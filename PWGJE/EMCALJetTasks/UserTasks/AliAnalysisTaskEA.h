@@ -66,7 +66,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    enum {fkV0A, fkV0C, fkV0M, fkV0Mnorm1, fkCE}; //detector level   norm1 : divided by mean V0M    norm2: average  A/mean A  +C/ mean C
 
 
-   enum {kNormal=0, kMC=1, kEmbedding=2}; //type of analysis    
+   enum {kNormal=0, kMC=1, kEmbedding=2, kKine=3, kEmbPy=4}; //type of analysis    
    enum {kMB=0, kHM=1, kGA=2, kTG};  //triggers   MB, HM, GA
    enum {krhokt =0, krhocms=1, kRho};  // rho kt,  rho cms
 
@@ -484,7 +484,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 22); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 24); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

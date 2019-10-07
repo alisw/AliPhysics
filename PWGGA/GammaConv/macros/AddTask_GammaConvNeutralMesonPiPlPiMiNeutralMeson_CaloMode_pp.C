@@ -240,6 +240,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036b3c00000000","0153503000000000"); // 6.0
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036c3c00000000","0153503000000000"); // 8.0
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036d3c00000000","0153503000000000"); // 10.0
+  } else if( trainConfig == 119){ // no dEdx cut for pion
+    cuts.AddCutHeavyMesonCalo("00010113","111111105f032230000","32c51000a","0103603c00000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
     // ---------------------------------
     // systematic studies 7 TeV (EMCal)
     // ---------------------------------

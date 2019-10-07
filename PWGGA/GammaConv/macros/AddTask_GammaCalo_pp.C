@@ -1804,9 +1804,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411791106f032230000","01631031000000d0"); // EG1  NL 11 + TB
   } else if (trainConfig == 2023){ //EMCal + DCal INT7 cut var.
     cuts.AddCutCalo("00010113","411790106f032230000","01631031000000d0"); // INT7 TBNL
-    cuts.AddCutCalo("00010113","411791206f032230000","01631031000000d0"); // INT7 NL12
-    cuts.AddCutCalo("00010113","411792106f032230000","01631031000000d0"); // INT7 NL21
-    cuts.AddCutCalo("00010113","411792206f032230000","01631031000000d0"); // INT7 NL22
+    cuts.AddCutCalo("00010113","411790006f032230000","01631031000000d0"); // INT7 No Nonlin
+    cuts.AddCutCalo("00010113","411791906f032230000","01631031000000d0"); // INT7 NL19
+    cuts.AddCutCalo("00010113","411792006f032230000","01631031000000d0"); // INT7 NL20
   } else if (trainConfig == 2024){ //EMCal + DCal INT7 cut var.
     cuts.AddCutCalo("00010113","411792105f032230000","01631031000000d0"); // INT7 time -50+50
     cuts.AddCutCalo("00010113","411792109f032230000","01631031000000d0"); // INT7 time -20+25
@@ -1825,9 +1825,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792106f032230000","01631031000000g0"); // INT7 Op. Ang. var
   } else if (trainConfig == 2026){ //EMCal + DCal EG2 cut var.
     cuts.AddCutCalo("0008e113","411790106f032230000","01631031000000d0"); // EG2 TBNL
-    cuts.AddCutCalo("0008e113","411791206f032230000","01631031000000d0"); // EG2 NL12
-    cuts.AddCutCalo("0008e113","411792106f032230000","01631031000000d0"); // EG2 NL21
-    cuts.AddCutCalo("0008e113","411792206f032230000","01631031000000d0"); // EG2 NL22
+    cuts.AddCutCalo("0008e113","411790006f032230000","01631031000000d0"); // EG2 No Nonlin
+    cuts.AddCutCalo("0008e113","411791906f032230000","01631031000000d0"); // EG2 NL19
+    cuts.AddCutCalo("0008e113","411792006f032230000","01631031000000d0"); // EG2 NL20
   } else if (trainConfig == 2027){ //EMCal + DCal EG2 cut var.
     cuts.AddCutCalo("0008e113","411792105f032230000","01631031000000d0"); // EG2 time -50+50
     cuts.AddCutCalo("0008e113","411792109f032230000","01631031000000d0"); // EG2 time -20+25
@@ -1846,9 +1846,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411792106f032230000","01631031000000g0"); // EG2 Op. Ang. var
   } else if (trainConfig == 2029){ //EMCal + DCal EG1 cut var.
     cuts.AddCutCalo("0008d113","411790106f032230000","01631031000000d0"); // EG1 TBNL
-    cuts.AddCutCalo("0008d113","411791206f032230000","01631031000000d0"); // EG1 NL12
-    cuts.AddCutCalo("0008d113","411792106f032230000","01631031000000d0"); // EG1 NL21
-    cuts.AddCutCalo("0008d113","411792206f032230000","01631031000000d0"); // EG1 NL22
+    cuts.AddCutCalo("0008d113","411790006f032230000","01631031000000d0"); // EG1 No Nonlin
+    cuts.AddCutCalo("0008d113","411791906f032230000","01631031000000d0"); // EG1 NL19
+    cuts.AddCutCalo("0008d113","411792006f032230000","01631031000000d0"); // EG1 NL20
   } else if (trainConfig == 2030){ //EMCal + DCal EG1 cut var.
     cuts.AddCutCalo("0008d113","411792105f032230000","01631031000000d0"); // EG1 time -50+50
     cuts.AddCutCalo("0008d113","411792109f032230000","01631031000000d0"); // EG1 time -20+25
@@ -1904,7 +1904,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411793206f032230000","01631031000000d0"); // EG1 NL32
     cuts.AddCutCalo("0008d113","411793306f032230000","01631031000000d0"); // EG1 NL33
     cuts.AddCutCalo("0008d113","411793406f032230000","01631031000000d0"); // EG1 NL34
-    
+
 // EDC settings with TB correction
   } else if (trainConfig == 2100){ // 100 MeV aggregation
     cuts.AddCutCalo("00010113","411790106f032230000","01631031000000d0"); // INT7 test beam NL

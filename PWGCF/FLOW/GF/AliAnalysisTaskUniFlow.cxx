@@ -1087,6 +1087,8 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // event sampling
   fIndexSampling = GetSamplingIndex();
 
+  if(fColSystem == kPPb || fColSystem == kPP) fhMeanMultRFP[fIndexSampling]->Fill(fIndexCentrality, fVector[kRefs]->size());
+
   // extract PV-z for weights
   fPVz = fEventAOD->GetPrimaryVertex()->GetZ();
 
@@ -3537,6 +3539,7 @@ Int_t AliAnalysisTaskUniFlow::GetCentralityIndex(CentEst est) const
 // ============================================================================
 const char* AliAnalysisTaskUniFlow::GetCentEstimatorLabel(const CentEst est) const
 {
+  return "V0A";
   // Return string with estimator name or 'n/a' if not available
   // *************************************************************
   switch (est) {
@@ -5240,6 +5243,16 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     fhEventCounter = new TH1D("fhEventCounter","Event Counter",iEventCounterBins,0,iEventCounterBins);
     for(Int_t i(0); i < iEventCounterBins; ++i) { fhEventCounter->GetXaxis()->SetBinLabel(i+1, sEventCounterLabel[i].Data() ); }
     fQAEvents->Add(fhEventCounter);
+    //small systems RFP multiplicity after all cuts
+    if(fColSystem == kPPb || fColSystem == kPP) {
+      for(Int_t iSample(0); iSample < fNumSamples; ++iSample)
+      {
+        if(iSample > 0 && !fSampling) { break; }
+        if(iSample > 9) { AliWarning("Multiplicity sampling not implemented for more than 10 samples! First 10 filled."); break; }
+        fhMeanMultRFP[iSample] = new TH2D(Form("fhMeanMultRFP_Sample%d",iSample), "RFPs: Centrality vs. multiplicity; centrality; multiplicity", fCentBinNum,fCentMin,fCentMax,200,0,200);
+        fQAEvents->Add(fhMeanMultRFP[iSample]);
+      }
+    }
   }
 
   {

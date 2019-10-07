@@ -165,6 +165,7 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
                                   GetCollisionCandidates(), false);
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
+  fEvent->SetCalcSpherocity(fEventCuts->GetDoSpherocityCuts());
 
   fTrack = new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(

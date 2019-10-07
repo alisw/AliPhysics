@@ -428,6 +428,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH1D*                   fhEventCentrality; //! distribution of event centrality
       TH2D*                   fh2EventCentralityNumRefs; //! distribution of event centrality vs number of selected charged tracks
       TH1D*                   fhEventCounter; //! counter following event selection
+      TH2D*                   fhMeanMultRFP[10]; //! counter following RFP multiplicity
       // Charged
       TH1D*                   fhRefsMult; //!multiplicity distribution of selected RFPs
       TH1D*                   fhRefsPt; //! pt distribution of selected RFPs

@@ -44,8 +44,10 @@
 #include <AliNanoAODHeader.h>
 #include <AliNanoAODTrack.h>
 
+#include "AliAODcascade.h"
 #include "AliAODv0.h"
 #include "AliAnalysisTaskNanoCheck.h"
+#include "AliESDcascade.h"
 #include "AliESDv0.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
@@ -100,56 +102,128 @@ void AliAnalysisTaskNanoCheck::UserCreateOutputObjects() {
     fHistos->CreateTH1("hMultiplicity", "", 100, 0, 100, "s");
     if (checkTracks)
         fHistos->CreateTH1("hNofTracks", "", 2, 0, 2, "s");
-    if (checkV0s)
+    if (checkV0s) {
         fHistos->CreateTH1("hNofV0s", "", 2, 0, 2, "s");
-    if (checkTracks){
-        fHistos->CreateTH2("QA/hTPCPIDPion", "", 200, 0, 20, 2000, 0, 200);
-        fHistos->CreateTH1("QA/hEtaPion", "", 40, -2, 2);
-        fHistos->CreateTH1("QA/hDCAPVPion", "", 300, 0, 3, "s");
-        fHistos->CreateTH1("QA/hDCArPVPion", "", 300, 0, 3, "s");
+        fHistos->CreateTH1("hNofV0sDistribution", "", 500, 0, 500, "s");
     }
-    if (checkV0s){
-        fHistos->CreateTH2("QA/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
-        fHistos->CreateTH2("QA/hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
-        fHistos->CreateTH2("QA/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 2000, 0,
+    if (checkCascades) {
+        fHistos->CreateTH1("hNofCascades", "", 2, 0, 2, "s");
+        fHistos->CreateTH1("hNofCascadesDistribution", "", 50, 0, 50, "s");
+    }
+    if (checkTracks) {
+        fHistos->CreateTH2("QA_pion/hTPCPIDPion", "", 200, 0, 20, 2000, 0, 200);
+        fHistos->CreateTH1("QA_pion/hEtaPion", "", 40, -2, 2);
+        fHistos->CreateTH1("QA_pion/hDCAPVPion", "", 300, 0, 3, "s");
+        fHistos->CreateTH1("QA_pion/hDCArPVPion", "", 300, 0, 3, "s");
+    }
+    if (checkV0s) {
+        fHistos->CreateTH2("QA_V0/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
+        fHistos->CreateTH2("QA_V0/hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
+        fHistos->CreateTH2("QA_V0/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 2000, 0,
                         200);
-        fHistos->CreateTH2("QA/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 2000, 0,
+        fHistos->CreateTH2("QA_V0/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 2000, 0,
                         200);
-        fHistos->CreateTH1("QA/hDCA_lambdaDaughters", "", 300, 0, 3, "s");
-        fHistos->CreateTH1("QA/hDCAlambdaPV", "", 500, 0, 5, "s");
-        fHistos->CreateTH1("QA/hDCAlambdaPionPV", "", 500, 0, 5, "s");
-        fHistos->CreateTH1("QA/hDCAlambdaProtonPV", "", 500, 0, 5, "s");
-        fHistos->CreateTH1("QA/hCosPAlambda", "", 150, 0.85, 1.0, "s");
-        fHistos->CreateTH1("QA/hTotMomQA", "", 100, 0, 10, "s");
-        fHistos->CreateTH1("QA/hYlambda", "", 400, -2, 2, "s");
-        fHistos->CreateTH1("QA/hDecayLengthQA", "", 100, 0, 100, "s");
-        fHistos->CreateTH1("QA/hMassLambda", "", 500, 1.0, 1.5, "s");
-        fHistos->CreateTH1("QA/hLambdaRxy", "", 400, 0, 400);
+        fHistos->CreateTH1("QA_V0/hDCA_lambdaDaughters", "", 300, 0, 3, "s");
+        fHistos->CreateTH1("QA_V0/hDCAlambdaPV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_V0/hDCAlambdaPionPV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_V0/hDCAlambdaProtonPV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_V0/hCosPAlambda", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("QA_V0/hTotMomQA", "", 100, 0, 10, "s");
+        fHistos->CreateTH1("QA_V0/hYlambda", "", 400, -2, 2, "s");
+        fHistos->CreateTH1("QA_V0/hDecayLengthQA", "", 100, 0, 100, "s");
+        fHistos->CreateTH1("QA_V0/hMassLambda", "", 500, 1.0, 1.5, "s");
+        fHistos->CreateTH1("QA_V0/hLambdaRxy", "", 400, 0, 400);
+    }
+    if (checkCascades) {
+        fHistos->CreateTH2("QA_Xi/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0,
+                           200);
+        fHistos->CreateTH2("QA_Xi/hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0,
+                           200);
+        fHistos->CreateTH2("QA_Xi/hTPCPIDBachelorPion", "", 200, 0, 20, 2000, 0,
+                           200);
+        fHistos->CreateTH1("QA_Xi/hTPCPIDsignalLambdaProton", "", 100, -5, 5, "s");
+        fHistos->CreateTH1("QA_Xi/hTPCPIDsignalLambdaPion", "", 100, -5, 5, "s");
+        fHistos->CreateTH1("QA_Xi/hTPCPIDsignalBachelorPion", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("QA_Xi/hDCADist_Lambda_BTW_Daughters", "", 300, 0, 3,
+                           "s");
+        fHistos->CreateTH1("QA_Xi/hDCADist_Xi_BTW_Daughters", "", 300, 0, 3,
+                           "s");
+        fHistos->CreateTH1("QA_Xi/hDCADist_lambda_to_PV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_Xi/hDCADist_Xi_to_PV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_Xi/hDCADist_LambdaProton_to_PV", "", 500, 0, 5,
+                           "s");
+        fHistos->CreateTH1("QA_Xi/hDCADist_LambdaPion_to_PV", "", 500, 0, 5,
+                           "s");
+        fHistos->CreateTH1("QA_Xi/hDCADist_BachelorPion_to_PV", "", 500, 0, 5,
+                           "s");
+        fHistos->CreateTH1("QA_Xi/hCosPA_lambda", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("QA_Xi/hCosPA_Xi", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("QA_Xi/hMass_Xi", "", 500, 1.0, 1.5, "s");
+        fHistos->CreateTH2("QA_Xi/hPhiEta_Xi", "", 180, 0, 2 * pi, 40, -2, 2);
+        fHistos->CreateTH2("QA_Xi/hLambda_Rxy", "", 400, -200, 200, 400, -200,
+                           200);
+        fHistos->CreateTH2("QA_Xi/hXi_Rxy", "", 400, -200, 200, 400, -200,
+                           200);
     }
 
-    if (checkTracks){
-        fHistos->CreateTH2("QAcut/hTPCPIDPion", "", 200, 0, 20, 2000, 0, 200);
-        fHistos->CreateTH1("QAcut/hEtaPion", "", 40, -2, 2);
-        fHistos->CreateTH1("QAcut/hDCAPVPion", "", 300, 0, 3, "s");
-        fHistos->CreateTH1("QAcut/hDCArPVPion", "", 300, 0, 3, "s");
+    if (checkTracks) {
+        fHistos->CreateTH2("QA_pionCut/hTPCPIDPion", "", 200, 0, 20, 2000, 0, 200);
+        fHistos->CreateTH1("QA_pionCut/hEtaPion", "", 40, -2, 2);
+        fHistos->CreateTH1("QA_pionCut/hDCAPVPion", "", 300, 0, 3, "s");
+        fHistos->CreateTH1("QA_pionCut/hDCArPVPion", "", 300, 0, 3, "s");
     }
-    if (checkV0s){
-        fHistos->CreateTH2("QAcut/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
-        fHistos->CreateTH2("QAcut/hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
-        fHistos->CreateTH2("QAcut/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 2000, 0,
+    if (checkV0s) {
+        fHistos->CreateTH2("QA_V0Cut/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
+        fHistos->CreateTH2("QA_V0Cut/hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
+        fHistos->CreateTH2("QA_V0Cut/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 2000, 0,
                         200);
-        fHistos->CreateTH2("QAcut/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 2000, 0,
+        fHistos->CreateTH2("QA_V0Cut/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 2000, 0,
                         200);
-        fHistos->CreateTH1("QAcut/hDCA_lambdaDaughters", "", 300, 0, 3, "s");
-        fHistos->CreateTH1("QAcut/hDCAlambdaPV", "", 500, 0, 5, "s");
-        fHistos->CreateTH1("QAcut/hDCAlambdaPionPV", "", 500, 0, 5, "s");
-        fHistos->CreateTH1("QAcut/hDCAlambdaProtonPV", "", 500, 0, 5, "s");
-        fHistos->CreateTH1("QAcut/hCosPAlambda", "", 150, 0.85, 1.0, "s");
-        fHistos->CreateTH1("QAcut/hTotMomQA", "", 100, 0, 10, "s");
-        fHistos->CreateTH1("QAcut/hYlambda", "", 400, -2, 2, "s");
-        fHistos->CreateTH1("QAcut/hDecayLengthQA", "", 100, 0, 100, "s");
-        fHistos->CreateTH1("QAcut/hMassLambda", "", 500, 1.0, 1.5, "s");
-        fHistos->CreateTH1("QAcut/hLambdaRxy", "", 400, 0, 400);
+        fHistos->CreateTH1("QA_V0Cut/hDCA_lambdaDaughters", "", 300, 0, 3, "s");
+        fHistos->CreateTH1("QA_V0Cut/hDCAlambdaPV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_V0Cut/hDCAlambdaPionPV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_V0Cut/hDCAlambdaProtonPV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_V0Cut/hCosPAlambda", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("QA_V0Cut/hTotMomQA", "", 100, 0, 10, "s");
+        fHistos->CreateTH1("QA_V0Cut/hYlambda", "", 400, -2, 2, "s");
+        fHistos->CreateTH1("QA_V0Cut/hDecayLengthQA", "", 100, 0, 100, "s");
+        fHistos->CreateTH1("QA_V0Cut/hMassLambda", "", 500, 1.0, 1.5, "s");
+        fHistos->CreateTH1("QA_V0Cut/hLambdaRxy", "", 400, 0, 400);
+    }
+    if (checkCascades) {
+        fHistos->CreateTH2("QA_XiCut/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0,
+                           200);
+        fHistos->CreateTH2("QA_XiCut/hTPCPIDLambdaPion", "", 200, 0, 20, 2000,
+                           0, 200);
+        fHistos->CreateTH2("QA_XiCut/hTPCPIDBachelorPion", "", 200, 0, 20, 2000,
+                           0, 200);
+        fHistos->CreateTH1("QA_XiCut/hTPCPIDsignalLambdaProton", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("QA_XiCut/hTPCPIDsignalLambdaPion", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("QA_XiCut/hTPCPIDsignalBachelorPion", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("QA_XiCut/hDCADist_Lambda_BTW_Daughters", "", 300, 0,
+                           3, "s");
+        fHistos->CreateTH1("QA_XiCut/hDCADist_Xi_BTW_Daughters", "", 300, 0, 3,
+                           "s");
+        fHistos->CreateTH1("QA_XiCut/hDCADist_lambda_to_PV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_XiCut/hDCADist_Xi_to_PV", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("QA_XiCut/hDCADist_LambdaProton_to_PV", "", 500, 0,
+                           5, "s");
+        fHistos->CreateTH1("QA_XiCut/hDCADist_LambdaPion_to_PV", "", 500, 0, 5,
+                           "s");
+        fHistos->CreateTH1("QA_XiCut/hDCADist_BachelorPion_to_PV", "", 500, 0,
+                           5, "s");
+        fHistos->CreateTH1("QA_XiCut/hCosPA_lambda", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("QA_XiCut/hCosPA_Xi", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("QA_XiCut/hMass_Xi", "", 500, 1.0, 1.5, "s");
+        fHistos->CreateTH2("QA_XiCut/hPhiEta_Xi", "", 180, 0, 2 * pi, 40, -2, 2);
+        fHistos->CreateTH2("QA_XiCut/hLambda_Rxy", "", 400, -200, 200, 400,
+                           -200, 200);
+        fHistos->CreateTH2("QA_XiCut/hXi_Rxy", "", 400, -200, 200, 400, -200,
+                           200);
     }
     std::vector<double> centaxisbin = {
         0,  1,  5,  10, 15, 20, 30,
@@ -188,6 +262,8 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
         PostData(1, fHistos->GetListOfHistograms());
         return;
     }
+    if (!IsAOD && (event->IsA() != AliESDEvent::Class()))
+        IsAOD = true;
 
     // Input hander for PID
     AliInputEventHandler* inputHandler =
@@ -226,7 +302,7 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
     fHistos->FillTH1("hMultiplicity", (double)fCent);
 
     // Get Vertex informations
-    if (fEvt->IsA() == AliAODEvent::Class())
+    if (IsAOD)
         vertex = ((AliAODEvent*)fEvt)->GetPrimaryVertex();
     const AliVVertex* pVtx = fEvt->GetPrimaryVertex();
     lPosPV[0] = pVtx->GetX();
@@ -245,7 +321,7 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
     PostData(1, fHistos->GetListOfHistograms());
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskNanoCheck::Terminate(Option_t*) {}
+void AliAnalysisTaskNanoCheck::Terminate(Option_t*) { }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
     const UInt_t nTracks = fEvt->GetNumberOfTracks();
@@ -253,7 +329,7 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
     AliVTrack* track;
     Float_t b[2];
     Float_t bCov[3];
-    Double_t fTPCNSigPion, pionZ, pionPt, pionSigmaDCA_r, pionDCA_r, fEta;
+    Double_t TPCNSigPion, pionZ, pionPt, pionSigmaDCAr, pionDCAr, pionEta;
 
     for (UInt_t it = 0; it < nTracks; it++) {
         track = (AliVTrack*)fEvt->GetTrack(it);
@@ -264,7 +340,7 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
         GetImpactParam(track, b, bCov);
 
         // ---------- Track selection begin ----------
-        if (fEvt->IsA() == AliESDEvent::Class()) {
+        if (!IsAOD) {
             if (!fTrackCuts->AcceptTrack((AliESDtrack*)track))
                 continue;
         }  // ESD Case
@@ -279,34 +355,36 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
         }
 
         pionZ = b[1];
-        fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
+        TPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
         pionPt = track->Pt();
-        pionSigmaDCA_r = (0.0026 + 0.0050 / pionPt);
-        pionDCA_r = b[0];
-        fEta = TMath::Abs(track->Eta());
+        pionSigmaDCAr = (0.0026 + 0.0050 / pionPt);
+        pionDCAr = b[0];
+        pionEta = TMath::Abs(track->Eta());
 
-        fHistos->FillTH1("QA/hDCAPVPion", pionZ);
-        fHistos->FillTH1("QA/hDCArPVPion", pionDCA_r);
-        fHistos->FillTH1("QA/hEtaPion", fEta);
-        fHistos->FillTH2("QA/hTPCPIDPion", track->GetTPCmomentum(), track->GetTPCsignal());
-        
-        if (TMath::Abs(fTPCNSigPion) > fTPCNsigNanoCheckerPionCut)
+        fHistos->FillTH1("QA_pion/hDCAPVPion", pionZ);
+        fHistos->FillTH1("QA_pion/hDCArPVPion", pionDCAr);
+        fHistos->FillTH1("QA_pion/hEtaPion", pionEta);
+        fHistos->FillTH2("QA_pion/hTPCPIDPion", track->GetTPCmomentum(),
+                         track->GetTPCsignal());
+
+        if (TMath::Abs(TPCNSigPion) > fTPCNsigNanoCheckerPionCut)
             continue;
-        if (fEta > fNanoCheckerPionEtaCut)
+        if (pionEta > fNanoCheckerPionEtaCut)
             continue;
         if (pionPt < 0.15)
             continue;
         if (pionZ > fNanoCheckerPionZVertexCut)
             continue;
-        if (pionDCA_r > pionSigmaDCA_r * fNanoCheckerPionXYVertexSigmaCut)
+        if (pionDCAr > pionSigmaDCAr * fNanoCheckerPionXYVertexSigmaCut)
             continue;
         // ---------- Track selection done ----------
         fHistos->FillTH1("hNofTracks", 1.5);
 
-        fHistos->FillTH1("QAcut/hDCAPVPion", pionZ);
-        fHistos->FillTH1("QAcut/hDCArPVPion", pionDCA_r);
-        fHistos->FillTH1("QAcut/hEtaPion", fEta);
-        fHistos->FillTH2("QAcut/hTPCPIDPion", track->GetTPCmomentum(), track->GetTPCsignal());
+        fHistos->FillTH1("QA_pionCut/hDCAPVPion", pionZ);
+        fHistos->FillTH1("QA_pionCut/hDCArPVPion", pionDCAr);
+        fHistos->FillTH1("QA_pionCut/hEtaPion", pionEta);
+        fHistos->FillTH2("QA_pionCut/hTPCPIDPion", track->GetTPCmomentum(),
+                         track->GetTPCsignal());
 
         goodtrackindices.push_back(it);
     }
@@ -315,28 +393,25 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
 Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
     goodv0indices.clear();
     const UInt_t nV0 = fEvt->GetNumberOfV0s();
+    fHistos->FillTH1("hNofV0sDistribution", nV0);
 
     AliESDv0* v0ESD;
     AliAODv0* v0AOD;
-    Double_t LambdaX, LambdaY, LambdaZ;
-    Double_t fTPCNSigProton, fTPCNSigAntiProton, fTPCNSigPion, fTPCNSigAntiPion;
-    Double_t fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV;
-    Double_t fDCADistLambda_PV, fDCADistLambda, fLambdaCPA;
+    Double_t TPCNSigProton, TPCNSigAntiProton, TPCNSigPion, TPCNSigAntiPion;
+    Double_t DCADistLambda_PV, DCADistLambda, LambdaCPA;
     Double_t v0Position[3];
-    Double_t fMassV0;
-    Double_t radius, lV0TotalMomentum, fLength, lLifetime;
+    Double_t MassV0;
+    Double_t radius, lV0TotalMomentum, Length, lLifetime;
     UInt_t isAnti = 0;
     Float_t b[2];
     Float_t bCov[3];
-    Double_t fDCADist_LambdaPionPV, fDCADist_LambdaProtonPV;
+    Double_t DCADist_LambdaPionPV, DCADist_LambdaProtonPV;
 
     Bool_t AcceptedV0 = kTRUE;
-    if (fEvt->IsA() == AliESDEvent::Class()) {  // ESD case
+    if (!IsAOD) {  // ESD case
         for (UInt_t it = 0; it < nV0; it++) {
             AcceptedV0 = kTRUE;
             v0ESD = ((AliESDEvent*)fEvt)->GetV0(it);
-            if (!v0ESD)
-                continue;
             fHistos->FillTH1("hNofV0s", 0.5);
             if (TMath::Abs(v0ESD->GetPindex()) ==
                 TMath::Abs(v0ESD->GetNindex()))
@@ -352,37 +427,37 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
                 AcceptedV0 = kFALSE;
 
             // PID cuts
-            fTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
-            fTPCNSigAntiProton =
+            TPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
+            TPCNSigAntiProton =
                 GetTPCnSigma(nTrackV0, AliPID::kProton);
-            fTPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
-            fTPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
+            TPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
+            TPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
 
-            if ((TMath::Abs(fTPCNSigProton) < fTPCNsigLambdaProtonCut) 
-                && (TMath::Abs(fTPCNSigPion) < fTPCNsigLambdaPionCut) 
+            if ((TMath::Abs(TPCNSigProton) < fTPCNsigLambdaProtonCut) 
+                && (TMath::Abs(TPCNSigPion) < fTPCNsigLambdaPionCut) 
                 && (nTrackV0->GetSign() < 0) ){
                 
                 v0ESD->ChangeMassHypothesis(kLambda0);
                 isAnti = 0;
 
-                fHistos->FillTH2("QA/hTPCPIDLambdaProton",
+                fHistos->FillTH2("QA_V0/hTPCPIDLambdaProton",
                                  pTrackV0->GetTPCmomentum(),
                                  pTrackV0->GetTPCsignal());
-                fHistos->FillTH2("QA/hTPCPIDLambdaPion",
+                fHistos->FillTH2("QA_V0/hTPCPIDLambdaPion",
                                  nTrackV0->GetTPCmomentum(),
                                  nTrackV0->GetTPCsignal());
             }
-            else if ((TMath::Abs(fTPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
-                    && (TMath::Abs(fTPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
+            else if ((TMath::Abs(TPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
+                    && (TMath::Abs(TPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
                     && (nTrackV0->GetSign() > 0)){
 
                 v0ESD->ChangeMassHypothesis(kLambda0Bar);
                 isAnti = 1;
 
-                fHistos->FillTH2("QA/hTPCPIDAntiLambdaProton",
+                fHistos->FillTH2("QA_V0/hTPCPIDAntiLambdaProton",
                                  nTrackV0->GetTPCmomentum(),
                                  nTrackV0->GetTPCsignal());
-                fHistos->FillTH2("QA/hTPCPIDAntiLambdaPion",
+                fHistos->FillTH2("QA_V0/hTPCPIDAntiLambdaPion",
                                  pTrackV0->GetTPCmomentum(),
                                  pTrackV0->GetTPCsignal());
             }
@@ -391,63 +466,63 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
 
             // DCA cut
             // DCA between Dautgher particles
-            fDCADistLambda = TMath::Abs(v0ESD->GetDcaV0Daughters());
-            fHistos->FillTH1("QA/hDCA_lambdaDaughters", fDCADistLambda);
-            if (fDCADistLambda > fDCADistLambdaDaughtersCut)
+            DCADistLambda = TMath::Abs(v0ESD->GetDcaV0Daughters());
+            fHistos->FillTH1("QA_V0/hDCA_lambdaDaughters", DCADistLambda);
+            if (DCADistLambda > fDCADistLambdaDaughtersCut)
                 AcceptedV0 = kFALSE;
 
             // DCA to PV
-            fDCADistLambda_PV = TMath::Abs(v0ESD->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
-            fHistos->FillTH1("QA/hDCAlambdaPV", fDCADistLambda_PV);
-            if (fDCADistLambda_PV > fDCArDistLambdaPVCut)
+            DCADistLambda_PV = TMath::Abs(v0ESD->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
+            fHistos->FillTH1("QA_V0/hDCAlambdaPV", DCADistLambda_PV);
+            if (DCADistLambda_PV > fDCArDistLambdaPVCut)
                 AcceptedV0 = kFALSE;
             if (!isAnti)
                 GetImpactParam(nTrackV0, b, bCov);
             else
                 GetImpactParam(pTrackV0, b, bCov);
-            fDCADist_LambdaPionPV = b[0];
-            fHistos->FillTH1("QA/hDCAlambdaPionPV", fDCADist_LambdaPionPV);
+            DCADist_LambdaPionPV = b[0];
+            fHistos->FillTH1("QA_V0/hDCAlambdaPionPV", DCADist_LambdaPionPV);
             if (!isAnti)
                 GetImpactParam(pTrackV0, b, bCov);
             else
                 GetImpactParam(nTrackV0, b, bCov);
-            fDCADist_LambdaProtonPV = b[0];
-            fHistos->FillTH1("QA/hDCAlambdaProtonPV", fDCADist_LambdaProtonPV);
+            DCADist_LambdaProtonPV = b[0];
+            fHistos->FillTH1("QA_V0/hDCAlambdaProtonPV", DCADist_LambdaProtonPV);
 
             // CPA cut
-            fLambdaCPA =
+            LambdaCPA =
                 TMath::Abs(v0ESD->GetV0CosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]));
-            fHistos->FillTH1("QA/hCosPAlambda", fLambdaCPA);
-            if (fLambdaCPA < fV0CosineOfPointingAngleCut || fLambdaCPA >= 1)
+            fHistos->FillTH1("QA_V0/hCosPAlambda", LambdaCPA);
+            if (LambdaCPA < fV0CosineOfPointingAngleCut || LambdaCPA >= 1)
                 AcceptedV0 = kFALSE;
             
             // Rapidity cut
-            fHistos->FillTH1("QA/hYlambda", v0ESD->RapLambda());
+            fHistos->FillTH1("QA_V0/hYlambda", v0ESD->RapLambda());
             if (TMath::Abs(v0ESD->RapLambda()) > fMaxLambdaRapidity)
-                return kFALSE;
+                AcceptedV0 = kFALSE;
 
             // Radius cut
             v0ESD->GetXYZ(v0Position[0], v0Position[1], v0Position[2]);
             radius = TMath::Hypot(v0Position[0], v0Position[1]);
-            fHistos->FillTH1("QA/hLambdaRxy", radius);
+            fHistos->FillTH1("QA_V0/hLambdaRxy", radius);
             if ((radius < fLambdaLowRadius) || (radius > fLambdaHighRadius))
                 AcceptedV0 = kFALSE;
 
             // Life time cut
             lV0TotalMomentum = v0ESD->P();
-            fHistos->FillTH1("QA/hTotMomQA", lV0TotalMomentum);
-            fLength = TMath::Sqrt(TMath::Power(v0Position[0] - lPosPV[0], 2) +
+            fHistos->FillTH1("QA_V0/hTotMomQA", lV0TotalMomentum);
+            Length = TMath::Sqrt(TMath::Power(v0Position[0] - lPosPV[0], 2) +
                                   TMath::Power(v0Position[1] - lPosPV[1], 2) +
                                   TMath::Power(v0Position[2] - lPosPV[2], 2));
-            fHistos->FillTH1("QA/hDecayLengthQA", fLength);
-            lLifetime = TMath::Abs(v0Mass * fLength / lV0TotalMomentum);
+            fHistos->FillTH1("QA_V0/hDecayLengthQA", Length);
+            lLifetime = TMath::Abs(v0Mass * Length / lV0TotalMomentum);
             if (lLifetime > fLambdaLifetime)
                 AcceptedV0 = kFALSE;
 
             // Mass window cut
-            fMassV0 = v0ESD->GetEffMass();
-            fHistos->FillTH1("QA/hMassLambda", fMassV0);
-            if (TMath::Abs(fMassV0 - v0Mass) > fV0MassWindowCut)
+            MassV0 = v0ESD->GetEffMass();
+            fHistos->FillTH1("QA_V0/hMassLambda", MassV0);
+            if (TMath::Abs(MassV0 - v0Mass) > fV0MassWindowCut)
                 AcceptedV0 = kFALSE;
 
             // After selection above
@@ -455,31 +530,31 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
                 fHistos->FillTH1("hNofV0s", 1.5);
                 goodv0indices.push_back({it, isAnti});  // for standard V0
                 if (!isAnti) {
-                    fHistos->FillTH2("QAcut/hTPCPIDLambdaProton",
+                    fHistos->FillTH2("QA_V0Cut/hTPCPIDLambdaProton",
                                      pTrackV0->GetTPCmomentum(),
                                      pTrackV0->GetTPCsignal());
-                    fHistos->FillTH2("QAcut/hTPCPIDLambdaPion",
+                    fHistos->FillTH2("QA_V0Cut/hTPCPIDLambdaPion",
                                      nTrackV0->GetTPCmomentum(),
                                      nTrackV0->GetTPCsignal());
                 }
                 else {
-                    fHistos->FillTH2("QAcut/hTPCPIDAntiLambdaProton",
+                    fHistos->FillTH2("QA_V0Cut/hTPCPIDAntiLambdaProton",
                                      nTrackV0->GetTPCmomentum(),
                                      nTrackV0->GetTPCsignal());
-                    fHistos->FillTH2("QAcut/hTPCPIDAntiLambdaPion",
+                    fHistos->FillTH2("QA_V0Cut/hTPCPIDAntiLambdaPion",
                                      pTrackV0->GetTPCmomentum(),
                                      pTrackV0->GetTPCsignal());
                 }
-                fHistos->FillTH1("QAcut/hDCA_lambdaDaughters", fDCADistLambda);
-                fHistos->FillTH1("QAcut/hDCAlambdaPV", fDCADistLambda_PV);
-                fHistos->FillTH1("QAcut/hDCAlambdaPionPV", fDCADist_LambdaPionPV);
-                fHistos->FillTH1("QAcut/hDCAlambdaProtonPV", fDCADist_LambdaProtonPV);
-                fHistos->FillTH1("QAcut/hCosPAlambda", fLambdaCPA);
-                fHistos->FillTH1("QAcut/hYlambda", v0ESD->RapLambda());
-                fHistos->FillTH1("QAcut/hLambdaRxy", radius);
-                fHistos->FillTH1("QAcut/hTotMomQA", lV0TotalMomentum);
-                fHistos->FillTH1("QAcut/hMassLambda", fMassV0);
-                fHistos->FillTH1("QAcut/hDecayLengthQA", fLength);
+                fHistos->FillTH1("QA_V0Cut/hDCA_lambdaDaughters", DCADistLambda);
+                fHistos->FillTH1("QA_V0Cut/hDCAlambdaPV", DCADistLambda_PV);
+                fHistos->FillTH1("QA_V0Cut/hDCAlambdaPionPV", DCADist_LambdaPionPV);
+                fHistos->FillTH1("QA_V0Cut/hDCAlambdaProtonPV", DCADist_LambdaProtonPV);
+                fHistos->FillTH1("QA_V0Cut/hCosPAlambda", LambdaCPA);
+                fHistos->FillTH1("QA_V0Cut/hYlambda", v0ESD->RapLambda());
+                fHistos->FillTH1("QA_V0Cut/hLambdaRxy", radius);
+                fHistos->FillTH1("QA_V0Cut/hTotMomQA", lV0TotalMomentum);
+                fHistos->FillTH1("QA_V0Cut/hMassLambda", MassV0);
+                fHistos->FillTH1("QA_V0Cut/hDecayLengthQA", Length);
             }
         }                                     // All V0 loop
     }                                         // ESD case
@@ -487,8 +562,6 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
         for (UInt_t it = 0; it < nV0; it++) {
             AcceptedV0 = kTRUE;
             v0AOD = ((AliAODEvent*)fEvt)->GetV0(it);
-            if (!v0AOD)
-                continue;
             fHistos->FillTH1("hNofV0s", 0.5);
             if (TMath::Abs(v0AOD->GetPosID()) == TMath::Abs(v0AOD->GetNegID()))
                 continue;
@@ -503,35 +576,35 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
                 AcceptedV0 = kFALSE;
 
             // PID cuts
-            fTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
-            fTPCNSigAntiProton =
+            TPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
+            TPCNSigAntiProton =
                 GetTPCnSigma(nTrackV0, AliPID::kProton);
-            fTPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
-            fTPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
+            TPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
+            TPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
 
-            if ((TMath::Abs(fTPCNSigProton) < fTPCNsigLambdaProtonCut) 
-                && (TMath::Abs(fTPCNSigPion) < fTPCNsigLambdaPionCut) 
+            if ((TMath::Abs(TPCNSigProton) < fTPCNsigLambdaProtonCut) 
+                && (TMath::Abs(TPCNSigPion) < fTPCNsigLambdaPionCut) 
                 && (nTrackV0->GetSign() < 0) ){
                 
                 isAnti = 0;
 
-                fHistos->FillTH2("QA/hTPCPIDLambdaProton",
+                fHistos->FillTH2("QA_V0/hTPCPIDLambdaProton",
                                  pTrackV0->GetTPCmomentum(),
                                  pTrackV0->GetTPCsignal());
-                fHistos->FillTH2("QA/hTPCPIDLambdaPion",
+                fHistos->FillTH2("QA_V0/hTPCPIDLambdaPion",
                                  nTrackV0->GetTPCmomentum(),
                                  nTrackV0->GetTPCsignal());
             }
-            else if ((TMath::Abs(fTPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
-                    && (TMath::Abs(fTPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
+            else if ((TMath::Abs(TPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
+                    && (TMath::Abs(TPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
                     && (nTrackV0->GetSign() > 0)){
 
                 isAnti = 1;
 
-                fHistos->FillTH2("QA/hTPCPIDAntiLambdaProton",
+                fHistos->FillTH2("QA_V0/hTPCPIDAntiLambdaProton",
                                  nTrackV0->GetTPCmomentum(),
                                  nTrackV0->GetTPCsignal());
-                fHistos->FillTH2("QA/hTPCPIDAntiLambdaPion",
+                fHistos->FillTH2("QA_V0/hTPCPIDAntiLambdaPion",
                                  pTrackV0->GetTPCmomentum(),
                                  pTrackV0->GetTPCsignal());
             }
@@ -539,61 +612,61 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
                 AcceptedV0 = kFALSE;
 
             // DCA cut
-            fDCADistLambda = TMath::Abs(v0AOD->DcaV0Daughters());
-            fHistos->FillTH1("QA/hDCA_lambdaDaughters", fDCADistLambda);
-            if (fDCADistLambda > fDCADistLambdaDaughtersCut)
+            DCADistLambda = TMath::Abs(v0AOD->DcaV0Daughters());
+            fHistos->FillTH1("QA_V0/hDCA_lambdaDaughters", DCADistLambda);
+            if (DCADistLambda > fDCADistLambdaDaughtersCut)
                 AcceptedV0 = kFALSE;  // DCA proton-pion
 
             // DCA to PV
-            fDCADistLambda_PV = TMath::Abs(v0AOD->DcaV0ToPrimVertex());
-            fHistos->FillTH1("QA/hDCAlambdaPV", fDCADistLambda_PV);
-            if (fDCADistLambda_PV > fDCArDistLambdaPVCut)
+            DCADistLambda_PV = TMath::Abs(v0AOD->DcaV0ToPrimVertex());
+            fHistos->FillTH1("QA_V0/hDCAlambdaPV", DCADistLambda_PV);
+            if (DCADistLambda_PV > fDCArDistLambdaPVCut)
                 AcceptedV0 = kFALSE;
             if (!isAnti){
-                fDCADist_LambdaPionPV = TMath::Abs(v0AOD->DcaNegToPrimVertex());
-                fDCADist_LambdaProtonPV = TMath::Abs(v0AOD->DcaPosToPrimVertex());
+                DCADist_LambdaPionPV = TMath::Abs(v0AOD->DcaNegToPrimVertex());
+                DCADist_LambdaProtonPV = TMath::Abs(v0AOD->DcaPosToPrimVertex());
             }
             else {
-                fDCADist_LambdaPionPV = TMath::Abs(v0AOD->DcaPosToPrimVertex());
-                fDCADist_LambdaProtonPV = TMath::Abs(v0AOD->DcaNegToPrimVertex());
+                DCADist_LambdaPionPV = TMath::Abs(v0AOD->DcaPosToPrimVertex());
+                DCADist_LambdaProtonPV = TMath::Abs(v0AOD->DcaNegToPrimVertex());
             }
-            fHistos->FillTH1("QA/hDCAlambdaPionPV", fDCADist_LambdaPionPV);
-            fHistos->FillTH1("QA/hDCAlambdaProtonPV", fDCADist_LambdaProtonPV);
+            fHistos->FillTH1("QA_V0/hDCAlambdaPionPV", DCADist_LambdaPionPV);
+            fHistos->FillTH1("QA_V0/hDCAlambdaProtonPV", DCADist_LambdaProtonPV);
 
             // CPA cut
-            fLambdaCPA = TMath::Abs(v0AOD->CosPointingAngle(vertex));
-            fHistos->FillTH1("QA/hCosPAlambda", fLambdaCPA);
-            if (fLambdaCPA < fV0CosineOfPointingAngleCut || fLambdaCPA >= 1)
+            LambdaCPA = TMath::Abs(v0AOD->CosPointingAngle(vertex));
+            fHistos->FillTH1("QA_V0/hCosPAlambda", LambdaCPA);
+            if (LambdaCPA < fV0CosineOfPointingAngleCut || LambdaCPA >= 1)
                 AcceptedV0 = kFALSE;
 
             // Rapidity cut
-            fHistos->FillTH1("QA/hYlambda", v0AOD->RapLambda());
+            fHistos->FillTH1("QA_V0/hYlambda", v0AOD->RapLambda());
             if (TMath::Abs(v0AOD->RapLambda()) > fMaxLambdaRapidity)
-                return kFALSE;
+                AcceptedV0 = kFALSE;
 
             // Radius cut
             radius = v0AOD->RadiusV0();
-            fHistos->FillTH1("QA/hLambdaRxy", radius);
+            fHistos->FillTH1("QA_V0/hLambdaRxy", radius);
             if ((radius < fLambdaLowRadius) || (radius > fLambdaHighRadius))
                 AcceptedV0 = kFALSE;
 
             // Life time cut
             lV0TotalMomentum = TMath::Sqrt(v0AOD->Ptot2V0());
-            fHistos->FillTH1("QA/hTotMomQA", lV0TotalMomentum);
-            fLength = v0AOD->DecayLength(lPosPV);
-            fHistos->FillTH1("QA/hDecayLengthQA", fLength);
-            lLifetime = TMath::Abs(v0Mass * fLength / lV0TotalMomentum);
+            fHistos->FillTH1("QA_V0/hTotMomQA", lV0TotalMomentum);
+            Length = v0AOD->DecayLength(lPosPV);
+            fHistos->FillTH1("QA_V0/hDecayLengthQA", Length);
+            lLifetime = TMath::Abs(v0Mass * Length / lV0TotalMomentum);
             if (lLifetime > fLambdaLifetime)
                 AcceptedV0 = kFALSE;
 
             // Mass window cut
-            fMassV0 = -999;
+            MassV0 = -999;
             if (!isAnti)
-                fMassV0 = v0AOD->MassLambda();
+                MassV0 = v0AOD->MassLambda();
             else
-                fMassV0 = v0AOD->MassAntiLambda();
-            fHistos->FillTH1("QA/hMassLambda", fMassV0);
-            if (TMath::Abs(fMassV0 - v0Mass) > fV0MassWindowCut)
+                MassV0 = v0AOD->MassAntiLambda();
+            fHistos->FillTH1("QA_V0/hMassLambda", MassV0);
+            if (TMath::Abs(MassV0 - v0Mass) > fV0MassWindowCut)
                 AcceptedV0 = kFALSE;
 
             // After selection above
@@ -601,31 +674,31 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
                 fHistos->FillTH1("hNofV0s", 1.5);
                 goodv0indices.push_back({it, isAnti});
                 if (!isAnti) {
-                    fHistos->FillTH2("QAcut/hTPCPIDLambdaProton",
+                    fHistos->FillTH2("QA_V0Cut/hTPCPIDLambdaProton",
                                      pTrackV0->GetTPCmomentum(),
                                      pTrackV0->GetTPCsignal());
-                    fHistos->FillTH2("QAcut/hTPCPIDLambdaPion",
+                    fHistos->FillTH2("QA_V0Cut/hTPCPIDLambdaPion",
                                      nTrackV0->GetTPCmomentum(),
                                      nTrackV0->GetTPCsignal());
                 }
                 else {
-                    fHistos->FillTH2("QAcut/hTPCPIDAntiLambdaProton",
+                    fHistos->FillTH2("QA_V0Cut/hTPCPIDAntiLambdaProton",
                                      nTrackV0->GetTPCmomentum(),
                                      nTrackV0->GetTPCsignal());
-                    fHistos->FillTH2("QAcut/hTPCPIDAntiLambdaPion",
+                    fHistos->FillTH2("QA_V0Cut/hTPCPIDAntiLambdaPion",
                                      pTrackV0->GetTPCmomentum(),
                                      pTrackV0->GetTPCsignal());
                 }
-                fHistos->FillTH1("QAcut/hDCA_lambdaDaughters", fDCADistLambda);
-                fHistos->FillTH1("QAcut/hDCAlambdaPV", fDCADistLambda_PV);
-                fHistos->FillTH1("QAcut/hDCAlambdaPionPV", fDCADist_LambdaPionPV);
-                fHistos->FillTH1("QAcut/hDCAlambdaProtonPV", fDCADist_LambdaProtonPV);
-                fHistos->FillTH1("QAcut/hCosPAlambda", fLambdaCPA);
-                fHistos->FillTH1("QAcut/hYlambda", v0AOD->RapLambda());
-                fHistos->FillTH1("QAcut/hLambdaRxy", radius);
-                fHistos->FillTH1("QAcut/hTotMomQA", lV0TotalMomentum);
-                fHistos->FillTH1("QAcut/hMassLambda", fMassV0);
-                fHistos->FillTH1("QAcut/hDecayLengthQA", fLength);
+                fHistos->FillTH1("QA_V0Cut/hDCA_lambdaDaughters", DCADistLambda);
+                fHistos->FillTH1("QA_V0Cut/hDCAlambdaPV", DCADistLambda_PV);
+                fHistos->FillTH1("QA_V0Cut/hDCAlambdaPionPV", DCADist_LambdaPionPV);
+                fHistos->FillTH1("QA_V0Cut/hDCAlambdaProtonPV", DCADist_LambdaProtonPV);
+                fHistos->FillTH1("QA_V0Cut/hCosPAlambda", LambdaCPA);
+                fHistos->FillTH1("QA_V0Cut/hYlambda", v0AOD->RapLambda());
+                fHistos->FillTH1("QA_V0Cut/hLambdaRxy", radius);
+                fHistos->FillTH1("QA_V0Cut/hTotMomQA", lV0TotalMomentum);
+                fHistos->FillTH1("QA_V0Cut/hMassLambda", MassV0);
+                fHistos->FillTH1("QA_V0Cut/hDecayLengthQA", Length);
             }
         }  // All v0 loop
     }      // AOD case
@@ -633,7 +706,441 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
     return goodv0indices.size();
 }
 Bool_t AliAnalysisTaskNanoCheck::GoodCascadeSelection(){
-    // tbd
+    goodcascadeindices.clear();
+    const UInt_t nXi = fEvt->GetNumberOfCascades();
+    fHistos->FillTH1("hNofCascadesDistribution", nXi);
+
+    AliESDcascade* Xicandidate;
+    AliAODcascade* Xicandidate_aod;
+    Double_t TPCNSigProton, TPCNSigLambdaPion, TPCNSigBachelorPion;
+    Double_t pTPCmom, nTPCmom, bTPCmom;
+    Double_t pTPCsig, nTPCsig, bTPCsig;
+    Double_t DCADist_BachelorPion_PV, DCADist_Lambda_PV, DCADist_Xi_PV;
+    Double_t DCADist_LambdaProton_PV, DCADist_LambdaPion_PV;
+    Double_t DCADist_Lambda, DCADist_Xi;
+    Double_t LambdaCPA, XiCPA;
+    Double_t XiPosition[3];
+    Double_t XiMomentum[3];
+    Double_t LambdaPosition[3];
+    Double_t Mass_Xi, Xi_momsum;
+    Double_t Xi_eta, Xi_phi;
+    UInt_t isXiMinus = 0;
+    Float_t b[2];
+    Float_t bCov[3];
+
+    Bool_t StandardXi = kTRUE;
+    if (!IsAOD) {  // ESD case
+        for (UInt_t it = 0; it < nXi; it++) {
+            StandardXi = kTRUE;
+            Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(it);
+            fHistos->FillTH1("hNofCascades", 0.5);
+            if (!Xicandidate)
+                continue;
+
+            if (TMath::Abs(Xicandidate->GetPindex()) ==
+                TMath::Abs(Xicandidate->GetNindex()))
+                continue;
+
+            if (TMath::Abs(Xicandidate->GetPindex()) ==
+                TMath::Abs(Xicandidate->GetBindex()))
+                continue;
+
+            if (TMath::Abs(Xicandidate->GetNindex()) ==
+                TMath::Abs(Xicandidate->GetBindex()))
+                continue;
+
+            AliESDtrack* pTrackXi = (AliESDtrack*)fEvt->GetTrack(
+                TMath::Abs(Xicandidate->GetPindex()));
+            AliESDtrack* nTrackXi = (AliESDtrack*)fEvt->GetTrack(
+                TMath::Abs(Xicandidate->GetNindex()));
+            AliESDtrack* bTrackXi = (AliESDtrack*)fEvt->GetTrack(
+                TMath::Abs(Xicandidate->GetBindex()));
+
+            // PID cuts for Xi daughters
+            if (Xicandidate->Charge() == -1)  
+                isXiMinus = 1;
+            else
+                isXiMinus = 0;
+
+            if (isXiMinus) {  // Xi- has +proton, -pion
+                pTPCmom = pTrackXi->GetTPCmomentum();
+                pTPCsig = pTrackXi->GetTPCsignal();
+                nTPCmom = nTrackXi->GetTPCmomentum();
+                nTPCsig = nTrackXi->GetTPCsignal();
+                TPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                TPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
+            } else {  // Xi+ has -proton, +pion
+                nTPCmom = pTrackXi->GetTPCmomentum();
+                nTPCsig = pTrackXi->GetTPCsignal();
+                pTPCmom = nTrackXi->GetTPCmomentum();
+                pTPCsig = nTrackXi->GetTPCsignal();
+                TPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                TPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
+            }
+            bTPCmom = bTrackXi->GetTPCmomentum();
+            bTPCsig = bTrackXi->GetTPCsignal();
+            TPCNSigBachelorPion = GetTPCnSigma(
+                bTrackXi, AliPID::kPion);  // bachelor is always pion
+            fHistos->FillTH2("QA_Xi/hTPCPIDLambdaProton", pTPCmom, pTPCsig);
+            fHistos->FillTH2("QA_Xi/hTPCPIDLambdaPion", nTPCmom, nTPCsig);
+            fHistos->FillTH2("QA_Xi/hTPCPIDBachelorPion", bTPCmom, bTPCsig);
+            fHistos->FillTH1("QA_Xi/hTPCPIDsignalLambdaProton", TPCNSigProton);
+            fHistos->FillTH1("QA_Xi/hTPCPIDsignalLambdaPion",
+                             TPCNSigLambdaPion);
+            fHistos->FillTH1("QA_Xi/hTPCPIDsignalBachelorPion",
+                             TPCNSigBachelorPion);
+
+            if (TMath::Abs(TPCNSigProton) > fTPCNsigLambdaProtonCut)
+                StandardXi = kFALSE;  // PID for proton
+            if (TMath::Abs(TPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
+                StandardXi = kFALSE;  // PID for 1st pion
+            if (TMath::Abs(TPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
+                StandardXi = kFALSE;  // PID for 2nd pion
+
+            // DCA cut
+            // DCA between Dautgher particles
+            DCADist_Lambda = TMath::Abs(Xicandidate->GetDcaV0Daughters());
+            DCADist_Xi = TMath::Abs(Xicandidate->GetDcaXiDaughters());
+            fHistos->FillTH1("QA_Xi/hDCADist_Lambda_BTW_Daughters",
+                             DCADist_Lambda);
+            fHistos->FillTH1("QA_Xi/hDCADist_Xi_BTW_Daughters", DCADist_Xi);
+
+            if (DCADist_Lambda > fDCADist_LambdaDaughtersCut)
+                StandardXi = kFALSE;  // DCA proton-pion
+            if (DCADist_Xi > fDCADist_XiDaughtersCut)
+                StandardXi = kFALSE;  // DCA Lambda-pion
+
+            // DCA to PV
+            DCADist_Lambda_PV =
+                TMath::Abs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
+            DCADist_Xi_PV = TMath::Abs(
+                Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2]));
+            if (isXiMinus) {  // Xi- has +proton, -pion
+                GetImpactParam(pTrackXi, b, bCov);
+                DCADist_LambdaProton_PV = b[0];
+                GetImpactParam(nTrackXi, b, bCov);
+                DCADist_LambdaPion_PV = b[0];
+            } else {
+                GetImpactParam(nTrackXi, b, bCov);
+                DCADist_LambdaProton_PV = b[0];
+                GetImpactParam(pTrackXi, b, bCov);
+                DCADist_LambdaPion_PV = b[0];
+            }
+            GetImpactParam(bTrackXi, b, bCov);
+            DCADist_BachelorPion_PV = b[0];
+            fHistos->FillTH1("QA_Xi/hDCADist_lambda_to_PV",
+                                DCADist_Lambda_PV);
+            fHistos->FillTH1("QA_Xi/hDCADist_Xi_to_PV", DCADist_Xi_PV);
+            fHistos->FillTH1("QA_Xi/hDCADist_LambdaProton_to_PV",
+                                DCADist_LambdaProton_PV);
+            fHistos->FillTH1("QA_Xi/hDCADist_LambdaPion_to_PV",
+                                DCADist_LambdaPion_PV);
+            fHistos->FillTH1("QA_Xi/hDCADist_BachelorPion_to_PV",
+                                DCADist_BachelorPion_PV);
+
+            if (DCADist_Lambda_PV < fDCADist_Lambda_PVCut)
+                StandardXi = kFALSE;  // DCA Lambda-vertex
+
+            // CPA cut
+            Xicandidate->GetXYZcascade(XiPosition[0], XiPosition[1],
+                                       XiPosition[2]);
+            LambdaCPA = Xicandidate->GetV0CosineOfPointingAngle(
+                XiPosition[0], XiPosition[1], XiPosition[2]);
+            // LambdaCPA = Xicandidate->GetV0CosineOfPointingAngle(lPosPV[0],
+            // lPosPV[1], lPosPV[2]); // PV check
+            XiCPA = Xicandidate->GetCascadeCosineOfPointingAngle(
+                lPosPV[0], lPosPV[1], lPosPV[2]);
+            fHistos->FillTH1("QA_Xi/hCosPA_lambda", LambdaCPA);
+            fHistos->FillTH1("QA_Xi/hCosPA_Xi", XiCPA);
+
+            if (LambdaCPA < fV0CosineOfPointingAngleCut)
+                StandardXi = kFALSE;
+            if (XiCPA < fCascadeCosineOfPointingAngleCut)
+                StandardXi = kFALSE;
+
+            // Mass window cut
+            Mass_Xi = Xicandidate->GetEffMassXi();
+            fHistos->FillTH1("QA_Xi/hMass_Xi", Mass_Xi);
+            /*
+            // Disable for Xi study
+            if (TMath::Abs(Mass_Xi - Ximass) > fXiMassWindowCut)
+                StandardXi = kFALSE;
+            */
+            // Eta cut
+            Xi_eta = Xicandidate->Eta();
+            Xi_phi = Xicandidate->Phi();
+            if (TMath::Abs(Xi_eta) > fXiEtaCut)
+                StandardXi = kFALSE;
+            fHistos->FillTH2("QA_Xi/hPhiEta_Xi", Xi_phi, Xi_eta);
+
+            // XY Raidus cut(experiemntal)
+            Xicandidate->GetXYZ(LambdaPosition[0], LambdaPosition[1],
+                                LambdaPosition[2]);
+            fHistos->FillTH2("QA_Xi/hLambda_Rxy", LambdaPosition[0],
+                             LambdaPosition[1]);
+            // if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > 100)
+            // StandardXi=kFALSE; // NOT USING
+            fHistos->FillTH2("QA_Xi/hXi_Rxy", XiPosition[0], XiPosition[1]);
+
+            // After selection above
+            if (StandardXi) {  // Save only the Xi is good candidate
+                fHistos->FillTH2("QA_XiCut/hTPCPIDLambdaProton", pTPCmom,
+                                 pTPCsig);
+                fHistos->FillTH2("QA_XiCut/hTPCPIDLambdaPion", nTPCmom,
+                                 nTPCsig);
+                fHistos->FillTH2("QA_XiCut/hTPCPIDBachelorPion", bTPCmom,
+                                 bTPCsig);
+                fHistos->FillTH1("QA_XiCut/hTPCPIDsignalLambdaProton",
+                                 TPCNSigProton);
+                fHistos->FillTH1("QA_XiCut/hTPCPIDsignalLambdaPion",
+                                 TPCNSigLambdaPion);
+                fHistos->FillTH1("QA_XiCut/hTPCPIDsignalBachelorPion",
+                                 TPCNSigBachelorPion);
+                fHistos->FillTH1("QA_XiCut/hDCADist_Lambda_BTW_Daughters",
+                                 DCADist_Lambda);
+                fHistos->FillTH1("QA_XiCut/hDCADist_Xi_BTW_Daughters",
+                                 DCADist_Xi);
+                fHistos->FillTH1("QA_XiCut/hDCADist_lambda_to_PV",
+                                 DCADist_Lambda_PV);
+                fHistos->FillTH1("QA_XiCut/hDCADist_Xi_to_PV", DCADist_Xi_PV);
+                fHistos->FillTH1("QA_XiCut/hDCADist_LambdaProton_to_PV",
+                                 DCADist_LambdaProton_PV);
+                fHistos->FillTH1("QA_XiCut/hDCADist_LambdaPion_to_PV",
+                                 DCADist_LambdaPion_PV);
+                fHistos->FillTH1("QA_XiCut/hDCADist_BachelorPion_to_PV",
+                                 DCADist_BachelorPion_PV);
+                fHistos->FillTH1("QA_XiCut/hCosPA_lambda", LambdaCPA);
+                fHistos->FillTH1("QA_XiCut/hCosPA_Xi", XiCPA);
+                fHistos->FillTH1("QA_XiCut/hMass_Xi", Mass_Xi);
+                fHistos->FillTH2("QA_XiCut/hPhiEta_Xi", Xi_phi, Xi_eta);
+                fHistos->FillTH2("QA_XiCut/hLambda_Rxy", LambdaPosition[0],
+                                 LambdaPosition[1]);
+                fHistos->FillTH2("QA_XiCut/hXi_Rxy", XiPosition[0],
+                                 XiPosition[1]);
+
+                goodcascadeindices.push_back({it, isXiMinus});
+                fHistos->FillTH1("hNofCascades", 1.5);
+            }  // for standard Xi
+        }      // All Xi loop
+    }          // ESD case
+    else {
+        for (UInt_t it = 0; it < nXi; it++) {
+            StandardXi = kTRUE;
+            Xicandidate_aod = ((AliAODEvent*)fEvt)->GetCascade(it);
+            fHistos->FillTH1("hNofCascades", 0.5);
+            if (!Xicandidate_aod)
+                continue;
+
+            if (TMath::Abs(Xicandidate_aod->GetPosID()) ==
+                TMath::Abs(Xicandidate_aod->GetNegID()))
+                continue;
+            if (TMath::Abs(Xicandidate_aod->GetPosID()) ==
+                TMath::Abs(Xicandidate_aod->GetBachID()))
+                continue;
+            if (TMath::Abs(Xicandidate_aod->GetNegID()) ==
+                TMath::Abs(Xicandidate_aod->GetBachID()))
+                continue;
+
+            AliAODTrack* pTrackXi =
+                (AliAODTrack*)(Xicandidate_aod->GetDaughter(0));
+            AliAODTrack* nTrackXi =
+                (AliAODTrack*)(Xicandidate_aod->GetDaughter(1));
+            AliAODTrack* bTrackXi =
+                (AliAODTrack*)(Xicandidate_aod->GetDecayVertexXi()->GetDaughter(
+                    0));
+
+            // PID cuts for Xi daughters
+            if (Xicandidate_aod->ChargeXi() == -1)
+                isXiMinus = 1;
+            else
+                isXiMinus = 0;
+
+            if (isXiMinus) {  // Xi- has +proton, -pion
+                pTPCmom = pTrackXi->GetTPCmomentum();
+                pTPCsig = pTrackXi->GetTPCsignal();
+                nTPCmom = nTrackXi->GetTPCmomentum();
+                nTPCsig = nTrackXi->GetTPCsignal();
+                TPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                TPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
+            } else {  // Xi+ has -proton, +pion
+                nTPCmom = pTrackXi->GetTPCmomentum();
+                nTPCsig = pTrackXi->GetTPCsignal();
+                pTPCmom = nTrackXi->GetTPCmomentum();
+                pTPCsig = nTrackXi->GetTPCsignal();
+                TPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                TPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
+            }
+            bTPCmom = bTrackXi->GetTPCmomentum();
+            bTPCsig = bTrackXi->GetTPCsignal();
+            TPCNSigBachelorPion = GetTPCnSigma(
+                bTrackXi, AliPID::kPion);  // bachelor is always pion
+            fHistos->FillTH2("QA_Xi/hTPCPIDLambdaProton", pTPCmom, pTPCsig);
+            fHistos->FillTH2("QA_Xi/hTPCPIDLambdaPion", nTPCmom, nTPCsig);
+            fHistos->FillTH2("QA_Xi/hTPCPIDBachelorPion", bTPCmom, bTPCsig);
+            fHistos->FillTH1("QA_Xi/hTPCPIDsignalLambdaProton", TPCNSigProton);
+            fHistos->FillTH1("QA_Xi/hTPCPIDsignalLambdaPion",
+                             TPCNSigLambdaPion);
+            fHistos->FillTH1("QA_Xi/hTPCPIDsignalBachelorPion",
+                             TPCNSigBachelorPion);
+
+            if (TMath::Abs(TPCNSigProton) > fTPCNsigLambdaProtonCut) 
+                StandardXi = kFALSE;  // PID for proton
+            if (TMath::Abs(TPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
+                StandardXi = kFALSE;  // PID for 1st pion
+            if (TMath::Abs(TPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
+                StandardXi = kFALSE;  // PID for 2nd pion
+
+            // DCA cut
+            // DCA between Dautgher particles
+            DCADist_Lambda = TMath::Abs(Xicandidate_aod->DcaV0Daughters());
+            DCADist_Xi = TMath::Abs(Xicandidate_aod->DcaXiDaughters());
+            fHistos->FillTH1("QA_Xi/hDCADist_Lambda_BTW_Daughters", DCADist_Lambda);
+            fHistos->FillTH1("QA_Xi/hDCADist_Xi_BTW_Daughters", DCADist_Xi);
+
+            if (DCADist_Lambda > fDCADist_LambdaDaughtersCut)
+                StandardXi = kFALSE;  // DCA proton-pion
+            if (DCADist_Xi > fDCADist_XiDaughtersCut)
+                StandardXi = kFALSE;  // DCA Lambda-pion
+
+            // DCA to PV
+            DCADist_Lambda_PV =
+                TMath::Abs(Xicandidate_aod->DcaV0ToPrimVertex());
+            DCADist_Xi_PV = TMath::Abs(Xicandidate_aod->DcaXiToPrimVertex(
+                lPosPV[0], lPosPV[1], lPosPV[2]));
+            if (isXiMinus) {  // Xi- has +proton, -pion
+                GetImpactParam(pTrackXi, b, bCov);
+                DCADist_LambdaProton_PV = b[0];
+                GetImpactParam(nTrackXi, b, bCov);
+                DCADist_LambdaPion_PV = b[0];
+            } else {
+                GetImpactParam(nTrackXi, b, bCov);
+                DCADist_LambdaProton_PV = b[0];
+                GetImpactParam(pTrackXi, b, bCov);
+                DCADist_LambdaPion_PV = b[0];
+            }
+            GetImpactParam(bTrackXi, b, bCov);
+            DCADist_BachelorPion_PV = b[0];
+            /*
+            // typical AOD method
+            if (isXiMinus) {
+                DCADist_LambdaProton_PV =
+                    TMath::Abs(Xicandidate_aod->DcaPosToPrimVertex());
+                DCADist_LambdaPion_PV =
+                    TMath::Abs(Xicandidate_aod->DcaNegToPrimVertex());
+            } else {
+                DCADist_LambdaProton_PV =
+                    TMath::Abs(Xicandidate_aod->DcaNegToPrimVertex());
+                DCADist_LambdaPion_PV =
+                    TMath::Abs(Xicandidate_aod->DcaPosToPrimVertex());
+            }
+            
+            DCADist_BachelorPion_PV =
+                TMath::Abs(Xicandidate_aod->DcaBachToPrimVertex());
+            */
+            fHistos->FillTH1("QA_Xi/hDCADist_lambda_to_PV", DCADist_Lambda_PV);
+            fHistos->FillTH1("QA_Xi/hDCADist_Xi_to_PV", DCADist_Xi_PV);
+            fHistos->FillTH1("QA_Xi/hDCADist_LambdaProton_to_PV",
+                             DCADist_LambdaProton_PV);
+            fHistos->FillTH1("QA_Xi/hDCADist_LambdaPion_to_PV",
+                             DCADist_LambdaPion_PV);
+            fHistos->FillTH1("QA_Xi/hDCADist_BachelorPion_to_PV",
+                             DCADist_BachelorPion_PV);
+
+            if (DCADist_Lambda_PV < fDCADist_Lambda_PVCut)
+                StandardXi = kFALSE;  // DCA Lambda-vertex
+
+            // CPA cut
+            XiPosition[0] = Xicandidate_aod->DecayVertexXiX();
+            XiPosition[1] = Xicandidate_aod->DecayVertexXiY();
+            XiPosition[2] = Xicandidate_aod->DecayVertexXiZ();
+            LambdaCPA = Xicandidate_aod->CosPointingAngle(XiPosition);
+            // LambdaCPA = Xicandidate_aod->CosPointingAngle(lPosPV);
+            XiCPA = Xicandidate_aod->CosPointingAngleXi(lPosPV[0], lPosPV[1],
+                                                         lPosPV[2]);
+            fHistos->FillTH1("QA_Xi/hCosPA_lambda", LambdaCPA);
+            fHistos->FillTH1("QA_Xi/hCosPA_Xi", XiCPA);
+
+            if (LambdaCPA < fV0CosineOfPointingAngleCut)
+                StandardXi = kFALSE;
+            if (XiCPA < fCascadeCosineOfPointingAngleCut)
+                StandardXi = kFALSE;
+
+            // Mass window cut
+            Mass_Xi = Xicandidate_aod->MassXi();
+            fHistos->FillTH1("QA_Xi/hMass_Xi", Mass_Xi);
+            /*
+            // Disable for Xi study
+            if (TMath::Abs(Mass_Xi - Ximass) > fXiMassWindowCut)
+                StandardXi = kFALSE;
+            */
+
+            // Eta cut
+            // Eta: 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13))
+            // Phi: TMath::Pi()+TMath::ATan2(-Py(),-Px())
+            XiMomentum[0] = Xicandidate_aod->MomXiX();
+            XiMomentum[1] = Xicandidate_aod->MomXiY();
+            XiMomentum[2] = Xicandidate_aod->MomXiZ();
+            Xi_momsum =
+                TMath::Sqrt(XiMomentum[0] * XiMomentum[0] + XiMomentum[1] * XiMomentum[1] +
+                            XiMomentum[2] * XiMomentum[2]);
+            Xi_eta = 0.5 * TMath::Log((Xi_momsum + XiMomentum[2]) /
+                                      (Xi_momsum - XiMomentum[2] + 1.e-13));
+            Xi_phi = TMath::Pi() + TMath::ATan2(-XiMomentum[1], -XiMomentum[0]);
+            if (TMath::Abs(Xi_eta) > fXiEtaCut)
+                StandardXi = kFALSE;
+            fHistos->FillTH2("QA_Xi/hPhiEta_Xi", Xi_phi, Xi_eta);
+
+            // XY Raidus cut(experiemntal)
+            // Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
+            fHistos->FillTH2("QA_Xi/hLambda_Rxy", Xicandidate_aod->DecayVertexV0X(),
+                             Xicandidate_aod->DecayVertexV0Y());
+            // if(sqrt( Xicandidate->RadiusV0() ) > 100)
+            // StandardXi=kFALSE; // NOT USING
+
+            fHistos->FillTH2("QA_Xi/hXi_Rxy", XiPosition[0], XiPosition[1]);
+
+            // After selection above
+            if (StandardXi) {  // Save only the Xi is good candidate
+                fHistos->FillTH2("QA_XiCut/hTPCPIDLambdaProton", pTPCmom,
+                                 pTPCsig);
+                fHistos->FillTH2("QA_XiCut/hTPCPIDLambdaPion", nTPCmom,
+                                 nTPCsig);
+                fHistos->FillTH2("QA_XiCut/hTPCPIDBachelorPion", bTPCmom,
+                                 bTPCsig);
+                fHistos->FillTH1("QA_XiCut/hTPCPIDsignalLambdaProton",
+                                 TPCNSigProton);
+                fHistos->FillTH1("QA_XiCut/hTPCPIDsignalLambdaPion",
+                                 TPCNSigLambdaPion);
+                fHistos->FillTH1("QA_XiCut/hTPCPIDsignalBachelorPion",
+                                 TPCNSigBachelorPion);
+                fHistos->FillTH1("QA_XiCut/hDCADist_Lambda_BTW_Daughters",
+                                 DCADist_Lambda);
+                fHistos->FillTH1("QA_XiCut/hDCADist_Xi_BTW_Daughters",
+                                 DCADist_Xi);
+                fHistos->FillTH1("QA_XiCut/hDCADist_lambda_to_PV",
+                                 DCADist_Lambda_PV);
+                fHistos->FillTH1("QA_XiCut/hDCADist_Xi_to_PV", DCADist_Xi_PV);
+                fHistos->FillTH1("QA_XiCut/hDCADist_LambdaProton_to_PV",
+                                 DCADist_LambdaProton_PV);
+                fHistos->FillTH1("QA_XiCut/hDCADist_LambdaPion_to_PV",
+                                 DCADist_LambdaPion_PV);
+                fHistos->FillTH1("QA_XiCut/hDCADist_BachelorPion_to_PV",
+                                 DCADist_BachelorPion_PV);
+                fHistos->FillTH1("QA_XiCut/hCosPA_lambda", LambdaCPA);
+                fHistos->FillTH1("QA_XiCut/hCosPA_Xi", XiCPA);
+                fHistos->FillTH1("QA_XiCut/hMass_Xi", Mass_Xi);
+                fHistos->FillTH2("QA_XiCut/hPhiEta_Xi", Xi_phi, Xi_eta);
+                fHistos->FillTH2("QA_XiCut/hLambda_Rxy", LambdaPosition[0],
+                                 LambdaPosition[1]);
+                fHistos->FillTH2("QA_XiCut/hXi_Rxy", XiPosition[0],
+                                 XiPosition[1]);
+                goodcascadeindices.push_back({it,isXiMinus});
+                fHistos->FillTH1("hNofCascades", 1.5);
+            }  // for standard Xi
+        }      // All Xi loop
+    }          // AOD case
+
+    return goodcascadeindices.size();
 }
 
 THnSparse* AliAnalysisTaskNanoCheck::CreateTHnSparse(

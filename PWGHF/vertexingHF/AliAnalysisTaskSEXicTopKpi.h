@@ -22,6 +22,7 @@
 #include <TH1F.h>
 #include <THnSparse.h>
 #include <TArrayI.h>
+#include <TClonesArray.h>
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsLctopKpi.h"
@@ -157,16 +158,18 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // calculate weight to treat reco true Lc as Xic (mfaggin)
   
-  void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselpKpi=0x0,Bool_t *arrayPIDselpiKpi=0x0,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1);
+  void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselpKpi=0x0,Bool_t *arrayPIDselpiKpi=0x0,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1,AliAODMCParticle *pSigmaC=0x0);
   void FillArrayVariableSparse(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Double_t *point,Int_t massHypothesis);  
   Double_t Weight_fromLc_toXic(AliAODMCParticle* p, AliAODMCParticle* prong);
   void PrepareTracks(AliAODEvent *aod,TClonesArray *mcArray=0x0);
+  Int_t ConvertXicMCinfo(Int_t infoMC);
 
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts 
   //AliRDHFCutsLctopKpi *fCutsLc;  // Lc Cuts
   AliRDHFCutsXictopKpi *fCutsXic;  // Xic Cuts
   AliNormalizationCounter *fCounter;//!<! AliNormalizationCounter on output slot 5
   AliPIDResponse *fPidResponse; //!<!PID response 
+  TClonesArray *fmcArray;        //!<!pointer to mc array
   Bool_t    fReadMC;              ///  flag for MC array: kTRUE = read it, kFALSE = do not read it
   Int_t     fAnalysisType;        /// defines loops and particle targets: 0=default (=all)  1= Xic->pKpi, 2=Lc->pKpi + displacement, 3= Sigma_c, 4= Xicc->Xic pi
   Bool_t fRecalPrimVtx;                  /// switch on/off recalculation of prim vtx: note that in pp and p-Pb it will be set off by default
@@ -190,6 +193,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   AliAODVertex *fprimVtx;//! pointer to prim. vertex
   TH2F *fhistInvMassCheck;//! hist with generic inv. mass distr (for checks)
   TH2F *fhistMCSpectrumAccLc;//! hist with MC spectrum of cand in acceptance
+  TH2F *fhistMCSpectrumAccSc;//! hist with MC spectrum of cand in acceptance
   TH2F *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
   THnSparseF* fhSparseAnalysisSigma;//! sparse for analysis of SigmaC (with deltaM)
@@ -281,7 +285,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fSigmaCfromLcOnTheFly; /// switch to use on-the-fly Lc or filtered Lc from delta file
   Bool_t fCheckOnlyTrackEfficiency;// flag for filling only the single-track sparse and return
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,4); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,5); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 
