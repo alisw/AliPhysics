@@ -84,24 +84,32 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
 
   // Track Cuts
+
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-      false, false, false, false);
+		  isMC, true, true, true);//DCAplots,CombSigma,ContribSplitting
   TrackCuts->SetFilterBit(128);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(false, false, false, false);
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
   AntiTrackCuts->SetFilterBit(128);
   AntiTrackCuts->SetCutCharge(-1);
 
   //Lambda Cuts
-  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false, true,
-                                                                false);
+  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
+      isMC,CPAPlots,ContributionSplitting);
+  AliFemtoDreamTrackCuts *Posv0Daug=AliFemtoDreamTrackCuts::DecayProtonCuts(
+          isMC,PileUpRej,false);
+  AliFemtoDreamTrackCuts *Negv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
+          isMC,PileUpRej,false);
+
+  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
+                                                                true);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
-      false, true, false);
+      isMC, true, false);//PileUpRej, false
 
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
-      false, true, false);
+      isMC, true, false);
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -109,14 +117,14 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   v0Cuts->SetPDGCodeNegDaug(211);  //Pion
   v0Cuts->SetPDGCodev0(3122);  //Lambda
 
-  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false,
-                                                                    false,
-                                                                    false);
+  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
+                                                                    true);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
-      false, true, false);
+      isMC, true, false);
   PosAntiv0Daug->SetCutCharge(1);
+
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
-      AliFemtoDreamTrackCuts::DecayProtonCuts(false, false, false);
+      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, false, false);
   NegAntiv0Daug->SetCutCharge(-1);
 
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
