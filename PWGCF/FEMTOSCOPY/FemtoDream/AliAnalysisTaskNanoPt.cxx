@@ -39,6 +39,11 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt()
       fAntiProtonRestMass(nullptr),
       fDeuteronRestMass(nullptr),
       fAntiDeuteronRestMass(nullptr),
+
+      fPairCleaner(nullptr),
+      fPartColl(nullptr),
+      fResults(nullptr),
+      fResultsQA(nullptr),
       fTrackBufferSize(2500)
       {
 
@@ -77,6 +82,10 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt(
       fAntiProtonRestMass(nullptr),
       fDeuteronRestMass(nullptr),
       fAntiDeuteronRestMass(nullptr),
+      fPairCleaner(nullptr),
+      fPartColl(nullptr),
+      fResults(nullptr),
+      fResultsQA(nullptr),
       fTrackBufferSize(2500)
       {
       DefineOutput(1, TList::Class());  //Output for the Event Cuts
@@ -84,6 +93,8 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt(
       DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
       DefineOutput(4, TList::Class());  //Output for the Dueteron Cuts
       DefineOutput(5, TList::Class());  //Output for the AntiDeuteron Cuts
+      DefineOutput(6, TList::Class());  //Output for the Results
+      DefineOutput(7, TList::Class());  //Output for the Results QA
       }
 
   
@@ -98,6 +109,9 @@ AliAnalysisTaskNanoPt::~AliAnalysisTaskNanoPt() {
   delete fAntiProtonTrack;
   delete fDeuteronTrack;
   delete fAntiDeuteronTrack;
+  delete fPairCleaner;
+  delete fPartColl;
+  
 } 
 //-----------------------------------------------------------------------------------------------------------------
 
@@ -161,7 +175,8 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     fDeuteronRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
   }
 
-  if (!fAntiDeuteronTrack) {
+  if (!fAntiDeuteronTrack) 
+  {
     AliError("No Proton cuts \n");
   } else
   {
@@ -171,15 +186,29 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     fAntiDeuteronRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
   }
 
+  if (!fConfig) 
+  {
+    AliError("No Correlation Config \n");
+  } 
+  else 
+  {
+    fPartColl = new AliFemtoDreamPartCollection(fConfig,
+                                                fConfig->GetMinimalBookingME());
+    fPairCleaner = new AliFemtoDreamPairCleaner(2, 4,
+                                                fConfig->GetMinimalBookingME());
+  }
+
   fEvent = new AliFemtoDreamEvent(false,true,GetCollisionCandidates(), false);
 
 
    fTrack = new AliFemtoDreamTrack();
    fTrack->SetUseMCInfo(false);
 
-  if (!fEvtCuts->GetMinimalBooking()) {
+  if (!fEvtCuts->GetMinimalBooking()) 
+  {
     fEvtList = fEvtCuts->GetHistList();
-  } else {
+  } else 
+  {
     fEvtList = new TList();
     fEvtList->SetName("EventCuts");
     fEvtList->SetOwner();
@@ -195,12 +224,33 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
    fAntiDeuteronList = fAntiDeuteronTrack->GetQAHists();
    fAntiDeuteronList->Add(fAntiDeuteronRestMass);
 
+  fResultsQA = new TList();
+  fResultsQA->SetOwner();
+  fResultsQA->SetName("ResultsQA");
+
+  if (fConfig->GetUseEventMixing()) 
+  {
+    fResults = fPartColl->GetHistList();
+    if (!fConfig->GetMinimalBookingME()) 
+    {
+      fResultsQA->Add(fPartColl->GetQAList());
+      fResultsQA->Add(fPairCleaner->GetHistList());
+    }
+  }
+  else 
+  {
+    fResults = new TList();
+    fResults->SetOwner();
+    fResults->SetName("Results");
+  }
 
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
   PostData(4, fDeuteronList);
   PostData(5, fAntiDeuteronList);
+  PostData(6, fResults);
+  PostData(7, fResultsQA);
 
 }
 
@@ -262,7 +312,7 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
   std::vector<AliFemtoDreamBasePart> AntiProton;
   std::vector<AliFemtoDreamBasePart> Deuteron;
   std::vector<AliFemtoDreamBasePart> AntiDeuteron;
-
+  
   const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
@@ -271,29 +321,53 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
     fTrack->SetTrack(track, fInputEvent, multiplicity);
     fTrack->SetInvMass(0.938);
 
-    if (fProtonTrack->isSelected(fTrack)) {
+    if (fProtonTrack->isSelected(fTrack)) 
+    {
       
       fProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
       Proton.push_back(*fTrack);
     }
-    if (fAntiProtonTrack->isSelected(fTrack)) {
-      AntiProton.push_back(*fTrack);
-      fAntiProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
 
+    if (fAntiProtonTrack->isSelected(fTrack)) 
+    {
+      
+      fAntiProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+       AntiProton.push_back(*fTrack);
     }
-      if (fDeuteronTrack->isSelected(fTrack)) {
+    if (fDeuteronTrack->isSelected(fTrack)) 
+
+    {
       
       fDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
       Deuteron.push_back(*fTrack);
     }
-    if (fAntiDeuteronTrack->isSelected(fTrack)) {
-       AntiDeuteron.push_back(*fTrack);
+    if (fAntiDeuteronTrack->isSelected(fTrack)) 
+    { 
       fAntiDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
-    
+      AntiDeuteron.push_back(*fTrack);
     }
   }
+  
+  
+  
+  fPairCleaner->CleanTrackAndDecay(&Proton, &Deuteron, 0);
+  fPairCleaner->CleanTrackAndDecay(&AntiProton, &AntiDeuteron, 1);
+  fPairCleaner->CleanDecay(&Proton, 0);
+  fPairCleaner->CleanDecay(&AntiProton, 1);
+  fPairCleaner->CleanDecay(&Deuteron, 2);
+  fPairCleaner->CleanDecay(&AntiDeuteron,3);
 
 
+  fPairCleaner->ResetArray();
+  fPairCleaner->StoreParticle(Proton);
+  fPairCleaner->StoreParticle(AntiProton);
+  fPairCleaner->StoreParticle(Deuteron);
+  fPairCleaner->StoreParticle(AntiDeuteron);
+
+  
+  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(), 
+                      fEvent->GetMultiplicity(),fEvent->GetV0MCentrality());
+ 
 
 // flush the data
   PostData(1, fEvtList);
@@ -301,6 +375,8 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
   PostData(3, fAntiProtonList);
   PostData(4, fDeuteronList);
   PostData(5, fAntiDeuteronList);
+  PostData(6, fResults);
+  PostData(7, fResultsQA);
 }
 
 
@@ -344,39 +420,5 @@ void AliAnalysisTaskNanoPt::StoreGlobalTrackReference(AliVTrack *track) {
   }
   (fGTI[trackID]) = track;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

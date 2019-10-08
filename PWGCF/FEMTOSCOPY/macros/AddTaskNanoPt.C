@@ -49,21 +49,21 @@ AliAnalysisTaskSE* AddTaskNanoPt(  bool isMC = false,
  AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
 
-     TrackCuts->SetMinimalBooking(false);
-     TrackCuts->SetCutCharge(-1);
+     AntiTrackCuts->SetMinimalBooking(false);
+     AntiTrackCuts->SetCutCharge(-1);
  //deuteron track cuts----------------------------------------------------------------------------
  AliFemtoDreamTrackCuts* TrackCutsDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true,
   CombSigma, ContributionSplitting); 
 
-      TrackCuts->SetMinimalBooking(false);
-      TrackCuts->SetCutCharge(1);
+      TrackCutsDeuteron->SetMinimalBooking(false);
+      TrackCutsDeuteron->SetCutCharge(1);
 
 //Antideuteron track cuts----------------------------------------------------------------------------
  AliFemtoDreamTrackCuts* AntiTrackCutsDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts( isMC, true, 
   CombSigma, ContributionSplitting); 
   
-      TrackCuts->SetMinimalBooking(false);
-      TrackCuts->SetCutCharge(-1);
+      AntiTrackCutsDeuteron->SetMinimalBooking(false);
+      AntiTrackCutsDeuteron->SetCutCharge(-1);
 
 
   std::vector<int> PDGParticles;
@@ -242,6 +242,27 @@ AliFemtoDreamCollConfig *config=new AliFemtoDreamCollConfig("Femto","Femto");
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiTrackCutsDeuteronName.Data()));
   mgr->ConnectOutput(task, 5, coutputAntiTrkCutsDeuteron);
+
+ AliAnalysisDataContainer *coutputResults;
+  TString ResultsName = Form("%sResults", addon.Data());
+  coutputResults = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsName.Data()));
+  mgr->ConnectOutput(task, 6, coutputResults);
+
+  AliAnalysisDataContainer *coutputResultsQA;
+  TString ResultsQAName = Form("%sResultsQA", addon.Data());
+  coutputResultsQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsQAName.Data()));
+  mgr->ConnectOutput(task, 7, coutputResultsQA);
+
+
 
   return task;
 
