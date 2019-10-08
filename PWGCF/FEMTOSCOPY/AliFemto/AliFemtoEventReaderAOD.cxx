@@ -1316,7 +1316,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
     //cout<<"Track with pT "<<tAodTrack->Pt()<<" eta: "<<tAodTrack->Eta()<<" zv: "<<tAodTrack->Zv()<<" phi: "<<tAodTrack->Phi()<<endl;
     //cout<<"Pion bin: "<<idx[0]<<" "<<idx[1]<<" "<<idx[2]<<" "<<idx[3]<<" val: "<<f4DcorrectionsPions->GetBinContent(idx)<<endl;
     double correction = f4DcorrectionsPions->GetBinContent(idx);
-    tFemtoTrack->SetCorrectionPion(correction == 0.0 ? 1.0 : 1.0 / correction);
+    tFemtoTrack->SetCorrectionPion(correction == 0.0 ? 1.0 : correction);
   }
   else {
     tFemtoTrack->SetCorrectionPion(1.0);
@@ -1331,7 +1331,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
                     f4DcorrectionsKaons->GetAxis(2)->FindFixBin(tAodTrack->Zv()),
                     f4DcorrectionsKaons->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsKaons->GetBinContent(idx) != 0) {
-      tFemtoTrack->SetCorrectionKaon(1. / f4DcorrectionsKaons->GetBinContent(idx));
+      tFemtoTrack->SetCorrectionKaon(f4DcorrectionsKaons->GetBinContent(idx));
     } else {
       tFemtoTrack->SetCorrectionKaon(1.0);
     }
@@ -1349,7 +1349,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
                     f4DcorrectionsProtons->GetAxis(2)->FindFixBin(tAodTrack->Zv()),
                     f4DcorrectionsProtons->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsProtons->GetBinContent(idx) != 0) {
-      tFemtoTrack->SetCorrectionProton(1. / f4DcorrectionsProtons->GetBinContent(idx));
+      tFemtoTrack->SetCorrectionProton(f4DcorrectionsProtons->GetBinContent(idx));
     } else {
       tFemtoTrack->SetCorrectionProton(1.0);
     }
@@ -1367,7 +1367,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
                     f4DcorrectionsPionsMinus->GetAxis(2)->FindFixBin(tAodTrack->Zv()),
                     f4DcorrectionsPionsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsPionsMinus->GetBinContent(idx) != 0) {
-      tFemtoTrack->SetCorrectionPionMinus(1. / f4DcorrectionsPionsMinus->GetBinContent(idx));
+      tFemtoTrack->SetCorrectionPionMinus(f4DcorrectionsPionsMinus->GetBinContent(idx));
     } else {
       tFemtoTrack->SetCorrectionPionMinus(1.0);
     }
@@ -1385,7 +1385,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
                     f4DcorrectionsKaonsMinus->GetAxis(2)->FindFixBin(tAodTrack->Zv()),
                     f4DcorrectionsKaonsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsKaonsMinus->GetBinContent(idx) != 0) {
-      tFemtoTrack->SetCorrectionKaonMinus(1. / f4DcorrectionsKaonsMinus->GetBinContent(idx));
+      tFemtoTrack->SetCorrectionKaonMinus(f4DcorrectionsKaonsMinus->GetBinContent(idx));
     } else {
       tFemtoTrack->SetCorrectionKaonMinus(1.0);
     }
@@ -1403,7 +1403,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
                     f4DcorrectionsProtonsMinus->GetAxis(2)->FindFixBin(tAodTrack->Zv()),
                     f4DcorrectionsProtonsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsProtonsMinus->GetBinContent(idx) != 0) {
-      tFemtoTrack->SetCorrectionProtonMinus(1. / f4DcorrectionsProtonsMinus->GetBinContent(idx));
+      tFemtoTrack->SetCorrectionProtonMinus(f4DcorrectionsProtonsMinus->GetBinContent(idx));
     } else {
       tFemtoTrack->SetCorrectionProtonMinus(1.0);
     }
@@ -1421,7 +1421,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
                     f4DcorrectionsAll->GetAxis(2)->FindFixBin(tAodTrack->Zv()),
                     f4DcorrectionsAll->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsAll->GetBinContent(idx) != 0) {
-      tFemtoTrack->SetCorrectionAll(1. / f4DcorrectionsAll->GetBinContent(idx));
+      tFemtoTrack->SetCorrectionAll(f4DcorrectionsAll->GetBinContent(idx));
     } else {
       tFemtoTrack->SetCorrectionAll(1.0);
     }
