@@ -389,6 +389,7 @@ void AliAnalysisTaskEMCALTimeCalib::NotifyRun()
   if (!fgeom) SetEMCalGeometry();
   //Init EMCAL geometry done
 
+  AliInfo(Form("Run number in NotifyRun %d",fRunNumber));
   GetPARInfoForRunNumber(fRunNumber);
 
   //set L1 phases for current run
@@ -511,8 +512,10 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) AliFatal("No Analysis Manager available...\n");
   Int_t runNum = mgr->GetRunFromPath();
+  AliInfo(Form("Run number from path %d",runNum));
   if(runNum == 0){
     runNum = TString(gSystem->Getenv("RUNNO")).Atoi();
+    AliInfo(Form("Run number from RUNNO variable %d",runNum));
     if(runNum < 200000){
         AliFatal("Run Number not correctly set in UserCreateOutputObjects()!");
     }
