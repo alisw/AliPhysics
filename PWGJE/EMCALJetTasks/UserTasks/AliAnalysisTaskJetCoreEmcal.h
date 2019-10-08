@@ -141,6 +141,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH2F *fhPhiHybrPartCor; //!<!
 	TH1F *fhPtDet; //!<!
 	TH1F *fhPtDetMatchedToPart; //!<!
+	TH1F *fhPtPartMatched; //!<!
+	TH2F *fhPtPartMatchedCent; //!<!
 	TH1F *fhResidual; //!<!
 	TH2F *fhPtResidual; //!<!
 	TH1F *fhPhiResidual; //!<!

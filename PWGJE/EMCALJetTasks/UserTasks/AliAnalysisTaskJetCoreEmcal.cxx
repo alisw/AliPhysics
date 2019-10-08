@@ -92,6 +92,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fhPhiHybrPartCor(0x0),
 	fhPtDet(0x0),
 	fhPtDetMatchedToPart(0x0),
+	fhPtPartMatched(0x0),
+	fhPtPartMatchedCent(0x0),
 	fhResidual(0x0),
 	fhPtResidual(0x0),
 	fhPhiResidual(0x0),
@@ -169,6 +171,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fhPhiHybrPartCor(0x0),
 	fhPtDet(0x0),
 	fhPtDetMatchedToPart(0x0),
+	fhPtPartMatched(0x0),
+	fhPtPartMatchedCent(0x0),
 	fhResidual(0x0),
 	fhPtResidual(0x0),
 	fhPhiResidual(0x0),
@@ -559,6 +563,11 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fhPtDet->GetXaxis()->SetTitle("p^{reco,PYTHIA,ch}_{T} (GeV/c)"); 
 	fhPtDetMatchedToPart = new TH1F("hPtDetMatchedToPart","pT detector level matched to particle level jet",200,0,200);
 	fhPtDetMatchedToPart->GetXaxis()->SetTitle("p^{reco,PYTHIA,ch}_{T} (GeV/c)"); 
+	fhPtPartMatched= new TH1F("hPtPartMatched","pT particle level matched",200,0,200);
+	fhPtPartMatched->GetXaxis()->SetTitle("p^{part}_{T} (GeV/c)"); 
+	fhPtPartMatchedCent= new TH2F("hPtPartMatchedCent","pT particle level matched",200,0,200,100,0,100);
+	fhPtPartMatchedCent->GetXaxis()->SetTitle("p^{part}_{T} (GeV/c)"); 
+	fhPtPartMatchedCent->GetYaxis()->SetTitle("centrality (%)"); 
 
 	fhPtHybrDetRecoil= new TH2F("hPtHybrDetRecoil","pT response Pb-Pb+PYTHIA vs PYTHIA",200,0,200,200,0,200);
 	fhPtHybrDetRecoil->GetXaxis()->SetTitle("p^{Pb-Pb+PYTHIA,ch}_{T} (GeV/c)"); 
@@ -606,6 +615,8 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fhPhiHybrPartCor);
 	fOutput->Add(fhPtDet);
 	fOutput->Add(fhPtDetMatchedToPart);
+	fOutput->Add(fhPtPartMatched);
+	fOutput->Add(fhPtPartMatchedCent);
 	fOutput->Add(fhResidual);
 	fOutput->Add(fhPtResidual);
 	fOutput->Add(fhPhiResidual);
@@ -1020,6 +1031,8 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
       fhPtDetMatchedToPart->Fill(ptJet2);
       ptJet3 = jet3->Pt();
       phiJet3 = jet3->Phi();
+      fhPtPartMatched->Fill(ptJet3);
+      fhPtPartMatchedCent->Fill(ptJet3,fCent);
     }
 
     if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) { // loop over detector jets
