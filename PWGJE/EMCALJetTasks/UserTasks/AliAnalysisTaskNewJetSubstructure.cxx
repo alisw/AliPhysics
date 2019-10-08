@@ -297,8 +297,14 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
           jet2 = jetUS->ClosestJet();
         }
 
-        if (!(fJetShapeSub == kConstSub))
-          jet2 = jet1->ClosestJet();
+	if(fJetShapeSub==kEventSub){
+	  jetUS = jet1->ClosestJet();
+	  jet2 = jetUS->ClosestJet();
+	}
+	  
+        if (!(fJetShapeSub == kConstSub) && !(fJetShapeSub == kEventSub)) jet2 = jet1->ClosestJet();
+        
+	
         if (!jet2) {
           Printf("jet2 does not exist, returning");
           continue;
