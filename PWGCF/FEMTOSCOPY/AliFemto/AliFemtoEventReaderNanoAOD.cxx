@@ -107,7 +107,9 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD():
   f1DcorrectionsProtonsMinus(0),
   f1DcorrectionsAll(0),
   f1DcorrectionsLambdas(0),
-  f1DcorrectionsLambdasMinus(0)
+  f1DcorrectionsLambdasMinus(0),
+  f1DcorrectionsXiPlus(0),
+  f1DcorrectionsXiMinus(0)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -166,7 +168,9 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD(const AliFemtoEventReader
   f1DcorrectionsProtonsMinus(aReader.f1DcorrectionsProtonsMinus),
   f1DcorrectionsAll(aReader.f1DcorrectionsAll),
   f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas),
-  f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus)
+  f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus),
+  f1DcorrectionsXiPlus(aReader.f1DcorrectionsXiPlus),
+  f1DcorrectionsXiMinus(aReader.f1DcorrectionsXiMinus)
 {
   // copy constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -250,7 +254,9 @@ AliFemtoEventReaderNanoAOD &AliFemtoEventReaderNanoAOD::operator=(const AliFemto
   f1DcorrectionsAll = aReader.f1DcorrectionsAll;
   f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
   f1DcorrectionsLambdasMinus = aReader.f1DcorrectionsLambdasMinus;
-    
+  f1DcorrectionsXiPlus = aReader.f1DcorrectionsXiPlus;
+  f1DcorrectionsXiMinus = aReader.f1DcorrectionsXiMinus;
+
   return *this;
 }
 //__________________
@@ -1102,6 +1108,20 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   tFemtoXi->SetChargeXi(tAODxi->ChargeXi());
   tFemtoXi->SetptXi(std::sqrt(tAODxi->Pt2Xi()));
 
+  if (f1DcorrectionsXiPlus) {
+    tFemtoXi->SetCorrectionXiPlus(f1DcorrectionsXiPlus->GetBinContent(f1DcorrectionsXiPlus->FindFixBin(tAODxi->Pt())));
+  }
+  else {
+    tFemtoXi->SetCorrectionXiPlus(1.0);
+  }
+
+  if (f1DcorrectionsXiMinus) {
+    tFemtoXi->SetCorrectionXiMinus(f1DcorrectionsXiMinus->GetBinContent(f1DcorrectionsXiMinus->FindFixBin(tAODxi->Pt())));
+  }
+  else {
+    tFemtoXi->SetCorrectionXiMinus(1.0);
+  }
+
   AliNanoAODTrack *trackbac = (AliNanoAODTrack *)tAODxi->GetDecayVertexXi()->GetDaughter(0);
 
   if (trackbac) {
@@ -1516,4 +1536,13 @@ void AliFemtoEventReaderNanoAOD::Set1DCorrectionsLambdas(TH1D *h1)
 void AliFemtoEventReaderNanoAOD::Set1DCorrectionsLambdasMinus(TH1D *h1)
 {
   f1DcorrectionsLambdasMinus = h1;
+}
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsXiPlus(TH1D *h1)
+{
+  f1DcorrectionsXiPlus = h1;
+}
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsXiMinus(TH1D *h1)
+{
+  f1DcorrectionsXiMinus = h1;
 }

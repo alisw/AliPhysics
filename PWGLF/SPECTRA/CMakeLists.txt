@@ -120,6 +120,7 @@ set(SRCS
   Kinks/AliAnalysisTaskKinkpp5TeVMC.cxx
   Kinks/AliAnalysisTaskKinkPbPb.cxx
   Kinks/AliAnalysisTaskKinkPbPbMC.cxx
+  Kinks/AliAnalysisKinkTaskPbPb2018.cxx
   PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothEventCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothHistoManager.cxx

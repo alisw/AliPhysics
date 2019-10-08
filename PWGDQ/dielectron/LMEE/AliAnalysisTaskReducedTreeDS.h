@@ -64,14 +64,6 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     void ClearVectorElement();
     void ClearVectorMemory();
 
-    Float_t Median(vector<Float_t> vec){
-      size_t size = vec.size();
-      if(size == 0) return 0;
-
-      sort(vec.begin(), vec.end());
-      if(size%2 == 0) return (vec[size/2 - 1] + vec[size/2]) / 2.;
-      else return vec[size/2];
-    }
 
   protected:
     Float_t fMinPtCut;
@@ -116,10 +108,8 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Bool_t fIsPileupFromSPDInMultBins;
     Bool_t fIsPileupMV;//SPD multi vertexer
 
-    vector<Float_t> fPileupTrackZA;
-    vector<Float_t> fPileupTrackZC;
-    Int_t fTPCpileupMultiplicity[2];
-    Float_t fTPCpileupZ[2];
+    vector<Float_t> fPileupTrackZ;
+    vector<Float_t> fPileupTracktgl;
 
     Bool_t fIskINT7;
     Bool_t fIskCentral;
@@ -183,6 +173,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<vector<Float_t>>fTrackMCMomentum;
     vector<vector<Float_t>>fTrackMCProdVtx;//production vertex in MC for track
     vector<Int_t>fTrackMCGeneratorIndex;
+    vector<Bool_t> fTrackMCIsPhysicalPrimary;
     vector<Int_t>fTrackMCIndex;
     vector<Int_t>fTrackMCPdgCode;
     vector<Int_t>fTrackMCMotherIndex;
@@ -197,12 +188,8 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<Float_t> fV0Lxy;//N
     vector<Float_t> fV0alpha;//N 
     vector<Float_t> fV0qT;//N 
-    vector<Float_t> fV0DCA;//N //DCA between daughters
-    vector<Float_t> fV0PointingAngle;//N
     vector<Int_t> fV0Candidate;//N
     vector<Float_t> fV0Mass;//N
-    vector<vector<Float_t>> fV0legDCAxy;//N x 2
-    vector<vector<Float_t>> fV0legDCAz;//N x 2
     vector<vector<vector<Bool_t>>> fV0legPointOnITSLayer;//N x 2 x 6
     vector<vector<vector<Bool_t>>> fV0legSharedPointOnITSLayer;//N x 2 x 6
     vector<vector<Float_t>> fV0legTPCNsigmaEl;//N x 2//for post calibration
@@ -237,6 +224,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<vector<Float_t>> fMCProdVtx;//production vertex of true electrons
     vector<Int_t> fMCGeneratorIndex;
     vector<TString> fMCGeneratorName;
+    vector<Bool_t> fMCIsPhysicalPrimary;
     vector<Int_t> fMCIndex;
     vector<Int_t> fMCPdgCode;
     vector<Int_t> fMCMotherIndex;
@@ -248,7 +236,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 13);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 14);
 
 };
 

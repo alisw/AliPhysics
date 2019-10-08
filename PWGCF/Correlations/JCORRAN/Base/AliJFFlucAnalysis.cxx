@@ -185,7 +185,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	// set AliJTH1D here //
 	fh_cent
-		<< TH1D("h_cent","h_cent", 400, 0, 100)
+		<< TH1D("h_cent","h_cent", 200, 0, 100)
 		<< "END" ;
 
 	fh_ImpactParameter
@@ -336,7 +336,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 //________________________________________________________________________
 AliJFFlucAnalysis::~AliJFFlucAnalysis() {
-	delete fInputList;
 	delete fHMG;
 	delete fEfficiency;
 }
@@ -380,7 +379,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	enum{kSubA, kSubB, kNSub};
 	enum{kMin, kMax};
-	enum{kReal, kImg, kNPhase};
 	Double_t Eta_config[kNSub][2];
 	Eta_config[kSubA][kMin] = fEta_min;  // 0.4 min for SubA
 	Eta_config[kSubA][kMax] = fEta_max;  // 0.8 max for SubA

@@ -10,7 +10,16 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
 									Bool_t debugFlag = kFALSE,
 									Bool_t useXmlWeightsFile = kTRUE,
 									Bool_t useWeightsLibrary = kFALSE,
-									TString xmlWeightsFile = "$ALICE_PHYSICS/PWGHF/vertexingHF/TMVA/LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml"){
+									TString xmlWeightsFile = "$ALICE_PHYSICS/PWGHF/vertexingHF/TMVA/LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml",
+                  Bool_t useMultCorrection = kFALSE,
+                  TString estimatorFilename="",       //  Multicity estimator file
+                  Double_t refMult=9.26,              // refrence multiplcity (period b)
+                  Int_t year = 16,                    // Production year 
+                  Int_t recoEstimator = AliAnalysisTaskSELc2V0bachelorTMVAApp::kNtrk10, // fMultiplicityEstimator
+                  Bool_t useMultCut = kFALSE,
+                  Float_t multMin = 0.,    // Minimum is included
+                  Float_t multMax = 99999. // Maximum is excluded
+                  ){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -96,6 +105,121 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
   task->SetUseXmlWeightsFile(useXmlWeightsFile);
   task->SetUseWeightsLibrary(useWeightsLibrary);
   task->SetXmlWeightsFile(TString(gSystem->ExpandPathName(Form("%s", xmlWeightsFile.Data()))));
+  
+  if(useMultCorrection){
+
+    task->SetUseMultiplicityCorrection(useMultCorrection);
+    task->SetMultiplicityEstimator(recoEstimator);
+    task->SetUseVZEROParameterizedVertexCorr(1);
+
+    if(estimatorFilename.EqualTo("") ) {
+      printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
+    } 
+    else{
+
+      TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+      if(!fileEstimator)  {
+        Printf("FATAL: File with multiplicity estimator not found\n");
+        return NULL;
+      }
+
+      task->SetReferenceMultiplcity(refMult); // < FUNCTION NEEDS TO BE ADDED TO AliAnalysisTaskSELc2V0bachelorMultTMVAApp.h
+      const Char_t* profilebasename="SPDmult10";
+      if(recoEstimator==AliAnalysisTaskSELc2V0bachelorTMVAApp::kVZEROA || recoEstimator==AliAnalysisTaskSELc2V0bachelorTMVAApp::kVZEROAEq) profilebasename="VZEROAmult";
+      else if(recoEstimator==AliAnalysisTaskSELc2V0bachelorTMVAApp::kVZERO || recoEstimator==AliAnalysisTaskSELc2V0bachelorTMVAApp::kVZEROEq) profilebasename="VZEROMmult";
+      cout<<endl<<endl<<" profilebasename="<<profilebasename<<endl<<endl;
+
+      // Only pp data is calibrated
+      if(year == 10){
+        const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+        TProfile* multEstimatorAvg[4];
+        for(Int_t ip=0; ip<4; ip++) {
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+            Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+            return NULL;
+          }
+        }
+        task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+        task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+        task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+        task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+      }
+      else if(year == 16){
+        const Char_t* periodNames[10]={"LHC16d","LHC16e","LHC16g","LHC16h_1", "LHC16h_2","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p"};
+        TProfile *multEstimatorAvg[10];
+        for(Int_t ip=0;ip<10; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+            Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+            return NULL;
+          }
+        }
+        task->SetMultiplVsZProfileLHC16d(multEstimatorAvg[0]);
+        task->SetMultiplVsZProfileLHC16e(multEstimatorAvg[1]);
+        task->SetMultiplVsZProfileLHC16g(multEstimatorAvg[2]);
+        task->SetMultiplVsZProfileLHC16h1(multEstimatorAvg[3]);
+        task->SetMultiplVsZProfileLHC16h2(multEstimatorAvg[4]);
+        task->SetMultiplVsZProfileLHC16j(multEstimatorAvg[5]);
+        task->SetMultiplVsZProfileLHC16k(multEstimatorAvg[6]);
+        task->SetMultiplVsZProfileLHC16l(multEstimatorAvg[7]);
+        task->SetMultiplVsZProfileLHC16o(multEstimatorAvg[8]);
+        task->SetMultiplVsZProfileLHC16p(multEstimatorAvg[9]);
+      }
+      else if(year == 17){
+        const Char_t* periodNames[10]={"LHC17e","LHC17f","LHC17h","LHC17i", "LHC17j","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r"};
+        TProfile *multEstimatorAvg[10];
+        for(Int_t ip=0;ip<10; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+            Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+            return NULL;
+          }
+        }
+        task->SetMultiplVsZProfileLHC17e(multEstimatorAvg[0]);
+        task->SetMultiplVsZProfileLHC17f(multEstimatorAvg[1]);
+        task->SetMultiplVsZProfileLHC17h(multEstimatorAvg[2]);
+        task->SetMultiplVsZProfileLHC17i(multEstimatorAvg[3]);
+        task->SetMultiplVsZProfileLHC17j(multEstimatorAvg[4]);
+        task->SetMultiplVsZProfileLHC17k(multEstimatorAvg[5]);
+        task->SetMultiplVsZProfileLHC17l(multEstimatorAvg[6]);
+        task->SetMultiplVsZProfileLHC17m(multEstimatorAvg[7]);
+        task->SetMultiplVsZProfileLHC17o(multEstimatorAvg[8]);
+        task->SetMultiplVsZProfileLHC17r(multEstimatorAvg[9]);
+      }
+      else if(year == 18){
+        const Char_t* periodNames[14]={"LHC18b","LHC18d","LHC18e","LHC18f", "LHC18g","LHC18h","LHC18i","LHC18j","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"};
+        TProfile *multEstimatorAvg[14];
+        for(Int_t ip=0;ip<14; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+            Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+            return NULL;
+          }
+        }
+        task->SetMultiplVsZProfileLHC18b(multEstimatorAvg[0]);
+        task->SetMultiplVsZProfileLHC18d(multEstimatorAvg[1]);
+        task->SetMultiplVsZProfileLHC18e(multEstimatorAvg[2]);
+        task->SetMultiplVsZProfileLHC18f(multEstimatorAvg[3]);
+        task->SetMultiplVsZProfileLHC18g(multEstimatorAvg[4]);
+        task->SetMultiplVsZProfileLHC18h(multEstimatorAvg[5]);
+        task->SetMultiplVsZProfileLHC18i(multEstimatorAvg[6]);
+        task->SetMultiplVsZProfileLHC18j(multEstimatorAvg[7]);
+        task->SetMultiplVsZProfileLHC18k(multEstimatorAvg[8]);
+        task->SetMultiplVsZProfileLHC18l(multEstimatorAvg[9]);
+        task->SetMultiplVsZProfileLHC18m(multEstimatorAvg[10]);
+        task->SetMultiplVsZProfileLHC18n(multEstimatorAvg[11]);
+        task->SetMultiplVsZProfileLHC18o(multEstimatorAvg[12]);
+        task->SetMultiplVsZProfileLHC18p(multEstimatorAvg[13]);
+      }
+    }
+  }
+
+  if(useMultCut){
+    task->SetUseMultiplcityCut(useMultCut);
+    task->SetMinimumMultiplicity(multMin);
+    task->SetMaximumMultiplicity(multMax);
+  }
   
   mgr->AddTask(task);
   

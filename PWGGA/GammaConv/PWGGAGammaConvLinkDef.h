@@ -34,6 +34,7 @@
 #pragma link C++ class AliAnalysisTaskGammaTriggerQA+;
 #pragma link C++ class AliAnalysisTaskConvCaloCalibration+;
 #pragma link C++ class AliAnalysisTaskTrackQA+;
+#pragma link C++ class AliAnalysisTRDEfficiency+;
 #pragma link C++ class AliIdentifiedPrimarySelector+;
 #pragma link C++ class AliIdentifiedPrimaryCuts+;
 

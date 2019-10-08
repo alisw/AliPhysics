@@ -285,7 +285,7 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
 		  bdtlist->Add(thisbdt2_5);
 	  }
   }
-  //~ fileBDT->Close();
+  fileBDT->Close();
   massD0Task->SetBDTGetRespTree(GetRespTree);
   massD0Task->SetBDTRespCut(BDTRespCut);
   massD0Task->SetBDTSidebandCut(LeftSBndCut,RightSBndCut);

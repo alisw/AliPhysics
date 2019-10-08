@@ -53,4 +53,3 @@ void AliPP13MixingSample::UpdatePool(const TObjArray & clusters, EventFlags & e)
 		delete tmp;
 	}
 }
-

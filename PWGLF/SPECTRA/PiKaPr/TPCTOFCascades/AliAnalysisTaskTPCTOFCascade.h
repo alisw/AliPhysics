@@ -50,7 +50,7 @@ public AliAnalysisTaskSE
   
   virtual void UserExec(Option_t *option); // user exec
   virtual void Terminate(Option_t *option); // terminate
-
+  virtual Int_t FindCommonMother(Int_t label_1, Int_t label_2);
 
 
   /* getters */
@@ -107,6 +107,7 @@ public AliAnalysisTaskSE
   AliESDEvent *fESDEvent; // ESD event
   AliMCEvent *fMCEvent; // MC event
   //AliStack *fMCStack; // MC stack
+  AliESDtrackCuts *fTrackCutsV0;
   AliESDtrackCuts *fTrackCuts2010; //! ITSTPC track cuts 2010
   AliESDtrackCuts *fTrackCuts2011; //! ITSTPC track cuts 2011
   AliESDtrackCuts *fTrackCutsTPCRefit; //! TPC only track cuts + refit

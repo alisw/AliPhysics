@@ -49,6 +49,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   fEmbeddingQA(),
   fCreateQAHists(false),
   fCreateCellQAHists(false),
+  fPerformJetMatching(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
   fPreviousEventTrigger(0),
@@ -73,6 +74,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   fEmbeddingQA(),
   fCreateQAHists(false),
   fCreateCellQAHists(false),
+  fPerformJetMatching(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
   fPreviousEventTrigger(0),
@@ -98,6 +100,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const A
   //fEmbeddingQA(other.fEmbeddingQA), // Cannot use because the THistManager (which is in the class) copy constructor is private.
   fCreateQAHists(other.fCreateQAHists),
   fCreateCellQAHists(other.fCreateCellQAHists),
+  fPerformJetMatching(other.fPerformJetMatching),
   fCreateResponseMatrix(other.fCreateResponseMatrix),
   fEmbeddedCellsName(other.fEmbeddedCellsName),
   fPreviousEventTrigger(other.fPreviousEventTrigger),
@@ -147,8 +150,6 @@ double AliAnalysisTaskEmcalJetHPerformance::DetermineTrackingEfficiency(double t
 void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLConfig()
 {
   // Base class options
-  // Recycle unused embedded events
-  fYAMLConfig.GetProperty("recycleUnusedEmbeddedEventsMode", fRecycleUnusedEmbeddedEventsMode, false);
   // Task physics (trigger) selection.
   std::vector<std::string> physicsSelection;
   bool res = fYAMLConfig.GetProperty(std::vector<std::string>({"eventCuts", "physicsSelection"}), physicsSelection, false);
@@ -161,6 +162,7 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
   // These are disabled by default.
   fYAMLConfig.GetProperty({baseName, "QAHists"}, fCreateQAHists, false);
   fYAMLConfig.GetProperty({baseName, "CellQAHists"}, fCreateCellQAHists, false);
+  fYAMLConfig.GetProperty({baseName, "jetMatching"}, fPerformJetMatching, false);
   fYAMLConfig.GetProperty({baseName, "responseMatrix"}, fCreateResponseMatrix, false);
 
   // Event cuts
@@ -195,6 +197,10 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
     fEfficiencyPeriodIdentifier = AliAnalysisTaskEmcalJetHUtils::fgkEfficiencyPeriodIdentifier.at(tempStr);
   }
 
+  // Jet matching
+  baseName = "jetMatching";
+  fYAMLConfig.GetProperty({baseName, "maxMatchingDistance"}, fMaxJetMatchingDistance, false);
+
   // Response matrix properties
   baseName = "responseMatrix";
   fYAMLConfig.GetProperty({baseName, "useThreeJetCollections"}, fResponseFromThreeJetCollections, false);
@@ -221,16 +227,20 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
     bool res = fYAMLConfig.GetProperty(std::vector<std::string>({baseName, jetName}), node, false);
     if (res) {
       // Retrieve jet container properties
-      std::string collectionName = "", acceptance = "";
+      std::string collectionName = "";
       double R = -1;
       fYAMLConfig.GetProperty({baseName, jetName, "collection"}, collectionName, true);
-      fYAMLConfig.GetProperty({baseName, jetName, "acceptance"}, acceptance, true);
       fYAMLConfig.GetProperty({baseName, jetName, "R"}, R, true);
+
+      // Determine the jet acceptance.
+      std::vector<std::string> jetAcceptances;
+      fYAMLConfig.GetProperty({baseName, jetName, "acceptance"}, jetAcceptances, true);
+      UInt_t jetAcceptance = AliAnalysisTaskEmcalJetHUtils::DetermineJetAcceptanceFromYAML(jetAcceptances);
 
       // Create jet container and set the name
       AliDebugStream(1) << "Creating jet from jet collection name " << collectionName << " with acceptance "
-               << acceptance << " and R=" << R << "\n";
-      AliJetContainer* jetCont = AddJetContainer(collectionName.c_str(), acceptance.c_str(), R);
+               << jetAcceptance << " and R=" << R << "\n";
+      AliJetContainer* jetCont = AddJetContainer(collectionName.c_str(), jetAcceptance, R);
       jetCont->SetName(jetName.c_str());
 
       // Jet area cut percentage
@@ -257,6 +267,24 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
         AliDebugStream(1) << "Setting leading hadron type of " << leadingHadronType << " for jet cont "
                  << jetName << "\n";
         jetCont->SetLeadingHadronType(leadingHadronType);
+      }
+
+      // Leading hadron cut
+      double leadingHadronBias = 0.;
+      res = fYAMLConfig.GetProperty({ baseName, jetName, "leadingHadronBias" }, leadingHadronBias, false);
+      if (res) {
+        AliDebugStream(1) << "Setting leading hadron bias of " << leadingHadronBias << " for jet cont "
+                 << jetName << "\n";
+        jetCont->SetMinTrackPt(leadingHadronBias);
+      }
+
+      // Max track pt
+      double maxTrackPt = 0.;
+      res = fYAMLConfig.GetProperty({ baseName, jetName, "maxTrackPt" }, maxTrackPt, false);
+      if (res) {
+        AliDebugStream(1) << "Setting max track pt of " << maxTrackPt << " for jet cont "
+                 << jetName << "\n";
+        jetCont->SetMinTrackPt(maxTrackPt);
       }
     }
     else {
@@ -396,6 +424,9 @@ void AliAnalysisTaskEmcalJetHPerformance::UserCreateOutputObjects()
   // Create histograms
   if (fCreateQAHists) {
     SetupQAHists();
+  }
+  if (fPerformJetMatching) {
+    SetupJetMatchingQA();
   }
   if (fCreateResponseMatrix) {
     SetupResponseMatrixHists();
@@ -560,6 +591,96 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
 }
 
 /**
+ * Setup and allocate histograms related to jet matching.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::SetupJetMatchingQA()
+{
+  // Setup
+  const int nBinsPt        = 40;
+  const int nBinsDPhi      = 72;
+  const int nBinsDEta      = 100;
+  const int nBinsDR        = 50;
+  const int nBinsFraction  = 101;
+
+  const double minPt       = -50.;
+  const double maxPt       = 150.;
+  const double minDPhi     = -0.5;
+  const double maxDPhi     =  0.5;
+  const double minDEta     = -0.5;
+  const double maxDEta     =  0.5;
+  const double minDR       =  0.;
+  const double maxDR       =  0.5;
+  const double minFraction =  -0.005;
+  const double maxFraction =  1.005;
+
+  // Create the histograms
+  // "s" ensures that Sumw2() is called
+  std::string name = "";
+  std::string title = "";
+  std::vector<std::string> matchingTypes = {"hybridToDet", "detToPart"};
+  for (auto matchingType : matchingTypes)
+  {
+    for (unsigned int centBin = 0; centBin < fNcentBins; centBin++)
+    {
+      // Jet 1 pt vs delta eta vs delta phi
+      name = "jetMatching/%s/fh3PtJet1VsDeltaEtaDeltaPhi_%d";
+      title = "fh3PtJet1VsDeltaEtaDeltaPhi_%d;#it{p}_{T,jet1};#it{#Delta#eta};#it{#Delta#varphi}";
+      fHistManager.CreateTH3(TString::Format(name.c_str(), matchingType.c_str(), centBin),
+                  TString::Format(title.c_str(), centBin), nBinsPt, minPt, maxPt, nBinsDEta,
+                  minDEta, maxDEta, nBinsDPhi, minDPhi, maxDPhi, "s");
+
+      // Jet pt 1 vs delta R
+      name = "jetMatching/%s/fh2PtJet1VsDeltaR_%d";
+      title = "fh2PtJet1VsDeltaR_%d;#it{p}_{T,jet1};#it{#Delta R}";
+      fHistManager.CreateTH2(TString::Format(name.c_str(), matchingType.c_str(), centBin),
+                  TString::Format(title.c_str(), centBin), nBinsPt, minPt, maxPt, nBinsDR, minDR,
+                  maxDR, "s");
+
+      // Jet pt 2 vs shared momentum fraction
+      name = "jetMatching/%s/fh2PtJet2VsFraction_%d";
+      title = "fh2PtJet2VsFraction_%d;#it{p}_{T,jet2};#it{f}_{shared}";
+      fHistManager.CreateTH2(TString::Format(name.c_str(), matchingType.c_str(), centBin),
+                  TString::Format(title.c_str(), centBin), nBinsPt, minPt, maxPt, nBinsFraction,
+                  minFraction, maxFraction, "s");
+
+      // Jet pt 1 vs lead pt before checking if the jet has a matched jet.
+      name = "jetMatching/%s/fh2PtJet1VsLeadPtAllSel_%d";
+      title = "fh2PtJet1VsLeadPtAllSel_%d;#it{p}_{T,jet1};#it{p}_{T,lead trk}";
+      fHistManager.CreateTH2(TString::Format(name.c_str(), matchingType.c_str(), centBin),
+                  TString::Format(title.c_str(), centBin), nBinsPt, minPt, maxPt, 20, 0., 20.,
+                  "s");
+
+      // Jet pt 1 vs lead pt after checking if the jet has a matched jet.
+      name = "jetMatching/%s/fh2PtJet1VsLeadPtTagged_%d";
+      title = "fh2PtJet1VsLeadPtTagged_%d;#it{p}_{T,jet1};#it{p}_{T,lead trk}";
+      fHistManager.CreateTH2(TString::Format(name.c_str(), matchingType.c_str(), centBin),
+                  TString::Format(title.c_str(), centBin), nBinsPt, minPt, maxPt, 20, 0., 20.,
+                  "s");
+
+      // Jet pt 1 vs jet pt 2.
+      name = "jetMatching/%s/fh2PtJet1VsPtJet2_%d";
+      title = "fh2PtJet1VsPtJet2_%d;#it{p}_{T,jet1};#it{p}_{T,jet2}";
+      fHistManager.CreateTH2(TString::Format(name.c_str(), matchingType.c_str(), centBin),
+                  TString::Format(title.c_str(), centBin), nBinsPt, minPt, maxPt, nBinsPt, minPt,
+                  maxPt, "s");
+
+      // Jet pt2 residual (aka. the jet energy scale).
+      name = "jetMatching/%s/fh2PtJet2VsRelPt_%d";
+      title = "fh2PtJet2VsRelPt_%d;#it{p}_{T,jet2};(#it{p}_{T,jet1}-#it{p}_{T,jet2})/#it{p}_{T,jet2}";
+      fHistManager.CreateTH2(TString::Format(name.c_str(), matchingType.c_str(), centBin),
+                  TString::Format(title.c_str(), centBin), nBinsPt, minPt, maxPt, 241, -2.41, 2.41,
+                  "s");
+    }
+
+    // Number of jets accepted.
+    name = "jetMatching/%s/fNAccJets";
+    title = "fNAccJets;N/ev";
+    fHistManager.CreateTH1(TString::Format(name.c_str(), matchingType.c_str()), title.c_str(), 11, -0.5, 9.5, "s");
+  }
+
+}
+
+/**
  * Setup and allocate histograms related to creating a response matrix.
  */
 void AliAnalysisTaskEmcalJetHPerformance::SetupResponseMatrixHists()
@@ -634,9 +755,59 @@ Bool_t AliAnalysisTaskEmcalJetHPerformance::Run()
     fEmbeddingQA.RecordEmbeddedEventProperties();
   }
 
+  // QA
   if (fCreateQAHists) {
     QAHists();
   }
+
+  // Jet matching
+  if (fPerformJetMatching) {
+    // Setup
+    AliDebugStream(1) << "Performing jet matching\n";
+    // We don't perform any additional jet matching initialization because we will restrict
+    // the jets accepted via the jet acceptance cuts (ie. EMCal fiducial cuts)
+    // Retrieve the releveant jet collections
+    AliJetContainer * jetsHybrid = GetJetContainer("hybridLevelJets");
+    AliJetContainer * jetsDetLevel = GetJetContainer("detLevelJets");
+    AliJetContainer * jetsPartLevel = GetJetContainer("partLevelJets");
+    // Validation
+    if (!jetsHybrid) {
+      AliErrorStream() << "Could not retrieve hybrid jet collection.\n";
+      return kFALSE;
+    }
+    if (!jetsDetLevel) {
+      AliErrorStream() << "Could not retrieve det level jet collection.\n";
+      return kFALSE;
+    }
+    if (!jetsPartLevel) {
+      AliErrorStream() << "Could not retrieve part level jet collection.\n";
+      return kFALSE;
+    }
+
+    // Now, begin the actual matching.
+    // Hybrid <-> det first
+    AliDebugStream(2) << "Matching hybrid to detector level jets.\n";
+    // First, we reset the tagging
+    ResetMatching(*jetsHybrid);
+    ResetMatching(*jetsDetLevel);
+    // Next, we perform the matching
+    PerformGeometricalJetMatching(*jetsHybrid, *jetsDetLevel, fMaxJetMatchingDistance);
+    // Now, begin the next matching stage
+    // det <-> particle
+    AliDebugStream(2) << "Matching detector level to particle level jets.\n";
+    // First, we reset the tagging. We need to reset the det matching again to ensure
+    // that it doesn't accidentally keep some latent matches to the hybrid jets.
+    ResetMatching(*jetsDetLevel);
+    ResetMatching(*jetsPartLevel);
+    // Next, we perform the matching
+    PerformGeometricalJetMatching(*jetsDetLevel, *jetsPartLevel, fMaxJetMatchingDistance);
+
+    // Fill QA hists.
+    FillJetMatchingQA(*jetsHybrid, *jetsDetLevel, "hybridToDet");
+    FillJetMatchingQA(*jetsDetLevel, *jetsPartLevel, "detToPart");
+  }
+
+  // Response matrix
   if (fCreateResponseMatrix) {
     ResponseMatrix();
   }
@@ -842,6 +1013,215 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
 }
 
 /**
+ * Reset matching for the jet container.
+ *
+ * @params[in] c Jet container for the matching to be reset.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::ResetMatching(const AliJetContainer &c) const
+{
+  for(auto j : c.all()){
+    j->ResetMatching();
+  }
+}
+
+/**
+ * Perform matching between jet collections.
+ *
+ * This code is basically combined from `AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(...)`` and
+ * ``AliEmcalJetTaggerTaskFast::MatchJetsGeo(...)``. I mainly took the appraoch from the fast tagger,
+ * but I'm not using the KDTrees because they still need some additional work as of to properly wrap
+ * around at 2pi in phi. So for now we just use brute force matching at O(n^2).
+ *
+ * Why copy this code? It's a less than ideal thing to do, but for some unidentified, but well known reason
+ * (present from at least 2018), there is an issue that causes most jobs to fail when embedding into LHC15o
+ * for full jets when using one of the tagger tasks. This particularly seems to occur when embedding LHC16j5.
+ * This can be worked around by not running the standard or fast taggers. Thus, the code is copied.
+ *
+ * NOTE: This makes a number of assumptions about the jet containers that are specific to the jet-hadron analysis
+ *       for full jets. Among other factors, it expects that the acceptances are restricted to the EMCal fiducial
+ *       volume for detector level jets. If these assumptions are not true, matching may not work properly.
+ *
+ * @params[in] contBase Base jet container.
+ * @params[in] contTag Second jet container.
+ * @params[in] maxDist Max distance for matching.
+ * @returns True if the matching was successful.
+ */
+bool AliAnalysisTaskEmcalJetHPerformance::PerformGeometricalJetMatching(AliJetContainer& contBase,
+                                    AliJetContainer& contTag, double maxDist) const
+{
+  // Setup
+  const Int_t kNacceptedBase = contBase.GetNAcceptedJets(), kNacceptedTag = contTag.GetNAcceptedJets();
+  if (!(kNacceptedBase && kNacceptedTag)) {
+    return false;
+  }
+
+  // Build up vectors of jet pointers to use when assigning the closest jets.
+  // The storages are needed later for applying the tagging, in order to avoid multiple occurrence of jet selection
+  std::vector<AliEmcalJet*> jetsBase(kNacceptedBase), jetsTag(kNacceptedTag);
+
+  int countBase(0), countTag(0);
+  for (auto jb : contBase.accepted()) {
+    jetsBase[countBase] = jb;
+    countBase++;
+  }
+  for (auto jt : contTag.accepted()) {
+    jetsTag[countTag] = jt;
+    countTag++;
+  }
+
+  TArrayI faMatchIndexTag(kNacceptedBase), faMatchIndexBase(kNacceptedTag);
+  faMatchIndexBase.Reset(-1);
+  faMatchIndexTag.Reset(-1);
+
+  // find the closest distance to the base jet
+  countBase = 0;
+  for (auto jet1 : contBase.accepted()) {
+    double distance = maxDist;
+
+    // Loop over all accepted jets and brute force search for the closest jet.
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contTagAcceptedIndex = 0;
+    for (auto jet2 : contTag.accepted()) {
+      double dR = jet1->DeltaR(jet2);
+      if (dR < distance && dR < maxDist) {
+        faMatchIndexTag[countBase] = contTagAcceptedIndex;
+        distance = dR;
+      }
+      contTagAcceptedIndex++;
+    }
+
+    // Let us know whether a match was found successfully.
+    if (faMatchIndexTag[countBase] >= 0 && distance < maxDist) {
+      AliDebugStream(1) << "Found closest tag jet for " << countBase << " with match index "
+               << faMatchIndexTag[countBase] << " and distance " << distance << "\n";
+    } else {
+      AliDebugStream(1) << "Not found closest tag jet for " << countBase << ".\n";
+    }
+
+    countBase++;
+  }
+
+  // other way around
+  countTag = 0;
+  for (auto jet1 : contTag.accepted()) {
+    double distance = maxDist;
+
+    // Loop over all accepted jets and brute force search for the closest jet.
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contBaseAcceptedIndex = 0;
+    for (auto jet2 : contBase.accepted()) {
+      double dR = jet1->DeltaR(jet2);
+      if (dR < distance && dR < maxDist) {
+        faMatchIndexBase[countTag] = contBaseAcceptedIndex;
+        distance = dR;
+      }
+      contBaseAcceptedIndex++;
+    }
+
+    // Let us know whether a match was found successfully.
+    if (faMatchIndexBase[countTag] >= 0 && distance < maxDist) {
+      AliDebugStream(1) << "Found closest base jet for " << countTag << " with match index "
+               << faMatchIndexBase[countTag] << " and distance " << distance << "\n";
+    } else {
+      AliDebugStream(1) << "Not found closest base jet for " << countTag << ".\n";
+    }
+
+    countTag++;
+  }
+
+  // check for "true" correlations
+  // these are pairs where the base jet is the closest to the tag jet and vice versa
+  // As the lists are linear a loop over the outer base jet is sufficient.
+  AliDebugStream(1) << "Starting true jet loop: nbase(" << kNacceptedBase << "), ntag(" << kNacceptedTag << ")\n";
+  for (int ibase = 0; ibase < kNacceptedBase; ibase++) {
+    AliDebugStream(2) << "base jet " << ibase << ": match index in tag jet container " << faMatchIndexTag[ibase]
+             << "\n";
+    if (faMatchIndexTag[ibase] > -1) {
+      AliDebugStream(2) << "tag jet " << faMatchIndexTag[ibase] << ": matched base jet "
+               << faMatchIndexBase[faMatchIndexTag[ibase]] << "\n";
+    }
+    // We have a true correlation where each jet points to the other.
+    if (faMatchIndexTag[ibase] > -1 && faMatchIndexBase[faMatchIndexTag[ibase]] == ibase) {
+      AliDebugStream(2) << "found a true match \n";
+      AliEmcalJet *jetBase = jetsBase[ibase], *jetTag = jetsTag[faMatchIndexTag[ibase]];
+      // We have a valid pair of matched jets, so set the closest jet properties.
+      if (jetBase && jetTag) {
+        Double_t dR = jetBase->DeltaR(jetTag);
+        jetBase->SetClosestJet(jetTag, dR);
+        jetTag->SetClosestJet(jetBase, dR);
+      }
+    }
+  }
+  return true;
+}
+
+/**
+ * Fill jet matching QA histograms to describe the matching quality.
+ *
+ * @param[in] contBase Base jet container.
+ * @param[in] contTag Second jet container.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::FillJetMatchingQA(AliJetContainer& contBase, AliJetContainer& contTag,
+                              const std::string& prefix)
+{
+  // Fill histograms.
+  std::string name = "";
+  std::string centBin = std::to_string(fCentBin);
+  AliDebugStream(2) << "Filling matching hists with prefix: " << prefix << "\n";
+  for (auto jet1 : contBase.accepted()) {
+    // Setup
+    Double_t ptJet1 = jet1->Pt() - contBase.GetRhoVal() * jet1->Area();
+    // Record jet 1 only properties
+    AliDebugStream(4) << "jet1: " << jet1->toString() << "\n";
+    name = "jetMatching/" + prefix + "/fh2PtJet1VsLeadPtAllSel_" + centBin;
+    fHistManager.FillTH2(name.c_str(), ptJet1, jet1->MaxTrackPt());
+
+    // Retrieve jet 2
+    AliEmcalJet * jet2 = jet1->ClosestJet();
+    if (!jet2) { continue; }
+    AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
+    Double_t ptJet2 = jet2->Pt() - contTag.GetRhoVal() * jet2->Area();
+    // This will retrieve the fraction of jet2's momentum in jet1.
+    Double_t fraction = contBase.GetFractionSharedPt(jet1);
+
+    name = "jetMatching/" + prefix + "/fh2PtJet2VsFraction_" + centBin;
+    fHistManager.FillTH2(name.c_str(), ptJet2, fraction);
+    AliDebugStream(5) << "Fraction: " << fraction << ", minimum: " << fMinFractionShared << "\n";
+    if (fraction < fMinFractionShared) {
+      continue;
+    }
+    name = "jetMatching/" + prefix + "/fh2PtJet1VsLeadPtTagged_" + centBin;
+    fHistManager.FillTH2(name.c_str(), ptJet1,jet1->MaxTrackPt());
+    name = "jetMatching/" + prefix + "/fh2PtJet1VsPtJet2_" + centBin;
+    fHistManager.FillTH2(name.c_str(), ptJet1, ptJet2);
+    if (ptJet2 > 0.) {
+      name = "jetMatching/" + prefix + "/fh2PtJet2VsRelPt_" + centBin;
+      fHistManager.FillTH2(name.c_str(), ptJet2, (ptJet1 - ptJet2) / ptJet2);
+    }
+
+    // Recall that the arguments are backwards of the expectation.
+    Double_t dPhi = DeltaPhi(jet2->Phi(), jet1->Phi());
+    if (dPhi > TMath::Pi()) {
+      dPhi -= TMath::TwoPi();
+    }
+    if (dPhi < (-1. * TMath::Pi())) {
+      dPhi += TMath::TwoPi();
+    }
+
+    name = "jetMatching/" + prefix + "/fh3PtJet1VsDeltaEtaDeltaPhi_" + centBin;
+    fHistManager.FillTH3(name.c_str(), ptJet1, jet1->Eta() - jet2->Eta(), dPhi);
+    name = "jetMatching/" + prefix + "/fh2PtJet1VsDeltaR_" + centBin;
+    fHistManager.FillTH2(name.c_str(), ptJet1, jet1->DeltaR(jet2));
+  }
+
+  // Number of accepted jets
+  name = "jetMatching/" + prefix + "/fNAccJets";
+  fHistManager.FillTH1(name.c_str(), contBase.GetNAcceptedJets());
+}
+
+/**
  * Process the jets according to defined cuts and fill the response matrix.
  */
 void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
@@ -1043,7 +1423,6 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
 {
   std::stringstream tempSS;
   tempSS << std::boolalpha;
-  tempSS << "Recycle unused embedded events: " << fRecycleUnusedEmbeddedEventsMode << "\n";
   tempSS << "Particle collections:\n";
   TIter nextParticleCont(&fParticleCollArray);
   AliParticleContainer * particleCont;
@@ -1062,16 +1441,24 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
   while ((jetCont = static_cast<AliJetContainer *>(nextJetCont()))) {
     tempSS << "\t" << jetCont->GetName() << ": " << jetCont->GetArrayName() << "\n";
   }
+  // AliEventCuts
   tempSS << "AliEventCuts\n";
   tempSS << "\tEnabled: " << !fUseBuiltinEventSelection << "\n";
+  // Efficiency
   tempSS << "Efficiency\n";
   tempSS << "\tSingle track efficiency identifier: " << fEfficiencyPeriodIdentifier << "\n";
+  // QA
   tempSS << "QA Hists:\n";
   tempSS << "\tEnabled: " << fCreateQAHists << "\n";
   tempSS << "\tCreate cell QA hists: " << fCreateCellQAHists << "\n";
   // Use whether the pointer as null as a proxy. It's not ideal because it's not fully initialized
   // until after UserCreateOutputObjects(). But it's good enough for these purposes.
-  tempSS << "\tCalculate event plane resolution (proxy - may not be accurate): " << (fFlowQnVectorManager != nullptr) << "\n";
+  tempSS << "\tCalculate event plane resolution (proxy of whether it's enabled - it may not be accurate): " << (fFlowQnVectorManager != nullptr) << "\n";
+  // Jet matching
+  tempSS << "Jet matching:\n";
+  tempSS << "\tEnabled: " << fPerformJetMatching << "\n";
+  tempSS << "\tMax matching distance: " << fMaxJetMatchingDistance << "\n";
+  // Response matrix
   tempSS << "Response matrix:\n";
   tempSS << "\tEnabled: " << fCreateResponseMatrix << "\n";
   tempSS << "\tConstruct response from 3 jet collections: " << fResponseFromThreeJetCollections << "\n";
@@ -1139,6 +1526,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWG
   //swap(first.fEmbeddingQA, second.fEmbeddingQA); // Skip here, because the THistManager copy constructor is private.
   swap(first.fCreateQAHists, second.fCreateQAHists);
   swap(first.fCreateCellQAHists, second.fCreateCellQAHists);
+  swap(first.fPerformJetMatching, second.fPerformJetMatching);
   swap(first.fCreateResponseMatrix, second.fCreateResponseMatrix);
   swap(first.fEmbeddedCellsName, second.fEmbeddedCellsName);
   swap(first.fPreviousEventTrigger, second.fPreviousEventTrigger);

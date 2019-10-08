@@ -153,7 +153,17 @@ public:
 
 
     //JetTagging
-    int DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval);
+    enum TaggingType{
+          Full,
+          Single1st,
+          Single2nd,
+          Single3rd,
+          Double12,
+          Double23,
+          Triple,
+    };
+
+    void DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool* kTagDec);
     void SetThresholds(TObjArray* threshfirst, TObjArray* threshsec, TObjArray* threshthird);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
 
@@ -286,14 +296,16 @@ private:
     TH1D* h1DTrueBTaggedSingle1st;//!
     TH1D* h1DTrueBTaggedSingle2nd;//!
     TH1D* h1DTrueBTaggedSingle3rd;//!
-    TH1D* h1DTrueBTaggedDouble;//!
+    TH1D* h1DTrueBTaggedDouble12;//!
+    TH1D* h1DTrueBTaggedDouble23;//!
     TH1D* h1DTrueBTaggedTripple;//!
 
     TH1D* h1DFalseBTagged;//!
     TH1D* h1DFalseBTaggedSingle1st;//!
     TH1D* h1DFalseBTaggedSingle2nd;//!
     TH1D* h1DFalseBTaggedSingle3rd;//!
-    TH1D* h1DFalseBTaggedDouble;//!
+    TH1D* h1DFalseBTaggedDouble12;//!
+    TH1D* h1DFalseBTaggedDouble23;//!
     TH1D* h1DFalseBTaggedTripple;//!
 
     int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3
@@ -392,7 +404,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 38)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 39)
 };
 
 #endif

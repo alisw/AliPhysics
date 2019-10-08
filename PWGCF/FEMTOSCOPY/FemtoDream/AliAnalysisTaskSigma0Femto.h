@@ -11,7 +11,7 @@
 #include "AliFemtoDreamTrack.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliMCEvent.h"
-#include "AliSigma0PhotonMotherCuts.h"
+#include "AliSigma0AODPhotonMotherCuts.h"
 #include "AliSigma0V0Cuts.h"
 #include "AliStack.h"
 #include "AliV0ReaderV1.h"
@@ -35,7 +35,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void SetCheckDaughterCF(bool doIt) { fCheckDaughterCF = doIt; }
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
-  void SetMultiplicityMode(UInt_t trigger) { fMultMode = trigger; }
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) { fEvtCuts = cuts; }
   void SetProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fTrackCutsPartProton = cuts;
@@ -45,8 +44,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   }
   void SetV0Cuts(AliSigma0V0Cuts *cuts) { fV0Cuts = cuts; }
   void SetAntiV0Cuts(AliSigma0V0Cuts *cuts) { fAntiV0Cuts = cuts; }
-  void SetSigmaCuts(AliSigma0PhotonMotherCuts *cuts) { fSigmaCuts = cuts; }
-  void SetAntiSigmaCuts(AliSigma0PhotonMotherCuts *cuts) {
+  void SetSigmaCuts(AliSigma0AODPhotonMotherCuts *cuts) { fSigmaCuts = cuts; }
+  void SetAntiSigmaCuts(AliSigma0AODPhotonMotherCuts *cuts) {
     fAntiSigmaCuts = cuts;
   }
   void SetPhotonLegPileUpCut(bool pileup) { fPhotonLegPileUpCut = pileup; }
@@ -54,14 +53,13 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
     fConfig = config;
   }
 
+  void CastToVector(std::vector<AliFemtoDreamBasePart> &particlesOut,
+                    std::vector<AliFemtoDreamBasePart> &particlesIn);
   void CastToVector(std::vector<AliSigma0ParticleV0> &container,
                     std::vector<AliFemtoDreamBasePart> &particles,
                     const AliMCEvent *mcEvent);
-  void CastToVector(std::vector<AliSigma0ParticleV0> &container,
+  void CastToVector(std::vector<AliFemtoDreamBasePart> &container,
                     const AliVEvent *inputEvent);
-  void CastToVector(std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
-                    std::vector<AliFemtoDreamBasePart> &particles,
-                    const AliMCEvent *mcEvent);
   void FillTriggerHisto(TH1F *histo);
 
  private:
@@ -75,8 +73,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   AliSigma0V0Cuts *fV0Cuts;                   //
   AliSigma0V0Cuts *fAntiV0Cuts;               //
   AliSigma0V0Cuts *fPhotonQA;                 //
-  AliSigma0PhotonMotherCuts *fSigmaCuts;      //
-  AliSigma0PhotonMotherCuts *fAntiSigmaCuts;  //
+  AliSigma0AODPhotonMotherCuts *fSigmaCuts;      //
+  AliSigma0AODPhotonMotherCuts *fAntiSigmaCuts;  //
 
   TRandom3 *fRandom;  //!
 
@@ -95,7 +93,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   bool fPhotonLegPileUpCut;  //
   float fV0PercentileMax;    //
   UInt_t fTrigger;           //
-  UInt_t fMultMode;          //
 
   TClonesArray *fGammaArray;  //!
 
@@ -113,6 +110,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TList *fResultList;              //!
   TList *fResultQAList;            //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 16)
+  ClassDef(AliAnalysisTaskSigma0Femto, 17)
 };
 #endif

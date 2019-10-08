@@ -33,11 +33,11 @@
 using namespace std;
 
 class AliAnalysisTaskSEHFTenderQnVectors : public AliAnalysisTaskSE {
-  
+
 public:
 
     enum Det{kFullTPC,kPosTPC,kNegTPC,kFullV0,kV0A,kV0C};
- 
+
     AliAnalysisTaskSEHFTenderQnVectors();
     AliAnalysisTaskSEHFTenderQnVectors(const char *name, int harmonic, int calibType, TString oadbFileName);
     virtual ~AliAnalysisTaskSEHFTenderQnVectors();
@@ -46,7 +46,7 @@ public:
     virtual void UserExec(Option_t *option);
 
     AliHFQnVectorHandler* GetQnVectorHandler() const                                                     {return fHFQnVecHandler;}
-    TList* GetSplineForqnPercentileList(int det=kFullTPC) const;                                                       
+    TList* GetSplineForqnPercentileList(int det=kFullTPC) const;
     void SetUseAODBCalibrations(TString oadbFileName)                                                    {fOADBFileName = oadbFileName; fCalibType = AliHFQnVectorHandler::kQnCalib;}
     void SetUseQnFrameworkCalibrations()                                                                 {fCalibType = AliHFQnVectorHandler::kQnFrameworkCalib;}
     void SetNormalisationMethod(int normmethod)                                                          {fNormMethod = normmethod;}
@@ -58,14 +58,16 @@ public:
 
 private:
 
-    double GetEventPlaneAngle(double Qx, double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;} 
+    double GetEventPlaneAngle(double Qx, double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;}
 
     TList *fOutputList;                              //!<! output list for histograms
 
     TH1F *fHistNEvents;                              //!<! histo with number of events
     TH1F *fHistCentrality;                           //!<! histo with centrality
-    TH1F *fHistEventPlaneTPC[3];                     //!<! histos of TPC (Full, PosEta, NegEta) EP angle 
+    TH1F *fHistEventPlaneTPC[3];                     //!<! histos of TPC (Full, PosEta, NegEta) EP angle
     TH1F *fHistEventPlaneV0[3];                      //!<! histos of V0 (Full, V0A, V0C) EP angle
+    TH2F *fHistqnVsCentrTPC[3];                    	 //!<! histos of q2TPC (Full, PosEta, NegEta) vs centrality (for spline calibration)
+    TH2F *fHistqnVsCentrV0[3];                       //!<! histos of q2V0 (Full, V0A, V0C) vs centrality (for spline calibration)
 
     TH2F* fTPCPhiVsCentrDistr[2];                    //!<! histos of phi vs. centr of selected TPC tracks in eta>0 and eta<0
     TH2F* fQvecTPCVsCentrDistr[3];                   //!<! histos of TPC Q-vector vs. centr for tracks with eta>0 and eta<0
@@ -80,8 +82,8 @@ private:
 
     TString fOADBFileName;                           /// OADB input file name
 
-    TList* fSplineListqnPercTPC[3];                  /// Splines for qn percentile calibration for TPC 
-    TList* fSplineListqnPercV0[3];                   /// Splines for qn percentile calibration for V0 
+    TList* fSplineListqnPercTPC[3];                  /// Splines for qn percentile calibration for TPC
+    TList* fSplineListqnPercV0[3];                   /// Splines for qn percentile calibration for V0
 
     AliAODEvent* fAOD;                               /// AOD event
     int fPrevEventRun;                               /// run number of event previously analysed
@@ -89,7 +91,7 @@ private:
     TString fTriggerClass;                           /// trigger class
     unsigned long long fTriggerMask;                 /// trigger mask
 
-    ClassDef(AliAnalysisTaskSEHFTenderQnVectors, 3);
+    ClassDef(AliAnalysisTaskSEHFTenderQnVectors, 4);
 };
 
 #endif

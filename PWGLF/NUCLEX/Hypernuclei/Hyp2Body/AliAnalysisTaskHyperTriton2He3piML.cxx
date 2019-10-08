@@ -73,8 +73,9 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
       fFillGenericV0s{true},
-      fFillGenericTracklets{true},
+      fFillGenericTracklets{false},
       fFillTracklet{true},
+      fStoreAllEvents{true},
       fSaveFileNames{false},
       fPropagetToPV{true},
       fV0Vertexer{},
@@ -103,6 +104,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxDeltaPhi{0.12},
       fMaxDeltaTheta{0.12},
       fMinTrackletCosP{0.8},
+      fEnableLikeSign{false},
       fFileNameTree{nullptr},
       fCurrentFileName{""},
       fSHyperTriton{},
@@ -246,13 +248,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   unsigned char tgr = 0x0;
 
   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)
-    tgr = 1;
+    tgr = kINT7;
   if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)
-    tgr = 2;
+    tgr = kCentral;
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
-    tgr = 4;
+    tgr = kSemiCentral;
+  int magField = esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
-  fRCollision.fTrigger = tgr;
+  fRCollision.fTrigger = tgr + magField;
 
   std::unordered_map<int, int> mcMap;
   if (fMC)
@@ -320,6 +323,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   }
 
   fRHyperTriton.clear();
+  std::vector<int> he3TrackIndices;
 
   auto customNsigma = [this](double mom, double sig) -> double {
     const float bg = mom / AliPID::ParticleMass(AliPID::kHe3);
@@ -328,14 +332,19 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     return (sig - expS) / (fCustomResolution * expS);
   };
 
-  esdEvent->ResetV0s();
-  std::vector<AliESDv0> V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent);
-  for (int iV0 = 0; iV0 < int(V0Vector.size());
-       iV0++)
+  std::vector<AliESDv0> V0Vector;
+  if (!fUseOnTheFly) {
+    esdEvent->ResetV0s();
+    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent);
+  }
+
+  int nV0s = fUseOnTheFly ? esdEvent->GetNumberOfV0s() : V0Vector.size();
+
+  for (int iV0 = 0; iV0 < nV0s; iV0++)
   { // This is the begining of the V0 loop (we analyse only offline
     // V0s)
 
-    AliESDv0 *v0 = &V0Vector[iV0];
+    AliESDv0 *v0 = fUseOnTheFly ? esdEvent->GetV0(iV0) : &V0Vector[iV0];
     if (!v0)
       continue;
     if (v0->GetOnFlyStatus() != 0 && !fUseOnTheFly)
@@ -344,8 +353,13 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       continue;
 
     // Remove like-sign (will not affect offline V0 candidates!)
-    if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0)
-      continue;
+    if (fEnableLikeSign) {
+      if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() < 0)
+        continue;
+    } else {
+      if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0)
+        continue;
+    }
 
     const int lKeyPos = std::abs(v0->GetPindex());
     const int lKeyNeg = std::abs(v0->GetNindex());
@@ -355,10 +369,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     if (!pTrack || !nTrack)
       ::Fatal("AliAnalysisTaskHyperTriton2He3piML::UserExec",
               "Could not retreive one of the daughter track");
-
-    // Filter like-sign V0 (next: add counter and distribution)
-    if (pTrack->GetSign() == nTrack->GetSign())
-      continue;
 
     if (std::abs(nTrack->Eta()) > 0.8 || std::abs(pTrack->Eta()) > 0.8)
       continue;
@@ -550,6 +560,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fTOFmatchPi = HasTOF(piTrack);
     v0part.fMatter = (pTrack == he3Track);
     fRHyperTriton.push_back(v0part);
+    he3TrackIndices.push_back(aHyperTriton ? lKeyNeg : lKeyPos);
 
     fHistNsigmaPi->Fill(piTrack->Pt(), v0part.fTPCnSigmaPi);
     fHistNsigmaHe3->Fill(he3Vector.Pt(), v0part.fTPCnSigmaHe3);
@@ -559,32 +570,36 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   fRTracklets.clear();
   AliMultiplicity *tracklets = esdEvent->GetMultiplicity();
   int nTracklets = tracklets->GetNumberOfTracklets();
-  for (int iTracklet = 0; iTracklet < nTracklets; iTracklet++)
+  
+  
+  for (size_t iHyper{0}; iHyper < fRHyperTriton.size(); ++iHyper)
   {
-    double theta = tracklets->GetTheta(iTracklet);
-    double phi = tracklets->GetPhi(iTracklet);
-    double deltaTheta = tracklets->GetDeltaTheta(iTracklet);
-    double deltaPhi = tracklets->GetDeltaPhi(iTracklet);
-    fHistTrackletThetaPhi->Fill(theta, phi);
-    fHistTrackletDThetaDPhi->Fill(deltaTheta, deltaPhi);
-    
-    int id1{-1}, id2{-1};
-    tracklets->GetTrackletTrackIDs (iTracklet, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
-    
-    //if (id1 >= 0 && id2 >= 0)  /// Both points are used in a track
-    //  continue;
-
-    if (std::abs(deltaPhi) > fMaxDeltaPhi)
-      continue;
-    if (std::abs(deltaTheta) > fMaxDeltaTheta)
-      continue;
-
-    double cx = std::cos(phi) * std::sin(theta);
-    double cy = std::sin(phi) * std::sin(theta);
-    double cz = std::cos(theta);
-
-    for (const auto &v0 : fRHyperTriton)
+    const auto &v0 = fRHyperTriton[iHyper];
+    for (int iTracklet = 0; iTracklet < nTracklets; iTracklet++)
     {
+      double theta = tracklets->GetTheta(iTracklet);
+      double phi = tracklets->GetPhi(iTracklet);
+      double deltaTheta = tracklets->GetDeltaTheta(iTracklet);
+      double deltaPhi = tracklets->GetDeltaPhi(iTracklet);
+      fHistTrackletThetaPhi->Fill(theta, phi);
+      fHistTrackletDThetaDPhi->Fill(deltaTheta, deltaPhi);
+
+      int id1{-1}, id2{-1};
+      tracklets->GetTrackletTrackIDs (iTracklet, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
+
+      if (id1 >= 0 && id2 >= 0 && id1 != he3TrackIndices[iHyper] && id2 != he3TrackIndices[iHyper])  /// Both points are used in a track that is not the candidate He3
+       continue;
+
+      if (std::abs(deltaPhi) > fMaxDeltaPhi)
+        continue;
+      if (std::abs(deltaTheta) > fMaxDeltaTheta)
+        continue;
+
+      double cx = std::cos(phi) * std::sin(theta);
+      double cy = std::sin(phi) * std::sin(theta);
+      double cz = std::cos(theta);
+
+
       const double cosp = (v0.fDecayX * cx + v0.fDecayY * cy + v0.fDecayZ * cz) / std::sqrt(v0.fDecayX * v0.fDecayX + v0.fDecayY * v0.fDecayY + v0.fDecayZ * v0.fDecayZ);
       fHistTrackletCosP->Fill(cosp);
       if (cosp > fMinTrackletCosP)
@@ -618,7 +633,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     }
   }
 
-  fTreeV0->Fill();
+  if (fRHyperTriton.size() != 0 || fStoreAllEvents)
+    fTreeV0->Fill();
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);

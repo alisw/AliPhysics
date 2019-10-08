@@ -137,9 +137,11 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fHistPhoReco0(0),
 	fHistPhoReco1(0),
 	fHistPhoReco2(0),
-	fPi000_0(0),
-	fPi000_1(0),
-	fEta000(0),
+        fPi010(0),
+        fEta010(0),
+	fPi3050_0(0),
+	fPi3050_1(0),
+	fEta3050(0),
 	fHistPhoPi0(0),
 	fHistPhoEta(0),
 	fHistPhoPi01(0),
@@ -185,7 +187,13 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	DCAxy(3.0),
 	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
-	fDCAxy_Pt_had(0),
+	fDCAxy_Pt_had(0), 
+        ftpcnsig(-1.0),
+        femceop(0.9),
+        femcss_mim(0.01),
+        femcss_max(0.35),
+        finvmass(0.1),
+        finvmass_pt(0.15),
 	massMin(0.1),
 	fDCAxy_Pt_LS(0),
 	fDCAxy_Pt_ULS(0),
@@ -324,9 +332,11 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fHistPhoReco0(0),
 	fHistPhoReco1(0),
 	fHistPhoReco2(0),
-	fPi000_0(0),
-	fPi000_1(0),
-	fEta000(0),
+        fPi010(0),
+        fEta010(0),
+	fPi3050_0(0),
+	fPi3050_1(0),
+	fEta3050(0),
 	fHistPhoPi0(0),
 	fHistPhoEta(0),
 	fHistPhoPi01(0),
@@ -373,6 +383,12 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
+        ftpcnsig(-1.0),
+        femceop(0.9),
+        femcss_mim(0.01),
+        femcss_max(0.35),
+        finvmass(0.1),
+        finvmass_pt(0.15),
 	massMin(0.1),
 	fDCAxy_Pt_LS(0),
 	fDCAxy_Pt_ULS(0),
@@ -679,16 +695,24 @@ fHistPhoReco2 = new TH1F("fHistPhoReco2","P_{T} (HFE)",500,0,100);
 fOutputList->Add(fHistPhoReco2);
 
 //Pi0 Weight
-fPi000_0 = new TF1("fPi000_0","[0]*x/pow([1]+x/[2],[3])");
-fPi000_0->SetParameters(0.937028,0.674846,9.02659,10.);
-fPi000_1 = new TF1("fPi000_1","[0]*x/pow([1]+x/[2],[3])");
-fPi000_1->SetParameters(2.7883,0.,2.5684,5.63827);
+
+fPi010 = new TF1("fPi010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+fPi010->SetParameters(2.75146e-02,-1.33252e+00,3.53590e+00,1.04521e+00,3.15246e+00);  // HIJING + Data
+
+fPi3050_0 = new TF1("fPi3050_0","[0]*x/pow([1]+x/[2],[3])");
+fPi3050_0->SetParameters(0.937028,0.674846,9.02659,10.);
+fPi3050_1 = new TF1("fPi3050_1","[0]*x/pow([1]+x/[2],[3])");
+fPi3050_1->SetParameters(2.7883,0.,2.5684,5.63827);
 
 
 //Eta Weight
-fEta000 = new TF1("fEta000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])",0,100);
-fEta000 -> SetParameters(5.87918e+01,2.14009e-01,4.03579e+00,2.38693e+00,2.52382e+00);
-//fOutputList -> Add(fEta000);
+
+fEta010 = new TF1("fEta010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+fEta010->SetParameters(2.50883e-02,-1.63341e+00,6.58911e+00,8.07446e-01,3.12257e+00);
+
+fEta3050 = new TF1("fEta3050","[0]*x/pow([1]+x/[2]+x*x/[3],[4])",0,100);
+fEta3050 -> SetParameters(5.87918e+01,2.14009e-01,4.03579e+00,2.38693e+00,2.52382e+00);
+//fOutputList -> Add(fEta3050);
 
 fHistPhoPi0 = new TH1F("fHistPhoPi0","total pi0 in sample;p_{T}(GeV/c)",600,0,60);
 fHistPhoPi0->Sumw2();
@@ -975,6 +999,15 @@ Double_t CutDCAz = DCAz;
 
 //PID cut
 Double_t CutEopHad = -3.5;
+
+cout << "cut selections ---------------------" << endl;
+cout << "tpcnsig = " << ftpcnsig << endl; 
+cout << "emceop = " << femceop << endl; 
+cout << "emcss_mim = " << femcss_mim << endl; 
+cout << "emcss_max = " << femcss_max << endl; 
+cout << "invmass = " << finvmass << endl; 
+cout << "invmass_pt = " << finvmass_pt << endl; 
+cout << "-------------------------------------" << endl;
 
 //===================================================
 
@@ -1843,22 +1876,34 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	if(iEmbPi0){
 
-		cout << "pTmom=" << pTmom <<endl;
-                if(pTmom<4.0)
-                   {
-		    WeightPho = fPi000_0 -> Eval(pTmom);
-                   }
-                else
-                   {
-		    WeightPho = fPi000_1 -> Eval(pTmom);
-                   }
-
-	}
+           if(lPercentile>=0 && lPercentile<10.0)
+             {
+                WeightPho = fPi010->Eval(pTmom);
+             }
+    
+            if(lPercentile>=30.0 && lPercentile<50.0)
+             {
+              if(pTmom<4.0)
+                 {
+	          WeightPho = fPi3050_0 -> Eval(pTmom);
+                  }
+               else
+                  {
+	           WeightPho = fPi3050_1 -> Eval(pTmom);
+                  }
+              }
+	    }
 
 	if(iEmbEta){
 
-		WeightPho = fEta000 -> Eval(pTmom);
-
+           if(lPercentile>=0 && lPercentile<10.0)
+             {
+                WeightPho = fEta010->Eval(pTmom);
+             }
+           if(lPercentile>=30 && lPercentile<50.0)
+             {
+		WeightPho = fEta3050 -> Eval(pTmom);
+             }
 	}
 
 	//////// calculation of electron v2 at low pt using TPC and TOF info. //////
@@ -1965,9 +2010,11 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		Double_t TrkPhicos2_elehigh = -999;
 		Double_t TrkPhisin2_elehigh = -999;
 
-		if((fTPCnSigma > -1 && fTPCnSigma <3) && (m20 > 0.01 && m20 < 0.3)){ //TPC nsigma & shower shape cut
+		//if((fTPCnSigma > -1 && fTPCnSigma <3) && (m20 > 0.01 && m20 < 0.3)){ //TPC nsigma & shower shape cut
+		if((fTPCnSigma > ftpcnsig && fTPCnSigma <3) && (m20 > femcss_mim && m20 < femcss_max)){ //TPC nsigma & shower shape cut
 
-			if(eop>0.9 && eop<1.3){ //eop cut
+			//if(eop>0.9 && eop<1.3){ //eop cut
+			if(eop>femceop && eop<1.3){ //eop cut
 
 				////electron v2////
 
@@ -2186,7 +2233,8 @@ Double_t CutmassMin = massMin;
         //}
 
         //-------loose cut on partner electron
-        if(ptAsso <0.2) continue;
+        //if(ptAsso <0.2) continue;
+        if(ptAsso <finvmass_pt) continue;
         if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;
         if(nsigma < -3 || nsigma > 3) continue;
 
@@ -2213,7 +2261,8 @@ Double_t CutmassMin = massMin;
 		fInvmassLS->Fill(mass);
 		fInvmassLS_2D->Fill(mass,track->Pt());
 
-		if(mass<CutmassMin){
+		//if(mass<CutmassMin){
+		if(mass<finvmass){
 
 			fDCAxy_Pt_LS -> Fill(TrkPt,DCAxy*charge*Bsign);
 			TrkPhiEPV0A_phoLS = TrkPhiPI - PsinV0A;

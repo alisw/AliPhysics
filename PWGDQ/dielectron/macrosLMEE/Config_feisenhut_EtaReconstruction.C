@@ -7,13 +7,18 @@ TString names=("cut5_pt200");
 // TString generatorNameForMCSignal  = "Hijing_0";
 TString generatorNameForMCSignal  = "";
 
+TString generatorNameForULSSignal = "";
+// TString generatorNameForULSSignal = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
+
 bool SetGeneratedSmearingHistos = false;
 
-bool DoPairing = true;
+bool DoPairing     = true;
 bool DoFourPairing = true;
+bool DoULSLS       = true;
+bool DeactivateLS  = true;
 
 bool GetResolutionFromAlien = kTRUE;
-std::string resoFilename = "";
+std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP.root"; //"";
 std::string resoFilenameFromAlien = "/alice/cern.ch/user/f/feisenhu/data/resolution_PbPb2015_0080_deltaXvsP.root";
 
 bool DoCocktailWeighting = kFALSE;
@@ -24,6 +29,26 @@ std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/f/feisenhu/data/Coc
 bool GetCentralityFromAlien = kFALSE;
 std::string centralityFilename = "";
 std::string centralityFilenameFromAlien = "/alice/cern.ch/user/f/feisenhu/data/centralityLHC16g1.root";
+
+
+// //------ needed for cutsettings from jjung
+// const Int_t  nNumCutSettings                         = 1;
+// const Int_t PIDCutType            [nNumCutSettings]  =  {  100  };
+// const Int_t TrackCutType          [nNumCutSettings]  =  {  0    };
+// const Bool_t TPCrefitOnlyCut      [nNumCutSettings]  =  { kFALSE};
+// const Bool_t nITSdoPID            [nNumCutSettings]  =  { kFALSE};
+// const Int_t nITSsharedClusterCut  [nNumCutSettings]  =  {  1    };
+// const Double_t pTCut              [nNumCutSettings]  =  { 0.075 };
+// const Bool_t nTOFdoPID            [nNumCutSettings]  =  { kTRUE };
+// const Bool_t nTRDdoPID            [nNumCutSettings]  =  { kFALSE};
+//
+// Bool_t nIsESD             = kFALSE;
+// Bool_t MCenabled          = kFALSE;
+//
+// TString names = "cut_1;";
+// TObjArray *arrNames=names.Tokenize(";");
+// const Int_t nDie=arrNames->GetEntriesFast();
+// //------
 
 const Int_t triggerNames = AliVEvent::kMB;
 
@@ -42,7 +67,7 @@ const double maxGenEta =  1.5;
 // const double minEtaCut = -0.8;
 // const double maxEtaCut = 0.8;
 
-const double minPtCut = 0.02;
+const double minPtCut = 0.2;
 const double maxPtCut = 100.;
 const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
@@ -125,6 +150,315 @@ void GetCentrality(const int centrality, double& CentMin, double& CentMax){
   return;
 }
 
+// // -----------------\/--Included from jjung confic--\/-----------------
+//
+// AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutDefinition)
+// {
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//   printf("SetupTrackCutsAndSettings() for cut setting: %i \n", cutDefinition);
+//   AliAnalysisFilter *anaFilter = new AliAnalysisFilter(arrNames->At(cutDefinition)->GetName(),arrNames->At(cutDefinition)->GetName()); // named constructor seems mandatory!
+//   TString name=arrNames->At(cutDefinition)->GetName();
+//   //if (cutDefinition<arrNames->GetEntriesFast()){
+//   //    name=arrNames->At(cutDefinition)->GetName();
+//   //
+//   //}
+//   anaFilter->SetName(name);
+//   // do not change these initial values!
+//   // selectedPID=-1;
+//   // isPrefilterCutset=kFALSE;
+//   // rejCutMee=-1;
+//   // rejCutTheta=-1;
+//   // rejCutPhiV=3.2; // relevant are values below pi, so initialization to 3.2 means disabling.
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   // ESD handler?
+//   nIsESD    = (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
+//   //nIsESD    = kFALSE;
+//   //Do we have an MC handler?
+//   MCenabled = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+//   //MCenabled = kTRUE;
+//
+//   // if (cutDefinition==900) {
+//   //   // kinematic cuts for the legs during pair efficiency determination:
+//   //   AliDielectronVarCuts *kineCuts = new AliDielectronVarCuts("kineCuts","kineCuts");
+//   //   kineCuts->AddCut(AliDielectronVarManager::kEta, -0.8, 0.8);
+//   //   //kineCuts->AddCut(AliDielectronVarManager::kPt,   0.075, 1000.);
+//   //   kineCuts->AddCut(AliDielectronVarManager::kPt,   pTCut[0], 1000.);
+//   //   anaFilter->AddCuts( kineCuts );
+//   //   return anaFilter; // return here because we dont want any other cuts.
+//   // }
+//   // if(cutDefinition == 901){
+//   //   rejCutMee=-1;
+//   //   rejCutTheta=-1.;/*50.e-3*/;
+//   //   rejCutPhiV=3.2;
+//   //   return 0x0;
+//   // }
+//
+//
+//
+//   // conversion cut
+//   AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("IsGamma","IsGamma");
+//
+//   // which V0 finder you want to use
+//   gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
+//
+//   // add some pdg codes (they are used then by the KF package and important for gamma conversions)
+//   gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+//
+//   // add default PID cuts (defined in AliDielectronPID)
+//   // requirement can be set to at least one(kAny) of the tracks or to both(kBoth)
+//   gammaV0Cuts->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   // add the pair cuts for V0 candidates
+//   gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02), 1.0, kFALSE);  // cosine of the pointing angle
+//   gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,10.0, kFALSE);  // Chi^2/NDF
+//   gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,0.25, kFALSE); // distance of the legs
+//   gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,90.0, kFALSE);  // distance to the origin
+//   gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0, 0.05, kFALSE); // phi in mother's rest frame in Collins-Soper picture
+//   gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0, 0.05, kFALSE); // mass
+//   gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0, 0.05, kFALSE); // Armenteros-Podolanski pt
+//
+//
+//   if(cutDefinition == -1){
+//
+//     //gammaV0Cuts->SetExcludeTracks(kTRUE);
+//
+//     printf("default setting...\n");
+//     anaFilter->AddCuts(SetupESDtrackCuts(cutDefinition)); // track cuts
+//     anaFilter->AddCuts(SetupPIDcuts(cutDefinition));        // PID cuts
+//     anaFilter->AddCuts(gammaV0Cuts);                      // conversion cut
+//     std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//     return anaFilter;
+//   }
+//
+//
+//   // selection or rejection of V0 tracks
+//   //  gammaV0Cuts->SetExcludeTracks(kFALSE);
+//     gammaV0Cuts->SetExcludeTracks(kTRUE);
+//
+//
+//   AliDielectronVarCuts *sharedClustersCut(0x0);
+//     Printf("cutting on number of shared clusters in ITS! Max: 0 \n");
+//     sharedClustersCut  = new AliDielectronVarCuts("sharedClustersCut","sharedClustersCut");
+//     //if(nITSsharedClusterCut[cutDefinition] > 0)
+//       sharedClustersCut->AddCut(AliDielectronVarManager::kNclsSITS, nITSsharedClusterCut[cutDefinition]-0.1, 6.0, kTRUE);
+//     //else
+//     //  sharedClustersCut->AddCut(AliDielectronVarManager::kNclsSITS, 1.0, 6.0, kFALSE);
+//
+//     std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   AliDielectronVarCuts *PhiV(0x0);
+//
+//     PhiV = new AliDielectronVarCuts("PhiV","PhiV");//mass and Phiv together
+//     PhiV->AddCut(AliDielectronVarManager::kM, 0. , 0.10,kTRUE);
+//     PhiV->AddCut(AliDielectronVarManager::kPhivPair, 2.0 , 3.2,kTRUE);
+//     PhiV->SetCutType(1);
+//
+//
+//   //if(nIsESD)
+//     // anaFilter->AddCuts(SetupESDtrackCuts(cutDefinition)); // track cuts
+//   //  anaFilter->AddCuts(SetupAODtrackCuts(cutDefinition)); // track cuts
+// //  else
+//     anaFilter->AddCuts(SetupAODtrackCuts(cutDefinition)); // track cuts
+//   anaFilter->AddCuts(SetupPIDcuts(cutDefinition));        // PID cuts
+//     anaFilter->AddCuts(gammaV0Cuts);                      // conversion cut
+//     anaFilter->AddCuts(sharedClustersCut);                // ITS shared cluster cut
+//     anaFilter->AddCuts(PhiV);                            //PhiV cut
+//
+//     std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   printf("...cuts added!\n");
+//
+//   //std::cout << "__________ anaFilter->GetCuts()->Print() __________ cutDefinition = " << cutDefinition <<std::endl;
+//   //  anaFilter->GetCuts()->Print();
+//   //  std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" <<std::endl;
+//   //  std::cout << "__________ anaFilter->GetCuts()->Dump() __________ cutDefinition = " << cutDefinition <<std::endl;
+//   //  anaFilter->GetCuts()->Dump();
+//   //  std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" <<std::endl;
+//   return anaFilter;
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+// }
+//
+//
+//
+// AliAnalysisCuts *SetupAODtrackCuts(Int_t cutDefinition){
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
+//   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv FILTER CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+//   // AOD track filter (needs to be first cut to speed up)
+//   AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
+//   //trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
+//   trkFilter->SetAODFilterBit(1<<4); // I think we loose the possibility to use prefilter?
+//   //
+//   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+//   AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
+//   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+//   // specific cuts
+//   //trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
+//
+//   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
+//   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+//   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+//   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   if(TPCrefitOnlyCut[cutDefinition] == kTRUE){
+//     trkCuts->SetRequireTPCRefit(kTRUE);
+//     varCuts->AddCut(AliDielectronVarManager::kPt,           pTCut[cutDefinition] , 8.);
+//     varCuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+//     varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+//     varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+//     varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 100.);
+//   }
+//
+//   if(TrackCutType[cutDefinition] == 0){
+//     trkCuts->SetRequireITSRefit(kTRUE);
+//     trkCuts->SetRequireTPCRefit(kTRUE);
+//     //trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kAtLeast, 1); // SPD any
+//     trkFilter->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+//     varCuts->AddCut(AliDielectronVarManager::kPt,           pTCut[cutDefinition] , 8.);
+//     varCuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+//     varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+//     varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+//     varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 100.);
+//
+//     varCuts->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+//     varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.50);
+//     //varCuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
+//   }
+//
+//   cuts->AddCut(trkFilter);
+//   cuts->AddCut(trkCuts);
+//   cuts->AddCut(varCuts);
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   AliAnalysisCuts* TrackCuts=0x0;
+//   TrackCuts = cuts;
+//
+//   return TrackCuts;
+// }
+//
+//
+//
+// //__________________________________pid cuts______________________________________________
+// AliAnalysisCuts *SetupPIDcuts(Int_t cutDefinition){
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   AliDielectronPID *mastermind_TPC = new AliDielectronPID("mastermind_TPC","mastermind_TPC");
+//   AliDielectronPID *mastermind_TOF = new AliDielectronPID("mastermind_TOF","mastermind_TOF");
+//   AliDielectronPID *mastermind_ITS = new AliDielectronPID("mastermind_ITS","mastermind_ITS");
+//   AliDielectronPID *mastermind_TRD = new AliDielectronPID("mastermind_TRD","mastermind_TRD");
+//   AliDielectronVarCuts *TRD_PIDcuts = new AliDielectronVarCuts("TRD_PIDcuts","TRD_PIDcuts");
+//
+//
+//   if(cutDefinition == -1){
+//     mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -5.,5. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+//
+//     AliDielectronCutGroup* mastermind_cg = new AliDielectronCutGroup("mastermind_cg","mastermind_cg",AliDielectronCutGroup::kCompOR);
+//     mastermind_cg->AddCut(mastermind_TPC);
+//
+//     AliAnalysisCuts* fancyCut=0x0;
+//     fancyCut = mastermind_cg;
+//
+//     return fancyCut;
+//   }
+//
+//   if(PIDCutType[cutDefinition] < 0){
+//     printf("no PID cut applied\n");
+//     mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -99.,99. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable    ,AliDielectronVarManager::kPt);
+//
+//     AliDielectronCutGroup* mastermind_cg = new AliDielectronCutGroup("mastermind_cg","mastermind_cg",AliDielectronCutGroup::kCompOR);
+//     mastermind_cg->AddCut(mastermind_TPC);
+//
+//     AliAnalysisCuts* fancyCut=0x0;
+//     fancyCut = mastermind_cg;
+//
+//     return fancyCut;
+//   }
+//
+//
+//
+//   if(PIDCutType[cutDefinition] == 100){
+//     //New PID standard cut: full PID setting with recovery of ITS and TOF tracks
+//     //accepts an electron if it's identified in one of the 3 detector samples
+//     std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//     //TPC electrons: includes electrons and exclude all possible other contributions using the TPC
+//     //possible elemination of contamination using ITS and TOF
+//     mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.5, 3. , 0. ,100., kFALSE);
+//     mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -2.5, 3.5 , 0.100 ,100., kTRUE);
+//     mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kMuon, -1.75, 1. , 0.100 ,100., kTRUE);
+//     mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kKaon, -2.25, 3. , 0.200 ,100., kTRUE);
+//     mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kProton, -2.25, 3.5 , 0.200 ,100., kTRUE);
+//     if(nTOFdoPID[cutDefinition] == kTRUE)
+//       mastermind_TPC->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+//     if(nITSdoPID[cutDefinition] == kTRUE)
+//       mastermind_TPC->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 3.0 , 0.0 ,100.0  , kFALSE, AliDielectronPID::kIfAvailable);
+//
+//     //TOF electrons: includes all electrons, exlcludes Pions using the TPC
+//     //possible elemination of contamination using ITS
+//     mastermind_TOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.5, 3. , 0. ,100., kFALSE);
+//     mastermind_TOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -2.5, 3.5 , 0.300 ,100., kTRUE);
+//     mastermind_TOF->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+//     if(nITSdoPID[cutDefinition] == kTRUE)
+//       mastermind_TOF->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 3.0 , 0.0 ,100.0  , kFALSE, AliDielectronPID::kIfAvailable);
+//
+//     //ITS electrons: includes all electrons, exlcludes Pions using the TPC
+//     //possible elemination of contamination using TOF
+//     mastermind_ITS->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.5, 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+//     mastermind_ITS->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -2.5, 3.5 , 0.300 ,100., kTRUE, AliDielectronPID::kIfAvailable);
+//     mastermind_ITS->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 3.0 , 0.0 ,100.0  , kFALSE);
+//     mastermind_ITS->AddCut(AliDielectronPID::kITS,AliPID::kPion, -4.0, 4.0 , 0.130 ,0.300  , kTRUE);
+//     mastermind_ITS->AddCut(AliDielectronPID::kITS,AliPID::kKaon, -3.0, 3.0 , 0.0 ,100.0  , kTRUE);
+//     mastermind_ITS->AddCut(AliDielectronPID::kITS,AliPID::kProton, -3.0, 3.0 , 0.0 ,100.0  , kTRUE);
+//      if(nTOFdoPID[cutDefinition] == kTRUE)
+//       mastermind_ITS->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+//
+//
+//     //TRD_PIDcuts->SetCutType(AliDielectronVarCuts::kAny);
+// 	TRD_PIDcuts->AddCut(AliDielectronVarManager::kTRDpidQuality, 3.5, 7.0, kFALSE); // tracklets for PID
+// 	TRD_PIDcuts->AddCut(AliDielectronVarManager::kTRDchi2Trklt ,  .0, 5.0, kFALSE);
+// 	TRD_PIDcuts->AddCut(AliDielectronVarManager::kTRDprob2DEle ,0.99, 1. , kFALSE); // Double_t trdEleProb = 0.99;
+// 	mastermind_TRD->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.5, 3., 0. ,100., kFALSE);
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   }
+//
+//   AliDielectronCutGroup* mastermind_cg = new AliDielectronCutGroup("mastermind_cg","mastermind_cg",AliDielectronCutGroup::kCompOR);
+//   AliDielectronCutGroup* subgroup = new AliDielectronCutGroup("subgroup","subgroup",AliDielectronCutGroup::kCompAND);
+//   mastermind_cg->AddCut(mastermind_TPC);
+//   if(nTOFdoPID[cutDefinition] == kTRUE)
+//     mastermind_cg->AddCut(mastermind_TOF);
+//   if(nITSdoPID[cutDefinition] == kTRUE)
+//     mastermind_cg->AddCut(mastermind_ITS);
+//   if(nTRDdoPID[cutDefinition] == kTRUE){
+//     mastermind_cg->AddCut(mastermind_TRD);
+//
+//   }
+//   //Why
+//   //if(nITSdoPID[cutDefinition] == kTRUE){
+//   //  AliDielectronVarCuts* ITSpTCut = new AliDielectronVarCuts("ITSpTCut","ITSpTCut");
+//   //  ITSpTCut->AddCut(AliDielectronVarManager::kP, 0.0, 140, kFALSE);
+//   //
+//   //  AliDielectronCutGroup* subgroup = new AliDielectronCutGroup("subgroup","subgroup",AliDielectronCutGroup::kCompAND);
+//   //  subgroup->AddCut(mastermind_ITS);
+//   //  subgroup->AddCut(ITSpTCut);
+//   //  mastermind_cg->AddCut(subgroup);
+//   //}
+//   std::cout << __LINE__ << "##### TEST #####" << std::endl;
+//
+//   AliAnalysisCuts* fancyCut=0x0;
+//   fancyCut = mastermind_cg;
+//
+//   return fancyCut;
+// }
+//
+//
+// // -----------------/\-- Included from jjung --/\-----------------
 
 
 // #########################################################
@@ -431,7 +765,7 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 }
 
 
-  void AddFourPairULSMCSignal(AliAnalysisTaskEtaReconstruction* task){
+  void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     //#########################################
     //########### Unlike Signe Signals ########
     //#########################################
@@ -506,47 +840,49 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
         ULSFourElePair2_FromPion.SetGrandMotherPDGs(111, 111); //
 
 //________________________________________________________
-      // task->AddFourPairULSMCSignal(ULSFourElePair1_FromEta);
-      // task->AddFourPairULSMCSignal(ULSFourElePair2_FromEta);
-      task->AddFourPairULSMCSignal(ULSFourElePair1_FinalState);
-      task->AddFourPairULSMCSignal(ULSFourElePair2_Secondary_from_Photon);
-      // task->AddFourPairULSMCSignal(ULSFourElePair1_FromPion);
-      // task->AddFourPairULSMCSignal(ULSFourElePair2_FromPion);
+      // task->AddFourPairMCSignal(ULSFourElePair1_FromEta);
+      // task->AddFourPairMCSignal(ULSFourElePair2_FromEta);
+      task->AddFourPairMCSignal(ULSFourElePair1_FinalState);
+      task->AddFourPairMCSignal(ULSFourElePair2_Secondary_from_Photon);
+      // task->AddFourPairMCSignal(ULSFourElePair1_FromPion);
+      // task->AddFourPairMCSignal(ULSFourElePair2_FromPion);
 
 }
 
-void AddFourPairLSMCSignal(AliAnalysisTaskEtaReconstruction* task){
-    //#########################################
-    //########### Like Signe Signals ##########
-    //#########################################
-    // AliDielectronSignalMC for 4 particles
-    // Seperate it into 2 pair MCSignals
-    //
-    // First Pair
-      AliDielectronSignalMC LSFourElePair1_FromEta("LSFourElePair1_FromEta","LSFourElePair1_FromEta");
-      LSFourElePair1_FromEta.SetLegPDGs(11,11);
-      LSFourElePair1_FromEta.SetCheckBothChargesLegs(kFALSE,kFALSE);
-      LSFourElePair1_FromEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-      //mother
-      // LSFourElePair1_FromEta.SetMothersRelation(AliDielectronSignalMC::kSame);
-       LSFourElePair1_FromEta.SetMotherPDGs(221, 221); //
 
-    // Second Pair
-      AliDielectronSignalMC LSFourElePair2_FromEta("LSFourElePair2_FromEta","LSFourElePair2_FromEta");
-      LSFourElePair2_FromEta.SetLegPDGs(-11,-11);
-      LSFourElePair2_FromEta.SetCheckBothChargesLegs(kFALSE,kFALSE);
-      LSFourElePair2_FromEta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-      // FourElePair2_FromEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-      // FourElePair2_FromEta.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
-      // mother
-      // LSFourElePair2_FromEta.SetMothersRelation(AliDielectronSignalMC::kSame);
-      LSFourElePair2_FromEta.SetMotherPDGs(22, 22); //
-      // grand-mother
-      // LSFourElePair2_FromEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-       LSFourElePair2_FromEta.SetGrandMotherPDGs(221, 221); //
 
-//________________________________________________________
-        // task->AddFourPairLSMCSignal(LSFourElePair1_FromEta);
-        // task->AddFourPairLSMCSignal(LSFourElePair2_FromEta);
-
-}
+// void AddFourPairLSMCSignal(AliAnalysisTaskEtaReconstruction* task){
+//     //#########################################
+//     //########### Like Signe Signals ##########
+//     //#########################################
+//     // AliDielectronSignalMC for 4 particles
+//     // Seperate it into 2 pair MCSignals
+//     //
+//     // First Pair
+//       AliDielectronSignalMC LSFourElePair1_FromEta("LSFourElePair1_FromEta","LSFourElePair1_FromEta");
+//       LSFourElePair1_FromEta.SetLegPDGs(11,11);
+//       LSFourElePair1_FromEta.SetCheckBothChargesLegs(kFALSE,kFALSE);
+//       LSFourElePair1_FromEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//       //mother
+//       // LSFourElePair1_FromEta.SetMothersRelation(AliDielectronSignalMC::kSame);
+//        LSFourElePair1_FromEta.SetMotherPDGs(221, 221); //
+//
+//     // Second Pair
+//       AliDielectronSignalMC LSFourElePair2_FromEta("LSFourElePair2_FromEta","LSFourElePair2_FromEta");
+//       LSFourElePair2_FromEta.SetLegPDGs(-11,-11);
+//       LSFourElePair2_FromEta.SetCheckBothChargesLegs(kFALSE,kFALSE);
+//       LSFourElePair2_FromEta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+//       // FourElePair2_FromEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//       // FourElePair2_FromEta.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+//       // mother
+//       // LSFourElePair2_FromEta.SetMothersRelation(AliDielectronSignalMC::kSame);
+//       LSFourElePair2_FromEta.SetMotherPDGs(22, 22); //
+//       // grand-mother
+//       // LSFourElePair2_FromEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+//        LSFourElePair2_FromEta.SetGrandMotherPDGs(221, 221); //
+//
+// //________________________________________________________
+//         // task->AddFourPairLSMCSignal(LSFourElePair1_FromEta);
+//         // task->AddFourPairLSMCSignal(LSFourElePair2_FromEta);
+//
+// }

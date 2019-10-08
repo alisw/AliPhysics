@@ -1,6 +1,17 @@
+#include <vector>
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliSigma0V0Cuts.h"
+#include "AliSigma0PhotonCuts.h"
+#include "AliSigma0AODPhotonMotherCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#include "AliAnalysisTaskSigma0Femto.h"
+
 AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
                                       bool fullBlastQA = false,
-                                      TString trigger = "kINT7",
+                                      TString trigger = "kHighMultV0",
                                       const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
@@ -16,7 +27,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton;
-  cutnumberPhoton = "00200008400000002280920000";
+  cutnumberPhoton = "00200008400000002280f20090";
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
@@ -25,58 +36,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   if (suffix != "0" && suffix != "999") {
     runLightOutput = kTRUE;
     fillHistos = kFALSE;
-  }
-
-  if (suffix == "1") {
-    cutnumberPhoton = "0c200078000000002280920000";
-  } else if (suffix == "2") {
-    cutnumberPhoton = "002000a9400000001280920000";
-  } else if (suffix == "3") {
-    cutnumberPhoton = "002000081000000022c0920000";
-  } else if (suffix == "4") {
-    cutnumberPhoton = "00200009000000002280920000";
-  } else if (suffix == "5") {
-    cutnumberPhoton = "0c200078400000003280920000";
-  } else if (suffix == "6") {
-    cutnumberPhoton = "002000a84000000022c0920000";
-  } else if (suffix == "7") {
-    cutnumberPhoton = "00200008400000002280820000";
-  } else if (suffix == "8") {
-    cutnumberPhoton = "0c200008400000002280a20000";
-  } else if (suffix == "9") {
-    cutnumberPhoton = "00200008100000002240a20000";
-  } else if (suffix == "10") {
-    cutnumberPhoton = "002000a94000000012c0920000";
-  } else if (suffix == "11") {
-    cutnumberPhoton = "0c200008000000003280820000";
-  } else if (suffix == "12") {
-    cutnumberPhoton = "00200078400000002240a20000";
-  } else if (suffix == "13") {
-    cutnumberPhoton = "0c200008100000002280a20000";
-  } else if (suffix == "14") {
-    cutnumberPhoton = "002000084000000032c0920000";
-  } else if (suffix == "15") {
-    cutnumberPhoton = "0c200009400000001280920000";
-  } else if (suffix == "16") {
-    cutnumberPhoton = "002000a8400000002240820000";
-  } else if (suffix == "17") {
-    cutnumberPhoton = "002000a8000000003280920000";
-  } else if (suffix == "18") {
-    cutnumberPhoton = "0c2000a84000000022c0920000";
-  } else if (suffix == "19") {
-    cutnumberPhoton = "00200008100000001240920000";
-  } else if (suffix == "20") {
-    cutnumberPhoton = "0c2000784000000022c0920000";
-  } else if (suffix == "21") {
-    cutnumberPhoton = "002000a8400000003280820000";
-  } else if (suffix == "22") {
-    cutnumberPhoton = "0c2000080000000022c0920000";
-  } else if (suffix == "23") {
-    cutnumberPhoton = "002000a9400000002240920000";
-  } else if (suffix == "24") {
-    cutnumberPhoton = "002000a8100000001280920000";
-  } else if (suffix == "25") {
-    cutnumberPhoton = "0c200008000000002240920000";
   }
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -156,132 +115,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
   }
-  if (suffix == "1") {
-    TrackCuts->SetPtRange(0.4, 4.05);
-    AntiTrackCuts->SetPtRange(0.4, 4.05);
-    TrackCuts->SetEtaRange(-0.85, 0.85);
-    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
-  } else if (suffix == "2") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-  } else if (suffix == "3") {
-    TrackCuts->SetEtaRange(-0.85, 0.85);
-    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
-    TrackCuts->SetNClsTPC(90);
-    AntiTrackCuts->SetNClsTPC(90);
-  } else if (suffix == "4") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-  } else if (suffix == "5") {
-    TrackCuts->SetEtaRange(-0.75, 0.75);
-    AntiTrackCuts->SetEtaRange(-0.75, 0.75);
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
-  } else if (suffix == "6") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-  } else if (suffix == "7") {
-    TrackCuts->SetEtaRange(-0.85, 0.85);
-    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
-  } else if (suffix == "8") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-  } else if (suffix == "9") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetNClsTPC(90);
-    AntiTrackCuts->SetNClsTPC(90);
-  } else if (suffix == "10") {
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
-  } else if (suffix == "11") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-  } else if (suffix == "12") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetNClsTPC(90);
-    AntiTrackCuts->SetNClsTPC(90);
-  } else if (suffix == "13") {
-    TrackCuts->SetEtaRange(-0.85, 0.85);
-    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
-    TrackCuts->SetPtRange(0.4, 4.05);
-    AntiTrackCuts->SetPtRange(0.4, 4.05);
-  } else if (suffix == "14") {
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    TrackCuts->SetEtaRange(-0.75, 0.75);
-    AntiTrackCuts->SetEtaRange(-0.75, 0.75);
-  } else if (suffix == "15") {
-    TrackCuts->SetNClsTPC(90);
-    AntiTrackCuts->SetNClsTPC(90);
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-  } else if (suffix == "16") {
-    TrackCuts->SetEtaRange(-0.75, 0.75);
-    AntiTrackCuts->SetEtaRange(-0.75, 0.75);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-  } else if (suffix == "17") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
-  } else if (suffix == "18") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-  } else if (suffix == "19") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-  } else if (suffix == "20") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-  } else if (suffix == "21") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
-  } else if (suffix == "22") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-  } else if (suffix == "23") {
-    TrackCuts->SetPtRange(0.4, 4.05);
-    AntiTrackCuts->SetPtRange(0.4, 4.05);
-    TrackCuts->SetNClsTPC(90);
-    AntiTrackCuts->SetNClsTPC(90);
-  } else if (suffix == "24") {
-    TrackCuts->SetEtaRange(-0.75, 0.75);
-    AntiTrackCuts->SetEtaRange(-0.75, 0.75);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-  } else if (suffix == "25") {
-    TrackCuts->SetEtaRange(-0.85, 0.85);
-    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
-  }
 
   AliSigma0V0Cuts *v0Cuts = AliSigma0V0Cuts::LambdaCuts();
   v0Cuts->SetIsMC(isMC);
@@ -299,178 +132,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     v0Cuts->SetLightweight(true);
     antiv0Cuts->SetLightweight(true);
   }
-  if (suffix == "1") {
-    v0Cuts->SetArmenterosCut(0., 0.15, 0.4, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.15, 0.4, 1);
-    v0Cuts->SetV0CosPAMin(0.98);
-    antiv0Cuts->SetV0CosPAMin(0.98);
-    v0Cuts->SetEtaMax(0.85);
-    antiv0Cuts->SetEtaMax(0.85);
-  } else if (suffix == "2") {
-    v0Cuts->SetV0PtMin(0.24);
-    antiv0Cuts->SetV0PtMin(0.24);
-    v0Cuts->SetPIDnSigma(6);
-    antiv0Cuts->SetPIDnSigma(6);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-  } else if (suffix == "3") {
-    v0Cuts->SetV0PtMin(0.36);
-    antiv0Cuts->SetV0PtMin(0.36);
-    v0Cuts->SetArmenterosCut(0., 0.11, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.11, 0.2, 1);
-    v0Cuts->SetPIDnSigma(6);
-    antiv0Cuts->SetPIDnSigma(6);
-  } else if (suffix == "4") {
-    v0Cuts->SetPIDnSigma(6);
-    antiv0Cuts->SetPIDnSigma(6);
-    v0Cuts->SetEtaMax(0.85);
-    antiv0Cuts->SetEtaMax(0.85);
-    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-  } else if (suffix == "5") {
-    v0Cuts->SetV0CosPAMin(0.98);
-    antiv0Cuts->SetV0CosPAMin(0.98);
-    v0Cuts->SetArmenterosCut(0., 0.11, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.11, 0.2, 1);
-  } else if (suffix == "6") {
-    v0Cuts->SetV0PtMin(0.36);
-    antiv0Cuts->SetV0PtMin(0.36);
-    v0Cuts->SetPIDnSigma(4);
-    antiv0Cuts->SetPIDnSigma(4);
-    v0Cuts->SetEtaMax(0.85);
-    antiv0Cuts->SetEtaMax(0.85);
-  } else if (suffix == "7") {
-    v0Cuts->SetV0PtMin(0.24);
-    antiv0Cuts->SetV0PtMin(0.24);
-    v0Cuts->SetArmenterosCut(0., 0.15, 0.4, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.15, 0.4, 1);
-    v0Cuts->SetTPCclusterMin(80);
-    antiv0Cuts->SetTPCclusterMin(80);
-  } else if (suffix == "8") {
-    v0Cuts->SetV0CosPAMin(0.995);
-    antiv0Cuts->SetV0CosPAMin(0.995);
-    v0Cuts->SetArmenterosCut(0., 0.11, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.11, 0.2, 1);
-  } else if (suffix == "9") {
-    v0Cuts->SetV0CosPAMin(0.98);
-    antiv0Cuts->SetV0CosPAMin(0.98);
-    v0Cuts->SetPIDnSigma(6);
-    antiv0Cuts->SetPIDnSigma(6);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-  } else if (suffix == "10") {
-    v0Cuts->SetV0PtMin(0.36);
-    antiv0Cuts->SetV0PtMin(0.36);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-    v0Cuts->SetEtaMax(0.85);
-    antiv0Cuts->SetEtaMax(0.85);
-  } else if (suffix == "11") {
-    v0Cuts->SetV0PtMin(0.36);
-    antiv0Cuts->SetV0PtMin(0.36);
-    v0Cuts->SetArmenterosCut(0., 0.15, 0.4, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.15, 0.4, 1);
-    v0Cuts->SetV0CosPAMin(0.98);
-    antiv0Cuts->SetV0CosPAMin(0.98);
-  } else if (suffix == "12") {
-    v0Cuts->SetV0CosPAMin(0.995);
-    antiv0Cuts->SetV0CosPAMin(0.995);
-    v0Cuts->SetPIDnSigma(4);
-    antiv0Cuts->SetPIDnSigma(4);
-    v0Cuts->SetTPCclusterMin(80);
-    antiv0Cuts->SetTPCclusterMin(80);
-  } else if (suffix == "13") {
-    v0Cuts->SetV0CosPAMin(0.995);
-    antiv0Cuts->SetV0CosPAMin(0.995);
-    v0Cuts->SetArmenterosCut(0., 0.11, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.11, 0.2, 1);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-  } else if (suffix == "14") {
-    v0Cuts->SetPIDnSigma(6);
-    antiv0Cuts->SetPIDnSigma(6);
-    v0Cuts->SetEtaMax(0.85);
-    antiv0Cuts->SetEtaMax(0.85);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-  } else if (suffix == "15") {
-    v0Cuts->SetV0CosPAMin(0.995);
-    antiv0Cuts->SetV0CosPAMin(0.995);
-    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-  } else if (suffix == "16") {
-    v0Cuts->SetV0PtMin(0.36);
-    antiv0Cuts->SetV0PtMin(0.36);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-    v0Cuts->SetArmenterosCut(0., 0.11, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.11, 0.2, 1);
-  } else if (suffix == "17") {
-    v0Cuts->SetV0PtMin(0.36);
-    antiv0Cuts->SetV0PtMin(0.36);
-    v0Cuts->SetV0CosPAMin(0.98);
-    antiv0Cuts->SetV0CosPAMin(0.98);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-  } else if (suffix == "18") {
-    v0Cuts->SetV0CosPAMin(0.98);
-    antiv0Cuts->SetV0CosPAMin(0.98);
-    v0Cuts->SetArmenterosCut(0., 0.11, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.11, 0.2, 1);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-  } else if (suffix == "19") {
-    v0Cuts->SetV0CosPAMin(0.98);
-    antiv0Cuts->SetV0CosPAMin(0.98);
-    v0Cuts->SetArmenterosCut(0., 0.11, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.11, 0.2, 1);
-    v0Cuts->SetPIDnSigma(4);
-    antiv0Cuts->SetPIDnSigma(4);
-  } else if (suffix == "20") {
-    v0Cuts->SetV0CosPAMin(0.995);
-    antiv0Cuts->SetV0CosPAMin(0.995);
-    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    v0Cuts->SetV0PtMin(0.36);
-    antiv0Cuts->SetV0PtMin(0.36);
-  } else if (suffix == "21") {
-    v0Cuts->SetV0CosPAMin(0.995);
-    antiv0Cuts->SetV0CosPAMin(0.995);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-    v0Cuts->SetEtaMax(0.85);
-    antiv0Cuts->SetEtaMax(0.85);
-  } else if (suffix == "22") {
-    v0Cuts->SetV0PtMin(0.36);
-    antiv0Cuts->SetV0PtMin(0.36);
-    v0Cuts->SetPIDnSigma(4);
-    antiv0Cuts->SetPIDnSigma(4);
-    v0Cuts->SetArmenterosCut(0., 0.15, 0.4, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.15, 0.4, 1);
-  } else if (suffix == "23") {
-    v0Cuts->SetV0PtMin(0.24);
-    antiv0Cuts->SetV0PtMin(0.24);
-    v0Cuts->SetEtaMax(0.85);
-    antiv0Cuts->SetEtaMax(0.85);
-    v0Cuts->SetArmenterosCut(0., 0.11, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.11, 0.2, 1);
-  } else if (suffix == "24") {
-    v0Cuts->SetArmenterosCut(0., 0.11, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.11, 0.2, 1);
-    v0Cuts->SetV0PtMin(0.36);
-    antiv0Cuts->SetV0PtMin(0.36);
-    v0Cuts->SetTPCclusterMin(60);
-    antiv0Cuts->SetTPCclusterMin(60);
-  } else if (suffix == "25") {
-    v0Cuts->SetV0PtMin(0.24);
-    antiv0Cuts->SetV0PtMin(0.24);
-    v0Cuts->SetV0CosPAMin(0.995);
-    antiv0Cuts->SetV0CosPAMin(0.995);
-    v0Cuts->SetPIDnSigma(4);
-    antiv0Cuts->SetPIDnSigma(4);
-  }
   if (suffix == "999") {
     v0Cuts->SetCheckCutsMC(true);
     antiv0Cuts->SetCheckCutsMC(true);
@@ -478,84 +139,41 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     antiv0Cuts->SetLightweight(false);
   }
 
-  AliSigma0PhotonMotherCuts *sigmaCuts =
-      AliSigma0PhotonMotherCuts::DefaultCuts();
+  AliSigma0AODPhotonMotherCuts *sigmaCuts =
+      AliSigma0AODPhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
   sigmaCuts->SetPDG(3212, 3122, 22);
-  sigmaCuts->SetLambdaCuts(v0Cuts);
-  sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
-  sigmaCuts->SetIsSpectrum(false);
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
   }
 
-  AliSigma0PhotonMotherCuts *antiSigmaCuts =
-      AliSigma0PhotonMotherCuts::DefaultCuts();
+  AliSigma0AODPhotonMotherCuts *antiSigmaCuts =
+      AliSigma0AODPhotonMotherCuts::DefaultCuts();
   antiSigmaCuts->SetIsMC(isMC);
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
-  antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
-  antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
-  antiSigmaCuts->SetIsSpectrum(false);
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
   }
 
-  // vary the sidebands
-  if (suffix == "33") {
-    sigmaCuts->SetSigmaSideband(0.01, 0.075);
-    antiSigmaCuts->SetSigmaSideband(0.01, 0.075);
-  } else if (suffix == "34") {
-    sigmaCuts->SetSigmaSideband(0.01, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.01, 0.1);
-  } else if (suffix == "35") {
-    sigmaCuts->SetSigmaSideband(0.025, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.025, 0.05);
-  } else if (suffix == "36") {
-    sigmaCuts->SetSigmaSideband(0.025, 0.075);
-    antiSigmaCuts->SetSigmaSideband(0.025, 0.075);
-  } else if (suffix == "37") {
-    sigmaCuts->SetSigmaSideband(0.025, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
-  } else if (suffix == "38") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.025);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.025);
-  } else if (suffix == "39") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.05);
-  } else if (suffix == "40") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.075);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.075);
-  } else if (suffix == "41") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.1);
-  }
-
-  if (trigger == "kINT7") {
-    sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
-    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
-  } else if (trigger == "kHighMultV0") {
-    sigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
-    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
-  } else if (trigger == "AliVEvent::kMB") {
-    sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
-    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
-  }
 
   // Femto Collection
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212);
-  PDGParticles.push_back(2212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
+  PDGParticles.push_back(2212); // 0
+  PDGParticles.push_back(2212); // 1
+  PDGParticles.push_back(3212); // 2
+  PDGParticles.push_back(3212); // 3
+  PDGParticles.push_back(3212); // 4
+  PDGParticles.push_back(3212); // 5
+  PDGParticles.push_back(3212); // 6
+  PDGParticles.push_back(3212); // 7
   if (suffix == "0" && fullBlastQA) {
-    PDGParticles.push_back(3122);
-    PDGParticles.push_back(22);
-    PDGParticles.push_back(3122);
-    PDGParticles.push_back(22);
+    PDGParticles.push_back(3122); // 8
+    PDGParticles.push_back(3122); // 9
+    PDGParticles.push_back(3122); // 10
+    PDGParticles.push_back(3122); // 11
+    PDGParticles.push_back(22); // 12
+    PDGParticles.push_back(22); // 13
+    PDGParticles.push_back(22); // 14
   }
 
   std::vector<float> ZVtxBins;
@@ -576,7 +194,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  const int nPairs = (suffix == "0" && fullBlastQA) ? 78 : 36;
+  const int nPairs = (suffix == "0" && fullBlastQA) ? 120 : 36;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
@@ -593,30 +211,26 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
 
   NBins[0] = 250;  // pp
   NBins[8] = 250;  // barp barp
-
-  closeRejection[0] = true;  // pp
-  closeRejection[8] = true;  // barp barp
+  pairQA[0] = 11;   // pp
+  pairQA[8] = 11;   // pbarpbar
+  pairQA[2] = 14;  // pSigma
+  pairQA[10] = 14;  // barp bSigma
 
   // do extended QA for the pairs in default mode
-  if (suffix == "0" && !fullBlastQA) {
-    NBins[0] = 750;  // pp
-    NBins[8] = 750;  // barp barp
+  if (suffix == "0" && fullBlastQA) {
 
     pairQA[0] = 11;   // pp
     pairQA[2] = 14;   // pSigma
-    pairQA[8] = 11;   // barp barp
-    pairQA[10] = 14;  // barp bSigma
-  } else if (suffix == "0" && fullBlastQA) {
-    NBins[0] = 750;   // pp
-    NBins[12] = 750;  // barp barp
-
-    pairQA[0] = 11;   // pp
-    pairQA[2] = 14;   // pSigma
-    pairQA[12] = 11;  // barp barp
-    pairQA[14] = 14;  // barp bSigma
-
-    closeRejection[8] = false;  // no more barp barp
-    closeRejection[12] = true;  // new barp barp
+    pairQA[8] = 12;   // pLambda(Sigma0)
+    pairQA[10] = 12;   // pLambda
+    pairQA[12] = 12;   // pPhoton(Sigma0)
+    pairQA[14] = 12;   // pPhoton
+    pairQA[15] = 11;  // barp barp
+    pairQA[17] = 14;  // barp bSigma
+    pairQA[23] = 12;   // barpbarLambda(barSigma0)
+    pairQA[25] = 12;   // barpbarLambda
+    pairQA[27] = 12;   // barpPhoton(Sigma0)
+    pairQA[28] = 12;   // barpPhoton
   }
 
   AliFemtoDreamCollConfig *config =
@@ -678,17 +292,24 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   }
 
   if (trigger == "kHighMultV0") {
-    config->SetDeltaEtaMax(0.01);
-    config->SetDeltaPhiMax(0.01);
+    // no close pair rejection since we don't care about pp
+    config->SetDeltaEtaMax(0.);
+    config->SetDeltaPhiMax(0.);
     config->SetClosePairRejection(closeRejection);
   }
 
   if (suffix == "0" && fullBlastQA) {
-    config->SetPhiEtaBinnign(true);
     config->SetkTBinning(true);
     config->SetmTBinning(true);
-    config->SetPtQA(true);
   }
+
+  config->SetUsePhiSpinning(false);
+  config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
+  config->SetCorrelationRange(0.1); // to be validated
+  config->SetSpinningDepth(1);      // to be validated
+
+  config->SetPtQA(true);
+  config->SetMassQA(true);
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -697,35 +318,29 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+  config->SetMinimalBookingME(false);
   if (suffix != "0") {
-    config->SetMinimalBookingME(true);
+    config->SetMinimalBookingSample(true);
   }
 
   AliAnalysisTaskSigma0Femto *task =
-      new AliAnalysisTaskSigma0Femto("AnalysisTaskSigma0Femto", isMC);
+      new AliAnalysisTaskSigma0Femto("AliAnalysisTaskSigma0Femto", isMC);
   if (trigger == "kINT7") {
     task->SetTrigger(AliVEvent::kINT7);
-    task->SetMultiplicityMode(AliVEvent::kINT7);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
   } else if (trigger == "kHighMultV0") {
     if (isMC) {
       task->SetTrigger(AliVEvent::kINT7);
       task->SelectCollisionCandidates(AliVEvent::kINT7);
-      task->SetMultiplicityMode(AliVEvent::kHighMultV0);
     } else {
       task->SetTrigger(AliVEvent::kHighMultV0);
       task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-      task->SetMultiplicityMode(AliVEvent::kHighMultV0);
     }
-  } else if (trigger == "AliVEvent::kMB") {
-    task->SetTrigger(AliVEvent::kMB);
-    task->SelectCollisionCandidates(AliVEvent::kMB);
-    task->SetMultiplicityMode(AliVEvent::kINT7);
   }
   task->SetEventCuts(evtCuts);
-  task->SetV0ReaderName(V0ReaderName.Data());
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
+  task->SetV0ReaderName(V0ReaderName.Data());
   task->SetV0Cuts(v0Cuts);
   task->SetAntiV0Cuts(antiv0Cuts);
   task->SetSigmaCuts(sigmaCuts);
@@ -744,9 +359,9 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
 
   TString addon = "";
   if (trigger == "kINT7") {
-    addon += "MB";
+    addon += "MBSigma0";
   } else if (trigger == "kHighMultV0") {
-    addon += "HM";
+    addon += "HMSigma0";
   }
 
   TString file = AliAnalysisManager::GetCommonFileName();
@@ -831,6 +446,25 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
       Form("%s:%s", file.Data(), ResultQAName.Data()));
   mgr->ConnectOutput(task, 11, coutputResultQA);
 
+  AliAnalysisDataContainer *coutputResultsSample;
+  TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(), suffix.Data());
+  coutputResultsSample = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleName.Data()));
+  mgr->ConnectOutput(task, 12, coutputResultsSample);
+
+  AliAnalysisDataContainer *coutputResultsSampleQA;
+  TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(), suffix.Data());
+  coutputResultsSampleQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
+  mgr->ConnectOutput(task, 13, coutputResultsSampleQA);
+
   if (isMC) {
     TString TrkCutsMCName =
         Form("%sTrackCutsMC%s", addon.Data(), suffix.Data());
@@ -838,7 +472,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
         mgr->CreateContainer(TrkCutsMCName.Data(), TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 12, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 14, coutputTrkCutsMC);
 
     TString AntiTrkCutsMCName =
         Form("%sAntiTrackCutsMC%s", addon.Data(), suffix.Data());
@@ -846,7 +480,22 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 13, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 15, coutputAntiTrkCutsMC);
+
+    TString V0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
+    AliAnalysisDataContainer *coutputV0CutsMC =
+        mgr->CreateContainer(V0CutsMCName.Data(), TList::Class(),
+                             AliAnalysisManager::kOutputContainer,
+                             Form("%s:%s", file.Data(), V0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 16, coutputV0CutsMC);
+
+    TString AntiV0CutsMCName =
+        Form("%sAntiv0CutsMC%s", addon.Data(), suffix.Data());
+    AliAnalysisDataContainer *coutputAntiV0CutsMC = mgr->CreateContainer(
+        AntiTrkCutsMCName.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiV0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 17, coutputAntiV0CutsMC);
   }
 
   return task;

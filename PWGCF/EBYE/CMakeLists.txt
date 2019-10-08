@@ -79,6 +79,8 @@ set(SRCS
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucPbPb.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucpPb.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucpp.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucPbPbQA.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucLHC10h.cxx
   NetLambda/AliAnalysisTaskNetLambdaIdent.cxx 
   NetLambda/AliAnalysisTaskNetLambdaMCTrad.cxx 
   NetLambda/AliAnalysisTaskNetLambdaTrad.cxx 

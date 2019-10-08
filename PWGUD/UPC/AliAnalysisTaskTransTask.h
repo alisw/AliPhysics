@@ -37,6 +37,7 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
 	TTree *fAnaTree; //! analysis tree
 	Int_t fRunNum;
 	Int_t fTracklets;
+	Int_t fGoodTracks;
 	Int_t fCtrue;
 	Int_t fC1zed;	
 

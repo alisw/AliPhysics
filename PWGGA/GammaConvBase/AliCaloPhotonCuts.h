@@ -137,7 +137,6 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16c3b,
       k16c3c,
       kPPb5T13P4DPMJet,
-      kLHC19a4,
       // pp 2.76TeV 2013
       k15g2,
       kPP2T13P1JJ,
@@ -297,6 +296,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
     Float_t     FunctionNL_SPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2);
     Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6 = 1.0, Float_t p7 = 1.0);
+    Float_t     FunctionNL_ExpExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3);
     //predefined functions
     Float_t     FunctionNL_kPi0MCv1(Float_t e);
     Float_t     FunctionNL_kPi0MCv2(Float_t e);
@@ -304,23 +304,21 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kPi0MCv5(Float_t e);
     Float_t     FunctionNL_kPi0MCv6(Float_t e);
     Float_t     FunctionNL_kPi0MCMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
-    Float_t     FunctionNL_MartinTB_100MeV_MC(Float_t e);
-    Float_t     FunctionNL_MartinTB_100MeV_Data(Float_t e);
-    Float_t     FunctionNL_NicoTB_50MeV_Data(Float_t e);
-    Float_t     FunctionNL_NicoTB_100MeV_Data(Float_t e);
-    Float_t     FunctionNL_NicoTB_150MeV_Data(Float_t e);
-    Float_t     FunctionNL_NicoTB_300MeV_Data(Float_t e);
-    Float_t     FunctionNL_NicoTB_50MeV_MC(Float_t e);
-    Float_t     FunctionNL_NicoTB_100MeV_MC(Float_t e);
-    Float_t     FunctionNL_NicoTB_150MeV_MC(Float_t e);
-    Float_t     FunctionNL_NicoTB_300MeV_MC(Float_t e);
+    Float_t     FunctionNL_OfficialTB_50MeV_Data(Float_t e);
+    Float_t     FunctionNL_OfficialTB_100MeV_Data(Float_t e);
+    Float_t     FunctionNL_OfficialTB_150MeV_Data(Float_t e);
+    Float_t     FunctionNL_OfficialTB_300MeV_Data(Float_t e);
+    Float_t     FunctionNL_OfficialTB_50MeV_MC(Float_t e);
+    Float_t     FunctionNL_OfficialTB_100MeV_MC(Float_t e);
+    Float_t     FunctionNL_OfficialTB_150MeV_MC(Float_t e);
+    Float_t     FunctionNL_OfficialTB_300MeV_MC(Float_t e);
     Float_t     FunctionNL_kSDMv5(Float_t e);
     Float_t     FunctionNL_kSDMv6(Float_t e);
     Float_t     FunctionNL_kTestBeamv2(Float_t e);
     Float_t     FunctionNL_kTestBeamv3(Float_t e);
     Float_t     FunctionNL_kTestBeamv4(Float_t e);
     Float_t     FunctionNL_kTestBeamMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
-    
+
     void        InitCutHistograms(TString name="");
     void        SetFillCutHistograms(TString name="")           {if(!fHistograms){InitCutHistograms(name);} return;}
     TList*      GetCutHistograms()                              {return fHistograms;}
@@ -434,6 +432,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t     fPHOSInitialized;                        // flag for PHOS initialization
     Int_t      fPHOSCurrentRun;                         // PHOS: current processed run for bad channel map
     TObjArray* fEMCALBadChannelsMap;                    // pointer to EMCAL bad channel map
+    TH1C*      fEMCALBadChannelsMap1D;                  // pointer to EMCAL bad channel map (1D)
     TH2I**     fPHOSBadChannelsMap;                     // pointer to PHOS bad channel map
     TProfile*  fBadChannels;                            // TProfile with bad channels
     Int_t      fNMaxEMCalModules;                       // max number of EMCal Modules
@@ -480,8 +479,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
     TF1*      fFuncPtDepEta;                            // TF1 for pT dep cutting in eta
     TF1*      fFuncPtDepPhi;                            // TF1 for pT dep cutting in phi
+    TRandom3  fRandom;                                  // random for effi generation
     Int_t     fUseTimingEfficiencyMCSimCluster;         // flag for switching on TimingEfficiencyMCSimCluster
     TF1*      fFuncTimingEfficiencyMCSimCluster;        // TF1 for TimingEfficiencyMCSimCluster
+    TF1*      fFuncTimingEfficiencyMCSimClusterHighPt;  // TF1 for fFuncTimingEfficiencyMCSimClusterHighPt
     Float_t   fMinTMDistSigma;                          // number of sigma's for TM using PHOS
     Bool_t    fUseEOverPVetoTM;                         // flag for switching on E/P veto (forbidding tracks to match clusters if clusterE/trackP > someValue
     Double_t  fEOverPMax;                               // maximum value for E/P of a track to be considered for TM
@@ -642,7 +643,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,92)
+    ClassDef(AliCaloPhotonCuts,97)
 };
 
 #endif

@@ -1,25 +1,24 @@
-AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
-			       Int_t storeNtuple=0,Bool_t storeNsparse=kFALSE,Bool_t storeNsparseDplus=kFALSE,Bool_t readMC=kFALSE,
-			       TString filename="", TString postname="", Bool_t doCutVarHistos = kFALSE, Int_t AODProtection = 1,
-			       Bool_t fillNTrklAxis = kFALSE, Bool_t fillCentrAxis = kFALSE,
-			       Bool_t useRotBkg=kFALSE, Bool_t useBkgFromPhiSB=kFALSE, Bool_t useCutV0multTPCout=kFALSE,
-			       Bool_t storeNsparseImpPar = kFALSE)
+AliAnalysisTaskSEDs *AddTaskDs(Int_t system = AliAnalysisTaskSEDs::kpp/*0=pp,1=PbPb*/,
+                               Int_t storeNtuple = 0, Bool_t storeNsparse = kFALSE, Bool_t storeNsparseDplus=  kFALSE,Bool_t readMC = kFALSE,
+                               TString filename = "", TString postname = "", Bool_t doCutVarHistos = kFALSE, Int_t AODProtection = 1, Bool_t useRotBkg = kFALSE, Bool_t useBkgFromPhiSB = kFALSE,
+                               Bool_t useCutV0multTPCout = kFALSE, Bool_t storeNsparseImpPar = kFALSE, Bool_t applyML = kFALSE, TString confFileML = "",
+                               TString cutObjName = "AnalysisCuts")
 {
   //
   // Test macro for the AliAnalysisTaskSE for Ds candidates
-    
+
   //Invariant mass histogram and
   // association with MC truth (using MC info in AOD)
   // Origin: R. Bala, bala@to.infn.it
   // Modified for Ds meson: G.M. Innocenti innocent@to.infn.it
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
-    
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskDs", "No analysis manager to connect to.");
   }
-    
+
   Bool_t stdcuts=kFALSE;
   TFile* filecuts;
   if( filename.EqualTo("") ) {
@@ -31,11 +30,11 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
     }
     else printf("Cut file correctly found\n");
   }
-    
+
   //Analysis Task
-    
+
   AliRDHFCutsDstoKKpi* analysiscuts=new AliRDHFCutsDstoKKpi();
-    
+
   if(stdcuts) {
     if(system==0) {
       printf("Cut object not found: standard pp cut object used\n");
@@ -43,15 +42,15 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
     }
     else ::Fatal("AddTaskDs", "Standard cut object not available for PbPb: analysis will not start!\n");
   }
-  else {analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("AnalysisCuts");
+  else {analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(cutObjName.Data());
     if (!analysiscuts)
-	{ ::Fatal("AddTaskDs", "Cut object named \"AnalysisCuts\" not found in cutfile.");
+	{ ::Fatal("AddTaskDs", "Cut object not found in cutfile");
 	  return NULL;
 	}
 }
 
   AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis",analysiscuts,storeNtuple);
-    
+
   dsTask->SetReadMC(readMC);
   //dsTask->SetDoLikeSign(kTRUE);
   //dsTask->SetUseTPCpid(kTRUE);
@@ -68,10 +67,14 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   dsTask->SetUseBkgFromPhiSB(useBkgFromPhiSB);
   dsTask->SetUseCutV0multVsTPCout(useCutV0multTPCout);
   dsTask->SetSystem(system);
-  dsTask->SetFillTracklets(fillNTrklAxis);
-  dsTask->SetFillCentralityAxis(fillCentrAxis);
+  if(system==AliAnalysisTaskSEDs::kPbPb || system==AliAnalysisTaskSEDs::kUpgr) {
+    dsTask->SetKeepOnlyBkgFromHIJING(kTRUE);
+  }
+  dsTask->SetDoMLApplication(applyML);
+  if(applyML)
+    dsTask->SetMLConfigFile(confFileML);
   mgr->AddTask(dsTask);
-    
+
   // Create containers for input/output
   TString name="cinputDs";
   name+=postname;
@@ -80,12 +83,12 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG3_D2H_InvMassDs";
   outputfile+=postname;
-    
+
   name="coutputDsCuts"; name+=postname;
   AliAnalysisDataContainer *coutputDsCuts = mgr->CreateContainer(name,TList::Class(),
 								 AliAnalysisManager::kOutputContainer,
 								 outputfile.Data());
-    
+
   name="coutputDs"; name+=postname;
   AliAnalysisDataContainer *coutputDs = mgr->CreateContainer(name,TList::Class(),
 							     AliAnalysisManager::kOutputContainer,
@@ -94,27 +97,27 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   AliAnalysisDataContainer *coutputDsNorm = mgr->CreateContainer(name,AliNormalizationCounter::Class(),
 								 AliAnalysisManager::kOutputContainer,
 								 outputfile.Data());
-    
+
   name="coutputDs2"; name+=postname;
-  AliAnalysisDataContainer *coutputDs2 = 0x0; 
+  AliAnalysisDataContainer *coutputDs2 = 0x0;
   if(storeNtuple){
     coutputDs2 = mgr->CreateContainer(name,TNtuple::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
     coutputDs2->SetSpecialOutput();
   }
-    
+
   mgr->ConnectInput(dsTask,0,mgr->GetCommonInputContainer());
-    
+
   mgr->ConnectOutput(dsTask,1,coutputDs);
-    
+
   mgr->ConnectOutput(dsTask,2,coutputDsCuts);
-    
-  mgr->ConnectOutput(dsTask,3,coutputDsNorm);  
-    
+
+  mgr->ConnectOutput(dsTask,3,coutputDsNorm);
+
   if(storeNtuple){
     mgr->ConnectOutput(dsTask,4,coutputDs2);
   }
-    
+
   return dsTask;
 }

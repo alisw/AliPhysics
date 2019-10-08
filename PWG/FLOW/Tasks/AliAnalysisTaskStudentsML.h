@@ -93,6 +93,18 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   void SetPtCut(Bool_t Cut, Double_t Min, Double_t Max)
   {this->bCutOnPt=Cut;  this->fMinPtCut=Min; this->fMaxPtCut=Max;}
+
+  void SetNumberTPCClusters(Bool_t Cut, Int_t Min)
+  {this->bNumberTPCCluster=Cut;  this->fMinTPCCluster=Min; }
+
+  void SetNumberITSClusters(Bool_t Cut, Int_t Min)
+  {this->bNumberITSCluster=Cut;  this->fMinITSCluster=Min; }
+
+  void SetChiSquareTPC(Bool_t Cut, Double_t Min, Double_t Max)
+  {this->bChiSquareTPC=Cut;  this->fMinChiSquareTPC=Min; this->fMaxChiSquareTPC=Max;}
+
+  void SetDCAz(Bool_t Cut, Double_t Max)
+  {this->bDCAz=Cut;  this->fMaxDCAz=Max;}
  
   void SetMinNuPar(Int_t top){this->fMinNumberPart = top;} 
   Int_t GetMinNuPar() const {return this->fMinNumberPart;}
@@ -149,7 +161,14 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   TH1F *fTotalMultAfterTrackSeletion;         // total number of Multiplicity for a centrality before Track Selection
   TH1F *fMultiHistoAfterTrackSeletion;             // multiplicity distribution before Track Selection
   TH1F *fMultiHistoBeforeMultCut;             // multiplicity distribution before high multiplicity outlier removel
-
+  TH1F *fTPCClustersBeforeCut;		//Number of TPC clusters before cut
+  TH1F *fTPCClustersAfterCut;		//Number of TPC clustes after cut
+  TH1F *fITSClustersBeforeCut;		//Number of ITS clusters before cut
+  TH1F *fITSClustersAfterCut;		//Number of ITS clusters after cut
+  TH1F *fChiSquareTPCBeforeCut;		//Chi Square TPC before cut
+  TH1F *fChiSquareTPCAfterCut;		//Chi Square TPC after cut
+  TH1F *fDCAzBeforeCut;			//DCAz before cut
+  TH1F *fDCAzAfterCut;			//DCAz after cut
 
   //2.) SelectionCuts
   Bool_t bMultCut;
@@ -183,11 +202,19 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
     //Physics-Selection
   Bool_t bCutOnEta;               // Bool to apply eta cuts (default kTRUE)
   Bool_t bCutOnPt;               // Bool to apply pt cuts (default kTRUE)
+  Bool_t bNumberTPCCluster;	//Bool to apply cuts on number of TPC clusters (default kTRUE)
+  Bool_t bNumberITSCluster;	//Bool to apply cuts on number of ITS clusters (default kTRUE)
+  Bool_t bChiSquareTPC;		//Bool to apply cuts on chi square TPC (default kTRUE)
+  Bool_t bDCAz;			//Bool to apply cuts on DCAz (default kTRUE)
   Double_t fMinEtaCut;               // min eta cut (default -0.8)
   Double_t fMaxEtaCut;               // max eta cut (default 0.8)
   Double_t fMinPtCut;               // min pt cut (default 0.2)
   Double_t fMaxPtCut;               // max pt cut (default 5.0)
- 
+  Int_t fMinTPCCluster;		//Number of minimum TPC clusters (default 70)
+  Int_t fMinITSCluster;		//Number of minimum ITS clusters (default 2)
+  Double_t fMinChiSquareTPC;	//Minimal Chi Square TPC (default 0.1)
+  Double_t fMaxChiSquareTPC;	//Maximal Chi Square TPC (default 4.0)
+  Double_t fMaxDCAz;		//Maximal DCAz (default 2.4 cm)
 
   //3.) Variables for the correlation:
   Int_t fMaxCorrelator;          // maximum of correlation 
@@ -225,7 +252,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,19);
+  ClassDef(AliAnalysisTaskStudentsML,20);
 
 };
 

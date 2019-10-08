@@ -120,6 +120,14 @@ struct SGenericTracklet
 class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE
 {
 public:
+
+  enum kReducedTrigger { 
+    kINT7 = BIT(0),
+    kCentral = BIT(1),
+    kSemiCentral = BIT(2),
+    kPositiveB = BIT(3)
+  };
+
   AliAnalysisTaskHyperTriton2He3piML(bool mc = false, std::string name = "HyperTriton2He3piML");
   virtual ~AliAnalysisTaskHyperTriton2He3piML();
 
@@ -152,11 +160,13 @@ public:
   void SetMaxDeltaTheta(float maxDeltaTheta) { fMaxDeltaTheta = maxDeltaTheta; }
   void SetMaxDeltaPhi(float maxDeltaPhi) { fMaxDeltaPhi = maxDeltaPhi; }
   void SetMinTrackletCosP(float minTrackletCosP) { fMinTrackletCosP = minTrackletCosP; }
+  void EnableLikeSign(bool enableIt = true) { fEnableLikeSign = enableIt; fV0Vertexer.fLikeSign = enableIt; }
 
   AliEventCuts fEventCuts; /// Event cuts class
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
   bool fFillTracklet;
+  bool fStoreAllEvents;   
   bool fSaveFileNames;
   bool fPropagetToPV;
   AliVertexerHyperTriton2Body fV0Vertexer; //
@@ -193,6 +203,8 @@ private:
   float fMaxDeltaPhi;
   float fMaxDeltaTheta;
   float fMinTrackletCosP;
+
+  bool  fEnableLikeSign;
 
   TTree *fFileNameTree;        //!
   TObjString fCurrentFileName; //!

@@ -505,6 +505,22 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 94) {
     cuts.AddCutPCM("00000113", "00200009227000008250400000", "0152103500000000"); // std conv cut used in omega analysis
 
+    //  Test RBins for 7TeV and new cuts
+  } else if (trainConfig == 95) {
+    cuts.AddCutPCM("00000113", "00200009227300008250404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
+    cuts.AddCutPCM("00000113", "00200009f9730000dge0404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
+    cuts.AddCutPCM("00000113", "00m00009f9730000dge0404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
+  } else if (trainConfig == 96) {
+    cuts.AddCutPCM("00000113", "00a00009f9730000dge0404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
+    cuts.AddCutPCM("00000113", "00b00009f9730000dge0404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
+    cuts.AddCutPCM("00000113", "00c00009f9730000dge0404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
+  } else if (trainConfig == 97) {  // To be used with MBW
+    cuts.AddCutPCM("00000113", "00a00009f9730000dge0404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
+    cuts.AddCutPCM("00000113", "00b00009f9730000dge0404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
+    cuts.AddCutPCM("00000113", "00c00009f9730000dge0404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
+
+
+
   // ------------------------- run 2 High mult triggers --------------------------------------
   } else if (trainConfig == 100) {
     cuts.AddCutPCM("00074113", "00200009227302008250404000", "0152103500000000"); // for V0 High-Mult trigger
@@ -725,6 +741,26 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00076113", "00200089227300008250404000", "0152103500000000"); // for V0 High-Mult trigger
     cuts.AddCutPCM("00076013", "00200089227300008250404000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
 
+  } else if (trainConfig == 312) { // dEdx recalib MB
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0163103100000010"); // MB
+  } else if (trainConfig == 313) { // dEdx recalib TRD Triggers
+    cuts.AddCutPCM("00049113", "00200009f9730000dge0400000", "0163103100000010"); // HSE
+    cuts.AddCutPCM("0004a113", "00200009f9730000dge0400000", "0163103100000010"); // HQU
+    cuts.AddCutPCM("0004b113", "00200009f9730000dge0400000", "0163103100000010"); // HJT
+  } else if (trainConfig == 314) { // dEdx recalib PHOS Trigger
+    cuts.AddCutPCM("00062113", "00200009f9730000dge0400000", "0163103100000010"); // PHI7
+  } else if (trainConfig == 315) { // dEdx recalib PHOS Trigger, /w calo cut number
+    cuts.AddCutPCM("00062113", "00200009f9730000dge0400000", "0163103100000010","2446600040012300000"); // PHI7
+  } else if (trainConfig == 316) { // dEdx recalib V0M
+    cuts.AddCutPCM("00074113", "00200009f9730000dge0400000", "0163103100000010"); // V0M
+    cuts.AddCutPCM("00076113", "00200009f9730000dge0400000", "0163103100000010"); // V0M /w pileup condition
+  } else if (trainConfig == 317) { // dEdx recalib EMC Triggers
+    cuts.AddCutPCM("0008d113", "00200009f9730000dge0400000", "0163103100000010"); // EG1
+    cuts.AddCutPCM("0008e113", "00200009f9730000dge0400000", "0163103100000010"); // EG2
+  } else if (trainConfig == 318) { // dEdx recalib EMC Triggers, /w calo cut number
+    cuts.AddCutPCM("0008d113", "00200009f9730000dge0400000", "0163103100000010", "411791106f032230000"); // EG1
+    cuts.AddCutPCM("0008e113", "00200009f9730000dge0400000", "0163103100000010", "411791106f032230000"); // EG2
+
   // EMCal triggered sets
   } else if (trainConfig == 320) { // EMC triggers +-1000 ns
     cuts.AddCutPCM("00010113", "00200009227300008250404000", "0163103100000000","1111100010032220000"); //INT7
@@ -911,40 +947,43 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200009287000008250404000", "0152103500000000"); // to be used for MBW
     cuts.AddCutPCM("00010113", "0d200009297000008250404000", "0152103500000000"); // to be used for MBW
 
-  } else if (trainConfig == 422){   // AM changed from 441 to 422
-    cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
-    cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
-    cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
+  } else if (trainConfig == 422){   // AM changed from 441 to 422  // updated 190923 with better 2D cuts
+    cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
+    cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
+    cuts.AddCutPCM("00010113", "0dc00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
   } else if (trainConfig == 423){   // AM split the RBin "a" in two
-    cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-13
-    cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 13-33.5
-    cuts.AddCutPCM("00010113", "0dl00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-95
+    cuts.AddCutPCM("00010113", "0dh00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-13
+    cuts.AddCutPCM("00010113", "0di00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 13-33.5
+    cuts.AddCutPCM("00010113", "0dl00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-95
   } else if (trainConfig == 424){   // AM split the RBin "a" in two
-    cuts.AddCutPCM("00010113", "0dj00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
-    cuts.AddCutPCM("00010113", "0dk00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 55-72
-    cuts.AddCutPCM("00010113", "0dg00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 95-180
+    cuts.AddCutPCM("00010113", "0dj00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
+    cuts.AddCutPCM("00010113", "0dk00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 55-72
+    cuts.AddCutPCM("00010113", "0dg00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 95-180
   } else if (trainConfig == 425){   // AM exclude 55-72 region
-    cuts.AddCutPCM("00010113", "0dm00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R  5-180, 55-72 excluded
+    cuts.AddCutPCM("00010113", "0dd00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-55
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-180
 
-  } else if (trainConfig == 440){ // as 400 to be used MBW
-    cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-    cuts.AddCutPCM("00010113", "0c200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-    cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+  } else if (trainConfig == 440){ // as 400 to be used MBW   // updated 190923 with better 2D cuts
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+    cuts.AddCutPCM("00010113", "0c200009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
   } else if (trainConfig == 442){ // as 422 (before 441) to be used MBW
-    cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-33.5
-    cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72.
-    cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
+    cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-33.5
+    cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72.
+    cuts.AddCutPCM("00010113", "0dc00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
   } else if (trainConfig == 443){ // as 423 to be used MBW
-    cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-13
-    cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 13-33.5.
-    cuts.AddCutPCM("00010113", "0dl00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-95
+    cuts.AddCutPCM("00010113", "0dh00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-13
+    cuts.AddCutPCM("00010113", "0di00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 13-33.5.
+    cuts.AddCutPCM("00010113", "0dl00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-95
   } else if (trainConfig == 444){   // as 424 to be used with MBW
-    cuts.AddCutPCM("00010113", "0dj00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
-    cuts.AddCutPCM("00010113", "0dk00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 55-72
-    cuts.AddCutPCM("00010113", "0dg00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 95-180
+    cuts.AddCutPCM("00010113", "0dj00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
+    cuts.AddCutPCM("00010113", "0dk00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 55-72
+    cuts.AddCutPCM("00010113", "0dg00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 95-180
   } else if (trainConfig == 445){   // AM exclude 55-72 region
-    cuts.AddCutPCM("00010113", "0dm00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
-
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-180 55-72 excluded
+    cuts.AddCutPCM("00010113", "0dd00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-55
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-180
 
   } else if (trainConfig == 449){ // PCM standard
     cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // old standard
@@ -1256,6 +1295,29 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 718) { // R 5-180 and remove r bin 55-72
     cuts.AddCutPCM("00010113", "0dm00009267300008250404000", "0152103500000000"); // eta < 0.8
     cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0152103500000000"); // eta < 0.8
+  } else if (trainConfig == 719) { // R 5-180 and remove r bin 55-72
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin 
+    cuts.AddCutPCM("00010113", "0dd00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // use 5-55 bin only
+  } else if (trainConfig == 720) { // R 5-180 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 721) { // R 5-180 
+    cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0dc00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 722) { // R 5-180 
+    cuts.AddCutPCM("00010113", "0dh00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0di00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0dj00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 723) { // R 5-180 
+    cuts.AddCutPCM("00010113", "0dk00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0dl00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0dg00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 724) { // R 5-180  // Test smearing parameters 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500a00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500b00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500c00000"); // eta < 0.8  // Test improved cuts 
+
     // config like 70X but to be used with weights +50
   } else if (trainConfig == 752) { // as iConfig 702 to be used with MBW
     cuts.AddCutPCM("00010113", "00a00009267300008250404000", "0152103500000000"); //
@@ -1325,6 +1387,29 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 768) { // R 5-180 and remove r bin 55-72
     cuts.AddCutPCM("00010113", "0dm00009267300008250404000", "0152103500000000"); // eta < 0.8
     cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0152103500000000"); // eta < 0.8
+  } else if (trainConfig == 769) { // R 5-180 and remove r bin 55-72
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin 
+    cuts.AddCutPCM("00010113", "0dd00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // use 5-55 bin only
+  } else if (trainConfig == 770) { // R 5-180 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 771) { // R 5-180 
+    cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0dc00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+
+  } else if (trainConfig == 772) { // R 5-180 
+    cuts.AddCutPCM("00010113", "0dh00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0di00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0dj00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+
+  } else if (trainConfig == 773) { // R 5-180 
+    cuts.AddCutPCM("00010113", "0dk00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0dl00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0dg00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+
+
+
  
   //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
   } else if (trainConfig == 1001){

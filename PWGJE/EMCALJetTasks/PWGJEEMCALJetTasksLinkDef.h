@@ -81,8 +81,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalHighMultTrigger+;
 #pragma link C++ namespace EmcalHJetMassAnalysis+;
 #pragma link C++ class EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass+;
-#pragma link C++ class AliAnalysisTaskEmcalJetCDF+;
-#pragma link C++ namespace PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetCDF_NS;
 #pragma link C++ class AliAnalysisTaskEmcalJetCorrection+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadCorQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadEPpid+;
@@ -262,6 +260,7 @@
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
 #pragma link C++ class AliAnalysisTaskNewJetSubstructure+;
+#pragma link C++ class AliAnalysisTaskHardestBranch+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapeExtra+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
@@ -280,6 +279,7 @@
 #pragma link C++ class AliAnalysisTaskSoftDrop+;
 #pragma link C++ class AliAnalysisTaskSoftDropResponse+;
 #pragma link C++ class AliAnalysisTaskSDKL+;
+#pragma link C++ class AliAnalysisTaskSDKLResponse+;
 #pragma link C++ class AliEmcalJetTree+;
 #pragma link C++ class AliAnalysisTaskJetExtractor+;
 #pragma link C++ class std::vector<AliAnalysisTaskJetExtractor::SimpleSecondaryVertex>+;
@@ -288,8 +288,11 @@
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskPythiaBranchEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliLundPlaneHelper+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalSoftDropData+;
+#pragma link C++ class AliAnalysisTaskEmcalJetCDF+;
+#pragma link C++ namespace PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetCDF_NS;
 #ifdef WITH_ROOUNFOLD
 // Classes which need direct access to both Fastjet and RooUnfold objects
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalSoftDropResponse+;

@@ -11,9 +11,11 @@ vector<TH1D*> GetStatSpectra(vector<vector<double>> multibin);
 TH1D* GetSpectrasys(double multi_start, double multi_end);
 TH1D* GetSpectrasysNocor(double multi_start, double multi_end);
 TH1D* GetSpectrastat(double multi_start, double multi_end);
-vector<double> GetdNdetawithError(double multi_start, double multi_end);
 vector<double> GetPidNdetawithError(double multi_start, double multi_end);
-TString finalfile = "AnalysisResults_Xi1530_systematic001030507000.root";
+TString finalfile;
+TString multistring;
+bool isINEL = false;
+//TString finalfile = "AnalysisResults_Xi1530_systematic0-100_0-10_10-30_30-50_50-70_70-100_0.00-0.01_0.01-0.05_0.05-0.10_bins.root";
 TString workdirectory = "/Users/blim/alidock/Postprocessing/data/";
 enum {kFitExpPt=1, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave, kFitBoseEinstein, kFitFermiDirac};
 vector<TString> functions = {"", "kFitExpPt", "kFitLevi", "fFitExpMt", "kFitBoltzmann", "kFitBlastWave", "kFitBoseEinstein", "kFitFermiDirac"};
@@ -28,11 +30,61 @@ vector<vector<vector<double>>> // { {first pT bin variation}, {last pTbin variat
                                     { {0.8}, {1.6, 2.0} }, // BoseEinstein, only front part.
                                     { {0.8}, {1.6, 2.0, 2.4} } // FermiDirac, only front part.
                                     };
+vector<vector<double>> centralvalue = {
+    {0.8, 3.2}, // 0: INEL
+    {0.8, 3.2}, // 1: 0-10
+    {0.8, 4.0}, // 2: 10-30
+    {0.8, 4.0}, // 3: 30-50
+    {0.8, 2.4}, // 4: 50-70
+    {0.8, 3.2}, // 5: 70-100
+    {0.8, 3.2}, // 6: 0-0.01 (HM)
+    {0.8, 3.2}  // 7: 0.01-0.1 (HM)
+};
 Int_t maxtrial = 10000;
 double mass = 1.5318;
-TString fitoption = "0q"; //default "0q"
+TString fitoption = "0qi"; //default "0q"
 
 void Xi1530YieldMean(double multis = 0, double multie = 100){
+    int centralvaluebin = 0;
+    TString bininfo = "_";
+    if ((multis == 0) && (multie == 0)){ 
+        //INEL case
+        bininfo += "INEL";
+        isINEL = true;
+        multistring = "INEL";
+    }
+    else if (multie < 0.5) {
+        bininfo += Form("%.2f", multis);
+        bininfo += "-";
+        bininfo += Form("%.2f", multie);
+        multistring = Form("%.2f-%.2f", multis, multie);
+    }
+    else {
+        bininfo += Form("%.0f", multis);
+        bininfo += "-";
+        bininfo += Form("%.0f", multie);   
+        multistring = Form("%.2f-%.2f", multis, multie);
+    }
+    double binsum = multis + multie;
+    if (binsum < 0.011) // 0-0.01
+        centralvaluebin = 7;
+    else if (binsum < 0.111) // 0-0.01
+        centralvaluebin = 6;
+    else if (binsum < 11) // 0-10
+        centralvaluebin = 1;
+    else if (binsum < 41) // 10-30
+        centralvaluebin = 2;
+    else if (binsum < 81) // 30-50
+        centralvaluebin = 3;
+    else if (binsum < 101) // 0-100
+        centralvaluebin = 0;
+    else if (binsum < 121) // 50-70
+        centralvaluebin = 4;
+    else if (binsum < 171) // 70-100
+        centralvaluebin = 5;
+    else
+        centralvaluebin = 0;
+    finalfile = Form("./AnalysisResults_Xi1530_systematic%s.root", bininfo.Data());
 
     // Reweighting efficiency
     TFile* fReweighting =
@@ -63,17 +115,13 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
         // {0, 100}, {0, 10}, {10, 30}, {30, 50}, {50, 70}, {70, 100}, {30, 100}};
         // {0, 100}};
          {multis, multie}};
-    TString bininfo = "";
-    for (auto const& bin : multibin)
-        bininfo += Form("%.0f", bin[0]);
-    bininfo += Form("%.0f", multibin.back()[1]);
 
     bool recalculate7TeV = false;
     TString filename;
     if(recalculate7TeV)
         filename = "AnalysisResults_Xi1530_YieldMean_7TeV.root";
     else
-        filename = Form("AnalysisResults_Xi1530_YieldMean_%s.root", bininfo.Data());
+        filename = Form("AnalysisResults_Xi1530_YieldMean%s.root", bininfo.Data());
 
     TFile* resultfile = TFile::Open(filename.Data(),"RECREATE");
 
@@ -104,8 +152,6 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
             tempe += pow(0.075, 2); // 7.5%
             CorrectedYeild_total_syserr_7TeV.push_back(CorrectedYeild_7TeV[value]*sqrt(tempe));
         }
-
-        
 
         TH1D* hRatio7TeV_stat = new TH1D("hRatio7TeV_stat", "hRatio7TeV_stat", ptbin7TeV.size() - 1, ptbin7TeV_array);
         TH1D* hRatio7TeV_sys = new TH1D("hRatio7TeV_sys", "hRatio7TeV_sys", ptbin7TeV.size() - 1, ptbin7TeV_array);
@@ -149,19 +195,16 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
             }
             resultfile->cd();
             hspectra_sys[multbin]->Write(
-                    Form("%.2f-%.2f_SYS_corrected",
-                        multibin[multbin][0],
-                        multibin[multbin][1]
+                    Form("%s_SYS_corrected",
+                        multistring.Data()
                         ));
             hspectra_stat[multbin]->Write(
-                    Form("%.2f-%.2f_stat_corrected",
-                        multibin[multbin][0],
-                        multibin[multbin][1]
+                    Form("%s_stat_corrected",
+                        multistring.Data()
                         ));
             hspectra_sys_nocor[multbin]->Write(
-                    Form("%.2f-%.2f_SYS_uncor_corrected",
-                        multibin[multbin][0],
-                        multibin[multbin][1]
+                    Form("%s_SYS_uncor_corrected",
+                        multistring.Data()
                         ));
         }
     }
@@ -241,7 +284,7 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
                     }
                     auto hfinal =
                             YieldMean(hspectra_stat[imultibin], hspectra_sys_nocor[imultibin],
-                                    func, 0.05, 10, 0.01, 0.1, fitoption.Data(), Form("log_%s.root",bininfo.Data()),fitstart, fitend);
+                                    func, 0.05, 10, 0.01, 0.1, fitoption.Data(), Form("log%s.root",bininfo.Data()),fitstart, fitend);
                     yield[imultibin].push_back(hfinal->GetBinContent(1));
                     meanpt[imultibin].push_back(hfinal->GetBinContent(5));
                     func->SetLineWidth(1);
@@ -249,9 +292,8 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
                     func->SetRange(0,fitend);
                     resultfile->cd();
                     func->Write(
-                        Form("%.2f-%.2f_%s_%.2f-%.2f",
-                        multibin[imultibin][0],
-                        multibin[imultibin][1],
+                        Form("%s_%s_%.2f-%.2f",
+                        multistring.Data(),
                         functions[fitvar].Data(),
                         fitstart,fitend
                         ));
@@ -262,7 +304,7 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
         }
     }
 
-    int sysColorPallet = GetSerialColors(functions.size()-1);
+    int sysColorPallet = GetSerialColors(functions.size());
     // for memo, small
     TLatex* tm = new TLatex();
     tm->SetNDC();
@@ -317,8 +359,8 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
                     cout << "yields: " << yield[imultibin][loopcheck] << " meanpT" << meanpt[imultibin][loopcheck]  <<  ", Chi^2: " << funcs[imultibin][loopcheck]->GetChisquare() << ", NDF: " << funcs[imultibin][loopcheck]->GetNDF() << ", Chi^2/NDF: " << funcs[imultibin][loopcheck]->GetChisquare()/funcs[imultibin][loopcheck]->GetNDF() << endl;
 
                     if( (fitvar == kFitLevi)
-                        && (fitstart == 0.8)
-                        && (fitend == 8.8)
+                        && (fitstart == centralvalue[centralvaluebin][0])
+                        && (fitend == centralvalue[centralvaluebin][1])
                     ) {
                         centralyield = yield[imultibin][loopcheck];
                         centralmeanpT = meanpt[imultibin][loopcheck];
@@ -333,21 +375,17 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
         }
         legendhead->Draw();
         SaveCanvas(cResults,
-                   Form("Spectrafit_%.2f-%.2f_zoom", multibin[imultibin][0],
-                    multibin[imultibin][1]),"figs/LowpTExtrapolate/");
+                   Form("Spectrafit_%s_zoom", multistring.Data()),"figs/LowpTExtrapolate/");
         resultfile->cd();
         cResults->Write(
-                Form("Spectrafit_%.2f-%.2f_zoom",
-                    multibin[imultibin][0],
-                    multibin[imultibin][1]));
+                Form("Spectrafit_%s_zoom",
+                    multistring.Data()));
         systematicyields->Write(
-                Form("Yieldsys_%.2f-%.2f",
-                    multibin[imultibin][0],
-                    multibin[imultibin][1]));
+                Form("Yieldsys_%s",
+                    multistring.Data()));
         systematicmeanpTs->Write(
-                Form("MeanPtsys_%.2f-%.2f",
-                    multibin[imultibin][0],
-                    multibin[imultibin][1]));
+                Form("MeanPtsys_%s",
+                    multistring.Data()));
         cResults->SetLogy(false);
         systematicyields->Draw();
         TLine* centralarrow1 = new TLine(centralyield, 0, centralyield, 
@@ -356,8 +394,7 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
         centralarrow1->SetLineStyle(2);
         centralarrow1->Draw();
         SaveCanvas(cResults,
-                   Form("Yields_systematic_%.2f-%.2f", multibin[imultibin][0],
-                    multibin[imultibin][1]),"figs/LowpTExtrapolate/");
+                   Form("Yields_systematic_%s", multistring.Data()),"figs/LowpTExtrapolate/");
         cout << "mean: " << systematicyields->GetMean() << ", stdev: " << systematicyields->GetRMS() 
              << ", percentage: " << systematicyields->GetRMS()/systematicyields->GetMean()  << endl;
         systematicmeanpTs->Draw();
@@ -367,8 +404,7 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
         centralarrow2->SetLineStyle(2);
         centralarrow2->Draw();
         SaveCanvas(cResults,
-                   Form("MeanPts_systematic_%.2f-%.2f", multibin[imultibin][0],
-                    multibin[imultibin][1]),"figs/LowpTExtrapolate/");
+                   Form("MeanPts_systematic_%s", multistring.Data()),"figs/LowpTExtrapolate/");
         fitsyserrory.push_back(systematicyields->GetRMS());
         fitsyserrorm.push_back(systematicmeanpTs->GetRMS());
     }
@@ -379,10 +415,9 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
     slopePar = 2;
     for (int imultibin = 0; imultibin < multibin.size(); imultibin++) {
         auto hResult = YieldMean(hspectra_stat[imultibin], hspectra_sys_nocor[imultibin],
-                            func, 0.05, 10, 0.01, 0.1, fitoption.Data(), Form("log_%s.root",bininfo.Data()),
-                            0.8, 8.8);
-        auto houty = new TH1D(Form("hYield_%.2f-%.2f",multibin[imultibin][0],
-                    multibin[imultibin][1]), "", 6, 0, 6);
+                            func, 0.05, 10, 0.01, 0.1, fitoption.Data(), Form("log%s.root",bininfo.Data()),
+                            centralvalue[centralvaluebin][0], centralvalue[centralvaluebin][1]);
+        auto houty = new TH1D(Form("hYield_%s",multistring.Data()), "", 6, 0, 6);
         houty->SetBinContent(1, hResult->GetBinContent(1)); // central value
         houty->SetBinContent(2, hResult->GetBinContent(2)); // stat.err.
         houty->SetBinContent(3, fitsyserrory[imultibin]); // fit syst. err.
@@ -390,19 +425,23 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
         houty->SetBinContent(5, hResult->GetBinContent(4)); // extreme low
         houty->SetBinContent(6, hResult->GetBinContent(9)); // extrapolated yield
         resultfile->cd();
-        houty->Write(Form("hYield_%.2f-%.2f",multibin[imultibin][0],
-                    multibin[imultibin][1]));
+        houty->Write(Form("hYield_%s",multistring.Data()));
+        cout << "dNdy: Central value: " << hResult->GetBinContent(1) << ", stat.e: " << hResult->GetBinContent(2)
+             << ", fit sys err.: " << fitsyserrory[imultibin] << ", extreme high: " << hResult->GetBinContent(3)
+             << ", extreme low: " << hResult->GetBinContent(4) << endl;
         
-        auto houtm = new TH1D(Form("hMeanPt_%.2f-%.2f",multibin[imultibin][0],
-                    multibin[imultibin][1]), "", 5, 0, 5);
+        auto houtm = new TH1D(Form("hMeanPt_%s",multistring.Data()), "", 5, 0, 5);
         houtm->SetBinContent(1, hResult->GetBinContent(5)); // central value
         houtm->SetBinContent(2, hResult->GetBinContent(6)); // stat.err.
         houtm->SetBinContent(3, fitsyserrorm[imultibin]); // fit syst. err.
         houtm->SetBinContent(4, hResult->GetBinContent(7)); // extreme high
         houtm->SetBinContent(5, hResult->GetBinContent(8)); // extreme low
         resultfile->cd();
-        houtm->Write(Form("hMeanPt_%.2f-%.2f",multibin[imultibin][0],
-                    multibin[imultibin][1]));
+        houtm->Write(Form("hMeanPt_%s",multistring.Data()));
+
+        cout << "Mean pT: Central value: " << hResult->GetBinContent(5) << ", stat.e: " << hResult->GetBinContent(6)
+             << ", fit sys err.: " << fitsyserrorm[imultibin] << ", extreme high: " << hResult->GetBinContent(7)
+             << ", extreme low: " << hResult->GetBinContent(8) << endl;
     }
     resultfile->Close();
     gSystem->Exit(1);
@@ -436,109 +475,47 @@ vector<TH1D*> GetStatSpectra(vector<vector<double>> multibin){
 }
 TH1D* GetSpectrasys(double multi_start, double multi_end){
     TFile* inputfile = new TFile(finalfile.Data());
-    TH1D* hr = (TH1D*)inputfile->Get(
-        Form("hSpectra_%.2f_%.2f_sys", multi_start, multi_end));
+    TString text;
+    if(isINEL)
+        text = "hSpectra_INEL_sys";
+    else
+        text = Form("hSpectra_%.2f_%.2f_sys", multi_start, multi_end);
+    TH1D* hr = (TH1D*)inputfile->Get(text);
 
     return hr;
 }
 TH1D* GetSpectrasysNocor(double multi_start, double multi_end) {
     TFile* inputfile = new TFile(finalfile.Data());
-    TH1D* hr = (TH1D*)inputfile->Get(
-        Form("hSpectra_%.2f_%.2f_sys_noCorrelation", multi_start, multi_end));
+    TString text;
+    if(isINEL)
+        text = "hSpectra_INEL_sys_noCorrelation";
+    else
+        text = Form("hSpectra_%.2f_%.2f_sys_noCorrelation", multi_start, multi_end);
+    TH1D* hr = (TH1D*)inputfile->Get(text);
 
     return hr;
 }
 TH1D* GetSpectrastat(double multi_start, double multi_end){
     TFile* inputfile = new TFile(finalfile.Data());
-    TH1D* hr = (TH1D*)inputfile->Get(Form("hSpectra_%.2f_%.2f_stat",
-                               multi_start,
-                               multi_end));
+    TString text;
+    if(isINEL)
+        text = "hSpectra_INEL_stat";
+    else
+        text = Form("hSpectra_%.2f_%.2f_stat",multi_start,multi_end);
+    TH1D* hr = (TH1D*)inputfile->Get(text);
 
     return hr;
 }
-vector<double> GetdNdetawithError(double multi_start, double multi_end){
-    // Return dN/deta with give Multiplicity bin.
-    // it works with only dedicated multiplicit bins(see below)
-    // return {value, err}
 
-    vector<double> returnarray;
-
-    //--dNdeta histogram
-    // Ref: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/
-    //      ReferenceMult#Multiplicity_dependent_pp_at_AN2
-    // LHC16k data.
-    // Error was asym error, so choosed bigger error for sym error.
-
-    vector<double> dNchdeta_multibin = 
-    {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
-    vector<double> dNchdeta = 
-    {0, 26.02, 20.02, 16.17, 13.77, 12.04, 10.02, 7.95, 6.32, 4.50, 2.55};
-    vector<double> dNchdeta_e = 
-    {0,  0.35,  0.27,  0.22,  0.19,  0.17,  0.14, 0.11, 0.09, 0.07, 0.04};
-
-    // input must be in the multiplicity range
-    if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_start) == end(dNchdeta_multibin))
-        return {99,99};
-    if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_end) == end(dNchdeta_multibin))
-        return {99,99};
-
-    // special cases
-    if((multi_start == 0) && (multi_end == 0.01)){
-        returnarray = {35.37, 0.92};
-    }
-    else if((multi_start == 0.01) && (multi_end == 0.1)){
-        returnarray = {30.89, 0.57};
-    }
-    else if((multi_start == 0) && (multi_end == 5)){
-        returnarray = {21.20, 0.28};
-    }
-    else if((multi_start == 0) && (multi_end == 100)){
-        returnarray = {6.94, 0.10};
-    }
-    else if((multi_start == 0.1) && (multi_end == 0.5)){
-        returnarray = {26.96, 0.37};
-    }
-    else if((multi_start == 0.5) && (multi_end == 1)){
-        returnarray = {24.23, 0.36};
-    }
-    // Common case
-    else{
-        // Value
-        vector<double>::iterator itr_left = find(dNchdeta_multibin.begin(),
-                                dNchdeta_multibin.end(),
-                                multi_start);
-        vector<double>::iterator itr_right = find(dNchdeta_multibin.begin(),
-                                dNchdeta_multibin.end(),
-                                multi_end);
-        int left = distance(dNchdeta_multibin.begin(), itr_left);
-        int right = distance(dNchdeta_multibin.begin(), itr_right);
-
-        int gap = right - left;
-
-        double result = 0.;
-        for(int i = 1; i < gap+1; i++)
-            result += dNchdeta[i+left]*(dNchdeta_multibin[i+left] - dNchdeta_multibin[i+left-1]);
-            
-        result /= (multi_end - multi_start);
-        returnarray.push_back(result);
-
-        // Error
-        double error = 0.;
-        for(int i = 1; i < gap+1; i++)
-            error += pow( dNchdeta_e[i+left], 2); 
-            
-        error = sqrt(error);
-        returnarray.push_back(error);
-    }
-
-    return returnarray;
-}
 vector<double> GetPidNdetawithError(double multi_start, double multi_end){
     // Return pion's dN/deta with give Multiplicity bin.
     // it works with only dedicated multiplicit bins(see below)
     // return {value, err}
-
+    TFile* fPi =
+        TFile::Open("OutputYields_pp13mult.root","READ");
+    auto pisys = (TGraphAsymmErrors*)fPi->Get("pi_Syst");
     vector<double> returnarray;
+    int lenpisys = pisys->GetN();
 
     //--dNdeta histogram of pion+ + pion-
     // Ref: given by Anders, need to update ref.
@@ -546,11 +523,19 @@ vector<double> GetPidNdetawithError(double multi_start, double multi_end){
 
     vector<double> dNchdeta_multibin = 
     {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
+    vector<double> dNchdeta = {0};
+    vector<double> dNchdeta_e = {0};
+    for(int i = 0; i < lenpisys; i++){
+        dNchdeta.push_back(pisys->GetY()[lenpisys-i]);
+        dNchdeta_e.push_back(pisys->GetErrorYhigh(lenpisys-i));
+    }
+
+    /*
     vector<double> dNchdeta = 
     {0, 24.605455025, 19.016207266, 15.477779961, 13.241832514, 11.612550017, 9.742647922, 7.779575692,  6.241633459, 4.530678113, 2.713659699};
     vector<double> dNchdeta_e = 
     {0,  1.121689195,  0.856354796,  0.685848455,  0.582627504,   0.498773083,  0.415988997, 0.327417792, 0.261067034, 0.186885663, 0.110000678};
-
+    */
     // input must be in the multiplicity range
     if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_start) == end(dNchdeta_multibin))
         return {99,99};

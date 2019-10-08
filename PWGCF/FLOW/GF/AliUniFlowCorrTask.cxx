@@ -24,6 +24,7 @@
 #include <vector>
 #include "TObject.h"
 #include "TString.h"
+#include "TMath.h"
 #include "AliUniFlowCorrTask.h"
 
 ClassImp(AliUniFlowCorrTask);
@@ -35,6 +36,8 @@ AliUniFlowCorrTask::AliUniFlowCorrTask() :
   fbDoPOIs{0},
   fiNumHarm{0},
   fiNumGaps{0},
+  fMaxWeightPower{0},
+  fMaxHarm{0},
   fsName{},
   fsLabel{},
   fiHarm{},
@@ -47,6 +50,8 @@ AliUniFlowCorrTask::AliUniFlowCorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector
   fbDoPOIs{doPOIs},
   fiNumHarm{0},
   fiNumGaps{0},
+  fMaxWeightPower{0},
+  fMaxHarm{0},
   fsName{},
   fsLabel{},
   fiHarm{harms},
@@ -58,6 +63,19 @@ AliUniFlowCorrTask::AliUniFlowCorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector
   fiNumGaps = gaps.size();
 
   if(fiNumHarm < 2) { return; }
+
+  fMaxWeightPower = harms.size();
+  Int_t maxHarm = 0;
+  Int_t maxHarmNeg = 0;
+  for(Int_t i = 0; i < fMaxWeightPower; i++)
+  {
+    Int_t harm = fiHarm[i];
+    if(harm > 0) maxHarm += harm;
+    else maxHarmNeg += harm;
+    Int_t abs = TMath::Abs(maxHarmNeg);
+    if(abs > maxHarm) maxHarm = abs;
+  }
+  fMaxHarm = maxHarm;
 
   // generating name
   TString sName = Form("<<%d>>(%d",fiNumHarm,fiHarm[0]);

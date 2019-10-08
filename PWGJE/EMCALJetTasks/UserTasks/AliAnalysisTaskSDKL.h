@@ -17,7 +17,11 @@ class AliParticleContainer;
 #include "FJ_includes.h"
 
 namespace fastjet {
-    class PseudoJet;
+  class PseudoJet;
+  class ClusterSequenceArea;
+  namespace contrib {
+    class ConstituentSubtractor;
+  }
 }
 
 struct split {
@@ -30,7 +34,7 @@ struct split {
 class AliAnalysisTaskSDKL : public AliAnalysisTaskEmcalJet {
  public:
 
-  AliAnalysisTaskSDKL();
+  AliAnalysisTaskSDKL(const char *name = "AliAnalysisTaskSDKL") ;
   AliAnalysisTaskSDKL(const char *name, Int_t const backgroption);
   virtual ~AliAnalysisTaskSDKL();
 
@@ -56,9 +60,12 @@ class AliAnalysisTaskSDKL : public AliAnalysisTaskEmcalJet {
   std::vector<split>   ReclusterFindHardSplits(std::vector <fastjet::PseudoJet> const & particles);
   std::vector<split>   FindHardSplits(fastjet::PseudoJet const & jet);
 
-  std::vector<fastjet::PseudoJet> GetBackSubEvent(std::vector <fastjet::PseudoJet> const & full_event, Double_t & rho, Double_t & rho_sparse, Int_t opt = 0);
+  int InitializeSubtractor(std::vector <fastjet::PseudoJet> const & event_full, Double_t & rho, Double_t & rho_sparse, Int_t opt = 0);
+  void SetJetByJetConstSubtractionMode() { fCSOption = 1; }
 
-  void                 FillAllTracks(AliParticleContainer* cont1, AliParticleContainer* cont2, std::vector <fastjet::PseudoJet> & full_event);
+  std::vector<fastjet::PseudoJet> GetBackSubJets(std::vector<fastjet::PseudoJet> const & event_full, fastjet::ClusterSequenceArea* cs);
+
+  void                 AddTracksToEvent(AliParticleContainer* cont, std::vector <fastjet::PseudoJet> & event);
   void                 FillTree(std::vector<fastjet::PseudoJet> const & jets, TNtuple* tree);
   void                 FillTree(AliJetContainer *jets, TNtuple* tree);
 
@@ -81,10 +88,13 @@ class AliAnalysisTaskSDKL : public AliAnalysisTaskEmcalJet {
   AliJetContainer            *fJetsCont;               //! Jets
   AliParticleContainer       *fTracksCont;             //! Tracks
   Int_t                       fbcoption;
+  Int_t                       fCSOption;
+  fastjet::contrib::ConstituentSubtractor *fCSubtractor; //!
 
  private:
   AliAnalysisTaskSDKL(const AliAnalysisTaskSDKL&);            // not implemented
   AliAnalysisTaskSDKL &operator=(const AliAnalysisTaskSDKL&); // not implemented
+
   ClassDef(AliAnalysisTaskSDKL, 1) // jet sample analysis task
 
 };

@@ -37,6 +37,7 @@ using namespace std;
 class AliMultSelection;
 class AliVMultiplicity;
 class TClonesArray;
+class AliJJetTask;
 class AliDirList;
 
 

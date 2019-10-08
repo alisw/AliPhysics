@@ -13,7 +13,7 @@
 #include "TChain.h"
 #include "TBits.h"
 #include "THnSparse.h"
- 
+
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliFemtoV0.h"
@@ -97,8 +97,10 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
+  void Set1DCorrectionsXiPlus(TH1D *h1);
+  void Set1DCorrectionsXiMinus(TH1D *h1);
 
-  
+
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
   virtual AliFemtoTrack *CopyAODtoFemtoTrack(AliNanoAODTrack *tAodTrack
@@ -167,6 +169,9 @@ private:
   TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsXiPlus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsXiMinus;    ///<file with corrections, pT dependant
+
 
 #ifdef __ROOT__
   /// \cond CLASSIMP

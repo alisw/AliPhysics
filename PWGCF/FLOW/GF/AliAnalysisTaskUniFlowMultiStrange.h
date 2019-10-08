@@ -2,6 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
+//#ifndef ALIANALYSISTASKUNIFLOW_H
+//#define ALIANALYSISTASKUNIFLOW_H
 #ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
 #define ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
 
@@ -29,7 +31,7 @@ class AliPicoTrack;
 class AliAODv0;
 class AliAODcascade;
 class AliAODMCParticle;
-
+class AliAODPidHF;
 //_____________________________________________________________________________
 
 class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
@@ -76,145 +78,166 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       virtual void            UserExec(Option_t* option); // main methond - called for each event
       virtual void            Terminate(Option_t* option); // called after all events are processed
       // analysis setters
-      void       SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
-      void       SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
-      void       SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
-      void	   		          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
-      void       SetMC(Bool_t mc = kTRUE) { fMC = mc; }
-      void       SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
-      void       SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
-      void       SetProcessPID(Bool_t use = kTRUE) { fProcessSpec[kPion] = use; fProcessSpec[kKaon] = use; fProcessSpec[kProton] = use; }
-      void       SetProcessV0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; fProcessSpec[kLambda] = use; }
-      void       SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
-      void       Setq2eta(Double_t value){q2eta=value;}
-      void       SetProcessCascades(Bool_t use = kTRUE) { fProcessSpec[kXi] = use; fProcessSpec[kOmega] = use; }
-      void       SetESELarge(){IsESELargeq2 = kTRUE;}
-      void       SetESESmall(){IsESESmallq2 = kTRUE;}
-      // flow rel
-      void       AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2})); }
-      void       AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2}, {gap})); }
-      void       AddThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3})); }
-      void       AddThreeGap(Int_t n1, Int_t n2, Int_t n3, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3} ,{gap})); }
-      void       AddFour(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3,n4})); }
-      void       AddFourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3,n4}, {gap})); }
-      void       SetFlowRFPsPt(Double_t min, Double_t max) { fFlowRFPsPtMin = min; fFlowRFPsPtMax = max; }
-      void       SetFlowPOIsPt(Double_t min, Double_t max, Int_t bins = 0) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; fFlowPOIsPtBinNum = bins; }
-      void       SetFlowEta(Double_t max, Int_t bins = 0) { fFlowEtaMax = max; fFlowEtaBinNum = bins; }
-      void       SetFlowPhiBins(Int_t bins) { fFlowPhiBinNum = bins; }
-      void       SetFlowFillWeights(Bool_t weights = kTRUE) { fFlowFillWeights = weights; }
-      void       SetUseWeigthsFile(const char* file, Bool_t bRunByRun) { fFlowWeightsPath = file; fFlowRunByRunWeights = bRunByRun; fFlowUseWeights = kTRUE; } //! NOTE file has to include "alien:///" if the file is on grid
-      void       SetUseq2CutFile(const char* file) { fq2CutFilePath = file;} //! NOTE file has to include "alien:///" if the file is on grid
-      void       SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
-      // events setters
-      void       SetCollisionSystem(ColSystem colSystem = kPP) { fColSystem = colSystem; }
-      void       SetCentrality(CentEst est, Int_t min = 0, Int_t max = 0, Int_t bins = 0) { fCentEstimator = est; fCentMin = min; fCentMax = max; fCentBinNum = bins; }
-      void       SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
-      void	 SetPVtxZMax(Double_t z) { fPVtxCutZ = z; }
-      void       SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
-      // track setters
-      void       SetChargedDCAzMax(Double_t dcaz) {  fCutChargedDCAzMax = dcaz; }
-      void       SetChargedDCAxyMax(Double_t dcaxy) {  fCutChargedDCAxyMax = dcaxy; }
-      void       SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
-      void       SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; }
-      // PID (pi,K,p) setters
-      void       SetPIDUseAntiProtonOnly(Bool_t use = kTRUE) { fCutPIDUseAntiProtonOnly = use; }
-      void       SetPIDNumSigmasPionMax(Float_t numSigmas) { fCutPIDnSigmaMax[kPion] = numSigmas; }
-      void       SetPIDNumSigmasKaonMax(Float_t numSigmas) { fCutPIDnSigmaMax[kKaon] = numSigmas; }
-      void       SetPIDNumSigmasProtonMax(Float_t numSigmas) { fCutPIDnSigmaMax[kProton] = numSigmas; }
-      void       SetPIDNumSigmasTPCRejectElectron(Float_t numSigmas) { fCutPIDnSigmaTPCRejectElectron = numSigmas; }
-      void       SetPIDNumSigmasCombinedNoTOFrejection(Bool_t reject = kTRUE) { fCutPIDnSigmaCombinedTOFrejection = reject; }
-      void       SetUseBayesPID(Bool_t bayes = kTRUE) { fCutUseBayesPID = bayes; }
-      void       SetPIDBayesProbPionMin(Double_t probPi) { fCutPIDBayesMin[kPion] = probPi; }
-      void       SetPIDBayesProbKaonMin(Double_t probK) { fCutPIDBayesMin[kKaon] = probK; }
-      void       SetPIDBayesProbProtonMin(Double_t probP) { fCutPIDBayesMin[kProton] = probP; }
-      // V0s set
-      void	 SetV0sOnFly(Bool_t onFly) { fCutV0sOnFly = onFly; }
-      void	 SetV0sTPCRefit(Bool_t refit) { fCutV0srefitTPC = refit; }
-      void	 SetV0sRejectKinks(Bool_t reject) { fCutV0srejectKinks = reject; }
-      void       SetV0sDaughterNumTPCClsMin(UShort_t cls) { fCutV0sDaughterNumTPCClsMin = cls; }
-      void       SetV0sDaughterNumTPCrossMin(UShort_t cls) { fCutV0sDaughterNumTPCCrossMin = cls; }
-      void       SetV0sDaughterNumTPCFindMin(UShort_t cls) { fCutV0sDaughterNumTPCFindMin = cls; }
-      void       SetV0sDaughterNumTPCClsPIDMin(UShort_t cls) { fCutV0sDaughterNumTPCClsPIDMin = cls; }
-      void       SetV0sDaughterRatioCrossFindMin(Double_t ratio) { fCutV0sDaughterRatioCrossFindMin = ratio; }
-      void	 SetV0sUseCrossMassRejection(Bool_t reject) { fCutV0sCrossMassRejection = reject; }
-      void	 SetV0sCrossMassCutK0s(Double_t mass) { fCutV0sCrossMassCutK0s = mass; }
-      void	 SetV0sCrossMassCutLambda(Double_t mass) { fCutV0sCrossMassCutLambda = mass; }
-      void	 SetV0sDCAPVMin(Double_t dca) { fCutV0sDCAtoPVMin = dca; }
-      void	 SetV0sDCAPVMax(Double_t dca) { fCutV0sDCAtoPVMax = dca; }
-      void	 SetV0sDCAPVzMax(Double_t dca) { fCutV0sDCAtoPVzMax = dca; }
-      void       SetV0sDaughtersFilterBit(UInt_t filter) { fCutV0sDaughterFilterBit = filter; }
-      void	 SetV0sDCADaughtersMin(Double_t dca) { fCutV0sDCADaughtersMin = dca; }
-      void	 SetV0sDCADaughtersMax(Double_t dca) { fCutV0sDCADaughtersMax = dca; }
-      void	 SetV0sDecayRadiusMin(Double_t radius) { fCutV0sDecayRadiusMin = radius; }
-      void	 SetV0sDecayRadiusMax(Double_t radius) { fCutV0sDecayRadiusMax = radius; }
-      void	 SetV0sDaughterEtaMax(Double_t eta) { fCutV0sDaughterEtaMax = eta; }
-      void	 SetV0sDaughterPtMin(Double_t pt) { fCutV0sDaughterPtMin = pt; }
-      void	 SetV0sDaughterPtMax(Double_t pt) { fCutV0sDaughterPtMax = pt; }
-      void       SetV0sMotherRapMax(Double_t rap) { fCutV0sMotherRapMax = rap; }
-      void	 SetV0sK0sInvMassMin(Double_t mass) { fCutV0sInvMassK0sMin = mass; }
-      void	 SetV0sK0sInvMassMax(Double_t mass) { fCutV0sInvMassK0sMax = mass; }
-      void	 SetV0sLambdaInvMassMin(Double_t mass) { fCutV0sInvMassLambdaMin = mass; }
-      void	 SetV0sLambdaInvMassMax(Double_t mass) { fCutV0sInvMassLambdaMax = mass; }
-      void       SetCascadesXiInvMassMin(Double_t mass) { fCutCascadesInvMassXiMin = mass; }
-      void       SetCascadesXiInvMassMax(Double_t mass){fCutCascadesInvMassXiMax = mass;}
-      void       SetCascadesOmegaInvMassMin(Double_t mass) { fCutCascadesInvMassOmegaMin = mass; }
-      void       SetCascadesOmegaInvMassMax(Double_t mass) { fCutCascadesInvMassOmegaMax = mass; }
-      void	 SetV0sK0sCPAMin(Double_t cpa){fCutV0sCPAK0sMin = cpa;}
-      void	 SetV0sLambdaCPAMin(Double_t cpa) { fCutV0sCPALambdaMin = cpa; }
-      void	 SetV0sK0sNumTauMax(Double_t nTau) { fCutV0sNumTauK0sMax = nTau; }
-      void	 SetV0sLambdaNumTauMax(Double_t nTau) { fCutV0sNumTauLambdaMax = nTau; }
-      void       SetV0sK0sArmenterosAlphaMin(Double_t alpha) { fCutV0sArmenterosAlphaK0sMin = alpha; }
-      void       SetV0sLambdaArmenterosAlphaMax(Double_t alpha) { fCutV0sArmenterosAlphaLambdaMax = alpha; }
-      void       SetV0sK0sPionNumTPCSigmaMax(Float_t nSigma) { fCutV0sK0sPionNumTPCSigmaMax = nSigma; }
-      void       SetV0sLambdaPionNumTPCSigmaMax(Float_t nSigma) { fCutV0sLambdaPionNumTPCSigmaMax = nSigma; }
-      void       SetV0sLambdaProtonNumTPCSigmaMax(Float_t nSigma) { fCutV0sLambdaProtonNumTPCSigmaMax = nSigma; }
-      // phi set
-      void       SetPhiInvMassMin(Double_t mass) { fCutPhiInvMassMin = mass; }
-      void	 SetPhiInvMassMax(Double_t mass) { fCutPhiInvMassMax = mass; }
-      // cascade set
-      void       SetXiEtaMin(Double_t value){fXiPseMin = value;}
-      void       SetXiEtaMax(Double_t value){fXiPseMax = value;}
-      void       SetV0RadiusXiMin(Double_t value){fV0RadiusXiMin = value;}
-      void       SetV0RadiusXiMax(Double_t value){fV0RadiusXiMax = value;}
-      void       SetXiRadiusMin(Double_t value){fXiRadiusMin = value;}
-      void       SetXiRadiusMax(Double_t value){fXiRadiusMax = value;}
-      void       SetDCAXiDaughtersMax(Double_t value){fdcaXiDaughtersMax = value;}
-      void       SetXiCosOfPointingAngleMin(Double_t value){fXiCosOfPointingAngleMin = value;}
-      void       SetDCAV0ToPrimaryVtxXiMin(Double_t value){fdcaV0ToPrimaryVtxXiMin = value;}
-      void       SetDCABachToPrimaryVtxXiMin(Double_t value){fdcaBachToPrimaryVtxXiMin = value;}
-      void       SetLambdaMassWindow(Double_t value){fLambdaMassWind = value;}
-      void       SetDCAV0DaughtersXi(Double_t value){fdcaV0DaughtersXi = value;}
-      void       SetV0CosOfPointingAngleXiMin(Double_t value){fV0CosOfPointingAngleXiMin = value;}
-      void       SetDCAPosToPrimaryVtxXiMin(Double_t value){fdcaPosToPrimaryVtxXiMin = value;}
-      void       SetDCANegToPrimaryVtxXiMin(Double_t value){fdcaNegToPrimaryVtxXiMin = value;}
-      void       SetCascadesRejectKinks(Bool_t reject) { fCutCascadesrejectKinks = reject; }
-      void       SetXiPIDSigma(Double_t value){fXiPIDsigma = value;}
-      void       SetRPTrackFromTPC(Bool_t value){fRPFromTPC = value;}
-      void       SetTrackEta(Double_t value){fTrackEta = value;}
-      void       SetTrackPtMin(Double_t value){fTrackPtMin = value;}
-      void       SetTPCNcls(Double_t ncls = 70){fTPCNcls = ncls;}
-      void       SetIsGetq2(){IsGetq2 =kTRUE;}
-      AliEventCuts            fEventCuts; //
+      void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
+      void                    Set2018Data(Bool_t use = kTRUE){Is2018Data = use;}
+      void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
+      void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
+      void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
+      void                    SetMC(Bool_t mc = kTRUE) { fMC = mc; }
+      void                    SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
+      void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
+      void                    SetProcessPID(Bool_t use = kTRUE) { fProcessSpec[kPion] = use; fProcessSpec[kKaon] = use; fProcessSpec[kProton] = use; }
+      void                    SetProcessV0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; fProcessSpec[kLambda] = use; }
+      void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
 
+
+      void       SetProcessCascades(Bool_t use = kTRUE) { fProcessSpec[kXi] = use; fProcessSpec[kOmega] = use; }
+      void       SetESELarge(Double_t value){IsESELargeq2 = kTRUE;q2Eta=value;}
+      void       SetESESmall(Double_t value){IsESESmallq2 = kTRUE;q2Eta=value;}
+ 
+
+      // flow related setters
+      void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2})); }
+      void                    AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2}, {gap})); }
+      void                    AddThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3})); }
+      void                    AddThreeGap(Int_t n1, Int_t n2, Int_t n3, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3} ,{gap})); }
+      void                    AddFour(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3,n4})); }
+      void                    AddFourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3,n4}, {gap})); }
+
+      void                    SetFlowRFPsPt(Double_t min, Double_t max) { fFlowRFPsPtMin = min; fFlowRFPsPtMax = max; }
+      void                    SetFlowPOIsPt(Double_t min, Double_t max, Int_t bins = 0) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; fFlowPOIsPtBinNum = bins; }
+      void                    SetFlowEta(Double_t max, Int_t bins = 0) { fFlowEtaMax = max; fFlowEtaBinNum = bins; }
+      void                    SetFlowPhiBins(Int_t bins) { fFlowPhiBinNum = bins; }
+      void                    SetFlowFillWeights(Bool_t weights = kTRUE) { fFlowFillWeights = weights; }
+      void                    SetUseWeigthsFile(const char* file, Bool_t bRunByRun) { fFlowWeightsPath = file; fFlowRunByRunWeights = bRunByRun; fFlowUseWeights = kTRUE; } //! NOTE file has to include "alien:///" if the file is on grid
+      void                    SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
+     
+      void                    SetUseq2CutFile(const char* file) { fq2CutFilePath = file;}
+       // events setters
+      void                    SetCollisionSystem(ColSystem colSystem = kPP) { fColSystem = colSystem; }
+      void                    SetCentrality(CentEst est, Int_t min = 0, Int_t max = 0, Int_t bins = 0) { fCentEstimator = est; fCentMin = min; fCentMax = max; fCentBinNum = bins; }
+      void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
+      void					          SetPVtxZMax(Double_t z) { fPVtxCutZ = z; }
+      void                    SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
+      // track setters
+      void                    SetChargedDCAzMax(Double_t dcaz) {  fCutChargedDCAzMax = dcaz; }
+      void                    SetChargedDCAxyMax(Double_t dcaxy) {  fCutChargedDCAxyMax = dcaxy; }
+      void                    SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
+      void                    SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; }
+      // PID (pi,K,p) setters
+      void                    SetPIDUseAntiProtonOnly(Bool_t use = kTRUE) { fCutPIDUseAntiProtonOnly = use; }
+      void                    SetPIDNumSigmasPionMax(Float_t numSigmas) { fCutPIDnSigmaMax[kPion] = numSigmas; }
+      void                    SetPIDNumSigmasKaonMax(Float_t numSigmas) { fCutPIDnSigmaMax[kKaon] = numSigmas; }
+      void                    SetPIDNumSigmasProtonMax(Float_t numSigmas) { fCutPIDnSigmaMax[kProton] = numSigmas; }
+      void                    SetPIDNumSigmasTPCRejectElectron(Float_t numSigmas) { fCutPIDnSigmaTPCRejectElectron = numSigmas; }
+      void                    SetPIDNumSigmasCombinedNoTOFrejection(Bool_t reject = kTRUE) { fCutPIDnSigmaCombinedTOFrejection = reject; }
+      void                    SetUseHFPIDCorrection(Bool_t PIDCorrection = kTRUE) { fUsePIDCorrection = PIDCorrection; }
+      void                    SetUseBayesPID(Bool_t bayes = kTRUE) { fCutUseBayesPID = bayes; }
+      void                    SetPIDBayesProbPionMin(Double_t probPi) { fCutPIDBayesMin[kPion] = probPi; }
+      void                    SetPIDBayesProbKaonMin(Double_t probK) { fCutPIDBayesMin[kKaon] = probK; }
+      void                    SetPIDBayesProbProtonMin(Double_t probP) { fCutPIDBayesMin[kProton] = probP; }
+      // V0s setters
+      void					          SetV0sOnFly(Bool_t onFly) { fCutV0sOnFly = onFly; }
+      void					          SetV0sTPCRefit(Bool_t refit) { fCutV0srefitTPC = refit; }
+      void					          SetV0sRejectKinks(Bool_t reject) { fCutV0srejectKinks = reject; }
+      void                    SetV0sDaughterNumTPCClsMin(UShort_t cls) { fCutV0sDaughterNumTPCClsMin = cls; }
+      void                    SetV0sDaughterNumTPCrossMin(UShort_t cls) { fCutV0sDaughterNumTPCCrossMin = cls; }
+      void                    SetV0sDaughterNumTPCFindMin(UShort_t cls) { fCutV0sDaughterNumTPCFindMin = cls; }
+      void                    SetV0sDaughterNumTPCClsPIDMin(UShort_t cls) { fCutV0sDaughterNumTPCClsPIDMin = cls; }
+      void                    SetV0sDaughterRatioCrossFindMin(Double_t ratio) { fCutV0sDaughterRatioCrossFindMin = ratio; }
+      void					          SetV0sUseCrossMassRejection(Bool_t reject) { fCutV0sCrossMassRejection = reject; }
+      void					          SetV0sCrossMassCutK0s(Double_t mass) { fCutV0sCrossMassCutK0s = mass; }
+      void					          SetV0sCrossMassCutLambda(Double_t mass) { fCutV0sCrossMassCutLambda = mass; }
+      void					          SetV0sDCAPVMin(Double_t dca) { fCutV0sDCAtoPVMin = dca; }
+      void					          SetV0sDCAPVMax(Double_t dca) { fCutV0sDCAtoPVMax = dca; }
+      void					          SetV0sDCAPVzMax(Double_t dca) { fCutV0sDCAtoPVzMax = dca; }
+      void                    SetV0sDaughtersFilterBit(UInt_t filter) { fCutV0sDaughterFilterBit = filter; }
+      void					          SetV0sDCADaughtersMin(Double_t dca) { fCutV0sDCADaughtersMin = dca; }
+      void					          SetV0sDCADaughtersMax(Double_t dca) { fCutV0sDCADaughtersMax = dca; }
+      void					          SetV0sDecayRadiusMin(Double_t radius) { fCutV0sDecayRadiusMin = radius; }
+      void					          SetV0sDecayRadiusMax(Double_t radius) { fCutV0sDecayRadiusMax = radius; }
+      void					          SetV0sDaughterEtaMax(Double_t eta) { fCutV0sDaughterEtaMax = eta; }
+      void					          SetV0sDaughterPtMin(Double_t pt) { fCutV0sDaughterPtMin = pt; }
+      void					          SetV0sDaughterPtMax(Double_t pt) { fCutV0sDaughterPtMax = pt; }
+      void                    SetV0sMotherRapMax(Double_t rap) { fCutV0sMotherRapMax = rap; }
+      void					          SetV0sK0sInvMassMin(Double_t mass) { fCutV0sInvMassK0sMin = mass; }
+      void					          SetV0sK0sInvMassMax(Double_t mass) { fCutV0sInvMassK0sMax = mass; }
+      void					          SetV0sLambdaInvMassMin(Double_t mass) { fCutV0sInvMassLambdaMin = mass; }
+      void					          SetV0sLambdaInvMassMax(Double_t mass) { fCutV0sInvMassLambdaMax = mass; }
+
+     void          SetCascadesXiInvMassMin(Double_t mass) { fCutCascadesInvMassXiMin = mass; }
+     void          SetCascadesXiInvMassMax(Double_t mass) { fCutCascadesInvMassXiMax = mass; }
+   
+      void         SetCascadesOmegaInvMassMin(Double_t mass) { fCutCascadesInvMassOmegaMin = mass; }
+      void         SetCascadesOmegaInvMassMax(Double_t mass) { fCutCascadesInvMassOmegaMax = mass; }
+
+
+
+
+
+
+      void					          SetV0sK0sCPAMin(Double_t cpa) { fCutV0sCPAK0sMin = cpa; }
+      void					          SetV0sLambdaCPAMin(Double_t cpa) { fCutV0sCPALambdaMin = cpa; }
+      void					          SetV0sK0sNumTauMax(Double_t nTau) { fCutV0sNumTauK0sMax = nTau; }
+      void					          SetV0sLambdaNumTauMax(Double_t nTau) { fCutV0sNumTauLambdaMax = nTau; }
+      void					          SetV0sK0sArmenterosAlphaMin(Double_t alpha) { fCutV0sArmenterosAlphaK0sMin = alpha; }
+      void					          SetV0sLambdaArmenterosAlphaMax(Double_t alpha) { fCutV0sArmenterosAlphaLambdaMax = alpha; }
+      void                    SetV0sK0sPionNumTPCSigmaMax(Float_t nSigma) { fCutV0sK0sPionNumTPCSigmaMax = nSigma; }
+      void                    SetV0sLambdaPionNumTPCSigmaMax(Float_t nSigma) { fCutV0sLambdaPionNumTPCSigmaMax = nSigma; }
+      void                    SetV0sLambdaProtonNumTPCSigmaMax(Float_t nSigma) { fCutV0sLambdaProtonNumTPCSigmaMax = nSigma; }
+      // phi setters
+      void					          SetPhiInvMassMin(Double_t mass) { fCutPhiInvMassMin = mass; }
+      void					          SetPhiInvMassMax(Double_t mass) { fCutPhiInvMassMax = mass; }
+
+
+
+
+      //--------------------------cascade----------------------------------------------------------------
+      void  SetXiEtaMin(Double_t value){fXiPseMin = value;}
+      void  SetXiEtaMax(Double_t value){fXiPseMax = value;}
+      void  SetV0RadiusXiMin(Double_t value){fV0RadiusXiMin = value;}
+      void  SetV0RadiusXiMax(Double_t value){fV0RadiusXiMax = value;}
+      void  SetXiRadiusMin(Double_t value){fXiRadiusMin = value;}
+      void  SetXiRadiusMax(Double_t value){fXiRadiusMax = value;}
+      void  SetDCAXiDaughtersMax(Double_t value){fdcaXiDaughtersMax = value;}
+      void  SetXiCosOfPointingAngleMin(Double_t value){fXiCosOfPointingAngleMin = value;}
+      void  SetDCAV0ToPrimaryVtxXiMin(Double_t value){fdcaV0ToPrimaryVtxXiMin = value;}
+      void  SetDCABachToPrimaryVtxXiMin(Double_t value){fdcaBachToPrimaryVtxXiMin = value;}
+      void  SetLambdaMassWindow(Double_t value){fLambdaMassWind = value;}
+      void  SetDCAV0DaughtersXi(Double_t value){fdcaV0DaughtersXi = value;}
+      void  SetV0CosOfPointingAngleXiMin(Double_t value){fV0CosOfPointingAngleXiMin = value;}
+      void  SetDCAPosToPrimaryVtxXiMin(Double_t value){fdcaPosToPrimaryVtxXiMin = value;}
+      void  SetDCANegToPrimaryVtxXiMin(Double_t value){fdcaNegToPrimaryVtxXiMin = value;}
+      void  SetCascadesRejectKinks(Bool_t reject) { fCutCascadesrejectKinks = reject; }
+      void  SetXiPIDSigma(Double_t value){fXiPIDsigma = value;}
+
+      void  SetRPTrackFromTPC(Bool_t value){fRPFromTPC = value;}
+      void  SetTrackEta(Double_t value){fTrackEta = value;}
+      void  SetTrackPtMin(Double_t value){fTrackPtMin = value;}
+      void  SetTPCNcls(Double_t ncls = 70){fTPCNcls = ncls;}
+      void  SetIsGetq2(){IsGetq2 =kTRUE;}
+
+      AliEventCuts            fEventCuts; //!
+      AliAODPidHF*            fPidHF;//! PID correction from HF Group
     private:
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
       static const Int_t      fFlowNumHarmonicsMax = 7; // maximum harmonics length of flow vector array
       static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
       static const Int_t      fV0sNumBinsMass = 60; // number of InvMass bins for V0s distribution
       static const Int_t      fPhiNumBinsMass = 60; // number of InvMass bins for phi distribution
-      static const Int_t      fCascadesNumBinsMass = 40;
+      static const Int_t      fCascadesNumBinsMass = 120;
 
-      static const Int_t      fiNumIndexQA = 2; // QA indexes: 0: before cuts // 1: after cuts
+      static const Int_t      fiNumIndexQA = 6; // QA indexes: 0: raw // 1: after AliEventCut //2: after New cut(Correlation SPD clusters – SPD tracklets and Correlation V0 online – V0 offline )  //3: after TPC cluster and V0 multiplicityCorrelation(GA) // 4:as 3(tight) 5:after TPC cluster and V0 multiplicity Correlation(HF)
 
       const char*             GetSpeciesName(PartSpecies species) const;
       const char*             GetSpeciesLabel(PartSpecies species) const;
       const char*             GetEtaGapName(Double_t dEtaGap) const { return Form("%02.2g",10.0*dEtaGap); }
-
+      
       Bool_t                  InitializeTask(); // called once on beginning of task (within CreateUserObjects method)
       Bool_t                  LoadWeights(); // load weights histograms
       Bool_t                  IsESESmallq2;
       Bool_t                  IsESELargeq2;
-      Double_t                q2eta;
+      Bool_t                  fUsePIDCorrection;
       Bool_t                  FillFlowWeight(AliVTrack* track, PartSpecies species) const; // fill distribution for per-particle flow weight
       Double_t                GetFlowWeight(AliVTrack* track, PartSpecies species) const; // extract per-particle flow weight from input file
       Bool_t                  FillFlowWeightCascade(const AliAODcascade* xi, PartSpecies species) const; // fill distribution for per-particle flow weight
@@ -261,18 +284,52 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    FillQAPID(Int_t iQAindex, const AliAODTrack* track = 0x0, PartSpecies species = kUnknown) const; // filling pi,K,p QA histograms
       void                    FillQAV0s(Int_t iQAindex, const AliAODv0* v0 = 0x0, Bool_t bIsK0s = kTRUE, Int_t bIsLambda = 2) const; // filling QA plots for V0s candidates
       void                    FillQAPhi(Int_t iQAindex, const AliPicoTrack* part = 0x0) const; // filling QA plots for V0s candidates
+
       // Flow related methods
       void                    FillRefsVectors(Double_t dGap); // fill flow vector Q with RFPs for reference flow
       Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
+      void VZEROCalbration();
+//-----------------------------------------------------------------------------------------
+      Bool_t                  Is2018Data;//
+      Double_t q2Eta;
       Bool_t                  IsGetq2;
       Double_t                Getq2(Double_t dEta);
+      TString   fq2CutFilePath;
       void                    FilterCascades() const;
+
       Bool_t                  IsCascadeSelected(const AliAODcascade *xi) const;
+
       Bool_t                  IsSelected(const AliAODTrack *t =0x0) const;
       void                    Propagate( Double_t vv[3],Double_t x[3],Double_t p[3],Double_t bz,Double_t sign) const;
       void                    IsCascadexi( const AliAODcascade* xi, Int_t& strangePar) const;
+
+       Double_t fXiPseMin = 0;
+       Double_t fXiPseMax = 0;
+       Double_t fV0RadiusXiMin = 0;
+       Double_t fV0RadiusXiMax = 0;
+       Double_t fXiRadiusMin = 0;
+       Double_t fXiRadiusMax = 0;
+       Double_t fdcaXiDaughtersMax = 0;
+       Double_t fXiCosOfPointingAngleMin = 0;
+       Double_t fdcaV0ToPrimaryVtxXiMin = 0;
+       Double_t fdcaBachToPrimaryVtxXiMin = 0;
+       Double_t fLambdaMassWind = 0;
+       Double_t fdcaV0DaughtersXi = 0;
+       Double_t fV0CosOfPointingAngleXiMin = 0;
+       Double_t fdcaPosToPrimaryVtxXiMin = 0;
+       Double_t fdcaNegToPrimaryVtxXiMin = 0;
+       Bool_t   fCutCascadesrejectKinks; // Reject Kink cascade daughter tracks ?
+       Double_t fXiPIDsigma = 0;
+
+       //----------------track-------------------------------------------------  
+       Double_t fTPCNcls; // number of TPC clusters   
+       Double_t fTrackEta = 0;
+       Double_t fTrackPtMin = 0;
+       Bool_t   fRPFromTPC;
+
+//----------------------------------------------------------------------------------------
       TComplex                Q(Int_t n, Int_t p) const;
       TComplex                QGapPos(Int_t n, Int_t p) const;
       TComplex                QGapNeg(Int_t n, Int_t p) const;
@@ -283,6 +340,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TComplex                S(Int_t n, Int_t p) const;
       TComplex                SGapPos(Int_t n, Int_t p) const;
       TComplex                SGapNeg(Int_t n, Int_t p) const;
+
       TComplex                Two(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (no eta gap)
       TComplex                TwoGap(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (with eta gap)
       TComplex                Three(Int_t n1, Int_t n2, Int_t n3) const; // Three particle reference correlation calculations (no eta gap)
@@ -315,6 +373,13 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TFile*                  fFlowWeightsFile; //! source file containing weights
       TFile*                  q2File;//!
       TList*                  q2List;//!
+      TFile* Stepfile;//!
+      TList* V0CalListStep;//!
+      TH1D*fMultV0;//!
+      TProfile*fhQxV0A_pfx;//!
+      TProfile*fhQyV0A_pfx;//!
+      TProfile*fhQxV0C_pfx;//!
+      TProfile*fhQyV0C_pfx;//!
       TH1D*                   histlowq2;//!
       TH1D*                   histhighq2;//!
 
@@ -361,7 +426,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Bool_t                  fFlowUse3Dweights; // [kFALSE] flag for using 3D GF weights, if kFALSE, 2D weights are expected
       Bool_t                  fFlowRunByRunWeights; // [kTRUE] flag for using rub-by-run weigths from weigths file; if false, only one set of histrograms is provided
       TString                 fFlowWeightsPath; //[] path to source root file with weigthts (if empty unit weights are applied) e.g. "alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2016/PhiWeight_LHC16kl.root"
-      TString                 fq2CutFilePath;
+
       //cuts & selection: events
       ColSystem               fColSystem; // collisional system
       AliVEvent::EOfflineTriggerTypes    fTrigger; // physics selection trigger
@@ -376,6 +441,25 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       UShort_t                fCutChargedNumTPCclsMin;  // (-) Minimal number of TPC clusters used for track reconstruction
       Double_t                fCutChargedDCAzMax; // (cm) Maximal DCA-z cuts for tracks (pile-up rejection suggested for LHC16)
       Double_t                fCutChargedDCAxyMax; // (cm) Maximal DCA-xy cuts for tracks (pile-up rejection suggested for LHC16)
+      TH1D *  histcent;//!
+
+      Int_t multESD;
+      Int_t nTracks;
+      Int_t multTPC32;
+      Int_t multTPC128;
+      Int_t multTOF;
+      Int_t multTrk;
+      Double_t multESDTPCdif;
+      Double_t v0Centr;
+      Double_t CL0Centr;
+      Double_t CL1Centr;
+      Float_t multV0Tot;
+      UShort_t multV0On;
+      Int_t nITSTrkls;
+      Int_t nITSCls;
+      Int_t multTPCout;
+      Int_t tpcClsTot;
+
       // cuts & selection: PID selection
       Bool_t                  fCutPIDUseAntiProtonOnly; // [kFALSE] check proton PID charge to select AntiProtons only
       Bool_t                  fCutPIDnSigmaCombinedTOFrejection; // [kTRUE] flag for rejection candidates in TPC+TOF pt region if TOF is not available (if true and no TOF track is skipped, otherwise only TPC is used)
@@ -392,16 +476,16 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       UShort_t                fCutV0sDaughterNumTPCFindMin; // min number of findable TPC clusters
       UShort_t                fCutV0sDaughterNumTPCClsPIDMin; // min number of TPC clusters used for PID
       Double_t                fCutV0sDaughterRatioCrossFindMin; // min ratio of crossed / findable TPC clusters
-      Bool_t		      fCutV0sCrossMassRejection; // competing V0 rejection based on InvMass
+      Bool_t				          fCutV0sCrossMassRejection; // competing V0 rejection based on InvMass
       Double_t                fCutV0sCrossMassCutK0s; // [0.005] (GeV/c2) restricted vicinity of Lambda/ALambda inv. mass peak for K0s candidates
       Double_t                fCutV0sCrossMassCutLambda; // [0.020] (GeV/c2) restricted vicinity of K0s inv. mass peak for Lambda/ALambda candidates
       Double_t                fCutV0sDCAtoPVMin;   // (cm) min DCA of V0 daughter to PV
-      Double_t		      fCutV0sDCAtoPVMax;	// (cm) max DCA of V0 daughter to PV
+      Double_t				        fCutV0sDCAtoPVMax;	// (cm) max DCA of V0 daughter to PV
       Double_t                fCutV0sDCAtoPVzMax; // (cm) max DCA-z coordinate of V0 daughters to PV
-      Double_t		      fCutV0sDCADaughtersMin;	// (cm) min DCA of V0 daughters among themselves
-      Double_t		      fCutV0sDCADaughtersMax;// (cm) max DCA of V0 daughters among themselves
+      Double_t				        fCutV0sDCADaughtersMin;	// (cm) min DCA of V0 daughters among themselves
+      Double_t				        fCutV0sDCADaughtersMax;	// (cm) max DCA of V0 daughters among themselves
       Double_t                fCutV0sDecayRadiusMin; // (cm) min distance of secondary vertex from z-axis in transverse plane
-      Double_t		      fCutV0sDecayRadiusMax; // (cm) max distance of secondary vertex from z-axis in transverse plane
+      Double_t				        fCutV0sDecayRadiusMax; // (cm) max distance of secondary vertex from z-axis in transverse plane
       UInt_t                  fCutV0sDaughterFilterBit; // (-) V0 daughters filter bit
       Double_t                fCutV0sDaughterPtMin; // (GeV/c) min pT of V0 daughters
       Double_t                fCutV0sDaughterPtMax; // (GeV/c) max pT of V0 daughters
@@ -415,11 +499,16 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Double_t                fCutV0sInvMassK0sMax; // [0.6] (GeV/c2) max inv. mass window for selected K0s candidates
       Double_t                fCutV0sInvMassLambdaMin; // [1.08] (GeV/c2) min inv. mass window for selected (Anti)Lambda candidates
       Double_t                fCutV0sInvMassLambdaMax; // [1.16] (GeV/c2) max inv. mass window for selected (Anti)Lambda candidates
+
       Double_t                fCutCascadesInvMassXiMin;
       Double_t                fCutCascadesInvMassOmegaMin;
+
+
       Double_t                fCutCascadesInvMassXiMax;
       Double_t                fCutCascadesInvMassOmegaMax;
-      Double_t		      fCutV0sArmenterosAlphaK0sMin; // (alpha) min Armenteros alpha for K0s
+
+
+      Double_t				        fCutV0sArmenterosAlphaK0sMin; // (alpha) min Armenteros alpha for K0s
       Double_t                fCutV0sArmenterosAlphaLambdaMax; // (alpha) max Armenteros alpha for (Anti)Lambda
       Float_t                 fCutV0sK0sPionNumTPCSigmaMax; // (sigmaTPC) max number of TPC sigmas for kaon PID (K0s candidates)
       Float_t                 fCutV0sLambdaPionNumTPCSigmaMax;    // (sigmaTPC) max number of TPC sigma for pion PID (Lambda candidates)
@@ -427,29 +516,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       // cuts & selection: phi
       Double_t                fCutPhiInvMassMin; // [0.99] (GeV/c2) min inv. mass window for selected phi candidates
       Double_t                fCutPhiInvMassMax; // [1.07] (GeV/c2) min inv. mass window for selected phi candidates
-      //  cuts & selection:Cascade
-      Double_t                fXiPseMin;
-      Double_t                fXiPseMax;
-      Double_t                fV0RadiusXiMin;
-      Double_t                fV0RadiusXiMax;
-      Double_t                fXiRadiusMin;
-      Double_t                fXiRadiusMax;
-      Double_t                fdcaXiDaughtersMax;
-      Double_t                fXiCosOfPointingAngleMin;
-      Double_t                fdcaV0ToPrimaryVtxXiMin;
-      Double_t                fdcaBachToPrimaryVtxXiMin;
-      Double_t                fLambdaMassWind;
-      Double_t                fdcaV0DaughtersXi;
-      Double_t                fV0CosOfPointingAngleXiMin;
-      Double_t                fdcaPosToPrimaryVtxXiMin;
-      Double_t                fdcaNegToPrimaryVtxXiMin;
-      Bool_t                  fCutCascadesrejectKinks; // Reject Kink cascade daughter tracks ?
-      Double_t                fXiPIDsigma;
-      //----------------track-------------------------------------------------  
-      Double_t                fTPCNcls; // number of TPC clusters   
-      Double_t                fTrackEta;
-      Double_t                fTrackPtMin;
-      Bool_t                  fRPFromTPC;
+
       // output lists
       TList*                  fQAEvents; //! events list
       TList*                  fQACharged; //! charged tracks list
@@ -457,19 +524,27 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TList*                  fQAV0s; //! V0s candidates list
       TList*                  fQAPhi; //! Phi candidates list
       TList*                  fFlowWeights; //! list for flow weights
+      //TList*                  fEventq2;//!list for Event q2
       TList*                  fListFlow[kUnknown]; //! flow lists
+
+
       // histograms & profiles
+
       // Flow
       THnSparseD*             fhsCandK0s; //! distribution of K0s candidates
       THnSparseD*             fhsCandLambda; //!  distribution of Lambda candidates
       THnSparseD*             fhsCandXi; //! distribution of xi candidates
       THnSparseD*             fhsCandOmega; //!  distribution of omega candidates
+
+
       THnSparseD*             fhsCandPhi; //!  distribution of Phi candidates
       THnSparseD*             fhsCandPhiBg; //!  distribution of Phi background
+
       TH2D*                   fh2Weights[kUnknown]; //! container for GF weights (phi,eta,pt) (2D)
       TH3D*                   fh3Weights[kUnknown]; //! container for GF weights (phi,eta,pt)
       TH2D*                   fh2AfterWeights[kUnknown]; //! distribution after applying GF weights - lightweight QA (phi)
       TH3D*                   fh3AfterWeights[kUnknown]; //! distribution after applying GF weights - full QA (phi,eta,pt)
+
       // Events
       TH2D*                   fhEventSampling; //! distribution of sampled events (based on randomly generated numbers)
       TH1D*                   fhEventCentrality; //! distribution of event centrality
@@ -540,16 +615,27 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*                   fhV0sInvMassLambda; //! 2D inv. mass distiburion (K0s mass vs. Lambda/AntiLambda mass)
       TH2D*                   fhV0sCompetingInvMassK0s; //! dist of InvMass of rejected K0s candidates in (Anti-)Lambda peak
       TH2D*                   fhV0sCompetingInvMassLambda; //! dist of InvMass of rejected (Anti-)Lambda candidates in K0s peak
+
+
       // QA: events
       TH1D*                   fhQAEventsPVz[fiNumIndexQA]; //!
       TH1D*                   fhQAEventsNumContrPV[fiNumIndexQA]; //!
       TH1D*                   fhQAEventsNumSPDContrPV[fiNumIndexQA]; //!
       TH1D*                   fhQAEventsDistPVSPD[fiNumIndexQA]; //!
       TH1D*                   fhQAEventsSPDresol[fiNumIndexQA]; //!
-      TH2D*                   fhQAEventsfMult32vsCentr;
-      TH2D*                   fhQAEventsMult128vsCentr;
-      TH2D*                   fhQAEventsfMultTPCvsTOF;
-      TH2D*                   fhQAEventsfMultTPCvsESD;
+      TH2D*                   fhQAEventsfMult32vsCentr[fiNumIndexQA];//!
+      TH2D*                   fhQAEventsMult128vsCentr[fiNumIndexQA];//!
+      TH2D*                   fhQAEventsfMultTPCvsTOF[fiNumIndexQA];//!
+      TH2D*                   fhQAEventsfMultTPCvsESD[fiNumIndexQA];//!
+      //improve for 2018 data
+      TH2F*                   fCenCL0vsV0M[fiNumIndexQA];//!
+      TH2F*                   fCenCL1vsV0M[fiNumIndexQA];//!
+      TH2F*                   fCenCL0vsCL1[fiNumIndexQA];//!
+      TH2F*                   fMultV0onvsMultV0of[fiNumIndexQA];//!
+      TH2I*                   fSPclsvsSPDtrks[fiNumIndexQA];//!
+      TH2F*                   fMultV0vsMultTPCout[fiNumIndexQA];//!
+      TH2F*                   fMultV0vsNclsTPC[fiNumIndexQA];//!
+
       // QA: charged tracks
       TH1D*                   fhQAChargedMult[fiNumIndexQA];       //! number of AOD charged tracks distribution
       TH1D*                   fhQAChargedPt[fiNumIndexQA];         //! pT dist of charged tracks
@@ -569,8 +655,8 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH3D*                   fh3QAPIDnSigmaTPCTOFPtProton[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
       // QA: V0s candidates
       TH1D*		      fhQAV0sMultK0s[fiNumIndexQA];//! number of K0s candidates
-      TH1D*		      fhQAV0sMultLambda[fiNumIndexQA];//! number of Lambda candidates
-      TH1D*		      fhQAV0sMultALambda[fiNumIndexQA];//! number of Anti-Lambda candidates
+      TH1D*		      fhQAV0sMultLambda[fiNumIndexQA];	//! number of Lambda candidates
+      TH1D*		      fhQAV0sMultALambda[fiNumIndexQA];	//! number of Anti-Lambda candidates
       TH1D*		      fhQAV0sRecoMethod[fiNumIndexQA];//! offline/online V0 reconstruction method
       TH1D*		      fhQAV0sDaughterTPCRefit[fiNumIndexQA];//! Daughters TPC refit true/false
       TH1D*		      fhQAV0sDaughterKinks[fiNumIndexQA];//! Daughters kinks true/false
@@ -579,39 +665,101 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH1D*                   fhQAV0sDaughterNumTPCCrossRows[fiNumIndexQA]; //! Daughter # of TPC crossed rows
       TH1D*                   fhQAV0sDaughterTPCCrossFindRatio[fiNumIndexQA]; //! Daughter # of TPC cross / # of TPC findable cls ratio
       TH1D*                   fhQAV0sDaughterNumTPCClsPID[fiNumIndexQA]; //! Daughter # of TPC findable clusters used for PID
-      TH1D*		      fhQAV0sDCAtoPV[fiNumIndexQA];//! V0 DCA to PV
-      TH1D*		      fhQAV0sDCADaughters[fiNumIndexQA];//! DCA between V0 daughters
-      TH1D*		      fhQAV0sDecayRadius[fiNumIndexQA];//! Distance between PV and Secondary vertex in transverse plane
-      TH1D*                   fhQAV0sInvMassK0s[fiNumIndexQA];//! inv. mass dist of V0s (K0s mass hypothesis)
-      TH1D*		      fhQAV0sInvMassLambda[fiNumIndexQA];//! inv. mass dist of V0s ((A)Lambda mass hypothesis)
+      TH1D*			  		        fhQAV0sDCAtoPV[fiNumIndexQA];	//! V0 DCA to PV
+      TH1D*			  		        fhQAV0sDCADaughters[fiNumIndexQA];	//! DCA between V0 daughters
+      TH1D*			  		        fhQAV0sDecayRadius[fiNumIndexQA];	//! Distance between PV and Secondary vertex in transverse plane
+      TH1D*                   fhQAV0sInvMassK0s[fiNumIndexQA];    //! inv. mass dist of V0s (K0s mass hypothesis)
+      TH1D*					          fhQAV0sInvMassLambda[fiNumIndexQA];	//! inv. mass dist of V0s ((A)Lambda mass hypothesis)
       TH1D*                   fhQAV0sMotherPt[fiNumIndexQA];  //! pT dist of V0s
-      TH1D*		      fhQAV0sMotherPhi[fiNumIndexQA];//! azimuthal dist of V0s
+      TH1D*					          fhQAV0sMotherPhi[fiNumIndexQA];	//! azimuthal dist of V0s
       TH1D*                   fhQAV0sMotherEta[fiNumIndexQA]; //! pseudorapidity dist of V0s
       TH1D*                   fhQAV0sMotherCharge[fiNumIndexQA]; //! charge distribution of mothers
       TH1D*                   fhQAV0sMotherRapK0s[fiNumIndexQA];  //! rapidity dist of V0s (K0s mass hypothesis)
       TH1D*                   fhQAV0sMotherRapLambda[fiNumIndexQA]; //! rapidity dist of V0s (Lambda mass hypothesis)
-      TH1D*                   fhQAV0sDaughterPt[fiNumIndexQA];//! pT dist of V0 daughters
-      TH1D*		      fhQAV0sDaughterPhi[fiNumIndexQA];//! pT dist of V0 daughters
-      TH1D*                   fhQAV0sDaughterEta[fiNumIndexQA];//! pseudorapidity dist of V0 daughters
-      TH1D*                   fhQAV0sDaughterCharge[fiNumIndexQA];//! charge distribution of daughters
-      TH1D*		      fhQAV0sDaughterTPCstatus[fiNumIndexQA];//! TPC dEdx vs p of K0s daughters
-      TH1D*		      fhQAV0sDaughterTOFstatus[fiNumIndexQA];//! TPC dEdx vs p of K0s daughters
-      TH2D*		      fhQAV0sDaughterTPCdEdxK0s[fiNumIndexQA];//! TPC dEdx vs p of K0s daughters
-      TH2D*		      fhQAV0sDaughterNumSigmaPionK0s[fiNumIndexQA];//! Number of TPC sigmas (pion) vs mother pT of K0s daughters
-      TH2D*		      fhQAV0sDaughterTPCdEdxLambda[fiNumIndexQA];//! TPC dEdx vs p of Lambda daughters
-      TH2D*                   fhQAV0sDaughterNumSigmaPionLambda[fiNumIndexQA];//! number of TPC sigmas vs mother pT of pion (Lambda candidates)
-      TH2D*                   fhQAV0sDaughterNumSigmaProtonLambda[fiNumIndexQA];//! number of TPC sigmas vs mother pT of proton (Lambda candidates)
-      TH2D*                   fhQAV0sDaughterNumSigmaPionALambda[fiNumIndexQA];//! number of TPC sigmas vs mother pT of pion (Anti-Lambda candidates)
+      TH1D*                   fhQAV0sDaughterPt[fiNumIndexQA];    //! pT dist of V0 daughters
+      TH1D*					          fhQAV0sDaughterPhi[fiNumIndexQA];	//! pT dist of V0 daughters
+      TH1D*                   fhQAV0sDaughterEta[fiNumIndexQA];   //! pseudorapidity dist of V0 daughters
+      TH1D*                   fhQAV0sDaughterCharge[fiNumIndexQA]; //! charge distribution of daughters
+      TH1D*					          fhQAV0sDaughterTPCstatus[fiNumIndexQA];	//! TPC dEdx vs p of K0s daughters
+      TH1D*					          fhQAV0sDaughterTOFstatus[fiNumIndexQA];	//! TPC dEdx vs p of K0s daughters
+      TH2D*					          fhQAV0sDaughterTPCdEdxK0s[fiNumIndexQA];	//! TPC dEdx vs p of K0s daughters
+      TH2D*					          fhQAV0sDaughterNumSigmaPionK0s[fiNumIndexQA];	//! Number of TPC sigmas (pion) vs mother pT of K0s daughters
+      TH2D*					          fhQAV0sDaughterTPCdEdxLambda[fiNumIndexQA];	//! TPC dEdx vs p of Lambda daughters
+      TH2D*                   fhQAV0sDaughterNumSigmaPionLambda[fiNumIndexQA];  //! number of TPC sigmas vs mother pT of pion (Lambda candidates)
+      TH2D*                   fhQAV0sDaughterNumSigmaProtonLambda[fiNumIndexQA];  //! number of TPC sigmas vs mother pT of proton (Lambda candidates)
+      TH2D*                   fhQAV0sDaughterNumSigmaPionALambda[fiNumIndexQA];  //! number of TPC sigmas vs mother pT of pion (Anti-Lambda candidates)
       TH2D*                   fhQAV0sDaughterNumSigmaProtonALambda[fiNumIndexQA];  //! number of TPC sigmas vs mother pT of proton (Anti-Lambda candidates)
-      TH1D*		      fhQAV0sCPAK0s[fiNumIndexQA];//! cosine of pointing angle of K0s candidates
-      TH1D*		      fhQAV0sCPALambda[fiNumIndexQA];//! cosine of pointing angle of Lambda candidates
-      TH1D*		      fhQAV0sNumTauK0s[fiNumIndexQA];//! number of c*tau of K0s candidates
-      TH1D*		      fhQAV0sNumTauLambda[fiNumIndexQA];//! number of c*tau of Lambda candidates
-      TH2D*		      fhQAV0sArmenterosK0s[fiNumIndexQA];//! Armenteros-Podolanski plot for K0s candidates
-      TH2D*		      fhQAV0sArmenterosLambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for Lambda candidates
-      TH2D*		      fhQAV0sArmenterosALambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for ALambda candidates
-       TH2D*                  fhEventq2TPC;//!Event q2  
-      ClassDef(AliAnalysisTaskUniFlowMultiStrange, 0);
-};
+      TH1D*					          fhQAV0sCPAK0s[fiNumIndexQA];	//! cosine of pointing angle of K0s candidates
+      TH1D*					          fhQAV0sCPALambda[fiNumIndexQA];	//! cosine of pointing angle of Lambda candidates
+      TH1D*					          fhQAV0sNumTauK0s[fiNumIndexQA];	//! number of c*tau of K0s candidates
+      TH1D*					          fhQAV0sNumTauLambda[fiNumIndexQA];	//! number of c*tau of Lambda candidates
+      TH2D*				   	        fhQAV0sArmenterosK0s[fiNumIndexQA];	//! Armenteros-Podolanski plot for K0s candidates
+      TH2D*			  		        fhQAV0sArmenterosLambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for Lambda candidates
+      TH2D*			  		        fhQAV0sArmenterosALambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for ALambda candidates
+ 
+      TH2D*       fhEventq2TPC;//!Event q2 
+      TH2D*       fhVZEROChannel;//!gain equalisation
+      TH2D*       fhQxV0A;//!
+      TH2D*       fhQxV0C;//!
+      TH1D*       fhPsi2V0A;//!
+      TH2D*       fhQyV0A;//!
+      TH2D*       fhQyV0C;//!
+      TH1D*       fhPsi2V0C;//!
 
+      ClassDef(AliAnalysisTaskUniFlowMultiStrange, 7);
+};
+/*
+AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
+fbDoRefs(0),
+fbDoPOIs(0),
+fiNumHarm(0),
+fiNumGaps(0),
+fiHarm(std::vector<Int_t>()),
+fdGaps(std::vector<Double_t>()),
+fsName(TString()),
+fsLabel(TString())
+{};
+// ============================================================================
+AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask(Bool_t refs, Bool_t pois, std::vector<Int_t> harm, std::vector<Double_t> gaps) :
+fbDoRefs(refs),
+fbDoPOIs(pois),
+fiNumHarm(0),
+fiNumGaps(0),
+fiHarm(harm),
+fdGaps(gaps),
+fsName(TString()),
+fsLabel(TString())
+{
+    // constructor of CorrTask
+    
+    fiNumHarm = harm.size();
+    fiNumGaps = gaps.size();
+    
+    if(fiNumHarm < 2) { return; }
+    
+    // generating name
+    TString sName = Form("<<%d>>(%d",fiNumHarm,fiHarm[0]);
+    for(Int_t i(1); i < fiNumHarm; ++i) { sName += Form(",%d",fiHarm[i]); }
+    sName += ")";
+    
+    if(fiNumGaps > 0) {
+        sName += Form("_%dsub(%.2g",fiNumGaps+1,fdGaps[0]);
+        for(Int_t i(1); i < fiNumGaps; ++i) { sName += Form(",%.2g",fdGaps[i]); }
+        sName += ")";
+    }
+    
+    // generating label
+    TString sLabel = Form("<<%d>>_{%d",fiNumHarm,fiHarm[0]);
+    for(Int_t i(1); i < fiNumHarm; ++i) { sLabel += Form(",%d",fiHarm[i]); }
+    sLabel += "}";
+    
+    if(fiNumGaps > 0) {
+        sLabel += Form(" %dsub(|#Delta#eta| > %.2g",fiNumGaps+1,fdGaps[0]);
+        for(Int_t i(1); i < fiNumGaps; ++i) { sLabel += Form(", |#Delta#eta| > %.2g",fdGaps[i]); }
+        sLabel += ")";
+    }    
+    fsName = sName;
+    fsLabel = sLabel;
+}
+*/
 #endif

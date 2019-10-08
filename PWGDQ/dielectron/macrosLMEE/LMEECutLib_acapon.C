@@ -11,6 +11,7 @@ class LMEECutLib {
     kTTreeCuts,
     // Current primary analysis cut
     kCutSet1,
+    kCutSet2, //Remove fITSshared clsuter cut
     // Cut settings to obtain PID correction maps
     kV0_ITScorr,
     kV0_TPCcorr,
@@ -1200,7 +1201,6 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->Print();
       return trackCuts;
     case kCutSet1:
-
       varCutsFilter->AddCut(AliDielectronVarManager::kEta,            -0.80, 0.80);
       varCutsFilter->AddCut(AliDielectronVarManager::kPt,             0.2,   20.);
       varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  200.);
@@ -1214,6 +1214,33 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       }else{
         varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0,   100.0); // < 3
         varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
+      }
+      varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
+
+      // Select filterbit 4
+      trackCutsFilter->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//or 1<<4
+      trackCutsFilter->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kFirst);
+      // Refits
+      trackCutsFilter->SetRequireITSRefit(kTRUE);
+      trackCutsFilter->SetRequireTPCRefit(kTRUE);
+
+      trackCuts->AddCut(varCutsFilter);
+      trackCuts->AddCut(trackCutsFilter);
+      trackCuts->AddCut(GetPIDCuts(PIDcuts));
+      trackCuts->Print();
+      return trackCuts;
+    case kCutSet2:
+      varCutsFilter->AddCut(AliDielectronVarManager::kEta,            -0.80, 0.80);
+      varCutsFilter->AddCut(AliDielectronVarManager::kPt,             0.2,   20.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      100.0, 200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,   1.1);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,  1.0);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,  3.0);
+      if(wSDD){
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0); // < 5
+      }else{
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0,   100.0); // < 3
       }
       varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
 
@@ -2089,6 +2116,14 @@ void LMEECutLib::SetSignalsMC(AliDielectron* die){
   PiDalitz->SetCheckBothChargesMothers(kTRUE,kTRUE);
   die->AddSignalMC(PiDalitz);
 
+  // Dielectron pairs from same mother (excluding conversions)
+  AliDielectronSignalMC* pair_sameMother = new AliDielectronSignalMC("sameMother","sameMother");
+  pair_sameMother->SetLegPDGs(11,-11);
+  pair_sameMother->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  pair_sameMother->SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother->SetMotherPDGs(22,22,kTRUE,kTRUE); // Exclude conversion
+  die->AddSignalMC(pair_sameMother);
   // Used pdg codes (defined in AliDielectronMC::ComparePDG)
   // 401: open charm meson
   // 404: charged open charmed mesons NO s quark

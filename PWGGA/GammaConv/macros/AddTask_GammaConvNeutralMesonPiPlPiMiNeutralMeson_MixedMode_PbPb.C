@@ -17,7 +17,7 @@
 //***************************************************************************************
 //This AddTask is supposed to set up the main task
 //($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson.cxx) for
-//pp together with all supporting classes
+//PbPb together with all supporting classes
 //***************************************************************************************
 
 //***************************************************************************************
@@ -38,6 +38,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb(
     Double_t  tolerance                   = -1,
     TString   periodNameV0Reader          = "",                       // period Name for V0Reader
     Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
+    Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -55,14 +56,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb(
         TString tempType = tempStr;
         tempType.Replace(0,2,"");
         trackMatcherRunningMode = tempType.Atoi();
-        cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+        cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_PbPb will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
       }
     }
   }
   TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+    cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
 
   Int_t isHeavyIon = 1;
@@ -71,7 +72,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb(
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp_%i",trainConfig), "No analysis manager found.");
+    Error(Form("AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb_%i",trainConfig), "No analysis manager found.");
     return ;
   }
 
@@ -103,6 +104,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     AliPrimaryPionCuts *fPionCuts=0;
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
+      fPionCuts->SetPrefilterRunFlag(prefilterRunFlag);
       if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
       fPionCuts->SetPeriodName(periodNameV0Reader);
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
@@ -277,6 +279,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
     TString cutName( Form("%s_%s_%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(), (cuts.GetPhotonCut(i)).Data(), (cuts.GetClusterCut(i)).Data(),(cuts.GetPionCut(i)).Data(),(cuts.GetNDMCut(i)).Data(), (cuts.GetMesonCut(i)).Data() ) );
     analysisPionCuts[i] = new AliPrimaryPionCuts();
+    analysisPionCuts[i]->SetPrefilterRunFlag(prefilterRunFlag);
     analysisPionCuts[i]->SetPeriodName(periodNameV0Reader);
     if(runLightOutput>0) analysisPionCuts[i]->SetLightOutput(kTRUE);
 

@@ -73,6 +73,7 @@ public:
   Bool_t IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Bool_t IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMother);
   Bool_t IsMCTruth(const AliDielectronPair* pair, const AliDielectronSignalMC* signalMC) const;
+  Bool_t IsMCTruth(const AliDielectronPair* pair1, const AliDielectronPair* pair2, const AliDielectronSignalMC* signalMC1, const AliDielectronSignalMC* signalMC2) const;
   Bool_t IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, const AliDielectronSignalMC* signalMC) const;
   Bool_t IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, AliVParticle* mcD3, AliVParticle* mcD4, const AliDielectronSignalMC* signalMC1, const AliDielectronSignalMC* signalMC2) const;
   Bool_t IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, Int_t branch) const;

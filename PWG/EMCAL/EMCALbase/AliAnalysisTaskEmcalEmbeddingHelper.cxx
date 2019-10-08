@@ -1641,11 +1641,20 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
       }
     }
 
-    // If the internal event was rejected, then record and move on.
+    // If the internal event was rejected, then record and skip this internal event by asking the
+    // analysis manager to break the execution.
     if (fEmbeddedEventUsed == false) {
       if (fCreateHisto) {
         PostData(1, fOutput);
       }
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      if (!mgr) {
+        AliFatal("No analysis manager to connect to.");
+      }
+      // Ask the analysis manager to break execution, which will prevent any downstream tasks
+      // from executing.
+      AliDebugStream(3) << "Internal event rejected due to event selection. Breaking execution early.\n";
+      mgr->BreakExecutionChain(kTRUE);
       return;
     }
   }

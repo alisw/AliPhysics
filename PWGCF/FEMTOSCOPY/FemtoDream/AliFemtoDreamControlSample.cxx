@@ -95,7 +95,7 @@ void AliFemtoDreamControlSample::SetEvent(
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   auto itSpec1 = Particles.begin();
   bool sameParticle = false;
-  int minimumSize;
+  size_t minimumSize;
   while (itSpec1 != Particles.end()) {
     auto itSpec2 = itSpec1;
     auto itPDGPar2 = itPDGPar1;

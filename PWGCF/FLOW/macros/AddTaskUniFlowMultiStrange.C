@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-// AddUniFlowMultiStange.C                                                     //
-// Author: Ya Zhu ya.zhu@cern.ch       //
+// AddUniFlow                                                     //
+// Author: Vojtech Pacik (vojtech.pacik@cern.ch), NBI, 2016       //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;

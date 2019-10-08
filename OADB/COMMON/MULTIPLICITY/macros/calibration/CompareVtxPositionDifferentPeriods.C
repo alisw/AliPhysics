@@ -265,6 +265,8 @@ void CompareVtxPositionDifferentPeriods(
     collisionSystem = "Xe-Xe #sqrt{#it{s}_{_{NN}}} = 5.44 TeV";
   else if ( energy.CompareTo("5TeV") == 0 )
     collisionSystem = "pp #sqrt{#it{s}} = 5.02 TeV";
+  else if ( energy.CompareTo("13TeVLowB") == 0 )
+    collisionSystem = "pp #sqrt{#it{s}} = 13 TeV, B = 0.2 T";
 
 
   TString nameOutputDir = Form("CalibrationQA/CompareDifferentPeriods%s_%s",addName.Data(), energy.Data());

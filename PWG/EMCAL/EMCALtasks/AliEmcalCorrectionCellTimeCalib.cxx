@@ -30,6 +30,7 @@ AliEmcalCorrectionCellTimeCalib::AliEmcalCorrectionCellTimeCalib() :
   ,fCalibrateTime(kFALSE)
   ,fCalibrateTimeL1Phase(kFALSE)
   ,fDoMergedBCs(kFALSE)
+  ,fDoCalibrateLowGain(kFALSE)
   ,fUseAutomaticTimeCalib(1)
 {
 }
@@ -61,6 +62,13 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
 
   if (fDoMergedBCs)
     fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
+
+  GetProperty("doCalibrateLowGain", fDoCalibrateLowGain);    
+
+  if (fDoCalibrateLowGain)
+    fRecoUtils->SwitchOnLG();
+  else
+    fRecoUtils->SwitchOffLG();
 
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
@@ -235,6 +243,30 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     
       h->SetDirectory(0);
       fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+
+      if(fDoCalibrateLowGain){
+        TH1F *hLG = (TH1F*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i+4);
+        if (hLG)
+          delete hLG;
+      
+        hLG = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvLGBC%d",i));
+      
+        if (!hLG)
+        {
+          AliError(Form("Can not get hAllTimeAvLGBC%d",i));
+          continue;
+        }
+      
+        // Shift parameters for bc0 and bc1 in this pass
+        if ( pass=="spc_calo" && (i==0 || i==1) ) 
+        {
+          for(Int_t icell = 0; icell < hLG->GetNbinsX(); icell++) 
+            hLG->SetBinContent(icell,hLG->GetBinContent(icell)-100);
+        }
+      
+        hLG->SetDirectory(0);
+        fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i+4,hLG);
+      }
     }
   }else{
   
@@ -249,6 +281,20 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     
     h->SetDirectory(0);
     fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);//HG cells
+
+    if(fDoCalibrateLowGain){
+      TH1S *hLG = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(1);//LG cells
+      if (hLG)
+        delete hLG;
+    
+      hLG = (TH1S*)arrayBCpass->FindObject("hAllTimeAvLG");
+    
+      if (!hLG)
+        AliError("Can not get hAllTimeAvLG");
+      
+      hLG->SetDirectory(0);
+      fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(1,hLG);//LG cells
+    }
   }
   
   return 1;
@@ -332,7 +378,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
   arrayBCpass->Print();
   
   
-  TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+  TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM(0);
   if (h) delete h;
   
   h = (TH1C*)arrayBCpass->FindObject(Form("h%d",runBC));
@@ -341,7 +387,34 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
     AliFatal(Form("There is no calibration histogram h%d for this run",runBC));
   }
   h->SetDirectory(0);
-  fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
+  fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h,0);
+
+  //Now special case for PAR runs
+  fRecoUtils->SwitchOffParRun();
+  //access tree from OADB file
+  TTree *tGID = (TTree*)arrayBCpass->FindObject(Form("h%d_GID",runBC));
+  if(tGID){//check whether present = PAR run
+    fRecoUtils->SwitchOnParRun();
+    //access tree branch with PARs
+    ULong64_t parGlobalBCs;
+    tGID->SetBranchAddress("GID",&parGlobalBCs);
+    //set number of PARs in run
+    Short_t nPars = (Short_t) tGID->GetEntries();
+    fRecoUtils->SetNPars((Short_t)nPars);
+    //set global ID for each PAR
+    for (Short_t iParNumber = 0; iParNumber < nPars; ++iParNumber) {
+      tGID->GetEntry(iParNumber);
+      fRecoUtils->SetGlobalIDPar(parGlobalBCs,iParNumber);
+    }//loop over entries  
+
+    //access GlobalID hiostograms for each PAR
+    for(Short_t iParNumber=1; iParNumber< fRecoUtils->GetNPars()+1;iParNumber++){
+      TH1C *hPar = (TH1C*)arrayBCpass->FindObject( Form("h%d_%llu",runBC,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+      if (!hPar) AliError( Form("Could not load h%d_%llu",runBC,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+      hPar->SetDirectory(0);
+      fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(hPar,iParNumber);
+    }//loop over PARs
+  }//end if tGID present  
   
   return 1;
 }

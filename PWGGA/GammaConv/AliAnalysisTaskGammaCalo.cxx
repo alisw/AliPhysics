@@ -284,6 +284,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoEventSphericityAxis(NULL),
   fHistoEventSphericityvsNtracks(NULL),
   fHistoEventSphericityvsNJets(NULL),
+  fHistoEventMultiplicityvsNJets(NULL),
   fHistoTrueSphericityvsRecSphericity(NULL),
   fHistoTrueMultiplicityvsRecMultiplicity(NULL),
   fHistoEventSphericityvsHighpt(NULL),
@@ -685,6 +686,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoEventSphericityAxis(NULL),
   fHistoEventSphericityvsNtracks(NULL),
   fHistoEventSphericityvsNJets(NULL),
+  fHistoEventMultiplicityvsNJets(NULL),
   fHistoTrueSphericityvsRecSphericity(NULL),
   fHistoTrueMultiplicityvsRecMultiplicity(NULL),
   fHistoEventSphericityvsHighpt(NULL),
@@ -1012,27 +1014,37 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     nBinsMinv                 = 150;
     maxMinv                  = 0.3;
   }
-  if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV || ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k7TeV ){
-    nBinsPt                   = 400;
+  if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ||
+      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k7TeV ||
+      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
+    nBinsPt                   = 169;
     minPt                     = 0;
-    maxPt                     = 40;
+    maxPt                     = 50;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      arrPtBinning[i]         = ((maxPt-minPt)/nBinsPt)*i;
+      if (i < 100) arrPtBinning[i]            = 0.10*i;
+      else if(i<140) arrPtBinning[i]          = 10.+0.25*(i-100);
+      else if(i<170) arrPtBinning[i]          = 20.+1.00*(i-140);
+      else arrPtBinning[i]                    = maxPt;
     }
-    nBinsQAPt                 = 190;
-    maxQAPt                   = 40;
+    nBinsQAPt                 = 169;
+    maxQAPt                   = 50;
     for(Int_t i=0; i<nBinsQAPt+1;i++){
-      if(i<60)  arrQAPtBinning[i]             = 0.05*i;
-      else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-      else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-      else if(i<190) arrQAPtBinning[i]        = 20.+1.0*(i-170);
-      else  arrQAPtBinning[i]                 = maxQAPt;
+      if (i < 100) arrQAPtBinning[i]            = 0.10*i;
+      else if(i<140) arrQAPtBinning[i]          = 10.+0.25*(i-100);
+      else if(i<170) arrQAPtBinning[i]          = 20.+1.00*(i-140);
+      else arrQAPtBinning[i]                    = maxQAPt;
     }
-    nBinsClusterPt            = 800;
+    nBinsClusterPt            = 310;
     minClusterPt              = 0;
-    maxClusterPt              = 80;
+    maxClusterPt              = 100;
     for(Int_t i=0; i<nBinsClusterPt+1;i++){
-      arrClusPtBinning[i]     = ((maxClusterPt-minClusterPt)/nBinsClusterPt)*i;
+      if (i < 1) arrClusPtBinning[i]          = 0.3*i;
+      else if(i<198) arrClusPtBinning[i]      = 0.3+0.1*(i-1);
+      else if(i<238) arrClusPtBinning[i]      = 20.+0.25*(i-198);
+      else if(i<278) arrClusPtBinning[i]      = 30.+0.5*(i-238);
+      else if(i<298) arrClusPtBinning[i]      = 50.+1.0*(i-278);
+      else if(i<310) arrClusPtBinning[i]      = 70.+2.5*(i-298);
+      else arrClusPtBinning[i]                = maxClusterPt;
     }
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ){
@@ -1105,41 +1117,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       }
     }
 
-  } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
-    binWidthPt                = 0.05;
-    nBinsPt                   = 201;
-    minPt                     = 0;
-    maxPt                     = 60;
-    for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.5*i;
-      else if(i<51) arrPtBinning[i]           = 0.5+0.05*(i-1);
-      else if(i<121) arrPtBinning[i]          = 3.+0.1*(i-51);
-      else if(i<161) arrPtBinning[i]          = 10.+0.25*(i-121);
-      else if(i<201) arrPtBinning[i]          = 20.+1.0*(i-161);
-      else arrPtBinning[i]                    = maxPt;
-    }
-    nBinsQAPt                 = 210;
-    maxQAPt                   = 60;
-    for(Int_t i=0; i<nBinsQAPt+1;i++){
-      if(i<60) arrQAPtBinning[i]              = 0.05*i;
-      else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-      else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-      else if(i<210) arrQAPtBinning[i]        = 20.+1.0*(i-170);
-      else arrQAPtBinning[i]                  = maxQAPt;
-    }
-    nBinsClusterPt            = 301;
-    minClusterPt              = 0;
-    maxClusterPt              = 100;
-    for(Int_t i=0; i<nBinsClusterPt+1;i++){
-      if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-      else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
-      else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
-      else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
-      else if(i<211) arrClusPtBinning[i]      = 16.+0.25*(i-155);
-      else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
-      else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
-      else arrClusPtBinning[i]                = maxClusterPt;
-    }
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV   ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV   ){
@@ -1207,14 +1184,14 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV  ){
-    nBinsPt                   = 88;
+    nBinsPt                   = 108;
     minPt                     = 0;
-    maxPt                     = 20;
+    maxPt                     = 40;
     for(Int_t i=0; i<nBinsPt+1;i++){
       if (i < 1) arrPtBinning[i]              = 0.5*i;
       else if(i<56) arrPtBinning[i]           = 0.5+0.1*(i-1);
       else if(i<80) arrPtBinning[i]           = 6.+0.25*(i-56);
-      else if(i<88) arrPtBinning[i]           = 12.+1.0*(i-80);
+      else if(i<108) arrPtBinning[i]          = 12.+1.0*(i-80);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 92;
@@ -1303,6 +1280,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoEventSphericityAxis   = new TH1F*[fnCuts];
     fHistoEventSphericityvsNtracks    = new TH2F*[fnCuts];
     fHistoEventSphericityvsNJets      = new TH2F*[fnCuts];
+    fHistoEventMultiplicityvsNJets      = new TH2F*[fnCuts];
     if(fIsMC >0){
       fHistoTrueSphericityvsRecSphericity     = new TH2F*[fnCuts];
       fHistoTrueMultiplicityvsRecMultiplicity = new TH2F*[fnCuts];
@@ -1501,6 +1479,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoEventSphericityvsNJets[iCut]->GetXaxis()->SetTitle("S");
       fHistoEventSphericityvsNJets[iCut]->GetYaxis()->SetTitle("NJets");
       fESDList[iCut]->Add(fHistoEventSphericityvsNJets[iCut]);
+      fHistoEventMultiplicityvsNJets[iCut]  = new TH2F("Multiplicity vs NJets", "EventSphericity vs NJets", 100, 0, 100, 10, 0, 10);
+      fHistoEventMultiplicityvsNJets[iCut]->GetXaxis()->SetTitle("Mult");
+      fHistoEventMultiplicityvsNJets[iCut]->GetYaxis()->SetTitle("NJets");
+      fESDList[iCut]->Add(fHistoEventMultiplicityvsNJets[iCut]);
       }
       if(fIsMC>0){
         fHistoTrueSphericityvsRecSphericity[iCut]  = new TH2F("True Sphericity vs rec. Sphericity", "True Sphericity vs rec. Sphericity", 50, 0, 1, 50, 0, 1);
@@ -1618,7 +1600,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoEventSphericity[iCut]->Sumw2();
         fHistoEventSphericityAxis[iCut]->Sumw2();
         fHistoEventSphericityvsNtracks[iCut]->Sumw2();
-        if(fDoJetAnalysis) fHistoEventSphericityvsNJets[iCut]->Sumw2();
+        if(fDoJetAnalysis){
+          fHistoEventSphericityvsNJets[iCut]->Sumw2();
+          fHistoEventMultiplicityvsNJets[iCut]->Sumw2();
+        }
         fHistoTrueSphericityvsRecSphericity[iCut]->Sumw2();
         fHistoTrueMultiplicityvsRecMultiplicity[iCut]->Sumw2();
         fHistoEventSphericityvsHighpt[iCut]->Sumw2();
@@ -3379,6 +3364,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
                 fHistoEventSphericityvsNtracks[iCut]->Fill(fV0Reader->GetSphericity(), fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
             }
             fHistoEventSphericityvsNJets[iCut]->Fill(fV0Reader->GetSphericity(), fConvJetReader->GetNJets(), fWeightJetJetMC);
+            fHistoEventMultiplicityvsNJets[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fConvJetReader->GetNJets(), fWeightJetJetMC);
             if(fIsMC>0){
                 fHistoTrueSphericityvsRecSphericity[iCut]->Fill(fV0Reader->GetSphericityTrue(), fV0Reader->GetSphericity(), fWeightJetJetMC);
                 fHistoTrueMultiplicityvsRecMultiplicity[iCut]->Fill(fV0Reader->GetNumberOfTruePrimaryTracks(), fV0Reader->GetNumberOfRecTracks(), fWeightJetJetMC);
@@ -3398,6 +3384,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
                 fHistoEventSphericityvsNtracks[iCut]->Fill(fV0Reader->GetSphericity(), fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
             }
             fHistoEventSphericityvsNJets[iCut]->Fill(fV0Reader->GetSphericity(), fConvJetReader->GetNJets(), fWeightJetJetMC);
+            fHistoEventMultiplicityvsNJets[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fConvJetReader->GetNJets(), fWeightJetJetMC);
             if(fIsMC>0){
                 fHistoTrueSphericityvsRecSphericity[iCut]->Fill(fV0Reader->GetSphericityTrue(), fV0Reader->GetSphericity(), fWeightJetJetMC);
                 fHistoTrueMultiplicityvsRecMultiplicity[iCut]->Fill(fV0Reader->GetNumberOfTruePrimaryTracks(), fV0Reader->GetNumberOfRecTracks(), fWeightJetJetMC);

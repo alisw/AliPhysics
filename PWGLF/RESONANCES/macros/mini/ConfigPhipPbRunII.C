@@ -1,6 +1,5 @@
 /***************************************************************************
               sandeep.dudi@cern.ch - last modified on 16/01/2018
-
 // *** Configuration script for KStar-Meson analysis with 2016 PbPb runs ***
 // 
 // A configuration script for RSN package needs to define the followings:
@@ -100,7 +99,7 @@ Bool_t ConfigPhipPbRunII(AliRsnMiniAnalysisTask *task,
     //axis W: pseudorapidity
     //out->AddAxis(etaID, 20, -1.0, 1.0);
     //axis J: rapidity
-    out->AddAxis(yID, 18, -0.9, 0.9);
+    out->AddAxis(yID, 200, -0.8, 0.2);
   }
   return kTRUE;
 }

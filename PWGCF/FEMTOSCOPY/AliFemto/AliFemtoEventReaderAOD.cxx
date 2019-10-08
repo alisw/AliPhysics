@@ -106,6 +106,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   f1DcorrectionsAll(0),
   f1DcorrectionsLambdas(0),
   f1DcorrectionsLambdasMinus(0),
+  f1DcorrectionsXiPlus(0),
+  f1DcorrectionsXiMinus(0),
   f4DcorrectionsPions(0),
   f4DcorrectionsKaons(0),
   f4DcorrectionsProtons(0),
@@ -184,6 +186,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   f1DcorrectionsAll(aReader.f1DcorrectionsAll),
   f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas),
   f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus),
+  f1DcorrectionsXiPlus(aReader.f1DcorrectionsXiPlus),
+  f1DcorrectionsXiMinus(aReader.f1DcorrectionsXiMinus),
   f4DcorrectionsPions(aReader.f4DcorrectionsPions),
   f4DcorrectionsKaons(aReader.f4DcorrectionsKaons),
   f4DcorrectionsProtons(aReader.f4DcorrectionsProtons),
@@ -290,6 +294,8 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   f1DcorrectionsAll = aReader.f1DcorrectionsAll;
   f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
   f1DcorrectionsLambdasMinus = aReader.f1DcorrectionsLambdasMinus;
+  f1DcorrectionsXiPlus = aReader.f1DcorrectionsXiPlus;
+  f1DcorrectionsXiMinus = aReader.f1DcorrectionsXiMinus;
   f4DcorrectionsPions = aReader.f4DcorrectionsPions;
   f4DcorrectionsKaons = aReader.f4DcorrectionsKaons;
   f4DcorrectionsProtons = aReader.f4DcorrectionsProtons;
@@ -662,7 +668,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       //have at least 1 hit in ITS or TOF.
       bool passTrackPileUp = false;
       //does tof timing exist for our track?
-      
+
       if(fFilterBit == (1 << 7) || fFilterMask == 128){
 
    	   if (aodtrackpid->GetTOFBunchCrossing() == 0) passTrackPileUp = true;
@@ -671,7 +677,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
                delete trackCopy;
                continue;
 	    }
-     
+
       	   //loop over the 4 ITS Layrs and check for a hit!
       	   for (int i = 0; i < 2; ++i) {
                //we use layers 0, 1 /OR/ 0, 1, 4, 5
@@ -683,14 +689,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
                delete trackCopy;
 	       continue;
 	   }
-     
-       }  
+
+       }
 
        else{
 
    	   if (aodtrack->GetTOFBunchCrossing() == 0) passTrackPileUp = true;
            //check ITS refit
-     	    if (!(aodtrack->GetStatus() & AliESDtrack::kITSrefit)){ 
+     	    if (!(aodtrack->GetStatus() & AliESDtrack::kITSrefit)){
                delete trackCopy;
                continue;
             }
@@ -704,14 +710,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
                delete trackCopy;
 	       continue;
            }
-     
-       } 
+
+       }
 
     }
 
     if(fFilterBit == (1 << 7) || fFilterMask == 128)
         CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
-    else 
+    else
 	CopyPIDtoFemtoTrack(aodtrack, trackCopy);
 
 
@@ -1887,6 +1893,15 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   tFemtoXi->SetChargeXi(tAODxi->ChargeXi());
   tFemtoXi->SetptXi(std::sqrt(tAODxi->Pt2Xi()));
 
+
+    if (f1DcorrectionsXiPlus) {
+      tFemtoXi->SetCorrectionXiPlus(f1DcorrectionsXiPlus->GetBinContent(f1DcorrectionsXiPlus->FindFixBin(tAODxi->Pt())));
+    }
+    if (f1DcorrectionsXiMinus) {
+      tFemtoXi->SetCorrectionXiMinus(f1DcorrectionsXiMinus->GetBinContent(f1DcorrectionsXiMinus->FindFixBin(tAODxi->Pt())));
+    }
+
+
   AliAODTrack *trackbac = (AliAODTrack *)tAODxi->GetDecayVertexXi()->GetDaughter(0);
 
   if (trackbac) {
@@ -2612,6 +2627,15 @@ void AliFemtoEventReaderAOD::Set1DCorrectionsLambdas(TH1D *h1)
 void AliFemtoEventReaderAOD::Set1DCorrectionsLambdasMinus(TH1D *h1)
 {
   f1DcorrectionsLambdasMinus = h1;
+}
+void AliFemtoEventReaderAOD::Set1DCorrectionsXiPlus(TH1D *h1)
+{
+  f1DcorrectionsXiPlus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsXiMinus(TH1D *h1)
+{
+  f1DcorrectionsXiMinus = h1;
 }
 
 void AliFemtoEventReaderAOD::Set4DCorrectionsPions(THnSparse *h1)

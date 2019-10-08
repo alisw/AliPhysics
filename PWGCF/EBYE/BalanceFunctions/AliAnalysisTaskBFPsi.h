@@ -213,6 +213,16 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void SetTimeRangeCutPbPb2018(){
     fUseTimeRangeCutForPbPb2018 = kTRUE;
   }
+
+  void SetTOFBCPileUpCut(){
+    fUseTOFBCPileUpCut = kTRUE;
+  }
+
+  void SetTPCInOutRowsCut(Int_t innermostRows = 2,  Int_t outermostRows = 20){
+    fUseTPCInOutRowsCut = kTRUE;
+    fInRows = innermostRows;
+    fOutRows = outermostRows; 
+  }
   
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
@@ -587,6 +597,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Int_t   fMinVtxPileUpContrSPD;
   Float_t fMinPileUpZdistSPD;
 
+  Bool_t fUseTOFBCPileUpCut;
+  
+  Bool_t fUseTPCInOutRowsCut;
+  Int_t fInRows;
+  Int_t fOutRows; 
+
   Bool_t fDetailedTracksQA; //fill Eta, Phi vs Vx histos to be used to check ME pools. 
 
   Double_t fVxMax;//vxmax
@@ -682,7 +698,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 22); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 23); // example of analysis
 };
 
 

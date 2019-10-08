@@ -30,6 +30,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
                    )
 
 # Sources in alphabetical order
@@ -79,7 +82,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD CDB EMCALUtils PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger EMCALbase EMCALrec PWGCaloTrackCorrBase ESD ESDfilter PWGGAUtils PWGGAGammaConvBase STEER STEERBase)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD CDB EMCALUtils PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger EMCALbase EMCALrec PWGCaloTrackCorrBase ESD ESDfilter PWGGAUtils PWGGAGammaConvBase STEER STEERBase PWGPPevcharQn PWGPPevcharQnInterface)
 
 # Generate the ROOT map
 # Dependecies

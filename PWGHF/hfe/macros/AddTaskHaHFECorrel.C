@@ -16,7 +16,6 @@
     Error("AddTaskHaHFECorrel", "No analysis manager found.");
     return 0;
   }
-
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskHaHFECorrel", "This task requires an input event handler");
     return 0x0;
@@ -134,8 +133,8 @@
   printf("Loading NonTagCorr\n");
   TString NonTagFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/NonTagCorrHist.root";
   TFile *NonTagFile = TFile::Open(NonTagFileName.Data());
-  NonTagFile->ls();
-  if (NonTagFile) {    
+  if (!NonTagFile->IsZombie()) {
+    NonTagFile->ls();
     TH1F * NonTagCorr = (TH1F*)NonTagFile->Get("NonTagCorr");
     if (NonTagCorr) taskMB->SetNonTagCorr(*NonTagCorr);
     else printf("Could not load NonTagCorr\n");

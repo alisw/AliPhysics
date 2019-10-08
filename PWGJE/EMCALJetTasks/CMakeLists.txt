@@ -180,7 +180,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
-    UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
     UserTasks/AliAnalysisTaskEmcalJetCorrection.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
@@ -261,6 +260,7 @@ if(FASTJET_FOUND)
         AliLundPlaneHelper.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
+	    UserTasks/AliAnalysisTaskHardestBranch.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
 	    UserTasks/AliAnalysisTaskFullpAJets.cxx
@@ -272,6 +272,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
         UserTasks/AliAnalysisTaskEA.cxx
         UserTasks/AliAnalysisEmcalJetHelperEA.cxx
+        UserTasks/AliAnalysisTaskPythiaBranchEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	    UserTasks/AliAnalysisTaskRecoilJetYield.cxx
 	    UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx
@@ -279,8 +280,10 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskSoftDrop.cxx
         UserTasks/AliAnalysisTaskSoftDropResponse.cxx
         UserTasks/AliAnalysisTaskSDKL.cxx
+        UserTasks/AliAnalysisTaskSDKLResponse.cxx
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
+        UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx

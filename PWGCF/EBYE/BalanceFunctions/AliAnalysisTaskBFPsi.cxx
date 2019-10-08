@@ -241,6 +241,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fModifySPDDefaultParams(kFALSE),
   fMinVtxPileUpContrSPD(5),
   fMinPileUpZdistSPD(0.8),
+  fUseTOFBCPileUpCut(kFALSE),
+  fUseTPCInOutRowsCut(kFALSE),
+  fInRows(2),
+  fOutRows(20), 
   fDetailedTracksQA(kFALSE),
   fVxMax(0.8),
   fVyMax(0.8),
@@ -2497,7 +2501,24 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if (!fESDtrackCuts->IsSelected(aodTrack))
 	  continue;
       }
-     
+
+      if (fUseTOFBCPileUpCut) {
+	if (!aodTrack->GetTOFBunchCrossing()==0)
+	  continue;
+      }
+      
+      if (fUseTPCInOutRowsCut) {
+	const TBits& bmap = aodTrack->GetTPCClusterMap();
+	// require at least 20 out of 25 and 3 out of 5 innermost rows
+	int nset25 = 0, nset5 = 0;
+	for (int i=0;i<25; i++) {
+	  if (!bmap.TestBitNumber(i)) continue;
+	  nset25++;
+	  if (i<5) nset5++;
+	}
+	if((nset5<fInRows) || (nset25<fOutRows))
+	  continue;
+      }
       
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
@@ -2799,7 +2820,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
          else{
 	   fHistEtaPhiPosCorr->Fill(vEta, vPhi,gCentrality, correction);
 	   fHistEtaVzPosCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
-       fHistEtaPhiVzPlusCorr->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ(), correction);
+	   fHistEtaPhiVzPlusCorr->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ(), correction);
 	 }
 	}
 	else if(vCharge < 0){
@@ -2810,7 +2831,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
          else{
  	   fHistEtaPhiNegCorr->Fill(vEta, vPhi,gCentrality, correction);
 	   fHistEtaVzNegCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
-       fHistEtaPhiVzMinusCorr->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ(), correction);
+	   fHistEtaPhiVzMinusCorr->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ(), correction);
 	  }
 	}
       }
@@ -3140,6 +3161,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
        AliError("ERROR: Could not retrieve MC event");
        return tracksAccepted;
     }
+
+    if (fUseRaaGeoCut){
+      fESDtrackCuts = new AliESDtrackCuts();
+      fESDtrackCuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
+    }
      
     for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
@@ -3163,6 +3189,29 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	    continue;
 	  //Printf("mother =%d, generatorName=%s", label, generatorName.Data()); 
 	}
+      }
+
+      if(fUseRaaGeoCut){
+	if (!fESDtrackCuts->IsSelected(aodTrack))
+	  continue;
+      }
+      
+      if (fUseTOFBCPileUpCut) {
+	if (!aodTrack->GetTOFBunchCrossing()==0)
+	  continue;
+      }
+      
+      if (fUseTPCInOutRowsCut) {
+	const TBits& bmap = aodTrack->GetTPCClusterMap();
+	// require at least 20 out of 25 and 3 out of 5 innermost rows
+	int nset25 = 0, nset5 = 0;
+	for (int i=0;i<25; i++) {
+	  if (!bmap.TestBitNumber(i)) continue;
+	  nset25++;
+	  if (i<5) nset5++;
+	}
+	if((nset5<fInRows) || (nset25<fOutRows))
+	  continue;
       }
 
       
@@ -3573,6 +3622,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
         }
         
     }//track loop
+    if (fUseRaaGeoCut) delete fESDtrackCuts;
   }//MCAODrec
   //==============================================================================================================
 

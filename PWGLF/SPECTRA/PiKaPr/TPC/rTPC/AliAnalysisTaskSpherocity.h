@@ -26,9 +26,11 @@
 #include <AliESDtrackCuts.h>
 #include <AliPIDResponse.h>
 #include "AliTPCPIDResponse.h"
-#include <AliSpherocityUtils.h>
+//#include <AliSpherocityUtils.h>
 #include <AliEventCuts.h>
 #include "AliVTrack.h"
+#include <vector>
+using namespace std;
 
 
 
@@ -60,7 +62,7 @@ public:
 		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
 		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
 		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
-		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
+//		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
 		virtual void  SetPeriod(Int_t isLHC16l) { fLHC16l = isLHC16l; }
 		virtual void  SetEstimator(const Bool_t isV0M) { fisV0Mestimator = isV0M; }
 		virtual void  SetJettyCutOff(const Double_t JettyCutOff) { fJettyCutOff = JettyCutOff; }
@@ -82,16 +84,20 @@ public:
 
 
 		TParticle* FindPrimaryMotherV0(AliStack* stack, Int_t label);
-		Int_t      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
-		Bool_t selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
-		Bool_t IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
-		Bool_t IsGoodZvertexPos(AliESDEvent *esd);
-		Bool_t PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
-		Float_t GetMaxDCApTDep(TF1* fcut, Double_t pt );
-		Double_t EtaCalibrationNeg(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationPos(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationNegEl(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationPosEl(const Int_t centrality, const Double_t Eta);
+		int      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
+		bool selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
+		bool IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
+		bool IsGoodZvertexPos(AliESDEvent *esd);
+		bool PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
+		float GetMaxDCApTDep(TF1* fcut, Double_t pt );
+                float GetSpherocity( TH1D * hphi, TH1D *heta );
+                int ReadESDEvent( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, vector<Float_t> &phiArray, TH1D * hphi, TH1D *heta );
+                float AnalyseGetSpherocity( const vector<Float_t> &pt, const vector<Float_t> &eta, const vector<Float_t> &phi );
+		bool TOFPID(AliESDtrack* track);
+		double EtaCalibrationNeg(const Int_t centrality, const Double_t Eta);
+		double EtaCalibrationPos(const Int_t centrality, const Double_t Eta);
+		double EtaCalibrationNegEl(const Int_t centrality, const Double_t Eta);
+		double EtaCalibrationPosEl(const Int_t centrality, const Double_t Eta);
 
 
 		static const Double_t fgkClight;   // Speed of light (cm/ps)
@@ -108,7 +114,7 @@ public:
 		AliAnalysisFilter* fTrackFilterTPC; // track filter for TPC only tracks
 		AliAnalysisFilter* fTrackFilter;
 		AliAnalysisUtils* utils;
-		AliSpherocityUtils* fSpheroUtils;
+//		AliSpherocityUtils* fSpheroUtils;
 		TString       fAnalysisType;        //  "ESD" or "AOD"
 		Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
 		Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
@@ -127,10 +133,13 @@ public:
 		Float_t      fMaxCent; //maximum centrality
                 const Double_t fDeDxMIPMin;
                 const Double_t fDeDxMIPMax;
-                const Double_t fdEdxHigh;
-                const Double_t fdEdxLow;
+                int fdEdxHigh;
+                int fdEdxLow;
                 Double_t fJettyCutOff;
                 Double_t fIsotrCutOff;
+		int fMinMult;
+		int fNrec;
+		float fSizeStep;
 
 		//
 		// Help variables
@@ -152,7 +161,7 @@ public:
 		TH2F*  fTrcksVsTrklets;
 		Bool_t       fdEdxCalibrated;
 		Bool_t       fMakePid;
-		Bool_t       fLowPt;
+//		Bool_t       fLowPt;
 		Int_t  fLHC16l;
 		TH1F* fcent;
 		TH1F* fcentAfterPrimaries;
@@ -206,13 +215,26 @@ public:
 
 		TH2D *hDeDxVsP[11][4][3];
 
-		TH2D *hnSigmaPiPos[11][4];
-		TH2D *hnSigmaKPos[11][4];
-		TH2D *hnSigmaPPos[11][4];
+		TH2D *hnSigmaPiPos[11][4][3];
+		TH2D *hnSigmaKPos[11][4][3];
+		TH2D *hnSigmaPPos[11][4][3];
+		TH2D *hnSigmaPiNeg[11][4][3];
+		TH2D *hnSigmaKNeg[11][4][3];
+		TH2D *hnSigmaPNeg[11][4][3];
 
-		TH2D *hnSigmaPiNeg[11][4];
-		TH2D *hnSigmaKNeg[11][4];
-		TH2D *hnSigmaPNeg[11][4];
+		TH2D *hBetavsPneg[11][4][3];
+		TH2D *hBetavsPpos[11][4][3];
+
+		TH1D *hPtneg_TPC_Eta[11][4][3];
+		TH1D *hPtpos_TPC_Eta[11][4][3];
+		TH1D *hPtneg_TPC[11][3];
+		TH1D *hPtpos_TPC[11][3];
+		TH1D *hPtneg_TOF_Eta[11][4][3];
+		TH1D *hPtpos_TOF_Eta[11][4][3];
+		TH1D *hPneg_TOF_Eta[11][4][3];
+		TH1D *hPpos_TOF_Eta[11][4][3];
+		TH1D *hPtneg_TOF[11][3];
+		TH1D *hPtpos_TOF[11][3];
 
 		TH2D* histPiV0[11][4][3];
 		TH2D* histPV0[11][4][3];

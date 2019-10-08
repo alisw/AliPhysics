@@ -364,6 +364,10 @@ void AliReducedVarManager::SetVariableDependencies() {
     fgUsedVars[kNTPCclusters] = kTRUE;
     fgUsedVars[kNTPCclustersFromPileup] = kTRUE;
   }
+  if(fgUsedVars[kNTracksTPCoutFromPileup]) {
+    fgUsedVars[kNTracksTPCoutBeforeClean] = kTRUE;
+    fgUsedVars[kVZEROTotalMultFromChannels] = kTRUE;
+  }
 }
 
 //__________________________________________________________________
@@ -768,7 +772,11 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   for(Int_t i=0;i<2;++i) values[kSPDFiredChips+i] = event->SPDFiredChips(i+1);
   for(Int_t i=0;i<6;++i) values[kITSnClusters+i] = event->ITSClusters(i+1);
   values[kSPDnSingleClusters] = event->SPDnSingleClusters();
-
+  if(fgUsedVars[kSDDandSSDclusters]) {
+     values[kSDDandSSDclusters] = 0.0;
+     for(Int_t i=2;i<6;++i) values[kSDDandSSDclusters] += event->ITSClusters(i+1);  
+  }
+  
   //VZERO detector information
   fgUsedVars[kNTracksTPCoutVsVZEROTotalMult] = kTRUE;
   if(values[kVZEROTotalMult]>1.0e-5)
@@ -796,10 +804,8 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     }
   }
   
-  fgUsedVars[kNTracksTPCoutFromPileup] = kTRUE;
-  if(values[kVZEROTotalMultFromChannels]>0.0)
-     values[kNTracksTPCoutFromPileup] = 0.0;
-  else fgUsedVars[kNTracksTPCoutFromPileup] = kFALSE;
+  if(values[kVZEROTotalMultFromChannels]>0.0) 
+     values[kNTracksTPCoutFromPileup] = values[kNTracksTPCoutBeforeClean] - (-3.2+TMath::Sqrt(3.2*3.2+4.0*1.6e-5*values[kVZEROTotalMultFromChannels]))/(2.0*1.6e-5);
   
   Float_t tpcClustersExpectationWOpileup = 0.001;
   if(fgUsedVars[kNTPCclustersFromPileup] && values[kVZEROTotalMultFromChannels]>0.0) {
@@ -2885,6 +2891,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableUnits[kITSnClusters+il] = "";
   }
   fgVariableNames[kSPDnSingleClusters]  = "SPD single clusters";    fgVariableUnits[kSPDnSingleClusters]  = "";  
+  fgVariableNames[kSDDandSSDclusters] = "SDD+SSD clusters";         fgVariableUnits[kSDDandSSDclusters] = "";
   fgVariableNames[kEventMixingId]       = "Event mixing id";        fgVariableUnits[kEventMixingId]       = "";  
   fgVariableNames[kVZEROCurrentChannel] = "VZERO channel";          fgVariableUnits[kVZEROCurrentChannel] = "";
   fgVariableNames[kVZEROCurrentChannelMult] = "VZERO channel multiplicity";   fgVariableUnits[kVZEROCurrentChannelMult] = "";

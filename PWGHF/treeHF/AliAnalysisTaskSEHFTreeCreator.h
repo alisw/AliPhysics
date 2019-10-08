@@ -37,7 +37,6 @@
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsLctopKpi.h"
-#include "AliRDHFCutsBPlustoD0Pi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsLctoV0.h"
 #include "AliNormalizationCounter.h"
@@ -65,6 +64,7 @@ class AliAODEvent;
 class TClonesArray;
 class AliEmcalJet;
 class AliRhoParameter;
+class AliCDBEntry;
 
 class AliAnalysisTaskSEHFTreeCreator : public AliAnalysisTaskSE
 {
@@ -170,11 +170,12 @@ public:
     void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
     void ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
     void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
+    void ProcessBplus(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessBs(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessLb(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessMCGen(TClonesArray *mcarray);
   
-    Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+    Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau, Bool_t ITSUpgradeStudy);
     Bool_t IsCandidateFromHijing(AliAODRecoDecayHF *cand, AliAODMCHeader *mcHeader, TClonesArray* arrMC, AliAODTrack *tr = 0x0);
     
     void SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
@@ -184,7 +185,15 @@ public:
         fEnableNsigmaTPCDataCorr=true; 
         fSystemForNsigmaTPCDataCorr=syst; 
     }
-  
+
+    void ApplyPhysicsSelectionOnline(bool apply=true) { fApplyPhysicsSelOnline = apply; }
+
+    void EnableEventDownsampling(float fractokeep, unsigned long seed) {
+        fEnableEventDownsampling = true;
+        fFracToKeepEventDownsampling = fractokeep;
+        fSeedEventDownsampling = seed;
+    }
+
     // Particles (tracks or MC particles)
     //-----------------------------------------------------------------------------------------------
     void                        SetFillParticleTree(Bool_t b) {fFillParticleTree = b;}
@@ -220,7 +229,7 @@ private:
     AliRDHFCutsDstoKKpi     *fFiltCutsDstoKKpi;                    //      DstoKKpi filtering (or loose) cuts
     AliRDHFCutsDplustoKpipi *fFiltCutsDplustoKpipi;                //      DplustoKpipi filtering (or loose) cuts
     AliRDHFCutsLctopKpi     *fFiltCutsLctopKpi    ;                //      LctopKpi filtering (or loose) cuts
-    AliRDHFCutsBPlustoD0Pi  *fFiltCutsBplustoD0pi;                 //      BplustoD0pi filtering (or loose) cuts
+    AliRDHFCutsD0toKpi      *fFiltCutsBplustoD0pi;                 //      BplustoD0pi filtering (or loose) cuts
     AliRDHFCutsDstoKKpi     *fFiltCutsBstoDspi;                    //      BstoDspi filtering (or loose) cuts
     AliRDHFCutsDStartoKpipi *fFiltCutsDstartoKpipi;                //      DstartoKpipi filtering (or loose) cuts
     AliRDHFCutsLctoV0       *fFiltCutsLc2V0bachelor;               //      Lc2V0bachelor filtering (or loose) cuts
@@ -229,7 +238,7 @@ private:
     AliRDHFCutsDstoKKpi     *fCutsDstoKKpi;                        //      DstoKKpi analysis cuts
     AliRDHFCutsDplustoKpipi *fCutsDplustoKpipi;                    //      DplustoKpipi analysis cuts
     AliRDHFCutsLctopKpi     *fCutsLctopKpi;                        //      LctopKpi analysis cuts
-    AliRDHFCutsBPlustoD0Pi  *fCutsBplustoD0pi;                     //      BplustoD0pi analysis cuts
+    AliRDHFCutsD0toKpi      *fCutsBplustoD0pi;                     //      BplustoD0pi analysis cuts
     AliRDHFCutsDstoKKpi     *fCutsBstoDspi;                        //      BstoDspi analysis cuts
     AliRDHFCutsDStartoKpipi *fCutsDstartoKpipi;                    //      DstartoKpipi analysis cuts
     AliRDHFCutsLctoV0       *fCutsLc2V0bachelor;                   //      Lc2V0bachelor analysis cuts
@@ -326,6 +335,7 @@ private:
     Int_t                   fNtracks;                              /// number of tracks
     Int_t                   fIsEvRej;                              /// flag with information about rejection of the event
     Int_t                   fRunNumber;                            /// run number
+    Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
     UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
     TString                 fFileName;
     unsigned int            fDirNumber;
@@ -353,6 +363,8 @@ private:
     Int_t                   fnV0MEq;                               /// V0M multiplicity (equalized)
     Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
     Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
+    Float_t                 fPercV0M;                              /// V0M multiplicity percentile
+    Float_t                 fMultV0M;                              /// V0M multiplicity from mult selection task
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -436,8 +448,15 @@ private:
     bool fCorrNtrVtx;
     bool fCorrV0MVtx;
 
+    bool fApplyPhysicsSelOnline;                                   /// flag to apply physics selection in the task
+    bool fEnableEventDownsampling;                                 /// flag to apply event downsampling
+    float fFracToKeepEventDownsampling;                            /// fraction of events to be kept by event downsampling
+    unsigned long fSeedEventDownsampling;                          /// seed for event downsampling
+
+    AliCDBEntry *fCdbEntry;
+
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,18);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,21);
     /// \endcond
 };
 

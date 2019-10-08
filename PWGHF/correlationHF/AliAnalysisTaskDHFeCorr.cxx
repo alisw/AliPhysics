@@ -54,6 +54,7 @@ AliAnalysisTaskDHFeCorr::AliAnalysisTaskDHFeCorr(const char *name) : AliAnalysis
     DefineOutput(3, TList::Class());
     DefineOutput(4, TTree::Class());
     DefineOutput(5, TTree::Class());
+    DefineOutput(6, TTree::Class());
 }
 
 //_____________________________________________________________________________
@@ -65,11 +66,13 @@ void AliAnalysisTaskDHFeCorr::UserCreateOutputObjects() {
     fOptElectron.SetOwner(kTRUE);
     fOptDMeson.SetOwner(kTRUE);
 
+    fEventTree = std::unique_ptr<TTree>(new TTree("event", "event"));
     fElectronTree = std::unique_ptr<TTree>(new TTree("electron", "electron"));
     fDmesonTree = std::unique_ptr<TTree>(new TTree("dmeson", "dmeson"));
 
     AddElectronVariables(fElectronTree);
     AddDMesonVariables(fDmesonTree, fDmesonSpecies);
+    AddEventVariables(fEventTree);
 
     if (fIsMC) {
         AddDMesonMCVariables(fDmesonTree);
@@ -80,6 +83,7 @@ void AliAnalysisTaskDHFeCorr::UserCreateOutputObjects() {
     fEventQAAfterCuts = CreateQAEvents("after", fOptEvent);
 
     fElectronQABeforeCuts = CreateQAElectrons(fElectronOptConfig, "electron", "before", fOptElectron);
+    fElectronQAAfterTrackCuts =CreateQAElectrons(fElectronOptConfig, "electron", "after_track_cuts", fOptElectron);
     fElectronQAAfterCuts = CreateQAElectrons(fElectronOptConfig, "electron", "after", fOptElectron);
 
     fDMesonQABeforeCuts = CreateQADMeson(fDMesonOptConfig, "dmeson", "before", fOptDMeson);
@@ -88,12 +92,19 @@ void AliAnalysisTaskDHFeCorr::UserCreateOutputObjects() {
     PostOutput();
 }
 
+void AliAnalysisTaskDHFeCorr::AddEventVariables(std::unique_ptr<TTree> &tree) {
+    tree->Branch("GridPID", &fGridPID);
+    tree->Branch("EventNumber", &fEventNumber);
+    tree->Branch("VtxZ", &fVtxZ);
+}
+
+
 void AliAnalysisTaskDHFeCorr::AddElectronVariables(std::unique_ptr<TTree> &tree) {
     tree->Branch("GridPID", &fElectron.fGridPID);
     tree->Branch("EventNumber", &fElectron.fEventNumber);
-    tree->Branch("Centrality", &fElectron.fCentrality);
-    tree->Branch("VtxZ", &fElectron.fVtxZ);
     tree->Branch("Charge", &fElectron.fCharge);
+    tree->Branch("ID", &fElectron.fID);
+    tree->Branch("P", &fElectron.fP);
     tree->Branch("Pt", &fElectron.fPt);
     tree->Branch("Eta", &fElectron.fEta);
     tree->Branch("Phi", &fElectron.fPhi);
@@ -144,6 +155,7 @@ void AliAnalysisTaskDHFeCorr::AddDMesonVariables(std::unique_ptr<TTree> &tree,
     tree->Branch("D0Daughter", &fDmeson.fD0Daughters);
     tree->Branch("NSigmaTPCDaughter", &fDmeson.fNSigmaTPCDaughters);
     tree->Branch("NSigmaTOFDaughters", &fDmeson.fNSigmaTOFDaughters);
+    tree->Branch("IDDaughters", &fDmeson.fIDDaughters);
 
     //PID
     tree->Branch("SelectionStatusDefaultPID", &fDmeson.fSelectionStatusDefaultPID);
@@ -180,6 +192,60 @@ void AliAnalysisTaskDHFeCorr::AddDMesonMCVariables(std::unique_ptr<TTree> &tree)
     tree->Branch("IsPrompt", &fDmeson.fIsPrompt);
 }
 
+std::vector<AliDHFeCorr::AliElectron> AliAnalysisTaskDHFeCorr::ElectronAnalysis(){
+    auto aod_event = dynamic_cast<AliAODEvent *>(InputEvent());
+    
+    std::vector<AliDHFeCorr::AliElectron> tracks;
+    tracks.reserve(static_cast<unsigned long>(aod_event->GetNumberOfTracks()));
+    
+    //Move tracks to a vector
+    for (int i(0); i < aod_event->GetNumberOfTracks(); i++) {
+        auto particle = AliDHFeCorr::AliElectron();
+        particle.fTrack = dynamic_cast<AliAODTrack *>(aod_event->GetTrack(i));
+        tracks.push_back(particle);
+    }
+    
+    FillElectronInformation(tracks);
+    
+    auto selected_tracks = FilterElectronsTracking(fElectronRequirements, tracks);
+    auto selected_electrons = FilterElectronsPID(fElectronRequirements, selected_tracks);
+    
+    FillElectronMCInfo(selected_electrons);
+    
+    auto selected_partner_tracks = FilterElectronsTracking(fPartnerElectronRequirements, tracks);
+    auto partner_electrons = FilterElectronsPID(fPartnerElectronRequirements, selected_partner_tracks);
+    
+    for (auto &electron: selected_electrons)
+        FindNonHFe(electron, partner_electrons);
+    
+    //fill the electron (track) QA before applying the cuts
+    FillElectronQA(tracks, fElectronQABeforeCuts);
+    
+    //fill the electron QA after track selection
+    FillElectronQA(selected_tracks, fElectronQAAfterTrackCuts);
+    //fill the electron QA after applying the cuts
+    FillElectronQA(selected_electrons, fElectronQAAfterCuts);
+    
+    return selected_electrons;
+}
+
+std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::DMesonAnalysis() {
+    auto aod_event = dynamic_cast<AliAODEvent *>(InputEvent());
+    //Move D meson candidates to vectors
+    const TClonesArray *dmeson_candidates = dynamic_cast<TClonesArray *>(aod_event->GetList()->FindObject(fgkDMesonListName.at(fDmesonSpecies).c_str()));
+    
+    auto d_mesons = FillDMesonInfo(dmeson_candidates, fDmesonSpecies, fDMesonRequirements);
+    //Select D mesons
+    auto selected_d_mesons = FilterDmesons(d_mesons, fDMesonRequirements, aod_event, fgkDMesonPDG.at(fDmesonSpecies));
+    
+    FillDmesonQA(d_mesons, fDMesonQABeforeCuts, fDmesonSpecies);
+    
+    FillDmesonQA(selected_d_mesons, fDMesonQAAfterCuts, fDmesonSpecies);
+    FillDmesonMCInfo(selected_d_mesons, fDmesonSpecies);
+    
+    return selected_d_mesons;
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskDHFeCorr::UserExec(Option_t *) {
     CheckConfiguration();
@@ -201,67 +267,34 @@ void AliAnalysisTaskDHFeCorr::UserExec(Option_t *) {
         PostOutput();
         return;
     }
-
-    //Move tracks to a vector
-    std::vector<AliDHFeCorr::AliElectron> tracks;
-    tracks.reserve(static_cast<unsigned long>(aod_event->GetNumberOfTracks()));
-
-    for (int i(0); i < aod_event->GetNumberOfTracks(); i++) {
-        auto particle = AliDHFeCorr::AliElectron();
-        particle.fTrack = dynamic_cast<AliAODTrack *>(aod_event->GetTrack(i));
-        tracks.push_back(particle);
-    }
-    FillElectronInformation(tracks);
     
-    auto selected_tracks = FilterElectronsTracking(fElectronRequirements, tracks);
-    auto selected_electrons = FilterElectronsPID(fElectronRequirements, selected_tracks);
+    auto selected_d_mesons = DMesonAnalysis();
+    auto selected_electrons = ElectronAnalysis();
+    
+    //In case no D meson AND electron is present, the event is not saved at all
+    if ((selected_d_mesons.empty()) && (selected_electrons.empty())) {
+        PostOutput();
+        return;
+    }
 
-    //Move D meson candidates to vectors
-    const TClonesArray *dmeson_candidates = dynamic_cast<TClonesArray *>(aod_event->GetList()->FindObject(
-            fgkDMesonListName.at(fDmesonSpecies).c_str()));
-
-    auto d_mesons = FillDMesonInfo(dmeson_candidates, fDmesonSpecies, fDMesonRequirements);
-    //Select D mesons
-    auto selected_d_mesons = FilterDmesons(d_mesons, fDMesonRequirements, aod_event,
-                                           fgkDMesonPDG.at(fDmesonSpecies));
-
-    if (!fIsEffMode) {
-        //Ignores event in case no electron and D meson is found
+    if (!fIsEffMode && !fKeepAllCandidates) {
+        //Ignores event in case no electron and D meson is found, depending on the configuration
         if ((selected_d_mesons.empty()) || (selected_electrons.empty())) {
             PostOutput();
             return;
         }
     }
-
-    FillDmesonMCInfo(selected_d_mesons, fDmesonSpecies);
-    FillElectronMCInfo(selected_electrons);
-
-    //Filter partner electrons (for Non-HFe tagging)
-    auto selected_partner_tracks = FilterElectronsTracking(fPartnerElectronRequirements, tracks);
-    auto partner_electrons = FilterElectronsPID(fPartnerElectronRequirements, selected_partner_tracks);
-
-    for (auto &electron: selected_electrons)
-        FindNonHFe(electron, partner_electrons);
-
+    
     //Fill the plots in case both D meson and electron is found the event
     FillEventQA(fEventQAAfterCuts);
-    //fill the electron (track) QA before applying the cuts
-    FillElectronQA(tracks, fElectronQABeforeCuts);
-    //fill the electron QA after applying the cuts
-    FillElectronQA(selected_electrons, fElectronQAAfterCuts);
-
-    FillElectronTree(selected_electrons);
-
-    //Fill QA before selection
-    FillDmesonQA(d_mesons, fDMesonQABeforeCuts, fDmesonSpecies);
-    //Fill QA after selection
-
+    
     if (fIsEffMode && fIsMC) {
         selected_d_mesons = FilterTrueDMesons(selected_d_mesons);
     }
-
-    FillDmesonQA(selected_d_mesons, fDMesonQAAfterCuts, fDmesonSpecies);
+    
+    FillElectronTree(selected_electrons);
     FillDMesonTree(selected_d_mesons);
+    fEventTree->Fill();
 
     //Post information to the output
     PostOutput();
@@ -300,8 +333,7 @@ void AliAnalysisTaskDHFeCorr::FillElectronInformation(std::vector<AliDHFeCorr::A
         const auto track = candidate.fTrack;
         candidate.fGridPID = fGridPID;
         candidate.fEventNumber = fEventNumber;
-        candidate.fVtxZ = fVtxZ;
-        candidate.fCentrality = fCentrality;
+        candidate.fID = TMath::Abs(track->GetID());
         
         candidate.fCharge = track->Charge();
         candidate.fPt = track->Pt();
@@ -493,6 +525,7 @@ void AliAnalysisTaskDHFeCorr::PostOutput() {
     PostData(3, &fOptDMeson);
     PostData(4, fElectronTree.get());
     PostData(5, fDmesonTree.get());
+    PostData(6, fEventTree.get());
 }
 
 
@@ -681,6 +714,11 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
         const auto reco_candidate = cand.fRecoObj;
         if (!reco_candidate)
             continue;
+        
+        //avoid a lot of computational time by rejecting minimum Pt here
+        //Reject in case the pt is smalelr than the minimum fPtMin
+        if (reco_candidate->Pt() < dmeson_selection.fPtMin)
+            continue;
 
         //Fill missing info not saved in the AOD
         switch (meson_species) {
@@ -759,16 +797,20 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
     
         std::vector<Float_t> pid_info_tpc;
         std::vector<Float_t> pid_info_tof;
+        std::vector<UInt_t> id_daughters;
         pid_info_tpc.reserve(n_prongs);
         pid_info_tof.reserve(n_prongs);
+        id_daughters.reserve(n_prongs);
         
         for (int i = 0; i < n_prongs; i++){
             const auto track = dynamic_cast<AliAODTrack *>(reco_cand->GetDaughter(i));
             pid_info_tpc.push_back(pid_response->NumberOfSigmasTPC(track, id_daughter[i]));
             pid_info_tof.push_back(pid_response->NumberOfSigmasTOF(track, id_daughter[i]));
+            id_daughters.push_back(TMath::Abs(track->GetID()));
         }
         cand.fNSigmaTPCDaughters = pid_info_tpc;
         cand.fNSigmaTOFDaughters = pid_info_tof;
+        cand.fIDDaughters = id_daughters;
         
         if (meson_species == kD0) { //The reflection will be saved later
             const auto d0_candidate = dynamic_cast<AliAODRecoDecayHF2Prong *>(reco_cand);
@@ -801,6 +843,7 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
             std::reverse(reflection.fD0Daughters.begin(), reflection.fD0Daughters.end());
             std::reverse(reflection.fNSigmaTPCDaughters.begin(), reflection.fNSigmaTPCDaughters.end());
             std::reverse(reflection.fNSigmaTOFDaughters.begin(), reflection.fNSigmaTOFDaughters.end());
+            std::reverse(reflection.fIDDaughters.begin(), reflection.fIDDaughters.end());
             
             d_mesons.push_back(reflection);
         }
@@ -821,10 +864,6 @@ AliAnalysisTaskDHFeCorr::FilterDmesons(const std::vector<AliDHFeCorr::AliDMeson>
 
     for (const auto &candidate: dmeson_candidates) {
         const auto d_candidate = candidate.fRecoObj;
-        
-        //Reject in case the pt is smalelr than the minimum fPtMin
-        if (candidate.fPt < selectionDMeson.fPtMin)
-            continue;
 
         //Check if it is in fiducial acceptance
         if (!selectionDMeson.fDMesonCuts->IsInFiducialAcceptance(d_candidate->Pt(), d_candidate->Y(pdg_dmeson)))
@@ -832,6 +871,7 @@ AliAnalysisTaskDHFeCorr::FilterDmesons(const std::vector<AliDHFeCorr::AliDMeson>
 
         //Use PID only for values smaller than fPtMaxPID
         Bool_t pid_configuration = selectionDMeson.fDMesonCuts->GetIsUsePID();
+        
         if (candidate.fPt > selectionDMeson.fPtMaxPID)
             selectionDMeson.fDMesonCuts->SetUsePID(kFALSE);
 
@@ -849,14 +889,15 @@ AliAnalysisTaskDHFeCorr::FilterDmesons(const std::vector<AliDHFeCorr::AliDMeson>
                 continue;
         }
         
+        //Set PID status to True to obtain the default PID value
+        selectionDMeson.fDMesonCuts->SetUsePID(kTRUE);
         Int_t pid_selection_status = selectionDMeson.fDMesonCuts->IsSelected(d_candidate, AliRDHFCuts::kPID, aod_event);
+        //return the PID selection to the original value
+        selectionDMeson.fDMesonCuts->SetUsePID(pid_configuration);
 
         AliDHFeCorr::AliDMeson cand(candidate);
         cand.fSelectionStatusDefaultPID = pid_selection_status;
         d_mesons.push_back(cand);
-
-        //return the PID selection to the original value
-        selectionDMeson.fDMesonCuts->SetUsePID(pid_configuration);
     }
     d_mesons.shrink_to_fit();
 
@@ -940,6 +981,9 @@ AliAnalysisTaskDHFeCorr *AliAnalysisTaskDHFeCorr::AddTask(const std::string &nam
                                             fileName.c_str()));
     mgr->ConnectOutput(task, 5, mgr->CreateContainer("DMesonTree", TTree::Class(), AliAnalysisManager::kOutputContainer,
                                                      fileName.c_str()));
+    
+    mgr->ConnectOutput(task, 6, mgr->CreateContainer("EventTree", TTree::Class(), AliAnalysisManager::kOutputContainer,
+                                                     fileName.c_str()));
 
     return task;
 }
@@ -955,6 +999,7 @@ bool AliAnalysisTaskDHFeCorr::Configure(std::string config_file, std::string con
     //Read the global task settings
     fYAMLConfig.GetProperty("mc_mode", fIsMC, true);
     fYAMLConfig.GetProperty("calculate_only_efficiency", fIsEffMode, true);
+    fYAMLConfig.GetProperty("keep_all_candidates", fKeepAllCandidates, true);
 
     std::string meson_species;
     fYAMLConfig.GetProperty("d_meson_species", meson_species, true);

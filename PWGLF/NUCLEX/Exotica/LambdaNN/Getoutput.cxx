@@ -33,6 +33,7 @@ fOutFilename+=filename;
  fInputList->SetOwner(kTRUE);
  fIncludePidTOF=kFALSE;//FALSE;
  fUseAODCut=kFALSE;//kTRUE;
+ fCaio=kFALSE;
  fIsMC=kFALSE;
  f3HPcut=3;
  f3Hcharge=2;
@@ -164,6 +165,15 @@ void Getoutput::ClearInputData(){
   } else return;
 }
 
+
+bool Getoutput::EventSelectionSimple (Double_t *arr)
+{
+ if(arr[kV0mom] < param[kParMinPv0]) return kFALSE;
+ if (arr[kDcaTriZ] > param[kParDcaTriZ]) return kFALSE;
+ if (arr[kCosP] < param[kParCosP]) return kFALSE;
+ if (arr[kV0Dca] > param[kParV0Dca]) return kFALSE;
+}
+
 bool Getoutput::EventSelectionAOD (Double_t *arr)
 {
  if(arr[kV0mom] < param[kParMinPv0]) return kFALSE;
@@ -202,8 +212,9 @@ void Getoutput::BookOutputData(const char *name){
  fOutFilename+=Form("3H%i",f3Hcharge);
  if(fUseAODCut)fOutFilename+=".AODcut.";
  if(fIncludePidTOF)fOutFilename+=".3HTOFpid.";
+ if(fCaio) fOutFilename+="CaioCuts.";
  fOutFilename+=name;
- if(fIsMC) fOutFilename+=Form(".MC.root");
+ if(fIsMC) fOutFilename+=Form("MC.root");
  else fOutFilename+=("root");
  printf("filename is : %s \n",fOutFilename.Data());
  fOutFile = TFile::Open(fOutFilename.Data(),"recreate"); 
@@ -505,7 +516,9 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
 
  hMonitorPlot->Fill(4);
  //if(nsigmatri>2.999) printf("AFTER : nsigmapi %f , nsigmaTri %f, limit %f \n",nsigmapi,nsigmatri,param[kParNsigmaPID]);
-  if (!EventSelectionAOD(arr)) continue;
+  if (fCaio){
+  if(!EventSelectionAOD(arr)) continue;
+  } else if(!EventSelectionSimple(arr)) continue;
   v0Mom = arr[kV0mom];
   hArmPlot->Fill (arr[kAlphaArm], arr[kPtArm]);
   hMonitorPlot->Fill(5);
@@ -604,15 +617,15 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   }
   else {
    // left shift in the number is a bug
-   printf("Mum Pi %i    Mum Tri  %i   - Pi %i  Tri %i \n", (Int_t)arr[kMumPiPdgCode-1],(Int_t)arr[kMumTriPdgCode-1],(Int_t)arr[kPiPdgCode-1],(Int_t)arr[kTriPdgCode-1]);
-   if (arr[kMumPiPdgCode-1] == arr[kMumTriPdgCode-1] && TMath::Abs (arr[kMumPiPdgCode-1]) == 1010000030) {
-    tmvaArray[17]=arr[kMumTriPdgCode]; 
+   printf("Mum Pi %i    Mum Tri  %i   - Pi %i  Tri %i \n", (Int_t)arr[kMumPiPdgCode],(Int_t)arr[kMumTriPdgCode],(Int_t)arr[kPiPdgCode],(Int_t)arr[kTriPdgCode]);
+   if (arr[kMumPiPdgCode] == arr[kMumTriPdgCode] && TMath::Abs (arr[kMumPiPdgCode]) == 1010000030) {
+    //tmvaArray[17]=arr[kMumTriPdgCode]; 
     ntTot->Fill (tmvaArray);      // true LNN inv Mass are in that interval 
-    printf("analyzing MC, please check that TRD is correctly stored in ntTot\n");
-   }
+    printf("analyzing MC, Filling the ntuple (please check that TRD is correctly stored in ntTot) \n");
    // 1010000030 - LNN
    // 1000010030 - 3H
    if(TMath::Abs (arr[kMumPiPdgCode]) == 1010000030) hMassSignal->Fill(LNN);
+   }
    else {
     //printf("mother pi %i, mother triton %i \n",(Int_t) arr[kMumPiPdgCode],(Int_t) arr[kMumTriPdgCode]);  
     Int_t binPi[2] = { nPossible-1,nPossible/2}; //first is mother, second is true particle

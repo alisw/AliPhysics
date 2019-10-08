@@ -2218,7 +2218,7 @@ void AliJJetJtAnalysis::UserExec(){
   //End.
 
 
-  if(fDoFullJets){
+  if(fDoFullJets){ //If Full jets are used do comparisons between full and charged jets
     int iS1 = 0; //full 0.4
     int iS2 = fnR; //Ch   0.4
     TObjArray * jetfinder1;

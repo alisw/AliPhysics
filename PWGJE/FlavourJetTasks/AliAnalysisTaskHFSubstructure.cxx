@@ -297,6 +297,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
     TRandom3 Random;
     Random.SetSeed(0);
+    Double_t Random_Number;
     
     fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject("D0toKpi"));
 
@@ -319,7 +320,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       if (!D_Candidate) continue;
       if (!fRDHFCuts->IsInFiducialAcceptance(D_Candidate->Pt(), D_Candidate->Y(fCandidatePDG))) continue;
       
-      Double_t Random_Number=Random.Rndm();
 
       
       Int_t Mass_Hypo_Type=fRDHFCuts->IsSelected(D_Candidate, AliRDHFCuts::kAll, fAodEvent);
@@ -426,7 +426,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	      }
 	    }
 	}
-	if(Random_Number > fTrackingEfficiency*fTrackingEfficiency) continue; // here it shows that the D did not get reconstructed cause one of the daughters was missing...however should we do this before incase the same daughter is involved multiple times?
+	//Random_Number=Random.Rndm();
+	//if(Random_Number > fTrackingEfficiency*fTrackingEfficiency) continue; // here it shows that the D did not get reconstructed cause one of the daughters was missing...however should we do this before incase the same daughter is involved multiple times?
 	fFastJetWrapper->Clear();
 	AliTLorentzVector D_Candidate_LorentzVector(0,0,0,0);
 	D_Candidate_LorentzVector.SetPtEtaPhiM(D_Candidate->Pt(), D_Candidate->Eta(), D_Candidate->Phi(), Inv_Mass_D);
@@ -436,7 +437,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
 	  Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	  if(!Track) continue;
-	  if (Track->Pt() > 100.0 || TMath::Abs(Track->Eta()) > 0.9) continue; 
+	  if (Track->Pt() > 100.0 || TMath::Abs(Track->Eta()) > 0.9) continue;
+	  Random_Number=Random.Rndm();
 	  if(Random_Number > fTrackingEfficiency) continue;
 	  fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
 	}
@@ -583,6 +585,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
   if (fJetShapeType == kTrueDet){ 
     
+    TRandom3 Random;
+    Random.SetSeed(0);
+    Double_t Random_Number;
     
     AliHFAODMCParticleContainer *Particle_Container = (AliHFAODMCParticleContainer*) GetParticleContainer(1); 
     Particle_Container->SetSpecialPDG(fCandidatePDG); 
@@ -753,8 +758,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	Inv_Mass_D_Truth=0.0;
       }
 
-      
-      
+      //Random_Number=Random.Rndm();
+      //if(Random_Number > fTrackingEfficiency*fTrackingEfficiency) continue;
   
       fFastJetWrapper->Clear();
       AliTLorentzVector D_Candidate_LorentzVector(0,0,0,0);
@@ -772,6 +777,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	if(!Track) continue;
 	if (Track->Pt() > 100.0 || TMath::Abs(Track->Eta())>0.9) continue;
+	Random_Number=Random.Rndm();
+	if(Random_Number > fTrackingEfficiency) continue;
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100); 
       }
       // delete Track;
@@ -1422,6 +1429,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
   if (fJetShapeType == kDataInclusive){
 
+    TRandom3 Random;
+    Random.SetSeed(0);
+    Double_t Random_Number;
 
     AliHFTrackContainer* Track_Container=dynamic_cast<AliHFTrackContainer*>(GetTrackContainer(0));
     if (!Track_Container) return kTRUE;
@@ -1437,6 +1447,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
       if(!Track) continue;
       if(Track->Pt() > 100.0 || TMath::Abs(Track->Eta()) > 0.9) continue;
+      Random_Number=Random.Rndm();
+      if(Random_Number > fTrackingEfficiency) continue;
       fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
     }
     fFastJetWrapper->Run();

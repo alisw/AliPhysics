@@ -35,6 +35,8 @@ class TH2D;
 class TH3D;
 class TList;
 class TTree;
+class TRandom;
+class TRandom3;
 class AliMCEvent;
 class AliAODEvent;
 class AliAODTrack;
@@ -71,7 +73,8 @@ public:
 	double GetCentralityFromImpactPar(double ip);
 	//void SetIsWeakDeacyExclude( Bool_t WeakDecay){
 		//IsExcludeWeakDecay=WeakDecay; cout << "Setting Exclude Weak Decay Particles = " << WeakDecay <<	endl;}
-	void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "setting TestFilterBit = " << FilterBit << endl; }
+	void SetTestFilterBit( UInt_t FilterBit){ fFilterBit = FilterBit; cout << "setting TestFilterBit = " << FilterBit << endl; }
+	void SetNumTPCClusters( UInt_t NumTPCClusters){ fNumTPCClusters = NumTPCClusters; }
 	void SetEtaRange( double eta_min, double eta_max ){
 		fEta_min = eta_min; fEta_max = eta_max; cout << "setting Eta range as " << fEta_min << " ~ " <<	fEta_max << endl;}
 	void SetPtRange( double pt_min, double pt_max){
@@ -83,9 +86,12 @@ public:
 	void ReadVertexInfo( AliAODEvent *aod , double* fvertex);
 	Bool_t IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy);
 	Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
-	void SetEffConfig( int effMode, int FilterBit );
+	void SetEffConfig( UInt_t effMode, UInt_t FilterBit );
+	UInt_t ConnectInputContainer(const TString, const TString);
 	void EnablePhiCorrection(const TString);
+	void EnableCentFlattening(const TString);
 	TH1 * GetCorrectionMap(UInt_t, UInt_t);
+	TH1 * GetCentCorrection();
 	//void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ;
 					//cout << "setting phi modulation = " << isphi << endl; }
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
@@ -127,7 +133,7 @@ public:
 		//FLUC_PHI_REJECTION = 0x20,
 		FLUC_SCPT = 0x40,
 		FLUC_EBE_WEIGHTING = 0x80,
-		//FLUC_CENT_FLATTENING = 0x100,
+		FLUC_CENT_FLATTENING = 0x100,
 		FLUC_CUT_OUTLIERS = 0x200,
 		FLUC_ALICE_IPINFO = 0x400,
 	};
@@ -139,46 +145,39 @@ private:
 	 TClonesArray *fInputList;  // tracklist
 	 TDirectory *fOutput;     // output
 	 AliJFFlucAnalysis *fFFlucAna; // analysis code
-	 //std::unordered_map<UInt_t, TH2D *> PhiWeightMap[CENTN];
 	 std::map<UInt_t, TH1 *> PhiWeightMap[CENTN_NAT];
 
 	 TString fTaskName;
-	 int fEvtNum;
-	 int fFilterBit;
-	 int fEffMode;
-	 int fEffFilterBit;
+	 TString fCentDetName;
+	 UInt_t fEvtNum;
+	 UInt_t fFilterBit;
+	 UInt_t fNumTPCClusters;
+	 UInt_t fEffMode;
+	 UInt_t fEffFilterBit;
 	 int fPcharge;
 	 int fRunNum;
-	 unsigned int GlobTracks;
-	 unsigned int TPCTracks;
-	 unsigned int FB32Tracks;
-	 unsigned int FB32TOFTracks;
+	 UInt_t GlobTracks;
+	 UInt_t TPCTracks;
+	 UInt_t FB32Tracks;
+	 UInt_t FB32TOFTracks;
 	 double fEta_min;
 	 double fEta_max;
+	 double fQC_eta_min;
+	 double fQC_eta_max;
 	 double fPt_min;
 	 double fPt_max;
 	 double fzvtxCut;
 
-	 Double_t fQC_eta_min;
-	 Double_t fQC_eta_max;
-
 	 UInt_t subeventMask;
 
-	 TString fCentDetName;
-	 //TString fInFileName;
-	 /*Bool_t IsMC;
-	 Bool_t IsKineOnly;
-	 Bool_t IsExcludeWeakDecay;
-	 Bool_t IsCentFlat;
-	 Bool_t IsPhiModule;
-	 Bool_t IsSCptdep;
-	 //Bool_t IsSCwithQC;
-	 Bool_t IsEbEWeighted;
-	 Bool_t fCutOutliers;
-	 Bool_t fALICEIPinfo;*/
 	 UInt_t flags;
+	 UInt_t inputIndex;
+	 UInt_t phiInputIndex;
+	 UInt_t centInputIndex;
 
 	 ClassDef(AliJFFlucTask, 1);
 
 };
 #endif // AliJFFlucTask_H
+
+

@@ -91,7 +91,7 @@ private:
   Float_t *fDebugVars;   //! variables to store as degug info 
   Int_t   fNDebug;       // Max number of debug entries into Ntuple
 
-  ClassDef(AliAnalysisTaskSEImproveITS3,5);
+  ClassDef(AliAnalysisTaskSEImproveITS3,6);
 };
 
 #endif

@@ -28,8 +28,8 @@ TString filnamRaaFc="~/alice/Charm/PbYield/2011/Final/010/Dzero/HFPtSpectrumRaa_
 enum dspec{kDzero,kDplus,kDstar,kDs};
 Int_t mesonSpecie=kDzero;
 TString centrality="0-10";
-const Int_t nPtBins=9;
-Double_t binlim[nPtBins+1]={1.,2.,3.,4.,5.,6.,8.,12.,16.,24.};
+const Int_t maxPtBins=50;
+Double_t binlim[maxPtBins+1];
 Int_t method=2;    // 1=fc; 2=Nb --> default=2
 Int_t optErrFD=1;  // 0=from histos, not combined; 
                    // 1= from ntuple with Rbc hypo, not combining Nb and fc; 
@@ -44,9 +44,9 @@ TString collSyst="Pb-Pb";
 
 
 // Graphical styles
-Bool_t draw[nPtBins]={1,1,0,1,0,1,0,0,1};
-Int_t colors[nPtBins]={kGray+2,kMagenta+1,kMagenta,kBlue,kCyan,kGreen+2,kYellow+2,kOrange+1,kRed+1};
-Int_t lstyle[nPtBins]={9,10,3,5,7,1,3,6,2};
+Bool_t draw[maxPtBins]={1,1,0,1,0,0,0,0,0,1,0,0,0,0};
+Int_t colors[maxPtBins]={1,kRed+1,kGray,kMagenta+1,kMagenta,kBlue+1,kBlue,kBlue-9,kCyan,kGreen+2,kYellow+2,kOrange+1,kRed+1,kRed};
+Int_t lstyle[maxPtBins]={7,2,3,5,9,1,10,6,8,4,1,2,3,8};
 
 
 Bool_t PbPbDataSyst(AliHFSystErr *syst, TH1D* heff, Double_t pt, Double_t &dataSystUp, Double_t &dataSystDown);
@@ -123,6 +123,17 @@ void ComputeDmesonYield(){
   Float_t sizesystrb=0.2;
   Float_t sizesysttot=0.15;
 
+  // extract pt binning from histos
+  TFile *filChi= new TFile(filnamChi.Data());
+  TH1D *hSpC = (TH1D*)filChi->Get("hRECpt");
+  const Int_t nPtBins=hSpC->GetNbinsX();
+  if(nPtBins>maxPtBins){
+    printf("Too many pt bins in histo: %d \n",nPtBins);
+    return;
+  }
+  for(Int_t j=0; j<nPtBins; j++) binlim[j]=hSpC->GetBinLowEdge(j+1);
+  binlim[nPtBins]=hSpC->GetXaxis()->GetBinUpEdge(nPtBins);
+
 
   // pp reference
 
@@ -192,10 +203,10 @@ void ComputeDmesonYield(){
     Double_t x,y;
     gsystppFD->GetPoint(i,x,y);
     Int_t hBin=TMath::BinarySearch(nPtBins,binlim,x);
-    if(hBin>=0 && hBin<nPtBins && x<binlim[nPtBins]){
+    if(hBin>=0 && hBin<nPtBins && x<binlim[nPtBins] && x>0){
       relsysterrLowFDpp[hBin]=gsystppFD->GetErrorYlow(i)/y;
       relsysterrHiFDpp[hBin]=gsystppFD->GetErrorYhigh(i)/y;
-      printf(" ---- Check syst err FD pp Bin %d  Err+%f -%f\n",hBin,relsysterrHiFDpp[hBin],relsysterrLowFDpp[hBin]);
+      printf(" ---- Check syst err FD pp (pt=%f) Bin %d  Err+%f -%f\n",x,hBin,relsysterrHiFDpp[hBin],relsysterrLowFDpp[hBin]);
       //      printf("%d %f %f\n",hBin,relsysterrLowFDpp[hBin],relsysterrHiFDpp[hBin]);
     }
   }
@@ -208,8 +219,6 @@ void ComputeDmesonYield(){
     printf("File %s with A-A (p-A) yield not found -> exiting\n",filnamChi.Data());
     return;
   }
-  TFile *filChi= new TFile(filnamChi.Data());
-  TH1D *hSpC = (TH1D*)filChi->Get("hRECpt");
   Float_t relstaterrPbPb[nPtBins];
   for(Int_t ib=0; ib<nPtBins; ib++){
     Int_t hBin=hSpC->FindBin(0.5*(binlim[ib]+binlim[ib+1]));
@@ -328,6 +337,7 @@ void ComputeDmesonYield(){
   for(Int_t ib=0; ib<nPtBins; ib++){
     gcb[ib]=new TGraph(0);
     gcrbc[ib]=new TGraph(0);
+    gcrbc[ib]->SetName(Form("gcrbc%d",ib));
   }
   
   for(Int_t ie=0; ie<ntC->GetEntries(); ie++){
@@ -373,7 +383,9 @@ void ComputeDmesonYield(){
     }
     if(theBin<nPtBins && theBin>=0 && pt<binlim[nPtBins]){
       gcb[theBin]->SetPoint(gcb[theBin]->GetN(),RABBeauty,RABCharm);
-      gcrbc[theBin]->SetPoint(gcrbc[theBin]->GetN(),rFdPr,RABCharm);
+      if(rFdPr>lowHypoFdOverPrArray[theBin] && rFdPr<highHypoFdOverPrArray[theBin]){
+	gcrbc[theBin]->SetPoint(gcrbc[theBin]->GetN(),rFdPr,RABCharm);
+      }
     }
   }
 
@@ -682,7 +694,7 @@ void ComputeDmesonYield(){
       }else{
 	gcb[ib]->Draw("lsame");
       }
-      ent=leg->AddEntry(gcb[ib],Form("%d<#it{p}_{T}<%d GeV/#it{c}",(Int_t)binlim[ib],(Int_t)binlim[ib+1]),"L");
+      ent=leg->AddEntry(gcb[ib],Form("%.1f<#it{p}_{T}<%.1f GeV/#it{c}",binlim[ib],binlim[ib+1]),"L");
     }
   }
   leg->Draw();
@@ -762,9 +774,7 @@ void ComputeDmesonYield(){
   lin0->SetLineStyle(2);
   lin0->SetLineColor(kGray+1);
   lin0->Draw();
-  if(method==2 && optErrFD==2){
-    c2->SaveAs(Form("%s-RcVsRcb_method%d_optErrFD%d_br%d.eps",mesName.Data(),method,optErrFD,correctForBR));
-  }
+  c2->SaveAs(Form("%s-RcVsRcb_method%d_optErrFD%d_br%d.eps",mesName.Data(),method,optErrFD,correctForBR));
 
 
   TCanvas* cfp=new TCanvas("cfp","fprompt",700,700);
@@ -796,7 +806,8 @@ void ComputeDmesonYield(){
   }
   TLatex* t2=new TLatex(0.17,0.2,"Nb");
   t2->SetNDC();
-  t2->Draw();
+  //  t2->Draw();
+  tdmes->Draw();
   cfp->SaveAs(Form("fprompt-%s.eps",mesName.Data()));
 
   hppC->SetMarkerStyle(markerppC);
@@ -973,6 +984,7 @@ void ComputeDmesonYield(){
   systematicsABcent->SetName("AliHFSystErrAA");
   systematicsABcent->Write();
   if(systematicsPP) systematicsPP->Write();
+  for(Int_t ib=0; ib<nPtBins; ib++) gcrbc[ib]->Write();
   outfil->Close();
 }
 
