@@ -214,7 +214,6 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","411793105f032230000","01631031000000d0"); // Standard EDC MB
   } else if (trainConfig == 191){ // EDC JETS - EDC - enabling jet QA
     cuts.AddCutCalo("80010113","411793105f032230000","3l631031000000d0"); // Standard EDC Jets
-    cuts.AddCutCalo("80010113","411793105f032230000","01631031000000d0"); // Standard EDC MB
 
   // ===============================================================================================
   // EMC +(DMC) clusters pPb 5TeV triggrs
