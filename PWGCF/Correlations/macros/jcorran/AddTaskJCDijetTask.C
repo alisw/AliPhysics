@@ -14,6 +14,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     double particlePtCut      = 0.15,
                                     double leadingJetCut      = 20.0,
                                     double subleadingJetCut   = 20.0,
+                                    double minJetPt           = 10.0,
                                     double constituentCut     = 5.0,
                                     double deltaPhiCut        = 2.0,
                                     double matchingR          = 0.2){
@@ -76,7 +77,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     dijetTask->SetJetConeSize(jetCone, ktjetCone);
     dijetTask->SetBGSubtrSettings(ktScheme, antiktScheme, usePionMass, useDeltaPhiBGSubtr);
     dijetTask->SetIsMC(isMC);
-    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR);
+    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR, minJetPt);
     cout << dijetTask->GetName() << endl;
 
 
