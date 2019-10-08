@@ -497,14 +497,14 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                        iPar2);
         fSameEventmTDist[Counter] = new TH2F(SamemTEventName.Data(),
                                              SamemTEventName.Data(), *itNBins,
-                                             *itKMin, *itKMax, 225, 0, 4.5);
+                                             *itKMin, *itKMax, 225, 0, 7.5);
         fPairs[Counter]->Add(fSameEventmTDist[Counter]);
 
         TString MixedmTEventName = Form("MEmTDist_Particle%d_Particle%d", iPar1,
                                         iPar2);
         fMixedEventmTDist[Counter] = new TH2F(MixedmTEventName.Data(),
                                               MixedmTEventName.Data(), *itNBins,
-                                              *itKMin, *itKMax, 225, 0, 4.5);
+                                              *itKMin, *itKMax, 225, 0, 7.5);
         fPairs[Counter]->Add(fMixedEventmTDist[Counter]);
       }
 
