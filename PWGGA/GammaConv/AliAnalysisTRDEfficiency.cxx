@@ -673,8 +673,14 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                     Double_t dpt   = 0;
                     Double_t dpid  = 0;
                 
-                    trdpt   = TMath::Abs(trdpt);        
-                    dpt     = TMath::Abs(dpt);
+                    //if (trdpt < 0) cout << "pt" << endl;
+                    //if (trdpid < 0) cout << "pid" << endl;
+                    //if (gpt < 0) cout << "gpt" << endl;
+                    //if (gR < 0) cout << "gR" << endl;
+                    //if (dpt < 0) cout << "dpt" << endl;
+                    //if (dpid < 0) cout << "dpid" << endl;
+                    //trdpt   = TMath::Abs(trdpt);        
+                    //dpt     = TMath::Abs(dpt);
                     
                     // grab the other daughter track
                     AliAODTrack *other = (AliAODTrack*)v0->GetDaughter(!j); 
@@ -696,6 +702,7 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                 
                     if (!hasmatch){    // event has matched trd track
                         hasmatch= kTRUE;
+                        fhgptM->Fill(gamma->Pt(), gamma->GetPhotonMass());
                         fhgevent->Fill(2);
                         fhgevent2->Fill(lst);
                     }
@@ -766,6 +773,7 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                         //cout << index << endl;
                         if (!hashqu){
                             hashqu = kTRUE;
+                            fhgptMhqu->Fill(gamma->Pt(), gamma->GetPhotonMass());
                             fhgevent->Fill(6);
                             fhgevent6->Fill(lst);
                         }
