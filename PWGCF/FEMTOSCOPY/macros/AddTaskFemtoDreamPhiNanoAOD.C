@@ -343,6 +343,47 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
       TrackNegKaonCuts->SetFilterBit(128);
   }
 
+  if (suffix == "36") {
+      TrackPosKaonCuts->SetFilterBit(128);
+      TrackNegKaonCuts->SetFilterBit(128);
+  }
+
+  if (suffix == "37") {
+      TrackPosKaonCuts->SetDCAVtxZ(1.0);
+      TrackPosKaonCuts->SetDCAVtxXY(1.0);
+      TrackNegKaonCuts->SetDCAVtxZ(1.0);
+      TrackNegKaonCuts->SetDCAVtxXY(1.0);
+  }
+
+  if (suffix == "38") {
+      TrackPosKaonCuts->SetDCAVtxZ(2.0);
+      TrackPosKaonCuts->SetDCAVtxXY(2.0);
+      TrackNegKaonCuts->SetDCAVtxZ(2.0);
+      TrackNegKaonCuts->SetDCAVtxXY(2.0);
+  }
+
+  if (suffix == "39") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.5);
+      TrackPosKaonCuts->SetDCAVtxXY(0.5);
+      TrackNegKaonCuts->SetDCAVtxZ(0.5);
+      TrackNegKaonCuts->SetDCAVtxXY(0.5);
+  }
+
+  if (suffix == "40") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.8);
+      TrackPosKaonCuts->SetDCAVtxXY(0.6);
+      TrackNegKaonCuts->SetDCAVtxZ(0.8);
+      TrackNegKaonCuts->SetDCAVtxXY(0.6);
+  }
+
+  if (suffix == "41") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackPosKaonCuts->SetDCAVtxXY(0.2);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxXY(0.2);
+  }
+
+
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);
