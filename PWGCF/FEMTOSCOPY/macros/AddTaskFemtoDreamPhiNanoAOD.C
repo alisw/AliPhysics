@@ -17,26 +17,27 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
+  evtCuts->SetSphericityCuts(0.7,1);
 
-    if (suffix == "1") {
-        evtCuts->SetSpherocityCuts(0.5,1);
-    }
+//    if (suffix == "1") {
+//        evtCuts->SetSpherocityCuts(0.5,1);
+//    }
 
-    if (suffix == "2") {
-        evtCuts->SetSpherocityCuts(0.6,1);
-    }
+//    if (suffix == "2") {
+//        evtCuts->SetSpherocityCuts(0.6,1);
+//    }
 
-    if (suffix == "3") {
-        evtCuts->SetSpherocityCuts(0.7,1);
-    }
+//    if (suffix == "3") {
+//        evtCuts->SetSpherocityCuts(0.7,1);
+//    }
 
-    if (suffix == "4") {
-        evtCuts->SetSpherocityCuts(0.8,1);
-    }
+//    if (suffix == "4") {
+//        evtCuts->SetSpherocityCuts(0.8,1);
+//    }
 
-    if (suffix == "5") {
-        evtCuts->SetSpherocityCuts(0.9,1);
-    }
+//    if (suffix == "5") {
+//        evtCuts->SetSpherocityCuts(0.9,1);
+//    }
 
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -53,7 +54,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
-
+g
   AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackNegKaonCuts->SetCutCharge(-1);
 
@@ -61,6 +62,102 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 //    TrackPosKaonCuts->SetMinimalBooking(true);
 //    TrackNegKaonCuts->SetMinimalBooking(true);
 //  }
+
+  if (suffix == "1") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.3);
+      TrackNegKaonCuts->SetPtRange(0.15,1.3);
+  }
+
+  if (suffix == "2") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.4);
+      TrackNegKaonCuts->SetPtRange(0.15,1.4);
+  }
+
+  if (suffix == "3") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.5);
+      TrackNegKaonCuts->SetPtRange(0.15,1.5);
+  }
+
+  if (suffix == "4") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.4);
+      TrackNegKaonCuts->SetPtRange(0.15,1.4);
+      TrackPosKaonCuts->SetPtExclusion(0.3,0.4);
+      TrackNegKaonCuts->SetPtExclusion(0.3,0.4);
+  }
+
+  if (suffix == "5") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.4);
+      TrackNegKaonCuts->SetPtRange(0.15,1.4);
+      TrackPosKaonCuts->SetPtExclusion(0.2,0.4);
+      TrackNegKaonCuts->SetPtExclusion(0.2,0.4);
+  }
+
+  if (suffix == "6") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.4);
+      TrackNegKaonCuts->SetPtRange(0.15,1.4);
+      TrackPosKaonCuts->SetPtExclusion(0.3,0.5);
+      TrackNegKaonCuts->SetPtExclusion(0.3,0.5);
+  }
+
+  if (suffix == "7") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.5);
+      TrackNegKaonCuts->SetPtRange(0.15,1.5);
+      TrackPosKaonCuts->SetPtExclusion(0.3,0.4);
+      TrackNegKaonCuts->SetPtExclusion(0.3,0.4);
+  }
+
+  if (suffix == "8") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.5);
+      TrackNegKaonCuts->SetPtRange(0.15,1.5);
+      TrackPosKaonCuts->SetPtExclusion(0.2,0.4);
+      TrackNegKaonCuts->SetPtExclusion(0.2,0.4);
+  }
+
+  if (suffix == "9") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.5);
+      TrackNegKaonCuts->SetPtRange(0.15,1.5);
+      TrackPosKaonCuts->SetPtExclusion(0.3,0.5);
+      TrackNegKaonCuts->SetPtExclusion(0.3,0.5);
+  }
+
+
+  if (suffix == "10") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.3);
+      TrackNegKaonCuts->SetPtRange(0.15,1.3);
+      TrackPosKaonCuts->SetPtExclusion(0.3,0.4);
+      TrackNegKaonCuts->SetPtExclusion(0.3,0.4);
+  }
+
+  if (suffix == "11") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.3);
+      TrackNegKaonCuts->SetPtRange(0.15,1.3);
+      TrackPosKaonCuts->SetPtExclusion(0.2,0.4);
+      TrackNegKaonCuts->SetPtExclusion(0.2,0.4);
+  }
+
+  if (suffix == "12") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.3);
+      TrackNegKaonCuts->SetPtRange(0.15,1.3);
+      TrackPosKaonCuts->SetPtExclusion(0.3,0.5);
+      TrackNegKaonCuts->SetPtExclusion(0.3,0.5);
+  }
+
+  if (suffix == "13") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.0);
+      TrackNegKaonCuts->SetPtRange(0.15,1.0);
+  }
+
+  if (suffix == "14") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.2);
+      TrackNegKaonCuts->SetPtRange(0.15,1.2);
+  }
+
+  if (suffix == "15") {
+      TrackPosKaonCuts->SetPtRange(0.15,1.4);
+      TrackNegKaonCuts->SetPtRange(0.15,1.4);
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
+  }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);
@@ -76,12 +173,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
   double Phimass=TDatabasePDG::Instance()->GetParticle(333)->Mass();
-  if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(Phimass-0.008,Phimass);
-  }
-  if (suffix == "2") {
-    TrackCutsPhi->SetCutWindow(Phimass,Phimass+0.008);
-  }
 
 
 //  if (suffix != "0") {
