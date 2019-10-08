@@ -61,6 +61,8 @@ protected:
   TH2D *fdEdxNegDaughter;
   TH2D *fTOFtimePosDaughter;
   TH2D *fTOFtimeNegDaughter;
+  TH2D *fCPAvsPt;
+  TH2D *fMINVvsPt;
 
   TH1D *fnsigmaPosL;
   TH1D *fnsigmaNegL;
