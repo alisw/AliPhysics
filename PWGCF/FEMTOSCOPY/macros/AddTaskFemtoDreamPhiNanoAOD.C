@@ -54,7 +54,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
-g
+
   AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackNegKaonCuts->SetCutCharge(-1);
 
