@@ -35,17 +35,29 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_centrality(),
     fh_zvtx(),
     fh_pt(),
+    fh_ptPosEta(),
+    fh_ptNegEta(),
     fh_eta(),
     fh_phi(),
     fh_rho(),
+    fh_rhoHighPt(),
     fh_rhom(),
+    fh_rhomHighPt(),
+    fh_rhoLin(),
+    fh_rhoLinHighPt(),
+    fh_rhomLin(),
+    fh_rhomLinHighPt(),
     fh_jetPt(),
     fh_jetPt_ALICE(),
+    fh_jetPtTransBGSub(),
+    fh_jetN(),
     fh_jetEta(),
     fh_jetPhi(),
     fh_jetEtaPhi(),
+    fh_randConeEtaPhi(),
     fh_jetArea(),
     fh_jetAreaRho(),
+    fh_deltaPt(),
     fh_dijetInvM(),
     fh_dijetPtPair(),
     fh_dijetDeltaPhi(),
@@ -59,6 +71,11 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_jetDeltaRMin(),
     fh_jetBGSubtrDeltaR(),
     fh_jetResponse(),
+    fh_jetResponse_ALICE(),
+    fh_deltaPtResponse(),
+    fh_deltaPtResponse_ALICE(),
+    fh_deltaPtResponseEvery(),
+    fh_deltaPtResponseEvery_ALICE(),
     fh_dijetResponse(),
     fh_dijetResponseDeltaPhiCut()
 {
@@ -74,17 +91,29 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_centrality(obj.fh_centrality),
     fh_zvtx(obj.fh_zvtx),
     fh_pt(obj.fh_pt),
+    fh_ptPosEta(obj.fh_ptPosEta),
+    fh_ptNegEta(obj.fh_ptNegEta),
     fh_eta(obj.fh_eta),
     fh_phi(obj.fh_phi),
     fh_rho(obj.fh_rho),
+    fh_rhoHighPt(obj.fh_rhoHighPt),
     fh_rhom(obj.fh_rhom),
+    fh_rhomHighPt(obj.fh_rhomHighPt),
+    fh_rhoLin(obj.fh_rhoLin),
+    fh_rhoLinHighPt(obj.fh_rhoLinHighPt),
+    fh_rhomLin(obj.fh_rhomLin),
+    fh_rhomLinHighPt(obj.fh_rhomLinHighPt),
     fh_jetPt(obj.fh_jetPt),
     fh_jetPt_ALICE(obj.fh_jetPt_ALICE),
+    fh_jetPtTransBGSub(obj.fh_jetPtTransBGSub),
+    fh_jetN(obj.fh_jetN),
     fh_jetEta(obj.fh_jetEta),
     fh_jetPhi(obj.fh_jetPhi),
     fh_jetEtaPhi(obj.fh_jetEtaPhi),
+    fh_randConeEtaPhi(obj.fh_randConeEtaPhi),
     fh_jetArea(obj.fh_jetArea),
     fh_jetAreaRho(obj.fh_jetAreaRho),
+    fh_deltaPt(obj.fh_deltaPt),
     fh_dijetInvM(obj.fh_dijetInvM),
     fh_dijetPtPair(obj.fh_dijetPtPair),
     fh_dijetDeltaPhi(obj.fh_dijetDeltaPhi),
@@ -99,6 +128,10 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_jetBGSubtrDeltaR(obj.fh_jetBGSubtrDeltaR),
     fh_jetResponse(obj.fh_jetResponse),
     fh_jetResponse_ALICE(obj.fh_jetResponse_ALICE),
+    fh_deltaPtResponse(obj.fh_deltaPtResponse),
+    fh_deltaPtResponse_ALICE(obj.fh_deltaPtResponse_ALICE),
+    fh_deltaPtResponseEvery(obj.fh_deltaPtResponseEvery),
+    fh_deltaPtResponseEvery_ALICE(obj.fh_deltaPtResponseEvery_ALICE),
     fh_dijetResponse(obj.fh_dijetResponse),
     fh_dijetResponseDeltaPhiCut(obj.fh_dijetResponseDeltaPhiCut)
 {
@@ -190,6 +223,16 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << fHistCentBin
         << "END" ;
 
+    fh_ptPosEta
+        << TH1D("h_ptPosEta","h_ptPosEta",NBINSJet, LogBinsXJet )
+        << fHistCentBin
+        << "END" ;
+
+    fh_ptNegEta
+        << TH1D("h_ptNegEta","h_ptNegEta",NBINSJet, LogBinsXJet )
+        << fHistCentBin
+        << "END" ;
+
     fh_eta
         << TH1D("h_eta", "h_eta", 100, -1.0, 1.0 )
         << fHistCentBin
@@ -211,8 +254,38 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << fHistCentBin
         << "END" ;
 
+    fh_rhoHighPt
+        << TH1D("h_rhoHighPt", "h_rhoHighPt", NBINSJet, LogBinsXJet)
+        << fHistCentBin
+        << "END" ;
+
     fh_rhom
         << TH1D("h_rhom", "h_rhom", NBINSJet, LogBinsXJet)
+        << fHistCentBin
+        << "END" ;
+
+    fh_rhomHighPt
+        << TH1D("h_rhomHighPt", "h_rhomHighPt", NBINSJet, LogBinsXJet)
+        << fHistCentBin
+        << "END" ;
+
+    fh_rhoLin
+        << TH1D("h_rhoLin", "h_rhoLin", 501, -0.1, 100.1)
+        << fHistCentBin
+        << "END" ;
+
+    fh_rhoLinHighPt
+        << TH1D("h_rhoLinHighPt", "h_rhoLinHighPt", 501, -0.1, 100.1)
+        << fHistCentBin
+        << "END" ;
+
+    fh_rhomLin
+        << TH1D("h_rhomLin", "h_rhomLin", 501, -0.1, 100.1)
+        << fHistCentBin
+        << "END" ;
+
+    fh_rhomLinHighPt
+        << TH1D("h_rhomLinHighPt", "h_rhomLinHighPt", 501, -0.1, 100.1)
         << fHistCentBin
         << "END" ;
 
@@ -223,8 +296,18 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << "END" ;
 
     fh_jetPt_ALICE
-        << TH1D("h_jetPt_ALICE","h_jetPt_ALICE", 200, 10, 210 )
+        << TH1D("h_jetPt_ALICE","h_jetPt_ALICE", 300, 10, 310 )
         << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_jetPtTransBGSub
+        << TH1D("h_jetPtTransBGSub","h_jetPtTransBGSub", 300, 10, 310 )
+        << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_jetN
+        << TH1D("h_jetN","h_jetN", 51, -0.5, 50.5 )
+        << fHistCentBin
         << "END" ;
 
     fh_jetEta
@@ -242,6 +325,11 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << fHistCentBin << fJetBin
         << "END" ;
 
+    fh_randConeEtaPhi
+        << TH2D("h_randConeEtaPhi", "h_randConeEtaPhi", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi())
+        << fHistCentBin
+        << "END" ;
+
     fh_jetArea
         //<< TH1D("h_jetArea", "h_jetArea", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek)
         << TH1D("h_jetArea", "h_jetArea", NBINSJet, LogBinsXJet )
@@ -252,6 +340,11 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         //<< TH1D("h_jetAreaRho", "h_jetAreaRho", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek)
         << TH1D("h_jetAreaRho", "h_jetAreaRho", NBINSJet, LogBinsXJet )
         << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_deltaPt
+        << TH1D("h_deltaPt", "h_deltaPt", 321, -20.5, 300.5)
+        << fHistCentBin
         << "END" ;
 
     int NBINSDijet=170;
@@ -325,7 +418,23 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << "END" ;
 
     fh_jetResponse_ALICE
-        << TH2D("h_jetResponse_ALICE", "h_jetResponse_ALICE", 200, 10, 210, 200, 10, 210 )
+        << TH2D("h_jetResponse_ALICE", "h_jetResponse_ALICE", 300, 10, 310, 300, 10, 310 )
+        << "END" ;
+
+    fh_deltaPtResponse
+        << TH2D("h_deltaPtResponse", "h_deltaPtResponse", NBINSJet, LogBinsXJet, NBINSJet, LogBinsXJet )
+        << "END" ;
+
+    fh_deltaPtResponse_ALICE
+        << TH2D("h_deltaPtResponse_ALICE", "h_deltaPtResponse_ALICE", 300, 10, 310, 300, 10, 310 )
+        << "END" ;
+
+    fh_deltaPtResponseEvery
+        << TH2D("h_deltaPtResponseEvery", "h_deltaPtResponseEvery", NBINSJet, LogBinsXJet, NBINSJet, LogBinsXJet )
+        << "END" ;
+
+    fh_deltaPtResponseEvery_ALICE
+        << TH2D("h_deltaPtResponseEvery_ALICE", "h_deltaPtResponseEvery_ALICE", 300, 10, 310, 300, 10, 310 )
         << "END" ;
 
     fh_dijetResponse
