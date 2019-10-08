@@ -8,11 +8,10 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
                                                                 Int_t wagonnr = 0,
                                                                 Int_t centrality = 4) {
 
-
 bool debug = true;
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
-                                                                                if (debug) std::cout << __LINE__ << "DEBUG_AddTask: COUT LINE" << std::endl;
+
   // #########################################################
   // #########################################################
   // Configuring Analysis Manager
@@ -23,14 +22,13 @@ bool debug = true;
   // #########################################################
   // #########################################################
   // Loading individual config file either local or from Alien
-                                                                                if (debug) std::cout << __LINE__ << "DEBUG_AddTask: COUT LINE" << std::endl;
 
   // TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
       && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/LMEECutLib_caklein.C ."))
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/LMEECutLib_feisenhut.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
@@ -42,7 +40,7 @@ bool debug = true;
   // err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
   // err |= gROOT->LoadMacro(configFilePath.Data());
   // if (err) { Error("AddTask_caklein_ElectronEfficiency_v2","Config(s) could not be loaded!"); return 0x0; }
-                                                                                if (debug) std::cout << __LINE__ << "DEBUG_AddTask: COUT LINE" << std::endl;
+
   Bool_t err=kFALSE;
   if (!cutlibPreloaded) { // should not be needed but seems to be...
     std::cout << "Cutlib was not preloaded" << std::endl;
@@ -54,7 +52,7 @@ bool debug = true;
   }
 
 
-  // ###AliAnalysisTaskEtaReconstruction##############################
+  // #########################################################
   // #########################################################
   // Creating an instance of the task
   AliAnalysisTaskEtaReconstruction* task = new AliAnalysisTaskEtaReconstruction(Form("%s%d",name.Data(), wagonnr));
@@ -65,6 +63,7 @@ bool debug = true;
   // task->SetGeneratorName(generatorName);
   task->SetGeneratorMCSignalName(generatorNameForMCSignal);
   task->SetGeneratorULSSignalName(generatorNameForULSSignal);
+
   // #########################################################
   // #########################################################
   // Event selection. Is the same for all the different cutsettings
@@ -77,9 +76,10 @@ bool debug = true;
   GetCentrality(centrality, centMin, centMax);
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
   task->SetCentrality(centMin, centMax);
+
   // #########################################################
   // #########################################################
-  // Use variable to debug code.
+  // Set debug variable for debugging code
   task->SetDebug(debug);
 
   // #########################################################
@@ -96,6 +96,7 @@ bool debug = true;
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
   task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
+
   // #########################################################
   // #########################################################
   // Set Binning
@@ -112,6 +113,7 @@ bool debug = true;
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
   task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
   task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
+
   // #########################################################
   // #########################################################
   // Resolution File, If resoFilename = "" no correction is applied
@@ -123,6 +125,7 @@ bool debug = true;
   task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
   task->SetResolutionPhiBinsLinear  (DeltaPhiMin, DeltaPhiMax, NbinsDeltaPhi);
   task->SetResolutionThetaBinsLinear(DeltaThetaMin, DeltaThetaMax, NbinsDeltaTheta);
+
   // #########################################################
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
@@ -139,6 +142,7 @@ bool debug = true;
   task->SetDoCocktailWeighting(DoCocktailWeighting);
   task->SetCocktailWeighting(CocktailFilename);
   task->SetCocktailWeightingFromAlien(CocktailFilenameFromAlien);
+
   // #########################################################
   // #########################################################
   // Pairing related config
@@ -157,6 +161,7 @@ bool debug = true;
   std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
 
+
   // #########################################################
   // #########################################################
   // Set mean and width correction for ITS, TPC and TOF
@@ -167,12 +172,14 @@ bool debug = true;
   // Adding cutsettings
   TObjArray*  arrNames=names.Tokenize(";");
   const Int_t nDie=arrNames->GetEntriesFast();
+
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
     task->AddTrackCuts(filter);
     DoAdditionalWork(task);
   }
+
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

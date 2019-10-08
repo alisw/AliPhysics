@@ -66,7 +66,7 @@ AliAnalysisTaskEtaReconstruction::~AliAnalysisTaskEtaReconstruction(){
 
 // ############################################################################
 // ############################################################################
-AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysisTaskSE(), fEventFilter(0x0),fdebug(false)
+AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysisTaskSE(), fEventFilter(0x0), fdebug(false)
                                                                               , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
                                                                               , fOutputList(0x0), fSingleElectronList(0x0), fPairList(0x0), fFourPairList(0x0), fResolutionList(0x0)
                                                                               , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
@@ -611,14 +611,16 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
       fResolutionList->Add(fThetaGen_DeltaTheta);
       fResolutionList->Add(fPhiGen_DeltaPhi);
 
+
       // ######################################################
       // #################  Four Electrons ####################
       // ######################################################
-
+                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fDoFourPairing " << fDoFourPairing << std::endl;
       if (fDoFourPairing == true){
         fFourPairList = new TList();
         fFourPairList->SetName("4 el. Pairs");
         fFourPairList->SetOwner();
+                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
 
         TList* GeneratedFourPairs = new TList();
         GeneratedFourPairs->SetName("Generated");
@@ -660,7 +662,6 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
 
       } // end if fDoFourPairing
 
-
     fOutputList->Add(fSingleElectronList);
     fOutputList->Add(fResolutionList);
     if (fDoPairing) fOutputList->Add(fPairList);
@@ -678,7 +679,8 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
 // ############################################################################
 void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   const double pi = TMath::Pi();
-                                                        										    if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+
   // THIS MIGHT BE USED IN THE FUTURE TO SEPARATE DIFFERENT GENERATORS FROM EACH OTHER
   // AliMCEvent* mcEvent = MCEvent();
   // if(!mcEvent)return 0;
@@ -698,7 +700,6 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   // ##########################################################
   // Set MC event
   if(!AliDielectronMC::Instance()->ConnectMCEvent()) return;
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
 
   // ##########################################################
   // Manage AOD&ESD handling and the corresponding events
@@ -719,7 +720,6 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     eventHandler   = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   }
   //
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
   fMC = eventHandlerMC->MCEvent();
   if (!fMC) { Printf("ERROR: fMC not available"); return; }
 
@@ -750,17 +750,17 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // std::cout << "TOF width correction applied" << std::endl;
     AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
   }
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+
 
   if (isAOD) fEvent = static_cast<AliAODEvent*>(eventHandler->GetEvent());
   else       fEvent = static_cast<AliESDEvent*>(eventHandler->GetEvent());
 
   AliDielectronVarManager::SetEvent(fEvent);
-
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
   // ##########################################################
   // All events before all cuts
   fHistEventStat->Fill(kAllEvents);
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+
   // ##########################################################
   // calculating physics selection stuff
   ULong64_t isSelected = AliVEvent::kMB;
@@ -776,7 +776,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   // Apply physics selection
   if (isSelected==0) return;
   fHistEventStat->Fill(kPhysicsSelectionEvents);
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+
   // ##########################################################
   // Apply event filter
   if (fEventFilter) {
@@ -807,20 +807,20 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   fHistEventStat->Fill(kCentralityEvents);
   fHistEvents->Fill(0.5);
   fHistCentrality->Fill(centralityF);
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+
   // Calculating the weight when centrality correction is applied
   double centralityWeight = 1.;
   // if (fHistCentralityCorrection != 0x0){
   //   centralityWeight = (fHistCentralityCorrection->GetEntries() / fHistCentralityCorrection->GetNbinsX()) / fHistCentralityCorrection->FindBin(centralityF) ;
   //   std::cout << "cent: " << centralityF << "  " << "weight: " << centralityWeight << std::endl;
   // }
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+
   // ##########################################################
   // Fill Multiplicity histogram
   int nTracks = fEvent->GetNumberOfTracks();
   fHistNTracks->Fill(nTracks);
-
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+
   // ######################################################
   // ######################################################
   // ######################################################
@@ -828,12 +828,10 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   for(int iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
     AliVParticle* mcPart1  = (AliVParticle*)fMC->GetTrack(iPart);
     if (!mcPart1) continue;
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
     // ##########################################################
     // Checking minimum and maximum values for generated particles
     if (mcPart1->Pt()  < fPtMinGen  || mcPart1->Pt()  > fPtMaxGen)  continue;
     if (mcPart1->Eta() < fEtaMinGen || mcPart1->Eta() > fEtaMaxGen) continue;
-
     // ##########################################################
     // Check MC signals
     std::vector<Bool_t> mcSignal_acc(fSingleLegMCSignal.size(), kFALSE); // initialize vector which stores if track is accepted by [i]-th mcsignal
@@ -842,7 +840,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // ##########################################################
     // check if at least one mc signal is true
     if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
-
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
     // ##########################################################
     // check if correct generator used
     bool generatorForMCSignal  = CheckGenerator(iPart, fGeneratorMCSignalHashs);
@@ -850,7 +848,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     bool generatorForULSSignal = CheckGenerator(iPart, fGeneratorULSSignalHashs);
     if (!generatorForMCSignal && !generatorForULSSignal) continue;
     // if (!CheckGenerator(iPart, fGeneratorHashs)) continue;
-
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
 
     // ##########################################################
     // Creating particles to summarize all the data
@@ -865,7 +863,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // ##########################################################
     // check if electron comes from a mother with ele+pos as daughters
     CheckIfFromMotherWithDielectronAsDaughter(part);
-
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
     // ##########################################################
     // Filling generated particle histograms according to MCSignals
     for (unsigned int i = 0; i < part.isMCSignal.size(); ++i){
@@ -878,7 +876,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
         }
       }
     }
-
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
     // ##########################################################
     // Filling generated+smeared particle histograms according to MCSignals
     // and separated into pos and neg charge
@@ -903,7 +901,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
     if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge <  0) fGenNegPart.push_back(part); // store particles for later pairing
     else if ((fDoPairing == true || fDoFourPairing == true) && part.fCharge >  0) fGenPosPart.push_back(part); // store particles for later pairing
-
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
   }// end of MC track loop
 
 
@@ -1091,10 +1089,10 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   float phiNeg      = -999;
   float op_angle    = -999;
 
+
   if (fDoPairing){
-    std::cout << "Doing two pairing..." << std::endl;
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
-                                                                                if(fdebug) std::cout << " fGenNegPart: "  << fGenNegPart.size() << " fGenPosPart: " <<  fGenPosPart.size() << std::endl;
+    std::cout << "start two pairing" << std::endl;
+                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fGenNegPart: " << fGenNegPart.size() << " fGenPosPart: " << fGenPosPart.size() << std::endl;
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
       for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
         AliVParticle* mcPart1 = fMC->GetTrack(fGenNegPart[neg_i].GetTrackID());
@@ -1206,10 +1204,13 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
             }
           } // end of loop over all MCsignals
         }
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Bevor fArrResoPt" << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fArrResoPt: " << fArrResoPt << std::endl;
         if (fArrResoPt){ // Smear particles to fill "GeneratedSmeared"
 
           if (fGenNegPart[neg_i].fPt_smeared < fPtMin || fGenNegPart[neg_i].fPt_smeared > fPtMax || fGenNegPart[neg_i].fEta_smeared < fEtaMin || fGenNegPart[neg_i].fEta_smeared > fEtaMax) continue;
           if (fGenPosPart[pos_i].fPt_smeared < fPtMin || fGenPosPart[pos_i].fPt_smeared > fPtMax || fGenPosPart[pos_i].fEta_smeared < fEtaMin || fGenPosPart[pos_i].fEta_smeared > fEtaMax) continue;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: bevor smearing" << std::endl;
 
           // Construct pair variables from LorentzVectors
           TLorentzVector Lvec1_smeared;
@@ -1232,6 +1233,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
           for (unsigned int i = 0; i <  mcSignal_acc.size(); ++i){
             if (mcSignal_acc[i] == kTRUE){
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Filling fHistGenSmearedPair" << std::endl;
               fHistGenSmearedPair.at(i)->Fill(massSmeared, pairptSmeared, weight * centralityWeight);
               if (fWriteLegsFromPair){
                 ptNeg  = fGenNegPart[neg_i].fPt_smeared;
@@ -1637,7 +1639,6 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // ##########################################################
     // Fill reconstructed pairs
                   	                                                            if(fdebug) std::cout << __LINE__ << " Start Four Reconstructed Pairing " << std::endl;
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
                   	                                                            if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart: " << fRecNegPart.size() << " fRecPosPart: " << fRecPosPart.size() << std::endl;
     for (unsigned int neg_i = 0; neg_i < fRecNegPart.size(); ++neg_i){
       for (unsigned int pos_i = 0; pos_i < fRecPosPart.size(); ++pos_i){
@@ -1647,13 +1648,13 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
           AliVParticle* track2  = fEvent->GetTrack(fRecPosPart[pos_i].GetTrackID());
           AliVParticle* track3  = fEvent->GetTrack(fRecNegPart[neg_j].GetTrackID());
           AliVParticle* track4  = fEvent->GetTrack(fRecPosPart[pos_j].GetTrackID());
-                  	                                                            if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+                  	                                                            // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
           // Check if electrons are from MCSignal Generator
           if (!fRecPosPart[pos_i].GetMCSignalPair() || !fRecNegPart[neg_i].GetMCSignalPair()) continue;
 
           // Apply MC signals
           std::vector<Bool_t> mcSignal_acc(fFourPairMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
-                  	                                                            if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+                  	                                                            // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
           // Check if it according to mcsignals
           AliDielectronPair firstpair;
           AliDielectronPair secondpair;
@@ -1712,6 +1713,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   } // end of fDoFourPairing
   /**/
   /*  ------ /\ ------ added by feisenhut ------ /\ ------  */
+
 
   PostData(1, fOutputList);
 }

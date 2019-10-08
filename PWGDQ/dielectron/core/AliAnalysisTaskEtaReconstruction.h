@@ -58,9 +58,10 @@ public:
    std::vector<double>  GetEtaBins() const                  {return fEtaBins;}
    std::vector<double>  GetPhiBins() const                  {return fPhiBins;}
 
-   // Debug variable
+   // Debug Variable
    void   SetDebug(bool debug) {fdebug = debug;}
-   bool fdebug;
+   bool   fdebug;
+
 
    // MC Signal setter
    void   AddSingleLegMCSignal(AliDielectronSignalMC signal1)         {fSingleLegMCSignal.push_back(signal1);}

@@ -17,9 +17,9 @@ TString names=("cut1_pt75;cut5_pt75");
 
 // TString generatorNameForMCSignal  = "Pythia CC_0;Pythia CC_1;Pythia B_0;Pythia B_1";
 // TString generatorNameForULSSignal = "Pythia CC_0;Pythia CC_1;Pythia B_0;Pythia B_1";
- TString generatorNameForMCSignal  = "";
- TString generatorNameForULSSignal = "";
-// TString generatorNameForMCSignal  = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6";
+TString generatorNameForMCSignal  = "";
+TString generatorNameForULSSignal = "";
+// TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
 // TString generatorNameForULSSignal = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
 
 
@@ -27,19 +27,18 @@ Bool_t SetTPCCorrection = kFALSE;
 Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
-bool SetGeneratedSmearingHistos = true;
+bool SetGeneratedSmearingHistos = false;
 
-bool DoPairing = true;
-bool DoFourPairing = true;
-bool DoULSLS   = false;
+bool DoPairing      = true;
+bool DoFourPairing  = true;
+bool DoULSLS        = false;
 bool DeactivateLS   = true;
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
 // std::string resoFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
-//std::string resoFilename = "";
 std::string resoFilename = "resolution_pp2016f_deltaXvsP_LHC17d1_vsPt.root";
-std::string resoFilenameFromAlien = "/alice/cern.ch/user/f/feisenhut/data/resolution_pp2016f_deltaXvsP_LHC17d1_vsPt.root";
+std::string resoFilenameFromAlien = "/alice/cern.ch/user/f/feisenhu/data/resolution_pp2016f_deltaXvsP_LHC17d1_vsPt.root";
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP.root";
 // std::string resoFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/resolution_PbPb2015_0080_deltaXvsP.root";
 // std::string resoFilename = "new_resolution_PbPb2015_0080_deltaXvsP.root";
@@ -72,9 +71,7 @@ const double maxGenEta =  1.5;
 // const double maxPtCut = 100.0;
 // const double minEtaCut = -100;
 // const double maxEtaCut =  100;
-// const double minPtCut = 0.05;  // cut for secondaries
-const double minPtCut = 0.075;  // cut for primaries
-// const double minPtCut = 0.2;  // cut for primaries (has to be same like in libbary)
+const double minPtCut = 0.075;
 const double maxPtCut = 8.0;
 const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
@@ -543,167 +540,6 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
   return eventCuts;
 }
 
-
-
-// // #########################################################
-// // #########################################################
-// std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
-//   AliDielectronSignalMC partFinalState("partFinalState","partFinalState");
-//   partFinalState.SetLegPDGs(0,1);//dummy second leg (never MCtrue)\n"
-//   // partFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//   partFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//
-//   AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
-//   eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-//   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//   eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//
-//   AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
-//   eleFinalStateFromSameMotherMeson.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-//   eleFinalStateFromSameMotherMeson.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//   eleFinalStateFromSameMotherMeson.SetMotherPDGs(600, 600); // open charm mesons and baryons together
-//   eleFinalStateFromSameMotherMeson.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//   //
-//   AliDielectronSignalMC eleFinalStateFromD("eleFinalStateFromD","eleFinalStateFromD");
-//   eleFinalStateFromD.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-//   eleFinalStateFromD.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//   eleFinalStateFromD.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//   eleFinalStateFromD.SetMotherPDGs(402, 402); // open charm mesons and baryons together
-//   eleFinalStateFromD.SetCheckBothChargesMothers(kTRUE,kTRUE);
-//   //
-//   AliDielectronSignalMC eleFinalStateFromB("eleFinalStateFromB","eleFinalStateFromB");
-//   eleFinalStateFromB.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-//   eleFinalStateFromB.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//   eleFinalStateFromB.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//   eleFinalStateFromB.SetMotherPDGs(502, 502); // open charm mesons and baryons together
-//   eleFinalStateFromB.SetCheckBothChargesMothers(kTRUE,kTRUE);
-//
-//   // AliDielectronSignalMC eleSecondary("eleSecondary","eleSecondary");
-//   // eleSecondary.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-//   // eleSecondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//   // eleSecondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-//   // task->AddSingleLegMCSignal(eleSecondary);
-//   //
-//   // AliDielectronSignalMC eleDontCare("eleDontCare","eleDontCare");
-//   // eleDontCare.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-//   // eleDontCare.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//   // eleDontCare.SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-//   // task->AddSingleLegMCSignal(eleDontCare);
-//
-//   // task->AddSingleLegMCSignal(partFinalState);
-//   task->AddSingleLegMCSignal(eleFinalState);
-//   // task->AddSingleLegMCSignal(eleFinalStateFromPion);
-//   task->AddSingleLegMCSignal(eleFinalStateFromD);
-//   task->AddSingleLegMCSignal(eleFinalStateFromB);
-//   // task->AddSingleLegMCSignal(eleFinalStateFromSameMotherMeson);
-//
-//   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
-//   // ordering is according to MCSignals of single legs
-//  std::vector<bool> DielectronsPairNotFromSameMother;
-//  DielectronsPairNotFromSameMother.push_back(false);
-//  DielectronsPairNotFromSameMother.push_back(true);
-//  DielectronsPairNotFromSameMother.push_back(true);
-//  // DielectronsPairNotFromSameMother.push_back(false);
-//  return DielectronsPairNotFromSameMother;
-// }
-//
-//
-// // #########################################################
-// // #########################################################
-// void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
-//
-//     AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
-//     pair_sameMother.SetLegPDGs(11,-11);
-//     pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//     //mother
-//     pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-//     pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.
-//
-//     AliDielectronSignalMC pair_sameMother_pion("sameMother_pion","sameMother_pion");
-//     pair_sameMother_pion.SetLegPDGs(11,-11);
-//     pair_sameMother_pion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_sameMother_pion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//     //mother
-//     pair_sameMother_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
-//     pair_sameMother_pion.SetMotherPDGs(111,111); //
-//
-//     AliDielectronSignalMC pair_sameMother_eta("sameMother_eta","sameMother_eta");
-//     pair_sameMother_eta.SetLegPDGs(11,-11);
-//     pair_sameMother_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_sameMother_eta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//     //mother
-//     pair_sameMother_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
-//     pair_sameMother_eta.SetMotherPDGs(221,221); //
-//
-//     AliDielectronSignalMC pair_sameMother_etaP("sameMother_etaP","sameMother_etaP");
-//     pair_sameMother_etaP.SetLegPDGs(11,-11);
-//     pair_sameMother_etaP.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_sameMother_etaP.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//     //mother
-//     pair_sameMother_etaP.SetMothersRelation(AliDielectronSignalMC::kSame);
-//     pair_sameMother_etaP.SetMotherPDGs(331,331); //
-//
-//     AliDielectronSignalMC pair_sameMother_rho("sameMother_rho","sameMother_rho");
-//     pair_sameMother_rho.SetLegPDGs(11,-11);
-//     pair_sameMother_rho.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_sameMother_rho.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//     //mother
-//     pair_sameMother_rho.SetMothersRelation(AliDielectronSignalMC::kSame);
-//     pair_sameMother_rho.SetMotherPDGs(113, 113); //
-//
-//     AliDielectronSignalMC pair_sameMother_omega("sameMother_omega","sameMother_omega");
-//     pair_sameMother_omega.SetLegPDGs(11,-11);
-//     pair_sameMother_omega.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_sameMother_omega.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//     //mother
-//     pair_sameMother_omega.SetMothersRelation(AliDielectronSignalMC::kSame);
-//     pair_sameMother_omega.SetMotherPDGs(223, 223); //
-//
-//     AliDielectronSignalMC pair_sameMother_phi("sameMother_phi","sameMother_phi");
-//     pair_sameMother_phi.SetLegPDGs(11,-11);
-//     pair_sameMother_phi.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_sameMother_phi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//     //mother
-//     pair_sameMother_phi.SetMothersRelation(AliDielectronSignalMC::kSame);
-//     pair_sameMother_phi.SetMotherPDGs(333, 333); //
-//
-//     AliDielectronSignalMC pair_sameMother_jpsi("sameMother_jpsi","sameMother_jpsi");
-//     pair_sameMother_jpsi.SetLegPDGs(11,-11);
-//     pair_sameMother_jpsi.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_sameMother_jpsi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//     //mother
-//     pair_sameMother_jpsi.SetMothersRelation(AliDielectronSignalMC::kSame);
-//     pair_sameMother_jpsi.SetMotherPDGs(443, 443); //
-//
-//     AliDielectronSignalMC pair_sameMother_CharmedMesonsWithSameMother("CharmedMesonsWithSameMother","CharmedMesonsWithSameMother");
-//     pair_sameMother_CharmedMesonsWithSameMother.SetLegPDGs(11,-11);
-//     pair_sameMother_CharmedMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_sameMother_CharmedMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//     //mother
-//     pair_sameMother_CharmedMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-//     pair_sameMother_CharmedMesonsWithSameMother.SetMotherPDGs(402, 402); //
-//
-//     AliDielectronSignalMC pair_conversion("pair_conversion","pair_conversion");
-//     pair_conversion.SetLegPDGs(11,-11);
-//     pair_conversion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//     pair_conversion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-//     //mother
-//     pair_conversion.SetMothersRelation(AliDielectronSignalMC::kSame);
-//
-//
-//
-//     task->AddPairMCSignal(pair_sameMother);
-//     // task->AddPairMCSignal(pair_sameMother_pion);
-//     // task->AddPairMCSignal(pair_sameMother_eta);
-//     // task->AddPairMCSignal(pair_sameMother_etaP);
-//     // task->AddPairMCSignal(pair_sameMother_rho);
-//     // task->AddPairMCSignal(pair_sameMother_omega);
-//     // task->AddPairMCSignal(pair_sameMother_phi);
-//     task->AddPairMCSignal(pair_sameMother_jpsi);
-//     // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-//     // task->AddPairMCSignal(pair_conversion);
-// }
 
 
 // #########################################################
