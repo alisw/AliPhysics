@@ -873,7 +873,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       trackCont->SetEtaLimits(-trackEtaWindow, trackEtaWindow);
    }
 
-   if(mode == AliAnalysisTaskEA::kMC || mode == AliAnalysisTaskEA::kEmbedding || mode == AliAnalysisTaskEA::kKine){
+   if(mode == AliAnalysisTaskEA::kMC || mode == AliAnalysisTaskEA::kEmbedding){
       trackContTrue = task->AddMCParticleContainer(mcpariclearraynamePartMC); //particle level MC particles   
       trackContTrue->SetClassName("AliAODMCParticle");
       trackContTrue->SetMinPt(0.15);
@@ -881,6 +881,13 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
 
       if(mode == AliAnalysisTaskEA::kEmbedding) trackContTrue->SetIsEmbedding(kTRUE);
    }
+
+   if(mode == AliAnalysisTaskEA::kKine){
+      trackContTrue = task->AddParticleContainer(mcpariclearraynamePartMC); //particle level MC particles   
+      trackContTrue->SetMinPt(0.15);
+      trackContTrue->SetEtaLimits(-5.1,5.1); //V0 eta range
+   }
+
 
    if(mode == AliAnalysisTaskEA::kEmbedding){
       trackContDet = task->AddTrackContainer(tracknameDetMC);  //detector level pythia tracks when embedding
@@ -1991,67 +1998,67 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    
    
       //____________ INCLUSIVE EVENTS _______________________________
-      if(fIsMinBiasTrig){
-   
-         for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
-            // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-            track = trackIterator.second;  // Get the full track
-            if(!track) continue;
-    
-            if(IsTrackInAcceptance(track, kDetLevel)){  
-    
-               //get sigma pT / pT  
-               //Taken from AliEMCalTriggerExtraCuts::CalculateTPCTrackLength
-               memset(cv, 0, sizeof(Double_t) * 21); //cleanup arrays
-               memset(pxpypz, 0, sizeof(Double_t) * 50);
-               memset(xyz, 0, sizeof(Double_t) * 50);
-   
-               trackAOD = dynamic_cast <AliAODTrack*>( track);
-               if(trackAOD){
-                  trackAOD->GetXYZ(xyz);
-                  trackAOD->GetPxPyPz(pxpypz);
-                  trackAOD->GetCovarianceXYZPxPyPz(cv);
-                  
-                  AliExternalTrackParam  par(xyz, pxpypz, cv, trackAOD->Charge());
-                  fhSigmaPtOverPtVsPt->Fill(trackAOD->Pt(), TMath::Abs(sqrt(par.GetSigma1Pt2())/par.GetSigned1Pt()));
-                  
-                  if(trackAOD->Charge()<0){
-                     fhOneOverPtVsPhiNeg->Fill(trackAOD->Phi(), 1.0/trackAOD->Pt());
-                  }else{
-                     fhOneOverPtVsPhiPos->Fill(trackAOD->Phi(), 1.0/trackAOD->Pt());
-                  }
-                  
-                  //DCA distributions
-                  fhDCAinXVsPt->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
-                  fhDCAinYVsPt->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
-                 
-                  //SINGLE TRACK EFFICIENCY AND CONTAMINATION
-                  if(fMode == AliAnalysisTaskEA::kMC){
-                     label = TMath::Abs(trackAOD->GetLabel()); 
-                     
-                     particleMC = NULL;
-                     labelfound = 0;
-                     for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
-                        particleMC  =  static_cast <AliAODMCParticle*>(  mcPartIterator.second);  // Get the pointer to mc particle object
-                  
-                        labelMC = TMath::Abs(particleMC->GetLabel());
-                        if(labelMC==label && label > -1){
-                           labelfound=1;
-                           break;
-                        }
-                     }
-                     if(labelfound && particleMC && particleMC->IsPhysicalPrimary()){
-                        fhDCAinXVsPtPhysPrimary->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
-                        fhDCAinYVsPtPhysPrimary->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
-                     }else{
-                        fhDCAinXVsPtSecondary->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
-                        fhDCAinYVsPtSecondary->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
-                     }//AID
-                  }
-               }
-            }
-         }
-      }
+//      if(fIsMinBiasTrig){
+//   
+//         for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
+//            // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+//            track = trackIterator.second;  // Get the full track
+//            if(!track) continue;
+//    
+//            if(IsTrackInAcceptance(track, kDetLevel)){  
+//    
+//               //get sigma pT / pT  
+//               //Taken from AliEMCalTriggerExtraCuts::CalculateTPCTrackLength
+//               memset(cv, 0, sizeof(Double_t) * 21); //cleanup arrays
+//               memset(pxpypz, 0, sizeof(Double_t) * 50);
+//               memset(xyz, 0, sizeof(Double_t) * 50);
+//   
+//               trackAOD = dynamic_cast <AliAODTrack*>( track);
+//               if(trackAOD){
+//                  trackAOD->GetXYZ(xyz);
+//                  trackAOD->GetPxPyPz(pxpypz);
+//                  trackAOD->GetCovarianceXYZPxPyPz(cv);
+//                  
+//                  AliExternalTrackParam  par(xyz, pxpypz, cv, trackAOD->Charge());
+//                  fhSigmaPtOverPtVsPt->Fill(trackAOD->Pt(), TMath::Abs(sqrt(par.GetSigma1Pt2())/par.GetSigned1Pt()));
+//                  
+//                  if(trackAOD->Charge()<0){
+//                     fhOneOverPtVsPhiNeg->Fill(trackAOD->Phi(), 1.0/trackAOD->Pt());
+//                  }else{
+//                     fhOneOverPtVsPhiPos->Fill(trackAOD->Phi(), 1.0/trackAOD->Pt());
+//                  }
+//                  
+//                  //DCA distributions
+//                  fhDCAinXVsPt->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
+//                  fhDCAinYVsPt->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
+//                 
+//                  //SINGLE TRACK EFFICIENCY AND CONTAMINATION
+//                  if(fMode == AliAnalysisTaskEA::kMC){
+//                     label = TMath::Abs(trackAOD->GetLabel()); 
+//                     
+//                     particleMC = NULL;
+//                     labelfound = 0;
+//                     for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
+//                        particleMC  =  static_cast <AliAODMCParticle*>(  mcPartIterator.second);  // Get the pointer to mc particle object
+//                  
+//                        labelMC = TMath::Abs(particleMC->GetLabel());
+//                        if(labelMC==label && label > -1){
+//                           labelfound=1;
+//                           break;
+//                        }
+//                     }
+//                     if(labelfound && particleMC && particleMC->IsPhysicalPrimary()){
+//                        fhDCAinXVsPtPhysPrimary->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
+//                        fhDCAinYVsPtPhysPrimary->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
+//                     }else{
+//                        fhDCAinXVsPtSecondary->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
+//                        fhDCAinYVsPtSecondary->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
+//                     }//AID
+//                  }
+//               }
+//            }
+//         }
+//      }
    
       //______________________________________________________________
       //                       TTH  ANALYSIS 
@@ -2523,17 +2530,19 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
    Bool_t isMBpartlevel = 0; // requires coincidence of V0A and V0C on parton level
 
-   if(fMode == AliAnalysisTaskEA::kMC){
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine ){
 
       for(Int_t ir=0; ir<kRho; ir++){   
          fhRhoMBpart[ir]->Fill(rhoMC[ir]);
       }
 
       TClonesArray* arrayMC = 0; // array particles in the MC event
-      arrayMC = (TClonesArray*) InputEvent()->FindListObject(AliAODMCParticle::StdBranchName());
-      if(!arrayMC){
-         AliError("No MC array found!");
-         return kFALSE;
+      if(fMode == AliAnalysisTaskEA::kMC){
+         arrayMC = (TClonesArray*) InputEvent()->FindListObject(AliAODMCParticle::StdBranchName());
+         if(!arrayMC){
+            AliError("No MC array found!");
+            return kFALSE;
+         }
       }
       AliAODMCParticle* daughtermc; 
 
@@ -2587,7 +2596,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                } 
              
             
-               if(!mcParticle->Charge()){ 
+               if(!mcParticle->Charge() && fMode == AliAnalysisTaskEA::kMC){
                   //TT Cluster
                    if(((static_cast<AliAODMCParticle*>(mcParticle))->IsPhysicalPrimary()) && TMath::Abs(mcParticle->Eta())<0.7){ //EMCAL acceptance
                       if(((static_cast<AliAODMCParticle*>(mcParticle))->GetPdgCode())==22){ //photon
@@ -2706,47 +2715,49 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             }
          
             //chose trigger emcal cluster TT 
-            for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-               if(fClusterTT_PartLevel[igg]>0){ 
-                  fIndexTTC_PartLevel[igg] = fRandom->Integer(fClusterTT_PartLevel[igg]);
-                  idx = fIndexTTC_PartLevel[igg];// gamma trigger
-        
-                  for(Int_t ir=0; ir<kRho; ir++){ 
-                     fdeltapT_PartLevel[igg][ir] = GetDeltaPt(fTTC_PartLevel[igg][idx].Phi(), fTTC_PartLevel[igg][idx].Eta(), phiLJmc, etaLJmc, phiSJmc, etaSJmc, rhoMC[ir], kPartLevel);
-                  }
-         
-                  //signal in events with hadron TT   particle level
-                  fhSignalTTC_PartLevel[fkV0A][igg]->Fill(fMultV0A_PartLevel);
-                  fhSignalTTC_PartLevel[fkV0C][igg]->Fill(fMultV0C_PartLevel);
-                  fhSignalTTC_PartLevel[fkV0M][igg]->Fill(fMultV0M_PartLevel);
-                  fhSignalTTC_PartLevel[fkV0Mnorm1][igg]->Fill(fMultV0Mnorm_PartLevel);
-         
-                  if(idx>-1){ 
-         
+            if(fMode == AliAnalysisTaskEA::kMC){
+               for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+                  if(fClusterTT_PartLevel[igg]>0){ 
+                     fIndexTTC_PartLevel[igg] = fRandom->Integer(fClusterTT_PartLevel[igg]);
+                     idx = fIndexTTC_PartLevel[igg];// gamma trigger
+             
                      for(Int_t ir=0; ir<kRho; ir++){ 
-                        fhRhoTTCinMBpart[igg][ir]->Fill(rhoMC[ir]);
-                        fhDeltaPtTTC_RC_V0Mnorm1_PartLevel[igg][ir]->Fill(fMultV0Mnorm_PartLevel, fdeltapT_PartLevel[igg][ir]);
+                        fdeltapT_PartLevel[igg][ir] = GetDeltaPt(fTTC_PartLevel[igg][idx].Phi(), fTTC_PartLevel[igg][idx].Eta(), phiLJmc, etaLJmc, phiSJmc, etaSJmc, rhoMC[ir], kPartLevel);
                      }
-
-                     if(fFillSigTT && igg==0) continue;  // Do not fill reference 
-                     if(!fFillSigTT && igg>0) continue;  // Do not fill signal 
-         
-                     fhTTC_V0Mnorm1_PartLevel[igg]->Fill(fMultV0Mnorm_PartLevel, fTTC_PartLevel[igg][idx].Pt()); //fill trigger track pT
-         
-                     //recoil jets PARTICLE LEVEL
-                     for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
-                        // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-                        jet = jetIterator.second;  // Get the pointer to jet object
-                        if(!jet)  continue; 
-                    
-                        if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTC_PartLevel[igg][idx].Phi())) > fPhiCut){     
-                           //recoil jet
-                           for(Int_t ir=0; ir<kRho; ir++){ 
-                              jetPtCorrDet = jet->Pt() - rhoMC[ir]*jet->Area();
-                              fhRecoilJetPtTTC_V0Mnorm1_PartLevel[igg][ir]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet);
-                           }
+            
+                     //signal in events with hadron TT   particle level
+                     fhSignalTTC_PartLevel[fkV0A][igg]->Fill(fMultV0A_PartLevel);
+                     fhSignalTTC_PartLevel[fkV0C][igg]->Fill(fMultV0C_PartLevel);
+                     fhSignalTTC_PartLevel[fkV0M][igg]->Fill(fMultV0M_PartLevel);
+                     fhSignalTTC_PartLevel[fkV0Mnorm1][igg]->Fill(fMultV0Mnorm_PartLevel);
+            
+                     if(idx>-1){ 
+            
+                        for(Int_t ir=0; ir<kRho; ir++){ 
+                           fhRhoTTCinMBpart[igg][ir]->Fill(rhoMC[ir]);
+                           fhDeltaPtTTC_RC_V0Mnorm1_PartLevel[igg][ir]->Fill(fMultV0Mnorm_PartLevel, fdeltapT_PartLevel[igg][ir]);
                         }
-                     } 
+             
+                        if(fFillSigTT && igg==0) continue;  // Do not fill reference 
+                        if(!fFillSigTT && igg>0) continue;  // Do not fill signal 
+            
+                        fhTTC_V0Mnorm1_PartLevel[igg]->Fill(fMultV0Mnorm_PartLevel, fTTC_PartLevel[igg][idx].Pt()); //fill trigger track pT
+            
+                        //recoil jets PARTICLE LEVEL
+                        for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
+                           // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+                           jet = jetIterator.second;  // Get the pointer to jet object
+                           if(!jet)  continue; 
+                       
+                           if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTC_PartLevel[igg][idx].Phi())) > fPhiCut){     
+                              //recoil jet
+                              for(Int_t ir=0; ir<kRho; ir++){ 
+                                 jetPtCorrDet = jet->Pt() - rhoMC[ir]*jet->Area();
+                                 fhRecoilJetPtTTC_V0Mnorm1_PartLevel[igg][ir]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet);
+                              }
+                           }
+                        } 
+                     }
                   }
                }
             }

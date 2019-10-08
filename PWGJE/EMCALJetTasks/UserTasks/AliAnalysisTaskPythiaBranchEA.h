@@ -57,7 +57,8 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskPythiaBranchEA()                                 ;
   
   static AliAnalysisTaskPythiaBranchEA* AddTaskPythiaBranchEA(const char *outputName = "pyparticles",
-                                                                                        const char *pyfile ="",
+                                                                                        const char *pyfilepath ="",
+                                                                                        const char *pyfilemask ="",
                                                                                         const char *suffix     = "");
   // Methods from AliAnalysisTaskSE
   void UserCreateOutputObjects();
@@ -78,13 +79,16 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
   void SetMinEta(Int_t d)                                   { fMinEta = d; }
   void SetMaxEta(Int_t d)                                   { fMaxEta = d; }
 
-  void SetPythiaFile(const char* pyfile)                    { fPyFile = pyfile;}
+  void SetPythiaFilePath(const char* pyfile)                { fPyFilePath = pyfile;}
+  void SetPythiaFileMask(const char* pyfilemask)            { fPyFileMask = pyfilemask;}
+  void SetNFiles(Int_t n)                                   { fNfiles = n;}
+
 
  protected:
   // Event parameters
   bool                        fEventInitialized;                ///< If the event is initialized properly
   AliVEvent*                  fEvent;                           //!<! Pointer to the current event
-  
+  TRandom3                    fRandom;                          //!<! Random number generator 
   /////////////////////////////////////////////////////////////////////////////////
   // Thermal model parameters
   
@@ -96,8 +100,11 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
   Double_t                    fMinEta;                          ///< Min eta for thermal particles
   Double_t                    fMaxEta;                          ///< Max eta for thermal particles
 
-  TString                     fPyFile;                          ///< Name of PYTHIA text file
-
+  TString                     fPyFilePath;                      ///< Path to PYTHIA text file
+  TString                     fPyFileMask;                      ///< Mask of PYTHIA text file
+  TString                     fPyFile;                          ///< Mask of PYTHIA text file
+  Int_t                       fNumber;                          //!<! Random number
+  Int_t                       fNfiles;                          ///< Number of files   
   /////////////////////////////////////////////////////////////////////////////////
   
   // Histogram output
@@ -110,7 +117,7 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
   AliAnalysisTaskPythiaBranchEA &operator=(const AliAnalysisTaskPythiaBranchEA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskPythiaBranchEA, 1);
+  ClassDef(AliAnalysisTaskPythiaBranchEA, 2);
   /// \endcond
 };
 }
