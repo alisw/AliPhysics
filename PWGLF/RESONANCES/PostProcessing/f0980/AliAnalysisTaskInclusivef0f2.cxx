@@ -128,7 +128,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 */
 
 
- Double1D varcentbinHeavy = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,5,10,15,20,30,40,50,70,100};
+ Double1D varcentbinHeavy = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,5,10,15,20,30,40,50,60,70,80,100};
  binCent = AxisVar("Cent",varcentbinHeavy);
 
  Double1D verzbin = {-15,-10,-7,7,10,15};
@@ -201,10 +201,75 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
  CreateTHnSparse("VtxSelection","VtxSelection",2,
 	{binCent,binSwitch},"s");
+
  CreateTHnSparse("SignalLoss","SignalLoss",3,
 	{binCent,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0","SignalLoss0",3,
         {binCent,binPt,binSwitch},"s"); 
+
+ CreateTHnSparse("SignalLossPion","SignalLossPion",4,
+        {binCent,binPt,binSwitch,binCharge},"s");
+ CreateTHnSparse("SignalLoss0Pion","SignalLoss0Pion",4,
+        {binCent,binPt,binSwitch,binCharge},"s");
+
+ CreateTHnSparse("SignalLossKaon","SignalLossKaon",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0Kaon","SignalLoss0Kaon",3,
+        {binCent,binPt,binSwitch},"s");
+
+ CreateTHnSparse("SignalLossKaonpipi","SignalLossKaonpipi",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0Kaonpipi","SignalLoss0Kaonpipi",3,
+        {binCent,binPt,binSwitch},"s");
+
+ CreateTHnSparse("SignalLossPhi","SignalLossPhi",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0Phi","SignalLoss0Phi",3,
+        {binCent,binPt,binSwitch},"s");
+
+ CreateTHnSparse("SignalLossPionMt","SignalLossPionMt",4,
+        {binCent,binPt,binSwitch,binCharge},"s");
+ CreateTHnSparse("SignalLoss0PionMt","SignalLoss0PionMt",4,
+        {binCent,binPt,binSwitch,binCharge},"s");
+
+ CreateTHnSparse("SignalLossKaonMt","SignalLossKaonMt",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0KaonMt","SignalLoss0KaonMt",3,
+        {binCent,binPt,binSwitch},"s");
+
+ CreateTHnSparse("SignalLossKaonpipiMt","SignalLossKaonpipiMt",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0KaonpipiMt","SignalLoss0KaonpipiMt",3,
+        {binCent,binPt,binSwitch},"s");
+
+ CreateTHnSparse("SignalLossPhiMt","SignalLossPhiMt",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0PhiMt","SignalLoss0PhiMt",3,
+        {binCent,binPt,binSwitch},"s");
+
+
+
+ CreateTHnSparse("SignalLossRho","SignalLossRho",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0Rho","SignalLoss0Rho",3,
+        {binCent,binPt,binSwitch},"s");
+
+ CreateTHnSparse("SignalLossRhopipi","SignalLossRhopipi",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0Rhopipi","SignalLoss0Rhopipi",3,
+        {binCent,binPt,binSwitch},"s");
+
+ CreateTHnSparse("SignalLossRhoMt","SignalLossRhoMt",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0RhoMt","SignalLoss0RhoMt",3,
+        {binCent,binPt,binSwitch},"s");
+        
+ CreateTHnSparse("SignalLossRhopipiMt","SignalLossRhopipiMt",3,
+        {binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0RhopipiMt","SignalLoss0RhopipiMt",3,
+        {binCent,binPt,binSwitch},"s");
+
+
 
  CreateTHnSparse("hF0GenParticleFromPion","hF0GenParticleFromPion",4,
         {binZ,binCent,binPt,binMass},"s");
@@ -332,6 +397,9 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
 void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 {
+
+ cout << "a " << endl;
+
  AliVEvent *event = InputEvent();
  if (!event) { Printf("ERROR: Could not retrieve event"); return; }
 
@@ -481,9 +549,9 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 
 //IsNotPileup Flag Configuration
  if( IsMC ) IsNotPileup = kTRUE;
- else if( fRunTable->IsAA() || fRunTable->IsPA() ) IsNotPileup = kTRUE;
+ else if( fRunTable->IsAA() ) IsNotPileup = kTRUE;
  else if( !IsMC && !event->IsPileupFromSPDInMultBins() &&
-	( fRunTable->IsPP() ) ) IsNotPileup = kTRUE;
+	(  fRunTable->IsPP() || fRunTable->IsPA() ) ) IsNotPileup = kTRUE;
 //*****************************
 
 
@@ -677,9 +745,119 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  			if( IsINEL>0 )FillTHnSparse("SignalLoss",{fCent,trackMC->Pt(),0.0},1.0);
 			if( IsTriggered && IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() ){
 //			if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
-				FillTHnSparse("SignalLoss",{fCent,trackMC->Pt(),1.0},1.0);
+				if( IsINEL>0 ) FillTHnSparse("SignalLoss",{fCent,trackMC->Pt(),1.0},1.0);
 				FillTHnSparse("SignalLoss0",{fCent,trackMC->Pt(),1.0},1.0);
 			}
+		}
+		else if( abs(pdgCode) == 211 ){
+			if( fabs( trackMC->Y() ) > 0.5 ) continue;
+			if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
+			FillTHnSparse("SignalLoss0Pion",{fCent,trackMC->Pt(),0.0,(double)trackMC->Charge()/3.0},1.0 );
+			FillTHnSparse("SignalLoss0PionMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0,(double)trackMC->Charge()/3.0},1.0 );
+			if( IsINEL>0 ){
+				FillTHnSparse("SignalLossPion",{fCent,trackMC->Pt(),0.0,(double)trackMC->Charge()/3.0},1.0 );	
+				FillTHnSparse("SignalLossPionMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0,(double)trackMC->Charge()/3.0},1.0 );
+			}
+			if( IsTriggered && IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() ){
+				FillTHnSparse("SignalLoss0Pion",{fCent,trackMC->Pt(),1.0,(double)trackMC->Charge()/3.0},1.0 );
+				FillTHnSparse("SignalLoss0PionMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0,(double)trackMC->Charge()/3.0},1.0 );
+				if( IsINEL>0 ){
+					FillTHnSparse("SignalLossPion",{fCent,trackMC->Pt(),1.0,(double)trackMC->Charge()/3.0},1.0 );
+					FillTHnSparse("SignalLossPionMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0,(double)trackMC->Charge()/3.0},1.0 );
+				}
+			}
+		}
+		else if( pdgCode == 310 || pdgCode == 113 ){
+                        if( fabs( trackMC->Y() ) > 0.5 ) continue;
+                        if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
+			if( pdgCode == 310 ){
+                        	FillTHnSparse("SignalLoss0Kaon",{fCent,trackMC->Pt(),0.0},1.0 );
+				FillTHnSparse("SignalLoss0KaonMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+                        	if( IsINEL>0 ){
+					FillTHnSparse("SignalLossKaon",{fCent,trackMC->Pt(),0.0},1.0 );
+					FillTHnSparse("SignalLossKaonMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+				}
+                        	if( IsTriggered && IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() ){
+                        	        FillTHnSparse("SignalLoss0Kaon",{fCent,trackMC->Pt(),1.0},1.0 );
+					FillTHnSparse("SignalLoss0KaonMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+                        	        if( IsINEL>0 ){
+						FillTHnSparse("SignalLossKaon",{fCent,trackMC->Pt(),1.0},1.0 );
+						FillTHnSparse("SignalLossKaonMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+					}
+                        	}
+			}
+			else if( pdgCode == 113 ){
+                                FillTHnSparse("SignalLoss0Rho",{fCent,trackMC->Pt(),0.0},1.0 );
+                                FillTHnSparse("SignalLoss0RhoMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+                                if( IsINEL>0 ){
+                                        FillTHnSparse("SignalLossRho",{fCent,trackMC->Pt(),0.0},1.0 );
+                                        FillTHnSparse("SignalLossRhoMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+                                }
+                                if( IsTriggered && IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() ){
+                                        FillTHnSparse("SignalLoss0Rho",{fCent,trackMC->Pt(),1.0},1.0 );
+                                        FillTHnSparse("SignalLoss0RhoMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+                                        if( IsINEL>0 ){
+                                                FillTHnSparse("SignalLossRho",{fCent,trackMC->Pt(),1.0},1.0 );
+                                                FillTHnSparse("SignalLossRhoMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+                                        }
+                                }
+                        }
+                        if( trackMC->GetNDaughters() != 2 ) continue;
+                        AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
+                        AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
+                        if( !trackd2 ) continue; if( !trackd1 ) continue;
+                        if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->PdgCode() ) != 211 ) continue;
+                        if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->PdgCode() ) != 211 ) continue;
+			if( pdgCode == 310 ){
+				FillTHnSparse("SignalLoss0Kaonpipi",{fCent,trackMC->Pt(),0.0}, 1.0 );
+				FillTHnSparse("SignalLoss0KaonpipiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+				if( IsINEL>0 ){
+                        	        FillTHnSparse("SignalLossKaonpipi",{fCent,trackMC->Pt(),0.0},1.0 );
+                        	        FillTHnSparse("SignalLossKaonpipiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+				}
+                        	if( IsTriggered && IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() ){
+                        	        FillTHnSparse("SignalLoss0Kaonpipi",{fCent,trackMC->Pt(),1.0},1.0 );
+                        	        FillTHnSparse("SignalLoss0KaonpipiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+                        	        if( IsINEL>0 ){
+                        	                FillTHnSparse("SignalLossKaonpipi",{fCent,trackMC->Pt(),1.0},1.0 );
+                        	                FillTHnSparse("SignalLossKaonpipiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+                        	        }
+                        	}
+			}
+			else if( pdgCode == 113 ){
+				FillTHnSparse("SignalLoss0Rhopipi",{fCent,trackMC->Pt(),0.0}, 1.0 );
+                                FillTHnSparse("SignalLoss0RhopipiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+                                if( IsINEL>0 ){
+                                        FillTHnSparse("SignalLossRhopipi",{fCent,trackMC->Pt(),0.0},1.0 );
+                                        FillTHnSparse("SignalLossRhopipiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+                                }
+                                if( IsTriggered && IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() ){
+                                        FillTHnSparse("SignalLoss0Rhopipi",{fCent,trackMC->Pt(),1.0},1.0 );
+                                        FillTHnSparse("SignalLoss0RhopipiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+                                        if( IsINEL>0 ){
+                                                FillTHnSparse("SignalLossRhopipi",{fCent,trackMC->Pt(),1.0},1.0 );
+                                                FillTHnSparse("SignalLossRhopipiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+                                        }
+                                }
+			}
+		}
+		else if( pdgCode == 333 ){
+                        if( fabs( trackMC->Y() ) > 0.5 ) continue;
+                        if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
+                        FillTHnSparse("SignalLoss0Phi",{fCent,trackMC->Pt(),0.0},1.0 );
+			FillTHnSparse("SignalLoss0PhiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+                        if( IsINEL>0 ){
+				FillTHnSparse("SignalLossPhi",{fCent,trackMC->Pt(),0.0},1.0 );
+				FillTHnSparse("SignalLossPhiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),0.0},1.0 );
+			}
+                        if( IsTriggered && IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() ){
+                                FillTHnSparse("SignalLoss0Phi",{fCent,trackMC->Pt(),1.0},1.0 );
+				FillTHnSparse("SignalLoss0PhiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+                                if( IsINEL>0 ){
+					FillTHnSparse("SignalLossPhi",{fCent,trackMC->Pt(),1.0},1.0 );
+					FillTHnSparse("SignalLossPhiMt",{fCent,sqrt( pow(trackMC->Pt(),2) + pow(trackMC->M(),2 ) ),1.0},1.0 );
+				}
+                        }
 		}
 	}
  }
