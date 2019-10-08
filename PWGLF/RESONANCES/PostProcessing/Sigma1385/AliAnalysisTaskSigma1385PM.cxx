@@ -773,6 +773,11 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
                     (vecsum.Rapidity() < fSigmaStarYCutLow))
                     continue;
 
+                if (track1->Charge() > 0)
+                    isPionPlus = true;
+                else
+                    isPionPlus = false;
+
                 if (goodv0indices[i][1] > 0)
                     isAnti = true;
                 else
@@ -898,6 +903,11 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
             if ((vecsum.Rapidity() > fSigmaStarYCutHigh) ||
                 (vecsum.Rapidity() < fSigmaStarYCutLow))
                 continue;
+
+            if (track1->Charge() > 0)
+                isPionPlus = true;
+            else
+                isPionPlus = false;
 
             auto sign = kAllType;
 

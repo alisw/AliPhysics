@@ -40,7 +40,6 @@ set(SRCS
   AliMCSpectraWeights.cxx
   AliNamedArrayI.cxx
   AliNamedString.cxx
-  AliMCSpectraWeights.cxx
   TCustomBinning.cxx
   TLinearBinning.cxx
   TVariableBinning.cxx

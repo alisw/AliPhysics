@@ -18,16 +18,14 @@ using namespace std;
 enum EValue_t {
   kYield = 1,
   kYieldStat,
+  kYieldSysUncorr,
   kYieldSysHiCorr,
   kYieldSysLoCorr,
-  kYieldSysHiUncorr,
-  kYieldSysLoUncorr,
   kMean,
   kMeanStat,
+  kMeanSysUncorr,
   kMeanSysHiCorr,
   kMeanSysLoCorr,
-  kMeanSysHiUncorr,
-  kMeanSysLoUncorr,
   kFitRes
 };
 
@@ -42,6 +40,7 @@ TH1 * YieldMean_ReturnExtremeSoftHisto(TH1 *hin, const char* hout_title);
 TH1 * YieldMean_ReturnExtremeLowHisto(TH1 *hin, const char* hout_title);
 TH1 * YieldMean_ReturnExtremeHighHisto(TH1 *hin, const char* hout_title);
 int Fitter(TH1* histo, TF1* func, Option_t *opt);
+void RandomShifter(TH1* hin, TH1* hhi, TH1* hlo, TH1*& hIntegral, TH1*& hMean, float integral_limit, float mean_limit, int nRepetitions = 1000);
 void SaveToFile(const char* file_name, const char* dir_name, TCanvas& canvas, bool debug);
 //TH1 * MergeHistograms(TH1 *hdata, TH1 *hlo, TH1 *hhi, const char* hout_name);
 
@@ -53,9 +52,9 @@ YieldMeanNew(TH1 *hstat, TH1 *hsys, TH1 *hsys_mult_corr, TH1 *hsys_mult_uncorr, 
   TVirtualFitter::SetMaxIterations(1000000);
 
   /* create output histo */
-  Double_t integral, mean;
-  TH1 *hout = new TH1D(Form("hout_%s",hstat->GetName()), "", 9, 0, 9);
-  TH1 *hlo = 0x0, *hhi = 0x0;
+  double integral, mean, integral_ref, mean_ref;
+  TH1 *hout = new TH1D(Form("hout_%s",hstat->GetName()), "", kFitRes, 0, kFitRes);
+  TH1 *hlo = nullptr, *hhi = nullptr;
 
   /* create histo with stat+sys errors */
   TH1 *htot = (TH1 *)hstat->Clone(Form("%sfittedwith%s",hstat->GetName(),f->GetName()));
@@ -80,6 +79,8 @@ YieldMeanNew(TH1 *hstat, TH1 *hsys, TH1 *hsys_mult_corr, TH1 *hsys_mult_uncorr, 
   YieldMean_IntegralMean(htot, hlo, hhi, integral, mean,kTRUE);
   hout->SetBinContent(kYield, integral);
   hout->SetBinContent(kMean, mean);
+  integral_ref = integral;
+  mean_ref = mean;
 
   TCanvas cCanvasDefault(Form("cCanvasDefault_%s",hstat->GetName()));
   cCanvasDefault.DrawFrame(min,0,max,1.3 * hstat->GetMaximum());
@@ -108,59 +109,27 @@ YieldMeanNew(TH1 *hstat, TH1 *hsys, TH1 *hsys_mult_corr, TH1 *hsys_mult_uncorr, 
   Fitter(hstat,f,opt);
   hlo = YieldMean_LowExtrapolationHisto(hstat, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hstat, f, max, hiprecision);
-  /* random generation with integration (coarse) */
-  TH1F hIntegral_tmp("hIntegral_tmp", "", 1000, 0.75 * integral, 1.25 * integral); //NOTE: only used for the range of the next histograms
-  TH1F hMean_tmp("hMean_tmp", "", 1000, 0.75 * mean, 1.25 * mean);
-  for (Int_t irnd = 0; irnd < 100; irnd++) {
-    /* get random histogram */
-    TH1 *hrnd = YieldMean_ReturnRandom(hstat); //QUESTION: why not coherent?
-    /* fit */
-    TH1 *hrndlo = YieldMean_ReturnCoherentRandom(hlo);
-    TH1 *hrndhi = YieldMean_ReturnCoherentRandom(hhi);
-    /* integrate */
-    YieldMean_IntegralMean(hrnd, hrndlo, hrndhi, integral, mean);
-    hIntegral_tmp.Fill(integral);
-    hMean_tmp.Fill(mean);
-    delete hrnd;
-    delete hrndlo;
-    delete hrndhi;
-  }
-  /* random generation with integration (fine) */
-  TH1F hIntegral(Form("hIntegral_%s",hstat->GetName()), "", 100,
-                            hIntegral_tmp.GetMean() - 10. * hIntegral_tmp.GetRMS(),
-                            hIntegral_tmp.GetMean() + 10. * hIntegral_tmp.GetRMS());
-  TH1F hMean(Form("hMean_%s",hstat->GetName()), "", 100,
-                        hMean_tmp.GetMean() - 10. * hMean_tmp.GetRMS(),
-                        hMean_tmp.GetMean() + 10. * hMean_tmp.GetRMS());
-  for (Int_t irnd = 0; irnd < 1000; irnd++) {
-    /* get random histogram */
-    TH1 *hrnd = YieldMean_ReturnRandom(hstat); //QUESTION: why not coherent?
-    /* fit */
-    TH1 *hrndlo = YieldMean_ReturnCoherentRandom(hlo);
-    TH1 *hrndhi = YieldMean_ReturnCoherentRandom(hhi);
-    /* integrate */
-    YieldMean_IntegralMean(hrnd, hrndlo, hrndhi, integral, mean);
-    hIntegral.Fill(integral);
-    hMean.Fill(mean);
-    delete hrnd;
-    delete hrndlo;
-    delete hrndhi;
-  }
+
+  TH1* hIntegral = nullptr;
+  TH1* hMean = nullptr;
+
+  RandomShifter(hstat, hhi, hlo, hIntegral, hMean, integral_ref, mean_ref);
+
   TF1 *gaus = (TF1 *)gROOT->GetFunction("gaus");
   
   cCanvasStat.cd(1);
-  hIntegral.Fit(gaus, "q");
+  hIntegral->Fit(gaus, "q");
   integral = hout->GetBinContent(kYield) * gaus->GetParameter(2) / gaus->GetParameter(1);
   hout->SetBinContent(kYieldStat, integral);
 
   cCanvasStat.cd(2);
-  hMean.Fit(gaus, "q");
+  hMean->Fit(gaus, "q");
   mean = hout->GetBinContent(kMean) * gaus->GetParameter(2) / gaus->GetParameter(1);
   hout->SetBinContent(kMeanStat, mean);
   
   if(store_log){
     SaveToFile(logfilename,path,cCanvasStat,debug);
-  }  
+  }
 
   TCanvas cCanvasStatExtra(Form("cCanvasStatExtra_%s",hstat->GetName()));
   cCanvasStatExtra.DrawFrame(min,0,max,1.3 * hstat->GetMaximum());
@@ -171,6 +140,54 @@ YieldMeanNew(TH1 *hstat, TH1 *hsys, TH1 *hsys_mult_corr, TH1 *hsys_mult_uncorr, 
   if(store_log){
     SaveToFile(logfilename,path,cCanvasStatExtra,debug);
   }
+  delete hMean;
+  delete hIntegral;
+
+  /*
+   * MULTIPLICITY UNCORRELATED SYSTEMATICS
+   */
+
+  /* fit with uncorrelated syst error */
+  TCanvas cCanvasSystUncorr(Form("cCanvasSystUncorr_%s",hstat->GetName()));
+  cCanvasSystUncorr.Divide(2, 1);
+
+  Fitter(hsys_mult_uncorr,f,opt);
+  delete hlo;
+  delete hhi;
+  hlo = YieldMean_LowExtrapolationHisto(hsys_mult_uncorr, f, min, loprecision);
+  hhi = YieldMean_HighExtrapolationHisto(hsys_mult_uncorr, f, max, hiprecision);
+
+  TH1* hIntegralSyst = nullptr;
+  TH1* hMeanSyst = nullptr;
+
+  RandomShifter(hsys_mult_uncorr, hhi, hlo, hIntegralSyst, hMeanSyst, integral_ref, mean_ref);
+  
+  cCanvasSystUncorr.cd(1);
+  hIntegralSyst->Fit(gaus, "q");
+  integral = hout->GetBinContent(kYield) * gaus->GetParameter(2) / gaus->GetParameter(1);
+  hout->SetBinContent(kYieldSysUncorr, integral);
+
+  cCanvasSystUncorr.cd(2);
+  hMeanSyst->Fit(gaus, "q");
+  mean = hout->GetBinContent(kMean) * gaus->GetParameter(2) / gaus->GetParameter(1);
+  hout->SetBinContent(kMeanSysUncorr, mean);
+  
+  if(store_log){
+    SaveToFile(logfilename,path,cCanvasSystUncorr,debug);
+  }
+
+  TCanvas cCanvasSystUncorrExtra(Form("cCanvasStatExtra_%s",hstat->GetName()));
+  cCanvasSystUncorrExtra.DrawFrame(min,0,max,1.3 * hsys_mult_corr->GetMaximum());
+  hsys_mult_corr->Draw("pesame");
+  hlo->Draw("pesame");
+  hhi->Draw("pesame");
+
+  if(store_log){
+    SaveToFile(logfilename,path,cCanvasSystUncorrExtra,debug);
+  }
+
+  delete hMeanSyst;
+  delete hIntegralSyst;
 
   /*
    * MULTIPLICITY CORRELATED SYSTEMATICS
@@ -306,150 +323,16 @@ YieldMeanNew(TH1 *hstat, TH1 *hsys, TH1 *hsys_mult_corr, TH1 *hsys_mult_uncorr, 
     SaveToFile(logfilename,path,cCanvasSysCorr,debug);
   }
 
-  /*
-   * MULTIPLICITY UNCORRELATED SYSTEMATICS
-   */
-
-  TCanvas cCanvasSysUncorr(Form("cCanvasYieldSysUncorr_%s",hstat->GetName()));
-  cCanvasSysUncorr.Divide(2, 1);
-  cCanvasSysUncorr.cd(1)->DrawFrame(min, 0.7 * hsys_mult_uncorr->GetMinimum(), max, 1.3 * hsys_mult_uncorr->GetMaximum());
-  hsys_mult_uncorr->SetMarkerStyle(20);
-  hsys_mult_uncorr->SetMarkerColor(1);
-  hsys_mult_uncorr->SetMarkerSize(1);
-  hsys_mult_uncorr->Draw("same");
-  cCanvasSysUncorr.cd(2)->DrawFrame(min, 0.7 * hsys_mult_uncorr->GetMinimum() , max, 1.3 * hsys_mult_uncorr->GetMaximum());
-  hsys_mult_uncorr->Draw("same");
-
-  /*
-   * systematic error high
-   */
-
-  TH1 *hhigh_mult_uncorr = YieldMean_ReturnExtremeHighHisto(hsys_mult_uncorr, Form("%s_extreme_high",hsys_mult_uncorr->GetName()));
-  Fitter(hhigh_mult_uncorr,f,opt);
-
-  delete hlo;
-  delete hhi;
-  hlo = YieldMean_LowExtrapolationHisto(hhigh_mult_uncorr, f, min, loprecision);
-  hhi = YieldMean_HighExtrapolationHisto(hhigh_mult_uncorr, f, max, hiprecision);
-  YieldMean_IntegralMean(hhigh_mult_uncorr, hlo, hhi, integral, mean);
-  integral = TMath::Abs(integral - hout->GetBinContent(kYield));
-  hout->SetBinContent(kYieldSysHiUncorr, integral);
-
-  TCanvas cCanvasHighUncorr(Form("cCanvasHighUncorr_%s",hstat->GetName()));
-  cCanvasHighUncorr.DrawFrame(min,0,max,1.3 * hhigh_mult_uncorr->GetMaximum());
-  hhigh_mult_uncorr->Draw("pesame");
-  hlo->Draw("pesame");
-  hhi->Draw("pesame");
-
-  if(store_log){
-    SaveToFile(logfilename,path,cCanvasHighUncorr,debug);
-  }
-
-  cCanvasSysUncorr.cd(1);
-  f->SetLineColor(2);
-  f->DrawCopy("same");
-
-  /*
-   * systematic error hard
-   */
-
-  TH1 *hhard_mult_uncorr = YieldMean_ReturnExtremeHardHisto(hsys_mult_uncorr, Form("%s_extreme_hard",hsys_mult_uncorr->GetName()));
-  Fitter(hhard_mult_uncorr,f,opt);
-
-  delete hlo;
-  delete hhi;
-  hlo = YieldMean_LowExtrapolationHisto(hhard_mult_uncorr, f, min, loprecision);
-  hhi = YieldMean_HighExtrapolationHisto(hhard_mult_uncorr, f, max, hiprecision);
-  YieldMean_IntegralMean(hhard_mult_uncorr, hlo, hhi, integral, mean);
-  mean = TMath::Abs(mean - hout->GetBinContent(kMean));
-  hout->SetBinContent(kMeanSysHiUncorr, mean);
-
-  TCanvas cCanvasHardUncorr(Form("cCanvasHardUncorr_%s",hstat->GetName()));
-  cCanvasHardUncorr.DrawFrame(min,0,max,1.3 * hhigh_mult_uncorr->GetMaximum());
-  hhigh_mult_uncorr->Draw("pesame");
-  hlo->Draw("pesame");
-  hhi->Draw("pesame");
-
-  if(store_log){
-    SaveToFile(logfilename,path,cCanvasHardUncorr,debug);
-  }
-
-  cCanvasSysUncorr.cd(2);
-  f->SetLineColor(2);
-  f->DrawCopy("same");
-
-  /*
-   * systematic error low
-   */
-
-  TH1 *hlow_mult_uncorr = YieldMean_ReturnExtremeLowHisto(hsys_mult_uncorr, Form("%s_extreme_low",hsys_mult_uncorr->GetName()));
-  Fitter(hlow_mult_uncorr,f,opt);
-
-  delete hlo;
-  delete hhi;
-  hlo = YieldMean_LowExtrapolationHisto(hlow_mult_uncorr, f, min, loprecision);
-  hhi = YieldMean_HighExtrapolationHisto(hlow_mult_uncorr, f, max, hiprecision);
-  YieldMean_IntegralMean(hlow_mult_uncorr, hlo, hhi, integral, mean);
-  integral = TMath::Abs(integral - hout->GetBinContent(kYield));
-  hout->SetBinContent(kYieldSysLoUncorr, integral);
-
-  TCanvas cCanvasLowUncorr(Form("cCanvasLowUncorr_%s",hstat->GetName()));
-  cCanvasLowUncorr.DrawFrame(min,0,max,1.3 * hlow_mult_uncorr->GetMaximum());
-  hlow_mult_uncorr->Draw("pesame");
-  hlo->Draw("pesame");
-  hhi->Draw("pesame");
-
-  if(store_log){
-    SaveToFile(logfilename,path,cCanvasLowUncorr,debug);
-  }
-
-  cCanvasSysUncorr.cd(1);
-  f->SetLineColor(4);
-  f->DrawCopy("same");
-
-  /*
-   * systematic error soft
-   */
-
-  TH1 *hsoft_mult_uncorr = YieldMean_ReturnExtremeSoftHisto(hsys_mult_uncorr, Form("%s_extreme_soft",hsys_mult_uncorr->GetName()));
-  Fitter(hsoft_mult_uncorr,f,opt);
-
-  delete hlo;
-  delete hhi;
-  hlo = YieldMean_LowExtrapolationHisto(hsoft_mult_uncorr, f, min, loprecision);
-  hhi = YieldMean_HighExtrapolationHisto(hsoft_mult_uncorr, f, max, hiprecision);
-  YieldMean_IntegralMean(hsoft_mult_uncorr, hlo, hhi, integral, mean);
-  mean = TMath::Abs(mean - hout->GetBinContent(kMean));
-  hout->SetBinContent(kMeanSysLoUncorr, mean);
-
-  TCanvas cCanvasSoftUncorr(Form("cCanvasSoftUncorr_%s",hstat->GetName()));
-  cCanvasSoftUncorr.DrawFrame(min,0,max,1.3 * hlow_mult_uncorr->GetMaximum());
-  hlow_mult_uncorr->Draw("pesame");
-  hlo->Draw("pesame");
-  hhi->Draw("pesame");
-
-  if(store_log){
-    SaveToFile(logfilename,path,cCanvasSoftUncorr,debug);
-  }
-  delete hlo;
-  delete hhi;
-
-  cCanvasSysUncorr.cd(2);
-  f->SetLineColor(4);
-  f->DrawCopy("same");
-
-  if(store_log){
-    SaveToFile(logfilename,path,cCanvasSysUncorr,debug);
-  }
-
   cout << "dN / dy = " << hout->GetBinContent(kYield) << " +- " << hout->GetBinContent(kYieldStat);
+  cout << " +- " << hout->GetBinContent(kYieldSysUncorr);
   cout << " + " << hout->GetBinContent(kYieldSysHiCorr) << " - " << hout->GetBinContent(kYieldSysLoCorr);
-  cout << " + " << hout->GetBinContent(kYieldSysHiUncorr) << " - " << hout->GetBinContent(kYieldSysLoUncorr);
   cout << "\n<pT> = " << hout->GetBinContent(kMean) << " +- " << hout->GetBinContent(kMeanStat);
+  cout << " + " << hout->GetBinContent(kMeanSysUncorr);
   cout << " + " << hout->GetBinContent(kMeanSysHiCorr) << " - " << hout->GetBinContent(kMeanSysLoCorr);
-  cout << " + " << hout->GetBinContent(kMeanSysHiUncorr) << " - " << hout->GetBinContent(kMeanSysLoUncorr);
   cout << endl;
 
+  delete hlo;
+  delete hhi;
   return hout;
 }
 
@@ -687,6 +570,51 @@ void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, 
   mean = IX / I;
   if(printinfo)
   	cout<<"data only = "<<dataonly<<" total = "<<I<<" ratio= "<<dataonly/I<<endl;
+}
+
+void RandomShifter(TH1* hin, TH1* hhi, TH1* hlo, TH1*& hIntegral, TH1*& hMean, float integral_limit, float mean_limit, int nRepetitions){
+
+  TH1F hIntegral_tmp("hIntegral_tmp", "", 1000, 0.75 * integral_limit, 1.25 * integral_limit); //NOTE: only used for the range of the next histograms
+  TH1F hMean_tmp("hMean_tmp", "", 1000, 0.75 * mean_limit, 1.25 * mean_limit);
+  
+  double integral, mean;
+  
+  for (int irnd = 0; irnd < 100; irnd++) {
+    /* get random histogram */
+    TH1 *hrnd = YieldMean_ReturnRandom(hin); //QUESTION: why not coherent?
+    /* fit */
+    TH1 *hrndlo = YieldMean_ReturnCoherentRandom(hlo);
+    TH1 *hrndhi = YieldMean_ReturnCoherentRandom(hhi);
+    /* integrate */
+    YieldMean_IntegralMean(hrnd, hrndlo, hrndhi, integral, mean);
+    hIntegral_tmp.Fill(integral);
+    hMean_tmp.Fill(mean);
+    delete hrnd;
+    delete hrndlo;
+    delete hrndhi;
+  }
+  if(hIntegral){
+    delete hIntegral;
+  }
+  hIntegral  = new TH1F(Form("hIntegral_%s",hin->GetName()), "", 100, hIntegral_tmp.GetMean() - 10. * hIntegral_tmp.GetRMS(), hIntegral_tmp.GetMean() + 10. * hIntegral_tmp.GetRMS());
+  if(hMean){
+    delete hMean;
+  }
+  hMean = new TH1F(Form("hMean_%s",hin->GetName()), "", 100, hMean_tmp.GetMean() - 10. * hMean_tmp.GetRMS(), hMean_tmp.GetMean() + 10. * hMean_tmp.GetRMS());
+  for (Int_t irnd = 0; irnd < nRepetitions; irnd++) {
+    /* get random histogram */
+    TH1 *hrnd = YieldMean_ReturnRandom(hin); //QUESTION: why not coherent?
+    /* fit */
+    TH1 *hrndlo = YieldMean_ReturnCoherentRandom(hlo);
+    TH1 *hrndhi = YieldMean_ReturnCoherentRandom(hhi);
+    /* integrate */
+    YieldMean_IntegralMean(hrnd, hrndlo, hrndhi, integral, mean);
+    hIntegral->Fill(integral);
+    hMean->Fill(mean);
+    delete hrnd;
+    delete hrndlo;
+    delete hrndhi;
+  }
 }
 
 int Fitter(TH1* histo, TF1* func, Option_t *opt){

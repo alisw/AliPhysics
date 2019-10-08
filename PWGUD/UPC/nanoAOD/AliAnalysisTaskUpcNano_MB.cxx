@@ -587,7 +587,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Two track loop
   
   TLorentzVector vMC, vLabelPart;
-  
+  Int_t nTOFPID = 0;
   fInEtaRec = kTRUE;
   if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2){
   	fFOCrossedChips.ResetAllBits(kFALSE);
@@ -622,9 +622,12 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     	Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
 	Float_t fPIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
 	
+	Float_t fPIDTPCProton = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
 	Float_t fPIDTOFProton = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
 	
     	qTrack[iTrack] = trk->Charge();
+	
+	if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk) nTOFPID++;
 	
 	vElectron[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
     	vMuon[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
@@ -635,7 +638,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     	nSigmaPion[iTrack] = fPIDTPCPion;
 	
     	vProton[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), protonMass);
-	nSigmaProton[iTrack] = fPIDTOFProton;
+	if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk) nSigmaProton[iTrack] = fPIDTOFProton;
+	else nSigmaProton[iTrack] = fPIDTPCProton;
  	
 	dEdx[iTrack] = trk->GetTPCsignal();
     	}
@@ -655,6 +659,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 
   if(nSigmaDistProton < 4){ 
   	  fPIDsigma = nSigmaDistProton;
+	  if(nTOFPID == 0) fPIDsigma = 666;
   	  vJPsiCandidate = vProton[0]+vProton[1];
   	  fChannel = 2;
   	  FillTree(fTreeJPsi,vJPsiCandidate);

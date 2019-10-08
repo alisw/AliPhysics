@@ -44,6 +44,7 @@ AliJCDijetTask::AliJCDijetTask() :
     fparticleEtaCut(0),
     fleadingJetCut(0),
     fsubleadingJetCut(0),
+    fMinJetPt(0),
     fconstituentCut(0),
     fdeltaPhiCut(0),
     fmatchingR(0),
@@ -75,6 +76,7 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fparticleEtaCut(0),
     fleadingJetCut(0),
     fsubleadingJetCut(0),
+    fMinJetPt(0),
     fconstituentCut(0),
     fdeltaPhiCut(0),
     fmatchingR(0),
@@ -109,6 +111,7 @@ AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
     fparticleEtaCut(ap.fparticleEtaCut),
     fleadingJetCut(ap.fleadingJetCut),
     fsubleadingJetCut(ap.fsubleadingJetCut),
+    fMinJetPt(ap.fMinJetPt),
     fconstituentCut(ap.fconstituentCut),
     fdeltaPhiCut(ap.fdeltaPhiCut),
     fmatchingR(ap.fmatchingR),
@@ -237,6 +240,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Particle pt cut:            " << fparticlePtCut << endl;
     cout << "Dijet leading jet cut:      " << fleadingJetCut << endl;
     cout << "Dijet subleading jet cut:   " << fsubleadingJetCut << endl;
+    cout << "Jet min pt cut:             " << fMinJetPt << endl;
     cout << "Jet leading const. cut:     " << fconstituentCut << endl;
     cout << "Dijet DeltaPhi cut:         pi/" << fdeltaPhiCut << endl;
     cout << "Matching R for MC:          " << fmatchingR << endl;
@@ -260,6 +264,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fconstituentCut,
                       fleadingJetCut,
                       fsubleadingJetCut,
+                      fMinJetPt,
                       fdeltaPhiCut,
                       fmatchingR);
 
@@ -276,6 +281,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fconstituentCut,
                             fleadingJetCut,
                             fsubleadingJetCut,
+                            fMinJetPt,
                             fdeltaPhiCut,
                             fmatchingR);
     }
@@ -296,6 +302,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
 //______________________________________________________________________________
 void AliJCDijetTask::UserExec(Option_t* /*option*/) 
 {
+    //cout << "======================== BEGIN EVENT ========================" << endl;
     // Processing of one event
     if(fDebug > 5) cout << "------- AliJCDijetTask Exec-------"<<endl;
     if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
@@ -310,6 +317,7 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
     TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
+    //cout << "Next true level calculations:" << endl;
     fana->CalculateJets(fInputList, fhistos, fCBin);
     fana->FillJetsDijets(fhistos, fCBin);
 #endif
@@ -326,6 +334,7 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         TClonesArray *fInputListDetMC = (TClonesArray*)fJCatalystDetMCTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
+        //cout << "Next det level calculations:" << endl;
         fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
         fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC);
 
