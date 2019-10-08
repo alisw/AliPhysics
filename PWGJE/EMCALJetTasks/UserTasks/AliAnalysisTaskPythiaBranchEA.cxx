@@ -53,11 +53,16 @@ AliAnalysisTaskPythiaBranchEA::AliAnalysisTaskPythiaBranchEA() :
   AliAnalysisTaskSE(),
   fEventInitialized(false),
   fEvent(nullptr),
+  fRandom(0),
   fOutputCollectionName(""),
   fThermalParticlesArray(),
   fMinEta(-0.9),
   fMaxEta(0.9),
+  fPyFilePath(""),
+  fPyFileMask(""),
   fPyFile(""),
+  fNumber(1),
+  fNfiles(1000),
   fOutput(0),
   fHistManager(),
   fInput(0x0)
@@ -71,11 +76,16 @@ AliAnalysisTaskPythiaBranchEA::AliAnalysisTaskPythiaBranchEA(const char* name) :
   AliAnalysisTaskSE(name),
   fEventInitialized(false),
   fEvent(nullptr),
+  fRandom(0),
   fOutputCollectionName(""),
   fThermalParticlesArray(),
   fMinEta(-0.9),
   fMaxEta(0.9),
+  fPyFilePath(""),
+  fPyFileMask(""),
   fPyFile(""),
+  fNumber(1),
+  fNfiles(1000),
   fOutput(0),
   fHistManager(name),
   fInput(0x0)
@@ -137,11 +147,18 @@ void AliAnalysisTaskPythiaBranchEA::ExecOnce()
     return;
   }
 
+  fRandom.SetSeed(0);
+  gRandom = &fRandom; // It seems this is necessary in order to use the TF1::GetRandom() function...
+
 
   if (fPyFile.BeginsWith("alien://")) {
     TGrid::Connect("alien://");
   }
- 
+
+  fNumber = fRandom.Integer(fNfiles); //0-999
+  fPyFile = fPyFileMask;
+  fPyFile.ReplaceAll("XXX",Form("%d",fNumber)); 
+  fPyFile = Form("%s/%s", fPyFilePath.Data(), fPyFile.Data());
   fInput = fopen(fPyFile.Data(),"r");
  
   if (!fInput) {
@@ -215,11 +232,22 @@ void AliAnalysisTaskPythiaBranchEA::Run()
   while(evtLoop){
 
      if(!fInput){
-        if (fPyFile.BeginsWith("alien://")) {
+        if (fPyFilePath.BeginsWith("alien://")) {
           TGrid::Connect("alien://");
         }
- 
+
+        fNumber = fRandom.Integer(fNfiles); //0-999
+        fPyFile = fPyFileMask;
+        fPyFile.ReplaceAll("XXX",Form("%d",fNumber)); 
+        fPyFile = Form("%s/%s", fPyFilePath.Data(), fPyFile.Data());
+
         fInput = fopen(fPyFile.Data(),"r");
+
+        if (!fInput) {
+          AliError(Form("Could not retrieve PYTHIA file %s!",fPyFile.Data()));
+          return;
+        }
+ 
      }
 
      if(fscanf(fInput,"%f %f %f", &pt, &eta, &phi) == EOF){
@@ -230,7 +258,7 @@ void AliAnalysisTaskPythiaBranchEA::Run()
         continue;
      }
 
-     if(eta > 900){
+     if(phi > 900){
         evtLoop=0;
         break;
      }else{
@@ -273,7 +301,8 @@ void AliAnalysisTaskPythiaBranchEA::FillHistograms()
  */
 AliAnalysisTaskPythiaBranchEA* AliAnalysisTaskPythiaBranchEA::AddTaskPythiaBranchEA(
   const char *outputCollectionName,
-  const char *pyfile,
+  const char *pyfilepath,
+  const char *pyfilemask,
   const char *suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -327,7 +356,8 @@ AliAnalysisTaskPythiaBranchEA* AliAnalysisTaskPythiaBranchEA::AddTaskPythiaBranc
   AliAnalysisTaskPythiaBranchEA* task = new AliAnalysisTaskPythiaBranchEA(name.Data());
 
   task->SetOutputCollectionName(outputCollectionName);
-  task->SetPythiaFile(pyfile);
+  task->SetPythiaFilePath(pyfilepath);
+  task->SetPythiaFileMask(pyfilemask);
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
