@@ -27,8 +27,8 @@ public:
     kPythiaDef = 5,
     kDetEmbPartPythia = 6,
     kGenOnTheFly = 7
-  };
-  enum JetShapeSub { kNoSub = 0, kConstSub = 1, kDerivSub = 2 };
+      };
+  enum JetShapeSub { kNoSub = 0, kConstSub = 1, kDerivSub = 2, kEventSub=3 };
   enum JetSelectionType { kInclusive = 0, kRecoil = 1 };
 
   enum DerivSubtrOrder { kSecondOrder = 0, kFirstOrder = 1 };
