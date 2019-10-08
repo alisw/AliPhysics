@@ -108,7 +108,7 @@ class AliFemtoDreamTrackCuts {
   void SetPtExclusion(float exmin, float exmax) {
     fpTexmin = exmin;
     fpTexmax = exmax;
-    fexPt = kTRUE;
+    fexclPt = kTRUE;
   }
   ;
   void SetEtaRange(float etamin, float etamax) {
@@ -283,7 +283,7 @@ class AliFemtoDreamTrackCuts {
   float fpTexmin;                   //
   float fpTexmax;                   //
   bool fcutPt;                        //
-  bool fexPt;                        //
+  bool fexclPt;                        //
   float fetamin;                     //
   float fetamax;                     //
   bool fcutEta;                       //
@@ -314,7 +314,7 @@ class AliFemtoDreamTrackCuts {
   float fNSigValueITS;                  // defaults to 3
   float fPIDPTPCThreshold;           // defaults to 0
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
-ClassDef(AliFemtoDreamTrackCuts,7)
+ClassDef(AliFemtoDreamTrackCuts,8)
   ;
 };
 

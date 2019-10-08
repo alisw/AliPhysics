@@ -35,7 +35,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fpTexmin(0.),
       fpTexmax(0.),
       fcutPt(false),
-      fexPt(false),
+      fexclPt(false),
       fetamin(0.),
       fetamax(0.),
       fcutEta(false),
@@ -93,7 +93,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fpTexmin(cuts.fpTexmin),
       fpTexmax(cuts.fpTexmax),
       fcutPt(cuts.fcutPt),
-      fexPt(cuts.fexPt),
+      fexclPt(cuts.fexclPt),
       fetamin(cuts.fetamin),
       fetamax(cuts.fetamax),
       fcutEta(cuts.fcutEta),
@@ -154,7 +154,7 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fpTexmin = cuts.fpTexmin;
   this->fpTexmax = cuts.fpTexmax;
   this->fcutPt = cuts.fcutPt;
-  this->fexPt = cuts.fexPt;
+  this->fexclPt = cuts.fexclPt;
   this->fetamin = cuts.fetamin;
   this->fetamax = cuts.fetamax;
   this->fcutEta = cuts.fcutEta;
@@ -266,7 +266,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
         fHists->FillTrackCounter(2);
     }
   }
-  if (pass && fexPt) {
+  if (pass && fexclPt) {
     if ( (Track->GetPt() < fpTexmax && Track->GetPt() > fpTexmin) ) {
       pass = false;
     } else {
@@ -859,7 +859,7 @@ void AliFemtoDreamTrackCuts::BookTrackCuts() {
       fHists->FillConfig(0, fpTmin);
       fHists->FillConfig(1, fpTmax);
     }
-    if (fexPt) {
+    if (fexclPt) {
       fHists->FillConfig(2, fpTexmin);
       fHists->FillConfig(3, fpTexmax);
     }
