@@ -41,6 +41,8 @@ class AliVEvent;
 
 #include <TRandom3.h>
 #include <TString.h>
+#include <TFile.h>
+#include <TSystem.h>
 
 #include <AliAnalysisTaskSE.h>
 #include <THistManager.h>
@@ -68,7 +70,8 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
   void ExecOnce();
   void Run();
   void FillHistograms();
-  
+  void Terminate(Option_t *);
+ 
   // Analysis functions
   void                        CreateNewObjectBranch();
   
@@ -82,6 +85,8 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
   void SetPythiaFilePath(const char* pyfile)                { fPyFilePath = pyfile;}
   void SetPythiaFileMask(const char* pyfilemask)            { fPyFileMask = pyfilemask;}
   void SetNFiles(Int_t n)                                   { fNfiles = n;}
+
+  void GetNewPythiaFile();
 
 
  protected:
@@ -102,6 +107,7 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
 
   TString                     fPyFilePath;                      ///< Path to PYTHIA text file
   TString                     fPyFileMask;                      ///< Mask of PYTHIA text file
+  TString                     fPyFileName;                      ///< Mask of PYTHIA text file
   TString                     fPyFile;                          ///< Mask of PYTHIA text file
   Int_t                       fNumber;                          //!<! Random number
   Int_t                       fNfiles;                          ///< Number of files   
@@ -117,7 +123,7 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
   AliAnalysisTaskPythiaBranchEA &operator=(const AliAnalysisTaskPythiaBranchEA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskPythiaBranchEA, 2);
+  ClassDef(AliAnalysisTaskPythiaBranchEA, 3);
   /// \endcond
 };
 }
