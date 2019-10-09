@@ -201,6 +201,8 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fTrigInfoSelected(0)
     , fTrigHist(0)
     , fTrigHistSelected(0)
+    , fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M)
+    , fUseSuperCalibrationForCent(kFALSE)
 {
     // default constructor for root    
 }
@@ -373,6 +375,8 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fTrigInfoSelected(0)
     , fTrigHist(0)
     , fTrigHistSelected(0)
+    , fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M)
+    , fUseSuperCalibrationForCent(kFALSE)
 {    
     // constructor    
     DefineInput(0, TChain::Class()); 
@@ -1124,7 +1128,42 @@ Bool_t AliAnalysisTaskMKBase::InitEventMult()
         LogEvent("noMultSelection");
         return kFALSE;
     } else {
-        fMultPercentileV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+        TString _Estimator{"V0M"};
+        switch (fCentralityEstimator) {
+            case kV0M:
+                _Estimator = "V0M";
+                break;
+            case kCL0:
+                _Estimator = "CL0";
+                break;
+            case kCL1:
+                _Estimator = "CL1";
+                break;
+            case kV0Mplus05:
+                _Estimator = "V0Mplus05";
+                break;
+            case kV0Mplus10:
+                _Estimator = "V0Mplus10";
+                break;
+            case kV0Mminus05:
+                _Estimator = "V0Mminus05";
+                break;
+            case kV0Mminus10:
+                _Estimator = "V0Mminus10";
+                break;
+            case kSPDClustersCorr:
+                _Estimator = "SPDClustersCorr";
+                break;
+            case kSPDTracklets:
+                _Estimator = "SPDTracklets";
+                break;
+            default:
+                break;
+        }
+        if(fUseSuperCalibrationForCent)
+            fMultSelection->SetPreferSuperCalib(kTRUE);
+        fMultPercentileV0M = fMultSelection->GetMultiplicityPercentile(_Estimator.Data());
+        
         if (fMultPercentileV0M < 0.) { LogEvent("fMultPercentileV0M<0"); }
         if (fMultPercentileV0M > 100.) { LogEvent("fMultPercentileV0M>100"); }
         if (fMultPercentileV0M == 0.) { LogEvent("fMultPercentileV0M==0"); }
