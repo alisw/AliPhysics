@@ -469,8 +469,7 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
   fhRho->Fill(rho);
   fhRhoSparse->Fill(rho_sparse);
 
-  fastjet::ClusterSequenceArea* cs_backsub(nullptr); //CS must be in the scope
-  std::vector<fastjet::PseudoJet> jets_backsub = GetBackSubJets(event_full, cs_backsub);
+  std::vector<fastjet::PseudoJet> jets_backsub = GetBackSubJets(event_full);
 
   std::vector<fastjet::PseudoJet> jets_backsub_filtered;
   for (auto jet : jets_backsub) {
@@ -519,8 +518,12 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
-  if (cs_backsub)   delete cs_backsub;
-  if (fCSubtractor) delete fCSubtractor;
+
+  if (fCSubtractor)   delete fCSubtractor;
+  if (fCSubtractorCS) delete fCSubtractorCS;
+
+  fCSubtractor = 0;
+  fCSubtractorCS = 0;
 
   return kTRUE;
 }
@@ -799,7 +802,7 @@ void AliAnalysisTaskSDKLResponse::FillRespTree(std::vector<AliEmcalJet*> const &
 
     //probe
     auto pjet = probe_jets[i];
-    if ( pjet->Pt() < 30. ) continue; //cut only on the probe jet
+    if ( pjet->Pt() < 10.) continue; //cut only on the probe jet
 
     UShort_t ntracks = pjet->GetNumberOfTracks();
     tree->Fill(pjet->Pt(), pjet->Eta(), pjet->Phi(), ntracks);

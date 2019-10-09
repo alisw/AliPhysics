@@ -63,7 +63,7 @@ class AliAnalysisTaskSDKL : public AliAnalysisTaskEmcalJet {
   int InitializeSubtractor(std::vector <fastjet::PseudoJet> const & event_full, Double_t & rho, Double_t & rho_sparse, Int_t opt = 0);
   void SetJetByJetConstSubtractionMode() { fCSOption = 1; }
 
-  std::vector<fastjet::PseudoJet> GetBackSubJets(std::vector<fastjet::PseudoJet> const & event_full, fastjet::ClusterSequenceArea* cs);
+  std::vector<fastjet::PseudoJet> GetBackSubJets(std::vector<fastjet::PseudoJet> const & event_full);
 
   void                 AddTracksToEvent(AliParticleContainer* cont, std::vector <fastjet::PseudoJet> & event);
   void                 FillTree(std::vector<fastjet::PseudoJet> const & jets, TNtuple* tree);
@@ -90,6 +90,7 @@ class AliAnalysisTaskSDKL : public AliAnalysisTaskEmcalJet {
   Int_t                       fbcoption;
   Int_t                       fCSOption;
   fastjet::contrib::ConstituentSubtractor *fCSubtractor; //!
+  fastjet::ClusterSequenceArea            *fCSubtractorCS; //!
 
  private:
   AliAnalysisTaskSDKL(const AliAnalysisTaskSDKL&);            // not implemented

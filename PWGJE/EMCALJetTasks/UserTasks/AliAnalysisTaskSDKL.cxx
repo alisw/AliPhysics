@@ -35,7 +35,8 @@ AliAnalysisTaskSDKL::AliAnalysisTaskSDKL(const char *name) :
   fTracksCont(0),
   fbcoption(0),
   fCSOption(0),
-  fCSubtractor(nullptr)
+  fCSubtractor(0),
+  fCSubtractorCS(0)
 {
   // Default constructor.
   // SetMakeGeneralHistograms(kTRUE);
@@ -54,7 +55,8 @@ AliAnalysisTaskSDKL::AliAnalysisTaskSDKL(const char *name, Int_t const backgropt
   fTracksCont(0),
   fbcoption(backgroption),
   fCSOption(0),
-  fCSubtractor(nullptr)
+  fCSubtractor(0),
+  fCSubtractorCS(0)
 {
   // Standard constructor.
   // SetMakeGeneralHistograms(kTRUE);
@@ -255,8 +257,7 @@ Bool_t AliAnalysisTaskSDKL::FillHistograms() {
   fhRho->Fill(rho);
   fhRhoSparse->Fill(rho_sparse);
 
-  fastjet::ClusterSequenceArea* cs_backsub(nullptr); //CS must be in the scope
-  std::vector<fastjet::PseudoJet> jets_backsub = GetBackSubJets(event_full, cs_backsub);
+  std::vector<fastjet::PseudoJet> jets_backsub = GetBackSubJets(event_full);
 
   std::vector<fastjet::PseudoJet> jets_backsub_filtered;
   for (auto jet : jets_backsub) {
@@ -282,13 +283,17 @@ Bool_t AliAnalysisTaskSDKL::FillHistograms() {
 
   event_full.clear();
   jets_backsub.clear();
-  if (cs_backsub)   delete cs_backsub;
-  if (fCSubtractor) delete fCSubtractor;
+
+  if (fCSubtractor)   delete fCSubtractor;
+  if (fCSubtractorCS) delete fCSubtractorCS;
+
+  fCSubtractor = 0;
+  fCSubtractorCS = 0;
 
   return kTRUE;
 }
 
-std::vector<fastjet::PseudoJet> AliAnalysisTaskSDKL::GetBackSubJets(std::vector <fastjet::PseudoJet> const & event_full, fastjet::ClusterSequenceArea* cs) {
+std::vector<fastjet::PseudoJet> AliAnalysisTaskSDKL::GetBackSubJets(std::vector <fastjet::PseudoJet> const & event_full) {
 
   fastjet::Selector sel_jets = fastjet::SelectorAbsEtaMax(0.9 - 0.4); //max_eta_jet
   fastjet::JetDefinition jet_def(fastjet::antikt_algorithm, 0.4, fastjet::E_scheme);
@@ -299,14 +304,13 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskSDKL::GetBackSubJets(std::vector 
   if (fCSubtractor) {
 
     if (0 == fCSOption) { //full event: subtract then cluster
-      std::vector<fastjet::PseudoJet> event_backsub;
-      event_backsub = fCSubtractor->subtract_event(event_full, 0.9);
-      cs = new fastjet::ClusterSequenceArea(event_backsub, jet_def, area_def);
-      jets_backsub = sel_jets( cs->inclusive_jets() );
+      std::vector<fastjet::PseudoJet> event_backsub = fCSubtractor->subtract_event(event_full, 0.9);
+      fCSubtractorCS = new fastjet::ClusterSequenceArea(event_backsub, jet_def, area_def);
+      jets_backsub = sel_jets( fCSubtractorCS->inclusive_jets() );
     }
     else if (1 == fCSOption) { //jet-by-jet: cluster then subtract
-      cs = new fastjet::ClusterSequenceArea(event_full, jet_def, area_def);
-      std::vector<fastjet::PseudoJet> jets_full = sel_jets( cs->inclusive_jets() );
+      fCSubtractorCS = new fastjet::ClusterSequenceArea(event_full, jet_def, area_def);
+      std::vector<fastjet::PseudoJet> jets_full = sel_jets( fCSubtractorCS->inclusive_jets() );
       for (auto j : jets_full) {
         jets_backsub.push_back( fCSubtractor->result(j) );
       }
