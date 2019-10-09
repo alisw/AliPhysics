@@ -799,7 +799,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
 
     Int_t idx[4] = {f4DcorrectionsPions->GetAxis(0)->FindFixBin(tAodTrack->Eta()),
                     f4DcorrectionsPions->GetAxis(1)->FindFixBin(tAodTrack->Pt()),
-                    f4DcorrectionsPions->GetAxis(2)->FindFixBin(0),
+                    f4DcorrectionsPions->GetAxis(2)->FindFixBin(0.0),
                     f4DcorrectionsPions->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     // cout<<"Track with pT "<<tAodTrack->Pt()<<" eta: "<<tAodTrack->Eta()<<" zv: "<<tAodTrack->Zv()<<" phi: "<<tAodTrack->Phi()<<endl;
     //cout<<"Pion bin: "<<idx[0]<<" "<<idx[1]<<" "<<idx[2]<<" "<<idx[3]<<" val: "<<f4DcorrectionsPions->GetBinContent(idx)<<endl;
@@ -818,7 +818,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   else if (f4DcorrectionsKaons) {
     Int_t idx[4] = {f4DcorrectionsKaons->GetAxis(0)->FindFixBin(tAodTrack->Eta()),
                     f4DcorrectionsKaons->GetAxis(1)->FindFixBin(tAodTrack->Pt()),
-                    f4DcorrectionsKaons->GetAxis(2)->FindFixBin(0),
+                    f4DcorrectionsKaons->GetAxis(2)->FindFixBin(0.0),
                     f4DcorrectionsKaons->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsKaons->GetBinContent(idx) != 0) {
       tFemtoTrack->SetCorrectionKaon(f4DcorrectionsKaons->GetBinContent(idx));
@@ -836,7 +836,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   else if (f4DcorrectionsProtons) {
     Int_t idx[4] = {f4DcorrectionsProtons->GetAxis(0)->FindFixBin(tAodTrack->Eta()),
                     f4DcorrectionsProtons->GetAxis(1)->FindFixBin(tAodTrack->Pt()),
-                    f4DcorrectionsProtons->GetAxis(2)->FindFixBin(0),
+                    f4DcorrectionsProtons->GetAxis(2)->FindFixBin(0.0),
                     f4DcorrectionsProtons->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsProtons->GetBinContent(idx) != 0) {
       tFemtoTrack->SetCorrectionProton(f4DcorrectionsProtons->GetBinContent(idx));
@@ -854,7 +854,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   else if (f4DcorrectionsPionsMinus) {
     Int_t idx[4] = {f4DcorrectionsPionsMinus->GetAxis(0)->FindFixBin(tAodTrack->Eta()),
                     f4DcorrectionsPionsMinus->GetAxis(1)->FindFixBin(tAodTrack->Pt()),
-                    f4DcorrectionsPionsMinus->GetAxis(2)->FindFixBin(0),
+                    f4DcorrectionsPionsMinus->GetAxis(2)->FindFixBin(0.0),
                     f4DcorrectionsPionsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsPionsMinus->GetBinContent(idx) != 0) {
       tFemtoTrack->SetCorrectionPionMinus(f4DcorrectionsPionsMinus->GetBinContent(idx));
@@ -872,7 +872,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   else if (f4DcorrectionsKaonsMinus) {
     Int_t idx[4] = {f4DcorrectionsKaonsMinus->GetAxis(0)->FindFixBin(tAodTrack->Eta()),
                     f4DcorrectionsKaonsMinus->GetAxis(1)->FindFixBin(tAodTrack->Pt()),
-                    f4DcorrectionsKaonsMinus->GetAxis(2)->FindFixBin(0),
+                    f4DcorrectionsKaonsMinus->GetAxis(2)->FindFixBin(0.0),
                     f4DcorrectionsKaonsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsKaonsMinus->GetBinContent(idx) != 0) {
       tFemtoTrack->SetCorrectionKaonMinus(f4DcorrectionsKaonsMinus->GetBinContent(idx));
@@ -890,7 +890,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   else if (f4DcorrectionsProtonsMinus) {
     Int_t idx[4] = {f4DcorrectionsProtonsMinus->GetAxis(0)->FindFixBin(tAodTrack->Eta()),
                     f4DcorrectionsProtonsMinus->GetAxis(1)->FindFixBin(tAodTrack->Pt()),
-                    f4DcorrectionsProtonsMinus->GetAxis(2)->FindFixBin(0),
+                    f4DcorrectionsProtonsMinus->GetAxis(2)->FindFixBin(0.0),
                     f4DcorrectionsProtonsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
     if (f4DcorrectionsProtonsMinus->GetBinContent(idx) != 0) {
       tFemtoTrack->SetCorrectionProtonMinus(f4DcorrectionsProtonsMinus->GetBinContent(idx));
