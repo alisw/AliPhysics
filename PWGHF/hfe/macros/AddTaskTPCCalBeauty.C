@@ -30,7 +30,8 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
                                      Bool_t timeCut = kFALSE,
                                      Int_t nTpcCrossRows=0,
                                      Int_t itsChi2 = -100,
-                                     Int_t itsLayer = 0)
+                                     Int_t itsLayer = 0,
+                                     Double_t zDCA = 3.2)
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -74,6 +75,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEemc->SetDCABinSize(dcaBinSize);
     taskBFEemc->SetStackLoop(runStackLoop);
     taskBFEemc->SetTPCClus(nClsTPC);
+    taskBFEemc->SetDCAzCut(zDCA);
     taskBFEemc->SetClusterTypeEMC(kTRUE);
     taskBFEemc->SetClusterTypeDCAL(kFALSE);
     taskBFEemc->SetCentralitySelection(centMin,centMax);
@@ -116,6 +118,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEdc->SetDCABinSize(dcaBinSize);
     taskBFEdc->SetStackLoop(runStackLoop);
     taskBFEdc->SetTPCClus(nClsTPC);
+    taskBFEdc->SetDCAzCut(zDCA);
     taskBFEdc->SetClusterTypeEMC(kFALSE);
     taskBFEdc->SetClusterTypeDCAL(kTRUE);
     taskBFEdc->SetCentralitySelection(centMin,centMax);
@@ -190,6 +193,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEeg01emc->SetDCABinSize(dcaBinSize);
         taskBFEeg01emc->SetStackLoop(runStackLoop);
         taskBFEeg01emc->SetTPCClus(nClsTPC);
+        taskBFEeg01emc->SetDCAzCut(zDCA);
         taskBFEeg01emc->SetClusterTypeEMC(kTRUE);
         taskBFEeg01emc->SetClusterTypeDCAL(kFALSE);
         taskBFEeg01emc->SetCentralitySelection(centMin,centMax);
@@ -278,6 +282,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEdg01dc->SetDCABinSize(dcaBinSize);
         taskBFEdg01dc->SetStackLoop(runStackLoop);
         taskBFEdg01dc->SetTPCClus(nClsTPC);
+        taskBFEdg01dc->SetDCAzCut(zDCA);
         taskBFEdg01dc->SetClusterTypeEMC(kFALSE);
         taskBFEdg01dc->SetClusterTypeDCAL(kTRUE);
         taskBFEdg01dc->SetCentralitySelection(centMin,centMax);

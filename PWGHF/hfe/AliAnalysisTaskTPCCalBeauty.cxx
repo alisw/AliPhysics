@@ -59,6 +59,7 @@ fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
 fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
+fDCAzCut(3.2),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
@@ -288,6 +289,7 @@ fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
 fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
+fDCAzCut(3.2),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
@@ -1876,7 +1878,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         if(!kinkmotherpass) continue; //kink rejection
         
         Double_t d0z0[2]={-999,-999}, cov[3];
-        Double_t DCAxyCut = 2.4, DCAzCut = 3.2;
+        Double_t DCAxyCut = 2.4, DCAzCut = fDCAzCut;
         
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;
         
@@ -3007,6 +3009,9 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
         if(!trackAsso) continue;
         if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
         if(trackAsso->GetTPCNcls() < 80) continue;
+        
+        //Refit
+        if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         
         nsigmaAsso = fpidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);
         ptAsso = trackAsso->Pt();
