@@ -32,6 +32,8 @@
 #include <TH2F.h>
 #include <TF1.h>
 #include <TGrid.h>
+#include <TFile.h>
+#include <TSystem.h>
 
 #include <AliAnalysisManager.h>
 #include <AliVEventHandler.h>
@@ -60,6 +62,7 @@ AliAnalysisTaskPythiaBranchEA::AliAnalysisTaskPythiaBranchEA() :
   fMaxEta(0.9),
   fPyFilePath(""),
   fPyFileMask(""),
+  fPyFileName(""),
   fPyFile(""),
   fNumber(1),
   fNfiles(1000),
@@ -83,6 +86,7 @@ AliAnalysisTaskPythiaBranchEA::AliAnalysisTaskPythiaBranchEA(const char* name) :
   fMaxEta(0.9),
   fPyFilePath(""),
   fPyFileMask(""),
+  fPyFileName(""),
   fPyFile(""),
   fNumber(1),
   fNfiles(1000),
@@ -137,6 +141,34 @@ void AliAnalysisTaskPythiaBranchEA::UserCreateOutputObjects()
 }
 
 /**
+ * This function will open new pythia text file
+ */
+void AliAnalysisTaskPythiaBranchEA::GetNewPythiaFile(){
+
+  if (fPyFilePath.BeginsWith("alien://")) {
+     TGrid::Connect("alien://");
+ 
+  }
+
+  for(Int_t k=0;k<100;k++){ //in case that some of the files are missing try other files
+     fNumber = fRandom.Integer(fNfiles); //0-999
+     fPyFileName = fPyFileMask;
+     fPyFileName.ReplaceAll("XXX",Form("%d",fNumber)); 
+     fPyFile = Form("%s/%s", fPyFilePath.Data(), fPyFileName.Data());
+     TFile::Cp(fPyFile.Data(), fPyFileName.Data());
+     fInput = fopen(fPyFileName.Data(),"r");
+     
+     if(fInput) break;
+  } 
+ 
+  if (!fInput) {
+    AliError(Form("Could not retrieve PYTHIA file %s!",fPyFileName.Data()));
+    return;
+  }
+} 
+
+
+/**
  * This function is executed automatically for the first event. Some extra initialization can be performed here.
  */
 void AliAnalysisTaskPythiaBranchEA::ExecOnce()
@@ -150,22 +182,8 @@ void AliAnalysisTaskPythiaBranchEA::ExecOnce()
   fRandom.SetSeed(0);
   gRandom = &fRandom; // It seems this is necessary in order to use the TF1::GetRandom() function...
 
+  GetNewPythiaFile();
 
-  if (fPyFile.BeginsWith("alien://")) {
-    TGrid::Connect("alien://");
-  }
-
-  fNumber = fRandom.Integer(fNfiles); //0-999
-  fPyFile = fPyFileMask;
-  fPyFile.ReplaceAll("XXX",Form("%d",fNumber)); 
-  fPyFile = Form("%s/%s", fPyFilePath.Data(), fPyFile.Data());
-  fInput = fopen(fPyFile.Data(),"r");
- 
-  if (!fInput) {
-    AliError(Form("Could not retrieve PYTHIA file %s!",fPyFile.Data()));
-    return;
-  }
- 
   // Create a new collection during the first event
   CreateNewObjectBranch();
   
@@ -232,28 +250,15 @@ void AliAnalysisTaskPythiaBranchEA::Run()
   while(evtLoop){
 
      if(!fInput){
-        if (fPyFilePath.BeginsWith("alien://")) {
-          TGrid::Connect("alien://");
-        }
-
-        fNumber = fRandom.Integer(fNfiles); //0-999
-        fPyFile = fPyFileMask;
-        fPyFile.ReplaceAll("XXX",Form("%d",fNumber)); 
-        fPyFile = Form("%s/%s", fPyFilePath.Data(), fPyFile.Data());
-
-        fInput = fopen(fPyFile.Data(),"r");
-
-        if (!fInput) {
-          AliError(Form("Could not retrieve PYTHIA file %s!",fPyFile.Data()));
-          return;
-        }
- 
+        GetNewPythiaFile();
      }
 
      if(fscanf(fInput,"%f %f %f", &pt, &eta, &phi) == EOF){
 
         fclose(fInput);
         fInput=NULL;
+
+        gSystem->Exec(Form("rm %s", fPyFileName.Data()));        
 
         continue;
      }
@@ -377,3 +382,18 @@ AliAnalysisTaskPythiaBranchEA* AliAnalysisTaskPythiaBranchEA::AddTaskPythiaBranc
   
   return task;
 }
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/**
+ *  Terminate clean up
+ */
+void AliAnalysisTaskPythiaBranchEA::Terminate(Option_t *){
+
+  if(fInput){
+        fclose(fInput);
+        fInput=NULL;
+   }
+   gSystem->Exec(Form("rm %s", fPyFileName.Data()));        
+
+} 
+

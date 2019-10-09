@@ -1,9 +1,11 @@
 PWGJE::EMCALJetTasks::AliAnalysisTaskPythiaBranchEA* AddTaskPythiaBranchEA(const char *outputName = "pyparticles",
-                                                     const char *pyfile ="",
-                                                     const char *suffix = ""){
+                                                                           const char *pyfilepath ="",
+                                                                           const char *pyfilemask ="",
+                                                                           const char *suffix = ""){
 
    return PWGJE::EMCALJetTasks::AliAnalysisTaskPythiaBranchEA::AddTaskPythiaBranchEA(
        outputName,
-       pyfile,
+       pyfilepath,
+       pyfilemask,
        suffix);
 }
