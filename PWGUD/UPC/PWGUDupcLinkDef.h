@@ -13,6 +13,7 @@
 #pragma link C++ class AliAnalysisTaskUPCforward+;
 #pragma link C++ class AliAnalysisTaskUPCforwardMC+;
 #pragma link C++ class AliAnalysisTaskUPCforward2+;
+#pragma link C++ class AliAnalysisTaskUPCforwardpPb+;
 #pragma link C++ class AliAnalysisTaskMatchTriggerForward+;
 #pragma link C++ class AliAnalysisTaskNanoMUON+;
 #pragma link C++ class AliAnalysisTaskCTrue+;
