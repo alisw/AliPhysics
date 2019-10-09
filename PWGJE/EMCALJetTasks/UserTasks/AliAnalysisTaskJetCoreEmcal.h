@@ -120,8 +120,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Int_t fRejectionFactorInclusiveJets; ///< factor to reject inclusive jets, to reduce size of ttree
 	//
 	TRandom3 *fRandom; ///<
-	Float_t fTreeVarsInclusive[8]; ///<
-	Float_t fTreeVarsRecoil[11]; ///<
+	Float_t fTreeVarsInclusive[9]; ///<
+	Float_t fTreeVarsRecoil[10]; ///<
 	//histograms to fill
 	TH1I *fHistEvtSelection; //!<!
 	// recoil jet info contained in THnSparse
