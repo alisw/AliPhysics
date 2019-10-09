@@ -533,7 +533,43 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
      if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections xi plus"<<f1DcorrectionsXiPlus;
   femtoReaderNanoAOD->Set1DCorrectionsXiPlus(f1DcorrectionsXiPlus);
       }
-
+//Applying 4D corrections
+      if(f4DcorrectionsPions) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections pions"<<f4DcorrectionsPions;
+        femtoReaderNanoAOD->Set4DCorrectionsPions(f4DcorrectionsPions);
+      }
+      if(f4DcorrectionsKaons) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections kaons"<<f4DcorrectionsKaons;
+        femtoReaderNanoAOD->Set4DCorrectionsKaons(f4DcorrectionsKaons);
+      }
+      if(f4DcorrectionsProtons) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections protons"<<f4DcorrectionsProtons;
+        femtoReaderNanoAOD->Set4DCorrectionsProtons(f4DcorrectionsProtons);
+      }
+      if(f4DcorrectionsPionsMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections pions Minus"<<f4DcorrectionsPionsMinus;
+        femtoReaderNanoAOD->Set4DCorrectionsPionsMinus(f4DcorrectionsPionsMinus);
+      }
+      if(f4DcorrectionsKaonsMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections kaons Minus"<<f4DcorrectionsKaonsMinus;
+        femtoReaderNanoAOD->Set4DCorrectionsKaonsMinus(f4DcorrectionsKaonsMinus);
+      }
+      if(f4DcorrectionsProtonsMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections protons Minus"<<f4DcorrectionsProtonsMinus;
+        femtoReaderNanoAOD->Set4DCorrectionsProtonsMinus(f4DcorrectionsProtonsMinus);
+      }
+      if(f4DcorrectionsAll) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections all"<<f4DcorrectionsAll;
+        femtoReaderNanoAOD->Set4DCorrectionsAll(f4DcorrectionsAll);
+      }
+      if(f4DcorrectionsLambdas) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections lambas"<<f4DcorrectionsLambdas;
+        femtoReaderNanoAOD->Set4DCorrectionsLambdas(f4DcorrectionsLambdas);
+      }
+      if(f4DcorrectionsLambdasMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections lambas Minus"<<f4DcorrectionsLambdasMinus;
+        femtoReaderNanoAOD->Set4DCorrectionsLambdasMinus(f4DcorrectionsLambdasMinus);
+      }
 
       // cout<<"nano AOD header: "<<fVEvent<<" "<<fVEvent->GetHeader()<<endl;
       // fNanoAODheader = dynamic_cast<AliNanoAODHeader *>(fVEvent->GetHeader());
