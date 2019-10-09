@@ -93,7 +93,6 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         enum CentralityEstimator {kV0M=0, kCL0, kCL1, kV0Mplus05, kV0Mplus10, kV0Mminus05, kV0Mminus10, kSPDClustersCorr, kSPDTracklets};
         void                   SetCentralityEstimator(CentralityEstimator _est) {fCentralityEstimator=_est;}
         CentralityEstimator    GetCentralityEstimator() const {return fCentralityEstimator;}
-        void                   SetUseSuperCalibration() {fUseSuperCalibrationForCent=kTRUE;}
     protected:
         
         virtual void          Log(const char* name) { Log(fLogHist,name); }        
@@ -334,8 +333,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         TH1D*                           fTrigHist;              //->  AliVEvent trigger classes
         TH1D*                           fTrigHistSelected;      //->  AliVEvent trigger classes of selected events    
         CentralityEstimator             fCentralityEstimator;
-        Bool_t                          fUseSuperCalibrationForCent;
-    private:
+private:
         AliAnalysisTaskMKBase(const AliAnalysisTaskMKBase&); // not implemented
         AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
         

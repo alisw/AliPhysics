@@ -202,7 +202,6 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fTrigHist(0)
     , fTrigHistSelected(0)
     , fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M)
-    , fUseSuperCalibrationForCent(kFALSE)
 {
     // default constructor for root    
 }
@@ -376,8 +375,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fTrigHist(0)
     , fTrigHistSelected(0)
     , fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M)
-    , fUseSuperCalibrationForCent(kFALSE)
-{    
+{
     // constructor    
     DefineInput(0, TChain::Class()); 
     DefineOutput(1, TList::Class());
@@ -1160,8 +1158,6 @@ Bool_t AliAnalysisTaskMKBase::InitEventMult()
             default:
                 break;
         }
-        if(fUseSuperCalibrationForCent)
-            fMultSelection->SetPreferSuperCalib(kTRUE);
         fMultPercentileV0M = fMultSelection->GetMultiplicityPercentile(_Estimator.Data());
         
         if (fMultPercentileV0M < 0.) { LogEvent("fMultPercentileV0M<0"); }
