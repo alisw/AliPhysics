@@ -157,7 +157,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   fTrackCutsBit0 = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   fTrackCutsBit0->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
   
   fTrackCutsBit1 = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kFALSE,kTRUE);
   
