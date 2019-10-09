@@ -131,8 +131,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
 
 
 	TF1 * weightfit = new TF1("weightfit","expo");
-	weightfit -> SetParameter(0,9.60710e-01);
-	weightfit -> SetParameter(1,-2.76085e-01);
+	weightfit -> SetParameter(0,8.66109e-01);
+	weightfit -> SetParameter(1,-2.59812e-01);
     task -> SetFunction(weightfit);
 
 	//============== weight process for the acceptance phi distribution
