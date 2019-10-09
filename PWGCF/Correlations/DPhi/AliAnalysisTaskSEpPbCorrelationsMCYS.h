@@ -53,6 +53,7 @@ public:
   virtual void SetAssociatedTrack(TString mode) { fasso = mode; }
   virtual void SetPID(Bool_t mode) { fPID = mode; }
   virtual void SetDatatype(Bool_t mode) { fDataType = mode; }
+  virtual void SetCentCalib(Bool_t mode) { fcentcalib= mode; }
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
   virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
@@ -137,6 +138,7 @@ private:
 
   TString fcollisiontype;
   Bool_t fDataType;
+  Bool_t fcentcalib;
   Bool_t frun2;
   Bool_t fQA;
   Bool_t fFMDcut;
@@ -251,7 +253,7 @@ private:
   TH2D*fhmcprimvzeta;
 
   TH1F*frefvz;
-  TH2D*fhcorr[10];
+  TH1D*fhcorr[10];
 
   TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];

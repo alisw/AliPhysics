@@ -6,13 +6,14 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
 								       Bool_t  fDataType       =kFALSE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kFALSE,
-								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
+								       TString anamode         ="FMDFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
 								       TString anacent         ="V0A",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =5,
 								       Int_t fFMDcutpar        =2,
 								       Bool_t fmakehole        =kFALSE,
-								       Bool_t fprim            =fprim
+								       Bool_t fprim            =kTRUE,
+								       Bool_t fcentcalib       =kTRUE
 								       )
 {
   // Get the current analysis manager.
@@ -57,6 +58,7 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
   myTask->SetAssociatedTrack(assomode);
   //myTask->SetPID(fpid);
   myTask->SetDatatype(fDataType);
+  myTask->SetCentCalib(fcentcalib);
   myTask->SetRunType(frun2);
   myTask->SetFMDcut(fFMDcut);
   myTask->SetFMDcutpar(fFMDcutpar);

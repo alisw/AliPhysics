@@ -81,6 +81,7 @@ AliAnalysisTaskSEpPbCorrelationsMCYS::AliAnalysisTaskSEpPbCorrelationsMCYS()
     : AliAnalysisTaskSE(),
       fcollisiontype("pPb"),
       fDataType(kTRUE),
+      fcentcalib(kFALSE),
       frun2(kTRUE),
       fQA(kTRUE),
       fFMDcut(kTRUE),
@@ -277,6 +278,7 @@ AliAnalysisTaskSEpPbCorrelationsMCYS::AliAnalysisTaskSEpPbCorrelationsMCYS(const
     : AliAnalysisTaskSE(name),
       fcollisiontype("pPb"),
       fDataType(kTRUE),
+      fcentcalib(kFALSE),
       frun2(kTRUE),
       fQA(kTRUE),
       fFMDcut(kTRUE),
@@ -525,10 +527,14 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
 
   frefvz=new TH1F("frefvz","z-vertex",10,-10,10);
   fOutputList2->Add(frefvz);
-  ///    TGrid::Connect("alien://");
-  //   TFile*file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/correction.root");
+  if(fcentcalib){
+  TGrid::Connect("alien://");
+  TFile*file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/fcalibration_centrality_AMPT.root");
   //  TFile*file=TFile::Open("/home/yuko/work/local_alicework/MCESDanalysis/draw_result/correction.root");
-  // if(!file) AliError("No correction factor");
+  if(!file) AliError("No correction factor");
+  fhcorr[0]=(TH1D*)file->Get("hcent");
+  fOutputList->Add(fhcorr[0]);
+  }
   //for(Int_t i=0;i<10;i++){
   //fhcorr[i]=(TH2D*)file->Get(Form("fRefetaphiclone_%d",i));
   // fOutputList2->Add(fhcorr[i]);
@@ -1759,17 +1765,17 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
 
    // Multiplicity Object
    //if(fcollisiontype=="pPb" || fcollisiontype=="PP"){
-     if(frun2){
+   fvzero = fEvent->GetVZEROData();
+   if(!fcentcalib){
        //AliMultSelection *multSelection =    (AliMultSelection *)fEvent->FindListObject("MultSelection");
        lCentrality = multSelection->GetMultiplicityPercentile(fCentType);
        Int_t qual = multSelection->GetEvSelCode();
        if (qual == 199)  lCentrality = -999;
      } else{
-       AliCentrality *centobj = 0;
-       centobj = fEvent->GetCentrality();
-       lCentrality = centobj->GetCentralityPercentile(fCentType);
-       if(!centobj) lCentrality=-1.;
-     }
+       Float_t v0amult=fvzero->GetMTotV0A();
+       Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(v0amult);
+       lCentrality=fhcorr[0]->GetBinContent(nbinmult);
+   }
 	 
 	 
      if (lCentrality < 0. || lCentrality > 100. - 0.0000001)   return;
@@ -1828,8 +1834,8 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
    selectedTracksMC2->SetOwner(kTRUE);
 
   
-   
-   fvzero = fEvent->GetVZEROData();
+   //   fvzero = fEvent->GetVZEROData();
+
    if(fAnaMode=="TPCV0A"||fAnaMode=="TPCV0C"||fAnaMode=="V0AV0C"){
      Double_t eta_min;
      Double_t eta_max;
@@ -2109,13 +2115,14 @@ if(fAnaMode=="TPCTPC"){
 
 
 	}
+
   
   if(!fprim){
-    FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
-    FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
+    //    FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
+    //    FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
     DumpTObjTable("End of fill  Correlation");
-    //FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
-    //FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
+    FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
+    FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
  
 
   }else{
@@ -2123,6 +2130,9 @@ if(fAnaMode=="TPCTPC"){
     FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksMC2,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
     DumpTObjTable("End of fill  Correlation");
   }
+  
+
+  
   selectedTracksLeading->Clear();
   delete selectedTracksLeading;
   selectedTracksAssociated->Clear();
