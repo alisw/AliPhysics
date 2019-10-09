@@ -5797,7 +5797,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 
         } else if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
-          if(fClusterType==2) energy /= FunctionNL_kSDM(energy, 1.00571, -2.03882, -2.12252);
+          if(fClusterType==2) { //13 TeV PCM-PHOS Exponential function fitted
+              //energy /= FunctionNL_kSDM(energy, 1.00571, -2.03882, -2.12252); //old Version
+              energy /= FunctionNL_kSDM(energy, 0.968757, -2.70484, -1.18801, 1.0);
+          }
           if(fClusterType==4) energy /= FunctionNL_kSDM(energy, 0.966959, -3.53435, -0.505337);
         } else fPeriodNameAvailable = kFALSE;
 
@@ -5889,6 +5892,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           }
         } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.57881);
+          if(fClusterType==2) { //13 TeV PHOS-PHOS Exponential function fitted
+              energy /= FunctionNL_kSDM(energy, 0.967918, -2.81051, -1.04303, 1.0);
+          }
           if(fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
               energy /= FunctionNL_kSDM(energy, 0.991236,-3.48689,-0.192788);
