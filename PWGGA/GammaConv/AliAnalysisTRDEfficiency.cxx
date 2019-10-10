@@ -583,7 +583,7 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
         fhgR1->Fill(Rg);
         fhgpt1->Fill(ptg);
         
-        for (Int_t j = 0; j < v0->GetNDaughters()-1; j++) {     // TODO
+        for (Int_t j = 0; j < v0->GetNDaughters(); j++) {     // 
                         
                 //cout << v0->GetDaughter(j) << endl;
             AliAODTrack *track = (AliAODTrack*)v0->GetDaughter(j);
