@@ -134,7 +134,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
         if (doRefFlow){
           if ((fSettings.etagap) && TMath::Abs(eta)<=fSettings.gap) continue;
-          if (fSettings.etagap && TMath::Abs(eta)>3.0) continue;
+          //if (fSettings.etagap && TMath::Abs(eta)>3.0) continue;
           if (fSettings.ref_mode & fSettings.kFMDref) {
             if (TMath::Abs(eta) < fSettings.fmdlowcut) continue;
             if (TMath::Abs(eta) > fSettings.fmdhighcut) continue;
