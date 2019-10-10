@@ -715,3 +715,12 @@ HMPID  7  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1  
 HMPID  8  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
 * W               (>  50 keV delta-electrons)
 HMPID  9  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+
+* VZERO
+* ====
+*
+*      Med GAM   ELEC NHAD   CHAD  MUON  EBREM MUHAB  EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+* V0C Scintillator
+VZERO  4   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* V0A Scintillator
+VZERO  5   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
