@@ -129,7 +129,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
     
     }
     
-    if(jetShapeSub==AliAnalysisTaskNewJetSubstructure::kConstSub){
+    if(jetShapeSub==AliAnalysisTaskNewJetSubstructure::kConstSub || jetShapeSub==AliAnalysisTaskNewJetSubstructure::kEventSub){
       jetContUS=task->AddJetContainer(njetsUS,strType,R);
       if(jetContUS) {
         jetContUS->SetRhoName(nrhoBase);
