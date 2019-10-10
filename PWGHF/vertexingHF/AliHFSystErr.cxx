@@ -430,8 +430,18 @@ void AliHFSystErr::Init(Int_t decay){
       }
       else if (fCollisionType==1) {
         if (fRunNumber == 18 || fRunNumber == 2018){
-          if (fCentralityClass=="010") InitDstoKKpi2018PbPb010();
-          else if (fCentralityClass=="3050") InitDstoKKpi2018PbPb3050();
+          if (fCentralityClass=="010"){
+            if(fIsBDTAnalysis)
+              InitDstoKKpi2018PbPb010BDT();
+            else
+              InitDstoKKpi2018PbPb010();
+          } 
+          else if (fCentralityClass=="3050"){
+            if(fIsBDTAnalysis)
+              InitDstoKKpi2018PbPb3050BDT();
+            else
+              InitDstoKKpi2018PbPb3050();
+          } 
           else AliFatal("Not yet implemented");
         }
         else if (fRunNumber == 15){
@@ -9493,6 +9503,62 @@ void AliHFSystErr::InitDstoKKpi2018PbPb010() {
 }
 
 //--------------------------------------------------------------------------
+void AliHFSystErr::InitDstoKKpi2018PbPb010BDT() {
+  // D+s->Kpipi with BDT selections syst. errors.
+  // 2018 PbPb sample, 0-10% CC
+  // Responsible: F. Catalano
+
+  AliInfo(" Settings for Ds --> K K pi, Pb-Pb collisions at 5 TeV for 0-10 CC - 2018 runs (LHC18qr) with BDT selections");
+  SetNameTitle("AliHFSystErr","SystErrDstoKKpi2018PbPb010BDT");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",50,0,50);
+  for(Int_t i=1;i<=50;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",50,0,50);
+  for(Int_t i=1;i<=50;i++) fBR->SetBinContent(i,0.035); // 0.08/2.27 PDG2017
+
+  // Tracking and ME efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",50,0,50);
+  for(Int_t i=1;i<=4;i++) fTrackingEff->SetBinContent(i,0.155);
+  for(Int_t i=5;i<=5;i++) fTrackingEff->SetBinContent(i,0.165);
+  for(Int_t i=6;i<=8;i++) fTrackingEff->SetBinContent(i,0.170);
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.150);
+  for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.150);
+  for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.115);
+  for(Int_t i=25;i<=50;i++) fTrackingEff->SetBinContent(i,0.105);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",50,0,50);
+  for(Int_t i=1;i<=3;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=4;i<=4;i++) fRawYield->SetBinContent(i,0.08);
+  for(Int_t i=5;i<=5;i++) fRawYield->SetBinContent(i,0.04);
+  for(Int_t i=6;i<=24;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=37;i<=50;i++) fRawYield->SetBinContent(i,0.10);
+
+  // Cuts efficiency (from cuts variation + phi selection cuts)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
+  for(Int_t i=1;i<=4;i++) fCutsEff->SetBinContent(i,0.08);
+  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,0.06);
+  for(Int_t i=7;i<=50;i++) fCutsEff->SetBinContent(i,0.04);
+
+  // PID efficiency
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",50,0,50);
+  for(Int_t i=1;i<=50;i++) fPIDEff->SetBinContent(i,0.);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",50,0,50);
+  for(Int_t i=1;i<=3;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=4;i<=5;i++) fMCPtShape->SetBinContent(i,0.03);
+  for(Int_t i=6;i<=12;i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=13;i<=50;i++) fMCPtShape->SetBinContent(i,0.);
+
+  return;
+}
+
+//--------------------------------------------------------------------------
 void AliHFSystErr::InitDstoKKpi2018PbPb3050() {
   // D+s->Kpipi syst. errors.
   // 2018 PbPb sample, 30-50% CC
@@ -9540,6 +9606,60 @@ void AliHFSystErr::InitDstoKKpi2018PbPb3050() {
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
   for(Int_t i=1;i<=6;i++) fMCPtShape->SetBinContent(i,0.03);
+  for(Int_t i=7;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=13;i<=36;i++) fMCPtShape->SetBinContent(i,0.);
+
+  return;
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstoKKpi2018PbPb3050BDT() {
+  // D+s->Kpipi with BDT selections syst. errors.
+  // 2018 PbPb sample, 30-50% CC
+  // Responsible: F. Catalano
+
+  AliInfo(" Settings for Ds --> K K pi, Pb-Pb collisions at 5 TeV for 30-50 CC - 2018 runs (LHC18qr) with BDT selections");
+  SetNameTitle("AliHFSystErr","SystErrDstoKKpi2018PbPb3050BDT");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",36,0,36);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",36,0,36);
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.035); // 0.08/2.27 PDG2017
+
+  // Tracking and ME efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
+  for(Int_t i=1;i<=6;i++) fTrackingEff->SetBinContent(i,0.125);
+  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.130);
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.135);
+  for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.125);
+  for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.115);
+  for(Int_t i=25;i<=36;i++) fTrackingEff->SetBinContent(i,0.095);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  for(Int_t i=1;i<=3;i++) fRawYield->SetBinContent(i,0.09);
+  for(Int_t i=4;i<=4;i++) fRawYield->SetBinContent(i,0.07);
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.04);
+  for(Int_t i=7;i<=24;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.06);
+
+
+  // Cuts efficiency (from cuts variation + phi selection cuts)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+  for(Int_t i=1;i<=6;i++) fCutsEff->SetBinContent(i,0.06);
+  for(Int_t i=7;i<=36;i++) fCutsEff->SetBinContent(i,0.04);
+
+  // PID efficiency
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  for(Int_t i=1;i<=3;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=4;i<=6;i++) fMCPtShape->SetBinContent(i,0.03);
   for(Int_t i=7;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
   for(Int_t i=13;i<=36;i++) fMCPtShape->SetBinContent(i,0.);
 

@@ -628,8 +628,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       }//resonance cut
         
       if(fResonancePhiCut) {
-        if (charge1 * charge2 < 0) {
-        
+        if (!particlesMixed) {
+	  if (charge1 * charge2 < 0) {
         //phi        
         vectorDaughter[0].SetPtEtaPhiM(firstPt,firstEta,firstPhi,pKaon.GetMass());
         vectorDaughter[1].SetPtEtaPhiM(secondPt[j],secondEta[j],secondPhi[j],pKaon.GetMass());
@@ -640,6 +640,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
         if (((vectorMother.M() - pPhi.GetMass()) < fNSigmaRejectionMin*gWidthForPhiData) || ((vectorMother.M() - pPhi.GetMass()) >= fNSigmaRejectionMax*gWidthForPhiData))
         continue;
         fHistResonancesPhi->Fill(trackVariablesPair[1],trackVariablesPair[2],vectorMother.M());
+          }
         }
       }
  
