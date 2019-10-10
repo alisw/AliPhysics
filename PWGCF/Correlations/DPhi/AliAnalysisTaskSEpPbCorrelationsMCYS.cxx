@@ -527,6 +527,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
 
   frefvz=new TH1F("frefvz","z-vertex",10,-10,10);
   fOutputList2->Add(frefvz);
+
   if(fcentcalib){
   TGrid::Connect("alien://");
   TFile*file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/fcalibration_centrality_AMPT.root");
@@ -1709,10 +1710,12 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
 	 
    
    fHist_Stat->Fill(1);      
-
-   AliMultSelection *multSelection =    (AliMultSelection *)fEvent->FindListObject("MultSelection");
-   if(!multSelection) return;
-   fHist_Stat->Fill(2);
+   AliMultSelection*multSelection;
+   if(!fcentcalib){
+     multSelection= (AliMultSelection *)fEvent->FindListObject("MultSelection");
+     if(!multSelection) return;
+     fHist_Stat->Fill(2);
+   }
    
    //Pileu rejection by MultSelection
    if(fcollisiontype.Contains("HMPP") || fcollisiontype.Contains("MBPP")){
@@ -1767,14 +1770,13 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
    //if(fcollisiontype=="pPb" || fcollisiontype=="PP"){
    fvzero = fEvent->GetVZEROData();
    if(!fcentcalib){
-       //AliMultSelection *multSelection =    (AliMultSelection *)fEvent->FindListObject("MultSelection");
-       lCentrality = multSelection->GetMultiplicityPercentile(fCentType);
-       Int_t qual = multSelection->GetEvSelCode();
-       if (qual == 199)  lCentrality = -999;
-     } else{
-       Float_t v0amult=fvzero->GetMTotV0A();
-       Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(v0amult);
-       lCentrality=fhcorr[0]->GetBinContent(nbinmult);
+     lCentrality = multSelection->GetMultiplicityPercentile(fCentType);
+     Int_t qual = multSelection->GetEvSelCode();
+     if (qual == 199)  lCentrality = -999;
+   } else{
+     Float_t v0amult=fvzero->GetMTotV0A();
+     Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(v0amult);
+     lCentrality=fhcorr[0]->GetBinContent(nbinmult);
    }
 	 
 	 
