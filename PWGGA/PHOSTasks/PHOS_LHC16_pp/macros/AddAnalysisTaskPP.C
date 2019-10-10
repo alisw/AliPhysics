@@ -21,7 +21,7 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 	{
 		// TODO: Add plain selections
 		AliPP13SelectionWeights & data_weights = AliPP13SelectionWeights::Init(AliPP13SelectionWeights::kData);
-		// AliPP13SelectionWeights & data_weights_plain = AliPP13SelectionWeights::Init(AliPP13SelectionWeights::kPlain);
+		AliPP13SelectionWeights & data_weights_plain = AliPP13SelectionWeights::Init(AliPP13SelectionWeights::kPlain);
 
 		selections->Add(new AliPP13SpectrumSelection("Phys", "Physics Selection", cuts_pi0, &data_weights));
 		// selections->Add(new AliPP13SpectrumSelection("PhysPlain", "Physics Selection no TOF cut efficiency", cuts_pi0, &data_weights_plain));
@@ -44,7 +44,7 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 		selections->Add(new AliPP13EpRatioSelection("EpRatio", "E/p ratio selection for electrons", cuts_pi0, &data_weights));
 
 		delete &data_weights;
-		// delete &data_weights_plain;
+		delete &data_weights_plain;
 	}
 
 
