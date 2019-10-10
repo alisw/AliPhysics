@@ -399,13 +399,14 @@ void AliFemtoCorrFctnDYDPhi::Finish()
   //mRatio->Draw();
 
 }
+
 //____________________________
 AliFemtoString AliFemtoCorrFctnDYDPhi::Report()
 {
   // create report
   AliFemtoString report = "TPC Ncls Correlation Function Report:\n";
-  report += Form("Number of entries in numerator:\t%E\n",fDPhiDYNumerator->GetEntries());
-  report += Form("Number of entries in denominator:\t%E\n",fDPhiDYDenominator->GetEntries());
+  report += Form("Number of entries in numerator:\t%E\n", fDPhiDYNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fDPhiDYDenominator->GetEntries());
   //  report += mCoulombWeight->Report();
 
   return report;
@@ -475,15 +476,14 @@ void AliFemtoCorrFctnDYDPhi::AddRealPair(AliFemtoPair* pair)
   if(fIfCorrectionHist)
     {
       if(fIfCorrectionHist == kPt){
-        Double_t val[] = {pt1,pt2,dphi,dy};
-        fPtCorrectionsNum->Fill(val);
+	Double_t val[] = {pt1,pt2,dphi,dy};
+	fPtCorrectionsNum->Fill(val);
       }
       if(fIfCorrectionHist == kY){
-        Double_t val[] = {y1,y2,dphi,dy};
-        fYCorrectionsNum->Fill(val);
+	Double_t val[] = {y1,y2,dphi,dy};
+	fYCorrectionsNum->Fill(val);
       }
     }
-
 }
 //____________________________
 void AliFemtoCorrFctnDYDPhi::AddMixedPair(AliFemtoPair* pair)
@@ -520,8 +520,8 @@ void AliFemtoCorrFctnDYDPhi::AddMixedPair(AliFemtoPair* pair)
 
   double dy = y1 - y2;
 
-  double pt1 = TMath::Hypot(px1, py1);
-  double pt2 = TMath::Hypot(px2, py2);
+   double pt1 = TMath::Hypot(px1, py1);
+   double pt2 = TMath::Hypot(px2, py2);
 //   double ptmin = pt1>pt2 ? pt2 : pt1;
 
 //   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
@@ -545,14 +545,15 @@ void AliFemtoCorrFctnDYDPhi::AddMixedPair(AliFemtoPair* pair)
   if(fIfCorrectionHist)
     {
       if(fIfCorrectionHist == kPt){
-        Double_t val[] = {pt1,pt2,dphi,dy};
-        fPtCorrectionsDen->Fill(val);
+	Double_t val[] = {pt1,pt2,dphi,dy};
+	fPtCorrectionsDen->Fill(val);
       }
       if(fIfCorrectionHist == kY){
-        Double_t val[] = {y1,y2,dphi,dy};
-        fYCorrectionsDen->Fill(val);
+	Double_t val[] = {y1,y2,dphi,dy};
+	fYCorrectionsDen->Fill(val);
       }
     }
+
 }
 
 
@@ -620,8 +621,8 @@ TList* AliFemtoCorrFctnDYDPhi::GetOutputList()
       tOutputList->Add(fYCorrectionsDen);
     }
   }
-  return tOutputList;
 
+  return tOutputList;
 }
 
 void AliFemtoCorrFctnDYDPhi::SetDoPtAnalysis(int do2d)
