@@ -1897,11 +1897,10 @@ const  Double_t upperLimit[]={
   Int_t totalValue=0;
 
   for(Int_t iPAR = 0; iPAR <= info.numPARs; iPAR++){
-    if(iPAR != info.numPARs){
-      hPARRun[iPAR] =new TH1C(Form("h%d_%llu", runNumber, info.PARGlobalBCs[iPAR]), Form("h%d_%llu", runNumber, info.PARGlobalBCs[iPAR]),19,0,19);
-    }else{
-      //hPARRun[iPAR] =new TH1C(Form("h%dp%d", runNumber,iPAR), Form("h%d", runNumber),19,0,19);
+    if(iPAR ==0){//iPAR=0 means before any PAR
       hPARRun[iPAR] =new TH1C(Form("h%d", runNumber), Form("h%d", runNumber),19,0,19);
+    }else{
+      hPARRun[iPAR] =new TH1C(Form("h%d_%llu", runNumber, (ULong64_t)info.PARGlobalBCs[iPAR-1]), Form("h%d_%llu", runNumber, (ULong64_t)info.PARGlobalBCs[iPAR-1]),19,0,19);
     }
     for(Int_t i=0;i<20;i++){
       minimumValue=10000;
@@ -1926,10 +1925,10 @@ const  Double_t upperLimit[]={
 	//hRun->SetBinContent(i,0);//correct it please
 	meanBC[j]=-1;
 	if(isPAR){
-      printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBCPAR[iPAR][j]->Integral(lowerLimit[i],upperLimit[i]));
-    }else{
-      printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBC[j]->Integral(lowerLimit[i],upperLimit[i]));
-    }
+	  printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBCPAR[iPAR][j]->Integral(lowerLimit[i],upperLimit[i]));
+	}else{
+	  printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBC[j]->Integral(lowerLimit[i],upperLimit[i]));
+	}
 	continue;
       } else {
 	fitParameter = f1->GetParameter(0);
