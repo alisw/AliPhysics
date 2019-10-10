@@ -107,6 +107,13 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
         TList*                  lsttrckvnthqu;
         //AliConversionPhotonCuts fConversionCuts;
         
+        TH2F*                   fhgetaphi1;
+        TH1F*                   fhgR1;
+        TH1F*                   fhgpt1;
+        TH2F*                   fhgetaphi5;
+        TH2F*                   fhgetaphi8;
+        TH2F*                   fhgetaphi9;
+        
         AliAnalysisTRDEfficiency(const AliAnalysisTRDEfficiency&); // not implemented
         AliAnalysisTRDEfficiency& operator=(const AliAnalysisTRDEfficiency&); // not implemented
 
