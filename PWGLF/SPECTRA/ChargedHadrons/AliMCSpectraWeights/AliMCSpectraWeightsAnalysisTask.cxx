@@ -137,6 +137,8 @@ void AliMCSpectraWeightsAnalysisTask::UserExec(Option_t* option) {
         Printf("ERROR: Could not receive inputHandler");
         return;
     }
+    //check if trigger mask is fine
+    if(!inputHandler->IsEventSelected() & fTriggerMask) return;
     AliPhysicsSelection* physicsSelection =
         static_cast<AliPhysicsSelection*>(inputHandler->GetEventSelection());
     if (!physicsSelection) {

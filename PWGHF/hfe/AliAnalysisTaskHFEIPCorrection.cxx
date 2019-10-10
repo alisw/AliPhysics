@@ -197,9 +197,10 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
 
     
     fRd = new TRandom3(0);
-    double xspline[10] = {0.15708, 0.471239, 0.785398, 1.09956, 1.41372, 1.72788, 2.04204, 2.35619, 2.67035, 2.98451};
-    double ysplinecorr[10] = {0.967768, 0.985385, 0.994534, 0.972478, 0.964526, 0.947392, 0.929229, 0.944621, 0.941785, 0.953983};
-    fSplineCorr = new TSpline3("fSplineCorr", xspline, ysplinecorr, 10, "b2e2");
+
+    double xspline[8] = {0.19635, 0.589049, 0.981748, 1.37445, 1.76715, 2.15984, 2.55254, 2.94524};
+    double ysplinecorr[8] = {0.941257, 0.930742, 0.950908, 0.980328, 0.991139, 0.936922, 0.915115, 0.932759};
+    fSplineCorr = new TSpline3("fSplineCorr", xspline, ysplinecorr, 8, "b2e2");
 
     fOutputContainer = new TObjArray(1);
     fOutputContainer->SetName(GetName());

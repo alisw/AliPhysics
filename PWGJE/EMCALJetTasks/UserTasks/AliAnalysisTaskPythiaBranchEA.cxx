@@ -32,6 +32,8 @@
 #include <TH2F.h>
 #include <TF1.h>
 #include <TGrid.h>
+#include <TFile.h>
+#include <TSystem.h>
 
 #include <AliAnalysisManager.h>
 #include <AliVEventHandler.h>
@@ -53,11 +55,17 @@ AliAnalysisTaskPythiaBranchEA::AliAnalysisTaskPythiaBranchEA() :
   AliAnalysisTaskSE(),
   fEventInitialized(false),
   fEvent(nullptr),
+  fRandom(0),
   fOutputCollectionName(""),
   fThermalParticlesArray(),
   fMinEta(-0.9),
   fMaxEta(0.9),
+  fPyFilePath(""),
+  fPyFileMask(""),
+  fPyFileName(""),
   fPyFile(""),
+  fNumber(1),
+  fNfiles(1000),
   fOutput(0),
   fHistManager(),
   fInput(0x0)
@@ -71,11 +79,17 @@ AliAnalysisTaskPythiaBranchEA::AliAnalysisTaskPythiaBranchEA(const char* name) :
   AliAnalysisTaskSE(name),
   fEventInitialized(false),
   fEvent(nullptr),
+  fRandom(0),
   fOutputCollectionName(""),
   fThermalParticlesArray(),
   fMinEta(-0.9),
   fMaxEta(0.9),
+  fPyFilePath(""),
+  fPyFileMask(""),
+  fPyFileName(""),
   fPyFile(""),
+  fNumber(1),
+  fNfiles(1000),
   fOutput(0),
   fHistManager(name),
   fInput(0x0)
@@ -127,6 +141,34 @@ void AliAnalysisTaskPythiaBranchEA::UserCreateOutputObjects()
 }
 
 /**
+ * This function will open new pythia text file
+ */
+void AliAnalysisTaskPythiaBranchEA::GetNewPythiaFile(){
+
+  if (fPyFilePath.BeginsWith("alien://")) {
+     TGrid::Connect("alien://");
+ 
+  }
+
+  for(Int_t k=0;k<100;k++){ //in case that some of the files are missing try other files
+     fNumber = fRandom.Integer(fNfiles); //0-999
+     fPyFileName = fPyFileMask;
+     fPyFileName.ReplaceAll("XXX",Form("%d",fNumber)); 
+     fPyFile = Form("%s/%s", fPyFilePath.Data(), fPyFileName.Data());
+     TFile::Cp(fPyFile.Data(), fPyFileName.Data());
+     fInput = fopen(fPyFileName.Data(),"r");
+     
+     if(fInput) break;
+  } 
+ 
+  if (!fInput) {
+    AliError(Form("Could not retrieve PYTHIA file %s!",fPyFileName.Data()));
+    return;
+  }
+} 
+
+
+/**
  * This function is executed automatically for the first event. Some extra initialization can be performed here.
  */
 void AliAnalysisTaskPythiaBranchEA::ExecOnce()
@@ -137,18 +179,11 @@ void AliAnalysisTaskPythiaBranchEA::ExecOnce()
     return;
   }
 
+  fRandom.SetSeed(0);
+  gRandom = &fRandom; // It seems this is necessary in order to use the TF1::GetRandom() function...
 
-  if (fPyFile.BeginsWith("alien://")) {
-    TGrid::Connect("alien://");
-  }
- 
-  fInput = fopen(fPyFile.Data(),"r");
- 
-  if (!fInput) {
-    AliError(Form("Could not retrieve PYTHIA file %s!",fPyFile.Data()));
-    return;
-  }
- 
+  GetNewPythiaFile();
+
   // Create a new collection during the first event
   CreateNewObjectBranch();
   
@@ -215,11 +250,7 @@ void AliAnalysisTaskPythiaBranchEA::Run()
   while(evtLoop){
 
      if(!fInput){
-        if (fPyFile.BeginsWith("alien://")) {
-          TGrid::Connect("alien://");
-        }
- 
-        fInput = fopen(fPyFile.Data(),"r");
+        GetNewPythiaFile();
      }
 
      if(fscanf(fInput,"%f %f %f", &pt, &eta, &phi) == EOF){
@@ -227,10 +258,12 @@ void AliAnalysisTaskPythiaBranchEA::Run()
         fclose(fInput);
         fInput=NULL;
 
+        gSystem->Exec(Form("rm %s", fPyFileName.Data()));        
+
         continue;
      }
 
-     if(eta > 900){
+     if(phi > 900){
         evtLoop=0;
         break;
      }else{
@@ -273,7 +306,8 @@ void AliAnalysisTaskPythiaBranchEA::FillHistograms()
  */
 AliAnalysisTaskPythiaBranchEA* AliAnalysisTaskPythiaBranchEA::AddTaskPythiaBranchEA(
   const char *outputCollectionName,
-  const char *pyfile,
+  const char *pyfilepath,
+  const char *pyfilemask,
   const char *suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -327,7 +361,8 @@ AliAnalysisTaskPythiaBranchEA* AliAnalysisTaskPythiaBranchEA::AddTaskPythiaBranc
   AliAnalysisTaskPythiaBranchEA* task = new AliAnalysisTaskPythiaBranchEA(name.Data());
 
   task->SetOutputCollectionName(outputCollectionName);
-  task->SetPythiaFile(pyfile);
+  task->SetPythiaFilePath(pyfilepath);
+  task->SetPythiaFileMask(pyfilemask);
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -347,3 +382,18 @@ AliAnalysisTaskPythiaBranchEA* AliAnalysisTaskPythiaBranchEA::AddTaskPythiaBranc
   
   return task;
 }
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/**
+ *  Terminate clean up
+ */
+void AliAnalysisTaskPythiaBranchEA::Terminate(Option_t *){
+
+  if(fInput){
+        fclose(fInput);
+        fInput=NULL;
+   }
+   gSystem->Exec(Form("rm %s", fPyFileName.Data()));        
+
+} 
+

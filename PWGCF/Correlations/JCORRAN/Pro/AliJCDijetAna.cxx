@@ -138,6 +138,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
                                 double lConstituentCut,
                                 double lLeadingJetCut,
                                 double lSubleadingJetCut,
+                                double lMinJetPt,
                                 double lDeltaPhiCut,
                                 double lmatchingR){
     fDebug = lDebug;
@@ -152,7 +153,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
 
     etaMaxCutForJet = lParticleEtaCut-lJetCone;
     etaMaxCutForKtJet = lParticleEtaCut-lktJetCone;
-    MinJetPt = 10.0; // Min Jet Pt cut to disregard low pt jets
+    MinJetPt = lMinJetPt; // Min Jet Pt cut to disregard low pt jets
     double const ghost_maxrap = lParticleEtaCut;
     unsigned int const repeat = 1; // default
     double const ghost_area   = 0.005; // ALICE=0.005 // default=0.01
@@ -564,6 +565,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
     double minR=0;
     double deltaRMatch=0;
     double ptTrue, ptDetMC;
+    double deltaRLL, deltaRLS, deltaRSL, deltaRSS;
     unsigned maxptIndex;
     bool bfound;
     std::vector<bool> bTrueJetMatch(Njets, false);
@@ -599,8 +601,6 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
                 maxptIndex = ujetDetMC;
                 deltaRMatch = deltaR;
                 bfound = true;
-                if(ujet==0 && ujetDetMC==0) bLeadingMatch   = true;
-                if(ujet==1 && ujetDetMC==1) bSubleadingMatch= true;
                 //cout << "found, detPt vs truePt: " << maxpt << " <> " << jets[iAcc][ujet].pt() << ", index: " << maxptIndex << endl;
             }
         }
@@ -667,6 +667,17 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
         }
         dijet = dijets.at(iAcc).at(0).at(0) + dijets.at(iAcc).at(0).at(1);
         if(anaDetMC->HasDijet()) {
+
+            // Check that leading and subleading jets match.
+            // It is also ok if leading and subleading jets change places in det level.
+            deltaRLL = DeltaR(dijets.at(iAcc).at(0).at(0),dijetsDetMC.at(iAcc).at(0).at(0)); //leading, leading
+            deltaRLS = DeltaR(dijets.at(iAcc).at(0).at(0),dijetsDetMC.at(iAcc).at(0).at(1)); //leading, subleading
+            deltaRSS = DeltaR(dijets.at(iAcc).at(0).at(1),dijetsDetMC.at(iAcc).at(0).at(1)); //subleading, subleading
+            deltaRSL = DeltaR(dijets.at(iAcc).at(0).at(1),dijetsDetMC.at(iAcc).at(0).at(0)); //subleading, leading
+
+            if(deltaRLL < matchingR || deltaRLS < matchingR) bLeadingMatch    = true;
+            if(deltaRSS < matchingR || deltaRSL < matchingR) bSubleadingMatch = true;
+
             if(fDebug>8) {
                 cout << "Det dijet" << endl;
                 cout << "leading jet(E, pt, phi, eta) =    " <<
@@ -716,24 +727,27 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
         }
         dijet = dijets.at(iAcc).at(1).at(0) + dijets.at(iAcc).at(1).at(1);
         if(anaDetMC->HasDeltaPhiDijet()) {
+        
+            // Leading jets are the same as without delta phi cut.
+            deltaRSS = DeltaR(dijets.at(iAcc).at(1).at(1),dijetsDetMC.at(iAcc).at(1).at(1)); //subleading, subleading
+            deltaRSL = DeltaR(dijets.at(iAcc).at(1).at(1),dijetsDetMC.at(iAcc).at(1).at(0)); //subleading, leading
+            if(deltaRSS < matchingR || deltaRSL < matchingR) bSubleadingMatchDeltaPhi = true;
+
             if(fDebug>8) {
                 cout << "Det dijet" << endl;
                 cout << "leading jet(E, pt, phi, eta) =    " <<
-                    "(" << dijetsDetMC.at(iAcc).at(0).at(0).E()   << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(0).pt()  << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(0).phi() << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(0).eta() << ")" << endl;
+                    "(" << dijetsDetMC.at(iAcc).at(1).at(0).E()   << ", "
+                    << dijetsDetMC.at(iAcc).at(1).at(0).pt()  << ", "
+                    << dijetsDetMC.at(iAcc).at(1).at(0).phi() << ", "
+                    << dijetsDetMC.at(iAcc).at(1).at(0).eta() << ")" << endl;
                 cout << "subleading jet(E, pt, phi, eta) = " <<
-                    "(" << dijetsDetMC.at(iAcc).at(0).at(1).E()   << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(1).pt()  << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(1).phi() << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(1).eta() << ")" << endl;
+                    "(" << dijetsDetMC.at(iAcc).at(1).at(1).E()   << ", "
+                    << dijetsDetMC.at(iAcc).at(1).at(1).pt()  << ", "
+                    << dijetsDetMC.at(iAcc).at(1).at(1).phi() << ", "
+                    << dijetsDetMC.at(iAcc).at(1).at(1).eta() << ")" << endl;
             }
             dijetDetMC = dijetsDetMC.at(iAcc).at(1).at(0) + dijetsDetMC.at(iAcc).at(1).at(1);
             // Check subleading jet match.
-            if(DeltaR(dijets.at(iAcc).at(1).at(1), dijetsDetMC.at(iAcc).at(1).at(1)) < matchingR) {
-                bSubleadingMatchDeltaPhi = true;
-            }
 
             if(bLeadingMatch && bSubleadingMatchDeltaPhi) {
                 fhistos->fh_dijetResponseDeltaPhiCut->Fill(dijetDetMC.m(), dijet.m());

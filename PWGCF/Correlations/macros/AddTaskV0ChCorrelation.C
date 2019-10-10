@@ -41,7 +41,7 @@ if (!mgr->GetInputEventHandler()) {
   task->SetMixingTracks(50000);
   //task->SetMixingTracks(10000);
   //task->SetPoolSize(200); 
-  task->SetPoolSize(200); 
+  task->SetPoolSize(500); 
  //--------------------------------Variable--------------------------------
   task->SetVtxCut(7.);
   task->SetVtxXMin(10e-5);
@@ -65,10 +65,10 @@ if (!mgr->GetInputEventHandler()) {
   task->SetK0sLifeTimeMax(20);
   task->SetLambdaLifeTimeMin(0);
   task->SetLambdaLifeTimeMax(25);
-  task->SetDCAV0DaughtersMax(1);
+  task->SetDCAV0DaughtersMax(0.8);
 
   task->SetCosPointingAngleMin(0.975);
-  task->SetLambdaCPA(0.993);
+  task->SetLambdaCPA(0.995);
   task->Set2DFiducialMin(5);
   task->SetV0DaughterTrackTPCCluster(70.);
   task->SetNCrossedRowsTPCfindable(0.8);
@@ -125,7 +125,7 @@ AliAnalysisDataContainer *coutput7
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
    
-    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/V0EfficiencyLoos0_10.root");
+    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/V0Efficiency50_90.root");
 
     if(!file) {
       printf("ERROR: efficiency file is not available!\n");

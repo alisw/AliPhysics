@@ -53,7 +53,7 @@
 #include "AliCentrality.h"
 
 #include "AliVertex.h"
-#include "AliMultSelection.h"
+//#include "AliMultSelection.h"
 
 
 #include "AliESDcascade.h"
@@ -386,7 +386,7 @@ void AliXiStarPbPb::XiStarInit()
     
     
     if(fMCcase) fEventsToMix = 0;
-    else fEventsToMix = 2; //5
+    else fEventsToMix = 1; //5
     
     fMultLimits[0]=0, fMultLimits[1]=1250, fMultLimits[2]=2500, fMultLimits[3]=3750, fMultLimits[4]=5000, fMultLimits[5]=6250, fMultLimits[6]=7500, fMultLimits[7]=8750, fMultLimits[8]=10000, fMultLimits[9]=13000, fMultLimits[10]=20000;
     
@@ -454,7 +454,7 @@ void AliXiStarPbPb::XiStarInit()
      fCutValues[6][8] = 3.0;
      fCutValues[7][9] = 0.9;
      fCutValues[8][10] = 0.8;
-     fCutValues[9][11] = 0.993; //Open CPA L
+     fCutValues[9][11] = 0.993;
      fCutValues[10][12] = 0.997;
      
      //systematic variation// tight
@@ -467,7 +467,7 @@ void AliXiStarPbPb::XiStarInit()
      fCutValues[17][9] = 0.7;
      fCutValues[18][10] = 0.7;
      fCutValues[19][11] = 0.998;
-     fCutValues[20][12] = 0.999; //Open CPA L and Xi
+     fCutValues[20][12] = 0.999; //
      
     
     
@@ -827,7 +827,7 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     
     
     // Cut study for CPA
-    TH2F *fXiMCCosPA_lambda = new TH2F("fXiMCCosPA_lambda","MC : Cosine pointing angle Lambda vs Xi pT",100,0,10,500,0.9,1.0);
+/*    TH2F *fXiMCCosPA_lambda = new TH2F("fXiMCCosPA_lambda","MC : Cosine pointing angle Lambda vs Xi pT",100,0,10,500,0.9,1.0);
     fOutputList->Add(fXiMCCosPA_lambda);
     
     TH2F *fXiMCCosPA_Xi = new TH2F("fXiMCCosPA_Xi","MC : Cosine pointing angle Xi vs Xi pT",100,0,10,500,0.9,1.0);
@@ -838,9 +838,9 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     
     TH2F *fXiStarMCCosPA_Xi = new TH2F("fXiStarMCCosPA_Xi","MC : Cosine pointing angle Xi vs Xi pT",100,0,10,500,0.9,1.0);
     fOutputList->Add(fXiStarMCCosPA_Xi);
-    
+ */   
     // Cut study for DCA
-    TH2F *fXiMCDCA_lambda = new TH2F("fXiMCDCA_lambda","MC : DCA Lambda vs Xi pT",100,0,10,200,0,2.0);
+ /*   TH2F *fXiMCDCA_lambda = new TH2F("fXiMCDCA_lambda","MC : DCA Lambda vs Xi pT",100,0,10,200,0,2.0);
     fOutputList->Add(fXiMCDCA_lambda);
     
     TH2F *fXiMCDCA_Xi = new TH2F("fXiMCDCA_Xi","MC : DCA Xi vs Xi pT",100,0,10,200,0,2.0);
@@ -851,7 +851,7 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     
     TH2F *fXiStarMCDCA_Xi = new TH2F("fXiStarMCDCA_Xi","MC : DCA Xi vs XiStar pT",100,0,10,200,0,2.0);
     fOutputList->Add(fXiStarMCDCA_Xi);
-    
+*/
     
     //
     
@@ -987,14 +987,26 @@ void AliXiStarPbPb::Exec(Option_t *)
     
     // ---- AliPIDResponse ---- //
     fPIDResponse = inputHandler->GetPIDResponse();
-    Float_t  centralityV0M = -100;
     
     //------------------------------------------------
     // Getting: Centrality
     //------------------------------------------------
     
+    Float_t  centralityV0M = -100;
+  //  AliMultSelection* MultSelection =0x0;
+  //  MultSelection = (AliMultSelection*)fESD->FindListObject("MultSelection");
+
     fCentrality = fESD->GetCentrality();
     centralityV0M = fCentrality->GetCentralityPercentile("V0M");
+   
+  /*  if (MultSelection) {
+        centralityV0M = MultSelection->GetMultiplicityPercentile("V0M");
+    } else {
+        AliInfo("Didn't find MultSelection!");
+        centralityV0M = 999.;
+    }*/
+    
+    
     ((TH1F*)fOutputList->FindObject("hCentrality"))->Fill(centralityV0M);
     
     
@@ -1570,11 +1582,8 @@ void AliXiStarPbPb::Exec(Option_t *)
         // MC associaton
         mcXiFilled = kFALSE;
         if(fMCcase ){
-            
             //MCXiD2esd = (TParticle*)mcstack->Particle(abs(bTrackXi->GetLabel()));
             MCXiD2esd = ((AliMCParticle*)mcstack->GetTrack(abs(bTrackXi->GetLabel())))->Particle();
-            
-            
             if(abs(MCXiD2esd->GetPdgCode())==kPionCode){
                 
                 //  MCLamD1esd = (TParticle*)mcstack->Particle(abs(pTrackXi->GetLabel()));
@@ -1602,13 +1611,10 @@ void AliXiStarPbPb::Exec(Option_t *)
                                         mcXiFilled = kTRUE;
                                         
                                         if(StandardXi){
-                                            ((TH2F*)fOutputList->FindObject("fXiMCDCA_lambda"))->Fill(xiPt,fDecayParameters[9]);
-                                            ((TH2F*)fOutputList->FindObject("fXiMCDCA_Xi"))->Fill(xiPt,fDecayParameters[10]);
-                                            ((TH2F*)fOutputList->FindObject("fXiMCCosPA_lambda"))->Fill(xiPt,fDecayParameters[11]);
-                                            ((TH2F*)fOutputList->FindObject("fXiMCCosPA_Xi"))->Fill(xiPt,fDecayParameters[12]);
-                                            
-                                            
-                                            
+                                         //   ((TH2F*)fOutputList->FindObject("fXiMCDCA_lambda"))->Fill(xiPt,fDecayParameters[9]);
+                                         //   ((TH2F*)fOutputList->FindObject("fXiMCDCA_Xi"))->Fill(xiPt,fDecayParameters[10]);
+                                         //   ((TH2F*)fOutputList->FindObject("fXiMCCosPA_lambda"))->Fill(xiPt,fDecayParameters[11]);
+                                         //   ((TH2F*)fOutputList->FindObject("fXiMCCosPA_Xi"))->Fill(xiPt,fDecayParameters[12]);
                                             
                                             
                                             if(Xicandidate->Charge() == -1){
@@ -1642,7 +1648,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         //////////////////////////////////////////////////////////
         // Reconstruct Xi(1530)
         for(Int_t EN=0; EN<fEventsToMix+1; EN++){// Event buffer loop
-            
+
             for(Int_t l=0; l<(fEvt+EN)->fNTracks; l++){// Present(EN=0) and Past(EN from 1 to fEventsToMix) event track loop
                 
                 if(EN==0) {
@@ -1650,6 +1656,8 @@ void AliXiStarPbPb::Exec(Option_t *)
                     if((fEvt+EN)->fTracks[l].fID == nTrackXi->GetID()) continue;
                     if((fEvt+EN)->fTracks[l].fID == bTrackXi->GetID()) continue;
                 }
+                
+                cout<<"fEvT == "<<fEvt<<",  EN == "<<EN<< endl;
                 
                 fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(xiCharge));
                 
@@ -1855,10 +1863,10 @@ void AliXiStarPbPb::Exec(Option_t *)
                                 if(abs(MCXiStaresd->GetPdgCode())==kXiStarCode) {
                                     
                                     ((TH1F*)fOutputList->FindObject("fXiStarYDistMCout"))->Fill(xiStarY);
-                                    ((TH2F*)fOutputList->FindObject("fXiStarMCDCA_lambda"))->Fill(xiStarPt,fDecayParameters[9]);
-                                    ((TH2F*)fOutputList->FindObject("fXiStarMCDCA_Xi"))->Fill(xiStarPt,fDecayParameters[10]);
-                                    ((TH2F*)fOutputList->FindObject("fXiStarMCCosPA_lambda"))->Fill(xiStarPt,fDecayParameters[11]);
-                                    ((TH2F*)fOutputList->FindObject("fXiStarMCCosPA_Xi"))->Fill(xiStarPt,fDecayParameters[12]);
+                                 //   ((TH2F*)fOutputList->FindObject("fXiStarMCDCA_lambda"))->Fill(xiStarPt,fDecayParameters[9]);
+                                 //   ((TH2F*)fOutputList->FindObject("fXiStarMCDCA_Xi"))->Fill(xiStarPt,fDecayParameters[10]);
+                                 //   ((TH2F*)fOutputList->FindObject("fXiStarMCCosPA_lambda"))->Fill(xiStarPt,fDecayParameters[11]);
+                                 //   ((TH2F*)fOutputList->FindObject("fXiStarMCCosPA_Xi"))->Fill(xiStarPt,fDecayParameters[12]);
                                     
                                     if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1) {
                                         CutVar[cv].fMCrecXiMinusPiPlus->Fill(xiStarPt, centralityV0M, xiStarMass);
@@ -1876,6 +1884,9 @@ void AliXiStarPbPb::Exec(Option_t *)
                 }// Cut Variation loop
             }// 3rd pion loop
         }// Event mixing loop
+    
+    
+    
     }// Xi loop
     
     

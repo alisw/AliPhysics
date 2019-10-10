@@ -157,6 +157,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t GetBDTVariableValues(AliConversionPhotonBase *gamma, AliVEvent *event, Float_t* values);
 
     // Cut Selection
+    Bool_t TrackIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
     Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
     Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
@@ -426,7 +427,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,29)
+    ClassDef(AliConversionPhotonCuts,30)
     /// \endcond
 };
 

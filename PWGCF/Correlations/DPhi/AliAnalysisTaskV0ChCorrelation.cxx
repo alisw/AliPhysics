@@ -1767,8 +1767,8 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       if(tr->Charge() == 0.) continue;
       if(!(IsGoodPrimaryTrack(tr))) continue;
 
-   //Bunch rejection trk
-  // if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
+   //Bunch rejection trk by trk
+   if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
 
       Double_t tPhi = tr->Phi();
       Double_t tPt = tr->Pt();
@@ -1904,9 +1904,9 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
 // reject bunch-off pile-up
-//  if(!fAnalysisMC){      
- //if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
-   //  }   
+  if(!fAnalysisMC){      
+ if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
+     }   
  
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
          ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
@@ -1943,7 +1943,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfAP"))->Fill(lPtArmV0, lAlphaV0);
       
       //--------------------check whether it is K0s/ Lambda/ AntiLambda candidates------------------------------
-      if(ctK &&lCPA > 0.977 && lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0) && xyn > 0.1 && xyp > 0.1 && isPosPionForTPC  && isNegPionForTPC && (massK0s > 0.40 )&& (massK0s < 0.58)){
+      if(ctK &&lCPA > 0.98 && lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0) && xyn > 0.1 && xyp > 0.1 && isPosPionForTPC  && isNegPionForTPC && (massK0s > 0.40 )&& (massK0s < 0.58)){
         selectedK0s->Add(v0);
         Double_t spK0s[4] = {massK0s, lPt, lCent, lPVz};
         if(fEffCorr){
@@ -1973,7 +1973,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
     
       // check whether it is Lambda candidates
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.23 && xyp > 0.1 && isPosProtonForTPC && isNegPionForTPC && (massLambda > 1.07) && (massLambda < 1.15)){
+      if(ctL && lCPA > fLambdaCPA && xyn > 0.25 && xyp > 0.1 && isPosProtonForTPC && isNegPionForTPC && (massLambda > 1.07) && (massLambda < 1.15)){
         selectedLambda->Add(v0);
         Double_t spLambda[4] = {massLambda, lPt, lCent, lPVz};
         if(fEffCorr){
@@ -2014,7 +2014,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
 
     // check whether it is AntiLambda candidates   
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.1 && xyp > 0.23 && isPosPionForTPC && isNegProtonForTPC && (massAntiLambda > 1.07) && (massAntiLambda < 1.15)){
+      if(ctL && lCPA > fLambdaCPA && xyn > 0.1 && xyp > 0.25 && isPosPionForTPC && isNegProtonForTPC && (massAntiLambda > 1.07) && (massAntiLambda < 1.15)){
         selectedAntiLambda->Add(v0);
         Double_t spAntiLambda[4] = {massAntiLambda, lPt, lCent, lPVz};
         if(fEffCorr){

@@ -90,7 +90,9 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         static TH1D*           CreateLogHist(const char* name) { return AlidNdPtTools::CreateLogHist(name); }
         
         static AliAnalysisTaskMKBase* AddTaskMKBase(const char* name = "TaskMKBase", const char* outfile = 0);
-
+        enum CentralityEstimator {kV0M=0, kCL0, kCL1, kV0Mplus05, kV0Mplus10, kV0Mminus05, kV0Mminus10, kSPDClustersCorr, kSPDTracklets};
+        void                   SetCentralityEstimator(CentralityEstimator _est) {fCentralityEstimator=_est;}
+        CentralityEstimator    GetCentralityEstimator() const {return fCentralityEstimator;}
     protected:
         
         virtual void          Log(const char* name) { Log(fLogHist,name); }        
@@ -330,8 +332,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         TH1D*                           fTrigInfoSelected;      //->  all the trigger strings of selected events
         TH1D*                           fTrigHist;              //->  AliVEvent trigger classes
         TH1D*                           fTrigHistSelected;      //->  AliVEvent trigger classes of selected events    
-
-    private:
+        CentralityEstimator             fCentralityEstimator;
+private:
         AliAnalysisTaskMKBase(const AliAnalysisTaskMKBase&); // not implemented
         AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
         

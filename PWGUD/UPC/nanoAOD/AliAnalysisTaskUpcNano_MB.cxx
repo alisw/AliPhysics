@@ -157,7 +157,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   fTrackCutsBit0 = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   fTrackCutsBit0->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
   
   fTrackCutsBit1 = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kFALSE,kTRUE);
   
@@ -194,6 +194,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
   fTreeJPsi ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
   fTreeJPsi ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
+  fTreeJPsi ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[6]/F");
+  
   if(isMC){
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
 	}
@@ -221,6 +223,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
   fTreePsi2s ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
   fTreePsi2s ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
+  fTreePsi2s ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[4]/F");
   if(isMC){ 
     fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
     }
@@ -513,6 +516,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	  crossedFO[2] = trk->GetITSModuleIndex(6);
 	  crossedFO[3] = trk->GetITSModuleIndex(7);
 	  SetCrossed(crossedFO, fFOCrossedChips);
+	  if(trk->GetInnerParam())fTrackLenght[iTrack] = trk->GetLengthInActiveZone(1, 2.0, 220, fEvent->GetMagneticField());
+	  else fTrackLenght[iTrack] = trk->GetLengthInActiveZone(0, 2.0, 220, fEvent->GetMagneticField());
 	  }
 	
 	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexALL[iTrack]));
@@ -601,6 +606,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	  crossedFO[2] = trk->GetITSModuleIndex(6);
 	  crossedFO[3] = trk->GetITSModuleIndex(7);
 	  SetCrossed(crossedFO, fFOCrossedChips);
+	  fTrackLenght[iTrack] = trk->GetLengthInActiveZone(1, 1.5, 220, fEvent->GetMagneticField());
+	  fTrackLenght[iTrack+2] = trk->GetLengthInActiveZone(1, 2.0, 220, fEvent->GetMagneticField());
+	  fTrackLenght[iTrack+4] = trk->GetLengthInActiveZone(1, 2.5, 220, fEvent->GetMagneticField());
 	  }
 	  
     	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));

@@ -53,6 +53,7 @@ class AliJCDijetAna : public TObject
                          double lConstituentCut,
                          double lLeadingJetCut,
                          double lSubleadingJetCut,
+                         double lMinJetPt,
                          double lDeltaPhiCut,
                          double lmatchingR);
 

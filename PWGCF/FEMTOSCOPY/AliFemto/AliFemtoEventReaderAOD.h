@@ -181,7 +181,7 @@ protected:
                                             );
   virtual AliFemtoV0 *CopyAODtoFemtoV0(AliAODv0 *tAODv0);
   virtual AliFemtoXi *CopyAODtoFemtoXi(AliAODcascade *tAODxi);
-  virtual void CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack);
+  virtual void CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack);
 
   int            fNumberofEvent;    ///< number of Events in AOD file
   int            fCurEvent;         ///< number of current event

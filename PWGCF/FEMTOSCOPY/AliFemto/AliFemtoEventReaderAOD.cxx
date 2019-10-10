@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <memory>
 #include <map>
 
 
@@ -646,7 +647,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
     tEvent->SetNormalizedMult(norm_mult);
 
-    AliFemtoTrack *trackCopy = CopyAODtoFemtoTrack(aodtrack);
+    std::unique_ptr<AliFemtoTrack> trackCopy(CopyAODtoFemtoTrack(aodtrack));
 
     trackCopy->SetMultiplicity(norm_mult);
     trackCopy->SetZvtx(fV1[2]);
@@ -655,71 +656,44 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     //  const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 
     // For TPC Only tracks we have to copy PID information from corresponding global tracks
-    AliAODTrack *aodtrackpid;
-    if(fFilterBit == (1 << 7) || fFilterMask == 128){
-      const Int_t pid_track_id = labels[-1 - fEvent->GetTrack(i)->GetID()];
-      aodtrackpid = static_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
-      assert(aodtrackpid && "Not a standard AOD");
-    }
+    const Int_t pid_track_id = (fFilterBit == (1 << 7) || fFilterMask == 128)
+                             ? labels[-1 - fEvent->GetTrack(i)->GetID()]
+                             : i;
+
+    const auto *aodtrackpid = static_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
+    assert(aodtrackpid && "Not a standard AOD");
 
     //Pile-up removal
     if (fTrackPileUpRemoval) {
       //method which checks if track
       //have at least 1 hit in ITS or TOF.
       bool passTrackPileUp = false;
-      //does tof timing exist for our track?
 
-      if(fFilterBit == (1 << 7) || fFilterMask == 128){
+      // does tof timing exist for our track?
+      if (aodtrackpid->GetTOFBunchCrossing() == 0) {
+        passTrackPileUp = true;
+      }
 
-   	   if (aodtrackpid->GetTOFBunchCrossing() == 0) passTrackPileUp = true;
-           //check ITS refit
-     	    if (!(aodtrackpid->GetStatus() & AliESDtrack::kITSrefit)) {
-               delete trackCopy;
-               continue;
-	    }
+      // check ITS refit
+      if (!(aodtrackpid->GetStatus() & AliESDtrack::kITSrefit)) {
+        continue;
+      }
 
-      	   //loop over the 4 ITS Layrs and check for a hit!
-      	   for (int i = 0; i < 2; ++i) {
-               //we use layers 0, 1 /OR/ 0, 1, 4, 5
-               // if(i==2 || i==3) i+=2;
-               if (aodtrackpid->HasPointOnITSLayer(i)) passTrackPileUp = true;
-      	   }
+      //loop over the 4 ITS Layrs and check for a hit!
+      for (int i = 0; i < 2; ++i) {
+        //we use layers 0, 1 /OR/ 0, 1, 4, 5
+        // if(i==2 || i==3) i+=2;
+        if (aodtrackpid->HasPointOnITSLayer(i)) {
+          passTrackPileUp = true;
+        }
+      }
 
-      	   if (!passTrackPileUp){
-               delete trackCopy;
-	       continue;
-	   }
-
-       }
-
-       else{
-
-   	   if (aodtrack->GetTOFBunchCrossing() == 0) passTrackPileUp = true;
-           //check ITS refit
-     	    if (!(aodtrack->GetStatus() & AliESDtrack::kITSrefit)){
-               delete trackCopy;
-               continue;
-            }
-      	   //loop over the 4 ITS Layrs and check for a hit!
-      	   for (int i = 0; i < 2; ++i) {
-        	//we use layers 0, 1 /OR/ 0, 1, 4, 5
-        	// if(i==2 || i==3) i+=2;
-        	if (aodtrack->HasPointOnITSLayer(i)) passTrackPileUp = true;
-      	   }
-      	   if (!passTrackPileUp) {
-               delete trackCopy;
-	       continue;
-           }
-
-       }
-
+      if (!passTrackPileUp) {
+        continue;
+      }
     }
 
-    if(fFilterBit == (1 << 7) || fFilterMask == 128)
-        CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
-    else
-	CopyPIDtoFemtoTrack(aodtrack, trackCopy);
-
+    CopyPIDtoFemtoTrack(aodtrackpid, trackCopy.get());
 
     if (mcP) {
       // Fill the hidden information with the simulated data
@@ -896,15 +870,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       /*****************************************************/
 
       if (trackAccept == true && ptrue > 0) {
-        tEvent->TrackCollection()->push_back(trackCopy); //adding track to analysis
+        tEvent->TrackCollection()->push_back(trackCopy.release()); //adding track to analysis
         realnofTracks++;                                 //real number of tracks
       } else {
         // cout<<"bad track : AOD REader pdg cod"<<pdg<<" ptrue "<<ptrue<<endl;
-        delete trackCopy;
       }
       //Special MC analysis for pi,K,p,e slected by PDG code <--
     } else {
-      tEvent->TrackCollection()->push_back(trackCopy); // Adding track to analysis
+      tEvent->TrackCollection()->push_back(trackCopy.release()); // Adding track to analysis
       realnofTracks++;                                 // Real number of tracks
     }
   }
@@ -992,7 +965,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         }
       }
 
-      AliFemtoV0 *trackCopyV0 = CopyAODtoFemtoV0(aodv0);
+      std::unique_ptr<AliFemtoV0> trackCopyV0(CopyAODtoFemtoV0(aodv0));
       trackCopyV0->SetMultiplicity(norm_mult);
       trackCopyV0->SetZvtx(fV1[2]);
 
@@ -1062,7 +1035,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
           }
         }
       }
-      tEvent->V0Collection()->push_back(trackCopyV0);
+      tEvent->V0Collection()->push_back(trackCopyV0.release());
       count_pass++;
     }
   }
@@ -1134,7 +1107,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         }
       }
 
-      AliFemtoXi *trackCopyXi = CopyAODtoFemtoXi(aodxi);
+      std::unique_ptr<AliFemtoXi> trackCopyXi(CopyAODtoFemtoXi(aodxi));
 
       //TODO for now, in AliFemtoHiddenInfo, consider V0 as positive daughter and bachelor pion as negative daughter
       //Methods will either be added to AliFemtoHiddenInfo to handle the Cascade case, or a new class will be constructed
@@ -1220,7 +1193,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         }
       }
 
-      tEvent->XiCollection()->push_back(trackCopyXi);
+      tEvent->XiCollection()->push_back(trackCopyXi.release());
       count_pass++;
     }
   }
@@ -2092,7 +2065,7 @@ AliAODMCParticle *AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
   return nullptr;
 }
 
-void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack)
+void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack)
 {
   // A cache which maps vertices to the number of tracks used to determine the vertex
   // Added due to slow calculation in AliAODVertex::GetNContributors - if that changes, remove this.
