@@ -169,16 +169,27 @@ bool debug = true;
 
   // #########################################################
   // #########################################################
-  // Adding cutsettings
-  TObjArray*  arrNames=names.Tokenize(";");
+  // Adding primary electron cutsettings
+  TObjArray*  arrNames=names_Prim_Cuts.Tokenize(";");
   const Int_t nDie=arrNames->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-    task->AddTrackCuts(filter);
+    task->AddTrackCuts_primary(filter);
     DoAdditionalWork(task);
   }
+  // Adding secondary electron cutsettings
+  TObjArray*  arrNames=names_Sec_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_secondary(filter);
+    DoAdditionalWork(task);
+  }
+
 
 
   mgr->AddTask(task);

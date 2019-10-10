@@ -66,7 +66,8 @@ AliAnalysisTaskEtaReconstruction::~AliAnalysisTaskEtaReconstruction(){
 
 // ############################################################################
 // ############################################################################
-AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysisTaskSE(), fEventFilter(0x0), fdebug(false)
+AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysisTaskSE(), fEventFilter(0x0)
+                                                                              , fdebug(false), fRecNegPart_PrimAndSec(), fRecPosPart_PrimAndSec()
                                                                               , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
                                                                               , fOutputList(0x0), fSingleElectronList(0x0), fPairList(0x0), fFourPairList(0x0), fResolutionList(0x0)
                                                                               , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
@@ -79,7 +80,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
                                                                               , fSingleLegMCSignal(), fPairMCSignal(), fFourPairMCSignal(), fDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts(), fUsedVars(0x0)
+                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
@@ -87,7 +88,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fHistGenPosPart(), fHistGenNegPart(), fHistGenSmearedPosPart(), fHistGenSmearedNegPart(), fHistRecPosPart(), fHistRecNegPart()
                                                                               , fHistGenPair(), fHistGenFourPair(), fHistGenSmearedPair(), fHistGenSmearedFourPair(), fHistRecPair(), fHistRecFourPair(), fHistGenPair_ULSandLS(), fHistGenFourPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistGenSmearedFourPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fHistRecFourPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPair(), fTHnSparseRecLegsFromPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99)
                                                                               , fDoPairing(false), fDoFourPairing(false), fDoULSandLS(false), fDeactivateLS(false)
-                                                                              , fGenNegPart(), fGenPosPart(), fRecNegPart(), fRecPosPart()
+                                                                              , fGenNegPart(), fGenPosPart(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
                                                                               fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
@@ -98,7 +99,8 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
 
 // ############################################################################
 // ############################################################################
-AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * name) : AliAnalysisTaskSE(name), fEventFilter(0x0), fdebug(false)
+AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * name) : AliAnalysisTaskSE(name), fEventFilter(0x0)
+                                                                              , fdebug(false), fRecNegPart_PrimAndSec(), fRecPosPart_PrimAndSec()
                                                                               , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
                                                                               , fOutputList(0x0), fSingleElectronList(0x0), fPairList(0x0), fFourPairList(0x0), fResolutionList(0x0)
                                                                               , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
@@ -111,7 +113,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
                                                                               , fSingleLegMCSignal(), fPairMCSignal(), fFourPairMCSignal(), fDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts(), fUsedVars(0x0)
+                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
@@ -119,7 +121,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fHistGenPosPart(), fHistGenNegPart(), fHistGenSmearedPosPart(), fHistGenSmearedNegPart(), fHistRecPosPart(), fHistRecNegPart()
                                                                               , fHistGenPair(), fHistGenFourPair(), fHistGenSmearedPair(), fHistGenSmearedFourPair(), fHistRecPair(), fHistRecFourPair(), fHistGenPair_ULSandLS(), fHistGenFourPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistGenSmearedFourPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fHistRecFourPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPair(), fTHnSparseRecLegsFromPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99)
                                                                               , fDoPairing(false), fDoFourPairing(false), fDoULSandLS(false), fDeactivateLS(false)
-                                                                              , fGenNegPart(), fGenPosPart(), fRecNegPart(), fRecPosPart()
+                                                                              , fGenNegPart(), fGenPosPart(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
                                                                               fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
@@ -143,6 +145,7 @@ void AliAnalysisTaskEtaReconstruction::Terminate(Option_t* option){
 // ############################################################################
 // ############################################################################
 void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
+  gRandom->SetSeed(2);  // Seed in order to proove consistance of code durig changes. Disables the randomness of smearing. Comment out for normal calculation
   fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kP, kTRUE);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kPIn, kTRUE);
@@ -338,9 +341,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
       fSingleElectronList->Add(GeneratedSmeared);
 
       // Generated reconstructed lists for every cutsetting one list and every MCsignal 2 histograms with pos and neg charge
-      for (unsigned int list_i = 0; list_i < fTrackCuts.size(); ++list_i){
+      for (unsigned int list_i = 0; list_i < fTrackCuts_primary.size(); ++list_i){
         TList* list = new TList();
-        list->SetName(fTrackCuts.at(list_i)->GetName());
+        list->SetName(fTrackCuts_primary.at(list_i)->GetName());
         list->SetOwner();
 
         for (unsigned int i = 0; i < fSingleLegMCSignal.size(); ++i){
@@ -359,9 +362,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fSingleElectronList->Add(list);
       }
       if (fDoGenSmearing == kTRUE){
-        for (unsigned int list_i = 0; list_i < fTrackCuts.size(); ++list_i){
+        for (unsigned int list_i = 0; list_i < fTrackCuts_primary.size(); ++list_i){
           TList* list = new TList();
-          std::string gen_smeared_name = fTrackCuts.at(list_i)->GetName();
+          std::string gen_smeared_name = fTrackCuts_primary.at(list_i)->GetName();
           gen_smeared_name += "_gen_smeared";
           list->SetName(gen_smeared_name.c_str());
           list->SetOwner();
@@ -468,9 +471,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fPairList->Add(GeneratedSmearedPairs);
 
         // Generated reconstructed lists for every cutsetting one list and every MCsignal 1 histogram
-        for (unsigned int list_i = 0; list_i < fTrackCuts.size(); ++list_i){
+        for (unsigned int list_i = 0; list_i < fTrackCuts_primary.size(); ++list_i){
           TList* list = new TList();
-          list->SetName(fTrackCuts.at(list_i)->GetName());
+          list->SetName(fTrackCuts_primary.at(list_i)->GetName());
           list->SetOwner();
 
           for (unsigned int i = 0; i < fPairMCSignal.size(); ++i){
@@ -646,9 +649,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fFourPairList->Add(GeneratedSmearedFourPairs);
 
         // Generated reconstructed lists for every cutsetting one list and every MCsignal 1 histogram
-        for (unsigned int list_i = 0; list_i < fTrackCuts.size(); ++list_i){
+        for (unsigned int list_i = 0; list_i < fTrackCuts_primary.size(); ++list_i){
           TList* list = new TList();
-          list->SetName(fTrackCuts.at(list_i)->GetName());
+          list->SetName(fTrackCuts_primary.at(list_i)->GetName());
           list->SetOwner();
 
           for (unsigned int i = 0; i < fFourPairMCSignal.size(); i+=2){
@@ -694,8 +697,13 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
   fGenNegPart.clear();
   fGenPosPart.clear();
-  fRecNegPart.clear();
-  fRecPosPart.clear();
+  fRecNegPart_primary.clear();
+  fRecPosPart_primary.clear();
+  fRecNegPart_secondary.clear();
+  fRecPosPart_secondary.clear();
+  fRecNegPart_PrimAndSec.clear();
+  fRecPosPart_PrimAndSec.clear();
+
 
   // ##########################################################
   // Set MC event
@@ -900,7 +908,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     }
 
     if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge <  0) fGenNegPart.push_back(part); // store particles for later pairing
-    else if ((fDoPairing == true || fDoFourPairing == true) && part.fCharge >  0) fGenPosPart.push_back(part); // store particles for later pairing
+    if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge >  0) fGenPosPart.push_back(part); // store particles for later pairing
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
   }// end of MC track loop
 
@@ -940,26 +948,36 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // if (!CheckGenerator(label, fGeneratorHashs)) continue;
 
     // ##########################################################
-    // Check if particle is passing selection cuts
-    std::vector<bool> selected(fTrackCuts.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
-    for (UInt_t iCut=0; iCut<fTrackCuts.size(); ++iCut){ // loop over all specified cutInstances
-      UInt_t selectedMask=( 1 << fTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
+    // Check if particle is passing primary selection cuts
+    std::vector<bool> selected_primary(fTrackCuts_primary.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+    for (UInt_t iCut=0; iCut<fTrackCuts_primary.size(); ++iCut){ // loop over all specified cutInstances
+      UInt_t selectedMask=( 1 << fTrackCuts_primary.at(iCut)->GetCuts()->GetEntries())-1;
       // cutting logic taken from AliDielectron::FillTrackArrays()
       // apply track cuts
-      UInt_t cutMask = fTrackCuts.at(iCut)->IsSelected(track);
-      if (cutMask == selectedMask) {selected[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
+      UInt_t cutMask = fTrackCuts_primary.at(iCut)->IsSelected(track);
+      if (cutMask == selectedMask) {selected_primary[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
+    }
+    // Check if particle is passing secondary selection cuts
+    std::vector<bool> selected_secondary(fTrackCuts_secondary.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+    for (UInt_t iCut=0; iCut<fTrackCuts_secondary.size(); ++iCut){ // loop over all specified cutInstances
+      UInt_t selectedMask=( 1 << fTrackCuts_secondary.at(iCut)->GetCuts()->GetEntries())-1;
+      // cutting logic taken from AliDielectron::FillTrackArrays()
+      // apply track cuts
+      UInt_t cutMask = fTrackCuts_secondary.at(iCut)->IsSelected(track);
+      if (cutMask == selectedMask) {selected_secondary[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
     }
 
     // ##########################################################
     // check if at least one is selected by cuts otherwise skip this particle
-    if (CheckIfOneIsTrue(selected) == kFALSE) continue;
+    if (CheckIfOneIsTrue(selected_primary) == kFALSE && CheckIfOneIsTrue(selected_secondary) == kFALSE) continue;
 
     // ##########################################################
     // Create summary particle from track info
     int motherID = TMath::Abs(fMC->GetTrack(abslabel)->GetMother());
     Particle part  = CreateParticle(track);
     part.isMCSignal = mcSignal_acc;
-    part.isReconstructed = selected;
+    part.isReconstructed_primary = selected_primary;
+    part.isReconstructed_secondary = selected_secondary;
     part.SetTrackID(iTracks);
     part.SetMotherID(motherID);
     part.SetULSSignalPair(generatorForULSSignal);
@@ -969,8 +987,14 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     CheckIfFromMotherWithDielectronAsDaughter(part);
 
     // ##########################################################
-    if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge <  0) fRecNegPart.push_back(part);
-    else if ((fDoPairing == true || fDoFourPairing == true) && part.fCharge >  0) fRecPosPart.push_back(part);
+    if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge <  0 && CheckIfOneIsTrue(selected_primary) == kTRUE /*&& CheckIfOneIsTrue(selected_secondary) == kFALSE*/) fRecNegPart_primary.push_back(part);
+    if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge >  0 && CheckIfOneIsTrue(selected_primary) == kTRUE /*&& CheckIfOneIsTrue(selected_secondary) == kFALSE*/) fRecPosPart_primary.push_back(part);
+    if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge <  0 && CheckIfOneIsTrue(selected_secondary) == kTRUE /*&& CheckIfOneIsTrue(selected_primary) == kFALSE*/) fRecNegPart_secondary.push_back(part);
+    if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge >  0 && CheckIfOneIsTrue(selected_secondary) == kTRUE /*&& CheckIfOneIsTrue(selected_primary) == kFALSE*/) fRecPosPart_secondary.push_back(part);
+                                                                                if (fdebug) {
+                                                                                  if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge < 0 && CheckIfOneIsTrue(selected_primary) == kTRUE && CheckIfOneIsTrue(selected_secondary) == kTRUE) fRecNegPart_PrimAndSec.push_back(part);
+                                                                                  if      ((fDoPairing == true || fDoFourPairing == true) && part.fCharge > 0 && CheckIfOneIsTrue(selected_primary) == kTRUE && CheckIfOneIsTrue(selected_secondary) == kTRUE) fRecPosPart_PrimAndSec.push_back(part);
+                                                                                }
 
     if (fDoGenSmearing == true && fArrResoPt){
       AliVParticle* genTrack = fMC->GetTrack(abslabel);
@@ -992,9 +1016,9 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // ##########################################################
     // Filling generated particle histograms according to MCSignals
     for (unsigned int i = 0; i < part.isMCSignal.size(); ++i){
-      for (unsigned int j = 0; j < part.isReconstructed.size(); ++j){
+      for (unsigned int j = 0; j < part.isReconstructed_primary.size(); ++j){
         if (part.isMCSignal[i] == kTRUE) {
-          if (part.isReconstructed[j] == kTRUE){
+          if (part.isReconstructed_primary[j] == kTRUE){
             if      (part.fCharge < 0) {
               dynamic_cast<TH3D*>(fHistRecNegPart.at(j * part.isMCSignal.size() + i))->Fill(part.fPt, part.fEta, part.fPhi, centralityWeight);
             }
@@ -1003,10 +1027,10 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
             }
             if (fDoGenSmearing == true && fArrResoPt){
               if      (part.fCharge < 0) {
-                dynamic_cast<TH3D*>(fHistRecNegPart.at(j * part.isMCSignal.size() + i + part.isMCSignal.size() * part.isReconstructed.size()))->Fill(part.fPt_smeared, part.fEta_smeared, part.fPhi_smeared, centralityWeight);
+                dynamic_cast<TH3D*>(fHistRecNegPart.at(j * part.isMCSignal.size() + i + part.isMCSignal.size() * part.isReconstructed_primary.size()))->Fill(part.fPt_smeared, part.fEta_smeared, part.fPhi_smeared, centralityWeight);
               }
               else if (part.fCharge > 0) {
-                dynamic_cast<TH3D*>(fHistRecPosPart.at(j * part.isMCSignal.size() + i + part.isMCSignal.size() * part.isReconstructed.size()))->Fill(part.fPt_smeared, part.fEta_smeared, part.fPhi_smeared, centralityWeight);
+                dynamic_cast<TH3D*>(fHistRecPosPart.at(j * part.isMCSignal.size() + i + part.isMCSignal.size() * part.isReconstructed_primary.size()))->Fill(part.fPt_smeared, part.fEta_smeared, part.fPhi_smeared, centralityWeight);
               }
 
             }
@@ -1018,9 +1042,11 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
     // ##########################################################
     // Fill support histograms with first cutsetting and first mcsignal
-    if(part.isMCSignal[fSupportMCSignal] == true && part.isReconstructed[fSupportCutsetting] == kTRUE){
+    if(part.isMCSignal[fSupportMCSignal] == true && part.isReconstructed_primary[fSupportCutsetting] == kTRUE){
 
       AliVParticle* mcPart1 = fMC->GetTrack(abslabel);
+
+
 
       FillTrackHistograms(track, mcPart1); // Fill support histograms
 
@@ -1353,27 +1379,27 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // ##########################################################
     // ##########################################################
     // Fill reconstructed pairs
-    for (unsigned int neg_i = 0; neg_i < fRecNegPart.size(); ++neg_i){
-      for (unsigned int pos_i = 0; pos_i < fRecPosPart.size(); ++pos_i){
-        AliVParticle* track1  = fEvent->GetTrack(fRecNegPart[neg_i].GetTrackID());
-        AliVParticle* track2  = fEvent->GetTrack(fRecPosPart[pos_i].GetTrackID());
+    for (unsigned int neg_i = 0; neg_i < fRecNegPart_primary.size(); ++neg_i){
+      for (unsigned int pos_i = 0; pos_i < fRecPosPart_primary.size(); ++pos_i){
+        AliVParticle* track1  = fEvent->GetTrack(fRecNegPart_primary[neg_i].GetTrackID());
+        AliVParticle* track2  = fEvent->GetTrack(fRecPosPart_primary[pos_i].GetTrackID());
 
-        // if (fDoULSandLS && fRecNegPart[neg_i].GetULSSignalPair() && fRecPosPart[pos_i].GetULSSignalPair()){
+        // if (fDoULSandLS && fRecNegPart_primary[neg_i].GetULSSignalPair() && fRecPosPart_primary[pos_i].GetULSSignalPair()){
         //   // Calculated for single leg signals unlike sign
         //   TLorentzVector Lvec1;
         //   TLorentzVector Lvec2;
-        //   Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt, fRecNegPart[neg_i].fEta, fRecNegPart[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-        //   Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt, fRecPosPart[pos_i].fEta, fRecPosPart[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+        //   Lvec1.SetPtEtaPhiM(fRecNegPart_primary[neg_i].fPt, fRecNegPart_primary[neg_i].fEta, fRecNegPart_primary[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+        //   Lvec2.SetPtEtaPhiM(fRecPosPart_primary[pos_i].fPt, fRecPosPart_primary[pos_i].fEta, fRecPosPart_primary[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
         //   TLorentzVector LvecM = Lvec1 + Lvec2;
         //   double mass = LvecM.M();
         //   double pairpt = LvecM.Pt();
         //
-        //   for (unsigned int i = 0; i < fRecNegPart[neg_i].isMCSignal.size(); ++i){
-        //     // if (fRecNegPart[neg_i].isMCSignal[i] == kTRUE && fRecPosPart[pos_i].isMCSignal[i] == kTRUE){
-        //     if (fRecNegPart[neg_i].isMCSignal[i] == true && fRecPosPart[pos_i].isMCSignal[i] == true &&
-        //         fRecNegPart[neg_i].DielectronPairFromSameMother[i] == false && fRecPosPart[pos_i].DielectronPairFromSameMother[i] == false){
-        //       for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
-        //         if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
+        //   for (unsigned int i = 0; i < fRecNegPart_primary[neg_i].isMCSignal.size(); ++i){
+        //     // if (fRecNegPart_primary[neg_i].isMCSignal[i] == kTRUE && fRecPosPart_primary[pos_i].isMCSignal[i] == kTRUE){
+        //     if (fRecNegPart_primary[neg_i].isMCSignal[i] == true && fRecPosPart_primary[pos_i].isMCSignal[i] == true &&
+        //         fRecNegPart_primary[neg_i].DielectronPairFromSameMother[i] == false && fRecPosPart_primary[pos_i].DielectronPairFromSameMother[i] == false){
+        //       for (unsigned int j = 0; j < fRecNegPart_primary[neg_i].isReconstructed_primary.size(); ++j){
+        //         if (fRecNegPart_primary[neg_i].isReconstructed_primary[j] == kTRUE && fRecPosPart_primary[pos_i].isReconstructed_primary[j] == kTRUE){
         //           if (!fDeactivateLS) {
         //             fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i]->Fill(mass, pairpt, centralityWeight);
         //           }
@@ -1387,7 +1413,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
         // } // end of ULS loops
 
         // Check if electrons are from MCSignal Generator
-        if (!fRecPosPart[pos_i].GetMCSignalPair() || !fRecNegPart[neg_i].GetMCSignalPair()) continue;
+        if (!fRecPosPart_primary[pos_i].GetMCSignalPair() || !fRecNegPart_primary[neg_i].GetMCSignalPair()) continue;
 
         // Apply MC signals
         std::vector<Bool_t> mcSignal_acc(fPairMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
@@ -1412,9 +1438,9 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
         double pairpt = LvecM.Pt();
         double weight = 1.;
         if (fCocktailFile) {
-          if (fRecNegPart[neg_i].GetMotherID() == fRecPosPart[pos_i].GetMotherID()){
-            double motherpt = fMC->GetTrack(fRecNegPart[neg_i].GetMotherID())->Pt();
-            weight *= GetWeight(fRecNegPart[neg_i], fRecPosPart[pos_i], motherpt);
+          if (fRecNegPart_primary[neg_i].GetMotherID() == fRecPosPart_primary[pos_i].GetMotherID()){
+            double motherpt = fMC->GetTrack(fRecNegPart_primary[neg_i].GetMotherID())->Pt();
+            weight *= GetWeight(fRecNegPart_primary[neg_i], fRecPosPart_primary[pos_i], motherpt);
           }
           else{
             weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
@@ -1425,17 +1451,17 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
         // Filling reconstructed particle histograms according to MCSignals
         for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
           if (mcSignal_acc[i] == kTRUE){
-            for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
-              if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
+            for (unsigned int j = 0; j < fRecNegPart_primary[neg_i].isReconstructed_primary.size(); ++j){
+              if (fRecNegPart_primary[neg_i].isReconstructed_primary[j] == kTRUE && fRecPosPart_primary[pos_i].isReconstructed_primary[j] == kTRUE){
                 fHistRecPair.at(j * mcSignal_acc.size() + i)->Fill(mass, pairpt, weight * centralityWeight);
 
                 if (fWriteLegsFromPair){
-                  ptNeg  = fRecNegPart[neg_i].fPt;
-                  etaNeg = fRecNegPart[neg_i].fEta;
-                  phiNeg = fRecNegPart[neg_i].fPhi;
-                  ptPos  = fRecPosPart[pos_i].fPt;
-                  etaPos = fRecPosPart[pos_i].fEta;
-                  phiPos = fRecPosPart[pos_i].fPhi;
+                  ptNeg  = fRecNegPart_primary[neg_i].fPt;
+                  etaNeg = fRecNegPart_primary[neg_i].fEta;
+                  phiNeg = fRecNegPart_primary[neg_i].fPhi;
+                  ptPos  = fRecPosPart_primary[pos_i].fPt;
+                  etaPos = fRecPosPart_primary[pos_i].fEta;
+                  phiPos = fRecPosPart_primary[pos_i].fPhi;
                   op_angle = Lvec2.Angle(Lvec1.Vect());
 
                   const double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
@@ -1452,24 +1478,24 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
   // if (fDoULSandLS && !fDeactivateLS){
   //   //LS--
-  //   for (unsigned int neg_i = 0; neg_i < fRecNegPart.size(); ++neg_i){
-  //     for (unsigned int neg_j = neg_i + 1; neg_j < fRecNegPart.size(); ++neg_j){
-  //       if (!fRecNegPart[neg_i].GetULSSignalPair() || !fRecNegPart[neg_j].GetULSSignalPair()) continue;
+  //   for (unsigned int neg_i = 0; neg_i < fRecNegPart_primary.size(); ++neg_i){
+  //     for (unsigned int neg_j = neg_i + 1; neg_j < fRecNegPart_primary.size(); ++neg_j){
+  //       if (!fRecNegPart_primary[neg_i].GetULSSignalPair() || !fRecNegPart_primary[neg_j].GetULSSignalPair()) continue;
   //       // Calculated for single leg signals like sign
   //       TLorentzVector Lvec1;
   //       TLorentzVector Lvec2;
-  //       Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt, fRecNegPart[neg_i].fEta, fRecNegPart[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-  //       Lvec2.SetPtEtaPhiM(fRecNegPart[neg_j].fPt, fRecNegPart[neg_j].fEta, fRecNegPart[neg_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+  //       Lvec1.SetPtEtaPhiM(fRecNegPart_primary[neg_i].fPt, fRecNegPart_primary[neg_i].fEta, fRecNegPart_primary[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+  //       Lvec2.SetPtEtaPhiM(fRecNegPart_primary[neg_j].fPt, fRecNegPart_primary[neg_j].fEta, fRecNegPart_primary[neg_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
   //       TLorentzVector LvecM = Lvec1 + Lvec2;
   //       double mass = LvecM.M();
   //       double pairpt = LvecM.Pt();
   //
-  //       for (unsigned int i = 0; i < fRecNegPart[neg_i].isMCSignal.size(); ++i){
-  //         // if (fRecNegPart[neg_i].isMCSignal[i] == kTRUE && fRecNegPart[neg_j].isMCSignal[i] == kTRUE){
-  //         if (fRecNegPart[neg_i].isMCSignal[i] == true && fRecNegPart[neg_j].isMCSignal[i] == true &&
-  //             fRecNegPart[neg_i].DielectronPairFromSameMother[i] == false && fRecNegPart[neg_j].DielectronPairFromSameMother[i] == false){
-  //           for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
-  //             if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecNegPart[neg_j].isReconstructed[j] == kTRUE){
+  //       for (unsigned int i = 0; i < fRecNegPart_primary[neg_i].isMCSignal.size(); ++i){
+  //         // if (fRecNegPart_primary[neg_i].isMCSignal[i] == kTRUE && fRecNegPart_primary[neg_j].isMCSignal[i] == kTRUE){
+  //         if (fRecNegPart_primary[neg_i].isMCSignal[i] == true && fRecNegPart_primary[neg_j].isMCSignal[i] == true &&
+  //             fRecNegPart_primary[neg_i].DielectronPairFromSameMother[i] == false && fRecNegPart_primary[neg_j].DielectronPairFromSameMother[i] == false){
+  //           for (unsigned int j = 0; j < fRecNegPart_primary[neg_i].isReconstructed_primary.size(); ++j){
+  //             if (fRecNegPart_primary[neg_i].isReconstructed_primary[j] == kTRUE && fRecNegPart_primary[neg_j].isReconstructed_primary[j] == kTRUE){
   //               fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 2]->Fill(mass, pairpt, centralityWeight);
   //             }// is selected by cutsetting
   //           } // end of loop over all cutsettings
@@ -1478,24 +1504,24 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   //     }
   //   }
   //   // LS++
-  //   for (unsigned int pos_i = 0; pos_i < fRecPosPart.size(); ++pos_i){
-  //     for (unsigned int pos_j = pos_i + 1; pos_j < fRecPosPart.size(); ++pos_j){
-  //       if (!fRecPosPart[pos_i].GetULSSignalPair() || !fRecPosPart[pos_j].GetULSSignalPair()) continue;
+  //   for (unsigned int pos_i = 0; pos_i < fRecPosPart_primary.size(); ++pos_i){
+  //     for (unsigned int pos_j = pos_i + 1; pos_j < fRecPosPart_primary.size(); ++pos_j){
+  //       if (!fRecPosPart_primary[pos_i].GetULSSignalPair() || !fRecPosPart_primary[pos_j].GetULSSignalPair()) continue;
   //       // Calculated for single leg signals like sign
   //       TLorentzVector Lvec1;
   //       TLorentzVector Lvec2;
-  //       Lvec1.SetPtEtaPhiM(fRecPosPart[pos_i].fPt, fRecPosPart[pos_i].fEta, fRecPosPart[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-  //       Lvec2.SetPtEtaPhiM(fRecPosPart[pos_j].fPt, fRecPosPart[pos_j].fEta, fRecPosPart[pos_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+  //       Lvec1.SetPtEtaPhiM(fRecPosPart_primary[pos_i].fPt, fRecPosPart_primary[pos_i].fEta, fRecPosPart_primary[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+  //       Lvec2.SetPtEtaPhiM(fRecPosPart_primary[pos_j].fPt, fRecPosPart_primary[pos_j].fEta, fRecPosPart_primary[pos_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
   //       TLorentzVector LvecM = Lvec1 + Lvec2;
   //       double mass = LvecM.M();
   //       double pairpt = LvecM.Pt();
   //
-  //       for (unsigned int i = 0; i < fRecPosPart[pos_i].isMCSignal.size(); ++i){
-  //         // if (fRecPosPart[pos_i].isMCSignal[i] == kTRUE && fRecPosPart[pos_j].isMCSignal[i] == kTRUE){
-  //         if (fRecPosPart[pos_i].isMCSignal[i] == true && fRecPosPart[pos_j].isMCSignal[i] == true &&
-  //             fRecPosPart[pos_i].DielectronPairFromSameMother[i] == false && fRecPosPart[pos_j].DielectronPairFromSameMother[i] == false){
-  //           for (unsigned int j = 0; j < fRecPosPart[pos_i].isReconstructed.size(); ++j){
-  //             if (fRecPosPart[pos_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_j].isReconstructed[j] == kTRUE){
+  //       for (unsigned int i = 0; i < fRecPosPart_primary[pos_i].isMCSignal.size(); ++i){
+  //         // if (fRecPosPart_primary[pos_i].isMCSignal[i] == kTRUE && fRecPosPart_primary[pos_j].isMCSignal[i] == kTRUE){
+  //         if (fRecPosPart_primary[pos_i].isMCSignal[i] == true && fRecPosPart_primary[pos_j].isMCSignal[i] == true &&
+  //             fRecPosPart_primary[pos_i].DielectronPairFromSameMother[i] == false && fRecPosPart_primary[pos_j].DielectronPairFromSameMother[i] == false){
+  //           for (unsigned int j = 0; j < fRecPosPart_primary[pos_i].isReconstructed_primary.size(); ++j){
+  //             if (fRecPosPart_primary[pos_i].isReconstructed_primary[j] == kTRUE && fRecPosPart_primary[pos_j].isReconstructed_primary[j] == kTRUE){
   //               fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 1]->Fill(mass, pairpt, centralityWeight);
   //             }// is selected by cutsetting
   //           } // end of loop over all cutsettings
@@ -1514,124 +1540,124 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     //############### Unlike Signe Pairing #####################
     //##########################################################
     std::cout << "Doing four pairing..." << std::endl;
-										if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
-										if(fdebug) std::cout << " fGenNegPart: "  << fGenNegPart.size() << " fGenPosPart: " <<  fGenPosPart.size() << std::endl;
-    // std::cout << "Bool fDoFourPairing is " << fDoFourPairing << std::endl;
-    for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
-      if (fGenNegPart[neg_i].isMCSignal[0] == false) continue;                   // Condition for single electron: Is Primary
-      // std::cout << "neg_i = " << neg_i <<std::endl;
-      for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
-        if (fGenPosPart[pos_i].isMCSignal[0] == false) continue;                 // Condition for single electron: Is Primary
-        for (unsigned int neg_j = 0; neg_j < fGenNegPart.size(); ++neg_j){
-          if (fGenNegPart[neg_j].isMCSignal[3] == false) continue;               // Condition for single electron: Is Secondary (change number of isMCSignal[] acordingly to signals)
-          // if(neg_j == neg_i) continue;
-          for (unsigned int pos_j = 0; pos_j < fGenPosPart.size(); ++pos_j){
-            if (fGenPosPart[pos_j].isMCSignal[3] == false) continue;             // Condition for single electron: Is Secondary (change number of isMCSignal[] acordingly to signals)
-            // if(pos_j == pos_i) continue;
-
-            AliVParticle* mcPart1 = fMC->GetTrack(fGenNegPart[neg_i].GetTrackID());  // normal particles from pos/neg vectors
-            AliVParticle* mcPart2 = fMC->GetTrack(fGenPosPart[pos_i].GetTrackID());  // normal particles from pos/neg vectors
-            AliVParticle* mcPart3 = fMC->GetTrack(fGenNegPart[neg_j].GetTrackID());  // normal particles from pos/neg vectors
-            AliVParticle* mcPart4 = fMC->GetTrack(fGenPosPart[pos_j].GetTrackID());  // normal particles from pos/neg vectors
-
-            // Check if electrons are from MCSignal Generator
-                  // if (!fGenPosPart[pos_i].GetMCSignalPair() || !fGenNegPart[neg_i].GetMCSignalPair() || !fGenNegPart[neg_j].GetMCSignalPair() || !fGenPosPart[pos_j].GetMCSignalPair()) continue;
-                  // std::cout << __LINE__ << "################################################################################################" << std::endl;
-            // Apply MC signals
-            std::vector<Bool_t> mcSignal_acc(fFourPairMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
-
-            // Check if it is according to mcsignals
-            for (unsigned int i = 0; i < fFourPairMCSignal.size(); ++i){
-                        // mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart1, mcPart2, &(fFourPairMCSignal[i]));
-                        // i++;
-                        // mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart3, mcPart4, &(fFourPairMCSignal[i]));
-              mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart1, mcPart2, mcPart3, mcPart4, &(fFourPairMCSignal[i]), &(fFourPairMCSignal[i+1]));
-            }
-            // check if at least one mc signal is true
-            if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
-
-            // This if clause is needed here because smearing can potentially smear tracks into the selected kinematic region
-            bool selectedByKinematicCuts = true;
-            if (fGenNegPart[neg_i].fPt < fPtMin || fGenNegPart[neg_i].fPt > fPtMax || fGenNegPart[neg_i].fEta < fEtaMin || fGenNegPart[neg_i].fEta > fEtaMax ||
-                fGenNegPart[neg_j].fPt < fPtMin || fGenNegPart[neg_j].fPt > fPtMax || fGenNegPart[neg_j].fEta < fEtaMin || fGenNegPart[neg_j].fEta > fEtaMax    ) selectedByKinematicCuts = false;
-            if (fGenPosPart[pos_i].fPt < fPtMin || fGenPosPart[pos_i].fPt > fPtMax || fGenPosPart[pos_i].fEta < fEtaMin || fGenPosPart[pos_i].fEta > fEtaMax ||
-                fGenPosPart[pos_j].fPt < fPtMin || fGenPosPart[pos_j].fPt > fPtMax || fGenPosPart[pos_j].fEta < fEtaMin || fGenPosPart[pos_j].fEta > fEtaMax    ) selectedByKinematicCuts = false;
-
-            if (selectedByKinematicCuts == true){
-              // Construct pair variables from LorentzVectors
-              TLorentzVector Lvec1;
-              TLorentzVector Lvec2;
-              TLorentzVector Lvec3;
-              TLorentzVector Lvec4;
-              Lvec1.SetPtEtaPhiM(mcPart1->Pt(), mcPart1->Eta(), mcPart1->Phi(), AliPID::ParticleMass(AliPID::kElectron));
-              Lvec2.SetPtEtaPhiM(mcPart2->Pt(), mcPart2->Eta(), mcPart2->Phi(), AliPID::ParticleMass(AliPID::kElectron));
-              Lvec3.SetPtEtaPhiM(mcPart3->Pt(), mcPart3->Eta(), mcPart3->Phi(), AliPID::ParticleMass(AliPID::kElectron));
-              Lvec4.SetPtEtaPhiM(mcPart4->Pt(), mcPart4->Eta(), mcPart4->Phi(), AliPID::ParticleMass(AliPID::kElectron));
-              TLorentzVector LvecM = Lvec1 + Lvec2 + Lvec3 + Lvec4;
-              double mass = LvecM.M();
-              double pairpt = LvecM.Pt();
-              double weight = 1.;
-
-              // std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << std::endl;
-              // std::cout << "Mother Mass = " << mass << ", Mother Pt = " << pairpt << std::endl;
-
-              if (fCocktailFile) {
-                if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
-                  double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
-                  weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
-                }
-                else{
-                  weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
-                }
-              }
-
-              for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
-                if (mcSignal_acc[i] == kTRUE){
-                  fHistGenFourPair.at(i)->Fill(mass, pairpt, weight * centralityWeight);
-                }
-              } // end of loop over all MCsignals
-            } // end of if selectedByKinematicCuts
-
-            if (fArrResoPt){ // Smear particles to fill "GeneratedSmeared"
-
-             if (fGenNegPart[neg_i].fPt_smeared < fPtMin || fGenNegPart[neg_i].fPt_smeared > fPtMax || fGenNegPart[neg_i].fEta_smeared < fEtaMin || fGenNegPart[neg_i].fEta_smeared > fEtaMax ||
-                 fGenNegPart[neg_j].fPt_smeared < fPtMin || fGenNegPart[neg_j].fPt_smeared > fPtMax || fGenNegPart[neg_j].fEta_smeared < fEtaMin || fGenNegPart[neg_j].fEta_smeared > fEtaMax   ) continue;
-             if (fGenPosPart[pos_i].fPt_smeared < fPtMin || fGenPosPart[pos_i].fPt_smeared > fPtMax || fGenPosPart[pos_i].fEta_smeared < fEtaMin || fGenPosPart[pos_i].fEta_smeared > fEtaMax ||
-                 fGenPosPart[pos_j].fPt_smeared < fPtMin || fGenPosPart[pos_j].fPt_smeared > fPtMax || fGenPosPart[pos_j].fEta_smeared < fEtaMin || fGenPosPart[pos_j].fEta_smeared > fEtaMax   ) continue;
-
-             // Construct pair variables from LorentzVectors
-             TLorentzVector Lvec1_smeared;
-             TLorentzVector Lvec2_smeared;
-             TLorentzVector Lvec3_smeared;
-             TLorentzVector Lvec4_smeared;
-             Lvec1_smeared.SetPtEtaPhiM(fGenNegPart[neg_i].fPt_smeared, fGenNegPart[neg_i].fEta_smeared, fGenNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
-             Lvec2_smeared.SetPtEtaPhiM(fGenPosPart[pos_i].fPt_smeared, fGenPosPart[pos_i].fEta_smeared, fGenPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
-             Lvec3_smeared.SetPtEtaPhiM(fGenNegPart[neg_j].fPt_smeared, fGenNegPart[neg_j].fEta_smeared, fGenNegPart[neg_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
-             Lvec4_smeared.SetPtEtaPhiM(fGenPosPart[pos_j].fPt_smeared, fGenPosPart[pos_j].fEta_smeared, fGenPosPart[pos_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
-             TLorentzVector LvecM_smeared = Lvec1_smeared + Lvec2_smeared + Lvec3_smeared + Lvec4_smeared;
-             double massSmeared = LvecM_smeared.M();
-             double pairptSmeared = LvecM_smeared.Pt();
-             double weight = 1.;
-             if (fCocktailFile) {
-               if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
-                 double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
-                 weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
-               }
-               else{
-                 weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
-               }
-             }
-
-             for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
-               if (mcSignal_acc[i] == kTRUE){
-                 fHistGenSmearedFourPair.at(i)->Fill(massSmeared, pairptSmeared, weight * centralityWeight);
-               }
-             } // end of loop over all MCsignals
-            } // end of smearing
-          } // end of loop pos_j
-        } // end of loop neg_j
-      } // end of loop pos_i
-    } // end of loop neg_i
+		// 								// if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+		// 								if(fdebug) std::cout << " fGenNegPart: "  << fGenNegPart.size() << " fGenPosPart: " <<  fGenPosPart.size() << std::endl;
+    // // std::cout << "Bool fDoFourPairing is " << fDoFourPairing << std::endl;
+    // for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
+    //   if (fGenNegPart[neg_i].isMCSignal[0] == false) continue;                   // Condition for single electron: Is Primary
+    //   // std::cout << "neg_i = " << neg_i <<std::endl;
+    //   for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
+    //     if (fGenPosPart[pos_i].isMCSignal[0] == false) continue;                 // Condition for single electron: Is Primary
+    //     for (unsigned int neg_j = 0; neg_j < fGenNegPart.size(); ++neg_j){
+    //       if (fGenNegPart[neg_j].isMCSignal[3] == false) continue;               // Condition for single electron: Is Secondary (change number of isMCSignal[] acordingly to signals)
+    //       // if(neg_j == neg_i) continue;
+    //       for (unsigned int pos_j = 0; pos_j < fGenPosPart.size(); ++pos_j){
+    //         if (fGenPosPart[pos_j].isMCSignal[3] == false) continue;             // Condition for single electron: Is Secondary (change number of isMCSignal[] acordingly to signals)
+    //         // if(pos_j == pos_i) continue;
+    //
+    //         AliVParticle* mcPart1 = fMC->GetTrack(fGenNegPart[neg_i].GetTrackID());  // normal particles from pos/neg vectors
+    //         AliVParticle* mcPart2 = fMC->GetTrack(fGenPosPart[pos_i].GetTrackID());  // normal particles from pos/neg vectors
+    //         AliVParticle* mcPart3 = fMC->GetTrack(fGenNegPart[neg_j].GetTrackID());  // normal particles from pos/neg vectors
+    //         AliVParticle* mcPart4 = fMC->GetTrack(fGenPosPart[pos_j].GetTrackID());  // normal particles from pos/neg vectors
+    //
+    //         // Check if electrons are from MCSignal Generator
+    //               // if (!fGenPosPart[pos_i].GetMCSignalPair() || !fGenNegPart[neg_i].GetMCSignalPair() || !fGenNegPart[neg_j].GetMCSignalPair() || !fGenPosPart[pos_j].GetMCSignalPair()) continue;
+    //               // std::cout << __LINE__ << "################################################################################################" << std::endl;
+    //         // Apply MC signals
+    //         std::vector<Bool_t> mcSignal_acc(fFourPairMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
+    //
+    //         // Check if it is according to mcsignals
+    //         for (unsigned int i = 0; i < fFourPairMCSignal.size(); ++i){
+    //                     // mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart1, mcPart2, &(fFourPairMCSignal[i]));
+    //                     // i++;
+    //                     // mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart3, mcPart4, &(fFourPairMCSignal[i]));
+    //           mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart1, mcPart2, mcPart3, mcPart4, &(fFourPairMCSignal[i]), &(fFourPairMCSignal[i+1]));
+    //         }
+    //         // check if at least one mc signal is true
+    //         if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
+    //
+    //         // This if clause is needed here because smearing can potentially smear tracks into the selected kinematic region
+    //         bool selectedByKinematicCuts = true;
+    //         if (fGenNegPart[neg_i].fPt < fPtMin || fGenNegPart[neg_i].fPt > fPtMax || fGenNegPart[neg_i].fEta < fEtaMin || fGenNegPart[neg_i].fEta > fEtaMax ||
+    //             fGenNegPart[neg_j].fPt < fPtMin || fGenNegPart[neg_j].fPt > fPtMax || fGenNegPart[neg_j].fEta < fEtaMin || fGenNegPart[neg_j].fEta > fEtaMax    ) selectedByKinematicCuts = false;
+    //         if (fGenPosPart[pos_i].fPt < fPtMin || fGenPosPart[pos_i].fPt > fPtMax || fGenPosPart[pos_i].fEta < fEtaMin || fGenPosPart[pos_i].fEta > fEtaMax ||
+    //             fGenPosPart[pos_j].fPt < fPtMin || fGenPosPart[pos_j].fPt > fPtMax || fGenPosPart[pos_j].fEta < fEtaMin || fGenPosPart[pos_j].fEta > fEtaMax    ) selectedByKinematicCuts = false;
+    //
+    //         if (selectedByKinematicCuts == true){
+    //           // Construct pair variables from LorentzVectors
+    //           TLorentzVector Lvec1;
+    //           TLorentzVector Lvec2;
+    //           TLorentzVector Lvec3;
+    //           TLorentzVector Lvec4;
+    //           Lvec1.SetPtEtaPhiM(mcPart1->Pt(), mcPart1->Eta(), mcPart1->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+    //           Lvec2.SetPtEtaPhiM(mcPart2->Pt(), mcPart2->Eta(), mcPart2->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+    //           Lvec3.SetPtEtaPhiM(mcPart3->Pt(), mcPart3->Eta(), mcPart3->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+    //           Lvec4.SetPtEtaPhiM(mcPart4->Pt(), mcPart4->Eta(), mcPart4->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+    //           TLorentzVector LvecM = Lvec1 + Lvec2 + Lvec3 + Lvec4;
+    //           double mass = LvecM.M();
+    //           double pairpt = LvecM.Pt();
+    //           double weight = 1.;
+    //
+    //           // std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << std::endl;
+    //           // std::cout << "Mother Mass = " << mass << ", Mother Pt = " << pairpt << std::endl;
+    //
+    //           if (fCocktailFile) {
+    //             if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
+    //               double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
+    //               weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
+    //             }
+    //             else{
+    //               weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
+    //             }
+    //           }
+    //
+    //           for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
+    //             if (mcSignal_acc[i] == kTRUE){
+    //               fHistGenFourPair.at(i)->Fill(mass, pairpt, weight * centralityWeight);
+    //             }
+    //           } // end of loop over all MCsignals
+    //         } // end of if selectedByKinematicCuts
+    //
+    //         if (fArrResoPt){ // Smear particles to fill "GeneratedSmeared"
+    //
+    //          if (fGenNegPart[neg_i].fPt_smeared < fPtMin || fGenNegPart[neg_i].fPt_smeared > fPtMax || fGenNegPart[neg_i].fEta_smeared < fEtaMin || fGenNegPart[neg_i].fEta_smeared > fEtaMax ||
+    //              fGenNegPart[neg_j].fPt_smeared < fPtMin || fGenNegPart[neg_j].fPt_smeared > fPtMax || fGenNegPart[neg_j].fEta_smeared < fEtaMin || fGenNegPart[neg_j].fEta_smeared > fEtaMax   ) continue;
+    //          if (fGenPosPart[pos_i].fPt_smeared < fPtMin || fGenPosPart[pos_i].fPt_smeared > fPtMax || fGenPosPart[pos_i].fEta_smeared < fEtaMin || fGenPosPart[pos_i].fEta_smeared > fEtaMax ||
+    //              fGenPosPart[pos_j].fPt_smeared < fPtMin || fGenPosPart[pos_j].fPt_smeared > fPtMax || fGenPosPart[pos_j].fEta_smeared < fEtaMin || fGenPosPart[pos_j].fEta_smeared > fEtaMax   ) continue;
+    //
+    //          // Construct pair variables from LorentzVectors
+    //          TLorentzVector Lvec1_smeared;
+    //          TLorentzVector Lvec2_smeared;
+    //          TLorentzVector Lvec3_smeared;
+    //          TLorentzVector Lvec4_smeared;
+    //          Lvec1_smeared.SetPtEtaPhiM(fGenNegPart[neg_i].fPt_smeared, fGenNegPart[neg_i].fEta_smeared, fGenNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+    //          Lvec2_smeared.SetPtEtaPhiM(fGenPosPart[pos_i].fPt_smeared, fGenPosPart[pos_i].fEta_smeared, fGenPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+    //          Lvec3_smeared.SetPtEtaPhiM(fGenNegPart[neg_j].fPt_smeared, fGenNegPart[neg_j].fEta_smeared, fGenNegPart[neg_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+    //          Lvec4_smeared.SetPtEtaPhiM(fGenPosPart[pos_j].fPt_smeared, fGenPosPart[pos_j].fEta_smeared, fGenPosPart[pos_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+    //          TLorentzVector LvecM_smeared = Lvec1_smeared + Lvec2_smeared + Lvec3_smeared + Lvec4_smeared;
+    //          double massSmeared = LvecM_smeared.M();
+    //          double pairptSmeared = LvecM_smeared.Pt();
+    //          double weight = 1.;
+    //          if (fCocktailFile) {
+    //            if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
+    //              double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
+    //              weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
+    //            }
+    //            else{
+    //              weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
+    //            }
+    //          }
+    //
+    //          for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
+    //            if (mcSignal_acc[i] == kTRUE){
+    //              fHistGenSmearedFourPair.at(i)->Fill(massSmeared, pairptSmeared, weight * centralityWeight);
+    //            }
+    //          } // end of loop over all MCsignals
+    //         } // end of smearing
+    //       } // end of loop pos_j
+    //     } // end of loop neg_j
+    //   } // end of loop pos_i
+    // } // end of loop neg_i
 
 
     // ##########################################################
@@ -1639,18 +1665,20 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // ##########################################################
     // Fill reconstructed pairs
                   	                                                            if(fdebug) std::cout << __LINE__ << " Start Four Reconstructed Pairing " << std::endl;
-                  	                                                            if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart: " << fRecNegPart.size() << " fRecPosPart: " << fRecPosPart.size() << std::endl;
-    for (unsigned int neg_i = 0; neg_i < fRecNegPart.size(); ++neg_i){
-      for (unsigned int pos_i = 0; pos_i < fRecPosPart.size(); ++pos_i){
-        for (unsigned int neg_j = 0; neg_j < fRecNegPart.size(); ++neg_j){
-          for (unsigned int pos_j = 0; pos_j < fRecPosPart.size(); ++pos_j){
-          AliVParticle* track1  = fEvent->GetTrack(fRecNegPart[neg_i].GetTrackID());
-          AliVParticle* track2  = fEvent->GetTrack(fRecPosPart[pos_i].GetTrackID());
-          AliVParticle* track3  = fEvent->GetTrack(fRecNegPart[neg_j].GetTrackID());
-          AliVParticle* track4  = fEvent->GetTrack(fRecPosPart[pos_j].GetTrackID());
+                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_primary:    " << fRecNegPart_primary.size() <<    " fRecPosPart_primary:    " << fRecPosPart_primary.size()   << std::endl;
+                  	                                                            if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_secondary:  " << fRecNegPart_secondary.size() <<  " fRecPosPart_secondary:  " << fRecPosPart_secondary.size() << std::endl;
+                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_PrimAndSec: " << fRecNegPart_PrimAndSec.size() << " fRecPosPart_PrimAndSec: " << fRecPosPart_PrimAndSec.size() << std::endl;
+    for (unsigned int neg_i = 0; neg_i < fRecNegPart_primary.size(); ++neg_i){
+      for (unsigned int pos_i = 0; pos_i < fRecPosPart_primary.size(); ++pos_i){
+        for (unsigned int neg_j = 0; neg_j < fRecNegPart_secondary.size(); ++neg_j){
+          for (unsigned int pos_j = 0; pos_j < fRecPosPart_secondary.size(); ++pos_j){
+          AliVParticle* track1  = fEvent->GetTrack(fRecNegPart_primary[neg_i].GetTrackID());
+          AliVParticle* track2  = fEvent->GetTrack(fRecPosPart_primary[pos_i].GetTrackID());
+          AliVParticle* track3  = fEvent->GetTrack(fRecNegPart_secondary[neg_j].GetTrackID());
+          AliVParticle* track4  = fEvent->GetTrack(fRecPosPart_secondary[pos_j].GetTrackID());
                   	                                                            // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
           // Check if electrons are from MCSignal Generator
-          if (!fRecPosPart[pos_i].GetMCSignalPair() || !fRecNegPart[neg_i].GetMCSignalPair()) continue;
+          if (!fRecPosPart_primary[pos_i].GetMCSignalPair() || !fRecNegPart_primary[neg_i].GetMCSignalPair() || !fRecPosPart_secondary[pos_j].GetMCSignalPair() || !fRecNegPart_secondary[neg_j].GetMCSignalPair()) continue;
 
           // Apply MC signals
           std::vector<Bool_t> mcSignal_acc(fFourPairMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
@@ -1669,7 +1697,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
           }
           // check if at least one mc signal is true
           if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
-                  	                                                            if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+                  	                                                            // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
           // Construct pair variables from LorentzVectors
           TLorentzVector Lvec1;
           TLorentzVector Lvec2;
@@ -1684,9 +1712,9 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
           double pairpt = LvecM.Pt();
           double weight = 1.;
           if (fCocktailFile) {
-            if (fRecNegPart[neg_i].GetMotherID() == fRecPosPart[pos_i].GetMotherID()){
-              double motherpt = fMC->GetTrack(fRecNegPart[neg_i].GetMotherID())->Pt();
-              weight *= GetWeight(fRecNegPart[neg_i], fRecPosPart[pos_i], motherpt);
+            if (fRecNegPart_primary[neg_i].GetMotherID() == fRecPosPart_primary[pos_i].GetMotherID()){
+              double motherpt = fMC->GetTrack(fRecNegPart_primary[neg_i].GetMotherID())->Pt();
+              weight *= GetWeight(fRecNegPart_primary[neg_i], fRecPosPart_primary[pos_i], motherpt);
             }
             else{
               weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
@@ -1697,9 +1725,9 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
           // Filling reconstructed particle histograms according to MCSignals
           for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
             if (mcSignal_acc[i] == kTRUE){
-              for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
-                if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
-                  	                                                            if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+              for (unsigned int j = 0; j < fRecNegPart_primary[neg_i].isReconstructed_primary.size(); ++j){
+                if (fRecNegPart_primary[neg_i].isReconstructed_primary[j] == kTRUE && fRecPosPart_primary[pos_i].isReconstructed_primary[j] == kTRUE){
+                  	                                                            // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
                   fHistRecFourPair.at(j * mcSignal_acc.size() + i)->Fill(mass, pairpt, weight * centralityWeight);
                 }// is selected by cutsetting
               } // end of loop over all cutsettings

@@ -149,14 +149,15 @@ public:
    void   SetMaxEtaGen(double etaMax) {fEtaMaxGen = etaMax;};
 
    // Track cuts setter
-   void   AddTrackCuts(AliAnalysisFilter* filter) {fTrackCuts.push_back(filter);}
+   void   AddTrackCuts_primary  (AliAnalysisFilter* filter) {fTrackCuts_primary.push_back(filter);}
+   void   AddTrackCuts_secondary(AliAnalysisFilter* filter) {fTrackCuts_secondary.push_back(filter);}
 
   class Particle{
   public:
     Particle() :
-      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
+      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), isReconstructed_primary(), isReconstructed_secondary(), DielectronPairFromSameMother() {}
     Particle(double pt, double eta, double phi, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), isReconstructed_primary(), isReconstructed_secondary(), DielectronPairFromSameMother() {}
 
     void SetTrackID(int id) {fTrackID = id;}
     void SetMotherID(int id) {fMotherID = id;}
@@ -181,7 +182,8 @@ public:
     bool    fMCSignalPair;
     bool    fULSSignalPair;
     std::vector<Bool_t> isMCSignal;
-    std::vector<Bool_t> isReconstructed;
+    std::vector<Bool_t> isReconstructed_primary;
+    std::vector<Bool_t> isReconstructed_secondary;
     std::vector<Bool_t> DielectronPairFromSameMother;
   };
 
@@ -286,7 +288,8 @@ private:
 
   Bool_t fSelectPhysics;
   Int_t  fTriggerMask;
-  std::vector<AliAnalysisFilter*> fTrackCuts;
+  std::vector<AliAnalysisFilter*> fTrackCuts_primary;
+  std::vector<AliAnalysisFilter*> fTrackCuts_secondary;
   TBits*  fUsedVars;                // used variables by AliDielectronVarManager
 
   int fSupportMCSignal; // Setting for which the support histograms are filled
@@ -348,8 +351,13 @@ private:
   Bool_t fDeactivateLS;
   std::vector<Particle> fGenNegPart;
   std::vector<Particle> fGenPosPart;
-  std::vector<Particle> fRecNegPart;
-  std::vector<Particle> fRecPosPart;
+  std::vector<Particle> fRecNegPart_primary;
+  std::vector<Particle> fRecPosPart_primary;
+  std::vector<Particle> fRecNegPart_secondary;
+  std::vector<Particle> fRecPosPart_secondary;
+  std::vector<Particle> fRecNegPart_PrimAndSec;
+  std::vector<Particle> fRecPosPart_PrimAndSec;
+
 
   bool fDoCocktailWeighting;
   std::string fCocktailFilename;

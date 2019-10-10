@@ -4,8 +4,17 @@
 // TString names=("noPID;cut5_pt75;kPbPb2015_Pt75_PID_cutoff_pion_kaon_proton;cut5_pt75_TOFreq");
 // TString names=("cut1_pt75;cut2_pt75;cut3_pt75;cut4_pt75;cut5_pt75;cut6_pt75;cut7_pt75;cut8_pt75;cut9_pt75;cut10_pt75;cut11_pt75;cut12_pt75;cut13_pt75;cut14_pt75;cut15_pt75;cut16_pt75;cut17_pt75;cut18_pt75;cut19_pt75;cut20_pt75;cut21_pt75;cut22_pt75;cut23_pt75;cut24_pt75;cut25_pt75;cut26_pt75;cut27_pt75;cut28_pt75;cut29_pt75;cut30_pt75");
 // TString names=("cut5_pt75;cut5_pt75_noPID_wSharedCluster;cut5_pt75_noPID_noSharedCluster");
-TString names=("cut1_pt75;cut5_pt75");
 // TString names=("cut1_pt75;cut2_pt75;cut3_pt75;cut4_pt75;cut5_pt75;cut6_pt75;cut7_pt75;cut8_pt75;cut9_pt75;cut10_pt75");
+
+// Vuts for primary electrons
+TString names_Prim_Cuts=("noPID");
+// TString names_Prim_Cuts=("cut1_pt75");
+// TString names_Prim_Cuts=("cut1_pt200"); // Cuts for CaKlein LMEECutLib_caklein
+// Cuts for secondary electrons
+TString names_Sec_Cuts=("noPID");
+// TString names_Sec_Cuts=("cut1_pt75_secondary");
+
+
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // 400 MEV CUT !!!!!!!!!!!!!!!
@@ -103,7 +112,7 @@ const double maxThetaBin =  TMath::TwoPi();
 const int    stepsThetaBin = 60;
 
 const double minMassBin = 0;
-const double maxMassBin =  1;
+const double maxMassBin =  5;
 const int    stepsMassBin = 1000;
 const double minPairPtBin = 0;
 const double maxPairPtBin =  8;
@@ -514,6 +523,14 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   else if (cutDefinition == "cut5_pt75_looserPionRejection"){
     AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt75_looserPionRejection);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "cut1_pt75_secondary"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt75);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
