@@ -1251,6 +1251,33 @@ void AliRsnCutSetDaughterParticle::Init()
 	SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
 	break;
 
+      // PID cuts for Lstar analysis:
+      case    AliRsnCutSetDaughterParticle::kTOFTPCpidLstar :      
+	if (fPID==AliPID::kProton) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 1.1);
+	}
+	if (fPID==AliPID::kKaon) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.6);
+	}
+	
+	AddCut(fCutQuality);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTPCNSigma);
+	
+	// set TPC+TOF PID
+
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 1.E20);
+
+
+	AddCut(iCutTPCTOFNSigma);
+	AddCut(iCutTOFNSigma);
+      
+	// scheme:
+	// quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+	SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+	break;
+
 
     case AliRsnCutSetDaughterParticle::kTPCTOFvetoPhiXeXe:
 
@@ -1258,7 +1285,6 @@ void AliRsnCutSetDaughterParticle::Init()
 	 if TOF, 
 	 - Nsigma cut on TOF
 	 - 5sigma mismatch rejection with TPC
-
 	 otherwise TPC only:
 	 - 6 sigma, p < 0.3 GeV/c
 	 - 4 sigma, 0.3 < p < 0.4 GeV/c
@@ -1327,12 +1353,10 @@ void AliRsnCutSetDaughterParticle::Init()
 	 if TOF, 
 	 - Nsigma cut on TOF
 	 - 5sigma mismatch rejection with TPC
-
 	 otherwise TPC only:
 	 - 6 sigma, p < 0.3 GeV/c
 	 - 4 sigma, 0.3 < p < 0.4 GeV/c
 	 - nsigma, p > 0.4 GeV/c
-
 	 Electron rejection cut
 	 
       */
