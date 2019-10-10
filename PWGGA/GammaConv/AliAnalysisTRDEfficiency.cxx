@@ -523,6 +523,9 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
     Bool_t hqupt    = kFALSE;
     Bool_t hqupid   = kFALSE;
     Bool_t hquptpid = kFALSE;
+    
+    Bool_t countedgamma = kFALSE;
+
     //cout << "start" << endl;
     TString fDeltaAODBranchName("GammaConv_00000003_06000008d00100001100000000_gamma");
  
@@ -615,6 +618,14 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                     Double_t gR    = gamma->GetConversionRadius();
                     Double_t dpt   = 0;
                     Double_t dpid  = 0;
+                    
+                    countedgamma = haspt + haspid + haspitpt + hashqu + hqupt + hqupid + hquptpid;
+                    if (countedgamma){  // prevents double counting; numbers are supposed to be out of range
+                        ptg = -1;
+                        etag = 100;
+                        phig = 100;
+                        Rg = -1;
+                    }
                     
                     // grab the other daughter track
                     AliAODTrack *other = (AliAODTrack*)v0->GetDaughter(!j); 
