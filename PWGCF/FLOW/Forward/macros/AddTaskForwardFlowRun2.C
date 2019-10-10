@@ -246,7 +246,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
     std::cout << nuaobject << std::endl;
 
     weights = (AliAnalysisDataContainer*) taskContainers->FindObject(nuaobject);
-
+    
     if (!weights) {
       std::cout << "I-AddTaskForwardFlowRun2: " << nuaobject << " weights not defined - reading now. " << std::endl;
       weights = makeWeightContainer(nua_file,nuaobject);
