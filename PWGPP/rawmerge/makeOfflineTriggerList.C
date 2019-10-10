@@ -183,7 +183,7 @@ void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long64
   outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
   //
-  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), "cutMultSelect","",0,nEvents, "csv","filteredMult.list");
+  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), "cutMultSelect","",0,nEvents, "csvroot","filteredMult.list");
   // Export counter - histograms in filteredMult.root file and log file
   Int_t nEventsAll = tree->Draw("mult","","",nEvents);
   tree->GetHistogram()->Write("multAll");
@@ -253,7 +253,7 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long64_t nEvents
   outputString+="gid;1.30;gid;/l:";
   outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
-  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), "cutHighPt","",0,nEvents, "csv","filteredHighPt.list");
+  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), "cutHighPt","",0,nEvents, "csvroot","filteredHighPt.list");
   //
   tree->Draw("-esdTrack.Pt():mult:ntracks","cutHighPt&&esdTrack.Pt()<100","goff",nEvents);
   Double_t meanMult=TMath::Mean(tree->GetSelectedRows(),tree->GetV2());
@@ -294,7 +294,7 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long64_t nEvents
   //
  
   TString eventListName = "filteredHighPt.list";
-  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), "cutHighPt","",0,nEvents, "csv",eventListName);
+  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), "cutHighPt","",0,nEvents, "csvroot",eventListName);
   gSystem->Exec(Form("{ rm %s && uniq > %s; } < %s ",eventListName.Data(),eventListName.Data(),eventListName.Data()));
   //
   Int_t nHighPtSelected = tree->Draw("esdTrack.fTPCncls","cutHighPt");
@@ -367,7 +367,7 @@ void TriggerHighPtV0s( const char * chinput,  const char * filter, Long64_t nEve
   outputString+="type;10.20;triggerType;/i:";
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
   TString eventListName = "filteredHighPtV0s.list";
-  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), cutAll.Data(),"",0,nEvents, "csv",eventListName);
+  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), cutAll.Data(),"",0,nEvents, "csvroot",eventListName);
   gSystem->Exec(Form("{ rm %s && uniq > %s; } < %s ",eventListName.Data(),eventListName.Data(),eventListName.Data()));
   //
   //
@@ -436,7 +436,7 @@ void TriggerCosmicPairs( const char * chinput,  const char * filter, Long64_t nE
   //   outputString+="type;10.20;triggerType;/i:";
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
   TString eventListName = "filteredCosmicPairs.list";
-  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), cutAll.Data(),"",0,nEvents, "csv",eventListName);
+  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), cutAll.Data(),"",0,nEvents, "csvroot",eventListName);
   gSystem->Exec(Form("{ rm %s && uniq > %s; } < %s ",eventListName.Data(),eventListName.Data(),eventListName.Data()));
   //
   //
@@ -489,7 +489,7 @@ void TriggerLaser( const char * chinput, Long64_t nEvents){
   outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
   TString eventListName = "filteredLaser.list";
-  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), cutAll.Data(),"",0,nEvents, "csv",eventListName);
+  AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), cutAll.Data(),"",0,nEvents, "csvroot",eventListName);
   gSystem->Exec(Form("{ rm %s && uniq > %s; } < %s ",eventListName.Data(),eventListName.Data(),eventListName.Data()));
 
   //
@@ -563,7 +563,7 @@ void triggerCalibHighPt( const char * chinput,  const char * filter, Long64_t nE
   outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
   TString eventListName = "filteredCalibHighPt.list";
-  AliTreePlayer::selectWhatWhereOrderBy(treeHighPt, outputString.Data(), "cutHighPt","",0,nEvents, "csv",eventListName);  
+  AliTreePlayer::selectWhatWhereOrderBy(treeHighPt, outputString.Data(), "cutHighPt","",0,nEvents, "csvroot",eventListName);
   gSystem->Exec(Form("{ rm %s && uniq > %s; } < %s ",eventListName.Data(),eventListName.Data(),eventListName.Data()));
   //
   // QA plots
@@ -682,7 +682,7 @@ void triggerCalibV0( const char * chinput,  const char * filter, Long64_t nEvent
   outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
   TString eventListName = "filteredCalibV0.list";
-  AliTreePlayer::selectWhatWhereOrderBy(treeV0, outputString.Data(), "cutHighPt","",0,nEvents, "csv",eventListName);  
+  AliTreePlayer::selectWhatWhereOrderBy(treeV0, outputString.Data(), "cutHighPt","",0,nEvents, "csvroot",eventListName);
   gSystem->Exec(Form("{ rm %s && uniq > %s; } < %s ",eventListName.Data(),eventListName.Data(),eventListName.Data()));
   //
   // QA plots
