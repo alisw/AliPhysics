@@ -206,6 +206,9 @@ fzVtxGen(0.),
 fNcontributors(0),
 fNtracks(0),
 fIsEvRej(0),
+fIsEvRej_INT7(0),
+fIsEvRej_HighMultSPD(0),
+fIsEvRej_HighMultV0(0),
 fRunNumber(0),
 fRunNumberCDB(0),
 fEventID(0),
@@ -575,6 +578,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("n_vtx_contributors", &fNcontributors);
   fTreeEvChar->Branch("n_tracks", &fNtracks);
   fTreeEvChar->Branch("is_ev_rej", &fIsEvRej);
+  fTreeEvChar->Branch("is_ev_rej_INT7", &fIsEvRej_INT7);
+  fTreeEvChar->Branch("is_ev_rej_HighMultSPD", &fIsEvRej_HighMultSPD);
+  fTreeEvChar->Branch("is_ev_rej_HighMultV0", &fIsEvRej_HighMultV0);
   fTreeEvChar->Branch("run_number", &fRunNumber);
   fTreeEvChar->Branch("ev_id", &fEventID);
   fTreeEvChar->Branch("n_tracklets", &fnTracklets);
@@ -1239,6 +1245,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   
   fCounter->StoreEvent(aod,fEvSelectionCuts,fReadMC);
   Bool_t isEvSel=fEvSelectionCuts->IsEventSelected(aod);
+    
+  AliRDHFCuts* ev_sel_cuts_copy = (AliRDHFCuts*)fEvSelectionCuts->Clone();
   
   if(fEvSelectionCuts->IsEventRejectedDueToTrigger())fNentries->Fill(5);
   if(fEvSelectionCuts->IsEventRejectedDueToNotRecoVertex())fNentries->Fill(6);
@@ -1291,6 +1299,19 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fzVtxReco = vtx->GetZ();
   fNtracks = aod->GetNumberOfTracks();
   fIsEvRej = fEvSelectionCuts->GetEventRejectionBitMap();
+    
+  ev_sel_cuts_copy->SetTriggerMask(AliVEvent::kINT7);
+  Bool_t isEvSel_INT7 = ev_sel_cuts_copy->IsEventSelected(aod);
+  fIsEvRej_INT7 = ev_sel_cuts_copy->GetEventRejectionBitMap();
+
+  ev_sel_cuts_copy->SetTriggerMask(AliVEvent::kHighMultSPD);
+  Bool_t isEvSel_HighMultSPD = ev_sel_cuts_copy->IsEventSelected(aod);
+  fIsEvRej_HighMultSPD = ev_sel_cuts_copy->GetEventRejectionBitMap();
+
+  ev_sel_cuts_copy->SetTriggerMask(AliVEvent::kHighMultV0);
+  Bool_t isEvSel_HighMultV0 = ev_sel_cuts_copy->IsEventSelected(aod);
+  fIsEvRej_HighMultV0 = ev_sel_cuts_copy->GetEventRejectionBitMap();
+  
   fRunNumber=aod->GetRunNumber();
   //n tracklets
   AliAODTracklets* tracklets=aod->GetTracklets();
