@@ -2120,11 +2120,18 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
     }
   }
   
-  // Check effect of energy and fiducial cuts
-  fhEMCALClusterCutsE[4]->Fill(clus->E());
+  // Check effect of energy and fiducial cuts  
+  if ( bEMCAL || bDCAL ) 
+  {
+    fhEMCALClusterCutsE[4]->Fill(clus->E());
+    fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
+  }
+  else 
+  {
+    AliDebug(2,"Cluster not on EMCal or DCal selected region");
+    return ;
+  }
   
-  if ( bEMCAL || bDCAL ) fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
-
   //----------------------------------------------------
   // Apply N cells cut
   //
