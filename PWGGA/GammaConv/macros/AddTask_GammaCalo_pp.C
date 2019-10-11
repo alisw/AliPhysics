@@ -1660,6 +1660,9 @@ void AddTask_GammaCalo_pp(
       cuts.AddCutCalo("00062113","24466110ga012200000","0163103100000010"); //PHI7, Mike's Timing
       cuts.AddCutCalo("00010113","24466110ma012200000","0163103100000010"); //no Trigger, MB Timing
       cuts.AddCutCalo("00062113","24466110ma012200000","0163103100000010"); //PHI7, MB Timing
+      cuts.AddCutCalo("00010113","24466110oa012200000","0163103100000010"); //no Trigger, MB Timing, Open Cuts HighPt
+      cuts.AddCutCalo("00062113","24466110oa012200000","0163103100000010"); //PHI7, MB Timing, Open Cuts HighPt
+
   } else if( trainConfig == 870){ // PHOS HM trigger
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, MB trigger
     cuts.AddCutCalo("00010113","2446600004012300000","0163103100000010"); // no timing, MB trigger
