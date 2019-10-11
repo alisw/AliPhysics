@@ -334,6 +334,9 @@ private:
     Int_t                   fNcontributors;                        /// number of contributors
     Int_t                   fNtracks;                              /// number of tracks
     Int_t                   fIsEvRej;                              /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_INT7;                         /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_HighMultSPD;                  /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_HighMultV0;                   /// flag with information about rejection of the event
     Int_t                   fRunNumber;                            /// run number
     Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
     UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
@@ -456,7 +459,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,21);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,22);
     /// \endcond
 };
 
