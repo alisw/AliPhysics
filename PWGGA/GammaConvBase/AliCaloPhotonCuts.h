@@ -471,6 +471,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fUseDistanceToBadChannel;                 // flag for switching on distance to bad channel cut: 0 off, 1 on without corners, 2 on with corners included
     Double_t  fMaxTimeDiff;                             // maximum time difference to triggered collision
     Double_t  fMinTimeDiff;                             // minimum time difference to triggered collision
+    Double_t  fMaxTimeDiffHighPt;                       // maximum time difference to triggered collision at high Pt
+    Double_t  fMinTimeDiffHighPt;                       // minimum time difference to triggered collision at high Pt
     Bool_t    fUseTimeDiff;                             // flag for switching on time difference cut
     Double_t  fMaxDistTrackToClusterEta;                // minimum distance between track and cluster in eta
     Double_t  fMinDistTrackToClusterPhi;                // minimum distance between track and cluster in phi
@@ -643,7 +645,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,97)
+    ClassDef(AliCaloPhotonCuts,98)
 };
 
 #endif
