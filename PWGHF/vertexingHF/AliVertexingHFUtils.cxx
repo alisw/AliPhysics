@@ -778,6 +778,36 @@ Double_t AliVertexingHFUtils::GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCP
   }
   return -999.;
 }
+
+//____________________________________________________________________________
+Double_t AliVertexingHFUtils::GetBeautyMotherPtAndPDG(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t &pdgGranma){
+  /// get the pt of the beauty hadron (feed-down case), returns negative value for prompt
+
+  pdgGranma = 0;
+  Int_t mother = 0;
+  mother = mcPart->GetMother();
+  Int_t istep = 0;
+  Int_t abspdgGranma = 0;
+  while (mother >=0 ){
+    istep++;
+    AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
+    if (mcGranma){
+      pdgGranma = mcGranma->GetPdgCode();
+      abspdgGranma = TMath::Abs(pdgGranma);
+      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+	return mcGranma->Pt();
+      }
+      if(abspdgGranma==4) return -999.;
+      if(abspdgGranma==5) return -1.;
+      mother = mcGranma->GetMother();
+    }else{
+      printf("AliVertexingHFUtils::GetBeautyMotherPt: Failed casting the mother particle!");
+      break;
+    }
+  }
+  return -999.;
+}
+
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
   /// Checks the D0 decay channel. Returns 1 for the D0->Kpi case, 2 for the D0->Kpipipi case, -1 in other cases
@@ -2479,17 +2509,17 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
   ///
   /// NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
-  
+
   if(label<0) return -1;
   AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
   TParticle* part = mcEvent->Particle(label);
   if(!part || !mcPart) return -1;
   Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=531) return -1;
-  
+
   Int_t nDau=mcPart->GetNDaughters();
   if(nDau!=2) return -1;
-  
+
   Int_t labelFirstDau = mcPart->GetDaughterFirst();
   Int_t nKaons=0;
   Int_t nPions=0;
@@ -2498,7 +2528,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
   Double_t sumPzDau=0.;
   Int_t nFoundKpi=0;
   Int_t decayBs = -1;
-  
+
   for(Int_t iDau=0; iDau<nDau; iDau++){
     Int_t indDau = labelFirstDau+iDau;
     if(indDau<0) return -1;
@@ -2509,7 +2539,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
       //Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
       Int_t labDauDs[3] = {-1,-1,-1};
       Int_t decayDs = CheckDsDecay(mcEvent, indDau, labDauDs);
-      
+
       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
       //Fix implemented, to still select correct Ds decay
       if(decayDs==-2){
@@ -2528,7 +2558,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
           }
         }
       }
-      
+
       if (decayDs < 0 || labDauDs[0] == -1) return -1;
       decayBs = decayDs;
       nPions++;
@@ -2552,7 +2582,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
       if(nFoundKpi>4) return -1;
     }
   }
-  
+
   if(nPions!=2) return -1;
   if(nKaons!=2) return -1;
   //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
@@ -2571,13 +2601,13 @@ Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle 
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
   ///
   /// NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
-  
+
   Int_t pdgD=mcPart->GetPdgCode();
   if(TMath::Abs(pdgD)!=531) return -1;
-  
+
   Int_t nDau=mcPart->GetNDaughters();
   if(nDau!=2) return -1;
-  
+
   Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
   Int_t nKaons=0;
   Int_t nPions=0;
@@ -2586,7 +2616,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle 
   Double_t sumPzDau=0.;
   Int_t nFoundKpi=0;
   Int_t decayBs = -1;
-  
+
   for(Int_t iDau=0; iDau<nDau; iDau++){
     Int_t indDau = labelFirstDau+iDau;
     if(indDau<0) return -1;
@@ -2597,7 +2627,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle 
       //Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
       Int_t labDauDs[3] = {-1,-1,-1};
       Int_t decayDs = CheckDsDecay(arrayMC, dau, labDauDs);
-      
+
       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
       //Fix implemented, to still select correct Ds decay
       if(decayDs==-2){
@@ -2615,7 +2645,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle 
           }
         }
       }
-      
+
       if (decayDs < 0 || labDauDs[0] == -1) return -1;
       decayBs = decayDs;
       nPions++;
@@ -2639,7 +2669,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle 
       if(nFoundKpi>4) return -1;
     }
   }
-  
+
   if(nPions!=2) return -1;
   if(nKaons!=2) return -1;
   //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
@@ -2658,17 +2688,17 @@ Int_t AliVertexingHFUtils::CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
   ///
   /// NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
-  
+
   if(label<0) return -1;
   AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
   TParticle* part = mcEvent->Particle(label);
   if(!part || !mcPart) return -1;
   Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=5122) return -1;
-  
+
   Int_t nDau=mcPart->GetNDaughters();
   if(nDau!=2) return -1;
-  
+
   Int_t labelFirstDau = mcPart->GetDaughterFirst();
   Int_t nKaons=0;
   Int_t nPions=0;
@@ -2678,7 +2708,7 @@ Int_t AliVertexingHFUtils::CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
   Double_t sumPzDau=0.;
   Int_t nFoundpKpi=0;
   Int_t decayLb = -1;
-  
+
   for(Int_t iDau=0; iDau<nDau; iDau++){
     Int_t indDau = labelFirstDau+iDau;
     if(indDau<0) return -1;
@@ -2689,7 +2719,7 @@ Int_t AliVertexingHFUtils::CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
       Int_t labDauLc[3] = {-1,-1,-1};
       //Returns 1 for non-resonant decays and 2, 3 or 4 for resonant ones, -1 in other cases
       Int_t decayLc = CheckLcpKpiDecay(mcEvent, indDau, labDauLc);
-      
+
       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
       //Fix implemented, to still select correct Lc decay
       if(decayLc==-2){
@@ -2708,7 +2738,7 @@ Int_t AliVertexingHFUtils::CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
           }
         }
       }
-      
+
       if (decayLc < 0 || labDauLc[0] == -1) return -1;
       decayLb = decayLc;
       nProtons++;
@@ -2733,7 +2763,7 @@ Int_t AliVertexingHFUtils::CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
       if(nFoundpKpi>4) return -1;
     }
   }
-  
+
   if(nProtons!=1) return -1;
   if(nKaons!=1) return -1;
   if(nPions!=2) return -1;
@@ -2753,13 +2783,13 @@ Int_t AliVertexingHFUtils::CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle 
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
   ///
   /// NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
-  
+
   Int_t pdgD=mcPart->GetPdgCode();
   if(TMath::Abs(pdgD)!=5122) return -1;
-  
+
   Int_t nDau=mcPart->GetNDaughters();
   if(nDau!=2) return -1;
-  
+
   Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
   Int_t nKaons=0;
   Int_t nPions=0;
@@ -2769,7 +2799,7 @@ Int_t AliVertexingHFUtils::CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle 
   Double_t sumPzDau=0.;
   Int_t nFoundpKpi=0;
   Int_t decayLb = -1;
-  
+
   for(Int_t iDau=0; iDau<nDau; iDau++){
     Int_t indDau = labelFirstDau+iDau;
     if(indDau<0) return -1;
@@ -2780,7 +2810,7 @@ Int_t AliVertexingHFUtils::CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle 
       Int_t labDauLc[3] = {-1,-1,-1};
       //Returns 1 for non-resonant decays and 2, 3 or 4 for resonant ones, -1 in other cases
       Int_t decayLc = CheckLcpKpiDecay(arrayMC, dau, labDauLc);
-      
+
       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
       //Fix implemented, to still select correct Lc decay
       if(decayLc==-2){
@@ -2823,7 +2853,7 @@ Int_t AliVertexingHFUtils::CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle 
       if(nFoundpKpi>4) return -1;
     }
   }
-  
+
   if(nProtons!=1) return -1;
   if(nKaons!=1) return -1;
   if(nPions!=2) return -1;
@@ -3220,7 +3250,7 @@ ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliH
   //define fitter and fit
   ROOT::Fit::Fitter simulfitter;
   simulfitter.Config().SetParamsSettings(npars*2-ncommonpars,initpars.data()); //set initial parameters from prefits
-  if(nparsRefl>0) { //fix S/R 
+  if(nparsRefl>0) { //fix S/R
     simulfitter.Config().ParSettings(nparsBkg+nparsSgn+nparsSecPeak).Fix();
 
     iter = find(commonpars.begin(),commonpars.end(),npars+nparsBkg+nparsSgn+nparsSecPeak);
