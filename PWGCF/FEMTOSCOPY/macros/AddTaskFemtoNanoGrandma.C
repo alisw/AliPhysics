@@ -96,26 +96,18 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   AntiTrackCuts->SetCutCharge(-1);
 
   //Lambda Cuts
-  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
-                                                                true);
-  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
-      isMC, true, false);//PileUpRej, false
-
-  AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
-      isMC, true, false);
-
+  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
+  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);//PileUpRej, false
+  AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);  //Proton
   v0Cuts->SetPDGCodeNegDaug(211);  //Pion
   v0Cuts->SetPDGCodev0(3122);  //Lambda
 
-  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
-                                                                    true);
-  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
-      isMC, true, false);
+  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
+  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   PosAntiv0Daug->SetCutCharge(1);
-
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
       AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
   NegAntiv0Daug->SetCutCharge(-1);
@@ -167,10 +159,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     kMin.push_back(0.);
     kMax.push_back(6.);
   }
+  pairQA[0] = 11;
   pairQA[1] = 11;
+  pairQA[2] = 12;
   pairQA[3] = 12;
+  pairQA[4] = 11;
   pairQA[5] = 12;
+  pairQA[6] = 12;
+  pairQA[7] = 22;
   pairQA[8] = 22;
+  pairQA[9] = 22;
 
   closeRejection[0] = true;  // pp
   closeRejection[4] = true;  // barp barp
