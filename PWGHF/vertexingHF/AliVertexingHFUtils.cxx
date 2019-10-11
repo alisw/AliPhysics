@@ -805,6 +805,7 @@ Double_t AliVertexingHFUtils::GetBeautyMotherPtAndPDG(TClonesArray* arrayMC, Ali
       break;
     }
   }
+  pdgGranma = 0;
   return -999.;
 }
 
