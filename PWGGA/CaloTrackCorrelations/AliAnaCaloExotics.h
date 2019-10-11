@@ -94,15 +94,22 @@ public:
   TH2F *   fhNCellsPerClusterTrackMatch;        //!<! Cluster energy vs N cells in cluster, for track-matched clusters 
   TH3F *   fhNCellsPerClusterExo;               //!<! Cluster energy vs N cells in cluster vs Exoticity   
   TH3F *   fhNCellsPerClusterExoTrackMatch;     //!<! Cluster energy vs N cells in cluster vs Exoticity, for track-matched clusters 
-  
+  TH3F *   fhNCellsPerClusterM02;               //!<! Cluster energy vs N cells in cluster vs M02   
+
   TH3F *   fhEtaPhiExo  ;                       //!<! eta vs phi vs exoticity when E > fEMinForExo and n cells > 1
+  TH3F *   fhEtaPhiExoHighE ;                   //!<! eta vs phi vs exoticity when E > fEMinForExo and n cells > 1 and E > 100 GeV
   TH2F *   fhEtaPhi1Cell;                       //!<! eta vs phi for 1 cell clusters when E > fEMinForExo
   
   TH3F *   fhTimeEnergyExo;                     //!<! Cluster Energy vs Time vs Exoticity, n cells > 1
   TH2F *   fhTimeEnergy1Cell;                   //!<! Cluster Energy vs Time vs n cells = 1
   TH3F *   fhTimeDiffClusCellExo;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity
+  TH3F *   fhTimeDiffClusCellExoWide;           //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity, wide time window
   TH3F *   fhTimeDiffAmpClusCellExo;            //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs secondary cell energy vs exoticity for E > fEMinForExo
- 
+  TH3F *   fhTimeEnergyM02;                     //!<! Cluster Energy vs Time vs M02, n cells > 1
+  TH3F *   fhTimeDiffClusCellM02;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs M02
+  TH3F *   fhTimeDiffClusCellM02Wide;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs M02, wide time window
+
+  TH3F *   fhM02EnergyNCell;                    //!<! Cluster M02 vs Energy vs n cells
   TH3F *   fhM02EnergyExo;                      //!<! Cluster M02 vs Energy vs exoticity
   TH3F *   fhM02EnergyExoZoomIn;                //!<! Cluster M02 vs Energy vs exoticity, finer binning in exotic region
   TH3F *   fhM20EnergyExoM02MinCut;             //!<! Cluster M20 vs Energy vs exoticity for M02 > 0.1
@@ -135,6 +142,7 @@ public:
   TH2F *   fhCellExoAmpLowGain;              //!<! Cell amplitude vs exoticity for low gain cells
   TH3F *   fhCellExoAmpTime;                 //!<! Cell amplitude vs time vs exoticity
   TH3F *   fhCellExoGrid ;                   //!<! Cells ordered in column/row vs exoticity when amplitude > fEMinForExo 
+  TH3F *   fhCellExoGridHighE ;              //!<! Cells ordered in column/row vs exoticity when amplitude > 100 GeV
 
 
   /// Copy constructor not implemented.
@@ -144,7 +152,7 @@ public:
   AliAnaCaloExotics(              const AliAnaCaloExotics & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloExotics,1) ;
+  ClassDef(AliAnaCaloExotics,2) ;
   /// \endcond
 
 } ;

@@ -353,7 +353,7 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
 /// \param simulation : A bool identifying the data as simulation
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
-/// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
+/// \param cutsString : A string with additional cuts (Smearing, SPDPileUp, NoTracks)
 /// \param trigger :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
 /// \param nonLinOn : A bool to set the use of the non linearity correction
 /// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
@@ -397,7 +397,10 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   // Fiducial cuts active, see acceptance in detector methods
   reader->SwitchOnFiducialCut();
   
-  ConfigureTrackCuts       (reader, inputDataType, cutsString);
+  if ( cutsString.Contains("NoTracks") ) 
+    reader->SwitchOffCTS();
+  else 
+    ConfigureTrackCuts     (reader, inputDataType, cutsString);
   
   ConfigurePHOSClusterCuts (reader, calorimeter, year);
 
@@ -575,6 +578,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    * MCEvtHeadW: Get the cross section from the event header
 ///    * MCEnScale: Scale the cluster energy by a factor, depending SM number  and period
 ///    * ITSonly: Select tracks with only ITS information
+///    * NoTracks: Do not filter the tracks, not used in analysis
 ///    * PtHardCut: Select events with jet or cluster photon energy not too large or small with respect the generated partonic energy 
 ///       * JetJet: Compare generated (reconstructed generator level) jet pT with parton pT  
 ///       * GamJet: Compare cluster pt and generated parton pt, careful, test before using
