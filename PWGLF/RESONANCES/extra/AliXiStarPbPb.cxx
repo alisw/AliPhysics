@@ -53,7 +53,7 @@
 #include "AliCentrality.h"
 
 #include "AliVertex.h"
-//#include "AliMultSelection.h"
+#include "AliMultSelection.h"
 
 
 #include "AliESDcascade.h"
@@ -993,20 +993,19 @@ void AliXiStarPbPb::Exec(Option_t *)
     //------------------------------------------------
     
     Float_t  centralityV0M = -100;
-  //  AliMultSelection* MultSelection =0x0;
-  //  MultSelection = (AliMultSelection*)fESD->FindListObject("MultSelection");
+    AliMultSelection* MultSelection =0x0;
+    MultSelection = (AliMultSelection*)fESD->FindListObject("MultSelection");
 
-    fCentrality = fESD->GetCentrality();
-    centralityV0M = fCentrality->GetCentralityPercentile("V0M");
+  //  fCentrality = fESD->GetCentrality();
+  //  centralityV0M = fCentrality->GetCentralityPercentile("V0M");
    
-  /*  if (MultSelection) {
+    if (MultSelection) {
         centralityV0M = MultSelection->GetMultiplicityPercentile("V0M");
     } else {
         AliInfo("Didn't find MultSelection!");
         centralityV0M = 999.;
-    }*/
-    
-    
+    }
+       
     ((TH1F*)fOutputList->FindObject("hCentrality"))->Fill(centralityV0M);
     
     
