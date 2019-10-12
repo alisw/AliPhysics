@@ -282,7 +282,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
     if ( nCaloCellsPerCluster > 1 )
     {
       fhTimeEnergyExo  ->Fill(en, tmax, exoticity, GetEventWeight());
-      fhTimeEnergyExo  ->Fill(en, tmax, m02      , GetEventWeight());
+      fhTimeEnergyM02  ->Fill(en, tmax, m02      , GetEventWeight());
     }
     else if ( fFill1CellHisto )
       fhTimeEnergy1Cell->Fill(en, tmax,            GetEventWeight());
