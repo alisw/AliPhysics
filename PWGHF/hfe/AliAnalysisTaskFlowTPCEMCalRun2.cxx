@@ -231,7 +231,9 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
 	fMinCentr(30.),
-	fMaxCentr(50.)
+	fMaxCentr(50.),
+	fSparseElectron(0),
+	fvalueElectron(0)
 
 
 {
@@ -427,7 +429,9 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
 	fMinCentr(30.),
-	fMaxCentr(50.)
+	fMaxCentr(50.),
+	fSparseElectron(0),
+	fvalueElectron(0)
 
 	// Standard constructor
 {
@@ -892,6 +896,15 @@ fOutputList->Add(fcorcentOutplane);
 //
 //fQy3 = new TH2F("fQy3","centrality vs Qy3",40,0,80,320,-1.6,1.6);
 //fOutputList->Add(fQy3);
+
+
+//add by sudo
+Int_t Sparsebins[5]={100, 100, 100, 100, 300}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
+Double_t Sparsexmin[5]={0, -10, -10, -10, 0};
+Double_t Sparsexmax[5]={10, 10, 10, 10, 3};
+fSparseElectron = new THnSparseD ("fSparseElectron","correlation;Pt;TPCnsigma;ITSnsigma;TOFnsigma;E/p;",5,Sparsebins,Sparsexmin,Sparsexmax);
+fOutputList -> Add(fSparseElectron);
+
 
 const int ncentbins = static_cast<int>(fMaxCentr-fMinCentr);
 
@@ -1639,7 +1652,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	//////////////Track properties//////////
 	Bool_t fFlagNonHFE=kFALSE;
 
-	Double_t dEdx=-999, fTPCnSigma=-999, fTOFnSigma=-999;
+	Double_t dEdx=-999, fTPCnSigma=-999, fTOFnSigma=-999, fITSnSigma=-999;
 	Double_t TrkPhi=-999, TrkPt=-999,TrkEta=-999,TrkP=-999;
 
 	TrkPhi = track->Phi();
@@ -1650,6 +1663,8 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	dEdx = track->GetTPCsignal();     
 	fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
         fTOFnSigma = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+	//add by sudo
+	fITSnSigma = fpidResponse->NumberOfSigmasITS(track, AliPID::kElectron);
 
 	fTrkPt -> Fill(TrkPt);
 	fTrkphi -> Fill(TrkPhi);
@@ -1659,6 +1674,13 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	fTPCnsig -> Fill(TrkP,fTPCnSigma);
         fTOFnsig -> Fill(TrkP,fTOFnSigma);
         fTPCnsig_TOFnsig -> Fill(fTOFnSigma,fTPCnSigma);
+
+	//add by sudo fSparse
+        fvalueElectron[0] = TrkPt;
+        fvalueElectron[1] = fTPCnSigma;
+        fvalueElectron[2] = fITSnSigma;
+        fvalueElectron[3] = fTOFnSigma;
+        fvalueElectron[4] = -1.0;
 
 	////Charged Particle v2////
 
@@ -1998,6 +2020,9 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		m02 = clustMatch->GetM02();
 		m20 = clustMatch->GetM20();
 
+		//add by sudo
+        	fvalueElectron[4] = eop;
+
 		if(track->Pt()>2.0){
 			fHistNsigEop->Fill(eop,fTPCnSigma);
 		}
@@ -2121,6 +2146,8 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 			fHisthadron -> Fill(eop,track->Pt());
 			fDCAxy_Pt_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
+                        fSparseElectron->Fill(fvalueElectron);
 
 		}
 

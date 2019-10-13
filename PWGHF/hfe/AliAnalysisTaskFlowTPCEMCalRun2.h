@@ -276,6 +276,9 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
 		TList* fqnSplinesList[6];
 
+		THnSparse  *fSparseElectron;//!Electron info
+		Double_t *fvalueElectron;//!Electron info
+
 		AliAnalysisTaskFlowTPCEMCalRun2(const AliAnalysisTaskFlowTPCEMCalRun2&); // not implemented
 		AliAnalysisTaskFlowTPCEMCalRun2& operator=(const AliAnalysisTaskFlowTPCEMCalRun2&); // not implemented
 
