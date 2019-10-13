@@ -1245,9 +1245,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   
   fCounter->StoreEvent(aod,fEvSelectionCuts,fReadMC);
   Bool_t isEvSel=fEvSelectionCuts->IsEventSelected(aod);
-    
-  AliRDHFCuts* ev_sel_cuts_copy = (AliRDHFCuts*)fEvSelectionCuts->Clone();
-  
+      
   if(fEvSelectionCuts->IsEventRejectedDueToTrigger())fNentries->Fill(5);
   if(fEvSelectionCuts->IsEventRejectedDueToNotRecoVertex())fNentries->Fill(6);
   if(fEvSelectionCuts->IsEventRejectedDueToVertexContributors())fNentries->Fill(7);
@@ -1300,17 +1298,21 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fNtracks = aod->GetNumberOfTracks();
   fIsEvRej = fEvSelectionCuts->GetEventRejectionBitMap();
     
-  ev_sel_cuts_copy->SetTriggerMask(AliVEvent::kINT7);
-  Bool_t isEvSel_INT7 = ev_sel_cuts_copy->IsEventSelected(aod);
-  fIsEvRej_INT7 = ev_sel_cuts_copy->GetEventRejectionBitMap();
+  auto trig_mask_cuts = fEvSelectionCuts->GetTriggerMask();
+    
+  fEvSelectionCuts->SetTriggerMask(AliVEvent::kINT7);
+  Bool_t isEvSel_INT7 = fEvSelectionCuts->IsEventSelected(aod);
+  fIsEvRej_INT7 = fEvSelectionCuts->GetEventRejectionBitMap();
 
-  ev_sel_cuts_copy->SetTriggerMask(AliVEvent::kHighMultSPD);
-  Bool_t isEvSel_HighMultSPD = ev_sel_cuts_copy->IsEventSelected(aod);
-  fIsEvRej_HighMultSPD = ev_sel_cuts_copy->GetEventRejectionBitMap();
+  fEvSelectionCuts->SetTriggerMask(AliVEvent::kHighMultSPD);
+  Bool_t isEvSel_HighMultSPD = fEvSelectionCuts->IsEventSelected(aod);
+  fIsEvRej_HighMultSPD = fEvSelectionCuts->GetEventRejectionBitMap();
 
-  ev_sel_cuts_copy->SetTriggerMask(AliVEvent::kHighMultV0);
-  Bool_t isEvSel_HighMultV0 = ev_sel_cuts_copy->IsEventSelected(aod);
-  fIsEvRej_HighMultV0 = ev_sel_cuts_copy->GetEventRejectionBitMap();
+  fEvSelectionCuts->SetTriggerMask(AliVEvent::kHighMultV0);
+  Bool_t isEvSel_HighMultV0 = fEvSelectionCuts->IsEventSelected(aod);
+  fIsEvRej_HighMultV0 = fEvSelectionCuts->GetEventRejectionBitMap();
+    
+  fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
   
   fRunNumber=aod->GetRunNumber();
   //n tracklets
