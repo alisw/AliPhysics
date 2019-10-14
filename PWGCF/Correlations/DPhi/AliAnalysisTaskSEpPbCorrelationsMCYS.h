@@ -1,7 +1,7 @@
 /*
  *****************************************************************************************/
-#ifndef ALIANALYSISTASKSEPPBCORRELATIONS
-#define ALIANALYSISTASKSEPPBCORRELATIONS
+#ifndef ALIANALYSISTASKSEPPBCORRELATIONSMCYS
+#define ALIANALYSISTASKSEPPBCORRELATIONSMCYS
 
 #include "AliAnalysisTask.h"
 #include "AliLog.h"
@@ -30,9 +30,9 @@ class AliAODcascade;
 class AliAODVertex;
 
 
-#ifndef ALIANALYSISTASKSEH
+//#ifndef ALIANALYSISTASKSEH_
 #include "AliAnalysisTaskSE.h"
-#endif
+//#endif
 
 //---------------------------------------------------------------------------------------
 class AliAnalysisTaskSEpPbCorrelationsMCYS : public AliAnalysisTaskSE {
@@ -40,7 +40,6 @@ public:
   AliAnalysisTaskSEpPbCorrelationsMCYS();
   AliAnalysisTaskSEpPbCorrelationsMCYS(const char *name);
   virtual ~AliAnalysisTaskSEpPbCorrelationsMCYS();
-
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
@@ -376,14 +375,14 @@ Float_t AliAnalysisTaskSEpPbCorrelationsMCYS::GetDPhiStar(
   return dphistar;
 }
 
-class AliAssociatedTrackYS : public AliVParticle {
+class AliAssociatedTrackYSMC : public AliVParticle {
 public:
-  AliAssociatedTrackYS(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
+  AliAssociatedTrackYSMC(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
                        Int_t ID, Int_t ID1, Int_t ID2, Short_t candidate,
                        Double_t multiplicity)
       : fCharge(charge), fEta(eta), fPhi(phi), fpT(pt), fID(ID), fID1(ID1),
         fID2(ID2), fCandidate(candidate), fMultiplicity(multiplicity) {}
-  virtual ~AliAssociatedTrackYS() {}
+  virtual ~AliAssociatedTrackYSMC() {}
 
   virtual Double_t Px() const {
     AliFatal("Not implemented");
@@ -473,18 +472,18 @@ private:
   Double_t fMultiplicity;
   Int_t fID1;
   Int_t fID2;
-  ClassDef(AliAssociatedTrackYS, 1);
+  ClassDef(AliAssociatedTrackYSMC, 1);
 };
 
-class AliMixTrackYS : public AliVParticle {
+class AliMixTrackYSMC : public AliVParticle {
 public:
-  AliMixTrackYS(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
+  AliMixTrackYSMC(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
                 Float_t px, Float_t py, Float_t pz
 
                 )
       : fCharge(charge), fEta(eta), fPhi(phi), fpT(pt), fpx(px), fpy(py),
         fpz(pz) {}
-  virtual ~AliMixTrackYS() {}
+  virtual ~AliMixTrackYSMC() {}
 
   virtual Double_t Px() const { return fpx; }
   virtual Double_t Py() const { return fpy; }
@@ -579,13 +578,13 @@ private:
   Float_t fpy;
   Float_t fpz;
 
-  ClassDef(AliMixTrackYS, 1);
+  ClassDef(AliMixTrackYSMC, 1);
 };
 //---------------------------------------------------------------------------------------
 
-class AliAssociatedVZEROYS : public AliVParticle {
+class AliAssociatedVZEROYSMC : public AliVParticle {
 public:
-  AliAssociatedVZEROYS(Float_t multiplicity,
+  AliAssociatedVZEROYSMC(Float_t multiplicity,
                        //		  Double_t multiplicity,
                        Float_t eta,
                        // Float_t phi,
@@ -594,7 +593,7 @@ public:
 
         fMultiplicity(multiplicity),
         fEta(eta), fPhi(phi), fpT(pt), fID(ID), fCandidate(candidate) {}
-  virtual ~AliAssociatedVZEROYS() {}
+  virtual ~AliAssociatedVZEROYSMC() {}
 
   virtual Double_t Px() const {
     AliFatal("Not implemented");
@@ -685,7 +684,7 @@ private:
   Int_t fID;          // ID
   Short_t fCandidate; // 1-pi,2-K,3-p
 
-  ClassDef(AliAssociatedVZEROYS, 1);
+  ClassDef(AliAssociatedVZEROYSMC, 1);
 };
 
 #endif

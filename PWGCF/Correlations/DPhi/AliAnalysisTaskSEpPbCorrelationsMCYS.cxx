@@ -73,9 +73,9 @@
 #include "AliAnalysisTaskSEpPbCorrelationsMCYS.h"
 
 ClassImp(AliAnalysisTaskSEpPbCorrelationsMCYS)
-ClassImp(AliAssociatedTrackYS)
-ClassImp(AliMixTrackYS)
-ClassImp(AliAssociatedVZEROYS)
+ClassImp(AliAssociatedTrackYSMC)
+ClassImp(AliMixTrackYSMC)
+ClassImp(AliAssociatedVZEROYSMC)
 
 AliAnalysisTaskSEpPbCorrelationsMCYS::AliAnalysisTaskSEpPbCorrelationsMCYS()
     : AliAnalysisTaskSE(),
@@ -1861,11 +1861,11 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
        vzeroqa[2] = lCentrality;
        if (fQA)   fHistVZERO->Fill(vzeroqa, 0, (Double_t)mult_vzero_eq);
        if(imod>31) {
-	 if(fAnaMode=="TPCV0A") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta_ave,phi_vzero,-999,-999,-999,-999,-999,mult_vzero_eq));
-	 if(fAnaMode=="V0AV0C")selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta_ave,phi_vzero,-999,-999,-999,-999,-999,mult_vzero_eq));
-	 //selectedTrackV0A->Add(new AliAssociatedVZEROYS(mult_vzero_eq,eta_ave,phi_vzero,0.0,0,0));  
+	 if(fAnaMode=="TPCV0A") selectedTracksAssociated->Add(new AliAssociatedTrackYSMC(-999,eta_ave,phi_vzero,-999,-999,-999,-999,-999,mult_vzero_eq));
+	 if(fAnaMode=="V0AV0C")selectedTracksLeading->Add(new AliAssociatedTrackYSMC(-999,eta_ave,phi_vzero,-999,-999,-999,-999,-999,mult_vzero_eq));
+	 //selectedTrackV0A->Add(new AliAssociatedVZEROYSMC(mult_vzero_eq,eta_ave,phi_vzero,0.0,0,0));  
        }else if(imod<32) {
-	 if(fAnaMode=="TPCV0C" ||fAnaMode=="V0AV0C")selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta_ave,phi_vzero,-999,-999,-999,-999,-999,mult_vzero_eq));
+	 if(fAnaMode=="TPCV0C" ||fAnaMode=="V0AV0C")selectedTracksAssociated->Add(new AliAssociatedTrackYSMC(-999,eta_ave,phi_vzero,-999,-999,-999,-999,-999,mult_vzero_eq));
        }
      }
    }
@@ -1917,11 +1917,11 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
 	 
 	 if (mostProbableN > 0) {
 	   if(eta>0){
-	     if(fAnaMode=="TPCFMD" || fAnaMode=="ITSFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));			
-	     if(fAnaMode=="FMDFMD") selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
+	     if(fAnaMode=="TPCFMD" || fAnaMode=="ITSFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYSMC(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));			
+	     if(fAnaMode=="FMDFMD") selectedTracksLeading->Add(new AliAssociatedTrackYSMC(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
 	     
 	   }else if(eta<0){
-	     if(fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));
+	     if(fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYSMC(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));
 	   }
 	   
 	   Double_t cont[4]={eta,phi,lCentrality,fPrimaryZVtx};
@@ -2098,18 +2098,18 @@ if(fAnaMode=="TPCTPC"){
 		  //		  if(mcTrackPt<0.2 || mcTrackPt>3.0) continue;
 		  if(fAnaMode=="TPCTPC") {
 			if(mcTrackEta<-0.8 || mcTrackEta>0.8) continue;
-			selectedTracksMC1->Add(new AliAssociatedTrackYS(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));         
-			selectedTracksMC2->Add(new AliAssociatedTrackYS(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));  			
+			selectedTracksMC1->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));         
+			selectedTracksMC2->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));  			
 		  }else{
 			if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC"){
-			  if(mcTrackEta>-0.8 && mcTrackEta<0.8) selectedTracksMC1->Add(new AliAssociatedTrackYS(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
+			  if(mcTrackEta>-0.8 && mcTrackEta<0.8) selectedTracksMC1->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
 			}else if(fAnaMode=="FMDFMD")	  {
-			  if(mcTrackEta>1.7 && mcTrackEta<4.9) selectedTracksMC1->Add(new AliAssociatedTrackYS(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1)); 			}	
+			  if(mcTrackEta>1.7 && mcTrackEta<4.9) selectedTracksMC1->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1)); 			}	
 
  			if(fAnaMode=="TPCFMD"){
-			  if(mcTrackEta>1.7  && mcTrackEta<4.9)	    selectedTracksMC2->Add(new AliAssociatedTrackYS(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));  
+			  if(mcTrackEta>1.7  && mcTrackEta<4.9)	    selectedTracksMC2->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));  
 			}	else if(fAnaMode=="TPCFMDC" ||fAnaMode=="FMDFMD"){
-			  if(mcTrackEta>-3.4  && mcTrackEta<-1.7)	    selectedTracksMC2->Add(new AliAssociatedTrackYS(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));  
+			  if(mcTrackEta>-3.4  && mcTrackEta<-1.7)	    selectedTracksMC2->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));  
 			}
 		  }			
 		}	  
@@ -2177,7 +2177,7 @@ TObjArray* AliAnalysisTaskSEpPbCorrelationsMCYS::GetFMDhitsYS(Bool_t Aside){
 	  } else{
 	    if(eta>0) continue;
 	  }
-	  tracks1->Add(new AliAssociatedVZEROYS(mostProbableN,eta,phi,0,0,0));
+	  tracks1->Add(new AliAssociatedVZEROYSMC(mostProbableN,eta,phi,0,0,0));
 	  Double_t cont[3]={eta,phi,lCentrality};
 	  fhistfmd->Fill(cont,0,mostProbableN);
 	  fh2_FMD_acceptance->Fill(eta,tPrimaryVtxPosition[2]);
@@ -2195,9 +2195,9 @@ TObjArray* AliAnalysisTaskSEpPbCorrelationsMCYS::GetFMDhitsYS(Bool_t Aside){
     for (auto const &track: ret_vector) {
            //cout<<i<<" "<<track.eta<<" "<<track.phi<<" "<<track.weight<<endl;
            if(Aside==kTRUE){
-            if(track.eta>0) tracks1->Add(new AliAssociatedVZEROYS(track.eta,track.phi,track.weight,0,0,0));
+            if(track.eta>0) tracks1->Add(new AliAssociatedVZEROYSMC(track.eta,track.phi,track.weight,0,0,0));
             } else{
-            if(track.eta<0) tracks1->Add(new AliAssociatedVZEROYS(track.eta,track.phi,track.weight,0,0,0));
+            if(track.eta<0) tracks1->Add(new AliAssociatedVZEROYSMC(track.eta,track.phi,track.weight,0,0,0));
           }
            i++;
     }
@@ -2230,7 +2230,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::CalculateSP(){
   fQTPCSin=0;
   fQTPC=0;
   for(Int_t i=0;i<selectedTracksLeading->GetEntriesFast();i++){
-    AliAssociatedTrackYS* trackRP=(AliAssociatedTrackYS*)selectedTracksLeading->At(i);
+    AliAssociatedTrackYSMC* trackRP=(AliAssociatedTrackYSMC*)selectedTracksLeading->At(i);
     if(!trackRP) continue;
     Double_t phiRP=trackRP->Phi();
     Double_t ptRP=trackRP->Pt();
@@ -2344,8 +2344,8 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::CalculateSP(){
       fQVZEROA+=w;
     }
 
-    if(imod>31) selectedTrackV0A->Add(new AliAssociatedVZEROYS(mult_vzero_eq,eta_ave,phi_vzero,0.0,0,0));
-    if(imod<32) selectedTrackV0C->Add(new AliAssociatedVZEROYS(mult_vzero_eq,eta_ave,phi_vzero,0.0,0,0));
+    if(imod>31) selectedTrackV0A->Add(new AliAssociatedVZEROYSMC(mult_vzero_eq,eta_ave,phi_vzero,0.0,0,0));
+    if(imod<32) selectedTrackV0C->Add(new AliAssociatedVZEROYSMC(mult_vzero_eq,eta_ave,phi_vzero,0.0,0,0));
     }
   Double_t vzeroc_qmcos=fQVZEROCCos/fQVZEROC;
   Double_t vzeroc_qmsin=fQVZEROCSin/fQVZEROC;
@@ -2396,7 +2396,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::CalculateSP(){
   Double_t uQ_vzeroa=0;
   Double_t uQ_vzeroc=0;
   for(Int_t i=0;i<selectedTracksAssociated->GetEntriesFast();i++){
-    AliAssociatedTrackYS* trackPOI=(AliAssociatedTrackYS*)selectedTracksAssociated->At(i);
+    AliAssociatedTrackYSMC* trackPOI=(AliAssociatedTrackYSMC*)selectedTracksAssociated->At(i);
     Double_t phi=trackPOI->Phi();
     Double_t eta=trackPOI->Eta();
     Double_t pt=trackPOI->Pt();
@@ -2468,7 +2468,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksLeading(AliAOD
 
     if (aodTrack->Pt() > 3.) continue;
     Int_t SpAsso=0;
-    tracks->Add(new AliAssociatedTrackYS(aodTrack->Charge(), aodTrack->Eta(), aodTrack->Phi(), aodTrack->Pt(), aodTrack->GetID(), -999, -999, SpAsso, 1));
+    tracks->Add(new AliAssociatedTrackYSMC(aodTrack->Charge(), aodTrack->Eta(), aodTrack->Phi(), aodTrack->Pt(), aodTrack->GetID(), -999, -999, SpAsso, 1));
   }
   return tracks;
 }
@@ -2535,7 +2535,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksPID(AliAODEven
     if(SpPID==0) fHistNsigcorr[1]->Fill(nSigmaKaonTPC,nSigmaKaonTOF);
     if(SpPID==2) fHistNsigcorr[2]->Fill(nSigmaProtonTPC,nSigmaProtonTOF);
 
-    tracks->Add(new AliAssociatedTrackYS(aodTrack->Charge(), aodTrack->Eta(), aodTrack->Phi(), aodTrack->Pt(), aodTrack->GetID(), -999, -999, SpPID, 1));
+    tracks->Add(new AliAssociatedTrackYSMC(aodTrack->Charge(), aodTrack->Eta(), aodTrack->Phi(), aodTrack->Pt(), aodTrack->GetID(), -999, -999, SpPID, 1));
   }
   return tracks;
 }
@@ -2597,7 +2597,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksAssociated(Ali
     if (!isKaon1)
     continue;
 
-    dtrack->Add(new AliMixTrackYS(
+    dtrack->Add(new AliMixTrackYSMC(
       aodTrack1->Charge(), aodTrack1->Eta(), aodTrack1->Phi(),
       aodTrack1->Pt(), aodTrack1->Px(), aodTrack1->Py(), aodTrack1->Pz()));
 
@@ -2713,7 +2713,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksAssociated(Ali
         SpPhi = 6; // same as step
 
       if(SpPhi<0) continue;
-      tracks->Add(new AliAssociatedTrackYS(0, eta_phi, phi_phi, pt_phi, -999,
+      tracks->Add(new AliAssociatedTrackYSMC(0, eta_phi, phi_phi, pt_phi, -999,
                                            aodTrack1->GetID(),
                                            aodTrack2->GetID(), SpPhi, 1));
 
@@ -2733,7 +2733,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksAssociated(Ali
     for (Int_t jMix = 0; jMix < nMix; jMix++) {
       TObjArray *mixEvents = pool->GetEvent(jMix);
       for (Int_t i = 0; i < dtrack->GetEntriesFast(); i++) {
-        AliMixTrackYS *dtrack1 = (AliMixTrackYS *)dtrack->At(i);
+        AliMixTrackYSMC *dtrack1 = (AliMixTrackYSMC *)dtrack->At(i);
         if (!dtrack1)
           continue;
         Double_t pdx1 = dtrack1->Px();
@@ -2743,7 +2743,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksAssociated(Ali
                                    0.493677 * 0.493677);
         counterMix++;
         for (Int_t j = 0; j < mixEvents->GetEntriesFast(); j++) {
-          AliMixTrackYS *dtrack2 = (AliMixTrackYS *)mixEvents->At(j);
+          AliMixTrackYSMC *dtrack2 = (AliMixTrackYSMC *)mixEvents->At(j);
           if (!dtrack2)
             continue;
           if (dtrack1->Charge() == dtrack2->Charge())
@@ -2783,8 +2783,8 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksAssociated(Ali
   tracksClone->SetOwner(kTRUE);
 
   for (Int_t i = 0; i < dtrack->GetEntriesFast(); i++) {
-    AliMixTrackYS *particle = (AliMixTrackYS *)dtrack->At(i);
-    tracksClone->Add(new AliMixTrackYS(
+    AliMixTrackYSMC *particle = (AliMixTrackYSMC *)dtrack->At(i);
+    tracksClone->Add(new AliMixTrackYSMC(
         particle->Charge(), particle->Eta(), particle->Phi(), particle->Pt(),
         particle->Px(), particle->Py(), particle->Pz()));
   }
@@ -3053,7 +3053,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedV0Tracks(const AliAO
 	    fh3PosNsig[2]->Fill(myTrackPos->Pt(),nSigmaPosPionTPC,nSigmaPosPionTOF);
           }
         }
-        tracks->Add(new AliAssociatedTrackYS(aodv0->Charge(), aodv0->Eta(), aodv0->Phi(), aodv0->Pt(),aodv0->GetID(), myTrackPos->GetID(), myTrackNeg->GetID(), SpV0, 1));
+        tracks->Add(new AliAssociatedTrackYSMC(aodv0->Charge(), aodv0->Eta(), aodv0->Phi(), aodv0->Pt(),aodv0->GetID(), myTrackPos->GetID(), myTrackNeg->GetID(), SpV0, 1));
 
       if(!fDataType){
         TClonesArray *mcArray1 = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName());
@@ -3338,7 +3338,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedCascadeTracks(AliAOD
     if(SpCas<0) continue;
     Double_t spCascadeQA[5] = {casc->Pt(),casc->Eta(), casc->Phi(), (Float_t)SpCas,  lCentrality};
     fHist_CascadeQA->Fill(spCascadeQA);
-    tracks->Add(new AliAssociatedTrackYS(1., etaCas, phiCas, lPtCas, myTrackCascPos->GetID(),myTrackCascNeg->GetID(), myTrackCascBach->GetID(), SpCas, 1));
+    tracks->Add(new AliAssociatedTrackYSMC(1., etaCas, phiCas, lPtCas, myTrackCascPos->GetID(),myTrackCascNeg->GetID(), myTrackCascBach->GetID(), SpCas, 1));
   }
   return tracks;
 }
@@ -3579,7 +3579,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
       Double_t binscontTrig[3];
       Double_t binscont[6];
       for (Int_t i = 0; i < triggerArray->GetEntriesFast(); i++) {
-	AliAssociatedTrackYS *trigger = (AliAssociatedTrackYS *)triggerArray->At(i);
+	AliAssociatedTrackYSMC *trigger = (AliAssociatedTrackYSMC *)triggerArray->At(i);
 	if (!trigger)    continue;
 	Float_t triggerPt = trigger->Pt();
 	Float_t triggerEta = trigger->Eta();
@@ -3592,7 +3592,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
 	binscontTrig[2] = fPrimaryZVtx;
 	triggerHist->Fill(binscontTrig, 0);
 	for (Int_t j = 0; j < selectedTrackArray->GetEntriesFast(); j++) {
-	  AliAssociatedTrackYS *associate =   (AliAssociatedTrackYS*)selectedTrackArray->At(j);
+	  AliAssociatedTrackYSMC *associate =   (AliAssociatedTrackYSMC*)selectedTrackArray->At(j);
 	  if (!associate)        continue;
 	  Int_t AssoFirstID = associate->GetIDFirstDaughter();
 	  Int_t AssoSecondID = associate->GetIDSecondDaughter();
@@ -3625,7 +3625,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
     Double_t binscontTrig[4];
     Double_t binscont[7];
     for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-      AliAssociatedTrackYS* trigger = (AliAssociatedTrackYS*) triggerArray->At(i);
+      AliAssociatedTrackYSMC* trigger = (AliAssociatedTrackYSMC*) triggerArray->At(i);
       if(!trigger)continue;
       Float_t  triggerEta  = trigger->Eta();
       Float_t  triggerPhi  = trigger->Phi();
@@ -3637,7 +3637,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
       Int_t SpAsso= trigger->WhichCandidate();
       triggerHist->Fill(binscontTrig,SpAsso);
       for (Int_t j=0; j<selectedTrackArray->GetEntriesFast(); j++){
-        AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*) selectedTrackArray->At(j);
+        AliAssociatedTrackYSMC* associate = (AliAssociatedTrackYSMC*) selectedTrackArray->At(j);
         if(!associate)continue;
         Float_t associatemultiplicity=associate->Multiplicity();
         Float_t assophi=associate->Phi();
@@ -3661,7 +3661,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
     Double_t binscontTrig[4];
     Double_t binscont[6];
     for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-      AliAssociatedTrackYS* trigger = (AliAssociatedTrackYS*) triggerArray->At(i);
+      AliAssociatedTrackYSMC* trigger = (AliAssociatedTrackYSMC*) triggerArray->At(i);
       if(!trigger)continue;
       Float_t  triggerEta  = trigger->Eta();
       Float_t  triggerPhi  = trigger->Phi();
@@ -3673,7 +3673,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
       Int_t SpAsso= trigger->WhichCandidate();
       triggerHist->Fill(binscontTrig,SpAsso);
       for (Int_t j=0; j<selectedTrackArray->GetEntriesFast(); j++){
-        AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*) selectedTrackArray->At(j);
+        AliAssociatedTrackYSMC* associate = (AliAssociatedTrackYSMC*) selectedTrackArray->At(j);
         if(!associate)continue;
         Float_t associatemultiplicity=associate->Multiplicity();
         Float_t assophi=associate->Phi();
@@ -3691,7 +3691,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
     Double_t binscontTrig[3];
     Double_t binscont[6];
     for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-      AliAssociatedTrackYS* trigger = (AliAssociatedTrackYS*) triggerArray->At(i);
+      AliAssociatedTrackYSMC* trigger = (AliAssociatedTrackYSMC*) triggerArray->At(i);
       if(!trigger)continue;
       Float_t  triggerMultiplicity= trigger->Multiplicity();
       Float_t  triggerEta  = trigger->Eta();
@@ -3701,7 +3701,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
       binscontTrig[2]=fPrimaryZVtx;
       triggerHist->Fill(binscontTrig,0,(Double_t)triggerMultiplicity);
       for (Int_t j=0; j<selectedTrackArray->GetEntriesFast(); j++){
-        AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*) selectedTrackArray->At(j);
+        AliAssociatedTrackYSMC* associate = (AliAssociatedTrackYSMC*) selectedTrackArray->At(j);
         if(!associate)continue;
         Float_t assophi=associate->Phi();
         Float_t assoeta=associate->Eta();
@@ -3722,7 +3722,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
     Double_t binscontTrig[3];
     Double_t binscont[5];
     for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-      AliAssociatedTrackYS* trigger = (AliAssociatedTrackYS*) triggerArray->At(i);
+      AliAssociatedTrackYSMC* trigger = (AliAssociatedTrackYSMC*) triggerArray->At(i);
       if(!trigger)continue;
       Float_t  triggerMultiplicity= trigger->Multiplicity();
       Float_t  triggerEta  = trigger->Eta();
@@ -3732,7 +3732,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
       binscontTrig[2]=fPrimaryZVtx;
       triggerHist->Fill(binscontTrig,0,(Double_t)triggerMultiplicity);
       for (Int_t j=0; j<selectedTrackArray->GetEntriesFast(); j++){
-        AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*) selectedTrackArray->At(j);
+        AliAssociatedTrackYSMC* associate = (AliAssociatedTrackYSMC*) selectedTrackArray->At(j);
         if(!associate)continue;
         Float_t assophi=associate->Phi();
         Float_t assoeta=associate->Eta();
@@ -3752,7 +3752,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
     Double_t  binscont1[4];
     Double_t  binscontTrig1[3];
     for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-      AliAssociatedTrackYS* trigger = (AliAssociatedTrackYS*) triggerArray->At(i);
+      AliAssociatedTrackYSMC* trigger = (AliAssociatedTrackYSMC*) triggerArray->At(i);
       if(!trigger)continue;
       Double_t  triggerMultiplicity= trigger->Multiplicity();
       Double_t  triggerEta  = trigger->Eta();
@@ -3762,7 +3762,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
       binscontTrig1[2]=triggerPhi;
       triggerHist->Fill(binscontTrig1,0,(Double_t)triggerMultiplicity);
       for (Int_t j=0; j<selectedTrackArray->GetEntriesFast(); j++){
-        AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*) selectedTrackArray->At(j);
+        AliAssociatedTrackYSMC* associate = (AliAssociatedTrackYSMC*) selectedTrackArray->At(j);
         if(!associate)continue;
         Double_t associatemultiplicity=associate->Multiplicity();
         Double_t assophi=associate->Phi();
@@ -3813,7 +3813,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
         Double_t binscontTrig[2];
         Double_t binscont[6];
 	for (Int_t i = 0; i < triggerArray->GetEntriesFast(); i++) {
-          AliAssociatedTrackYS *trig = (AliAssociatedTrackYS *)triggerArray->At(i);
+          AliAssociatedTrackYSMC *trig = (AliAssociatedTrackYSMC *)triggerArray->At(i);
           if (!trig)          continue;
           Double_t triggerPhi = trig->Phi();
           Double_t triggerEta = trig->Eta();
@@ -3823,7 +3823,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
           binscontTrig[1] = centrality;
           triggerHist->Fill(binscontTrig, 0);
           for (Int_t j = 0; j < mixEvents->GetEntriesFast(); j++) {
-            AliAssociatedTrackYS *associate =  (AliAssociatedTrackYS *)mixEvents->At(j);
+            AliAssociatedTrackYSMC *associate =  (AliAssociatedTrackYSMC *)mixEvents->At(j);
             if (!associate) continue;
 	    binscont[0] = triggerEta - associate->Eta();
 	    binscont[1] = associate->Pt();
@@ -3844,7 +3844,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
         Double_t binscontTrig[2];
         Double_t binscont[7];
         for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-          AliAssociatedTrackYS* trigger =(AliAssociatedTrackYS*) triggerArray->At(i);
+          AliAssociatedTrackYSMC* trigger =(AliAssociatedTrackYSMC*) triggerArray->At(i);
           if(!trigger)continue;
           Double_t triggerPt   = trigger->Pt();
           Double_t triggerEta  = trigger->Eta();
@@ -3855,7 +3855,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
           binscontTrig[1]=centrality;
           triggerHist->Fill(binscontTrig,SpAsso);
           for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
-            AliAssociatedTrackYS* associate=(AliAssociatedTrackYS*)  mixEvents->At(j);
+            AliAssociatedTrackYSMC* associate=(AliAssociatedTrackYSMC*)  mixEvents->At(j);
             
             if(!associate)continue;
             binscont[0]=triggerEta-associate->Eta();
@@ -3878,7 +3878,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
         Double_t binscontTrig[2];
         Double_t binscont[6];
         for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-          AliAssociatedTrackYS* trigger =(AliAssociatedTrackYS*) triggerArray->At(i);
+          AliAssociatedTrackYSMC* trigger =(AliAssociatedTrackYSMC*) triggerArray->At(i);
           if(!trigger)continue;
           Double_t triggerPt   = 0.5;
           Double_t triggerEta  = trigger->Eta();
@@ -3889,7 +3889,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
           binscontTrig[1]=centrality;
           triggerHist->Fill(binscontTrig,SpAsso);
           for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
-            AliAssociatedTrackYS* associate=(AliAssociatedTrackYS*)  mixEvents->At(j);
+            AliAssociatedTrackYSMC* associate=(AliAssociatedTrackYSMC*)  mixEvents->At(j);
 	    if(!associate)continue;
             binscont[0]=triggerEta-associate->Eta();
             binscont[1]=centrality;
@@ -3904,7 +3904,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
         Double_t binscontTrig[2];
         Double_t binscont[6];
         for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-          AliAssociatedTrackYS* trigger = (AliAssociatedTrackYS*) triggerArray->At(i);
+          AliAssociatedTrackYSMC* trigger = (AliAssociatedTrackYSMC*) triggerArray->At(i);
         if(!trigger)continue;
         Float_t triggerMultiplicity= trigger->Multiplicity();
         Float_t  triggerEta  = trigger->Eta();
@@ -3914,7 +3914,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
         binscontTrig[1]=triggerEta;
         triggerHist->Fill(binscontTrig,step,(Double_t)triggerMultiplicity);
         for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
-          AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*) mixEvents->At(j);
+          AliAssociatedTrackYSMC* associate = (AliAssociatedTrackYSMC*) mixEvents->At(j);
           if(!associate)continue;
           //          Double_t associatemultiplicity=associate->Multiplicity();
           Float_t assophi=associate->Phi();
@@ -3935,7 +3935,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
         Double_t binscontTrig[2];
         Double_t binscont[5];
         for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-          AliAssociatedTrackYS* trigger = (AliAssociatedTrackYS*) triggerArray->At(i);
+          AliAssociatedTrackYSMC* trigger = (AliAssociatedTrackYSMC*) triggerArray->At(i);
 	  if(!trigger)continue;
 	  Float_t triggerMultiplicity= trigger->Multiplicity();
 	  Float_t  triggerEta  = trigger->Eta();
@@ -3945,7 +3945,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
 	  binscontTrig[1]=triggerEta;
 	  triggerHist->Fill(binscontTrig,step,(Double_t)triggerMultiplicity);
 	  for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
-	    AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*) mixEvents->At(j);
+	    AliAssociatedTrackYSMC* associate = (AliAssociatedTrackYSMC*) mixEvents->At(j);
 	    if(!associate)continue;
 	    //          Double_t associatemultiplicity=associate->Multiplicity();
 	    Float_t assophi=associate->Phi();
@@ -3965,7 +3965,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
 	Double_t  binscont1[4];
 	Double_t  binscontTrig1[3];
 	for(Int_t i=0;i<triggerArray->GetEntriesFast();i++){
-	  AliAssociatedTrackYS* trigger = (AliAssociatedTrackYS*) triggerArray->At(i);
+	  AliAssociatedTrackYSMC* trigger = (AliAssociatedTrackYSMC*) triggerArray->At(i);
 	  if(!trigger)continue;
 	  Double_t  triggerMultiplicity= trigger->Multiplicity();
 	  Double_t  triggerEta  = trigger->Eta();
@@ -3976,7 +3976,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracksMixing(Double_t 
 	  binscontTrig1[2]=triggerPhi;
 	  triggerHist->Fill(binscontTrig1,step,(Double_t)triggerMultiplicity);
 	  for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
-	    AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*) mixEvents->At(j);
+	    AliAssociatedTrackYSMC* associate = (AliAssociatedTrackYSMC*) mixEvents->At(j);
 	    if(!associate)continue;
 	    Double_t associatemultiplicity=associate->Multiplicity();
 	    Double_t assophi=associate->Phi();
@@ -4002,8 +4002,8 @@ TObjArray* AliAnalysisTaskSEpPbCorrelationsMCYS::CloneTrack(TObjArray*selectedTr
   tracksClone->SetOwner(kTRUE);
   
   for (Int_t i = 0; i < selectedTrackArray->GetEntriesFast(); i++) {
-    AliAssociatedTrackYS *particle =  (AliAssociatedTrackYS *)selectedTrackArray->At(i);
-    tracksClone->Add(new AliAssociatedTrackYS(particle->Charge(), particle->Eta(), particle->Phi(), particle->Pt(),
+    AliAssociatedTrackYSMC *particle =  (AliAssociatedTrackYSMC *)selectedTrackArray->At(i);
+    tracksClone->Add(new AliAssociatedTrackYSMC(particle->Charge(), particle->Eta(), particle->Phi(), particle->Pt(),
 					      particle->GetID(), particle->GetIDFirstDaughter(),
 					      particle->GetIDSecondDaughter(), particle->WhichCandidate(),
 					      particle->Multiplicity()));
