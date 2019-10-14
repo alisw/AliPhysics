@@ -179,6 +179,42 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
   sPathOfMCFile("/alien"),
   sNucleiTP("PbPb"),
   sCentrEstimator("V0M"),
+  fpX1X2PosT1(NULL),
+  fpX1X3PosT1(NULL),
+  fpX1X2PosT2(NULL),
+  fpX1X3PosT2(NULL),
+  fpX1X2PosT3(NULL),
+  fpX1X3PosT3(NULL),
+  fpX1X2PosT4(NULL),
+  fpX1X3PosT4(NULL),
+  fpX1X2NegT1(NULL),
+  fpX1X3NegT1(NULL),
+  fpX1X2NegT2(NULL),
+  fpX1X3NegT2(NULL),
+  fpX1X2NegT3(NULL),
+  fpX1X3NegT3(NULL),
+  fpX1X2NegT4(NULL),
+  fpX1X3NegT4(NULL),
+  fpX1X2OppT1(NULL),
+  fpX1X2OppT2(NULL),
+  fpX1X2OppT3(NULL),
+  fpX1X2OppT4(NULL),
+  fpX1X3PosT1EP2(NULL),
+  fpX1X3PosT2EP2(NULL),
+  fpX1X3PosT3EP2(NULL),
+  fpX1X3PosT4EP2(NULL),
+  fpX1X3NegT1EP2(NULL),
+  fpX1X3NegT2EP2(NULL),
+  fpX1X3NegT3EP2(NULL),
+  fpX1X3NegT4EP2(NULL),
+  fpX1PosCosT1(NULL),
+  fpX1NegCosT1(NULL),
+  fpX1PosSinT1(NULL),
+  fpX1NegSinT1(NULL),
+  fpX1EventT1EP1(NULL),
+  fpX1EventT1EP2(NULL),
+  fpY1EventT1EP1(NULL),
+  fpY1EventT1EP2(NULL),
   fHistEventCount(NULL)
 {
   for(int i=0;i<3;i++){
@@ -368,6 +404,42 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():
   sPathOfMCFile("/alien"),
   sNucleiTP("PbPb"),
   sCentrEstimator("V0M"),
+  fpX1X2PosT1(NULL),
+  fpX1X3PosT1(NULL),
+  fpX1X2PosT2(NULL),
+  fpX1X3PosT2(NULL),
+  fpX1X2PosT3(NULL),
+  fpX1X3PosT3(NULL),
+  fpX1X2PosT4(NULL),
+  fpX1X3PosT4(NULL),
+  fpX1X2NegT1(NULL),
+  fpX1X3NegT1(NULL),
+  fpX1X2NegT2(NULL),
+  fpX1X3NegT2(NULL),
+  fpX1X2NegT3(NULL),
+  fpX1X3NegT3(NULL),
+  fpX1X2NegT4(NULL),
+  fpX1X3NegT4(NULL),
+  fpX1X2OppT1(NULL),
+  fpX1X2OppT2(NULL),
+  fpX1X2OppT3(NULL),
+  fpX1X2OppT4(NULL),
+  fpX1X3PosT1EP2(NULL),
+  fpX1X3PosT2EP2(NULL),
+  fpX1X3PosT3EP2(NULL),
+  fpX1X3PosT4EP2(NULL),
+  fpX1X3NegT1EP2(NULL),
+  fpX1X3NegT2EP2(NULL),
+  fpX1X3NegT3EP2(NULL),
+  fpX1X3NegT4EP2(NULL),
+  fpX1PosCosT1(NULL),
+  fpX1NegCosT1(NULL),
+  fpX1PosSinT1(NULL),
+  fpX1NegSinT1(NULL),
+  fpX1EventT1EP1(NULL),
+  fpX1EventT1EP2(NULL),
+  fpY1EventT1EP1(NULL),
+  fpY1EventT1EP2(NULL),
   fHistEventCount(NULL)
 {
   for(int i=0;i<3;i++){
@@ -837,6 +909,116 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   }
 
 
+
+
+  // Alex's correction histograms: 
+    
+  fpX1X2PosT1 =  new TProfile("fpX1X2PosT1", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2PosT1);
+  fpX1X3PosT1 =  new TProfile("fpX1X3PosT1", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3PosT1);
+  fpX1X2PosT2 =  new TProfile("fpX1X2PosT2", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2PosT2);
+  fpX1X3PosT2 =  new TProfile("fpX1X3PosT2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3PosT2);
+  fpX1X2PosT3 =  new TProfile("fpX1X2PosT3", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2PosT3);
+  fpX1X3PosT3 =  new TProfile("fpX1X3PosT3", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3PosT3);
+  fpX1X2PosT4 =  new TProfile("fpX1X2PosT4", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2PosT4);
+  fpX1X3PosT4 =  new TProfile("fpX1X3PosT4", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3PosT4);
+     
+     
+  fpX1X2NegT1 =  new TProfile("fpX1X2NegT1", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2NegT1);
+  fpX1X3NegT1 =  new TProfile("fpX1X3NegT1", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3NegT1);
+  fpX1X2NegT2 =  new TProfile("fpX1X2NegT2", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2NegT2);
+  fpX1X3NegT2 =  new TProfile("fpX1X3NegT2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3NegT2);
+  fpX1X2NegT3 =  new TProfile("fpX1X2NegT3", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2NegT3);
+  fpX1X3NegT3 =  new TProfile("fpX1X3NegT3", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3NegT3);
+  fpX1X2NegT4 =  new TProfile("fpX1X2NegT4", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2NegT4);
+  fpX1X3NegT4 =  new TProfile("fpX1X3NegT4", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3NegT4);
+     
+  fpX1X2OppT1 =  new TProfile("fpX1X2OppT1", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2OppT1);
+  fpX1X2OppT2 =  new TProfile("fpX1X2OppT2", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2OppT2);
+  fpX1X2OppT3 =  new TProfile("fpX1X2OppT3", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2OppT3);
+  fpX1X2OppT4 =  new TProfile("fpX1X2OppT4", "; centrality percentile; #LT X1X2 #GT", 10,centRange);
+  fListHist->Add(fpX1X2OppT4);
+
+
+  fpX1X3PosT1EP2 =  new TProfile("fpX1X3PosT1EP2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3PosT1EP2);
+  fpX1X3PosT2EP2 =  new TProfile("fpX1X3PosT2EP2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3PosT2EP2);
+  fpX1X3PosT3EP2 =  new TProfile("fpX1X3PosT3EP2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3PosT3EP2);
+  fpX1X3PosT4EP2 =  new TProfile("fpX1X3PosT4EP2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3PosT4EP2);
+
+  fpX1X3NegT1EP2 =  new TProfile("fpX1X3NegT1EP2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3NegT1EP2);
+  fpX1X3NegT2EP2 =  new TProfile("fpX1X3NegT2EP2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3NegT2EP2);
+  fpX1X3NegT3EP2 =  new TProfile("fpX1X3NegT3EP2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3NegT3EP2);
+  fpX1X3NegT4EP2 =  new TProfile("fpX1X3NegT4EP2", "; centrality percentile; #LT X1X3 #GT", 10,centRange);
+  fListHist->Add(fpX1X3NegT4EP2);
+    
+  /// Single terms:
+  fpX1PosCosT1 =  new TProfile("fpX1PosCosT1", "; centrality percentile; #LT <cos(#varphi_{+})> #GT", 10, centRange);
+  fListHist->Add(fpX1PosCosT1);
+  fpX1NegCosT1 =  new TProfile("fpX1NegCosT1", "; centrality percentile; #LT <cos(#varphi_{-})> #GT", 10, centRange);
+  fListHist->Add(fpX1NegCosT1);
+  fpX1PosSinT1 =  new TProfile("fpX1PosSinT1", "; centrality percentile; #LT <sin(#varphi_{+})> #GT", 10, centRange);
+  fListHist->Add(fpX1PosSinT1);
+  fpX1NegSinT1 =  new TProfile("fpX1NegSinT1", "; centrality percentile; #LT <sin(#varphi_{-})> #GT", 10, centRange);
+  fListHist->Add(fpX1NegSinT1);
+
+  fpX1EventT1EP1 =  new TProfile("fpX1EventT1EP1", "; centrality percentile; #LT <cos(N#Psi_N)> #GT", 10, centRange);
+  fListHist->Add(fpX1EventT1EP1);
+  fpX1EventT1EP2 =  new TProfile("fpX1EventT1EP2", "; centrality percentile; #LT <cos(N#Psi_N)> #GT", 10, centRange);
+  fListHist->Add(fpX1EventT1EP2);
+  fpY1EventT1EP1 =  new TProfile("fpY1EventT1EP1", "; centrality percentile; #LT <sin(N#Psi_N)> #GT", 10, centRange);
+  fListHist->Add(fpY1EventT1EP1);
+  fpY1EventT1EP2 =  new TProfile("fpY1EventT1EP2", "; centrality percentile; #LT <sin(N#Psi_N)> #GT", 10, centRange);
+  fListHist->Add(fpY1EventT1EP2);
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
   //---- to store NUA and calib histograms -----
   TList *fListNUACalib = new TList();
@@ -2320,6 +2502,39 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
 
+    //Alexandru Corrections: 
+    if (gCharge1 > 0){
+        
+      fpX1X3PosT1->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Cos(gPsiN*PsiNTPCC),ptw1*w1NUA);
+      fpX1X3PosT2->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Cos(gPsiN*PsiNTPCC),ptw1*w1NUA);
+      fpX1X3PosT3->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Sin(gPsiN*PsiNTPCC),ptw1*w1NUA);
+      fpX1X3PosT4->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Sin(gPsiN*PsiNTPCC),ptw1*w1NUA);
+
+      fpX1PosCosT1->Fill(EvtCent,TMath::Cos(dPhi1),ptw1*w1NUA);
+      fpX1PosSinT1->Fill(EvtCent,TMath::Sin(dPhi1),ptw1*w1NUA);
+	  
+      fpX1X3PosT1EP2->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Cos(gPsiN*PsiNTPCA),ptw1*w1NUA);
+      fpX1X3PosT2EP2->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Cos(gPsiN*PsiNTPCA),ptw1*w1NUA);
+      fpX1X3PosT3EP2->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Sin(gPsiN*PsiNTPCA),ptw1*w1NUA);
+      fpX1X3PosT4EP2->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Sin(gPsiN*PsiNTPCA),ptw1*w1NUA);
+          
+    }  
+    else if (gCharge1 < 0){
+        
+      fpX1X3NegT1->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Cos(gPsiN*PsiNTPCC),ptw1*w1NUA);
+      fpX1X3NegT2->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Cos(gPsiN*PsiNTPCC),ptw1*w1NUA);
+      fpX1X3NegT3->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Sin(gPsiN*PsiNTPCC),ptw1*w1NUA);
+      fpX1X3NegT4->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Sin(gPsiN*PsiNTPCC),ptw1*w1NUA);
+
+      fpX1NegCosT1->Fill(EvtCent,TMath::Cos(dPhi1),ptw1*w1NUA);
+      fpX1NegSinT1->Fill(EvtCent,TMath::Sin(dPhi1),ptw1*w1NUA);
+      
+      fpX1X3NegT1EP2->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Cos(gPsiN*PsiNTPCA),ptw1*w1NUA);
+      fpX1X3NegT2EP2->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Cos(gPsiN*PsiNTPCA),ptw1*w1NUA);
+      fpX1X3NegT3EP2->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Sin(gPsiN*PsiNTPCA),ptw1*w1NUA);
+      fpX1X3NegT4EP2->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Sin(gPsiN*PsiNTPCA),ptw1*w1NUA);          
+
+    }
 
 
 
@@ -2329,7 +2544,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
     multPOI2nd = 0;   
 
-    //---2nd track loop (nested)---
+    //===========> 2nd track loop (nested) <=================
+    
     for(Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
 
       if(jtrack==itrack) continue;
@@ -2604,7 +2820,14 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	fHist_Corr3p_EP_Refm_PN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	fHist_Corr3p_EP_Refm_PN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);		
 	*/
-	//Differential
+	
+	fpX1X2OppT1->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Cos(dPhi2),WgtEP);            
+	fpX1X2OppT2->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Sin(dPhi2),WgtEP);
+	fpX1X2OppT3->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Cos(dPhi2),WgtEP);
+	fpX1X2OppT4->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Sin(dPhi2),WgtEP);
+              
+	//Differential 	//Temporarily Turn off - Rihan 14Oct19
+	/*
 	if(cIndex<6){
 	  fHist_Corr3p_pTSum_EP_V0A_PN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5,  TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_pTSum_EP_V0C_PN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5,  TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
@@ -2613,6 +2836,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_EtaDiff_EP_V0A_PN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_EtaDiff_EP_V0C_PN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
 	}
+	*/
 	//-------------> PID CME ---------------
 	//Pion:
 	if(isPion1 && isPion2){
@@ -2692,8 +2916,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	fHist_Corr3p_EP_Refm_PP[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	fHist_Corr3p_EP_Refm_PP[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);	
 	*/
-	  		
-	//Differential:		
+	fpX1X2PosT1->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Cos(dPhi2),WgtEP);            
+	fpX1X2PosT2->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Sin(dPhi2),WgtEP);
+	fpX1X2PosT3->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Cos(dPhi2),WgtEP);
+	fpX1X2PosT4->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Sin(dPhi2),WgtEP);
+	//Differential 	//Temporarily Turn off - Rihan 14Oct19
+	
+	/*
 	if(cIndex<6){
 	  fHist_Corr3p_pTSum_EP_V0A_PP[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5,  TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_pTSum_EP_V0C_PP[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5,  TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
@@ -2702,6 +2931,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_EtaDiff_EP_V0A_PP[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_EtaDiff_EP_V0C_PP[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
 	}
+	*/
 	//-------------> PID CME ---------------
 	//Pion:
 	if(isPion1 && isPion2){
@@ -2781,6 +3011,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	fHist_Corr3p_EP_Refm_NN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	fHist_Corr3p_EP_Refm_NN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);	
 	*/
+	fpX1X2NegT1->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Cos(dPhi2),WgtEP);            
+	fpX1X2NegT2->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Sin(dPhi2),WgtEP);
+	fpX1X2NegT3->Fill(EvtCent, TMath::Sin(dPhi1)*TMath::Cos(dPhi2),WgtEP);
+	fpX1X2NegT4->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Sin(dPhi2),WgtEP);
+	
+	//Differential 	//Temporarily Turn off - Rihan 14Oct19
+	/*
 	if(cIndex<6){
 	  fHist_Corr3p_pTSum_EP_V0A_NN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5,   TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_pTSum_EP_V0C_NN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5,   TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
@@ -2789,6 +3026,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_EtaDiff_EP_V0A_NN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_EtaDiff_EP_V0C_NN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
 	}
+	*/
 	//-------------> PID CME ---------------
 	//Pion:
 	if(isPion1 && isPion2){
@@ -3060,6 +3298,11 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
 
+  //Alex Corrections EP terms:
+  fpX1EventT1EP1->Fill(EvtCent, TMath::Cos(gPsiN*PsiNTPCC),multPOI1st);
+  fpX1EventT1EP2->Fill(EvtCent, TMath::Cos(gPsiN*PsiNTPCA),multPOI1st);
+  fpY1EventT1EP1->Fill(EvtCent, TMath::Sin(gPsiN*PsiNTPCC),multPOI1st);
+  fpY1EventT1EP2->Fill(EvtCent, TMath::Sin(gPsiN*PsiNTPCA),multPOI1st);  
 
 
 
@@ -3130,9 +3373,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   fTPCAQ2yVsCentRun->Fill(EvtCent,sumTPCQn2y[0]);
   fTPCCQ2xVsCentRun->Fill(EvtCent,sumTPCQn2x[1]);
   fTPCCQ2yVsCentRun->Fill(EvtCent,sumTPCQn2y[1]);
-
   fTPCFQ2xVsCentRun->Fill(EvtCent,sumTPCQn2x[2]);
-  fTPCFQ2yVsCentRun->Fill(EvtCent,sumTPCQn2y[2]);    
+  fTPCFQ2yVsCentRun->Fill(EvtCent,sumTPCQn2y[2]);
+  
   /*
   fTPCAQ3xVsCentRun->Fill(EvtCent,sumTPCQn3x[0]); 
   fTPCAQ3yVsCentRun->Fill(EvtCent,sumTPCQn3y[0]);
@@ -3165,18 +3408,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
 
-  //if(multPOI2nd!=(multPOI1st-1)) 
-  //cout<<"mismatched "<< "\tPOIs1st = "<<multPOI1st<<"\tPOIs2nd = "<<multPOI2nd <<" for Event = "<<fEventCount<<endl;
-
-  //if(multPOI1st!=multEtaFull)
-  //cout<<"\n Mismatched track "<< "\t multEtaFull = "<<multEtaFull<<"\tPOIs1st = "<<multPOI1st<<" for Event = "<<fEventCount<<endl;
-
   //if(fEventCount%10==0) 
   //cout<<"Ev = "<<fEventCount<<"\tMult = "<<multEtaFull<<"\tPOIs1st = "<<multPOI1st<<"\t POI2nd = "<< multPOI2nd <<endl;
 
-  //if(multEtaFull>500)
-    //cout<<"Ev = "<<fEventCount<<" ntracks = "<<ntracks<<"\tMult = "<<multEtaFull<<"\t RealTime = "<<watch.RealTime()<<"\t CPUTime = "<< watch.CpuTime() <<endl;
-    //cout<<"Ev = "<<fEventCount<<" cent = "<<EvtCent<<"\tWEtaNeg = "<<SumWEtaNeg<<"\tnegMult = "<<multEtaNeg<<"\tWEtaPos = "<<SumWEtaPos<<"\tposMult = "<<multEtaPos<<endl;
   //watch.Stop();
 
 }//================ UserExec ==============
