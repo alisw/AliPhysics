@@ -58,7 +58,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
 
   AliParticleContainer *trackCont;// = task->AddTrackContainer(ntracks);
  
-  if ((jetShapeSub==AliAnalysisTaskNewJetSubstructure::kConstSub) && ((jetShapeType==AliAnalysisTaskNewJetSubstructure::kData) || (jetShapeType==AliAnalysisTaskNewJetSubstructure::kDetEmbPartPythia) || (jetShapeType==AliAnalysisTaskNewJetSubstructure::kPythiaDef))){
+  if ((jetShapeSub==AliAnalysisTaskNewJetSubstructure::kConstSub || jetShapeSub==AliAnalysisTaskNewJetSubstructure::kEventSub ) && ((jetShapeType==AliAnalysisTaskNewJetSubstructure::kData) || (jetShapeType==AliAnalysisTaskNewJetSubstructure::kDetEmbPartPythia) || (jetShapeType==AliAnalysisTaskNewJetSubstructure::kPythiaDef))){
     trackCont = task->AddParticleContainer(ntracks);}
   else trackCont = task->AddTrackContainer(ntracks);
 
