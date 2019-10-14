@@ -72,6 +72,7 @@ using namespace std;
 
 const Char_t * estimators[3]={"Mid05","Mid08","V0M"};
 const Int_t NchPercBin=7;
+const Int_t NchBin08=78;// multiplicity |eta|<0.8
 const Int_t nTSBins=100;
 Double_t nchBin_gen0[NchPercBin+1]={0x0};
 Double_t nchBin_gen1[NchPercBin+1]={0x0};
@@ -104,6 +105,14 @@ Double_t PtBins[nPtBins+1] = {
 	4.0,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 9.0,  10.0,
 	11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
 	26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0 };
+const Int_t nPtBins08 = 46;
+Double_t PtBins08[nPtBins08+1] = {
+	0.15,  0.2,  0.25, 0.3,  0.35, 0.4,  0.45,
+	0.5 ,  0.55, 0.6,  0.65, 0.7,  0.75, 0.8,  0.85, 0.9,  0.95,
+	1.0 ,  1.1 , 1.2,  1.3 , 1.4,  1.5 , 1.6,  1.7 , 1.8,  1.9 ,
+	2.0 ,  2.2 , 2.4,  2.6 , 2.8,  3.0 , 3.2,  3.4 , 3.6,  3.8 ,
+	4.0 ,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 9.0,  10.0};
+
 const Int_t nSoBins = 200;
 Double_t SoBins[nSoBins+1]={
 	0.000, 0.005, 0.01,  0.015, 0.02,  0.025, 0.03,  0.035, 0.04,  0.045, 
@@ -130,6 +139,17 @@ Double_t SoBins[nSoBins+1]={
 };
 
 
+const Int_t nDphiBins=64;
+Double_t DphiBins[nDphiBins+1]={ 
+	-1.5708,   -1.47262,  -1.37445,  -1.27627,  -1.1781,   -1.07992,  -0.981748, -0.883573,
+	-0.785398, -0.687223, -0.589049, -0.490874, -0.392699, -0.294524, -0.19635,  -0.0981748, 
+	0.0000000, 0.0981748, 0.19635,    0.294524,  0.392699,  0.490874,  0.589049,  0.687223,
+	0.785398,  0.883573,  0.981748,   1.07992,   1.1781,    1.27627,   1.37445,   1.47262,
+	1.5708,    1.66897,   1.76715,    1.86532,   1.9635,    2.06167,   2.15984,   2.25802,
+	2.35619,   2.45437,   2.55254,    2.65072,   2.74889,   2.84707,   2.94524,   3.04342,
+	3.14159,   3.23977,   3.33794,    3.43612,   3.53429,   3.63247,   3.73064,   3.82882,
+	3.92699,   4.02517,   4.12334,    4.22152,   4.31969,   4.41786,   4.51604,   4.61421, 4.7123};
+
 ClassImp( AliAnalysisTaskGenUeSpherocity )
 
 	//_____________________________________________________________________________
@@ -141,9 +161,11 @@ ClassImp( AliAnalysisTaskGenUeSpherocity )
 		fStack(0),
 		fGenerator("Pythia8"),
 		fIndexLeadingGen(-1),
-                fIndexLeadingRec(-1),
+		fIndexLeadingRec(-1),
 		fMinPtLeading(5.0),
 		fSizeStep(0.1),
+		//fNso_gen(3),
+		//fNso_rec(3),
 		fspherocity_gen_ptWeighted(-1),
 		fspherocity_gen(-1),
 		fspherocity_rec_ptWeighted(-1),
@@ -159,13 +181,13 @@ ClassImp( AliAnalysisTaskGenUeSpherocity )
 		fHistEta(0x0),
 		fHistPart(0x0),
 		fDphiNS(0x0),
-                fDphiAS(0x0),
+		fDphiAS(0x0),
 		fDphiTS(0x0),
 		fMultTS(0x0),
 		fDphiNSRec(0x0),
 		fDphiASRec(0x0),
 		fDphiTSRec(0x0),
-                fMultTSRec(0x0),
+		fMultTSRec(0x0),
 		fListOfObjects(0)
 {
 
@@ -224,6 +246,17 @@ ClassImp( AliAnalysisTaskGenUeSpherocity )
 		fSoWeighedVsNchRec[i] = 0;
 
 	}
+
+	for(Int_t i_nch08=0; i_nch08<NchBin08; ++i_nch08){
+
+		hDphiSoIS[i_nch08]=0;
+		hPtVsSoIS[i_nch08]=0;
+		hPtVsSoNS[i_nch08]=0;
+		hPtVsSoAS[i_nch08]=0;
+		hPtVsSoTS[i_nch08]=0;
+
+	}
+
 	// Default constructor (should not be used)
 }
 
@@ -239,6 +272,8 @@ AliAnalysisTaskGenUeSpherocity::AliAnalysisTaskGenUeSpherocity(const char *name)
 	fIndexLeadingRec(-1),
 	fMinPtLeading(5.0),
 	fSizeStep(0.1),
+	//fNso_gen(3),
+	//fNso_rec(3),
 	fspherocity_gen_ptWeighted(-1),
 	fspherocity_gen(-1),
 	fspherocity_rec_ptWeighted(-1),
@@ -313,6 +348,15 @@ AliAnalysisTaskGenUeSpherocity::AliAnalysisTaskGenUeSpherocity(const char *name)
 		fSoVsNchRec[i] = 0;
 		fSoWeighedVsNchRec[i] = 0;
 
+
+	}
+	for(Int_t i_nch08=0; i_nch08<NchBin08; ++i_nch08){
+
+		hDphiSoIS[i_nch08]=0;
+		hPtVsSoIS[i_nch08]=0;
+		hPtVsSoNS[i_nch08]=0;
+		hPtVsSoAS[i_nch08]=0;
+		hPtVsSoTS[i_nch08]=0;
 
 	}
 	DefineInput( 0, TChain::Class());
@@ -587,6 +631,32 @@ void AliAnalysisTaskGenUeSpherocity::UserCreateOutputObjects(){
 
 
 	}
+
+	for(Int_t i_nch08=0; i_nch08<NchBin08; ++i_nch08){
+
+		hDphiSoIS[i_nch08]=0;
+		hDphiSoIS[i_nch08]=new TH2D(Form("hDphiVsSoIS_Nch08_%d",i_nch08+3),Form("hDphiVsSoIS_Nch08_%d",i_nch08+3),nSoBins,SoBins,nDphiBins,DphiBins);
+		fListOfObjects->Add(hDphiSoIS[i_nch08]);
+
+		hPtVsSoIS[i_nch08]=0;
+		hPtVsSoIS[i_nch08]=new TH2D(Form("hPtVsSoIS_Nch08_%d",i_nch08+3),Form("hPtVsSoIS_Nch08_%d",i_nch08+3),nSoBins,SoBins,nPtBins08,PtBins08);
+		fListOfObjects->Add(hPtVsSoIS[i_nch08]);
+
+		hPtVsSoNS[i_nch08]=0;
+		hPtVsSoNS[i_nch08]=new TH2D(Form("hPtVsSoNS_Nch08_%d",i_nch08+3),Form("hPtVsSoNS_Nch08_%d",i_nch08+3),nSoBins,SoBins,nPtBins08,PtBins08);
+		fListOfObjects->Add(hPtVsSoNS[i_nch08]);
+
+		hPtVsSoAS[i_nch08]=0;
+		hPtVsSoAS[i_nch08]=new TH2D(Form("hPtVsSoAS_Nch08_%d",i_nch08+3),Form("hPtVsSoAS_Nch08_%d",i_nch08+3),nSoBins,SoBins,nPtBins08,PtBins08);
+		fListOfObjects->Add(hPtVsSoAS[i_nch08]);
+
+		hPtVsSoTS[i_nch08]=0;
+		hPtVsSoTS[i_nch08]=new TH2D(Form("hPtVsSoTS_Nch08_%d",i_nch08+3),Form("hPtVsSoTS_Nch08_%d",i_nch08+3),nSoBins,SoBins,nPtBins08,PtBins08);
+		fListOfObjects->Add(hPtVsSoTS[i_nch08]);
+
+	}
+
+
 	// ### List of outputs
 	PostData(1, fListOfObjects);
 
@@ -682,12 +752,12 @@ void AliAnalysisTaskGenUeSpherocity::Init(){
 		}
 	}
 	else{
-		Double_t nchBin_gen0tmp[NchPercBin+1]={-0.5, 2.5, 4.5, 6.5, 8.5, 12.5, 17.5, 299.5};
-		Double_t nchBin_gen1tmp[NchPercBin+1]={-0.5, 4.5, 7.5, 10.5, 14.5, 19.5, 28.5, 299.5};
-		Double_t nchBin_gen2tmp[NchPercBin+1]={-0.5, 13.5, 21.5, 29.5, 38.5, 52.5, 71.5, 299.5};
-		Double_t nchBin_rec0tmp[NchPercBin+1]={-0.5, 1.5, 3.5, 4.5, 6.5, 8.5, 12.5, 299.5};
-		Double_t nchBin_rec1tmp[NchPercBin+1]={-0.5, 2.5, 5.5, 7.5, 10.5, 14.5, 20.5, 299.5};
-		Double_t nchBin_rec2tmp[NchPercBin+1]={-0.5, 13.5, 22.5, 29.5, 39.5, 52.5, 72.5, 299.5};
+		Double_t nchBin_gen0tmp[NchPercBin+1]={-0.5, 1.5, 4.5, 5.5, 7.5, 10.5, 15.5, 299.5};
+		Double_t nchBin_gen1tmp[NchPercBin+1]={-0.5, 3.5, 6.5, 9.5, 12.5, 17.5, 25.5, 299.5};
+		Double_t nchBin_gen2tmp[NchPercBin+1]={-0.5, 12.5, 19.5, 26.5, 34.5, 46.5, 64.5, 299.5};
+		Double_t nchBin_rec0tmp[NchPercBin+1]={-0.5, 1.5, 2.5, 3.5, 5.5, 7.5, 11.5, 299.5};
+		Double_t nchBin_rec1tmp[NchPercBin+1]={-0.5, 2.5, 4.5, 6.5, 9.5, 12.5, 18.5, 299.5};
+		Double_t nchBin_rec2tmp[NchPercBin+1]={-0.5, 12.5, 20.5, 26.5, 35.5, 47.5, 65.5, 299.5};
 		for(Int_t i=0;i<NchPercBin+1;++i){
 			nchBin_gen0[i]=nchBin_gen0tmp[i];
 			nchBin_gen1[i]=nchBin_gen1tmp[i];
@@ -795,6 +865,13 @@ void AliAnalysisTaskGenUeSpherocity::UserExec(Option_t *){
 	if(fIsInel0_gen&&fIsInel0_rec){
 		ParticleSel( kTRUE, mult_estimators_rec );
 		ParticleSel( kFALSE, mult_estimators_gen );
+	}
+
+
+	if(fIndexLeadingGen>=0){
+		if(mcPartLeadingGen->Pt()>=fMinPtLeading){
+			MakeUeSoNch08Analysis(mult_estimators_gen);
+		}
 	}
 	//MemInfo_t memInfo;
 	//Int_t memUsage = 0;
@@ -1122,6 +1199,74 @@ void AliAnalysisTaskGenUeSpherocity::MakeRTAnalysis(Bool_t fIsPseudoRec){
 	} // particle loop
 
 }
+
+void AliAnalysisTaskGenUeSpherocity::MakeUeSoNch08Analysis(vector<Int_t> &mult){
+
+
+
+	Int_t BinNchForSpherocity=mult[1];
+	if(fspherocity_gen_ptWeighted<0)
+		return;
+
+	if(BinNchForSpherocity<3||BinNchForSpherocity>80)
+		return;
+
+	TParticle* mcPartTmp         = 0x0;
+	mcPartTmp                    = (TParticle *)fMcEvent->Particle(fIndexLeadingGen);
+	Double_t phiL = mcPartTmp->Phi();
+
+	//Int_t pidCodeMC = 0;
+	Double_t ipt = 0.;
+	Double_t etaPart = -10.0;
+	Double_t phiPart = -10.0;
+	Bool_t isPhysPrim = kFALSE;
+	Double_t qPart = 0;
+	//Int_t pPDG = -10;
+
+	// ### particle loop
+	for (Int_t ipart = 0; ipart < fMcEvent->GetNumberOfTracks(); ++ipart) {
+
+		if(ipart == fIndexLeadingGen)continue;
+
+		TParticle* mcPart         = 0x0;
+		mcPart                    = (TParticle *)fMcEvent->Particle(ipart);
+		if (!mcPart) continue;
+		//selection of primary charged particles
+		if(!(mcPart->GetPDG())) continue;
+		qPart = mcPart->GetPDG()->Charge()/3.;
+		if(TMath::Abs(qPart)<0.001) continue;
+		isPhysPrim = fMcEvent->IsPhysicalPrimary(ipart);
+		if(!isPhysPrim)
+			continue;
+		//pPDG = TMath::Abs(mcPart->GetPdgCode());
+		//pidCodeMC = GetPidCode(pPDG);
+		etaPart = mcPart -> Eta();
+		if(TMath::Abs(etaPart)>0.8)continue;
+		ipt = mcPart->Pt();
+		if(ipt<0.15)continue;
+		phiPart = mcPart -> Phi();
+		Double_t DPhi = DeltaPhi(phiL,phiPart);
+
+		// inclusive
+		hDphiSoIS[BinNchForSpherocity-3]->Fill(fspherocity_gen_ptWeighted,DPhi);
+		hPtVsSoIS[BinNchForSpherocity-3]->Fill(fspherocity_gen_ptWeighted,ipt);
+		// near side
+		if(TMath::Abs(DPhi)<pi/3.0){
+			hPtVsSoNS[BinNchForSpherocity-3]->Fill(fspherocity_gen_ptWeighted,ipt);
+		}
+		// away side
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){
+			hPtVsSoAS[BinNchForSpherocity-3]->Fill(fspherocity_gen_ptWeighted,ipt);
+		}
+		// transverse side
+		else{
+			hPtVsSoTS[BinNchForSpherocity-3]->Fill(fspherocity_gen_ptWeighted,ipt);
+		}
+
+	} // particle loop
+
+}
+
 
 void AliAnalysisTaskGenUeSpherocity::ParticleSel(Bool_t fIsPseudoRec, const vector<Int_t> &mult){
 
