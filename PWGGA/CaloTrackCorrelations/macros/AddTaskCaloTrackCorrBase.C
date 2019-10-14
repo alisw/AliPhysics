@@ -164,7 +164,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
-/// \param cutsString : A string with additional cuts ("Smearing","MCEnScale")
+/// \param cutsString : A string with additional cuts ("Smearing","MCEnScale","FullCalo")
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param year: The year the data was taken, used to configure time cut and fiducial cut
 /// \param simulation : A bool identifying the data as simulation
@@ -183,6 +183,9 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
     else                    reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
   }
   else if ( calorimeter == "DCAL"  ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  
+  if ( cutsString.Contains("FullCalo") )
+    reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 325.8) ; 
   
   // Use other cluster array than default:
   reader->SetEMCALClusterListName(clustersArray);
@@ -427,6 +430,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 /// \param col: A string with the colliding system
 /// \param simulation : A bool identifying the data as simulation
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param cutsString : A string with additional cuts (FullCalo)
 /// \param nonLinOn : A bool to set the use of the non linearity correction
 /// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
 /// \param year: The year the data was taken, used to configure some histograms
@@ -434,7 +438,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 /// \param debug : An int to define the debug level of all the tasks
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation, 
-                                        TString calorimeter, Bool_t nonLinOn,      
+                                        TString calorimeter, TString cutsString, Bool_t nonLinOn,      
                                         Bool_t calibrate,    Int_t   year,        
                                         Bool_t printSettings, Int_t   debug)
 {
@@ -472,7 +476,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
       cu->SetFirstSuperModuleUsed(12);
       cu->SetLastSuperModuleUsed (19);
     }
-    else
+    
+    if ( cutsString.Contains("FullCalo") )
     {
       cu->SetFirstSuperModuleUsed(0);
       cu->SetLastSuperModuleUsed (cu->GetNumberOfSuperModulesUsed()-1);
@@ -582,6 +587,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    * PtHardCut: Select events with jet or cluster photon energy not too large or small with respect the generated partonic energy 
 ///       * JetJet: Compare generated (reconstructed generator level) jet pT with parton pT  
 ///       * GamJet: Compare cluster pt and generated parton pt, careful, test before using
+///    * FullCalo: Use EMCal+DCal acceptances
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
@@ -721,7 +727,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
                                           nonLinOn,calibrate,year,trigger,rejectEMCTrig,
                                           minCen,maxCen,printSettings,debug) );  
   
-  maker->SetCaloUtils( ConfigureCaloUtils(col,simulation,calorimeter,nonLinOn,calibrate,year,
+  maker->SetCaloUtils( ConfigureCaloUtils(col,simulation,calorimeter,cutsString,nonLinOn,calibrate,year,
                                           printSettings,debug) );
   
   maker->SwitchOnHistogramsMaker()  ;
