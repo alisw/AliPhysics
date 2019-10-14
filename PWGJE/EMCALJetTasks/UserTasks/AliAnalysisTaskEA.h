@@ -60,7 +60,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
       kPartLevel=1,
       kEmbLevel=2,
       fkVtx=3,
-      fkTTbins = 20 //maximum number of TT bins
+      fkTTbins = 20, //maximum number of TT bins
+      fkShift  = 61
    };
 
    enum {fkV0A, fkV0C, fkV0M, fkV0Mnorm1, fkCE}; //detector level   norm1 : divided by mean V0M    norm2: average  A/mean A  +C/ mean C
@@ -348,8 +349,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    THnSparse *fhRecoilJetTTH_V0Mnorm1_PartLevel[fkTTbins][kRho]; //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
 
 
-   TH2D* fhRecoilJetPtTTHref_V0Mnorm1_rhoShift1[kTG][kRho];   //! reference pT spectrum of recoil jets TT67 vs V0M/mean with rho shifted for TT12,20
-   TH2D* fhRecoilJetPtTTHref_V0Mnorm1_rhoShift2[kTG][kRho];   //! reference pT spectrum of recoil jets TT67 vs V0M/mean with rho shifted for TT20,30
+   TH2D* fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[kTG][kRho][fkShift];   //! reference pT spectrum of recoil jets TT67 vs V0M/mean with rho shifted for TTsignal
    
    //recoil jet yields with EMCAL cluster TT
 //   TH2D* fhRecoilJetPtTTC_CentV0M[kTG][fkTTbins];         //! pT spectrum of recoil jets associated to semi-inclusive emcal TT versus V0M    centrality 
@@ -484,7 +484,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 24); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 25); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }
