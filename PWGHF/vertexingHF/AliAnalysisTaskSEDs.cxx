@@ -118,7 +118,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fModelOutputCuts(),
   fPtBinsModel(),
   fModels(),
-  fEnablePIDMLHistos(kFALSE),
+  fEnablePIDMLSparses(kFALSE),
   fNMLBins(300),
   fMLOutputMin(0.85),
   fMLOutputMax(1.0),
@@ -241,7 +241,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fModelOutputCuts(),
   fPtBinsModel(),
   fModels(),
-  fEnablePIDMLHistos(kFALSE),
+  fEnablePIDMLSparses(kFALSE),
   fNMLBins(300),
   fMLOutputMin(0.85),
   fMLOutputMax(1.0),
@@ -304,12 +304,9 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
     fImpParSparseMC[iHist] = nullptr;
   }
 
-  for (Int_t iProng=0; iProng<3; iProng++)
+  for (Int_t iHist=0; iHist<2; iHist++)
   {
-    for (Int_t iVar=0; iVar<6; iVar++)
-    {
-      fHistNsigmaPIDVsML[iProng][iVar] = nullptr;
-    }
+      fnSparseNsigmaPIDVsML[iHist] = nullptr;
   }
 
   Int_t nptbins = fAnalysisCuts->GetNPtBins();
@@ -444,14 +441,11 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
           delete fnSparseMCDplus[iHist];
     }
 
-    if(fApplyML && fEnablePIDMLHistos)
+    if(fApplyML && fEnablePIDMLSparses)
     {
-      for (Int_t iProng=0; iProng<3; iProng++)
+      for (Int_t iHist=0; iHist<2; iHist++)
       {
-        for (Int_t iVar=0; iVar<6; iVar++)
-        {
-          delete fHistNsigmaPIDVsML[iProng][iVar];
-        }
+          delete fnSparseNsigmaPIDVsML[iHist];
       }
     }
   }
@@ -772,20 +766,8 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       fModels.push_back(model);
     }
 
-    if(fEnablePIDMLHistos)
-    {
-      TString PIDvarnames[6] = {"NsigmaTPCPi", "NsigmaTPCK", "NsigmaTOFPi", "NsigmaTOFK", "NsigmaCombPi", "NsigmaCombK"};
-      Double_t PIDmin[6] = {-20., -20., -20., -20., 0., 0.};
-      Double_t PIDmax[6] = {20., 20., 20., 20., 40., 40.};
-      for (Int_t iProng=0; iProng<3; iProng++)
-      {
-        for (Int_t iVar=0; iVar<6; iVar++)
-        {
-          fHistNsigmaPIDVsML[iProng][iVar] = new TH3F(Form("fHist%sProng%d",PIDvarnames[iVar].Data(),iProng), Form("%sProng%d;#it{p}_{T} (GeV/#it{c});ML response;%s",PIDvarnames[iVar].Data(),iProng,PIDvarnames[iVar].Data()), Int_t(fPtLimits[fNPtBins]), 0., fPtLimits[fNPtBins], fNMLBins, fMLOutputMin, fMLOutputMax, 200., PIDmin[iVar], PIDmax[iVar]);
-          fOutput->Add(fHistNsigmaPIDVsML[iProng][iVar]);
-        }
-      }
-    }
+    if(fEnablePIDMLSparses)
+      CreatePIDMLSparses();
   }
 
   PostData(1, fOutput);
@@ -1343,17 +1325,15 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
                                        sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
               modelPred = fModels[iModel].Predict(features, fNumVars);
-              if(fEnablePIDMLHistos && (!fReadMC || indexMCKKpi == GetSignalHistoIndex(iPtBin)))
+              if(fEnablePIDMLSparses && (!fReadMC || (indexMCKKpi == GetSignalHistoIndex(iPtBin) && orig == 4)))
               {
-                for (Int_t iProng=0; iProng<3; iProng++)
-                {
-                  fHistNsigmaPIDVsML[iProng][0]->Fill(ptCand, modelPred, nsigTPCPi[iProng]);
-                  fHistNsigmaPIDVsML[iProng][1]->Fill(ptCand, modelPred, nsigTPCK[iProng]);
-                  fHistNsigmaPIDVsML[iProng][2]->Fill(ptCand, modelPred, nsigTOFPi[iProng]);
-                  fHistNsigmaPIDVsML[iProng][3]->Fill(ptCand, modelPred, nsigTOFK[iProng]);
-                  fHistNsigmaPIDVsML[iProng][4]->Fill(ptCand, modelPred, sigCombPi[iProng]);
-                  fHistNsigmaPIDVsML[iProng][5]->Fill(ptCand, modelPred, sigCombK[iProng]);
-                }
+                Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred, nsigTPCPi[0], nsigTPCK[0], nsigTOFPi[0], nsigTOFK[0],
+                                                     nsigTPCPi[1], nsigTPCK[1], nsigTOFPi[1], nsigTOFK[1], 
+                                                     nsigTPCPi[2], nsigTPCK[2], nsigTOFPi[2], nsigTOFK[2]};
+                Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred, sigCombPi[0], sigCombK[0], 
+                                                             sigCombPi[1], sigCombK[1], sigCombPi[2], sigCombK[2]};
+                fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID);
+                fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb);
               }
             }
 
@@ -1400,17 +1380,15 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
                                        sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
               modelPred = fModels[iModel].Predict(features, fNumVars);
-              if(fEnablePIDMLHistos && (!fReadMC || indexMCpiKK == GetSignalHistoIndex(iPtBin)))
+              if(fEnablePIDMLSparses && (!fReadMC || (indexMCpiKK == GetSignalHistoIndex(iPtBin) && orig == 4)))
               {
-                for (Int_t iProng=0; iProng<3; iProng++)
-                {
-                  fHistNsigmaPIDVsML[iProng][0]->Fill(ptCand, modelPred, nsigTPCPi[iProng]);
-                  fHistNsigmaPIDVsML[iProng][1]->Fill(ptCand, modelPred, nsigTPCK[iProng]);
-                  fHistNsigmaPIDVsML[iProng][2]->Fill(ptCand, modelPred, nsigTOFPi[iProng]);
-                  fHistNsigmaPIDVsML[iProng][3]->Fill(ptCand, modelPred, nsigTOFK[iProng]);
-                  fHistNsigmaPIDVsML[iProng][4]->Fill(ptCand, modelPred, sigCombPi[iProng]);
-                  fHistNsigmaPIDVsML[iProng][5]->Fill(ptCand, modelPred, sigCombK[iProng]);
-                }
+                Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred, nsigTPCPi[0], nsigTPCK[0], nsigTOFPi[0], nsigTOFK[0],
+                                                     nsigTPCPi[1], nsigTPCK[1], nsigTOFPi[1], nsigTOFK[1], 
+                                                     nsigTPCPi[2], nsigTPCK[2], nsigTOFPi[2], nsigTOFK[2]};
+                Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred, sigCombPi[0], sigCombK[0], 
+                                                             sigCombPi[1], sigCombK[1], sigCombPi[2], sigCombK[2]};
+                fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID);
+                fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb);
               }
             }
 
@@ -2095,6 +2073,43 @@ void AliAnalysisTaskSEDs::CreateImpactParameterSparses()
       fOutput->Add(fImpParSparseMC[iSparse]);
     }
   }
+}
+
+//_________________________________________________________________________
+void AliAnalysisTaskSEDs::CreatePIDMLSparses()
+{
+  Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
+  if(fUseFinPtBinsForSparse)
+     nPtBins = nPtBins*10;
+  Int_t nPIDbins = 80;
+  Double_t PIDmin = -20.;
+  Double_t PIDmax = 20.;
+  Double_t PIDcombMin = 0.;
+  Double_t PIDcombMax = 40.;
+
+  TString PIDvarnames[knVarPID] = {"#it{p}_{T}", "ML model output", "n#sigmaTPCPi_0", "n#sigmaTPCK_0", "n#sigmaTOFPi_0", "n#sigmaTOFK_0", 
+                                         "n#sigmaTPCPi_1", "n#sigmaTPCK_1", "n#sigmaTOFPi_1", "n#sigmaTOFK_1", "n#sigmaTPCPi_2", "n#sigmaTPCK_2", 
+                                         "n#sigmaTOFPi_2", "n#sigmaTOFK_2"};
+  Int_t nBinsPID[knVarPID] = {nPtBins, fNMLBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, 
+                                    nPIDbins, nPIDbins};
+  Double_t xminPID[knVarPID] = {0., fMLOutputMin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin};
+  Double_t xmaxPID[knVarPID] = {fPtLimits[fNPtBins], fMLOutputMax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax};
+
+  TString PIDvarnamesComb[knVarPIDcomb] = {"#it{p}_{T}", "ML model output", "n#sigmaCombPi_0", "n#sigmaCombK_0", "n#sigmaCombPi_1", "n#sigmaCombK_1", 
+                                                 "n#sigmaCombPi_2", "n#sigmaCombK_2"};
+  Int_t nBinsPIDcomb[knVarPIDcomb] = {nPtBins, fNMLBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins};
+  Double_t xminPIDcomb[knVarPIDcomb] = {0., fMLOutputMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin};
+  Double_t xmaxPIDcomb[knVarPIDcomb] = {fPtLimits[fNPtBins], fMLOutputMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax};
+  
+  fnSparseNsigmaPIDVsML[0] = new THnSparseF("fnSparsePID", "nSparsePID", knVarPID, nBinsPID, xminPID, xmaxPID);
+  for (Int_t iAxis = 0; iAxis < knVarPID; iAxis++)
+    fnSparseNsigmaPIDVsML[0]->GetAxis(iAxis)->SetTitle(Form("%s", PIDvarnames[iAxis].Data()));
+  fOutput->Add(fnSparseNsigmaPIDVsML[0]);
+
+  fnSparseNsigmaPIDVsML[1] = new THnSparseF("fnSparsePIDcomb", "nSparsePIDcomb", knVarPIDcomb, nBinsPIDcomb, xminPIDcomb, xmaxPIDcomb);
+  for (Int_t iAxis = 0; iAxis < knVarPIDcomb; iAxis++)
+    fnSparseNsigmaPIDVsML[1]->GetAxis(iAxis)->SetTitle(Form("%s", PIDvarnamesComb[iAxis].Data()));
+  fOutput->Add(fnSparseNsigmaPIDVsML[1]);
 }
 
 //_________________________________________________________________________________________________

@@ -85,9 +85,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   /// methods for ML application
   void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
-  void EnablePIDMLHistos(Bool_t enable=kTRUE) {fEnablePIDMLHistos=enable;}
   void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
-
+  void EnablePIDMLSparses(Bool_t enable=kTRUE) {fEnablePIDMLSparses=enable;}
+  void CreatePIDMLSparses();
+ 
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -105,7 +106,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   std::string GetFile(const std::string path);
   double CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF);
 
-  enum {kMaxPtBins=36,knVarForSparse=14,knVarForSparseAcc=2,kVarForImpPar=3};
+  enum {kMaxPtBins=36,knVarForSparse=14,knVarForSparseAcc=2,kVarForImpPar=3,knVarPID=14,knVarPIDcomb=8};
 
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
@@ -200,11 +201,11 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 
   THnSparseF *fnSparse;                   ///!<!THnSparse for candidates on data
   THnSparseF *fnSparseMC[5];              ///!<!THnSparse for MC
-  ///[0]: Acc step prompt Ds
-  ///[1]: Acc step FD Ds
-  ///[2]: Selected prompt Ds
-  ///[3]: Selected FD Ds
-  ///[4]: Selected bkg candidates
+                                          ///[0]: Acc step prompt Ds
+                                          ///[1]: Acc step FD Ds
+                                          ///[2]: Selected prompt Ds
+                                          ///[3]: Selected FD Ds
+                                          ///[4]: Selected bkg candidates
   THnSparseF *fnSparseMCDplus[4];         ///!<!THnSparse for MC for D+->kkpi
   THnSparseF *fImpParSparse;              ///!<!THnSparse for imp. par. on data
   THnSparseF *fImpParSparseMC[4];         ///!<!THnSparse for imp. par. on MC
@@ -219,9 +220,9 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   std::vector<std::string> fModelPaths;   /// vector of model paths
   std::vector<double> fModelOutputCuts;   /// vector of thresholds on model output
   std::vector<double> fPtBinsModel;       /// vector of pt bin lims
-  std::vector<AliExternalBDT> fModels;    //!<! vector of ML models (BDTs for now)
-  TH3F* fHistNsigmaPIDVsML[3][6];         //!<! histograms with PID Nsigma variables vs ML output
-  Bool_t fEnablePIDMLHistos;              /// flag to enable control histograms for PID with ML
+  std::vector<AliExternalBDT> fModels;    ///!<! vector of ML models (BDTs for now)
+  THnSparseF* fnSparseNsigmaPIDVsML[2];   ///!<!THnSparse with PID Nsigma variables vs ML output
+  Bool_t fEnablePIDMLSparses;             /// flag to enable control histograms for PID with ML
   Int_t fNMLBins;                         /// number of bins for ML output axis in THnSparse
   Double_t fMLOutputMin;                  /// min for ML output axis in THnSparse
   Double_t fMLOutputMax;                  /// max for ML output axis in THnSparse
@@ -230,7 +231,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fKeepOnlyBkgFromHIJING;          /// flag to keep the background from HIJING only
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,34);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,35);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
