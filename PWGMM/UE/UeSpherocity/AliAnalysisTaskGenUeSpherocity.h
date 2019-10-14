@@ -63,6 +63,7 @@ class AliAnalysisTaskGenUeSpherocity : public AliAnalysisTaskSE { //
 		Int_t   GetIndexLeading(Bool_t fIsPseudoRec);
 		Int_t   GetMultipliciy(Bool_t fIsPseudoRec, std::vector<Int_t> &mult, std::vector<Float_t> &ptArray,  std::vector<Float_t> &etaArray, std::vector<Float_t> &phiArray);
 		void    MakeRTAnalysis(Bool_t fIsPseudoRec);
+		void    MakeUeSoNch08Analysis(std::vector<Int_t> &mult);
 		void 	ParticleSel(Bool_t fIsPseudoRec, const std::vector<Int_t> &mult);
 		Float_t GetSpherocity(
 				Int_t nch_so,
@@ -90,9 +91,11 @@ class AliAnalysisTaskGenUeSpherocity : public AliAnalysisTaskSE { //
 		AliStack*   fStack;
 		TString     fGenerator;
 		Int_t       fIndexLeadingGen;
-                Int_t       fIndexLeadingRec;
+		Int_t       fIndexLeadingRec;
 		Double_t    fMinPtLeading;
 		Float_t     fSizeStep;
+		//Int_t       fNso_gen;
+		//Int_t       fNso_rec;
 		Float_t     fspherocity_gen_ptWeighted;
 		Float_t     fspherocity_gen;
 		Float_t     fspherocity_rec_ptWeighted;
@@ -126,12 +129,12 @@ class AliAnalysisTaskGenUeSpherocity : public AliAnalysisTaskSE { //
 		TH1D * fDphiTSRec;
 		TH1D * fMultTSRec;
 
-                TH2D * fHistPtVsNchNS[11];
-                TH2D * fHistPtVsNchAS[11];
-                TH2D * fHistPtVsNchTS[11];
-                TH2D * fHistPtVsNchNSRec[11];
-                TH2D * fHistPtVsNchASRec[11];
-                TH2D * fHistPtVsNchTSRec[11];
+		TH2D * fHistPtVsNchNS[11];
+		TH2D * fHistPtVsNchAS[11];
+		TH2D * fHistPtVsNchTS[11];
+		TH2D * fHistPtVsNchNSRec[11];
+		TH2D * fHistPtVsNchASRec[11];
+		TH2D * fHistPtVsNchTSRec[11];
 
 		TH1F * fHistPt[11];
 		TH1F * fHistPtRec[11];
@@ -159,6 +162,12 @@ class AliAnalysisTaskGenUeSpherocity : public AliAnalysisTaskSE { //
 		TH2D * fSoWeighedVsNchRec[3];
 		TH1F * fNchRec[3];
 		TH1F * fNchSoSelRec[3];
+
+                TH2D * hDphiSoIS[78];
+                TH2D * hPtVsSoIS[78];
+                TH2D * hPtVsSoNS[78];
+                TH2D * hPtVsSoAS[78];
+                TH2D * hPtVsSoTS[78];
 
 		TList* fListOfObjects;	//!<! Output list of objects
 
