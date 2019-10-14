@@ -386,7 +386,7 @@ void AliXiStarPbPb::XiStarInit()
     
     
     if(fMCcase) fEventsToMix = 0;
-    else fEventsToMix = 1; //5
+    else fEventsToMix = 0; //5
     
     fMultLimits[0]=0, fMultLimits[1]=1250, fMultLimits[2]=2500, fMultLimits[3]=3750, fMultLimits[4]=5000, fMultLimits[5]=6250, fMultLimits[6]=7500, fMultLimits[7]=8750, fMultLimits[8]=10000, fMultLimits[9]=13000, fMultLimits[10]=20000;
     
