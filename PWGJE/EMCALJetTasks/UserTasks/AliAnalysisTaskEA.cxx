@@ -352,9 +352,10 @@ fJetAcut(0.)
    }
 
    for(Int_t itg=kMB; itg<=kGA; itg++){ 
-      for(Int_t ir=0; ir<kRho; ir++){ 
-         fhRecoilJetPtTTHref_V0Mnorm1_rhoShift1[itg][ir] = 0x0;
-         fhRecoilJetPtTTHref_V0Mnorm1_rhoShift2[itg][ir] = 0x0;
+      for(Int_t ir=0; ir<kRho; ir++){
+         for(Int_t is=0; is<fkShift; is++){
+            fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[itg][ir][is] = 0x0;
+         }
       }
    }
  
@@ -705,8 +706,9 @@ fJetAcut(0.)
 
    for(Int_t itg=kMB; itg<=kGA; itg++){ 
       for(Int_t ir=0; ir<kRho; ir++){
-         fhRecoilJetPtTTHref_V0Mnorm1_rhoShift1[itg][ir] = 0x0;
-         fhRecoilJetPtTTHref_V0Mnorm1_rhoShift2[itg][ir] = 0x0;
+         for(Int_t is=0; is<fkShift; is++){
+            fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[itg][ir][is] = 0x0;
+         }
       }
    }
  
@@ -1355,8 +1357,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    
    Double_t jetPtCorrPart = 0.; //particle level jet pt corrected for rho
    Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
-   Double_t jetPtCorrDetShift1  = 0.;  //detector level jet pt corrected for rho
-   Double_t jetPtCorrDetShift2  = 0.;  //detector level jet pt corrected for rho
+   Double_t jetPtCorrDetShift  = 0.;  //detector level jet pt corrected for rho
    Double_t sharedFraction = 0.; //shared fraction between detector level and combined level
 
    Double_t ptLJ=-1, etaLJ=999, phiLJ=0; //leading jet
@@ -2201,92 +2202,11 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                            tmparr3[2] = fMultV0Mnorm;
                            fhJetPtAreaV0normTTH[itg][itt][ir]->Fill(tmparr3);
                     
-                           if(itt==0){ //reference with shifted rho
-                              if(TMath::Abs( fJetAcut) < 1e-4){  //no area cut                            
-
-                                 if(TMath::Abs(fJetR -0.4) < 1e-3){ //R=0.4 jets 
-
-                                    if(itg==kMB){
-                                       if(ir==krhokt){
-                                          shift1 =  0.000896396;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = -0.00603773;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }else{
-                                          shift1 = -0.00500762;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = -0.0120839;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }
-                                    }else{
-                                       if(ir==krhokt){
-                                          shift1 = 0.0179261;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = 0.0322556;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }else{
-                                          shift1 = 0.0117027;  // pT shift of 6,7 w.r.t. 12 20            
-                                          shift2 = 0.0207614;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }
-                                    }
-                                 }else{  //R=0.2 jets
-                                    if(itg==kMB){
-                                       if(ir==krhokt){
-                                          shift1 = -0.0123206;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = -0.0217714;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }else{
-                                          shift1 = -0.0170195;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = -0.0292258;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }
-                                    }else{
-                                       if(ir==krhokt){
-                                          shift1 = 0.00595735;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = 0.010721;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }else{
-                                          shift1 = 0.00394271;  // pT shift of 6,7 w.r.t. 12 20            
-                                          shift2 = 0.00688605;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }
-                                    }
-                                 }
-                              }else{ //jet area cut
-                                 if(TMath::Abs(fJetR -0.4) < 1e-3){ //R=0.4 jets 
-
-                                    if(itg==kMB){
-                                       if(ir==krhokt){
-                                          shift1 = -0.0021434;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = 0.000527553;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }else{
-                                          shift1 = -0.00283202;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = -0.00473093;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }
-                                    }else{
-                                       if(ir==krhokt){
-                                          shift1 = 0.0223449;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = 0.0386102;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }else{
-                                          shift1 = 0.0136156;  // pT shift of 6,7 w.r.t. 12 20            
-                                          shift2 = 0.0222889;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }
-                                    }
-                                 }else{  //R=0.2 jets
-                                    if(itg==kMB){
-                                       if(ir==krhokt){
-                                          shift1 = -0.00873796;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = -0.0166677;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }else{
-                                          shift1 = -0.0146481;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = -0.0272;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }
-                                    }else{
-                                       if(ir==krhokt){
-                                          shift1 = 0.00578544;  // pT shift of 6,7 w.r.t. 12 20             
-                                          shift2 = 0.0110027;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }else{
-                                          shift1 = 0.00355317;  // pT shift of 6,7 w.r.t. 12 20            
-                                          shift2 = 0.0070802;  // pT shift of 6,7 w.r.t. 20 30           
-                                       }
-                                    }
-                                 }
+                           if(itt==0){
+                              for(Int_t is=0; is<fkShift;is++){
+                                 jetPtCorrDetShift = jetPtCorrDet - 0.3 + is*0.01;  //from -300 MeV to 300 MeV in steps of 10 MeV
+                                 fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[itg][ir][is]->Fill(fMultV0Mnorm, jetPtCorrDetShift);
                               }
-                              jetPtCorrDetShift1 = jetPtCorrDet - shift1;
-                              jetPtCorrDetShift2 = jetPtCorrDet - shift2;
-                    
-                              fhRecoilJetPtTTHref_V0Mnorm1_rhoShift1[itg][ir]->Fill(fMultV0Mnorm, jetPtCorrDetShift1);
-                              fhRecoilJetPtTTHref_V0Mnorm1_rhoShift2[itg][ir]->Fill(fMultV0Mnorm, jetPtCorrDetShift2);
                            }
                         }
                      }
@@ -2295,7 +2215,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             }
          }
       }
-   
+
    
       //_________________________________________________________
       //              EMCAL CLUSTERS   TTC
@@ -3682,22 +3602,26 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    }
 
    //reference with shifted rho
+   Int_t shiftMeV;
+   TString sign;
    for(Int_t itg=kMB; itg<=kHM; itg++){  //TTH
       if(fMode == AliAnalysisTaskEA::kKine) continue;
       if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue;
 
       for(Int_t ir=0; ir<kRho; ir++){  //TTH
-         name = Form("fhRecoilJetPt_%s_TTH%d_%d_V0Mnorm_Rho%s_rhoShift1", trig[itg].Data(), fHadronTTLowPt[0], fHadronTTHighPt[0], rhotype[ir].Data());
-     
-         fhRecoilJetPtTTHref_V0Mnorm1_rhoShift1[itg][ir] = new TH2D(name.Data(), name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 200, -20, 180); 
-         fOutput->Add((TH2D*) fhRecoilJetPtTTHref_V0Mnorm1_rhoShift1[itg][ir]);
-      }
-      
-      for(Int_t ir=0; ir<kRho; ir++){  //TTH
-         name = Form("fhRecoilJetPt_%s_TTH%d_%d_V0Mnorm_Rho%s_rhoShift2", trig[itg].Data(), fHadronTTLowPt[0], fHadronTTHighPt[0], rhotype[ir].Data());
-         
-         fhRecoilJetPtTTHref_V0Mnorm1_rhoShift2[itg][ir] = new TH2D(name.Data(), name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 200, -20, 180); 
-         fOutput->Add((TH2D*) fhRecoilJetPtTTHref_V0Mnorm1_rhoShift2[itg][ir]);
+         for(Int_t is=0; is<fkShift; is++){  //TTH
+            shiftMeV = TMath::Nint(1000*( -0.3 + is*0.01));
+            if(shiftMeV<0){
+               sign = "Minus";
+            }else if(shiftMeV>0){
+               sign = "Plus";
+            }
+            name = Form("fhRecoilJetPt_%s_TTH%d_%d_V0Mnorm_Rho%s_rhoShift%s%dMeV", 
+               trig[itg].Data(), fHadronTTLowPt[0], fHadronTTHighPt[0], rhotype[ir].Data(), sign.Data(), TMath::Abs(shiftMeV));
+            
+            fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[itg][ir][is] = new TH2D(name.Data(), name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 200, -20, 180); 
+            fOutput->Add((TH2D*) fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[itg][ir][is]);
+         }
       }
    }
  
