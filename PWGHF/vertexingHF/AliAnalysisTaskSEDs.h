@@ -88,7 +88,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
   void EnablePIDMLSparses(Bool_t enable=kTRUE) {fEnablePIDMLSparses=enable;}
   void CreatePIDMLSparses();
- 
+
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -151,8 +151,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F*   fYVsPtSig;                      //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
   TH2F*   fHistAllV0multNTPCout;          //!<! histo for V0mult vs #tracks TPCout (all)
   TH2F*   fHistSelV0multNTPCout;          //!<! histo for V0mult vs #tracks TPCout (sel)
-  TH1F*   fHistCentrality[3];             //!<!hist. for cent distr (all,sel ev, )
-  TH2F*   fHistCentralityMult[3];         //!<!hist. for cent distr vs mult (all,sel ev, )
+  TH1F*   fHistCentrality[3];             //!<! hist. for cent distr (all,sel ev, )
+  TH2F*   fHistCentralityMult[3];         //!<! hist. for cent distr vs mult (all,sel ev, )
   TH3F*   fCosPHist3D;                    //!<! cosP vs Ds mass vs pt
   TH3F*   fCosPxyHist3D;                  //!<! cosPxy vs Ds mass vs pt
   TH3F*   fDLenHist3D;                    //!<! Dlen vs Ds mass vs pt
@@ -173,42 +173,42 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
                                           /// 3 for filling all
 
   Int_t   fSystem;                        /// 0 = pp, 1 = pPb,PbPb
-  Bool_t  fReadMC;                        ///  flag for access to MC
-  Bool_t  fWriteOnlySignal;               ///  flag to control ntuple writing in MC
-  Bool_t  fDoCutVarHistos;                ///  flag to create and fill histos with distributions of cut variables
+  Bool_t  fReadMC;                        /// flag for access to MC
+  Bool_t  fWriteOnlySignal;               /// flag to control ntuple writing in MC
+  Bool_t  fDoCutVarHistos;                /// flag to create and fill histos with distributions of cut variables
   Bool_t  fUseSelectionBit;               /// flag for usage of HasSelectionBit
   Bool_t  fFillSparse;                    /// flag for usage of THnSparse
   Bool_t  fFillSparseDplus;               /// flag for usage of THnSparse
   Bool_t  fFillImpParSparse;              /// flag for usage of sparse for imp. parameter
   Bool_t  fFillAcceptanceLevel;           /// flag for filling true reconstructed Ds at acceptance level (see FillMCGenAccHistos)
-  Bool_t fDoRotBkg;                       ///flag to create rotational bkg (rotating pi track)
-  Bool_t fDoBkgPhiSB;                     ///flag to create bkg from phi sidebands
-  Bool_t fDoCutV0multTPCout;              ///flag to activate cut on V0mult vs #tracks TPCout
+  Bool_t fDoRotBkg;                       /// flag to create rotational bkg (rotating pi track)
+  Bool_t fDoBkgPhiSB;                     /// flag to create bkg from phi sidebands
+  Bool_t fDoCutV0multTPCout;              /// flag to activate cut on V0mult vs #tracks TPCout
   Bool_t fUseWeight;                      /// flag to decide whether to use pt-weights != 1 when filling the container or not
   Int_t fAODProtection;                   /// flag to activate protection against AOD-dAOD mismatch.
                                           /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins;                       /// number of Pt bins
   TList *fListCuts;                       /// list of cuts
-  Float_t fPtLimits[kMaxPtBins+1];        ///  limits for pt bins
+  Float_t fPtLimits[kMaxPtBins+1];        /// limits for pt bins
   Double_t fMassRange;                    /// range for mass histogram
   Double_t fMassBinSize;                  /// bin size for inv. mass histo
   Double_t fminMass;
   Double_t fmaxMass;
-  Double_t fMaxDeltaPhiMass4Rot;          ///flag to set mass window of phi meson (when using pion rotation to create bkg)
+  Double_t fMaxDeltaPhiMass4Rot;          /// flag to set mass window of phi meson (when using pion rotation to create bkg)
 
-  AliNormalizationCounter *fCounter;      //!<!Counter for normalization
+  AliNormalizationCounter *fCounter;      //!<! Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts;     /// Cuts for Analysis
 
-  THnSparseF *fnSparse;                   ///!<!THnSparse for candidates on data
-  THnSparseF *fnSparseMC[5];              ///!<!THnSparse for MC
+  THnSparseF *fnSparse;                   //!<! THnSparse for candidates on data
+  THnSparseF *fnSparseMC[5];              //!<! THnSparse for MC
                                           ///[0]: Acc step prompt Ds
                                           ///[1]: Acc step FD Ds
                                           ///[2]: Selected prompt Ds
                                           ///[3]: Selected FD Ds
                                           ///[4]: Selected bkg candidates
-  THnSparseF *fnSparseMCDplus[4];         ///!<!THnSparse for MC for D+->kkpi
-  THnSparseF *fImpParSparse;              ///!<!THnSparse for imp. par. on data
-  THnSparseF *fImpParSparseMC[4];         ///!<!THnSparse for imp. par. on MC
+  THnSparseF *fnSparseMCDplus[4];         //!<! THnSparse for MC for D+->kkpi
+  THnSparseF *fImpParSparse;              //!<! THnSparse for imp. par. on data
+  THnSparseF *fImpParSparseMC[4];         //!<! THnSparse for imp. par. on MC
 
   TString fMultSelectionObjectName;       /// name of the AliMultSelection object to be considered
   Bool_t fUseFinPtBinsForSparse;          ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
@@ -220,8 +220,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   std::vector<std::string> fModelPaths;   /// vector of model paths
   std::vector<double> fModelOutputCuts;   /// vector of thresholds on model output
   std::vector<double> fPtBinsModel;       /// vector of pt bin lims
-  std::vector<AliExternalBDT> fModels;    ///!<! vector of ML models (BDTs for now)
-  THnSparseF* fnSparseNsigmaPIDVsML[2];   ///!<!THnSparse with PID Nsigma variables vs ML output
+  std::vector<AliExternalBDT> fModels;    //!<! vector of ML models (BDTs for now)
+  THnSparseF* fnSparseNsigmaPIDVsML[2];   //!<! THnSparse with PID Nsigma variables vs ML output
   Bool_t fEnablePIDMLSparses;             /// flag to enable control histograms for PID with ML
   Int_t fNMLBins;                         /// number of bins for ML output axis in THnSparse
   Double_t fMLOutputMin;                  /// min for ML output axis in THnSparse
