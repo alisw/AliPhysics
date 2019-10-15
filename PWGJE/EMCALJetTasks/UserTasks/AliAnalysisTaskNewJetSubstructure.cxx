@@ -298,7 +298,9 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         }
 
 	if(fJetShapeSub==kEventSub){
+	
 	  jetUS = jet1->ClosestJet();
+	  if (!jetUS) continue;
 	  jet2 = jetUS->ClosestJet();
 	}
 	  
@@ -326,9 +328,9 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
           CheckSubjetResolution(jet2, jetContTrue, jet3, jetContPart);
 
         Double_t fraction = 0;
-        if (!(fJetShapeSub == kConstSub))
+        if (!(fJetShapeSub == kConstSub) && !(fJetShapeSub==kEventSub))
           fraction = jetCont->GetFractionSharedPt(jet1);
-        if (fJetShapeSub == kConstSub)
+	  if ((fJetShapeSub == kConstSub) || (fJetShapeSub == kEventSub))
           fraction = jetContUS->GetFractionSharedPt(jetUS);
 
         if (fraction < fMinFractionShared)
@@ -395,7 +397,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       }
 
       Double_t ptSubtracted = 0;
-      if (fJetShapeSub == kConstSub)
+      if (fJetShapeSub == kConstSub || fJetShapeSub == kEventSub)
         ptSubtracted = jet1->Pt();
 
       else if (fJetShapeSub == kDerivSub) {
@@ -704,7 +706,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
   fastjet::PseudoJet PseudoTracks;
 
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
-
+  cout<<"is it really here?"<<endl;
   if (fTrackCont)
     for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
