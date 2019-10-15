@@ -94,6 +94,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fhPtDetMatchedToPart(0x0),
 	fhPtPartMatched(0x0),
 	fhPtPartMatchedCent(0x0),
+	fhPtPartMatchedWrongCent(0x0),
 	fhResidual(0x0),
 	fhPtResidual(0x0),
 	fhPhiResidual(0x0),
@@ -173,6 +174,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fhPtDetMatchedToPart(0x0),
 	fhPtPartMatched(0x0),
 	fhPtPartMatchedCent(0x0),
+	fhPtPartMatchedWrongCent(0x0),
 	fhResidual(0x0),
 	fhPtResidual(0x0),
 	fhPhiResidual(0x0),
@@ -568,6 +570,9 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fhPtPartMatchedCent= new TH2F("hPtPartMatchedCent","pT particle level matched",200,0,200,100,0,100);
 	fhPtPartMatchedCent->GetXaxis()->SetTitle("p^{part}_{T} (GeV/c)"); 
 	fhPtPartMatchedCent->GetYaxis()->SetTitle("centrality (%)"); 
+	fhPtPartMatchedWrongCent= new TH2F("hPtPartMatchedWrongCent","pT particle level matched incorrectly",200,0,200,100,0,100);
+	fhPtPartMatchedWrongCent->GetXaxis()->SetTitle("p^{part}_{T} (GeV/c)"); 
+	fhPtPartMatchedWrongCent->GetYaxis()->SetTitle("centrality (%)"); 
 
 	fhPtHybrDetRecoil= new TH2F("hPtHybrDetRecoil","pT response Pb-Pb+PYTHIA vs PYTHIA",200,0,200,200,0,200);
 	fhPtHybrDetRecoil->GetXaxis()->SetTitle("p^{Pb-Pb+PYTHIA,ch}_{T} (GeV/c)"); 
@@ -617,6 +622,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fhPtDetMatchedToPart);
 	fOutput->Add(fhPtPartMatched);
 	fOutput->Add(fhPtPartMatchedCent);
+	fOutput->Add(fhPtPartMatchedWrongCent);
 	fOutput->Add(fhResidual);
 	fOutput->Add(fhPtResidual);
 	fOutput->Add(fhPhiResidual);
@@ -1033,6 +1039,10 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
       ptJet3 = jet3->Pt();
       phiJet3 = jet3->Phi();
       ptLeadingTrackJet3 = jet3->GetLeadingTrack()->Pt();
+      if(ptJet3==ptJet1) {
+        fhPtPartMatchedWrongCent->Fill(ptJet3,fCent);
+        continue;
+      }
       fhPtPartMatched->Fill(ptJet3);
       fhPtPartMatchedCent->Fill(ptJet3,fCent);
     }
