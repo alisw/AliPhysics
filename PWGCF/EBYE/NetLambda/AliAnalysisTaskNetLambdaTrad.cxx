@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Oct 7
+// Updated Oct 14
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -91,7 +91,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     
     fHistCentrality = new TH1D( "fHistCentrality", "fHistCentrality",100,0,100);
     fListHist->Add(fHistCentrality);
- 
+    
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     const Int_t CentbinNum = 81;
     Double_t CentBins[CentbinNum+1];
@@ -347,7 +347,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         negprnsg = fPIDResponse->NumberOfSigmasTPC(esdnTrack, AliPID::kProton);
         pospion  = fPIDResponse->NumberOfSigmasTPC( esdpTrack, AliPID::kPion );
         negpion  = fPIDResponse->NumberOfSigmasTPC( esdnTrack, AliPID::kPion );
-
+        
         
         if(TMath::Abs(peta) > 0.8) continue;
         if(TMath::Abs(neta) > 0.8) continue;
@@ -365,38 +365,38 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             
             if(TMath::Abs(eta) < 0.5)
             {
-                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.5 && dcaPosToVertex > 0.2 && TMath::Abs(posprnsg)  <= 2.5 && TMath::Abs(negpion)  <= 2.5) //Default
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.5 && dcaPosToVertex > 0.2 && TMath::Abs(posprnsg)  <= 2 && TMath::Abs(negpion)  <= 2) //Default
                 {
                     f3fHistCentVsInvMassLambda1point0->Fill(fCentrality,invMassLambda,V0pt);
-                    if(invMassLambda > 1.11 && invMassLambda < 1.122)
+                    if(invMassLambda > 1.11 && invMassLambda < 1.12)
                     {
                         ptChEta1point0[iptbin] += 1;
                         f3fHistCentVsInvMassLambda1point0Masscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
                 }
-                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.2 && dcaPosToVertex > 0.5 && TMath::Abs(negprnsg)  <= 2.5 && TMath::Abs(pospion)  <= 2.5) //default
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.2 && dcaPosToVertex > 0.5 && TMath::Abs(negprnsg)  <= 2 && TMath::Abs(pospion)  <= 2) //default
                 {
                     f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
-                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
+                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.12)
                     {
                         ptChEta1point0[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda1point0Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
                 }
                 
-                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 1.25 && dcaPosToVertex > 0.5 && TMath::Abs(posprnsg)  <= 2.5 && TMath::Abs(negpion)  <= 2.5) //Default
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 1.25 && dcaPosToVertex > 0.5 && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //Default
                 {
                     f3fHistCentVsInvMassLambda1point0tight->Fill(fCentrality,invMassLambda,V0pt);
-                    if(invMassLambda > 1.11 && invMassLambda < 1.122)
+                    if(invMassLambda > 1.11 && invMassLambda < 1.12)
                     {
                         ptChEta1point0tight[iptbin] += 1;
                         f3fHistCentVsInvMassLambda1point0Masscuttight->Fill(fCentrality,invMassLambda,V0pt);
                     }
                 }
-                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.5 && dcaPosToVertex > 1.25 && TMath::Abs(negprnsg)  <= 2.5 && TMath::Abs(pospion)  <= 2.5) //default
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.5 && dcaPosToVertex > 1.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3) //default
                 {
                     f3fHistCentVsInvMassAntiLambda1point0tight->Fill(fCentrality,invMassAntiLambda,V0pt);
-                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
+                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.12)
                     {
                         ptChEta1point0tight[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda1point0Masscuttight->Fill(fCentrality,invMassAntiLambda,V0pt);
