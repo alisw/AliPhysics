@@ -29,13 +29,16 @@ class AliReducedVarCut : public AliReducedInfoCut {
               AliReducedVarManager::Variables dependentVar2=AliReducedVarManager::kNothing, Float_t depCut2Low=0., Float_t depCut2High=0., Bool_t depCut2Exclude=kFALSE);
   // NOTE: Define cuts which use functions of a defined variable instead of a constant cut; the logic of the arguments is the same as for the above function
   // NOTE: The use case is for cuts on correlations between 2 variables
-  void AddCut(AliReducedVarManager::Variables var, Float_t cutLow, TF1* funcCutHigh, Bool_t exclude = kFALSE, AliReducedVarManager::Variables  
-              dependentVar=AliReducedVarManager::kNothing, Float_t depCutLow=0., Float_t depCutHigh=0., Bool_t depCutExclude=kFALSE);
-  void AddCut(AliReducedVarManager::Variables var, TF1* funcCutLow, Float_t cutHigh, Bool_t exclude = kFALSE, AliReducedVarManager::Variables 
-              dependentVar=AliReducedVarManager::kNothing, Float_t depCutLow=0., Float_t depCutHigh=0., Bool_t depCutExclude=kFALSE);
-  void AddCut(AliReducedVarManager::Variables var, TF1* funcCutLow, TF1* funcCutHigh, Bool_t exclude = kFALSE, AliReducedVarManager::Variables  
-              dependentVar=AliReducedVarManager::kNothing, Float_t depCutLow=0., Float_t depCutHigh=0., Bool_t depCutExclude=kFALSE);
-  
+  void AddCut(AliReducedVarManager::Variables var, Float_t cutLow, TF1* funcCutHigh, Bool_t exclude = kFALSE,
+              AliReducedVarManager::Variables dependentVar=AliReducedVarManager::kNothing, Float_t depCutLow=0., Float_t depCutHigh=0., Bool_t depCutExclude=kFALSE,
+              AliReducedVarManager::Variables dependentVar2=AliReducedVarManager::kNothing, Float_t depCut2Low=0., Float_t depCut2High=0., Bool_t depCut2Exclude=kFALSE);
+  void AddCut(AliReducedVarManager::Variables var, TF1* funcCutLow, Float_t cutHigh, Bool_t exclude = kFALSE,
+              AliReducedVarManager::Variables dependentVar=AliReducedVarManager::kNothing, Float_t depCutLow=0., Float_t depCutHigh=0., Bool_t depCutExclude=kFALSE,
+              AliReducedVarManager::Variables dependentVar2=AliReducedVarManager::kNothing, Float_t depCut2Low=0., Float_t depCut2High=0., Bool_t depCut2Exclude=kFALSE);
+  void AddCut(AliReducedVarManager::Variables var, TF1* funcCutLow, TF1* funcCutHigh, Bool_t exclude = kFALSE,
+              AliReducedVarManager::Variables dependentVar=AliReducedVarManager::kNothing, Float_t depCutLow=0., Float_t depCutHigh=0., Bool_t depCutExclude=kFALSE,
+              AliReducedVarManager::Variables dependentVar2=AliReducedVarManager::kNothing, Float_t depCut2Low=0., Float_t depCut2High=0., Bool_t depCut2Exclude=kFALSE);
+
   virtual Bool_t IsSelected(TObject* obj);
   virtual Bool_t IsSelected(Float_t* values);
   virtual Bool_t IsSelected(TObject* obj, Float_t* values);
@@ -63,7 +66,7 @@ class AliReducedVarCut : public AliReducedInfoCut {
   AliReducedVarCut(const AliReducedVarCut &c);
   AliReducedVarCut& operator= (const AliReducedVarCut &c);
   
-  ClassDef(AliReducedVarCut,3);
+  ClassDef(AliReducedVarCut,4);
 };
 
 #endif
