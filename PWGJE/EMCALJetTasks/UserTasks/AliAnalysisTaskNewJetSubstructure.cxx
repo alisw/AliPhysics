@@ -319,6 +319,12 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         }
         cout << "jet 3 exists" << jet3->Pt() << endl;
 
+	AliJetContainer *jetContTrue = GetJetContainer(1);
+	AliJetContainer *jetContPart = GetJetContainer(3);
+	
+	if (fCheckResolution)
+          CheckSubjetResolution(jet2, jetContTrue, jet3, jetContPart);
+
         Double_t fraction = 0;
         if (!(fJetShapeSub == kConstSub))
           fraction = jetCont->GetFractionSharedPt(jet1);
