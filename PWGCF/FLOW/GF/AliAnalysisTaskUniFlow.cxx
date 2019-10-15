@@ -2810,7 +2810,7 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
 Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
 {
     if(!task) { AliError("AliUniFlowCorrTask does not exists!"); return kFALSE; }
-    // task->Print();
+    // task->PrintTask();
 
     Int_t iNumHarm = task->fiNumHarm;
     Int_t iNumGaps = task->fiNumGaps;
@@ -5458,13 +5458,13 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
             }
           }
 
-          if(!profile) { fInit = kFALSE; AliError("Profile (Pos) NOT created!"); task->Print(); return; }
+          if(!profile) { fInit = kFALSE; AliError("Profile (Pos) NOT created!"); task->PrintTask(); return; }
 
           // check if same profile does not exists already
           if(fListFlow[iSpec]->FindObject(profile->GetName())) {
             AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
             fInit = kFALSE;
-            task->Print();
+            task->PrintTask();
             delete profile;
             return;
           }
@@ -5475,12 +5475,12 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
           if(bHasGap)
           { // Refs does not distinquish Pos/Neg
             if(iSpec != kRefs || fEtaCheckRFP){
-              if(!profileNeg) { fInit = kFALSE; AliError("Profile (Neg) NOT created!"); task->Print(); return; }
+              if(!profileNeg) { fInit = kFALSE; AliError("Profile (Neg) NOT created!"); task->PrintTask(); return; }
               // same for Neg
               if(fListFlow[iSpec]->FindObject(profileNeg->GetName())) {
                 AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
                 fInit = kFALSE;
-                task->Print();
+                task->PrintTask();
                 delete profileNeg;
                 return;
               }
@@ -5494,11 +5494,11 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
               for(Int_t twoPos(0); twoPos < 3; twoPos++){
                 if(iSpec == kRefs && corrOrder == 2 && poiPos >= twoPos ) continue;
                 if(iSpec != kRefs && corrOrder == 2 && poiPos == twoPos) continue;
-                if(!profile3sub[poiPos][twoPos]) { fInit = kFALSE; AliError("Profiles combi NOT created!"); task->Print(); return; }
+                if(!profile3sub[poiPos][twoPos]) { fInit = kFALSE; AliError("Profiles combi NOT created!"); task->PrintTask(); return; }
                 if(fListFlow[iSpec]->FindObject(profile3sub[poiPos][twoPos]->GetName())) {
                   AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
                   fInit = kFALSE;
-                  task->Print();
+                  task->PrintTask();
                   delete profile3sub[poiPos][twoPos];
                   return;
                 }
