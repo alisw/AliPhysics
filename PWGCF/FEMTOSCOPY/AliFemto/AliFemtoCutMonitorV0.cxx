@@ -55,8 +55,8 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fdEdxNegDaughter = new TH2D("dEdxNegDaughter","dEdx of negative daughters",200, 0.1, 4.0, 250, 0.0, 500.0);
   fTOFtimePosDaughter = new TH2D("TOFtimePosDaughter","TOF time of positive daughters",100,0.,1.1,100,0.,3.0);
   fTOFtimeNegDaughter = new TH2D("TOFtimeNegDaughter","TOF time of negative daughters",100,0.,1.1,100,0.,3.0);
-  fCPAvsPt = new TH2D("CPAvsPt","CPA vs Pt",1000,0.0,10.0, 500,-1,1);
-  fMINVvsPt = new TH2D("fMINVvsPt", "Invarint mass V0 vs Pt", 1000, 0., 10., 500, 0., 5.);
+  fCPAvsPt = new TH2D("CPAvsPt","CPA vs Pt",100,0.0,10.0, 500,-1,1);
+  fMINVvsPt = new TH2D("fMINVvsPt", "Invarint mass V0 vs Pt", 100, 0., 10., 500, 0., 5.);
 
   fnsigmaPosL = new TH1D("fnsigmaPosL","Number of sigmas of positive Lambda daughters",200,-8,8);
   fnsigmaNegL = new TH1D("fnsigmaNegL","Number of sigmas of negative Lambda daughters",200,-8,8);
@@ -156,9 +156,9 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   snprintf(name, 200, " fTOFtimeNegDaughter%s", aName);
   fTOFtimeNegDaughter = new TH2D(name,"TOF time of negative daughters",190, 0.1, 2.0, 400, -4000.0, 4000.0);
   snprintf(name, 200, " fCPAvsPt%s", aName);
-  fCPAvsPt = new TH2D(name,"CPA vs Pt",1000,0.0,10.0, 500,-1,1);
+  fCPAvsPt = new TH2D(name,"CPA vs Pt",100,0.0,10.0, 500,-1,1);
   snprintf(name, 200, " fMINVvsPt%s", aName);
-  fMINVvsPt = new  TH2D(name, "Invarint mass V0 vs Pt", 1000, 0., 10., 500, 0., 5.);
+  fMINVvsPt = new  TH2D(name, "Invarint mass V0 vs Pt", 100, 0., 10., 500, 0., 5.);
   snprintf(name, 200, " fnsigmaPosL%s", aName);
   fnsigmaPosL = new TH1D(name,"Number of sigmas of positive Lambda daughters",200,-10,10);
   snprintf(name, 200, " fnsigmaNegL%s", aName);
