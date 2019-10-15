@@ -124,6 +124,7 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH2F* fClsEtaPhiAftMatch;
 		TH2F* fTPCnsig;
                 TH2F* fTOFnsig;
+                TH2F* fITSnsig;
 		TH2F* fTPCnsig_TOFnsig;
 		//TH3F* fTrkPt_TPCnsig_TOFnsig;
 		TH2F* fHistele_TOFcuts;
@@ -207,6 +208,8 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH2F* fTrkPhisin2_elelow;
 		TH2F* fTrkPhicos2_elehigh;
 		TH2F* fTrkPhisin2_elehigh;
+		TH2F* fTrkPhicos2_hfehigh;
+		TH2F* fTrkPhisin2_hfehigh;
 		TH2F* fTrkPhicos2_hadhigh;
 		TH2F* fTrkPhisin2_hadhigh;
 		TH2F* fTrkPhicos2_phoLShigh;
@@ -217,6 +220,8 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		//TH1F* fOutplane;
                 TH1F* fInplane_ele;
 		TH1F* fOutplane_ele;
+                TH1F* fInplane_hfe;
+		TH1F* fOutplane_hfe;
 		TH1F* fInplane_LSpho;
 		TH1F* fOutplane_LSpho;
 		TH1F* fInplane_ULSpho;
