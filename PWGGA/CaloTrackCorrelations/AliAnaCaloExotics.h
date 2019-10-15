@@ -139,7 +139,6 @@ public:
   // Calorimeter cells
     
   TH2F *   fhCellExoAmp;                     //!<! Cell amplitude vs exoticity
-  TH2F *   fhCellExoAmpLowGain;              //!<! Cell amplitude vs exoticity for low gain cells
   TH3F *   fhCellExoAmpTime;                 //!<! Cell amplitude vs time vs exoticity
   TH3F *   fhCellExoGrid ;                   //!<! Cells ordered in column/row vs exoticity when amplitude > fEMinForExo 
   TH3F *   fhCellExoGridHighE ;              //!<! Cells ordered in column/row vs exoticity when amplitude > 100 GeV

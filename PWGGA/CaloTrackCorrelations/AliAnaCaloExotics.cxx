@@ -79,7 +79,7 @@ fhTrackMatchedDEtaPos1Cell(0),         fhTrackMatchedDPhiPos1Cell(0),          f
 fhEOverP1Cell(0),
 
 // Cells
-fhCellExoAmp(0),                        fhCellExoAmpLowGain(0),                       
+fhCellExoAmp(0),                                               
 fhCellExoAmpTime(0),                    fhCellExoGrid(0),                      fhCellExoGridHighE(0)
 
 {        
@@ -107,7 +107,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
   Float_t  amp    = 0.;
   Double_t time   = 0.;
   Int_t    id     = -1;
-  Bool_t   highG  = kFALSE;
+  //Bool_t   highG  = kFALSE;
   Float_t  exoticity = -1000;
   
   Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
@@ -132,8 +132,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     
     id      = cells->GetCellNumber(iCell);
     
-    highG   = cells->GetCellHighGain(id);
-    if ( IsDataMC() ) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
+    //highG   = cells->GetCellHighGain(id);
     
     exoticity =  1-GetCaloUtils()->GetECross(id,cells,bc)/amp;
     
@@ -141,9 +140,6 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     
     fhCellExoAmp    ->Fill(amp       , exoticity, GetEventWeight());
     fhCellExoAmpTime->Fill(amp , time, exoticity, GetEventWeight());
-    
-    if ( !highG )
-      fhCellExoAmpLowGain->Fill(amp  , exoticity, GetEventWeight());
     
     if ( amp > fEMinForExo )
       fhCellExoGrid->Fill(icolAbs, irowAbs, exoticity, GetEventWeight());
@@ -844,13 +840,6 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhCellExoAmp->SetXTitle("#it{E}_{cell} (GeV) ");
   fhCellExoAmp->SetYTitle("#it{F}_{+}");
   outputContainer->Add(fhCellExoAmp);    
-
-  fhCellExoAmpLowGain     = new TH2F 
-  ("hCellExoAmpLowGain","Cell #it{F}_{+} vs #it{E}_{cell}, low gain",
-   nptbins,ptmin,ptmax/2, nexobins,exomin,exomax); 
-  fhCellExoAmpLowGain->SetXTitle("#it{E}_{cell} (GeV) ");
-  fhCellExoAmpLowGain->SetYTitle("#it{F}_{+}");
-  outputContainer->Add(fhCellExoAmpLowGain);    
   
   fhCellExoAmpTime = new TH3F 
   ("hCellExoAmpTime","Cell #it{F}_{+} vs #it{E}_{cell} vs time",
