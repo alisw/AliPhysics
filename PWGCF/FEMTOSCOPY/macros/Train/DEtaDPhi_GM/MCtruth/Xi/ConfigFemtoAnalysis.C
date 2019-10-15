@@ -124,8 +124,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int runmults[numOfMultBins] = {0, 0, 0, 0, 1};
 	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,15000};
 
-	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed",  "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0ALAL","V0LAL","PXim","PXip","aPXim","aPXip","POmegam","POmegap","aPOmegam","aPOmegap" };
+	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1};
+	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed",  "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0ALAL","V0LAL","PXim","aPXim","PXip","aPXip","POmegam","POmegap","aPOmegam","aPOmegap" };
 
 	//int runktdep = 1;
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
@@ -304,14 +304,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    dtc1etaphitpc[aniter]->SetPDG(3122);
 					    dtc2etaphitpc[aniter]->SetPDG(-3122);
 					  }
-					if(ichg == 20) //PXim
+					if(ichg == 20) //PXim - nie dziala
 					  {  
 					    dtc1etaphitpc[aniter]->SetPt(0.6,maxPt); //Xi-
 					    dtc1etaphitpc[aniter]->SetCharge(-1.0);	    
 					    dtc1etaphitpc[aniter]->SetPDG(3312);
 					    
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); //proton
-					    dtc1etaphitpc[aniter]->SetCharge(1.0);	
+					    dtc2etaphitpc[aniter]->SetCharge(1.0);	
 					    dtc2etaphitpc[aniter]->SetPDG(2212);
 					  }
 					if(ichg == 21) //aPXim
@@ -321,7 +321,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    dtc1etaphitpc[aniter]->SetPDG(3312);
 					    
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); //anti-proton
-					    dtc1etaphitpc[aniter]->SetCharge(-1.0);	
+					    dtc2etaphitpc[aniter]->SetCharge(-1.0);	
 					    dtc2etaphitpc[aniter]->SetPDG(2212);
 					  }
 					if(ichg == 22) //PXip
@@ -331,17 +331,17 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    dtc1etaphitpc[aniter]->SetPDG(-3312);
 					    
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); //proton
-					    dtc1etaphitpc[aniter]->SetCharge(1.0);	
+					    dtc2etaphitpc[aniter]->SetCharge(1.0);	
 					    dtc2etaphitpc[aniter]->SetPDG(2212);
 					  }
-					if(ichg == 23) //aPXip
+					if(ichg == 23) //aPXip - nie dziala
 					  {  
 					    dtc1etaphitpc[aniter]->SetPt(0.6,maxPt); //Xi+
 					    dtc1etaphitpc[aniter]->SetCharge(1.0);	    
 					    dtc1etaphitpc[aniter]->SetPDG(-3312);
 					    
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); //anti-proton
-					    dtc1etaphitpc[aniter]->SetCharge(-1.0);	
+					    dtc2etaphitpc[aniter]->SetCharge(-1.0);	
 					    dtc2etaphitpc[aniter]->SetPDG(2212);
 					  }
 
@@ -352,7 +352,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    dtc1etaphitpc[aniter]->SetPDG(3334);
 					    
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); //proton
-					    dtc1etaphitpc[aniter]->SetCharge(1.0);	
+					    dtc2etaphitpc[aniter]->SetCharge(1.0);	
 					    dtc2etaphitpc[aniter]->SetPDG(2212);
 					  }
 					if(ichg == 25) //aPOmegam
@@ -362,7 +362,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    dtc1etaphitpc[aniter]->SetPDG(3334);
 					    
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); //anti-proton
-					    dtc1etaphitpc[aniter]->SetCharge(-1.0);	
+					    dtc2etaphitpc[aniter]->SetCharge(-1.0);	
 					    dtc2etaphitpc[aniter]->SetPDG(2212);
 					  }
 					if(ichg == 26) //POmegap
@@ -372,7 +372,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    dtc1etaphitpc[aniter]->SetPDG(-3334);
 					    
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); //proton
-					    dtc1etaphitpc[aniter]->SetCharge(1.0);	
+					    dtc2etaphitpc[aniter]->SetCharge(1.0);	
 					    dtc2etaphitpc[aniter]->SetPDG(2212);
 					  }
 					if(ichg == 27) //aPOmegap
@@ -382,7 +382,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    dtc1etaphitpc[aniter]->SetPDG(-3334);
 					    
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); //anti-proton
-					    dtc1etaphitpc[aniter]->SetCharge(-1.0);	
+					    dtc2etaphitpc[aniter]->SetCharge(-1.0);	
 					    dtc2etaphitpc[aniter]->SetPDG(2212);
 					  }
 
@@ -454,7 +454,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    anetaphitpc[aniter]->SetFirstParticleCut(dtc2etaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
 					  }
-					if(ichg==2 || ichg==5 || ichg==8 || ichg==12 || (ichg >= 13 && ichg <=16) || ichg == 19)//unlike-sign + proton/lambda
+					if(ichg==2 || ichg==5 || ichg==8 || ichg==12 || (ichg >= 13 && ichg <=16) || ichg >= 19)//unlike-sign + proton/lambda
 					  {
 					    anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
