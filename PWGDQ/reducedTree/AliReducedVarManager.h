@@ -655,6 +655,8 @@ class AliReducedVarManager : public TObject {
     kTriggerPt,       // pt of J/psi candidate
     kTriggerRap,      // rapidity of J/psi candidate
     kTriggerRapAbs,   // absolute rapidity of J/psi candidate
+    kTriggerPseudoProperDecayTime,  // pseudo-proper decay length of J/psi candidate
+    kTriggerPairTypeSPD,            // SPD pair type of J/psi candidate
     kAssociatedPt,          // pt of associated track
     kAssociatedPtBoosted,   // pt of associated track, after boost to trigger rest frame
     kAssociatedPtOverTriggerGammaT, // pt of associated track / transverse gamma of J/psi candidate
@@ -837,7 +839,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 12);
+  ClassDef(AliReducedVarManager, 13);
 };
 
 #endif
