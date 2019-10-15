@@ -155,13 +155,16 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           if (fillHists && ResultsHist->GetDoPtQA()) {
             ResultsHist->FillPtQADist(HistCounter, RelativeK, itPart1->GetPt(),
                                       itPart2->GetPt());
+            ResultsHist->FillPtSEOneQADist(HistCounter, itPart1->GetPt(),
+                                           iMult + 1);
+            ResultsHist->FillPtSETwoQADist(HistCounter, itPart2->GetPt(),
+                                           iMult + 1);
           }
           if (fillHists && ResultsHist->GetDoMassQA()) {
             ResultsHist->FillMassQADist(HistCounter, RelativeK,
                                         itPart1->GetInvMass(),
                                         itPart2->GetInvMass());
-	    ResultsHist->FillPairInvMassQAD(HistCounter, part1, part2);
-
+            ResultsHist->FillPairInvMassQAD(HistCounter, part1, part2);
           }
           ++itPart2;
         }
@@ -256,6 +259,12 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                   RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
                                  itPart2->GetMomentum(), *itPDGPar2),
                   RelativeK);
+            }
+            if (fillHists && ResultsHist->GetDoPtQA()) {
+              ResultsHist->FillPtMEOneQADist(HistCounter, itPart1->GetPt(),
+                                             iMult + 1);
+              ResultsHist->FillPtMETwoQADist(HistCounter, itPart2->GetPt(),
+                                             iMult + 1);
             }
             if (fillHists && ResultsHist->GetObtainMomentumResolution()) {
               //It is sufficient to do this in Mixed events, which allows
