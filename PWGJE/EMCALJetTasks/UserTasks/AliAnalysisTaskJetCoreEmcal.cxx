@@ -861,7 +861,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 				// embedding for recoil jets
 				// get MC info
 				//
-				if(ptcorr<fMinEmbJetPt) continue;
 				Double_t ptTTMC = 0;
 				Double_t phiTTMC = 0;
 				Int_t TTmatched = 0;
@@ -922,6 +921,8 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 				fhPtResidualRecoil->Fill(ptJet3,residual);
 				fhDphiResidualRecoil->Fill(residualDphi);
 				fhDphiphiResidualRecoil->Fill(dPhiPart,residualDphi);
+
+				if(ptcorr<fMinEmbJetPt) continue;
 
 				if(fFillRecoilTree) {
 					fTreeVarsRecoil[0] = fCent;
@@ -1010,7 +1011,6 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		Double_t area = jet1->Area();
 		Double_t ptCorr = ptJet1-rho*area;
 		Double_t ptLeadingTrackJet1 = jet1->GetLeadingTrack()->Pt();
-		if(ptCorr<fMinEmbJetPt) continue;
     // closest jet
     Double_t ptJet2=0, phiJet2=0;
     Double_t ptJet3=0, phiJet3=0;
@@ -1080,6 +1080,8 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		fhPtResidual->Fill(ptJet3,residual);
 		fhPhiResidual->Fill(residualPhi);
 		fhPhiPhiResidual->Fill(phiJet3,residualPhi);
+
+		if(ptCorr<fMinEmbJetPt) continue;
 
 		if(fFillInclusiveTree && fRandom->Integer(fRejectionFactorInclusiveJets)==0 ) {
 			fTreeVarsInclusive[0] = fCent;
