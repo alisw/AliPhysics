@@ -2928,6 +2928,7 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
     bDiff = kFALSE;
     if(fEtaCheckRFP) etaCheck = kTRUE;
   }
+  char sides[] = "LMR";
 
 
   // results of correlations
@@ -2965,6 +2966,14 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
           cDenomNeg = TwoDiffGapNeg(0,0);
           cNom = TwoDiffGapPos(task->fiHarm[0],task->fiHarm[1]);
           cNomNeg = TwoDiffGapNeg(task->fiHarm[0],task->fiHarm[1]);
+          if(bHas3sub){
+            for(Int_t poiPos(0); poiPos < 3; poiPos++)
+              for(Int_t rfPos(0); rfPos < 3; rfPos++){
+                if(poiPos == rfPos) continue;
+                cDenom3Sub[poiPos][rfPos] = TwoDiffGap3sub(0,0,poiPos,rfPos);
+                cNom3Sub[poiPos][rfPos] = TwoDiffGap3sub(task->fiHarm[0],task->fiHarm[1],poiPos,rfPos);
+              }
+          }
         }
         else {
           if(!etaCheck) {
@@ -2976,6 +2985,16 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
             cDenomNeg = TwoNeg(0,0);
             cNom = TwoPos(task->fiHarm[0],task->fiHarm[1]);
             cNomNeg = TwoNeg(task->fiHarm[0],task->fiHarm[1]);
+            }
+          if(bHas3sub){
+            for(Int_t rf1Pos(0); rf1Pos < 3; rf1Pos++){
+              if(rf1Pos > 1) break;
+              for(Int_t rf2Pos(0); rf2Pos < 3; rf2Pos++ ){
+                  if(rf1Pos >= rf2Pos) continue;
+                  cDenom3Sub[rf1Pos][rf2Pos] = TwoGap3sub(0,0,rf1Pos,rf2Pos);
+                  cNom3Sub[rf1Pos][rf2Pos] = TwoGap3sub(task->fiHarm[0],task->fiHarm[1],rf1Pos,rf2Pos);
+                }
+              }
             }
           }
         }
@@ -3045,6 +3064,12 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
             cDenomNeg = FourNeg(0,0,0,0);
             cNom = FourPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
             cNomNeg = FourNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+          }
+          if(bHas3sub){
+            for(Int_t twoPos(0); twoPos < 3; twoPos++){
+              cDenom3Sub[0][twoPos] = Four3sub(0,0,0,0,twoPos);
+              cNom3Sub[0][twoPos] = Four3sub(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],twoPos);
+            }
           }
         }
       }
@@ -3186,8 +3211,10 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
   Double_t dNom3Sub[3][3] = {0.0};
 
   if(bHas3sub){
-    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+    for(Int_t poiPos(0); poiPos < 3; poiPos++){
+      if(species == kRefs && iNumHarm == 2 && poiPos > 0) break;
       for(Int_t twoPos(0); twoPos < 3; twoPos++){
+        if(species == kRefs && iNumHarm == 2 && (poiPos > 1 || poiPos >= twoPos) ) break;
         bFill3sub[poiPos][twoPos] = kTRUE;
         dNom3Sub[poiPos][twoPos] = cNom3Sub[poiPos][twoPos].Re();
         dDenom3Sub[poiPos][twoPos] = cDenom3Sub[poiPos][twoPos].Re();
@@ -3198,6 +3225,7 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
         if(TMath::Abs(dValue3Sub[poiPos][twoPos]) > 1.0)
           bFill3sub[poiPos][twoPos] = kFALSE;
       }
+    }
   }
 
   // Filling corresponding profiles
@@ -3216,6 +3244,29 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
         TProfile* profNeg = (TProfile*) fListFlow[species]->FindObject(Form("%s_Neg_sample%d",task->fsName.Data(),fIndexSampling));
         if(!profNeg) { AliError(Form("Profile '%s_Neg_sample%d' not found!", task->fsName.Data(),fIndexSampling)); return; }
         profNeg->Fill(fIndexCentrality, dValueNeg, dDenomNeg);
+      }
+      if(bHas3sub)
+      {
+        if(iNumHarm == 2){
+          for(Int_t rf1Pos(0); rf1Pos < 3; rf1Pos++){
+            if(rf1Pos > 1) break;
+            for(Int_t rf2Pos(0); rf2Pos < 3; rf2Pos++){
+              if(rf1Pos >= rf2Pos) break;
+              TProfile* prof = (TProfile*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_rf1_%c_rf2_%c",task->fsName.Data(),fIndexSampling,sides[rf1Pos],sides[rf2Pos]));
+              if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_rf1_%c_rf2_%c' not found!", task->fsName.Data(),fIndexSampling,sides[rf1Pos],sides[rf2Pos])); return; }
+              if(bFill3sub[rf1Pos][rf2Pos]) prof->Fill(fIndexCentrality, dValue3Sub[rf1Pos][rf2Pos], dDenom3Sub[rf1Pos][rf2Pos]);
+            }
+          }
+        }
+        else if(iNumHarm == 4){
+          for(Int_t twoPos(0); twoPos < 3; twoPos++){
+            TProfile* prof = (TProfile*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_two_%c",task->fsName.Data(),fIndexSampling,sides[twoPos]));
+            if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_two_%c' not found!", task->fsName.Data(),fIndexSampling,sides[twoPos])); return; }
+            if(bFill3sub[0][twoPos]) prof->Fill(fIndexCentrality, dValue3Sub[0][twoPos], dDenom3Sub[0][twoPos]);
+          }
+        }
+        else
+          return;
       }
       break;
     }
@@ -3241,13 +3292,25 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
 
       if(bHas3sub)
       {
-        char sides[] = "LMR";
-        for(Int_t poiPos(0); poiPos < 3; poiPos++)
-          for(Int_t twoPos(0); twoPos < 3; twoPos++){
-            TProfile2D* prof = (TProfile2D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_poi_%c_two_%c",task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos]));
-            if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_poi_%c_two_%c' not found!", task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos])); return; }
-            if(bFill3sub[poiPos][twoPos]) prof->Fill(fIndexCentrality, dPt, dValue3Sub[poiPos][twoPos], dDenom3Sub[poiPos][twoPos]);
+        if(iNumHarm == 2){
+          for(Int_t poiPos(0); poiPos < 3; poiPos++)
+            for(Int_t rfPos(0); rfPos < 3; rfPos++){
+              if(poiPos == rfPos) continue;
+              TProfile2D* prof = (TProfile2D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_poi_%c_rfp_%c",task->fsName.Data(),fIndexSampling,sides[poiPos],sides[rfPos]));
+              if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_poi_%c_rfp_%c' not found!", task->fsName.Data(),fIndexSampling,sides[poiPos],sides[rfPos])); return; }
+              if(bFill3sub[poiPos][rfPos]) prof->Fill(fIndexCentrality, dPt, dValue3Sub[poiPos][rfPos], dDenom3Sub[poiPos][rfPos]);
+            }
           }
+        else if(iNumHarm == 4){
+          for(Int_t poiPos(0); poiPos < 3; poiPos++)
+            for(Int_t twoPos(0); twoPos < 3; twoPos++){
+              TProfile2D* prof = (TProfile2D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_poi_%c_two_%c",task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos]));
+              if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_poi_%c_two_%c' not found!", task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos])); return; }
+              if(bFill3sub[poiPos][twoPos]) prof->Fill(fIndexCentrality, dPt, dValue3Sub[poiPos][twoPos], dDenom3Sub[poiPos][twoPos]);
+            }
+        }
+        else
+          return;
       }
       break;
     }
@@ -3768,6 +3831,21 @@ TComplex AliAnalysisTaskUniFlow::TwoGap(const Int_t n1, const Int_t n2) const
   return formula;
 }
 // ============================================================================
+TComplex AliAnalysisTaskUniFlow::TwoGap3sub(const Int_t n1, const Int_t n2, const Int_t rf1Pos, const Int_t rf2Pos) const
+{
+  TComplex formula = TComplex(0.0,0.0,kFALSE);
+  if(rf1Pos >= rf2Pos) { AliError("TwoGap3sub: Incorrect position of RFPs."); return 0; }
+  if(rf1Pos == 0){
+    if(rf2Pos == 0)
+      formula = QGapNeg(n1,1)*QGapMid(n2,1);
+    else
+      formula = QGapNeg(n1,1)*QGapPos(n2,1);
+  }
+  else
+    formula = QGapMid(n1,1)*QGapPos(n2,1);
+  return formula;
+}
+// ============================================================================
 TComplex AliAnalysisTaskUniFlow::TwoDiff(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = P(n1,1)*Q(n2,1) - S(n1+n2,2);
@@ -3819,6 +3897,35 @@ TComplex AliAnalysisTaskUniFlow::TwoDiffNeg(const Int_t n1, const Int_t n2) cons
 TComplex AliAnalysisTaskUniFlow::TwoDiffMid(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = PGapMid(n1,1)*QGapMid(n2,1) - SGapMid(n1+n2,2);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::TwoDiffGap3sub(const Int_t n1, const Int_t n2, const Int_t poiPos, const Int_t rfPos) const
+{
+  TComplex formula = TComplex(0.0,0.0,kFALSE);
+  if(poiPos == rfPos) { AliError("TwoDiffGap3sub: Incorrect position of POI and RFP."); return 0; }
+  switch(poiPos){
+    case 0:
+    {
+      if(rfPos == 1) formula = PGapNeg(n1,1)*QGapMid(n2,1);
+      else formula = PGapNeg(n1,1)*QGapPos(n2,1);
+      break;
+    }
+    case 1:
+    {
+      if(rfPos == 0) formula = PGapMid(n1,1)*QGapNeg(n2,1);
+      else formula = PGapMid(n1,1)*QGapPos(n2,1);
+      break;
+    }
+    case 2:
+    {
+      if(rfPos == 0) formula = PGapPos(n1,1)*QGapNeg(n2,1);
+      else formula = PGapPos(n1,1)*QGapMid(n2,1);
+      break;
+    }
+    default:
+      return 0;
+  }
   return formula;
 }
 // ============================================================================
@@ -4923,10 +5030,30 @@ TComplex AliAnalysisTaskUniFlow::EightGap(const Int_t n1, const Int_t n2, const 
 	return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlow::Four3sub(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlow::Four3sub(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t twoParCorrPosition) const
 {
   // left = neg, middle = mid; rigth = pos
-  TComplex formula = QGapMid(n1,1)*QGapMid(n2,1)*QGapNeg(n3,1)*QGapPos(n4,1)-QGapMid(n1+n2,2)*QGapNeg(n3,1)*QGapPos(n4,1);
+  TComplex formula = TComplex(0.0,0.0,kFALSE);
+  if(!(n1 == n2 && n1 == -n3 && n3 == n4) ) { AliError("Four par. diff. correlation with different harmonics not implemented!"); return 0; }
+  switch(twoParCorrPosition){
+    case 0:
+    {
+      formula = TwoNeg(n1,n2)*QGapMid(n3,1)*QGapPos(n4,1);
+      break;
+    }
+    case 1:
+    {
+      formula = QGapNeg(n3,1)*TwoMid(n1,n2)*QGapPos(n4,1);
+      break;
+    }
+    case 2:
+    {
+      formula = QGapNeg(n3,1)*QGapMid(n4,1)*TwoPos(n1,n2);
+      break;
+    }
+    default:
+      return 0;
+  }
   return formula;
 }
 // ============================================================================
@@ -5189,6 +5316,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
   // setting number of bins based on set range with fixed width
   const Int_t iFlowRFPsPtBinNum = (Int_t) ((fFlowRFPsPtMax - fFlowRFPsPtMin) / 0.1 + 0.5);
+  char sides[] = "LMR";
 
   // creating output correlations profiles based on CorrTasks
   Int_t iNumTasks = fVecCorrTask.size();
@@ -5205,6 +5333,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
       Bool_t bHasGap = task->HasGap();
       Bool_t bHas3sub = kFALSE;
       if(task->fiNumGaps > 1) bHas3sub = kTRUE;
+      Int_t corrOrder = task->fiNumHarm;
       const char* corName = task->fsName.Data();
       const char* corLabel = task->fsLabel.Data();
 
@@ -5227,10 +5356,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
           TH1* profile = nullptr;
           TH1* profileNeg = nullptr;
-          TH1* profile3sub[3][3];
-          for(Int_t poiPos(0); poiPos < 3; poiPos++)
-            for(Int_t twoPos(0); twoPos < 3; twoPos++)
-              profile3sub[poiPos][twoPos] = nullptr;
+          TH1* profile3sub[3][3] = {nullptr};
 
           switch(iSpec)
           {
@@ -5238,6 +5364,26 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
             {
               profile = new TProfile(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s; %s",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
               if(fEtaCheckRFP) profileNeg = new TProfile(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s; %s",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
+              if(bHas3sub){
+                if(corrOrder == 2) {
+                  for(Int_t rf1Pos(0); rf1Pos < 3; rf1Pos++){
+                    if(rf1Pos > 1) break;
+                    for(Int_t rf2Pos(0); rf2Pos < 3; rf2Pos++ ){
+                      if(rf1Pos >= rf2Pos) continue;
+                      profile3sub[rf1Pos][rf2Pos] = new TProfile(Form("%s_Pos_sample%d_rf1_%c_rf2_%c",corName,iSample,sides[rf1Pos],sides[rf2Pos]), Form("%s: %s; %s",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
+                    }
+                  }
+                }
+                else if(corrOrder == 4) {
+                  for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                    profile3sub[0][twoPos] = new TProfile(Form("%s_Pos_sample%d_two_%c",corName,iSample,sides[twoPos]), Form("%s: %s; %s",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
+                  }
+                }
+                else {
+                  AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- or 4-particle correlations.\n",iTask));
+                  return;
+                }
+              }
               break;
             }
 
@@ -5254,12 +5400,23 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                     if(bHasGap) { profileNeg = new TProfile2D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax); }
                 }
                 if(bHas3sub){
-                  if(task->fiNumHarm != 4) { AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 4-particle correlations.\n",iTask)); return; }
-                  char sides[] = "LMR";
-                  for(Int_t poiPos(0); poiPos < 3; poiPos++)
-                    for(Int_t twoPos(0); twoPos < 3; twoPos++){
-                      profile3sub[poiPos][twoPos] = new TProfile2D(Form("%s_Pos_sample%d_poi_%c_two_%c",corName,iSample,sides[poiPos],sides[twoPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    }
+                  if(corrOrder == 2) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t rfPos(0); rfPos < 3; rfPos++){
+                        if(poiPos == rfPos) continue;
+                        profile3sub[poiPos][rfPos] = new TProfile2D(Form("%s_Pos_sample%d_poi_%c_rfp_%c",corName,iSample,sides[poiPos],sides[rfPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                      }
+                  }
+                  else if(corrOrder == 4) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                        profile3sub[poiPos][twoPos] = new TProfile2D(Form("%s_Pos_sample%d_poi_%c_two_%c",corName,iSample,sides[poiPos],sides[twoPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                      }
+                  }
+                  else {
+                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 4-particle correlations.\n",iTask));
+                    return;
+                  }
                 }
                 break;
             }
@@ -5315,35 +5472,39 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
           profile->Sumw2();
           fListFlow[iSpec]->Add(profile);
 
-          if(bHasGap && (iSpec != kRefs || fEtaCheckRFP))
+          if(bHasGap)
           { // Refs does not distinquish Pos/Neg
-            if(!profileNeg) { fInit = kFALSE; AliError("Profile (Neg) NOT created!"); task->Print(); return; }
-
-            // same for Neg
-            if(fListFlow[iSpec]->FindObject(profileNeg->GetName())) {
-              AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
-              fInit = kFALSE;
-              task->Print();
-              delete profileNeg;
-              return;
+            if(iSpec != kRefs || fEtaCheckRFP){
+              if(!profileNeg) { fInit = kFALSE; AliError("Profile (Neg) NOT created!"); task->Print(); return; }
+              // same for Neg
+              if(fListFlow[iSpec]->FindObject(profileNeg->GetName())) {
+                AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
+                fInit = kFALSE;
+                task->Print();
+                delete profileNeg;
+                return;
+              }
+              profileNeg->Sumw2();
+              fListFlow[iSpec]->Add(profileNeg);
             }
 
-            profileNeg->Sumw2();
-            fListFlow[iSpec]->Add(profileNeg);
-
-            if(bHas3sub && iSpec == kCharged){
-              for(Int_t poiPos(0); poiPos < 3; poiPos++)
-                for(Int_t twoPos(0); twoPos < 3; twoPos++){
-                  if(!profile3sub[poiPos][twoPos]) { fInit = kFALSE; AliError("Profiles combi NOT created!"); task->Print(); return; }
-                  if(fListFlow[iSpec]->FindObject(profile3sub[poiPos][twoPos]->GetName())) {
-                    AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
-                    fInit = kFALSE;
-                    task->Print();
-                    delete profile3sub[poiPos][twoPos];
-                    return;
-                  }
-                  profile3sub[poiPos][twoPos]->Sumw2();
-                  fListFlow[iSpec]->Add(profile3sub[poiPos][twoPos]);
+          if(bHas3sub){
+            for(Int_t poiPos(0); poiPos < 3; poiPos++){
+              if(iSpec == kRefs && ((corrOrder == 4 && poiPos > 0) || (corrOrder == 2 && poiPos > 1)) ) break;
+              for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                if(iSpec == kRefs && corrOrder == 2 && poiPos >= twoPos ) continue;
+                if(iSpec != kRefs && corrOrder == 2 && poiPos == twoPos) continue;
+                if(!profile3sub[poiPos][twoPos]) { fInit = kFALSE; AliError("Profiles combi NOT created!"); task->Print(); return; }
+                if(fListFlow[iSpec]->FindObject(profile3sub[poiPos][twoPos]->GetName())) {
+                  AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
+                  fInit = kFALSE;
+                  task->Print();
+                  delete profile3sub[poiPos][twoPos];
+                  return;
+                }
+                profile3sub[poiPos][twoPos]->Sumw2();
+                fListFlow[iSpec]->Add(profile3sub[poiPos][twoPos]);
+                }
               }
             }
           }
