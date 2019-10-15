@@ -96,6 +96,18 @@ class AliFemtoDreamCorrHists {
       fPtQADist[i]->Fill(pt1, pt2);
     }
   }
+  void FillPtSEOneQADist(int i, float pt, int mult) {
+    fPtQADistSEPartOne[i]->Fill(pt, mult);
+  }
+  void FillPtSETwoQADist(int i, float pt, int mult) {
+    fPtQADistSEPartTwo[i]->Fill(pt, mult);
+  }
+  void FillPtMEOneQADist(int i, float pt, int mult) {
+    fPtQADistMEPartOne[i]->Fill(pt, mult);
+  }
+  void FillPtMETwoQADist(int i, float pt, int mult) {
+    fPtQADistMEPartTwo[i]->Fill(pt, mult);
+  }
   void FillMassQADist(int i, float kstar, float invMass1, float invMass2) {
     if(fMassQADistPart1[i] && fMassQADistPart2[i]) {
       fMassQADistPart1[i]->Fill(invMass1, kstar);
@@ -219,6 +231,10 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventkTDist;
   TH2F ***fSameEventkTCentDist;
   TH2F **fPtQADist;
+  TH2F **fPtQADistSEPartOne;
+  TH2F **fPtQADistSEPartTwo;
+  TH2F **fPtQADistMEPartOne;
+  TH2F **fPtQADistMEPartTwo;
   TH2F **fMassQADistPart1;
   TH2F **fMassQADistPart2;
   TH1F **fPairInvMassQAD;
