@@ -197,7 +197,7 @@ struct MacroParams : public TNamed {
 
   bool do_detadphistar_cf { false };
   bool do_kt_detadphistar_cf { false };
-  double phistar_radius { 1.2 };
+  double phistar_radius { NAN };
   UInt_t detadphistar_nbins { 144 };
 
   bool RequestsMonteCarloData() const
@@ -869,6 +869,11 @@ MacroParams::MacroParams(PionAnalysis::AnalysisParams &analysis_config,
 {
   // Read parameter string and update configurations
   BuildConfiguration(params, analysis_config, c, *this);
+
+
+  if (std::isnan(phistar_radius)) {
+    phistar_radius = c.pair_phi_star_radius;
+  }
 
   if (RequestsMonteCarloData() && !analysis_config.is_mc_analysis) {
     std::cerr << "\nMonteCarlo correlation function requested when analysis is *not* MC\n\n";
