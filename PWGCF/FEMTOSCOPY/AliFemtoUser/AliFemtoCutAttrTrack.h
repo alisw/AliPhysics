@@ -618,6 +618,7 @@ struct TrackCutAttrSigmaPion {
   std::pair<double, double> nsigma_pion_range;
   bool usetpctof;
   double nsigma_pion;
+  double tpctof_limit;
 
   bool Pass(const AliFemtoTrack &track) const
     {
@@ -632,8 +633,8 @@ struct TrackCutAttrSigmaPion {
   bool is_pion_nsigma(float mom, float sigtpc, float sigtof) const
     {
       if (usetpctof) {
-        return mom > 0.5 ? sigtof*sigtof + sigtpc*sigtpc < nsigma_pion * nsigma_pion
-                         : TMath::Abs(sigtpc) < nsigma_pion;
+        return mom > tpctof_limit ? sigtof*sigtof + sigtpc*sigtpc < nsigma_pion * nsigma_pion
+                                  : TMath::Abs(sigtpc) < nsigma_pion;
       }
 
       if (mom < 0.65) {
@@ -656,18 +657,21 @@ struct TrackCutAttrSigmaPion {
     : nsigma_pion_range(DEFAULT)
     , usetpctof(true)
     , nsigma_pion(3.0)
+    , tpctof_limit(0.5)
     {}
 
   TrackCutAttrSigmaPion(AliFemtoConfigObject &cfg)
     : nsigma_pion_range(cfg.pop_range("nsigma_pion_range", DEFAULT))
     , usetpctof(cfg.pop_bool("use_tpctof", true))
     , nsigma_pion(cfg.pop_num("nsigma_pion", 3.0))
+    , tpctof_limit(cfg.pop_num("tpctof_limit", 0.5))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
       // cfg.insert("use_tpctof", usetpctof);
       cfg.insert("nsigma_pion", nsigma_pion);
+      cfg.insert("tpctof_limit", tpctof_limit);
     }
 
   virtual ~TrackCutAttrSigmaPion() {}
