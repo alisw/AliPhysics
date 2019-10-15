@@ -203,7 +203,8 @@ private:
 
   void    CreateSupportHistos();
 
-  void    FillTrackHistograms(AliVParticle* track, AliVParticle* mcTrack);
+  void    FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack);
+  void    FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack);
 
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
@@ -308,6 +309,8 @@ private:
   std::string fCentralityFilename;
   TH1F* fHistCentralityCorrection;
   TList* fOutputListSupportHistos;
+  TList* fPrimarySupportHistos;
+  TList* fSecondarySupportHistos;
 
   std::vector<TH3D*> fHistGenPosPart;
   std::vector<TH3D*> fHistGenNegPart;

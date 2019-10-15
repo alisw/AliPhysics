@@ -84,7 +84,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
-                                                                              , fOutputListSupportHistos(0x0)
+                                                                              , fOutputListSupportHistos(0x0), fPrimarySupportHistos(0x0), fSecondarySupportHistos(0x0)
                                                                               , fHistGenPosPart(), fHistGenNegPart(), fHistGenSmearedPosPart(), fHistGenSmearedNegPart(), fHistRecPosPart(), fHistRecNegPart()
                                                                               , fHistGenPair(), fHistGenFourPair(), fHistGenSmearedPair(), fHistGenSmearedFourPair(), fHistRecPair(), fHistRecFourPair(), fHistGenPair_ULSandLS(), fHistGenFourPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistGenSmearedFourPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fHistRecFourPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPair(), fTHnSparseRecLegsFromPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99)
                                                                               , fDoPairing(false), fDoFourPairing(false), fDoULSandLS(false), fDeactivateLS(false)
@@ -117,7 +117,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
-                                                                              , fOutputListSupportHistos(0x0)
+                                                                              , fOutputListSupportHistos(0x0), fPrimarySupportHistos(0x0), fSecondarySupportHistos(0x0)
                                                                               , fHistGenPosPart(), fHistGenNegPart(), fHistGenSmearedPosPart(), fHistGenSmearedNegPart(), fHistRecPosPart(), fHistRecNegPart()
                                                                               , fHistGenPair(), fHistGenFourPair(), fHistGenSmearedPair(), fHistGenSmearedFourPair(), fHistRecPair(), fHistRecFourPair(), fHistGenPair_ULSandLS(), fHistGenFourPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistGenSmearedFourPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fHistRecFourPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPair(), fTHnSparseRecLegsFromPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99)
                                                                               , fDoPairing(false), fDoFourPairing(false), fDoULSandLS(false), fDeactivateLS(false)
@@ -166,6 +166,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
   fUsedVars->SetBitNumber(AliDielectronVarManager::kTPCsignalN, kTRUE);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kNclsTPC, kTRUE);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kNFclsTPCr, kTRUE);
+  fUsedVars->SetBitNumber(AliDielectronVarManager::kImpactParXY, kTRUE);
+  fUsedVars->SetBitNumber(AliDielectronVarManager::kImpactParZ, kTRUE);
+  // fUsedVars->SetBitNumber(AliDielectronVarManager::kR, kTRUE);
   AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
 
 
@@ -1042,60 +1045,67 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
     // ##########################################################
     // Fill support histograms with first cutsetting and first mcsignal
-    if(part.isMCSignal[fSupportMCSignal] == true && part.isReconstructed_primary[fSupportCutsetting] == kTRUE){
+    // if(part.isMCSignal[fSupportMCSignal] == true && part.isReconstructed_primary[fSupportCutsetting] == kTRUE){
+    if(part.isReconstructed_primary[fSupportCutsetting] == kTRUE){
 
       AliVParticle* mcPart1 = fMC->GetTrack(abslabel);
 
 
-
-      FillTrackHistograms(track, mcPart1); // Fill support histograms
-
-      // ##########################################################
-      // Fill resolution histograms
-      // ##########################################################
-      double mcP     = mcPart1->P();
-      double mcPt    = mcPart1->Pt();
-      double mcEta   = mcPart1->Eta();
-      double mcPhi   = mcPart1->Phi();
-      double mcTheta = mcPart1->Theta();
-      double P     = track->P();
-      double Pt    = part.fPt;
-      double Phi   = part.fPhi;
-      double Eta   = part.fEta;
-      double Theta = track->Theta();
-
-      if(TMath::Abs(mcEta) < 1.0) {
-        // fPGen                ->Fill(mcP);
-        // fPRec                ->Fill(recP);
-        fPGen_DeltaP           ->Fill(mcP,  P - mcP, centralityWeight);
-        fPtGen_DeltaPt         ->Fill(mcPt, Pt - mcPt, centralityWeight);
-        fPtGen_DeltaPtOverPtGen->Fill(mcPt, (mcPt - Pt) / mcPt, centralityWeight);
-        fPtGen_PtRecOverPtGen  ->Fill(mcPt, Pt / mcPt, centralityWeight);
-
-        if (fDoGenSmearing == true && fArrResoPt){
-          double Pt_genSmeared = part.fPt_smeared;
-          fPtGen_DeltaPt_wGenSmeared         ->Fill(mcPt, Pt_genSmeared - mcPt, centralityWeight);
-          fPtGen_DeltaPtOverPtGen_wGenSmeared->Fill(mcPt, (mcPt - Pt_genSmeared) / mcPt, centralityWeight);
-          fPtGen_PtRecOverPtGen_wGenSmeared  ->Fill(mcPt, Pt_genSmeared / mcPt, centralityWeight);
-        }
-
-        fPGen_PrecOverPGen     ->Fill(mcP,  P / mcP, centralityWeight);
-        if (part.fCharge<0) {
-          fPGen_DeltaPhi_Ele   ->Fill(mcP,  Phi - mcPhi, centralityWeight);
-          fPtGen_DeltaPhi_Ele  ->Fill(mcPt, mcPhi - Phi, centralityWeight);
-        }
-        else {
-          fPGen_DeltaPhi_Pos   ->Fill(mcP,  Phi - mcPhi, centralityWeight);
-          fPtGen_DeltaPhi_Pos  ->Fill(mcPt, mcPhi - Phi, centralityWeight);
-        }
-        fPhiGen_DeltaPhi       ->Fill(mcPhi, Phi - mcPhi, centralityWeight);
+      if(part.isMCSignal[0] == kTRUE){
+        FillTrackHistograms_Primary(track, mcPart1); // Fill primary support histograms
+      }
+      if(part.isMCSignal[3] == kTRUE){
+        FillTrackHistograms_Secondary(track, mcPart1); // Fill secondary support histograms
       }
 
-      if(mcPt > fPtMinGen){
-        fPGen_DeltaEta       ->Fill(mcP,     Eta - mcEta, centralityWeight);
-        fPtGen_DeltaEta      ->Fill(mcPt,    Eta - mcEta, centralityWeight);
-        fPGen_DeltaTheta     ->Fill(mcP,     Theta - mcTheta, centralityWeight);
-        fThetaGen_DeltaTheta ->Fill(mcTheta, Theta - mcTheta, centralityWeight);
+      if (part.isMCSignal[fSupportMCSignal] == true && part.isReconstructed_primary[fSupportCutsetting] == kTRUE) {
+        // ##########################################################
+        // Fill resolution histograms
+        // ##########################################################
+        double mcP     = mcPart1->P();
+        double mcPt    = mcPart1->Pt();
+        double mcEta   = mcPart1->Eta();
+        double mcPhi   = mcPart1->Phi();
+        double mcTheta = mcPart1->Theta();
+        double P     = track->P();
+        double Pt    = part.fPt;
+        double Phi   = part.fPhi;
+        double Eta   = part.fEta;
+        double Theta = track->Theta();
+
+        if(TMath::Abs(mcEta) < 1.0) {
+          // fPGen                ->Fill(mcP);
+          // fPRec                ->Fill(recP);
+          fPGen_DeltaP           ->Fill(mcP,  P - mcP, centralityWeight);
+          fPtGen_DeltaPt         ->Fill(mcPt, Pt - mcPt, centralityWeight);
+          fPtGen_DeltaPtOverPtGen->Fill(mcPt, (mcPt - Pt) / mcPt, centralityWeight);
+          fPtGen_PtRecOverPtGen  ->Fill(mcPt, Pt / mcPt, centralityWeight);
+
+          if (fDoGenSmearing == true && fArrResoPt){
+            double Pt_genSmeared = part.fPt_smeared;
+            fPtGen_DeltaPt_wGenSmeared         ->Fill(mcPt, Pt_genSmeared - mcPt, centralityWeight);
+            fPtGen_DeltaPtOverPtGen_wGenSmeared->Fill(mcPt, (mcPt - Pt_genSmeared) / mcPt, centralityWeight);
+            fPtGen_PtRecOverPtGen_wGenSmeared  ->Fill(mcPt, Pt_genSmeared / mcPt, centralityWeight);
+          }
+
+          fPGen_PrecOverPGen     ->Fill(mcP,  P / mcP, centralityWeight);
+          if (part.fCharge<0) {
+            fPGen_DeltaPhi_Ele   ->Fill(mcP,  Phi - mcPhi, centralityWeight);
+            fPtGen_DeltaPhi_Ele  ->Fill(mcPt, mcPhi - Phi, centralityWeight);
+          }
+          else {
+            fPGen_DeltaPhi_Pos   ->Fill(mcP,  Phi - mcPhi, centralityWeight);
+            fPtGen_DeltaPhi_Pos  ->Fill(mcPt, mcPhi - Phi, centralityWeight);
+          }
+          fPhiGen_DeltaPhi       ->Fill(mcPhi, Phi - mcPhi, centralityWeight);
+        }
+
+        if(mcPt > fPtMinGen){
+          fPGen_DeltaEta       ->Fill(mcP,     Eta - mcEta, centralityWeight);
+          fPtGen_DeltaEta      ->Fill(mcPt,    Eta - mcEta, centralityWeight);
+          fPGen_DeltaTheta     ->Fill(mcP,     Theta - mcTheta, centralityWeight);
+          fThetaGen_DeltaTheta ->Fill(mcTheta, Theta - mcTheta, centralityWeight);
+        }
       }
     }
   }
@@ -1749,7 +1759,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
 // ############################################################################
 // ############################################################################
-void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms(AliVParticle* track, AliVParticle* mcTrack){
+void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack){
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
 
@@ -1757,35 +1767,82 @@ void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms(AliVParticle* trac
   // std::cout << "pt var  manager = " << values[AliDielectronVarManager::kPt] << std::endl;
   // std::cout << "SITS    manager = " << values[AliDielectronVarManager::kNclsSITS] << std::endl;
   // std::cout << "TPCnSig manager = " << values[AliDielectronVarManager::kTPCnSigmaEle] << std::endl;
-  // std::cout << fOutputListSupportHistos << std::endl;
+  // std::cout << fPrimarySupportHistos << std::endl;
   TString genname;
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
-  (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
-  (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(2)))->Fill(values[AliDielectronVarManager::kPIn], values[AliDielectronVarManager::kTPCnSigmaEle]);
-  (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(3)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kTOFnSigmaEle]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(4)))->Fill(values[AliDielectronVarManager::kEta]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(5)))->Fill(values[AliDielectronVarManager::kPhi]);
-  (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(6)))->Fill(values[AliDielectronVarManager::kEta], values[AliDielectronVarManager::kPhi]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
+  (dynamic_cast<TH2D *>(fPrimarySupportHistos->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
+  (dynamic_cast<TH2D *>(fPrimarySupportHistos->At(2)))->Fill(values[AliDielectronVarManager::kPIn], values[AliDielectronVarManager::kTPCnSigmaEle]);
+  (dynamic_cast<TH2D *>(fPrimarySupportHistos->At(3)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kTOFnSigmaEle]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(4)))->Fill(values[AliDielectronVarManager::kEta]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(5)))->Fill(values[AliDielectronVarManager::kPhi]);
+  (dynamic_cast<TH2D *>(fPrimarySupportHistos->At(6)))->Fill(values[AliDielectronVarManager::kEta], values[AliDielectronVarManager::kPhi]);
 
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(7 )))->Fill(values[AliDielectronVarManager::kNFclsTPCfCross]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(8 )))->Fill(values[AliDielectronVarManager::kNFclsTPCr]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(9 )))->Fill(values[AliDielectronVarManager::kNclsTPC]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(10)))->Fill(values[AliDielectronVarManager::kNclsITS]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(11)))->Fill(values[AliDielectronVarManager::kTPCchi2Cl]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(12)))->Fill(values[AliDielectronVarManager::kITSchi2Cl]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(13)))->Fill(values[AliDielectronVarManager::kNclsSTPC]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(14)))->Fill(values[AliDielectronVarManager::kNclsSITS]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(15)))->Fill(values[AliDielectronVarManager::kNclsSFracTPC]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(16)))->Fill(values[AliDielectronVarManager::kNclsSFracITS]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(17)))->Fill(values[AliDielectronVarManager::kTPCclsDiff]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(18)))->Fill(values[AliDielectronVarManager::kTPCsignalN]);
-  (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(19)))->Fill(values[AliDielectronVarManager::kNclsTPC], values[AliDielectronVarManager::kNFclsTPCr]);
-  (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(20)))->Fill(values[AliDielectronVarManager::kPt], values[AliDielectronVarManager::kNFclsTPCr]);
-  // (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(21)))->Fill(values[AliDielectronVarManager::kPdgCode]);
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(21)))->Fill(mcTrack->PdgCode());
-  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(22)))->Fill( (fMC->GetTrack(TMath::Abs(mcTrack->GetMother())))->PdgCode());
-  if(fMC->GetCocktailGenerator(TMath::Abs(track->GetLabel()), genname))    (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(23)))->Fill( genname,1);
-  else (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(23)))->Fill( "none",1);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(7 )))->Fill(values[AliDielectronVarManager::kNFclsTPCfCross]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(8 )))->Fill(values[AliDielectronVarManager::kNFclsTPCr]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(9 )))->Fill(values[AliDielectronVarManager::kNclsTPC]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(10)))->Fill(values[AliDielectronVarManager::kNclsITS]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(11)))->Fill(values[AliDielectronVarManager::kTPCchi2Cl]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(12)))->Fill(values[AliDielectronVarManager::kITSchi2Cl]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(13)))->Fill(values[AliDielectronVarManager::kNclsSTPC]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(14)))->Fill(values[AliDielectronVarManager::kNclsSITS]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(15)))->Fill(values[AliDielectronVarManager::kNclsSFracTPC]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(16)))->Fill(values[AliDielectronVarManager::kNclsSFracITS]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(17)))->Fill(values[AliDielectronVarManager::kTPCclsDiff]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(18)))->Fill(values[AliDielectronVarManager::kTPCsignalN]);
+  (dynamic_cast<TH2D *>(fPrimarySupportHistos->At(19)))->Fill(values[AliDielectronVarManager::kNclsTPC], values[AliDielectronVarManager::kNFclsTPCr]);
+  (dynamic_cast<TH2D *>(fPrimarySupportHistos->At(20)))->Fill(values[AliDielectronVarManager::kPt], values[AliDielectronVarManager::kNFclsTPCr]);
+  // (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(21)))->Fill(values[AliDielectronVarManager::kPdgCode]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(21)))->Fill(mcTrack->PdgCode());
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(22)))->Fill( (fMC->GetTrack(TMath::Abs(mcTrack->GetMother())))->PdgCode());
+  if(fMC->GetCocktailGenerator(TMath::Abs(track->GetLabel()), genname))    (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(23)))->Fill( genname,1);
+  else (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(23)))->Fill( "none",1);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(24)))->Fill(values[AliDielectronVarManager::kImpactParXY]);
+  (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(25)))->Fill(values[AliDielectronVarManager::kImpactParZ]);
+  // (dynamic_cast<TH1D *>(fPrimarySupportHistos->At(26)))->Fill(values[AliDielectronVarManager::kR]);
+}
+
+void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack){
+  Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
+  AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
+
+  AliDielectronVarManager::Fill(track, values);
+  // std::cout << "pt var  manager = " << values[AliDielectronVarManager::kPt] << std::endl;
+  // std::cout << "SITS    manager = " << values[AliDielectronVarManager::kNclsSITS] << std::endl;
+  // std::cout << "TPCnSig manager = " << values[AliDielectronVarManager::kTPCnSigmaEle] << std::endl;
+  // std::cout << fPrimarySupportHistos << std::endl;
+  TString genname;
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
+  (dynamic_cast<TH2D *>(fSecondarySupportHistos->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
+  (dynamic_cast<TH2D *>(fSecondarySupportHistos->At(2)))->Fill(values[AliDielectronVarManager::kPIn], values[AliDielectronVarManager::kTPCnSigmaEle]);
+  (dynamic_cast<TH2D *>(fSecondarySupportHistos->At(3)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kTOFnSigmaEle]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(4)))->Fill(values[AliDielectronVarManager::kEta]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(5)))->Fill(values[AliDielectronVarManager::kPhi]);
+  (dynamic_cast<TH2D *>(fSecondarySupportHistos->At(6)))->Fill(values[AliDielectronVarManager::kEta], values[AliDielectronVarManager::kPhi]);
+
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(7 )))->Fill(values[AliDielectronVarManager::kNFclsTPCfCross]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(8 )))->Fill(values[AliDielectronVarManager::kNFclsTPCr]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(9 )))->Fill(values[AliDielectronVarManager::kNclsTPC]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(10)))->Fill(values[AliDielectronVarManager::kNclsITS]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(11)))->Fill(values[AliDielectronVarManager::kTPCchi2Cl]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(12)))->Fill(values[AliDielectronVarManager::kITSchi2Cl]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(13)))->Fill(values[AliDielectronVarManager::kNclsSTPC]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(14)))->Fill(values[AliDielectronVarManager::kNclsSITS]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(15)))->Fill(values[AliDielectronVarManager::kNclsSFracTPC]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(16)))->Fill(values[AliDielectronVarManager::kNclsSFracITS]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(17)))->Fill(values[AliDielectronVarManager::kTPCclsDiff]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(18)))->Fill(values[AliDielectronVarManager::kTPCsignalN]);
+  (dynamic_cast<TH2D *>(fSecondarySupportHistos->At(19)))->Fill(values[AliDielectronVarManager::kNclsTPC], values[AliDielectronVarManager::kNFclsTPCr]);
+  (dynamic_cast<TH2D *>(fSecondarySupportHistos->At(20)))->Fill(values[AliDielectronVarManager::kPt], values[AliDielectronVarManager::kNFclsTPCr]);
+  // (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(21)))->Fill(values[AliDielectronVarManager::kPdgCode]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(21)))->Fill(mcTrack->PdgCode());
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(22)))->Fill( (fMC->GetTrack(TMath::Abs(mcTrack->GetMother())))->PdgCode());
+  if(fMC->GetCocktailGenerator(TMath::Abs(track->GetLabel()), genname))    (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(23)))->Fill( genname,1);
+  else (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(23)))->Fill( "none",1);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(24)))->Fill(values[AliDielectronVarManager::kImpactParXY]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(25)))->Fill(values[AliDielectronVarManager::kImpactParZ]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(26)))->Fill(values[AliDielectronVarManager::kDistPrimToSecVtxXYMC]);
+  (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(27)))->Fill(values[AliDielectronVarManager::kDistPrimToSecVtxZMC]);
+  // (dynamic_cast<TH1D *>(fSecondarySupportHistos->At(26)))->Fill(values[AliDielectronVarManager::kR]);
 }
 
 
@@ -1906,69 +1963,150 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
   fOutputListSupportHistos->SetName("Support");
   fOutputListSupportHistos->SetOwner();
 
+  fPrimarySupportHistos = new TList();
+  fPrimarySupportHistos->SetName("Primaries");
+  fPrimarySupportHistos->SetOwner();
+
+  fSecondarySupportHistos = new TList();
+  fSecondarySupportHistos->SetName("Secondaries");
+  fSecondarySupportHistos->SetOwner();
+
+  fOutputListSupportHistos->Add(fPrimarySupportHistos);
+  fOutputListSupportHistos->Add(fSecondarySupportHistos);
 
   // Track variables
-  TH1D* hPt      = new TH1D("Pt","Pt;Pt [GeV];#tracks",160,0.,8.);//,AliDielectronVarManager::kPt);
-  fOutputListSupportHistos->AddAt(hPt,     0);
+  TH1D* hPt_prim     = new TH1D("Pt","Pt ;Pt [GeV];#tracks",160,0.,8.);//,AliDielectronVarManager::kPt);
+  TH1D* hPt_sec      = new TH1D("Pt" ,"Pt ;Pt [GeV];#tracks",160,0.,8.);//,AliDielectronVarManager::kPt);
+  fPrimarySupportHistos->AddAt(hPt_prim,     0);
+  fSecondarySupportHistos->AddAt(hPt_sec,     0);
 
   // PID
-  TH2D* hITSnSigmaEle_P = new TH2D("ITSnSigmaEle_P","ITS number of sigmas Electrons;P [GeV/c];ITS number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
-  fOutputListSupportHistos->AddAt(hITSnSigmaEle_P, 1);
-  TH2D* hTPCnSigmaEle_P = new TH2D("TPCnSigmaEle_P","TPC number of sigmas Electrons;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,makeLogx);
-  fOutputListSupportHistos->AddAt(hTPCnSigmaEle_P, 2);
-  TH2D* hTOFnSigmaEle_P = new TH2D("TOFnSigmaEle_P","TOF number of sigmas Electrons;PIn (pTPC) [GeV/c];TOF number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
-  fOutputListSupportHistos->AddAt(hTOFnSigmaEle_P, 3);
+  TH2D* hITSnSigmaEle_P_prim = new TH2D("ITSnSigmaPrimEle_P","ITS number of sigmas, primary electrons ;P [GeV/c];ITS number of sigmas ", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
+  TH2D* hITSnSigmaEle_P_sec  = new TH2D("ITSnSigmaSecEle_P","ITS number of sigmas, secondary electrons ;P [GeV/c];ITS number of sigmas ", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
+  fPrimarySupportHistos->AddAt(hITSnSigmaEle_P_prim, 1);
+  fSecondarySupportHistos->AddAt(hITSnSigmaEle_P_sec, 1);
+  TH2D* hTPCnSigmaEle_P_prim = new TH2D("TPCnSigmaEle_P","TPC number of sigmas, primary electrons ;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,makeLogx);
+  TH2D* hTPCnSigmaEle_P_sec = new TH2D("TPCnSigmaEle_P","TPC number of sigmas, secondary electrons ;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,makeLogx);
+  fPrimarySupportHistos->AddAt(hTPCnSigmaEle_P_prim, 2);
+  fSecondarySupportHistos->AddAt(hTPCnSigmaEle_P_sec, 2);
+  TH2D* hTOFnSigmaEle_P_prim = new TH2D("TOFnSigmaEle_P","TOF number of sigmas, primary electrons ;PIn (pTPC) [GeV/c];TOF number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
+  TH2D* hTOFnSigmaEle_P_sec = new TH2D("TOFnSigmaEle_P","TOF number of sigmas, secondary electrons ;PIn (pTPC) [GeV/c];TOF number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
+  fPrimarySupportHistos->AddAt(hTOFnSigmaEle_P_prim, 3);
+  fSecondarySupportHistos->AddAt(hTOFnSigmaEle_P_sec, 3);
 
   // Track kinematic
-  TH1D* hEta = new TH1D("Eta","Eta; Eta;#tracks", 200, -2, 2);//,AliDielectronVarManager::kEta);
-  TH1D* hPhi = new TH1D("Phi","Phi; Phi;#tracks", 320, 0., 6.4);//,AliDielectronVarManager::kPhi);
-  TH2D* hEta_Phi = new TH2D("Eta_Phi","Eta Phi Map; Eta; Phi", 100, -1, 1, 320, 0, 6.4);//,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
-  fOutputListSupportHistos->AddAt(hEta, 4);
-  fOutputListSupportHistos->AddAt(hPhi, 5);
-  fOutputListSupportHistos->AddAt(hEta_Phi, 6);
+  TH1D* hEta_prim = new TH1D("Eta","Eta ; Eta;#tracks", 200, -2, 2);//,AliDielectronVarManager::kEta);
+  TH1D* hEta_sec = new TH1D("Eta","Eta ; Eta;#tracks", 200, -2, 2);//,AliDielectronVarManager::kEta);
+  TH1D* hPhi_prim = new TH1D("Phi","Phi ; Phi;#tracks", 320, 0., 6.4);//,AliDielectronVarManager::kPhi);
+  TH1D* hPhi_sec = new TH1D("Phi","Phi ; Phi;#tracks", 320, 0., 6.4);//,AliDielectronVarManager::kPhi);
+  TH2D* hEta_Phi_prim = new TH2D("Eta_Phi","Eta Phi Map, primary electrons ; Eta; Phi", 100, -1, 1, 320, 0, 6.4);//,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
+  TH2D* hEta_Phi_sec = new TH2D("Eta_Phi","Eta Phi Map, secondary electrons ; Eta; Phi", 100, -1, 1, 320, 0, 6.4);//,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
+  fPrimarySupportHistos->AddAt(hEta_prim, 4);
+  fSecondarySupportHistos->AddAt(hEta_sec, 4);
+  fPrimarySupportHistos->AddAt(hPhi_prim, 5);
+  fSecondarySupportHistos->AddAt(hPhi_sec, 5);
+  fPrimarySupportHistos->AddAt(hEta_Phi_prim, 6);
+  fSecondarySupportHistos->AddAt(hEta_Phi_sec, 6);
 
   // Quality
-  TH1D* hTPCcrossedRowsOverFindable = new TH1D("TPCcrossedRowsOverFindable","Number of Crossed Rows TPC over Findable;TPC crossed rows over findable;#tracks",120,0.,1.2);//,AliDielectronVarManager::kNFclsTPCfCross);
-  TH1D* hTPCcrossedRows = new TH1D("TPCcrossedRows","Number of Crossed Rows TPC;TPC crossed rows;#tracks",160,-0.5,159.5);//,AliDielectronVarManager::kNFclsTPCr);
-  TH1D* hTPCnCls = new TH1D("TPCnCls","Number of Clusters TPC;TPC number clusters;#tracks",160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC);
-  TH1D* hITSnCls = new TH1D("ITSnCls","Number of Clusters ITS;ITS number clusters;#tracks",10,-0.5,9.5);//,AliDielectronVarManager::kNclsITS);
-  TH1D* hTPCchi2 = new TH1D("TPCchi2","TPC chi2 per Cluster;TPC chi2/Cl;#tracks",100,0.,10.);//,AliDielectronVarManager::kTPCchi2Cl);
-  TH1D* hITSchi2 = new TH1D("ITSchi2","ITS chi2 per Cluster;ITS chi2/Cl;#tracks",100,0.,10.);//,AliDielectronVarManager::kITSchi2Cl);
-  TH1D* hTPCnClsS = new TH1D("TPCnClsS",";TPC number of shared clusters;#tracks",160,-0.5,159.5);//,AliDielectronVarManager::kNclsSTPC);
-  TH1D* hITSnClsS = new TH1D("ITSnClsS",";ITS number of shared clusters;#tracks",7,-0.5,6.5);//,AliDielectronVarManager::kNclsSITS);
-  TH1D* hNclsSFracTPC = new TH1D("NclsSFracTPC","Fraction of shared clusters assigned in the TPC;TPC fraction of shared clusters;#tracks",120,0,1.2);//.,AliDielectronVarManager::kNclsSFracTPC);
-  TH1D* hNclsSFracITS = new TH1D("NclsSFracITS","Fraction of shared clusters assigned in the ITS;ITS fraction of shared clusters;#tracks",120,0,1.2);//.,AliDielectronVarManager::kNclsSFracITS);
-  TH1D* hTPCclsDiff = new TH1D("TPCclsDiff","TPC cluster difference;N_{d#it{E}/d#it{x} points}^{TPC} - N_{cls}^{TPC};#tracks",100,-80,20);//.,AliDielectronVarManager::kTPCclsDiff);
-  TH1D* hTPCsignalN = new TH1D("TPCsignalN","Number of PID Clusters TPC;N_{d#it{E}/d#it{x} points}^{TPC};#tracks",160,-0.5,159.5);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
-  fOutputListSupportHistos->AddAt(hTPCcrossedRowsOverFindable, 7);
-  fOutputListSupportHistos->AddAt(hTPCcrossedRows, 8);
-  fOutputListSupportHistos->AddAt(hTPCnCls, 9);
-  fOutputListSupportHistos->AddAt(hITSnCls, 10);
-  fOutputListSupportHistos->AddAt(hTPCchi2, 11);
-  fOutputListSupportHistos->AddAt(hITSchi2, 12);
-  fOutputListSupportHistos->AddAt(hTPCnClsS, 13);
-  fOutputListSupportHistos->AddAt(hITSnClsS, 14);
-  fOutputListSupportHistos->AddAt(hNclsSFracTPC, 15);
-  fOutputListSupportHistos->AddAt(hNclsSFracITS, 16);
-  fOutputListSupportHistos->AddAt(hTPCclsDiff, 17);
-  fOutputListSupportHistos->AddAt(hTPCsignalN, 18);
-  TH2D* hTPCcrossedRows_TPCnCls = new TH2D("TPCcrossedRows_TPCnCls","TPC crossed rows vs TPC number clusters;TPC number clusters;TPC crossed rows",
+  TH1D* hTPCcrossedRowsOverFindable_prim = new TH1D("TPCcrossedRowsOverFindable","Number of Crossed Rows TPC over Findable ;TPC crossed rows over findable;#tracks",120,0.,1.2);//,AliDielectronVarManager::kNFclsTPCfCross);
+  TH1D* hTPCcrossedRowsOverFindable_sec = new TH1D("TPCcrossedRowsOverFindable","Number of Crossed Rows TPC over Findable ;TPC crossed rows over findable;#tracks",120,0.,1.2);//,AliDielectronVarManager::kNFclsTPCfCross);
+  TH1D* hTPCcrossedRows_prim = new TH1D("TPCcrossedRows","Number of Crossed Rows TPC ;TPC crossed rows;#tracks",160,-0.5,159.5);//,AliDielectronVarManager::kNFclsTPCr);
+  TH1D* hTPCcrossedRows_sec = new TH1D("TPCcrossedRows","Number of Crossed Rows TPC ;TPC crossed rows;#tracks",160,-0.5,159.5);//,AliDielectronVarManager::kNFclsTPCr);
+  TH1D* hTPCnCls_prim = new TH1D("TPCnCls","Number of Clusters TPC ;TPC number clusters;#tracks",160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC);
+  TH1D* hTPCnCls_sec = new TH1D("TPCnCls","Number of Clusters TPC ;TPC number clusters;#tracks",160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC);
+  TH1D* hITSnCls_prim = new TH1D("ITSnCls","Number of Clusters ITS ;ITS number clusters;#tracks",10,-0.5,9.5);//,AliDielectronVarManager::kNclsITS);
+  TH1D* hITSnCls_sec = new TH1D("ITSnCls","Number of Clusters ITS ;ITS number clusters;#tracks",10,-0.5,9.5);//,AliDielectronVarManager::kNclsITS);
+  TH1D* hTPCchi2_prim = new TH1D("TPCchi2","TPC chi2 per Cluster ;TPC chi2/Cl;#tracks",100,0.,10.);//,AliDielectronVarManager::kTPCchi2Cl);
+  TH1D* hTPCchi2_sec = new TH1D("TPCchi2","TPC chi2 per Cluster ;TPC chi2/Cl;#tracks",100,0.,10.);//,AliDielectronVarManager::kTPCchi2Cl);
+  TH1D* hITSchi2_prim = new TH1D("ITSchi2","ITS chi2 per Cluster ;ITS chi2/Cl;#tracks",100,0.,10.);//,AliDielectronVarManager::kITSchi2Cl);
+  TH1D* hITSchi2_sec = new TH1D("ITSchi2","ITS chi2 per Cluster ;ITS chi2/Cl;#tracks",100,0.,10.);//,AliDielectronVarManager::kITSchi2Cl);
+  TH1D* hTPCnClsS_prim = new TH1D("TPCnClsS",";TPC number of shared clusters ;#tracks",160,-0.5,159.5);//,AliDielectronVarManager::kNclsSTPC);
+  TH1D* hTPCnClsS_sec = new TH1D("TPCnClsS",";TPC number of shared clusters ;#tracks",160,-0.5,159.5);//,AliDielectronVarManager::kNclsSTPC);
+  TH1D* hITSnClsS_prim = new TH1D("ITSnClsS",";ITS number of shared clusters ;#tracks",7,-0.5,6.5);//,AliDielectronVarManager::kNclsSITS);
+  TH1D* hITSnClsS_sec = new TH1D("ITSnClsS",";ITS number of shared clusters ;#tracks",7,-0.5,6.5);//,AliDielectronVarManager::kNclsSITS);
+  TH1D* hNclsSFracTPC_prim = new TH1D("NclsSFracTPC","Fraction of shared clusters assigned in the TPC ;TPC fraction of shared clusters;#tracks",120,0,1.2);//.,AliDielectronVarManager::kNclsSFracTPC);
+  TH1D* hNclsSFracTPC_sec = new TH1D("NclsSFracTPC","Fraction of shared clusters assigned in the TPC ;TPC fraction of shared clusters;#tracks",120,0,1.2);//.,AliDielectronVarManager::kNclsSFracTPC);
+  TH1D* hNclsSFracITS_prim = new TH1D("NclsSFracITS","Fraction of shared clusters assigned in the ITS ;ITS fraction of shared clusters;#tracks",120,0,1.2);//.,AliDielectronVarManager::kNclsSFracITS);
+  TH1D* hNclsSFracITS_sec = new TH1D("NclsSFracITS","Fraction of shared clusters assigned in the ITS ;ITS fraction of shared clusters;#tracks",120,0,1.2);//.,AliDielectronVarManager::kNclsSFracITS);
+  TH1D* hTPCclsDiff_prim = new TH1D("TPCclsDiff","TPC cluster difference ;N_{d#it{E}/d#it{x} points}^{TPC} - N_{cls}^{TPC};#tracks",100,-80,20);//.,AliDielectronVarManager::kTPCclsDiff);
+  TH1D* hTPCclsDiff_sec = new TH1D("TPCclsDiff","TPC cluster difference ;N_{d#it{E}/d#it{x} points}^{TPC} - N_{cls}^{TPC};#tracks",100,-80,20);//.,AliDielectronVarManager::kTPCclsDiff);
+  TH1D* hTPCsignalN_prim = new TH1D("TPCsignalN","Number of PID Clusters TPC ;N_{d#it{E}/d#it{x} points}^{TPC};#tracks",160,-0.5,159.5);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  TH1D* hTPCsignalN_sec = new TH1D("TPCsignalN","Number of PID Clusters TPC ;N_{d#it{E}/d#it{x} points}^{TPC};#tracks",160,-0.5,159.5);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  fPrimarySupportHistos->AddAt(hTPCcrossedRowsOverFindable_prim, 7);
+  fSecondarySupportHistos->AddAt(hTPCcrossedRowsOverFindable_sec, 7);
+  fPrimarySupportHistos->AddAt(hTPCcrossedRows_prim, 8);
+  fSecondarySupportHistos->AddAt(hTPCcrossedRows_sec, 8);
+  fPrimarySupportHistos->AddAt(hTPCnCls_prim, 9);
+  fSecondarySupportHistos->AddAt(hTPCnCls_sec, 9);
+  fPrimarySupportHistos->AddAt(hITSnCls_prim, 10);
+  fSecondarySupportHistos->AddAt(hITSnCls_sec, 10);
+  fPrimarySupportHistos->AddAt(hTPCchi2_prim, 11);
+  fSecondarySupportHistos->AddAt(hTPCchi2_sec, 11);
+  fPrimarySupportHistos->AddAt(hITSchi2_prim, 12);
+  fSecondarySupportHistos->AddAt(hITSchi2_sec, 12);
+  fPrimarySupportHistos->AddAt(hTPCnClsS_prim, 13);
+  fSecondarySupportHistos->AddAt(hTPCnClsS_sec, 13);
+  fPrimarySupportHistos->AddAt(hITSnClsS_prim, 14);
+  fSecondarySupportHistos->AddAt(hITSnClsS_sec, 14);
+  fPrimarySupportHistos->AddAt(hNclsSFracTPC_prim, 15);
+  fSecondarySupportHistos->AddAt(hNclsSFracTPC_sec, 15);
+  fPrimarySupportHistos->AddAt(hNclsSFracITS_prim, 16);
+  fSecondarySupportHistos->AddAt(hNclsSFracITS_sec, 16);
+  fPrimarySupportHistos->AddAt(hTPCclsDiff_prim, 17);
+  fSecondarySupportHistos->AddAt(hTPCclsDiff_sec, 17);
+  fPrimarySupportHistos->AddAt(hTPCsignalN_prim, 18);
+  fSecondarySupportHistos->AddAt(hTPCsignalN_sec, 18);
+  TH2D* hTPCcrossedRows_TPCnCls_prim = new TH2D("TPCcrossedRows_TPCnCls","TPC crossed rows vs TPC number clusters, primary electrons ;TPC number clusters;TPC crossed rows",
                                            160,-0.5,159.5,160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
-  TH2D* hTPCcrossedRows_Pt = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt;Pt [GeV];TPC crossed rows",
+  TH2D* hTPCcrossedRows_TPCnCls_sec = new TH2D("TPCcrossedRows_TPCnCls","TPC crossed rows vs TPC number clusters, secondary electrons ;TPC number clusters;TPC crossed rows",
+                                           160,-0.5,159.5,160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
+  TH2D* hTPCcrossedRows_Pt_prim = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt, primary electrons ;Pt [GeV];TPC crossed rows",
                                       160,0.,8.,160,-0.5,159.5);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
-  fOutputListSupportHistos->AddAt(hTPCcrossedRows_TPCnCls, 19);
-  fOutputListSupportHistos->AddAt(hTPCcrossedRows_Pt, 20);
+  TH2D* hTPCcrossedRows_Pt_sec = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt, secondary electrons ;Pt [GeV];TPC crossed rows",
+                                      160,0.,8.,160,-0.5,159.5);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
+  fPrimarySupportHistos->AddAt(hTPCcrossedRows_TPCnCls_prim, 19);
+  fSecondarySupportHistos->AddAt(hTPCcrossedRows_TPCnCls_sec, 19);
+  fPrimarySupportHistos->AddAt(hTPCcrossedRows_Pt_prim, 20);
+  fSecondarySupportHistos->AddAt(hTPCcrossedRows_Pt_sec, 20);
 
-  TH1D* hPDGCode = new TH1D("PDGCode","PDGCode;#tracks",10001, -5000, 5000);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
-  fOutputListSupportHistos->AddAt(hPDGCode, 21);
+  TH1D* hPDGCode_prim = new TH1D("PDGCode","PDGCode ;PDG Code",10001, -25, 25);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  TH1D* hPDGCode_sec = new TH1D("PDGCode","PDGCode ;PDG Code",10001, -25, 25);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  fPrimarySupportHistos->AddAt(hPDGCode_prim, 21);
+  fSecondarySupportHistos->AddAt(hPDGCode_sec, 21);
 
-  TH1D* hPDGCodeMother = new TH1D("PDGCodeMother","PDGCodeMother;#tracks",10001, -5000, 5000);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
-  fOutputListSupportHistos->AddAt(hPDGCodeMother, 22);
+  TH1D* hPDGCodeMother_prim = new TH1D("PDGCodeMother","PDGCodeMother ;Mother PDG Code",10001, -600, 600);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  TH1D* hPDGCodeMother_sec = new TH1D("PDGCodeMother","PDGCodeMother ;Mother PDG Code",10001, -600, 600);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  fPrimarySupportHistos->AddAt(hPDGCodeMother_prim, 22);
+  fSecondarySupportHistos->AddAt(hPDGCodeMother_sec, 22);
   // TH2D* hPDGCode_PDGCodeMother = new TH2D("PDGCode_PDGCodeMother",";PDG code;PDG code Mother",
   // 10001,-5000,5000,10001,-5000,5000);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
-  // fOutputListSupportHistos->AddAt(hPDGCode_PDGCodeMother, 21);
-  TH1D* hMCGenCode = new TH1D("MCGenerator","MCGenerator;#tracks",1, 0, 0);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
-  fOutputListSupportHistos->AddAt(hMCGenCode, 23);
+  // fPrimarySupportHistos->AddAt(hPDGCode_PDGCodeMother, 21);
+  // fSecondarySupportHistos->AddAt(hPDGCode_PDGCodeMother, 21);
+  TH1D* hMCGenCode_prim = new TH1D("MCGenerator","MCGenerator ;MC Generators",1, 0, 0);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  TH1D* hMCGenCode_sec = new TH1D("MCGenerator","MCGenerator ;MC Generators",1, 0, 0);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  fPrimarySupportHistos->AddAt(hMCGenCode_prim, 23);
+  fSecondarySupportHistos->AddAt(hMCGenCode_sec, 23);
+  TH1D* hImpactParXY_prim = new TH1D("ImpactParXY","Impact parameter XY ;Impact parameter XY",200, -5., 5.);//.,AliDielectronVarManager::kTPCsignalN); //kImpactParXY_prim
+  TH1D* hImpactParXY_sec = new TH1D("ImpactParXY","Impact parameter XY ;Impact parameter XY",200, -5., 5.);//.,AliDielectronVarManager::kTPCsignalN); //kImpactParXY_sec
+  TH1D* hImpactParZ_prim = new TH1D("ImpactParZ","Impact parameter Z ;Impact parameter Z",200, -5., 5.);//.,AliDielectronVarManager::kTPCsignalN); //kImpactParZ_prim
+  TH1D* hImpactParZ_sec = new TH1D("ImpactParZ","Impact parameter Z ;Impact parameter Z",200, -5., 5.);//.,AliDielectronVarManager::kTPCsignalN); //kImpactParZ_sec
+  fPrimarySupportHistos->AddAt(hImpactParXY_prim, 24);
+  fSecondarySupportHistos->AddAt(hImpactParXY_sec, 24);
+  fPrimarySupportHistos->AddAt(hImpactParZ_prim, 25);
+  fSecondarySupportHistos->AddAt(hImpactParZ_sec, 25);
+  TH1D* hDistPrimToSecVtxXYMC_prim = new TH1D("DistPrimToSecVtxXYMC","Distance from primary to secondary Vertex ;Dist. Primary to Secondary Vertex XY",100, -5., 5.);//.,AliDielectronVarManager::kTPCsignalN); //kImpactParXY_prim
+  TH1D* hDistPrimToSecVtxXYMC_sec = new TH1D("DistPrimToSecVtxXYMC","Distance from primary to secondary Vertex ;Dist. Primary to Secondary Vertex XY",100, -5., 5.);//.,AliDielectronVarManager::kTPCsignalN); //kImpactParXY_sec
+  TH1D* hDistPrimToSecVtxZMC_prim = new TH1D("DistPrimToSecVtxZMC","Distance from primary to secondary Vertex ;Dist. Primary to Secondary Vertex Z",100, -5., 5.);//.,AliDielectronVarManager::kTPCsignalN); //kImpactParZ_prim
+  TH1D* hDistPrimToSecVtxZMC_sec = new TH1D("DistPrimToSecVtxZMC","Distance from primary to secondary Vertex ;Dist. Primary to Secondary Vertex Z",100, -5., 5.);//.,AliDielectronVarManager::kTPCsignalN); //kImpactParZ_sec
+  fPrimarySupportHistos->AddAt(hDistPrimToSecVtxXYMC_prim, 26);
+  fSecondarySupportHistos->AddAt(hDistPrimToSecVtxXYMC_sec, 26);
+  fPrimarySupportHistos->AddAt(hDistPrimToSecVtxZMC_prim, 27);
+  fSecondarySupportHistos->AddAt(hDistPrimToSecVtxZMC_sec, 27);
+  // TH1D* hR_prim = new TH1D("R_prim","Distance to Origin;radius",100, -0.5, 0.5);//.,AliDielectronVarManager::kTPCsignalN); //kR
+  // TH1D* hR_sec = new TH1D("R_sec","Distance to Origin;radius",100, -0.5, 0.5);//.,AliDielectronVarManager::kTPCsignalN); //kR
+  // fPrimarySupportHistos->AddAt(hR_prim, 26);
+  // fSecondarySupportHistos->AddAt(hR_sec, 26);
 
 }
 

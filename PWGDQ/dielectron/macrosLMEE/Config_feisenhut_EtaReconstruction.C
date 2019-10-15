@@ -38,8 +38,8 @@ Bool_t SetTOFCorrection = kFALSE;
 
 bool SetGeneratedSmearingHistos = false;
 
-bool DoPairing      = true;
-bool DoFourPairing  = true;
+bool DoPairing      = false;
+bool DoFourPairing  = false;
 bool DoULSLS        = false;
 bool DeactivateLS   = true;
 
