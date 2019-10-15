@@ -200,15 +200,20 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   config->SetZBins(ZVtxBins);
 
   config->SetMultBinning(true);
+  config->SetmTBinning(true);
+
   config->SetdPhidEtaPlotsSmallK(false);
   config->SetdPhidEtaPlots(false);
-
   config->SetPhiEtaBinnign(false);
 
-  if (suffix == "0" && fullBlastQA) {
+  if (fullBlastQA) {
     config->SetkTBinning(true);
-    config->SetmTBinning(true);
     config->SetPtQA(true);
+  }
+
+  if (!fullBlastQA) {
+    config->SetMinimalBookingME(true);
+    config->SetMinimalBookingSample(true);
   }
 
   if (suffix != "0") {
