@@ -458,12 +458,12 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
 Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliDalitzAODESD* lTrack)
 {
     //NOTE On ESD we only check if there are ConstrainedParam, we do not need the inputs of the vertex or magnetic field to calculate like AOD(there are already calculate), for that we use the GetParamG(0,0).
-    if(lTrack->GetIsESD()){
-        if ( ! lTrack->GetParamG(0,0)){
-            return kFALSE;
+    //if(lTrack->GetIsESD()){
+       // if ( ! lTrack->GetParamG(0,0,0)){
+            //return kFALSE;
           //  lTrack->IsHybridGlobalConstrainedGlobal();
-        }
-    }
+        //}
+    //}
    // cout<<"ParamG"<<lTrack->GetParamG()<<endl;
   //cout<<"PasoGetParamG"<<endl;
   //Selection of Reconstructed electrons

@@ -3323,8 +3323,8 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
   //      Mas   ter Thesis. Thorsten Dahms. 2005
   // https://twiki.cern.ch/twiki/pub/ALICE/GammaPhysicsPublications/tdahms_thesis.pdf
   //
-  Double_t momPos[3]={0.0,0.0,0.0};
-  Double_t momNeg[3]={0.0,0.0,0.0};
+  Double_t momPos[4]={0.0,0.0,0.0,0.0};
+  Double_t momNeg[4]={0.0,0.0,0.0,0.0};
   Double_t fPos[3]={0.0,0.0,0.0};
 //NOTE Working on differents ways to obtain the momentum close to the vertex, here I see that theta was calculate with differents momentum, one PropagateToDCA and the other not.
         TVector3 posDaughterB;
@@ -3371,12 +3371,8 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
 
    //Positive.PxPyPz(momPos);//NOTE PxPyPz Propagate close to DCA
    //Negative.PxPyPz(momNeg);//NOTE PxPyPz Propagate close to DCA
-   momPos[0]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px();
-   momPos[1]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Py();
-   momPos[2]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Pz();
-   momNeg[0]= trackNeg->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px();
-   momNeg[1]= trackNeg->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Py();
-   momNeg[2]= trackNeg->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Pz();
+    trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),momPos);
+    trackNeg->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),momNeg);
 
     posDaughterA.SetXYZ( momPos[0],momPos[1],momPos[2]);
     negDaughterA.SetXYZ( momNeg[0],momNeg[1],momNeg[2]);
@@ -3398,6 +3394,8 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
 Double_t AliAnalysisTaskGammaConvDalitzV1::GetdeltaPhi(AliDalitzAODESD *trackelectronVgamma, AliDalitzAODESD *trackpositronVgamma ) const
 {
 //Function to calculate deltaPhi with constrained Param on AOD and ESD
+    Double_t momPos[4]={0.0,0.0,0.0,0.0};
+    Double_t momNeg[4]={0.0,0.0,0.0,0.0};
     Double_t magField = fInputEvent->GetMagneticField();
     if( magField  < 0.0 ){
         magField =  1.0;
@@ -3413,10 +3411,12 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetdeltaPhi(AliDalitzAODESD *trackele
         AliAODVertex *vtxAODPhi = (AliAODVertex*)fAODESDEvent->GetPrimaryVertex();
         TString title=vtxAODPhi->GetTitle();
         if(!title.Contains("VertexerTracks")){
+            delete title;
             return 0.8;
         }
-        //We Use the Primary Vertex and Magnetic Field.
-   deltaPhiC =magField * TVector2::Phi_mpi_pi( trackelectronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Phi()-trackpositronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Phi());
+        trackpositronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),momPos);
+        trackelectronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),momNeg);
+        deltaPhiC =magField * TVector2::Phi_mpi_pi(momNeg[3]-momPos[3]);
     }
 
     return deltaPhiC;
