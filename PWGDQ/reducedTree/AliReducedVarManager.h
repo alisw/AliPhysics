@@ -456,6 +456,8 @@ class AliReducedVarManager : public TObject {
     kMultEstimatorPercentileRefMult08,
     kINT7Triggered,
     kHighMultV0Triggered,
+    kEMCEGATriggered,
+    kEMCEGAHighTriggered,
     kEtaBinForSPDtracklets,
     kMCNch,                                  // number of primary charged particles in the MC, in |eta|<1
     kMCNchNegSide,                     // number of primary charged particles in the MC, in -1<eta<0
@@ -839,7 +841,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 13);
+  ClassDef(AliReducedVarManager, 14);
 };
 
 #endif
