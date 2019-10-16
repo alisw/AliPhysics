@@ -164,7 +164,10 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fBackgroundUseLikeSign(kFALSE),
   fBackgroundMode(4),
   fDoJetAnalysis(kFALSE),
-  fDoJetQA(kFALSE)
+  fDoJetQA(kFALSE),
+  fDoGammaMinEnergyCut(kFALSE),
+  fNDaughterEnergyCut(0),
+  fSingleDaughterMinE(0.)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -267,7 +270,10 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
   fBackgroundMode(4),
   fDoJetAnalysis(ref.fDoJetAnalysis),
-  fDoJetQA(ref.fDoJetQA)
+  fDoJetQA(ref.fDoJetQA),
+  fDoGammaMinEnergyCut(kFALSE),
+  fNDaughterEnergyCut(0),
+  fSingleDaughterMinE(0.)
 
 {
   // Copy Constructor
@@ -1882,6 +1888,13 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fMinPt = 10.0;
     fDoMinPtCut = kTRUE;
     break;
+
+  // Instead of applying pt cut, apply a min energy cut on daughters
+  // (needs to be treated in analysis task)
+  case 14:
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 5.;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
