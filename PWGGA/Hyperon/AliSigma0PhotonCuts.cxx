@@ -344,7 +344,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
 
   float pidPos = -999.f;
   float pidNeg = -999.f;
-  if (fPIDResponse) {
+  if (fPIDResponse && !(nanoPos && nanoNeg)) {
     pidPos = fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kElectron);
     pidNeg = fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kElectron);
   } else if(nanoPos && nanoNeg) {
