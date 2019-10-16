@@ -1,4 +1,4 @@
-AliAnalysisTaskSE* AddTaskFemtoDreamPion(
+AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
     bool isMC=false, float fSpherDown=0.7, float fdPhidEta=0.04,
     TString CentEst="kInt7")
 {
@@ -168,8 +168,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     }
   
   //now we create the task
-  AliAnalysisTaskFemtoDreamPion *task=
-      new AliAnalysisTaskFemtoDreamPion("FemtoDreamDefaultPion",isMC);
+  AliAnalysisTaskNanoAODFemtoDreamPion *task=
+      new AliAnalysisTaskNanoAODFemtoDreamPion("NanoAODFemtoDreamPion",isMC);
   //THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   //kINT7 == Minimum bias
   //kHighMultV0 high multiplicity triggered by the V0 detector

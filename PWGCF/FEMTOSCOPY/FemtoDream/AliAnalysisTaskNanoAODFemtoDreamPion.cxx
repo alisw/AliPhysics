@@ -1,16 +1,17 @@
 /*
- * AliAnalysisTaskFemtoDreamPion.cxx
+ * AliAnalysisTaskNanoAODFemtoDreamPion.cxx
  *
- *  Created on: 11 Oct 2019
+ *  Created on: 16 Oct 2019
  *      Author: M. Korwieser
  */
 
-#include "AliAnalysisTaskFemtoDreamPion.h"
+#include "AliAnalysisTaskNanoAODFemtoDreamPion.h"
 #include "AliFemtoDreamBasePart.h"
 #include "AliLog.h"
 #include "AliVEvent.h"
-ClassImp(AliAnalysisTaskFemtoDreamPion)
-AliAnalysisTaskFemtoDreamPion::AliAnalysisTaskFemtoDreamPion()
+#include "AliNanoAODTrack.h"
+ClassImp(AliAnalysisTaskNanoAODFemtoDreamPion)
+AliAnalysisTaskNanoAODFemtoDreamPion::AliAnalysisTaskNanoAODFemtoDreamPion()
 :AliAnalysisTaskSE()
 ,fIsMC(false)
 ,fOutput()
@@ -29,7 +30,7 @@ AliAnalysisTaskFemtoDreamPion::AliAnalysisTaskFemtoDreamPion()
 
 }
 
-AliAnalysisTaskFemtoDreamPion::AliAnalysisTaskFemtoDreamPion(const char *name, bool isMC)
+AliAnalysisTaskNanoAODFemtoDreamPion::AliAnalysisTaskNanoAODFemtoDreamPion(const char *name, bool isMC)
 :AliAnalysisTaskSE(name)
 ,fIsMC(isMC)
 ,fOutput()
@@ -48,9 +49,9 @@ AliAnalysisTaskFemtoDreamPion::AliAnalysisTaskFemtoDreamPion(const char *name, b
   DefineOutput(1,TList::Class());
 }
 
-AliAnalysisTaskFemtoDreamPion::~AliAnalysisTaskFemtoDreamPion() {}
+AliAnalysisTaskNanoAODFemtoDreamPion::~AliAnalysisTaskNanoAODFemtoDreamPion() {}
 
-void AliAnalysisTaskFemtoDreamPion::UserCreateOutputObjects() {
+void AliAnalysisTaskNanoAODFemtoDreamPion::UserCreateOutputObjects() {
   fOutput = new TList();
   fOutput->SetName("Output");
   fOutput->SetOwner();
@@ -61,7 +62,7 @@ void AliAnalysisTaskFemtoDreamPion::UserCreateOutputObjects() {
   fTrack=new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(fIsMC);
 
-  fGTI=new AliAODTrack*[fTrackBufferSize];
+  fGTI=new AliVTrack*[fTrackBufferSize];
 
   if (!fEventCuts) {
       AliFatal("Event Cuts not set!");
@@ -110,8 +111,8 @@ void AliAnalysisTaskFemtoDreamPion::UserCreateOutputObjects() {
 
 
 
-void AliAnalysisTaskFemtoDreamPion::UserExec(Option_t *) {
-  AliAODEvent *Event=static_cast<AliAODEvent*>(fInputEvent);
+void AliAnalysisTaskNanoAODFemtoDreamPion::UserExec(Option_t *) {
+  AliVEvent *Event= fInputEvent;
   if (!Event) {
     AliWarning("No Input Event");
   } else {
@@ -119,9 +120,9 @@ void AliAnalysisTaskFemtoDreamPion::UserExec(Option_t *) {
     if (fEventCuts->isSelected(fEvent)) {
       ResetGlobalTrackReference();
       for(int iTrack = 0;iTrack<Event->GetNumberOfTracks();++iTrack){
-        AliAODTrack *track=static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
+        AliVTrack *track=static_cast<AliVTrack*>(Event->GetTrack(iTrack));
         if (!track) {
-          AliFatal("No Standard AOD");
+          AliFatal("No Standard NanoAOD");
           return;
         }
         StoreGlobalTrackReference(track);
@@ -134,12 +135,12 @@ void AliAnalysisTaskFemtoDreamPion::UserExec(Option_t *) {
       NegPions.clear();
 
       for (int iTrack = 0;iTrack<Event->GetNumberOfTracks();++iTrack) {
-        AliAODTrack *track=static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
+        AliVTrack *track=static_cast<AliVTrack*>(Event->GetTrack(iTrack));
         if (!track) {
-          AliFatal("No Standard AOD");
+          AliFatal("No Standard NanoAOD");
           return;
         }
-        fTrack->SetTrack(track);
+        fTrack->SetTrack(track, Event);
 
         if (fTrackCutsPosPion->isSelected(fTrack)) {
           PosPions.push_back(*fTrack);
@@ -148,13 +149,13 @@ void AliAnalysisTaskFemtoDreamPion::UserExec(Option_t *) {
           NegPions.push_back(*fTrack);
         }
       }
-      
+
       //This is where the magic of selecting particles ends, and we can turn our attention to
       //calculating the results. First we need to ensure to not have any Autocorrelations by
       //selecting a track twice. Now this is hypothetical, because we are selecting opposite
       //charged particles, but imagine you want to use p+K^+ (Check for this is not yet implemented)!
 
-      //fPairCleaner->CleanTrackAndDecay(&PosPions,&PosPions,0);   // pi+ pi+
+      //fPairCleaner->CleanTrackAndDecay(&PosPions,&PosPions,0); // pi+ pi+
       //fPairCleaner->CleanTrackAndDecay(&PosPions,&NegPions,1); // pi+ pi-
       //fPairCleaner->CleanTrackAndDecay(&NegPions,&NegPions,2); // pi- pi-
 
@@ -181,7 +182,7 @@ void AliAnalysisTaskFemtoDreamPion::UserExec(Option_t *) {
   }
 }
 
-void AliAnalysisTaskFemtoDreamPion::ResetGlobalTrackReference(){
+void AliAnalysisTaskNanoAODFemtoDreamPion::ResetGlobalTrackReference(){
     // for documentation see AliFemtoDreamAnalysis
     
     // Sets all the pointers to zero. To be called at
@@ -191,10 +192,12 @@ void AliAnalysisTaskFemtoDreamPion::ResetGlobalTrackReference(){
         fGTI[i]=0;
     }
 }
-void AliAnalysisTaskFemtoDreamPion::StoreGlobalTrackReference(AliAODTrack *track){
+void AliAnalysisTaskNanoAODFemtoDreamPion::StoreGlobalTrackReference(AliVTrack *track){
     // for documentation see AliFemtoDreamAnalysis
     
     // Check that the id is positive
+    // AliVTrack has no filtermap
+    AliNanoAODTrack *nanoTrack = dynamic_cast<AliNanoAODTrack *>(track);
     const int trackID = track->GetID();
     if(trackID<0){
         return;
@@ -212,19 +215,19 @@ void AliAnalysisTaskFemtoDreamPion::StoreGlobalTrackReference(AliAODTrack *track
     {
         // Seems like there are FilterMap 0 tracks
         // that have zero TPCNcls, don't store these!
-        if( (!track->GetFilterMap()) && (!track->GetTPCNcls()) ){
+        if( (!nanoTrack->GetFilterMap()) && (!track->GetTPCNcls()) ){
             return;
         }
         // Imagine the other way around, the zero map zero clusters track
         // is stored and the good one wants to be added. We ommit the warning
         // and just overwrite the 'bad' track
-        if( fGTI[trackID]->GetFilterMap() || fGTI[trackID]->GetTPCNcls()  ){
+        if( (dynamic_cast<AliNanoAODTrack *>(fGTI[trackID]))->GetFilterMap() || fGTI[trackID]->GetTPCNcls()  ){
             // If we come here, there's a problem
             printf("Warning! global track info already there!");
             printf("         TPCNcls track1 %u track2 %u",
-                   (fGTI[trackID])->GetTPCNcls(),track->GetTPCNcls());
+                   ( dynamic_cast<AliNanoAODTrack *>(fGTI[trackID]))->GetTPCNcls(),track->GetTPCNcls());
             printf("         FilterMap track1 %u track2 %u\n",
-                   (fGTI[trackID])->GetFilterMap(),track->GetFilterMap());
+                   ( dynamic_cast<AliNanoAODTrack *>(fGTI[trackID]))->GetFilterMap(),nanoTrack->GetFilterMap());
         }
     } // Two tracks same id
     
