@@ -552,6 +552,12 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kINT7Triggered]        = event->TriggerMask() & kINT7 ?1:0;
   values[kTRDTriggeredType]     = event->TRDfired();
   values[kHighMultV0Triggered]  = event->TriggerMask() & kHighMultV0 ?1:0;
+  values[kEMCEGATriggered]      = event->TriggerMask() & kEMCEGA ?1:0;
+  values[kEMCEGAHighTriggered]  = 0;
+  if (values[kEMCEGATriggered]) {
+    TString trgClasses = event->TriggerClass();
+    if (trgClasses.Contains("EG1") || trgClasses.Contains("EG2")) values[kEMCEGAHighTriggered] = 1;
+  }
   values[kIsPhysicsSelection]   = (event->IsPhysicsSelection() ? 1.0 : 0.0);
   values[kIsSPDPileup]          = event->IsSPDPileup();
   values[kIsSPDPileup5]         = event->EventTag(11);
@@ -2437,6 +2443,8 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
   if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) 	  values[kTriggerRap]     = ((PAIR*)trig)->Rapidity();
   if(fgUsedVars[kTriggerRapAbs] && (trig->IsA()==PAIR::Class()))  values[kTriggerRapAbs]  = TMath::Abs(((PAIR*)trig)->Rapidity());
+  if(fgUsedVars[kTriggerPseudoProperDecayTime] && (trig->IsA()==PAIR::Class())) values[kTriggerPseudoProperDecayTime] = ((PAIR*)trig)->PsProper();
+  if(fgUsedVars[kTriggerPairTypeSPD] && (trig->IsA()==PAIR::Class()))           values[kTriggerPairTypeSPD]           = ((PAIR*)trig)->PairTypeSPD();
   if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
   if(fgUsedVars[kAssociatedEta]) values[kAssociatedEta] = assoc->Eta();
   if(fgUsedVars[kAssociatedPhi]) values[kAssociatedPhi] = assoc->Phi();
@@ -2991,6 +2999,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kINT7Triggered]       = "event was triggered with INT7";       fgVariableUnits[kINT7Triggered]       = "";
   fgVariableNames[kTRDTriggeredType]    = "event was triggered by TRD ele trigger"; fgVariableUnits[kTRDTriggeredType]       = "";
   fgVariableNames[kHighMultV0Triggered] = "event was triggered with HighMultV0"; fgVariableUnits[kHighMultV0Triggered] = "";
+  fgVariableNames[kEMCEGATriggered]     = "event was triggered with EMCEGA";              fgVariableUnits[kEMCEGATriggered] = "";
+  fgVariableNames[kEMCEGAHighTriggered] = "event was triggered with EMCEGA high thresh."; fgVariableUnits[kEMCEGAHighTriggered] = "";
 
   TString vzeroSideNames[3] = {"A","C","AC"};
   for(Int_t iHarmonic=0;iHarmonic<6;++iHarmonic) {
@@ -3348,6 +3358,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTriggerPt]             = "p_{T} trigger particle";     fgVariableUnits[kTriggerPt]             = "GeV/c";
   fgVariableNames[kTriggerRap]            = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap]            = "";
   fgVariableNames[kTriggerRapAbs]         = "|#it{y}| trigger particle";  fgVariableUnits[kTriggerRapAbs]         = "";
+  fgVariableNames[kTriggerPseudoProperDecayTime]  = "t";                      fgVariableUnits[kTriggerPseudoProperDecayTime]  = "cm./c";
+  fgVariableNames[kTriggerPairTypeSPD]            = "trigger type spd legs";  fgVariableUnits[kTriggerPairTypeSPD]            = "";
   fgVariableNames[kAssociatedPt]          = "p_{T} associated particle";  fgVariableUnits[kAssociatedPt]          = "GeV/c";
   fgVariableNames[kAssociatedPtBoosted]   = "p_{T} associated particle (boosted)"; fgVariableUnits[kAssociatedPtBoosted] = "GeV/c";
   fgVariableNames[kAssociatedPtOverTriggerGammaT] = "p_{T} associated particle / #gamma_{T} trigger particle"; fgVariableUnits[kAssociatedPtOverTriggerGammaT] = "GeV/c";
