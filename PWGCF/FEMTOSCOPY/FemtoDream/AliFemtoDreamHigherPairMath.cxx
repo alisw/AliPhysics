@@ -172,6 +172,8 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtQADist(iHC, RelativeK, Part1Momentum.Pt(),
                          Part2Momentum.Pt());
+    fHists->FillPtSEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
+    fHists->FillPtSETwoQADist(iHC, Part2Momentum.Pt(), Mult + 1);
   }
   return RelativeK;
 }
@@ -225,6 +227,10 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
   if (fillHists && fHists->GetDomTBinning()) {
     fHists->FillMixedEventmTDist(iHC, RelativePairmT(PartOne, PartTwo),
                                  RelativeK);
+  }
+  if (fillHists && fHists->GetDoPtQA()) {
+    fHists->FillPtMEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
+    fHists->FillPtMETwoQADist(iHC, Part2Momentum.Pt(), Mult + 1);
   }
   return RelativeK;
 }

@@ -51,13 +51,10 @@ class AliFemtoDreamHigherPairMath {
                             float RelativeK);
   void MEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart& part1, int PDGPart1,
                        AliFemtoDreamBasePart& part2, int PDGPart2,
-                       float RelativeK, bool recalculate) {
-    MEDetaDPhiPlots(iHC, &part1, PDGPart1, &part2, PDGPart2, RelativeK,
-                    recalculate);
-  }
-  void MEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
-                       AliFemtoDreamBasePart* part2, int PDGPart2,
                        float RelativeK, bool recalculate);
+  void FillEffectiveMixingDepth(int iHC, int iDepth) {
+    fHists->FillEffectiveMixingDepth(iHC, iDepth);
+  }
   void FillPairCounterME(int iHC, unsigned int sizePartOne,
                          unsigned int sizePartTwo) {
     fHists->FillPartnersME(iHC, sizePartOne, sizePartTwo);
