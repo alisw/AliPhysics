@@ -88,6 +88,14 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
 
   void GetNewPythiaFile();
 
+  Bool_t PassedDetectorEfficiency(Float_t pt); 
+  Float_t SmearPt(Float_t pt);
+  void SetMomentumSmearingFile(const char* path, const char* file){ 
+       fMomSmearFilePath = path; 
+       fMomSmearFileName = file;
+       fEffMomSmear = kTRUE;
+  }
+  void ReadMomentumSmearingFile();
 
  protected:
   // Event parameters
@@ -110,7 +118,13 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
   TString                     fPyFileName;                      ///< Mask of PYTHIA text file
   TString                     fPyFile;                          ///< Mask of PYTHIA text file
   Int_t                       fNumber;                          //!<! Random number
-  Int_t                       fNfiles;                          ///< Number of files   
+  Int_t                       fNfiles;                          ///< Number of files  
+  Bool_t                      fEffMomSmear;                     ///< Apply efficiency and momentum smearing to PYTHIA 
+  TH1D*                       fhSigmaPt[100];                   //!<! sigma_1/pt  / 1/pt from covariance matrix 
+  TString                     fMomSmearFilePath;                ///< Path to momentum smeaing root file
+  TString                     fMomSmearFileName;                ///< momentum smeaing root file name
+  TFile*                      fMomSmearingFile;                 //!<! momentum smearing file
+
   /////////////////////////////////////////////////////////////////////////////////
   
   // Histogram output
@@ -123,7 +137,7 @@ class AliAnalysisTaskPythiaBranchEA : public AliAnalysisTaskSE {
   AliAnalysisTaskPythiaBranchEA &operator=(const AliAnalysisTaskPythiaBranchEA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskPythiaBranchEA, 3);
+  ClassDef(AliAnalysisTaskPythiaBranchEA, 4);
   /// \endcond
 };
 }
