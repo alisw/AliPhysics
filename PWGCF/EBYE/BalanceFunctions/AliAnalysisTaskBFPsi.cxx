@@ -759,7 +759,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fBalance->GetQAHistConversionafter());
   fList->Add(fBalance->GetQAHistPsiMinusPhi());
   fList->Add(fBalance->GetQAHistResonancesBefore());
-  fList->Add(fBalance->GetQAHistResonancesPhiBefore());
+  fList->Add(fBalance->GetQAHistResonancesPhiBeforeUS());
+  fList->Add(fBalance->GetQAHistResonancesPhiBeforeLS());
   fList->Add(fBalance->GetQAHistResonancesRho());
   fList->Add(fBalance->GetQAHistResonancesK0());
   fList->Add(fBalance->GetQAHistResonancesLambda());
@@ -1293,7 +1294,7 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskBFPsi::SetSelectPID(AliAODTrack* track, Int_t poi){
-    
+  
     Double_t probTPC[AliPID::kSPECIES]={0.};
     Double_t probTOF[AliPID::kSPECIES]={0.};
     Double_t probTPCTOF[AliPID::kSPECIES]={0.};
@@ -1412,7 +1413,7 @@ Bool_t AliAnalysisTaskBFPsi::SetSelectPID(AliAODTrack* track, Int_t poi){
             }
             
             if (track_pt >= fPIDMomCut){
-                switch(fParticleOfInterest[poi]) {
+	         switch(fParticleOfInterest[poi]) {
                     case AliPID::kPion:
                         if (fUsePIDnSigma) {
                             if ((TMath::Abs(nSigmaTPCTOF)<fPIDNSigmaAcc) && !(TMath::Abs(nSigmaTPCTOFKaons)<fPIDNSigmaExcl) && !(TMath::Abs(nSigmaTPCTOFProtons)<fPIDNSigmaExcl))
@@ -1435,26 +1436,36 @@ Bool_t AliAnalysisTaskBFPsi::SetSelectPID(AliAODTrack* track, Int_t poi){
                         break;
                 }
             }
-        }
-    }
+    
+	    if (fCrossCorr){
+	        if (statusPID==kTRUE){
+        	    if (poi==kTrig){
+                	fHistdEdxVsPTPCafterPIDTrig->Fill(track->P()*track->Charge(),track->GetTPCsignal());
+                	fHistBetavsPTOFafterPIDTrig->Fill(track->P()*track->Charge(),beta);
+            	    }   
+            	    else if (poi==kAssoc){
+                	fHistdEdxVsPTPCafterPIDAssoc->Fill(track->P()*track->Charge(),track->GetTPCsignal());
+                	fHistBetavsPTOFafterPIDAssoc->Fill(track->P()*track->Charge(),beta);
+           	    }
+        	}
+    	    }
+	    else{
+		if (statusPID==kTRUE){
+		    fHistNSigmaTOFvsPtafterPID->Fill(track->Pt(),nSigmaTOF);
+		    fHistNSigmaTPCvsPtafterPID->Fill(track->Pt(),nSigmaTPC);
+		    fHistNSigmaTPCTOFvsPtafterPID->Fill(track->Pt(),nSigmaTPCTOF);
+		    fHistNSigmaTPCTOFPafterPID->Fill(nSigmaTPC,nSigmaTOF,track->P());
+		    fHistBetavsPTOFafterPID->Fill(track->P()*track->Charge(),beta);
+		    fHistdEdxVsPTPCafterPID->Fill(track->P()*track->Charge(),track->GetTPCsignal());
+		    fHistBetaVsdEdXafterPID->Fill(track->GetTPCsignal(),beta);
+		}
+    	    }
+      }  
+  }
     // if no detector flag remove track
     else
         return kFALSE;
-    
-    
-    if (fCrossCorr){
-        if (statusPID==kTRUE){
-            if (poi==kTrig){
-                fHistdEdxVsPTPCafterPIDTrig ->Fill(track->P()*track->Charge(),track->GetTPCsignal());
-                fHistBetavsPTOFafterPIDTrig ->Fill(track->P()*track->Charge(),beta);
-            }
-            else if (poi==kAssoc){
-                fHistdEdxVsPTPCafterPIDAssoc ->Fill(track->P()*track->Charge(),track->GetTPCsignal());
-                fHistBetavsPTOFafterPIDAssoc ->Fill(track->P()*track->Charge(),beta);
-            }
-        }
-    }
-    
+  
     return statusPID;
     
 }
