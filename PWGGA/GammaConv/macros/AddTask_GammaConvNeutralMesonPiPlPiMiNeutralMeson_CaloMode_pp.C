@@ -103,7 +103,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     std::cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< std::endl;
   }
 
-  TString PionCuts      = "000000200";
+  TString PionCuts      = "000000000";
   //================================================
   //========= Add Pion Selector ====================
   if( !(AliPrimaryPionSelector*)mgr->GetTask("PionSelector") ){
@@ -226,9 +226,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","111111105f032230000","32c51070a","0103603c00000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603c00000000","0153503000000000"); // EMC7 (LHC11 acc)
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103683c00000000","0153503000000000"); // EMC7 min Pt cut 5 GeV
-  } else if( trainConfig == 116){ // EMCal LHC11 with LHC10 acceptance cut
-    cuts.AddCutHeavyMesonCalo("00010113","1111a11047032230000","32c51070a","0103603c00000000","0153503000000000"); // INT7 (LHC10 acc)
-    cuts.AddCutHeavyMesonCalo("00052113","1111a11047032230000","32c51070a","0103603c00000000","0153503000000000"); // EMC7 (LHC10 acc)
+  } else if( trainConfig == 116){ // with new SPD pileup cut
+    cuts.AddCutHeavyMesonCalo("00010c13","111111105f032230000","32c51070a","0103603c00000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
+    cuts.AddCutHeavyMesonCalo("00052c13","111111105f032230000","32c51070a","0103683c00000000","0153503000000000"); // EMC7 min Pt cut 5 GeV
+    cuts.AddCutHeavyMesonCalo("00052c13","111111105f032230000","32c51070a","01036d3c00000000","0153503000000000"); // 10.0
   // inv mass cut variation
   } else if( trainConfig == 117)  { 
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603600000000","0153503000000000"); // EMC7 (LHC11 acc)
@@ -240,7 +241,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036b3c00000000","0153503000000000"); // 6.0
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036c3c00000000","0153503000000000"); // 8.0
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036d3c00000000","0153503000000000"); // 10.0
-  } else if( trainConfig == 119){ // no dEdx cut for pion
+  } else if( trainConfig == 119){ // testbeam nonlin
     cuts.AddCutHeavyMesonCalo("00010113","111111105f032230000","32c51000a","0103603c00000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
     // ---------------------------------
     // systematic studies 7 TeV (EMCal)

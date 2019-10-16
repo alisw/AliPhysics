@@ -2386,6 +2386,12 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
     fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
     fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
     break;
+ case 12:
+    fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
+    fUtils->SetASPDCvsTCut(200.);
+    fUtils->SetBSPDCvsTCut(7.);
+    break;
   default:
     AliError("RemovePileUpCut not defined");
     return kFALSE;
@@ -5981,6 +5987,7 @@ Int_t AliConvEventCuts::SecondaryClassificationPhotonAOD( AliAODMCParticle *part
 
 void AliConvEventCuts::SetPeriodEnum (TString periodName){
 
+  AliInfo(Form("Period name is %s",periodName.Data()));
   if (periodName.CompareTo("") == 0){
     periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   }
