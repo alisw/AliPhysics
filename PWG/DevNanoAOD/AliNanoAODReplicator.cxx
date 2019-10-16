@@ -341,14 +341,14 @@ void AliNanoAODReplicator::FilterMC(const AliAODEvent& source)
       pdgCodes = static_cast<AliAnalysisNanoAODMCParticleCuts*>(fMCParticleCuts)->GetKeepV0s();
     }
     while ((v0 = static_cast<AliAODv0*>(nextV0()))) {
+      // Get the daughter labels
+      for (Int_t i = 0; i < v0->GetNDaughters(); ++i) {
+        AliNanoAODTrack *trk = (AliNanoAODTrack*) v0->GetDaughter(i);
+        SelectParticle(trk->GetLabel());
+      }
       // loop over all PDG codes we want to match the V0 to
       for (auto it : pdgCodes) {
         int label = v0->MatchToMC(TMath::Abs(it), mcParticles);
-        // Get the daughter labels
-        for (Int_t i = 0; i < v0->GetNDaughters(); ++i) {
-          AliNanoAODTrack *trk = (AliNanoAODTrack*) v0->GetDaughter(i);
-          SelectParticle(trk->GetLabel());
-        }
         while (label >= 0) {
           SelectParticle(label);
           AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(mcParticles
