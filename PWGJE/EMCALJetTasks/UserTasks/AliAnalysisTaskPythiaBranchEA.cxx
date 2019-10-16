@@ -66,6 +66,10 @@ AliAnalysisTaskPythiaBranchEA::AliAnalysisTaskPythiaBranchEA() :
   fPyFile(""),
   fNumber(1),
   fNfiles(1000),
+  fEffMomSmear(kFALSE),
+  fMomSmearFilePath(""),
+  fMomSmearFileName(""),
+  fMomSmearingFile(0x0),
   fOutput(0),
   fHistManager(),
   fInput(0x0)
@@ -90,6 +94,10 @@ AliAnalysisTaskPythiaBranchEA::AliAnalysisTaskPythiaBranchEA(const char* name) :
   fPyFile(""),
   fNumber(1),
   fNfiles(1000),
+  fEffMomSmear(kFALSE),
+  fMomSmearFilePath(""),
+  fMomSmearFileName(""),
+  fMomSmearingFile(0x0),
   fOutput(0),
   fHistManager(name),
   fInput(0x0)
@@ -115,14 +123,28 @@ void AliAnalysisTaskPythiaBranchEA::UserCreateOutputObjects()
   // Eta-phi of particles
   histname = "hPyEtaPhi";
   title = histname + ";#eta;#phi";
-  fHistManager.CreateTH2(histname.Data(), title.Data(), 100, -1., 1., 100, 0, 2*TMath::Pi());
+  fHistManager.CreateTH2(histname.Data(), title.Data(), 100, -1., 1., 100, -TMath::Pi(), TMath::Pi());
   
-  // Particle pT spectrum
-  histname = "hPyPt";
+  // Particle pT spectrum (after eff and mom smearing)
+  histname = "hPyPtSmeared";
   title = histname + ";#it{p}_{T}";
-  fHistManager.CreateTH1(histname.Data(), title.Data(), 200, 0, 20);
+  fHistManager.CreateTH1(histname.Data(), title.Data(), 120, 0, 120);
+ 
+  // Particle pT spectrum origianal
+  histname = "hPyPtOrg";
+  title = histname + ";#it{p}_{T}";
+  fHistManager.CreateTH1(histname.Data(), title.Data(), 120, 0, 120);
   
-  
+  // Particle pT spectrum origianal
+  histname = "hPyPtEff";
+  title = histname + ";#it{p}_{T}";
+  fHistManager.CreateTH1(histname.Data(), title.Data(), 120, 0, 120);
+ 
+  // ptsmeared-ptorg of particles
+  histname = "hPyPtSmearedPtOrg";
+  title = histname + ";#it{p}_{T,smeared};#it{p}_{T,org}";
+  fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 50, 50, 0, 50);
+ 
   
   /////////////////////////////////////
   
@@ -184,6 +206,7 @@ void AliAnalysisTaskPythiaBranchEA::ExecOnce()
 
   GetNewPythiaFile();
 
+  if(fEffMomSmear) ReadMomentumSmearingFile();  
   // Create a new collection during the first event
   CreateNewObjectBranch();
   
@@ -206,6 +229,37 @@ void AliAnalysisTaskPythiaBranchEA::CreateNewObjectBranch()
   fThermalParticlesArray->SetName(fOutputCollectionName.c_str());
   fEvent->AddObject(fThermalParticlesArray);
 }
+
+
+
+ 
+/**
+ * Read parameters for momentum smearing 
+ */
+void AliAnalysisTaskPythiaBranchEA::ReadMomentumSmearingFile(){
+
+   if(fMomSmearFilePath.BeginsWith("alien://")) {
+      TGrid::Connect("alien://");
+   }
+   
+   TString name = Form("%s/%s", fMomSmearFilePath.Data(), fMomSmearFileName.Data());
+   TFile::Cp(name.Data(), fMomSmearFileName.Data());
+   fMomSmearingFile = new TFile(fMomSmearFileName.Data(),"READ");
+   if(!fMomSmearingFile){
+      AliFatal(TString::Format("Momentum smearing file %s not found!", name.Data()));
+   }
+   
+   for(Int_t i=0; i<40; i++){
+      name = Form("hPtResolution%d_%d",i,i+1);
+      fhSigmaPt[i] = (TH1D*) fMomSmearingFile->Get(name.Data());
+   
+      if(!fhSigmaPt[i]){
+         AliFatal(TString::Format("Momentum smearing histogram %s not found!", name.Data()));
+      }
+      fhSigmaPt[i]->SetDirectory(0);
+   }
+
+}  
 
 /**
  * Steers each event. It enforces that the event is initialized before executing the main analysis of the event.
@@ -244,7 +298,7 @@ void AliAnalysisTaskPythiaBranchEA::Run()
 
   //read event from text file 
   Bool_t evtLoop = 1;
-  Float_t pt, eta, phi;
+  Float_t pt, eta, phi, newpt;
   Int_t index=0;
 
   while(evtLoop){
@@ -268,7 +322,21 @@ void AliAnalysisTaskPythiaBranchEA::Run()
         break;
      }else{
         if(fMinEta < eta && eta < fMaxEta){
-           new((*fThermalParticlesArray)[index]) AliBasicParticle(eta, phi, pt, 3);   //use dummy value of charge
+           newpt = pt;
+
+           fHistManager.FillTH1("hPyPtOrg", pt);
+
+           if(fEffMomSmear){
+              if(!PassedDetectorEfficiency(pt)) continue;
+
+              fHistManager.FillTH1("hPyPtEff", pt);
+              newpt = SmearPt(pt);
+
+              fHistManager.FillTH2("hPyPtSmearedPtOrg", pt, newpt);
+           } 
+
+
+           new((*fThermalParticlesArray)[index]) AliBasicParticle(eta, phi, newpt, 3);   //use dummy value of charge
            index++;
         }
      }
@@ -290,7 +358,7 @@ void AliAnalysisTaskPythiaBranchEA::FillHistograms()
        Double_t eta = thermalParticle->Eta();
        Double_t phi = thermalParticle->Phi();
        
-       TString histname = "hPyPt";
+       TString histname = "hPyPtSmeared";
        fHistManager.FillTH1(histname, pT);
        
        histname = "hPyEtaPhi";
@@ -382,6 +450,77 @@ AliAnalysisTaskPythiaBranchEA* AliAnalysisTaskPythiaBranchEA::AddTaskPythiaBranc
   
   return task;
 }
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/**
+ *  Track reconstruction efficiency 
+ */
+
+Bool_t AliAnalysisTaskPythiaBranchEA::PassedDetectorEfficiency(Float_t pt){
+
+   Double_t eff = 0.;
+
+   if(pt<1.){
+      eff = 0.774694;
+   }else if(pt < 2.){
+      eff = 0.8466;
+   }else if(pt < 3.){
+      eff = 0.833747;
+   }else if(pt < 4.){
+      eff = 0.81656;
+   }else if(pt < 5.){
+      eff = 0.816461; 
+   }else if(pt < 7.){
+      eff = 0.821438;
+   }else if(pt < 10.){
+      eff = 0.828123;
+   }else if(pt < 100.){
+      eff = 0.838103 + (-0.000292742)*pt + (-3.3135e-05)*pt*pt +  (1.41748e-07)*pt*pt*pt; 
+   }else{
+      eff = 0.61922724; 
+   } 
+
+   if(fRandom.Uniform(0.,1.) < eff) return kTRUE; 
+   else return kFALSE; 
+
+}
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/**
+ *  Smear Pt 
+ */
+
+Float_t AliAnalysisTaskPythiaBranchEA::SmearPt(Float_t pt){
+
+   Double_t sigmaFrac; //sigma_1/pT /  1/pT 
+   Int_t index;
+
+   if(pt < 30.){ //read sigma from histogram
+      index = TMath::Nint(TMath::Floor(pt));
+      if(fhSigmaPt[index]){
+         sigmaFrac = fhSigmaPt[index]->GetRandom();
+      }else{
+         ::Error("AddTaskPythiaBranchEA", "Histogram with momentum smearing is missing.");
+         return 0.;
+      }
+   }else{     // take parameterized value
+      sigmaFrac = -0.0291678 + 0.00995427*sqrt( pt + 5.90289); 
+   }
+
+   if(pt<1e-5) return 0.;
+    
+   Double_t oneoverpT    = (Double_t) (1./pt); 
+   Double_t sigma        = sigmaFrac*oneoverpT; //sigma_1/pT 
+   Double_t oneoverpTnew = fRandom.Gaus(oneoverpT, sigma); 
+   Float_t  newpt        = (Float_t) (1./oneoverpTnew);
+   if(newpt < 0){
+      for(Int_t i=0; i<100; i++){
+         oneoverpTnew = fRandom.Gaus(oneoverpT, sigma); 
+         newpt        = (Float_t) (1./oneoverpTnew);
+         if(newpt>0) break;
+      }
+   } 
+ 
+   return newpt;
+}
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /**
@@ -395,5 +534,9 @@ void AliAnalysisTaskPythiaBranchEA::Terminate(Option_t *){
    }
    gSystem->Exec(Form("rm %s", fPyFileName.Data()));        
 
+   if(fMomSmearingFile){
+      fMomSmearingFile->Close();
+      delete fMomSmearingFile;
+   }
 } 
 
