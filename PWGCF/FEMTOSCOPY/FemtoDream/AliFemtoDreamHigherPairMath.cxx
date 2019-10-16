@@ -19,6 +19,9 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
       fRandom(),
       fPi(TMath::Pi()) {
   fRandom.SetSeed(0);
+  TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
+                                        kTRUE, 0.0, 1, "Nucleus", 1000010020);
+  TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
 }
 
 AliFemtoDreamHigherPairMath::~AliFemtoDreamHigherPairMath() {
