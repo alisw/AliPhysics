@@ -16,9 +16,9 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     bool InvMassPairs=false, //12
     bool kTCentBins=false,//13
     bool DeltaEtaDeltaPhiCut=false,//14
-    bool DoSphericityCuts=false, //15
-    bool DoSpherocityCuts=false, //16
-    const char *swuffix = "",//17
+    bool DoSpherocityCuts=false, //15
+    const char *swuffix = "8",//16
+	const char *s0cut = "08", //17
     const char *swuffixvar = "0") {
 
 
@@ -26,7 +26,9 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
       //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
 
   TString suffix=Form("%s",swuffix);
+  TString s0suffix = TString::Format("%s", s0cut);
   TString suffixvar=Form("%s",swuffixvar);
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -59,59 +61,53 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
-  evtCuts->SetDoSphericityCuts(DoSphericityCuts);
-  evtCuts->SetDoSpherocityCuts(DoSpherocityCuts);
-  if(isMC && CentEst=="kHM"){
-    evtCuts->SetMultiplicityPercentileMax(5);
+//  evtCuts->SetDoSphericityCuts(DoSphericityCuts);
+//  evtCuts->SetDoSpherocityCuts(DoSpherocityCuts);
+
+//  if(isMC && CentEst=="kHM"){
+//    evtCuts->SetMultiplicityPercentileMax(5);
+//  }
+
+  if(DoSpherocityCuts==true){
+	  evtCuts->SetDoSpherocityCuts(true);
+	  suffix="8";
   }
 
-  if(DoSphericityCuts){
-  if (suffix=="1") {
-    evtCuts->SetSphericityCuts(0.,0.3);
+  if(suffix=="1"){
+	    evtCuts->SetSphericityCuts(0.,0.3);
+  }else if(suffix=="2"){
+	    evtCuts->SetSphericityCuts(0.3,0.7);
+  }else if(suffix=="3"){
+	    evtCuts->SetSphericityCuts(0.7,1.0);
+  }else if(suffix=="4"){
+	    evtCuts->SetSphericityCuts(0.,1.0);
+  }else if(suffix=="5"){
+	    evtCuts->SetSphericityCuts(0.8,1.0);
+  }else if(suffix=="6"){
+	    evtCuts->SetSphericityCuts(0.9,1.0);
+  }else if(suffix=="8"){
+	  std::cout<<"No SpherIcity cuts applied"<<std::endl;
   }
-  if (suffix=="2") {
-    evtCuts->SetSphericityCuts(0.3,0.7);
-  }
-  if (suffix=="3") {
-    evtCuts->SetSphericityCuts(0.7,1.0);
-  }
-  //4 is reserved to the full sphericity range
-  if (suffix=="4") {
-    evtCuts->SetSphericityCuts(0.,1.0);
-  }
-  if (suffix=="5") {
-    evtCuts->SetSphericityCuts(0.8,1.0);
-  }
-  if (suffix=="6") {
-    evtCuts->SetSphericityCuts(0.9,1.0);
-  }
-}else if(!DoSphericityCuts && !DoSpherocityCuts){
-    suffix="8";
-}
 
-if(DoSpherocityCuts){
-if (suffix=="01") {
-  evtCuts->SetSpherocityCuts(0.,0.3);
-}
-if (suffix=="02") {
-  evtCuts->SetSpherocityCuts(0.3,0.7);
-}
-if (suffix=="03") {
-  evtCuts->SetSpherocityCuts(0.7,1.0);
-}
-//4 is reserved to the full sphericity range
-if (suffix=="04") {
-  evtCuts->SetSpherocityCuts(0.,1.0);
-}
-if (suffix=="05") {
-  evtCuts->SetSpherocityCuts(0.8,1.0);
-}
-if (suffix=="06") {
-  evtCuts->SetSpherocityCuts(0.9,1.0);
-}
-}else if(!DoSpherocityCuts && !DoSphericityCuts){
-  suffix="08";
-}
+  if(DoSpherocityCuts==true)
+  {
+  if(s0suffix=="01"){
+	    evtCuts->SetSpherocityCuts(0.,0.3);
+  }else if(s0suffix=="02"){
+	    evtCuts->SetSpherocityCuts(0.3,0.7);
+  }else if(s0suffix=="03"){
+	    evtCuts->SetSpherocityCuts(0.7,1.0);
+  }else if(s0suffix=="04"){
+	    evtCuts->SetSpherocityCuts(0.,1.0);
+  }else if(s0suffix=="05"){
+	    evtCuts->SetSpherocityCuts(0.8,1.0);
+  }else if(s0suffix=="06"){
+	    evtCuts->SetSpherocityCuts(0.9,1.0);
+  }else if(s0suffix=="08"){
+	  std::cout<<"No SpherOcity cuts applied"<<std::endl;
+  }
+  suffix=s0suffix;
+  }
 
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
@@ -154,22 +150,22 @@ if (suffix=="06") {
                                                                 "Femto");
 
   std::vector<int> PairQA;
-  PairQA.push_back(0);        // p p
+  PairQA.push_back(11);        // p p
   PairQA.push_back(11);         // p barp
-  PairQA.push_back(0);        // p Lambda
+  PairQA.push_back(12);        // p Lambda
   PairQA.push_back(12);         // p barLambda
   // PairQA.push_back(0);         // p Xi
   // PairQA.push_back(0);         // p barXi
-  PairQA.push_back(0);        // barp barp
+  PairQA.push_back(11);        // barp barp
   PairQA.push_back(12);         // barp Lambda
-  PairQA.push_back(0);        // barp barLambda
+  PairQA.push_back(12);        // barp barLambda
   // PairQA.push_back(0);         // barp Xi
   // PairQA.push_back(0);         // barp barXi
-  PairQA.push_back(0);         // Lambda Lambda
+  PairQA.push_back(22);         // Lambda Lambda
   PairQA.push_back(22);         // Lambda barLambda
   // PairQA.push_back(0);         // Lambda Xi
   // PairQA.push_back(0);         // Lambda barXi
-  PairQA.push_back(0);         // barLambda barLamb
+  PairQA.push_back(22);         // barLambda barLamb
   // PairQA.push_back(0);         // barLambda Xi
   // PairQA.push_back(0);         // barLambda barXi
   // PairQA.push_back(0);         // Xi Xi
@@ -334,7 +330,7 @@ if (etaPhiPlotsAtTPCRadii) {
   config->SetUseEventMixing(true);
   config->SetMixingDepth(10);
   config->SetCentBinning(false);
-  config->SetkTBinning(false);
+  config->SetkTBinning(true);
   config->SetmTBinning(true);
 
 
