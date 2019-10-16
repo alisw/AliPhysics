@@ -178,10 +178,12 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
   return RelativeK;
 }
 
-void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK, float massOne,
-                                         float massTwo) {
+void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK,
+                                         AliFemtoDreamBasePart &part1,
+                                         AliFemtoDreamBasePart &part2) {
   if (fWhichPairs.at(iHC) && fHists->GetDoMassQA()) {
-    fHists->FillMassQADist(iHC, RelK, massOne, massTwo);
+    fHists->FillMassQADist(iHC, RelK, part1.GetInvMass(), part2.GetInvMass());
+    fHists->FillPairInvMassQAD(iHC, part1, part2);
   }
 }
 

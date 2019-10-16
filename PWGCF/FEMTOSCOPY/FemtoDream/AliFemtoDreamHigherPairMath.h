@@ -35,7 +35,8 @@ class AliFemtoDreamHigherPairMath {
   void RecalculatePhiStar(AliFemtoDreamBasePart &part);
   float FillSameEvent(int iHC, int Mult, float cent, TVector3 Part1Momentum,
                       int PDGPart1, TVector3 Part2Momentum, int PDGPart2);
-  void MassQA(int iHC, float RelK, float massOne, float massTwo);
+  void MassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1,
+              AliFemtoDreamBasePart &part2);
   void SEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart& part1, int PDGPart1,
                        AliFemtoDreamBasePart& part2, int PDGPart2,
                        float RelativeK, bool recalculate);
