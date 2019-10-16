@@ -259,6 +259,8 @@ for(int iHisto=0; iHisto<3; iHisto++){
 	}
 
 
+        fvalueElectron = new Double_t[5];
+
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
 	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
 
@@ -462,8 +464,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	}
 
 
-
-
+        fvalueElectron = new Double_t[5];
 
 	// default constructor, don't allocate memory here!
 	// this is used by root for IO purposes, it needs to remain empty
@@ -491,6 +492,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::~AliAnalysisTaskFlowTPCEMCalRun2()
 		delete fHistEvPlaneQncorr[iDet];
 		delete fHistEvPlane[iDet];
 		delete fHistqnVsCentrPercCalib[iDet];
+                delete []fvalueElectron;
 
 	}
 
