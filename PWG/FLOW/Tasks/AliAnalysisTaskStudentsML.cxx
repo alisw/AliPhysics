@@ -123,8 +123,8 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMinNumberPart(10),
  bUseRatioWeight(kTRUE),
  fDenominatorMinValue(1.0e-16),
- fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0),  //harmonics
- fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0),  //second set of harmonics
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0), fh11(0), fh12(0),  //harmonics
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0), fa11(0), fa12(0), //second set of harmonics
  fCentrality(NULL),
  fCentralitySecond(NULL),
  fEvCentrality(NULL),
