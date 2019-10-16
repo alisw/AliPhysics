@@ -12,7 +12,6 @@
 #include "TVector2.h"
 
 ClassImp(AliFemtoDreamPartContainer)
-static const float piHi = TMath::Pi();
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
     : fPartContainer(0),
       fPDGParticleSpecies(0),
@@ -22,9 +21,6 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
       fDeltaPhiMax(0.f),
       fDeltaPhiEtaMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false) {
-  TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
-                                        kTRUE, 0.0, 1, "Nucleus", 1000010020);
-  TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
 }
 
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
@@ -73,7 +69,7 @@ void AliFemtoDreamZVtxMultContainer::SetEvent(
 }
 void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    AliFemtoDreamCorrHists *ResultsHist, int iMult, float cent) {
+    AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
   float RelativeK = 0;
   int HistCounter = 0;
   //First loop over all the different Species
@@ -83,11 +79,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     auto itPDGPar2 = fPDGParticleSpecies.begin();
     itPDGPar2 += itSpec1 - Particles.begin();
     for (auto itSpec2 = itSpec1; itSpec2 != Particles.end(); ++itSpec2) {
-      ResultsHist->FillPartnersSE(HistCounter, itSpec1->size(),
-                                  itSpec2->size());
+      HigherMath->FillPairCounterSE(HistCounter, itSpec1->size(),
+                                    itSpec2->size());
       //Now loop over the actual Particles and correlate them
-      unsigned int DoThisPair = fWhichPairs.at(HistCounter);
-      bool fillHists = DoThisPair > 0 ? true : false;
       bool CPR = fRejPairs.at(HistCounter);
       for (auto itPart1 = itSpec1->begin(); itPart1 != itSpec1->end();
           ++itPart1) {
@@ -102,70 +96,19 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           AliFemtoDreamBasePart part2 = *itPart2;
           // Delta eta - Delta phi* cut
           if (fDoDeltaEtaDeltaPhiCut && CPR) {
-            if (!RejectClosePairs(part1, part2)) {
+            if (!HigherMath->PassesPairSelection(*itPart1, *itPart2, false)) {
               ++itPart2;
               continue;
             }
           }
-          RelativeK = RelativePairMomentum(itPart1->GetMomentum(), *itPDGPar1,
-                                           itPart2->GetMomentum(), *itPDGPar2);
-
-          if (fillHists && ResultsHist->GetEtaPhiPlots()) {
-            DeltaEtaDeltaPhi(HistCounter, part1, part2, true, ResultsHist,
-                             RelativeK);
-          }
-          if (fillHists && ResultsHist->GetDodPhidEtaPlots()) {
-            float deta = itPart1->GetEta().at(0) - itPart2->GetEta().at(0);
-            float dphi = itPart1->GetPhi().at(0) - itPart2->GetPhi().at(0);
-            float mT =
-                ResultsHist->GetDodPhidEtamTPlots() ?
-                    RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-                                   itPart2->GetMomentum(), *itPDGPar2) :
-                    0;
-            if (dphi < 0) {
-              ResultsHist->FilldPhidEtaSE(HistCounter, dphi + 2 * TMath::Pi(),
-                                          deta, mT);
-            } else {
-              ResultsHist->FilldPhidEtaSE(HistCounter, dphi, deta, mT);
-            }
-          }
-
-          ResultsHist->FillSameEventDist(HistCounter, RelativeK);
-          if (ResultsHist->GetDoMultBinning()) {
-            ResultsHist->FillSameEventMultDist(HistCounter, iMult + 1,
-                                               RelativeK);
-          }
-          if (fillHists && ResultsHist->GetDoCentBinning()) {
-            ResultsHist->FillSameEventCentDist(HistCounter, cent, RelativeK);
-          }
-          if (fillHists && ResultsHist->GetDokTBinning()) {
-            ResultsHist->FillSameEventkTDist(
-                HistCounter,
-                RelativePairkT(itPart1->GetMomentum(), *itPDGPar1,
-                               itPart2->GetMomentum(), *itPDGPar2),
-                RelativeK, cent);
-          }
-          if (fillHists && ResultsHist->GetDomTBinning()) {
-            ResultsHist->FillSameEventmTDist(
-                HistCounter,
-                RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-                               itPart2->GetMomentum(), *itPDGPar2),
-                RelativeK);
-          }
-          if (fillHists && ResultsHist->GetDoPtQA()) {
-            ResultsHist->FillPtQADist(HistCounter, RelativeK, itPart1->GetPt(),
-                                      itPart2->GetPt());
-            ResultsHist->FillPtSEOneQADist(HistCounter, itPart1->GetPt(),
-                                           iMult + 1);
-            ResultsHist->FillPtSETwoQADist(HistCounter, itPart2->GetPt(),
-                                           iMult + 1);
-          }
-          if (fillHists && ResultsHist->GetDoMassQA()) {
-            ResultsHist->FillMassQADist(HistCounter, RelativeK,
-                                        itPart1->GetInvMass(),
-                                        itPart2->GetInvMass());
-            ResultsHist->FillPairInvMassQAD(HistCounter, part1, part2);
-          }
+          RelativeK = HigherMath->FillSameEvent(HistCounter, iMult, cent,
+                                                itPart1->GetMomentum(),
+                                                *itPDGPar1,
+                                                itPart2->GetMomentum(),
+                                                *itPDGPar2);
+          HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
+          HigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
+                                      *itPart2, *itPDGPar2, RelativeK, false);
           ++itPart2;
         }
       }
@@ -178,7 +121,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 
 void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    AliFemtoDreamCorrHists *ResultsHist, int iMult, float cent) {
+    AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
   float RelativeK = 0;
   int HistCounter = 0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
@@ -192,96 +135,34 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     for (auto itSpec2 = fPartContainer.begin() + SkipPart;
         itSpec2 != fPartContainer.end(); ++itSpec2) {
       if (itSpec1->size() > 0) {
-        ResultsHist->FillEffectiveMixingDepth(HistCounter,
-                                              (int) itSpec2->GetMixingDepth());
+        HigherMath->FillEffectiveMixingDepth(HistCounter,
+                                             (int) itSpec2->GetMixingDepth());
       }
-      unsigned int DoThisPair = fWhichPairs.at(HistCounter);
-      bool fillHists = DoThisPair > 0 ? true : false;
       bool CPR = fRejPairs.at(HistCounter);
       for (int iDepth = 0; iDepth < (int) itSpec2->GetMixingDepth(); ++iDepth) {
         std::vector<AliFemtoDreamBasePart> ParticlesOfEvent = itSpec2->GetEvent(
             iDepth);
-        ResultsHist->FillPartnersME(HistCounter, itSpec1->size(),
-                                    ParticlesOfEvent.size());
+        HigherMath->FillPairCounterME(HistCounter, itSpec1->size(),
+                                      ParticlesOfEvent.size());
         for (auto itPart1 = itSpec1->begin(); itPart1 != itSpec1->end();
             ++itPart1) {
-          AliFemtoDreamBasePart part1 = *itPart1;
           for (auto itPart2 = ParticlesOfEvent.begin();
               itPart2 != ParticlesOfEvent.end(); ++itPart2) {
-            AliFemtoDreamBasePart part2 = *itPart2;
-            // Delta eta - Delta phi* cut
             if (fDoDeltaEtaDeltaPhiCut && CPR) {
-              if (!RejectClosePairs(part1, part2)) {
+              if (!HigherMath->PassesPairSelection(*itPart1, *itPart2, false)) {
                 continue;
               }
             }
-            RelativeK = RelativePairMomentum(itPart1->GetMomentum(), *itPDGPar1,
-                                             itPart2->GetMomentum(),
-                                             *itPDGPar2);
-            if (fillHists && ResultsHist->GetEtaPhiPlots()) {
-              DeltaEtaDeltaPhi(HistCounter, part1, part2, false, ResultsHist,
-                               RelativeK);
-            }
-            if (fillHists && ResultsHist->GetDodPhidEtaPlots()) {
-              float deta = itPart1->GetEta().at(0) - itPart2->GetEta().at(0);
-              float dphi = itPart1->GetPhi().at(0) - itPart2->GetPhi().at(0);
-              float mT =
-                  ResultsHist->GetDodPhidEtamTPlots() ?
-                      RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-                                     itPart2->GetMomentum(), *itPDGPar2) :
-                      0;
-              if (dphi < 0) {
-                ResultsHist->FilldPhidEtaME(HistCounter, dphi + 2 * TMath::Pi(),
-                                            deta, mT);
-              } else {
-                ResultsHist->FilldPhidEtaME(HistCounter, dphi, deta, mT);
-              }
-            }
+            RelativeK = HigherMath->FillMixedEvent(
+                HistCounter, iMult, cent, itPart1->GetMomentum(), *itPDGPar1,
+                itPart2->GetMomentum(), *itPDGPar2,
+                AliFemtoDreamCollConfig::kNone);
 
-            ResultsHist->FillMixedEventDist(HistCounter, RelativeK);
-            if (ResultsHist->GetDoMultBinning()) {
-              ResultsHist->FillMixedEventMultDist(HistCounter, iMult + 1,
-                                                  RelativeK);
-            }
-            if (fillHists && ResultsHist->GetDoCentBinning()) {
-              ResultsHist->FillMixedEventCentDist(HistCounter, cent, RelativeK);
-            }
-            if (fillHists && ResultsHist->GetDokTBinning()) {
-              ResultsHist->FillMixedEventkTDist(
-                  HistCounter,
-                  RelativePairkT(itPart1->GetMomentum(), *itPDGPar1,
-                                 itPart2->GetMomentum(), *itPDGPar2),
-                  RelativeK, cent);
-            }
-            if (fillHists && ResultsHist->GetDomTBinning()) {
-              ResultsHist->FillMixedEventmTDist(
-                  HistCounter,
-                  RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-                                 itPart2->GetMomentum(), *itPDGPar2),
-                  RelativeK);
-            }
-            if (fillHists && ResultsHist->GetDoPtQA()) {
-              ResultsHist->FillPtMEOneQADist(HistCounter, itPart1->GetPt(),
-                                             iMult + 1);
-              ResultsHist->FillPtMETwoQADist(HistCounter, itPart2->GetPt(),
-                                             iMult + 1);
-            }
-            if (fillHists && ResultsHist->GetObtainMomentumResolution()) {
-              //It is sufficient to do this in Mixed events, which allows
-              //to increase the statistics. The Resolution of the tracks and therefore
-              //of the pairs does not change event by event.
-              //Now we only want to use the momentum of particles we are after, hence
-              //we check the PDG Code!
-              if ((*itPDGPar1 == TMath::Abs(itPart1->GetMCPDGCode()))
-                  && ((*itPDGPar2 == TMath::Abs(itPart2->GetMCPDGCode())))) {
-                float RelKTrue = RelativePairMomentum(itPart1->GetMCMomentum(),
-                                                      *itPDGPar1,
-                                                      itPart2->GetMCMomentum(),
-                                                      *itPDGPar2);
-                ResultsHist->FillMomentumResolution(HistCounter, RelKTrue,
-                                                    RelativeK);
-              }
-            }
+            HigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
+                                        *itPart2, *itPDGPar2, RelativeK, false);
+            HigherMath->MEMomentumResolution(HistCounter, &(*itPart1),
+                                             *itPDGPar1, &(*itPart2),
+                                             *itPDGPar2, RelativeK);
           }
         }
       }
