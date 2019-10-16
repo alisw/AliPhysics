@@ -1,5 +1,5 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPion(
-    bool isMC=false,
+    bool isMC=false, float fSpherDown=0.7,
     TString CentEst="kInt7")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -23,7 +23,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   evtCuts->CleanUpMult(false,false,false,true);
   evtCuts->SetZVtxPosition(-10., 10.);
   // Only use those events where more than two primary tracks with |eta|<0.8 and pT>0.5 GeV/c see AN
-  evtCuts->SetSphericityCuts(0.7, 1.0);
+  evtCuts->SetSphericityCuts(fSpherDown, 1.0);
 
   //Track Cuts are defined here
   //positive pions
@@ -45,12 +45,13 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   // Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
   fTrackCutsPosPion->SetCutSharedCls(true);
   fTrackCutsPosPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
-  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.75);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetChi2Cut(0., 4.0);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
   // Not mention in AN oder Indico
-  fTrackCutsPosPion->SetCutSmallestSig(true);
+  //fTrackCutsPosPion->SetCutSmallestSig(true);
 
   //The same things for negative pions
   AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
@@ -65,9 +66,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   fTrackCutsNegPion->SetDCAVtxXY(0.3);
   fTrackCutsNegPion->SetCutSharedCls(true);
   fTrackCutsNegPion->SetNClsTPC(80);
-  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.75);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
-  fTrackCutsNegPion->SetCutSmallestSig(true);
+  fTrackCutsNegPion->SetChi2Cut(0., 4.0);
+  //fTrackCutsNegPion->SetCutSmallestSig(true);
 
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
@@ -123,9 +125,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   kMax.push_back(1.5);
   //pair rejection
   std::vector<bool> closeRejection;
-  closeRejection.push_back(false); // pi+ pi+
+  closeRejection.push_back(true); // pi+ pi+
   closeRejection.push_back(false); // pi+ pi- 
-  closeRejection.push_back(false); // pi- pi-
+  closeRejection.push_back(true); // pi- pi-
   //QA plots for tracks
   std::vector<int> pairQA;
   pairQA.push_back(0); // pi+ pi+

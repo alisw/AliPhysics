@@ -63,7 +63,6 @@ void AliAnalysisTaskFemtoDreamPion::UserCreateOutputObjects() {
 
   fGTI=new AliAODTrack*[fTrackBufferSize];
 
-
   if (!fEventCuts) {
       AliFatal("Event Cuts not set!");
   }
@@ -99,7 +98,7 @@ void AliAnalysisTaskFemtoDreamPion::UserCreateOutputObjects() {
   //3. Minimal booking == true means no histograms are created and filled
   //might be handy for systematic checks, in order to reduce the memory
   //usage
-  fPairCleaner=new AliFemtoDreamPairCleaner(3,6,fConfig->GetMinimalBookingME());
+  fPairCleaner=new AliFemtoDreamPairCleaner(3,0,fConfig->GetMinimalBookingME());
   fOutput->Add(fPairCleaner->GetHistList());
 
   fPartColl=new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
@@ -156,8 +155,8 @@ void AliAnalysisTaskFemtoDreamPion::UserExec(Option_t *) {
       //selecting a track twice. Now this is hypothetical, because we are selecting opposite
       //charged particles, but imagine you want to use p+K^+ (Check for this is not yet implemented)!
       fPairCleaner->CleanTrackAndDecay(&PosPions,&PosPions,0);   // pi+ pi+
-      fPairCleaner->CleanTrackAndDecay(&PosPions,&NegPions,2); // pi+ pi-
-      fPairCleaner->CleanTrackAndDecay(&NegPions,&NegPions,0); // pi- pi-
+      fPairCleaner->CleanTrackAndDecay(&PosPions,&NegPions,1); // pi+ pi-
+      fPairCleaner->CleanTrackAndDecay(&NegPions,&NegPions,2); // pi- pi-
       //The cleaner tags particles as 'bad' for use, these we don't want to give to our particle
       //pairer, that's why we call store particles, which only takes the particles marked 'good' from
       //our buffer vector.
