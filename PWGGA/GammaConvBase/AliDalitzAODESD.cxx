@@ -77,6 +77,7 @@ ClassImp( AliDalitzAODESD )
             if (!par->PropagateToDCA(vx,bmag,999.,dz,0)) {
                 delete par;
                 chi2 = 1e9;
+                return;
             }
             Double_t covar[6]; vx->GetCovarianceMatrix(covar);
             Double_t p[2]= { par->GetParameter()[0]-dz[0], par->GetParameter()[1]-dz[1]};
@@ -88,7 +89,7 @@ ClassImp( AliDalitzAODESD )
                 vector[1]=0.0;
                 vector[2]=0.0;
                 vector[3]=0.0;
-            //return 0;
+                return;
             }
             vector[0]=par->Px();
             vector[1]=par->Py();
