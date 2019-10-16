@@ -10,11 +10,16 @@ AliGenerator* CreatePythia8Gen(
                 Float_t e_cms,  
                 Bool_t kCR, 
                 Int_t kProcess
-                ); 
+                );
 AliGenerator* AddMCGenPythia8(
 		Float_t e_cms= 13000.,
 		Bool_t kCR= kTRUE,
 		Int_t kProcess= 0 
+		);
+AliGenerator* AddMCGenPythia8(
+		Float_t e_cms,
+		Bool_t kCR,
+		Int_t kProcess 
 		)
 {
 	cout<<"holaaaaaaaaaaaaaa"<<endl;

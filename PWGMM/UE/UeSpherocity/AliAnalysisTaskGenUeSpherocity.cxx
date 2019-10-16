@@ -188,6 +188,7 @@ ClassImp( AliAnalysisTaskGenUeSpherocity )
 		fDphiASRec(0x0),
 		fDphiTSRec(0x0),
 		fMultTSRec(0x0),
+		fSoWeighedVsNchPtL(0x0),
 		fListOfObjects(0)
 {
 
@@ -296,6 +297,7 @@ AliAnalysisTaskGenUeSpherocity::AliAnalysisTaskGenUeSpherocity(const char *name)
 	fDphiASRec(0x0),
 	fDphiTSRec(0x0),
 	fMultTSRec(0x0),
+	fSoWeighedVsNchPtL(0x0),
 	fListOfObjects(0)
 {
 
@@ -480,6 +482,11 @@ void AliAnalysisTaskGenUeSpherocity::UserCreateOutputObjects(){
 	fMultTSRec = 0;
 	fMultTSRec = new TH1D("fMultTSRec","",100,-0.5,99.5);
 	fListOfObjects->Add(fMultTSRec);
+
+	fSoWeighedVsNchPtL = 0;
+	fSoWeighedVsNchPtL = new TH2D("fSoWeighedVsNchPtL","So vs Nch |eta|<0.8 pTL>5",300,-0.5,299.5,200,0.0,1.0);
+	fListOfObjects->Add(fSoWeighedVsNchPtL);
+
 
 	Double_t TSBins[nTSBins+1]={0x0};
 	for(Int_t i=0;i<nTSBins;++i){
@@ -1207,6 +1214,8 @@ void AliAnalysisTaskGenUeSpherocity::MakeUeSoNch08Analysis(vector<Int_t> &mult){
 	Int_t BinNchForSpherocity=mult[1];
 	if(fspherocity_gen_ptWeighted<0)
 		return;
+
+	fSoWeighedVsNchPtL->Fill(1.0*BinNchForSpherocity,fspherocity_gen_ptWeighted);
 
 	if(BinNchForSpherocity<3||BinNchForSpherocity>80)
 		return;
