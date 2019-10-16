@@ -103,7 +103,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     std::cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< std::endl;
   }
 
-  TString PionCuts      = "000000000";
+  TString PionCuts      = "000000200";
+  if(periodNameV0Reader.Contains("LHC11") ||
+     periodNameV0Reader.Contains("LHC14k1") ||
+     periodNameV0Reader.Contains("LHC14b7") ||
+     periodNameV0Reader.Contains("LHC16c2")){
+       PionCuts      = "000000000";
+  }
   //================================================
   //========= Add Pion Selector ====================
   if( !(AliPrimaryPionSelector*)mgr->GetTask("PionSelector") ){
