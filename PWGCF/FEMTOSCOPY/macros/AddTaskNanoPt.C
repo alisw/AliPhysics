@@ -67,6 +67,32 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = false,
   PDGParticles.push_back(1000010020);
   PDGParticles.push_back(1000010020);
 
+  std::vector<bool> closeRejection;
+  //pairs:
+  // pp             0
+  // p bar p        1
+  // p d            2
+  // p bar d        3
+  // bar p bar p    4
+  // bar p d        5
+  // bar p bar d    6
+  // d d            7
+  // d bar d        8
+  // bar d bar d    9
+
+  const int nPairs = 10;
+  for (int i = 0; i < nPairs; ++i) {
+
+    closeRejection.push_back(false);
+  }
+
+  closeRejection[0] = true;  // pp
+  closeRejection[2] = true;  // pd
+  closeRejection[4] = true;  // barp barp
+  closeRejection[6] = true;  // barp bard
+  closeRejection[7] = true;  // dd
+  closeRejection[9] = true;  // bard bard
+
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
   ZVtxBins.push_back(-8);
@@ -151,6 +177,9 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = false,
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
+  config->SetClosePairRejection(closeRejection);
+  config->SetDeltaEtaMax(0.012); // and here you set the actual values
+  config->SetDeltaPhiMax(0.012); // and here you set the actual values
   //Here we set the mixing depth.
   config->SetMixingDepth(10);
 
