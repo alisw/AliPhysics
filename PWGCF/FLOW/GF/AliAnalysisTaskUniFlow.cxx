@@ -3212,9 +3212,10 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
 
   if(bHas3sub){
     for(Int_t poiPos(0); poiPos < 3; poiPos++){
-      if(species == kRefs && iNumHarm == 2 && poiPos > 0) break;
+      if(species == kRefs && ( (iNumHarm == 2 && poiPos > 1) || (iNumHarm == 4 && poiPos > 0) ) ) break;
       for(Int_t twoPos(0); twoPos < 3; twoPos++){
-        if(species == kRefs && iNumHarm == 2 && (poiPos > 1 || poiPos >= twoPos) ) break;
+        if(species == kRefs && iNumHarm == 2 && poiPos >= twoPos ) continue;
+        if(species != kRefs && iNumHarm == 2 && poiPos == twoPos ) continue;
         bFill3sub[poiPos][twoPos] = kTRUE;
         dNom3Sub[poiPos][twoPos] = cNom3Sub[poiPos][twoPos].Re();
         dDenom3Sub[poiPos][twoPos] = cDenom3Sub[poiPos][twoPos].Re();
@@ -3251,7 +3252,7 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
           for(Int_t rf1Pos(0); rf1Pos < 3; rf1Pos++){
             if(rf1Pos > 1) break;
             for(Int_t rf2Pos(0); rf2Pos < 3; rf2Pos++){
-              if(rf1Pos >= rf2Pos) break;
+              if(rf1Pos >= rf2Pos) continue;
               TProfile* prof = (TProfile*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_rf1_%c_rf2_%c",task->fsName.Data(),fIndexSampling,sides[rf1Pos],sides[rf2Pos]));
               if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_rf1_%c_rf2_%c' not found!", task->fsName.Data(),fIndexSampling,sides[rf1Pos],sides[rf2Pos])); return; }
               if(bFill3sub[rf1Pos][rf2Pos]) prof->Fill(fIndexCentrality, dValue3Sub[rf1Pos][rf2Pos], dDenom3Sub[rf1Pos][rf2Pos]);
@@ -3836,7 +3837,7 @@ TComplex AliAnalysisTaskUniFlow::TwoGap3sub(const Int_t n1, const Int_t n2, cons
   TComplex formula = TComplex(0.0,0.0,kFALSE);
   if(rf1Pos >= rf2Pos) { AliError("TwoGap3sub: Incorrect position of RFPs."); return 0; }
   if(rf1Pos == 0){
-    if(rf2Pos == 0)
+    if(rf2Pos == 1)
       formula = QGapNeg(n1,1)*QGapMid(n2,1);
     else
       formula = QGapNeg(n1,1)*QGapPos(n2,1);
