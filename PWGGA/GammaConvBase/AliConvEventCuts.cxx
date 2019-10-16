@@ -5987,7 +5987,6 @@ Int_t AliConvEventCuts::SecondaryClassificationPhotonAOD( AliAODMCParticle *part
 
 void AliConvEventCuts::SetPeriodEnum (TString periodName){
 
-  AliInfo(Form("Period name is %s",periodName.Data()));
   if (periodName.CompareTo("") == 0){
     periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   }
