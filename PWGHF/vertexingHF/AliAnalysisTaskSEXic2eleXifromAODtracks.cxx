@@ -4027,7 +4027,7 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fHistoXiQovPtvsPhi=new TH2F("fHistoXiQovPtvsPhi","",70,0.,7.,50,-2.,2.);
   fOutputAll->Add(fHistoXiQovPtvsPhi);
 
-  Int_t bins_xicmcgen[3]=	{100 ,20	,10};
+  Int_t bins_xicmcgen[3]=	{200 ,20	,10};
   Double_t xmin_xicmcgen[3]={0.,-1.0	,0.0};
   Double_t xmax_xicmcgen[3]={20.,1.0	,100};
   fHistoXicMCGen = new THnSparseF("fHistoXicMCGen","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
@@ -4050,7 +4050,7 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoXicMCSWeight);
 
 
-  Int_t bins_xibmcgen[3]=	{100 ,20	,10};
+  Int_t bins_xibmcgen[3]=	{200 ,20	,10};
   Double_t xmin_xibmcgen[3]={0.,-1.0	,0.0};
   Double_t xmax_xibmcgen[3]={50.,1.0	,100};
   fHistoXibMCGen = new THnSparseF("fHistoXibMCGen","",3,bins_xibmcgen,xmin_xibmcgen,xmax_xibmcgen);
@@ -4058,7 +4058,7 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fHistoXibMCS = new THnSparseF("fHistoXibMCS","",3,bins_xibmcgen,xmin_xibmcgen,xmax_xibmcgen);
   fOutputAll->Add(fHistoXibMCS);
  //================== non prompt/ prompt / inclusive =====
-   Int_t bins_xibmcgen1[3]=  {100 ,20    ,10};
+   Int_t bins_xibmcgen1[3]=  {200 ,20    ,10};
    Double_t xmin_xibmcgen1[3]={0.,-1.0   ,0.0};
    Double_t xmax_xibmcgen1[3]={20.,1.0   ,100};
 
@@ -4134,11 +4134,11 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoResponseElePt);
   fHistoResponseXiPt = new TH2D("fHistoResponseXiPt","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseXiPt);
-  fHistoResponseEleXiPt = new TH2D("fHistoResponseEleXiPt","",100,0.,20.,100,0.,20.);
+  fHistoResponseEleXiPt = new TH2D("fHistoResponseEleXiPt","",200,0.,20.,200,0.,20.);
   fOutputAll->Add(fHistoResponseEleXiPt);
 
   
-  fHistoResponseEleXiPtWeight = new TH2D("fHistoResponseEleXiPtWeight","",100,0.,20.,100,0.,20.);
+  fHistoResponseEleXiPtWeight = new TH2D("fHistoResponseEleXiPtWeight","",200,0.,20.,200,0.,20.);
   fOutputAll->Add(fHistoResponseEleXiPtWeight);
   
   
