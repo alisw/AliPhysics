@@ -62,6 +62,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fEtaHistAfterTrackSeletion(NULL),
  fTotalMultAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion(NULL),
+ fMultiHistoAfterTrackSeletion_Second(NULL),
  fMultiHistoBeforeMultCut(NULL),
  fTPCClustersBeforeCut(NULL),
  fTPCClustersAfterCut(NULL),
@@ -115,7 +116,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMaxChiSquareTPC(4.0),
  fMaxDCAz(2.4),
  //Variables for the correlation
- fMaxCorrelator(10),
+ fMaxCorrelator(12),
  bUseWeights(kFALSE),
  fNumber(6),  //number of correlation first correlator
  fNumberSecond(6), //number of correlation second correlator
@@ -124,17 +125,13 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fDenominatorMinValue(1.0e-16),
  fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0),  //harmonics
  fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0),  //second set of harmonics
- fParticles(0),
- fAngles(NULL),
- fWeights(NULL),
- fBin(NULL),
  fCentrality(NULL),
  fCentralitySecond(NULL),
  fEvCentrality(NULL),
- fCentralitySecondSquare(NULL),
- fCentralitySecondSquareUnit(NULL),
- fCov(NULL),
- fCovUnit(NULL),
+ bDoEbERatio(kFALSE),
+ fMixedParticleHarmonics(NULL),
+ bDoMixed(kFALSE),		
+ fMixedHarmonic(0),
  fCounterHistogram(NULL),
  // Final results:
  fFinalResultsList(NULL)
@@ -190,6 +187,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fEtaHistAfterTrackSeletion(NULL),
  fTotalMultAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion(NULL),
+ fMultiHistoAfterTrackSeletion_Second(NULL),
  fMultiHistoBeforeMultCut(NULL),
  fTPCClustersBeforeCut(NULL),
  fTPCClustersAfterCut(NULL),
@@ -243,27 +241,23 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMaxChiSquareTPC(4.0),
  fMaxDCAz(2.4),
  //Variables for the correlation
- fMaxCorrelator(10),
+ fMaxCorrelator(12),
  bUseWeights(kFALSE),
  fNumber(6),  //number of correlation first correlator
  fNumberSecond(6), //number of correlation second correlator
  fMinNumberPart(10),
  bUseRatioWeight(kTRUE),
  fDenominatorMinValue(1.0e-16),
- fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0),  //harmonics
- fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0),  //second set of harmonics
- fParticles(0), 
- fAngles(NULL),
- fWeights(NULL),
- fBin(NULL),
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0), fh11(0), fh12(0),  //harmonics
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0), fa11(0), fa12(0), //second set of harmonics
  // Final results:
  fCentrality(NULL),
  fCentralitySecond(NULL),
  fEvCentrality(NULL),
- fCentralitySecondSquare(NULL),
- fCentralitySecondSquareUnit(NULL),
- fCov(NULL),
- fCovUnit(NULL),
+ bDoEbERatio(kFALSE),
+ fMixedParticleHarmonics(NULL),
+ bDoMixed(kFALSE),		
+ fMixedHarmonic(0),
  fCounterHistogram(NULL),
  fFinalResultsList(NULL)
 {
@@ -327,6 +321,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
  // c) Reset event-by-event objects;
  // d) PostData.
  
+
  fCounterHistogram->Fill(0.5); // counter hist 1st bin
 
  // a.0) Get pointer to AOD event:
@@ -339,12 +334,16 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
  fVertexYAfter->Fill(avtx->GetY());
  fVertexZAfter->Fill(avtx->GetZ());
 
- //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Access Data
  
  //b.0) Start analysis over AODs:
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
- fAngles = new TArrayD(nTracks); //new Array
- fParticles=0; //number of particles after selections
+ 
+ Double_t* angles_A = NULL; // Azimuthal angles
+ Int_t Multi_Ang_A = 0.;
+ Double_t* angles_B = NULL; 
+ Int_t Multi_Ang_B = 0.; 
+
 
  if(nTracks>0){fMultiHistoBeforeTrackSeletion->Fill(nTracks);} //multiplicity distribution before track selection
  for(Int_t u=0;u<nTracks;u++){fTotalMultBeforeTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class before track sel.
@@ -359,6 +358,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
      Double_t phi = aTrack->Phi(); // azimuthal angle
      Double_t eta = aTrack->Eta(); // pseudorapidity
      Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
+     Double_t charge = aTrack->Charge(); // charge
      Int_t NumberOfTPCClusters = aTrack->GetTPCNcls(); //number of TPC clusters of the track
      Int_t NumberOfITSClusters = aTrack->GetITSNcls(); //number of ITS clusters of the track
      Double_t ChiSquareInTPC = (aTrack->GetTPCchi2())/(aTrack->GetNcls(1)); //chi square in the TPC
@@ -384,92 +384,74 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
      fChiSquareTPCAfterCut->Fill(ChiSquareInTPC);
      fDCAzAfterCut->Fill(ValueDCAz);
 
-     //Fill angle array  
-     fAngles->AddAt(phi,fParticles);
-     fParticles += 1;
+     if(!bDoMixed) {Multi_Ang_A+=1.;}
+     if(bDoMixed)
+     {
+	if(charge>0.){Multi_Ang_A+=1.;}
+	if(charge<0.){Multi_Ang_B+=1.;}
+     }
 
 
  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
- 
- fAngles->Set(fParticles);
+
+        angles_A = new Double_t[Multi_Ang_A];
+	Multi_Ang_A = 0.; //Reset for filling
+       
+	if(Multi_Ang_B>0){angles_B = new Double_t[Multi_Ang_B];}
+	else{angles_B = new Double_t[1]; angles_B[0]=0.;} //Dummy 
+  	Multi_Ang_B = 0.; //Reset for filling
 
 
- if(fParticles>0){fMultiHistoAfterTrackSeletion->Fill(fParticles);} //multiplicity distribution after track selection
- for(Int_t u=0;u<fParticles;u++){fTotalMultAfterTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class after track sel.
- 
- //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
- //b.2) Multi-Particle Correlation;
-
- if(fParticles>=fMinNumberPart) //do the correlation only if there are more than 8 particles in the event
- { 
-
-    // Calculate Q-vectors for available angles and weights;
-    this->CalculateQvectors();
-
-    Double_t FirstCorrelation=0.;
-    Double_t Weight_FirstCorrelation=0.;
-    Double_t SecondCorrelation=0.;
-    Double_t Weight_SecondCorrelation=0.;
-
-    Double_t FirstCorrelation_Im=0.;
-    Double_t Weight_FirstCorrelation_Im=0.;
-    Double_t SecondCorrelation_Im=0.;
-    Double_t Weight_SecondCorrelation_Im=0.;
+//b.1.1) Second Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
+ for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
+ {  AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to a track
+    if(!aTrack){continue;} // protection against NULL pointers
+    if(!aTrack->TestFilterBit(fMainFilter)){continue;} //Check if in Filter
     
-    //~~~~~~~~~~~~~~~~~
+     Double_t phi = aTrack->Phi(); // azimuthal angle
+     Double_t charge = aTrack->Charge(); // charge
+ 
+     if(!TrackSelection(aTrack)){continue;} //Track did not pass physics selection 
 
-    this->Correlation(fNumber,fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8, fh9, fh10);  //do the correlation for the first set
+     if(!bDoMixed) {angles_A[Multi_Ang_A] = phi; Multi_Ang_A+=1.;}
+     if(bDoMixed)
+     {
+	if(charge>0.){angles_A[Multi_Ang_A] = phi; Multi_Ang_A+=1.;}
+	if(charge<0.){angles_B[Multi_Ang_B] = phi; Multi_Ang_B+=1.;}
+     }
 
-    FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(1);
-    Weight_FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(2);
-    FirstCorrelation_Im=fRecursion[1][fNumber-2]->GetBinContent(1);
-    Weight_FirstCorrelation_Im=fRecursion[1][fNumber-2]->GetBinContent(2);
+ } //second loop
 
-    fRecursion[0][fNumber-2]->Reset(); //Reset
-    fRecursion[1][fNumber-2]->Reset(); //Reset
 
-    //~~~~~~~~~~~~~~~~~
 
-    this->Correlation(fNumberSecond,fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8, fa9, fa10);  //do the correlation for the second set
 
-    SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(1);
-    Weight_SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(2);
-    SecondCorrelation_Im=fRecursion[1][fNumberSecond-2]->GetBinContent(1);
-    Weight_SecondCorrelation_Im=fRecursion[1][fNumberSecond-2]->GetBinContent(2);
-    
-    fRecursion[0][fNumberSecond-2]->Reset(); //Reset
-    fRecursion[1][fNumberSecond-2]->Reset(); //Reset
+ //~~~~~~~~~~~~~~~~~~~~~~~~~~ Do the Calculus
+ 
+ if(!bDoMixed)
+ {
+   if(Multi_Ang_A>0){fMultiHistoAfterTrackSeletion->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
+   for(Int_t u=0;u<Multi_Ang_A;u++){fTotalMultAfterTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class after track sel.
 
-    //~~~~~~~~~~~~~~~~~
-    if(TMath::Abs(SecondCorrelation)>=fDenominatorMinValue){
+   this->MainTask(Multi_Ang_A, angles_A);
 
-    if(bUseRatioWeight){ fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),Weight_SecondCorrelation); } 
-    else { fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),1.); } 
+ }
+ 
+ if(bDoMixed)
+ {
+   if(Multi_Ang_A>0){fMultiHistoAfterTrackSeletion->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
+   for(Int_t u=0;u<Multi_Ang_A+Multi_Ang_B;u++){fTotalMultAfterTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class after track sel.
+   if(Multi_Ang_B>0){fMultiHistoAfterTrackSeletion_Second->Fill(Multi_Ang_B);}
 
-    } //protection against 0, we will come back to this later
-
-    fCentrality->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation); //safe output first set of harmonics
-    fCentralitySecond->Fill(0.5,SecondCorrelation,Weight_SecondCorrelation); //safe output second set of harmonics    
-
-    fCentrality->Fill(1.5,FirstCorrelation_Im,Weight_FirstCorrelation_Im); //safe output first set of harmonics
-    fCentralitySecond->Fill(1.5,SecondCorrelation_Im,Weight_SecondCorrelation_Im); //safe output second set of harmonics
-
-   fCentralitySecondSquare->Fill(0.5,SecondCorrelation*SecondCorrelation,TMath::Binomial(fParticles,fNumberSecond+fNumberSecond)*TMath::Factorial(fNumberSecond+fNumberSecond));
-   fCentralitySecondSquare->Fill(1.5,SecondCorrelation*SecondCorrelation,Weight_SecondCorrelation*Weight_SecondCorrelation);
-   fCentralitySecondSquareUnit->Fill(0.5,SecondCorrelation*SecondCorrelation,1.);
-   fCov->Fill(0.5,FirstCorrelation*SecondCorrelation,TMath::Binomial(fParticles,fNumber+fNumberSecond)*TMath::Factorial(fNumber+fNumberSecond));
-   fCov->Fill(1.5,FirstCorrelation*SecondCorrelation,Weight_FirstCorrelation*Weight_SecondCorrelation);
-   fCovUnit->Fill(0.5,FirstCorrelation*SecondCorrelation,1.);
-
-  } //if(fParticles>=fMinNumberPart)
-
+   this->MixedParticle(fMixedHarmonic, Multi_Ang_A, angles_A, Multi_Ang_B, angles_B);
+ }
+ 
  
  // c) Reset event-by-event objects:
- fParticles=0;
- delete fAngles;
-
- 
+ Multi_Ang_A =0.;
+ delete [] angles_A; 
+ Multi_Ang_B =0.;
+ delete [] angles_B;
 
  // d) PostData:
  PostData(1,fHistList);
@@ -511,9 +493,9 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
      }  
     }  //for(Int_t cs=0;cs<2;cs++)
 
-   for(Int_t js=0;js<61;js++) 
+   for(Int_t js=0;js<97;js++) 
    {
-     for(Int_t j=0;j<11;j++)
+     for(Int_t j=0;j<13;j++)
      {
    
       fQvector[js][j] = TComplex(0.,0.); //! 
@@ -635,6 +617,10 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  fMultiHistoAfterTrackSeletion->GetXaxis()->SetTitle("Multiplicity M");
  fControlHistogramsList->Add(fMultiHistoAfterTrackSeletion);
 
+ fMultiHistoAfterTrackSeletion_Second = new TH1F("fMultiHistoAfterTrackSeletion_Second","Multiplicity",5000,0.,5000.);
+ fMultiHistoAfterTrackSeletion_Second->GetXaxis()->SetTitle("Multiplicity M");
+ fControlHistogramsList->Add(fMultiHistoAfterTrackSeletion_Second);
+
  // j) Book histogam to hold multiplicty distribution before high multiplicity outlier cut:
  fMultiHistoBeforeMultCut = new TH1F("fMultiHistoBeforeMultCut","Multiplicity",5000,0.,5000.); 
  fMultiHistoBeforeMultCut->GetXaxis()->SetTitle("Multiplicity M");
@@ -731,25 +717,11 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
  fEvCentrality->Sumw2();  
  fFinalResultsList->Add(fEvCentrality);
 
- fCentralitySecondSquare = new TProfile("fCentralitySecondSquare","Result Analysis Second Set Correlators Squared",2,0.,2.); //centrality dependet output
- fCentralitySecondSquare->GetXaxis()->SetTitle("");
- fCentralitySecondSquare->Sumw2();  
- fFinalResultsList->Add(fCentralitySecondSquare);
-
- fCentralitySecondSquareUnit = new TProfile("fCentralitySecondSquareUnit","Result Analysis Second Set Correlators Squared Unit Weight",1,0.,1.); //centrality dependet output
- fCentralitySecondSquareUnit->GetXaxis()->SetTitle("");
- fCentralitySecondSquareUnit->Sumw2();  
- fFinalResultsList->Add(fCentralitySecondSquareUnit);
-
- fCov = new TProfile("fCov","Result Analysis Covariance Term",2,0.,2.); //centrality dependet output
- fCov->GetXaxis()->SetTitle("");
- fCov->Sumw2();  
- fFinalResultsList->Add(fCov);
-
- fCovUnit = new TProfile("fCovUnit","Result Analysis Covariance Term Unit Weight",1,0.,1.); //centrality dependet output
- fCovUnit->GetXaxis()->SetTitle("");
- fCovUnit->Sumw2();  
- fFinalResultsList->Add(fCovUnit);
+  fMixedParticleHarmonics = new TProfile("fMixedParticleHarmonics","fMixedParticleHarmonics",2,0.,2.); //centrality dependet output
+ fMixedParticleHarmonics->GetXaxis()->SetTitle("");
+ fMixedParticleHarmonics->GetYaxis()->SetTitle("");
+ fMixedParticleHarmonics->Sumw2(); 
+ fFinalResultsList->Add(fMixedParticleHarmonics);
 
 
  Cosmetics();
@@ -921,7 +893,7 @@ void AliAnalysisTaskStudentsML::Cosmetics()
 
 //=======================================================================================================================
 
-void AliAnalysisTaskStudentsML::CalculateQvectors()
+void AliAnalysisTaskStudentsML::CalculateQvectors(Int_t CalculateQvectors_nParticles, Double_t* CalculateQvectors_angles)
 {
  // Calculate Q-vectors.
 
@@ -929,9 +901,9 @@ void AliAnalysisTaskStudentsML::CalculateQvectors()
  // b) Calculate Q-vectors for available angles and weights. 
 
  // a) Make sure all Q-vectors are initially zero:
- for(Int_t h=0;h<61;h++)
+ for(Int_t h=0;h<97;h++)
  {
-  for(Int_t p=0;p<11;p++)
+  for(Int_t p=0;p<13;p++)
   {
    fQvector[h][p] = TComplex(0.,0.);
   } //  for(Int_t p=0;p<kMaxPower;p++)
@@ -941,13 +913,13 @@ void AliAnalysisTaskStudentsML::CalculateQvectors()
  Double_t dPhi2 = 0.; // particle angle
  Double_t wPhi = 1.; // particle weight
  Double_t wPhiToPowerP = 1.; // particle weight raised to power p
- for(Int_t i=0;i<fParticles;i++) // loop over particles
+ for(Int_t i=0;i<CalculateQvectors_nParticles;i++) // loop over particles
  {
-  dPhi2 = fAngles->GetAt(i);
-  if(bUseWeights){wPhi = fWeights->GetAt(i);}
-  for(Int_t h=0;h<61;h++)
+  dPhi2 = CalculateQvectors_angles[i];
+  //if(bUseWeights){wPhi = fWeights->GetAt(i);} //Change some point
+  for(Int_t h=0;h<97;h++)
   {
-   for(Int_t p=0;p<11;p++)
+   for(Int_t p=0;p<13;p++)
    {
     if(bUseWeights){wPhiToPowerP = pow(wPhi,p);}
     fQvector[h][p] += TComplex(wPhiToPowerP*TMath::Cos(h*dPhi2),wPhiToPowerP*TMath::Sin(h*dPhi2));
@@ -960,6 +932,34 @@ void AliAnalysisTaskStudentsML::CalculateQvectors()
 
 //=======================================================================================================================
 
+TComplex AliAnalysisTaskStudentsML::CalculateMixedQVectors(Double_t Harm, Int_t M_A, Int_t M_B, Double_t* Ang_A, Double_t* Ang_B){
+
+    //Reset
+    TComplex Q_A = TComplex(0.,0.);
+    TComplex Q_2A = TComplex(0.,0.);
+    TComplex Q_B = TComplex(0.,0.);
+    TComplex Q_2B = TComplex(0.,0.);
+    TComplex v_AB = TComplex(0.,0.);
+    
+    for(Int_t i=0; i<M_A; i++){
+        Q_A += TComplex(TMath::Cos(Harm*Ang_A[i]),TMath::Sin(Harm*Ang_A[i]));
+        Q_2A += TComplex(TMath::Cos(2.*Harm*Ang_A[i]),TMath::Sin(2.*Harm*Ang_A[i]));
+    }
+    
+    for(Int_t i=0; i<M_B; i++){
+        Q_B += TComplex(TMath::Cos(Harm*Ang_B[i]),TMath::Sin(Harm*Ang_B[i]));
+        Q_2B += TComplex(TMath::Cos(2.*Harm*Ang_B[i]),TMath::Sin(2.*Harm*Ang_B[i]));
+    }
+    
+  v_AB = Q_A*Q_A*TComplex::Conjugate(Q_B)*TComplex::Conjugate(Q_B) - Q_2A*TComplex::Conjugate(Q_B)*TComplex::Conjugate(Q_B) - Q_A*Q_A*TComplex::Conjugate(Q_2B) + Q_2A*TComplex::Conjugate(Q_2B);
+    
+
+    return v_AB;
+
+ }
+
+
+//=======================================================================================================================
 
 TComplex AliAnalysisTaskStudentsML::Q(Int_t n, Int_t p)
 {
@@ -1016,13 +1016,14 @@ TComplex AliAnalysisTaskStudentsML::Recursion(Int_t n, Int_t* harmonic, Int_t mu
 //========================================================================================================================
 
 
-void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10)
+void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10, Int_t h11, Int_t h12, Double_t* Correlation_Angle, Int_t Correlation_Mult)
 {
 	
-     if(h1+h2+h3+h4+h5+h6+h7+h8+h9+h10!=0.){return;} //protection against anisotropic correlators
+       if(h1+h2+h3+h4+h5+h6+h7+h8+h9+h10+h11+h12!=0.){return;} //protection against anisotropic correlators
 	
-    // Calculate n-particle correlations from Q-vectors (using recursion):	
+       // Calculate n-particle correlations from Q-vectors (using recursion):	
 
+	this->CalculateQvectors(Correlation_Mult, Correlation_Angle);
          
         if(2==Number)
         {
@@ -1142,14 +1143,143 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
          fRecursion[1][8]->Fill(0.5,tenRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
          fRecursion[1][8]->Fill(1.5,wtenRecursion);
         
-        }//  8-p correlation
+        }//  10-p correlation
 
-        if(Number!=2 && Number!=3 && Number!=4 && Number!=5 && Number!=6 && Number!=7 && Number!=8 && Number!=9 && Number!=10) 
+        if(12==Number)
         {
-         return;
-        }
+         Int_t harmonicsTwelveNum[12] = {h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12};       
+         Int_t harmonicsTwelveDen[12] = {0,0,0,0,0,0,0,0,0,0,0,0};       
+         TComplex twelveRecursion = Recursion(12,harmonicsTwelveNum)/Recursion(12,harmonicsTwelveDen).Re();
+         Double_t wtwelveRecursion = Recursion(12,harmonicsTwelveDen).Re();
+         fRecursion[0][10]->Fill(0.5,twelveRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursion[0][10]->Fill(1.5,wtwelveRecursion);
+         fRecursion[1][10]->Fill(0.5,twelveRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursion[1][10]->Fill(1.5,wtwelveRecursion);
+        
+        }//  12-p correlation
+
+        if(Number!=2 && Number!=3 && Number!=4 && Number!=5 && Number!=6 && Number!=7 && Number!=8 && Number!=9 && Number!=10 && Number!=12) { return; }
       
  }//void Correlation() 
+
+//========================================================================================================================
+
+  void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask_Angle_Array)
+  {
+
+    if(MainTask_Mult>=fMinNumberPart) //do the correlation only if there are more than 8 particles in the event
+    { 
+
+    // Calculate Q-vectors for available angles and weights;
+     
+
+    Double_t FirstCorrelation=0.;
+    Double_t Weight_FirstCorrelation=0.;
+    Double_t SecondCorrelation=0.;
+    Double_t Weight_SecondCorrelation=0.;
+
+    Double_t FirstCorrelation_Im=0.;
+    Double_t Weight_FirstCorrelation_Im=0.;
+    Double_t SecondCorrelation_Im=0.;
+    Double_t Weight_SecondCorrelation_Im=0.;
+    
+    //~~~~~~~~~~~~~~~~~
+
+    this->Correlation(fNumber,fh1, fh2, fh3, fh4,fh5,fh6,fh7,fh8,fh9,fh10,fh11,fh12,MainTask_Angle_Array,MainTask_Mult );  
+    //do the correlation for the first set
+
+    FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(1);
+    Weight_FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(2);
+    FirstCorrelation_Im=fRecursion[1][fNumber-2]->GetBinContent(1);
+    Weight_FirstCorrelation_Im=fRecursion[1][fNumber-2]->GetBinContent(2);
+
+    fRecursion[0][fNumber-2]->Reset(); //Reset
+    fRecursion[1][fNumber-2]->Reset(); //Reset
+
+    //~~~~~~~~~~~~~~~~~
+
+    this->Correlation(fNumberSecond,fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8, fa9, fa10, fa11, fa12,MainTask_Angle_Array,MainTask_Mult);  //do the correlation for the second set
+
+    SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(1);
+    Weight_SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(2);
+    SecondCorrelation_Im=fRecursion[1][fNumberSecond-2]->GetBinContent(1);
+    Weight_SecondCorrelation_Im=fRecursion[1][fNumberSecond-2]->GetBinContent(2);
+    
+    fRecursion[0][fNumberSecond-2]->Reset(); //Reset
+    fRecursion[1][fNumberSecond-2]->Reset(); //Reset
+
+    //~~~~~~~~~~~~~~~~~
+
+    if(bDoEbERatio){
+    	if(TMath::Abs(SecondCorrelation)>=fDenominatorMinValue)
+	{
+    	   if(bUseRatioWeight){ fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),Weight_SecondCorrelation); } 
+   	   else { fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),1.); } 
+        } //protection against 0, we will come back to this later
+    } //if(bDoEbERatio)
+
+
+    fCentrality->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation); //safe output first set of harmonics
+    fCentralitySecond->Fill(0.5,SecondCorrelation,Weight_SecondCorrelation); //safe output second set of harmonics    
+
+    fCentrality->Fill(1.5,FirstCorrelation_Im,Weight_FirstCorrelation_Im); //safe output first set of harmonics
+    fCentralitySecond->Fill(1.5,SecondCorrelation_Im,Weight_SecondCorrelation_Im); //safe output second set of harmonics
+
+
+  } //if(fParticles>=fMinNumberPart)
+
+
+
+  } //void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask_Angle_Array)
+
+//========================================================================================================================
+
+  void AliAnalysisTaskStudentsML::MixedParticle(Int_t Harmonicus, Int_t Mixed_Mult_A, Double_t* Mixed_Angle_A, Int_t Mixed_Mult_B, Double_t* Mixed_Angle_B)
+  {
+
+   if(Mixed_Mult_A>=fMinNumberPart && Mixed_Mult_B>=fMinNumberPart) 
+    { 
+
+    Double_t FirstCorrelation=0.;
+    Double_t Weight_FirstCorrelation=0.;
+    Double_t SecondCorrelation=0.;
+    Double_t Weight_SecondCorrelation=0.;
+
+  this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,Mixed_Angle_A,Mixed_Mult_A);  
+    //do the correlation for the first set
+
+    FirstCorrelation=fRecursion[0][2]->GetBinContent(1);
+    Weight_FirstCorrelation=fRecursion[0][2]->GetBinContent(2);
+
+    fRecursion[0][2]->Reset(); //Reset
+    fRecursion[1][2]->Reset(); //Reset
+
+    //~~~~~~~~~~~~~~~~~
+
+   this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,Mixed_Angle_B,Mixed_Mult_B); 
+
+    SecondCorrelation=fRecursion[0][2]->GetBinContent(1);
+    Weight_SecondCorrelation=fRecursion[0][2]->GetBinContent(2);
+    
+    fRecursion[0][2]->Reset(); //Reset
+    fRecursion[1][2]->Reset(); //Reset
+
+    //~~~~~~~~~~~~~~~~~~
+     Double_t Special_Weight = (Double_t)Mixed_Mult_A*((Double_t)Mixed_Mult_A-1.)*(Double_t)Mixed_Mult_B*((Double_t)Mixed_Mult_B-1.);
+     TComplex Mixed = TComplex(0.,0.);
+     Mixed = CalculateMixedQVectors((Double_t)Harmonicus, Mixed_Mult_A, Mixed_Mult_B, Mixed_Angle_A, Mixed_Angle_B);
+
+    //~~~~~~~~~~~~~~~~~~
+
+   fCentrality->Fill(0.5,(1./Special_Weight)*Mixed.Re(),Special_Weight); //safe output first set of harmonics
+   fCentralitySecond->Fill(0.5,FirstCorrelation*SecondCorrelation,Weight_FirstCorrelation*Weight_SecondCorrelation); //safe output second set of harmonics    
+   
+   fMixedParticleHarmonics->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation);
+   fMixedParticleHarmonics->Fill(1.5,SecondCorrelation,Weight_SecondCorrelation);
+
+   }
+  
+  } //void AliAnalysisTaskStudentsML::MixedParticle(Int_t Harmonicus, Int_t Mixed_Mult_A, Double_t* Mixed_Angle_A, Int_t Mixed_Mult_B, Double_t* Mixed_Angle_B)
 
 //========================================================================================================================
 
