@@ -2,8 +2,6 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-//#ifndef ALIANALYSISTASKUNIFLOW_H
-//#define ALIANALYSISTASKUNIFLOW_H
 #ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
 #define ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
 
@@ -31,7 +29,7 @@ class AliPicoTrack;
 class AliAODv0;
 class AliAODcascade;
 class AliAODMCParticle;
-class AliAODPidHF;
+
 //_____________________________________________________________________________
 
 class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
@@ -42,8 +40,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       enum    AnalType {kAOD = 0, kESD}; // tag for analysis type
       enum    CentEst {kRFP = 0, kV0A, kV0C, kV0M, kCL0, kCL1, kZNA, kZNC}; // multiplicity/centrality estimator as AliMultSelection
       enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kK0s, kLambda, kPhi,kXi, kOmega,kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
-      enum    SparseCand {kInvMass = 0, kCent, kPt, kEta, kDim}; // reconstructed candidates dist. dimensions
-      enum    SparseCandXi {kInvMassXi = 0, kCentXi, kPtXi, kEtaXi, kSampleXi,kDimXi};
+      enum    SparseCand {kInvMass = 0, kCent, kPt, kEta, kSample,kDim}; // reconstructed candidates dist. dimensions
 
       class CorrTask
       {
@@ -92,9 +89,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
 
       void       SetProcessCascades(Bool_t use = kTRUE) { fProcessSpec[kXi] = use; fProcessSpec[kOmega] = use; }
-      void       SetESELarge(Double_t value){IsESELargeq2 = kTRUE;q2Eta=value;}
-      void       SetESESmall(Double_t value){IsESESmallq2 = kTRUE;q2Eta=value;}
- 
+
+
+
 
       // flow related setters
       void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2})); }
@@ -111,9 +108,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    SetFlowFillWeights(Bool_t weights = kTRUE) { fFlowFillWeights = weights; }
       void                    SetUseWeigthsFile(const char* file, Bool_t bRunByRun) { fFlowWeightsPath = file; fFlowRunByRunWeights = bRunByRun; fFlowUseWeights = kTRUE; } //! NOTE file has to include "alien:///" if the file is on grid
       void                    SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
-     
-      void                    SetUseq2CutFile(const char* file) { fq2CutFilePath = file;}
-       // events setters
+      // events setters
       void                    SetCollisionSystem(ColSystem colSystem = kPP) { fColSystem = colSystem; }
       void                    SetCentrality(CentEst est, Int_t min = 0, Int_t max = 0, Int_t bins = 0) { fCentEstimator = est; fCentMin = min; fCentMax = max; fCentBinNum = bins; }
       void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -131,15 +126,14 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    SetPIDNumSigmasProtonMax(Float_t numSigmas) { fCutPIDnSigmaMax[kProton] = numSigmas; }
       void                    SetPIDNumSigmasTPCRejectElectron(Float_t numSigmas) { fCutPIDnSigmaTPCRejectElectron = numSigmas; }
       void                    SetPIDNumSigmasCombinedNoTOFrejection(Bool_t reject = kTRUE) { fCutPIDnSigmaCombinedTOFrejection = reject; }
-      void                    SetUseHFPIDCorrection(Bool_t PIDCorrection = kTRUE) { fUsePIDCorrection = PIDCorrection; }
       void                    SetUseBayesPID(Bool_t bayes = kTRUE) { fCutUseBayesPID = bayes; }
       void                    SetPIDBayesProbPionMin(Double_t probPi) { fCutPIDBayesMin[kPion] = probPi; }
       void                    SetPIDBayesProbKaonMin(Double_t probK) { fCutPIDBayesMin[kKaon] = probK; }
       void                    SetPIDBayesProbProtonMin(Double_t probP) { fCutPIDBayesMin[kProton] = probP; }
       // V0s setters
-      void					          SetV0sOnFly(Bool_t onFly) { fCutV0sOnFly = onFly; }
-      void					          SetV0sTPCRefit(Bool_t refit) { fCutV0srefitTPC = refit; }
-      void					          SetV0sRejectKinks(Bool_t reject) { fCutV0srejectKinks = reject; }
+      void		      SetV0sOnFly(Bool_t onFly) { fCutV0sOnFly = onFly; }
+      void		      SetV0sTPCRefit(Bool_t refit) { fCutV0srefitTPC = refit; }
+      void		      SetV0sRejectKinks(Bool_t reject) { fCutV0srejectKinks = reject; }
       void                    SetV0sDaughterNumTPCClsMin(UShort_t cls) { fCutV0sDaughterNumTPCClsMin = cls; }
       void                    SetV0sDaughterNumTPCrossMin(UShort_t cls) { fCutV0sDaughterNumTPCCrossMin = cls; }
       void                    SetV0sDaughterNumTPCFindMin(UShort_t cls) { fCutV0sDaughterNumTPCFindMin = cls; }
@@ -165,11 +159,11 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void					          SetV0sLambdaInvMassMin(Double_t mass) { fCutV0sInvMassLambdaMin = mass; }
       void					          SetV0sLambdaInvMassMax(Double_t mass) { fCutV0sInvMassLambdaMax = mass; }
 
-     void          SetCascadesXiInvMassMin(Double_t mass) { fCutCascadesInvMassXiMin = mass; }
-     void          SetCascadesXiInvMassMax(Double_t mass) { fCutCascadesInvMassXiMax = mass; }
+     void      SetCascadesXiInvMassMin(Double_t mass) { fCutCascadesInvMassXiMin = mass; }
+      void     SetCascadesXiInvMassMax(Double_t mass) { fCutCascadesInvMassXiMax = mass; }
    
-      void         SetCascadesOmegaInvMassMin(Double_t mass) { fCutCascadesInvMassOmegaMin = mass; }
-      void         SetCascadesOmegaInvMassMax(Double_t mass) { fCutCascadesInvMassOmegaMax = mass; }
+      void      SetCascadesOmegaInvMassMin(Double_t mass) { fCutCascadesInvMassOmegaMin = mass; }
+      void     SetCascadesOmegaInvMassMax(Double_t mass) { fCutCascadesInvMassOmegaMax = mass; }
 
 
 
@@ -211,14 +205,24 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void  SetCascadesRejectKinks(Bool_t reject) { fCutCascadesrejectKinks = reject; }
       void  SetXiPIDSigma(Double_t value){fXiPIDsigma = value;}
 
+
+
+
+
       void  SetRPTrackFromTPC(Bool_t value){fRPFromTPC = value;}
       void  SetTrackEta(Double_t value){fTrackEta = value;}
       void  SetTrackPtMin(Double_t value){fTrackPtMin = value;}
       void  SetTPCNcls(Double_t ncls = 70){fTPCNcls = ncls;}
-      void  SetIsGetq2(){IsGetq2 =kTRUE;}
 
-      AliEventCuts            fEventCuts; //!
-      AliAODPidHF*            fPidHF;//! PID correction from HF Group
+ 
+
+
+
+
+
+
+      AliEventCuts            fEventCuts; //
+
     private:
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
       static const Int_t      fFlowNumHarmonicsMax = 7; // maximum harmonics length of flow vector array
@@ -227,17 +231,14 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       static const Int_t      fPhiNumBinsMass = 60; // number of InvMass bins for phi distribution
       static const Int_t      fCascadesNumBinsMass = 120;
 
-      static const Int_t      fiNumIndexQA = 6; // QA indexes: 0: raw // 1: after AliEventCut //2: after New cut(Correlation SPD clusters – SPD tracklets and Correlation V0 online – V0 offline )  //3: after TPC cluster and V0 multiplicityCorrelation(GA) // 4:as 3(tight) 5:after TPC cluster and V0 multiplicity Correlation(HF)
+      static const Int_t      fiNumIndexQA = 2; // QA indexes: 0: before cuts // 1: after cuts
 
       const char*             GetSpeciesName(PartSpecies species) const;
       const char*             GetSpeciesLabel(PartSpecies species) const;
       const char*             GetEtaGapName(Double_t dEtaGap) const { return Form("%02.2g",10.0*dEtaGap); }
-      
+
       Bool_t                  InitializeTask(); // called once on beginning of task (within CreateUserObjects method)
       Bool_t                  LoadWeights(); // load weights histograms
-      Bool_t                  IsESESmallq2;
-      Bool_t                  IsESELargeq2;
-      Bool_t                  fUsePIDCorrection;
       Bool_t                  FillFlowWeight(AliVTrack* track, PartSpecies species) const; // fill distribution for per-particle flow weight
       Double_t                GetFlowWeight(AliVTrack* track, PartSpecies species) const; // extract per-particle flow weight from input file
       Bool_t                  FillFlowWeightCascade(const AliAODcascade* xi, PartSpecies species) const; // fill distribution for per-particle flow weight
@@ -275,7 +276,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Int_t                   IsV0aLambda(const AliAODv0* v0 = 0x0) const; // V0 selection: (A)Lambda specific
       AliPicoTrack*           MakeMother(const AliAODTrack* part1, const AliAODTrack* part2) const; // Combine two prongs into a mother particle stored in AliPicoTrack object
       void                    FillSparseCand(THnSparse* sparse, AliVTrack* track) const; // Fill sparse histogram for inv. mass distribution of candidates (V0s,Phi)
-      void                    FillSparseCandXi(THnSparse* sparse, AliVTrack* track) const; // Fill sparse histogram for inv. mass distribution of candidates (V0s,Phi)
 
 
       void                    FillEventsQA(Int_t iQAindex) const; // filling QA plots related to event selection
@@ -290,56 +290,58 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
-      void VZEROCalbration();
+
+
 //-----------------------------------------------------------------------------------------
-      Bool_t                  Is2018Data;//
-      Double_t q2Eta;
-      Bool_t                  IsGetq2;
-      Double_t                Getq2(Double_t dEta);
-      TString   fq2CutFilePath;
+
+   
       void                    FilterCascades() const;
 
       Bool_t                  IsCascadeSelected(const AliAODcascade *xi) const;
 
       Bool_t                  IsSelected(const AliAODTrack *t =0x0) const;
+
+
       void                    Propagate( Double_t vv[3],Double_t x[3],Double_t p[3],Double_t bz,Double_t sign) const;
       void                    IsCascadexi( const AliAODcascade* xi, Int_t& strangePar) const;
+      Double_t               PIDCorrectionHF(const AliAODTrack *track, const Int_t ispecies) const;
 
-       Double_t fXiPseMin = 0;
-       Double_t fXiPseMax = 0;
-       Double_t fV0RadiusXiMin = 0;
-       Double_t fV0RadiusXiMax = 0;
-       Double_t fXiRadiusMin = 0;
-       Double_t fXiRadiusMax = 0;
-       Double_t fdcaXiDaughtersMax = 0;
-       Double_t fXiCosOfPointingAngleMin = 0;
-       Double_t fdcaV0ToPrimaryVtxXiMin = 0;
-       Double_t fdcaBachToPrimaryVtxXiMin = 0;
-       Double_t fLambdaMassWind = 0;
-       Double_t fdcaV0DaughtersXi = 0;
-       Double_t fV0CosOfPointingAngleXiMin = 0;
-       Double_t fdcaPosToPrimaryVtxXiMin = 0;
-       Double_t fdcaNegToPrimaryVtxXiMin = 0;
+       Bool_t  Is2018Data;//
+       Double_t fXiPseMin;//
+       Double_t fXiPseMax;//
+       Double_t fV0RadiusXiMin;//
+       Double_t fV0RadiusXiMax;//
+       Double_t fXiRadiusMin;//
+       Double_t fXiRadiusMax;//
+       Double_t fdcaXiDaughtersMax;//
+       Double_t fXiCosOfPointingAngleMin;//
+       Double_t fdcaV0ToPrimaryVtxXiMin;//
+       Double_t fdcaBachToPrimaryVtxXiMin;//
+       Double_t fLambdaMassWind;//
+       Double_t fdcaV0DaughtersXi;//
+       Double_t fV0CosOfPointingAngleXiMin;//
+       Double_t fdcaPosToPrimaryVtxXiMin;//
+       Double_t fdcaNegToPrimaryVtxXiMin;//
        Bool_t   fCutCascadesrejectKinks; // Reject Kink cascade daughter tracks ?
-       Double_t fXiPIDsigma = 0;
+       Double_t fXiPIDsigma;//
 
        //----------------track-------------------------------------------------  
        Double_t fTPCNcls; // number of TPC clusters   
-       Double_t fTrackEta = 0;
-       Double_t fTrackPtMin = 0;
-       Bool_t   fRPFromTPC;
+       Double_t fTrackEta;//
+       Double_t fTrackPtMin;//
+       Bool_t   fRPFromTPC;//
 
 //----------------------------------------------------------------------------------------
-      TComplex                Q(Int_t n, Int_t p) const;
-      TComplex                QGapPos(Int_t n, Int_t p) const;
-      TComplex                QGapNeg(Int_t n, Int_t p) const;
-      TComplex                QGapMid(Int_t n, Int_t p) const;
-      TComplex                P(Int_t n, Int_t p) const;
-      TComplex                PGapPos(Int_t n, Int_t p) const;
-      TComplex                PGapNeg(Int_t n, Int_t p) const;
-      TComplex                S(Int_t n, Int_t p) const;
-      TComplex                SGapPos(Int_t n, Int_t p) const;
-      TComplex                SGapNeg(Int_t n, Int_t p) const;
+      TComplex                Q(Int_t n, Int_t p) const;//
+      TComplex                QGapPos(Int_t n, Int_t p) const;//
+      TComplex                QGapNeg(Int_t n, Int_t p) const;//
+      TComplex                QGapMid(Int_t n, Int_t p) const;//
+      TComplex                P(Int_t n, Int_t p) const;//
+      TComplex                PGapPos(Int_t n, Int_t p) const;//
+      TComplex                PGapNeg(Int_t n, Int_t p) const;//
+      TComplex                S(Int_t n, Int_t p) const;//
+      TComplex                SGapPos(Int_t n, Int_t p) const;//
+      TComplex                SGapNeg(Int_t n, Int_t p) const;//
 
       TComplex                Two(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (no eta gap)
       TComplex                TwoGap(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (with eta gap)
@@ -371,19 +373,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
       AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
       TFile*                  fFlowWeightsFile; //! source file containing weights
-      TFile*                  q2File;//!
-      TList*                  q2List;//!
-      TFile* Stepfile;//!
-      TList* V0CalListStep;//!
-      TH1D*fMultV0;//!
-      TProfile*fhQxV0A_pfx;//!
-      TProfile*fhQyV0A_pfx;//!
-      TProfile*fhQxV0C_pfx;//!
-      TProfile*fhQyV0C_pfx;//!
-      TH1D*                   histlowq2;//!
-      TH1D*                   histhighq2;//!
-
-
       TClonesArray*           fArrayMC; //! input list of MC particles
       Bool_t                  fMC; // is running on mc?
       Bool_t                  fInit; // initialization check
@@ -441,25 +430,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       UShort_t                fCutChargedNumTPCclsMin;  // (-) Minimal number of TPC clusters used for track reconstruction
       Double_t                fCutChargedDCAzMax; // (cm) Maximal DCA-z cuts for tracks (pile-up rejection suggested for LHC16)
       Double_t                fCutChargedDCAxyMax; // (cm) Maximal DCA-xy cuts for tracks (pile-up rejection suggested for LHC16)
-      TH1D *  histcent;//!
-
-      Int_t multESD;
-      Int_t nTracks;
-      Int_t multTPC32;
-      Int_t multTPC128;
-      Int_t multTOF;
-      Int_t multTrk;
-      Double_t multESDTPCdif;
-      Double_t v0Centr;
-      Double_t CL0Centr;
-      Double_t CL1Centr;
-      Float_t multV0Tot;
-      UShort_t multV0On;
-      Int_t nITSTrkls;
-      Int_t nITSCls;
-      Int_t multTPCout;
-      Int_t tpcClsTot;
-
       // cuts & selection: PID selection
       Bool_t                  fCutPIDUseAntiProtonOnly; // [kFALSE] check proton PID charge to select AntiProtons only
       Bool_t                  fCutPIDnSigmaCombinedTOFrejection; // [kTRUE] flag for rejection candidates in TPC+TOF pt region if TOF is not available (if true and no TOF track is skipped, otherwise only TPC is used)
@@ -500,15 +470,15 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Double_t                fCutV0sInvMassLambdaMin; // [1.08] (GeV/c2) min inv. mass window for selected (Anti)Lambda candidates
       Double_t                fCutV0sInvMassLambdaMax; // [1.16] (GeV/c2) max inv. mass window for selected (Anti)Lambda candidates
 
-      Double_t                fCutCascadesInvMassXiMin;
-      Double_t                fCutCascadesInvMassOmegaMin;
+      Double_t                fCutCascadesInvMassXiMin;//
+      Double_t                fCutCascadesInvMassOmegaMin;//
 
 
-      Double_t                fCutCascadesInvMassXiMax;
-      Double_t                fCutCascadesInvMassOmegaMax;
+      Double_t                fCutCascadesInvMassXiMax;//
+      Double_t                fCutCascadesInvMassOmegaMax;//
 
 
-      Double_t				        fCutV0sArmenterosAlphaK0sMin; // (alpha) min Armenteros alpha for K0s
+      Double_t		      fCutV0sArmenterosAlphaK0sMin; // (alpha) min Armenteros alpha for K0s
       Double_t                fCutV0sArmenterosAlphaLambdaMax; // (alpha) max Armenteros alpha for (Anti)Lambda
       Float_t                 fCutV0sK0sPionNumTPCSigmaMax; // (sigmaTPC) max number of TPC sigmas for kaon PID (K0s candidates)
       Float_t                 fCutV0sLambdaPionNumTPCSigmaMax;    // (sigmaTPC) max number of TPC sigma for pion PID (Lambda candidates)
@@ -524,7 +494,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TList*                  fQAV0s; //! V0s candidates list
       TList*                  fQAPhi; //! Phi candidates list
       TList*                  fFlowWeights; //! list for flow weights
-      //TList*                  fEventq2;//!list for Event q2
       TList*                  fListFlow[kUnknown]; //! flow lists
 
 
@@ -623,19 +592,10 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH1D*                   fhQAEventsNumSPDContrPV[fiNumIndexQA]; //!
       TH1D*                   fhQAEventsDistPVSPD[fiNumIndexQA]; //!
       TH1D*                   fhQAEventsSPDresol[fiNumIndexQA]; //!
-      TH2D*                   fhQAEventsfMult32vsCentr[fiNumIndexQA];//!
-      TH2D*                   fhQAEventsMult128vsCentr[fiNumIndexQA];//!
-      TH2D*                   fhQAEventsfMultTPCvsTOF[fiNumIndexQA];//!
-      TH2D*                   fhQAEventsfMultTPCvsESD[fiNumIndexQA];//!
-      //improve for 2018 data
-      TH2F*                   fCenCL0vsV0M[fiNumIndexQA];//!
-      TH2F*                   fCenCL1vsV0M[fiNumIndexQA];//!
-      TH2F*                   fCenCL0vsCL1[fiNumIndexQA];//!
-      TH2F*                   fMultV0onvsMultV0of[fiNumIndexQA];//!
-      TH2I*                   fSPclsvsSPDtrks[fiNumIndexQA];//!
-      TH2F*                   fMultV0vsMultTPCout[fiNumIndexQA];//!
-      TH2F*                   fMultV0vsNclsTPC[fiNumIndexQA];//!
-
+      TH2D*                   fhQAEventsfMult32vsCentr;//!
+      TH2D*                   fhQAEventsMult128vsCentr;//!
+      TH2D*                   fhQAEventsfMultTPCvsTOF;//!
+      TH2D*                   fhQAEventsfMultTPCvsESD;//!
       // QA: charged tracks
       TH1D*                   fhQAChargedMult[fiNumIndexQA];       //! number of AOD charged tracks distribution
       TH1D*                   fhQAChargedPt[fiNumIndexQA];         //! pT dist of charged tracks
@@ -654,12 +614,12 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH3D*                   fh3QAPIDnSigmaTPCTOFPtKaon[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
       TH3D*                   fh3QAPIDnSigmaTPCTOFPtProton[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
       // QA: V0s candidates
-      TH1D*		      fhQAV0sMultK0s[fiNumIndexQA];//! number of K0s candidates
-      TH1D*		      fhQAV0sMultLambda[fiNumIndexQA];	//! number of Lambda candidates
-      TH1D*		      fhQAV0sMultALambda[fiNumIndexQA];	//! number of Anti-Lambda candidates
-      TH1D*		      fhQAV0sRecoMethod[fiNumIndexQA];//! offline/online V0 reconstruction method
-      TH1D*		      fhQAV0sDaughterTPCRefit[fiNumIndexQA];//! Daughters TPC refit true/false
-      TH1D*		      fhQAV0sDaughterKinks[fiNumIndexQA];//! Daughters kinks true/false
+      TH1D*			  		        fhQAV0sMultK0s[fiNumIndexQA];	//! number of K0s candidates
+      TH1D*			  		        fhQAV0sMultLambda[fiNumIndexQA];	//! number of Lambda candidates
+      TH1D*			  		        fhQAV0sMultALambda[fiNumIndexQA];	//! number of Anti-Lambda candidates
+      TH1D*			  		        fhQAV0sRecoMethod[fiNumIndexQA];	//! offline/online V0 reconstruction method
+      TH1D*			  		        fhQAV0sDaughterTPCRefit[fiNumIndexQA];	//! Daughters TPC refit true/false
+      TH1D*			  		        fhQAV0sDaughterKinks[fiNumIndexQA];	//! Daughters kinks true/false
       TH1D*                   fhQAV0sDaughterNumTPCCls[fiNumIndexQA]; //! Daughter # of TPC findable clusters
       TH1D*                   fhQAV0sDaughterNumTPCFind[fiNumIndexQA]; //! Daughter # of TPC clusters
       TH1D*                   fhQAV0sDaughterNumTPCCrossRows[fiNumIndexQA]; //! Daughter # of TPC crossed rows
@@ -696,70 +656,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*				   	        fhQAV0sArmenterosK0s[fiNumIndexQA];	//! Armenteros-Podolanski plot for K0s candidates
       TH2D*			  		        fhQAV0sArmenterosLambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		        fhQAV0sArmenterosALambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for ALambda candidates
- 
-      TH2D*       fhEventq2TPC;//!Event q2 
-      TH2D*       fhVZEROChannel;//!gain equalisation
-      TH2D*       fhQxV0A;//!
-      TH2D*       fhQxV0C;//!
-      TH1D*       fhPsi2V0A;//!
-      TH2D*       fhQyV0A;//!
-      TH2D*       fhQyV0C;//!
-      TH1D*       fhPsi2V0C;//!
 
-      ClassDef(AliAnalysisTaskUniFlowMultiStrange, 7);
+      ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
 };
-/*
-AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
-fbDoRefs(0),
-fbDoPOIs(0),
-fiNumHarm(0),
-fiNumGaps(0),
-fiHarm(std::vector<Int_t>()),
-fdGaps(std::vector<Double_t>()),
-fsName(TString()),
-fsLabel(TString())
-{};
-// ============================================================================
-AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask(Bool_t refs, Bool_t pois, std::vector<Int_t> harm, std::vector<Double_t> gaps) :
-fbDoRefs(refs),
-fbDoPOIs(pois),
-fiNumHarm(0),
-fiNumGaps(0),
-fiHarm(harm),
-fdGaps(gaps),
-fsName(TString()),
-fsLabel(TString())
-{
-    // constructor of CorrTask
-    
-    fiNumHarm = harm.size();
-    fiNumGaps = gaps.size();
-    
-    if(fiNumHarm < 2) { return; }
-    
-    // generating name
-    TString sName = Form("<<%d>>(%d",fiNumHarm,fiHarm[0]);
-    for(Int_t i(1); i < fiNumHarm; ++i) { sName += Form(",%d",fiHarm[i]); }
-    sName += ")";
-    
-    if(fiNumGaps > 0) {
-        sName += Form("_%dsub(%.2g",fiNumGaps+1,fdGaps[0]);
-        for(Int_t i(1); i < fiNumGaps; ++i) { sName += Form(",%.2g",fdGaps[i]); }
-        sName += ")";
-    }
-    
-    // generating label
-    TString sLabel = Form("<<%d>>_{%d",fiNumHarm,fiHarm[0]);
-    for(Int_t i(1); i < fiNumHarm; ++i) { sLabel += Form(",%d",fiHarm[i]); }
-    sLabel += "}";
-    
-    if(fiNumGaps > 0) {
-        sLabel += Form(" %dsub(|#Delta#eta| > %.2g",fiNumGaps+1,fdGaps[0]);
-        for(Int_t i(1); i < fiNumGaps; ++i) { sLabel += Form(", |#Delta#eta| > %.2g",fdGaps[i]); }
-        sLabel += ")";
-    }    
-    fsName = sName;
-    fsLabel = sLabel;
-}
-*/
+
+
 #endif
