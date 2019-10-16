@@ -620,49 +620,53 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
 
         if (fillHists && fPtQA) {
           TString PtQAName = Form("PtQA_Particle%d_Particle%d", iPar1, iPar2);
-          fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 50,
-                                        0, 10, 50, 0, 10);
+          fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 50, 0,
+                                        10, 50, 0, 10);
           fPtQADist[Counter]->GetXaxis()->SetTitle(
               Form("#it{p}_{T} Particle %d (GeV/#it{c})", iPar1));
           fPtQADist[Counter]->GetYaxis()->SetTitle(
               Form("#it{p}_{T} Particle %d (GeV/#it{c})", iPar2));
           fPairQA[Counter]->Add(fPtQADist[Counter]);
 
-          TString PtQASEPartOneName = Form("PtSEPartOne_Particle%d_Particle%d", iPar1,
-                                           iPar2);
+          TString PtQASEPartOneName = Form("PtSEPartOne_Particle%d_Particle%d",
+                                           iPar1, iPar2);
           fPtQADistSEPartOne[Counter] = new TH2F(PtQASEPartOneName.Data(),
                                                  PtQASEPartOneName.Data(), 375,
-                                                 0, 7.5, multbins, 1, multbins + 1);
+                                                 0, 7.5, multbins, 1,
+                                                 multbins + 1);
           fPtQADistSEPartOne[Counter]->GetXaxis()->SetTitle(
               Form("#it{p}_{T} Particle One (GeV/#it{c})", iPar1));
           fPtQADistSEPartOne[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistSEPartOne[Counter]);
 
-          TString PtQASEPartTwoName = Form("PtSEPartTwo_Particle%d_Particle%d", iPar1,
-                                           iPar2);
+          TString PtQASEPartTwoName = Form("PtSEPartTwo_Particle%d_Particle%d",
+                                           iPar1, iPar2);
           fPtQADistSEPartTwo[Counter] = new TH2F(PtQASEPartTwoName.Data(),
                                                  PtQASEPartTwoName.Data(), 375,
-                                                 0, 7.5, multbins, 1, multbins + 1);
+                                                 0, 7.5, multbins, 1,
+                                                 multbins + 1);
           fPtQADistSEPartTwo[Counter]->GetXaxis()->SetTitle(
               Form("#it{p}_{T} Particle Two (GeV/#it{c})", iPar1));
           fPtQADistSEPartTwo[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistSEPartTwo[Counter]);
 
-          TString PtQAMEPartOneName = Form("PtMEPartOne_Particle%d_Particle%d", iPar1,
-                                           iPar2);
+          TString PtQAMEPartOneName = Form("PtMEPartOne_Particle%d_Particle%d",
+                                           iPar1, iPar2);
           fPtQADistMEPartOne[Counter] = new TH2F(PtQAMEPartOneName.Data(),
                                                  PtQAMEPartOneName.Data(), 375,
-                                                 0, 7.5, multbins, 1, multbins + 1);
+                                                 0, 7.5, multbins, 1,
+                                                 multbins + 1);
           fPtQADistMEPartOne[Counter]->GetXaxis()->SetTitle(
               Form("#it{p}_{T} Particle One (GeV/#it{c})", iPar1));
           fPtQADistMEPartOne[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistMEPartOne[Counter]);
 
-          TString PtQAMEPartTwoName = Form("PtMEPartTwo_Particle%d_Particle%d", iPar1,
-                                           iPar2);
+          TString PtQAMEPartTwoName = Form("PtMEPartTwo_Particle%d_Particle%d",
+                                           iPar1, iPar2);
           fPtQADistMEPartTwo[Counter] = new TH2F(PtQAMEPartTwoName.Data(),
                                                  PtQAMEPartTwoName.Data(), 375,
-                                                 0, 7.5, multbins, 1, multbins + 1);
+                                                 0, 7.5, multbins, 1,
+                                                 multbins + 1);
           fPtQADistMEPartTwo[Counter]->GetXaxis()->SetTitle(
               Form("#it{p}_{T} Particle Two (GeV/#it{c})", iPar1));
           fPtQADistMEPartTwo[Counter]->GetYaxis()->SetTitle("Multiplicity");

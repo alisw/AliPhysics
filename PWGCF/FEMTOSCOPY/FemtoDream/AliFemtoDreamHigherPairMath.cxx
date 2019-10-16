@@ -44,7 +44,7 @@ AliFemtoDreamHigherPairMath& AliFemtoDreamHigherPairMath::operator=(
   fBField = math.fBField;
   fDeltaPhiEtaMax = math.fDeltaPhiEtaMax;
   fRandom = math.fRandom;
-  fPi=TMath::Pi();
+  fPi = TMath::Pi();
   return *this;
 }
 
