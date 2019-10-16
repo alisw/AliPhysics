@@ -17,7 +17,7 @@ class AliUniFlowCorrTask : public TObject
         virtual ~AliUniFlowCorrTask() { fiHarm.clear(); fdGaps.clear(); }
 
         Bool_t      HasGap() const { return (Bool_t) fiNumGaps; }; // check if Gap
-        void        Print() const; // print AliUniFlowCorrTask properties
+        void        PrintTask() const; // print AliUniFlowCorrTask properties
 
         Bool_t                fbDoRefs; // which particles are procesed (RFPs / POIs / both )
         Bool_t                fbDoPOIs; // which particles are procesed (RFPs / POIs / both )
