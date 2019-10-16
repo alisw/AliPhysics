@@ -10,6 +10,8 @@
 /// * LambdaN
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
 #pragma link C++ class AliAnalysisTaskLambdaNRun2+;
+#pragma link C++ class AliAnalysisTaskLambdaNRun2::AnalysisV0+;
+#pragma link C++ class AliAnalysisTaskLambdaNRun2::AnalysisEvent+;
 /// * LambdaNN
 #pragma link C++ class AliAnalysisTaskLNNntuple+;
 #pragma link C++ class AliAnalysisTaskLNNv0Bkg+;
