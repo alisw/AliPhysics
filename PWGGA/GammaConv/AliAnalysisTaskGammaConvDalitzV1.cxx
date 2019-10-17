@@ -3411,7 +3411,6 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetdeltaPhi(AliDalitzAODESD *trackele
         AliAODVertex *vtxAODPhi = (AliAODVertex*)fAODESDEvent->GetPrimaryVertex();
         TString title=vtxAODPhi->GetTitle();
         if(!title.Contains("VertexerTracks")){
-            delete title;
             return 0.8;
         }
         trackpositronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),momPos);
