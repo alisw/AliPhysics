@@ -4,7 +4,8 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
                                                                      TString filenameHistME = "",
                                                                      TString filenameHistTrEff = "",
                                                                      TString postname = "",
-                                                                     Double_t maxPt=60.)
+                                                                     Double_t maxPt=60.,
+                                                                     TString filenameHistMEPr = "")
 {
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -38,6 +39,8 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
     
   if(ch==AliAnalysisTaskTrackingSysPropagation::kDstartoKpipi) analysiscuts = (AliRDHFCuts*)filecuts->Get("DStartoKpipiCuts");
   else if(ch==AliAnalysisTaskTrackingSysPropagation::kD0toKpi) analysiscuts = (AliRDHFCuts*)filecuts->Get("D0toKpiCuts");
+  else if(ch==AliAnalysisTaskTrackingSysPropagation::kLctopK0s) analysiscuts = (AliRDHFCuts*)filecuts->Get("LctoK0spCuts");
+  else if(ch==AliAnalysisTaskTrackingSysPropagation::kLctopKpi) analysiscuts = (AliRDHFCuts*)filecuts->Get("LctopKpiAnalysisCuts");
   else analysiscuts = (AliRDHFCuts*)filecuts->Get("AnalysisCuts");
     
   TFile* fileMESys;
@@ -52,7 +55,12 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
   TH1F *histoME = (TH1F*)fileMESys->Get("h");
   if(!histoME){ Printf("FATAL: Histo with ME syst. not found: analysis will not start!\n"); return NULL;}
     
-    
+  TH1F *histoMEPr = 0x0;
+  if(!filenameHistMEPr.EqualTo("")) {
+    histoMEPr = (TH1F*)fileMESys->Get("hPr");
+    if(!histoMEPr){ Printf("FATAL: Histo with ME syst. for proton not found: analysis will not start!\n"); return NULL;}
+  }
+  
   TFile* fileTrEffSys;
   if( filenameHistTrEff.EqualTo("") ) {
     Printf("FATAL: Histo with TrEff syst. not found: analysis will not start!\n"); return NULL;
@@ -66,7 +74,7 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
   if(!histoTrEff) {Printf("FATAL: Histo TrEff not found: analysis will not start!\n"); return NULL;}
     
     
-  AliAnalysisTaskTrackingSysPropagation *Task = new AliAnalysisTaskTrackingSysPropagation(ch, analysiscuts, histoME, histoTrEff);
+  AliAnalysisTaskTrackingSysPropagation *Task = new AliAnalysisTaskTrackingSysPropagation(ch, analysiscuts, histoME, histoTrEff, histoMEPr);
     
   Task->SetMaximumPt(maxPt);
   Task->SetDebugLevel(1);
