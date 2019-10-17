@@ -336,9 +336,9 @@ void AliNanoAODReplicator::FilterMC(const AliAODEvent& source)
     TIter nextV0(fV0s);
     AliAODv0* v0;
     // Get the PDG codes we want to match to from the cut object
-    std::vector<int> pdgCodes;
+    std::vector<int> pdgCodesV0;
     if (fMCParticleCuts) {
-      pdgCodes = static_cast<AliAnalysisNanoAODMCParticleCuts*>(fMCParticleCuts)->GetKeepV0s();
+      pdgCodesV0 = static_cast<AliAnalysisNanoAODMCParticleCuts*>(fMCParticleCuts)->GetKeepV0s();
     }
     while ((v0 = static_cast<AliAODv0*>(nextV0()))) {
       // Get the daughter labels
@@ -347,7 +347,7 @@ void AliNanoAODReplicator::FilterMC(const AliAODEvent& source)
         SelectParticle(trk->GetLabel());
       }
       // loop over all PDG codes we want to match the V0 to
-      for (auto it : pdgCodes) {
+      for (auto it : pdgCodesV0) {
         int label = v0->MatchToMC(TMath::Abs(it), mcParticles);
         while (label >= 0) {
           SelectParticle(label);
@@ -364,11 +364,46 @@ void AliNanoAODReplicator::FilterMC(const AliAODEvent& source)
     }
 
     // loop on (kept) cascades to find their ancestors
+    std::vector<int> pdgCodesV0Cascade;
+    if (fMCParticleCuts) {
+      pdgCodesV0Cascade =
+          static_cast<AliAnalysisNanoAODMCParticleCuts*>(fMCParticleCuts)
+              ->GetKeepV0sCascades();
+    }
     TIter nextCascade(fCascades);
     AliAODcascade* casc;
 
     while ((casc = static_cast<AliAODcascade*>(nextCascade()))) {
-      // TODO
+      AliNanoAODTrack *nTrackXi = (AliNanoAODTrack*) (casc->GetDaughter(1));
+      AliNanoAODTrack *pTrackXi = (AliNanoAODTrack*) (casc->GetDaughter(0));
+      AliNanoAODTrack *bachTrackXi =
+          (AliNanoAODTrack*) (casc->GetDecayVertexXi()->GetDaughter(0));
+      SelectParticle(nTrackXi->GetLabel());
+      SelectParticle(pTrackXi->GetLabel());
+      SelectParticle(bachTrackXi->GetLabel());
+      for (auto it : pdgCodesV0Cascade) {
+        // You might think this is wrong, its not ....
+        int MamaLauda = casc->MatchToMC(TMath::Abs(it), mcParticles);
+        auto mamaBachPart = ((AliAODMCParticle*) mcParticles->At(
+            bachTrackXi->GetLabel()));
+        int MamaBach = (mamaBachPart) ? mamaBachPart->GetMother() : -1;
+        // Is it a brother from another mother
+        if (MamaLauda > 0 && MamaLauda == MamaBach) {
+          int label = MamaLauda;
+          while (label >= 0) {
+            SelectParticle (label);
+            AliAODMCParticle* mother =
+                static_cast<AliAODMCParticle*>(mcParticles->UncheckedAt(label));
+            if (!mother) {
+              AliError(
+                  Form("Got a null mother ! Check that ! (label %d", label));  // FIXME: I think this error is not needed
+              label = -1;
+            } else {
+              label = mother->GetMother();  // do not only keep particles which created a track, but all their mothers
+            }
+          }
+        }
+      }
     }
 
     // loop on (kept) photons to find their ancestors
