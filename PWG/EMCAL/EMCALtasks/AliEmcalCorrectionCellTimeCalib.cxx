@@ -31,6 +31,7 @@ AliEmcalCorrectionCellTimeCalib::AliEmcalCorrectionCellTimeCalib() :
   ,fCalibrateTimeL1Phase(kFALSE)
   ,fDoMergedBCs(kFALSE)
   ,fDoCalibrateLowGain(kFALSE)
+  ,fDoCalibMergedLG(kFALSE)
   ,fUseAutomaticTimeCalib(1)
 {
 }
@@ -63,9 +64,11 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   if (fDoMergedBCs)
     fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
 
-  GetProperty("doCalibrateLowGain", fDoCalibrateLowGain);    
+  GetProperty("doCalibrateLowGain", fDoCalibrateLowGain);
 
-  if (fDoCalibrateLowGain)
+  GetProperty("doCalibMergedLG", fDoCalibMergedLG);    
+
+  if (fDoCalibrateLowGain || fDoCalibMergedLG)
     fRecoUtils->SwitchOnLG();
   else
     fRecoUtils->SwitchOffLG();
@@ -295,6 +298,72 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
       hLG->SetDirectory(0);
       fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(1,hLG);//LG cells
     }
+  }
+
+  if(fDoCalibMergedLG){
+
+    std::unique_ptr<AliOADBContainer> contTimeCalibLG;
+    std::unique_ptr<TFile> timeCalibFileLG;
+    if (fBasePath!="")
+    { //if fBasePath specified in the ->SetBasePath()
+      AliInfo(Form("Loading time calibration OADB from given path %s",fBasePath.Data()));
+      
+      timeCalibFileLG = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTimeCalibMergedBCLG.root",fBasePath.Data()),"read"));
+      if (!timeCalibFileLG || timeCalibFileLG->IsZombie())
+      {
+        AliFatal(Form("EMCALTimeCalibMergedBCLG.root was not found in the path provided: %s",fBasePath.Data()));
+        return 0;
+      }
+      
+      contTimeCalibLG = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(timeCalibFileLG->Get("AliEMCALTimeCalib")));
+    }
+    else
+    { // Else choose the one in the $ALICE_PHYSICS directory
+      AliInfo("Loading time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
+      
+      timeCalibFileLG = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeCalibMergedBCLG.root").data(),"read"));
+      if (!timeCalibFileLG || timeCalibFileLG->IsZombie())
+      {
+        AliFatal("OADB/EMCAL/EMCALTimeCalibMergedBCLG.root was not found");
+        return 0;
+      }
+      
+      contTimeCalibLG = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(timeCalibFileLG->Get("AliEMCALTimeCalib")));
+    }
+    if(!contTimeCalibLG){
+      AliError("No OADB container found");
+      return 0;
+    }
+    contTimeCalibLG->SetOwner(true);
+    
+    TObjArray *arrayBCLG=(TObjArray*)contTimeCalibLG->GetObject(runBC);
+    if (!arrayBCLG)
+    {
+      AliError(Form("No external time calibration set for run number: %d", runBC));
+      return 2;
+    }
+     
+    TObjArray *arrayBCpassLG=(TObjArray*)arrayBCLG->FindObject(pass);
+    if (!arrayBCpassLG)
+    {
+      AliError(Form("No external time calibration set for: %d -%s", runBC,pass.Data()));
+      return 2;
+    }
+    
+    arrayBCpassLG->Print();
+
+    TH1S *hLG = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(1);//LG cells
+    if (hLG)
+      delete hLG;
+     
+    hLG = (TH1S*)arrayBCpassLG->FindObject("hAllTimeAvLG");
+      
+    if (!hLG)
+      AliError("Can not get hAllTimeAvLG");
+        
+    hLG->SetDirectory(0);
+    fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(1,hLG);//LG cells
+
   }
   
   return 1;
