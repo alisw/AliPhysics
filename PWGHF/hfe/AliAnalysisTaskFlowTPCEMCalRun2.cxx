@@ -2001,6 +2001,15 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	//cout << "Charge = " << track -> Charge() << endl;
 	
+	if(clustMatch && clustMatch->IsEMCAL())
+	{
+	 Double_t clustMatchE = clustMatch->E();
+	 if(track->P()>0) fvalueElectron[4] = clustMatchE/track->P();
+        }
+        fSparseElectron->Fill(fvalueElectron);
+
+
+
 	Double_t emcphi = -999, emceta = -999;        
 
 	if(clustMatch && clustMatch->IsEMCAL())
@@ -2047,7 +2056,6 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		m20 = clustMatch->GetM20();
 
 		//add by sudo
-        	fvalueElectron[4] = eop;
 
 		if(track->Pt()>2.0){
 			fHistNsigEop->Fill(eop,fTPCnSigma);
@@ -2205,7 +2213,6 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 			fHisthadron -> Fill(eop,track->Pt());
 			fDCAxy_Pt_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
-                        fSparseElectron->Fill(fvalueElectron);
 
 		}
 
