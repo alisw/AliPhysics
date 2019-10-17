@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnalysisTaskUpcPhi+;
 #pragma link C++ class AliAnalysisTaskUpcRho0+;
 #pragma link C++ class AliAnalysisTaskUpcTree+;
+#pragma link C++ class AliAnalysisTaskADin2018+;
 #pragma link C++ class AliAnalysisTaskUPCforward+;
 #pragma link C++ class AliAnalysisTaskUPCforwardMC+;
 #pragma link C++ class AliAnalysisTaskUPCforward2+;
