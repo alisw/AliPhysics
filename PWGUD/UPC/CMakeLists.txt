@@ -40,6 +40,7 @@ set(SRCS
     AliAnalysisTaskUpcRho0.cxx
 		AliAnalysisTaskUpcTree.cxx
 		AliAnalysisTaskADin2018.cxx
+		AliAnalysisTaskForMCpPb.cxx
 		AliAnalysisTaskUPCforward.cxx
 		AliAnalysisTaskUPCforwardMC.cxx
 		AliAnalysisTaskUPCforward2.cxx
