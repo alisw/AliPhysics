@@ -84,6 +84,8 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb()
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
+      fInvariantMassDistributionRapidityBinsH{ 0, 0 },
+      fInvariantMassDistributionMoreRapidityBinsH{ 0, 0, 0 },
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fRunNumberTriggerCMUP11ClassH(0),
@@ -155,6 +157,8 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb(const char* name)
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
+      fInvariantMassDistributionRapidityBinsH{ 0, 0 },
+      fInvariantMassDistributionMoreRapidityBinsH{ 0, 0, 0 },
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fRunNumberTriggerCMUP11ClassH(0),
@@ -277,6 +281,22 @@ void AliAnalysisTaskUPCforwardpPb::UserCreateOutputObjects()
 
   fInvariantMassDistributionH = new TH1F("fInvariantMassDistributionH", "fInvariantMassDistributionH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionH);
+
+  for( Int_t iRapidity = 0; iRapidity < 2; iRapidity++ ) {
+    fInvariantMassDistributionRapidityBinsH[iRapidity]
+            = new TH1F( Form("fInvariantMassDistributionRapidityBinsH_%d", iRapidity),
+                        Form("fInvariantMassDistributionRapidityBinsH_%d", iRapidity),
+                        2000, 0, 20);
+    fOutputList->Add(fInvariantMassDistributionRapidityBinsH[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ) {
+    fInvariantMassDistributionMoreRapidityBinsH[iRapidity]
+            = new TH1F( Form("fInvariantMassDistributionMoreRapidityBinsH_%d", iRapidity),
+                        Form("fInvariantMassDistributionMoreRapidityBinsH_%d", iRapidity),
+                        2000, 0, 20);
+    fOutputList->Add(fInvariantMassDistributionMoreRapidityBinsH[iRapidity]);
+  }
 
   fEntriesAgainstRunNumberH = new TH1F("fEntriesAgainstRunNumberH", "fEntriesAgainstRunNumberH", 10000, 290000, 300000);
   fOutputList->Add(fEntriesAgainstRunNumberH);
@@ -911,6 +931,31 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
   }
   fInvariantMassDistributionH->Fill(possibleJPsi.Mag());
   fInvariantMassDistributionExtendedH->Fill(possibleJPsi.Mag());
+
+  /**
+   * - Pt-integrated analysis
+   * - in 2 rapidity bins.
+   * -
+   */
+  if (        possibleJPsi.Rapidity() > -4.00 && possibleJPsi.Rapidity() <= -3.25 ) {
+    fInvariantMassDistributionRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -2.50 ) {
+    fInvariantMassDistributionRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+  }
+
+  /**
+   * - Pt-integrated analysis
+   * - in 3 rapidity bins.
+   * -
+   */
+  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+    fInvariantMassDistributionMoreRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+    fInvariantMassDistributionMoreRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+    fInvariantMassDistributionMoreRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+  }
+
 
 
   /* - Now we are evaluating the pt of the dimuon pair. Generally speaking,

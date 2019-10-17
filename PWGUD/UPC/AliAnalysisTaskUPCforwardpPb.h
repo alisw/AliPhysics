@@ -139,8 +139,14 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
                                 /**
                                  * This histogram records the invariant mass
                                  * distribution of the dimuon system.
+                                 *
+                                 * Rapidity Bins => 2 of them
+                                 * More Bins     => 3 of them!
                                  */
-        TH1F*                   fInvariantMassDistributionH;         //!
+        TH1F*                   fInvariantMassDistributionH;                      //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsH[2];       //!
+        TH1F*                   fInvariantMassDistributionMoreRapidityBinsH[3];   //!
+
 
                                 /**
                                  * This histogram records the number of entries
@@ -405,7 +411,7 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardpPb, 1);
+        ClassDef(AliAnalysisTaskUPCforwardpPb, 2);
 };
 
 #endif
