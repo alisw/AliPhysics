@@ -2037,6 +2037,12 @@ m	   auto fZ = spdVtx->GetZ();
 	 FMDcutcpar0=2.3;
 	 FMDcutcpar1=300;
 	 break;
+       case 5:
+	 FMDcutapar0=1.3;
+	 FMDcutapar1=400;
+	 FMDcutcpar0=2.;
+	 FMDcutcpar1=400;
+	 break;
        default: break;
        }
        
@@ -2122,8 +2128,8 @@ if(fAnaMode=="TPCTPC"){
  
  DumpTObjTable("End of TPC/ITS track fill");
 
- // FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
- // FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
+ FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
+ FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
  DumpTObjTable("End of fill  Correlation");
  
  selectedTracksLeading->Clear();
