@@ -128,7 +128,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	fTOFmask(0) 
 
 {
-  for(Int_t i = 0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
+  for(Int_t i = 0; i<NTRIGGERINPUTS; i++) fTriggerInputsMC[i] = kFALSE;
+  for(Int_t i = 0; i<NTRIGGERS; i++) fTriggers[i] = kFALSE;
   DefineOutput(1, TList::Class());
 
 }//AliAnalysisTaskUpcNano_MB
@@ -169,9 +170,9 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   for (Int_t i = 0; i<9; i++) fHistEvents->GetXaxis()->SetBinLabel(i+1,gCutName[i].Data());
   fOutputList->Add(fHistEvents);
   
-  TString gTriggerName[12] = {"0VBA","0VBC","0UBA","0UBC","0OMU","0OM2","0SMB","0SM2","0STP","0SH1","0STG","Offline OMU"};		  
-  fHistMCTriggers = new TH1D("fHistMCTriggers","Fired MC trigger inputs",12,0.5,12.5);
-  for (Int_t i = 0; i<12; i++) fHistMCTriggers->GetXaxis()->SetBinLabel(i+1,gTriggerName[i].Data());
+  TString gTriggerName[NTRIGGERINPUTS+1] = {"0VBA","0VBC","0UBA","0UBC","0OMU","0OM2","0SMB","0SM2","0STP","0SH1","0STG","Offline OMU"};
+  fHistMCTriggers = new TH1D("fHistMCTriggers","Fired MC trigger inputs",NTRIGGERINPUTS+1,0.5,NTRIGGERINPUTS+1.5);
+  for (Int_t i = 0; i<NTRIGGERINPUTS+1; i++) fHistMCTriggers->GetXaxis()->SetBinLabel(i+1,gTriggerName[i].Data());
   fOutputList->Add(fHistMCTriggers);
   
   fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
@@ -187,7 +188,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeJPsi ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
-  fTreeJPsi ->Branch("fTriggers", &fTriggers, "fTriggers[10]/O");
+  fTreeJPsi ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",NTRIGGERS));
   fTreeJPsi ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
   fTreeJPsi ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
   fTreeJPsi ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
@@ -197,7 +198,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[6]/F");
   
   if(isMC){
-	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
+	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O",NTRIGGERINPUTS));
 	}
   fOutputList->Add(fTreeJPsi);
 
@@ -216,7 +217,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreePsi2s ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
-  fTreePsi2s ->Branch("fTriggers", &fTriggers, "fTriggers[10]/O");
+  fTreePsi2s ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",NTRIGGERS));
   fTreePsi2s ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
   fTreePsi2s ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
   fTreePsi2s ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
@@ -225,7 +226,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
   fTreePsi2s ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[4]/F");
   if(isMC){ 
-    fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
+    fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O",NTRIGGERINPUTS));
     }
   fOutputList->Add(fTreePsi2s);
     
@@ -363,7 +364,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     RunMC(fEvent);
     }
   
-  for(Int_t i = 0; i<11; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
+  for(Int_t i = 0; i<NTRIGGERINPUTS; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
     
   if(isESD){
   	AliESDZDC *fZDCdata = (AliESDZDC*)fEvent->GetZDCData();
@@ -794,7 +795,7 @@ Bool_t AliAnalysisTaskUpcNano_MB::IsSTGFired(TBits bits, Int_t dphiMin, Int_t dp
 void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
 {
   
-  for(Int_t i=0; i<11; i++) fTriggerInputsMC[i] = kFALSE;
+  for(Int_t i=0; i<NTRIGGERINPUTS; i++) fTriggerInputsMC[i] = kFALSE;
   UShort_t fTriggerAD = fEvent->GetADData()->GetTriggerBits();
   UShort_t fTriggerVZERO = fEvent->GetVZEROData()->GetTriggerBits();
   UInt_t fL0inputs = fEvent->GetHeader()->GetL0TriggerInputs();

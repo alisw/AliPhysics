@@ -3,6 +3,8 @@
 /* $Id$ */
 
 #ifndef ALIANALYSISTASKUPCNano_MB_H
+const Int_t NTRIGGERINPUTS = 11;
+const Int_t NTRIGGERS = 10;
 #define ALIANALYSISTASKUPCNano_MB_H
 
 class TH1;
@@ -75,7 +77,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   
   Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma, fTrackLenght[6];
   Int_t fChannel, fSign, fRunNumber, fADAdecision, fADCdecision,fV0Adecision, fV0Cdecision, fNGoodTracksITS, fNGoodTracksLoose;
-  Bool_t fTriggerInputsMC[11], fTriggers[10], fInEtaGen, fInEtaRec;
+  Bool_t fTriggerInputsMC[NTRIGGERINPUTS], fTriggers[NTRIGGERS], fInEtaGen, fInEtaRec;
   
   TFile *fSPDfile;
   TFile *fTOFfile;
