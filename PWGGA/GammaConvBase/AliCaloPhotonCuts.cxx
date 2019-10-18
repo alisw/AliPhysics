@@ -1957,12 +1957,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   // Check wether timing is ok
   if (fUseTimeDiff){
-    if( (fUseTimingEfficiencyMCSimCluster==0)||(fUseTimingEfficiencyMCSimCluster==1) ){
-      if( (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff) && !(isMC>0)){
-        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
-        return kFALSE;
-      }
-    } else if(fUseTimingEfficiencyMCSimCluster==2){
+    if(fUseTimingEfficiencyMCSimCluster==2){
       if ( cluster->E() < 5) {
         if( (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff) && !(isMC>0)){
           if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
@@ -1973,6 +1968,11 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
           return kFALSE;
         }
+      }
+    } else {
+      if( (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff) && !(isMC>0)){
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
+        return kFALSE;
       }
     }
     if( ((fUseTimingEfficiencyMCSimCluster==1) || (fUseTimingEfficiencyMCSimCluster==2)) && isMC && cluster->E() < 4 && cluster->E() > fMinEnergy ){
@@ -2504,16 +2504,15 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if (fUseM20 && (cluster->GetM20() < fMinM20 || cluster->GetM20() > fMaxM20)){continue;}
     if (fUseDispersion && (cluster->GetDispersion() > fMaxDispersion)){continue;}
     //cluster within timing cut
-    if( (fUseTimingEfficiencyMCSimCluster==0)||(fUseTimingEfficiencyMCSimCluster==1) ){
-      if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff)){continue;}
-    }else if( fUseTimingEfficiencyMCSimCluster==2 ){
+    if( fUseTimingEfficiencyMCSimCluster==2 ){
       if ( cluster->E() < 5 ) {
         if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff)){continue;}
       } else {
         if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiffHighPt || cluster->GetTOF() > fMaxTimeDiffHighPt)){continue;}
       }
+    } else {
+      if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff)){continue;}
     }
-
     Int_t largestCellicol = -1, largestCellirow = -1;
     Int_t largestCellID = FindLargestCellInCluster(cluster.get(),event);
     if(largestCellID==-1) AliFatal("FillHistogramsExtendedQA: FindLargestCellInCluster found cluster with NCells<1?");
@@ -2608,13 +2607,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       if( calculatedDiff ){
         Float_t dist1D = TMath::Sqrt(TMath::Power(etaCluster-etaclusterMatched,2)+TMath::Power(phiCluster-phiclusterMatched,2));
         if( !(isMC>0) ){
-          if( (fUseTimingEfficiencyMCSimCluster==0)||(fUseTimingEfficiencyMCSimCluster==1) ){
-            if( (clusterMatched->GetTOF() > fMinTimeDiff && clusterMatched->GetTOF() < fMaxTimeDiff) ){
-              fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
-              fHistClusterDistance1DInTimeCut->Fill(dist1D);
-            }
-            else fHistClusterDistanceOutTimeCut->Fill(rowdiff,coldiff);
-          }else if( (fUseTimingEfficiencyMCSimCluster==2) ){
+          if( (fUseTimingEfficiencyMCSimCluster==2) ){
             if ( cluster->E() < 5) {
               if( (clusterMatched->GetTOF() > fMinTimeDiff && clusterMatched->GetTOF() < fMaxTimeDiff) ){
                 fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
@@ -2629,6 +2622,12 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
               }
               else fHistClusterDistanceOutTimeCut->Fill(rowdiff,coldiff);
             }
+          } else {
+            if( (clusterMatched->GetTOF() > fMinTimeDiff && clusterMatched->GetTOF() < fMaxTimeDiff) ){
+              fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
+              fHistClusterDistance1DInTimeCut->Fill(dist1D);
+            }
+            else fHistClusterDistanceOutTimeCut->Fill(rowdiff,coldiff);
           }
         }else{
           fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
