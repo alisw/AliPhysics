@@ -153,6 +153,7 @@ public:
     void SetJetAlgorithm(Int_t i) {fJetAlgorithm = i; }
     void SetSubJetAlgorithm(Int_t i) {fSubJetAlgorithm = i; }
     void SetMinJetPt(Double_t d) {fMinJetPt = d; }
+    void SetTrackingEfficiency(Double_t d) {fTrackingEfficiency = d;}
   
     void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
     void SetGoodTrackEtaRange(Double_t d) { fGoodTrackEtaRange = d; }
@@ -381,6 +382,7 @@ private:
     Int_t                   fJetAlgorithm;                         //Setting the jet finding algorithm
     Int_t                   fSubJetAlgorithm;                      //Setting the jet finding algorithm
     Double_t                fMinJetPt;                             //Setting the jet finding min pT
+    Double_t                fTrackingEfficiency;                   //Setting the jet finding tracking efficiency
   
     Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackEtaRange;                    /// Setting eta-range for bachelor on-the-fly reconstruction candidate
@@ -442,6 +444,7 @@ private:
     
     bool                    fFillJets;                             //FillJetInfo
     bool                    fDoJetSubstructure;                    //FillJetSubstructure
+    
   
     bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
     int fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
