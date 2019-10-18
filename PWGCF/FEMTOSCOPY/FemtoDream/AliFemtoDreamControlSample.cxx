@@ -148,7 +148,7 @@ void AliFemtoDreamControlSample::CorrelatedSample(
     auto itPart2 = SameParticle ? itPart1 + 1 : part2.begin();
     while (itPart2 != part2.end()) {
       if (fDoDeltaEtaDeltaPhiCut && CPR) {
-        if (fHigherMath->PassesPairSelection(&(*itPart1), &(*itPart2), false)) {
+        if (fHigherMath->PassesPairSelection(*itPart1, *itPart2, false)) {
           ++itPart2;
           continue;
         }
@@ -156,8 +156,7 @@ void AliFemtoDreamControlSample::CorrelatedSample(
       RelativeK = fHigherMath->FillSameEvent(HistCounter, fMult, fCent,
                                              itPart1->GetMomentum(), PDGPart1,
                                              itPart2->GetMomentum(), PDGPart2);
-      fHigherMath->MassQA(HistCounter, RelativeK, itPart1->GetInvMass(),
-                          itPart2->GetInvMass());
+      fHigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
       fHigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, PDGPart1, *itPart2,
                                    PDGPart2, RelativeK, true);
 
@@ -199,7 +198,7 @@ void AliFemtoDreamControlSample::PhiSpinning(
       //in this case it does NOT work as intended since the new phi of the particle has to
       //be considered for this cut
       if (fDoDeltaEtaDeltaPhiCut && CPR) {
-        if (fHigherMath->PassesPairSelection(&(*itPart1), &(*itPart2), true)) {
+        if (fHigherMath->PassesPairSelection(*itPart1, *itPart2, true)) {
           ++itPart2;
           continue;
         }
@@ -259,7 +258,7 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
       //be considered for this cut
       if (fDoDeltaEtaDeltaPhiCut && CPR) {
         if (fDoDeltaEtaDeltaPhiCut && CPR) {
-          if (fHigherMath->PassesPairSelection(*itPart1, *itPart2, true)) {
+          if (fHigherMath->PassesPairSelection(*(*itPart1), *(*itPart2), true)) {
             ++itPart2;
             continue;
           }
@@ -272,7 +271,7 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
                                               (*itPart2)->GetMomentum(),
                                               PDGPart2,
                                               AliFemtoDreamCollConfig::kNone);
-      fHigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, PDGPart1, *itPart2,
+      fHigherMath->MEDetaDPhiPlots(HistCounter, *(*itPart1), PDGPart1, *(*itPart2),
                                    PDGPart2, RelativeK, true);
       itPart2++;
     }
