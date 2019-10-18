@@ -344,16 +344,16 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   PostData(6, fResults);
   PostData(7, fResultsQA);
   if (fProton->GetIsMonteCarlo()) {
-    PostData(10, fProtonMCList);
+    PostData(8, fProtonMCList);
   }
   if (fAntiProton->GetIsMonteCarlo()) {
-    PostData(11, fAntiProtonMCList);
+    PostData(9, fAntiProtonMCList);
   }
   if (fXi->GetIsMonteCarlo()) {
-    PostData(12, fXiMCList);
+    PostData(10, fXiMCList);
   }
   if (fAntiXi->GetIsMonteCarlo()) {
-    PostData(13, fAntiXiMCList);
+    PostData(11, fAntiXiMCList);
   }
 }
 
