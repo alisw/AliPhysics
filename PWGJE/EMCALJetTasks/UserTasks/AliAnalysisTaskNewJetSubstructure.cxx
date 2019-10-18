@@ -115,10 +115,10 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   fOutput->Add(fPtJet);
 
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
-  const Int_t dimSpec = 7;
-  const Int_t nBinsSpec[7] = {50, 100, 100, 20, 100, 50, 100};
-  const Double_t lowBinSpec[7] = {0., -10, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec[7] = {5., 10., 200, 20, 200, 100, 50};
+  const Int_t dimSpec = 8;
+  const Int_t nBinsSpec[8] = {50, 100, 100, 20, 100, 50, 100, 2};
+  const Double_t lowBinSpec[8] = {0., -10, 0, 0, 0, 0, 0, 0};
+  const Double_t hiBinSpec[8] = {5., 10., 200, 20, 200, 100, 50, 2};
   fHLundIterative =
       new THnSparseF("fHLundIterative",
                      "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
@@ -739,7 +739,8 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
     double nall = 0;
     double nsd = 0;
     int flagSubjet = 0;
-    int flagSubjetkT = 0; 
+    int flagSubjetkT = 0;
+    double flagConst=0;
     double Rg = 0;
     double zg = 0;
     double xktg = 0;
@@ -749,7 +750,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
 
       if (j1.perp() < j2.perp())
         swap(j1, j2);
-
+      flagConst=0;
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
       double lnpt_rel = log(xkt);
@@ -757,6 +758,10 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
       double form = 2 * 0.197 * j2.e() / (xkt * xkt);
       double rad = j2.e();
       double z = j2.perp() / (j2.perp() + j1.perp());
+       vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+       if(constitj1[0].perp()>fMinPtConst) flagConst=1; 
+
+      
       if (z > fHardCutoff)
         nsd = nsd + 1;
       if (z > fHardCutoff && flagSubjet == 0) {
@@ -773,8 +778,8 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
 	}
       }
 
-      Double_t LundEntries[7] = {
-          y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf};
+      Double_t LundEntries[8] = {
+	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf,flagConst};
       fHLundIterative->Fill(LundEntries);
 
       jj = j1;

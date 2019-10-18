@@ -55,6 +55,7 @@ public:
   void SetFillLundMC(Bool_t t) { fDoFillMCLund = t; }
   void SetCheckResolution(Bool_t t) { fCheckResolution = t; }
   void SetSubjetCutoff(Float_t t) { fSubjetCutoff = t; }
+  void SetMinPtConst(Float_t t) { fMinPtConst = t;}
   void SetHardCutoff(Float_t t) { fHardCutoff = t; }
   void SetDoTwoTrack(Bool_t t) { fDoTwoTrack = t; }
   void SetCutDoubleCounts(Bool_t t) {fCutDoubleCounts = t;}
