@@ -160,10 +160,19 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Float_t fMaxBin;               // min bin 
   TH1F *fPhiHistBeforeTrackSeletion;                // atrack->Phi() - Distribution before Track Selection
   TH1F *fEtaHistBeforeTrackSeletion;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fPTHistBeforeTrackSeletction;		    // atrack->PT() - Distribution before Track Selection
+  TH1F *fPhiHistBeforeTrackSeletionSecond;                // atrack->Phi() - Distribution before Track Selection
+  TH1F *fEtaHistBeforeTrackSeletionSecond;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fPTHistBeforeTrackSeletctionSecond;		    // atrack->PT() - Distribution before Track Selection
   TH1F *fTotalMultBeforeTrackSeletion;         // total number of Multiplicity for a centrality before Track Selection
   TH1F *fMultiHistoBeforeTrackSeletion;             // multiplicity distribution before Track Selection
+
   TH1F *fPhiHistAfterTrackSeletion;                // atrack->Phi() - Distribution before Track Selection
   TH1F *fEtaHistAfterTrackSeletion;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fPTHistAfterTrackSeletction;		    // atrack->PT() - Distribution before Track Selection
+  TH1F *fPhiHistAfterTrackSeletionSecond;                // atrack->Phi() - Distribution before Track Selection
+  TH1F *fEtaHistAfterTrackSeletionSecond;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fPTHistAfterTrackSeletctionSecond;		    // atrack->PT() - Distribution before Track Selection
   TH1F *fTotalMultAfterTrackSeletion;         // total number of Multiplicity for a centrality before Track Selection
   TH1F *fMultiHistoAfterTrackSeletion;             // multiplicity distribution after Track Selection
   TH1F *fMultiHistoAfterTrackSeletion_Second; 	   // multiplicity distribution after Track Selection second particle
@@ -254,7 +263,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,21);
+  ClassDef(AliAnalysisTaskStudentsML,22);
 
 };
 

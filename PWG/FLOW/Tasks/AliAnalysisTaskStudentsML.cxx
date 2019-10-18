@@ -50,16 +50,23 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fHistList(NULL),
  // Control histograms:
  fControlHistogramsList(NULL),
- fPtHist(NULL),
  fNbins(1000),
  fMinBin(0.),
  fMaxBin(10.),
  fPhiHistBeforeTrackSeletion(NULL),
  fEtaHistBeforeTrackSeletion(NULL),
+ fPTHistBeforeTrackSeletction(NULL),
+ fPhiHistBeforeTrackSeletionSecond(NULL),
+ fEtaHistBeforeTrackSeletionSecond(NULL),
+ fPTHistBeforeTrackSeletctionSecond(NULL),
  fTotalMultBeforeTrackSeletion(NULL),
  fMultiHistoBeforeTrackSeletion(NULL),
  fPhiHistAfterTrackSeletion(NULL),
  fEtaHistAfterTrackSeletion(NULL),
+ fPTHistAfterTrackSeletction(NULL),
+ fPhiHistAfterTrackSeletionSecond(NULL),
+ fEtaHistAfterTrackSeletionSecond(NULL),
+ fPTHistAfterTrackSeletctionSecond(NULL),
  fTotalMultAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion_Second(NULL),
@@ -175,16 +182,23 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fHistList(NULL),
  // Control histograms:
  fControlHistogramsList(NULL),
- fPtHist(NULL),
  fNbins(1000),
  fMinBin(0.),
  fMaxBin(10.),
  fPhiHistBeforeTrackSeletion(NULL),
  fEtaHistBeforeTrackSeletion(NULL),
+ fPTHistBeforeTrackSeletction(NULL),
+ fPhiHistBeforeTrackSeletionSecond(NULL),
+ fEtaHistBeforeTrackSeletionSecond(NULL),
+ fPTHistBeforeTrackSeletctionSecond(NULL),
  fTotalMultBeforeTrackSeletion(NULL),
  fMultiHistoBeforeTrackSeletion(NULL),
  fPhiHistAfterTrackSeletion(NULL),
  fEtaHistAfterTrackSeletion(NULL),
+ fPTHistAfterTrackSeletction(NULL),
+ fPhiHistAfterTrackSeletionSecond(NULL),
+ fEtaHistAfterTrackSeletionSecond(NULL),
+ fPTHistAfterTrackSeletctionSecond(NULL),
  fTotalMultAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion_Second(NULL),
@@ -364,9 +378,27 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
      Double_t ChiSquareInTPC = (aTrack->GetTPCchi2())/(aTrack->GetNcls(1)); //chi square in the TPC
      Double_t ValueDCAz = aTrack->ZAtDCA();  //z-coordinate of DCA
 
-      // Fill some control histograms with the particles before track selection:
-     fPhiHistBeforeTrackSeletion->Fill(phi); 
-     fEtaHistBeforeTrackSeletion->Fill(eta);
+// Fill some control histograms with the particles before track selection:
+
+	if(!bDoMixed){
+        fPhiHistBeforeTrackSeletion->Fill(phi); 
+        fEtaHistBeforeTrackSeletion->Fill(eta);
+        fPTHistBeforeTrackSeletction->Fill(pt);
+	}
+        if(bDoMixed){
+          if(charge>0.){
+	    fPhiHistBeforeTrackSeletion->Fill(phi); 
+            fEtaHistBeforeTrackSeletion->Fill(eta);
+            fPTHistBeforeTrackSeletction->Fill(pt);
+          }
+	  if(charge<0.){
+	    fPhiHistBeforeTrackSeletionSecond->Fill(phi); 
+            fEtaHistBeforeTrackSeletionSecond->Fill(eta);
+            fPTHistBeforeTrackSeletctionSecond->Fill(pt);
+	  }
+
+        }
+    
      fTPCClustersBeforeCut->Fill(NumberOfTPCClusters);
      fITSClustersBeforeCut->Fill(NumberOfITSClusters);
      fChiSquareTPCBeforeCut->Fill(ChiSquareInTPC);
@@ -376,9 +408,26 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
       if(!TrackSelection(aTrack)){continue;} //Track did not pass physics selection 
 	
       // Fill some control histograms with the particles after track selection:
-     fPtHist->Fill(pt);
-     fPhiHistAfterTrackSeletion->Fill(phi); 
-     fEtaHistAfterTrackSeletion->Fill(eta);
+
+	if(!bDoMixed){
+        fPhiHistAfterTrackSeletion->Fill(phi); 
+        fEtaHistAfterTrackSeletion->Fill(eta);
+        fPTHistAfterTrackSeletction->Fill(pt);
+	}
+        if(bDoMixed){
+          if(charge>0.){
+	    fPhiHistAfterTrackSeletion->Fill(phi); 
+            fEtaHistAfterTrackSeletion->Fill(eta);
+            fPTHistAfterTrackSeletction->Fill(pt);
+          }
+	  if(charge<0.){
+	    fPhiHistAfterTrackSeletionSecond->Fill(phi); 
+            fEtaHistAfterTrackSeletionSecond->Fill(eta);
+            fPTHistAfterTrackSeletctionSecond->Fill(pt);
+	  }
+
+        }
+
      fTPCClustersAfterCut->Fill(NumberOfTPCClusters);
      fITSClustersAfterCut->Fill(NumberOfITSClusters);
      fChiSquareTPCAfterCut->Fill(ChiSquareInTPC);
@@ -564,12 +613,29 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  // x) Book histogram for DCAz before cut
  // y) Book histogram for DCAz after cut
 
+
+
  // a) Book histogram to hold pt spectra:
- fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbins,fMinBin,fMaxBin);
- fPtHist->SetStats(kFALSE);
- fPtHist->SetFillColor(kBlue-10);
- fPtHist->GetXaxis()->SetTitle("p_{t}");
- fControlHistogramsList->Add(fPtHist);
+ fPTHistBeforeTrackSeletction = new TH1F("fPTHistBeforeTrackSeletction","Pt Distribution",1000,0.,10.);
+ fPTHistBeforeTrackSeletction->GetXaxis()->SetTitle("P_t");
+ fPTHistBeforeTrackSeletction->SetLineColor(4);
+ fControlHistogramsList->Add(fPTHistBeforeTrackSeletction);
+
+ fPTHistBeforeTrackSeletctionSecond = new TH1F("fPTHistBeforeTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
+ fPTHistBeforeTrackSeletctionSecond->GetXaxis()->SetTitle("P_t");
+ fPTHistBeforeTrackSeletctionSecond->SetLineColor(4);
+ fControlHistogramsList->Add(fPTHistBeforeTrackSeletctionSecond);
+
+ fPTHistAfterTrackSeletction = new TH1F("fPTHistAfterTrackSeletction","Pt Distribution",1000,0.,10.);
+ fPTHistAfterTrackSeletction->GetXaxis()->SetTitle("P_t");
+ fPTHistAfterTrackSeletction->SetLineColor(4);
+ fControlHistogramsList->Add(fPTHistAfterTrackSeletction);
+
+ fPTHistAfterTrackSeletctionSecond = new TH1F("fPTHistAfterTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
+ fPTHistAfterTrackSeletctionSecond->GetXaxis()->SetTitle("P_t");
+ fPTHistAfterTrackSeletctionSecond->SetLineColor(4);
+ fControlHistogramsList->Add(fPTHistAfterTrackSeletctionSecond);
+
 
  // b) Book histogram to hold phi distribution before track selection:
  fPhiHistBeforeTrackSeletion = new TH1F("fPhiHistBeforeTrackSeletion","Phi Distribution",1000,0.,6.3);
@@ -577,11 +643,21 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  fPhiHistBeforeTrackSeletion->SetLineColor(4);
  fControlHistogramsList->Add(fPhiHistBeforeTrackSeletion);
 
+ fPhiHistBeforeTrackSeletionSecond = new TH1F("fPhiHistBeforeTrackSeletionSecond","Phi Distribution",1000,0.,6.3);
+ fPhiHistBeforeTrackSeletionSecond->GetXaxis()->SetTitle("Phi");
+ fPhiHistBeforeTrackSeletionSecond->SetLineColor(4);
+ fControlHistogramsList->Add(fPhiHistBeforeTrackSeletionSecond);
+
  // c) Book histogram to hold eta distribution before track selection:
  fEtaHistBeforeTrackSeletion = new TH1F("fEtaHistBeforeTrackSeletion","Eta Distribution",1000,-1.,1.);
  fEtaHistBeforeTrackSeletion->GetXaxis()->SetTitle("Eta");
  fEtaHistBeforeTrackSeletion->SetLineColor(4);
  fControlHistogramsList->Add(fEtaHistBeforeTrackSeletion);
+
+ fEtaHistBeforeTrackSeletionSecond = new TH1F("fEtaHistBeforeTrackSeletionSecond","Eta Distribution",1000,-1.,1.);
+ fEtaHistBeforeTrackSeletionSecond->GetXaxis()->SetTitle("Eta");
+ fEtaHistBeforeTrackSeletionSecond->SetLineColor(4);
+ fControlHistogramsList->Add(fEtaHistBeforeTrackSeletionSecond);
 
  // d) Book Mult. Histo before before track selection
  fTotalMultBeforeTrackSeletion = new TH1F("fTotalMultBeforeTrackSeletion","Mult. Counts per Class before brute cut",1,0.,1.);
@@ -600,11 +676,21 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  fPhiHistAfterTrackSeletion->SetLineColor(4);
  fControlHistogramsList->Add(fPhiHistAfterTrackSeletion);
 
+ fPhiHistAfterTrackSeletionSecond = new TH1F("fPhiHistAfterTrackSeletionSecond","Phi Distribution",1000,0.,6.3);
+ fPhiHistAfterTrackSeletionSecond->GetXaxis()->SetTitle("Phi");
+ fPhiHistAfterTrackSeletionSecond->SetLineColor(4);
+ fControlHistogramsList->Add(fPhiHistAfterTrackSeletionSecond);
+
  // g) Book histogram to hold eta distribution after track selection:
-  fEtaHistAfterTrackSeletion = new TH1F("fEtaHistAfterTrackSeletion","Eta Distribution",1000,-1.,1.);
+ fEtaHistAfterTrackSeletion = new TH1F("fEtaHistAfterTrackSeletion","Eta Distribution",1000,-1.,1.);
  fEtaHistAfterTrackSeletion->GetXaxis()->SetTitle("Eta");
  fEtaHistAfterTrackSeletion->SetLineColor(4);
  fControlHistogramsList->Add(fEtaHistAfterTrackSeletion);
+
+ fEtaHistAfterTrackSeletionSecond = new TH1F("fEtaHistAfterTrackSeletionSecond","Eta Distribution",1000,-1.,1.);
+ fEtaHistAfterTrackSeletionSecond->GetXaxis()->SetTitle("Eta");
+ fEtaHistAfterTrackSeletionSecond->SetLineColor(4);
+ fControlHistogramsList->Add(fEtaHistAfterTrackSeletionSecond);
 
  // h) Book Mult. Histo before after track selection
   fTotalMultAfterTrackSeletion = new TH1F("fTotalMultAfterTrackSeletion","Mult. Counts per Class before brute cut",1,0.,1.);
