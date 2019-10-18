@@ -27,12 +27,13 @@ TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentumBinned(const Ali
 void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 {
 	// pi0 mass spectrum
-	Int_t nM       = 750;
-	Double_t mMin  = 0.0;
-	Double_t mMax  = 1.5;
-	Int_t nPt      = 400;
-	Double_t ptMin = 0;
-	Double_t ptMax = 20;
+	Int_t nM       = fLimits.nM;
+	Double_t mMin  = fLimits.mMin;
+	Double_t mMax  = fLimits.mMax;
+	Int_t nPt      = fLimits.nPt;
+	Double_t ptMin = fLimits.ptMin;
+	Double_t ptMax = fLimits.ptMax;
+
 
 	for (Int_t ia = 0; ia < kNbinsA; ++ia)
 	{
