@@ -2037,6 +2037,12 @@ m	   auto fZ = spdVtx->GetZ();
 	 FMDcutcpar0=2.3;
 	 FMDcutcpar1=300;
 	 break;
+       case 5:
+	 FMDcutapar0=1.3;
+	 FMDcutapar1=400;
+	 FMDcutcpar0=2.;
+	 FMDcutcpar1=400;
+	 break;
        default: break;
        }
        
