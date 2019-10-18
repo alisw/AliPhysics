@@ -1951,7 +1951,7 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceOffsetForSMsV2(Int_t runNumber,TStrin
 	  minimumValue = fitParameter;
 	  minimumIndex = j;
 	}
-      }
+      }//end of loop over BCs
       
       if( minimumValue/25-(Int_t)(minimumValue/25)>0.5 ) {
 	L1shift=(Int_t)(minimumValue/25.)+1;
@@ -1960,7 +1960,7 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceOffsetForSMsV2(Int_t runNumber,TStrin
       }
       
       if(TMath::Abs(minimumValue/25-(Int_t)(minimumValue/25)-0.5)<0.05)
-	printf("Run %d, SM %d, min %f, next_min %f, next+1_min %f, next+2_min %f, min/25 %f, min%%25 %d, next_min/25 %f, next+1_min/25 %f, next+2_min/25 %f, SMmin %d\n",runNumber,i,minimumValue,meanBC[(minimumIndex+1)%4],meanBC[(minimumIndex+2)%4],meanBC[(minimumIndex+3)%4],minimumValue/25., (Int_t)((Int_t)minimumValue%25), meanBC[(minimumIndex+1)%4]/25., meanBC[(minimumIndex+2)%4]/25., meanBC[(minimumIndex+3)%4]/25., L1shift*25);
+	printf("Run %d, PAR %d, SM %d, min %f, next_min %f, next+1_min %f, next+2_min %f, min/25 %f, min%%25 %d, next_min/25 %f, next+1_min/25 %f, next+2_min/25 %f, SMmin %d\n",runNumber,iPAR,i,minimumValue,meanBC[(minimumIndex+1)%4],meanBC[(minimumIndex+2)%4],meanBC[(minimumIndex+3)%4],minimumValue/25., (Int_t)((Int_t)minimumValue%25), meanBC[(minimumIndex+1)%4]/25., meanBC[(minimumIndex+2)%4]/25., meanBC[(minimumIndex+3)%4]/25., L1shift*25);
       
       if(justL1phase) totalValue = minimumIndex;
       else totalValue = L1shift<<2 | minimumIndex ;
@@ -1975,39 +1975,51 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceOffsetForSMsV2(Int_t runNumber,TStrin
       for(iorder=minimumIndex;iorder<minimumIndex+4-1;iorder++){
 	if( meanBC[(iorder+1)%4] <= meanBC[iorder%4] ) orderTest=kFALSE;
       }
-      if(!orderTest)
-	printf("run %d, SM %d, min index %d meanBC %f %f %f %f, order ok? %d\n",runNumber,i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3],orderTest);
+      
+      if(!orderTest){
+	if(isPAR)	
+	  printf("run %d, PAR %d, SM %d, min index %d meanBC %f %f %f %f, order ok? %d\n",runNumber,iPAR,i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3],orderTest);
+	else
+	  printf("run %d, SM %d, min index %d meanBC %f %f %f %f, order ok? %d\n",runNumber,i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3],orderTest);
+      }
       
       //patch for runs with not filled one, two or three BCs
       //manual patch for LHC16q - pPb@5TeV - only BC0 is filled and phase rotate
-      if(shouldBeEmpty[0] || shouldBeEmpty[1] || shouldBeEmpty[2] || shouldBeEmpty[3]){
-	Double_t newMean = meanBC[minimumIndex]-600;
-	if(newMean<=12.5){
-	  if(isPAR){
+      if(isPAR){// PAR case
+	if(shouldBeEmptyPAR[iPAR][0] || shouldBeEmptyPAR[iPAR][1] || shouldBeEmptyPAR[iPAR][3] || shouldBeEmptyPAR[iPAR][3]){
+	  Double_t newMean = meanBC[minimumIndex]-600;
+	  if(newMean<=12.5){
 	    hPARRun[iPAR]->SetBinContent(i,minimumIndex);
-	  }else{
-	    hRun->SetBinContent(i,minimumIndex);
-	  }
-	} else {
-	  Int_t minIndexTmp=-1;
-	  if(newMean/25. - (Int_t)(newMean/25.) <0.5)
-	    minIndexTmp = (Int_t)(newMean/25.);
-	  else
-	    minIndexTmp = 1+(Int_t)(newMean/25.);
-	  
-	  if(isPAR){
+	  } else {
+	    Int_t minIndexTmp=-1;
+	    if(newMean/25. - (Int_t)(newMean/25.) <0.5)
+	      minIndexTmp = (Int_t)(newMean/25.);
+	    else
+	      minIndexTmp = 1+(Int_t)(newMean/25.);
+	    
 	    hPARRun[iPAR]->SetBinContent(i,(4-minIndexTmp+minimumIndex)%4);
-	  }else{
-	    hRun->SetBinContent(i,(4-minIndexTmp+minimumIndex)%4);
 	  }
-	  //cout<<newMean/25.<<" int "<<(Int_t)(newMean/25.)<<" dif "<< newMean/25.-(Int_t)(newMean/25.)<<endl;
-	}
-	if(isPAR){
 	  printf("run with missing BC; PAR %d; new L1 phase in SM%d set to %d\n",iPAR,i,(Int_t)hPARRun[iPAR]->GetBinContent(i));
-	}else{
+	}
+      } else {//regular case
+	if(shouldBeEmpty[0] || shouldBeEmpty[1] || shouldBeEmpty[2] || shouldBeEmpty[3]){
+	  Double_t newMean = meanBC[minimumIndex]-600;
+	  if(newMean<=12.5){
+	    hRun->SetBinContent(i,minimumIndex);
+	  } else {
+	    Int_t minIndexTmp=-1;
+	    if(newMean/25. - (Int_t)(newMean/25.) <0.5)
+	      minIndexTmp = (Int_t)(newMean/25.);
+	    else
+	      minIndexTmp = 1+(Int_t)(newMean/25.);
+	    
+	    hRun->SetBinContent(i,(4-minIndexTmp+minimumIndex)%4);
+	    //cout<<newMean/25.<<" int "<<(Int_t)(newMean/25.)<<" dif "<< newMean/25.-(Int_t)(newMean/25.)<<endl;
+	  }
 	  printf("run with missing BC; new L1 phase in SM%d set to %d\n",i,(Int_t)hRun->GetBinContent(i));
 	}
       }//end of patch for LHC16q and other runs with not filled BCs
+
     }//end of loop over SM
   }//end of loop over PARs
   
