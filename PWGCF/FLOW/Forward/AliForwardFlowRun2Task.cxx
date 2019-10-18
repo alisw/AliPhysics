@@ -117,9 +117,10 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   Int_t mixed_dbins[dimensions] = {4,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.dWTwoTwoD)} ;
   Double_t dmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
   Double_t dmax[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.dW4Four)+1};
+  Double_t dmax_mixed[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.dWTwoTwoD)+1};
 
   fAnalysisList->Add(new THnD("standard_differential","standard_differential", dimensions, std_dbins, dmin, dmax));
-  fAnalysisList->Add(new THnD("mixed_differential","mixed_differential", dimensions, mixed_dbins, dmin, dmax));
+  fAnalysisList->Add(new THnD("mixed_differential","mixed_differential", dimensions, mixed_dbins, dmin, dmax_mixed));
 
   // The THn has dimensions [n, pt, random samples, vertex position, eta, centrality, kind of variable to store]
   // set names
