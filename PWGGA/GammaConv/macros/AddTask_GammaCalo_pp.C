@@ -1917,6 +1917,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411793406f032230000","01631031000000d0"); // EG1 NL34
 
 // EDC settings with TB correction
+  } else if (trainConfig == 2099){ // any aggregation no NL
+    cuts.AddCutCalo("00010113","411790006f032230000","01631031000000d0"); // INT7 test beam NL
   } else if (trainConfig == 2100){ // 100 MeV aggregation
     cuts.AddCutCalo("00010113","411790106f032230000","01631031000000d0"); // INT7 test beam NL
   } else if (trainConfig == 2101){ // 100 MeV aggregation
