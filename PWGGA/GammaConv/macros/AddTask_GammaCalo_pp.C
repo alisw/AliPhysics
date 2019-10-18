@@ -1656,10 +1656,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","244661100a012200000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","244661100a012200000","0163103100000010"); //PHI7
   } else if (trainConfig ==813){//PHOS Triggers Timing Cut Studies
-      cuts.AddCutCalo("00010113","24466110ga012200000","0163103100000010"); //no Trigger, Mike's Timing
-      cuts.AddCutCalo("00062113","24466110ga012200000","0163103100000010"); //PHI7, Mike's Timing
-      cuts.AddCutCalo("00010113","24466110ma012200000","0163103100000010"); //no Trigger, MB Timing
-      cuts.AddCutCalo("00062113","24466110ma012200000","0163103100000010"); //PHI7, MB Timing
+      //cuts.AddCutCalo("00010113","24466110ga012200000","0163103100000010"); //no Trigger, Mike's Timing
+      //cuts.AddCutCalo("00062113","24466110ga012200000","0163103100000010"); //PHI7, Mike's Timing
+      //cuts.AddCutCalo("00010113","24466110ma012200000","0163103100000010"); //no Trigger, MB Timing
+      //cuts.AddCutCalo("00062113","24466110ma012200000","0163103100000010"); //PHI7, MB Timing
       cuts.AddCutCalo("00010113","24466110oa012200000","0163103100000010"); //no Trigger, MB Timing, Open Cuts HighPt
       cuts.AddCutCalo("00062113","24466110oa012200000","0163103100000010"); //PHI7, MB Timing, Open Cuts HighPt
 
