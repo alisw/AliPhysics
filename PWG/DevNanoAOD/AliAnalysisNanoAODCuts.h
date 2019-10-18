@@ -246,6 +246,9 @@ public:
   std::vector<int> &GetKeepV0s() { return fPDGV0; }
   void SetKeepV0s(std::vector<int> pdgCodes) { fPDGV0 = pdgCodes; }
   void AddKeepV0(int pdgCode) { fPDGV0.push_back(pdgCode); }
+  std::vector<int> &GetKeepV0sCascades() { return fPDGV0Cascade; }
+  void SetKeepCascadeV0s(std::vector<int> pdgCodes) { fPDGV0Cascade = pdgCodes; }
+  void AddKeepCascadeV0(int pdgCode) { fPDGV0Cascade.push_back(pdgCode); }
 
 private:
   bool fDoSelectPrimaries; // switch to only select IsPhysicalPrimary() particles
@@ -254,8 +257,9 @@ private:
   float fMaxEta; // MaxEta
   std::vector<int> fPDGToKeep;  // vector of PDG codes that we want to keep anyways
   std::vector<int> fPDGV0;  // vector of PDG codes that we want to match the V0s to
+  std::vector<int> fPDGV0Cascade;  // vector of PDG codes that we want to match the V0s to
 
-  ClassDef(AliAnalysisNanoAODMCParticleCuts,1); // MC particle cut object for nano AOD filtering
+  ClassDef(AliAnalysisNanoAODMCParticleCuts,2); // MC particle cut object for nano AOD filtering
 };
 
 class AliNanoAODSimpleSetter : public AliNanoAODCustomSetter

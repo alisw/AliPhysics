@@ -743,7 +743,8 @@ AliAnalysisNanoAODMCParticleCuts::AliAnalysisNanoAODMCParticleCuts()
       fMinPt(0.f),
       fMaxEta(999.f),
       fPDGToKeep(),
-      fPDGV0() {
+      fPDGV0(),
+      fPDGV0Cascade(){
 }
 
 bool AliAnalysisNanoAODMCParticleCuts::IsSelected(TObject* obj) {
