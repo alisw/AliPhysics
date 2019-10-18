@@ -169,6 +169,12 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
+  else if(cutDefinition == "kCutSet3"){ // kCutSet1 with pT <  10 GeV
+    std::cout << "Setting up cut set 3" << std::endl;
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet3, LMEECutLib::kCutSet1));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
   else if(cutDefinition == "kTheoPID"){ // PID cut set from a Run 1 pPb analysis. Standard track cuts
     std::cout << "Setting up Theo PID. Standard track cuts." << std::endl;
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));

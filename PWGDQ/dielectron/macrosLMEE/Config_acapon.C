@@ -117,6 +117,13 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
+  // kCutSet1 with low pt cut at 10 GeV
+  else if(cutDefinition == "kCutSet3"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet3, LMEECutLib::kCutSet1));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
 
   // ######## PID Cut variation settings #################
   // These variations use the kCutSet1 track cuts and only vary PID
