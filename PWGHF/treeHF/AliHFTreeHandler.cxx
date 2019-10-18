@@ -95,7 +95,8 @@ AliHFTreeHandler::AliHFTreeHandler():
   fSubJetRadius(0.2),
   fJetAlgorithm(0),
   fSubJetAlgorithm(2),
-  fMinJetPt(0.0)
+  fMinJetPt(0.0),
+  fTrackingEfficiency(1.0)
 {
   //
   // Default constructor
@@ -196,7 +197,8 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fSubJetRadius(0.2),
   fJetAlgorithm(0),
   fSubJetAlgorithm(2),
-  fMinJetPt(0.0)
+  fMinJetPt(0.0),
+  fTrackingEfficiency(1.0)
 {
   //
   // Standard constructor
@@ -532,6 +534,7 @@ void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
   hfjetfinder.SetSubJetRadius(fSubJetRadius);
   hfjetfinder.SetSubJetAlgorithm(fSubJetAlgorithm);
   hfjetfinder.SetDoJetSubstructure(fDoJetSubstructure);
+  hfjetfinder.SetTrackingEfficiency(fTrackingEfficiency);
 
 }
 #endif

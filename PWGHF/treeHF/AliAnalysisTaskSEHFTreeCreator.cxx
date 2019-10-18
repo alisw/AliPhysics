@@ -248,6 +248,7 @@ fSubJetRadius(0.2),
 fJetAlgorithm(JetAlgorithm::antikt),
 fSubJetAlgorithm(JetAlgorithm::ca),
 fMinJetPt(0.0),
+fTrackingEfficiency(1.0),
 fGoodTrackFilterBit(-1),
 fGoodTrackEtaRange(999.),
 fGoodTrackMinPt(0.),
@@ -619,6 +620,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     if(fEnableNsigmaTPCDataCorr) fTreeHandlerD0->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
     fTreeHandlerD0->SetFillJets(fFillJets);
     fTreeHandlerD0->SetDoJetSubstructure(fDoJetSubstructure);
+    fTreeHandlerD0->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerD0->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
     fTreeHandlerD0->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
     fVariablesTreeD0 = (TTree*)fTreeHandlerD0->BuildTree(nameoutput,nameoutput);
@@ -648,6 +650,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerDs->SetMassKKOption(fDsMassKKOpt);
     fTreeHandlerDs->SetFillJets(fFillJets);
     fTreeHandlerDs->SetDoJetSubstructure(fDoJetSubstructure);
+    fTreeHandlerDs->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerDs->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
     fTreeHandlerDs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
     fVariablesTreeDs = (TTree*)fTreeHandlerDs->BuildTree(nameoutput,nameoutput);
@@ -676,6 +679,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     if(fEnableNsigmaTPCDataCorr) fTreeHandlerDplus->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
     fTreeHandlerDplus->SetFillJets(fFillJets);
     fTreeHandlerDplus->SetDoJetSubstructure(fDoJetSubstructure);
+    fTreeHandlerDplus->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerDplus->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
     fTreeHandlerDplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
     fVariablesTreeDplus = (TTree*)fTreeHandlerDplus->BuildTree(nameoutput,nameoutput);
@@ -703,6 +707,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     if(fEnableNsigmaTPCDataCorr) fTreeHandlerLctopKpi->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
     fTreeHandlerLctopKpi->SetFillJets(fFillJets);
     fTreeHandlerLctopKpi->SetDoJetSubstructure(fDoJetSubstructure);
+    fTreeHandlerLctopKpi->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerLctopKpi->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
     fTreeHandlerLctopKpi->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
     fVariablesTreeLctopKpi = (TTree*)fTreeHandlerLctopKpi->BuildTree(nameoutput,nameoutput);
@@ -731,6 +736,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     if(fEnableNsigmaTPCDataCorr) fTreeHandlerBplus->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
     fTreeHandlerBplus->SetFillJets(fFillJets);
     fTreeHandlerBplus->SetDoJetSubstructure(fDoJetSubstructure);
+    fTreeHandlerBplus->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerBplus->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
     fTreeHandlerBplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
     fVariablesTreeBplus = (TTree*)fTreeHandlerBplus->BuildTree(nameoutput,nameoutput);
@@ -758,6 +764,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     if(fEnableNsigmaTPCDataCorr) fTreeHandlerDstar->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
     fTreeHandlerDstar->SetFillJets(fFillJets);
     fTreeHandlerDstar->SetDoJetSubstructure(fDoJetSubstructure);
+    fTreeHandlerDstar->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerDstar->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
     fTreeHandlerDstar->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
     fVariablesTreeDstar = (TTree*)fTreeHandlerDstar->BuildTree(nameoutput,nameoutput);
@@ -786,6 +793,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerLc2V0bachelor->SetCalcSecoVtx(fLc2V0bachelorCalcSecoVtx);
     fTreeHandlerLc2V0bachelor->SetFillJets(fFillJets);
     fTreeHandlerLc2V0bachelor->SetDoJetSubstructure(fDoJetSubstructure);
+    fTreeHandlerLc2V0bachelor->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerLc2V0bachelor->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
     fTreeHandlerLc2V0bachelor->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
     fVariablesTreeLc2V0bachelor = (TTree*)fTreeHandlerLc2V0bachelor->BuildTree(nameoutput,nameoutput);
@@ -813,6 +821,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     if(fEnableNsigmaTPCDataCorr) fTreeHandlerBs->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
     fTreeHandlerBs->SetFillJets(fFillJets);
     fTreeHandlerBs->SetDoJetSubstructure(fDoJetSubstructure);
+    fTreeHandlerBs->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerBs->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
     fTreeHandlerBs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
     fVariablesTreeBs = (TTree*)fTreeHandlerBs->BuildTree(nameoutput,nameoutput);
@@ -840,6 +849,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     if(fEnableNsigmaTPCDataCorr) fTreeHandlerLb->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
     fTreeHandlerLb->SetFillJets(fFillJets);
     fTreeHandlerLb->SetDoJetSubstructure(fDoJetSubstructure);
+    fTreeHandlerLb->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerLb->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
     fTreeHandlerLb->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
     fVariablesTreeLb = (TTree*)fTreeHandlerLb->BuildTree(nameoutput,nameoutput);
