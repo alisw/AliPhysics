@@ -2742,6 +2742,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralDecayMeson
         if(!fDoLightOutput){
             fHistoGammaGammaInvMassPtBeforeCuts[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC);
         }
+
+        if( ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->DoGammaMinEnergyCut() ){
+          Int_t minDaughters        = ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->GetNDaughterEnergyCut();
+          Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
+          if(minDaughters==1){ // at least one over threshold
+             if( (gamma0->E() < minDaughterEnergy)  && (gamma1->E() < minDaughterEnergy)) continue;
+          } else if (minDaughters==2){ // both over threshold
+             if( (gamma0->E() < minDaughterEnergy)  || (gamma1->E() < minDaughterEnergy)) continue;
+          }
+        }
+
         if((((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelected(NDMcand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
           if(fIsMC){
             if(fInputEvent->IsA()==AliESDEvent::Class())
@@ -2806,6 +2817,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
         if(!fDoLightOutput){
             fHistoGammaGammaInvMassPtBeforeCuts[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC);
+        }
+
+        if( ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->DoGammaMinEnergyCut() ){
+          Int_t minDaughters        = ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->GetNDaughterEnergyCut();
+          Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
+          if(minDaughters==1){ // at least one over threshold
+             if( (gamma0->E() < minDaughterEnergy)  && (gamma1->E() < minDaughterEnergy)) continue;
+          } else if (minDaughters==2){ // both over threshold
+             if( (gamma0->E() < minDaughterEnergy)  || (gamma1->E() < minDaughterEnergy)) continue;
+          }
         }
 
         if((((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelected(NDMcand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
@@ -3261,6 +3282,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
         if(!fDoLightOutput){
           fHistoGammaGammaInvMassPtBeforeCuts[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC);
+        }
+
+        if( ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->DoGammaMinEnergyCut() ){
+          Int_t minDaughters        = ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->GetNDaughterEnergyCut();
+          Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
+          if(minDaughters==1){ // at least one over threshold
+             if( (gamma0->E() < minDaughterEnergy)  && (gamma1->E() < minDaughterEnergy)) continue;
+          } else if (minDaughters==2){ // both over threshold
+             if( (gamma0->E() < minDaughterEnergy)  || (gamma1->E() < minDaughterEnergy)) continue;
+          }
         }
 
         if((((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelected(NDMcand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
