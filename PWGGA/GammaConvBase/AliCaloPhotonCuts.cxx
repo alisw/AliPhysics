@@ -5583,7 +5583,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 
 
   Bool_t fPeriodNameAvailable = kTRUE;
-
   switch(fSwitchNonLinearity){
 
     // Standard NonLinearity -
@@ -6017,36 +6016,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
-    // PCM-EDC based nonlinearity ******* shifting   MC
-    case 19:
-      if(isMC>0){
-        //pp 13 TeV MCs for LHC16 || LHC17 || LHC18
-        if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
-          if(fClusterType==4){
-            energy /= (FunctionNL_ExpExp(energy, 0.9872432434, 0.3665071019, -2.8842177373, 7.4181896132)/FunctionNL_ExpExp(energy, 1.0469170329, 0.2974710295, -2.4204052267, 7.2038176960));
-            energy /= (FunctionNL_DExp(energy, 1.0069808932, 1.0667129308, -1.9891679083, 1.0064686109, 0.9237756300, -2.0610042221));
-          }
-        }
-      }
-      break;
-    // PCM-EDC based nonlinearity ******* shifting  data and MC
-    case 20:
-      if(isMC>0){
-        //pp 13 TeV MCs for LHC16 || LHC17 || LHC18
-        if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
-          if(fClusterType==4){
-            energy /= FunctionNL_ExpExp(energy, 0.9872432434, 0.3665071019, -2.8842177373, 7.4181896132);
-          }
-        }
-      } else if (isMC == 0){
-        //pp 13 TeV LHC16 || LHC17 || LHC18
-        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
-          if(fClusterType==4){
-            energy /= FunctionNL_ExpExp(energy, 1.0469170329, 0.2974710295, -2.4204052267, 7.2038176960);
-          }
-        }
-      }
-      break;
 
 // *************** 20 + x **** modified tender Settings 1 - pp
     // NonLinearity pp ConvCalo - only shifting MC - no timing cut
@@ -6349,6 +6318,37 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           // }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
+        }
+      }
+      break;
+
+    // PCM-EDC based nonlinearity for LHC16x,17x,18x pp 13TeV ******* shifting   MC
+    case 35:
+      if(isMC>0){
+        //pp 13 TeV MCs for LHC16 || LHC17 || LHC18
+        if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
+          if(fClusterType==4){
+            energy /= (FunctionNL_ExpExp(energy, 0.9872432434, 0.3665071019, -2.8842177373, 7.4181896132)/FunctionNL_ExpExp(energy, 1.0469170329, 0.2974710295, -2.4204052267, 7.2038176960));
+            energy /= (FunctionNL_DExp(energy, 1.0069808932, 1.0667129308, -1.9891679083, 1.0064686109, 0.9237756300, -2.0610042221));
+          }
+        }
+      }
+      break;
+    // PCM-EDC based nonlinearity for LHC16x,17x,18x pp 13TeV ******* shifting  data and MC
+    case 36:
+      if(isMC>0){
+        //pp 13 TeV MCs for LHC16 || LHC17 || LHC18
+        if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
+          if(fClusterType==4){
+            energy /= FunctionNL_ExpExp(energy, 0.9872432434, 0.3665071019, -2.8842177373, 7.4181896132);
+          }
+        }
+      } else if (isMC == 0){
+        //pp 13 TeV LHC16 || LHC17 || LHC18
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
+          if(fClusterType==4){
+            energy /= FunctionNL_ExpExp(energy, 1.0469170329, 0.2974710295, -2.4204052267, 7.2038176960);
+          }
         }
       }
       break;
