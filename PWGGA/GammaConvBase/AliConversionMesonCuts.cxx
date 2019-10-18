@@ -1872,29 +1872,30 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fMinPt = 3.0;
     fDoMinPtCut = kTRUE;
     break;
-  case 10: // for triggered omega
+  case 10: // a for triggered omega
     fMinPt = 4.0;
     fDoMinPtCut = kTRUE;
     break;
-  case 11: // for triggered omega
+  case 11: // b for triggered omega
     fMinPt = 6.0;
     fDoMinPtCut = kTRUE;
     break;
-  case 12: // for triggered omega
+  case 12: // c for triggered omega
     fMinPt = 8.0;
     fDoMinPtCut = kTRUE;
     break;
-  case 13: // for triggered omega
+  case 13: // d for triggered omega
     fMinPt = 10.0;
     fDoMinPtCut = kTRUE;
     break;
 
   // Instead of applying pt cut, apply a min energy cut on daughters
   // (needs to be treated in analysis task)
-  case 14:
+  case 14: // e
     fDoGammaMinEnergyCut = kTRUE;
     fNDaughterEnergyCut  = 1;
     fSingleDaughterMinE  = 5.;
+    break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;

@@ -242,11 +242,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603b00000000","0153503000000000"); // EMC7 (LHC11 acc)
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603d00000000","0153503000000000"); // EMC7 (LHC11 acc)
   } else if( trainConfig == 118){ // pt cut variation
-    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103693c00000000","0153503000000000"); // 3.0
-    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036a3c00000000","0153503000000000"); // 4.0
-    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036b3c00000000","0153503000000000"); // 6.0
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036c3c00000000","0153503000000000"); // 8.0
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036d3c00000000","0153503000000000"); // 10.0
+    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","01036e3c00000000","0153503000000000"); // new Energy cut
   } else if( trainConfig == 119){ // testbeam nonlin
     cuts.AddCutHeavyMesonCalo("00010113","111111105f032230000","32c51000a","0103603c00000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
     // ---------------------------------
