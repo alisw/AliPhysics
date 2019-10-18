@@ -112,6 +112,13 @@ h1DFalseBTaggedDouble12(nullptr),
 h1DFalseBTaggedDouble23(nullptr),
 h1DFalseBTaggedTripple(nullptr),
 kTagLevel(3),
+h2DProbLookup(0),
+h2DProbDistsUnid(0),
+h2DProbDistsudsg(0),
+h2DProbDistsc(0),
+h2DProbDistsb(0),
+h2DProbDistss(0),
+h2DProbDists(0),
 cCuts(0),
 fMCArray(nullptr),
 fMCEvent(nullptr),
@@ -210,6 +217,13 @@ h1DFalseBTaggedDouble12(nullptr),
 h1DFalseBTaggedDouble23(nullptr),
 h1DFalseBTaggedTripple(nullptr),
 kTagLevel(3),
+h2DProbLookup(0),
+h2DProbDistsUnid(0),
+h2DProbDistsudsg(0),
+h2DProbDistsc(0),
+h2DProbDistsb(0),
+h2DProbDistss(0),
+h2DProbDists(0),
 cCuts(0),
 fMCArray(nullptr),
 fMCEvent(nullptr),
@@ -941,6 +955,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
                     }
                 }
+
+                //*********************
+                //Track Counting
                 bool kTagDec[7]={kFALSE};
                 DoJetTaggingThreshold(jetpt, hasIPs,ipval, kTagDec);
 
@@ -969,6 +986,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 if(!kTagDec[Full]&&jetflavour==3&&hasIPs[0]){
                     //printf("################################ Missed one: flavour is=%i, ipval[1]=%f, ipval[2]=%f, ipval[3]=%f\n", jetflavour, ipval[0],ipval[2], ipval[2]);
                 }
+
+                //***********************
+                //Probability Tagging
+                double probval=0;
+                probval=GetTrackProbability(jetpt,hasIPs, ipval);
+               if(probval>0)FillProbabilityHists(jetpt,  probval, jetflavour);
 
                 if(sImpParXY.size()!=0){
                   FillHist("fh2dNoAcceptedTracksvsJetArea",(int)sImpParXY.size(),jetrec->Area(),1);
@@ -1452,6 +1475,16 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   h1DFalseBTaggedDouble23=(TH1D*)AddHistogramm("h1DFalseBTaggedDouble23","h1DTrueBTaggedDouble",500, 0, 250);
   h1DFalseBTaggedTripple=(TH1D*)AddHistogramm("h1DFalseBTaggedTripple","h1DFalseBTaggedTripple",500, 0, 250);
 
+  //Histograms for Probability Tagging
+  const char * flavour[6]  = {"Unidentified","udsg","c","b","s",""};
+
+  h2DProbDistsUnid=(TH2D*)AddHistogramm("h2DProbDistsUnid","h2DProbDistsUnid",500, 0, 250,500, 0, 250);
+  h2DProbDistsudsg=(TH2D*)AddHistogramm("h2DProbDistsudsg","h2DProbDistsUDSG",500, 0, 250,500, 0, 250);
+  h2DProbDistsc=(TH2D*)AddHistogramm("h2DProbDistsc","h2DProbDistsC",500, 0, 250,500, 0, 250);
+  h2DProbDistsb=(TH2D*)AddHistogramm("h2DProbDistsb","h2DProbDistsB",500, 0, 250,500, 0, 250);
+  h2DProbDistss=(TH2D*)AddHistogramm("h2DProbDistss","h2DProbDistsS",500, 0, 250,500, 0, 250);
+  h2DProbDists=(TH2D*)AddHistogramm("h2DProbDists","h2DProbDistsAll",500, 0, 250,500, 0, 250);
+
   //Histograms for vertexing factor quicktest
   //fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
   //fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_10CM","fh1dVERTEXFACTOR_VERTEXZ_10CM;",400,-100,100,"s");
@@ -1751,7 +1784,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH1("fh1dTrackPt_n_3_all_Accepted","detector level jets;pt (GeV/c); count",500,0,200,"s");
 
     //Template Generation
-    const char * flavour[6]  = {"Unidentified","udsg","c","b","s",""};
+    //const char * flavour[6]  = {"Unidentified","udsg","c","b","s",""};
     const char * base = "fh2dJetSignedImpPar";
     const char * dim[2]  = {"XY","XYZ"};
     const char * typ[2]  = {"","Significance"};
@@ -3606,6 +3639,13 @@ void AliAnalysisTaskHFJetIPQA::SetThresholds(TObjArray* threshfirst, TObjArray* 
     }
  }
 
+void AliAnalysisTaskHFJetIPQA::ReadProbvsIPLookup(TObjArray*& oLookup){
+
+  for(int iN=0;iN<3;iN++){
+    h2DProbLookup.push_back((TH2D*)oLookup->At(iN));
+  }
+}
+
 void AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool *kTagDec){
   //threshold values for tracks with largest, second and third largest IP
   int iJetPtBin=h1DThresholdsFirst[0]->FindBin(jetpt);
@@ -3665,6 +3705,52 @@ void AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs,
 
 }
 
+double AliAnalysisTaskHFJetIPQA::GetTrackProbability(double jetpt, bool* hasIPs, double* ipval){
+  //printf("Printing h2DProbLook\n");
+
+
+  double prob=1;
+  double probval[3]={0};
+  int iJetPtBin=h2DProbLookup[0]->GetYaxis()->FindBin(jetpt);;
+  int iIPBin[3]={0};
+
+  for(int iN=0;iN<3;iN++){
+    if(!hasIPs[iN])continue;
+    if(ipval[iN]<0) continue;
+    iIPBin[iN]=h2DProbLookup[iN]->GetXaxis()->FindBin(ipval[iN]);
+    probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);
+    //printf("iN=%i, iIPBin=%i, ipval=%f, lowerIP=%f, higherIP=%f, || iJetPtBin=%i, jetpt=%f, lowerjetpt=%f, higherjetpt=%f, prob=%f\n", iN, iIPBin[iN],ipval[iN],h2DProbLookup[iN]->GetXaxis()->GetBinLowEdge(iIPBin[iN]),
+    //        h2DProbLookup[iN]->GetXaxis()->GetBinLowEdge(iIPBin[iN]+1), iJetPtBin,jetpt, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin),  h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1),probval[iN]);
+    prob=prob*probval[iN];
+  }
+
+  double prob3=prob-prob*TMath::Log(prob)+prob*(TMath::Log(prob)*TMath::Log(prob))*0.5;
+  double prob2=prob-prob*TMath::Log(prob);
+  double prob1=prob;
+
+
+  if(hasIPs[2]&&ipval[2]>0){
+      //printf("3 tracks with prob1=%f, prob2=%f, prob3=%f, prob=%f, prob3=%f\n",probval[0],probval[1],probval[2],prob,prob3);
+      return prob3;
+  }
+  if(hasIPs[1]&&ipval[1]>0){
+      //printf("2 tracks with prob1=%f, prob2=%f prob=%f, prob2=%f\n",probval[0],probval[1],prob,prob2);
+      return prob2;
+  }
+  if(hasIPs[0]&&ipval[0]>0){
+      //printf("1 track with prob1=%f, prob=%f, prob1=%f\n",probval[0],prob,prob1);
+      return prob1;
+  }
+  return 0;
+}
+
+void AliAnalysisTaskHFJetIPQA::FillProbabilityHists(double jetpt,double probval,int jetflavour){
+  //  printf("Filling iflavou=%i, jetpt=%f, probval=%f into histogram\n", jetflavour,jetpt,probval);
+  const char * flavour[6]  = {"Unid","udsg","c","b","s",""};
+
+  FillHist(Form("h2DProbDists%s",flavour[jetflavour]),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
+  FillHist(Form("h2DProbDists"),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
+}
 
 void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){
 
