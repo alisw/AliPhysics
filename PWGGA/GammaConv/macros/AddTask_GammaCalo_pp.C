@@ -1937,6 +1937,11 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2107){ // 300 MeV aggregation
     cuts.AddCutCalo("0008e113","411790406f032230000","01631031000000d0"); // EG2  test beam NL
     cuts.AddCutCalo("0008d113","411790406f032230000","01631031000000d0"); // EG1  test beam NL
+  } else if (trainConfig == 2108){ // any aggregation no NL
+    cuts.AddCutCalo("00010113","411790006f032230000","01631031000000d0"); // INT7 test beam NL
+  } else if (trainConfig == 2109){ // any aggregation no NL
+    cuts.AddCutCalo("0008e113","411790006f032230000","01631031000000d0"); // EG2  test beam NL
+    cuts.AddCutCalo("0008d113","411790006f032230000","01631031000000d0"); // EG1  test beam NL
 
   } else if (trainConfig == 2110){ // clusterizer timing cut studies (5TeV pp std cut)
     cuts.AddCutCalo("00010113","411793106f032230000","01631031000000d0"); // INT7 test beam NL
