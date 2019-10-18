@@ -259,7 +259,7 @@ for(int iHisto=0; iHisto<3; iHisto++){
 	}
 
 
-        fvalueElectron = new Double_t[5];
+        fvalueElectron = new Double_t[6];
 
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
 	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
@@ -464,7 +464,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	}
 
 
-        fvalueElectron = new Double_t[5];
+        fvalueElectron = new Double_t[6];
 
 	// default constructor, don't allocate memory here!
 	// this is used by root for IO purposes, it needs to remain empty
@@ -926,10 +926,10 @@ fOutputList->Add(fcorcentOutplane);
 
 
 //add by sudo
-Int_t Sparsebins[5]={100, 100, 100, 100, 300}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
-Double_t Sparsexmin[5]={0, -10, -10, -10, 0};
-Double_t Sparsexmax[5]={10, 10, 10, 10, 3};
-fSparseElectron = new THnSparseD ("fSparseElectron","correlation;Pt;TPCnsigma;ITSnsigma;TOFnsigma;E/p;",5,Sparsebins,Sparsexmin,Sparsexmax);
+Int_t Sparsebins[6]={100, 100, 100, 100, 100, 300}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
+Double_t Sparsexmin[6]={ 0,  0, -10, -10, -10, 0};
+Double_t Sparsexmax[6]={10, 10,  10,  10,  10, 3};
+fSparseElectron = new THnSparseD ("fSparseElectron","correlation;Pt;P;TPCnsigma;ITSnsigma;TOFnsigma;E/p;",6,Sparsebins,Sparsexmin,Sparsexmax);
 fOutputList -> Add(fSparseElectron);
 
 
@@ -1703,10 +1703,11 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
         fTPCnsig_TOFnsig -> Fill(fTOFnSigma,fTPCnSigma);
 
         fvalueElectron[0] = TrkPt;
-        fvalueElectron[1] = fTPCnSigma;
-        fvalueElectron[2] = fITSnSigma;
-        fvalueElectron[3] = fTOFnSigma;
-        fvalueElectron[4] = -1.0;
+        fvalueElectron[1] = TrkP;
+        fvalueElectron[2] = fTPCnSigma;
+        fvalueElectron[3] = fITSnSigma;
+        fvalueElectron[4] = fTOFnSigma;
+        fvalueElectron[5] = -1.0;
 
 	////Charged Particle v2////
 
@@ -2004,7 +2005,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	if(clustMatch && clustMatch->IsEMCAL())
 	{
 	 Double_t clustMatchE = clustMatch->E();
-	 if(track->P()>0) fvalueElectron[4] = clustMatchE/track->P();
+	 if(track->P()>0) fvalueElectron[5] = clustMatchE/track->P();
         }
         fSparseElectron->Fill(fvalueElectron);
 
