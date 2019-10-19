@@ -144,7 +144,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   // check if time calibration is on
   //histoRanges->SetHistoTimeRangeAndNBins(-1000.,1000,1000);
   histoRanges->SetHistoTimeRangeAndNBins(-400.,400,400);
-  histoRanges->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
+  histoRanges->SetHistoDiffTimeRangeAndNBins(-400, 400, 800);
   
   // track-cluster residuals
   histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.06,0.06,120);
@@ -1579,12 +1579,14 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
     ana->SetCalorimeter(calo);
   }
   
-  ana->SwitchOnFill1CellHisto(); 
+  ana->SwitchOffFillCellHisto(); 
+  ana->SwitchOffFill1CellHisto(); 
+  ana->SwitchOffFillMatchingHisto(); 
   
   if ( simulation ) 
     ana->SetConstantTimeShift(615);
   
-  ana->SetEMinForExo(6);
+  ana->SetEMinForExo(100);
 
   ana->SetCellAmpMin(0.3);
     
