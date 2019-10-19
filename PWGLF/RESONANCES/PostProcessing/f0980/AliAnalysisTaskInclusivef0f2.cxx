@@ -27,6 +27,9 @@ auther : JunLee Kim
 #include "AliVMultiplicity.h"
 #include "AliMCEventHandler.h"
 #include "AliVEventHandler.h"
+#include "AliEventCuts.h"
+
+
 using namespace std;
 
 
@@ -382,6 +385,12 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 	vector<eventpool>( binZ.GetNbins() ) ) );
 
  fOutput->Add(fHistos); 
+
+ if( fOption.Contains("PbPb2018") ) fEventCuts.SetupPbPb2018();
+ fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) ); 
+ fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
+
+
  PostData(1, fHistos->GetListOfHistograms());
 
  fPIDCombined = new AliPIDCombined;
@@ -398,8 +407,6 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 {
 
- cout << "a " << endl;
-
  AliVEvent *event = InputEvent();
  if (!event) { Printf("ERROR: Could not retrieve event"); return; }
 
@@ -407,8 +414,23 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 	? fEvt = dynamic_cast<AliESDEvent*>(event)
 	: fEvt = dynamic_cast<AliAODEvent*>(event);
  if(!fEvt) return;
- Int_t runnumber = fEvt->GetRunNumber();
- fRunTable = new AliAnalysisTaskInclusivef0f2RunTable(runnumber);
+
+ bool IsEventSelected = fEventCuts.AcceptEvent( event );
+
+ IsMC = kFALSE;
+ if( IsFirstEvent ){
+	Int_t runnumber = fEvt->GetRunNumber();
+	cout << runnumber << endl;
+	if( fOption.Contains("MC") ) IsMC = kTRUE;
+	fRunTable = new AliAnalysisTaskInclusivef0f2RunTable(runnumber);
+	fRunTable->SetColl(0);
+	if( fOption.Contains("pPb") ) fRunTable->SetColl(1);
+	if( fOption.Contains("PbPb") ){
+		fRunTable->SetColl(2);
+	}
+
+	IsFirstEvent = kFALSE;
+ }
 
  AliInputEventHandler* inputHandler = (AliInputEventHandler*)
         AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
@@ -427,18 +449,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  double v0amplitude=0;
  for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
  fMultiplicity = fEvt -> GetMultiplicity();
- IsMC = kFALSE;
- if( fOption.Contains("MC") ){
-	IsMC = kTRUE;
- }
 
- fRunTable->SetColl(0);
- if( fOption.Contains("pPb") ){
-	fRunTable->SetColl(1);
- }
- if( fOption.Contains("PbPb") ){
-	fRunTable->SetColl(2);
- }
 
 // const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC(); //for ESD
  const AliVVertex* trackVtx = fEvt->GetPrimaryVertex();
@@ -539,11 +550,9 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  IsTriggered = (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7);
  if( fOption.Contains("kMB") ) IsTriggered = (inputHandler -> IsEventSelected()) & (AliVEvent::kMB);
  if( fOption.Contains("HighMult") ) IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
- if( fOption.Contains("2018") ) IsTriggered = fEvt -> GetTriggerMask() & (AliVEvent::kINT7); 
-
- if( IsMC ){
-        IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
- }
+// if( fOption.Contains("2018") ) IsTriggered = fEvt -> GetTriggerMask() & (AliVEvent::kINT7); 
+ if( fOption.Contains("2018") ) IsTriggered = fEventCuts.PassedCut(AliEventCuts::kTrigger);
+ if( IsMC ) IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
 //*****************************
 
 
@@ -576,7 +585,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 
 //IsSelectedFromAliMultSelection Flag Configuration
  if( !IsMC && !fOption.Contains("HighMult") && !fOption.Contains("kMB") &&
-	( fRunTable->IsPP() || fRunTable->IsPA() || fRunTable->IsAA() ) ){
+//	( fRunTable->IsPP() || fRunTable->IsPA() || fRunTable->IsAA() ) ){
+	( fRunTable->IsPP() || fRunTable->IsPA() ) ){
 	if( sel->IsEventSelected() ) IsSelectedFromAliMultSelection = kTRUE;
 
 	if( sel->GetThisEventIsNotPileupInMultBins() &&
@@ -598,6 +608,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 		}
 	}
  }
+ if( fRunTable->IsAA() ) IsSelectedFromAliMultSelection = kTRUE;
+ if( fRunTable->IsAA() ) IsSelectedFromAliMultSelectionForSysZ = kTRUE;
 
  if( IsMC ) IsSelectedFromAliMultSelection = kTRUE;
  if( IsMC && fabs(genzvtx)<15 ) IsSelectedFromAliMultSelectionForSysZ = kTRUE;
@@ -617,7 +629,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( IsTriggered && IsNotPileup && IsValidVtx ) fHistos->FillTH1("hEventNumbers","IsValidVtx",1);
  if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx ) fHistos->FillTH1("hEventNumbers","IsGoodVtx",1);
  if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection ) fHistos->FillTH1("hEventNumbers","IsSelectedFromAliMultSelection",1);
- if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
+ if( ( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && !fOption.Contains("2018") ) ||
+	( IsEventSelected && fOption.Contains("2018") ) ){
 	fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
 	if( !fOption.Contains("HighMult") ){
 		fHistos->FillTH1("hMB",fCent,1);
@@ -636,7 +649,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 
  if( !fOption.Contains("EvtSelStudy") ){
 	if( !fOption.Contains("Sys") ){
-		if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
+		if( ( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && !fOption.Contains("2018") ) ||
+			( IsEventSelected && fOption.Contains("2018") ) ){
 			if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
 			fHistos->FillTH1("hEvtNumberUsed",1,1);
 			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
