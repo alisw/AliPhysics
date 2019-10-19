@@ -10,7 +10,7 @@
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  * 
+ * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 #include <iostream>
@@ -130,7 +130,7 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4(const char *name,
     fNRotations=13.;
   //
   // Constructor to be used to create the task.
-  // The the URIs specify the resolution files to be used. 
+  // The the URIs specify the resolution files to be used.
   // They are expected to contain TGraphs with the resolutions
   // for the current and the upgraded ITS (see code for details).
   // One may also specify for how many tracks debug information
@@ -175,10 +175,10 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
   //
   // The event loop
   //
-  
+
   AliAODEvent *aod=dynamic_cast<AliAODEvent*>(InputEvent());
   fHistNEvents->Fill(0);
-  
+
   TClonesArray *array3Prong = 0;
   TClonesArray *arrayLikeSign =0;
   if(!aod && AODEvent() && IsStandardAOD()) {
@@ -200,13 +200,13 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
     arrayLikeSign=(TClonesArray*)aod->GetList()->FindObject("LikeSign3Prong");
   }
   if(!aod || !array3Prong) return;
-  
+
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   fBzkG = aod->GetMagneticField();
   fvtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
   if(!fvtx1 || TMath::Abs(fBzkG)<0.001) return;
-  
+
   AliAODMCHeader *mcHeader = 0;
   mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
   if(!mcHeader) {
@@ -220,11 +220,11 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
   Int_t n3Prong = array3Prong->GetEntriesFast();
   for (Int_t icand = 0; icand < n3Prong; icand++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(icand);
-    
+
     if(fApplyFixesITS3AnalysisBit){
       if(!(d->HasSelectionBit(AliRDHFCuts::kLcCuts))) continue;
     }
-    
+
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
       d->SetOwnPrimaryVtx(fvtx1);
@@ -238,13 +238,13 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
       continue;
     }
-    
+
     //lc preliminary large pt cuts:
     if(d->Pt()>fCutsPerPt[1] || d->Pt()<fCutsPerPt[2]){
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
       continue;
     }
-    
+
     //Additional Cut on Lc
     // d0p and d0pi of Lc
     //large pt cuts on the d0's of the Lc daughters //keep them out for the moment
@@ -254,7 +254,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
         continue;
       }
     }
-    
+
     FillHistos(d,mcs,aod,mcHeader);
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
@@ -263,24 +263,24 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
 
 void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesArray* arrayMC,AliAODEvent *ev,AliAODMCHeader *mcHeader){
   Int_t countLc=0;
-  
+
   //check ID d prongs
   Int_t idProng1 = d->GetProngID(0);
   Int_t idProng2 = d->GetProngID(1);
   Int_t idProng3 = d->GetProngID(2);
-  
+
   Int_t lc=0;
   fIsPromptLc=kFALSE;
   Int_t labLb=CheckMCLc(d,arrayMC);//after track cuts
   //here we know if it is a prompt Lc
   AliExternalTrackParam *LcCand = new AliExternalTrackParam;
   LcCand->CopyFromVTrack(d);
-  
+
   for(Int_t k = 0 ; k < ev->GetNumberOfTracks() ; k++) {
     Double_t xdummy,ydummy;
     Double_t dzdummy[2];
     Double_t covardummy[3];
-    
+
     AliAODTrack * HPiAODtrk = dynamic_cast<AliAODTrack*>(ev->GetTrack(k));
     if(HPiAODtrk->GetID()==idProng1 || HPiAODtrk->GetID()==idProng2 || HPiAODtrk->GetID()==idProng3){
       HPiAODtrk=0;
@@ -298,7 +298,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       HPiAODtrk=0;
       continue;
     }
-    
+
     //basic PID pion
     if(fRDCutsAnalysisLc->GetIsUsePID()){
       Double_t nsigmatofPi= fPIDResponse->NumberOfSigmasTOF(HPiAODtrk,AliPID::kPion);
@@ -306,17 +306,17 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       Double_t nsigmatpcPi= fPIDResponse->NumberOfSigmasTPC(HPiAODtrk,AliPID::kPion);
       if(nsigmatpcPi>-990. && (nsigmatpcPi<-3 || nsigmatpcPi>3)){HPiAODtrk=0;continue;}
     }
-    
+
     // Track cuts
     AliESDtrackCuts *trackCutsHPi = fRDCutsAnalysisLc->GetTrackCuts();//
     if(!fRDCutsAnalysisLc->IsDaughterSelected(HPiAODtrk,(AliESDVertex*)fvtx1,trackCutsHPi)){
       HPiAODtrk=0;
       continue;
     }
-    
+
     AliExternalTrackParam *chargedHPi = new AliExternalTrackParam;
     chargedHPi->CopyFromVTrack(HPiAODtrk);
-    
+
     Double_t dAtDCALc = d->GetDCA();
     //keep this since we know we have bg above this number
     if(dAtDCALc>0.05){
@@ -324,17 +324,17 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       delete chargedHPi;
       continue;
     }
-    
+
     //out for the large pt cuts
     ((TH1F*)fOutput->FindObject("fDCALcBg"))->Fill(dAtDCALc);
     //further cuts on candidate charged track
-    
+
     const Double_t max = 1;
     Double_t d0cut[2],covd0cut[3];
     Double_t d0cutLc[2],covd0cutLc[3];
     chargedHPi->PropagateToDCA(fvtx1,fBzkG,max,d0cut,covd0cut);
     LcCand->PropagateToDCA(fvtx1,fBzkG,max,d0cutLc,covd0cutLc);
-    
+
     // Construction of Secondary vertex
     TObjArray *recoArray = new TObjArray(2);
     Double_t dispersion;
@@ -353,25 +353,25 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     }
     // Add daughter information
     AddDaughterRefs(vtxAODNew,(AliAODEvent*)ev,recoArray);
-    
+
     //______________________________________________________________________________________
     // construction of lb (with secondary vertex)
-    
+
     const Double_t maxd = 1;
     //___
     // Propagate candidates to secondary vertex
     chargedHPi->PropagateToDCA(vtxAODNew,fBzkG,maxd,dzdummy,covardummy);
     LcCand->PropagateToDCA(vtxAODNew,fBzkG,maxd,dzdummy,covardummy);
-    
+
     // Calculate momenta
     Double_t momentum[3];
     chargedHPi->GetPxPyPz(momentum);
-    
+
     Double_t px[2],py[2],pz[2],d0[2],d0err[2],dcaCand;
     px[0] = momentum[0]; py[0] = momentum[1]; pz[0] = momentum[2];
     LcCand->GetPxPyPz(momentum);
     px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
-    
+
     // Calculate impact parameters
     Double_t d0z0[2],covd0z0[3];
     LcCand->PropagateToDCA(fvtx1,fBzkG,maxd,d0z0,covd0z0);
@@ -380,9 +380,9 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     chargedHPi->PropagateToDCA(fvtx1,fBzkG,maxd,d0z0,covd0z0);
     d0[0] = d0z0[0];
     d0err[0] = TMath::Sqrt(covd0z0[0]);
-    
+
     dcaCand = chargedHPi->GetDCA(LcCand,fBzkG,xdummy,ydummy);
-    
+
     // Create lbcandidate as AliAODRecoDecayHF2Prong
     AliAODRecoDecayHF2Prong *lbcandProng = new AliAODRecoDecayHF2Prong(vtxAODNew,px,py,pz,d0,d0err,dcaCand);
     if(lbcandProng->Pt()>fCutsPerPt[5]||lbcandProng->Pt()<fCutsPerPt[6]){
@@ -395,7 +395,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       continue;
     }
     lbcandProng->SetOwnPrimaryVtx(fvtx1);
-    
+
     UShort_t id[2];
     id[0]=(UShort_t)HPiAODtrk->GetID();
     id[1]=(UShort_t)LcCand->GetID();
@@ -406,7 +406,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       vtxAODNew->AddDaughter(HPiAODtrk);
     }
     vtxAODNew->AddDaughter(LcCand);
-    
+
     Int_t lb=0;
     Int_t labPi2=CheckMCpartPIONaf(HPiAODtrk,arrayMC);
     if(labPi2==labLb){//signal
@@ -416,7 +416,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       fSelMC->Fill(8);
       lc=1;
     }
-    
+
     Bool_t isHijing = CheckGenerator(HPiAODtrk,d,mcHeader,arrayMC);
     // JJJ - check whether bkg from hijing
     if(lb==0 && !isHijing){
@@ -428,7 +428,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       delete lbcandProng;
       continue;
     }
-    
+
     Double_t pionPt=lbcandProng->PtProng(0);
     Double_t pionP=lbcandProng->PProng(0);
     Double_t LcPt=lbcandProng->PtProng(1);
@@ -436,7 +436,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     ((TH1F*)fOutput->FindObject("fLcPt"))->Fill(LcPt);
     ((TH1F*)fOutput->FindObject("fpionP"))->Fill(pionP);
     //fill not rotated
-    
+
     Int_t selectionlb=IsSelectedLbMY(lbcandProng,AliRDHFCuts::kCandidate,lb,0,isHijing);
     if(selectionlb!=0){
       Int_t dgLabelsnr[3];
@@ -448,7 +448,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       FillLbHistsnr(lbcandProng,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev, fIsPromptLc);
     }
     lbcandProng->UnsetOwnPrimaryVtx();
-    
+
     UInt_t pdgLb[2]={0,0};
     pdgLb[1] = 4122;
     pdgLb[0] = 211;
@@ -458,10 +458,10 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     pdgLb2[0] = 211;
     Double_t    massLb = lbcandProng->InvMass(2,pdgLb);
     if(TMath::Abs(massLb - massTrueLB)<1.) ((TH1F*)fOutput->FindObject("fMassLbbkg"))->Fill(massLb);
-    
+
     //Add possibility to skip this heavy operation for checks
     if(fNRotations>0) DoRotations(ev,lbcandProng,d,HPiAODtrk,fNRotations,isHijing,lb,arrayMC,mcHeader);
-    
+
     HPiAODtrk=0;
     delete chargedHPi;
     recoArray->Clear();
@@ -472,7 +472,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
 
   delete LcCand;
   PostData(1,fOutput);
-  
+
   return;
 }
 
@@ -483,10 +483,10 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   AliAnalysisManager *man    = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   if (!inputHandler) return;
-  
+
   fPIDResponse      = inputHandler->GetPIDResponse();
   if(!fPIDResponse) AliFatal("PID response not found.");
-  
+
   if(fRDCutsProductionLb->GetIsUsePID()){
     fRDCutsProductionLb->GetPidHF()->SetPidResponse(fPIDResponse);
     fRDCutsProductionLb->GetPidpion()->SetPidResponse(fPIDResponse);
@@ -503,12 +503,12 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
     fRDCutsAnalysisLc->GetPidpion()->SetOldPid(kFALSE);
     fRDCutsAnalysisLc->GetPidprot()->SetOldPid(kFALSE);
   }
-  
+
   //
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("Histos");
-  
+
   fInvMassLbSign0 = new TH1F("fMassLbSign0", "Lb signal invariant mass 0 ; M [GeV]; Entries",20000,5.641-1.,5.641+1.);
   fInvMassLbSign1 = new TH1F("fMassLbSign1", "Lb signal invariant mass 1; M [GeV]; Entries",20000,5.641-1.,5.641+1.);
   fInvMassLbSign2 = new TH1F("fMassLbSign2", "Lb signal invariant mass 2; M [GeV]; Entries",20000,5.641-1.,5.641+1.);
@@ -521,10 +521,10 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fOutput->Add(fInvMassLbSign3);
   fOutput->Add(fInvMassLbSign4);
   fOutput->Add(fInvMassLbSign5);
-  
+
   fNtupleLambdabUPG = new TNtuple("fNtupleLambdabUPG"," Lb ","massCand:ptLb:pt_Prong0:pt_Prong1:d0_Prong1:d0_Prong0:cosThetaStar:Ct:Prodd0:cosp:cospXY:NormDL:ImpPar:dca:signal:rotated:ptLc:d0_Prong0Lc:d0_Prong1Lc:d0_Prong2Lc:pt_Prong0Lc:pt_Prong1Lc:pt_Prong2Lc:dist12Lc:sigmavertLc:distprimsecLc:costhetapointLc:dcaLc:signalLc:promptLc");
   PostData(2,fNtupleLambdabUPG);
-  
+
   fSelMC = new TH1I("trackSelMC", "SelMC",9,-0.5,8.5);
   fSelMC->GetXaxis()->SetBinLabel(1,"is lc from MTMC");
   fSelMC->GetXaxis()->SetBinLabel(2,"sel lab is negative ") ;
@@ -536,38 +536,38 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fSelMC->GetXaxis()->SetBinLabel(8,"lb in lc e pions");
   fSelMC->GetXaxis()->SetBinLabel(9," lc e pions same label");
   fOutput->Add(fSelMC);
-  
+
   fCountLc = new TH1I("countLc for background","count Lc for background",500,0,499);
   fOutput->Add(fCountLc);
-  
+
   TH1F *fMassUpg_pt0=new TH1F("fMassUpg_pt0","fMassUpg_pt0",100,2.086,2.486);
   TH1F *fMassUpg_pt1=new TH1F("fMassUpg_pt1","fMassUpg_pt1",100,2.086,2.486);
   TH1F *fMassUpg_pt2=new TH1F("fMassUpg_pt2","fMassUpg_pt2",100,2.086,2.486);
   TH1F *fMassUpg_pt3=new TH1F("fMassUpg_pt3","fMassUpg_pt3",100,2.086,2.486);
   TH1F *fMassUpg_pt4=new TH1F("fMassUpg_pt4","fMassUpg_pt4",100,2.086,2.486);
   TH1F *fMassUpg_pt5=new TH1F("fMassUpg_pt5","fMassUpg_pt5",100,2.086,2.486);
-  
+
   fOutput->Add(fMassUpg_pt0);
   fOutput->Add(fMassUpg_pt1);
   fOutput->Add(fMassUpg_pt2);
   fOutput->Add(fMassUpg_pt3);
   fOutput->Add(fMassUpg_pt4);
   fOutput->Add(fMassUpg_pt5);
-  
+
   TH1F *fMassUpg_pt0lcb=new TH1F("fMassUpg_pt0lbNR","fMassUpg_pt0lbNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt1lcb=new TH1F("fMassUpg_pt1lbNR","fMassUpg_pt1lbNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt2lcb=new TH1F("fMassUpg_pt2lbNR","fMassUpg_pt2lbNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt3lcb=new TH1F("fMassUpg_pt3lbNR","fMassUpg_pt3lbNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt4lcb=new TH1F("fMassUpg_pt4lbNR","fMassUpg_pt4lbNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt5lcb=new TH1F("fMassUpg_pt5lbNR","fMassUpg_pt5lbNR",20000,5.641-1.,5.641+1.);
-  
+
   fOutput->Add(fMassUpg_pt0lcb);
   fOutput->Add(fMassUpg_pt1lcb);
   fOutput->Add(fMassUpg_pt2lcb);
   fOutput->Add(fMassUpg_pt3lcb);
   fOutput->Add(fMassUpg_pt4lcb);
   fOutput->Add(fMassUpg_pt5lcb);
-  
+
   TH1F *fMassUpg_pt0lb=new TH1F("fMassUpg_pt0lb","fMassUpg_pt0lb",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt1lb=new TH1F("fMassUpg_pt1lb","fMassUpg_pt1lb",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt2lb=new TH1F("fMassUpg_pt2lb","fMassUpg_pt2lb",20000,5.641-1.,5.641+1.);
@@ -580,35 +580,35 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fOutput->Add(fMassUpg_pt3lb);
   fOutput->Add(fMassUpg_pt4lb);
   fOutput->Add(fMassUpg_pt5lb);
-  
+
   TH1F *fMassUpg_pt0lbbgOnly=new TH1F("fMassUpg_pt0lbbgOnly","fMassUpg_pt0lbbgOnly",20000,4.641,6.641);
   TH1F *fMassUpg_pt1lbbgOnly=new TH1F("fMassUpg_pt1lbbgOnly","fMassUpg_pt1lbbgOnly",20000,4.641,6.641);
   TH1F *fMassUpg_pt2lbbgOnly=new TH1F("fMassUpg_pt2lbbgOnly","fMassUpg_pt2lbbgOnly",20000,4.641,6.641);
   TH1F *fMassUpg_pt3lbbgOnly=new TH1F("fMassUpg_pt3lbbgOnly","fMassUpg_pt3lbbgOnly",20000,4.641,6.641);
   TH1F *fMassUpg_pt4lbbgOnly=new TH1F("fMassUpg_pt4lbbgOnly","fMassUpg_pt4lbbgOnly",20000,4.641,6.641);
   TH1F *fMassUpg_pt5lbbgOnly=new TH1F("fMassUpg_pt5lbbgOnly","fMassUpg_pt5lbbgOnly",20000,4.641,6.641);
-  
+
   fOutput->Add(fMassUpg_pt0lbbgOnly);
   fOutput->Add(fMassUpg_pt1lbbgOnly);
   fOutput->Add(fMassUpg_pt2lbbgOnly);
   fOutput->Add(fMassUpg_pt3lbbgOnly);
   fOutput->Add(fMassUpg_pt4lbbgOnly);
   fOutput->Add(fMassUpg_pt5lbbgOnly);
-  
+
   TH1F *fMassUpg_pt0lbbg=new TH1F("fMassUpg_pt0lbbgNR","fMassUpg_pt0lbbgNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt1lbbg=new TH1F("fMassUpg_pt1lbbgNR","fMassUpg_pt1lbbgNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt2lbbg=new TH1F("fMassUpg_pt2lbbgNR","fMassUpg_pt2lbbgNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt3lbbg=new TH1F("fMassUpg_pt3lbbgNR","fMassUpg_pt3lbbgNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt4lbbg=new TH1F("fMassUpg_pt4lbbgNR","fMassUpg_pt4lbbgNR",20000,5.641-1.,5.641+1.);
   TH1F *fMassUpg_pt5lbbg=new TH1F("fMassUpg_pt5lbbgNR","fMassUpg_pt5lbbgNR",20000,5.641-1.,5.641+1.);
-  
+
   fOutput->Add(fMassUpg_pt0lbbg);
   fOutput->Add(fMassUpg_pt1lbbg);
   fOutput->Add(fMassUpg_pt2lbbg);
   fOutput->Add(fMassUpg_pt3lbbg);
   fOutput->Add(fMassUpg_pt4lbbg);
   fOutput->Add(fMassUpg_pt5lbbg);
-  
+
   //
   // JJJ histograms for signal and background
   //
@@ -661,7 +661,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fOutput->Add(fPtBkgRot_TC);
   fOutput->Add(fPtSig);
   fOutput->Add(fPtSig_TC);
-  
+
   TH1F *fMassLbbkg=new TH1F("fMassLbbkg","fMassLbbkg",500,5.641-1.,5.641+1.);
   fOutput->Add(fMassLbbkg);
   TH1F *fMassLb2bkg=new TH1F("fMassLb2bkg","fMassLb2bkg",500,5.641-1.,5.641+1.);
@@ -678,7 +678,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fOutput->Add(fLcPt2);
   TH1F *fpionP2=new TH1F("fpionP2","fpionP2",100,0.,25.);
   fOutput->Add(fpionP2);
-  
+
   TH1F *fd0Pion=new TH1F("fd0Pion","fd0Pion",100,-1.,1.);
   TH1F *fd0Lc=new TH1F("fd0Lc","fd0Lc",100,-1.,1.);
   TH1F *fDCApion=new TH1F("fDCApion","fDCApion",100,-1.,1.);
@@ -693,7 +693,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   TH1F *fd0Lcprong1nr=new TH1F("fd0Lcprong1nr","fd0Lcprong1nr",100,-0.09,0.09);
   TH1F *fd0Lcprong0Bgnr=new TH1F("fd0Lcprong0Bgnr","fd0Lcprong0Bgnr",100,-0.09,0.09);
   TH1F *fd0Lcprong1Bgnr=new TH1F("fd0Lcprong1Bgnr","fd0Lcprong1Bgnr",100,-0.09,0.09);
-  
+
   fOutput->Add(fd0Pion);
   fOutput->Add(fd0Lc);
   fOutput->Add(fDCApion);
@@ -708,7 +708,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fOutput->Add(fd0Lcprong1nr);
   fOutput->Add(fd0Lcprong0Bgnr);
   fOutput->Add(fd0Lcprong1Bgnr);
-  
+
   fHistNEvents = new TH1F("fHistNEvents", "number of events ",6,-0.5,5.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n lc");
@@ -720,7 +720,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
-  
+
   fHistNEventsCuts = new TH1F("fHistNEventsCuts", "pass cuts ",14,-0.5,13.5);
   fHistNEventsCuts->GetXaxis()->SetBinLabel(1,"pt inf prong 0");
   fHistNEventsCuts->GetXaxis()->SetBinLabel(2,"pt inf prong 1");
@@ -740,7 +740,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fHistNEventsCuts->Sumw2();
   fHistNEventsCuts->SetMinimum(0);
   fOutput->Add(fHistNEventsCuts);
-  
+
   fHistNEventsCutsLb= new TH1F("fHistNEventsCutsLb", "pass cuts Lb ",14,-0.5,13.5);
   fHistNEventsCutsLb->GetXaxis()->SetBinLabel(1,"pt inf prong 0");
   fHistNEventsCutsLb->GetXaxis()->SetBinLabel(2,"pt inf prong 1");
@@ -778,7 +778,7 @@ void AliAnalysisTaskSELbtoLcpi4::Terminate(Option_t */*option*/)
     printf("ERROR: fOutput not available\n");
     return;
   }
-  
+
   return;
 }
 
@@ -793,7 +793,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   UInt_t pdgLb[2]={211,4122};
   Double_t massCandLb = part->InvMass(2,pdgLb);
   if(TMath::Abs(massCandLb - massTrueLB)>1.) return;
-  
+
   Int_t iPtBinlb = -1;
   Double_t ptCandlb = part->Pt();
   if(ptCandlb>0. && ptCandlb<2.) iPtBinlb=0;
@@ -802,7 +802,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   if(ptCandlb>=7. && ptCandlb<10.) iPtBinlb=3;
   if(ptCandlb>10. && ptCandlb<14.) iPtBinlb=4;
   if(ptCandlb>=14.) iPtBinlb=5;
-  
+
   //fill ntuple
   Float_t lbVarC[30] = {0};
   lbVarC[0] = massCandLb;
@@ -835,7 +835,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   lbVarC[27] = d->GetDCA();
   lbVarC[28] = lc;
   lbVarC[29] = promptLc;
-  
+
   if(lb==1){ //
     if(iPtBinlb==0)((TH1F*)fOutput->FindObject("fMassUpg_pt0lb"))->Fill(massCandLb);
     if(iPtBinlb==1)((TH1F*)fOutput->FindObject("fMassUpg_pt1lb"))->Fill(massCandLb);
@@ -843,7 +843,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
     if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lb"))->Fill(massCandLb);
     if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lb"))->Fill(massCandLb);
     if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lb"))->Fill(massCandLb);
-    
+
     // note - don't fill rotated signal (not needed)
   }
   if(lb!=1){
@@ -855,16 +855,16 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
       if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lbbgOnly"))->Fill(massCandLb);
       if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lbbgOnly"))->Fill(massCandLb);
       if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lbbgOnly"))->Fill(massCandLb);
-      
+
       if(fFillNtupleBackgroundRotated) {
         fNtupleLambdabUPG->Fill(lbVarC);
         PostData(2,fNtupleLambdabUPG);
       }
     }
   }
-  
+
   return;
-  
+
 }
 
 //-----------------------------------------------------------------------------
@@ -879,16 +879,16 @@ AliAODVertex* AliAnalysisTaskSELbtoLcpi4::ReconstructSecondaryVertex(TObjArray *
   vertexer->SetVtxStart((AliESDVertex*)fvtx1);//primary vertex
   vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);
   delete vertexer; vertexer=NULL;
-  
+
   if(!vertexESD) return vertexAOD;
-  
+
   if(vertexESD->GetNContributors()!=trkArray->GetEntriesFast()) {
     //AliDebug(2,"vertexing failed"); i
     //cout<< " vertex failed " << endl;
     delete vertexESD; vertexESD=NULL;
     return vertexAOD;
   }
-  
+
   Double_t vertRadius2=vertexESD->GetX()*vertexESD->GetX()+vertexESD->GetY()*vertexESD->GetY();
   if(vertRadius2>8.){//(2.82)^2 radius beam pipe
     //clout<<"  // vertex outside beam pipe, reject candidate to avoid propagation through material "<< endl;
@@ -920,13 +920,13 @@ void AliAnalysisTaskSELbtoLcpi4::AddDaughterRefs(AliAODVertex *v, const AliVEven
   TObject *dg = 0;
   if(nDg) dg = v->GetDaughter(0);
   if(dg) return; // daughters already added
-  
+
   Int_t nTrks = trkArray->GetEntriesFast();
-  
+
   AliExternalTrackParam *track = 0;
   AliAODTrack *aodTrack = 0;
   Int_t id;
-  
+
   for(Int_t i=0; i<nTrks; i++) {
     track = (AliExternalTrackParam*)trkArray->UncheckedAt(i);
     id = (Int_t)track->GetID();
@@ -992,16 +992,16 @@ Int_t AliAnalysisTaskSELbtoLcpi4::CheckMCLc(AliAODRecoDecayHF3Prong *d,TClonesAr
   Int_t iPtBinl = -1;
   if(pdgsl[0]==211 && pdgsl[1]==321 && pdgsl[2]==2212) massl=d->InvMassLcpiKp();
   if(pdgsl[0]==2212 && pdgsl[1]==321 && pdgsl[2]==211) massl=d->InvMassLcpKpi();
-  
+
   Double_t ptCandl = d->Pt();
-  
+
   if(ptCandl<2.) iPtBinl=0;
   if(ptCandl>=2. && ptCandl<4.) iPtBinl=1;
   if(ptCandl>=4. && ptCandl<6.) iPtBinl=2;
   if(ptCandl>6. && ptCandl<14.) iPtBinl=3;
   if(ptCandl>6. && ptCandl<14.) iPtBinl=3;
   if(ptCandl>14.)iPtBinl=4;
-  
+
   fSelMC->Fill(0);// from MC if label particle is positive
   //in match to mc lc return 0 is not  lambdac
   if(labDpL<0){
@@ -1073,7 +1073,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
   UInt_t pdgLb[2]={0,0};
   pdgLb[0] = 211;//lambdac
   pdgLb[1] = 4122;//pion
-  
+
   //
   Int_t iPtBinlb = -1;
   Float_t lbVar[14];
@@ -1085,7 +1085,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
   if(ptCandlb>=7. && ptCandlb<10.) iPtBinlb=3;
   if(ptCandlb>=10. && ptCandlb<14.) iPtBinlb=4;
   if(ptCandlb>=14.) iPtBinlb=5;
-  
+
   Float_t cutV[6][22]=
   //0,   1     2      3       4      5    6     7      8     9       10    11    12   13        14      15     16     17         18       19     20     21
   //M, ptp0<, ptp1<, ptp0>, ptp1>, d0p1>,d0p1<,d0p0>,d0p0<,cosTSt<,cosTSt>,ct<, ct>,prodd0d0>,prodd0d0<,cosp>,cospXY<,normDLXY>,normDLXY<,dca>, dca<, ImpParXY>
@@ -1102,7 +1102,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
     {1.,0. ,  0.,  999., 999., 999.,-999.,999.,-999.,       -10,    10.,  0.005, 999.,   0.,    -999, 0.96,    0.96,        999., 0.5, 0.008,  0., 50.},//7-10
     {1.,0. , 0.,   999., 999., 999.,-999.,999.,-999.,       -10,    10.,  0.005, 999.,   0.,    -999, 0.96,    0.96,        999., 0.5, 0.008,  0., 50.},//10-14
     {1.,0. ,  0.,  999., 999., 999.,-999.,999.,-999.,        -10,   10.,  0.005, 999.,   0.,    -999, 0.96,    0.96,        999., 0.5, 0.008,  0., 50.}};//>14
-  
+
   massCandLb = dd->InvMass(2,pdgLb);
   if(TMath::Abs(massCandLb - massTrueLB)>cutV[iPtBinlb][0]){
     cut=0;
@@ -1142,7 +1142,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
     if(lb==1)fHistNEventsCutsLb->Fill(6);
     //    cut = 0;
   }
-  
+
   if(dd->Ct(5122)<cutV[iPtBinlb][11] || dd->Ct(5122)>cutV[iPtBinlb][12]) {//
     fHistNEventsCuts->Fill(7);
     if(lb==1)fHistNEventsCutsLb->Fill(7);
@@ -1178,7 +1178,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
     if(lb==1)fHistNEventsCutsLb->Fill(12);
     cut = 0;
   }
-  
+
   // fill histograms
   if(lb==0 && isHijing){
     if(isRot==0) { //not rotated bkg
@@ -1215,7 +1215,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
     else if(iPtBinlb==4) ((TH1F*)fOutput->FindObject("fMassSig_pt4lb_NoCuts"))->Fill(massCandLb);
     else if(iPtBinlb==5) ((TH1F*)fOutput->FindObject("fMassSig_pt5lb_NoCuts"))->Fill(massCandLb);
   }
-  
+
   if(cut==0)return 0;
   else return 1;//returnvalue;
 }
@@ -1234,19 +1234,19 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
   //
   // Do full rotation procedure in one function and delete everything at the end to fix memory leak
   //
-  
+
   // magnetic field
   Double_t bz=ev->GetMagneticField();
-  
+
   //primary vertex
   AliVVertex *primaryVertex=ev->GetPrimaryVertex();
   AliAODVertex *primaryVertexAOD=ev->GetPrimaryVertex();
   if(!primaryVertex || !primaryVertexAOD) return;
-  
+
   Double_t pseudoX2[3], pseudoP2[3];
   Double_t CovPseudo2[21],CovPseudo1[21];
   Double_t pseudoX1[3],pseudoP1[3];
-  
+
   // positive track to be rotated
   AliAODTrack* positive = (AliAODTrack*)decay->GetDaughter(0);//pion
   positive->GetCovarianceXYZPxPyPz(CovPseudo2);
@@ -1254,7 +1254,7 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
   positive->GetPxPyPz(pseudoP2);
   Short_t sign = positive->Charge();
   //AliExternalTrackParam* et1 = new AliExternalTrackParam(pseudoX2,pseudoP2,CovPseudo2,sign); //made below
-  
+
   // negative track
   AliAODTrack* negative = (AliAODTrack*)decay->GetDaughter(1);//Lc
   negative->GetCovarianceXYZPxPyPz(CovPseudo1);
@@ -1263,21 +1263,21 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
   Short_t sign1 = negative->Charge();
   AliExternalTrackParam* et2 = new AliExternalTrackParam(pseudoX1,pseudoP1,CovPseudo1,sign1);
   Double_t Prot[3];
-  
-  Double_t fRot=13.;//20
+
+  //Double_t fRot=13.;//20
+  Double_t fRot=nRot;
   Double_t fAngle=0.0872;//0.1047
   Double_t fAngleFirst=3.14;
   if(nRot==20){
-    fRot=20.;
     fAngle=0.1047;//0.0872;//5 gradi...
   }
-  
+
   Double_t d0z0[2],covd0z0[3],d0[2],d0err[2];
   Double_t d0z02[2],covd0z02[3];
   Double_t xdummy=0.,ydummy=0.,dca;
   Double_t px[2],py[2],pz[2];
   UShort_t id[2];
-  
+
   // parameters of the actual 2Prong
   for (Int_t i=0;i<2;++i) {
     const AliAODTrack *t=static_cast<AliAODTrack*>(decay->GetDaughter(i));
@@ -1289,7 +1289,7 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
     id[i]= decay->GetProngID(i);
   }
   dca = decay->GetDCA(); // will be recalculated
-  
+
   // rotate the first track in the xy plane
   for (Int_t r = 0; r < fRot; r++)
   {
@@ -1307,7 +1307,7 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
     }
     TObjArray ta12;
     ta12.Add(et1); ta12.Add(et2);
-    
+
     //recalculate the secondary vertex
     //not crucial now but needed if you rotate the momenta
     AliAODVertex *vtxt=RecalculateVertex(primaryVertex,&ta12 ,bz);
@@ -1316,7 +1316,7 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
       ta12.Clear(); ta12=0x0;
       continue;
     }
-    
+
     // this are the new impact prameters
     // with relative errors
     et1->PropagateToDCA(primaryVertex,bz,100.,d0z0,covd0z0);
@@ -1325,7 +1325,7 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
     et2->PropagateToDCA(primaryVertex,bz,100.,d0z02,covd0z02);
     d0[1]=d0z02[0];
     d0err[1] = TMath::Sqrt(covd0z02[0]);
-    
+
     //this is the new DCA
     dca=et1->GetDCA(et2,bz,xdummy,ydummy);
     //daughters momenta
@@ -1336,7 +1336,7 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
     px1[0]= Prot[0];
     py1[0]= Prot[1];
     pz1[0]= Prot[2];
-    
+
     // make the rotated Lb candidate and add to the candidate vector
     // this is the new rotated candidate
     AliAODRecoDecayHF2Prong *the2Prong = new AliAODRecoDecayHF2Prong(vtxt,px1,py1,pz1,d0,d0err,dca);
@@ -1344,24 +1344,24 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
     the2Prong->GetSecondaryVtx()->AddDaughter(positive);
     the2Prong->GetSecondaryVtx()->AddDaughter(negative);
     the2Prong->SetProngIDs(2,id);
-    
+
     /*Update 20/09/19: From here on copied from FillHistos, instead of using array that has big memory leak*/
-    
+
     the2Prong->SetOwnPrimaryVtx(primaryVertexAOD);
     Double_t pionPt2=the2Prong->PtProng(0);
     Double_t pionP2=the2Prong->PProng(0);
     Double_t LcPt2=the2Prong->PtProng(1);
-    
+
     ((TH1F*)fOutput->FindObject("fpionPt2"))->Fill(pionPt2);
     ((TH1F*)fOutput->FindObject("fLcPt2"))->Fill(LcPt2);
     ((TH1F*)fOutput->FindObject("fpionP2"))->Fill(pionP2);
-    
+
     UInt_t pdgLb2[2]={211,4122};
     Double_t massTrueLB = 5.641;
-    
+
     Double_t massLb2 = the2Prong->InvMass(2,pdgLb2);
     if(TMath::Abs(massLb2 - massTrueLB)<1.)((TH1F*)fOutput->FindObject("fMassLb2bkg"))->Fill(massLb2);
-    
+
     Int_t selectionlbR=IsSelectedLbMY(the2Prong,AliRDHFCuts::kCandidate,lb,1,isHijing);//analysis cut Lb --> to be improved
     if(selectionlbR==0){
       et1->Reset(); delete et1; et1=0x0;
@@ -1371,16 +1371,16 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
       delete vtxt;
       continue;
     }
-    
+
     FillLbHists(the2Prong, lb, mcHeader, arrayMC, piontrack, lc3prong, lb /*is same as lc*/, ev, fIsPromptLc);
-    
+
     et1->Reset(); delete et1; et1=0x0;
     ta12.Clear(); ta12=0x0;
     the2Prong->UnsetOwnPrimaryVtx();
     delete the2Prong;
     delete vtxt;
   }
-  
+
   et2->Reset(); delete et2; et2=0x0;
 }
 //_____________________________________________________________
@@ -1388,7 +1388,7 @@ AliAODVertex* AliAnalysisTaskSELbtoLcpi4::RecalculateVertex(const AliVVertex *pr
   //
   // Helper function to recalculate a vertex.
   //
-  
+
   AliESDVertex *vertexESD = 0;
   AliAODVertex *vertexAOD = 0;
   //Double_t covmatrix[6];
@@ -1397,14 +1397,14 @@ AliAODVertex* AliAnalysisTaskSELbtoLcpi4::RecalculateVertex(const AliVVertex *pr
   vertexer->SetVtxStart((AliESDVertex*)primary);//primary vertex
   vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(tracks);
   delete vertexer; vertexer=NULL;
-  
+
   if(!vertexESD) return vertexAOD;
-  
+
   if(vertexESD->GetNContributors()!=tracks->GetEntriesFast()) {
     delete vertexESD; vertexESD=NULL;
     return vertexAOD;
   }
-  
+
   Double_t vertRadius2=vertexESD->GetX()*vertexESD->GetX()+vertexESD->GetY()*vertexESD->GetY();
   if(vertRadius2>8.){//(2.82)^2 radius beam pipe
     delete vertexESD; vertexESD=NULL;
@@ -1418,7 +1418,7 @@ AliAODVertex* AliAnalysisTaskSELbtoLcpi4::RecalculateVertex(const AliVVertex *pr
   for(Int_t b=0;b<6;b++)cov[b]=0.;
   chi2perNDF=0;
   //
-  
+
   vertexESD->GetXYZ(pos); // position
   vertexESD->GetCovMatrix(cov); //covariance matrix
   chi2perNDF = vertexESD->GetChi2toNDF();
@@ -1427,16 +1427,16 @@ AliAODVertex* AliAnalysisTaskSELbtoLcpi4::RecalculateVertex(const AliVVertex *pr
   Int_t nprongs= tracks->GetEntriesFast();
   vertexAOD = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,nprongs);
   return vertexAOD;
-  
+
 }
 //___________________________
 void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC, AliAODTrack *pion,AliAODRecoDecayHF3Prong *d, Int_t lc,AliAODEvent *ev, Bool_t IsPromptLc){
   //ptlb cut
-  
+
   Int_t promptLc=0;
   if (IsPromptLc) promptLc=1;
   Bool_t gen = CheckGenerator(pion,d,mcHeader,arrayMC);
-  
+
   Double_t massTrueLB = 5.641;
   UInt_t pdgLb[2]={211,4122};
   Double_t massCandLb = part->InvMass(2,pdgLb);
@@ -1453,7 +1453,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   if(ptCandlb>=10. && ptCandlb<14.) iPtBinlb=4;
   if(ptCandlb>=14.) iPtBinlb=5;
   if(ptCandlb<2. || ptCandlb>999.) return;
-  
+
   //fill ntuple
   Float_t lbVarC[30] = {0};
   lbVarC[0] = massCandLb;
@@ -1486,7 +1486,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   lbVarC[27] = d->GetDCA();
   lbVarC[28] = lc;
   lbVarC[29] = promptLc;
-  
+
   if(lb==1){
     if(iPtBinlb==0)fInvMassLbSign0->Fill(massCandLb);
     if(iPtBinlb==1)fInvMassLbSign1->Fill(massCandLb);
@@ -1500,7 +1500,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
     if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lbNR"))->Fill(massCandLb);
     if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lbNR"))->Fill(massCandLb);
     if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lbNR"))->Fill(massCandLb);
-    
+
     if(fFillNtupleSignal) {
       fNtupleLambdabUPG->Fill(lbVarC);
       PostData(2,fNtupleLambdabUPG);
@@ -1515,7 +1515,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
       if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lbbgNR"))->Fill(massCandLb);
       if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lbbgNR"))->Fill(massCandLb);
       if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lbbgNR"))->Fill(massCandLb);
-      
+
       if(fFillNtupleBackgroundNonRotated) {
         fNtupleLambdabUPG->Fill(lbVarC);
         PostData(2,fNtupleLambdabUPG);
@@ -1526,9 +1526,9 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
 }
 //___________________________________________________________
 Int_t AliAnalysisTaskSELbtoLcpi4::IsTrackInjected(AliAODTrack *part,AliAODMCHeader *header,TClonesArray *arrayMC){
-  
+
   AliVertexingHFUtils* ggg=new  AliVertexingHFUtils();
-  
+
   Int_t lab;
   if(fApplyFixesITS3AnalysisHijing)lab=TMath::Abs(part->GetLabel());
   else                             lab=part->GetLabel();
@@ -1556,13 +1556,13 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsTrackInjected(AliAODTrack *part,AliAODMCHead
     }
   }
   if(nameGen.IsWhitespace() || nameGen.Contains("ijing")){delete ggg; return 0;}
-  
+
   delete ggg;
   return 1;
 }
 //_____________________________________________________________
 Bool_t AliAnalysisTaskSELbtoLcpi4::IsCandidateInjected(AliAODRecoDecayHF *part, AliAODMCHeader *header,TClonesArray *arrayMC){
-  
+
   Int_t nprongs=part->GetNProngs();
   for(Int_t i=0;i<nprongs;i++){
     AliAODTrack *daugh=(AliAODTrack*)part->GetDaughter(i);
