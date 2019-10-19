@@ -56,8 +56,10 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
   if(!histoME){ Printf("FATAL: Histo with ME syst. not found: analysis will not start!\n"); return NULL;}
     
   TH1F *histoMEPr = 0x0;
+  TFile* fileMESysPr;
   if(!filenameHistMEPr.EqualTo("")) {
-    histoMEPr = (TH1F*)fileMESys->Get("hPr");
+    fileMESysPr=TFile::Open(filenameHistMEPr.Data());
+    histoMEPr = (TH1F*)fileMESysPr->Get("hPr");
     if(!histoMEPr){ Printf("FATAL: Histo with ME syst. for proton not found: analysis will not start!\n"); return NULL;}
   }
   
