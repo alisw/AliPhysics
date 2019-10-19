@@ -70,6 +70,8 @@
 #pragma link C++ class std::map<ULong64_t,TString>+;
 #pragma link C++ class std::map<ULong64_t,Int_t>+;
 #pragma link C++ class std::map<ULong64_t,UInt_t>+;
+#pragma link C++ class std::map<ULong64_t,Float_t>+;
+#pragma link C++ class std::map<ULong64_t,Double_t>+;
 #pragma link C++ class std::map<UInt_t,ULong64_t>+;
 #pragma link C++ class std::map<std::string,TFormula*>+;
 #pragma link C++ class std::map<std::string,TVectorF*>+;

@@ -839,7 +839,9 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
       for (Int_t icol=0; icol<nCols; icol++){  // formula loop
         Int_t nData=rFormulaList[icol]->GetNdata();
         if (nData<=1){
-          fprintf(default_fp,"%s\t",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
+          TString qValue=rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName());
+          qValue.ReplaceAll("\t","");
+          fprintf(default_fp,"%s\t",qValue.Data());
         }else{
           for (Int_t iData=0; iData<nData;iData++){  // array loo
             fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
