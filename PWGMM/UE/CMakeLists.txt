@@ -93,3 +93,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install macros
 install(DIRECTORY UeSpherocity DESTINATION  PWGMM/UE)
+install(DIRECTORY UeSpherocity/PiKaPr DESTINATION PWGMM/UE/UeSpherocity/PiKaPr)
