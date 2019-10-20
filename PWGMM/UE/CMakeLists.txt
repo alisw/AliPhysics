@@ -31,6 +31,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   UeSpherocity/AliAnalysisTaskUeSpherocity.cxx
+  UeSpherocity/PiKaPr/AliAnalysisTaskSpherocity.cxx
 )
 
 # Headers from sources

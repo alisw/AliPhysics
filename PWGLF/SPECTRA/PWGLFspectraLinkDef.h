@@ -31,7 +31,6 @@
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDxTest+;
 #pragma link C++ class AliAnalysisTaskPPvsMult+;
-#pragma link C++ class AliAnalysisTaskSpherocity+;
 #pragma link C++ class AliAnalysisTaskPPvsRT+;
 #pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
