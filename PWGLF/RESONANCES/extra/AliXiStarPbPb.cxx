@@ -491,7 +491,7 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner();
     
-    TH3F *fVertexDist1 = new TH3F("fVertexDist1","Vertex Distribution",20,-1,1, 20,-1,1, 600,-30,30);
+  /*  TH3F *fVertexDist1 = new TH3F("fVertexDist1","Vertex Distribution",20,-1,1, 20,-1,1, 600,-30,30);
     fVertexDist1->GetXaxis()->SetTitle("X Vertex (cm)");
     fVertexDist1->GetYaxis()->SetTitle("Y Vertex (cm)");
     fVertexDist1->GetZaxis()->SetTitle("Z Vertex (cm)");
@@ -502,7 +502,7 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     fVertexDist3->GetYaxis()->SetTitle("Y Vertex (cm)");
     fVertexDist3->GetZaxis()->SetTitle("Z Vertex (cm)");
     fOutputList->Add(fVertexDist3);
-    
+  */
     TH2F *fDCADist = new TH2F("fDCADist","DCA distribution",kNbinsM,-.5,kNbinsM*8-.5, 100,0,10);
     fOutputList->Add(fDCADist);
     
@@ -1110,7 +1110,7 @@ void AliXiStarPbPb::Exec(Option_t *)
     if(!PrimaryVertexESD) return;
     
     primaryVtx[0]=PrimaryVertexESD->GetX(); primaryVtx[1]=PrimaryVertexESD->GetY(); primaryVtx[2]=PrimaryVertexESD->GetZ();
-    ((TH3F*)fOutputList->FindObject("fVertexDist1"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
+   // ((TH3F*)fOutputList->FindObject("fVertexDist1"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
     
     if(fMCcase){
         /////////////////////////////////////////////////
@@ -1166,7 +1166,7 @@ void AliXiStarPbPb::Exec(Option_t *)
     if(fESD->IsPileupFromSPD()) return; // Reject Pile-up events
     
     ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(fESD->GetNumberOfTracks());
-    ((TH3F*)fOutputList->FindObject("fVertexDist3"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
+  //  ((TH3F*)fOutputList->FindObject("fVertexDist3"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
     
     // multiplicity
     
