@@ -8017,8 +8017,8 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeV() {
   for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.10); // 12-24
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
-  fCutsEff->SetBinContent(1,0.14);//1-2
-  for(Int_t i=2;i<=3;i++) fCutsEff->SetBinContent(i,0.14); // 1-2
+  fCutsEff->SetBinContent(1,0.10);//1-2
+  for(Int_t i=2;i<=3;i++) fCutsEff->SetBinContent(i,0.1); // 1-2
   for(Int_t i=3;i<=5;i++) fCutsEff->SetBinContent(i,0.1); // 2-3
   for(Int_t i=5;i<=24;i++) fCutsEff->SetBinContent(i,0.05); // 3-4
 
