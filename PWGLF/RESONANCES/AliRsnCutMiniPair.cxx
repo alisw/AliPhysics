@@ -68,6 +68,12 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
       case kMassRange:
 	  fCutValueD = pair->InvMass(0);
 	  return OkRangeD();
+      case kAsymRange:
+          fCutValueD = pair->PairAsymmetry(0);
+	  return OkRangeD();
+      case kAsymRangeMC:
+          fCutValueD = pair->PairAsymmetry(1);
+	  return OkRangeD();
 
    default:
          AliWarning("Undefined enum value");
