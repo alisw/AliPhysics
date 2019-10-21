@@ -1457,7 +1457,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 1028) {
     cuts.AddCutPCM("00010113", "002000l9227300008250404000", "0152103500000000"); //asym pT cut: 0.200 GeV and 0.075 GeV
   } else if (trainConfig == 1029) {
-    cuts.AddCutPCM("00010113", "002000f9227300008250404000", "0152103500000000"); //gamma pT > 0.2 GeV/c
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
   //----------------------------- configuration for  7 TeV standard cuts -----------------------------------------------------
   } else if (trainConfig == 1030) {
     cuts.AddCutPCM("00000113", "00200009227300008250404000", "0152103500000000"); //New standard cut pp 7 TeV direct photon
