@@ -39,6 +39,7 @@
 #include <TH2F.h>
 #include <TLegend.h>
 #include <TColor.h>
+#include <Riostream.h>
 
 #include "AliLog.h"
 #include "AliHFSystErr.h"
@@ -127,6 +128,11 @@ void AliHFSystErr::Init(Int_t decay){
           else InitD0toKpi2010pp();
         }
         else if(fRunNumber == 16 || fRunNumber==2016) InitD0toKpi2016pp13TeV();
+        else if(fRunNumber ==18 || fRunNumber == 2018){
+          InitD0toKpi20161718pp13TeVmb();
+          if(fCentralityClass=="19")InitD0toKpi20161718pp13TeVlm();
+          if(fCentralityClass=="3060")InitD0toKpi20161718pp13TeVhm();
+        }
         else AliFatal("Not yet implemented");
       }
       else if (fCollisionType==1) {
@@ -476,7 +482,8 @@ void AliHFSystErr::Init(Int_t decay){
         if (fRunNumber == 17 || fRunNumber == 2017){
           InitLctopKpi2017pp();
         }
-        else {
+         if( fRunNumber ==18 || fRunNumber ==2018)InitLctopKpi20161718pp13TeV();
+         else{  
           if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
           else                InitLctopKpi2010pp();
         }
@@ -1274,12 +1281,12 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV_finebins(){
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",23,xbins);
   // fNorm->SetBinContent(1,0.0); // bin 0.-1.
-  for(Int_t i=1;i<=23;i++) fNorm->SetBinContent(i,0.0129);////  (0.05/3.88)
+  for(Int_t i=1;i<=23;i++) fNorm->SetBinContent(i,0.021); // 2.1% error on sigmaV0and
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",23,xbins);
   //fBR->SetBinContent(1,0.0); // bin 0.-1.
-  for(Int_t i=1;i<=23;i++) fBR->SetBinContent(i,0.0129); //
+  for(Int_t i=1;i<=23;i++) fBR->SetBinContent(i,0.0129); // 0.05/3.83
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",23,xbins);
@@ -1489,6 +1496,96 @@ void AliHFSystErr::InitD0toKpi2016pp13TeV(){
   return;
 }
 //_________________________________________________________________________
+void AliHFSystErr::InitD0toKpi20161718pp13TeVmb(){
+  //
+  // D0->Kpi syst errors
+  //  2016 2017 2018 pp sample (Cristina)
+  //
+
+  AliInfo(" Settings for D0 --> K pi, pp collisions for 13 TeV");
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2016pp13TeV");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,1,24);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); //
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",24,1,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.89)
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,1,24);
+  fTrackingEff->SetBinContent(1,0.035);
+  fTrackingEff->SetBinContent(2,0.04);
+  for(Int_t i=3;i<=24;i++) fTrackingEff->SetBinContent(i,0.05);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,1,24);
+  fRawYield->SetBinContent(1,0.04);
+  for(Int_t i=2;i<=24;i++)fRawYield->SetBinContent(i,0.02);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,1,24);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.03);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,1,24);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.00); // 0%
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,1,24);
+  for(Int_t i=2;i<=24;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(1,0.05);
+
+  return;
+}
+//_________________________________________________________________________
+void AliHFSystErr::InitD0toKpi20161718pp13TeVlm(){
+  //
+  // D0->Kpi syst errors
+  //  2016 2017 2018 pp sample Low Multiplicity (1-9 SPD Ntracklets) (Cristina)
+  //
+
+  AliInfo(" Settings for D0 --> K pi, pp collisions for 13 TeV low mult");
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2016pp13TeV");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,1,24);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); //
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",24,1,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.89)
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,1,24);
+  fTrackingEff->SetBinContent(1,0.035);
+  fTrackingEff->SetBinContent(2,0.04);
+  for(Int_t i=4;i<=24;i++) fTrackingEff->SetBinContent(i,0.05);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,1,24);
+  fRawYield->SetBinContent(1,0.04);
+  for(Int_t i=2;i<12;i++)fRawYield->SetBinContent(1,0.02);
+  fRawYield->SetBinContent(1,0.04);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,1,24);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.03);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,1,24);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.00); // 0%
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,1,24);
+  for(Int_t i=2;i<=24;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(1,0.05);
+
+  return;
+}
+//---------------------------------------------------------------------------
+
 void AliHFSystErr::InitD0toKpi2013pPb0100(){
   //
   // D0->Kpi syst errors. p-Pb data sample
@@ -1498,6 +1595,7 @@ void AliHFSystErr::InitD0toKpi2013pPb0100(){
 
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
   for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.02); //
+
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",24,0,24);
@@ -7889,6 +7987,60 @@ void AliHFSystErr::InitLctopKpi2017pp() {
 }
 
 //--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopKpi20161718pp13TeV() {
+  //
+  // Lc->pKpi std. cut method syst errors. Responsible: Cristina Terrevoli
+  //  2016 2017 2018  pp sample
+  //
+  //
+
+  SetNameTitle("AliHFSystErr","SystErrLctopKpi20161718pp");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.05);
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  fTrackingEff->SetBinContent(1,0.045);
+  for(Int_t i=2;i<=3;i++) fTrackingEff->SetBinContent(i,0.045); // 1-2
+  for(Int_t i=3;i<=5;i++) fTrackingEff->SetBinContent(i,0.055); // 2-3
+  for(Int_t i=5;i<=7;i++) fTrackingEff->SetBinContent(i,0.06); // 2-3
+  for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.07); // 8-12
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  fRawYield->SetBinContent(1,0.14);//1-2
+  for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.14); // 1-2
+  for(Int_t i=3;i<=7;i++) fRawYield->SetBinContent(i,0.05); // 4-6
+  for(Int_t i=7;i<=13;i++) fRawYield->SetBinContent(i,0.04); // 6-8
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.10); // 12-24
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  fCutsEff->SetBinContent(1,0.14);//1-2
+  for(Int_t i=2;i<=3;i++) fCutsEff->SetBinContent(i,0.14); // 1-2
+  for(Int_t i=3;i<=5;i++) fCutsEff->SetBinContent(i,0.1); // 2-3
+  for(Int_t i=5;i<=24;i++) fCutsEff->SetBinContent(i,0.05); // 3-4
+
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  fMCPtShape->SetBinContent(1,0.02);
+  fMCPtShape->SetBinContent(2,0.02);
+  for(Int_t i=3;i<=24;i++) fMCPtShape->SetBinContent(i,0.0); // 2-24
+
+  // BR
+  fBR= new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i,0.05);
+
+}
+
+//--------------------------------------------------------------------------
+
 void AliHFSystErr::InitLctopKpi2013pPbBDT() {
   //
   // Lc->pKpi using BDTs syst errors. Responsible: Jaime Norman
