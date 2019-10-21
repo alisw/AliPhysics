@@ -269,9 +269,9 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0d200089227300008250404000", "204c4640263202263710", "0152107500000000"); // meson alpha < 0.85
   }  else if (trainConfig == 325) {//Primary cut, +with no mass c psi pair cut cuts.ut,no psi cut, +with
     cuts.AddCutPCMDalitz("00010113", "0d200089227300008250404000", "204c4640263002263010", "0152103500000000");
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////// 5TeV 2017 and 13TeV Normal Magnetic Field////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////// 5TeV 2017 and 13TeV Normal Magnetic Field////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   }  else if (trainConfig == 400) {////Primary cut (No Standard yet!), there are the standard cut from Lucia at 5TeV plus Pedro cuts for 7 Tev or 5.02 TeV pPb on electrons.
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152103500000000");
 
@@ -389,6 +389,15 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
 
     //  7XX for NomB,    75X  nomB and MBW
+  } else if (trainConfig == 701) {  //Cross check on new cuts.
+    cuts.AddCutPCMDalitz("00010113", "0d200009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    //New Standar cut, Nico Implemantation(Gamma)
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152103500000000");
+    //Standar used untill 21 Octuber 2019
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    //New Standar cut, Nico Implemantation(Gamma) + Ana TPC range remove 55-72
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dg70404000", "204c4640263202223710", "0152103500000000");
+    //New Standar cut, Nico Implemantation(Gamma) + Ana TPC range remove 55-72 + 0.15 line on qT(Armenteros)
   } else if (trainConfig == 706) {   // Nominal eta<0.8 for primactronsry and secondary ele   //  gamma asymmetry cut removed on 15.04.2019
     cuts.AddCutPCMDalitz("00010113", "0d200009266300008850404000", "20475400254202321710", "0263103100900000");
   } else if (trainConfig == 707) {    // R scan
@@ -398,9 +407,27 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   } else if (trainConfig == 714) {    // R scan
     cuts.AddCutPCMDalitz("00010113", "0dh00009266300008850404000", "20475400254202321710", "0263103100900000");
     cuts.AddCutPCMDalitz("00010113", "0di00009266300008850404000", "20475400254202321710", "0263103100900000");
-
-
-    // to be used with weights equal to 70X +50
+  } else if (trainConfig == 719) {  //Removing range 55-72 of TPC range.
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+  } else if (trainConfig == 720) {  //New standar?
+    cuts.AddCutPCMDalitz("00010113", "0d200009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+  } else if (trainConfig == 721) {  //Study on range of TPC
+    cuts.AddCutPCMDalitz("00010113", "0da00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0db00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dc00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+  } else if (trainConfig == 722) {  //still Study on range of TPC
+    cuts.AddCutPCMDalitz("00010113", "0dh00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0di00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dj00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+  } else if (trainConfig == 723) {  //still still Study on range of TPC
+    cuts.AddCutPCMDalitz("00010113", "0dk00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dl00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dg00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////// to be used with weights equal to 70X +50 /////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
   } else if (trainConfig == 756) {   // Nominal eta<0.8 for primactronsry and secondary ele   //  gamma asymmetry cut removed on 15.04.2019
     cuts.AddCutPCMDalitz("00010113", "0d200009266300008850404000", "20475400254202321710", "0263103100900000");
   } else if (trainConfig == 757) {    // R scan
