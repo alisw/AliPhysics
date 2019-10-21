@@ -43,16 +43,16 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
+    TH1D*  hPt;
 
+    
     TH2F*  f2fHistGenCentVsPtLambda;
     TH2F*  f2fHistGenCentVsPtAntiLambda;
     TH2F*  f2fHistXiPlus;
     TH2F*  f2fHistXiMinus;
-
+    
     TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreetight;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreetight;
     
     TH2F*  f2fHistRecSecCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecSecCentVsPtAntiLambdaFourSigthree;
@@ -62,19 +62,11 @@ protected:
     
     TH3F*  f3fHistLambdafromXiFourSigthree;
     TH3F*  f3fHistAntiLambdafromXiFourSigthree;
-    TH3F*  f3fHistLambdafromXiFourSigthreetight;
-    TH3F*  f3fHistAntiLambdafromXiFourSigthreetight;
-
+  
+    
     TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag;
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut;
     TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut;
-    
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthree;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree;
-    
 
-    
     Float_t fCentrality;
     Int_t fTreeVariablePID;
     Int_t fTreeVariablePIDParent;
@@ -92,7 +84,6 @@ protected:
     THnSparse *fPtBinNplusNminusChTruth;
     
     THnSparse *fPtBinNplusNminusChRec;
-    THnSparse *fPtBinNplusNminusChRecTag;
     
     Int_t    GetPtBin(Double_t pt);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
