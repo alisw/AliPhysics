@@ -123,7 +123,7 @@ AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, D
     cTest->cd(2);
     hReflModif->Draw();
     hrfl->Draw("same");
-    cTest->SaveAs(Form("figures/cTest%d.eps",iPtBin));
+    cTest->SaveAs(Form("figures/ReflectionConfig_PtBin%d.eps",iPtBin));
     if(!hrfl){
       Printf("SOMETHING WENT WRONG WHILE SETTINGS REFLECTIONS TEMPLATE");
       delete hReflModif;
