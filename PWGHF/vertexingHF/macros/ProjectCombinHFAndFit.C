@@ -103,18 +103,27 @@ AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, D
   if(fixSigmaConf==1 || (fixSigmaConf==2 && fixSigma[iPtBin])) fitter->SetFixGaussianSigma(sigmas[iPtBin]);
   if(fixMeanConf==1 || (fixMeanConf==2 && fixMean[iPtBin])) fitter->SetFixGaussianMean(massD);
   if(correctForRefl){
-    TCanvas *cTest=new TCanvas("cTest","cTest",800,800);    
+    TCanvas *cTest=new TCanvas("cTest","cTest",1600,800);
+    cTest->Divide(2,1);
+    cTest->cd(1);
     TH1F *hmasstemp=fitter->GetHistoClone();
     TH1F *hReflModif=(TH1F*)AliVertexingHFUtils::AdaptTemplateRangeAndBinning(hMCReflPtBin,hmasstemp,minFit,maxFit);
     TH1F *hSigModif=(TH1F*)AliVertexingHFUtils::AdaptTemplateRangeAndBinning(hMCSigPtBin,hmasstemp,minFit,maxFit);
     hReflModif->SetLineColor(kRed);
     hSigModif->SetLineColor(kBlue);
     hSigModif->Draw();
+    hMCSigPtBin->SetLineColor(kRed-9);
+    hMCSigPtBin->Draw("same");
+    hMCReflPtBin->SetLineColor(kGray+1);
+    hMCReflPtBin->Draw("same");
     hReflModif->Draw("same");
-    cTest->SaveAs(Form("figures/cTest%d.eps",iPtBin));
     delete hmasstemp;
     Double_t fixSoverRefAt=rOverSmodif*(hReflModif->Integral(hReflModif->FindBin(minFit*1.0001),hReflModif->FindBin(maxFit*0.999))/hSigModif->Integral(hSigModif->FindBin(minFit*1.0001),hSigModif->FindBin(maxFit*0.999)));
-    TH1F* hrfl=fitter->SetTemplateReflections(hReflModif,reflopt,minFit,maxFit);
+    TH1F* hrfl=fitter->SetTemplateReflections(hReflModif,reflopt,-1.,-1.);
+    cTest->cd(2);
+    hReflModif->Draw();
+    hrfl->Draw("same");
+    cTest->SaveAs(Form("figures/ReflectionConfig_PtBin%d.eps",iPtBin));
     if(!hrfl){
       Printf("SOMETHING WENT WRONG WHILE SETTINGS REFLECTIONS TEMPLATE");
       delete hReflModif;
@@ -702,6 +711,7 @@ void ProjectCombinHFAndFit(){
 
   for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
 
+    printf("\n---------- pt interval %d (%.1f-%.1f)\n",iPtBin,binLims[iPtBin],binLims[iPtBin+1]);
     minMass=minMass4Fit[iPtBin];
     maxMass=maxMass4Fit[iPtBin];
     Int_t bin1=h3d->GetYaxis()->FindBin(binLims[iPtBin]);
