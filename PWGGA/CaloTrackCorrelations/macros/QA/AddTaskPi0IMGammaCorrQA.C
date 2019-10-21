@@ -648,7 +648,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle  , TString 
   ana->SetMinPt(5);
   
   ana->SwitchOffStudyTracksInCone() ;
-  ana->SwitchOnUEBandSubtractionHistoFill();
+  //ana->SwitchOnUEBandSubtractionHistoFill();
 
   ana->SwitchOffDecayTaggedHistoFill() ;
   ana->SwitchOnSSHistoFill();
