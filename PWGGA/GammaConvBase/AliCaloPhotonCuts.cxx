@@ -138,6 +138,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fUseDistanceToBadChannel(0),
   fMaxTimeDiff(10e10),
   fMinTimeDiff(-10e10),
+  fMaxTimeDiffHighPt(10e10),
+  fMinTimeDiffHighPt(-10e10),
   fUseTimeDiff(0),
   fMaxDistTrackToClusterEta(0),
   fMinDistTrackToClusterPhi(0),
@@ -341,6 +343,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fUseDistanceToBadChannel(ref.fUseDistanceToBadChannel),
   fMaxTimeDiff(ref.fMaxTimeDiff),
   fMinTimeDiff(ref.fMinTimeDiff),
+  fMaxTimeDiffHighPt(ref.fMaxTimeDiffHighPt),
+  fMinTimeDiffHighPt(ref.fMinTimeDiffHighPt),
   fUseTimeDiff(ref.fUseTimeDiff),
   fMaxDistTrackToClusterEta(ref.fMaxDistTrackToClusterEta),
   fMinDistTrackToClusterPhi(ref.fMinDistTrackToClusterPhi),
@@ -1953,11 +1957,25 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   // Check wether timing is ok
   if (fUseTimeDiff){
-    if( (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff) && !(isMC>0)){
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
-      return kFALSE;
+    if(fUseTimingEfficiencyMCSimCluster==2){
+      if ( cluster->E() < 5) {
+        if( (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff) && !(isMC>0)){
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
+          return kFALSE;
+        }
+      } else {
+        if( (cluster->GetTOF() < fMinTimeDiffHighPt || cluster->GetTOF() > fMaxTimeDiffHighPt) && !(isMC>0)){
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
+          return kFALSE;
+        }
+      }
+    } else {
+      if( (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff) && !(isMC>0)){
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
+        return kFALSE;
+      }
     }
-    if(fUseTimingEfficiencyMCSimCluster==1 && isMC && cluster->E() < 4 && cluster->E() > fMinEnergy){
+    if( ((fUseTimingEfficiencyMCSimCluster==1) || (fUseTimingEfficiencyMCSimCluster==2)) && isMC && cluster->E() < 4 && cluster->E() > fMinEnergy ){
       fRandom.SetSeed(0);
       if( fRandom.Uniform(1) > fFuncTimingEfficiencyMCSimCluster->Eval(cluster->E()) ){
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
@@ -2486,8 +2504,15 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if (fUseM20 && (cluster->GetM20() < fMinM20 || cluster->GetM20() > fMaxM20)){continue;}
     if (fUseDispersion && (cluster->GetDispersion() > fMaxDispersion)){continue;}
     //cluster within timing cut
-    if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff)){continue;}
-
+    if( fUseTimingEfficiencyMCSimCluster==2 ){
+      if ( cluster->E() < 5 ) {
+        if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff)){continue;}
+      } else {
+        if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiffHighPt || cluster->GetTOF() > fMaxTimeDiffHighPt)){continue;}
+      }
+    } else {
+      if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff)){continue;}
+    }
     Int_t largestCellicol = -1, largestCellirow = -1;
     Int_t largestCellID = FindLargestCellInCluster(cluster.get(),event);
     if(largestCellID==-1) AliFatal("FillHistogramsExtendedQA: FindLargestCellInCluster found cluster with NCells<1?");
@@ -2582,11 +2607,28 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       if( calculatedDiff ){
         Float_t dist1D = TMath::Sqrt(TMath::Power(etaCluster-etaclusterMatched,2)+TMath::Power(phiCluster-phiclusterMatched,2));
         if( !(isMC>0) ){
-          if( (clusterMatched->GetTOF() > fMinTimeDiff && clusterMatched->GetTOF() < fMaxTimeDiff) ){
-            fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
-            fHistClusterDistance1DInTimeCut->Fill(dist1D);
+          if( (fUseTimingEfficiencyMCSimCluster==2) ){
+            if ( cluster->E() < 5) {
+              if( (clusterMatched->GetTOF() > fMinTimeDiff && clusterMatched->GetTOF() < fMaxTimeDiff) ){
+                fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
+                fHistClusterDistance1DInTimeCut->Fill(dist1D);
+              }
+              else fHistClusterDistanceOutTimeCut->Fill(rowdiff,coldiff);
+            }
+            else {
+              if( (clusterMatched->GetTOF() > fMinTimeDiffHighPt && clusterMatched->GetTOF() < fMaxTimeDiffHighPt) ){
+                fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
+                fHistClusterDistance1DInTimeCut->Fill(dist1D);
+              }
+              else fHistClusterDistanceOutTimeCut->Fill(rowdiff,coldiff);
+            }
+          } else {
+            if( (clusterMatched->GetTOF() > fMinTimeDiff && clusterMatched->GetTOF() < fMaxTimeDiff) ){
+              fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
+              fHistClusterDistance1DInTimeCut->Fill(dist1D);
+            }
+            else fHistClusterDistanceOutTimeCut->Fill(rowdiff,coldiff);
           }
-          else fHistClusterDistanceOutTimeCut->Fill(rowdiff,coldiff);
         }else{
           fHistClusterDistanceInTimeCut->Fill(rowdiff,coldiff);
           fHistClusterDistance1DInTimeCut->Fill(dist1D);
@@ -3935,6 +3977,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
 
   printf("Cluster Quality cuts: \n");
   if (fUseTimeDiff) printf("\t %6.2f ns < time difference < %6.2f ns\n", fMinTimeDiff*1e9, fMaxTimeDiff*1e9 );
+  if ((fUseTimeDiff)&&(fUseTimingEfficiencyMCSimCluster==2)) printf("\t %6.2f ns < time difference HighPt < %6.2f ns\n", fMinTimeDiffHighPt*1e9, fMaxTimeDiffHighPt*1e9 );
   if (fUseDistTrackToCluster) printf("\tmin distance to track in eta > %3.2f, min phi < %3.2f and max phi > %3.2f\n", fMaxDistTrackToClusterEta, fMinDistTrackToClusterPhi, fMaxDistTrackToClusterPhi );
   if (fUseExoticCluster)printf("\t exotic cluster: %3.2f\n", fExoticEnergyFracCluster );
   if (fUseMinEnergy)printf("\t E_{cluster} > %3.2f\n", fMinEnergy );
@@ -4426,6 +4469,16 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fFuncTimingEfficiencyMCSimCluster->SetParameters(1.01021e+00,1.00143e+00,1.36545e+01,1.49372e-01,-1.09826e-01,5.56485e+02,1.25420e+01);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
     fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(6.00000e+00, 3.50809e-01, 6.96152e-01, 1.54686e+01, 2.55793e-03);
+    break;
+  case 24: //o PHOS timing cut, 13TeV MB 30ns, applying timing cut efficiency in MC
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-30e-9;
+    fMaxTimeDiff=30e-9;//30ns
+    fMinTimeDiffHighPt=-150e-9;
+    fMaxTimeDiffHighPt=150e-9;//150ns
+    fUseTimingEfficiencyMCSimCluster = 2;
+    fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
+    fFuncTimingEfficiencyMCSimCluster->SetParameters(1.01021e+00,1.00143e+00,1.36545e+01,1.49372e-01,-1.09826e-01,5.56485e+02,1.25420e+01);
     break;
   default:
     AliError(Form("Timing Cut not defined %d",timing));
