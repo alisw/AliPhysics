@@ -250,6 +250,8 @@ public:
   TH2             *fMAngle;                  //!<! Tyler's histogram
   TH2             *fPtAngle;                 //!<! Tyler's histogram
   TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+  TH2             *fPtEPAnglePionAcc;        //!<! Histogram of delta Psi of accepted pi0 (vs pt)
+  TH2             *fPtEPAngleMCPion;         //!<! Histogram of delta Psi of MC truth pi0 (vs pt)
   TH2             *fEtaPhiPionAcc;           //!<! Histogram of eta,phi location of accepted pions
   TH2             *fMassPtPionAcc;           //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
   TH2             *fMassPtPionRej;           //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates

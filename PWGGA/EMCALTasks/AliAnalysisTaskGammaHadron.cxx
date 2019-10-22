@@ -65,6 +65,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
   fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),
   fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),
+  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -104,6 +105,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
   fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),
   fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),
+  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -160,9 +162,6 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 			if(j<kNoXiBins+1)   fHistDEtaDPhiXI[i][j] = 0;
 		}
 	}*/
-
-  // Make sure Cluster Acceptance array is zeroed at start of task
-  for (int i = 0; i < kCLUS_BUF_SIZE; i++) fClusterAcceptanceStatus[i] = 0;
 
 	fRtoD=180.0/TMath::Pi();
 
@@ -1326,6 +1325,11 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fMassPionRej = new TH1F("fMassPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2)",3000,0,0.75);
 		fOutput->Add(fMassPionRej);
 
+    fPtEPAnglePionAcc = new TH2F("PtEPAnglePionAcc","PtEPAnglePionAcc",128,0,TMath::Pi(),60,0,30);
+    fOutput->Add(fPtEPAnglePionAcc);
+    fPtEPAngleMCPion = new TH2F("PtEPAngleMCPion","fPtEPAngleMCPion",128,0,TMath::Pi(),60,0,30);
+    fOutput->Add(fPtEPAngleMCPion);
+
 		fEtaPhiPionAcc = new TH2F("fEtaPhiPionAcc","Accepted Pi0 Coordinates;#eta;#phi",200,-0.9,0.9,200,0,2*TMath::Pi());
 		fOutput->Add(fEtaPhiPionAcc);
 
@@ -1821,6 +1825,9 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	Double_t zVertex = fVertex[2];
 	AliParticleContainer* tracks =0x0;
 	tracks   = GetParticleContainer(0);
+
+  // Make sure Cluster Acceptance array is zeroed at start of event
+  for (int i = 0; i < kCLUS_BUF_SIZE; i++) fClusterAcceptanceStatus[i] = 0;
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//    Mixed event section
@@ -2586,6 +2593,8 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			{
         Double_t fLocalPhi = aliCaloClusterVecpi0.Phi();
         if (fLocalPhi < 0) fLocalPhi += 2*pi;
+        Double_t evtPlaneAngle=DeltaPhi(aliCaloClusterVecpi0,fQnCorrEventPlaneAngle);
+        fPtEPAnglePionAcc->Fill(evtPlaneAngle,aliCaloClusterVecpi0.Pt());
 				fEtaPhiPionAcc->Fill(aliCaloClusterVecpi0.Eta(),fLocalPhi);
 				fMassPtPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt());
 				fMassPtCentPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt(),fCent);
@@ -3129,6 +3138,14 @@ void AliAnalysisTaskGammaHadron::FillMCPi0Hists(Int_t fMultiplicity) {
   Int_t nMCPi0s = fMCPi0List.size();
   for (Int_t i = 0; i < nMCPi0s; i++) {
     AliAODMCParticle * fMCPi0_Part = fMCPi0List[i];
+
+    AliTLorentzVector vMCPi0;
+    fMCPi0_Part->Momentum(vMCPi0);
+
+    Double_t fLocalPhi = fMCPi0_Part->Phi();
+    if (fLocalPhi < 0) fLocalPhi += TMath::TwoPi();
+    Double_t evtPlaneAngle=DeltaPhi(vMCPi0,fQnCorrEventPlaneAngle);
+    fPtEPAngleMCPion->Fill(evtPlaneAngle,fMCPi0_Part->Pt());
 
     //fMCPi0s = new TH3F("fHistMCPi0s","fHistMCPi0s;p_{T}^{#pi^{0}};",20,fMCPi0Bins,7,fMCPi0EtaBins,kNEMCalMultBins,fMixBEMCalMult->GetXbins()->GetArray());
     fHistMCPi0_PtEtaMult->Fill(fMCPi0_Part->Pt(),fMCPi0_Part->Eta(),fMultiplicity);
