@@ -1322,6 +1322,14 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500e00000"); // eta < 0.8  // Test improved cuts 
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500f00000"); // eta < 0.8  // Test improved cuts 
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500g00000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 726) { // R 5-180  // Test smearing parameters -1
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500h00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500i00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500j00000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 727) { // R 5-180  // Test smearing parameters -1
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500k00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500l00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500d00000"); // eta < 0.8  // Test improved cuts 
     // config like 70X but to be used with weights +50
   } else if (trainConfig == 752) { // as iConfig 702 to be used with MBW
     cuts.AddCutPCM("00010113", "00a00009267300008250404000", "0152103500000000"); //
