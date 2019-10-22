@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
-// AliFemtoWRzTrackCut: An extention to AliFemtoMJTrackCut               //
+// AliFemtoWRzTrackCut: An extension to AliFemtoMJTrackCut               //
 // The method allows you to set different cut on DCA for different pt ranges //
 ///////////////////////////////////////////////////////////////////////////
 
