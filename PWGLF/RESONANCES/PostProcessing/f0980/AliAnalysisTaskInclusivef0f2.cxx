@@ -386,8 +386,10 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
  fOutput->Add(fHistos); 
 
- if( fOption.Contains("PbPb2018") ) fEventCuts.SetupPbPb2018();
- fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) ); 
+ if( fOption.Contains("PbPb2018") ){
+	fEventCuts.SetupPbPb2018();
+	fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) ); 
+ }
  fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
 
 
@@ -415,7 +417,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 	: fEvt = dynamic_cast<AliAODEvent*>(event);
  if(!fEvt) return;
 
- bool IsEventSelected = fEventCuts.AcceptEvent( event );
+ bool IsEventSelectedPbPb2018 = fEventCuts.AcceptEvent( event );
 
  IsMC = kFALSE;
  if( IsFirstEvent ){
@@ -630,7 +632,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx ) fHistos->FillTH1("hEventNumbers","IsGoodVtx",1);
  if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection ) fHistos->FillTH1("hEventNumbers","IsSelectedFromAliMultSelection",1);
  if( ( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && !fOption.Contains("2018") ) ||
-	( IsEventSelected && fOption.Contains("2018") ) ){
+	( IsEventSelectedPbPb2018 && fOption.Contains("2018") ) ){
 	fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
 	if( !fOption.Contains("HighMult") ){
 		fHistos->FillTH1("hMB",fCent,1);
@@ -650,7 +652,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( !fOption.Contains("EvtSelStudy") ){
 	if( !fOption.Contains("Sys") ){
 		if( ( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && !fOption.Contains("2018") ) ||
-			( IsEventSelected && fOption.Contains("2018") ) ){
+			( IsEventSelectedPbPb2018 && fOption.Contains("2018") ) ){
 			if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
 			fHistos->FillTH1("hEvtNumberUsed",1,1);
 			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
