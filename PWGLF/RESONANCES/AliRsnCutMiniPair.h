@@ -26,6 +26,8 @@ public:
       kPhiVRange,
       kContainsV0Daughter,
       kMassRange,
+      kAsymRange,
+      kAsymRangeMC,
       kTypes
    };
 
