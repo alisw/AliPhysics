@@ -55,6 +55,12 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         Bool_t  IsMC()const{ return fIsMC; }
         void    SetIsMC(Bool_t b) { fIsMC=b; }
         void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi, double matchingR, double minJetPt) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi; fmatchingR = matchingR; fMinJetPt = minJetPt; }
+        void AddFlags(UInt_t nflags){flags |= nflags;}
+        enum{
+            DIJET_VERTEX13PA      = 0x1,
+            DIJET_PILEUPSPD       = 0x2,
+            DIJET_UTILSPILEUPSPD  = 0x4
+        };
 
         // Methods specific for this class
         void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
@@ -89,6 +95,8 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         int fCBin;
         int fCBinDetMC;
         TDirectory     *fOutput; // Output directory
+        UInt_t flags; //
+        AliAnalysisUtils *fUtils; //!
 
         ClassDef(AliJCDijetTask, 1); 
 };

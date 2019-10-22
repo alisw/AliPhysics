@@ -234,6 +234,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
     bge = fastjet::JetMedianBackgroundEstimator(selectorEta, jet_def_bge, area_def_bge);
 
 
+
 }
 
 //______________________________________________________________________________
@@ -254,6 +255,7 @@ void AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhisto
     fhistos->fh_randConeEtaPhi[lCBin]->Fill(randConeEta,randConePhi);
     double randConePt = 0.0;
 
+    //cout << "Number of tracks in Ana code: " << noTracks << endl;
     for (utrack = 0; utrack < noTracks; ++utrack) {//loop over all the particles in the event
         // Building input particle list for the jet reconstruction
         AliJBaseTrack *trk = (AliJBaseTrack*)inList->At(utrack);
@@ -280,6 +282,7 @@ void AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhisto
             }
         }
     }
+    fhistos->fh_nch[lCBin]->Fill(chparticles.size());
     if(chparticles.size()==0) return; // We are not intereted in empty events.
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -832,6 +835,14 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
     histos->fh_info->Fill("Const. cut", fConstituentCut);
     histos->fh_info->Fill("Delta phi cut pi/",fDeltaPhiCut);
     histos->fh_info->Fill("Matching R for MC",matchingR);
+
+    histos->fh_eventSel->Fill("events wo/ cuts",0.0);
+    histos->fh_eventSel->Fill("catalyst entry ok",0.0);
+    histos->fh_eventSel->Fill("catalyst ok",0.0);
+    histos->fh_eventSel->Fill("vertex2013pA ok",0.0);
+    histos->fh_eventSel->Fill("pileupSPD ok",0.0);
+    histos->fh_eventSel->Fill("utils pileupSPD ok",0.0);
+    histos->fh_eventSel->Fill("events",0.0);
 
     // Initialize histos->fh_events so that the bin order is correct
     for (int iBin=0; iBin < nCentBins-1; iBin++) {

@@ -54,7 +54,9 @@ AliJCDijetTask::AliJCDijetTask() :
     fanaMC(NULL),
     fCBin(-1),
     fCBinDetMC(-1),
-    fOutput(NULL)
+    fOutput(NULL),
+    flags(0),
+    fUtils(nullptr)
 {
 }
 
@@ -86,7 +88,9 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fanaMC(NULL),
     fCBin(-1),
     fCBinDetMC(-1),
-    fOutput(NULL)
+    fOutput(NULL),
+    flags(0),
+    fUtils(nullptr)
 {
     // Constructor
     AliInfo("---- AliJCDijetTask Constructor ----");
@@ -121,7 +125,9 @@ AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
     fanaMC(ap.fanaMC),
     fCBin(ap.fCBin),
     fCBinDetMC(ap.fCBinDetMC),
-    fOutput( ap.fOutput )
+    fOutput( ap.fOutput ),
+    flags(ap.flags),
+    fUtils(ap.fUtils)
 { 
 
     AliInfo("----DEBUG AliJCDijetTask COPY ----");
@@ -148,6 +154,7 @@ AliJCDijetTask::~AliJCDijetTask()
     delete fhistosDetMC;
     delete fana;
     delete fanaMC;
+    delete fUtils;
 
 }
 
@@ -167,7 +174,6 @@ void AliJCDijetTask::UserCreateOutputObjects()
     fOutput = gDirectory;
     fOutput->cd();
 
-
     fhistos = new AliJCDijetHistos();
     fhistos->SetName("jcdijet");
     fhistos->SetCentralityBinsHistos(fcentralityBins);
@@ -184,6 +190,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
         fanaMC = new AliJCDijetAna();
     }
 
+    fUtils = new AliAnalysisUtils();
+    fUtils->SetMaxVtxZ(10);
 
     TString sktScheme;
     TString santiktScheme;
@@ -304,16 +312,37 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
 {
     //cout << "======================== BEGIN EVENT ========================" << endl;
     // Processing of one event
+    fhistos->fh_eventSel->Fill("events wo/ cuts",1.0);
     if(fDebug > 5) cout << "------- AliJCDijetTask Exec-------"<<endl;
     if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
     if( fJCatalystTask->GetJCatalystEntry() != fEntry) return;
+    fhistos->fh_eventSel->Fill("catalyst entry ok",1.0);
+    if( !fJCatalystTask->GetIsGoodEvent() ) return;
+    fhistos->fh_eventSel->Fill("catalyst ok",1.0);
+
+    if(flags & DIJET_VERTEX13PA) {
+        if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
+        fhistos->fh_eventSel->Fill("vertex2013pA ok",1.0);
+    }
+
+    if(flags & DIJET_PILEUPSPD) {
+        if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) return;
+        fhistos->fh_eventSel->Fill("pileupSPD ok",1.0);
+    }
+
+    if(flags & DIJET_UTILSPILEUPSPD) {
+        if(fUtils->IsPileUpSPD(InputEvent())) return;
+        fhistos->fh_eventSel->Fill("utils pileupSPD ok",1.0);
+    }
+
     fCBin = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
+    fhistos->fh_centrality->Fill(fJCatalystTask->GetCentrality());
     if(fCBin == -1) return;
 
+    fhistos->fh_eventSel->Fill("events",1.0);
     fhistos->fh_events[fCBin]->Fill("events",1.0);
-    fhistos->fh_centrality->Fill(fJCatalystTask->GetCentrality());
     fhistos->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
-
+    
     TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
@@ -324,11 +353,31 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
 
     if(fIsMC) {
         if(fJCatalystDetMCTask->GetJCatalystEntry() != fEntry) return;
+        fhistosDetMC->fh_eventSel->Fill("catalyst entry ok",1.0);
+        if( !fJCatalystDetMCTask->GetIsGoodEvent() ) return;
+        fhistosDetMC->fh_eventSel->Fill("catalyst ok",1.0);
+
+        if(flags & DIJET_VERTEX13PA) {
+            if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
+            fhistosDetMC->fh_eventSel->Fill("vertex2013pA ok",1.0);
+        }
+
+        if(flags & DIJET_PILEUPSPD) {
+            if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) return;
+            fhistosDetMC->fh_eventSel->Fill("pileupSPD ok",1.0);
+        }
+
+        if(flags & DIJET_UTILSPILEUPSPD) {
+            if(fUtils->IsPileUpSPD(InputEvent())) return;
+            fhistosDetMC->fh_eventSel->Fill("utils pileupSPD ok",1.0);
+        }
+
         fCBinDetMC = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
+        fhistosDetMC->fh_centrality->Fill(fJCatalystTask->GetCentrality());
         if(fCBinDetMC == -1) return;
 
+        fhistosDetMC->fh_eventSel->Fill("events",1.0);
         fhistosDetMC->fh_events[fCBin]->Fill("events",1.0);
-        fhistosDetMC->fh_centrality->Fill(fJCatalystTask->GetCentrality());
         fhistosDetMC->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
 
         TClonesArray *fInputListDetMC = (TClonesArray*)fJCatalystDetMCTask->GetInputList();
