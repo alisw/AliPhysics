@@ -191,13 +191,20 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //
   //forwardDist = 0;
 
-
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
+  //fCalculator.fUtil = fUtil;
+  Bool_t isgoodrun = kFALSE;
+  if (!fSettings.mc){
+    isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
+  }
+  if (!fSettings.mc) fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
+
+
 
   // Get the event validation object
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
-  if (!ev_val->IsValidEvent()){
+  if (!ev_val->IsValidEvent() || !isgoodrun){
   //  PostData(1, this->fOutputList);
     PostData(1, fStorage);
 
