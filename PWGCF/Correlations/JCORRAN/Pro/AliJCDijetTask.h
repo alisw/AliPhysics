@@ -96,7 +96,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         int fCBinDetMC;
         TDirectory     *fOutput; // Output directory
         UInt_t flags; //
-        AliAnalysisUtils *fUtils=nullptr;//!
+        AliAnalysisUtils *fUtils; //!
 
         ClassDef(AliJCDijetTask, 1); 
 };
