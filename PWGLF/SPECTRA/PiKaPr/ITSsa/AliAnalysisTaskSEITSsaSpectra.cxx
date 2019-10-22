@@ -1033,19 +1033,19 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
         fHistSepPowerTrue[lMCtIndex]->Fill(lMCpt, dEdx);
         if (lMCevent->IsPhysicalPrimary(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 0);
-          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCPt, 0);
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 0);
         }
         else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 1);
-          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCPt, 1);
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 1);
         }
         else if (lMCevent->IsSecondaryFromMaterial(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 2);
-          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCPt, 2);
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 2);
         }
         else {
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 3);
-          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCPt, 3);
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 3);
           AliWarning("Weird particle physics");
         }
       }
