@@ -238,7 +238,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fMinCentr(30.),
 	fMaxCentr(50.),
 	fSparseElectron(0),
-	fvalueElectron(0)
+	fvalueElectron(0),
+        iTree(kFALSE)
 
 
 {
@@ -443,7 +444,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fMinCentr(30.),
 	fMaxCentr(50.),
 	fSparseElectron(0),
-	fvalueElectron(0)
+	fvalueElectron(0),
+        iTree(kFALSE)
 
 	// Standard constructor
 {
@@ -930,7 +932,7 @@ Int_t Sparsebins[6]={100, 100, 100, 100, 100, 300}; // trigger;pT;nSigma;eop;m20
 Double_t Sparsexmin[6]={ 0,  0, -10, -10, -10, 0};
 Double_t Sparsexmax[6]={10, 10,  10,  10,  10, 3};
 fSparseElectron = new THnSparseD ("fSparseElectron","correlation;Pt;P;TPCnsigma;ITSnsigma;TOFnsigma;E/p;",6,Sparsebins,Sparsexmin,Sparsexmax);
-fOutputList -> Add(fSparseElectron);
+if(iTree)fOutputList -> Add(fSparseElectron);
 
 
 const int ncentbins = static_cast<int>(fMaxCentr-fMinCentr);
@@ -2007,7 +2009,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	 Double_t clustMatchE = clustMatch->E();
 	 if(track->P()>0) fvalueElectron[5] = clustMatchE/track->P();
         }
-        fSparseElectron->Fill(fvalueElectron);
+        if(iTree)fSparseElectron->Fill(fvalueElectron);
 
 
 
