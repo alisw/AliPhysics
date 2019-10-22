@@ -18,11 +18,11 @@ class TBits;
 #include "AliTimeRangeCut.h"
 #include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
+class AliAnalysisTaskUpcTest : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskUpcNano_MB();
-  AliAnalysisTaskUpcNano_MB(const char *name);
-  virtual ~AliAnalysisTaskUpcNano_MB();
+  AliAnalysisTaskUpcTest();
+  AliAnalysisTaskUpcTest(const char *name);
+  virtual ~AliAnalysisTaskUpcTest();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -88,10 +88,10 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliTOFTriggerMask *fTOFmask;
   TBits fFOCrossFiredChips;
   
-  AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
-  AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
+  AliAnalysisTaskUpcTest(const AliAnalysisTaskUpcTest&); //not implemented
+  AliAnalysisTaskUpcTest& operator =(const AliAnalysisTaskUpcTest&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 29); 
+  ClassDef(AliAnalysisTaskUpcTest, 29); 
 };
 
 #endif

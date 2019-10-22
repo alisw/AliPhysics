@@ -54,7 +54,7 @@
 // my headers
 #include "AliAnalysisTaskUpcNano_MB.h"
 
-ClassImp(AliAnalysisTaskUpcNano_MB);
+ClassImp(AliAnalysisTaskUpcTest);
 
 using std::cout;
 using std::endl;
@@ -62,7 +62,7 @@ using std::endl;
 //analysis skeleton of UPC nano AODs,
 
 //_____________________________________________________________________________
-AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB() 
+AliAnalysisTaskUpcTest::AliAnalysisTaskUpcTest() 
   : AliAnalysisTaskSE(),
 	fTrackCutsBit0(0),
 	fTrackCutsBit1(0),
@@ -135,7 +135,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name) 
+AliAnalysisTaskUpcTest::AliAnalysisTaskUpcTest(const char *name) 
   : AliAnalysisTaskSE(name),
 	fTrackCutsBit0(0),
 	fTrackCutsBit1(0),
@@ -208,7 +208,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 }//AliAnalysisTaskUpcNano_MB
 
 //_____________________________________________________________________________
-AliAnalysisTaskUpcNano_MB::~AliAnalysisTaskUpcNano_MB() 
+AliAnalysisTaskUpcTest::~AliAnalysisTaskUpcTest() 
 {
   // Destructor
   
@@ -222,7 +222,7 @@ AliAnalysisTaskUpcNano_MB::~AliAnalysisTaskUpcNano_MB()
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
+void AliAnalysisTaskUpcTest::UserCreateOutputObjects()
 {
   
 AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
@@ -390,7 +390,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *) 
+void AliAnalysisTaskUpcTest::UserExec(Option_t *) 
 {
 
   AliVEvent *fEvent = InputEvent();
@@ -838,14 +838,14 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 }//UserExec
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcNano_MB::SetCrossed(Int_t spd[4], TBits &crossed){
+void AliAnalysisTaskUpcTest::SetCrossed(Int_t spd[4], TBits &crossed){
 
   Int_t chipId2;
   for(Int_t iLayer = 0; iLayer<4 ;iLayer++)
     if(spd[iLayer]>0) { crossed.SetBitNumber(GetChipId(spd[iLayer],chipId2)); crossed.SetBitNumber(chipId2); }
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskUpcNano_MB::GetChipId(Int_t index, Int_t &chipId2, Bool_t debug){
+Int_t AliAnalysisTaskUpcTest::GetChipId(Int_t index, Int_t &chipId2, Bool_t debug){
   Int_t status   = (index%1000000)/100000;
   Int_t iModule  = index/1000000;           // 0 - 239
   Int_t iPhi     = iModule/4;               // 0-19 - inner, 20-59 outer
@@ -885,7 +885,7 @@ Int_t AliAnalysisTaskUpcNano_MB::GetChipId(Int_t index, Int_t &chipId2, Bool_t d
   return chipId;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskUpcNano_MB::IsSTGFired(TBits bits, Int_t dphiMin, Int_t dphiMax, Bool_t tolerance){
+Bool_t AliAnalysisTaskUpcTest::IsSTGFired(TBits bits, Int_t dphiMin, Int_t dphiMax, Bool_t tolerance){
   Int_t n1 = bits.CountBits(400);
   Int_t n0 = bits.CountBits()-n1;
   //cout<<n0<<" "<<n1<<endl;
@@ -907,7 +907,7 @@ Bool_t AliAnalysisTaskUpcNano_MB::IsSTGFired(TBits bits, Int_t dphiMin, Int_t dp
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
+void AliAnalysisTaskUpcTest::RunMC(AliVEvent *fEvent)
 {
 
   // **************************************************************************
@@ -1051,10 +1051,10 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
        TMath::Abs(mcPart->PdgCode()) == 211||
        TMath::Abs(mcPart->PdgCode()) == 22){
 
-        if(TMath::Abs(mcPart->PdgCode()) != 13) {
-			qPart[nmc] = mcPart->Charge(); // Returns +/- 3 due to MC saving charge as quark charge
-			nmc++;// counts muons
-			}
+       if(TMath::Abs(mcPart->PdgCode()) == 13) {
+		 qPart[nmc] = mcPart->Charge(); // Returns +/- 3 due to MC saving charge as quark charge
+		 nmc++;// counts muons
+     	 }
        
        if(mcPart->GetMother() == -1){
          if(TMath::Abs(mcPart->PdgCode()) != 22 && TMath::Abs(mcPart->Eta())>cutEta) fInEtaGen = kFALSE;
@@ -1097,13 +1097,13 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcNano_MB::Terminate(Option_t *) 
+void AliAnalysisTaskUpcTest::Terminate(Option_t *) 
 {
   cout<<"Analysis complete."<<endl;
 }//Terminate
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcNano_MB::FillTree(TTree *t, TLorentzVector v) {
+void AliAnalysisTaskUpcTest::FillTree(TTree *t, TLorentzVector v) {
 
   fPt      = v.Pt();
   if(v.E() != v.Pz())fY = v.Rapidity();
@@ -1116,7 +1116,7 @@ void AliAnalysisTaskUpcNano_MB::FillTree(TTree *t, TLorentzVector v) {
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcNano_MB::FillTree(TTree *t, TLorentzVector v, TLorentzVector vgen, TLorentzVector vDaughter[], TLorentzVector vGenDaughter[]) {
+void AliAnalysisTaskUpcTest::FillTree(TTree *t, TLorentzVector v, TLorentzVector vgen, TLorentzVector vDaughter[], TLorentzVector vGenDaughter[]) {
 
   fPt      = v.Pt();
   fPtDaughter[0] = vDaughter[0].Pt();
@@ -1136,7 +1136,7 @@ void AliAnalysisTaskUpcNano_MB::FillTree(TTree *t, TLorentzVector v, TLorentzVec
 }
 
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskUpcNano_MB::GetMedian(Double_t *daArray) {
+Double_t AliAnalysisTaskUpcTest::GetMedian(Double_t *daArray) {
     // Allocate an array of the same size and sort it.
     Double_t dpSorted[4];
     for (Int_t i = 0; i < 4; ++i) {
