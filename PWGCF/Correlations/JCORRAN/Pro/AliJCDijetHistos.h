@@ -56,9 +56,11 @@ class AliJCDijetHistos : public AliJHistogramInterface
         // Event/Track histograms
         //===================================================
         AliJTH1D fh_events;       //! // for counting events, jets, dijets and so on.
+        AliJTH1D fh_eventSel;     //! // for studying event selection.
         AliJTH1D fh_info;         //! // General information about the run.
         AliJTH1D fh_centrality;   //! // centrality histogram
         AliJTH1D fh_zvtx;         //! // z-vertex histogram
+        AliJTH1D fh_nch;         //! // Number of charged tracks
 
         AliJTH1D fh_pt;     //! // for pt dist of tracks
         AliJTH1D fh_ptPosEta; //! // for pt dist of tracks with positive eta
