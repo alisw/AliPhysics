@@ -1866,7 +1866,7 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceOffsetForSMsV2(Int_t runNumber,TStrin
         for(Int_t j=0;j<upperLimit[19];j++){
           if(ccBCPAR[iPAR][i]->GetBinContent(j)>0.) emptyCounter++;
         }
-        if(emptyCounter<1500) shouldBeEmptyPAR[iPAR][i]=kTRUE;
+        if(emptyCounter<400) shouldBeEmptyPAR[iPAR][i]=kTRUE;
         printf("Non-zero channels %d BC %d PAR %d should be empty: %d \n",emptyCounter,i,iPAR,shouldBeEmptyPAR[iPAR][i]);
       }
       //it cannot be empty after par when befor was not empty
