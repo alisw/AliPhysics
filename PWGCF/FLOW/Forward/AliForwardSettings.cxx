@@ -50,6 +50,7 @@ AliForwardSettings::AliForwardSettings() :
   fMaxConsequtiveStrips(0),
   standard_only(kTRUE),
   fmdlowcut(2.0),
-  fmdhighcut(3.5)
+  fmdhighcut(3.5),
+  nua_runnumber(0)
 {
 }
