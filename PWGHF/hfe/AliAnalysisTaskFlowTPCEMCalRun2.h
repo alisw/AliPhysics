@@ -67,6 +67,8 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		void SetMinCentrality(float mincentr=30.) {fMinCentr = mincentr;}
 		void SetMaxCentrality(float maxcentr=50.) {fMaxCentr = maxcentr;}
 
+                void SetTree(Bool_t itree){iTree=itree;}
+
 		//virtual void LocalInit();
 
 		Bool_t IsPdecay(int mpid);
@@ -283,6 +285,7 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
 		THnSparse  *fSparseElectron;//!Electron info
 		Double_t *fvalueElectron;//!Electron info
+                Bool_t iTree;
 
 		AliAnalysisTaskFlowTPCEMCalRun2(const AliAnalysisTaskFlowTPCEMCalRun2&); // not implemented
 		AliAnalysisTaskFlowTPCEMCalRun2& operator=(const AliAnalysisTaskFlowTPCEMCalRun2&); // not implemented

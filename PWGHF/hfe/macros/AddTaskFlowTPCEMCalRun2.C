@@ -18,7 +18,8 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     Double_t emcss_mim = 0.01,
     Double_t emcss_max = 0.35,
     Double_t invmass = 0.1,
-    Double_t invmass_pt = 0.15
+    Double_t invmass_pt = 0.15,
+    Bool_t TreeOn = kFALSE
  )
 {
     // get the manager via the static access member. since it's static, you don't need
@@ -68,6 +69,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     task->SetMaxCentrality(cmax);
     task->SetPIDcuts(tpcnsig, emceop, emcss_mim, emcss_max);
     task->SetMasscuts(invmass,invmass_pt);
+    task->SetTree(TreeOn);
 
     mgr->AddTask(task);
 
