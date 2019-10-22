@@ -618,7 +618,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
            // Just to fill the motherpT
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
           //CorrCharm3050 = 15.1975*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)) / (15.1975*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519))); // previous
-          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519))); // 15o correction
           
           //CorrCharm3050 = 1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153)) // old (10h)
           //      /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
@@ -654,7 +654,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         if(SourceNew == 0)
         {
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
-          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519))); // 15o correction
           IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159+1);
           OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159);
           fDCACharmNew->Fill(pt, IP);
