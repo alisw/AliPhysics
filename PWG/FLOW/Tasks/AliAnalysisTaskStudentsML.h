@@ -154,7 +154,6 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   // 1.) Control histograms: 
   TList *fControlHistogramsList; // list to hold all control histograms
-  TH1F *fPtHist;                 // atrack->Pt() 
   Int_t fNbins;                  // number of bins
   Float_t fMinBin;               // min bin
   Float_t fMaxBin;               // min bin 
@@ -263,7 +262,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,22);
+  ClassDef(AliAnalysisTaskStudentsML,23);
 
 };
 
