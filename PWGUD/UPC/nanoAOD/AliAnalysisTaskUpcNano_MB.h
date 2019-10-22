@@ -75,7 +75,7 @@ class AliAnalysisTaskUpcTest : public AliAnalysisTaskSE {
   TH2I *hADdecision;		//!
   TH2I *hV0decision;		//!
   
-  Double_t fPtDaughter[2], fPtGenDaughter[2];
+  Float_t fPtDaughter[2], fPtGenDaughter[2];
   Float_t fPt, fY, fM, fPhi, fPtGen, fYGen, fMGen, fPhiGen, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma, fTrackLenght[6];
   Int_t fChannel, fSign, fRunNumber, fADAdecision, fADCdecision,fV0Adecision, fV0Cdecision, fNGoodTracksITS, fNGoodTracksLoose, labelMC[2];
   Bool_t fTriggerInputsMC[NTRIGGERINPUTS], fTriggers[NTRIGGERS], fInEtaGen, fInEtaRec;
