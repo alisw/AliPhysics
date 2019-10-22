@@ -168,6 +168,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
       fHistRecoMC[index] = NULL;
 
       fHistTruePIDMCReco[index] = NULL;
+      fHistTruePIDMCGen[index] = NULL;
     }
   }
   for (int iL = 0; iL < 4; ++iL)
@@ -489,6 +490,11 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
         fHistTruePIDMCReco[index] = new TH3F(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});", nCentBins,
                                              centBins, nPtBins, ptBins, nPhysBins, physBins);
         fOutput->Add(fHistTruePIDMCReco[index]);
+
+        hist_name = Form("fHistTruePIDMCGen%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
+        fHistTruePIDMCGen[index] = new TH3F(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});", nCentBins,
+                                             centBins, nPtBins, ptBins, nPhysBins, physBins);
+        fOutput->Add(fHistTruePIDMCGen[index]);
 
         // Histograms MC DCAxy
         hist_name = Form("fHistDCARecoPID_prim%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
@@ -1025,14 +1031,21 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       // information from the MC kinematics (truth PID)
       if (fIsMC && lIsGoodPart) {
         fHistSepPowerTrue[lMCtIndex]->Fill(lMCpt, dEdx);
-        if (lMCevent->IsPhysicalPrimary(lMCtrk))
+        if (lMCevent->IsPhysicalPrimary(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 0);
-        else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk))
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCPt, 0);
+        }
+        else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 1);
-        else if (lMCevent->IsSecondaryFromMaterial(lMCtrk))
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCPt, 1);
+        }
+        else if (lMCevent->IsSecondaryFromMaterial(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 2);
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCPt, 2);
+        }
         else {
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 3);
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCPt, 3);
           AliWarning("Weird particle physics");
         }
       }
