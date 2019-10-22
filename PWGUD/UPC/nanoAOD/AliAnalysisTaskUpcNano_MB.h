@@ -3,6 +3,8 @@
 /* $Id$ */
 
 #ifndef ALIANALYSISTASKUPCNano_MB_H
+const Int_t NTRIGGERINPUTS = 11;
+const Int_t NTRIGGERS = 10;
 #define ALIANALYSISTASKUPCNano_MB_H
 
 class TH1;
@@ -35,6 +37,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
   Bool_t IsSTGFired(TBits bits, Int_t dphiMin=4, Int_t dphiMax=10, Bool_t tolerance = 1);
   void FillTree(TTree *t, TLorentzVector v);
+  void FillTree(TTree *t, TLorentzVector v, TLorentzVector vgen, TLorentzVector vDaughter[], TLorentzVector vGenDaughter[]);
  private:
  
   AliPIDResponse *fPIDResponse;
@@ -72,10 +75,10 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH2I *hADdecision;		//!
   TH2I *hV0decision;		//!
   
-  
-  Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma, fTrackLenght[6];
-  Int_t fChannel, fSign, fRunNumber, fADAdecision, fADCdecision,fV0Adecision, fV0Cdecision, fNGoodTracksITS, fNGoodTracksLoose;
-  Bool_t fTriggerInputsMC[11], fTriggers[10], fInEtaGen, fInEtaRec;
+  Float_t fPtDaughter[2], fPtGenDaughter[2];
+  Float_t fPt, fY, fM, fPhi, fPtGen, fYGen, fMGen, fPhiGen, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma, fTrackLenght[6];
+  Int_t fChannel, fSign, fRunNumber, fADAdecision, fADCdecision,fV0Adecision, fV0Cdecision, fNGoodTracksITS, fNGoodTracksLoose, labelMC[2];
+  Bool_t fTriggerInputsMC[NTRIGGERINPUTS], fTriggers[NTRIGGERS], fInEtaGen, fInEtaRec;
   
   TFile *fSPDfile;
   TFile *fTOFfile;
