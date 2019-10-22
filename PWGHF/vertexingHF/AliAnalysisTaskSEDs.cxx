@@ -118,6 +118,10 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fModelOutputCuts(),
   fPtBinsModel(),
   fModels(),
+  fEnablePIDMLSparses(kFALSE),
+  fNMLBins(300),
+  fMLOutputMin(0.85),
+  fMLOutputMax(1.0),
   fFillBkgSparse(kFALSE),
   fKeepOnlyBkgFromHIJING(kFALSE)
 {
@@ -173,6 +177,10 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   {
     fnSparseMCDplus[iHist] = nullptr;
     fImpParSparseMC[iHist] = nullptr;
+  }
+  for (Int_t iHist=0; iHist<2; iHist++)
+  {
+      fnSparseNsigmaPIDVsML[iHist] = nullptr;
   }
 }
 
@@ -237,6 +245,10 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fModelOutputCuts(),
   fPtBinsModel(),
   fModels(),
+  fEnablePIDMLSparses(kFALSE),
+  fNMLBins(300),
+  fMLOutputMin(0.85),
+  fMLOutputMax(1.0),
   fFillBkgSparse(kFALSE),
   fKeepOnlyBkgFromHIJING(kFALSE)
 {
@@ -294,6 +306,11 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   {
     fnSparseMCDplus[iHist] = nullptr;
     fImpParSparseMC[iHist] = nullptr;
+  }
+
+  for (Int_t iHist=0; iHist<2; iHist++)
+  {
+      fnSparseNsigmaPIDVsML[iHist] = nullptr;
   }
 
   Int_t nptbins = fAnalysisCuts->GetNPtBins();
@@ -426,6 +443,14 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     {
       for (Int_t iHist = 0; iHist < 4; iHist++)
           delete fnSparseMCDplus[iHist];
+    }
+
+    if(fApplyML && fEnablePIDMLSparses)
+    {
+      for (Int_t iHist=0; iHist<2; iHist++)
+      {
+          delete fnSparseNsigmaPIDVsML[iHist];
+      }
     }
   }
   if (fHistoPtWeight)
@@ -735,6 +760,20 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
 
+  //Loading of ML models
+  if(fApplyML) {
+    for(auto it = fModelPaths.begin(); it != fModelPaths.end(); it++) {
+      std::string model_path = GetFile(*it);
+      AliExternalBDT model = AliExternalBDT();
+      if(!model.LoadXGBoostModel(model_path))
+        AliFatal("Problem in loading model");
+      fModels.push_back(model);
+    }
+
+    if(fEnablePIDMLSparses)
+      CreatePIDMLSparses();
+  }
+
   PostData(1, fOutput);
   PostData(3, fCounter);
 
@@ -749,17 +788,6 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     OpenFile(4); // 4 is the slot number of the ntuple
 
     fNtupleDs = new TNtuple("fNtupleDs", "Ds", "Pt:InvMass:d0:origin");
-  }
-
-  //Loading of ML models
-  if(fApplyML) {
-    for(auto it = fModelPaths.begin(); it != fModelPaths.end(); it++) {
-      std::string model_path = GetFile(*it);
-      AliExternalBDT model = AliExternalBDT();
-      if(!model.LoadXGBoostModel(model_path))
-        AliFatal("Problem in loading model");
-      fModels.push_back(model);
-    }
   }
 
   return;
@@ -1239,6 +1267,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           Double_t normIPprong[nProng]; //to store IP of k,k,pi
           Double_t absimpparxy = TMath::Abs(d->ImpParXY());
           //variables for ML application
+          Double_t nsigTPCPi[nProng] = {-999., -999., -999.};
+          Double_t nsigTPCK[nProng] = {-999., -999., -999.};
+          Double_t nsigTOFPi[nProng] = {-999., -999., -999.};
+          Double_t nsigTOFK[nProng] = {-999., -999., -999.};
           Double_t sigCombK[nProng] = {-999., -999., -999.};
           Double_t sigCombPi[nProng] = {-999., -999., -999.};
           AliAODPidHF *Pid_HF = nullptr;
@@ -1273,17 +1305,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             //get PID info for ML application
             if(fApplyML)
             {
-              Double_t sigTPC_K = -999.;
-              Double_t sigTPC_Pi = -999.;
-              Double_t sigTOF_K = -999.;
-              Double_t sigTOF_Pi = -999.;
               AliAODTrack *track=(AliAODTrack*)d->GetDaughter(ip);
-              Pid_HF->GetnSigmaTPC(track,3,sigTPC_K);
-              Pid_HF->GetnSigmaTPC(track,2,sigTPC_Pi);
-              Pid_HF->GetnSigmaTOF(track,3,sigTOF_K);
-              Pid_HF->GetnSigmaTOF(track,2,sigTOF_Pi);
-              sigCombK[ip] = CombineNsigmaDiffDet(sigTPC_K, sigTOF_K);
-              sigCombPi[ip] = CombineNsigmaDiffDet(sigTPC_Pi, sigTOF_Pi);
+              Pid_HF->GetnSigmaTPC(track,3,nsigTPCK[ip]);
+              Pid_HF->GetnSigmaTPC(track,2,nsigTPCPi[ip]);
+              Pid_HF->GetnSigmaTOF(track,3,nsigTOFK[ip]);
+              Pid_HF->GetnSigmaTOF(track,2,nsigTOFPi[ip]);
+              sigCombK[ip] = CombineNsigmaDiffDet(nsigTPCK[ip], nsigTOFK[ip]);
+              sigCombPi[ip] = CombineNsigmaDiffDet(nsigTPCPi[ip], nsigTOFPi[ip]);
             }
           }
 
@@ -1301,6 +1329,16 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
                                        sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
               modelPred = fModels[iModel].Predict(features, fNumVars);
+              if(fEnablePIDMLSparses && (!fReadMC || (indexMCKKpi == GetSignalHistoIndex(iPtBin) && orig == 4)))
+              {
+                Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred, nsigTPCPi[0], nsigTPCK[0], nsigTOFPi[0], nsigTOFK[0],
+                                                     nsigTPCPi[1], nsigTPCK[1], nsigTOFPi[1], nsigTOFK[1],
+                                                     nsigTPCPi[2], nsigTPCK[2], nsigTOFPi[2], nsigTOFK[2]};
+                Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred, sigCombPi[0], sigCombK[0],
+                                                             sigCombPi[1], sigCombK[1], sigCombPi[2], sigCombK[2]};
+                fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID);
+                fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb);
+              }
             }
 
             Double_t var4nSparse[knVarForSparse] = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000,
@@ -1346,6 +1384,16 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
                                        sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
               modelPred = fModels[iModel].Predict(features, fNumVars);
+              if(fEnablePIDMLSparses && (!fReadMC || (indexMCpiKK == GetSignalHistoIndex(iPtBin) && orig == 4)))
+              {
+                Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred, nsigTPCPi[0], nsigTPCK[0], nsigTOFPi[0], nsigTOFK[0],
+                                                     nsigTPCPi[1], nsigTPCK[1], nsigTOFPi[1], nsigTOFK[1],
+                                                     nsigTPCPi[2], nsigTPCK[2], nsigTOFPi[2], nsigTOFK[2]};
+                Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred, sigCombPi[0], sigCombK[0],
+                                                             sigCombPi[1], sigCombK[1], sigCombPi[2], sigCombK[2]};
+                fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID);
+                fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb);
+              }
             }
 
             Double_t var4nSparse[knVarForSparse] = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000,
@@ -1889,11 +1937,8 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
   Int_t nSparseAxes = knVarForSparse;
-  Int_t nMLBins = 300;
-  if(!fApplyML) {
-    nMLBins = 1;
+  if(!fApplyML)
     nSparseAxes--;
-  }
 
   Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
   if(fUseFinPtBinsForSparse)
@@ -1907,9 +1952,9 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
 
   if (fSystem == kpp)
   {
-    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nMLBins};
-    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 0.85};
-    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1.};
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
     std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
     std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
@@ -1919,18 +1964,18 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     nInvMassBins = (Int_t)(0.45 / fMassBinSize + 0.5);
     minMass = massDs - 0.5 * nInvMassBins * fMassBinSize;
     maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
-    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, nMLBins};
-    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., 0.85};
-    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1.};
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
     std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
     std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
   }
   else if (fSystem == kUpgr)
   {
-    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, nMLBins};
-    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., 0.85};
-    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., 1.};
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax};
     std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
     std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
@@ -2032,6 +2077,43 @@ void AliAnalysisTaskSEDs::CreateImpactParameterSparses()
       fOutput->Add(fImpParSparseMC[iSparse]);
     }
   }
+}
+
+//_________________________________________________________________________
+void AliAnalysisTaskSEDs::CreatePIDMLSparses()
+{
+  Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
+  if(fUseFinPtBinsForSparse)
+     nPtBins = nPtBins*10;
+  Int_t nPIDbins = 80;
+  Double_t PIDmin = -20.;
+  Double_t PIDmax = 20.;
+  Double_t PIDcombMin = 0.;
+  Double_t PIDcombMax = 40.;
+
+  TString PIDvarnames[knVarPID] = {"#it{p}_{T}", "ML model output", "n#sigmaTPCPi_0", "n#sigmaTPCK_0", "n#sigmaTOFPi_0", "n#sigmaTOFK_0",
+                                         "n#sigmaTPCPi_1", "n#sigmaTPCK_1", "n#sigmaTOFPi_1", "n#sigmaTOFK_1", "n#sigmaTPCPi_2", "n#sigmaTPCK_2",
+                                         "n#sigmaTOFPi_2", "n#sigmaTOFK_2"};
+  Int_t nBinsPID[knVarPID] = {nPtBins, fNMLBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins,
+                                    nPIDbins, nPIDbins};
+  Double_t xminPID[knVarPID] = {0., fMLOutputMin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin};
+  Double_t xmaxPID[knVarPID] = {fPtLimits[fNPtBins], fMLOutputMax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax};
+
+  TString PIDvarnamesComb[knVarPIDcomb] = {"#it{p}_{T}", "ML model output", "n#sigmaCombPi_0", "n#sigmaCombK_0", "n#sigmaCombPi_1", "n#sigmaCombK_1",
+                                                 "n#sigmaCombPi_2", "n#sigmaCombK_2"};
+  Int_t nBinsPIDcomb[knVarPIDcomb] = {nPtBins, fNMLBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins};
+  Double_t xminPIDcomb[knVarPIDcomb] = {0., fMLOutputMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin};
+  Double_t xmaxPIDcomb[knVarPIDcomb] = {fPtLimits[fNPtBins], fMLOutputMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax};
+
+  fnSparseNsigmaPIDVsML[0] = new THnSparseF("fnSparsePID", "nSparsePID", knVarPID, nBinsPID, xminPID, xmaxPID);
+  for (Int_t iAxis = 0; iAxis < knVarPID; iAxis++)
+    fnSparseNsigmaPIDVsML[0]->GetAxis(iAxis)->SetTitle(Form("%s", PIDvarnames[iAxis].Data()));
+  fOutput->Add(fnSparseNsigmaPIDVsML[0]);
+
+  fnSparseNsigmaPIDVsML[1] = new THnSparseF("fnSparsePIDcomb", "nSparsePIDcomb", knVarPIDcomb, nBinsPIDcomb, xminPIDcomb, xmaxPIDcomb);
+  for (Int_t iAxis = 0; iAxis < knVarPIDcomb; iAxis++)
+    fnSparseNsigmaPIDVsML[1]->GetAxis(iAxis)->SetTitle(Form("%s", PIDvarnamesComb[iAxis].Data()));
+  fOutput->Add(fnSparseNsigmaPIDVsML[1]);
 }
 
 //_________________________________________________________________________________________________
@@ -2161,8 +2243,8 @@ std::string AliAnalysisTaskSEDs::GetFile(const std::string path)
 double AliAnalysisTaskSEDs::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF)
 {
   if(nsigmaTPC > -998. && nsigmaTOF > -998.) return TMath::Sqrt((nsigmaTPC*nsigmaTPC+nsigmaTOF*nsigmaTOF)/2);
-  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
-  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return nsigmaTOF;
+  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return TMath::Abs(nsigmaTPC);
+  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return TMath::Abs(nsigmaTOF);
   else return -999.;
 }
 

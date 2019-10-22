@@ -59,8 +59,9 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
-      void					  SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
+      void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
       void                    SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
+      void                    SetEtaCheckRFP(Bool_t check = kFALSE) { fEtaCheckRFP = check; }
       void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
       void                    SetProcessPID(Bool_t use = kTRUE) { fProcessSpec[kPion] = use; fProcessSpec[kKaon] = use; fProcessSpec[kProton] = use; }
       void                    SetProcessV0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; fProcessSpec[kLambda] = use; }
@@ -217,7 +218,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
 
       // Flow related methods
       void                    FillRefsVectors(const AliUniFlowCorrTask* task, Double_t dGap); // fill flow vector Q with RFPs for reference flow
-      Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Int_t& indStart, Int_t& tracksInBin, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
+      Int_t                   FillPOIsVectors(const AliUniFlowCorrTask* task, Double_t dEtaGap, PartSpecies species, Int_t& indStart, Int_t& tracksInBin, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm = 8, Int_t maxWeightPower = 4); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
 
@@ -228,30 +229,63 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                P(Int_t n, Int_t p) const;
       TComplex                PGapPos(Int_t n, Int_t p) const;
       TComplex                PGapNeg(Int_t n, Int_t p) const;
+      TComplex                PGapMid(Int_t n, Int_t p) const;
       TComplex                S(Int_t n, Int_t p) const;
       TComplex                SGapPos(Int_t n, Int_t p) const;
       TComplex                SGapNeg(Int_t n, Int_t p) const;
+      TComplex                SGapMid(Int_t n, Int_t p) const;
 
       TComplex                Two(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (no eta gap)
       TComplex                TwoGap(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (with eta gap)
+      TComplex                TwoGap3sub(Int_t n1, Int_t n2, Int_t rf1Pos, Int_t rf2Pos) const; // Two particle reference correlation calculations (with 3 subevents)
+      TComplex                TwoPos(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the positive eta)
+      TComplex                TwoNeg(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the negative eta)
+      TComplex                TwoMid(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the mid eta)
       TComplex                Three(Int_t n1, Int_t n2, Int_t n3) const; // Three particle reference correlation calculations (no eta gap)
+      TComplex                ThreePos(Int_t n1, Int_t n2, Int_t n3) const; // Three particle reference correlation calculations (just from the positive eta)
+      TComplex                ThreeNeg(Int_t n1, Int_t n2, Int_t n3) const; // Three particle reference correlation calculations (just from the negative eta)
       TComplex                Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
       TComplex                FourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (with eta gap)
-      TComplex                Four3sub(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (with 3 sub-events)
+      TComplex                FourPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (just from the positive eta)
+      TComplex                FourNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (just from the negative eta)
+      TComplex                Four3sub(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t twoParCorrPosition) const; // Four particle reference correlation calculations (with 3 sub-events)
       TComplex                Five(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5) const; // Five particle reference correlation calculations (no eta gap)
+      TComplex                FivePos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5) const; // Five particle reference correlation calculations (just from the positive eta)
+      TComplex                FiveNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5) const; // Five particle reference correlation calculations (just from the negative eta)
       TComplex                Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (no eta gap)
+      TComplex                SixPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (just from the positive eta)
+      TComplex                SixNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (just from the negative eta)
+      TComplex                SixGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (with eta gap)
       TComplex                Seven(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7) const; // Seven particle reference correlation calculations (no eta gap)
+      TComplex                SevenPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7) const; // Seven particle reference correlation calculations (just from the positive eta)
+      TComplex                SevenNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7) const; // Seven particle reference correlation calculations (just from the negative eta)
       TComplex                Eight(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (no eta gap)
+      TComplex                EightGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (with eta gap)
+      TComplex                EightPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (just from the positive eta)
+      TComplex                EightNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (just from the negative eta)
 
       TComplex                TwoDiff(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (no eta gap)
       TComplex                TwoDiffGapPos(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (with eta gap)
       TComplex                TwoDiffGapNeg(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (with eta gap)
+      TComplex                TwoDiffPos(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (just from the positive eta)
+      TComplex                TwoDiffNeg(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (just from the negative eta)
+      TComplex                TwoDiffMid(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (just from the mid eta)
+      TComplex                TwoDiffGap3sub(Int_t n1, Int_t n2, Int_t poiPos, Int_t rfPos) const; // Two particle diff. correlation calculations (with 3 subevents)
       TComplex                ThreeDiff(Int_t n1, Int_t n2, Int_t n3) const; // Three particle diff. correlation calculations (no eta gap)
       TComplex                ThreeDiffGapPos(Int_t n1, Int_t n2, Int_t n3) const; // Three particle diff. correlation calculations (with eta gap)
       TComplex                ThreeDiffGapNeg(Int_t n1, Int_t n2, Int_t n3) const; // Three particle diff. correlation calculations (with eta gap)
+      TComplex                ThreeDiffPos(Int_t n1, Int_t n2, Int_t n3) const; // Three particle diff. correlation calculations (just from the positive eta)
+      TComplex                ThreeDiffNeg(Int_t n1, Int_t n2, Int_t n3) const; // Three particle diff. correlation calculations (just from the negative eta)
       TComplex                FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
-      TComplex                FourDiffGapPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (with eta gap)
-      TComplex                FourDiffGapNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (with eta gap)
+      TComplex                FourDiffGapPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle diff. correlation calculations (with eta gap)
+      TComplex                FourDiffGapNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle diff. correlation calculations (with eta gap)
+      TComplex                FourDiffPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle diff. correlation calculations (just from the positive eta)
+      TComplex                FourDiffNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle diff. correlation calculations (just from the negative eta)
+      TComplex                FourDiff3sub(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t poiPosition, Int_t twoParCorrPosition) const; // Four particle diff. correlation calculations (with 3 sub-events)
+      TComplex                SixDiffGapPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (with eta gap)
+      TComplex                SixDiffGapNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (with eta gap)
+      TComplex                EightDiffGapPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (with eta gap)
+      TComplex                EightDiffGapNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (with eta gap)
 
       // array lenghts & constants
       AliAODEvent*            fEventAOD; //! AOD event countainer
@@ -273,8 +307,10 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                fFlowVecQmid[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecPpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecPneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
+      TComplex                fFlowVecPmid[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecSpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecSneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
+      TComplex                fFlowVecSmid[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
 
       std::vector<AliUniFlowCorrTask*>  fVecCorrTask; //
       std::vector<AliVTrack*>* fVector[kUnknown]; //! container for selected Refs charged particles
@@ -299,6 +335,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   fPhiNumBinsMass; // number of InvMass bins for phi distribution
       Int_t                   fV0sNumBinsMass; // number of InvMass bins for V0s distribution
       Int_t                   fNumSamples; // [1] overall number of samples (from random sampling) used
+      Bool_t                  fEtaCheckRFP; // [kFALSE] flag for doing analysis of FMPs for positive and negative eta separately
       Bool_t                  fFlowFillWeights; //[kFALSE] flag for filling weights
       Bool_t                  fFlowFillAfterWeights; //[kTRUE] flag for filling weights after NUA (only if fUseWeights is on)
       Bool_t                  fFlowUseWeights; //[kFALSE] flag for using the previously filled weights
@@ -400,6 +437,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH1D*                   fhEventCentrality; //! distribution of event centrality
       TH2D*                   fh2EventCentralityNumRefs; //! distribution of event centrality vs number of selected charged tracks
       TH1D*                   fhEventCounter; //! counter following event selection
+      TH2D*                   fh2MeanMultRFP[10]; //! counter following RFP multiplicity (pT vs. mult.)
       // Charged
       TH1D*                   fhRefsMult; //!multiplicity distribution of selected RFPs
       TH1D*                   fhRefsPt; //! pt distribution of selected RFPs
@@ -529,7 +567,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 10);
+      ClassDef(AliAnalysisTaskUniFlow, 12);
 };
 
 #endif

@@ -237,8 +237,10 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   double ybins[500];
   for(j=0;j<=401;j++) ybins[j]=j-0.5;
 
-  TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
-  hmc->GetYaxis()->SetTitle("QUALITY");
+  //TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
+  //hmc->GetYaxis()->SetTitle("QUALITY");
+  TH2F* hmc=new TH2F("TrackletsVsCent","", nmult,multbins, 401,ybins);
+  hmc->GetYaxis()->SetTitle("TRACKLETS");
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
   // -- PAIR CUTS (common to all resonances) ------------------------------------------------------

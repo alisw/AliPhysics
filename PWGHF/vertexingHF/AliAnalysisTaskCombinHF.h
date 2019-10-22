@@ -217,6 +217,8 @@ private:
   TH2F *fHistonSigmaTPCKaon;        //!<! hist. of nSigmaTPC kaon
   TH2F *fHistonSigmaTPCKaonGoodTOF; //!<! hist. of nSigmaTPC kaon
   TH2F *fHistonSigmaTOFKaon;        //!<! hist. of nSigmaTOF kaon
+  TH3F *fHistoPtKPtPiPtD;           //!<! hist. for propagation of tracking unc
+  TH3F *fHistoPtKPtPiPtDSig;        //!<! hist. for propagation of tracking unc
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
@@ -287,7 +289,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,28); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,29); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

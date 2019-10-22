@@ -137,8 +137,8 @@ fFillInputBackgroundJetBranch(kFALSE),
 fBackgroundJets(new TClonesArray("AliAODJet",100)),
 fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
-fMomentum(),                 fOutputContainer(0x0),           
-fhEMCALClusterEtaPhi(0),     fhEMCALClusterEtaPhiFidCut(0),     
+fMomentum(),                 fParRun(kFALSE),                 fCurrentParIndex(0),
+fOutputContainer(0x0),       fhEMCALClusterEtaPhi(0),         fhEMCALClusterEtaPhiFidCut(0),     
 fhEMCALClusterTimeE(0),
 fEnergyHistogramNbins(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
@@ -1301,6 +1301,18 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   fIsTriggerMatchOpenCut[0] = kFALSE ;
   fIsTriggerMatchOpenCut[1] = kFALSE ;
   fIsTriggerMatchOpenCut[2] = kFALSE ;
+
+  fCurrentParIndex = 0;
+  if(IsParRun()){
+    ULong64_t globalEventID = (ULong64_t)fInputEvent->GetBunchCrossNumber() + (ULong64_t)fInputEvent->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fInputEvent->GetPeriodNumber() * (ULong64_t)59793994260;
+    for(Short_t ipar=0;ipar<GetCaloUtils()->GetEMCALRecoUtils()->GetNPars();ipar++){
+      if(globalEventID >= GetCaloUtils()->GetEMCALRecoUtils()->GetGlobalIDPar(ipar)) {
+	fCurrentParIndex++;
+      }
+    }
+  }
+  GetCaloUtils()->GetEMCALRecoUtils()->SetCurrentParNumber(fCurrentParIndex);
+
   
   //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent)
@@ -2012,7 +2024,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
       //additional L1 phase shift
       if(GetCaloUtils()->GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn())
       {
-        GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(iSupMod,fInputEvent->GetBunchCrossNumber(), tof);
+        GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(iSupMod,fInputEvent->GetBunchCrossNumber(), tof, fCurrentParIndex);
       }
 
       clus->SetTOF(tof);
@@ -2131,11 +2143,18 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
     }
   }
   
-  // Check effect of energy and fiducial cuts
-  fhEMCALClusterCutsE[4]->Fill(clus->E());
+  // Check effect of energy and fiducial cuts  
+  if ( bEMCAL || bDCAL ) 
+  {
+    fhEMCALClusterCutsE[4]->Fill(clus->E());
+    fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
+  }
+  else 
+  {
+    AliDebug(2,"Cluster not on EMCal or DCal selected region");
+    return ;
+  }
   
-  if ( bEMCAL || bDCAL ) fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
-
   //----------------------------------------------------
   // Apply N cells cut
   //
@@ -2339,7 +2358,7 @@ void AliCaloTrackReader::FillInputEMCAL()
           //additional L1 phase shift
           if(GetCaloUtils()->GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn())
           {
-            GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absIdMax), fInputEvent->GetBunchCrossNumber(), tof);
+            GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absIdMax), fInputEvent->GetBunchCrossNumber(), tof, fCurrentParIndex);
           }
 
           tof*=1e9;
@@ -2867,7 +2886,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
       //additional L1 phase shift
       if(GetCaloUtils()->GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn()){
-	GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absIdMax), fInputEvent->GetBunchCrossNumber(), tof);
+	GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absIdMax), fInputEvent->GetBunchCrossNumber(), tof, fCurrentParIndex);
       }
     }
     tof *=1.e9;

@@ -223,6 +223,9 @@ public:
   vector<AliAODMCParticle *>  fMCPi0List;                ///< List of MC Pi0s within EMCAL/DCal acceptance
 
   //..Other stuff
+  static const int            kCLUS_BUF_SIZE = 3000;     ///< Should cover all clusters in event
+  signed char                 fClusterAcceptanceStatus[kCLUS_BUF_SIZE];   ///< List of cluster acceptance statuses (post container cuts) (-1 for rejected, 0 for unexamined
+                                                         //   1 for passed, and manual hadronic correction applied)
   TList                      *fEventCutList;           //!<! Output list for event cut histograms
   TList                      *fOutputListQA;           //!<! Output list
   Double_t                    fscaleEta[4];             ///<
@@ -247,6 +250,8 @@ public:
   TH2             *fMAngle;                  //!<! Tyler's histogram
   TH2             *fPtAngle;                 //!<! Tyler's histogram
   TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+  TH2             *fPtEPAnglePionAcc;        //!<! Histogram of delta Psi of accepted pi0 (vs pt)
+  TH2             *fPtEPAngleMCPion;         //!<! Histogram of delta Psi of MC truth pi0 (vs pt)
   TH2             *fEtaPhiPionAcc;           //!<! Histogram of eta,phi location of accepted pions
   TH2             *fMassPtPionAcc;           //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
   TH2             *fMassPtPionRej;           //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates

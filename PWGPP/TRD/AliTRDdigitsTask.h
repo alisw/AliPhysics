@@ -95,8 +95,8 @@ protected:
 
   void CreateTriggerHistos();
   void FillTriggerHisto(TH1*);
-  TH1F* fhTrgAll;
-  TH1F* fhTrgAcc;
+  TH1F* fhTrgAll;  //! trigger classes of all events
+  TH1F* fhTrgAcc;  //! trigger classes of accepted events
 
   //--------------------------------------------------------------------
   // TRD digits I/O

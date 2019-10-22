@@ -221,6 +221,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputdXiAOD(AliMCEvent* fMCEvent, Int_t check);
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
+    void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
 
     TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
     TAxis AxisVar(TString name, std::vector<Double_t> bin);
@@ -262,6 +263,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t fCent = -1;
     Double_t ftrackmult = -1;
     std::vector<UInt_t> goodtrackindices;    //!
+    std::vector<UInt_t> goodtrackfullindices;    //!
     std::vector<UInt_t> goodcascadeindices;  //!
 
     AliPIDResponse* fPIDResponse = nullptr;  //!
@@ -345,6 +347,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t fExoticFinder2 = kFALSE;
     Bool_t fSimplieEventCut = kFALSE;
     Bool_t IsNano = kFALSE;
+    Bool_t IsAOD = kFALSE;
     Bool_t fCPAstudy = kFALSE;
     Bool_t isINEL = kFALSE;
     TString MultiplicityEstimator = "V0M";
@@ -354,7 +357,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t lPosPV[3];
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 31);
+    ClassDef(AliAnalysisTaskXi1530, 33);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -388,6 +391,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 29: Add Special finder
     // 30: Remove unused variables and reformatting
     // 31: Add option to remove PIDqa plots
+    // 32: Add goodtrackfullindices for further trackloop
+    // 33: Modify for the nanoCheck
 };
 
 #endif

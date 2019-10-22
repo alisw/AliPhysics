@@ -130,7 +130,7 @@ void SetNumOfCaloModules              ( Int_t nModules)                         
   // Function to enable MC label sorting
   void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
 
-
+  void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
 
 protected:
@@ -254,12 +254,13 @@ protected:
   Bool_t                  fDoInvMassShowerShapeTree;                          // flag for producing tree tESDInvMassShowerShape
   Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
   Bool_t                  fEnableClusterCutsForTrigger;                       // enable CLusterCuts output for trigger only
+  Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
 
 private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 3);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 4);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H

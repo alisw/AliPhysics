@@ -65,6 +65,7 @@ public:
     void            SetDCABinSize(Double_t dcaBinning) {fDCABinSize = dcaBinning;};
     void            SetStackLoop(Bool_t runStackLoop) {fFlagRunStackLoop = runStackLoop;};
     void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;};
+    void            SetDCAzCut(Double_t dcaZCut) {fDCAzCut = dcaZCut;};
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     void            SetTrkMatch(Double_t maxTrkMatch) {fTrkMatch = maxTrkMatch;};
@@ -118,6 +119,7 @@ private:
     Bool_t              fFlagFillMCHistos; // switch to fill histos that require MC pid
     Bool_t              fFlagRunStackLoop; //switch to run stack loop to get D & B meson species info
     Int_t               fNclusTPC;       // set number of TPC clusters
+    Double_t            fDCAzCut;        // set DCA z cut
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
     Double_t            fTrkMatch; //set distance to cluster
@@ -215,6 +217,8 @@ private:
     TH1F                *fDWeightNew; //!
     TH1F                *fDWeightVar1; //!
     TH1F                *fDWeightVar2; //!
+    TH1F                *fDPlusWeightVar1; //!
+    TH1F                *fDsWeightVar1; //!
     TH1F                *fLcWeightVar1; //!
     TH1F                *fLcWeightVar2; //!
     TH1F                *fBWeight; //!
@@ -257,6 +261,8 @@ private:
     TH1F                *fLambdaCPt; //!
     TH1F                *fD0MesonPtWeight;  //!
     TH1F                *fLambdaCPtWeight; //!
+    TH1F                *fDPlusMesonPtWeight; //!
+    TH1F                *fDsMesonPtWeight; //!
     TH1F                *fEtaCPt; //!
     TH1F                *fCBaryonPt; //!
     

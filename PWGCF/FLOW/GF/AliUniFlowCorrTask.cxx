@@ -103,7 +103,7 @@ AliUniFlowCorrTask::AliUniFlowCorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector
   fsLabel = sLabel;
 }
 // ============================================================================
-void AliUniFlowCorrTask::Print() const
+void AliUniFlowCorrTask::PrintTask() const
 {
   printf("AliUniFlowCorrTask::Print():\n");
   printf("# fsName:\t %s\n", fsName.Data());

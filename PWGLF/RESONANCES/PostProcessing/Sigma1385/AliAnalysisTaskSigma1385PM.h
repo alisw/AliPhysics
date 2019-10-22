@@ -87,6 +87,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void FillTrackToEventPool();
     Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion);
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
+    void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
     void SetCutOpen();
 
     // helper
@@ -166,9 +167,10 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     std::vector<UInt_t> goodtrackindices;  //!
     std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
-    ClassDef(AliAnalysisTaskSigma1385PM, 3);
+    ClassDef(AliAnalysisTaskSigma1385PM, 4);
     // Add rapidity/radius/Lifetime/Y cut of lambda
     // Add NanoOption
+    // 4: Add GetImpactParm function for nano
 };
 
 #endif

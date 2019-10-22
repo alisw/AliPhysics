@@ -35,6 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
+  Exotica/LambdaN/AliAnalysisTaskLambdaNRun2.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNv0Bkg.cxx
   Exotica/Ps/AliAnalysisTaskPsEfficiency.cxx

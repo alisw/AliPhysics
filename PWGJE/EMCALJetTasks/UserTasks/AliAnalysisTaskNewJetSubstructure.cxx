@@ -54,7 +54,7 @@ ClassImp(AliAnalysisTaskNewJetSubstructure)
       fRMatching(0.2), fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
       fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE),
       fDoFillMCLund(kFALSE), fCheckResolution(kFALSE), fSubjetCutoff(0.1),
-      fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE),
+      fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
       fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
       fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
       fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
@@ -79,7 +79,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
       fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
       fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE),
       fDoFillMCLund(kFALSE), fCheckResolution(kFALSE), fSubjetCutoff(0.1),
-      fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE),
+      fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
       fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
       fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
       fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
@@ -115,10 +115,10 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   fOutput->Add(fPtJet);
 
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
-  const Int_t dimSpec = 7;
-  const Int_t nBinsSpec[7] = {50, 100, 100, 20, 100, 50, 100};
-  const Double_t lowBinSpec[7] = {0., -10, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec[7] = {5., 10., 200, 20, 200, 100, 50};
+  const Int_t dimSpec = 8;
+  const Int_t nBinsSpec[8] = {50, 100, 100, 20, 100, 50, 100, 2};
+  const Double_t lowBinSpec[8] = {0., -10, 0, 0, 0, 0, 0, 0};
+  const Double_t hiBinSpec[8] = {5., 10., 200, 20, 200, 100, 50, 2};
   fHLundIterative =
       new THnSparseF("fHLundIterative",
                      "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
@@ -297,8 +297,16 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
           jet2 = jetUS->ClosestJet();
         }
 
-        if (!(fJetShapeSub == kConstSub))
-          jet2 = jet1->ClosestJet();
+	if(fJetShapeSub==kEventSub){
+	
+	  jetUS = jet1->ClosestJet();
+	  if (!jetUS) continue;
+	  jet2 = jetUS->ClosestJet();
+	}
+	  
+        if (!(fJetShapeSub == kConstSub) && !(fJetShapeSub == kEventSub)) jet2 = jet1->ClosestJet();
+        
+	
         if (!jet2) {
           Printf("jet2 does not exist, returning");
           continue;
@@ -313,10 +321,16 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         }
         cout << "jet 3 exists" << jet3->Pt() << endl;
 
+	AliJetContainer *jetContTrue = GetJetContainer(1);
+	AliJetContainer *jetContPart = GetJetContainer(3);
+	
+	if (fCheckResolution)
+          CheckSubjetResolution(jet2, jetContTrue, jet3, jetContPart);
+
         Double_t fraction = 0;
-        if (!(fJetShapeSub == kConstSub))
+        if (!(fJetShapeSub == kConstSub) && !(fJetShapeSub==kEventSub))
           fraction = jetCont->GetFractionSharedPt(jet1);
-        if (fJetShapeSub == kConstSub)
+	  if ((fJetShapeSub == kConstSub) || (fJetShapeSub == kEventSub))
           fraction = jetContUS->GetFractionSharedPt(jetUS);
 
         if (fraction < fMinFractionShared)
@@ -383,7 +397,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       }
 
       Double_t ptSubtracted = 0;
-      if (fJetShapeSub == kConstSub)
+      if (fJetShapeSub == kConstSub || fJetShapeSub == kEventSub)
         ptSubtracted = jet1->Pt();
 
       else if (fJetShapeSub == kDerivSub) {
@@ -406,6 +420,9 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
       fShapesVar[0] = ptSubtracted;
       fShapesVar[10] = jet1->MaxTrackPt();
+      
+      if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet3->MaxTrackPt()) continue;
+      
       IterativeParents(jet1, jetCont);
 
       Float_t ptMatch = 0.;
@@ -611,6 +628,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(
     double nall = 0;
     double nsd = 0;
     int flagSubjet = 0;
+    int flagSubjetkT = 0;
     double Rg = 0;
     double zg = 0;
     double xktg = 0;
@@ -622,6 +640,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(
       nall = nall + 1;
 
       flagSubjet = 0;
+      flagSubjetkT = 0;
       area1 = j1.area_4vector();
       area2 = j2.area_4vector();
       fastjet::PseudoJet jet_sub1 = j1 - GetRhoVal(0) * area1;
@@ -651,8 +670,13 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(
           Rg = delta_R;
           flagSubjet = 1;
         }
-        if (lnpt_rel > 0)
+        if (lnpt_rel > 0) {
           cumtf = cumtf + form;
+	  if ((nsd == 0) && (flagSubjetkT == 0)) {
+	    xktg = xkt;
+	    flagSubjetkT = 1;
+	  }
+	}
         Double_t LundEntries[7] = {
             y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf};
         fHLundIterative->Fill(LundEntries);
@@ -682,7 +706,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
   fastjet::PseudoJet PseudoTracks;
 
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
-
+  cout<<"is it really here?"<<endl;
   if (fTrackCont)
     for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
@@ -715,6 +739,8 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
     double nall = 0;
     double nsd = 0;
     int flagSubjet = 0;
+    int flagSubjetkT = 0;
+    double flagConst=0;
     double Rg = 0;
     double zg = 0;
     double xktg = 0;
@@ -724,7 +750,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
 
       if (j1.perp() < j2.perp())
         swap(j1, j2);
-
+      flagConst=0;
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
       double lnpt_rel = log(xkt);
@@ -732,6 +758,10 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
       double form = 2 * 0.197 * j2.e() / (xkt * xkt);
       double rad = j2.e();
       double z = j2.perp() / (j2.perp() + j1.perp());
+       vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+       if(constitj1[0].perp()>fMinPtConst) flagConst=1; 
+
+      
       if (z > fHardCutoff)
         nsd = nsd + 1;
       if (z > fHardCutoff && flagSubjet == 0) {
@@ -740,11 +770,16 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
         Rg = delta_R;
         flagSubjet = 1;
       }
-      if (lnpt_rel > 0)
-        cumtf = cumtf + form;
+      if (lnpt_rel > 0) {
+	cumtf = cumtf + form;
+	if ((nsd == 0) && (flagSubjetkT == 0)) {
+	  xktg = xkt;
+	  flagSubjetkT = 1;
+	}
+      }
 
-      Double_t LundEntries[7] = {
-          y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf};
+      Double_t LundEntries[8] = {
+	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf,flagConst};
       fHLundIterative->Fill(LundEntries);
 
       jj = j1;
@@ -800,6 +835,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
     fastjet::PseudoJet j2;
     jj = fOutputJets[0];
     int flagSubjet = 0;
+    int flagSubjetkT = 0;
     double nall = 0;
     double nsd = 0;
 
@@ -828,8 +864,13 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
         Rg = delta_R;
         flagSubjet = 1;
       }
-      if (lnpt_rel > 0)
-        cumtf = cumtf + form;
+      if (lnpt_rel > 0) {
+	cumtf = cumtf + form;
+	if ((nsd == 0) && (flagSubjetkT == 0)) {
+	  xktg = xkt;
+	  flagSubjetkT = 1;
+	}
+      }
       if (fDoFillMCLund == kTRUE) {
         Double_t LundEntries[7] = {
             y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf};

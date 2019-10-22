@@ -104,6 +104,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxDeltaPhi{0.12},
       fMaxDeltaTheta{0.12},
       fMinTrackletCosP{0.8},
+      fEnableLikeSign{false},
       fFileNameTree{nullptr},
       fCurrentFileName{""},
       fSHyperTriton{},
@@ -352,8 +353,13 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       continue;
 
     // Remove like-sign (will not affect offline V0 candidates!)
-    if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0)
-      continue;
+    if (fEnableLikeSign) {
+      if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() < 0)
+        continue;
+    } else {
+      if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0)
+        continue;
+    }
 
     const int lKeyPos = std::abs(v0->GetPindex());
     const int lKeyNeg = std::abs(v0->GetNindex());
@@ -363,10 +369,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     if (!pTrack || !nTrack)
       ::Fatal("AliAnalysisTaskHyperTriton2He3piML::UserExec",
               "Could not retreive one of the daughter track");
-
-    // Filter like-sign V0 (next: add counter and distribution)
-    if (pTrack->GetSign() == nTrack->GetSign())
-      continue;
 
     if (std::abs(nTrack->Eta()) > 0.8 || std::abs(pTrack->Eta()) > 0.8)
       continue;

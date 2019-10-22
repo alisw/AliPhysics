@@ -14,7 +14,7 @@ public TObject
   AliAnalysisPIDCascade(const AliAnalysisPIDCascade &source); //copy const
   AliAnalysisPIDCascade &operator=(const AliAnalysisPIDCascade &source); // operator =
   virtual ~AliAnalysisPIDCascade();
-  void Update(AliAnalysisPIDV0* V0, AliAnalysisPIDTrack* BachTrack, Double_t *InvMasses, Double_t CascRadius, Double_t CascDCA,  Double_t CascCosinePA, Double_t PtCasc, Double_t EtaCasc, Double_t CascDCAPV, Int_t Charge);
+  void Update(AliAnalysisPIDV0* V0, AliAnalysisPIDTrack* BachTrack, Double_t *InvMasses, Double_t CascRadius, Double_t CascDCA,  Double_t CascCosinePA, Double_t PtCasc, Double_t EtaCasc, Double_t CascDCAPV, Int_t Charge, Double_t V0DCA, Int_t CascPdg, Bool_t CascPrimary);
 
   AliAnalysisPIDV0    *GetV0()  { return fV0AnalysisPIDV0;};
   AliAnalysisPIDTrack *GetBachAnalysisTrack() { return fBachAnalysisPIDTrack; };
@@ -28,6 +28,9 @@ public TObject
   Double_t GetCascDCAPV()    { return fCascDCAPV; };
   Double_t CalculateCascDCAPV();
   Int_t GetCharge() { return fCharge;};
+  Double_t GetV0DCA() { return fV0DCA;};
+  Int_t GetCascPdg() {return fCascPdg;};
+  Bool_t GetCascPrimary() {return fCascPrimary;};
 
  protected:  
   AliAnalysisPIDV0 * fV0AnalysisPIDV0;
@@ -39,7 +42,10 @@ public TObject
   Double_t fEtaCasc;
   Double_t fCascDCAPV;
   Int_t fCharge;
-  
-  ClassDef(AliAnalysisPIDCascade, 2);
+  Double_t fV0DCA;
+  Int_t fCascPdg;
+  Bool_t fCascPrimary;
+
+  ClassDef(AliAnalysisPIDCascade, 3);
 };
 #endif

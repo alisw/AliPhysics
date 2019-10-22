@@ -61,6 +61,7 @@ CellEnergy:                                         # Cell Energy correction com
     createHistos: false                             # Whether the task should create output histograms
     enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
+    load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellBadChannel:                                     # Bad channel removal at the cell level component
@@ -77,6 +78,8 @@ CellTimeCalib:                                      # Cell Time Calibration comp
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     doMergedBCs: false                              # Whether the task should create output histograms
+    doCalibrateLowGain: false                       # Whether the task should calibrate the low gain cells
+    doCalibMergedLG: false                          # Whether the task should calibrate the low gain cells
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEmulateCrosstalk:                               # Component to emulate crosstalk

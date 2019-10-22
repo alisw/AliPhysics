@@ -92,30 +92,45 @@ class AliFemtoDreamCorrHists {
   ;
   void FillPtQADist(int i, float kstar, float pt1, float pt2) {
     // TODO for the moment the threshold is hardcoded to 200 MeV/c
-    if(fPtQADist[i] && kstar < 0.2) {
+    if (fPtQADist[i] && kstar < 0.2) {
       fPtQADist[i]->Fill(pt1, pt2);
     }
   }
+  void FillPtSEOneQADist(int i, float pt, int mult) {
+    fPtQADistSEPartOne[i]->Fill(pt, mult);
+  }
+  void FillPtSETwoQADist(int i, float pt, int mult) {
+    fPtQADistSEPartTwo[i]->Fill(pt, mult);
+  }
+  void FillPtMEOneQADist(int i, float pt, int mult) {
+    fPtQADistMEPartOne[i]->Fill(pt, mult);
+  }
+  void FillPtMETwoQADist(int i, float pt, int mult) {
+    fPtQADistMEPartTwo[i]->Fill(pt, mult);
+  }
   void FillMassQADist(int i, float kstar, float invMass1, float invMass2) {
-    if(fMassQADistPart1[i] && fMassQADistPart2[i]) {
+    if (fMassQADistPart1[i] && fMassQADistPart2[i]) {
       fMassQADistPart1[i]->Fill(invMass1, kstar);
-      fMassQADistPart2[i]->Fill(invMass2, kstar);      
+      fMassQADistPart2[i]->Fill(invMass2, kstar);
     }
 
-}
+  }
 
-  void FillPairInvMassQAD(int i, AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2) {
-    if(fPairInvMassQAD[i]) {
- 	TVector3 momPart1 = part1.GetMomentum();
-        TVector3 momPart2 = part2.GetMomentum();
-        TLorentzVector trackPos, trackNeg;
-          trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(), part1.GetInvMass());
-          trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(), part2.GetInvMass());
-         TLorentzVector trackSum = trackPos + trackNeg;
-    
-       fPairInvMassQAD[i]->Fill(trackSum.M());
-       }
- }
+  void FillPairInvMassQAD(int i, AliFemtoDreamBasePart &part1,
+                          AliFemtoDreamBasePart &part2) {
+    if (fPairInvMassQAD[i]) {
+      TVector3 momPart1 = part1.GetMomentum();
+      TVector3 momPart2 = part2.GetMomentum();
+      TLorentzVector trackPos, trackNeg;
+      trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(),
+                       part1.GetInvMass());
+      trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(),
+                       part2.GetInvMass());
+      TLorentzVector trackSum = trackPos + trackNeg;
+
+      fPairInvMassQAD[i]->Fill(trackSum.M());
+    }
+  }
   void FillMixedEventMultDist(int i, int iMult, float RelK) {
     if (fMixedEventMultDist[i])
       fMixedEventMultDist[i]->Fill(RelK, iMult);
@@ -168,7 +183,8 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
-  void FillEtaPhiAverageSE(int hist, int iDaug, float dPhi, float dEta, bool BeforeOrAfter) {
+  void FillEtaPhiAverageSE(int hist, int iDaug, float dPhi, float dEta,
+                           bool BeforeOrAfter) {
     if (!fMinimalBooking && fPhiEtaPlots) {
       if (BeforeOrAfter) {
         fIntRadiiQAEtaPhiSEBefore[hist][iDaug]->Fill(dEta, dPhi);
@@ -177,7 +193,8 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
-  void FillEtaPhiAverageME(int hist, int iDaug, float dPhi, float dEta, bool BeforeOrAfter) {
+  void FillEtaPhiAverageME(int hist, int iDaug, float dPhi, float dEta,
+                           bool BeforeOrAfter) {
     if (!fMinimalBooking && fPhiEtaPlots) {
       if (BeforeOrAfter) {
         fIntRadiiQAEtaPhiMEBefore[hist][iDaug]->Fill(dEta, dPhi);
@@ -219,6 +236,10 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventkTDist;
   TH2F ***fSameEventkTCentDist;
   TH2F **fPtQADist;
+  TH2F **fPtQADistSEPartOne;
+  TH2F **fPtQADistSEPartTwo;
+  TH2F **fPtQADistMEPartOne;
+  TH2F **fPtQADistMEPartTwo;
   TH2F **fMassQADistPart1;
   TH2F **fMassQADistPart2;
   TH1F **fPairInvMassQAD;
@@ -258,8 +279,8 @@ class AliFemtoDreamCorrHists {
   std::vector<int> fPDGCode;
   std::vector<float> fmTdEtadPhiBins;
   std::vector<unsigned int> fWhichPairs;
-  std::vector<int> fCentBins;
-  ClassDef(AliFemtoDreamCorrHists,8);
+  std::vector<int> fCentBins;ClassDef(AliFemtoDreamCorrHists,8)
+  ;
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */

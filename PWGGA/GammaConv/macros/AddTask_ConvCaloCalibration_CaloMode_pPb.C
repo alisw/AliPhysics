@@ -48,7 +48,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
-  Int_t     isRun2                        = kTRUE,    // enables different number of SM
+  Int_t     isRun2                        = 1,        // enables different number of SM
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
@@ -176,13 +176,12 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
   task->SetMesonRecoMode(mesonRecoMode); // meson reco mode: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
   if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(kTRUE);
+  task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
   if (trainConfig == 1){ // EMCAL + DCal clusters pPb run1
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113100f032230000","0163103100000010"); // no timing cut, no NL INT7
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // -50ns, 50ns timing cut, no NL INT7
-
-  } else if (trainConfig == 11){ // EMCAL + DCal clusters pPb run 1
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // INT7
+  } else if (trainConfig == 2){ // EMCAL + DCal clusters pPb run 1
     cuts.AddCutPCMCalo("80052113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // EMC7
     cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // EG2+DG2
     cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // EG1+DG1
@@ -200,6 +199,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
     cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411790005f032230000","0163103100000010"); // EG2+DG2
     cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411790005f032230000","0163103100000010"); // EG1+DG1
     cuts.AddCutPCMCalo("8009b123","00200009f9730000dge0400000","411790605f032230000","0163103100000010"); // EGJ+DJ1
+  } else {
     Error(Form("ConvCaloCalibration_%i_%i_%i", mesonRecoMode, selectedMeson, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
@@ -284,27 +284,6 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
       cout << "enabling mult weighting" << endl;
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
     }
-
-    // definition of weighting input
-    TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());
-    TString fitNameEta = Form("Eta_Fit_Data_%s",energy.Data());
-    TString fAddedSignalString = cuts.GetEventCut(i);
-    fAddedSignalString = fAddedSignalString(6,1);
-    Bool_t fAddedSignal = kFALSE;
-    if (fAddedSignalString.CompareTo("2") == 0) fAddedSignal = kTRUE;
-    TString mcInputNamePi0 = "";
-    TString mcInputNameEta = "";
-    if (fAddedSignal && (generatorName.Contains("LHC12i3") || generatorName.CompareTo("LHC14e2b")==0)){
-      mcInputNamePi0 = Form("Pi0_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
-      mcInputNameEta = Form("Eta_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
-    } else {
-      mcInputNamePi0 = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
-      mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
-    }
-
-    if (doWeightingPart) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile( kTRUE, kTRUE, kFALSE, fileNamePtWeights,
-      mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
-
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);

@@ -80,7 +80,8 @@ class AliForwardSettings : public TObject {
   TString fileName;
   Int_t fMaxConsequtiveStrips;
   Bool_t standard_only;
-  Double_t fmdcut;
+  Double_t fmdlowcut;
+  Double_t fmdhighcut;
   // return true if good event
 
   // flags used for method of cumulant

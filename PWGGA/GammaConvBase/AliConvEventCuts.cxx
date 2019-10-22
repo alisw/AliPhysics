@@ -2386,6 +2386,12 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
     fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
     fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
     break;
+ case 12:
+    fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
+    fUtils->SetASPDCvsTCut(200.);
+    fUtils->SetBSPDCvsTCut(7.);
+    break;
   default:
     AliError("RemovePileUpCut not defined");
     return kFALSE;

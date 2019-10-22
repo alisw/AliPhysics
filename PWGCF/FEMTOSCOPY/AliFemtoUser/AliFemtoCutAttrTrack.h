@@ -609,6 +609,73 @@ struct TrackCutAttrPidContourPion {
 };
 
 
+/// Cut on the track's TOF pion-time
+///
+struct TrackCutAttrRejectKaonTofPionTime {
+
+  double tof_cut_factor;
+
+  bool Pass(const AliFemtoTrack &track) const
+    {
+      const double
+        p = track.P().Mag(),
+        tof_signal = track.TOFpionTime();
+
+      const double
+        decay = 1.50388857 + tof_cut_factor * (0.14601506 + tof_cut_factor * 0.04899996),
+        amplitude =  6688.09178 + tof_cut_factor * (5.68606498 + tof_cut_factor * 524.181339),
+
+        max_kayon_signal = amplitude * std::exp(-decay * p);
+
+      return tof_signal < max_kayon_signal;
+      // return tof_signal < 9150.442842004599 * std::exp(-2.089165525857385 * p);
+    }
+
+  TrackCutAttrRejectKaonTofPionTime()
+    : tof_cut_factor(3.0)
+    {}
+
+  TrackCutAttrRejectKaonTofPionTime(AliFemtoConfigObject &cfg)
+    : tof_cut_factor(cfg.pop_num("tof_cut_factor", 3.0))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+     cfg.insert("tof_cut_factor", tof_cut_factor);
+    }
+
+  virtual ~TrackCutAttrRejectKaonTofPionTime()
+    { }
+};
+
+///
+struct TrackCutAttrTpcSigmaPion {
+
+  double tpc_sigma_pion;
+
+  bool Pass(const AliFemtoTrack &track) const
+    {
+      return std::abs(track.NSigmaTPCPi()) < tpc_sigma_pion;
+    }
+
+  TrackCutAttrTpcSigmaPion()
+    : tpc_sigma_pion(2.5)
+    { }
+
+  TrackCutAttrTpcSigmaPion(AliFemtoConfigObject &cfg)
+    : tpc_sigma_pion(cfg.pop_num("tpc_sigma_pion", 2.5))
+    { }
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("tpc_sigma_pion", tpc_sigma_pion);
+    }
+
+  virtual ~TrackCutAttrTpcSigmaPion()
+    { }
+};
+
+
 /// Cut using combination of NSigmaTPCPI && NSigmaTOFPI
 ///
 struct TrackCutAttrSigmaPion {
@@ -618,6 +685,7 @@ struct TrackCutAttrSigmaPion {
   std::pair<double, double> nsigma_pion_range;
   bool usetpctof;
   double nsigma_pion;
+  double tpctof_limit;
 
   bool Pass(const AliFemtoTrack &track) const
     {
@@ -632,8 +700,8 @@ struct TrackCutAttrSigmaPion {
   bool is_pion_nsigma(float mom, float sigtpc, float sigtof) const
     {
       if (usetpctof) {
-        return mom > 0.5 ? sigtof*sigtof + sigtpc*sigtpc < nsigma_pion * nsigma_pion
-                         : TMath::Abs(sigtpc) < nsigma_pion;
+        return mom > tpctof_limit ? sigtof*sigtof + sigtpc*sigtpc < nsigma_pion * nsigma_pion
+                                  : TMath::Abs(sigtpc) < nsigma_pion;
       }
 
       if (mom < 0.65) {
@@ -656,18 +724,21 @@ struct TrackCutAttrSigmaPion {
     : nsigma_pion_range(DEFAULT)
     , usetpctof(true)
     , nsigma_pion(3.0)
+    , tpctof_limit(0.5)
     {}
 
   TrackCutAttrSigmaPion(AliFemtoConfigObject &cfg)
     : nsigma_pion_range(cfg.pop_range("nsigma_pion_range", DEFAULT))
     , usetpctof(cfg.pop_bool("use_tpctof", true))
     , nsigma_pion(cfg.pop_num("nsigma_pion", 3.0))
+    , tpctof_limit(cfg.pop_num("tpctof_limit", 0.5))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
       // cfg.insert("use_tpctof", usetpctof);
       cfg.insert("nsigma_pion", nsigma_pion);
+      cfg.insert("tpctof_limit", tpctof_limit);
     }
 
   virtual ~TrackCutAttrSigmaPion() {}
@@ -797,6 +868,34 @@ struct TrackCutAttrItsCluster {
   virtual ~TrackCutAttrItsCluster() {}
 };
 
+
+/// Reject tracks close to the electron band
+///
+struct TrackCutAttrRejectTpcElectron {
+
+  double electron_tpc_sigma_min;
+
+  bool Pass(const AliFemtoTrack &track) const
+    {
+      return std::abs(track.NSigmaTPCE()) > electron_tpc_sigma_min;
+    }
+
+  TrackCutAttrRejectTpcElectron()
+    : electron_tpc_sigma_min(3.0)
+    { }
+
+  TrackCutAttrRejectTpcElectron(AliFemtoConfigObject &cfg)
+    : electron_tpc_sigma_min(cfg.pop_num("electron_tpc_sigma_min", 3.0))
+    { }
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("electron_tpc_sigma_min", electron_tpc_sigma_min);
+    }
+
+  virtual ~TrackCutAttrRejectTpcElectron()
+    { }
+};
 
 /// Reject tracks within 3 TPC-sigma of electrons and outside 3-sigma
 /// of other particles

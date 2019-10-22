@@ -157,7 +157,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   fTrackCutsBit0 = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   fTrackCutsBit0->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
   
   fTrackCutsBit1 = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kFALSE,kTRUE);
   
@@ -194,6 +194,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
   fTreeJPsi ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
   fTreeJPsi ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
+  fTreeJPsi ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[6]/F");
+  
   if(isMC){
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
 	}
@@ -213,6 +215,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreePsi2s ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
   fTreePsi2s ->Branch("fTriggers", &fTriggers, "fTriggers[10]/O");
   fTreePsi2s ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
   fTreePsi2s ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
@@ -220,6 +223,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
   fTreePsi2s ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
   fTreePsi2s ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
+  fTreePsi2s ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[4]/F");
   if(isMC){ 
     fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
     }
@@ -497,7 +501,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   TBits fFOCrossedChips(1200); 
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   TBits fFOFiredChips = mult->GetFastOrFiredChips();
-     
+  
+  fInEtaRec = kTRUE;   
   if(nGoodTracksTPC+fNGoodTracksITS == 4 && nGoodTracksTPC > 1 && nGoodTracksSPD > 1){
   	fFOCrossedChips.ResetAllBits(kFALSE);
     	MeanPt = GetMedian(TrackPtALL);
@@ -511,9 +516,12 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	  crossedFO[2] = trk->GetITSModuleIndex(6);
 	  crossedFO[3] = trk->GetITSModuleIndex(7);
 	  SetCrossed(crossedFO, fFOCrossedChips);
+	  if(trk->GetInnerParam())fTrackLenght[iTrack] = trk->GetLengthInActiveZone(1, 2.0, 220, fEvent->GetMagneticField());
+	  else fTrackLenght[iTrack] = trk->GetLengthInActiveZone(0, 2.0, 220, fEvent->GetMagneticField());
 	  }
 	
 	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexALL[iTrack]));
+	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
 	
 	if(trk->Pt() > 1.0) nHighPt++;
       		if(trk->Pt() > MeanPt){   
@@ -584,7 +592,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Two track loop
   
   TLorentzVector vMC, vLabelPart;
-  
+  Int_t nTOFPID = 0;
   fInEtaRec = kTRUE;
   if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2){
   	fFOCrossedChips.ResetAllBits(kFALSE);
@@ -598,6 +606,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	  crossedFO[2] = trk->GetITSModuleIndex(6);
 	  crossedFO[3] = trk->GetITSModuleIndex(7);
 	  SetCrossed(crossedFO, fFOCrossedChips);
+	  fTrackLenght[iTrack] = trk->GetLengthInActiveZone(1, 1.5, 220, fEvent->GetMagneticField());
+	  fTrackLenght[iTrack+2] = trk->GetLengthInActiveZone(1, 2.0, 220, fEvent->GetMagneticField());
+	  fTrackLenght[iTrack+4] = trk->GetLengthInActiveZone(1, 2.5, 220, fEvent->GetMagneticField());
 	  }
 	  
     	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
@@ -619,9 +630,12 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     	Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
 	Float_t fPIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
 	
+	Float_t fPIDTPCProton = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
 	Float_t fPIDTOFProton = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
 	
     	qTrack[iTrack] = trk->Charge();
+	
+	if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk) nTOFPID++;
 	
 	vElectron[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
     	vMuon[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
@@ -632,7 +646,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     	nSigmaPion[iTrack] = fPIDTPCPion;
 	
     	vProton[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), protonMass);
-	nSigmaProton[iTrack] = fPIDTOFProton;
+	if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk) nSigmaProton[iTrack] = fPIDTOFProton;
+	else nSigmaProton[iTrack] = fPIDTPCProton;
  	
 	dEdx[iTrack] = trk->GetTPCsignal();
     	}
@@ -652,6 +667,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 
   if(nSigmaDistProton < 4){ 
   	  fPIDsigma = nSigmaDistProton;
+	  if(nTOFPID == 0) fPIDsigma = 666;
   	  vJPsiCandidate = vProton[0]+vProton[1];
   	  fChannel = 2;
   	  FillTree(fTreeJPsi,vJPsiCandidate);

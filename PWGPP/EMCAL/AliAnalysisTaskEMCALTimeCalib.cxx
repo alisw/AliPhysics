@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <vector>
 #include <TChain.h>
 #include <TTree.h>
 #include <TFile.h>
@@ -388,6 +389,7 @@ void AliAnalysisTaskEMCALTimeCalib::NotifyRun()
   if (!fgeom) SetEMCalGeometry();
   //Init EMCAL geometry done
 
+  AliInfo(Form("Run number in NotifyRun %d",fRunNumber));
   GetPARInfoForRunNumber(fRunNumber);
 
   //set L1 phases for current run
@@ -510,8 +512,10 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) AliFatal("No Analysis Manager available...\n");
   Int_t runNum = mgr->GetRunFromPath();
+  AliInfo(Form("Run number from path %d",runNum));
   if(runNum == 0){
     runNum = TString(gSystem->Getenv("RUNNO")).Atoi();
+    AliInfo(Form("Run number from RUNNO variable %d",runNum));
     if(runNum < 200000){
         AliFatal("Run Number not correctly set in UserCreateOutputObjects()!");
     }
@@ -1893,10 +1897,10 @@ const  Double_t upperLimit[]={
   Int_t totalValue=0;
 
   for(Int_t iPAR = 0; iPAR <= info.numPARs; iPAR++){
-    if(iPAR != info.numPARs){
-      hPARRun[iPAR] =new TH1C(Form("h%d_%llu", runNumber, info.PARGlobalBCs[iPAR]), Form("h%d_%llu", runNumber, info.PARGlobalBCs[iPAR]),19,0,19);
+    if(iPAR ==0){//iPAR=0 means before any PAR
+      hPARRun[iPAR] =new TH1C(Form("h%d", runNumber), Form("h%d", runNumber),19,0,19);
     }else{
-      hPARRun[iPAR] =new TH1C(Form("h%dp%d", runNumber,iPAR), Form("h%d", runNumber),19,0,19);
+      hPARRun[iPAR] =new TH1C(Form("h%d_%llu", runNumber, (ULong64_t)info.PARGlobalBCs[iPAR-1]), Form("h%d_%llu", runNumber, (ULong64_t)info.PARGlobalBCs[iPAR-1]),19,0,19);
     }
     for(Int_t i=0;i<20;i++){
       minimumValue=10000;
@@ -1921,10 +1925,10 @@ const  Double_t upperLimit[]={
 	//hRun->SetBinContent(i,0);//correct it please
 	meanBC[j]=-1;
 	if(isPAR){
-      printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBCPAR[iPAR][j]->Integral(lowerLimit[i],upperLimit[i]));
-    }else{
-      printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBC[j]->Integral(lowerLimit[i],upperLimit[i]));
-    }
+	  printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBCPAR[iPAR][j]->Integral(lowerLimit[i],upperLimit[i]));
+	}else{
+	  printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBC[j]->Integral(lowerLimit[i],upperLimit[i]));
+	}
 	continue;
       } else {
 	fitParameter = f1->GetParameter(0);
@@ -2006,6 +2010,17 @@ const  Double_t upperLimit[]={
       hPARRun[iPAR]->Write();
       delete hPARRun[iPAR];
     }
+    // create tree for PAR global IDs
+    ULong64_t ParGlobalBCs;
+    TTree *treePAR=new TTree(Form("t%d_GID",runNumber),"Tree with Global ID");
+    treePAR->Branch("GID",&ParGlobalBCs,"GID/l");
+
+    for(Int_t iPAR = 0; iPAR < info.numPARs; iPAR++){
+      ParGlobalBCs=(ULong64_t)(info.PARGlobalBCs[iPAR]);
+      //printf("infoPAR %llu in tree %llu",info.PARGlobalBCs[iPAR],ParGlobalBCs);
+      treePAR->Fill();
+    }
+    treePAR->Write();
   }else{
     hRun->Write();
     delete hRun;

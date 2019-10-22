@@ -113,7 +113,7 @@ class AliAnalysisTaskSDKLResponse : public AliAnalysisTaskSDKL {
   void FillMjetContainer(AliJetContainer *jet_container, std::vector <mjet> & mjet_container);
   void FillMjetContainer(std::vector <fastjet::PseudoJet> & jet_container, std::vector <mjet> & mjet_container);
 
-  void FillRespTree(std::vector<AliEmcalJet*> const & jets, TNtuple* tree);
+  void FillRespTree(std::vector<AliEmcalJet*> const & probe_jets, std::vector<fastjet::PseudoJet> const & resp_jets, TNtuple* tree);
 
   Double_t                   fFractionEventsDumpedToTree;
   TRandom                    *fRandom; //!<!

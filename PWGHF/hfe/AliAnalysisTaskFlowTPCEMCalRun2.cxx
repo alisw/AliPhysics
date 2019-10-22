@@ -97,6 +97,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fClsEtaPhiAftMatch(0),
 	fTPCnsig(0),
         fTOFnsig(0),
+        fITSnsig(0),
         fTPCnsig_TOFnsig(0),
         fHistele_TOFcuts(0),
         fHisthad_TOFcuts(0),
@@ -170,6 +171,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
         fTrkPhisin2_elelow(0),
         fTrkPhicos2_elehigh(0),
         fTrkPhisin2_elehigh(0),
+        fTrkPhicos2_hfehigh(0),
+        fTrkPhisin2_hfehigh(0),
         fTrkPhicos2_hadhigh(0),
         fTrkPhisin2_hadhigh(0),
         fTrkPhicos2_phoLShigh(0),
@@ -180,6 +183,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	//fOutplane(0),
         fInplane_ele(0),
         fOutplane_ele(0),
+        fInplane_hfe(0), 
+        fOutplane_hfe(0), 
         fInplane_LSpho(0),
         fOutplane_LSpho(0),
         fInplane_ULSpho(0),
@@ -231,7 +236,10 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
 	fMinCentr(30.),
-	fMaxCentr(50.)
+	fMaxCentr(50.),
+	fSparseElectron(0),
+	fvalueElectron(0),
+        iTree(kFALSE)
 
 
 {
@@ -251,6 +259,8 @@ for(int iHisto=0; iHisto<3; iHisto++){
 		fHistEvPlane[iDet] = nullptr;
 	}
 
+
+        fvalueElectron = new Double_t[6];
 
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
 	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
@@ -291,6 +301,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fClsEtaPhiAftMatch(0),
 	fTPCnsig(0),
         fTOFnsig(0),
+        fITSnsig(0),
         fTPCnsig_TOFnsig(0),
         //fTrkPt_TPCnsig_TOFnsig(0),
         fHistele_TOFcuts(0),
@@ -365,6 +376,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
         fTrkPhisin2_elelow(0),
         fTrkPhicos2_elehigh(0),
         fTrkPhisin2_elehigh(0),
+        fTrkPhicos2_hfehigh(0),
+        fTrkPhisin2_hfehigh(0),
         fTrkPhicos2_hadhigh(0),
         fTrkPhisin2_hadhigh(0),
         fTrkPhicos2_phoLShigh(0),
@@ -375,6 +388,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	//fOutplane(0),
         fInplane_ele(0),
         fOutplane_ele(0),
+        fInplane_hfe(0), 
+        fOutplane_hfe(0), 
         fInplane_LSpho(0),
         fOutplane_LSpho(0),
         fInplane_ULSpho(0),
@@ -427,7 +442,10 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
 	fMinCentr(30.),
-	fMaxCentr(50.)
+	fMaxCentr(50.),
+	fSparseElectron(0),
+	fvalueElectron(0),
+        iTree(kFALSE)
 
 	// Standard constructor
 {
@@ -448,8 +466,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	}
 
 
-
-
+        fvalueElectron = new Double_t[6];
 
 	// default constructor, don't allocate memory here!
 	// this is used by root for IO purposes, it needs to remain empty
@@ -477,6 +494,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::~AliAnalysisTaskFlowTPCEMCalRun2()
 		delete fHistEvPlaneQncorr[iDet];
 		delete fHistEvPlane[iDet];
 		delete fHistqnVsCentrPercCalib[iDet];
+                delete []fvalueElectron;
 
 	}
 
@@ -608,6 +626,9 @@ fOutputList->Add(fTPCnsig);
 
 fTOFnsig = new TH2F("fTOFnsig","All Track TOF Nsigma distribution;p (GeV/c);#sigma_{TOF-dE/dx}",500,0,50,200,-10,10);
 fOutputList->Add(fTOFnsig);
+
+fITSnsig = new TH2F("fITSnsig","All Track ITS Nsigma distribution;p (GeV/c);#sigma_{ITS-dE/dx}",500,0,50,200,-10,10);
+fOutputList->Add(fITSnsig);
 
 fTPCnsig_TOFnsig = new TH2F("fTPCnsig_TOFnsig","All Track TOF vs TPC Nsigma distribution;#sigma {TOF-dE/dx};#sigma_{TPC-dE/dx}",200,-10,10,200,-10,10);
 fOutputList->Add(fTPCnsig_TOFnsig);
@@ -796,6 +817,12 @@ fOutputList->Add(fTrkPhicos2_elehigh);
 fTrkPhisin2_elehigh = new TH2F("fTrkPhisin2_elehigh","fTrkPhisin2_elehigh",200,0,20,200,-1,1);
 fOutputList->Add(fTrkPhisin2_elehigh);
 
+fTrkPhicos2_hfehigh = new TH2F("fTrkPhicos2_hfehigh","fTrkPhicos2_hfehigh",200,0,20,200,-1,1);
+fOutputList->Add(fTrkPhicos2_hfehigh);
+//
+fTrkPhisin2_hfehigh = new TH2F("fTrkPhisin2_hfehigh","fTrkPhisin2_hfehigh",200,0,20,200,-1,1);
+fOutputList->Add(fTrkPhisin2_hfehigh);
+
 fTrkPhicos2_hadhigh = new TH2F("fTrkPhicos2_hadhigh","fTrkPhicos2_hadhigh",200,0,20,200,-1,1);
 fOutputList->Add(fTrkPhicos2_hadhigh);
 //
@@ -826,6 +853,12 @@ fOutputList->Add(fInplane_ele);
 
 fOutplane_ele = new TH1F("fOutplane_ele","p_{T} distribution of outplane_ele",200,0,20);
 fOutputList->Add(fOutplane_ele);
+
+fInplane_hfe = new TH1F("fInplane_hfe","p_{T} distribution of inplane_hfe",200,0,20);
+fOutputList->Add(fInplane_hfe);
+
+fOutplane_hfe = new TH1F("fOutplane_hfe","p_{T} distribution of outplane_hfe",200,0,20);
+fOutputList->Add(fOutplane_hfe);
 
 fInplane_LSpho = new TH1F("fInplane_LSpho","p_{T} distribution of inplane_LSpho",200,0,20);
 fOutputList->Add(fInplane_LSpho);
@@ -892,6 +925,15 @@ fOutputList->Add(fcorcentOutplane);
 //
 //fQy3 = new TH2F("fQy3","centrality vs Qy3",40,0,80,320,-1.6,1.6);
 //fOutputList->Add(fQy3);
+
+
+//add by sudo
+Int_t Sparsebins[6]={100, 100, 100, 100, 100, 300}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
+Double_t Sparsexmin[6]={ 0,  0, -10, -10, -10, 0};
+Double_t Sparsexmax[6]={10, 10,  10,  10,  10, 3};
+fSparseElectron = new THnSparseD ("fSparseElectron","correlation;Pt;P;TPCnsigma;ITSnsigma;TOFnsigma;E/p;",6,Sparsebins,Sparsexmin,Sparsexmax);
+if(iTree)fOutputList -> Add(fSparseElectron);
+
 
 const int ncentbins = static_cast<int>(fMaxCentr-fMinCentr);
 
@@ -1639,7 +1681,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	//////////////Track properties//////////
 	Bool_t fFlagNonHFE=kFALSE;
 
-	Double_t dEdx=-999, fTPCnSigma=-999, fTOFnSigma=-999;
+	Double_t dEdx=-999, fTPCnSigma=-999, fTOFnSigma=-999, fITSnSigma=-999;
 	Double_t TrkPhi=-999, TrkPt=-999,TrkEta=-999,TrkP=-999;
 
 	TrkPhi = track->Phi();
@@ -1650,6 +1692,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	dEdx = track->GetTPCsignal();     
 	fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
         fTOFnSigma = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+	fITSnSigma = fpidResponse->NumberOfSigmasITS(track, AliPID::kElectron);
 
 	fTrkPt -> Fill(TrkPt);
 	fTrkphi -> Fill(TrkPhi);
@@ -1658,7 +1701,15 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	fdEdx -> Fill(TrkP,dEdx);
 	fTPCnsig -> Fill(TrkP,fTPCnSigma);
         fTOFnsig -> Fill(TrkP,fTOFnSigma);
+        fITSnsig -> Fill(TrkP,fITSnSigma);
         fTPCnsig_TOFnsig -> Fill(fTOFnSigma,fTPCnSigma);
+
+        fvalueElectron[0] = TrkPt;
+        fvalueElectron[1] = TrkP;
+        fvalueElectron[2] = fTPCnSigma;
+        fvalueElectron[3] = fITSnSigma;
+        fvalueElectron[4] = fTOFnSigma;
+        fvalueElectron[5] = -1.0;
 
 	////Charged Particle v2////
 
@@ -1953,6 +2004,15 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	//cout << "Charge = " << track -> Charge() << endl;
 	
+	if(clustMatch && clustMatch->IsEMCAL())
+	{
+	 Double_t clustMatchE = clustMatch->E();
+	 if(track->P()>0) fvalueElectron[5] = clustMatchE/track->P();
+        }
+        if(iTree)fSparseElectron->Fill(fvalueElectron);
+
+
+
 	Double_t emcphi = -999, emceta = -999;        
 
 	if(clustMatch && clustMatch->IsEMCAL())
@@ -1998,6 +2058,8 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		m02 = clustMatch->GetM02();
 		m20 = clustMatch->GetM20();
 
+		//add by sudo
+
 		if(track->Pt()>2.0){
 			fHistNsigEop->Fill(eop,fTPCnSigma);
 		}
@@ -2012,6 +2074,11 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 		//if((fTPCnSigma > -1 && fTPCnSigma <3) && (m20 > 0.01 && m20 < 0.3)){ //TPC nsigma & shower shape cut
 		if((fTPCnSigma > ftpcnsig && fTPCnSigma <3) && (m20 > femcss_mim && m20 < femcss_max)){ //TPC nsigma & shower shape cut
+
+                if(track->Pt()<3.0){
+                      if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) || (fTPCnSigma<0) )continue;
+                       }
+
 
 			//if(eop>0.9 && eop<1.3){ //eop cut
 			if(eop>femceop && eop<1.3){ //eop cut
@@ -2050,15 +2117,38 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 				fTrkPhisin2_elehigh -> Fill(track->Pt(),TrkPhisin2_elehigh);
 				//}
 
+                                if(!fFlagNonHFE){
+ 
+                                fTrkPhicos2_hfehigh -> Fill(track->Pt(),TrkPhicos2_elehigh);
+                                fTrkPhisin2_hfehigh -> Fill(track->Pt(),TrkPhisin2_elehigh);
+ 
+                                }
+
+
 				if(TrkPhiEPV0A_ele > -TMath::Pi()/4. && TrkPhiEPV0A_ele < TMath::Pi()/4.){
 
 					fInplane_ele -> Fill(track->Pt());
 
+                                         if(!fFlagNonHFE){
+ 
+                                                 fInplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
+ 
+                                         }
+
+
 				}
+
+
 
 				if(TrkPhiEPV0A_ele > TMath::Pi()/4. || TrkPhiEPV0A_ele < -TMath::Pi()/4.){
 
 					fOutplane_ele -> Fill(track->Pt());
+
+                                        if(!fFlagNonHFE){
+
+                                                fOutplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
+
+                                          }
 
 				}
 
@@ -2103,6 +2193,10 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 		if((fTPCnSigma < -3) && (m20 > 0.01 && m20 < 3.0)){
 
+                if(track->Pt()<3.0){
+                              if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) )continue;
+                      }
+
 				TrkPhiEPV0A_had = TrkPhiPI - PsinV0A;
 				
 				if(TrkPhiEPV0A_had > TMath::Pi()/2.){
@@ -2121,6 +2215,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 			fHisthadron -> Fill(eop,track->Pt());
 			fDCAxy_Pt_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
 
 		}
 

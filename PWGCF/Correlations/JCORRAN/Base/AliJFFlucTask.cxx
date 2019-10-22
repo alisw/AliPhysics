@@ -594,11 +594,20 @@ Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 void AliJFFlucTask::SetEffConfig( UInt_t effMode, UInt_t FilterBit)
 {
 	fEffMode = effMode;
-	fEffFilterBit = 0; // as default
-	if( FilterBit == 128 )
+	switch(FilterBit){
+	case 128:
 		fEffFilterBit = 0;
-	if( FilterBit == 768 )
+		break;
+	case 96:
+		fEffFilterBit = 4;
+		break;
+	case 768:
 		fEffFilterBit = 5;
+		break;
+	default:
+		fEffFilterBit = 0;
+		break;
+	}
 	cout << "setting to EffCorr Mode : " << effMode << endl;
 	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }

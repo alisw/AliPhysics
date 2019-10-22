@@ -113,13 +113,25 @@ public:
   void Background(Double_t min, Double_t max, Double_t &background,Double_t &errbackground) const;
   void Significance(Double_t nOfSigma, Double_t &significance,Double_t &errsignificance) const;
   void Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const;
-  TF1* GetMassTotFitFunc() {
+  TF1* GetMassTotFitFunc() const {
     if(fMassTotFunc) return fMassTotFunc;
-    else return 0x0;
+    else return nullptr;
   }
-  TF1* GetVnVsMassTotFitFunc() {
+  TF1* GetMassSignalFitFunc() const {
+    if(fMassSgnFunc) return fMassSgnFunc;
+    else return nullptr;
+  }
+  TF1* GetMassBkgFitFunc() const {
+    if(fMassBkgFunc) return fMassBkgFunc;
+    else return nullptr;
+  }
+  TF1* GetVnVsMassTotFitFunc() const {
     if(fVnTotFunc) return fVnTotFunc;
-    else return 0x0;
+    else return nullptr;
+  }
+  TF1* GetVnVsMassBkgFitFunc() const {
+    if(fVnBkgFunc) return fVnBkgFunc;
+    else return nullptr;
   }
 
   //struct for global chi2 (for simultaneus fit)
