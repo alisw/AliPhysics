@@ -614,6 +614,7 @@ struct TrackCutAttrPidContourPion {
 struct TrackCutAttrRejectKaonTofPionTime {
 
   double tof_cut_factor;
+  double tof_cut_limit;
 
   bool Pass(const AliFemtoTrack &track) const
     {
@@ -621,13 +622,17 @@ struct TrackCutAttrRejectKaonTofPionTime {
         p = track.P().Mag(),
         tof_signal = track.TOFpionTime();
 
+      if (p < tof_cut_limit) {
+        return true;
+      }
+
       const double
         decay = 1.50388857 + tof_cut_factor * (0.14601506 + tof_cut_factor * 0.04899996),
         amplitude =  6688.09178 + tof_cut_factor * (5.68606498 + tof_cut_factor * 524.181339),
 
-        max_kayon_signal = amplitude * std::exp(-decay * p);
+        max_kaon_signal = amplitude * std::exp(-decay * p);
 
-      return tof_signal < max_kayon_signal;
+      return tof_signal < max_kaon_signal;
       // return tof_signal < 9150.442842004599 * std::exp(-2.089165525857385 * p);
     }
 
@@ -637,11 +642,13 @@ struct TrackCutAttrRejectKaonTofPionTime {
 
   TrackCutAttrRejectKaonTofPionTime(AliFemtoConfigObject &cfg)
     : tof_cut_factor(cfg.pop_num("tof_cut_factor", 3.0))
+    , tof_cut_limit(cfg.pop_num("tof_cut_limit", 0.5))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
      cfg.insert("tof_cut_factor", tof_cut_factor);
+     cfg.insert("tof_cut_limit", tof_cut_limit);
     }
 
   virtual ~TrackCutAttrRejectKaonTofPionTime()
