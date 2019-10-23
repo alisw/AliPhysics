@@ -30,7 +30,7 @@ class AliAODcascade;
 class AliAODVertex;
 
 
-//#ifndef ALIANALYSISTASKSEH_
+//#ifndef ALIANALYSISTASKSEH
 #include "AliAnalysisTaskSE.h"
 //#endif
 
@@ -40,6 +40,7 @@ public:
   AliAnalysisTaskSEpPbCorrelationsMCYS();
   AliAnalysisTaskSEpPbCorrelationsMCYS(const char *name);
   virtual ~AliAnalysisTaskSEpPbCorrelationsMCYS();
+
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
@@ -285,6 +286,11 @@ private:
   TH2F*fFMDV0C;
   TH2F*fFMDV0C_post;
 
+  TH1F*fV0Amultprim;
+  TH2F*fh2_V0A;
+  TH2F*fh2_V0A_all;
+  TH2F*fh2_V0C;
+  
   TH2F *fHist_vzeromult;
   TH2F *fHist_vzeromultEqweighted;
   TH3F *fHist2dmult;
