@@ -363,7 +363,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				      AliAODVertex *secVert,
 				      Double_t dispersion,
 				      const AliAODVertex *vertexp1n1,
-				      const AliAODVertex *vertexp2n1,
+				      TObjArray *twoTrackArray2,
 				      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
 				      Bool_t useForLc, Bool_t useForDs,
 				      Bool_t &ok3Prong);

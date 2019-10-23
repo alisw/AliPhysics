@@ -1169,18 +1169,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	// Vertexing
 	twoTrackArray2->AddAt(postrack2,0);
 	twoTrackArray2->AddAt(negtrack1,1);
-	AliAODVertex *vertexp2n1 = ReconstructSecondaryVertex(twoTrackArray2,dispersion);
-	if(!vertexp2n1) {
-	  twoTrackArray2->Clear();
-	  postrack2=0;
-	  continue;
-	}
 
 	// 3 prong candidates
 	if(f3Prong && massCutOK) {
 
 	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
-	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,vertexp2n1,dcap1n1,dcap2n1,dcap1p2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
+	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,twoTrackArray2,dcap1n1,dcap2n1,dcap1p2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
 	  if(ok3Prong) {
             AliAODVertex *v3Prong=0x0;
 	    if(!fMakeReducedRHF)v3Prong = new (verticesHFRef[iVerticesHF++])AliAODVertex(*secVert3PrAOD);
@@ -1326,7 +1320,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 
 	postrack2 = 0;
-	delete vertexp2n1;
 
       } // end 2nd loop on positive tracks
 
@@ -1438,16 +1431,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	twoTrackArray2->AddAt(postrack1,0);
 	twoTrackArray2->AddAt(negtrack2,1);
 
-	AliAODVertex *vertexp1n2 = ReconstructSecondaryVertex(twoTrackArray2,dispersion);
-	if(!vertexp1n2) {
-	  twoTrackArray2->Clear();
-	  negtrack2=0;
-	  continue;
-	}
-
 	if(f3Prong) {
 	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
-	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,vertexp1n2,dcap1n1,dcap1n2,dcan1n2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
+	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,twoTrackArray2,dcap1n1,dcap1n2,dcan1n2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
 	  if(ok3Prong) {
 	    AliAODVertex *v3Prong = 0x0;
             if(!fMakeReducedRHF) v3Prong = new(verticesHFRef[iVerticesHF++])AliAODVertex(*secVert3PrAOD);
@@ -1487,7 +1473,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 	threeTrackArray->Clear();
 	negtrack2 = 0;
-	delete vertexp1n2;
 
       } // end 2nd loop on negative tracks
 
@@ -2408,7 +2393,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
 AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 							    TObjArray *threeTrackArray,AliVEvent *event,
 							    AliAODVertex *secVert,Double_t dispersion,
-							    const AliAODVertex *vertexp1n1,const AliAODVertex *vertexp2n1,
+							    const AliAODVertex *vertexp1n1, TObjArray *twoTrackArray2,
 							    Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
 							    Bool_t useForLc, Bool_t useForDs, Bool_t &ok3Prong)
 {
@@ -2424,7 +2409,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   }
 
   ok3Prong=kFALSE;
-  if(!secVert || !vertexp1n1 || !vertexp2n1) return 0x0;
+  if(!secVert) return 0x0;
 
   Double_t px[3],py[3],pz[3],d0[3],d0err[3];
   Double_t momentum[3];
@@ -2472,8 +2457,8 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   // create the object AliAODRecoDecayHF3Prong
   Double_t pos[3]; primVertexAOD->GetXYZ(pos);
   Double_t dca[3]={dcap1n1,dcap2n1,dcap1p2};
-  Double_t dist12=TMath::Sqrt((vertexp1n1->GetX()-pos[0])*(vertexp1n1->GetX()-pos[0])+(vertexp1n1->GetY()-pos[1])*(vertexp1n1->GetY()-pos[1])+(vertexp1n1->GetZ()-pos[2])*(vertexp1n1->GetZ()-pos[2]));
-  Double_t dist23=TMath::Sqrt((vertexp2n1->GetX()-pos[0])*(vertexp2n1->GetX()-pos[0])+(vertexp2n1->GetY()-pos[1])*(vertexp2n1->GetY()-pos[1])+(vertexp2n1->GetZ()-pos[2])*(vertexp2n1->GetZ()-pos[2]));
+  Double_t dist12=TMath::Max(0.,fCutsLctopKpi->GetMaxDistanceSecPrimVertex()-0.001);
+  Double_t dist23=dist12;
   Short_t charge=(Short_t)(postrack1->Charge()+postrack2->Charge()+negtrack->Charge());
 
 
@@ -2524,6 +2509,16 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   if(ok3Prong && fInputAOD){
     the3Prong->SetSecondaryVtx(secVert);
     AddDaughterRefs(secVert,(AliAODEvent*)event,threeTrackArray);
+    Double_t dummyDisp;
+    AliAODVertex *vertexp2n1 = ReconstructSecondaryVertex(twoTrackArray2,dummyDisp);
+    if(!vertexp2n1) ok3Prong=kFALSE;
+    else{
+      dist12=TMath::Sqrt((vertexp1n1->GetX()-pos[0])*(vertexp1n1->GetX()-pos[0])+(vertexp1n1->GetY()-pos[1])*(vertexp1n1->GetY()-pos[1])+(vertexp1n1->GetZ()-pos[2])*(vertexp1n1->GetZ()-pos[2]));
+      dist23=TMath::Sqrt((vertexp2n1->GetX()-pos[0])*(vertexp2n1->GetX()-pos[0])+(vertexp2n1->GetY()-pos[1])*(vertexp2n1->GetY()-pos[1])+(vertexp2n1->GetZ()-pos[2])*(vertexp2n1->GetZ()-pos[2]));
+      the3Prong->SetDist12toPrim(dist12);
+      the3Prong->SetDist23toPrim(dist23);
+      delete vertexp2n1;
+    }
   }
 
   // get PID info from ESD
