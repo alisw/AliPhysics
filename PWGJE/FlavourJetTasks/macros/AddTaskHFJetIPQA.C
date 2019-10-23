@@ -159,16 +159,23 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     Printf("%s :: File %s successfully loaded, setting up threshold functions.",taskname,PathToThresholds.Data());
 
     if(fileThresholds){
-        printf("Going here *****************************\n");
+        printf("Reading threshold histograms for track counting...\n");
         TObjArray* threshfirst;
         TObjArray* threshsec;
         TObjArray* threshthird;
-        fileThresholds->GetObject("Prob_0.65",threshfirst);
-        fileThresholds->GetObject("Prob_0.54",threshsec);
-        fileThresholds->GetObject("Prob_0.50",threshthird);
-        printf("Pointers in the C file: %p, %p, %p\n",threshfirst, threshsec,threshthird);
+        fileThresholds->GetObject("Thresh_0.65",threshfirst);
+        fileThresholds->GetObject("Thresh_0.54",threshsec);
+        fileThresholds->GetObject("Thresh_0.50",threshthird);
+        //printf("Pointers in the C file: %p, %p, %p\n",threshfirst, threshsec,threshthird);
+
+        printf("Reading prob <-> IP lookup histograms...\n");
+        TObjArray* oLookup;
+        fileThresholds->GetObject("ProbLookup",oLookup);
+        //printf("Lookup Pointer in Read file:%p\n", oLookup);
+
 
         jetTask->SetThresholds(threshfirst,threshsec,threshthird);
+        jetTask->ReadProbvsIPLookup(oLookup);
     }
 
     // Setup input containers
