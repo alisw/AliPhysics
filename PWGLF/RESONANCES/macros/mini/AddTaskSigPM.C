@@ -30,8 +30,9 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
  Float_t     radiuslow=5.,            // radius low 
  Bool_t      doCustomDCAcuts=kTRUE,  //custom dca cuts for V0 daughters
  Double_t    dcaProton=0.1,           // proton dca
- Double_t    dcaPion=0.1)             //pion dca
-
+ Double_t    dcaPion=0.1,             //pion dca
+ Double_t    minAsym = 0.3,           //pair lower abs(asym)
+ Double_t    maxAsym=0.95)            //pair maximum abs(asym)  
 {  
 
   //-------------------------------------------
@@ -60,7 +61,7 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   //-------------------------------------------
   Double_t minYlab = -0.5;
   Double_t maxYlab =  0.5;
-      
+
   // if (pairCutSetID==pairYCutSet::kCentralTight) { //|y_cm|<0.3
   //   minYlab = -0.3;    maxYlab = 0.3;
   // }
@@ -184,24 +185,27 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
   cutY->SetRangeD(minYlab, maxYlab);
 
+  AliRsnCutMiniPair *cutAsym = new AliRsnCutMiniPair("cutAsymmetry", AliRsnCutMiniPair::kAsymRange);
+  cutAsym->SetRangeD(minAsym, maxAsym);
+
   //AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
   
   AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
-  //cutsPair->AddCut(cutV0);
-  //cutsPair->SetCutScheme(TString::Format("%s&(!%s)",cutY->GetName(),cutV0->GetName()).Data());
-  cutsPair->SetCutScheme(cutY->GetName());
+  cutsPair->AddCut(cutAsym);
+  cutsPair->SetCutScheme(Form("%s & %s ",cutY->GetName(), cutAsym->GetName()));
+
+  AliRsnCutSet *cutsPairY = new AliRsnCutSet("pairCutsY", AliRsnTarget::kMother);
+  cutsPairY->AddCut(cutY);
+  cutsPairY->SetCutScheme(cutY->GetName());
   
-  // AliRsnCutSet* PairCutsMix=new AliRsnCutSet("PairCutsMix",AliRsnTarget::kMother);
-  // PairCutsMix->AddCut(cutY);
-  // PairCutsMix->SetCutScheme(cutY->GetName());
 
   //-----------------------------------------------------------------------------------------------
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
- gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
 //  gROOT->LoadMacro("ConfigSigPM.C");
- if (!ConfigSigPM(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, nsigma, 
+ if (!ConfigSigPM(task, isMC, collSys, cutsPair, cutsPairY, enaMultSel, masslow, massup, nbins, nsigma, 
 enableMonitor, pi_Ls_PIDCut, LsDCA, LsCosPoinAn, LsDaughDCA, massTol, massTolVeto, Switch, pLife, v0rapidity, radiuslow, doCustomDCAcuts, dcaProton, dcaPion)) 
 return 0x0;
   
