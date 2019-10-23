@@ -58,7 +58,7 @@ public:
   Bool_t  GetCutOnMCtruth() const { return fCutOnMCtruth; }
   CutType GetCutType()      const { return fCutType;      }
 
-  Int_t GetNCuts() { return fNActiveCuts; }
+  Int_t GetNCuts() const { return fNActiveCuts; }
 
   //
   //Analysis cuts interface

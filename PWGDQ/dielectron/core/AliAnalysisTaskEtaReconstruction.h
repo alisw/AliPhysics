@@ -14,6 +14,8 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliDielectronSignalMC.h"
+#include "AliDielectronCutGroup.h"
+#include "AliDielectronVarCuts.h"
 #include "TString.h"
 #include "THnSparse.h"
 class TH1F;
@@ -152,6 +154,10 @@ public:
    void   AddTrackCuts_primary  (AliAnalysisFilter* filter) {fTrackCuts_primary.push_back(filter);}
    void   AddTrackCuts_secondary(AliAnalysisFilter* filter) {fTrackCuts_secondary.push_back(filter);}
 
+   // Set mass cuts
+   void   SetMassCutPrimaries(double MassCut) {fMassCutPrimaries = MassCut;};
+   void   SetMassCutSecondaries(double MassCut) {fMassCutSecondaries = MassCut;};
+
   class Particle{
   public:
     Particle() :
@@ -268,6 +274,9 @@ private:
   double  fPtMaxGen;
   double  fEtaMinGen;
   double  fEtaMaxGen;
+
+  double fMassCutPrimaries; // Mass cut for primary pair
+  double fMassCutSecondaries; // Mass cut for secondary pair
 
   std::vector<AliDielectronSignalMC> fSingleLegMCSignal;
   std::vector<AliDielectronSignalMC> fPairMCSignal;
