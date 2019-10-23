@@ -254,11 +254,6 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fY", &fY, "fY/F");
   fTreeJPsi ->Branch("fM", &fM, "fM/F");
   fTreeJPsi ->Branch("fPhi", &fPhi, "fPhi/F");
-  fTreeJPsi ->Branch("fPtGen", &fPtGen, "fPtGen/F");
-  fTreeJPsi ->Branch("fPtGenDaughter", &fPtGenDaughter[0], "fPtGenDaughter[2]/F");
-  fTreeJPsi ->Branch("fYGen", &fYGen, "fYGen/F");
-  fTreeJPsi ->Branch("fMGen", &fMGen, "fMGen/F");
-  fTreeJPsi ->Branch("fPhiGen", &fPhiGen, "fPhiGen/F");
   fTreeJPsi ->Branch("fChannel", &fChannel, "fChannel/I");
   fTreeJPsi ->Branch("fSign", &fSign, "fSign/I");
   fTreeJPsi ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/F");
@@ -276,8 +271,12 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
   fTreeJPsi ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
   fTreeJPsi ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[6]/F");
-  
   if(isMC){
+	fTreeJPsi ->Branch("fPtGen", &fPtGen, "fPtGen/F");
+	fTreeJPsi ->Branch("fPtGenDaughter", &fPtGenDaughter[0], "fPtGenDaughter[2]/F");
+	fTreeJPsi ->Branch("fYGen", &fYGen, "fYGen/F");
+	fTreeJPsi ->Branch("fMGen", &fMGen, "fMGen/F");
+	fTreeJPsi ->Branch("fPhiGen", &fPhiGen, "fPhiGen/F");
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O",NTRIGGERINPUTS));
 	}
   fOutputList->Add(fTreeJPsi);
