@@ -167,7 +167,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  auto binTrig = AxisFix("Trig",2,-0.5,1.5);
  auto binParType = AxisFix("ParType",2,-0.5,1.5);
 
- fHistos = new THistManager("Inclusivef0f2hists");
+ fHistos = new THistManager("Inclusivef0f2Temphists");
 
 //Event Selection ****************
  vector<TString> ent ={
@@ -204,6 +204,8 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
  CreateTHnSparse("VtxSelection","VtxSelection",2,
 	{binCent,binSwitch},"s");
+ CreateTHnSparse("VtxSelection0","VtxSelection0",2,
+        {binCent,binSwitch},"s");
 
  CreateTHnSparse("SignalLoss","SignalLoss",3,
 	{binCent,binPt,binSwitch},"s");
@@ -386,12 +388,11 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
  fOutput->Add(fHistos); 
 
- if( fOption.Contains("PbPb2018") ){
+ if( fOption.Contains("2018") ){
 	fEventCuts.SetupPbPb2018();
 	fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) ); 
+	fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
  }
- fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
-
 
  PostData(1, fHistos->GetListOfHistograms());
 
@@ -417,12 +418,13 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 	: fEvt = dynamic_cast<AliAODEvent*>(event);
  if(!fEvt) return;
 
- bool IsEventSelectedPbPb2018 = fEventCuts.AcceptEvent( event );
+ bool IsEventSelectedPbPb2018 = kFALSE;
+ if( fOption.Contains("2018") ) IsEventSelectedPbPb2018 = fEventCuts.AcceptEvent( event );
 
  IsMC = kFALSE;
- if( IsFirstEvent ){
+// if( IsFirstEvent ){
 	Int_t runnumber = fEvt->GetRunNumber();
-	cout << runnumber << endl;
+//	cout << runnumber << endl;
 	if( fOption.Contains("MC") ) IsMC = kTRUE;
 	fRunTable = new AliAnalysisTaskInclusivef0f2RunTable(runnumber);
 	fRunTable->SetColl(0);
@@ -431,8 +433,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 		fRunTable->SetColl(2);
 	}
 
-	IsFirstEvent = kFALSE;
- }
+//	IsFirstEvent = kFALSE;
+// }
 
  AliInputEventHandler* inputHandler = (AliInputEventHandler*)
         AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
@@ -697,7 +699,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 
 //Trigger Efficiency**********************
  bool IsINEL = false;
- bool IsINEL0 = false;
+ bool IsINEL0 = true;
  if( IsMC ){
         if( fEvt->IsA()==AliAODEvent::Class() ){
                 fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
@@ -708,15 +710,15 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
                         AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
                         if( !trackMC ) continue;
                         if( trackMC->Charge() == 0 ) continue;
-			IsINEL0 = true;
                        	if( fabs( trackMC->Eta() ) > 1.0 ) continue;
                         IsINEL = true;
                 }
         }
  }      
 
- if( IsINEL ){
-        if( (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7) ){
+ if( IsINEL && IsMC ){
+//        if( (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7) ){
+	if( IsTriggered ){
                 FillTHnSparse("TrigEffMult",{fCent,1.0},1.0 );
         }
         else{
@@ -724,8 +726,9 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
         }
  }
 
- if( IsINEL0 ){
-        if( (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7) ){
+ if( IsINEL0 && IsMC ){
+//        if( (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7) ){
+	if( IsTriggered ){
                 FillTHnSparse("TrigEffMult0",{fCent,1.0},1.0 );
         }
         else{
@@ -740,6 +743,13 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 		FillTHnSparse("VtxSelection",{fCent,1.0}, 1.0);
 	}
 	else{ FillTHnSparse("VtxSelection",{fCent,0.0}, 1.0); }
+ }
+
+ if( IsMC && IsTriggered && IsINEL0 ){
+        if( IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() && IsGoodVtx ){
+                FillTHnSparse("VtxSelection0",{fCent,1.0}, 1.0);
+        }
+        else{ FillTHnSparse("VtxSelection0",{fCent,0.0}, 1.0); }
  }
 
  if( IsMC ){
