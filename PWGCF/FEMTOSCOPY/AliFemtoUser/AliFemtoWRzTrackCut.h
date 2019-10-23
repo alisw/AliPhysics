@@ -18,8 +18,7 @@ public:
    virtual ~AliFemtoWRzTrackCut();
    AliFemtoWRzTrackCut& operator =(const AliFemtoWRzTrackCut &aCut);
    virtual bool Pass(const AliFemtoTrack* aTrack);
-   virtual AliFemtoString Report();
-   virtual TList *ListSettings();
+
    void SetDCAcutPtDependence(const float &DCAxy,const float &DCAz,const float& Pt_min, const float& Pt_max);
    
 private:
