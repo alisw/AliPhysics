@@ -25,7 +25,7 @@ CellTimeCalib:                                      # Cell Time Calibration comp
     enabled: true                                  # Whether to enable the task
 Clusterizer:                                        # Clusterizer component
     enabled: true                                  # Whether to enable the task
-    clusterizer: kClusterizerv1                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
+    clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
     cellE: 0.05                                     # Minimum cell energy
     seedE: 0.1                                      # Seed energy threshold
     cellTimeMin: -1                                 # Min cell time (s)
@@ -40,6 +40,7 @@ ClusterExotics:                                     # Cluster exotics identifica
     createHistos: true                             # Whether the task should create output histograms    
 ClusterNonLinearity:                                # Cluster non-linearity correction component
     enabled: true                                  # Whether to enable the task
+    setForceClusterE: true                         #for cluster energy to correct for non-linearity
     createHistos: true                             # Whether the task should create output histograms        
     nonLinFunct: kBeamTestCorrectedv3               # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
 ClusterTrackMatcher:                                # Cluster-track matcher component

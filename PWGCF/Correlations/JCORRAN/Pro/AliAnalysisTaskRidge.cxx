@@ -212,11 +212,14 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 
 	Double1D verzbin = {-8,-6,-4,-2,0,2,4,6,8};
 
-//	Double1D verzbin = {
-//	 -8, -7, -6, -5, -4, -3, -2,
-//	  2,  3,  4,  5,  6,  7,  8};
+	Double1D verzbinFine = {
+	 -8, -7, -6, -5, -4, -3, -2,
+	  2,  3,  4,  5,  6,  7,  8};
 
 	binZ = AxisVar("Z",verzbin);
+	if( fOption.Contains("FineBkg") ){
+		binZ = AxisVar("Z",verzbinFine);
+	}
 
         auto binPhiTrack = AxisFix("PHI",180,0,2*pi);
         auto binEtaTrack = AxisFix("ETA",80,-4,4);
@@ -555,7 +558,9 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	double v0amplitude=0;
 
 //	fJetTask = (AliJJetTask*) fEvt -> FindListObject("AliJJetTask");
-	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTask" ));
+	if( !fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTask" ));
+	else if( fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskHighMult" ));
+
 
 	sel = (AliMultSelection*) fEvt -> FindListObject("MultSelection");
 	if( sel ){ 
@@ -687,9 +692,11 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection ) fHistos->FillTH1("hEventNumbers","IsSelectedFromAliMultSelection",1);
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 	        fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
-		fHistos->FillTH1("hJetPt",fJetPt,1.0);
-		fHistos->FillTH1("hJetEta",JetEta,1.0);
-		fHistos->FillTH1("hJetPhi",JetPhi,1.0);
+		if( Ljet ){
+			fHistos->FillTH1("hJetPt",fJetPt,1.0);
+			fHistos->FillTH1("hJetEta",JetEta,1.0);
+			fHistos->FillTH1("hJetPhi",JetPhi,1.0);
+		}
 	        if( !fOption.Contains("HighMult") ){
 	                fHistos->FillTH1("hMB",fCent,1);
 	                fHistos->FillTH2("hMB_V0M",fCent,v0amplitude,1);
@@ -706,7 +713,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	}
 
 //	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
-	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && fabs(fZ) < 10 && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
+	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && fabs(fZ) < 10.0 && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 		if( IsMC && fEvt->IsA()==AliAODEvent::Class() ){
 			fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
 			if (fabs(fZ_gen)<10.0){
@@ -729,7 +736,8 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 		if( !fOption.Contains("EffCorrection") && IsGoodVtx ){
-			if( fOption.Contains("Glb") ){ 		if( this -> GoodTracksSelection( 4 ) ){ this -> FillTracks(); } }
+			if( fOption.Contains("Glb") && !fOption.Contains("SDD") ){ 
+								if( this -> GoodTracksSelection( 4 ) ){ this -> FillTracks(); } }
 			else if( fOption.Contains("GlbSDD") ){ 	if( this -> GoodTracksSelection( 5 ) ){ this -> FillTracks(); } }
 			else{ 					if( this -> GoodTracksSelection( 1 ) ){ this -> FillTracks(); } }
 
@@ -1068,7 +1076,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 	const UInt_t ntracks = goodtrackindices.size();
 
 	tracklist trackpool;
-
+/*
         int epsize=1;	
 	if (fsetmixing && centbin>=0 && zbin>=0){
 		eventpool &ep = fEMpool[centbin][zbin];
@@ -1081,7 +1089,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 			n++;
 		}
 	}
-
+*/
 	std::random_device rd;
 	std::default_random_engine engine{rd()};
 	std::shuffle ( goodtrackindices.begin(), goodtrackindices.end(), engine );
@@ -1310,6 +1318,18 @@ void AliAnalysisTaskRidge::FillTracks(){
 	}
 
 
+        int epsize=1;
+        if (fsetmixing && centbin>=0 && zbin>=0){
+                eventpool &ep = fEMpool[centbin][zbin];
+                epsize = ep.size();
+                if (ep.size()<bookingsize  ) return;
+                int n = 0;
+                for (auto pool: ep){
+                        if (n == (ep.size() -1 )) continue;
+                        for (auto track: pool) trackpool.push_back((AliVTrack*)track);
+                        n++;
+                }
+        }
 
 	if (fsetmixing){
 		for (UInt_t  it = 0; it < ntracks; it++) {

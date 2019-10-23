@@ -149,16 +149,6 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t cent
   if(usePileUpRej){
     Double_t pileUpCutsTPCClustersMin = 2.0e+06;
     Double_t pileUpCutsTPCClustersMax = 3.1e+06;        
-
-    printf("Adding TPC-Cluster based Pile-up rejection! \n");
-    TF1* fFitMin = new TF1("fFit","pol6",0,90);
-    fFitMin->SetParameters(pileUpCutsTPCClustersMin,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
-    TF1* fFitMax = new TF1("fFit","pol6",0,90);
-    fFitMax->SetParameters(pileUpCutsTPCClustersMax,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
-        
-    eventCuts->SetMinCorrCutFunction(fFitMin, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
-    eventCuts->SetMaxCorrCutFunction(fFitMax, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
-}   
   
   return eventCuts;
 }

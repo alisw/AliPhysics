@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//update Jul 24
+//update Oct 2019
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -39,24 +39,10 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
-    TH1F*  fHistPA;
-    TH1F*  fHistPAparLambda;
-    TH1F*  fHistPAparLambdabar;
-    
-    
+    TH1D*  hPt;
     
     TH3F*  f3fHistCentVsInvMassLambda1point0;
-    TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point0Rap;
-    TH3F*  f3fHistCentVsInvMassLambda1point0MasscutRap;
-    
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
-    
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Rap;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0MasscutRap;
-    
     
     Float_t fCentrality;
     Int_t fTreeVariableLeastNbrCrossedRows;
@@ -68,8 +54,8 @@ protected:
     
     
     THnSparse *fPtBinNplusNminusCh;
-    THnSparse *fPtBinNplusNminusChRap;
-
+    THnSparse *fPtBinNplusNminusChtight;
+    
     
     
     

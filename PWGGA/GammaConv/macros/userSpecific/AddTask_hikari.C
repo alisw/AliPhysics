@@ -29,6 +29,8 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
    Int_t   isHeavyIon             = 0,
    TString additionalTrainConfig  = "0"// additional counter for trainconfig + special settings
    ) {
+
+
   
   Bool_t    enableLightOutput = kFALSE;
   Bool_t    enableTHnSparse   = kFALSE;
@@ -266,7 +268,7 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("00010113", "0d200009287000008250404000", "0152103500000000"); // to be used for MBW
       cuts.AddCutPCM("00010113", "0d200009297000008250404000", "0152103500000000"); // to be used for MBW
 
-    } else if (trainConfig == 440){ // as 400 to be used MBW
+    } else if (trainConfig == 440){ // as 400 to be used MBW eta
       cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // 
       cuts.AddCutPCM("00010113", "0c200009227300008250404000", "0152103500000000"); // 
       cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // 
@@ -274,9 +276,26 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // R 5-33.5 cm
       cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // R 33.5-72 cm
       cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // R 72-180 cm
-    } else if (trainConfig == 442){ //further study material 
-      cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // R 95.0-180 cm Gas Volume
-      cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // R 5-13.0 cm SPD
+    } else if (trainConfig == 442){//fine binning
+      cuts.AddCutPCM("00010113", "0dg00009227300008250404000", "0152103500000000"); // R 95-180
+      cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // R 5-13
+      cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // R 13-33.5.
+    } else if (trainConfig == 443){//fine binning
+      cuts.AddCutPCM("00010113", "0dj00009227300008250404000", "0152103500000000"); // R 33-55
+      cuts.AddCutPCM("00010113", "0dk00009227300008250404000", "0152103500000000"); // R 55-72
+    } else if (trainConfig == 444){//fine binning
+      cuts.AddCutPCM("00010113", "0dl00009227300008250404000", "0152103500000000"); // R 72-95
+      cuts.AddCutPCM("00010113", "0dm00009227300008250404000", "0152103500000000"); // R 5-180, exclude 55-72
+    } else if (trainConfig == 445){// <--> 442
+      cuts.AddCutPCM("00010113", "0dg00009227300008250404000", "0152103500000000"); // R 95-180
+      cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // R 5-13
+      cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // R 13-33.5.
+    } else if (trainConfig == 446){// <--> 443
+      cuts.AddCutPCM("00010113", "0dj00009227300008250404000", "0152103500000000"); // R 33-55
+      cuts.AddCutPCM("00010113", "0dk00009227300008250404000", "0152103500000000"); // R 55-72
+    } else if (trainConfig == 447){// <--> 444
+      cuts.AddCutPCM("00010113", "0dl00009227300008250404000", "0152103500000000"); // R 72-95
+      cuts.AddCutPCM("00010113", "0dm00009227300008250404000", "0152103500000000"); // R 5-180, exclude 55-72
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL;
@@ -357,7 +376,7 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
     } else if (trainConfig == 20){
       cuts.AddCutPCM("88010113", "0d200009a27300008250404000", "0162103500000000"); // default 80100
 
-    } else if (trainConfig == 440){// as 400 to be used MBW
+    } else if (trainConfig == 440){// as 400 to be used MBW eta
       cuts.AddCutPCM("80010113", "00200009a27300008250404000", "0162103500000000"); // 
       cuts.AddCutPCM("80010113", "0c200009a27300008250404000", "0162103500000000"); // 
       cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "0162103500000000"); // 
@@ -372,6 +391,30 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("80010113", "0d200009a27300008250424000", "0162103500000000"); // default 0100 + Cat1
     } else if (trainConfig == 444){// 
       cuts.AddCutPCM("80010113", "0d200009a27300008250454000", "0162103500000000"); // default 0100 + Cat23
+    } else if (trainConfig == 445){// <---> 443
+      cuts.AddCutPCM("80010113", "0d200009a27300008250424000", "0162103500000000"); // default 0100 + Cat1
+    } else if (trainConfig == 446){// <---> 446
+      cuts.AddCutPCM("80010113", "0d200009a27300008250454000", "0162103500000000"); // default 0100 + Cat23
+    } else if (trainConfig == 447){//MBW
+      cuts.AddCutPCM("80010113", "0dg00009a27300008250404000", "0162103500000000"); // R 95-180
+      cuts.AddCutPCM("80010113", "0dh00009a27300008250404000", "0162103500000000"); // R 5-13
+      cuts.AddCutPCM("80010113", "0di00009a27300008250404000", "0162103500000000"); // R 13-33.5.
+    } else if (trainConfig == 448){//MBW
+      cuts.AddCutPCM("80010113", "0dj00009a27300008250404000", "0162103500000000"); // R 33-55
+      cuts.AddCutPCM("80010113", "0dk00009a27300008250404000", "0162103500000000"); // R 55-72
+    } else if (trainConfig == 449){//MBW
+      cuts.AddCutPCM("80010113", "0dl00009a27300008250404000", "0162103500000000"); // R 72-95
+      cuts.AddCutPCM("80010113", "0dm00009a27300008250404000", "0162103500000000"); // R 5-180, exclude 55-72
+    } else if (trainConfig == 450){// <--> 447
+      cuts.AddCutPCM("80010113", "0dg00009a27300008250404000", "0162103500000000"); // R 95-180
+      cuts.AddCutPCM("80010113", "0dh00009a27300008250404000", "0162103500000000"); // R 5-13
+      cuts.AddCutPCM("80010113", "0di00009a27300008250404000", "0162103500000000"); // R 13-33.5.
+    } else if (trainConfig == 451){// <--> 448
+      cuts.AddCutPCM("80010113", "0dj00009a27300008250404000", "0162103500000000"); // R 33-55
+      cuts.AddCutPCM("80010113", "0dk00009a27300008250404000", "0162103500000000"); // R 55-72
+    } else if (trainConfig == 452){// <--> 449
+      cuts.AddCutPCM("80010113", "0dl00009a27300008250404000", "0162103500000000"); // R 72-95
+      cuts.AddCutPCM("80010113", "0dm00009a27300008250404000", "0162103500000000"); // R 5-180, exclude 55-72
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL; 
@@ -443,15 +486,19 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       }
       else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
+
+    analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+
     if (doPostCalibration){
       if (isMC == 0){
-        if(fileNamedEdxPostCalib.CompareTo("") != 0){
-          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
-          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
-        }
-        analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
-        cout << "Enabled TPC dEdx recalibration." << endl;
-      } else{
+	if(analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNamedEdxPostCalib)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
+	  cout << "Setting TPC dEdx post calibration file: " << fileNamedEdxPostCalib.Data() << endl;
+        } else{
+          doPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
+        }	
+      }else{
         cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
         doPostCalibration=kFALSE;
         analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);

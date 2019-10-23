@@ -168,6 +168,8 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   AliFemtoDreamCascade(const AliFemtoDreamCascade&);
   void Reset();
   void SetMCMotherInfo(AliAODEvent *evt, AliAODcascade *casc);
+  void SetMCMotherInfo(AliVEvent *evt, AliAODcascade *casc);
+  void SetMCMotherInfo(TClonesArray *mcarray, AliAODcascade *casc);
   AliFemtoDreamTrack *fPosDaug;
   AliFemtoDreamTrack *fNegDaug;
   AliFemtoDreamTrack *fBach;

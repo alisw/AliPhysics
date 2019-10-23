@@ -13,7 +13,7 @@
 #include "TChain.h"
 #include "TBits.h"
 #include "THnSparse.h"
- 
+
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliFemtoV0.h"
@@ -97,8 +97,19 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
+  void Set1DCorrectionsXiPlus(TH1D *h1);
+  void Set1DCorrectionsXiMinus(TH1D *h1);
 
-  
+  void Set4DCorrectionsPions(THnSparse *h1);
+  void Set4DCorrectionsKaons(THnSparse *h1);
+  void Set4DCorrectionsProtons(THnSparse *h1);
+  void Set4DCorrectionsPionsMinus(THnSparse *h1);
+  void Set4DCorrectionsKaonsMinus(THnSparse *h1);
+  void Set4DCorrectionsProtonsMinus(THnSparse *h1);
+  void Set4DCorrectionsAll(THnSparse *h1);
+  void Set4DCorrectionsLambdas(THnSparse *h1);
+  void Set4DCorrectionsLambdasMinus(THnSparse *h1);
+
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
   virtual AliFemtoTrack *CopyAODtoFemtoTrack(AliNanoAODTrack *tAodTrack
@@ -167,6 +178,17 @@ private:
   TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsXiPlus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsXiMinus;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsPions;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsKaons;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsProtons;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsPionsMinus;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsKaonsMinus;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsProtonsMinus;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsAll;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsLambdas;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
 
 #ifdef __ROOT__
   /// \cond CLASSIMP

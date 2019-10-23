@@ -76,6 +76,7 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fNParsBkg(2),
   fOnlySideBands(kFALSE),
   fNSigma4SideBands(4.),
+  fCheckSignalCountsAfterFirstFit(kTRUE),
   fFitOption("L,E"),
   fRawYield(0.),
   fRawYieldErr(0.),
@@ -135,6 +136,7 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fNParsBkg(2),
   fOnlySideBands(kFALSE),
   fNSigma4SideBands(4.),
+  fCheckSignalCountsAfterFirstFit(kTRUE),
   fFitOption("L,E"),
   fRawYield(0.),
   fRawYieldErr(0.),
@@ -275,10 +277,11 @@ Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
   printf("\n--- Estimate signal counts in the peak region ---\n");
   Double_t estimSignal=CheckForSignal(fMass,fSigmaSgn);
   Bool_t doFinalFit=kTRUE;
-  if(estimSignal<0.){
+  if(fCheckSignalCountsAfterFirstFit && estimSignal<0.){
     if(draw) DrawFit();
     estimSignal=0.;
     doFinalFit=kFALSE;
+    printf("Abandon fit: no signal counts after first fit\n");
   }
 
   fRawYieldHelp=estimSignal; // needed for reflection normalization
@@ -401,7 +404,7 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
 
       pinfos->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
       pinfos->AddText(Form("B (%.0f#sigma) = %.0f #pm %.0f",nsigma,bkg,errbkg));
-      pinfos->AddText(Form("S/B (%.0f#sigma) = %.4f ",nsigma,fRawYield/bkg));
+      pinfos->AddText(Form("S/B (%.0f#sigma) = %.4g ",nsigma,fRawYield/bkg));
       if(fRflFunc)  pinfos->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
       pinfos->AddText(Form("Signif (%.0f#sigma) = %.1f #pm %.1f ",nsigma,signif,errsignif));
       if(writeFitInfo>=2) pinfos->Draw();
@@ -473,9 +476,9 @@ Double_t AliHFInvMassFitter::CheckForSignal(Double_t mean, Double_t sigma){
     sumback+=fBkgFunc->Eval(fHistoInvMass->GetBinCenter(ibin));
   }
   Double_t diffUnderPeak=(sum-sumback);
-  printf("   ---> IntegralUnderFitFunc=%f  IntegralUnderHisto=%f   EstimatedSignal=%f\n",sum,sumback,diffUnderPeak);
+  printf("   ---> IntegralUnderHisto=%f  IntegralUnderBkgFunc=%f   EstimatedSignal=%f\n",sum,sumback,diffUnderPeak);
   if(diffUnderPeak/TMath::Sqrt(sum)<1.){
-    printf("   ---> (Tot-Bkg)/sqrt(Tot)=%f ---> Likely no signal/\n",diffUnderPeak/TMath::Sqrt(sum));
+    printf("   ---> (Tot-Bkg)/sqrt(Tot)=%f ---> Likely no signal\n",diffUnderPeak/TMath::Sqrt(sum));
     return -1;
   }
   return diffUnderPeak*fHistoInvMass->GetBinWidth(1);
@@ -1120,7 +1123,8 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     }
     for(Int_t j=1;j<=fHistoTemplRfl->GetNbinsX();j++){
       if(isPoissErr){
-	fHistoTemplRfl->SetBinError(j,TMath::Sqrt(fHistoTemplRfl->GetBinContent(j)));
+	if(fHistoTemplRfl->GetBinContent(j)>0) fHistoTemplRfl->SetBinError(j,TMath::Sqrt(fHistoTemplRfl->GetBinContent(j)));
+	else fHistoTemplRfl->SetBinError(j,0);
       }
       else fHistoTemplRfl->SetBinError(j,0.001*fHistoTemplRfl->GetBinContent(j));
     }

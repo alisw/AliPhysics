@@ -41,13 +41,15 @@ typedef TrackSelectionCut<
                             > > > >,
 
           // physical-cuts
+          AddTrackCutAttrs< TrackCutAttrRejectTpcElectron,
           AddTrackCutAttrs< TrackCutAttrImpact,
           AddTrackCutAttrs< TrackCutAttrPt,
           AddTrackCutAttrs< TrackCutAttrEta,
           AddTrackCutAttrs< TrackCutAttrChi2TPC,
           AddTrackCutAttrs< TrackCutAttrChi2ITS,
-                            TrackCutAttrSigmaPion
-                            > > > > >
+          AddTrackCutAttrs< TrackCutAttrRejectKaonTofPionTime,
+                            TrackCutAttrTpcSigmaPion
+                            > > > > > > >
 
         > TrackCutAttrsAK;
 
@@ -144,7 +146,6 @@ public:
   ULong_t fNumPass,
           fNumFail;
 };
-
 
 /// Cut on MonteCarlo PDG code to select *only* pions
 ///

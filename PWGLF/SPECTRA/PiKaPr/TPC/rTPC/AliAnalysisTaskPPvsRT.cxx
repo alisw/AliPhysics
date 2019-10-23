@@ -80,9 +80,9 @@ using namespace std;
 
 static float Magf                = 1;
 static const int nHists          = 4;
-static const int nRt             = 6;
-static const double CentMin[nRt] = {0.0,0.5,1.0,2.0,3.0,0.0};
-static const double CentMax[nRt] = {0.5,1.0,2.0,3.0,10.0,10.0};
+static const int nRt             = 5;
+static const double CentMin[nRt] = {0.0,0.5,1.5,2.5,0.0};
+static const double CentMax[nRt] = {0.5,1.5,2.5,5.0,5.0};
 
 ClassImp(AliAnalysisTaskPPvsRT)
 AliAnalysisTaskPPvsRT::AliAnalysisTaskPPvsRT():
@@ -835,7 +835,9 @@ void AliAnalysisTaskPPvsRT::UserExec(Option_t *)
         fRT->Fill(Rt);
         fPtLVsRt->Fill(LeadingTrack->Pt(),Rt);
         
-        Int_t BinRT = GetBinRT(listTrans);
+        int BinRT = GetBinRT(listTrans);
+	if(BinRT < 0)
+		return;
         ProduceArrayTrksESD(0,listToward,BinRT);
         ProduceArrayTrksESD(1,listAway,BinRT);
         ProduceArrayTrksESD(2,listTrans,BinRT);
@@ -1146,23 +1148,24 @@ Double_t AliAnalysisTaskPPvsRT::DeltaPhi(Double_t phi, Double_t Lphi,
     return dphi;
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPPvsRT::GetBinRT(TList* listT){
+int AliAnalysisTaskPPvsRT::GetBinRT(TList* listT){
     
     double rt = -999.0;
     rt = (double)listT->GetEntries()/fMeanChT;
+     int r = -10;
     
     if(rt < 0.5)
-        rt = 0;
-    else if(rt >= 0.5 && rt < 1.0)
-        rt = 1;
-    else if(rt >= 1.0 && rt < 2.0)
-        rt = 2;
-    else if(rt >= 2.0 && rt < 3.0)
-        rt = 3;
+        r = 0;
+    else if(rt >= 0.5 && rt < 1.5)
+        r = 1;
+    else if(rt >= 1.5 && rt < 2.5)
+        r = 2;
+    else if(rt >= 2.5 && rt < 5.0)
+        r = 3;
     else
-        rt = 4;
+        r = -10;
     
-    return rt;
+    return r;
 }
 //_____________________________________________________________________________
 Short_t AliAnalysisTaskPPvsRT::GetPidCode(Int_t pdgCode) const
@@ -1325,44 +1328,44 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int& region, TList *lt, co
                 if( fMCStack->IsPhysicalPrimary(label) ){
                     if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
                         hMcOut[Cent][0]->Fill(esdTrack->Pt());
-                        hMcOut[5][0]->Fill(esdTrack->Pt());
+                        hMcOut[4][0]->Fill(esdTrack->Pt());
                         hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
-                        hMcOut[5][pidCode]->Fill(esdTrack->Pt());
+                        hMcOut[4][pidCode]->Fill(esdTrack->Pt());
                     }
                     
                     hDCApTPrim[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTPrim[5][0]->Fill(pt,dcaxy);
+                    hDCApTPrim[4][0]->Fill(pt,dcaxy);
                     hDCApTPrim[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTPrim[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTPrim[4][pidCode]->Fill(pt,dcaxy);
                     
                     hDCApTPrim2[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTPrim2[5][0]->Fill(pt,dcaxy);
+                    hDCApTPrim2[4][0]->Fill(pt,dcaxy);
                     hDCApTPrim2[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTPrim2[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTPrim2[4][pidCode]->Fill(pt,dcaxy);
                 }	// Primary particles MC
                 
                 if( fMCStack->IsSecondaryFromWeakDecay(label) ){
                     hDCApTWDec[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTWDec[5][0]->Fill(pt,dcaxy);
+                    hDCApTWDec[4][0]->Fill(pt,dcaxy);
                     hDCApTWDec[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTWDec[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTWDec[4][pidCode]->Fill(pt,dcaxy);
                     
                     hDCApTWDec2[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTWDec2[5][0]->Fill(pt,dcaxy);
+                    hDCApTWDec2[4][0]->Fill(pt,dcaxy);
                     hDCApTWDec2[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTWDec2[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTWDec2[4][pidCode]->Fill(pt,dcaxy);
                 }	// Weak Decay MC
                 
                 if( fMCStack->IsSecondaryFromMaterial(label) ){
                     hDCApTMate[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTMate[5][0]->Fill(pt,dcaxy);
+                    hDCApTMate[4][0]->Fill(pt,dcaxy);
                     hDCApTMate[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTMate[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTMate[4][pidCode]->Fill(pt,dcaxy);
                     
                     hDCApTMate2[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTMate2[5][0]->Fill(pt,dcaxy);
+                    hDCApTMate2[4][0]->Fill(pt,dcaxy);
                     hDCApTMate2[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTMate2[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTMate2[4][pidCode]->Fill(pt,dcaxy);
                 }	// Material Inte MC
             }	//mcTrack
         }	//fAnalysis MC
@@ -1388,16 +1391,16 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int& region, TList *lt, co
             if( momentum <= 0.6 && momentum >= 0.4 ){//only p:0.4-0.6 GeV, pion MIP
                 if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
                     hMIPVsEta[region][Cent]->Fill(eta,dedxUnc);
-                    hMIPVsEta[region][5]->Fill(eta,dedxUnc);
+                    hMIPVsEta[region][4]->Fill(eta,dedxUnc);
                     pMIPVsEta[region][Cent]->Fill(eta,dedxUnc);
-                    pMIPVsEta[region][5]->Fill(eta,dedxUnc);
+                    pMIPVsEta[region][4]->Fill(eta,dedxUnc);
                 }
                 if( dedxUnc > 70 && dedxUnc < 90 ){
                     if(TMath::Abs(beta-1)<0.1){
                         hPlateauVsEta[Cent]->Fill(eta,dedxUnc);
-                        hPlateauVsEta[5]->Fill(eta,dedxUnc);
+                        hPlateauVsEta[4]->Fill(eta,dedxUnc);
                         pPlateauVsEta[Cent]->Fill(eta,dedxUnc);
-                        pPlateauVsEta[5]->Fill(eta,dedxUnc);
+                        pPlateauVsEta[4]->Fill(eta,dedxUnc);
                     }
                 }
             }
@@ -1406,23 +1409,23 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int& region, TList *lt, co
             if( momentum <= 0.6 && momentum >= 0.4 ){//only p:0.4-0.6 GeV, pion MIP
                 if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
                     hMIPVsEta[region][Cent]->Fill(eta,dedx);
-                    hMIPVsEta[region][5]->Fill(eta,dedx);
+                    hMIPVsEta[region][4]->Fill(eta,dedx);
                     pMIPVsEta[region][Cent]->Fill(eta,dedx);
-                    pMIPVsEta[region][5]->Fill(eta,dedx);
+                    pMIPVsEta[region][4]->Fill(eta,dedx);
                 }
                 if( dedxUnc > 70 && dedxUnc < 90 ){
                     if(TMath::Abs(beta-1)<0.1){
                         hPlateauVsEta[Cent]->Fill(eta,dedx);
-                        hPlateauVsEta[5]->Fill(eta,dedx);
+                        hPlateauVsEta[4]->Fill(eta,dedx);
                         pPlateauVsEta[Cent]->Fill(eta,dedx);
-                        pPlateauVsEta[5]->Fill(eta,dedx);
+                        pPlateauVsEta[4]->Fill(eta,dedx);
                     }
                 }
             }
         }
         
         hPtAll[region][Cent]->Fill(pt);
-        hPtAll[region][5]->Fill(pt);
+        hPtAll[region][4]->Fill(pt);
         
         Int_t nh = -1;
         if(TMath::Abs(eta)<0.2)
@@ -1439,35 +1442,35 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int& region, TList *lt, co
         
         if(beta>1){
             histPiTof[Cent][nh]->Fill(momentum, dedx);
-            histPiTof[5][nh]->Fill(momentum, dedx);
+            histPiTof[4][nh]->Fill(momentum, dedx);
         }
         
         if( momentum <= 0.6 && momentum >= 0.4  ){
             if( dedx < fDeDxMIPMax && dedx > fDeDxMIPMin ){
                 hMIPVsPhi[Cent][nh]->Fill(phi,dedx);
-                hMIPVsPhi[5][nh]->Fill(phi,dedx);
+                hMIPVsPhi[4][nh]->Fill(phi,dedx);
                 pMIPVsPhi[Cent][nh]->Fill(phi,dedx);
-                pMIPVsPhi[5][nh]->Fill(phi,dedx);
+                pMIPVsPhi[4][nh]->Fill(phi,dedx);
             }
             if( dedx > 70 && dedx < 90 ){
                 if(TMath::Abs(beta-1)<0.1){
                     hPlateauVsPhi[Cent][nh]->Fill(phi,dedx);
-                    hPlateauVsPhi[5][nh]->Fill(phi,dedx);
+                    hPlateauVsPhi[4][nh]->Fill(phi,dedx);
                     pPlateauVsPhi[Cent][nh]->Fill(phi,dedx);
-                    pPlateauVsPhi[5][nh]->Fill(phi,dedx);
+                    pPlateauVsPhi[4][nh]->Fill(phi,dedx);
                 }
             }
         }
         
         hDeDxVsP[region][Cent][nh]->Fill(momentum,dedx);
-        hDeDxVsP[region][5][nh]->Fill(momentum,dedx);
+        hDeDxVsP[region][4][nh]->Fill(momentum,dedx);
         
         hnSigmaPi[Cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
-        hnSigmaPi[5][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+        hnSigmaPi[4][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
         hnSigmak[Cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
-        hnSigmak[5][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
+        hnSigmak[4][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
         hnSigmap[Cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
-        hnSigmap[5][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
+        hnSigmap[4][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
         
         
     }//end of track loop
@@ -1690,9 +1693,9 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const int&
                             if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
                                 if(momentum<0.6&&momentum>0.4){
                                     hMIPVsEtaV0s[Cent]->Fill(eta,dedx);
-                                    hMIPVsEtaV0s[5]->Fill(eta,dedx);
+                                    hMIPVsEtaV0s[4]->Fill(eta,dedx);
                                     pMIPVsEtaV0s[Cent]->Fill(eta,dedx);
-                                    pMIPVsEtaV0s[5]->Fill(eta,dedx);
+                                    pMIPVsEtaV0s[4]->Fill(eta,dedx);
                                 }
                             }
                         }
@@ -1714,11 +1717,11 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const int&
                         
                         if(fillPos&&fillNeg){
                             histPiV0[Cent][nh]->Fill(momentum, dedx);
-                            histPiV0[5][nh]->Fill(momentum, dedx);
+                            histPiV0[4][nh]->Fill(momentum, dedx);
                         }
                         else{
                             histPV0[Cent][nh]->Fill(momentum, dedx);
-                            histPV0[5][nh]->Fill(momentum, dedx);
+                            histPV0[4][nh]->Fill(momentum, dedx);
                         }
                     }//end loop over two tracks
                     
@@ -1782,7 +1785,7 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const int&
                         continue;
                     
                     histEV0[Cent][nh]->Fill(momentum, dedx);
-                    histEV0[5][nh]->Fill(momentum, dedx);
+                    histEV0[4][nh]->Fill(momentum, dedx);
                     
                 };
                     break;
@@ -1879,7 +1882,7 @@ Bool_t AliAnalysisTaskPPvsRT::PhiCut(const double& pt, double phi, const double&
        && phi>phiCutLow->Eval(pt))
         return kFALSE; // reject track
     
-    hPhi[5]->Fill(pt, phi);
+    hPhi[4]->Fill(pt, phi);
     
     return kTRUE;
 }
@@ -1903,23 +1906,23 @@ void AliAnalysisTaskPPvsRT::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
 //________________________________________________________________________
 Double_t AliAnalysisTaskPPvsRT::EtaCalibration( const Int_t &indx, const Double_t &eta){
                                     //    h        i         j        l      k        o          p
-    const Double_t aPos[nRt+1]      = {49.9044 ,50.0841  ,49.8419 ,49.9799 ,49.9659 ,50.0535 ,50.0649};
-    const Double_t bPos[nRt+1]      = {4.05075 ,-0.743724,10.3952 ,2.99619 ,2.91366 ,-2.87404,-4.3589};
-    const Double_t cPos[nRt+1]      = {-58.1027,-13.8508 ,-151.227,-45.718 ,-45.5994,31.159  ,66.268 };
-    const Double_t dPos[nRt+1]      = {342.297 ,141.269  ,900.83  ,290.013 ,290.042 ,-151.257,-435.715};
-    const Double_t ePos[nRt+1]      = {-1098.19,-567.054 ,-2833.25,-1018.42,-1014.49,282.703 ,1325.24};
-    const Double_t fPos[nRt+1]      = {1944.32 ,1105.63  ,4884.59 ,1948.68 ,1931.84 ,-98.8756,-2030.25};
-    const Double_t gPos[nRt+1]      = {-1749.14,-1022.19 ,-4318.99,-1864.06,-1839.36,-230.114,1542.09};
-    const Double_t hPos[nRt+1]      = {617.929 ,355.158  ,1521.66 ,692.752 ,680.421 ,172.854 ,-468.577};
+    const Double_t aPos[nRt+2]      = {49.9044 ,50.0841  ,49.8419 ,49.9799 ,49.9659 ,50.0535 ,50.0649};
+    const Double_t bPos[nRt+2]      = {4.05075 ,-0.743724,10.3952 ,2.99619 ,2.91366 ,-2.87404,-4.3589};
+    const Double_t cPos[nRt+2]      = {-58.1027,-13.8508 ,-151.227,-45.718 ,-45.5994,31.159  ,66.268 };
+    const Double_t dPos[nRt+2]      = {342.297 ,141.269  ,900.83  ,290.013 ,290.042 ,-151.257,-435.715};
+    const Double_t ePos[nRt+2]      = {-1098.19,-567.054 ,-2833.25,-1018.42,-1014.49,282.703 ,1325.24};
+    const Double_t fPos[nRt+2]      = {1944.32 ,1105.63  ,4884.59 ,1948.68 ,1931.84 ,-98.8756,-2030.25};
+    const Double_t gPos[nRt+2]      = {-1749.14,-1022.19 ,-4318.99,-1864.06,-1839.36,-230.114,1542.09};
+    const Double_t hPos[nRt+2]      = {617.929 ,355.158  ,1521.66 ,692.752 ,680.421 ,172.854 ,-468.577};
     
-    const Double_t aNeg[nRt+1]      = {49.9261,50.0561,49.9583,50.078 ,50.046 ,49.9496,50.1258};
-    const Double_t bNeg[nRt+1]      = {2.92422,4.68965,3.38038,6.67199,6.79992,2.45301,12.7977};
-    const Double_t cNeg[nRt+1]      = {61.6661,65.891 ,53.1256,103.662,109.86 ,53.654 ,190.076};
-    const Double_t dNeg[nRt+1]      = {421.545,394.542,314.489,611.034,668.241,363.689,1144.11};
-    const Double_t eNeg[nRt+1]      = {1283.04,1100.56,825.296,1695.63,1916.44,1115.13,3411.98};
-    const Double_t fNeg[nRt+1]      = {1944.85,1516.21,1021.01,2395.88,2815.04,1762.18,5402.99};
-    const Double_t gNeg[nRt+1]      = {1442.98,989.24 ,548.44 ,1669.22,2057.21,1421.46,4379.16};
-    const Double_t hNeg[nRt+1]      = {419.491,238.333,84.7945,455.362,595.391,469.45 ,1436.76};
+    const Double_t aNeg[nRt+2]      = {49.9261,50.0561,49.9583,50.078 ,50.046 ,49.9496,50.1258};
+    const Double_t bNeg[nRt+2]      = {2.92422,4.68965,3.38038,6.67199,6.79992,2.45301,12.7977};
+    const Double_t cNeg[nRt+2]      = {61.6661,65.891 ,53.1256,103.662,109.86 ,53.654 ,190.076};
+    const Double_t dNeg[nRt+2]      = {421.545,394.542,314.489,611.034,668.241,363.689,1144.11};
+    const Double_t eNeg[nRt+2]      = {1283.04,1100.56,825.296,1695.63,1916.44,1115.13,3411.98};
+    const Double_t fNeg[nRt+2]      = {1944.85,1516.21,1021.01,2395.88,2815.04,1762.18,5402.99};
+    const Double_t gNeg[nRt+2]      = {1442.98,989.24 ,548.44 ,1669.22,2057.21,1421.46,4379.16};
+    const Double_t hNeg[nRt+2]      = {419.491,238.333,84.7945,455.362,595.391,469.45 ,1436.76};
     
     
     for(Int_t i=0; i<8; ++i)
@@ -1952,17 +1955,17 @@ Double_t AliAnalysisTaskPPvsRT::EtaCalibration( const Int_t &indx, const Double_
 //________________________________________________________________________
 Double_t AliAnalysisTaskPPvsRT::EtaCalibrationEl(const Int_t &indx, const Double_t &eta){
     
-    const Double_t aPosEl[nRt+1]    = {79.8647 ,79.6737 ,80.3915 ,80.1263 ,79.9957 ,79.6537 ,80.6434 };
-    const Double_t bPosEl[nRt+1]    = {6.50512 ,16.0745 ,9.53925 ,5.28525 ,7.03079 ,15.0221 ,0.40293 };
-    const Double_t cPosEl[nRt+1]    = {-35.9277,-80.5639,-69.3773,-32.7731,-42.9098,-83.6391,-21.8162};
-    const Double_t dPosEl[nRt+1]    = {73.1535 ,148.866 ,143.956 ,68.4524 ,88.7057 ,168.5   ,61.9147 };
-    const Double_t ePosEl[nRt+1]    = {-47.1041,-90.3376,-89.5518,-44.1566,-56.6554,-107.999,-44.6593};
+    const Double_t aPosEl[nRt+2]    = {79.8647 ,79.6737 ,80.3915 ,80.1263 ,79.9957 ,79.6537 ,80.6434 };
+    const Double_t bPosEl[nRt+2]    = {6.50512 ,16.0745 ,9.53925 ,5.28525 ,7.03079 ,15.0221 ,0.40293 };
+    const Double_t cPosEl[nRt+2]    = {-35.9277,-80.5639,-69.3773,-32.7731,-42.9098,-83.6391,-21.8162};
+    const Double_t dPosEl[nRt+2]    = {73.1535 ,148.866 ,143.956 ,68.4524 ,88.7057 ,168.5   ,61.9147 };
+    const Double_t ePosEl[nRt+2]    = {-47.1041,-90.3376,-89.5518,-44.1566,-56.6554,-107.999,-44.6593};
     
-    const Double_t aNegEl[nRt+1]    = {79.6366 ,80.0767 ,79.6157 ,79.8351 ,79.7387 ,79.3638 ,79.9111 };
-    const Double_t bNegEl[nRt+1]    = {-11.3437,-2.51009,-16.2468,-8.46921,-8.60021,-17.1977,-1.66066};
-    const Double_t cNegEl[nRt+1]    = {-65.1353,-23.6188,-92.0783,-44.5947,-44.1718,-82.7998,-6.96109};
-    const Double_t dNegEl[nRt+1]    = {-134.447,-65.5053,-180.753,-86.2242,-84.4984,-143.394,-16.0465};
-    const Double_t eNegEl[nRt+1]    = {-87.7848,-51.1463,-112.997,-53.6285,-51.945 ,-81.3439,-10.3587};
+    const Double_t aNegEl[nRt+2]    = {79.6366 ,80.0767 ,79.6157 ,79.8351 ,79.7387 ,79.3638 ,79.9111 };
+    const Double_t bNegEl[nRt+2]    = {-11.3437,-2.51009,-16.2468,-8.46921,-8.60021,-17.1977,-1.66066};
+    const Double_t cNegEl[nRt+2]    = {-65.1353,-23.6188,-92.0783,-44.5947,-44.1718,-82.7998,-6.96109};
+    const Double_t dNegEl[nRt+2]    = {-134.447,-65.5053,-180.753,-86.2242,-84.4984,-143.394,-16.0465};
+    const Double_t eNegEl[nRt+2]    = {-87.7848,-51.1463,-112.997,-53.6285,-51.945 ,-81.3439,-10.3587};
     
     
     for(Int_t i=0; i<5; ++i)

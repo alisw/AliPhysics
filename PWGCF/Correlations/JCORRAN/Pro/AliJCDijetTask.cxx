@@ -37,12 +37,14 @@ AliJCDijetTask::AliJCDijetTask() :
     fjetCone(0),
     fktJetCone(0),
     fktScheme(0),
-    fusePionMassInktjets(0),
+    fantiktScheme(0),
+    fusePionMass(0),
     fuseDeltaPhiBGSubtr(0),
     fIsMC(kTRUE),
     fparticleEtaCut(0),
     fleadingJetCut(0),
     fsubleadingJetCut(0),
+    fMinJetPt(0),
     fconstituentCut(0),
     fdeltaPhiCut(0),
     fmatchingR(0),
@@ -52,7 +54,9 @@ AliJCDijetTask::AliJCDijetTask() :
     fanaMC(NULL),
     fCBin(-1),
     fCBinDetMC(-1),
-    fOutput(NULL)
+    fOutput(NULL),
+    flags(0),
+    fUtils(nullptr)
 {
 }
 
@@ -67,12 +71,14 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fjetCone(0),
     fktJetCone(0),
     fktScheme(0),
-    fusePionMassInktjets(0),
+    fantiktScheme(0),
+    fusePionMass(0),
     fuseDeltaPhiBGSubtr(0),
     fIsMC(kTRUE),
     fparticleEtaCut(0),
     fleadingJetCut(0),
     fsubleadingJetCut(0),
+    fMinJetPt(0),
     fconstituentCut(0),
     fdeltaPhiCut(0),
     fmatchingR(0),
@@ -82,7 +88,9 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fanaMC(NULL),
     fCBin(-1),
     fCBinDetMC(-1),
-    fOutput(NULL)
+    fOutput(NULL),
+    flags(0),
+    fUtils(nullptr)
 {
     // Constructor
     AliInfo("---- AliJCDijetTask Constructor ----");
@@ -100,12 +108,14 @@ AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
     fjetCone(ap.fjetCone),
     fktJetCone(ap.fktJetCone),
     fktScheme(ap.fktScheme),
-    fusePionMassInktjets(ap.fusePionMassInktjets),
+    fantiktScheme(ap.fantiktScheme),
+    fusePionMass(ap.fusePionMass),
     fuseDeltaPhiBGSubtr(ap.fuseDeltaPhiBGSubtr),
     fIsMC(ap.fIsMC),
     fparticleEtaCut(ap.fparticleEtaCut),
     fleadingJetCut(ap.fleadingJetCut),
     fsubleadingJetCut(ap.fsubleadingJetCut),
+    fMinJetPt(ap.fMinJetPt),
     fconstituentCut(ap.fconstituentCut),
     fdeltaPhiCut(ap.fdeltaPhiCut),
     fmatchingR(ap.fmatchingR),
@@ -115,7 +125,9 @@ AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
     fanaMC(ap.fanaMC),
     fCBin(ap.fCBin),
     fCBinDetMC(ap.fCBinDetMC),
-    fOutput( ap.fOutput )
+    fOutput( ap.fOutput ),
+    flags(ap.flags),
+    fUtils(ap.fUtils)
 { 
 
     AliInfo("----DEBUG AliJCDijetTask COPY ----");
@@ -142,6 +154,7 @@ AliJCDijetTask::~AliJCDijetTask()
     delete fhistosDetMC;
     delete fana;
     delete fanaMC;
+    delete fUtils;
 
 }
 
@@ -161,7 +174,6 @@ void AliJCDijetTask::UserCreateOutputObjects()
     fOutput = gDirectory;
     fOutput->cd();
 
-
     fhistos = new AliJCDijetHistos();
     fhistos->SetName("jcdijet");
     fhistos->SetCentralityBinsHistos(fcentralityBins);
@@ -178,8 +190,11 @@ void AliJCDijetTask::UserCreateOutputObjects()
         fanaMC = new AliJCDijetAna();
     }
 
+    fUtils = new AliAnalysisUtils();
+    fUtils->SetMaxVtxZ(10);
 
     TString sktScheme;
+    TString santiktScheme;
     switch (fktScheme) {
         case 0:  sktScheme = "E_scheme";
                  break;
@@ -198,6 +213,24 @@ void AliJCDijetTask::UserCreateOutputObjects()
         default: sktScheme = "Unknown, check macro arguments!";
                  break;
     }
+    switch (fantiktScheme) {
+        case 0:  santiktScheme = "E_scheme";
+                 break;
+        case 1:  santiktScheme = "pt_scheme";
+                 break;
+        case 2:  santiktScheme = "pt2_scheme";
+                 break;
+        case 3:  santiktScheme = "Et_scheme";
+                 break;
+        case 4:  santiktScheme = "Et2_scheme";
+                 break;
+        case 5:  santiktScheme = "BIpt_scheme";
+                 break;
+        case 6:  santiktScheme = "BIpt2_scheme";
+                 break;
+        default: santiktScheme = "Unknown, check macro arguments!";
+                 break;
+    }
 
     cout << endl;
     cout << "===========SETTINGS===========" << endl;
@@ -208,19 +241,21 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Jet cone size:              " << fjetCone << endl;
     cout << "kt-jet cone size:           " << fktJetCone << endl;
     cout << "Using kt-jet scheme:        " << sktScheme.Data() << endl;
-    cout << "Using pion mass in kt-jets: " << fusePionMassInktjets << endl;
+    cout << "Using antikt-jet scheme:    " << santiktScheme.Data() << endl;
+    cout << "Using pion mass:            " << fusePionMass << endl;
     cout << "Using DeltaPhi in BG subtr: " << fuseDeltaPhiBGSubtr << endl;
     cout << "Particle eta cut:           " << fparticleEtaCut << endl;
     cout << "Particle pt cut:            " << fparticlePtCut << endl;
     cout << "Dijet leading jet cut:      " << fleadingJetCut << endl;
     cout << "Dijet subleading jet cut:   " << fsubleadingJetCut << endl;
+    cout << "Jet min pt cut:             " << fMinJetPt << endl;
     cout << "Jet leading const. cut:     " << fconstituentCut << endl;
     cout << "Dijet DeltaPhi cut:         pi/" << fdeltaPhiCut << endl;
     cout << "Matching R for MC:          " << fmatchingR << endl;
     cout << endl;
 
-    if(fusePionMassInktjets && fktScheme!=0) {
-        cout << "Warning: Using pion mass for kt-jets but not using E_scheme!" << endl;
+    if(fusePionMass && (fktScheme!=0 || fantiktScheme!=0)) {
+        cout << "Warning: Using pion mass for jets but not using E_scheme!" << endl;
         cout << endl;
     }
 
@@ -231,11 +266,13 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fjetCone,
                       fktJetCone,
                       fktScheme,
-                      fusePionMassInktjets,
+                      fantiktScheme,
+                      fusePionMass,
                       fuseDeltaPhiBGSubtr,
                       fconstituentCut,
                       fleadingJetCut,
                       fsubleadingJetCut,
+                      fMinJetPt,
                       fdeltaPhiCut,
                       fmatchingR);
 
@@ -246,11 +283,13 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fjetCone,
                             fktJetCone,
                             fktScheme,
-                            fusePionMassInktjets,
+                            fantiktScheme,
+                            fusePionMass,
                             fuseDeltaPhiBGSubtr,
                             fconstituentCut,
                             fleadingJetCut,
                             fsubleadingJetCut,
+                            fMinJetPt,
                             fdeltaPhiCut,
                             fmatchingR);
     }
@@ -271,36 +310,80 @@ void AliJCDijetTask::UserCreateOutputObjects()
 //______________________________________________________________________________
 void AliJCDijetTask::UserExec(Option_t* /*option*/) 
 {
+    //cout << "======================== BEGIN EVENT ========================" << endl;
     // Processing of one event
+    fhistos->fh_eventSel->Fill("events wo/ cuts",1.0);
     if(fDebug > 5) cout << "------- AliJCDijetTask Exec-------"<<endl;
     if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
     if( fJCatalystTask->GetJCatalystEntry() != fEntry) return;
+    fhistos->fh_eventSel->Fill("catalyst entry ok",1.0);
+    if( !fJCatalystTask->GetIsGoodEvent() ) return;
+    fhistos->fh_eventSel->Fill("catalyst ok",1.0);
+
+    if(flags & DIJET_VERTEX13PA) {
+        if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
+        fhistos->fh_eventSel->Fill("vertex2013pA ok",1.0);
+    }
+
+    if(flags & DIJET_PILEUPSPD) {
+        if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) return;
+        fhistos->fh_eventSel->Fill("pileupSPD ok",1.0);
+    }
+
+    if(flags & DIJET_UTILSPILEUPSPD) {
+        if(fUtils->IsPileUpSPD(InputEvent())) return;
+        fhistos->fh_eventSel->Fill("utils pileupSPD ok",1.0);
+    }
+
     fCBin = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
+    fhistos->fh_centrality->Fill(fJCatalystTask->GetCentrality());
     if(fCBin == -1) return;
 
+    fhistos->fh_eventSel->Fill("events",1.0);
     fhistos->fh_events[fCBin]->Fill("events",1.0);
-    fhistos->fh_centrality->Fill(fJCatalystTask->GetCentrality());
     fhistos->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
-
+    
     TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
+    //cout << "Next true level calculations:" << endl;
     fana->CalculateJets(fInputList, fhistos, fCBin);
     fana->FillJetsDijets(fhistos, fCBin);
 #endif
 
     if(fIsMC) {
         if(fJCatalystDetMCTask->GetJCatalystEntry() != fEntry) return;
+        fhistosDetMC->fh_eventSel->Fill("catalyst entry ok",1.0);
+        if( !fJCatalystDetMCTask->GetIsGoodEvent() ) return;
+        fhistosDetMC->fh_eventSel->Fill("catalyst ok",1.0);
+
+        if(flags & DIJET_VERTEX13PA) {
+            if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
+            fhistosDetMC->fh_eventSel->Fill("vertex2013pA ok",1.0);
+        }
+
+        if(flags & DIJET_PILEUPSPD) {
+            if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) return;
+            fhistosDetMC->fh_eventSel->Fill("pileupSPD ok",1.0);
+        }
+
+        if(flags & DIJET_UTILSPILEUPSPD) {
+            if(fUtils->IsPileUpSPD(InputEvent())) return;
+            fhistosDetMC->fh_eventSel->Fill("utils pileupSPD ok",1.0);
+        }
+
         fCBinDetMC = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
+        fhistosDetMC->fh_centrality->Fill(fJCatalystTask->GetCentrality());
         if(fCBinDetMC == -1) return;
 
+        fhistosDetMC->fh_eventSel->Fill("events",1.0);
         fhistosDetMC->fh_events[fCBin]->Fill("events",1.0);
-        fhistosDetMC->fh_centrality->Fill(fJCatalystTask->GetCentrality());
         fhistosDetMC->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
 
         TClonesArray *fInputListDetMC = (TClonesArray*)fJCatalystDetMCTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
+        //cout << "Next det level calculations:" << endl;
         fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
         fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC);
 

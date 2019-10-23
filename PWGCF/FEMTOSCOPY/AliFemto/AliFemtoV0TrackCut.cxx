@@ -508,28 +508,21 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 AliFemtoString AliFemtoV0TrackCut::Report()
 {
   // Prepare report from the execution
-  string tStemp;
-  char tCtemp[100];
-  snprintf(tCtemp, 100, "Minimum of Invariant Mass assuming Lambda:\t%lf\n", fInvMassLambdaMin);
-  tStemp += tCtemp;
-  snprintf(tCtemp, 100, "Maximum of Invariant Mass assuming Lambda:\t%lf\n", fInvMassLambdaMax);
-  tStemp += tCtemp;
-  snprintf(tCtemp, 100, "Minimum DCA of positive daughter to primary vertex:\t%lf\n", fMinDcaDaughterPosToVert);
-  tStemp += tCtemp;
-  snprintf(tCtemp, 100, "Minimum DCA of negative daughter to primary vertex:\t%lf\n", fMinDcaDaughterNegToVert);
-  tStemp += tCtemp;
-  snprintf(tCtemp, 100, "Max DCA of daughters:\t%lf\n", fMaxDcaV0Daughters);
-  tStemp += tCtemp;
+  AliFemtoString report("AliFemtoV0TrackCut report:\n");
+  report += Form("Minimum of Invariant Mass assuming Lambda:\t%lf\n", fInvMassLambdaMin);
+  report += Form("Maximum of Invariant Mass assuming Lambda:\t%lf\n", fInvMassLambdaMax);
+  report += Form("Minimum DCA of positive daughter to primary vertex:\t%lf\n", fMinDcaDaughterPosToVert);
+  report += Form("Minimum DCA of negative daughter to primary vertex:\t%lf\n", fMinDcaDaughterNegToVert);
+  report += Form("Max DCA of daughters:\t%lf\n", fMaxDcaV0Daughters);
 
-  AliFemtoString returnThis = tStemp;
-  return returnThis;
+  return report;
 }
+
 TList *AliFemtoV0TrackCut::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoV0TrackCut.InvMassLambdaMin=%lf", fInvMassLambdaMin);
+  char *buf = Form("AliFemtoV0TrackCut.InvMassLambdaMin=%lf", fInvMassLambdaMin);
   tListSetttings->AddLast(new TObjString(buf));
   return tListSetttings;
 }

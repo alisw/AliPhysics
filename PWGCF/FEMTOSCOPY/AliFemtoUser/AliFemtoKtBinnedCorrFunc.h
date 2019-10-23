@@ -110,6 +110,9 @@ public:
   /// Constant to return if no correlation is found
   static const UInt_t NPos = static_cast<UInt_t>(-1);
 
+  virtual void EventBegin(const AliFemtoEvent *event);
+  virtual void EventEnd(const AliFemtoEvent *event);
+
 private:
   AliFemtoKtBinnedCorrFunc(const AliFemtoKtBinnedCorrFunc&);
   AliFemtoKtBinnedCorrFunc& operator=(const AliFemtoKtBinnedCorrFunc&);

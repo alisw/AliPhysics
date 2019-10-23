@@ -464,6 +464,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   const float PhotonArmenterosUp = 0.1;
 
   AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
+  photon->SetIsMC(isMC);
   if (suffix != "0") {
     photon->SetLightweight(true);
   }
@@ -578,6 +579,10 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
   }
+
+  // RUN A TEST TO SEE WHETHER THIS MAKES A DIFFERENCE!
+  sigmaCuts->SetDeltaPhiEtaMax(0.0001);
+  antiSigmaCuts->SetDeltaPhiEtaMax(0.0001);
 
   // vary the sidebands
   if (suffix == "1") {
@@ -983,7 +988,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     TString AntiV0CutsMCName =
         Form("%sAntiv0CutsMC%s", addon.Data(), suffix.Data());
     AliAnalysisDataContainer *coutputAntiV0CutsMC = mgr->CreateContainer(
-        AntiTrkCutsMCName.Data(), TList::Class(),
+        AntiV0CutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiV0CutsMCName.Data()));
     mgr->ConnectOutput(task, 17, coutputAntiV0CutsMC);

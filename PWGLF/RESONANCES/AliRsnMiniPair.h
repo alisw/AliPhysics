@@ -64,6 +64,7 @@ public:
    Short_t         NSisters()  {return fNSisters;}
    Double_t        PairPtRes()              const;
    Double_t        PairYRes()               const;
+   Double_t        PairAsymmetry(Bool_t mc); 
 
  private:
    

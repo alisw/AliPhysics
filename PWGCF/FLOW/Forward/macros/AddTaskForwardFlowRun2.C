@@ -84,6 +84,36 @@ AliAnalysisDataContainer* makeWeightContainerSec(TString sec_file, TString conta
 
 
 
+AliAnalysisDataContainer* makeWeightContainerSecCent(TString sec_file, TString containerName){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer* weights;
+  if (sec_file.Contains("alien:") ) TGrid::Connect("alien:");
+  TFile* file;
+  //if (sec_file.Contains(containerName))
+  file = TFile::Open(sec_file.Data(), "READ");
+
+  if(!file) { printf("E-AddTaskForwardFlowRun2: Input file with secondary weights not found!\n"); return NULL; }
+
+  TList* weights_list = new TList();
+  weights_list->SetName("sec_corr_cent");
+  
+  TH3F* sechist = new TH3F();
+  TH3F* nuaforward = new TH3F();
+
+  file->GetObject("correction", sechist);
+  sechist->SetDirectory(0);
+  sechist->SetNameTitle("sec_corr_cent","sec_corr_cent");
+
+  file->Close();
+
+  weights_list->Add(sechist);
+
+  weights = mgr->CreateContainer(containerName,TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
+  weights->SetData(weights_list);
+  return weights;
+}
+
+
 AliAnalysisDataContainer* makeEmptyContainer(){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer* weights;
@@ -111,6 +141,11 @@ void connectSecContainer(AliAnalysisDataContainer* container,AliForwardFlowRun2T
   task->fSettings.seccorr_fwd->SetDirectory(0);
 }
 
+void connectSecContainerCent(AliAnalysisDataContainer* container,AliForwardFlowRun2Task* task){
+
+  task->fSettings.seccorr_cent = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("sec_corr_cent") );
+  task->fSettings.seccorr_cent->SetDirectory(0);
+}
 
 AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, 
                                           TString nua_file, 
@@ -120,6 +155,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
                                           UInt_t tracktype, TString centrality,
                                           Double_t minpt,Double_t maxpt,
                                           TString sec_file_fwd,
+                                          TString sec_file_cent,
                                           TString suffix)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
@@ -210,7 +246,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
     std::cout << nuaobject << std::endl;
 
     weights = (AliAnalysisDataContainer*) taskContainers->FindObject(nuaobject);
-
+    
     if (!weights) {
       std::cout << "I-AddTaskForwardFlowRun2: " << nuaobject << " weights not defined - reading now. " << std::endl;
       weights = makeWeightContainer(nua_file,nuaobject);
@@ -223,10 +259,20 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
     TObjArray* taskContainers = mgr->GetContainers();
     AliAnalysisDataContainer* sec_weights;
     
-    sec_weights = (AliAnalysisDataContainer*) taskContainers->FindObject("ft_fft");
+    sec_weights = (AliAnalysisDataContainer*) taskContainers->FindObject("sec");
 
-    if (!sec_weights) sec_weights = makeWeightContainerSec(sec_file_fwd,"ft_fft");   
+    if (!sec_weights) sec_weights = makeWeightContainerSec(sec_file_fwd,"sec");   
     connectSecContainer(sec_weights, task);
+}
+  if (sec_file_cent != ""){
+    TObjArray* taskContainers = mgr->GetContainers();
+
+    AliAnalysisDataContainer* sec_weights_cent;
+    
+    sec_weights_cent = (AliAnalysisDataContainer*) taskContainers->FindObject("sec_cent");
+
+    if (!sec_weights_cent) sec_weights_cent = makeWeightContainerSecCent(sec_file_cent,"sec_cent");   
+    connectSecContainerCent(sec_weights_cent, task);
   }
 
   return task;

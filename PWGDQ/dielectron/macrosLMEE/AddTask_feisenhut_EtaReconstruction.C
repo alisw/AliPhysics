@@ -18,8 +18,8 @@ bool debug = false;
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   TString fileName = AliAnalysisManager::GetCommonFileName();
 
-  // fileName = "AnalysisResults.root"; // create a subfolder in the file
-  fileName = "AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS__Full.root"; // create a subfolder in the file
+  fileName = "AnalysisResults.root"; // create a subfolder in the file
+  // fileName = "AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS__Full.root"; // create a subfolder in the file
 
   // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS__Full
   // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParXY

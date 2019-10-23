@@ -8,6 +8,7 @@
 #include "AliFemtoDreamCollConfig.h"
 
 AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
+                                     bool isMC = false,
                                      const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
@@ -28,27 +29,27 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   evtCuts->SetMultVsCentPlots(true);
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-      false, true, false, false);
+      isMC, true, false, false);
   TrackCuts->SetFilterBit(128);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(false, true, false, false);
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   AntiTrackCuts->SetFilterBit(128);
   AntiTrackCuts->SetCutCharge(-1);
 
   //Cascade Cuts
   AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
-      false, false);
+      isMC, false);
   CascadeCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
-      false, true, false);
+      isMC, true, false);
   XiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
-      false, true, false);
+      isMC, true, false);
   XiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(
-      false, true, false);
+      isMC, true, false);
   XiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
@@ -61,18 +62,18 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   CascadeCuts->SetPDGCodeBach(-211);
 
   AliFemtoDreamCascadeCuts* AntiCascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
-      false, false);
+      isMC, false);
   AntiCascadeCuts->SetXiCharge(1);
   AliFemtoDreamTrackCuts *AntiXiNegCuts =
-      AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
+      AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
   AntiXiNegCuts->SetCutCharge(-1);
   AntiXiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
-      false, true, false);
+      isMC, true, false);
   AntiXiPosCuts->SetCutCharge(1);
   AntiXiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *AntiXiBachCuts =
-      AliFemtoDreamTrackCuts::XiBachPionCuts(false, true, false);
+      AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
   AntiXiBachCuts->SetCutCharge(1);
   AntiXiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
 
@@ -200,21 +201,26 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   config->SetZBins(ZVtxBins);
 
   config->SetMultBinning(true);
+  config->SetmTBinning(true);
+
   config->SetdPhidEtaPlotsSmallK(false);
   config->SetdPhidEtaPlots(false);
-
   config->SetPhiEtaBinnign(false);
 
-  if (suffix == "0" && fullBlastQA) {
+  if (fullBlastQA) {
     config->SetkTBinning(true);
-    config->SetmTBinning(true);
     config->SetPtQA(true);
+  }
+
+  if (!fullBlastQA) {
+    config->SetMinimalBookingME(true);
+    config->SetMinimalBookingSample(true);
   }
 
   if (suffix != "0") {
     config->SetMinimalBookingME(true);
   }
-  AliAnalysisTaskNanoXioton* task = new AliAnalysisTaskNanoXioton("femtoXoton");
+  AliAnalysisTaskNanoXioton* task = new AliAnalysisTaskNanoXioton("femtoXoton", isMC);
   if (suffix != "0" && suffix != "999") {
     task->SetRunTaskLightWeight(true);
   }
@@ -293,5 +299,48 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
   mgr->ConnectOutput(task, 7, coutputResultsQA);
 
+  if (isMC) {
+     AliAnalysisDataContainer *coutputTrkCutsMC;
+     TString TrkCutsMCName = Form("%sTrkCutsMC%s", addon.Data(), suffix.Data());
+     coutputTrkCutsMC = mgr->CreateContainer(
+         //@suppress("Invalid arguments") it works ffs
+         TrkCutsMCName.Data(),
+         TList::Class(),
+         AliAnalysisManager::kOutputContainer,
+         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
+     mgr->ConnectOutput(task, 8, coutputTrkCutsMC);
+
+     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
+     TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s", addon.Data(),
+                                      suffix.Data());
+     coutputAntiTrkCutsMC = mgr->CreateContainer(
+         //@suppress("Invalid arguments") it works ffs
+         AntiTrkCutsMCName.Data(),
+         TList::Class(),
+         AliAnalysisManager::kOutputContainer,
+         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
+     mgr->ConnectOutput(task, 9, coutputAntiTrkCutsMC);
+
+     AliAnalysisDataContainer *coutputCascCutsMC;
+     TString CascCutsMCName = Form("%sCascCutsMC%s", addon.Data(), suffix.Data());
+     coutputCascCutsMC = mgr->CreateContainer(
+         //@suppress("Invalid arguments") it works ffs
+         CascCutsMCName.Data(),
+         TList::Class(),
+         AliAnalysisManager::kOutputContainer,
+         Form("%s:%s", file.Data(), CascCutsMCName.Data()));
+     mgr->ConnectOutput(task, 10, coutputCascCutsMC);
+
+     AliAnalysisDataContainer *coutputAntiCascCutsMC;
+     TString AntiCascCutsMCName = Form("%sAntiCascCutsMC%s", addon.Data(),
+                                     suffix.Data());
+     coutputAntiCascCutsMC = mgr->CreateContainer(
+         //@suppress("Invalid arguments") it works ffs
+         AntiCascCutsMCName.Data(),
+         TList::Class(),
+         AliAnalysisManager::kOutputContainer,
+         Form("%s:%s", file.Data(), AntiCascCutsMCName.Data()));
+     mgr->ConnectOutput(task, 11, coutputAntiCascCutsMC);
+   }
   return task;
 }

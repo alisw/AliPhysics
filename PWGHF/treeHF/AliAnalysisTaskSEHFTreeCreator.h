@@ -64,6 +64,7 @@ class AliAODEvent;
 class TClonesArray;
 class AliEmcalJet;
 class AliRhoParameter;
+class AliCDBEntry;
 
 class AliAnalysisTaskSEHFTreeCreator : public AliAnalysisTaskSE
 {
@@ -152,6 +153,7 @@ public:
     void SetJetAlgorithm(Int_t i) {fJetAlgorithm = i; }
     void SetSubJetAlgorithm(Int_t i) {fSubJetAlgorithm = i; }
     void SetMinJetPt(Double_t d) {fMinJetPt = d; }
+    void SetTrackingEfficiency(Double_t d) {fTrackingEfficiency = d;}
   
     void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
     void SetGoodTrackEtaRange(Double_t d) { fGoodTrackEtaRange = d; }
@@ -174,7 +176,7 @@ public:
     void ProcessLb(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessMCGen(TClonesArray *mcarray);
   
-    Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+    Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau, Bool_t ITSUpgradeStudy);
     Bool_t IsCandidateFromHijing(AliAODRecoDecayHF *cand, AliAODMCHeader *mcHeader, TClonesArray* arrMC, AliAODTrack *tr = 0x0);
     
     void SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
@@ -184,7 +186,15 @@ public:
         fEnableNsigmaTPCDataCorr=true; 
         fSystemForNsigmaTPCDataCorr=syst; 
     }
-  
+
+    void ApplyPhysicsSelectionOnline(bool apply=true) { fApplyPhysicsSelOnline = apply; }
+
+    void EnableEventDownsampling(float fractokeep, unsigned long seed) {
+        fEnableEventDownsampling = true;
+        fFracToKeepEventDownsampling = fractokeep;
+        fSeedEventDownsampling = seed;
+    }
+
     // Particles (tracks or MC particles)
     //-----------------------------------------------------------------------------------------------
     void                        SetFillParticleTree(Bool_t b) {fFillParticleTree = b;}
@@ -325,7 +335,11 @@ private:
     Int_t                   fNcontributors;                        /// number of contributors
     Int_t                   fNtracks;                              /// number of tracks
     Int_t                   fIsEvRej;                              /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_INT7;                         /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_HighMultSPD;                  /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_HighMultV0;                   /// flag with information about rejection of the event
     Int_t                   fRunNumber;                            /// run number
+    Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
     UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
     TString                 fFileName;
     unsigned int            fDirNumber;
@@ -354,6 +368,7 @@ private:
     Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
     Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
     Float_t                 fPercV0M;                              /// V0M multiplicity percentile
+    Float_t                 fMultV0M;                              /// V0M multiplicity from mult selection task
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -367,6 +382,7 @@ private:
     Int_t                   fJetAlgorithm;                         //Setting the jet finding algorithm
     Int_t                   fSubJetAlgorithm;                      //Setting the jet finding algorithm
     Double_t                fMinJetPt;                             //Setting the jet finding min pT
+    Double_t                fTrackingEfficiency;                   //Setting the jet finding tracking efficiency
   
     Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackEtaRange;                    /// Setting eta-range for bachelor on-the-fly reconstruction candidate
@@ -428,6 +444,7 @@ private:
     
     bool                    fFillJets;                             //FillJetInfo
     bool                    fDoJetSubstructure;                    //FillJetSubstructure
+    
   
     bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
     int fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
@@ -437,8 +454,15 @@ private:
     bool fCorrNtrVtx;
     bool fCorrV0MVtx;
 
+    bool fApplyPhysicsSelOnline;                                   /// flag to apply physics selection in the task
+    bool fEnableEventDownsampling;                                 /// flag to apply event downsampling
+    float fFracToKeepEventDownsampling;                            /// fraction of events to be kept by event downsampling
+    unsigned long fSeedEventDownsampling;                          /// seed for event downsampling
+
+    AliCDBEntry *fCdbEntry;
+
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,19);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,22);
     /// \endcond
 };
 

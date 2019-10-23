@@ -2,7 +2,7 @@ AliAnalysisTaskPP13 * AddAnalysisAcceptanceTaskPP(
 	Bool_t isMC = kFALSE,
 	TString description = "",
 	TString suff = "",
-	Int_t minDistanceMaximum = 4,
+	Int_t minDistanceMaximum = 5,
 	Float_t scale = 1 // Scale parameter in cm
 )
 {
@@ -23,8 +23,8 @@ AliAnalysisTaskPP13 * AddAnalysisAcceptanceTaskPP(
 		cuts_eta.fMinimalDistance = i * scale;
 
 		// TODO: Add plain selections
-		selections->Add(new AliPP13SpectrumSelection(Form("Phys%d", i), "Physics Selection", cuts_pi0, &data_weights));
-		selections->Add(new AliPP13SpectrumSelection(Form("Eta%d", i), "Physics Selection for eta meson", cuts_eta, &data_weights));
+		selections->Add(new AliPP13SpectrumSelectionSimple(Form("Phys%d", i), "Physics Selection", cuts_pi0, &data_weights));
+		selections->Add(new AliPP13SpectrumSelectionSimple(Form("Eta%d", i), "Physics Selection for eta meson", cuts_eta, &data_weights));
 	}
 	delete &data_weights;
 

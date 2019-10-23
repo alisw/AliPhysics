@@ -51,10 +51,16 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
         void    SetCentralityBins( vector<double> centralityBins ) {fcentralityBins=centralityBins; }
         void    SetJetConeSize(double jetCone, double ktjetCone) {fjetCone=jetCone; fktJetCone=ktjetCone; }
-        void    SetBGSubtrSettings(int ktScheme, Bool_t usePionMasskt, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fusePionMassInktjets=usePionMasskt; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
+        void    SetBGSubtrSettings(int ktScheme, int antiktScheme, Bool_t usePionMass, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fantiktScheme=antiktScheme; fusePionMass=usePionMass; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
         Bool_t  IsMC()const{ return fIsMC; }
         void    SetIsMC(Bool_t b) { fIsMC=b; }
-        void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi, double matchingR) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi; fmatchingR = matchingR; }
+        void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi, double matchingR, double minJetPt) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi; fmatchingR = matchingR; fMinJetPt = minJetPt; }
+        void AddFlags(UInt_t nflags){flags |= nflags;}
+        enum{
+            DIJET_VERTEX13PA      = 0x1,
+            DIJET_PILEUPSPD       = 0x2,
+            DIJET_UTILSPILEUPSPD  = 0x4
+        };
 
         // Methods specific for this class
         void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
@@ -70,13 +76,15 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         double fjetCone;
         double fktJetCone;
         int  fktScheme;
-        Bool_t fusePionMassInktjets;
+        int  fantiktScheme;
+        Bool_t fusePionMass;
         Bool_t fuseDeltaPhiBGSubtr;
         Bool_t fIsMC;       // MC data or real data
         double fparticleEtaCut;
         double fparticlePtCut;
         double fleadingJetCut;
         double fsubleadingJetCut;
+        double fMinJetPt;
         double fconstituentCut;
         double fdeltaPhiCut;
         double fmatchingR;
@@ -87,6 +95,8 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         int fCBin;
         int fCBinDetMC;
         TDirectory     *fOutput; // Output directory
+        UInt_t flags; //
+        AliAnalysisUtils *fUtils; //!
 
         ClassDef(AliJCDijetTask, 1); 
 };

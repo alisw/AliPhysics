@@ -73,8 +73,9 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
       fFillGenericV0s{true},
-      fFillGenericTracklets{true},
+      fFillGenericTracklets{false},
       fFillTracklet{true},
+      fStoreAllEvents{true},
       fSaveFileNames{false},
       fPropagetToPV{true},
       fV0Vertexer{},
@@ -103,6 +104,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxDeltaPhi{0.12},
       fMaxDeltaTheta{0.12},
       fMinTrackletCosP{0.8},
+      fEnableLikeSign{false},
       fFileNameTree{nullptr},
       fCurrentFileName{""},
       fSHyperTriton{},
@@ -246,13 +248,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   unsigned char tgr = 0x0;
 
   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)
-    tgr = 1;
+    tgr = kINT7;
   if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)
-    tgr = 2;
+    tgr = kCentral;
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
-    tgr = 4;
+    tgr = kSemiCentral;
+  int magField = esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
-  fRCollision.fTrigger = tgr;
+  fRCollision.fTrigger = tgr + magField;
 
   std::unordered_map<int, int> mcMap;
   if (fMC)
@@ -350,8 +353,13 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       continue;
 
     // Remove like-sign (will not affect offline V0 candidates!)
-    if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0)
-      continue;
+    if (fEnableLikeSign) {
+      if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() < 0)
+        continue;
+    } else {
+      if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0)
+        continue;
+    }
 
     const int lKeyPos = std::abs(v0->GetPindex());
     const int lKeyNeg = std::abs(v0->GetNindex());
@@ -361,10 +369,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     if (!pTrack || !nTrack)
       ::Fatal("AliAnalysisTaskHyperTriton2He3piML::UserExec",
               "Could not retreive one of the daughter track");
-
-    // Filter like-sign V0 (next: add counter and distribution)
-    if (pTrack->GetSign() == nTrack->GetSign())
-      continue;
 
     if (std::abs(nTrack->Eta()) > 0.8 || std::abs(pTrack->Eta()) > 0.8)
       continue;
@@ -629,7 +633,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     }
   }
 
-  fTreeV0->Fill();
+  if (fRHyperTriton.size() != 0 || fStoreAllEvents)
+    fTreeV0->Fill();
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);

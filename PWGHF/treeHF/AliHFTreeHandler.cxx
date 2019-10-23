@@ -95,7 +95,8 @@ AliHFTreeHandler::AliHFTreeHandler():
   fSubJetRadius(0.2),
   fJetAlgorithm(0),
   fSubJetAlgorithm(2),
-  fMinJetPt(0.0)
+  fMinJetPt(0.0),
+  fTrackingEfficiency(1.0)
 {
   //
   // Default constructor
@@ -196,7 +197,8 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fSubJetRadius(0.2),
   fJetAlgorithm(0),
   fSubJetAlgorithm(2),
-  fMinJetPt(0.0)
+  fMinJetPt(0.0),
+  fTrackingEfficiency(1.0)
 {
   //
   // Standard constructor
@@ -532,6 +534,7 @@ void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
   hfjetfinder.SetSubJetRadius(fSubJetRadius);
   hfjetfinder.SetSubJetAlgorithm(fSubJetAlgorithm);
   hfjetfinder.SetDoJetSubstructure(fDoJetSubstructure);
+  hfjetfinder.SetTrackingEfficiency(fTrackingEfficiency);
 
 }
 #endif
@@ -749,8 +752,8 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
 double AliHFTreeHandler::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF)
 {
   if(nsigmaTPC > -998. && nsigmaTOF > -998.) return TMath::Sqrt((nsigmaTPC*nsigmaTPC+nsigmaTOF*nsigmaTOF)/2);
-  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
-  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return nsigmaTOF;
+  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return TMath::Abs(nsigmaTPC);
+  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return TMath::Abs(nsigmaTOF);
   else return -999.;
 }
 

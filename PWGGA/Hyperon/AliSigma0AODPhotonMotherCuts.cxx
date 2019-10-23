@@ -43,6 +43,8 @@ ClassImp(AliSigma0AODPhotonMotherCuts)
       fArmenterosQtUp(0.f),
       fArmenterosAlphaLow(0.f),
       fArmenterosAlphaUp(0.f),
+      fDoDeltaPhiEtaCut(false),
+      fDeltaPhiEtaMax(-1.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
       fHistNPhotonBefore(nullptr),
@@ -52,6 +54,9 @@ ClassImp(AliSigma0AODPhotonMotherCuts)
       fHistNPhotonLabel(nullptr),
       fHistNLambdaLabel(nullptr),
       fHistNLambdaGammaLabel(nullptr),
+      fHistNPhotonSplit(nullptr),
+      fHistNLambdaSplit(nullptr),
+      fHistNLambdaGammaSplit(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassK0Gamma(nullptr),
@@ -130,6 +135,8 @@ AliSigma0AODPhotonMotherCuts::AliSigma0AODPhotonMotherCuts(
       fArmenterosQtUp(0.f),
       fArmenterosAlphaLow(0.f),
       fArmenterosAlphaUp(0.f),
+      fDoDeltaPhiEtaCut(false),
+      fDeltaPhiEtaMax(-1.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
       fHistNPhotonBefore(nullptr),
@@ -139,6 +146,9 @@ AliSigma0AODPhotonMotherCuts::AliSigma0AODPhotonMotherCuts(
       fHistNPhotonLabel(nullptr),
       fHistNLambdaLabel(nullptr),
       fHistNLambdaGammaLabel(nullptr),
+      fHistNPhotonSplit(nullptr),
+      fHistNLambdaSplit(nullptr),
+      fHistNLambdaGammaSplit(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassK0Gamma(nullptr),
@@ -240,6 +250,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
 
   // Do the checks for the photons
   int nPhotonKilledLabel = 0;
+  int nPhotonKilledSplit = 0;
   for (auto photon1 = fPhotonCandidates.begin();
        photon1 < fPhotonCandidates.end(); ++photon1) {
     if (!photon1->UseParticle()) continue;
@@ -256,11 +267,12 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
       float photon2PosPhiStar = photon2->GetAveragePhiAtRadius(0);
       float photon2NegPhiStar = photon2->GetAveragePhiAtRadius(1);
 
+      float deltaPhistarPos = photon1PosPhiStar - photon2PosPhiStar;
+      float deltaPhistarNeg = photon1NegPhiStar - photon2NegPhiStar;
+      float deltaEtaPos = photon1Eta[1] - photon2Eta[1];
+      float deltaEtaNeg = photon1Eta[2] - photon2Eta[2];
+
       if (!fIsLightweight) {
-        float deltaPhistarPos = photon1PosPhiStar - photon2PosPhiStar;
-        float deltaPhistarNeg = photon1NegPhiStar - photon2NegPhiStar;
-        float deltaEtaPos = photon1Eta[1] - photon2Eta[1];
-        float deltaEtaNeg = photon1Eta[2] - photon2Eta[2];
         fHistDeltaEtaDeltaPhiGammaNegBefore->Fill(deltaEtaNeg, deltaPhistarNeg);
         fHistDeltaEtaDeltaPhiGammaPosBefore->Fill(deltaEtaPos, deltaPhistarPos);
       }
@@ -269,12 +281,19 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
                             photon1TrackLabels[1] == photon2TrackLabels[0] ||
                             photon1TrackLabels[1] == photon2TrackLabels[1] ||
                             photon1TrackLabels[0] == photon2TrackLabels[1]);
+      bool hasTrackSplitting =
+          (fDoDeltaPhiEtaCut
+              && (((deltaPhistarPos * deltaPhistarPos
+                  + deltaEtaPos * deltaEtaPos) < fDeltaPhiEtaMax)
+                  || ((deltaPhistarNeg * deltaPhistarNeg
+                      + deltaEtaNeg * deltaEtaNeg) < fDeltaPhiEtaMax)));
 
       // do the check for both daughters
-      if (hasSameLabels) {
+      if (hasSameLabels) ++nPhotonKilledLabel;
+      if (hasTrackSplitting) ++nPhotonKilledSplit;
+      if (hasSameLabels || hasTrackSplitting) {
         const float cpa1 = photon1->GetCPA();
         const float cpa2 = photon2->GetCPA();
-        ++nPhotonKilledLabel;
         if (cpa1 > cpa2) {
           photon2->SetUse(false);
         } else {
@@ -287,6 +306,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
 
   // Do the checks for the Lambdas
   int nLambdaKilledLabel = 0;
+  int nLambdaKilledSplit = 0;
   for (auto lambda1 = fLambdaCandidates.begin();
        lambda1 < fLambdaCandidates.end(); ++lambda1) {
     if (!lambda1->UseParticle()) continue;
@@ -303,11 +323,12 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
       float lambda2PosPhiStar = lambda2->GetAveragePhiAtRadius(0);
       float lambda2NegPhiStar = lambda2->GetAveragePhiAtRadius(1);
 
+      float deltaPhistarPos = lambda1PosPhiStar - lambda2PosPhiStar;
+      float deltaPhistarNeg = lambda1NegPhiStar - lambda2NegPhiStar;
+      float deltaEtaPos = lambda1Eta[1] - lambda2Eta[1];
+      float deltaEtaNeg = lambda1Eta[2] - lambda2Eta[2];
+
       if (!fIsLightweight) {
-        float deltaPhistarPos = lambda1PosPhiStar - lambda2PosPhiStar;
-        float deltaPhistarNeg = lambda1NegPhiStar - lambda2NegPhiStar;
-        float deltaEtaPos = lambda1Eta[1] - lambda2Eta[1];
-        float deltaEtaNeg = lambda1Eta[2] - lambda2Eta[2];
         fHistDeltaEtaDeltaPhiLambdaNegBefore->Fill(deltaEtaNeg,
                                                    deltaPhistarNeg);
         fHistDeltaEtaDeltaPhiLambdaPosBefore->Fill(deltaEtaPos,
@@ -318,10 +339,17 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
                             lambda1TrackLabels[1] == lambda2TrackLabels[0] ||
                             lambda1TrackLabels[1] == lambda2TrackLabels[1] ||
                             lambda1TrackLabels[0] == lambda2TrackLabels[1]);
+      bool hasTrackSplitting =
+          (fDoDeltaPhiEtaCut
+              && (((deltaPhistarPos * deltaPhistarPos
+                  + deltaEtaPos * deltaEtaPos) < fDeltaPhiEtaMax)
+                  || ((deltaPhistarNeg * deltaPhistarNeg
+                      + deltaEtaNeg * deltaEtaNeg) < fDeltaPhiEtaMax)));
 
       // do the check for both daughters
-      if (hasSameLabels) {
-        ++nLambdaKilledLabel;
+      if (hasSameLabels) ++nLambdaKilledLabel;
+      if (hasTrackSplitting) ++nLambdaKilledSplit;
+      if (hasSameLabels || hasTrackSplitting) {
         const float cpa1 = lambda1->GetCPA();
         const float cpa2 = lambda2->GetCPA();
         if (cpa1 > cpa2) {
@@ -336,6 +364,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
 
   // Now do the exercise for photon-Lambda combination
   int nPhotonLambdaKilledLabel = 0;
+  int nPhotonLambdaKilledSplit = 0;
   for (auto photon = fPhotonCandidates.begin(); photon < fPhotonCandidates.end();
        ++photon) {
     if (!photon->UseParticle()) continue;
@@ -352,11 +381,12 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
       float lambdaPosPhiStar = lambda->GetAveragePhiAtRadius(0);
       float lambdaNegPhiStar = lambda->GetAveragePhiAtRadius(1);
 
+      float deltaPhistarPos = photonPosPhiStar - lambdaPosPhiStar;
+      float deltaPhistarNeg = photonNegPhiStar - lambdaNegPhiStar;
+      float deltaEtaPos = photonEta[1] - lambdaEta[1];
+      float deltaEtaNeg = photonEta[2] - lambdaEta[2];
+
       if (!fIsLightweight) {
-        float deltaPhistarPos = photonPosPhiStar - lambdaPosPhiStar;
-        float deltaPhistarNeg = photonNegPhiStar - lambdaNegPhiStar;
-        float deltaEtaPos = photonEta[1] - lambdaEta[1];
-        float deltaEtaNeg = photonEta[2] - lambdaEta[2];
         fHistDeltaEtaDeltaPhiLambdaGammaNegBefore->Fill(deltaEtaNeg,
                                                         deltaPhistarNeg);
         fHistDeltaEtaDeltaPhiLambdaGammaPosBefore->Fill(deltaEtaPos,
@@ -367,12 +397,19 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
                             photonTrackLabels[1] == lambdaTrackLabels[0] ||
                             photonTrackLabels[1] == lambdaTrackLabels[1] ||
                             photonTrackLabels[0] == lambdaTrackLabels[1]);
+      bool hasTrackSplitting =
+          (fDoDeltaPhiEtaCut
+              && (((deltaPhistarPos * deltaPhistarPos
+                  + deltaEtaPos * deltaEtaPos) < fDeltaPhiEtaMax)
+                  || ((deltaPhistarNeg * deltaPhistarNeg
+                      + deltaEtaNeg * deltaEtaNeg) < fDeltaPhiEtaMax)));
 
       // do the check for both daughters
-      if (hasSameLabels) {
+      if (hasSameLabels) ++nPhotonLambdaKilledLabel;
+      if (hasTrackSplitting) ++nPhotonLambdaKilledSplit;
+      if (hasSameLabels || hasTrackSplitting) {
         const float cpaPhoton = photon->GetCPA();
         const float cpaLambda = lambda->GetCPA();
-        ++nPhotonLambdaKilledLabel;
         if (cpaPhoton > cpaLambda) {
           lambda->SetUse(false);
         } else {
@@ -480,6 +517,9 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
     fHistNPhotonLabel->Fill(nPhotonKilledLabel);
     fHistNLambdaLabel->Fill(nLambdaKilledLabel);
     fHistNLambdaGammaLabel->Fill(nPhotonLambdaKilledLabel);
+    fHistNPhotonSplit->Fill(nPhotonKilledSplit);
+    fHistNLambdaSplit->Fill(nLambdaKilledSplit);
+    fHistNLambdaGammaSplit->Fill(nPhotonLambdaKilledSplit);
   }
 }
 
@@ -551,6 +591,9 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
       }
 
       // TODO Implement MC handling
+      if(fIsMC) {
+        sigma.SetMCPDGCode(fPDG);
+      }
       // int label = -10;
       // int pdgLambdaMother = 0;
       // int pdgPhotonMother = 0;
@@ -878,6 +921,22 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->Add(fHistNPhotonLabel);
     fHistograms->Add(fHistNLambdaLabel);
     fHistograms->Add(fHistNLambdaGammaLabel);
+
+    fHistNPhotonSplit= new TH1F(
+        "fHistNPhotonSplit",
+        ";# #gamma candidates eliminated due to #Delta#eta#Delta#phi*; Entries", 15, 0,
+        15);
+    fHistNLambdaSplit = new TH1F(
+        "fHistNLambdaSplit",
+        ";# #Lambda candidates eliminated due to #Delta#eta#Delta#phi*; Entries", 15, 0,
+        15);
+    fHistNLambdaGammaSplit = new TH1F(
+        "fHistNLambdaGammaSplit",
+        ";#Candidates eliminated due to #Lambda-#gamma #Delta#eta#Delta#phi*; Entries",
+        15, 0, 15);
+    fHistograms->Add(fHistNPhotonSplit);
+    fHistograms->Add(fHistNLambdaSplit);
+    fHistograms->Add(fHistNLambdaGammaSplit);
 
     fHistLambdaPtPhi =
         new TH2F("fHistLambdaPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",

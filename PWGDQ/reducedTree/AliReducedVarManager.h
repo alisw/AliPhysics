@@ -346,6 +346,7 @@ class AliReducedVarManager : public TObject {
     kSPDFiredChips = kCorrectedMultiplicity + kNMultiplicityEstimators * ( 1 + kNCorrections * kNReferenceMultiplicities * kNSmearingMethods), // SPD fired chips in first and second layer
     kITSnClusters=kSPDFiredChips+2,        // number of ITS clusters in each layer
     kSPDnSingleClusters=kITSnClusters+6,   // number of clusters in SPD layer 1 not mached to tracklets from layer 2
+    kSDDandSSDclusters,                    // number of clusters in the SDD and SSD layers
     kEventMixingId,     // Id of the event mixing category 
     // VZERO event plane related variables
     kVZEROCurrentChannel,         // current VZERO channel
@@ -455,6 +456,8 @@ class AliReducedVarManager : public TObject {
     kMultEstimatorPercentileRefMult08,
     kINT7Triggered,
     kHighMultV0Triggered,
+    kEMCEGATriggered,
+    kEMCEGAHighTriggered,
     kEtaBinForSPDtracklets,
     kMCNch,                                  // number of primary charged particles in the MC, in |eta|<1
     kMCNchNegSide,                     // number of primary charged particles in the MC, in -1<eta<0
@@ -654,6 +657,8 @@ class AliReducedVarManager : public TObject {
     kTriggerPt,       // pt of J/psi candidate
     kTriggerRap,      // rapidity of J/psi candidate
     kTriggerRapAbs,   // absolute rapidity of J/psi candidate
+    kTriggerPseudoProperDecayTime,  // pseudo-proper decay length of J/psi candidate
+    kTriggerPairTypeSPD,            // SPD pair type of J/psi candidate
     kAssociatedPt,          // pt of associated track
     kAssociatedPtBoosted,   // pt of associated track, after boost to trigger rest frame
     kAssociatedPtOverTriggerGammaT, // pt of associated track / transverse gamma of J/psi candidate
@@ -836,7 +841,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 12);
+  ClassDef(AliReducedVarManager, 14);
 };
 
 #endif

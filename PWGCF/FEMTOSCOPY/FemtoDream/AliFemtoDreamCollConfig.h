@@ -23,7 +23,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   };
   AliFemtoDreamCollConfig();
   AliFemtoDreamCollConfig(const AliFemtoDreamCollConfig& config);
-  AliFemtoDreamCollConfig(const char *name, const char *title, bool QACouts = false);
+  AliFemtoDreamCollConfig(const char *name, const char *title, bool QACouts =
+                              false);
   AliFemtoDreamCollConfig &operator=(const AliFemtoDreamCollConfig& config);
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt) {
@@ -287,8 +288,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaEtaMax;           //
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
-  bool fCoutVariables;
-ClassDef(AliFemtoDreamCollConfig,14)
+  bool fCoutVariables;ClassDef(AliFemtoDreamCollConfig,14)
   ;
 };
 

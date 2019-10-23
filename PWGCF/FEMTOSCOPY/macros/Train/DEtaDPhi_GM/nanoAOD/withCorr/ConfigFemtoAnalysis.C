@@ -190,7 +190,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
 	Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
-	Reader->SetReadV0(kTRUE);
+
 	Reader->SetReadCascade(kFALSE);
 	Reader->SetUseOutOfBunchPlpSelection(kFALSE);
 	Reader->SetUseMVPlpSelection(ifIsPileUp);
@@ -202,6 +202,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetDCAglobalTrack(1); //false for FB7, true for the rest //we do not use DCA at all
 	//Reader->SetUseMultiplicity("MultSelection.RefMult08.Value");
  	Reader->SetUseMultiplicity("V0M");
+  Reader->SetReadV0(kTRUE);
 
 
 	AliFemtoManager* Manager = new AliFemtoManager();
@@ -397,8 +398,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc4etaphitpc[aniter]->SetPtNegDaughter(0.16,4.0);
 					dtc4etaphitpc[aniter]->SetTPCnclsDaughters(70);
 					dtc4etaphitpc[aniter]->SetNdofDaughters(4.0); //4.0
-					dtc4etaphitpc[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit/* | AliESDtrack::kITSrefit*/);
-					dtc4etaphitpc[aniter]->SetOnFlyStatus(kFALSE); //kTRUE
+					dtc4etaphitpc[aniter]->SetNanoAODAnalysis(kTRUE);
 					dtc4etaphitpc[aniter]->SetParticleType(0);
 					dtc4etaphitpc[aniter]->SetMaxDcaV0Daughters(1.0); //0.5
 					dtc4etaphitpc[aniter]->SetMaxDcaV0(0.6); //0.5
@@ -428,9 +428,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetPtNegDaughter(0.3,4.0);
 					dtc5etaphitpc[aniter]->SetTPCnclsDaughters(70);
 					dtc5etaphitpc[aniter]->SetNdofDaughters(4.0); //4.0
-					dtc5etaphitpc[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit/* | AliESDtrack::kITSrefit*/);
-					dtc5etaphitpc[aniter]->SetOnFlyStatus(kFALSE); //kTRUE
 					dtc5etaphitpc[aniter]->SetParticleType(1);
+          dtc5etaphitpc[aniter]->SetNanoAODAnalysis(kTRUE);
 					dtc5etaphitpc[aniter]->SetMaxDcaV0Daughters(1.0); //0.5
 					dtc5etaphitpc[aniter]->SetMaxDcaV0(0.6); //0.5
 					dtc5etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.06, 0.06); //0.05
@@ -601,7 +600,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ifMonitors)//ichg>8)
 					  {
 
-					    if(0){
+					    if(ichg>=17 && ichg<=33){
 					      // //V0 monitors (memory leak problems?)
 					      cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
 					      cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", chrgs[ichg], imult));
@@ -891,7 +890,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 					//***with corrections****
-          
+
 					if(ichg >= 13)
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),23, 23);
 					else

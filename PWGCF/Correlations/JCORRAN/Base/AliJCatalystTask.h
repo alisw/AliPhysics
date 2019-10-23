@@ -100,6 +100,7 @@ class AliJCatalystTask : public AliAnalysisTaskSE {
 		};
 		void AddFlags(UInt_t nflags){flags |= nflags;}
 		Int_t GetJCatalystEntry(){ return fJCatalystEntry; } // in order to sync event id
+		bool GetIsGoodEvent(){ return fIsGoodEvent; }
 		void SetNoCentralityBin( bool nocent) { fnoCentBin = nocent;}
 
 
@@ -131,6 +132,7 @@ class AliJCatalystTask : public AliAnalysisTaskSE {
 		TString fCentDetName; //
 		UInt_t flags; //
 		Int_t fJCatalystEntry; //
+		bool fIsGoodEvent; //
 
 		ClassDef(AliJCatalystTask, 1);
 

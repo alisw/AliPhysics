@@ -41,8 +41,15 @@ ClassImp( AliDalitzAODESD )
         if (fIsESD==kTRUE) return fESDtrack->GetConstrainedParam()->Phi();
         else return fAODtrack->Phi();
      }
-    const AliExternalTrackParam* AliDalitzAODESD::GetParamG(const AliVVertex* vx,Double_t bmag){
-        if (fIsESD==kTRUE) return fESDtrack->GetConstrainedParam();
+    void AliDalitzAODESD::GetParamG(const AliVVertex* vx,Double_t bmag, Double_t* vector){
+   // const AliExternalTrackParam* AliDalitzAODESD::GetParamG(const AliVVertex* vx,Double_t bmag){
+        if (fIsESD==kTRUE) {
+            vector[0]=fESDtrack->GetConstrainedParam()->Px();
+            vector[1]=fESDtrack->GetConstrainedParam()->Py();
+            vector[2]=fESDtrack->GetConstrainedParam()->Pz();
+            vector[3]=fESDtrack->GetConstrainedParam()->Phi();
+            //ar[0]=fESDtrack->GetConstrainedParam()->Px();
+        }
         else{ //AliExternalTrackParam* aodParam;
         //ALERT modification on GetParamG(), for ESD is the same, but for AOD we need the inputs of Vertex and GetMagneticField, with that we recalcualte the GetConstrainedParam
 
@@ -70,7 +77,7 @@ ClassImp( AliDalitzAODESD )
             if (!par->PropagateToDCA(vx,bmag,999.,dz,0)) {
                 delete par;
                 chi2 = 1e9;
-                return 0;
+                return;
             }
             Double_t covar[6]; vx->GetCovarianceMatrix(covar);
             Double_t p[2]= { par->GetParameter()[0]-dz[0], par->GetParameter()[1]-dz[1]};
@@ -78,11 +85,19 @@ ClassImp( AliDalitzAODESD )
             chi2 = par->GetPredictedChi2(p,c);
             if (chi2>1e9 || !par->Update(p,c)) {
                 delete par;
-            return 0;
+                vector[0]=0.0;
+                vector[1]=0.0;
+                vector[2]=0.0;
+                vector[3]=0.0;
+                return;
             }
-            return par;
-        }
-     }
+            vector[0]=par->Px();
+            vector[1]=par->Py();
+            vector[2]=par->Pz();
+            vector[3]=par->Phi();
+            delete par;
+         }
+    }
     Int_t AliDalitzAODESD::GetLabelG(){
         if (fIsESD==kTRUE) return fESDtrack->GetLabel();
         else return fAODtrack->GetLabel();

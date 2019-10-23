@@ -1218,7 +1218,7 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
 				}
 				else{
 					TH3F *h3InvmassBDTResp[6];
-					h3InvmassBDTResp[0] = new TH3F(Form("h3MassBDTResp%s_1",ptstring.Data()),"Invmass vs BDT1Resp vs BDT2Resp pt",100,1.68,2.10,30,0,0.3,30,-0.05,0.25);
+					h3InvmassBDTResp[0] = new TH3F(Form("h3MassBDTResp%s_1",ptstring.Data()),"Invmass vs BDT1Resp vs BDT2Resp pt",100,1.68,2.10,70,-0.05,0.30,70,-0.05,0.30);
 					h3InvmassBDTResp[1] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_2",ptstring.Data()));
 					h3InvmassBDTResp[2] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_3",ptstring.Data()));
 					h3InvmassBDTResp[3] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_4",ptstring.Data()));

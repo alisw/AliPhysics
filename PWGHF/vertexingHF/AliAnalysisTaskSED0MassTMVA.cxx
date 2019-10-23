@@ -1187,6 +1187,12 @@ void AliAnalysisTaskSED0MassTMVA::UserExec(Option_t */*option*/)
   //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+    Float_t centValue = fCuts->GetCentrality(aod);
+    Float_t cent_min = fCuts->GetMinCentrality();
+    Float_t cent_max = fCuts->GetMaxCentrality();
+  //       printf("    min_cent = %f\n",cent_min);
+     //    printf("    max_cent  = %f\n",cent_max);
+    
 
   if(fAODProtection>=0){
     //   Protection against different number of events in the AOD and deltaAOD
@@ -1296,7 +1302,7 @@ void AliAnalysisTaskSED0MassTMVA::UserExec(Option_t */*option*/)
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNentries->Fill(14);
-  if(fReadMC && fStepMCAcc){
+  if(fReadMC && fStepMCAcc && centValue >= cent_min && centValue <= cent_max ){
     FillMCAcceptanceHistos(mcArray, mcHeader);
   }
 
@@ -3070,28 +3076,56 @@ void AliAnalysisTaskSED0MassTMVA::FillMCAcceptanceHistos(TClonesArray *arrayMC, 
 
       isFidAcc=fCuts->IsInFiducialAcceptance(mcPart->Pt(),mcPart->Y());
       isInAcc=CheckAcc(arrayMC,nProng,labDau);
+         Double_t BY = GetBeautyMotherY(arrayMC,mcPart);
 
-      if(isGoodDecay && TMath::Abs(zMCVertex) < fCuts->GetMaxVtxZ() && isFidAcc && isInAcc) {
-        //for prompt
-        if(orig == 4){
-          //fill histo for prompt
-          Double_t arrayMCprompt[2] = {mcPart->Pt(),mcPart->Y()};
-          fMCAccPrompt->Fill(arrayMCprompt);
+        if(isGoodDecay && TMath::Abs(zMCVertex) < fCuts->GetMaxVtxZ() && isFidAcc && TMath::Abs(mcPart->Y()) < 0.5 && orig == 4) {
+            //for prompt
+            
+            //fill histo for prompt
+            Double_t arrayMCprompt[2] = {mcPart->Pt(),mcPart->Y()};
+            fMCAccPrompt->Fill(arrayMCprompt);
         }
         //for FD
-        else if(orig == 5){
-          Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,mcPart);
-          //fill histo for FD
-          Double_t arrayMCFD[3] = {mcPart->Pt(),mcPart->Y(),ptB};
-          fMCAccBFeed->Fill(arrayMCFD);
+        else if(orig == 5 && isGoodDecay && TMath::Abs(zMCVertex) < fCuts->GetMaxVtxZ() && isFidAcc && (TMath::Abs(BY) < 1.0)){
+            Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,mcPart);
+            //fill histo for FD
+            Double_t arrayMCFD[3] = {mcPart->Pt(),BY,ptB};
+            fMCAccBFeed->Fill(arrayMCFD);
         }
         else
-          continue;
-      }
+            continue;
     }
   }
 }
 //______________________________________________________________________
+Double_t AliAnalysisTaskSED0MassTMVA::GetBeautyMotherY(TClonesArray* arrayMC, AliAODMCParticle *mcPart){
+    /// get the pt of the beauty hadron (feed-down case), returns negative value for prompt
+    
+    Int_t pdgGranma = 0;
+    Int_t mother = 0;
+    mother = mcPart->GetMother();
+    Int_t istep = 0;
+    Int_t abspdgGranma =0;
+    while (mother >=0 ){
+        istep++;
+        AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
+        if (mcGranma){
+            pdgGranma = mcGranma->GetPdgCode();
+            abspdgGranma = TMath::Abs(pdgGranma);
+            if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+                return mcGranma->Y();
+            }
+            if(abspdgGranma==4) return -999.;
+            if(abspdgGranma==5) return -888.;
+            mother = mcGranma->GetMother();
+        }else{
+            printf("AliVertexingHFUtils::GetBeautyMotherPt: Failed casting the mother particle!");
+            break;
+        }
+    }
+    return -999.;
+}
+//________________________________________
 Bool_t AliAnalysisTaskSED0MassTMVA::CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau){
   /// check if the decay products are in the good eta and pt range
   for (Int_t iProng = 0; iProng<nProng; iProng++){

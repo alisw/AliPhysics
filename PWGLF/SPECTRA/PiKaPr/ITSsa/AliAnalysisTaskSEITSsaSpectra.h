@@ -259,7 +259,10 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   THnSparseF *fHistRecoMC[kNchg * kNspc]; //!<! NSigma histos for 6 species
 
   // MC histograms using reco values
-  TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth
+  TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt reco)
+
+  //MC histograms using gen values
+  TH3F *fHistTruePIDMCGen[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt generated)
 
   // DCAxy distributions
   TH3F *fHistDCAReco[kNchg * kNspc]; //!<! histo with DCA distibution

@@ -54,6 +54,8 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Int_t V0Cdecision_T;
 	Int_t ADAdecision_T;
 	Int_t ADCdecision_T;
+	Bool_t UBAfired_T;
+	Bool_t UBCfired_T;
 	Float_t ZNAenergy_T;
 	Float_t ZNCenergy_T;
 	Float_t ZPAenergy_T;

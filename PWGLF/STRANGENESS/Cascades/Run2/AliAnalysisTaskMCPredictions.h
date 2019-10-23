@@ -63,6 +63,7 @@ public:
     Double_t ComputeDeltaPhi( Double_t phi1, Double_t phi2) const;
     
     void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
+    void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; } 
     
 //---------------------------------------------------------------------------------------
 
@@ -74,10 +75,12 @@ private:
 
     //Histograms (Desired objects in this cross-checking task) 
     TH1D *fHistEventCounter; //! histogram for event counting
+    TH1D *fHistChargedEta; //! histogram for event counting
     
     Int_t fSmallMultRange;
     Int_t fLargeMultRange;
-    Int_t fRebinFactor; 
+    Int_t fRebinFactor;
+    Bool_t fkSelectINELgtZERO;
     
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1D *fHistV0MMult;
@@ -88,32 +91,27 @@ private:
     TH2D *fHistNchVsNpart;
     TH1D *fHistB;
     TH2D *fHistNchVsB;
+    TH1D *fHistNMPI;
+    TH2D *fHistNchVsNMPI;
     
-    TH1D *fHistPt[13];              //! for keeping track of base spectra
-    TH1D *fHistEta[13];              //! for keeping track of base spectra
-    TH2D *fHistPtVsV0MMult[13];     //! for keeping track of base spectra
-    TH2D *fHistPtVsSPDMult[13];     //! for keeping track of base spectra
-    TH2D *fHistPtVsNpart[13];       //! for keeping track of base spectra
-    TH2D *fHistPtVsB[13];           //! for keeping track of base spectra
+    TH1D *fHistPt[23];              //! for keeping track of base spectra
+    TH1D *fHistEta[23];              //! for keeping track of base spectra
+    TH2D *fHistPtVsV0MMult[23];     //! for keeping track of base spectra
+    TH2D *fHistPtVsSPDMult[23];     //! for keeping track of base spectra
+    TH2D *fHistPtVsNpart[23];       //! for keeping track of base spectra
+    TH2D *fHistPtVsB[23];           //! for keeping track of base spectra
+    TH2D *fHistPtVsNMPI[23];       //! for keeping track of base spectra
   
     Bool_t fkDo2pc;
-    //Add some 2pc to the mixture: Charged hadron trigger
-    Long_t fBufferChargedTriggerSize[10];
-    Double_t fBufferChargedTriggersPhi[10][1000];
-    Double_t fBufferChargedTriggersEta[10][1000];
-    TH3D *fHist3d2pcSE[13]; //!
-
-    //Add some 2pc to the mixture: xi trigger
-    Long_t fBufferXiTriggerSize[10];
-    Double_t fBufferXiTriggersPhi[10][1000];
-    Double_t fBufferXiTriggersEta[10][1000];
-    TH3D *fHist3d2pcXiSE[13]; //!
-
-    //Add some 2pc to the mixture: phi trigger
-    Long_t fBufferPhiTriggerSize[10];
-    Double_t fBufferPhiTriggersPhi[10][1000];
-    Double_t fBufferPhiTriggersEta[10][1000];
-    TH3D *fHist3d2pcPhiSE[13]; //!
+    Float_t fMinPtTriggerCharged; //for charged trigger
+    Float_t fMinPtTriggerXi; //for xi trigger
+    Float_t fMinPtTriggerPhi; //for phi trigger
+    TH1D *fEtaTriggerCharged;
+    TH1D *fEtaTriggerXi;
+    TH1D *fEtaTriggerPhi;
+    TH3D *fHist3d2pcSE[23]; //!
+    TH3D *fHist3d2pcXiSE[23]; //!
+    TH3D *fHist3d2pcPhiSE[23]; //!
     
     AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
     AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented

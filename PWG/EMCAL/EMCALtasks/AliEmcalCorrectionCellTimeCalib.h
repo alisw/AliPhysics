@@ -44,6 +44,8 @@ private:
   Bool_t                 fCalibrateTime;          ///< flag cell time calibration
   Bool_t                 fCalibrateTimeL1Phase;   ///< flag cell time calibration with L1phase shift
   Bool_t                 fDoMergedBCs;            ///< flag to use one histogram for all BCs
+  Bool_t                 fDoCalibrateLowGain;     ///< flag to calibrate the low gain cells
+  Bool_t                 fDoCalibMergedLG;        ///< flag to calibrate the low gain cells using a period merged histogram for LG calibration
   
   // Change to false if experts
   Bool_t                 fUseAutomaticTimeCalib;     ///< On by default the check in the OADB of the time recalibration
@@ -55,7 +57,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellTimeCalib> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellTimeCalib, 2); // EMCal cell time calibration component
+  ClassDef(AliEmcalCorrectionCellTimeCalib, 4); // EMCal cell time calibration component
   /// \endcond
 };
 

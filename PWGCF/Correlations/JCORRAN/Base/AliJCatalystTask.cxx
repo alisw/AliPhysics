@@ -64,6 +64,7 @@ AliJCatalystTask::AliJCatalystTask():
 
 	fzvtxCut = 10;  // default z vertex cut
 	fJCatalystEntry = 0;
+	fIsGoodEvent = false; //
 	//  DefineOutput(1, TDirectory::Class());
 }
 
@@ -94,6 +95,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 
 	fzvtxCut = 10;
 	fJCatalystEntry = 0;
+	fIsGoodEvent = false; //
 }
 
 //____________________________________________________________________________
@@ -157,7 +159,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 
 	fEvtNum++;
 	if(fEvtNum % 1000 == 0)
-		cout << "evt : " << fEvtNum <<endl;
+		cout << "evt : " << fEvtNum << ", fEntry: " << fEntry <<  endl;
 
 	// load current event and save track, event info
 	if(flags & FLUC_KINEONLY) {
@@ -202,8 +204,10 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		}
 		fRunNum = currentEvent->GetRunNumber();
 
-		if(!IsGoodEvent( currentEvent ))
+		fIsGoodEvent = IsGoodEvent(currentEvent);
+		if(!fIsGoodEvent) {
 			return;
+		}
 		ReadAODTracks( currentEvent, fInputList, fcent ) ; // read tracklist
 		ReadVertexInfo( currentEvent, fvertex); // read vertex info
 	} // AOD

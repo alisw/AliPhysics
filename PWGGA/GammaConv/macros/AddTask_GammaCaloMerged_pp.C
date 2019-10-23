@@ -56,6 +56,7 @@ void AddTask_GammaCaloMerged_pp(
   AliCutHandlerPCM cuts;
 
   TString fileNamePtWeights     = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
+  TString fileNameCustomTriggerMimicOADB   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FTRM:");
 
   TString addTaskName                 = "AddTask_GammaMerged_pp";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
@@ -998,9 +999,9 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("00052113","111111106f032200000","111111106f022700001","0163300000000000"); // EMC7
     cuts.AddCutMergedCalo("00081113","111111106f032200000","111111106f022700001","0163300000000000"); // EGA
   } else if (trainConfig == 211){  // new standard with TB NL
-    cuts.AddCutMergedCalo("00010113","111116506f032200000","111116506f022700001","0163300000000000"); // INT7
-    cuts.AddCutMergedCalo("00052113","111116506f032200000","111116506f022700001","0163300000000000"); // EMC7
-    cuts.AddCutMergedCalo("00081113","111116506f032200000","111116506f022700001","0163300000000000"); // EGA
+    cuts.AddCutMergedCalo("00010113","1111101060032200000","1111101060022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","1111101060032200000","1111101060022700001","0163300000000000"); // EMC7
+    cuts.AddCutMergedCalo("00081113","1111101060032200000","1111101060022700001","0163300000000000"); // EGA
   } else if (trainConfig == 212){  // new standard with exotic cut 0.97
     cuts.AddCutMergedCalo("00010113","111111106f532200000","111111106f522700001","0163300000000000"); // INT7
     cuts.AddCutMergedCalo("00052113","111111106f532200000","111111106f522700001","0163300000000000"); // EMC7
@@ -1715,6 +1716,8 @@ void AddTask_GammaCaloMerged_pp(
     if (doWeightingPart) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNamePtWeights, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+    if(fileNameCustomTriggerMimicOADB.CompareTo("") != 0)
+      analysisEventCuts[i]->SetCustomTriggerMimicOADBFile(fileNameCustomTriggerMimicOADB);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     if(fMinPtHardSet)
       analysisEventCuts[i]->SetMinFacPtHard(minFacPtHard);

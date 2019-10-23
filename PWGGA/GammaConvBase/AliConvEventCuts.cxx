@@ -184,6 +184,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fMaxFacPtHard(2.5),
   fMaxFacPtHardSingleParticle(1.5),
   fMimicTrigger(kFALSE),
+  fPathTriggerMimicSpecialInput(""),
   fRejectTriggerOverlap(kFALSE),
   fDoMultiplicityWeighting(kFALSE),
   fPathReweightingMult(""),
@@ -312,6 +313,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMaxFacPtHard(ref.fMaxFacPtHard),
   fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
   fMimicTrigger(ref.fMimicTrigger),
+  fPathTriggerMimicSpecialInput(ref.fPathTriggerMimicSpecialInput),
   fRejectTriggerOverlap(ref.fRejectTriggerOverlap),
   fDoMultiplicityWeighting(ref.fDoMultiplicityWeighting),
   fPathReweightingMult(ref.fPathReweightingMult),
@@ -1373,7 +1375,7 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
 //     break;
   case 3:
     fSpecialTrigger=3; //specific centrality trigger selection
-    //fOfflineTriggerMask=AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+    fOfflineTriggerMask=AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
     fTriggerSelectedManually = kTRUE;
     fSpecialTriggerName="AliVEvent::kCentral/kSemiCentral/kINT7";
     break;
@@ -1877,28 +1879,28 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
-    case 10: // 8DG1 - CINT8 DG1
+    case 10: //a) 8DG1 - CINT8 DG1
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DG1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
-    case 11: // 7DG2 - CINT7 DG2
+    case 11: //b) 7DG2 - CINT7 DG2
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7DG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
-    case 12: // 8DG2 - CINT8 DG2
+    case 12: //c) 8DG2 - CINT8 DG2
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
-    case 13: // Gamma Low EMC and DMC
+    case 13: //d) Gamma Low EMC and DMC
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialSubTriggerName="7EG1";
@@ -1906,7 +1908,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
-    case 14: // Gamma Low EMC and DMC
+    case 14: //e) Gamma Low EMC and DMC
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialSubTriggerName="7EG2";
@@ -2383,6 +2385,12 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
     fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
     fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
     fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
+    break;
+ case 12:
+    fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
+    fUtils->SetASPDCvsTCut(200.);
+    fUtils->SetBSPDCvsTCut(7.);
     break;
   default:
     AliError("RemovePileUpCut not defined");
@@ -3990,19 +3998,36 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     Int_t runnumber = event->GetRunNumber();
     if(!fHistoTriggThresh || fRunNumberTriggerOADB != runnumber){
       fRunNumberTriggerOADB = runnumber;
-      TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
-      if (!fileTriggThresh || fileTriggThresh->IsZombie())
-      {
-        AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
-      }
-      if (fileTriggThresh) delete fileTriggThresh;
       std::unique_ptr<AliOADBContainer> contfileTriggThresh(new AliOADBContainer(""));
-      contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"AliEMCalTriggerMimic");
-      if(!contfileTriggThresh){
-        AliFatal("AliOADBContainer could not be loaded from PWGGA/EMCalTriggerMimicOADB.root");
-      } else{
-        contfileTriggThresh->SetOwner(kTRUE);
+
+      if(!fPathTriggerMimicSpecialInput.CompareTo("")){ // load from standard OADB on EOS
+        TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
+        if (!fileTriggThresh || fileTriggThresh->IsZombie())
+        {
+          AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
+        }
+        if (fileTriggThresh) delete fileTriggThresh;
+        contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"AliEMCalTriggerMimic");
+        if(!contfileTriggThresh){
+          AliFatal("AliOADBContainer could not be loaded from PWGGA/EMCalTriggerMimicOADB.root");
+        } else{
+          contfileTriggThresh->SetOwner(kTRUE);
+        }
+      } else { // load from special OADB file from AliEn
+        TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"read");
+        if (!fileTriggThresh || fileTriggThresh->IsZombie())
+        {
+          AliFatal(Form("%s was not found",fPathTriggerMimicSpecialInput.Data()));
+        }
+        if (fileTriggThresh) delete fileTriggThresh;
+        contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"AliEMCalTriggerMimic");
+        if(!contfileTriggThresh){
+          AliFatal(Form("AliOADBContainer could not be loaded from %s",fPathTriggerMimicSpecialInput.Data()));
+        } else{
+          contfileTriggThresh->SetOwner(kTRUE);
+        }
       }
+
       TObjArray *arrayTriggThresh=(TObjArray*)contfileTriggThresh->GetObject(runnumber);
       if (!arrayTriggThresh)
       {
@@ -4128,14 +4153,6 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
     if ( (fSpecialTrigger == 11)  && fTriggerSelectedManually &&  fSpecialSubTriggerName.CompareTo("CCUP25-B-SPD1-CENTNOTRD") == 0 ) {
       if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
     }
-
-    // select manually PbPb kINT7 | kCentral | kSemiCentral
-    if ( fIsHeavyIon == 1 && fSpecialTrigger == 3  && fTriggerSelectedManually) {
-      if (firedTrigClass.Contains("CENT")){
-        if ( firedTrigClass.Contains("CV0H7") || firedTrigClass.Contains("CMID7") ) isSelected = 1;
-      }
-    }
-
 
     if (fOfflineTriggerMask){
       isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
@@ -4528,6 +4545,15 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
         }
       }
     }
+
+    //******************************************************//
+    // uncomment the following lines for trigger debugging
+    //   if (!fPreSelCut){
+    //     if (isSelected) cout << fSpecialTrigger << "\t"<<  fSpecialTriggerName.Data() <<  "\t"<<  fSpecialSubTrigger << "\t" << fSpecialSubTriggerName.Data()  << endl;
+    //   } else {
+    //      cout << "Preselection: " << firedTrigClass.Data() << endl;
+    //   }
+    //******************************************************//
   }
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
@@ -4586,6 +4612,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
   }
 
   if(hTriggerClassSelected && isSelected){
+
     if (mimickedTrigger){
       if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
       if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassSelected->Fill(0);

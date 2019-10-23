@@ -481,12 +481,13 @@ Int_t AliRDHFCutsXictopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
     for(Int_t i=0;i<3;i++){
      AliAODTrack *track=(AliAODTrack*)obj->GetDaughter(i);
      if(!track) return 0;
-     // identify kaon
-     if(track->P()<0.55){
-      fPidHF->SetTOF(kFALSE);
-      fPidHF->SetTOFdecide(kFALSE);
-     }
      if(i==1) {
+      // identify kaon
+      if(track->P()<0.55){
+        fPidHF->SetTOF(kFALSE);
+        fPidHF->SetTOFdecide(kFALSE);
+      }
+      //if(i==1) {
       Int_t isKaon=0;
       isKaon=fPIDStrategy==kNSigmaMin?fPidHF->MatchTPCTOFMin(track,3):fPidHF->MakeRawPid(track,3);
       if(isKaon>=1) iskaon1=kTRUE;
@@ -1458,4 +1459,111 @@ Int_t AliRDHFCutsXictopKpi::IsSelectedCombinedPIDProb(AliAODRecoDecayHF* obj) {
   
   return returnvalue;
 
+}
+//-----------------------
+void AliRDHFCutsXictopKpi::ExplorePID(AliPIDResponse* pid_resp, AliAODRecoDecayHF3Prong* cand, UInt_t PIDcase, Bool_t &is_pKpi_passed, Bool_t &is_piKp_passed)
+{
+  //
+  //  Testing some PID cuts, tuned on TH2 PID plots from pp @ 5 TeV
+  //
+
+  // store the PID variables (nSigma)
+  Float_t nSigma_TPC_prot_0=99, nSigma_TOF_prot_0=99, nSigma_TPC_pion_0=99, nSigma_TOF_pion_0=99;
+  Float_t nSigma_TPC_kaon_1=99, nSigma_TOF_kaon_1=99; 
+  Float_t nSigma_TPC_prot_2=99, nSigma_TOF_prot_2=99, nSigma_TPC_pion_2=99, nSigma_TOF_pion_2=99;
+  AliPIDResponse::EDetPidStatus status_TPC_0, status_TPC_1, status_TPC_2, status_TOF_0, status_TOF_1, status_TOF_2;
+  status_TPC_0 = pid_resp->CheckPIDStatus(AliPIDResponse::kTPC,(AliAODTrack*)cand->GetDaughter(0));
+  status_TOF_0 = pid_resp->CheckPIDStatus(AliPIDResponse::kTOF,(AliAODTrack*)cand->GetDaughter(0));
+  status_TPC_1 = pid_resp->CheckPIDStatus(AliPIDResponse::kTPC,(AliAODTrack*)cand->GetDaughter(1));
+  status_TOF_1 = pid_resp->CheckPIDStatus(AliPIDResponse::kTOF,(AliAODTrack*)cand->GetDaughter(1));
+  status_TPC_2 = pid_resp->CheckPIDStatus(AliPIDResponse::kTPC,(AliAODTrack*)cand->GetDaughter(2));
+  status_TOF_2 = pid_resp->CheckPIDStatus(AliPIDResponse::kTOF,(AliAODTrack*)cand->GetDaughter(2));
+  if(status_TPC_0 == AliPIDResponse::kDetPidOk){
+    nSigma_TPC_pion_0 = pid_resp->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(0),AliPID::kPion);
+    nSigma_TPC_prot_0 = pid_resp->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(0),AliPID::kProton);
+  }
+  if(status_TOF_0 == AliPIDResponse::kDetPidOk){
+    nSigma_TOF_pion_0 = pid_resp->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(0),AliPID::kPion);
+    nSigma_TOF_prot_0 = pid_resp->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(0),AliPID::kProton);
+  }
+  if(status_TPC_1 == AliPIDResponse::kDetPidOk){
+    nSigma_TPC_kaon_1 = pid_resp->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(1),AliPID::kKaon);
+  }
+  if(status_TOF_1 == AliPIDResponse::kDetPidOk){
+    nSigma_TOF_kaon_1 = pid_resp->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(1),AliPID::kKaon);
+  }
+  if(status_TPC_2 == AliPIDResponse::kDetPidOk){
+    nSigma_TPC_pion_2 = pid_resp->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(2),AliPID::kPion);
+    nSigma_TPC_prot_2 = pid_resp->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(2),AliPID::kProton);
+  }
+  if(status_TOF_2 == AliPIDResponse::kDetPidOk){
+    nSigma_TOF_pion_2 = pid_resp->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(2),AliPID::kPion);
+    nSigma_TOF_prot_2 = pid_resp->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(2),AliPID::kProton);
+  }
+
+  Float_t pt_prong0 = (Float_t) ((AliAODTrack*) cand->GetDaughter(0))->Pt();
+  Float_t pt_prong1 = (Float_t) ((AliAODTrack*) cand->GetDaughter(1))->Pt();
+  Float_t pt_prong2 = (Float_t) ((AliAODTrack*) cand->GetDaughter(2))->Pt();
+  //
+  // look if the candidate satisfies the PID cuts
+  //
+  switch (PIDcase)
+  {
+  // (TPC_prot_0 && TPC_kaon_1) || (TPC_prot_2 && TPC_kaon_1)
+  case 1:
+    if( func_TPCprot_down(pt_prong0)< nSigma_TPC_prot_0 && nSigma_TPC_prot_0<func_TPCprot_up(pt_prong0) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( func_TPCprot_down(pt_prong2)< nSigma_TPC_prot_2 && nSigma_TPC_prot_2<func_TPCprot_up(pt_prong2) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+  // (TPC_prot_0 && TOF_prot_0 && TPC_kaon_1) || (TPC_prot_2 && TOF_prot_2 && TPC_kaon_1)
+  case 2:
+    if( func_TPCprot_down(pt_prong0)< nSigma_TPC_prot_0 && nSigma_TPC_prot_0<func_TPCprot_up(pt_prong0) && func_TOFprot_down(pt_prong0)<nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( func_TPCprot_down(pt_prong2)< nSigma_TPC_prot_2 && nSigma_TPC_prot_2<func_TPCprot_up(pt_prong2) && func_TOFprot_down(pt_prong2)<nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+  // (TPC_prot_0 && TOF_prot_0 && TOF_kaon_1) || (TPC_prot_2 && TOF_prot_2 && TOF_kaon_1)
+  case 3:
+    if( func_TPCprot_down(pt_prong0)< nSigma_TPC_prot_0 && nSigma_TPC_prot_0<func_TPCprot_up(pt_prong0) && func_TOFprot_down(pt_prong0)<nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( func_TPCprot_down(pt_prong2)< nSigma_TPC_prot_2 && nSigma_TPC_prot_2<func_TPCprot_up(pt_prong2) && func_TOFprot_down(pt_prong2)<nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+  // (TPC_prot_0 && TOF_prot_0 && TPC_kaon_1 && TOF_kaon_1) || (TPC_prot_2 && TOF_prot_2 && TPC_kaon_1 & TOF_kaon_1)
+  case 4:
+    if( func_TPCprot_down(pt_prong0)< nSigma_TPC_prot_0 && nSigma_TPC_prot_0<func_TPCprot_up(pt_prong0) && func_TOFprot_down(pt_prong0)<nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( func_TPCprot_down(pt_prong2)< nSigma_TPC_prot_2 && nSigma_TPC_prot_2<func_TPCprot_up(pt_prong2) && func_TOFprot_down(pt_prong2)<nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+  // (TOF_prot_0 && TOF_kaon_1) || (TOF_prot_2 && TOF_kaon_1)
+  case 5:
+    if( func_TOFprot_down(pt_prong0)< nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( func_TOFprot_down(pt_prong2)< nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+  // (TOF_prot_0 && TPC_kaon_1) || (TOF_prot_2 && TPC_kaon_1)
+  case 6:
+    if( func_TOFprot_down(pt_prong0)< nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( func_TOFprot_down(pt_prong2)< nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+  // (TOF_prot_0 && TPC_kaon_1 && TOF_kaon_1) || (TOF_prot_2 && TPC_kaon_1 && TOF_kaon_1)
+  case 7:
+    if( func_TOFprot_down(pt_prong0)< nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( func_TOFprot_down(pt_prong2)< nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+  // (|TPC_prot_0|<3 && TOF_prot_0 && TOF_kaon_1) || (|TPC_prot_2|<3 && TOF_prot_2 && TOF_kaon_1)
+  case 8:
+    if( -3< nSigma_TPC_prot_0 && nSigma_TPC_prot_0<3 && func_TOFprot_down(pt_prong0)<nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( -3< nSigma_TPC_prot_2 && nSigma_TPC_prot_2<3 && func_TOFprot_down(pt_prong2)<nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+  // (|TPC_prot_0|<3 && TOF_prot_0 && TPC_kaon_1) || (|TPC_prot_2|<3 && TOF_prot_2 && TPC_kaon_1)
+  case 9:
+    if( -3< nSigma_TPC_prot_0 && nSigma_TPC_prot_0<3 && func_TOFprot_down(pt_prong0)<nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( -3< nSigma_TPC_prot_2 && nSigma_TPC_prot_2<3 && func_TOFprot_down(pt_prong2)<nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+  // (|TPC_prot_0|<3 && TOF_prot_0 && TPC_kaon_1 && TOF_kaon_1) || (|TPC_prot_2|<3 && TOF_prot_2 && TPC_kaon_1 && TOF_kaon_1)
+  case 10:
+    if( -3< nSigma_TPC_prot_0 && nSigma_TPC_prot_0<3 && func_TOFprot_down(pt_prong0)<nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
+    if( -3< nSigma_TPC_prot_2 && nSigma_TPC_prot_2<3 && func_TOFprot_down(pt_prong2)<nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
+    break;
+
+  default:
+    break;
+  }
+  
+
+  return;
 }

@@ -316,6 +316,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           PrintTCardParam();
 
   void     SwitchUseMergedBCs(Bool_t doUseMergedBC)     { fDoMergedBCs     = doUseMergedBC; }
+
+  void     SetUse1DRecalibration(Bool_t use1D)     { fLoad1DRecalibFactors     = use1D; }
   
   //------------------------------------------
   
@@ -453,6 +455,7 @@ private:
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
 
   Bool_t                fDoMergedBCs;              ///< flag whether to load four histos for the time calib or one merged histo
+  Bool_t                fLoad1DRecalibFactors;     ///< Flag to load 1D energy recalibration factors
   
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;

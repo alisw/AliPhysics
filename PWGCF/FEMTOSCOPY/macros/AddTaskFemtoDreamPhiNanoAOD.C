@@ -17,26 +17,27 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
+  evtCuts->SetSphericityCuts(0.7,1);
 
-    if (suffix == "1") {
-        evtCuts->SetSpherocityCuts(0.5,1);
-    }
+//    if (suffix == "1") {
+//        evtCuts->SetSpherocityCuts(0.5,1);
+//    }
 
-    if (suffix == "2") {
-        evtCuts->SetSpherocityCuts(0.6,1);
-    }
+//    if (suffix == "2") {
+//        evtCuts->SetSpherocityCuts(0.6,1);
+//    }
 
-    if (suffix == "3") {
-        evtCuts->SetSpherocityCuts(0.7,1);
-    }
+//    if (suffix == "3") {
+//        evtCuts->SetSpherocityCuts(0.7,1);
+//    }
 
-    if (suffix == "4") {
-        evtCuts->SetSpherocityCuts(0.8,1);
-    }
+//    if (suffix == "4") {
+//        evtCuts->SetSpherocityCuts(0.8,1);
+//    }
 
-    if (suffix == "5") {
-        evtCuts->SetSpherocityCuts(0.9,1);
-    }
+//    if (suffix == "5") {
+//        evtCuts->SetSpherocityCuts(0.9,1);
+//    }
 
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -46,21 +47,178 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   AntiTrackCuts->SetCutCharge(-1);
 
-//  if (suffix != "0") {
-//    TrackCuts->SetMinimalBooking(true);
-//    AntiTrackCuts->SetMinimalBooking(true);
-//  }
+  if (suffix != "0") {
+    TrackCuts->SetMinimalBooking(true);
+    AntiTrackCuts->SetMinimalBooking(true);
+  }
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
+  TrackPosKaonCuts->SetFilterBit(128);
 
   AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackNegKaonCuts->SetCutCharge(-1);
+  TrackNegKaonCuts->SetFilterBit(128);
 
-//  if (suffix != "0") {
-//    TrackPosKaonCuts->SetMinimalBooking(true);
-//    TrackNegKaonCuts->SetMinimalBooking(true);
-//  }
+
+  if (suffix != "0") {
+    TrackPosKaonCuts->SetMinimalBooking(true);
+    TrackNegKaonCuts->SetMinimalBooking(true);
+  }
+
+  if (suffix == "1") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
+  }
+
+  if (suffix == "2") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+  }
+
+  if (suffix == "3") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.5);
+      TrackNegKaonCuts->SetDCAVtxZ(0.5);
+  }
+
+  if (suffix == "4") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.6);
+      TrackNegKaonCuts->SetDCAVtxZ(0.6);
+  }
+
+  if (suffix == "5") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.7);
+      TrackNegKaonCuts->SetDCAVtxZ(0.7);
+  }
+
+  if (suffix == "6") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.8);
+      TrackNegKaonCuts->SetDCAVtxZ(0.8);
+  }
+
+  if (suffix == "7") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.9);
+      TrackNegKaonCuts->SetDCAVtxZ(0.9);
+  }
+
+  if (suffix == "8") {
+      TrackPosKaonCuts->SetDCAVtxZ(1.0);
+      TrackNegKaonCuts->SetDCAVtxZ(1.0);
+  }
+
+  if (suffix == "9") {
+      TrackPosKaonCuts->SetDCAVtxZ(1.1);
+      TrackNegKaonCuts->SetDCAVtxZ(1.1);
+  }
+
+  if (suffix == "10") {
+      TrackPosKaonCuts->SetDCAVtxZ(1.2);
+      TrackNegKaonCuts->SetDCAVtxZ(1.2);
+  }
+
+  if (suffix == "11") {
+      TrackPosKaonCuts->SetDCAVtxZ(1.3);
+      TrackNegKaonCuts->SetDCAVtxZ(1.3);
+  }
+
+  if (suffix == "12") {
+      TrackPosKaonCuts->SetDCAVtxZ(1.4);
+      TrackNegKaonCuts->SetDCAVtxZ(1.4);
+  }
+
+  if (suffix == "13") {
+      TrackPosKaonCuts->SetDCAVtxZ(1.5);
+      TrackNegKaonCuts->SetDCAVtxZ(1.5);
+  }
+
+  if (suffix == "14") {
+      TrackPosKaonCuts->SetDCAVtxXY(0.2);
+      TrackNegKaonCuts->SetDCAVtxXY(0.2);
+  }
+
+  if (suffix == "15") {
+      TrackPosKaonCuts->SetDCAVtxXY(0.3);
+      TrackNegKaonCuts->SetDCAVtxXY(0.3);
+  }
+
+  if (suffix == "16") {
+      TrackPosKaonCuts->SetDCAVtxXY(0.4);
+      TrackNegKaonCuts->SetDCAVtxXY(0.4);
+  }
+
+  if (suffix == "17") {
+      TrackPosKaonCuts->SetDCAVtxXY(0.5);
+      TrackNegKaonCuts->SetDCAVtxXY(0.5);
+  }
+
+  if (suffix == "18") {
+      TrackPosKaonCuts->SetDCAVtxXY(0.6);
+      TrackNegKaonCuts->SetDCAVtxXY(0.6);
+  }
+
+  if (suffix == "19") {
+      TrackPosKaonCuts->SetDCAVtxXY(0.7);
+      TrackNegKaonCuts->SetDCAVtxXY(0.7);
+  }
+
+  if (suffix == "20") {
+      TrackPosKaonCuts->SetDCAVtxXY(0.8);
+      TrackNegKaonCuts->SetDCAVtxXY(0.8);
+  }
+
+  if (suffix == "21") {
+      TrackPosKaonCuts->SetDCAVtxXY(0.9);
+      TrackNegKaonCuts->SetDCAVtxXY(0.9);
+  }
+
+  if (suffix == "22") {
+      TrackPosKaonCuts->SetDCAVtxXY(1.0);
+      TrackNegKaonCuts->SetDCAVtxXY(1.0);
+  }
+
+  if (suffix == "23") {
+      TrackPosKaonCuts->SetDCAVtxXY(1.1);
+      TrackNegKaonCuts->SetDCAVtxXY(1.1);
+  }
+
+  if (suffix == "24") {
+      TrackPosKaonCuts->SetDCAVtxXY(1.2);
+      TrackNegKaonCuts->SetDCAVtxXY(1.2);
+  }
+
+  if (suffix == "25") {
+      TrackPosKaonCuts->SetDCAVtxXY(1.3);
+      TrackNegKaonCuts->SetDCAVtxXY(1.3);
+  }
+
+  if (suffix == "26") {
+      TrackPosKaonCuts->SetDCAVtxXY(1.4);
+      TrackNegKaonCuts->SetDCAVtxXY(1.4);
+  }
+
+  if (suffix == "27") {
+      TrackPosKaonCuts->SetDCAVtxXY(1.5);
+      TrackNegKaonCuts->SetDCAVtxXY(1.5);
+  }
+
+  if (suffix == "28") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackPosKaonCuts->SetDCAVtxXY(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxXY(0.3);
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
+  }
+
+  if (suffix == "29") {
+      TrackPosKaonCuts->SetDCAVtxZ(1.0);
+      TrackPosKaonCuts->SetDCAVtxXY(0.9);
+      TrackNegKaonCuts->SetDCAVtxZ(1.0);
+      TrackNegKaonCuts->SetDCAVtxXY(0.9);
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
+  }
+
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);
@@ -76,17 +234,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
   double Phimass=TDatabasePDG::Instance()->GetParticle(333)->Mass();
-  if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(Phimass-0.008,Phimass);
-  }
-  if (suffix == "2") {
-    TrackCutsPhi->SetCutWindow(Phimass,Phimass+0.008);
-  }
 
 
-//  if (suffix != "0") {
-//    TrackCutsPhi->SetMinimalBooking(true);
-//  }
+  if (suffix != "0") {
+    TrackCutsPhi->SetMinimalBooking(true);
+  }
 
 
   // Now we define stuff we want for our Particle collection

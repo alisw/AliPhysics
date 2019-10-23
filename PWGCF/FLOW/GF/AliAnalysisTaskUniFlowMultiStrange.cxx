@@ -14,8 +14,9 @@
 **************************************************************************/
 
 // =================================================================================================
-// AliAnalysisTaskUniFlowMultiStrange - Used for Multi-Strange Flow analysis with Multi-particle
-// cumulant method and ESE analysis. Extension of AliAnalysisTaskUniFlow class (impl. by Vojtech Pacik, NBI).
+// =================================================================================================
+// AliAnalysisTaskUniFlowMultiStrangeMultiStrange - Used for Multi-Strange Flow analysis with Multi-particle
+// cumulant method and ESE analysis. Extension of AliAnalysisTaskUniFlowMultiStrange class (impl. by Vojtech Pacik, NBI).
 // Author: Ya Zhu (ya.zhu@cern.ch), CCNU, 2016-2019
 // =================================================================================================
 //
@@ -65,13 +66,11 @@
 //        - 4-particle cumulants has to be setup by invoking AliAnalysisTaskUniFlowMultiStrange::SetFlowDoFourCorrelations(kTRUE)
 //
 // =================================================================================================
-
 #ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 #define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
-
 #include "TObjectTable.h"
 #include "TFile.h"
 #include "TChain.h"
@@ -86,7 +85,6 @@
 #include "TClonesArray.h"
 #include "TComplex.h"
 #include "TRandom3.h"
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODInputHandler.h"
@@ -102,24 +100,10 @@
 #include "AliAODcascade.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
-
+#include "AliAODVZERO.h"
 #include "AliAnalysisTaskUniFlowMultiStrange.h"
-
+#include "AliAODPidHF.h"
 ClassImp(AliAnalysisTaskUniFlowMultiStrange);
-
-// ============================================================================
-// ############################################################################
-// AliAnalysisTaskUniFlowMultiStrange::CorrTask
-// ############################################################################
-// ============================================================================
-void AliAnalysisTaskUniFlowMultiStrange::CorrTask::Print() const
-{
-  printf("CorrTask::Print() : '%s' (%s) | fbDoRefs %d | fbDoPOIs %d | fiHarm[%d] = { ",fsName.Data(), fsLabel.Data(), fbDoRefs, fbDoPOIs, fiNumHarm);
-  for(Int_t i(0); i < fiNumHarm; ++i) { printf("%d ",fiHarm[i]); }
-  printf("} | fgGaps[%d] = { ",fiNumGaps);
-  for(Int_t i(0); i < fiNumGaps; ++i) { printf("%0.2f ",fdGaps[i]); }
-  printf("}\n");
-}
 // ============================================================================
 // ############################################################################
 // AliAnalysisTaskUniFlowMultiStrange
@@ -134,10 +118,34 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fPDGMassK0s(TDatabasePDG::Instance()->GetParticle(310)->Mass()),
   fPDGMassLambda(TDatabasePDG::Instance()->GetParticle(3122)->Mass()),
   fEventAOD(),
+  q2Eta(0.2),
   fPVz(),
   fPIDResponse(),
   fPIDCombined(),
+  fUsePIDCorrection(0),
   fFlowWeightsFile(),
+  q2File(),
+  q2List(),
+  Stepfile(),
+  V0CalListStep(),
+  fMultV0(),
+  fhQxV0A_pfx(),
+  fhQyV0A_pfx(),
+  fhQxV0C_pfx(),
+  fhQyV0C_pfx(),
+  fPidHF(),
+  Is2018Data(kFALSE),
+  histlowq2(),
+  histhighq2(),
+  fhEventq2TPC(),
+  fhVZEROChannel(),
+  fhQxV0A(),
+  fhQxV0C(),
+  fhPsi2V0A(),
+  fhPsi2V0C(),
+  fhQyV0A(),
+  fhQyV0C(),
+  fq2CutFilePath(),  
   fArrayMC(),
   fMC(kFALSE),
   fInit(kFALSE),
@@ -162,7 +170,6 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fDumpTObjectTable(kFALSE),
   fSampling(kFALSE),
   fFillQA(kTRUE),
-  q2eta(0.2),
   fProcessSpec(),
   fFlowRFPsPtMin(0.2),
   fFlowRFPsPtMax(5.0),
@@ -185,6 +192,26 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fCentMax(0),
   fCentBinNum(0),
   fPVtxCutZ(10.0),
+
+  multESD(0),
+  nTracks(0),
+  multTPC32(0),
+  multTPC128(0),
+  multTOF(0),
+  multTrk(0),
+  multESDTPCdif(0),
+  v0Centr(0),
+  CL0Centr(0),
+  CL1Centr(0),
+  multV0Tot(0),
+  multV0On(0),
+  nITSTrkls(0),
+  nITSCls(0),
+  multTPCout(0),
+  tpcClsTot(0),
+
+
+
   fEventRejectAddPileUp(kTRUE),
   fCutChargedTrackFilterBit(96),
   fCutChargedNumTPCclsMin(70),
@@ -262,7 +289,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fCutCascadesInvMassXiMax(1.37),
   fCutCascadesInvMassOmegaMin(1.63),
   fCutCascadesInvMassOmegaMax(1.72),
-
+  //q2Gap(0.2),
 
   fQAEvents(),
   fQACharged(),
@@ -270,6 +297,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fQAV0s(),
   fQAPhi(),
   fFlowWeights(),
+ // fEventq2(),
   fListFlow(),
   IsGetq2(0),
   fhsCandK0s(),
@@ -278,7 +306,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fhsCandPhiBg(),
   fhsCandXi(),
   fhsCandOmega(),
-
+  histcent(),
   fh2Weights(),
   fh3Weights(),
   fh2AfterWeights(),
@@ -356,6 +384,17 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fhQAEventsMult128vsCentr(),
   fhQAEventsfMultTPCvsTOF(),
   fhQAEventsfMultTPCvsESD(),
+  
+  fCenCL0vsV0M(),
+  fCenCL1vsV0M(),
+  fCenCL0vsCL1(),
+  fMultV0onvsMultV0of(),
+  fSPclsvsSPDtrks(),
+  fMultV0vsMultTPCout(),
+  fMultV0vsNclsTPC(),
+
+
+
   fhQAChargedMult(),
   fhQAChargedPt(),
   fhQAChargedEta(),
@@ -428,14 +467,38 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fPDGMassLambda(TDatabasePDG::Instance()->GetParticle(3122)->Mass()),
   fEventAOD(),
   fPVz(),
+  q2Eta(0.2),
   fPIDResponse(),
   fPIDCombined(),
+  fUsePIDCorrection(0),
   fFlowWeightsFile(),
+  q2File(),
+  q2List(),
+  Stepfile(),
+  V0CalListStep(),
+  fMultV0(),
+  fhQxV0A_pfx(),
+  fhQyV0A_pfx(),
+  fhQxV0C_pfx(),
+  fhQyV0C_pfx(),
+  fPidHF(),
+  Is2018Data(kFALSE),
+  histlowq2(),
+  histhighq2(),
+  fhEventq2TPC(),
+  histcent(),
+  fhVZEROChannel(),
+  fhQxV0A(),
+  fhQxV0C(),
+  fhPsi2V0A(),
+  fhPsi2V0C(),
+  fhQyV0A(),
+  fhQyV0C(),
+  fq2CutFilePath(),
   fArrayMC(),
   fMC(kFALSE),
   fInit(kFALSE),
   fIndexSampling(0),
-  q2eta(0.2),
   fIndexCentrality(-1),
   fEventCounter(0),
   fNumEventsAnalyse(50),
@@ -478,6 +541,24 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fCentMax(0),
   fCentBinNum(0),
   fPVtxCutZ(10.0),
+
+  multESD(0),
+  nTracks(0),
+  multTPC32(0),
+  multTPC128(0),
+  multTOF(0),
+  multTrk(0),
+  multESDTPCdif(0),
+  v0Centr(0),
+  CL0Centr(0),
+  CL1Centr(0),
+  multV0Tot(0),
+  multV0On(0),
+  nITSTrkls(0),
+  nITSCls(0),
+  multTPCout(0),
+  tpcClsTot(0),
+
   fEventRejectAddPileUp(kTRUE),
   fCutChargedTrackFilterBit(96),
   fCutChargedNumTPCclsMin(70),
@@ -527,9 +608,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fCutV0sLambdaProtonNumTPCSigmaMax(5.0),
   fCutPhiInvMassMin(0.99),
   fCutPhiInvMassMax(1.07),
-
-
-
+  //q2Gap(0.2),
   fXiPseMin(-0.8),
   fXiPseMax(0.8),
   fV0RadiusXiMin(0.9),
@@ -557,10 +636,6 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fCutCascadesInvMassXiMax(1.37),
   fCutCascadesInvMassOmegaMin(1.63),
   fCutCascadesInvMassOmegaMax(1.72),
-
-
-
-
   IsGetq2(0),
   fQAEvents(),
   fQACharged(),
@@ -568,6 +643,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fQAV0s(),
   fQAPhi(),
   fFlowWeights(),
+//  fEventq2(),
   fListFlow(),
   fhsCandK0s(),
   fhsCandLambda(),
@@ -652,6 +728,16 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fhQAEventsMult128vsCentr(),
   fhQAEventsfMultTPCvsTOF(),
   fhQAEventsfMultTPCvsESD(),
+
+  fCenCL0vsV0M(),
+  fCenCL1vsV0M(),
+  fCenCL0vsCL1(),
+  fMultV0onvsMultV0of(),
+  fSPclsvsSPDtrks(),
+  fMultV0vsMultTPCout(),
+  fMultV0vsNclsTPC(),
+
+
   fhQAChargedMult(),
   fhQAChargedPt(),
   fhQAChargedEta(),
@@ -759,6 +845,7 @@ AliAnalysisTaskUniFlowMultiStrange::~AliAnalysisTaskUniFlowMultiStrange()
   if(fQAPhi) delete fQAPhi;
   if(fQAV0s) delete fQAV0s;
   if(q2List) delete q2List;
+  if(V0CalListStep) delete V0CalListStep;
   DumpTObjTable("Destructor: end");
 
 }
@@ -954,6 +1041,8 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::InitializeTask()
   fPIDCombined->SetSelectedSpecies(fPIDNumSpecies);
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF); // setting TPC + TOF mask
 
+  fPidHF=new AliAODPidHF();
+  fPidHF->SetPidResponse(fPIDResponse);
   // checking consistency of PartSpecies with AliPID::EParticleType
   if((Int_t) kPion != (Int_t) AliPID::kPion || (Int_t) kKaon != (Int_t) AliPID::kKaon || (Int_t) kProton != (Int_t) AliPID::kProton)
   {
@@ -1065,6 +1154,16 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::InitializeTask()
 
 //   fProcessSpec[kXi] = kTRUE;
 //   fProcessSpec[kOmega] = kTRUE;  
+
+   //Stepfile =TFile::Open("alien:///alice/cern.ch/user/z/zhuy/V0Cal.root");
+   //  Stepfile = TFile::Open("V0Cal.root","READ");
+   /*  V0CalListStep=(TList*)Stepfile->Get("V0CalStep");
+     fMultV0=(TH1D*)(V0CalListStep->FindObject("Gain equalisation"));
+     fhQxV0A_pfx=(TProfile*)(V0CalListStep->FindObject("fhQxV0A_pfx"));
+     fhQyV0A_pfx=(TProfile*)(V0CalListStep->FindObject("fhQyV0A_pfx"));
+     fhQxV0C_pfx=(TProfile*)(V0CalListStep->FindObject("fhQxV0C_pfx"));
+     fhQyV0C_pfx=(TProfile*)(V0CalListStep->FindObject("fhQyV0C_pfx"));
+   */
   // checking for weights source file
   if(fFlowUseWeights && !fFlowWeightsPath.EqualTo(""))
   {
@@ -1126,6 +1225,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   fPIDResponse = inputHandler->GetPIDResponse();
   if(!fPIDResponse) { AliFatal("AliPIDResponse not attached!"); return; }
 
+
   // loading array with MC particles
   if(fMC)
   {
@@ -1137,15 +1237,71 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   fhEventCounter->Fill("Input",1);
 
   // Fill event QA BEFORE cuts
-  if(fFillQA) { FillEventsQA(0); }
+   if(fFillQA) { FillEventsQA(0); }
+  
+   Bool_t bEventSelected = IsEventSelected();
+ 
 
-  Bool_t bEventSelected = IsEventSelected();
-  // if(!IsEventSelected()) { return; }
+//   if(!IsEventSelected()) { return; }
+     DumpTObjTable("UserExec: after event selection");
+        if(!bEventSelected) { return; }
+         fhEventCounter->Fill("Event OK",1);
+  
+  multESD = ((AliAODHeader*) fEventAOD->GetHeader())->GetNumberOfESDTracks();
+  nTracks = fEventAOD->GetNumberOfTracks();
+  
+  Int_t nmultTPCout =0;
+  Int_t nmultTPC32 =0;
+  Int_t nmultTrk=0;
+  Int_t nmultTOF=0;
+  Int_t nmultTPC128=0;
 
-  DumpTObjTable("UserExec: after event selection");
-  if(!bEventSelected) { return; }
+  for(Int_t it(0); it < nTracks; it++)
+  {
 
-  fhEventCounter->Fill("Event OK",1);
+    AliAODTrack* track = (AliAODTrack*) fEventAOD->GetTrack(it);
+    if(!track) { continue; }
+    if (track->GetFlags()&AliESDtrack::kTPCout)
+         {nmultTPCout++;}
+    
+    if(track->TestFilterBit(32))
+    {
+      nmultTPC32++;
+      if(TMath::Abs(track->GetTOFsignalDz()) <= 10.0 && track->GetTOFsignal() >= 12000.0 && track->GetTOFsignal() <= 25000.0) { nmultTOF++; }
+      if((TMath::Abs(track->Eta())) < fFlowEtaMax && (track->GetTPCNcls() >= fCutChargedNumTPCclsMin) && (track->Pt() >= fFlowRFPsPtMin) && (track->Pt() < fFlowRFPsPtMax)) { nmultTrk++; }
+    }
+
+    if(track->TestFilterBit(128)) { nmultTPC128++; }
+  }
+
+   multTPCout=nmultTPCout;
+   multTPC32=nmultTPC32;
+   multTOF=nmultTOF;
+   multTrk=nmultTrk;
+   multTPC128=nmultTPC128;
+
+
+   AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
+   if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return;}
+   v0Centr = multSelection->GetMultiplicityPercentile("V0M");
+   CL0Centr = multSelection->GetMultiplicityPercentile("CL0");
+   CL1Centr = multSelection->GetMultiplicityPercentile("CL1");
+
+    AliAODVZERO* AODV0 = fEventAOD->GetVZEROData();
+    Float_t multV0a = AODV0->GetMTotV0A();
+    Float_t multV0c = AODV0->GetMTotV0C();
+    multV0Tot = multV0a + multV0c;
+    UShort_t multV0aOn = AODV0->GetTriggerChargeA();
+    UShort_t multV0cOn = AODV0->GetTriggerChargeC();
+    multV0On = multV0aOn + multV0cOn;
+    AliAODTracklets* AODTrkl = (AliAODTracklets*)fEventAOD->GetTracklets();
+    nITSTrkls = AODTrkl->GetNumberOfTracklets();
+    Int_t nITSClsLy0 = fEventAOD->GetNumberOfITSClusters(0);
+    Int_t nITSClsLy1 = fEventAOD->GetNumberOfITSClusters(1);
+    nITSCls = nITSClsLy0 + nITSClsLy1;
+
+    tpcClsTot = fEventAOD->GetNumberOfTPCClusters();
+    
 
   // checking the run number for aplying weights & loading TList with weights
   if(fFlowUseWeights && fFlowRunByRunWeights && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
@@ -1161,7 +1317,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   // checking if there is at least 5 particles: needed to "properly" calculate correlations
   if(fVector[kRefs]->size() < 5) { return; }
   fhEventCounter->Fill("#RPFs OK",1);
-
+/*
   // estimate centrality & assign indexes (centrality/percentile, sampling, ...)
   fIndexCentrality = GetCentralityIndex();
   if(fIndexCentrality < 0) { return; }
@@ -1177,20 +1333,77 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
 
   // extract PV-z for weights
   fPVz = fEventAOD->GetPrimaryVertex()->GetZ();
-
+*/
   // Fill QA AFTER cuts (i.e. only in selected events)
   if(fFillQA) { FillEventsQA(1); }
-  if(IsGetq2){
-  fhEventq2TPC->Fill(Getq2(q2eta),fIndexCentrality);
-  return;
+
+
+  //new cut for V0 online and v0 offline ; SPD clusters and SPD tracklets
+  
+  Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
+  TF1*fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+  fV0CutPU->SetParameters(parV0);
+   if(Is2018Data){if (multV0On < fV0CutPU->Eval(multV0Tot)){return;}}
+  
+  TF1*fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
+   if(Is2018Data){if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)){return;}}
+
+  if(fFillQA) {FillEventsQA(2); }
+
+  Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
+
+  if (nclsDif < 100000){if(fFillQA) { FillEventsQA(3);}}
+  
+  if (nclsDif < 200000){if(fFillQA) { FillEventsQA(4);}}
+
+  
+  Float_t mV0TPCclsCut=-2000.+(0.013*tpcClsTot)+(1.25e-9*tpcClsTot*tpcClsTot);
+  if (multV0Tot>mV0TPCclsCut){ if(fFillQA) {FillEventsQA(5);}}
+  if(Is2018Data){ 
+    if (nclsDif >200000){return;}
+   }
+  histcent->Fill(fIndexCentrality);
+  fIndexCentrality = GetCentralityIndex();
+  if(fIndexCentrality < 0) { return; }
+  if(fCentMin > 0 && fIndexCentrality < fCentMin) { return; }
+  if(fCentMax > 0 && fIndexCentrality > fCentMax) { return; }
+ 
+  if(fIndexCentrality > 0 && fIndexCentrality< 10){
+     fPidHF->EnableNsigmaTPCDataCorr(fEventAOD->GetRunNumber(),AliAODPidHF::kPbPb010);
+     }
+
+  if(fIndexCentrality > 30 && fIndexCentrality< 50){
+     fPidHF->EnableNsigmaTPCDataCorr(fEventAOD->GetRunNumber(),AliAODPidHF::kPbPb3050);
+     }
+ 
+  if(fIndexCentrality < 30) { return; }
+  if(fIndexCentrality > 50) { return; } 
+
+   fhEventCounter->Fill("Cent/Mult OK",1);
+
+  // here events are selected
+    fhEventCounter->Fill("Selected",1);
+  
+  // event sampling
+    fIndexSampling = GetSamplingIndex();
+  
+  // extract PV-z for weights
+    fPVz = fEventAOD->GetPrimaryVertex()->GetZ();
+
+
+
+  if (IsGetq2){
+  fhEventq2TPC->Fill(Getq2(q2Eta),fIndexCentrality);
+  //return;
   }
-  double lowq2 =histlowq2->GetBinContent(histlowq2->GetXaxis()->FindBin(fIndexCentrality));
-  double highq2 =histhighq2->GetBinContent(histhighq2->GetXaxis()->FindBin(fIndexCentrality));
+  //VZEROCalbration();
   if (IsESESmallq2){
-    if (Getq2(q2eta) >lowq2){ return;}
+     double lowq2 =histlowq2->GetBinContent(histlowq2->GetXaxis()->FindBin(fIndexCentrality));
+    if (Getq2(q2Eta) >lowq2){ return;}
   }
   if (IsESELargeq2){
-    if (Getq2(q2eta) <highq2){ return;}
+     double highq2 =histhighq2->GetBinContent(histhighq2->GetXaxis()->FindBin(fIndexCentrality));
+    if (Getq2(q2Eta) <highq2){ return;}
   }
 
   // filling Charged QA histos
@@ -1221,6 +1434,8 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   }
 
   // Filtering other species
+  //
+
   if(fProcessSpec[kPion] || fProcessSpec[kKaon] || fProcessSpec[kProton]) { FilterPID(); }
   if(fProcessSpec[kK0s] || fProcessSpec[kLambda]) { FilterV0s(); }
   if(fProcessSpec[kPhi]) { FilterPhi(); }
@@ -1238,13 +1453,13 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   // particles (Phi, V0s) because here new AliPicoTracks are created
   ClearVectors();
 
+
   // extracting run number here to store run number from previous event (for current run number use info in AliAODEvent)
   fRunNumber = fEventAOD->GetRunNumber();
 
   DumpTObjTable("UserExec: end");
 
   if(!bProcessed) return;
-  // posting data (mandatory)
   Int_t i = 0;
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) { PostData(++i, fListFlow[iSpec]); }
   PostData(++i, fQAEvents);
@@ -1253,6 +1468,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   PostData(++i, fQAV0s);
   PostData(++i, fQAPhi);
   PostData(++i, fFlowWeights);
+ // PostData(++i, fEventq2);
 
   return;
 }
@@ -1267,15 +1483,22 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventSelected()
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
   UInt_t fSelectMask = inputHandler->IsEventSelected();
-  if(!(fSelectMask & fTrigger)) { return kFALSE; }
+  
+   if(!Is2018Data){if(!(fSelectMask & fTrigger)) { return kFALSE;}}
+  if(Is2018Data){if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT7))) {
+  return kFALSE; }}
 
   // events passing physics && trigger selection
   fhEventCounter->Fill("Physics selection OK",1);
 
   // events passing AliEventCuts selection
+  if(Is2018Data){
+  fEventCuts.SetManualMode(1);
+  fEventCuts.SetupPbPb2018();
+  }
+
   if(!fEventCuts.AcceptEvent(fEventAOD)) { return kFALSE; }
   fhEventCounter->Fill("EventCuts OK",1);
-
   // Additional pile-up rejection cuts for LHC15o dataset
   if(fColSystem == kPbPb && fEventRejectAddPileUp && IsEventRejectedAddPileUp()) { return kFALSE; }
 
@@ -1290,13 +1513,14 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventRejectedAddPileUp() const
 
   Bool_t bIs17n = kFALSE;
   Bool_t bIs15o = kFALSE;
-
+  Bool_t bIs18qandr = kFALSE;
+  Double_t multESDTPCdif = 0.0;
   Int_t iRunNumber = fEventAOD->GetRunNumber();
   if(iRunNumber >= 244824 && iRunNumber <= 246994) { bIs15o = kTRUE; }
   else if(iRunNumber == 280235 || iRunNumber == 20234) { bIs17n = kTRUE; }
+  else if(iRunNumber >= 295500 && iRunNumber <= 297595) { bIs18qandr = kTRUE; }
   else { return kFALSE; }
-
-  // recounting multiplcities
+/*  // recounting multiplcities
   const Int_t multESD = ((AliAODHeader*) fEventAOD->GetHeader())->GetNumberOfESDTracks();
   const Int_t nTracks = fEventAOD->GetNumberOfTracks();
   Int_t multTPC32 = 0;
@@ -1304,7 +1528,7 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventRejectedAddPileUp() const
   Int_t multTOF = 0;
   Int_t multTrk = 0;
   Double_t multESDTPCdif = 0.0;
-  Double_t v0Centr = 0.0;
+  //Double_t v0Centr = 0.0;
 
   for(Int_t it(0); it < nTracks; it++)
   {
@@ -1321,15 +1545,18 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventRejectedAddPileUp() const
     if(track->TestFilterBit(128)) { multTPC128++; }
   }
 
-  if(bIs17n)
+*/
+/*
+if(bIs17n)
   {
     multESDTPCdif = multESD - (6.6164 + 3.64583*multTPC128 + 0.000126397*multTPC128*multTPC128);
     if(multESDTPCdif > 1000) { return kTRUE; }
     if( ((AliAODHeader*) fEventAOD->GetHeader())->GetRefMultiplicityComb08() < 0) { return kTRUE; }
   }
-
-  if(bIs15o)
+  
+  if(bIs15o || bIs18qandr)
   {
+
     multESDTPCdif = multESD - 3.38*multTPC128;
     if(multESDTPCdif > 500) { return kTRUE; }
 
@@ -1341,29 +1568,25 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventRejectedAddPileUp() const
     fMultTOFHighCut.SetParameters(-1.0178, 0.333132, 9.10282e-05, -1.61861e-08, 1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15);
     if(Double_t(multTOF) > fMultTOFHighCut.Eval(Double_t (multTPC32))) { return kTRUE; }
 
-    AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
-    if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return -1; }
-    v0Centr = multSelection->GetMultiplicityPercentile("V0M");
+  //  AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
+  //  if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return -1; }
+  //  v0Centr = multSelection->GetMultiplicityPercentile("V0M");
 
     TF1 fMultCentLowCut = TF1("fMultCentLowCut", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
     fMultCentLowCut.SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
     if(Double_t(multTrk) < fMultCentLowCut.Eval(v0Centr)) { return kTRUE; }
   }
+*/
 
-  // QA Plots
-  if(fFillQA) {
-    fhQAEventsfMult32vsCentr->Fill(v0Centr, multTrk);
-    fhQAEventsMult128vsCentr->Fill(v0Centr, multTPC128);
-    fhQAEventsfMultTPCvsTOF->Fill(multTPC32, multTOF);
-    fhQAEventsfMultTPCvsESD->Fill(multTPC128, multESD);
+ // QA Plots
+/*  if(fFillQA) {
+
+    fhQAEventsfMult32vsCentr[1]->Fill(v0Centr, multTrk);
+    fhQAEventsMult128vsCentr[1]->Fill(v0Centr, multTPC128);
+    fhQAEventsfMultTPCvsTOF[1]->Fill(multTPC32, multTOF);
+    fhQAEventsfMultTPCvsESD[1]->Fill(multTPC128, multESD);
   }
-
-  // fCentralityDis->Fill(centrV0);
-  // fV0CentralityDis->Fill(cent);
-  //
-  // fCentralityV0MCL1->Fill(v0Centr, cl1Centr);
-  // fCentralityV0MCL0->Fill(v0Centr, cl0Centr);
-  // fCentralityCL0CL1->Fill(cl0Centr, cl1Centr);
+*/
 
   return kFALSE;
 }
@@ -1469,7 +1692,19 @@ void AliAnalysisTaskUniFlowMultiStrange::FillEventsQA(const Int_t iQAindex) cons
   fhQAEventsNumContrPV[iQAindex]->Fill(iNumContr);
   fhQAEventsNumSPDContrPV[iQAindex]->Fill(iNumContrSPD);
   fhQAEventsDistPVSPD[iQAindex]->Fill(TMath::Abs(dVtxZ - spdVtxZ));
-
+   
+  fhQAEventsfMult32vsCentr[iQAindex]->Fill(v0Centr, multTrk);
+  fhQAEventsMult128vsCentr[iQAindex]->Fill(v0Centr, multTPC128);
+  fhQAEventsfMultTPCvsTOF[iQAindex]->Fill(multTPC32, multTOF);
+  fhQAEventsfMultTPCvsESD[iQAindex]->Fill(multTPC128, multESD);
+  fCenCL0vsV0M[iQAindex]->Fill(v0Centr, CL0Centr);
+  fCenCL1vsV0M[iQAindex]->Fill(v0Centr, CL1Centr);
+  fCenCL0vsCL1[iQAindex]->Fill(CL0Centr, CL1Centr);
+  fMultV0onvsMultV0of[iQAindex]->Fill(multV0Tot, multV0On);
+  fSPclsvsSPDtrks[iQAindex]->Fill(nITSTrkls, nITSCls);
+  fMultV0vsMultTPCout[iQAindex]->Fill(multTPCout, multV0Tot);
+  fMultV0vsNclsTPC[iQAindex]->Fill(tpcClsTot, multV0Tot);
+ 
   // // event / physics selection criteria
   // AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   // AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
@@ -2324,13 +2559,16 @@ void AliAnalysisTaskUniFlowMultiStrange::FilterPhi() const
   // If track passes all requirements, the relevant properties (pT, eta, phi) are stored
   // in FlowPart struct  and pushed to relevant vector container.
   // *************************************************************
+  
   Int_t iNumKaons = (Int_t) fVector[kKaon]->size();
   // check if there are at least 2 selected kaons in event (minimum for a single phi reconstruction)
   if(iNumKaons < 2) { return; }
-
   // start Phi reconstruction
   Int_t iNumBG = 0;
   for(Int_t iKaon1(0); iKaon1 < iNumKaons; iKaon1++) {
+  
+
+
     AliAODTrack* kaon1 = dynamic_cast<AliAODTrack*>(fVector[kKaon]->at(iKaon1));
     if(!kaon1) { continue; }
 
@@ -3354,6 +3592,7 @@ Int_t AliAnalysisTaskUniFlowMultiStrange::GetCentralityIndex() const
   if(fCentEstimator == kRFP) { iCentralityIndex = fVector[kRefs]->size(); }
   else {
     AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
+//    multSelection->SetThisEventTriggered(1);
     if(!multSelection) {
       AliError("AliMultSelection object not found! Returning -1");
       return -1;
@@ -3598,11 +3837,16 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
   // create output objects
   // this function is called ONCE at the start of your analysis (RUNTIME)
   // *************************************************************
- if( IsESESmallq2 || IsESELargeq2){
+
+  if( IsESESmallq2 || IsESELargeq2){
   q2File = TFile::Open(fq2CutFilePath);
   q2List=(TList*)q2File->Get("q2cut");
-  histlowq2 = (TH1D*)(q2List->FindObject("Lowq2"));
-  histhighq2 = (TH1D*)(q2List->FindObject("Highq2"));
+   if(!q2List) {
+    std::cout<<"q2 list are not available!"<<std::endl;
+    return;
+   }
+   histlowq2 = (TH1D*)(q2List->FindObject("Lowq2"));
+   histhighq2 = (TH1D*)(q2List->FindObject("Highq2"));
  }
   DumpTObjTable("UserCreateOutputObjects: start");
 
@@ -3626,6 +3870,9 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
   fFlowWeights = new TList();
   fFlowWeights->SetOwner(kTRUE);
   fFlowWeights->SetName("fFlowWeights");
+//  fEventq2 = new TList();
+//  fEventq2->SetOwner(kTRUE);
+  //fEventq2->SetName("fEventq2");
   fQAEvents = new TList();
   fQAEvents->SetOwner(kTRUE);
   fQACharged = new TList();
@@ -3843,9 +4090,6 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
       fListFlow[kOmega]->Add(fhsCandOmega);
     }
 
-
-
-
   } // end-if {fRunMode != fSkipFlow || iNumCorrTask > 0 }
 
   // creating GF weights
@@ -3955,8 +4199,10 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
     fQAEvents->Add(fhEventCentrality);
     fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, 150,0,150);
     fQAEvents->Add(fh2EventCentralityNumRefs);
-
-    if(fEventRejectAddPileUp)
+   
+    histcent = new TH1D ("cent","Event centrality; centrality; N", 100,0,100);
+    fQAEvents->Add(histcent); 
+/*   if(fEventRejectAddPileUp)
     {
       fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
       fQAEvents->Add(fhQAEventsfMult32vsCentr);
@@ -3967,7 +4213,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
       fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
       fQAEvents->Add(fhQAEventsfMultTPCvsESD);
     }
-
+*/
     // charged (tracks) histograms
     fhRefsMult = new TH1D("fhRefsMult","RFPs: Multiplicity; multiplicity", 200,0,1000);
     fQACharged->Add(fhRefsMult);
@@ -4074,7 +4320,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
     } // end-if {fProcessSpec[kK0s] || fProcessSpec[kLambda]}
 
     // ####  Selection QA (2-step)
-    TString sQAindex[fiNumIndexQA] = {"Before", "After"};
+    TString sQAindex[fiNumIndexQA] = {"Raw", "AfterAliEventCut","AfterNewCut","AfterV0_TPCClus_GA_loose","AfterV0_TPCClus_GA_tight","AfterV0_TPCClus_HF"};
     for(Int_t iQA(0); iQA < fiNumIndexQA; ++iQA)
     {
       // EVENTs QA histograms
@@ -4088,6 +4334,43 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
       fQAEvents->Add(fhQAEventsDistPVSPD[iQA]);
       fhQAEventsSPDresol[iQA] = new TH1D(Form("fhQAEventsSPDresol_%s",sQAindex[iQA].Data()), "QA Events: SPD resolution", 150,0,15);
       fQAEvents->Add(fhQAEventsSPDresol[iQA]);
+
+
+//=========================================improve for 2018 data=======================================
+
+      fCenCL0vsV0M[iQA] = new TH2F(Form("fCenCL0vsV0M_%s",sQAindex[iQA].Data()), "; centrality V0M; centrality CL0", 100, 0, 100, 100, 0, 100);
+      fQAEvents->Add(fCenCL0vsV0M[iQA]);
+
+      fCenCL1vsV0M[iQA] = new TH2F(Form("fCenCL1vsV0M_%s",sQAindex[iQA].Data()), "; centrality V0M; centrality CL1", 100, 0, 100, 100, 0, 100);
+      fQAEvents->Add(fCenCL1vsV0M[iQA]);
+
+      fCenCL0vsCL1[iQA] = new TH2F(Form("fCenCL0vsCL1_%s",sQAindex[iQA].Data()), "; centrality CL1; centrality CL0", 100, 0, 100, 100, 0, 100);
+      fQAEvents->Add(fCenCL0vsCL1[iQA]);
+
+      fSPclsvsSPDtrks[iQA] = new TH2I(Form("fSPclsvsSPDtrks_%s",sQAindex[iQA].Data()), "; SPD N_{tracklets}; SPD N_{clusters}", 1000, -0.5, 6999.5, 1000, -0.5, 24999.5);
+      fQAEvents->Add(fSPclsvsSPDtrks[iQA]);
+
+      fMultV0onvsMultV0of[iQA] = new TH2F(Form("fMultV0onvsMultV0of_%s",sQAindex[iQA].Data()), "; V0 offline; V0 online", 1000, 0, 50000, 1000, 0, 50000);
+      fQAEvents->Add(fMultV0onvsMultV0of[iQA]);
+      
+      fMultV0vsMultTPCout[iQA] = new TH2F(Form("fMultV0vsMultTPCout_%s",sQAindex[iQA].Data()), "; TPC out; V0 multiplicity", 1000, 0, 30000, 1000, 0, 40000);
+      fQAEvents->Add(fMultV0vsMultTPCout[iQA]);
+
+      fMultV0vsNclsTPC[iQA] = new TH2F(Form("fMultV0vsNclsTPC_%s",sQAindex[iQA].Data()), "; N_{cls}; V0 multiplicity", 1000, 0, 8000000, 1000, 0, 50000);
+      fQAEvents->Add(fMultV0vsNclsTPC[iQA]);
+      
+      fhQAEventsfMult32vsCentr[iQA] = new TH2D(Form("fhQAEventsfMult32vsCentr_%s",sQAindex[iQA].Data()), "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
+      fQAEvents->Add(fhQAEventsfMult32vsCentr[iQA]);
+      fhQAEventsMult128vsCentr[iQA] = new TH2D(Form("fhQAEventsfMult128vsCentr_%s",sQAindex[iQA].Data()), "; centrality V0M; TPC multiplicity (FB128)", 100, 0, 100, 100, 0, 5000);
+      fQAEvents->Add(fhQAEventsMult128vsCentr[iQA]);
+      fhQAEventsfMultTPCvsTOF[iQA] = new TH2D(Form("fhQAEventsfMultTPCvsTOF_%s",sQAindex[iQA].Data()), "; TPC FB32 multiplicity; TOF multiplicity", 200, 0, 4000, 200, 0, 2000);
+      fQAEvents->Add(fhQAEventsfMultTPCvsTOF[iQA]);
+      fhQAEventsfMultTPCvsESD[iQA] = new TH2D(Form("fhQAEventsfMultTPCvsESD_%s",sQAindex[iQA].Data()), "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
+      fQAEvents->Add(fhQAEventsfMultTPCvsESD[iQA]);
+
+//==========================================================================================================
+
+
 
       // Charged tracks QA
       fhQAChargedMult[iQA] = new TH1D(Form("fhQAChargedMult_%s",sQAindex[iQA].Data()),"QA Charged: Number of Charged in selected events; #it{N}^{Charged}", 150,0,1500);
@@ -4273,6 +4556,20 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
     } // end-if{fMC}
   } // end-if {fFillQA}
   fhEventq2TPC = new TH2D("fhEventq2TPC","fhEventq2TPC;q_{2}; Centrality", 1000,0,10,fCentBinNum,fCentMin,fCentMax);
+  fhVZEROChannel = new TH2D ("fhVZEROChannel","fhVZEROChannel; Channel; Multiplicity;", 64,0,64,1500,0,1500);  
+  fhQxV0A =new TH2D("fhQxV0A","fhQxV0A; Centrality;QxV0A",fCentBinNum,fCentMin,fCentMax, 2000,-1000,1000);
+  fhQxV0C =new TH2D("fhQxV0C","fhQxV0A;Centrality;QxV0C", fCentBinNum,fCentMin,fCentMax,2000,-1000,1000);
+  fhQyV0A =new TH2D("fhQyV0A","fhQyV0A;Centrality;QyV0A", fCentBinNum,fCentMin,fCentMax,2000,-1000,1000);
+  fhQyV0C =new TH2D("fhQyV0C","fhQyV0C;Centrality;QyV0C", fCentBinNum,fCentMin,fCentMax,2000,-1000,1000);
+  fhPsi2V0A=new TH1D("fhPsi2V0A","fhPsi2V0A;#Psi_{V0A};N", 64,-0.5*(TMath::Pi()),0.5*(TMath::Pi()));
+  fhPsi2V0C=new TH1D("fhPsi2V0C","fhPsi2V0C;#Psi_{V0C};N", 64,-0.5*(TMath::Pi()),0.5*(TMath::Pi()));
+  fQAEvents->Add(fhQxV0A);
+  fQAEvents->Add(fhQyV0A);
+  fQAEvents->Add(fhQxV0C);
+  fQAEvents->Add(fhQyV0C);
+  fQAEvents->Add(fhPsi2V0A);
+  fQAEvents->Add(fhPsi2V0C);
+  fQAEvents->Add(fhVZEROChannel);
   fQAEvents->Add(fhEventq2TPC);
 // posting data (mandatory)
   Int_t i = 0;
@@ -4283,6 +4580,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
   PostData(++i, fQAV0s);
   PostData(++i, fQAPhi);
   PostData(++i, fFlowWeights);
+  //PostData(++i, fEventq2);
   DumpTObjTable("UserCreateOutputObjects: end");
 
 
@@ -4539,24 +4837,39 @@ void  AliAnalysisTaskUniFlowMultiStrange::IsCascadexi( const AliAODcascade* xi, 
     Bool_t isNegProtonForTPC = kFALSE;
     Bool_t isPosProtonForTPC = kFALSE;
 
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kKaon))<fXiPIDsigma)
-       isBachelorKaonForTPC = kTRUE;
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kPion))<fXiPIDsigma)
-       isBachelorPionForTPC = kTRUE;
 
+    Double_t NumBKaon=fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kKaon);
+    Double_t NumBPion=fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kPion);
+    Double_t NumNPion=fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kPion);
+    Double_t NumNProton=fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kProton);
+    Double_t NumPPion=fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kPion);
+    Double_t NumPProton=fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kProton);
+
+   if (fUsePIDCorrection ){
+    fPidHF->GetnSigmaTPC(bTrkXi,3,NumBKaon);
+    fPidHF->GetnSigmaTPC(bTrkXi,2,NumBPion);
+    fPidHF->GetnSigmaTPC(nTrkXi,2,NumNPion);
+    fPidHF->GetnSigmaTPC(nTrkXi,4,NumNProton);
+    fPidHF->GetnSigmaTPC(pTrkXi,2,NumPPion);
+    fPidHF->GetnSigmaTPC(pTrkXi,4,NumPProton);
+    }
+     if(TMath::Abs(NumBKaon)<fXiPIDsigma)
+       {isBachelorKaonForTPC = kTRUE;}
+
+    if(TMath::Abs(NumBPion)<fXiPIDsigma)
+       {isBachelorPionForTPC = kTRUE;}
      //Negative V0 daughter
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kPion))<fXiPIDsigma)
-       isNegPionForTPC = kTRUE;
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kProton))<fXiPIDsigma)
-       isNegProtonForTPC = kTRUE;
-
+    if(TMath::Abs(NumNPion)<fXiPIDsigma)
+       {isNegPionForTPC = kTRUE;}
+    if(TMath::Abs(NumNProton)<fXiPIDsigma)
+       {isNegProtonForTPC = kTRUE;}
      //Positive V0 daughter
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kPion))< fXiPIDsigma)
-       isPosPionForTPC = kTRUE;
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kProton))<fXiPIDsigma)
-       isPosProtonForTPC = kTRUE;
+    if(TMath::Abs(NumPPion)< fXiPIDsigma)
+       {isPosPionForTPC = kTRUE;}
+    if(TMath::Abs(NumPProton)<fXiPIDsigma)
+       {isPosProtonForTPC = kTRUE;} 
 
-      strangePar=4000;
+     strangePar=4000;
 
     if(xi->ChargeXi() < 0){
         if(isPosProtonForTPC && isNegPionForTPC && isBachelorPionForTPC){
@@ -4682,6 +4995,7 @@ Double_t AliAnalysisTaskUniFlowMultiStrange::GetFlowWeightCascade(const AliAODca
   if(dWeight <= 0.0) { dWeight = 1.0; }
   return dWeight;
 }
+
 AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
 fbDoRefs(0),
 fbDoPOIs(0),
@@ -4692,11 +5006,7 @@ fdGaps(std::vector<Double_t>()),
 fsName(TString()),
 fsLabel(TString())
 {};
-
-
 // ============================================================================
-
-
 AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask(Bool_t refs, Bool_t pois, std::vector<Int_t> harm, std::vector<Double_t> gaps) :
 fbDoRefs(refs),
 fbDoPOIs(pois),
@@ -4737,6 +5047,159 @@ fsLabel(TString())
     }    
     fsName = sName;
     fsLabel = sLabel;
+}
+
+void AliAnalysisTaskUniFlowMultiStrange::CorrTask::Print() const
+{
+  printf("CorrTask::Print() : '%s' (%s) | fbDoRefs %d | fbDoPOIs %d | fiHarm[%d] = { ",fsName.Data(), fsLabel.Data(), fbDoRefs, fbDoPOIs, fiNumHarm);
+  for(Int_t i(0); i < fiNumHarm; ++i) { printf("%d ",fiHarm[i]); }
+  printf("} | fgGaps[%d] = { ",fiNumGaps);
+  for(Int_t i(0); i < fiNumGaps; ++i) { printf("%0.2f ",fdGaps[i]); }
+  printf("}\n");
+}
+
+void AliAnalysisTaskUniFlowMultiStrange::VZEROCalbration() 
+{
+   AliAODVZERO* AODVZERO = fEventAOD->GetVZEROData();
+   if (!Stepfile){
+    ResetFlowVector(fFlowVecQpos);
+   for (Int_t iV0 = 0; iV0 < 32; iV0++) {
+     Float_t multv0 = AODVZERO->GetMultiplicity(iV0);
+     fhVZEROChannel->Fill(iV0,multv0);
+     Double_t phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
+     for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
+            for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+                {
+                    Double_t dCos = TMath::Power(multv0,iPower) * TMath::Cos(iHarm * phiV0);
+                    Double_t dSin = TMath::Power(multv0,iPower) * TMath::Sin(iHarm * phiV0);
+                    fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                }
+        }
+        Double_t QxV0C = Q(2, 1).Re();
+        Double_t QyV0C = Q(2, 1).Im();
+        fhQxV0C->Fill(fIndexCentrality,QyV0C);
+        fhQyV0C->Fill(fIndexCentrality,QyV0C);   
+        Double_t Psi2V0C = TMath::ATan2(QyV0C,QxV0C)/2;
+        fhPsi2V0C->Fill(Psi2V0C);
+     ResetFlowVector(fFlowVecQpos);
+     for (Int_t iV0 = 32; iV0 < 64; iV0++) {
+       Float_t multv0 = AODVZERO->GetMultiplicity(iV0);
+       Double_t phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
+         for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
+            for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+                {
+                    Double_t dCos = TMath::Power(multv0,iPower) * TMath::Cos(iHarm * phiV0);
+                    Double_t dSin = TMath::Power(multv0,iPower) * TMath::Sin(iHarm * phiV0);
+                    fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                }
+        fhVZEROChannel->Fill(iV0,multv0);
+     }
+        Double_t QxV0A = Q(2, 1).Re();
+        Double_t QyV0A = Q(2, 1).Im();
+        fhQxV0A->Fill(fIndexCentrality,QxV0A);
+        fhQyV0A->Fill(fIndexCentrality,QyV0A);
+        Double_t Psi2V0A = TMath::ATan2(QyV0A,QxV0A)/2;
+        fhPsi2V0A->Fill(Psi2V0A);
+   return;
+   }
+  if (Stepfile){
+     V0CalListStep=(TList*)Stepfile->Get("V0CalStep");
+     fMultV0=(TH1D*)(V0CalListStep->FindObject("Gain equalisation"));
+     fhQxV0A_pfx=(TProfile*)(V0CalListStep->FindObject("fhQxV0A_pfx"));
+     fhQyV0A_pfx=(TProfile*)(V0CalListStep->FindObject("fhQyV0A_pfx"));
+     fhQxV0C_pfx=(TProfile*)(V0CalListStep->FindObject("fhQxV0C_pfx"));
+     fhQyV0C_pfx=(TProfile*)(V0CalListStep->FindObject("fhQyV0C_pfx"));
+
+
+ if (fMultV0){
+   ResetFlowVector(fFlowVecQpos);
+   for (Int_t iV0 = 0; iV0 < 32; iV0++) {
+      Float_t multv0 = AODVZERO->GetMultiplicity(iV0);
+      Double_t phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
+        Double_t multCorC = -10;
+        multCorC = multv0*fMultV0->GetBinContent(iV0+1);
+         for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
+            for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+                {
+                    Double_t dCos = TMath::Power(multCorC,iPower) * TMath::Cos(iHarm * phiV0);
+                    Double_t dSin = TMath::Power(multCorC,iPower) * TMath::Sin(iHarm * phiV0);
+                    fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                }
+     fhVZEROChannel->Fill(iV0,multCorC);
+     }
+        Double_t QxV0C = Q(2, 1).Re();
+        Double_t QyV0C = Q(2, 1).Im(); 
+        Double_t Psi2V0C;
+     if(!fhQxV0A_pfx){
+        fhQxV0C->Fill(fIndexCentrality,QxV0C);
+        fhQyV0C->Fill(fIndexCentrality,QyV0C);
+        Psi2V0C = TMath::ATan2(QyV0C,QxV0C)/2;
+        fhPsi2V0C->Fill(Psi2V0C);
+      }
+     if(fhQxV0A_pfx){
+        QxV0C = QxV0C-fhQxV0C_pfx->GetBinContent(fhQxV0C_pfx->FindBin(fIndexCentrality));
+        Double_t SigmaQxV0C = fhQxV0C_pfx->GetBinError(fhQxV0C_pfx->FindBin(fIndexCentrality));
+        if(SigmaQxV0C!=0){
+        QxV0C = QxV0C/SigmaQxV0C;
+        }
+        QyV0C = QyV0C-fhQyV0C_pfx->GetBinContent(fhQyV0C_pfx->FindBin(fIndexCentrality));
+        Double_t SigmaQyV0C = fhQyV0C_pfx->GetBinError(fhQyV0C_pfx->FindBin(fIndexCentrality));
+        if(SigmaQyV0C!=0){
+        QyV0C = QyV0C/SigmaQyV0C;
+        }        
+ 
+        fhQxV0C->Fill(fIndexCentrality,QxV0C);
+        fhQyV0C->Fill(fIndexCentrality,QyV0C);
+        Psi2V0C = TMath::ATan2(QyV0C,QxV0C)/2;
+        fhPsi2V0C->Fill(Psi2V0C);
+     }
+
+    ResetFlowVector(fFlowVecQpos);    
+     for (Int_t iV0 = 32; iV0 < 64; iV0++) {
+      Float_t multv0 = AODVZERO->GetMultiplicity(iV0);
+       Double_t phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
+        Double_t multCorA = -10;
+        multCorA = multv0*fMultV0->GetBinContent(iV0+1);
+         for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
+            for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+                {
+                    Double_t dCos = TMath::Power(multCorA,iPower) * TMath::Cos(iHarm * phiV0);
+                    Double_t dSin = TMath::Power(multCorA,iPower) * TMath::Sin(iHarm * phiV0);
+                    fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                }
+       fhVZEROChannel->Fill(iV0,multCorA);
+     }
+        Double_t QxV0A = Q(2, 1).Re();
+        Double_t QyV0A = Q(2, 1).Im();
+        Double_t Psi2V0A;
+       if(!fhQxV0A_pfx){ 
+        fhQxV0A->Fill(fIndexCentrality,QxV0A);
+        fhQyV0A->Fill(fIndexCentrality,QyV0A);        
+        Psi2V0A = TMath::ATan2(QyV0A,QxV0A)/2;
+        fhPsi2V0A->Fill(Psi2V0A); 
+        }
+       if(fhQxV0A_pfx){
+        QxV0A = QxV0A-fhQxV0A_pfx->GetBinContent(fhQxV0A_pfx->FindBin(fIndexCentrality));
+        Double_t SigmaQxV0A = fhQxV0A_pfx->GetBinError(fhQxV0A_pfx->FindBin(fIndexCentrality));
+        if(SigmaQxV0A!=0){
+        QxV0A = QxV0A/SigmaQxV0A;
+        }
+        QyV0A = QyV0A-fhQyV0A_pfx->GetBinContent(fhQyV0A_pfx->FindBin(fIndexCentrality));
+        Double_t SigmaQyV0A = fhQyV0A_pfx->GetBinError(fhQyV0A_pfx->FindBin(fIndexCentrality));
+        if(SigmaQyV0A!=0){
+        QyV0A = QyV0A/SigmaQyV0A;
+        }
+        fhQxV0A->Fill(fIndexCentrality,QxV0A);
+        fhQyV0A->Fill(fIndexCentrality,QyV0A);
+        Psi2V0A = TMath::ATan2(QyV0A,QxV0A)/2;
+        fhPsi2V0A->Fill(Psi2V0A);
+
+     }
+
+    delete V0CalListStep;
+   return;
+  }
+ }
 }
 
 #endif

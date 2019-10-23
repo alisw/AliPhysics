@@ -97,6 +97,7 @@ class AliHFJetFinder : public TObject
   void SetMaxParticlePt(Float_t f)         {fMaxParticlePt = f;}
   void SetMaxParticleEta(Float_t f)        {fMaxParticleEta = f;}
   void SetCharged(Int_t i)                 {fCharged = i;}
+  void SetTrackingEfficiency(Double_t d)   {fTrackingEfficiency = d;}
   
 
   Float_t                  fMinJetPt;
@@ -124,6 +125,8 @@ class AliHFJetFinder : public TObject
   Float_t                  fMaxParticlePt;
   Float_t                  fMaxParticleEta;
   Float_t                  fCharged;
+
+  Double_t                 fTrackingEfficiency;
   
   Bool_t                   fDoJetSubstructure;
   AliFJWrapper            *fFastJetWrapper;

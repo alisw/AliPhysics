@@ -51,7 +51,7 @@ Bool_t SetTOFCorrection = kFALSE;
 bool SetGeneratedSmearingHistos = false;
 
 bool DoPairing      = true;
-bool DoFourPairing  = false;
+bool DoFourPairing  = true;
 bool DoULSLS        = false;
 bool DeactivateLS   = true;
 
@@ -800,13 +800,13 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     pair_sameMother_photon_secondaryfromWD.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother_photon_secondaryfromWD.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_UndifinedMother_photon_secondary("pair_UndefinedMother_photon_secondary","pair_UndefinedMother_photon_secondary");
-    pair_UndifinedMother_photon_secondary.SetLegPDGs(11,-11);
-    pair_UndifinedMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndifinedMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC pair_UndefinedMother_photon_secondary("pair_UndefinedMother_photon_secondary","pair_UndefinedMother_photon_secondary");
+    pair_UndefinedMother_photon_secondary.SetLegPDGs(11,-11);
+    pair_UndefinedMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_UndefinedMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_UndifinedMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
-    pair_UndifinedMother_photon_secondary.SetMotherPDGs(22,22);
+    pair_UndefinedMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    pair_UndefinedMother_photon_secondary.SetMotherPDGs(22,22);
 
     AliDielectronSignalMC pair_DifferentMother_photon_secondary("pair_DifferentMother_photon_secondary","pair_DifferentMother_photon_secondary");
     pair_DifferentMother_photon_secondary.SetLegPDGs(11,-11);
@@ -893,7 +893,7 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     task->AddPairMCSignal(pair_sameMother_photon_secondary);
     task->AddPairMCSignal(pair_sameMother_photon_secondaryfromMaterial);
     task->AddPairMCSignal(pair_sameMother_photon_secondaryfromWD);
-    task->AddPairMCSignal(pair_UndifinedMother_photon_secondary);
+    task->AddPairMCSignal(pair_UndefinedMother_photon_secondary);
     task->AddPairMCSignal(pair_DifferentMother_photon_secondary);
     task->AddPairMCSignal(pair_sameMother_photon_secondary_eta);
     task->AddPairMCSignal(pair_sameMother_eta_finalstate);

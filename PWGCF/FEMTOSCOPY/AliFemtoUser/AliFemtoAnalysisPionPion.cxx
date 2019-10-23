@@ -189,6 +189,10 @@ struct CutConfig_Pion {
 
     ULong_t status = 0;
 
+    /// momentum to begin using TOF sigma in sigma calculation
+    Float_t tpctof_limit = 0.5,
+            tof_momentum_limit = 0.5,
+            electron_rejection_sigma = 3.0;
 
     Float_t max_impact_xy = .20,
             max_impact_z = .15,
@@ -404,6 +408,9 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   // , default_pion.nSigma.first
   // , default_pion.nSigma.second
   , pion_1_sigma(default_pion.sigma)
+  , pion_1_tpctof(default_pion.tpctof_limit)
+  , pion_1_tof_limit(default_pion.tof_momentum_limit)
+  , pion_1_ereject_sigma(default_pion.electron_rejection_sigma)
 
   , pion_1_max_impact_xy(default_pion.max_impact_xy)
   , pion_1_max_impact_z(default_pion.max_impact_z)
@@ -460,7 +467,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
 
   // sanity checks
   assert(params.event_mult == default_event.multiplicity);
-  assert(params.pion_1_pt == default_pion.pt);
+  assert(params.pion_1_pt.first == default_pion.pt.first && params.pion_1_pt.second == default_pion.pt.second);
   assert(params.pair_TPCOnly == default_pair.TPCOnly);
   // assert(params.pair_TPCExitSepMin == default_pair_TPCExitSepMin);
   assert(params.pair_delta_eta_min == default_pair.min_delta_eta);
@@ -492,7 +499,10 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
     cut->charge = charge;
     cut->max_xy = p.pion_1_max_impact_xy;
     cut->max_z = p.pion_1_max_impact_z;
-    cut->nsigma_pion = p.pion_1_sigma;
+    cut->tof_cut_factor = p.pion_1_tpctof;
+    cut->tof_cut_limit = p.pion_1_tof_limit;
+    cut->tpc_sigma_pion = p.pion_1_sigma;
+    cut->electron_tpc_sigma_min = p.pion_1_ereject_sigma;
     cut->rchi2_tpc_min = p.pion_1_min_tpc_chi_ndof;
     cut->rchi2_tpc_max = p.pion_1_max_tpc_chi_ndof;
     cut->rchi2_its_max = p.pion_1_max_its_chi_ndof;
@@ -795,7 +805,6 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfiguration() const
                   ("event_cut", event_cut_cfg)
                   ("track_cut", track_cut_cfg)
                   ("pair_cut", pair_cut_cfg);
-
 }
 
 TList* AliFemtoAnalysisPionPion::GetOutputList()
