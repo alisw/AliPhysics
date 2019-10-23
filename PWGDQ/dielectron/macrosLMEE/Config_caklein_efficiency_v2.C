@@ -1,29 +1,42 @@
 
 // TString names=("kPbPb2015_Pt400_looseTOFif;kPbPb2015_Pt400_tightTOFreq;NewPID;kPbPb2015_Pt400_looseTOFif_0SITSCl;kPbPb2015_Pt400_tightTOFreq_0SITSCl;NewPID_0SITSCl;kPbPb2015_Pt400_looseTOFif_ITSMAP;kPbPb2015_Pt400_tightTOFreq_ITSMAP;NewPID_ITSMAP");
 // TString names=("cut1_pt400;cut2_pt400;cut3_pt400;cut4_pt400;cut5_pt400;cut6_pt400;cut7_pt400;cut8_pt400;cut9_pt400;cut10_pt400;cut11_pt400;cut12_pt400;cut13_pt400;cut14_pt400;cut15_pt400;cut16_pt400;cut17_pt400;cut18_pt400;cut19_pt400;cut20_pt400");
-// TString names=("noPID;cut5_pt200;kPbPb2015_Pt200_PID_cutoff_pion_kaon_proton;cut5_pt200_TOFreq");
-// TString names=("cut1_pt200;cut2_pt200;cut3_pt200;cut4_pt200;cut5_pt200;cut6_pt200;cut7_pt200;cut8_pt200;cut9_pt200;cut10_pt200;cut11_pt200;cut12_pt200;cut13_pt200;cut14_pt200;cut15_pt200;cut16_pt200;cut17_pt200;cut18_pt200;cut19_pt200;cut20_pt200;cut21_pt200;cut22_pt200;cut23_pt200;cut24_pt200;cut25_pt200;cut26_pt200;cut27_pt200;cut28_pt200;cut29_pt200;cut30_pt200");
-// TString names=("cut5_pt200;cut5_pt200_noPID_wSharedCluster;cut5_pt200_noPID_noSharedCluster");
-// TString names=("cut5_pt200");
-TString names=("cut1_pt200;cut2_pt200;cut3_pt200;cut4_pt200;cut5_pt200;cut6_pt200;cut7_pt200;cut8_pt200;cut9_pt200;cut10_pt200");
+// TString names=("cut5_pt200;kPbPb2015_Pt200_PID_cutoff_pion_kaon_proton;cut5_pt200_TOFreq");
+TString names=("cut5_pt200_noPIDcuts;cut5_pt200;cut5_pt200_woSCcut");
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// 400 MEV CUT !!!!!!!!!!!!!!!
-// TString names=("cut5_pt400;cut11_pt400;cut23_pt400");
+// TString names=("cut1_pt200;cut2_pt200;cut3_pt200;cut4_pt200;cut5_pt200;cut6_pt200;cut7_pt200;cut8_pt200;cut9_pt200;cut10_pt200;cut11_pt200;cut12_pt200;cut13_pt200;cut14_pt200;cut15_pt200;cut16_pt200;cut17_pt200;cut18_pt200;cut19_pt200;cut20_pt200");
+// TString names=("cut1_pt200_woSCcut;cut2_pt200_woSCcut;cut3_pt200_woSCcut;cut4_pt200_woSCcut;cut5_pt200_woSCcut;cut6_pt200_woSCcut;cut7_pt200_woSCcut;cut8_pt200_woSCcut;cut9_pt200_woSCcut;cut10_pt200_woSCcut;cut11_pt200_woSCcut;cut12_pt200_woSCcut;cut13_pt200_woSCcut;cut14_pt200_woSCcut;cut15_pt200_woSCcut;cut16_pt200_woSCcut;cut17_pt200_woSCcut;cut18_pt200_woSCcut;cut19_pt200_woSCcut;cut20_pt200_woSCcut");
+// TString names=("cut1_pt200_wSCcut;cut2_pt200_wSCcut;cut3_pt200_wSCcut;cut4_pt200_wSCcut;cut5_pt200_wSCcut;cut6_pt200_wSCcut;cut7_pt200_wSCcut;cut8_pt200_wSCcut;cut9_pt200_wSCcut;cut10_pt200_wSCcut;cut11_pt200_wSCcut;cut12_pt200_wSCcut;cut13_pt200_wSCcut;cut14_pt200_wSCcut;cut15_pt200_wSCcut;cut16_pt200_wSCcut;cut17_pt200_wSCcut;cut18_pt200_wSCcut;cut19_pt200_wSCcut;cut20_pt200_wSCcut");
+
 
 // TString names=("cut5_openKinematicCuts");
 // TString names=("cut5_openKinematicCuts_without_CrossedOverFindableCut");
 // TString names=("kPbPb2015_Pt100_ResolutionCuts");
 
-// TString generatorNameForMCSignal  = "Pythia CC_0;Pythia CC_1;Pythia B_0;Pythia B_1";
-// TString generatorNameForULSSignal = "Pythia CC_0;Pythia CC_1;Pythia B_0;Pythia B_1";
-// TString generatorNameForMCSignal  = "";
-// TString generatorNameForULSSignal = "";
+// TString generatorName = "Hijing";
+
+// TString generatorName = "";
+// TString generatorName = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia B_8;Pythia BB_8";
+// TString generatorName = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia B_8;Pythia BB_8";
+// TString generatorName = "Hijing_0;Hijing";
+// TString generatorName = "pizero_1";
+// TString generatorName = "eta_2";
+// TString generatorName = "etaprime_3";
+// TString generatorName = "rho_4";
+// TString generatorName = "omega_5";
+// TString generatorName = "phi_6";
+// TString generatorName = "jpsi_7";
+// TString generatorName = "Pythia_CC_";
+
+// TString generatorName = "Hijing_0";
+// TString generatorName = "Jpsi2ee_1";
+
 TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
+// TString generatorNameForMCSignal  = "Hijing_0";
 TString generatorNameForULSSignal = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
 
 
-Bool_t SetTPCCorrection = kTRUE;
+Bool_t SetTPCCorrection = kFALSE;
 Bool_t SetITSCorrection = kTRUE;
 Bool_t SetTOFCorrection = kTRUE;
 
@@ -41,7 +54,7 @@ std::string resoFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/resolutio
 // std::string resoFilename = "new_resolution_PbPb2015_0080_deltaXvsP.root";
 // std::string resoFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/new_resolution_PbPb2015_0080_deltaXvsP.root";
 
-bool DoCocktailWeighting = kFALSE;
+bool DoCocktailWeighting = kTRUE;
 bool GetCocktailFromAlien = kTRUE;
 std::string CocktailFilename = "Cocktail_PbPb0080_5TeV_MotherPt.root";
 std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/Cocktail_PbPb0080_5TeV_MotherPt.root";
@@ -63,15 +76,14 @@ const double minGenEta = -1.5;
 const double maxGenEta =  1.5;
 
 
-// const double minPtCut = 0.2;
-// const double minPtCut = 0.;
-// const double maxPtCut = 100.0;
-// const double minEtaCut = -100;
-// const double maxEtaCut =  100;
 const double minPtCut = 0.2;
 const double maxPtCut = 8.0;
 const double minEtaCut = -0.8;
-const double maxEtaCut = 0.8;
+const double maxEtaCut =  0.8;
+// const double minPtCut = 0.2;
+// const double maxPtCut = 8.0;
+// const double minEtaCut = -0.8;
+// const double maxEtaCut = 0.8;
 
 
 
@@ -85,7 +97,7 @@ const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
 const double minPtBin = 0;
 const double maxPtBin = 8;
-const int    stepsPtBin = 320;
+const int    stepsPtBin = 400;
 
 const double minEtaBin = -1.0;
 const double maxEtaBin =  1.0;
@@ -107,19 +119,19 @@ const double maxPairPtBin =  8;
 const int    stepsPairPtBin = 160;
 
 // Binning of resolution histograms
-const int    NbinsDeltaMom    = 1000;
+const int    NbinsDeltaMom    = 2000;
 const double DeltaMomMin   =-10.0;
 const double DeltaMomMax   = 10.0;
-const int    NbinsRelMom      = 200;
+const int    NbinsRelMom      = 400;
 const double RelMomMin     =  0.0;
 const double RelMomMax     =  2.0;
-const int    NbinsDeltaEta    = 100;
+const int    NbinsDeltaEta    = 200;
 const double DeltaEtaMin   = -0.4;
 const double DeltaEtaMax   =  0.4;
-const int    NbinsDeltaTheta  = 100;
+const int    NbinsDeltaTheta  = 200;
 const double DeltaThetaMin = -0.4;
 const double DeltaThetaMax =  0.4;
-const int    NbinsDeltaPhi    = 100;
+const int    NbinsDeltaPhi    = 200;
 const double DeltaPhiMin   = -0.4;
 const double DeltaPhiMax   =  0.4;
 
@@ -253,36 +265,6 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut5_pt200_woSITS"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_woSharedCluster);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "noPID"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt200_noPID);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_pt200_noPID_wSharedCluster"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt200_noPID);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_pt200_noPID_noSharedCluster"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt200_noPID);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_0SharedCluster);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_pt200_0SITS"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_0SharedCluster);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
   else if (cutDefinition == "cut5_pt200_noPIDcuts"){
     AnaCut.SetPIDAna(LMEECutLib::kPDGelectron);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
@@ -307,26 +289,127 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-
+  else if (cutDefinition == "cut1_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut2_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_2_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut3_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_3_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut4_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_4_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_4);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
   else if (cutDefinition == "cut5_pt400"){
     AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt400);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut11_pt400"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11_pt400);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+  else if (cutDefinition == "cut6_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_6_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_6);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut23_pt400"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_23_pt400);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+  else if (cutDefinition == "cut7_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_7_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_7);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut8_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_8_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_8);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut9_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_9_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_9);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut10_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_10_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_10);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut11_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_11);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
+  else if (cutDefinition == "cut12_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_12_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_12);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut13_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_13_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_13);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut14_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_14_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_14);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut15_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_15_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_15);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut16_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_16_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_16);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut17_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_17_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_17);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut18_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_18_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_18);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut19_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_19_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_19);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut20_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_20_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_20);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
   else if (cutDefinition == "cut1_pt200"){
     AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt200);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
@@ -448,69 +531,375 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut21_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_21_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_21);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut22_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_22_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_22);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut23_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_23_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_23);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut24_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_24_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_24);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut25_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_25_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_25);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut26_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_26_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_26);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut27_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_27_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_27);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut28_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_28_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_28);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut29_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_29_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_29);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut30_pt200"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_30_pt200);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_30);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
   else if (cutDefinition == "cut5_pt200_looserPionRejection"){
     AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt200_looserPionRejection);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut5_pt200_looserPionRejection_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt200_looserPionRejection);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut1_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut2_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_2_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut3_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_3_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut4_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_4_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_4_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut5_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut6_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_6_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_6_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut7_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_7_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_7_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut8_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_8_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_8_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut9_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_9_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_9_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut10_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_10_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_10_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut11_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_11_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut12_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_12_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_12_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut13_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_13_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_13_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut14_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_14_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_14_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut15_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_15_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_15_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut16_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_16_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_16_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut17_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_17_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_17_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut18_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_18_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_18_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut19_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_19_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_19_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut20_pt200_woSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_20_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_20_woSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut1_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut2_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_2_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut3_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_3_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut4_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_4_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_4);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut5_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut6_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_6_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_6);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut7_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_7_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_7);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut8_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_8_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_8);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut9_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_9_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_9);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut10_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_10_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_10);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut11_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_11);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut12_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_12_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_12);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut13_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_13_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_13);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut14_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_14_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_14);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut15_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_15_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_15);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut16_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_16_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_16);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut17_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_17_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_17);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut18_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_18_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_18);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut19_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_19_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_19);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut20_pt200_TOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_20_pt200_TOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_20);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut1_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut2_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_2_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut3_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_3_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut4_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_4_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_4_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut5_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut6_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_6_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_6_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut7_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_7_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_7_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut8_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_8_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_8_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut9_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_9_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_9_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut10_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_10_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_10_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut11_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_11_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut12_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_12_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_12_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut13_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_13_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_13_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut14_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_14_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_14_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut15_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_15_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_15_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut16_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_16_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_16_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut17_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_17_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_17_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut18_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_18_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_18_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut19_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_19_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_19_wSCcut);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut20_pt200_wSCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_20_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_20_wSCcut);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -694,7 +1083,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
     // task->AddPairMCSignal(pair_sameMother_rho);
     // task->AddPairMCSignal(pair_sameMother_omega);
     // task->AddPairMCSignal(pair_sameMother_phi);
-    task->AddPairMCSignal(pair_sameMother_jpsi);
+    // task->AddPairMCSignal(pair_sameMother_jpsi);
     // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
     // task->AddPairMCSignal(pair_conversion);
 }
