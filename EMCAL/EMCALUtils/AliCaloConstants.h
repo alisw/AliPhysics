@@ -103,7 +103,7 @@ namespace CaloConstants
   namespace FitAlgorithm
   {
     ///< fitting alorithms tag numbers
-    enum fitAlgorithm { kStandard = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4, kStandardFast = 5, kFakeAltro = 9, kNONE = 8 } ; 
+    enum fitAlgorithm { kStandard = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4, kStandardFast = 5, kFakeAltro = 9, kNONE = 8 , kGamma2=10} ; 
   }
   
   namespace ReturnCodes

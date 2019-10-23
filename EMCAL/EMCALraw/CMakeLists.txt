@@ -44,6 +44,7 @@ set(SRCS
     AliCaloRawAnalyzerFakeALTRO.cxx
     AliCaloRawAnalyzerFastFit.cxx
     AliCaloRawAnalyzerFitter.cxx
+    AliCaloRawAnalyzerGamma2.cxx
     AliCaloRawAnalyzerKStandard.cxx
     AliCaloRawAnalyzerKStandardFast.cxx
     AliCaloRawAnalyzerNN.cxx

@@ -21,6 +21,7 @@
 #pragma link C++ class AliEMCALCCUSBRawStream+;
 #pragma link C++ class AliCaloFastAltroFitv0+;
 #pragma link C++ class AliEMCALRawResponse+;
+#pragma link C++ class AliCaloRawAnalyzerGamma2+;
 
 #endif
 
