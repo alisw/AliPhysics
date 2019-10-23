@@ -51,7 +51,8 @@ fPidObjpion(0),
 fUseImpParProdCorrCut(kFALSE),
 fPIDStrategy(kNSigma),
 fCutsStrategy(kStandard),
-fUseSpecialCut(kFALSE)
+fUseSpecialCut(kFALSE),
+fMaxDistanceSecPrimVertex(0.5)
 {
   //
   // Default Constructor
@@ -113,7 +114,8 @@ AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi &source) :
   fUseImpParProdCorrCut(source.fUseImpParProdCorrCut),
   fPIDStrategy(source.fPIDStrategy),
   fCutsStrategy(source.fCutsStrategy),
-  fUseSpecialCut(source.fUseSpecialCut)
+  fUseSpecialCut(source.fUseSpecialCut),
+  fMaxDistanceSecPrimVertex(source.fMaxDistanceSecPrimVertex)
 {
   //
   // Copy constructor
@@ -140,6 +142,7 @@ AliRDHFCutsLctopKpi &AliRDHFCutsLctopKpi::operator=(const AliRDHFCutsLctopKpi &s
     fPIDStrategy=source.fPIDStrategy;
     fCutsStrategy=source.fCutsStrategy;
     memcpy(fPIDThreshold,source.fPIDThreshold,AliPID::kSPECIES*sizeof(Double_t));
+    fMaxDistanceSecPrimVertex=source.fMaxDistanceSecPrimVertex;
   }
     
   return *this;
@@ -365,14 +368,14 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     if(!okLcpKpi && !okLcpiKp) return 0;
     //2track cuts
     if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]|| d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]) return 0;
-    if(d->GetDist12toPrim()>0.5) return 0;
-    if(d->GetDist23toPrim()>0.5) return 0;
+    if(d->GetDist12toPrim()>fMaxDistanceSecPrimVertex) return 0;
+    if(d->GetDist23toPrim()>fMaxDistanceSecPrimVertex) return 0;
     if(fUseImpParProdCorrCut){
       if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) return 0;
     }
     //sec vert
     if(d->DecayLength()<fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
-    if(d->DecayLength()>0.5) return 0;
+    if(d->DecayLength()>fMaxDistanceSecPrimVertex) return 0;
 
   //  Double_t sumd0s=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
   //  if(sumd0s<fCutsRD[GetGlobalIndex(10,ptbin)]) return 0;
