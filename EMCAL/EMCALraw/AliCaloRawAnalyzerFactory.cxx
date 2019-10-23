@@ -26,6 +26,7 @@
 #include "AliCaloRawAnalyzerKStandard.h"
 #include "AliCaloRawAnalyzerKStandardFast.h"
 #include "AliCaloRawAnalyzerFakeALTRO.h"
+#include "AliCaloRawAnalyzerGamma2.h"
 
 ///
 /// Default constructor.
@@ -61,6 +62,9 @@ AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
       break;
     case kFakeAltro:
       return  new AliCaloRawAnalyzerFakeALTRO();
+      break;
+    case kGamma2:
+      return  new AliCaloRawAnalyzerGamma2();
       break;
     default:
       return  new AliCaloRawAnalyzerCrude();
