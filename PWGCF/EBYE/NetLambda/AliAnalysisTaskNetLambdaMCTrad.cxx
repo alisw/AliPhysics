@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Oct 21
+// Updated Oct 23
 
 
 #include "AliAnalysisManager.h"
@@ -152,9 +152,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         
         
         //-------------------------------------------------------------------MC REC-----------------------------------------------------------------------------------------------
-        hPt = new TH1D( "hPt", "hPt",fNptBins, LambdaPtBins);
-        fListHist->Add(hPt);
-        
+ 
         //Sec
         f2fHistRecSecCentVsPtLambdaFourSigthree = new TH2F("f2fHistRecSecCentVsPtLambdaFourSigthree","#Lambda SEC  ",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistRecSecCentVsPtLambdaFourSigthree);
@@ -174,7 +172,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         
         f2fHistRecPrimariesCentVsPtLambdaFourSigthree = new TH2F("f2fHistRecPrimariesCentVsPtLambdaFourSigthree","#Lambda primaries",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistRecPrimariesCentVsPtLambdaFourSigthree);
- 
+        
         f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree = new TH2F("f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree","#bar{#Lambda} primaries",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree);
         
@@ -209,8 +207,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     Int_t ptChMC[dim];
     Int_t ptChEta1point0[dim];
     Int_t ptChEta1point0SB[dim];
-
-
+    
+    
     for(Int_t idx = 0; idx < dim; idx++)
     {
         ptChMC[idx] = 0;
@@ -520,15 +518,14 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         
                     }
                 }
-            
+                
                 Int_t iptbin = GetPtBin(mcpt);
                 if( iptbin < 0 || iptbin > fNptBins-1 ) continue;
-                hPt->Fill(mcpt);
-
+                
                 if(TMath::Abs(eta) < 0.5)
                 {
-                   
-                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 3 && TMath::Abs(negpion) <= 3)
+                    
+                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 3 && TMath::Abs(negpion) <= 3)
                     {
                         f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
                         if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -539,7 +536,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         {
                             ptChEta1point0SB[iptbin] += 1;
                         }
-                   
+                        
                         if(fTreeVariablePID == 3122)
                         {
                             if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);}
@@ -569,7 +566,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         {
                             ptChEta1point0SB[iptbin+fNptBins] += 1;
                         }
-                    
+                        
                         if(fTreeVariablePID == -3122)
                         {
                             if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);}
@@ -602,7 +599,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         ptContainerRec[i] = (ptChEta1point0[i-1] - ptChEta1point0SB[i-1]);
     }
     fPtBinNplusNminusChRec->Fill(ptContainerRec);
-
+    
     PostData(1,fListHist);
 }
 
@@ -611,9 +608,29 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Int_t AliAnalysisTaskNetLambdaMCTrad::GetPtBin(Double_t pt)
 {
-    Int_t bin = hPt->FindBin(pt) - 1;
-    return bin;
+    Int_t bin = -1;
     
+    Double_t LambdaPtBins[24] = {0.9,1.0,1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,4.2,4.4};
+    
+    for(Int_t iBin = 0; iBin < fNptBins; iBin++)
+    {
+        
+        if( iBin == fNptBins-1){
+            if( pt >= LambdaPtBins[iBin] && pt <= LambdaPtBins[iBin+1]){
+                bin = iBin;
+                break;
+            }
+        }
+        else{
+            if( pt >= LambdaPtBins[iBin] && pt < LambdaPtBins[iBin+1]){
+                bin = iBin;
+                break;
+                
+            }
+        }
+    }
+    
+    return bin;
     
 }
 
