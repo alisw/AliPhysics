@@ -117,8 +117,8 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
   const Int_t dimSpec = 8;
   const Int_t nBinsSpec[8] = {50, 100, 100, 20, 100, 50, 100, 2};
-  const Double_t lowBinSpec[8] = {0., -10, 0, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec[8] = {5., 10., 200, 20, 200, 100, 50, 2};
+  const Double_t lowBinSpec[8] = {0., -5, 0, 0, 0, 0, 0, 0};
+  const Double_t hiBinSpec[8] = {5., 10., 200, 20, 200, 50, 50, 2};
   fHLundIterative =
       new THnSparseF("fHLundIterative",
                      "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
@@ -128,7 +128,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
   const Int_t dimSpec2 = 7;
   const Int_t nBinsSpec2[7] = {50, 100, 100, 20, 100, 50, 100};
-  const Double_t lowBinSpec2[7] = {0., -10, 0, 0, 0, 0, 0};
+  const Double_t lowBinSpec2[7] = {0., -5, 0, 0, 0, 0, 0};
   const Double_t hiBinSpec2[7] = {5., 10., 200, 20, 200, 100, 50};
   fHLundIterativeMC = new THnSparseF(
       "fHLundIterativeMC",
@@ -139,7 +139,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
   const Int_t dimSpec3 = 7;
   const Int_t nBinsSpec3[7] = {50, 100, 100, 20, 100, 50, 100};
-  const Double_t lowBinSpec3[7] = {0., -10, 0, 0, 0, 0, 0};
+  const Double_t lowBinSpec3[7] = {0., -5, 0, 0, 0, 0, 0};
   const Double_t hiBinSpec3[7] = {5., 10., 200, 20, 200, 100, 50};
   fHLundIterativeMCDet = new THnSparseF(
       "fHLundIterativeMCDet",
