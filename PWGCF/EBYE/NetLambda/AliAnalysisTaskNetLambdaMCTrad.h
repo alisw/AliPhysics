@@ -43,8 +43,6 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
-    TH1D*  hPt;
-
     
     TH2F*  f2fHistGenCentVsPtLambda;
     TH2F*  f2fHistGenCentVsPtAntiLambda;
