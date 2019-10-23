@@ -6,9 +6,16 @@ void runOnNano(const char* filePath = "AliAOD.NanoAOD.root")
   AliAODInputHandler* iH = new AliAODInputHandler();
   mgr->SetInputEventHandler(iH);
 
-  AliAnalysisTaskSE* task = (AliAnalysisTaskSE*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/tutorial/AddTaskSimple.C");
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
   
+  gInterpreter->ExecuteMacro(
+        "$ALICE_PHYSICS/PWGLF/RESONANCES/PostProcessing/Xi1530/NanoCheck/"
+        "AddTaskNanoCheck.C");
+  /*
+  AliAnalysisTaskXi1530* task_ESD =
+      (AliAnalysisTaskXi1530*)gInterpreter->ExecuteMacro(
+          "$ALICE_PHYSICS/PWGLF/RESONANCES/PostProcessing/Xi1530/"
+          "AddTaskXi1530.C");
+          */
   mgr->InitAnalysis();
   mgr->PrintStatus();
 
@@ -20,6 +27,7 @@ void runOnNano(const char* filePath = "AliAOD.NanoAOD.root")
   chain->Add(filePath);
 
   TStopwatch watch;
-  mgr->StartAnalysis("local", chain, 1000);
+  mgr->StartAnalysis("local", chain, 100000);
   watch.Print();
+    gSystem->Exec("mv AnalysisResults.root AnalysisResultsNano.root");
 }

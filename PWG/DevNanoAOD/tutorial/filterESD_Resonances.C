@@ -44,10 +44,11 @@ void filterESD_Resonances()
   gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/AddTaskConfigOCDB.C(\"raw://\")"); //for ESD: ->AOD->nanoAOD (2 steps)
   
   // // V0 finder
+  /*
   AliAnalysisTaskWeakDecayVertexer* v0Finder = (AliAnalysisTaskWeakDecayVertexer*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C");
   v0Finder->SetUseImprovedFinding();
-  v0Finder->SetForceResetV0s(true);
-  v0Finder->SetForceResetCascades(true);
+  //v0Finder->SetForceResetV0s(true);
+  //v0Finder->SetForceResetCascades(true);
 
 
   //V0-Related topological selections
@@ -73,9 +74,12 @@ void filterESD_Resonances()
   v0Finder->SetPreselectDedx(kFALSE);
   v0Finder->SetPreselectDedxLambda(kFALSE);
   //v0Finder-> SetUseMonteCarloAssociation(kFALSE);
-
+  */
   // ESD filter
-  gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C(kFALSE, kFALSE, kFALSE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, 1500, 3, kFALSE, kFALSE, kFALSE, kFALSE)");
+  gInterpreter->ExecuteMacro(
+        "$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C(kFALSE, "
+        "kFALSE, kFALSE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, 1500, 3, "
+        "kFALSE, kFALSE, kFALSE, kFALSE)");
   
   AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/macros/AddTaskNanoAODFilter.C(0, kFALSE)");
   task->AddSetter(new AliNanoAODSimpleSetter);
@@ -119,7 +123,11 @@ void filterESD_Resonances()
   
   // Input files
   TChain * chain = new TChain("esdTree");
-  chain->Add("AliESDs.root");
+  chain->Add("/Users/blim/data/2016/LHC16k/000257605/pass2/16000257605037.800/AliESDs.root");
+  chain->Add("/Users/blim/data/2016/LHC16k/000257605/pass2/16000257605037.801/AliESDs.root");
+  chain->Add("/Users/blim/data/2016/LHC16k/000257605/pass2/16000257605037.802/AliESDs.root");
+  chain->Add("/Users/blim/data/2016/LHC16k/000257605/pass2/16000257605037.803/AliESDs.root");
+  chain->Add("/Users/blim/data/2016/LHC16k/000257605/pass2/16000257605037.804/AliESDs.root");
 
   Printf("Starting Analysis....");
   mgr->StartAnalysis("local", chain, 1000000);
