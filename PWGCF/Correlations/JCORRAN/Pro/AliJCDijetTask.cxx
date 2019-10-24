@@ -252,6 +252,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Jet leading const. cut:     " << fconstituentCut << endl;
     cout << "Dijet DeltaPhi cut:         pi/" << fdeltaPhiCut << endl;
     cout << "Matching R for MC:          " << fmatchingR << endl;
+    cout << "Tracking ineff for DetMC:   " << ftrackingIneff << endl;
     cout << endl;
 
     if(fusePionMass && (fktScheme!=0 || fantiktScheme!=0)) {
@@ -274,7 +275,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fsubleadingJetCut,
                       fMinJetPt,
                       fdeltaPhiCut,
-                      fmatchingR);
+                      fmatchingR,
+                      0.0); //Tracking ineff only for det level.
 
     if(fIsMC) {
         fanaMC->SetSettings(fDebug,
@@ -291,7 +293,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fsubleadingJetCut,
                             fMinJetPt,
                             fdeltaPhiCut,
-                            fmatchingR);
+                            fmatchingR,
+                            ftrackingIneff);
     }
 
     // Save information about the settings used.
@@ -352,6 +355,7 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
 #endif
 
     if(fIsMC) {
+        fhistosDetMC->fh_eventSel->Fill("events wo/ cuts",1.0);
         if(fJCatalystDetMCTask->GetJCatalystEntry() != fEntry) return;
         fhistosDetMC->fh_eventSel->Fill("catalyst entry ok",1.0);
         if( !fJCatalystDetMCTask->GetIsGoodEvent() ) return;
