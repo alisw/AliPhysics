@@ -628,7 +628,7 @@ struct TrackCutAttrRejectKaonTofPionTime {
         return true;
       }
 
-      if (!std::isnan(tof_sigma_pion) and tof_sigma_pion <= track.NSigmaTOFPi()) {
+      if (!std::isnan(tof_sigma_pion) and tof_sigma_pion <= std::abs(track.NSigmaTOFPi())) {
         return false;
       }
 
