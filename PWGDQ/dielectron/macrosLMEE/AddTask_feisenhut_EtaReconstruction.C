@@ -8,6 +8,8 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
                                                                 Int_t wagonnr = 0,
                                                                 Int_t centrality = 4) {
 
+bool debug = false;
+
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
   // #########################################################
@@ -15,7 +17,50 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Configuring Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   TString fileName = AliAnalysisManager::GetCommonFileName();
+
   fileName = "AnalysisResults.root"; // create a subfolder in the file
+  // fileName = "AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS__Full.root"; // create a subfolder in the file
+
+  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS__Full
+  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParXY
+  // AnalysisResults_TrackCuts_ImpactParXY_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParZ
+  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_TPCchi2Cl_NclsSITS__wo_NclsTPC
+  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_NclsSITS__wo_TPCchi2Cl
+  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl__wo_NclsSITS
+
+  // AnalysisResults_TrackCuts_ImpactParXY_TPCchi2Cl_NclsSITS__wo_ImpParZ_NclsTPC
+  // AnalysisResults_TrackCuts_ImpactParXY_TPCchi2Cl__wo_ImpParZ_NclsTPC_NclsSITS
+  // AnalysisResults_TrackCuts_ImpactParXY_NclsSITS__wo_ImpParZ_NclsTPC_TPCchi2Cl
+  // AnalysisResults_TrackCuts_ImpactParXY__wo_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS
+
+  // AnalysisResults_TrackCuts_ImpactParZ_TPCchi2Cl_NclsSITS__wo_ImpParXY_NclsTPC
+  // AnalysisResults_TrackCuts_ImpactParZ_TPCchi2Cl__wo_ImpParXY_NclsTPC_NclsSITS
+  // AnalysisResults_TrackCuts_ImpactParZ_NclsSITS__wo_ImpParXY_NclsTPC_TPCchi2Cl
+  // AnalysisResults_TrackCuts_ImpactParZ__wo_ImpParXY_NclsTPC_TPCchi2Cl_NclsSITS
+
+  // AnalysisResults_TrackCuts_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParXY_ImpactParZ
+  // AnalysisResults_TrackCuts_NclsTPC_TPCchi2Cl__wo_ImpParXY_ImpactParZ_NclsSITS
+  // AnalysisResults_TrackCuts_NclsTPC_NclsSITS__wo_ImpParXY_ImpactParZ_TPCchi2Cl
+  // AnalysisResults_TrackCuts_NclsTPC__wo_ImpParXY_ImpactParZ_TPCchi2Cl_NclsSITS
+
+  // AnalysisResults_TrackCuts_TPCchi2Cl_NclsSITS__wo_ImpParXY_ImpactParZ_NclsTPC
+  // AnalysisResults_TrackCuts_TPCchi2Cl__wo_ImpParXY_ImpactParZ_NclsTPC_NclsSITS
+
+  // AnalysisResults_TrackCuts_NclsSITS__wo_ImpParXY_ImpactParZ_NclsTPC_TPCchi2Cl
+
+  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ_NclsTPC__wo_TPCchi2Cl_NclsSITS
+  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ_TPCchi2Cl__wo_NclsTPC_NclsSITS
+  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ_NclsSITS__wo_NclsTPC_TPCchi2Cl
+  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ__wo_NclsTPC_TPCchi2Cl_NclsSITS
+  // AnalysisResults_TrackCuts_ImpParXY_NclsTPC_TPCchi2Cl__wo_ImpactParZ_NclsSITS
+  // AnalysisResults_TrackCuts_ImpParXY_NclsTPC_NclsSITS__wo_ImpactParZ_TPCchi2Cl
+  // AnalysisResults_TrackCuts_ImpParXY_NclsTPC__wo_ImpactParZ_TPCchi2Cl_NclsSITS
+  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_TPCchi2Cl__wo_ImpParXY_NclsSITS
+  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_NclsSITS__wo_ImpParXY_TPCchi2Cl
+  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC__wo_ImpParXY_TPCchi2Cl_NclsSITS
+
+  // AnalysisResults_NoTrackCuts
+
 
   // #########################################################
   // #########################################################
@@ -25,15 +70,24 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/f/feisenhu/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
+      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/LMEECutLib_feisenhut.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
   TString configFilePath(configBasePath+configFile);
+  TString configLMEECutLib("LMEECutLib_feisenhut.C");
+  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+
+  // Loading config and cutlib
+  // err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
+  // err |= gROOT->LoadMacro(configFilePath.Data());
+  // if (err) { Error("AddTask_caklein_ElectronEfficiency_v2","Config(s) could not be loaded!"); return 0x0; }
 
   Bool_t err=kFALSE;
   if (!cutlibPreloaded) { // should not be needed but seems to be...
     std::cout << "Cutlib was not preloaded" << std::endl;
+    err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
     err |= gROOT->LoadMacro(configFilePath.Data());
   }
   else{
@@ -68,6 +122,11 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
 
   // #########################################################
   // #########################################################
+  // Set debug variable for debugging code
+  task->SetDebug(debug);
+
+  // #########################################################
+  // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
   // Do not set here your analysis pt-cuts
   task->SetMinPtGen(minGenPt);
@@ -80,6 +139,13 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
   task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
+
+  // #########################################################
+  // #########################################################
+  // Set mass cuts for primary and secondary pairs
+  task->SetMassCutPrimaries(MassCutPrimaries);
+  task->SetMassCutSecondaries(MassCutSecondaries);
+
 
   // #########################################################
   // #########################################################
@@ -104,11 +170,16 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetResolutionFile(resoFilename);
   task->SetResolutionFileFromAlien(resoFilenameFromAlien);
   task->SetSmearGenerated(SetGeneratedSmearingHistos);
+  task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
+  task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
+  task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
+  task->SetResolutionPhiBinsLinear  (DeltaPhiMin, DeltaPhiMax, NbinsDeltaPhi);
+  task->SetResolutionThetaBinsLinear(DeltaThetaMin, DeltaThetaMax, NbinsDeltaTheta);
 
   // #########################################################
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
-  // task->SetCentralityFile(centralityFilename);
+  task->SetCentralityFile(centralityFilename);
 
   // #########################################################
   // #########################################################
@@ -128,6 +199,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
   task->SetULSandLS(DoULSLS);
+  task->SetDeactivateLS(DeactivateLS);
 
   // #########################################################
   // #########################################################
@@ -139,29 +211,36 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
 
-  // #########################################################
-  // #########################################################
-  // Write Tree with electrons from pair
-  // task->SetWriteTreeLegFromPair(true);
 
   // #########################################################
   // #########################################################
   // Set mean and width correction for ITS, TPC and TOF
 
 
-  // // #########################################################
-  // // #########################################################
-  // // Adding cutsettings
-  // // TObjArray*  arrNames=names.Tokenize(";");
-  // // const Int_t nDie=arrNames->GetEntriesFast();
-  //
-  // for (int iCut = 0; iCut < nDie; ++iCut){
-  //   TString cutDefinition(arrNames->At(iCut)->GetName());
-  //   // AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-  //   AliAnalysisFilter* filter = SetupTrackCutsAndSettings(iCut);
-  //   task->AddTrackCuts(filter);
-  //   // DoAdditionalWork(task);
-  // }
+  // #########################################################
+  // #########################################################
+  // Adding primary electron cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_prim->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_prim->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_primary(filter);
+    DoAdditionalWork(task);
+  }
+  // Adding secondary electron cutsettings
+  TObjArray*  arrNames_sec=names_Sec_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_sec->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_sec->At(iCut)->GetName());
+                                                                                // if(debug) std::cout << __LINE__ << " DEBUG_AddTask: arrNames_sec->At(iCut)->GetName(): " <<  arrNames_sec->At(iCut)->GetName()<< std::endl;
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_secondary(filter);
+    DoAdditionalWork(task);
+  }
+
 
 
   mgr->AddTask(task);
