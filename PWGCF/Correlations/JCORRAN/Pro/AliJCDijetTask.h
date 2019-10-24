@@ -54,7 +54,25 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         void    SetBGSubtrSettings(int ktScheme, int antiktScheme, Bool_t usePionMass, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fantiktScheme=antiktScheme; fusePionMass=usePionMass; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
         Bool_t  IsMC()const{ return fIsMC; }
         void    SetIsMC(Bool_t b) { fIsMC=b; }
-        void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi, double matchingR, double minJetPt) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi; fmatchingR = matchingR; fMinJetPt = minJetPt; }
+        void    SetCuts(double particleEta,
+                        double particlePt,
+                        double leadingJet,
+                        double subleadingJet,
+                        double constituent,
+                        double deltaPhi,
+                        double matchingR,
+                        double trackingIneff,
+                        double minJetPt) {
+                        fparticleEtaCut=particleEta;
+                        fparticlePtCut=particlePt;
+                        fleadingJetCut=leadingJet;
+                        fsubleadingJetCut=subleadingJet;
+                        fconstituentCut=constituent;
+                        fdeltaPhiCut=deltaPhi;
+                        fmatchingR = matchingR;
+                        ftrackingIneff = trackingIneff;
+                        fMinJetPt = minJetPt;
+        }
         void AddFlags(UInt_t nflags){flags |= nflags;}
         enum{
             DIJET_VERTEX13PA      = 0x1,
@@ -88,6 +106,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         double fconstituentCut;
         double fdeltaPhiCut;
         double fmatchingR;
+        double ftrackingIneff;
         AliJCDijetHistos *fhistos;
         AliJCDijetHistos *fhistosDetMC;
         AliJCDijetAna *fana;
