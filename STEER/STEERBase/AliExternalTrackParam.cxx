@@ -1714,17 +1714,17 @@ Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   x-=xv; y-=yv;
 
   //Estimate the impact parameter neglecting the track curvature
-  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt((1.-snp)*(1.+snp)));
+  double csp = TMath::Sqrt((1.-snp)*(1.+snp));
+  Double_t d=TMath::Abs(x*snp - y*csp);
   if (d > maxd) return kFALSE; 
 
   //Propagate to the DCA
   Double_t crv=GetC(b);
   if (TMath::Abs(b) < kAlmost0Field) crv=0.;
 
-  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt((1.-snp)*(1.+snp)));
-  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt((1.-sn)*(1.+sn));
-  if (TMath::Abs(tgfv)>0.) cs = sn/tgfv;
-  else cs=1.;
+  Double_t tgfv=-(crv*x - snp)/(crv*y + csp);  
+  cs = 1./TMath::Sqrt(1+tgfv*tgfv);
+  sn = cs<1. ? tgfv*cs : 0.;
 
   x = xv*cs + yv*sn;
   yv=-xv*sn + yv*cs; xv=x;
@@ -1772,18 +1772,18 @@ Double_t b[3], Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   x-=xv; y-=yv;
 
   //Estimate the impact parameter neglecting the track curvature
-  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt((1.-snp)*(1.+snp)));
+  double csp = TMath::Sqrt((1.-snp)*(1.+snp));
+  Double_t d=TMath::Abs(x*snp - y*csp);
   if (d > maxd) return kFALSE; 
 
   //Propagate to the DCA
   Double_t crv=GetC(b[2]);
   if (TMath::Abs(b[2]) < kAlmost0Field) crv=0.;
 
-  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt((1.-snp)*(1.+snp)));
-  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt((1.-sn)*(1.+sn));
-  if (TMath::Abs(tgfv)>0.) cs = sn/tgfv;
-  else cs=1.;
-
+  Double_t tgfv=-(crv*x - snp)/(crv*y + csp);
+  cs = 1./TMath::Sqrt(1+tgfv*tgfv);
+  sn = cs<1. ? tgfv*cs : 0.;
+  
   x = xv*cs + yv*sn;
   yv=-xv*sn + yv*cs; xv=x;
 
