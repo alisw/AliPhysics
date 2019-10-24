@@ -871,6 +871,22 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     pair_sameMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother_pion_finalstate.SetMotherPDGs(111,111); //
 
+    AliDielectronSignalMC pair_DifferentMother_pion_finalstate("pair_DifferentMother_pion_finalstate","pair_DifferentMother_pion_finalstate");
+    pair_DifferentMother_pion_finalstate.SetLegPDGs(11,-11);
+    pair_DifferentMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_DifferentMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_DifferentMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    pair_DifferentMother_pion_finalstate.SetMotherPDGs(111,111);
+
+    AliDielectronSignalMC pair_UndefinedMother_pion_finalstate("pair_UndefinedMother_pion_finalstate","pair_UndefinedMother_pion_finalstate");
+    pair_UndefinedMother_pion_finalstate.SetLegPDGs(11,-11);
+    pair_UndefinedMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_UndefinedMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_UndefinedMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    pair_UndefinedMother_pion_finalstate.SetMotherPDGs(111,111);
+
     AliDielectronSignalMC pair_sameMother_CharmedMesonsWithSameMother("CharmedMesonsWithSameMother","CharmedMesonsWithSameMother");
     pair_sameMother_CharmedMesonsWithSameMother.SetLegPDGs(11,-11);
     pair_sameMother_CharmedMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -902,6 +918,8 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     task->AddPairMCSignal(pair_conversion_secondary);
     task->AddPairMCSignal(pair_random_secondary);
     task->AddPairMCSignal(pair_sameMother_pion_finalstate);
+    task->AddPairMCSignal(pair_DifferentMother_pion_finalstate);
+    task->AddPairMCSignal(pair_UndefinedMother_pion_finalstate);
     // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
     // task->AddPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
 }
