@@ -41,7 +41,17 @@ protected:
     TH1D*  fHistCentrality;
     
     TH3F*  f3fHistCentVsInvMassLambda1point0;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point0tight;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Masscuttight;
+    
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0tight;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscuttight;
+    
     
     Float_t fCentrality;
     Int_t fTreeVariableLeastNbrCrossedRows;
