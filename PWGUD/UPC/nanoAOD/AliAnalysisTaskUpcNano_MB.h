@@ -31,33 +31,32 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   
   void SetIsMC(Bool_t MC){isMC = MC;}
   void SetIsESD(Bool_t ESD){isESD = ESD;}
-  void SetParameters(Float_t cutE, Bool_t checkS, Bool_t storeR){cutEta = cutE; checkStack = checkS; storeRho = storeR;}
+  void SetParameters(Float_t cutE, Bool_t storeR){cutEta = cutE; storeRho = storeR;}
   Double_t GetMedian(Double_t *daArray);
   void SetCrossed(Int_t spd[4], TBits &crossed);
   Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
   Bool_t IsSTGFired(TBits bits, Int_t dphiMin=4, Int_t dphiMax=10, Bool_t tolerance = 1);
   void FillTree(TTree *t, TLorentzVector v);
-  void FillTree(TTree *t, TLorentzVector v, TLorentzVector vgen, TLorentzVector vDaughter[], TLorentzVector vGenDaughter[]);
+  void FillTree(TTree *t, TLorentzVector v, TLorentzVector vgen);
  private:
  
   AliPIDResponse *fPIDResponse;
   AliTimeRangeCut fTimeRangeCut;
   AliESDtrackCuts *fTrackCutsBit0;
   AliESDtrackCuts *fTrackCutsBit1;
+  AliESDtrackCuts *fTrackCutsBit4;
   AliESDtrackCuts *fTrackCutsBit5;
   Bool_t isMC; 
   Bool_t isESD;
   Float_t cutEta;
-  Bool_t checkStack, storeRho;
+  Bool_t storeRho;
 
   TList *fOutputList;		//<
   TH1D *fHistEvents;		//!
   TH1D *fHistMCTriggers;	//!
    
-  TTree *fTreePhi;		//!
   TTree *fTreeJPsi;		//!
   TTree *fTreePsi2s;		//!
-  TTree *fTreeRho;		//!
   TTree *fTreeGen;		//!
 
   TH2D *hTPCPIDMuonCorr; 	//!
@@ -77,7 +76,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   
   Float_t fPtDaughter[2], fPtGenDaughter[2];
   Float_t fPt, fY, fM, fPhi, fPtGen, fYGen, fMGen, fPhiGen, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma, fTrackLenght[6];
-  Int_t fChannel, fSign, fRunNumber, fADAdecision, fADCdecision,fV0Adecision, fV0Cdecision, fNGoodTracksITS, fNGoodTracksLoose, labelMC[2];
+  Int_t fChannel, fSign, fRunNumber, fADAdecision, fADCdecision,fV0Adecision, fV0Cdecision, fNGoodTracksITS, fNGoodTracksLoose, fNGoodTracksDCA;
   Bool_t fTriggerInputsMC[NTRIGGERINPUTS], fTriggers[NTRIGGERS], fInEtaGen, fInEtaRec;
   
   TFile *fSPDfile;
@@ -91,7 +90,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 29); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 30); 
 };
 
 #endif
