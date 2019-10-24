@@ -25,11 +25,13 @@
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
+#include "AliEMCALGeometry.h"
 #include "AliAnalysisTaskAO2Dconverter.h"
 #include "AliVHeader.h"
 #include "AliAnalysisManager.h"
 
 #include "AliESDCaloCells.h"
+#include "AliESDCaloTrigger.h"
 #include "AliESDHeader.h"
 #include "AliESDtrack.h"
 #include "AliESDMuonTrack.h"
@@ -98,9 +100,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2tracks", "O2calo", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2tracks", "O2calo",  "O2caloTrigger", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics" };
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -221,9 +223,23 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tCalo->Branch("fCellNumber", &calo.fCellNumber, "fCellNumber/S");
     tCalo->Branch("fAmplitude", &calo.fAmplitude, "fAmplitude/F");
     tCalo->Branch("fTime", &calo.fTime, "fTime/F");
+    tCalo->Branch("fCellType", &calo.fCellType, "fCellType/C");
     tCalo->Branch("fType", &calo.fType, "fType/B");
   }
   PostTree(kCalo);
+
+  TTree *tCaloTrigger = CreateTree(kCaloTrigger);
+  tCaloTrigger->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kCaloTrigger]) {
+    tCaloTrigger->Branch("fCollisionID", &calotrigger.fCollisionID, "fCollisionID/I");
+    tCaloTrigger->Branch("fFastOrAbsID", &calotrigger.fFastorAbsID, "fFastorAbsID/S");
+    tCaloTrigger->Branch("fL0Amplitude", &calotrigger.fL0Amplitude, "fL0Amplitude/F");
+    tCaloTrigger->Branch("fL1TimeSum", &calotrigger.fL1TimeSum, "fL1TimeSum/F");
+    tCaloTrigger->Branch("fNL0Times", &calotrigger.fNL0Times, "fNL0Times/C");
+    tCaloTrigger->Branch("fTriggerBits", &calotrigger.fTriggerBits, "fTriggerBits/I");
+    tCaloTrigger->Branch("fType", &calotrigger.fType, "fType/B");
+  }
+  PostTree(kCaloTrigger);
 
   // Associuate branches for MUON tracks
   TTree* tMuon = CreateTree(kMuon);
@@ -584,9 +600,29 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     calo.fAmplitude = amplitude;
     calo.fTime = time;
     calo.fType = cells->GetType(); // common for all cells
-
+    calo.fCellType = cells->GetHighGain(ice) ? 0. : 1.; 
     FillTree(kCalo);
   } // end loop on calo cells
+
+  AliEMCALGeometry *geo = AliEMCALGeometry::GetInstanceFromRunNumber(fESD->GetRunNumber()); // Needed for EMCAL trigger mapping
+  AliESDCaloTrigger *calotriggers = fESD->GetCaloTrigger("EMCAL");
+  calotriggers->Reset();
+  while(calotriggers->Next()){
+    calotrigger.fCollisionID = eventID;
+    int col, row, fastorID;
+    calotriggers->GetPosition(col, row);
+    geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
+    calotrigger.fFastorAbsID = fastorID;
+    calotriggers->GetAmplitude(calotrigger.fL0Amplitude);
+    calotriggers->GetTime(calotrigger.fL0Time);
+    calotriggers->GetTriggerBits(calotrigger.fTriggerBits);
+    Int_t nL0times;
+    calotriggers->GetNL0Times(nL0times);
+    calotrigger.fNL0Times = nL0times;
+    calotriggers->GetL1TimeSum(calotrigger.fTriggerBits);
+    calotrigger.fType = 1;
+    FillTree(kCaloTrigger);
+  }
 
   cells = fESD->GetPHOSCells();
   nCells = cells->GetNumberOfCells();
@@ -604,6 +640,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     calo.fCellNumber = cellNumber;
     calo.fAmplitude = amplitude;
     calo.fTime = time;
+    calo.fCellType = cells->GetHighGain(icp) ? 0. : 1.;     /// @TODO cell type value to be confirmed by PHOS experts
     calo.fType = cells->GetType(); // common for all cells
 
     FillTree(kCalo);

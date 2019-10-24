@@ -41,6 +41,7 @@ public:
     kEvents = 0,
     kTracks,
     kCalo,
+    kCaloTrigger,
     kMuon,
     kMuonCls,
     kZdc,
@@ -239,8 +240,21 @@ private:
     Short_t fCellNumber = -1;     /// Cell absolute Id. number
     Float_t fAmplitude = -999.f;  /// Cell amplitude (= energy!)
     Float_t fTime = -999.f;       /// Cell time
+    Char_t fCellType = -1;        /// EMCAL: High Gain: 0 / Low Gain: 1 / TRU: 2 / LEDmon 3 (see DataFromatsEMCAL/Constants.h)
     Char_t fType = -1;            /// Cell type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calo;
+  
+  struct {
+    // Calorimeter trigger data (EMCAL & PHOS)
+    Int_t   fCollisionID;         /// The index of the collision vertex in the TF, to which the track is attached
+    Short_t fFastorAbsID = - 1;   /// FastOR absolute ID
+    Float_t fL0Amplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
+    Float_t fL0Time = -1.f;       /// L0 time
+    Int_t fL1TimeSum = -1;        /// L1 amplitude (ADC) := Integral over L0 time samples
+    Char_t fNL0Times = -1;        /// Number of L0 times
+    Int_t fTriggerBits = 0;       /// Online trigger bits
+    Char_t fType = -1;            /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
+  } calotrigger;
 
   struct {
     // MUON track data
@@ -335,7 +349,7 @@ private:
   Int_t fOffsetTrackID = 0;   ///! Offset of track IDs (used in V0s)
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 2);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 3);
 };
 
 #endif
