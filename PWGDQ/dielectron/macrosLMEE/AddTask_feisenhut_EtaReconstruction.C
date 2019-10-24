@@ -235,7 +235,7 @@ bool debug = false;
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_sec->At(iCut)->GetName());
-                                                                                if(debug) std::cout << __LINE__ << " DEBUG_AddTask: arrNames_sec->At(iCut)->GetName(): " <<  arrNames_sec->At(iCut)->GetName()<< std::endl;
+                                                                                // if(debug) std::cout << __LINE__ << " DEBUG_AddTask: arrNames_sec->At(iCut)->GetName(): " <<  arrNames_sec->At(iCut)->GetName()<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
     task->AddTrackCuts_secondary(filter);
     DoAdditionalWork(task);

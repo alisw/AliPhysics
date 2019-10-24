@@ -621,7 +621,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
       // ######################################################
       // #################  Four Electrons ####################
       // ######################################################
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fDoFourPairing " << fDoFourPairing << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fDoFourPairing " << fDoFourPairing << std::endl;
       if (fDoFourPairing == true){
         fFourPairList = new TList();
         fFourPairList->SetName("4 el. Pairs");
@@ -1112,37 +1112,37 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     }
   }
 
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fTrackCuts_primary.size: " << fTrackCuts_primary.size() << std::endl;
-                                                                                if(fdebug){
-                                                                                  for (size_t i = 0; i < fTrackCuts_primary.size(); i++) {
-                                                                                  std::cout << __LINE__ << " DEBUG_AnalysisTask: " << i+1 << "-th CutSetting: " << fTrackCuts_primary.at(i)->GetName() << std::endl;
-                                                                                  const AliDielectronCutGroup* cgPIDCutsAna = dynamic_cast< const AliDielectronCutGroup*> (fTrackCuts_primary.at(i)->GetCuts()->At(0));
-                                                                                  const AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = dynamic_cast< const AliDielectronCutGroup*> (cgPIDCutsAna->GetCut(3));
-                                                                                  const AliDielectronVarCuts*  trackCutsAOD = dynamic_cast< const AliDielectronVarCuts*> (cgTrackCutsAnaSPDfirst->GetCut(1));
-
-                                                                                  // std::cout << trackCutsAOD->GetNCuts() << std::endl;
-                                                                                  for (Int_t j = 0; j < trackCutsAOD->GetNCuts(); j++) {
-                                                                                             std::cout << __LINE__ << " DEBUG_AnalysisTask: Cut "<< j+1 <<" " <<  trackCutsAOD->GetCutName(j) << std::endl;
-                                                                                   }
-                                                                                  }
-                                                                                }
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fTrackCuts_secondary.size: " << fTrackCuts_secondary.size() << std::endl;
-                                                                                if(fdebug){
-                                                                                  for (size_t i = 0; i < fTrackCuts_secondary.size(); i++) {
-                                                                                  std::cout << __LINE__ << " DEBUG_AnalysisTask: " << i+1 << "-th CutSetting: " << fTrackCuts_secondary.at(i)->GetName() << std::endl;
-                                                                                  const AliDielectronCutGroup* cgPIDCutsAna = dynamic_cast< const AliDielectronCutGroup*> (fTrackCuts_secondary.at(i)->GetCuts()->At(0));
-                                                                                  const AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = dynamic_cast< const AliDielectronCutGroup*> (cgPIDCutsAna->GetCut(3));
-                                                                                  const AliDielectronVarCuts*  trackCutsAOD = dynamic_cast< const AliDielectronVarCuts*> (cgTrackCutsAnaSPDfirst->GetCut(1));
-
-                                                                                  // std::cout << trackCutsAOD->GetNCuts() << std::endl;
-                                                                                  for (Int_t j = 0; j < trackCutsAOD->GetNCuts(); j++) {
-                                                                                             std::cout << __LINE__ << " DEBUG_AnalysisTask: Cut "<< j+1 <<" " <<  trackCutsAOD->GetCutName(j) << std::endl;
-                                                                                   }
-                                                                                  }
-                                                                                }
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_primary:    " << fRecNegPart_primary.size() <<    " fRecPosPart_primary:    " << fRecPosPart_primary.size()   << std::endl;
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_secondary:  " << fRecNegPart_secondary.size() <<  " fRecPosPart_secondary:  " << fRecPosPart_secondary.size() << std::endl;
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_PrimAndSec: " << fRecNegPart_PrimAndSec.size() << " fRecPosPart_PrimAndSec: " << fRecPosPart_PrimAndSec.size() << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fTrackCuts_primary.size: " << fTrackCuts_primary.size() << std::endl;
+                                                                                // if(fdebug){
+                                                                                //   for (size_t i = 0; i < fTrackCuts_primary.size(); i++) {
+                                                                                //   std::cout << __LINE__ << " DEBUG_AnalysisTask: " << i+1 << "-th CutSetting: " << fTrackCuts_primary.at(i)->GetName() << std::endl;
+                                                                                //   const AliDielectronCutGroup* cgPIDCutsAna = dynamic_cast< const AliDielectronCutGroup*> (fTrackCuts_primary.at(i)->GetCuts()->At(0));
+                                                                                //   const AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = dynamic_cast< const AliDielectronCutGroup*> (cgPIDCutsAna->GetCut(3));
+                                                                                //   const AliDielectronVarCuts*  trackCutsAOD = dynamic_cast< const AliDielectronVarCuts*> (cgTrackCutsAnaSPDfirst->GetCut(1));
+                                                                                //
+                                                                                //   // std::cout << trackCutsAOD->GetNCuts() << std::endl;
+                                                                                //   for (Int_t j = 0; j < trackCutsAOD->GetNCuts(); j++) {
+                                                                                //              std::cout << __LINE__ << " DEBUG_AnalysisTask: Cut "<< j+1 <<" " <<  trackCutsAOD->GetCutName(j) << std::endl;
+                                                                                //    }
+                                                                                //   }
+                                                                                // }
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fTrackCuts_secondary.size: " << fTrackCuts_secondary.size() << std::endl;
+                                                                                // if(fdebug){
+                                                                                //   for (size_t i = 0; i < fTrackCuts_secondary.size(); i++) {
+                                                                                //   std::cout << __LINE__ << " DEBUG_AnalysisTask: " << i+1 << "-th CutSetting: " << fTrackCuts_secondary.at(i)->GetName() << std::endl;
+                                                                                //   const AliDielectronCutGroup* cgPIDCutsAna = dynamic_cast< const AliDielectronCutGroup*> (fTrackCuts_secondary.at(i)->GetCuts()->At(0));
+                                                                                //   const AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = dynamic_cast< const AliDielectronCutGroup*> (cgPIDCutsAna->GetCut(3));
+                                                                                //   const AliDielectronVarCuts*  trackCutsAOD = dynamic_cast< const AliDielectronVarCuts*> (cgTrackCutsAnaSPDfirst->GetCut(1));
+                                                                                //
+                                                                                //   // std::cout << trackCutsAOD->GetNCuts() << std::endl;
+                                                                                //   for (Int_t j = 0; j < trackCutsAOD->GetNCuts(); j++) {
+                                                                                //              std::cout << __LINE__ << " DEBUG_AnalysisTask: Cut "<< j+1 <<" " <<  trackCutsAOD->GetCutName(j) << std::endl;
+                                                                                //    }
+                                                                                //   }
+                                                                                // }
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_primary:    " << fRecNegPart_primary.size() <<    " fRecPosPart_primary:    " << fRecPosPart_primary.size()   << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_secondary:  " << fRecNegPart_secondary.size() <<  " fRecPosPart_secondary:  " << fRecPosPart_secondary.size() << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_PrimAndSec: " << fRecNegPart_PrimAndSec.size() << " fRecPosPart_PrimAndSec: " << fRecPosPart_PrimAndSec.size() << std::endl;
 
   // ##########################################################
   // ##########################################################
@@ -1161,7 +1161,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
   if (fDoPairing){
     std::cout << "start two pairing" << std::endl;
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fGenNegPart: " << fGenNegPart.size() << " fGenPosPart: " << fGenPosPart.size() << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fGenNegPart: " << fGenNegPart.size() << " fGenPosPart: " << fGenPosPart.size() << std::endl;
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
       for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
         AliVParticle* mcPart1 = fMC->GetTrack(fGenNegPart[neg_i].GetTrackID());
@@ -1584,7 +1584,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     //##########################################################
     std::cout << "Doing four pairing..." << std::endl;
 										// if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
-										if(fdebug) std::cout << " fGenNegPart: "  << fGenNegPart.size() << " fGenPosPart: " <<  fGenPosPart.size() << std::endl;
+										// if(fdebug) std::cout << " fGenNegPart: "  << fGenNegPart.size() << " fGenPosPart: " <<  fGenPosPart.size() << std::endl;
     // std::cout << "Bool fDoFourPairing is " << fDoFourPairing << std::endl;
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
       if (fGenNegPart[neg_i].isMCSignal[0] == false) continue;                   // Condition for single electron: Is Primary
@@ -1707,10 +1707,10 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // ##########################################################
     // ##########################################################
     // Fill reconstructed pairs
-                  	                                                            if(fdebug) std::cout << __LINE__ << " Start Four Reconstructed Pairing " << std::endl;
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_primary:    " << fRecNegPart_primary.size() <<    " fRecPosPart_primary:    " << fRecPosPart_primary.size()   << std::endl;
-                  	                                                            if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_secondary:  " << fRecNegPart_secondary.size() <<  " fRecPosPart_secondary:  " << fRecPosPart_secondary.size() << std::endl;
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_PrimAndSec: " << fRecNegPart_PrimAndSec.size() << " fRecPosPart_PrimAndSec: " << fRecPosPart_PrimAndSec.size() << std::endl;
+                  	                                                            // if(fdebug) std::cout << __LINE__ << " Start Four Reconstructed Pairing " << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_primary:    " << fRecNegPart_primary.size() <<    " fRecPosPart_primary:    " << fRecPosPart_primary.size()   << std::endl;
+                  	                                                            // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_secondary:  " << fRecNegPart_secondary.size() <<  " fRecPosPart_secondary:  " << fRecPosPart_secondary.size() << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart_PrimAndSec: " << fRecNegPart_PrimAndSec.size() << " fRecPosPart_PrimAndSec: " << fRecPosPart_PrimAndSec.size() << std::endl;
     for (unsigned int neg_i = 0; neg_i < fRecNegPart_primary.size(); ++neg_i){
       for (unsigned int pos_i = 0; pos_i < fRecPosPart_primary.size(); ++pos_i){
         for (unsigned int neg_j = 0; neg_j < fRecNegPart_secondary.size(); ++neg_j){
