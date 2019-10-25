@@ -150,6 +150,7 @@ public:
     void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
+    void setfNThresholds(Int_t value){fNThresholds=value;}
 
 
     //Track Counting
@@ -158,13 +159,13 @@ public:
           Single1st,
           Single2nd,
           Single3rd,
-          Double12,
-          Double23,
+          Double,
           Triple,
     };
 
-    void DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool* kTagDec);
-    void SetThresholds(TObjArray* threshfirst, TObjArray* threshsec, TObjArray* threshthird);
+    void DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec);
+    void FillTCEfficiencyHists(bool** kTagDec, int jetflavour, double jetpt,bool hasIPs);
+    void SetThresholds(int nthresh, TObjArray** &threshs);
     void ReadProbvsIPLookup(TObjArray *&oLookup);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
 
@@ -314,6 +315,7 @@ private:
     TH1D* h1DFalseBTaggedTripple;//!
 
     int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3 for track counting algorithm
+    vector<double > fFracs;
 
     //Histograms for probability tagging
     std::vector<TH2D*> h2DProbLookup;//
@@ -348,6 +350,8 @@ private:
     Double_t fJetRadius;//
     Double_t fDaughtersRadius;//
     Int_t fNoJetConstituents;//
+    Int_t fNThresholds;//
+
     Double_t fMCglobalDCAxyShift;//
     Double_t fMCglobalDCASmear;//
     Double_t fVertexRecalcMinPt;//
@@ -418,7 +422,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 40)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 41)
 };
 
 #endif
