@@ -1,7 +1,9 @@
 AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
     bool isMC=false, float fSpherDown=0.7, float fdPhidEta=0.04,
-    TString CentEst="kInt7")
-{
+    TString CentEst="kInt7", const char *cutVar = "0", bool doCloseRej=true) {
+
+  TString suffix = TString::Format("%s", cutVar);
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr)
@@ -48,6 +50,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsPosPion->SetPID(AliPID::kPion, 0.);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
   fTrackCutsPosPion->SetChi2Cut(0., 4.0);
+  fTrackCutsPosPion->SetMinimalBooking(false);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
   // Not mention in AN oder Indico
@@ -69,6 +72,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetChi2Cut(0., 4.0);
+  fTrackCutsNegPion->SetMinimalBooking(false);
   //fTrackCutsNegPion->SetCutSmallestSig(true);
 
   //Now we define stuff we want for our Particle collection
@@ -128,6 +132,33 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   closeRejection.push_back(true); // pi+ pi+
   closeRejection.push_back(false); // pi+ pi- 
   closeRejection.push_back(true); // pi- pi-
+
+  if(!doCloseRej) {
+	  //Deactivate the ClosePairRejection
+  	  fdPhidEta=0.;
+	  closeRejection.clear();
+	  closeRejection.push_back(false); // pi+ pi+
+	  closeRejection.push_back(false); // pi+ pi-
+	  closeRejection.push_back(false); // pi- pi-
+  }
+
+  //Variations for fdPhidEta
+  if(suffix == "1") {
+ 	  fdPhidEta=0.035;
+  }
+
+  if(suffix == "2") {
+	  fdPhidEta=0.03;
+  }
+
+  if(suffix == "3") {
+  	  fdPhidEta=0.025;
+  }
+
+  if(suffix == "4") {
+  	  fdPhidEta=0.02;
+  }
+
   //QA plots for tracks
   std::vector<int> pairQA;
   pairQA.push_back(11); // pi+ pi+
@@ -155,6 +186,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   config->SetkTBinning(true);
   config->SetmTBinning(true);
   config->SetMinimalBookingME(false);
+  config->SetdPhidEtaPlots(true);
   
   if (isMC) {
       config->SetMomentumResolution(true);
@@ -203,13 +235,19 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputQA;
-  TString QAName = Form("MyTask");
+  TString addon = "";
+  if (CentEst == "kInt7") {
+  addon += "MB";
+  } else if (CentEst == "kHM") {
+  addon += "HM";
+  }
+  TString QAName = Form("%sResults%s", addon.Data(), suffix.Data());
   coutputQA = mgr->CreateContainer(
-      QAName.Data(), TList::Class(),
-      AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), QAName.Data()));
+    QAName.Data(),
+    TList::Class(),
+    AliAnalysisManager::kOutputContainer,
+    Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
 
   return task;
 }
-
