@@ -246,10 +246,6 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
     config->SetMinimalBookingSample(true);
   }
 
-  if (suffix != "0") {
-    config->SetMinimalBookingME(true);
-  }
-
   if (Systematic) {
     if (suffix == "1") {
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
