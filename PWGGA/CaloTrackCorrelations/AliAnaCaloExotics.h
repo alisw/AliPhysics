@@ -150,7 +150,7 @@ public:
   TH3F *   fhM02EnergyExo;                      //!<! Cluster M02 vs Energy vs exoticity
   TH3F *   fhM02EnergyExoZoomIn;                //!<! Cluster M02 vs Energy vs exoticity, finer binning in exotic region
   TH3F *   fhM20EnergyExoM02MinCut;             //!<! Cluster M20 vs Energy vs exoticity for M02 > 0.1
-  TH3F *   fhM02ExoNCells[fgkNEBins];           //!<! Cluster M02 vs exoticity vs n cells
+  TH3F *   fhM02ExoNCells[fgkNEBins];           //!<! Cluster M02 vs exoticity vs n cells, different E bins
   
   // Different n cells definitions
   TH2F *   fhNCellsPerClusterW ;                //!<! Cluster E vs n cells with w > 0         
@@ -162,18 +162,24 @@ public:
   TH2F *   fhNCellsPerClusterDiffW ;            //!<! Cluster E vs n cells with w > 0 in same T-Card as max E cell
   TH3F *   fhNCellsPerClusterSameDiff;          //!<! Cluster E vs n cells in same vs different T-Card as max E cell
   TH2F *   fhNCellsPerClusterSameFrac;          //!<! Cluster E vs fraction n cells in same T-Card as max E cell
+  TH3F *   fhNCellsPerClusterSameFracExo;       //!<! Cluster E vs fraction n cells in same T-Card as max E cell vs exoticity
 
   TH2F *   fhExoSame;                           //!<! Cluster E vs 1 - E same TCard / E max
   TH2F *   fhExoDiff;                           //!<! Cluster E vs 1 - E different TCard / E max
   TH2F *   fhExoSame5;                          //!<! Cluster E vs 1 - E same & neighbor TCard / E max
   TH2F *   fhExoDiff5;                          //!<! Cluster E vs 1 - E different & neighbor TCard / E max
   
-  // Cluster column-row
-  TH3F *   hClusterColRowExo[2][fgkNEBins];     //!<! Cluster col-row centred in cell max vs exoticity for different cluster E bins
-  //TH2F *   hClusterColRow   [2][fgkNEBins];     //!<! Cluster col-row centred in cell max for different cluster E bins
-  //TH3F *   hClusterColRowExoW[2][fgkNEBins];    //!<! Cluster col-row centred in cell max vs exoticity and w>0 for different cluster E bins 
+  TH3F *   fhNCellsSameDiffExo[fgkNEBins];      //!<! N cells in same vs diff vs exoticity, different cluster E bins
+  TH3F *   fhEnSameDiffExo    [fgkNEBins];      //!<! Sum of E in same vs diff vs exoticity, different  cluster E bins
+  TH3F *   fhCellEnSameExo;                     //!<! Cluster E vs cell E in same T-Card vs exoticity
+  TH3F *   fhCellEnDiffExo;                     //!<! Cluster E vs cell E in diff T-Card vs exoticity
 
-  TH3F *   hClusterColRowPerSMHighNCell[fgkNEBins]; //!<! Cluster col-row centred in cell max vs SM for different cluster E bins and n cells > fHighNCellCut
+  // Cluster column-row
+  TH3F *   fhClusterColRowExo[2][fgkNEBins];     //!<! Cluster col-row centred in cell max vs exoticity for different cluster E bins
+  //TH2F *   fhClusterColRow   [2][fgkNEBins];     //!<! Cluster col-row centred in cell max for different cluster E bins
+  //TH3F *   fhClusterColRowExoW[2][fgkNEBins];    //!<! Cluster col-row centred in cell max vs exoticity and w>0 for different cluster E bins 
+
+  TH3F *   fhClusterColRowPerSMHighNCell[fgkNEBins]; //!<! Cluster col-row centred in cell max vs SM for different cluster E bins and n cells > fHighNCellCut
 
   
   // Cluster-Track matching
@@ -192,17 +198,17 @@ public:
   TH2F *   fhTrackMatchedDPhiNeg1Cell;          //!<! Phi distance between - track and cluster vs cluster E, n cells = 1
   TH2F *   fhTrackMatchedDEtaDPhiNeg1Cell;      //!<! Eta vs Phi distance between - track and cluster, E cluster > fEMinForExo and n cells = 1
   
-  TH2F *   fhTrackMatchedDEtaPos1Cell;         //!<! Eta distance between + track and cluster vs cluster E, n cells = 1
-  TH2F *   fhTrackMatchedDPhiPos1Cell;         //!<! Phi distance between + track and cluster vs cluster E, n cells = 1
-  TH2F *   fhTrackMatchedDEtaDPhiPos1Cell;     //!<! Eta vs Phi distance between + track and cluster, E cluster > fEMinForExo and n cells = 1
+  TH2F *   fhTrackMatchedDEtaPos1Cell;          //!<! Eta distance between + track and cluster vs cluster E, n cells = 1
+  TH2F *   fhTrackMatchedDPhiPos1Cell;          //!<! Phi distance between + track and cluster vs cluster E, n cells = 1
+  TH2F *   fhTrackMatchedDEtaDPhiPos1Cell;      //!<! Eta vs Phi distance between + track and cluster, E cluster > fEMinForExo and n cells = 1
   
-  TH2F *   fhEOverP1Cell;                      //!<! E/p for track-cluster matches, n cells = 1
+  TH2F *   fhEOverP1Cell;                       //!<! E/p for track-cluster matches, n cells = 1
   
   // Calorimeter cells
     
-  TH2F *   fhCellExoAmp;                     //!<! Cell amplitude vs exoticity
-  TH3F *   fhCellExoAmpTime;                 //!<! Cell amplitude vs time vs exoticity
-  TH3F *   fhCellExoGrid ;                   //!<! Cells ordered in column/row vs exoticity when amplitude > fEMinForExo 
+  TH2F *   fhCellExoAmp;                        //!<! Cell amplitude vs exoticity
+  TH3F *   fhCellExoAmpTime;                    //!<! Cell amplitude vs time vs exoticity
+  TH3F *   fhCellExoGrid ;                      //!<! Cells ordered in column/row vs exoticity when amplitude > fEMinForExo 
 
 
   /// Copy constructor not implemented.
