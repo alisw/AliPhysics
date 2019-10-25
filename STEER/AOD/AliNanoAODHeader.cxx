@@ -111,7 +111,7 @@ Double_t AliNanoAODHeader::GetCentr (const char *x) const {
 } 
 
 Int_t  AliNanoAODHeader::GetRunNumber() const { 
-   if (fRunNumber>0) return GetVarInt(fRunNumber);
+   if (fRunNumber>-1) return GetVarInt(fRunNumber);
    return 0;
 
 } 
