@@ -244,6 +244,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetPidResponse(AliPIDResponse* p){fPidResponse=p;}
 
   AliAODTrack *GetProng(AliVEvent *event,AliAODRecoDecayHF *rd,Int_t iprong);
+  Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3]) const;
 
   //
  private:
