@@ -9,14 +9,15 @@
 
 AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 									 bool isMC = false,				//2
-									 int phiSpinning =0,			//3
-                                     int nSpins = 1,				//4
-									 double corrRange = 0.1,		//5
-									 TString triggerData = "kInt7",	//6
-                                     bool Systematic = false,		//7
-									 const char *sTcut = "8",		//8
-									 bool DoSpherocity = false,		//9
-									 const char *s0cut = "08",		//10
+									 int fFilterBit = 128,			//3
+									 int phiSpinning =0,			//4
+                                     int nSpins = 1,				//5
+									 double corrRange = 0.1,		//6
+									 TString triggerData = "kInt7",	//7
+                                     bool Systematic = false,		//8
+									 const char *sTcut = "8",		//9
+									 bool DoSpherocity = false,		//10
+									 const char *s0cut = "08",		//11
                                      const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -87,12 +88,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
 		  isMC, true, true, true);//DCAplots,CombSigma,ContribSplitting
-  TrackCuts->SetFilterBit(128);
+  TrackCuts->SetFilterBit(fFilterBit);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
-  AntiTrackCuts->SetFilterBit(128);
+  AntiTrackCuts->SetFilterBit(fFilterBit);
   AntiTrackCuts->SetCutCharge(-1);
 
   //Lambda Cuts
