@@ -331,6 +331,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAODRecoDecay *fMassCalc2; /// for 2 prong
   AliAODRecoDecay *fMassCalc3; /// for 3 prong
   AliAODRecoDecay *fMassCalc4; /// for 4 prong
+  Double_t fMinPt3Prong; /// minimum pt for 3 prong candidates
   Bool_t fOKInvMassD0; /// pair fullfilling D0 inv mass selection
   Bool_t fOKInvMassJpsi; /// pair fullfilling Jpsi inv mass selection
   Bool_t fOKInvMassDplus; /// triplet fullfilling D+ inv mass selection
@@ -423,7 +424,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisVertexingHF,27);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,28);  // Reconstruction of HF decay candidates
   /// \endcond
 };
 

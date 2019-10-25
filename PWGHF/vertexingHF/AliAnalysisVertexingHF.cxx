@@ -141,6 +141,7 @@ fMassCutBeforeVertexing(kFALSE),
 fMassCalc2(0),
 fMassCalc3(0),
 fMassCalc4(0),
+fMinPt3Prong(0.),
 fOKInvMassD0(kFALSE),
 fOKInvMassJpsi(kFALSE),
 fOKInvMassDplus(kFALSE),
@@ -236,6 +237,7 @@ fMassCutBeforeVertexing(source.fMassCutBeforeVertexing),
 fMassCalc2(source.fMassCalc2),
 fMassCalc3(source.fMassCalc3),
 fMassCalc4(source.fMassCalc4),
+fMinPt3Prong(source.fMinPt3Prong),
 fOKInvMassD0(source.fOKInvMassD0),
 fOKInvMassJpsi(source.fOKInvMassJpsi),
 fOKInvMassDplus(source.fOKInvMassDplus),
@@ -330,6 +332,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fMassCalc2 = source.fMassCalc2;
   fMassCalc3 = source.fMassCalc3;
   fMassCalc4 = source.fMassCalc4;
+  fMinPt3Prong = source.fMinPt3Prong;
   fOKInvMassD0 = source.fOKInvMassD0;
   fOKInvMassJpsi = source.fOKInvMassJpsi;
   fOKInvMassDplus = source.fOKInvMassDplus;
@@ -635,6 +638,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   AliESDv0         *esdV0 = 0;
 
   Bool_t massCutOK=kTRUE;
+  
+  fMinPt3Prong=0.;
+  fMinPt3Prong=TMath::Min(fCutsDplustoKpipi->GetMinPtCandidate(),fCutsDstoKKpi->GetMinPtCandidate());
+  fMinPt3Prong=TMath::Min(fMinPt3Prong,fCutsLctopKpi->GetMinPtCandidate());
 
   // LOOP ON  POSITIVE  TRACKS
   for(iTrkP1=0; iTrkP1<nSeleTrks; iTrkP1++) {
@@ -1172,7 +1179,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	// 3 prong candidates
 	if(f3Prong && massCutOK) {
-
+	  
 	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
 	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,twoTrackArray2,dcap1n1,dcap2n1,dcap1p2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
 	  if(ok3Prong) {
@@ -3140,7 +3147,6 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
   Int_t nprongs=3;
   Double_t minv2,mrange;
   Double_t lolim,hilim;
-  Double_t minPt=0;
   Bool_t retval=kFALSE;
 
 
@@ -3149,10 +3155,8 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
   fOKInvMassDs=kFALSE;
   fOKInvMassLc=kFALSE;
   // pt cut
-  minPt=TMath::Min(fCutsDplustoKpipi->GetMinPtCandidate(),fCutsDstoKKpi->GetMinPtCandidate());
-  minPt=TMath::Min(minPt,fCutsLctopKpi->GetMinPtCandidate());
-  if(minPt>0.1)
-    if(fMassCalc3->Pt2() < minPt*minPt) return retval;
+  if(fMinPt3Prong>0.1)
+    if(fMassCalc3->Pt2() < fMinPt3Prong*fMinPt3Prong) return retval;
   // D+->Kpipi
   mrange=fCutsDplustoKpipi->GetMassCut();
   lolim=fMassDplus-mrange;
