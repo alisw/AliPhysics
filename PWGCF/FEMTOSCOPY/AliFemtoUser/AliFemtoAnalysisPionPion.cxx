@@ -215,8 +215,8 @@ struct CutConfig_Pion {
 struct CutConfig_Pair {
   Bool_t use_avgsep = { kFALSE };
   Float_t min_delta_eta = { 0.01 },
-          min_delta_phi = { 0.04 },
-          phi_star_radius = { 1.2 };
+          min_delta_phi = { 0.033 },
+          phi_star_radius = { 1.1 };
 
   Float_t min_avgsep = { 3.0 };
 
