@@ -262,7 +262,11 @@ void AliEmcalJetTree::FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadr
   fBuffer_Event_Weight = eventWeight;
   fBuffer_Event_ImpactParameter = impactParameter;
 }
-
+//________________________________________________________________________
+void AliEmcalJetTree::FillBuffer_JetTagger(Float_t taggedJetPt_Det, Float_t taggedJetPt_Part){
+  fBuffer_Tag_DetLevelJet_Pt           = taggedJetPt_Det;
+  fBuffer_Tag_PartLevelJet_Pt          = taggedJetPt_Part;
+}
 
 //________________________________________________________________________
 void AliEmcalJetTree::FillBuffer_PID(std::vector<Float_t>& trackPID_ITS, std::vector<Float_t>& trackPID_TPC, std::vector<Float_t>& trackPID_TOF, std::vector<Float_t>& trackPID_TRD, std::vector<Short_t>& trackPID_Reco, std::vector<Int_t>& trackPID_Truth)
@@ -328,7 +332,7 @@ void AliEmcalJetTree::FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std
 }
 
 //________________________________________________________________________
-void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks)
+void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveTagInfo, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks)
 {
   // Create the tree with active branches
 
@@ -473,6 +477,12 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
     fJetTree->Branch("Jet_MC_TruePtFraction",&fBuffer_Jet_MC_TruePtFraction,"Jet_MC_TruePtFraction/F");
     fJetTree->Branch("Jet_MC_TruePtFraction_PartLevel",&fBuffer_Jet_MC_TruePtFraction_PartLevel,"Jet_MC_TruePtFraction_PartLevel/F");
   }
+  if(saveTagInfo)
+  {
+      fJetTree->Branch("Tag_DetLevelJet_Pt",&fBuffer_Tag_DetLevelJet_Pt,"Tag_DetLevelJet_Pt/F");
+      fJetTree->Branch("Tag_PartLevelJet_Pt",&fBuffer_Tag_PartLevelJet_Pt,"Tag_PartLevelJet_Pt/F");
+  }
+
 
   if(saveSecondaryVertices)
   {
@@ -627,7 +637,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 
   // ### Initialize the jet tree (settings must all be given at this stage)
   fJetTree->SetRandomGenerator(fRandomGenerator);
-  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, (fMatchedDetLevelJetsArrayName != ""), (fMatchedPartLevelJetsArrayName != ""), fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveSecondaryVertices, fSaveTriggerTracks);
+  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, (fMatchedDetLevelJetsArrayName != ""), (fMatchedPartLevelJetsArrayName != ""), fSaveTaggedInfo, fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveSecondaryVertices, fSaveTriggerTracks);
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
 
@@ -830,6 +840,48 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
                                       truePtFraction,truePtFraction_PartLevel,fPtHard,fEventWeight,fImpactParameter);
     }
 
+    if(fSaveTaggedInfo){
+      Double_t taggedJetPt_Det = 0;
+      Double_t taggedJetPt_Part = 0;
+      AliJetContainer * jetsHybrid = GetJetContainer(0);
+      AliJetContainer * jetsDetLevel = GetJetContainer(1);
+      AliJetContainer * jetsPartLevel = GetJetContainer(2);
+      // Validation
+      if (!jetsHybrid) {
+	AliErrorStream() << "Could not retrieve hybrid jet collection.\n";
+	return kFALSE;
+      }
+      if (!jetsDetLevel) {
+	AliErrorStream() << "Could not retrieve det level jet collection.\n";
+	return kFALSE;
+      }
+      if (!jetsPartLevel) {
+	AliErrorStream() << "Could not retrieve part level jet collection.\n";
+	return kFALSE;
+      }
+
+      // Now, begin the actual matching.
+      // Hybrid <-> det first
+      AliDebugStream(2) << "Matching hybrid to detector level jets.\n";
+      // First, we reset the tagging
+      ResetMatching(*jetsHybrid);
+      ResetMatching(*jetsDetLevel);
+      // Next, we perform the matching
+      PerformGeometricalJetMatching(*jetsHybrid, *jetsDetLevel, (jetsHybrid->GetJetRadius()*0.75));
+      // Now, begin the next matching stage
+      // det <-> particle
+      AliDebugStream(2) << "Matching detector level to particle level jets.\n";
+      // First, we reset the tagging. We need to reset the det matching again to ensure
+      // that it doesn't accidentally keep some latent matches to the hybrid jets.
+      ResetMatching(*jetsDetLevel);
+      ResetMatching(*jetsPartLevel);
+      // Next, we perform the matching
+      PerformGeometricalJetMatching(*jetsDetLevel, *jetsPartLevel, (jetsHybrid->GetJetRadius()*0.75));
+
+      GetJetTagging(*jetsHybrid, *jetsDetLevel, kFALSE, taggedJetPt_Det, taggedJetPt_Part);
+      GetJetTagging(*jetsDetLevel, *jetsPartLevel, kTRUE, taggedJetPt_Det, taggedJetPt_Part);
+      fJetTree->FillBuffer_JetTagger(taggedJetPt_Det, taggedJetPt_Part);
+    }
     // ### CONSTITUENT LOOP: Retrieve PID values + impact parameters
     if(fSaveConstituentPID || fSaveConstituentsIP)
     {
@@ -1181,7 +1233,152 @@ void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Dou
     }
   }
 }
+//________________________________________________________________________
+bool AliAnalysisTaskJetExtractor::PerformGeometricalJetMatching(AliJetContainer& contBase,
+                                    AliJetContainer& contTag, double maxDist) 
+{
+  //std::cout << "dR: " << maxDist << std::endl;
+  // Setup
+  const Int_t kNacceptedBase = contBase.GetNAcceptedJets(), kNacceptedTag = contTag.GetNAcceptedJets();
+  if (!(kNacceptedBase && kNacceptedTag)) {
+    return false;
+  }
 
+  // Build up vectors of jet pointers to use when assigning the closest jets.
+  // The storages are needed later for applying the tagging, in order to avoid multiple occurrence of jet selection
+  std::vector<AliEmcalJet*> jetsBase(kNacceptedBase), jetsTag(kNacceptedTag);
+
+  int countBase(0), countTag(0);
+  for (auto jb : contBase.accepted()) {
+    jetsBase[countBase] = jb;
+    countBase++;
+  }
+  //std::cout << "Count Base" << countBase << std::endl;
+  for (auto jt : contTag.accepted()) {
+    jetsTag[countTag] = jt;
+    countTag++;
+  }
+  //					    std::cout << "Count Tag: " << countTag << std::endl;
+
+  TArrayI faMatchIndexTag(kNacceptedBase), faMatchIndexBase(kNacceptedTag);
+  faMatchIndexBase.Reset(-1);
+  faMatchIndexTag.Reset(-1);
+
+  // find the closest distance to the base jet
+  countBase = 0;
+  for (auto jet1 : contBase.accepted()) {
+    double distance = maxDist;
+
+    // Loop over all accepted jets and brute force search for the closest jet.
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contTagAcceptedIndex = 0;
+    for (auto jet2 : contTag.accepted()) {
+      double dR = jet1->DeltaR(jet2);
+      if (dR < distance && dR < maxDist) {
+        faMatchIndexTag[countBase] = contTagAcceptedIndex;
+        distance = dR;
+      }
+      contTagAcceptedIndex++;
+    }
+
+    // Let us know whether a match was found successfully.
+    if (faMatchIndexTag[countBase] >= 0 && distance < maxDist) {
+      //std::cout << "Found closest tag jet for " << countBase << " with match index " << faMatchIndexTag[countBase] << " and distance " << distance << std::endl;
+    } else {
+      //std::cout << "Not found closest tag jet for " << countBase << std::endl;
+    }
+
+    countBase++;
+  }
+
+  // other way around
+  countTag = 0;
+  for (auto jet1 : contTag.accepted()) {
+    double distance = maxDist;
+
+    // Loop over all accepted jets and brute force search for the closest jet.
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contBaseAcceptedIndex = 0;
+    for (auto jet2 : contBase.accepted()) {
+      double dR = jet1->DeltaR(jet2);
+      if (dR < distance && dR < maxDist) {
+        faMatchIndexBase[countTag] = contBaseAcceptedIndex;
+        distance = dR;
+      }
+      contBaseAcceptedIndex++;
+    }
+
+    // Let us know whether a match was found successfully.
+    if (faMatchIndexBase[countTag] >= 0 && distance < maxDist) {
+      //std::cout << "Found closest base jet for " << countTag << " with match index " << faMatchIndexBase[countTag] << " and distance " << distance << std::endl;
+    } else {
+      AliDebugStream(1) << "Not found closest base jet for " << countTag << ".\n";
+    }
+
+    countTag++;
+  }
+
+  // check for "true" correlations
+  // these are pairs where the base jet is the closest to the tag jet and vice versa
+  // As the lists are linear a loop over the outer base jet is sufficient.
+  AliDebugStream(1) << "Starting true jet loop: nbase(" << kNacceptedBase << "), ntag(" << kNacceptedTag << ")\n";
+  for (int ibase = 0; ibase < kNacceptedBase; ibase++) {
+    AliDebugStream(2) << "base jet " << ibase << ": match index in tag jet container " << faMatchIndexTag[ibase]
+             << "\n";
+    if (faMatchIndexTag[ibase] > -1) {
+      AliDebugStream(2) << "tag jet " << faMatchIndexTag[ibase] << ": matched base jet " << faMatchIndexBase[faMatchIndexTag[ibase]] << "\n";
+    }
+    // We have a true correlation where each jet points to the other.
+    if (faMatchIndexTag[ibase] > -1 && faMatchIndexBase[faMatchIndexTag[ibase]] == ibase) {
+      AliDebugStream(2) << "found a true match \n";
+      AliEmcalJet *jetBase = jetsBase[ibase], *jetTag = jetsTag[faMatchIndexTag[ibase]];
+      // We have a valid pair of matched jets, so set the closest jet properties.
+      if (jetBase && jetTag) {
+        Double_t dR = jetBase->DeltaR(jetTag);
+        jetBase->SetClosestJet(jetTag, dR);
+        jetTag->SetClosestJet(jetBase, dR);
+      }
+    }
+  }
+  return true;
+}
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::GetJetTagging(AliJetContainer& contBase, AliJetContainer& contTag, Bool_t isMatchTwo,  Double_t& detJetPt, Double_t& partJetPt)
+{
+  for (auto jet1 : contBase.accepted()) {
+    // Setup
+    Double_t ptJet1 = jet1->Pt() - contBase.GetRhoVal() * jet1->Area();
+    //std::cout << "pTJet1: " << ptJet1 << std::endl;
+    // Retrieve jet 2
+    AliEmcalJet * jet2 = jet1->ClosestJet();
+    if (!jet2) { continue; }
+    AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
+    Double_t ptJet2 = jet2->Pt() - contTag.GetRhoVal() * jet2->Area();
+    // This will retrieve the fraction of jet2's momentum in jet1.
+    Double_t fraction = contBase.GetFractionSharedPt(jet1);
+    //std::cout << "fraction: " << fraction << std::endl;
+    if (fraction < 0.5 && !(isMatchTwo)) {
+      continue;
+    }
+    //    std::cout << "tagged Jet pT: " << matchedJetPt << std::endl;
+    if(isMatchTwo){
+      detJetPt  = ptJet1;
+      partJetPt = ptJet2;
+    }
+  }
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::ResetMatching(const AliJetContainer &c)
+{
+  for(auto j : c.all()){
+    j->ResetMatching();
+  }
+}
+  
 
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractor::GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC)
