@@ -1350,7 +1350,7 @@ void AliAnalysisTaskJetExtractor::GetJetTagging(AliJetContainer& contBase, AliJe
   for (auto jet1 : contBase.accepted()) {
     // Setup
     Double_t ptJet1 = jet1->Pt() - contBase.GetRhoVal() * jet1->Area();
-    std::cout << "pTJet1: " << ptJet1 << std::endl;
+    //std::cout << "pTJet1: " << ptJet1 << std::endl;
     // Retrieve jet 2
     AliEmcalJet * jet2 = jet1->ClosestJet();
     if (!jet2) { continue; }
@@ -1358,7 +1358,7 @@ void AliAnalysisTaskJetExtractor::GetJetTagging(AliJetContainer& contBase, AliJe
     Double_t ptJet2 = jet2->Pt() - contTag.GetRhoVal() * jet2->Area();
     // This will retrieve the fraction of jet2's momentum in jet1.
     Double_t fraction = contBase.GetFractionSharedPt(jet1);
-    std::cout << "fraction: " << fraction << std::endl;
+    //std::cout << "fraction: " << fraction << std::endl;
     if (fraction < 0.5 && !(isMatchTwo)) {
       continue;
     }
