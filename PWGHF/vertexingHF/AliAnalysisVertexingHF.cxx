@@ -2419,14 +2419,11 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   AliESDtrack *negtrack  = (AliESDtrack*)threeTrackArray->UncheckedAt(1);
   AliESDtrack *postrack2 = (AliESDtrack*)threeTrackArray->UncheckedAt(2);
 
-  postrack1->PropagateToDCA(secVert,fBzkG,kVeryBig);
-  negtrack->PropagateToDCA(secVert,fBzkG,kVeryBig);
-  postrack2->PropagateToDCA(secVert,fBzkG,kVeryBig);
-  postrack1->GetPxPyPz(momentum);
+  GetTrackMomentumAtSecVert(postrack1,secVert,momentum);
   px[0] = momentum[0]; py[0] = momentum[1]; pz[0] = momentum[2];
-  negtrack->GetPxPyPz(momentum);
+  GetTrackMomentumAtSecVert(negtrack,secVert,momentum);
   px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
-  postrack2->GetPxPyPz(momentum);
+  GetTrackMomentumAtSecVert(postrack2,secVert,momentum);
   px[2] = momentum[0]; py[2] = momentum[1]; pz[2] = momentum[2];
 
   // invariant mass cut for D+, Ds, Lc
@@ -2441,7 +2438,6 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   // primary vertex to be used by this candidate
   AliAODVertex *primVertexAOD  = PrimaryVertex(threeTrackArray,event);
   if(!primVertexAOD) return 0x0;
-
   Double_t d0z0[2],covd0z0[3];
   postrack1->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
   d0[0]=d0z0[0];
@@ -3740,3 +3736,28 @@ Bool_t AliAnalysisVertexingHF::CheckCutsConsistency(){
 }
 //-----------------------------------------------------------------------------
 
+Bool_t AliAnalysisVertexingHF::GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3]) const {
+  /// fast calculation (no covariance matrix treatment) of track momentum at secondary vertex
+
+  Double_t alpha=tr->GetAlpha();
+  Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
+  Double_t x=tr->GetX(), y=tr->GetParameter()[0], snp=tr->GetParameter()[2];
+  Double_t xv= secVert->GetX()*cs + secVert->GetY()*sn;
+  Double_t yv=-secVert->GetX()*sn + secVert->GetY()*cs;
+  x-=xv; y-=yv;
+  Double_t crv=tr->GetC(fBzkG);
+  if (TMath::Abs(fBzkG) < kAlmost0Field) crv=0.;
+  double csp = TMath::Sqrt((1.-snp)*(1.+snp));
+  
+  Double_t tgfv=-(crv*x - snp)/(crv*y + csp);
+  cs = 1./TMath::Sqrt(1+tgfv*tgfv);
+  sn = cs<1. ? tgfv*cs : 0.;
+
+  x = xv*cs + yv*sn;
+  float alpNew = alpha+TMath::ASin(sn);
+  if (!tr->RotateParamOnly(alpNew)) {
+    return kFALSE; // failed
+ }
+ tr->GetPxPyPzAt(x, fBzkG,momentum); // extract momentum
+ return kTRUE;
+}
