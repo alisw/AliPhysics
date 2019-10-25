@@ -617,11 +617,11 @@ void AliTPCv2::CreateGeometry()
   //
   TGeoVolume *cflv = new TGeoVolume("TPC_CDR",cfl,m3);
   // sandwich
-  TGeoTubeSeg *cd1 = new TGeoTubeSeg(60.6224,61.19,71.1,0.2,119.2);
-  TGeoTubeSeg *cd2 = new TGeoTubeSeg(60.6262,61.1862,71.1,0.2,119.2);
-  TGeoTubeSeg *cd3 = new TGeoTubeSeg(60.6462,61.1662,71.1,0.2,119.2);
-  TGeoTubeSeg *cd4 = new TGeoTubeSeg(60.6562,61.1562,71.1,0.2,119.2);
-  TGeoTubeSeg *tepox4 = new TGeoTubeSeg(60.6224,61.19,71.1,359.8,0.8);
+  TGeoTubeSeg *cd1 = new TGeoTubeSeg(60.6224,61.19,69.8,0.05,119.95);
+  TGeoTubeSeg *cd2 = new TGeoTubeSeg(60.6262,61.1862,69.8,0.05,119.95);
+  TGeoTubeSeg *cd3 = new TGeoTubeSeg(60.6462,61.1662,69.8,0.05,119.95);
+  TGeoTubeSeg *cd4 = new TGeoTubeSeg(60.6562,61.1562,69.8,0.05,119.95);
+  TGeoTubeSeg *tepox4 = new TGeoTubeSeg(60.6224,61.19,69.8,359.95,0.05);
   //
   TGeoMedium *sm6 = gGeoManager->GetMedium("TPC_Prepreg1");
   TGeoMedium *sm8 = gGeoManager->GetMedium("TPC_Epoxyfm");
@@ -630,7 +630,15 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *cd3v = new TGeoVolume("TPC_CDR3",cd3,sm8); //epoxy film
   TGeoVolume *cd4v = new TGeoVolume("TPC_CDR4",cd4,sm4); //nomex
   TGeoVolume *tvep4 = new TGeoVolume("TPC_IFEPOX4",tepox4,smep);
-
+  //
+  // joints between sections - 1 deg prepreg1 placed in nomex at lower and upper radius + 0.1 deg of glue (epoxy)
+  //
+  TGeoTubeSeg *cdjl = new TGeoTubeSeg(60.6562,60.6762,69.8,0.,1.0); //lower, to be rotated when positioned
+  TGeoTubeSeg *cdju = new TGeoTubeSeg(61.1362,61.1562,69.8,0.,1.0); //upper, to be rotated when positioned
+  //
+  TGeoVolume *cdjlv = new TGeoVolume("TPC_CDJL",cdjl,sm6);
+  TGeoVolume *cdjuv = new TGeoVolume("TPC_CDJU",cdju,sm6); 
+  //
   //
   // seals for central drum 2 copies
   //
@@ -661,16 +669,43 @@ void AliTPCv2::CreateGeometry()
   TGeoRotation *ref = new TGeoRotation("ref",90.,0.,90.,90.,180.,0.);
   //
   cd1v->AddNode(cd2v,1); cd2v->AddNode(cd3v,1); cd3v->AddNode(cd4v,1); //sandwich
-  // first segment  
+  //
+  // joints, lower part and upper parts, placed in nomex
+  //
+  segrot = new TGeoRotation();
+  segrot->RotateZ(0.05);
+  cd4v->AddNode(cdjlv,1,segrot);
+  cd4v->AddNode(cdjuv,1,segrot);
+  segrot = new TGeoRotation();
+  segrot->RotateZ(118.95);
+  cd4v->AddNode(cdjlv,2,segrot);
+  cd4v->AddNode(cdjuv,2,segrot);
+  //
+  // according to the conversion data segments had an additional rotation angle of 4.6 deg.
+  //
+  // first segment
+  segrot = new TGeoRotation();
+  segrot->RotateZ(4.6);
   cflv->AddNode(cd1v,1); cflv->AddNode(tvep4,1);
   // second segment
   segrot = new TGeoRotation();
-  segrot->RotateZ(120.);
+  segrot->RotateZ(124.6);
   cflv->AddNode(cd1v,2,segrot); cflv->AddNode(tvep4,2,segrot);
   // third segment
   segrot = new TGeoRotation();
-  segrot->RotateZ(240.);
+  segrot->RotateZ(244.6);
   cflv->AddNode(cd1v,3,segrot); cflv->AddNode(tvep4,3,segrot);
+  //
+  //  heating strips, 
+  //
+  TGeoTubeSeg *hstr = new TGeoTubeSeg(60.6124,60.6224,67.6,0.,1.25);
+  TGeoVolume *hstrv = new TGeoVolume("TPC_HSTR",hstr,m1); // air, caved out from cflv
+  for(Int_t i=0;i<144;i++){
+    Double_t alpha = i*2.5;
+    segrot = new TGeoRotation();
+    segrot->RotateZ(alpha);
+    cflv->AddNode(hstrv,i+1,segrot);
+  }
   //
   v1->AddNode(siv,1,new TGeoTranslation(0.,0.,-69.9));
   v1->AddNode(siv,2,new TGeoTranslation(0.,0.,69.9));
