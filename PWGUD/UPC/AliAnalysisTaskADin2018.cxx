@@ -61,7 +61,7 @@
 #include "AliAODInputHandler.h"
 #include "AliMuonTrackCuts.h"
 #include "AliAODVertex.h"         // My addition, to use Eugeny Krishen's format
-
+#include <bitset>
 
 // my headers
 #include "AliAnalysisTaskADin2018.h"
@@ -71,6 +71,9 @@
 class AliAnalysisTaskADin2018;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout'
+
+typedef std::bitset<32> IntBits;
+// typedef std::bitset<sizeof(UShort_t)> IntBits;
 
 ClassImp(AliAnalysisTaskADin2018) // classimp: necessary for root
 
@@ -435,6 +438,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   Int_t iSelectionCounter = 0; // no selection applied yet
   fCounterH->Fill(iSelectionCounter); // entering UserExec
   iSelectionCounter++;
+  // fADcheck = 1;
 
   // get AOD event
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -758,6 +762,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   // AD
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
   fCounterH->Fill(19);
+  Int_t is_ADA_set = -9;
+  Int_t is_ADC_set = -9;
   if(dataAD) {
         fCounterH->Fill(iSelectionCounter);
         iSelectionCounter++;
@@ -766,6 +772,14 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
         fADADecision = dataAD->GetADADecision();
         fADCDecision = dataAD->GetADCDecision();
         fCounterH->Fill(21);
+
+        is_ADA_set = IntBits( dataAD->GetTriggerBits() ).test(12);
+        is_ADC_set = IntBits( dataAD->GetTriggerBits() ).test(13);
+        // cout << "is_ADA_set = " << is_ADA_set << endl;
+        // cout << "is_ADC_set = " << is_ADC_set << endl;
+        // cout << "is_ADA_set = " << IntBits( dataAD->GetTriggerBits() ) << endl;
+        // cout << "is_ADC_set = " << dataAD->GetTriggerBits() << endl;
+
   }
   fCounterH->Fill(22);
 
@@ -796,6 +810,9 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
        PostData(1, fOutputList);
        return;
   }
+  /**
+   * Check with no AD veto at all...
+   */
   if(fADADecision != 0) {
        PostData(1, fOutputList);
        return;
@@ -812,8 +829,9 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
    */
   if( fADcheck != 0){
       if(fADCDecision != 0) {
-           PostData(1, fOutputList);
-           return;
+          // fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
+          PostData(1, fOutputList);
+          return;
       }
   }
   /* - Empty V0C decision
@@ -842,6 +860,133 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
        PostData(1, fOutputList);
        return;
   }
+
+
+
+  //
+  //
+  //
+  // /******************************
+  //  *       HW + SW check        *
+  //  ******************************/
+  // /**
+  //  * Check with no AD veto at all...
+  //  */
+  // if ( is_ADA_set == 0 ){
+  //     /* -
+  //      * - This means that we don't have
+  //      * - the hardware trigger.
+  //      * -
+  //      */
+  //     fEntriesAgainstRunNumberProperlyH          ->Fill( "ADA0" , 1 );
+  //     if ( is_ADC_set == 0 ){
+  //         fEntriesAgainstRunNumberProperlyH      ->Fill( "ADA0_ADC0" , 1 );
+  //         if (fADADecision != 0) {
+  //             fEntriesAgainstRunNumberProperlyH  ->Fill( "ADA0_ADC0_Adec1" , 1 );
+  //             if(fADCDecision != 0) {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA0_ADC0_Adec1_Cdec1" , 1 );
+  //             } else {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA0_ADC0_Adec1_Cdec0" , 1 );
+  //             }
+  //         } else  {
+  //             fEntriesAgainstRunNumberProperlyH  ->Fill( "ADA0_ADC0_Adec0" , 1 );
+  //             if(fADCDecision != 0) {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA0_ADC0_Adec0_Cdec1" , 1 );
+  //             } else {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA0_ADC0_Adec0_Cdec0" , 1 );
+  //             }
+  //         }
+  //     } else {
+  //         fEntriesAgainstRunNumberProperlyH      ->Fill( "ADA0_ADC1" , 1 );
+  //         if (fADADecision != 0) {
+  //             fEntriesAgainstRunNumberProperlyH  ->Fill( "ADA0_ADC1_Adec1" , 1 );
+  //             if(fADCDecision != 0) {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA0_ADC1_Adec1_Cdec1" , 1 );
+  //             } else {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA0_ADC1_Adec1_Cdec0" , 1 );
+  //             }
+  //         } else  {
+  //             fEntriesAgainstRunNumberProperlyH  ->Fill( "ADA0_ADC1_Adec0" , 1 );
+  //             if(fADCDecision != 0) {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA0_ADC1_Adec0_Cdec1" , 1 );
+  //             } else {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA0_ADC1_Adec0_Cdec0" , 1 );
+  //             }
+  //         }
+  //     }
+  // } else {
+  //     /* -
+  //      * - This means that we have
+  //      * - the hardware trigger.
+  //      * -
+  //      */
+  //     fEntriesAgainstRunNumberProperlyH          ->Fill( "ADA1" , 1 );
+  //     if ( is_ADC_set == 0 ){
+  //         fEntriesAgainstRunNumberProperlyH      ->Fill( "ADA1_ADC0" , 1 );
+  //         if (fADADecision != 0) {
+  //             fEntriesAgainstRunNumberProperlyH  ->Fill( "ADA1_ADC0_Adec1" , 1 );
+  //             if(fADCDecision != 0) {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA1_ADC0_Adec1_Cdec1" , 1 );
+  //             } else {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA1_ADC0_Adec1_Cdec0" , 1 );
+  //             }
+  //         } else  {
+  //             fEntriesAgainstRunNumberProperlyH  ->Fill( "ADA1_ADC0_Adec0" , 1 );
+  //             if(fADCDecision != 0) {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA1_ADC0_Adec0_Cdec1" , 1 );
+  //             } else {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA1_ADC0_Adec0_Cdec0" , 1 );
+  //             }
+  //         }
+  //     } else {
+  //         fEntriesAgainstRunNumberProperlyH      ->Fill( "ADA1_ADC1" , 1 );
+  //         if (fADADecision != 0) {
+  //             fEntriesAgainstRunNumberProperlyH  ->Fill( "ADA1_ADC1_Adec1" , 1 );
+  //             if(fADCDecision != 0) {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA1_ADC1_Adec1_Cdec1" , 1 );
+  //             } else {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA1_ADC1_Adec1_Cdec0" , 1 );
+  //             }
+  //         } else  {
+  //             fEntriesAgainstRunNumberProperlyH  ->Fill( "ADA1_ADC1_Adec0" , 1 );
+  //             if(fADCDecision != 0) {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA1_ADC1_Adec0_Cdec1" , 1 );
+  //             } else {
+  //               fEntriesAgainstRunNumberProperlyH->Fill( "ADA1_ADC1_Adec0_Cdec0" , 1 );
+  //             }
+  //         }
+  //     }
+  // }
+  //
+  //
+  //
+  // /**
+  //  * Check with no AD veto at all...
+  //  */
+  // if(fADADecision != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+  //
+  // /**
+  //  * - This is the AD check.
+  //  * - This is selected at the
+  //  * - level of train set up...
+  //  * - Needed for both the neutron
+  //  * - emission analysis and the
+  //  * - p-Pb analysis!!
+  //  * -
+  //  */
+  // if( fADcheck != 0){
+  //     if(fADCDecision != 0) {
+  //         // fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
+  //         PostData(1, fOutputList);
+  //         return;
+  //     }
+  // }
+
+
+
 
 
 
@@ -932,7 +1077,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   /* - This is the last part of my try to obtain a proper RunNumbers histogram...
      -
    */
-  fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
+  // fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
   if (nGoodMuons>0) fCounterH->Fill(iSelectionCounter); // At least one good muon
   iSelectionCounter++;
 

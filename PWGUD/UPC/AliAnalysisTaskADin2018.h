@@ -121,7 +121,10 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
                                 /**
                                  * Switch for the AD analysis.
                                  */
-        Int_t                   fADcheck;           //!
+        Int_t                   fADcheck;           //  NB: without streamer,
+                                                    //      otherwise you can't
+                                                    //      set it from outside
+                                                    //      in the wagon configs...
 
                                 /**
                                  * Utility type histo. It counts the GOOD muons
@@ -417,7 +420,7 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskADin2018, 1);
+        ClassDef(AliAnalysisTaskADin2018, 2);
 };
 
 #endif
