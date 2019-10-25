@@ -18,7 +18,7 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
 ) {
 
   //set fullBlastQA and suffix (cut variation)
-  bool fullBlastQA = false;
+  bool fullBlastQA = true;
   const char *cutVariation = "0";
   TString suffix = TString::Format("%s", cutVariation);
 
@@ -170,7 +170,7 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   //pairs:
   //p p               0
   //p barp            1
-  //p Xi              2
+  //p Xi              2  // here and in the following Xi stands for Omega background
   //p barXi           3
   //p Omega           4
   //p barOmega        5
@@ -207,10 +207,9 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
       kMax.push_back(1.);
     }
   }
-//  pairQA[0] = 11;//wtf ???
-//  pairQA[4] = 11;//wtf ???
-//  pairQA[2] = 13;//wtf ???
-//  pairQA[6] = 13;//wtf ???
+
+  pairQA[4] = 13;//p-Omega
+  pairQA[10] = 13;//pbar-antiOmega
 
   closeRejection[0] = true;  // pp              ????
   closeRejection[6] = true;  // barp barp       ????
