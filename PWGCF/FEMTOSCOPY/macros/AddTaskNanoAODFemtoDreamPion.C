@@ -1,6 +1,6 @@
 AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
     bool isMC=false, float fSpherDown=0.7, float fdPhidEta=0.04,
-    TString CentEst="kInt7", const char *cutVar = "0", bool doCloseRej=true) {
+    TString CentEst="kInt7", bool doCloseRej=true, const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
 
