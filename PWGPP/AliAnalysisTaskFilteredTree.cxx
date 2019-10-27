@@ -1482,9 +1482,11 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	TVectorD tpcNsigma(nSpecies); 
         TVectorD tofNsigma(nSpecies);
         TVectorD itsNsigma(nSpecies);
+        TVectorD tofTime(nSpecies);
 
 	TVectorD tpcPID(nSpecies); // bayes
         TVectorD tofPID(nSpecies);
+        track->GetIntegratedTimes(tofTime.GetMatrixArray(),nSpecies);
 	if(pidResponse){
           for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie) {
             //if (ispecie == Int_t(AliPID::kMuon)) continue;
@@ -1531,6 +1533,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	    "tofNsigma.="<<&tofNsigma<<
 	    "tpcNsigma.="<<&tpcNsigma<<
 	    "itsNsigma.="<<&itsNsigma<<
+	    "tofTime.="<<&tofTime<<                // tof time
 	    "tofPID.="<<&tofPID<<                  // bayesian PID - without priors
 	    "tpcPID.="<<&tpcPID<<                  // bayesian PID - without priors
 	    
