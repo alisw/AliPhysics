@@ -52,6 +52,7 @@ set(SRCS
   AliRDHFCuts.cxx
   AliVertexingHFUtils.cxx
   AliHFSystErr.cxx
+  AliRDHFCutsB0toDPi.cxx
   AliRDHFCutsB0toDStarPi.cxx
   AliRDHFCutsBPlustoD0Pi.cxx
   AliRDHFCutsD0toKpi.cxx
@@ -152,6 +153,7 @@ set(SRCS
   AliAnalysisTaskCharmBaryonsMC.cxx
   AliAnalysisTaskSEDvsEventShapes.cxx
   AliAnalysisTaskSEB0toDminuspi.cxx
+  AliAnalysisTaskSEB0toDPi.cxx
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
