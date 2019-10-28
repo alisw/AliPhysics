@@ -115,7 +115,8 @@ AliRDHFCutsBPlustoD0Pi::AliRDHFCutsBPlustoD0Pi(const char* name) :
   fCutsRDForCutOptimization(0x0),
   fIsUpperCutForCutOptimization(0x0),
   fCutIndexForCutOptimization(0x0),
-  fSigmaForCutOptimization(0x0)
+  fSigmaForCutOptimization(0x0),
+  fNumberOfSigmaBinsForCutOptimization(0)
 {
   //
   // Default Constructor
@@ -342,7 +343,8 @@ AliRDHFCutsBPlustoD0Pi::AliRDHFCutsBPlustoD0Pi(const AliRDHFCutsBPlustoD0Pi &sou
   fCutsRDForCutOptimization(0x0),
   fIsUpperCutForCutOptimization(0x0),
   fCutIndexForCutOptimization(0x0),
-  fSigmaForCutOptimization(0x0)
+  fSigmaForCutOptimization(0x0),
+  fNumberOfSigmaBinsForCutOptimization(source.fNumberOfSigmaBinsForCutOptimization)
 {
   //
   // Copy constructor
@@ -508,6 +510,7 @@ AliRDHFCutsBPlustoD0Pi &AliRDHFCutsBPlustoD0Pi::operator=(const AliRDHFCutsBPlus
   fnVariablesForCutOptimization = source.fnVariablesForCutOptimization;
   fnCutsForOptimization = source.fnCutsForOptimization;
   fGlobalIndexCutOptimization = source.fGlobalIndexCutOptimization;
+  fNumberOfSigmaBinsForCutOptimization = source.fNumberOfSigmaBinsForCutOptimization;
 
   if (source.fPtBinLimitsD0forD0ptbin) SetPtBinsD0forD0ptbin(source.fnPtBinLimitsD0forD0ptbin, source.fPtBinLimitsD0forD0ptbin);
   if (source.fVarNamesD0forD0ptbin) SetVarNamesD0forD0ptbin(source.fnVarsD0forD0ptbin, source.fVarNamesD0forD0ptbin, source.fIsUpperCut);
