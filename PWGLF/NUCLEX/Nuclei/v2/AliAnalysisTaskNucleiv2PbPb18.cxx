@@ -29,6 +29,7 @@ class AliAODv0;
 
 #include <iostream>
 
+#include <TGrid.h>
 #include "TList.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -915,6 +916,8 @@ void AliAnalysisTaskNucleiv2PbPb18::OpenInfoCalbration(Int_t run )
   //foadb = TFile::Open("alien:///alice/cern.ch/user/l/lramona/CalibpPb2016/calibV0NoSDD.root");
   
   TFile* foadb = 0;
+  if (!gGrid) TGrid::Connect("alien");
+
   if (fPeriod == 0)
     foadb = TFile::Open("alien:///alice/cern.ch/user/l/lramona/CalibPbPb2018/calibV0Run2Vtx10P118q.root");
   //TFile::Open("calibV0Run2Vtx10P118q.root");
