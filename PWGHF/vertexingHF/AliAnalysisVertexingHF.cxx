@@ -3079,11 +3079,14 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtD0Kpi(Double_t *px,
   fMassCalc2->SetPxPyPzProngs(nprongs,px,py,pz);
   fOKInvMassD0=kFALSE;
   // pt cut
+  Double_t ptcand=TMath::Sqrt(fMassCalc2->Pt2());
   minPt=fCutsD0toKpi->GetMinPtCandidate();
   if(minPt>0.1)
-    if(fMassCalc2->Pt2() < minPt*minPt) return retval;
+    if(ptcand < minPt) return retval;
   // mass cut
-  mrange=fCutsD0toKpi->GetMassCut();
+  Int_t jPtBinZero=fCutsD0toKpi->PtBin(ptcand);
+  if(jPtBinZero<0) jPtBinZero=0;
+  mrange=fCutsD0toKpi->GetMassCut(jPtBinZero);
   lolim=fMassDzero-mrange;
   hilim=fMassDzero+mrange;
   pdg2[0]=211; pdg2[1]=321;
@@ -3155,10 +3158,13 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
   fOKInvMassDs=kFALSE;
   fOKInvMassLc=kFALSE;
   // pt cut
+  Double_t ptcand=TMath::Sqrt(fMassCalc3->Pt2());
   if(fMinPt3Prong>0.1)
-    if(fMassCalc3->Pt2() < fMinPt3Prong*fMinPt3Prong) return retval;
+    if(ptcand < fMinPt3Prong) return retval;
   // D+->Kpipi
-  mrange=fCutsDplustoKpipi->GetMassCut();
+  Int_t jPtBinPlus=fCutsDplustoKpipi->PtBin(ptcand);
+  if(jPtBinPlus<0) jPtBinPlus=0;
+  mrange=fCutsDplustoKpipi->GetMassCut(jPtBinPlus);
   lolim=fMassDplus-mrange;
   hilim=fMassDplus+mrange;
   pdg3[0]=211; pdg3[1]=321; pdg3[2]=211;
@@ -3168,7 +3174,9 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
     fOKInvMassDplus=kTRUE;
   }
   // Ds+->KKpi
-  mrange=fCutsDstoKKpi->GetMassCut();
+  Int_t jPtBinS=fCutsDstoKKpi->PtBin(ptcand);
+  if(jPtBinS<0) jPtBinS=0;
+  mrange=fCutsDstoKKpi->GetMassCut(jPtBinS);
   lolim=fMassDs-mrange;
   hilim=fMassDs+mrange;
   pdg3[0]=321; pdg3[1]=321; pdg3[2]=211;
@@ -3183,8 +3191,11 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
     retval=kTRUE;
     fOKInvMassDs=kTRUE;
   }
+
   // Lc->pKpi
-  mrange=fCutsLctopKpi->GetMassCut();
+  Int_t jPtBinL=fCutsLctopKpi->PtBin(ptcand);
+  if(jPtBinL<0) jPtBinL=0;
+  mrange=fCutsLctopKpi->GetMassCut(jPtBinL);
   lolim=fMassLambdaC-mrange;
   hilim=fMassLambdaC+mrange;
   if(pidLcStatus&1){
@@ -3224,14 +3235,17 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtDstarD0pi(Double_t *px,
   fMassCalc2->SetPxPyPzProngs(nprongs,px,py,pz);
   fOKInvMassDstar=kFALSE;
   // pt cut
+  Double_t ptcand=TMath::Sqrt(fMassCalc2->Pt2());
   minPt=fCutsDStartoKpipi->GetMinPtCandidate();
   if(minPt>0.1)
-    if(fMassCalc2->Pt2() < minPt*minPt) return retval;
+    if(ptcand < minPt) return retval;
   // mass cut
-  pdg2[0]=211; pdg2[1]=421; // in twoTrackArrayCasc we put the pion first
-  mrange=fCutsDStartoKpipi->GetMassCut();
+  Int_t jPtBinStar=fCutsDStartoKpipi->PtBin(ptcand);
+  if(jPtBinStar<0) jPtBinStar=0;
+  mrange=fCutsDStartoKpipi->GetMassCut(jPtBinStar);
   lolim=fMassDstar-mrange;
   hilim=fMassDstar+mrange;
+  pdg2[0]=211; pdg2[1]=421; // in twoTrackArrayCasc we put the pion first
   minv2 = fMassCalc2->InvMass2(nprongs,pdg2);
   if(minv2>lolim*lolim && minv2<hilim*hilim ){
     retval=kTRUE;
