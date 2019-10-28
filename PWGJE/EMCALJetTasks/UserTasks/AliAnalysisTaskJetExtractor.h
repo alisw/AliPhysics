@@ -59,6 +59,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
                                 {fMatchedDetLevelJetsArrayName = arrayNameDetLevel; fMatchedPartLevelJetsArrayName = arrayNamePartLevel; fMatchedDetLevelJetsRhoName = rhoName; fMatchedDetLevelJetsRhoMassName = rhoMassName;}
   void                        SetMCParticleArrayName(const char* name)            { fMCParticleArrayName = name; }
   void                        SetHadronMatchingRadius(Double_t val)               { fHadronMatchingRadius  = val; }
+  void                        SetJetMatchingRadius(Double_t val)                  { fJetMatchingRadius = val;}
   void                        SetSecondaryVertexMaxChi2(Double_t val   )          { fSecondaryVertexMaxChi2 = val; }
   void                        SetSecondaryVertexMaxDispersion(Double_t val)       { fSecondaryVertexMaxDispersion = val; }
   void                        SetCustomStartupScript(const char* path)            { fCustomStartupScript = path; }
@@ -70,7 +71,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetRandomSeed(ULong_t val)                          { fRandomSeed  = val; }
   void                        SetRandomSeedCones(ULong_t val)                     { fRandomSeedCones  = val; }
   void                        SetNeedEmbedClusterContainer(Bool_t val)            { fNeedEmbedClusterContainer = val;}
-
+  
   void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=-9999999, Int_t maxLabel=+9999999)
                                 { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel;
                                   fEventCut_TriggerTrackMaxLabel = maxLabel;}
@@ -87,7 +88,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        GetMatchedJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetDistance, Double_t& matchedJetMass, Double_t& matchedJetAngularity, Double_t& matchedJetpTD, Bool_t isPartLevelMatching);
   void                        ResetMatching(const AliJetContainer &c);
   bool                        PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
-  void                        GetJetTagging(AliJetContainer& contBase, AliJetContainer& contTag, Bool_t isMatchTwo,  Double_t& detJetPt, Double_t& partJetPt);
+  void                        GetJetTagging(AliEmcalJet* jet, AliJetContainer& hybridJetCont, AliJetContainer& detJetCont, AliJetContainer& partJetCont,  Double_t& detJetPt, Double_t& partJetPt);
   void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC);
   Bool_t                      IsTriggerTrackInEvent();
   Bool_t                      IsTrackInCone(const AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
@@ -120,6 +121,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Int_t                       fTruthMinLabel;                           ///< min track label to consider it as true particle
   Int_t                       fTruthMaxLabel;                           ///< max track label to consider it as true particle
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
+  Double_t                    fJetMatchingRadius;                       ///< Matching radius for geometrically matching jets
 
   TString                     fMatchedDetLevelJetsArrayName;            ///< Array name for matched detector level jets
   TString                     fMatchedPartLevelJetsArrayName;           ///< Array name for matched particle level jets
@@ -174,7 +176,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 5) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 6) // Jet extraction task
   /// \endcond
 };
 
@@ -324,7 +326,7 @@ class AliEmcalJetTree : public TNamed
     Int_t           fBuffer_NumSplittings;
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 10) // Jet tree class
+    ClassDef(AliEmcalJetTree, 11) // Jet tree class
     /// \endcond
 };
 

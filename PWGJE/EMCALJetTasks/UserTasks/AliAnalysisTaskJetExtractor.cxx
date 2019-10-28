@@ -523,6 +523,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fHadronMatchingRadius(0.4),
+  fJetMatchingRadius(0.3),
   fMatchedDetLevelJetsArrayName(""),
   fMatchedPartLevelJetsArrayName(""),
   fMatchedDetLevelJetsRhoName(""),
@@ -572,6 +573,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fHadronMatchingRadius(0.4),
+  fJetMatchingRadius(0.3),
   fMatchedDetLevelJetsArrayName(""),
   fMatchedPartLevelJetsArrayName(""),
   fMatchedDetLevelJetsRhoName(""),
@@ -792,6 +794,40 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       FillHistogram("hJEWEL_ImpactParameter", fImpactParameter);
     }
   }
+  // Perform the matching before the main jet loop
+  AliJetContainer * jetsHybrid = GetJetContainer(0);
+  AliJetContainer * jetsDetLevel = GetJetContainer(1);
+  AliJetContainer * jetsPartLevel = GetJetContainer(2);
+  // Validation                                                                                                                                      
+  if (!jetsHybrid) {
+    AliErrorStream() << "Could not retrieve hybrid jet collection.\n";
+    return kFALSE;
+  }
+  if (!jetsDetLevel) {
+    AliErrorStream() << "Could not retrieve det level jet collection.\n";
+    return kFALSE;
+  }
+  if (!jetsPartLevel) {
+    AliErrorStream() << "Could not retrieve part level jet collection.\n";
+    return kFALSE;
+  }
+  // Now, begin the actual matching.                                                                                                                 
+  // Hybrid <-> det first                                                                                                                            
+  AliDebugStream(2) << "Matching hybrid to detector level jets.\n";
+  // First, we reset the tagging                                                                                                                     
+  ResetMatching(*jetsHybrid);
+  ResetMatching(*jetsDetLevel);
+  // Next, we perform the matching                                                                                                                   
+  PerformGeometricalJetMatching(*jetsHybrid, *jetsDetLevel, fJetMatchingRadius);
+  // Now, begin the next matching stage                                                                                                              
+  // det <-> particle                                                                                                                                
+  AliDebugStream(2) << "Matching detector level to particle level jets.\n";
+  // First, we reset the tagging. We need to reset the det matching again to ensure                                                                  
+  // that it doesn't accidentally keep some latent matches to the hybrid jets.                                                                       
+  ResetMatching(*jetsDetLevel);
+  ResetMatching(*jetsPartLevel);
+  // Next, we perform the matching                                                                                                                   
+  PerformGeometricalJetMatching(*jetsDetLevel, *jetsPartLevel, fJetMatchingRadius);
 
   // ################################### MAIN JET LOOP
   GetJetContainer(0)->ResetCurrentID();
@@ -840,46 +876,11 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
                                       truePtFraction,truePtFraction_PartLevel,fPtHard,fEventWeight,fImpactParameter);
     }
 
+    // perform the jet tagging
     if(fSaveTaggedInfo){
       Double_t taggedJetPt_Det = 0;
       Double_t taggedJetPt_Part = 0;
-      AliJetContainer * jetsHybrid = GetJetContainer(0);
-      AliJetContainer * jetsDetLevel = GetJetContainer(1);
-      AliJetContainer * jetsPartLevel = GetJetContainer(2);
-      // Validation
-      if (!jetsHybrid) {
-	AliErrorStream() << "Could not retrieve hybrid jet collection.\n";
-	return kFALSE;
-      }
-      if (!jetsDetLevel) {
-	AliErrorStream() << "Could not retrieve det level jet collection.\n";
-	return kFALSE;
-      }
-      if (!jetsPartLevel) {
-	AliErrorStream() << "Could not retrieve part level jet collection.\n";
-	return kFALSE;
-      }
-
-      // Now, begin the actual matching.
-      // Hybrid <-> det first
-      AliDebugStream(2) << "Matching hybrid to detector level jets.\n";
-      // First, we reset the tagging
-      ResetMatching(*jetsHybrid);
-      ResetMatching(*jetsDetLevel);
-      // Next, we perform the matching
-      PerformGeometricalJetMatching(*jetsHybrid, *jetsDetLevel, (jetsHybrid->GetJetRadius()*0.75));
-      // Now, begin the next matching stage
-      // det <-> particle
-      AliDebugStream(2) << "Matching detector level to particle level jets.\n";
-      // First, we reset the tagging. We need to reset the det matching again to ensure
-      // that it doesn't accidentally keep some latent matches to the hybrid jets.
-      ResetMatching(*jetsDetLevel);
-      ResetMatching(*jetsPartLevel);
-      // Next, we perform the matching
-      PerformGeometricalJetMatching(*jetsDetLevel, *jetsPartLevel, (jetsHybrid->GetJetRadius()*0.75));
-
-      GetJetTagging(*jetsHybrid, *jetsDetLevel, kFALSE, taggedJetPt_Det, taggedJetPt_Part);
-      GetJetTagging(*jetsDetLevel, *jetsPartLevel, kTRUE, taggedJetPt_Det, taggedJetPt_Part);
+      GetJetTagging(jet, *jetsHybrid, *jetsDetLevel, *jetsPartLevel, taggedJetPt_Det, taggedJetPt_Part);
       fJetTree->FillBuffer_JetTagger(taggedJetPt_Det, taggedJetPt_Part);
     }
     // ### CONSTITUENT LOOP: Retrieve PID values + impact parameters
@@ -1345,29 +1346,26 @@ bool AliAnalysisTaskJetExtractor::PerformGeometricalJetMatching(AliJetContainer&
   return true;
 }
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::GetJetTagging(AliJetContainer& contBase, AliJetContainer& contTag, Bool_t isMatchTwo,  Double_t& detJetPt, Double_t& partJetPt)
+void AliAnalysisTaskJetExtractor::GetJetTagging(AliEmcalJet* jet, AliJetContainer& hybridJetCont,  AliJetContainer& detJetCont, AliJetContainer& partJetCont,  Double_t& detJetPt, Double_t& partJetPt)
 {
-  for (auto jet1 : contBase.accepted()) {
-    // Setup
-    Double_t ptJet1 = jet1->Pt() - contBase.GetRhoVal() * jet1->Area();
-    //std::cout << "pTJet1: " << ptJet1 << std::endl;
-    // Retrieve jet 2
-    AliEmcalJet * jet2 = jet1->ClosestJet();
-    if (!jet2) { continue; }
-    AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
-    Double_t ptJet2 = jet2->Pt() - contTag.GetRhoVal() * jet2->Area();
-    // This will retrieve the fraction of jet2's momentum in jet1.
-    Double_t fraction = contBase.GetFractionSharedPt(jet1);
-    //std::cout << "fraction: " << fraction << std::endl;
-    if (fraction < 0.5 && !(isMatchTwo)) {
-      continue;
-    }
-    //    std::cout << "tagged Jet pT: " << matchedJetPt << std::endl;
-    if(isMatchTwo){
-      detJetPt  = ptJet1;
-      partJetPt = ptJet2;
-    }
+  // hybrid to detector level matching 
+  AliEmcalJet * jet2 = jet->ClosestJet();
+  if (!jet2) { return; }// if there is no match return.
+  Double_t ptJet2 = jet2->Pt() - detJetCont.GetRhoVal() * jet2->Area();
+  // This will retrieve the fraction of jet2's momentum in jet1.
+  Double_t fraction = hybridJetCont.GetFractionSharedPt(jet);
+  if (fraction < 0.5) {
+    return;
   }
+  // detector to particle matching
+  AliEmcalJet * jet3 = jet2->ClosestJet();
+  if(!jet3){return;}
+  Double_t ptJet3 = jet3->Pt() - partJetCont.GetRhoVal() * jet3->Area(); 
+  // make no fraction cut on the detector to particle
+  // fill if we have found both matches
+  detJetPt  = ptJet2;
+  partJetPt = ptJet3;
+  
 }
 
 
