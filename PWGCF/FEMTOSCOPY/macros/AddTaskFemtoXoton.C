@@ -183,7 +183,9 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
-
+  if (isMC) {
+    config->SetMomentumResolution(true);
+  }
   std::vector<int> MultBins;
   MultBins.push_back(0);
   MultBins.push_back(4);

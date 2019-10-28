@@ -62,6 +62,8 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   AliAnalysisTaskSE(),
 // General parameters of the analysis.
   fMainList(NULL),
+  fEfficiency(NULL),
+  fFirstEvent(kTRUE),
   fHighestFlowHarmonic(6),
   fMaxNumberOfParticlesInCorrelations(8),
   fProcessOnlyAOD(kFALSE),
@@ -114,6 +116,7 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   fTrackSelectionList(NULL),
   fHistoInitialPt(NULL),
   fHistoFinalPt(NULL),
+  fHistoEfficiencyCorrection(NULL),
   fHistoInitialEta(NULL),
   fHistoFinalEta(NULL),
   fHistoInitialPhi(NULL),
@@ -192,6 +195,8 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   AliAnalysisTaskSE(name),
 // General parameters of the analysis.
   fMainList(NULL),
+  fEfficiency(NULL),
+  fFirstEvent(kTRUE),
   fHighestFlowHarmonic(6),
   fMaxNumberOfParticlesInCorrelations(8),
   fProcessOnlyAOD(kFALSE),
@@ -244,6 +249,7 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fTrackSelectionList(NULL),
   fHistoInitialPt(NULL),
   fHistoFinalPt(NULL),
+  fHistoEfficiencyCorrection(NULL),
   fHistoInitialEta(NULL),
   fHistoFinalEta(NULL),
   fHistoInitialPhi(NULL),
@@ -340,7 +346,10 @@ void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 // Avoid name clashes.
   Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-
+  // JEfficiency for NUA correction : DongJo
+  fEfficiency = new AliJEfficiency();
+  fEfficiency->SetMode(1) ; // 1: priod should work for you
+  fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
 // Book all the lists.
   this->BookAllLists();
 
@@ -354,6 +363,7 @@ void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 // Continue to avoid name clashes.
   TH1::AddDirectory(oldHistAddStatus);
   PostData(1, fMainList);
+  fFirstEvent = kTRUE;
 }
 
 //======================================================================================//
@@ -606,7 +616,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookEventSelectionList()
 void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
 {
 /* Book the control histograms for the track selection criteria. */
-// Distributions of the transverse momentum.
+// Distributions of the transverse momentum and the efficiency correction.
   fHistoInitialPt = new TH1D("fHistoInitialPt",
     "p_{T} before the track selection", 1000, 0., 20.);
   fHistoInitialPt->SetStats(kTRUE);
@@ -620,6 +630,13 @@ void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
   fHistoFinalPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistoFinalPt->GetYaxis()->SetTitle("Number of tracks");
   fTrackSelectionList->Add(fHistoFinalPt);
+
+  fHistoEfficiencyCorrection = new TH1D("fHistoEfficiencyCorrection",
+    "Efficiency correction before inversion", 1000, 0., 5.);
+  fHistoEfficiencyCorrection->SetStats(kTRUE);
+  fHistoEfficiencyCorrection->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistoEfficiencyCorrection->GetYaxis()->SetTitle("Number of tracks");
+  fTrackSelectionList->Add(fHistoEfficiencyCorrection);
 
 // Distributions of the pseudorapidity.
   fHistoInitialEta = new TH1D("fHistoInitialEta",
@@ -836,6 +853,26 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *inputAODe
 // Check if the event passes the event selection criteria.
   if(!ApplyEventSelectionAOD(inputAODevent)) {return;}
 
+  // Efficiency : DongJo
+  if( fFirstEvent ) {
+    fEfficiency->SetRunNumber( inputAODevent->GetRunNumber() );
+    fEfficiency->Load();
+    fFirstEvent = kFALSE;
+  }
+
+// Obtain locally the centrality of the event for the efficiency correction.
+  TString centralityEstimatorAOD = "centralityEstimatorAOD";
+  if ( (Int_t)fCentralityFromVZero + (Int_t)fCentralityFromSPD != 1 )
+  {
+    Fatal(sMethodName.Data(), "ERROR: only one detector must be set to kTRUE.");
+  }
+  else if (fCentralityFromVZero) {centralityEstimatorAOD = "V0M";}
+  else if (fCentralityFromSPD) {centralityEstimatorAOD = "CL1";}
+  AliMultSelection *multiplicitySelectionAOD = (AliMultSelection*)inputAODevent->FindListObject("MultSelection");
+  if (!multiplicitySelectionAOD) {return;}
+
+  Double_t eventCentralityAOD = multiplicitySelectionAOD->GetMultiplicityPercentile(Form("%s", centralityEstimatorAOD.Data()));
+
 // Determine how many and which tracks pass the track selection.
   long long currentNumberOfTracks = inputAODevent->GetNumberOfTracks(); // Number of tracks before the track selection.
   long long finalNumberOfTracks = 0.; // Number of tracks remaining after the track selection.
@@ -877,8 +914,17 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *inputAODe
 
     currentEta[finalIndex] = currentTrack->Eta();
     currentPhi[finalIndex] = currentTrack->Phi();
+
+    // Efficiency by DongJo
+    Double_t pt = currentTrack->Pt();
+    Double_t fCent = eventCentralityAOD;// this doesn't work eventCentrality; --> Fixed.
+    Double_t effCorr = fEfficiency->GetCorrection( pt,0, fCent); //filterbitIndex 0 : TPCOnly 6: hybrid(this work for AOD86, i am not sure if it is work for new AOD)
+    Double_t effInv = 1.0/effCorr;
+
     currentParticleWeights[finalIndex] = 1.;  // Unit particle weights are used by default.
-    if (fUseParticleWeights) {Fatal(sMethodName.Data(), "ERROR: TBA use of non-unit particle weights");}
+    if (fUseParticleWeights) {currentParticleWeights[finalIndex] = effInv;}
+
+    fHistoEfficiencyCorrection->Fill(effCorr);
 
     finalIndex++;
   }
