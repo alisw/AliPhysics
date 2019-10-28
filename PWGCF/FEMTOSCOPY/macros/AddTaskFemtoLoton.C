@@ -203,6 +203,10 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   config->SetdPhidEtaPlots(false);
   config->SetPhiEtaBinnign(false);
 
+  if (isMC) {
+    config->SetMomentumResolution(true);
+  }
+
   if (fullBlastQA) {
     config->SetkTBinning(true);
     config->SetPtQA(true);
