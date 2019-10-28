@@ -152,20 +152,20 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   mixed_differential->GetAxis(6)->SetName("identifier");
 
   // Make centralDist
-  Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
-  Int_t   centralPhiBins = (fSettings.useITS ? 20 : 400);
-  Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.5);
-  Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
+  Int_t   centralEtaBins = (fSettings.useITS ? 200 : 300);
+  Int_t   centralPhiBins = (fSettings.useITS ? 20 : 300);
+  Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.2);
+  Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.2);
 
   // Make refDist
-  Int_t   refEtaBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 200 : 400);
-  Int_t   refPhiBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 20  : 400);
+  Int_t   refEtaBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 200 : 300);
+  Int_t   refPhiBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 20  : 300);
   Double_t refEtaMin = ((fSettings.ref_mode & fSettings.kSPDref) ? -2.5 
                              : ((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? -4 
-                             : -1.5);
+                             : -1.2);
   Double_t refEtaMax = ((fSettings.ref_mode & fSettings.kSPDref) ?  2.5 
                              : ((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 6 
-                             : 1.5);
+                             : 1.2);
 
   centralDist = new TH2D("c","",centralEtaBins,centralEtaMin,centralEtaMax,centralPhiBins,0,2*TMath::Pi());
   centralDist ->SetDirectory(0);
@@ -198,7 +198,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   if (!fSettings.mc){
     isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
   }
-  if (!fSettings.mc) fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
+  if (fSettings.doNUA) fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
 
 
 
