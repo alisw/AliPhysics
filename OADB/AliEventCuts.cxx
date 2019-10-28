@@ -482,13 +482,13 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
 
   /// Run 2 p-Pb
-  if ((fCurrentRun >= 265309 && fCurrentRun <= 265525) || /// LHC16q: p-Pb 5 TeV
-      (fCurrentRun >= 265594 && fCurrentRun <= 266318) || /// LHC16r: p-Pb 8 TeV
-      (fCurrentRun >= 267163 && fCurrentRun <= 267166)) { /// LHC16t: p-Pb 5 TeV
+  if ((fCurrentRun >= 264896 && fCurrentRun <= 265533) || /// LHC16q: p-Pb 5 TeV
+      (fCurrentRun >= 265534 && fCurrentRun <= 266329) || /// LHC16r: p-Pb 8 TeV
+      (fCurrentRun >= 267139 && fCurrentRun <= 267166)) { /// LHC16t: p-Pb 5 TeV
     SetupRun2pA(0);
     return;
   }
-  if (fCurrentRun >= 266437 && fCurrentRun <= 267110) {   /// LHC16s: Pb-p 5 TeV
+  if (fCurrentRun >= 266330 && fCurrentRun <= 267138) {   /// LHC16s: Pb-p 5 TeV
     SetupRun2pA(1);
     return;
   }
