@@ -27,6 +27,7 @@ public:
 
   AliEventCuts  fEventCut; ///<
 
+  int   fFilterBit;  ///< Filter bit cut
   float fNsigmaITS;  ///< Number of sigma ITS
   float fNsigmaTPC;  ///< Number of sigma TPC
   float fNsigmaTOF;  ///< Number of sigma TOF
