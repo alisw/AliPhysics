@@ -28,7 +28,6 @@ class AliESDv0;
 class AliAODv0; 
 
 #include <iostream>
-
 #include <TGrid.h>
 #include "TList.h"
 #include "TH1.h"
@@ -302,6 +301,7 @@ Bool_t AliAnalysisTaskHypv2PbPb18::IsHyperTritonCandidate (AliESDv0 *V0)  {
     if ( IsPionCandidate   (trackPos)  && (!Is3HeCandidate  (trackNeg))) return false;
     if ( Is3HeCandidate    (trackPos)  && (!IsPionCandidate (trackNeg))) return false;
     
+
     //Momentum Components of V0 Daughters
     Double_t posMomentum[3] = { 0.0, 0.0, 0.0 };
     Double_t negMomentum[3] = { 0.0, 0.0, 0.0 };
@@ -314,6 +314,10 @@ Bool_t AliAnalysisTaskHypv2PbPb18::IsHyperTritonCandidate (AliESDv0 *V0)  {
         TVector3 P1 (2.0*posMomentum[0],2.0*posMomentum[1],2.0*posMomentum[2]);
         TVector3 P2 (negMomentum[0],negMomentum[1],negMomentum[2]);
         Double_t m = InvariantMassHypertriton (P1,P2);
+	
+	fhBBDeu->Fill(trackPos->GetTPCmomentum(),trackPos->GetTPCsignal());
+	fhBBDeu->Fill(trackNeg->GetTPCmomentum(),trackNeg->GetTPCsignal());
+
         if (m>3.1) return false;
     }
     
@@ -323,8 +327,13 @@ Bool_t AliAnalysisTaskHypv2PbPb18::IsHyperTritonCandidate (AliESDv0 *V0)  {
         TVector3 P1 (2.0*negMomentum[0],2.0*negMomentum[1],2.0*negMomentum[2]);
         TVector3 P2 (posMomentum[0],posMomentum[1],posMomentum[2]);
         Double_t m = InvariantMassHypertriton (P1,P2);
+
+	fhBBDeu->Fill(trackPos->GetTPCmomentum(),trackPos->GetTPCsignal());
+	fhBBDeu->Fill(trackNeg->GetTPCmomentum(),trackNeg->GetTPCsignal());
+
         if (m>3.1) return false;
     }
+
     
     return true;
 }
@@ -344,6 +353,9 @@ Bool_t AliAnalysisTaskHypv2PbPb18::IsPionCandidate (AliESDtrack *track)  {
 Bool_t AliAnalysisTaskHypv2PbPb18::Is3HeCandidate (AliESDtrack *track)  {
     
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kHe3);
+
+    fhBB->Fill(track->GetTPCmomentum()*track->Charge(),track->GetTPCsignal());
+
     if (TMath::Abs(nsigmaTPC) > 4.0) return false;
     
     return true;
@@ -722,13 +734,14 @@ void AliAnalysisTaskHypv2PbPb18::UserExec(Option_t *)
 
   //Analysis
   //cout<<"Start event"<<endl;
-  Analyze(fevent);
-  
-    
+  Analyze(fevent,lBestPrimaryVtxPos[2],eventtype);
+  //  Analyze(fevent);
+     
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd)
+void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd, Double_t vz, Int_t evttype)
+//void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd)
 {  
   //  cout<<"OPen analysize"<<endl;
 
@@ -1017,8 +1030,11 @@ void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd)
     Double_t negMomentum[3] = { 0.0, 0.0, 0.0 };
     V0->GetPPxPyPz(posMomentum[0],posMomentum[1],posMomentum[2]);
     V0->GetNPxPyPz(negMomentum[0],negMomentum[1],negMomentum[2]);
-        
-    
+
+    // iEvent     = evttype;        
+    // zVertex    = vz;
+    centrality = iCen;
+
     //Daughter1 (Positive Charge)
     px_Daughter1                    = posMomentum[0];
     py_Daughter1                    = posMomentum[1];
@@ -1077,7 +1093,6 @@ void AliAnalysisTaskHypv2PbPb18::OpenInfoCalbration(Int_t run )
   
   TFile* foadb = 0;
   if (!gGrid) TGrid::Connect("alien");
-
   if (fPeriod == 0)
     foadb = TFile::Open("alien:///alice/cern.ch/user/l/lramona/CalibPbPb2018/calibV0Run2Vtx10P118q.root");
   //TFile::Open("calibV0Run2Vtx10P118q.root");
