@@ -590,6 +590,8 @@ class AliReducedVarManager : public TObject {
     //TODO: TPC number of crossed rows over findable clusters has at the moment 2 variables assigned: kTPCcrossedRowsOverFindableClusters and kTPCnclsRatio3
     kTPCcrossedRowsOverFindableClusters,
     kTPCnclsRatio3,      // TPCCrossedRows/TPCnclsF
+    kTPCActiveLength,
+    kTPCGeomLength,
     kTPCsignal,         
     kTPCsignalN,
     kTPCdEdxQmax,                 // dEdx info from Qmax (IROC, medium OROC, long OROC, all OROC)

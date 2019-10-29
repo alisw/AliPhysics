@@ -1702,6 +1702,8 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTPCcrossedRows] = pinfo->TPCCrossedRows();
   values[kTPCsignal]      = pinfo->TPCsignal();
   values[kTPCsignalN]     = pinfo->TPCsignalN();
+  values[kTPCActiveLength] = pinfo->TPCActiveLength();
+  values[kTPCGeomLength] = pinfo->TPCGeomLength();
   for(Int_t i=0; i<4; ++i) {
      values[kTPCdEdxQmax+i] = pinfo->TPCdEdxInfoQmax(i);
      values[kTPCdEdxQtot+i] = pinfo->TPCdEdxInfoQtot(i);
@@ -3266,6 +3268,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTPCnclsRatio2]     = "No.TPC clusters/crossed rows"; fgVariableUnits[kTPCnclsRatio2] = "";
   fgVariableNames[kTPCcrossedRowsOverFindableClusters] = "Crossed rows / findable clusters"; fgVariableUnits[kTPCcrossedRowsOverFindableClusters] = "";
   fgVariableNames[kTPCnclsRatio3]     = "No.TPC crossed rows/findable clusters"; fgVariableUnits[kTPCnclsRatio3] = "";
+  fgVariableNames[kTPCActiveLength]   = "Track length in active TPC";   fgVariableUnits[kTPCActiveLength] = "";
+  fgVariableNames[kTPCGeomLength]     = "Track relative geometric length in active TPC";   fgVariableUnits[kTPCGeomLength] = "";
   fgVariableNames[kTPCsignal]         = "TPC dE/dx";                    fgVariableUnits[kTPCsignal] = "";  
   fgVariableNames[kTPCsignalN]        = "No. TPC clusters PID";         fgVariableUnits[kTPCsignalN] = "";  
   fgVariableNames[kTPCdEdxQmax+0]     = "TPC dE/dx Qmax from IROC";        fgVariableUnits[kTPCdEdxQmax+0] = "";
