@@ -194,7 +194,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
   //fCalculator.fUtil = fUtil;
-  Bool_t isgoodrun = kFALSE;
+  Bool_t isgoodrun = kTRUE;
   if (!fSettings.mc){
     isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
   }
