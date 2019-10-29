@@ -1297,7 +1297,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
 	    // Write standard error to null device
             //gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
             TGridCollection *tmp = gGrid->OpenCollectionQuery(gGrid->Command(command), kTRUE);
-            tmp->ExportXML(Form("__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
+            tmp->ExportXML(Form("file://__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
 						delete tmp;
             //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage, file.Data()));
             Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
@@ -1397,7 +1397,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
                //gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
                TGridCollection *tmp = gGrid->OpenCollectionQuery(gGrid->Command(command), kTRUE);
-               tmp->ExportXML(Form("__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
+               tmp->ExportXML(Form("file://__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
                delete tmp;
                Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
                Bool_t nullFile = kFALSE;
@@ -1547,7 +1547,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                // Write standard output to file
                //gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
                TGridCollection *tmp = gGrid->OpenCollectionQuery(gGrid->Command(command), kTRUE);
-               tmp->ExportXML(Form("__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
+               tmp->ExportXML(Form("file://__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
                delete tmp;
                //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
                Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
