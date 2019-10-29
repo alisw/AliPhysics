@@ -284,6 +284,8 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
     hQVzCQTPCvsCentrality = new TH2F("hQVzCQTPCvsCentrality","hQVzCQTPCvsCentrality",5000,-5000,5000,105,0,105);
   }
   fListHist->Add(hQVzAQVzCvsCentrality);
+  fListHist->Add(hQVzAQTPCvsCentrality);
+  fListHist->Add(hQVzCQTPCvsCentrality);
 
   if(fNHarm < 3){
     hQxVzAvsCentrality = new TH2F("hQxVzAvsCentrality","hQxVzAvsCentrality",100,-20,20,105,0,105);
