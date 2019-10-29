@@ -56,7 +56,8 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
 
  private:
   
-  void Analyze(AliVEvent* aod);
+  void Analyze(AliVEvent* esd, Double_t vz, Int_t evttype);
+  //  void Analyze(AliVEvent* aod);
   void OpenInfoCalbration(Int_t run);
   
   AliESDEvent *fESDevent;                         // 
