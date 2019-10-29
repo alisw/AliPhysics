@@ -150,22 +150,28 @@ public:
     void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
+    void setfNThresholds(Int_t value){fNThresholds=value;}
 
 
-    //JetTagging
+    //Track Counting
     enum TaggingType{
           Full,
           Single1st,
           Single2nd,
           Single3rd,
-          Double12,
-          Double23,
+          Double,
           Triple,
     };
 
-    void DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool* kTagDec);
-    void SetThresholds(TObjArray* threshfirst, TObjArray* threshsec, TObjArray* threshthird);
+    void DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec);
+    void FillTCEfficiencyHists(bool** kTagDec, int jetflavour, double jetpt,bool hasIPs);
+    void SetThresholds(int nthresh, TObjArray** &threshs);
+    void ReadProbvsIPLookup(TObjArray *&oLookup);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
+
+    //Probability Tagging
+    double GetTrackProbability(double jetpt, bool* hasIPs, double* ipval);
+    void FillProbabilityHists(double jetpt,double  probval,int jetflavour);
 
     Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
     bool IsFromElectron(AliAODTrack *track);
@@ -288,7 +294,7 @@ private:
     TGraph * fGeant3FlukaAntiLambda;//!
     TGraph * fGeant3FlukaKMinus;//!
 
-    //Histograms for tagging
+    //Histograms for track counting
     std::vector<TH1D*> h1DThresholdsFirst; //0-> single probability, 1-> double probability, 2-> tripple probability
     std::vector<TH1D*> h1DThresholdsSecond; //
     std::vector<TH1D*> h1DThresholdsThird;//
@@ -308,7 +314,17 @@ private:
     TH1D* h1DFalseBTaggedDouble23;//!
     TH1D* h1DFalseBTaggedTripple;//!
 
-    int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3
+    int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3 for track counting algorithm
+    vector<double > fFracs;
+
+    //Histograms for probability tagging
+    std::vector<TH2D*> h2DProbLookup;//
+    TH2D* h2DProbDistsUnid;//!
+    TH2D* h2DProbDistsudsg;//!
+    TH2D* h2DProbDistsc;//!
+    TH2D* h2DProbDistsb;//!
+    TH2D* h2DProbDistss;//!
+    TH2D* h2DProbDists;//!
 
     //! \brief cCuts
     TCanvas *cCuts; //
@@ -334,6 +350,8 @@ private:
     Double_t fJetRadius;//
     Double_t fDaughtersRadius;//
     Int_t fNoJetConstituents;//
+    Int_t fNThresholds;//
+
     Double_t fMCglobalDCAxyShift;//
     Double_t fMCglobalDCASmear;//
     Double_t fVertexRecalcMinPt;//
@@ -404,7 +422,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 39)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 41)
 };
 
 #endif

@@ -24,7 +24,6 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	virtual ~AliAnalysisTaskUpcRho0();
 
 	virtual void Init();
-	virtual void LocalInit();
 	virtual void UserCreateOutputObjects();
 	virtual void UserExec(Option_t *option);
 	virtual void Terminate(Option_t *){};
@@ -55,6 +54,8 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Int_t V0Cdecision_T;
 	Int_t ADAdecision_T;
 	Int_t ADCdecision_T;
+	Bool_t UBAfired_T;
+	Bool_t UBCfired_T;
 	Float_t ZNAenergy_T;
 	Float_t ZNCenergy_T;
 	Float_t ZPAenergy_T;

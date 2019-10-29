@@ -13,6 +13,7 @@
 #include "AliPIDCombined.h"
 #include "AliPID.h"
 #include "AliStack.h"
+#include "AliEventCuts.h"
 
 
 class AliMultSelection;
@@ -72,6 +73,8 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
         Long64_t FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w=1.);
 
 	void SetIsMC (Bool_t ismc) {IsMC = ismc;}
+
+	AliEventCuts fEventCuts;  // Event cuts
 
  private:
         typedef std::vector<AliVTrack*> tracklist;

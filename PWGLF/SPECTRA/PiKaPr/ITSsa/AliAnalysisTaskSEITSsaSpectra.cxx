@@ -168,6 +168,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
       fHistRecoMC[index] = NULL;
 
       fHistTruePIDMCReco[index] = NULL;
+      fHistTruePIDMCGen[index] = NULL;
     }
   }
   for (int iL = 0; iL < 4; ++iL)
@@ -489,6 +490,11 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
         fHistTruePIDMCReco[index] = new TH3F(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});", nCentBins,
                                              centBins, nPtBins, ptBins, nPhysBins, physBins);
         fOutput->Add(fHistTruePIDMCReco[index]);
+
+        hist_name = Form("fHistTruePIDMCGen%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
+        fHistTruePIDMCGen[index] = new TH3F(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});", nCentBins,
+                                             centBins, nPtBins, ptBins, nPhysBins, physBins);
+        fOutput->Add(fHistTruePIDMCGen[index]);
 
         // Histograms MC DCAxy
         hist_name = Form("fHistDCARecoPID_prim%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
@@ -1025,14 +1031,21 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       // information from the MC kinematics (truth PID)
       if (fIsMC && lIsGoodPart) {
         fHistSepPowerTrue[lMCtIndex]->Fill(lMCpt, dEdx);
-        if (lMCevent->IsPhysicalPrimary(lMCtrk))
+        if (lMCevent->IsPhysicalPrimary(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 0);
-        else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk))
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 0);
+        }
+        else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 1);
-        else if (lMCevent->IsSecondaryFromMaterial(lMCtrk))
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 1);
+        }
+        else if (lMCevent->IsSecondaryFromMaterial(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 2);
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 2);
+        }
         else {
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 3);
+          fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 3);
           AliWarning("Weird particle physics");
         }
       }
@@ -1692,7 +1705,7 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
   Double_t fBBsaElectron[6];
 
   if(!fIsMC) {//DATA
-    if(fIsNominalBfield || (mass>0.130 && mass<0.140) || (mass>0.0005 && mass<0.00052)){//pions&elect want always the same parametrization
+    if(fIsNominalBfield){//pions&elect want always the same parametrization
       fBBsaHybrid[0]=1.43505E7;  //PHOBOS+Polinomial parameterization
       fBBsaHybrid[1]=49.3402;
       fBBsaHybrid[2]=1.77741E-7;
@@ -1710,29 +1723,29 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
       fBBsaElectron[4]=4.40284E-7;
       fBBsaElectron[5]=-2.;
     }
-    else{
-      fBBsaHybrid[0]=2.1617e7;//E0  //PHOBOS+Polinomial parameterization
-      fBBsaHybrid[1]=19.970580;//b
-      fBBsaHybrid[2]=2.4726e-7;//a
-      fBBsaHybrid[3]=2.4726e-7;//c
-      fBBsaHybrid[4]=1.6012e-7;//d
-      fBBsaHybrid[5]=-2.0;
-      fBBsaHybrid[6]=80.461549;//p0
-      fBBsaHybrid[7]=-21.954755;//p1
-      fBBsaHybrid[8]=83.189581;//p2
-      fBBsaHybrid[9]=-10.196385;//p3
+    else{//DATA: lowB field
+      fBBsaHybrid[0]=1.2281e7;//E0  //PHOBOS+Polinomial parameterization
+      fBBsaHybrid[1]=26.313261;//b
+      fBBsaHybrid[2]=1.8914e-4;//a
+      fBBsaHybrid[3]=-1.7118e-4;//c
+      fBBsaHybrid[4]=9.0570e-8;//d
+      fBBsaHybrid[5]=-1.74;
+      fBBsaHybrid[6]=-51.164329;//p0
+      fBBsaHybrid[7]=256.148748;//p1
+      fBBsaHybrid[8]=-90.215742;//p2
+      fBBsaHybrid[9]=16.700070;//p3 */
 
-      fBBsaElectron[0]=79.856480;//E0 //electrons in the ITS
-      fBBsaElectron[1]=64.838062;//b
-      fBBsaElectron[2]=1.1440e-1;//a
-      fBBsaElectron[3]=-8.6559e-3;//c
-      fBBsaElectron[4]=-5.5526e-4;//d
-      fBBsaElectron[5]=-1.54;//exp
+      fBBsaElectron[0]=79.872250;//E0 //electrons in the ITS
+      fBBsaElectron[1]=64.779799;//b
+      fBBsaElectron[2]=1.1441e-1;//a
+      fBBsaElectron[3]=-8.6686e-3;//c
+      fBBsaElectron[4]=-5.5293e-4;//d
+      fBBsaElectron[5]=-2.;//exp
     }
 
   } else {//MC
 
-    if(fIsNominalBfield || (mass>0.130 && mass<0.140) || (mass>0.0005 && mass<0.00052)){
+    if(fIsNominalBfield){
       fBBsaHybrid[0]=1.05381E7; //PHOBOS+Polinomial parameterization
       fBBsaHybrid[1]=89.3933;
       fBBsaHybrid[2]=2.4831E-7;
@@ -1750,24 +1763,24 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
       fBBsaElectron[4]=1.39412E-7;
       fBBsaElectron[5]=-2.;
     }
-    else{//low B field
-      fBBsaHybrid[0]=1.2292e7;//E0  //PHOBOS+Polinomial parameterization
-      fBBsaHybrid[1]=25.134119;//b
-      fBBsaHybrid[2]=1.8838e-4;//a
-      fBBsaHybrid[3]=-1.8207e-4;//c
-      fBBsaHybrid[4]=8.8786e-8;//d
-      fBBsaHybrid[5]=-2.0;//exp of beta
-      fBBsaHybrid[6]=76.577272;//p0
-      fBBsaHybrid[7]=-11.171906;//p1
-      fBBsaHybrid[8]=76.043339;//p2
-      fBBsaHybrid[9]=-6.288562;//p3
+    else{//MC low B field
+      fBBsaHybrid[0]=1.3946e7;//E0  //PHOBOS+Polinomial parameterization
+      fBBsaHybrid[1]=27.674452;//b
+      fBBsaHybrid[2]=1.5628e-4;//a
+      fBBsaHybrid[3]=-1.4786e-4;//c
+      fBBsaHybrid[4]=9.0375e-8;//d
+      fBBsaHybrid[5]=-1.86;//exp of beta
+      fBBsaHybrid[6]=-71.908360;//p0
+      fBBsaHybrid[7]=311.837370;//p1
+      fBBsaHybrid[8]=-134.097525;//p2
+      fBBsaHybrid[9]=28.997631;//p3
 
-      fBBsaElectron[0]=80.981442;//E0 //electrons in the ITS
-      fBBsaElectron[1]=61.698532;//b
+      fBBsaElectron[0]=80.977208;//E0 //electrons in the ITS
+      fBBsaElectron[1]=61.656376;//b
       fBBsaElectron[2]=1.1459e-1;//a
-      fBBsaElectron[3]=-9.3479e-3;//c
-      fBBsaElectron[4]=-4.8142e-4;//d
-      fBBsaElectron[5]=-1.58;//exp of beta
+      fBBsaElectron[3]=-9.3440e-3;//c
+      fBBsaElectron[4]=-4.6991e-4;//d
+      fBBsaElectron[5]=-2.0;//exp of beta
     }
 
 }
@@ -1777,7 +1790,7 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
   Double_t gamma=bg/beta;
   Double_t bb=1.;
 
-  Double_t betagcut = (fIsNominalBfield || (mass>0.130 && mass<0.140) || (mass>0.0005 && mass<0.00052)) ? 0.76 : 2.4;
+  Double_t betagcut = (fIsNominalBfield) ? 0.76 : 1.06;
 
   Double_t par[10];
   //parameters for pi, K, p

@@ -3,6 +3,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     Bool_t isMC,
                                     TString sJCatalyst        = "JCatalystTask",
                                     TString sJCatalystDetMC   = "JCatalystDetMCTask",
+                                    UInt_t flags              = 0,
                                     TString centBins          = "0.0 5.0 10.0 20.0 30.0 40.0 50.0 60.0 70.0",
                                     double jetCone            = 0.4,
                                     double ktjetCone          = 0.4,
@@ -14,11 +15,22 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     double particlePtCut      = 0.15,
                                     double leadingJetCut      = 20.0,
                                     double subleadingJetCut   = 20.0,
+                                    double minJetPt           = 10.0,
                                     double constituentCut     = 5.0,
                                     double deltaPhiCut        = 2.0,
-                                    double matchingR          = 0.2){
+                                    double matchingR          = 0.2,
+                                    double trackingIneff      = 0.0){
+
     // Load Custom Configuration and parameters
     // override values with parameters
+
+    // flags can manipulate event selection:
+    // 0: no additional events rejected.
+    // AliAnalysisTask::DIJET_VERTEX13PA: use IsVertexSelected2013pA
+    // AliAnalysisTask::DIJET_PILEUPSPD: use IsPileupFromSPD(3,0.6,3,2,5)
+    // AliAnalysisTask::DIJET_UTILSPILEUPSPD: use IsPileUpSPD(InputEvent())
+    // Combinations of these can be used by giving argument for example:
+    // AliAnalysisTask::DIJET_VERTEX13PA|AliAnalysisTask::DIJET_PILEUPSPD
 
     // jet recombination schemes can be set with ktScheme argument:
     // E_scheme     = 0
@@ -28,6 +40,8 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     // Et2_scheme   = 4
     // BIpt_scheme  = 5
     // BIpt2_scheme = 6
+
+    cout<<"AddTaskJCDijetTask::flags = "<<flags<<endl;
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -76,7 +90,8 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     dijetTask->SetJetConeSize(jetCone, ktjetCone);
     dijetTask->SetBGSubtrSettings(ktScheme, antiktScheme, usePionMass, useDeltaPhiBGSubtr);
     dijetTask->SetIsMC(isMC);
-    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR);
+    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR, trackingIneff, minJetPt);
+    dijetTask->AddFlags(flags);
     cout << dijetTask->GetName() << endl;
 
 

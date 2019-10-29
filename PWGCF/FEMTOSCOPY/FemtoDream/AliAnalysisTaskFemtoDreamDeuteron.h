@@ -40,6 +40,10 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   void SetTrackCutsAntiProtonMass(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsAntiProtonMass=trkCuts;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {fConfig=config;};
  private:
+  AliAnalysisTaskFemtoDreamDeuteron(
+      const AliAnalysisTaskFemtoDreamDeuteron &task);
+  AliAnalysisTaskFemtoDreamDeuteron &operator=(
+      const AliAnalysisTaskFemtoDreamDeuteron &task);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   bool fIsMC;                               //

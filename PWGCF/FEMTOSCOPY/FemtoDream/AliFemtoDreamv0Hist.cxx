@@ -97,27 +97,31 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
   fCutCounter->GetXaxis()->SetBinLabel(17, "D1&D2 pass cuts");
   fCutCounter->GetXaxis()->SetBinLabel(18, "D1&D2 wrong");
   fCutCounter->GetXaxis()->SetBinLabel(19, "D1&D2 pass cuts");
+  fCutCounter->GetYaxis()->SetTitle("Entries");
 
   fHistList->Add(fCutCounter);
 
   fInvMassBefKaonRej = new TH1F("InvMassBefK0Rej", "InvMassBefK0Rej", MassNBins,
                                 MassMin, MassMax);
-  fInvMassBefKaonRej->GetXaxis()->SetName("m_{Pair}");
+  fInvMassBefKaonRej->GetXaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
+  fInvMassBefKaonRej->GetYaxis()->SetTitle("Entries");
   fHistList->Add(fInvMassBefKaonRej);
 
   fInvMassKaon = new TH1F("InvMassKaon", "InvMassKaon", 400, 0.4, 0.6);
-  fInvMassKaon->GetXaxis()->SetName("m_{Pair}");
+  fInvMassKaon->GetXaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
+  fInvMassKaon->GetYaxis()->SetTitle("Entries");
   fHistList->Add(fInvMassKaon);
 
   fInvMassBefSelection = new TH1F("InvMasswithCuts", "InvMasswithCuts",
                                   MassNBins, MassMin, MassMax);
-  fInvMassBefSelection->GetXaxis()->SetName("m_{Pair}");
+  fInvMassBefSelection->GetXaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
+  fInvMassBefSelection->GetYaxis()->SetTitle("Entries");
   fHistList->Add(fInvMassBefSelection);
 
   fInvMassPt = new TH2F("InvMassPt", "Invariant Mass in Pt Bins", 8, 0.3, 4.3,
                         MassNBins, MassMin, MassMax);
-  fInvMassPt->GetXaxis()->SetTitle("P_{T}");
-  fInvMassPt->GetYaxis()->SetTitle("m_{Pair}");
+  fInvMassPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  fInvMassPt->GetYaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
   fHistList->Add(fInvMassPt);
 
   for (int i = 0; i < 2; ++i) {
@@ -130,70 +134,82 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
     fOnFly[i] = new TH1F(OnFlyName.Data(), OnFlyName.Data(), 2, 0, 2.);
     fOnFly[i]->GetXaxis()->SetBinLabel(1, "Online");
     fOnFly[i]->GetXaxis()->SetBinLabel(2, "Offline");
+    fOnFly[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fOnFly[i]);
 
     TString ptname = Form("pTDist_%s", sName[i].Data());
-    fpTDist[i] = new TH1F(ptname.Data(), ptname.Data(), 100, 0, 10.);
-    fpTDist[i]->GetXaxis()->SetTitle("P_{T}");
+    fpTDist[i] = new TH1F(ptname.Data(), ptname.Data(), 200, 0, 10.);
+    fpTDist[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fpTDist[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fpTDist[i]);
 
     TString etaname = Form("EtaDist_%s", sName[i].Data());
     fetaDist[i] = new TH1F(etaname.Data(), etaname.Data(), 200, -2., 2.);
     fetaDist[i]->GetXaxis()->SetTitle("#eta");
+    fetaDist[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fetaDist[i]);
 
     TString phiname = Form("PhiDist_%s", sName[i].Data());
     fPhiDist[i] = new TH1F(phiname.Data(), phiname.Data(), 100, 0.,
                            2 * TMath::Pi());
     fPhiDist[i]->GetXaxis()->SetTitle("#phi");
+    fPhiDist[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fPhiDist[i]);
 
     TString decayVtxXname = Form("DecayVtxXPV_%s", sName[i].Data());
     fDecayVtxv0X[i] = new TH1F(decayVtxXname.Data(), decayVtxXname.Data(), 400,
                                0., 200);
-    fDecayVtxv0X[i]->GetXaxis()->SetTitle("Decay Vtx To PV X");
+    fDecayVtxv0X[i]->GetXaxis()->SetTitle("Decay Vtx To PV X (cm)");
+    fDecayVtxv0X[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fDecayVtxv0X[i]);
 
     TString decayVtxYname = Form("DecayVtxYPV_%s", sName[i].Data());
     fDecayVtxv0Y[i] = new TH1F(decayVtxYname.Data(), decayVtxYname.Data(), 400,
                                0., 200);
-    fDecayVtxv0Y[i]->GetXaxis()->SetTitle("Decay Vtx To PV Y");
+    fDecayVtxv0Y[i]->GetXaxis()->SetTitle("Decay Vtx To PV Y (cm)");
+    fDecayVtxv0Y[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fDecayVtxv0Y[i]);
 
     TString decayVtxZname = Form("DecayVtxZPV_%s", sName[i].Data());
     fDecayVtxv0Z[i] = new TH1F(decayVtxZname.Data(), decayVtxZname.Data(), 400,
                                0., 200);
-    fDecayVtxv0Z[i]->GetXaxis()->SetTitle("Decay Vtx To PV Z");
+    fDecayVtxv0Z[i]->GetXaxis()->SetTitle("Decay Vtx To PV Z (cm)");
+    fDecayVtxv0Z[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fDecayVtxv0Z[i]);
 
     TString transverseRadname = Form("TransverseRadius_%s", sName[i].Data());
     fTransRadius[i] = new TH1F(transverseRadname.Data(),
                                transverseRadname.Data(), 750, 0, 150);
-    fTransRadius[i]->GetXaxis()->SetTitle("Transverse Radius");
+    fTransRadius[i]->GetXaxis()->SetTitle("#it{r}_{xy} (cm)");
+    fTransRadius[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fTransRadius[i]);
 
     TString DCADauPVPname = Form("DCADauPToPV_%s", sName[i].Data());
     fDCAPosDaugToPrimVtx[i] = new TH1F(DCADauPVPname.Data(),
                                        DCADauPVPname.Data(), 500, 0, 100);
     fDCAPosDaugToPrimVtx[i]->GetXaxis()->SetTitle("DCADaugther P to PV");
+    fDCAPosDaugToPrimVtx[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fDCAPosDaugToPrimVtx[i]);
 
     TString DCADauPVNname = Form("DCADauNToPV_%s", sName[i].Data());
     fDCANegDaugToPrimVtx[i] = new TH1F(DCADauPVNname.Data(),
                                        DCADauPVNname.Data(), 500, 0, 100);
     fDCANegDaugToPrimVtx[i]->GetXaxis()->SetTitle("DCADaugther N to PV");
+    fDCANegDaugToPrimVtx[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fDCANegDaugToPrimVtx[i]);
 
     TString DCADaugVtxname = Form("DCADauToVtx_%s", sName[i].Data());
     fDCADaugToVtx[i] = new TH1F(DCADaugVtxname.Data(), DCADaugVtxname.Data(),
-                                100, 0, 10);
+                                100, 0, 5);
     fDCADaugToVtx[i]->GetXaxis()->SetTitle("DCA Daug to Vtx");
+    fDCADaugToVtx[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fDCADaugToVtx[i]);
 
     TString cosPointName = Form("PointingAngle_%s", sName[i].Data());
-    fCPA[i] = new TH1F(cosPointName.Data(), cosPointName.Data(), 500, 0.8,
+    fCPA[i] = new TH1F(cosPointName.Data(), cosPointName.Data(), 500, 0.9,
                        1.001);
-    fCPA[i]->GetXaxis()->SetTitle("Cos Pointing Angle");
+    fCPA[i]->GetXaxis()->SetTitle("cos(#alpha)");
+    fCPA[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fCPA[i]);
 
     TString armenterosName = Form("ArmenterosPodolandski_%s", sName[i].Data());
@@ -206,22 +222,23 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
     TString invMassName = Form("InvariantMass_%s", sName[i].Data());
     fInvMass[i] = new TH1F(invMassName.Data(), invMassName.Data(), MassNBins,
                            MassMin, MassMax);
-    fInvMass[i]->GetXaxis()->SetTitle("m_{Pair}");
+    fInvMass[i]->GetXaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
+    fInvMass[i]->GetYaxis()->SetTitle("Entries");
     fv0CutQA[i]->Add(fInvMass[i]);
   }
 
   if (CPAPlots) {
     fCPAPtBins = new TH2F("CPAPtBinsTot", "CPAPtBinsTot", 8, 0.3, 4.3, 1000,
                           0.90, 1.);
-    fCPAPtBins->GetXaxis()->SetTitle("P_{T}");
-    fCPAPtBins->GetYaxis()->SetTitle("CPA");
+    fCPAPtBins->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fCPAPtBins->GetYaxis()->SetTitle("cos(#alpha)");
     fHistList->Add(fCPAPtBins);
 
     TString cpaPtBinName = "CPAPtBinsMult_0_";
     cpaPtBinName += fMultRangeLow;
     TString cpaAxisName = "0 < mult < ";
     cpaAxisName += fMultRangeLow;
-    cpaAxisName += ";P#_{T};CPA";
+    cpaAxisName += ";#it{p}_{T} (GeV/#it{c});cos(#alpha)";
     fCPAPtBinsMult[0] = new TH2F(cpaPtBinName.Data(), cpaAxisName.Data(), 8,
                                  0.3, 4.3, 1000, 0.90, 1.);
 
@@ -232,7 +249,7 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
     cpaAxisName = fMultRangeLow;
     cpaAxisName += "0 < mult < ";
     cpaAxisName += fMultRangeHigh;
-    cpaAxisName += ";P#_{T};CPA";
+    cpaAxisName += ";#it{p}_{T} (GeV/#it{c});cos(#alpha)";
     fCPAPtBinsMult[1] = new TH2F(cpaPtBinName.Data(), cpaAxisName.Data(), 8,
                                  0.3, 4.3, 1000, 0.90, 1.);
 
@@ -241,7 +258,7 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
     cpaPtBinName += "_inf";
     cpaAxisName = "mult > ";
     cpaAxisName += fMultRangeHigh;
-    cpaAxisName += ";P#_{T};CPA";
+    cpaAxisName += ";#it{p}_{T} (GeV/#it{c});cos(#alpha)";
     fCPAPtBinsMult[2] = new TH2F(cpaPtBinName.Data(), cpaAxisName.Data(), 8,
                                  0.3, 4.3, 1000, 0.90, 1.);
 
@@ -303,8 +320,8 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(TString MinimalBooking, int MassNBins,
 
   fInvMassPt = new TH2F("InvMassPt", "Invariant Mass in Pt Bins", 8, 0.3, 4.3,
                         MassNBins, MassMin, MassMax);
-  fInvMassPt->GetXaxis()->SetTitle("P_{T}");
-  fInvMassPt->GetYaxis()->SetTitle("m_{Pair}");
+  fInvMassPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c}^{2})");
+  fInvMassPt->GetYaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
   fHistList->Add(fInvMassPt);
 }
 

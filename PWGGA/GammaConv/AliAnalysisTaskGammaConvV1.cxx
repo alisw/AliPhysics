@@ -812,8 +812,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
   // Set special pt binning for pPb 5TeV, pPb 8TeV
   if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
-      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
-      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
+      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2  ){
 //    binWidthPt                = 0.05;
     nBinsPt                   = 186;
     minPt                     = 0;
@@ -851,7 +850,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   // Set special pt binning for pp 13TeV and 5TeV
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
-              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV  ){
+              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV ){
 //    binWidthPt                = 0.05;
     nBinsPt                   = 169;
     minPt                     = 0;
@@ -868,6 +867,36 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       if(i<100) arrQAPtBinning[i]             = 0.1*i;
       else if(i<140) arrQAPtBinning[i]        = 10.+0.25*(i-100);
       else if(i<170) arrQAPtBinning[i]        = 20.+1.0*(i-140);
+      else arrQAPtBinning[i]                  = maxQAPt;
+    }
+    nBinsClusterPt            = 274;
+    minClusterPt              = 0;
+    maxClusterPt              = 100;
+    for(Int_t i=0; i<nBinsClusterPt+1;i++){
+      if (i < 1) arrClusPtBinning[i]          = 0.3*i;
+      else if(i<98) arrClusPtBinning[i]       = 0.3+0.1*(i-1);
+      else if(i<128) arrClusPtBinning[i]      = 10.+0.2*(i-98);
+      else if(i<184) arrClusPtBinning[i]      = 16.+0.25*(i-128);
+      else if(i<224) arrClusPtBinning[i]      = 30.+0.5*(i-184);
+      else if(i<274) arrClusPtBinning[i]      = 50.+1.0*(i-224);
+      else arrClusPtBinning[i]                = maxClusterPt;
+    }
+  // Set special pt binning for pp 13TeV and 5TeV
+  } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV  ||
+      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV  ){
+    nBinsPt                   = 139;
+    minPt                     = 0;
+    maxPt                     = 20;
+    for(Int_t i=0; i<nBinsPt+1;i++){
+      if (i < 100) arrPtBinning[i]            = 0.10*i;
+      else if(i<140) arrPtBinning[i]          = 10.+0.25*(i-100);
+      else arrPtBinning[i]                    = maxPt;
+    }
+    nBinsQAPt                 = 140;
+    maxQAPt                   = 20;
+    for(Int_t i=0; i<nBinsQAPt+1;i++){
+      if(i<100) arrQAPtBinning[i]             = 0.1*i;
+      else if(i<140) arrQAPtBinning[i]        = 10.+0.25*(i-100);
       else arrQAPtBinning[i]                  = maxQAPt;
     }
     nBinsClusterPt            = 274;

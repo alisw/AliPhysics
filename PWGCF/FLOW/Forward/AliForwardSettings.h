@@ -80,7 +80,8 @@ class AliForwardSettings : public TObject {
   TString fileName;
   Int_t fMaxConsequtiveStrips;
   Bool_t standard_only;
-  Double_t fmdcut;
+  Double_t fmdlowcut;
+  Double_t fmdhighcut;
   // return true if good event
 
   // flags used for method of cumulant
@@ -189,8 +190,9 @@ class AliForwardSettings : public TObject {
 
   Int_t dW4FourTwo   = 1;
   Int_t dW4ThreeTwo  = 2;
-  Int_t dWTwoTwoN    = 3; // Numerator of R_{n,n; 2}
-  Int_t dWTwoTwoD    = 4; // Denominator of R_{n,n; 2}
+  Int_t dW4_mixed    = 3;
+  Int_t dWTwoTwoN    = 4; // Numerator of R_{n,n; 2}
+  Int_t dWTwoTwoD    = 5; // Denominator of R_{n,n; 2}
 
   Int_t rW2          = 1; // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
   Int_t rW2Two       = 2; // <w2*two>
@@ -218,6 +220,8 @@ class AliForwardSettings : public TObject {
     kN2 = 1,
     kD2
   };
+
+  Int_t nua_runnumber;
 
 private:
   ClassDef(AliForwardSettings, 1);

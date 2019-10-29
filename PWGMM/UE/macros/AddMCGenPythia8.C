@@ -1,16 +1,31 @@
-R__LOAD_LIBRARY(liblhapdf)
-R__LOAD_LIBRARY(libpythia6_4_25)
-R__LOAD_LIBRARY(libEGPythia6)
-R__LOAD_LIBRARY(libAliPythia8)
+AliGenerator* CreatePythia8Gen(
+                Float_t e_cms,  
+                Bool_t kCR, 
+                Int_t kProcess
+                );
+AliGenerator* AddMCGenPythia8(
+		Float_t e_cms= 13000.,
+		Bool_t kCR= kTRUE,
+		Int_t kProcess= 0 
+		)
+{
+	// Add Pythia 6 generator: 
+	// -- kProcess=0  MB generation
+	//-- kProcess=1  Jet production, pthard generation
+	//   -- Color reconnection = ON/OFF
 
-#include "AliGenerator.h"
-#include "AliGenPythia.h"
+	gSystem->Load("liblhapdf");
 
-	AliGenerator* CreatePythia8Gen( 
-			Float_t e_cms, 
-			Bool_t kCR, 
-			Int_t kProcess
-			)
+	AliGenerator *myGen  = NULL;
+	myGen                = CreatePythia8Gen(e_cms, kCR, kProcess);
+
+	return myGen;
+}
+AliGenerator* CreatePythia8Gen( 
+		Float_t e_cms, 
+		Bool_t kCR, 
+		Int_t kProcess
+		)
 {
 
 
@@ -54,25 +69,6 @@ R__LOAD_LIBRARY(libAliPythia8)
 
 
 	return myGener;
-}
-
-AliGenerator* AddMCGenPythia8(
-		Float_t e_cms= 13000.,
-		Bool_t kCR= kTRUE,
-		Int_t kProcess= 0 
-		)
-{
-	// Add Pythia 6 generator: 
-	// -- kProcess=0  MB generation
-	//-- kProcess=1  Jet production, pthard generation
-	//   -- Color reconnection = ON/OFF
-
-	gSystem->Load("liblhapdf");
-
-	AliGenerator *myGen  = NULL;
-	myGen                = CreatePythia8Gen(e_cms, kCR, kProcess);
-
-	return myGen;
 }
 
 

@@ -27,8 +27,8 @@ public:
     kPythiaDef = 5,
     kDetEmbPartPythia = 6,
     kGenOnTheFly = 7
-  };
-  enum JetShapeSub { kNoSub = 0, kConstSub = 1, kDerivSub = 2 };
+      };
+  enum JetShapeSub { kNoSub = 0, kConstSub = 1, kDerivSub = 2, kEventSub=3 };
   enum JetSelectionType { kInclusive = 0, kRecoil = 1 };
 
   enum DerivSubtrOrder { kSecondOrder = 0, kFirstOrder = 1 };
@@ -55,8 +55,10 @@ public:
   void SetFillLundMC(Bool_t t) { fDoFillMCLund = t; }
   void SetCheckResolution(Bool_t t) { fCheckResolution = t; }
   void SetSubjetCutoff(Float_t t) { fSubjetCutoff = t; }
+  void SetMinPtConst(Float_t t) { fMinPtConst = t;}
   void SetHardCutoff(Float_t t) { fHardCutoff = t; }
   void SetDoTwoTrack(Bool_t t) { fDoTwoTrack = t; }
+  void SetCutDoubleCounts(Bool_t t) {fCutDoubleCounts = t;}
   void SetDoAreaIterative(Bool_t t) { fDoAreaIterative = t; }
   void SetPowerAlgorithm(Float_t t) { fPowerAlgo = t; }
   void SetMagFieldPol(Float_t t) { fMagFieldPolarity = t; }
@@ -104,6 +106,7 @@ protected:
   Float_t fMinPtConst;       // constituent pt cutoff
   Float_t fHardCutoff;       // hard cutoff in the iterative declustering
   Bool_t fDoTwoTrack;        // switch to consider 2 track effects
+  Bool_t fCutDoubleCounts;   //turn off to avoid true-hybrid cuts to suppress double counting
   Bool_t fDoAreaIterative;   // subtract the area in the declustering
   Float_t fPowerAlgo;        // power of the generickt algorithm
   Float_t fPhiCutValue;      // cuts from HBT

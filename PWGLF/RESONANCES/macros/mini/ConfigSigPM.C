@@ -8,6 +8,7 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
 		Bool_t                 isMC, 
 		AliPIDResponse::EBeamType collSys = AliPIDResponse::kPBPB, //=0, kPPB=1, kPBPB=2
 		AliRsnCutSet           *cutsPair,             //cuts on the pair
+                AliRsnCutSet           *cutsPairY,             //cuts on the pair Y only
 		Bool_t                 enaMultSel = kTRUE,    //enable multiplicity axis
       		Float_t                masslow = 1.2,         //inv mass axis low edge 
 		Float_t                massup = 2.,          //inv mass axis upper edge 
@@ -175,6 +176,8 @@ iCutTPCNSigma->GetName()) ) ;
   /* 2nd daughter pt      */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt, kFALSE);
   /* 1st daughter p       */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP, kFALSE);
   /* 2nd daughter p       */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP, kFALSE);
+  /* Asymmetry data       */ Int_t asymd   = task->CreateValue(AliRsnMiniValue::kAsym, kFALSE);
+  /* Asymmetry            */ Int_t asym   = task->CreateValue(AliRsnMiniValue::kAsym, kTRUE);
    /* gener. transv. mom.  */
   if (isMC) Int_t ptIDgen= task->CreateValue(AliRsnMiniValue::kPt, kTRUE);
   
@@ -212,10 +215,32 @@ iCutTPCNSigma->GetName()) ) ;
     // axis X: invmass 
     out->AddAxis(imID, nbins, masslow, massup);
     //axis Y: mother pt
-    out->AddAxis(ptID, 100, 0.0, 10.0); //default use mother pt
+    out->AddAxis(ptID, 150, 0.0, 15.0); //default use mother pt
     //axis Z: multiplicity
       if (enaMultSel) out->AddAxis(multID, 100, 0.0, 100.0);
   }
+  
+    AliRsnMiniOutput *outasmd = task->CreateOutput("hAsymmetryDAtaSp", "HIST", "PAIR");
+    outasmd->SetDaughter(0, AliRsnDaughter::kLambda);
+    outasmd->SetDaughter(1, AliRsnDaughter::kPion);
+    outasmd->SetCutID(0, iCutLs);
+    outasmd->SetCutID(1, icutPi);
+    outasmd->SetMotherPDG(3224);  
+    outasmd->SetMotherMass(1.3828);
+    outasmd->SetPairCuts(cutsPair);
+    outasmd->SetDaughter(0, AliRsnDaughter::kLambda);
+    outasmd->SetDaughter(1, AliRsnDaughter::kPion);
+    outasmd->SetCharge(0, charge1[0]);
+    outasmd->SetCharge(1, charge2[0]);
+    outasmd->AddAxis(asymd, 200, -1.0, 1.0);
+    if (enaMultSel) outasmd->AddAxis(multID, 100, 0.0, 100.0);
+
+   //AliRsnMiniOutput *out = task->CreateOutput("hOpeningAngle", "HIST", "PAIR");
+   //out->SetCutID(0, cutID1[1]);
+   //out->SetCutID(1, cutID2[1]);
+   //out->SetPairCuts(cutsPair);
+   //out->AddAxis(ptID, 350, 0.0, 35.0);
+   //out->AddAxis(opAngl, 300, 0., 150.);
  
    AddMonitorOutput_LambdaPt(cutSetLs->GetMonitorOutput());
    AddMonitorOutput_LambdaNegDaughPt(cutSetLs->GetMonitorOutput());
@@ -278,7 +303,7 @@ iCutTPCNSigma->GetName()) ) ;
     out->SetPairCuts(cutsPair);
     // binnings
     out->AddAxis(imID, 800, 1.2, 2.0);
-    out->AddAxis(ptID, 100, 0.0, 10.0);
+    out->AddAxis(ptID, 150, 0.0, 15.0);
     //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
     
     if (enaMultSel) out->AddAxis(multID, 100, 0.0, 100.0);
@@ -298,7 +323,7 @@ iCutTPCNSigma->GetName()) ) ;
     out->SetPairCuts(cutsPair);
     // binnings
     out->AddAxis(imID, 800, 1.2, 2.0);
-    out->AddAxis(ptID, 100, 0.0, 10.0);
+    out->AddAxis(ptID, 150, 0.0, 15.0);
     //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
     
     if (enaMultSel) out->AddAxis(multID, 100, 0.0, 100.0);
@@ -318,7 +343,7 @@ iCutTPCNSigma->GetName()) ) ;
     out->SetPairCuts(cutsPair);
     // binnings
     out->AddAxis(imID, 800, 1.2, 2.0);
-    out->AddAxis(ptID, 100, 0.0, 10.0);
+    out->AddAxis(ptID, 150, 0.0, 15.0);
     //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
     
     if (enaMultSel) out->AddAxis(multID, 100, 0.0, 100.0);
@@ -338,19 +363,107 @@ iCutTPCNSigma->GetName()) ) ;
     out->SetPairCuts(cutsPair);
     // binnings
     out->AddAxis(imID, 800, 1.2, 2.0);
-    out->AddAxis(ptID, 100, 0.0, 10.0);
+    out->AddAxis(ptID, 150, 0.0, 15.0);
 
     if (enaMultSel) out->AddAxis(multID, 100, 0.0, 100.0);
+
+   //AliRsnMiniOutput *out = task->CreateOutput("hAsymmetryMC", "HIST", "TRUE");
+   // out->SetCutID(0, cutID1[0]);
+   // out->SetCutID(1, cutID2[0]);
+   // out->SetDaughter(0, AliRsnDaughter::kLambda);
+   // out->SetDaughter(1, AliRsnDaughter::kPion);
+   // out->SetCharge(0, charge1[0]);
+   // out->SetCharge(1, charge2[0]);
+   // out->SetMotherPDG(ipdg[0]); 
+   // out->SetMotherMass(mass[0]);
+   // out->SetPairCuts(cutsPair);
+   // out->AddAxis(ptID, 100, 0.0, 10.0);
+   // out->AddAxis(opAngl, 300, 0., 150.);
+
+   // AliRsnMiniOutput *out = task->CreateOutput("hOpeningAngleMCTrueM", "HIST", "TRUE");
+   // out->SetCutID(0, cutID1[1]);
+   // out->SetCutID(1, cutID2[1]);
+   // out->SetDaughter(0, AliRsnDaughter::kLambda);
+   // out->SetDaughter(1, AliRsnDaughter::kPion);
+   // out->SetCharge(0, charge1[1]);
+   // out->SetCharge(1, charge2[1]);
+   // out->SetMotherPDG(ipdg[1]);
+   // out->SetMotherMass(mass[1]);
+   // out->SetPairCuts(cutsPair);
+   // out->AddAxis(ptID, 100, 0.0, 10.0);
+   // out->AddAxis(opAngl, 300, 0., 150.);
+ 
+   // AliRsnMiniOutput *out = task->CreateOutput("hOpeningAngleMCTrueAP", "HIST", "TRUE");
+   // out->SetCutID(0, cutID1[4]);
+   // out->SetCutID(1, cutID2[4]);
+   // out->SetDaughter(0, AliRsnDaughter::kLambda);
+   // out->SetDaughter(1, AliRsnDaughter::kPion);
+   // out->SetCharge(0, charge1[4]);
+   // out->SetCharge(1, charge2[4]);
+   // out->SetMotherPDG(ipdg[4]);
+   // out->SetMotherMass(mass[4]);
+   // out->SetPairCuts(cutsPair);
+   // out->AddAxis(ptID, 100, 0.0, 10.0);
+   // out->AddAxis(opAngl, 300, 0., 150.);
+    
+   // AliRsnMiniOutput *out = task->CreateOutput("hOpeningAngleMCTrueAM", "HIST", "TRUE");
+   // out->SetCutID(0, cutID1[5]);
+   // out->SetCutID(1, cutID2[5]);
+   // out->SetDaughter(0, AliRsnDaughter::kLambda);
+   // out->SetDaughter(1, AliRsnDaughter::kPion);
+   // out->SetCharge(0, charge1[5]);
+   // out->SetCharge(1, charge2[5]);
+   // out->SetMotherPDG(ipdg[5]);
+   // out->SetMotherMass(mass[5]);
+   // out->SetPairCuts(cutsPair);
+   // out->AddAxis(ptID, 100, 0.0, 10.0);
+   // out->AddAxis(opAngl, 300, 0., 150.);
     
     //GENERATED PAIRS
+    AliRsnMiniOutput *outasm = task->CreateOutput("hAsymmetryMCSp", "HIST", "MOTHER");
+    outasm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outasm->SetDaughter(1, AliRsnDaughter::kPion);
+    outasm->SetMotherPDG(3224);
+    outasm->SetMotherMass(1.3828);
+    outasm->SetPairCuts(cutsPairY);
+    outasm->AddAxis(asym, 200, -1.0, 1.0);
+    if (enaMultSel) outasm->AddAxis(multID, 100, 0.0, 100.0);
+
+    AliRsnMiniOutput *outasm = task->CreateOutput("hAsymmetryMCSm", "HIST", "MOTHER");
+    outasm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outasm->SetDaughter(1, AliRsnDaughter::kPion);
+    outasm->SetMotherPDG(3114);   
+    outasm->SetMotherMass(1.3872);
+    outasm->SetPairCuts(cutsPairY);
+    outasm->AddAxis(asym, 200, -1.0, 1.0);
+    if (enaMultSel) outasm->AddAxis(multID, 100, 0.0, 100.0);
+
+    AliRsnMiniOutput *outasm = task->CreateOutput("hAsymmetryMCSpbar", "HIST", "MOTHER");
+    outasm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outasm->SetDaughter(1, AliRsnDaughter::kPion);
+    outasm->SetMotherPDG(-3224);
+    outasm->SetMotherMass(1.3828); 
+    outasm->SetPairCuts(cutsPairY);
+    outasm->AddAxis(asym, 200, -1.0, 1.0);
+    if (enaMultSel) outasm->AddAxis(multID, 100, 0.0, 100.0);
+
+    AliRsnMiniOutput *outasm = task->CreateOutput("hAsymmetryMCSmbar", "HIST", "MOTHER");
+    outasm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outasm->SetDaughter(1, AliRsnDaughter::kPion);
+    outasm->SetMotherPDG(-3114);
+    outasm->SetMotherMass(1.3872); 
+    outasm->SetPairCuts(cutsPairY);
+    outasm->AddAxis(asym, 200, -1.0, 1.0);
+    if (enaMultSel) outasm->AddAxis(multID, 100, 0.0, 100.0);
+
     output[0] = "HIST";
     AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaPpt_%s", name[0].Data()), output[0].Data(),"MOTHER");
     outm->SetDaughter(0, AliRsnDaughter::kLambda);
     outm->SetDaughter(1, AliRsnDaughter::kPion);
     outm->SetMotherPDG(3224);
     outm->SetMotherMass(1.3828);
-    outm->SetPairCuts(cutsPair);
-    outm->AddAxis(ptIDgen, 100, 0.0, 10.0);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
     if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
 
     output[1] = "HIST";
@@ -359,8 +472,8 @@ iCutTPCNSigma->GetName()) ) ;
     outm->SetDaughter(1, AliRsnDaughter::kPion);
     outm->SetMotherPDG(3114);
     outm->SetMotherMass(1.3872);
-    outm->SetPairCuts(cutsPair);
-    outm->AddAxis(ptIDgen, 100, 0.0, 10.0);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
     if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
 
     output[4] = "HIST";
@@ -369,8 +482,8 @@ iCutTPCNSigma->GetName()) ) ;
     outm->SetDaughter(1, AliRsnDaughter::kPion);
     outm->SetMotherPDG(-3224);
     outm->SetMotherMass(1.3828);
-    outm->SetPairCuts(cutsPair);
-    outm->AddAxis(ptIDgen, 100, 0.0, 10.0);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
     if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
 
     output[5] = "HIST";
@@ -379,10 +492,18 @@ iCutTPCNSigma->GetName()) ) ;
     outm->SetDaughter(1, AliRsnDaughter::kPion);
     outm->SetMotherPDG(-3114);
     outm->SetMotherMass(1.3872);
-    outm->SetPairCuts(cutsPair);
-    outm->AddAxis(ptIDgen, 100, 0.0, 10.0);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
     if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
 
+//    AliRsnMiniOutput *out = task->CreateOutput("hOpeningAngleGener", "HIST", "PAIR");
+//    outm->SetDaughter(0, AliRsnDaughter::kLambda);
+//    outm->SetDaughter(1, AliRsnDaughter::kPion);
+//    outm->SetMotherPDG(-3114);  
+//    outm->SetMotherMass(1.3872);
+//    out->SetPairCuts(cutsPair);
+//    out->AddAxis(ptIDgen, 100, 0.0, 10.0);
+//    out->AddAxis(opAnglsim, 300, 0., 150.);
  
   }
 

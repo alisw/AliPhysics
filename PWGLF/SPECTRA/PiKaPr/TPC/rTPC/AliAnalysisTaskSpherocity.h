@@ -72,8 +72,7 @@ public:
 
 		virtual void ProduceArrayTrksESD(AliESDEvent* event, const Int_t cent, const Int_t sperocity);
 		virtual void ProduceArrayV0ESD(AliESDEvent* event, const Int_t cent, const Int_t sperocity );
- 		Int_t   GetV0MIndex(Float_t V0MPercentile);
- 		Int_t   GetMultiplicityIndex(Int_t Mult);
+ 		Int_t   GetCentralityClass(Float_t percentile);
  		void    PtRecVsPtTruth(AliESDEvent* event, const Bool_t isjetty);
 		Int_t   GetMultiplicityParticles(Double_t etaCut);
 		Short_t GetPidCode(Int_t pdgCode) const;
@@ -127,7 +126,7 @@ public:
 
 		Int_t        fNcl;                
 		Double_t     fEtaCut;             // Eta cut used to select particles
-		Int_t        fCent; //minimum centrality
+		Int_t        fCentClass; //minimum centrality
 		Int_t        fSpherocity;
 		Float_t      fMinCent; //minimum centrality
 		Float_t      fMaxCent; //maximum centrality

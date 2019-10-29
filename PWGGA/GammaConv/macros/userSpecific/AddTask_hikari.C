@@ -486,22 +486,25 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       }
       else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
+
+    analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+
     if (doPostCalibration){
       if (isMC == 0){
-        if(fileNamedEdxPostCalib.CompareTo("") != 0){
-          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
-          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
-        }
-        analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
-        cout << "Enabled TPC dEdx recalibration." << endl;
-      } else{
+	if(analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNamedEdxPostCalib)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
+	  cout << "Setting TPC dEdx post calibration file: " << fileNamedEdxPostCalib.Data() << endl;
+        } else{
+          doPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
+        }	
+      }else{
         cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
         doPostCalibration=kFALSE;
         analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
     }
 
-    analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(enableLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());

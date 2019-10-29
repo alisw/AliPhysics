@@ -228,6 +228,8 @@ class AliCalorimeterUtils : public TObject {
   void          SwitchOffRecalibration()                   { fRecalibration = kFALSE;
                   fEMCALRecoUtils->SwitchOffRecalibration()                                                           ; }
 	
+  void          Load1DRecalibration()                      { fLoad1DRecalibFactors=kTRUE; }
+
   void          InitPHOSRecalibrationFactors () ;
 	
   Float_t       GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
@@ -246,16 +248,18 @@ class AliCalorimeterUtils : public TObject {
                   ((TH2F*)fPHOSRecalibrationFactors->At(imod))->SetBinContent(iCol,iRow,c)                            ; }
     
   void          SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(iSM,h)      ; }
+  void          SetEMCALChannelRecalibrationFactors1D(TH1S* h) { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors1D(h)      ; }
   void          SetPHOSChannelRecalibrationFactors(Int_t imod , TH2F* h) { fPHOSRecalibrationFactors ->AddAt(h,imod)                        ; }
 	
   TH2F *        GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors(iSM) ; }
+  TH1S *        GetEMCALChannelRecalibrationFactors1D()     const { return fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors1D() ; }
   TH2F *        GetPHOSChannelRecalibrationFactors(Int_t imod)     const { return (TH2F*)fPHOSRecalibrationFactors->At(imod)                ; }
 	
   void          SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(map)        ; }
   void          SetPHOSChannelRecalibrationFactors (TObjArray *map)      { fPHOSRecalibrationFactors  = map;}
 
   void          RecalibrateCellTime       (Double_t & time, Int_t calo, Int_t absId, Int_t bunchCrossNumber) const ;
-  void          RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo, Int_t iSM  , Int_t bunchCrossNumber) const;
+  void          RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo, Int_t iSM  , Int_t bunchCrossNumber, Short_t par=0) const;
   void          RecalibrateCellAmplitude  (Float_t  & amp , Int_t calo, Int_t absId) const ;
   Float_t       RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
   Float_t       RecalibrateClusterEnergyWeightCell(AliVCluster* cluster, AliVCaloCells * cells, Float_t energyOrg);
@@ -292,13 +296,21 @@ class AliCalorimeterUtils : public TObject {
   void     SwitchOffL1PhaseInTimeRecalibration()           { fEMCALRecoUtils->SwitchOffL1PhaseInTimeRecalibration()   ; }
   void     SwitchOnL1PhaseInTimeRecalibration()            { fEMCALRecoUtils->SwitchOnL1PhaseInTimeRecalibration()    ; }
 
-  Int_t    GetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM) const        { return fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForSM(iSM)   ; }
-  void     SetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM, Int_t c = 0) { return fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForSM(iSM,c) ; }
+  Int_t    GetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM, Short_t par=0) const        { return fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForSM(iSM,par) ; }
+  void     SetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM, Int_t c = 0, Short_t par=0) { return fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForSM(iSM,c,par) ; }
   
-  TH1C *   GetEMCALL1PhaseInTimeRecalibrationForAllSM()const          { return fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM() ; }
-  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TObjArray *map) { fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(map)     ; }
-  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TH1C* h)        { fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h)       ; }
+  TH1C *   GetEMCALL1PhaseInTimeRecalibrationForAllSM(Short_t par=0) const    { return fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM(par) ; }
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TObjArray *map)         { fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(map)        ; }
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TH1C* h, Short_t par=0) { fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h,par)      ; }
 
+  Bool_t  IsParRun() { return fEMCALRecoUtils->IsParRun() ; }
+  Short_t GetCurrentParNumber()         { return fEMCALRecoUtils->GetCurrentParNumber() ; }
+  void SetCurrentParNumber(Short_t par) { fEMCALRecoUtils->SetCurrentParNumber(par)     ; }
+  Short_t GetNPars()             { return fEMCALRecoUtils->GetNPars() ; }
+  void SetNPars(Short_t npars)   { fEMCALRecoUtils->SetNPars(npars)   ; }
+  ULong64_t GetGlobalIDPar(Short_t par)            { return fEMCALRecoUtils->GetGlobalIDPar(par) ; }
+  void SetGlobalIDPar(ULong64_t glob, Short_t par) { fEMCALRecoUtils->SetGlobalIDPar(glob,par)   ; }
+  
   //------------------------------
   // EMCAL specific utils for the moment
   //------------------------------
@@ -427,6 +439,8 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fRemoveBadChannels;        ///<  Check the channel status provided and remove clusters with bad channels.
 
   Bool_t             fLoad1DBadChMap;           ///<  Flag to load 1D bad channel map.
+
+  Bool_t             fLoad1DRecalibFactors;     ///<  Flag to load 1D energy recalibration histogram
 
   TObjArray        * fPHOSBadChannelMap;        ///<  Array of histograms with map of bad channels, PHOS.
 

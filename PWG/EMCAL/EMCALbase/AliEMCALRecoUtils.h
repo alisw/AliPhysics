@@ -171,18 +171,30 @@ public:
   void     SwitchOffRecalibration()                      { fRecalibration = kFALSE ; }
   void     SwitchOnRecalibration()                       { fRecalibration = kTRUE  ; 
                                                            if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors() ; }
+  void     SetUse1DRecalibration(Bool_t use)             { fUse1Drecalib = use; }
   void     InitEMCALRecalibrationFactors() ;
+  void     InitEMCALRecalibrationFactors1D() ;
   TObjArray* GetEMCALRecalibrationFactorsArray()   const { return fEMCALRecalibrationFactors ; }
-  TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALRecalibrationFactors->At(iSM) ; }	
+  TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const;	
+  TH1S *   GetEMCALChannelRecalibrationFactors1D()            const { return (TH1S*)fEMCALRecalibrationFactors->At(0) ; }	
   void     SetEMCALChannelRecalibrationFactors(const TObjArray *map);
   void     SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h);
+  void     SetEMCALChannelRecalibrationFactors1D(const TH1S* h);
   Float_t  GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
     if(fEMCALRecalibrationFactors) 
       return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 1 ; }
+  Float_t  GetEMCALChannelRecalibrationFactor1D(UInt_t iCell ) const { 
+    if(fEMCALRecalibrationFactors) 
+      return (Float_t) ((TH1S*)fEMCALRecalibrationFactors->At(0))->GetBinContent(iCell)/1000; 
     else return 1 ; } 
   void     SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
     if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors() ;
     ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
+
+  void     SetEMCALChannelRecalibrationFactor1D(UInt_t icell, Double_t c = 1) { 
+    if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors1D() ;
+    ((TH1S*)fEMCALRecalibrationFactors->At(0))->SetBinContent(icell,c) ; }
   
   // Recalibrate channels energy with run dependent corrections
   Bool_t   IsRunDepRecalibrationOn()               const { return fUseRunCorrectionFactors ; }
@@ -232,19 +244,38 @@ public:
     if(!fEMCALL1PhaseInTimeRecalibration) InitEMCALL1PhaseInTimeRecalibration() ; }
   void     InitEMCALL1PhaseInTimeRecalibration() ;
 
-  void     RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t & time) const;
+  void     RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t & time, Short_t par=0) const;
   TObjArray* GetEMCALL1PhaseInTimeRecalibrationArray() const { return fEMCALL1PhaseInTimeRecalibration ; }
-  Int_t  GetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM) const { 
+  Int_t  GetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM, Short_t par=0) const { 
     if(fEMCALL1PhaseInTimeRecalibration) 
-      return (Int_t) ((TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0))->GetBinContent(iSM); 
+      return (Int_t) ((TH1C*)fEMCALL1PhaseInTimeRecalibration->At(par))->GetBinContent(iSM); 
     else return 0 ; } 
-  void     SetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM, Int_t c = 0) { 
+  void     SetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM, Int_t c = 0, Short_t par=0) { 
     if(!fEMCALL1PhaseInTimeRecalibration) InitEMCALL1PhaseInTimeRecalibration();
-    ((TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0))->SetBinContent(iSM,c) ; }  
+    ((TH1C*)fEMCALL1PhaseInTimeRecalibration->At(par))->SetBinContent(iSM,c) ; }  
   
-  TH1C *   GetEMCALL1PhaseInTimeRecalibrationForAllSM()const       { return (TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0) ; }	
+  TH1C *   GetEMCALL1PhaseInTimeRecalibrationForAllSM(Short_t par=0) const      { return (TH1C*)fEMCALL1PhaseInTimeRecalibration->At(par) ; }	
   void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArray *map);
-  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h);
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h, Short_t par=0);
+
+  void SwitchOnParRun()  { fIsParRun = kTRUE ; }
+  void SwitchOffParRun() { fIsParRun = kFALSE ; }
+  Bool_t IsParRun()      { return fIsParRun ; }
+  Short_t GetCurrentParNumber()         { return fCurrentParNumber ; }
+  void SetCurrentParNumber(Short_t par) { fCurrentParNumber = par ; }
+  Short_t GetNPars()                    { return fNPars ; }
+  void SetNPars(Short_t npars)          { fNPars = npars ;
+    if(fGlobalEventID) delete fGlobalEventID;
+    fGlobalEventID = new ULong64_t[npars];
+    for(Short_t i=0;i<npars;i++) fGlobalEventID[i]=0; 
+  }
+  ULong64_t GetGlobalIDPar(Short_t par) {
+    return par<fNPars ? fGlobalEventID[par] : 0 ;
+  }
+  void SetGlobalIDPar(ULong64_t glob, Short_t par) {
+    if(par < fNPars) fGlobalEventID[par] = glob ;
+    else AliInfo("PAR index exceeds max number of PARs in the run");
+  }
 
   //-----------------------------------------------------
   // Modules fiducial region, remove clusters in borders
@@ -266,6 +297,7 @@ public:
   void     SwitchOffBadChannelsRemoval()                 { fRemoveBadChannels = kFALSE     ; }
   void     SwitchOnBadChannelsRemoval ()                 { fRemoveBadChannels = kTRUE ; 
                                                            if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ; }
+  void     SetUse1DBadChannelMap(Bool_t use)             { fUse1Dmap = use;}
   Bool_t   IsDistanceToBadChannelRecalculated()    const { return fRecalDistToBadChannels   ; }
   void     SwitchOffDistToBadChannelRecalculation()      { fRecalDistToBadChannels = kFALSE ; }
   void     SwitchOnDistToBadChannelRecalculation()       { fRecalDistToBadChannels = kTRUE  ; 
@@ -491,6 +523,7 @@ private:
   // Energy Recalibration 
   Bool_t     fCellsRecalibrated;         ///< Internal bool to check if cells (time/energy) where recalibrated and not recalibrate them when recalculating different things
   Bool_t     fRecalibration;             ///< Switch on or off the recalibration
+  Bool_t     fUse1Drecalib;              ///< Flag to use one dimensional recalibration histogram
   TObjArray* fEMCALRecalibrationFactors; ///< Array of histograms with map of recalibration factors, EMCAL
     
   // Time Recalibration 
@@ -502,6 +535,10 @@ private:
   // Time Recalibration with L1 phase 
   Bool_t     fUseL1PhaseInTimeRecalibration;   ///< Switch on or off the L1 phase in time recalibration
   TObjArray* fEMCALL1PhaseInTimeRecalibration; ///< Histogram with map of L1 phase per SM, EMCAL
+  Bool_t     fIsParRun;                        //!<! flag if run contains PAR
+  Short_t    fCurrentParNumber;                //!<! Current par number
+  Short_t    fNPars;                           ///< Number of PARs in run
+  ULong64_t* fGlobalEventID;                   ///< array with globalID for PAR runs
   Bool_t     fDoUseMergedBC;                   ///< flag for using one histo for all BCs
 
   // Recalibrate with run dependent corrections, energy
@@ -577,7 +614,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 31) ;
+  ClassDef(AliEMCALRecoUtils, 32) ;
   /// \endcond
 
 };

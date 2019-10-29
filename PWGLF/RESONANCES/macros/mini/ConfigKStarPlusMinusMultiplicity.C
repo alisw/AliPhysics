@@ -249,7 +249,7 @@ Bool_t ConfigKStarPlusMinusMultiplicity
         //if(isPP) out->AddAxis(centID, 100, 0., 100.);
         //else out->AddAxis(centID, 100, 0.0, 100.);
         if(isHiMult)out->AddAxis(centID, 100, 0.0, 1.);
-        else out->AddAxis(centID, 100, 0.0, 100.);
+        else out->AddAxis(centID, 400, 0.0, 100.);
         if(isGT) out->AddAxis(sdpt,100,0.,10.);
     }
 
@@ -295,7 +295,7 @@ Bool_t ConfigKStarPlusMinusMultiplicity
         //if(isPP) out->AddAxis(centID, 100, 0., 100.);
         //else out->AddAxis(centID, 100, 0.0, 100.);
         if(isHiMult)out->AddAxis(centID, 100, 0.0, 1.);
-        else out->AddAxis(centID, 100, 0.0, 100.);
+        else out->AddAxis(centID, 400, 0.0, 100.);
         //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
 
@@ -319,7 +319,7 @@ Bool_t ConfigKStarPlusMinusMultiplicity
         //if(isPP) out->AddAxis(centID, 100, 0., 100.);
         //else out->AddAxis(centID, 100, 0.0, 100.);
         if(isHiMult)out->AddAxis(centID, 100, 0.0, 1.);
-        else out->AddAxis(centID, 100, 0.0, 100.);
+        else out->AddAxis(centID, 400, 0.0, 100.);
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
 
 

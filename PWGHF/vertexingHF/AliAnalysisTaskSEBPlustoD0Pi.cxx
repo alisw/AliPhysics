@@ -877,23 +877,24 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
   fOutputBPlusResults->Add(histogram_mc_D0_kaon_pseudorapidity_true);
   fResultsHistogramArray[0][14] = histogram_mc_D0_kaon_pseudorapidity_true;
 
-  if(fPerformCutOptimization)
+  if (fPerformCutOptimization)
   {
     Int_t nCuts = fCuts->GetnCutsForOptimization();
     Int_t nVariables = fCuts->GetnVariablesForCutOptimization();
-    Int_t nCutOptimizationBins = TMath::Power(nCuts,nVariables);
+    Int_t nCutOptimizationBins = TMath::Power(nCuts, nVariables);
+    Int_t nSigmaBins = fCuts->GetNumberOfSigmaBinsForCutOptimization();
 
-    for (Int_t k = 0; k < fnPtBins; ++k) 
+    for (Int_t k = 0; k < fnPtBins; ++k)
     {
       TString ptBinMother = "";
-      ptBinMother += "_ptbin_"; 
-      ptBinMother += fPtBinLimits[k]; 
-      ptBinMother += "_to_"; 
-      ptBinMother += fPtBinLimits[k+1];
+      ptBinMother += "_ptbin_";
+      ptBinMother += fPtBinLimits[k];
+      ptBinMother += "_to_";
+      ptBinMother += fPtBinLimits[k + 1];
 
       TString name_cut_optimization_signal = "cut_optimization_signal";
       name_cut_optimization_signal += ptBinMother;
-      TH2F* hist_cut_optimization_signal = new TH2F(name_cut_optimization_signal.Data(), "Total signal for different cuts; Cut number; Entries", nCutOptimizationBins, 0, nCutOptimizationBins, 18, -9, 9);
+      TH2F* hist_cut_optimization_signal = new TH2F(name_cut_optimization_signal.Data(), "Total signal for different cuts; Cut number; Entries", nCutOptimizationBins, 0, nCutOptimizationBins, 2 * nSigmaBins, -nSigmaBins, nSigmaBins);
       hist_cut_optimization_signal->Sumw2();
       hist_cut_optimization_signal->SetLineColor(6);
       hist_cut_optimization_signal->SetMarkerStyle(20);
@@ -905,7 +906,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
 
       TString name_cut_optimization_background = "cut_optimization_background";
       name_cut_optimization_background += ptBinMother;
-      TH2F* hist_cut_optimization_background = new TH2F(name_cut_optimization_background.Data(), "Total background for different cuts; Cut number; Entries", nCutOptimizationBins, 0, nCutOptimizationBins, 18, -9, 9);
+      TH2F* hist_cut_optimization_background = new TH2F(name_cut_optimization_background.Data(), "Total background for different cuts; Cut number; Entries", nCutOptimizationBins, 0, nCutOptimizationBins, 2 * nSigmaBins, -nSigmaBins, nSigmaBins);
       hist_cut_optimization_background->Sumw2();
       hist_cut_optimization_background->SetLineColor(6);
       hist_cut_optimization_background->SetMarkerStyle(20);
@@ -3048,36 +3049,26 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
         if (!bWrongSign && fPerformCutOptimization)
         {
           Double_t sigmaWindowForCutOptimization = fCuts->GetSigmaForCutOptimization(ptBin);
+          Int_t nSigmaBins = fCuts->GetNumberOfSigmaBinsForCutOptimization();
           Double_t massDifference = TMath::Abs(invariantMassMother - pdgMassMother);
-          if(massDifference < 9 * sigmaWindowForCutOptimization)
+
+          if (massDifference < nSigmaBins * sigmaWindowForCutOptimization)
           {
-            Int_t nSigmaBin = 10;
+            Int_t nSigmaBin = 0;
             if (invariantMassMother < pdgMassMother)
             {
-              if (massDifference > 8 * sigmaWindowForCutOptimization) {nSigmaBin = -9;}
-              else if (massDifference > 7 * sigmaWindowForCutOptimization) nSigmaBin = -8;
-              else if (massDifference > 6 * sigmaWindowForCutOptimization) nSigmaBin = -7;
-              else if (massDifference > 5 * sigmaWindowForCutOptimization) nSigmaBin = -6;
-              else if (massDifference > 4 * sigmaWindowForCutOptimization) nSigmaBin = -5;
-              else if (massDifference > 3 * sigmaWindowForCutOptimization) nSigmaBin = -4;
-              else if (massDifference > 2 * sigmaWindowForCutOptimization) nSigmaBin = -3;
-              else if (massDifference > 1 * sigmaWindowForCutOptimization) nSigmaBin = -2;
-              else nSigmaBin = -1;
+              for (Int_t iSigma = 0; iSigma < nSigmaBins; ++iSigma)
+              {
+                if ((massDifference > iSigma * sigmaWindowForCutOptimization) && (massDifference < (iSigma + 1) * sigmaWindowForCutOptimization)) {nSigmaBin = -(iSigma + 1); break;}
+              }
             }
             if (invariantMassMother > pdgMassMother)
             {
-              if (massDifference > 8 * sigmaWindowForCutOptimization) {nSigmaBin = 8;}
-              else if (massDifference > 7 * sigmaWindowForCutOptimization) nSigmaBin = 7;
-              else if (massDifference > 6 * sigmaWindowForCutOptimization) nSigmaBin = 6;
-              else if (massDifference > 5 * sigmaWindowForCutOptimization) nSigmaBin = 5;
-              else if (massDifference > 4 * sigmaWindowForCutOptimization) nSigmaBin = 4;
-              else if (massDifference > 3 * sigmaWindowForCutOptimization) nSigmaBin = 3;
-              else if (massDifference > 2 * sigmaWindowForCutOptimization) nSigmaBin = 2;
-              else if (massDifference > 1 * sigmaWindowForCutOptimization) nSigmaBin = 1;
-              else nSigmaBin = 0;
+              for (Int_t iSigma = 0; iSigma < nSigmaBins; ++iSigma)
+              {
+                if ((massDifference > iSigma * sigmaWindowForCutOptimization) && (massDifference < (iSigma + 1) * sigmaWindowForCutOptimization)) {nSigmaBin = iSigma; break;}
+              }
             }
-
-            if(nSigmaBin == 10) std::cout << "nSigmaBin has wrong value" << std::endl;
 
             Int_t nStartVariable = 0;
             Int_t nStartFillNumber = 0;
@@ -3085,7 +3076,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
             Int_t nCuts = fCuts->GetnCutsForOptimization();
             CutOptimizationVariableValues(&trackBPlus, aodEvent);
             CutOptimizationLoop(nStartVariable, nVariables, nCuts, ptBin, nStartFillNumber, isDesiredCandidate, nSigmaBin);
-          } 
+          }
         }
 
 

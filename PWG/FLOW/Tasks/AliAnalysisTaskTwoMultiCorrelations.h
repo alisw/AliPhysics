@@ -34,6 +34,7 @@
 #include "TH1D.h"
 #include "TH1I.h"
 #include "TProfile.h"
+#include "AliJEfficiency.h"
 
 //######################################################################################//
 // Definition of the class.
@@ -239,6 +240,9 @@ private:
 // General parameters of the analysis.
   TList     *fMainList;                             // Mother list in the output file.
 
+  AliJEfficiency *fEfficiency;
+  Bool_t fFirstEvent; ///< True if this is the first event analyzed
+
   Int_t     fHighestFlowHarmonic;                   // Highest flow harmonic taken into account (v_6).
   Int_t     fMaxNumberOfParticlesInCorrelations;    // Maximum number of particles used in the correlators (8-particle correlations).
   TComplex  fQvectors[49][9];                       // All needed combinations of Q-vectors. (size: [fHighestFlowHarmonic*fMaxNumberOfParticlesInCorrelations+1][fMaxNumberOfParticlesInCorrelations+1])
@@ -301,6 +305,7 @@ private:
   TList     *fTrackSelectionList;                   // Daughter list for the histograms containing the track selection criteria.
   TH1D      *fHistoInitialPt;                       //! Distribution of the transverse momentum before the track selection.
   TH1D      *fHistoFinalPt;                         //! Distribution of the transverse momentum after the track selection.
+  TH1D      *fHistoEfficiencyCorrection;            //! Distribution of the efficiency correction before inversion.
   TH1D      *fHistoInitialEta;                      //! Distribution of the pseudorapidity before the track selection.
   TH1D      *fHistoFinalEta;                        //! Distribution of the pseudorapidity after the track selection.
   TH1D      *fHistoInitialPhi;                      //! Distribution of the azimuthal angles before the track selection.
@@ -375,8 +380,8 @@ private:
 
 //--------------------------------------------------------------------------------------//
 // Version number to handle properly objects written before and after the changes.
-// Version 13, date: 2019-06-11.
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 13);
+// Version 14, date: 2019-10-25.
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 14);
 
 };  // End: class AliAnalysisTaskTwoMultiCorrelations.
 

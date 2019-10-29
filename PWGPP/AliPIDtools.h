@@ -24,15 +24,27 @@
 #include  "AliESDtrack.h"
 class AliPIDResponse;
 class AliTPCPIDResponse;
+class AliITSPIDResponse;
+class AliTOFPIDResponse;
+
 
 
 class AliPIDtools {
 public:
   static Int_t GetHash(Int_t run, Int_t passNumber, TString recoPass, Bool_t isMC);
   static Int_t LoadPID(Int_t run, Int_t passNumber, TString recoPass, Bool_t isMC);
-  static AliTPCPIDResponse *GetTPCPID(Int_t hash);
+  static AliPIDResponse *GetPID(Int_t hash);
+  static AliTPCPIDResponse &GetTPCPID(Int_t hash);
+  static AliTOFPIDResponse &GetTOFPID(Int_t hash);
+  static AliITSPIDResponse &GetITSPID(Int_t hash);
+  //
   static Double_t BetheBlochAleph(Int_t hash, Double_t bg);
-  static Double_t GetExpectedTPCSignal(Int_t hash, Double_t p, AliPID::EParticleType particle);
+  static Double_t BetheBlochITS(Int_t hash, Double_t p, Double_t mass);
+  static Double_t GetExpectedTPCSignal(Int_t hash, Double_t p, Int_t  particle);
+  static Double_t GetExpectedITSSignal(Int_t hash, Double_t p, Int_t  particle);
+  static Double_t GetExpectedTOFSigma(Int_t hash, Float_t mom, Int_t type);
+  static Double_t GetExpectedTOFSignal(Int_t hash, const AliVTrack *track, Int_t  type);
+  //
   static std::map<Int_t, AliTPCPIDResponse *> pidTPC;     /// we should use better hash map
   static std::map<Int_t, AliPIDResponse *> pidAll;        /// we should use better hash map
 private:

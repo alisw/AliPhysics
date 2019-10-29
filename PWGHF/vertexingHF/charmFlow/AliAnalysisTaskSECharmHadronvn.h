@@ -8,7 +8,7 @@
 
 //*************************************************************************************
 // \class AliAnalysisTaskSECharmHadronvn
-// \brief task for the analysis of D-meson vn 
+// \brief task for the analysis of D-meson vn
 // \authors:
 // F. Grosa, fabrizio.grosa@cern.ch
 // F. Catalano, fabio.catalano@cern.ch
@@ -30,6 +30,7 @@
 #include "AliAODEvent.h"
 #include "AliHFQnVectorHandler.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliHFMLResponse.h"
 
 class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
 {
@@ -78,7 +79,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     float GetLowerMassLimit() const                                   {return fLowmasslimit;}
     int GetNMassBins() const                                          {return fNMassBins;}
 
-    void SetTPCHalvesEtaGap(double etagap = 0.2)                      {fEtaGapInTPCHalves=etagap;}                             
+    void SetTPCHalvesEtaGap(double etagap = 0.2)                      {fEtaGapInTPCHalves=etagap;}
     void RemoveDauTracksFromqn(int removedau=1, bool remsoftpi=false) {fRemoveDauFromqn=removedau; fRemoveSoftPion=remsoftpi;}
     void SetRandomDownsamplFromqn(double fractokeep = 0.5)            {fEnableDownsamplqn=true; fFracToKeepDownSamplqn=fractokeep;}
 
@@ -94,8 +95,10 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     void CalculateInvMasses(AliAODRecoDecayHF* d,float* &masses,int& nmasses);
     void GetMainQnVectorInfo(double &mainPsin, double &mainMultQn, double mainQn[2], double &SubAPsin, double &SubAMultQn, double SubAQn[2], double &SubBPsin, double &SubBMultQn, double SubBQn[2], AliHFQnVectorHandler* HFQnVectorHandler);
     void GetDaughterTracksToRemove(AliAODRecoDecayHF* d, int nDau, vector<AliAODTrack*> &trackstoremove);
-    int IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0);
+    int IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, double modelPred[2]);
     bool LoadSplinesForqnPercentile();
+
+    static const int kVarForSparse = 10;
 
     AliAODEvent* fAOD;                      /// AOD event
 
@@ -138,14 +141,19 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     float fLowmasslimit;                    /// lower inv mass limit for histos
     float fUpmasslimit;                     /// upper inv mass limit for histos
     int fNMassBins;                         /// number of bins in the mass histograms
-    
+
     double fEtaGapInTPCHalves;              /// eta gap between TPC subevents
     int fRemoveDauFromqn;                   /// flag to enable removal of D-meson daughter tracks from qn (1->remove single cand, 2->remove all cand of the analysed event)
     bool fRemoveSoftPion;                   /// flag to enable removal of soft pion too (only D*)
     bool fEnableDownsamplqn;                /// flag to enable random downsampling for qn
-    double fFracToKeepDownSamplqn;          /// fraction of tracks to keep in qn with random downsampling 
+    double fFracToKeepDownSamplqn;          /// fraction of tracks to keep in qn with random downsampling
 
-    ClassDef(AliAnalysisTaskSECharmHadronvn,3); // AliAnalysisTaskSE for the HF vn analysis
+    /// variables for ML application
+    bool fApplyML;                          /// flag to enable ML application
+    TString fConfigPath;                    /// path to ML config file
+    AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
+
+    ClassDef(AliAnalysisTaskSECharmHadronvn,4); // AliAnalysisTaskSE for the HF vn analysis
 };
 
 #endif

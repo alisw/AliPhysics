@@ -55,8 +55,11 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   virtual void Cosmetics();
   Bool_t GlobalQualityAssurance(AliAODEvent *aAODevent);
   Bool_t TrackSelection(AliAODTrack *aTrack); 
-  virtual void CalculateQvectors();
-  virtual void Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10);
+  virtual void CalculateQvectors(Int_t CalculateQvectors_nParticles, Double_t* CalculateQvectors_angles);
+  TComplex CalculateMixedQVectors(Double_t Harm, Int_t M_A, Int_t M_B, Double_t* Ang_A, Double_t* Ang_B);
+  virtual void Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10, Int_t h11, Int_t h12, Double_t* Correlation_Angle, Int_t Correlation_Mult);
+  virtual void MainTask(Int_t MainTask_Mult, Double_t* MainTask_Angle_Array);
+  virtual void MixedParticle(Int_t Harmonicus, Int_t Mixed_Mult_A, Double_t* Mixed_Angle_A, Int_t Mixed_Mult_B, Double_t* Mixed_Angle_B);
   // 3.) Methods called in Terminate():
   // ...
 
@@ -109,16 +112,19 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   void SetMinNuPar(Int_t top){this->fMinNumberPart = top;} 
   Int_t GetMinNuPar() const {return this->fMinNumberPart;}
 
-  void SetCorrSet1(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t i, Int_t j)
-  {this->fNumber=Number; this->fh1=a; this->fh2=b; this->fh3=c; this->fh4=d; this->fh5=e; this->fh6=f; this->fh7=g; this->fh8=h; this->fh9=i; this->fh10=j;}
+  void SetCorrSet1(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t i, Int_t j, Int_t k, Int_t l)
+  {this->fNumber=Number; this->fh1=a; this->fh2=b; this->fh3=c; this->fh4=d; this->fh5=e; this->fh6=f; this->fh7=g; this->fh8=h; this->fh9=i; this->fh10=j; this->fh11=k; this->fh12=l;}
 
-   void SetCorrSet2(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t i, Int_t j)
-  {this->fNumberSecond=Number; this->fa1=a; this->fa2=b; this->fa3=c; this->fa4=d; this->fa5=e; this->fa6=f; this->fa7=g; this->fa8=h; this->fa9=i; this->fa10=j;}
+   void SetCorrSet2(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t i, Int_t j, Int_t k, Int_t l)
+  {this->fNumberSecond=Number; this->fa1=a; this->fa2=b; this->fa3=c; this->fa4=d; this->fa5=e; this->fa6=f; this->fa7=g; this->fa8=h; this->fa9=i; this->fa10=j;this->fa11=k; this->fa12=l;}
 
-  void SetRatioWeight(Bool_t top)
-  {this->bUseRatioWeight=top;}
+  void SetDoEbE(Bool_t top){this->bDoEbERatio=top;}
+
+  void SetRatioWeight(Bool_t top){this->bUseRatioWeight=top;}
 
   void SetDenominatorMinValue(Double_t top) {this->fDenominatorMinValue=top; }
+
+  void SetMixed(Bool_t top, Int_t nop){this->bDoMixed = top; this->fMixedHarmonic = nop;}
 
   void SetMinCent(Float_t top){this->fMinCentrality = top;} 
   Float_t GetMinCent() const {return this->fMinCentrality;}
@@ -148,18 +154,27 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   // 1.) Control histograms: 
   TList *fControlHistogramsList; // list to hold all control histograms
-  TH1F *fPtHist;                 // atrack->Pt() 
   Int_t fNbins;                  // number of bins
   Float_t fMinBin;               // min bin
   Float_t fMaxBin;               // min bin 
   TH1F *fPhiHistBeforeTrackSeletion;                // atrack->Phi() - Distribution before Track Selection
   TH1F *fEtaHistBeforeTrackSeletion;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fPTHistBeforeTrackSeletction;		    // atrack->PT() - Distribution before Track Selection
+  TH1F *fPhiHistBeforeTrackSeletionSecond;                // atrack->Phi() - Distribution before Track Selection
+  TH1F *fEtaHistBeforeTrackSeletionSecond;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fPTHistBeforeTrackSeletctionSecond;		    // atrack->PT() - Distribution before Track Selection
   TH1F *fTotalMultBeforeTrackSeletion;         // total number of Multiplicity for a centrality before Track Selection
   TH1F *fMultiHistoBeforeTrackSeletion;             // multiplicity distribution before Track Selection
+
   TH1F *fPhiHistAfterTrackSeletion;                // atrack->Phi() - Distribution before Track Selection
   TH1F *fEtaHistAfterTrackSeletion;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fPTHistAfterTrackSeletction;		    // atrack->PT() - Distribution before Track Selection
+  TH1F *fPhiHistAfterTrackSeletionSecond;                // atrack->Phi() - Distribution before Track Selection
+  TH1F *fEtaHistAfterTrackSeletionSecond;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fPTHistAfterTrackSeletctionSecond;		    // atrack->PT() - Distribution before Track Selection
   TH1F *fTotalMultAfterTrackSeletion;         // total number of Multiplicity for a centrality before Track Selection
-  TH1F *fMultiHistoAfterTrackSeletion;             // multiplicity distribution before Track Selection
+  TH1F *fMultiHistoAfterTrackSeletion;             // multiplicity distribution after Track Selection
+  TH1F *fMultiHistoAfterTrackSeletion_Second; 	   // multiplicity distribution after Track Selection second particle
   TH1F *fMultiHistoBeforeMultCut;             // multiplicity distribution before high multiplicity outlier removel
   TH1F *fTPCClustersBeforeCut;		//Number of TPC clusters before cut
   TH1F *fTPCClustersAfterCut;		//Number of TPC clustes after cut
@@ -218,7 +233,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   //3.) Variables for the correlation:
   Int_t fMaxCorrelator;          // maximum of correlation 
-  TProfile *fRecursion[2][10];    //!  
+  TProfile *fRecursion[2][12];    //!  
   Bool_t bUseWeights;  
   
   Int_t fNumber;           //number of correlation first correlator
@@ -227,32 +242,27 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Bool_t bUseRatioWeight;	//use number of combination weight for EbE Ratio (default kTRUE)
   Double_t fDenominatorMinValue;   //min value for the denominator in EbE Ratio (default 
 
-  Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8, fh9, fh10;  //harmonics
-  Int_t fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8, fa9, fa10;  //second set of harmonics
+  Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8, fh9, fh10, fh11, fh12;  //harmonics
+  Int_t fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8, fa9, fa10, fa11, fa12;  //second set of harmonics
 
-
-  Int_t fParticles;        // number of particles after all selections
-  TArrayD *fAngles;              //! Azimuthal angles 
-  TArrayD *fWeights;            //! Particle weights
-  TArrayI *fBin;                   //! Bins for particle weight
   
-  TComplex fQvector[61][11];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
+  TComplex fQvector[97][13];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
 
   // 4.) Final results:
    
   TProfile *fCentrality;         // final centrality result
   TProfile *fCentralitySecond;         // final centrality result for second harmonics 
   TProfile *fEvCentrality;         // final centrality result for event version
-  TProfile *fCentralitySecondSquare; // final centrality result for second harmonics to the power of 2
-  TProfile *fCentralitySecondSquareUnit; // final centrality result for second harmonics to the power of 2 with unit weights
-  TProfile *fCov;         // Covariance term between first set of harmonics and second set of harmonics
-  TProfile *fCovUnit;         // Covariance term between first set of harmonics and second set of harmonics
+  Bool_t bDoEbERatio;		 // if kTRUE: Do the EbE ratio, Default: kFALSE
+  TProfile *fMixedParticleHarmonics; //Stores output for special mixed particle analysis
+  Bool_t bDoMixed;		 //if kTRUE: Do special mixed particle analysis, default kFALSE (MainTask)
+  Int_t fMixedHarmonic;		//Harmonic of special mixed particle analysis
   TH1F *fCounterHistogram;       // for some checks
   TList *fFinalResultsList;      // list to hold all histograms with final results
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,20);
+  ClassDef(AliAnalysisTaskStudentsML,23);
 
 };
 

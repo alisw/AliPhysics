@@ -329,7 +329,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                "TOF Time;"
                "N_{tracks}"),
     256, 0, 6.0,
-    128, -2000.0, 2000.0
+    256, -3000.0, 4000.0
   );
 
   const int sig_nbins_per_unit = 13;

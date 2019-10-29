@@ -148,8 +148,7 @@ void ApplyPIDpostCalibration(AliAnalysisTaskElectronEfficiencyV2* task, Int_t wh
 AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
 {
   std::cout << "SetupTrackCutsAndSettings( cutInstance = " << cutDefinition << " )" <<std::endl;
-  AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
-
+  AliAnalysisFilter* anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); 
 
   LMEECutLib* LMcutlib = new LMEECutLib(wSDD);
   if(cutDefinition == "kResolutionCuts"){
@@ -158,9 +157,21 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutSet1"){ //TMVA
+  else if(cutDefinition == "kCutSet1"){ // Typical analysis cut
     std::cout << "Setting up cut set 1" << std::endl;
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutSet2"){ // kCutSet1 w/o ITSshared cut
+    std::cout << "Setting up cut set 2" << std::endl;
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet2, LMEECutLib::kCutSet1));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutSet3"){ // kCutSet1 with pT <  10 GeV
+    std::cout << "Setting up cut set 3" << std::endl;
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet3, LMEECutLib::kCutSet1));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }

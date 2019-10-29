@@ -164,7 +164,10 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fBackgroundUseLikeSign(kFALSE),
   fBackgroundMode(4),
   fDoJetAnalysis(kFALSE),
-  fDoJetQA(kFALSE)
+  fDoJetQA(kFALSE),
+  fDoGammaMinEnergyCut(kFALSE),
+  fNDaughterEnergyCut(0),
+  fSingleDaughterMinE(0.)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -267,7 +270,10 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
   fBackgroundMode(4),
   fDoJetAnalysis(ref.fDoJetAnalysis),
-  fDoJetQA(ref.fDoJetQA)
+  fDoJetQA(ref.fDoJetQA),
+  fDoGammaMinEnergyCut(kFALSE),
+  fNDaughterEnergyCut(0),
+  fSingleDaughterMinE(0.)
 
 {
   // Copy Constructor
@@ -1862,6 +1868,34 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fMinPt = 5.0;
     fDoMinPtCut = kTRUE;
     break;
+  case 9: // for triggered omega
+    fMinPt = 3.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 10: // a for triggered omega
+    fMinPt = 4.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 11: // b for triggered omega
+    fMinPt = 6.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 12: // c for triggered omega
+    fMinPt = 8.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 13: // d for triggered omega
+    fMinPt = 10.0;
+    fDoMinPtCut = kTRUE;
+    break;
+
+  // Instead of applying pt cut, apply a min energy cut on daughters
+  // (needs to be treated in analysis task)
+  case 14: // e
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 5.;
+    break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
@@ -3346,6 +3380,78 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPBremSmearing    = 1.;
       fPSigSmearing     = 0.007;
       fPSigSmearingCte  = 0.011;
+      break;
+   case 10:     //a
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.00;
+      fPSigSmearingCte  = 0.02;
+      break;
+    case 11:     //b
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.00;
+      fPSigSmearingCte  = 0.025;
+      break;
+    case 12:     //c
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.00;
+      fPSigSmearingCte  = 0.030;
+      break;
+    case 13:     //d
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.00;
+      fPSigSmearingCte  = 0.01;
+      break;
+    case 14:     //e
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.00;
+      fPSigSmearingCte  = 0.008;
+      break;
+    case 15:     //f
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.002;
+      fPSigSmearingCte  = 0.008;
+      break;
+    case 16:     //g
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.001;
+      fPSigSmearingCte  = 0.008;
+      break;
+    case 17:     //h
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.00;
+      fPSigSmearingCte  = 0.011;
+      break;
+    case 18:     //i
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.00;
+      fPSigSmearingCte  = 0.012;
+      break;
+    case 19:     //j
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.002;
+      fPSigSmearingCte  = 0.01;
+      break;
+    case 20:     //k
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.002;
+      fPSigSmearingCte  = 0.011;
+      break;
+    case 21:     //l
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.002;
+      fPSigSmearingCte  = 0.012;
       break;
 
     default:

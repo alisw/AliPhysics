@@ -65,6 +65,8 @@ class AliAnalysisTaskNanoXioton1530 : public AliAnalysisTaskSE {
     fConfig=config;
   }
  private:
+  AliAnalysisTaskNanoXioton1530(const AliAnalysisTaskNanoXioton1530 &task);
+  AliAnalysisTaskNanoXioton1530 &operator=(const AliAnalysisTaskNanoXioton1530 &task);
   bool fisLightWeight;//
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//

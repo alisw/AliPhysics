@@ -325,7 +325,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) = 0;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* /*aod*/)
                 {return IsSelected(obj,selectionLevel);}
-  Int_t PtBin(Double_t pt) const;
+  Int_t PtBin(Float_t pt) const {
+    if(pt<fPtBinLimits[0]) return -1;
+    for (Int_t i=0;i<fnPtBins;i++) if(pt<fPtBinLimits[i+1]) return i;
+    return -1;
+  }
   virtual void PrintAll()const;
   void PrintTrigger() const;
 

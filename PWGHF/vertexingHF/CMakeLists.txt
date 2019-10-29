@@ -21,8 +21,8 @@ add_subdirectory (vHFBDT)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
-
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -78,7 +78,6 @@ set(SRCS
   AliAnalysisTaskSESelectHF.cxx
   AliAnalysisTaskSECleanupVertexingHF.cxx
   AliAnalysisTaskSECompareHF.cxx
-  AliAnalysisTaskSEDplus.cxx
   AliAnalysisTaskSELambdac.cxx
   AliAnalysisTaskSED0BDT.cxx
   AliAnalysisTaskSED0Mass.cxx
@@ -131,7 +130,6 @@ set(SRCS
   charmFlow/AliAnalysisTaskFlowD2H.cxx
   charmFlow/AliHFQnVectorHandler.cxx
   charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
-  charmFlow/AliAnalysisTaskSECharmHadronvn.cxx  
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerDplus.cxx
@@ -165,7 +163,12 @@ set(SRCS
 if(ROOT_VERSION_MAJOR EQUAL 6)
   set(SRCS
       ${SRCS}
+      vHFML/AliHFMLResponse.cxx
+      vHFML/AliHFMLResponseDplustoKpipi.cxx
+      vHFML/AliHFMLResponseDstoKKpi.cxx
+      AliAnalysisTaskSEDplus.cxx
       AliAnalysisTaskSEDs.cxx
+      charmFlow/AliAnalysisTaskSECharmHadronvn.cxx
   )
 endif()
 
@@ -247,3 +250,4 @@ install(DIRECTORY
 
 install(DIRECTORY upgrade DESTINATION PWGHF/vertexingHF)
 install(DIRECTORY charmFlow DESTINATION PWGHF/vertexingHF)
+install(DIRECTORY vHFML DESTINATION PWGHF/vertexingHF)

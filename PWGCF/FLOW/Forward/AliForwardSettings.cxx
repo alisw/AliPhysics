@@ -49,6 +49,8 @@ AliForwardSettings::AliForwardSettings() :
   fileName(""),
   fMaxConsequtiveStrips(0),
   standard_only(kTRUE),
-  fmdcut(2.0)
+  fmdlowcut(2.0),
+  fmdhighcut(3.5),
+  nua_runnumber(0)
 {
 }

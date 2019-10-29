@@ -470,21 +470,25 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
-  /// Run 2 Pb-Pb
-  if ( (fCurrentRun >= 244917 && fCurrentRun <= 246994) ||
-       (fCurrentRun >= 295369 && fCurrentRun <= 297624)) {
+  /// Run 2 Pb-Pb: LHC15o
+  if (fCurrentRun >= 244917 && fCurrentRun <= 246994) {
     SetupRun2PbPb();
     return;
   }
 
+  if (fCurrentRun >= 295369 && fCurrentRun <= 297624) {
+    SetupPbPb2018();
+    return;
+  }
+
   /// Run 2 p-Pb
-  if ((fCurrentRun >= 265309 && fCurrentRun <= 265525) || /// LHC16q: p-Pb 5 TeV
-      (fCurrentRun >= 265594 && fCurrentRun <= 266318) || /// LHC16r: p-Pb 8 TeV
-      (fCurrentRun >= 267163 && fCurrentRun <= 267166)) { /// LHC16t: p-Pb 5 TeV
+  if ((fCurrentRun >= 264896 && fCurrentRun <= 265533) || /// LHC16q: p-Pb 5 TeV
+      (fCurrentRun >= 265534 && fCurrentRun <= 266329) || /// LHC16r: p-Pb 8 TeV
+      (fCurrentRun >= 267139 && fCurrentRun <= 267166)) { /// LHC16t: p-Pb 5 TeV
     SetupRun2pA(0);
     return;
   }
-  if (fCurrentRun >= 266437 && fCurrentRun <= 267110) {   /// LHC16s: Pb-p 5 TeV
+  if (fCurrentRun >= 266330 && fCurrentRun <= 267138) {   /// LHC16s: Pb-p 5 TeV
     SetupRun2pA(1);
     return;
   }
@@ -734,7 +738,7 @@ void AliEventCuts::SetupPbPb2018() {
     fMaxCentrality = 90.f;
   }
 
-  fUseEstimatorsCorrelationCut = fCentralityFramework != 0;
+  fUseEstimatorsCorrelationCut = false;
   fEstimatorsCorrelationCoef[0] = -0.669108;
   fEstimatorsCorrelationCoef[1] = 1.04489;
   fEstimatorsSigmaPars[0] = 0.933321;

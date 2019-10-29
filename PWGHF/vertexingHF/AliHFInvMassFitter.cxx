@@ -76,6 +76,7 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fNParsBkg(2),
   fOnlySideBands(kFALSE),
   fNSigma4SideBands(4.),
+  fCheckSignalCountsAfterFirstFit(kTRUE),
   fFitOption("L,E"),
   fRawYield(0.),
   fRawYieldErr(0.),
@@ -135,6 +136,7 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fNParsBkg(2),
   fOnlySideBands(kFALSE),
   fNSigma4SideBands(4.),
+  fCheckSignalCountsAfterFirstFit(kTRUE),
   fFitOption("L,E"),
   fRawYield(0.),
   fRawYieldErr(0.),
@@ -275,10 +277,11 @@ Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
   printf("\n--- Estimate signal counts in the peak region ---\n");
   Double_t estimSignal=CheckForSignal(fMass,fSigmaSgn);
   Bool_t doFinalFit=kTRUE;
-  if(estimSignal<0.){
+  if(fCheckSignalCountsAfterFirstFit && estimSignal<0.){
     if(draw) DrawFit();
     estimSignal=0.;
     doFinalFit=kFALSE;
+    printf("Abandon fit: no signal counts after first fit\n");
   }
 
   fRawYieldHelp=estimSignal; // needed for reflection normalization
@@ -473,9 +476,9 @@ Double_t AliHFInvMassFitter::CheckForSignal(Double_t mean, Double_t sigma){
     sumback+=fBkgFunc->Eval(fHistoInvMass->GetBinCenter(ibin));
   }
   Double_t diffUnderPeak=(sum-sumback);
-  printf("   ---> IntegralUnderFitFunc=%f  IntegralUnderHisto=%f   EstimatedSignal=%f\n",sum,sumback,diffUnderPeak);
+  printf("   ---> IntegralUnderHisto=%f  IntegralUnderBkgFunc=%f   EstimatedSignal=%f\n",sum,sumback,diffUnderPeak);
   if(diffUnderPeak/TMath::Sqrt(sum)<1.){
-    printf("   ---> (Tot-Bkg)/sqrt(Tot)=%f ---> Likely no signal/\n",diffUnderPeak/TMath::Sqrt(sum));
+    printf("   ---> (Tot-Bkg)/sqrt(Tot)=%f ---> Likely no signal\n",diffUnderPeak/TMath::Sqrt(sum));
     return -1;
   }
   return diffUnderPeak*fHistoInvMass->GetBinWidth(1);

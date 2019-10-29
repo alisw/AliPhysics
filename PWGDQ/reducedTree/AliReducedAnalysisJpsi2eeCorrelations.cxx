@@ -47,7 +47,8 @@ AliReducedAnalysisJpsi2eeCorrelations::AliReducedAnalysisJpsi2eeCorrelations() :
   fOptionRunCorrelation(kTRUE),
   fOptionRunCorrelationMixing(kTRUE),
   fAssociatedTrackCuts(),
-  fAssociatedTracks()
+  fAssociatedTracks(),
+  fAssociatedTracksMB()
 {
   //
   // default constructor
@@ -106,29 +107,37 @@ void AliReducedAnalysisJpsi2eeCorrelations::Process() {
    // The jpsi pair candidates will then be stored in the array fJpsiCandidates
    AliReducedAnalysisJpsi2ee::Process();
 
-  // select hadrons from MB event for mixing with EMCal trigger
-  if (fMBEventCuts.GetEntries() && IsMBEventSelected(fEvent)) {
-    RunAssociatedTrackSelection(kFALSE, kTRUE);
+  // check event cuts
+  Bool_t eventSelected = IsEventSelected(fEvent, fValues);
 
-    // Feed the selected triggers and associated to the event mixing handler
-    if(!fOptionRunOverMC && fOptionRunCorrelationMixing && fOptionRunCorrelation) {
+  // do mixing between MB and triggered event
+  if (fMBEventCuts.GetEntries() && !fOptionRunOverMC && fOptionRunCorrelationMixing && fOptionRunCorrelation) {
+
+    // take hadrons from MB event
+    if (IsMBEventSelected(fEvent, fValues)) {
+      RunAssociatedTrackSelection(kFALSE, kTRUE);
+      fCorrelationsMixingHandler->FillEvent(NULL, &fAssociatedTracksMB, fValues);
+    }
+
+    // take Jpsi canidates from triggered event
+    if (eventSelected) {
       if (!fOptionUseLikeSignPairs) {
         TList jpsiCandidatesTemp;
         TIter nextJpsi(&fJpsiCandidates);
         AliReducedPairInfo* jpsi = 0x0;
         for (Int_t i=0; i<fJpsiCandidates.GetEntries(); ++i) {
           jpsi = (AliReducedPairInfo*)nextJpsi();
-          if ((Int_t)jpsi->PairType() == 1) jpsiCandidatesTemp.Add(jpsi->Clone());
+          if ((Int_t)jpsi->PairType()==1) jpsiCandidatesTemp.Add(jpsi->Clone());
         }
-        fCorrelationsMixingHandler->FillEvent(&jpsiCandidatesTemp, &fAssociatedTracksMB, fValues);
+        fCorrelationsMixingHandler->FillEvent(&jpsiCandidatesTemp, NULL, fValues);
       } else {
-        fCorrelationsMixingHandler->FillEvent(&fJpsiCandidates, &fAssociatedTracksMB, fValues);
+        fCorrelationsMixingHandler->FillEvent(&fJpsiCandidates, NULL, fValues);
       }
     }
   }
 
   // apply event selection
-  if(!IsEventSelected(fEvent)) return;
+  if (!eventSelected) return;
 
   // loop over associated tracks
   RunAssociatedTrackSelection();
@@ -142,7 +151,7 @@ void AliReducedAnalysisJpsi2eeCorrelations::Process() {
       AliReducedPairInfo* jpsi = 0x0;
       for (Int_t i=0; i<fJpsiCandidates.GetEntries(); ++i) {
         jpsi = (AliReducedPairInfo*)nextJpsi();
-        if ((Int_t)jpsi->PairType() == 1) jpsiCandidatesTemp.Add(jpsi->Clone());
+        if ((Int_t)jpsi->PairType()==1) jpsiCandidatesTemp.Add(jpsi->Clone());
       }
       fCorrelationsMixingHandler->FillEvent(&jpsiCandidatesTemp, &fAssociatedTracks, fValues);
     } else {

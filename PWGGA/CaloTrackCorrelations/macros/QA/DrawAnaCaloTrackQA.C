@@ -1891,86 +1891,105 @@ void IsolQA(Int_t icalo)
   TH2F* h2SumPtConeSubCluster = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConeSumPtEtaUESubCluster" ,icalo));
   TH2F* h2SumPtConeSub        = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConeSumPtEtaUESub"        ,icalo));
   
+  if ( !h2SumPtConeSub )
+  {
+    h2SumPtConeSubTrack   = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConePtSumUESubTrack"   ,icalo));
+    h2SumPtConeSubCluster = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConePtSumUESubCluster" ,icalo));
+    h2SumPtConeSub        = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConePtSumUESub"        ,icalo));
+  }
+  
   TH1F* hSumPtCone            = (TH1F*) h2SumPtCone          ->ProjectionY(Form("%s_hSumPtCone_TrigEnMin%2.0fGeV"              ,histoTag.Data(),minClusterE),minClusterEBin,10000);
   TH1F* hSumPtConeCluster     = (TH1F*) h2SumPtConeCluster   ->ProjectionY(Form("%s_hSumPtConeCluster_TrigEnMin%2.0fGeV"       ,histoTag.Data(),minClusterE),minClusterEBin,10000);
   TH1F* hSumPtConeTrack       = (TH1F*) h2SumPtConeTrack     ->ProjectionY(Form("%s_hSumPtConeTrack_TrigEnMin%2.0fGeV"         ,histoTag.Data(),minClusterE),minClusterEBin,10000);
   TH1F* hSumPtConeTrackPerp   = (TH1F*) h2SumPtConeTrackPerp ->ProjectionY(Form("%s_hSumPtConePerp_TrigEnMin%2.0fGeV"          ,histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtEtaBandTrack    = (TH1F*) h2SumPtEtaBandTrack  ->ProjectionY(Form("%s_hSumPtConeEtaBandTrack_TrigEnMin%2.0fGeV"  ,histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtEtaBandCluster  = (TH1F*) h2SumPtEtaBandCluster->ProjectionY(Form("%s_hSumPtConeEtaBandCluster_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtConeSub         = (TH1F*) h2SumPtConeSub       ->ProjectionY(Form("%s_hSumPtConeSub_TrigEnMin%2.0fGeV"           ,histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtConeSubCluster  = (TH1F*) h2SumPtConeSubCluster->ProjectionY(Form("%s_hSumPtConeSubCluster_TrigEnMin%2.0fGeV"    ,histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtConeSubTrack    = (TH1F*) h2SumPtConeSubTrack  ->ProjectionY(Form("%s_hSumPtConeSubTrack_TrigEnMin%2.0fGeV"      ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtEtaBandTrack    = 0;
+  if ( h2SumPtEtaBandTrack ) 
+    hSumPtEtaBandTrack = (TH1F*) h2SumPtEtaBandTrack->ProjectionY(Form("%s_hSumPtConeEtaBandTrack_TrigEnMin%2.0fGeV",
+                                                                       histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtEtaBandCluster  = 0;
+  if ( h2SumPtEtaBandCluster ) 
+    hSumPtEtaBandTrack = (TH1F*) h2SumPtEtaBandCluster->ProjectionY(Form("%s_hSumPtConeEtaBandCluster_TrigEnMin%2.0fGeV",
+                                                                         histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeSub         = 0;
+  if ( h2SumPtConeSub) hSumPtConeSub = (TH1F*) h2SumPtConeSub->ProjectionY(Form("%s_hSumPtConeSub_TrigEnMin%2.0fGeV"           ,
+                                                                                histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeSubCluster  = 0; 
+  if ( h2SumPtConeSubCluster ) hSumPtConeSubCluster = (TH1F*) h2SumPtConeSubCluster->ProjectionY(Form("%s_hSumPtConeSubCluster_TrigEnMin%2.0fGeV"    ,
+                                                                                                      histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeSubTrack    = 0; 
+  if ( h2SumPtConeSubTrack )hSumPtConeSubTrack = (TH1F*) h2SumPtConeSubTrack->ProjectionY(Form("%s_hSumPtConeSubTrack_TrigEnMin%2.0fGeV"      ,
+                                                                                               histoTag.Data(),minClusterE),minClusterEBin,10000);
   
   hSumPtCone          ->Sumw2();
   hSumPtConeCluster   ->Sumw2();
   hSumPtConeTrack     ->Sumw2();
-  hSumPtConeSub       ->Sumw2();
-  hSumPtConeSubCluster->Sumw2();
-  hSumPtConeSubTrack  ->Sumw2();
+  if(hSumPtConeSub)        hSumPtConeSub       ->Sumw2();
+  if(hSumPtConeSubCluster) hSumPtConeSubCluster->Sumw2();
+  if(hSumPtConeSubTrack)   hSumPtConeSubTrack  ->Sumw2();
   hSumPtConeTrackPerp ->Sumw2();
-  hSumPtEtaBandCluster->Sumw2();
-  hSumPtEtaBandTrack  ->Sumw2();
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->Sumw2();
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->Sumw2();
   
   rb = 1;
   hSumPtCone          ->Rebin(rb);
   hSumPtConeCluster   ->Rebin(rb);
   hSumPtConeTrack     ->Rebin(rb);
-  hSumPtConeSub       ->Rebin(rb);
-  hSumPtConeSubCluster->Rebin(rb);
-  hSumPtConeSubTrack  ->Rebin(rb);
+  if(hSumPtConeSub)       hSumPtConeSub       ->Rebin(rb);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->Rebin(rb);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->Rebin(rb);
   hSumPtConeTrackPerp ->Rebin(rb);
-  hSumPtEtaBandCluster->Rebin(rb);
-  hSumPtEtaBandTrack  ->Rebin(rb);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->Rebin(rb);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->Rebin(rb);
   
   hSumPtCone          ->Scale(1./nTrig);
   hSumPtConeCluster   ->Scale(1./nTrig);
   hSumPtConeTrack     ->Scale(1./nTrig);
-  hSumPtConeSub       ->Scale(1./nTrig);
-  hSumPtConeSubCluster->Scale(1./nTrig);
-  hSumPtConeSubTrack  ->Scale(1./nTrig);
+  if(hSumPtConeSub)       hSumPtConeSub       ->Scale(1./nTrig);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->Scale(1./nTrig);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->Scale(1./nTrig);
   hSumPtConeTrackPerp ->Scale(1./nTrig);
-  hSumPtEtaBandCluster->Scale(1./nTrig);
-  hSumPtEtaBandTrack  ->Scale(1./nTrig);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->Scale(1./nTrig);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->Scale(1./nTrig);
   
   hSumPtCone          ->SetAxisRange(0,500);
   hSumPtConeCluster   ->SetAxisRange(0,500);
   hSumPtConeTrack     ->SetAxisRange(0,500);
-  hSumPtConeSub       ->SetAxisRange(-5,500);
-  hSumPtConeSubCluster->SetAxisRange(-5,500);
-  hSumPtConeSubTrack  ->SetAxisRange(-5,500);
+  if(hSumPtConeSub)       hSumPtConeSub       ->SetAxisRange(-5,500);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->SetAxisRange(-5,500);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->SetAxisRange(-5,500);
   hSumPtConeTrackPerp ->SetAxisRange(0,500);
-  hSumPtEtaBandCluster->SetAxisRange(0,500);
-  hSumPtEtaBandTrack  ->SetAxisRange(0,500);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->SetAxisRange(0,500);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->SetAxisRange(0,500);
   
   hSumPtCone          ->SetMarkerStyle(24);
   hSumPtConeCluster   ->SetMarkerStyle(20);
   hSumPtConeTrack     ->SetMarkerStyle(20);
-  hSumPtConeSub       ->SetMarkerStyle(25);
-  hSumPtConeSubCluster->SetMarkerStyle(25);
-  hSumPtConeSubTrack  ->SetMarkerStyle(25);
+  if(hSumPtConeSub)       hSumPtConeSub       ->SetMarkerStyle(25);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->SetMarkerStyle(25);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->SetMarkerStyle(25);
   hSumPtConeTrackPerp ->SetMarkerStyle(27);
-  hSumPtEtaBandCluster->SetMarkerStyle(21);
-  hSumPtEtaBandTrack  ->SetMarkerStyle(21);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->SetMarkerStyle(21);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->SetMarkerStyle(21);
   
   hSumPtCone          ->SetMarkerColor(1);
   hSumPtConeCluster   ->SetMarkerColor(2);
   hSumPtConeTrack     ->SetMarkerColor(4); 
-  hSumPtConeSub       ->SetMarkerColor(1);
-  hSumPtConeSubCluster->SetMarkerColor(2);
-  hSumPtConeSubTrack  ->SetMarkerColor(4);
+  if(hSumPtConeSub)       hSumPtConeSub       ->SetMarkerColor(1);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->SetMarkerColor(2);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->SetMarkerColor(4);
   hSumPtConeTrackPerp ->SetMarkerColor(4);
-  hSumPtEtaBandCluster->SetMarkerColor(2);
-  hSumPtEtaBandTrack  ->SetMarkerColor(4);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->SetMarkerColor(2);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->SetMarkerColor(4);
   
   hSumPtCone          ->SetLineColor(1);
   hSumPtConeCluster   ->SetLineColor(2);
   hSumPtConeTrack     ->SetLineColor(4);
-  hSumPtConeSub       ->SetLineColor(1);
-  hSumPtConeSubCluster->SetLineColor(2);
-  hSumPtConeSubTrack  ->SetLineColor(4);
+  if(hSumPtConeSub)       hSumPtConeSub       ->SetLineColor(1);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->SetLineColor(2);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->SetLineColor(4);
   hSumPtConeTrackPerp ->SetLineColor(4);
-  hSumPtEtaBandCluster->SetLineColor(2);
-  hSumPtEtaBandTrack  ->SetLineColor(4);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->SetLineColor(2);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->SetLineColor(4);
   
   hSumPtCone->SetTitleOffset(1.5,"Y");
   hSumPtCone->SetYTitle("Entries / #it{N}_{candidates}");
@@ -1979,33 +1998,38 @@ void IsolQA(Int_t icalo)
   max = hSumPtCone->GetMaximum();
   if(max < hSumPtConeTrack     ->GetMaximum()) max = hSumPtConeTrack     ->GetMaximum();
   if(max < hSumPtConeCluster   ->GetMaximum()) max = hSumPtConeCluster   ->GetMaximum();
-  if(max < hSumPtConeSub       ->GetMaximum()) max = hSumPtConeSub       ->GetMaximum();
-  if(max < hSumPtConeSubTrack  ->GetMaximum()) max = hSumPtConeSubTrack  ->GetMaximum();
-  if(max < hSumPtConeSubCluster->GetMaximum()) max = hSumPtConeSubCluster->GetMaximum();
+  if(hSumPtConeSub){
+    if(max < hSumPtConeSub       ->GetMaximum()) max = hSumPtConeSub       ->GetMaximum();}
+  if(hSumPtConeSubTrack){
+    if(max < hSumPtConeSubTrack  ->GetMaximum()) max = hSumPtConeSubTrack  ->GetMaximum();}
+  if(hSumPtConeSubCluster){
+    if(max < hSumPtConeSubCluster->GetMaximum()) max = hSumPtConeSubCluster->GetMaximum();}
   if(max < hSumPtConeTrackPerp ->GetMaximum()) max = hSumPtConeTrackPerp ->GetMaximum();
-  if(max < hSumPtEtaBandCluster->GetMaximum()) max = hSumPtEtaBandCluster->GetMaximum();
-  if(max < hSumPtEtaBandTrack  ->GetMaximum()) max = hSumPtEtaBandTrack  ->GetMaximum();
+  if(hSumPtEtaBandCluster){
+    if(max < hSumPtEtaBandCluster->GetMaximum()) max = hSumPtEtaBandCluster->GetMaximum();}
+  if(hSumPtEtaBandTrack){
+    if(max < hSumPtEtaBandTrack  ->GetMaximum()) max = hSumPtEtaBandTrack  ->GetMaximum();}
   hSumPtCone->SetMaximum(max*2);
 
   hSumPtCone          ->Draw("");
   hSumPtConeCluster   ->Draw("same");
   hSumPtConeTrack     ->Draw("same");
-//  hSumPtConeSub       ->Draw("same");
-//  hSumPtConeSubCluster->Draw("same");
-//  hSumPtConeSubTrack  ->Draw("same");
+//  if(hSumPtConeSub)       hSumPtConeSub       ->Draw("same");
+//  if(hSumPtConeSubCluster)hSumPtConeSubCluster->Draw("same");
+//  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->Draw("same");
   hSumPtConeTrackPerp ->Draw("same");
-  hSumPtEtaBandCluster->Draw("same");
-  hSumPtEtaBandTrack  ->Draw("same");
+  if(hSumPtEtaBandCluster) hSumPtEtaBandCluster->Draw("same");
+  if(hSumPtEtaBandTrack)   hSumPtEtaBandTrack  ->Draw("same");
   
   l2.AddEntry(hSumPtCone          ,"Tracks+Clusters","P");
   l2.AddEntry(hSumPtConeCluster   ,"Clusters inside cone","P");
   l2.AddEntry(hSumPtConeTrack     ,"Tracks inside cone","P");
   l2.AddEntry(hSumPtConeTrackPerp ,"Tracks inside #perp cones","P");
-  l2.AddEntry(hSumPtEtaBandTrack  ,"Tracks #eta band","P");
-  l2.AddEntry(hSumPtEtaBandCluster,"Clusters #eta band","P");
-//  l2.AddEntry(hSumPtConeSub       ,"Tracks+Clusters-#eta band","P");
-//  l2.AddEntry(hSumPtConeSubCluster,"Clusters inside cone-#eta band","P");
-//  l2.AddEntry(hSumPtConeSubTrack  ,"Tracks inside cone-#eta band","P");
+  if(hSumPtEtaBandCluster)l2.AddEntry(hSumPtEtaBandTrack  ,"Tracks #eta band","P");
+  if(hSumPtEtaBandTrack)  l2.AddEntry(hSumPtEtaBandCluster,"Clusters #eta band","P");
+//  if(hSumPtConeSub)       l2.AddEntry(hSumPtConeSub       ,"Tracks+Clusters-#eta band","P");
+//  if(hSumPtConeSubCluster)l2.AddEntry(hSumPtConeSubCluster,"Clusters inside cone-#eta band","P");
+//  if(hSumPtConeSubTrack)  l2.AddEntry(hSumPtConeSubTrack  ,"Tracks inside cone-#eta band","P");
   
   l2.Draw("same");
   
@@ -2058,17 +2082,17 @@ void IsolQA(Int_t icalo)
   l3.SetBorderSize(0);
   l3.SetFillColor(0);
 
-  hSumPtConeSub->SetTitle(Form("Track/Cluster #Sigma #it{p}_{T}-#Sigma #eta band, p_{T,cand}>%2.0f GeV/#it{c}, #it{R}=0.4",minClusterE));
-  hSumPtConeSub->SetYTitle("Entries / #it{N}_{candidates}");
-  hSumPtConeSub->SetMaximum(max*2);
+  if(hSumPtConeSub)hSumPtConeSub->SetTitle(Form("Track/Cluster #Sigma #it{p}_{T}-#Sigma #eta band, p_{T,cand}>%2.0f GeV/#it{c}, #it{R}=0.4",minClusterE));
+  if(hSumPtConeSub)hSumPtConeSub->SetYTitle("Entries / #it{N}_{candidates}");
+  if(hSumPtConeSub)hSumPtConeSub->SetMaximum(max*2);
 
-  hSumPtConeSub       ->Draw("");
-  hSumPtConeSubCluster->Draw("same");
-  hSumPtConeSubTrack  ->Draw("same");
+  if(hSumPtConeSub)       hSumPtConeSub       ->Draw("");
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->Draw("same");
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->Draw("same");
   
-  l3.AddEntry(hSumPtConeSub       ,"Tracks+Clusters-#eta band","P");
-  l3.AddEntry(hSumPtConeSubCluster,"Clusters inside cone-#eta band","P");
-  l3.AddEntry(hSumPtConeSubTrack  ,"Tracks inside cone-#eta band","P");
+  if(hSumPtConeSub)       l3.AddEntry(hSumPtConeSub       ,"Tracks+Clusters-#eta band","P");
+  if(hSumPtConeSubCluster)l3.AddEntry(hSumPtConeSubCluster,"Clusters inside cone-#eta band","P");
+  if(hSumPtConeSubTrack)  l3.AddEntry(hSumPtConeSubTrack  ,"Tracks inside cone-#eta band","P");
 
   l3.Draw("same");
 

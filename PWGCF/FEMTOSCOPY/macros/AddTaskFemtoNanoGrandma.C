@@ -1,23 +1,32 @@
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskNanoLoton.h"
+#include "AliAnalysisTaskNanoBBar.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 
-AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpinning =
-                                         0,
-                                     int nSpins = 1, double corrRange = 0.1,
-                                     bool Systematic = false,
+AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
+									 bool isMC = false,				//2
+									 int fFilterBit = 128,			//3
+									 int phiSpinning =0,			//4
+                                     int nSpins = 1,				//5
+									 double corrRange = 0.1,		//6
+									 TString triggerData = "kInt7",	//7
+                                     bool Systematic = false,		//8
+									 const char *sTcut = "8",		//9
+									 bool DoSpherocity = false,		//10
+									 const char *s0cut = "08",		//11
                                      const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
+  TString sTsuffix = TString::Format("%s", sTcut);
+  TString s0suffix = TString::Format("%s", s0cut);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskSigma0Run2()", "No analysis manager found.");
+    Error("AddTaskFemtoNanoGrandma()", "No analysis manager found.");
     return 0x0;
   }
 
@@ -25,45 +34,83 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
   AliVEventHandler *inputHandler = mgr->GetInputEventHandler();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
-  //========= Init subtasks and start analyis ============================
+  //========= Init subtasks and start analysis ============================
   // Event Cuts
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
+//  void CleanUpMult(bool SPD, bool v0A, bool v0C, bool RefMult) {
   evtCuts->CleanUpMult(false, false, false, true);
+  if(DoSpherocity==true){
+	  evtCuts->SetDoSpherocityCuts(true);
+	  sTsuffix="8";
+  }
+
+	  if(sTsuffix=="1"){
+		    evtCuts->SetSphericityCuts(0.,0.3);
+	  }else if(sTsuffix=="2"){
+		    evtCuts->SetSphericityCuts(0.3,0.7);
+	  }else if(sTsuffix=="3"){
+		    evtCuts->SetSphericityCuts(0.7,1.0);
+	  }else if(sTsuffix=="4"){
+		    evtCuts->SetSphericityCuts(0.,1.0);
+	  }else if(sTsuffix=="5"){
+		    evtCuts->SetSphericityCuts(0.8,1.0);
+	  }else if(sTsuffix=="6"){
+		    evtCuts->SetSphericityCuts(0.9,1.0);
+	  }else if(sTsuffix=="8"){
+		  std::cout<<"No SpherIcity cuts applied"<<std::endl;
+	  }
+	  if(Systematic==false)suffix=sTsuffix;
+
+
+	  if(DoSpherocity==true)
+	  {
+	  if(s0suffix=="01"){
+		    evtCuts->SetSpherocityCuts(0.,0.3);
+	  }else if(s0suffix=="02"){
+		    evtCuts->SetSpherocityCuts(0.3,0.7);
+	  }else if(s0suffix=="03"){
+		    evtCuts->SetSpherocityCuts(0.7,1.0);
+	  }else if(s0suffix=="04"){
+		    evtCuts->SetSpherocityCuts(0.,1.0);
+	  }else if(s0suffix=="05"){
+		    evtCuts->SetSpherocityCuts(0.8,1.0);
+	  }else if(s0suffix=="06"){
+		    evtCuts->SetSpherocityCuts(0.9,1.0);
+	  }else if(s0suffix=="08"){
+		  std::cout<<"No SpherOcity cuts applied"<<std::endl;
+	  }
+	  if(Systematic==false)suffix=s0suffix;
+	  }
+
+
 
   // Track Cuts
+
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-      false, false, false, false);
-  TrackCuts->SetFilterBit(128);
+		  isMC, true, true, true);//DCAplots,CombSigma,ContribSplitting
+  TrackCuts->SetFilterBit(fFilterBit);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(false, false, false, false);
-  AntiTrackCuts->SetFilterBit(128);
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
+  AntiTrackCuts->SetFilterBit(fFilterBit);
   AntiTrackCuts->SetCutCharge(-1);
 
   //Lambda Cuts
-  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false, true,
-                                                                false);
-  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
-      false, true, false);
-
-  AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
-      false, true, false);
-
+  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
+  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);//PileUpRej, false
+  AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);  //Proton
   v0Cuts->SetPDGCodeNegDaug(211);  //Pion
   v0Cuts->SetPDGCodev0(3122);  //Lambda
 
-  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false,
-                                                                    false,
-                                                                    false);
-  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
-      false, true, false);
+  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
+  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   PosAntiv0Daug->SetCutCharge(1);
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
-      AliFemtoDreamTrackCuts::DecayProtonCuts(false, false, false);
+      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
   NegAntiv0Daug->SetCutCharge(-1);
 
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
@@ -113,10 +160,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
     kMin.push_back(0.);
     kMax.push_back(6.);
   }
+  pairQA[0] = 11;
   pairQA[1] = 11;
+  pairQA[2] = 12;
   pairQA[3] = 12;
+  pairQA[4] = 11;
   pairQA[5] = 12;
+  pairQA[6] = 12;
+  pairQA[7] = 22;
   pairQA[8] = 22;
+  pairQA[9] = 22;
 
   closeRejection[0] = true;  // pp
   closeRejection[4] = true;  // barp barp
@@ -1152,11 +1205,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
     }
   }
 
-  AliAnalysisTaskNanoLoton* task = new AliAnalysisTaskNanoLoton("femtoLoton");
+  AliAnalysisTaskNanoBBar* task = new AliAnalysisTaskNanoBBar("femtoGrandmaBBar",isMC);
+
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
   }
-  task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+  if(triggerData=="kINT7"){
+	  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  }else if(triggerData=="kHM"){
+	  task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+  }
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
@@ -1165,24 +1223,35 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
   task->SetCorrelationConfig(config);
   mgr->AddTask(task);
 
-  TString addon = "PL";
+  TString addon = "";
+  if (triggerData == "kINT7") {
+    addon += "MBBBar";
+  } else if (triggerData == "kHM") {
+    addon += "HMBBar";
+  }
 
   TString file = AliAnalysisManager::GetCommonFileName();
 
   mgr->ConnectInput(task, 0, cinput);
 
+  TString QAName = Form("%sQA%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputQA = mgr->CreateContainer(
+		  QAName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), QAName.Data()));
+  mgr->ConnectOutput(task, 1, coutputQA);
+
   TString EvtCutsName = Form("%sEvtCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
       EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), EvtCutsName.Data()));
-  mgr->ConnectOutput(task, 1, coutputEvtCuts);
+  mgr->ConnectOutput(task, 2, coutputEvtCuts);
 
   TString TrackCutsName = Form("%sTrackCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *couputTrkCuts = mgr->CreateContainer(
       TrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), TrackCutsName.Data()));
-  mgr->ConnectOutput(task, 2, couputTrkCuts);
+  mgr->ConnectOutput(task, 3, couputTrkCuts);
 
   TString AntiTrackCutsName = Form("%sAntiTrackCuts%s", addon.Data(),
                                    suffix.Data());
@@ -1190,7 +1259,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
       AntiTrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
-  mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
+  mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
 
   AliAnalysisDataContainer *coutputv0Cuts;
   TString v0CutsName = Form("%sv0Cuts%s", addon.Data(), suffix.Data());
@@ -1199,7 +1268,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
       v0CutsName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), v0CutsName.Data()));
-  mgr->ConnectOutput(task, 4, coutputv0Cuts);
+  mgr->ConnectOutput(task, 5, coutputv0Cuts);
 
   AliAnalysisDataContainer *coutputAntiv0Cuts;
   TString Antiv0CutsName = Form("%sAntiv0Cuts%s", addon.Data(), suffix.Data());
@@ -1209,7 +1278,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
-  mgr->ConnectOutput(task, 5, coutputAntiv0Cuts);
+  mgr->ConnectOutput(task, 6, coutputAntiv0Cuts);
 
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
@@ -1218,7 +1287,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
       ResultsName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 6, coutputResults);
+  mgr->ConnectOutput(task, 7, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
   TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
@@ -1228,7 +1297,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
-  mgr->ConnectOutput(task, 7, coutputResultsQA);
+  mgr->ConnectOutput(task, 8, coutputResultsQA);
 
   AliAnalysisDataContainer *coutputResultsSample;
   TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(),
@@ -1239,7 +1308,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsSampleName.Data()));
-  mgr->ConnectOutput(task, 8, coutputResultsSample);
+  mgr->ConnectOutput(task, 9, coutputResultsSample);
 
   AliAnalysisDataContainer *coutputResultsSampleQA;
   TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(),
@@ -1250,7 +1319,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false, int phiSpin
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
-  mgr->ConnectOutput(task, 9, coutputResultsSampleQA);
+  mgr->ConnectOutput(task, 10, coutputResultsSampleQA);
 
   return task;
 }

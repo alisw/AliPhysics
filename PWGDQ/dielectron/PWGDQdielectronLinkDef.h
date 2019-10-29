@@ -68,4 +68,10 @@
 #pragma link C++ class AliAnalysisTaskBeauty+;
 #pragma link C++ class AliAnalysisTaskJpsi+;
 #pragma link C++ class AlimakeJPsiTree+;
+#ifdef HAVE_FASTJET
+// Classes which need direct access only to Fastjet objects (not
+// needed if wrapped into ALICE objects)
+#pragma link C++ class AliAnalysisTaskJpsiJet+;
+#pragma link C++ class AliAnalysisTaskJpsiJetFilter+;
+#endif
 #endif

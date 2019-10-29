@@ -145,7 +145,7 @@ fisV0Mestimator(kFALSE),
 fRandom(0x0),
 fNcl(70),
 fEtaCut(0.9),
-fCent(3),
+fCentClass(3),
 fSpherocity(2),
 fMinCent(0.0),
 fMaxCent(100.0),
@@ -307,7 +307,7 @@ fisV0Mestimator(kFALSE),
 fRandom(0x0),
 fNcl(70),
 fEtaCut(0.9),
-fCent(3),
+fCentClass(3),
 fSpherocity(2),
 fMinCent(0.0),
 fMaxCent(100.0),
@@ -551,8 +551,13 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
         1.2 , 1.4 , 1.6 , 1.8 , 2.0 , 2.5 , 3.0 , 3.5 , 4.0 , 5.0 , 7.0 ,
         9.0 , 12.0, 15.0, 20.0 };
 
-    const int nBinsPer = 10;
-    double perBins[nBinsPer+1] = {0.0,1.0,5.0,10.0,15.0,20.0,30.0,40.0,50.0,70.0,100.0};
+//    const int nBinsPer = 10;
+//    double perBins[nBinsPer+1] = {0.0,1.0,5.0,10.0,15.0,20.0,30.0,40.0,50.0,70.0,100.0};
+     printf("==============================\n");
+	printf("Running the Fixed Code\n");
+	printf("Jetty cut: %f\n",fJettyCutOff);
+	printf("Isotropic cut: %f\n",fIsotrCutOff);
+     printf("==============================\n");
 
     const int nBinsdEdx = fdEdxHigh-fdEdxLow;
     double binsdEdx[nBinsdEdx+1];
@@ -924,42 +929,47 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
         V0MPercentile = MultSelection->GetMultiplicityPercentile("V0M",false);
         RefPercentile = MultSelection->GetMultiplicityPercentile("RefMult08",false);
         
-        IndxV0MMult  = GetV0MIndex(V0MPercentile);
-        IndxTrksMult = GetMultiplicityIndex(RefPercentile);
+        IndxV0MMult  = GetCentralityClass(V0MPercentile);
+        IndxTrksMult = GetCentralityClass(RefPercentile);
 //        printf("V0MPer === %f   RefPercentile == %f\n",V0MPercentile,RefPercentile);
     }
     else{
         return;}
     
-    if(!fisV0Mestimator){
-        if(IndxTrksMult>=0)
-            fCent = IndxTrksMult;}
-    else{
-        if(IndxV0MMult>=0)
-            fCent = IndxV0MMult;}
+    if(!fisV0Mestimator) {
+      if(IndxTrksMult>=0)
+	fCentClass = IndxTrksMult;
+      else
+	return;
+    } else {
+      if(IndxV0MMult>=0)
+	fCentClass = IndxV0MMult;
+      else
+	return;
+    }
     
     if( fESD->IsPileupFromSPDInMultBins() ){return;}
-    fEvents->Fill(2.5,fCent);
+    fEvents->Fill(2.5,fCentClass);
     fEvents->Fill(2.5,10);
     
     if( fESD->IsIncompleteDAQ() ){return;}
-    fEvents->Fill(3.5,fCent);
+    fEvents->Fill(3.5,fCentClass);
     fEvents->Fill(3.5,10);
     
     if( utils->IsSPDClusterVsTrackletBG(fESD) ){return;}
-    fEvents->Fill(4.5,fCent);
+    fEvents->Fill(4.5,fCentClass);
     fEvents->Fill(4.5,10);
     
     if( !MultSelection->GetThisEventINELgtZERO() ){return;}
-    fEvents->Fill(5.5,fCent);
+    fEvents->Fill(5.5,fCentClass);
     fEvents->Fill(5.5,10);
     
     if( !selectVertex2015pp(fESD,kTRUE,kFALSE,kTRUE) ){return;}
-    fEvents->Fill(6.5,fCent);
+    fEvents->Fill(6.5,fCentClass);
     fEvents->Fill(6.5,10);
     
     if( !IsGoodZvertexPos(fESD) ){return;}
-    fEvents->Fill(7.5,fCent);
+    fEvents->Fill(7.5,fCentClass);
     fEvents->Fill(7.5,10);
     
     float SOm = -1.0;
@@ -973,7 +983,7 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
     
     // Events with non-measured spherocity
     if( SOm < 0 ){
-        fEvents->Fill(8.5,fCent);
+        fEvents->Fill(8.5,fCentClass);
         fEvents->Fill(8.5,10);
         return;}
 
@@ -981,15 +991,15 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
     hSOrvsTrks->Fill(RefPercentile,SOm);
     hRefMultVsRefMultPer->Fill(RefPercentile,fnRefGlobal);
     
-    if(fCent > 2)
+    if(fCentClass > 2)
         return;
     
-    fEvents->Fill(9.5,fCent);
+    fEvents->Fill(9.5,fCentClass);
     fEvents->Fill(9.5,10);
     
     //	fTrcksVsTrklets->Fill(fnRefGlobal,nRec);
     
-    ProduceArrayTrksESD(fESD,fCent,2);
+    ProduceArrayTrksESD(fESD,fCentClass,2);
     
     if(fAnalysisMC){
         
@@ -1000,104 +1010,84 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
             hSOtvsTrks->Fill(fnRefGlobal,SOt);
             hSOtvsV0M->Fill(V0MPercentile,SOt);
             hSOtvsTrkst->Fill(TruthMult,SOt);
-            hSOtVsSOm[fCent]->Fill(SOt,SOm);
+            hSOtVsSOm[fCentClass]->Fill(SOt,SOm);
             hSOtVsSOm[10]->Fill(SOt,SOm);
         }
     }
     
     if(fisV0Mestimator){
         if((0.0<SOm)&&(SOm<=fJettyCutOff)){
-            ProduceArrayTrksESD(fESD,fCent,0);
-//            ProduceArrayV0ESD(fESD,fCent,0);
+            ProduceArrayTrksESD(fESD,fCentClass,0);
+//            ProduceArrayV0ESD(fESD,fCentClass,0);
             
             if(fAnalysisMC)
                 PtRecVsPtTruth(fESD, kTRUE);
             
-            fcent->Fill(fCent);
+            fcent->Fill(fCentClass);
             fcent->Fill(10);
         }
         
         if((SOm>=fIsotrCutOff) && (SOm<1.0)){
-            ProduceArrayTrksESD(fESD,fCent,1);
-//            ProduceArrayV0ESD(fESD,fCent,1);
+            ProduceArrayTrksESD(fESD,fCentClass,1);
+//            ProduceArrayV0ESD(fESD,fCentClass,1);
             
             if(fAnalysisMC)
                 PtRecVsPtTruth(fESD, kFALSE);
             
-            fcent->Fill(fCent);
+            fcent->Fill(fCentClass);
             fcent->Fill(10);
         }
         
         if(fAnalysisMC){
             if((0<SOt) && (SOt<0.472))
-                ProcessMCTruthESD(fCent,0);
+                ProcessMCTruthESD(fCentClass,0);
             
             if((0.759<SOt) && (SOt<1.0))
-                ProcessMCTruthESD(fCent,1);
+                ProcessMCTruthESD(fCentClass,1);
             
         }
     }
     
     //Make PID using Mid-Rapidity estimator
     else{
-        if(fCent > 2){return;}
+        if(fCentClass > 2){return;}
         if((0<SOm) && (SOm<fJettyCutOff)){
-            ProduceArrayTrksESD(fESD,fCent,0);
-//            ProduceArrayV0ESD(fESD,fCent,0);
-            fcent->Fill(fCent);
+            ProduceArrayTrksESD(fESD,fCentClass,0);
+//            ProduceArrayV0ESD(fESD,fCentClass,0);
+            fcent->Fill(fCentClass);
             fcent->Fill(10);}
         if((SOm>fIsotrCutOff) && (SOm<1.0)){
-            ProduceArrayTrksESD(fESD,fCent,1);
-//            ProduceArrayV0ESD(fESD,fCent,1);
-            fcent->Fill(fCent);
+            ProduceArrayTrksESD(fESD,fCentClass,1);
+//            ProduceArrayV0ESD(fESD,fCentClass,1);
+            fcent->Fill(fCentClass);
             fcent->Fill(10);}
         
         if(fAnalysisMC){
             if((0<SOm) && (SOm<fJettyCutOff))
-                ProcessMCTruthESD(fCent,0);
+                ProcessMCTruthESD(fCentClass,0);
             if((fIsotrCutOff<SOm) && (SOm<1.0))
-                ProcessMCTruthESD(fCent,1);}
+                ProcessMCTruthESD(fCentClass,1);}
     }
     
     PostData(1, fListOfObjects);
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskSpherocity::GetV0MIndex(Float_t V0MPercentile)
+Int_t AliAnalysisTaskSpherocity::GetCentralityClass(Float_t percentile)
 {
     
-    if((V0MPercentile<0))return -1;
+    if((percentile<=0))return -1;
     
     Int_t Index = -1;
-    if((V0MPercentile>70) && (V0MPercentile<=100))Index=9;
-    else if((V0MPercentile>50) && (V0MPercentile<=70))Index=8;
-    else if((V0MPercentile>40) && (V0MPercentile<=50))Index=7;
-    else if((V0MPercentile>30) && (V0MPercentile<=40))Index=6;
-    else if((V0MPercentile>20) && (V0MPercentile<=30))Index=5;
-    else if((V0MPercentile>15) && (V0MPercentile<=20))Index=4;
-    else if((V0MPercentile>10) && (V0MPercentile<=15))Index=3;
-    else if((V0MPercentile>5) && (V0MPercentile<=10))Index=2;
-    else if((V0MPercentile>1) && (V0MPercentile<=5))Index=1;
-    else if((V0MPercentile>0) && (V0MPercentile<=1))Index=0;
-    else Index=-1;
-    
-    return Index;
-}
-//_____________________________________________________________________________
-Int_t AliAnalysisTaskSpherocity::GetMultiplicityIndex(Int_t Multiplicity)
-{
-    if((Multiplicity<=0))return -1;
-    
-    Int_t Index = -1;
-    if((Multiplicity>70) && (Multiplicity<=100))Index=9;
-    else if((Multiplicity>50) && (Multiplicity<=70))Index=8;
-    else if((Multiplicity>40) && (Multiplicity<=50))Index=7;
-    else if((Multiplicity>30) && (Multiplicity<=40))Index=6;
-    else if((Multiplicity>20) && (Multiplicity<=30))Index=5;
-    else if((Multiplicity>15) && (Multiplicity<=20))Index=4;
-    else if((Multiplicity>10) && (Multiplicity<=15))Index=3;
-    else if((Multiplicity>5) && (Multiplicity<=10))Index=2;
-    else if((Multiplicity>1) && (Multiplicity<=5))Index=1;
-    else if((Multiplicity>0) && (Multiplicity<=1))Index=0;
+    if((percentile>70) && (percentile<=100))Index=9;
+    else if((percentile>50) && (percentile<=70))Index=8;
+    else if((percentile>40) && (percentile<=50))Index=7;
+    else if((percentile>30) && (percentile<=40))Index=6;
+    else if((percentile>20) && (percentile<=30))Index=5;
+    else if((percentile>15) && (percentile<=20))Index=4;
+    else if((percentile>10) && (percentile<=15))Index=3;
+    else if((percentile>5) && (percentile<=10))Index=2;
+    else if((percentile>1) && (percentile<=5))Index=1;
+    else if((percentile>0) && (percentile<=1))Index=0;
     else Index=-1;
     
     return Index;
@@ -2091,7 +2081,7 @@ Bool_t AliAnalysisTaskSpherocity::PhiCut(Double_t pt, Double_t phi, Double_t q, 
        && phi>phiCutLow->Eval(pt))
         return kFALSE; // reject track
     
-    hPhi[fCent]->Fill(pt, phi);
+    hPhi[fCentClass]->Fill(pt, phi);
     
     return kTRUE;
 }

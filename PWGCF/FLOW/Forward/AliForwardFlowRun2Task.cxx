@@ -117,9 +117,10 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   Int_t mixed_dbins[dimensions] = {4,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.dWTwoTwoD)} ;
   Double_t dmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
   Double_t dmax[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.dW4Four)+1};
+  Double_t dmax_mixed[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.dWTwoTwoD)+1};
 
   fAnalysisList->Add(new THnD("standard_differential","standard_differential", dimensions, std_dbins, dmin, dmax));
-  fAnalysisList->Add(new THnD("mixed_differential","mixed_differential", dimensions, mixed_dbins, dmin, dmax));
+  fAnalysisList->Add(new THnD("mixed_differential","mixed_differential", dimensions, mixed_dbins, dmin, dmax_mixed));
 
   // The THn has dimensions [n, pt, random samples, vertex position, eta, centrality, kind of variable to store]
   // set names
@@ -151,20 +152,20 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   mixed_differential->GetAxis(6)->SetName("identifier");
 
   // Make centralDist
-  Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
-  Int_t   centralPhiBins = (fSettings.useITS ? 20 : 400);
-  Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.5);
-  Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
+  Int_t   centralEtaBins = (fSettings.useITS ? 200 : 300);
+  Int_t   centralPhiBins = (fSettings.useITS ? 20 : 300);
+  Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.2);
+  Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.2);
 
   // Make refDist
-  Int_t   refEtaBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 200 : 400);
-  Int_t   refPhiBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 20  : 400);
+  Int_t   refEtaBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 200 : 300);
+  Int_t   refPhiBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 20  : 300);
   Double_t refEtaMin = ((fSettings.ref_mode & fSettings.kSPDref) ? -2.5 
                              : ((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? -4 
-                             : -1.5);
+                             : -1.2);
   Double_t refEtaMax = ((fSettings.ref_mode & fSettings.kSPDref) ?  2.5 
                              : ((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 6 
-                             : 1.5);
+                             : 1.2);
 
   centralDist = new TH2D("c","",centralEtaBins,centralEtaMin,centralEtaMax,centralPhiBins,0,2*TMath::Pi());
   centralDist ->SetDirectory(0);
@@ -190,13 +191,20 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //
   //forwardDist = 0;
 
-
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
+  //fCalculator.fUtil = fUtil;
+  Bool_t isgoodrun = kTRUE;
+  if (!fSettings.mc){
+    isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
+  }
+  if (fSettings.doNUA) fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
+
+
 
   // Get the event validation object
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
-  if (!ev_val->IsValidEvent()){
+  if (!ev_val->IsValidEvent() || !isgoodrun){
   //  PostData(1, this->fOutputList);
     PostData(1, fStorage);
 
@@ -261,8 +269,10 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   centralDist->Reset();
   
   if (!(fSettings.ref_mode & fSettings.kFMDref) || (fSettings.mc && fSettings.esd)) refDist->Reset();
-  if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) forwardDist->Reset();
-
+  if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) {
+    forwardDist->Reset();
+    refDist->Reset();
+  }
 
   PostData(1, fStorage);
   return;

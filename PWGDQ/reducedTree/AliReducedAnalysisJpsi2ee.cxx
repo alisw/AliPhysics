@@ -702,6 +702,8 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
                pair->CandidateId(AliReducedPairInfo::kJpsiToEE);
                pair->PairType(1);
                pair->SetLegIds(pTrack->TrackId(), nTrack->TrackId());
+               pair->SetPseudoProper(fValues[AliReducedVarManager::kPseudoProperDecayTime]);
+               pair->PairTypeSPD(fValues[AliReducedVarManager::kPairTypeSPD]);
                fJpsiCandidates.Add(pair);
             }
          }
@@ -725,6 +727,8 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
                   pair->CandidateId(AliReducedPairInfo::kJpsiToEE);
                   pair->PairType(0);
                   pair->SetLegIds(pTrack->TrackId(), pTrack2->TrackId());
+                  pair->SetPseudoProper(fValues[AliReducedVarManager::kPseudoProperDecayTime]);
+                  pair->PairTypeSPD(fValues[AliReducedVarManager::kPairTypeSPD]);
                   fJpsiCandidates.Add(pair);
                }
             }
@@ -754,6 +758,8 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
                   pair->CandidateId(AliReducedPairInfo::kJpsiToEE);
                   pair->PairType(2);
                   pair->SetLegIds(nTrack->TrackId(), nTrack2->TrackId());
+                  pair->SetPseudoProper(fValues[AliReducedVarManager::kPseudoProperDecayTime]);
+                  pair->PairTypeSPD(fValues[AliReducedVarManager::kPairTypeSPD]);
                   fJpsiCandidates.Add(pair);
                }
             }

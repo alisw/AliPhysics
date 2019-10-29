@@ -215,6 +215,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSidebandMixingRightLow() const {return fSidebandMixingRightLow;}
     Double_t GetSidebandMixingRightHigh() const {return fSidebandMixingRightHigh;}
     Int_t    GetBackgroundMode() const {return fBackgroundMode;}
+    Bool_t   DoGammaMinEnergyCut() const {return fDoGammaMinEnergyCut;}
+    Int_t    GetNDaughterEnergyCut() const {return fNDaughterEnergyCut;}
+    Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
 
   protected:
     TRandom3    fRandom;                        ///<
@@ -312,10 +315,14 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoJetAnalysis;                 ///< switch to run a jet analysis
     Bool_t      fDoJetQA;                       ///< switch to run a jet QA analysis
 
+    Bool_t      fDoGammaMinEnergyCut;           ///< if enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson need to fulfill fMinSingleDaughterE
+    Int_t       fNDaughterEnergyCut;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
+    Float_t     fSingleDaughterMinE;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
+
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,35)
+    ClassDef(AliConversionMesonCuts,36)
     /// \endcond
 };
 

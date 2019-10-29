@@ -84,7 +84,7 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetFullEvResol(const TH1F* hSubEvCorr, Int_t k=1);
   static Double_t GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t k=1);
   static Double_t GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k=1);
-  static TString  GetGenerator(Int_t label, AliAODMCHeader* header); 
+  static TString  GetGenerator(Int_t label, AliAODMCHeader* header);
   static Bool_t IsTrackInjected(Int_t label,AliAODMCHeader *header,TClonesArray *arrayMC);
   static Bool_t IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC);
   static void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
@@ -94,7 +94,7 @@ class AliVertexingHFUtils : public TObject{
   static Bool_t HasCascadeCandidateAnyDaughInjected(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
   /// Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
-    fMinEtaForTracklets=mineta; 
+    fMinEtaForTracklets=mineta;
     fMaxEtaForTracklets=maxeta;
   }
   static Int_t GetNumberOfTrackletsInEtaRange(AliAODEvent* ev, Double_t mineta, Double_t maxeta);
@@ -153,6 +153,7 @@ class AliVertexingHFUtils : public TObject{
   static Bool_t IsTrackFromBeauty(AliAODTrack* tr, TClonesArray* arrayMC);
   static Bool_t IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* tr, TClonesArray* arrayMC);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
+  static Double_t GetBeautyMotherPtAndPDG(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t &pdgGranma);
   static Int_t CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
   static Int_t CheckDplusDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
@@ -182,8 +183,8 @@ class AliVertexingHFUtils : public TObject{
   /// GlobalChi2 structure for simultaneus in-plane - out-of-plane fit
   struct GlobalInOutOfPlaneChi2 {
     GlobalInOutOfPlaneChi2(ROOT::Math::IMultiGenFunction & fInPlane, ROOT::Math::IMultiGenFunction & fOutOfPlane, Int_t npars, vector<UInt_t> commonpars) :
-    fChi2_InPlane(&fInPlane), 
-    fChi2_OutOfPlane(&fOutOfPlane), 
+    fChi2_InPlane(&fInPlane),
+    fChi2_OutOfPlane(&fOutOfPlane),
     fNpars(npars),
     fCommonPars() {
       fCommonPars.clear();
@@ -193,14 +194,14 @@ class AliVertexingHFUtils : public TObject{
     Double_t operator() (const Double_t *par) const {
       const UInt_t npars = fNpars;
       Double_t pInPlane[npars];
-      for(UInt_t iPar=0; iPar<npars; iPar++) 
+      for(UInt_t iPar=0; iPar<npars; iPar++)
         pInPlane[iPar]=par[iPar];
 
       UInt_t iParOutOfPlane = fNpars;
       Double_t pOutOfPlane[npars];
       vector<UInt_t> veccopy = fCommonPars;
       vector<UInt_t>::iterator iter;
-      for(UInt_t iPar=0; iPar<npars; iPar++) { 
+      for(UInt_t iPar=0; iPar<npars; iPar++) {
         iter = find(veccopy.begin(),veccopy.end(),iPar);
         if(iter!=veccopy.end()) { //is common
           pOutOfPlane[iPar] = par[iPar];
@@ -229,7 +230,7 @@ class AliVertexingHFUtils : public TObject{
   Double_t fMinEtaForTracklets; /// min eta for counting tracklets
   Double_t fMaxEtaForTracklets; /// min eta for counting tracklets
 
-  /// \cond CLASSIMP    
+  /// \cond CLASSIMP
   ClassDef(AliVertexingHFUtils,0);
   /// \endcond
 };

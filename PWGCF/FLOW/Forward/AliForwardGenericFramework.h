@@ -23,6 +23,7 @@
 #include "TString.h"
 #include "AliForwardSettings.h"
 #include "TComplex.h"
+#include "AliForwardFlowUtil.h"
 /**
  * Class to handle cumulant calculations.
  */
@@ -41,6 +42,9 @@ public:
 
 
   AliForwardSettings fSettings;
+
+    // Utility class for filling histograms
+  //AliForwardFlowUtil fUtil;
   /**
    * Do cumulants calculations for current event with
    * centrality cent

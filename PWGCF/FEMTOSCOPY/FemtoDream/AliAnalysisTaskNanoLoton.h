@@ -22,7 +22,7 @@
 class AliAnalysisTaskNanoLoton : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskNanoLoton();
-  AliAnalysisTaskNanoLoton(const char* name);
+  AliAnalysisTaskNanoLoton(const char* name, bool isMC);
   virtual ~AliAnalysisTaskNanoLoton();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -50,6 +50,8 @@ class AliAnalysisTaskNanoLoton : public AliAnalysisTaskSE {
     fConfig=config;
   }
  private:
+  AliAnalysisTaskNanoLoton(const AliAnalysisTaskNanoLoton &task);
+  AliAnalysisTaskNanoLoton &operator=(const AliAnalysisTaskNanoLoton &task);
   bool fisLightWeight;//
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//
@@ -57,13 +59,17 @@ class AliAnalysisTaskNanoLoton : public AliAnalysisTaskSE {
   AliFemtoDreamTrack* fTrack;//!
   AliFemtoDreamTrackCuts* fProton;//
   TList* fProtonList;//!
+  TList* fProtonMCList;//!
   AliFemtoDreamTrackCuts* fAntiProton;//
   TList* fAntiProtonList;//!
+  TList* fAntiProtonMCList;//!
   AliFemtoDreamv0* fv0;//!
   AliFemtoDreamv0Cuts* fLambda;//
   TList* fLambdaList;
+  TList* fLambdaMCList;
   AliFemtoDreamv0Cuts* fAntiLambda;//
   TList* fAntiLambdaList;
+  TList* fAntiLambdaMCList;
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!

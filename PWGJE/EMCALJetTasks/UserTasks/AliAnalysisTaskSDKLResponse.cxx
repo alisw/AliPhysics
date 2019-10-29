@@ -453,8 +453,7 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
 
   //dump only matched jets
   if (isDumpEventToTree) {
-    FillRespTree(jets_pl_matched, fTreeDL);
-    FillTree(jets_dl_matched, fTreeDL);
+    FillRespTree(jets_pl_matched, jets_dl_matched, fTreeDL);
     PostData(2, fTreeDL);
   }
 
@@ -463,14 +462,14 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
   AddTracksToEvent(fTracksCont1, event_full);
   AddTracksToEvent(fTracksCont2, event_full);
 
+  //get backgr-subtracted jets
   Double_t rho;
   Double_t rho_sparse;
-  std::vector<fastjet::PseudoJet> event_backsub = GetBackSubEvent(event_full, rho, rho_sparse, fbcoption);
+  InitializeSubtractor(event_full, rho, rho_sparse, fbcoption);
   fhRho->Fill(rho);
   fhRhoSparse->Fill(rho_sparse);
 
-  fastjet::ClusterSequenceArea clust_seq_backsub(event_backsub, jet_def, area_def);
-  std::vector<fastjet::PseudoJet> jets_backsub = sorted_by_pt( sel_jets(clust_seq_backsub.inclusive_jets()) );
+  std::vector<fastjet::PseudoJet> jets_backsub = GetBackSubJets(event_full);
 
   std::vector<fastjet::PseudoJet> jets_backsub_filtered;
   for (auto jet : jets_backsub) {
@@ -513,12 +512,18 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
 
   //and now dump only matched jets
   if (isDumpEventToTree) {
-    FillRespTree(jets_pl_matched, fTreeDLUEBS);
-    FillTree(jets_backsub_filtered_matched, fTreeDLUEBS);
+    FillRespTree(jets_pl_matched, jets_backsub_filtered_matched, fTreeDLUEBS);
     PostData(3, fTreeDLUEBS);
   }
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+
+
+  if (fCSubtractor)   delete fCSubtractor;
+  if (fCSubtractorCS) delete fCSubtractorCS;
+
+  fCSubtractor = 0;
+  fCSubtractorCS = 0;
 
   return kTRUE;
 }
@@ -789,17 +794,35 @@ Float_t AliAnalysisTaskSDKLResponse::CalcEnergyShare(mjet const & mjet1, mjet co
 
 }
 
-void AliAnalysisTaskSDKLResponse::FillRespTree(std::vector<AliEmcalJet*> const & jets, TNtuple* tree) {
+void AliAnalysisTaskSDKLResponse::FillRespTree(std::vector<AliEmcalJet*> const & probe_jets, std::vector<fastjet::PseudoJet> const & resp_jets, TNtuple* tree) {
 
-  for ( auto jet : jets ) {
+  int njets = probe_jets.size();
 
-    if ( jet->Pt() < 30. ) continue;
-    UShort_t ntracks = jet->GetNumberOfTracks();
-    tree->Fill(jet->Pt(), jet->Eta(), jet->Phi(), ntracks);
+  for (int i = 0; i < njets; i++) {
+
+    //probe
+    auto pjet = probe_jets[i];
+    if ( pjet->Pt() < 10.) continue; //cut only on the probe jet
+
+    UShort_t ntracks = pjet->GetNumberOfTracks();
+    tree->Fill(pjet->Pt(), pjet->Eta(), pjet->Phi(), ntracks);
     for (int j = 0; j < ntracks; j++) {
-      auto jtrack = jet->Track(j);
+      auto jtrack = pjet->Track(j);
       if (jtrack->Pt() > 1.e-5) {
         tree->Fill(jtrack->Pt(), jtrack->Eta(), jtrack->Phi(), -108);
+      }
+    }
+
+    //response
+    auto rjet = resp_jets[i];
+    int nconst = 0;
+    for (auto c : rjet.constituents() ) {
+      if ( c.pt() > 1.e-5 ) nconst++;
+    }
+    tree->Fill(rjet.pt(), rjet.eta(), rjet.phi(), nconst);
+    for ( auto c : rjet.constituents() ) {
+      if ( c.pt() > 1.e-5 ) {
+        tree->Fill(c.pt(), c.eta(), c.phi(), -7);
       }
     }
 

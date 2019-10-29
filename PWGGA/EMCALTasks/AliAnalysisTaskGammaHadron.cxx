@@ -65,6 +65,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
   fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),
   fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),
+  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -104,6 +105,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
   fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),
   fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),
+  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -1323,6 +1325,11 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fMassPionRej = new TH1F("fMassPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2)",3000,0,0.75);
 		fOutput->Add(fMassPionRej);
 
+    fPtEPAnglePionAcc = new TH2F("PtEPAnglePionAcc","PtEPAnglePionAcc",128,0,TMath::Pi(),60,0,30);
+    fOutput->Add(fPtEPAnglePionAcc);
+    fPtEPAngleMCPion = new TH2F("PtEPAngleMCPion","fPtEPAngleMCPion",128,0,TMath::Pi(),60,0,30);
+    fOutput->Add(fPtEPAngleMCPion);
+
 		fEtaPhiPionAcc = new TH2F("fEtaPhiPionAcc","Accepted Pi0 Coordinates;#eta;#phi",200,-0.9,0.9,200,0,2*TMath::Pi());
 		fOutput->Add(fEtaPhiPionAcc);
 
@@ -1707,7 +1714,7 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 
   if ((fMinCent != -999) && (fMaxCent != -999)) {
     if (fCent<fMinCent || fCent>fMaxCent) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("Cent",1);
+//      if (fGeneralHistograms) fHistEventRejection->Fill("Cent",1); // Disabling cent bin
       return kFALSE;
     }
   }
@@ -1793,6 +1800,11 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
   // Getting corrected event plane, saving information
   LoadQnCorrectedEventPlane();
 
+
+  //  Initialize array of acceptance status FIXME
+  AliClusterContainer *clusters = GetClusterContainer(0);
+	if (!clusters) return 0;
+
 	// 1. First get an event pool corresponding in mult (cent) and
 	//    zvertex to the current event. Once initialized, the pool
 	//    should contain nMix (reduced) events. This routine does not
@@ -1813,6 +1825,9 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	Double_t zVertex = fVertex[2];
 	AliParticleContainer* tracks =0x0;
 	tracks   = GetParticleContainer(0);
+
+  // Make sure Cluster Acceptance array is zeroed at start of event
+  for (int i = 0; i < kCLUS_BUF_SIZE; i++) fClusterAcceptanceStatus[i] = 0;
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//    Mixed event section
@@ -2143,6 +2158,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			}
 		}
 
+    // Also building Pi0Cand array, if fPlotQA == 1
 		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 		{
 			cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
@@ -2577,6 +2593,8 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			{
         Double_t fLocalPhi = aliCaloClusterVecpi0.Phi();
         if (fLocalPhi < 0) fLocalPhi += 2*pi;
+        Double_t evtPlaneAngle=DeltaPhi(aliCaloClusterVecpi0,fQnCorrEventPlaneAngle);
+        fPtEPAnglePionAcc->Fill(evtPlaneAngle,aliCaloClusterVecpi0.Pt());
 				fEtaPhiPionAcc->Fill(aliCaloClusterVecpi0.Eta(),fLocalPhi);
 				fMassPtPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt());
 				fMassPtCentPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt(),fCent);
@@ -3121,6 +3139,14 @@ void AliAnalysisTaskGammaHadron::FillMCPi0Hists(Int_t fMultiplicity) {
   for (Int_t i = 0; i < nMCPi0s; i++) {
     AliAODMCParticle * fMCPi0_Part = fMCPi0List[i];
 
+    AliTLorentzVector vMCPi0;
+    fMCPi0_Part->Momentum(vMCPi0);
+
+    Double_t fLocalPhi = fMCPi0_Part->Phi();
+    if (fLocalPhi < 0) fLocalPhi += TMath::TwoPi();
+    Double_t evtPlaneAngle=DeltaPhi(vMCPi0,fQnCorrEventPlaneAngle);
+    fPtEPAngleMCPion->Fill(evtPlaneAngle,fMCPi0_Part->Pt());
+
     //fMCPi0s = new TH3F("fHistMCPi0s","fHistMCPi0s;p_{T}^{#pi^{0}};",20,fMCPi0Bins,7,fMCPi0EtaBins,kNEMCalMultBins,fMixBEMCalMult->GetXbins()->GetArray());
     fHistMCPi0_PtEtaMult->Fill(fMCPi0_Part->Pt(),fMCPi0_Part->Eta(),fMultiplicity);
   }
@@ -3132,9 +3158,19 @@ void AliAnalysisTaskGammaHadron::FillMCPi0Hists(Int_t fMultiplicity) {
 //________________________________________________________________________
 Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster)
 {
+  int iClusterID = caloCluster->GetID();
+  // This assumes each cluster has a unique ID
+  // Check if already checked:
+  if(fClusterAcceptanceStatus[iClusterID] != 0) {
+    if (fClusterAcceptanceStatus[iClusterID] == -1) return 0;
+    else return 1;
+  }
+
 	TLorentzVector caloClusterVec;
 	clusters->GetMomentum(caloClusterVec,caloCluster);
 	//!!!! eventually transform to AliTLorentzvector
+
+  fClusterAcceptanceStatus[iClusterID] = -1; // This assumes the cluster will be rejected. changed at end
 
 	//..Accepts clusters if certain conditions are fulfilled
 	Bool_t Accepted=1; //..By default accepted
@@ -3210,18 +3246,19 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 			if(!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kEMCAL) &&
 			!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kDCAL)) return 0;
 	}
-	 //-----------------------------
-	 //..Fiducial volume cut II. Cuts on the distance to the EMCal border last+first row and last+first collumn
-	 //fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(1); //ELI this could be momentum dependent and also different for merged clusters!!!
-	 if(!fFiducialCellCut->CheckCellFiducialRegion(fGeom,caloCluster,fCaloCells))
-	 {
-		 return 0;
-	 }
-	 //-----------------------------
-	 //..Exotic cells
+  //-----------------------------
+  //..Fiducial volume cut II. Cuts on the distance to the EMCal border last+first row and last+first collumn
+  //fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(1); //ELI this could be momentum dependent and also different for merged clusters!!!
+  if(!fFiducialCellCut->CheckCellFiducialRegion(fGeom,caloCluster,fCaloCells))
+  {
+   return 0;
+  }
+  //-----------------------------
+  //..Exotic cells
 
 
-	 return Accepted;
+  fClusterAcceptanceStatus[iClusterID] = 1; // This marks the cluster as accepted
+  return Accepted;
 }
 //
 // Accept cluster pair cut for Pi0 analysis. More cuts besides in ApplyClusterCuts and ApplyKinematicCuts
@@ -3547,6 +3584,7 @@ Int_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluster
 		fMatchDeltaEtaTrackPt->Fill(trackPt,fEtaDiff);
 		//
 		// For input -1 or 0, use the parametrized track matching cuts given in https://alice-notes.web.cern.ch/node/813
+    // FIXME make these (changeable) parameters
 		if (etaCut <= 0) etaCut = 0.010 + TMath::Power((trackPt + 4.07), -2.5);
 		if (phiCut <= 0) phiCut = 0.015 + TMath::Power((trackPt + 3.65), -2.);
 

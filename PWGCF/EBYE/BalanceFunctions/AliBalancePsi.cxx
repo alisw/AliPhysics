@@ -73,7 +73,8 @@ AliBalancePsi::AliBalancePsi() :
   fHistConversionafter(0),
   fHistPsiMinusPhi(0),
   fHistResonancesBefore(0),
-  fHistResonancesPhiBefore(0),
+  fHistResonancesPhiBeforeUS(0),
+  fHistResonancesPhiBeforeLS(0),
   fHistResonancesRho(0),
   fHistResonancesK0(0),
   fHistResonancesLambda(0),
@@ -124,7 +125,8 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistConversionafter(balance.fHistConversionafter),
   fHistPsiMinusPhi(balance.fHistPsiMinusPhi),
   fHistResonancesBefore(balance.fHistResonancesBefore),
-  fHistResonancesPhiBefore(balance.fHistResonancesPhiBefore),
+  fHistResonancesPhiBeforeUS(balance.fHistResonancesPhiBeforeUS),
+  fHistResonancesPhiBeforeLS(balance.fHistResonancesPhiBeforeLS),
   fHistResonancesRho(balance.fHistResonancesRho),
   fHistResonancesK0(balance.fHistResonancesK0),
   fHistResonancesLambda(balance.fHistResonancesLambda),
@@ -140,6 +142,8 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHBTCutValue(balance.fHBTCutValue),
   fConversionCut(balance.fConversionCut),
   fInvMassCutConversion(balance.fInvMassCutConversion),
+  fNSigmaRejectionMin(balance.fNSigmaRejectionMin),
+  fNSigmaRejectionMax(balance.fNSigmaRejectionMax),
   fResonancesLabelCut(balance.fResonancesLabelCut),
   fQCut(balance.fQCut),
   fDeltaPtMin(balance.fDeltaPtMin),
@@ -170,7 +174,8 @@ AliBalancePsi::~AliBalancePsi() {
   delete fHistConversionafter;
   delete fHistPsiMinusPhi;
   delete fHistResonancesBefore;
-  delete fHistResonancesPhiBefore;
+  delete fHistResonancesPhiBeforeUS;
+  delete fHistResonancesPhiBeforeLS;
   delete fHistResonancesRho;
   delete fHistResonancesK0;
   delete fHistResonancesLambda;
@@ -413,11 +418,12 @@ void AliBalancePsi::InitHistograms() {
   fHistConversionafter  = new TH3D("fHistConversionafter","after Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistPsiMinusPhi      = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
   fHistResonancesBefore = new TH3D("fHistResonancesBefore","before resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
-  fHistResonancesPhiBefore = new TH3D("fHistResonancesPhiBefore","before phi resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistResonancesPhiBeforeUS = new TH2D("fHistResonancesPhiBeforeUS","before phi resonance cut;p_{T} (GeV/c);M_{inv}",200,0,10,500,0.8,1.2);
+  fHistResonancesPhiBeforeLS = new TH2D("fHistResonancesPhiBeforeLS","before phi resonance cut;p_{T} (GeV/c);M_{inv}",200,0,10,500,0.8,1.2);
   fHistResonancesRho    = new TH3D("fHistResonancesRho","after #rho resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistResonancesK0     = new TH3D("fHistResonancesK0","after #rho, K0 resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistResonancesLambda = new TH3D("fHistResonancesLambda","after #rho, K0, Lambda resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
-  fHistResonancesPhi    = new TH3D("fHistResonancesPhi","after phi resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistResonancesPhi    = new TH2D("fHistResonancesPhi","after phi resonance cut;p_{T} (GeV/c);M_{inv}",200,0,10.0,500,0.8,1.2);
   fHistQbefore          = new TH3D("fHistQbefore","before momentum difference cut;#Delta#eta;#Delta#phi;|#Delta p_{T}| (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistQafter           = new TH3D("fHistQafter","after momentum difference cut;#Delta#eta;#Delta#phi;|#Delta p_{T}| (GeV/c)",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
 
@@ -493,7 +499,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
   Double_t gWidthForK0s = 0.01;
   Double_t gWidthForLambda = 0.006;
   //Double_t gWidthForPhi = 0.031;
-  Double_t gWidthForPhi = 0.004266;
+  Double_t gWidthForPhiPdg = 0.004266;
+  Double_t gWidthForPhiData = 0.0012;
   Double_t nSigmaRejection = 3.0;
 
   // 1st particle loop
@@ -625,17 +632,22 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       }//resonance cut
         
       if(fResonancePhiCut) {
-        if (charge1 * charge2 < 0) {
-        
-        //phi        
-        vectorDaughter[0].SetPtEtaPhiM(firstPt,firstEta,firstPhi,pKaon.GetMass());
-        vectorDaughter[1].SetPtEtaPhiM(secondPt[j],secondEta[j],secondPhi[j],pKaon.GetMass());
-        vectorMother = vectorDaughter[0] + vectorDaughter[1];
-        fHistResonancesPhiBefore->Fill(trackVariablesPair[1],trackVariablesPair[2],vectorMother.M());
-        if(TMath::Abs(vectorMother.M() - pPhi.GetMass()) <= nSigmaRejection*gWidthForPhi)
-           continue;
-        fHistResonancesPhi->Fill(trackVariablesPair[1],trackVariablesPair[2],vectorMother.M());
-        } 
+        if (!particlesMixed) {
+	//phi        
+	vectorDaughter[0].SetPtEtaPhiM(firstPt,firstEta,firstPhi,pKaon.GetMass());
+	vectorDaughter[1].SetPtEtaPhiM(secondPt[j],secondEta[j],secondPhi[j],pKaon.GetMass());
+	vectorMother = vectorDaughter[0] + vectorDaughter[1];
+	  if (charge1 * charge2 > 0)
+	    fHistResonancesPhiBeforeLS->Fill(vectorMother.Pt(),vectorMother.M());
+	  else if (charge1 * charge2 < 0) {
+	    //if(TMath::Abs(vectorMother.M() - pPhi.GetMass()) <= nSigmaRejection*gWidthForPhiPdg)
+	    //continue;          
+	    fHistResonancesPhiBeforeUS->Fill(vectorMother.Pt(),vectorMother.M());
+	    if (((vectorMother.M() - pPhi.GetMass()) < fNSigmaRejectionMin*gWidthForPhiData) || ((vectorMother.M() - pPhi.GetMass()) >= fNSigmaRejectionMax*gWidthForPhiData))
+	    continue;
+	    fHistResonancesPhi->Fill(vectorMother.Pt(),vectorMother.M());
+	  }
+        }
       }
  
       if (fResonancesLabelCut) {

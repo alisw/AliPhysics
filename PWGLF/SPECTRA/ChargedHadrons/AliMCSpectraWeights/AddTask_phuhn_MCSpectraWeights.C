@@ -36,7 +36,7 @@ AliMCSpectraWeightsAnalysisTask* AddTask_phuhn_MCSpectraWeights(const char* coll
   if(type.Contains("ESD")) task->SetUseESD();
   else task->SetUseAOD();
   task->SetUseMultiplicity(kTRUE);
-  task->SetTriggerMask(AliVEvent::kINT7 ); //kINT7
+  task->SetTriggerMask(AliVEvent::kINT7 | AliVEvent::kMB ); //kINT7
   //For particle composition
   task->SetMCSpectraWeightObject(fMCSpectraWeights);
   // Debug info

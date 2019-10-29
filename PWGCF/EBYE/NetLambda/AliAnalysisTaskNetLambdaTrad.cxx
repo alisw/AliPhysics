@@ -1,7 +1,8 @@
+
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Sep 20
+// Updated Oct 24
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -47,29 +48,26 @@ fEventCuts(0),
 fListHist(0x0),
 fHistEventCounter(0x0),
 fHistCentrality(0x0),
-fHistPA(0x0),
-fHistPAparLambda(0x0),
-fHistPAparLambdabar(0x0),
 
 
 f3fHistCentVsInvMassLambda1point0(0x0),
 f3fHistCentVsInvMassLambda1point0Masscut(0x0),
 
-f3fHistCentVsInvMassLambda1point0Rap(0x0),
-f3fHistCentVsInvMassLambda1point0MasscutRap(0x0),
+f3fHistCentVsInvMassLambda1point0tight(0x0),
+f3fHistCentVsInvMassLambda1point0Masscuttight(0x0),
 
 f3fHistCentVsInvMassAntiLambda1point0(0x0),
 f3fHistCentVsInvMassAntiLambda1point0Masscut(0x0),
 
-f3fHistCentVsInvMassAntiLambda1point0Rap(0x0),
-f3fHistCentVsInvMassAntiLambda1point0MasscutRap(0x0),
+f3fHistCentVsInvMassAntiLambda1point0tight(0x0),
+f3fHistCentVsInvMassAntiLambda1point0Masscuttight(0x0),
 
 
 fCentrality(-1),
 fNptBins(23),
 
 fEvSel(AliVEvent::kINT7),
-fPtBinNplusNminusChRap(NULL),
+fPtBinNplusNminusChtight(NULL),
 fPtBinNplusNminusCh(NULL)
 
 
@@ -95,14 +93,6 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     fHistCentrality = new TH1D( "fHistCentrality", "fHistCentrality",100,0,100);
     fListHist->Add(fHistCentrality);
     
-    fHistPA = new TH1F("fHistPA", "fHistPA",10,0,1);
-    fListHist->Add(fHistPA);
-    
-    fHistPAparLambda = new TH1F("fHistPAparLambda", "fHistPAparLambda",10,0,1);
-    fListHist->Add(fHistPAparLambda);
-    
-    fHistPAparLambdabar = new TH1F("fHistPAparLambdabar", "fHistPAparLambdabar",10,0,1);
-    fListHist->Add(fHistPAparLambdabar);
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     const Int_t CentbinNum = 81;
     Double_t CentBins[CentbinNum+1];
@@ -122,17 +112,17 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     //V0 hists//
     
     
-    f3fHistCentVsInvMassLambda1point0 = new TH3F("f3fHistCentVsInvMassLambda1point0","Cent vs. #Lambda Inv Mass vs. pT (new set 0)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+    f3fHistCentVsInvMassLambda1point0 = new TH3F("f3fHistCentVsInvMassLambda1point0","Cent vs. #Lambda Inv Mass vs. pT ",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
     fListHist->Add(f3fHistCentVsInvMassLambda1point0);
     
     f3fHistCentVsInvMassLambda1point0Masscut = new TH3F("f3fHistCentVsInvMassLambda1point0Masscut","Cent vs. #Lambda Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
     fListHist->Add(f3fHistCentVsInvMassLambda1point0Masscut);
     
-    f3fHistCentVsInvMassLambda1point0Rap = new TH3F("f3fHistCentVsInvMassLambda1point0Rap","Cent vs. #Lambda Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-    fListHist->Add(f3fHistCentVsInvMassLambda1point0Rap);
+    f3fHistCentVsInvMassLambda1point0tight = new TH3F("f3fHistCentVsInvMassLambda1point0tight","Cent vs. #Lambda Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+    fListHist->Add(f3fHistCentVsInvMassLambda1point0tight);
     
-    f3fHistCentVsInvMassLambda1point0MasscutRap = new TH3F("f3fHistCentVsInvMassLambda1point0MasscutRap","Cent vs. #Lambda Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-    fListHist->Add(f3fHistCentVsInvMassLambda1point0MasscutRap);
+    f3fHistCentVsInvMassLambda1point0Masscuttight = new TH3F("f3fHistCentVsInvMassLambda1point0Masscuttight","Cent vs. #Lambda Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+    fListHist->Add(f3fHistCentVsInvMassLambda1point0Masscuttight);
     
     //////////////////
     f3fHistCentVsInvMassAntiLambda1point0 = new TH3F("f3fHistCentVsInvMassAntiLambda1point0","Cent vs. #bar{#Lambda} Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
@@ -141,11 +131,11 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     f3fHistCentVsInvMassAntiLambda1point0Masscut = new TH3F("f3fHistCentVsInvMassAntiLambda1point0Masscut","Cent vs. #bar{#Lambda} Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
     fListHist->Add(f3fHistCentVsInvMassAntiLambda1point0Masscut);
     
-    f3fHistCentVsInvMassAntiLambda1point0Rap = new TH3F("f3fHistCentVsInvMassAntiLambda1point0Rap","Cent vs. #bar{#Lambda} Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-    fListHist->Add(f3fHistCentVsInvMassAntiLambda1point0Rap);
+    f3fHistCentVsInvMassAntiLambda1point0tight = new TH3F("f3fHistCentVsInvMassAntiLambda1point0tight","Cent vs. #bar{#Lambda} Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+    fListHist->Add(f3fHistCentVsInvMassAntiLambda1point0tight);
     
-    f3fHistCentVsInvMassAntiLambda1point0MasscutRap = new TH3F("f3fHistCentVsInvMassAntiLambda1point0MasscutRap","Cent vs. #bar{#Lambda} Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-    fListHist->Add(f3fHistCentVsInvMassAntiLambda1point0MasscutRap);
+    f3fHistCentVsInvMassAntiLambda1point0Masscuttight = new TH3F("f3fHistCentVsInvMassAntiLambda1point0Masscuttight","Cent vs. #bar{#Lambda} Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+    fListHist->Add(f3fHistCentVsInvMassAntiLambda1point0Masscuttight);
     
     
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -161,14 +151,11 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     max[0] = 80.5;
     for(Int_t jbin = 1; jbin < dim; jbin++) max[jbin] = 499.5;
     
-    
-    
     fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nlambda-nantilambda masscut", dim, bin, min, max);
     fListHist->Add(fPtBinNplusNminusCh);
     
-    fPtBinNplusNminusChRap = new THnSparseI("fPtBinNplusNminusChRap","cent-nlambda-nantilambda masscut Rap", dim, bin, min, max);
-    fListHist->Add(fPtBinNplusNminusChRap);
-    
+    fPtBinNplusNminusChtight = new THnSparseI("fPtBinNplusNminusChtight","cent-nlambda-nantilambda masscut tight", dim, bin, min, max);
+    fListHist->Add(fPtBinNplusNminusChtight);
     
     PostData(1,fListHist);
 }
@@ -181,14 +168,14 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     const Int_t dim = fNptBins*2;
     
     Int_t ptChEta1point0[dim];
-    Int_t ptChEta1point0Rap[dim];
+    Int_t ptChEta1point0tight[dim];
     
     
     
     for(Int_t idx = 0; idx < dim; idx++)
     {
         ptChEta1point0[idx] = 0.;
-        ptChEta1point0Rap[idx] = 0.;
+        ptChEta1point0tight[idx] = 0.;
         
     }
     
@@ -362,43 +349,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         pospion  = fPIDResponse->NumberOfSigmasTPC( esdpTrack, AliPID::kPion );
         negpion  = fPIDResponse->NumberOfSigmasTPC( esdnTrack, AliPID::kPion );
         
-        proLT = v0DecayLength*invMassLambda;
-        proLTbar = v0DecayLength*invMassAntiLambda;
-        
         
         if(TMath::Abs(peta) > 0.8) continue;
         if(TMath::Abs(neta) > 0.8) continue;
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
-        if(v0dlength < 5.0) continue;
-        if(dcaV0ToVertex > 0.5) continue;
-        
-        Float_t PAngle = 0.0;
-        Float_t lVarV0CosPALambda= 0.0;
-        Float_t lVarV0CosPALambdaBar= 0.0;
-        PAngle = TMath::ACos(cosPointingAngle);
-        fHistPA->Fill(PAngle);
-        
-        Float_t lVarV0CosPAparLambda[5];
-        lVarV0CosPAparLambda[0] = 0.36284;
-        lVarV0CosPAparLambda[1] = -1.87960;
-        lVarV0CosPAparLambda[2] =  0.04543;
-        lVarV0CosPAparLambda[3] = -0.20447;
-        lVarV0CosPAparLambda[4] = 0.01085;
-        
-        lVarV0CosPALambda = lVarV0CosPAparLambda[0]*TMath::Exp(lVarV0CosPAparLambda[1]*V0pt) + lVarV0CosPAparLambda[2]*TMath::Exp(lVarV0CosPAparLambda[3]*V0pt) + lVarV0CosPAparLambda[4];
-        fHistPAparLambda->Fill(lVarV0CosPALambda);
-        
-        Float_t lVarV0CosPAparLambdaBar[5];
-        lVarV0CosPAparLambdaBar[0] = 0.35809;
-        lVarV0CosPAparLambdaBar[1] = -1.93860;
-        lVarV0CosPAparLambdaBar[2] =  0.05306;
-        lVarV0CosPAparLambdaBar[3] = -0.24518;
-        lVarV0CosPAparLambdaBar[4] = 0.01213;
-        
-        lVarV0CosPALambdaBar = lVarV0CosPAparLambdaBar[0]*TMath::Exp(lVarV0CosPAparLambdaBar[1]*V0pt) + lVarV0CosPAparLambdaBar[2]*TMath::Exp(lVarV0CosPAparLambdaBar[3]*V0pt) + lVarV0CosPAparLambdaBar[4];
-        fHistPAparLambdabar->Fill(lVarV0CosPALambdaBar);
-        
         if(cosPointingAngle < 0.99) continue;
         
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -411,7 +366,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             
             if(TMath::Abs(eta) < 0.5)
             {
-                if(dcaNegToVertex > 2.5 && dcaPosToVertex > 1.0 && TMath::Abs(posprnsg)  <= 2.5 && TMath::Abs(negpion)  <= 2.5) //Default
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3)
                 {
                     f3fHistCentVsInvMassLambda1point0->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -421,11 +376,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     }
                     if(invMassLambda > 1.126 && invMassLambda < 1.138)
                     {
-                        ptChEta1point0Rap[iptbin] += 1;
-                        f3fHistCentVsInvMassLambda1point0MasscutRap->Fill(fCentrality,invMassLambda,V0pt);
+                       ptChEta1point0tight[iptbin] += 1;
+                       f3fHistCentVsInvMassLambda1point0Masscuttight->Fill(fCentrality,invMassLambda,V0pt);
                     }
                 }
-                if(dcaNegToVertex > 1.0 && dcaPosToVertex > 2.5 && TMath::Abs(negprnsg)  <= 2.5 && TMath::Abs(pospion)  <= 2.5) //default
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -435,8 +390,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     }
                     if(invMassAntiLambda > 1.126 && invMassAntiLambda < 1.138)
                     {
-                        ptChEta1point0Rap[iptbin+fNptBins] += 1;
-                        f3fHistCentVsInvMassAntiLambda1point0MasscutRap->Fill(fCentrality,invMassAntiLambda,V0pt);
+                        ptChEta1point0tight[iptbin+fNptBins] += 1;
+                        f3fHistCentVsInvMassAntiLambda1point0Masscuttight->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
                 }
             }
@@ -451,15 +406,16 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     {
         ptContainer[i] = ptChEta1point0[i-1];
     }
+    
     fPtBinNplusNminusCh->Fill(ptContainer);
     ////////////////////////
-    Double_t ptContainerRap[dim+1];
-    ptContainerRap[0] = (Double_t)fCentrality;
+    Double_t ptContainertight[dim+1];
+    ptContainertight[0] = (Double_t)fCentrality;
     for(Int_t i = 1; i <= dim; i++)
     {
-        ptContainerRap[i] = ptChEta1point0Rap[i-1];
+        ptContainertight[i] = (ptChEta1point0[i-1] - ptChEta1point0tight[i-1]);
     }
-    fPtBinNplusNminusChRap->Fill(ptContainerRap);
+    fPtBinNplusNminusChtight->Fill(ptContainertight);
     
     
     
@@ -496,6 +452,7 @@ Int_t AliAnalysisTaskNetLambdaTrad::GetPtBin(Double_t pt)
     return bin;
     
 }
+
 
 
 
