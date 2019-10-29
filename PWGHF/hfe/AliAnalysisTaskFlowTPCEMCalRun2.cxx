@@ -24,6 +24,7 @@
 #include "TH1F.h"
 #include "TCanvas.h"
 #include "TList.h"
+#include "THnSparse.h"
 #include "AliMultSelection.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
