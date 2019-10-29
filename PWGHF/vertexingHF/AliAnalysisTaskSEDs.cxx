@@ -35,8 +35,6 @@
 #include <TGrid.h>
 #include <TFile.h>
 
-#include "yaml-cpp/yaml.h"
-
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
@@ -113,11 +111,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fUseFinPtBinsForSparse(kFALSE),
   fApplyML(kFALSE),
   fConfigPath(""),
-  fNumVars(0),
-  fModelPaths(),
-  fModelOutputCuts(),
-  fPtBinsModel(),
-  fModels(),
+  fMLResponse(nullptr),
   fEnablePIDMLSparses(kFALSE),
   fNMLBins(300),
   fMLOutputMin(0.85),
@@ -240,11 +234,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fUseFinPtBinsForSparse(kFALSE),
   fApplyML(kFALSE),
   fConfigPath(""),
-  fNumVars(0),
-  fModelPaths(),
-  fModelOutputCuts(),
-  fPtBinsModel(),
-  fModels(),
+  fMLResponse(nullptr),
   fEnablePIDMLSparses(kFALSE),
   fNMLBins(300),
   fMLOutputMin(0.85),
@@ -460,6 +450,9 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
   delete fNtupleDs;
   delete fCounter;
   delete fAnalysisCuts;
+
+  if(fApplyML && fMLResponse)
+    delete fMLResponse;
 }
 
 //________________________________________________________________________
@@ -479,11 +472,6 @@ void AliAnalysisTaskSEDs::Init()
 
   fListCuts->Add(analysis);
   PostData(2, fListCuts);
-
-  if(fApplyML) {
-    if(!SetMLVariables(fConfigPath))
-      AliFatal("Problem in configuration of the ML application");
-  }
 
   return;
 }
@@ -762,13 +750,8 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 
   //Loading of ML models
   if(fApplyML) {
-    for(auto it = fModelPaths.begin(); it != fModelPaths.end(); it++) {
-      std::string model_path = GetFile(*it);
-      AliExternalBDT model = AliExternalBDT();
-      if(!model.LoadXGBoostModel(model_path))
-        AliFatal("Problem in loading model");
-      fModels.push_back(model);
-    }
+    fMLResponse = new AliHFMLResponseDstoKKpi(fConfigPath.Data());
+    fMLResponse->InitModels();
 
     if(fEnablePIDMLSparses)
       CreatePIDMLSparses();
@@ -909,8 +892,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     }
   }
 
-  Double_t nTracklets = (Double_t)AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod, -1., 1.);
-
   if (fReadMC && fFillSparse)
   {
     if (aod->GetTriggerMask() == 0 && (runNumber >= 195344 && runNumber <= 195677))
@@ -919,7 +900,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     if (fAnalysisCuts->GetUseCentrality() > 0 && fAnalysisCuts->IsEventSelectedInCentrality(aod) != 0)
       // events not passing the centrality selection can be removed immediately.
       return;
-    FillMCGenAccHistos(arrayMC, mcHeader, nTracklets);
+    FillMCGenAccHistos(arrayMC, mcHeader);
   }
 
   if (!isEvSel) return;
@@ -1267,30 +1248,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           Double_t normIPprong[nProng]; //to store IP of k,k,pi
           Double_t absimpparxy = TMath::Abs(d->ImpParXY());
           //variables for ML application
-          Double_t nsigTPCPi[nProng] = {-999., -999., -999.};
-          Double_t nsigTPCK[nProng] = {-999., -999., -999.};
-          Double_t nsigTOFPi[nProng] = {-999., -999., -999.};
-          Double_t nsigTOFK[nProng] = {-999., -999., -999.};
-          Double_t sigCombK[nProng] = {-999., -999., -999.};
-          Double_t sigCombPi[nProng] = {-999., -999., -999.};
           AliAODPidHF *Pid_HF = nullptr;
-          Int_t iModel = 0;
-          Double_t modelLim = 0.;
-
+          Double_t modelPred = -1.;
+          bool isMLsel = true;
           if(fApplyML)
-          {
             Pid_HF = fAnalysisCuts->GetPidHF();
-            if(ptCand > fPtBinsModel[0])
-            {
-              for(unsigned int i = 0; i < fPtBinsModel.size() - 1; i++)
-              {
-                if(fPtBinsModel[i] <= ptCand && ptCand < fPtBinsModel[i+1])
-                  break;
-                iModel++;
-              }
-            }
-            modelLim = fModelOutputCuts[iModel];
-          }
 
           for (Int_t ip = 0; ip < nProng; ip++)
           {
@@ -1301,18 +1263,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               normIP = normIPprong[ip];
             else if (TMath::Abs(normIPprong[ip]) > TMath::Abs(normIP))
               normIP = normIPprong[ip];
-
-            //get PID info for ML application
-            if(fApplyML)
-            {
-              AliAODTrack *track=(AliAODTrack*)d->GetDaughter(ip);
-              Pid_HF->GetnSigmaTPC(track,3,nsigTPCK[ip]);
-              Pid_HF->GetnSigmaTPC(track,2,nsigTPCPi[ip]);
-              Pid_HF->GetnSigmaTOF(track,3,nsigTOFK[ip]);
-              Pid_HF->GetnSigmaTOF(track,2,nsigTOFPi[ip]);
-              sigCombK[ip] = CombineNsigmaDiffDet(nsigTPCK[ip], nsigTOFK[ip]);
-              sigCombPi[ip] = CombineNsigmaDiffDet(nsigTPCPi[ip], nsigTOFPi[ip]);
-            }
           }
 
           if (isPhiKKpi)
@@ -1323,19 +1273,25 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             cosPiKPhiNoabs = cosPiKPhi * cosPiKPhi * cosPiKPhi;
             cosPiKPhi = TMath::Abs(cosPiKPhiNoabs);
 
-            Double_t modelPred = 0.;
             if(fApplyML)
             {
-              Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
-                                       sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
-              modelPred = fModels[iModel].Predict(features, fNumVars);
+              isMLsel = fMLResponse->IsSelectedML(modelPred, d, aod->GetMagneticField(), Pid_HF, 0);
+
               if(fEnablePIDMLSparses && (!fReadMC || (indexMCKKpi == GetSignalHistoIndex(iPtBin) && orig == 4)))
               {
-                Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred, nsigTPCPi[0], nsigTPCK[0], nsigTOFPi[0], nsigTOFK[0],
-                                                     nsigTPCPi[1], nsigTPCK[1], nsigTOFPi[1], nsigTOFK[1],
-                                                     nsigTPCPi[2], nsigTPCK[2], nsigTOFPi[2], nsigTOFK[2]};
-                Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred, sigCombPi[0], sigCombK[0],
-                                                             sigCombPi[1], sigCombK[1], sigCombPi[2], sigCombK[2]};
+                Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred,
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_0"), fMLResponse->GetVariable("nsigTOF_K_0"),
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_1"), fMLResponse->GetVariable("nsigTPC_K_1"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_1"), fMLResponse->GetVariable("nsigTOF_K_1"),
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_2"), fMLResponse->GetVariable("nsigTPC_K_2"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_2"), fMLResponse->GetVariable("nsigTOF_K_2")};
+
+                Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred,
+                                                            fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
+                                                            fMLResponse->GetVariable("nsigComb_Pi_1"), fMLResponse->GetVariable("nsigComb_K_1"),
+                                                            fMLResponse->GetVariable("nsigComb_Pi_2"), fMLResponse->GetVariable("nsigComb_K_2")};
+
                 fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID);
                 fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb);
               }
@@ -1345,7 +1301,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                                                     normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10,
                                                     TMath::Abs(normIP), absimpparxy * 10000, modelPred};
 
-            if(!fApplyML || (modelPred > modelLim))
+            if(!fApplyML || isMLsel)
             {
               if (!fReadMC)
               {
@@ -1378,19 +1334,24 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             cosPiKPhiNoabs = cosPiKPhi * cosPiKPhi * cosPiKPhi;
             cosPiKPhi = TMath::Abs(cosPiKPhiNoabs);
 
-            Double_t modelPred = 0.;
             if(fApplyML)
             {
-              Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
-                                       sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
-              modelPred = fModels[iModel].Predict(features, fNumVars);
-              if(fEnablePIDMLSparses && (!fReadMC || (indexMCpiKK == GetSignalHistoIndex(iPtBin) && orig == 4)))
+              isMLsel = fMLResponse->IsSelectedML(modelPred, d, aod->GetMagneticField(), Pid_HF, 1);
+              if(fEnablePIDMLSparses && (!fReadMC || (indexMCpiKK == GetSignalHistoIndex(iPtBin) && orig==4)))
               {
-                Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred, nsigTPCPi[0], nsigTPCK[0], nsigTOFPi[0], nsigTOFK[0],
-                                                     nsigTPCPi[1], nsigTPCK[1], nsigTOFPi[1], nsigTOFK[1],
-                                                     nsigTPCPi[2], nsigTPCK[2], nsigTOFPi[2], nsigTOFK[2]};
-                Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred, sigCombPi[0], sigCombK[0],
-                                                             sigCombPi[1], sigCombK[1], sigCombPi[2], sigCombK[2]};
+                Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred,
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_0"), fMLResponse->GetVariable("nsigTOF_K_0"),
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_1"), fMLResponse->GetVariable("nsigTPC_K_1"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_1"), fMLResponse->GetVariable("nsigTOF_K_1"),
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_2"), fMLResponse->GetVariable("nsigTPC_K_2"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_2"), fMLResponse->GetVariable("nsigTOF_K_2")};
+
+                Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred,
+                                                            fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
+                                                            fMLResponse->GetVariable("nsigComb_Pi_1"), fMLResponse->GetVariable("nsigComb_K_1"),
+                                                            fMLResponse->GetVariable("nsigComb_Pi_2"), fMLResponse->GetVariable("nsigComb_K_2")};
+
                 fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID);
                 fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb);
               }
@@ -1400,7 +1361,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                                                     normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10,
                                                     TMath::Abs(normIP), absimpparxy * 10000, modelPred};
 
-            if(!fApplyML || (modelPred > modelLim))
+            if(!fApplyML || isMLsel)
             {
               if (!fReadMC)
               {
@@ -1751,7 +1712,7 @@ void AliAnalysisTaskSEDs::Terminate(Option_t * /*option*/)
 }
 
 //_________________________________________________________________
-void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t nTracklets)
+void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader)
 {
   /// Fill MC histos for cuts study
   ///    - at GenLimAccStep and AccStep (if fFillAcceptanceLevel=kFALSE)
@@ -2194,58 +2155,6 @@ Float_t AliAnalysisTaskSEDs::GetTrueImpactParameterDstoPhiPi(const AliAODMCHeade
   Double_t d0dummy[3] = {0., 0., 0.};
   AliAODRecoDecayHF aodDsMC(vtxTrue, origD, 3, charge, pXdauTrue, pYdauTrue, pZdauTrue, d0dummy);
   return aodDsMC.ImpParXY();
-}
-
-//_________________________________________________________________________
-bool AliAnalysisTaskSEDs::SetMLVariables(TString path)
-{
-  std::string config_path = GetFile(path.Data());
-  YAML::Node config_file = YAML::LoadFile(config_path);
-  int num_models = config_file["NumModels"].as<int>();
-  fNumVars = config_file["NumVars"].as<int>();
-  fModelPaths = config_file["ModelNames"].as<vector<std::string> >();
-  fModelOutputCuts = config_file["ModelOutputCuts"].as<vector<double> >();
-  fPtBinsModel = config_file["PtBins"].as<vector<double> >();
-
-  if(((unsigned int)num_models == fModelPaths.size()) && (fModelPaths.size() == fModelOutputCuts.size()) && (fModelOutputCuts.size() == (fPtBinsModel.size()-1)))
-    return kTRUE;
-
-  return kFALSE;
-}
-
-//_________________________________________________________________________
-std::string AliAnalysisTaskSEDs::GetFile(const std::string path)
-{
-  if(path.find("alien:") != std::string::npos) {
-    size_t pos = path.find_last_of("/") + 1;
-    std::string model_name = path.substr(pos);
-    if(gGrid == nullptr) {
-      TGrid::Connect("alien://");
-      if(gGrid == nullptr){
-        std::cerr << "Connection to GRID not established!" << std::endl;
-      }
-    }
-    std::string new_path = gSystem->pwd() + std::string("/") + model_name.data();
-    const char *old_root_dir = gDirectory->GetPath();
-    bool cp_status = TFile::Cp(path.data(), new_path.data());
-    gDirectory->cd(old_root_dir);
-    if(!cp_status){
-      std::cerr << "Error in coping file from Alien!\n";
-      return std::string();
-    }
-    return new_path;
-  } else {
-    return path;
-  }
-}
-
-//________________________________________________________________
-double AliAnalysisTaskSEDs::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF)
-{
-  if(nsigmaTPC > -998. && nsigmaTOF > -998.) return TMath::Sqrt((nsigmaTPC*nsigmaTPC+nsigmaTOF*nsigmaTOF)/2);
-  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return TMath::Abs(nsigmaTPC);
-  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return TMath::Abs(nsigmaTOF);
-  else return -999.;
 }
 
 //_________________________________________________________________________

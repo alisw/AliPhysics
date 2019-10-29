@@ -141,6 +141,7 @@ fMassCutBeforeVertexing(kFALSE),
 fMassCalc2(0),
 fMassCalc3(0),
 fMassCalc4(0),
+fMinPt3Prong(0.),
 fOKInvMassD0(kFALSE),
 fOKInvMassJpsi(kFALSE),
 fOKInvMassDplus(kFALSE),
@@ -157,7 +158,9 @@ fMassDplus(0.),
 fMassDs(0.),
 fMassLambdaC(0.),
 fMassDstar(0.),
-fMassJpsi(0.)
+fMassJpsi(0.),
+fMassPhi(0.),
+fMassK(0.)
 {
   /// Default constructor
 
@@ -236,6 +239,7 @@ fMassCutBeforeVertexing(source.fMassCutBeforeVertexing),
 fMassCalc2(source.fMassCalc2),
 fMassCalc3(source.fMassCalc3),
 fMassCalc4(source.fMassCalc4),
+fMinPt3Prong(source.fMinPt3Prong),
 fOKInvMassD0(source.fOKInvMassD0),
 fOKInvMassJpsi(source.fOKInvMassJpsi),
 fOKInvMassDplus(source.fOKInvMassDplus),
@@ -252,7 +256,9 @@ fMassDplus(source.fMassDplus),
 fMassDs(source.fMassDs),
 fMassLambdaC(source.fMassLambdaC),
 fMassDstar(source.fMassDstar),
-fMassJpsi(source.fMassJpsi)
+fMassJpsi(source.fMassJpsi),
+fMassPhi(source.fMassPhi),
+fMassK(source.fMassK)
 {
   ///
   /// Copy constructor
@@ -330,6 +336,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fMassCalc2 = source.fMassCalc2;
   fMassCalc3 = source.fMassCalc3;
   fMassCalc4 = source.fMassCalc4;
+  fMinPt3Prong = source.fMinPt3Prong;
   fOKInvMassD0 = source.fOKInvMassD0;
   fOKInvMassJpsi = source.fOKInvMassJpsi;
   fOKInvMassDplus = source.fOKInvMassDplus;
@@ -344,6 +351,8 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fMassLambdaC = source.fMassLambdaC;
   fMassDstar = source.fMassDstar;
   fMassJpsi = source.fMassJpsi;
+  fMassPhi = source.fMassPhi;
+  fMassK = source.fMassK;
 
   return *this;
 }
@@ -635,6 +644,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   AliESDv0         *esdV0 = 0;
 
   Bool_t massCutOK=kTRUE;
+  
+  fMinPt3Prong=0.;
+  fMinPt3Prong=TMath::Min(fCutsDplustoKpipi->GetMinPtCandidate(),fCutsDstoKKpi->GetMinPtCandidate());
+  fMinPt3Prong=TMath::Min(fMinPt3Prong,fCutsLctopKpi->GetMinPtCandidate());
 
   // LOOP ON  POSITIVE  TRACKS
   for(iTrkP1=0; iTrkP1<nSeleTrks; iTrkP1++) {
@@ -1169,18 +1182,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	// Vertexing
 	twoTrackArray2->AddAt(postrack2,0);
 	twoTrackArray2->AddAt(negtrack1,1);
-	AliAODVertex *vertexp2n1 = ReconstructSecondaryVertex(twoTrackArray2,dispersion);
-	if(!vertexp2n1) {
-	  twoTrackArray2->Clear();
-	  postrack2=0;
-	  continue;
-	}
 
 	// 3 prong candidates
 	if(f3Prong && massCutOK) {
-
+	  
 	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
-	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,vertexp2n1,dcap1n1,dcap2n1,dcap1p2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
+	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,twoTrackArray2,dcap1n1,dcap2n1,dcap1p2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
 	  if(ok3Prong) {
             AliAODVertex *v3Prong=0x0;
 	    if(!fMakeReducedRHF)v3Prong = new (verticesHFRef[iVerticesHF++])AliAODVertex(*secVert3PrAOD);
@@ -1326,7 +1333,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 
 	postrack2 = 0;
-	delete vertexp2n1;
 
       } // end 2nd loop on positive tracks
 
@@ -1438,16 +1444,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	twoTrackArray2->AddAt(postrack1,0);
 	twoTrackArray2->AddAt(negtrack2,1);
 
-	AliAODVertex *vertexp1n2 = ReconstructSecondaryVertex(twoTrackArray2,dispersion);
-	if(!vertexp1n2) {
-	  twoTrackArray2->Clear();
-	  negtrack2=0;
-	  continue;
-	}
-
 	if(f3Prong) {
 	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
-	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,vertexp1n2,dcap1n1,dcap1n2,dcan1n2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
+	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,twoTrackArray2,dcap1n1,dcap1n2,dcan1n2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
 	  if(ok3Prong) {
 	    AliAODVertex *v3Prong = 0x0;
             if(!fMakeReducedRHF) v3Prong = new(verticesHFRef[iVerticesHF++])AliAODVertex(*secVert3PrAOD);
@@ -1487,7 +1486,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 	threeTrackArray->Clear();
 	negtrack2 = 0;
-	delete vertexp1n2;
 
       } // end 2nd loop on negative tracks
 
@@ -2408,7 +2406,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
 AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 							    TObjArray *threeTrackArray,AliVEvent *event,
 							    AliAODVertex *secVert,Double_t dispersion,
-							    const AliAODVertex *vertexp1n1,const AliAODVertex *vertexp2n1,
+							    const AliAODVertex *vertexp1n1, TObjArray *twoTrackArray2,
 							    Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
 							    Bool_t useForLc, Bool_t useForDs, Bool_t &ok3Prong)
 {
@@ -2424,7 +2422,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   }
 
   ok3Prong=kFALSE;
-  if(!secVert || !vertexp1n1 || !vertexp2n1) return 0x0;
+  if(!secVert) return 0x0;
 
   Double_t px[3],py[3],pz[3],d0[3],d0err[3];
   Double_t momentum[3];
@@ -2434,14 +2432,11 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   AliESDtrack *negtrack  = (AliESDtrack*)threeTrackArray->UncheckedAt(1);
   AliESDtrack *postrack2 = (AliESDtrack*)threeTrackArray->UncheckedAt(2);
 
-  postrack1->PropagateToDCA(secVert,fBzkG,kVeryBig);
-  negtrack->PropagateToDCA(secVert,fBzkG,kVeryBig);
-  postrack2->PropagateToDCA(secVert,fBzkG,kVeryBig);
-  postrack1->GetPxPyPz(momentum);
+  GetTrackMomentumAtSecVert(postrack1,secVert,momentum);
   px[0] = momentum[0]; py[0] = momentum[1]; pz[0] = momentum[2];
-  negtrack->GetPxPyPz(momentum);
+  GetTrackMomentumAtSecVert(negtrack,secVert,momentum);
   px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
-  postrack2->GetPxPyPz(momentum);
+  GetTrackMomentumAtSecVert(postrack2,secVert,momentum);
   px[2] = momentum[0]; py[2] = momentum[1]; pz[2] = momentum[2];
 
   // invariant mass cut for D+, Ds, Lc
@@ -2456,7 +2451,6 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   // primary vertex to be used by this candidate
   AliAODVertex *primVertexAOD  = PrimaryVertex(threeTrackArray,event);
   if(!primVertexAOD) return 0x0;
-
   Double_t d0z0[2],covd0z0[3];
   postrack1->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
   d0[0]=d0z0[0];
@@ -2472,8 +2466,8 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   // create the object AliAODRecoDecayHF3Prong
   Double_t pos[3]; primVertexAOD->GetXYZ(pos);
   Double_t dca[3]={dcap1n1,dcap2n1,dcap1p2};
-  Double_t dist12=TMath::Sqrt((vertexp1n1->GetX()-pos[0])*(vertexp1n1->GetX()-pos[0])+(vertexp1n1->GetY()-pos[1])*(vertexp1n1->GetY()-pos[1])+(vertexp1n1->GetZ()-pos[2])*(vertexp1n1->GetZ()-pos[2]));
-  Double_t dist23=TMath::Sqrt((vertexp2n1->GetX()-pos[0])*(vertexp2n1->GetX()-pos[0])+(vertexp2n1->GetY()-pos[1])*(vertexp2n1->GetY()-pos[1])+(vertexp2n1->GetZ()-pos[2])*(vertexp2n1->GetZ()-pos[2]));
+  Double_t dist12=TMath::Max(0.,fCutsLctopKpi->GetMaxDistanceSecPrimVertex()-0.001);
+  Double_t dist23=dist12;
   Short_t charge=(Short_t)(postrack1->Charge()+postrack2->Charge()+negtrack->Charge());
 
 
@@ -2524,6 +2518,16 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   if(ok3Prong && fInputAOD){
     the3Prong->SetSecondaryVtx(secVert);
     AddDaughterRefs(secVert,(AliAODEvent*)event,threeTrackArray);
+    Double_t dummyDisp;
+    AliAODVertex *vertexp2n1 = ReconstructSecondaryVertex(twoTrackArray2,dummyDisp);
+    if(!vertexp2n1) ok3Prong=kFALSE;
+    else{
+      dist12=TMath::Sqrt((vertexp1n1->GetX()-pos[0])*(vertexp1n1->GetX()-pos[0])+(vertexp1n1->GetY()-pos[1])*(vertexp1n1->GetY()-pos[1])+(vertexp1n1->GetZ()-pos[2])*(vertexp1n1->GetZ()-pos[2]));
+      dist23=TMath::Sqrt((vertexp2n1->GetX()-pos[0])*(vertexp2n1->GetX()-pos[0])+(vertexp2n1->GetY()-pos[1])*(vertexp2n1->GetY()-pos[1])+(vertexp2n1->GetZ()-pos[2])*(vertexp2n1->GetZ()-pos[2]));
+      the3Prong->SetDist12toPrim(dist12);
+      the3Prong->SetDist23toPrim(dist23);
+      delete vertexp2n1;
+    }
   }
 
   // get PID info from ESD
@@ -3081,11 +3085,14 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtD0Kpi(Double_t *px,
   fMassCalc2->SetPxPyPzProngs(nprongs,px,py,pz);
   fOKInvMassD0=kFALSE;
   // pt cut
+  Double_t ptcand=TMath::Sqrt(fMassCalc2->Pt2());
   minPt=fCutsD0toKpi->GetMinPtCandidate();
   if(minPt>0.1)
-    if(fMassCalc2->Pt2() < minPt*minPt) return retval;
+    if(ptcand < minPt) return retval;
   // mass cut
-  mrange=fCutsD0toKpi->GetMassCut();
+  Int_t jPtBinZero=fCutsD0toKpi->PtBin(ptcand);
+  if(jPtBinZero<0) jPtBinZero=0;
+  mrange=fCutsD0toKpi->GetMassCut(jPtBinZero);
   lolim=fMassDzero-mrange;
   hilim=fMassDzero+mrange;
   pdg2[0]=211; pdg2[1]=321;
@@ -3149,7 +3156,6 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
   Int_t nprongs=3;
   Double_t minv2,mrange;
   Double_t lolim,hilim;
-  Double_t minPt=0;
   Bool_t retval=kFALSE;
 
 
@@ -3158,12 +3164,13 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
   fOKInvMassDs=kFALSE;
   fOKInvMassLc=kFALSE;
   // pt cut
-  minPt=TMath::Min(fCutsDplustoKpipi->GetMinPtCandidate(),fCutsDstoKKpi->GetMinPtCandidate());
-  minPt=TMath::Min(minPt,fCutsLctopKpi->GetMinPtCandidate());
-  if(minPt>0.1)
-    if(fMassCalc3->Pt2() < minPt*minPt) return retval;
+  Double_t ptcand=TMath::Sqrt(fMassCalc3->Pt2());
+  if(fMinPt3Prong>0.1)
+    if(ptcand < fMinPt3Prong) return retval;
   // D+->Kpipi
-  mrange=fCutsDplustoKpipi->GetMassCut();
+  Int_t jPtBinPlus=fCutsDplustoKpipi->PtBin(ptcand);
+  if(jPtBinPlus<0) jPtBinPlus=0;
+  mrange=fCutsDplustoKpipi->GetMassCut(jPtBinPlus);
   lolim=fMassDplus-mrange;
   hilim=fMassDplus+mrange;
   pdg3[0]=211; pdg3[1]=321; pdg3[2]=211;
@@ -3173,23 +3180,38 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
     fOKInvMassDplus=kTRUE;
   }
   // Ds+->KKpi
-  mrange=fCutsDstoKKpi->GetMassCut();
+  Int_t jPtBinS=fCutsDstoKKpi->PtBin(ptcand);
+  if(jPtBinS<0) jPtBinS=0;
+  mrange=fCutsDstoKKpi->GetMassCut(jPtBinS);
   lolim=fMassDs-mrange;
   hilim=fMassDs+mrange;
-  pdg3[0]=321; pdg3[1]=321; pdg3[2]=211;
-  minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
-  if(minv2>lolim*lolim && minv2<hilim*hilim ){
-    retval=kTRUE;
-    fOKInvMassDs=kTRUE;
+  Double_t mphirange=1.2*fCutsDstoKKpi->GetPhiMassCut(jPtBinS); // 1.2 to have margin
+  Double_t lolimphi=fMassPhi-mphirange;
+  Double_t hilimphi=fMassPhi+mphirange;
+  for(Int_t ih=0; ih<2; ih++){
+    if(fOKInvMassDs) break;
+    Int_t k=ih*2;
+    pdg3[k]=321; pdg3[1]=321; pdg3[2-k]=211; 
+    minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
+    if(minv2>lolim*lolim && minv2<hilim*hilim ){
+      if(ptcand < 4){ // check KK mass for Ds with pt<4 GeV/c
+	Double_t ee = TMath::Sqrt(fMassK*fMassK+px[k]*px[k]+py[k]*py[k]+pz[k]*pz[k])+TMath::Sqrt(fMassK*fMassK+px[1]*px[1]+py[1]*py[1]+pz[1]*pz[1]);
+	Double_t mKK2=ee*ee-((px[k]+px[1])*(px[k]+px[1])+(py[k]+py[1])*(py[k]+py[1])+(pz[k]+pz[1])*(pz[k]+pz[1]));
+	if(mKK2>lolimphi*lolimphi && mKK2<hilimphi*hilimphi){
+	  retval=kTRUE;
+	  fOKInvMassDs=kTRUE;
+	}
+      }else{
+	retval=kTRUE;
+	fOKInvMassDs=kTRUE;
+      }
+    }
   }
-  pdg3[0]=211; pdg3[1]=321; pdg3[2]=321;
-  minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
-  if(minv2>lolim*lolim && minv2<hilim*hilim ){
-    retval=kTRUE;
-    fOKInvMassDs=kTRUE;
-  }
+  
   // Lc->pKpi
-  mrange=fCutsLctopKpi->GetMassCut();
+  Int_t jPtBinL=fCutsLctopKpi->PtBin(ptcand);
+  if(jPtBinL<0) jPtBinL=0;
+  mrange=fCutsLctopKpi->GetMassCut(jPtBinL);
   lolim=fMassLambdaC-mrange;
   hilim=fMassLambdaC+mrange;
   if(pidLcStatus&1){
@@ -3229,14 +3251,17 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtDstarD0pi(Double_t *px,
   fMassCalc2->SetPxPyPzProngs(nprongs,px,py,pz);
   fOKInvMassDstar=kFALSE;
   // pt cut
+  Double_t ptcand=TMath::Sqrt(fMassCalc2->Pt2());
   minPt=fCutsDStartoKpipi->GetMinPtCandidate();
   if(minPt>0.1)
-    if(fMassCalc2->Pt2() < minPt*minPt) return retval;
+    if(ptcand < minPt) return retval;
   // mass cut
-  pdg2[0]=211; pdg2[1]=421; // in twoTrackArrayCasc we put the pion first
-  mrange=fCutsDStartoKpipi->GetMassCut();
+  Int_t jPtBinStar=fCutsDStartoKpipi->PtBin(ptcand);
+  if(jPtBinStar<0) jPtBinStar=0;
+  mrange=fCutsDStartoKpipi->GetMassCut(jPtBinStar);
   lolim=fMassDstar-mrange;
   hilim=fMassDstar+mrange;
+  pdg2[0]=211; pdg2[1]=421; // in twoTrackArrayCasc we put the pion first
   minv2 = fMassCalc2->InvMass2(nprongs,pdg2);
   if(minv2>lolim*lolim && minv2<hilim*hilim ){
     retval=kTRUE;
@@ -3715,6 +3740,8 @@ void AliAnalysisVertexingHF::SetMasses(){
   fMassLambdaC=TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   fMassDstar=TDatabasePDG::Instance()->GetParticle(413)->Mass();
   fMassJpsi=TDatabasePDG::Instance()->GetParticle(443)->Mass();
+  fMassPhi=TDatabasePDG::Instance()->GetParticle(333)->Mass();
+  fMassK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
 }
 //-----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::CheckCutsConsistency(){
@@ -3745,3 +3772,28 @@ Bool_t AliAnalysisVertexingHF::CheckCutsConsistency(){
 }
 //-----------------------------------------------------------------------------
 
+Bool_t AliAnalysisVertexingHF::GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3]) const {
+  /// fast calculation (no covariance matrix treatment) of track momentum at secondary vertex
+
+  Double_t alpha=tr->GetAlpha();
+  Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
+  Double_t x=tr->GetX(), y=tr->GetParameter()[0], snp=tr->GetParameter()[2];
+  Double_t xv= secVert->GetX()*cs + secVert->GetY()*sn;
+  Double_t yv=-secVert->GetX()*sn + secVert->GetY()*cs;
+  x-=xv; y-=yv;
+  Double_t crv=tr->GetC(fBzkG);
+  if (TMath::Abs(fBzkG) < kAlmost0Field) crv=0.;
+  double csp = TMath::Sqrt((1.-snp)*(1.+snp));
+  
+  Double_t tgfv=-(crv*x - snp)/(crv*y + csp);
+  cs = 1./TMath::Sqrt(1+tgfv*tgfv);
+  sn = cs<1. ? tgfv*cs : 0.;
+
+  x = xv*cs + yv*sn;
+  float alpNew = alpha+TMath::ASin(sn);
+  if (!tr->RotateParamOnly(alpNew)) {
+    return kFALSE; // failed
+ }
+ tr->GetPxPyPzAt(x, fBzkG,momentum); // extract momentum
+ return kTRUE;
+}

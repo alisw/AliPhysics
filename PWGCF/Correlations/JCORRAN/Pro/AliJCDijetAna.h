@@ -55,7 +55,8 @@ class AliJCDijetAna : public TObject
                          double lSubleadingJetCut,
                          double lMinJetPt,
                          double lDeltaPhiCut,
-                         double lmatchingR);
+                         double lmatchingR,
+                         double ltrackingIneff);
 
         void CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
@@ -85,6 +86,7 @@ class AliJCDijetAna : public TObject
         double fktJetCone;
         double pionmass;
         double matchingR;
+        double ftrackingIneff;
         bool bEvtHasAreaInfo;
 
         enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};

@@ -117,8 +117,8 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
   const Int_t dimSpec = 8;
   const Int_t nBinsSpec[8] = {50, 100, 100, 20, 100, 50, 100, 2};
-  const Double_t lowBinSpec[8] = {0., -10, 0, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec[8] = {5., 10., 200, 20, 200, 100, 50, 2};
+  const Double_t lowBinSpec[8] = {0., -5, 0, 0, 0, 0, 0, 0};
+  const Double_t hiBinSpec[8] = {5., 10., 200, 20, 200, 50, 50, 2};
   fHLundIterative =
       new THnSparseF("fHLundIterative",
                      "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
@@ -128,7 +128,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
   const Int_t dimSpec2 = 7;
   const Int_t nBinsSpec2[7] = {50, 100, 100, 20, 100, 50, 100};
-  const Double_t lowBinSpec2[7] = {0., -10, 0, 0, 0, 0, 0};
+  const Double_t lowBinSpec2[7] = {0., -5, 0, 0, 0, 0, 0};
   const Double_t hiBinSpec2[7] = {5., 10., 200, 20, 200, 100, 50};
   fHLundIterativeMC = new THnSparseF(
       "fHLundIterativeMC",
@@ -139,7 +139,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
   const Int_t dimSpec3 = 7;
   const Int_t nBinsSpec3[7] = {50, 100, 100, 20, 100, 50, 100};
-  const Double_t lowBinSpec3[7] = {0., -10, 0, 0, 0, 0, 0};
+  const Double_t lowBinSpec3[7] = {0., -5, 0, 0, 0, 0, 0};
   const Double_t hiBinSpec3[7] = {5., 10., 200, 20, 200, 100, 50};
   fHLundIterativeMCDet = new THnSparseF(
       "fHLundIterativeMCDet",
@@ -756,7 +756,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
       double lnpt_rel = log(xkt);
       double y = log(1. / delta_R);
       double form = 2 * 0.197 * j2.e() / (xkt * xkt);
-      double rad = j2.e();
+      double rad = j1.e()+j2.e();
       double z = j2.perp() / (j2.perp() + j1.perp());
        vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
        if(constitj1[0].perp()>fMinPtConst) flagConst=1; 
@@ -854,7 +854,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
       double lnpt_rel = log(xkt);
       double y = log(1. / delta_R);
       double form = 2 * 0.197 * j2.e() / (xkt * xkt);
-      double rad = j2.e();
+      double rad = j1.e()+j2.e();
       double z = j2.perp() / (j2.perp() + j1.perp());
       if (z > fHardCutoff)
         nsd = nsd + 1;

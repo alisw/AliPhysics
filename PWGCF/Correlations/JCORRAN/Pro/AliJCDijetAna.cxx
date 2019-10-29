@@ -140,7 +140,8 @@ void AliJCDijetAna::SetSettings(int    lDebug,
                                 double lSubleadingJetCut,
                                 double lMinJetPt,
                                 double lDeltaPhiCut,
-                                double lmatchingR){
+                                double lmatchingR,
+                                double ltrackingIneff){
     fDebug = lDebug;
     fParticleEtaCut = lParticleEtaCut;
     fParticlePtCut = lParticlePtCut;
@@ -150,6 +151,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
     fLeadingJetCut = lLeadingJetCut;
     fSubleadingJetCut = lSubleadingJetCut;
     fDeltaPhiCut = lDeltaPhiCut;
+    ftrackingIneff = ltrackingIneff;
 
     etaMaxCutForJet = lParticleEtaCut-lJetCone;
     etaMaxCutForKtJet = lParticleEtaCut-lktJetCone;
@@ -263,6 +265,7 @@ void AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhisto
         eta = trk->Eta();
         fhistos->fh_events[lCBin]->Fill("particles",1.0);
         if (pt>fParticlePtCut && TMath::Abs(eta) < fParticleEtaCut){
+            if(ftrackingIneff>0.0 && randomGenerator->Uniform(0.0,1.0) < ftrackingIneff) continue;
             fhistos->fh_events[lCBin]->Fill("acc. particles",1.0);
             phi = trk->Phi();
             fhistos->fh_eta[lCBin]->Fill(eta);
@@ -835,6 +838,7 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
     histos->fh_info->Fill("Const. cut", fConstituentCut);
     histos->fh_info->Fill("Delta phi cut pi/",fDeltaPhiCut);
     histos->fh_info->Fill("Matching R for MC",matchingR);
+    histos->fh_info->Fill("tracking ineff",ftrackingIneff);
 
     histos->fh_eventSel->Fill("events wo/ cuts",0.0);
     histos->fh_eventSel->Fill("catalyst entry ok",0.0);

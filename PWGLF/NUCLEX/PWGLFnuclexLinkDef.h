@@ -1,3 +1,5 @@
+
+
 #ifdef __CINT__
 
 #pragma link off all globals;
@@ -71,6 +73,8 @@
 #pragma link C++ class AliAnalysishDEvent+;
 #pragma link C++ class AliAnalysishDEventCollection+;
 #pragma link C++ class AliAnalysisTaskDeuFlow2PC+;
+#pragma link C++ class AliAnalysisTaskHypv2PbPb18+;
+#pragma link C++ class AliAnalysisTaskNucleiv2PbPb18+;
 
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;

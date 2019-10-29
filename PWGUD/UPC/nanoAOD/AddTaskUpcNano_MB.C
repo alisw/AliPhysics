@@ -1,4 +1,4 @@
-AliAnalysisTaskUpcNano_MB *AddTaskUpcNano_MB(Float_t cutEta = 0.9, Bool_t checkStack, Bool_t storeRho){
+AliAnalysisTaskUpcNano_MB *AddTaskUpcNano_MB(Float_t cutEta = 0.9, Bool_t storeRho){
 
   
   //--- get the current analysis manager ---//
@@ -25,7 +25,7 @@ AliAnalysisTaskUpcNano_MB *AddTaskUpcNano_MB(Float_t cutEta = 0.9, Bool_t checkS
   AliAnalysisTaskUpcNano_MB *task = new AliAnalysisTaskUpcNano_MB(inputDataType.Data());
   task->SetIsMC(isMC);
   task->SetIsESD(isESD);
-  task->SetParameters(cutEta,checkStack, storeRho);
+  task->SetParameters(cutEta, storeRho);
   mgr->AddTask(task);
 
 

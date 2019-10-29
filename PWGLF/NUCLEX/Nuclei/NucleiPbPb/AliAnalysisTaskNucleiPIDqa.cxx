@@ -57,6 +57,7 @@ void BinLogAxis(TH1 *h) {
 ///
 AliAnalysisTaskNucleiPIDqa::AliAnalysisTaskNucleiPIDqa(TString taskname) :  AliAnalysisTaskSE(taskname.Data()),
   fEventCut{false},
+  fFilterBit{BIT(4)},
   fNsigmaITS{3.5f},
   fNsigmaTPC{3.5f},
   fNsigmaTOF{3.5f},
@@ -166,7 +167,7 @@ void AliAnalysisTaskNucleiPIDqa::UserExec(Option_t *) {
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
 
     if (track->GetID() <= 0) continue;
-    if (!track->TestFilterBit(4)) continue;
+    if (!track->TestFilterBit(fFilterBit)) continue;
     if (track->GetTPCsignalN() < fTPCsignalN) continue;
     const float beta = AliAnalysisTaskNucleiYield::HasTOF(track,fPID);
     const int hasTOF = beta > 1.e-24 ? 1 : 0;

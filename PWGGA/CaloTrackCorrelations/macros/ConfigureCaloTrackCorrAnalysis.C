@@ -1595,7 +1595,8 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
   ana->AddToHistogramsName("Exo_"); // Begining of histograms name
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
-  
+  ana->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 250, 125) ; // Energy and pt histograms
+
   return ana;
 }
 

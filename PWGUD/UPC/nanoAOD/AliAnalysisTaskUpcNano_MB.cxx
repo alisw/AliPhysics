@@ -64,23 +64,35 @@ using std::endl;
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB() 
   : AliAnalysisTaskSE(),
-	fTrackCutsBit0(0),
-	fTrackCutsBit1(0),
-	fTrackCutsBit5(0),
-	isMC(kFALSE),
-	isESD(kFALSE),
-	cutEta(0.9),
-	checkStack(kFALSE),
-	storeRho(kFALSE),
-    fOutputList(0),
     fPIDResponse(0),
+    fTrackCutsBit0(0),
+    fTrackCutsBit1(0),
+    fTrackCutsBit4(0),
+    fTrackCutsBit5(0),
+    isMC(kFALSE),
+    isESD(kFALSE),
+    cutEta(0.9),
+    storeRho(kFALSE),
+    fOutputList(0),
     fHistEvents(0),
     fHistMCTriggers(0),
-    fTreePhi(0),
-	fTreeJPsi(0),
-	fTreePsi2s(0),
-	fTreeRho(0),
-	fTreeGen(0),
+    fTreeJPsi(0),
+    fTreePsi2s(0),
+    fTreeGen(0),
+    hTPCPIDMuonCorr(0),
+    hTPCPIDMuon(0),
+    hTPCPIDElectronCorr(0),
+    hTPCPIDElectron(0),
+    hTPCPIDPion(0),
+    hTPCPIDPionCorr(0),
+    hTOFPIDProton(0),
+    hTOFPIDProtonCorr(0),
+    hITSPIDKaon(0),
+    hITSPIDKaonCorr(0),
+    hTPCdEdxCorr(0),
+    hTriggerCounter(0),
+    hADdecision(0),
+    hV0decision(0),
     fPt(0),
     fY(0),
     fM(0),
@@ -89,44 +101,29 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
     fYGen(0),
     fMGen(0),
     fPhiGen(0),
-	fDiLeptonM(0),
-	fDiLeptonPt(0),
+    fDiLeptonM(0),
+    fDiLeptonPt(0),
     fZNAenergy(0),
     fZNCenergy(0),
-	fChannel(0),
-	fSign(0),
-	fRunNumber(0),
-	fADAdecision(0),
-	fADCdecision(0),
-	fV0Adecision(0),
-	fV0Cdecision(0),
-	fNGoodTracksITS(0),
-	fNGoodTracksLoose(0),
-	fInEtaGen(0),
-	fInEtaRec(0),
+    fChannel(0),
+    fSign(0),
+    fRunNumber(0),
+    fADAdecision(0),
+    fADCdecision(0),
+    fV0Adecision(0),
+    fV0Cdecision(0),
+    fNGoodTracksITS(0),
+    fNGoodTracksLoose(0),
+    fNGoodTracksDCA(0),
+    fInEtaGen(0),
+    fInEtaRec(0),
     fPIDsigma(0),
-	hTPCPIDMuonCorr(0),
-    hTPCPIDMuon(0),
-    hTPCPIDElectronCorr(0),
-    hTPCPIDElectron(0),
-	hTPCPIDPion(0),
-	hTPCPIDPionCorr(0),
-	hTOFPIDProton(0),
-	hTOFPIDProtonCorr(0),
-	hITSPIDKaon(0),
-	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0),
-	hTriggerCounter(0),
-	hADdecision(0),
-	hV0decision(0),
-	fSPDfile(0),
-	fTOFfile(0),
-	fLoadedRun(-1),
-	hTOFeff(0),
+    fSPDfile(0),
+    fTOFfile(0),
+    fLoadedRun(-1),
+    hTOFeff(0),
     hSPDeff(0),
-	fTOFmask(0) 
-	
-
+    fTOFmask(0)
 {
 
 //Dummy constructor
@@ -137,23 +134,35 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name) 
   : AliAnalysisTaskSE(name),
-	fTrackCutsBit0(0),
-	fTrackCutsBit1(0),
-	fTrackCutsBit5(0),
-	isMC(kFALSE),
-	isESD(kFALSE),
-	cutEta(0.9),
-	checkStack(kFALSE),
-	storeRho(kFALSE),
-    fOutputList(0),
     fPIDResponse(0),
+    fTrackCutsBit0(0),
+    fTrackCutsBit1(0),
+    fTrackCutsBit4(0),
+    fTrackCutsBit5(0),
+    isMC(kFALSE),
+    isESD(kFALSE),
+    cutEta(0.9),
+    storeRho(kFALSE),
+    fOutputList(0),
     fHistEvents(0),
     fHistMCTriggers(0),
-    fTreePhi(0),
-	fTreeJPsi(0),
-	fTreePsi2s(0),
-	fTreeRho(0),
-	fTreeGen(0),
+    fTreeJPsi(0),
+    fTreePsi2s(0),
+    fTreeGen(0),
+    hTPCPIDMuonCorr(0),
+    hTPCPIDMuon(0),
+    hTPCPIDElectronCorr(0),
+    hTPCPIDElectron(0),
+    hTPCPIDPion(0),
+    hTPCPIDPionCorr(0),
+    hTOFPIDProton(0),
+    hTOFPIDProtonCorr(0),
+    hITSPIDKaon(0),
+    hITSPIDKaonCorr(0),
+    hTPCdEdxCorr(0),
+    hTriggerCounter(0),
+    hADdecision(0),
+    hV0decision(0),
     fPt(0),
     fY(0),
     fM(0),
@@ -162,47 +171,36 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     fYGen(0),
     fMGen(0),
     fPhiGen(0),
-	fDiLeptonM(0),
-	fDiLeptonPt(0),
+    fDiLeptonM(0),
+    fDiLeptonPt(0),
     fZNAenergy(0),
     fZNCenergy(0),
-	fChannel(0),
-	fSign(0),
-	fRunNumber(0),
-	fADAdecision(0),
-	fADCdecision(0),
-	fV0Adecision(0),
-	fV0Cdecision(0),
-	fNGoodTracksITS(0),
-	fNGoodTracksLoose(0),
-	fInEtaGen(0),
-	fInEtaRec(0),
+    fChannel(0),
+    fSign(0),
+    fRunNumber(0),
+    fADAdecision(0),
+    fADCdecision(0),
+    fV0Adecision(0),
+    fV0Cdecision(0),
+    fNGoodTracksITS(0),
+    fNGoodTracksLoose(0),
+    fNGoodTracksDCA(0),
+    fInEtaGen(0),
+    fInEtaRec(0),
     fPIDsigma(0),
-	hTPCPIDMuonCorr(0),
-    hTPCPIDMuon(0),
-    hTPCPIDElectronCorr(0),
-    hTPCPIDElectron(0),
-	hTPCPIDPion(0),
-	hTPCPIDPionCorr(0),
-	hTOFPIDProton(0),
-	hTOFPIDProtonCorr(0),
-	hITSPIDKaon(0),
-	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0),
-	hTriggerCounter(0),
-	hADdecision(0),
-	hV0decision(0),
-	fSPDfile(0),
-	fTOFfile(0),
-	fLoadedRun(-1),
-	hTOFeff(0),
+    fSPDfile(0),
+    fTOFfile(0),
+    fLoadedRun(-1),
+    hTOFeff(0),
     hSPDeff(0),
-	fTOFmask(0) 
-
+    fTOFmask(0)
 {
   for(Int_t i = 0; i<NTRIGGERINPUTS; i++) fTriggerInputsMC[i] = kFALSE;
   for(Int_t i = 0; i<NTRIGGERS; i++) fTriggers[i] = kFALSE;
-  for(Int_t i = 0; i<2;  i++) labelMC[i] = -1;
+  for(Int_t i = 0; i<2;  i++){ 
+    fPtGenDaughter[i] = -1;
+    fPtDaughter[i] = -1;
+    }
   DefineOutput(1, TList::Class());
 
 }//AliAnalysisTaskUpcNano_MB
@@ -231,7 +229,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   fTrackCutsBit0 = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   fTrackCutsBit0->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+  fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
+  fTrackCutsBit4 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
   
   fTrackCutsBit1 = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kFALSE,kTRUE);
   
@@ -254,11 +253,6 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fY", &fY, "fY/F");
   fTreeJPsi ->Branch("fM", &fM, "fM/F");
   fTreeJPsi ->Branch("fPhi", &fPhi, "fPhi/F");
-  fTreeJPsi ->Branch("fPtGen", &fPtGen, "fPtGen/F");
-  fTreeJPsi ->Branch("fPtGenDaughter", &fPtGenDaughter[0], "fPtGenDaughter[2]/F");
-  fTreeJPsi ->Branch("fYGen", &fYGen, "fYGen/F");
-  fTreeJPsi ->Branch("fMGen", &fMGen, "fMGen/F");
-  fTreeJPsi ->Branch("fPhiGen", &fPhiGen, "fPhiGen/F");
   fTreeJPsi ->Branch("fChannel", &fChannel, "fChannel/I");
   fTreeJPsi ->Branch("fSign", &fSign, "fSign/I");
   fTreeJPsi ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/F");
@@ -274,10 +268,15 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
   fTreeJPsi ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
   fTreeJPsi ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
+  fTreeJPsi ->Branch("fNGoodTracksDCA", &fNGoodTracksDCA, "fNGoodTracksDCA/I");
   fTreeJPsi ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
   fTreeJPsi ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[6]/F");
-  
   if(isMC){
+	fTreeJPsi ->Branch("fPtGen", &fPtGen, "fPtGen/F");
+	fTreeJPsi ->Branch("fPtGenDaughter", &fPtGenDaughter[0], "fPtGenDaughter[2]/F");
+	fTreeJPsi ->Branch("fYGen", &fYGen, "fYGen/F");
+	fTreeJPsi ->Branch("fMGen", &fMGen, "fMGen/F");
+	fTreeJPsi ->Branch("fPhiGen", &fPhiGen, "fPhiGen/F");
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O",NTRIGGERINPUTS));
 	}
   fOutputList->Add(fTreeJPsi);
@@ -304,6 +303,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
   fTreePsi2s ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
   fTreePsi2s ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
+  fTreePsi2s ->Branch("fNGoodTracksDCA", &fNGoodTracksDCA, "fNGoodTracksDCA/I");
   fTreePsi2s ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
   fTreePsi2s ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[4]/F");
   if(isMC){ 
@@ -313,15 +313,9 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
     
   fTreeGen = new TTree("fTreeGen", "fTreeGen");
   fTreeGen ->Branch("fPt", &fPt, "fPt/F");
-  fTreeGen ->Branch("fPtDaughter", &fPtDaughter[0], "fPtDaughter[2]/F");
   fTreeGen ->Branch("fY", &fY, "fY/F");
   fTreeGen ->Branch("fM", &fM, "fM/F");
   fTreeGen ->Branch("fPhi", &fPhi, "fPhi/F");
-  fTreeGen ->Branch("fPtGen", &fPtGen, "fPtGen/F");
-  fTreeGen ->Branch("fPtGenDaughter", &fPtGenDaughter[0], "fPtGenDaughter[2]/F");
-  fTreeGen ->Branch("fYGen", &fYGen, "fYGen/F");
-  fTreeGen ->Branch("fMGen", &fMGen, "fMGen/F");
-  fTreeGen ->Branch("fPhiGen", &fPhiGen, "fPhiGen/F");
   fTreeGen ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeGen ->Branch("fInEtaGen", &fInEtaGen, "fInEtaGen/O");
   if(isMC) fOutputList->Add(fTreeGen);
@@ -511,12 +505,13 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   TLorentzVector vKaon[5], vPhiCandidate;
   TLorentzVector vPion[5], vRhoCandidate;
 
-  Float_t nSigmaMuon[5], nSigmaElectron[5], nSigmaPion[5], nSigmaProton[5],  nSigmaKaon[5], dEdx[5];
+  Float_t nSigmaMuon[5], nSigmaElectron[5], nSigmaPion[5], nSigmaProton[5], dEdx[5];
   Short_t qPion[5];
   TLorentzVector vLepton[5], vDilepton, vPsi2sCandidate;
   Short_t qLepton[5];
   UInt_t nPion = 0, nLepton = 0, nHighPt = 0;
   UInt_t nGoodTracksTPC=0;
+  fNGoodTracksDCA = 0;
   fNGoodTracksITS = 0; 
   UInt_t nGoodTracksSPD=0;
   UInt_t nGoodTracksTOF=0;
@@ -536,8 +531,11 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	if( !trk ) continue;
 	if(fTrackCutsBit0->AcceptTrack(trk) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1))) fNGoodTracksLoose++;
 	
-    	if(!fTrackCutsBit5->AcceptTrack(trk)) goodTPCTrack = kFALSE;
-	else if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
+    	if(!fTrackCutsBit4->AcceptTrack(trk)) goodTPCTrack = kFALSE;
+	else{ 
+	  if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
+	  if(fTrackCutsBit5->AcceptTrack(trk))fNGoodTracksDCA++;
+	  }
 
     	if(!fTrackCutsBit1->AcceptTrack(trk)) goodITSTrack = kFALSE;
 	
@@ -702,16 +700,17 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	  
     	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
 	
-	if(isMC && checkStack){
+	if(isMC && trk->GetLabel() >= 0){
 	  AliMCEvent *mc = MCEvent();
           if(!mc) return;
           AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(trk->GetLabel());
-          if(!mcPart) continue;
-        
+	  
+          fPtGenDaughter[iTrack] = mcPart->Pt();
           TParticlePDG *partGen = pdgdat->GetParticle(mcPart->PdgCode());
           vLabelPart.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
           vMC += vLabelPart;
 	  }
+	fPtDaughter[iTrack] = trk->Pt();
 	
 	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
 	
@@ -728,7 +727,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	
 	vElectron[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
     	vMuon[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
-        if (isMC) labelMC[iTrack] = trk->GetLabel(); // Printf("DEBUGGER: label MC for track %i = %i",iTrack, labelMC[iTrack]);// Store important info on what track belongs to which generater particle
     	nSigmaMuon[iTrack] = fPIDTPCMuon;
     	nSigmaElectron[iTrack] = fPIDTPCElectron;
     
@@ -751,7 +749,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Float_t nSigmaDistElectron = TMath::Sqrt(TMath::Power(nSigmaElectron[0],2) + TMath::Power(nSigmaElectron[1],2));
   Float_t nSigmaDistProton = TMath::Sqrt(TMath::Power(nSigmaProton[0],2) + TMath::Power(nSigmaProton[1],2));
   
-  
   if(qTrack[0]*qTrack[1]<0)fSign = -1;
   if(qTrack[0]*qTrack[1]>0)fSign = 1;
 
@@ -760,43 +757,15 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	  if(nTOFPID == 0) fPIDsigma = 666;
   	  vJPsiCandidate = vProton[0]+vProton[1];
   	  fChannel = 2;
-  	  FillTree(fTreeJPsi,vJPsiCandidate);
+  	  if(!isMC) FillTree(fTreeJPsi,vJPsiCandidate);
+	  else FillTree(fTreeJPsi,vJPsiCandidate,vMC);
   	  }
   if(nSigmaDistMuon < nSigmaDistElectron){
   	  fPIDsigma = nSigmaDistMuon; 
   	  vJPsiCandidate = vMuon[0]+vMuon[1];
   	  fChannel = 1;
   	  if(!isMC) FillTree(fTreeJPsi,vJPsiCandidate);
-	  if(isMC && checkStack){ 
-            fChannel *= 100;
-            FillTree(fTreeJPsi,vMC);
-            }
-      // FILL CONNECTED INFO ABOUT REC AND GEN
-      if(isMC && labelMC[0]>-1 && labelMC[1]>-1) {
-			TLorentzVector vGenMuon[2];
-			TParticlePDG *partGen = new TParticlePDG;
-			AliMCParticle *mcPart = new AliMCParticle;
-			AliMCEvent *tempMCEvent = MCEvent();
-			if(!tempMCEvent) return;
-			// First particle
-			mcPart = (AliMCParticle*) tempMCEvent->GetTrack(labelMC[0]);
-			if(!mcPart) return;
-			partGen = pdgdat->GetParticle(mcPart->PdgCode());
-			vGenMuon[0].SetXYZM(mcPart->Px(), mcPart->Py(), mcPart->Pz(), partGen->Mass());
-	        // Second particle
-            mcPart = (AliMCParticle*) tempMCEvent->GetTrack(labelMC[1]);
-			if(!mcPart) return;
-			partGen = pdgdat->GetParticle(mcPart->PdgCode());
-			vGenMuon[1].SetXYZM(mcPart->Px(), mcPart->Py(), mcPart->Pz(), partGen->Mass());
-			vJPsiGenerated=vGenMuon[0]+vGenMuon[1];
-			fPtGenDaughter[0] = vGenMuon[0].Pt();
-			fPtGenDaughter[1] = vGenMuon[1].Pt();
-			FillTree(fTreeJPsi,vJPsiCandidate,vJPsiGenerated,vMuon,vGenMuon);
-	          fSign = qTrack[0];
-	          fPIDsigma = nSigmaMuon[0];
-	          fSign = qTrack[1];
-	          fPIDsigma = nSigmaMuon[1];
-      	  }
+	  else FillTree(fTreeJPsi,vJPsiCandidate,vMC);
   	  }
   if(nSigmaDistPion < nSigmaDistElectron){
   	  fPIDsigma = nSigmaDistPion; 
@@ -809,10 +778,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  vJPsiCandidate = vElectron[0]+vElectron[1];
   	  fChannel = -1;
   	  FillTree(fTreeJPsi,vJPsiCandidate);
-	  if(isMC && checkStack){ 
-            fChannel *= 100;
-            FillTree(fTreeJPsi,vMC);
-            }
+	  if(!isMC) FillTree(fTreeJPsi,vJPsiCandidate);
+	  else FillTree(fTreeJPsi,vJPsiCandidate,vMC);
   	  }
 
   hTPCPIDPionCorr->Fill(nSigmaPion[0],nSigmaPion[1]);
@@ -1020,19 +987,11 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
   //    LOCAL VARIABLES DEFINITION
   // **************************************************************************
 
-  Short_t qPart[5];
-  TLorentzVector vGenerated, vDecayProduct, vReconstructed, vRecTrk[2];
+  TLorentzVector vGenerated, vDecayProduct;
   TDatabasePDG *pdgdat = TDatabasePDG::Instance();
   
-  Int_t nmc=0;
   vGenerated.SetPtEtaPhiM(0.,0.,0.,0.);
-  vReconstructed.SetPtEtaPhiM(0.,0.,0.,0.);
-  vRecTrk[0].SetPtEtaPhiM(0.,0.,0.,0.);
-  vRecTrk[1].SetPtEtaPhiM(0.,0.,0.,0.);
   fInEtaGen = kTRUE;
-
-  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
-  Float_t muonMass = partMuon->Mass();
 
   // **************************************************************************
   //    MC PARTICLES LOOP
@@ -1050,11 +1009,6 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
        TMath::Abs(mcPart->PdgCode()) == 2212 ||
        TMath::Abs(mcPart->PdgCode()) == 211||
        TMath::Abs(mcPart->PdgCode()) == 22){
-
-       if(TMath::Abs(mcPart->PdgCode()) == 13) {
-		 qPart[nmc] = mcPart->Charge(); // Returns +/- 3 due to MC saving charge as quark charge
-		 nmc++;// counts muons
-     	 }
        
        if(mcPart->GetMother() == -1){
          if(TMath::Abs(mcPart->PdgCode()) != 22 && TMath::Abs(mcPart->Eta())>cutEta) fInEtaGen = kFALSE;
@@ -1075,22 +1029,7 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
     }
   }//loop over mc particles 
 
-  if (nmc == 2 && fEvent->GetNumberOfTracks() == 2){
-  //Two track loop
-    for(Int_t iTrack=0; iTrack<fEvent ->GetNumberOfTracks(); iTrack++) {
-        AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
-        if( !trk ) continue;
-        vRecTrk[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
-        }
-    vReconstructed = vRecTrk[0]+vRecTrk[1];
-    fPtDaughter[0] = vRecTrk[0].Pt();
-    fPtDaughter[1] = vRecTrk[1].Pt();
-  }//loop over generated particles
-
-  if (nmc == 2) {
-    fSign = (qPart[0]*qPart[1])/9;
-    FillTree(fTreeGen,vReconstructed,vGenerated,vRecTrk,vRecTrk);
-  }
+  FillTree(fTreeGen,vGenerated);
 
 }//RunMC
 
@@ -1116,14 +1055,10 @@ void AliAnalysisTaskUpcNano_MB::FillTree(TTree *t, TLorentzVector v) {
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcNano_MB::FillTree(TTree *t, TLorentzVector v, TLorentzVector vgen, TLorentzVector vDaughter[], TLorentzVector vGenDaughter[]) {
+void AliAnalysisTaskUpcNano_MB::FillTree(TTree *t, TLorentzVector v, TLorentzVector vgen) {
 
   fPt      = v.Pt();
-  fPtDaughter[0] = vDaughter[0].Pt();
-  fPtDaughter[1] = vDaughter[1].Pt();
   fPtGen   = vgen.Pt();
-  fPtGenDaughter[0] = vGenDaughter[0].Pt();
-  fPtGenDaughter[1] = vGenDaughter[1].Pt();
   fY       = v.Rapidity();
   fYGen    = vgen.Rapidity();
   fM       = v.M();

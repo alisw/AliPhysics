@@ -1478,16 +1478,21 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	tofClInfo[5]=track->GetIntegratedLength();
 
 	//get the nSigma information; NB particle number ID in the vectors follow the convention of AliPID
-        const Int_t nSpecies=AliPID::kSPECIES;
+        const Int_t nSpecies=AliPID::kSPECIESC;
 	TVectorD tpcNsigma(nSpecies); 
         TVectorD tofNsigma(nSpecies);
+        TVectorD itsNsigma(nSpecies);
+        TVectorD tofTime(nSpecies);
+
 	TVectorD tpcPID(nSpecies); // bayes
         TVectorD tofPID(nSpecies);
+        track->GetIntegratedTimes(tofTime.GetMatrixArray(),nSpecies);
 	if(pidResponse){
           for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie) {
-            if (ispecie == Int_t(AliPID::kMuon)) continue;
+            //if (ispecie == Int_t(AliPID::kMuon)) continue;
             tpcNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType)ispecie);
             tofNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType)ispecie);
+            itsNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType)ispecie);
 	    //
           }	
 	  pidResponse->ComputePIDProbability(AliPIDResponse::kTPC, track, nSpecies, tpcPID.GetMatrixArray());
@@ -1527,6 +1532,8 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	    //            "friendTrack.="<<friendTrack<<      // esdFriendTrack associated to the esdTrack
 	    "tofNsigma.="<<&tofNsigma<<
 	    "tpcNsigma.="<<&tpcNsigma<<
+	    "itsNsigma.="<<&itsNsigma<<
+	    "tofTime.="<<&tofTime<<                // tof time
 	    "tofPID.="<<&tofPID<<                  // bayesian PID - without priors
 	    "tpcPID.="<<&tpcPID<<                  // bayesian PID - without priors
 	    

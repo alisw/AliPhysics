@@ -1,7 +1,7 @@
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskNanoLoton.h"
+#include "AliAnalysisTaskNanoBBar.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCascadeCuts.h"
@@ -9,14 +9,15 @@
 
 AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 									 bool isMC = false,				//2
-									 int phiSpinning =0,			//3
-                                     int nSpins = 1,				//4
-									 double corrRange = 0.1,		//5
-									 TString triggerData = "kInt7",	//6
-                                     bool Systematic = false,		//7
-									 const char *sTcut = "8",		//8
-									 bool DoSpherocity = false,		//9
-									 const char *s0cut = "08",		//10
+									 int fFilterBit = 128,			//3
+									 int phiSpinning =0,			//4
+                                     int nSpins = 1,				//5
+									 double corrRange = 0.1,		//6
+									 TString triggerData = "kInt7",	//7
+                                     bool Systematic = false,		//8
+									 const char *sTcut = "8",		//9
+									 bool DoSpherocity = false,		//10
+									 const char *s0cut = "08",		//11
                                      const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -87,12 +88,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
 		  isMC, true, true, true);//DCAplots,CombSigma,ContribSplitting
-  TrackCuts->SetFilterBit(128);
+  TrackCuts->SetFilterBit(fFilterBit);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
-  AntiTrackCuts->SetFilterBit(128);
+  AntiTrackCuts->SetFilterBit(fFilterBit);
   AntiTrackCuts->SetCutCharge(-1);
 
   //Lambda Cuts
@@ -1204,7 +1205,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     }
   }
 
-  AliAnalysisTaskNanoLoton* task = new AliAnalysisTaskNanoLoton("femtoGrandmaBBar",isMC);
+  AliAnalysisTaskNanoBBar* task = new AliAnalysisTaskNanoBBar("femtoGrandmaBBar",isMC);
 
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
@@ -1233,18 +1234,24 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
   mgr->ConnectInput(task, 0, cinput);
 
+  TString QAName = Form("%sQA%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputQA = mgr->CreateContainer(
+		  QAName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), QAName.Data()));
+  mgr->ConnectOutput(task, 1, coutputQA);
+
   TString EvtCutsName = Form("%sEvtCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
       EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), EvtCutsName.Data()));
-  mgr->ConnectOutput(task, 1, coutputEvtCuts);
+  mgr->ConnectOutput(task, 2, coutputEvtCuts);
 
   TString TrackCutsName = Form("%sTrackCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *couputTrkCuts = mgr->CreateContainer(
       TrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), TrackCutsName.Data()));
-  mgr->ConnectOutput(task, 2, couputTrkCuts);
+  mgr->ConnectOutput(task, 3, couputTrkCuts);
 
   TString AntiTrackCutsName = Form("%sAntiTrackCuts%s", addon.Data(),
                                    suffix.Data());
@@ -1252,7 +1259,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       AntiTrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
-  mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
+  mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
 
   AliAnalysisDataContainer *coutputv0Cuts;
   TString v0CutsName = Form("%sv0Cuts%s", addon.Data(), suffix.Data());
@@ -1261,7 +1268,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       v0CutsName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), v0CutsName.Data()));
-  mgr->ConnectOutput(task, 4, coutputv0Cuts);
+  mgr->ConnectOutput(task, 5, coutputv0Cuts);
 
   AliAnalysisDataContainer *coutputAntiv0Cuts;
   TString Antiv0CutsName = Form("%sAntiv0Cuts%s", addon.Data(), suffix.Data());
@@ -1271,7 +1278,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
-  mgr->ConnectOutput(task, 5, coutputAntiv0Cuts);
+  mgr->ConnectOutput(task, 6, coutputAntiv0Cuts);
 
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
@@ -1280,7 +1287,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       ResultsName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 6, coutputResults);
+  mgr->ConnectOutput(task, 7, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
   TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
@@ -1290,7 +1297,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
-  mgr->ConnectOutput(task, 7, coutputResultsQA);
+  mgr->ConnectOutput(task, 8, coutputResultsQA);
 
   AliAnalysisDataContainer *coutputResultsSample;
   TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(),
@@ -1301,7 +1308,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsSampleName.Data()));
-  mgr->ConnectOutput(task, 8, coutputResultsSample);
+  mgr->ConnectOutput(task, 9, coutputResultsSample);
 
   AliAnalysisDataContainer *coutputResultsSampleQA;
   TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(),
@@ -1312,7 +1319,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
-  mgr->ConnectOutput(task, 9, coutputResultsSampleQA);
+  mgr->ConnectOutput(task, 10, coutputResultsSampleQA);
 
   return task;
 }

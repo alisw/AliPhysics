@@ -27,8 +27,9 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *njetsMC              = "Jets",
                                            const char *ntracksMC            = "tracksMC",
                                            const char *nrhoMC               = "RhoMC",
+                                           int nThresh                      =1,
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/k/kgarner/Weights_18_07_18.root",
-                                           TString PathToThresholds = "alien:///alice/cern.ch/user/k/kgarner/ThresholdHists_LHC16JJ.root",
+                                           TString PathToThresholds = "alien:///alice/cern.ch/user/k/kgarner/ThresholdHists_LHC16JJ_new.root",
                                           // TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
                                           // TString PathToJetProbabilityInput = "/home/katha/Uni/PhD/PhD/LinusCode/Anwendung/data/Binned_ResFct_XYSignificance_pp7TeV.root",
                                            TString PathToFlukaFactor="alien:///alice/cern.ch/user/k/kgarner/FlukaFactors_18_07_18.root",
@@ -159,16 +160,24 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     Printf("%s :: File %s successfully loaded, setting up threshold functions.",taskname,PathToThresholds.Data());
 
     if(fileThresholds){
-        printf("Going here *****************************\n");
-        TObjArray* threshfirst;
-        TObjArray* threshsec;
-        TObjArray* threshthird;
-        fileThresholds->GetObject("Prob_0.65",threshfirst);
-        fileThresholds->GetObject("Prob_0.54",threshsec);
-        fileThresholds->GetObject("Prob_0.50",threshthird);
-        printf("Pointers in the C file: %p, %p, %p\n",threshfirst, threshsec,threshthird);
+        printf("Reading threshold histograms for track counting...\n");
 
-        jetTask->SetThresholds(threshfirst,threshsec,threshthird);
+        TObjArray** thresh=new TObjArray*[nThresh];
+        for(int iThresh=0;iThresh<nThresh;iThresh++){
+          fileThresholds->GetObject(Form("Thres_%i",iThresh),thresh[iThresh]);
+        }
+
+        printf("Pointers in the C file: %p, %p, %p\n",thresh[0], thresh[1],thresh[2]);
+
+        printf("Reading prob <-> IP lookup histograms...\n");
+        TObjArray* oLookup;
+        fileThresholds->GetObject("ProbLookup",oLookup);
+        //printf("Lookup Pointer in Read file:%p\n", oLookup);
+
+
+        jetTask->SetThresholds(nThresh,thresh);
+        jetTask->setfNThresholds(nThresh);
+        jetTask->ReadProbvsIPLookup(oLookup);
     }
 
     // Setup input containers
@@ -196,7 +205,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
             jetContMC->ConnectParticleContainer(trackContMC);
             jetContMC->SetIsParticleLevel(kTRUE);
             jetContMC->SetMaxTrackPt(1000);
-            DefineCutsTaskpp(jetContMC, jetradius);
+            //DefineCutsTaskpp(jetContMC, jetradius);
         }
     }
 

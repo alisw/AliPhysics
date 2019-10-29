@@ -61,6 +61,9 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
       fRejOmega(false),
       fRejOmegaMass(0),
       fRejOmegaWidth(0),
+      fRejXi(false),
+      fRejXiMass(0),
+      fRejXiWidth(0),
       fPDGCasc(0),
       fPDGv0(0),
       fPDGPosDaug(0),
@@ -121,6 +124,9 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts(
       fRejOmega(cuts.fRejOmega),
       fRejOmegaMass(cuts.fRejOmegaMass),
       fRejOmegaWidth(cuts.fRejOmegaWidth),
+      fRejXi(cuts.fRejXi),
+      fRejXiMass(cuts.fRejXiMass),
+      fRejXiWidth(cuts.fRejXiWidth),
       fPDGCasc(cuts.fPDGCasc),
       fPDGv0(cuts.fPDGv0),
       fPDGPosDaug(cuts.fPDGPosDaug),
@@ -185,6 +191,9 @@ AliFemtoDreamCascadeCuts& AliFemtoDreamCascadeCuts::operator=(
   this->fRejOmega = cuts.fRejOmega;
   this->fRejOmegaMass = cuts.fRejOmegaMass;
   this->fRejOmegaWidth = cuts.fRejOmegaWidth;
+  this->fRejXi = cuts.fRejXi;
+  this->fRejXiMass = cuts.fRejXiMass;
+  this->fRejXiWidth = cuts.fRejXiWidth;
   this->fPDGCasc = cuts.fPDGCasc;
   this->fPDGv0 = cuts.fPDGv0;
   this->fPDGPosDaug = cuts.fPDGPosDaug;
@@ -263,7 +272,8 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::OmegaCuts(
   OmegaCuts->SetCutv0TransverseRadius(1.1, 200);
   OmegaCuts->SetCutv0MinDistToPrimVtx(0.06);
   OmegaCuts->SetCutv0MinDaugDistToPrimVtx(0.04);
-  OmegaCuts->SetRejectOmegas(1.322, 0.005);
+  //OmegaCuts->SetRejectXis(1.322, 0.005);
+  OmegaCuts->SetRejectXis(1.322, 0.008);
   OmegaCuts->SetPtRangeXi(0.3, 999.9);
   return OmegaCuts;
 }
@@ -425,6 +435,15 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     if (pass && fRejOmega) {
       if ((casc->GetOmegaMass() > (fRejOmegaMass - fRejOmegaWidth))
           && (casc->GetOmegaMass() < (fRejOmegaMass + fRejOmegaWidth))) {
+        pass = false;
+      } else {
+        if (!fMinimalBooking)
+          fHist->FillCutCounter(19);
+      }
+    }
+    if (pass && fRejXi) {
+      if ((casc->GetXiMass() > (fRejXiMass - fRejXiWidth))
+          && (casc->GetXiMass() < (fRejXiMass + fRejXiWidth))) {
         pass = false;
       } else {
         if (!fMinimalBooking)
@@ -729,6 +748,10 @@ void AliFemtoDreamCascadeCuts::BookCuts() {
   if (fRejOmega) {
     fHist->FillConfig(20, fRejOmegaMass);
     fHist->FillConfig(21, fRejOmegaWidth);
+  }
+  if (fRejXi) {
+    fHist->FillConfig(20, fRejXiMass);
+    fHist->FillConfig(21, fRejXiWidth);
   }
 }
 
