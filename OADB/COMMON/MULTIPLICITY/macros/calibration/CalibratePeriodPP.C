@@ -1,3 +1,4 @@
+#ifdef __CLING__
 #include "AliMultEstimator.h"
 #include "AliMultSelectionCuts.h"
 #include "AliMultSelection.h"
@@ -6,6 +7,7 @@
 #include <TSystem.h>
 #include <TF1.h>
 #include <TFile.h>
+#endif
 
 ////////////////////////////////////////////////////////////
 //
