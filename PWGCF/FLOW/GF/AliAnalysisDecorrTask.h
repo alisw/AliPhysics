@@ -176,10 +176,10 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Bool_t                  bDiff;
         Bool_t                  bRef;
         Bool_t                  bPtB;
-        double_t                fPOIsPtmax;
-        double_t                fPOIsPtmin;
-        double_t                fRPsPtmax;
-        double_t                fRPsPtmin;
+        Double_t                fPOIsPtmax;
+        Double_t                fPOIsPtmin;
+        Double_t                fRPsPtmax;
+        Double_t                fRPsPtmin;
 
         ClassDef(AliAnalysisDecorrTask, 1);
 };
