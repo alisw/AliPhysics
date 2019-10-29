@@ -1031,8 +1031,8 @@ void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd, Double_t vz, Int_t evtt
     V0->GetPPxPyPz(posMomentum[0],posMomentum[1],posMomentum[2]);
     V0->GetNPxPyPz(negMomentum[0],negMomentum[1],negMomentum[2]);
 
-    // iEvent     = evttype;        
-    // zVertex    = vz;
+    iEvent     = evttype;        
+    zVertex    = vz;
     centrality = iCen;
 
     //Daughter1 (Positive Charge)
