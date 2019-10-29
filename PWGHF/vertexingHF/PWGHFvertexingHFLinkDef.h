@@ -17,7 +17,6 @@
 #pragma link C++ class AliVertexingHFUtils+;
 #pragma link C++ class AliHFSystErr+;
 #pragma link C++ class AliRDHFCutsD0toKpi+;
-#pragma link C++ class AliRDHFCutsB0toDPi+;
 #pragma link C++ class AliRDHFCutsB0toDStarPi+;
 #pragma link C++ class AliRDHFCutsBPlustoD0Pi+;
 #pragma link C++ class AliRDHFCutsJpsitoee+;
@@ -38,13 +37,11 @@
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
 #pragma link C++ class AliAnalysisTaskMEVertexingHF+;
-#pragma link C++ class AliAnalysisTaskSEB0toDPi+;
 #pragma link C++ class AliAnalysisTaskSEB0toDStarPi+;
 #pragma link C++ class AliAnalysisTaskSEBPlustoD0Pi+;
 #pragma link C++ class AliAnalysisTaskSESelectHF+;
 #pragma link C++ class AliAnalysisTaskSECleanupVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSECompareHF+;
-#pragma link C++ class AliAnalysisTaskSEDplus+;
 #pragma link C++ class AliAnalysisTaskSELambdac+;
 #pragma link C++ class AliAnalysisTaskSED0BDT+;
 #pragma link C++ class AliAnalysisTaskSED0Mass+;
@@ -100,7 +97,6 @@
 #pragma link C++ class AliHFAfterBurner+;
 #pragma link C++ class AliHFQnVectorHandler+;
 #pragma link C++ class AliAnalysisTaskSEHFTenderQnVectors+;
-#pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
 #pragma link C++ class AliAnalysisTaskSELambdacUp+;
 #pragma link C++ class AliAnalysisTaskCountLcEta+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVA+;
@@ -129,7 +125,12 @@
 
 //classes working only in ROOT6
 #ifdef __CLING__
+#pragma link C++ class AliAnalysisTaskSEDplus+;
 #pragma link C++ class AliAnalysisTaskSEDs+;
+#pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
+#pragma link C++ class AliHFMLResponse+;
+#pragma link C++ class AliHFMLResponseDplustoKpipi+;
+#pragma link C++ class AliHFMLResponseDstoKKpi+;
 #endif
 
 #endif

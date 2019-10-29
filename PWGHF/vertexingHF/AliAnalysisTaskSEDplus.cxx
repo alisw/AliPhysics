@@ -119,12 +119,15 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fHigherImpPar(1000.),
   fDoLS(0),
   fEtaSelection(0),
-  fSystem(0),
+  fSystem(kpp),
   fNtrcklMin(0),
   fNtrcklMax(10000),
   fCutOnTrckl(kFALSE),
   fFillOnlySignalSparses(kFALSE),
-  fUseFinPtBinsForSparse(kFALSE)
+  fUseFinPtBinsForSparse(kFALSE),
+  fApplyML(kFALSE),
+  fConfigPath(""),
+  fMLResponse(nullptr)
 {
   /// Default constructor
 
@@ -208,12 +211,15 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fHigherImpPar(1000.),
   fDoLS(0),
   fEtaSelection(0),
-  fSystem(0),
+  fSystem(kpp),
   fNtrcklMin(0),
   fNtrcklMax(10000),
   fCutOnTrckl(kFALSE),
   fFillOnlySignalSparses(kFALSE),
-  fUseFinPtBinsForSparse(kFALSE)
+  fUseFinPtBinsForSparse(kFALSE),
+  fApplyML(kFALSE),
+  fConfigPath(""),
+  fMLResponse(nullptr)
 {
   //
   /// Standrd constructor
@@ -340,6 +346,8 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
   delete fRDCutsAnalysis;
   delete fCounter;
 
+  if(fApplyML && fMLResponse)
+    delete fMLResponse;
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t range){
@@ -771,7 +779,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fPhiEtaCandSigReg=new TH2F("hPhiEtaCandSigReg","phi vs. eta candidates",20,-1.,1.,50,0.,2*TMath::Pi());
 
   Double_t maxmult;
-  if(fSystem==1) maxmult=5000;
+  if(fSystem==kPbPb) maxmult=5000;
   else maxmult=200;
   fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries",200,0.,maxmult);
   fOutput->Add(fPtVsMassNoPid);
@@ -799,7 +807,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fDaughterClass->GetXaxis()->SetBinLabel(8,"AliAODRecoCascadeHF");
   fDaughterClass->GetXaxis()->SetBinLabel(9,"Other");
   fDeltaID = new TH1F("hDeltaID"," ; GetDaughter->GetID() - GetProngID()",20001,-10000.5,10000.5);
-  if(fSystem==0){
+  if(fSystem==kpp){
     fIDDauVsIDTra = new TH2F("hIDDauVsIDTra"," ; GetProngID() ; GetDaughter->GetID()",1001,-500.5,500.5,1001,-500.5,500.5);
   }else{
     fIDDauVsIDTra = new TH2F("hIDDauVsIDTra"," ; GetProngID() ; GetDaughter->GetID()",1000,-30000,30000,1000,-30000,30000);
@@ -826,17 +834,19 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   if(fFillNtuple==1){
     OpenFile(4); // 4 is the slot number of the ntuple
 
-
     fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:charge:piddau0:piddau1:piddau2:Ptpi:PtK:Ptpi2:mompi:momK:mompi2:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber:BadDau");
 
   }
-
-  if(fFillNtuple==2){
+  else if(fFillNtuple==2){
     OpenFile(4); // 4 is the slot number of the ntuple
 
-
     fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Pt:InvMass:d0:origin");
+  }
 
+  //Loading of ML models
+  if(fApplyML) {
+    fMLResponse = new AliHFMLResponseDplustoKpipi(fConfigPath.Data());
+    fMLResponse->InitModels();
   }
 
   return;
@@ -944,7 +954,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     if(fRDCutsAnalysis->GetUseCentrality()>0 && fRDCutsAnalysis->IsEventSelectedInCentrality(aod)!=0) return;
     // events not passing the centrality selection can be removed immediately.
 
-    FillMCAcceptanceHistos(arrayMC, mcHeader, tracklets);
+    FillMCAcceptanceHistos(arrayMC, mcHeader);
   }
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
   //TString trigclass=aod->GetFiredTriggerClasses();
@@ -1157,12 +1167,22 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	Double_t resSel=0;
 	if(fRDCutsAnalysis->GetIsSelectedCuts()) resSel=1;
 	if(passTopolAndPIDCuts) resSel=2;
-	if(fSystem==1) dd0max = TMath::Abs(dd0max);
+	if(fSystem==kPbPb) dd0max = TMath::Abs(dd0max);
+
+    //variables for ML application
+    AliAODPidHF *Pid_HF = nullptr;
+    Double_t modelPred = -1.;
+    bool isMLsel = true;
+
+    if(fApplyML) {
+      Pid_HF = fRDCutsAnalysis->GetPidHF();
+      isMLsel = fMLResponse->IsSelectedML(modelPred, d, aod->GetMagneticField(), Pid_HF);
+    }
 
 	//for all THnSparses except for FD
-	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,(Double_t)tracklets};
+	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,modelPred};
 	//for THnSparses for FD
-	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,(Double_t)tracklets,ptB};
+	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB,modelPred};
 
 	//for imppar THnSparses
 	Double_t arrayForImpPar[kVarForImpPar]={invMass,ptCand,impparXY};
@@ -1532,140 +1552,86 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
 
   Int_t nmassbins=GetNBinsHistos();
 
-  Int_t nptbins=100;
+  Int_t nptbins=140;
   Double_t ptmin=0.;
-  Double_t ptmax=50.;
+  Double_t ptmax=70.;
   if(fUseFinPtBinsForSparse)
-    nptbins = 500;
+    nptbins = 700;
 
   Int_t nselbins=2;
   Double_t minsel=0.5;
   Double_t maxsel=2.5;
 
-  Int_t nnormdlbins=30;
-  Double_t minnormdl=0.;
-  Double_t maxnormdl=30.;
+  TString axTit[kVarForSparse]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)","passTopolPID","min. daughter p_{T} (GeV/c)","sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp","ML response"};
 
-  Int_t nmultbins;
-  Double_t maxmult;
-  Double_t minmult=-0.5;
+  TString axTitFD[kVarForSparseFD]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)","passTopolPID","min. daughter p_{T} (GeV/c)","sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp","p_{T}^{B} (GeV/c)","ML response"};
 
-  Int_t nd0bins;
-  Double_t d0min;
-  Double_t d0max;
-
-  Int_t nptmindaubins;
-  Double_t minptmindau;
-  Double_t maxptmindau;
-
-  Int_t nsigvertbins;
-  Double_t minsigvert;
-  Double_t maxsigvert;
-
-  Int_t ndeclbins;
-  Double_t mindecl;
-  Double_t maxdecl;
-
-  Int_t ndeclxybins;
-  Double_t mindeclxy;
-  Double_t maxdeclxy;
-
-  Int_t ncospbins;
-  Double_t mincosp;
-  Double_t maxcosp;
-
-  Int_t ncospxybins;
-  Double_t mincospxy;
-  Double_t maxcospxy;
-
-  Int_t nd0d0expbins;
-  Double_t mind0d0;
-  Double_t maxd0d0;
-
-  if(fSystem==1) {
-    nd0bins=18;
-    d0min=0.;
-    d0max=180;
-
-    nptmindaubins=1;//dummy axis
-    minptmindau=0.2;
-    maxptmindau=1.2;
-
-    nsigvertbins=10;
-    minsigvert=0.012;
-    maxsigvert=0.032;
-
-    ndeclbins=35;
-    mindecl=0.;
-    maxdecl=0.35;
-
-    ndeclxybins=35;
-    mindeclxy=0.;
-    maxdeclxy=0.35;
-
-    ncospbins=30;
-    mincosp=0.97;
-    maxcosp=1.;
-
-    ncospxybins=30;
-    mincospxy=0.97;
-    maxcospxy=1.;
-
-    nd0d0expbins=12;
-    mind0d0=0.;
-    maxd0d0=6.;
-
-    maxmult=5000.5;//dummy axis
-    nmultbins=1;
-  }
-  else {
-    nd0bins=60;
-    d0min=0.;
-    d0max=300;
-
-    nptmindaubins=10;
-    minptmindau=0.2;
-    maxptmindau=1.2;
-
-    nsigvertbins=25;
-    minsigvert=0.010;
-    maxsigvert=0.035;
-
-    ndeclbins=70;
-    mindecl=0.;
-    maxdecl=0.70;
-
-    ndeclxybins=70;
-    mindeclxy=0.;
-    maxdeclxy=0.70;
-
-    ncospbins=100;
-    mincosp=0.90;
-    maxcosp=1.;
-
-    ncospxybins=30;
-    mincospxy=0.97;
-    maxcospxy=1.;
-
-    nd0d0expbins=40;
-    mind0d0=-10.;
-    maxd0d0=10.;
-    
-    maxmult=200.5;
-    nmultbins = maxmult-minmult;
-  }
-  
   //dimensions for THnSparse which are NOT for BFeed
-  TString axTit[kVarForSparse]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)","passTopolPID","min. daughter p_{T} (GeV/c)","sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp","N_{trkls}"};
-
-  Int_t nbins[kVarForSparse]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclxybins,nnormdlbins,nd0d0expbins,nmultbins};
-  Double_t xmin[kVarForSparse]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,minmult};
-  Double_t xmax[kVarForSparse]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,maxmult};
-
+  Int_t nbins[kVarForSparse];
+  Double_t xmin[kVarForSparse];
+  Double_t xmax[kVarForSparse];
   //dimensions for THnSparse for BFeed
-  Int_t nbinsFD[kVarForSparseFD]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclbins,nnormdlbins,nd0d0expbins,nmultbins,84};
-  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,minmult,-2};
-  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,maxmult,40};
+  Int_t nbinsFD[kVarForSparseFD];
+  Double_t xminFD[kVarForSparseFD];
+  Double_t xmaxFD[kVarForSparseFD];
+
+  if (fSystem == kpp)
+  {
+    std::vector<Int_t> nBinsRecoVec = {nmassbins, nptbins, 60, nselbins, 10, 30, 100, 30, 70, 70, 30, 40};
+    std::vector<Double_t> xminRecoVec = {fLowmasslimit, ptmin, 0., minsel, 0.3, 0.010, 0.9, 0.97, 0., 0., 0., -10.};
+    std::vector<Double_t> xmaxRecoVec = {fUpmasslimit, ptmax, 300., maxsel, 1.3, 0.040, 1., 1., 0.7, 0.7, 30., 10.};
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nbins);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xmin);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmax);
+    //ML
+    nbins[kVarForSparse-1] = 300;
+    xmin[kVarForSparse-1] = 0.85;
+    xmax[kVarForSparse-1] = 1.;
+
+    //feed-down
+    nBinsRecoVec.push_back(nptbins);
+    nBinsRecoVec.push_back(ptmin);
+    nBinsRecoVec.push_back(ptmax);
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nbinsFD);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminFD);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxFD);
+    //ML
+    nbinsFD[kVarForSparse-1] = 300;
+    xminFD[kVarForSparse-1] = 0.85;
+    xmaxFD[kVarForSparse-1] = 1.;
+  }
+  else if (fSystem == kPbPb)
+  {
+    std::vector<Int_t> nBinsRecoVec = {nmassbins, nptbins, 18, nselbins, 10, 14, 30, 30, 35, 35, 30, 12};
+    std::vector<Double_t> xminRecoVec = {fLowmasslimit, ptmin, 0., minsel, 0.4, 0.012, 0.97, 0.97, 0., 0., 0., 0.};
+    std::vector<Double_t> xmaxRecoVec = {fUpmasslimit, ptmax, 180., maxsel, 1.4, 0.040, 1., 1., 0.35, 0.35, 30., 6.};
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nbins);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xmin);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmax);
+    //ML
+    nbins[kVarForSparse-1] = 300;
+    xmin[kVarForSparse-1] = 0.85;
+    xmax[kVarForSparse-1] = 1.;
+
+    //feed-down
+    nBinsRecoVec.push_back(nptbins);
+    nBinsRecoVec.push_back(ptmin);
+    nBinsRecoVec.push_back(ptmax);
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nbinsFD);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminFD);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxFD);
+    //ML
+    nbinsFD[kVarForSparse-1] = 300;
+    xminFD[kVarForSparse-1] = 0.85;
+    xmaxFD[kVarForSparse-1] = 1.;
+  }
+
+  Int_t nVarForSparse = kVarForSparse;
+  Int_t nVarForSparseFD = kVarForSparseFD;
+  if(!fApplyML) {
+    nVarForSparse--;
+    nVarForSparseFD--;
+  }
 
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   fSparseCutVars[0]=new THnSparseF("hMassPtCutVarsAll",
@@ -1678,11 +1644,16 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
 					"Mass vs. pt vs. cut vars - DfromB",
 					kVarForSparseFD,nbinsFD,xminFD,xmaxFD);
 
-  for(Int_t i=0; i<3; i++){
-    for(Int_t iax=0; iax<kVarForSparse; iax++) fSparseCutVars[i]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-    if(i == 2 || i == 3) fSparseCutVars[i]->GetAxis(kVarForSparseFD-1)->SetTitle("p_{T}^{B} (GeV/c)");
-    fOutput->Add(fSparseCutVars[i]);
+  for(Int_t iHisto = 0; iHisto < 2; iHisto++){
+    for(Int_t iax=0; iax<kVarForSparse; iax++) {
+      fSparseCutVars[iHisto]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+      fOutput->Add(fSparseCutVars[iHisto]);
+    }
   }
+  for(Int_t iax=0; iax<kVarForSparseFD; iax++) {
+      fSparseCutVars[2]->GetAxis(iax)->SetTitle(axTitFD[iax].Data());
+  }
+  fOutput->Add(fSparseCutVars[2]);
 }
 
 //________________________________________________________________________
@@ -1713,47 +1684,33 @@ void AliAnalysisTaskSEDplus::CreateTrackVarHistos(){
 void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
   /// Histos for MC Acceptance histos
 
-  const Int_t nVarPrompt = 3;
-  const Int_t nVarFD = 4;
+  const Int_t nVarPrompt = 2;
+  const Int_t nVarFD = 3;
 
-  Double_t multmin=-0.5;
-  Double_t multmax;
-  Int_t nmultbins;
-  if(fSystem==0) {
-    multmax=200.5;
-    nmultbins=multmax-multmin;
-  }
-  else {
-    multmax=5000.5;
-    nmultbins=1;
-  }
-  
-  Int_t nptbins = 100;
+  Int_t nptbins = 140;
   Double_t ptmin = 0.;
-  Double_t ptmax = 50.;
+  Double_t ptmax = 70.;
   if(fUseFinPtBinsForSparse)
-    nptbins = 500;
+    nptbins = 700;
 
-  Int_t nbinsPrompt[nVarPrompt]={nptbins,100,nmultbins};
-  Int_t nbinsFD[nVarFD]={nptbins,100,nmultbins,200};
+  Int_t nbinsPrompt[nVarPrompt]={nptbins,100};
+  Int_t nbinsFD[nVarFD]={nptbins,100,nptbins};
 
-  Double_t xminPrompt[nVarPrompt] = {ptmin,-1.,multmin};
-  Double_t xmaxPrompt[nVarPrompt] = {ptmax,1.,multmax};
+  Double_t xminPrompt[nVarPrompt] = {ptmin,-1.};
+  Double_t xmaxPrompt[nVarPrompt] = {ptmax,1.};
 
-  Double_t xminFD[nVarFD] = {ptmin,-1.,multmin,0.};
-  Double_t xmaxFD[nVarFD] = {ptmax,1.,multmax,40.};
+  Double_t xminFD[nVarFD] = {ptmin,-1.,ptmin};
+  Double_t xmaxFD[nVarFD] = {ptmax,1.,ptmax};
 
   //pt, y
-  fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y vs. Ntracklets - promptD",nVarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt);
+  fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y - promptD",kVarForSparseAcc,nbinsPrompt,xminPrompt,xmaxPrompt);
   fMCAccPrompt->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccPrompt->GetAxis(1)->SetTitle("y");
-  fMCAccPrompt->GetAxis(2)->SetTitle("N_{trklts}");
 
   //pt,y,ptB
-  fMCAccBFeed = new THnSparseF("hMCAccBFeed","kStepMCAcceptance pt vs. y vs. Ntracklets vs. ptB - DfromB",nVarFD,nbinsFD,xminFD,xmaxFD);
+  fMCAccBFeed = new THnSparseF("hMCAccBFeed","kStepMCAcceptance pt vs. y vs. ptB - DfromB",kVarForSparseAccFD,nbinsFD,xminFD,xmaxFD);
   fMCAccBFeed->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccBFeed->GetAxis(1)->SetTitle("y");
-  fMCAccBFeed->GetAxis(2)->SetTitle("N_{trklts}");
   fMCAccBFeed->GetAxis(3)->SetTitle("p_{T}^{B} (GeV/c)");
 
   fOutput->Add(fMCAccPrompt);
@@ -1761,7 +1718,7 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t tracklets){
+void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader){
   /// Fill MC acceptance histos for cuts study
 
   const Int_t nProng = 3;
@@ -1794,14 +1751,14 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
 	//for prompt
 	if(orig == 4){
 	  //fill histo for prompt
-	  Double_t arrayMCprompt[3] = {mcPart->Pt(),mcPart->Y(),(Double_t)tracklets};
+	  Double_t arrayMCprompt[kVarForSparseAcc] = {mcPart->Pt(),mcPart->Y()};
 	  fMCAccPrompt->Fill(arrayMCprompt);
 	}
 	//for FD
 	else if(orig == 5){
 	  Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,mcPart);
 	  //fill histo for FD
-	  Double_t arrayMCFD[4] = {mcPart->Pt(),mcPart->Y(),(Double_t)tracklets,ptB};
+	  Double_t arrayMCFD[kVarForSparseAccFD] = {mcPart->Pt(),mcPart->Y(),ptB};
 	  fMCAccBFeed->Fill(arrayMCFD);
 	}
 	else
