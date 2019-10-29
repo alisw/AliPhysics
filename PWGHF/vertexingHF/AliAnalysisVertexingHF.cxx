@@ -158,7 +158,9 @@ fMassDplus(0.),
 fMassDs(0.),
 fMassLambdaC(0.),
 fMassDstar(0.),
-fMassJpsi(0.)
+fMassJpsi(0.),
+fMassPhi(0.),
+fMassK(0.)
 {
   /// Default constructor
 
@@ -254,7 +256,9 @@ fMassDplus(source.fMassDplus),
 fMassDs(source.fMassDs),
 fMassLambdaC(source.fMassLambdaC),
 fMassDstar(source.fMassDstar),
-fMassJpsi(source.fMassJpsi)
+fMassJpsi(source.fMassJpsi),
+fMassPhi(source.fMassPhi),
+fMassK(source.fMassK)
 {
   ///
   /// Copy constructor
@@ -347,6 +351,8 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fMassLambdaC = source.fMassLambdaC;
   fMassDstar = source.fMassDstar;
   fMassJpsi = source.fMassJpsi;
+  fMassPhi = source.fMassPhi;
+  fMassK = source.fMassK;
 
   return *this;
 }
@@ -3179,19 +3185,29 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
   mrange=fCutsDstoKKpi->GetMassCut(jPtBinS);
   lolim=fMassDs-mrange;
   hilim=fMassDs+mrange;
-  pdg3[0]=321; pdg3[1]=321; pdg3[2]=211;
-  minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
-  if(minv2>lolim*lolim && minv2<hilim*hilim ){
-    retval=kTRUE;
-    fOKInvMassDs=kTRUE;
+  Double_t mphirange=1.2*fCutsDstoKKpi->GetPhiMassCut(jPtBinS); // 1.2 to have margin
+  Double_t lolimphi=fMassPhi-mphirange;
+  Double_t hilimphi=fMassPhi+mphirange;
+  for(Int_t ih=0; ih<2; ih++){
+    if(fOKInvMassDs) break;
+    Int_t k=ih*2;
+    pdg3[k]=321; pdg3[1]=321; pdg3[2-k]=211; 
+    minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
+    if(minv2>lolim*lolim && minv2<hilim*hilim ){
+      if(ptcand < 4){ // check KK mass for Ds with pt<4 GeV/c
+	Double_t ee = TMath::Sqrt(fMassK*fMassK+px[k]*px[k]+py[k]*py[k]+pz[k]*pz[k])+TMath::Sqrt(fMassK*fMassK+px[1]*px[1]+py[1]*py[1]+pz[1]*pz[1]);
+	Double_t mKK2=ee*ee-((px[k]+px[1])*(px[k]+px[1])+(py[k]+py[1])*(py[k]+py[1])+(pz[k]+pz[1])*(pz[k]+pz[1]));
+	if(mKK2>lolimphi*lolimphi && mKK2<hilimphi*hilimphi){
+	  retval=kTRUE;
+	  fOKInvMassDs=kTRUE;
+	}
+      }else{
+	retval=kTRUE;
+	fOKInvMassDs=kTRUE;
+      }
+    }
   }
-  pdg3[0]=211; pdg3[1]=321; pdg3[2]=321;
-  minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
-  if(minv2>lolim*lolim && minv2<hilim*hilim ){
-    retval=kTRUE;
-    fOKInvMassDs=kTRUE;
-  }
-
+  
   // Lc->pKpi
   Int_t jPtBinL=fCutsLctopKpi->PtBin(ptcand);
   if(jPtBinL<0) jPtBinL=0;
@@ -3724,6 +3740,8 @@ void AliAnalysisVertexingHF::SetMasses(){
   fMassLambdaC=TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   fMassDstar=TDatabasePDG::Instance()->GetParticle(413)->Mass();
   fMassJpsi=TDatabasePDG::Instance()->GetParticle(443)->Mass();
+  fMassPhi=TDatabasePDG::Instance()->GetParticle(333)->Mass();
+  fMassK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
 }
 //-----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::CheckCutsConsistency(){

@@ -351,7 +351,8 @@ class AliAnalysisVertexingHF : public TNamed {
   Double_t fMassLambdaC;
   Double_t fMassDstar;
   Double_t fMassJpsi;
-
+  Double_t fMassPhi;
+  Double_t fMassK;
 
   //
   void AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd,const AliVEvent *event,
@@ -424,7 +425,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisVertexingHF,28);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,29);  // Reconstruction of HF decay candidates
   /// \endcond
 };
 
