@@ -928,9 +928,9 @@ fOutputList->Add(fcorcentOutplane);
 
 
 //add by sudo
-Int_t Sparsebins[6]={100, 100, 100, 100, 100, 300}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
-Double_t Sparsexmin[6]={ 0,  0, -10, -10, -10, 0};
-Double_t Sparsexmax[6]={10, 10,  10,  10,  10, 3};
+Int_t Sparsebins[6]={  100, 100, 100,  50,  50, 200}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
+Double_t Sparsexmin[6]={ 0,   0, -10,  -5,  -5,   0};
+Double_t Sparsexmax[6]={10,  10,  10,   5,   5,   2};
 fSparseElectron = new THnSparseD ("fSparseElectron","correlation;Pt;P;TPCnsigma;ITSnsigma;TOFnsigma;E/p;",6,Sparsebins,Sparsexmin,Sparsexmax);
 if(iTree)fOutputList -> Add(fSparseElectron);
 
@@ -2073,7 +2073,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		Double_t TrkPhisin2_elehigh = -999;
 
 		//if((fTPCnSigma > -1 && fTPCnSigma <3) && (m20 > 0.01 && m20 < 0.3)){ //TPC nsigma & shower shape cut
-		if((fTPCnSigma > ftpcnsig && fTPCnSigma <3) && (m20 > femcss_mim && m20 < femcss_max)){ //TPC nsigma & shower shape cut
+		if(fTPCnSigma > ftpcnsig && fTPCnSigma <3){ //TPC nsigma & shower shape cut
 
                 if(track->Pt()<3.0){
                       if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) || (fTPCnSigma<0) )continue;
@@ -2081,7 +2081,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 
 			//if(eop>0.9 && eop<1.3){ //eop cut
-			if(eop>femceop && eop<1.3){ //eop cut
+			if(eop>femceop && eop<1.3 && (m20 > femcss_mim && m20 < femcss_max)){ //eop cut
 
 				////electron v2////
 
