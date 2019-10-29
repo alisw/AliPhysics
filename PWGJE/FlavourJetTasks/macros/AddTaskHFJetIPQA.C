@@ -205,7 +205,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
             jetContMC->ConnectParticleContainer(trackContMC);
             jetContMC->SetIsParticleLevel(kTRUE);
             jetContMC->SetMaxTrackPt(1000);
-            DefineCutsTaskpp(jetContMC, jetradius);
+            //DefineCutsTaskpp(jetContMC, jetradius);
         }
     }
 
