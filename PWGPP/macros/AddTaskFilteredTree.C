@@ -22,9 +22,7 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   }
 
   // Switch off all AliInfo (too much output!!!)
-  AliLog::SetGlobalLogLevel(AliLog::kError);
-  mgr->SetDebugLevel(0);
-
+  AliLog::SetClassDebugLevel("AliAnalysisTaskFilteredTree", AliLog::kError);
   
 
   //

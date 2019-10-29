@@ -53,7 +53,7 @@
 #include "AliCentrality.h"
 
 #include "AliVertex.h"
-#include "AliMultSelection.h"
+//#include "AliMultSelection.h"
 
 
 #include "AliESDcascade.h"
@@ -385,8 +385,10 @@ void AliXiStarPbPb::XiStarInit()
     fMultBins = 10;
     
     
-    if(fMCcase) fEventsToMix = 0;
-    else fEventsToMix = 0; //5
+    //if(fMCcase) fEventsToMix = 0;
+    //else fEventsToMix = 0;
+    
+    fEventsToMix = 0;
     
     fMultLimits[0]=0, fMultLimits[1]=1250, fMultLimits[2]=2500, fMultLimits[3]=3750, fMultLimits[4]=5000, fMultLimits[5]=6250, fMultLimits[6]=7500, fMultLimits[7]=8750, fMultLimits[8]=10000, fMultLimits[9]=13000, fMultLimits[10]=20000;
     
@@ -403,8 +405,6 @@ void AliXiStarPbPb::XiStarInit()
     }
     
     fTempStruct = new AliXiStarPbPbTrackStruct[20000];
-    
-    
     fESDTrack4 = new AliESDtrack();
     fXiTrack = new AliESDtrack();
     
@@ -497,7 +497,7 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     fVertexDist1->GetZaxis()->SetTitle("Z Vertex (cm)");
     fOutputList->Add(fVertexDist1);
     
-    TH3F *fVertexDist3 = new TH3F("fVertexDist3","Vertex Distribution",20,-1,1, 20,-1,1, 600,-30,30);
+    TH3F *fVertexDist3 
     fVertexDist3->GetXaxis()->SetTitle("X Vertex (cm)");
     fVertexDist3->GetYaxis()->SetTitle("Y Vertex (cm)");
     fVertexDist3->GetZaxis()->SetTitle("Z Vertex (cm)");
@@ -993,19 +993,19 @@ void AliXiStarPbPb::Exec(Option_t *)
     //------------------------------------------------
     
     Float_t  centralityV0M = -100;
-    AliMultSelection* MultSelection =0x0;
-    MultSelection = (AliMultSelection*)fESD->FindListObject("MultSelection");
+ //   AliMultSelection* MultSelection =0x0;
+ //   MultSelection = (AliMultSelection*)fESD->FindListObject("MultSelection");
 
-  //  fCentrality = fESD->GetCentrality();
-  //  centralityV0M = fCentrality->GetCentralityPercentile("V0M");
+    fCentrality = fESD->GetCentrality();
+    centralityV0M = fCentrality->GetCentralityPercentile("V0M");
    
-    if (MultSelection) {
+  /*  if (MultSelection) {
         centralityV0M = MultSelection->GetMultiplicityPercentile("V0M");
     } else {
         AliInfo("Didn't find MultSelection!");
         centralityV0M = 999.;
     }
-       
+  */
     ((TH1F*)fOutputList->FindObject("hCentrality"))->Fill(centralityV0M);
     
     
@@ -1646,8 +1646,9 @@ void AliXiStarPbPb::Exec(Option_t *)
         
         //////////////////////////////////////////////////////////
         // Reconstruct Xi(1530)
-        for(Int_t EN=0; EN<fEventsToMix+1; EN++){// Event buffer loop
+      //  for(Int_t EN=0; EN<fEventsToMix+1; EN++){// Event buffer loop
 
+           Int_t EN=0;
             for(Int_t l=0; l<(fEvt+EN)->fNTracks; l++){// Present(EN=0) and Past(EN from 1 to fEventsToMix) event track loop
                 
                 if(EN==0) {
@@ -1656,7 +1657,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                     if((fEvt+EN)->fTracks[l].fID == bTrackXi->GetID()) continue;
                 }
                 
-                cout<<"fEvT == "<<fEvt<<",  EN == "<<EN<< endl;
+               //cout<<"fEvT == "<<fEvt<<",  EN == "<<EN<<",   l == "<<l<< endl;
                 
                 fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(xiCharge));
                 
@@ -1728,7 +1729,6 @@ void AliXiStarPbPb::Exec(Option_t *)
                 
                 for(int cv=0; cv<kNCutVariations; cv++){
                     
-                    
                     if(fDecayParameters[0] < fCutValues[cv][0]) continue;// Nclus proton
                     if(fDecayParameters[1] < fCutValues[cv][1]) continue;// Nclus pion first
                     if(fDecayParameters[2] < fCutValues[cv][2]) continue;// Nclus pion second
@@ -1753,66 +1753,56 @@ void AliXiStarPbPb::Exec(Option_t *)
                     //
                     if(fDecayParameters[11] < fCutValues[cv][11]) continue;// Cos PA Lambda
                     if(fDecayParameters[12] < fCutValues[cv][12]) continue;// Cos PA Xi
-                    if(EN==0 && cv==0){  // cut QA plot for default cut
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_p"))->Fill(fDecayParameters[0]);
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi1"))->Fill(fDecayParameters[1]);
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi2"))->Fill(fDecayParameters[2]);
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi3"))->Fill(fDecayParameters[3]);
-                        
-                        ((TH1F*)fOutputList->FindObject("fQADCADist_p"))->Fill(fDecayParameters[4]);
-                        ((TH1F*)fOutputList->FindObject("fQADCADist_pi1"))->Fill(fDecayParameters[5]);
-                        ((TH1F*)fOutputList->FindObject("fQADCADist_pi2"))->Fill(fDecayParameters[6]);
-                        
-                        ((TH1F*)fOutputList->FindObject("fQADCADist_lambda"))->Fill(fDecayParameters[7]);
-                        ((TH1F*)fOutputList->FindObject("fQADCADist_3rd_pi"))->Fill(fDecayParameters[8]);
-                        ((TH1F*)fOutputList->FindObject("fQADCADist_pi_p"))->Fill(fDecayParameters[9]);
-                        ((TH1F*)fOutputList->FindObject("fQADCADist_pi_lambda"))->Fill(fDecayParameters[10]);
-                        ((TH1F*)fOutputList->FindObject("fQACosPA_lambda"))->Fill(fDecayParameters[11]);
-                        ((TH1F*)fOutputList->FindObject("fQACosPA_Xi"))->Fill(fDecayParameters[12]);
-                    }
-                    if(EN==0 && cv==1){
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_p_L"))->Fill(fDecayParameters[0]);
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi1_L"))->Fill(fDecayParameters[1]);
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi2_L"))->Fill(fDecayParameters[2]);
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi3_L"))->Fill(fDecayParameters[3]);
-                    }
                     if(EN==0){
-                        
-                        if(cv==2)((TH1F*)fOutputList->FindObject("fQADCADist_p_L"))->Fill(fDecayParameters[4]);
-                        if(cv==3)((TH1F*)fOutputList->FindObject("fQADCADist_pi1_L"))->Fill(fDecayParameters[5]);
-                        if(cv==4)((TH1F*)fOutputList->FindObject("fQADCADist_pi2_L"))->Fill(fDecayParameters[6]);
-                        if(cv==5)((TH1F*)fOutputList->FindObject("fQADCADist_lambda_L"))->Fill(fDecayParameters[7]);
-                        if(cv==6)((TH1F*)fOutputList->FindObject("fQADCADist_3rd_pi_L"))->Fill(fDecayParameters[8]);
-                        if(cv==7)((TH1F*)fOutputList->FindObject("fQADCADist_pi_p_L"))->Fill(fDecayParameters[9]);
-                        if(cv==8)((TH1F*)fOutputList->FindObject("fQADCADist_pi_lambda_L"))->Fill(fDecayParameters[10]);
-                        if(cv==9)((TH1F*)fOutputList->FindObject("fQACosPA_lambda_L"))->Fill(fDecayParameters[11]);
-                        if(cv==10)((TH1F*)fOutputList->FindObject("fQACosPA_Xi_L"))->Fill(fDecayParameters[12]);
-                        
-                    }
-                    
-                    if(EN==0 && cv==11){
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_p_T"))->Fill(fDecayParameters[0]);
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi1_T"))->Fill(fDecayParameters[1]);
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi2_T"))->Fill(fDecayParameters[2]);
-                        ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi3_T"))->Fill(fDecayParameters[3]);
-                    }
-                    if(EN==0){
-                        
-                        if(cv==12)((TH1F*)fOutputList->FindObject("fQADCADist_p_T"))->Fill(fDecayParameters[4]);
-                        if(cv==13)((TH1F*)fOutputList->FindObject("fQADCADist_pi1_T"))->Fill(fDecayParameters[5]);
-                        if(cv==14)((TH1F*)fOutputList->FindObject("fQADCADist_pi2_T"))->Fill(fDecayParameters[6]);
-                        if(cv==15)((TH1F*)fOutputList->FindObject("fQADCADist_lambda_T"))->Fill(fDecayParameters[7]);
-                        if(cv==16)((TH1F*)fOutputList->FindObject("fQADCADist_3rd_pi_T"))->Fill(fDecayParameters[8]);
-                        if(cv==17)((TH1F*)fOutputList->FindObject("fQADCADist_pi_p_T"))->Fill(fDecayParameters[9]);
-                        if(cv==18)((TH1F*)fOutputList->FindObject("fQADCADist_pi_lambda_T"))->Fill(fDecayParameters[10]);
-                        if(cv==19)((TH1F*)fOutputList->FindObject("fQACosPA_lambda_T"))->Fill(fDecayParameters[11]);
-                        if(cv==20)((TH1F*)fOutputList->FindObject("fQACosPA_Xi_T"))->Fill(fDecayParameters[12]);
-                        
-                        
-                    }
-                    
-                    
-                    
+                        if(cv==0){
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_p"))->Fill(fDecayParameters[0]);
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi1"))->Fill(fDecayParameters[1]);
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi2"))->Fill(fDecayParameters[2]);
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi3"))->Fill(fDecayParameters[3]);
+                            
+                            ((TH1F*)fOutputList->FindObject("fQADCADist_p"))->Fill(fDecayParameters[4]);
+                            ((TH1F*)fOutputList->FindObject("fQADCADist_pi1"))->Fill(fDecayParameters[5]);
+                            ((TH1F*)fOutputList->FindObject("fQADCADist_pi2"))->Fill(fDecayParameters[6]);
+                            
+                            ((TH1F*)fOutputList->FindObject("fQADCADist_lambda"))->Fill(fDecayParameters[7]);
+                            ((TH1F*)fOutputList->FindObject("fQADCADist_3rd_pi"))->Fill(fDecayParameters[8]);
+                            ((TH1F*)fOutputList->FindObject("fQADCADist_pi_p"))->Fill(fDecayParameters[9]);
+                            ((TH1F*)fOutputList->FindObject("fQADCADist_pi_lambda"))->Fill(fDecayParameters[10]);
+                            ((TH1F*)fOutputList->FindObject("fQACosPA_lambda"))->Fill(fDecayParameters[11]);
+                            ((TH1F*)fOutputList->FindObject("fQACosPA_Xi"))->Fill(fDecayParameters[12]);
+                        }
+                        else if(cv==1){
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_p_L"))->Fill(fDecayParameters[0]);
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi1_L"))->Fill(fDecayParameters[1]);
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi2_L"))->Fill(fDecayParameters[2]);
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi3_L"))->Fill(fDecayParameters[3]);
+                        }
+                        else if(cv==2)((TH1F*)fOutputList->FindObject("fQADCADist_p_L"))->Fill(fDecayParameters[4]);
+                        else if(cv==3)((TH1F*)fOutputList->FindObject("fQADCADist_pi1_L"))->Fill(fDecayParameters[5]);
+                        else if(cv==4)((TH1F*)fOutputList->FindObject("fQADCADist_pi2_L"))->Fill(fDecayParameters[6]);
+                        else if(cv==5)((TH1F*)fOutputList->FindObject("fQADCADist_lambda_L"))->Fill(fDecayParameters[7]);
+                        else if(cv==6)((TH1F*)fOutputList->FindObject("fQADCADist_3rd_pi_L"))->Fill(fDecayParameters[8]);
+                        else if(cv==7)((TH1F*)fOutputList->FindObject("fQADCADist_pi_p_L"))->Fill(fDecayParameters[9]);
+                        else if(cv==8)((TH1F*)fOutputList->FindObject("fQADCADist_pi_lambda_L"))->Fill(fDecayParameters[10]);
+                        else if(cv==9)((TH1F*)fOutputList->FindObject("fQACosPA_lambda_L"))->Fill(fDecayParameters[11]);
+                        else if(cv==10)((TH1F*)fOutputList->FindObject("fQACosPA_Xi_L"))->Fill(fDecayParameters[12]);
+                        else if(cv==11){
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_p_T"))->Fill(fDecayParameters[0]);
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi1_T"))->Fill(fDecayParameters[1]);
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi2_T"))->Fill(fDecayParameters[2]);
+                            ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi3_T"))->Fill(fDecayParameters[3]);
+
+                        }
+                        else if(cv==12)((TH1F*)fOutputList->FindObject("fQADCADist_p_T"))->Fill(fDecayParameters[4]);
+                        else if(cv==14)((TH1F*)fOutputList->FindObject("fQADCADist_pi2_T"))->Fill(fDecayParameters[6]);
+                        else if(cv==15)((TH1F*)fOutputList->FindObject("fQADCADist_lambda_T"))->Fill(fDecayParameters[7]);
+                        else if(cv==16)((TH1F*)fOutputList->FindObject("fQADCADist_3rd_pi_T"))->Fill(fDecayParameters[8]);
+                        else if(cv==17)((TH1F*)fOutputList->FindObject("fQADCADist_pi_p_T"))->Fill(fDecayParameters[9]);
+                        else if(cv==18)((TH1F*)fOutputList->FindObject("fQADCADist_pi_lambda_T"))->Fill(fDecayParameters[10]);
+                        else if(cv==19)((TH1F*)fOutputList->FindObject("fQACosPA_lambda_T"))->Fill(fDecayParameters[11]);
+                        else if(cv==20)((TH1F*)fOutputList->FindObject("fQACosPA_Xi_T"))->Fill(fDecayParameters[12]);
+                  
+                       }
                     
                     
                     if(EN==0){
@@ -1882,7 +1872,8 @@ void AliXiStarPbPb::Exec(Option_t *)
                     
                 }// Cut Variation loop
             }// 3rd pion loop
-        }// Event mixing loop
+    
+      //  }// Event mixing loop
     
     
     
