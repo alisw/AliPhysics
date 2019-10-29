@@ -1267,8 +1267,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    TString path;
    Int_t nruns = 0;
    TString schunk, schunk2;
-   TAliceCollection *cbase=0, *cadd=0, *res=0;
-
+   TAliceCollection *cbase=0, *cadd=0;
    if (!fRunNumbers.Length() && !fRunRange[0]) {
       if (fInputFiles && fInputFiles->GetEntries()) return kTRUE;
       // Make a single data collection from data directory.
@@ -1292,36 +1291,62 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             command += pattern;
             command += conditions;
             printf("command: %s\n", command.Data());
-            res = dynamic_cast<TAliceCollection*>(gGrid->OpenCollectionQuery(gGrid->Command(command)));
-
-            if(res->GetNofGroups() == 0) {
-                Error("CreateDataset","Dataset %s produced by the previous find command is empty !", file.Data());
-                delete res;
-                return kFALSE;
-            }
-
-            ncount = res->GetNofGroups();
+            //TGridResult *res = gGrid->Command(command);
+            //if (res) delete res;
+            // Write standard output to file
+	    // Write standard error to null device
+            //gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
+            TGridCollection *tmp = gGrid->OpenCollectionQuery(gGrid->Command(command), kTRUE);
+            tmp->ExportXML(Form("__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
+						delete tmp;
+            //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage, file.Data()));
+            Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
+            Bool_t nullFile = kFALSE;
+            if (!hasGrep) {
+                Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
+            } else {
+               nullFile = (gSystem->Exec(Form("grep -c /event __tmp%d__%s 2>/dev/null > __tmp__",stage,file.Data()))==0)?kFALSE:kTRUE;
+               if (nullFile) {
+                  Error("CreateDataset","Dataset %s produced by the previous find command is empty !", file.Data());
+                  gSystem->Exec("rm -f __tmp*");
+                  return kFALSE;
+               }
+               TString line;
+               ifstream in;
+               in.open("__tmp__");
+               in >> line;
+               in.close();
+               gSystem->Exec("rm -f __tmp__");
+               ncount = line.Atoi();
+            }         
          }
          if (ncount == gMaxEntries) {
             Info("CreateDataset", "Dataset %s has more than 15K entries. Trying to merge...", file.Data());
-            cadd = res;
+            cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data()), 1000000));
             if (!cbase) cbase = cadd;
             else {
+	      // cholm - Avoid using very slow TAlienCollection 
+	      // cbase->Add(cadd);
+	      // cholm - Use AddFast (via interpreter)
                cbase->AddFast(cadd);
                delete cadd;
             }   
             nstart += ncount;
          } else {
             if (cbase) {
-               cadd = res;
+							cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data()), 1000000));
                printf("... please wait - TAlienCollection::Add() scales badly...\n");
+	      // cholm - Avoid using very slow TAlienCollection 
+	      // cbase->Add(cadd);
+	      // cholm - Use AddFast (via interpreter)
                cbase->AddFast(cadd);
-               cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
                delete cadd;
-               delete cbase; cbase = 0;
-            } else {
                cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
+               delete cbase; cbase = 0;               
+            } else {
+               TFile::Cp(Form("__tmp%d__%s",stage, file.Data()), file.Data());
             }
+            gSystem->Exec("rm -f __tmp*");   
             Info("CreateDataset", "Created dataset %s with %d files", file.Data(), nstart+ncount);
             break;
          }
@@ -1340,7 +1365,6 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       AddDataFile(Form("%s/%s", workdir.Data(), file.Data()));
       return kTRUE;
    }   
-
    // Several runs
    Bool_t nullResult = kTRUE;
    if (fRunNumbers.Length()) {
@@ -1367,16 +1391,34 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                command += delimiter;
                command += pattern;
                command += conditions;
-               res = dynamic_cast<TAliceCollection*>(gGrid->OpenCollectionQuery(gGrid->Command(command)));
-               Bool_t nullFile = res->GetNofGroups() == 0;
-               if (nullFile) {
-                   Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
-                   fRunNumbers.ReplaceAll(os->GetString().Data(), "");
-                   delete res;
-                   break;
+               //TGridResult *res = gGrid->Command(command);
+               //if (res) delete res;
+               // Write standard output to file
+               //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
+               //gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
+               TGridCollection *tmp = gGrid->OpenCollectionQuery(gGrid->Command(command), kTRUE);
+               tmp->ExportXML(Form("__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
+               delete tmp;
+               Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
+               Bool_t nullFile = kFALSE;
+               if (!hasGrep) {
+                  Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
+               } else {
+                  nullFile = (gSystem->Exec(Form("grep -c /event __tmp%d__%s 2>/dev/null > __tmp__",stage,file.Data()))==0)?kFALSE:kTRUE;
+                  if (nullFile) {
+                     Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
+                     gSystem->Exec("rm -f __tmp*");
+                     fRunNumbers.ReplaceAll(os->GetString().Data(), "");
+                     break;
+                  }   
+                  TString line;
+                  ifstream in;
+                  in.open("__tmp__");
+                  in >> line;
+                  in.close();
+                  gSystem->Exec("rm -f __tmp__");   
+                  ncount = line.Atoi();
                }
-               ncount = res->GetNofGroups();
-
                nullResult = kFALSE;         
             }
             if (ncount == gMaxEntries) {
@@ -1384,10 +1426,9 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                if (fNrunsPerMaster > 1) {
                   Error("CreateDataset", "File %s has more than %d entries. Please set the number of runs per master to 1 !", 
                           file.Data(),gMaxEntries);
-                  delete res;
                   return kFALSE;
-               }
-               cadd = res;
+               }           
+               cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data()), 1000000));
                if (!cbase) cbase = cadd;
                else {
                   cbase->AddFast(cadd);
@@ -1396,15 +1437,19 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                nstart += ncount;
             } else {
                if (cbase && fNrunsPerMaster<2) {
-                  cadd = res;
+								 cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data()), 1000000));
+                  printf("... please wait - TAlienCollection::Add() scales badly...\n");
+		  // cholm - Avoid using very slow TAlienCollection 
+		  // cbase->Add(cadd);
+		  // cholm - Use AddFast (via interpreter)
                   cbase->AddFast(cadd);
-                  cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
                   delete cadd;
+                  cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
                   delete cbase; cbase = 0;               
                } else {
-                  cbase = res;
-                  cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
+                  TFile::Cp(Form("__tmp%d__%s",stage, file.Data()), file.Data());
                }
+               gSystem->Exec("rm -f __tmp*");   
                Info("CreateDataset", "Created dataset %s with %d files", file.Data(), nstart+ncount);
                break;
             }
@@ -1430,10 +1475,13 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             nruns++;
             if (((nruns-1)%fNrunsPerMaster) == 0) {
                schunk = os->GetString();
-               cbase = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(file.Data()));
+               cbase = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(file.Data(), 1000000));
             } else {
-               cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(file.Data()));
+               cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(file.Data(), 1000000));
                printf("   Merging collection <%s> into masterjob input...\n", file.Data());
+	       // cholm - Avoid using very slow TAlienCollection 
+	       // cbase->Add(cadd);
+	       // cholm - Use AddFast (via interpreter)
                cbase->AddFast(cadd);
                delete cadd;
             }
@@ -1494,14 +1542,33 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                command += delimiter;
                command += pattern;
                command += conditions;
-               res = dynamic_cast<TAliceCollection*>(gGrid->OpenCollectionQuery(gGrid->Command(command)));
-               Bool_t nullFile = res->GetNofGroups() == 0;
-               if (nullFile) {
-                   Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
-                   delete res;
-                   break;
+               //TGridResult *res = gGrid->Command(command);
+               //if (res) delete res;
+               // Write standard output to file
+               //gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
+               TGridCollection *tmp = gGrid->OpenCollectionQuery(gGrid->Command(command), kTRUE);
+               tmp->ExportXML(Form("__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
+               delete tmp;
+               //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
+               Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
+               Bool_t nullFile = kFALSE;
+               if (!hasGrep) {
+                  Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
+               } else {
+                  nullFile = (gSystem->Exec(Form("grep -c /event __tmp%d__%s 2>/dev/null > __tmp__",stage,file.Data()))==0)?kFALSE:kTRUE;
+                  if (nullFile) {
+                     Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
+                     gSystem->Exec("rm -f __tmp*");
+                     break;
+                  }   
+                  TString line;
+                  ifstream in;
+                  in.open("__tmp__");
+                  in >> line;
+                  in.close();
+                  gSystem->Exec("rm -f __tmp__");   
+                  ncount = line.Atoi();
                }
-               ncount = res->GetNofGroups() == 0;
                nullResult = kFALSE;         
             }   
             if (ncount == gMaxEntries) {
@@ -1509,26 +1576,31 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                if (fNrunsPerMaster > 1) {
                   Error("CreateDataset", "File %s has more than %d entries. Please set the number of runs per master to 1 !", 
                           file.Data(),gMaxEntries);
-                  delete res;
                   return kFALSE;
                }
                cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data())));
                if (!cbase) cbase = cadd;
                else {
-                  cbase->Add(cadd);
+		 // cholm - Avoid using very slow TAlienCollection 
+		 // cbase->Add(cadd);
+		 // cholm - Use AddFast (via interpreter)
+                  cbase->AddFast(cadd);
                   delete cadd;
                }   
                nstart += ncount;
             } else {
                if (cbase && fNrunsPerMaster<2) {
                   cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data())));
-                  cbase->Add(cadd);
-                  cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
+                  printf("... please wait - TAlienCollection::Add() scales badly...\n");
+		 // cholm - Avoid using very slow TAlienCollection 
+		 // cbase->Add(cadd);
+		 // cholm - Use AddFast (via interpreter)
+                  cbase->AddFast(cadd);
                   delete cadd;
+                  cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
                   delete cbase; cbase = 0;               
                } else {
-                  cbase = res;
-                  cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
+                  TFile::Cp(Form("__tmp%d__%s",stage, file.Data()), file.Data());
                }
                Info("CreateDataset", "Created dataset %s with %d files", file.Data(), nstart+ncount);
                break;
@@ -1564,7 +1636,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                cbase = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(file.Data()));
             } else {
                 cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(file.Data()));
-               gROOT->ProcessLine(Form("((TJAlienCollection*)%p)->AddFast((TGridCollection*)%p)",cbase,cadd));
+                cbase->AddFast(cadd);
                delete cadd;
             }
             format = Form("%%s_%s.xml", fRunPrefix.Data());
