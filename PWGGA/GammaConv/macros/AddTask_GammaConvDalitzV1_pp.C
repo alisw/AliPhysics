@@ -389,15 +389,17 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
 
     //  7XX for NomB,    75X  nomB and MBW
-  } else if (trainConfig == 701) {  //Cross check on new cuts.
-    cuts.AddCutPCMDalitz("00010113", "0d200009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
-    //New Standar cut, Nico Implemantation(Gamma)
+  } else if (trainConfig == 701) {  //Cross check on new cuts, modification had been made on standard.
+    cuts.AddCutPCMDalitz("00010113", "0d200009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
+    //New Standard cut, Nico Implemantation(Gamma)
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152103500000000");
-    //Standar used untill 21 Octuber 2019
-    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
-    //New Standar cut, Nico Implemantation(Gamma) + Ana TPC range remove 55-72
-    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dg70404000", "204c4640263202223710", "0152103500000000");
-    //New Standar cut, Nico Implemantation(Gamma) + Ana TPC range remove 55-72 + 0.15 line on qT(Armenteros)
+    //Standard used untill 21 Octuber 2019
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
+    //New Standard cut, Nico Implemantation(Gamma) + Ana TPC range remove 55-72
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dg70404000", "204c6400263202223710", "0152103500000000");
+    //New Standard cut, Nico Implemantation(Gamma) + Ana TPC range remove 55-72 + 0.15 line on qT(Armenteros)
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c6400263202223710", "0152103500000000");
+    //Standard cut + Correction on Low Rejection and momentum for pions = New Standard
   } else if (trainConfig == 706) {   // Nominal eta<0.8 for primactronsry and secondary ele   //  gamma asymmetry cut removed on 15.04.2019
     cuts.AddCutPCMDalitz("00010113", "0d200009266300008850404000", "20475400254202321710", "0263103100900000");
   } else if (trainConfig == 707) {    // R scan
@@ -408,21 +410,21 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dh00009266300008850404000", "20475400254202321710", "0263103100900000");
     cuts.AddCutPCMDalitz("00010113", "0di00009266300008850404000", "20475400254202321710", "0263103100900000");
   } else if (trainConfig == 719) {  //Removing range 55-72 of TPC range.
-    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
   } else if (trainConfig == 720) {  //New standar?
-    cuts.AddCutPCMDalitz("00010113", "0d200009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0d200009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
   } else if (trainConfig == 721) {  //Study on range of TPC
-    cuts.AddCutPCMDalitz("00010113", "0da00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
-    cuts.AddCutPCMDalitz("00010113", "0db00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
-    cuts.AddCutPCMDalitz("00010113", "0dc00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0da00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0db00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dc00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
   } else if (trainConfig == 722) {  //still Study on range of TPC
-    cuts.AddCutPCMDalitz("00010113", "0dh00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
-    cuts.AddCutPCMDalitz("00010113", "0di00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
-    cuts.AddCutPCMDalitz("00010113", "0dj00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dh00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0di00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dj00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
   } else if (trainConfig == 723) {  //still still Study on range of TPC
-    cuts.AddCutPCMDalitz("00010113", "0dk00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
-    cuts.AddCutPCMDalitz("00010113", "0dl00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
-    cuts.AddCutPCMDalitz("00010113", "0dg00009f9730000dge0404000", "204c4640263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dk00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dl00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0dg00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////// to be used with weights equal to 70X +50 /////////////////////////////////////////////
