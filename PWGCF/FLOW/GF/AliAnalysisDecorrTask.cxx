@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* AliAnalysisDecorrTask
- *
- * example flow class
- * event selection
- * track selection
- */
+
 
 #include "TChain.h"
 #include "TH1F.h"
@@ -53,11 +48,15 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fReferenceFlowList(0),
     fDifferentialFlowList(0),
     fDifferentialPtAList(0),
+    fPtA_PtB_List(0),
     fHistPhiEta(0),
     fTrigger(AliVEvent::kINT7),
     fEventRejectAddPileUp(kFALSE),
-    bHasGap(kFALSE),
-    bUseOwnWeights(kTRUE),
+    bHasGap(kTRUE),
+    bDiff(kFALSE),
+    bRef(kTRUE),
+    bPtB(kFALSE),
+    fUseWeights3D(kTRUE),
     dEtaGap(1.0),
     fFilterBit(96),
     fPtMin(0.2),
@@ -68,14 +67,15 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fRPsPtmin(0.2),
     fAbsEtaMax(0.8),
     fCentEstimator("V0M"),
+    centEdges{0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100.},
     fHistdnNeg{0},
     fHistcnPtA{0},
     fHistdnPos{0},
     fHistcn{0},
     fHistGap{0},
-    //fHistPtA_PtB_LS{0},
-    //fHistPtA_PtB_OS{0},
-    //fHistPtA_PtB{0},
+    fHistPtA_PtB_LS{0},
+    fHistPtA_PtB_OS{0},
+    fHistPtA_PtB{0},
     fHistEta(0),
     fHistPhi(0),
     fHistPt(0),
@@ -98,11 +98,15 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fReferenceFlowList(0),
     fDifferentialFlowList(0),
     fDifferentialPtAList(0),
+    fPtA_PtB_List(0),
     fHistPhiEta(0),
     fTrigger(AliVEvent::kINT7),
     fEventRejectAddPileUp(kFALSE),
-    bHasGap(kFALSE),
-    bUseOwnWeights(kTRUE),
+    bHasGap(kTRUE),
+    bDiff(kFALSE),
+    bRef(kTRUE),
+    bPtB(kFALSE),
+    fUseWeights3D(kTRUE),
     dEtaGap(1.0),
     fFilterBit(96),
     fPtMin(0.2),
@@ -113,6 +117,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fRPsPtmin(0.2),
     fAbsEtaMax(0.8),
     fCentEstimator("V0M"),  //Changed kV0M to "V0M"
+    centEdges{0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100.},
     fHistEta(0),
     fHistPhi(0),
     fHistPt(0),
@@ -125,9 +130,9 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fHistdnPos{0},
     fHistcn{0},
     fHistGap{0},
-    //fHistPtA_PtB_LS{0},
-    //fHistPtA_PtB_OS{0},
-    //fHistPtA_PtB{0},
+    fHistPtA_PtB_LS{0},
+    fHistPtA_PtB_OS{0},
+    fHistPtA_PtB{0},
     fWeights(0),
     fWeightList(0),
     fh2Weights(nullptr),
@@ -140,6 +145,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     DefineOutput(3, TList::Class());
     DefineOutput(4, TList::Class());
     DefineOutput(5, TList::Class());
+    DefineOutput(6, TList::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisDecorrTask::~AliAnalysisDecorrTask()
@@ -159,11 +165,14 @@ AliAnalysisDecorrTask::~AliAnalysisDecorrTask()
     if (fDifferentialPtAList) {
         delete fDifferentialPtAList;
     }
+    if (fPtA_PtB_List) {
+        delete fPtA_PtB_List;
+    }
 }
 
 Bool_t AliAnalysisDecorrTask::InitTask()
 {
-    if (bUseOwnWeights) { 
+    if (!fUseWeights3D) { 
         fWeightList = (TList*) GetInputData(1);
         if(!fWeightList) { AliFatal("\n\n\n\n\n\n\n\n\n Weight List not found! \n\n\n\n\n\n\n\n"); return kFALSE; }
     } else {
@@ -188,24 +197,14 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
     fDifferentialFlowList->SetOwner(kTRUE);
     fDifferentialPtAList = new TList();
     fDifferentialPtAList->SetOwner(kTRUE);
-    //fPtA_PtB_List = new TList();
-    //fPtA_PtB_List->SetOwner(kTRUE);
+    fPtA_PtB_List = new TList();
+    fPtA_PtB_List->SetOwner(kTRUE);
 
     bool fInitTask = InitTask();
     if(!fInitTask) { return; }
     //Bins
-    const int Nv2PtBin = 28;
-    double v2PtEdges[Nv2PtBin+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,3.75,4.0,4.5,5.0,5.5,6.0,7.0,8.0,9.0,10.0};
-    const int Nv3PtBin = 20;
-    double v3PtEdges[Nv3PtBin+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,8.0};
-    const int Nv4PtBin = 17;
-    double v4PtEdges[Nv4PtBin+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,6.0,10.0};
-
-    double* PtEdges[3] = {v2PtEdges, v3PtEdges, v4PtEdges};
-    int NPtBin[3] = {Nv2PtBin,Nv3PtBin,Nv4PtBin};     
-    const int NcentBin = 6;
-    double centEdges[NcentBin+1] = {0.,5.,10.,20.,30.,40.,50.};
-
+    const int NPtBin = 28;
+    double PtEdges[NPtBin+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,3.75,4.0,4.5,5.0,5.5,6.0,7.0,8.0,9.0,10.0};
 
     //Stat histograms
     fHistPhiEta = new TH2F("fHistPhiEta", "fHistPhiEta; phi; eta", 60, 0.0, TwoPi(), 100, -1.0, 1.0);
@@ -214,9 +213,9 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
     fObservablesList->Add(fHistEta);
     fHistPhi = new TH1F("fHistPhi","fHistPhi",60,0.0,TwoPi());
     fObservablesList->Add(fHistPhi);
-    fHistPt = new TH1F("fHistPt","fHistPt",Nv2PtBin,v2PtEdges);
+    fHistPt = new TH1F("fHistPt","fHistPt",NPtBin,PtEdges);
     fObservablesList->Add(fHistPt);
-    fHistCent = new TProfile("fHistCent","fHistCent",80,0,80);
+    fHistCent = new TProfile("fHistCent","fHistCent",100,0,100);
     fObservablesList->Add(fHistCent);
     fHistVz = new TH1F("fHistVz","fHistVz",100,-20,20);
     fObservablesList->Add(fHistVz);
@@ -230,48 +229,38 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         //Reference histogram
         for(int i(0); i < fHarmPlots+1; i++)
         {
-            ostringstream fHistcn_name;
-            fHistcn_name << "c_{" << j+2 << "}{" << i*2+2 << "}";
-            fHistcn[j][i] = new TProfile(fHistcn_name.str().c_str(),"",NcentBin,centEdges);
+            fHistcn[j][i] = new TProfile(Form("c_{%i}{%i}",j+2,i*2+2),"",NcentBin,centEdges);
             fReferenceFlowList->Add(fHistcn[j][i]);
         }
         for(int i(0); i < NcentBin; i++)
         {
 
             // POI flow histograms
-            ostringstream fHistdnNeg_name;
-            fHistdnNeg_name << "d_{" << j+2 << "}{2}(|#Delta #eta| > 1), POI in negative #eta, centrality: " << centEdges[i] << "-" << centEdges[i+1] << "%";
-            fHistdnNeg[j][i] = new TProfile(fHistdnNeg_name.str().c_str(),"", NPtBin[j], PtEdges[j]);
+            fHistdnNeg[j][i] = new TProfile(Form("d_{%i}{2}GapM_cent_%f_%f",j+2,centEdges[i],centEdges[i+1]),"", NPtBin, PtEdges);
             fDifferentialFlowList->Add(fHistdnNeg[j][i]);
 
-            ostringstream fHistdnPos_name;
-            fHistdnPos_name << "d_{" << j+2 << "}{2}(|#Delta #eta| > 1), POI in positive #eta, centrality: " << centEdges[i] << "-" << centEdges[i+1] << "%";
-            fHistdnPos[j][i] = new TProfile(fHistdnPos_name.str().c_str(),"", NPtBin[j], PtEdges[j]);
+            fHistdnPos[j][i] = new TProfile(Form("d_{%i}{2}GapP_cent_%f_%f",j+2,centEdges[i],centEdges[i+1]),"", NPtBin, PtEdges);
             fDifferentialFlowList->Add(fHistdnPos[j][i]);
 
-            ostringstream fHistcnPtA_name;
-            fHistcnPtA_name << "c_{" << j+2 << "}{2}(p_{T}^{a}), POI in negative #eta, centrality: " << centEdges[i] << "-" << centEdges[i+1] << "%";
-            fHistcnPtA[j][i] = new TProfile(fHistcnPtA_name.str().c_str(),"",NPtBin[j],PtEdges[j]);
+            fHistcnPtA[j][i] = new TProfile(Form("c_{%i}{2}PtAGapM_cent_%f_%f",j+2,centEdges[i],centEdges[i+1]),"",NPtBin, PtEdges);
             fDifferentialPtAList->Add(fHistcnPtA[j][i]);
 
         }
-        ostringstream fHistGap_name;
-        fHistGap_name << "c_{" << j+2 << "}{2}(|#Delta #eta| > 1)";
-        fHistGap[j] = new TProfile(fHistGap_name.str().c_str(),"",NcentBin,centEdges);
+        fHistGap[j] = new TProfile(Form("c_{%i}Gap",j+2),"",NcentBin,centEdges);
         fReferenceFlowList->Add(fHistGap[j]);
 
-        /*
-        double a[NPtBin[j]+1];
-        for(int i(1); i < NPtBin[j]+2; i++)
+        for(int i(0); i < NPtBin; i++)
         {
-            ostringstream fHistPtA_PtB_name;
-            memcpy(a,PtEdges[j],(i+1)*sizeof(double));                                                     //Get the pt ranges up to and including PtB
-            fHistPtA_PtB_name << "c_{" << j+2 << "}{2}(p_{T}^{a}, p_{T}^{b}), p_{T}^{a} = " << a[i];
-            fHistPtA_PtB[j][i] = new TProfile(fHistPtA_PtB_name.str().c_str(),"",i, a);
+            fHistPtA_PtB[j][i] = new TProfile(Form("c_{%i}{2}PtB_PtA_%f_%f",j+2,PtEdges[i],PtEdges[i+1]),"",NPtBin, PtEdges);
             fPtA_PtB_List->Add(fHistPtA_PtB[j][i]);
+
+            fHistPtA_PtB_LS[j][i] = new TProfile(Form("c_{%i}{4}PtB_LS_PtA_%f_%f",j+2,PtEdges[i],PtEdges[i+1]),"",NPtBin, PtEdges);
+            fPtA_PtB_List->Add(fHistPtA_PtB_LS[j][i]);
+
+            fHistPtA_PtB_OS[j][i] = new TProfile(Form("c_{%i}{4}PtB_OS_PtA_%f_%f",j+2,PtEdges[i],PtEdges[i+1]),"",NPtBin, PtEdges);
+            fPtA_PtB_List->Add(fHistPtA_PtB_OS[j][i]);
+            
         }
-        */
-        
     }
     
     PostData(1, fOutputList);
@@ -279,12 +268,12 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
     PostData(3, fReferenceFlowList);
     PostData(4, fDifferentialFlowList);
     PostData(5, fDifferentialPtAList);
-
+    PostData(6, fPtA_PtB_List);
 }
 
 Bool_t AliAnalysisDecorrTask::LoadWeights()
 {
-    if(bUseOwnWeights)
+    if(!fUseWeights3D)
     {
         TList* listFlowWeights = nullptr;
        
@@ -297,7 +286,7 @@ Bool_t AliAnalysisDecorrTask::LoadWeights()
             listFlowWeights = (TList*) fWeightList->FindObject("averaged");
             if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fWeightList->ls(); return kFALSE; }
         }
-        //}
+        
         fh2Weights = (TH2D*) listFlowWeights->FindObject("Refs");
         return kTRUE;
     }
@@ -337,53 +326,53 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     //Multiplicity
     Int_t iTracks(fAOD->GetNumberOfTracks());
     //Fill RP vectors
-    bool bRef = kTRUE;   bool bDiff = kFALSE; 
     FillRPvectors(fAOD,dEtaGap);
-    CalculateCorrelations(centrality, bRef, bDiff, 0.0);
+    CalculateCorrelations(centrality, 0.0);
 
     //Fill POI vectors
-    bRef = kFALSE;    bDiff = kTRUE;  
     int iNumPtBins = fHistPt->GetNbinsX();
-
+    if (bDiff) {
     //Loop over Pt bins
-    for(int iPtA(1); iPtA < iNumPtBins+1; ++iPtA)
-    {
+        for(int iPtA(1); iPtA < iNumPtBins+1; ++iPtA)
+        {
+            double dPt = fHistPt->GetXaxis()->GetBinCenter(iPtA);
+            double dPtLow = fHistPt->GetXaxis()->GetBinLowEdge(iPtA);
+            double dPtHigh = fHistPt->GetXaxis()->GetBinUpEdge(iPtA);
 
-        double dPt = fHistPt->GetXaxis()->GetBinCenter(iPtA);
-        double dPtLow = fHistPt->GetXaxis()->GetBinLowEdge(iPtA);
-        double dPtHigh = fHistPt->GetXaxis()->GetBinUpEdge(iPtA);
-
-        FillPOIvectors(fAOD, dEtaGap, dPtLow, dPtHigh, kFALSE);
-        CalculateCorrelations(centrality, bRef, bDiff, dPt);
-        /* Too slow  -- reimplement
-        for(int iPtB(1); iPtB <= iPtA; ++iPtB)
-        { 
-            double dPtB = fHistPt->GetXaxis()->GetBinCenter(iPtB);
-            double dPtBLow = fHistPt->GetXaxis()->GetBinLowEdge(iPtB);
-            double dPtBHigh = fHistPt->GetXaxis()->GetBinUpEdge(iPtB);
-            FillPOIvectors(fAOD, dEtaGap, dPtBLow, dPtBHigh, kTRUE);
-            //CalculatePtBCorrelations(centrality, dPtB, iPtA);              
-        }
-        */
-        
+            FillPOIvectors(fAOD, dEtaGap, dPtLow, dPtHigh);
+            CalculateCorrelations(centrality, dPt);
+            if(bPtB)
+            {
+                // Too slow  -- reimplement maybe
+                if(centrality > 10.0 && centrality <= 20.0)
+                {
+                    for(int iPtB(1); iPtB < iNumPtBins+1; ++iPtB)
+                    { 
+                        double dPtB = fHistPt->GetXaxis()->GetBinCenter(iPtB);
+                        double dPtBLow = fHistPt->GetXaxis()->GetBinLowEdge(iPtB);
+                        double dPtBHigh = fHistPt->GetXaxis()->GetBinUpEdge(iPtB);
+                        FillPtBvectors(fAOD, dEtaGap, dPtBLow, dPtBHigh);
+                        CalculatePtBCorrelations(centrality, dPtB, iPtA);    
+                    }
+                }
+            }
+        } 
     }
     //Extra stat histograms
     fHistCent->Fill(centrality,iTracks,1);
-
     
     PostData(1, fOutputList);
     PostData(2, fObservablesList);
     PostData(3, fReferenceFlowList);
     PostData(4, fDifferentialFlowList);
     PostData(5, fDifferentialPtAList);
+    PostData(6, fPtA_PtB_List);
 
 }
-//Function to calculate correlations
-void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, bool bRef, bool bDiff, double dPt)
-{
-    const int NcentBin = 6;
-    double centEdges[NcentBin+1] = {0.,5.,10.,20.,30.,40.,50.};
 
+//Function to calculate correlations
+void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, double dPt)
+{
     for(int j(0); j < fHarmPlots; j++)
     {
         double iHarm = j+2;
@@ -410,7 +399,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, bool bRef, 
                 fHistGap[j]->Fill(centrality,dValue,Dn2Gap10);
             }
         } 
-        else if (bDiff) //Differential cumulants  
+        if (bDiff) //Differential cumulants  
         {                                             
             TComplex cDnNeg = TComplex(0.0,0.0,kFALSE);
             TComplex cNumNeg = TComplex(0.0,0.0,kFALSE);
@@ -436,7 +425,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, bool bRef, 
     
             if (dDnPos > 0.0) { bFillPos = kTRUE; dValuePos = dNumPos/dDnPos; }
             if (bFillPos && Abs(dValuePos) > 1.0) {bFillPos = kFALSE; }
-        
+            
             for(int i(0); i < NcentBin; ++i)
             {
                 if (centrality > centEdges[i] && centrality < centEdges[i+1])
@@ -474,12 +463,9 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, bool bRef, 
     } 
     return;
 }
-/*
+
 void AliAnalysisDecorrTask::CalculatePtBCorrelations(double centrality, double dPt, int iPtA)
 {
-    //const int NcentBin = 6;
-    //double centEdges[NcentBin+1] = {0.,5.,10.,20.,30.,40.,50.};
-
     for(int j(0); j < fHarmPlots; j++)
     {       
         int iHarm = j+2;
@@ -488,9 +474,9 @@ void AliAnalysisDecorrTask::CalculatePtBCorrelations(double centrality, double d
         TComplex cNumOS = TComplex(0.0,0.0,kFALSE);
         TComplex cNum = TComplex(0.0,0.0,kFALSE);
 
-        cDn = FourDiff_PtA_PtB(0,0,0,0);
-        cNumLS = FourDiff_PtA_PtB(iHarm,iHarm,-iHarm,-iHarm);
-        cNumOS = FourDiff_PtA_PtB(iHarm,-iHarm,iHarm,-iHarm);
+        cDn = FourDiffGap10_PtA_PtB(0,0,0,0);
+        cNumLS = FourDiffGap10_PtA_PtB(iHarm,iHarm,-iHarm,-iHarm);
+        cNumOS = FourDiffGap10_PtA_PtB(iHarm,-iHarm,iHarm,-iHarm);
 
         double dDn = cDn.Re();
         double dNumLS = cNumLS.Re();
@@ -499,17 +485,16 @@ void AliAnalysisDecorrTask::CalculatePtBCorrelations(double centrality, double d
         double dValueLS = 0.0;
         double dValueOS = 0.0;
         bool bFill = kFALSE;
-        if (dDn > 0.0) { bFill = kTRUE; } 
+        if (dDn > 0.0) { bFill = kTRUE; dValueLS = dNumLS/dDn; dValueOS = dNumOS/dDn; } 
     
         if (!bFill) { return; }
         
         //Fill four particle correlations AABB and ABAB here
-        if (centrality > 0.0 && centrality <= 10.0)
-        {
-            fHistPtA_PtB_LS[j][iPtA]->Fill(dPt,dValueLS,dDn);
-            fHistPtA_PtB_OS[j][iPtA]->Fill(dPt,dValueOS,dDn);
-        }
-
+        
+        fHistPtA_PtB_LS[j][iPtA-1]->Fill(dPt,dValueLS,dDn);
+        fHistPtA_PtB_OS[j][iPtA-1]->Fill(dPt,dValueOS,dDn);
+        
+        
         //r_n correlations
         cDn = TwoDiffGap10_PtA_PtB(0,0);
         cNum = TwoDiffGap10_PtA_PtB(iHarm,-iHarm);
@@ -519,18 +504,18 @@ void AliAnalysisDecorrTask::CalculatePtBCorrelations(double centrality, double d
 
         double dValue = 0.0;
         bFill = kFALSE;
-        if (dDn > 0.0) { bFill = kTRUE; }
+        if (dDn > 0.0) { bFill = kTRUE; dValue = dNum/dDn; }
         if (!bFill) { return; }
-
-        //Fill two particle correlation from differen pt bins here
-        if (centrality > 0.0 && centrality <= 10.0)
-        {
-            fHistPtA_PtB[j][iPtA]->Fill(dPt,dValue,dDn);
-        }
+        
+        //Fill two particle correlation from differen pt bins here    
+        fHistPtA_PtB[j][iPtA-1]->Fill(dPt,dValue,dDn);
+        
+        
+        
     } //End for fHarmPlots
 
 }
-*/
+
 //Method to fill RP vectors and stat histograms
 void AliAnalysisDecorrTask::FillRPvectors(AliAODEvent* fAOD, double dEtaGap)
 {
@@ -568,7 +553,7 @@ void AliAnalysisDecorrTask::FillRPvectors(AliAODEvent* fAOD, double dEtaGap)
 
         //Calculating weights
         
-        double dWeight = GetWeights(dPhi, dEta, dVz, bUseOwnWeights);
+        double dWeight = GetWeights(dPhi, dEta, dVz);
         if(dWeight <= 0.0) { dWeight = 1.0; }
         
         //Filling Q-vectors for RPs
@@ -613,20 +598,14 @@ void AliAnalysisDecorrTask::FillRPvectors(AliAODEvent* fAOD, double dEtaGap)
 }
 
 //Method to fill POIs into pvectors
-void AliAnalysisDecorrTask::FillPOIvectors(AliAODEvent* fAOD, const double dEtaGap, const double dPtLow, const double dPtHigh, bool bPtB)
+void AliAnalysisDecorrTask::FillPOIvectors(AliAODEvent* fAOD, const double dEtaGap, const double dPtLow, const double dPtHigh)
 {
-    if(bPtB)
-    {
-        ResetFlowVector(pvectorPtB);
-        ResetFlowVector(pvectorPtB10M);
-        ResetFlowVector(pvectorPtB10P);
-        ResetFlowVector(qvectorPtB);
-    } else {
-        ResetFlowVector(pvector);
-        ResetFlowVector(pvector10M);
-        ResetFlowVector(pvector10P);
-        ResetFlowVector(qvector);
-    }
+
+    ResetFlowVector(pvector);
+    ResetFlowVector(pvector10M);
+    ResetFlowVector(pvector10P);
+    ResetFlowVector(qvector);
+
 
     int iPart(fAOD->GetNumberOfTracks());
     if(iPart < 1) { return; }
@@ -653,7 +632,7 @@ void AliAnalysisDecorrTask::FillPOIvectors(AliAODEvent* fAOD, const double dEtaG
         if(!bIsWithinPOI) { continue; }
 
         //Load weights
-        double dWeight = GetWeights(dPhi,dEta,dVz,bUseOwnWeights);
+        double dWeight = GetWeights(dPhi,dEta,dVz);
         if(dWeight <= 0.0) { dWeight = 1.0; }
 
         //POI with no eta gap
@@ -665,21 +644,12 @@ void AliAnalysisDecorrTask::FillPOIvectors(AliAODEvent* fAOD, const double dEtaG
                 {
                     Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                     Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                    if(bPtB)
-                    {
-                        pvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                    } else {
-                        pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                    }
+                    pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                    
                     //Check if there is overlap of POI and RP
                     if(bIsWithinRP)
                     {
-                        if(bPtB)
-                        {
-                            qvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                        } else {
-                            qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                        }
+                        qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                     }
                 }  //End for iPower
             }  //End for iHarm
@@ -693,12 +663,8 @@ void AliAnalysisDecorrTask::FillPOIvectors(AliAODEvent* fAOD, const double dEtaG
                     {
                         Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                         Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                        if(bPtB)
-                        {
-                            pvectorPtB10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                        } else {
-                            pvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                        }
+                        pvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                        
                     } //End for iPower
                 }  //End for iHarm
             }
@@ -710,12 +676,97 @@ void AliAnalysisDecorrTask::FillPOIvectors(AliAODEvent* fAOD, const double dEtaG
                     {
                         Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                         Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                        if(bPtB)
-                        {
-                            pvectorPtB10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                        } else {
-                            pvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                        }
+                        pvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                        
+                    } //End for iPower
+                } //End for iHarm
+            }  // end if eta gap
+        } //end if dPtLow < dPt < dPtHigh
+    } //end for track
+
+    return;
+}
+
+//Method to fill POIs into pvectors
+void AliAnalysisDecorrTask::FillPtBvectors(AliAODEvent* fAOD, const double dEtaGap, const double dPtLow, const double dPtHigh)
+{
+
+    ResetFlowVector(pvectorPtB);
+    ResetFlowVector(pvectorPtB10M);
+    ResetFlowVector(pvectorPtB10P);
+    ResetFlowVector(qvectorPtB);
+
+    int iPart(fAOD->GetNumberOfTracks());
+    if(iPart < 1) { return; }
+    double dEtaLimit = 0.5*dEtaGap;
+    double dVz = fAOD->GetPrimaryVertex()->GetZ();
+
+    for(int index(0); index < iPart; ++index)
+    {   
+        AliAODTrack* POItrack = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
+        if(!POItrack || !IsTrackSelected(POItrack)) { continue; }
+
+        double dPt = POItrack->Pt();
+        double dPhi = POItrack->Phi();
+        double dEta = POItrack->Eta();
+
+        //if (Abs(dEta) < dEtaLimit) { continue; } Why the hell is this here?
+
+        //Check for overlap with RPs
+        bool bIsWithinRP = IsWithinRP(POItrack);
+
+        //Check that particle is in POI range
+        bool bIsWithinPOI = IsWithinPOI(POItrack);
+
+        if(!bIsWithinPOI) { continue; }
+
+        //Load weights
+        double dWeight = GetWeights(dPhi,dEta,dVz);
+        if(dWeight <= 0.0) { dWeight = 1.0; }
+
+        //POI with no eta gap
+        if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
+        {
+            for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+            {
+                for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                {
+                    Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                    Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                    pvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+                    //Check if there is overlap of POI and RP
+                    if(bIsWithinRP)
+                    {
+                        qvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                    }
+                }  //End for iPower
+            }  //End for iHarm
+
+            //POI with eta gap
+            if(dEta > dEtaLimit)
+            {
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
+                {
+                    for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                    {
+                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                        pvectorPtB10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                       
+                    } //End for iPower
+                }  //End for iHarm
+            }
+            if (dEta < -dEtaLimit)
+            {
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
+                {
+                    for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                    {
+                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                        pvectorPtB10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                        
                     } //End for iPower
                 } //End for iHarm
             }  // end if eta gap
@@ -840,10 +891,10 @@ Bool_t AliAnalysisDecorrTask::IsEventRejectedAddPileUp() const
   return kFALSE;
 }
 
-double AliAnalysisDecorrTask::GetWeights(double dPhi, double dEta, double dVz, bool bUseOwnWeights)
+double AliAnalysisDecorrTask::GetWeights(double dPhi, double dEta, double dVz)
 {
     double dWeight = 1.0;
-    if(bUseOwnWeights)
+    if(!fUseWeights3D)
     {
         Int_t iBin = fh2Weights->FindFixBin(dPhi,dEta);
         dWeight = fh2Weights->GetBinContent(iBin);

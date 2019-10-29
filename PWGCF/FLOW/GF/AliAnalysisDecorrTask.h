@@ -25,11 +25,15 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
         AliEventCuts            fEventCuts;
         void                    SetPtRange(Double_t min, Double_t max) {fPtMin = min; fPtMax = max; }
+        void                    SetPOIsPtRange(Double_t min, Double_t max) { fPOIsPtmin = min; fPOIsPtmax = max; }
+        void                    SetRPsPtRange(Double_t min, Double_t max) { fRPsPtmin = min; fRPsPtmax = max; }
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
-        bool                    SetInputWeightList(TList* inlist);
         void                    SetEtaGap(double etaGap) { dEtaGap = etaGap; }
-        void                    SetWeightType(Bool_t ownWeights) { bUseOwnWeights = ownWeights; }
-        Bool_t                  GetWeightType() { return bUseOwnWeights; }
+        void                    SetUseWeights3D(Bool_t useWeights3D) { fUseWeights3D = useWeights3D; }
+        void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }
+        //Observable selection
+        void                    SetDiff(Bool_t diff) { bDiff = diff; }
+        void                    SetPtB(Bool_t ptb) { bPtB = ptb; }
         TH2F*                   nuacentral;
 
 
@@ -37,12 +41,14 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         static const Int_t      fNumHarms = 13;             // maximum harmonics length of flow vector array
         static const Int_t      fNumPowers = 9;             // maximum weight power length of flow vector array
         static const Int_t      fHarmPlots = 3;             // Number of harmonics for plotting (v2, v3, v4)
+        static const Int_t      NcentBin = 11;
+        Double_t                centEdges[NcentBin+1]; 
         AliAODEvent*            fAOD;                       //! input event
         TList*                  fOutputList;                //! output list
         TList*                  fReferenceFlowList;         //! Output list for reference flow observables
         TList*                  fDifferentialFlowList;      //! Output list for differential flow observables
         TList*                  fDifferentialPtAList;       //! Output list for differential same bin
-        //TList*                  fPtA_PtB_List;              //! Output list for different pt bins
+        TList*                  fPtA_PtB_List;              //! Output list for different pt bins
         TList*                  fObservablesList;           //! List of common observables
         //Weights
         AliGFWWeights*          fWeights;                   //!
@@ -64,22 +70,23 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TProfile*               fHistcn[fHarmPlots][5];     //!
         TProfile*               fHistGap[fHarmPlots];       //!
         //Differential flow histograms
-        TProfile*               fHistdnNeg[fHarmPlots][6];  //!
-        TProfile*               fHistcnPtA[fHarmPlots][6];  //!
-        TProfile*               fHistdnPos[fHarmPlots][6];  //!
+        TProfile*               fHistdnNeg[fHarmPlots][11];  //!
+        TProfile*               fHistcnPtA[fHarmPlots][11];  //!
+        TProfile*               fHistdnPos[fHarmPlots][11];  //!
 
         //PtA PtB histograms
-        //TProfile*               fHistPtA_PtB[fHarmPlots][28];      //!
-        //TProfile*               fHistPtA_PtB_LS[fHarmPlots][28];   //!
-        //TProfile*               fHistPtA_PtB_OS[fHarmPlots][28];   //!
+        TProfile*               fHistPtA_PtB[fHarmPlots][28];      //!
+        TProfile*               fHistPtA_PtB_LS[fHarmPlots][28];   //!
+        TProfile*               fHistPtA_PtB_OS[fHarmPlots][28];   //!
 
         //Flow method
         bool                    IsWithinRP(const AliAODTrack* track) const;
         bool                    IsWithinPOI(const AliAODTrack* track) const;
         void                    FillRPvectors(AliAODEvent *fAOD, double dEtaLimit);
-        void                    FillPOIvectors(AliAODEvent* fAOD, const double dEtaLimit, const double dPtLow, const double dPtHigh, bool bPtB); 
-        void                    CalculateCorrelations(double centrality, bool bRef, bool bDiff, double dPt);
-        //void                    CalculatePtBCorrelations(double centrality, double dPtB, int iPtA);
+        void                    FillPOIvectors(AliAODEvent* fAOD, const double dEtaLimit, const double dPtLow, const double dPtHigh); 
+        void                    FillPtBvectors(AliAODEvent* fAOD, const double dEtaLimit, const double dPtLow, const double dPtHigh); 
+        void                    CalculateCorrelations(double centrality, double dPt);
+        void                    CalculatePtBCorrelations(double centrality, double dPtB, int iPtA);
 
         //Flow vectors
         TComplex pvector[fNumHarms][fNumPowers];
@@ -157,15 +164,18 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fPtMax;
         Double_t                fAbsEtaMax;
         Double_t                dEtaGap;
-        Bool_t                  bUseOwnWeights;
+        Bool_t                  fUseWeights3D;
         TString                 fCentEstimator;
         Bool_t                  InitTask();
         Bool_t                  LoadWeights();
-        double                  GetWeights(double dPhi, double dEta, double dVz, bool bUseOwnWeights);
+        double                  GetWeights(double dPhi, double dEta, double dVz);
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
         Bool_t                  bHasGap;
+        Bool_t                  bDiff;
+        Bool_t                  bRef;
+        Bool_t                  bPtB;
         double_t                fPOIsPtmax;
         double_t                fPOIsPtmin;
         double_t                fRPsPtmax;

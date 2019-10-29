@@ -34,7 +34,7 @@ void connectContainer(AliAnalysisDataContainer* container,AliAnalysisDecorrTask*
   task->nuacentral->SetDirectory(0);
 }
 
-AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString sWeightsFile = "", TString sVytauWeights = "")
+AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = "", TString sWeightsFile = "", TString sVytauWeights = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -52,29 +52,30 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString sWeightsFile
 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += ":MyTask";      // create a subfolder in the file
+    fileName += Form(":%s",dirname.Data());      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisDecorrTask* task = new AliAnalysisDecorrTask(name.Data());   
     if(!task) return 0x0;
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-
-    task->SetWeightType(kFALSE);        //kTRUE for own weights and kFALSE for Vytau's
-
-    bool bUseOwnWeights = task->GetWeightType();
+    bool useWeights3D = kTRUE;
+    task->SetUseWeights3D(useWeights3D);        //kTRUE for own weights and kFALSE for Vytau's
+    task->SetDiff(kTRUE);
+    task->SetPtB(kTRUE);
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer("ObservableContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer("ReferenceFlowContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer("DifferentialFlowContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,5,mgr->CreateContainer("DifferentialPtAContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("ObservableContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("ReferenceFlowContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("DifferentialFlowContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("DifferentialPtAContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("PtA_PtB_Container_%s",dirname.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
-    if(bUseOwnWeights) 
+    if(!useWeights3D) 
     {
         TObjArray* taskContainers = mgr->GetContainers();
         if(!taskContainers) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
