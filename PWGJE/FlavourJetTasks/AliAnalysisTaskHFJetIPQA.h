@@ -93,6 +93,8 @@ public:
         Int_t trackLabel=-1 ;
         Double_t trackpt=-99;
     };
+
+    //_________________________
     //FUNCTION DEFINITIONS
     AliAnalysisTaskHFJetIPQA();
     AliAnalysisTaskHFJetIPQA(const char *name);
@@ -105,54 +107,92 @@ public:
     virtual Bool_t Run();
     virtual Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
 
-
-
-    void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
-    void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
-                                       TH1F *ChargedKaon,TH1F *Proton,TH1F *D0,TH1F *DPlus,TH1F *DStarPlus,
-                                       TH1F *DSPlus,TH1F *LambdaC,TH1F *BPlus,TH1F *B0,TH1F *LambdaB,TH1F *BStarPlus);
-    void SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphXi, TGraph* K0Star, TGraph* Phi);
+    //__________________________
+    //basic stuff
     void localtoglobal(double alpha, double *local, double *global);
-    Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
    // void EventwiseCleanup();
     AliVParticle * GetVParticleMother(AliVParticle *part);
-    Bool_t IsPhysicalPrimary(AliVParticle *part);
-    void SetDefaultAnalysisCuts();
-    void ChangeDefaultCutTo(AliAnalysisTaskHFJetIPQA::bCuts cutname, Double_t newcutvalue);
     Double_t GetLocalAlphaAOD(AliAODTrack *track);
     Double_t GetTrackCurvature(AliAODTrack *track);
-    AliAODVertex *RemoveDaughtersFromPrimaryVtx(const AliVTrack * const track);
-    void GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut);
     Double_t GetLocalThetaAOD(AliAODTrack *track);
-    Bool_t IsVertexSelected(const AliVVertex *vertex);
-    Bool_t GetImpactParameter(const AliAODTrack *track, const AliAODEvent *event, Double_t *dca, Double_t *cov, Double_t *XYZatDCA);
-    AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
-    Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign);
     Bool_t getJetVtxMass( AliEmcalJet *jet, double &value);
     void SetJetRadius(Double_t fJetRadRead){fJetRadius=fJetRadRead;}
+
     int GetMCTruth(AliAODTrack *track, int &motherpdg);
     bool GetPIDCombined(AliAODTrack * track, double *prob, int &nDetectors, UInt_t &usedDet , AliPID::EParticleType &MostProbablePID, bool setTrackPID );
     void setFProductionNumberPtHard(Int_t value=-1)
     {
         fProductionNumberPtHard = value;
     }
-    void RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
     Bool_t IsParton(int pdg);
-    Double_t CalculateJetProb(AliEmcalJet *jet);
-    Double_t CalculatePSTrack(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass);
-    Double_t CalculatePSTrackPID(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass, Int_t species);
 
-    //Setter for turning Corrections off and on
+    //____________________________
+    //Cuts
+    void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
+    void SetDefaultAnalysisCuts();
+    Bool_t IsPhysicalPrimary(AliVParticle *part);
+    void ChangeDefaultCutTo(AliAnalysisTaskHFJetIPQA::bCuts cutname, Double_t newcutvalue);
+    void GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut);
+    Bool_t IsVertexSelected(const AliVVertex *vertex);
+    Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
+    bool IsFromElectron(AliAODTrack *track);
+    bool IsFromProton(AliAODTrack *track);
+    bool IsFromKaon(AliAODTrack *track);
+    bool IsFromPion(AliAODTrack *track);
+
+    //_____________________________
+    //Impact Parameter Generation
+    Bool_t GetImpactParameter(const AliAODTrack *track, const AliAODEvent *event, Double_t *dca, Double_t *cov, Double_t *XYZatDCA);
+    AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
+    Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign);
+
+    //______________________________
+    //Corrections
+    double DoUESubtraction(AliJetContainer* &jetcongen, AliJetContainer* &jetconrec, AliEmcalJet* &jetrec, double jetpt);
+    void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
+                                       TH1F *ChargedKaon,TH1F *Proton,TH1F *D0,TH1F *DPlus,TH1F *DStarPlus,
+                                       TH1F *DSPlus,TH1F *LambdaC,TH1F *BPlus,TH1F *B0,TH1F *LambdaB,TH1F *BStarPlus);
+    void SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphXi, TGraph* K0Star, TGraph* Phi);
+    AliAODVertex *RemoveDaughtersFromPrimaryVtx(const AliVTrack * const track);
+
+    //_______________________________
+    //Filling Histograms
+    Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
+    void FillRecHistograms(int jetflavour, double jetpt, double eta, double phi);
+    void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen);
+    void FillIPTypePtHists(int jetflavour, double jetpt, int nTracks);
+    void FillTrackTypeResHists();
+
+    //________________________________
+    //Setters
     void SmearTrack(AliAODTrack *track);
     void setFRunSmearing(Bool_t value){fRunSmearing = value;}
     void setFDoMCCorrection(Bool_t value){fDoMCCorrection=value;}
     void setFDoUnderlyingEventSub(Bool_t value){fDoUnderlyingEventSub=value;}
     void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
+
+    Bool_t SetResFunctionPID(const char * filename);
+    Double_t getFMCglobalDCAxyShift() const;
+    void setFMCglobalDCAxyShift(const Double_t &value);
+    Double_t getFVertexRecalcMinPt() const;
+    void setFVertexRecalcMinPt(const Double_t &value);
+    void setFMCglobalDCASmear(const Double_t value);
+    void setFParam_Smear_Sigma(Double_t value){fParam_Smear_Sigma = value;}
+    void setFParam_Smear_Mean(Double_t value){fParam_Smear_Mean = value;}
+    void setGlobalVertex(Bool_t value){fGlobalVertex = value;}
+    void setDoNotCheckIsPhysicalPrimary(Bool_t value){fDoNotCheckIsPhysicalPrimary = value;}
+    void setDoJetProb(Bool_t value){fDoJetProb = value;}
+    void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
+
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
     void setfNThresholds(Int_t value){fNThresholds=value;}
 
+    //_____________________________
+    //Lund Plane
+    void RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
 
+    //_____________________________
     //Track Counting
     enum TaggingType{
           Full,
@@ -169,38 +209,13 @@ public:
     void ReadProbvsIPLookup(TObjArray *&oLookup);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
 
+    //________________________________
     //Probability Tagging
     double GetTrackProbability(double jetpt, bool* hasIPs, double* ipval);
     void FillProbabilityHists(double jetpt,double  probval,int jetflavour);
-
-    Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
-    bool IsFromElectron(AliAODTrack *track);
-    bool IsFromProton(AliAODTrack *track);
-    bool IsFromKaon(AliAODTrack *track);
-    bool IsFromPion(AliAODTrack *track);
-    Bool_t SetResFunctionPID(const char * filename);
-    Double_t getFMCglobalDCAxyShift() const;
-    void setFMCglobalDCAxyShift(const Double_t &value);
-    Double_t getFVertexRecalcMinPt() const;
-    void setFVertexRecalcMinPt(const Double_t &value);
-    void setFMCglobalDCASmear(const Double_t value);
-    void setFParam_Smear_Sigma(Double_t value)
-    {
-        fParam_Smear_Sigma = value;
-    }
-    void setFParam_Smear_Mean(Double_t value)
-    {
-        fParam_Smear_Mean = value;
-    }
-
-    void setGlobalVertex(Bool_t value)
-    {
-        fGlobalVertex = value;
-    }
-
-    void setDoNotCheckIsPhysicalPrimary(Bool_t value){fDoNotCheckIsPhysicalPrimary = value;}
-    void setDoJetProb(Bool_t value){fDoJetProb = value;}
     void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
+    double IntegrateIP(int iJetPtBin, int iIPBin, int iN);
+
     void useTreeForCorrelations(Bool_t value){fUseTreeForCorrelations = value;}
     //virtual Bool_t IsEventSelected();
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
@@ -266,21 +281,36 @@ private:
 
 
 private:
-    //Booleans for different corrections
+    //___________________
+    //Booleans for settings
     Bool_t   fRunSmearing;//
     Bool_t   fUsePIDJetProb;//
     Bool_t   fDoMCCorrection;//  Bool to turn on/off MC correction. Take care: some histograms may still be influenced by weighting.
     Bool_t   fDoUnderlyingEventSub;//
     Bool_t   fDoFlavourMatching;//
-
-    Bool_t   fFillCorrelations;//
     Double_t fParam_Smear_Sigma;//
     Double_t fParam_Smear_Mean;//
     Bool_t   fGlobalVertex;//
     Bool_t fDoNotCheckIsPhysicalPrimary;//
     Bool_t fDoJetProb;
-    Bool_t fDoLundPlane;
+    Bool_t   fFillCorrelations;//
+    Bool_t fDoLundPlane;//
+    Bool_t fDoTCTagging;//
+    Bool_t fDoProbTagging;//
 
+    //_____________________
+    //variables
+    int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3 for track counting algorithm
+    vector<double > fFracs;
+    Float_t fXsectionWeightingFactor;//
+    Int_t   fProductionNumberPtHard;//
+    Double_t fJetRadius;//
+    Double_t fDaughtersRadius;//
+    Int_t fNoJetConstituents;//
+    Int_t fNThresholds;//
+
+    //_____________________
+    //TGraphs
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
     TGraph * fGraphSigmaMC;//!
@@ -294,29 +324,16 @@ private:
     TGraph * fGeant3FlukaAntiLambda;//!
     TGraph * fGeant3FlukaKMinus;//!
 
+    //*********************************
+    //Histograms
+
+    //__________________________
     //Histograms for track counting
     std::vector<TH1D*> h1DThresholdsFirst; //0-> single probability, 1-> double probability, 2-> tripple probability
     std::vector<TH1D*> h1DThresholdsSecond; //
     std::vector<TH1D*> h1DThresholdsThird;//
-    TH1D* h1DTrueBTagged;//!
-    TH1D* h1DTrueBTaggedSingle1st;//!
-    TH1D* h1DTrueBTaggedSingle2nd;//!
-    TH1D* h1DTrueBTaggedSingle3rd;//!
-    TH1D* h1DTrueBTaggedDouble12;//!
-    TH1D* h1DTrueBTaggedDouble23;//!
-    TH1D* h1DTrueBTaggedTripple;//!
 
-    TH1D* h1DFalseBTagged;//!
-    TH1D* h1DFalseBTaggedSingle1st;//!
-    TH1D* h1DFalseBTaggedSingle2nd;//!
-    TH1D* h1DFalseBTaggedSingle3rd;//!
-    TH1D* h1DFalseBTaggedDouble12;//!
-    TH1D* h1DFalseBTaggedDouble23;//!
-    TH1D* h1DFalseBTaggedTripple;//!
-
-    int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3 for track counting algorithm
-    vector<double > fFracs;
-
+    //_____________________________
     //Histograms for probability tagging
     std::vector<TH2D*> h2DProbLookup;//
     TH2D* h2DProbDistsUnid;//!
@@ -326,9 +343,17 @@ private:
     TH2D* h2DProbDistss;//!
     TH2D* h2DProbDists;//!
 
-    //! \brief cCuts
+    TH2D* h2DLNProbDistsUnid;//!
+    TH2D* h2DLNProbDistsudsg;//!
+    TH2D* h2DLNProbDistsc;//!
+    TH2D* h2DLNProbDistsb;//!
+    TH2D* h2DLNProbDistss;//!
+    TH2D* h2DLNProbDists;//!
+
     TCanvas *cCuts; //
-    //! \brief fMCArray
+
+    //________________________________
+    //vectors
     TClonesArray     *fMCArray;//!
     AliMCEvent       *fMCEvent;//!
     AliESDtrackCuts  *fESDTrackCut;//
@@ -344,13 +369,8 @@ private:
 
     TGraph fResolutionFunction[200];//[200]<-
     Double_t fAnalysisCuts[19]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
+
     AliPIDCombined *fCombined ;//!
-    Float_t fXsectionWeightingFactor;//
-    Int_t   fProductionNumberPtHard;//
-    Double_t fJetRadius;//
-    Double_t fDaughtersRadius;//
-    Int_t fNoJetConstituents;//
-    Int_t fNThresholds;//
 
     Double_t fMCglobalDCAxyShift;//
     Double_t fMCglobalDCASmear;//
@@ -422,7 +442,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 41)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 42)
 };
 
 #endif
