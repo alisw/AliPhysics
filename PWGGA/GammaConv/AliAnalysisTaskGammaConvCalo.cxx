@@ -1178,57 +1178,28 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
   // Set special pt binning for pp 8TeV
-  if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k7TeV ||
-      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV || 
+  if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
+      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
+      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV ||
+      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k7TeV ||
+      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ||
       ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV){
-    nBinsPt                   = 159;
-    minPt                     = 0;
-    maxPt                     = 40;
-    for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 100) arrPtBinning[i]            = 0.10*i;
-      else if(i<140) arrPtBinning[i]          = 10.+0.25*(i-100);
-      else if(i<160) arrPtBinning[i]          = 20.+1.00*(i-140);
-      else arrPtBinning[i]                    = maxPt;
-    }
-    nBinsQAPt                 = 190;
-    maxQAPt                   = 40;
-    for(Int_t i=0; i<nBinsQAPt+1;i++){
-      if(i<60) arrQAPtBinning[i]              = 0.05*i;
-      else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-      else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-      else if(i<190) arrQAPtBinning[i]        = 20.+1.0*(i-170);
-      else arrQAPtBinning[i]                  = maxQAPt;
-    }
-    nBinsClusterPt            = 800;
-    minClusterPt              = 0;
-    maxClusterPt              = 80;
-    for(Int_t i=0; i<nBinsClusterPt+1;i++){
-      arrClusPtBinning[i]     = ((maxClusterPt-minClusterPt)/nBinsClusterPt)*i;
-    }
-  // Set special pt binning for pPb 5TeV
-  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
-             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
-             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV      ){
-    binWidthPt                = 0.05;
-    nBinsPt                   = 205;
+    nBinsPt                   = 179;
     minPt                     = 0;
     maxPt                     = 60;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.3*i;
-      else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
-      else if(i<125) arrPtBinning[i]          = 3.+0.1*(i-55);
-      else if(i<165) arrPtBinning[i]          = 10.+0.25*(i-125);
-      else if(i<205) arrPtBinning[i]          = 20.+1.0*(i-165);
+      if (i < 100) arrPtBinning[i]            = 0.10*i;
+      else if(i<140) arrPtBinning[i]          = 10.+0.25*(i-100);
+      else if(i<180) arrPtBinning[i]          = 20.+1.00*(i-140);
       else arrPtBinning[i]                    = maxPt;
     }
-    nBinsQAPt                 = 210;
+    nBinsQAPt                 = 179;
     maxQAPt                   = 60;
     for(Int_t i=0; i<nBinsQAPt+1;i++){
-      if(i<60) arrQAPtBinning[i]              = 0.05*i;
-      else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-      else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-      else if(i<210) arrQAPtBinning[i]        = 20.+1.0*(i-170);
-      else arrQAPtBinning[i]                  = maxQAPt;
+      if (i < 100) arrQAPtBinning[i]            = 0.10*i;
+      else if(i<140) arrQAPtBinning[i]          = 10.+0.25*(i-100);
+      else if(i<180) arrQAPtBinning[i]          = 20.+1.00*(i-140);
+      else arrQAPtBinning[i]                    = maxQAPt;
     }
     nBinsClusterPt            = 301;
     minClusterPt              = 0;
