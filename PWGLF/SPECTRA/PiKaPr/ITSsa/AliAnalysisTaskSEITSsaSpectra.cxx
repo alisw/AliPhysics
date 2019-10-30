@@ -166,6 +166,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
 
       fHistReco[index] = NULL;
       fHistRecoMC[index] = NULL;
+      fHistRecoTrueMC[index] = NULL;
 
       fHistTruePIDMCReco[index] = NULL;
       fHistTruePIDMCGen[index] = NULL;
@@ -481,6 +482,19 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
         fHistRecoMC[index]->GetAxis(1)->Set(nPtBins, ptBins);     // Real limits for rec pt
         fHistRecoMC[index]->GetAxis(2)->Set(nPtBins, ptBins);     // Real limits for gen pt
         fOutput->Add(fHistRecoMC[index]);
+
+        hist_name = Form("fHistRecoTrueMC%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
+        const UInt_t nDims2 = 4;                                         // cent, recPt, genPt, IsPrim/Sec
+        int nBins2[nDims2] = { nCentBins, nPtBins, nPtBins, 4 }; //
+        double minBin2[nDims2] = { 0., 0., 0., -.5 };         // Dummy limits for cent, recPt, genPt
+        double maxBin2[nDims2] = { 1., 1., 1., 3.5 };           // Dummy limits for cent, recPt, genPt
+        fHistRecoTrueMC[index] =
+          new THnSparseF(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{p}_{T} (GeV/#it{c});", nDims2,
+                         nBins2, minBin2, maxBin2);
+        fHistRecoTrueMC[index]->GetAxis(0)->Set(nCentBins, centBins); // Real limits for cent
+        fHistRecoTrueMC[index]->GetAxis(1)->Set(nPtBins, ptBins);     // Real limits for rec pt
+        fHistRecoTrueMC[index]->GetAxis(2)->Set(nPtBins, ptBins);     // Real limits for gen pt
+        fOutput->Add(fHistRecoTrueMC[index]);
 
         //        // Histograms MC part Rec.
         const int nPhysBins = 4;
@@ -1031,23 +1045,31 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       // information from the MC kinematics (truth PID)
       if (fIsMC && lIsGoodPart) {
         fHistSepPowerTrue[lMCtIndex]->Fill(lMCpt, dEdx);
+        int ptype;
         if (lMCevent->IsPhysicalPrimary(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 0);
           fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 0);
+          ptype = 0;
         }
         else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 1);
           fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 1);
+          ptype = 1;
         }
         else if (lMCevent->IsSecondaryFromMaterial(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 2);
           fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 2);
+          ptype = 2;
         }
         else {
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 3);
           fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 3);
+          ptype = 3;
           AliWarning("Weird particle physics");
         }
+
+        double tmp_vect2[4] = {fEvtMult, trkPt, lMCpt, static_cast<double>(ptype)};
+        fHistRecoTrueMC[lMCtIndex]->Fill(tmp_vect2);
       }
 
       int binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
