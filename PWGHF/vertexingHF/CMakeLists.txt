@@ -52,6 +52,7 @@ set(SRCS
   AliRDHFCuts.cxx
   AliVertexingHFUtils.cxx
   AliHFSystErr.cxx
+  AliRDHFCutsB0toDPi.cxx
   AliRDHFCutsB0toDStarPi.cxx
   AliRDHFCutsBPlustoD0Pi.cxx
   AliRDHFCutsD0toKpi.cxx
@@ -71,6 +72,7 @@ set(SRCS
   AliRDHFCutsXicZerotoXiPifromAODtracks.cxx
   AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliAnalysisVertexingHF.cxx
+  AliAnalysisTaskSEB0toDPi.cxx
   AliAnalysisTaskSEB0toDStarPi.cxx
   AliAnalysisTaskSEBPlustoD0Pi.cxx
   AliAnalysisTaskSEVertexingHF.cxx
