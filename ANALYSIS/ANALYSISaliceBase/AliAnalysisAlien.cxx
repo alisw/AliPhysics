@@ -1298,7 +1298,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             //gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
             TGridCollection *tmp = gGrid->OpenCollectionQuery(gGrid->Command(command), kTRUE);
             tmp->ExportXML(Form("file://__tmp%d__%s", stage, file.Data()), kFALSE, kFALSE, command.Data());
-						delete tmp;
+            delete tmp;
             //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage, file.Data()));
             Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
             Bool_t nullFile = kFALSE;
@@ -1334,7 +1334,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             nstart += ncount;
          } else {
             if (cbase) {
-							cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data()), 1000000));
+               cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data()), 1000000));
                printf("... please wait - TAlienCollection::Add() scales badly...\n");
 	      // cholm - Avoid using very slow TAlienCollection 
 	      // cbase->Add(cadd);
@@ -1431,13 +1431,17 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data()), 1000000));
                if (!cbase) cbase = cadd;
                else {
+		  // cholm - Avoid using very slow TAlienCollection 
+		  // cbase->Add(cadd);
+		  // cholm - Use AddFast (via interpreter)
                   cbase->AddFast(cadd);
+
                   delete cadd;
                }   
                nstart += ncount;
             } else {
                if (cbase && fNrunsPerMaster<2) {
-								 cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data()), 1000000));
+                 cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data()), 1000000));
                   printf("... please wait - TAlienCollection::Add() scales badly...\n");
 		  // cholm - Avoid using very slow TAlienCollection 
 		  // cbase->Add(cadd);
@@ -1577,7 +1581,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                   Error("CreateDataset", "File %s has more than %d entries. Please set the number of runs per master to 1 !", 
                           file.Data(),gMaxEntries);
                   return kFALSE;
-               }
+               }           
                cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(Form("__tmp%d__%s", stage, file.Data())));
                if (!cbase) cbase = cadd;
                else {
@@ -1635,8 +1639,11 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                schunk = Form(fRunPrefix.Data(), irun);
                cbase = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(file.Data()));
             } else {
-                cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(file.Data()));
-                cbase->AddFast(cadd);
+               cadd = dynamic_cast<TAliceCollection*>(gGrid->OpenCollection(file.Data()));
+	       // cholm - Avoid using very slow TAlienCollection 
+	       // cbase->Add(cadd);
+	       // cholm - Use AddFast (via interpreter)
+	       cbase->AddFast(cadd);
                delete cadd;
             }
             format = Form("%%s_%s.xml", fRunPrefix.Data());
