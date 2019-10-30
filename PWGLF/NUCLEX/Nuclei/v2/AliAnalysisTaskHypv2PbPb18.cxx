@@ -962,7 +962,9 @@ void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd, Double_t vz, Int_t evtt
     
     if(!fESDtrackCutsEP->AcceptTrack((AliESDtrack*)esdTrk1))
       continue; //tpc only track
-     
+
+    if(!PassedBasicTrackQualityCuts_Pos (esdTrk1))continue;
+
     if (TMath::Abs(esdTrk1->Eta()) < 0.8 && esdTrk1->GetTPCNcls() >= 70 && esdTrk1->Pt() >= 0.2 && esdTrk1->Pt() < 3.){
       Qxtn += TMath::Cos(fNHarm*esdTrk1->Phi());
       Qytn += TMath::Sin(fNHarm*esdTrk1->Phi());
