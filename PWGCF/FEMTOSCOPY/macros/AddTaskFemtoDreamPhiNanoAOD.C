@@ -60,6 +60,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackNegKaonCuts->SetCutCharge(-1);
   TrackNegKaonCuts->SetFilterBit(128);
 
+  TrackPosKaonCuts->SetDCAVtxZ(0.4);
+  TrackNegKaonCuts->SetDCAVtxZ(0.4);
+  TrackPosKaonCuts->SetDCAVtxXY(0.8);
+  TrackNegKaonCuts->SetDCAVtxXY(0.8);
 
   if (suffix != "0") {
     TrackPosKaonCuts->SetMinimalBooking(true);
@@ -67,129 +71,238 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   }
 
   if (suffix == "1") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.3);
-      TrackPosKaonCuts->SetDCAVtxXY(0.2);
-      TrackNegKaonCuts->SetDCAVtxXY(0.2);
+      TrackPosKaonCuts->SetPtRange(0.10, 999);
+      TrackNegKaonCuts->SetPtRange(0.10, 999);
   }
 
   if (suffix == "2") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.3);
-      TrackPosKaonCuts->SetDCAVtxXY(0.3);
-      TrackNegKaonCuts->SetDCAVtxXY(0.3);
+      TrackPosKaonCuts->SetPtRange(0.20, 999);
+      TrackNegKaonCuts->SetPtRange(0.20, 999);
   }
 
   if (suffix == "3") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.3);
-      TrackPosKaonCuts->SetDCAVtxXY(0.4);
-      TrackNegKaonCuts->SetDCAVtxXY(0.4);
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
   }
 
   if (suffix == "4") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.3);
-      TrackPosKaonCuts->SetDCAVtxXY(0.5);
-      TrackNegKaonCuts->SetDCAVtxXY(0.5);
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
   }
 
   if (suffix == "5") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.3);
-      TrackPosKaonCuts->SetDCAVtxXY(0.6);
-      TrackNegKaonCuts->SetDCAVtxXY(0.6);
+      TrackPosKaonCuts->SetEtaRange(-0.77, 0.77);
+      TrackNegKaonCuts->SetEtaRange(-0.77, 0.77);
   }
 
   if (suffix == "6") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.3);
-      TrackPosKaonCuts->SetDCAVtxXY(0.7);
-      TrackNegKaonCuts->SetDCAVtxXY(0.7);
+      TrackPosKaonCuts->SetEtaRange(-0.85, 0.85);
+      TrackNegKaonCuts->SetEtaRange(-0.85, 0.85);
   }
 
   if (suffix == "7") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.3);
-      TrackPosKaonCuts->SetDCAVtxXY(0.8);
-      TrackNegKaonCuts->SetDCAVtxXY(0.8);
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
   }
 
   if (suffix == "8") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.3);
-      TrackPosKaonCuts->SetDCAVtxXY(0.9);
-      TrackNegKaonCuts->SetDCAVtxXY(0.9);
+      TrackCuts->SetEtaRange(-0.85, 0.85);
+      AntiTrackCuts->SetEtaRange(-0.85, 0.85);
   }
 
   if (suffix == "9") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(0.2);
-      TrackNegKaonCuts->SetDCAVtxXY(0.2);
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 4.5);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 4.5);
   }
 
   if (suffix == "10") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(0.3);
-      TrackNegKaonCuts->SetDCAVtxXY(0.3);
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 5.5);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 5.5);
   }
 
   if (suffix == "11") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(0.4);
-      TrackNegKaonCuts->SetDCAVtxXY(0.4);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
   }
 
   if (suffix == "12") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(0.5);
-      TrackNegKaonCuts->SetDCAVtxXY(0.5);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
   }
 
   if (suffix == "13") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(0.6);
-      TrackNegKaonCuts->SetDCAVtxXY(0.6);
+      TrackPosKaonCuts->SetNClsTPC(70);
+      TrackNegKaonCuts->SetNClsTPC(70);
   }
 
   if (suffix == "14") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(0.7);
-      TrackNegKaonCuts->SetDCAVtxXY(0.7);
+      TrackPosKaonCuts->SetNClsTPC(90);
+      TrackNegKaonCuts->SetNClsTPC(90);
   }
 
   if (suffix == "15") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(0.8);
-      TrackNegKaonCuts->SetDCAVtxXY(0.8);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
   }
 
   if (suffix == "16") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(0.9);
-      TrackNegKaonCuts->SetDCAVtxXY(0.9);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
   }
 
   if (suffix == "17") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(1.0);
-      TrackNegKaonCuts->SetDCAVtxXY(1.0);
+      evtCuts->SetSphericityCuts(0.65,1);
   }
 
   if (suffix == "18") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.3);
-      TrackPosKaonCuts->SetDCAVtxXY(1.0);
-      TrackNegKaonCuts->SetDCAVtxXY(1.0);
+      evtCuts->SetSphericityCuts(0.75,1);
+  }
+
+  if (suffix == "19") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackPosKaonCuts->SetPtRange(0.10, 999);
+      TrackNegKaonCuts->SetPtRange(0.10, 999);
+  }
+
+  if (suffix == "20") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackPosKaonCuts->SetEtaRange(-0.77, 0.77);
+      TrackNegKaonCuts->SetEtaRange(-0.77, 0.77);
+  }
+
+  if (suffix == "21") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 5.5);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 5.5);
+  }
+
+  if (suffix == "22") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackPosKaonCuts->SetNClsTPC(70);
+      TrackNegKaonCuts->SetNClsTPC(70);
+  }
+
+  if (suffix == "23") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      evtCuts->SetSphericityCuts(0.75,1);
+  }
+
+  if (suffix == "24") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackPosKaonCuts->SetPtRange(0.20, 999);
+      TrackNegKaonCuts->SetPtRange(0.20, 999);
+  }
+
+  if (suffix == "25") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackPosKaonCuts->SetEtaRange(-0.85, 0.85);
+      TrackNegKaonCuts->SetEtaRange(-0.85, 0.85);
+  }
+
+  if (suffix == "26") {
+      TrackCuts->SetEtaRange(-0.85, 0.85);
+      AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 4.5);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 4.5);
+  }
+
+  if (suffix == "27") {
+      TrackCuts->SetEtaRange(-0.85, 0.85);
+      AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+      TrackPosKaonCuts->SetNClsTPC(70);
+      TrackNegKaonCuts->SetNClsTPC(70);
+  }
+
+  if (suffix == "28") {
+      TrackCuts->SetEtaRange(-0.85, 0.85);
+      AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+      evtCuts->SetSphericityCuts(0.65,1);
+  }
+
+  if (suffix == "29") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 4.5);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 4.5);
+  }
+
+  if (suffix == "30") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackPosKaonCuts->SetPtRange(0.20, 999);
+      TrackNegKaonCuts->SetPtRange(0.20, 999);
+  }
+
+  if (suffix == "31") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      TrackPosKaonCuts->SetEtaRange(-0.77, 0.77);
+      TrackNegKaonCuts->SetEtaRange(-0.77, 0.77);
+  }
+
+  if (suffix == "32") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      TrackPosKaonCuts->SetNClsTPC(90);
+      TrackNegKaonCuts->SetNClsTPC(90);
+  }
+
+  if (suffix == "33") {
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      TrackPosKaonCuts->SetNClsTPC(70);
+      TrackNegKaonCuts->SetNClsTPC(70);
+  }
+
+  if (suffix == "34") {
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      TrackPosKaonCuts->SetPtRange(0.10, 999);
+      TrackNegKaonCuts->SetPtRange(0.10, 999);
+  }
+
+  if (suffix == "35") {
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      TrackPosKaonCuts->SetEtaRange(-0.85, 0.85);
+      TrackNegKaonCuts->SetEtaRange(-0.85, 0.85);
+  }
+
+  if (suffix == "36") {
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 4.5);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 4.5);
+  }
+
+  if (suffix == "37") {
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      evtCuts->SetSphericityCuts(0.65,1);
+  }
+
+  if (suffix == "38") {
+      TrackCuts->SetFilterBit(96);
+      AntiTrackCuts->SetFilterBit(96);
+      TrackPosKaonCuts->SetFilterBit(96);
+      TrackNegKaonCuts->SetFilterBit(96);
+  }
+
+  if (suffix == "39") {
+      TrackCuts->SetFilterBit(96);
+      AntiTrackCuts->SetFilterBit(96);
+  }
+
+  if (suffix == "40") {
+      TrackPosKaonCuts->SetFilterBit(96);
+      TrackNegKaonCuts->SetFilterBit(96);
   }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
