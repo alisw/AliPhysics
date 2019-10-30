@@ -69,156 +69,128 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   if (suffix == "1") {
       TrackPosKaonCuts->SetDCAVtxZ(0.3);
       TrackNegKaonCuts->SetDCAVtxZ(0.3);
-  }
-
-  if (suffix == "2") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-  }
-
-  if (suffix == "3") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.5);
-      TrackNegKaonCuts->SetDCAVtxZ(0.5);
-  }
-
-  if (suffix == "4") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.6);
-      TrackNegKaonCuts->SetDCAVtxZ(0.6);
-  }
-
-  if (suffix == "5") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.7);
-      TrackNegKaonCuts->SetDCAVtxZ(0.7);
-  }
-
-  if (suffix == "6") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.8);
-      TrackNegKaonCuts->SetDCAVtxZ(0.8);
-  }
-
-  if (suffix == "7") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.9);
-      TrackNegKaonCuts->SetDCAVtxZ(0.9);
-  }
-
-  if (suffix == "8") {
-      TrackPosKaonCuts->SetDCAVtxZ(1.0);
-      TrackNegKaonCuts->SetDCAVtxZ(1.0);
-  }
-
-  if (suffix == "9") {
-      TrackPosKaonCuts->SetDCAVtxZ(1.1);
-      TrackNegKaonCuts->SetDCAVtxZ(1.1);
-  }
-
-  if (suffix == "10") {
-      TrackPosKaonCuts->SetDCAVtxZ(1.2);
-      TrackNegKaonCuts->SetDCAVtxZ(1.2);
-  }
-
-  if (suffix == "11") {
-      TrackPosKaonCuts->SetDCAVtxZ(1.3);
-      TrackNegKaonCuts->SetDCAVtxZ(1.3);
-  }
-
-  if (suffix == "12") {
-      TrackPosKaonCuts->SetDCAVtxZ(1.4);
-      TrackNegKaonCuts->SetDCAVtxZ(1.4);
-  }
-
-  if (suffix == "13") {
-      TrackPosKaonCuts->SetDCAVtxZ(1.5);
-      TrackNegKaonCuts->SetDCAVtxZ(1.5);
-  }
-
-  if (suffix == "14") {
       TrackPosKaonCuts->SetDCAVtxXY(0.2);
       TrackNegKaonCuts->SetDCAVtxXY(0.2);
   }
 
-  if (suffix == "15") {
+  if (suffix == "2") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
       TrackPosKaonCuts->SetDCAVtxXY(0.3);
       TrackNegKaonCuts->SetDCAVtxXY(0.3);
   }
 
-  if (suffix == "16") {
+  if (suffix == "3") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
       TrackPosKaonCuts->SetDCAVtxXY(0.4);
       TrackNegKaonCuts->SetDCAVtxXY(0.4);
   }
 
-  if (suffix == "17") {
+  if (suffix == "4") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
       TrackPosKaonCuts->SetDCAVtxXY(0.5);
       TrackNegKaonCuts->SetDCAVtxXY(0.5);
   }
 
-  if (suffix == "18") {
+  if (suffix == "5") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
       TrackPosKaonCuts->SetDCAVtxXY(0.6);
       TrackNegKaonCuts->SetDCAVtxXY(0.6);
   }
 
-  if (suffix == "19") {
+  if (suffix == "6") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
       TrackPosKaonCuts->SetDCAVtxXY(0.7);
       TrackNegKaonCuts->SetDCAVtxXY(0.7);
   }
 
-  if (suffix == "20") {
+  if (suffix == "7") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
       TrackPosKaonCuts->SetDCAVtxXY(0.8);
       TrackNegKaonCuts->SetDCAVtxXY(0.8);
   }
 
-  if (suffix == "21") {
+  if (suffix == "8") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
       TrackPosKaonCuts->SetDCAVtxXY(0.9);
       TrackNegKaonCuts->SetDCAVtxXY(0.9);
   }
 
-  if (suffix == "22") {
+  if (suffix == "9") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+      TrackPosKaonCuts->SetDCAVtxXY(0.2);
+      TrackNegKaonCuts->SetDCAVtxXY(0.2);
+  }
+
+  if (suffix == "10") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+      TrackPosKaonCuts->SetDCAVtxXY(0.3);
+      TrackNegKaonCuts->SetDCAVtxXY(0.3);
+  }
+
+  if (suffix == "11") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+      TrackPosKaonCuts->SetDCAVtxXY(0.4);
+      TrackNegKaonCuts->SetDCAVtxXY(0.4);
+  }
+
+  if (suffix == "12") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+      TrackPosKaonCuts->SetDCAVtxXY(0.5);
+      TrackNegKaonCuts->SetDCAVtxXY(0.5);
+  }
+
+  if (suffix == "13") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+      TrackPosKaonCuts->SetDCAVtxXY(0.6);
+      TrackNegKaonCuts->SetDCAVtxXY(0.6);
+  }
+
+  if (suffix == "14") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+      TrackPosKaonCuts->SetDCAVtxXY(0.7);
+      TrackNegKaonCuts->SetDCAVtxXY(0.7);
+  }
+
+  if (suffix == "15") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+      TrackPosKaonCuts->SetDCAVtxXY(0.8);
+      TrackNegKaonCuts->SetDCAVtxXY(0.8);
+  }
+
+  if (suffix == "16") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
+      TrackPosKaonCuts->SetDCAVtxXY(0.9);
+      TrackNegKaonCuts->SetDCAVtxXY(0.9);
+  }
+
+  if (suffix == "17") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.4);
+      TrackNegKaonCuts->SetDCAVtxZ(0.4);
       TrackPosKaonCuts->SetDCAVtxXY(1.0);
       TrackNegKaonCuts->SetDCAVtxXY(1.0);
   }
 
-  if (suffix == "23") {
-      TrackPosKaonCuts->SetDCAVtxXY(1.1);
-      TrackNegKaonCuts->SetDCAVtxXY(1.1);
+  if (suffix == "18") {
+      TrackPosKaonCuts->SetDCAVtxZ(0.3);
+      TrackNegKaonCuts->SetDCAVtxZ(0.3);
+      TrackPosKaonCuts->SetDCAVtxXY(1.0);
+      TrackNegKaonCuts->SetDCAVtxXY(1.0);
   }
-
-  if (suffix == "24") {
-      TrackPosKaonCuts->SetDCAVtxXY(1.2);
-      TrackNegKaonCuts->SetDCAVtxXY(1.2);
-  }
-
-  if (suffix == "25") {
-      TrackPosKaonCuts->SetDCAVtxXY(1.3);
-      TrackNegKaonCuts->SetDCAVtxXY(1.3);
-  }
-
-  if (suffix == "26") {
-      TrackPosKaonCuts->SetDCAVtxXY(1.4);
-      TrackNegKaonCuts->SetDCAVtxXY(1.4);
-  }
-
-  if (suffix == "27") {
-      TrackPosKaonCuts->SetDCAVtxXY(1.5);
-      TrackNegKaonCuts->SetDCAVtxXY(1.5);
-  }
-
-  if (suffix == "28") {
-      TrackPosKaonCuts->SetDCAVtxZ(0.4);
-      TrackPosKaonCuts->SetDCAVtxXY(0.3);
-      TrackNegKaonCuts->SetDCAVtxZ(0.4);
-      TrackNegKaonCuts->SetDCAVtxXY(0.3);
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
-  }
-
-  if (suffix == "29") {
-      TrackPosKaonCuts->SetDCAVtxZ(1.0);
-      TrackPosKaonCuts->SetDCAVtxXY(0.9);
-      TrackNegKaonCuts->SetDCAVtxZ(1.0);
-      TrackNegKaonCuts->SetDCAVtxXY(0.9);
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
-  }
-
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);

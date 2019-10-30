@@ -476,6 +476,17 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(AliReducedBaseTrack* track, 
                }
             }
          }
+         for(UInt_t iflag=0; iflag<64; ++iflag) {
+            AliReducedVarManager::FillTrackQualityFlag(trackInfo, iflag, fValues);
+            fHistosManager->FillHistClass(Form("%sQualityFlags_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+            if(mcDecisionMap) {
+               for(Int_t iMC=0; iMC<=fLegCandidatesMCcuts.GetEntries(); ++iMC) {
+                  if(mcDecisionMap & (UInt_t(1)<<iMC))
+                     fHistosManager->FillHistClass(Form("%sQualityFlags_%s_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName(),
+                                                        fLegCandidatesMCcuts.At(iMC)->GetName()), fValues);
+               }
+            }
+         }
          for(Int_t iLayer=0; iLayer<6; ++iLayer) {
             AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);
             fHistosManager->FillHistClass(Form("%sITSclusterMap_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
@@ -623,6 +634,10 @@ void AliReducedAnalysisJpsi2ee::LoopOverTracks(Int_t arrayOption /*=1*/) {
             for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingStatus; ++iflag) {
                AliReducedVarManager::FillTrackingFlag(trackInfo, iflag, fValues);
                fHistosManager->FillHistClass("TrackStatusFlags_BeforeCuts", fValues);
+            }
+            for(UInt_t iflag=0; iflag<64; ++iflag) {
+               AliReducedVarManager::FillTrackQualityFlag(trackInfo, iflag, fValues);
+               fHistosManager->FillHistClass("TrackQualityFlags_BeforeCuts", fValues);
             }
             for(Int_t iLayer=0; iLayer<6; ++iLayer) {
                AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);

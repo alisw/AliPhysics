@@ -179,41 +179,22 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
     fEvtList->SetName("EventCuts");
     fEvtList->SetOwner();
   }
-  if (!fProton->GetMinimalBooking()) {
-    fProtonList = fProton->GetQAHists();
-  } else {
-    fProtonList = new TList();
-    fProtonList->SetName("TrackCuts");
-    fProtonList->SetOwner();
-  }
-  if (!fAntiProton->GetMinimalBooking()) {
-    fAntiProtonList = fAntiProton->GetQAHists();
-  } else {
-    fAntiProtonList = new TList();
-    fAntiProtonList->SetName("AntiTrackCuts");
-    fAntiProtonList->SetOwner();
-  }
-  if (!fXi->GetMinimalBooking()) {
-    fXiList = fXi->GetQAHists();
-  } else {
-    fXiList = new TList();
-    fXiList->SetName("XiCuts");
-    fXiList->SetOwner();
-  }
-  if (!fAntiXi->GetMinimalBooking()) {
-    fAntiXiList = fAntiXi->GetQAHists();
-  } else {
-    fAntiXiList = new TList();
-    fAntiXiList->SetName("AntiXiCuts");
-    fAntiXiList->SetOwner();
-  }
+
+  fProtonList = fProton->GetQAHists();
+  fAntiProtonList = fAntiProton->GetQAHists();
+  fXiList = fXi->GetQAHists();
+  fAntiXiList = fAntiXi->GetQAHists();
+
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
-  if (!fConfig->GetMinimalBookingME()) {
+
+  if (fConfig->GetUseEventMixing()) {
     fResults = fPartColl->GetHistList();
-    fResultsQA->Add(fPartColl->GetQAList());
-    fResultsQA->Add(fPairCleaner->GetHistList());
+    if (!fConfig->GetMinimalBookingME()) {
+      fResultsQA->Add(fPartColl->GetQAList());
+      fResultsQA->Add(fPairCleaner->GetHistList());
+    }
   } else {
     fResults = new TList();
     fResults->SetOwner();

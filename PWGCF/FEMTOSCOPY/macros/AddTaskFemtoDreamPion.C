@@ -1,7 +1,9 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     bool isMC=false, float fSpherDown=0.7, float fdPhidEta=0.04,
-    TString CentEst="kInt7")
-{
+    TString CentEst="kInt7", const char *cutVariation = "0") {
+
+  TString suffix = TString::Format("%s", cutVariation);
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr)
@@ -47,6 +49,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   fTrackCutsPosPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
   fTrackCutsPosPion->SetPID(AliPID::kPion, 0.);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
   fTrackCutsPosPion->SetChi2Cut(0., 4.0);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
@@ -69,6 +72,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetChi2Cut(0., 4.0);
+  fTrackCutsNegPion->SetMinimalBooking(false);
   //fTrackCutsNegPion->SetCutSmallestSig(true);
 
   //Now we define stuff we want for our Particle collection
@@ -155,6 +159,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   config->SetkTBinning(true);
   config->SetmTBinning(true);
   config->SetMinimalBookingME(false);
+  config->SetdPhidEtaPlots(true);
   
   if (isMC) {
       config->SetMomentumResolution(true);
@@ -203,11 +208,18 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputQA;
-  TString QAName = Form("MyTask");
+  TString addon = "";
+  if (CentEst == "kInt7") {
+  addon += "MB";
+  } else if (CentEst == "kHM") {
+  addon += "HM";
+  }
+  TString QAName = Form("%sResults%s", addon.Data(), suffix.Data());
   coutputQA = mgr->CreateContainer(
-      QAName.Data(), TList::Class(),
-      AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), QAName.Data()));
+    QAName.Data(),
+    TList::Class(),
+    AliAnalysisManager::kOutputContainer,
+    Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
 
   return task;

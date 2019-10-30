@@ -22,8 +22,8 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsDstoKKpi.h"
+#include "AliHFMLResponseDstoKKpi.h"
 #include "AliLog.h"
-#include "AliExternalBDT.h"
 
 class AliNormalizationCounter;
 
@@ -57,7 +57,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   Bool_t GetUseWeight() const {return fUseWeight;}
-  void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t nTracklets);
+  void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
   void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
   void CreateCutVarsAndEffSparses();
   void CreateImpactParameterSparses();
@@ -101,10 +101,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
-  /// methods for ML application
-  Bool_t SetMLVariables(TString path);
-  std::string GetFile(const std::string path);
-  double CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF);
 
   enum {kMaxPtBins=36,knVarForSparse=14,knVarForSparseAcc=2,kVarForImpPar=3,knVarPID=14,knVarPIDcomb=8};
 
@@ -216,12 +212,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   /// variables for ML application
   Bool_t fApplyML;                        /// flag to enable ML application
   TString fConfigPath;                    /// path to ML config file
-  Int_t fNumVars;                         /// number of variables used in the model
-  std::vector<std::string> fModelPaths;   /// vector of model paths
-  std::vector<double> fModelOutputCuts;   /// vector of thresholds on model output
-  std::vector<double> fPtBinsModel;       /// vector of pt bin lims
-  std::vector<AliExternalBDT> fModels;    //!<! vector of ML models (BDTs for now)
-  THnSparseF* fnSparseNsigmaPIDVsML[2];   //!<! THnSparse with PID Nsigma variables vs ML output
+  AliHFMLResponseDstoKKpi* fMLResponse;   //!<! object to handle ML response
+  THnSparseF* fnSparseNsigmaPIDVsML[2];   //!<! histograms with PID Nsigma variables vs ML output
   Bool_t fEnablePIDMLSparses;             /// flag to enable control histograms for PID with ML
   Int_t fNMLBins;                         /// number of bins for ML output axis in THnSparse
   Double_t fMLOutputMin;                  /// min for ML output axis in THnSparse
@@ -231,7 +223,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fKeepOnlyBkgFromHIJING;          /// flag to keep the background from HIJING only
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,35);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,36);       /// AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

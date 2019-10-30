@@ -5,7 +5,7 @@
 
 //*************************************************************************************
 // \class AliAnalysisTaskSECharmHadronvn
-// \brief task for the analysis of D-meson vn 
+// \brief task for the analysis of D-meson vn
 // \authors:
 // F. Grosa, fabrizio.grosa@cern.ch
 // F. Catalano, fabio.catalano@cern.ch
@@ -45,8 +45,11 @@
 #include "AliVertexingHFUtils.h"
 
 #include "AliAnalysisTaskSEHFTenderQnVectors.h"
-
 #include "AliAnalysisTaskSECharmHadronvn.h"
+
+#include "AliAODPidHF.h"
+#include "AliHFMLResponseDstoKKpi.h"
+#include "AliHFMLResponseDplustoKpipi.h"
 
 ClassImp(AliAnalysisTaskSECharmHadronvn)
 
@@ -86,10 +89,16 @@ AliAnalysisTaskSE(),
     fRemoveDauFromqn(0),
     fRemoveSoftPion(false),
     fEnableDownsamplqn(false),
-    fFracToKeepDownSamplqn(1.1)
+    fFracToKeepDownSamplqn(1.1),
+    fApplyML(false),
+    fConfigPath(""),
+    fMLResponse(nullptr),
+    fNMLBins(300),
+    fMLOutputMin(0.85),
+    fMLOutputMax(1.)
 {
     // Default constructor
-    for(int iHisto=0; iHisto<3; iHisto++) { 
+    for(int iHisto=0; iHisto<3; iHisto++) {
         fHistCentrality[iHisto]         = nullptr;
         fHistEPResolVsCentrVsqn[iHisto] = nullptr;
     }
@@ -136,10 +145,16 @@ AliAnalysisTaskSECharmHadronvn::AliAnalysisTaskSECharmHadronvn(const char *name,
     fRemoveDauFromqn(0),
     fRemoveSoftPion(false),
     fEnableDownsamplqn(false),
-    fFracToKeepDownSamplqn(1.1)
+    fFracToKeepDownSamplqn(1.1),
+    fApplyML(false),
+    fConfigPath(""),
+    fMLResponse(nullptr),
+    fNMLBins(300),
+    fMLOutputMin(0.85),
+    fMLOutputMax(1.)
 {
     // standard constructor
-    for(int iHisto=0; iHisto<3; iHisto++) { 
+    for(int iHisto=0; iHisto<3; iHisto++) {
         fHistCentrality[iHisto]         = nullptr;
         fHistEPResolVsCentrVsqn[iHisto] = nullptr;
     }
@@ -212,6 +227,9 @@ AliAnalysisTaskSECharmHadronvn::~AliAnalysisTaskSECharmHadronvn()
     for(int iDet=0; iDet<6; iDet++) {
         if(fqnSplinesList[iDet] && fLoadedSplines) delete fqnSplinesList[iDet];
     }
+
+    if(fApplyML && fMLResponse)
+        delete fMLResponse;
 }
 
 //_________________________________________________________________
@@ -241,19 +259,19 @@ void AliAnalysisTaskSECharmHadronvn::LocalInit()
     fRDCuts->SetMaxCentrality(fMaxCentr);
 
     switch(fDecChannel) {
-        case kDplustoKpipi: 
+        case kDplustoKpipi:
             {
                 AliRDHFCutsDplustoKpipi* copycut=new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDCuts)));
                 PostData(2,copycut);
             }
         break;
-        case kD0toKpi: 
+        case kD0toKpi:
             {
                 AliRDHFCutsD0toKpi* copycut=new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fRDCuts)));
                 PostData(2,copycut);
             }
         break;
-        case kDstartoKpipi: 
+        case kDstartoKpipi:
             {
                 AliRDHFCutsDStartoKpipi* copycut=new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fRDCuts)));
                 PostData(2,copycut);
@@ -266,7 +284,7 @@ void AliAnalysisTaskSECharmHadronvn::LocalInit()
             }
         break;
     }
-  
+
   return;
 }
 
@@ -304,7 +322,7 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     for(int iHisto=0; iHisto<3; iHisto++){
         fOutput->Add(fHistCentrality[iHisto]);
     }
-    
+
     const int ncentbins = static_cast<int>(fMaxCentr-fMinCentr);
 
     fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",ncentbins,fMinCentr,fMaxCentr,101,-0.5,100.5);
@@ -336,9 +354,9 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
 
     TString qnpercaxisname = qnaxisname + " (%)";
     TString qnaxisnamefill = qnaxisname;
-    if(fPercentileqn) 
+    if(fPercentileqn)
         qnaxisnamefill = qnpercaxisname;
-    
+
     int nqnbins=1; //single bin if unbiased analysis
     double qnmin = 0.;
     double qnmax = 15.;
@@ -439,12 +457,14 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     else if(fDecChannel==2) massaxisname = "#it{M}(K#pi#pi)-#it{M}(K#pi) (GeV/#it{c}^{2})";
     else if(fDecChannel==3) massaxisname = "#it{M}(KK#pi) (GeV/#it{c}^{2})";
 
-    const int naxes=9;
-    
-    int nbins[naxes]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins};
-    double xmin[naxes]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin};
-    double xmax[naxes]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax};
-    TString axTit[naxes] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname, nfphiname1, nfphiname2, "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill};
+    int naxes=kVarForSparse;
+    if(!fApplyML)
+        naxes--;
+
+    int nbins[kVarForSparse]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins, fNMLBins};
+    double xmin[kVarForSparse]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin, fMLOutputMin};
+    double xmax[kVarForSparse]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax, fMLOutputMax};
+    TString axTit[kVarForSparse] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname, nfphiname1, nfphiname2, "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill, "ML response"};
 
     fHistMassPtPhiqnCentr = new THnSparseF("fHistMassPtPhiqnCentr",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
 
@@ -452,6 +472,34 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
         fHistMassPtPhiqnCentr->GetAxis(iAx)->SetTitle(axTit[iAx].Data());
 
     fOutput->Add(fHistMassPtPhiqnCentr);
+
+    //ML model
+    if(fApplyML) {
+        switch(fDecChannel) {
+            case kDplustoKpipi:
+                {
+                    fMLResponse = new AliHFMLResponseDplustoKpipi(fConfigPath.Data());
+                    fMLResponse->InitModels();
+                }
+            break;
+            case kD0toKpi:
+                {
+                    AliFatal("ML application for D0 meson not yet implemented! Exit");
+                }
+            break;
+            case kDstartoKpipi:
+                {
+                    AliFatal("ML application for Dstar meson not yet implemented! Exit");
+                }
+            break;
+            case kDstoKKpi:
+                {
+                    fMLResponse = new AliHFMLResponseDstoKKpi(fConfigPath.Data());
+                    fMLResponse->InitModels();
+                }
+            break;
+        }
+    }
 
     PostData(1,fOutput);
     return;
@@ -522,7 +570,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
                 break;
             }
         }
-    } 
+    }
     else if(fAOD){
         switch(fDecChannel) {
             case kDplustoKpipi:
@@ -588,7 +636,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     AliAnalysisTaskSEHFTenderQnVectors *HFQnVectorTask = dynamic_cast<AliAnalysisTaskSEHFTenderQnVectors*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fTenderTaskName.Data()));
     if(HFQnVectorTask) {
         HFQnVectorHandler = HFQnVectorTask->GetQnVectorHandler();
-        
+
         if(fPercentileqn && !fqnSplinesList[0]) {
             for(int iDet=0; iDet<6; iDet++) {
                 fqnSplinesList[iDet] = dynamic_cast<TList*>(HFQnVectorTask->GetSplineForqnPercentileList(iDet));
@@ -623,7 +671,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         HFQnVectorHandler->ComputeCalibratedQnVectorV0();
     }
 
-    if(fPercentileqn && !fqnSplinesList[0]) { //probably qn splines not found in tender task, let's load them here 
+    if(fPercentileqn && !fqnSplinesList[0]) { //probably qn splines not found in tender task, let's load them here
         fLoadedSplines=LoadSplinesForqnPercentile();
     }
 
@@ -664,12 +712,13 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
 
     //define vars for candidate loop already here, in case daughter tracks removed from qn
     AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
-    AliAODRecoDecayHF *d = nullptr; 
+    AliAODRecoDecayHF *d = nullptr;
     AliAODRecoDecayHF2Prong *dD0 = nullptr;
 
     int nCand = arrayProng->GetEntriesFast();
     bool alreadyLooped = false;
     vector<int> isSelByPrevLoop;
+    vector<double> MLPred[2];
     vector<AliAODTrack*> trackstoremove;
 
     if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP || fFlowMethod==kEvShapeEPVsMass) {
@@ -677,13 +726,13 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         HFQnVectorHandler->GetqnV0(qnFullV0,qnV0A,qnV0C);
 
         if((fEnableDownsamplqn && fFracToKeepDownSamplqn<1.) || fRemoveDauFromqn==2) {
-    
+
             //random downsampling of tracks for qn
             if(fEnableDownsamplqn && fFracToKeepDownSamplqn<1.) {
                 for(int iTrack=0; iTrack<fAOD->GetNumberOfTracks(); iTrack++) {
                     AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
                     double pseudoRand = track->Pt()*1000.-(long)(track->Pt()*1000);
-                    if(pseudoRand>fFracToKeepDownSamplqn)   
+                    if(pseudoRand>fFracToKeepDownSamplqn)
                         trackstoremove.push_back(track);
                 }
             }
@@ -699,10 +748,12 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
                             dD0 = dynamic_cast<AliAODRecoDecayHF2Prong*>(arrayD0toKpi->At(d->GetProngID(1)));
                         else
                             dD0 = (dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong();
-                    }        
-
-                    int isSel = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0);
+                    }
+                    double modelPred[2] = {-1., -1.};
+                    int isSel = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0, modelPred);
                     isSelByPrevLoop.push_back(isSel);
+                    MLPred[0].push_back(modelPred[0]);
+                    MLPred[1].push_back(modelPred[1]);
                     if(!isSel) continue;
 
                     GetDaughterTracksToRemove(d,nDau,trackstoremove);
@@ -749,7 +800,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             break;
         }
         if(fPercentileqn) {
-            if(qnspline) 
+            if(qnspline)
                 mainpercqn = qnspline->Eval(mainqn);
             else
                 AliWarning("Centrality binning and centrality intervals of qn splines do not match!");
@@ -780,7 +831,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
 
         if(fPercentileqn) {
             fHistPercqnVsqnVsCentr->Fill(evCentr,mainqn,mainpercqn);
-        }   
+        }
     }
 
     //EP / Qn resolution histos
@@ -788,14 +839,14 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         fHistEPResolVsCentrVsqn[0]->Fill(evCentr,mainpercqn,TMath::Cos(fHarmonic*GetDeltaPsiSubInRange(SubAPsin,SubBPsin)));
         if(nsubevents==3) {
             fHistEPResolVsCentrVsqn[1]->Fill(evCentr,mainpercqn,TMath::Cos(fHarmonic*GetDeltaPsiSubInRange(SubAPsin,SubCPsin)));
-            fHistEPResolVsCentrVsqn[2]->Fill(evCentr,mainpercqn,TMath::Cos(fHarmonic*GetDeltaPsiSubInRange(SubBPsin,SubCPsin)));            
+            fHistEPResolVsCentrVsqn[2]->Fill(evCentr,mainpercqn,TMath::Cos(fHarmonic*GetDeltaPsiSubInRange(SubBPsin,SubCPsin)));
         }
     }
     else if(fFlowMethod==kSP || fFlowMethod==kEvShapeSP) {
         fHistEPResolVsCentrVsqn[0]->Fill(evCentr,mainpercqn,(SubAQn[0]*SubBQn[0]+SubAQn[1]*SubBQn[1])/(SubAMultQn * SubBMultQn));
         if(nsubevents==3) {
             fHistEPResolVsCentrVsqn[1]->Fill(evCentr,mainpercqn,(SubAQn[0]*SubCQn[0]+SubAQn[1]*SubCQn[1])/(SubAMultQn * SubCMultQn));
-            fHistEPResolVsCentrVsqn[2]->Fill(evCentr,mainpercqn,(SubBQn[0]*SubCQn[0]+SubBQn[1]*SubCQn[1])/(SubCMultQn * SubBMultQn));            
+            fHistEPResolVsCentrVsqn[2]->Fill(evCentr,mainpercqn,(SubBQn[0]*SubCQn[0]+SubBQn[1]*SubCQn[1])/(SubCMultQn * SubBMultQn));
         }
     }
 
@@ -810,16 +861,21 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             else
                 dD0 = (dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong();
         }
-        
+
         int isSelected = 0;
-        if(alreadyLooped) //check already here to avoid application of cuts twice
+        double modelPred[2] = {-1., -1.};
+        if(alreadyLooped) {//check already here to avoid application of cuts twice
             isSelected = isSelByPrevLoop[iCand];
-        else
-            isSelected = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0);
+            modelPred[0] = MLPred[0][iCand];
+            modelPred[1] = MLPred[1][iCand];
+        }
+        else {
+            isSelected = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0, modelPred);
+        }
         if(!isSelected) continue;
 
-        nSelCand++;                
-        fHistNEvents->Fill(14); // candidate selected
+        nSelCand++;
+        fHistNEvents->Fill(14); // candidate selected (including ML selection if used)
 
         float* invMass = nullptr;
         int nmasses = 0;
@@ -827,7 +883,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
 
         double ptD = d->Pt();
         double phiD = d->Phi();
-        
+
         double deltaphi = GetPhiInRange(phiD-mainPsin);
         double scalprod = (TMath::Cos(fHarmonic*phiD)*mainQn[0]+TMath::Sin(fHarmonic*phiD)*mainQn[1]) / mainMultQn;
         double cosndeltaphi = TMath::Cos(fHarmonic*deltaphi);
@@ -853,9 +909,9 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         //remove daughter tracks from qn (on top of random downsampling, if enabled)
         double candQnFullTPC[2], candQnPosTPC[2], candQnNegTPC[2];
         double candMultQnFullTPC = -1., candMultQnPosTPC = -1., candMultQnNegTPC = -1.;
-        double candqn = -1., candpercqn = -1.; 
+        double candqn = -1., candpercqn = -1.;
         if(fRemoveDauFromqn==1 && (fqnMeth==kq2TPC || fqnMeth==kq2PosTPC || fqnMeth==kq2NegTPC) && (fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP || fFlowMethod==kEvShapeEPVsMass)) {
-            
+
             vector<AliAODTrack*> trackstoremoveDau(trackstoremove);
             GetDaughterTracksToRemove(d,nDau,trackstoremoveDau);
             HFQnVectorHandler->RemoveTracksFromQnTPC(trackstoremoveDau, candQnFullTPC, candQnPosTPC, candQnNegTPC, candMultQnFullTPC, candMultQnPosTPC, candMultQnNegTPC, true);
@@ -872,7 +928,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             }
             trackstoremoveDau.clear();
             if(fPercentileqn) {
-                if(qnspline) 
+                if(qnspline)
                     candpercqn = qnspline->Eval(candqn);
                 else
                     AliWarning("Centrality binning and centrality intervals of qn splines do not match!");
@@ -885,32 +941,42 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             candpercqn = mainpercqn;
         }
 
-        if(fDecChannel==kDplustoKpipi) {
-            double sparsearray[9] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
-            fHistMassPtPhiqnCentr->Fill(sparsearray);
-        }
-        else if(fDecChannel==kD0toKpi) {
-            if(isSelected==1 || isSelected==3) {
-                double sparsearray[9] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+        switch(fDecChannel) {
+            case kDplustoKpipi:
+            {
+                double sparsearray[10] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
                 fHistMassPtPhiqnCentr->Fill(sparsearray);
+                break;
             }
-            if(isSelected==2 || isSelected==3) {
-                double sparsearray[9] = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
-                fHistMassPtPhiqnCentr->Fill(sparsearray);
+            case kD0toKpi:
+            {
+                if(isSelected==1 || isSelected==3) {
+                    double sparsearray[10] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
+                    fHistMassPtPhiqnCentr->Fill(sparsearray);
+                }
+                if(isSelected==2 || isSelected==3) {
+                    double sparsearray[10] = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[1]};
+                    fHistMassPtPhiqnCentr->Fill(sparsearray);
+                }
+                break;
             }
-        }
-        else if(fDecChannel==kDstartoKpipi) {
-            double sparsearray[9] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
-            fHistMassPtPhiqnCentr->Fill(sparsearray);
-        }
-        else if(fDecChannel==kDstoKKpi) {
-            if(isSelected&4) {
-                double sparsearray[9] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+            case kDstartoKpipi:
+            {
+                double sparsearray[10] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
                 fHistMassPtPhiqnCentr->Fill(sparsearray);
+                break;
             }
-            if(isSelected&8) {
-                double sparsearray[9] = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
-                fHistMassPtPhiqnCentr->Fill(sparsearray);
+            case kDstoKKpi:
+            {
+                if(isSelected&4) {
+                    double sparsearray[10] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
+                    fHistMassPtPhiqnCentr->Fill(sparsearray);
+                }
+                if(isSelected&8) {
+                    double sparsearray[10] = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[1]};
+                    fHistMassPtPhiqnCentr->Fill(sparsearray);
+                }
+                break;
             }
         }
     }
@@ -919,11 +985,13 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
 
     trackstoremove.clear();
     isSelByPrevLoop.clear();
+    MLPred[0].clear();
+    MLPred[1].clear();
 
     delete vHF;
     vHF = nullptr;
     if(!isHandlerFound) { // if not found in the tender task, allocated memory with new --> to be deleted
-        delete HFQnVectorHandler; 
+        delete HFQnVectorHandler;
         HFQnVectorHandler = nullptr;
     }
 
@@ -985,7 +1053,7 @@ void AliAnalysisTaskSECharmHadronvn::SetQnVectorDetConf(int detconf)
 double AliAnalysisTaskSECharmHadronvn::GetPhiInRange(double phi)
 {
     // Sets the phi angle in the range [0,2*pi/harmonic]
-    
+
     double result = phi;
     while(result < 0) {
         result = result + 2. * TMath::Pi() / fHarmonic;
@@ -997,7 +1065,7 @@ double AliAnalysisTaskSECharmHadronvn::GetPhiInRange(double phi)
 }
 
 //________________________________________________________________________
-double AliAnalysisTaskSECharmHadronvn::GetDeltaPsiSubInRange(double psi1, double psi2) 
+double AliAnalysisTaskSECharmHadronvn::GetDeltaPsiSubInRange(double psi1, double psi2)
 {
     // difference of subevents reaction plane angle cannot be bigger than pi / n
 
@@ -1005,7 +1073,7 @@ double AliAnalysisTaskSECharmHadronvn::GetDeltaPsiSubInRange(double psi1, double
     if(TMath::Abs(delta) > TMath::Pi() / fHarmonic) {
         if(delta>0.) delta -= 2.*TMath::Pi() / fHarmonic;
         else delta += 2.*TMath::Pi() / fHarmonic;
-    } 
+    }
 
     return delta;
 }
@@ -1071,13 +1139,13 @@ void AliAnalysisTaskSECharmHadronvn::GetMainQnVectorInfo(double &mainPsin, doubl
     HFQnVectorHandler->GetMultQnVecV0(MultQnFullV0,MultQnV0A,MultQnV0C);
 
     HFQnVectorHandler->GetEventPlaneAngleTPC(PsinFullTPC,PsinPosTPC,PsinNegTPC);
-    HFQnVectorHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C); 
+    HFQnVectorHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C);
 
     if(fEtaGapInTPCHalves>0.) {
         vector<AliAODTrack*> trackstoremove;
         for(int iTrack=0; iTrack<fAOD->GetNumberOfTracks(); iTrack++) {
             AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
-            if(TMath::Abs(track->Eta())<fEtaGapInTPCHalves/2)   
+            if(TMath::Abs(track->Eta())<fEtaGapInTPCHalves/2)
                 trackstoremove.push_back(track);
         }
         HFQnVectorHandler->RemoveTracksFromQnTPC(trackstoremove, QnFullTPC, QnPosTPC, QnNegTPC, MultQnFullTPC, MultQnPosTPC, MultQnNegTPC, true);
@@ -1097,7 +1165,7 @@ void AliAnalysisTaskSECharmHadronvn::GetMainQnVectorInfo(double &mainPsin, doubl
             mainPsin   = PsinPosTPC;
             mainMultQn = MultQnPosTPC;
             mainQn[0]  = QnPosTPC[0];
-            mainQn[1]  = QnPosTPC[1];        
+            mainQn[1]  = QnPosTPC[1];
         break;
         case kNegTPC:
             mainPsin   = PsinNegTPC;
@@ -1115,13 +1183,13 @@ void AliAnalysisTaskSECharmHadronvn::GetMainQnVectorInfo(double &mainPsin, doubl
             mainPsin   = PsinV0A;
             mainMultQn = MultQnV0A;
             mainQn[0]  = QnV0A[0];
-            mainQn[1]  = QnV0A[1];        
+            mainQn[1]  = QnV0A[1];
         break;
         case kV0C:
             mainPsin   = PsinV0C;
             mainMultQn = MultQnV0C;
             mainQn[0]  = QnV0C[0];
-            mainQn[1]  = QnV0C[1];        
+            mainQn[1]  = QnV0C[1];
         break;
     }
 
@@ -1136,7 +1204,7 @@ void AliAnalysisTaskSECharmHadronvn::GetMainQnVectorInfo(double &mainPsin, doubl
             SubAPsin   = PsinPosTPC;
             SubAMultQn = MultQnPosTPC;
             SubAQn[0]  = QnPosTPC[0];
-            SubAQn[1]  = QnPosTPC[1];        
+            SubAQn[1]  = QnPosTPC[1];
         break;
         case kNegTPC:
             SubAPsin   = PsinNegTPC;
@@ -1154,13 +1222,13 @@ void AliAnalysisTaskSECharmHadronvn::GetMainQnVectorInfo(double &mainPsin, doubl
             SubAPsin   = PsinV0A;
             SubAMultQn = MultQnV0A;
             SubAQn[0]  = QnV0A[0];
-            SubAQn[1]  = QnV0A[1];        
+            SubAQn[1]  = QnV0A[1];
         break;
         case kV0C:
             SubAPsin   = PsinV0C;
             SubAMultQn = MultQnV0C;
             SubAQn[0]  = QnV0C[0];
-            SubAQn[1]  = QnV0C[1];        
+            SubAQn[1]  = QnV0C[1];
         break;
     }
 
@@ -1175,7 +1243,7 @@ void AliAnalysisTaskSECharmHadronvn::GetMainQnVectorInfo(double &mainPsin, doubl
             SubBPsin   = PsinPosTPC;
             SubBMultQn = MultQnPosTPC;
             SubBQn[0]  = QnPosTPC[0];
-            SubBQn[1]  = QnPosTPC[1];        
+            SubBQn[1]  = QnPosTPC[1];
         break;
         case kNegTPC:
             SubBPsin   = PsinNegTPC;
@@ -1193,19 +1261,19 @@ void AliAnalysisTaskSECharmHadronvn::GetMainQnVectorInfo(double &mainPsin, doubl
             SubBPsin   = PsinV0A;
             SubBMultQn = MultQnV0A;
             SubBQn[0]  = QnV0A[0];
-            SubBQn[1]  = QnV0A[1];        
+            SubBQn[1]  = QnV0A[1];
         break;
         case kV0C:
             SubBPsin   = PsinV0C;
             SubBMultQn = MultQnV0C;
             SubBQn[0]  = QnV0C[0];
-            SubBQn[1]  = QnV0C[1];        
+            SubBQn[1]  = QnV0C[1];
         break;
     }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSECharmHadronvn::GetDaughterTracksToRemove(AliAODRecoDecayHF* d, int nDau, vector<AliAODTrack*> &trackstoremove) 
+void AliAnalysisTaskSECharmHadronvn::GetDaughterTracksToRemove(AliAODRecoDecayHF* d, int nDau, vector<AliAODTrack*> &trackstoremove)
 {
     if(fDecChannel!=kDstartoKpipi) {
         for(int iDau=0; iDau<nDau; iDau++) {
@@ -1222,7 +1290,7 @@ void AliAnalysisTaskSECharmHadronvn::GetDaughterTracksToRemove(AliAODRecoDecayHF
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0) {
+int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, double modelPred[2]) {
 
     if(!d || !vHF || (fDecChannel==kDstartoKpipi && !dD0)) return false;
 
@@ -1237,7 +1305,7 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
     }
     else {
         for(int iDau=0; iDau<nDau; iDau++){
-            if(iDau == 0) 
+            if(iDau == 0)
                 track=vHF->GetProng(fAOD,d,iDau); //soft pion
             else
                 track=vHF->GetProng(fAOD,dD0,iDau-1); //D0 daughters
@@ -1263,14 +1331,8 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
         break;
         case kDstoKKpi:
             isSelBit = d->HasSelectionBit(AliRDHFCuts::kDsCuts);
-            if(!isSelBit || !vHF->FillRecoCand(fAOD,(AliAODRecoDecayHF3Prong*)d)) return 0;            
+            if(!isSelBit || !vHF->FillRecoCand(fAOD,(AliAODRecoDecayHF3Prong*)d)) return 0;
         break;
-    }
-
-    int isSelected = fRDCuts->IsSelected(d,AliRDHFCuts::kAll,fAOD);
-    if(!isSelected) return 0;
-    if(fDecChannel==kDstoKKpi) {
-        if(!(isSelected&4) && !(isSelected&8)) return 0;
     }
 
     double ptD = d->Pt();
@@ -1283,16 +1345,62 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
     bool isFidAcc = fRDCuts->IsInFiducialAcceptance(ptD,yD);
     if(!isFidAcc) return 0;
 
+    int isSelected = fRDCuts->IsSelected(d,AliRDHFCuts::kAll,fAOD);
+
+    //ML application
+    if(fApplyML) {
+        AliAODPidHF* pidHF = fRDCuts->GetPidHF();
+        bool isMLsel = true;
+
+        switch(fDecChannel) {
+            case kDplustoKpipi:
+            {
+                isMLsel = fMLResponse->IsSelectedML(modelPred[0], d, fAOD->GetMagneticField(), pidHF);
+                if(!isMLsel)
+                    isSelected = 0;
+                break;
+            }
+            case kD0toKpi:
+            {
+                AliWarning("ML application for D0 meson not yet implemented! Exit");
+                break;
+            }
+            case kDstartoKpipi:
+            {
+                AliWarning("ML application for Dstar meson not yet implemented! Exit");
+                break;
+            }
+            case kDstoKKpi:
+            {
+                if(isSelected&4) {
+                    isMLsel = fMLResponse->IsSelectedML(modelPred[0], d, fAOD->GetMagneticField(), pidHF, 0);
+                    if(!isMLsel)
+                        isSelected &= ~4; //switch off bit ok KKpi hypo
+                }
+                if(isSelected&8) {
+                    isMLsel = fMLResponse->IsSelectedML(modelPred[1], d, fAOD->GetMagneticField(), pidHF, 1);
+                    if(!isMLsel)
+                        isSelected &= ~8; //switch off bit ok piKK hypo
+                }
+                break;
+            }
+        }
+    }
+
+    if(!isSelected) return 0;
+    if(fDecChannel==kDstoKKpi)
+        if(!(isSelected&4) && !(isSelected&8)) return 0;
+
     return isSelected;
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskSECharmHadronvn::LoadSplinesForqnPercentile() 
+bool AliAnalysisTaskSECharmHadronvn::LoadSplinesForqnPercentile()
 {
     // load splines from file
 
     TString listname[6] = {"SplineListq2TPC", "SplineListq2TPCPosEta", "SplineListq2TPCNegEta", "SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
-    
+
     if (!gGrid) {
         TGrid::Connect("alien://");
     }

@@ -21,8 +21,8 @@ add_subdirectory (vHFBDT)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
-
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -52,7 +52,6 @@ set(SRCS
   AliRDHFCuts.cxx
   AliVertexingHFUtils.cxx
   AliHFSystErr.cxx
-  AliRDHFCutsB0toDPi.cxx
   AliRDHFCutsB0toDStarPi.cxx
   AliRDHFCutsBPlustoD0Pi.cxx
   AliRDHFCutsD0toKpi.cxx
@@ -79,7 +78,6 @@ set(SRCS
   AliAnalysisTaskSESelectHF.cxx
   AliAnalysisTaskSECleanupVertexingHF.cxx
   AliAnalysisTaskSECompareHF.cxx
-  AliAnalysisTaskSEDplus.cxx
   AliAnalysisTaskSELambdac.cxx
   AliAnalysisTaskSED0BDT.cxx
   AliAnalysisTaskSED0Mass.cxx
@@ -132,7 +130,6 @@ set(SRCS
   charmFlow/AliAnalysisTaskFlowD2H.cxx
   charmFlow/AliHFQnVectorHandler.cxx
   charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
-  charmFlow/AliAnalysisTaskSECharmHadronvn.cxx  
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerDplus.cxx
@@ -153,7 +150,6 @@ set(SRCS
   AliAnalysisTaskCharmBaryonsMC.cxx
   AliAnalysisTaskSEDvsEventShapes.cxx
   AliAnalysisTaskSEB0toDminuspi.cxx
-  AliAnalysisTaskSEB0toDPi.cxx
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
@@ -167,7 +163,12 @@ set(SRCS
 if(ROOT_VERSION_MAJOR EQUAL 6)
   set(SRCS
       ${SRCS}
+      vHFML/AliHFMLResponse.cxx
+      vHFML/AliHFMLResponseDplustoKpipi.cxx
+      vHFML/AliHFMLResponseDstoKKpi.cxx
+      AliAnalysisTaskSEDplus.cxx
       AliAnalysisTaskSEDs.cxx
+      charmFlow/AliAnalysisTaskSECharmHadronvn.cxx
   )
 endif()
 
@@ -249,3 +250,4 @@ install(DIRECTORY
 
 install(DIRECTORY upgrade DESTINATION PWGHF/vertexingHF)
 install(DIRECTORY charmFlow DESTINATION PWGHF/vertexingHF)
+install(DIRECTORY vHFML DESTINATION PWGHF/vertexingHF)
