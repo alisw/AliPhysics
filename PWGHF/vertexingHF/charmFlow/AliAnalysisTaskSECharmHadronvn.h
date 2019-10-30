@@ -83,6 +83,11 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     void RemoveDauTracksFromqn(int removedau=1, bool remsoftpi=false) {fRemoveDauFromqn=removedau; fRemoveSoftPion=remsoftpi;}
     void SetRandomDownsamplFromqn(double fractokeep = 0.5)            {fEnableDownsamplqn=true; fFracToKeepDownSamplqn=fractokeep;}
 
+    // methods for ML application
+    void SetDoMLApplication(bool flag = kTRUE) {fApplyML = flag;}
+    void SetMLConfigFile(TString path = ""){fConfigPath = path;}
+    void SetMLBinsForSparse(int nbins = 300, double min = 0.85, double max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
+
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void LocalInit();
@@ -152,8 +157,11 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     bool fApplyML;                          /// flag to enable ML application
     TString fConfigPath;                    /// path to ML config file
     AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
+    int fNMLBins;                           /// number of bins for ML axis in thnsparse
+    double fMLOutputMin;                    /// minimum value of ML ouptut in thnsparse axis
+    double fMLOutputMax;                    /// maximum value of ML ouptut in thnsparse axis
 
-    ClassDef(AliAnalysisTaskSECharmHadronvn,4); // AliAnalysisTaskSE for the HF vn analysis
+    ClassDef(AliAnalysisTaskSECharmHadronvn,5); // AliAnalysisTaskSE for the HF vn analysis
 };
 
 #endif

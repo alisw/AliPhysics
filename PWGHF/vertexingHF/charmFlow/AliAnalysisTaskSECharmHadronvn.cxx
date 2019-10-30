@@ -92,7 +92,10 @@ AliAnalysisTaskSE(),
     fFracToKeepDownSamplqn(1.1),
     fApplyML(false),
     fConfigPath(""),
-    fMLResponse(nullptr)
+    fMLResponse(nullptr),
+    fNMLBins(300),
+    fMLOutputMin(0.85),
+    fMLOutputMax(1.)
 {
     // Default constructor
     for(int iHisto=0; iHisto<3; iHisto++) {
@@ -145,7 +148,10 @@ AliAnalysisTaskSECharmHadronvn::AliAnalysisTaskSECharmHadronvn(const char *name,
     fFracToKeepDownSamplqn(1.1),
     fApplyML(false),
     fConfigPath(""),
-    fMLResponse(nullptr)
+    fMLResponse(nullptr),
+    fNMLBins(300),
+    fMLOutputMin(0.85),
+    fMLOutputMax(1.)
 {
     // standard constructor
     for(int iHisto=0; iHisto<3; iHisto++) {
@@ -445,10 +451,6 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     double Ntrkmin       = 0.;
     double Ntrkmax       = 5000.;
 
-    int nMLbins          = 300;
-    double MLmin         = 0.85;
-    double MLmax         = 1.;
-
     TString massaxisname = "";
     if(fDecChannel==0)      massaxisname = "#it{M}(K#pi#pi) (GeV/#it{c}^{2})";
     else if(fDecChannel==1) massaxisname = "#it{M}(K#pi) (GeV/#it{c}^{2})";
@@ -459,9 +461,9 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     if(!fApplyML)
         naxes--;
 
-    int nbins[kVarForSparse]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins, nMLbins};
-    double xmin[kVarForSparse]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin, MLmin};
-    double xmax[kVarForSparse]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax, MLmax};
+    int nbins[kVarForSparse]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins, fNMLBins};
+    double xmin[kVarForSparse]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin, fMLOutputMin};
+    double xmax[kVarForSparse]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax, fMLOutputMax};
     TString axTit[kVarForSparse] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname, nfphiname1, nfphiname2, "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill, "ML response"};
 
     fHistMassPtPhiqnCentr = new THnSparseF("fHistMassPtPhiqnCentr",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
