@@ -178,7 +178,7 @@ extern template AliFemtoBasicEventCut* AliFemtoConfigObject::Into<AliFemtoBasicE
 ///
 struct CutConfig_Pion {
 
-    RangeF_t pt = {0.2, 2.0},
+    RangeF_t pt = {0.15, 2.0},
              eta = {-0.8, 0.8},
              DCA = {0.5, 4.0},
              nSigma = {-3.0, 3.0};
@@ -193,7 +193,7 @@ struct CutConfig_Pion {
     Float_t tpctof_limit = 0.5,
             tof_momentum_limit = 0.5,
             tof_sigma = NAN,
-            tof_kaon_rejection_sigma = 3.5,
+            tof_kaon_rejection_sigma = -2.0,
             electron_rejection_sigma = 3.0;
 
     Float_t max_impact_xy = .20,

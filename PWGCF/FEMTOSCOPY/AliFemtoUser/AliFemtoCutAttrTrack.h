@@ -667,6 +667,53 @@ struct TrackCutAttrRejectKaonTofPionTime {
     { }
 };
 
+/// Cut away Kaon TOF sigma
+struct TrackCutAttrRejectKaonTofSigma {
+
+  double tof_kaon_reject_sigma;
+  double tof_sigma_pion;
+  double tof_momentum_limit;
+
+  bool Pass(const AliFemtoTrack &track) const
+    {
+      const double
+        p = track.P().Mag(),
+        tof_kaon_sigma = track.NSigmaTOFK();
+
+      if (p < tof_momentum_limit) {
+        return true;
+      }
+
+      return tof_kaon_sigma < tof_kaon_reject_sigma;
+    }
+
+  TrackCutAttrRejectKaonTofSigma()
+    : tof_kaon_reject_sigma(-2.0)
+    , tof_sigma_pion(NAN)
+    , tof_momentum_limit(0.75)
+    {
+    }
+
+  TrackCutAttrRejectKaonTofSigma(AliFemtoConfigObject &cfg)
+    : tof_kaon_reject_sigma(cfg.pop_num("tof_kaon_reject_sigma", -2.0))
+    , tof_sigma_pion(cfg.pop_num("tof_sigma_pion", NAN))
+    , tof_momentum_limit(cfg.pop_num("tof_momentum_limit", 0.75))
+    {
+    }
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("tof_kaon_reject_sigma", tof_kaon_reject_sigma);
+      if (!std::isnan(tof_sigma_pion)) {
+        cfg.insert("tof_sigma_pion", tof_sigma_pion);
+      }
+      cfg.insert("tof_momentum_limit", tof_momentum_limit);
+    }
+
+  virtual ~TrackCutAttrRejectKaonTofSigma()
+    { }
+};
+
 ///
 struct TrackCutAttrTpcSigmaPion {
 
