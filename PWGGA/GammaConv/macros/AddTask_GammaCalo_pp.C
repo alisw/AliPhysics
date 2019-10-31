@@ -1632,14 +1632,18 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig ==807){//Non Lin Studies
     cuts.AddCutCalo("00010113","24466000na012200000","0163103100000010"); // No Nonlin MB
     cuts.AddCutCalo("00062113","24466000na012200000","0163103100000010"); // No Nonlin Triggered
-    //cuts.AddCutCalo("00010113","24466510na012200000","0163103100000010"); // 55 Nonlin MB
-    //cuts.AddCutCalo("00062113","24466510na012200000","0163103100000010"); // 55 Nonlin Triggered
-    //cuts.AddCutCalo("00010113","24466110n4012200000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM MB PCMPHOS
-    //cuts.AddCutCalo("00062113","24466110n4012200000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM Triggered PCMPHOS
-    cuts.AddCutCalo("00010113","24466120n4012200000","0163103100000010"); // INT7 //case 12=> FunctionNL_kSDM MB PHOSPHOS
-    cuts.AddCutCalo("00062113","24466120n4012200000","0163103100000010"); // INT7 //case 12=> FunctionNL_kSDM Triggered PHOSPHOS
-    //cuts.AddCutCalo("00010113","24466210n4012200000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW MB
-    //cuts.AddCutCalo("00062113","24466210n4012200000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW Triggered
+    //-
+    cuts.AddCutCalo("00010113","24466510na012200000","0163103100000010"); // 55 Nonlin MB
+    cuts.AddCutCalo("00062113","24466510na012200000","0163103100000010"); // 55 Nonlin Triggered
+    //-
+    cuts.AddCutCalo("00010113","24466110na012200000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM MB PCMPHOS
+    cuts.AddCutCalo("00062113","24466110na012200000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM Triggered PCMPHOS
+    //-
+    cuts.AddCutCalo("00010113","24466120na012200000","0163103100000010"); // INT7 //case 12=> FunctionNL_kSDM MB PHOSPHOS
+    cuts.AddCutCalo("00062113","24466120na012200000","0163103100000010"); // INT7 //case 12=> FunctionNL_kSDM Triggered PHOSPHOS
+    //-
+    //cuts.AddCutCalo("00010113","24466210na012200000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW MB
+    //cuts.AddCutCalo("00062113","24466210na012200000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW Triggered
   } else if (trainConfig ==808){//PHOS Triggers
     cuts.AddCutCalo("00010113","24466110na012200000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","24466110na012200000","0163103100000010"); //PHI7
