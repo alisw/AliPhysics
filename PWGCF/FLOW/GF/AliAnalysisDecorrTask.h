@@ -31,6 +31,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetEtaGap(double etaGap) { dEtaGap = etaGap; }
         void                    SetUseWeights3D(Bool_t useWeights3D) { fUseWeights3D = useWeights3D; }
         void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }
+        void                    SetCentMax(Int_t centmax);
         //Observable selection
         void                    SetDiff(Bool_t diff) { bDiff = diff; }
         void                    SetPtB(Bool_t ptb) { bPtB = ptb; }
@@ -41,8 +42,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         static const Int_t      fNumHarms = 13;             // maximum harmonics length of flow vector array
         static const Int_t      fNumPowers = 9;             // maximum weight power length of flow vector array
         static const Int_t      fHarmPlots = 3;             // Number of harmonics for plotting (v2, v3, v4)
-        static const Int_t      NcentBin = 11;
-        Double_t                centEdges[NcentBin+1]; 
+        static const Int_t      NcentBinMax = 11;           //
         AliAODEvent*            fAOD;                       //! input event
         TList*                  fOutputList;                //! output list
         TList*                  fReferenceFlowList;         //! Output list for reference flow observables
@@ -70,14 +70,14 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TProfile*               fHistcn[fHarmPlots][5];     //!
         TProfile*               fHistGap[fHarmPlots];       //!
         //Differential flow histograms
-        TProfile*               fHistdnNeg[fHarmPlots][11];  //!
-        TProfile*               fHistcnPtA[fHarmPlots][11];  //!
-        TProfile*               fHistdnPos[fHarmPlots][11];  //!
+        TProfile*               fHistdnNeg[fHarmPlots][NcentBinMax];  //!
+        TProfile*               fHistcnPtA[fHarmPlots][NcentBinMax];  //!
+        TProfile*               fHistdnPos[fHarmPlots][NcentBinMax];  //!
 
         //PtA PtB histograms
-        TProfile*               fHistPtA_PtB[fHarmPlots][28];      //!
-        TProfile*               fHistPtA_PtB_LS[fHarmPlots][28];   //!
-        TProfile*               fHistPtA_PtB_OS[fHarmPlots][28];   //!
+        TProfile*               fHistPtA_PtB[fHarmPlots][NcentBinMax][22];      //!
+        TProfile*               fHistPtA_PtB_LS[fHarmPlots][NcentBinMax][22];   //!
+        TProfile*               fHistPtA_PtB_OS[fHarmPlots][NcentBinMax][22];   //!
 
         //Flow method
         bool                    IsWithinRP(const AliAODTrack* track) const;
@@ -180,6 +180,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fPOIsPtmin;
         Double_t                fRPsPtmax;
         Double_t                fRPsPtmin;
+        Int_t                   NcentBin;
+        Double_t                centEdges[NcentBinMax+1]; 
 
         ClassDef(AliAnalysisDecorrTask, 1);
 };

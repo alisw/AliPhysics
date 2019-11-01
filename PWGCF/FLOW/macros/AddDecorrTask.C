@@ -61,6 +61,7 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = ""
     task->SetUseWeights3D(useWeights3D);        //kTRUE for own weights and kFALSE for Vytau's
     task->SetDiff(kTRUE);
     task->SetPtB(kTRUE);
+    task->SetCentMax(50);
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
