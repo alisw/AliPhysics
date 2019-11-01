@@ -702,8 +702,10 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
     const float b_field = InputEvent()->GetMagneticField();
 
     const auto pdg_dmeson = fgkDMesonPDG.at(meson_species);
-    const auto pdg_daughters = fgkDMesonDaughterPDG.at(meson_species);
-    const auto id_daughter = fgkDMesonDaughterAliPID.at(fDmesonSpecies);
+
+    const auto id_daughter_alipid = fgkDMesonDaughterAliPID.at(fDmesonSpecies);
+    const auto id_daughter_alipid_anti = fgkDMesonDaughterAliPID.at(fDmesonSpecies);
+    std::reverse(id_daughter_alipid_anti.begin(), id_daughter_alipid_anti.end());
 
     const auto aod_event = dynamic_cast<AliAODEvent *>(InputEvent());
     const auto pid_response = fInputHandler->GetPIDResponse();
@@ -805,8 +807,8 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
 
         for (int i = 0; i < n_prongs; i++) {
             const auto track = dynamic_cast<AliAODTrack *>(reco_cand->GetDaughter(i));
-            pid_info_tpc.push_back(pid_response->NumberOfSigmasTPC(track, id_daughter[i]));
-            pid_info_tof.push_back(pid_response->NumberOfSigmasTOF(track, id_daughter[i]));
+            pid_info_tpc.push_back(pid_response->NumberOfSigmasTPC(track, id_daughter_alipid[i]));
+            pid_info_tof.push_back(pid_response->NumberOfSigmasTOF(track, id_daughter_alipid[i]));
             id_daughters.push_back(TMath::Abs(track->GetID()));
         }
         cand.fNSigmaTPCDaughters = pid_info_tpc;
@@ -822,6 +824,7 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
             cand.fSigmaVertex = dplus_candidate->GetSigmaVert();
             cand.fInvMass = dplus_candidate->InvMassDplus();
         } else if (meson_species == kDstar) {
+            //TODO
             //const auto dstar_candidate = dynamic_cast<AliAODRecoCascadeHF *>(reco_cand);
         }
 
@@ -836,12 +839,29 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
             reflection.fInvMass = d0bar_candidate->InvMassD0bar();
             reflection.fCosTs = d0bar_candidate->CosThetaStarD0bar();
 
-            //Invert the vectors, since we would like to have the pt and d0 for the pion and
-            //kaon in the same position
+            //Invert the vectors, since we would like to have the pt and d0 for the pion and kaon in the same position
             std::reverse(reflection.fPtDaughters.begin(), reflection.fPtDaughters.end());
             std::reverse(reflection.fD0Daughters.begin(), reflection.fD0Daughters.end());
-            std::reverse(reflection.fNSigmaTPCDaughters.begin(), reflection.fNSigmaTPCDaughters.end());
-            std::reverse(reflection.fNSigmaTOFDaughters.begin(), reflection.fNSigmaTOFDaughters.end());
+
+            //Needs to recalculate PID, since the hypotheses is different.
+
+            std::vector<Float_t> pid_info_tpc_reflection;
+            std::vector<Float_t> pid_info_tof_reflection;
+            pid_info_tpc_reflection.reserve(n_prongs);
+            pid_info_tof_reflection.reserve(n_prongs);
+
+            for (int j = 0; j < n_prongs; j++) {
+                const auto track = dynamic_cast<AliAODTrack *>(reco_cand->GetDaughter(j));
+                pid_info_tpc.push_back(pid_response->NumberOfSigmasTPC(track, id_daughter_alipid_anti[j]));
+                pid_info_tof.push_back(pid_response->NumberOfSigmasTOF(track, id_daughter_alipid_anti[j]));
+            }
+            reflection.fNSigmaTPCDaughters = pid_info_tpc_reflection;
+            reflection.fNSigmaTOFDaughters = pid_info_tof_reflection;
+
+            //Reverse them to have always pion in the first position
+            std::reverse(reflection.fNSigmaTPCDaughters.begin(), reflection.fD0Daughters.end());
+            std::reverse(reflection.fNSigmaTOFDaughters.begin(), reflection.fD0Daughters.end());
+
             std::reverse(reflection.fIDDaughters.begin(), reflection.fIDDaughters.end());
 
             d_mesons.push_back(reflection);
