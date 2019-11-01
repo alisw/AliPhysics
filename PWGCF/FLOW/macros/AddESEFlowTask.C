@@ -1,37 +1,4 @@
-AliAnalysisDataContainer* makeWeightContainer(TString nua_file, TString containerName){
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliAnalysisDataContainer* weights;
-  if (nua_file.Contains("alien:")) TGrid::Connect("alien:");
-  TFile* file;
-  file = TFile::Open(nua_file.Data(), "READ");
-
-  if(!file) { printf("E-MyAddTask: Input file with differential weights not found!\n"); return NULL; }
-
-  TList* weights_list_newtemp = new TList();
-  weights_list_newtemp->SetName("nuaWeights");
- 
-  TH2F* nuacentral = new TH2F();
-
-  file->GetObject("PhiEtaWeights", nuacentral);
-  nuacentral->SetDirectory(0);
-  nuacentral->SetNameTitle("nuacentral","nuacentral");
-
-  file->Close();
-
-  weights_list_newtemp->Add(nuacentral);
-
-  weights = mgr->CreateContainer(containerName,TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
-  weights->SetData(weights_list_newtemp);
-  return weights;
-}
-
-void connectContainer(AliAnalysisDataContainer* container,AliAnalysisTaskESEFlow* task)
-{
-  task->nuacentral = static_cast<TH2F*>( static_cast<TList*>(container->GetData())->FindObject("nuacentral") );
-  task->nuacentral->SetDirectory(0);
-}
-
-AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask",TString nua_file = "", TString sWeightsFile = "", TString sVWeights = "", TString sqSelCuts = "")
+AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "", TString sqSelCuts = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -72,28 +39,6 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("c_n{n} dist after q selection%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
-
-  
-
-  if(bUseMyWeights)
-  {
-    // read new histogram
-    TObjArray* taskContainers = mgr->GetContainers();
-    AliAnalysisDataContainer* weights_newtemp;
-   
-    TObjArray *tx = nua_file.Tokenize("/");
-    TObjArray *ty = ((TObjString *)(tx->At(tx->GetEntries()-1)))->String().Tokenize(".");
-    TString nuaobject =  ((TObjString *)(ty->At(0)))->String();
-    std::cout << nuaobject << std::endl;
-
-    weights_newtemp = (AliAnalysisDataContainer*) taskContainers->FindObject(nuaobject);
-
-    if (!weights_newtemp) {
-      std::cout << "I-AddTask: " << nuaobject << " weights not defined - reading now. " << std::endl;
-      weights_newtemp = makeWeightContainer(nua_file,nuaobject);
-    }
-    connectContainer( weights_newtemp, task);
-  }
 
 
   // RUN BY RUN
