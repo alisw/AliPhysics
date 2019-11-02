@@ -211,8 +211,10 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D verzbin = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
 
 	Double1D verzbinFine = {
+	-10, -9, 
 	 -8, -7, -6, -5, -4, -3, -2,
-	  2,  3,  4,  5,  6,  7,  8};
+	  2,  3,  4,  5,  6,  7,  8,
+	  9, 10 };
 
 	binZ = AxisVar("Z",verzbin);
 	if( fOption.Contains("FineBkg") ){
@@ -285,7 +287,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	fHistos->CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
         fHistos->CreateTH2("hPhiEtaCor","",180,0,2*pi,40,-2,2);
 
-	fEMpool.resize(binCent.GetNbins()-1,vector<eventpool> (binZ.GetNbins()-1));
+	fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
 	fEMpooltracklet.resize(binCent.GetNbins(),vector<eventpooltracklet> (binZ.GetNbins()));
 	fEMpoolMCALICE.resize(binCent.GetNbins(),vector<eventpoolMC> (binZ.GetNbins()));
 	fEMpoolMCCMS.resize(binCent.GetNbins(),vector<eventpoolMC> (binZ.GetNbins()));	
@@ -395,13 +397,11 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		else if( runnumber >= 293475 && runnumber <= 293898 ) Period = "LHC18o";
 		else if( runnumber >= 294009 && runnumber <= 294925 ) Period = "LHC18p";
 
-		cout << "Period : " << Period << endl;
 
 		TH2D* hEfficiencyHist;
 		TH3D* hEfficiency3DHist;
 
 		if( !fefficiencyFile ){
-                	cout << "No Eff file " << endl;
                 	for(int i=0;i<fEff_npT_step;i++){
                 	        for(int j=0;j<fEff_neta_step;j++){
                 	                Eff[i][j] = 0.5;
@@ -410,7 +410,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		}
 
 		if( fOption.Contains("Add3DEff") && !fefficiency3DFile ){
-			cout << "No Eff 3D file " << endl;
 			for(int i=0;i<fEff_npT_step;i++){
 				for(int j=0;j<fEff_neta_step;j++){
 					for(int k=0;k<fEff_nphi_step;k++){
@@ -494,7 +493,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 	double v0amplitude=0;
 
-	fJetTask = (AliJJetTask*) fEvt -> FindListObject("AliJJetTask");
+//	fJetTask = (AliJJetTask*) fEvt -> FindListObject("AliJJetTask");
 	if( !fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTask" ));
 	else if( fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskHighMult" ));
 
@@ -529,7 +528,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
                 if( cHeaderAOD ) fZ_gen = cHeaderAOD -> GetVtxZ();
         }
 
-
+	AbsZmax = 8.0;
 	if( fOption.Contains("TightVtx") ) AbsZmax = 6.0;
 	
 	Bool_t IsTriggered = kFALSE;
@@ -545,13 +544,13 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
                 IsTriggered = (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7);
         }
         else if(fRunTable->IsPP() ){
-                IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
+                IsTriggered = (inputHandler -> IsEventSelected()) & AliVEvent::kINT7;
                 if( fOption.Contains("HighMult") ){
-                        IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
+                        IsTriggered = (inputHandler -> IsEventSelected()) & AliVEvent::kHighMultV0;
                 }
 	}
 	if( IsMC ){
-                IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
+                IsTriggered = (inputHandler -> IsEventSelected()) & AliVEvent::kINT7;
 //                if( fOption.Contains("HighMult") ){
 //                        IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
 //                }
@@ -590,7 +589,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	        sel->GetThisEventINELgtZERO() &&
 	        sel->GetThisEventPassesTrackletVsCluster() &&
 	        sel->GetThisEventHasNoInconsistentVertices() &&
-	        fabs(fZ) < 10.0 ){
+	        fabs(fZ) < 8.0 ){
 	                IsSelectedFromAliMultSelectionForSysZ = kTRUE;
 	        }
 	}
@@ -600,7 +599,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	        sel->GetThisEventHasNoInconsistentVertices() &&
 	        sel->GetThisEventPassesTrackletVsCluster() ){
 	                IsSelectedFromAliMultSelection = kTRUE;
-	                if( fabs(fZ) < 10.0 ){
+	                if( fabs(fZ) < 8.0 ){
 	                        IsSelectedFromAliMultSelectionForSysZ = kTRUE;
 	                }
 	        }
@@ -619,12 +618,9 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 //IsMultiplicityInsideBin Flag Configuration********
 	centbin = binCent.FindBin(fCent) -1;
-	if( centbin >= 0 && centbin < binCent.GetNbins()-1 ) IsMultiplicityInsideBin = kTRUE;
+	if( centbin >= 0 && centbin < binCent.GetNbins() ) IsMultiplicityInsideBin = kTRUE;
 //******************************************
 	
-	cout << centbin << endl;
-	cout << "Event Class : " << IsTriggered << ", " << IsNotPileup << ", " << IsValidVtx << ", " << IsGoodVtx << ", " << IsSelectedFromAliMultSelection << "< " << IsMultiplicityInsideBin << ", " << fCent << endl;
-
 	if( IsTriggered ) fHistos->FillTH1("hEventNumbers","IsTriggered",1);
 	if( IsTriggered && IsNotPileup ) fHistos->FillTH1("hEventNumbers","IsNotPileup",1);
 	if( IsTriggered && IsNotPileup && IsValidVtx ) fHistos->FillTH1("hEventNumbers","IsValidVtx",1);
@@ -683,7 +679,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 			else if( fOption.Contains("GlbSDD") ){ 	if( this -> GoodTracksSelection( 5 ) ){ this -> FillTracks(); } }
 			else{ 					if( this -> GoodTracksSelection( 2 ) ){ this -> FillTracks(); } }
 //			else{  this -> GoodTracksSelection( 2 ); }
-			cout << "GoodTrack " << endl;
 			if( fOption.Contains("MC") ){ if( this -> GoodTracksSelectionMC() ){ this -> FillTracksMC(); } }
 
 		}
@@ -768,7 +763,8 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 	eventpool *ep;
 
 	//Event mixing pool
-	if (fsetmixing && centbin>=0 && zbin>=0){
+	if (fsetmixing && centbin>=0 && zbin>=0 &&
+	centbin < binCent.GetNbins() && zbin < binZ.GetNbins() ){
 		ep = &fEMpool[centbin][zbin];
 		ep -> push_back( tracklist() ); //
 //		ep -> push_back( etl );
@@ -787,8 +783,8 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 			track = (AliAODTrack*) fEvt ->GetTrack(it);
 			if (!track) continue;
 
-			if( trk < 2.5 ){ if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue; } //for hybrid
-			else if( trk > 2.5 ){ if( ! ((AliAODTrack*) track)->TestFilterMask(fFilterBit)) continue; } //for global
+			if( trk < 3.5 ){ if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue; } //for hybrid
+			else if( trk > 3.5 ){ if( ! ((AliAODTrack*) track)->TestFilterMask(fFilterBit)) continue; } //for global
 
 
                         if( IsMC && fabs( dynamic_cast<AliAODMCHeader*>(fEvt->FindListObject(AliAODMCHeader::StdBranchName()))->GetVtxZ() ) < 10 ){
@@ -862,7 +858,6 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 			etl->push_back( (AliVTrack*) track -> Clone() );
 		}
 	}
-	cout << etl->size() << endl;
 	if (fsetmixing){
 		if (!goodtrackindices.size()) ep->pop_back();
 		if ( ep->size() > bookingsize ){
@@ -1267,7 +1262,8 @@ void AliAnalysisTaskRidge::FillTracks(){
 
 
         int epsize=1;
-        if (fsetmixing && centbin>=0 && zbin>=0){
+        if (fsetmixing && centbin>=0 && zbin>=0 &&
+	centbin < binCent.GetNbins() && zbin < binZ.GetNbins() ){
                 eventpool &ep = fEMpool[centbin][zbin];
                 epsize = ep.size();
                 if (ep.size()<bookingsize  ) return;
