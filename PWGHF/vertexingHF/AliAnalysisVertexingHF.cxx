@@ -3167,6 +3167,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
   Double_t ptcand=TMath::Sqrt(fMassCalc3->Pt2());
   if(fMinPt3Prong>0.1)
     if(ptcand < fMinPt3Prong) return retval;
+  
   // D+->Kpipi
   Int_t jPtBinPlus=fCutsDplustoKpipi->PtBin(ptcand);
   if(jPtBinPlus<0) jPtBinPlus=0;
@@ -3179,6 +3180,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
     retval=kTRUE;
     fOKInvMassDplus=kTRUE;
   }
+  
   // Ds+->KKpi
   Int_t jPtBinS=fCutsDstoKKpi->PtBin(ptcand);
   if(jPtBinS<0) jPtBinS=0;
@@ -3209,28 +3211,29 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
   }
   
   // Lc->pKpi
-  Int_t jPtBinL=fCutsLctopKpi->PtBin(ptcand);
-  if(jPtBinL<0) jPtBinL=0;
-  mrange=fCutsLctopKpi->GetMassCut(jPtBinL);
-  lolim=fMassLambdaC-mrange;
-  hilim=fMassLambdaC+mrange;
-  if(pidLcStatus&1){
-    pdg3[0]=2212; pdg3[1]=321; pdg3[2]=211;
-    minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
-    if(minv2>lolim*lolim && minv2<hilim*hilim ){
-      retval=kTRUE;
-      fOKInvMassLc=kTRUE;
+  if(ptcand>fCutsLctopKpi->GetMinPtCandidate()){
+    Int_t jPtBinL=fCutsLctopKpi->PtBin(ptcand);
+    if(jPtBinL<0) jPtBinL=0;
+    mrange=fCutsLctopKpi->GetMassCut(jPtBinL);
+    lolim=fMassLambdaC-mrange;
+    hilim=fMassLambdaC+mrange;
+    if(pidLcStatus&1){
+      pdg3[0]=2212; pdg3[1]=321; pdg3[2]=211;
+      minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
+      if(minv2>lolim*lolim && minv2<hilim*hilim ){
+	retval=kTRUE;
+	fOKInvMassLc=kTRUE;
+      }
+    }
+    if(pidLcStatus&2 && !fOKInvMassLc){
+      pdg3[0]=211; pdg3[1]=321; pdg3[2]=2212;
+      minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
+      if(minv2>lolim*lolim && minv2<hilim*hilim ){
+	retval=kTRUE;
+	fOKInvMassLc=kTRUE;
+      }
     }
   }
-  if(pidLcStatus&2){
-    pdg3[0]=211; pdg3[1]=321; pdg3[2]=2212;
-    minv2 = fMassCalc3->InvMass2(nprongs,pdg3);
-    if(minv2>lolim*lolim && minv2<hilim*hilim ){
-      retval=kTRUE;
-      fOKInvMassLc=kTRUE;
-    }
-  }
-
   return retval;
 }
 
