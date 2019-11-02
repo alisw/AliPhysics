@@ -1592,6 +1592,8 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
 
   ana->SetCellAmpMin(0.3);
     
+  ana->SetTimeCut(-20,20);
+  
   ana->AddToHistogramsName("Exo_"); // Begining of histograms name
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below

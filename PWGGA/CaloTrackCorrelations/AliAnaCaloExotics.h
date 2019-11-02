@@ -69,12 +69,17 @@ public:
   Float_t      GetHighNCellCut()    const   { return fNCellHighCut        ; }
   void         SetHighNCellCut(Int_t n)     { fNCellHighCut = n           ; }
   
+  Double_t     GetTimeCutMin()      const   { return fTimeCutMin          ; }
+  Double_t     GetTimeCutMax()      const   { return fTimeCutMax          ; }  
+  void         SetTimeCut(Float_t min, Float_t max) { fTimeCutMin = min   ; 
+                                                      fTimeCutMax = max   ; }
+  
   Float_t      GetEBinLimit(Int_t i) const  
                            { if ( i < fgkNEBins && i >= 0 ) return fEnergyBins[i] ;
                              else                           return -1     ; }
   void         SetEBinLimit(Int_t i, Float_t en) 
                            { if ( i < fgkNEBins && i >= 0 ) fEnergyBins[i] = en ; }
-  
+
   void         SwitchOnFill1CellHisto()     { fFill1CellHisto    = kTRUE  ; }
   void         SwitchOffFill1CellHisto()    { fFill1CellHisto    = kFALSE ; }
  
@@ -97,7 +102,10 @@ public:
 
   Float_t  fExoCut;                             ///<  Exoticity cut for some histograms 
   
-  Int_t    fNCellHighCut;                       ///<  High N cell  cut for some histograms 
+  Int_t    fNCellHighCut;                       ///<  High N cell with w>0  cut for some histograms 
+  
+  Float_t  fTimeCutMin  ;                       ///<  Remove clusters with time smaller than this value, in ns
+  Float_t  fTimeCutMax  ;                       ///<  Remove clusters with time larger than this value, in ns
   
   /// Total number of cluster energy bins histograms
   static const Int_t fgkNEBins = 12;
@@ -126,6 +134,7 @@ public:
   TH2F *   fhNCellsPerCluster;                  //!<! Cluster energy vs N cells in cluster
   TH2F *   fhNCellsPerClusterAllSameTCard;      //!<! Cluster energy vs N cells, all cells in same T-Card
   TH3F *   fhNCellsPerClusterPerSM;             //!<! Cluster energy vs N cells in cluster, per SM
+  TH3F *   fhNCellsPerClusterWPerSM;            //!<! Cluster energy vs N cells in cluster, per SM
   TH3F *   fhNCellsPerClusterExo;               //!<! Cluster energy vs N cells in cluster vs Exoticity   
   TH3F *   fhNCellsPerClusterExoPerSM[20];      //!<! Cluster energy vs N cells in cluster vs Exoticity, per SM  
   TH2F *   fhNCellsPerClusterTrackMatch;        //!<! Cluster energy vs N cells in cluster, for track-matched clusters 
@@ -133,6 +142,7 @@ public:
   TH3F *   fhNCellsPerClusterM02;               //!<! Cluster energy vs N cells in cluster vs M02   
 
   TH3F *   fhEtaPhiGridExoEnCut  ;              //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1
+  TH3F *   fhEtaPhiGridExoEnCutSameFracCut;     //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff = 0
   TH3F *   fhEtaPhiGridEnExoCut  ;              //!<! column vs row vs energy when F+ < 0.97 and n cells > 1
   TH3F *   fhEtaPhiGridEn1Cell;                 //!<! column vs row vs energy for 1 cell clusters 
   TH3F *   fhEtaPhiGridEnHighNCells;            //!<! column vs row vs energy for n cell >  fNCellCut
@@ -144,7 +154,10 @@ public:
   TH3F *   fhTimeDiffAmpClusCellExo;            //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs secondary cell energy vs exoticity for E > fEMinForExo
   TH3F *   fhTimeEnergyM02;                     //!<! Cluster Energy vs Time vs M02, n cells > 1
   TH3F *   fhTimeDiffClusCellM02;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs M02
-
+  TH3F *   fhTimeEnergyNCells;                  //!<! Cluster Energy vs Time vs n cells
+  TH3F *   fhTimeEnergyNCellsW;                 //!<! Cluster Energy vs Time vs n cells for w > 0
+  TH1F *   fhTimeNCellCut;                      //!<! Cluster Time vs n cells > fNCellCut, larger time range 
+  
   TH3F *   fhM02EnergyNCell;                    //!<! Cluster M02 vs Energy vs n cells
   TH2F *   fhM02EnergyAllSameTCard;             //!<! Cluster M02 vs Energy, all cells in same T-Card
   TH3F *   fhM02EnergyExo;                      //!<! Cluster M02 vs Energy vs exoticity
