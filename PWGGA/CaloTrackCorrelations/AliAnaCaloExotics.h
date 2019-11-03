@@ -182,6 +182,18 @@ public:
   TH2F *   fhExoSame5;                          //!<! Cluster E vs 1 - E same & neighbor TCard / E max
   TH2F *   fhExoDiff5;                          //!<! Cluster E vs 1 - E different & neighbor TCard / E max
   
+  TH2F *   fhFracEnDiffSame;                    //!<! Cluster E vs fraction of energy in diff over same T-Card
+  TH2F *   fhFracNCellDiffSame;                 //!<! Cluster E vs fraction of n cells in diff over same T-Card
+  TH2F *   fhFracEnNCellDiffSame;               //!<! Cluster E vs double fraction of energy/n cells in diff over same T-Card
+  
+  TH2F *   fhFracEnDiffSameW;                   //!<! Cluster E vs fraction of energy in diff over same T-Card, cells with w > 0
+  TH2F *   fhFracNCellDiffSameW;                //!<! Cluster E vs fraction of n cells in diff over same T-Card, cells with w > 0
+  TH2F *   fhFracEnNCellDiffSameW;              //!<! Cluster E vs double fraction of energy/n cells in diff over same T-Card, cells with w > 0
+  
+  TH2F *   fhFracEnDiffSame5;                   //!<! Cluster E vs fraction of energy in diff over same T-Card, neighbour cells
+  TH2F *   fhFracNCellDiffSame5;                //!<! Cluster E vs fraction of n cells in diff over same T-Card, neighbour cells
+  TH2F *   fhFracEnNCellDiffSame5;              //!<! Cluster E vs double fraction of energy/n cells in diff over same T-Card, neighbour cells
+  
   TH3F *   fhNCellsSameDiffExo[fgkNEBins];      //!<! N cells in same vs diff vs exoticity, different cluster E bins
   TH3F *   fhEnSameDiffExo    [fgkNEBins];      //!<! Sum of E in same vs diff vs exoticity, different  cluster E bins
   TH3F *   fhCellEnSameExo;                     //!<! Cluster E vs cell E in same T-Card vs exoticity
