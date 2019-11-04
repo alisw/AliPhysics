@@ -36,7 +36,7 @@ TString outputpath="";
 TString strAverage;
 TString strTempl;
 TString betadir="";
-Bool_t saveAwaySide=kFALSE;
+Bool_t saveAwaySide=kTRUE;
 void SetSaveAwaySidePlots(Bool_t saveAS){
   saveAwaySide=saveAS;
 }
@@ -915,7 +915,7 @@ void Systematics_pp_2to3had(Bool_t useReflected){
 //////// TEMPLATE CASE ///////////////
 void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     
-  
+  cout << "BetaDir" << betadir << endl;
     TString path = inputpath;
     TString mcCase;
     if(strTemplRootName.Contains("Perugia2010"))mcCase="Perugia2010";
@@ -923,6 +923,7 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
+    else if(strTemplRootName.Contains("POW_LO"))mcCase="POWHEG_LO";    
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -948,7 +949,8 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir);     
+
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
@@ -956,8 +958,8 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
 	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -969,8 +971,8 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-	    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-	    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+	    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
         systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1071,6 +1073,7 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
+    else if(strTemplRootName.Contains("POW_LO"))mcCase="POWHEG_LO";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1096,7 +1099,8 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
@@ -1104,8 +1108,8 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1117,8 +1121,8 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
         systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1219,6 +1223,7 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
+    else if(strTemplRootName.Contains("POW_LO"))mcCase="POWHEG_LO";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1244,7 +1249,8 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
@@ -1252,8 +1258,8 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1265,8 +1271,8 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
         systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1367,6 +1373,7 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
+    else if(strTemplRootName.Contains("POW_LO"))mcCase="POWHEG_LO";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1392,7 +1399,8 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
@@ -1400,8 +1408,8 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1413,8 +1421,8 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
         systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1515,6 +1523,7 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
+    else if(strTemplRootName.Contains("POW_LO"))mcCase="POWHEG_LO";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1540,7 +1549,8 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
@@ -1548,11 +1558,11 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity1); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);
       }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
@@ -1561,8 +1571,8 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
         systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1663,6 +1673,7 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
+    else if(strTemplRootName.Contains("POW_LO"))mcCase="POWHEG_LO";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1688,7 +1699,8 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
@@ -1696,8 +1708,8 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1709,8 +1721,8 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
         systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1811,6 +1823,7 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
+    else if(strTemplRootName.Contains("POW_LO"))mcCase="POWHEG_LO";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1836,7 +1849,8 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
@@ -1844,8 +1858,8 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
@@ -1857,8 +1871,8 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
         systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
