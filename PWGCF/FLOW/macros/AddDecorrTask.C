@@ -48,20 +48,15 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = ""
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
-
-
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += Form(":%s",dirname.Data());      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisDecorrTask* task = new AliAnalysisDecorrTask(name.Data());   
     if(!task) return 0x0;
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-    bool useWeights3D = kTRUE;
-    task->SetUseWeights3D(useWeights3D);        //kTRUE for own weights and kFALSE for Vytau's
-    task->SetDiff(kTRUE);
-    task->SetPtB(kTRUE);
-    task->SetCentMax(50);
+
+    Bool_t useWeights3D = task->GetUseWeights3D();
+
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
