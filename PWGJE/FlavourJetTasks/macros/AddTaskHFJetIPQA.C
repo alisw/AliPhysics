@@ -7,6 +7,7 @@ Bool_t DefineCutsTaskpp(AliJetContainer* cont, double radius)
     cont->SetJetPtCut(5.);
     cont->SetJetPtCutMax(1000.);
     cont->SetJetEtaLimits(-0.9+radius, 0.9-radius);
+    cont->SetPercAreaCut(0.6);
     return kTRUE;
 }
 
