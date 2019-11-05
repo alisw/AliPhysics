@@ -5,6 +5,7 @@
 
 #include "AliAnalysisTaskEmcal.h"
 #include "AliEventPoolManager.h"
+#include "AliAODMCHeader.h"
 #include "AliEventCuts.h"
 #include "AliFiducialCut.h"
 #include "AliEMCALRecoUtils.h"
@@ -20,6 +21,7 @@ class TH2;
 class TH3;
 class AliVVZERO;
 class AliEvtPoolManager;
+class AliAODMCHeader;
 
 class AliQnCorrectionsManager;
 
@@ -65,8 +67,11 @@ public:
   void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input  ; }
   void                        SetNLM(Int_t input)                                   { fMaxNLM          = input  ; }
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
+  void                        SetClusterEnergyType(Int_t input)                     { fClusEnergyType = input   ; }
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;} // dEta, dPhi = -1 or 0 will use pt parametrized cut
-  void                        SetHadronicCorrection(Int_t input, Double_t dEta=-1, Double_t dPhi=-1) { fHadCorr = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi; } // dEta, dPhi = -1 or 0 will use pt parametrized cut
+  void                        SetHadronicCorrection(Int_t input, Double_t dEta=-1, Double_t dPhi=-1) { // dEta, dPhi = -1 or 0 will use pt parametrized cut
+  fHadCorr = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi; fClusEnergyType = AliVCluster::kHadCorr;
+  AliWarning("This configuration modifies the HadCorr energy of input clusters. Following tasks beware!"); }
   void                        SetHadronicCorrectionEnergy(Double_t input)           { fHadCorrConstant = input;}
   void                        SetEOverPLimits(Double_t inputMin, Double_t inputMax) { fTrackMatchEOverPLow = inputMin; fTrackMatchEOverPHigh = inputMax; }
   void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts= input;}
@@ -83,6 +88,8 @@ public:
   void                        SetApplyPatchCandCut(Bool_t input)                    { fApplyPatchCandCut = input;}
   void                        SetSidebandChoice(Int_t input)                        { fSidebandChoice    = input;}
 
+  void                        SetMCEmbedReweightMode(Int_t input)                   { fMCEmbedReweightMode = input;}
+  void                        SetUseMCReactionPlane(Int_t input)                    { fUseMCReactionPlane  = input;}
 
   //..Functions for mixed event purposes
   void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
@@ -113,8 +120,10 @@ public:
   //..Function for event plane purposes
   void                        LoadQnCorrectedEventPlane();
 
+
   //..Correlate and fill
   Bool_t                      FillHistograms()                                              ;
+  void                        FillTrackHistograms(AliParticleContainer* tracks);
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Int_t isMixed, Int_t mcIndex1 = -1, Int_t mcIndex2 = -1, Int_t PosSwapStatus = 0); // Pos swap status 1 is for conserved energy pair, 2 is for conserved positions pair
@@ -180,12 +189,14 @@ public:
   //..cuts
 	Int_t                       fSubDetector;              ///< Whether to use all clusters, ECal only, or DCal only
   Double_t                    fTriggerPtCut;             ///< Cut of 5 GeV/c on Trigger Pt
+  Double_t                    fMaxPi0Pt;                 ///< Cut of maximum pt for pi0 candidates
   Double_t                    fClShapeMin;               ///< Minimum cluster shape
   Double_t                    fClShapeMax;               ///< Maximum cluster shape
   Double_t                    fClEnergyMin;              ///< Minimum cluster energy for pi0 Reconstruction
   Double_t                    fOpeningAngleCut;          ///< Minimum opening angle cut for pi0 candidates
   Int_t                       fMaxNLM;                   ///< Maximum number of local maxima
   Bool_t                      fRmvMTrack;                ///< Switch to enable removing clusters with a matched track
+  Int_t                       fClusEnergyType;           ///< Index of the energy from clusters (nonLinCorr=0,hadCorr=1)
   Int_t                       fHadCorr;                  ///< Switch to enable subtraction of constant energy for matched tracks. 0 = none, 1 = enable subtraction
   Double_t                    fHadCorrConstant;          ///< Energy value that is subtracted from clusters with matched tracks
   Double_t                    fTrackMatchEta;            ///< eta range in which a track is called a match to a cluster
@@ -218,9 +229,13 @@ public:
   //..MC stuff
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
   Bool_t                      fIsMC;                     ///< Trigger, MC analysis
+  Int_t                       fMCEmbedReweightMode;      ///< Whether to reweight embedded MC particles. 0 = none, 1 = reweight function, 2 = veto embed etas
+  Int_t                       fUseMCReactionPlane;       ///< Whether to set the 2nd order event plane to the reaction plane in the MC Header.
   UInt_t                      fAODfilterBits[2];         ///< AOD track filter bit map
+  AliAODMCHeader             *fMCHeader;                 //!<! AOD MC Header
   AliMCParticleContainer     *fMCParticles;              ///< Container for MC Particles
   vector<AliAODMCParticle *>  fMCPi0List;                ///< List of MC Pi0s within EMCAL/DCal acceptance
+  Double_t                    fMCReactionPlaneAngle;     //!<! Reaction plane angle from MC Truth
 
   //..Other stuff
   static const int            kCLUS_BUF_SIZE = 3000;     ///< Should cover all clusters in event
@@ -244,19 +259,32 @@ public:
   // Hists for MC Efficiency
   TH3             *fHistMCPi0_PtEtaMult;     //!<! MC pi0 dists (pt,eta,mult)
   TH3             *fHistMCPi0_PtEtaEP;       //!<! MC pi0 dists (pt,eta,EP bin)
+  TH2             *fEtaPhiMCPion;            //!<! MC pi0 dists (eta,phi)
 
   TH2             *fHistClusPairInvarMasspT; //!<! Tyler's histogram
   TH1             *fHistPi0;                 //!<! Tyler's histogram
   TH2             *fMAngle;                  //!<! Tyler's histogram
   TH2             *fPtAngle;                 //!<! Tyler's histogram
   TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
-  TH2             *fPtEPAnglePionAcc;        //!<! Histogram of delta Psi of accepted pi0 (vs pt)
-  TH2             *fPtEPAngleMCPion;         //!<! Histogram of delta Psi of MC truth pi0 (vs pt)
+  // Event Plane information (reconstructed event plane)
+  TH2             *fPtEPAnglePionAcc;        //!<! Histogram of delta Psi_{EP} of accepted pi0 (vs pt)
+  TH2             *fPtEPAngleMCPion;         //!<! Histogram of delta Psi_{EP} of MC truth pi0 (vs pt)
+  TH2             *fPtEPAngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+  TH3             *fHistTrackPsiEPPtCent;    //!<! Histogram of delta Psi_{EP} of accepted tracks (vs pt and centrality)
+  // Event Plane information (MC information);
+  TH1             *fMCReactionPlane;         //!<! Histogram of distribution of reaction plane angle (MC information)
+  TH2             *fPtRPAnglePionAcc;        //!<! Histogram of delta Psi_{RP} of accepted pi0 (vs pt)
+  TH2             *fPtRPAngleMCPion;         //!<! Histogram of delta Psi_{RP} of MC truth pi0 (vs pt)
+  TH2             *fPtRPAngleTrueRecMCPion;  //!<! Histogram of delta Psi_{RP} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+  TH3             *fHistTrackPsiRPPtCent;    //!<! Histogram of delta Psi_{RP} of accepted tracks (vs pt and centrality)
+
+
   TH2             *fEtaPhiPionAcc;           //!<! Histogram of eta,phi location of accepted pions
   TH2             *fMassPtPionAcc;           //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
   TH2             *fMassPtPionRej;           //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
   TH3             *fMassPtCentPionAcc;       //!<! Histogram of Mass vs Pt vs Cent for accepted Pi0 Candidates
   TH3             *fMassPtCentPionRej;       //!<! Histogram of Mass vs Pt vs Cent for rejected Pi0 Candidates
+  // Track Cluster Matching
   TH2             *fMatchDeltaEtaTrackPt;     //!<! Histogram of Delta eta vs track pt for cluster-track matching
   TH2             *fMatchDeltaPhiTrackPt;     //!<! Histogram of Delta phi vs track pt for cluster-track matching
   TH2             *fMatchCondDeltaEtaTrackPt;     //!<! Histogram of Delta eta vs track pt for cluster-track matching (Requiring delta phi cut)
@@ -264,6 +292,7 @@ public:
   TH2             *fClusterEnergyMatchedTracks;   //!<! Histogram counting the number of matched tracks vs the energy of matched clusters
   TH2             *fHistEOverPvE;            //!<! Histogram of E/p vs E_cluster for cluster-track pairs (geometrically matched)
   TH2             *fHistPOverEvE;            //!<! Histogram of p/E vs E_cluster for cluster-track pairs (geometrically matched)
+  // Position Swap Corrections
   TH2             *fHistPSDistU;             //!<! Histogram of sqrt((1-cos(theta_A))(1-cos(theta_B))) for Pos Swap Method
   TH2             *fHistPSDistV;             //!<! Histogram of sqrt(E_A/E_B) for Pos Swap Method
 
