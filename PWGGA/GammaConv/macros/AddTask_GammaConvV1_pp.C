@@ -1518,6 +1518,8 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00000113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
   } else if (trainConfig == 1036) {
     cuts.AddCutPCM("00000113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 1037) {
+    cuts.AddCutPCM("00000113", "0dm0000922700000dge0404000", "0152103500000000"); // new cuts consistent with omega analysis
 
   //----------------------------- configuration for run 2 analysis 13 TeV ----------------------------------------------------
   } else if (trainConfig == 1040){

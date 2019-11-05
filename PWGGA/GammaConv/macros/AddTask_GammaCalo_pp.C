@@ -823,6 +823,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00052113","1111100067032230000","01631031000000d0"); // EMC7
   } else if (trainConfig == 251){  // EMCAL clusters 7 TeV LHC10 MB only
     cuts.AddCutCalo("00000113","11111000b7032230000","01631031000000d0"); // VOAND
+  } else if (trainConfig == 252){  // EMCAL clusters 7 TeV LHC10 MB only new 31 TB NL
+    cuts.AddCutCalo("00000113","1111a3104f032230000","01631031000000d0"); // V0OR
   } else if (trainConfig == 254){  // QA for settings of omega analysis
     cuts.AddCutCalo("00000113","1111111047032230000","0163503800000000");
   // LHC11cd configs V0OR and V0AND with nonlinearity
@@ -853,6 +855,9 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 267){  // EMCAL clusters 7 TeV LHC11 for Omega QA
     cuts.AddCutCalo("00010113","111111105f032230000","01631031000000d0"); // VOAND
     cuts.AddCutCalo("00052113","111111105f032230000","01631031000000d0"); // EMC7
+  } else if (trainConfig == 268){  // EMCAL clusters 7 TeV LHC11 for Omega QA
+    cuts.AddCutCalo("00010113","111113106f032230000","01631031000000d0"); // VOAND
+    cuts.AddCutCalo("00052113","111113106f032230000","01631031000000d0"); // EMC7
   //multiple std dirGAMMA cuts for different studies
   } else if (trainConfig == 281){ // EMCAL clusters pp 7 TeV
     cuts.AddCutCalo("00000113","11111110b70322l0000","01631031000000d0"); // std
