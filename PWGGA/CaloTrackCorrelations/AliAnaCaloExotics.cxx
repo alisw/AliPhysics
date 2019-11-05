@@ -567,7 +567,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       
       if ( en > 20 )
       {
-        fhFracEnDiffSameWEnCut     ->Fill(fracEnDiffSame      , GetEventWeight()); 
+        fhFracEnDiffSameEnCut      ->Fill(fracEnDiffSame      , GetEventWeight()); 
         fhFracNCellDiffSameEnCut   ->Fill(fracNCellDiffSame   , GetEventWeight());
         fhFracEnNCellDiffSameEnCut ->Fill(fracEnNCellDiffSame , GetEventWeight());
         
