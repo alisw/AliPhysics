@@ -3813,10 +3813,14 @@ Bool_t AliAnalysisVertexingHF::GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAOD
   sn = cs<1. ? tgfv*cs : 0.;
 
   x = xv*cs + yv*sn;
-  float alpNew = alpha+TMath::ASin(sn);
-  if (!tr->RotateParamOnly(alpNew)) {
-    return kFALSE; // failed
- }
- tr->GetPxPyPzAt(x, fBzkG,momentum); // extract momentum
- return kTRUE;
+  Double_t alpNew = alpha+TMath::ASin(sn);
+  Double_t ca=TMath::Cos(alpNew-alpha), sa=TMath::Sin(alpNew-alpha);
+  Double_t p2=tr->GetSnp();
+  Double_t xNew=tr->GetX()*ca + tr->GetY()*sa;
+  Double_t p2New=p2*ca - TMath::Sqrt((1.- p2)*(1.+p2))*sa;
+  momentum[0]=tr->GetSigned1Pt();
+  momentum[1]=p2New*(x-xNew)*tr->GetC(fBzkG);
+  momentum[2]=tr->GetTgl();
+  Bool_t retCode=tr->Local2GlobalMomentum(momentum,alpNew);
+  return retCode;
 }
