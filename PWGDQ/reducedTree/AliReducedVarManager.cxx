@@ -157,6 +157,9 @@ TH1*                            AliReducedVarManager::fgPairEffMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyY = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyZ = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyXCorr = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyYCorr = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyZCorr = kNothing;
 TH1*                            AliReducedVarManager::fgAssocHadronEffMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyY = kNothing;
@@ -330,10 +333,23 @@ void AliReducedVarManager::SetVariableDependencies() {
   }
   
   
+  if (fgUsedVars[kTriggerEffTimesAssocHadronEff]) {
+    fgUsedVars[kTriggerEff]             = kTRUE;
+    fgUsedVars[kAssocHadronEff]         = kTRUE;
+  }
+  if (fgUsedVars[kOneOverTriggerEffTimesAssocHadronEff]) {
+    fgUsedVars[kOneOverTriggerEff]      = kTRUE;
+    fgUsedVars[kOneOverAssocHadronEff]  = kTRUE;
+  }
   if(fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]){
     fgUsedVars[fgEffMapVarDependencyX] = kTRUE;
     fgUsedVars[fgEffMapVarDependencyY] = kTRUE;
     fgUsedVars[fgEffMapVarDependencyZ] = kTRUE;
+  }
+  if (fgUsedVars[kTriggerEff] || fgUsedVars[kOneOverTriggerEff]) {
+    fgUsedVars[fgEffMapVarDependencyXCorr] = kTRUE;
+    fgUsedVars[fgEffMapVarDependencyYCorr] = kTRUE;
+    fgUsedVars[fgEffMapVarDependencyZCorr] = kTRUE;
   }
   if(fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]){
     fgUsedVars[fgAssocHadronEffMapVarDependencyX] = kTRUE;
@@ -2560,6 +2576,39 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kDeltaEtaAbs])  values[kDeltaEtaAbs]  = TMath::Abs(trig->Eta() - assoc->Eta());
   if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
 
+  // J/psi efficiency variables
+  if ((fgUsedVars[kTriggerEff] || fgUsedVars[kOneOverTriggerEff]) && fgPairEffMap) {
+    Int_t binX = 0;
+    if (fgEffMapVarDependencyXCorr!=kNothing) {
+      binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyXCorr]);
+      if(binX==0) binX = 1;
+      if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
+    }
+    Int_t binY = 0;
+    if (fgEffMapVarDependencyYCorr!=kNothing) {
+      binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyYCorr]);
+      if(binY==0) binY = 1;
+      if(binY==fgPairEffMap->GetXaxis()->GetNbins()+1) binY -= 1;
+    }
+    Int_t binZ = 0;
+    if (fgEffMapVarDependencyZCorr!=kNothing) {
+      binZ = fgPairEffMap->GetZaxis()->FindBin(values[fgEffMapVarDependencyZCorr]);
+      if(binZ==0) binZ = 1;
+      if(binZ==fgPairEffMap->GetZaxis()->GetNbins()+1) binZ -= 1;
+    }
+
+    Float_t                   pairEff = 1.;
+    if (binX && binY && binZ) pairEff = fgPairEffMap->GetBinContent(binX, binY, binZ);
+    else if (binX && binY)    pairEff = fgPairEffMap->GetBinContent(binX, binY);
+    else if (binX)            pairEff = fgPairEffMap->GetBinContent(binX);
+
+    Float_t               oneOverPairEff = 1.;
+    if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
+
+    values[kTriggerEff]         = pairEff;
+    values[kOneOverTriggerEff]  = oneOverPairEff;
+  }
+
   // hadron efficiency variables
   if ((fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]) && fgAssocHadronEffMap) {
     Int_t binX = 0;
@@ -2591,6 +2640,13 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
 
     values[kAssocHadronEff]         = hadronEff;
     values[kOneOverAssocHadronEff]  = oneOverHadronEff;
+  }
+
+  // J/psi x hadron efficiency variables
+  if ((fgUsedVars[kTriggerEffTimesAssocHadronEff] || fgUsedVars[kOneOverTriggerEffTimesAssocHadronEff]) &&
+      fgPairEffMap && fgAssocHadronEffMap) {
+    values[kTriggerEffTimesAssocHadronEff]        = values[kTriggerEff]*values[kAssocHadronEff];
+    values[kOneOverTriggerEffTimesAssocHadronEff] = values[kOneOverTriggerEff]*values[kOneOverAssocHadronEff];
   }
 }
 
@@ -3253,8 +3309,6 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPairEff]           = "pair eff.";             fgVariableUnits[kPairEff]           = "";
   fgVariableNames[kOneOverPairEff]    = "1/pair eff.";           fgVariableUnits[kOneOverPairEff]    = "";
   fgVariableNames[kOneOverPairEffSq]  = "1/pair eff. squared";   fgVariableUnits[kOneOverPairEffSq]  = "";
-  fgVariableNames[kAssocHadronEff]        = "assoc. hadron eff.";   fgVariableUnits[kAssocHadronEff]        = "";
-  fgVariableNames[kOneOverAssocHadronEff] = "1/assoc. hadron eff."; fgVariableUnits[kOneOverAssocHadronEff] = "";
   for(Int_t i=0;i<2;++i) {
      fgVariableNames[kPairLegTPCchi2+i] = Form("TPC #chi^{2}, leg %d", i+1);
      fgVariableUnits[kPairLegTPCchi2+i] = "";
@@ -3403,6 +3457,12 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kAssociatedEtaBoosted]  = "#eta associated particle";   fgVariableUnits[kAssociatedEtaBoosted]  = "";
   fgVariableNames[kAssociatedPhi]         = "#varphi associated particle";fgVariableUnits[kAssociatedPhi]         = "rad.";
   fgVariableNames[kAssociatedPhiBoosted]  = "#varphi associated particle";fgVariableUnits[kAssociatedPhiBoosted]  = "rad.";
+  fgVariableNames[kTriggerEff]                            = "#epsilon_{trigger}";                           fgVariableUnits[kTriggerEff]                            = "";
+  fgVariableNames[kOneOverTriggerEff]                     = "1/#epsilon_{trigger}";                         fgVariableUnits[kOneOverTriggerEff]                     = "";
+  fgVariableNames[kAssocHadronEff]                        = "#epsilon_{assoc}";                             fgVariableUnits[kAssocHadronEff]                        = "";
+  fgVariableNames[kOneOverAssocHadronEff]                 = "1/#epsilon_{assoc}";                           fgVariableUnits[kOneOverAssocHadronEff]                 = "";
+  fgVariableNames[kTriggerEffTimesAssocHadronEff]         = "#epsilon_{trigger} #times #epsilon_{assoc}";   fgVariableUnits[kTriggerEffTimesAssocHadronEff]         = "";
+  fgVariableNames[kOneOverTriggerEffTimesAssocHadronEff]  = "1/#epsilon_{trigger} #times #epsilon_{assoc}"; fgVariableUnits[kOneOverTriggerEffTimesAssocHadronEff]  = "";
 }
 
 
@@ -3566,6 +3626,26 @@ void AliReducedVarManager::SetPairEfficiencyMap(TH1* map, AliReducedVarManager::
   }
   fgPairEffMap->SetDirectory(0x0);
 }
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetPairEfficiencyMapDependeciesCorrelation(AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY/*=kNothing*/, AliReducedVarManager::Variables varZ/*=kNothing*/) {
+  //
+  // initialize variable dependencies for pair efficiency map used in correlation
+  //
+  if (!fgPairEffMap) {
+    cout << "AliReducedVarManager::SetPairEfficiencyMapDependeciesCorrelation() No efficiency map provided!" << endl;
+    return;
+  }
+  if(varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetPairEfficiencyMapDependeciesCorrelation() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used in correlation! Check it out!" << endl;
+    return;
+  }
+  fgEffMapVarDependencyXCorr = varX;
+  if (varY>kNothing && varY<=kNVars) fgEffMapVarDependencyYCorr = varY;
+  if (varZ>kNothing && varZ<=kNVars) fgEffMapVarDependencyZCorr = varZ;
+}
+
 
 //____________________________________________________________________________________
 void AliReducedVarManager::SetAssociatedHadronEfficiencyMap(TH1* map, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY/*=kNothing*/, AliReducedVarManager::Variables varZ/*=kNothing*/) {

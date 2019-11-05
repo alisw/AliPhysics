@@ -667,8 +667,12 @@ class AliReducedVarManager : public TObject {
     kAssociatedEtaBoosted,
     kAssociatedPhi,         // phi of associated track
     kAssociatedPhiBoosted,
-    kAssocHadronEff,        // associated hadron efficiency
-    kOneOverAssocHadronEff, // 1 / associated hadron efficiency (correction factor)
+    kTriggerEff,                            // J/psi candidate efficiency
+    kOneOverTriggerEff,                     // 1 / J/psi candidate efficiency
+    kAssocHadronEff,                        // associated hadron efficiency
+    kOneOverAssocHadronEff,                 // 1 / associated hadron efficiency (correction factor)
+    kTriggerEffTimesAssocHadronEff,         // J/psi candidate efficiency x associated hadron efficiency
+    kOneOverTriggerEffTimesAssocHadronEff,  // 1 / (J/psi candidate efficiency x associated hadron efficiency)
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets
     kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
@@ -759,6 +763,7 @@ class AliReducedVarManager : public TObject {
   static void SetTPCpidCalibMaps(Int_t pid, THnF* centroidMap, THnF* widthMap, THnI* statusMap);
   static void SetTPCpidCalibDepVars(Variables vars[]);
   static void SetPairEfficiencyMap(TH1* map, Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
+  static void SetPairEfficiencyMapDependeciesCorrelation(Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
   static void SetAssociatedHadronEfficiencyMap(TH1* map, Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
@@ -803,6 +808,9 @@ class AliReducedVarManager : public TObject {
   static Variables fgEffMapVarDependencyX;        // varX in the pair eff maps
   static Variables fgEffMapVarDependencyY;        // varY in the pair eff maps
   static Variables fgEffMapVarDependencyZ;        // varZ in the pair eff maps
+  static Variables fgEffMapVarDependencyXCorr;        // varX in the pair eff maps, used for correlation
+  static Variables fgEffMapVarDependencyYCorr;        // varY in the pair eff maps, used for correlation
+  static Variables fgEffMapVarDependencyZCorr;        // varZ in the pair eff maps, used for correlation
   static TH1*      fgAssocHadronEffMap;               // assoc hadron efficiency map
   static Variables fgAssocHadronEffMapVarDependencyX; // varX in assoc hadron eff map
   static Variables fgAssocHadronEffMapVarDependencyY; // varY in assoc hadron eff map
@@ -840,7 +848,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 15);
+  ClassDef(AliReducedVarManager, 16);
 };
 
 #endif
