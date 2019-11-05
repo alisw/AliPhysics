@@ -2523,35 +2523,34 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
 
   // hadron efficiency variables
-  if (fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]) {
-    Float_t hadronEff         = 1.;
-    Float_t oneOverHadronEff  = 1.;
-    if (fgAssocHadronEffMap) {
-      Int_t binX = 0;
-      if (fgAssocHadronEffMapVarDependencyX!=kNothing) {
-        binX = fgAssocHadronEffMap->GetXaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyX]);
-        if(binX==0) binX = 1;
-        if(binX==fgAssocHadronEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
-      }
-      Int_t binY = 0;
-      if (fgAssocHadronEffMapVarDependencyY!=kNothing) {
-        binY = fgAssocHadronEffMap->GetYaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyY]);
-        if(binY==0) binY = 1;
-        if(binY==fgAssocHadronEffMap->GetXaxis()->GetNbins()+1) binY -= 1;
-      }
-      Int_t binZ = 0;
-      if (fgAssocHadronEffMapVarDependencyZ!=kNothing) {
-        binZ = fgAssocHadronEffMap->GetZaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyZ]);
-        if(binZ==0) binZ = 1;
-        if(binZ==fgAssocHadronEffMap->GetZaxis()->GetNbins()+1) binZ -= 1;
-      }
-      if (binX && binY && binZ) hadronEff = fgAssocHadronEffMap->GetBinContent(binX, binY, binZ);
-      else if (binX && binY)    hadronEff = fgAssocHadronEffMap->GetBinContent(binX, binY);
-      else if (binX)            hadronEff = fgAssocHadronEffMap->GetBinContent(binX);
-      else                      hadronEff = 1.;
+  if ((fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]) && fgAssocHadronEffMap) {
+    Int_t binX = 0;
+    if (fgAssocHadronEffMapVarDependencyX!=kNothing) {
+      binX = fgAssocHadronEffMap->GetXaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgAssocHadronEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
     }
-    if (!hadronEff) hadronEff       = 1.; // NOTE: should this be the default in case of eff=0?
-    if (hadronEff) oneOverHadronEff = 1./hadronEff;
+    Int_t binY = 0;
+    if (fgAssocHadronEffMapVarDependencyY!=kNothing) {
+      binY = fgAssocHadronEffMap->GetYaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyY]);
+      if(binY==0) binY = 1;
+      if(binY==fgAssocHadronEffMap->GetXaxis()->GetNbins()+1) binY -= 1;
+    }
+    Int_t binZ = 0;
+    if (fgAssocHadronEffMapVarDependencyZ!=kNothing) {
+      binZ = fgAssocHadronEffMap->GetZaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyZ]);
+      if(binZ==0) binZ = 1;
+      if(binZ==fgAssocHadronEffMap->GetZaxis()->GetNbins()+1) binZ -= 1;
+    }
+
+    Float_t                   hadronEff = 1.;
+    if (binX && binY && binZ) hadronEff = fgAssocHadronEffMap->GetBinContent(binX, binY, binZ);
+    else if (binX && binY)    hadronEff = fgAssocHadronEffMap->GetBinContent(binX, binY);
+    else if (binX)            hadronEff = fgAssocHadronEffMap->GetBinContent(binX);
+
+    Float_t                 oneOverHadronEff = 1.;
+    if (hadronEff > 1.0e-6) oneOverHadronEff = 1./hadronEff;
+
     values[kAssocHadronEff]         = hadronEff;
     values[kOneOverAssocHadronEff]  = oneOverHadronEff;
   }
