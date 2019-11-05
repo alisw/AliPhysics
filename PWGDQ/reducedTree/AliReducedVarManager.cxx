@@ -153,9 +153,10 @@ THnF*                           AliReducedVarManager::fgTPCpidCalibCentroid[3] =
 THnF*                           AliReducedVarManager::fgTPCpidCalibWidth[3] = {0x0};
 THnI*                           AliReducedVarManager::fgTPCpidCalibStatus[3] = {0x0};
 AliReducedVarManager::Variables AliReducedVarManager::fgTPCpidCalibVars[4] = {kNothing, kNothing, kNothing, kNothing};
-TH2F*                           AliReducedVarManager::fgPairEffMap = 0x0;
+TH1*                            AliReducedVarManager::fgPairEffMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyY = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyZ = kNothing;
 TH1*                            AliReducedVarManager::fgAssocHadronEffMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyY = kNothing;
@@ -332,6 +333,7 @@ void AliReducedVarManager::SetVariableDependencies() {
   if(fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]){
     fgUsedVars[fgEffMapVarDependencyX] = kTRUE;
     fgUsedVars[fgEffMapVarDependencyY] = kTRUE;
+    fgUsedVars[fgEffMapVarDependencyZ] = kTRUE;
   }
   if(fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]){
     fgUsedVars[fgAssocHadronEffMapVarDependencyX] = kTRUE;
@@ -1554,17 +1556,35 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   
   //pair efficiency variables
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
-    Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]);
-    if(binX==0) binX = 1;
-    if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
-    Int_t binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]);
-    if(binY==0) binY=1;
-    if(binY==fgPairEffMap->GetYaxis()->GetNbins()+1) binY -= 1;
-    Float_t pairEff = fgPairEffMap->GetBinContent(binX, binY);
-    Float_t oneOverPairEff = 1;
+    Int_t binX = 0;
+    if (fgEffMapVarDependencyX!=kNothing) {
+      binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
+    }
+    Int_t binY = 0;
+    if (fgEffMapVarDependencyY!=kNothing) {
+      binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]);
+      if(binY==0) binY = 1;
+      if(binY==fgPairEffMap->GetXaxis()->GetNbins()+1) binY -= 1;
+    }
+    Int_t binZ = 0;
+    if (fgEffMapVarDependencyZ!=kNothing) {
+      binZ = fgPairEffMap->GetZaxis()->FindBin(values[fgEffMapVarDependencyZ]);
+      if(binZ==0) binZ = 1;
+      if(binZ==fgPairEffMap->GetZaxis()->GetNbins()+1) binZ -= 1;
+    }
+
+    Float_t                   pairEff = 1.;
+    if (binX && binY && binZ) pairEff = fgPairEffMap->GetBinContent(binX, binY, binZ);
+    else if (binX && binY)    pairEff = fgPairEffMap->GetBinContent(binX, binY);
+    else if (binX)            pairEff = fgPairEffMap->GetBinContent(binX);
+
+    Float_t               oneOverPairEff = 1.;
     if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
-    values[kPairEff] = pairEff;
-    values[kOneOverPairEff] = oneOverPairEff;
+
+    values[kPairEff]          = pairEff;
+    values[kOneOverPairEff]   = oneOverPairEff;
     values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
 
@@ -2373,17 +2393,35 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
   if(fgUsedVars[kTheta])  values[kTheta]  = p.Theta();
   
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
-    Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]); //make sure the values[XVar] are filled for EM
-    if(binX==0) binX = 1;
-    if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
-    Int_t binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]); //make sure the values[YVar] are filled for EM
-    if(binY==0) binY=1;
-    if(binY==fgPairEffMap->GetYaxis()->GetNbins()+1) binY -= 1;
-    Float_t pairEff = fgPairEffMap->GetBinContent(binX, binY);
-    Float_t oneOverPairEff = 1;
+    Int_t binX = 0;
+    if (fgEffMapVarDependencyX!=kNothing) {
+      binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]); //make sure the values[XVar] are filled for EM
+      if(binX==0) binX = 1;
+      if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
+    }
+    Int_t binY = 0;
+    if (fgEffMapVarDependencyY!=kNothing) {
+      binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]); //make sure the values[XVar] are filled for EM
+      if(binY==0) binY = 1;
+      if(binY==fgPairEffMap->GetXaxis()->GetNbins()+1) binY -= 1;
+    }
+    Int_t binZ = 0;
+    if (fgEffMapVarDependencyZ!=kNothing) {
+      binZ = fgPairEffMap->GetZaxis()->FindBin(values[fgEffMapVarDependencyZ]); //make sure the values[ZVar] are filled for EM
+      if(binZ==0) binZ = 1;
+      if(binZ==fgPairEffMap->GetZaxis()->GetNbins()+1) binZ -= 1;
+    }
+
+    Float_t                   pairEff = 1.;
+    if (binX && binY && binZ) pairEff = fgPairEffMap->GetBinContent(binX, binY, binZ);
+    else if (binX && binY)    pairEff = fgPairEffMap->GetBinContent(binX, binY);
+    else if (binX)            pairEff = fgPairEffMap->GetBinContent(binX);
+
+    Float_t               oneOverPairEff = 1.;
     if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
-    values[kPairEff] = pairEff;
-    values[kOneOverPairEff] = oneOverPairEff;
+
+    values[kPairEff]          = pairEff;
+    values[kOneOverPairEff]   = oneOverPairEff;
     values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
 }
@@ -3485,26 +3523,48 @@ void AliReducedVarManager::SetTPCpidCalibDepVars(Variables vars[]) {
 }
 
 //____________________________________________________________________________________
-void AliReducedVarManager::SetPairEfficiencyMap(TH2F* effMap, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY) {
+void AliReducedVarManager::SetPairEfficiencyMap(TH1* map, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY/*=kNothing*/, AliReducedVarManager::Variables varZ/*=kNothing*/) {
   //
   // initialize the pair efficiency map
   //
+  if (!map) {
+    cout << "AliReducedVarManager::SetPairEfficiencyMap() No efficiency map provided!" << endl;
+    return;
+  }
   if(varX>kNVars || varX<=kNothing) {
     cout << "AliReducedVarManager::SetPairEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
     cout << "                           Efficiency map not used! Check it out!" << endl;
     return;
   }
-  if(varY>kNVars || varY<=kNothing) {
-    cout << "AliReducedVarManager::SetPairEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
-    cout << "                           Efficiency map not used! Check it out!" << endl;
-    return;
+  if (map->IsA()==TH3F::Class() || map->IsA()==TH3D::Class()) {
+    if (varY>kNVars || varY<=kNothing) {
+      cout << "AliReducedVarManager::SetPairEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Efficiency map not used! Check it out!" << endl;
+      return;
+    }
+    if (varZ>kNVars || varZ<=kNothing) {
+      cout << "AliReducedVarManager::SetPairEfficiencyMap() The Z-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Efficiency map not used! Check it out!" << endl;
+      return;
+    }
+    fgEffMapVarDependencyX  = varX;
+    fgEffMapVarDependencyY  = varY;
+    fgEffMapVarDependencyZ  = varZ;
+    fgPairEffMap            = (TH3F*)map->Clone(Form("AliReducedVarManager_PairEffMap"));
+  } else if (map->IsA()==TH2F::Class() || map->IsA()==TH2D::Class()) {
+    if (varY>kNVars || varY<=kNothing) {
+      cout << "AliReducedVarManager::SetPairEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Efficiency map not used! Check it out!" << endl;
+      return;
+    }
+    fgEffMapVarDependencyX  = varX;
+    fgEffMapVarDependencyY  = varY;
+    fgPairEffMap            = (TH2F*)map->Clone(Form("AliReducedVarManager_PairEffMap"));
+  } else {
+    fgEffMapVarDependencyX  = varX;
+    fgPairEffMap            = (TH1F*)map->Clone(Form("AliReducedVarManager_PairEffMap"));
   }
-  fgEffMapVarDependencyX = varX; 
-  fgEffMapVarDependencyY = varY;
-  if(effMap) {
-    fgPairEffMap = (TH2F*)effMap->Clone(Form("AliReducedVarManager_PairEffMap"));
-    fgPairEffMap->SetDirectory(0x0);
-  }
+  fgPairEffMap->SetDirectory(0x0);
 }
 
 //____________________________________________________________________________________

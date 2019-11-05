@@ -758,7 +758,7 @@ class AliReducedVarManager : public TObject {
   static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
   static void SetTPCpidCalibMaps(Int_t pid, THnF* centroidMap, THnF* widthMap, THnI* statusMap);
   static void SetTPCpidCalibDepVars(Variables vars[]);
-  static void SetPairEfficiencyMap(TH2F* effMap, Variables xVarDep, Variables yVarDep);
+  static void SetPairEfficiencyMap(TH1* map, Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
   static void SetAssociatedHadronEfficiencyMap(TH1* map, Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
@@ -799,9 +799,10 @@ class AliReducedVarManager : public TObject {
   static THnF* fgTPCpidCalibWidth[3];       // TPC calib width 4D map
   static THnI* fgTPCpidCalibStatus[3];      // TPC calib status 4D map
   static Variables fgTPCpidCalibVars[4];    // variables used for TPC pid 4D calibration
-  static TH2F* fgPairEffMap;                // 2D pair efficiency map
+  static TH1*      fgPairEffMap;                  // pair efficiency map
   static Variables fgEffMapVarDependencyX;        // varX in the pair eff maps
   static Variables fgEffMapVarDependencyY;        // varY in the pair eff maps
+  static Variables fgEffMapVarDependencyZ;        // varZ in the pair eff maps
   static TH1*      fgAssocHadronEffMap;               // assoc hadron efficiency map
   static Variables fgAssocHadronEffMapVarDependencyX; // varX in assoc hadron eff map
   static Variables fgAssocHadronEffMapVarDependencyY; // varY in assoc hadron eff map
