@@ -572,8 +572,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   AliESDtrack *negtrack2 = 0;
   AliESDtrack *trackPi   = 0;
   Double_t mompos1[3],mompos2[3],momneg1[3],momneg2[3];
-  //   AliESDtrack *posV0track = 0;
-  //   AliESDtrack *negV0track = 0;
   Float_t dcaMax = fCutsD0toKpi->GetDCACut();
   if(fCutsJpsitoee) dcaMax=TMath::Max(dcaMax,fCutsJpsitoee->GetDCACut());
   if(fCutsDplustoKpipi) dcaMax=TMath::Max(dcaMax,fCutsDplustoKpipi->GetDCACut());
@@ -692,8 +690,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
         // Get the tracks that form the V0
         //  ( parameters at primary vertex )
         //   and define an AliExternalTrackParam out of them
-        AliExternalTrackParam * posV0track;
-        AliExternalTrackParam * negV0track;
 
         if(fInputAOD){
           AliAODTrack *posVV0track = (AliAODTrack*)(v0->GetDaughter(0));
@@ -710,14 +706,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
           // avoid ghost TPC tracks
           if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
              !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-          // Get AliExternalTrackParam out of the AliAODTracks
-          Double_t xyz[3], pxpypz[3], cv[21]; Short_t sign;
-          posVV0track->PxPyPz(pxpypz); 	              posVV0track->XvYvZv(xyz);
-          posVV0track->GetCovarianceXYZPxPyPz(cv);	  sign=posVV0track->Charge();
-          posV0track = new AliExternalTrackParam(xyz,pxpypz,cv,sign);
-          negVV0track->PxPyPz(pxpypz); 	              negVV0track->XvYvZv(xyz);
-          negVV0track->GetCovarianceXYZPxPyPz(cv);	  sign=negVV0track->Charge();
-          negV0track = new AliExternalTrackParam(xyz,pxpypz,cv,sign);
         }  else {
           AliESDtrack *posVV0track = (AliESDtrack*)(event->GetTrack( esdV0->GetPindex() ));
           AliESDtrack *negVV0track = (AliESDtrack*)(event->GetTrack( esdV0->GetNindex() ));
@@ -736,20 +724,13 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
           //  reject kinks (only necessary on AliESDtracks)
           if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
           // Get AliExternalTrackParam out of the AliESDtracks
-          posV0track = new AliExternalTrackParam(*posVV0track);
-          negV0track = new AliExternalTrackParam(*negVV0track);
 
           // Define the AODv0 from ESDv0 if reading ESDs
+	  twoTrackArrayV0->AddAt(posVV0track,0);
+	  twoTrackArrayV0->AddAt(negVV0track,1);
           v0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
+	  twoTrackArrayV0->Clear();
         }
-        if( !posV0track || !negV0track ){
-          AliDebug(1,Form(" Couldn't get the V0 daughters"));
-          continue;
-        }
-
-        // fill in the v0 two-external-track-param array
-        twoTrackArrayV0->AddAt(posV0track,0);
-        twoTrackArrayV0->AddAt(negV0track,1);
 
         // Get the V0 dca
         dcaV0 = v0->DcaV0Daughters();
@@ -788,11 +769,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
           dcaCasc = 0.;
         }
         if(!vertexCasc) {
-          delete posV0track; posV0track=NULL;
-          delete negV0track; negV0track=NULL;
           delete trackV0; trackV0=NULL;
           if(!fInputAOD) {delete v0; v0=NULL;}
-          twoTrackArrayV0->Clear();
           twoTrackArrayCasc->Clear();
           continue;
         }
@@ -820,10 +798,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 
         // Clean up
-        delete posV0track; posV0track=NULL;
-        delete negV0track; negV0track=NULL;
         delete trackV0; trackV0=NULL;
-        twoTrackArrayV0->Clear();
         twoTrackArrayCasc->Clear();
         if(ioCascade) { delete ioCascade; ioCascade=NULL; }
         if(vertexCasc) { delete vertexCasc; vertexCasc=NULL; }
