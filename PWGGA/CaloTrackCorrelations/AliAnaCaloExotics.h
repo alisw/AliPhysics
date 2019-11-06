@@ -132,10 +132,14 @@ public:
   TH2F *   fhExoticity1Cell;                    //!<! Exoticity vs energy for 1 cell clusters
 
   TH2F *   fhNCellsPerCluster;                  //!<! Cluster energy vs N cells in cluster
-  TH2F *   fhNCellsPerClusterAllSameTCard;      //!<! Cluster energy vs N cells, all cells in same T-Card
+  TH2F *   fhNCellsPerClusterEMaxCell;          //!<! Cell max energy vs N cells in cluster
+  TH2F *   fhNCellsPerClusterOpenTime;          //!<! Cluster energy vs N cells in cluster, no time cut
+  TH2F *   fhNCellsPerClusterEMaxCellOpenTime;  //!<! Cell max energy vs N cells in cluster, no time cut
+
+  TH2F *   fhNCellsPerClusterAllSameTCard;      //!<! Cluster energy vs N cells, all cells in same T-Card  
+  TH3F *   fhNCellsPerClusterExo;               //!<! Cluster energy vs N cells in cluster vs Exoticity   
   TH3F *   fhNCellsPerClusterPerSM;             //!<! Cluster energy vs N cells in cluster, per SM
   TH3F *   fhNCellsPerClusterWPerSM;            //!<! Cluster energy vs N cells in cluster, per SM
-  TH3F *   fhNCellsPerClusterExo;               //!<! Cluster energy vs N cells in cluster vs Exoticity   
   TH3F *   fhNCellsPerClusterExoPerSM[20];      //!<! Cluster energy vs N cells in cluster vs Exoticity, per SM  
   TH2F *   fhNCellsPerClusterTrackMatch;        //!<! Cluster energy vs N cells in cluster, for track-matched clusters 
   TH3F *   fhNCellsPerClusterExoTrackMatch;     //!<! Cluster energy vs N cells in cluster vs Exoticity, for track-matched clusters 
@@ -220,10 +224,16 @@ public:
   
   TH3F *   fhNCellsSameDiffExo[fgkNEBins];      //!<! N cells in same vs diff vs exoticity, different cluster E bins
   TH3F *   fhEnSameDiffExo    [fgkNEBins];      //!<! Sum of E in same vs diff vs exoticity, different  cluster E bins
+  TH3F *   fhEnNCellsSameDiffExo[fgkNEBins];    //!<! Sum of E in / n cell in same vs diff vs exoticity, different  cluster E bins
   TH3F *   fhCellEnSameExo;                     //!<! Cluster E vs cell E in same T-Card vs exoticity
   TH3F *   fhCellEnDiffExo;                     //!<! Cluster E vs cell E in diff T-Card vs exoticity
   TH3F *   fhCellEnNCellWOpenTime;              //!<! Cluster E vs cell E vs n cells with w > 0, no time cut
   TH3F *   fhCellEnNCellW;                      //!<! Cluster E vs cell E vs n cells with w > 0
+
+  TH2F *   fhCellMaxClusterEnOpenTime;          //!<!  Cluster E (without non lin) vs Cell max E, no time cut 
+  TH2F *   fhCellMaxClusterEn;                  //!<!  Cluster E (without non lin) vs Cell max E  
+  TH2F *   fhCellMaxClusterEnRatioOpenTime;     //!<!  Cluster E vs E cell max / E cluster, no time cut 
+  TH2F *   fhCellMaxClusterEnRatio;             //!<!  Cluster E vs E cell max / E cluster 
   TH3F *   fhCellMaxClusterEnRatioNCellWOpenTime;//!<! Cluster E vs E cell max / E cluster vs n cells with w > 0, no time cut
   TH3F *   fhCellMaxClusterEnRatioNCellW;       //!<!  Cluster E vs E cell max / E cluster vs n cells with w > 0
   TH3F *   fhCellMaxClusterEnRatioExo;          //!<!  Cluster E vs E cell max / E cluster vs n exoticity
