@@ -353,7 +353,10 @@ class AliAnalysisTaskForMCpPb : public AliAnalysisTaskSE
                                  * fMCEfficiencyPerRunH to extract the
                                  * efficiency on a run-by-run basis.
                                  */
-        TH1F*                   fEfficiencyPerRunH;  //!
+        TH1F*                   fEfficiencyPerRunH;                          //!
+        TH1F*                   fEfficiencyPerRunRestrictedRapidityH;        //!
+        TH1F*                   fEfficiencyPerRunRestrictedRapidity36to31H;  //!
+        TH1F*                   fEfficiencyPerRunRestrictedRapidity31to26H;  //!
 
                                 /**
                                  * This histogram shows the entries distribution
@@ -365,7 +368,10 @@ class AliAnalysisTaskForMCpPb : public AliAnalysisTaskSE
                                  * and I forgot to eliminate  the comment
                                  * from here....
                                  */
-        TH1F*                   fMCEfficiencyPerRunH;  //!
+        TH1F*                   fMCEfficiencyPerRunH;                          //!
+        TH1F*                   fMCEfficiencyPerRunRestrictedRapidityH;        //!
+        TH1F*                   fMCEfficiencyPerRunRestrictedRapidity36to31H;  //!
+        TH1F*                   fMCEfficiencyPerRunRestrictedRapidity31to26H;  //!
 
                                 /**
                                  * This array of histograms shows the
@@ -469,7 +475,7 @@ class AliAnalysisTaskForMCpPb : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskForMCpPb, 1);
+        ClassDef(AliAnalysisTaskForMCpPb, 2);
 };
 
 #endif

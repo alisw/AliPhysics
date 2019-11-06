@@ -168,6 +168,12 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb()
       fCounterUPCevent(0),
       fEfficiencyPerRunH(0),
       fMCEfficiencyPerRunH(0),
+      fEfficiencyPerRunRestrictedRapidityH(0),
+      fMCEfficiencyPerRunRestrictedRapidityH(0),
+      fEfficiencyPerRunRestrictedRapidity36to31H(0),
+      fMCEfficiencyPerRunRestrictedRapidity36to31H(0),
+      fEfficiencyPerRunRestrictedRapidity31to26H(0),
+      fMCEfficiencyPerRunRestrictedRapidity31to26H(0),
       fEtaAndPhi(0)
 {
     // default constructor, don't allocate memory here!
@@ -261,6 +267,12 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb( const char* name )
       fCounterUPCevent(0),
       fEfficiencyPerRunH(0),
       fMCEfficiencyPerRunH(0),
+      fEfficiencyPerRunRestrictedRapidityH(0),
+      fMCEfficiencyPerRunRestrictedRapidityH(0),
+      fEfficiencyPerRunRestrictedRapidity36to31H(0),
+      fMCEfficiencyPerRunRestrictedRapidity36to31H(0),
+      fEfficiencyPerRunRestrictedRapidity31to26H(0),
+      fMCEfficiencyPerRunRestrictedRapidity31to26H(0),
       fEtaAndPhi(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
@@ -472,6 +484,43 @@ void AliAnalysisTaskForMCpPb::UserCreateOutputObjects()
   fMCEfficiencyPerRunH->LabelsDeflate();
   fOutputList->Add(fMCEfficiencyPerRunH);
 
+  fEfficiencyPerRunRestrictedRapidityH = new TH1F("fEfficiencyPerRunRestrictedRapidityH", "fEfficiencyPerRunRestrictedRapidityH", 3, 0, 3);
+  fEfficiencyPerRunRestrictedRapidityH->SetStats(0);
+  fEfficiencyPerRunRestrictedRapidityH->SetFillColor(38);
+  fEfficiencyPerRunRestrictedRapidityH->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunRestrictedRapidityH);
+
+  fMCEfficiencyPerRunRestrictedRapidityH = new TH1F("fMCEfficiencyPerRunRestrictedRapidityH", "fMCEfficiencyPerRunRestrictedRapidityH", 3, 0, 3);
+  fMCEfficiencyPerRunRestrictedRapidityH->SetStats(0);
+  fMCEfficiencyPerRunRestrictedRapidityH->SetFillColor(38);
+  fMCEfficiencyPerRunRestrictedRapidityH->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunRestrictedRapidityH);
+
+  fEfficiencyPerRunRestrictedRapidity36to31H = new TH1F("fEfficiencyPerRunRestrictedRapidity36to31H", "fEfficiencyPerRunRestrictedRapidity36to31H", 3, 0, 3);
+  fEfficiencyPerRunRestrictedRapidity36to31H->SetStats(0);
+  fEfficiencyPerRunRestrictedRapidity36to31H->SetFillColor(38);
+  fEfficiencyPerRunRestrictedRapidity36to31H->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunRestrictedRapidity36to31H);
+
+  fMCEfficiencyPerRunRestrictedRapidity36to31H = new TH1F("fMCEfficiencyPerRunRestrictedRapidity36to31H", "fMCEfficiencyPerRunRestrictedRapidity36to31H", 3, 0, 3);
+  fMCEfficiencyPerRunRestrictedRapidity36to31H->SetStats(0);
+  fMCEfficiencyPerRunRestrictedRapidity36to31H->SetFillColor(38);
+  fMCEfficiencyPerRunRestrictedRapidity36to31H->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunRestrictedRapidity36to31H);
+
+  fEfficiencyPerRunRestrictedRapidity31to26H = new TH1F("fEfficiencyPerRunRestrictedRapidity31to26H", "fEfficiencyPerRunRestrictedRapidity31to26H", 3, 0, 3);
+  fEfficiencyPerRunRestrictedRapidity31to26H->SetStats(0);
+  fEfficiencyPerRunRestrictedRapidity31to26H->SetFillColor(38);
+  fEfficiencyPerRunRestrictedRapidity31to26H->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunRestrictedRapidity31to26H);
+
+  fMCEfficiencyPerRunRestrictedRapidity31to26H = new TH1F("fMCEfficiencyPerRunRestrictedRapidity31to26H", "fMCEfficiencyPerRunRestrictedRapidity31to26H", 3, 0, 3);
+  fMCEfficiencyPerRunRestrictedRapidity31to26H->SetStats(0);
+  fMCEfficiencyPerRunRestrictedRapidity31to26H->SetFillColor(38);
+  fMCEfficiencyPerRunRestrictedRapidity31to26H->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunRestrictedRapidity31to26H);
+
+
   /* - Eta vs Phi dead zones per Run.
    * -
    */
@@ -552,6 +601,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
       PostData(1, fOutputList);
       return;
   }
+  fRunNum    = fAOD->GetRunNumber();
   if(fMCEvent) {
     fRunNum    = fAOD->GetRunNumber();
     SetLuminosityCap();
@@ -602,7 +652,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
      - almost unit vector roughly 2 cm between two pixels of the SPD in different
      - layers.
    */
-  fRunNum    = fAOD->GetRunNumber();
+  // fRunNum    = fAOD->GetRunNumber();
   fTracklets = fAOD->GetTracklets()->GetNumberOfTracklets();
 
   /* - Trigger Inputs:
@@ -711,12 +761,13 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
                                           266674, 266669, 266668, 266665, 266659, 266658, 266657, 266630, 266621, 266618,
                                           266615, 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
                                           266543, 266539, 266534, 266533, 266525, 266523, 266522, 266520, 266518, 266516,
-                                          266514, 266487, 266480, 266479, 266472, 266441, 266439 };
+                                          266514, 266487, 266480, 266479, 266472, 266441, 266439, 295585 };
   Bool_t checkIfGoodRun = kFALSE;
-  for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
-    if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
-  }
-  for( Int_t iRunLHC16s = 0; iRunLHC16s <  77; iRunLHC16s++){
+  // cout << "OK4" << endl;
+  // for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
+  //   if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
+  // }
+  for( Int_t iRunLHC16s = 0; iRunLHC16s <  /*77*/ 78; iRunLHC16s++){
     if( fRunNum == listOfGoodRunNumbersLHC16s[iRunLHC16s] ) checkIfGoodRun = kTRUE;
   }
   if(checkIfGoodRun != 1) {
@@ -905,8 +956,10 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
   /* - Filling the fDeadZoneEtaVsPhiPerRunH.
    * -
    */
-  ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[0]->Eta(), track[0]->Phi() );
-  ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[1]->Eta(), track[1]->Phi() );
+  if ( fRunNum < 290000 ) {
+    ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[0]->Eta(), track[0]->Phi() );
+    ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[1]->Eta(), track[1]->Phi() );
+  }
 
   /* - Finally the core!!!
    * - What will be happening is that we will instantiate TLorentzVectors to
@@ -992,6 +1045,18 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
     } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
       fTemplatePtDistributionRapidityH[2]->Fill(possibleJPsi.Mag());
     }
+  }
+
+  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+      if ( (possibleJPsi.Rapidity() > -3.6) && (possibleJPsi.Rapidity() < -2.6) ) {
+          fEfficiencyPerRunRestrictedRapidityH->Fill( Form("%d", fRunNum) , 1 );
+          if ( possibleJPsi.Rapidity() < -3.1 ) {
+            fEfficiencyPerRunRestrictedRapidity36to31H->Fill( Form("%d", fRunNum) , 1 );
+          } else {
+            fEfficiencyPerRunRestrictedRapidity31to26H->Fill( Form("%d", fRunNum) , 1 );
+          }
+          // cout << "OK1" << endl;
+      }
   }
 
 
@@ -1154,6 +1219,18 @@ void AliAnalysisTaskForMCpPb::ProcessMCParticles(AliMCEvent* fMCEventArg)
       }
       fMCinvariantMassDistrJPsiGeneratedTruthH->Fill(possibleJPsiMC.Mag());
       fMCptDimuonGeneratedTruthH->Fill(possibleJPsiMC.Pt());
+      if ( (possibleJPsiMC.Mag() > 2.85) && (possibleJPsiMC.Mag() < 3.35) ) {
+          // cout << "OK2" << endl;
+          if ( (possibleJPsiMC.Rapidity() > -3.6) && (possibleJPsiMC.Rapidity() < -2.6) ) {
+              fMCEfficiencyPerRunRestrictedRapidityH->Fill( Form("%d", fRunNum) , 1 );
+              if ( possibleJPsiMC.Rapidity() < -3.1 ) {
+                fMCEfficiencyPerRunRestrictedRapidity36to31H->Fill( Form("%d", fRunNum) , 1 );
+              } else {
+                fMCEfficiencyPerRunRestrictedRapidity31to26H->Fill( Form("%d", fRunNum) , 1 );
+              }
+          }
+          // cout << "OK3" << endl;
+      }
       if ( (possibleJPsiMC.Mag() > 2.8) && (possibleJPsiMC.Mag() < 3.3) && (possibleJPsiMC.Pt() < 0.25) ) {
           if( charge[0] > 0 ) {
                   /* - This means that [0] is the positive muon while [1]
