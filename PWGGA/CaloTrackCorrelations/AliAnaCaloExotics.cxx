@@ -574,17 +574,17 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       fhFracEnNCellDiffSame5->Fill(en, fracEnNCellDiffSame5, GetEventWeight());
  
       
-      fhFracEnDiffSameExo      ->Fill(en, fracEnDiffSame     , exoticity, GetEventWeight()); 
-      fhFracNCellDiffSameExo   ->Fill(en, fracNCellDiffSame  , exoticity, GetEventWeight());
-      fhFracEnNCellDiffSameExo ->Fill(en, fracEnNCellDiffSame, exoticity, GetEventWeight());
+      fhFracEnDiffSameExo      ->Fill(en, fracEnDiffSame      , exoticity, GetEventWeight()); 
+      fhFracNCellDiffSameExo   ->Fill(en, fracNCellDiffSame   , exoticity, GetEventWeight());
+      fhFracEnNCellDiffSameExo ->Fill(en, fracEnNCellDiffSame , exoticity, GetEventWeight());
       
-      fhFracEnDiffSameWExo     ->Fill(en, fracEnDiffSameW     , GetEventWeight()); 
-      fhFracNCellDiffSameWExo  ->Fill(en, fracNCellDiffSameW  , GetEventWeight());
-      fhFracEnNCellDiffSameWExo->Fill(en, fracEnNCellDiffSameW, GetEventWeight());
+      fhFracEnDiffSameWExo     ->Fill(en, fracEnDiffSameW     , exoticity, GetEventWeight()); 
+      fhFracNCellDiffSameWExo  ->Fill(en, fracNCellDiffSameW  , exoticity, GetEventWeight());
+      fhFracEnNCellDiffSameWExo->Fill(en, fracEnNCellDiffSameW, exoticity, GetEventWeight());
       
-      fhFracEnDiffSame5Exo     ->Fill(en, fracEnDiffSame5     , GetEventWeight()); 
-      fhFracNCellDiffSame5Exo  ->Fill(en, fracNCellDiffSame5  , GetEventWeight());
-      fhFracEnNCellDiffSame5Exo->Fill(en, fracEnNCellDiffSame5, GetEventWeight());
+      fhFracEnDiffSame5Exo     ->Fill(en, fracEnDiffSame5     , exoticity, GetEventWeight()); 
+      fhFracNCellDiffSame5Exo  ->Fill(en, fracNCellDiffSame5  , exoticity, GetEventWeight());
+      fhFracEnNCellDiffSame5Exo->Fill(en, fracEnNCellDiffSame5, exoticity, GetEventWeight());
       
       if ( en > fEMinForExo )
       {
