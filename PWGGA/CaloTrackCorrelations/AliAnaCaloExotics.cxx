@@ -772,65 +772,14 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   // Init the number of modules, set in the class AliCalorimeterUtils
   //
   InitCaloParameters(); // See AliCaloTrackCorrBaseClass
-    
-  Int_t totalSM = fLastModule-fFirstModule+1;
-
+  
   // Histogram binning and ranges
   // 
-  Int_t nptbins       = GetHistogramRanges()->GetHistoPtBins(); 	        
-  Float_t ptmax       = GetHistogramRanges()->GetHistoPtMax();           
-  Float_t ptmin       = GetHistogramRanges()->GetHistoPtMin();
-  
-//  Int_t nphibins      = GetHistogramRanges()->GetHistoPhiBins();           
-//  Float_t phimax      = GetHistogramRanges()->GetHistoPhiMax();          
-//  Float_t phimin      = GetHistogramRanges()->GetHistoPhiMin();
-//  
-//  Int_t netabins      = GetHistogramRanges()->GetHistoEtaBins();          
-//  Float_t etamax      = GetHistogramRanges()->GetHistoEtaMax();          
-//  Float_t etamin      = GetHistogramRanges()->GetHistoEtaMin();  
-  
-  Int_t ntimebins     = GetHistogramRanges()->GetHistoTimeBins();         
-  Float_t timemax     = GetHistogramRanges()->GetHistoTimeMax();         
-  Float_t timemin     = GetHistogramRanges()->GetHistoTimeMin();       
- 
-  Int_t nceclbins     = GetHistogramRanges()->GetHistoNClusterCellBins(); 
-  Int_t   nceclmax    = GetHistogramRanges()->GetHistoNClusterCellMax(); 
-  Int_t   nceclmin    = GetHistogramRanges()->GetHistoNClusterCellMin(); 
-  
-  Int_t ssbins        = GetHistogramRanges()->GetHistoShowerShapeBins();  
-  Float_t ssmax       = GetHistogramRanges()->GetHistoShowerShapeMax();  
-  Float_t ssmin       = GetHistogramRanges()->GetHistoShowerShapeMin();
-  
-  Int_t tdbins        = GetHistogramRanges()->GetHistoDiffTimeBins() ;    
-  Float_t tdmax       = GetHistogramRanges()->GetHistoDiffTimeMax();     
-  Float_t tdmin       = GetHistogramRanges()->GetHistoDiffTimeMin();
-  
-  // TM residuals
-  Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();
-  Float_t resetamax   = GetHistogramRanges()->GetHistoTrackResidualEtaMax();
-  Float_t resetamin   = GetHistogramRanges()->GetHistoTrackResidualEtaMin();
-  Int_t   nresphibins = GetHistogramRanges()->GetHistoTrackResidualPhiBins();
-  Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();
-  Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
-  
-  Int_t nPoverEbins   = GetHistogramRanges()->GetHistoEOverPBins();       
-  Float_t eOverPmax   = GetHistogramRanges()->GetHistoEOverPMax();       
-  Float_t eOverPmin   = GetHistogramRanges()->GetHistoEOverPMin();
-  
-  // Exoticity
-  Int_t nexobins  = 201; Float_t exomin  = -1 ; Float_t exomax  = 1.01;
-  // For TH3, reduced binning
-  Int_t nexobinsS = 82 ; Float_t exominS = -0.795; Float_t exomaxS = 1.005;
-    
-  // Cell column-row histograms, see base class for data members setting
-  //fNMaxColsFull+2,-1.5,fNMaxColsFull+0.5, fNMaxRowsFull+2,-1.5,fNMaxRowsFull+0.5
-  Int_t   ncolcell    = fNMaxColsFull+2;
-  Float_t colcellmin  = -1.5;
-  Float_t colcellmax  = fNMaxColsFull+0.5;
-  
-  Int_t   nrowcell    = fNMaxRowsFullMax-fNMaxRowsFullMin+2;
-  Float_t rowcellmin  = fNMaxRowsFullMin-1.5;
-  Float_t rowcellmax  = fNMaxRowsFullMax+0.5;
+
+  // Energy bins
+  Int_t nptbins = GetHistogramRanges()->GetHistoPtBins();           
+  Float_t ptmax = GetHistogramRanges()->GetHistoPtMax();           
+  Float_t ptmin = GetHistogramRanges()->GetHistoPtMin();
   
   TCustomBinning eBinning;
   eBinning.SetMinimum(5);
@@ -851,6 +800,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   TArrayD e2BinsArray;
   e2Binning.CreateBinEdges(e2BinsArray);
   
+  // Exoticity
+  Int_t nexobins  = 201; Float_t exomin  = -1 ; Float_t exomax  = 1.01;
+
   TCustomBinning fBinning;
   fBinning.SetMinimum(-1.0);
   fBinning.AddStep(0.0 ,0.100); // 10
@@ -860,9 +812,14 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   TArrayD fBinsArray;
   fBinning.CreateBinEdges(fBinsArray);
   
+  // N cells in cluster
+  Int_t nceclbins  = GetHistogramRanges()->GetHistoNClusterCellBins(); 
+  Int_t   nceclmax = GetHistogramRanges()->GetHistoNClusterCellMax(); 
+  Int_t   nceclmin = GetHistogramRanges()->GetHistoNClusterCellMin(); 
+  
   TCustomBinning nBinning;
-  nBinning.SetMinimum(0.5);
-  nBinning.AddStep(50.5,1);
+  nBinning.SetMinimum(nceclmin-0.5);
+  nBinning.AddStep(nceclmax+0.5,1);
   TArrayD nBinsArray;
   nBinning.CreateBinEdges(nBinsArray);
 
@@ -872,11 +829,23 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   TArrayD nsameBinsArray;
   nsameBinning.CreateBinEdges(nsameBinsArray);
   
+  // Super-module bins
+  Int_t totalSM = fLastModule-fFirstModule+1;
+
   TCustomBinning smBinning;
-  smBinning.SetMinimum(fFirstModule+0.5);
+  smBinning.SetMinimum(fFirstModule-0.5);
   smBinning.AddStep(fLastModule+0.5,1); 
   TArrayD smBinsArray;
   smBinning.CreateBinEdges(smBinsArray);
+  
+  // Cell column-row histograms, see base class for data members setting
+  Int_t   ncolcell    = fNMaxColsFull+2;
+  Float_t colcellmin  = -1.5;
+  Float_t colcellmax  = fNMaxColsFull+0.5;
+  
+  Int_t   nrowcell    = fNMaxRowsFullMax-fNMaxRowsFullMin+2;
+  Float_t rowcellmin  = fNMaxRowsFullMin-1.5;
+  Float_t rowcellmax  = fNMaxRowsFullMax+0.5;
   
   TCustomBinning rowBinning;
   rowBinning.SetMinimum(rowcellmin-1.5);
@@ -890,6 +859,11 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   TArrayD colBinsArray;
   colBinning.CreateBinEdges(colBinsArray);
   
+  // Shower shape
+  Int_t ssbins  = GetHistogramRanges()->GetHistoShowerShapeBins();  
+  Float_t ssmax = GetHistogramRanges()->GetHistoShowerShapeMax();  
+  Float_t ssmin = GetHistogramRanges()->GetHistoShowerShapeMin();
+  
   TCustomBinning ssBinning;
   ssBinning.SetMinimum(-0.005);
   ssBinning.AddStep(0.505,0.005); //101 
@@ -898,23 +872,48 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   TArrayD ssBinsArray;
   ssBinning.CreateBinEdges(ssBinsArray);
 
+  // Fractions
   TCustomBinning fracBinning;
   fracBinning.SetMinimum(-0.1);
-  fracBinning.AddStep(1.1,0.1);   
+  fracBinning.AddStep(1.1,0.01);   
   TArrayD fracBinsArray;
   fracBinning.CreateBinEdges(fracBinsArray);
- 
+
+  TCustomBinning frac2Binning;
+  frac2Binning.SetMinimum(-0.1);
+  frac2Binning.AddStep(2.1,0.01);   
+  TArrayD frac2BinsArray;
+  frac2Binning.CreateBinEdges(frac2BinsArray);
+  
+  // Cluster time bins
+  Int_t ntimebins = GetHistogramRanges()->GetHistoTimeBins();         
+  Float_t timemax = GetHistogramRanges()->GetHistoTimeMax();         
+  Float_t timemin = GetHistogramRanges()->GetHistoTimeMin();  
+  
   TCustomBinning tBinning;
   tBinning.SetMinimum(timemin);
   tBinning.AddStep(timemax,(timemax-timemin)/ntimebins);   
   TArrayD tBinsArray;
   tBinning.CreateBinEdges(tBinsArray);
 
+  // Difference in time within cluster
+  Int_t tdbins  = GetHistogramRanges()->GetHistoDiffTimeBins() ;    
+  Float_t tdmax = GetHistogramRanges()->GetHistoDiffTimeMax();     
+  Float_t tdmin = GetHistogramRanges()->GetHistoDiffTimeMin();
+  
   TCustomBinning tdBinning;
   tdBinning.SetMinimum(tdmin);
   tdBinning.AddStep(tdmax,(tdmax-tdmin)/tdbins);   
   TArrayD tdBinsArray;
-  tBinning.CreateBinEdges(tdBinsArray);
+  tdBinning.CreateBinEdges(tdBinsArray);
+  
+  // TM residuals
+  Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();
+  Float_t resetamax   = GetHistogramRanges()->GetHistoTrackResidualEtaMax();
+  Float_t resetamin   = GetHistogramRanges()->GetHistoTrackResidualEtaMin();
+  Int_t   nresphibins = GetHistogramRanges()->GetHistoTrackResidualPhiBins();
+  Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();
+  Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
   
   TCustomBinning retaBinning;
   retaBinning.SetMinimum(resetamin);
@@ -927,12 +926,24 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   rphiBinning.AddStep(resphimax,(resphimax-resphimin)/nresphibins);   
   TArrayD rphiBinsArray;
   rphiBinning.CreateBinEdges(rphiBinsArray);
-                   
+     
+  // E over p bins
+  Int_t nPoverEbins  = GetHistogramRanges()->GetHistoEOverPBins();       
+  Float_t eOverPmax  = GetHistogramRanges()->GetHistoEOverPMax();       
+  Float_t eOverPmin  = GetHistogramRanges()->GetHistoEOverPMin();
+  
   TCustomBinning eopBinning;
   eopBinning.SetMinimum(eOverPmin);
   eopBinning.AddStep(resphimax,(eOverPmax-eOverPmin)/nPoverEbins);   
   TArrayD eopBinsArray;
-  rphiBinning.CreateBinEdges(eopBinsArray);
+  eopBinning.CreateBinEdges(eopBinsArray);
+  
+  // Cluster size
+  TCustomBinning sizeBinning;
+  sizeBinning.SetMinimum(-8.5);
+  sizeBinning.AddStep(8.5,1);   
+  TArrayD sizeBinsArray;
+  sizeBinning.CreateBinEdges(sizeBinsArray);
   
   //
   // Init histograms
@@ -1269,7 +1280,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhFracEnDiffSameExo    = new TH3F 
   ("hFracEnDiffSameExo","cell #Sigma #it{E}_{diff}/#Sigma #it{E}_{same} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-  eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
   fhFracEnDiffSameExo->SetXTitle("#it{E}_{cluster} (GeV) ");
   fhFracEnDiffSameExo->SetYTitle("#Sigma #it{E}_{diff}/#Sigma #it{E}_{same}");
   fhFracEnDiffSameExo->SetZTitle("#it{F}_{+}");
@@ -1278,7 +1291,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhFracNCellDiffSameExo = new TH3F 
   ("hFracNCellDiffSameExo","cell #it{n}_{diff}/#it{n}_{same} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());  
   fhFracNCellDiffSameExo->SetXTitle("#it{E}_{cluster} (GeV) ");
   fhFracNCellDiffSameExo->SetYTitle("#it{n}_{diff}/#it{n}_{same}");
   fhFracNCellDiffSameExo->SetZTitle("#it{F}_{+}");
@@ -1287,7 +1302,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhFracEnNCellDiffSameExo = new TH3F 
   ("hFracEnNCellDiffSameExo","cell (#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same}) vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
 
   fhFracEnNCellDiffSameExo->SetXTitle("#it{E}_{cluster} (GeV) ");
   fhFracEnNCellDiffSameExo->SetYTitle("(#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same})");
@@ -1297,7 +1314,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhFracEnDiffSameWExo    = new TH3F 
   ("hFracEnDiffSameWExo","cell #Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
   fhFracEnDiffSameWExo->SetXTitle("#it{E}_{cluster} (GeV) ");
   fhFracEnDiffSameWExo->SetYTitle("#Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}}");
   fhFracEnDiffSameWExo->SetZTitle("#it{F}_{+}");
@@ -1306,7 +1325,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhFracNCellDiffSameWExo = new TH3F 
   ("hFracNCellDiffSameWExo","cell #it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());  
   fhFracNCellDiffSameWExo->SetXTitle("#it{E}_{cluster} (GeV) ");
   fhFracNCellDiffSameWExo->SetYTitle("#it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}}");
   fhFracNCellDiffSameWExo->SetZTitle("#it{F}_{+}");
@@ -1315,7 +1336,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhFracEnNCellDiffSameWExo = new TH3F 
   ("hFracEnNCellDiffSameWExo","cell (#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}}) vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
   fhFracEnNCellDiffSameWExo->SetXTitle("#it{E}_{cluster} (GeV) ");
   fhFracEnNCellDiffSameWExo->SetYTitle("(#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})");
   fhFracEnNCellDiffSameWExo->SetZTitle("#it{F}_{+}");
@@ -1324,7 +1347,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhFracEnDiffSame5Exo    = new TH3F 
   ("hFracEnDiffSame5Exo","cell #Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray()); 
   fhFracEnDiffSame5Exo->SetXTitle("#it{E}_{cluster} (GeV) ");
   fhFracEnDiffSame5Exo->SetYTitle("#Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}");
   fhFracEnDiffSame5Exo->SetZTitle("#it{F}_{+}");
@@ -1333,7 +1358,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhFracNCellDiffSame5Exo = new TH3F 
   ("hFracNCellDiffSame5Exo","cell #it{n}_{diff}^{next}/#it{n}_{same}^{next} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());  
   fhFracNCellDiffSame5Exo->SetXTitle("#it{E}_{cluster} (GeV) ");
   fhFracNCellDiffSame5Exo->SetYTitle("#it{n}_{diff}^{next}/#it{n}_{same}^{next}");
   fhFracNCellDiffSame5Exo->SetZTitle("#it{F}_{+}");
@@ -1342,7 +1369,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhFracEnNCellDiffSame5Exo = new TH3F 
   ("hFracEnNCellDiffSame5Exo","cell (#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next}) vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray()); 
   fhFracEnNCellDiffSame5Exo->SetXTitle("#it{E}_{cluster} (GeV) ");
   fhFracEnNCellDiffSame5Exo->SetYTitle("(#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})");
   fhFracEnNCellDiffSame5Exo->SetZTitle("#it{F}_{+}");
@@ -1417,7 +1446,10 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhNCellsSameDiffExo[i] = new TH3F 
     (Form("hNCellsSameDiffExo_Ebin%d",i),
      Form("#it{n}_{cells-same} vs #it{n}_{cells-diff}, %2.1f < #it{E} < %2.1f GeV",fEnergyBins[i],fEnergyBins[i+1]),
-     17,0,17,nceclbins,nceclmin,nceclmax,nexobinsS,exominS,exomaxS); 
+     //17,0,17,nceclbins,nceclmin,nceclmax,nexobinsS,exominS,exomaxS); 
+     nsameBinsArray.GetSize() - 1, nsameBinsArray.GetArray(), 
+         nBinsArray.GetSize() - 1,     nBinsArray.GetArray(), 
+         fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
     fhNCellsSameDiffExo[i]->SetXTitle("#it{n}_{cells}^{same}");
     fhNCellsSameDiffExo[i]->SetYTitle("#it{n}_{cells}^{diff}");
     fhNCellsSameDiffExo[i]->SetZTitle("#it{F}_{+}");
@@ -1541,7 +1573,10 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhEtaPhiGridExoEnCut  = new TH3F 
   ("hEtaPhiGridExoEnCut",
    Form("colum (#eta) vs row (#varphi) vs #it{F}_{+}, #it{E}_{cluster}> %2.1f, #it{n}_{cells}>1",fEMinForExo),
-   ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nexobinsS,exominS,exomaxS); 
+   //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nexobinsS,exominS,exomaxS); 
+   colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+   rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,   fBinsArray.GetArray());
   fhEtaPhiGridExoEnCut->SetXTitle("column-#eta ");
   fhEtaPhiGridExoEnCut->SetYTitle("row-#varphi (rad)");
   fhEtaPhiGridExoEnCut->SetZTitle("#it{F}_{+}");
@@ -1550,7 +1585,10 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhEtaPhiGridExoEnCutSameFracCut = new TH3F 
   ("hEtaPhiGridExoEnCutSameFracCut",
    Form("colum (#eta) vs row (#varphi) vs #it{F}_{+}, #it{E}_{cluster}> %2.1f, #it{n}_{cells}>1, #it{n}_{cells}^{same}/(#it{n}_{cells}-1)=1",fEMinForExo),
-   ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nexobinsS,exominS,exomaxS); 
+   //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nexobinsS,exominS,exomaxS); 
+   colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+   rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,   fBinsArray.GetArray());
   fhEtaPhiGridExoEnCutSameFracCut->SetXTitle("column-#eta ");
   fhEtaPhiGridExoEnCutSameFracCut->SetYTitle("row-#varphi (rad)");
   fhEtaPhiGridExoEnCutSameFracCut->SetZTitle("#it{F}_{+}");
@@ -1558,7 +1596,10 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   
   fhEtaPhiGridEnExoCut  = new TH3F 
   ("hEtaPhiGridEnExoCut", Form("colum (#eta) vs row (#varphi) vs #it{E}, #it{F}_{+} > %2.2f",fExoCut),
-   ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nptbins/2,ptmin,ptmax); 
+   //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nptbins/2,ptmin,ptmax); 
+   colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+   rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+     eBinsArray.GetSize() - 1,   eBinsArray.GetArray());
   fhEtaPhiGridEnExoCut->SetXTitle("column-#eta ");
   fhEtaPhiGridEnExoCut->SetYTitle("row-#varphi (rad)");
   fhEtaPhiGridEnExoCut->SetZTitle("#it{E} (GeV)");
@@ -1567,7 +1608,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhEtaPhiGridEnHighNCells  = new TH3F 
   ("hEtaPhiGridEnHighNCells", Form("colum (#eta) vs row (#varphi) vs #it{E}, #it{n}_{cells}^{#it{w}} > %d",fNCellHighCut),
    //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nptbins/2,ptmin,ptmax); 
-   colBinsArray.GetSize() - 1, colBinsArray.GetArray(), rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), eBinsArray.GetSize() - 1, eBinsArray.GetArray());
+   colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+   rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+     eBinsArray.GetSize() - 1,   eBinsArray.GetArray());
   fhEtaPhiGridEnHighNCells->SetXTitle("column-#eta ");
   fhEtaPhiGridEnHighNCells->SetYTitle("row-#varphi (rad)");
   fhEtaPhiGridEnHighNCells->SetZTitle("#it{E} (GeV)");
@@ -1587,7 +1630,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhEtaPhiGridEn1Cell  = new TH3F 
     ("hEtaPhiGridEn1Cell", "colum (#eta) vs row (#varphi) vs #it{E}, #it{n}_{cells}=1",
      //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nptbins,ptmin,ptmax); 
-     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), eBinsArray.GetSize() - 1, eBinsArray.GetArray());
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+       eBinsArray.GetSize() - 1,   eBinsArray.GetArray());
     fhEtaPhiGridEn1Cell->SetXTitle("column-#eta ");
     fhEtaPhiGridEn1Cell->SetYTitle("row-#varphi (rad)");
     fhEtaPhiGridEn1Cell->SetZTitle("#it{E} (GeV)");
@@ -1744,7 +1789,10 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       fhClusterColRowExo[j][i] = new TH3F 
       (Form("hClusterColRowExo_Ebin%d_Col%d",i,j),
        Form("column vs row vs #it{F}_{+}, %2.1f < #it{E} < %2.1f GeV, column %d",fEnergyBins[i],fEnergyBins[i+1],j),
-       17,-8.5,8.5,17,-8.5,8.5,nexobinsS,exominS,exomaxS); 
+       //17,-8.5,8.5,17,-8.5,8.5,nexobinsS,exominS,exomaxS); 
+      sizeBinsArray.GetSize() - 1, sizeBinsArray.GetArray(), 
+      sizeBinsArray.GetSize() - 1, sizeBinsArray.GetArray(), 
+         fBinsArray.GetSize() - 1,    fBinsArray.GetArray());
       fhClusterColRowExo[j][i]->SetXTitle("column");
       fhClusterColRowExo[j][i]->SetYTitle("row");
       fhClusterColRowExo[j][i]->SetZTitle("#it{F}_{+}");
@@ -1791,7 +1839,10 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhTrackMatchedDEtaDPhiNegExo  = new TH3F
     ("hTrackMatchedDEtaDPhiNegExo",
      Form("d#eta vs d#varphi of cluster- negative track vs #it{F}_{+}, E > %2.1f GeV",fEMinForExo),
-     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax, nexobinsS,exominS,exomaxS);
+     //nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax, nexobinsS,exominS,exomaxS);
+     retaBinsArray.GetSize() - 1, retaBinsArray.GetArray(), 
+     rphiBinsArray.GetSize() - 1, rphiBinsArray.GetArray(), 
+        fBinsArray.GetSize() - 1,    fBinsArray.GetArray());
     fhTrackMatchedDEtaDPhiNegExo->SetYTitle("d#varphi (rad)");
     fhTrackMatchedDEtaDPhiNegExo->SetXTitle("d#eta");
     fhTrackMatchedDEtaDPhiNegExo->SetZTitle("#it{F}_{+}");
@@ -1815,7 +1866,10 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhTrackMatchedDEtaDPhiPosExo  = new TH3F
     ("hTrackMatchedDEtaDPhiPosExo",
      Form("d#eta vs d#varphi of cluster-positive track vs #it{F}_{+}, E > %2.1f GeV",fEMinForExo),
-     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax, nexobinsS,exominS,exomaxS);
+     //nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax, nexobinsS,exominS,exomaxS);
+     retaBinsArray.GetSize() - 1, retaBinsArray.GetArray(), 
+     rphiBinsArray.GetSize() - 1, rphiBinsArray.GetArray(), 
+        fBinsArray.GetSize() - 1,    fBinsArray.GetArray());
     fhTrackMatchedDEtaDPhiPosExo->SetYTitle("d#varphi (rad)");
     fhTrackMatchedDEtaDPhiPosExo->SetXTitle("d#eta");
     fhTrackMatchedDEtaDPhiNegExo->SetZTitle("#it{F}_{+}");
@@ -1922,7 +1976,10 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhCellExoGrid    = new TH3F 
     ("hCellExoGrid",
      Form("Cell hits row-column vs #it{F}_{+} for #it{E}_{cell} > %2.1f",fEMinForExo), 
-     ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, nexobinsS,exominS,exomaxS); 
+     //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, nexobinsS,exominS,exomaxS); 
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,   fBinsArray.GetArray());
     fhCellExoGrid->SetYTitle("row (phi direction)");
     fhCellExoGrid->SetXTitle("column (eta direction)");
     fhCellExoGrid->SetZTitle("#it{F}_{+}");
