@@ -545,6 +545,8 @@ public:
     THnSparse             *fTagMotherPt;            //!
     TH2F                  *fTagEffInclMult;         //!
     TH2F                  *fTagEffULSMult;          //!
+    TH2F                  *fTagEffInclBGMult;       //!
+    TH2F                  *fTagEffULSBGMult;        //!
     TH2F                  *fTagTruePairsMult;       //!
     THnSparse             *fTagEffIncl;             //! 
     THnSparse             *fTagEffLS;               //!

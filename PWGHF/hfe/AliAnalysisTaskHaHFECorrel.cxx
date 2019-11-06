@@ -2653,6 +2653,13 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     
     fTagTruePairsMult = new TH2F("fTagTruePairsMult", "fTagTruePairsMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
     fOutputListMain->Add(fTagTruePairsMult);
+
+    fTagEffInclBGMult = new TH2F("fTagEffInclBGMult", "fTagEffInclBGMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fOutputListMain->Add(fTagEffInclBGMult);
+
+    fTagEffULSBGMult = new TH2F("fTagEffULSBGMult", "fTagEffULSBGMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fOutputListMain->Add(fTagEffULSBGMult);
+  
   }
 
   
@@ -3760,7 +3767,8 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
   
 
   AliAODTrack *AODtrack = dynamic_cast<AliAODTrack*>(Vtrack);
-  if(!AODtrack) return;  lsPartner=0;
+  if(!AODtrack) return;
+  lsPartner=0;
   ulsPartner=0;
   trueULSPartner=kFALSE; // only for MC use
   Int_t ntracks = -999;
@@ -4353,15 +4361,19 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
 	    }
 	    if (MotherPDG==11 || MotherPDG==15) {
 	      Int_t IsHeavyGM =  Int_t (GMotherPDG / TMath::Power(10, Int_t(TMath::Log10(GMotherPDG))));
-	      Double_t BGWeight = GetBackgroundWeight(MotherPDG, MCParticleAOD->Pt());
 	      if (IsHeavyGM>3 && IsHeavyGM<6)  fSignalElecHa->Fill(fillSparse, EventWeight/(recEffH*recEffE));
-	      else fBackgroundElecHa->Fill(fillSparse, EventWeight/(recEffH*recEffE));
+	      else if (!RedTrack->IsPhotonic()){
+		Double_t BGWeight = GetBackgroundWeight(MotherPDG, MCParticleAOD->Pt());
+		fBackgroundElecHa->Fill(fillSparse, BGWeight*EventWeight/(recEffH*recEffE));
+	      }
 	    }
 	    else {
 	      Int_t  IsHeavy =  Int_t (MotherPDG / TMath::Power(10, Int_t(TMath::Log10(MotherPDG))));
-	      Double_t BGWeight = GetBackgroundWeight(MotherPDG, MCParticleAOD->Pt());
 	      if (IsHeavy>3 && IsHeavy<6)  fSignalElecHa->Fill(fillSparse, EventWeight/(recEffH*recEffE));
-	      else  fBackgroundElecHa->Fill(fillSparse, EventWeight/(recEffH*recEffE));
+	      else if (!RedTrack->IsPhotonic()) {
+		Double_t BGWeight = GetBackgroundWeight(MotherPDG, MCParticleAOD->Pt());
+		fBackgroundElecHa->Fill(fillSparse, BGWeight*EventWeight/(recEffH*recEffE));
+	      }
 	    }
 	    if  (RedTrack->IsPhotonic()) {
 	      Double_t PtMotherWeight=1.;
@@ -5683,7 +5695,11 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	if (trueULSPartner) fTagTruePairsMult->Fill(pt,mult, PtMotherWeight*EventWeight);
 	if (trueULSPartner && !(LSPartner>0 || ULSPartner>0)) cout << "ERROR ULSLS" << endl;
       }
-
+      else if (PDGCodeMother<400 && PDGCodeMother>100) {
+	fTagEffInclBGMult->Fill(pt, mult, PtMotherWeight*EventWeight);
+	for (int j=0; j<LSPartner; j++)  fTagEffULSBGMult->Fill(pt,mult, -1.*PtMotherWeight*EventWeight);
+	for (int j=0; j<ULSPartner; j++) fTagEffULSBGMult->Fill(pt,mult, PtMotherWeight*EventWeight);
+      }
     }      
 	
 
