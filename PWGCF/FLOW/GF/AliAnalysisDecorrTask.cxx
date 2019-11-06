@@ -209,13 +209,13 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
     
     NcentBin = fCentAxis->GetNbins();
     NPtBin = fPtAxis->GetNbins();
-    for(Int_t bin(1); bin < NPtBin+2; bin++)
+    for(Int_t bin(0); bin < NPtBin+1; bin++)
     {
-        PtEdges[bin] = fPtAxis->GetBinLowEdge(bin);
+        PtEdges[bin] = fPtAxis->GetBinLowEdge(bin+1);
     }
-    for(Int_t bin(1); bin < NcentBin+2; bin++)
+    for(Int_t bin(0); bin < NcentBin+1; bin++)
     {
-        centEdges[bin] = fCentAxis->GetBinLowEdge(bin);
+        centEdges[bin] = fCentAxis->GetBinLowEdge(bin+1);
     }
 
     //Stat histograms
@@ -242,37 +242,37 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         //Reference histogram
         for(int i(0); i < fHarmPlots+1; i++)
         {
-            fHistcn[j][i] = new TProfile(Form("c_{%i}{%i}",j+2,i*2+2),"",NcentBin+1,centEdges);
+            fHistcn[j][i] = new TProfile(Form("c_{%i}{%i}",j+2,i*2+2),"",NcentBin,centEdges);
             fReferenceFlowList->Add(fHistcn[j][i]);
         }
-        for(int i(1); i < NcentBin+1; i++)
+        for(int i(0); i < NcentBin; i++)
         {
             // POI flow histograms
-            fHistdnNeg[j][i] = new TProfile(Form("d_{%i}{2}GapM_cent_%f_%f",j+2,centEdges[i],centEdges[i+1]),"", NPtBin+1, PtEdges);
+            fHistdnNeg[j][i] = new TProfile(Form("d_{%i}{2}GapM_cent_%f_%f",j+2,centEdges[i],centEdges[i+1]),"", NPtBin, PtEdges);
             fDifferentialFlowList->Add(fHistdnNeg[j][i]);
 
-            fHistdnPos[j][i] = new TProfile(Form("d_{%i}{2}GapP_cent_%f_%f",j+2,centEdges[i],centEdges[i+1]),"", NPtBin+1, PtEdges);
+            fHistdnPos[j][i] = new TProfile(Form("d_{%i}{2}GapP_cent_%f_%f",j+2,centEdges[i],centEdges[i+1]),"", NPtBin, PtEdges);
             fDifferentialFlowList->Add(fHistdnPos[j][i]);
 
-            fHistcnPtA[j][i] = new TProfile(Form("c_{%i}{2}PtAGapM_cent_%f_%f",j+2,centEdges[i],centEdges[i+1]),"",NPtBin+1, PtEdges);
+            fHistcnPtA[j][i] = new TProfile(Form("c_{%i}{2}PtAGapM_cent_%f_%f",j+2,centEdges[i],centEdges[i+1]),"",NPtBin, PtEdges);
             fDifferentialPtAList->Add(fHistcnPtA[j][i]);
 
-            for(int k(1); k < NPtBin+1; k++)
+            for(int k(0); k < NPtBin; k++)
             {
                 
-                fHistPtA_PtB[j][i][k] = new TProfile(Form("c_{%i}{2}PtB_PtA_%f_%f_cent_%f_%f",j+2,PtEdges[k],PtEdges[k+1],centEdges[i],centEdges[i+1]),"",NPtBin+1, PtEdges);
+                fHistPtA_PtB[j][i][k] = new TProfile(Form("c_{%i}{2}PtB_PtA_%f_%f_cent_%f_%f",j+2,PtEdges[k],PtEdges[k+1],centEdges[i],centEdges[i+1]),"",NPtBin, PtEdges);
                 fPtA_PtB_List->Add(fHistPtA_PtB[j][i][k]);
 
-                fHistPtA_PtB_LS[j][i][k] = new TProfile(Form("c_{%i}{4}PtB_LS_PtA_%f_%f_cent_%f_%f",j+2,PtEdges[k],PtEdges[k+1],centEdges[i],centEdges[i+1]),"",NPtBin+1, PtEdges);
+                fHistPtA_PtB_LS[j][i][k] = new TProfile(Form("c_{%i}{4}PtB_LS_PtA_%f_%f_cent_%f_%f",j+2,PtEdges[k],PtEdges[k+1],centEdges[i],centEdges[i+1]),"",NPtBin, PtEdges);
                 fPtA_PtB_List->Add(fHistPtA_PtB_LS[j][i][k]);
 
-                fHistPtA_PtB_OS[j][i][k] = new TProfile(Form("c_{%i}{4}PtB_OS_PtA_%f_%f_cent_%f_%f",j+2,PtEdges[k],PtEdges[k+1],centEdges[i],centEdges[i+1]),"",NPtBin+1, PtEdges);
+                fHistPtA_PtB_OS[j][i][k] = new TProfile(Form("c_{%i}{4}PtB_OS_PtA_%f_%f_cent_%f_%f",j+2,PtEdges[k],PtEdges[k+1],centEdges[i],centEdges[i+1]),"",NPtBin, PtEdges);
                 fPtA_PtB_List->Add(fHistPtA_PtB_OS[j][i][k]);
             }
 
 
         }
-        fHistGap[j] = new TProfile(Form("c_{%i}Gap",j+2),"",NcentBin+1,centEdges);
+        fHistGap[j] = new TProfile(Form("c_{%i}Gap",j+2),"",NcentBin,centEdges);
         fReferenceFlowList->Add(fHistGap[j]);
     }
    
@@ -438,7 +438,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, double dPt)
             if (dDnPos > 0.0) { bFillPos = kTRUE; dValuePos = dNumPos/dDnPos; }
             if (bFillPos && Abs(dValuePos) > 1.0) {bFillPos = kFALSE; }
             
-            for(int i(1); i < NcentBin+1; ++i)
+            for(int i(0); i < NcentBin; ++i)
             {
                 if (centrality > centEdges[i] && centrality < centEdges[i+1])
                 {
@@ -464,7 +464,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, double dPt)
             if (bFill && Abs(dValue) > 1.0) { bFill = kFALSE; }
             if (!bFill) { return; }
 
-            for(int i(1); i < NcentBin+1; ++i)
+            for(int i(0); i < NcentBin; ++i)
             {
                 if (centrality > centEdges[i] && centrality < centEdges[i+1])
                 {
@@ -502,7 +502,7 @@ void AliAnalysisDecorrTask::CalculatePtBCorrelations(double centrality, double d
         if (!bFill) { return; }
         
         //Fill four particle correlations AABB and ABAB here
-        for(int i(1); i < NcentBin+1; ++i)
+        for(int i(0); i < NcentBin; ++i)
         {
             if (centrality > centEdges[i] && centrality < centEdges[i+1])
             {
@@ -524,7 +524,7 @@ void AliAnalysisDecorrTask::CalculatePtBCorrelations(double centrality, double d
         if (!bFill) { return; }
         
         //Fill two particle correlation from differen pt bins here         
-        for(int i(1); i < NcentBin+1; ++i)
+        for(int i(0); i < NcentBin; ++i)
         {
             if (centrality > centEdges[i] && centrality < centEdges[i+1])
             {
