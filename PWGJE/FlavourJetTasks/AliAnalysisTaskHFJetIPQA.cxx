@@ -64,9 +64,7 @@ ClassImp(AliAnalysisTaskHFJetIPQA)
 
 AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
 AliAnalysisTaskEmcalJet(),
-fh1dTracksAccepeted(nullptr),
-fh1dCuts(nullptr),
-fHLundIterative(nullptr),
+fEventCuts(0),
 fHistManager(),
 fEventVertex(nullptr),
 fPidResponse(nullptr),
@@ -88,10 +86,10 @@ kTagLevel(3),
 fFracs(0),
 fXsectionWeightingFactor(1),
 fProductionNumberPtHard(-1),
+fNThresholds(1),
 fJetRadius(0.4),
 fDaughtersRadius(1),
-fNoJetConstituents(2),
-fNThresholds(1),
+fNoJetConstituents(0),
 fGraphMean(nullptr),
 fGraphSigmaData(nullptr),
 fGraphSigmaMC(nullptr),
@@ -121,6 +119,14 @@ h2DLNProbDistsb(0),
 h2DLNProbDistss(0),
 h2DLNProbDists(0),
 cCuts(0),
+fh1DCutInclusive(0),
+fh1dCutudg(0),
+fh1dCutc(0),
+fh1dCutb(0),
+fh1dCuts(0),
+fh1dTracksAccepeted(0),
+fh1dCutsPrinted(0),
+fHLundIterative(nullptr),
 fMCArray(nullptr),
 fMCEvent(nullptr),
 fESDTrackCut(nullptr),
@@ -129,7 +135,7 @@ fMcEvtSampled(kFALSE),
 fBackgroundFactorLinus{0},
 fPUdsgJet(100),fPSJet(100),fPCJet(100),fPBJet(100),
 fJetCont(10),
-fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+fAnalysisCuts{0},
 fCombined(nullptr),
 fMCglobalDCAxyShift(0.0008),
 fMCglobalDCASmear(1),
@@ -154,20 +160,14 @@ fTREE_pt(-1.)
 {
     SetMakeGeneralHistograms(kTRUE);
     SetDefaultAnalysisCuts();
-    for(Int_t i =0 ; i<498;++i)for(Int_t j =0 ; j<19;++j)  fBackgroundFactorLinus[j][i]=1.;
-        SetNeedEmcalGeom(kFALSE);
+    SetNeedEmcalGeom(kFALSE);
     SetOffTrigger(AliVEvent::kINT7);
-    SetUseAliAnaUtils(kTRUE,kTRUE);
     SetVzRange(-10,10);
-    SetUseSPDTrackletVsClusterBG(kTRUE);
-    for(Int_t i =0 ; i<200;++i)this->fResolutionFunction[i].Set(1000);
     DefineOutput(1,  AliEmcalList::Class()) ;
 }
 AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
 AliAnalysisTaskEmcalJet(name, kTRUE),
-fh1dTracksAccepeted(nullptr),
-fh1dCuts(nullptr),
-fHLundIterative(nullptr),
+fEventCuts(0),
 fHistManager(name),
 fEventVertex(nullptr),
 fPidResponse(nullptr),
@@ -189,10 +189,10 @@ kTagLevel(3),
 fFracs(0),
 fXsectionWeightingFactor(1.),
 fProductionNumberPtHard(-1),
+fNThresholds(1),
 fJetRadius(0.4),
 fDaughtersRadius(1),
-fNoJetConstituents(2),
-fNThresholds(1),
+fNoJetConstituents(0),
 fGraphMean(nullptr),
 fGraphSigmaData(nullptr),
 fGraphSigmaMC(nullptr),
@@ -222,6 +222,14 @@ h2DLNProbDistsb(0),
 h2DLNProbDistss(0),
 h2DLNProbDists(0),
 cCuts(0),
+fh1DCutInclusive(0),
+fh1dCutudg(0),
+fh1dCutc(0),
+fh1dCutb(0),
+fh1dCuts(0),
+fh1dTracksAccepeted(0),
+fh1dCutsPrinted(0),
+fHLundIterative(nullptr),
 fMCArray(nullptr),
 fMCEvent(nullptr),
 fESDTrackCut(nullptr),
@@ -230,7 +238,7 @@ fMcEvtSampled(kFALSE),
 fBackgroundFactorLinus{0},
 fPUdsgJet(100),fPSJet(100),fPCJet(100),fPBJet(100),
 fJetCont(10),
-fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+fAnalysisCuts{0},
 fCombined(nullptr),
 fMCglobalDCAxyShift(0.000668),
 fMCglobalDCASmear(1),
@@ -252,20 +260,13 @@ fTREE_n2(-99.),
 fTREE_n3(-99.),
 fTREE_pt(-1.)
 {
-
     SetNeedEmcalGeom(kFALSE);
     SetOffTrigger(AliVEvent::kINT7);
-    SetUseAliAnaUtils(kTRUE,kTRUE);
     SetVzRange(-10,10);
-    SetUseSPDTrackletVsClusterBG(kTRUE);
     SetMakeGeneralHistograms(kTRUE);
     SetDefaultAnalysisCuts();
     DefineOutput(1,  AliEmcalList::Class()) ;
-
-    for(Int_t i =0 ; i<498;++i)for(Int_t j =0 ; j<19;++j)  fBackgroundFactorLinus[j][i]=1;
-        for(Int_t i =0 ; i<200;++i)this->fResolutionFunction[i].Set(1000);
-
-    }
+}
 
 /*! \brief ChangeDefaultCutTo
  *
@@ -281,25 +282,42 @@ void AliAnalysisTaskHFJetIPQA::ChangeDefaultCutTo(AliAnalysisTaskHFJetIPQA::bCut
  * Set default analysis cuts
  */
 void AliAnalysisTaskHFJetIPQA::SetDefaultAnalysisCuts(){
+    //DCA
     fAnalysisCuts[bAnalysisCut_DCAJetTrack]     = 0.07;
-    fAnalysisCuts[bAnalysisCut_MaxDecayLength]  = 10.;
-    fAnalysisCuts[bAnalysisCut_MaxDCA_XY]       = 0.5 ;
-    fAnalysisCuts[bAnalysisCut_MaxDCA_Z]        = 0.5;
+    fAnalysisCuts[bAnalysisCut_MaxDecayLength]  = 5.;
+    fAnalysisCuts[bAnalysisCut_MaxDCA_XY]       = 1.;
+    fAnalysisCuts[bAnalysisCut_MaxDCA_Z]        = 2.;
+
+    //Vertex
     fAnalysisCuts[bAnalysisCut_NContibutors]    = 3 ;
-    fAnalysisCuts[bAnalysisCut_RelError_Y]      = 0.2;
-    fAnalysisCuts[bAnalysisCut_RelError_Z]      = 0.2;
-    fAnalysisCuts[bAnalysisCut_Sigma_Y]         = 0.3;
-    fAnalysisCuts[bAnalysisCut_Sigma_Z]         = 0.3;
-    fAnalysisCuts[bAnalysisCut_SigmaDiamond]    = 2.;
+    //fAnalysisCuts[bAnalysisCut_RelError_Y]      = 0.2;
+    //fAnalysisCuts[bAnalysisCut_RelError_Z]      = 0.2;
+    //fAnalysisCuts[bAnalysisCut_Sigma_Y]         = 0.3;
+    //fAnalysisCuts[bAnalysisCut_Sigma_Z]         = 0.3;
+    //fAnalysisCuts[bAnalysisCut_SigmaDiamond]    = 2.;
     fAnalysisCuts[bAnalysisCut_MaxVtxZ]         = 10.;
     fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]    =3.5*3.5;
-    fAnalysisCuts[bAnalysisCut_MinTrackPt]      =1.;
-    fAnalysisCuts[bAnalysisCut_MinTrackPtMC]    =.5;
+    fAnalysisCuts[bAnalysisCut_MinNewVertexContrib] = 1;
+
+    //Tracks
+    fAnalysisCuts[bAnalysisCut_MinTrackPt]      =.5;
+    //fAnalysisCuts[bAnalysisCut_MinTrackPtMC]    =.5;
     fAnalysisCuts[bAnalysisCut_MinTPCClus]      =100;
-    fAnalysisCuts[bAnalysisCut_MinJetPt]        =0;
+    fAnalysisCuts[bAnalysisCut_MinITSLayersHit] =4;
+    fAnalysisCuts[bAnalysisCut_MinTrackChi2] =5;
+    fAnalysisCuts[bAnalysisCut_HasSDD]=1;
+    fAnalysisCuts[bAnalysisCut_HasTPCrefit]=1;
+    fAnalysisCuts[bAnalysisCut_HasITSrefit]=1;
+    fAnalysisCuts[bAnalysisCut_KinkCand]=1;
+
+    //Jet Cuts
+    fAnalysisCuts[bAnalysisCut_MinJetPt]        =0;  //only for settings output. Not really used as cuts are done in .C file
     fAnalysisCuts[bAnalysisCut_MaxJetPt]        =1000;
     fAnalysisCuts[bAnalysisCut_MinJetEta]       =-0.9;
     fAnalysisCuts[bAnalysisCut_MaxJetEta]       =0.9;
+
+    //Events
+    fAnalysisCuts[bAnalysisCut_PtHardAndJetPtFactor] =3;
 }
 
 void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
@@ -702,6 +720,35 @@ double AliAnalysisTaskHFJetIPQA::DoUESubtraction(AliJetContainer* &jetcongen, Al
     return jetpt;
 }
 
+Bool_t AliAnalysisTaskHFJetIPQA::IsEventAccepted(AliVEvent *ev){
+    if(!fEventCuts.AcceptEvent(ev)){
+        return kFALSE;
+    }
+
+    //if(!fMCRejectFilter) return true;
+    if(!(fIsPythia)) return true; // Only relevant for pt-hard production
+    AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
+    //auto partjets =GetJetContainer("mcparticles");
+    AliJetContainer * partjets=static_cast<AliJetContainer*>(fJetCollArray.At(1));
+    if(!partjets){
+      printf("No particle container found\n");
+      return true;
+    }
+
+      // Check whether there is at least one particle level jet with pt above n * event pt-hard
+      auto jetiter = partjets->accepted();
+      auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
+      if(max != jetiter.end()) {
+        // At least one jet found with pt > n * pt-hard
+        AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+        if((*max)->Pt() > fAnalysisCuts[bAnalysisCut_PtHardAndJetPtFactor] * fPtHard){
+            //printf("Refuse jet with jetpt=%f, fPtHard=%f, fPtHardAndJetPtFactor=%f\n",(*max)->Pt(), fPtHard,fAnalysisCuts[bAnalysisCut_PtHardAndJetPtFactor]);
+            return false;
+        }
+      }
+     return true;
+}
+
 Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
 
@@ -714,21 +761,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     fIsSameEvent_n2 = kFALSE;
     fIsSameEvent_n3 = kFALSE;
 
-    /*if(!fEventVertex) {
-        return kFALSE;
-    }
-    if(fEventVertex->GetNContributors()<1) {
-        return kFALSE;
-    }
-    if(fEventVertex->GetChi2perNDF()>fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]) {
-        return kFALSE;
-    }
-    if(fEventVertex->GetNContributors()<(int)(fAnalysisCuts[bAnalysisCut_NContibutors])) {
-        return kFALSE;
-    }
-    if(TMath::Abs(fEventVertex->GetZ())>=fAnalysisCuts[bAnalysisCut_MaxVtxZ]) {
-        return kFALSE;
-    }*/
+    AliVEvent *ev = InputEvent();
+    IsEventAccepted(ev);
     IncHist("fh1dEventsAcceptedInRun",1);
 
     Bool_t HasImpactParameter = kFALSE;
@@ -768,7 +802,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             continue;
         }
         IncHist("fh1dTracksAccepeted",1);
-        if(!IsTrackAccepted(trackV,6)) {
+        if(!IsTrackAccepted(trackV,-1)) {
             IncHist("fh1dTracksAccepeted",3);
             continue;
         }
@@ -874,13 +908,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           AliAODTrack *trackV = dynamic_cast<AliAODTrack*>(vtrack);
 
           if (!trackV || !jetrec)            continue;
-          if (!IsTrackAccepted((AliAODTrack*)trackV,3))   continue;
-          if (fIsPythia&&!IsTrackAccepted((AliAODTrack*)trackV,6))   continue;
+          if (fIsPythia&&!IsTrackAccepted((AliAODTrack*)trackV,jetflavour))   continue;
           ++NJetParticles;
 
           //FillTrackTypeResHists();
 
-          if(GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign)){
+          if(GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign, jetflavour)){
             if(fEventVertex) {
               delete fEventVertex;
               fEventVertex =nullptr;
@@ -1252,6 +1285,34 @@ void AliAnalysisTaskHFJetIPQA::SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphX
 void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   Printf("Analysing Jets with Radius: R=%f\n",fJetRadius);
 
+  TString BJetCuts[25] = {
+    "#sigma_{Dia}",  //0
+    "#sigma_{z}",       //1
+    "#sigma_{y}",       //2
+    "RelError_{z}",     //3
+    "RelError_{y}",     //4
+    "N_{Cont}",       //5
+    "MaxVtxZ",        //6
+    "d_{JetTrack}",   //7
+    "d_{z}",          //8
+    "d_{xy}",         //9
+    "DecayLength",    //10
+    "d_{chi2/ndf}", //11
+    "p_{T,Track}^{min}",      //12
+    "p_{T,TrackMC}^{min}",    //13
+    "MinTPCClus",     //14
+    "n_{ITS Hits}",   //15
+    "chi2_{track}", //16
+    "p_{T,Jet}^{min}",//17
+    "p_{T,Jet}^{max}",//18
+    "#eta_{Jet}^{min}",       //19
+    "#eta_{Jet}^{max}",        //20
+    "SPD Hits", //21
+    "Kink",//22
+    "TPC Refit",//23
+    "ITS Refit" //24
+  };
+
   fIsMixSignalReady_n1=kFALSE;
   fIsMixSignalReady_n2=kFALSE;
   fIsMixSignalReady_n3=kFALSE;
@@ -1329,7 +1390,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
   //****************************************
   //QA Plots
-  fh1dCuts =(TH1D*)AddHistogramm("fh1dCuts","",3,0,3);
+  fh1dCutsPrinted =(TH1D*)AddHistogramm("fh1dCutsPrinted","",3,0,3);
 
   fh1dTracksAccepeted =(TH1D*)AddHistogramm("fh1dTracksAccepeted","# tracks before/after cuts;;",3,0,3);
   fh1dTracksAccepeted->GetXaxis()->SetBinLabel(1,"total");
@@ -1364,6 +1425,23 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH1("fh1dJetRecPts","detector level jets;pt (GeV/c); count",250,0,250,"s");
   }
 
+  fh1DCutInclusive=(TH1D*)AddHistogramm("fh1DCutInclusive","fh1DCutInclusive",30,0,30);
+  fh1dCutudg=(TH1D*)AddHistogramm("fh1dCutudg","fh1dCutudg",30,0,30);
+  fh1dCutc=(TH1D*)AddHistogramm("fh1dCutc","fh1dCutc",30,0,30);
+  fh1dCutb=(TH1D*)AddHistogramm("fh1dCutb","fh1dCutb",30,0,30);
+  fh1dCuts=(TH1D*)AddHistogramm("fh1dCuts","fh1dCuts",30,0,30);
+  fh1dCuts->GetXaxis()->LabelsOption("v");
+
+  for(Int_t iBin = 0; iBin < 25; iBin++){
+          fh1DCutInclusive->GetXaxis()->SetBinLabel(iBin + 1, BJetCuts[iBin].Data());
+          if(fIsPythia){
+
+                  fh1dCutudg->GetXaxis()->SetBinLabel(iBin + 1, BJetCuts[iBin].Data());
+                  fh1dCutb->GetXaxis()->SetBinLabel(iBin + 1, BJetCuts[iBin].Data());
+                  fh1dCutc->GetXaxis()->SetBinLabel(iBin + 1, BJetCuts[iBin].Data());
+                  fh1dCuts->GetXaxis()->SetBinLabel(iBin + 1, BJetCuts[iBin].Data());
+          }
+  }
 
   //****************************************
   //Lund Plane
@@ -1729,6 +1807,7 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     TString vertexcuts="";
     Int_t version=1;
 
+
     jetcuts+=version;
     jetcuts+="+";
     jetcuts+=fAnalysisCuts[bAnalysisCut_MinJetPt];
@@ -1742,7 +1821,8 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     jetcuts+=fNoJetConstituents;
     jetcuts+="+";
     jetcuts+=fDaughtersRadius;
-    printf("Cut Settings: %s\n",jetcuts.Data());
+
+    printf("Cut Track Settings: %s\n",jetcuts.Data());
 
     trackcuts+=version;
     trackcuts+="+";
@@ -1754,15 +1834,44 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     trackcuts+="+";
     trackcuts+=fAnalysisCuts[bAnalysisCut_MinTrackPtMC];
     trackcuts+="+";
+    trackcuts+=fAnalysisCuts[bAnalysisCut_MaxDCA_Z];
+    trackcuts+="+";
+    trackcuts+=fAnalysisCuts[bAnalysisCut_MaxDCA_XY];
+    trackcuts+="+";
     trackcuts+=fAnalysisCuts[bAnalysisCut_MinTPCClus];
+    trackcuts+="+";
+    trackcuts+=fAnalysisCuts[bAnalysisCut_MinITSLayersHit];
+    trackcuts+="+";
+    trackcuts+=fAnalysisCuts[bAnalysisCut_MinTrackChi2];
+    trackcuts+="+";
+    trackcuts+=fAnalysisCuts[bAnalysisCut_HasSDD];
+    trackcuts+="+";
+    trackcuts+=fAnalysisCuts[bAnalysisCut_KinkCand];
+    trackcuts+="+";
+    trackcuts+=fAnalysisCuts[bAnalysisCut_HasTPCrefit];
+    trackcuts+="+";
+    trackcuts+=fAnalysisCuts[bAnalysisCut_HasITSrefit];
 
-    printf("Cut Track Settings %s\n", trackcuts.Data());
+
+    printf("Cut Vertex Settings %s\n", trackcuts.Data());
 
     vertexcuts+=version;
     vertexcuts+="+";
     vertexcuts+=Form("%0.f",fAnalysisCuts[bAnalysisCut_NContibutors]);
     vertexcuts+="+";
+    vertexcuts+=Form("%0.f",fAnalysisCuts[bAnalysisCut_Sigma_Z]);
+    vertexcuts+="+";
+    vertexcuts+=Form("%0.f",fAnalysisCuts[bAnalysisCut_Sigma_Y]);
+    vertexcuts+="+";
+    vertexcuts+=Form("%0.f",fAnalysisCuts[bAnalysisCut_RelError_Z]);
+    vertexcuts+="+";
+    vertexcuts+=Form("%0.f",fAnalysisCuts[bAnalysisCut_RelError_Y]);
+    vertexcuts+="+";
     vertexcuts+=fAnalysisCuts[bAnalysisCut_SigmaDiamond];
+    vertexcuts+="+";
+    vertexcuts+=fAnalysisCuts[bAnalysisCut_PtHardAndJetPtFactor];
+    vertexcuts+="+";
+    vertexcuts+=fAnalysisCuts[bAnalysisCut_MinNewVertexContrib];
     vertexcuts+="+";
     vertexcuts+=fAnalysisCuts[bAnalysisCut_MaxVtxZ];
     vertexcuts+="+";
@@ -1778,9 +1887,9 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     vertexcuts+="+";
     vertexcuts+=fDoFlavourMatching;
 
-    fh1dCuts->SetTitle(jetcuts.Data());
-    fh1dCuts->GetXaxis()->SetTitle(trackcuts.Data());
-    fh1dCuts->GetYaxis()->SetTitle(vertexcuts.Data());
+    fh1dCutsPrinted->SetTitle(jetcuts.Data());
+    fh1dCutsPrinted->GetXaxis()->SetTitle(trackcuts.Data());
+    fh1dCutsPrinted->GetYaxis()->SetTitle(vertexcuts.Data());
 
     printf("Vertex Cuts: %s\n",vertexcuts.Data());
 }
@@ -1874,40 +1983,20 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
             }
             return false;
         }
-        AliAODVertex *AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx( const AliVTrack * const track) {
-            const AliAODEvent * aod =  ((AliAODEvent*)InputEvent());
-            AliAODVertex *vtxAOD =aod ->GetPrimaryVertex();
-            if(!vtxAOD) return 0;
-            TString title=vtxAOD->GetTitle();
-            if(!title.Contains("VertexerTracks")) return 0;
-            AliVertexerTracks vertexer(aod->GetMagneticField());
-            vertexer.SetITSMode();
-            vertexer.SetMinClusters(4);
-            if(title.Contains("WithConstraint")) {
-                Float_t diamondcovxy[3];
-                aod->GetDiamondCovXY(diamondcovxy);
-                Double_t pos[3]={aod->GetDiamondX(),aod->GetDiamondY(),0.};
-                Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-                AliESDVertex diamond(pos,cov,1.,1);
-                vertexer.SetVtxStart(&diamond);
-            }
 
-            Int_t skipped[5000]; for(Int_t i=0;i<5000;i++) skipped[i]=-1;
-            Int_t id = (Int_t)track->GetID();
-            if(!(id<0)) skipped[0] = id;
-            int nTrksToSkip=1;
-
+        int AliAnalysisTaskHFJetIPQA::DetermineUnsuitableVtxTracks(int *skipped, AliAODEvent * const aod, AliVTrack * const track){
             Int_t nTracks=aod->GetNumberOfTracks();
             AliAODTrack * t = nullptr;
             AliExternalTrackParam etp_at_r39_old; etp_at_r39_old.CopyFromVTrack(track);
             etp_at_r39_old.PropagateTo(3.9,InputEvent()->GetMagneticField());
             double angle0 = TMath::ATan2(etp_at_r39_old.Yv(),etp_at_r39_old.Xv());
             double zz0    = etp_at_r39_old.GetZ();
+            int nTrksToSkip=1;
 
             for(Int_t i=0; i<nTracks; i++){
                 t = (AliAODTrack *)(aod->GetTrack(i));
                 if(!((((AliAODTrack*)t)->TestFilterBit(4))))continue;
-                id = (Int_t)t->GetID();
+                int id = (Int_t)t->GetID();
                 AliExternalTrackParam etp_at_r39; etp_at_r39.CopyFromVTrack(t);
                 etp_at_r39.PropagateTo(3.9,InputEvent()->GetMagneticField());
                 double angle = TMath::ATan2(etp_at_r39.Yv(),etp_at_r39.Xv());
@@ -1924,33 +2013,70 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
                     skipped[nTrksToSkip++] = id;
                 }
             }
-            vertexer.SetSkipTracks(nTrksToSkip,skipped);
-            AliESDVertex *vtxESDNew = vertexer.FindPrimaryVertex(aod);
-            if(!vtxESDNew) return 0;
-            Int_t nContrib =vtxESDNew->GetNContributors();
-            if(vtxESDNew->GetNContributors()<=2) {
+            return nTrksToSkip;
+        }
 
-                delete vtxESDNew; vtxESDNew=nullptr;
-                return 0;
-            }
+AliAODVertex *AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx( const AliVTrack * const track) {
+   //Initialisation of vertexer
+   const AliAODEvent * aod =  ((AliAODEvent*)InputEvent());
+   AliAODVertex *vtxAOD =aod ->GetPrimaryVertex();
+   if(!vtxAOD) return 0;
+   //printf("Before remove:\n");
+   //UvtxAOD->Print();
 
-            if(vtxESDNew->GetChi2toNDF()>fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]) {
-                delete vtxESDNew; vtxESDNew=nullptr;
-                return 0;
-            }
+   TString title=vtxAOD->GetTitle();
+   if(!title.Contains("VertexerTracks")) return 0;
 
-            Double_t pos[3];
-            Double_t cov[6];
+   AliVertexerTracks vertexer(aod->GetMagneticField());
+   vertexer.SetITSMode();
+   vertexer.SetMinClusters(3);
+   if(title.Contains("WithConstraint")) {
+     Float_t diamondcovxy[3];
+     aod->GetDiamondCovXY(diamondcovxy);
+     Double_t pos[3]={aod->GetDiamondX(),aod->GetDiamondY(),0.};
+     Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+     AliESDVertex diamond(pos,cov,1.,1);
+     vertexer.SetVtxStart(&diamond);
+   }
 
-            Double_t chi2perNDF;
-    vtxESDNew->GetXYZ(pos); // position
-    vtxESDNew->GetCovMatrix(cov); //covariance matrix
-    chi2perNDF = vtxESDNew->GetChi2toNDF();
-    if(vtxESDNew) delete vtxESDNew;
-    vtxESDNew=NULL;
-    AliAODVertex *vtxAODNew = new AliAODVertex(pos,cov,chi2perNDF);
-    vtxAODNew->	SetNContributors(nContrib);
-    return vtxAODNew;
+   //_____________________________
+   //Determination of unsuited tracks
+   Int_t skipped[5000]; for(Int_t i=0;i<5000;i++) skipped[i]=-1;
+   Int_t id = (Int_t)track->GetID();
+   if(!(id<0)) skipped[0] = id;  //remove track under investigation from vertex
+   int nTrksToSkip=1;
+   //nTrksToSkip=DetermineUnsuitableVtxTracks(skipped, aod, track);
+   vertexer.SetSkipTracks(nTrksToSkip,skipped);
+
+   //________________________________
+   //Determination of new ESD vertex
+   AliESDVertex *vtxESDNew = vertexer.FindPrimaryVertex(aod);
+   if(!vtxESDNew) return 0;
+   Int_t nContrib =vtxESDNew->GetNContributors();
+   if(vtxESDNew->GetNContributors()<fAnalysisCuts[bAnalysisCut_MinNewVertexContrib]) {
+     //printf("Thrown away with %i contributors\n",vtxESDNew->GetNContributors());
+     delete vtxESDNew; vtxESDNew=nullptr;
+     return 0;
+   }
+   if(vtxESDNew->GetChi2toNDF()>fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]) {
+     //printf("Thrown away with chi2 = %f\n",fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]);
+     delete vtxESDNew; vtxESDNew=nullptr;
+     return 0;
+   }
+
+   //________________________________
+   //Conversion to AOD vertex
+   Double_t pos[3];
+   Double_t cov[6];
+   Double_t chi2perNDF;
+   vtxESDNew->GetXYZ(pos); // position
+   vtxESDNew->GetCovMatrix(cov); //covariance matrix
+   chi2perNDF = vtxESDNew->GetChi2toNDF(); //chisquare
+   if(vtxESDNew) delete vtxESDNew;
+   vtxESDNew=NULL;
+   AliAODVertex *vtxAODNew = new AliAODVertex(pos,cov,chi2perNDF);
+   vtxAODNew->SetNContributors(nContrib);  //contributors
+   return vtxAODNew;
 }
 void AliAnalysisTaskHFJetIPQA::FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname ){
     if(!jet) return;
@@ -2090,10 +2216,22 @@ Double_t AliAnalysisTaskHFJetIPQA::GetValImpactParameter(TTypeImpPar type,Double
     return result;
 }
 
-Bool_t AliAnalysisTaskHFJetIPQA::IsTrackAccepted(AliVTrack* track ,Int_t n){
+//____________________________________________________
+void AliAnalysisTaskHFJetIPQA::FillCandidateJet(Int_t CutIndex, Int_t JetFlavor){
+        if(JetFlavor>0) fh1DCutInclusive->Fill(CutIndex);
+        if(fIsPythia){
+                if(JetFlavor==1)fh1dCutudg->Fill(CutIndex);
+                if(JetFlavor==2)fh1dCutc->Fill(CutIndex);
+                if(JetFlavor==3)fh1dCutb->Fill(CutIndex);
+                if(JetFlavor==4)fh1dCutb->Fill(CutIndex);
+        }
+
+}
+
+Bool_t AliAnalysisTaskHFJetIPQA::IsTrackAccepted(AliVTrack* track , int jetflavour){
     if(!track) return kFALSE;
     if(fIsEsd){
-        fESDTrackCut->SetMinNClustersITS(abs(n));
+        fESDTrackCut->SetMinNClustersITS(fAnalysisCuts[bAnalysisCut_MinITSLayersHit]);
         fESDTrackCut->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
         if(!(fESDTrackCut->AcceptTrack((AliESDtrack*)track))) return kFALSE;
         return kTRUE;
@@ -2101,42 +2239,95 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsTrackAccepted(AliVTrack* track ,Int_t n){
     else {
             //HasMatchedGoodTracklet((AliAODTrack*)track);
         if(!(((AliAODTrack*)track)->TestFilterBit(9) || ((AliAODTrack*)track)->TestFilterBit(4)))return kFALSE;
-        if(!(((AliAODTrack*)track->HasPointOnITSLayer(0))&&(AliAODTrack*)track->HasPointOnITSLayer(1)))  return kFALSE;
-        if(((AliAODTrack*)track)->GetNcls(0)<abs(n)) return kFALSE;
-        if(((AliAODTrack*)track)->GetNcls(1)<fAnalysisCuts[bAnalysisCut_MinTPCClus]) return kFALSE;
-        if(track->Pt()<fAnalysisCuts[bAnalysisCut_MinTrackPt])return kFALSE;
+
+        if(TMath::Abs(track->Eta())>0.9) return kFALSE;
+
+        //SPD hits
+        if(fAnalysisCuts[bAnalysisCut_HasSDD]){
+          if(!(((AliAODTrack*)track->HasPointOnITSLayer(0))&&(AliAODTrack*)track->HasPointOnITSLayer(1))){
+            FillCandidateJet(bAnalysisCut_HasSDD,jetflavour);
+            return kFALSE;
+          }
+        }
+
+        //n=hits in ITS layers
+        Int_t SPDSSDHits = (int) track->HasPointOnITSLayer(0) + (int) track->HasPointOnITSLayer(1) + (int) track->HasPointOnITSLayer(4) + (int) track->HasPointOnITSLayer(5);
+        if(SPDSSDHits<abs(fAnalysisCuts[bAnalysisCut_MinITSLayersHit])){
+            //printf("Throw away due flav=%i ssd points 0 = %i, 1=%i, 2=%i, 3=%i, SPDSSDHits=%i cutvalue=%f\n",jetflavour,track->HasPointOnITSLayer(0),track->HasPointOnITSLayer(1),track->HasPointOnITSLayer(4),track->HasPointOnITSLayer(5),SPDSSDHits, abs(fAnalysisCuts[bAnalysisCut_MinITSLayersHit]));
+            FillCandidateJet(bAnalysisCut_MinITSLayersHit,jetflavour);
+            return kFALSE;
+        }
+
+        //TPC clusters
+        if(((AliAODTrack*)track)->GetNcls(1)<fAnalysisCuts[bAnalysisCut_MinTPCClus]){
+            //printf("Throw away due flav=%i TPCClus %i, cutvalue=%f\n",jetflavour,((AliAODTrack*)track)->GetNcls(1),fAnalysisCuts[bAnalysisCut_MinTPCClus]);
+            FillCandidateJet(bAnalysisCut_MinTPCClus,jetflavour);
+            return kFALSE;
+        }
+
+        if(track->Pt()<fAnalysisCuts[bAnalysisCut_MinTrackPt]){
+            //printf("Throw away due flav=%i pt %f, cutvalue=%f\n",jetflavour,track->Pt(),fAnalysisCuts[bAnalysisCut_MinTrackPt]);
+            FillCandidateJet(bAnalysisCut_MinTrackPt,jetflavour);
+            return kFALSE;
+        }
+
         AliAODVertex *aodvertex = (( AliAODTrack *)track)->GetProdVertex();
         if(!aodvertex) return kFALSE;
-        if(aodvertex->GetType()==AliAODVertex::kKink) return kFALSE;
+        if(fAnalysisCuts[bAnalysisCut_KinkCand]){
+          if(aodvertex->GetType()==AliAODVertex::kKink){
+            FillCandidateJet(bAnalysisCut_KinkCand,jetflavour);
+            return kFALSE;
+          }
+        }
+
+        ULong_t status=track->GetStatus();
+        if(fAnalysisCuts[bAnalysisCut_HasTPCrefit]){
+          if(!(status & AliAODTrack::kTPCrefit)){
+            FillCandidateJet(bAnalysisCut_HasTPCrefit,jetflavour);
+            return kFALSE;
+          }
+        }
+
+        if(fAnalysisCuts[bAnalysisCut_HasITSrefit]){
+          if(!(status & AliAODTrack::kITSrefit)){
+            FillCandidateJet(bAnalysisCut_HasITSrefit,jetflavour);
+            return kFALSE;
+          }
+        }
+        if(((AliAODTrack*)track)->Chi2perNDF()>=fAnalysisCuts[bAnalysisCut_MinTrackChi2]){
+            FillCandidateJet(bAnalysisCut_MinTrackChi2,jetflavour);
+            //printf("Throw away due flav=%i chi2 %f, cutvalue=%f\n",jetflavour,((AliAODTrack*)track)->Chi2perNDF(),fAnalysisCuts[bAnalysisCut_MinTrackChi2]);
+            return kFALSE;
+        }
+
         return kTRUE;
     }
     return kTRUE;
 }
 
-Bool_t AliAnalysisTaskHFJetIPQA::IsTrackAcceptedJP(AliVTrack* track ,Int_t n){
-    // min pt = 0.5 instead of 1.
-    if(!track) return kFALSE;
-    if(fIsEsd){
-        fESDTrackCut->SetMinNClustersITS(abs(n));
-        fESDTrackCut->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-        if(!(fESDTrackCut->AcceptTrack((AliESDtrack*)track))) return kFALSE;
-        return kTRUE;
+
+bool AliAnalysisTaskHFJetIPQA::IsDCAAccepted(double decaylength, double ipwrtjet, Double_t * dca, int jetflavour){
+    if(dca[0]>fAnalysisCuts[bAnalysisCut_MaxDCA_XY]){
+        FillCandidateJet(bAnalysisCut_MaxDCA_XY,jetflavour);
+        //printf("Throw away due to xy cut = %f, cutvalue=%f",dca[0],fAnalysisCuts[bAnalysisCut_MaxDCA_XY]);
+        return kFALSE;
     }
-    else {
-        if(!(((AliAODTrack*)track)->TestFilterBit(9) || ((AliAODTrack*)track)->TestFilterBit(4))){
-            return kFALSE;
-        }
-        if(!(((AliAODTrack*)track->HasPointOnITSLayer(0))&&(AliAODTrack*)track->HasPointOnITSLayer(1)))  {
-            return kFALSE;
-        }
-        if(((AliAODTrack*)track)->GetNcls(0)<abs(n)) return kFALSE;
-        if(((AliAODTrack*)track)->GetNcls(1)<fAnalysisCuts[bAnalysisCut_MinTPCClus]) return kFALSE;
-        if(track->Pt()<fAnalysisCuts[bAnalysisCut_MinTrackPtMC])return kFALSE;
-        AliAODVertex *aodvertex = (( AliAODTrack *)track)->GetProdVertex();
-        if(!aodvertex) return kFALSE;
-        if(aodvertex->GetType()==AliAODVertex::kKink) return kFALSE;
-        return kTRUE;
+    if(dca[1]>fAnalysisCuts[bAnalysisCut_MaxDCA_Z]){
+        FillCandidateJet(bAnalysisCut_MaxDCA_Z,jetflavour);
+        printf("Throw away due to z cut = %f, cutvalue=%f",dca[1],fAnalysisCuts[bAnalysisCut_MaxDCA_Z]);
+        return kFALSE;
     }
+    if(decaylength>fAnalysisCuts[bAnalysisCut_MaxDecayLength]){
+        FillCandidateJet(bAnalysisCut_MaxDecayLength,jetflavour);
+        //printf("Throw away due to decaylength cut = %f, cutvalue=%f",decaylength,fAnalysisCuts[bAnalysisCut_MaxDecayLength]);
+        return kFALSE;
+    }
+    if(ipwrtjet>fAnalysisCuts[bAnalysisCut_DCAJetTrack]){
+        FillCandidateJet(bAnalysisCut_DCAJetTrack,jetflavour);
+        //printf("Throw away due to dcajettrack = %f, cutvalue=%f",ipwrtjet,fAnalysisCuts[bAnalysisCut_DCAJetTrack]);
+        return kFALSE;
+    }
+
     return kTRUE;
 }
 
@@ -3133,7 +3324,7 @@ TH1 *AliAnalysisTaskHFJetIPQA::AddHistogramm(const char *name, const char *title
     phist->Sumw2();
 
     TString sName(name);
-    if(sName.EqualTo("fh1dCuts")){
+    if(sName.EqualTo("fh1dCutsPrinted")){
         fOutput->AddFirst(phist);
     }
     else{
@@ -3195,23 +3386,23 @@ void AliAnalysisTaskHFJetIPQA::setFMCglobalDCAxyShift(const Double_t &value)
 
 Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameter(const AliAODTrack *track, const AliAODEvent *event, Double_t *dca, Double_t *cov, Double_t *XYZatDCA)
 {
-
-
     if(!track || !event) return kFALSE;
-
-
     if(dca==0 || cov ==0 ||XYZatDCA ==0 ) return kFALSE;
     AliExternalTrackParam etp;
     etp.CopyFromVTrack((AliVTrack*)track);
-    const Double_t kBeampiperadius=5;
+
+    const Double_t kBeampiperadius=3;  //maximal dca used for track propagation
     fEventVertex = RemoveDaughtersFromPrimaryVtx(track);
     if(!fEventVertex)return kFALSE;
+    //printf("After remove:\n");
+    //fEventVertex->Print();
     const AliVVertex *vtxESDSkip =fEventVertex;//RemoveDaughtersFromPrimaryVtx(track);
     if(!vtxESDSkip) return kFALSE;
     if(!etp.PropagateTo(1,event->GetMagneticField())) return kFALSE;
     Bool_t success = kFALSE;
     Double_t x_at_dca[3];
     Double_t p_at_dca[3];
+
     //Classic dca calculation
     if(etp.PropagateToDCA(vtxESDSkip, event->GetMagneticField(), kBeampiperadius, dca, cov)){
         success = kTRUE;
@@ -3222,14 +3413,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameter(const AliAODTrack *track, co
             //         if(fIsPythia)   dca[0] += fMCglobalDCAxyShift; // generic mean offset in LHC10e default is 0.007 == 7 µm
 
     } else return kFALSE;
-
-
-
-
     return success;
 }
 
-AliExternalTrackParam AliAnalysisTaskHFJetIPQA::GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event)
+/*AliExternalTrackParam AliAnalysisTaskHFJetIPQA::GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event)
 {
     double vtx[3]= {0.};
     double cov [21] = {0.};
@@ -3238,7 +3425,7 @@ AliExternalTrackParam AliAnalysisTaskHFJetIPQA::GetExternalParamFromJet(const Al
     (event->GetPrimaryVertex())->GetXYZ(vtx);
     AliExternalTrackParam etp     (vtx, pxpypz, cov, (Short_t)0);
     return etp;
-}
+}*/
 
 
 
@@ -3259,119 +3446,40 @@ Bool_t AliAnalysisTaskHFJetIPQA::getJetVtxMass(AliEmcalJet *jet,double &value ){
 }
 
 
-Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign)
+Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour)
 {
     if(!track || !event || !jet)return kFALSE;
     if(dca==0 || cov ==0 ||XYZatDCA ==0 ) return kFALSE;
+
     if(!GetImpactParameter(track,event,dca,cov,XYZatDCA)) return kFALSE;
+    //vertex properties
     Double_t VxVyVz[3]= {0.,0.,0.};
-    const  AliVVertex *vtxESDSkip =fEventVertex;//GetKFPrimaryVertex();//;RemoveDaughtersFromPrimaryVtx(track);//THIS IS THE WORKING RECALC OPTION
+    const  AliVVertex *vtxESDSkip =fEventVertex;    //GetImpactParameter does set fEventVertex to the recalculated one
     if(!fEventVertex) return kFALSE;
     vtxESDSkip->GetXYZ(VxVyVz);
+    //printf("Vertex in wrt jet:\n");
+    //vtxESDSkip->Print();
+
+    //jet properties
     double jetp[3];
     jet->PxPyPz(jetp);
     TVector3 jetP3(jetp);
+    double covjet [21] = {0.};
+    double pxpypz[3] = {0.};
+    jet->PxPyPz(pxpypz);
+    AliExternalTrackParam etp_jet(VxVyVz, pxpypz, covjet, (Short_t)0);
 
+    //Calculation of sign
     TVector3 JetDir =jetP3.Unit();
     TVector3 D0(XYZatDCA);
     TVector3 vertex(VxVyVz);
-    TVector3 DD0(D0.x()-vertex.x(),D0.y()-vertex.y(),0.);
+    TVector3 DD0(D0.x()-vertex.x(),D0.y()-vertex.y(),0.);   //track impact parameter
     double ps =DD0.Dot(JetDir);
-    double value = DD0.Mag()*(ps/fabs(ps));
-    jetsign  = TMath::Sign(1.,value);
+    double value = DD0.Mag()*(ps/fabs(ps));                 //absolut track impact parameter
+    jetsign  = TMath::Sign(1.,value);                       //sign
     TVector3 dd0 =DD0.Unit();
-    AliExternalTrackParam etp;
-    etp.CopyFromVTrack((AliVTrack*)track);
-    double c[3],d[2];
-    if(!etp.PropagateToDCA(vtxESDSkip, InputEvent()->GetMagneticField(), 10., d, c))return kFALSE;
-    double cm[21];
-    etp.GetCovarianceXYZPxPyPz(cm);
-    double cve[6];
-    vtxESDSkip->GetCovarianceMatrix(cve);
-    TMatrix vertexError(3,3);
-    vertexError(0,0) =cve[0];
-    vertexError(0,1) =cve[1];
-    vertexError(1,0) =cve[1];
-    vertexError(1,1) =cve[2];
-    vertexError(0,2) =cve[3];
-    vertexError(2,0) =cve[3];
 
-    vertexError(1,2) =cve[4];
-    vertexError(1,2) =cve[4];
-    vertexError(2,2) =cve[5];
-
-    TMatrix trackError(6,6);
-    trackError(0,0) =cm[0];
-    trackError(1,0) =cm[1];
-    trackError(2,0) =cm[3];
-    trackError(3,0) =cm[6];
-    trackError(4,0) =cm[10];
-    trackError(5,0) =cm[15];
-
-    trackError(0,1) =cm[1];
-    trackError(1,1) =cm[2];
-    trackError(2,1) =cm[4];
-    trackError(3,1) =cm[7];
-    trackError(4,1) =cm[11];
-    trackError(5,1) =cm[16];
-
-    trackError(0,2) =cm[3];
-    trackError(1,2) =cm[4];
-    trackError(2,2) =cm[5];
-    trackError(3,2) =cm[8];
-    trackError(4,2) =cm[12];
-    trackError(5,2) =cm[17];
-
-    trackError(0,3) =cm[6];
-    trackError(1,3) =cm[7];
-    trackError(2,3) =cm[8];
-    trackError(3,3) =cm[9];
-    trackError(4,3) =cm[13];
-    trackError(5,3) =cm[18];
-
-    trackError(0,4) =cm[10];
-    trackError(1,4) =cm[11];
-    trackError(2,4) =cm[12];
-    trackError(3,4) =cm[13];
-    trackError(4,4) =cm[14];
-    trackError(5,4) =cm[19];
-
-    trackError(0,5) =cm[15];
-    trackError(1,5) =cm[16];
-    trackError(2,5) =cm[17];
-    trackError(3,5) =cm[18];
-    trackError(4,5) =cm[19];
-    trackError(5,5) =cm[20];
-    ROOT::Math::SMatrix<double,3> E33Vertex;
-    ROOT::Math::SMatrix<double,6> E66Track;
-
-    for (int i = 0;i<3;++i) {
-        for (int j = 0;j<3;++j) {
-            E33Vertex (i,j) = vertexError(i,j);
-        }
-    }
-    for (int i = 0;i<6;++i) {
-        for (int j = 0;j<6;++j) {
-            E66Track (i,j) = trackError(i,j);
-        }
-    }
-
-    ROOT::Math::SVector<double,6>  deriv;
-    ROOT::Math::SVector<double,3>  deriv_v;
-
-    deriv_v[0] = -dd0.x();
-    deriv_v[1] = -dd0.y();
-    deriv_v[2] = -dd0.z();
-
-    deriv[0] = dd0.x();
-    deriv[1] = dd0.y();
-    deriv[2] = dd0.z();
-    deriv[3] = 0.;
-    deriv[4] = 0.;
-    deriv[5] = 0.;
-
-  
-    AliExternalTrackParam etp_jet = GetExternalParamFromJet(jet,event);
+    //track properties
     AliExternalTrackParam etp_track;    etp_track.CopyFromVTrack(track);
     Double_t xa,xb,xyz_jet_global[3],xyz_track_global[3];
 
@@ -3380,25 +3488,35 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *t
     etp_track.GetXYZAt(xb, event->GetMagneticField(),xyz_track_global);
     etp_track.PropagateTo(xb,event->GetMagneticField());
 
-
     if(fEventVertex) {
         delete fEventVertex;
         fEventVertex =nullptr;
 
     }
+
     double val = ((VxVyVz[0] - xyz_track_global[0]) * (VxVyVz[0] - xyz_track_global[0]) +
         (VxVyVz[1] - xyz_track_global[1]) * (VxVyVz[1] - xyz_track_global[1])+
         (VxVyVz[2] - xyz_track_global[2]) * (VxVyVz[2] - xyz_track_global[2]));
 
 
     double  bdecaylength = val >0 ? sqrt(val) : 1000;
+    //printf("decaylength:\n");
+    //for(int i=0;i<3;i++){
+    //    printf("VxVyVZ=%f, xyztrackglobal=%f\n",VxVyVz[i], xyz_track_global[i]);
+    //}
 
     double dcajetrack = sqrt((xyz_jet_global[0] - xyz_track_global[0]) * (xyz_jet_global[0] - xyz_track_global[0]) +
         (xyz_jet_global[1] - xyz_track_global[1]) * (xyz_jet_global[1] - xyz_track_global[1])+
         (xyz_jet_global[2] - xyz_track_global[2]) * (xyz_jet_global[2]- xyz_track_global[2]));
 
-    if(bdecaylength>bAnalysisCut_MaxDecayLength) return kFALSE;
-    if(dcajetrack  >bAnalysisCut_DCAJetTrack) return kFALSE;
+    //printf("decaylength:\n");
+    //for(int i=0;i<3;i++){
+    //    printf("xyzjetglobal=%f, xyztrackglobal=%f\n",xyz_jet_global[i], xyz_track_global[i]);
+    //}
+
+    if(!(IsDCAAccepted(bdecaylength, dcajetrack, dca, jetflavour))) return kFALSE;
+    //printf("decaylength=%f, pi=%f\n", bdecaylength, dcajetrack);
+
     return kTRUE;
 }
 
@@ -3407,7 +3525,7 @@ void AliAnalysisTaskHFJetIPQA::SetThresholds(int nthresh, TObjArray** &threshs){
   for(int iProbSet=0;iProbSet<nthresh;iProbSet++){
     TObjArray* oa=(TObjArray*)threshs[iProbSet];
 
-    printf("Pointer oa=%p\n",oa);
+    //printf("Pointer oa=%p\n",oa);
 
     h1DThresholdsFirst.push_back((TH1D*)oa->At(0));
     h1DThresholdsSecond.push_back((TH1D*)oa->At(1));

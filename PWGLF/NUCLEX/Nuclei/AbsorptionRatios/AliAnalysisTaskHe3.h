@@ -14,6 +14,9 @@ class TList;
 class AliPIDResponse; // main class for PID analysis
 
 #include "AliAnalysisTaskSE.h"
+#include <iostream>
+
+using namespace std;
 
 class AliAnalysisTaskHe3 : public AliAnalysisTaskSE {
 public:

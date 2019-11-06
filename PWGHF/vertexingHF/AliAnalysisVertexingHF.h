@@ -267,6 +267,7 @@ class AliAnalysisVertexingHF : public TNamed {
                              /// the primary vertex
 
   AliESDVertex *fV1; /// primary vertex
+  AliAODVertex *fV1AOD; /// primary vertex (AOD format)
 
   /// flag to enable candidates production
   Bool_t fD0toKpi;   /// D0->Kpi
@@ -425,7 +426,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisVertexingHF,29);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,30);  // Reconstruction of HF decay candidates
   /// \endcond
 };
 

@@ -77,11 +77,20 @@ public:
         bAnalysisCut_MinTrackPt=12,
         bAnalysisCut_MinTrackPtMC=13,
         bAnalysisCut_MinTPCClus=14,
-        bAnalysisCut_MinJetPt=15,
-        bAnalysisCut_MaxJetPt=16,
-        bAnalysisCut_MinJetEta=17,
-        bAnalysisCut_MaxJetEta=18,
+        bAnalysisCut_MinITSLayersHit=15,
+        bAnalysisCut_MinTrackChi2=16,
+        bAnalysisCut_MinJetPt=17,
+        bAnalysisCut_MaxJetPt=18,
+        bAnalysisCut_MinJetEta=19,
+        bAnalysisCut_MaxJetEta=20,
+        bAnalysisCut_HasSDD=21,
+        bAnalysisCut_KinkCand=22,
+        bAnalysisCut_HasTPCrefit=23,
+        bAnalysisCut_HasITSrefit=24,
+        bAnalysisCut_PtHardAndJetPtFactor=25,
+        bAnalysisCut_MinNewVertexContrib=26
     };
+
 
     //UTILITY STRUCT DEFINITIONS
     struct SJetIpPati {
@@ -133,8 +142,13 @@ public:
     Bool_t IsPhysicalPrimary(AliVParticle *part);
     void ChangeDefaultCutTo(AliAnalysisTaskHFJetIPQA::bCuts cutname, Double_t newcutvalue);
     void GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut);
+
     Bool_t IsVertexSelected(const AliVVertex *vertex);
-    Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
+    Bool_t IsTrackAccepted(AliVTrack* track, int jetflavour);
+    Bool_t IsDCAAccepted(double decaylength, double ipwrtjet, Double_t * dca, int jetflavour);
+    Bool_t IsEventAccepted(AliVEvent *ev);
+
+    void FillCandidateJet(Int_t CutIndex, Int_t JetFlavor);
     bool IsFromElectron(AliAODTrack *track);
     bool IsFromProton(AliAODTrack *track);
     bool IsFromKaon(AliAODTrack *track);
@@ -144,8 +158,8 @@ public:
     //Impact Parameter Generation
     Bool_t GetImpactParameter(const AliAODTrack *track, const AliAODEvent *event, Double_t *dca, Double_t *cov, Double_t *XYZatDCA);
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
-    Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign);
-
+    Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour);
+    int DetermineUnsuitableVtxTracks(int *skipped, AliAODEvent * const aod, AliVTrack * const track);
     //______________________________
     //Corrections
     double DoUESubtraction(AliJetContainer* &jetcongen, AliJetContainer* &jetconrec, AliEmcalJet* &jetrec, double jetpt);
@@ -224,13 +238,8 @@ public:
     void SetHardCutoff(Double_t t)                            {fHardCutOff = t;}
 
 
-
-protected:
-    TH1D *fh1dTracksAccepeted; //!
-    TH1D* fh1dCuts;//!
-
-    THnSparse *fHLundIterative;//!       iterative declustering
-
+public:
+    AliEventCuts fEventCuts;
 
 private:
     THistManager         fHistManager    ;///< Histogram manager
@@ -248,7 +257,6 @@ private:
     void FillHist(const char * name,Double_t x, Double_t y,Double_t w);
     void IncHist(const char * name,Int_t bin);
     void SubtractMean (Double_t val[2],AliVTrack *track);
-    Bool_t IsTrackAccepted(AliVTrack* track,Int_t n=6);
     Bool_t MatchJetsGeometricDefault(); //jet matching function 1/4
     Double_t GetMonteCarloCorrectionFactor(AliVTrack *track, Int_t &pCorr_indx, double &ppt);
     Double_t GetWeightFactor( AliVTrack * mcpart,Int_t &pCorr_indx, double &ppt);
@@ -304,11 +312,13 @@ private:
     vector<double > fFracs;
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
+    Int_t fNThresholds;//
+
+    //______________________
+    //Cuts
     Double_t fJetRadius;//
     Double_t fDaughtersRadius;//
     Int_t fNoJetConstituents;//
-    Int_t fNThresholds;//
-
     //_____________________
     //TGraphs
     TGraph * fGraphMean;//!
@@ -350,7 +360,20 @@ private:
     TH2D* h2DLNProbDistss;//!
     TH2D* h2DLNProbDists;//!
 
+    //______________________________
+    //Cut Histograms
     TCanvas *cCuts; //
+
+    TH1D *fh1DCutInclusive;
+    TH1D *fh1dCutudg;
+    TH1D *fh1dCutc;
+    TH1D *fh1dCutb;
+    TH1D *fh1dCuts;
+
+    TH1D *fh1dTracksAccepeted; //!
+    TH1D* fh1dCutsPrinted;//!
+
+    THnSparse *fHLundIterative;//!       iterative declustering
 
     //________________________________
     //vectors
@@ -368,7 +391,7 @@ private:
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
-    Double_t fAnalysisCuts[19]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
+    Double_t fAnalysisCuts[27]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
 
     AliPIDCombined *fCombined ;//!
 
@@ -436,13 +459,7 @@ private:
     return kTRUE;
     }
 
-
-
-
-
-
-
-    ClassDef(AliAnalysisTaskHFJetIPQA, 42)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 43)
 };
 
 #endif

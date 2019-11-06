@@ -143,7 +143,7 @@ public:
 
   TH3F *   fhEtaPhiGridExoEnCut  ;              //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1
   TH3F *   fhEtaPhiGridExoEnCutSameFracCut;     //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff = 0
-  TH3F *   fhEtaPhiGridEnExoCut  ;              //!<! column vs row vs energy when F+ < 0.97 and n cells > 1
+  TH3F *   fhEtaPhiGridEnExoCut  ;              //!<! column vs row vs energy when F+ > 0.97 and n cells > 1
   TH3F *   fhEtaPhiGridEn1Cell;                 //!<! column vs row vs energy for 1 cell clusters 
   TH3F *   fhEtaPhiGridEnHighNCells;            //!<! column vs row vs energy for n cell >  fNCellCut
   TH3F *   fhEtaPhiGridNCellEnCut;              //!<! column vs row vs n cells for E >  fEMinForExo
@@ -193,12 +193,42 @@ public:
   TH2F *   fhFracEnDiffSame5;                   //!<! Cluster E vs fraction of energy in diff over same T-Card, neighbour cells
   TH2F *   fhFracNCellDiffSame5;                //!<! Cluster E vs fraction of n cells in diff over same T-Card, neighbour cells
   TH2F *   fhFracEnNCellDiffSame5;              //!<! Cluster E vs double fraction of energy/n cells in diff over same T-Card, neighbour cells
+
+  TH3F *   fhFracEnDiffSameExo;                 //!<! Cluster E vs fraction of energy in diff over same T-Card vs F+
+  TH3F *   fhFracNCellDiffSameExo;              //!<! Cluster E vs fraction of n cells in diff over same T-Card vs F+
+  TH3F *   fhFracEnNCellDiffSameExo;            //!<! Cluster E vs double fraction of energy/n cells in diff over same T-Card vs F+
+  
+  TH3F *   fhFracEnDiffSameWExo;                //!<! Cluster E vs fraction of energy in diff over same T-Card, cells with w > 0 vs F+
+  TH3F *   fhFracNCellDiffSameWExo;             //!<! Cluster E vs fraction of n cells in diff over same T-Card, cells with w > 0 vs F+
+  TH3F *   fhFracEnNCellDiffSameWExo;           //!<! Cluster E vs double fraction of energy/n cells in diff over same T-Card, cells with w > 0 vs F+
+  
+  TH3F *   fhFracEnDiffSame5Exo;                //!<! Cluster E vs fraction of energy in diff over same T-Card, neighbour cells vs F+
+  TH3F *   fhFracNCellDiffSame5Exo;             //!<! Cluster E vs fraction of n cells in diff over same T-Card, neighbour cells vs F+
+  TH3F *   fhFracEnNCellDiffSame5Exo;           //!<! Cluster E vs double fraction of energy/n cells in diff over same T-Card, neighbour cells vs F+
+  
+  TH1F *   fhFracEnDiffSameEnCut;               //!<! Cluster E > 20, fraction of energy in diff over same T-Card
+  TH1F *   fhFracNCellDiffSameEnCut;            //!<! Cluster E > 20, fraction of n cells in diff over same T-Card
+  TH1F *   fhFracEnNCellDiffSameEnCut;          //!<! Cluster E > 20, double fraction of energy/n cells in diff over same T-Card
+  
+  TH1F *   fhFracEnDiffSameWEnCut;              //!<! Cluster E > 20, fraction of energy in diff over same T-Card, cells with w > 0
+  TH1F *   fhFracNCellDiffSameWEnCut;           //!<! Cluster E > 20, fraction of n cells in diff over same T-Card, cells with w > 0
+  TH1F *   fhFracEnNCellDiffSameWEnCut;         //!<! Cluster E > 20, double fraction of energy/n cells in diff over same T-Card, cells with w > 0
+  
+  TH1F *   fhFracEnDiffSame5EnCut;              //!<! Cluster E > 20, fraction of energy in diff over same T-Card, neighbour cells
+  TH1F *   fhFracNCellDiffSame5EnCut;           //!<! Cluster E > 20, fraction of n cells in diff over same T-Card, neighbour cells
+  TH1F *   fhFracEnNCellDiffSame5EnCut;         //!<! Cluster E > 20, double fraction of energy/n cells in diff over same T-Card, neighbour cells
   
   TH3F *   fhNCellsSameDiffExo[fgkNEBins];      //!<! N cells in same vs diff vs exoticity, different cluster E bins
   TH3F *   fhEnSameDiffExo    [fgkNEBins];      //!<! Sum of E in same vs diff vs exoticity, different  cluster E bins
   TH3F *   fhCellEnSameExo;                     //!<! Cluster E vs cell E in same T-Card vs exoticity
   TH3F *   fhCellEnDiffExo;                     //!<! Cluster E vs cell E in diff T-Card vs exoticity
+  TH3F *   fhCellEnNCellWOpenTime;              //!<! Cluster E vs cell E vs n cells with w > 0, no time cut
+  TH3F *   fhCellEnNCellW;                      //!<! Cluster E vs cell E vs n cells with w > 0
+  TH3F *   fhCellMaxClusterEnRatioNCellWOpenTime;//!<! Cluster E vs E cell max / E cluster vs n cells with w > 0, no time cut
+  TH3F *   fhCellMaxClusterEnRatioNCellW;       //!<!  Cluster E vs E cell max / E cluster vs n cells with w > 0
+  TH3F *   fhCellMaxClusterEnRatioExo;          //!<!  Cluster E vs E cell max / E cluster vs n exoticity
 
+  
   // Cluster column-row
   TH3F *   fhClusterColRowExo[2][fgkNEBins];     //!<! Cluster col-row centred in cell max vs exoticity for different cluster E bins
   //TH2F *   fhClusterColRow   [2][fgkNEBins];     //!<! Cluster col-row centred in cell max for different cluster E bins
@@ -243,7 +273,7 @@ public:
   AliAnaCaloExotics(              const AliAnaCaloExotics & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloExotics,4) ;
+  ClassDef(AliAnaCaloExotics,5) ;
   /// \endcond
 
 } ;

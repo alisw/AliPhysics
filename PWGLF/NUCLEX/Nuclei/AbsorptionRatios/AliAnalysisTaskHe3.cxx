@@ -523,8 +523,8 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
 		// ===================== Multiplicity counter ==========
 		// After track cuts and secondary (DCA) cut
 
-		if (TMath::Abs(track->Charge()) > 0.) { Nch++;} else { cout<< "Track is uncharged. Track charge is :" << track->Charge()<<endl;}
-		cout<< "Nch now : "<< Nch<<endl;
+		//if (TMath::Abs(track->Charge()) > 0.) { Nch++;} else { cout<< "Track is uncharged. Track charge is :" << track->Charge()<<endl;}
+		//cout<< "Nch now : "<< Nch<<endl;
 
 
 

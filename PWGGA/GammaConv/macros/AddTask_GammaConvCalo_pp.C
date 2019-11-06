@@ -894,6 +894,9 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 222){ // EMCAL clusters pp 7 TeV, no SPD pileup
     cuts.AddCutPCMCalo("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std
     cuts.AddCutPCMCalo("00000013","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std - no SPD pileup
+  } else if ( trainConfig == 223){ // EMCAL clusters pp 7 TeV
+    cuts.AddCutPCMCalo("00000113","0dm0000922700000dge0404000","1111a3104f032230000","0163103100000010"); // std
+
   // LHC11cd configs V0OR and V0AND
   } else if ( trainConfig == 250){ // EMCAL clusters 7 TeV LHC11 TM on, +-30ns, std TM, no NL
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","1111100067032230000","0163103100000010"); // MBAND
@@ -925,6 +928,12 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 266){ // EMCAL clusters 7 TeV LHC11 TM on, +-30ns, std TM, TB NL
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","111113406f032230000","0163103100000010"); // MBAND
     cuts.AddCutPCMCalo("00052113","00200009327000008250400000","111113406f032230000","0163103100000010"); // EMC7
+  } else if ( trainConfig == 267){ // EMCAL clusters 7 TeV LHC11 new cuts for PCM + 31 TB NL
+    cuts.AddCutPCMCalo("00010113","0dm0000922700000dge0404000","111113106f032230000","0163103100000010"); // MBAND
+    cuts.AddCutPCMCalo("00052113","0dm0000922700000dge0404000","111113106f032230000","0163103100000010"); // EMC7
+  } else if ( trainConfig == 268){ // EMCAL clusters 7 TeV LHC11 new cuts for PCM + 31 TB NL + SPD cut
+    cuts.AddCutPCMCalo("00010c13","0dm0000922700000dge0404000","111113106f032230000","0163103100000010"); // MBAND
+    cuts.AddCutPCMCalo("00052c13","0dm0000922700000dge0404000","111113106f032230000","0163103100000010"); // EMC7
 
   //multiple std dirGAMMA cuts for different studies
   } else if (trainConfig == 281){ // EMCAL clusters pp 7 TeV
