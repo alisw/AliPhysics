@@ -108,11 +108,14 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   fDeltaPhiVariableIndex(-1),
   fDeltaEtaVariable(AliReducedVarManager::kDeltaEta),
   fDeltaEtaVariableIndex(-1),
-  fEfficiencyVariable(AliReducedVarManager::kAssociatedPt),
-  fEfficiencyVariableIndex(-1),
+  fHadronEfficiencyVariable(AliReducedVarManager::kAssociatedPt),
+  fHadronEfficiencyVariableIndex(-1),
+  fJpsiEff(0.),
+  fJpsiEffErr(0.),
   fVerboseFlag(kFALSE),
   fUseMixingVars(kFALSE),
   fIntegrateDeltaEta(),
+  fUseJpsiEfficiency(kFALSE),
   fResonanceFits(0x0),
   fOptionBkgMethod(kBkgNone),
   fBkgFitFunction(0x0),
@@ -569,12 +572,22 @@ Bool_t AliCorrelationExtraction::Initialize() {
     return kFALSE;
   }
 
-  // check for efficiency variable
+  // check for J/psi efficiency
+  if (fUseJpsiEfficiency && fJpsiEff<=0.) {
+    cout << "AliCorrelationExtraction::Initialize() Fatal: J/psi efficiency correction requested but efficiency unsuitable (eff = " << fJpsiEff << ")!" << endl;
+    return kFALSE;
+  }
+  if (fUseJpsiEfficiency && fHadronEff) {
+    cout << "AliCorrelationExtraction::Initialize() Warning: Hadron efficiency correction requested but expecting 1/efficiency weighted histograms! Switching hadron efficiency correction OFF!" << endl;
+    fHadronEff = NULL;
+  }
+
+  // check for hadron efficiency variable
   if (fHadronEff) {
     for(Int_t i=0; i<fNVariables; ++i) {
-      if (fVariables[i]==fEfficiencyVariable) fEfficiencyVariableIndex = fVarIndices[i];
+      if (fVariables[i]==fHadronEfficiencyVariable) fHadronEfficiencyVariableIndex = fVarIndices[i];
     }
-    if (fEfficiencyVariableIndex<0) {
+    if (fHadronEfficiencyVariableIndex<0) {
       cout << "AliCorrelationExtraction::Initialize() Fatal: Efficiency dimension not found in list of user defined dimensions!" << endl;
       return kFALSE;
     }
@@ -1056,8 +1069,19 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
 
       Double_t bkg    = bkgBinCont/fTrigValSig[kBkg];
       Double_t bkgErr = TMath::Sqrt(TMath::Power(bkgBinErr/fTrigValSig[kBkg], 2) + TMath::Power(bkgBinCont*fTrigValSig[kBkgErr]/fTrigValSig[kBkg]/fTrigValSig[kBkg], 2));
-      Double_t sig    = sigBinCont/fTrigValSig[kSig];
-      Double_t sigErr = TMath::Sqrt(TMath::Power(sigBinErr/fTrigValSig[kSig], 2) + TMath::Power(sigBinCont*fTrigValSig[kSigErr]/fTrigValSig[kSig]/fTrigValSig[kSig], 2));
+
+      Double_t sig    = 0.;
+      Double_t sigErr = 0.;
+      if (fUseJpsiEfficiency) {
+        sig    = fJpsiEff*sigBinCont/fTrigValSig[kSig];
+        sigErr = TMath::Sqrt(TMath::Power(fJpsiEff*sigBinErr/fTrigValSig[kSig], 2) +
+                             TMath::Power(fTrigValSig[kSigErr]*fJpsiEff*sigBinCont/(fTrigValSig[kSig]*fTrigValSig[kSig]), 2) +
+                             TMath::Power(fJpsiEffErr*sigBinCont/fTrigValSig[kSig], 2));
+      } else {
+        sig    = sigBinCont/fTrigValSig[kSig];
+        sigErr = TMath::Sqrt(TMath::Power(sigBinErr/fTrigValSig[kSig], 2) +
+                             TMath::Power(fTrigValSig[kSigErr]*sigBinCont/fTrigValSig[kSig]/fTrigValSig[kSig], 2));
+      }
 
       fBackgroundCF2D->SetBinContent( xBin, yBin, bkg);
       fBackgroundCF2D->SetBinError(   xBin, yBin, bkgErr);
@@ -1337,6 +1361,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperposition() {
   fSignalCF2D->Scale(1-fTrigValBkg[1][kSigFrac]);
   fSignalCF2D->Add(fInclusiveCF2DBackgroundMassWindow[1], -1+fTrigValBkg[0][kSigFrac]);
   fSignalCF2D->Scale(1./(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]));
+  if (fUseJpsiEfficiency) fSignalCF2D->Scale(fJpsiEff);
   
   // re-calculate uncertainties for signal and background correlation
   Double_t inclCFBinCont[2] = {0., 0.};
@@ -1361,15 +1386,29 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperposition() {
       fBackgroundCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errA*errA + errB*errB + errC*errC + errD*errD));
 
       // calculate signal uncertainties
-      Double_t errE = (1-fTrigValBkg[1][kSigFrac])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac])*inclCFBinErr[0];
-      Double_t errF = (1-fTrigValBkg[0][kSigFrac])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac])*inclCFBinErr[1];
-      Double_t errG = (fTrigValBkg[1][kSigFrac]-1)/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
-                      (inclCFBinCont[0]-inclCFBinCont[1])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
-                      fTrigValBkg[0][kSigFracErr];
-      Double_t errH = (fTrigValBkg[0][kSigFrac]-1)/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
-                      (inclCFBinCont[0]-inclCFBinCont[1])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
-                      fTrigValBkg[1][kSigFracErr];
-      fSignalCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errE*errE + errF*errF + errG*errG + errH*errH));
+      if (fUseJpsiEfficiency) {
+        Double_t errE = fJpsiEff*(1-fTrigValBkg[1][kSigFrac])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac])*inclCFBinErr[0];
+        Double_t errF = fJpsiEff*(1-fTrigValBkg[0][kSigFrac])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac])*inclCFBinErr[1];
+        Double_t errG = fJpsiEff*(fTrigValBkg[1][kSigFrac]-1)/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
+                        (inclCFBinCont[0]-inclCFBinCont[1])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
+                        fTrigValBkg[0][kSigFracErr];
+        Double_t errH = fJpsiEff*(fTrigValBkg[0][kSigFrac]-1)/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
+                        (inclCFBinCont[0]-inclCFBinCont[1])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
+                        fTrigValBkg[1][kSigFracErr];
+        Double_t errI = ((1-fTrigValBkg[1][kSigFrac])*inclCFBinCont[0]-
+                         (1-fTrigValBkg[0][kSigFrac])*inclCFBinCont[1])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac])*fJpsiEffErr;
+        fSignalCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errE*errE + errF*errF + errG*errG + errH*errH + errI*errI));
+      } else {
+        Double_t errE = (1-fTrigValBkg[1][kSigFrac])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac])*inclCFBinErr[0];
+        Double_t errF = (1-fTrigValBkg[0][kSigFrac])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac])*inclCFBinErr[1];
+        Double_t errG = (fTrigValBkg[1][kSigFrac]-1)/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
+                        (inclCFBinCont[0]-inclCFBinCont[1])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
+                        fTrigValBkg[0][kSigFracErr];
+        Double_t errH = (fTrigValBkg[0][kSigFrac]-1)/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
+                        (inclCFBinCont[0]-inclCFBinCont[1])/(fTrigValBkg[0][kSigFrac]-fTrigValBkg[1][kSigFrac]) *
+                        fTrigValBkg[1][kSigFracErr];
+        fSignalCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errE*errE + errF*errF + errG*errG + errH*errH));
+      }
     }
   }
 
@@ -1581,6 +1620,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoC
   fSignalCF2D->Add(fCombinatorialBackgroundCF2D[0], fTrigValBkg[0][kBkgCombFrac]*(-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac]));
   fSignalCF2D->Add(fCombinatorialBackgroundCF2D[1], fTrigValBkg[1][kBkgCombFrac]*(1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]));
   fSignalCF2D->Scale(1./norm);
+  if (fUseJpsiEfficiency) fSignalCF2D->Scale(fJpsiEff);
 
   // re-calculate uncertainties for signal and background correlation
   Double_t inclCFBinCont[2] = {0., 0.};
@@ -1632,41 +1672,81 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoC
                                                            errE*errE + errF*errF + errG*errG + errH*errH));
       
       // calculate signal uncertainties
-      Double_t errI = ((inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
-                       ((1-fTrigValBkg[1][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                            (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                            (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                            (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                      fTrigValBkg[0][kSigFracErr];
-      Double_t errJ = ((-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm -
-                       ((-1+fTrigValBkg[0][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                             (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                             (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                             (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                      fTrigValBkg[1][kSigFracErr];
-      Double_t errK = ((-(1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                        bkgCFBinCont[0]+inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
-                       (fTrigValBkg[1][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                    (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                    (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                    (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                      fTrigValBkg[0][kBkgCombFracErr];
-      Double_t errL = (((1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                        bkgCFBinCont[1]-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm +
-                       (fTrigValBkg[0][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                    (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                    (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                    (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                      fTrigValBkg[1][kBkgCombFracErr];
-      Double_t errO = (-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[0];
-      Double_t errP = (-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[1];
-      Double_t errQ = ((-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])*fTrigValBkg[0][kBkgCombFrac])/norm * bkgCFBinErr[0];
-      Double_t errR = ((-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[0][kBkgCombFrac])*fTrigValBkg[1][kBkgCombFrac])/norm * bkgCFBinErr[1];
-      fSignalCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errI*errI + errJ*errJ + errK*errK + errL*errL +
-                                                       errO*errO + errP*errP + errQ*errQ + errR*errR));
+      if (fUseJpsiEfficiency) {
+        Double_t errI = fJpsiEff*((inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
+                         ((1-fTrigValBkg[1][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                                                              (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
+                                                              (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                                                              (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
+                        fTrigValBkg[0][kSigFracErr];
+        Double_t errJ = fJpsiEff*((-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm -
+                         ((-1+fTrigValBkg[0][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                                                               (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
+                                                               (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                                                               (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
+                        fTrigValBkg[1][kSigFracErr];
+        Double_t errK = fJpsiEff*((-(1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                          bkgCFBinCont[0]+inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
+                         (fTrigValBkg[1][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                                                      (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
+                                                      (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                                                      (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
+                        fTrigValBkg[0][kBkgCombFracErr];
+        Double_t errL = fJpsiEff*(((1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                          bkgCFBinCont[1]-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm +
+                         (fTrigValBkg[0][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                                                      (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
+                                                      (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                                                      (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
+                        fTrigValBkg[1][kBkgCombFracErr];
+        Double_t errO = fJpsiEff*(-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[0];
+        Double_t errP = fJpsiEff*(-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[1];
+        Double_t errQ = fJpsiEff*((-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])*fTrigValBkg[0][kBkgCombFrac])/norm * bkgCFBinErr[0];
+        Double_t errR = fJpsiEff*((-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[0][kBkgCombFrac])*fTrigValBkg[1][kBkgCombFrac])/norm * bkgCFBinErr[1];
+        Double_t errS = ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac])*inclCFBinCont[0] -
+                         (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac])*inclCFBinCont[1] -
+                         (1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac])*fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0] +
+                         (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac])*fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])
+                        /(fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kSigFrac]*fTrigValBkg[1][kBkgCombFrac] -
+                          fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kSigFrac]*fTrigValBkg[0][kBkgCombFrac])
+                        *fJpsiEffErr;
+        fSignalCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errI*errI + errJ*errJ + errK*errK + errL*errL + errO*errO + errP*errP + errQ*errQ + errR*errR + errS*errS));
+      } else {
+        Double_t errI = ((inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
+                         ((1-fTrigValBkg[1][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                                                              (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
+                                                              (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                                                              (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
+                        fTrigValBkg[0][kSigFracErr];
+        Double_t errJ = ((-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm -
+                         ((-1+fTrigValBkg[0][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                                                               (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
+                                                               (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                                                               (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
+                        fTrigValBkg[1][kSigFracErr];
+        Double_t errK = ((-(1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                          bkgCFBinCont[0]+inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
+                         (fTrigValBkg[1][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                                                      (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
+                                                      (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                                                      (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
+                        fTrigValBkg[0][kBkgCombFracErr];
+        Double_t errL = (((1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                          bkgCFBinCont[1]-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm +
+                         (fTrigValBkg[0][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
+                                                      (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
+                                                      (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
+                                                      (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
+                        fTrigValBkg[1][kBkgCombFracErr];
+        Double_t errO = (-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[0];
+        Double_t errP = (-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[1];
+        Double_t errQ = ((-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])*fTrigValBkg[0][kBkgCombFrac])/norm * bkgCFBinErr[0];
+        Double_t errR = ((-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[0][kBkgCombFrac])*fTrigValBkg[1][kBkgCombFrac])/norm * bkgCFBinErr[1];
+        fSignalCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errI*errI + errJ*errJ + errK*errK + errL*errL + errO*errO + errP*errP + errQ*errQ + errR*errR));
+      }
     }
   }
-  
+
   // project 1D background correlation from 2D
   fBackgroundCF1D = ProjectToDeltaPhi(fBackgroundCF2D,  "backgroundCF_1D");
   fSignalCF1D     = ProjectToDeltaPhi(fSignalCF2D,      "signalCF_1D");
@@ -1697,6 +1777,7 @@ Bool_t AliCorrelationExtraction::CalculateSignalCorrelation() {
   fSignalCF2D->Scale(fTrigValSig[kSplusB]);
   fSignalCF2D->Add(fBackgroundCF2D, -fTrigValSig[kBkg]);
   fSignalCF2D->Scale(1./fTrigValSig[kSig]);
+  if (fUseJpsiEfficiency) fSignalCF2D->Scale(fJpsiEff);
 
   // calculate uncertainty
   for (Int_t phiBin=1; phiBin<fSignalCF2D->GetNbinsY()+1; ++phiBin) {
@@ -1705,13 +1786,23 @@ Bool_t AliCorrelationExtraction::CalculateSignalCorrelation() {
       Double_t inclCFBinErr   = fInclusiveCF2D->GetBinError(    etaBin, phiBin);
       Double_t bkgCFBinCont   = fBackgroundCF2D->GetBinContent( etaBin, phiBin);
       Double_t bkgCFBinErr    = fBackgroundCF2D->GetBinError(   etaBin, phiBin);
-      Double_t errA = inclCFBinCont/fTrigValSig[kSig]*fTrigValSig[kSplusBErr];
-      Double_t errB = bkgCFBinCont/fTrigValSig[kSig]*fTrigValSig[kBkgErr];
-      Double_t errC = (fTrigValSig[kSplusB]*inclCFBinCont-fTrigValSig[kBkg]*bkgCFBinCont)/TMath::Power(fTrigValSig[kSig], 2)*fTrigValSig[kSigErr];
-      Double_t errD = fTrigValSig[kSplusB]/fTrigValSig[kSig]*inclCFBinErr;
-      Double_t errE = fTrigValSig[kBkg]/fTrigValSig[kSig]*bkgCFBinErr;
-      Double_t signalCFBinErr = TMath::Sqrt(errA*errA + errB*errB + errC*errC + errD*errD + errE*errE);
-      fSignalCF2D->SetBinError(etaBin, phiBin, signalCFBinErr);
+
+      if (fUseJpsiEfficiency) {
+        Double_t errA = fJpsiEff*inclCFBinCont/fTrigValSig[kSig]*fTrigValSig[kSplusBErr];
+        Double_t errB = fJpsiEff*bkgCFBinCont/fTrigValSig[kSig]*fTrigValSig[kBkgErr];
+        Double_t errC = fJpsiEff*(fTrigValSig[kSplusB]*inclCFBinCont-fTrigValSig[kBkg]*bkgCFBinCont)/TMath::Power(fTrigValSig[kSig], 2)*fTrigValSig[kSigErr];
+        Double_t errD = fJpsiEff*fTrigValSig[kSplusB]/fTrigValSig[kSig]*inclCFBinErr;
+        Double_t errE = fJpsiEff*fTrigValSig[kBkg]/fTrigValSig[kSig]*bkgCFBinErr;
+        Double_t errF = (fTrigValSig[kSplusB]*inclCFBinCont-fTrigValSig[kBkg]*bkgCFBinCont)/fTrigValSig[kSig]*fJpsiEffErr;
+        fSignalCF2D->SetBinError(etaBin, phiBin, TMath::Sqrt(errA*errA + errB*errB + errC*errC + errD*errD + errE*errE + errF*errF));
+      } else {
+        Double_t errA = inclCFBinCont/fTrigValSig[kSig]*fTrigValSig[kSplusBErr];
+        Double_t errB = bkgCFBinCont/fTrigValSig[kSig]*fTrigValSig[kBkgErr];
+        Double_t errC = (fTrigValSig[kSplusB]*inclCFBinCont-fTrigValSig[kBkg]*bkgCFBinCont)/TMath::Power(fTrigValSig[kSig], 2)*fTrigValSig[kSigErr];
+        Double_t errD = fTrigValSig[kSplusB]/fTrigValSig[kSig]*inclCFBinErr;
+        Double_t errE = fTrigValSig[kBkg]/fTrigValSig[kSig]*bkgCFBinErr;
+        fSignalCF2D->SetBinError(etaBin, phiBin, TMath::Sqrt(errA*errA + errB*errB + errC*errC + errD*errD + errE*errE));
+      }
     }
   }
   
@@ -1722,15 +1813,15 @@ Bool_t AliCorrelationExtraction::CalculateSignalCorrelation() {
 }
 
 //_______________________________________________________________________________
-Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
+Bool_t AliCorrelationExtraction::HadronEfficiencyCorrection() {
   //
   // correct signal correlation for hadron efficiency
   //
   std::unique_ptr<TH1D> normHist;
-  if (fSEOS)        normHist = std::unique_ptr<TH1D>(static_cast<TH1D*>(fSEOS->Projection(      fEfficiencyVariableIndex, "e")));
-  if (fSEOSSparse)  normHist = std::unique_ptr<TH1D>(static_cast<TH1D*>(fSEOSSparse->Projection(fEfficiencyVariableIndex, "e")));
+  if (fSEOS)        normHist = std::unique_ptr<TH1D>(static_cast<TH1D*>(fSEOS->Projection(      fHadronEfficiencyVariableIndex, "e")));
+  if (fSEOSSparse)  normHist = std::unique_ptr<TH1D>(static_cast<TH1D*>(fSEOSSparse->Projection(fHadronEfficiencyVariableIndex, "e")));
   if (!normHist.get()) {
-    cout << "AliCorrelationExtraction::EfficiencyCorrection() Fatal: There was an issue with the histogram needed for normalization! Efficiency correction can't be applied!" << endl;
+    cout << "AliCorrelationExtraction::HadronEfficiencyCorrection() Fatal: There was an issue with the histogram needed for normalization! Efficiency correction can't be applied!" << endl;
     return kFALSE;
   }
 
@@ -1742,21 +1833,21 @@ Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
   normBins.assign(normBinsArr, normBinsArr+(normHist->GetNbinsX()+1));
   effBins.assign(effBinsArr, effBinsArr+(fHadronEff->GetNbinsX()+1));
   if (fVerboseFlag) {
-    cout << "AliCorrelationExtraction::EfficiencyCorrection() normBins   = {";
+    cout << "AliCorrelationExtraction::HadronEfficiencyCorrection() normBins   = {";
     for (Int_t i=0; i<normBins.size(); ++i) cout << normBins.at(i) << ", ";
     cout << "}" << endl;
-    cout << "AliCorrelationExtraction::EfficiencyCorrection() effBins    = {";
+    cout << "AliCorrelationExtraction::HadronEfficiencyCorrection() effBins    = {";
     for (Int_t i=0; i<effBins.size(); ++i) cout << effBins.at(i) << ", ";
     cout << "}" << endl;
   }
   std::vector<Double_t> commonBins;
   std::set_intersection(normBins.begin(), normBins.end(), effBins.begin(), effBins.end(), std::back_inserter(commonBins));
   if (commonBins.size()<2) {
-    cout << "AliCorrelationExtraction::EfficiencyCorrection() Fatal: No common binning in efficiency and normalization histograms found! Efficiency correction can't be applied!" << endl;
+    cout << "AliCorrelationExtraction::HadronEfficiencyCorrection() Fatal: No common binning in efficiency and normalization histograms found! Efficiency correction can't be applied!" << endl;
     return kFALSE;
   }
   if (fVerboseFlag) {
-    cout << "AliCorrelationExtraction::EfficiencyCorrection() commonBins = {";
+    cout << "AliCorrelationExtraction::HadronEfficiencyCorrection() commonBins = {";
     for (Int_t i=0; i<commonBins.size(); ++i) cout << commonBins.at(i) << ", ";
     cout << "}" << endl;
   }
@@ -1797,7 +1888,7 @@ Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
   Double_t eff    = 1./oneOverEff;
   Double_t effErr = oneOverEffErr/TMath::Power(oneOverEff, 2);
   if (!eff || !effErr) {
-    cout << "AliCorrelationExtraction::EfficiencyCorrection() Fatal: There was an issue with the efficiency calculation! Efficiency correction can't be applied!" << endl;
+    cout << "AliCorrelationExtraction::HadronEfficiencyCorrection() Fatal: There was an issue with the efficiency calculation! Efficiency correction can't be applied!" << endl;
     return kFALSE;
   }
 
@@ -1890,7 +1981,7 @@ Bool_t AliCorrelationExtraction::Process() {
   }
 
   // correct for hadron efficiency
-  if (fHadronEff && fProcessDone) fProcessDone = EfficiencyCorrection();
+  if (fHadronEff && fProcessDone) fProcessDone = HadronEfficiencyCorrection();
 
   return fProcessDone;
 }
@@ -1942,11 +2033,11 @@ void AliCorrelationExtraction::PrintUserOptions() {
       }
     }
   }
-  cout << "fMassVariable       = " << AliReducedVarManager::fgVariableNames[fMassVariable] << ",\tindex = " << fMassVariableIndex << endl;
-  cout << "fDeltaPhiVariable   = " << AliReducedVarManager::fgVariableNames[fDeltaPhiVariable] << ",\tindex = " << fDeltaPhiVariableIndex << endl;
-  cout << "fDeltaEtaVariable   = " << AliReducedVarManager::fgVariableNames[fDeltaEtaVariable] << ",\tindex = " << fDeltaEtaVariableIndex << endl;
+  cout << "fMassVariable              = " << AliReducedVarManager::fgVariableNames[fMassVariable] << ",\tindex = " << fMassVariableIndex << endl;
+  cout << "fDeltaPhiVariable          = " << AliReducedVarManager::fgVariableNames[fDeltaPhiVariable] << ",\tindex = " << fDeltaPhiVariableIndex << endl;
+  cout << "fDeltaEtaVariable          = " << AliReducedVarManager::fgVariableNames[fDeltaEtaVariable] << ",\tindex = " << fDeltaEtaVariableIndex << endl;
   if (fHadronEff)
-    cout << "fEfficiencyVariable = " << AliReducedVarManager::fgVariableNames[fEfficiencyVariable] << ",\tindex = " << fEfficiencyVariableIndex << endl;
+    cout << "fHadronEfficiencyVariable  = " << AliReducedVarManager::fgVariableNames[fHadronEfficiencyVariable] << ",\tindex = " << fHadronEfficiencyVariableIndex << endl;
 
   if (fMassVariableIndexPair>=0) cout << "LS pair mass variable set: index = " << fMassVariableIndexPair << endl;
   cout << "general user options: +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
@@ -1955,6 +2046,9 @@ void AliCorrelationExtraction::PrintUserOptions() {
   cout << "fIntegrateDeltaEta = ";
   for (Int_t i=0; i<kNBackgroundMethods; ++i) cout << fIntegrateDeltaEta[i] << " ";
   cout << endl;
+  cout << "fUseJpsiEfficiency = " << fUseJpsiEfficiency;
+  if (fUseJpsiEfficiency) cout << " (" << fJpsiEff << " +/- " << fJpsiEffErr << ")" << endl;
+  else cout << endl;
   cout << "fResonanceFits     = " << fResonanceFits << " (" << fResonanceFits->GetName() << ")" << endl;
   cout << "fOptionBkgMethod   = " << fOptionBkgMethod << endl;
   if (fBkgFitFunction) cout << "fBkgFitFunction    = " << fBkgFitFunction << " (" << fBkgFitFunction->GetName() << ")" << endl;
