@@ -70,7 +70,27 @@
     else printf("Could not open Pi0Eta correction file \n");
     TH1::AddDirectory(kTRUE);
   }
+
+
+    
+  // Load correction weights for MC background
+  if (IsMC) {
+    TH1::AddDirectory(kFALSE);
+    printf("Loading MCBGCorrectionFiles\n");
+    TString CorrectBGFileName ="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/BGWeights.root";
+    // else if (IsHFE) CorrectPi0EtaFile="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/Pi0EtaWeightsHFE.root";
+    TFile *CorrectBGFile = TFile::Open(CorrectBGFileName.Data());
+    if (!CorrectBGFile->IsZombie()) {    
+      TH2F * BGHist =0;
+      BGHist=(TH2F*)CorrectBGFile->Get("BGWeightHist");
+      if (BGHist) taskMB->SetBGWeight(*BGHist);
+      else printf("Could not load BGWeights\n");
+    }
+    else printf("Could not open BG correction file \n");
+    TH1::AddDirectory(kTRUE);
+  }
   
+
 
 
 

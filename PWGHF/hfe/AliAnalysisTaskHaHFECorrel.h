@@ -192,6 +192,7 @@ public:
 
     void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
     void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
+    void SetBGWeight(TH2F & BGWeight) {fBgWeight = BGWeight; fBgWeight.SetName("fBgWeight");};
     void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");}
     void SetEleRecEff(TH3F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
     //  void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
@@ -558,7 +559,7 @@ public:
     Double_t              GetPionWeight(Double_t pt);
     TH1F                  fCorrectEtatoData;       
     Double_t              GetEtaWeight(Double_t pt);
-    TH1F                  fBgWeight;       
+    TH2F                  fBgWeight;       
     Double_t              GetBackgroundWeight(Int_t PDGMother, Double_t pt);
    
 

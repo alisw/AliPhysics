@@ -3760,9 +3760,7 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
   
 
   AliAODTrack *AODtrack = dynamic_cast<AliAODTrack*>(Vtrack);
-  if(!AODtrack) return;
-
-  lsPartner=0;
+  if(!AODtrack) return;  lsPartner=0;
   ulsPartner=0;
   trueULSPartner=kFALSE; // only for MC use
   Int_t ntracks = -999;
@@ -5482,6 +5480,8 @@ void AliAnalysisTaskHaHFECorrel::MCEfficiencyCorrections(const AliVVertex * RecV
 	  else if (mcPDG==221) fMCEtaProd->Fill(fillSparse);
 	  else if (mcPDG==211) fMCPiPlusProd->Fill(fillSparse);
 	  else{
+	    // if (mcPart->IsSecondaryFromWeakDecay()) cout<< "SecFromWeakDecay" << mcPDG << "\t" << endl; // mcMotherPDG << endl;
+	    // else cout << "primary" << endl;
 	    fillSparse[4]=fillSparse[3]; //Mother
 	    fillSparse[3]=PDGMap.find(mcPDG)->second;
 	    fMCBGProd->Fill(fillSparse);
@@ -6215,12 +6215,13 @@ Double_t AliAnalysisTaskHaHFECorrel::GetPionWeight(Double_t pt) {
 Double_t AliAnalysisTaskHaHFECorrel::GetBackgroundWeight(Int_t PDGMother, Double_t pt) {
 
   if (fBgWeight.IsZombie()) {
-    cout<< "Zombie Histogram" << endl;
+    // cout<< "Zombie Histogram" << endl;
     return 1.;
   }
   Int_t Bin = fBgWeight.FindBin(1.*PDGMother, pt);
   if (fBgWeight.IsBinUnderflow(Bin) || fBgWeight.IsBinOverflow(Bin)){
-    //    cout << "BGWeightDef1 " << PDGMother << "\t" << 1. << endl;
+    //  cout << "BGWeightDef1 " << PDGMother << "\t" << 1. << endl;
+ 
     return 1.;
   }
   //  cout << "BGWeight " << PDGMother << "\t" << fBgWeight.GetBinContent(Bin) << endl;  
