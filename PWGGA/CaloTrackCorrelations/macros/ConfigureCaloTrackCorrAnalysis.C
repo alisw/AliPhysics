@@ -1586,7 +1586,7 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
   if ( simulation ) 
     ana->SetConstantTimeShift(615);
   
-  ana->SetEMinForExo(100);
+  ana->SetEMinForExo(30);
 
   ana->SetCellAmpMin(0.3);
     

@@ -565,7 +565,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       fhFracNCellDiffSame5Exo  ->Fill(en, fracNCellDiffSame5  , GetEventWeight());
       fhFracEnNCellDiffSame5Exo->Fill(en, fracEnNCellDiffSame5, GetEventWeight());
       
-      if ( en > 20 )
+      if ( en > fEMinForExo )
       {
         fhFracEnDiffSameEnCut      ->Fill(fracEnDiffSame      , GetEventWeight()); 
         fhFracNCellDiffSameEnCut   ->Fill(fracNCellDiffSame   , GetEventWeight());
@@ -592,7 +592,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
         fhNCellsPerClusterAllSameTCard->Fill(en, nCaloCellsPerCluster, GetEventWeight());
         fhExoticityEClusAllSameTCard  ->Fill(en, exoticity           , GetEventWeight());
         fhM02EnergyAllSameTCard       ->Fill(en, m02                 , GetEventWeight());
-        if ( en > 20 )
+        if ( en > fEMinForExo )
           fhEtaPhiGridExoEnCutSameFracCut->Fill(icolMaxAbs, irowMaxAbs, exoticity, GetEventWeight());
       }
       
@@ -1186,47 +1186,65 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   
   //
   fhFracEnDiffSameEnCut    = new TH1F 
-  ("hFracEnDiffSameEnCut","cell #Sigma #it{E}_{diff}/#Sigma #it{E}_{same}, #it{E}_{cluster} > 20, #it{n}_{cluster}^{cell} > 1",1000,0,10);
+  ("hFracEnDiffSameEnCut",
+   Form("cell #Sigma #it{E}_{diff}/#Sigma #it{E}_{same}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+   1000,0,10);
   fhFracEnDiffSameEnCut->SetXTitle("#Sigma #it{E}_{diff}/#Sigma #it{E}_{same}");
   outputContainer->Add(fhFracEnDiffSameEnCut);  
   
   fhFracNCellDiffSameEnCut = new TH1F 
-  ("hFracNCellDiffSameEnCut","cell #it{n}_{diff}/#it{n}_{same}, #it{E}_{cluster} > 20, #it{n}_{cluster}^{cell} > 1",1000,0,10); 
+  ("hFracNCellDiffSameEnCut",
+   Form("cell #it{n}_{diff}/#it{n}_{same}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+   1000,0,10); 
   fhFracNCellDiffSameEnCut->SetXTitle("#it{n}_{diff}/#it{n}_{same}");
   outputContainer->Add(fhFracNCellDiffSameEnCut); 
   
   fhFracEnNCellDiffSameEnCut = new TH1F 
-  ("hFracEnNCellDiffSameEncut","cell (#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same}), #it{E}_{cluster} > 20, #it{n}_{cluster}^{cell} > 1",1000,0,10);
+  ("hFracEnNCellDiffSameEncut",
+   Form("cell (#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same}), #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+   1000,0,10);
   fhFracEnNCellDiffSame->SetXTitle("(#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same})");
   outputContainer->Add(fhFracEnNCellDiffSameEnCut); 
   
   fhFracEnDiffSameWEnCut    = new TH1F 
-  ("hFracEnDiffSameWEnCut","cell #Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}} #it{E}_{cluster} > 20, #it{n}_{cluster}^{cell} > 1",1000,0,10);
+  ("hFracEnDiffSameWEnCut",
+   Form("cell #Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}} #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+   1000,0,10);
   fhFracEnDiffSameWEnCut->SetXTitle("#Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}}");
   outputContainer->Add(fhFracEnDiffSameWEnCut);  
   
   fhFracNCellDiffSameWEnCut = new TH1F 
-  ("hFracNCellDiffSameWEnCut","cell #it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}} #it{E}_{cluster} > 20, #it{n}_{cluster}^{cell} > 1",1000,0,10);
+  ("hFracNCellDiffSameWEnCut",
+   Form("cell #it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}} #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+   1000,0,10);
   fhFracNCellDiffSameWEnCut->SetXTitle("#it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}}");
   outputContainer->Add(fhFracNCellDiffSameWEnCut); 
   
   fhFracEnNCellDiffSameWEnCut = new TH1F 
-  ("hFracEnNCellDiffSameWEnCut","cell (#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})#it{E}_{cluster} > 20, #it{n}_{cluster}^{cell} > 1",1000,0,10); 
+  ("hFracEnNCellDiffSameWEnCut",
+   Form("cell (#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})#it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+   1000,0,10); 
   fhFracEnNCellDiffSameWEnCut->SetXTitle("(#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})");
   outputContainer->Add(fhFracEnNCellDiffSameWEnCut); 
   
   fhFracEnDiffSame5EnCut    = new TH1F 
-  ("hFracEnDiffSame5EnCut","cell #Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}, #it{E}_{cluster} > 20, #it{n}_{cluster}^{cell} > 1",1000,0,10);
+  ("hFracEnDiffSame5EnCut",
+   Form("cell #Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+   1000,0,10);
   fhFracEnDiffSame5EnCut->SetXTitle("#Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}");
   outputContainer->Add(fhFracEnDiffSame5EnCut);  
   
   fhFracNCellDiffSame5EnCut = new TH1F 
-  ("hFracNCellDiffSame5EnCut","cell #it{n}_{diff}^{next}/#it{n}_{same}^{next}, #it{E}_{cluster} > 20, #it{n}_{cluster}^{cell} > 1",1000,0,10);
+  ("hFracNCellDiffSame5EnCut",
+   Form("cell #it{n}_{diff}^{next}/#it{n}_{same}^{next}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+   1000,0,10);
   fhFracNCellDiffSame5EnCut->SetXTitle("#it{n}_{diff}^{next}/#it{n}_{same}^{next}");
   outputContainer->Add(fhFracNCellDiffSame5EnCut); 
   
   fhFracEnNCellDiffSame5EnCut = new TH1F 
-  ("hFracEnNCellDiffSame5EnCut","cell (#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})#it{E}_{cluster} > 20, #it{n}_{cluster}^{cell} > 1",1000,0,10);
+  ("hFracEnNCellDiffSame5EnCut",
+   Form("cell (#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})#it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+   1000,0,10);
   fhFracEnNCellDiffSame5EnCut->SetXTitle("(#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})");
   outputContainer->Add(fhFracEnNCellDiffSame5EnCut); 
   
@@ -1320,7 +1338,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   
   fhEtaPhiGridExoEnCutSameFracCut = new TH3F 
   ("hEtaPhiGridExoEnCutSameFracCut",
-   Form("colum (#eta) vs row (#varphi) vs #it{F}_{+}, #it{E}_{cluster}> %2.1f, #it{n}_{cells}>1, #it{n}_{cells}^{same}/(#it{n}_{cells}-1)=1",20.0),
+   Form("colum (#eta) vs row (#varphi) vs #it{F}_{+}, #it{E}_{cluster}> %2.1f, #it{n}_{cells}>1, #it{n}_{cells}^{same}/(#it{n}_{cells}-1)=1",fEMinForExo),
    ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nexobinsS,exominS,exomaxS); 
   fhEtaPhiGridExoEnCutSameFracCut->SetXTitle("column-#eta ");
   fhEtaPhiGridExoEnCutSameFracCut->SetYTitle("row-#varphi (rad)");
