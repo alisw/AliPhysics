@@ -165,7 +165,6 @@ public:
   TH3F *   fhM02EnergyNCell;                    //!<! Cluster M02 vs Energy vs n cells
   TH2F *   fhM02EnergyAllSameTCard;             //!<! Cluster M02 vs Energy, all cells in same T-Card
   TH3F *   fhM02EnergyExo;                      //!<! Cluster M02 vs Energy vs exoticity
-  TH3F *   fhM02EnergyExoZoomIn;                //!<! Cluster M02 vs Energy vs exoticity, finer binning in exotic region
   TH3F *   fhM20EnergyExoM02MinCut;             //!<! Cluster M20 vs Energy vs exoticity for M02 > 0.1
   TH3F *   fhM02ExoNCells[fgkNEBins];           //!<! Cluster M02 vs exoticity vs n cells, different E bins
   
