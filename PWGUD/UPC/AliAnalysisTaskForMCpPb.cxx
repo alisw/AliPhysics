@@ -566,7 +566,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
     fCounterUPCevent += 1;
     fMCEfficiencyPerRunH->Fill( Form("%d", fRunNum) , 1 );
   }
-  if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000 ) ) {
+  if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 100.0 ) ) {
         PostData(1, fOutputList);
         return;
   }
