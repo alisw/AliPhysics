@@ -66,6 +66,10 @@ public:
     void            SetStackLoop(Bool_t runStackLoop) {fFlagRunStackLoop = runStackLoop;};
     void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;};
     void            SetDCAzCut(Double_t dcaZCut) {fDCAzCut = dcaZCut;};
+    void            SetMassCut(Double_t minM, Double_t maxM) {
+                        fMinMass = minM;
+                        fMaxMass = maxM;
+                    };
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     void            SetTrkMatch(Double_t maxTrkMatch) {fTrkMatch = maxTrkMatch;};
@@ -120,6 +124,8 @@ private:
     Bool_t              fFlagRunStackLoop; //switch to run stack loop to get D & B meson species info
     Int_t               fNclusTPC;       // set number of TPC clusters
     Double_t            fDCAzCut;        // set DCA z cut
+    Double_t            fMinMass;        // set min inv mass
+    Double_t            fMaxMass;        // set max inv mass
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
     Double_t            fTrkMatch; //set distance to cluster
