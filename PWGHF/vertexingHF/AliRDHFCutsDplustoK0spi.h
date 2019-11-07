@@ -45,6 +45,8 @@ public:
 
    using   AliRDHFCuts::IsSelectedPID;
    virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
+   
+   Bool_t PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack);
 
    using   AliRDHFCuts::IsInFiducialAcceptance;
    virtual Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y) const;
