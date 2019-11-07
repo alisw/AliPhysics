@@ -1803,7 +1803,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2P
   Bool_t okD0FromDstar=kFALSE;
   Bool_t refill =kTRUE;
   rd->SetNProngs();
-  rd= Make2Prong(twoTrackArray1, event, vtxRec, dca12, okD0, okJPSI, okD0FromDstar,refill,rd);
+  rd= Make2Prong(twoTrackArray1, event, vtxRec, dca12, okD0, okJPSI, okD0FromDstar, kFALSE, refill, rd);
   rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
   rd->SetIsFilled(2);
   delete fV1; fV1=0;
@@ -2207,7 +2207,7 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   // (which inherits from AliAODRecoDecayHF2Prong)
   AliAODRecoCascadeHF *theCascade =
     (AliAODRecoCascadeHF*)Make2Prong(twoTrackArray,event,secVert,dca,
-				     dummy1,dummy2,dummy3);
+				     dummy1,dummy2,dummy3,kTRUE);
   if(!theCascade) return 0x0;
 
   // bachelor track and charge
@@ -2275,7 +2275,8 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
 							    TObjArray *twoTrackArray,AliVEvent *event,
 							    AliAODVertex *secVert,Double_t dca,
 							    Bool_t &okD0,Bool_t &okJPSI,
-							    Bool_t &okD0fromDstar, Bool_t refill, AliAODRecoDecayHF2Prong *rd)
+							    Bool_t &okD0fromDstar, Bool_t callFromCascade,
+							    Bool_t refill, AliAODRecoDecayHF2Prong *rd)
 {
   /// Make 2Prong candidates and check if they pass D0toKpi or BtoJPSI
   /// reconstruction cuts
@@ -2298,58 +2299,81 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   GetTrackMomentumAtSecVert(negtrack,secVert,momentum);
   px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
 
-  if(!refill){//skip if it is called in refill step because already checked
-    // invariant mass cut (try to improve coding here..)
+  if(!refill && !callFromCascade){
+    //skip if it is called in refill step or for V0+bachelor because already checked
     Bool_t okMassCut=kFALSE;
     if(!okMassCut && fD0toKpi)   if(SelectInvMassAndPtD0Kpi(px,py,pz))     okMassCut=kTRUE;
     if(!okMassCut && fJPSItoEle) if(SelectInvMassAndPtJpsiee(px,py,pz))    okMassCut=kTRUE;
     if(!okMassCut && fDstar)     if(SelectInvMassAndPtDstarD0pi(px,py,pz)) okMassCut=kTRUE;
-    if(!okMassCut && fCascades)  if(SelectInvMassAndPtCascade(px,py,pz))   okMassCut=kTRUE;
     if(!okMassCut) {
       //AliDebug(2," candidate didn't pass mass cut");
       return 0x0;
     }
   }
   // primary vertex to be used by this candidate
-  AliAODVertex *primVertexAOD  = PrimaryVertex(twoTrackArray,event);
-  if(!primVertexAOD) return 0x0;
-
-  Double_t d0z0[2],covd0z0[3];
-  postrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
-  d0[0] = d0z0[0];
-  d0err[0] = TMath::Sqrt(covd0z0[0]);
-  negtrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
-  d0[1] = d0z0[0];
-  d0err[1] = TMath::Sqrt(covd0z0[0]);
+  AliAODVertex *primVertexAOD  = 0x0;
+  Float_t d0z0f[2],covd0z0f[3];
+  if(!refill && !fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
+    postrack->GetImpactParameters(d0z0f,covd0z0f);
+    d0[0]=d0z0f[0];
+    d0err[0] = TMath::Sqrt(covd0z0f[0]);
+    negtrack->GetImpactParameters(d0z0f,covd0z0f);
+    d0[1]=d0z0f[0];
+    d0err[1] = TMath::Sqrt(covd0z0f[0]);
+  }else{
+    primVertexAOD  = PrimaryVertex(twoTrackArray,event);
+    if(!primVertexAOD) return 0x0;
+    Double_t d0z0[2],covd0z0[3];
+    if(postrack->Charge()!=0){
+      postrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
+      d0[0] = d0z0[0];
+      d0err[0] = TMath::Sqrt(covd0z0[0]);
+    }else{
+      postrack->GetImpactParameters(d0z0f,covd0z0f);
+      d0[0]=d0z0f[0];
+      d0err[0] = TMath::Sqrt(covd0z0f[0]);
+    }
+    if(negtrack->Charge()!=0){
+      negtrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
+      d0[1] = d0z0[0];
+      d0err[1] = TMath::Sqrt(covd0z0[0]);
+    }else{
+      negtrack->GetImpactParameters(d0z0f,covd0z0f);
+      d0[1]=d0z0f[0];
+      d0err[1] = TMath::Sqrt(covd0z0f[0]);
+    }
+  }
+  
   AliAODRecoDecayHF2Prong *the2Prong;
   // create the object AliAODRecoDecayHF2Prong
   if(!refill){
     the2Prong = new AliAODRecoDecayHF2Prong(secVert,px,py,pz,d0,d0err,dca);
-    the2Prong->SetOwnPrimaryVtx(primVertexAOD);
+    if(primVertexAOD) the2Prong->SetOwnPrimaryVtx(primVertexAOD);
+    else the2Prong->SetOwnPrimaryVtx(fV1AOD);
     UShort_t id[2]={(UShort_t)postrack->GetID(),(UShort_t)negtrack->GetID()};
     the2Prong->SetProngIDs(2,id);
-     if(postrack->Charge()!=0 && negtrack->Charge()!=0) { // don't apply these cuts if it's a Dstar
-    // Add daughter references already here
-    if(fInputAOD) AddDaughterRefs(secVert,(AliAODEvent*)event,twoTrackArray);
+    if(postrack->Charge()!=0 && negtrack->Charge()!=0) { // don't apply these cuts if it's a D* or a V0+bachelor
+      // Add daughter references already here
+      if(fInputAOD) AddDaughterRefs(secVert,(AliAODEvent*)event,twoTrackArray);
 
-    // select D0->Kpi
-    if(fD0toKpi)   {
-      okD0 = (Bool_t)fCutsD0toKpi->IsSelected(the2Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event);
-      if(okD0) the2Prong->SetSelectionBit(AliRDHFCuts::kD0toKpiCuts);
+      // select D0->Kpi
+      if(fD0toKpi)   {
+	okD0 = (Bool_t)fCutsD0toKpi->IsSelected(the2Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event);
+	if(okD0) the2Prong->SetSelectionBit(AliRDHFCuts::kD0toKpiCuts);
+      }
+      //if(fDebug && fD0toKpi) printf("   %d\n",(Int_t)okD0);
+      // select J/psi from B
+      if(fJPSItoEle)   {
+	okJPSI = (Bool_t)fCutsJpsitoee->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
+      }
+      //if(fDebug && fJPSItoEle) printf("   %d\n",(Int_t)okJPSI);
+      // select D0->Kpi from Dstar
+      if(fDstar)   {
+	okD0fromDstar = (Bool_t)fCutsDStartoKpipi->IsD0FromDStarSelected(the2Prong->Pt(),the2Prong,AliRDHFCuts::kCandidate);
+	if(okD0fromDstar) the2Prong->SetSelectionBit(AliRDHFCuts::kD0fromDstarCuts);
+      }
+      //if(fDebug && fDstar) printf("   %d\n",(Int_t)okD0fromDstar);
     }
-    //if(fDebug && fD0toKpi) printf("   %d\n",(Int_t)okD0);
-    // select J/psi from B
-    if(fJPSItoEle)   {
-      okJPSI = (Bool_t)fCutsJpsitoee->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
-    }
-    //if(fDebug && fJPSItoEle) printf("   %d\n",(Int_t)okJPSI);
-    // select D0->Kpi from Dstar
-    if(fDstar)   {
-      okD0fromDstar = (Bool_t)fCutsDStartoKpipi->IsD0FromDStarSelected(the2Prong->Pt(),the2Prong,AliRDHFCuts::kCandidate);
-      if(okD0fromDstar) the2Prong->SetSelectionBit(AliRDHFCuts::kD0fromDstarCuts);
-    }
-    //if(fDebug && fDstar) printf("   %d\n",(Int_t)okD0fromDstar);
-  }
   }else{
     the2Prong =rd;
     the2Prong->SetSecondaryVtx(secVert);
@@ -2362,7 +2386,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
     the2Prong->Setd0errProngs(2,d0err);
     the2Prong->SetCharge(0);
   }
-  delete primVertexAOD; primVertexAOD=NULL;
+  if(primVertexAOD){ delete primVertexAOD; primVertexAOD=NULL;}
 
   // remove the primary vertex (was used only for selection)
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent) {
