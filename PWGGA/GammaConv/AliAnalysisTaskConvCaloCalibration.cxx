@@ -114,9 +114,6 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoClusGammaE(NULL),
   fHistoClusGammaPtSM(NULL),
   fHistoClusGammaESM(NULL),
-  fHistoClusOverlapHeadersGammaPt(NULL),
-  fHistoClusAllHeadersGammaPt(NULL),
-  fHistoClusRejectedHeadersGammaPt(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -225,9 +222,6 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoClusGammaE(NULL),
   fHistoClusGammaPtSM(NULL),
   fHistoClusGammaESM(NULL),
-  fHistoClusOverlapHeadersGammaPt(NULL),
-  fHistoClusAllHeadersGammaPt(NULL),
-  fHistoClusRejectedHeadersGammaPt(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -802,9 +796,6 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
           if (fHistoClusGammaPt[iCut]) fHistoClusGammaPt[iCut]->Sumw2();
           if (fHistoClusGammaE[iCut]) fHistoClusGammaE[iCut]->Sumw2();
-          if (fHistoClusOverlapHeadersGammaPt[iCut]) fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
-          if (fHistoClusAllHeadersGammaPt[iCut]) fHistoClusAllHeadersGammaPt[iCut]->Sumw2();
-          if (fHistoClusRejectedHeadersGammaPt[iCut]) fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
         }
       }
     }
@@ -859,7 +850,9 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     if (fIsMC > 1){
       fHistoMotherInvMassPt[iCut]->Sumw2();
       fHistoMotherBackInvMassPt[iCut]->Sumw2();
-      if (fHistoMotherMatchedInvMassPt[iCut]) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
+      if (fMesonRecoMode == 1){
+        if (fHistoMotherMatchedInvMassPt[iCut]) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
+      }
     }
 
     if (fDoMesonQA > 0 ){
@@ -909,8 +902,8 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     }
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
-  
-    
+
+
     //********************************************************************************************************//
     //*****************************  NOT NEEDED FOR CALIBRATION???    ****************************************//
     //********************************************************************************************************//
