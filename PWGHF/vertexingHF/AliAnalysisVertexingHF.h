@@ -410,6 +410,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t SelectInvMassAndPt3prong(TObjArray *trkArray);
   Bool_t SelectInvMassAndPt4prong(TObjArray *trkArray);
   Bool_t SelectInvMassAndPtDstarD0pi(TObjArray *trkArray);
+  Bool_t SelectInvMassAndPtCascade(TObjArray *trkArray);
 
   void   SelectTracksAndCopyVertex(const AliVEvent *event,Int_t trkEntries,
 				   TObjArray &seleTrksArray,
