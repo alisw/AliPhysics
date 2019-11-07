@@ -122,6 +122,16 @@ public:
   
   TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
   
+  // Histograms
+  
+  TH1F *   fhNClusterPerEventNCellHigh20;        //!<! NCells > 20 per event
+  TH1F *   fhNClusterPerEventNCellHigh12;        //!<! NCells > 12 per event
+  
+  TH1F *   fhNClusterPerEventExotic;             //!<! F+ > 0.97  and E > 5 GeV per event
+  TH1F *   fhNClusterPerEventExotic1Cell;        //!<! ncell = 1  and E > 5 GeV per event
+  TH1F *   fhNClusterPerEventExoticNCell;        //!<! F+ > 0.97 and ncell > 1 and E > 5 GeV per event
+ 
+  //
   // Calorimeter Clusters
     
   TH2F *   fhExoticityEClus;                    //!<! Exoticity vs cluster energy
@@ -268,6 +278,7 @@ public:
   
   TH2F *   fhEOverP1Cell;                       //!<! E/p for track-cluster matches, n cells = 1
   
+  //  
   // Calorimeter cells
     
   TH2F *   fhCellExoAmp;                        //!<! Cell amplitude vs exoticity
