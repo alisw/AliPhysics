@@ -5835,6 +5835,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         if(fClusterType==2) { //13 TeV PCM-PHOS Exponential function fitted
             // energy /= FunctionNL_kSDM(energy, 0.964058, -2.46552, -0.384301); //old
             energy /= FunctionNL_kSDM(energy, 0.966115, -2.7256, -1.02957, 1.0);
+            energy /= 1.022224;
         }
         if(fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
@@ -5862,6 +5863,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
           if(fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
+          } else if(fClusterType==2) {
+            energy /= 1.022224;
           }
         }
       }
@@ -5949,6 +5952,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==2) { //13 TeV PHOS-PHOS Exponential function fitted
               //energy /= FunctionNL_kSDM(energy, 0.967918, -2.81051, -1.04303, 1.0); //old
               energy /= FunctionNL_kSDM(energy, 0.972774, -2.77133, -1.39596, 1.0);
+              energy /= 1.022224;
           }
           if(fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
@@ -5968,6 +5972,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
           if(fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
+          } else if(fClusterType==2) {
+            energy /= 1.022224;
           }
         }
       }
