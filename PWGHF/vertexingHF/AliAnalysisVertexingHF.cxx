@@ -2324,6 +2324,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
     primVertexAOD  = PrimaryVertex(twoTrackArray,event);
     if(!primVertexAOD) return 0x0;
     Double_t d0z0[2],covd0z0[3];
+    // do not prapagate neutral tracks, which are there for D* and V0+bachelor candidates
     if(postrack->Charge()!=0){
       postrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
       d0[0] = d0z0[0];
