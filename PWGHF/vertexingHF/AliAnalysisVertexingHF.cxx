@@ -562,7 +562,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   AliAODRecoCascadeHF     *ioCascade = 0;
 
   Int_t    iTrkP1,iTrkP2,iTrkN1,iTrkN2,iTrkSoftPi,trkEntries,iv0,nv0;
-  Double_t xdummy,ydummy,dcap1n1,dcap1n2,dcap2n1,dcap1p2,dcan1n2,dcap2n2,dcaV0,dcaCasc;
+  Double_t xdummy,ydummy,dcap1n1,dcap1n2,dcap2n1,dcap1p2,dcan1n2,dcap2n2,dcaCasc;
   Bool_t   okD0=kFALSE,okJPSI=kFALSE,ok3Prong=kFALSE,ok4Prong=kFALSE;
   Bool_t   okDstar=kFALSE,okD0fromDstar=kFALSE;
   Bool_t   okCascades=kFALSE;
@@ -731,9 +731,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
           v0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
 	  twoTrackArrayV0->Clear();
         }
-
-        // Get the V0 dca
-        dcaV0 = v0->DcaV0Daughters();
 
         // Define the V0 (neutral) track
         AliNeutralTrackParam *trackV0=NULL;
