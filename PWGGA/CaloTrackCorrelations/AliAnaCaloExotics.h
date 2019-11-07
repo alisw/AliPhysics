@@ -124,13 +124,21 @@ public:
   
   // Histograms
   
-  TH1F *   fhNClusterPerEventNCellHigh20;        //!<! NCells > 20 per event
-  TH1F *   fhNClusterPerEventNCellHigh12;        //!<! NCells > 12 per event
+  TH1F *   fhNClusterPerEventNCellHigh20;        //!<! N clusters with NCells > 20 per event
+  TH1F *   fhNClusterPerEventNCellHigh12;        //!<! N clusters with NCells > 12 per event
   
-  TH1F *   fhNClusterPerEventExotic;             //!<! F+ > 0.97  and E > 5 GeV per event
-  TH1F *   fhNClusterPerEventExotic1Cell;        //!<! ncell = 1  and E > 5 GeV per event
-  TH1F *   fhNClusterPerEventExoticNCell;        //!<! F+ > 0.97 and ncell > 1 and E > 5 GeV per event
+  TH1F *   fhNClusterPerEventExotic;             //!<! N clusters with F+ > 0.97  and E > 5 GeV per event
+  TH1F *   fhNClusterPerEventExotic1Cell;        //!<! N clusters with ncell = 1  and E > 5 GeV per event
+  TH1F *   fhNClusterPerEventExoticNCell;        //!<! N clusters with F+ > 0.97 and ncell > 1 and E > 5 GeV per event
  
+  
+  TH2F *   fh2NClusterPerEventNCellHigh20;        //!<! N clusters total vs with NCells > 20 per event
+  TH2F *   fh2NClusterPerEventNCellHigh12;        //!<! N clusters total vs with NCells > 12 per event
+  
+  TH2F *   fh2NClusterPerEventExotic;             //!<! N clusters total vs with F+ > 0.97  and E > 5 GeV per event
+  TH2F *   fh2NClusterPerEventExotic1Cell;        //!<! N clusters total vs with ncell = 1  and E > 5 GeV per event
+  TH2F *   fh2NClusterPerEventExoticNCell;        //!<! N clusters total vs with F+ > 0.97 and ncell > 1 and E > 5 GeV per event
+  TH2F *   fh2NClusterPerEventExoticAmpMax;       //!<! Highest energy exotic amp max vs n clusters
   //
   // Calorimeter Clusters
     
