@@ -779,10 +779,10 @@ TObjString * AliAnaCaloExotics::GetAnalysisCuts()
   snprintf(onePar,buffersize,"NcellsW > %d;",fNCellHighCut) ;
   parList+=onePar ;
   
-  snprintf(onePar,buffersize,"%2.0f < time < %2.0f;",fTimeCutMin,fTimeCutMax) ;
+  snprintf(onePar,buffersize,"%2.0f < time < %2.0f ns;",fTimeCutMin,fTimeCutMax) ;
   parList+=onePar ;
  
-  snprintf(onePar,buffersize,"time shift = %2.0f;",fCellAmpMin) ;
+  snprintf(onePar,buffersize,"time shift = %2.0f;",fConstantTimeShift) ;
   parList+=onePar ;
   
   snprintf(onePar,buffersize,"fill cell histo: %d;",fFillCellHisto) ;
