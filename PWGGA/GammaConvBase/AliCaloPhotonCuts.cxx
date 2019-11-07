@@ -6763,6 +6763,16 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         }
       }
       break;
+    case 59: //PHOS data shift + finetuning based on symmetric decays PHOS
+      if (fClusterType == 2){
+        if(isMC == 0){
+          energy /= 1.012;
+        } else {
+          energy /= FunctionNL_DPOW(energy, 0.9566250057, 0.0443087138, -0.3580211849, 1.0135534518, -0.0003626298, -3.6314926044 );
+          energy /= 1.012;
+        }
+      }
+      break;
 
 // *************** 60 + x **** modified tender Settings 2 - pPb
 // PCM-EDC based nonlinearity kSDM
@@ -6833,7 +6843,16 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         }
       }
       break;
-
+    case 69: //PHOS data shift + finetuning based on PCM-PHOS
+      if (fClusterType == 2){
+        if(isMC == 0){
+          energy /= 1.012;
+        } else {
+          energy /= FunctionNL_DPOW(energy, 0.9516188999, 0.0430079212, -0.4999998720, 1.0095759080, 0.0010000001, 0.0800000000 );
+          energy /= 1.012;
+        }
+      }
+      break;
 
 // *************** 70 + x **** default tender Settings - PbPb
 

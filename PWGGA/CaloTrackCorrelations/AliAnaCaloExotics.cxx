@@ -60,6 +60,11 @@ fhNClusterPerEventNCellHigh20(0),      fhNClusterPerEventNCellHigh12(0),
 fhNClusterPerEventExotic(0),           
 fhNClusterPerEventExotic1Cell(0),      fhNClusterPerEventExoticNCell(0),
 
+fh2NClusterPerEventNCellHigh20(0),     fh2NClusterPerEventNCellHigh12(0),        
+fh2NClusterPerEventExotic(0),           
+fh2NClusterPerEventExotic1Cell(0),     fh2NClusterPerEventExoticNCell(0),
+fh2NClusterPerEventExoticAmpMax(0),
+
 fhExoticityEClus(0),                   fhExoticityEClusAllSameTCard(0),
 fhExoticityEClusPerSM(0),              fhExoticityEMaxCell(0),
 fhExoticityEClusTrackMatch(0),         fhExoticity1Cell(0),
@@ -246,6 +251,8 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
   Int_t nExotic      = 0;
   Int_t nExotic1Cell = 0;
   Int_t nExoticNCell = 0;
+
+  Float_t highestAmpMaxExo = 0;
   
   AliDebug(1,Form("In %s there are %d clusters", GetCalorimeterString().Data(), nCaloClusters));
   
@@ -396,6 +403,12 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       if ( exoticity > 0.97 && nCaloCellsPerCluster > 1 ) nExoticNCell++;
     }
     
+    if ( exoticity > 0.97 && ampMax > highestAmpMaxExo ) 
+    {
+      //printf("Exotic en %f, amp %f\n",en,ampMax);
+      highestAmpMaxExo = ampMax;
+    }
+  
     //
     // Fill histograms related to single cluster 
     //
@@ -750,6 +763,16 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
   fhNClusterPerEventExotic     ->Fill(nExotic     , GetEventWeight());
   fhNClusterPerEventExotic1Cell->Fill(nExotic1Cell, GetEventWeight());
   fhNClusterPerEventExoticNCell->Fill(nExoticNCell, GetEventWeight());
+  
+  fh2NClusterPerEventNCellHigh20->Fill(nCaloClusters, nNCellW20   , GetEventWeight());      
+  fh2NClusterPerEventNCellHigh12->Fill(nCaloClusters, nNCellW12   , GetEventWeight());        
+  fh2NClusterPerEventExotic     ->Fill(nCaloClusters, nExotic     , GetEventWeight());
+  fh2NClusterPerEventExotic1Cell->Fill(nCaloClusters, nExotic1Cell, GetEventWeight());
+  fh2NClusterPerEventExoticNCell->Fill(nCaloClusters, nExoticNCell, GetEventWeight());
+  
+  //if ( highestAmpMaxExo > 0 ) printf("Exotic final amp %f\n",highestAmpMaxExo);
+
+  fh2NClusterPerEventExoticAmpMax->Fill(highestAmpMaxExo, nCaloClusters, GetEventWeight());
 }
 
 
@@ -997,7 +1020,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   ("hNClusterPerEventNCellHigh20",
    "#it{n}_{cluster} per event with #it{n}_{cell}^{w} > 20",
    200,0,200); 
-  fhNClusterPerEventNCellHigh20->SetXTitle("#it{n}_{cluster}");
+  fhNClusterPerEventNCellHigh20->SetXTitle("#it{n}_{cluster}^{#it{n}_{cell}^{w} > 20}");
   fhNClusterPerEventNCellHigh20->SetYTitle("Counts per event");
   outputContainer->Add(fhNClusterPerEventNCellHigh20);
  
@@ -1005,7 +1028,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   ("hNClusterPerEventNCellHigh12",
    "#it{n}_{cluster} per event with #it{n}_{cell}^{w} > 12",
    200,0,200); 
-  fhNClusterPerEventNCellHigh12->SetXTitle("#it{n}_{cluster}");
+  fhNClusterPerEventNCellHigh12->SetXTitle("#it{n}_{cluster}^{#it{n}_{cell}^{w} > 12}");
   fhNClusterPerEventNCellHigh12->SetYTitle("Counts per event");
   outputContainer->Add(fhNClusterPerEventNCellHigh12);
   
@@ -1013,7 +1036,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   ("hNClusterPerEventExotic",
    "#it{n}_{cluster} per event with #it{E} > 5 GeV, #it{F}_{+} > 0.97",
    200,0,200); 
-  fhNClusterPerEventExotic->SetXTitle("#it{n}_{cluster}");
+  fhNClusterPerEventExotic->SetXTitle("#it{n}_{cluster}^{#it{F}_{+} > 0.97}");
   fhNClusterPerEventExotic->SetYTitle("Counts per event");
   outputContainer->Add(fhNClusterPerEventExotic);
   
@@ -1021,7 +1044,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   ("hNClusterPerEventExotic1Cell",
    "#it{n}_{cluster} per event with #it{E} > 5 GeV, #it{n}_{cells} = 1",
    200,0,200); 
-  fhNClusterPerEventExotic1Cell->SetXTitle("#it{n}_{cluster}");
+  fhNClusterPerEventExotic1Cell->SetXTitle("#it{n}_{cluster}^{#it{n}_{cells} = 1}");
   fhNClusterPerEventExotic1Cell->SetYTitle("Counts per event");
   outputContainer->Add(fhNClusterPerEventExotic1Cell);
 
@@ -1029,9 +1052,65 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   ("hNClusterPerEventExoticNCell",
    "#it{n}_{cluster} per event with #it{E} > 5 GeV, #it{n}_{cells} > 1, #it{F}_{+} > 0.97",
    200,0,200); 
-  fhNClusterPerEventExoticNCell->SetXTitle("#it{n}_{cluster}");
+  fhNClusterPerEventExoticNCell->SetXTitle("#it{n}_{cluster}^{#it{F}_{+} > 0.97, #it{n}_{cells} > 1}");
   fhNClusterPerEventExoticNCell->SetYTitle("Counts per event");
   outputContainer->Add(fhNClusterPerEventExoticNCell);
+  
+  //////////
+  
+  fh2NClusterPerEventNCellHigh20 = new TH2F 
+  ("h2NClusterPerEventNCellHigh20",
+   "#it{n}_{cluster} per event with #it{n}_{cell}^{w} > 20",
+   200,0,200,200,0,200); 
+  fh2NClusterPerEventNCellHigh20->SetXTitle("#it{n}_{cluster}");
+  fh2NClusterPerEventNCellHigh20->SetYTitle("#it{n}_{cluster}^{#it{n}_{cell}^{w} > 20}");
+  fh2NClusterPerEventNCellHigh20->SetZTitle("Counts per event");
+  outputContainer->Add(fh2NClusterPerEventNCellHigh20);
+  
+  fh2NClusterPerEventNCellHigh12 = new TH2F 
+  ("h2NClusterPerEventNCellHigh12",
+   "#it{n}_{cluster} per event, total vs with #it{n}_{cell}^{w} > 12",
+   200,0,200,200,0,200); 
+  fh2NClusterPerEventNCellHigh12->SetXTitle("#it{n}_{cluster}");
+  fh2NClusterPerEventNCellHigh12->SetYTitle("#it{n}_{cluster}^{#it{n}_{cell}^{w} > 12}");
+  fh2NClusterPerEventNCellHigh12->SetZTitle("Counts per event");
+  outputContainer->Add(fh2NClusterPerEventNCellHigh12);
+  
+  fh2NClusterPerEventExotic = new TH2F 
+  ("h2NClusterPerEventExotic",
+   "#it{n}_{cluster} per event, total vs with #it{E} > 5 GeV, #it{F}_{+} > 0.97",
+   200,0,200,200,0,200); 
+  fh2NClusterPerEventExotic->SetXTitle("#it{n}_{cluster}");
+  fh2NClusterPerEventExotic->SetYTitle("#it{n}_{cluster}^{#it{F}_{+} > 0.97}");
+  fh2NClusterPerEventExotic->SetZTitle("Counts per event");
+  outputContainer->Add(fh2NClusterPerEventExotic);
+  
+  fh2NClusterPerEventExotic1Cell = new TH2F 
+  ("h2NClusterPerEventExotic1Cell",
+   "#it{n}_{cluster} per event, total vs with #it{E} > 5 GeV, #it{n}_{cells} = 1",
+   200,0,200,200,0,200); 
+  fh2NClusterPerEventExotic1Cell->SetXTitle("#it{n}_{cluster}");
+  fh2NClusterPerEventExotic1Cell->SetYTitle("#it{n}_{cluster}^{#it{n}_{cells} = 1}");
+  fh2NClusterPerEventExotic1Cell->SetZTitle("Counts per event");
+  outputContainer->Add(fh2NClusterPerEventExotic1Cell);
+  
+  fh2NClusterPerEventExoticNCell = new TH2F 
+  ("h2NClusterPerEventExoticNCell",
+   "#it{n}_{cluster} per event, total vs with #it{E} > 5 GeV, #it{n}_{cells} > 1, #it{F}_{+} > 0.97",
+   200,0,200,200,0,200); 
+  fh2NClusterPerEventExoticNCell->SetXTitle("#it{n}_{cluster}");
+  fh2NClusterPerEventExoticNCell->SetYTitle("#it{n}_{cluster}^{#it{F}_{+} > 0.97, #it{n}_{cells} > 1}");
+  fh2NClusterPerEventExoticNCell->SetZTitle("Counts per event");
+  outputContainer->Add(fh2NClusterPerEventExoticNCell);
+  
+  fh2NClusterPerEventExoticAmpMax  = new TH2F 
+  ("h2NClusterPerEventExoticAmpMax",
+   "#it{n}_{cluster} per event vs highest energy cluster cell with #it{F}_{+} > 0.97",
+   nptbins,ptmin,ptmax,100,0,100); 
+  fh2NClusterPerEventExoticAmpMax->SetXTitle("#it{E}_{cell}^{#it{F}_{+} > 0.97}");
+  fh2NClusterPerEventExoticAmpMax->SetYTitle("#it{n}_{cluster}");
+  fh2NClusterPerEventExoticAmpMax->SetZTitle("Counts per event");
+  outputContainer->Add(fh2NClusterPerEventExoticAmpMax);
   
   // Cluster Exoticity 2D
   //
