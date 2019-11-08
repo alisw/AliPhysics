@@ -75,7 +75,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH2I *hV0decision;		//!
   
   Float_t fPtDaughter[2], fPtGenDaughter[2];
-  Float_t fPt, fY, fM, fPhi, fPtGen, fYGen, fMGen, fPhiGen, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma, fTrackLenght[6];
+  Float_t fPt, fY, fM, fPhi, fPtGen, fYGen, fMGen, fPhiGen, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma, fTrackLenght[6], fTrackPhiPos[4];
   Int_t fChannel, fSign, fRunNumber, fADAdecision, fADCdecision,fV0Adecision, fV0Cdecision, fNGoodTracksITS, fNGoodTracksLoose, fNGoodTracksDCA;
   Bool_t fTriggerInputsMC[NTRIGGERINPUTS], fTriggers[NTRIGGERS], fInEtaGen, fInEtaRec;
   
@@ -90,7 +90,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 30); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 31); 
 };
 
 #endif
