@@ -174,7 +174,7 @@ public:
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
     void FillRecHistograms(int jetflavour, double jetpt, double eta, double phi);
     void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen);
-    void FillIPTypePtHists(int jetflavour, double jetpt, int nTracks);
+    void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks);
     void FillTrackTypeResHists();
 
     //________________________________
@@ -459,7 +459,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 43)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 44)
 };
 
 #endif
