@@ -495,14 +495,14 @@ void AliAnalysisTaskHFJetIPQA::FillGenHistograms(int jetflavour, AliEmcalJet* je
 }
 
 
-void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, int nTracks){
+void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks){
     //Fill histograms for jets which have largest, second largest and third largest impact parameter
     //tracks passing the selection criterion
 
     const char * subtype[5] = {"Unidentified","udsg","c","b","s"};
 
     for (Int_t iN = 1 ; iN <=3 ;++iN){
-      if(nTracks<=iN) continue;
+      if(!nTracks[iN]) continue;
       FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",iN,"all"),jetpt,1);     //*this->fXsectionWeightingFactor );
 
       if(jetflavour==0) continue;
@@ -974,9 +974,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 //if(hasIPs[2])printf("N=3: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(2).first, sImpParXYSig.at(2).second, sImpParXYSig.at(2).trackLabel, sImpParXYSig.at(2).trackpt);
                 //printf("*********************************************************\n");
 
-                if(hasIPs[0])FillHist("fh1dTrackPt_n_1_all_Accepted",sImpParXYSig.at(0).trackpt,1);
-                if(hasIPs[1])FillHist("fh1dTrackPt_n_2_all_Accepted",sImpParXYSig.at(1).trackpt,1);
-                if(hasIPs[2])FillHist("fh1dTrackPt_n_3_all_Accepted",sImpParXYSig.at(2).trackpt,1);
+                //if(hasIPs[0])FillHist("fh1dTrackPt_n_1_all_Accepted",sImpParXYSig.at(0).trackpt,1);
+                //if(hasIPs[1])FillHist("fh1dTrackPt_n_2_all_Accepted",sImpParXYSig.at(1).trackpt,1);
+                //if(hasIPs[2])FillHist("fh1dTrackPt_n_3_all_Accepted",sImpParXYSig.at(2).trackpt,1);
+                FillIPTypePtHists(jetflavour, jetpt, hasIPs);
 
                 /*if(fFillCorrelations || fUseTreeForCorrelations){
                     FillCorrelations(hasIPs,ipval,jetpt);
@@ -1474,12 +1475,12 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     h2DProbDistss=(TH2D*)AddHistogramm("h2DProbDistss","h2DProbDistsS",200, 0, 1,500, 0, 250);
     h2DProbDists=(TH2D*)AddHistogramm("h2DProbDists","h2DProbDistsAll",200, 0, 1,500, 0, 250);
   
-    h2DLNProbDistsUnid=(TH2D*)AddHistogramm("h2DLNProbDistsUnid","h2DProbDistsUnid",200, 0, 1,500, 0, 250);
-    h2DLNProbDistsudsg=(TH2D*)AddHistogramm("h2DLNProbDistsudsg","h2DProbDistsUDSG",200, 0, 1,500, 0, 250);
-    h2DLNProbDistsc=(TH2D*)AddHistogramm("h2DLNProbDistsc","h2DProbDistsC",200, 0, 1,500, 0, 250);
-    h2DLNProbDistsb=(TH2D*)AddHistogramm("h2DLNProbDistsb","h2DProbDistsB",200, 0, 1,500, 0, 250);
-    h2DLNProbDistss=(TH2D*)AddHistogramm("h2DLNProbDistss","h2DProbDistsS",200, 0, 1,500, 0, 250);
-    h2DLNProbDists=(TH2D*)AddHistogramm("h2DLNProbDists","h2DProbDistsAll",200, 0, 1,500, 0, 250);
+    h2DLNProbDistsUnid=(TH2D*)AddHistogramm("h2DLNProbDistsUnid","h2DProbDistsUnid",200, 0, 15,500, 0, 250);
+    h2DLNProbDistsudsg=(TH2D*)AddHistogramm("h2DLNProbDistsudsg","h2DProbDistsUDSG",200, 0, 15,500, 0, 250);
+    h2DLNProbDistsc=(TH2D*)AddHistogramm("h2DLNProbDistsc","h2DProbDistsC",200, 0, 15,500, 0, 250);
+    h2DLNProbDistsb=(TH2D*)AddHistogramm("h2DLNProbDistsb","h2DProbDistsB",200, 0, 15,500, 0, 250);
+    h2DLNProbDistss=(TH2D*)AddHistogramm("h2DLNProbDistss","h2DProbDistsS",200, 0, 15,500, 0, 250);
+    h2DLNProbDists=(TH2D*)AddHistogramm("h2DLNProbDists","h2DProbDistsAll",200, 0, 15,500, 0, 250);
 
   }
   for(int iThresh=0;iThresh<fNThresholds;iThresh++){
