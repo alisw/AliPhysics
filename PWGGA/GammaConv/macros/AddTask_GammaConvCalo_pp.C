@@ -187,6 +187,7 @@ void AddTask_GammaConvCalo_pp(
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
+  if (enableLightOutput == 5) task->SetECalibOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   if(trainConfig >= 850 && trainConfig < 860) task->SetDoHBTHistoOutput(kTRUE);
@@ -2795,7 +2796,7 @@ void AddTask_GammaConvCalo_pp(
         analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
     }
-    if (enableLightOutput > 0 && enableLightOutput < 3) analysisCuts[i]->SetLightOutput(kTRUE);
+    if ((enableLightOutput > 0 && enableLightOutput < 3) || (enableLightOutput ==5 )) analysisCuts[i]->SetLightOutput(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
@@ -2806,7 +2807,7 @@ void AddTask_GammaConvCalo_pp(
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
-    if (enableLightOutput > 0 && enableLightOutput < 3) analysisClusterCuts[i]->SetLightOutput(kTRUE);
+    if ((enableLightOutput > 0 && enableLightOutput < 3) || (enableLightOutput ==5 )) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);

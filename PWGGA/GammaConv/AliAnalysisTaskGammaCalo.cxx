@@ -434,6 +434,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fiCut(0),
   fIsHeavyIon(0),
   fDoLightOutput(kFALSE),
+  fDoECalibOutput(kFALSE),
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
   fDoClusterQA(0),
@@ -836,6 +837,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fiCut(0),
   fIsHeavyIon(0),
   fDoLightOutput(kFALSE),
+  fDoECalibOutput(kFALSE),
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
   fDoClusterQA(0),
@@ -1273,7 +1275,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   if(fDoMesonAnalysis){
     fHistoMotherInvMassPt           = new TH2F*[fnCuts];
     fHistoMotherBackInvMassPt       = new TH2F*[fnCuts];
-    if(!fDoLightOutput || fDoPi0Only){
+    if(!fDoLightOutput || fDoPi0Only || fDoECalibOutput){
       fHistoMotherInvMassECalib         = new TH2F*[fnCuts];
       fHistoMotherBackInvMassECalib     = new TH2F*[fnCuts];
     }
@@ -1632,7 +1634,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMotherBackInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
       fHistoMotherBackInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoMotherBackInvMassPt[iCut]);
-      if(!fDoLightOutput || fDoPi0Only){
+      if(!fDoLightOutput || fDoPi0Only || fDoECalibOutput){
         fHistoMotherInvMassECalib[iCut]         = new TH2F("ESD_Mother_InvMass_E_Calib", "ESD_Mother_InvMass_E_Calib", 300, 0, 0.3, nBinsPt, arrPtBinning);
         fHistoMotherInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
         fHistoMotherInvMassECalib[iCut]->SetYTitle("E_{cluster}(GeV)");
@@ -1646,7 +1648,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       if (fIsMC > 1){
         fHistoMotherInvMassPt[iCut]->Sumw2();
         fHistoMotherBackInvMassPt[iCut]->Sumw2();
-        if(!fDoLightOutput || fDoPi0Only){
+        if(!fDoLightOutput || fDoPi0Only || fDoECalibOutput){
           fHistoMotherInvMassECalib[iCut]->Sumw2();
           fHistoMotherBackInvMassECalib[iCut]->Sumw2();
         }
@@ -5171,7 +5173,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             }
           }
           // fill new histograms
-          if((!fDoLightOutput || fDoPi0Only) && TMath::Abs(pi0cand->GetAlpha())<0.1){
+          if((!fDoLightOutput || fDoPi0Only || fDoECalibOutput) && TMath::Abs(pi0cand->GetAlpha())<0.1){
             fHistoMotherInvMassECalib[fiCut]->Fill(pi0cand->M(),pi0cand->E(),tempPi0CandWeight);
           }
 
@@ -6596,7 +6598,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
               Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
               fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
             }
-            if((!fDoLightOutput || fDoPi0Only) && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
+            if((!fDoLightOutput || fDoPi0Only || fDoECalibOutput) && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
               fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempBGCandidateWeight);
             }
 
@@ -6711,7 +6713,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                       Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                       fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
                     }
-                    if((!fDoLightOutput || fDoPi0Only) && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
+                    if((!fDoLightOutput || fDoPi0Only || fDoECalibOutput) && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
                       fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempBGCandidateWeight);
                     }
 
