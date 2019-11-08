@@ -265,6 +265,8 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
          pion_1_rm_neg_lbl,
          pion_1_use_tpctof;
 
+  ULong_t pion_1_ideal_pid;
+
   // PION - 2
   Float_t pion_2_PtMin,
           pion_2_PtMax;

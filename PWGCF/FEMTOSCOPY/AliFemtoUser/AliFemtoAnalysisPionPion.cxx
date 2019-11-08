@@ -207,6 +207,8 @@ struct CutConfig_Pion {
            use_tpctof = kTRUE,
            remove_kinks = kTRUE;
 
+    Int_t ideal_pid = 211;
+
     /// default constructor required to use default initialized members
     CutConfig_Pion(){};
 };
@@ -428,6 +430,8 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   , pion_1_rm_neg_lbl(default_pion.remove_negative_label)
   , pion_1_use_tpctof(default_pion.use_tpctof)
 
+  , pion_1_ideal_pid(default_pion.ideal_pid)
+
     // Pion 2
   , pion_2_PtMin(default_pion.pt.first)
   , pion_2_PtMax(default_pion.pt.second)
@@ -515,6 +519,10 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
     cut->rchi2_tpc_max = p.pion_1_max_tpc_chi_ndof;
     cut->rchi2_its_max = p.pion_1_max_its_chi_ndof;
     cut->remove_neg_label = p.pion_1_rm_neg_lbl;
+
+    if (auto *ideal_cut = dynamic_cast<AliFemtoTrackCutPionPionIdealAK*>(cut)) {
+      ideal_cut->ideal_pid = p.pion_1_ideal_pid;
+    }
 
     return cut;
   }
