@@ -1092,13 +1092,15 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   if(fDoMesonAnalysis){
     fHistoMotherInvMassPt             = new TH2F*[fnCuts];
     fHistoMotherBackInvMassPt         = new TH2F*[fnCuts];
-    if(!fDoLightOutput || fDoECalibOutput){
+    if(!fDoLightOutput){
       fHistoMotherMatchedInvMassPt      = new TH2F*[fnCuts];
       fHistoMotherInvMassPtAlpha        = new TH2F*[fnCuts];
       fHistoPhotonPairPtconv            = new TH2F*[fnCuts];
       fHistoPhotonPairMixedEventPtconv  = new TH2F*[fnCuts];
-      fHistoMotherInvMassECalib         = new TH2F*[fnCuts];
-      fHistoMotherBackInvMassECalib     = new TH2F*[fnCuts];
+    }
+    if(!fDoLightOutput || fDoECalibOutput){
+        fHistoMotherInvMassECalib         = new TH2F*[fnCuts];
+        fHistoMotherBackInvMassECalib     = new TH2F*[fnCuts];
     }
     if (fDoMesonQA > 0){
       fHistoMotherPi0PtY              = new TH2F*[fnCuts];
