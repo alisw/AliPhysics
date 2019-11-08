@@ -2196,7 +2196,15 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   Double_t dummyd0[2]={0,0};
   Double_t dummyd0err[2]={0,0};
   AliAODRecoCascadeHF tmpCasc(0x0,postrack->Charge(),px, py, pz, dummyd0, dummyd0err,0.);
-  Bool_t presel=fCutsLctoV0->PreSelect(&tmpCasc,v0,postrack);
+  // pre-selection with cuts not requiring the full AOD cascade object
+  Bool_t presel=kFALSE;
+  if(fCutsLctoV0->PreSelect(&tmpCasc,v0,postrack)) presel=kTRUE;
+  if(!presel && fCutsDplustoK0spi){
+    if(fCutsDplustoK0spi->PreSelect(&tmpCasc,v0,postrack)) presel=kTRUE;
+  }
+  if(!presel && fCutsDstoK0sK){
+    if(fCutsDplustoK0spi->PreSelect(&tmpCasc,v0,postrack)) presel=kTRUE;
+  }
   if(!presel) return 0x0;
 
   //  AliDebug(2,Form("         building the cascade"));
