@@ -503,8 +503,12 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
     cut->max_xy = p.pion_1_max_impact_xy;
     cut->max_z = p.pion_1_max_impact_z;
     cut->tof_kaon_reject_sigma = p.pion_1_kreject_sigma;
-    cut->tof_momentum_limit = p.pion_1_tof_limit;
-    cut->tof_sigma_pion = p.pion_1_tof_sigma;
+    cut->tof_kaon_momentum_limit = p.pion_1_tof_limit;
+    // cut->tof_sigma_pion = p.pion_1_tof_sigma;
+
+    cut->tof_proton_reject_sigma = p.pion_1_preject_sigma;
+    cut->tof_proton_momentum_limit = p.pion_1_tof_p_momentum_limit;
+
     cut->tpc_sigma_pion = p.pion_1_sigma;
     cut->electron_tpc_sigma_min = p.pion_1_ereject_sigma;
     cut->rchi2_tpc_min = p.pion_1_min_tpc_chi_ndof;

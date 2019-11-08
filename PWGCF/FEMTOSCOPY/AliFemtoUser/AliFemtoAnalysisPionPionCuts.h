@@ -45,11 +45,14 @@ typedef TrackSelectionCut<
           AddTrackCutAttrs< TrackCutAttrImpact,
           AddTrackCutAttrs< TrackCutAttrPt,
           AddTrackCutAttrs< TrackCutAttrEta,
+
+          // PID cuts
           AddTrackCutAttrs< TrackCutAttrChi2TPC,
           AddTrackCutAttrs< TrackCutAttrChi2ITS,
           AddTrackCutAttrs< TrackCutAttrRejectKaonTofSigma,
+          AddTrackCutAttrs< TrackCutAttrRejectProtonTofSigma,
                             TrackCutAttrTpcSigmaPion
-                            > > > > > > >
+                            > > > > > > > >
 
         > TrackCutAttrsAK;
 
