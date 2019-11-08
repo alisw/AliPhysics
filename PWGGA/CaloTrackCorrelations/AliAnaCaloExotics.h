@@ -80,6 +80,12 @@ public:
   void         SetEBinLimit(Int_t i, Float_t en) 
                            { if ( i < fgkNEBins && i >= 0 ) fEnergyBins[i] = en ; }
 
+//  Float_t      GetCellMinEnergy(Int_t i) const  
+//                           { if ( i < fgkNCellMinEnBins && i >= 0 ) return fCellMinEnBins[i] ;
+//    else                           return -1     ; }
+//  void         SetCellMinEnergy(Int_t i, Float_t en) 
+//                           { if ( i < fgkNCellMinEnBins && i >= 0 ) fCellMinEnBins[i] = en ; }
+  
   void         SwitchOnFill1CellHisto()     { fFill1CellHisto    = kTRUE  ; }
   void         SwitchOffFill1CellHisto()    { fFill1CellHisto    = kFALSE ; }
  
@@ -107,10 +113,18 @@ public:
   Float_t  fTimeCutMin  ;                       ///<  Remove clusters with time smaller than this value, in ns
   Float_t  fTimeCutMax  ;                       ///<  Remove clusters with time larger than this value, in ns
   
+  Bool_t    fLED20      ;                      ///<  There is at least a cluster with 20 cells with w > 0 in the event; internal
+  Bool_t    fLED12      ;                      ///<  There is at least a cluster with 12 cells with w > 0 in the event; internal
+  Float_t   fLED20Time  ;                      ///<  Time of LED cluster with 20 cells 
+  Float_t   fLED12Time  ;                      ///<  Time of LED cluster with 12 cells
+  
   /// Total number of cluster energy bins histograms
   static const Int_t fgkNEBins = 12;
-  
   Float_t  fEnergyBins[fgkNEBins];              ///<  Energy bins for some histograms
+  
+//  /// Total number of cell in cluster minimum  energy
+//  static const Int_t fgkNCellMinEnBins = 10;
+//  Float_t  fCellMinEnBins[fgkNCellMinEnBins];   ///<  Energy bins for some histograms 
   
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
  
@@ -142,6 +156,9 @@ public:
   //
   // Calorimeter Clusters
     
+  //TH2F *   fhExoticityECellMinCut[fgkNCellMinEnBins]; //!<! Exoticity vs cluster energy. Exoticity calculated with different cell energy thresholds
+  TH3F *   fhExoticityECellMinCut;              //!<! Exoticity vs Min E cell threshold vs cluster energy
+  
   TH2F *   fhExoticityEClus;                    //!<! Exoticity vs cluster energy
   TH2F *   fhExoticityEClusAllSameTCard;        //!<! Exoticity vs energy, all cells in same T-Card
   TH3F *   fhExoticityEClusPerSM;               //!<! Exoticity vs cluster energy, per SM
@@ -292,8 +309,11 @@ public:
   TH2F *   fhCellExoAmp;                        //!<! Cell amplitude vs exoticity
   TH3F *   fhCellExoAmpTime;                    //!<! Cell amplitude vs time vs exoticity
   TH3F *   fhCellExoGrid ;                      //!<! Cells ordered in column/row vs exoticity when amplitude > fEMinForExo 
-
-
+  TH3F *   fhCellGridTimeHighNCell20 ;          //!<! Cells ordered in column/row vs cluster time when at least 1 cluster n cellsW > 20
+  TH3F *   fhCellGridTimeHighNCell12 ;          //!<! Cells ordered in column/row vs cluster time when at least 1 cluster n cellsW > 12
+  TH2F *   fhCellTimeNCell20 ;                  //!<! Cells time vs cluster time, for events with a cluster with n cellsW > 20
+  TH2F *   fhCellTimeNCell12 ;                  //!<! Cells time vs cluster time, for events with a cluster with n cellsW > 12
+  
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;
     
@@ -301,7 +321,7 @@ public:
   AliAnaCaloExotics(              const AliAnaCaloExotics & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloExotics,5) ;
+  ClassDef(AliAnaCaloExotics,6) ;
   /// \endcond
 
 } ;
