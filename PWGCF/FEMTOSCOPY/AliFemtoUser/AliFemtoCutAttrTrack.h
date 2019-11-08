@@ -703,6 +703,8 @@ struct TrackCutAttrRejectKaonTofSigma {
   virtual ~TrackCutAttrRejectKaonTofSigma()
     { }
 };
+
+
 /// Cut away Kaon TOF sigma
 struct TrackCutAttrRejectProtonTofSigma {
 

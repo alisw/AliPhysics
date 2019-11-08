@@ -21,15 +21,15 @@ class AliFemtoEvent;
 
 
 /// \namespace AliFemtoCutMonitorPionPion
-/// \brief A set of standard cut monitors used by the pion-pion femtoscopy
-///        analysis
+/// \brief A set of standard cut monitors used by the pion-pion
+///        femtoscopy analysis
 ///
-/// This namespace contains cut monitors used by the AliFemtoAnalysisPionPion
-/// class.
+/// This namespace contains cut monitors used by the
+/// AliFemtoAnalysisPionPion class.
 ///
-/// Because of the specialization for pion+pion particles, these classes
-/// are not expected to be used in any other analysis, but may be used as a
-/// model for other specializations.
+/// Because of the specialization for pion+pion particles, these
+/// classes are not expected to be used in any other analysis, but
+/// may be used as a model for other specializations.
 ///
 /// Currently this namespace contains three cut monitors:
 ///   * Event
@@ -45,13 +45,15 @@ namespace AliFemtoCutMonitorPionPion {
   class Event : public AliFemtoCutMonitor {
   public:
 
-    /// Construct event cut monitor with knowledge if a passing or failing cut.
+    /// Construct event cut monitor with knowledge if a passing or
+    /// failing cut.
     ///
-    /// \param passing: This will set the correct pass/fail word in histogram
-    ///                titles.
+    /// \param passing: This will set the correct pass/fail word
+    ///        in histogram titles.
     ///
-    /// \param suffix_output: If true, this will put a _P or _F at the end of
-    ///   all the histogram names - required if not grouping output lists.
+    /// \param suffix_output: If true, this will put a _P or _F at
+    ///        the end of all the histogram names - required if not
+    ///        grouping output lists.
     ///
     Event(const bool passing,
           const bool is_identical_analysis=kFALSE,
@@ -61,8 +63,8 @@ namespace AliFemtoCutMonitorPionPion {
     /// Return list of Histograms to be placed in output file.
     virtual TList* GetOutputList();
 
-    /// Called at beginning of event processing. Used to reset the collection
-    /// size counters.
+    /// Called at beginning of event processing. Used to reset the
+    /// collection size counters.
     virtual void EventBegin(const AliFemtoEvent*);
     virtual void EventEnd(const AliFemtoEvent*);
 
@@ -133,6 +135,7 @@ namespace AliFemtoCutMonitorPionPion {
     TH2F *fNsigTof;
     TH2F *fNsigTpc;
     TH2F *fNsigKaonTof;
+    TH2F *fNsigProtonTof;
     TH2F *fImpact;
 
     TH2F *fEtaY;
