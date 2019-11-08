@@ -239,6 +239,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   , fNsigTof(nullptr)
   , fNsigTpc(nullptr)
   , fNsigKaonTof(nullptr)
+  , fNsigProtonTof(nullptr)
   , fImpact(nullptr)
   , fEtaY(nullptr)
   , fMC_mass(nullptr)
@@ -341,7 +342,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
 
   fNsigTof = new TH2F(
     hist_name("NsigTof"),
-    hist_title("TOF NSigma vs p",
+    hist_title("TOF NSigma_{pion} vs p",
                "p (GeV);"
                "TOF #sigma;"
                "N_{tracks}"),
@@ -350,7 +351,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
 
   fNsigTpc = new TH2F(
     hist_name("NsigTpc"),
-    hist_title("TPC NSigma vs p",
+    hist_title("TPC NSigma_{pion} vs p",
                "p (GeV);"
                "TPC #sigma;"
                "N_{tracks}"),
@@ -360,6 +361,15 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   fNsigKaonTof = new TH2F(
     hist_name("NsigKaonTof"),
     hist_title("TOF NSigma_{kaon} vs p",
+               "p (GeV);"
+               "TOF #sigma;"
+               "N_{tracks}"),
+    128, 0, 4.0,
+    sig_nbins, -sig_max*3, sig_max*2);
+
+  fNsigProtonTof = new TH2F(
+    hist_name("NsigProtonTof"),
+    hist_title("TOF NSigma_{proton} vs p",
                "p (GeV);"
                "TOF #sigma;"
                "N_{tracks}"),
@@ -479,6 +489,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const Pion &orig):
   , fNsigTof(static_cast<TH2F*>(orig.fNsigTof->Clone()))
   , fNsigTpc(static_cast<TH2F*>(orig.fNsigTpc->Clone()))
   , fNsigKaonTof(static_cast<TH2F*>(orig.fNsigKaonTof->Clone()))
+  , fNsigProtonTof(static_cast<TH2F*>(orig.fNsigProtonTof->Clone()))
   , fImpact(static_cast<TH2F*>(orig.fImpact->Clone()))
   , fEtaY(static_cast<TH2F*>(orig.fEtaY->Clone()))
   , fMC_mass(static_cast<TH1F*>(orig.fMC_mass ? orig.fMC_mass->Clone(): nullptr))
@@ -507,6 +518,7 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fNsigTof);
   output->Add(fNsigTpc);
   output->Add(fNsigKaonTof);
+  output->Add(fNsigProtonTof);
   output->Add(fImpact);
   output->Add(fEtaY);
   if (fMC_type) {
@@ -582,6 +594,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fNsigTof->Fill(p, track->NSigmaTOFPi());
   fNsigTpc->Fill(p, track->NSigmaTPCPi());
   fNsigKaonTof->Fill(p, track->NSigmaTOFK());
+  fNsigProtonTof->Fill(p, track->NSigmaTOFP());
 
   fChi2Tpc->Fill(TPC_ncls > 0 ? track->TPCchi2() / TPC_ncls : -1.0);
   fChi2Its->Fill(ITS_ncls > 0 ? track->ITSchi2() / ITS_ncls : -1.0);
