@@ -954,15 +954,16 @@ void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
 /// \param absID: cell absolute ID naumber
 /// \param cells: total list of cells in calo
 /// \param bc: bunch crossing number
+/// \param cellMinEn: minimum cell energy in sum of cells
 ///
 //______________________________________________________________________________________
-Float_t AliCalorimeterUtils::GetECross(Int_t absID, AliVCaloCells* cells, Int_t bc)
+Float_t AliCalorimeterUtils::GetECross(Int_t absID, AliVCaloCells* cells, Int_t bc, Float_t cellMinEn )
 {
   if ( cells->IsEMCAL() ) 
   {
     Double_t tcell = cells->GetCellTime(absID);
  
-    return fEMCALRecoUtils->GetECross(absID,tcell,cells,bc);
+    return fEMCALRecoUtils->GetECross(absID,tcell,cells,bc,cellMinEn);
   }
   else // PHOS
   { 
@@ -983,10 +984,15 @@ Float_t AliCalorimeterUtils::GetECross(Int_t absID, AliVCaloCells* cells, Int_t 
     
     Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
     
-    if(absId1 > 0 ) ecell1 = cells->GetCellAmplitude(absId1);
-    if(absId2 > 0 ) ecell2 = cells->GetCellAmplitude(absId2);
-    if(absId3 > 0 ) ecell3 = cells->GetCellAmplitude(absId3);
-    if(absId4 > 0 ) ecell4 = cells->GetCellAmplitude(absId4);
+    if ( absId1 > 0 ) ecell1 = cells->GetCellAmplitude(absId1);
+    if ( absId2 > 0 ) ecell2 = cells->GetCellAmplitude(absId2);
+    if ( absId3 > 0 ) ecell3 = cells->GetCellAmplitude(absId3);
+    if ( absId4 > 0 ) ecell4 = cells->GetCellAmplitude(absId4);
+    
+    if ( ecell1 < cellMinEn ) ecell1 = 0 ;
+    if ( ecell2 < cellMinEn ) ecell2 = 0 ;
+    if ( ecell3 < cellMinEn ) ecell3 = 0 ;
+    if ( ecell4 < cellMinEn ) ecell4 = 0 ;
     
     return ecell1+ecell2+ecell3+ecell4;
   }

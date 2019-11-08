@@ -594,12 +594,13 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
 /// \param tcell: time of cell under control
 /// \param cells: full list of cells
 /// \param bc: bunch crossing number
+/// \param cellMinEn: add the cell energy if large enough (for high energy clusters)
 ///
 /// \return float E_cross
 ///
 //___________________________________________________________________________
 Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
-                                     AliVCaloCells* cells, Int_t bc)
+                                     AliVCaloCells* cells, Int_t bc, Float_t cellMinEn)
 {  
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   
@@ -658,7 +659,12 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
   if (TMath::Abs(tcell-tcell2)*1.e9 > fExoticCellDiffTime) ecell2 = 0 ;
   if (TMath::Abs(tcell-tcell3)*1.e9 > fExoticCellDiffTime) ecell3 = 0 ;
   if (TMath::Abs(tcell-tcell4)*1.e9 > fExoticCellDiffTime) ecell4 = 0 ;
-  
+ 
+  if ( ecell1 < cellMinEn ) ecell1 = 0 ;
+  if ( ecell2 < cellMinEn ) ecell2 = 0 ;
+  if ( ecell3 < cellMinEn ) ecell3 = 0 ;
+  if ( ecell4 < cellMinEn ) ecell4 = 0 ;
+ 
   return ecell1+ecell2+ecell3+ecell4;
 }
 

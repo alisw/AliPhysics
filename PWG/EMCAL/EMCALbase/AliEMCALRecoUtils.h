@@ -419,7 +419,7 @@ public:
   void     SwitchOffRejectExoticCell()                { fRejectExoticCells = kFALSE    ; } 
   Bool_t   IsRejectExoticCell()                 const { return fRejectExoticCells      ; }
   Float_t  GetECross(Int_t absID, Double_t tcell,
-                     AliVCaloCells* cells, Int_t bc);
+                     AliVCaloCells* cells, Int_t bc, Float_t cellMinEn = 0);
   Float_t  GetExoticCellFractionCut()           const { return fExoticCellFraction     ; }
   Float_t  GetExoticCellDiffTimeCut()           const { return fExoticCellDiffTime     ; }
   Float_t  GetExoticCellMinAmplitudeCut()       const { return fExoticCellMinAmplitude ; }
