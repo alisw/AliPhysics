@@ -23,9 +23,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/ML
 )
 
 # Additional includes - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                    ${TREELITE_ROOT}/include
-  )
+include_directories(${TREELITE_ROOT}/include
+)
 set(SRCS
     AliExternalBDT.cxx
 )
@@ -38,16 +37,13 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice EVGEN)
-
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} treelite treelite_runtime)
+set(LIBDEPS treelite treelite_runtime)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-# Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
-add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "Tracks UserTasks")
+# Generate a PARfile target for this library. Note the extra includes
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
 # Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
@@ -55,7 +51,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} -L${TREELITE_ROOT}/lib treelite treelite_runtime)
+target_link_libraries(${MODULE} -L${TREELITE_ROOT}/lib ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
