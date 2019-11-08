@@ -51,6 +51,8 @@ AliAnaCaloTrackCorrBaseClass(),
 fCellAmpMin(),                         fEMinForExo(0),                         
 fExoCut(0),                            fNCellHighCut(0),
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
+fLED20(0),                             fLED12(0),   
+fLED20Time(0),                         fLED12Time(0),
 fFillCellHisto(0),                     fFill1CellHisto(0),                    
 fFillMatchingHisto(0),                 fConstantTimeShift(0),                 
 fClusterMomentum(),         
@@ -65,6 +67,7 @@ fh2NClusterPerEventExotic(0),
 fh2NClusterPerEventExotic1Cell(0),     fh2NClusterPerEventExoticNCell(0),
 fh2NClusterPerEventExoticAmpMax(0),
 
+fhExoticityECellMinCut(0),
 fhExoticityEClus(0),                   fhExoticityEClusAllSameTCard(0),
 fhExoticityEClusPerSM(0),              fhExoticityEMaxCell(0),
 fhExoticityEClusTrackMatch(0),         fhExoticity1Cell(0),
@@ -132,7 +135,9 @@ fhEOverP1Cell(0),
 
 // Cells
 fhCellExoAmp(0),                                               
-fhCellExoAmpTime(0),                    fhCellExoGrid(0)                     
+fhCellExoAmpTime(0),                    fhCellExoGrid(0),    
+fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0),
+fhCellTimeNCell20(0),                   fhCellTimeNCell12(0)
 {        
   AddToHistogramsName("AnaCaloExotic_");
   
@@ -160,6 +165,14 @@ fhCellExoAmpTime(0),                    fhCellExoGrid(0)
     fhEnSameDiffExo       [i] = 0; 
     fhEnNCellsSameDiffExo [i] = 0;  
   }
+  
+//  fCellMinEnBins[0] = 0.10; fCellMinEnBins[1] = 0.25; fCellMinEnBins[2] = 0.50;
+//  fCellMinEnBins[3] = 0.75; fCellMinEnBins[4] = 1.00; fCellMinEnBins[5] = 1.25;
+//
+//  for(Int_t i = 0; i < fgkNCellMinEnBins; i++) 
+//  {
+//    fhExoticityECellMinCut[i] = 0;
+//  }
   
   for(Int_t i = 0; i < 20; i++)  fhNCellsPerClusterExoPerSM[i] = 0;
 }
@@ -219,6 +232,18 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     if ( amp > fEMinForExo )
       fhCellExoGrid->Fill(icolAbs, irowAbs, exoticity, GetEventWeight());
 
+    // If there is at least one cluster with nCellW>20 or 12, check the cell distribution
+    if ( fLED20 )
+    {
+      fhCellGridTimeHighNCell20->Fill(icolAbs, irowAbs, fLED20Time, GetEventWeight());
+      fhCellTimeNCell20->Fill(fLED20Time,time);
+    }
+  
+    if ( fLED12 )
+    {
+      fhCellGridTimeHighNCell12->Fill(icolAbs, irowAbs, fLED12Time, GetEventWeight());
+      fhCellTimeNCell12->Fill(fLED12Time,time);
+    }
   } // Cell loop
   
 }
@@ -240,6 +265,11 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
 void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
                                                 AliVCaloCells* cells)
 {
+  fLED20 = kFALSE;
+  fLED12 = kFALSE;   
+  fLED20Time = -1e6;
+  fLED12Time = -1e6;
+  
   Int_t  nCaloClusters = caloClusters->GetEntriesFast() ;
   Int_t  bc            = GetReader()->GetInputEvent()->GetBunchCrossNumber();
   
@@ -251,7 +281,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
   Int_t nExotic      = 0;
   Int_t nExotic1Cell = 0;
   Int_t nExoticNCell = 0;
-
+  
   Float_t highestAmpMaxExo = 0;
   
   AliDebug(1,Form("In %s there are %d clusters", GetCalorimeterString().Data(), nCaloClusters));
@@ -394,8 +424,8 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
                     matched, absIdMax,ampMax,tmax,m02));  
 
     // Counters
-    if ( nCellW > 20 ) nNCellW20++;     
-    if ( nCellW > 12 ) nNCellW12++;
+    if ( nCellW > 20 ) { nNCellW20++; fLED20 = kTRUE; fLED20Time = tmax; }  
+    if ( nCellW > 12 ) { nNCellW12++; fLED12 = kTRUE; fLED12Time = tmax; }
     if ( en > 5 )
     {
       if ( exoticity > 0.97 ) nExotic++;
@@ -469,6 +499,21 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       
       if ( matched && fFillMatchingHisto )
         fhExoticityEClusTrackMatch->Fill(en, exoticity, GetEventWeight());
+      
+      // Recalculate exoticity with different cell minimum energy thresholds
+      for(Int_t imin = 0; imin < 41; imin++)
+      {
+        Float_t enCellMin  = 0.1 + imin*0.05;
+        Float_t exoMod = 1-GetCaloUtils()->GetECross(absIdMax,cells,bc,enCellMin)/ampMax;
+//        if(en > 5 && exoticity > 0.97)
+//        {
+//          printf("en %f, imin %d, emin %f exo org %f; exo recalc %f\n",
+//                 en, imin, enCellMin,exoticity,exoMod);
+//        }
+        
+        fhExoticityECellMinCut->Fill(en, exoMod, enCellMin, GetEventWeight());
+      }
+      
     }
     else if ( fFill1CellHisto )
       fhExoticity1Cell->Fill(en, exoticity, GetEventWeight());
@@ -773,6 +818,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
   //if ( highestAmpMaxExo > 0 ) printf("Exotic final amp %f\n",highestAmpMaxExo);
 
   fh2NClusterPerEventExoticAmpMax->Fill(highestAmpMaxExo, nCaloClusters, GetEventWeight());
+  
 }
 
 
@@ -865,6 +911,12 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   e2Binning.AddStep(50,5);  // 6
   TArrayD e2BinsArray;
   e2Binning.CreateBinEdges(e2BinsArray);
+  
+  TCustomBinning eminBinning;
+  eminBinning.SetMinimum(0.075);
+  eminBinning.AddStep(2.075,0.05); 
+  TArrayD eminBinsArray;
+  eminBinning.CreateBinEdges(eminBinsArray);
   
   // Exoticity
   Int_t nexobins  = 201; Float_t exomin  = -1 ; Float_t exomax  = 1.01;
@@ -1114,6 +1166,17 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   
   // Cluster Exoticity 2D
   //
+  fhExoticityECellMinCut = new TH3F 
+  ("hExoticityECellMinCut","cell #it{F}_{+} for different #it{E}_{cell}^{min} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+      eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
+      fBinsArray.GetSize() - 1,    fBinsArray.GetArray(), 
+   eminBinsArray.GetSize() - 1, eminBinsArray.GetArray());
+  //nptbins,ptmin,ptmax, nexobins,exomin,exomax, 40,0.075,2.075); 
+  fhExoticityECellMinCut->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhExoticityECellMinCut->SetYTitle("#it{F}_{+}");
+  fhExoticityECellMinCut->SetZTitle("#it{E}_{cell}^{min} (GeV)");
+  outputContainer->Add(fhExoticityECellMinCut);   
+  
   fhExoticityEClus = new TH2F 
   ("hExoticityEClus","cell #it{F}_{+} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
    nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
@@ -2147,6 +2210,48 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhCellExoGrid->SetXTitle("column (eta direction)");
     fhCellExoGrid->SetZTitle("#it{F}_{+}");
     outputContainer->Add(fhCellExoGrid);
+    
+    fhCellGridTimeHighNCell20    = new TH3F 
+    ("hCellGridTimeHighNCell20",
+     "Cell hits row-column vs cluster time for #it{n}_{cell}^{w} > 20", 
+     //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, 61,-610,610); 
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+       tBinsArray.GetSize() - 1,   tBinsArray.GetArray());
+    fhCellGridTimeHighNCell20->SetYTitle("row (phi direction)");
+    fhCellGridTimeHighNCell20->SetXTitle("column (eta direction)");
+    fhCellGridTimeHighNCell20->SetZTitle("#it{t}_{cluster} (ns)");
+    outputContainer->Add(fhCellGridTimeHighNCell20);
+    
+    fhCellGridTimeHighNCell12    = new TH3F 
+    ("hCellGridTimeHighNCell12",
+     "Cell hits row-column vs cluster time for #it{n}_{cell}^{w} > 12", 
+     //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, 61,-610,610); 
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+       tBinsArray.GetSize() - 1,   tBinsArray.GetArray());
+    fhCellGridTimeHighNCell12->SetYTitle("row (phi direction)");
+    fhCellGridTimeHighNCell12->SetXTitle("column (eta direction)");
+    fhCellGridTimeHighNCell12->SetZTitle("#it{t}_{cluster} (ns)");
+    outputContainer->Add(fhCellGridTimeHighNCell12);
+    
+    fhCellTimeNCell20 = new TH2F 
+    ("hCellTimeNCell20",
+     "All cell time vs cluster time for cluster #it{n}_{cell}^{w} > 20", 
+     tBinsArray.GetSize() - 1,   tBinsArray.GetArray(),
+     tBinsArray.GetSize() - 1,   tBinsArray.GetArray());
+    fhCellTimeNCell20->SetYTitle("#it{t}_{cell} (ns)");
+    fhCellTimeNCell20->SetXTitle("#it{t}_{cluster} (ns)");
+    outputContainer->Add(fhCellTimeNCell20);
+    
+    fhCellTimeNCell12 = new TH2F 
+    ("hCellTimeNCell12",
+     "All cell time vs cluster time for cluster #it{n}_{cell}^{w} > 12", 
+     tBinsArray.GetSize() - 1,   tBinsArray.GetArray(),
+     tBinsArray.GetSize() - 1,   tBinsArray.GetArray());
+    fhCellTimeNCell12->SetYTitle("#it{t}_{cell} (ns)");
+    fhCellTimeNCell12->SetXTitle("#it{t}_{cluster} (ns)");
+    outputContainer->Add(fhCellTimeNCell12);
   } 
   
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
