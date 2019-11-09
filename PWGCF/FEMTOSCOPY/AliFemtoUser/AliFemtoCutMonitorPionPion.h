@@ -131,13 +131,33 @@ namespace AliFemtoCutMonitorPionPion {
     TH2F *fChiTpcIts;
     TH2F *fClsTpcIts;
     TH2F *fdEdX;
+
+    TH2F *fPidProbPion;
+    TH2F *fPidProbKaon;
+    TH2F *fPidProbProton;
+    TH2F *fPidProbElectron;
+
     TH2F *fTofVsP;
-    TH2F *fNsigTof;
-    TH2F *fNsigTpc;
+    TH2F *fTofPionVsP;
+    TH2F *fTofKaonVsP;
+    TH2F *fTofProtonVsP;
+
+    TH2F *fTpcTofPionSigma;
+    TH2F *fTpcTofKaonSigma;
+    TH2F *fTpcTofProtonSigma;
+
+    TH1F *fTofMass;
+
+    // TH2F *fTof;
+    TH2F *fNsigPionTpc;
+    TH2F *fNsigKaonTpc;
+    TH2F *fNsigProtonTpc;
+
+    TH2F *fNsigPionTof;
     TH2F *fNsigKaonTof;
     TH2F *fNsigProtonTof;
-    TH2F *fImpact;
 
+    TH2F *fImpact;
     TH2F *fEtaY;
 
     TH1F *fMC_mass;

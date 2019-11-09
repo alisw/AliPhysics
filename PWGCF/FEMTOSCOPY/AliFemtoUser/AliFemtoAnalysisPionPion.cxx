@@ -191,9 +191,14 @@ struct CutConfig_Pion {
 
     /// momentum to begin using TOF sigma in sigma calculation
     Float_t tpctof_limit = 0.5,
-            tof_momentum_limit = 0.5,
+            tof_kaon_reject_pmin = 0.6,
             tof_sigma = NAN,
-            tof_kaon_rejection_sigma = -2.0,
+            tof_kaon_rejection_sigma = 4.0,
+            tof_kaon_rejection_pmin = 0.6,
+
+            tof_proton_reject_sigma = 5.0,
+            tof_proton_reject_pmin = 0.6,
+
             electron_rejection_sigma = 3.0;
 
     Float_t max_impact_xy = .20,
@@ -205,6 +210,7 @@ struct CutConfig_Pion {
 
     Bool_t remove_negative_label = kFALSE,
            use_tpctof = kTRUE,
+           tof_required = kFALSE,
            remove_kinks = kTRUE;
 
     Int_t ideal_pid = 211;
@@ -411,11 +417,17 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   , pion_1_status(default_pion.status)
   // , default_pion.nSigma.first
   // , default_pion.nSigma.second
-  , pion_1_sigma(default_pion.sigma)
+  , pion_1_tpc_sigma(default_pion.sigma)
   , pion_1_tof_sigma(default_pion.tof_sigma)
-  , pion_1_tof_limit(default_pion.tof_momentum_limit)
-  , pion_1_kreject_sigma(default_pion.tof_kaon_rejection_sigma)
-  , pion_1_ereject_sigma(default_pion.electron_rejection_sigma)
+  , pion_1_tof_required(default_pion.tof_required)
+
+  , pion_1_tof_kreject_sigma(default_pion.tof_kaon_rejection_sigma)
+  , pion_1_tof_kreject_pmin(default_pion.tof_kaon_reject_pmin)
+
+  , pion_1_tof_preject_sigma(default_pion.tof_proton_reject_sigma)
+  , pion_1_tof_preject_pmin(default_pion.tof_proton_reject_pmin)
+
+  , pion_1_tpc_ereject_sigma(default_pion.electron_rejection_sigma)
 
   , pion_1_max_impact_xy(default_pion.max_impact_xy)
   , pion_1_max_impact_z(default_pion.max_impact_z)
@@ -506,15 +518,18 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
     cut->charge = charge;
     cut->max_xy = p.pion_1_max_impact_xy;
     cut->max_z = p.pion_1_max_impact_z;
-    cut->tof_kaon_reject_sigma = p.pion_1_kreject_sigma;
-    cut->tof_kaon_momentum_limit = p.pion_1_tof_limit;
+
+    cut->tpc_sigma_pion = p.pion_1_tpc_sigma;
+    cut->tof_sigma_pion = p.pion_1_tof_sigma;
+    cut->require_tof = p.pion_1_tof_required;
+
+    cut->tof_kaon_reject_sigma = p.pion_1_tof_kreject_sigma;
+    cut->tof_kaon_momentum_limit = p.pion_1_tof_kreject_pmin;
     // cut->tof_sigma_pion = p.pion_1_tof_sigma;
 
-    cut->tof_proton_reject_sigma = p.pion_1_preject_sigma;
-    cut->tof_proton_momentum_limit = p.pion_1_tof_p_momentum_limit;
-
-    cut->tpc_sigma_pion = p.pion_1_sigma;
-    cut->electron_tpc_sigma_min = p.pion_1_ereject_sigma;
+    cut->tof_proton_reject_sigma = p.pion_1_tof_preject_sigma;
+    cut->tof_proton_momentum_limit = p.pion_1_tof_preject_pmin;
+    cut->electron_tpc_sigma_min = p.pion_1_tpc_ereject_sigma;
     cut->rchi2_tpc_min = p.pion_1_min_tpc_chi_ndof;
     cut->rchi2_tpc_max = p.pion_1_max_tpc_chi_ndof;
     cut->rchi2_its_max = p.pion_1_max_its_chi_ndof;
@@ -539,7 +554,7 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   cut->SetEta(p.pion_1_eta.first, p.pion_1_eta.second);
   cut->SetRapidity(p.pion_1_eta.first, p.pion_1_eta.second);
   cut->SetMostProbablePion();
-  cut->SetNsigma(p.pion_1_sigma);
+  cut->SetNsigma(p.pion_1_tpc_sigma);
   cut->SetNsigmaTPCTOF(p.pion_1_use_tpctof);
 //   cut->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
 

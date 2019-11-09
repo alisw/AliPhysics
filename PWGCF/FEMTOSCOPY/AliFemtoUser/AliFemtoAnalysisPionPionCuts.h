@@ -51,9 +51,9 @@ typedef TrackSelectionCut<
           AddTrackCutAttrs< TrackCutAttrChi2ITS,
           AddTrackCutAttrs< TrackCutAttrRejectKaonTofSigma,
           AddTrackCutAttrs< TrackCutAttrRejectProtonTofSigma,
+          AddTrackCutAttrs< TrackCutAttrTofSigmaPion,
                             TrackCutAttrTpcSigmaPion
-                            > > > > > > > >
-
+                            > > > > > > > > >
         > TrackCutAttrsAK;
 
 // paircut

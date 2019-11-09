@@ -244,14 +244,17 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
 
   ULong_t pion_1_status;
 
-  Float_t pion_1_sigma;
+  Float_t pion_1_tpc_sigma;
   Float_t pion_1_tof_sigma;
-  Float_t pion_1_tof_limit;
-  Float_t pion_1_kreject_sigma;
-  Float_t pion_1_ereject_sigma;
+  Bool_t pion_1_tof_required;
 
-  Float_t pion_1_preject_sigma;
-  Float_t pion_1_tof_p_momentum_limit;
+  Float_t pion_1_tof_kreject_sigma;
+  Float_t pion_1_tof_kreject_pmin;
+
+  Float_t pion_1_tof_preject_sigma;
+  Float_t pion_1_tof_preject_pmin;
+
+  Float_t pion_1_tpc_ereject_sigma;
 
   Float_t pion_1_max_impact_xy,
           pion_1_max_impact_z,
