@@ -759,7 +759,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
                                           266940, 266915, 266912, 266886, 266885, 266883, 266882, 266880, 266878, 266857,
                                           266807, 266805, 266800, 266776, 266775, 266708, 266706, 266703, 266702, 266676,
                                           266674, 266669, 266668, 266665, 266659, 266658, 266657, 266630, 266621, 266618,
-                                          266615, 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
+                                          /*266615,*/ 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
                                           266543, 266539, 266534, 266533, 266525, 266523, 266522, 266520, 266518, 266516,
                                           266514, 266487, 266480, 266479, 266472, 266441, 266439, 295585 };
   Bool_t checkIfGoodRun = kFALSE;
@@ -767,7 +767,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
   // for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
   //   if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
   // }
-  for( Int_t iRunLHC16s = 0; iRunLHC16s <  /*77*/ 78; iRunLHC16s++){
+  for( Int_t iRunLHC16s = 0; iRunLHC16s <  77; iRunLHC16s++){
     if( fRunNum == listOfGoodRunNumbersLHC16s[iRunLHC16s] ) checkIfGoodRun = kTRUE;
   }
   if(checkIfGoodRun != 1) {
