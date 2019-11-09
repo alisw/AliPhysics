@@ -475,7 +475,7 @@ class AliAnalysisTaskForMCpPb : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskForMCpPb, 2);
+        ClassDef(AliAnalysisTaskForMCpPb, 3);
 };
 
 #endif

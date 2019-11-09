@@ -915,6 +915,16 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
         continue;
     }
 
+
+    /* -
+     * - Compatibility with Run 1 analysis.
+     * -
+     */
+    if ( !( (track[nGoodMuons]->Eta() < -2.5) && (track[nGoodMuons]->Eta() > -3.7) ) ) {
+      continue;
+    }
+
+
     // MUON SELECTION
     /* - This is Eugeny Krishen's MUON selection from the talk in 14/1/2019 for
        - the PWG-UD (UPC oriented) meeting. The event selection requires:
