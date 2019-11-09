@@ -234,6 +234,12 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   , fChi2Its(nullptr)
   , fChiTpcIts(nullptr)
   , fClsTpcIts(nullptr)
+
+  , fPidProbPion(nullptr)
+  , fPidProbKaon(nullptr)
+  , fPidProbProton(nullptr)
+  , fPidProbElectron(nullptr)
+
   , fdEdX(nullptr)
   , fTofVsP(nullptr)
   , fTofPionVsP(nullptr)
@@ -325,6 +331,32 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     hist_title("N-Clusters ITS vs TPC", "TPC; ITS;"),
     161, -0.5, 160.5,
     11, -0.5, 10.5);
+
+#if PIDPROB_ENABLED
+  fPidProbPion = new TH2F(
+    hist_name("PidProbPion"),
+    hist_title("Pion PID Probability Vs P", "p (GeV); Prob;"),
+    128, 0.0, 4.0,
+    140, 0.0, 1.0);
+
+  fPidProbKaon = new TH2F(
+    hist_name("PidProbKaon"),
+    hist_title("Kaon PID Probability Vs P", "p (GeV); Prob;"),
+    128, 0.0, 4.0,
+    140, 0.0, 1.0);
+
+  fPidProbProton = new TH2F(
+    hist_name("PidProbProton"),
+    hist_title("Proton PID Probability Vs P", "p (GeV); Prob;"),
+    128, 0.0, 4.0,
+    140, 0.0, 1.0);
+
+  fPidProbElectron = new TH2F(
+    hist_name("PidProbElectron"),
+    hist_title("Electron PID Probability Vs P", "p (GeV); Prob;"),
+    128, 0.0, 4.0,
+    140, 0.0, 1.0);
+#endif
 
   fdEdX = new TH2F(
     hist_name("dEdX"),
@@ -579,6 +611,13 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const Pion &orig):
   , fClsTpcIts(static_cast<TH2F*>(orig.fClsTpcIts->Clone()))
   , fdEdX(static_cast<TH2F*>(orig.fdEdX->Clone()))
 
+#if PIDPROB_ENABLED
+  , fPidProbPion(static_cast<TH2F*>(orig.fPidProbPion->Clone()))
+  , fPidProbKaon(static_cast<TH2F*>(orig.fPidProbKaon->Clone()))
+  , fPidProbProton(static_cast<TH2F*>(orig.fPidProbProton->Clone()))
+  , fPidProbElectron(static_cast<TH2F*>(orig.fPidProbElectron->Clone()))
+#endif
+
   , fTofVsP(static_cast<TH2F*>(orig.fTofVsP->Clone()))
   , fTofPionVsP(static_cast<TH2F*>(orig.fTofPionVsP->Clone()))
   , fTofKaonVsP(static_cast<TH2F*>(orig.fTofKaonVsP->Clone()))
@@ -620,6 +659,14 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fChi2Its);
   output->Add(fChiTpcIts);
   output->Add(fClsTpcIts);
+
+#if PIDPROB_ENABLED
+  output->Add(fPidProbPion);
+  output->Add(fPidProbKaon);
+  output->Add(fPidProbProton);
+  output->Add(fPidProbElectron);
+#endif
+
   output->Add(fdEdX);
   output->Add(fNsigPionTpc);
   output->Add(fNsigKaonTpc);
@@ -709,7 +756,13 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fYPt->Fill(rapidity, pt);
   fPtPhi->Fill(phi, pt);
   fEtaPhi->Fill(phi, eta);
-  fdEdX->Fill(p, track->TPCsignal());
+
+#if PIDPROB_ENABLED
+  fPidProbPion->Fill(p, track->PidProbPion());
+  fPidProbKaon->Fill(p, track->PidProbKaon());
+  fPidProbProton->Fill(p, track->PidProbProton());
+  fPidProbElectron->Fill(p, track->PidProbElectron());
+#endif
 
   // fTofVsP->Fill(p, track->TOFdeuteronTime());
   fTofVsP->Fill(p, track->TOFsignal());
@@ -719,6 +772,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
 
   fTofMass->Fill(track->MassTOF());
 
+  fdEdX->Fill(p, track->TPCsignal());
   fTpcTofPionSigma->Fill(track->NSigmaTPCPi(), track->NSigmaTOFPi());
   fTpcTofKaonSigma->Fill(track->NSigmaTPCK(), track->NSigmaTOFK());
 
