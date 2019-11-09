@@ -1188,8 +1188,9 @@ void AliAnalysisTaskForMCpPb::ProcessMCParticles(AliMCEvent* fMCEventArg)
       AliError(Form("Could not receive track %d", iPart));
       continue;
     }
-    if (  !mcParticle->IsPrimary()                 ) continue;
-    if (   mcParticle->Charge()              == 0  ) continue;
+    if (  !mcParticle->IsPrimary()                                ) continue;
+    if (   mcParticle->Charge()              == 0                 ) continue;
+    if ( !(mcParticle->Eta() < -2.5 && mcParticle->Eta() > -3.7 ) ) continue;
     if (   TMath::Abs(mcParticle->PdgCode()) == 13 ) {
       if ( nGoodMuonsMC < 2 ) {
         // cout << "Ok" << nGoodMuonsMC << endl;
