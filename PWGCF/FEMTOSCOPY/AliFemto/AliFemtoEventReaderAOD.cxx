@@ -2164,7 +2164,9 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
     probMis = fAODpidUtil->GetTOFMismatchProbability(tAodTrack);
   }
 
+  // tFemtoTrack->SetTOFsignal(tTOF);
   tFemtoTrack->SetTOFsignal(tAodTrack->GetTOFsignal());
+
   tFemtoTrack->SetTofExpectedTimes(tTOF - aodpid[2], tTOF - aodpid[3], tTOF - aodpid[4], tTOF);
 
   //////  TPC ////////////////////////////////////////////
