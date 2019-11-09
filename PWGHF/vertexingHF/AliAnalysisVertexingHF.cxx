@@ -2184,14 +2184,12 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   Double_t px[2],py[2],pz[2];
   AliESDtrack *postrack = (AliESDtrack*)twoTrackArray->UncheckedAt(0);
   AliESDtrack *negtrack = (AliESDtrack*)twoTrackArray->UncheckedAt(1);
-  // propagate tracks to secondary vertex, to compute inv. mass
-  postrack->PropagateToDCA(secVert,fBzkG,kVeryBig);
-  negtrack->PropagateToDCA(secVert,fBzkG,kVeryBig);
   Double_t momentum[3];
-  postrack->GetPxPyPz(momentum);
+  GetTrackMomentumAtSecVert(postrack,secVert,momentum);
   px[0] = momentum[0]; py[0] = momentum[1]; pz[0] = momentum[2];
-  negtrack->GetPxPyPz(momentum);
+  GetTrackMomentumAtSecVert(negtrack,secVert,momentum);
   px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
+
   if(!fMassCutBeforeVertexing && !SelectInvMassAndPtCascade(px,py,pz)) return 0x0;
   Double_t dummyd0[2]={0,0};
   Double_t dummyd0err[2]={0,0};
