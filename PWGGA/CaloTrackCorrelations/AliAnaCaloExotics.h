@@ -160,6 +160,7 @@ public:
   TH3F *   fhExoticityECellMinCut;              //!<! Exoticity vs Min E cell threshold vs cluster energy
   
   TH2F *   fhExoticityEClus;                    //!<! Exoticity vs cluster energy
+  TH2F *   fhExoticityWEClus;                   //!<! Weighted exoticity vs Min E cell threshold vs cluster energy
   TH2F *   fhExoticityEClusAllSameTCard;        //!<! Exoticity vs energy, all cells in same T-Card
   TH3F *   fhExoticityEClusPerSM;               //!<! Exoticity vs cluster energy, per SM
   TH2F *   fhExoticityEMaxCell;                 //!<! Exoticity vs energy of highest energy cell in cluster
@@ -173,6 +174,7 @@ public:
 
   TH2F *   fhNCellsPerClusterAllSameTCard;      //!<! Cluster energy vs N cells, all cells in same T-Card  
   TH3F *   fhNCellsPerClusterExo;               //!<! Cluster energy vs N cells in cluster vs Exoticity   
+  TH3F *   fhNCellsPerClusterExoW;              //!<! Cluster energy vs N cells in cluster vs Weighted Exoticity   
   TH3F *   fhNCellsPerClusterPerSM;             //!<! Cluster energy vs N cells in cluster, per SM
   TH3F *   fhNCellsPerClusterWPerSM;            //!<! Cluster energy vs N cells in cluster, per SM
   TH3F *   fhNCellsPerClusterExoPerSM[20];      //!<! Cluster energy vs N cells in cluster vs Exoticity, per SM  
@@ -188,6 +190,7 @@ public:
   TH3F *   fhEtaPhiGridNCellEnCut;              //!<! column vs row vs n cells for E >  fEMinForExo
   
   TH3F *   fhTimeEnergyExo;                     //!<! Cluster Energy vs Time vs Exoticity, n cells > 1
+  TH3F *   fhTimeEnergyExoW;                    //!<! Cluster Energy vs Time vs Weighted Exoticity, n cells > 1
   TH2F *   fhTimeEnergy1Cell;                   //!<! Cluster Energy vs Time vs n cells = 1
   TH3F *   fhTimeDiffClusCellExo;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity
   TH3F *   fhTimeDiffAmpClusCellExo;            //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs secondary cell energy vs exoticity for E > fEMinForExo
@@ -200,6 +203,7 @@ public:
   TH3F *   fhM02EnergyNCell;                    //!<! Cluster M02 vs Energy vs n cells
   TH2F *   fhM02EnergyAllSameTCard;             //!<! Cluster M02 vs Energy, all cells in same T-Card
   TH3F *   fhM02EnergyExo;                      //!<! Cluster M02 vs Energy vs exoticity
+  TH3F *   fhM02EnergyExoW;                     //!<! Cluster M02 vs Energy vs Weighted exoticity
   TH3F *   fhM20EnergyExoM02MinCut;             //!<! Cluster M20 vs Energy vs exoticity for M02 > 0.1
   TH3F *   fhM02ExoNCells[fgkNEBins];           //!<! Cluster M02 vs exoticity vs n cells, different E bins
   
