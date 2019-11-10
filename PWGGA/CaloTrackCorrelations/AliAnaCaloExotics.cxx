@@ -54,8 +54,8 @@ fTimeCutMin(-10000),                   fTimeCutMax(10000),
 fLED20(0),                             fLED12(0),   
 fLED20Time(0),                         fLED12Time(0),
 fFillCellHisto(0),                     fFill1CellHisto(0),                    
-fFillMatchingHisto(0),                 fConstantTimeShift(0),                 
-fClusterMomentum(),         
+fFillMatchingHisto(0),                 fFillSameDiffFracHisto(0),
+fConstantTimeShift(0),                 fClusterMomentum(),         
 
 // Histograms
 fhNClusterPerEventNCellHigh20(0),      fhNClusterPerEventNCellHigh12(0),        
@@ -91,7 +91,7 @@ fhTimeDiffClusCellExo(0),              fhTimeDiffAmpClusCellExo(0),
 fhTimeEnergyM02(0),                    fhTimeDiffClusCellM02(0),  
 fhTimeEnergyNCells(0),                 fhTimeEnergyNCellsW(0),                 fhTimeNCellCut(0),                
 
-fhM02EnergyNCell(0),                   fhM02EnergyAllSameTCard(0),      
+fhM02EnergyAllSameTCard(0),      
 fhM02EnergyExo(0),                     fhM02EnergyExoW(0),           
 fhM20EnergyExoM02MinCut(0),                                                 
 
@@ -408,20 +408,23 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
     Float_t fracEnDiffSameW      = 0, fracNCellDiffSameW   = 0, fracEnNCellDiffSameW = 0;
     Float_t fracEnDiffSame5      = 0, fracNCellDiffSame5   = 0, fracEnNCellDiffSame5 = 0;
     
-    if ( enSame    > 0 ) fracEnDiffSame      = enDiff / enSame;
-    if ( nCellSame > 0 ) fracNCellDiffSame   = nCellDiff*1. / nCellSame*1.;
-    if ( nCellDiff > 0 && nCellSame > 0 && enSame > 0)
-                         fracEnNCellDiffSame = (enDiff/nCellDiff*1.) / (enSame/nCellSame*1.);
-
-    if ( enSameW    > 0 ) fracEnDiffSameW      = enDiffW / enSameW;
-    if ( nCellSameW > 0 ) fracNCellDiffSameW   = nCellDiffW*1. / nCellSameW*1.;
-    if ( nCellDiffW > 0 && nCellSameW > 0 && enSameW > 0)
-      fracEnNCellDiffSameW = (enDiffW/nCellDiffW) / (enSameW/nCellSameW);
-
-    if ( enSame5    > 0 ) fracEnDiffSame5      = enDiff5 / enSame5;
-    if ( nCellSame5 > 0 ) fracNCellDiffSame5   = nCellDiff5*1. / nCellSame5*1.;
-    if ( nCellDiff5 > 0 && nCellSame5 > 0 && enSame5 > 0)
-      fracEnNCellDiffSame5 = (enDiff5/nCellDiff5*1.) / (enSame5/nCellSame5*1.);
+    if ( fFillSameDiffFracHisto )
+    {
+      if ( enSame    > 0 ) fracEnDiffSame      = enDiff / enSame;
+      if ( nCellSame > 0 ) fracNCellDiffSame   = nCellDiff*1. / nCellSame*1.;
+      if ( nCellDiff > 0 && nCellSame > 0 && enSame > 0)
+        fracEnNCellDiffSame = (enDiff/nCellDiff*1.) / (enSame/nCellSame*1.);
+      
+      if ( enSameW    > 0 ) fracEnDiffSameW      = enDiffW / enSameW;
+      if ( nCellSameW > 0 ) fracNCellDiffSameW   = nCellDiffW*1. / nCellSameW*1.;
+      if ( nCellDiffW > 0 && nCellSameW > 0 && enSameW > 0)
+        fracEnNCellDiffSameW = (enDiffW/nCellDiffW) / (enSameW/nCellSameW);
+      
+      if ( enSame5    > 0 ) fracEnDiffSame5      = enDiff5 / enSame5;
+      if ( nCellSame5 > 0 ) fracNCellDiffSame5   = nCellDiff5*1. / nCellSame5*1.;
+      if ( nCellDiff5 > 0 && nCellSame5 > 0 && enSame5 > 0)
+        fracEnNCellDiffSame5 = (enDiff5/nCellDiff5*1.) / (enSame5/nCellSame5*1.);
+    }
 
     AliDebug(1,Form("cluster: E %2.3f, F+ %2.3f, eta %2.3f, phi %2.3f, col %d, row %d, ncells %d,"
                     "match %d; cell max: id %d, en %2.3f, time %2.3f, m02 %2.2f",
@@ -531,7 +534,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
     fhNCellsPerClusterExo            ->Fill(en, nCaloCellsPerCluster, exoticity , GetEventWeight());
     fhNCellsPerClusterExoW           ->Fill(en, nCaloCellsPerCluster, exoticityW, GetEventWeight());
     fhNCellsPerClusterM02            ->Fill(en, nCaloCellsPerCluster, m02       , GetEventWeight());
-    
+
     fhNCellsPerClusterEMaxCell       ->Fill(ampMax, nCaloCellsPerCluster       , GetEventWeight());
     
     fhNCellsPerClusterPerSM          ->Fill(en, nCaloCellsPerCluster, nSM      , GetEventWeight());
@@ -570,6 +573,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       fhCellMaxClusterEnRatioNCellW->Fill(en    , 1-maxCellFraction, nCellW   , GetEventWeight());
       fhCellMaxClusterEnRatioExo   ->Fill(en    , 1-maxCellFraction, exoticity, GetEventWeight());
     }
+    
     // Cell cluster loop
     //
     for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
@@ -636,15 +640,19 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
 //    }
     
     fhNCellsPerClusterW       ->Fill(en, nCellW     , GetEventWeight());
-    fhNCellsPerClusterSame    ->Fill(en, nCellSame  , GetEventWeight());
-    fhNCellsPerClusterDiff    ->Fill(en, nCellDiff  , GetEventWeight());
-    fhNCellsPerClusterSame5   ->Fill(en, nCellSame5 , GetEventWeight());
-    fhNCellsPerClusterDiff5   ->Fill(en, nCellDiff5 , GetEventWeight());
-    fhNCellsPerClusterSameW   ->Fill(en, nCellSameW , GetEventWeight());
-    fhNCellsPerClusterDiffW   ->Fill(en, nCellDiffW , GetEventWeight());    
     fhNCellsPerClusterSameDiff->Fill(en, nCellSame, nCellDiff, GetEventWeight());
+
+    if( fFillSameDiffFracHisto )
+    {
+      fhNCellsPerClusterSame    ->Fill(en, nCellSame  , GetEventWeight());
+      fhNCellsPerClusterDiff    ->Fill(en, nCellDiff  , GetEventWeight());
+      fhNCellsPerClusterSame5   ->Fill(en, nCellSame5 , GetEventWeight());
+      fhNCellsPerClusterDiff5   ->Fill(en, nCellDiff5 , GetEventWeight());
+      fhNCellsPerClusterSameW   ->Fill(en, nCellSameW , GetEventWeight());
+      fhNCellsPerClusterDiffW   ->Fill(en, nCellDiffW , GetEventWeight());    
+    }
     
-    if ( nCaloCellsPerCluster > 1 )
+    if ( nCaloCellsPerCluster > 1 && fFillSameDiffFracHisto )
     {
       fhFracEnDiffSame      ->Fill(en, fracEnDiffSame      , GetEventWeight()); 
       fhFracNCellDiffSame   ->Fill(en, fracNCellDiffSame   , GetEventWeight());
@@ -658,7 +666,6 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       fhFracNCellDiffSame5  ->Fill(en, fracNCellDiffSame5  , GetEventWeight());
       fhFracEnNCellDiffSame5->Fill(en, fracEnNCellDiffSame5, GetEventWeight());
  
-      
       fhFracEnDiffSameExo      ->Fill(en, fracEnDiffSame      , exoticity, GetEventWeight()); 
       fhFracNCellDiffSameExo   ->Fill(en, fracNCellDiffSame   , exoticity, GetEventWeight());
       fhFracEnNCellDiffSameExo ->Fill(en, fracEnNCellDiffSame , exoticity, GetEventWeight());
@@ -698,7 +705,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
         fhNCellsPerClusterAllSameTCard->Fill(en, nCaloCellsPerCluster, GetEventWeight());
         fhExoticityEClusAllSameTCard  ->Fill(en, exoticity           , GetEventWeight());
         fhM02EnergyAllSameTCard       ->Fill(en, m02                 , GetEventWeight());
-        if ( en > fEMinForExo )
+        if ( en > fEMinForExo && fFillSameDiffFracHisto )
           fhEtaPhiGridExoEnCutSameFracCut->Fill(icolMaxAbs, irowMaxAbs, exoticity, GetEventWeight());
       }
       
@@ -724,9 +731,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
     // Shower shape
     //
     if ( nCaloCellsPerCluster > 1 )
-    {
-      fhM02EnergyNCell->Fill(en, m02, nCaloCellsPerCluster, GetEventWeight());
-      
+    {      
       fhM02EnergyExo ->Fill(en, m02, exoticity , GetEventWeight());
       fhM02EnergyExoW->Fill(en, m02, exoticityW, GetEventWeight());
             
@@ -1200,13 +1205,6 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhExoticityWEClus->SetYTitle("#it{F}_{+}^{#it{w}}");
   outputContainer->Add(fhExoticityWEClus);    
   
-  fhExoticityEClusAllSameTCard = new TH2F 
-  ("hExoticityEClusAllSameTCard","cell #it{F}_{+} vs #it{E}_{cluster}, #it{n}_{cell} > 1, #it{n}_{cells} = #it{n}_{cells-same}",
-   nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
-  fhExoticityEClusAllSameTCard->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhExoticityEClusAllSameTCard->SetYTitle("#it{F}_{+}");
-  outputContainer->Add(fhExoticityEClusAllSameTCard);    
-  
   fhExoticityEMaxCell = new TH2F 
   ("hExoticityEMaxCell","cell #it{F}_{+} vs #it{E}_{cell}^{max}, #it{n}_{cluster}^{cell} > 1",
    nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
@@ -1262,13 +1260,6 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhNCellsPerClusterEMaxCell->SetXTitle("#it{E}_{cell}^{max} (GeV)");
   fhNCellsPerClusterEMaxCell->SetYTitle("#it{n}_{cells}");
   outputContainer->Add(fhNCellsPerClusterEMaxCell);
-  
-  fhNCellsPerClusterAllSameTCard  = new TH2F 
-  ("hNCellsPerClusterAllSameTCard","# cells per cluster vs #it{E}_{cluster}, #it{n}_{cells}=#it{n}_{cells-same}",
-   nptbins,ptmin,ptmax, 17,0,17); 
-  fhNCellsPerClusterAllSameTCard->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhNCellsPerClusterAllSameTCard->SetYTitle("#it{n}_{cells}");
-  outputContainer->Add(fhNCellsPerClusterAllSameTCard);
   
   fhNCellsPerClusterExo  = new TH3F 
   ("hNCellsPerClusterExo","# cells per cluster vs #it{E}_{cluster} vs #it{F}_{+}",
@@ -1366,368 +1357,395 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhNCellsPerClusterW ->SetYTitle("#it{n}_{cells}^{#it{w}}");
   outputContainer->Add(fhNCellsPerClusterW );
   
-  fhNCellsPerClusterSame  = new TH2F 
-  ("hNCellsPerClusterSame","# cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
-   nptbins,ptmin,ptmax, 17,0,17); 
-  fhNCellsPerClusterSame->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhNCellsPerClusterSame->SetYTitle("#it{n}_{cells, same T-Card}");
-  outputContainer->Add(fhNCellsPerClusterSame);
-  
-  fhNCellsPerClusterDiff  = new TH2F 
-  ("hNCellsPerClusterDiff","# cells per cluster in different T-Card as max #it{E} cell vs #it{E}_{cluster}",
-   nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
-  fhNCellsPerClusterDiff->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhNCellsPerClusterDiff->SetYTitle("#it{n}_{cells, diff T-Card}");
-  outputContainer->Add(fhNCellsPerClusterDiff);
- 
-  fhNCellsPerClusterSame5  = new TH2F 
-  ("hNCellsPerClusterSame5","# cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
-   nptbins,ptmin,ptmax, 7,0,7); 
-  fhNCellsPerClusterSame5->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhNCellsPerClusterSame5->SetYTitle("#it{n}_{cells, same T-Card}");
-  outputContainer->Add(fhNCellsPerClusterSame5);
-  
-  fhNCellsPerClusterDiff5  = new TH2F 
-  ("hNCellsPerClusterDiff5","# cells per cluster in different T-Card as max #it{E} cell vs #it{E}_{cluster}",
-   nptbins,ptmin,ptmax, 7,0,7); 
-  fhNCellsPerClusterDiff5->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhNCellsPerClusterDiff5->SetYTitle("#it{n}_{cells, diff T-Card}");
-  outputContainer->Add(fhNCellsPerClusterDiff5);
-  
-  fhNCellsPerClusterSameW   = new TH2F 
-  ("hNCellsPerClusterSameW ","# cells per cluster with #it{w} in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
-   nptbins,ptmin,ptmax, 17,0,17); 
-  fhNCellsPerClusterSameW ->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhNCellsPerClusterSameW ->SetYTitle("#it{n}_{cells, same T-Card}^{#it{w}}");
-  outputContainer->Add(fhNCellsPerClusterSameW );
-  
-  fhNCellsPerClusterDiffW   = new TH2F 
-  ("hNCellsPerClusterDiffW ","# cells per cluster with #it{w} in different T-Card as max #it{E} cell vs #it{E}_{cluster}",
-   nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
-  fhNCellsPerClusterDiffW ->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhNCellsPerClusterDiffW ->SetYTitle("#it{n}_{cells, diff T-Card}^{#it{w}}");
-  outputContainer->Add(fhNCellsPerClusterDiffW );
-  
   fhNCellsPerClusterSameDiff  = new TH3F 
   ("hNCellsPerClusterSameDiff","# cells per cluster in same vs different T-Card as max #it{E} cell vs #it{E}_{cluster}",
    //nptbins,ptmin,ptmax, 17,0,17,nceclbins,nceclmin,nceclmax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), nsameBinsArray.GetSize() - 1, nsameBinsArray.GetArray(), nBinsArray.GetSize() - 1, nBinsArray.GetArray());
+       eBinsArray.GetSize() - 1,      eBinsArray.GetArray(), 
+   nsameBinsArray.GetSize() - 1, nsameBinsArray.GetArray(), 
+       nBinsArray.GetSize() - 1,     nBinsArray.GetArray());
   fhNCellsPerClusterSameDiff->SetXTitle("#it{E}_{cluster} (GeV)");
   fhNCellsPerClusterSameDiff->SetYTitle("#it{n}_{cells, same T-Card}");
   fhNCellsPerClusterSameDiff->SetZTitle("#it{n}_{cells, diff T-Card}");
   outputContainer->Add(fhNCellsPerClusterSameDiff);
   
-  fhNCellsPerClusterSameFrac  = new TH2F 
-  ("hNCellsPerClusterSameFrac","Fraction of # cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
-   nptbins,ptmin,ptmax, 101,-0.005,1.005); 
-  fhNCellsPerClusterSameFrac->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhNCellsPerClusterSameFrac->SetYTitle("#it{n}_{cells, same T-Card} / (#it{n}_{cells}-1)");
-  outputContainer->Add(fhNCellsPerClusterSameFrac);
-  
-  fhNCellsPerClusterSameFracExo  = new TH3F 
-  ("hNCellsPerClusterSameFracExo","Fraction of # cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster} vs #it{F}_{+}",
-   //nptbins,ptmin,ptmax, 101,-0.005,1.005, nexobins,exomin,exomax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
-  fhNCellsPerClusterSameFracExo->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhNCellsPerClusterSameFracExo->SetYTitle("#it{n}_{cells, same T-Card} / (#it{n}_{cells}-1)");
-  fhNCellsPerClusterSameFracExo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhNCellsPerClusterSameFracExo); 
-  
-  // Cluster Exoticity other definitions
-  //
-  fhExoSame = new TH2F 
-  ("hExoSame","cell #it{F}_{same} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
-  fhExoSame->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhExoSame->SetYTitle("#it{F}_{same}");
-  outputContainer->Add(fhExoSame);    
-  
-  fhExoDiff = new TH2F 
-  ("hExoDiff","cell #it{F}_{diff} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
-  fhExoDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhExoDiff->SetYTitle("#it{F}_{diff}");
-  outputContainer->Add(fhExoDiff);   
- 
-  fhExoSame5 = new TH2F 
-  ("hExoSame5","cell #it{F}_{same-5} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
-  fhExoSame5->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhExoSame5->SetYTitle("#it{F}_{same-5}");
-  outputContainer->Add(fhExoSame5);    
-  
-  fhExoDiff5 = new TH2F 
-  ("hExoDiff5","cell #it{F}_{diff} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
-  fhExoDiff5->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhExoDiff5->SetYTitle("#it{F}_{diff-5}");
-  outputContainer->Add(fhExoDiff5);   
-  
-  //
-  fhFracEnDiffSame    = new TH2F 
-  ("hFracEnDiffSame","cell #Sigma #it{E}_{diff}/#Sigma #it{E}_{same} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, 200,0,2); 
-  fhFracEnDiffSame->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnDiffSame->SetYTitle("#Sigma #it{E}_{diff}/#Sigma #it{E}_{same}");
-  outputContainer->Add(fhFracEnDiffSame);  
-  
-  fhFracNCellDiffSame = new TH2F 
-  ("hFracNCellDiffSame","cell #it{n}_{diff}/#it{n}_{same} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, 200,0,2); 
-  fhFracNCellDiffSame->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracNCellDiffSame->SetYTitle("#it{n}_{diff}/#it{n}_{same}");
-  outputContainer->Add(fhFracNCellDiffSame); 
-  
-  fhFracEnNCellDiffSame = new TH2F 
-  ("hFracEnNCellDiffSame","cell (#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same}) vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, 200,0,2); 
-  fhFracEnNCellDiffSame->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnNCellDiffSame->SetYTitle("(#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same})");
-  outputContainer->Add(fhFracEnNCellDiffSame); 
-  
-  fhFracEnDiffSameW    = new TH2F 
-  ("hFracEnDiffSameW","cell #Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, 200,0,2); 
-  fhFracEnDiffSameW->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnDiffSameW->SetYTitle("#Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}}");
-  outputContainer->Add(fhFracEnDiffSameW);  
-  
-  fhFracNCellDiffSameW = new TH2F 
-  ("hFracNCellDiffSameW","cell #it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, 200,0,2); 
-  fhFracNCellDiffSameW->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracNCellDiffSameW->SetYTitle("#it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}}");
-  outputContainer->Add(fhFracNCellDiffSameW); 
-  
-  fhFracEnNCellDiffSameW = new TH2F 
-  ("hFracEnNCellDiffSameW","cell (#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}}) vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, 200,0,2); 
-  fhFracEnNCellDiffSameW->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnNCellDiffSameW->SetYTitle("(#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})");
-  outputContainer->Add(fhFracEnNCellDiffSameW); 
-  
-  fhFracEnDiffSame5    = new TH2F 
-  ("hFracEnDiffSame5","cell #Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, 200,0,2); 
-  fhFracEnDiffSame5->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnDiffSame5->SetYTitle("#Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}");
-  outputContainer->Add(fhFracEnDiffSame5);  
-  
-  fhFracNCellDiffSame5 = new TH2F 
-  ("hFracNCellDiffSame5","cell #it{n}_{diff}^{next}/#it{n}_{same}^{next} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, 200,0,2); 
-  fhFracNCellDiffSame5->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracNCellDiffSame5->SetYTitle("#it{n}_{diff}^{next}/#it{n}_{same}^{next}");
-  outputContainer->Add(fhFracNCellDiffSame5); 
-  
-  fhFracEnNCellDiffSame5 = new TH2F 
-  ("hFracEnNCellDiffSame5","cell (#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next}) vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
-   nptbins,ptmin,ptmax, 200,0,2); 
-  fhFracEnNCellDiffSame5->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnNCellDiffSame5->SetYTitle("(#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})");
-  outputContainer->Add(fhFracEnNCellDiffSame5); 
- 
-  //
-  fhFracEnDiffSameExo    = new TH3F 
-  ("hFracEnDiffSameExo","cell #Sigma #it{E}_{diff}/#Sigma #it{E}_{same} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
-   //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
-   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
-  fhFracEnDiffSameExo->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnDiffSameExo->SetYTitle("#Sigma #it{E}_{diff}/#Sigma #it{E}_{same}");
-  fhFracEnDiffSameExo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhFracEnDiffSameExo);  
-  
-  fhFracNCellDiffSameExo = new TH3F 
-  ("hFracNCellDiffSameExo","cell #it{n}_{diff}/#it{n}_{same} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
-   //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
-   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());  
-  fhFracNCellDiffSameExo->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracNCellDiffSameExo->SetYTitle("#it{n}_{diff}/#it{n}_{same}");
-  fhFracNCellDiffSameExo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhFracNCellDiffSameExo); 
-  
-  fhFracEnNCellDiffSameExo = new TH3F 
-  ("hFracEnNCellDiffSameExo","cell (#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same}) vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
-   //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
-   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
-
-  fhFracEnNCellDiffSameExo->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnNCellDiffSameExo->SetYTitle("(#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same})");
-  fhFracEnNCellDiffSameExo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhFracEnNCellDiffSameExo); 
-  
-  fhFracEnDiffSameWExo    = new TH3F 
-  ("hFracEnDiffSameWExo","cell #Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
-   //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
-   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
-  fhFracEnDiffSameWExo->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnDiffSameWExo->SetYTitle("#Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}}");
-  fhFracEnDiffSameWExo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhFracEnDiffSameWExo);  
-  
-  fhFracNCellDiffSameWExo = new TH3F 
-  ("hFracNCellDiffSameWExo","cell #it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
-   //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
-   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());  
-  fhFracNCellDiffSameWExo->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracNCellDiffSameWExo->SetYTitle("#it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}}");
-  fhFracNCellDiffSameWExo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhFracNCellDiffSameWExo); 
-  
-  fhFracEnNCellDiffSameWExo = new TH3F 
-  ("hFracEnNCellDiffSameWExo","cell (#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}}) vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
-   //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
-   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
-  fhFracEnNCellDiffSameWExo->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnNCellDiffSameWExo->SetYTitle("(#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})");
-  fhFracEnNCellDiffSameWExo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhFracEnNCellDiffSameWExo); 
-  
-  fhFracEnDiffSame5Exo    = new TH3F 
-  ("hFracEnDiffSame5Exo","cell #Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
-   //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
-   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,     fBinsArray.GetArray()); 
-  fhFracEnDiffSame5Exo->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnDiffSame5Exo->SetYTitle("#Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}");
-  fhFracEnDiffSame5Exo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhFracEnDiffSame5Exo);  
-  
-  fhFracNCellDiffSame5Exo = new TH3F 
-  ("hFracNCellDiffSame5Exo","cell #it{n}_{diff}^{next}/#it{n}_{same}^{next} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
-   //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
-   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());  
-  fhFracNCellDiffSame5Exo->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracNCellDiffSame5Exo->SetYTitle("#it{n}_{diff}^{next}/#it{n}_{same}^{next}");
-  fhFracNCellDiffSame5Exo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhFracNCellDiffSame5Exo); 
-  
-  fhFracEnNCellDiffSame5Exo = new TH3F 
-  ("hFracEnNCellDiffSame5Exo","cell (#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next}) vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
-   //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
-       eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
-   frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,     fBinsArray.GetArray()); 
-  fhFracEnNCellDiffSame5Exo->SetXTitle("#it{E}_{cluster} (GeV) ");
-  fhFracEnNCellDiffSame5Exo->SetYTitle("(#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})");
-  fhFracEnNCellDiffSame5Exo->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhFracEnNCellDiffSame5Exo); 
-  
-  //
-  fhFracEnDiffSameEnCut    = new TH1F 
-  ("hFracEnDiffSameEnCut",
-   Form("cell #Sigma #it{E}_{diff}/#Sigma #it{E}_{same}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
-   1000,0,10);
-  fhFracEnDiffSameEnCut->SetXTitle("#Sigma #it{E}_{diff}/#Sigma #it{E}_{same}");
-  outputContainer->Add(fhFracEnDiffSameEnCut);  
-  
-  fhFracNCellDiffSameEnCut = new TH1F 
-  ("hFracNCellDiffSameEnCut",
-   Form("cell #it{n}_{diff}/#it{n}_{same}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
-   1000,0,10); 
-  fhFracNCellDiffSameEnCut->SetXTitle("#it{n}_{diff}/#it{n}_{same}");
-  outputContainer->Add(fhFracNCellDiffSameEnCut); 
-  
-  fhFracEnNCellDiffSameEnCut = new TH1F 
-  ("hFracEnNCellDiffSameEncut",
-   Form("cell (#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same}), #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
-   1000,0,10);
-  fhFracEnNCellDiffSameEnCut->SetXTitle("(#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same})");
-  outputContainer->Add(fhFracEnNCellDiffSameEnCut); 
-  
-  fhFracEnDiffSameWEnCut    = new TH1F 
-  ("hFracEnDiffSameWEnCut",
-   Form("cell #Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}} #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
-   1000,0,10);
-  fhFracEnDiffSameWEnCut->SetXTitle("#Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}}");
-  outputContainer->Add(fhFracEnDiffSameWEnCut);  
-  
-  fhFracNCellDiffSameWEnCut = new TH1F 
-  ("hFracNCellDiffSameWEnCut",
-   Form("cell #it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}} #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
-   1000,0,10);
-  fhFracNCellDiffSameWEnCut->SetXTitle("#it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}}");
-  outputContainer->Add(fhFracNCellDiffSameWEnCut); 
-  
-  fhFracEnNCellDiffSameWEnCut = new TH1F 
-  ("hFracEnNCellDiffSameWEnCut",
-   Form("cell (#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})#it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
-   1000,0,10); 
-  fhFracEnNCellDiffSameWEnCut->SetXTitle("(#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})");
-  outputContainer->Add(fhFracEnNCellDiffSameWEnCut); 
-  
-  fhFracEnDiffSame5EnCut    = new TH1F 
-  ("hFracEnDiffSame5EnCut",
-   Form("cell #Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
-   1000,0,10);
-  fhFracEnDiffSame5EnCut->SetXTitle("#Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}");
-  outputContainer->Add(fhFracEnDiffSame5EnCut);  
-  
-  fhFracNCellDiffSame5EnCut = new TH1F 
-  ("hFracNCellDiffSame5EnCut",
-   Form("cell #it{n}_{diff}^{next}/#it{n}_{same}^{next}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
-   1000,0,10);
-  fhFracNCellDiffSame5EnCut->SetXTitle("#it{n}_{diff}^{next}/#it{n}_{same}^{next}");
-  outputContainer->Add(fhFracNCellDiffSame5EnCut); 
-  
-  fhFracEnNCellDiffSame5EnCut = new TH1F 
-  ("hFracEnNCellDiffSame5EnCut",
-   Form("cell (#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})#it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
-   1000,0,10);
-  fhFracEnNCellDiffSame5EnCut->SetXTitle("(#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})");
-  outputContainer->Add(fhFracEnNCellDiffSame5EnCut); 
-  
-  for(Int_t i = 0; i < fgkNEBins-1; i++) 
+  if ( fFillSameDiffFracHisto )
   {
-    fhNCellsSameDiffExo[i] = new TH3F 
-    (Form("hNCellsSameDiffExo_Ebin%d",i),
-     Form("#it{n}_{cells-same} vs #it{n}_{cells-diff}, %2.1f < #it{E} < %2.1f GeV",fEnergyBins[i],fEnergyBins[i+1]),
-     //17,0,17,nceclbins,nceclmin,nceclmax,nexobinsS,exominS,exomaxS); 
-     nsameBinsArray.GetSize() - 1, nsameBinsArray.GetArray(), 
-         nBinsArray.GetSize() - 1,     nBinsArray.GetArray(), 
-         fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
-    fhNCellsSameDiffExo[i]->SetXTitle("#it{n}_{cells}^{same}");
-    fhNCellsSameDiffExo[i]->SetYTitle("#it{n}_{cells}^{diff}");
-    fhNCellsSameDiffExo[i]->SetZTitle("#it{F}_{+}");
-    outputContainer->Add(fhNCellsSameDiffExo[i]);
+    fhNCellsPerClusterSame  = new TH2F 
+    ("hNCellsPerClusterSame","# cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
+     nptbins,ptmin,ptmax, 17,0,17); 
+    fhNCellsPerClusterSame->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNCellsPerClusterSame->SetYTitle("#it{n}_{cells, same T-Card}");
+    outputContainer->Add(fhNCellsPerClusterSame);
     
-    fhEnSameDiffExo[i] = new TH3F 
-    (Form("hEnSameDiffExo_Ebin%d",i),
-     Form("#Sigma #it{E}_{same}^{cells} vs #Sigma #it{E}_{diff}^{cells}, %2.1f < #it{E} < %2.1f GeV",fEnergyBins[i],fEnergyBins[i+1]),
-     //200, 0, 20, 200, 0, 20, nexobinsS,exominS,exomaxS); 
-     e2BinsArray.GetSize() - 1, e2BinsArray.GetArray(), e2BinsArray.GetSize() - 1, e2BinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
-    fhEnSameDiffExo[i]->SetXTitle("#Sigma #it{E}_{same}^{cells} (GeV)");
-    fhEnSameDiffExo[i]->SetYTitle("#Sigma #it{E}_{diff}^{cells} (GeV)");
-    fhEnSameDiffExo[i]->SetZTitle("#it{F}_{+}");
-    outputContainer->Add(fhEnSameDiffExo[i]);
+    fhNCellsPerClusterDiff  = new TH2F 
+    ("hNCellsPerClusterDiff","# cells per cluster in different T-Card as max #it{E} cell vs #it{E}_{cluster}",
+     nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+    fhNCellsPerClusterDiff->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNCellsPerClusterDiff->SetYTitle("#it{n}_{cells, diff T-Card}");
+    outputContainer->Add(fhNCellsPerClusterDiff);
     
-    fhEnNCellsSameDiffExo[i] = new TH3F 
-    (Form("hEnNCellsSameDiffExo_Ebin%d",i),
-     Form("#Sigma #it{E}_{same}^{cells}/#it{n}_{cells}^{same} vs #Sigma #it{E}_{diff}^{cells}/#it{n}_{cells}^{diff}, %2.1f < #it{E} < %2.1f GeV",
-          fEnergyBins[i],fEnergyBins[i+1]),
-     //100, 0, 10, 100, 0, 10, nexobinsS,exominS,exomaxS); 
-     e2BinsArray.GetSize() - 1, e2BinsArray.GetArray(), e2BinsArray.GetSize() - 1, e2BinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
-    fhEnNCellsSameDiffExo[i]->SetXTitle("#Sigma #it{E}_{same}^{cells}/#it{n}_{cells}^{same}  (GeV)");
-    fhEnNCellsSameDiffExo[i]->SetYTitle("#Sigma #it{E}_{diff}^{cells}/#it{n}_{cells}^{diff}  (GeV)");
-    fhEnNCellsSameDiffExo[i]->SetZTitle("#it{F}_{+}");
-    outputContainer->Add(fhEnNCellsSameDiffExo[i]);
+    fhNCellsPerClusterSame5  = new TH2F 
+    ("hNCellsPerClusterSame5","# cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
+     nptbins,ptmin,ptmax, 7,0,7); 
+    fhNCellsPerClusterSame5->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNCellsPerClusterSame5->SetYTitle("#it{n}_{cells, same T-Card}");
+    outputContainer->Add(fhNCellsPerClusterSame5);
+    
+    fhNCellsPerClusterDiff5  = new TH2F 
+    ("hNCellsPerClusterDiff5","# cells per cluster in different T-Card as max #it{E} cell vs #it{E}_{cluster}",
+     nptbins,ptmin,ptmax, 7,0,7); 
+    fhNCellsPerClusterDiff5->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNCellsPerClusterDiff5->SetYTitle("#it{n}_{cells, diff T-Card}");
+    outputContainer->Add(fhNCellsPerClusterDiff5);
+    
+    fhNCellsPerClusterSameW   = new TH2F 
+    ("hNCellsPerClusterSameW ","# cells per cluster with #it{w} in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
+     nptbins,ptmin,ptmax, 17,0,17); 
+    fhNCellsPerClusterSameW ->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNCellsPerClusterSameW ->SetYTitle("#it{n}_{cells, same T-Card}^{#it{w}}");
+    outputContainer->Add(fhNCellsPerClusterSameW );
+    
+    fhNCellsPerClusterDiffW   = new TH2F 
+    ("hNCellsPerClusterDiffW ","# cells per cluster with #it{w} in different T-Card as max #it{E} cell vs #it{E}_{cluster}",
+     nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+    fhNCellsPerClusterDiffW ->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNCellsPerClusterDiffW ->SetYTitle("#it{n}_{cells, diff T-Card}^{#it{w}}");
+    outputContainer->Add(fhNCellsPerClusterDiffW );
+    
+    fhNCellsPerClusterSameFrac  = new TH2F 
+    ("hNCellsPerClusterSameFrac","Fraction of # cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
+     nptbins,ptmin,ptmax, 101,-0.005,1.005); 
+    fhNCellsPerClusterSameFrac->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNCellsPerClusterSameFrac->SetYTitle("#it{n}_{cells, same T-Card} / (#it{n}_{cells}-1)");
+    outputContainer->Add(fhNCellsPerClusterSameFrac);
+    
+    fhNCellsPerClusterSameFracExo  = new TH3F 
+    ("hNCellsPerClusterSameFracExo","Fraction of # cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster} vs #it{F}_{+}",
+     //nptbins,ptmin,ptmax, 101,-0.005,1.005, nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1, eBinsArray.GetArray(), fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+    fhNCellsPerClusterSameFracExo->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNCellsPerClusterSameFracExo->SetYTitle("#it{n}_{cells, same T-Card} / (#it{n}_{cells}-1)");
+    fhNCellsPerClusterSameFracExo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhNCellsPerClusterSameFracExo); 
+    
+    // Cluster Exoticity other definitions
+    //
+    
+    fhExoSame = new TH2F 
+    ("hExoSame","cell #it{F}_{same} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
+    fhExoSame->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhExoSame->SetYTitle("#it{F}_{same}");
+    outputContainer->Add(fhExoSame);    
+    
+    fhExoDiff = new TH2F 
+    ("hExoDiff","cell #it{F}_{diff} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
+    fhExoDiff->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhExoDiff->SetYTitle("#it{F}_{diff}");
+    outputContainer->Add(fhExoDiff);   
+    
+    fhExoSame5 = new TH2F 
+    ("hExoSame5","cell #it{F}_{same-5} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
+    fhExoSame5->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhExoSame5->SetYTitle("#it{F}_{same-5}");
+    outputContainer->Add(fhExoSame5);    
+    
+    fhExoDiff5 = new TH2F 
+    ("hExoDiff5","cell #it{F}_{diff} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
+    fhExoDiff5->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhExoDiff5->SetYTitle("#it{F}_{diff-5}");
+    outputContainer->Add(fhExoDiff5);   
+    
+    //
+    fhFracEnDiffSame    = new TH2F 
+    ("hFracEnDiffSame","cell #Sigma #it{E}_{diff}/#Sigma #it{E}_{same} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, 200,0,2); 
+    fhFracEnDiffSame->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnDiffSame->SetYTitle("#Sigma #it{E}_{diff}/#Sigma #it{E}_{same}");
+    outputContainer->Add(fhFracEnDiffSame);  
+    
+    fhFracNCellDiffSame = new TH2F 
+    ("hFracNCellDiffSame","cell #it{n}_{diff}/#it{n}_{same} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, 200,0,2); 
+    fhFracNCellDiffSame->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracNCellDiffSame->SetYTitle("#it{n}_{diff}/#it{n}_{same}");
+    outputContainer->Add(fhFracNCellDiffSame); 
+    
+    fhFracEnNCellDiffSame = new TH2F 
+    ("hFracEnNCellDiffSame","cell (#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same}) vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, 200,0,2); 
+    fhFracEnNCellDiffSame->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnNCellDiffSame->SetYTitle("(#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same})");
+    outputContainer->Add(fhFracEnNCellDiffSame); 
+    
+    fhFracEnDiffSameW    = new TH2F 
+    ("hFracEnDiffSameW","cell #Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, 200,0,2); 
+    fhFracEnDiffSameW->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnDiffSameW->SetYTitle("#Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}}");
+    outputContainer->Add(fhFracEnDiffSameW);  
+    
+    fhFracNCellDiffSameW = new TH2F 
+    ("hFracNCellDiffSameW","cell #it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, 200,0,2); 
+    fhFracNCellDiffSameW->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracNCellDiffSameW->SetYTitle("#it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}}");
+    outputContainer->Add(fhFracNCellDiffSameW); 
+    
+    fhFracEnNCellDiffSameW = new TH2F 
+    ("hFracEnNCellDiffSameW","cell (#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}}) vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, 200,0,2); 
+    fhFracEnNCellDiffSameW->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnNCellDiffSameW->SetYTitle("(#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})");
+    outputContainer->Add(fhFracEnNCellDiffSameW); 
+    
+    fhFracEnDiffSame5    = new TH2F 
+    ("hFracEnDiffSame5","cell #Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, 200,0,2); 
+    fhFracEnDiffSame5->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnDiffSame5->SetYTitle("#Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}");
+    outputContainer->Add(fhFracEnDiffSame5);  
+    
+    fhFracNCellDiffSame5 = new TH2F 
+    ("hFracNCellDiffSame5","cell #it{n}_{diff}^{next}/#it{n}_{same}^{next} vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, 200,0,2); 
+    fhFracNCellDiffSame5->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracNCellDiffSame5->SetYTitle("#it{n}_{diff}^{next}/#it{n}_{same}^{next}");
+    outputContainer->Add(fhFracNCellDiffSame5); 
+    
+    fhFracEnNCellDiffSame5 = new TH2F 
+    ("hFracEnNCellDiffSame5","cell (#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next}) vs #it{E}_{cluster}, #it{n}_{cluster}^{cell} > 1",
+     nptbins,ptmin,ptmax, 200,0,2); 
+    fhFracEnNCellDiffSame5->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnNCellDiffSame5->SetYTitle("(#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})");
+    outputContainer->Add(fhFracEnNCellDiffSame5); 
+    
+    //
+    fhFracEnDiffSameExo    = new TH3F 
+    ("hFracEnDiffSameExo","cell #Sigma #it{E}_{diff}/#Sigma #it{E}_{same} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+     //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+     frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
+    fhFracEnDiffSameExo->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnDiffSameExo->SetYTitle("#Sigma #it{E}_{diff}/#Sigma #it{E}_{same}");
+    fhFracEnDiffSameExo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhFracEnDiffSameExo);  
+    
+    fhFracNCellDiffSameExo = new TH3F 
+    ("hFracNCellDiffSameExo","cell #it{n}_{diff}/#it{n}_{same} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+     //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+     frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,     fBinsArray.GetArray());  
+    fhFracNCellDiffSameExo->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracNCellDiffSameExo->SetYTitle("#it{n}_{diff}/#it{n}_{same}");
+    fhFracNCellDiffSameExo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhFracNCellDiffSameExo); 
+    
+    fhFracEnNCellDiffSameExo = new TH3F 
+    ("hFracEnNCellDiffSameExo","cell (#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same}) vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+     //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+     frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
+    
+    fhFracEnNCellDiffSameExo->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnNCellDiffSameExo->SetYTitle("(#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same})");
+    fhFracEnNCellDiffSameExo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhFracEnNCellDiffSameExo); 
+    
+    fhFracEnDiffSameWExo    = new TH3F 
+    ("hFracEnDiffSameWExo","cell #Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+     //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+     frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
+    fhFracEnDiffSameWExo->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnDiffSameWExo->SetYTitle("#Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}}");
+    fhFracEnDiffSameWExo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhFracEnDiffSameWExo);  
+    
+    fhFracNCellDiffSameWExo = new TH3F 
+    ("hFracNCellDiffSameWExo","cell #it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+     //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+     frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,     fBinsArray.GetArray());  
+    fhFracNCellDiffSameWExo->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracNCellDiffSameWExo->SetYTitle("#it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}}");
+    fhFracNCellDiffSameWExo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhFracNCellDiffSameWExo); 
+    
+    fhFracEnNCellDiffSameWExo = new TH3F 
+    ("hFracEnNCellDiffSameWExo","cell (#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}}) vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+     //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+     frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
+    fhFracEnNCellDiffSameWExo->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnNCellDiffSameWExo->SetYTitle("(#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})");
+    fhFracEnNCellDiffSameWExo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhFracEnNCellDiffSameWExo); 
+    
+    fhFracEnDiffSame5Exo    = new TH3F 
+    ("hFracEnDiffSame5Exo","cell #Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+     //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+     frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,     fBinsArray.GetArray()); 
+    fhFracEnDiffSame5Exo->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnDiffSame5Exo->SetYTitle("#Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}");
+    fhFracEnDiffSame5Exo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhFracEnDiffSame5Exo);  
+    
+    fhFracNCellDiffSame5Exo = new TH3F 
+    ("hFracNCellDiffSame5Exo","cell #it{n}_{diff}^{next}/#it{n}_{same}^{next} vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+     //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+     frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,     fBinsArray.GetArray());  
+    fhFracNCellDiffSame5Exo->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracNCellDiffSame5Exo->SetYTitle("#it{n}_{diff}^{next}/#it{n}_{same}^{next}");
+    fhFracNCellDiffSame5Exo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhFracNCellDiffSame5Exo); 
+    
+    fhFracEnNCellDiffSame5Exo = new TH3F 
+    ("hFracEnNCellDiffSame5Exo","cell (#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next}) vs #it{E}_{cluster} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+     //nptbins,ptmin,ptmax, 101,0,1.01,nexobins,exomin,exomax); 
+     eBinsArray.GetSize() - 1,     eBinsArray.GetArray(), 
+     frac2BinsArray.GetSize() - 1, frac2BinsArray.GetArray(), 
+     fBinsArray.GetSize() - 1,     fBinsArray.GetArray()); 
+    fhFracEnNCellDiffSame5Exo->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhFracEnNCellDiffSame5Exo->SetYTitle("(#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})");
+    fhFracEnNCellDiffSame5Exo->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhFracEnNCellDiffSame5Exo); 
+    
+    //
+    fhFracEnDiffSameEnCut    = new TH1F 
+    ("hFracEnDiffSameEnCut",
+     Form("cell #Sigma #it{E}_{diff}/#Sigma #it{E}_{same}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+     1000,0,10);
+    fhFracEnDiffSameEnCut->SetXTitle("#Sigma #it{E}_{diff}/#Sigma #it{E}_{same}");
+    outputContainer->Add(fhFracEnDiffSameEnCut);  
+    
+    fhFracNCellDiffSameEnCut = new TH1F 
+    ("hFracNCellDiffSameEnCut",
+     Form("cell #it{n}_{diff}/#it{n}_{same}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+     1000,0,10); 
+    fhFracNCellDiffSameEnCut->SetXTitle("#it{n}_{diff}/#it{n}_{same}");
+    outputContainer->Add(fhFracNCellDiffSameEnCut); 
+    
+    fhFracEnNCellDiffSameEnCut = new TH1F 
+    ("hFracEnNCellDiffSameEncut",
+     Form("cell (#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same}), #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+     1000,0,10);
+    fhFracEnNCellDiffSameEnCut->SetXTitle("(#Sigma #it{E}_{diff}/#it{n}_{diff})/(#Sigma #it{E}_{same}/#it{n}_{same})");
+    outputContainer->Add(fhFracEnNCellDiffSameEnCut); 
+    
+    fhFracEnDiffSameWEnCut    = new TH1F 
+    ("hFracEnDiffSameWEnCut",
+     Form("cell #Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}} #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+     1000,0,10);
+    fhFracEnDiffSameWEnCut->SetXTitle("#Sigma #it{E}_{diff}^{#it{w}}/#Sigma #it{E}_{same}^{#it{w}}");
+    outputContainer->Add(fhFracEnDiffSameWEnCut);  
+    
+    fhFracNCellDiffSameWEnCut = new TH1F 
+    ("hFracNCellDiffSameWEnCut",
+     Form("cell #it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}} #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+     1000,0,10);
+    fhFracNCellDiffSameWEnCut->SetXTitle("#it{n}_{diff}^{#it{w}}/#it{n}_{same}^{#it{w}}");
+    outputContainer->Add(fhFracNCellDiffSameWEnCut); 
+    
+    fhFracEnNCellDiffSameWEnCut = new TH1F 
+    ("hFracEnNCellDiffSameWEnCut",
+     Form("cell (#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})#it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+     1000,0,10); 
+    fhFracEnNCellDiffSameWEnCut->SetXTitle("(#Sigma #it{E}_{diff}^{#it{w}}/#it{n}_{diff}^{#it{w}})/(#Sigma #it{E}_{same}^{#it{w}}/#it{n}_{same}^{#it{w}})");
+    outputContainer->Add(fhFracEnNCellDiffSameWEnCut); 
+    
+    fhFracEnDiffSame5EnCut    = new TH1F 
+    ("hFracEnDiffSame5EnCut",
+     Form("cell #Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+     1000,0,10);
+    fhFracEnDiffSame5EnCut->SetXTitle("#Sigma #it{E}_{diff}^{next}/#Sigma #it{E}_{same}^{next}");
+    outputContainer->Add(fhFracEnDiffSame5EnCut);  
+    
+    fhFracNCellDiffSame5EnCut = new TH1F 
+    ("hFracNCellDiffSame5EnCut",
+     Form("cell #it{n}_{diff}^{next}/#it{n}_{same}^{next}, #it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+     1000,0,10);
+    fhFracNCellDiffSame5EnCut->SetXTitle("#it{n}_{diff}^{next}/#it{n}_{same}^{next}");
+    outputContainer->Add(fhFracNCellDiffSame5EnCut); 
+    
+    fhFracEnNCellDiffSame5EnCut = new TH1F 
+    ("hFracEnNCellDiffSame5EnCut",
+     Form("cell (#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})#it{E}_{cluster} > %2.1f, #it{n}_{cluster}^{cell} > 1",fEMinForExo),
+     1000,0,10);
+    fhFracEnNCellDiffSame5EnCut->SetXTitle("(#Sigma #it{E}_{diff}^{next}/#it{n}_{diff}^{next})/(#Sigma #it{E}_{same}^{next}/#it{n}_{same}^{next})");
+    outputContainer->Add(fhFracEnNCellDiffSame5EnCut); 
+    
+    for(Int_t i = 0; i < fgkNEBins-1; i++) 
+    {
+      fhNCellsSameDiffExo[i] = new TH3F 
+      (Form("hNCellsSameDiffExo_Ebin%d",i),
+       Form("#it{n}_{cells-same} vs #it{n}_{cells-diff}, %2.1f < #it{E} < %2.1f GeV",fEnergyBins[i],fEnergyBins[i+1]),
+       //17,0,17,nceclbins,nceclmin,nceclmax,nexobinsS,exominS,exomaxS); 
+       nsameBinsArray.GetSize() - 1, nsameBinsArray.GetArray(), 
+       nBinsArray.GetSize() - 1,     nBinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,     fBinsArray.GetArray());
+      fhNCellsSameDiffExo[i]->SetXTitle("#it{n}_{cells}^{same}");
+      fhNCellsSameDiffExo[i]->SetYTitle("#it{n}_{cells}^{diff}");
+      fhNCellsSameDiffExo[i]->SetZTitle("#it{F}_{+}");
+      outputContainer->Add(fhNCellsSameDiffExo[i]);
+      
+      fhEnSameDiffExo[i] = new TH3F 
+      (Form("hEnSameDiffExo_Ebin%d",i),
+       Form("#Sigma #it{E}_{same}^{cells} vs #Sigma #it{E}_{diff}^{cells}, %2.1f < #it{E} < %2.1f GeV",fEnergyBins[i],fEnergyBins[i+1]),
+       //200, 0, 20, 200, 0, 20, nexobinsS,exominS,exomaxS); 
+       e2BinsArray.GetSize() - 1, e2BinsArray.GetArray(), e2BinsArray.GetSize() - 1, e2BinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+      fhEnSameDiffExo[i]->SetXTitle("#Sigma #it{E}_{same}^{cells} (GeV)");
+      fhEnSameDiffExo[i]->SetYTitle("#Sigma #it{E}_{diff}^{cells} (GeV)");
+      fhEnSameDiffExo[i]->SetZTitle("#it{F}_{+}");
+      outputContainer->Add(fhEnSameDiffExo[i]);
+      
+      fhEnNCellsSameDiffExo[i] = new TH3F 
+      (Form("hEnNCellsSameDiffExo_Ebin%d",i),
+       Form("#Sigma #it{E}_{same}^{cells}/#it{n}_{cells}^{same} vs #Sigma #it{E}_{diff}^{cells}/#it{n}_{cells}^{diff}, %2.1f < #it{E} < %2.1f GeV",
+            fEnergyBins[i],fEnergyBins[i+1]),
+       //100, 0, 10, 100, 0, 10, nexobinsS,exominS,exomaxS); 
+       e2BinsArray.GetSize() - 1, e2BinsArray.GetArray(), e2BinsArray.GetSize() - 1, e2BinsArray.GetArray(), fBinsArray.GetSize() - 1, fBinsArray.GetArray());
+      fhEnNCellsSameDiffExo[i]->SetXTitle("#Sigma #it{E}_{same}^{cells}/#it{n}_{cells}^{same}  (GeV)");
+      fhEnNCellsSameDiffExo[i]->SetYTitle("#Sigma #it{E}_{diff}^{cells}/#it{n}_{cells}^{diff}  (GeV)");
+      fhEnNCellsSameDiffExo[i]->SetZTitle("#it{F}_{+}");
+      outputContainer->Add(fhEnNCellsSameDiffExo[i]);
+    }
+    
+    fhExoticityEClusAllSameTCard = new TH2F 
+    ("hExoticityEClusAllSameTCard","cell #it{F}_{+} vs #it{E}_{cluster}, #it{n}_{cell} > 1, #it{n}_{cells} = #it{n}_{cells-same}",
+     nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
+    fhExoticityEClusAllSameTCard->SetXTitle("#it{E}_{cluster} (GeV) ");
+    fhExoticityEClusAllSameTCard->SetYTitle("#it{F}_{+}");
+    outputContainer->Add(fhExoticityEClusAllSameTCard);    
+    
+    fhNCellsPerClusterAllSameTCard  = new TH2F 
+    ("hNCellsPerClusterAllSameTCard","# cells per cluster vs #it{E}_{cluster}, #it{n}_{cells}=#it{n}_{cells-same}",
+     nptbins,ptmin,ptmax, 17,0,17); 
+    fhNCellsPerClusterAllSameTCard->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNCellsPerClusterAllSameTCard->SetYTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCellsPerClusterAllSameTCard);
+    
+    fhM02EnergyAllSameTCard  = new TH2F 
+    ("hM02EnergyNCellAllSameTCard","#sigma^{2}_{long} vs #it{E}_{cluster}, #it{n}_{cells} = #it{n}_{cells-same}",
+     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhM02EnergyAllSameTCard->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhM02EnergyAllSameTCard->SetYTitle("#sigma^{2}_{long}");
+    outputContainer->Add(fhM02EnergyAllSameTCard); 
   }
-  
+
   fhCellEnSameExo = new TH3F 
   ("hCellEnSameExo","#it{E}_{cluster} (GeV) vs #it{E}_{cell}^{same} vs #it{F}_{+}",
    //nptbins,ptmin,ptmax, 200,0,20, nexobins,exomin,exomax); 
@@ -1833,17 +1851,20 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhEtaPhiGridExoEnCut->SetZTitle("#it{F}_{+}");
   outputContainer->Add(fhEtaPhiGridExoEnCut);
   
-  fhEtaPhiGridExoEnCutSameFracCut = new TH3F 
-  ("hEtaPhiGridExoEnCutSameFracCut",
-   Form("colum (#eta) vs row (#varphi) vs #it{F}_{+}, #it{E}_{cluster}> %2.1f, #it{n}_{cells}>1, #it{n}_{cells}^{same}/(#it{n}_{cells}-1)=1",fEMinForExo),
-   //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nexobinsS,exominS,exomaxS); 
-   colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
-   rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
-     fBinsArray.GetSize() - 1,   fBinsArray.GetArray());
-  fhEtaPhiGridExoEnCutSameFracCut->SetXTitle("column-#eta ");
-  fhEtaPhiGridExoEnCutSameFracCut->SetYTitle("row-#varphi (rad)");
-  fhEtaPhiGridExoEnCutSameFracCut->SetZTitle("#it{F}_{+}");
-  outputContainer->Add(fhEtaPhiGridExoEnCutSameFracCut);
+  if ( fFillSameDiffFracHisto )
+  {
+    fhEtaPhiGridExoEnCutSameFracCut = new TH3F 
+    ("hEtaPhiGridExoEnCutSameFracCut",
+     Form("colum (#eta) vs row (#varphi) vs #it{F}_{+}, #it{E}_{cluster}> %2.1f, #it{n}_{cells}>1, #it{n}_{cells}^{same}/(#it{n}_{cells}-1)=1",fEMinForExo),
+     //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nexobinsS,exominS,exomaxS); 
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+       fBinsArray.GetSize() - 1,   fBinsArray.GetArray());
+    fhEtaPhiGridExoEnCutSameFracCut->SetXTitle("column-#eta ");
+    fhEtaPhiGridExoEnCutSameFracCut->SetYTitle("row-#varphi (rad)");
+    fhEtaPhiGridExoEnCutSameFracCut->SetZTitle("#it{F}_{+}");
+    outputContainer->Add(fhEtaPhiGridExoEnCutSameFracCut);
+  }
   
   fhEtaPhiGridEnExoCut  = new TH3F 
   ("hEtaPhiGridEnExoCut", Form("colum (#eta) vs row (#varphi) vs #it{E}, #it{F}_{+} > %2.2f",fExoCut),
@@ -1982,22 +2003,6 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   
   // Shower shape
   //
-  fhM02EnergyNCell  = new TH3F 
-  ("hM02EnergyNCell","#sigma^{2}_{long} vs #it{E}_{cluster} vs #it{n}_{cells}",
-   //nptbins,ptmin,ptmax,ssbins,ssmin,ssmax, nceclbins,nceclmin,nceclmax); 
-   eBinsArray.GetSize() - 1, eBinsArray.GetArray(), ssBinsArray.GetSize() - 1, ssBinsArray.GetArray(), nBinsArray.GetSize() - 1, nBinsArray.GetArray());
-  fhM02EnergyNCell->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhM02EnergyNCell->SetYTitle("#sigma^{2}_{long}");
-  fhM02EnergyNCell->SetZTitle("#it{n}_{cells}");
-  outputContainer->Add(fhM02EnergyNCell); 
-  
-  fhM02EnergyAllSameTCard  = new TH2F 
-  ("hM02EnergyNCellAllSameTCard","#sigma^{2}_{long} vs #it{E}_{cluster}, #it{n}_{cells} = #it{n}_{cells-same}",
-   nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-  fhM02EnergyAllSameTCard->SetXTitle("#it{E}_{cluster} (GeV)");
-  fhM02EnergyAllSameTCard->SetYTitle("#sigma^{2}_{long}");
-  outputContainer->Add(fhM02EnergyAllSameTCard); 
-  
   fhM02EnergyExo  = new TH3F 
   ("hM02EnergyExo","#sigma^{2}_{long} vs #it{E}_{cluster} vs #it{F}_{+}",
    //nptbins,ptmin,ptmax,ssbins,ssmin,ssmax, nexobinsS,exominS,exomaxS); 

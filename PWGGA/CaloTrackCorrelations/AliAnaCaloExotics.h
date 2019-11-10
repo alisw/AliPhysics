@@ -94,6 +94,9 @@ public:
   
   void         SwitchOnFillMatchingHisto()  { fFillMatchingHisto = kTRUE  ; }
   void         SwitchOffFillMatchingHisto() { fFillMatchingHisto = kFALSE ; }
+ 
+  void         SwitchOnFillFractionSameDiffCells()  { fFillSameDiffFracHisto = kTRUE  ; }
+  void         SwitchOffFillFractionSameDiffCells() { fFillSameDiffFracHisto = kFALSE ; }
   
   void         SetConstantTimeShift(Float_t shift) { fConstantTimeShift = shift  ; }
   
@@ -131,6 +134,8 @@ public:
   Bool_t   fFill1CellHisto;                     ///<  Fill histograms for 1 cell clusters
   
   Bool_t   fFillMatchingHisto;                  ///<  Fill histograms for track-cluster matching
+  
+  Bool_t   fFillSameDiffFracHisto;              ///<  Fill histograms with fraction of cells or energy cells in same or different T-Card
   
   Float_t  fConstantTimeShift;                  ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
   
@@ -200,7 +205,6 @@ public:
   TH3F *   fhTimeEnergyNCellsW;                 //!<! Cluster Energy vs Time vs n cells for w > 0
   TH1F *   fhTimeNCellCut;                      //!<! Cluster Time vs n cells > fNCellCut, larger time range 
   
-  TH3F *   fhM02EnergyNCell;                    //!<! Cluster M02 vs Energy vs n cells
   TH2F *   fhM02EnergyAllSameTCard;             //!<! Cluster M02 vs Energy, all cells in same T-Card
   TH3F *   fhM02EnergyExo;                      //!<! Cluster M02 vs Energy vs exoticity
   TH3F *   fhM02EnergyExoW;                     //!<! Cluster M02 vs Energy vs Weighted exoticity
