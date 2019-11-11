@@ -1009,21 +1009,20 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      rc = new(aodDstarRef[iDstar++])AliAODRecoCascadeHF(*ioCascade);
 	      // Set selection bit for PID
 	      SetSelectionBitForPID(fCutsDStartoKpipi,rc,AliRDHFCuts::kDstarPID);
-	      AliAODVertex *vCasc = 0x0;
-               if(fMakeReducedRHF){
-		 //assign a ID to the D0 candidate, daughter of the Cascade. ID = position in the D0toKpi array
-		 UShort_t idCasc[2]={(UShort_t)trackPi->GetID(),(UShort_t)(iD0toKpi-1)};
-		 rc->SetProngIDs(2,idCasc);
-		 rc->DeleteRecoD();
-		 rc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
-	       }else{
-		 AliAODVertex *vCasc = new(verticesHFRef[iVerticesHF++])AliAODVertex(*vertexCasc);
-		 rc->SetSecondaryVtx(vCasc);
-		 vCasc->SetParent(rc);
-                  if(!fInputAOD) vCasc->AddDaughter(rd); // just to fill ref #0
-                  AddRefs(vCasc,rc,event,twoTrackArrayCasc);
-                  vCasc->AddDaughter(rd); // add the D0 (in ref #1)
-	        }
+	      if(fMakeReducedRHF){
+		//assign a ID to the D0 candidate, daughter of the Cascade. ID = position in the D0toKpi array
+		UShort_t idCasc[2]={(UShort_t)trackPi->GetID(),(UShort_t)(iD0toKpi-1)};
+		rc->SetProngIDs(2,idCasc);
+		rc->DeleteRecoD();
+		rc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
+	      }else{
+		AliAODVertex *vCasc = new(verticesHFRef[iVerticesHF++])AliAODVertex(*vertexCasc);
+		rc->SetSecondaryVtx(vCasc);
+		vCasc->SetParent(rc);
+		if(!fInputAOD) vCasc->AddDaughter(rd); // just to fill ref #0
+		AddRefs(vCasc,rc,event,twoTrackArrayCasc);
+		vCasc->AddDaughter(rd); // add the D0 (in ref #1)
+	      }
             }
 	    twoTrackArrayCasc->Clear();
 	    trackPi=0;
@@ -1891,8 +1890,6 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
   if(DStar)vtxCasc->AddDaughter(trackD0);
   else vtxCasc->AddDaughter(v0);
   rCasc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
-
-  Bool_t refill =kTRUE;
 
   Double_t px[2],py[2],pz[2],d0[2],d0err[2];
   // propagate tracks to secondary vertex, to compute inv. mass
