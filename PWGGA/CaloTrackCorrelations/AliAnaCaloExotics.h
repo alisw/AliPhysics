@@ -325,11 +325,64 @@ public:
     
   TH2F *   fhCellExoAmp;                        //!<! Cell amplitude vs exoticity
   TH3F *   fhCellExoAmpTime;                    //!<! Cell amplitude vs time vs exoticity
+  
   TH3F *   fhCellExoGrid ;                      //!<! Cells ordered in column/row vs exoticity when amplitude > fEMinForExo 
   TH3F *   fhCellGridTimeHighNCell20 ;          //!<! Cells ordered in column/row vs cluster time when at least 1 cluster n cellsW > 20
   TH3F *   fhCellGridTimeHighNCell12 ;          //!<! Cells ordered in column/row vs cluster time when at least 1 cluster n cellsW > 12
+  TH3F *   fhCellGridTime05 ;                   //!<! Cells ordered in column/row vs cell time when E > 0.5 GeV
+  TH3F *   fhCellGridTime1  ;                   //!<! Cells ordered in column/row vs cell time when E > 1.0 GeV
+  TH3F *   fhCellGridTime2  ;                   //!<! Cells ordered in column/row vs cell time when E > 2.0 GeV
+  TH3F *   fhCellGridTime5  ;                   //!<! Cells ordered in column/row vs cell time when E > 5.0 GeV
+
   TH2F *   fhCellTimeNCell20 ;                  //!<! Cells time vs cluster time, for events with a cluster with n cellsW > 20
   TH2F *   fhCellTimeNCell12 ;                  //!<! Cells time vs cluster time, for events with a cluster with n cellsW > 12
+  
+  TH1F *   fhSumEnCells05;                      //!<! For E cell > 0.5 GeV, sum of cells energy 
+  TH1F *   fhSumEnCells1;                       //!<! For E cell > 1.0 GeV, sum of cells energy
+  TH1F *   fhSumEnCells2;                       //!<! For E cell > 2.0 GeV, sum of cells energy 
+  TH1F *   fhSumEnCells5;                       //!<! For E cell > 5.0 GeV, sum of cells energy 
+ 
+  TH1F *   fhNCells05;                          //!<! For E cell > 0.5 GeV, count number of cells 
+  TH1F *   fhNCells1;                           //!<! For E cell > 1.0 GeV, count number of cells
+  TH1F *   fhNCells2;                           //!<! For E cell > 2.0 GeV, count number of cells 
+  TH1F *   fhNCells5;                           //!<! For E cell > 5.0 GeV, count number of cells
+  
+  TH1F *   fhAverSumEnCells05;                  //!<! For E cell > 0.5 GeV, sum of cells energy / total cells number
+  TH1F *   fhAverSumEnCells1;                   //!<! For E cell > 1.0 GeV, sum of cells energy / total cells number
+  TH1F *   fhAverSumEnCells2;                   //!<! For E cell > 2.0 GeV, sum of cells energy / total cells number
+  TH1F *   fhAverSumEnCells5;                   //!<! For E cell > 5.0 GeV, sum of cells energy / total cells number
+  
+  TH1F *   fhFracNCells1;                       //!<! total number of cells with E > 1 GeV over 0.5 GeV
+  TH1F *   fhFracNCells2;                       //!<! total number of cells with E > 2 GeV over 0.5 GeV
+  TH1F *   fhFracNCells5;                       //!<! total number of cells with E > 5 GeV over 0.5 GeV
+ 
+  TH1F *   fhFracSumEnCells1;                   //!<! sum of cells with E > 1 GeV over 0.5 GeV
+  TH1F *   fhFracSumEnCells2;                   //!<! sum of cells with E > 2 GeV over 0.5 GeV
+  TH1F *   fhFracSumEnCells5;                   //!<! sum of cells with E > 5 GeV over 0.5 GeV
+ 
+  
+  TH1F *   fhSumEnCells05NHigh20;               //!<! For E cell > 0.5 GeV, sum of cells energy, 1 cluster with n_cell_w>20 
+  TH1F *   fhSumEnCells1NHigh20;                //!<! For E cell > 1.0 GeV, sum of cells energy, 1 cluster with n_cell_w>20
+  TH1F *   fhSumEnCells2NHigh20;                //!<! For E cell > 2.0 GeV, sum of cells energy, 1 cluster with n_cell_w>20 
+  TH1F *   fhSumEnCells5NHigh20;                //!<! For E cell > 5.0 GeV, sum of cells energy, 1 cluster with n_cell_w>20 
+  
+  TH1F *   fhNCells05NHigh20;                   //!<! For E cell > 0.5 GeV, count number of cells, 1 cluster with n_cell_w>20 
+  TH1F *   fhNCells1NHigh20;                    //!<! For E cell > 1.0 GeV, count number of cells, 1 cluster with n_cell_w>20
+  TH1F *   fhNCells2NHigh20;                    //!<! For E cell > 2.0 GeV, count number of cells, 1 cluster with n_cell_w>20 
+  TH1F *   fhNCells5NHigh20;                    //!<! For E cell > 5.0 GeV, count number of cells, 1 cluster with n_cell_w>20
+  
+  TH1F *   fhAverSumEnCells05NHigh20;           //!<! For E cell > 0.5 GeV, sum of cells energy / total cells number, 1 cluster with n_cell_w>20
+  TH1F *   fhAverSumEnCells1NHigh20;            //!<! For E cell > 1.0 GeV, sum of cells energy / total cells number, 1 cluster with n_cell_w>20
+  TH1F *   fhAverSumEnCells2NHigh20;            //!<! For E cell > 2.0 GeV, sum of cells energy / total cells number, 1 cluster with n_cell_w>20
+  TH1F *   fhAverSumEnCells5NHigh20;            //!<! For E cell > 5.0 GeV, sum of cells energy / total cells number, 1 cluster with n_cell_w>20
+  
+  TH1F *   fhFracNCells1NHigh20;                //!<! total number of cells with E > 1 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
+  TH1F *   fhFracNCells2NHigh20;                //!<! total number of cells with E > 2 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
+  TH1F *   fhFracNCells5NHigh20;                //!<! total number of cells with E > 5 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
+  
+  TH1F *   fhFracSumEnCells1NHigh20;             //!<! sum of cells with E > 1 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
+  TH1F *   fhFracSumEnCells2NHigh20;             //!<! sum of cells with E > 2 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
+  TH1F *   fhFracSumEnCells5NHigh20;             //!<! sum of cells with E > 5 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
   
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;
@@ -338,7 +391,7 @@ public:
   AliAnaCaloExotics(              const AliAnaCaloExotics & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloExotics,6) ;
+  ClassDef(AliAnaCaloExotics,7) ;
   /// \endcond
 
 } ;
