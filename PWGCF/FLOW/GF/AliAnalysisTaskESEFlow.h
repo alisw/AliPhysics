@@ -32,7 +32,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         void                    SetMakeqSelectionRun(Bool_t actqRun = kFALSE) { fqRun = actqRun; }
 
-        void                    SetReadMC(Bool_t activate = kFALSE) { fReadMC = activate;}
+        void                    SetReadMC(Bool_t activateMC = kFALSE) { fReadMC = activateMC ;}
         void                    SetFlowRFPsPt(Double_t min, Double_t max) { fFlowRFPsPtMin = min; fFlowRFPsPtMax = max; }
         void                    SetFlowPOIsPt(Double_t min, Double_t max) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; } 
 
@@ -40,19 +40,22 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetUseqSel(Bool_t ActivateqSelection) { kUseqSel = ActivateqSelection; }
 
         void                    SetInputTree(TTree* inputTree) { fqCutsTree = inputTree->CloneTree(); }
-        
+        void                    SetCorrFour(Bool_t activateFour) {kUseFourCorr = activateFour; }
+        void                    SetCorrTwo(Bool_t activateTwo) {kUseTwoCorr = activateTwo; }
+        void                    SetCalcWeightsRun( Bool_t actWeightsRun) { kSetWeightsRun = actWeightsRun; }
 
 
     private:
 
-    static const Int_t      fNumHarms = 10; // maximum harmonics length of flow vector array
-    static const Int_t      fNumPowers = 10; // maximum weight power length of flow vector array
-    static const Int_t      fNumHarmHists = 3; // how many harmonics hists
-    static const Int_t      fNumCentHists = 7; // how many cent hists should there be
-    static const Int_t      fnqCuts = 11;        // number of q selection cuts from 0-10 in 10% intervals --- probably not used anywhere?
+    static const Int_t      fNumHarms = 10;     // maximum harmonics length of flow vector array
+    static const Int_t      fNumPowers = 10;    // maximum weight power length of flow vector array
+    static const Int_t      fNumHarmHists = 3;  // how many harmonics hists
+    static const Int_t      fNumCentHists = 7;  // how many cent hists should there be
+    static const Int_t      fnqCuts = 11;       // number of q selection cuts from 0-10 in 10% intervals --- probably not used anywhere?
+    static const Int_t      fqnBins = 10;
 
     Bool_t                  fInit; // ini check
-    Bool_t                  fqRun;
+    Bool_t                  fqRun;  // make q-selection run
 
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputList;    //! output list
@@ -91,12 +94,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistPDG; //! histogram of pdg codes for MC
 
         /////////////////// Work in progress //////////////////////////
-        TProfile*               fProfcn_2gap_qn[3][fNumHarmHists][fNumCentHists][10]; //! #of qn dists, harmonic hists, cent hists, and qn bins      
+        TProfile*               fProfcn_2gap_qn[3][fNumHarmHists][fNumCentHists][fqnBins]; //! #of qn dists, harmonic hists, cent hists, and qn bins      
 
         // 4-particle correlation
         TProfile*               fProfcn_4gap[fNumHarmHists]; //!
         TProfile*               fProfPTdn_4gap[fNumHarmHists][fNumCentHists];    //!
-        TProfile*               fProfcn_4gap_qn[3][fNumHarmHists][fNumCentHists][10]; //! #of qn dists, harmonic hists, cent hists, and qn bins 
+        TProfile*               fProfcn_4gap_qn[3][fNumHarmHists][fNumCentHists][fqnBins]; //! #of qn dists, harmonic hists, cent hists, and qn bins 
         TProfile*               fProfPTdn_4gap_large[fNumHarmHists][fNumCentHists];   //!
         TProfile*               fProfPTdn_4gap_small[fNumHarmHists][fNumCentHists];   //! 
         ///////////////////////////////////////////////////////////////
@@ -106,6 +109,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         // fill dphi/deta/dpt histograms for weights
         void FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD);
+        //
+        void CorrelationTask(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD);
         // Calculate flow vectors for reference and POIs
         void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD);
         void POIVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD);
@@ -124,6 +129,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t GetFlowWeight(const AliAODTrack* track, const float dVz) const;
         Bool_t LoadqCuts(TTree* inputTree);
         Double_t GetqSelectionCut(Int_t nHarm, Int_t CentRange, Int_t Entry);
+        
         //############ GENERIC FRAMEWORK ############# MODIFIED WITH ESE //
 
         double GetWeight(double phi, double eta, double vz,  double runNumber);
@@ -215,7 +221,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
         Bool_t                  fReadMC;
         AliMCEvent*             fMCEvent;       //! corresponding MC event
-        int                     N_counter;
         Double_t                dGap;
         Float_t                 fCentInterval[12];
         Double_t                fFlowRFPsPtMin; // [0.2] (GeV/c) min pT treshold for RFPs particle for reference flow
@@ -227,6 +232,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  bUseOwnWeights;
         Bool_t                  bUseGap;
         Bool_t                  kUseqSel;
+        Bool_t                  kUseTwoCorr;
+        Bool_t                  kUseFourCorr;
+        Bool_t                  kSetWeightsRun;
 
 
         ClassDef(AliAnalysisTaskESEFlow, 1);

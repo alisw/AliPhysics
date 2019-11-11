@@ -27,7 +27,6 @@
 #include "TList.h"
 #include "TMath.h"
 #include "TComplex.h"
-#include "AliAnalysisTask.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
@@ -80,7 +79,6 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fFlowPOIsPtMin(0),
     fFlowPOIsPtMax(10.0),
     fCentEstimator(),
-    N_counter(0),
     fh2Weights{nullptr},
     fFlowRunByRunWeights{kTRUE},
     fCentInterval{0,5,10,20,30,40,50,60,70,80,90,100},
@@ -105,7 +103,10 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fProfPTdn_4gap_small{0},
     fqnCuts{0},
     bUseGap(kTRUE),
-    kUseqSel(kTRUE)
+    kUseqSel(kTRUE),
+    kUseTwoCorr(kFALSE),
+    kUseFourCorr(kFALSE),
+    kSetWeightsRun(kFALSE)
 {}
 //_____________________________________________________________________________
 AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTaskSE(name),
@@ -141,7 +142,6 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTa
     fFlowPOIsPtMin(0.2),
     fFlowPOIsPtMax(10.0),
     fCentEstimator(),
-    N_counter(0),
     fh2Weights{nullptr},
     fFlowRunByRunWeights{kTRUE},
     fCentInterval{0,5,10,20,30,40,50,60,70,80,90,100},
@@ -166,7 +166,10 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTa
     fProfPTdn_4gap_small{0},
     fqnCuts{0},
     bUseGap(kTRUE),
-    kUseqSel(kTRUE)
+    kUseqSel(kTRUE),
+    kUseTwoCorr(kFALSE),
+    kUseFourCorr(kFALSE),
+    kSetWeightsRun(kFALSE)
 {
     //define input and output
     DefineInput(0, TChain::Class());
@@ -193,6 +196,7 @@ AliAnalysisTaskESEFlow::~AliAnalysisTaskESEFlow()
 }
 Bool_t AliAnalysisTaskESEFlow::InitializeTask()
 {
+    if(!kSetWeightsRun){
     if(fFlowRunByRunWeights){
         if(bUseOwnWeights)
         {
@@ -204,6 +208,7 @@ Bool_t AliAnalysisTaskESEFlow::InitializeTask()
             fFlowWeightsList = static_cast<TList*>(GetInputData(1));
             if(!fFlowWeightsList) { AliFatal("\n \n \n \n \n \n \n \n \n \n \n \n Flow weights list 2 not found! Terminating! \n \n \n \n \n \n \n \n \n \n \n \n "); return kFALSE; }
         }
+    }
     }
 
     if(kUseqSel){
@@ -258,61 +263,79 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     const int nBins = 9;
     double binedge[nBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80.};
 
+    if(!kSetWeightsRun){
     //Differential PT v's
     for(Int_t fHarmNum(0); fHarmNum<fNumHarmHists; ++fHarmNum)
     {
+        if(kUseTwoCorr){
         fProfcn_2gap[fHarmNum] = new TProfile(Form("c_{%i}{2} gap vs cent",fHarmNum+2),"",nBins,binedge);
-        fCorrDist->Add(fProfcn_2gap[fHarmNum]);
+        fCorrDist->Add(fProfcn_2gap[fHarmNum]); }
 
+        if(kUseFourCorr){
         fProfcn_4gap[fHarmNum] = new TProfile(Form("c_{%i}{4} gap vs cent",fHarmNum+2),"",nBins,binedge);
-        fCorrDist->Add(fProfcn_4gap[fHarmNum]);
+        fCorrDist->Add(fProfcn_4gap[fHarmNum]); }
 
         for(Int_t fCentNum(0) ; fCentNum<fNumCentHists; ++fCentNum)
         {
+            if(kUseTwoCorr){
             fProfPTdn_2gap[fHarmNum][fCentNum] = new TProfile(Form("d_{%i}{2} in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"",NvnPtBin,PtEdgesvn);
             fpTDiff->Add(fProfPTdn_2gap[fHarmNum][fCentNum]);
+            }
 
+            if(kUseFourCorr){
             fProfPTdn_4gap[fHarmNum][fCentNum] = new TProfile(Form("d_{%i}{4} in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"",NvnPtBin,PtEdgesvn);
             fpTDiff->Add(fProfPTdn_4gap[fHarmNum][fCentNum]);
+            }
 
             fHistqn_reduced[fHarmNum][fCentNum] = new TH1F(Form("q_{%i} red in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"",100,0,10);
             fqnDist->Add(fHistqn_reduced[fHarmNum][fCentNum]);
 
             if(kUseqSel){
+            if(kUseTwoCorr){
             fProfPTdn_2gap_small[fHarmNum][fCentNum] = new TProfile(Form("d_{%i}{2} small in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"",NvnPtBin,PtEdgesvn);
             fpTDiffqselec->Add(fProfPTdn_2gap_small[fHarmNum][fCentNum]);
 
             fProfPTdn_2gap_large[fHarmNum][fCentNum] = new TProfile(Form("d_{%i}{2} large in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"",NvnPtBin,PtEdgesvn);
             fpTDiffqselec->Add(fProfPTdn_2gap_large[fHarmNum][fCentNum]);
-
+            }
+            if(kUseFourCorr){
             fProfPTdn_4gap_small[fHarmNum][fCentNum] = new TProfile(Form("d_{%i}{4} small in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"",NvnPtBin,PtEdgesvn);
             fpTDiffqselec->Add(fProfPTdn_4gap_small[fHarmNum][fCentNum]);
 
             fProfPTdn_4gap_large[fHarmNum][fCentNum] = new TProfile(Form("d_{%i}{4} large in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"",NvnPtBin,PtEdgesvn);
             fpTDiffqselec->Add(fProfPTdn_4gap_large[fHarmNum][fCentNum]);
             }
+            }
         
+            if(kUseTwoCorr){
             fProfPTdn_2gap_B[fHarmNum][fCentNum] = new TProfile(Form("d_{%i}{2} B in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"", NvnPtBin, PtEdgesvn);
             fpTDiff->Add(fProfPTdn_2gap_B[fHarmNum][fCentNum]);
+            }
 
             //large & small q2 cuts
             if(kUseqSel){
+            if(kUseTwoCorr){
             fProfcn_2gap_smallqn[fHarmNum][fCentNum]  = new TProfile(Form("c_{%i}{2} smallcut in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"",nBins,binedge);
             fcnqselec->Add(fProfcn_2gap_smallqn[fHarmNum][fCentNum]);
 
             fProfcn_2gap_largeqn[fHarmNum][fCentNum]  = new TProfile(Form("c_{%i}{2} largecut in centrality percentile: %.0f-%.0f",fHarmNum+2,binedge[fCentNum],binedge[fCentNum+1]),"",nBins,binedge);
             fcnqselec->Add(fProfcn_2gap_largeqn[fHarmNum][fCentNum]);
             }
+            }
 
             //All Integrated cn after ESE in all centrality ranges with all permutations
             if(kUseqSel){
                 for(Int_t qn(0); qn<3; ++qn){
                     for(Int_t qBin(0); qBin<10; ++qBin){
+                        if(kUseTwoCorr){
                         fProfcn_2gap_qn[qn][fHarmNum][fCentNum][qBin] = new TProfile(Form("c%i_2gap_q%isel_point_%i_in_%.0f_%.0f",fHarmNum+2,qn+2,qBin+1,binedge[fCentNum],binedge[fCentNum+1]),"",nBins, binedge);
                         fcnqselec->Add(fProfcn_2gap_qn[qn][fHarmNum][fCentNum][qBin]);
-
+                        }
+                        
+                        if(kUseFourCorr){
                         fProfcn_4gap_qn[qn][fHarmNum][fCentNum][qBin] = new TProfile(Form("c%i_4gap_q%isel_point_%i_in_%.0f_%.0f",fHarmNum+2,qn+2,qBin+1,binedge[fCentNum],binedge[fCentNum+1]),"",nBins, binedge);
                         fcnqselec->Add(fProfcn_4gap_qn[qn][fHarmNum][fCentNum][qBin]);
+                        }
                     }
                 }
             }
@@ -320,6 +343,8 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     }
 
     fHistq2_red_cent_30_31 = new TH1F("fHistq2_red_cent_30_31", "",100,0,10);
+    fqnDist->Add(fHistq2_red_cent_30_31);
+
     for(Int_t qn(0);qn<3;++qn){
         fHistqn_red_cent_0_1[qn] = new TH1F(Form("fHistq%i_red_cent_0_1",qn+2),"",100,0,10);
         fqnDist->Add(fHistqn_red_cent_0_1[qn]);
@@ -330,13 +355,13 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         fHistPDG = new TH1F("fHistPDG","",500,0,500);
         fOutputList->Add(fHistPDG);
     }
+    }
     
     fObservables->Add(fHistPhiEta);
     fObservables->Add(fHistPhi);
     fObservables->Add(fHistEta);
     fObservables->Add(fHistPt);
     fObservables->Add(fHistZVertex);
-    fqnDist->Add(fHistq2_red_cent_30_31);
 
     PostData(1, fOutputList);
     PostData(2, fObservables);
@@ -362,23 +387,27 @@ void AliAnalysisTaskESEFlow::UserExec(Option_t *)
     AliMultSelection *multSelection =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
     if(multSelection) centrality = multSelection->GetMultiplicityPercentile(fCentEstimator);
 
+    if(!kSetWeightsRun){
     if(fFlowRunByRunWeights){
         if(!LoadWeights()) { AliFatal("\n \n \n \n \n \n \n \n \n \n Weights not loaded! \n \n \n \n \n \n \n \n \n \n "); return; }
+    }
     }
 
     
     FillObsDistributions(iTracks, fAOD);
-    ReducedRFPVectors(centrality, iTracks, fAOD);
-    if(!fqRun){
-    RFPVectors(centrality, iTracks, fAOD);
-    POIVectors(centrality, iTracks, fAOD);
-    }
-    if(fReadMC) 
-    { 
-        fMCEvent = MCEvent();
-        if(fMCEvent) ProcessMCParticles();
-    }
+
+    if(!kSetWeightsRun){
     
+        CorrelationTask(centrality,iTracks,fAOD);
+    
+
+        if(fReadMC) 
+        { 
+            fMCEvent = MCEvent();
+            if(fMCEvent) ProcessMCParticles();
+        }
+    }
+
     PostData(1, fOutputList);
     PostData(2, fObservables);
     PostData(3, fCorrDist);
@@ -391,6 +420,15 @@ void AliAnalysisTaskESEFlow::UserExec(Option_t *)
 void AliAnalysisTaskESEFlow::Terminate(Option_t *)
 {
 }
+void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD)
+{
+    ReducedRFPVectors(centrality, iTracks, fAOD);
+    if(!fqRun){
+    RFPVectors(centrality, iTracks, fAOD);
+    POIVectors(centrality, iTracks, fAOD);
+    }
+
+}
 void AliAnalysisTaskESEFlow::FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD)
 {
     if(iTracks < 1 ) { return; }
@@ -402,7 +440,6 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Int_t iTracks, const Ali
         double dEta = track->Eta();
         double dPhi = track->Phi();
         double dPt = track->Pt();
-        //example histogram
         fHistPhiEta->Fill(dPhi, dEta);
         fHistPhi->Fill(dPhi);
         fHistEta->Fill(dEta);
@@ -470,13 +507,17 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality, const Int_t iT
                         }
                     }
                 }
+            if(kUseTwoCorr){
             FillRFP(centrality,2,2);  //with gap for 2-particle correlation nHarm=2
             FillRFP(centrality,3,2);  // nHarm=3
             FillRFP(centrality,4,2);  // nHarm=4
+            }
 
+            if(kUseFourCorr){
             FillRFP(centrality,2,4);  //with gap for 4-particle correlation nHarm=2
             FillRFP(centrality,3,4);  // nHarm=3
             FillRFP(centrality,4,4);  // nHarm=4
+            }
             }
     return;
 
@@ -575,13 +616,17 @@ void AliAnalysisTaskESEFlow::POIVectors(const Float_t centrality, const Int_t iT
 
         FillPOI(dPtL, dPtLow, dPtHigh, dVz, iTracks);
         
+        if(kUseTwoCorr){
         Filldn(centrality,dPtL,2,2); //Fill d2_2 <<2'>>  2-particle correlation
         Filldn(centrality,dPtL,3,2); 
         Filldn(centrality,dPtL,4,2); 
+        }
 
-        Filldn(centrality,dPtL,2,4); //Fill d2_2 <<2'>>  2-particle correlation
+        if(kUseFourCorr){
+        Filldn(centrality,dPtL,2,4); //Fill d2_4 <<2'>>  4-particle correlation
         Filldn(centrality,dPtL,3,4); 
         Filldn(centrality,dPtL,4,4);
+        }
     }
 }
 void AliAnalysisTaskESEFlow::ReducedRFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD)
