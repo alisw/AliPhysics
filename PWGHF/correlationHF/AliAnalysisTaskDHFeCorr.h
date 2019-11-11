@@ -76,59 +76,61 @@ class TClonesArray;
 namespace AliDHFeCorr {
 
     typedef struct AliDMeson {
-        AliAODRecoDecayHF *fRecoObj{nullptr};
-        Int_t fGridPID{0}; ///<PID of the grid job used to create the tree
-        Int_t fEventNumber{0}; ///< Number of the event
-        UInt_t fID{0}; ///< D meson id in the event
-        Bool_t fIsParticleCandidate{kFALSE}; ///< Particle hypotheses at reconstruction level
+        public:
+            AliAODRecoDecayHF *fRecoObj{nullptr};
+            Int_t fGridPID{0}; ///<PID of the grid job used to create the tree
+            Int_t fEventNumber{0}; ///< Number of the event
+            UInt_t fID{0}; ///< D meson id in the event
+            Bool_t fIsParticleCandidate{kFALSE}; ///< Particle hypotheses at reconstruction level
 
-        //Basic Information
-        Float_t fPt{-999.};
-        Float_t fEta{-999.};
-        Float_t fPhi{-999.};
-        Float_t fY{-999.};
-        Float_t fInvMass{0.};
-        Float_t fReducedChi2{-999.};
+            //Basic Information
+            Float_t fPt{-999.};
+            Float_t fEta{-999.};
+            Float_t fPhi{-999.};
+            Float_t fY{-999.};
+            Float_t fInvMass{0.};
+            Float_t fReducedChi2{-999.};
 
-        //Topologic information
-        Float_t fDecayLength{-999.};
-        Float_t fDecayLengthXY{-999.};
+            // Topologic information
+            Float_t fDecayLength{-999.};
+            Float_t fDecayLengthXY{-999.};
 
-        Float_t fNormDecayLength{-999.};
-        Float_t fNormDecayLengthXY{-999.};
+            Float_t fNormDecayLength{-999.};
+            Float_t fNormDecayLengthXY{-999.};
 
-        Float_t fCosP{-999.};
-        Float_t fCosPXY{-999.};
+            Float_t fCosP{-999.};
+            Float_t fCosPXY{-999.};
 
-        Float_t fImpParXY{-999.};
-        Float_t fDCA{-999.};
+            Float_t fImpParXY{-999.};
+            Float_t fDCA{-999.};
 
-        //D0 and D+, D*+ shared information
-        Float_t fNormd0MeasMinusExp{-999.};
-        UChar_t fSelectionStatusDefaultPID{99}; ///< Default PID selection status
+            //D0 and D+, D*+ shared information
+            Float_t fNormd0MeasMinusExp{-999.};
+            UChar_t fSelectionStatusDefaultPID{99}; ///< Default PID selection status
 
-        //D0 information (also used by the D*, since it has a D0)
-        Float_t fCosTs{-999.};
+            //D0 information (also used by the D*, since it has a D0)
+            Float_t fCosTs{-999.};
 
-        //D+ information
-        Float_t fSigmaVertex{-999.};
+            //D+ information
+            Float_t fSigmaVertex{-999.};
 
-        //D* information
-        Float_t fAngleD0dkpPisoft{-999.};
+            //D* information
+            Float_t fAngleD0dkpPisoft{-999.};
 
-        //Single-track information
-        std::vector<Float_t> fPtDaughters;
-        std::vector<Float_t> fD0Daughters;
-        std::vector<UInt_t> fIDDaughters; ///< ID obtained using GetID()
+            //Single-track information
+            std::vector<Float_t> fPtDaughters;
+            std::vector<Float_t> fD0Daughters;
+            std::vector<UInt_t> fIDDaughters; ///< ID obtained using GetID()
 
-        std::vector<Float_t> fNSigmaTPCDaughters; ///< The PID TPC response (n sigma)
-        std::vector<Float_t> fNSigmaTOFDaughters; ///< The PID TOF response (n sigma)
+            std::vector<std::vector<Float_t>> fNSigmaTPCDaughters; ///< The PID TPC response (n sigma)
+            std::vector<std::vector<Float_t>> fNSigmaTOFDaughters; ///< The PID TOF response (n sigma)
 
-        //MC Level information
-        Float_t fPtMC{-999.};///< Transverse momentum (MC information)
-        Bool_t fIsD{kFALSE}; // Is it signal or background? (MC information)
-        Bool_t fIsParticle{kFALSE}; //is it a D0 or D0bar? (MC information)
-        Bool_t fIsPrompt{kFALSE}; // Does it comes from charm? (MC information)
+            //MC Level information
+            Float_t fPtMC{-999.};///< Transverse momentum (MC information)
+            Bool_t fIsD{kFALSE}; // Is it signal or background? (MC information)
+            Bool_t fIsParticle{kFALSE}; //is it a D0 or D0bar? (MC information)
+            Bool_t fIsPrompt{kFALSE}; // Does it comes from charm? (MC information)
+
     } AliDMeson;
 
     typedef struct AliElectron {

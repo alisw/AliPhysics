@@ -115,6 +115,7 @@ void AliAnalysisTaskDHFeCorr::AddElectronVariables(std::unique_ptr<TTree> &tree)
     tree->Branch("ITSHitSecondLayer", &fElectron.fITSHitSecondLayer);
     tree->Branch("DCAxy", &fElectron.fDCAxy);
     tree->Branch("DCAz", &fElectron.fDCAz);
+    //TODO: include Pion/Kaon response?
     tree->Branch("TPCNSigma", &fElectron.fTPCNSigma);
     tree->Branch("TOFNSigma", &fElectron.fTOFNSigma);
     tree->Branch("InvMassPartnersULS", &fElectron.fInvMassPartnersULS);
@@ -153,23 +154,36 @@ void AliAnalysisTaskDHFeCorr::AddDMesonVariables(std::unique_ptr<TTree> &tree,
     tree->Branch("Normd0MeasMinusExp", &fDmeson.fNormd0MeasMinusExp);
     tree->Branch("PtDaughter", &fDmeson.fPtDaughters);
     tree->Branch("D0Daughter", &fDmeson.fD0Daughters);
-    tree->Branch("NSigmaTPCDaughter", &fDmeson.fNSigmaTPCDaughters);
-    tree->Branch("NSigmaTOFDaughters", &fDmeson.fNSigmaTOFDaughters);
+
     tree->Branch("IDDaughters", &fDmeson.fIDDaughters);
 
     //PID
     tree->Branch("SelectionStatusDefaultPID", &fDmeson.fSelectionStatusDefaultPID);
 
+    tree->Branch("NSigmaTPCDaughters0", &fDmeson.fNSigmaTPCDaughters[0]);
+    tree->Branch("NSigmaTPCDaughters1", &fDmeson.fNSigmaTPCDaughters[1]);
+
+    tree->Branch("NSigmaTOFDaughters0", &fDmeson.fNSigmaTOFDaughters[0]);
+    tree->Branch("NSigmaTOFDaughters1", &fDmeson.fNSigmaTOFDaughters[1]);
+
     //Meson depended variables
     switch (meson_species) {
-        case AliAnalysisTaskDHFeCorr::kD0:
+        case AliAnalysisTaskDHFeCorr::kD0: {
             tree->Branch("CosTs", &fDmeson.fCosTs);
+        }
             break;
-        case AliAnalysisTaskDHFeCorr::kDplus:
+        case AliAnalysisTaskDHFeCorr::kDplus: {
             tree->Branch("SigmaVertex", &fDmeson.fSigmaVertex);
+            tree->Branch("NSigmaTPCDaughters2", &fDmeson.fNSigmaTPCDaughters[2]);
+            tree->Branch("NSigmaTOFDaughters2", &fDmeson.fNSigmaTOFDaughters[2]);
+        }
             break;
-        case AliAnalysisTaskDHFeCorr::kDstar:
+        case AliAnalysisTaskDHFeCorr::kDstar: {
             tree->Branch("AngleD0dkpPisoft", &fDmeson.fAngleD0dkpPisoft);
+            tree->Branch("CosTs", &fDmeson.fCosTs);
+            tree->Branch("NSigmaTPCDaughters2", &fDmeson.fNSigmaTPCDaughters[2]);
+            tree->Branch("NSigmaTOFDaughters2", &fDmeson.fNSigmaTOFDaughters[2]);
+        }
             break;
     }
 }
@@ -703,7 +717,7 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
 
     const auto pdg_dmeson = fgkDMesonPDG.at(meson_species);
     const auto pdg_daughters = fgkDMesonDaughterPDG.at(meson_species);
-    const auto id_daughter = fgkDMesonDaughterAliPID.at(fDmesonSpecies);
+    const auto id_daughter_alipid = fgkDMesonDaughterAliPID.at(fDmesonSpecies);
 
     const auto aod_event = dynamic_cast<AliAODEvent *>(InputEvent());
     const auto pid_response = fInputHandler->GetPIDResponse();
@@ -784,31 +798,43 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
 
         //Single particle information
         const auto n_prongs = reco_cand->GetNProngs();
+
         std::vector<Float_t> pt_daughters;
         pt_daughters.reserve(n_prongs);
+
         std::vector<Float_t> d0_daughters;
         d0_daughters.reserve(n_prongs);
 
-        for (int i = 0; i < n_prongs; i++) {
-            pt_daughters.push_back(reco_cand->PtProng(i));
-            d0_daughters.push_back(reco_cand->Getd0Prong(i));
+        for (int j = 0; j < n_prongs; j++) {
+            pt_daughters.push_back(reco_cand->PtProng(j));
+            d0_daughters.push_back(reco_cand->Getd0Prong(j));
         }
         cand.fPtDaughters = pt_daughters;
         cand.fD0Daughters = d0_daughters;
 
-        std::vector<Float_t> pid_info_tpc;
-        std::vector<Float_t> pid_info_tof;
+        std::vector<std::vector<Float_t>> pid_info_tpc;
+        std::vector<std::vector<Float_t>> pid_info_tof;
         std::vector<UInt_t> id_daughters;
         pid_info_tpc.reserve(n_prongs);
         pid_info_tof.reserve(n_prongs);
         id_daughters.reserve(n_prongs);
 
-        for (int i = 0; i < n_prongs; i++) {
-            const auto track = dynamic_cast<AliAODTrack *>(reco_cand->GetDaughter(i));
-            pid_info_tpc.push_back(pid_response->NumberOfSigmasTPC(track, id_daughter[i]));
-            pid_info_tof.push_back(pid_response->NumberOfSigmasTOF(track, id_daughter[i]));
+        for (int j = 0; j < n_prongs; j++) {
+            const auto track = dynamic_cast<AliAODTrack *>(reco_cand->GetDaughter(j));
             id_daughters.push_back(TMath::Abs(track->GetID()));
+
+            std::vector<Float_t> pid_info_tpc_prong;
+            std::vector<Float_t> pid_info_tof_prong;
+
+            for (auto hypothesis: id_daughter_alipid) {
+                pid_info_tpc_prong.push_back(pid_response->NumberOfSigmasTPC(track, hypothesis));
+                pid_info_tof_prong.push_back(pid_response->NumberOfSigmasTOF(track, hypothesis));
+            }
+
+            pid_info_tpc.push_back(pid_info_tpc_prong);
+            pid_info_tof.push_back(pid_info_tof_prong);
         }
+
         cand.fNSigmaTPCDaughters = pid_info_tpc;
         cand.fNSigmaTOFDaughters = pid_info_tof;
         cand.fIDDaughters = id_daughters;
@@ -836,8 +862,7 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
             reflection.fInvMass = d0bar_candidate->InvMassD0bar();
             reflection.fCosTs = d0bar_candidate->CosThetaStarD0bar();
 
-            //Invert the vectors, since we would like to have the pt and d0 for the pion and
-            //kaon in the same position
+            //Invert the vectors related to the reflections
             std::reverse(reflection.fPtDaughters.begin(), reflection.fPtDaughters.end());
             std::reverse(reflection.fD0Daughters.begin(), reflection.fD0Daughters.end());
             std::reverse(reflection.fNSigmaTPCDaughters.begin(), reflection.fNSigmaTPCDaughters.end());
@@ -846,12 +871,15 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
 
             d_mesons.push_back(reflection);
         }
+
         dmeson_selection.fDMesonCuts->CleanOwnPrimaryVtx(reco_cand, aod_event, original_own_vertex);
     }
 
     d_mesons.shrink_to_fit();
     return d_mesons;
 }
+
+
 
 std::vector<AliDHFeCorr::AliDMeson>
 AliAnalysisTaskDHFeCorr::FilterDmesons(const std::vector<AliDHFeCorr::AliDMeson> &dmeson_candidates,
