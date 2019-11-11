@@ -2756,110 +2756,110 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     outputContainer->Add(fhCellTimeNCell12);
     
     fhSumEnCells05 = new TH1F 
-    ("hSumEnCells05","#Sigma #it{E} for #{E}_{i} > 0.5 GeV", 1000,0,1000);
+    ("hSumEnCells05","#Sigma #it{E} for #it{E}_{i} > 0.5 GeV", 1000,0,1000);
     fhSumEnCells05->SetYTitle("Counts per event");
     fhSumEnCells05->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhSumEnCells05);                     
 
     fhSumEnCells1 = new TH1F 
-    ("hSumEnCells1","#Sigma #it{E} for #{E}_{i} > 1 GeV", 1000,0,1000);
+    ("hSumEnCells1","#Sigma #it{E} for #it{E}_{i} > 1 GeV", 1000,0,1000);
     fhSumEnCells1->SetYTitle("Counts per event");
     fhSumEnCells1->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhSumEnCells1);         
   
     fhSumEnCells2 = new TH1F 
-    ("hSumEnCells2","#Sigma #it{E} for #{E}_{i} > 2 GeV", 1000,0,1000);
+    ("hSumEnCells2","#Sigma #it{E} for #it{E}_{i} > 2 GeV", 1000,0,1000);
     fhSumEnCells2->SetYTitle("Counts per event");
     fhSumEnCells2->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhSumEnCells2);    
     
     fhSumEnCells5 = new TH1F 
-    ("hSumEnCells5","#Sigma #it{E} for #{E}_{i} > 5 GeV", 1000,0,1000);
+    ("hSumEnCells5","#Sigma #it{E} for #it{E}_{i} > 5 GeV", 1000,0,1000);
     fhSumEnCells5->SetYTitle("Counts per event");
     fhSumEnCells5->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhSumEnCells5);    
 
 
     fhNCells05 = new TH1F 
-    ("hNCells05","#it{n}_{cells}for #{E}_{i} > 0.5 GeV", 17000,0,17000);
+    ("hNCells05","#it{n}_{cells}for #it{E}_{i} > 0.5 GeV", 17000,0,17000);
     fhNCells05->SetYTitle("Counts per event");
     fhNCells05->SetXTitle("#it{n}_{cells}");
     outputContainer->Add(fhNCells05);                     
     
     fhNCells1 = new TH1F 
-    ("hNCells1","#it{n}_{cells} for #{E}_{i} > 1 GeV", 17000,0,17000);
+    ("hNCells1","#it{n}_{cells} for #it{E}_{i} > 1 GeV", 17000,0,17000);
     fhNCells1->SetYTitle("Counts per event");
     fhNCells1->SetXTitle("#it{n}_{cells}");
     outputContainer->Add(fhNCells1);         
     
     fhNCells2 = new TH1F 
-    ("hNCells2","#it{n}_{cells} for #{E}_{i} > 2 GeV", 17000,0,17000);
+    ("hNCells2","#it{n}_{cells} for #it{E}_{i} > 2 GeV", 17000,0,17000);
     fhNCells2->SetYTitle("Counts per event");
     fhNCells2->SetXTitle("#it{n}_{cells}");
     outputContainer->Add(fhNCells2);    
     
     fhNCells5 = new TH1F 
-    ("hNCells5","#it{n}_{cells} for #{E}_{i} > 5 GeV", 17000,0,17000);
+    ("hNCells5","#it{n}_{cells} for #it{E}_{i} > 5 GeV", 17000,0,17000);
     fhNCells5->SetYTitle("Counts per event");
     fhNCells5->SetXTitle("#it{n}_{cells}");
     outputContainer->Add(fhNCells5);        
     
     fhAverSumEnCells05 = new TH1F 
-    ("hAverSumEnCells05","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 0.5 GeV", 1000,0,1000);
+    ("hAverSumEnCells05","#Sigma #it{E}/#it{n}_{cells} for #it{E}_{i} > 0.5 GeV", 1000,0,1000);
     fhAverSumEnCells05->SetYTitle("Counts per event");
     fhAverSumEnCells05->SetXTitle("#Sigma #it{E}/#it{n}_{cells} (GeV)");
     outputContainer->Add(fhAverSumEnCells05);                     
     
     fhAverSumEnCells1 = new TH1F 
-    ("hAverSumEnCells1","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 1 GeV", 1000,0,1000);
+    ("hAverSumEnCells1","#Sigma #it{E}/#it{n}_{cells} for #it{E}_{i} > 1 GeV", 1000,0,1000);
     fhAverSumEnCells1->SetYTitle("Counts per event");
     fhAverSumEnCells1->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhAverSumEnCells1);         
     
     fhAverSumEnCells2 = new TH1F 
-    ("hAverSumEnCells2","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 2 GeV", 1000,0,1000);
+    ("hAverSumEnCells2","#Sigma #it{E}/#it{n}_{cells} for #it{E}_{i} > 2 GeV", 1000,0,1000);
     fhAverSumEnCells2->SetYTitle("Counts per event");
     fhAverSumEnCells2->SetXTitle("#Sigma #it{E}/#it{n}_{cells} (GeV)");
     outputContainer->Add(fhAverSumEnCells2);    
     
     fhAverSumEnCells5 = new TH1F 
-    ("hAverSumEnCells5","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 5 GeV", 1000,0,1000);
+    ("hAverSumEnCells5","#Sigma #it{E}/#it{n}_{cells} for #it{E}_{i} > 5 GeV", 1000,0,1000);
     fhAverSumEnCells5->SetYTitle("Counts per event");
     fhAverSumEnCells5->SetXTitle("#Sigma #it{E}/#it{n}_{cells}");
     outputContainer->Add(fhAverSumEnCells5);    
     
     fhFracSumEnCells1 = new TH1F 
-    ("hFracSumEnCells1","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 1 GeV", 201,0,1.005);
+    ("hFracSumEnCells1","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #it{E}_{i} > 1 GeV", 201,0,1.005);
     fhFracSumEnCells1->SetYTitle("Counts per event");
     fhFracSumEnCells1->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracSumEnCells1);         
     
     fhFracSumEnCells2 = new TH1F 
-    ("hFracSumEnCells2","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 2 GeV", 201,0,1.005);
+    ("hFracSumEnCells2","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #it{E}_{i} > 2 GeV", 201,0,1.005);
     fhFracSumEnCells2->SetYTitle("Counts per event");
     fhFracSumEnCells2->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracSumEnCells2);    
     
     fhFracSumEnCells5 = new TH1F 
-    ("hFracSumEnCells5","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 5 GeV", 201,0,1.005);
+    ("hFracSumEnCells5","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #it{E}_{i} > 5 GeV", 201,0,1.005);
     fhFracSumEnCells5->SetYTitle("Counts per event");
     fhFracSumEnCells5->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracSumEnCells5);    
 
     fhFracNCells1 = new TH1F 
-    ("hFracNCells1","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 1 GeV", 201,0,1.005);
+    ("hFracNCells1","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #it{E}_{i} > 1 GeV", 201,0,1.005);
     fhFracNCells1->SetYTitle("Counts per event");
     fhFracNCells1->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracNCells1);         
     
     fhFracNCells2 = new TH1F 
-    ("hFracNCells2","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 2 GeV", 201,0,1.005);
+    ("hFracNCells2","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #it{E}_{i} > 2 GeV", 201,0,1.005);
     fhFracNCells2->SetYTitle("Counts per event");
     fhFracNCells2->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracNCells2);    
     
     fhFracNCells5 = new TH1F 
-    ("hFracNCells5","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 5 GeV", 201,0,1.005);
+    ("hFracNCells5","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #it{E}_{i} > 5 GeV", 201,0,1.005);
     fhFracNCells5->SetYTitle("Counts per event");
     fhFracNCells5->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracNCells5);       
@@ -2867,110 +2867,110 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     ///////////////////
     
     fhSumEnCells05NHigh20 = new TH1F 
-    ("hSumEnCells05NHigh20","#Sigma #it{E} for #{E}_{i} > 0.5 GeV", 1000,0,1000);
+    ("hSumEnCells05NHigh20","#Sigma #it{E} for #it{E}_{i} > 0.5 GeV", 1000,0,1000);
     fhSumEnCells05NHigh20->SetYTitle("Counts per event");
     fhSumEnCells05NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhSumEnCells05NHigh20);                     
     
     fhSumEnCells1NHigh20 = new TH1F 
-    ("hSumEnCells1NHigh20","#Sigma #it{E} for #{E}_{i} > 1 GeV", 1000,0,1000);
+    ("hSumEnCells1NHigh20","#Sigma #it{E} for #it{E}_{i} > 1 GeV", 1000,0,1000);
     fhSumEnCells1NHigh20->SetYTitle("Counts per event");
     fhSumEnCells1NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhSumEnCells1NHigh20);         
     
     fhSumEnCells2NHigh20 = new TH1F 
-    ("hSumEnCells2NHigh20","#Sigma #it{E} for #{E}_{i} > 2 GeV", 1000,0,1000);
+    ("hSumEnCells2NHigh20","#Sigma #it{E} for #it{E}_{i} > 2 GeV", 1000,0,1000);
     fhSumEnCells2NHigh20->SetYTitle("Counts per event");
     fhSumEnCells2NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhSumEnCells2NHigh20);    
     
     fhSumEnCells5NHigh20 = new TH1F 
-    ("hSumEnCells5NHigh20","#Sigma #it{E} for #{E}_{i} > 5 GeV", 1000,0,1000);
+    ("hSumEnCells5NHigh20","#Sigma #it{E} for #it{E}_{i} > 5 GeV", 1000,0,1000);
     fhSumEnCells5NHigh20->SetYTitle("Counts per event");
     fhSumEnCells5NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhSumEnCells5NHigh20);    
     
     
     fhNCells05NHigh20 = new TH1F 
-    ("hNCells05NHigh20","#it{n}_{cells}for #{E}_{i} > 0.5 GeV", 17000,0,17000);
+    ("hNCells05NHigh20","#it{n}_{cells}for #it{E}_{i} > 0.5 GeV", 17000,0,17000);
     fhNCells05NHigh20->SetYTitle("Counts per event");
     fhNCells05NHigh20->SetXTitle("#it{n}_{cells}");
     outputContainer->Add(fhNCells05NHigh20);                     
     
     fhNCells1NHigh20 = new TH1F 
-    ("hNCells1NHigh20","#it{n}_{cells} for #{E}_{i} > 1 GeV", 17000,0,17000);
+    ("hNCells1NHigh20","#it{n}_{cells} for #it{E}_{i} > 1 GeV", 17000,0,17000);
     fhNCells1NHigh20->SetYTitle("Counts per event");
     fhNCells1NHigh20->SetXTitle("#it{n}_{cells}");
     outputContainer->Add(fhNCells1NHigh20);         
     
     fhNCells2NHigh20 = new TH1F 
-    ("hNCells2NHigh20","#it{n}_{cells} for #{E}_{i} > 2 GeV", 17000,0,17000);
+    ("hNCells2NHigh20","#it{n}_{cells} for #it{E}_{i} > 2 GeV", 17000,0,17000);
     fhNCells2NHigh20->SetYTitle("Counts per event");
     fhNCells2NHigh20->SetXTitle("#it{n}_{cells}");
     outputContainer->Add(fhNCells2NHigh20);    
     
     fhNCells5NHigh20 = new TH1F 
-    ("hNCells5NHigh20","#it{n}_{cells} for #{E}_{i} > 5 GeV", 17000,0,17000);
+    ("hNCells5NHigh20","#it{n}_{cells} for #it{E}_{i} > 5 GeV", 17000,0,17000);
     fhNCells5NHigh20->SetYTitle("Counts per event");
     fhNCells5NHigh20->SetXTitle("#it{n}_{cells}");
     outputContainer->Add(fhNCells5NHigh20);        
     
     fhAverSumEnCells05NHigh20 = new TH1F 
-    ("hAverSumEnCells05NHigh20","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 0.5 GeV", 1000,0,1000);
+    ("hAverSumEnCells05NHigh20","#Sigma #it{E}/#it{n}_{cells} for #it{E}_{i} > 0.5 GeV", 1000,0,1000);
     fhAverSumEnCells05NHigh20->SetYTitle("Counts per event");
     fhAverSumEnCells05NHigh20->SetXTitle("#Sigma #it{E}/#it{n}_{cells} (GeV)");
     outputContainer->Add(fhAverSumEnCells05NHigh20);                     
     
     fhAverSumEnCells1NHigh20 = new TH1F 
-    ("hAverSumEnCells1NHigh20","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 1 GeV", 1000,0,1000);
+    ("hAverSumEnCells1NHigh20","#Sigma #it{E}/#it{n}_{cells} for #it{E}_{i} > 1 GeV", 1000,0,1000);
     fhAverSumEnCells1NHigh20->SetYTitle("Counts per event");
     fhAverSumEnCells1NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
     outputContainer->Add(fhAverSumEnCells1NHigh20);         
     
     fhAverSumEnCells2NHigh20 = new TH1F 
-    ("hAverSumEnCells2NHigh20","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 2 GeV", 1000,0,1000);
+    ("hAverSumEnCells2NHigh20","#Sigma #it{E}/#it{n}_{cells} for #it{E}_{i} > 2 GeV", 1000,0,1000);
     fhAverSumEnCells2NHigh20->SetYTitle("Counts per event");
     fhAverSumEnCells2NHigh20->SetXTitle("#Sigma #it{E}/#it{n}_{cells} (GeV)");
     outputContainer->Add(fhAverSumEnCells2NHigh20);    
     
     fhAverSumEnCells5NHigh20 = new TH1F 
-    ("hAverSumEnCells5NHigh20","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 5 GeV", 1000,0,1000);
+    ("hAverSumEnCells5NHigh20","#Sigma #it{E}/#it{n}_{cells} for #it{E}_{i} > 5 GeV", 1000,0,1000);
     fhAverSumEnCells5NHigh20->SetYTitle("Counts per event");
     fhAverSumEnCells5NHigh20->SetXTitle("#Sigma #it{E}/#it{n}_{cells}");
     outputContainer->Add(fhAverSumEnCells5NHigh20);    
     
     fhFracSumEnCells1NHigh20 = new TH1F 
-    ("hFracSumEnCells1NHigh20","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 1 GeV", 201,0,1.005);
+    ("hFracSumEnCells1NHigh20","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #it{E}_{i} > 1 GeV", 201,0,1.005);
     fhFracSumEnCells1NHigh20->SetYTitle("Counts per event");
     fhFracSumEnCells1NHigh20->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracSumEnCells1NHigh20);         
     
     fhFracSumEnCells2NHigh20 = new TH1F 
-    ("hFracSumEnCells2NHigh20","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 2 GeV", 201,0,1.005);
+    ("hFracSumEnCells2NHigh20","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #it{E}_{i} > 2 GeV", 201,0,1.005);
     fhFracSumEnCells2NHigh20->SetYTitle("Counts per event");
     fhFracSumEnCells2NHigh20->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracSumEnCells2NHigh20);    
     
     fhFracSumEnCells5NHigh20 = new TH1F 
-    ("hFracSumEnCells5NHigh20","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 5 GeV", 201,0,1.005);
+    ("hFracSumEnCells5NHigh20","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #it{E}_{i} > 5 GeV", 201,0,1.005);
     fhFracSumEnCells5NHigh20->SetYTitle("Counts per event");
     fhFracSumEnCells5NHigh20->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracSumEnCells5NHigh20);    
     
     fhFracNCells1NHigh20 = new TH1F 
-    ("hFracNCells1NHigh20","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 1 GeV", 201,0,1.005);
+    ("hFracNCells1NHigh20","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #it{E}_{i} > 1 GeV", 201,0,1.005);
     fhFracNCells1NHigh20->SetYTitle("Counts per event");
     fhFracNCells1NHigh20->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracNCells1NHigh20);         
     
     fhFracNCells2NHigh20 = new TH1F 
-    ("hFracNCells2NHigh20","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 2 GeV", 201,0,1.005);
+    ("hFracNCells2NHigh20","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #it{E}_{i} > 2 GeV", 201,0,1.005);
     fhFracNCells2NHigh20->SetYTitle("Counts per event");
     fhFracNCells2NHigh20->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracNCells2NHigh20);    
     
     fhFracNCells5NHigh20 = new TH1F 
-    ("hFracNCells5NHigh20","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 5 GeV", 201,0,1.005);
+    ("hFracNCells5NHigh20","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #it{E}_{i} > 5 GeV", 201,0,1.005);
     fhFracNCells5NHigh20->SetYTitle("Counts per event");
     fhFracNCells5NHigh20->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
     outputContainer->Add(fhFracNCells5NHigh20);       
