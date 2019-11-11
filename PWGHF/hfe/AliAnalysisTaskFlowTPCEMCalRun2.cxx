@@ -672,7 +672,7 @@ fOutputList->Add(fInvmassULS);
 fInvmassLS_2D = new TH2F("fInvmassLS_2D","Invmass of LS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,400,0.0,20.0);
 fOutputList->Add(fInvmassLS_2D);
 
-fInvmassULS_2D = new TH2F("fInvmassULS_2D","Invmass of ULS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,200,0.0,10.0);
+fInvmassULS_2D = new TH2F("fInvmassULS_2D","Invmass of ULS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,400,0.0,20.0);
 fOutputList->Add(fInvmassULS_2D);
 
 fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC",160,-0.8,0.8);
