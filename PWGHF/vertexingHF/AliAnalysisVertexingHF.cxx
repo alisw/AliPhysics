@@ -2220,44 +2220,33 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   AliESDtrack *trackBachelor = (AliESDtrack*)twoTrackArray->UncheckedAt(0);
   theCascade->SetCharge(trackBachelor->Charge());
 
-  //--- selection cuts
-  //
-
-  AliAODRecoCascadeHF *tmpCascade = new AliAODRecoCascadeHF(*theCascade);
+  // Add daughters
   if(fInputAOD){
     Int_t idBachelor=(Int_t)trackBachelor->GetID();
     if (idBachelor > -1 && idBachelor < fAODMapSize) {
       AliAODTrack* trackBachelorAOD=dynamic_cast<AliAODTrack*>(event->GetTrack(fAODMap[idBachelor]));
       if(!trackBachelorAOD) AliFatal("Not a standard AOD");
-      tmpCascade->GetSecondaryVtx()->AddDaughter(trackBachelorAOD);
+      theCascade->GetSecondaryVtx()->AddDaughter(trackBachelorAOD);
     }
   }else{
-    tmpCascade->GetSecondaryVtx()->AddDaughter(trackBachelor);
+    theCascade->GetSecondaryVtx()->AddDaughter(trackBachelor);
   }
-  tmpCascade->GetSecondaryVtx()->AddDaughter(v0);
-
-  AliAODVertex *primVertexAOD=0;
-  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
-    // take event primary vertex
-    primVertexAOD = PrimaryVertex();
-    if(!primVertexAOD) primVertexAOD = (AliAODVertex*)event->GetPrimaryVertex();
-    tmpCascade->SetOwnPrimaryVtx(primVertexAOD);
-  }
+  theCascade->GetSecondaryVtx()->AddDaughter(v0);
 
   // select Cascades
   if (fCascades && fInputAOD) {
-    if (fCutsLctoV0->IsSelected(tmpCascade, AliRDHFCuts::kCandidate)>0) {
+    if (fCutsLctoV0->IsSelected(theCascade, AliRDHFCuts::kCandidate)>0) {
       okCascades = kTRUE;
       theCascade->SetSelectionBit(AliRDHFCuts::kLctoV0Cuts);
     }
     if (fCutsDplustoK0spi) {
-      if (fCutsDplustoK0spi->IsSelected(tmpCascade, AliRDHFCuts::kCandidate)>0) {
+      if (fCutsDplustoK0spi->IsSelected(theCascade, AliRDHFCuts::kCandidate)>0) {
         okCascades = kTRUE;
         theCascade->SetSelectionBit(AliRDHFCuts::kDplustoK0sCuts);
       }
     }
     if (fCutsDstoK0sK){
-      if (fCutsDstoK0sK->IsSelected(tmpCascade, AliRDHFCuts::kCandidate)>0) {
+      if (fCutsDstoK0sK->IsSelected(theCascade, AliRDHFCuts::kCandidate)>0) {
         okCascades = kTRUE;
         theCascade->SetSelectionBit(AliRDHFCuts::kDstoK0sCuts);
       }
@@ -2266,12 +2255,12 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   else {
     //AliDebug(2,Form("The cascade is contructed from ESDs, no cuts are applied"));
     okCascades=kTRUE;
+    theCascade->SetSelectionBit(AliRDHFCuts::kLctoV0Cuts);
+    if (fCutsDplustoK0spi) theCascade->SetSelectionBit(AliRDHFCuts::kDplustoK0sCuts);
+    if (fCutsDstoK0sK) theCascade->SetSelectionBit(AliRDHFCuts::kDstoK0sCuts);
   } // no cuts implemented from ESDs
-  tmpCascade->GetSecondaryVtx()->RemoveDaughters();
-  tmpCascade->UnsetOwnPrimaryVtx();
-  delete tmpCascade; tmpCascade=NULL;
-  if(primVertexAOD) {delete primVertexAOD; primVertexAOD=NULL;}
-  //---
+  theCascade->GetSecondaryVtx()->RemoveDaughters();
+  theCascade->UnsetOwnPrimaryVtx();
 
   return theCascade;
 }
@@ -2396,7 +2385,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   if(primVertexAOD){ delete primVertexAOD; primVertexAOD=NULL;}
 
   // remove the primary vertex (was used only for selection)
-  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent) {
+  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent && !callFromCascade) {
     the2Prong->UnsetOwnPrimaryVtx();
   }
 
