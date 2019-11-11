@@ -145,7 +145,30 @@ fhEOverP1Cell(0),
 fhCellExoAmp(0),                                               
 fhCellExoAmpTime(0),                    fhCellExoGrid(0),    
 fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0),
-fhCellTimeNCell20(0),                   fhCellTimeNCell12(0)
+fhCellGridTime05(0),                    fhCellGridTime1(0),
+fhCellGridTime2(0),                     fhCellGridTime5(0),
+fhCellTimeNCell20(0),                   fhCellTimeNCell12(0),
+
+fhSumEnCells05(0),                      fhSumEnCells1(0), 
+fhSumEnCells2(0),                       fhSumEnCells5(0),
+fhNCells05(0),                          fhNCells1(0), 
+fhNCells2(0),                           fhNCells5(0),
+fhAverSumEnCells05(0),                  fhAverSumEnCells1(0), 
+fhAverSumEnCells2(0),                   fhAverSumEnCells5(0),
+fhFracNCells1(0),                       fhFracNCells2(0),
+fhFracNCells5(0),
+fhFracSumEnCells1(0),                   fhFracSumEnCells2(0),                   
+fhFracSumEnCells5(0),
+fhSumEnCells05NHigh20(0),               fhSumEnCells1NHigh20(0), 
+fhSumEnCells2NHigh20(0),                fhSumEnCells5NHigh20(0),
+fhNCells05NHigh20(0),                   fhNCells1NHigh20(0), 
+fhNCells2NHigh20(0),                    fhNCells5NHigh20(0),
+fhAverSumEnCells05NHigh20(0),           fhAverSumEnCells1NHigh20(0), 
+fhAverSumEnCells2NHigh20(0),            fhAverSumEnCells5NHigh20(0),
+fhFracNCells1NHigh20(0),                fhFracNCells2NHigh20(0),
+fhFracNCells5NHigh20(0),
+fhFracSumEnCells1NHigh20(0),            fhFracSumEnCells2NHigh20(0),                   
+fhFracSumEnCells5NHigh20(0)
 {        
   AddToHistogramsName("AnaCaloExotic_");
   
@@ -208,6 +231,16 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
   
   Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
   
+  Int_t nCells05 = 0;
+  Int_t nCells1  = 0;
+  Int_t nCells2  = 0;
+  Int_t nCells5  = 0;
+
+  Float_t eCells05 = 0;
+  Float_t eCells1  = 0;
+  Float_t eCells2  = 0;
+  Float_t eCells5  = 0;
+  
   for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
   {
     if ( cells->GetCellNumber(iCell) < 0 ||  cells->GetAmplitude(iCell) < fCellAmpMin ) continue; // CPV 
@@ -252,8 +285,114 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       fhCellGridTimeHighNCell12->Fill(icolAbs, irowAbs, fLED12Time, GetEventWeight());
       fhCellTimeNCell12->Fill(fLED12Time,time);
     }
+    
+    if ( amp > 0.5 )
+    {
+      fhCellGridTime05->Fill(icolAbs, irowAbs, time, GetEventWeight());
+      nCells05++;
+      eCells05+=amp;
+    }
+    
+    if ( amp > 1 )
+    {
+      fhCellGridTime1->Fill(icolAbs, irowAbs, time, GetEventWeight());
+      nCells1++;
+      eCells1+=amp;
+    }
+    
+    if ( amp > 2 )
+    {
+      fhCellGridTime2->Fill(icolAbs, irowAbs, time, GetEventWeight());
+      nCells2++;
+      eCells2+=amp;
+    }
+    
+    if ( amp > 5 )
+    {
+      fhCellGridTime5->Fill(icolAbs, irowAbs, time, GetEventWeight());
+      nCells5++;
+      eCells5+=amp;
+    }
   } // Cell loop
   
+  Float_t averECells05 = 0;
+  Float_t averECells1  = 0;
+  Float_t averECells2  = 0;
+  Float_t averECells5  = 0;
+  
+  if ( nCells05 > 0 ) averECells05 = eCells05 / nCells05;
+  if ( nCells1  > 0 ) averECells1  = eCells1  / nCells1 ;
+  if ( nCells2  > 0 ) averECells2  = eCells2  / nCells2 ;
+  if ( nCells5  > 0 ) averECells5  = eCells5  / nCells5 ;
+  
+  Float_t frNCells1 = 0;
+  Float_t frNCells2 = 0;
+  Float_t frNCells5 = 0;
+  if ( nCells05 > 0 )
+  {
+    frNCells1 = (1.*nCells1) / nCells05;
+    frNCells2 = (1.*nCells2) / nCells05;
+    frNCells5 = (1.*nCells5) / nCells05;
+  }
+  
+  Float_t frEn1 = 0;
+  Float_t frEn2 = 0;
+  Float_t frEn5 = 0;
+  if ( eCells05 > 0 )
+  {
+    frEn1 = eCells1 / eCells05;
+    frEn2 = eCells2 / eCells05;
+    frEn5 = eCells5 / eCells05;
+  }
+  
+  fhSumEnCells05->Fill(eCells05, GetEventWeight());
+  fhSumEnCells1 ->Fill(eCells1 , GetEventWeight());
+  fhSumEnCells2 ->Fill(eCells2 , GetEventWeight());
+  fhSumEnCells5 ->Fill(eCells5 , GetEventWeight());
+  
+  fhNCells05    ->Fill(nCells05, GetEventWeight());
+  fhNCells1     ->Fill(nCells1 , GetEventWeight());
+  fhNCells2     ->Fill(nCells2 , GetEventWeight());
+  fhNCells5     ->Fill(nCells5 , GetEventWeight());
+  
+  fhAverSumEnCells05->Fill(averECells05, GetEventWeight());
+  fhAverSumEnCells1 ->Fill(averECells1 , GetEventWeight());
+  fhAverSumEnCells2 ->Fill(averECells2 , GetEventWeight());
+  fhAverSumEnCells5 ->Fill(averECells5 , GetEventWeight());
+  
+  fhFracNCells1->Fill(frNCells1, GetEventWeight());
+  fhFracNCells2->Fill(frNCells2, GetEventWeight());
+  fhFracNCells5->Fill(frNCells5, GetEventWeight());
+  
+  fhFracSumEnCells1 ->Fill(frEn1, GetEventWeight());
+  fhFracSumEnCells2 ->Fill(frEn2, GetEventWeight());
+  fhFracSumEnCells5 ->Fill(frEn5, GetEventWeight());
+
+  if ( fLED20 )  
+  {
+    fhSumEnCells05NHigh20->Fill(eCells05, GetEventWeight());
+    fhSumEnCells1NHigh20 ->Fill(eCells1 , GetEventWeight());
+    fhSumEnCells2NHigh20 ->Fill(eCells2 , GetEventWeight());
+    fhSumEnCells5NHigh20 ->Fill(eCells5 , GetEventWeight());
+    
+    fhNCells05NHigh20    ->Fill(nCells05, GetEventWeight());
+    fhNCells1NHigh20     ->Fill(nCells1 , GetEventWeight());
+    fhNCells2NHigh20     ->Fill(nCells2 , GetEventWeight());
+    fhNCells5NHigh20     ->Fill(nCells5 , GetEventWeight());
+    
+    fhAverSumEnCells05NHigh20->Fill(averECells05, GetEventWeight());
+    fhAverSumEnCells1NHigh20 ->Fill(averECells1 , GetEventWeight());
+    fhAverSumEnCells2NHigh20 ->Fill(averECells2 , GetEventWeight());
+    fhAverSumEnCells5NHigh20 ->Fill(averECells5 , GetEventWeight());
+    
+    fhFracNCells1NHigh20->Fill(frNCells1, GetEventWeight());
+    fhFracNCells2NHigh20->Fill(frNCells2, GetEventWeight());
+    fhFracNCells5NHigh20->Fill(frNCells5, GetEventWeight());
+    
+    fhFracSumEnCells1NHigh20 ->Fill(frEn1, GetEventWeight());
+    fhFracSumEnCells2NHigh20 ->Fill(frEn2, GetEventWeight());
+    fhFracSumEnCells5NHigh20 ->Fill(frEn5, GetEventWeight()); 
+  }
 }
 
 
@@ -366,7 +505,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
     Float_t enSame      = 0,    enDiff  = 0;
     Float_t enSame5     = 0,    enDiff5 = 0;
     Float_t enSameW     = 0,    enDiffW = 0;
-    
+
     for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
     {
       Int_t   absId     = clus->GetCellsAbsId()[ipos];  
@@ -1060,6 +1199,12 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   TArrayD tBinsArray;
   tBinning.CreateBinEdges(tBinsArray);
 
+  TCustomBinning t2Binning;
+  t2Binning.SetMinimum(-610);
+  t2Binning.AddStep(610,20);   
+  TArrayD t2BinsArray;
+  t2Binning.CreateBinEdges(t2BinsArray);
+  
   // Difference in time within cluster
   Int_t tdbins  = GetHistogramRanges()->GetHistoDiffTimeBins() ;    
   Float_t tdmax = GetHistogramRanges()->GetHistoDiffTimeMax();     
@@ -1117,7 +1262,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhNClusterPerEventNCellHigh20 = new TH1F 
   ("hNClusterPerEventNCellHigh20",
    "#it{n}_{cluster} per event with #it{n}_{cell}^{w} > 20",
-   200,0,200); 
+   1000,0,1000); 
   fhNClusterPerEventNCellHigh20->SetXTitle("#it{n}_{cluster}^{#it{n}_{cell}^{w} > 20}");
   fhNClusterPerEventNCellHigh20->SetYTitle("Counts per event");
   outputContainer->Add(fhNClusterPerEventNCellHigh20);
@@ -1125,7 +1270,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhNClusterPerEventNCellHigh12 = new TH1F 
   ("hNClusterPerEventNCellHigh12",
    "#it{n}_{cluster} per event with #it{n}_{cell}^{w} > 12",
-   200,0,200); 
+   1000,0,1000); 
   fhNClusterPerEventNCellHigh12->SetXTitle("#it{n}_{cluster}^{#it{n}_{cell}^{w} > 12}");
   fhNClusterPerEventNCellHigh12->SetYTitle("Counts per event");
   outputContainer->Add(fhNClusterPerEventNCellHigh12);
@@ -1159,7 +1304,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fh2NClusterPerEventNCellHigh20 = new TH2F 
   ("h2NClusterPerEventNCellHigh20",
    "#it{n}_{cluster} per event with #it{n}_{cell}^{w} > 20",
-   200,0,200,200,0,200); 
+   500,0,500,500,0,500); 
   fh2NClusterPerEventNCellHigh20->SetXTitle("#it{n}_{cluster}");
   fh2NClusterPerEventNCellHigh20->SetYTitle("#it{n}_{cluster}^{#it{n}_{cell}^{w} > 20}");
   fh2NClusterPerEventNCellHigh20->SetZTitle("Counts per event");
@@ -1168,7 +1313,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fh2NClusterPerEventNCellHigh12 = new TH2F 
   ("h2NClusterPerEventNCellHigh12",
    "#it{n}_{cluster} per event, total vs with #it{n}_{cell}^{w} > 12",
-   200,0,200,200,0,200); 
+   500,0,500,500,0,500); 
   fh2NClusterPerEventNCellHigh12->SetXTitle("#it{n}_{cluster}");
   fh2NClusterPerEventNCellHigh12->SetYTitle("#it{n}_{cluster}^{#it{n}_{cell}^{w} > 12}");
   fh2NClusterPerEventNCellHigh12->SetZTitle("Counts per event");
@@ -1984,7 +2129,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   outputContainer->Add(fhCellTimeDiffNCellWEMax);  
   
   fhCellMaxClusterEn = new TH2F 
-  ("fhCellMaxClusterEn","#it{E}_{cluster}^{org} vs #it{E}_{cell}^{max}, #it{n}_{cluster}^{cell} > 1",
+  ("hCellMaxClusterEn","#it{E}_{cluster}^{org} vs #it{E}_{cell}^{max}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, nptbins,ptmin,ptmax); 
    eBinsArray.GetSize() - 1, eBinsArray.GetArray(), 
    eBinsArray.GetSize() - 1, eBinsArray.GetArray());
@@ -1993,7 +2138,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   outputContainer->Add(fhCellMaxClusterEn);  
 
   fhCellMaxClusterEnOpenTime = new TH2F 
-  ("fhCellMaxClusterEnOpenTime","#it{E}_{cluster}^{org} vs #it{E}_{cell}^{max}, #it{n}_{cluster}^{cell} > 1, no time cut",
+  ("hCellMaxClusterEnOpenTime","#it{E}_{cluster}^{org} vs #it{E}_{cell}^{max}, #it{n}_{cluster}^{cell} > 1, no time cut",
    //nptbins,ptmin,ptmax, nptbins,ptmin,ptmax); 
    eBinsArray.GetSize() - 1, eBinsArray.GetArray(), 
    eBinsArray.GetSize() - 1, eBinsArray.GetArray());
@@ -2002,7 +2147,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   outputContainer->Add(fhCellMaxClusterEnOpenTime);    
   
   fhCellMaxClusterEnRatio = new TH2F 
-  ("fhCellMaxClusterEnRatio","#it{E}_{cluster} vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org}, #it{n}_{cluster}^{cell} > 1",
+  ("hCellMaxClusterEnRatio","#it{E}_{cluster} vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 202,0,1.01); 
       eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
    fracBinsArray.GetSize() - 1, fracBinsArray.GetArray());
@@ -2011,7 +2156,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   outputContainer->Add(fhCellMaxClusterEnRatio);  
  
   fhCellMaxClusterEnRatioOpenTime = new TH2F 
-  ("fhCellMaxClusterEnRatioOpenTime","#it{E}_{cluster} vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org}, #it{n}_{cluster}^{cell} > 1, no time cut",
+  ("hCellMaxClusterEnRatioOpenTime","#it{E}_{cluster} vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org}, #it{n}_{cluster}^{cell} > 1, no time cut",
    //nptbins,ptmin,ptmax, 202,0,1.01); 
       eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
    fracBinsArray.GetSize() - 1, fracBinsArray.GetArray());
@@ -2020,7 +2165,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   outputContainer->Add(fhCellMaxClusterEnRatioOpenTime);  
   
   fhCellMaxClusterEnRatioNCellWOpenTime = new TH3F 
-  ("fhCellMaxClusterEnRatioNCellWOpenTime","#it{E}_{cluster}vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org} vs #it{n}_{cell}^{#it{w}}, #it{n}_{cluster}^{cell} > 1, no time cut",
+  ("hCellMaxClusterEnRatioNCellWOpenTime","#it{E}_{cluster}vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org} vs #it{n}_{cell}^{#it{w}}, #it{n}_{cluster}^{cell} > 1, no time cut",
    //nptbins,ptmin,ptmax, 101,0,1.01, nceclbins,nceclmin,nceclmax); 
       eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
    fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), 
@@ -2031,7 +2176,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   outputContainer->Add(fhCellMaxClusterEnRatioNCellWOpenTime);  
   
   fhCellMaxClusterEnRatioNCellW = new TH3F 
-  ("fhCellMaxClusterEnRatioNCellW","#it{E}_{cluster} vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org} vs #it{n}_{cell}^{#it{w}}, #it{n}_{cluster}^{cell} > 1",
+  ("hCellMaxClusterEnRatioNCellW","#it{E}_{cluster} vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org} vs #it{n}_{cell}^{#it{w}}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01, nceclbins,nceclmin,nceclmax); 
       eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
    fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), 
@@ -2042,7 +2187,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   outputContainer->Add(fhCellMaxClusterEnRatioNCellW);  
  
   fhCellMaxClusterEnRatioExo = new TH3F 
-  ("fhCellMaxClusterEnRatioExo","#it{E}_{cluster} vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
+  ("hCellMaxClusterEnRatioExo","#it{E}_{cluster} vs #it{E}_{cell}^{max}/#it{E}_{cluster}^{org} vs #it{F}_{+}, #it{n}_{cluster}^{cell} > 1",
    //nptbins,ptmin,ptmax, 101,0,1.01, nexobins,exomin,exomax); 
       eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
    fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), 
@@ -2526,7 +2671,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
      //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, 61,-610,610); 
      colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
      rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
-       tBinsArray.GetSize() - 1,   tBinsArray.GetArray());
+      t2BinsArray.GetSize() - 1,  t2BinsArray.GetArray());
     fhCellGridTimeHighNCell20->SetYTitle("row (phi direction)");
     fhCellGridTimeHighNCell20->SetXTitle("column (eta direction)");
     fhCellGridTimeHighNCell20->SetZTitle("#it{t}_{cluster} (ns)");
@@ -2538,11 +2683,59 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
      //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, 61,-610,610); 
      colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
      rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
-       tBinsArray.GetSize() - 1,   tBinsArray.GetArray());
+      t2BinsArray.GetSize() - 1,  t2BinsArray.GetArray());
     fhCellGridTimeHighNCell12->SetYTitle("row (phi direction)");
     fhCellGridTimeHighNCell12->SetXTitle("column (eta direction)");
     fhCellGridTimeHighNCell12->SetZTitle("#it{t}_{cluster} (ns)");
     outputContainer->Add(fhCellGridTimeHighNCell12);
+    
+    fhCellGridTime05    = new TH3F 
+    ("hCellGridTime05",
+     "Cell hits row-column vs cell time for #it{E}_{cell} > 0.5 GeV", 
+     //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, 61,-610,610); 
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+      t2BinsArray.GetSize() - 1,  t2BinsArray.GetArray());
+    fhCellGridTime05->SetYTitle("row (phi direction)");
+    fhCellGridTime05->SetXTitle("column (eta direction)");
+    fhCellGridTime05->SetZTitle("#it{t}_{cell} (ns)");
+    outputContainer->Add(fhCellGridTime05);
+
+    fhCellGridTime1    = new TH3F 
+    ("hCellGridTime1",
+     "Cell hits row-column vs cell time for #it{E}_{cell} > 1 GeV", 
+     //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, 61,-610,610); 
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+      t2BinsArray.GetSize() - 1,  t2BinsArray.GetArray());
+    fhCellGridTime1->SetYTitle("row (phi direction)");
+    fhCellGridTime1->SetXTitle("column (eta direction)");
+    fhCellGridTime1->SetZTitle("#it{t}_{cell} (ns)");
+    outputContainer->Add(fhCellGridTime1);
+
+    fhCellGridTime2    = new TH3F 
+    ("hCellGridTime2",
+     "Cell hits row-column vs cell time for #it{E}_{cell} > 2 GeV", 
+     //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, 61,-610,610); 
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+      t2BinsArray.GetSize() - 1,  t2BinsArray.GetArray());
+    fhCellGridTime2->SetYTitle("row (phi direction)");
+    fhCellGridTime2->SetXTitle("column (eta direction)");
+    fhCellGridTime2->SetZTitle("#it{t}_{cell} (ns)");
+    outputContainer->Add(fhCellGridTime2);    
+ 
+    fhCellGridTime5    = new TH3F 
+    ("hCellGridTime5",
+     "Cell hits row-column vs cell time for #it{E}_{cell} > 5 GeV", 
+     //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax, 61,-610,610); 
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
+      t2BinsArray.GetSize() - 1,  t2BinsArray.GetArray());
+    fhCellGridTime5->SetYTitle("row (phi direction)");
+    fhCellGridTime5->SetXTitle("column (eta direction)");
+    fhCellGridTime5->SetZTitle("#it{t}_{cell} (ns)");
+    outputContainer->Add(fhCellGridTime5);    
     
     fhCellTimeNCell20 = new TH2F 
     ("hCellTimeNCell20",
@@ -2561,6 +2754,226 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhCellTimeNCell12->SetYTitle("#it{t}_{cell} (ns)");
     fhCellTimeNCell12->SetXTitle("#it{t}_{cluster} (ns)");
     outputContainer->Add(fhCellTimeNCell12);
+    
+    fhSumEnCells05 = new TH1F 
+    ("hSumEnCells05","#Sigma #it{E} for #{E}_{i} > 0.5 GeV", 1000,0,1000);
+    fhSumEnCells05->SetYTitle("Counts per event");
+    fhSumEnCells05->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhSumEnCells05);                     
+
+    fhSumEnCells1 = new TH1F 
+    ("hSumEnCells1","#Sigma #it{E} for #{E}_{i} > 1 GeV", 1000,0,1000);
+    fhSumEnCells1->SetYTitle("Counts per event");
+    fhSumEnCells1->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhSumEnCells1);         
+  
+    fhSumEnCells2 = new TH1F 
+    ("hSumEnCells2","#Sigma #it{E} for #{E}_{i} > 2 GeV", 1000,0,1000);
+    fhSumEnCells2->SetYTitle("Counts per event");
+    fhSumEnCells2->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhSumEnCells2);    
+    
+    fhSumEnCells5 = new TH1F 
+    ("hSumEnCells5","#Sigma #it{E} for #{E}_{i} > 5 GeV", 1000,0,1000);
+    fhSumEnCells5->SetYTitle("Counts per event");
+    fhSumEnCells5->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhSumEnCells5);    
+
+
+    fhNCells05 = new TH1F 
+    ("hNCells05","#it{n}_{cells}for #{E}_{i} > 0.5 GeV", 17000,0,17000);
+    fhNCells05->SetYTitle("Counts per event");
+    fhNCells05->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCells05);                     
+    
+    fhNCells1 = new TH1F 
+    ("hNCells1","#it{n}_{cells} for #{E}_{i} > 1 GeV", 17000,0,17000);
+    fhNCells1->SetYTitle("Counts per event");
+    fhNCells1->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCells1);         
+    
+    fhNCells2 = new TH1F 
+    ("hNCells2","#it{n}_{cells} for #{E}_{i} > 2 GeV", 17000,0,17000);
+    fhNCells2->SetYTitle("Counts per event");
+    fhNCells2->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCells2);    
+    
+    fhNCells5 = new TH1F 
+    ("hNCells5","#it{n}_{cells} for #{E}_{i} > 5 GeV", 17000,0,17000);
+    fhNCells5->SetYTitle("Counts per event");
+    fhNCells5->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCells5);        
+    
+    fhAverSumEnCells05 = new TH1F 
+    ("hAverSumEnCells05","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 0.5 GeV", 1000,0,1000);
+    fhAverSumEnCells05->SetYTitle("Counts per event");
+    fhAverSumEnCells05->SetXTitle("#Sigma #it{E}/#it{n}_{cells} (GeV)");
+    outputContainer->Add(fhAverSumEnCells05);                     
+    
+    fhAverSumEnCells1 = new TH1F 
+    ("hAverSumEnCells1","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 1 GeV", 1000,0,1000);
+    fhAverSumEnCells1->SetYTitle("Counts per event");
+    fhAverSumEnCells1->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhAverSumEnCells1);         
+    
+    fhAverSumEnCells2 = new TH1F 
+    ("hAverSumEnCells2","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 2 GeV", 1000,0,1000);
+    fhAverSumEnCells2->SetYTitle("Counts per event");
+    fhAverSumEnCells2->SetXTitle("#Sigma #it{E}/#it{n}_{cells} (GeV)");
+    outputContainer->Add(fhAverSumEnCells2);    
+    
+    fhAverSumEnCells5 = new TH1F 
+    ("hAverSumEnCells5","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 5 GeV", 1000,0,1000);
+    fhAverSumEnCells5->SetYTitle("Counts per event");
+    fhAverSumEnCells5->SetXTitle("#Sigma #it{E}/#it{n}_{cells}");
+    outputContainer->Add(fhAverSumEnCells5);    
+    
+    fhFracSumEnCells1 = new TH1F 
+    ("hFracSumEnCells1","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 1 GeV", 201,0,1.005);
+    fhFracSumEnCells1->SetYTitle("Counts per event");
+    fhFracSumEnCells1->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracSumEnCells1);         
+    
+    fhFracSumEnCells2 = new TH1F 
+    ("hFracSumEnCells2","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 2 GeV", 201,0,1.005);
+    fhFracSumEnCells2->SetYTitle("Counts per event");
+    fhFracSumEnCells2->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracSumEnCells2);    
+    
+    fhFracSumEnCells5 = new TH1F 
+    ("hFracSumEnCells5","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 5 GeV", 201,0,1.005);
+    fhFracSumEnCells5->SetYTitle("Counts per event");
+    fhFracSumEnCells5->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracSumEnCells5);    
+
+    fhFracNCells1 = new TH1F 
+    ("hFracNCells1","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 1 GeV", 201,0,1.005);
+    fhFracNCells1->SetYTitle("Counts per event");
+    fhFracNCells1->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracNCells1);         
+    
+    fhFracNCells2 = new TH1F 
+    ("hFracNCells2","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 2 GeV", 201,0,1.005);
+    fhFracNCells2->SetYTitle("Counts per event");
+    fhFracNCells2->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracNCells2);    
+    
+    fhFracNCells5 = new TH1F 
+    ("hFracNCells5","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 5 GeV", 201,0,1.005);
+    fhFracNCells5->SetYTitle("Counts per event");
+    fhFracNCells5->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracNCells5);       
+    
+    ///////////////////
+    
+    fhSumEnCells05NHigh20 = new TH1F 
+    ("hSumEnCells05NHigh20","#Sigma #it{E} for #{E}_{i} > 0.5 GeV", 1000,0,1000);
+    fhSumEnCells05NHigh20->SetYTitle("Counts per event");
+    fhSumEnCells05NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhSumEnCells05NHigh20);                     
+    
+    fhSumEnCells1NHigh20 = new TH1F 
+    ("hSumEnCells1NHigh20","#Sigma #it{E} for #{E}_{i} > 1 GeV", 1000,0,1000);
+    fhSumEnCells1NHigh20->SetYTitle("Counts per event");
+    fhSumEnCells1NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhSumEnCells1NHigh20);         
+    
+    fhSumEnCells2NHigh20 = new TH1F 
+    ("hSumEnCells2NHigh20","#Sigma #it{E} for #{E}_{i} > 2 GeV", 1000,0,1000);
+    fhSumEnCells2NHigh20->SetYTitle("Counts per event");
+    fhSumEnCells2NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhSumEnCells2NHigh20);    
+    
+    fhSumEnCells5NHigh20 = new TH1F 
+    ("hSumEnCells5NHigh20","#Sigma #it{E} for #{E}_{i} > 5 GeV", 1000,0,1000);
+    fhSumEnCells5NHigh20->SetYTitle("Counts per event");
+    fhSumEnCells5NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhSumEnCells5NHigh20);    
+    
+    
+    fhNCells05NHigh20 = new TH1F 
+    ("hNCells05NHigh20","#it{n}_{cells}for #{E}_{i} > 0.5 GeV", 17000,0,17000);
+    fhNCells05NHigh20->SetYTitle("Counts per event");
+    fhNCells05NHigh20->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCells05NHigh20);                     
+    
+    fhNCells1NHigh20 = new TH1F 
+    ("hNCells1NHigh20","#it{n}_{cells} for #{E}_{i} > 1 GeV", 17000,0,17000);
+    fhNCells1NHigh20->SetYTitle("Counts per event");
+    fhNCells1NHigh20->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCells1NHigh20);         
+    
+    fhNCells2NHigh20 = new TH1F 
+    ("hNCells2NHigh20","#it{n}_{cells} for #{E}_{i} > 2 GeV", 17000,0,17000);
+    fhNCells2NHigh20->SetYTitle("Counts per event");
+    fhNCells2NHigh20->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCells2NHigh20);    
+    
+    fhNCells5NHigh20 = new TH1F 
+    ("hNCells5NHigh20","#it{n}_{cells} for #{E}_{i} > 5 GeV", 17000,0,17000);
+    fhNCells5NHigh20->SetYTitle("Counts per event");
+    fhNCells5NHigh20->SetXTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCells5NHigh20);        
+    
+    fhAverSumEnCells05NHigh20 = new TH1F 
+    ("hAverSumEnCells05NHigh20","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 0.5 GeV", 1000,0,1000);
+    fhAverSumEnCells05NHigh20->SetYTitle("Counts per event");
+    fhAverSumEnCells05NHigh20->SetXTitle("#Sigma #it{E}/#it{n}_{cells} (GeV)");
+    outputContainer->Add(fhAverSumEnCells05NHigh20);                     
+    
+    fhAverSumEnCells1NHigh20 = new TH1F 
+    ("hAverSumEnCells1NHigh20","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 1 GeV", 1000,0,1000);
+    fhAverSumEnCells1NHigh20->SetYTitle("Counts per event");
+    fhAverSumEnCells1NHigh20->SetXTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhAverSumEnCells1NHigh20);         
+    
+    fhAverSumEnCells2NHigh20 = new TH1F 
+    ("hAverSumEnCells2NHigh20","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 2 GeV", 1000,0,1000);
+    fhAverSumEnCells2NHigh20->SetYTitle("Counts per event");
+    fhAverSumEnCells2NHigh20->SetXTitle("#Sigma #it{E}/#it{n}_{cells} (GeV)");
+    outputContainer->Add(fhAverSumEnCells2NHigh20);    
+    
+    fhAverSumEnCells5NHigh20 = new TH1F 
+    ("hAverSumEnCells5NHigh20","#Sigma #it{E}/#it{n}_{cells} for #{E}_{i} > 5 GeV", 1000,0,1000);
+    fhAverSumEnCells5NHigh20->SetYTitle("Counts per event");
+    fhAverSumEnCells5NHigh20->SetXTitle("#Sigma #it{E}/#it{n}_{cells}");
+    outputContainer->Add(fhAverSumEnCells5NHigh20);    
+    
+    fhFracSumEnCells1NHigh20 = new TH1F 
+    ("hFracSumEnCells1NHigh20","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 1 GeV", 201,0,1.005);
+    fhFracSumEnCells1NHigh20->SetYTitle("Counts per event");
+    fhFracSumEnCells1NHigh20->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracSumEnCells1NHigh20);         
+    
+    fhFracSumEnCells2NHigh20 = new TH1F 
+    ("hFracSumEnCells2NHigh20","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 2 GeV", 201,0,1.005);
+    fhFracSumEnCells2NHigh20->SetYTitle("Counts per event");
+    fhFracSumEnCells2NHigh20->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracSumEnCells2NHigh20);    
+    
+    fhFracSumEnCells5NHigh20 = new TH1F 
+    ("hFracSumEnCells5NHigh20","#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5} for #{E}_{i} > 5 GeV", 201,0,1.005);
+    fhFracSumEnCells5NHigh20->SetYTitle("Counts per event");
+    fhFracSumEnCells5NHigh20->SetXTitle("#Sigma #it{E}/#Sigma #it{E}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracSumEnCells5NHigh20);    
+    
+    fhFracNCells1NHigh20 = new TH1F 
+    ("hFracNCells1NHigh20","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 1 GeV", 201,0,1.005);
+    fhFracNCells1NHigh20->SetYTitle("Counts per event");
+    fhFracNCells1NHigh20->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracNCells1NHigh20);         
+    
+    fhFracNCells2NHigh20 = new TH1F 
+    ("hFracNCells2NHigh20","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 2 GeV", 201,0,1.005);
+    fhFracNCells2NHigh20->SetYTitle("Counts per event");
+    fhFracNCells2NHigh20->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracNCells2NHigh20);    
+    
+    fhFracNCells5NHigh20 = new TH1F 
+    ("hFracNCells5NHigh20","#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5} for #{E}_{i} > 5 GeV", 201,0,1.005);
+    fhFracNCells5NHigh20->SetYTitle("Counts per event");
+    fhFracNCells5NHigh20->SetXTitle("#it{n}_{cells}/#it{n}_{cells}_{#it{E}_{i}>0.5}");
+    outputContainer->Add(fhFracNCells5NHigh20);       
   } 
   
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
