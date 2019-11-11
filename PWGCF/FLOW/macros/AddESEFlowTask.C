@@ -40,17 +40,14 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
 
 
   // RUN BY RUN
-  if(bUseOwnWeights) 
-  {
+  if(bUseOwnWeights) {
     TObjArray* taskContainers = mgr->GetContainers();
     if(!taskContainers) { printf("E-AddESEFlowTask: Task containers does not exists!\n"); return NULL; }
 
     // check if the input weights are already loaded (e.g. in different subwagon)
     AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
-    if(!weights) 
-    {  
+    if(!weights) {  
       // if it does not exists create it
-
       // in case of non-local run, establish connection to ALiEn for loading the weights
       if(sWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
 
@@ -64,14 +61,12 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
       cInputWeights->SetData(weights_list);
       mgr->ConnectInput(task,1,cInputWeights);
     }
-    else 
-    {
+    else {
       // connect existing container
       mgr->ConnectInput(task,1,weights);
     }
   }
-  if(!bUseOwnWeights)
-  {
+  if(!bUseOwnWeights) {
     TObjArray* taskContainersVy = mgr->GetContainers();
     if(!taskContainersVy) { printf("E-AddESEFlowTask: Task containers does not exists!\n"); return NULL; }
 
@@ -96,27 +91,24 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
 
   task->SetUseqSel(bUseqSelCuts);
   if(bUseqSelCuts){
-    
     TObjArray* taskTreeCont = mgr->GetContainers();
-    if(!taskTreeCont) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
-
+    if(!taskTreeCont) { printf("E-AddESEFlowTask: Task containers does not exists!\n"); return NULL; }
     // check if the input weights are already loaded (e.g. in different subwagon)
     AliAnalysisDataContainer* TreeCont = (AliAnalysisDataContainer*) taskTreeCont->FindObject("inputTree");
 
     if(!TreeCont) { 
+      if(sqSelCuts.Contains("alien://")) { gGrid->Connect("alien://"); }
 
       TFile* qCuts_file = TFile::Open(sqSelCuts.Data(),"READ");
       if(!qCuts_file) { printf("Input file with q selections cuts not found! \n"); return NULL; }
 
       TTree* nuaTree = static_cast<TTree*>(qCuts_file->Get("q_nSel"));
-      //nuaTree->SetDirectory(0);
+      
       if(!nuaTree) { printf("Input tree with q selection cuts not found! \n"); qCuts_file->ls(); return NULL; }
 
       task->SetInputTree(nuaTree);
-      //qCuts_file->Close();
     }
   }
-
     
   return task;
 }
