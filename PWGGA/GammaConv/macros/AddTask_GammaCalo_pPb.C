@@ -584,31 +584,31 @@ void AddTask_GammaCalo_pPb(
 
   // PHOS clusters standard cuts, triggers, no nonlin with TM
   } else if (trainConfig == 700){
-    cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // INT7
+    cuts.AddCutCalo("80010123","24466000ha012200000","0163103100000010"); // INT7
   } else if (trainConfig == 701){
-    cuts.AddCutCalo("80062113","24466000ha012200000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("80062123","24466000ha012200000","0163103100000010"); // PHI7
   } else if (trainConfig == 702){
-    cuts.AddCutCalo("80010113","24466590ha012200000","0163103100000010"); // INT7
+    cuts.AddCutCalo("80010123","24466590ha012200000","0163103100000010"); // INT7
   } else if (trainConfig == 703){
-    cuts.AddCutCalo("80062113","24466590ha012200000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("80062123","24466590ha012200000","0163103100000010"); // PHI7
   } else if (trainConfig == 704){
-    cuts.AddCutCalo("80010113","24466690ha012200000","0163103100000010"); // INT7
+    cuts.AddCutCalo("80010123","24466690ha012200000","0163103100000010"); // INT7
   } else if (trainConfig == 705){
-    cuts.AddCutCalo("80062113","24466690ha012200000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("80062123","24466690ha012200000","0163103100000010"); // PHI7
 
   // PHOS clusters standard cuts, triggers, no nonlin, no TM
   } else if (trainConfig == 710){
-    cuts.AddCutCalo("80010113","24466000h0012200000","0163103100000010"); // INT7
+    cuts.AddCutCalo("80010123","24466000h0012200000","0163103100000010"); // INT7
   } else if (trainConfig == 711){
-    cuts.AddCutCalo("80062113","24466000h0012200000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("80062123","24466000h0012200000","0163103100000010"); // PHI7
   } else if (trainConfig == 712){
-    cuts.AddCutCalo("80010113","24466590h0012200000","0163103100000010"); // INT7
+    cuts.AddCutCalo("80010123","24466590h0012200000","0163103100000010"); // INT7
   } else if (trainConfig == 713){
-    cuts.AddCutCalo("80062113","24466590h0012200000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("80062123","24466590h0012200000","0163103100000010"); // PHI7
   } else if (trainConfig == 714){
-    cuts.AddCutCalo("80010113","24466690h0012200000","0163103100000010"); // INT7
+    cuts.AddCutCalo("80010123","24466690h0012200000","0163103100000010"); // INT7
   } else if (trainConfig == 715){
-    cuts.AddCutCalo("80062113","24466690h0012200000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("80062123","24466690h0012200000","0163103100000010"); // PHI7
 
   // ===============================================================================================
   // Run 1 data EMC triggers only
