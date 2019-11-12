@@ -210,7 +210,7 @@ struct CutConfig_Pion {
 
     Bool_t remove_negative_label = kFALSE,
            use_tpctof = kTRUE,
-           tof_required = kFALSE,
+           tof_required = kTRUE,
            remove_kinks = kTRUE;
 
     Int_t ideal_pid = 211;
