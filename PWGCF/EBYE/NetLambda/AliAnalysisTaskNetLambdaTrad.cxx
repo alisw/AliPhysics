@@ -2,7 +2,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Oct 24
+// Updated Nov 12
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -94,9 +94,9 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     fListHist->Add(fHistCentrality);
     
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    const Int_t CentbinNum = 81;
-    Double_t CentBins[CentbinNum+1];
-    for(Int_t ic = 0; ic <= CentbinNum; ic++) CentBins[ic] = ic - 0.5;
+    Double_t CentBins[101] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100};
+    Long_t CentbinNum = sizeof(CentBins)/sizeof(Double_t) - 1;
+
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //pt binning
     Double_t LambdaPtBins[24] = {0.9,1.0,1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,4.2, 4.4};
@@ -211,8 +211,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     
     fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
     
-    if( fCentrality < 0 || fCentrality >=80 ) return;
-    if (!fEventCuts.AcceptEvent(fInputEvent)) return;//pileup cut
+    if( fCentrality < 0 || fCentrality > 80 ) return;
+    if (!fEventCuts.AcceptEvent(fInputEvent)) return;
     
     fHistEventCounter->Fill(1.5);
     fHistCentrality->Fill(fCentrality);
@@ -274,7 +274,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         esdv0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
         Double_t lV0TotalMomentum = TMath::Sqrt(
                                                 tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
-        v0DecayLength /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
+        v0DecayLength /= (lV0TotalMomentum+1e-10);
         
         
         
@@ -366,7 +366,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             
             if(TMath::Abs(eta) < 0.5)
             {
-                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3)
+                if(dcaV0ToVertex < 0.2 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3)
                 {
                     f3fHistCentVsInvMassLambda1point0->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -376,11 +376,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     }
                     if(invMassLambda > 1.126 && invMassLambda < 1.138)
                     {
-                       ptChEta1point0tight[iptbin] += 1;
-                       f3fHistCentVsInvMassLambda1point0Masscuttight->Fill(fCentrality,invMassLambda,V0pt);
+                        ptChEta1point0tight[iptbin] += 1;
+                        f3fHistCentVsInvMassLambda1point0Masscuttight->Fill(fCentrality,invMassLambda,V0pt);
                     }
                 }
-                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3)
+                if(dcaV0ToVertex < 0.2 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -413,7 +413,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     ptContainertight[0] = (Double_t)fCentrality;
     for(Int_t i = 1; i <= dim; i++)
     {
-        ptContainertight[i] = (ptChEta1point0[i-1] - ptChEta1point0tight[i-1]);
+        ptContainertight[i] = ptChEta1point0tight[i-1];
     }
     fPtBinNplusNminusChtight->Fill(ptContainertight);
     
