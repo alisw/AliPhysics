@@ -53,8 +53,6 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetSaveSecondaryVertices(Bool_t val) {fSaveSecondaryVertices = val; fInitialized = kFALSE;}
   void                        SetSaveTriggerTracks(Bool_t val) {fSaveTriggerTracks = val; fInitialized = kFALSE;}
   void                        SetSaveCaloClusters(Bool_t val) {fSaveCaloClusters = val; fInitialized = kFALSE;}
-  void                        SetSaveTaggedInfo(Bool_t val) {fSaveTaggedInfo = val; fInitialized = kFALSE;}
-  
   void                        ActivateJetMatching(const char* arrayNameDetLevel, const char* arrayNamePartLevel = "", const char* rhoName = "", const char* rhoMassName = "")
                                 {fMatchedDetLevelJetsArrayName = arrayNameDetLevel; fMatchedPartLevelJetsArrayName = arrayNamePartLevel; fMatchedDetLevelJetsRhoName = rhoName; fMatchedDetLevelJetsRhoMassName = rhoMassName;}
   void                        SetMCParticleArrayName(const char* name)            { fMCParticleArrayName = name; }
@@ -71,6 +69,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetRandomSeed(ULong_t val)                          { fRandomSeed  = val; }
   void                        SetRandomSeedCones(ULong_t val)                     { fRandomSeedCones  = val; }
   void                        SetNeedEmbedClusterContainer(Bool_t val)            { fNeedEmbedClusterContainer = val;}
+  void                        SetUseTaggerForMatching(Bool_t val)                 { fUseTaggerForMatching = val;}
   
   void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=-9999999, Int_t maxLabel=+9999999)
                                 { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel;
@@ -110,7 +109,6 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      fSaveSecondaryVertices;                   ///< save reconstructed sec. vertex properties
   Bool_t                      fSaveTriggerTracks;                       ///< save event trigger track
   Bool_t                      fSaveCaloClusters;                        ///< save calorimeter clusters
-  Bool_t                      fSaveTaggedInfo;                          ///< save information from the tagger 
   
   Double_t                    fEventPercentage;                         ///< percentage (0, 1] which will be extracted
   Double_t                    fEventCut_TriggerTrackMinPt;              ///< Event requirement, trigger track min pT
@@ -129,6 +127,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   TString                     fMatchedDetLevelJetsRhoMassName;          ///< Name for matched jets rho_mass object
   TString                     fMCParticleArrayName;                     ///< Array name of MC particles in event (mcparticles)
   Bool_t                      fNeedEmbedClusterContainer;               ///< If we need to get embedded cluster container (true for hybrid event)
+  Bool_t                      fUseTaggerForMatching;                    ///< Specifies whether or not we utilize the method of the jet tagger for matching
 
 
   ULong_t                     fRandomSeed;                              ///< random seed
@@ -176,7 +175,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 6) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 7) // Jet extraction task
   /// \endcond
 };
 
@@ -209,7 +208,7 @@ class AliEmcalJetTree : public TNamed
     void            AddExtractionJetTypeHM(Int_t type) {fExtractionJetTypes_HM.push_back(type);}
     void            AddExtractionJetTypePM(Int_t type) {fExtractionJetTypes_PM.push_back(type);}
 
-    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveTagInfo, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks);
+    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks);
 
     // ######################################
     Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField);
@@ -221,7 +220,6 @@ class AliEmcalJetTree : public TNamed
                                     Float_t matchedJetDistance_Det, Float_t matchedJetPt_Det, Float_t matchedJetMass_Det, Float_t matchedJetAngularity_Det, Float_t matchedJetpTD_Det,
                                     Float_t matchedJetDistance_Part, Float_t matchedJetPt_Part, Float_t matchedJetMass_Part, Float_t matchedJetAngularity_Part, Float_t matchedJetpTD_Part,
                                     Float_t truePtFraction, Float_t truePtFraction_PartLevel, Float_t ptHard, Float_t eventWeight, Float_t impactParameter);
-    void            FillBuffer_JetTagger(Float_t taggedJetPt_Det, Float_t taggedJetPt_Part);
     void            FillBuffer_ImpactParameters(std::vector<Float_t>& trackIP_d0, std::vector<Float_t>& trackIP_z0, std::vector<Float_t>& trackIP_d0cov, std::vector<Float_t>& trackIP_z0cov);
     void            FillBuffer_TriggerTracks(std::vector<Float_t>& triggerTrackPt, std::vector<Float_t>& triggerTrackDeltaEta, std::vector<Float_t>& triggerTrackDeltaPhi);
     // ######################################
@@ -317,16 +315,14 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Jet_MC_TruePtFraction;               //!<! array buffer
     Float_t         fBuffer_Jet_MC_TruePtFraction_PartLevel;     //!<! array buffer
 
-    Float_t         fBuffer_Tag_DetLevelJet_Pt;               //!<! array buffer                                                                                                    
-    Float_t         fBuffer_Tag_PartLevelJet_Pt;              //!<! array buffer
-
+  
 
     Int_t           fBuffer_NumTriggerTracks;
     Int_t           fBuffer_NumSecVertices;
     Int_t           fBuffer_NumSplittings;
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 11) // Jet tree class
+    ClassDef(AliEmcalJetTree, 12) // Jet tree class
     /// \endcond
 };
 
