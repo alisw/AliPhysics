@@ -109,6 +109,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetSigmaCDeltaMassWindow(Double_t maxDeltaM){fSigmaCDeltaMassWindow=maxDeltaM;}
   void SetOnTheFlyLcCandidatesForSigmaC(Bool_t onthefly){fSigmaCfromLcOnTheFly=onthefly;}
   void SetFillOnlyTrackSparse(Bool_t fillonlysparse){fCheckOnlyTrackEfficiency=fillonlysparse;}
+  void SetIsCdeuteronAnalysis(Bool_t iscd){fIsCdeuteronAnalysis=iscd;}
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -195,6 +196,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH2F *fhistMCSpectrumAccLc;//! hist with MC spectrum of cand in acceptance
   TH2F *fhistMCSpectrumAccSc;//! hist with MC spectrum of cand in acceptance
   TH2F *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
+  TH2F *fhistMCSpectrumAccCdeuteron;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
   THnSparseF* fhSparseAnalysisSigma;//! sparse for analysis of SigmaC (with deltaM)
   THnSparseF* fhSparsePartReco;//! sparse for single track efficiency (reco spectra)
@@ -284,6 +286,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t fSigmaCDeltaMassWindow; /// mass window for accetping sigma_C candidate
   Bool_t fSigmaCfromLcOnTheFly; /// switch to use on-the-fly Lc or filtered Lc from delta file
   Bool_t fCheckOnlyTrackEfficiency;// flag for filling only the single-track sparse and return
+  Bool_t fIsCdeuteronAnalysis;// flag for doing the c deuteron analysis (inv mass)
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskSEXicTopKpi,5); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
