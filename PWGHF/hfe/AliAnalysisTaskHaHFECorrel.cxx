@@ -3997,7 +3997,7 @@ void AliAnalysisTaskHaHFECorrel::CheckPhotonicPartner(AliVTrack* Vtrack, Bool_t 
     if (abs(mcPart->GetPdgCode())!=11) continue;
     if (mcPart->GetMother()!=Mother) continue;
     // cout << "partner " << i << endl;
-    if (foundPartner) cout << "should never happen " << endl; // but in p0->eeee
+    if (foundPartner) cout << "p0->eeee? " << endl; // but in p0->eeee
     Double_t p1[3], p2[3];
     MCParticle->PxPyPz(p1);
     mcPart->PxPyPz(p2);
@@ -5695,12 +5695,18 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	if (trueULSPartner) fTagTruePairsMult->Fill(pt,mult, PtMotherWeight*EventWeight);
 	if (trueULSPartner && !(LSPartner>0 || ULSPartner>0)) cout << "ERROR ULSLS" << endl;
       }
-      else if (PDGCodeMother<400 && PDGCodeMother>100) {
+      else if ((PDGCodeMother<400 && PDGCodeMother>100) || (PDGCodeMother==22 &&( PDGCodeGrandMother<400 || PDGCodeGrandMother>100))) {
 	fTagEffInclBGMult->Fill(pt, mult, PtMotherWeight*EventWeight);
 	for (int j=0; j<LSPartner; j++)  fTagEffULSBGMult->Fill(pt,mult, -1.*PtMotherWeight*EventWeight);
 	for (int j=0; j<ULSPartner; j++) fTagEffULSBGMult->Fill(pt,mult, PtMotherWeight*EventWeight);
       }
-    }      
+      else {
+	//	cout << "primary, but neither photonic or default bg" << PDGCodeMother <<  endl; // usually heavy particles
+      }
+    }
+    else {
+      //   cout << "not primary" <<endl;
+    }
 	
 
     
