@@ -127,13 +127,17 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  bUseWeights(kFALSE),
  fNumber(6),  //number of correlation first correlator
  fNumberSecond(6), //number of correlation second correlator
+ fNumberThird(6),
+ bDoThirdCorrelation(kFALSE),
  fMinNumberPart(10),
  bUseRatioWeight(kTRUE),
  fDenominatorMinValue(1.0e-16),
  fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0), fh11(0), fh12(0),  //harmonics
  fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0), fa11(0), fa12(0), //second set of harmonics
+ fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), fb7(0), fb8(0), fb9(0), fb10(0), fb11(0), fb12(0), //third set of harmonics
  fCentrality(NULL),
  fCentralitySecond(NULL),
+ fCentralityThird(NULL),
  fEvCentrality(NULL),
  bDoEbERatio(kFALSE),
  fMixedParticleHarmonics(NULL),
@@ -259,14 +263,18 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  bUseWeights(kFALSE),
  fNumber(6),  //number of correlation first correlator
  fNumberSecond(6), //number of correlation second correlator
+ fNumberThird(6),
+ bDoThirdCorrelation(kFALSE),
  fMinNumberPart(10),
  bUseRatioWeight(kTRUE),
  fDenominatorMinValue(1.0e-16),
  fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0), fh11(0), fh12(0),  //harmonics
  fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0), fa11(0), fa12(0), //second set of harmonics
+ fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), fb7(0), fb8(0), fb9(0), fb10(0), fb11(0), fb12(0), //third set of harmonics
  // Final results:
  fCentrality(NULL),
  fCentralitySecond(NULL),
+ fCentralityThird(NULL),
  fEvCentrality(NULL),
  bDoEbERatio(kFALSE),
  fMixedParticleHarmonics(NULL),
@@ -798,6 +806,12 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
  fCentralitySecond->Sumw2(); 
  fFinalResultsList->Add(fCentralitySecond);
 
+ fCentralityThird = new TProfile("fCentralityThird","Result Analysis Second Third Correlators",2,0.,2.); //centrality dependet output
+ fCentralityThird->GetXaxis()->SetTitle("");
+ fCentralityThird->GetYaxis()->SetTitle("flow");
+ fCentralityThird->Sumw2(); 
+ fFinalResultsList->Add(fCentralityThird);
+
  fEvCentrality = new TProfile("fEvCentrality","Result Analysis EbE Method",1,0.,1.); //centrality dependet output
  fEvCentrality->GetXaxis()->SetTitle("");
  fEvCentrality->Sumw2();  
@@ -1268,10 +1282,15 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
     Double_t Weight_FirstCorrelation_Im=0.;
     Double_t SecondCorrelation_Im=0.;
     Double_t Weight_SecondCorrelation_Im=0.;
+
+    Double_t ThirdCorrelation=0.;
+    Double_t Weight_ThirdCorrelation=0.;
+    Double_t ThirdCorrelation_Im=0.;
+    Double_t Weight_ThirdCorrelation_Im=0.;
     
     //~~~~~~~~~~~~~~~~~
 
-    this->Correlation(fNumber,fh1, fh2, fh3, fh4,fh5,fh6,fh7,fh8,fh9,fh10,fh11,fh12,MainTask_Angle_Array,MainTask_Mult );  
+    this->Correlation(fNumber,fh1,fh2,fh3,fh4,fh5,fh6,fh7,fh8,fh9,fh10,fh11,fh12,MainTask_Angle_Array,MainTask_Mult );  
     //do the correlation for the first set
 
     FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(1);
@@ -1284,7 +1303,7 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
 
     //~~~~~~~~~~~~~~~~~
 
-    this->Correlation(fNumberSecond,fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8, fa9, fa10, fa11, fa12,MainTask_Angle_Array,MainTask_Mult);  //do the correlation for the second set
+    this->Correlation(fNumberSecond,fa1,fa2,fa3,fa4,fa5,fa6,fa7,fa8,fa9,fa10,fa11,fa12,MainTask_Angle_Array,MainTask_Mult);  //do the correlation for the second set
 
     SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(1);
     Weight_SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(2);
@@ -1293,6 +1312,22 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
     
     fRecursion[0][fNumberSecond-2]->Reset(); //Reset
     fRecursion[1][fNumberSecond-2]->Reset(); //Reset
+
+
+    if(bDoThirdCorrelation)
+    {
+	this->Correlation(fNumberThird,fb1,fb2,fb3,fb4,fb5,fb6,fb7,fb8,fb9,fb10,fb11,fb12,MainTask_Angle_Array,MainTask_Mult);  
+   	 //do the correlation for the first set
+
+   	 ThirdCorrelation=fRecursion[0][fNumberThird-2]->GetBinContent(1);
+   	 Weight_ThirdCorrelation=fRecursion[0][fNumberThird-2]->GetBinContent(2);
+   	 ThirdCorrelation_Im=fRecursion[1][fNumberThird-2]->GetBinContent(1);
+   	 Weight_ThirdCorrelation_Im=fRecursion[1][fNumberThird-2]->GetBinContent(2);
+	
+  	 fRecursion[0][fNumberThird-2]->Reset(); //Reset
+   	 fRecursion[1][fNumberThird-2]->Reset(); //Reset
+    }
+
 
     //~~~~~~~~~~~~~~~~~
 
@@ -1310,6 +1345,14 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
 
     fCentrality->Fill(1.5,FirstCorrelation_Im,Weight_FirstCorrelation_Im); //safe output first set of harmonics
     fCentralitySecond->Fill(1.5,SecondCorrelation_Im,Weight_SecondCorrelation_Im); //safe output second set of harmonics
+
+
+
+    if(bDoThirdCorrelation)
+    {
+	fCentralityThird->Fill(0.5,ThirdCorrelation,Weight_ThirdCorrelation); //safe output second set of harmonics    
+   	fCentralityThird->Fill(1.5,ThirdCorrelation_Im,Weight_ThirdCorrelation_Im); //safe output second set of harmonics
+    }
 
 
   } //if(fParticles>=fMinNumberPart)
