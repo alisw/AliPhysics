@@ -2021,7 +2021,7 @@ void AddTask_GammaConvCalo_pp(
 
   //PCM-PHOS pp HBT studies <- reserved 850 to 860
   } else if ( trainConfig == 850){ // Default cut, with TM
-    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","244665107a012200000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466510ga012200000","0h63103100000010"); // INT7
 
   //*************************************************************************************************
   // 13 TeV PHOS - setup
