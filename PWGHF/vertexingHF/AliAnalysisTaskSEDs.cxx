@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2019, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -12,8 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -30,10 +28,6 @@
 #include <TMath.h>
 #include <THnSparse.h>
 #include <TDatabasePDG.h>
-#include <Riostream.h>
-#include <TSystem.h>
-#include <TGrid.h>
-#include <TFile.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
@@ -45,8 +39,6 @@
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAnalysisVertexingHF.h"
-#include "AliRDHFCutsDstoKKpi.h"
-#include "AliAnalysisTaskSE.h"
 #include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSEDs.h"
 #include "AliVertexingHFUtils.h"
@@ -56,301 +48,30 @@ ClassImp(AliAnalysisTaskSEDs);
 /// \endcond
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
-  fOutput(nullptr),
-  fHistNEvents(nullptr),
-  fHistoPtWeight(nullptr),
-  fPtVsMass(nullptr),
-  fPtVsMassPhi(nullptr),
-  fPtVsMassK0st(nullptr),
-  fYVsPt(nullptr),
-  fYVsPtSig(nullptr),
-  fHistAllV0multNTPCout(nullptr),
-  fHistSelV0multNTPCout(nullptr),
-  fCosPHist3D(nullptr),
-  fCosPxyHist3D(nullptr),
-  fDLenHist3D(nullptr),
-  fDLenxyHist3D(nullptr),
-  fNDLenxyHist3D(nullptr),
-  fSigVertHist3D(nullptr),
-  fDCAHist3D(nullptr),
-  fNormIPHist3D(nullptr),
-  fCosPiDsHist3D(nullptr),
-  fCosPiKPhiHist3D(nullptr),
-  fPtProng0Hist3D(nullptr),
-  fPtProng1Hist3D(nullptr),
-  fPtProng2Hist3D(nullptr),
-  fNtupleDs(nullptr),
-  fFillNtuple(0),
-  fSystem(kpp),
-  fReadMC(kFALSE),
-  fWriteOnlySignal(kFALSE),
-  fDoCutVarHistos(kTRUE),
-  fUseSelectionBit(kFALSE),
-  fFillSparse(kTRUE),
-  fFillSparseDplus(kFALSE),
-  fFillImpParSparse(kFALSE),
-  fFillAcceptanceLevel(kTRUE),
-  fDoRotBkg(kFALSE),
-  fDoBkgPhiSB(kFALSE),
-  fDoCutV0multTPCout(kFALSE),
-  fUseWeight(kFALSE),
-  fAODProtection(1),
-  fNPtBins(0),
-  fListCuts(nullptr),
-  fMassRange(0.8),
-  fMassBinSize(0.002),
-  fminMass(1.6),
-  fmaxMass(2.5),
-  fMaxDeltaPhiMass4Rot(0.010),
-  fCounter(nullptr),
-  fAnalysisCuts(nullptr),
-  fnSparse(nullptr),
-  fImpParSparse(nullptr),
-  fMultSelectionObjectName("MultSelection"),
-  fUseFinPtBinsForSparse(kFALSE),
-  fApplyML(kFALSE),
-  fConfigPath(""),
-  fMLResponse(nullptr),
-  fEnablePIDMLSparses(kFALSE),
-  fNMLBins(300),
-  fMLOutputMin(0.85),
-  fMLOutputMax(1.0),
-  fFillBkgSparse(kFALSE),
-  fKeepOnlyBkgFromHIJING(kFALSE)
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE()                                   
 {
   /// Default constructor
-
-  for (Int_t iHist = 0; iHist < 3; iHist++)
-  {
-    fHistCentrality[iHist] = nullptr;
-    fHistCentralityMult[iHist] = nullptr;
-  }
-  for (Int_t iHist = 0; iHist < 4; iHist++)
-  {
-    fChanHist[iHist] = nullptr;
-  }
-  for (Int_t iHist = 0; iHist < 4 * kMaxPtBins; iHist++)
-  {
-    fPtCandHist[iHist] = nullptr;
-    fMassHist[iHist] = nullptr;
-    fMassHistPhi[iHist] = nullptr;
-    fMassHistK0st[iHist] = nullptr;
-    fCosPHist[iHist] = nullptr;
-    fDLenHist[iHist] = nullptr;
-    fSumd02Hist[iHist] = nullptr;
-    fSigVertHist[iHist] = nullptr;
-    fPtMaxHist[iHist] = nullptr;
-    fDCAHist[iHist] = nullptr;
-    fPtProng0Hist[iHist] = nullptr;
-    fPtProng1Hist[iHist] = nullptr;
-    fPtProng2Hist[iHist] = nullptr;
-    fDalitz[iHist] = nullptr;
-    fDalitzPhi[iHist] = nullptr;
-    fDalitzK0st[iHist] = nullptr;
-  }
-  for (Int_t iPt = 0; iPt < kMaxPtBins; iPt++)
-  {
-    fMassHistKK[iPt] = nullptr;
-    fMassHistKpi[iPt] = nullptr;
-    fMassHistKKVsKKpi[iPt] = nullptr;
-    fMassHistKpiVsKKpi[iPt] = nullptr;
-    fMassRotBkgHistPhi[iPt] = nullptr;
-    fMassLSBkgHistPhi[iPt] = nullptr;
-    fMassRSBkgHistPhi[iPt] = nullptr;
-  }
-  for (Int_t iPt = 0; iPt < kMaxPtBins + 1; iPt++)
-  {
-    fPtLimits[iPt] = 0;
-  }
-  for (Int_t iHist = 0; iHist < 5; iHist++)
-  {
-    fnSparseMC[iHist] = nullptr;
-  }
-  for (Int_t iHist = 0; iHist < 4; iHist++)
-  {
-    fnSparseMCDplus[iHist] = nullptr;
-    fImpParSparseMC[iHist] = nullptr;
-  }
-  for (Int_t iHist=0; iHist<2; iHist++)
-  {
-      fnSparseNsigmaPIDVsML[iHist] = nullptr;
-  }
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *analysiscuts, Int_t fillNtuple) : AliAnalysisTaskSE(name),
-  fOutput(nullptr),
-  fHistNEvents(nullptr),
-  fHistoPtWeight(nullptr),
-  fPtVsMass(nullptr),
-  fPtVsMassPhi(nullptr),
-  fPtVsMassK0st(nullptr),
-  fYVsPt(nullptr),
-  fYVsPtSig(nullptr),
-  fHistAllV0multNTPCout(nullptr),
-  fHistSelV0multNTPCout(nullptr),
-  fCosPHist3D(nullptr),
-  fCosPxyHist3D(nullptr),
-  fDLenHist3D(nullptr),
-  fDLenxyHist3D(nullptr),
-  fNDLenxyHist3D(nullptr),
-  fSigVertHist3D(nullptr),
-  fDCAHist3D(nullptr),
-  fNormIPHist3D(nullptr),
-  fCosPiDsHist3D(nullptr),
-  fCosPiKPhiHist3D(nullptr),
-  fPtProng0Hist3D(nullptr),
-  fPtProng1Hist3D(nullptr),
-  fPtProng2Hist3D(nullptr),
-  fNtupleDs(0),
-  fFillNtuple(fillNtuple),
-  fSystem(kpp),
-  fReadMC(kFALSE),
-  fWriteOnlySignal(kFALSE),
-  fDoCutVarHistos(kTRUE),
-  fUseSelectionBit(kFALSE),
-  fFillSparse(kTRUE),
-  fFillSparseDplus(kFALSE),
-  fFillImpParSparse(kFALSE),
-  fFillAcceptanceLevel(kTRUE),
-  fDoRotBkg(kTRUE),
-  fDoBkgPhiSB(kTRUE),
-  fDoCutV0multTPCout(kFALSE),
-  fUseWeight(kFALSE),
-  fAODProtection(1),
-  fNPtBins(0),
-  fListCuts(nullptr),
-  fMassRange(0.8),
-  fMassBinSize(0.002),
-  fminMass(1.6),
-  fmaxMass(2.5),
-  fMaxDeltaPhiMass4Rot(0.010),
-  fCounter(nullptr),
-  fAnalysisCuts(analysiscuts),
-  fnSparse(nullptr),
-  fImpParSparse(nullptr),
-  fMultSelectionObjectName("MultSelection"),
-  fUseFinPtBinsForSparse(kFALSE),
-  fApplyML(kFALSE),
-  fConfigPath(""),
-  fMLResponse(nullptr),
-  fEnablePIDMLSparses(kFALSE),
-  fNMLBins(300),
-  fMLOutputMin(0.85),
-  fMLOutputMax(1.0),
-  fFillBkgSparse(kFALSE),
-  fKeepOnlyBkgFromHIJING(kFALSE)
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *analysiscuts, Int_t fillNtuple) : AliAnalysisTaskSE(name)
 {
-  /// Default constructor
-  /// Output slot #1 writes into a TList container
-
-  for (Int_t iHist = 0; iHist < 3; iHist++)
-  {
-    fHistCentrality[iHist] = nullptr;
-    fHistCentralityMult[iHist] = nullptr;
-  }
-  for (Int_t iHist = 0; iHist < 4; iHist++)
-  {
-    fChanHist[iHist] = nullptr;
-  }
-  for (Int_t iHist = 0; iHist < 4 * kMaxPtBins; iHist++)
-  {
-    fPtCandHist[iHist] = nullptr;
-    fMassHist[iHist] = nullptr;
-    fMassHistPhi[iHist] = nullptr;
-    fMassHistK0st[iHist] = nullptr;
-    fCosPHist[iHist] = nullptr;
-    fDLenHist[iHist] = nullptr;
-    fSumd02Hist[iHist] = nullptr;
-    fSigVertHist[iHist] = nullptr;
-    fPtMaxHist[iHist] = nullptr;
-    fDCAHist[iHist] = nullptr;
-    fPtProng0Hist[iHist] = nullptr;
-    fPtProng1Hist[iHist] = nullptr;
-    fPtProng2Hist[iHist] = nullptr;
-    fDalitz[iHist] = nullptr;
-    fDalitzPhi[iHist] = nullptr;
-    fDalitzK0st[iHist] = nullptr;
-  }
-  for (Int_t iPt = 0; iPt < kMaxPtBins; iPt++)
-  {
-    fMassHistKK[iPt] = nullptr;
-    fMassHistKpi[iPt] = nullptr;
-    fMassHistKKVsKKpi[iPt] = nullptr;
-    fMassHistKpiVsKKpi[iPt] = nullptr;
-    fMassRotBkgHistPhi[iPt] = nullptr;
-    fMassLSBkgHistPhi[iPt] = nullptr;
-    fMassRSBkgHistPhi[iPt] = nullptr;
-  }
-  for (Int_t iPt = 0; iPt < kMaxPtBins + 1; iPt++)
-  {
-    fPtLimits[iPt] = 0;
-  }
-
-  for (Int_t iHist = 0; iHist < 5; iHist++)
-  {
-    fnSparseMC[iHist] = nullptr;
-  }
-  for (Int_t iHist = 0; iHist < 4; iHist++)
-  {
-    fnSparseMCDplus[iHist] = nullptr;
-    fImpParSparseMC[iHist] = nullptr;
-  }
-
-  for (Int_t iHist=0; iHist<2; iHist++)
-  {
-      fnSparseNsigmaPIDVsML[iHist] = nullptr;
-  }
-
+  /// Standard constructor
+  SetAnalysisCuts(analysiscuts);
   Int_t nptbins = fAnalysisCuts->GetNPtBins();
   Float_t *ptlim = fAnalysisCuts->GetPtBinLimits();
   SetPtBins(nptbins, ptlim);
+  SetFillNtuple(fillNtuple);
 
-  DefineOutput(1, TList::Class()); //My private output
-
+  DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-
   DefineOutput(3, AliNormalizationCounter::Class());
 
   if (fFillNtuple > 0)
-  {
     // Output slot #4 writes into a TNtuple container
     DefineOutput(4, TNtuple::Class()); //My private output
-  }
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskSEDs::SetPtBins(Int_t n, Float_t *lim)
-{
-  /// define pt bins for analysis
-  if (n > kMaxPtBins)
-  {
-    printf("Max. number of Pt bins = %d\n", kMaxPtBins);
-    fNPtBins = kMaxPtBins;
-    fPtLimits[0] = 0.;
-    fPtLimits[1] = 1.;
-    fPtLimits[2] = 3.;
-    fPtLimits[3] = 5.;
-    fPtLimits[4] = 10.;
-    for (Int_t iPt = 5; iPt < kMaxPtBins + iPt; iPt++)
-      fPtLimits[iPt] = 999.;
-  }
-  else
-  {
-    fNPtBins = n;
-    for (Int_t iPt = 0; iPt < fNPtBins + 1; iPt++)
-      fPtLimits[iPt] = lim[iPt];
-    for (Int_t iPt = fNPtBins + 1; iPt < kMaxPtBins + 1; iPt++)
-      fPtLimits[iPt] = 999.;
-  }
-  if (fDebug > 1)
-  {
-    printf("Number of Pt bins = %d\n", fNPtBins);
-    for (Int_t iPt = 0; iPt < fNPtBins; iPt++)
-      printf(" Bin%d = %8.2f-%8.2f\n", iPt, fPtLimits[iPt], fPtLimits[iPt + 1]);
-  }
-}
 //________________________________________________________________________
 AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
 {
@@ -1665,7 +1386,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           }
           PostData(4, fNtupleDs);
         }
-      } //if(retCodeAnalysisCuts
+      } //if(retCodeAnalysisCuts)
     }   // if(isFidAcc)
 
     if (unsetvtx)
@@ -2296,4 +2017,36 @@ Double_t AliAnalysisTaskSEDs::GetPtWeightFromHistogram(Double_t pt)
     weight = a * pt * pt + b * pt + c;
   }
   return weight;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSEDs::SetPtBins(Int_t n, Float_t *lim)
+{
+  /// define pt bins for analysis
+  if (n > kMaxPtBins)
+  {
+    printf("Max. number of Pt bins = %d\n", kMaxPtBins);
+    fNPtBins = kMaxPtBins;
+    fPtLimits[0] = 0.;
+    fPtLimits[1] = 1.;
+    fPtLimits[2] = 3.;
+    fPtLimits[3] = 5.;
+    fPtLimits[4] = 10.;
+    for (Int_t iPt = 5; iPt < kMaxPtBins + iPt; iPt++)
+      fPtLimits[iPt] = 999.;
+  }
+  else
+  {
+    fNPtBins = n;
+    for (Int_t iPt = 0; iPt < fNPtBins + 1; iPt++)
+      fPtLimits[iPt] = lim[iPt];
+    for (Int_t iPt = fNPtBins + 1; iPt < kMaxPtBins + 1; iPt++)
+      fPtLimits[iPt] = 999.;
+  }
+  if (fDebug > 1)
+  {
+    printf("Number of Pt bins = %d\n", fNPtBins);
+    for (Int_t iPt = 0; iPt < fNPtBins; iPt++)
+      printf(" Bin%d = %8.2f-%8.2f\n", iPt, fPtLimits[iPt], fPtLimits[iPt + 1]);
+  }
 }
