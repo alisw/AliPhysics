@@ -1853,9 +1853,9 @@ void AliAnalysisTaskJetExtractor::PrintConfig()
   if(fIsEmbeddedEvent)
     std::cout << Form("* EMCal embedding framework will be used (at least on container has IsEmbedded() true)") << std::endl;
   if(fDoDetLevelMatching)
-    std::cout << "* Detector level jet matching active *" << std::endl;
+    std::cout << Form("* Detector level jet matching active with containger: %s  *", GetJetContainer(1)->GetName()) << std::endl;
   if(fDoPartLevelMatching)
-    std::cout << "* Particle level jet matching active *" << std::endl;
+    std::cout << Form("* Particle level jet matching active with container: %s *", GetJetContainer(2)->GetName()) << std::endl;
   if(fMCParticleArray)
     std::cout << Form("* Particle level information available (for jet origin calculation, particle code): %s", fMCParticleArrayName.Data()) << std::endl;
   if(extractionHM.size())
