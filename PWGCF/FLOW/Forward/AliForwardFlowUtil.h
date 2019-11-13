@@ -75,6 +75,9 @@ class AliForwardFlowUtil : public TObject {
   Double_t GetTrackRefPhi(AliTrackReference* ref);
 
   void MakeFakeHoles(TH2D& forwarddNdedp);
+  Bool_t FMDAcceptanceExistMC(Double_t eta,Double_t phi,Double_t vertex);
+
+
   AliVEvent* fevent; //!
   AliAODEvent* fAODevent; //!
   AliMCEvent* fMCevent; //!

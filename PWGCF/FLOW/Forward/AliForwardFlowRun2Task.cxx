@@ -109,14 +109,14 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   // create a THn for each harmonic
   Int_t rbins[dimensions] = {4,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.rW4Four)} ; // n, pt, s, zvtx,eta,cent,kind
   Double_t rmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
-  Double_t rmax[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kW4Four)+1};
+  Double_t rmax[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.rW4Four)+1};
 
   fAnalysisList->Add(new THnD("reference", "reference", dimensions, rbins, rmin, rmax));
 
-  Int_t std_dbins[dimensions] = {4,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.dW4Four)} ;
+  Int_t std_dbins[dimensions]   = {4,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.dW4Four)} ;
   Int_t mixed_dbins[dimensions] = {4,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.dWTwoTwoD)} ;
-  Double_t dmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
-  Double_t dmax[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.dW4Four)+1};
+  Double_t dmin[dimensions]     = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
+  Double_t dmax[dimensions]     = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.dW4Four)+1};
   Double_t dmax_mixed[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.dWTwoTwoD)+1};
 
   fAnalysisList->Add(new THnD("standard_differential","standard_differential", dimensions, std_dbins, dmin, dmax));
@@ -205,9 +205,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   // Get the event validation object
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
   if (!ev_val->IsValidEvent() || !isgoodrun){
-  //  PostData(1, this->fOutputList);
     PostData(1, fStorage);
-
     return;
   }
 
@@ -217,38 +215,16 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     if(!aodevent) throw std::runtime_error("Not AOD as expected");
   }
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
-
   fUtil.fevent = fInputEvent;
 
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
-  // if (cent > 60.0){
-  //   //PostData(1, fOutputList);
-  //   return;
-  // }
-
 
   fUtil.FillData(refDist,centralDist,forwardDist);
-  
-  // dNdeta
-  // for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
-  //   Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
-  //   for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
-  //     fdNdeta->Fill(eta,cent,centralDist->GetBinContent(etaBin,phiBin));
-  //   }
-  // }
-  // for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-  //   Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
-  //   for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-  //     fdNdeta->Fill(eta,cent,forwardDist->GetBinContent(etaBin,phiBin));
-  //   }
-  // }
 
   Double_t zvertex = fUtil.GetZ();
 
   //if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
-  //fCent->Fill(cent);
-  //fVertex->Fill(zvertex);
   
   if (fSettings.a5){
     fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE, true,false);
@@ -268,7 +244,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   centralDist->Reset();
   
-  if (!(fSettings.ref_mode & fSettings.kFMDref) || (fSettings.mc && fSettings.esd)) refDist->Reset();
+  if (!(fSettings.ref_mode & fSettings.kFMDref)) refDist->Reset();
   if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) {
     forwardDist->Reset();
     refDist->Reset();
