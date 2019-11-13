@@ -651,6 +651,17 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   fMinPt3Prong=TMath::Min(fCutsDplustoKpipi->GetMinPtCandidate(),fCutsDstoKKpi->GetMinPtCandidate());
   fMinPt3Prong=TMath::Min(fMinPt3Prong,fCutsLctopKpi->GetMinPtCandidate());
 
+  Double_t minPtV0=0.;
+  if(fCutsLctoV0) minPtV0=fCutsLctoV0->GetMinV0PtCut();
+  if(fCutsDstoK0sK){
+    Double_t minPtV0fromDs=fCutsDstoK0sK->GetMinV0PtCut();
+    if(minPtV0fromDs<minPtV0) minPtV0=minPtV0fromDs;
+  }
+  if(fCutsDplustoK0spi){
+    Double_t minPtV0fromDp=fCutsDplustoK0spi->GetMinV0PtCut();
+    if(minPtV0fromDp<minPtV0) minPtV0=minPtV0fromDp;
+  }
+   
   // LOOP ON  POSITIVE  TRACKS
   for(iTrkP1=0; iTrkP1<nSeleTrks; iTrkP1++) {
 
@@ -687,6 +698,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
         if ( esdV0 && ((esdV0->GetOnFlyStatus() == kTRUE  && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOfflineV0s) ||
                        ( esdV0->GetOnFlyStatus() == kFALSE && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) continue;
 
+	if(v0->Pt()<minPtV0) continue;
         // Get the tracks that form the V0
         //  ( parameters at primary vertex )
         //   and define an AliExternalTrackParam out of them
