@@ -39,6 +39,9 @@ public:
 	virtual void            Terminate(Option_t* option);
 	void       GetLeadingObject(Bool_t isMC);
 	void       GetDetectorResponse();
+	void       GetBinByBinCorrections();
+	void       GetUEObservables();
+	void       GetPtLeadingMisRecCorrection();
 	void       GetMultiplicityDistributions();
 	void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}   // use to analyse MC data
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
@@ -50,7 +53,7 @@ protected:
 private:
 	AliESDEvent*            fESD;                                        //! input ESD event
 	AliEventCuts        fEventCuts;
-	AliStack*    fStack;                                                 //! MC stack
+	AliStack*    fMCStack;                                                 //! MC stack
 	AliMCEvent*  fMC;                                               //! MC Event
 	Bool_t       fUseMC;                // analyze MC events
 	AliAnalysisFilter*  fLeadingTrackFilter;
@@ -67,13 +70,33 @@ private:
 	Double_t fRecLeadPt;
 	Int_t    fRecLeadIn;
 
+	// KNO
 	TH1D * hPhiGen[3];
 	TH1D * hNchTSGen;
 	TH1D * hNchTSGenTest;
 	TH1D * hPhiRec[3];
 	TH1D * hNchTSRec;
-        TH1D * hNchTSRecTest;
+	TH1D * hNchTSRecTest;
 	TH2D * hNchResponse;
+
+	// UE 
+	TH1D * hPtInPrim;
+	TH1D * hPtOut;
+	TH1D * hPtOutPrim; 
+	TH1D * hPtOutSec; 
+	TH1D * hCounter;
+	TH2D * hNumDenMC[3];
+	TH2D * hSumPtMC[3];
+	TH2D * hNumDenMCMatch[3];
+	TH2D * hSumPtMCMatch[3];
+
+	TH1D * hPtLeadingTrue;
+	TH1D * hPtLeadingMeasured;
+	TH2D * hPtVsPtLeadingMeasured[3];
+	TProfile * pNumDenMeasured[3];
+	TProfile * pNumDenTrue[3];
+	TProfile * pSumPtMeasured[3];
+	TProfile * pSumPtTrue[3];
 
 	AliAnalysisTaskMcKnoUe(const AliAnalysisTaskMcKnoUe&);                  // not implemented
 	AliAnalysisTaskMcKnoUe& operator=(const AliAnalysisTaskMcKnoUe&);       // not implemented
