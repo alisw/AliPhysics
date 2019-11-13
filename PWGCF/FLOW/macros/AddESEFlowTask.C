@@ -1,4 +1,4 @@
-AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "", TString sqSelCuts = "")
+AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",Bool_t UseqRun = 1, TString sWeightsFile = "", TString sVWeights = "", TString sqSelCuts = "",const char* suffix ="")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -14,11 +14,11 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     }
 
     Bool_t bUseOwnWeights = kFALSE;
-    Bool_t bUseqSelCuts = kTRUE;
+    Bool_t bUseqSelCuts = UseqRun;
 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += Form(":Task%s", dirname.Data());      // create a subfolder in the file
+    fileName += Form(":Task%s", suffix);      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisTaskESEFlow* task = new AliAnalysisTaskESEFlow(name.Data());   
     if(!task) return 0x0;
@@ -28,13 +28,13 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Observables%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("c_n{n} distributions%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("d_n{n} distributions%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("q_n distributions%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("d_n{n} dist after q selection%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("c_n{n} dist after q selection%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Observables%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("c_n{n} distributions%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("d_n{n} distributions%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("q_n distributions%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("d_n{n} dist after q selection%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("c_n{n} dist after q selection%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
@@ -102,7 +102,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
       TFile* qCuts_file = TFile::Open(sqSelCuts.Data(),"READ");
       if(!qCuts_file) { printf("Input file with q selections cuts not found! \n"); return NULL; }
 
-      TTree* nuaTree = static_cast<TTree*>(qCuts_file->Get("q_nSel"));
+      TTree* nuaTree = dynamic_cast<TTree*>(qCuts_file->Get("q_nSel"));
       
       if(!nuaTree) { printf("Input tree with q selection cuts not found! \n"); qCuts_file->ls(); return NULL; }
 
