@@ -27,7 +27,6 @@
 #include "TList.h"
 #include "TMath.h"
 #include "TComplex.h"
-#include "AliAnalysisDataSlot.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 #include "AliMultSelection.h"
@@ -52,7 +51,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fInit{0},
     fqRun{0},
     fFlowWeightsList{nullptr},
-    fqCutsTree{0x0},
+    fqCutsTree{nullptr},
     fWeights(0),
     bUseOwnWeights(0),
     fOutputList(0),
@@ -115,7 +114,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTa
     fInit{0},
     fqRun{0},
     fFlowWeightsList{nullptr},
-    fqCutsTree{0x0},
+    fqCutsTree{nullptr},
     fWeights(0),
     bUseOwnWeights(0),
     fOutputList(0),
