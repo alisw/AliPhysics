@@ -40,13 +40,13 @@ class AliHFMLVarHandlerDstoKKpi : public AliHFMLVarHandler
         }
 
     private:
-        float fImpParProng[knMaxProngs]; ///prong impact parameter
-        float fSigmaVertex; /// candidate sigma vertex
-        float fMassKK; /// candidate massKK
-        float fCosPiDs; /// candidate cos3piDs
-        float fCosPiKPhi; /// candidate cospiKphi
-        float fNormd0MeasMinusExp; ///candidate topomatic variable
-        int fMassKKOpt; /// option for massKK variable (mass or delta mass wrt phi)
+        float fImpParProng[knMaxProngs] = {-999.,-999.,-999.,-999.};  ///prong impact parameter
+        float fSigmaVertex = -999.;                                   /// candidate sigma vertex
+        float fMassKK = -999.;                                        /// candidate massKK
+        float fCosPiDs = -999.;                                       /// candidate cos3piDs
+        float fCosPiKPhi = -999.;                                     /// candidate cospiKphi
+        float fNormd0MeasMinusExp = -999.;                            ///candidate topomatic variable
+        int fMassKKOpt = kDeltaMassKKPhi;                                       /// option for massKK variable (mass or delta mass wrt phi)
 
         /// \cond CLASSIMP
         ClassDef(AliHFMLVarHandlerDstoKKpi,1); /// 

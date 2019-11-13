@@ -23,25 +23,21 @@ ClassImp(AliHFMLVarHandlerDplustoKpipi);
 /// \endcond
 
 //________________________________________________________________
-AliHFMLVarHandlerDplustoKpipi::AliHFMLVarHandlerDplustoKpipi() : AliHFMLVarHandler(),
-                                                                 fSigmaVertex(-999.),
-                                                                 fNormd0MeasMinusExp(-999.)
+AliHFMLVarHandlerDplustoKpipi::AliHFMLVarHandlerDplustoKpipi() : AliHFMLVarHandler()
 {
     //
     // Default constructor
     //
     fNProngs=3; // --> cannot be changed
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
-        fImpParProng[iProng] = -999.;
 }
 
 //________________________________________________________________
-AliHFMLVarHandlerDplustoKpipi::AliHFMLVarHandlerDplustoKpipi(int PIDopt) : AliHFMLVarHandlerDplustoKpipi()
+AliHFMLVarHandlerDplustoKpipi::AliHFMLVarHandlerDplustoKpipi(int PIDopt) : AliHFMLVarHandler(PIDopt)
 {
     //
     // Standard constructor
     //
-    SetOptPID(PIDopt);
+   fNProngs=3; // --> cannot be changed
 }
 
 //________________________________________________________________

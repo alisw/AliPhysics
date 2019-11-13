@@ -85,30 +85,30 @@ class AliHFMLVarHandler : public TObject
         float ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF* cand, float bfield);
         float GetTOFmomentum(AliAODTrack* track, AliAODPidHF* pidrespo);
 
-        TTree* fTreeVar; /// tree with variables
-        unsigned int fNProngs; /// number of prongs
-        int fCandType; ///flag for candidate type (bit map above)
-        float fInvMass; ///candidate invariant mass
-        float fPt; ///candidate pt
-        float fDecayLength; ///candidate decay length
-        float fDecayLengthXY; ///candidate decay length in the transverse plane
-        float fNormDecayLengthXY; ///candidate normalised decay length in the transverse plane
-        float fCosP; ///candidate cosine of pointing angle
-        float fCosPXY; ///candidate cosine of pointing angle in the transcverse plane
-        float fImpParXY; ///candidate impact parameter in the transverse plane
-        float fDCA; ///DCA of candidates prongs
-        float fPtProng[knMaxProngs]; ///prong pt
-        float fTPCPProng[knMaxProngs]; ///prong TPC momentum
-        int fNTPCclsPidProng[knMaxProngs]; ///prong track number of clusters in TPC used for PID
-        float fTOFPProng[knMaxProngs]; ///prong TOF momentum
-        float fTrackIntegratedLengthProng[knMaxProngs]; /// prong track integrated lengths
-        float fStartTimeResProng[knMaxProngs]; /// prong track start time resolutions (for TOF)
-        float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; ///PID nsigma variables
-        float fPIDrawVector[knMaxProngs][knMaxDet4Pid]; ///raw PID variables
-        int fPidOpt; ///option for PID variables
-        bool fAddSingleTrackVar; //add single-track variables
-        bool fFillOnlySignal; ///flag to enable only signal filling
-
+        TTree* fTreeVar = nullptr;                                  /// tree with variables
+        int fPidOpt = kNsigmaPID;                                   /// option for PID variables
+        bool fAddSingleTrackVar = false;                            /// add single-track variables
+        bool fFillOnlySignal = false;                               /// flag to enable only signal filling
+        unsigned int fNProngs = -1;                                 /// number of prongs
+        int fCandType = 0;                                          /// flag for candidate type (bit map above)
+        float fInvMass = -999.;                                     /// candidate invariant mass
+        float fPt = -999.;                                          /// candidate pt
+        float fDecayLength = -999.;                                 /// candidate decay length
+        float fDecayLengthXY = -999.;                               /// candidate decay length in the transverse plane
+        float fNormDecayLengthXY = -999.;                           /// candidate normalised decay length in the transverse plane
+        float fCosP = -999.;                                        /// candidate cosine of pointing angle
+        float fCosPXY = -999.;                                      /// candidate cosine of pointing angle in the transcverse plane
+        float fImpParXY = -999.;                                    /// candidate impact parameter in the transverse plane
+        float fDCA = -999.;                                         /// DCA of candidates prongs
+        float fPtProng[knMaxProngs] = {-999.,-999.,-999.,-999.};    /// prong pt
+        float fTPCPProng[knMaxProngs] = {-999.,-999.,-999.,-999.};  /// prong TPC momentum
+        int fNTPCclsPidProng[knMaxProngs] = {-999,-999,-999,-999};  /// prong track number of clusters in TPC used for PID
+        float fTOFPProng[knMaxProngs] = {-999.,-999.,-999.,-999.};  /// prong TOF momentum
+        float fTrackIntegratedLengthProng[knMaxProngs] = {-999.,-999.,-999.,-999.};  /// prong track integrated lengths
+        float fStartTimeResProng[knMaxProngs] = {-999.,-999.,-999.,-999.};           /// prong track start time resolutions (for TOF)
+        float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid];          /// PID nsigma variables
+        float fPIDrawVector[knMaxProngs][knMaxDet4Pid];                              /// raw PID variables
+        
     /// \cond CLASSIMP
     ClassDef(AliHFMLVarHandler,1); ///
     /// \endcond

@@ -24,33 +24,21 @@ ClassImp(AliHFMLVarHandler);
 /// \endcond
 
 //________________________________________________________________
-AliHFMLVarHandler::AliHFMLVarHandler() : TObject(),
-                                         fTreeVar(nullptr),
-                                         fNProngs(-1),
-                                         fCandType(0),
-                                         fInvMass(-999.),
-                                         fPt(-999.),
-                                         fDecayLength(-999.),
-                                         fDecayLengthXY(-999.),
-                                         fNormDecayLengthXY(-999.),
-                                         fCosP(-999.),
-                                         fCosPXY(-999.),
-                                         fImpParXY(-999.),
-                                         fDCA(-999.),
-                                         fPidOpt(kNsigmaPID),
-                                         fAddSingleTrackVar(false),
-                                         fFillOnlySignal(false)
+AliHFMLVarHandler::AliHFMLVarHandler() : AliHFMLVarHandler(kNsigmaPID)
 {
     //
     // Default constructor
     //
+}
+
+//________________________________________________________________
+AliHFMLVarHandler::AliHFMLVarHandler(int PIDopt) : TObject(),
+                                                   fPidOpt(PIDopt)
+{
+    //
+    // Standard constructor
+    //
     for(unsigned int iProng=0; iProng<knMaxProngs; iProng++) {
-        fTPCPProng[iProng] = -999.;
-        fTOFPProng[iProng] = -999.;
-        fPtProng[iProng] = -999.;
-        fNTPCclsPidProng[iProng] = -999;
-        fTrackIntegratedLengthProng[iProng] = -999.;
-        fStartTimeResProng[iProng] = -999.;
         for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++)
             fPIDrawVector[iProng][iDet] = -999.;
         for(unsigned int iDet=0; iDet<knMaxDet4Pid+1; iDet++) {
@@ -58,15 +46,6 @@ AliHFMLVarHandler::AliHFMLVarHandler() : TObject(),
                 fPIDNsigmaVector[iProng][iDet][iHypo] = -999.;  
         }
     }
-}
-
-//________________________________________________________________
-AliHFMLVarHandler::AliHFMLVarHandler(int PIDopt) : AliHFMLVarHandler()
-{
-    //
-    // Standard constructor
-    //
-    SetOptPID(PIDopt);
 }
 
 //________________________________________________________________

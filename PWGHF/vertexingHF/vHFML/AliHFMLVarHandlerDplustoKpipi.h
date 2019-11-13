@@ -28,9 +28,9 @@ class AliHFMLVarHandlerDplustoKpipi : public AliHFMLVarHandler
         virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliAODPidHF *pidrespo=nullptr);
 
     private:
-        float fImpParProng[knMaxProngs]; ///prong impact parameter
-        float fSigmaVertex; /// candidate sigma vertex
-        float fNormd0MeasMinusExp; ///candidate topomatic variable
+        float fImpParProng[knMaxProngs] = {-999.,-999.,-999.,-999.}; ///prong impact parameter
+        float fSigmaVertex = -999.; /// candidate sigma vertex
+        float fNormd0MeasMinusExp = -999.; ///candidate topomatic variable
 
         /// \cond CLASSIMP
         ClassDef(AliHFMLVarHandlerDplustoKpipi,1); /// 
