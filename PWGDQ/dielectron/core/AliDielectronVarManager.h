@@ -301,6 +301,8 @@ public:
     kITSscPair,              // ITS shared cluster of both daughters of a pair
     kDeltaCotTheta,          // difference of cotangens of theta of daughters
 
+    kDeltaPhiSumDiff,
+    
     kPairPlaneAngle1A,         // angle between ee decay plane and x'-z reaction plane by using V0-A
     kPairPlaneAngle2A,         // angle between ee decay plane and (p1+p2) rot ez
     kPairPlaneAngle3A,         // angle between ee decay plane and (p1+p2) rot (p1+p2)x'z
@@ -1989,7 +1991,31 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   if(Req(kPsiPair))  values[AliDielectronVarManager::kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
   if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]     = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+  
+  values[AliDielectronVarManager::kDeltaPhiSumDiff]=-999; 
+  if(Req(kDeltaPhiSumDiff)){
+    // get track references from pair
+    AliVParticle* d1 = pair->GetFirstDaughterP();
+    AliVParticle* d2 = pair->GetSecondDaughterP();
 
+    //randomly swap to eliminate any biases in the assignment of the first and second pair leg
+    if(gRandom->Uniform()>0.5){
+        d1 = pair->GetSecondDaughterP();
+        d2 = pair->GetFirstDaughterP();
+    }    
+    if (d1 && d2) {     
+        Double_t p1[3];
+        Double_t p2[3];
+        static_cast<AliAODTrack*>(d1)->PxPyPz(p1);
+        static_cast<AliAODTrack*>(d2)->PxPyPz(p2);
+        TVector3 vl1(p1[0],p1[1],p1[2]);
+        TVector3 vl2(p2[0],p2[1],p2[2]);
+        TVector3 vSum=vl1+vl2;
+        TVector3 vDiff=vl1-vl2;     
+        values[AliDielectronVarManager::kDeltaPhiSumDiff]=TMath::Abs(vSum.DeltaPhi(vDiff));   
+    }
+  } 
+    
   values[AliDielectronVarManager::kITSscPair]   = -999;
   if(Req(kITSscPair)) {
 
