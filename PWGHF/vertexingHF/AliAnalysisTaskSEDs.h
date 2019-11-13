@@ -50,19 +50,11 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
   void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
-  Bool_t GetUseWeight() const {return fUseWeight;}
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
   void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
   void CreateCutVarsAndEffSparses();
   void CreateImpactParameterSparses();
   Float_t GetTrueImpactParameterDstoPhiPi(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDs) const;
-
-  void SetPtWeightsFromFONLL5anddataoverLHC16i2a();
-  void SetPtWeightsFromFONLL5overLHC16i2abc();
-  void SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc();
-  void SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc();
-  void SetPtWeightsFromFONLL13overLHC17c3a12();
-  void SetPtWeightsFromFONLL5overLHC18a4a2();
 
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
@@ -70,8 +62,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetSystem(Int_t system){fSystem = system;}
 
   void SetUseFinePtBinsForSparse(Bool_t usefinebins=kTRUE) {fUseFinPtBinsForSparse=usefinebins;} //use only in case of few candidates (e.g. MC signal only)
-
-  Double_t GetPtWeightFromHistogram(Double_t pt);
 
   void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=true) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
   void SetFillBkgSparse(Bool_t dofill=true) {fFillBkgSparse = dofill;}
@@ -102,7 +92,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 
   TList*  fOutput = nullptr;                    //!<! list send on output slot 0
   TH1F*   fHistNEvents = nullptr;               //!<! hist. for No. of events
-  TH1F*   fHistoPtWeight = nullptr;             //-> user-defined histogram to calculate the Pt weights
   TH1F*   fChanHist[4] = {};                    //!<! hist. with KKpi and piKK candidates (sig,bkg,tot)
   TH1F*   fMassHist[4*kMaxPtBins] = {};         //!<! hist. of mass spectra (sig,bkg,tot)
   TH1F*   fMassHistPhi[4*kMaxPtBins] = {};      //!<! hist. of mass spectra via phi (sig,bkg,tot)
@@ -172,7 +161,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fDoRotBkg = kFALSE;                   /// flag to create rotational bkg (rotating pi track)
   Bool_t  fDoBkgPhiSB = kFALSE;                 /// flag to create bkg from phi sidebands
   Bool_t  fDoCutV0multTPCout = kFALSE;          /// flag to activate cut on V0mult vs #tracks TPCout
-  Bool_t  fUseWeight = kFALSE;                  /// flag to decide whether to use pt-weights != 1 when filling the container or not
   Int_t   fAODProtection = 1;                   /// flag to activate protection against AOD-dAOD mismatch.
                                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins = 0;                         /// number of Pt bins
