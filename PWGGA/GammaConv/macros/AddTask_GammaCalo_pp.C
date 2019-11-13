@@ -1613,12 +1613,10 @@ void AddTask_GammaCalo_pp(
   // *********************************************************************************************************
   // 13 TeV 2015 pp Run2 - PHOS configurations
   // *********************************************************************************************************
-  } else if (trainConfig == 800){ // PHOS clusters with larger acceptance NCells 3
-    cuts.AddCutCalo("00010113","24466110n0012300000","0163103100000010"); // INT7
-    cuts.AddCutCalo("00062113","24466110n0012300000","0163103100000010"); // PHI7
-  } else if (trainConfig == 801){ // PHOS clusters with larger acceptance NCells 2
-    cuts.AddCutCalo("00010113","24466110n0012200000","0163103100000010"); // INT7
-    cuts.AddCutCalo("00062113","24466110n0012200000","0163103100000010"); // PHI7
+  } else if (trainConfig == 800){ // PHOS INT7
+    cuts.AddCutCalo("00010113","24466110na012200000","0163103100000010"); //Int7 no Trigger
+  } else if (trainConfig == 801){ // PHOS PHI7
+    cuts.AddCutCalo("00062113","24466110na012200000","0163103100000010"); //PHI7
   } else if (trainConfig == 802){ // PHOS clusters with larger acceptance w/ TM NCells 3
     cuts.AddCutCalo("00010113","24466110na012300000","0163103100000010"); // INT7
     cuts.AddCutCalo("00062113","24466110na012300000","0163103100000010"); // PHI7
