@@ -11,13 +11,14 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
- * Author: Prabi, Feng Fan, and Paolo Bartalini, CCNU 2016               *
+ * Author: Ahsan Mehmood Khan(ahsan.mehmood.khan@cern.ch)                 * 
+ *         Feng Fan (feng.fan@cern.ch)                                    *
+ *         Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)                *
  **************************************************************************/
 
 /* AliAnaysisTaskMcKnoUe source code
- *
- * simple task which can serve as a starting point for building an MPI UE analysis
- *
+ * The analysis task produce all the histos needed for MC closure test studies
+ * Results include both KNO properties and traditional UE analysis
  */
 
 class TTree;
@@ -99,6 +100,11 @@ using std::cout;
 using std::endl;
 
 #include "AliAnalysisTaskMcKnoUe.h"
+
+
+const Int_t nchNbins = 100;
+Double_t nchbins[nchNbins+1]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5,35.5,36.5,37.5,38.5,39.5,40.5,41.5,42.5,43.5,44.5,45.5,46.5,47.5,48.5,49.5,50.5,51.5,52.5,53.5,54.5,55.5,56.5,57.5,58.5,59.5,60.5,61.5,62.5,63.5,64.5,65.5,66.5,67.5,68.5,69.5,70.5,71.5,72.5,73.5,74.5,75.5,76.5,77.5,78.5,79.5,80.5,81.5,82.5,83.5,84.5,85.5,86.5,87.5,88.5,89.5,90.5,91.5,92.5,93.5,94.5,95.5,96.5,97.5,98.5,99.5};
+
 const Int_t ptNbins = 36;
 Double_t ptbins1[ptNbins+1] = {
 	0.0,  0.1,  0.15,  0.2,  0.25,  0.3,  0.35,  0.4,  0.45,  0.5,  0.6,  0.7,  0.8,  0.9,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, 5.0, 6.0,    7.0,  8.0,  9.0,  10.0,  12.0,  14.0,  16.0,  18.0,  20.0,  25.0,  30.0,  40.0,  50.0
@@ -111,23 +117,49 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKnoUe) // classimp: necessary for root
 
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
-	fESD(0), fEventCuts(0x0), fStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0)  
+	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0)  
 
 {
 	for(Int_t i=0;i<3;++i){ 
 		hPhiGen[i]= 0;
 		hPhiRec[i]= 0;
+		hNumDenMC[i]=0;
+		hSumPtMC[i]=0;
+		hNumDenMCMatch[i]=0;
+		hSumPtMCMatch[i]=0;
+
+		hPtVsPtLeadingMeasured[i]=0;// only for data
+		pNumDenMeasured[i]=0;// only for data
+		pSumPtMeasured[i]=0;// only for data
+
+		pNumDenTrue[i]=0;
+		pSumPtTrue[i]=0;
 	}
 	// default constructor, don't allocate memory here!  this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTaskSE(name),
-	fESD(0), fEventCuts(0x0), fStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0)
+	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0) 
 {
 	for(Int_t i=0;i<3;++i){
+
 		hPhiGen[i] = 0;
 		hPhiRec[i] = 0;
+		hNumDenMC[i]=0;
+		hSumPtMC[i]=0;
+		hNumDenMCMatch[i]=0;
+		hSumPtMCMatch[i]=0;
+
+		hPtVsPtLeadingMeasured[i]=0;// only for data
+		pNumDenMeasured[i]=0;// only for data
+		pSumPtMeasured[i]=0;// only for data
+
+		pNumDenTrue[i]=0;
+		pSumPtTrue[i]=0;
+
 	}
+
+
 	// constructor
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case you take a 'chain' of events
 	// this chain is created by the analysis manager, so no need to worry about it, does its work automatically
@@ -191,6 +223,10 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	const Char_t * nameReg[3]={"NS","AS","TS"};
 	hNchTSGen = new TH1D("hNchTSGen","",100,-0.5,99.5);
 	fOutputList->Add(hNchTSGen);
+
+	hNchTSGenTest = new TH1D("hNchTSGenTest","",100,-0.5,99.5); 
+	fOutputList->Add(hNchTSGenTest);
+
 	for(Int_t i=0;i<3;++i){
 		hPhiGen[i]= new TH1D(Form("hPhiGen_%s",nameReg[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 		fOutputList->Add(hPhiGen[i]);
@@ -198,6 +234,9 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 
 	hNchTSRec = new TH1D("hNchTSRec","",100,-0.5,99.5);
 	fOutputList->Add(hNchTSRec);
+	hNchTSRecTest = new TH1D("hNchTSRecTest","",100,-0.5,99.5); 
+	fOutputList->Add(hNchTSRecTest);
+
 	for(Int_t i=0;i<3;++i){
 		hPhiRec[i]= new TH1D(Form("hPhiRec_%s",nameReg[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 		fOutputList->Add(hPhiRec[i]);
@@ -205,8 +244,60 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",100,-0.5,99.5,100,-0.5,99.5);
 	fOutputList->Add(hNchResponse);
 
+	// UE analysis
+	hPtInPrim = new TH1D("hPtInPrim","pT prim true; pT; Nch",ptNbins,ptbins1);
+	fOutputList->Add(hPtInPrim);
 
-	fEventCuts.AddQAplotsToList(fOutputList);
+	hPtOut = new TH1D("hPtOut","pT all rec; pT; Nch",ptNbins,ptbins1);
+	fOutputList->Add(hPtOut);
+
+	hPtOutPrim = new TH1D("hPtOutPrim","pT prim rec; pT; Nch",ptNbins,ptbins1);
+	fOutputList->Add(hPtOutPrim);
+
+	hPtOutSec = new TH1D("hPtOutSec","pT sec rec; pT; Nch",ptNbins,ptbins1);
+	fOutputList->Add(hPtOutSec);
+
+	hCounter = new TH1D("hCounter","Counter; sel; Nev",3,0,3);
+	fOutputList->Add(hCounter);
+
+	for(Int_t i=0;i<3;++i){
+		hNumDenMC[i]= new TH2D(Form("hNumDenMC_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		fOutputList->Add(hNumDenMC[i]);
+		hSumPtMC[i]= new TH2D(Form("hSumPtMC_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		fOutputList->Add(hSumPtMC[i]);
+		hNumDenMCMatch[i]= new TH2D(Form("hNumDenMCMatch_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		fOutputList->Add(hNumDenMCMatch[i]);
+		hSumPtMCMatch[i]= new TH2D(Form("hSumPtMCMatch_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		fOutputList->Add(hSumPtMCMatch[i]);
+
+	}
+
+	for(Int_t i=0;i<3;++i){
+
+		hPtVsPtLeadingMeasured[i] = new TH2D(Form("hPtVsPtLeadingMeasured_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		fOutputList->Add(hPtVsPtLeadingMeasured[i]);
+
+		pNumDenMeasured[i] = new TProfile(Form("pNumDenMeasured_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pNumDenMeasured[i]);
+
+		pSumPtMeasured[i] = new TProfile(Form("pSumPtMeasured_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pSumPtMeasured[i]);
+
+		pNumDenTrue[i] = new TProfile(Form("pNumDenTrue_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pNumDenTrue[i]);
+
+		pSumPtTrue[i] = new TProfile(Form("pSumPtTrue_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pSumPtTrue[i]);
+
+	}
+
+	hPtLeadingTrue = new TH1D("hPtLeadingTrue","",ptNbins,ptbins1);
+	fOutputList->Add(hPtLeadingTrue);
+
+	hPtLeadingMeasured = new TH1D("hPtLeadingMeasured","",ptNbins,ptbins1);
+	fOutputList->Add(hPtLeadingMeasured);
+
+	//fEventCuts.AddQAplotsToList(fOutputList);
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
 
 }
@@ -237,40 +328,16 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 			this->Dump();
 			return;
 		}
-
-		/*
-		   fMCStack = fMC->Stack();
-
-		   if(!fMCStack){
-		   Printf("%s:%d MCStack not found in Input Manager",(char*)__FILE__,__LINE__);
-		   this->Dump();
-		   return;
-		   }
-		 */
+		fMCStack = fMC->Stack();
 	}
 
 
-	//AliMultSelection *MultSelection = (AliMultSelection*) fESD -> FindListObject("MultSelection");
-	// Cuts at event level
+	hCounter->Fill(0);
 	UInt_t fSelectMask= fInputHandler->IsEventSelected();
 	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
 	if(!isINT7selected)
 		return;
-
-
-/*
-	if (!fEventCuts.AcceptEvent(event)) {
-		PostData(1, fListOfObjects);
-		return;
-	}
-*/
-
-
-	//if(!IsEventSelected(fESD) ) {
-//		PostData(1, fOutputList);   /// Event isn't selected, post output data, done here
-	//	return;
-//	}
-
+	hCounter->Fill(1);
 
 	if (fUseMC){
 		GetLeadingObject(kTRUE);// leading particle at gen level
@@ -278,18 +345,31 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 	GetLeadingObject(kFALSE);// leading particle at rec level
 
-	// detector response (50% of full stat)
-	if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )){
-
-		Double_t randomUE = gRandom->Uniform(0.0,1.0);
-		if(randomUE<0.5)
+	Double_t randomUE = gRandom->Uniform(0.0,1.0);
+	if(randomUE<0.5){// corrections (50% stat.)
+		// KNO scaling
+		if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
 			GetDetectorResponse();
-		else{
 
-
+		// UE analysis
+		if(fGenLeadPt>=fPtMin){
+			GetBinByBinCorrections();
+			GetPtLeadingMisRecCorrection();
 		}
 
 	}
+	else{// for testing the method
+		// KNO scaling
+		if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
+			GetMultiplicityDistributions();
+
+		// UE analysis
+		if(fGenLeadPt>=fPtMin){
+			GetUEObservables();// TODO: define the corresponding histos 
+		}
+
+	}
+
 
 
 	PostData(1, fOutputList); // stream the result of this event to the output manager which will write it to a file
@@ -364,7 +444,103 @@ void AliAnalysisTaskMcKnoUe::GetLeadingObject(Bool_t isMC) {
 
 
 }
+void AliAnalysisTaskMcKnoUe::GetPtLeadingMisRecCorrection(){
 
+	Int_t nch_top[3];
+	Double_t sumpt_top[3];
+	for(Int_t i=0;i<3;++i){
+		nch_top[i]=0;
+		sumpt_top[i]=0;
+	}
+
+
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+
+		if(fGenLeadIn==i)continue;
+
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
+
+		if (!fMC->IsPhysicalPrimary(i)) continue; 
+		if (particle->Charge() == 0) continue;
+		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
+		if( particle->Pt() < fPtMin)continue;
+
+		Double_t DPhi = DeltaPhi(particle->Phi(), fRecLeadPhi);
+
+		// definition of the topological regions
+		if(TMath::Abs(DPhi)<pi/3.0){// near side
+			nch_top[0]++; sumpt_top[0]+=particle->Pt();	
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+			nch_top[1]++; sumpt_top[1]+=particle->Pt();
+		}
+		else{// transverse side
+			nch_top[2]++; sumpt_top[2]+=particle->Pt();
+		}
+	}
+
+	AliESDtrack* ltrack = static_cast<AliESDtrack*>(fESD->GetTrack(fRecLeadIn));
+	const Int_t label = TMath::Abs(ltrack->GetLabel());
+
+	Double_t ptlrec = ltrack->Pt();
+	for(Int_t i=0;i<3;++i){
+		hNumDenMC[i]->Fill(ptlrec,nch_top[i]);
+		hSumPtMC[i]->Fill(ptlrec,sumpt_top[i]);
+		if(label==fGenLeadIn){
+			hNumDenMCMatch[i]->Fill(ptlrec,nch_top[i]);
+			hSumPtMCMatch[i]->Fill(ptlrec,sumpt_top[i]);
+		}
+	}
+
+}
+
+
+void AliAnalysisTaskMcKnoUe::GetBinByBinCorrections(){
+
+	// Histos for efficiencyxacceptance
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
+
+		if (!fMC->IsPhysicalPrimary(i)) continue; 
+		if (particle->Charge() == 0) continue;
+		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
+		if( particle->Pt() < fPtMin)continue;
+		hPtInPrim->Fill(particle->Pt());// inital pT distribution (MC gen)
+
+	}
+
+
+	Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
+	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
+
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+
+		if(!track) continue;
+
+		if(!fLeadingTrackFilter->IsSelected(track))// for traditional UE analysis we consider TPCITS2015
+			continue;
+
+		if(TMath::Abs(track->Eta()) > fEtaCut)
+			continue;
+
+		if( track->Pt() < fPtMin)continue;
+
+		const Int_t label = TMath::Abs(track->GetLabel());
+		hPtOut->Fill(track->Pt());
+		if( fMCStack->IsPhysicalPrimary(label) ){
+			hPtOutPrim->Fill(track->Pt());
+		}
+		if( fMCStack->IsSecondaryFromWeakDecay(label) || fMCStack->IsSecondaryFromMaterial(label)){
+			hPtOutSec->Fill(track->Pt());
+		}
+
+
+	}
+
+}
 void AliAnalysisTaskMcKnoUe::GetDetectorResponse() {
 
 	Int_t multTSgen=0;
@@ -440,7 +616,107 @@ void AliAnalysisTaskMcKnoUe::GetDetectorResponse() {
 
 
 }
+
+void AliAnalysisTaskMcKnoUe::GetUEObservables(){
+
+	Int_t nch_top[3];
+	Double_t sumpt_top[3];
+	for(Int_t i=0;i<3;++i){
+		nch_top[i]=0;
+		sumpt_top[i]=0;
+	}
+
+
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+
+		if(i==fGenLeadIn)
+			continue;
+
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
+
+		if (!fMC->IsPhysicalPrimary(i)) continue; 
+		if (particle->Charge() == 0) continue;
+		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
+		if( particle->Pt() < fPtMin)continue;
+
+		Double_t DPhi = DeltaPhi(particle->Phi(), fRecLeadPhi);
+
+		// definition of the topological regions
+		if(TMath::Abs(DPhi)<pi/3.0){// near side
+			nch_top[0]++; sumpt_top[0]+=particle->Pt();
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+			nch_top[1]++; sumpt_top[1]+=particle->Pt();
+		}
+		else{// transverse side
+			nch_top[2]++; sumpt_top[2]+=particle->Pt();
+		}
+
+
+
+	}
+
+	Int_t nchm_top[3];
+	Double_t sumptm_top[3];
+	for(Int_t i=0;i<3;++i){
+		nchm_top[i]=0;
+		sumptm_top[i]=0;
+	}
+
+
+	Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
+	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
+
+		if(i==fRecLeadIn)
+			continue;
+
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+
+		if(!track) continue;
+
+		if(!fTrackFilter->IsSelected(track))
+			continue;
+
+		if(TMath::Abs(track->Eta()) > fEtaCut)
+			continue;
+
+		if( track->Pt() < fPtMin)continue;
+
+		Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+
+		// definition of the topological regions
+		if(TMath::Abs(DPhi)<pi/3.0){// near side
+			nchm_top[0]++; sumptm_top[0]+=track->Pt();
+			hPtVsPtLeadingMeasured[0]->Fill(fRecLeadPt,track->Pt());
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+			nchm_top[1]++; sumptm_top[1]+=track->Pt();
+			hPtVsPtLeadingMeasured[1]->Fill(fRecLeadPt,track->Pt());
+		}
+		else{// transverse side
+			nchm_top[2]++; sumptm_top[2]+=track->Pt();
+			hPtVsPtLeadingMeasured[2]->Fill(fRecLeadPt,track->Pt());
+		}
+
+	}
+
+	for(Int_t i=0;i<3;++i){
+		pNumDenMeasured[i]->Fill(fRecLeadPt,nchm_top[i]);
+		pSumPtMeasured[i]->Fill(fRecLeadPt,sumptm_top[i]);
+
+		pNumDenTrue[i]->Fill(fGenLeadPt,nch_top[i]);
+		pSumPtTrue[i]->Fill(fGenLeadPt,sumpt_top[i]);
+	}
+	hPtLeadingTrue->Fill(fGenLeadPt);
+	hPtLeadingMeasured->Fill(fRecLeadPt);
+
+}
+
 void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributions(){
+
+
+	cout<<"hello"<<endl;
 
 	Int_t multTSgen=0;
 	Int_t multTSrec=0;
