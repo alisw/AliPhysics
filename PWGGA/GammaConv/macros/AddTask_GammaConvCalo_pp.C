@@ -2027,13 +2027,9 @@ void AddTask_GammaConvCalo_pp(
   // 13 TeV PHOS - setup
   //*************************************************************************************************
   } else if ( trainConfig == 900){ // INT7
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","2446611000012200000","0163103100000010"); // QA
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","2446611060012200000","0163103100000010"); // QA, -30,50ns timing
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","2446611064012200000","0163103100000010"); // QA, -30,50ns timing, TM on with default EMC params
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466110na012200000","0163103100000010"); // INT7 no Trigger
   } else if ( trainConfig == 901){ // PHI7
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","2446611000012200000","0163103100000010"); // QA
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","2446611060012200000","0163103100000010"); // QA, -30,50ns timing
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","2446611064012200000","0163103100000010"); // QA, -30,50ns timing, TM on with default EMC params
+      cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466110na012200000","0163103100000010"); //PHI7
   } else if ( trainConfig == 902){ // INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","2446611000012200000","0163103100000010"); // QA
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","2446611060012200000","0163103100000010"); // QA, -30,50ns timing
