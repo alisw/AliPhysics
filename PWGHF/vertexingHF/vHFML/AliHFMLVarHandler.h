@@ -50,6 +50,9 @@ class AliHFMLVarHandler : public TObject
         AliHFMLVarHandler(int PIDopt);
         virtual ~AliHFMLVarHandler();
 
+        AliHFMLVarHandler(const AliHFMLVarHandler &source) = delete;
+        AliHFMLVarHandler& operator=(const AliHFMLVarHandler &source) = delete;
+        
         //core methods --> implemented in each derived class
         virtual TTree* BuildTree(TString /*name*/, TString /*title*/) {return nullptr;}
         virtual bool SetVariables(AliAODRecoDecayHF* /*cand*/, float /*bfield*/, int /*masshypo*/, AliAODPidHF* /*pidrespo*/) {return false;} //to be called for each candidate

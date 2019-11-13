@@ -75,7 +75,8 @@ AliHFMLVarHandler::~AliHFMLVarHandler()
     //
     // Destructor
     //
-    if(fTreeVar) delete fTreeVar;
+    if(fTreeVar) 
+        delete fTreeVar;
 }
 
 //________________________________________________________________

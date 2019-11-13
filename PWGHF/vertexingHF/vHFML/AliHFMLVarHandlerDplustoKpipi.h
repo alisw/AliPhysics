@@ -21,6 +21,9 @@ class AliHFMLVarHandlerDplustoKpipi : public AliHFMLVarHandler
         AliHFMLVarHandlerDplustoKpipi(int PIDopt);
         virtual ~AliHFMLVarHandlerDplustoKpipi();
 
+        AliHFMLVarHandlerDplustoKpipi(const AliHFMLVarHandlerDplustoKpipi &source) = delete;
+        AliHFMLVarHandlerDplustoKpipi& operator=(const AliHFMLVarHandlerDplustoKpipi &source) = delete;
+
         virtual TTree* BuildTree(TString name="tree", TString title="tree");
         virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliAODPidHF *pidrespo=nullptr);
 
