@@ -1797,7 +1797,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
         Int_t EMCalIndex = -1;
         EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
-        cout << "EMCalIndex = " << EMCalIndex << endl;
+        //cout << "EMCalIndex = " << EMCalIndex << endl;
 
 	//cout << "EMCal Index = " << EMCalIndex << endl;
 
@@ -2024,7 +2024,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		fEMCTrkMatchPhi->Fill(fPhiDiff);
 		fEMCTrkMatchEta->Fill(fEtaDiff);
 
-                cout << "fPhiDiff = "<< fPhiDiff << endl;
+                //cout << "fPhiDiff = "<< fPhiDiff << endl;
 
 		if(TMath::Abs(fPhiDiff)>0.05 || TMath::Abs(fEtaDiff)>0.05)continue;
 
