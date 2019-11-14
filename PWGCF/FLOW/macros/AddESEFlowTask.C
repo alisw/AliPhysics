@@ -1,4 +1,4 @@
-AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",Bool_t UseqRun = 1, TString sWeightsFile = "", TString sVWeights = "", TString sqSelCuts = "",const char* suffix ="")
+AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",Bool_t UseqRun = 1, TString sWeightsFile = "", TString sVWeights = "",const char* suffix ="")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -90,25 +90,6 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",Bool_t UseqRun = 1,
   }
 
   task->SetUseqSel(bUseqSelCuts);
-  if(bUseqSelCuts){
-    TObjArray* taskTreeCont = mgr->GetContainers();
-    if(!taskTreeCont) { printf("E-AddESEFlowTask: Task containers does not exists!\n"); return NULL; }
-    // check if the input weights are already loaded (e.g. in different subwagon)
-    AliAnalysisDataContainer* TreeCont = (AliAnalysisDataContainer*) taskTreeCont->FindObject("inputTree");
-
-    if(!TreeCont) { 
-      if(sqSelCuts.Contains("alien://")) { gGrid->Connect("alien://"); }
-
-      TFile* qCuts_file = TFile::Open(sqSelCuts.Data(),"READ");
-      if(!qCuts_file) { printf("Input file with q selections cuts not found! \n"); return NULL; }
-
-      TTree* nuaTree = dynamic_cast<TTree*>(qCuts_file->Get("q_nSel"));
-      
-      if(!nuaTree) { printf("Input tree with q selection cuts not found! \n"); qCuts_file->ls(); return NULL; }
-
-      task->SetInputTree(nuaTree);
-    }
-  }
     
   return task;
 }

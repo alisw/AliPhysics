@@ -51,7 +51,6 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fInit{0},
     fqRun{0},
     fFlowWeightsList{nullptr},
-    fqCutsTree{nullptr},
     fWeights(0),
     bUseOwnWeights(0),
     fOutputList(0),
@@ -114,7 +113,6 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTa
     fInit{0},
     fqRun{0},
     fFlowWeightsList{nullptr},
-    fqCutsTree{nullptr},
     fWeights(0),
     bUseOwnWeights(0),
     fOutputList(0),
@@ -208,10 +206,6 @@ Bool_t AliAnalysisTaskESEFlow::InitializeTask()
             if(!fFlowWeightsList) { AliFatal("\n \n \n \n \n \n \n \n \n \n \n \n Flow weights list 2 not found! Terminating! \n \n \n \n \n \n \n \n \n \n \n \n "); return kFALSE; }
         }
     }
-    }
-
-    if(kUseqSel){
-    if(!LoadqCuts(fqCutsTree)) { AliFatal("\n \n \n \n \n \n \n \n \n \n q selection cuts not loaded! \n \n \n \n \n \n \n \n \n \n "); return kFALSE; }
     }
 
     AliInfo("Initialization succes");
@@ -721,7 +715,6 @@ void AliAnalysisTaskESEFlow::FillRFP(const Float_t centrality,const int nHarm, c
         if(kUseqSel) {
         FillIntegratecqnCut(centrality, nHarm, cn_fill, cDenom, 2, nCorr); //fill integrated cqncut here
         FillIntegratecqnCut(centrality, nHarm, cn_fill, cDenom, 3, nCorr); //fill integrated cqncut here
-        FillIntegratecqnCut(centrality, nHarm, cn_fill, cDenom, 4, nCorr); //fill integrated cqncut here
         }
     }
 }
@@ -732,7 +725,7 @@ void AliAnalysisTaskESEFlow::FillIntegratecqnCut(const Float_t centrality, const
 
     for(Int_t nCentHist(0); nCentHist<fNumCentHists; ++nCentHist){
         for(Int_t iCut(0); iCut<10; ++iCut){
-            if(qvector_red[q_i][1] > GetqSelectionCut(nHarm,nCentHist,iCut) && qvector_red[q_i][1] < GetqSelectionCut(nHarm,nCentHist,iCut+1)){
+            if(qvector_red[q_i][1] > GetqSelectionCut(q_i,nCentHist,iCut) && qvector_red[q_i][1] < GetqSelectionCut(q_i,nCentHist,iCut+1)){
                 if(nCorr==2) {fProfcn_2gap_qn[q_iHist][nHist][nCentHist][iCut]->Fill(centrality,c,c_weight); }
                 if(nCorr==4) {fProfcn_4gap_qn[q_iHist][nHist][nCentHist][iCut]->Fill(centrality,c,c_weight); }
             }
@@ -913,33 +906,8 @@ Double_t AliAnalysisTaskESEFlow::GetFlowWeight(const AliAODTrack* track, const f
 
     return dWeight;
 }
-Bool_t AliAnalysisTaskESEFlow::LoadqCuts(TTree* inputTree)
-{
-    //Double_t qnCuts[3][7];
-    for(Int_t nHarm(0); nHarm<fNumHarmHists; ++nHarm){
-        inputTree->SetBranchAddress(Form("q%i_0_5",nHarm+2),&fqnCuts[nHarm][0]); 
-        inputTree->SetBranchAddress(Form("q%i_5_10",nHarm+2),&fqnCuts[nHarm][1]);
-        inputTree->SetBranchAddress(Form("q%i_10_20",nHarm+2),&fqnCuts[nHarm][2]); 
-        inputTree->SetBranchAddress(Form("q%i_20_30",nHarm+2),&fqnCuts[nHarm][3]);
-        inputTree->SetBranchAddress(Form("q%i_30_40",nHarm+2),&fqnCuts[nHarm][4]); 
-        inputTree->SetBranchAddress(Form("q%i_40_50",nHarm+2),&fqnCuts[nHarm][5]);
-        inputTree->SetBranchAddress(Form("q%i_50_60",nHarm+2),&fqnCuts[nHarm][6]);
-    }
-
-    /*
-    cout << "\n \n \n \n \n \n \n \n " << endl;
-    for (Int_t i(0); i<fnqCuts;++i){
-        inputTree->GetEntry(i);
-        cout << fqnCuts[0][0] << endl;
-    }
-    cout << "\n \n \n \n \n \n \n \n " << endl;
-    */
-
-    return kTRUE;
-}
 Double_t AliAnalysisTaskESEFlow::GetqSelectionCut(Int_t nHarm, Int_t CentRange, Int_t Entry)
 {
-    fqCutsTree->GetEntry(Entry);
     // CentRange: 
     // 0: 0-5
     // 1: 5-10
@@ -948,7 +916,29 @@ Double_t AliAnalysisTaskESEFlow::GetqSelectionCut(Int_t nHarm, Int_t CentRange, 
     // 4: 30-40
     // 5: 40-50
     // 6: 50-60 ...
-    return fqnCuts[nHarm-2][CentRange]; 
+    Double_t tefqnCuts[2][7][11] = {
+        {
+            {0,0.498746,0.724924,0.917000,1.097830,1.279390,1.471250,1.686280,1.950400,2.331690,9.9},
+            {0,0.611476,0.886385,1.116150,1.329310,1.540340,1.761100,2.004050,2.297820,2.717340,9.9},
+            {0,0.755841,1.081580,1.344740,1.583240,1.814650,2.051760,2.309800,2.617050,3.049640,9.9},
+            {0,0.817851,1.157980,1.429150,1.671260,1.904860,2.142580,2.399510,2.704620,3.130020,9.9},
+            {0,0.743844,1.061890,1.318030,1.548400,1.771580,1.999420,2.247940,2.542320,2.953580,9.9},
+            {0,0.617815,0.892109,1.117380,1.324930,1.528320,1.738440,1.968840,2.244040,2.631620,9.9},
+            {0,0.501478,0.727238,0.917611,1.094780,1.270770,1.455340,1.659760,1.905560,2.258620,9.9}
+        },
+        {
+            {0,0.426725,0.622956,0.788491,0.944154,1.099410,1.265360,1.451440,1.677960,2.007280,9.9},
+            {0,0.430521,0.628043,0.794514,0.950902,1.107560,1.273430,1.460150,1.687710,2.018740,9.9},
+            {0,0.423556,0.618443,0.782215,0.936381,1.090980,1.254980,1.438940,1.663910,1.988800,9.9},
+            {0,0.410142,0.597768,0.755170,0.904370,1.053610,1.210930,1.388230,1.604240,1.918890,9.9},
+            {0,0.391918,0.570434,0.722182,0.864660,1.007170,1.158530,1.327870,1.534980,1.835340,9.9},
+            {0,0.372150,0.543394,0.687894,0.823564,0.959430,1.102350,1.264150,1.461510,1.747530,9.9},
+            {0,0.355197,0.520128,0.657895,0.787790,0.917778,1.055510,1.208710,1.396090,1.669870,9.9}
+        }
+    };
+
+
+    return tefqnCuts[nHarm-2][CentRange][Entry]; 
 }
 // ######################### Generic FW #########################
 void AliAnalysisTaskESEFlow::ResetFlowVector(TComplex (&array)[fNumHarms][fNumPowers])
