@@ -371,7 +371,22 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   } else if (trainConfig == 419) {//Cross chech of efficiency show for range on TPC.
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");// Standard
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");// exclusion of range o transition between chambers of TPC 52 to 72 cm.
-
+  } else if (trainConfig == 420) {//Test with mass cut removed on primary selection
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202273010", "0152103500000000");
+    //New Standard+0.9 single pt cut
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202243010", "0152103500000000");
+    //New Standard+0.5 single pt cut
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6420263202223010", "0152103500000000");
+    //New Standard+Low Rejection for pions kaons and protons, one sigma
+  } else if (trainConfig == 421) {//Test with mass cut removed on primary selection + Event selection
+    cuts.AddCutPCMDalitz("0008d113", "0dm00009f9730000dge0404000", "204c6400263202223010", "0152103500000000");
+    //New Standard
+    cuts.AddCutPCMDalitz("0008d113", "0dm00009f9730000dge0404000", "204c6400263202273010", "0152103500000000");
+    //New Standard+0.9 single pt cut
+    cuts.AddCutPCMDalitz("0008d113", "0dm00009f9730000dge0404000", "204c6400263202243010", "0152103500000000");
+    //New Standard+0.5 single pt cut
+    cuts.AddCutPCMDalitz("0008d113", "0dm00009f9730000dge0404000", "204c6420263202223010", "0152103500000000");
+    //New Standard+Low Rejection for pions kaons and protons
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////  6XX for lowB,    65X  lowB and MBW ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
