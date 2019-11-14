@@ -316,6 +316,11 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6600263202223710", "0152103500000000");//max pT 2 GeV/c pions
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263102223710", "0152103500000000");//PsiPair 0.45
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263602223710", "0152103500000000");//PsiPair 0.65
+  } else if (trainConfig == 409) {//Primary cut, dE/dx sigma, min pT, max pT for pions.
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");//New Standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204a6200263202223710", "0152103500000000");//
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204b6600263202223710", "0152103500000000");//
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263102223710", "0152103500000000");//
   //////////////// systematic variations for 5 TeV 2017 (Lucia)/////////////////////////////
 
   } else if (trainConfig == 410){
