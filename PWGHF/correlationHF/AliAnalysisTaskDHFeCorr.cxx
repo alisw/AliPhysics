@@ -1369,7 +1369,7 @@ float AliAnalysisTaskDHFeCorr::GetMaxd0MeasMinusExp(AliAODRecoDecayHF *candidate
     float d_d0_max = 0;
     auto n_prongs_candidate = static_cast<unsigned int>(candidate->GetNProngs());
 
-    for (unsigned int i = 0; i < n_prongs_candidate i++) {
+    for (unsigned int i = 0; i < n_prongs_candidate; i++) {
         double d0_diff, error_d0_diff;
         candidate->Getd0MeasMinusExpProng(i, b_field, d0_diff, error_d0_diff);
         float norm_dd0 = d0_diff / error_d0_diff;
