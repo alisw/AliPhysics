@@ -285,7 +285,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     h->SetDirectory(0);
     fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);//HG cells
 
-    if(fDoCalibrateLowGain){
+    if(fDoCalibrateLowGain && !fDoCalibMergedLG){
       TH1S *hLG = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(1);//LG cells
       if (hLG)
         delete hLG;
@@ -308,10 +308,10 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     { //if fBasePath specified in the ->SetBasePath()
       AliInfo(Form("Loading time calibration OADB from given path %s",fBasePath.Data()));
       
-      timeCalibFileLG = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTimeCalibMergedBCLG.root",fBasePath.Data()),"read"));
+      timeCalibFileLG = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTimeCalibMergedBCsLG.root",fBasePath.Data()),"read"));
       if (!timeCalibFileLG || timeCalibFileLG->IsZombie())
       {
-        AliFatal(Form("EMCALTimeCalibMergedBCLG.root was not found in the path provided: %s",fBasePath.Data()));
+        AliFatal(Form("EMCALTimeCalibMergedBCsLG.root was not found in the path provided: %s",fBasePath.Data()));
         return 0;
       }
       
@@ -321,10 +321,10 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     { // Else choose the one in the $ALICE_PHYSICS directory
       AliInfo("Loading time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
       
-      timeCalibFileLG = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeCalibMergedBCLG.root").data(),"read"));
+      timeCalibFileLG = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeCalibMergedBCsLG.root").data(),"read"));
       if (!timeCalibFileLG || timeCalibFileLG->IsZombie())
       {
-        AliFatal("OADB/EMCAL/EMCALTimeCalibMergedBCLG.root was not found");
+        AliFatal("OADB/EMCAL/EMCALTimeCalibMergedBCsLG.root was not found");
         return 0;
       }
       
@@ -502,6 +502,17 @@ Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
     // this is based on implementation in AliEMCALRecoUtils
     Bool_t needTimecalib   = fCalibrateTime;
     if(fRun>209121) fCalibrateTimeL1Phase = kTRUE;
+
+    if(fRun<225000 && fCalibrateTime && fDoMergedBCs){
+      AliWarning("The merged BC histograms don't exist for Run1, falling back to the 4 BC histograms. For question contact constantin.loizides@cern.ch");
+      fDoMergedBCs=kFALSE;
+      fRecoUtils->SetUseOneHistForAllBCs(kFALSE);
+      if(fDoCalibrateLowGain && !fDoCalibMergedLG){
+        AliWarning("The merged BC LG histograms don't exist for Run1, using the all period merged LG histograms");
+        fDoCalibMergedLG=kTRUE;
+      }
+    }
+
     Bool_t needTimecalibL1Phase = fCalibrateTime & fCalibrateTimeL1Phase;
     
     // init time calibration
