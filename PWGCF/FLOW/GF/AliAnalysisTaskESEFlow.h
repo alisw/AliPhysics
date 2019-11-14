@@ -39,7 +39,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetWeights(Bool_t kOwn) { bUseOwnWeights = kOwn; }
         void                    SetUseqSel(Bool_t ActivateqSelection) { kUseqSel = ActivateqSelection; }
 
-        void                    SetInputTree(TTree* inputTree) { fqCutsTree = inputTree->CloneTree(); }
         void                    SetCorrFour(Bool_t activateFour) {kUseFourCorr = activateFour; }
         void                    SetCorrTwo(Bool_t activateTwo) {kUseTwoCorr = activateTwo; }
         void                    SetCalcWeightsRun( Bool_t actWeightsRun) { kSetWeightsRun = actWeightsRun; }
@@ -70,7 +69,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         TList*                  fFlowWeightsList; //! list of weights
         AliGFWWeights*          fWeights;           //!
-        TTree*                  fqCutsTree;     //
         //output histograms
         TH2F*                   fHistPhiEta;    //!
         TH1F*                   fHistPhi;       //!
@@ -127,7 +125,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t InitializeTask();
         Bool_t LoadWeights(); // load weights histograms
         Double_t GetFlowWeight(const AliAODTrack* track, const float dVz) const;
-        Bool_t LoadqCuts(TTree* inputTree);
         Double_t GetqSelectionCut(Int_t nHarm, Int_t CentRange, Int_t Entry);
         
         //############ GENERIC FRAMEWORK ############# MODIFIED WITH ESE //
