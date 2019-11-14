@@ -60,6 +60,8 @@ fFlagFillMCHistos(kFALSE),
 fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
 fDCAzCut(3.2),
+fMinMass(0.),
+fMaxMass(0.1),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
@@ -290,6 +292,8 @@ fFlagFillMCHistos(kFALSE),
 fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
 fDCAzCut(3.2),
+fMinMass(0.),
+fMaxMass(0.1),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
@@ -2965,13 +2969,13 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
         if(fFlagLS && track->Pt()>1) fInvmassLS->Fill(mass);
         if(fFlagULS && track->Pt()>1) fInvmassULS->Fill(mass);
         
-        if(fFlagLS && mass<0.1) Nls++;
-        if(fFlagULS && mass<0.1) Nuls++;
+        if(fFlagLS && mass>fMinMass && mass<fMaxMass) Nls++;
+        if(fFlagULS && mass>fMinMass && mass<fMaxMass) Nuls++;
         
-        if (fFlagULS && mass<0.1 && track->Pt()>1) {
+        if (fFlagULS && mass>fMinMass && mass<fMaxMass && track->Pt()>1) {
             fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
             
-        }else if(fFlagLS && mass<0.1 && track->Pt()>1){
+        }else if(fFlagLS && mass>fMinMass && mass<fMaxMass && track->Pt()>1){
             fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
         }
         
@@ -3048,11 +3052,11 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
             fInvmassULS->Fill(mass);
         }
         
-        if(fFlagLS && mass<0.1) Nls++;
-        if(fFlagULS && mass<0.1) Nuls++;
+        if(fFlagLS && mass>fMinMass && mass<fMaxMass) Nls++;
+        if(fFlagULS && mass>fMinMass && mass<fMaxMass) Nuls++;
         
         //CHANGED FROM pt>1
-        if (fFlagULS && mass<0.1) {
+        if (fFlagULS && mass>fMinMass && mass<fMaxMass) {
             kFlagReco = kTRUE;
             /*fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
              if (kHijing) {
@@ -3097,7 +3101,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
              }
              }*/
             
-        }else if(fFlagLS && mass<0.1){
+        }else if(fFlagLS && mass>fMinMass && mass<fMaxMass){
             kFlagReco = kFALSE;
             /*fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
              if (kHijing) {

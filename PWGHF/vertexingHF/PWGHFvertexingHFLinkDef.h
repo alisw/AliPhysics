@@ -124,6 +124,7 @@
 #pragma link C++ class AliAnalysisTaskSELbtoLcpi4+;
 #pragma link C++ class AliAnalysisTaskSEXicTopKpi+;
 #pragma link C++ class AliRDHFCutsXictopKpi+;
+#pragma link C++ class AliRDHFCutsCdeuterontodKpi+;
 
 //classes working only in ROOT6
 #ifdef __CLING__

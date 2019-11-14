@@ -130,8 +130,8 @@ struct MacroParams : public TNamed {
   Float_t delta_eta_min { -0.1 };
   Float_t delta_eta_max { 0.1 };
 
-  UInt_t q3d_bin_count { 51 };
-  Float_t q3d_maxq { 0.1275 };
+  UInt_t q3d_bin_count { 41 };
+  Float_t q3d_maxq { 0.1025 };
 
   UInt_t avgsep_nbins { 100 };
   Float_t avgsep_max { 20.0 };

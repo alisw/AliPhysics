@@ -288,7 +288,8 @@ void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd)
 
         Double_t phi_tr = this->GetTrackRefPhi(tr);
         Double_t eta_tr = this->GetTrackRefEta(tr);
-        if ((phi_tr > 0) & (eta_tr > -10)) fwd->Fill(eta_tr,phi_tr,1);
+
+        fwd->Fill(eta_tr,phi_tr,1);
       }
     }
   }
@@ -515,7 +516,7 @@ AliForwardFlowUtil::StoreParticle(AliMCParticle*       particle,
   Double_t phi_tr = this->GetTrackRefPhi(particle); //Wrap02pi
   Double_t eta_tr = this->GetTrackRefEta(particle);
 
-  if ((phi_tr > 0) & (eta_tr > -10)) fwd->Fill(eta_tr,phi_tr,1);
+  fwd->Fill(eta_tr,phi_tr,1);
   return;
 }
 
@@ -859,4 +860,15 @@ void AliForwardFlowUtil::MakeFakeHoles(TH2D& forwarddNdedp){
   for (Int_t etaBin = 168; etaBin <= 185; etaBin++){
     forwarddNdedp.SetBinContent(etaBin,14, 0.0);
   }
+}
+
+
+
+Bool_t AliForwardFlowUtil::FMDAcceptanceExistMC(Double_t eta,Double_t phi,Double_t vertex){
+  Int_t nuaeta = fSettings.correct_nua_mc->GetXaxis()->FindBin(eta);
+  Int_t nuaphi = fSettings.correct_nua_mc->GetYaxis()->FindBin(phi);
+  Int_t nuavtz = fSettings.correct_nua_mc->GetZaxis()->FindBin(vertex);
+  Double_t weight = fSettings.correct_nua_mc->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
+  if (weight > 0) return kTRUE;
+  else return kFALSE;
 }

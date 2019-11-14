@@ -88,6 +88,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
     int trigger=EventCuts%10;
     if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
     else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+    else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent:: kSemiCentral);
     
     // multiplicity
     bool isPP=false;

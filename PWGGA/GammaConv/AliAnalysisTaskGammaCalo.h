@@ -55,6 +55,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // switches for additional analysis streams or outputs
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
+    void SetECalibOutput( Bool_t flag ){fDoECalibOutput = flag;}
     void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
     void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
     void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
@@ -520,6 +521,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fiCut;                                                // current cut
     Int_t                 fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
     Bool_t                fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Bool_t                fDoECalibOutput;                                      // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
     Bool_t                fDoMesonAnalysis;                                     // flag for meson analysis
     Int_t                 fDoMesonQA;                                           // flag for meson QA
     Int_t                 fDoClusterQA;                                         // flag for cluster QA
@@ -550,7 +552,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 71);
+    ClassDef(AliAnalysisTaskGammaCalo, 72);
 };
 
 #endif

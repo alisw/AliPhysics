@@ -62,7 +62,8 @@ class AliCalorimeterUtils : public TObject {
   Bool_t        IsClusterSharedByTwoSuperModules(const AliEMCALGeometry * geom,
                                                  AliVCluster* cluster);
   
-  Float_t       GetECross(Int_t absId, AliVCaloCells* cells, Int_t bc);
+  Float_t       GetECross(Int_t absId, AliVCaloCells* cells, Int_t bc, 
+                          Float_t cellMinEn = 0., Bool_t useWeight = kFALSE, Float_t energyClus = 0.);
   
   Bool_t        GetFECCorrelatedCellAbsId(Int_t absId, Int_t absIdCorr[4]) const ;
   

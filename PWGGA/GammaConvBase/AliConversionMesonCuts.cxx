@@ -1896,6 +1896,11 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fNDaughterEnergyCut  = 1;
     fSingleDaughterMinE  = 5.;
     break;
+  case 15: // f
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 7.5;
+    break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
@@ -3453,7 +3458,18 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearing     = 0.002;
       fPSigSmearingCte  = 0.012;
       break;
-
+    case 22:     //m
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.004;
+      fPSigSmearingCte  = 0.011;
+      break;
+    case 23:     //n
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.009;
+      fPSigSmearingCte  = 0.011;
+      break;
     default:
       AliError("Warning: UseMCPSmearing not defined");
       return kFALSE;
@@ -4040,17 +4056,17 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
-        case 5: // EMC-EMC (optimized for 5 TeV)
-          mass = 1.30716e-01 + (-1.91861e-02 * exp(-5.89839e-01 * pt)) + 3.51796e-04  * pt;
-          FWHM =  7.68479e-03  + (2.04498e-02  * exp(-7.38029e-01  * pt)) + 5.18666e-04   * pt;
+        case 5: // EMC-EMC (optimized for 5 TeV with 31 NonLin)
+          mass = 1.30527e-01 + (1.95889e-03 * pt) + (-1.25235e-04 * pow(pt,2.)) + (-6.59348e-06 * pow(pt,3)) + (7.59190e-07 * pow(pt,4));
+          FWHM =   1.33790e-02 + (-9.40866e-04 * pt) + ( 7.01518e-05 * pow(pt,2));
           if(mass < 0.12) mass = 0.12;
           sigma = FWHM/2.35;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
-        case 6: // PCM-EMC (optimized for 5 TeV)
-          mass = 0.129584 + 0.000611824 * pt;
-          FWHM =   0.00990291 + ( ( -0.00114665) * pt ) + (0.000128015 * pt * pt);
+        case 6: // PCM-EMC (optimized for 5 TeV with 31 NonLin)
+          mass = 1.35057e-01 + 1.49470e-04 * pt;
+          FWHM = 9.25937e-03 + ( ( -4.89863e-04) * pt ) + (4.57442e-05 * pt * pt);
           if(FWHM>0.015) FWHM = 0.015;
           sigma = FWHM/2.35;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);

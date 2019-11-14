@@ -154,8 +154,8 @@ void AliForwardSecondariesTask::UserCreateOutputObjects()
   fSettings.fCentBins = 1;
 
   Int_t bins_phi_eta[4] = {fSettings.fNZvtxBins, phibins+1, etabins, fSettings.fCentBins} ;
-  Double_t xmin_phi_eta[4] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), -4, 0};
-  Double_t xmax_phi_eta[4] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 6, 100}; 
+  Double_t xmin_phi_eta[4] = {fSettings.fZVtxAcceptanceLowEdge, -2*TMath::Pi(), -4, 0};
+  Double_t xmax_phi_eta[4] = {fSettings.fZVtxAcceptanceUpEdge, 2*TMath::Pi(), 6, 100}; 
 
   Int_t bins_eta_phi[4] = {fSettings.fNZvtxBins, etabins+1, phibins, fSettings.fCentBins} ;
   Double_t xmin_eta_phi[4] = {fSettings.fZVtxAcceptanceLowEdge, -6, 0, 0};
@@ -239,8 +239,17 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
     PostData(1, this->fOutputList);
     return;
   }
+  fUtil.fSettings = fSettings;
+  if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
+  fUtil.fevent = fInputEvent;
+  
+  Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
   AliMCEvent* fAOD = this->MCEvent();
+
+
+
+
   AliStack* stack = fAOD->Stack();
   if(!fAOD) {
     std::cout << "no mcevent" << std::endl;
@@ -252,8 +261,8 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
   }
 
   // Disregard events without reconstructed vertex
-  Float_t event_vtx_z = fAOD->GetPrimaryVertex()->GetZ();
-  if (!(TMath::Abs(event_vtx_z) > 0)) {
+  Double_t event_vtx_z = fUtil.GetZ();
+  if (!(TMath::Abs(event_vtx_z) >= 0)) {
     return;
   }
 
@@ -283,22 +292,28 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
        Double_t phi_tr = etaPhi[1];
        Double_t eta_tr = etaPhi[0];
 
+       Double_t weight = 1;
+        Int_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta_tr);
+        Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi_tr);
+        Int_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(event_vtx_z);
+        weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
+        if (weight == 0) continue;
        // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
-       Double_t phi[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), eta_tr,10.};
-       Double_t eta[4] = {event_vtx_z, eta_tr - eta_mother, phi_tr,10.};
+       Double_t phi[4] = {event_vtx_z, phi_mother - phi_tr, eta_tr,cent};//wrappi
+       Double_t eta[4] = {event_vtx_z, eta_tr - eta_mother, phi_tr,cent};
 
-       delta_phi_eta->Fill(phi,1);
-       delta_eta_phi->Fill(eta,1);
+       delta_phi_eta->Fill(phi,weight);
+       delta_eta_phi->Fill(eta,weight);
 
-       Double_t phi1[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), phi_tr,10.};
-       Double_t eta1[4] = {event_vtx_z, eta_tr - eta_mother, eta_tr,10.};
-
-
-       delta_phi_phi->Fill(phi1,1);
-       delta_eta_eta->Fill(eta1,1);
+       Double_t phi1[4] = {event_vtx_z, phi_mother - phi_tr, phi_tr,cent};//wrappi
+       Double_t eta1[4] = {event_vtx_z, eta_tr - eta_mother, eta_tr,cent};
 
 
-       Double_t x_prim[3] =  {event_vtx_z,eta_tr, 10.};
+       delta_phi_phi->Fill(phi1,weight);
+       delta_eta_eta->Fill(eta1,weight);
+
+
+       Double_t x_prim[3] =  {event_vtx_z,eta_tr, cent};
        Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
        if (!isNewPrimary){
          listOfMothers.push_back(mother->GetLabel());

@@ -717,6 +717,9 @@ void AliAnalysisTaskHFEIPCorrection::Process(AliAODEvent *const aodEvent)
   // Called for each event
   EventSelectionSteps->Fill(4);
   //if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB))) //return;
+  bool SelectedBySemicentralTrigger = false;
+  if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) 
+    SelectedBySemicentralTrigger = true;
   EventSelectionSteps->Fill(5);
 
   if (!aodEvent) {
@@ -758,7 +761,11 @@ if(!MultSelection){
   fV0Cent = MultSelection->GetMultiplicityPercentile("V0M", false);
   fV0CentCalib = MultSelection->GetMultiplicityPercentile("V0M", true);
   centrality = fV0CentCalib;
+  TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
+  if(lProductionName.Contains("LHC18")) // 18r and q have same correction
+    centrality = fV0Cent; // 18qr calib does not seem to work yet
 }
+
 
   const AliAODVertex *vertex = aodEvent->GetPrimaryVertex();
   const AliAODVertex *vertexSPD = aodEvent->GetPrimaryVertexSPD();
@@ -775,7 +782,7 @@ if(!MultSelection){
   bool analyzeEvent=(TMath::Sqrt(vcov[5]) < 0.25 && TMath::Abs(vtx[2])<10. && TMath::Abs(vtx[2] - vtxSPD[2]) < 0.5 && centrality <= 100.);
   //hfetrackCuts->SetRecEvent(aodEvent);
 
-   if(centrality>=20.0 && centrality<=40.0)
+   if((centrality>=20.0 && centrality<=50.0))
    {
       EventSelectionSteps->Fill(0);
       if(TMath::Abs(vtx[2])<10.)

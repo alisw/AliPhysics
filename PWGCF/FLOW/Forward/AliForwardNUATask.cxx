@@ -158,7 +158,11 @@ void AliForwardNUATask::UserExec(Option_t *)
     fUtil.fAODevent =  dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fUtil.fAODevent) throw std::runtime_error("Not AOD as expected");
   }
-
+  fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
+  Bool_t isgoodrun = kTRUE;
+  if (!fSettings.mc){
+    isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
+  }
   fUtil.fevent = fInputEvent;
   fUtil.fSettings = fSettings;
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
@@ -205,7 +209,6 @@ void AliForwardNUATask::UserExec(Option_t *)
 
   Double_t zvertex = fUtil.GetZ();
 
-  //TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
   static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
 
 
@@ -221,6 +224,13 @@ void AliForwardNUATask::UserExec(Option_t *)
     // loop for the FMD
     for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
       for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
+          Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
+          Double_t phi = forwardDist->GetYaxis()->GetBinCenter(phiBin);
+        if (fSettings.mc & fSettings.esd){
+
+
+          if (!fUtil.FMDAcceptanceExistMC(eta,phi,zvertex)) continue;
+        }
         Double_t weight = forwardDist->GetBinContent(etaBin,phiBin);
 
         if (fSettings.nua_mode & fSettings.kInterpolate)
@@ -228,7 +238,7 @@ void AliForwardNUATask::UserExec(Option_t *)
 
         if (weight == 0) continue;
 
-        nua_fmd->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetYaxis()->GetBinCenter(phiBin),zvertex,weight);
+        nua_fmd->Fill(eta,phi,zvertex,weight);
       }
     }
 

@@ -159,6 +159,7 @@ set(SRCS
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
   AliAnalysisTaskSEXicTopKpi.cxx
   AliRDHFCutsXictopKpi.cxx
+  AliRDHFCutsCdeuterontodKpi.cxx
    )
 
 # Sources for ROOT6 only - alphabetical order

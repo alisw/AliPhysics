@@ -1313,10 +1313,10 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dk00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
     cuts.AddCutPCM("00010113", "0dl00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
     cuts.AddCutPCM("00010113", "0dg00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-  } else if (trainConfig == 724) { // R 5-180  // Test smearing parameters 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500a00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500b00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500c00000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 724) { // R 5-180  // Test smearing parameters. Changed smaring cut 08.11.2019  
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500900000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500m00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500n00000"); // eta < 0.8  // Test improved cuts 
   } else if (trainConfig == 725) { // R 5-180  // Test smearing parameters -1
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500d00000"); // eta < 0.8  // Test improved cuts 
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500e00000"); // eta < 0.8  // Test improved cuts 
@@ -1340,7 +1340,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("n1210113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
     cuts.AddCutPCM("n2510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
     cuts.AddCutPCM("n5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-  } else if (trainConfig == 730) { // R 5-180  // Sphericity selections
+  } else if (trainConfig == 730) { // R 5-180  // Multiplicity selections
     cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
     cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
     cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
@@ -1518,6 +1518,8 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00000113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
   } else if (trainConfig == 1036) {
     cuts.AddCutPCM("00000113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 1037) {
+    cuts.AddCutPCM("00000113", "0dm0000922700000dge0404000", "0152103500000000"); // new cuts consistent with omega analysis
 
   //----------------------------- configuration for run 2 analysis 13 TeV ----------------------------------------------------
   } else if (trainConfig == 1040){

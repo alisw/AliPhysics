@@ -77,7 +77,7 @@ public:
      Double_t GetConstrainedParamPhiG();
      Int_t GetLabelG();
      Bool_t GetConstrainedPxPyPzG(Double_t* p) const;
-//     void GetParamG(const AliVVertex* vx,Double_t bmag, Double_t* vector);
+     void GetParamG(const AliVVertex* vx,Double_t bmag, Double_t vector[4]) const;
      const AliExternalTrackParam* GetParamG(const AliVVertex* vx,Double_t bmag);
      void GetImpactParametersG(Float_t* p,Float_t* cov) const;
      Double_t GetSignG();

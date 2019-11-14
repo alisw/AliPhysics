@@ -498,8 +498,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
         //        // Histograms MC part Rec.
         const int nPhysBins = 4;
-        float physBins[nPhysBins + 1];
-        SetBins(nPhysBins, -0.5, nPhysBins + .5, physBins);
+        float physBins[nPhysBins + 1] = {-0.5, 0.5, 1.5, 2.5, 3.5};
         hist_name = Form("fHistTruePIDMCReco%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
         fHistTruePIDMCReco[index] = new TH3F(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});", nCentBins,
                                              centBins, nPtBins, ptBins, nPhysBins, physBins);

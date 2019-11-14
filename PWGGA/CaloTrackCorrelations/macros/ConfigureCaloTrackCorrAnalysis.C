@@ -1581,14 +1581,14 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
     ana->SetCalorimeter(calo);
   }
   
-  ana->SwitchOffFillCellHisto(); 
+  ana->SwitchOnFillCellHisto(); 
   ana->SwitchOffFill1CellHisto(); 
   ana->SwitchOffFillMatchingHisto(); 
   
   if ( simulation ) 
     ana->SetConstantTimeShift(615);
   
-  ana->SetEMinForExo(100);
+  ana->SetEMinForExo(30);
 
   ana->SetCellAmpMin(0.3);
     
@@ -1597,8 +1597,9 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
   ana->AddToHistogramsName("Exo_"); // Begining of histograms name
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
-  ana->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 250, 125) ; // Energy and pt histograms
-
+  ana->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 300, 150) ; // Energy and pt histograms
+  ana->GetHistogramRanges()->SetHistoTimeRangeAndNBins(-602.,602.,301);
+  ana->GetHistogramRanges()->SetHistoDiffTimeRangeAndNBins(-401, 401, 401);
   return ana;
 }
 

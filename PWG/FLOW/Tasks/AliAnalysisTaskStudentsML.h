@@ -118,6 +118,9 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
    void SetCorrSet2(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t i, Int_t j, Int_t k, Int_t l)
   {this->fNumberSecond=Number; this->fa1=a; this->fa2=b; this->fa3=c; this->fa4=d; this->fa5=e; this->fa6=f; this->fa7=g; this->fa8=h; this->fa9=i; this->fa10=j;this->fa11=k; this->fa12=l;}
 
+void SetCorrSet3(Bool_t booly, Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t i, Int_t j, Int_t k, Int_t l)
+  {this->bDoThirdCorrelation=booly; this->fNumberThird=Number; this->fb1=a; this->fb2=b; this->fb3=c; this->fb4=d; this->fb5=e; this->fb6=f; this->fb7=g; this->fb8=h; this->fb9=i; this->fb10=j;this->fb11=k; this->fb12=l;}
+
   void SetDoEbE(Bool_t top){this->bDoEbERatio=top;}
 
   void SetRatioWeight(Bool_t top){this->bUseRatioWeight=top;}
@@ -238,13 +241,15 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   
   Int_t fNumber;           //number of correlation first correlator
   Int_t fNumberSecond;           //number of correlation second correlator
+  Int_t fNumberThird;           //number of correlation third correlator
+  Bool_t bDoThirdCorrelation;   //if kTRUE: do the third correlation (default kFALSE)
   Int_t fMinNumberPart;           //minimal number of particles to do correlation
   Bool_t bUseRatioWeight;	//use number of combination weight for EbE Ratio (default kTRUE)
   Double_t fDenominatorMinValue;   //min value for the denominator in EbE Ratio (default 
 
   Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8, fh9, fh10, fh11, fh12;  //harmonics
   Int_t fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8, fa9, fa10, fa11, fa12;  //second set of harmonics
-
+ Int_t fb1, fb2, fb3, fb4, fb5, fb6, fb7, fb8, fb9, fb10, fb11, fb12;  //third set of harmonics
   
   TComplex fQvector[97][13];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
 
@@ -252,6 +257,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
    
   TProfile *fCentrality;         // final centrality result
   TProfile *fCentralitySecond;         // final centrality result for second harmonics 
+  TProfile *fCentralityThird;         // final centrality result for third harmonics 
   TProfile *fEvCentrality;         // final centrality result for event version
   Bool_t bDoEbERatio;		 // if kTRUE: Do the EbE ratio, Default: kFALSE
   TProfile *fMixedParticleHarmonics; //Stores output for special mixed particle analysis
@@ -262,7 +268,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,23);
+  ClassDef(AliAnalysisTaskStudentsML,24);
 
 };
 

@@ -45,12 +45,15 @@ typedef TrackSelectionCut<
           AddTrackCutAttrs< TrackCutAttrImpact,
           AddTrackCutAttrs< TrackCutAttrPt,
           AddTrackCutAttrs< TrackCutAttrEta,
+
+          // PID cuts
           AddTrackCutAttrs< TrackCutAttrChi2TPC,
           AddTrackCutAttrs< TrackCutAttrChi2ITS,
           AddTrackCutAttrs< TrackCutAttrRejectKaonTofSigma,
+          AddTrackCutAttrs< TrackCutAttrRejectProtonTofSigma,
+          AddTrackCutAttrs< TrackCutAttrTofSigmaPion,
                             TrackCutAttrTpcSigmaPion
-                            > > > > > > >
-
+                            > > > > > > > > >
         > TrackCutAttrsAK;
 
 // paircut
@@ -152,12 +155,16 @@ public:
 class AliFemtoTrackCutPionPionIdealAK : public AliFemtoTrackCutPionPionAK {
 public:
 
+  int ideal_pid;
+
   AliFemtoTrackCutPionPionIdealAK()
     : AliFemtoTrackCutPionPionAK()
+    , ideal_pid(211)
     {}
 
   AliFemtoTrackCutPionPionIdealAK(AliFemtoConfigObject &cfg)
     : AliFemtoTrackCutPionPionAK(cfg)
+    , ideal_pid(cfg.pop_num("ideal_pid", 211))
     {}
 
   virtual ~AliFemtoTrackCutPionPionIdealAK() {}
@@ -167,10 +174,16 @@ public:
       const AliFemtoModelHiddenInfo *info = static_cast<AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
       const Int_t pid = info->GetPDGPid();
 
-      if (pid != std::copysign(211, charge)) {
+      if (pid != std::copysign(ideal_pid, charge)) {
         return false;
       }
       return AliFemtoTrackCutPionPionAK::Pass(track);
+    }
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      AliFemtoTrackCutPionPionAK::FillConfiguration(cfg);
+      cfg.insert("ideal_pid", ideal_pid);
     }
 
   virtual const char* ClassName() const

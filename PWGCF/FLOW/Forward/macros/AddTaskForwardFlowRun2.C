@@ -237,6 +237,8 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
   mgr->ConnectInput(task,1,valid);
 
   if (doNUA){
+        std::cout << "doing NUA" << std::endl;
+
     TObjArray* taskContainers = mgr->GetContainers();
     AliAnalysisDataContainer* weights;
     

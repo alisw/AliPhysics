@@ -79,7 +79,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
  private:
 
-  enum EVarsTree {kNumOfIntVar=11, kNumOfFloatVar=34};
+  enum EVarsTree {kNumOfIntVar=14, kNumOfFloatVar=34};
 
   AliAnalysisTaskCheckESDTracks(const AliAnalysisTaskCheckESDTracks &source);
   AliAnalysisTaskCheckESDTracks& operator=(const AliAnalysisTaskCheckESDTracks &source);

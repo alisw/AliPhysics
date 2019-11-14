@@ -2798,6 +2798,29 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("17810a13","0dm00009f9730000dge0404000","0143103100000000"); //
     cuts.AddCutPCM("18910a13","0dm00009f9730000dge0404000","0143103100000000"); //
 
+   // ************************************** 
+   //  RBins studies for 5.02TeV Pb-Pb 18qr  
+   // **************************************   
+  } else if (trainConfig == 701){ // central , a,b,c bins , V0-TPC pileup rejection
+    cuts.AddCutPCM("10110a13","00200009f9730200dge0404000", "0652501500000000"); //  0-10%
+    cuts.AddCutPCM("10110a13","00a00009f9730200dge0404000", "0652501500000000"); //  0-10%  a
+    cuts.AddCutPCM("10110a13","00b00009f9730200dge0404000", "0652501500000000"); //  0-10%  b
+    cuts.AddCutPCM("10110a13","00c00009f9730200dge0404000", "0652501500000000"); //  0-10%  c
+  } else if (trainConfig == 702){ // semicentral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("12510a13","00200009f9730200dge0404000", "0652501500000000"); //  20-50%
+    cuts.AddCutPCM("12510a13","00a00009f9730200dge0404000", "0652501500000000"); //  20-50%  a
+    cuts.AddCutPCM("12510a13","00b00009f9730200dge0404000", "0652501500000000"); //  20-50%  b
+    cuts.AddCutPCM("12510a13","00c00009f9730200dge0404000", "0652501500000000"); //  20-50%  c
+
+  } else if (trainConfig == 703){ // peripheral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("15910a13","00200009f9730200dge0404000", "0652501500000000"); //  50-90%
+    cuts.AddCutPCM("15910a13","00a00009f9730200dge0404000", "0652501500000000"); //  50-90%  a
+    cuts.AddCutPCM("15910a13","00b00009f9730200dge0404000", "0652501500000000"); //  50-90%  b
+    cuts.AddCutPCM("15910a13","00c00009f9730200dge0404000", "0652501500000000"); //  50-90%  c
+
+
+
+
   } else if (trainConfig == 1001){
     cuts.AddCutPCM("60100013", "04200009297002003220000000", "0152204500900000");
   } else if (trainConfig == 1002) {

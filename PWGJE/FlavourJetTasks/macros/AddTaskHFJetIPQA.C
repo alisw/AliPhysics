@@ -7,11 +7,12 @@ Bool_t DefineCutsTaskpp(AliJetContainer* cont, double radius)
     cont->SetJetPtCut(5.);
     cont->SetJetPtCutMax(1000.);
     cont->SetJetEtaLimits(-0.9+radius, 0.9-radius);
+    cont->SetPercAreaCut(0.6);
     return kTRUE;
 }
 
 
-//
+
 
 
 AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
@@ -27,7 +28,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *njetsMC              = "Jets",
                                            const char *ntracksMC            = "tracksMC",
                                            const char *nrhoMC               = "RhoMC",
-                                           int nThresh                      =1,
+                                           int nTCThresh                      =1,
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/k/kgarner/Weights_18_07_18.root",
                                            TString PathToThresholds = "alien:///alice/cern.ch/user/k/kgarner/ThresholdHists_LHC16JJ_new.root",
                                           // TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
@@ -145,40 +146,8 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         if(fileFlukaCorrection) fileFlukaCorrection->Close();
     }
 
-    // Load and setup Threshold values for Tagger
-    //==============================================================================
-    TFile* fileThresholds;
-    if( PathToThresholds.EqualTo("") ) {
-      } else {
-        fileThresholds=TFile::Open(PathToThresholds.Data());
-        if(!fileThresholds ||(fileThresholds&& !fileThresholds->IsOpen())){
-        printf("%s :: File with threshold values not found",taskname);
-        return 0x0;
-      }
-    }
+    jetTask->ReadThresholdHists(PathToThresholds, taskname, nTCThresh);
 
-    Printf("%s :: File %s successfully loaded, setting up threshold functions.",taskname,PathToThresholds.Data());
-
-    if(fileThresholds){
-        printf("Reading threshold histograms for track counting...\n");
-
-        TObjArray** thresh=new TObjArray*[nThresh];
-        for(int iThresh=0;iThresh<nThresh;iThresh++){
-          fileThresholds->GetObject(Form("Thres_%i",iThresh),thresh[iThresh]);
-        }
-
-        printf("Pointers in the C file: %p, %p, %p\n",thresh[0], thresh[1],thresh[2]);
-
-        printf("Reading prob <-> IP lookup histograms...\n");
-        TObjArray* oLookup;
-        fileThresholds->GetObject("ProbLookup",oLookup);
-        //printf("Lookup Pointer in Read file:%p\n", oLookup);
-
-
-        jetTask->SetThresholds(nThresh,thresh);
-        jetTask->setfNThresholds(nThresh);
-        jetTask->ReadProbvsIPLookup(oLookup);
-    }
 
     // Setup input containers
     //==============================================================================

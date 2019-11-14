@@ -17,6 +17,7 @@ public:
   }
   static AliDielectronPID* GetPIDCutsAna();
   AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="NONE");
+  AliDielectronCutGroup* GetPairCuts(int pairsel=0);
   AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax, Bool_t usePileUpRej=kFALSE);
   void SetEtaCorrection( Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel);
   static AliDielectronPID* pidFilterCuts;
@@ -149,6 +150,16 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t cent
   if(usePileUpRej){
     Double_t pileUpCutsTPCClustersMin = 2.0e+06;
     Double_t pileUpCutsTPCClustersMax = 3.1e+06;        
+
+    printf("Adding TPC-Cluster based Pile-up rejection! \n");
+    TF1* fFitMin = new TF1("fFit","pol6",0,90);
+    fFitMin->SetParameters(pileUpCutsTPCClustersMin,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+    TF1* fFitMax = new TF1("fFit","pol6",0,90);
+    fFitMax->SetParameters(pileUpCutsTPCClustersMax,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+        
+    eventCuts->SetMinCorrCutFunction(fFitMin, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+    eventCuts->SetMaxCorrCutFunction(fFitMax, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+}   
   
   return eventCuts;
 }
@@ -427,6 +438,26 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
 
 }
 
+AliDielectronCutGroup* LMEECutLib::GetPairCuts(int selPair) {  
+  
+  AliDielectronCutGroup* pairCutsGr = new AliDielectronCutGroup("PairCutsGr","PairCutsGr",AliDielectronCutGroup::kCompAND);
+  AliDielectronVarCuts* pairCuts =new AliDielectronVarCuts("pairCutsAOD","pairCutsAOD"); 
+ 
+    switch (selPair) {     
+      case 0:  
+        pairCuts->AddCut(AliDielectronVarManager::kQnDeltaPhiTPCrpH2,     -TMath::Pi()/4., TMath::Pi()/4.,kTRUE);   //out of event plane
+        pairCuts->AddCut(AliDielectronVarManager::kQnDeltaPhiTPCrpH2,     -TMath::Pi(),-3*TMath::Pi()/4.,kTRUE);    //out of event plane
+        pairCuts->AddCut(AliDielectronVarManager::kQnDeltaPhiTPCrpH2,     3*TMath::Pi()/4., TMath::Pi(),kTRUE);     //out of event plane
+        break;
+      case 1:  
+        pairCuts->AddCut(AliDielectronVarManager::kQnDeltaPhiTPCrpH2,     TMath::Pi()/4., 3*TMath::Pi()/4.,kTRUE);    //in event plane
+        pairCuts->AddCut(AliDielectronVarManager::kQnDeltaPhiTPCrpH2,     -3*TMath::Pi()/4., -TMath::Pi()/4.,kTRUE);  //in event plane   
+        break;
+    }
+    pairCutsGr->AddCut(pairCuts);
+    return pairCutsGr;
+
+}
 AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MVACut, Bool_t useAODFilterCuts, TString TMVAweight) {
   
   
@@ -750,9 +781,65 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
               trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
               trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.6, 1.05);
               break;
+              
+   // track cut chosen for the results in 70-90% in 0.5-2.7 gev/c^2 (Track cut 30) and  1.1-2.7 gev/c^2 (Track cut 12) with additional event plane cuts  for tracks  
+        case 300:    
+              trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.6, 1.05);
+              //event plane cuts 
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     TMath::Pi()/4., 3*TMath::Pi()/4.,kTRUE);    //in event plane
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     -3*TMath::Pi()/4., -TMath::Pi()/4.,kTRUE);  //in event plane   
+              break;              
+         case 301:    
+              trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.6, 1.05);
+              //event plane cuts 
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     -TMath::Pi()/4., TMath::Pi()/4.,kTRUE);   //out of event plane
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     -TMath::Pi(),-3*TMath::Pi()/4.,kTRUE);    //out of event plane
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     3*TMath::Pi()/4., TMath::Pi(),kTRUE);     //out of event plane
+              break;
+        case 220:    
+              trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.6, 1.05);
+              //event plane cuts 
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     TMath::Pi()/4., 3*TMath::Pi()/4.,kTRUE);    //in event plane
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     -3*TMath::Pi()/4., -TMath::Pi()/4.,kTRUE);  //in event plane
+              break;
+        case 221:    
+              trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+              trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.6, 1.05);
+              //event plane cuts 
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     -TMath::Pi()/4., TMath::Pi()/4.,kTRUE);   //out of event plane
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     -TMath::Pi(),-3*TMath::Pi()/4.,kTRUE);    //out of event plane
+              trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     3*TMath::Pi()/4., TMath::Pi(),kTRUE);     //out of event plane       
+              break;
     }
     
- 
+  
   trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);   //(1<<4) -> error
   trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
     

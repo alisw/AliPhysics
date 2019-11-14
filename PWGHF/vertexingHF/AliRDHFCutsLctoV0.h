@@ -62,7 +62,12 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(7,iPtBin)] : 1.e6);}
-
+  Float_t GetV0PtCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(15,iPtBin)] : 0.);}
+  Float_t GetMinV0PtCut() const {
+    Float_t minPtCut=99999.;
+    for(Int_t j=0; j<fnPtBins; j++){Float_t c=GetV0PtCut(j); if(c<minPtCut) minPtCut=c;}
+    return minPtCut;
+  }
   void SetPidSelectionFlag(Int_t a) {fPidSelectionFlag=a;}
   Int_t GetPidSelectionFlag() {return fPidSelectionFlag;}
 

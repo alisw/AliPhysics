@@ -220,6 +220,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"PhivPair",               "#Phi_{v}^{pair}",                                    "(rad.)"},
   {"ITSscPair",              "ITS shared Cluster of pair",                         ""},
   {"DeltaCotTheta",          "#Delta cot(#Theta)",                                 ""},
+  {"DeltaPhiSumDiff",       "Delta Phi(Sum,Diff)",                                "(rad.)"},
   {"PairPlaneAngle1A",       "#Phi_{1A}",                                          "(rad.)"},
   {"PairPlaneAngle2A",       "#Phi_{2A}",                                          "(rad.)"},
   {"PairPlaneAngle3A",       "#Phi_{3A}",                                          "(rad.)"},
