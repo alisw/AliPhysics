@@ -6,6 +6,7 @@
 #include "THnSparse.h"
 #include "TMath.h"
 #include "TProfile.h"
+#include "TNtuple.h"
 
 #include <AliAnalysisTask.h>
 #include <AliAnalysisManager.h>
@@ -187,7 +188,7 @@ void AliAnalysisTaskHe3::UserCreateOutputObjects()
 	fOutputAHe3->SetOwner(kTRUE);
     
     fOutputList->Add(fOutputEvent);
-	if (kAnayseAllParticles) {
+	if (kAnalyseAllParticles) {
 			fOutputList->Add(fOutputProtons);
 			fOutputList->Add(fOutputAProtons);
 			fOutputList->Add(fOutputDeuterons);
@@ -560,10 +561,10 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
 		if (isHelium3Selected){
 			if (track->Charge() > 0){
 				FillHistosTrack(fHistsHe3, track);
-				if (track->GetTPCSignal() >100) {fNtupleHe3->Fill(track->P(); track->Pt(); track->GetTPCSignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz);}
+				if (track->GetTPCsignal() >100) {fNtupleHe3->Fill(track->P(), track->Pt(), track->GetTPCsignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz);}
 			} else if (track->Charge() < 0) {
 				FillHistosTrack(fHistsAHe3,track);
-				if (track->GetTPCSignal() > 100) {fNtupleAHe3->Fill(track->P(); track->Pt(); track->GetTPCSignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz);} //The TPC Signal requirement is to exclude the large amount of well seperated background which would make the Ntuple too large to compile & analyse. The histograms do not have this requirement and the seperation of the two signals can be seen in them.
+				if (track->GetTPCsignal() > 100) {fNtupleAHe3->Fill(track->P(), track->Pt(), track->GetTPCsignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz);} //The TPC Signal requirement is to exclude the large amount of well seperated background which would make the Ntuple too large to compile & analyse. The histograms do not have this requirement and the seperation of the two signals can be seen in them.
 			}
 		}
         
