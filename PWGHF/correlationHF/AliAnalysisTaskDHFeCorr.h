@@ -78,7 +78,7 @@ namespace AliDHFeCorr {
     typedef struct AliDMeson {
         public:
             AliAODRecoDecayHF *fRecoObj{nullptr};
-            Int_t fGridPID{0}; ///<PID of the grid job used to create the tree
+            Int_t fRunNumber{0}; ///<PID of the grid job used to create the tree
             Int_t fEventNumber{0}; ///< Number of the event
             UInt_t fID{0}; ///< D meson id in the event
             Bool_t fIsParticleCandidate{kFALSE}; ///< Particle hypotheses at reconstruction level
@@ -122,8 +122,8 @@ namespace AliDHFeCorr {
             std::vector<Float_t> fD0Daughters;
             std::vector<UInt_t> fIDDaughters; ///< ID obtained using GetID()
 
-            std::vector<std::vector<Float_t>> fNSigmaTPCDaughters; ///< The PID TPC response (n sigma)
-            std::vector<std::vector<Float_t>> fNSigmaTOFDaughters; ///< The PID TOF response (n sigma)
+            std::array<std::vector<Float_t>, 3> fNSigmaTPCDaughters; ///< The PID TPC response (n )sigma
+            std::array<std::vector<Float_t>, 3> fNSigmaTOFDaughters; ///< The PID TOF response (n sigma)
 
             //MC Level information
             Float_t fPtMC{-999.};///< Transverse momentum (MC information)
@@ -137,7 +137,7 @@ namespace AliDHFeCorr {
     public:
         AliAODTrack *fTrack{nullptr};
 
-        UInt_t fGridPID{0};
+        UInt_t fRunNumber{0};
         UInt_t fEventNumber{0};
 
         UInt_t fID{0};
@@ -204,7 +204,6 @@ namespace AliDHFeCorr {
 
         Int_t fITSPixel{0};
 
-        Bool_t fRecalculateDCA{kTRUE};
         Float_t fDCAz{999.};
         Float_t fDCAxy{999.};
 
@@ -416,8 +415,12 @@ private:
     std::unique_ptr<TTree> fElectronTree; ///< Tree with the electron information
     std::unique_ptr<TTree> fDmesonTree; ///< Tree with the D meson information
 
-    UInt_t fGridPID{0}; ///< ID of the process on GRID
+    std::string fCurrentFile;
+
+    UInt_t fRunNumber{0}; ///< Run number
     UInt_t fEventNumber{0}; ///< Unique number for each event
+    int fDirNum{-1};
+
     Float_t fVtxZ{-999.}; ///< Vertex Z
     Float_t fCentrality{-1.}; ///< Centrality
 
@@ -427,6 +430,7 @@ private:
     bool fIsMC{false}; ///< Flag for MC analysis
     bool fIsEffMode{false}; ///< Fills only the trees with true D mesons and electrons. No correlation analysis.
     bool fKeepAllCandidates{true}; ///< Keep all candidates (even if no electron is present)
+    bool fReducedElectronInfo{false};
     DMeson_t fDmesonSpecies{kD0}; ///< The D meson species (D0, D+ or D*)
 
     //YAML configuration
@@ -497,7 +501,7 @@ private:
     static void FillDmesonQA(const std::vector<AliDHFeCorr::AliDMeson> &d_mesons,
                              AliDHFeCorr::AliDMesonQAHistos &histogram, DMeson_t meson_species);
 
-    void SetGridPID();
+    void SetRunAndEventNumber();
 
     void PostOutput(); //< Function to post the data
 
