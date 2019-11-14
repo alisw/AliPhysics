@@ -35,7 +35,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -252,7 +252,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
     cuts.AddCutPCM("00010113", "00200009227300008250404000", "0163103b00000000","1111100067032220000"); //INT7
   }  else if (trainConfig == 407) { //for eta prime
     cuts.AddCutPCM("00010113", "00200009227300008250404000", "01631030000000d0"); //INT7
-  
+
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

@@ -19,6 +19,7 @@
 #include "AliAnalysisManager.h"
 #include "TRandom3.h"
 #include "AliVCaloTrigger.h"
+#include "AliEmcalTriggerDecisionContainer.h" ///home/joshua/alice/AliPhysics/PWG/EMCAL/EMCALtrigger/
 
 class AliESDEvent;
 class AliAODEvent;
@@ -370,7 +371,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
       void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
-      void    SetTriggerMimicking(Bool_t value)                                     { fMimicTrigger = value                                     ;
+      void    SetTriggerMimicking(Int_t value)                                      { fMimicTrigger = value                                     ;
                                                                                       if(value)AliInfo("enabled trigger mimicking")             ; }
       void    SetTriggerOverlapRejecion (Bool_t value)                              { fRejectTriggerOverlap = value                             ;
                                                                                       if(value)AliInfo("enabled trigger overlap rejection")     ; }
@@ -712,7 +713,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t                     fMinFacPtHard;                          ///< minimum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHard;                          ///< maximum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHardSingleParticle;            ///< maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
-      Bool_t                      fMimicTrigger;                          ///< enable trigger mimiking
+      Int_t                       fMimicTrigger;                          ///< enable trigger mimiking
       TString                     fPathTriggerMimicSpecialInput;          ///< set special trigger mimiking OADB file
       Bool_t                      fRejectTriggerOverlap;                  ///< enable trigger overlap rejections
       //
