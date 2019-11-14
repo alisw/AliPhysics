@@ -60,7 +60,6 @@ AliAnalysisTaskDHFeCorr::AliAnalysisTaskDHFeCorr(const char *name) : AliAnalysis
 //_____________________________________________________________________________
 void AliAnalysisTaskDHFeCorr::UserCreateOutputObjects() {
     fDMesonRequirements.fDMesonCuts->GetPidHF()->SetPidResponse(fInputHandler->GetPIDResponse());
-    SetGridPID();
 
     fOptEvent.SetOwner(kTRUE);
     fOptElectron.SetOwner(kTRUE);
@@ -93,39 +92,43 @@ void AliAnalysisTaskDHFeCorr::UserCreateOutputObjects() {
 }
 
 void AliAnalysisTaskDHFeCorr::AddEventVariables(std::unique_ptr<TTree> &tree) {
-    tree->Branch("GridPID", &fGridPID);
+    tree->Branch("RunNumber", &fRunNumber);
     tree->Branch("EventNumber", &fEventNumber);
     tree->Branch("VtxZ", &fVtxZ);
+    tree->Branch("Centrality", &fCentrality);
 }
 
 
 void AliAnalysisTaskDHFeCorr::AddElectronVariables(std::unique_ptr<TTree> &tree) {
-    tree->Branch("GridPID", &fElectron.fGridPID);
+    tree->Branch("RunNumber", &fElectron.fRunNumber);
     tree->Branch("EventNumber", &fElectron.fEventNumber);
-    tree->Branch("Charge", &fElectron.fCharge);
-    tree->Branch("ID", &fElectron.fID);
-    tree->Branch("P", &fElectron.fP);
+
     tree->Branch("Pt", &fElectron.fPt);
     tree->Branch("Eta", &fElectron.fEta);
     tree->Branch("Phi", &fElectron.fPhi);
-    tree->Branch("NClsTPC", &fElectron.fNClsTPC);
-    tree->Branch("NClsTPCDeDx", &fElectron.fNClsTPCDeDx);
-    tree->Branch("NITSCls", &fElectron.fNITSCls);
-    tree->Branch("ITSHitFirstLayer", &fElectron.fITSHitFirstLayer);
-    tree->Branch("ITSHitSecondLayer", &fElectron.fITSHitSecondLayer);
-    tree->Branch("DCAxy", &fElectron.fDCAxy);
-    tree->Branch("DCAz", &fElectron.fDCAz);
-    //TODO: include Pion/Kaon response?
-    tree->Branch("TPCNSigma", &fElectron.fTPCNSigma);
-    tree->Branch("TOFNSigma", &fElectron.fTOFNSigma);
-    tree->Branch("InvMassPartnersULS", &fElectron.fInvMassPartnersULS);
-    tree->Branch("InvMassPartnersLS", &fElectron.fInvMassPartnersLS);
+    tree->Branch("ID", &fElectron.fID);
+
+    if (!fReducedElectronInfo) {
+        tree->Branch("Charge", &fElectron.fCharge);
+        tree->Branch("P", &fElectron.fP);
+        tree->Branch("NClsTPC", &fElectron.fNClsTPC);
+        tree->Branch("NClsTPCDeDx", &fElectron.fNClsTPCDeDx);
+        tree->Branch("NITSCls", &fElectron.fNITSCls);
+        tree->Branch("ITSHitFirstLayer", &fElectron.fITSHitFirstLayer);
+        tree->Branch("ITSHitSecondLayer", &fElectron.fITSHitSecondLayer);
+        tree->Branch("DCAxy", &fElectron.fDCAxy);
+        tree->Branch("DCAz", &fElectron.fDCAz);
+        tree->Branch("TPCNSigma", &fElectron.fTPCNSigma);
+        tree->Branch("TOFNSigma", &fElectron.fTOFNSigma);
+        tree->Branch("InvMassPartnersULS", &fElectron.fInvMassPartnersULS);
+        tree->Branch("InvMassPartnersLS", &fElectron.fInvMassPartnersLS);
+    }
 }
 
 void AliAnalysisTaskDHFeCorr::AddDMesonVariables(std::unique_ptr<TTree> &tree,
                                                  AliAnalysisTaskDHFeCorr::DMeson_t meson_species) {
     //Event information
-    tree->Branch("GridPID", &fDmeson.fGridPID);
+    tree->Branch("RunNumber", &fDmeson.fRunNumber);
     tree->Branch("EventNumber", &fDmeson.fEventNumber);
     tree->Branch("ID", &fDmeson.fID);
     tree->Branch("IsParticleCandidate", &fDmeson.fIsParticleCandidate);
@@ -160,11 +163,11 @@ void AliAnalysisTaskDHFeCorr::AddDMesonVariables(std::unique_ptr<TTree> &tree,
     //PID
     tree->Branch("SelectionStatusDefaultPID", &fDmeson.fSelectionStatusDefaultPID);
 
-    tree->Branch("NSigmaTPCDaughters0", &fDmeson.fNSigmaTPCDaughters[0]);
-    tree->Branch("NSigmaTPCDaughters1", &fDmeson.fNSigmaTPCDaughters[1]);
+    tree->Branch("NSigmaTPCDaughters0", &(fDmeson.fNSigmaTPCDaughters[0]));
+    tree->Branch("NSigmaTPCDaughters1", &(fDmeson.fNSigmaTPCDaughters[1]));
 
-    tree->Branch("NSigmaTOFDaughters0", &fDmeson.fNSigmaTOFDaughters[0]);
-    tree->Branch("NSigmaTOFDaughters1", &fDmeson.fNSigmaTOFDaughters[1]);
+    tree->Branch("NSigmaTOFDaughters0", &(fDmeson.fNSigmaTOFDaughters[0]));
+    tree->Branch("NSigmaTOFDaughters1", &(fDmeson.fNSigmaTOFDaughters[1]));
 
     //Meson depended variables
     switch (meson_species) {
@@ -174,15 +177,13 @@ void AliAnalysisTaskDHFeCorr::AddDMesonVariables(std::unique_ptr<TTree> &tree,
             break;
         case AliAnalysisTaskDHFeCorr::kDplus: {
             tree->Branch("SigmaVertex", &fDmeson.fSigmaVertex);
-            tree->Branch("NSigmaTPCDaughters2", &fDmeson.fNSigmaTPCDaughters[2]);
-            tree->Branch("NSigmaTOFDaughters2", &fDmeson.fNSigmaTOFDaughters[2]);
+            tree->Branch("NSigmaTPCDaughters2", &(fDmeson.fNSigmaTPCDaughters[2]));
+            tree->Branch("NSigmaTOFDaughters2", &(fDmeson.fNSigmaTOFDaughters[2]));
         }
             break;
         case AliAnalysisTaskDHFeCorr::kDstar: {
             tree->Branch("AngleD0dkpPisoft", &fDmeson.fAngleD0dkpPisoft);
             tree->Branch("CosTs", &fDmeson.fCosTs);
-            tree->Branch("NSigmaTPCDaughters2", &fDmeson.fNSigmaTPCDaughters[2]);
-            tree->Branch("NSigmaTOFDaughters2", &fDmeson.fNSigmaTOFDaughters[2]);
         }
             break;
     }
@@ -212,7 +213,6 @@ std::vector<AliDHFeCorr::AliElectron> AliAnalysisTaskDHFeCorr::ElectronAnalysis(
     std::vector<AliDHFeCorr::AliElectron> tracks;
     tracks.reserve(static_cast<unsigned long>(aod_event->GetNumberOfTracks()));
 
-    //Move tracks to a vector
     for (int i(0); i < aod_event->GetNumberOfTracks(); i++) {
         auto particle = AliDHFeCorr::AliElectron();
         particle.fTrack = dynamic_cast<AliAODTrack *>(aod_event->GetTrack(i));
@@ -229,12 +229,13 @@ std::vector<AliDHFeCorr::AliElectron> AliAnalysisTaskDHFeCorr::ElectronAnalysis(
     auto selected_partner_tracks = FilterElectronsTracking(fPartnerElectronRequirements, tracks);
     auto partner_electrons = FilterElectronsPID(fPartnerElectronRequirements, selected_partner_tracks);
 
-    for (auto &electron: selected_electrons)
-        FindNonHFe(electron, partner_electrons);
+    if (!fReducedElectronInfo) {
+        for (auto &electron: selected_electrons)
+            FindNonHFe(electron, partner_electrons);
+    }
 
     //fill the electron (track) QA before applying the cuts
     FillElectronQA(tracks, fElectronQABeforeCuts);
-
     //fill the electron QA after track selection
     FillElectronQA(selected_tracks, fElectronQAAfterTrackCuts);
     //fill the electron QA after applying the cuts
@@ -245,6 +246,7 @@ std::vector<AliDHFeCorr::AliElectron> AliAnalysisTaskDHFeCorr::ElectronAnalysis(
 
 std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::DMesonAnalysis() {
     auto aod_event = dynamic_cast<AliAODEvent *>(InputEvent());
+
     //Move D meson candidates to vectors
     const TClonesArray *dmeson_candidates = dynamic_cast<TClonesArray *>(aod_event->GetList()->FindObject(
             fgkDMesonListName.at(fDmesonSpecies).c_str()));
@@ -254,8 +256,8 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::DMesonAnalysis() {
     auto selected_d_mesons = FilterDmesons(d_mesons, fDMesonRequirements, aod_event, fgkDMesonPDG.at(fDmesonSpecies));
 
     FillDmesonQA(d_mesons, fDMesonQABeforeCuts, fDmesonSpecies);
-
     FillDmesonQA(selected_d_mesons, fDMesonQAAfterCuts, fDmesonSpecies);
+
     FillDmesonMCInfo(selected_d_mesons, fDmesonSpecies);
 
     return selected_d_mesons;
@@ -264,6 +266,7 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::DMesonAnalysis() {
 //_____________________________________________________________________________
 void AliAnalysisTaskDHFeCorr::UserExec(Option_t *) {
     CheckConfiguration();
+    SetRunAndEventNumber();
 
     //Set Global event variables
     fVtxZ = InputEvent()->GetPrimaryVertex()->GetZ();
@@ -346,7 +349,7 @@ void AliAnalysisTaskDHFeCorr::FillElectronInformation(std::vector<AliDHFeCorr::A
 
     for (auto &candidate: electrons) {
         const auto track = candidate.fTrack;
-        candidate.fGridPID = fGridPID;
+        candidate.fRunNumber = fRunNumber;
         candidate.fEventNumber = fEventNumber;
         candidate.fID = TMath::Abs(track->GetID());
 
@@ -527,14 +530,26 @@ AliAnalysisTaskDHFeCorr::FilterTrueDMesons(const std::vector<AliDHFeCorr::AliDMe
     return true_d;
 }
 
-void AliAnalysisTaskDHFeCorr::SetGridPID() {
-    const char *grid_id = gSystem->Getenv("ALIEN_PROC_ID");
-    if (grid_id) {
-        std::string str(grid_id);
-        fGridPID = static_cast<ULong_t>(std::stoi(str));
-    } else
-        fGridPID = 0;
+void AliAnalysisTaskDHFeCorr::SetRunAndEventNumber() {
+    //Based on AliAnalysisTaskSEHFTreeCreator::GetEvID
+
+    fRunNumber = static_cast<UInt_t >(InputEvent()->GetRunNumber());
+
+    std::string current_file_name = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
+
+    if (fCurrentFile != current_file_name) {
+        fEventNumber = 0;
+        TObjArray *path = TString(current_file_name).Tokenize("/");
+        TString s = (dynamic_cast<TObjString *>(path->At(((path->GetLast()) - 1))))->GetString();
+        fDirNum = (unsigned int) s.Atoi();
+        delete path;
+    }
+
+    Long64_t ev_number = Entry();
+
+    fEventNumber = (unsigned int) ev_number + (unsigned int) (fDirNum << 17);
 }
+
 
 void AliAnalysisTaskDHFeCorr::PostOutput() {
     PostData(1, &fOptEvent);
@@ -760,25 +775,30 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
             }
         }
         //avoid a lot of computational time by rejecting minimum Pt here
-        //Reject in case the pt is smalelr than the minimum fPtMin
+        //Reject in case the pt is smaller than the minimum fPtMin
         if (reco_candidate->Pt() < dmeson_selection.fPtMin)
             continue;
 
         //Is it particle or antiparticle? Is positive -> True, Should work for D+
         //For D0, the Charge() should return 0, but the candidates will be saved twice (to handle reflections)
         cand.fIsParticleCandidate = reco_candidate->Charge() >= 0;
-        cand.fGridPID = fGridPID;
+        cand.fRunNumber = fRunNumber;
         cand.fEventNumber = fEventNumber;
 
         const auto reco_cand = cand.fRecoObj;
         //Recalculate vertex w/o daughters
         AliAODVertex *original_own_vertex(nullptr);
-        if (reco_cand->GetOwnPrimaryVtx())
-            original_own_vertex = new AliAODVertex(*reco_cand->GetOwnPrimaryVtx());
 
-        if (!dmeson_selection.fDMesonCuts->RecalcOwnPrimaryVtx(reco_cand, aod_event)) {
-            dmeson_selection.fDMesonCuts->CleanOwnPrimaryVtx(reco_cand, aod_event, original_own_vertex);
-            continue;
+        //GetIsPrimaryWithoutDaughters returns true if the user requested to recalculate the primary vertex
+        //In Pb-Pb this option can be turned off
+        if (dmeson_selection.fDMesonCuts->GetIsPrimaryWithoutDaughters()) {
+            if (reco_cand->GetOwnPrimaryVtx())
+                original_own_vertex = new AliAODVertex(*reco_cand->GetOwnPrimaryVtx());
+
+            if (!dmeson_selection.fDMesonCuts->RecalcOwnPrimaryVtx(reco_cand, aod_event)) {
+                dmeson_selection.fDMesonCuts->CleanOwnPrimaryVtx(reco_cand, aod_event, original_own_vertex);
+                continue;
+            }
         }
 
         cand.fPt = reco_cand->Pt();
@@ -812,14 +832,14 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
         cand.fPtDaughters = pt_daughters;
         cand.fD0Daughters = d0_daughters;
 
-        std::vector<std::vector<Float_t>> pid_info_tpc;
-        std::vector<std::vector<Float_t>> pid_info_tof;
+        std::array<std::vector<Float_t>, 3> pid_info_tpc;
+        std::array<std::vector<Float_t>, 3> pid_info_tof;
         std::vector<UInt_t> id_daughters;
-        pid_info_tpc.reserve(n_prongs);
-        pid_info_tof.reserve(n_prongs);
         id_daughters.reserve(n_prongs);
 
         for (int j = 0; j < n_prongs; j++) {
+
+            //TO DO: UNDERSTAND IT IS NOT SAVING THE pid_info_tpc_prong WITH 2X THE NUMBER OF id_daughter_alipid
             const auto track = dynamic_cast<AliAODTrack *>(reco_cand->GetDaughter(j));
             id_daughters.push_back(TMath::Abs(track->GetID()));
 
@@ -831,8 +851,8 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
                 pid_info_tof_prong.push_back(pid_response->NumberOfSigmasTOF(track, hypothesis));
             }
 
-            pid_info_tpc.push_back(pid_info_tpc_prong);
-            pid_info_tof.push_back(pid_info_tof_prong);
+            pid_info_tpc[j] = pid_info_tpc_prong;
+            pid_info_tof[j] = pid_info_tof_prong;
         }
 
         cand.fNSigmaTPCDaughters = pid_info_tpc;
@@ -865,9 +885,11 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
             //Invert the vectors related to the reflections
             std::reverse(reflection.fPtDaughters.begin(), reflection.fPtDaughters.end());
             std::reverse(reflection.fD0Daughters.begin(), reflection.fD0Daughters.end());
-            std::reverse(reflection.fNSigmaTPCDaughters.begin(), reflection.fNSigmaTPCDaughters.end());
-            std::reverse(reflection.fNSigmaTOFDaughters.begin(), reflection.fNSigmaTOFDaughters.end());
             std::reverse(reflection.fIDDaughters.begin(), reflection.fIDDaughters.end());
+
+            //Invert manually the NSigma responses
+            std::swap(reflection.fNSigmaTPCDaughters[0], reflection.fNSigmaTPCDaughters[1]);
+            std::swap(reflection.fNSigmaTOFDaughters[0], reflection.fNSigmaTOFDaughters[1]);
 
             d_mesons.push_back(reflection);
         }
@@ -878,7 +900,6 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
     d_mesons.shrink_to_fit();
     return d_mesons;
 }
-
 
 
 std::vector<AliDHFeCorr::AliDMeson>
@@ -1022,10 +1043,12 @@ bool AliAnalysisTaskDHFeCorr::Configure(std::string config_file, std::string con
     fYAMLConfig.AddConfiguration(default_file, "default_configuration");
     // Will be checked first. This is so it can override values in the first added configuration.
     fYAMLConfig.AddConfiguration(config_file, config_name);
+
     //Read the global task settings
     fYAMLConfig.GetProperty("mc_mode", fIsMC, true);
     fYAMLConfig.GetProperty("calculate_only_efficiency", fIsEffMode, true);
     fYAMLConfig.GetProperty("keep_all_candidates", fKeepAllCandidates, true);
+    fYAMLConfig.GetProperty("reduced_electron_info", fReducedElectronInfo, true);
 
     std::string meson_species;
     fYAMLConfig.GetProperty("d_meson_species", meson_species, true);
@@ -1127,7 +1150,6 @@ AliAnalysisTaskDHFeCorr::ConfigureElectrons(const std::string &name,
         return false;
     }
 
-    fYAMLConfig.GetProperty({name, "track", "recalculate_dca"}, electron_selection.fRecalculateDCA, true);
     fYAMLConfig.GetProperty({name, "track", "dca_z"}, electron_selection.fDCAz, true);
     fYAMLConfig.GetProperty({name, "track", "dca_xy"}, electron_selection.fDCAxy, true);
 
