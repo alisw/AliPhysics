@@ -29,14 +29,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   enum {kpp, kPbPb, kUpgr};
 
   AliAnalysisTaskSEDs();
-  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
+  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts);
   virtual ~AliAnalysisTaskSEDs();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
-  void SetWriteOnlySignalInNtuple(Bool_t opt=kTRUE){
+  void SetWriteOnlySignalInNtuple(Bool_t opt=kTRUE){ // TO USE FOR ML TUPLE
     if(fReadMC) fWriteOnlySignal=opt;
     else AliError("fReadMC has to be kTRUE");
   }
-  void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
   void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}
   void SetFillNSparseDplus(Bool_t fill=kTRUE){fFillSparseDplus=fill;if(fill)fFillSparse=fill;}
   void SetFillNSparseImpPar(Bool_t fill=kTRUE){fFillImpParSparse=fill;}
@@ -49,30 +48,19 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetUseBkgFromPhiSB(Bool_t flag=kFALSE) {fDoBkgPhiSB=flag;}
   void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
   void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
-  Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
-  void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
-  void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
-  void CreateCutVarsAndEffSparses();
-  void CreateImpactParameterSparses();
-  Float_t GetTrueImpactParameterDstoPhiPi(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDs) const;
-
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
   void SetSystem(Int_t system){fSystem = system;}
-
   void SetUseFinePtBinsForSparse(Bool_t usefinebins=kTRUE) {fUseFinPtBinsForSparse=usefinebins;} //use only in case of few candidates (e.g. MC signal only)
-
   void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=true) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
   void SetFillBkgSparse(Bool_t dofill=true) {fFillBkgSparse = dofill;}
-
   /// methods for ML application
   void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
   void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
   void EnablePIDMLSparses(Bool_t enable=kTRUE) {fEnablePIDMLSparses=enable;}
-  void CreatePIDMLSparses();
-
+  
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -82,6 +70,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 
  private:
   enum {kMaxPtBins=36,knVarForSparse=14,knVarForSparseAcc=2,kVarForImpPar=3,knVarPID=14,knVarPIDcomb=8};
+
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
 
@@ -89,6 +78,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
+  Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+  Float_t GetTrueImpactParameterDstoPhiPi(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDs) const;
+  void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+  void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
+  void CreateCutVarsAndEffSparses();
+  void CreateImpactParameterSparses();
+  void CreatePIDMLSparses();
 
   TList*  fOutput = nullptr;                    //!<! list send on output slot 0
   TH1F*   fHistNEvents = nullptr;               //!<! hist. for No. of events
@@ -144,11 +140,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH3F*   fPtProng0Hist3D = nullptr;            //!<! Pt prong0 vs Ds mass vs pt
   TH3F*   fPtProng1Hist3D = nullptr;            //!<! Pt prong1 vs Ds mass vs pt
   TH3F*   fPtProng2Hist3D = nullptr;            //!<! Pt prong2 vs Ds mass vs pt
-  TNtuple *fNtupleDs = nullptr;                 //!<! output ntuple
-  Int_t fFillNtuple = 0;                        /// 0 not to fill ntuple
-                                                /// 1 for filling ntuple for events through Phi
-                                                /// 2 for filling ntuple for events through K0Star
-                                                /// 3 for filling all
   Int_t   fSystem = kpp;                        /// 0 = pp, 1 = pPb,PbPb
   Bool_t  fReadMC = kFALSE;                     /// flag for access to MC
   Bool_t  fWriteOnlySignal = kFALSE;            /// flag to control ntuple writing in MC
@@ -165,7 +156,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
                                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins = 0;                         /// number of Pt bins
   TList *fListCuts = nullptr;                   /// list of cuts
-  Float_t fPtLimits[kMaxPtBins+1] = {};        /// limits for pt bins
+  Float_t fPtLimits[kMaxPtBins+1] = {};         /// limits for pt bins
   Double_t fMassRange = 0.8;                    /// range for mass histogram
   Double_t fMassBinSize = 0.002;                /// bin size for inv. mass histo
   Double_t fminMass = 1.6;

@@ -54,22 +54,18 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *analysiscuts, Int_t fillNtuple) : AliAnalysisTaskSE(name)
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *analysiscuts) : AliAnalysisTaskSE(name)
 {
   /// Standard constructor
   SetAnalysisCuts(analysiscuts);
   Int_t nptbins = fAnalysisCuts->GetNPtBins();
   Float_t *ptlim = fAnalysisCuts->GetPtBinLimits();
   SetPtBins(nptbins, ptlim);
-  SetFillNtuple(fillNtuple);
 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, AliNormalizationCounter::Class());
-
-  if (fFillNtuple > 0)
-    // Output slot #4 writes into a TNtuple container
-    DefineOutput(4, TNtuple::Class()); //My private output
+  //DefineOutput(4, TNtuple::Class()); //TNtuple for ML
 }
 
 //________________________________________________________________________
@@ -166,7 +162,6 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
   }
   delete fOutput;
   delete fListCuts;
-  delete fNtupleDs;
   delete fCounter;
   delete fAnalysisCuts;
 
@@ -478,19 +473,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 
   PostData(1, fOutput);
   PostData(3, fCounter);
-
-  if (fFillNtuple > 0 && fFillNtuple < 4)
-  {
-    OpenFile(4); // 4 is the slot number of the ntuple
-
-    fNtupleDs = new TNtuple("fNtupleDs", "Ds", "labDs:retcode:pdgcode0:Pt0:Pt1:Pt2:PtRec:P0:P1:P2:PidTrackBit0:PidTrackBit1:PidTrackBit2:PointingAngle:PointingAngleXY:DecLeng:DecLengXY:NorDecLeng:NorDecLengXY:InvMassKKpi:InvMasspiKK:sigvert:d00:d01:d02:dca:d0square:InvMassPhiKKpi:InvMassPhipiKK:InvMassK0starKKpi:InvMassK0starpiKK:cosinePiDsFrameKKpi:cosinePiDsFramepiKK:cosineKPhiFrameKKpi:cosineKPhiFramepiKK:centrality:runNumber");
-  }
-  else if (fFillNtuple == 4)
-  {
-    OpenFile(4); // 4 is the slot number of the ntuple
-
-    fNtupleDs = new TNtuple("fNtupleDs", "Ds", "Pt:InvMass:d0:origin");
-  }
+  // OpenFile(4); // 4 is the slot number of the ntuple
 
   return;
 }
@@ -1301,81 +1284,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               fPtProng2Hist[indexMCpiKK]->Fill(pt2);
             }
           }
-        }
-
-        Float_t tmp[37];
-        if ((fFillNtuple == 1 && (isPhiKKpi || isPhipiKK)) || (fFillNtuple == 2 && (isK0starKKpi || isK0starpiKK)) || (fFillNtuple == 3 && (isKKpi || ispiKK)))
-        {
-          AliAODTrack *track0 = (AliAODTrack *)d->GetDaughter(0);
-          AliAODTrack *track1 = (AliAODTrack *)d->GetDaughter(1);
-          AliAODTrack *track2 = (AliAODTrack *)d->GetDaughter(2);
-          UInt_t bitMapPIDTrack0 = fAnalysisCuts->GetPIDTrackTPCTOFBitMap(track0);
-          UInt_t bitMapPIDTrack1 = fAnalysisCuts->GetPIDTrackTPCTOFBitMap(track1);
-          UInt_t bitMapPIDTrack2 = fAnalysisCuts->GetPIDTrackTPCTOFBitMap(track2);
-          tmp[0] = Float_t(labDs);
-          if (fReadMC && fWriteOnlySignal)
-            tmp[0] = Float_t(isMCSignal);
-          tmp[1] = Float_t(retCodeAnalysisCuts);
-          tmp[2] = Float_t(pdgCode0);
-          tmp[3] = d->PtProng(0);
-          tmp[4] = d->PtProng(1);
-          tmp[5] = d->PtProng(2);
-          tmp[6] = d->Pt();
-          tmp[7] = d->PProng(0);
-          tmp[8] = d->PProng(1);
-          tmp[9] = d->PProng(2);
-          tmp[10] = Int_t(bitMapPIDTrack0);
-          tmp[11] = Int_t(bitMapPIDTrack1);
-          tmp[12] = Int_t(bitMapPIDTrack2);
-          tmp[13] = d->CosPointingAngle();
-          tmp[14] = d->CosPointingAngleXY();
-          tmp[15] = d->DecayLength();
-          tmp[16] = d->DecayLengthXY();
-          tmp[17] = d->NormalizedDecayLength();
-          tmp[18] = d->NormalizedDecayLengthXY();
-          tmp[19] = d->InvMassDsKKpi();
-          tmp[20] = d->InvMassDspiKK();
-          tmp[21] = d->GetSigmaVert();
-          tmp[22] = d->Getd0Prong(0);
-          tmp[23] = d->Getd0Prong(1);
-          tmp[24] = d->Getd0Prong(2);
-          tmp[25] = d->GetDCA();
-          tmp[26] = d->Getd0Prong(0) * d->Getd0Prong(0) + d->Getd0Prong(1) * d->Getd0Prong(1) + d->Getd0Prong(2) * d->Getd0Prong(2);
-          tmp[27] = d->InvMass2Prongs(0, 1, 321, 321);
-          tmp[28] = d->InvMass2Prongs(1, 2, 321, 321);
-          tmp[29] = d->InvMass2Prongs(1, 2, 321, 211);
-          tmp[30] = d->InvMass2Prongs(0, 1, 211, 321);
-          tmp[31] = d->CosPiDsLabFrameKKpi();
-          tmp[32] = d->CosPiDsLabFramepiKK();
-          tmp[33] = d->CosPiKPhiRFrameKKpi();
-          tmp[34] = d->CosPiKPhiRFramepiKK();
-          tmp[35] = (Float_t)(evCentr);
-          tmp[36] = (Float_t)(runNumber);
-          if (fReadMC && fWriteOnlySignal)
-          {
-            if (isMCSignal >= 0)
-              fNtupleDs->Fill(tmp);
-          }
-          else
-          {
-            fNtupleDs->Fill(tmp);
-          }
-          PostData(4, fNtupleDs);
-        }
-        else if(fFillNtuple == 4)
-        {
-          Float_t impParxy = d->ImpParXY() * 10000.;
-          if (isPhiKKpi)
-          {
-            Float_t tmp[4] = {(Float_t)ptCand, (Float_t)invMass_KKpi, impParxy, (Float_t)orig};
-            fNtupleDs->Fill(tmp);
-          }
-          if (isPhipiKK)
-          {
-            Float_t tmp[4] = {(Float_t)ptCand, (Float_t)invMass_piKK, impParxy, (Float_t)orig};
-            fNtupleDs->Fill(tmp);
-          }
-          PostData(4, fNtupleDs);
         }
       } //if(retCodeAnalysisCuts)
     }   // if(isFidAcc)
