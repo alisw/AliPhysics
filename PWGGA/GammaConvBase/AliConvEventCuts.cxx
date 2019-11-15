@@ -3977,7 +3977,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   // abort if mimicing not enabled
 
   if (!fMimicTrigger) return kTRUE;
-  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 10)) return kTRUE;   // not the correct trigger for mimcking
+  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 10)) return kTRUE;   // not the correct trigger for mimcking
 
     //Get the clusters
     TClonesArray * arrClustersMimic = NULL;
@@ -4040,6 +4040,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       else if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 || fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G1");
       // EMCal L1 G1 trigger
       else if((fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G2");
+      // PHOS L0 trigger
+      else if((fSpecialTrigger == 6) && (fSpecialSubTriggerName.CompareTo("PHI7")==0) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("PHOSL0");
       // return true if mimicking for fSpecialTrigger is not defined
       else return kTRUE;
 
@@ -4079,7 +4081,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     if (!clus) {
       continue;
     }
-    if (!clus->IsEMCAL()) {
+    if (!clus->IsEMCAL()&&!clus->IsPHOS()) {
       continue;
     }
     if (clus->GetM02()<0.1) {
@@ -4089,14 +4091,18 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       continue;
     }
     Int_t iSuperModule = 0;
-    // Get the supermodule from cluster position
-    if(fHistoTriggThresh->GetNbinsX() > 1){
-      Float_t clusPos[3]={0,0,0};
-      clus->GetPosition(clusPos);
-      TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
-      fGeomEMCAL->SuperModuleNumberFromEtaPhi(clusterVector.Eta(),clusterVector.Phi(),iSuperModule);
-      if(iSuperModule >= fHistoTriggThresh->GetNbinsX() ){
-        AliFatal("Supermodule nr. does not match with input histogramm");
+    if (clus->IsEMCAL()){
+      if(!fGeomEMCAL) fGeomEMCAL = AliEMCALGeometry::GetInstance();
+      if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
+      // Get the supermodule from cluster position
+      if(fHistoTriggThresh->GetNbinsX() > 1){
+        Float_t clusPos[3]={0,0,0};
+        clus->GetPosition(clusPos);
+        TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+        fGeomEMCAL->SuperModuleNumberFromEtaPhi(clusterVector.Eta(),clusterVector.Phi(),iSuperModule);
+        if(iSuperModule >= fHistoTriggThresh->GetNbinsX() ){
+          AliFatal("Supermodule nr. does not match with input histogramm");
+        }
       }
     }
     if (clus->E() > fTriggThresh[iSuperModule]){
