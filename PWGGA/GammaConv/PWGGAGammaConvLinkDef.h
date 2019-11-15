@@ -38,7 +38,6 @@
 #pragma link C++ class AliIdentifiedPrimarySelector+;
 #pragma link C++ class AliIdentifiedPrimaryCuts+;
 
-#pragma link C++ class AliEmcalTriggerDecisionContainer+;
 
 
 // Old tasks
