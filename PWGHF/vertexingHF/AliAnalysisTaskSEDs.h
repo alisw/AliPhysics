@@ -4,12 +4,14 @@
 /* Copyright(c) 2007-2019, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-///////////////////////////////////////////////////////////////////////////
-///                                                                      //
-/// \class Analysis task to produce Ds candidates mass spectra           //
-/// \author Origin: F.Prino, Torino, prino@to.infn.it                    //
-///                                                                      //
-//////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+//                                                               //
+// Analysis task to produce Ds candidates mass spectra           //
+// Origin: F.Prino, Torino, prino@to.infn.it                     //
+// Mantainers: F. Catalano, fabio.catalano@cern.ch               //
+//             F. Grosa, fabrizio.grosa@cern.ch                  //
+//                                                               //
+///////////////////////////////////////////////////////////////////
 
 #include <TH1F.h>
 #include <TH2F.h>

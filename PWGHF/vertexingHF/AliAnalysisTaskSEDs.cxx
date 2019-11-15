@@ -15,8 +15,10 @@
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-//  Analysis task to produce Ds candidates mass spectra          //
+// Analysis task to produce Ds candidates mass spectra           //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
+// Mantainers: F. Catalano, fabio.catalano@cern.ch               //
+//             F. Grosa, fabrizio.grosa@cern.ch                  //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
