@@ -4081,7 +4081,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     if (!clus) {
       continue;
     }
-    if (!clus->IsEMCAL()&&!clus->IsPHOS()) {
+     if ((fSpecialTrigger!=6 && !clus->IsEMCAL()) || (fSpecialTrigger==6 && !clus->IsPHOS())) {
       continue;
     }
     if (clus->GetM02()<0.1) {
