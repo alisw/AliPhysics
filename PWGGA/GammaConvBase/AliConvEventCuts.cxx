@@ -4062,7 +4062,6 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       {
         AliFatal(Form("No Trigger threshold found for run number: %d", runnumber));
       }
-
       // EMCal L0 trigger
       if(fSpecialTrigger == 5 ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL0");
       // EMCal L1 G2 trigger
@@ -4070,7 +4069,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       // EMCal L1 G1 trigger
       else if((fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G2");
       // PHOS L0 trigger
-      else if((fSpecialTrigger == 6) && (fSpecialSubTriggerName.CompareTo("PHI7")==0) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("PHOSL0");
+      else if((fSpecialTrigger == 6) && (fSpecialSubTriggerName.CompareTo("CPHI7")==0 )) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("PHOSL0");
       // return true if mimicking for fSpecialTrigger is not defined
       else return kTRUE;
 
