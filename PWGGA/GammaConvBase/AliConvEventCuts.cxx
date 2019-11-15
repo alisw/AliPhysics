@@ -4057,9 +4057,6 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     fTriggThresh[iSM] = fRandom.Gaus(fHistoTriggThresh->GetBinContent(iSM + 1)*0.01, fHistoTriggThresh->GetBinError(iSM + 1)*0.01);
   }
 
-  if(!fGeomEMCAL) fGeomEMCAL = AliEMCALGeometry::GetInstance();
-  if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
-
   // Loop over EMCal clusters
   for(Int_t i = 0; i < nclus; i++){
     AliVCluster* clus = NULL;
