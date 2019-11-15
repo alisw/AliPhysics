@@ -62,7 +62,7 @@ AliHFMLVarHandler::~AliHFMLVarHandler()
 void AliHFMLVarHandler::FillTree() {
     //if fill only signal and not signal/reflection candidate, do not store
     if(fFillOnlySignal && !(fCandType&kSignal) && !(fCandType&kRefl)) {
-                fCandType = 0;
+        fCandType = 0;
     }
     else {      
         fTreeVar->Fill(); 

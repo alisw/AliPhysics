@@ -169,6 +169,9 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
 
   if(fApplyML && fMLResponse)
     delete fMLResponse;
+
+  if(fCreateMLtree && fMLhandler)
+    delete fMLhandler;
 }
 
 //________________________________________________________________________
@@ -473,9 +476,20 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       CreatePIDMLSparses();
   }
 
+  //Create ML tree
+  if(fCreateMLtree) {
+    OpenFile(4);
+    fMLhandler = new AliHFMLVarHandlerDstoKKpi(fPIDopt, AliHFMLVarHandlerDstoKKpi::kDeltaMassKKPhi);
+    fMLhandler->SetAddSingleTrackVars(fAddSingleTrackVar);
+    if(fReadMC && fFillOnlySignal)
+      fMLhandler->SetFillOnlySignal();
+    fMLtree = fMLhandler->BuildTree("treeMLDs", "treeMLDs");
+    fMLtree->SetMaxVirtualSize(1.e+8);
+    PostData(4, fMLtree);
+  }
+  
   PostData(1, fOutput);
   PostData(3, fCounter);
-  // OpenFile(4); // 4 is the slot number of the ntuple
 
   return;
 }
@@ -782,10 +796,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         Int_t labDs = -1;
         Int_t labDplus = -1;
         Int_t pdgCode0 = -999;
-        Int_t isMCSignal = -1;
 
         AliAODMCParticle *partDs = nullptr;
-        Int_t orig=0;
+        Int_t orig = 0;
+        Bool_t isCandInjected = kFALSE;
         Float_t trueImpParDsFromB = 99999.;
 
         if (fReadMC)
@@ -805,13 +819,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                 indexMCKKpi = GetSignalHistoIndex(iPtBin);
                 fYVsPtSig->Fill(ptCand, rapid);
                 fChanHist[1]->Fill(retCodeAnalysisCuts);
-                isMCSignal = 1;
               }
               else
               {
                 indexMCKKpi = GetReflSignalHistoIndex(iPtBin);
                 fChanHist[3]->Fill(retCodeAnalysisCuts);
-                isMCSignal = 0;
               }
             }
             if (ispiKK)
@@ -821,19 +833,16 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                 indexMCpiKK = GetSignalHistoIndex(iPtBin);
                 fYVsPtSig->Fill(ptCand, rapid);
                 fChanHist[1]->Fill(retCodeAnalysisCuts);
-                isMCSignal = 1;
               }
               else
               {
                 indexMCpiKK = GetReflSignalHistoIndex(iPtBin);
                 fChanHist[3]->Fill(retCodeAnalysisCuts);
-                isMCSignal = 0;
               }
             }
           }
           else
           {
-            Bool_t isCandInjected = kFALSE;
             if(fKeepOnlyBkgFromHIJING) {
                 isCandInjected = AliVertexingHFUtils::IsCandidateInjected(d, mcHeader, arrayMC);
             }
@@ -928,7 +937,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         }
 
         ///////////////////// CODE FOR NSPARSES /////////////////////////
-
         if (fFillSparse && (isPhiKKpi || isPhipiKK))
         {
           Double_t deltaMassKK = -999.;
@@ -1129,9 +1137,81 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           }
         }
 
+        ///////////////////CODE FOR ML TREE/////////////////////////////
+        if (fCreateMLtree && (isPhiKKpi || isPhipiKK))
+        {
+          AliAODPidHF *Pid_HF = fAnalysisCuts->GetPidHF();
+
+          if (isPhiKKpi)
+          {
+            bool issignal = kFALSE;
+            bool isbkg = kFALSE;
+            bool isprompt = kFALSE;
+            bool isFD = kFALSE;
+            bool isrefl = kFALSE;
+
+            if(fReadMC) {
+              if(labDs >= 0) {
+                if(orig == 4)
+                  isprompt = kTRUE;
+                else if(orig == 5)
+                  isFD = kTRUE;
+
+                if(orig == 4 || orig == 5) {
+                  if(pdgCode0 == 321)
+                    issignal = kTRUE;
+                  else if(pdgCode0 == 211)
+                    isrefl = kTRUE;
+                }
+              } else {
+                if(!isCandInjected)
+                  isbkg = kTRUE;
+                if(labDplus >= 0)
+                  fMLhandler->SetIsDplustoKKpi(kTRUE);
+              }
+            }
+
+            fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
+            fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
+            fMLhandler->FillTree();
+          }
+
+          if (isPhipiKK)
+          {
+            bool issignal = kFALSE;
+            bool isbkg = kFALSE;
+            bool isprompt = kFALSE;
+            bool isFD = kFALSE;
+            bool isrefl = kFALSE;
+
+            if(fReadMC) {
+              if(labDs >= 0) {
+                if(orig == 4)
+                  isprompt = kTRUE;
+                else if(orig == 5)
+                  isFD = kTRUE;
+
+                if(orig == 4 || orig == 5) {
+                  if(pdgCode0 == 211)
+                    issignal = kTRUE;
+                  else if(pdgCode0 == 321)
+                    isrefl = kTRUE;
+                }
+              } else {
+                if(!isCandInjected)
+                  isbkg = kTRUE;
+                if(labDplus >= 0)
+                  fMLhandler->SetIsDplustoKKpi(kTRUE);
+              }
+            }
+
+            fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
+            fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
+            fMLhandler->FillTree();
+          }
+        }
 
         ////////////////////////////////////////////////////////////////
-
         if (fDoCutVarHistos)
         {
           Double_t dlen = d->DecayLength();
@@ -1161,10 +1241,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           Double_t dca = d->GetDCA();
           Double_t ptmax = 0;
           for (Int_t i = 0; i < 3; i++)
-          {
             if (d->PtProng(i) > ptmax)
               ptmax = d->PtProng(i);
-          }
 
           fCosPHist[index]->Fill(cosp);
           fCosPxyHist[index]->Fill(cospxy);

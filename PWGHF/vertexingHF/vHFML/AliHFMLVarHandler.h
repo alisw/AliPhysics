@@ -61,9 +61,9 @@ class AliHFMLVarHandler : public TObject
         void FillTree();
         
         //common methods
-        void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
-        void SetAddSingleTrackVars(bool add) {fAddSingleTrackVar=add;}
-        void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
+        void SetOptPID(int PIDopt) {fPidOpt = PIDopt;}
+        void SetAddSingleTrackVars(bool add = true) {fAddSingleTrackVar = add;}
+        void SetFillOnlySignal(bool fillopt = true) {fFillOnlySignal = fillopt;}
 
     protected:  
         //constant variables
@@ -85,7 +85,7 @@ class AliHFMLVarHandler : public TObject
         float ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF* cand, float bfield);
         float GetTOFmomentum(AliAODTrack* track, AliAODPidHF* pidrespo);
 
-        TTree* fTreeVar = nullptr;                                  /// tree with variables
+        TTree* fTreeVar = nullptr;                                  //!<! tree with variables
         int fPidOpt = kNsigmaPID;                                   /// option for PID variables
         bool fAddSingleTrackVar = false;                            /// add single-track variables
         bool fFillOnlySignal = false;                               /// flag to enable only signal filling

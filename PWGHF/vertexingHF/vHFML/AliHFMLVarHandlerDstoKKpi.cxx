@@ -35,12 +35,13 @@ AliHFMLVarHandlerDstoKKpi::AliHFMLVarHandlerDstoKKpi() : AliHFMLVarHandler()
 }
 
 //________________________________________________________________
-AliHFMLVarHandlerDstoKKpi::AliHFMLVarHandlerDstoKKpi(int PIDopt) : AliHFMLVarHandler(PIDopt)
+AliHFMLVarHandlerDstoKKpi::AliHFMLVarHandlerDstoKKpi(int PIDopt, int massopt) : AliHFMLVarHandler(PIDopt)
 {
     //
     // Standard constructor
     //
     fNProngs=3; // --> cannot be changed
+    SetMassKKOption(massopt);
 }
 
 //________________________________________________________________
@@ -112,13 +113,13 @@ bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfie
     float cospikphi =-2;
     if(fMassKKOpt==kDeltaMassKKPhi) 
         massPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
-    if(masshypo==0){ //phiKKpi
+    if(masshypo==kKKpi){ //phiKKpi
         fInvMass = ((AliAODRecoDecayHF3Prong*)cand)->InvMassDsKKpi();
         fMassKK = TMath::Abs(((AliAODRecoDecayHF3Prong*)cand)->InvMass2Prongs(0,1,321,321)-massPhi);
         fCosPiDs = ((AliAODRecoDecayHF3Prong*)cand)->CosPiDsLabFrameKKpi();
         cospikphi = ((AliAODRecoDecayHF3Prong*)cand)->CosPiKPhiRFrameKKpi();
     }
-    else if(masshypo==1){ //phipiKK
+    else if(masshypo==kpiKK){ //phipiKK
         fInvMass = ((AliAODRecoDecayHF3Prong*)cand)->InvMassDspiKK();
         fMassKK = TMath::Abs(((AliAODRecoDecayHF3Prong*)cand)->InvMass2Prongs(1,2,321,321)-massPhi);
         fCosPiDs = ((AliAODRecoDecayHF3Prong*)cand)->CosPiDsLabFramepiKK();

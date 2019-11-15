@@ -1,5 +1,5 @@
 AliAnalysisTaskSEDs *AddTaskDs(Int_t system = AliAnalysisTaskSEDs::kpp, Bool_t readMC = kFALSE, Int_t AODProtection = 1, 
-                               Bool_t storeNsparse = kFALSE,  TString filename = "", TString postname = "", 
+                               Bool_t storeNsparse = kFALSE,  TString filename = "", TString postname = "", Bool_t createMLtree = kFALSE,
                                Bool_t applyML = kFALSE, TString confFileML = "", TString cutObjName = "AnalysisCuts", 
                                Bool_t storeNsparseDplus =  kFALSE, Bool_t doCutVarHistos = kFALSE,   Bool_t storeNsparseImpPar = kFALSE)
 {
@@ -35,6 +35,9 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system = AliAnalysisTaskSEDs::kpp, Bool_t r
   dsTask->SetReadMC(readMC);
   dsTask->SetAODMismatchProtection(AODProtection);
   dsTask->SetFillNSparse(storeNsparse);
+  dsTask->SetCreateMLTree(createMLtree);
+  if(createMLtree && readMC)
+    dsTask->SetFillOnlySignalInMLtree();
   dsTask->SetDoMLApplication(applyML);
   if(applyML)
     dsTask->SetMLConfigFile(confFileML);
@@ -65,12 +68,18 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system = AliAnalysisTaskSEDs::kpp, Bool_t r
   AliAnalysisDataContainer *coutputDsNorm = mgr->CreateContainer(name, AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer,
 								                                                 outputfile.Data());
 
-  //coutputDs2->SetSpecialOutput();
+  AliAnalysisDataContainer *coutputDsML = nullptr;
+  if(createMLtree) {
+    name =  Form("coutputDsML%s", postname);
+    coutputDsML = mgr->CreateContainer(name, TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  }
 
   mgr->ConnectInput(dsTask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(dsTask, 1, coutputDs);
   mgr->ConnectOutput(dsTask, 2, coutputDsCuts);
   mgr->ConnectOutput(dsTask, 3, coutputDsNorm);
+  if(createMLtree)
+     mgr->ConnectOutput(dsTask, 4, coutputDsML);
 
   return dsTask;
 }

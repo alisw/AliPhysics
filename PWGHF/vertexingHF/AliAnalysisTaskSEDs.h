@@ -17,10 +17,12 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <THnSparse.h>
+#include <TTree.h>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliHFMLResponseDstoKKpi.h"
+#include "AliHFMLVarHandlerDstoKKpi.h"
 
 class AliNormalizationCounter;
 
@@ -34,10 +36,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts);
   virtual ~AliAnalysisTaskSEDs();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
-  void SetWriteOnlySignalInNtuple(Bool_t opt=kTRUE){ // TO USE FOR ML TUPLE
-    if(fReadMC) fWriteOnlySignal=opt;
-    else AliError("fReadMC has to be kTRUE");
-  }
   void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}
   void SetFillNSparseDplus(Bool_t fill=kTRUE){fFillSparseDplus=fill;if(fill)fFillSparse=fill;}
   void SetFillNSparseImpPar(Bool_t fill=kTRUE){fFillImpParSparse=fill;}
@@ -62,6 +60,14 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
   void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
   void EnablePIDMLSparses(Bool_t enable=kTRUE) {fEnablePIDMLSparses=enable;}
+  /// methods for ML tree creation
+  void SetCreateMLTree(Bool_t flag = kTRUE) {fCreateMLtree = flag;}
+  void SetMLTreePIDopt(int opt) {fPIDopt = opt;} // default AliHFMLVarHandlerDstoKKpi::kNsigmaDetAndCombPID
+  void SetMLTreeAddTrackVar(Bool_t flag = kTRUE) {fAddSingleTrackVar = flag;}
+  void SetFillOnlySignalInMLtree(Bool_t opt = kTRUE){
+    if(fReadMC) fFillOnlySignal = opt;
+    else AliError("fReadMC has to be kTRUE");
+  }
   
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -144,7 +150,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH3F*   fPtProng2Hist3D = nullptr;            //!<! Pt prong2 vs Ds mass vs pt
   Int_t   fSystem = kpp;                        /// 0 = pp, 1 = pPb,PbPb
   Bool_t  fReadMC = kFALSE;                     /// flag for access to MC
-  Bool_t  fWriteOnlySignal = kFALSE;            /// flag to control ntuple writing in MC
   Bool_t  fDoCutVarHistos = kTRUE;              /// flag to create and fill histos with distributions of cut variables
   Bool_t  fUseSelectionBit = kFALSE;            /// flag for usage of HasSelectionBit
   Bool_t  fFillSparse = kTRUE;                  /// flag for usage of THnSparse
@@ -183,12 +188,19 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   /// variables for ML application
   Bool_t fApplyML = kFALSE;                     /// flag to enable ML application
   TString fConfigPath = "";                     /// path to ML config file
-  AliHFMLResponseDstoKKpi* fMLResponse = nullptr; //!<! object to handle ML response
-  THnSparseF* fnSparseNsigmaPIDVsML[2] = {};    //!<! histograms with PID Nsigma variables vs ML output
-  Bool_t fEnablePIDMLSparses = kFALSE;          /// flag to enable control histograms for PID with ML
+  AliHFMLResponseDstoKKpi* fMLResponse = nullptr;  //!<! object to handle ML response
   Int_t fNMLBins = 300;                         /// number of bins for ML output axis in THnSparse
   Double_t fMLOutputMin = 0.85;                 /// min for ML output axis in THnSparse
   Double_t fMLOutputMax = 1.0;                  /// max for ML output axis in THnSparse
+  Bool_t fEnablePIDMLSparses = kFALSE;          /// flag to enable control histograms for PID with ML
+  THnSparseF* fnSparseNsigmaPIDVsML[2] = {};    //!<! histograms with PID Nsigma variables vs ML output
+  /// variables for ML tree creation
+  Bool_t fCreateMLtree = kFALSE;
+  AliHFMLVarHandlerDstoKKpi* fMLhandler = nullptr;  //!<! object to handle ML tree creation and filling
+  TTree* fMLtree = nullptr;                     //!<! tree with candidates for ML
+  int fPIDopt = AliHFMLVarHandlerDstoKKpi::kNsigmaDetAndCombPID;  /// option for PID variables
+  Bool_t fAddSingleTrackVar = kFALSE;           /// option to store single track variables
+  Bool_t fFillOnlySignal = kFALSE;              /// option to store only signal when using MC
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskSEDs,37);       /// AliAnalysisTaskSE for Ds mass spectra
