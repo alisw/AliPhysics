@@ -38,6 +38,8 @@
 #pragma link C++ class AliIdentifiedPrimarySelector+;
 #pragma link C++ class AliIdentifiedPrimaryCuts+;
 
+
+
 // Old tasks
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
 #pragma link C++ class AliPrimaryPionSelector+;

@@ -30,7 +30,7 @@ void AddTask_GammaConvV1_pp(
     Int_t     enableQAPhotonTask            = 0,        // enable additional QA task
     Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
     Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-    Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+    Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
     TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
     Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -1297,57 +1297,57 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0152103500000000"); // eta < 0.8
   } else if (trainConfig == 719) { // R 5-180 and remove r bin 55-72
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin 
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin
     cuts.AddCutPCM("00010113", "0dd00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // use 5-55 bin only
-  } else if (trainConfig == 720) { // R 5-180 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-  } else if (trainConfig == 721) { // R 5-180 
-    cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dc00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-  } else if (trainConfig == 722) { // R 5-180 
-    cuts.AddCutPCM("00010113", "0dh00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0di00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dj00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-  } else if (trainConfig == 723) { // R 5-180 
-    cuts.AddCutPCM("00010113", "0dk00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dl00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dg00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-  } else if (trainConfig == 724) { // R 5-180  // Test smearing parameters. Changed smaring cut 08.11.2019  
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500900000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500m00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500n00000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 720) { // R 5-180
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+  } else if (trainConfig == 721) { // R 5-180
+    cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dc00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+  } else if (trainConfig == 722) { // R 5-180
+    cuts.AddCutPCM("00010113", "0dh00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0di00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dj00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+  } else if (trainConfig == 723) { // R 5-180
+    cuts.AddCutPCM("00010113", "0dk00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dl00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dg00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+  } else if (trainConfig == 724) { // R 5-180  // Test smearing parameters. Changed smaring cut 08.11.2019
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500900000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500m00000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500n00000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 725) { // R 5-180  // Test smearing parameters -1
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500d00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500e00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500f00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500g00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500d00000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500e00000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500f00000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500g00000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 726) { // R 5-180  // Test smearing parameters -1
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500h00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500i00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500j00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500h00000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500i00000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500j00000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 727) { // R 5-180  // Test smearing parameters -1
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500k00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500l00000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500d00000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500k00000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500l00000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500d00000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 728) { // R 5-180  // Cat 1, cat 2+3
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0424000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0424000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0424000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0424000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 729) { // R 5-180  // Multiplicity selections
-    cuts.AddCutPCM("n0110113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("n1210113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("n2510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("n5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("n0110113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("n1210113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("n2510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("n5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 730) { // R 5-180  // Multiplicity selections
-    cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 731) { // R 5-180  // Sphericity selections
-    cuts.AddCutPCM("h0510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("h5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("h0a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("h0510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("h5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("h0a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
 
     // config like 70X but to be used with weights +50
   } else if (trainConfig == 752) { // as iConfig 702 to be used with MBW
@@ -1420,46 +1420,46 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0152103500000000"); // eta < 0.8
   } else if (trainConfig == 769) { // R 5-180 and remove r bin 55-72
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin 
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin
     cuts.AddCutPCM("00010113", "0dd00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // use 5-55 bin only
-  } else if (trainConfig == 770) { // R 5-180 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-  } else if (trainConfig == 771) { // R 5-180 
-    cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dc00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 770) { // R 5-180
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+  } else if (trainConfig == 771) { // R 5-180
+    cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dc00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
 
-  } else if (trainConfig == 772) { // R 5-180 
-    cuts.AddCutPCM("00010113", "0dh00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0di00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dj00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 772) { // R 5-180
+    cuts.AddCutPCM("00010113", "0dh00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0di00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dj00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
 
-  } else if (trainConfig == 773) { // R 5-180 
-    cuts.AddCutPCM("00010113", "0dk00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dl00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dg00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+  } else if (trainConfig == 773) { // R 5-180
+    cuts.AddCutPCM("00010113", "0dk00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dl00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dg00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
 
 
   } else if (trainConfig == 778) { // R 5-180  // Cat 1, cat 2+3
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0424000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0424000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0424000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0424000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 779) { // R 5-180  // Multiplicity selections
-    cuts.AddCutPCM("n0110113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("n1210113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("n2510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("n5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("n0110113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("n1210113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("n2510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("n5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 780) { // R 5-180  // Sphericity selections
-    cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 781) { // R 5-180  // Sphericity selections
-    cuts.AddCutPCM("h0510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("h5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
-    cuts.AddCutPCM("h0a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts 
+    cuts.AddCutPCM("h0510113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("h5a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("h0a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
 
- 
+
   //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
   } else if (trainConfig == 1001){
     cuts.AddCutPCM("00000113", "00200009397300008250400000", "0163103100900000"); // new pi0/eta cut 2.76TeV
