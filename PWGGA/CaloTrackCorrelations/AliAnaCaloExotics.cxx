@@ -1102,10 +1102,12 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
 
   TCustomBinning fBinning;
   fBinning.SetMinimum(-1.0);
-  fBinning.AddStep(0.0 ,0.100); // 10
-  fBinning.AddStep(0.50,0.050); // 25
-  fBinning.AddStep(0.90,0.020); // 20 
-  fBinning.AddStep(1.01,0.002); // 50 
+  fBinning.AddStep(0.000,0.1000); // 10
+  fBinning.AddStep(0.500,0.0500); // 10
+  fBinning.AddStep(0.700,0.0200); // 10
+  fBinning.AddStep(0.800,0.0100); // 10
+  fBinning.AddStep(0.900,0.0050); // 20 
+  fBinning.AddStep(1.002,0.0020); // 51 
   TArrayD fBinsArray;
   fBinning.CreateBinEdges(fBinsArray);
   
