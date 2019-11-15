@@ -1636,21 +1636,21 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   fSparseCutVars[0]=new THnSparseF("hMassPtCutVarsAll",
 					"Mass vs. pt vs. cut vars - All",
-					kVarForSparse,nbins,xmin,xmax);
+					nVarForSparse,nbins,xmin,xmax);
   fSparseCutVars[1]=new THnSparseF("hMassPtCutVarsPrompt",
 					"Mass vs. pt vs. cut vars - promptD",
-					kVarForSparse,nbins,xmin,xmax);
+					nVarForSparse,nbins,xmin,xmax);
   fSparseCutVars[2]=new THnSparseF("hMassPtCutVarsBfeed",
 					"Mass vs. pt vs. cut vars - DfromB",
-					kVarForSparseFD,nbinsFD,xminFD,xmaxFD);
+					nVarForSparseFD,nbinsFD,xminFD,xmaxFD);
 
   for(Int_t iHisto = 0; iHisto < 2; iHisto++){
-    for(Int_t iax=0; iax<kVarForSparse; iax++) {
+    for(Int_t iax=0; iax<nVarForSparse; iax++) {
       fSparseCutVars[iHisto]->GetAxis(iax)->SetTitle(axTit[iax].Data());
       fOutput->Add(fSparseCutVars[iHisto]);
     }
   }
-  for(Int_t iax=0; iax<kVarForSparseFD; iax++) {
+  for(Int_t iax=0; iax<nVarForSparseFD; iax++) {
       fSparseCutVars[2]->GetAxis(iax)->SetTitle(axTitFD[iax].Data());
   }
   fOutput->Add(fSparseCutVars[2]);
@@ -1711,7 +1711,7 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
   fMCAccBFeed = new THnSparseF("hMCAccBFeed","kStepMCAcceptance pt vs. y vs. ptB - DfromB",kVarForSparseAccFD,nbinsFD,xminFD,xmaxFD);
   fMCAccBFeed->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccBFeed->GetAxis(1)->SetTitle("y");
-  fMCAccBFeed->GetAxis(3)->SetTitle("p_{T}^{B} (GeV/c)");
+  fMCAccBFeed->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
 
   fOutput->Add(fMCAccPrompt);
   fOutput->Add(fMCAccBFeed);
