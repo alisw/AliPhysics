@@ -152,6 +152,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   //La La             7
   //La bar La         8
   //bar La bar La     9
+
   const int nPairs = 10;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
@@ -266,6 +267,14 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
+
+  if (isMC) {
+    config->SetMomentumResolution(true);//kstar true vs. kstar reco
+  } else {
+    std::cout
+        << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+  }
+
 
   if (Systematic) {
     if (suffix == "1") {
@@ -1320,6 +1329,48 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
   mgr->ConnectOutput(task, 10, coutputResultsSampleQA);
+
+   if (isMC) {
+    AliAnalysisDataContainer *coutputTrkCutsMC;
+    TString TrkCutsMCName = Form("%sTrkCutsMC%s",addon.Data(),suffix.Data());
+    coutputTrkCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        TrkCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
+    mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
+
+    AliAnalysisDataContainer *coutputv0CutsMC;
+    TString v0CutsMCName = Form("%sv0CutsMC%s",addon.Data(),suffix.Data());
+    coutputv0CutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        v0CutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), v0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 12, coutputv0CutsMC);
+
+    AliAnalysisDataContainer *coutputAntiTrkCutsMC;
+    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s",addon.Data(),suffix.Data());
+    coutputAntiTrkCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        AntiTrkCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
+    mgr->ConnectOutput(task, 13, coutputAntiTrkCutsMC);
+
+    AliAnalysisDataContainer *coutputAntiv0CutsMC;
+    TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s",addon.Data(),suffix.Data());
+    coutputAntiv0CutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        Antiv0CutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
+   }
 
   return task;
 }
