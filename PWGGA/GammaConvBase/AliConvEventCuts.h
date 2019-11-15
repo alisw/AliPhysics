@@ -19,7 +19,6 @@
 #include "AliAnalysisManager.h"
 #include "TRandom3.h"
 #include "AliVCaloTrigger.h"
-#include "AliEmcalTriggerDecisionContainer.h" ///home/joshua/alice/AliPhysics/PWG/EMCAL/EMCALtrigger/
 
 class AliESDEvent;
 class AliAODEvent;

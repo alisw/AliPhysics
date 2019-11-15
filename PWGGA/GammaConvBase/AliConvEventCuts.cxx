@@ -53,6 +53,8 @@
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliEmcalTriggerDecisionContainer.h"
+
 
 
 class iostream;
@@ -4183,6 +4185,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       if (clus->GetNCells()<2) {
         continue;
       }
+      iSuperModule = 0;
       // Get the supermodule from cluster position
       if(fHistoTriggThresh->GetNbinsX() > 1){
         if (clus->IsEMCAL()){   // just needed to get the correct supermodule number if EMCal trigger mimick is configured supermodule wise

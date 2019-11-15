@@ -72,8 +72,8 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD)
-set(ALIPHYSICS_DEPENDENCIES EMCALbase PWGCaloTrackCorrBase PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger PWGCaloTrackCorrBase OADB)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger)
+set(ALIPHYSICS_DEPENDENCIES EMCALbase PWGCaloTrackCorrBase PWGCaloTrackCorrBase OADB)
 
 # Generate the ROOT map
 # Dependecies
