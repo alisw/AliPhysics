@@ -86,17 +86,32 @@ public:
 //  void         SetCellMinEnergy(Int_t i, Float_t en) 
 //                           { if ( i < fgkNCellMinEnBins && i >= 0 ) fCellMinEnBins[i] = en ; }
   
-  void         SwitchOnFill1CellHisto()     { fFill1CellHisto    = kTRUE  ; }
-  void         SwitchOffFill1CellHisto()    { fFill1CellHisto    = kFALSE ; }
+  void         SwitchOnFill1CellHisto()             { fFill1CellHisto            = kTRUE  ; }
+  void         SwitchOffFill1CellHisto()            { fFill1CellHisto            = kFALSE ; }
  
-  void         SwitchOnFillCellHisto()      { fFillCellHisto     = kTRUE  ; }
-  void         SwitchOffFillCellHisto()     { fFillCellHisto     = kFALSE ; }
+  void         SwitchOnFillCellHisto()              { fFillCellHisto             = kTRUE  ; }
+  void         SwitchOffFillCellHisto()             { fFillCellHisto             = kFALSE ; }
   
-  void         SwitchOnFillMatchingHisto()  { fFillMatchingHisto = kTRUE  ; }
-  void         SwitchOffFillMatchingHisto() { fFillMatchingHisto = kFALSE ; }
+  void         SwitchOnFillMatchingHisto()          { fFillMatchingHisto         = kTRUE  ; }
+  void         SwitchOffFillMatchingHisto()         { fFillMatchingHisto         = kFALSE ; }
  
-  void         SwitchOnFillFractionSameDiffCells()  { fFillSameDiffFracHisto = kTRUE  ; }
-  void         SwitchOffFillFractionSameDiffCells() { fFillSameDiffFracHisto = kFALSE ; }
+  void         SwitchOnFillFractionSameDiffCells()  { fFillSameDiffFracHisto     = kTRUE  ; }
+  void         SwitchOffFillFractionSameDiffCells() { fFillSameDiffFracHisto     = kFALSE ; }
+  
+  void         SwitchOnFillExoEnMinCutHisto()       { fFillExoEnMinCut           = kTRUE  ; }
+  void         SwitchOffFillExoEnMinCutHisto()      { fFillExoEnMinCut           = kFALSE ; }
+  
+  void         SwitchOnFillAllSameTCardHisto()      { fFillAllCellSameTCardHisto = kTRUE  ; }
+  void         SwitchOffFillAllSameTCardHisto()     { fFillAllCellSameTCardHisto = kFALSE ; }
+  
+  void         SwitchOnFillPerSMHisto()             { fFillPerSMHisto            = kTRUE  ; }
+  void         SwitchOffFillPerSMHisto()            { fFillPerSMHisto            = kFALSE ; }
+  
+  void         SwitchOnClusterColRowHisto()         { fFillClusterColRowHisto    = kTRUE  ; }
+  void         SwitchOffFillClusterColRowHisto()    { fFillClusterColRowHisto    = kFALSE ; }
+  
+  void         SwitchOnFillOpenTimeHisto()          { fFillOpenTimeHisto         = kTRUE  ; }
+  void         SwitchOffFillOpenTimeHisto()         { fFillOpenTimeHisto         = kFALSE ; }
   
   void         SetConstantTimeShift(Float_t shift) { fConstantTimeShift = shift  ; }
   
@@ -125,10 +140,6 @@ public:
   static const Int_t fgkNEBins = 12;
   Float_t  fEnergyBins[fgkNEBins];              ///<  Energy bins for some histograms
   
-//  /// Total number of cell in cluster minimum  energy
-//  static const Int_t fgkNCellMinEnBins = 10;
-//  Float_t  fCellMinEnBins[fgkNCellMinEnBins];   ///<  Energy bins for some histograms 
-  
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
  
   Bool_t   fFill1CellHisto;                     ///<  Fill histograms for 1 cell clusters
@@ -136,6 +147,16 @@ public:
   Bool_t   fFillMatchingHisto;                  ///<  Fill histograms for track-cluster matching
   
   Bool_t   fFillSameDiffFracHisto;              ///<  Fill histograms with fraction of cells or energy cells in same or different T-Card
+  
+  Bool_t   fFillExoEnMinCut;                    ///<  Fill histograms with exoticity for different EMin cuts
+  
+  Bool_t   fFillAllCellSameTCardHisto;          ///<  Fill histograms when all cells are in same  T-Card
+  
+  Bool_t   fFillPerSMHisto;                     ///<  Fill histograms per SM
+  
+  Bool_t   fFillClusterColRowHisto;             ///<  Fill histograms with cluster coll and row size
+
+  Bool_t   fFillOpenTimeHisto;                  ///<  Fill histograms when time cut not applied (not needed in MC)
   
   Float_t  fConstantTimeShift;                  ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
   
@@ -149,7 +170,6 @@ public:
   TH1F *   fhNClusterPerEventExotic;             //!<! N clusters with F+ > 0.97  and E > 5 GeV per event
   TH1F *   fhNClusterPerEventExotic1Cell;        //!<! N clusters with ncell = 1  and E > 5 GeV per event
   TH1F *   fhNClusterPerEventExoticNCell;        //!<! N clusters with F+ > 0.97 and ncell > 1 and E > 5 GeV per event
- 
   
   TH2F *   fh2NClusterPerEventNCellHigh20;        //!<! N clusters total vs with NCells > 20 per event
   TH2F *   fh2NClusterPerEventNCellHigh12;        //!<! N clusters total vs with NCells > 12 per event
@@ -158,20 +178,18 @@ public:
   TH2F *   fh2NClusterPerEventExotic1Cell;        //!<! N clusters total vs with ncell = 1  and E > 5 GeV per event
   TH2F *   fh2NClusterPerEventExoticNCell;        //!<! N clusters total vs with F+ > 0.97 and ncell > 1 and E > 5 GeV per event
   TH2F *   fh2NClusterPerEventExoticAmpMax;       //!<! Highest energy exotic amp max vs n clusters
-  //
-  // Calorimeter Clusters
-    
-  //TH2F *   fhExoticityECellMinCut[fgkNCellMinEnBins]; //!<! Exoticity vs cluster energy. Exoticity calculated with different cell energy thresholds
-  TH3F *   fhExoticityECellMinCut;              //!<! Exoticity vs Min E cell threshold vs cluster energy
   
+  // Calorimeter Clusters
+  //
+
+  // Exoticity
+  //
   TH2F *   fhExoticityEClus;                    //!<! Exoticity vs cluster energy
-  TH2F *   fhExoticityWEClus;                   //!<! Weighted exoticity vs Min E cell threshold vs cluster energy
-  TH2F *   fhExoticityEClusAllSameTCard;        //!<! Exoticity vs energy, all cells in same T-Card
   TH3F *   fhExoticityEClusPerSM;               //!<! Exoticity vs cluster energy, per SM
   TH2F *   fhExoticityEMaxCell;                 //!<! Exoticity vs energy of highest energy cell in cluster
   TH2F *   fhExoticityEClusTrackMatch;          //!<! Exoticity vs cluster energy, track matched
   TH2F *   fhExoticity1Cell;                    //!<! Exoticity vs energy for 1 cell clusters
-
+  
   TH2F *   fhNCellsPerCluster;                  //!<! Cluster energy vs N cells in cluster
   TH2F *   fhNCellsPerClusterW;                 //!<! Cluster energy vs N cells in cluster with w > 0
   TH2F *   fhNCellsPerClusterEMaxCell;          //!<! Cell max energy vs N cells in cluster
@@ -181,9 +199,7 @@ public:
   TH2F *   fhNCellsPerClusterEMaxCellOpenTime;  //!<! Cell max energy vs N cells in cluster, no time cut
   TH2F *   fhNCellsPerClusterWEMaxCellOpenTime; //!<! Cell max energy vs N cells in cluster with w > 0, no time cut
 
-  TH2F *   fhNCellsPerClusterAllSameTCard;      //!<! Cluster energy vs N cells, all cells in same T-Card  
   TH3F *   fhNCellsPerClusterExo;               //!<! Cluster energy vs N cells in cluster vs Exoticity   
-  TH3F *   fhNCellsPerClusterExoW;              //!<! Cluster energy vs N cells in cluster vs Weighted Exoticity   
   TH3F *   fhNCellsPerClusterPerSM;             //!<! Cluster energy vs N cells in cluster, per SM
   TH3F *   fhNCellsPerClusterWPerSM;            //!<! Cluster energy vs N cells in cluster, per SM
   TH3F *   fhNCellsPerClusterExoPerSM[20];      //!<! Cluster energy vs N cells in cluster vs Exoticity, per SM  
@@ -192,14 +208,12 @@ public:
   TH3F *   fhNCellsPerClusterM02;               //!<! Cluster energy vs N cells in cluster vs M02   
 
   TH3F *   fhEtaPhiGridExoEnCut  ;              //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1
-  TH3F *   fhEtaPhiGridExoEnCutSameFracCut;     //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff = 0
   TH3F *   fhEtaPhiGridEnExoCut  ;              //!<! column vs row vs energy when F+ > 0.97 and n cells > 1
   TH3F *   fhEtaPhiGridEn1Cell;                 //!<! column vs row vs energy for 1 cell clusters 
   TH3F *   fhEtaPhiGridEnHighNCells;            //!<! column vs row vs energy for n cell >  fNCellCut
   TH3F *   fhEtaPhiGridNCellEnCut;              //!<! column vs row vs n cells for E >  fEMinForExo
   
   TH3F *   fhTimeEnergyExo;                     //!<! Cluster Energy vs Time vs Exoticity, n cells > 1
-  TH3F *   fhTimeEnergyExoW;                    //!<! Cluster Energy vs Time vs Weighted Exoticity, n cells > 1
   TH2F *   fhTimeEnergy1Cell;                   //!<! Cluster Energy vs Time vs n cells = 1
   TH3F *   fhTimeDiffClusCellExo;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity
   TH3F *   fhTimeDiffAmpClusCellExo;            //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs secondary cell energy vs exoticity for E > fEMinForExo
@@ -209,13 +223,12 @@ public:
   TH3F *   fhTimeEnergyNCellsW;                 //!<! Cluster Energy vs Time vs n cells for w > 0
   TH1F *   fhTimeNCellCut;                      //!<! Cluster Time vs n cells > fNCellCut, larger time range 
   
-  TH2F *   fhM02EnergyAllSameTCard;             //!<! Cluster M02 vs Energy, all cells in same T-Card
   TH3F *   fhM02EnergyExo;                      //!<! Cluster M02 vs Energy vs exoticity
-  TH3F *   fhM02EnergyExoW;                     //!<! Cluster M02 vs Energy vs Weighted exoticity
   TH3F *   fhM20EnergyExoM02MinCut;             //!<! Cluster M20 vs Energy vs exoticity for M02 > 0.1
   TH3F *   fhM02ExoNCells[fgkNEBins];           //!<! Cluster M02 vs exoticity vs n cells, different E bins
   
   // Different n cells definitions
+  //
   TH2F *   fhNCellsPerClusterSame;              //!<! Cluster E vs n cells in same T-Card as max E cell
   TH2F *   fhNCellsPerClusterDiff;              //!<! Cluster E vs n cells in different T-Card as max E cell 
   TH2F *   fhNCellsPerClusterSame5;             //!<! Cluster E vs n cells in same T-Card as max E cell, neighbour cells
@@ -289,17 +302,31 @@ public:
   TH3F *   fhCellMaxClusterEnRatioNCellW;       //!<!  Cluster E vs E cell max / E cluster vs n cells with w > 0
   TH3F *   fhCellMaxClusterEnRatioExo;          //!<!  Cluster E vs E cell max / E cluster vs n exoticity
 
-  
   // Cluster column-row
+  //
   TH3F *   fhClusterColRowExo[2][fgkNEBins];     //!<! Cluster col-row centred in cell max vs exoticity for different cluster E bins
   //TH2F *   fhClusterColRow   [2][fgkNEBins];     //!<! Cluster col-row centred in cell max for different cluster E bins
   //TH3F *   fhClusterColRowExoW[2][fgkNEBins];    //!<! Cluster col-row centred in cell max vs exoticity and w>0 for different cluster E bins 
 
   TH3F *   fhClusterColRowPerSMHighNCell[fgkNEBins]; //!<! Cluster col-row centred in cell max vs SM for different cluster E bins and n cells > fHighNCellCut
 
-  
+  // Recalculate exiticity for different EMin thresholds, only when fFillExoEnMinCut=true
+  //
+  TH2F *   fhExoticityWEClus;                   //!<! Weighted exoticity vs Min E cell threshold vs cluster energy
+  TH3F *   fhNCellsPerClusterExoW;              //!<! Cluster energy vs N cells in cluster vs Weighted Exoticity   
+  TH3F *   fhTimeEnergyExoW;                    //!<! Cluster Energy vs Time vs Weighted Exoticity, n cells > 1
+  TH3F *   fhM02EnergyExoW;                     //!<! Cluster M02 vs Energy vs Weighted exoticity
+  TH3F *   fhExoticityECellMinCut;              //!<! Exoticity vs Min E cell threshold vs cluster energy
+    
+  // Apply cut on number of cells of cluster all in same TCard
+  //
+  TH2F *   fhExoticityEClusAllSameTCard;        //!<! Exoticity vs energy, all cells in same T-Card
+  TH2F *   fhM02EnergyAllSameTCard;             //!<! Cluster M02 vs Energy, all cells in same T-Card
+  TH2F *   fhNCellsPerClusterAllSameTCard;      //!<! Cluster energy vs N cells, all cells in same T-Card  
+  TH3F *   fhEtaPhiGridExoEnCutSameFracCut;     //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff = 0
+
   // Cluster-Track matching
-  
+  //
   TH3F *   fhTrackMatchedDEtaNegExo;            //!<! Eta distance between - track and cluster vs cluster E vs exoticity, n cells > 1
   TH3F *   fhTrackMatchedDPhiNegExo;            //!<! Phi distance between - track and cluster vs cluster E vs exoticity, n cells > 1
   TH3F *   fhTrackMatchedDEtaDPhiNegExo;        //!<! Eta vs Phi distance between - track and cluster vs exoticity, E cluster > fEMinForExo and n cells > 1
