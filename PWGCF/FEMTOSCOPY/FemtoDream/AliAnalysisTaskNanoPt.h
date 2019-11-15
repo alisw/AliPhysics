@@ -63,14 +63,18 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts *fAntiProtonTrack;          //
   AliFemtoDreamTrackCuts *fDeuteronTrack;              //
   AliFemtoDreamTrackCuts *fAntiDeuteronTrack;          //
- 
+
   int fTrackBufferSize; //
   AliVTrack **fGTI;  //!
   TList *fEvtList;//!
   TList *fProtonList;//!
+  TList* fProtonMCList;//!
   TList *fAntiProtonList;//!
+  TList* fAntiProtonMCList;//!
   TList *fDeuteronList;//!
+  TList* fDeuteronMCList;//!
   TList *fAntiDeuteronList;//!
+  TList* fAntiDeuteronMCList;//!
 
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
