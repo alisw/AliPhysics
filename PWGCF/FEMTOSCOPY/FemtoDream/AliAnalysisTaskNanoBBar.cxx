@@ -6,11 +6,14 @@
  */
 #include "AliAnalysisTaskNanoBBar.h"
 #include "AliNanoAODTrack.h"
+#include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisTaskNanoBBar)
 AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar()
     : AliAnalysisTaskSE(),
       fisLightWeight(false),
+      fIsMC(false),
       fQA(nullptr),
       fEvent(nullptr),
       fEventCuts(nullptr),
@@ -44,6 +47,7 @@ AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar()
 AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar(const char* name, bool isMC)
     : AliAnalysisTaskSE(name),
       fisLightWeight(false),
+      fIsMC(false),
       fQA(nullptr),
       fEvent(nullptr),
       fEventCuts(nullptr),
@@ -80,8 +84,8 @@ AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar(const char* name, bool isMC)
   DefineOutput(6, TList::Class());  //Output for the AntiLambda Cuts
   DefineOutput(7, TList::Class());  //Output for the Results
   DefineOutput(8, TList::Class());  //Output for the Results QA
-  DefineOutput(9, TList::Class());  //Output for the Results
-  DefineOutput(10, TList::Class());  //Output for the Results QA
+  DefineOutput(9, TList::Class());  //Output for the Results Sample
+  DefineOutput(10, TList::Class());  //Output for the Results Sample QA
   if (isMC) {
     DefineOutput(11, TList::Class());  //Output for the Track MC
     DefineOutput(12, TList::Class());  //Output for the Anti Track MC
@@ -343,6 +347,30 @@ void AliAnalysisTaskNanoBBar::UserExec(Option_t *option) {
       AntiLambdas.push_back(*fv0);
     }
   }
+
+  //loop once over the MC stack to calculate Efficiency/Purity
+  if (fIsMC) {
+    AliAODInputHandler *eventHandler =
+        dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
+            ->GetInputEventHandler());
+    AliMCEvent* fMC = eventHandler->MCEvent();
+
+    for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
+      if (TMath::Abs(mcPart->Eta()) < 0.8 && mcPart->IsPhysicalPrimary()) {
+        if (mcPart->GetPdgCode() == fProton->GetPDGCode()) {
+          fProton->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiProton->GetPDGCode()) {
+          fAntiProton->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fLambda->GetPDGv0()) {
+          fLambda->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiLambda->GetPDGv0()) {
+          fAntiLambda->FillGenerated(mcPart->Pt());
+        }
+      }
+    }
+  }
+
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Protons, &AntiLambdas, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &Lambdas, 1);

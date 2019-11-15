@@ -53,6 +53,7 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   AliAnalysisTaskNanoBBar(const AliAnalysisTaskNanoBBar &task);
   AliAnalysisTaskNanoBBar &operator=(const AliAnalysisTaskNanoBBar &task);
   bool fisLightWeight;//
+  bool fIsMC;        //
   TList *fQA;        //!
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//
@@ -81,7 +82,7 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   TList *fResultsSampleQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskNanoBBar,1)
+  ClassDef(AliAnalysisTaskNanoBBar,2)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOBBAR_H_ */
