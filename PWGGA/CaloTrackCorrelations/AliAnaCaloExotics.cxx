@@ -88,7 +88,8 @@ fhEtaPhiGridEnExoCut(0),               fhEtaPhiGridEn1Cell(0),
 fhEtaPhiGridEnHighNCells(0),           fhEtaPhiGridNCellEnCut(0),
 
 fhTimeEnergyExo(0),                    fhTimeEnergy1Cell(0),                
-fhTimeDiffClusCellExo(0),              fhTimeDiffAmpClusCellExo(0),   
+fhTimeDiffClusCellExo(0),              fhTimeDiffWClusCellExo(0), 
+fhTimeDiffAmpClusCellExo(0), 
 fhTimeEnergyM02(0),                    fhTimeDiffClusCellM02(0),  
 fhTimeEnergyNCells(0),                 fhTimeEnergyNCellsW(0),                 
 fhTimeNCellCut(0),                
@@ -101,6 +102,7 @@ fhNCellsPerClusterSame5(0),            fhNCellsPerClusterDiff5(0),
 fhNCellsPerClusterSameW (0),           fhNCellsPerClusterDiffW (0),  
 fhNCellsPerClusterSameDiff(0),         fhNCellsPerClusterSameDiffW(0),         
 fhNCellsPerClusterSameFrac(0),         fhNCellsPerClusterSameFracExo(0),
+fhNCellsPerClusterSameFracW(0),        fhNCellsPerClusterSameFracWExo(0),
 
 // Other Exoticity definitions
 fhExoSame(0),                          fhExoDiff(0), 
@@ -857,7 +859,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       fhCellEnNCellW    ->Fill(en    , amp, nCellW, GetEventWeight());
       fhCellEnNCellWEMax->Fill(ampMax, amp, nCellW, GetEventWeight());
 
-//      Float_t weight    = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(amp, en);
+      Float_t weight    = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(amp, en);
 //
 //      if( weight > 0.01 ) 
 //      {
@@ -875,6 +877,9 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       
       fhTimeDiffClusCellExo->Fill(en , tdiff, exoticity, GetEventWeight());
       fhTimeDiffClusCellM02->Fill(en , tdiff, m02      , GetEventWeight());  
+      
+      if ( weight > 0.01 )
+        fhTimeDiffWClusCellExo->Fill(en , tdiff, exoticity, GetEventWeight());
       
       fhCellTimeDiffNCellW    ->Fill(en    , tdiff, nCellW, GetEventWeight());
       fhCellTimeDiffNCellWEMax->Fill(ampMax, tdiff, nCellW, GetEventWeight());
@@ -896,6 +901,15 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
     fhNCellsPerClusterSameDiff ->Fill(en, nCellSame , nCellDiff , GetEventWeight());
     fhNCellsPerClusterSameDiffW->Fill(en, nCellSameW, nCellDiffW, GetEventWeight());
 
+    Float_t frac  = (1.*nCellSame) /(nCaloCellsPerCluster-1.);
+    Float_t fracW = 0; 
+    if ( nCellW > 0 ) fracW = (1.*nCellSameW)/(nCellW);
+    
+    fhNCellsPerClusterSameFrac    ->Fill(en, frac ,            GetEventWeight());
+    fhNCellsPerClusterSameFracExo ->Fill(en, frac , exoticity, GetEventWeight());
+    fhNCellsPerClusterSameFracW   ->Fill(en, fracW,            GetEventWeight());
+    fhNCellsPerClusterSameFracWExo->Fill(en, fracW, exoticity, GetEventWeight());
+    
     if ( fFillAllCellSameTCardHisto )
     {
       if ( nCellDiff == 0 )
@@ -975,13 +989,6 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
         fhFracNCellDiffSame5EnCut  ->Fill(fracNCellDiffSame5  , GetEventWeight());
         fhFracEnNCellDiffSame5EnCut->Fill(fracEnNCellDiffSame5, GetEventWeight());
       }
-      
-      Float_t frac = (1.*nCellSame)/(nCaloCellsPerCluster-1.);
-//      if ( frac > 0.9 ) 
-//        printf("E %2.2f, n cells %d, n in T-Card / n cluster = %1.2f\n",
-//               en, nCaloCellsPerCluster, frac);
-      fhNCellsPerClusterSameFrac   ->Fill(en, frac,            GetEventWeight());
-      fhNCellsPerClusterSameFracExo->Fill(en, frac, exoticity, GetEventWeight());
       
       Float_t rEnSame  = 1-enSame /ampMax; 
       Float_t rEnDiff  = 1-enDiff /ampMax; 
@@ -1667,6 +1674,46 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhNCellsPerClusterSameDiffW->SetZTitle("#it{n}_{cells, diff T-Card}^{#it{w}}");
   outputContainer->Add(fhNCellsPerClusterSameDiffW);
   
+  fhNCellsPerClusterSameFrac  = new TH2F 
+  ("hNCellsPerClusterSameFrac","Fraction of # cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
+   //nptbins,ptmin,ptmax, 101,-0.005,1.005); 
+      eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
+   fracBinsArray.GetSize() - 1, fracBinsArray.GetArray()); 
+  fhNCellsPerClusterSameFrac->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhNCellsPerClusterSameFrac->SetYTitle("#it{n}_{cells, same T-Card} / (#it{n}_{cells}-1)");
+  outputContainer->Add(fhNCellsPerClusterSameFrac);
+  
+  fhNCellsPerClusterSameFracExo  = new TH3F 
+  ("hNCellsPerClusterSameFracExo","Fraction of # cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster} vs #it{F}_{+}",
+   //nptbins,ptmin,ptmax, 101,-0.005,1.005, nexobins,exomin,exomax); 
+      eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
+   fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), 
+      fBinsArray.GetSize() - 1,    fBinsArray.GetArray());
+  fhNCellsPerClusterSameFracExo->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhNCellsPerClusterSameFracExo->SetYTitle("#it{n}_{cells, same T-Card} / (#it{n}_{cells}-1)");
+  fhNCellsPerClusterSameFracExo->SetZTitle("#it{F}_{+}");
+  outputContainer->Add(fhNCellsPerClusterSameFracExo); 
+  
+  fhNCellsPerClusterSameFracW  = new TH2F 
+  ("hNCellsPerClusterSameFracW","Fraction of #it{n}^{w}_{cells} in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
+   //nptbins,ptmin,ptmax, 101,-0.005,1.005); 
+      eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
+   fracBinsArray.GetSize() - 1, fracBinsArray.GetArray()); 
+  fhNCellsPerClusterSameFracW->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhNCellsPerClusterSameFracW->SetYTitle("#it{n}^{w}_{cells, same T-Card} / #it{n}^{w}_{cells}");
+  outputContainer->Add(fhNCellsPerClusterSameFracW);
+  
+  fhNCellsPerClusterSameFracWExo  = new TH3F 
+  ("hNCellsPerClusterSameFracWExo","Fraction of #it{n}^{w}_{cells} in same T-Card as max #it{E} cell vs #it{E}_{cluster} vs #it{F}_{+}",
+   //nptbins,ptmin,ptmax, 101,-0.005,1.005, nexobins,exomin,exomax); 
+      eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
+   fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), 
+      fBinsArray.GetSize() - 1,    fBinsArray.GetArray());
+  fhNCellsPerClusterSameFracWExo->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhNCellsPerClusterSameFracWExo->SetYTitle("#it{n}^{w}_{cells, same T-Card} / #it{n}^{w}_{cells}");
+  fhNCellsPerClusterSameFracWExo->SetZTitle("#it{F}_{+}");
+  outputContainer->Add(fhNCellsPerClusterSameFracWExo); 
+  
   if ( fFillSameDiffFracHisto )
   {
     fhNCellsPerClusterSame  = new TH2F 
@@ -1718,26 +1765,6 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhNCellsPerClusterDiffW ->SetXTitle("#it{E}_{cluster} (GeV)");
     fhNCellsPerClusterDiffW ->SetYTitle("#it{n}_{cells, diff T-Card}^{#it{w}}");
     outputContainer->Add(fhNCellsPerClusterDiffW );
-    
-    fhNCellsPerClusterSameFrac  = new TH2F 
-    ("hNCellsPerClusterSameFrac","Fraction of # cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster}",
-     //nptbins,ptmin,ptmax, 101,-0.005,1.005); 
-        eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
-     fracBinsArray.GetSize() - 1, fracBinsArray.GetArray()); 
-    fhNCellsPerClusterSameFrac->SetXTitle("#it{E}_{cluster} (GeV)");
-    fhNCellsPerClusterSameFrac->SetYTitle("#it{n}_{cells, same T-Card} / (#it{n}_{cells}-1)");
-    outputContainer->Add(fhNCellsPerClusterSameFrac);
-    
-    fhNCellsPerClusterSameFracExo  = new TH3F 
-    ("hNCellsPerClusterSameFracExo","Fraction of # cells per cluster in same T-Card as max #it{E} cell vs #it{E}_{cluster} vs #it{F}_{+}",
-     //nptbins,ptmin,ptmax, 101,-0.005,1.005, nexobins,exomin,exomax); 
-        eBinsArray.GetSize() - 1,    eBinsArray.GetArray(), 
-     fracBinsArray.GetSize() - 1, fracBinsArray.GetArray(), 
-        fBinsArray.GetSize() - 1,    fBinsArray.GetArray());
-    fhNCellsPerClusterSameFracExo->SetXTitle("#it{E}_{cluster} (GeV)");
-    fhNCellsPerClusterSameFracExo->SetYTitle("#it{n}_{cells, same T-Card} / (#it{n}_{cells}-1)");
-    fhNCellsPerClusterSameFracExo->SetZTitle("#it{F}_{+}");
-    outputContainer->Add(fhNCellsPerClusterSameFracExo); 
     
     // Cluster Exoticity other definitions
     //
@@ -2332,6 +2359,17 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhTimeDiffClusCellExo->SetYTitle("#Delta #it{t}_{cell max-i} (ns)");
   fhTimeDiffClusCellExo->SetZTitle("#it{F}_{+}");
   outputContainer->Add(fhTimeDiffClusCellExo);
+
+  fhTimeDiffWClusCellExo  = new TH3F 
+  ("hTimeDiffWClusCellExo","#it{E}_{cluster} vs #it{t}_{cell max}-#it{t}_{cell i} for cells with w>0 vs #it{F}_{+}, #it{n}_{cells}>1",
+   //nptbins,ptmin,ptmax, tdbins,tdmin,tdmax, nexobinsS,exominS,exomaxS); 
+    eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
+   tdBinsArray.GetSize() - 1, tdBinsArray.GetArray(), 
+    fBinsArray.GetSize() - 1,  fBinsArray.GetArray());
+  fhTimeDiffWClusCellExo->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhTimeDiffWClusCellExo->SetYTitle("#Delta #it{t}_{cell max-i} (ns)");
+  fhTimeDiffWClusCellExo->SetZTitle("#it{F}_{+}");
+  outputContainer->Add(fhTimeDiffWClusCellExo);
   
   fhTimeDiffAmpClusCellExo  = new TH3F 
   ("hTimeDiffAmpClusCellExo",

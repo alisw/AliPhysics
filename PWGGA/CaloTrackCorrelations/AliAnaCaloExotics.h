@@ -216,6 +216,7 @@ public:
   TH3F *   fhTimeEnergyExo;                     //!<! Cluster Energy vs Time vs Exoticity, n cells > 1
   TH2F *   fhTimeEnergy1Cell;                   //!<! Cluster Energy vs Time vs n cells = 1
   TH3F *   fhTimeDiffClusCellExo;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity
+  TH3F *   fhTimeDiffWClusCellExo;              //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity, for cells with weight
   TH3F *   fhTimeDiffAmpClusCellExo;            //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs secondary cell energy vs exoticity for E > fEMinForExo
   TH3F *   fhTimeEnergyM02;                     //!<! Cluster Energy vs Time vs M02, n cells > 1
   TH3F *   fhTimeDiffClusCellM02;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs M02
@@ -239,7 +240,9 @@ public:
   TH3F *   fhNCellsPerClusterSameDiffW;         //!<! Cluster E vs n cells in same vs different T-Card as max E cell, cells with weight
   TH2F *   fhNCellsPerClusterSameFrac;          //!<! Cluster E vs fraction n cells in same T-Card as max E cell
   TH3F *   fhNCellsPerClusterSameFracExo;       //!<! Cluster E vs fraction n cells in same T-Card as max E cell vs exoticity
-
+  TH2F *   fhNCellsPerClusterSameFracW;         //!<! Cluster E vs fraction n cells with weight in same T-Card as max E cell
+  TH3F *   fhNCellsPerClusterSameFracWExo;      //!<! Cluster E vs fraction n cells with weight in same T-Card as max E cell vs exoticity
+  
   TH2F *   fhExoSame;                           //!<! Cluster E vs 1 - E same TCard / E max
   TH2F *   fhExoDiff;                           //!<! Cluster E vs 1 - E different TCard / E max
   TH2F *   fhExoSame5;                          //!<! Cluster E vs 1 - E same & neighbor TCard / E max
