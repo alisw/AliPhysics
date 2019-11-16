@@ -80,6 +80,12 @@ public:
   void         SetEBinLimit(Int_t i, Float_t en) 
                            { if ( i < fgkNEBins && i >= 0 ) fEnergyBins[i] = en ; }
 
+  Float_t      GetCellEMinBinLimit(Int_t i) const  
+                           { if ( i < fgkNCellEnMinBins && i >= 0 ) return fCellEnMinBins[i] ;
+                             else                                return -1     ; }
+  void         SetCellEMinBinLimit(Int_t i, Float_t en) 
+                           { if ( i < fgkNCellEnMinBins && i >= 0 ) fCellEnMinBins[i] = en ; }
+  
 //  Float_t      GetCellMinEnergy(Int_t i) const  
 //                           { if ( i < fgkNCellMinEnBins && i >= 0 ) return fCellMinEnBins[i] ;
 //    else                           return -1     ; }
@@ -139,6 +145,10 @@ public:
   /// Total number of cluster energy bins histograms
   static const Int_t fgkNEBins = 12;
   Float_t  fEnergyBins[fgkNEBins];              ///<  Energy bins for some histograms
+ 
+  static const Int_t fgkNCellEnMinBins = 4;
+  static const Int_t fgkNCellEnMinBinsFr = 3;
+  Float_t  fCellEnMinBins[fgkNCellEnMinBins];   ///<  Energy bins for some histograms for cells
   
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
  
@@ -216,6 +226,7 @@ public:
   TH3F *   fhTimeEnergyExo;                     //!<! Cluster Energy vs Time vs Exoticity, n cells > 1
   TH2F *   fhTimeEnergy1Cell;                   //!<! Cluster Energy vs Time vs n cells = 1
   TH3F *   fhTimeDiffClusCellExo;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity
+  TH3F *   fhTimeDiffWClusCellExo;              //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity, for cells with weight
   TH3F *   fhTimeDiffAmpClusCellExo;            //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs secondary cell energy vs exoticity for E > fEMinForExo
   TH3F *   fhTimeEnergyM02;                     //!<! Cluster Energy vs Time vs M02, n cells > 1
   TH3F *   fhTimeDiffClusCellM02;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs M02
@@ -239,7 +250,9 @@ public:
   TH3F *   fhNCellsPerClusterSameDiffW;         //!<! Cluster E vs n cells in same vs different T-Card as max E cell, cells with weight
   TH2F *   fhNCellsPerClusterSameFrac;          //!<! Cluster E vs fraction n cells in same T-Card as max E cell
   TH3F *   fhNCellsPerClusterSameFracExo;       //!<! Cluster E vs fraction n cells in same T-Card as max E cell vs exoticity
-
+  TH2F *   fhNCellsPerClusterSameFracW;         //!<! Cluster E vs fraction n cells with weight in same T-Card as max E cell
+  TH3F *   fhNCellsPerClusterSameFracWExo;      //!<! Cluster E vs fraction n cells with weight in same T-Card as max E cell vs exoticity
+  
   TH2F *   fhExoSame;                           //!<! Cluster E vs 1 - E same TCard / E max
   TH2F *   fhExoDiff;                           //!<! Cluster E vs 1 - E different TCard / E max
   TH2F *   fhExoSame5;                          //!<! Cluster E vs 1 - E same & neighbor TCard / E max
@@ -366,60 +379,45 @@ public:
   TH3F *   fhCellExoGrid ;                      //!<! Cells ordered in column/row vs exoticity when amplitude > fEMinForExo 
   TH3F *   fhCellGridTimeHighNCell20 ;          //!<! Cells ordered in column/row vs cluster time when at least 1 cluster n cellsW > 20
   TH3F *   fhCellGridTimeHighNCell12 ;          //!<! Cells ordered in column/row vs cluster time when at least 1 cluster n cellsW > 12
-  TH3F *   fhCellGridTime05 ;                   //!<! Cells ordered in column/row vs cell time when E > 0.5 GeV
-  TH3F *   fhCellGridTime1  ;                   //!<! Cells ordered in column/row vs cell time when E > 1.0 GeV
-  TH3F *   fhCellGridTime2  ;                   //!<! Cells ordered in column/row vs cell time when E > 2.0 GeV
-  TH3F *   fhCellGridTime5  ;                   //!<! Cells ordered in column/row vs cell time when E > 5.0 GeV
 
-  TH2F *   fhCellTimeNCell20 ;                  //!<! Cells time vs cluster time, for events with a cluster with n cellsW > 20
-  TH2F *   fhCellTimeNCell12 ;                  //!<! Cells time vs cluster time, for events with a cluster with n cellsW > 12
+  // En cuts: 0.5, 1, 2, 5 GeV
+  TH3F *   fhCellGridTime         [fgkNCellEnMinBins];        //!<! Cells ordered in column/row vs cell time when E > emin
+  TH1F *   fhSumEnCells           [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy 
+  TH1F *   fhNCells               [fgkNCellEnMinBins];        //!<! For E cell > emin, count number of cells 
+  TH1F *   fhAverSumEnCells       [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy / total cells number
+  TH1F *   fhFracNCells           [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV
+  TH1F *   fhFracSumEnCells       [fgkNCellEnMinBinsFr];      //!<! sum of cells with E > emin over 0.5 GeV
   
-  TH1F *   fhSumEnCells05;                      //!<! For E cell > 0.5 GeV, sum of cells energy 
-  TH1F *   fhSumEnCells1;                       //!<! For E cell > 1.0 GeV, sum of cells energy
-  TH1F *   fhSumEnCells2;                       //!<! For E cell > 2.0 GeV, sum of cells energy 
-  TH1F *   fhSumEnCells5;                       //!<! For E cell > 5.0 GeV, sum of cells energy 
+  TH1F *   fhSumEnCellsNHigh20    [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy, 1 cluster with n_cell_w>20 
+  TH1F *   fhNCellsNHigh20        [fgkNCellEnMinBins];        //!<! For E cell > emin, count number of cells, 1 cluster with n_cell_w>20 
+  TH1F *   fhAverSumEnCellsNHigh20[fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy / total cells number, 1 cluster with n_cell_w>20
+  TH1F *   fhFracNCellsNHigh20    [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV, 1 cluster with n_cell_w>20
+  TH1F *   fhFracSumEnCellsNHigh20[fgkNCellEnMinBinsFr];      //!<! sum of cells with E > 1 GeV over emin, 1 cluster with n_cell_w>20
  
-  TH1F *   fhNCells05;                          //!<! For E cell > 0.5 GeV, count number of cells 
-  TH1F *   fhNCells1;                           //!<! For E cell > 1.0 GeV, count number of cells
-  TH1F *   fhNCells2;                           //!<! For E cell > 2.0 GeV, count number of cells 
-  TH1F *   fhNCells5;                           //!<! For E cell > 5.0 GeV, count number of cells
+  TH1F *   fhSumEnCellsCutSM3     [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy, low SM3 activity 
+  TH1F *   fhNCellsCutSM3         [fgkNCellEnMinBins];        //!<! For E cell > emin, count number of cells, low SM3 activity
+  TH1F *   fhAverSumEnCellsCutSM3 [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy / total cells number, low SM3 activity
+  TH1F *   fhFracNCellsCutSM3     [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV, low SM3 activity
+  TH1F *   fhFracSumEnCellsCutSM3 [fgkNCellEnMinBinsFr];      //!<! sum of cells with E > 1 GeV over emin, low SM3 activity
   
-  TH1F *   fhAverSumEnCells05;                  //!<! For E cell > 0.5 GeV, sum of cells energy / total cells number
-  TH1F *   fhAverSumEnCells1;                   //!<! For E cell > 1.0 GeV, sum of cells energy / total cells number
-  TH1F *   fhAverSumEnCells2;                   //!<! For E cell > 2.0 GeV, sum of cells energy / total cells number
-  TH1F *   fhAverSumEnCells5;                   //!<! For E cell > 5.0 GeV, sum of cells energy / total cells number
+  // Per SM
+  TH2F *   fhSumEnCellsPerSM           [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, per SM 
+  TH2F *   fhNCellsPerSM               [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, per SM 
+  TH2F *   fhAverSumEnCellsPerSM       [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy / total cells number, per SM
+  TH2F *   fhFracNCellsPerSM           [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, per SM
+  TH2F *   fhFracSumEnCellsPerSM       [fgkNCellEnMinBinsFr]; //!<! sum of cells with E > emin over 0.5 GeV, per SM
   
-  TH1F *   fhFracNCells1;                       //!<! total number of cells with E > 1 GeV over 0.5 GeV
-  TH1F *   fhFracNCells2;                       //!<! total number of cells with E > 2 GeV over 0.5 GeV
-  TH1F *   fhFracNCells5;                       //!<! total number of cells with E > 5 GeV over 0.5 GeV
- 
-  TH1F *   fhFracSumEnCells1;                   //!<! sum of cells with E > 1 GeV over 0.5 GeV
-  TH1F *   fhFracSumEnCells2;                   //!<! sum of cells with E > 2 GeV over 0.5 GeV
-  TH1F *   fhFracSumEnCells5;                   //!<! sum of cells with E > 5 GeV over 0.5 GeV
- 
-  
-  TH1F *   fhSumEnCells05NHigh20;               //!<! For E cell > 0.5 GeV, sum of cells energy, 1 cluster with n_cell_w>20 
-  TH1F *   fhSumEnCells1NHigh20;                //!<! For E cell > 1.0 GeV, sum of cells energy, 1 cluster with n_cell_w>20
-  TH1F *   fhSumEnCells2NHigh20;                //!<! For E cell > 2.0 GeV, sum of cells energy, 1 cluster with n_cell_w>20 
-  TH1F *   fhSumEnCells5NHigh20;                //!<! For E cell > 5.0 GeV, sum of cells energy, 1 cluster with n_cell_w>20 
-  
-  TH1F *   fhNCells05NHigh20;                   //!<! For E cell > 0.5 GeV, count number of cells, 1 cluster with n_cell_w>20 
-  TH1F *   fhNCells1NHigh20;                    //!<! For E cell > 1.0 GeV, count number of cells, 1 cluster with n_cell_w>20
-  TH1F *   fhNCells2NHigh20;                    //!<! For E cell > 2.0 GeV, count number of cells, 1 cluster with n_cell_w>20 
-  TH1F *   fhNCells5NHigh20;                    //!<! For E cell > 5.0 GeV, count number of cells, 1 cluster with n_cell_w>20
-  
-  TH1F *   fhAverSumEnCells05NHigh20;           //!<! For E cell > 0.5 GeV, sum of cells energy / total cells number, 1 cluster with n_cell_w>20
-  TH1F *   fhAverSumEnCells1NHigh20;            //!<! For E cell > 1.0 GeV, sum of cells energy / total cells number, 1 cluster with n_cell_w>20
-  TH1F *   fhAverSumEnCells2NHigh20;            //!<! For E cell > 2.0 GeV, sum of cells energy / total cells number, 1 cluster with n_cell_w>20
-  TH1F *   fhAverSumEnCells5NHigh20;            //!<! For E cell > 5.0 GeV, sum of cells energy / total cells number, 1 cluster with n_cell_w>20
-  
-  TH1F *   fhFracNCells1NHigh20;                //!<! total number of cells with E > 1 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
-  TH1F *   fhFracNCells2NHigh20;                //!<! total number of cells with E > 2 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
-  TH1F *   fhFracNCells5NHigh20;                //!<! total number of cells with E > 5 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
-  
-  TH1F *   fhFracSumEnCells1NHigh20;             //!<! sum of cells with E > 1 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
-  TH1F *   fhFracSumEnCells2NHigh20;             //!<! sum of cells with E > 2 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
-  TH1F *   fhFracSumEnCells5NHigh20;             //!<! sum of cells with E > 5 GeV over 0.5 GeV, 1 cluster with n_cell_w>20
+  TH2F *   fhSumEnCellsPerSMNHigh20    [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, 1 cluster with n_cell_w>20, per SM 
+  TH2F *   fhNCellsPerSMNHigh20        [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, 1 cluster with n_cell_w>20, per SM 
+  TH2F *   fhAverSumEnCellsPerSMNHigh20[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy / total cells number, 1 cluster with n_cell_w>20, per SM
+  TH2F *   fhFracNCellsPerSMNHigh20    [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, 1 cluster with n_cell_w>20, per SM
+  TH2F *   fhFracSumEnCellsPerSMNHigh20[fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, 1 cluster with n_cell_w>20, per SM
+
+  TH2F *   fhSumEnCellsPerSMCutSM3     [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, low SM3 activity, per SM
+  TH2F *   fhNCellsPerSMCutSM3         [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, low SM3 activity, per SM 
+  TH2F *   fhAverSumEnCellsPerSMCutSM3 [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy / total cells number, low SM3 activity, per SM
+  TH2F *   fhFracNCellsPerSMCutSM3     [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, low SM3 activity, per SM
+  TH2F *   fhFracSumEnCellsPerSMCutSM3 [fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, low SM3 activity, per SM
   
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;
@@ -428,7 +426,7 @@ public:
   AliAnaCaloExotics(              const AliAnaCaloExotics & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloExotics,7) ;
+  ClassDef(AliAnaCaloExotics,8) ;
   /// \endcond
 
 } ;
