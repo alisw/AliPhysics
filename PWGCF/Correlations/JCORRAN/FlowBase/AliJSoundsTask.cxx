@@ -167,16 +167,15 @@ void AliJSoundsTask::Terminate(Option_t *)
 void AliJSoundsTask::BookHistos(TClonesArray *inList) {
 
 	int noTracks = inList->GetEntries();
-	int is = 0;
 	for(int itrack=0;itrack<noTracks; itrack++){
 		AliJBaseTrack *trk = (AliJBaseTrack*)inList->At(itrack);
 		double phi = trk->Phi();
 		double eta = trk->Eta();
 		double pt =  trk->Pt();
 		Double_t effCorr = fEfficiency->GetCorrection( pt, fJCatalystTask->GetEffFilterBit(), fJCatalystTask->GetCentrality());
-		fhistos->fh_eta[fCBin][is]->Fill(eta);
-		fhistos->fh_phi[fCBin][is]->Fill(phi);
-		fhistos->fh_pt[fCBin][is]->Fill(pt);
+		fhistos->fh_eta[fCBin][0]->Fill(eta);
+		fhistos->fh_phi[fCBin][0]->Fill(phi);
+		fhistos->fh_pt[fCBin][0]->Fill(pt); // uncorrected
+		fhistos->fh_pt[fCBin][1]->Fill(pt,1./effCorr); //corrected
 	}
-
 }
