@@ -104,7 +104,6 @@ AliDecayer* AliPythia8::Decayer()
 {
   printf("calling AliPythia8::Decayer \n");
   if (!fDecayer) fDecayer = new AliDecayerPythia8();
-  printf("decayer is  %p \n", fDecayer);
   return fDecayer;
 }
 
