@@ -102,7 +102,6 @@ AliPythia8::AliPythia8(const AliPythia8& pythia):
 
 AliDecayer* AliPythia8::Decayer()
 {
-  printf("calling AliPythia8::Decayer \n");
   if (!fDecayer) fDecayer = new AliDecayerPythia8();
   return fDecayer;
 }
