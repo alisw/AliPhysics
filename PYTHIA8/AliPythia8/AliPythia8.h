@@ -8,6 +8,8 @@
 #include "Pythia8/Analysis.h"
 #include "AliPythiaBase.h"
 #include "AliTPythia8.h"
+#include "AliDecayer.h"
+#include "AliDecayerPythia8.h"
 
 class AliStack;
 class AliPythia8 :public AliTPythia8, public AliPythiaBase
@@ -18,6 +20,7 @@ class AliPythia8 :public AliTPythia8, public AliPythiaBase
     AliPythia8(const AliPythia8& pythia);
     virtual ~AliPythia8() {;}
     virtual Int_t Version() {return (8);}
+    virtual AliDecayer* Decayer(); 
     // convert to compressed code and print result (for debugging only)
     virtual Int_t CheckedLuComp(Int_t /*kf*/) {return -1;}
     // Pythia initialisation for selected processes
@@ -38,6 +41,7 @@ class AliPythia8 :public AliTPythia8, public AliPythiaBase
     virtual void PrintParticles();
     // Reset the decay table
     virtual void ResetDecayTable();
+    virtual void PrintDecayTable();
     //
     // Common Physics Configuration
     virtual void SetPtHardRange(Float_t ptmin, Float_t ptmax);
@@ -130,7 +134,7 @@ class AliPythia8 :public AliTPythia8, public AliPythiaBase
     Int_t                 fNJetMax;           //  ! max. number of jets
     Bool_t                fDecayLonglived;	  ///<    Decay long-lived particles (see @ref SetDecayLonglived for list of supported particles)
     static AliPythia8*    fgAliPythia8;       //    Pointer to single instance
-
+    AliDecayerPythia8*    fDecayer;           //  !  Pointer to decayer
     ClassDef(AliPythia8, 2); //ALICE UI to PYTHIA8
 };
 

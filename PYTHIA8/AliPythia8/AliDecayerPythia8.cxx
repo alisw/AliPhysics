@@ -125,7 +125,6 @@ void AliDecayerPythia8::ForceDecay()
     fPythia8->ReadString("HadronLevel:Decay = on");
     
     if (decay == kNoDecayHeavy) return;
-
 //
 // select mode    
     switch (decay) 

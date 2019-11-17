@@ -8,11 +8,13 @@
 #include <TObject.h>
 #include "AliStructFuncType.h"
 #include "PythiaProcesses.h"
+#include "AliDecayer.h"
 
 class AliFastGlauber;
 class AliQuenchingWeights;
 class AliStack;
 class TClonesArray;
+
 
 class AliPythiaBase : public AliRndm 
 {
@@ -28,6 +30,7 @@ class AliPythiaBase : public AliRndm
     virtual void  ProcInit (Process_t /*process*/, Float_t /*energy*/, StrucFunc_t /*strucfunc*/, Int_t /* tune */) {;}
     virtual void  SetSeed(UInt_t seed);
     virtual void  GenerateEvent() {;}
+    virtual AliDecayer* Decayer() {return 0;}
     virtual void  GenerateMIEvent() {;}
     virtual Int_t GetNumberOfParticles() {return -1;};
     virtual void  SetNumberOfParticles(Int_t /*i*/){;}
