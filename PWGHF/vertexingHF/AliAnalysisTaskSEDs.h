@@ -33,7 +33,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   enum {kpp, kPbPb, kUpgr};
 
   AliAnalysisTaskSEDs();
-  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts);
+  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Bool_t createMLtree);
   virtual ~AliAnalysisTaskSEDs();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}

@@ -28,14 +28,13 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system = AliAnalysisTaskSEDs::kpp, Bool_t r
 	  return NULL;
 	}
 
-  AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis",analysiscuts);
+  AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis", analysiscuts, createMLtree);
   dsTask->SetDebugLevel(0);
   dsTask->SetUseSelectionBit(kTRUE);
   dsTask->SetSystem(system);
   dsTask->SetReadMC(readMC);
   dsTask->SetAODMismatchProtection(AODProtection);
   dsTask->SetFillNSparse(storeNsparse);
-  dsTask->SetCreateMLTree(createMLtree);
   if(createMLtree && readMC)
     dsTask->SetFillOnlySignalInMLtree();
   dsTask->SetDoMLApplication(applyML);
@@ -50,27 +49,27 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system = AliAnalysisTaskSEDs::kpp, Bool_t r
   mgr->AddTask(dsTask);
 
   // Create containers for input/output
-  TString name = Form("cinputDs%s", postname);
+  TString name = Form("cinputDs%s", postname.Data());
   AliAnalysisDataContainer *cinputDs = mgr->CreateContainer(name, TChain::Class(), AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWGHF_D2H_InvMassDs";
-  outputfile += postname;
+  outputfile += postname.Data();
 
-  name = Form("coutputDsCuts%s", postname);
+  name = Form("coutputDsCuts%s", postname.Data());
   AliAnalysisDataContainer *coutputDsCuts = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer,
 								                                                 outputfile.Data());
 
-  name =  Form("coutputDs%s", postname);
+  name =  Form("coutputDs%s", postname.Data());
   AliAnalysisDataContainer *coutputDs = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer,
 							                                               outputfile.Data());
   
-  name =  Form("coutputDsNorm%s", postname);
+  name =  Form("coutputDsNorm%s", postname.Data());
   AliAnalysisDataContainer *coutputDsNorm = mgr->CreateContainer(name, AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer,
 								                                                 outputfile.Data());
 
   AliAnalysisDataContainer *coutputDsML = nullptr;
   if(createMLtree) {
-    name =  Form("coutputDsML%s", postname);
+    name =  Form("coutputDsML%s", postname.Data());
     coutputDsML = mgr->CreateContainer(name, TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
   }
 

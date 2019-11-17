@@ -56,8 +56,9 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *analysiscuts) : AliAnalysisTaskSE(name)
-{
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *analysiscuts, Bool_t createMLtree) : AliAnalysisTaskSE(name),
+                                                                                                                     fCreateMLtree(createMLtree)
+{                                                   
   /// Standard constructor
   SetAnalysisCuts(analysiscuts);
   Int_t nptbins = fAnalysisCuts->GetNPtBins();
@@ -67,7 +68,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, AliNormalizationCounter::Class());
-  //DefineOutput(4, TNtuple::Class()); //TNtuple for ML
+  if(fCreateMLtree)
+    DefineOutput(4, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -1171,8 +1173,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               }
             }
 
-            fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
             fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
+            fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
             fMLhandler->FillTree();
           }
 
@@ -1205,8 +1207,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               }
             }
 
-            fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
             fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
+            fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
             fMLhandler->FillTree();
           }
         }
