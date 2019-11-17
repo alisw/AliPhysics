@@ -784,20 +784,20 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     }
     
     fhEMCALClusterTimeE  = new TH2F 
-    ("hEMCALReaderTimeE","time vs #it{E} after cuts (if no calib, shifted -615 ns)", 100,0,100,400,-400,400);
-    fhEMCALClusterTimeE->SetXTitle("#it{E} (GeV)");
-    fhEMCALClusterTimeE->SetYTitle("#it{time} (ns)");
+    ("hEMCALReaderTimeE","#it{time}_{cluster} vs #it{E}_{cluster} after cuts", 250,0,250,1201,-1201,1201);
+    fhEMCALClusterTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhEMCALClusterTimeE->SetYTitle("#it{time}_{cluster} (ns)");
     fOutputContainer->Add(fhEMCALClusterTimeE);
     
     fhEMCALClusterEtaPhi  = new TH2F 
-    ("hEMCALReaderEtaPhi","#eta vs #varphi",40,-2, 2,50, 0,10);
+    ("hEMCALReaderEtaPhi","#eta vs #varphi",80,-2, 2,100, 0,10);
     // Very open limits to check problems
     fhEMCALClusterEtaPhi->SetXTitle("#eta");
     fhEMCALClusterEtaPhi->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhi);    
     
     fhEMCALClusterEtaPhiFidCut  = new TH2F 
-    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",40,-2, 2,50, 0,10);
+    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",80,-2, 2,100, 0,10);
     fhEMCALClusterEtaPhiFidCut->SetXTitle("#eta");
     fhEMCALClusterEtaPhiFidCut->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhiFidCut);
@@ -1123,9 +1123,9 @@ void AliCaloTrackReader::InitParameters()
   fAODBranchList   = new TList ;
   fOutputContainer = new TList ;
   
-  fEnergyHistogramNbins    = 200;
-  fEnergyHistogramLimit[0] = 0  ;
-  fEnergyHistogramLimit[1] = 100;
+  fEnergyHistogramNbins    = 500 ;
+  fEnergyHistogramLimit[0] = 0.  ;
+  fEnergyHistogramLimit[1] = 250.;
   
   fPileUpParamSPD[0] = 3   ; fPileUpParamSPD[1] = 0.8 ;
   fPileUpParamSPD[2] = 3.0 ; fPileUpParamSPD[3] = 2.0 ; fPileUpParamSPD[4] = 5.0;
@@ -2190,7 +2190,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
 
   // Shift time in case of no calibration with rough factor
   Double_t tofShift = tof;
-  if(tof > 400) tofShift-=615;
+  //if(tof > 400) tofShift-=615;
   fhEMCALClusterTimeE->Fill(clus->E(),tofShift);
   
   if(!IsInTimeWindow(tof,clus->E()))
