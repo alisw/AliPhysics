@@ -67,7 +67,9 @@ AliPythia8::AliPythia8():
     fPtScale(0.),
     fNJetMin(0),
     fNJetMax(0),
-    fDecayLonglived(kFALSE)
+    fDecayLonglived(kFALSE),
+    fDecayer(0)
+    
 {
 // Default Constructor
 //
@@ -91,10 +93,19 @@ AliPythia8::AliPythia8(const AliPythia8& pythia):
     fPtScale(0.),
     fNJetMin(0),
     fNJetMax(0),
-    fDecayLonglived(kFALSE)
+    fDecayLonglived(kFALSE),
+    fDecayer(0)
 {
     // Copy Constructor
     pythia.Copy(*this);
+}
+
+AliDecayer* AliPythia8::Decayer()
+{
+  printf("calling AliPythia8::Decayer \n");
+  if (!fDecayer) fDecayer = new AliDecayerPythia8();
+  printf("decayer is  %p \n", fDecayer);
+  return fDecayer;
 }
 
 void AliPythia8::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfunc, Int_t tune)
@@ -574,7 +585,7 @@ void AliPythia8::SetNuclei(Int_t /*a1*/, Int_t /*a2*/)
 
 AliPythia8* AliPythia8::Instance()
 { 
-// Set random number generator 
+// return singleton instance
     if (fgAliPythia8) {
 	return fgAliPythia8;
     } else {
@@ -597,6 +608,10 @@ void  AliPythia8::ResetDecayTable()
 //    for (i = 1; i < 2001; i++) SetMDME(i,1,fDefMDME[i]);
 }
 
+void  AliPythia8::PrintDecayTable()
+{
+  Pythia8()->particleData.listChanged(); 
+}
 void  AliPythia8::SetDecayTable()
 {
 //  Set default values for pythia decay switches

@@ -10,7 +10,10 @@
 
 #include <ParticleData.h>
 #include <TVirtualMCDecayer.h>
-#include "AliDecayer.h"
+#include <AliDecayer.h>
+
+class AliDecayerPythia8;
+
 
 class AliDecayerPythia8 : public TVirtualMCDecayer {
  public:

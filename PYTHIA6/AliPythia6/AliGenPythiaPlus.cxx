@@ -68,7 +68,7 @@ AliGenPythiaPlus::AliGenPythiaPlus():
     fQuench(0),
     fPtKick(1.),
     fFullEvent(kTRUE),
-    fDecayer(new AliDecayerPythia()),
+    fDecayer(0),
     fDebugEventFirst(-1),
     fDebugEventLast(-1),
     fEtMinJet(0.),      
@@ -137,6 +137,7 @@ AliGenPythiaPlus::AliGenPythiaPlus():
 {
 // Default Constructor
   fEnergyCMS = 5500.;
+ 
   if (!AliPythiaRndm::GetPythiaRandom()) 
       AliPythiaRndm::SetPythiaRandom(GetRandom());
 }
@@ -172,7 +173,7 @@ AliGenPythiaPlus::AliGenPythiaPlus(AliPythiaBase* pythia)
      fQuench(kFALSE),
      fPtKick(1.),
      fFullEvent(kTRUE),
-     fDecayer(new AliDecayerPythia()),
+     fDecayer(0),
      fDebugEventFirst(-1),
      fDebugEventLast(-1),
      fEtMinJet(0.),      
@@ -246,6 +247,7 @@ AliGenPythiaPlus::AliGenPythiaPlus(AliPythiaBase* pythia)
     fEnergyCMS = 5500.;
     fName = "Pythia";
     fTitle= "Particle Generator using PYTHIA";
+    fDecayer = pythia->Decayer();
     SetForceDecay();
     // Set random number generator 
     if (!AliPythiaRndm::GetPythiaRandom()) 

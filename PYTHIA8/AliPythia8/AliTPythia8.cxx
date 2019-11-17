@@ -111,6 +111,7 @@ AliTPythia8::AliTPythia8():
    } else {
      fPythia    = new Pythia8::Pythia();
    }
+   fgInstance = this; 
 }
 
 //___________________________________________________________________________

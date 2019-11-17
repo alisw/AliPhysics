@@ -1,15 +1,10 @@
+R__LOAD_LIBRARY(libpythia8243)
+R__LOAD_LIBRARY(libAliPythia8)
 AliGenerator*  CreateGenerator();
 
 void pythia8(Int_t nev = 1, char* filename = "galice.root")
 {
 //  Runloader
-    gSystem->Load("liblhapdf");
-    gSystem->Load("libEGPythia6");
-    gSystem->Load("libpythia6");
-    gSystem->Load("libAliPythia6");
-    gSystem->Load("libpythia8205");
-    gSystem->Load("libAliPythia8");
-    
     AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");
     
     rl->SetCompressionLevel(2);
@@ -28,6 +23,7 @@ void pythia8(Int_t nev = 1, char* filename = "galice.root")
 //  Create and Initialize Generator
     AliGenerator *gener = CreateGenerator();
     gener->Init();
+    (AliPythia8::Instance())->PrintDecayTable();
     gener->SetStack(stack);
     
 //
@@ -83,9 +79,11 @@ void pythia8(Int_t nev = 1, char* filename = "galice.root")
 AliGenerator*  CreateGenerator()
 {
     AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
+
 //
 //
-    gener->SetProcess(kPyMbDefault);
+    gener->SetProcess(kPyCharmppMNRwmi);
+    gener->SetForceDecay(kHadronicDWithout4Bodies);
 //   Centre of mass energy 
     gener->SetEnergyCMS(7000.);
 //   Initialize generator    
