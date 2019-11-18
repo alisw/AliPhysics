@@ -25,7 +25,7 @@ class TObjArray;
 class AliAODEvent;
 class AliAODHeader;
 class AliEventPoolManager;
-class AliTHn;
+
 
 #include <TObject.h>
 #include "AliAnalysisTaskSE.h"
