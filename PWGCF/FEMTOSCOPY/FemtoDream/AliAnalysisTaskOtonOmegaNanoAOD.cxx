@@ -337,7 +337,7 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
 
   Double_t PrimVtx[3];
   fInputEvent->GetPrimaryVertex()->GetXYZ(PrimVtx);
-  fTVz = PrimVtx[1];
+  fTVz = PrimVtx[2];
   fTMult = fEvent->GetMultiplicity();
 
 //init tree
