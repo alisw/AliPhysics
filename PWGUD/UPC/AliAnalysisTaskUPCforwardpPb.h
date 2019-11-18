@@ -126,10 +126,11 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
         TH1F*                   fCounterH;          //!
 
                                 /**
-                                 * As far as I understand, it should be the
-                                 * pseudorapidity distribution of the many muons.
+                                 * Pseudorapidity distribution of the single muons.
+                                 * Followed by the same for the dimuons.
                                  */
         TH1F*                   fEtaMuonH;          //!
+        TH1F*                   fEtaDimuonH;        //!
 
                                 /**
                                  *
@@ -469,7 +470,7 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardpPb, 6);
+        ClassDef(AliAnalysisTaskUPCforwardpPb, 7);
 };
 
 #endif
