@@ -433,8 +433,8 @@ void AddTask_GammaCalo_pPb(
   // ===============================================================================================
   // INT7 triggers
   } else if (trainConfig == 500) {  // PHOS  INT7
-    cuts.AddCutCalo("80010113","24466410h0012200000","0163103100000010"); // standard without non-lin
-    cuts.AddCutCalo("80010113","2446641050012200000","0163103100000010"); // standard without non-lin
+    cuts.AddCutCalo("80010113","24466410ha012200000","0163103100000010"); // standard without non-lin
+    cuts.AddCutCalo("80010113","244664105a012200000","0163103100000010"); // standard without non-lin
   } else if (trainConfig == 501) {  // PHOS  INT7
     cuts.AddCutCalo("80010113","2446600041012200000","0163103100000010"); // no non lin
     cuts.AddCutCalo("80010113","2446600011012200000","0163103100000010"); // no non lin 1000 \mus
