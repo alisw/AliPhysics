@@ -418,13 +418,23 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("84662113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
     cuts.AddCutCalo("86062113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
 
+  // JJ MC cut strings
+  } else if (trainConfig == 360) {  // min energy = 0.3 GeV/c
+    cuts.AddCutCalo("80010123","2444400041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCutCalo("80062123","2444400041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+  } else if (trainConfig == 361) {  // PHOS default cent dep
+    cuts.AddCutCalo("80210123","2444401041013200000","0163103100000010"); // 0-20
+    cuts.AddCutCalo("82410123","2444401041013200000","0163103100000010"); // 20-40
+    cuts.AddCutCalo("84610123","2444401041013200000","0163103100000010"); // 40-60
+    cuts.AddCutCalo("86010123","2444401041013200000","0163103100000010"); // 60-100
+
   // ===============================================================================================
   // Run 2 data PHOS clusters pPb 5TeV
   // ===============================================================================================
   // INT7 triggers
   } else if (trainConfig == 500) {  // PHOS  INT7
-    cuts.AddCutCalo("80010113","24466410ha012200000","0163103100000010"); // standard without non-lin
-    cuts.AddCutCalo("80010113","244664105a012200000","0163103100000010"); // standard without non-lin
+    cuts.AddCutCalo("80010113","24466410h0012200000","0163103100000010"); // standard without non-lin
+    cuts.AddCutCalo("80010113","2446641050012200000","0163103100000010"); // standard without non-lin
   } else if (trainConfig == 501) {  // PHOS  INT7
     cuts.AddCutCalo("80010113","2446600041012200000","0163103100000010"); // no non lin
     cuts.AddCutCalo("80010113","2446600011012200000","0163103100000010"); // no non lin 1000 \mus
@@ -1245,8 +1255,8 @@ void AddTask_GammaCalo_pPb(
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
-      mgr->AddTask(fTrackMatcher);
-      mgr->ConnectInput(fTrackMatcher,0,cinput);
+      // mgr->AddTask(fTrackMatcher);
+      // mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
 
     analysisEventCuts[i] = new AliConvEventCuts();
