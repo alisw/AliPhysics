@@ -1,3 +1,6 @@
+class AliAnalysisDataContainer;
+class AliAnalysisTaskESEFlow;
+
 AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "", TString sqSelCuts = "")
 {
     // get the manager via the static access member. since it's static, you don't need

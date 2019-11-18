@@ -5,6 +5,7 @@
 #include "AliEventCuts.h"
 #include "AliAODTrack.h"
 #include "AliGFWWeights.h"
+#include "TComplex.h"
 
 class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 {
@@ -46,8 +47,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
     private:
 
-    static const Int_t      fNumHarms = 10; // maximum harmonics length of flow vector array
-    static const Int_t      fNumPowers = 10; // maximum weight power length of flow vector array
+    static const Int_t      fNumHarms = 13; // maximum harmonics length of flow vector array
+    static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
     static const Int_t      fNumHarmHists = 3; // how many harmonics hists
     static const Int_t      fNumCentHists = 7; // how many cent hists should there be
     static const Int_t      fnqCuts = 11;        // number of q selection cuts from 0-10 in 10% intervals --- probably not used anywhere?
@@ -98,6 +99,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         TH1F*                   fHistq2_red_cent_30_31;                     //!
         TH1F*                   fHistqn_red_cent_0_1[2];                     //!
+
+        TProfile*               fProfNPar; //!
 
         // fill dphi/deta/dpt histograms for weights
         void FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD);

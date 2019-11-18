@@ -32,10 +32,10 @@
 #include "AliAODEvent.h"
 #include "AliMultSelection.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTaskESEFlow.h"
 #include "AliGFWWeights.h"
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
+#include "AliAnalysisTaskESEFlow.h"
 
 #include <iostream>
 
@@ -91,6 +91,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fProfPTdn_2gap_large{0},
     fHistq2_red_cent_30_31(0),
     fHistqn_red_cent_0_1{0},
+    fProfNPar{0},
     fProfcn_2gap_smallqn{0},
     fProfcn_2gap_largeqn{0},
     fProfPTdn_2gap_B{0},
@@ -145,6 +146,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTa
     fProfPTdn_2gap_large{0},
     fHistq2_red_cent_30_31(0),
     fHistqn_red_cent_0_1{0},
+    fProfNPar{0},
     fProfcn_2gap_smallqn{0},
     fProfcn_2gap_largeqn{0},
     fProfPTdn_2gap_B{0},
@@ -232,7 +234,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fHistEta = new TH1F("fHistEta", "fHistEta", 120,-1.0, 1.0);
     fHistPt = new TH1F("fHistPt", "fHistPt", NvnPtBin,PtEdgesvn);
     fHistZVertex = new TH1F("fHistZVertex", "fHistZVertex", 100,-15,15);
-
+    fProfNPar = new TProfile("fProfNparvsCent",";Centrality;N_{particles}",100,0,100);
 
     const int nBins = 9;
     double binedge[nBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80.};
@@ -292,6 +294,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fObservables->Add(fHistEta);
     fObservables->Add(fHistPt);
     fObservables->Add(fHistZVertex);
+    fObservables->Add(fProfNPar);
     fqnDist->Add(fHistq2_red_cent_30_31);
     fqnDist->Add(fHistqn_red_cent_0_1[0]);
     fqnDist->Add(fHistqn_red_cent_0_1[1]);
@@ -326,6 +329,8 @@ void AliAnalysisTaskESEFlow::UserExec(Option_t *)
 
     FillObsDistributions(iTracks, fAOD);
     ReducedRFPVectors(centrality, iTracks, fAOD);
+
+    fProfNPar->Fill(centrality,iTracks);
     if(!fqRun){
     RFPVectors(centrality, iTracks, fAOD);
     POIVectors(centrality, iTracks, fAOD);
