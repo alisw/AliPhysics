@@ -2504,6 +2504,179 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(TClonesArray* arrayMC, AliAODMCPartic
 
 }
 //____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckB0toDminuspiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
+  /// Checks the Bs decay channel. Returns >= 1 for B0->Dminuspi->Kpipipi, <0 in other cases
+  /// Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+  /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
+  ///
+  /// NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
+
+  if(label<0) return -1;
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
+  if(TMath::Abs(pdgD)!=511) return -1;
+
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+
+  Int_t labelFirstDau = mcPart->GetDaughterFirst();
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundKpi=0;
+  Int_t decayB0 = -1;
+
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    TParticle* dau=mcEvent->Particle(indDau);
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==411){
+      /// Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+      Int_t labDauDplus[3] = {-1,-1,-1};
+      Int_t decayDplus = CheckDplusDecay(mcEvent, indDau, labDauDplus);
+
+      //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+      //Fix implemented, to still select correct Dplus decay
+      if(decayDplus==-2){
+        AliMCParticle* mcDplus = (AliMCParticle*)mcEvent->GetTrack(indDau);
+        Int_t labelFirstDauDplus = mcDplus->GetDaughterFirst();
+        if(mcDplus->GetNDaughters() > 1){
+          TParticle* dauDplus1 = mcEvent->Particle(labelFirstDauDplus);
+          TParticle* dauDplus2 = mcEvent->Particle(labelFirstDauDplus+1);
+          if(dauDplus1 && dauDplus2){
+            Int_t pdgdauDplus1=dauDplus1->GetPdgCode();
+            Int_t pdgdauDplus2=dauDplus2->GetPdgCode();
+            if(TMath::Abs(pdgdauDplus1)==313 || TMath::Abs(pdgdauDplus2)==313) decayDplus=2;
+          }
+        }
+      }
+
+      if (decayDplus < 0 || labDauDplus[0] == -1) return -1;
+      decayB0 = decayDplus;
+      nPions+=2;
+      nKaons++;
+      for(Int_t iDplus = 0; iDplus < 3; iDplus++){
+        TParticle* dauDplus=mcEvent->Particle(labDauDplus[iDplus]);
+        sumPxDau+=dauDplus->Px();
+        sumPyDau+=dauDplus->Py();
+        sumPzDau+=dauDplus->Pz();
+        arrayDauLab[nFoundKpi++]=labDauDplus[iDplus];
+      }
+      if(nFoundKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      //Temp fix for B0->D-+pi- and B0bar->D+pi- decays in ITS upgrade productions
+      //if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundKpi++]=indDau;
+      if(nFoundKpi>4) return -1;
+    }
+  }
+
+  if(nPions!=3) return -1;
+  if(nKaons!=1) return -1;
+  //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+  //Fix implemented, loosening cut from 0.001 to 0.1. If >0.1, (-1*decay - 1) is returned.
+  Int_t decayB0temp = decayB0;
+  if(TMath::Abs(part->Px()-sumPxDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  if(TMath::Abs(part->Py()-sumPyDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  if(TMath::Abs(part->Pz()-sumPzDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  decayB0 = decayB0temp;
+  return decayB0;
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckB0toDminuspiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+  /// Checks the Bs decay channel. Returns >= 1 for B0->Dminuspi->Kpipipi, <0 in other cases
+  /// Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+  /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
+  ///
+  /// NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
+
+  Int_t pdgD=mcPart->GetPdgCode();
+  if(TMath::Abs(pdgD)!=511) return -1;
+
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+
+  Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundKpi=0;
+  Int_t decayB0 = -1;
+
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==411){
+      /// Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+      Int_t labDauDplus[3] = {-1,-1,-1};
+      Int_t decayDplus = CheckDplusDecay(arrayMC, dau, labDauDplus);
+
+      //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+      //Fix implemented, to still select correct Dplus decay
+      if(decayDplus==-2){
+        Int_t labelFirstDauDplus = dau->GetDaughterLabel(0);
+        if(dau->GetNDaughters() > 1){
+          AliAODMCParticle* dauDplus1=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labelFirstDauDplus));
+          AliAODMCParticle* dauDplus2=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labelFirstDauDplus+1));
+          if(dauDplus1 && dauDplus2){
+            Int_t pdgdauDplus1=dauDplus1->GetPdgCode();
+            Int_t pdgdauDplus2=dauDplus2->GetPdgCode();
+            if(TMath::Abs(pdgdauDplus1)==313 || TMath::Abs(pdgdauDplus2)==313) decayDplus=2;
+          }
+        }
+      }
+
+      if (decayDplus < 0 || labDauDplus[0] == -1) return -1;
+      decayB0 = decayDplus;
+      nPions+=2;
+      nKaons++;
+      for(Int_t iDplus = 0; iDplus < 3; iDplus++){
+        AliAODMCParticle* dauDplus=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDplus[iDplus]));
+        sumPxDau+=dauDplus->Px();
+        sumPyDau+=dauDplus->Py();
+        sumPzDau+=dauDplus->Pz();
+        arrayDauLab[nFoundKpi++]=labDauDplus[iDplus];
+      }
+      if(nFoundKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      //Temp fix for B0->D-+pi- and B0bar->D+pi- decays in ITS upgrade productions
+      //if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundKpi++]=indDau;
+      if(nFoundKpi>4) return -1;
+    }
+  }
+
+  if(nPions!=3) return -1;
+  if(nKaons!=1) return -1;
+  //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+  //Fix implemented, loosening cut from 0.001 to 0.1. If >0.1, (-1*decay - 1) is returned.
+  Int_t decayB0temp = decayB0;
+  if(TMath::Abs(mcPart->Px()-sumPxDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  decayB0 = decayB0temp;
+  return decayB0;
+}
+//____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
   /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
   /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
