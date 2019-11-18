@@ -2534,7 +2534,7 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     AliAODTrack* track = static_cast<AliAODTrack*>(*part);
     if(!track) { continue; }
 
-    if(fColSystem == kPP || fColSystem == kPPb) {
+    if((fCentEstimator != kRFP) && (fColSystem == kPP || fColSystem == kPPb)) {
       Int_t counter = fIndexCentrality/10;
       fh2MeanMultRFP[counter]->Fill(track->Pt(), fVector[kCharged]->size());
     }
@@ -5642,7 +5642,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     fhChargedCounter = new TH1D("fhChargedCounter","Charged tracks: Counter",iNBinsChargedCounter,0,iNBinsChargedCounter);
     for(Int_t i(0); i < iNBinsChargedCounter; i++) fhChargedCounter->GetXaxis()->SetBinLabel(i+1, sChargedCounterLabel[i].Data() );
     fQACharged->Add(fhChargedCounter);
-    if(fColSystem == kPP || fColSystem == kPPb){
+    if( (fCentEstimator != kRFP) && (fColSystem == kPP || fColSystem == kPPb) ){
       Int_t counter = fCentBinNum/10;
       for(Int_t iCen(0); iCen < counter; ++iCen)
       {
