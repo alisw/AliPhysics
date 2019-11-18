@@ -120,6 +120,8 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fIsPileupMV(kFALSE),
   fPileupTrackZ(),
   fPileupTracktgl(),
+  fTPCpileupMultiplicity(),
+  fTPCpileupZ(),
   fIskINT7(kFALSE),
   fIskCentral(kFALSE),
   fIskSemiCentral(kFALSE),
@@ -152,6 +154,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fTPCNCrossedRows(0),
   fTPCNFindableCluster(0),
   fChi2TPCConstrainedVsGlobal(0),
+  fTPCsignalN(0),
   fTPCsignal(0),
   fTPCNsigmaEl(0),
   fTPCNsigmaPi(0),
@@ -228,6 +231,9 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   for(Int_t i=0;i<3;i++) fVertex[i] = 0;
   for(Int_t i=0;i<3;i++) fMCVertex[i] = 0;
   for(Int_t i=0;i<2;i++) fNITSCluster[i] = 0;
+
+  for(Int_t i=0;i<2;i++) fTPCpileupMultiplicity[i] = 0;
+  for(Int_t i=0;i<2;i++) fTPCpileupZ[i] = 0;
 
   for(Int_t i=0;i<2;i++){//Qx, Qy
     fQ2vectorTPC[i] = -999;
@@ -297,6 +303,8 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fIsPileupMV(kFALSE),
   fPileupTrackZ(),
   fPileupTracktgl(),
+  fTPCpileupMultiplicity(),
+  fTPCpileupZ(),
   fIskINT7(kFALSE),
   fIskCentral(kFALSE),
   fIskSemiCentral(kFALSE),
@@ -329,6 +337,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fTPCNCrossedRows(0),
   fTPCNFindableCluster(0),
   fChi2TPCConstrainedVsGlobal(0),
+  fTPCsignalN(0),
   fTPCsignal(0),
   fTPCNsigmaEl(0),
   fTPCNsigmaPi(0),
@@ -405,6 +414,9 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   for(Int_t i=0;i<3;i++) fVertex[i] = 0;
   for(Int_t i=0;i<3;i++) fMCVertex[i] = 0;
   for(Int_t i=0;i<2;i++) fNITSCluster[i] = 0;
+
+  for(Int_t i=0;i<2;i++) fTPCpileupMultiplicity[i] = 0;
+  for(Int_t i=0;i<2;i++) fTPCpileupZ[i] = 0;
 
   for(Int_t i=0;i<2;i++){//Qx, Qy
     fQ2vectorTPC[i] = -999;
@@ -476,6 +488,8 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
 
   fTree->Branch("fPileupTrackZ",&fPileupTrackZ);
   fTree->Branch("fPileupTracktgl",&fPileupTracktgl);
+  fTree->Branch("fTPCpileupMultiplicity",fTPCpileupMultiplicity,"fTPCpileupMultiplicity[2]/I");
+  fTree->Branch("fTPCpileupZ",fTPCpileupZ,"fTPCpileupZ[2]/F");
 
   fTree->Branch("fIskINT7",&fIskINT7,"fIskINT7/O");
   fTree->Branch("fIskCentral",&fIskCentral,"fIskCentral/O");
@@ -514,6 +528,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fTPCNFindableCluster",&fTPCNFindableCluster);
   fTree->Branch("fChi2TPCConstrainedVsGlobal",&fChi2TPCConstrainedVsGlobal);
 
+  fTree->Branch("fTPCsignalN",&fTPCsignalN);
   fTree->Branch("fTPCsignal",&fTPCsignal);
   fTree->Branch("fTPCNsigmaEl",&fTPCNsigmaEl);
   fTree->Branch("fTPCNsigmaPi",&fTPCNsigmaPi);
@@ -757,6 +772,14 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
   }
 
   Float_t DCAxy_PU = -999, DCAz_PU = -999, tgl = 0;
+  fTPCpileupMultiplicity[0] = 0;
+  fTPCpileupMultiplicity[1] = 0;
+  fTPCpileupZ[0] = 0;
+  fTPCpileupZ[1] = 0;
+  vector<Float_t> vec_puZ_pos;
+  vector<Float_t> vec_puZ_neg;
+  vec_puZ_pos.clear();
+  vec_puZ_neg.clear();
 
   const Int_t Ntrack = fEvent->GetNumberOfTracks();
   if(fESDEvent){
@@ -769,6 +792,8 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
         tgl = esdtrack->Pz() / esdtrack->Pt();
         fPileupTrackZ.push_back(esdtrack->GetZ());
         fPileupTracktgl.push_back(tgl);
+        if(tgl > +0.1) vec_puZ_pos.push_back(esdtrack->GetZ());
+        if(tgl < -0.1) vec_puZ_neg.push_back(esdtrack->GetZ());
       }
     }//end of track loop
   }//end of ESD
@@ -783,9 +808,20 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
         tgl = aodtrack->Pz() / aodtrack->Pt();
         fPileupTrackZ.push_back(av->GetZ());
         fPileupTracktgl.push_back(tgl);
+        if(tgl > +0.1) vec_puZ_pos.push_back(av->GetZ());
+        if(tgl < -0.1) vec_puZ_neg.push_back(av->GetZ());
       }
     }//end of track loop
   }//end of AOD
+  fTPCpileupMultiplicity[0] = Int_t(vec_puZ_pos.size());
+  fTPCpileupMultiplicity[1] = Int_t(vec_puZ_neg.size());
+  fTPCpileupZ[0] = Median(vec_puZ_pos);
+  fTPCpileupZ[1] = Median(vec_puZ_neg);
+
+  vec_puZ_pos.clear();
+  vec_puZ_neg.clear();
+  vector<Float_t>().swap(vec_puZ_pos);
+  vector<Float_t>().swap(vec_puZ_neg);
 
   fNTrackTPCout = 0;
   if(fESDEvent) fNTrackTPCout = fESDEvent->GetNTPCTrackBeforeClean();
@@ -836,17 +872,15 @@ void AliAnalysisTaskReducedTreeDS::FillTrackInfo()
       if(status & AliVTrack::kTPCout) fNTrackTPCout++;
     }
 
-    //track->GetImpactParameters(DCAxy,DCAz);
-    if(TMath::Abs(DCAxy) > 1.) continue;
-    if(TMath::Abs(DCAz) > 3.) continue;
-
     if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron) < fMinTPCNsigmaEleCut) continue;//pre-select electrons to reduce data size.
     if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron) > fMaxTPCNsigmaEleCut) continue;//pre-select electrons to reduce data size.
 
-    if(track->GetNcls(0) < 3)  continue;//minimum number of ITS cluster 3
-    if(track->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
-    if((Double_t)(track->GetTPCchi2()) / (Double_t)(track->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
-    if((Double_t)(track->GetITSchi2()) / (Double_t)(track->GetNcls(0)) > 5.) continue;//maximum chi2 per cluster ITS
+//    if(TMath::Abs(DCAxy) > 1.) continue;
+//    if(TMath::Abs(DCAz) > 3.) continue;
+//    if(track->GetNcls(0) < 3)  continue;//minimum number of ITS cluster 3
+//    if(track->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
+//    if((Double_t)(track->GetTPCchi2()) / (Double_t)(track->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
+//    if((Double_t)(track->GetITSchi2()) / (Double_t)(track->GetNcls(0)) > 5.) continue;//maximum chi2 per cluster ITS
 
     vector<Float_t> vec(3,0);
     vec[0] = track->Pt();
@@ -879,6 +913,7 @@ void AliAnalysisTaskReducedTreeDS::FillTrackInfo()
     fChi2TPCConstrainedVsGlobal.push_back(Chi2Global);
 
     //TPC PID info
+    fTPCsignalN.push_back(track->GetTPCsignalN());
     fTPCsignal.push_back(track->GetTPCsignal());
     fTPCNsigmaEl.push_back(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
     fTPCNsigmaPi.push_back(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
@@ -2178,6 +2213,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
   fTPCNFindableCluster.clear();
   fChi2TPCConstrainedVsGlobal.clear();
 
+  fTPCsignalN.clear();
   fTPCsignal.clear();
   fTPCNsigmaEl.clear();
   fTPCNsigmaPi.clear();
@@ -2285,6 +2321,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   vector<Int_t>().swap(fTPCNFindableCluster);
   vector<Float_t>().swap(fChi2TPCConstrainedVsGlobal);
 
+  vector<Int_t>().swap(fTPCsignalN);
   vector<Float_t>().swap(fTPCsignal);
   vector<Float_t>().swap(fTPCNsigmaEl);
   vector<Float_t>().swap(fTPCNsigmaPi);
