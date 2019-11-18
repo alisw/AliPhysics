@@ -16,6 +16,9 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 	AliPP13ClusterCuts cuts_eta = AliPP13ClusterCuts::GetClusterCuts();
 	cuts_eta.fAsymmetryCut = 0.7;
 
+	AliPP13ClusterCuts cuts_no_tof = AliPP13ClusterCuts::GetClusterCuts();
+	cuts_no_tof.fTimingCut = 999;
+
 
 	if (!isMC)
 	{
@@ -30,7 +33,7 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 		selections->Add(new AliPP13SpectrumSelection("Eta", "Physics Selection for eta meson", cuts_eta, &data_weights));
 		// selections->Add(new AliPP13SpectrumSelection("EtaPlain", "Physics Selection for eta meson no TOF cut efficiency", cuts_eta, &data_weights_plain));
 		selections->Add(new AliPP13TagAndProbeSelection("TagAndProbleTOF", "Cluster p_{T} Selection", cuts_pi0, &data_weights_plain));
-		selections->Add(new AliPP13QualityPhotonSelection("Qual", "Cluster quality Selection", cuts_pi0, &data_weights));
+		selections->Add(new AliPP13QualityPhotonSelection("Qual", "Cluster quality Selection", cuts_no_tof, &data_weights));
 		selections->Add(new AliPP13EpRatioSelection("EpRatio", "E/p ratio selection for electrons", cuts_pi0, &data_weights));
 
 		delete &data_weights;
