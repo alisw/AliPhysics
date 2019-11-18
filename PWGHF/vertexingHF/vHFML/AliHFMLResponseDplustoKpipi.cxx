@@ -91,10 +91,15 @@ void AliHFMLResponseDplustoKpipi::SetMapOfVariables(AliAODRecoDecayHF *cand, dou
     {
         AliAODTrack *dautrack = dynamic_cast<AliAODTrack *>(cand->GetDaughter(iProng));
 
-        pidHF->GetnSigmaTPC(dautrack, 2, fVars[Form("nsigTPC_Pi_%d", iProng)]);
-        pidHF->GetnSigmaTPC(dautrack, 3, fVars[Form("nsigTPC_K_%d", iProng)]);
-        pidHF->GetnSigmaTOF(dautrack, 2, fVars[Form("nsigTOF_Pi_%d", iProng)]);
-        pidHF->GetnSigmaTOF(dautrack, 3, fVars[Form("nsigTOF_K_%d", iProng)]);
+        double nsigma = -999.;
+        pidHF->GetnSigmaTPC(dautrack, 2, nsigma);
+        fVars[Form("nsigTPC_Pi_%d", iProng)] = nsigma;
+        pidHF->GetnSigmaTPC(dautrack, 3, nsigma);
+        fVars[Form("nsigTPC_K_%d", iProng)] = nsigma;
+        pidHF->GetnSigmaTOF(dautrack, 2, nsigma);
+        fVars[Form("nsigTOF_Pi_%d", iProng)] = nsigma;
+        pidHF->GetnSigmaTOF(dautrack, 3, nsigma);
+        fVars[Form("nsigTOF_K_%d", iProng)] = nsigma;
 
         fVars[Form("nsigComb_Pi_%d", iProng)] = CombineNsigmaTPCTOF(fVars[Form("nsigTPC_Pi_%d", iProng)], fVars[Form("nsigTOF_Pi_%d", iProng)]);
         fVars[Form("nsigComb_K_%d", iProng)] = CombineNsigmaTPCTOF(fVars[Form("nsigTPC_K_%d", iProng)], fVars[Form("nsigTOF_K_%d", iProng)]);

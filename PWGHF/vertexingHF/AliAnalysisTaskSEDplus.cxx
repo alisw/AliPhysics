@@ -1596,9 +1596,9 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminFD);
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxFD);
     //ML
-    nbinsFD[kVarForSparse-1] = 300;
-    xminFD[kVarForSparse-1] = 0.85;
-    xmaxFD[kVarForSparse-1] = 1.;
+    nbinsFD[kVarForSparseFD-1] = 300;
+    xminFD[kVarForSparseFD-1] = 0.85;
+    xmaxFD[kVarForSparseFD-1] = 1.;
   }
   else if (fSystem == kPbPb)
   {
@@ -1621,9 +1621,9 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminFD);
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxFD);
     //ML
-    nbinsFD[kVarForSparse-1] = 300;
-    xminFD[kVarForSparse-1] = 0.85;
-    xmaxFD[kVarForSparse-1] = 1.;
+    nbinsFD[kVarForSparseFD-1] = 300;
+    xminFD[kVarForSparseFD-1] = 0.85;
+    xmaxFD[kVarForSparseFD-1] = 1.;
   }
 
   Int_t nVarForSparse = kVarForSparse;
@@ -1647,8 +1647,8 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   for(Int_t iHisto = 0; iHisto < 2; iHisto++){
     for(Int_t iax=0; iax<nVarForSparse; iax++) {
       fSparseCutVars[iHisto]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-      fOutput->Add(fSparseCutVars[iHisto]);
     }
+    fOutput->Add(fSparseCutVars[iHisto]);
   }
   for(Int_t iax=0; iax<nVarForSparseFD; iax++) {
       fSparseCutVars[2]->GetAxis(iax)->SetTitle(axTitFD[iax].Data());
