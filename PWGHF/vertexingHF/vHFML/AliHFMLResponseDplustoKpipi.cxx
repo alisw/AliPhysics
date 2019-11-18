@@ -91,7 +91,7 @@ void AliHFMLResponseDplustoKpipi::SetMapOfVariables(AliAODRecoDecayHF *cand, dou
     {
         AliAODTrack *dautrack = dynamic_cast<AliAODTrack *>(cand->GetDaughter(iProng));
 
-        double nsigma = -999.
+        double nsigma = -999.;
         pidHF->GetnSigmaTPC(dautrack, 2, nsigma);
         fVars[Form("nsigTPC_Pi_%d", iProng)] = nsigma;
         pidHF->GetnSigmaTPC(dautrack, 3, nsigma);
