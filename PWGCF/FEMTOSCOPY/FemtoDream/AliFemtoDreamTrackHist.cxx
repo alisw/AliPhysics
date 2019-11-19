@@ -240,7 +240,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
 
     TString TOFbetaName = Form("TOFbeta_%s", sName[i].Data());
     fTOFbeta[i] = new TH2F(TOFbetaName.Data(), TOFbetaName.Data(), ptBins,
-                           ptmin, ptmax, 11 * twoDBins, -1.1, 1.1);
+                           ptmin, ptmax, 12 * twoDBins, -0.1, 1.1);
     fTOFbeta[i]->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
     fTOFbeta[i]->GetYaxis()->SetTitle("#beta_{TOF}");
 

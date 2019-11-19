@@ -848,12 +848,12 @@ void AliFemtoDreamTrack::SetMCInformation(AliMCEvent *mcEvent) {
 float AliFemtoDreamTrack::GetBeta(AliNanoAODTrack *track) const {
   static float c = 2.99792457999999984e-02;
   if (!fPIDResponse) {
-    return -1.f;
+    return -0.075f;
   }
 
   const float len = track->GetIntegratedLength();
   if (!(track->HasTOFpid() && (len > 350.))) {
-    return -1.f;
+    return -0.05f;
   }
   const float tim = track->GetTOFsignal()
       - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
@@ -865,7 +865,7 @@ float AliFemtoDreamTrack::GetBeta(AliAODTrack *track) const {
   const float len = track->GetIntegratedLength();
   if (!(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track)
       && (len > 350.))) {
-    return -1.;
+    return -0.05f;
   }
   const float tim = track->GetTOFsignal()
       - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
@@ -877,7 +877,7 @@ float AliFemtoDreamTrack::GetBeta(AliESDtrack *track) const {
   const float len = track->GetIntegratedLength();
   if (!(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track)
       && (len > 350.))) {
-    return -1.;
+    return -0.05f;
   }
   const float tim = track->GetTOFsignal()
       - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
