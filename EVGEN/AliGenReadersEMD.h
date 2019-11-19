@@ -3,10 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Class to read events from external (TNtupla) file
+// Class to read events from external (TNtuple) file
 // Events -> single EM dissociation of Pb nuclei
-// Data from RELDIS code (by I. Pshenichov)
-//
+// Data from RELDIS code (by I. Pshenichnov)
+// I. A. Pshenichnov, J. P. Bondorf, I. N. Mishustin, A. Ventura, and S. Masetti
+// Phys. Rev. C 64, 024903 – Published 13 July 2001
+
 #include "AliGenReader.h"
 
 

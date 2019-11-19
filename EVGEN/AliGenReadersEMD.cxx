@@ -14,10 +14,12 @@
  **************************************************************************/
 
 
-// Class to read events from external (TNtupla) file
+// Class to read events from external (TNtuple) file
 // Events -> neutron removal by EM dissociation of Pb nuclei
-// Data from RELDIS code (by I. Pshenichov)
-
+// Data from RELDIS code (by I. Pshenichnov)
+// I. A. Pshenichnov, J. P. Bondorf, I. N. Mishustin, A. Ventura, and S. Masetti
+// Phys. Rev. C 64, 024903 – Published 13 July 2001
+// 
 #include <TFile.h>
 #include <TParticle.h>
 #include <TTree.h>
@@ -189,7 +191,7 @@ Int_t AliGenReadersEMD::NextEvent()
 TParticle* AliGenReadersEMD::NextParticle()
 {
     // Read the next particle
-    Float_t p[4]={0.,0.,0.,0.};
+    Double_t p[4]={0.,0.,0.,0.};
     int pdgCode=0;
 
     if(fNparticle<fNneu){
@@ -223,7 +225,7 @@ TParticle* AliGenReadersEMD::NextParticle()
       p[2] = - p[2];
     }
 
-    Float_t ptot = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
+    Double_t ptot = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
     Double_t amass = TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
     p[3] = TMath::Sqrt(ptot*ptot+amass*amass);
 
@@ -231,12 +233,15 @@ TParticle* AliGenReadersEMD::NextParticle()
        Warning("Generate","Particle %d  E = %f GeV mass = %f GeV ",pdgCode,p[3],amass);
     }
 
-    //printf("  Pc %d:  PDGcode %d  p(%1.2f, %1.2f, %1.2f, %1.3f)\n",
-    	//fNparticle,pdgCode,p[0], p[1], p[2], p[3]);
-
+    // printf("  Pc %d:  PDGcode %d  p(%e, %e, %e, %e) M = %e\n",
+    //	   fNparticle,pdgCode,p[0], p[1], p[2], p[3], amass );
     TParticle* particle = new TParticle(pdgCode, 0, -1, -1, -1, -1,
     	p[0], p[1], p[2], p[3], 0., 0., 0., 0.);
     if((p[0]*p[0]+p[1]*p[1]+p[2]*p[2])>1e-5) particle->SetBit(kTransportBit);
+
+    //    printf("Check: %e\n", TMath::Sqrt( particle->Energy()*particle->Energy() - particle->P()*particle->P() ));
+
+    
     fNparticle++;
     return particle;
 }
