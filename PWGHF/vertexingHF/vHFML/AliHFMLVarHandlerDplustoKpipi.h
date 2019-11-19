@@ -24,16 +24,16 @@ class AliHFMLVarHandlerDplustoKpipi : public AliHFMLVarHandler
         AliHFMLVarHandlerDplustoKpipi(const AliHFMLVarHandlerDplustoKpipi &source) = delete;
         AliHFMLVarHandlerDplustoKpipi& operator=(const AliHFMLVarHandlerDplustoKpipi &source) = delete;
 
-        virtual TTree* BuildTree(TString name="tree", TString title="tree");
-        virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliAODPidHF *pidrespo=nullptr);
+        virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
+        virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliAODPidHF *pidrespo = nullptr);
 
     private:
-        float fImpParProng[knMaxProngs] = {-999.,-999.,-999.,-999.}; ///prong impact parameter
-        float fSigmaVertex = -999.; /// candidate sigma vertex
-        float fNormd0MeasMinusExp = -999.; ///candidate topomatic variable
+        float fImpParProng[knMaxProngs] = {-999., -999., -999., -999.};  ///prong impact parameter
+        float fSigmaVertex = -999.;                                      /// candidate sigma vertex
+        float fNormd0MeasMinusExp = -999.;                               ///candidate topomatic variable
 
         /// \cond CLASSIMP
-        ClassDef(AliHFMLVarHandlerDplustoKpipi,1); /// 
+        ClassDef(AliHFMLVarHandlerDplustoKpipi, 1); /// 
         /// \endcond
 };
 #endif

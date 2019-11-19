@@ -37,8 +37,8 @@ class AliHFMLVarHandlerDstoKKpi : public AliHFMLVarHandler
         AliHFMLVarHandlerDstoKKpi(const AliHFMLVarHandlerDstoKKpi &source) = delete;
         AliHFMLVarHandlerDstoKKpi& operator=(const AliHFMLVarHandlerDstoKKpi &source) = delete;
 
-        virtual TTree* BuildTree(TString name="tree", TString title="tree");
-        virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliAODPidHF *pidrespo=nullptr);
+        virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
+        virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliAODPidHF *pidrespo = nullptr);
 
         void SetMassKKOption(int opt) {fMassKKOpt = opt;}
         void SetIsDplustoKKpi(bool isDplus) {
@@ -49,16 +49,16 @@ class AliHFMLVarHandlerDstoKKpi : public AliHFMLVarHandler
         }
 
     private:
-        float fImpParProng[knMaxProngs] = {-999.,-999.,-999.,-999.};  /// prong impact parameter
-        float fSigmaVertex = -999.;                                   /// candidate sigma vertex
-        float fMassKK = -999.;                                        /// candidate massKK
-        float fCosPiDs = -999.;                                       /// candidate cos3piDs
-        float fCosPiKPhi = -999.;                                     /// candidate cospiKphi
-        float fNormd0MeasMinusExp = -999.;                            /// candidate topomatic variable
-        int fMassKKOpt = kDeltaMassKKPhi;                             /// option for massKK variable (mass or delta mass wrt phi)
+        float fImpParProng[knMaxProngs] = {-999., -999., -999., -999.};  /// prong impact parameter
+        float fSigmaVertex = -999.;                                      /// candidate sigma vertex
+        float fMassKK = -999.;                                           /// candidate massKK
+        float fCosPiDs = -999.;                                          /// candidate cos3piDs
+        float fCosPiKPhi = -999.;                                        /// candidate cospiKphi
+        float fNormd0MeasMinusExp = -999.;                               /// candidate topomatic variable
+        int fMassKKOpt = kDeltaMassKKPhi;                                /// option for massKK variable (mass or delta mass wrt phi)
 
         /// \cond CLASSIMP
-        ClassDef(AliHFMLVarHandlerDstoKKpi,1); /// 
+        ClassDef(AliHFMLVarHandlerDstoKKpi, 1); /// 
         /// \endcond
 };
 #endif

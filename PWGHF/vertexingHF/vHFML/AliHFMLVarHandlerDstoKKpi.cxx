@@ -31,7 +31,7 @@ AliHFMLVarHandlerDstoKKpi::AliHFMLVarHandlerDstoKKpi() : AliHFMLVarHandler()
     //
     // Default constructor
     //
-    fNProngs=3; // --> cannot be changed
+    fNProngs = 3; // --> cannot be changed
 }
 
 //________________________________________________________________
@@ -40,7 +40,7 @@ AliHFMLVarHandlerDstoKKpi::AliHFMLVarHandlerDstoKKpi(int PIDopt, int massopt) : 
     //
     // Standard constructor
     //
-    fNProngs=3; // --> cannot be changed
+    fNProngs = 3; // --> cannot be changed
     SetMassKKOption(massopt);
 }
 
@@ -57,42 +57,48 @@ TTree* AliHFMLVarHandlerDstoKKpi::BuildTree(TString name, TString title)
 {
     if(fTreeVar) {
         delete fTreeVar;
-        fTreeVar=nullptr;
+        fTreeVar = nullptr;
     }
-    fTreeVar = new TTree(name.Data(),title.Data());
+    fTreeVar = new TTree(name.Data(), title.Data());
 
     //set common variables
     AddCommonDmesonVarBranches();
     //set single-track variables
-    AddSingleTrackBranches();
+    if(fAddSingleTrackVar)
+        AddSingleTrackBranches();
     //sed pid variables
-    if(fPidOpt!=kNoPID) 
-        AddPidBranches(true,true,false,true,true);
+    if(fPidOpt != kNoPID) 
+        AddPidBranches(true, true, false, true, true);
 
     //set Ds variables
-    TString massKKname="";
-    if(fMassKKOpt==kMassKK) 
+    TString massKKname = "";
+    if(fMassKKOpt == kMassKK) 
         massKKname = "mass_KK";
-    else if(fMassKKOpt==kDeltaMassKKPhi) 
+    else if(fMassKKOpt == kDeltaMassKKPhi) 
         massKKname = "delta_mass_KK";
 
-    fTreeVar->Branch("sig_vert",&fSigmaVertex);
-    fTreeVar->Branch(massKKname.Data(),&fMassKK);
-    fTreeVar->Branch("cos_PiDs",&fCosPiDs);
-    fTreeVar->Branch("cos_PiKPhi_3",&fCosPiKPhi);
-    fTreeVar->Branch("max_norm_d0d0exp",&fNormd0MeasMinusExp);
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++)
-        fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
-        
+    fTreeVar->Branch("sig_vert", &fSigmaVertex);
+    fTreeVar->Branch(massKKname.Data(), &fMassKK);
+    fTreeVar->Branch("cos_PiDs", &fCosPiDs);
+    fTreeVar->Branch("cos_PiKPhi_3", &fCosPiKPhi);
+    fTreeVar->Branch("max_norm_d0d0exp", &fNormd0MeasMinusExp);
+
+    if(fAddSingleTrackVar) {
+        for(unsigned int iProng = 0; iProng < fNProngs; iProng++)
+            fTreeVar->Branch(Form("imp_par_prong%d", iProng), &fImpParProng[iProng]);
+    }
+
     return fTreeVar;
 }
 
 //________________________________________________________________
 bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliAODPidHF *pidrespo) 
 {
-    if(!cand) return false;
+    if(!cand) 
+        return false;
     if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-        if(!(fCandType&kSignal || fCandType&kRefl)) return true;
+        if(!(fCandType&kSignal || fCandType&kRefl)) 
+            return true;
     }
     
     //topological variables
@@ -104,42 +110,49 @@ bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfie
     fCosP = cand->CosPointingAngle();
     fCosPXY = cand->CosPointingAngleXY();
     fImpParXY = cand->ImpParXY();
-    fDCA  =cand->GetDCA();
-    fNormd0MeasMinusExp = ComputeMaxd0MeasMinusExp(cand,bfield);
+    fDCA = cand->GetDCA();
+    fNormd0MeasMinusExp = ComputeMaxd0MeasMinusExp(cand, bfield);
 
     //Ds+ -> KKpi variables
-    fSigmaVertex = ((AliAODRecoDecayHF3Prong*)cand)->GetSigmaVert();
+    AliAODRecoDecayHF3Prong* cand3p = (AliAODRecoDecayHF3Prong*)cand;
+    fSigmaVertex = cand3p->GetSigmaVert();
     float massPhi = 0;
     float cospikphi =-2;
-    if(fMassKKOpt==kDeltaMassKKPhi) 
+    if(fMassKKOpt == kDeltaMassKKPhi)
         massPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
-    if(masshypo==kKKpi){ //phiKKpi
-        fInvMass = ((AliAODRecoDecayHF3Prong*)cand)->InvMassDsKKpi();
-        fMassKK = TMath::Abs(((AliAODRecoDecayHF3Prong*)cand)->InvMass2Prongs(0,1,321,321)-massPhi);
-        fCosPiDs = ((AliAODRecoDecayHF3Prong*)cand)->CosPiDsLabFrameKKpi();
-        cospikphi = ((AliAODRecoDecayHF3Prong*)cand)->CosPiKPhiRFrameKKpi();
+    if(masshypo == kKKpi){ //phiKKpi
+        fInvMass = cand3p->InvMassDsKKpi();
+        fMassKK = TMath::Abs(cand3p->InvMass2Prongs(0, 1, 321, 321) - massPhi);
+        fCosPiDs = cand3p->CosPiDsLabFrameKKpi();
+        cospikphi = cand3p->CosPiKPhiRFrameKKpi();
     }
-    else if(masshypo==kpiKK){ //phipiKK
-        fInvMass = ((AliAODRecoDecayHF3Prong*)cand)->InvMassDspiKK();
-        fMassKK = TMath::Abs(((AliAODRecoDecayHF3Prong*)cand)->InvMass2Prongs(1,2,321,321)-massPhi);
-        fCosPiDs = ((AliAODRecoDecayHF3Prong*)cand)->CosPiDsLabFramepiKK();
-        cospikphi = ((AliAODRecoDecayHF3Prong*)cand)->CosPiKPhiRFramepiKK();
+    else if(masshypo == kpiKK){ //phipiKK
+        fInvMass = cand3p->InvMassDspiKK();
+        fMassKK = TMath::Abs(cand3p->InvMass2Prongs(1, 2, 321, 321) - massPhi);
+        fCosPiDs = cand3p->CosPiDsLabFramepiKK();
+        cospikphi = cand3p->CosPiKPhiRFramepiKK();
     }
-    fCosPiKPhi = cospikphi*cospikphi*cospikphi;
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++)
-        fImpParProng[iProng] = cand->Getd0Prong(iProng);
+    fCosPiKPhi = cospikphi * cospikphi * cospikphi;
         
     //single-track variables
     AliAODTrack* prongtracks[3];
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++) prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
-    bool setsingletrack = SetSingleTrackVars(prongtracks);  
-    if(!setsingletrack) return false;
+    for(unsigned int iProng = 0; iProng < fNProngs; iProng++) 
+        prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
+
+    if(fAddSingleTrackVar) {
+        bool setsingletrack = SetSingleTrackVars(prongtracks);  
+        if(!setsingletrack) 
+            return false;
+        for(unsigned int iProng = 0; iProng < fNProngs; iProng++)
+            fImpParProng[iProng] = cand->Getd0Prong(iProng);
+    }
 
     //pid variables
-    if(fPidOpt==kNoPID) return true;
-
-    bool setpid = SetPidVars(prongtracks,pidrespo,true,true,false,true,true);
-    if(!setpid) return false;
+    if(fPidOpt != kNoPID) {
+        bool setpid = SetPidVars(prongtracks, pidrespo, true, true, false, true, true);
+        if(!setpid) 
+            return false;
+    }
 
     return true;
 }

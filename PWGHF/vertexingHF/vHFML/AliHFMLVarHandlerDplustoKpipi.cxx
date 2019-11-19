@@ -28,7 +28,7 @@ AliHFMLVarHandlerDplustoKpipi::AliHFMLVarHandlerDplustoKpipi() : AliHFMLVarHandl
     //
     // Default constructor
     //
-    fNProngs=3; // --> cannot be changed
+    fNProngs = 3; // --> cannot be changed
 }
 
 //________________________________________________________________
@@ -37,7 +37,7 @@ AliHFMLVarHandlerDplustoKpipi::AliHFMLVarHandlerDplustoKpipi(int PIDopt) : AliHF
     //
     // Standard constructor
     //
-   fNProngs=3; // --> cannot be changed
+   fNProngs = 3; // --> cannot be changed
 }
 
 //________________________________________________________________
@@ -53,22 +53,27 @@ TTree* AliHFMLVarHandlerDplustoKpipi::BuildTree(TString name, TString title)
 {
     if(fTreeVar) {
         delete fTreeVar;
-        fTreeVar=nullptr;
+        fTreeVar = nullptr;
     }
-    fTreeVar = new TTree(name.Data(),title.Data());
+    fTreeVar = new TTree(name.Data(), title.Data());
 
     //set common variables
     AddCommonDmesonVarBranches();
     //set single-track variables
-    AddSingleTrackBranches();
+    if(fAddSingleTrackVar)
+        AddSingleTrackBranches();
     //set PID variables
-    if(fPidOpt!=kNoPID) AddPidBranches(true,true,false,true,true);
+    if(fPidOpt != kNoPID) 
+        AddPidBranches(true, true, false, true, true);
 
     //set D+ variables
-    fTreeVar->Branch("sig_vert",&fSigmaVertex);
-    fTreeVar->Branch("max_norm_d0d0exp",&fNormd0MeasMinusExp);
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++)
-        fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
+    fTreeVar->Branch("sig_vert", &fSigmaVertex);
+    fTreeVar->Branch("max_norm_d0d0exp", &fNormd0MeasMinusExp);
+
+    if(fAddSingleTrackVar) {
+        for(unsigned int iProng = 0; iProng < fNProngs; iProng++)
+            fTreeVar->Branch(Form("imp_par_prong%d", iProng), &fImpParProng[iProng]);
+    }
 
     return fTreeVar;
 }
@@ -76,42 +81,51 @@ TTree* AliHFMLVarHandlerDplustoKpipi::BuildTree(TString name, TString title)
 //________________________________________________________________
 bool AliHFMLVarHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliAODPidHF *pidrespo) 
 {
-    if(!cand) return false;
+    if(!cand) 
+        return false;
     if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-        if(!(fCandType&kSignal)) return true;
+        if(!(fCandType&kSignal)) 
+            return true;
     }
     
     fCandType &= ~kRefl; //protection --> D+->Kpipi cannot be reflected
 
     //topological variables
     //common
-    fPt=cand->Pt();
-    fDecayLength=cand->DecayLength();
-    fDecayLengthXY=cand->DecayLengthXY();
-    fNormDecayLengthXY=cand->NormalizedDecayLengthXY();
-    fCosP=cand->CosPointingAngle();
-    fCosPXY=cand->CosPointingAngleXY();
-    fImpParXY=cand->ImpParXY();
-    fDCA=cand->GetDCA();
-    fNormd0MeasMinusExp=ComputeMaxd0MeasMinusExp(cand,bfield);
+    fPt = cand->Pt();
+    fDecayLength = cand->DecayLength();
+    fDecayLengthXY = cand->DecayLengthXY();
+    fNormDecayLengthXY = cand->NormalizedDecayLengthXY();
+    fCosP = cand->CosPointingAngle();
+    fCosPXY = cand->CosPointingAngleXY();
+    fImpParXY = cand->ImpParXY();
+    fDCA = cand->GetDCA();
+    fNormd0MeasMinusExp = ComputeMaxd0MeasMinusExp(cand, bfield);
 
     //D+ -> Kpipi variables
-    fInvMass=((AliAODRecoDecayHF3Prong*)cand)->InvMassDplus();
-    fSigmaVertex=((AliAODRecoDecayHF3Prong*)cand)->GetSigmaVert();
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++)
-        fImpParProng[iProng]=cand->Getd0Prong(iProng);
+    AliAODRecoDecayHF3Prong* cand3p = (AliAODRecoDecayHF3Prong*)cand;
+    fInvMass = cand3p->InvMassDplus();
+    fSigmaVertex = cand3p->GetSigmaVert();
         
     //single track variables
     AliAODTrack* prongtracks[3];
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++) prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
-    bool setsingletrack = SetSingleTrackVars(prongtracks);  
-    if(!setsingletrack) return false;
+    for(unsigned int iProng = 0; iProng < fNProngs; iProng++) 
+        prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
+
+    if(fAddSingleTrackVar) {
+        bool setsingletrack = SetSingleTrackVars(prongtracks);  
+        if(!setsingletrack) 
+            return false;
+        for(unsigned int iProng = 0; iProng < fNProngs; iProng++)
+            fImpParProng[iProng] = cand->Getd0Prong(iProng);
+    }
 
     //pid variables
-    if(fPidOpt==kNoPID) return true;
-
-    bool setpid = SetPidVars(prongtracks,pidrespo,true,true,false,true,true);
-    if(!setpid) return false;
+    if(fPidOpt != kNoPID) {
+        bool setpid = SetPidVars(prongtracks, pidrespo, true, true, false, true, true);
+        if(!setpid) 
+            return false;
+    }
 
     return true;
 }
