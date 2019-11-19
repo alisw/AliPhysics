@@ -94,7 +94,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fCutGeoNcrNclGeom1Pt(1.5),
   fCutGeoNcrNclFractionNcr(0.9),
   fCutGeoNcrNclFractionNcl(0.7),
-  fWhichCuts(kStdITSTPCTrkCuts2011),
+  fWhichCuts(kDefault),
   fTPCclstCut(1)
 {
 
@@ -141,7 +141,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   fCutGeoNcrNclGeom1Pt(1.5),
   fCutGeoNcrNclFractionNcr(0.9),
   fCutGeoNcrNclFractionNcl(0.7),
-  fWhichCuts(kStdITSTPCTrkCuts2011),
+  fWhichCuts(kDefault),
   fTPCclstCut(1)
 {
   //
@@ -183,12 +183,12 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   // NB: the default case is kStdITSTPCTrkCuts2011 with fTPCclstCut=1
   switch (fWhichCuts)
   {
-  // OLD CONFIGURATION
-  //case kDefault:
-    //printf("\n### kDefault case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);   ---> cut on TPC # clusters\n   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(%.2f);\n\n",fCrossRowsOverFndCltTPC);
-    //fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
-    //fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
-    //break;
+  // backward compatibility
+  case kDefault:
+    printf("\n### kDefault case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);   ---> cut on TPC # clusters\n   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(%.2f);\n\n",fCrossRowsOverFndCltTPC);
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
+    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
+    break;
   
   case kStdTPConlyTrkCuts:
     printf("\n### kStdTPConlyTrkCuts case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();\n\n");

@@ -40,6 +40,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
 
   // list of possible standard ESD track cuts set
   enum EtrkCuts {
+    kDefault=0,
     kStdTPConlyTrkCuts=1,
     kStdITSTPCTrkCuts2009,
     kStdITSTPCTrkCuts2010,
