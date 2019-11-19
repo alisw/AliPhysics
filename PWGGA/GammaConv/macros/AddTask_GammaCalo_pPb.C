@@ -418,6 +418,16 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("84662113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
     cuts.AddCutCalo("86062113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
 
+  // JJ MC cut strings
+  } else if (trainConfig == 360) {  // min energy = 0.3 GeV/c
+    cuts.AddCutCalo("80010123","2444400041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCutCalo("80062123","2444400041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+  } else if (trainConfig == 361) {  // PHOS default cent dep
+    cuts.AddCutCalo("80210123","2444401041013200000","0163103100000010"); // 0-20
+    cuts.AddCutCalo("82410123","2444401041013200000","0163103100000010"); // 20-40
+    cuts.AddCutCalo("84610123","2444401041013200000","0163103100000010"); // 40-60
+    cuts.AddCutCalo("86010123","2444401041013200000","0163103100000010"); // 60-100
+
   // ===============================================================================================
   // Run 2 data PHOS clusters pPb 5TeV
   // ===============================================================================================
