@@ -1639,6 +1639,10 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   if (fReadMC)
   {
     TString label[3] = {"fromC", "fromB", "bkg"};
+    Int_t nSparseReco = 2;
+    if(fFillBkgSparse)
+      nSparseReco = 3;
+
     for (Int_t iHist = 0; iHist < 2; iHist++)
     {
       TString titleSparse = Form("MC nSparse (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
@@ -1657,7 +1661,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
         fOutput->Add(fnSparseMCDplus[iHist]);
       }
     }
-    for (Int_t iHist = 2; iHist < 5; iHist++)
+    for (Int_t iHist = 2; iHist < nSparseReco + 2; iHist++)
     {
       fnSparseMC[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
       for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
