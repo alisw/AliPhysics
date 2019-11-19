@@ -200,8 +200,7 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarWithKinks
   //-----------------------------------------------------------------------------------------------
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
-// gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigLambdaStarWithKinks.C");
-  gROOT->LoadMacro("ConfigLambdaStarWithKinks.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigLambdaStarWithKinks.C");
   if (!ConfigLambdaStarWithKinks(task, isMC, collSys, cutsPair, cutsPairY, enaMultSel, masslow, massup, nbins, nsigma, 
 enableMonitor, kaonPIDCut)) 
 return 0x0;
