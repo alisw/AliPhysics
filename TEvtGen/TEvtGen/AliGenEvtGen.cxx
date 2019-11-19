@@ -25,6 +25,7 @@
 
 #include "AliStack.h"
 #include "AliGenEvtGen.h"
+#include "AliGenEventHeader.h"
 #include "AliRun.h"
 #include "AliLog.h"
 #include <TParticle.h>
@@ -108,6 +109,8 @@ void AliGenEvtGen::Generate()
   if(!fStack) {Info("Generate","Error: No stack found!"); return;}
   nPrimsPythia = fStack->GetNprimary();  
   AliDebug(1,Form("nPrimsPythia = %d \n",nPrimsPythia));
+  int npushedPart = 0;
+  
   for (Int_t iTrack = 0; iTrack < nPrimsPythia; ++iTrack) {
   TParticle *part = fStack->Particle(iTrack);
   Int_t pdg=part->GetPdgCode();
@@ -172,7 +175,7 @@ void AliGenEvtGen::Generate()
  
   origin0[0]=part->Vx(); //[cm]
   origin0[1]=part->Vy(); //[cm]
-  origin0[2]=part->Vz(); //[cm]
+  origin0[2]=part->Vz(); //[cm] 
   //
   // Put decay products on the stack
   //
@@ -203,11 +206,22 @@ void AliGenEvtGen::Generate()
          pParent[i] = nt;
          KeepTrack(nt);
          SetHighWaterMark(nt);
+         npushedPart += 1;
          }// Particle loop
          particles->Clear();
      	 if (trackIt)    delete[] trackIt;
-         if (pParent)    delete[] pParent;
+         if (pParent)    delete[] pParent; 
        }
+   
+  // Add Header to preserve index generator assignment
+  AliGenEventHeader* header = new AliGenEventHeader("EvtGenDecay");
+  // Event Vertex
+  header->SetPrimaryVertex(fVertex);
+  header->SetInteractionTime(fTime);
+  header->SetNProduced(npushedPart);
+  if (fContainer) fContainer->AddHeader(header);
+  else gAlice->SetGenEventHeader(header); 
+
   Info("Generate","AliGenEvtGen DONE");  
   }
 
