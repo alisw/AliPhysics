@@ -94,8 +94,8 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fCutGeoNcrNclGeom1Pt(1.5),
   fCutGeoNcrNclFractionNcr(0.9),
   fCutGeoNcrNclFractionNcl(0.7),
-  fWhichCuts(kDefault),
-  fTPCclstCut(0)
+  fWhichCuts(kStdITSTPCTrkCuts2011),
+  fTPCclstCut(1)
 {
 
 }
@@ -141,8 +141,8 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   fCutGeoNcrNclGeom1Pt(1.5),
   fCutGeoNcrNclFractionNcr(0.9),
   fCutGeoNcrNclFractionNcl(0.7),
-  fWhichCuts(kDefault),
-  fTPCclstCut(0)
+  fWhichCuts(kStdITSTPCTrkCuts2011),
+  fTPCclstCut(1)
 {
   //
   // standard constructur
@@ -180,14 +180,15 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   //reproduce filtering cuts
   fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
   // choose a standard ESD track cut configuration, otherwise use the ESDtrackCuts object passed with SETESDtrackCuts function 
-  // NB: the default case is kDefault
+  // NB: the default case is kStdITSTPCTrkCuts2011 with fTPCclstCut=1
   switch (fWhichCuts)
   {
-  case kDefault:
-    printf("\n### kDefault case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);   ---> cut on TPC # clusters\n   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(%.2f);\n\n",fCrossRowsOverFndCltTPC);
-    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
-    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
-    break;
+  // OLD CONFIGURATION
+  //case kDefault:
+    //printf("\n### kDefault case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);   ---> cut on TPC # clusters\n   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(%.2f);\n\n",fCrossRowsOverFndCltTPC);
+    //fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
+    //fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
+    //break;
   
   case kStdTPConlyTrkCuts:
     printf("\n### kStdTPConlyTrkCuts case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();\n\n");
