@@ -205,6 +205,63 @@ public:
     std::vector<Bool_t> SecondaryDielectronPairFromSameMother;
   };
 
+  class TwoPair{
+  public:
+    TwoPair() :
+      fPt(-99), fEta(-99), fPhi(-99), fMass(-99), fCharge(-99)/*, fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.)*/, fDaughterTrackID_1(0), fDaughterTrackID_2(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed() /*, fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal_primary(), isMCSignal_secondary(), isReconstructed_primary(), isReconstructed_secondary(), PrimaryDielectronPairFromSameMother(), SecondaryDielectronPairFromSameMother()*/ {}
+    TwoPair(double pt, double eta, double phi, double mass, short charge) :
+      fPt(pt), fEta(eta), fPhi(phi), fMass(mass), fCharge(charge)/*, fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.)*/, fDaughterTrackID_1(0), fDaughterTrackID_2(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed()/*, fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal_primary(), isMCSignal_secondary(), isReconstructed_primary(), isReconstructed_secondary(), PrimaryDielectronPairFromSameMother(), SecondaryDielectronPairFromSameMother()*/ {}
+
+    void SetMCTwoSignal_acc_prim (std::vector<Bool_t> vec) {fMCTwoSignal_acc_prim = vec;}
+    void SetMCTwoSignal_acc_sec  (std::vector<Bool_t> vec) {fMCTwoSignal_acc_sec = vec;}
+    void SetDautherTrackID(int id1, int id2) {fDaughterTrackID_1 = id1; fDaughterTrackID_2 = id2;}
+    void SetDauthersAreReconstructed(std::vector<Bool_t> vec1, std::vector<Bool_t> vec2) {fFirstPartIsReconstructed = vec1, fSecondPartIsReconstructed = vec2;}
+
+    std::vector<Bool_t> GetMCTwoSignal_acc_prim () {return fMCTwoSignal_acc_prim;}
+    std::vector<Bool_t> GetMCTwoSignal_acc_sec  () {return fMCTwoSignal_acc_sec;}
+    int GetFirstDaughter() {return fDaughterTrackID_1;}
+    int GetSecondDaughter() {return fDaughterTrackID_2;}
+
+  //   void SetTrackID(int id) {fTrackID = id;}
+  //   void SetMotherID(int id) {fMotherID = id;}
+  //   void SetMCSignalPair (bool value) {fMCSignalPair = value;}
+  //   void SetULSSignalPair(bool value) {fULSSignalPair = value;}
+  //   void SetPrimaryDielectronPairFromSameMother(std::vector<Bool_t> vec){PrimaryDielectronPairFromSameMother = vec;}
+  //   void SetSecondaryDielectronPairFromSameMother(std::vector<Bool_t> vec){SecondaryDielectronPairFromSameMother = vec;}
+  //
+  //
+  //   int  GetTrackID() {return fTrackID;}
+  //   int  GetMotherID() {return fMotherID;}
+  //   bool GetMCSignalPair() {return fMCSignalPair;}
+  //   bool GetULSSignalPair() {return fULSSignalPair;}
+  //
+    double  fPt;
+    double  fEta;
+    double  fPhi;
+    double  fMass;
+    short   fCharge;
+    std::vector<Bool_t> fMCTwoSignal_acc_prim;
+    std::vector<Bool_t> fMCTwoSignal_acc_sec;
+    int fDaughterTrackID_1;
+    int fDaughterTrackID_2;
+    std::vector<Bool_t> fFirstPartIsReconstructed;
+    std::vector<Bool_t> fSecondPartIsReconstructed;
+  //   double  fPt_smeared;
+  //   double  fEta_smeared;
+  //   double  fPhi_smeared;
+  //   int     fTrackID;
+  //   int     fMotherID;
+  //   int     fGrandMotherID;
+  //   bool    fMCSignalPair;
+  //   bool    fULSSignalPair;
+  //   std::vector<Bool_t> isMCSignal_primary;
+  //   std::vector<Bool_t> isMCSignal_secondary;
+  //   std::vector<Bool_t> isReconstructed_primary;
+  //   std::vector<Bool_t> isReconstructed_secondary;
+  //   std::vector<Bool_t> PrimaryDielectronPairFromSameMother;
+  //   std::vector<Bool_t> SecondaryDielectronPairFromSameMother;
+  };
+
 private:
   enum {kAllEvents=0, kPhysicsSelectionEvents, kFilteredEvents , kCentralityEvents, kLastBin};
 
@@ -224,8 +281,9 @@ private:
   void    CreateSupportHistos();
 
   // Function to do reconstructed two pairing and filling histogramms
-  void   DoGenAndGenSmearTwoPairing(std::vector<Particle>* vec_negParticle, std::vector<Particle>* vec_posParticle, Bool_t PartPrimary, double centralityWeight);
+  void   DoGenAndGenSmearTwoPairing(std::vector<Particle>* vec_negParticle, std::vector<Particle>* vec_posParticle, Bool_t PartPrimary, Bool_t SmearedPair, double centralityWeight);
   void   DoRecTwoPairing(std::vector<Particle> fRecNegPart, std::vector<Particle> fRecPosPart, std::vector<AliDielectronSignalMC> fPairMCSignal, Bool_t PartPrimary, double centralityWeight);
+  void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, double centralityWeight);
 
   void    FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack);
   void    FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack);
@@ -339,8 +397,11 @@ private:
   std::string fCentralityFilename;
   TH1F* fHistCentralityCorrection;
   TList* fOutputListSupportHistos;
-  TList* fPrimarySupportHistos;
-  TList* fSecondarySupportHistos;
+
+  std::vector<TList*> fCutListVecPrim;    // Vector filled with each applied primary cutsetting
+  std::vector<TList*> fCutListVecSec;     // Vector filled with each applied secondary cutsetting
+  // TList* fPrimarySupportHistos;
+  // TList* fSecondarySupportHistos;
 
   std::vector<TH3D*> fHistGenPrimaryPosPart;
   std::vector<TH3D*> fHistGenPrimaryNegPart;
@@ -395,17 +456,40 @@ private:
   Bool_t fDoULSandLS;
   Bool_t fDeactivateLS;
   Bool_t fDoMassCut;
+
   std::vector<Particle> fGenNegPart;
   std::vector<Particle> fGenPosPart;
+  std::vector<Particle> fGenNegPart_primary;
+  std::vector<Particle> fGenPosPart_primary;
+  std::vector<Particle> fGenNegPart_secondary;
+  std::vector<Particle> fGenPosPart_secondary;
+  std::vector<Particle> fGenSmearedNegPart;
+  std::vector<Particle> fGenSmearedPosPart;
+  std::vector<Particle> fGenSmearedNegPart_primary;
+  std::vector<Particle> fGenSmearedPosPart_primary;
+  std::vector<Particle> fGenSmearedNegPart_secondary;
+  std::vector<Particle> fGenSmearedPosPart_secondary;
   std::vector<Particle> fRecNegPart_primary;
   std::vector<Particle> fRecPosPart_primary;
   std::vector<Particle> fRecNegPart_secondary;
   std::vector<Particle> fRecPosPart_secondary;
   std::vector<Particle> fRecNegPart_PrimAndSec;
   std::vector<Particle> fRecPosPart_PrimAndSec;
-  std::vector<Particle> fGenNegPart_PrimAndSec;
-  std::vector<Particle> fGenPosPart_PrimAndSec;
+  // std::vector<Particle> fGenNegPart_PrimAndSec;
+  // std::vector<Particle> fGenPosPart_PrimAndSec;
 
+  std::vector<TwoPair>  fGenPairVec_primary;
+  std::vector<TwoPair>  fGenPairVec_secondary;
+  std::vector<TwoPair>  fGenSmearedPairVec_primary;
+  std::vector<TwoPair>  fGenSmearedPairVec_secondary;
+  std::vector<TwoPair>  fRecPairVec_primary;
+  std::vector<TwoPair>  fRecPairVec_secondary;
+
+// Nur fuer zwischen Priefung
+  // std::vector<TwoPair>  PrimGenPairVec;
+  // std::vector<TwoPair>  SecGenPairVec;
+  // std::vector<TwoPair>  PrimGenSmearPairVec;
+  // std::vector<TwoPair>  SecGenSmearPairVec;
 
 
   bool fDoCocktailWeighting;

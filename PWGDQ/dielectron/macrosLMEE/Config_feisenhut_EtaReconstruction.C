@@ -8,12 +8,12 @@
 
 // Cuts for primary electrons
 // TString names_Prim_Cuts=("noPID");     // still has kin cuts (pt 75 MeV/c)
-TString names_Prim_Cuts=("noPID_pt200");  // still has kin cuts (pt 200 MeV/c)
+// TString names_Prim_Cuts=("noPID_pt200");  // still has kin cuts (pt 200 MeV/c)
 // TString names_Prim_Cuts=("onlyJPID_sum_noTrackCuts");
 // TString names_Prim_Cuts=("JPID_sum_pt75");
 // TString names_Prim_Cuts=("JPID_sum_pt200");
 // TString names_Prim_Cuts=("JPID_sum_pt75_secondary");
-// TString names_Prim_Cuts=("TESTCutsetting");
+TString names_Prim_Cuts=("noPID;TESTCutsetting1;TESTCutsetting2;JPID_sum_pt75");
                                                                                 // TString names_Prim_Cuts=("onlyPIDcut1_noTrackCuts");
                                                                                 // TString names_Prim_Cuts=("cut1_pt75");
                                                                                 // TString names_Prim_Cuts=("noPID;cut1_pt75");
@@ -22,12 +22,12 @@ TString names_Prim_Cuts=("noPID_pt200");  // still has kin cuts (pt 200 MeV/c)
 
 // Cuts for secondary electrons
 // TString names_Sec_Cuts=("noPID");      // still has kin cuts (pt 75 MeV/c)
-TString names_Sec_Cuts=("noPID_pt200");   // still has kin cuts (pt 200 MeV/c)
+// TString names_Sec_Cuts=("noPID_pt200");   // still has kin cuts (pt 200 MeV/c)
 // TString names_Sec_Cuts=("onlyJPID_sum_noTrackCuts");
 // TString names_Sec_Cuts=("JPID_sum_pt75");
 // TString names_Sec_Cuts=("JPID_sum_pt75_secondary");
 // TString names_Sec_Cuts=("JPID_sum_pt200_secondary");
-// TString names_Sec_Cuts=("TESTCutsetting");
+TString names_Sec_Cuts=("noPID;TESTCutsetting1;TESTCutsetting2;JPID_sum_pt75_secondary");
                                                                                 // TString names_Sec_Cuts=("onlyPIDcut1_noTrackCuts");
                                                                                 // TString names_Sec_Cuts=("cut1_pt75_secondary");
                                                                                 // TString names_Sec_Cuts=("cut1_pt75");
@@ -57,10 +57,10 @@ Bool_t SetTOFCorrection = kFALSE;
 bool SetGeneratedSmearingHistos = false;
 
 bool DoPairing      = true;
-bool DoFourPairing  = false;
+bool DoFourPairing  = true;
 bool DoULSLS        = false;
 bool DeactivateLS   = true;
-bool DoMassCut      = false;
+bool DoMassCut      = true;
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -99,8 +99,8 @@ const double maxGenEta =  1.5;
 // const double maxPtCut = 100.0;
 // const double minEtaCut = -100;
 // const double maxEtaCut =  100;
-const double minPtCut = 0.200;
-// const double minPtCut = 0.075;
+// const double minPtCut = 0.200;
+const double minPtCut = 0.075;
 const double maxPtCut = 8.0;
 const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
@@ -111,15 +111,15 @@ const double MassCutSecondaries = 5.;
 
 // binning of single leg histograms
 bool usePtVector = true;
-// double ptBins[] = {0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
-  // 1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
-  // 4.00,5.0,6.0,7.0,8.0
-  // };
-
-double ptBins[] = {0.000,0.015,0.030,0.045,0.060,0.075,0.090,0.100,0.110,0.120,0.130,0.140,0.150,0.160,0.170,0.180,0.190,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
+double ptBins[] = {0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,8.0
   };
+
+// double ptBins[] = {0.000,0.015,0.030,0.045,0.060,0.075,0.090,0.100,0.110,0.120,0.130,0.140,0.150,0.160,0.170,0.180,0.190,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
+  // 1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
+  // 4.00,5.0,6.0,7.0,8.0
+  // };
 
 const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
@@ -145,8 +145,8 @@ const double maxMassBin =  5;
 const int    stepsMassBin = 1000;
 const double minPairPtBin = 0;
 const double maxPairPtBin =  8;
-// const int    stepsPairPtBin = 80;
-const int    stepsPairPtBin = 320;
+const int    stepsPairPtBin = 80;
+// const int    stepsPairPtBin = 320;
 
 // Binning of resolution histograms
 const int    NbinsDeltaMom    = 1000;
@@ -291,11 +291,12 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   LMEECutLib* LMcutlib = new LMEECutLib();
 
   if (cutDefinition == "noPID"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt75_noPID);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
+
 
   else if (cutDefinition == "noPID_pt200"){
     AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt200_noPID);
@@ -329,6 +330,13 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
 
   // Secondary Cut settings
   /////////////////////////////////////////////////////
+  else if (cutDefinition == "JPID_sum_pt75_secondary"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
   else if (cutDefinition == "JPID_sum_pt200_secondary"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_pt200);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
@@ -337,13 +345,28 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
+
   //  one TEST Cut setting
-  else if (cutDefinition == "TESTCutsetting"){
+  else if (cutDefinition == "TESTCutsetting1"){
     // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TEST);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TEST1);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "TESTCutsetting2"){
+    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
+    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TEST2);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -797,8 +820,7 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     ULSFourElePair2_FromEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
     ULSFourElePair2_FromEta.SetGrandMotherPDGs(221, 221); //
 
-
-
+//________________________________________________________
     // First Pair
       AliDielectronSignalMC ULSFourElePair1_FinalState("ULSFourElePair1_FinalState","ULSFourElePair1_FinalState");
       ULSFourElePair1_FinalState.SetLegPDGs(11,-11);

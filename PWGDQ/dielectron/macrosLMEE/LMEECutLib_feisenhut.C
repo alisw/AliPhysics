@@ -61,8 +61,8 @@ public:
   // Possible PID Settings
   enum LMEEPIDAna{
     // Analysis cuts
-    kPbPb2015_Pt75_noPID,
-    kPbPb2015_Pt200_noPID,
+    kNoPID_Pt75,
+    kNoPID_Pt200,
     kPID_Jeromian_01,
     kPID_Jeromian_01_pt200,
     kPIDcut_1_pt75,
@@ -77,17 +77,18 @@ public:
     kNoTrackCuts,
     kTRACKcut_1,
     kTRACKcut_1_secondary,
-    kTRACKcut_TEST
+    kTRACKcut_TEST1,
+    kTRACKcut_TEST2
   };
   enum LMEETrackSelectionPre{
     kPrefilter_cut1
   };
-  enum LMEETrackCuts{
-    kPbPb2015_V0_tight,
-    kSPD_bit4,
-    kITSSA_bit1,
-    kNoTrackCuts
-  };
+  // enum LMEETrackCuts{
+  //   kPbPb2015_V0_tight,
+  //   kSPD_bit4,
+  //   kITSSA_bit1,
+  //   kNoTrackCuts
+  // };
   enum LMEEPairCutsAna{
     kPairCutsAna, // Cut off (theta < 0.05) && (Minv < 0.02)
     kNoPairCutsAna // No Cuts applied, since 18.02.2014
@@ -995,10 +996,10 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   //-----------------------------------------------
   switch (AnaCut.GetPIDAna()) {
 
-    case kPbPb2015_Pt75_noPID:
+    case kNoPID_Pt75:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange75to8000, PIDnoneExisting, AnaCut);;
       break;
-    case kPbPb2015_Pt200_noPID:
+    case kNoPID_Pt200:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDnoneExisting, AnaCut);;
       break;
     case noKinCuts_noPID:
@@ -1024,6 +1025,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
 
 AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackSelectionAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
+  // cout << AnaCut.GetTrackSelectionAna() << "  " << kNoTrackCuts << "  " << kTRACKcut_TEST1 << "  " << kTRACKcut_TEST2  << endl;
   AliDielectronCutGroup* trackCuts=0x0;
   switch (AnaCut.GetTrackSelectionAna()) {
     case kNoTrackCuts:
@@ -1115,16 +1117,48 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
         trackCuts = cgTrackCutsAnaSPDfirst;
         break;
 
-        case kTRACKcut_TEST:
+
+        case kTRACKcut_TEST1:
+          std::cout << "kTRACKcut_TEST1" << std::endl;
           AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-          trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -100.0,   100.0);
+          // trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -0.1,   0.1  , kTRUE);  // kTrue in order to exclude selection
           // trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-          // trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+          // trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      0.0, 100.0);     // offen
           // trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
           // trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
           // trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
           // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
           // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+          trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.9,   10.); //different SharedClusterCut: means 1 and 10 shared Cluster
+                                                                                  // std::cout << "Number of AODCuts: " <<  trackCutsAOD->GetNCuts() << std::endl;
+                                                                                  // for (size_t i = 0; i < trackCutsAOD->GetNCuts(); i++) {
+                                                                                  //   std::cout << i+1 <<"-th cut name: " <<  trackCutsAOD->GetCutName(i) << std::endl;
+                                                                                  // }
+
+          AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+          // trackCutsDiel->SetAODFilterBit(1<<4);
+          trackCutsDiel->SetAODFilterBit(1<<0);
+          // trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+          cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+          // cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+          cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+          // cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
+          trackCuts = cgTrackCutsAnaSPDfirst;
+          break;
+
+        case kTRACKcut_TEST2:
+        std::cout << "kTRACKcut_TEST2" << std::endl;
+          AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+          // trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -100.0,   100.0);
+          // trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -0.1,   0.1  , kTRUE);  // kTrue in order to exclude selection
+          trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+          // // trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+          // trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+          // // trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+          // trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+          // // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+          // // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+          // trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.9,   10.); //different SharedClusterCut: means 1 and 10 shared Cluster
           // AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
           // double delta = 0.00001;
           // AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
@@ -1156,8 +1190,8 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
           trackCuts = cgTrackCutsAnaSPDfirst;
           break;
     // case kNone:
-    //   trackCuts = GetTrackCuts(kNoTrackCuts);
-    //   break;
+      // trackCuts = GetTrackCuts(kNoTrackCuts);
+      // break;
 
     default: cout << "No Analysis Track Selection defined " << endl;
   }
