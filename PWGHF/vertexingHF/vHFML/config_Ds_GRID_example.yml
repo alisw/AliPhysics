@@ -1,0 +1,17 @@
+NumModels: 6
+ModelNames: ['alien:///alice/cern.ch/user/f/fcatalan/xgboost_PbPb3050_pt2_3_011019.model',
+             'alien:///alice/cern.ch/user/f/fcatalan/xgboost_PbPb3050_pt3_4_011019.model',
+             'alien:///alice/cern.ch/user/f/fcatalan/xgboost_PbPb3050_pt4_6_011019.model',
+             'alien:///alice/cern.ch/user/f/fcatalan/xgboost_PbPb3050_pt6_12_011019.model',
+             'alien:///alice/cern.ch/user/f/fcatalan/xgboost_PbPb3050_pt6_12_011019.model',
+             'alien:///alice/cern.ch/user/f/fcatalan/xgboost_PbPb3050_pt12_50_011019.model'
+             ]
+ModelLibraries: [kXGBoost, kXGBoost, kXGBoost, kXGBoost, kXGBoost, kXGBoost]
+ModelOutputCuts: [0.992, 0.992, 0.99, 0.99, 0.95, 0.85]
+PtBins: [2, 3, 4, 6, 8, 12, 999]
+NumVars: 13
+#list of variables: order used to train the model must be respected
+VarNames: [cos_p_xy, d_len, norm_dl_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp,
+           nsigComb_Pi_0, nsigComb_Pi_1, nsigComb_Pi_2, nsigComb_K_0, nsigComb_K_1, nsigComb_K_2]
+
+
