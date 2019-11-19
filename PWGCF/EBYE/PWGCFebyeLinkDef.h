@@ -99,6 +99,7 @@
 #pragma link C++ class AliEbyEPhiDistNew+;
 
 #pragma link C++ class AliAnalysisTaskStronglyIntensiveCorrTree+;
+#pragma link C++ class TrackInfoCorr+;
 
 
 #endif

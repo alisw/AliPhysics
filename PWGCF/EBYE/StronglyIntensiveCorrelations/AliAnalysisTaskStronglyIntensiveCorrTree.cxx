@@ -25,7 +25,8 @@
 
 
 ClassImp(AliAnalysisTaskStronglyIntensiveCorrTree);
-ClassImp(LRCParticle);
+ClassImp(TrackInfoCorr);
+
 AliAnalysisTaskStronglyIntensiveCorrTree::AliAnalysisTaskStronglyIntensiveCorrTree() : AliAnalysisTaskSE()
   , fTree(NULL)
   , fTreeMC(NULL)
@@ -36,6 +37,7 @@ AliAnalysisTaskStronglyIntensiveCorrTree::AliAnalysisTaskStronglyIntensiveCorrTr
   , fPhiMin(0.), fPhiMax(TMath::TwoPi())
   , fMagneticField(0)
   , fRunNumber(0)
+  , fEventCuts(0)
   , fHistEta(0)
   , fHistPt(0)
   , fHistPhi(0)
@@ -88,6 +90,7 @@ AliAnalysisTaskStronglyIntensiveCorrTree::AliAnalysisTaskStronglyIntensiveCorrTr
   , fPhiMin(0.), fPhiMax(TMath::TwoPi())
   , fMagneticField(0)
   , fRunNumber(0)
+  , fEventCuts(0)
   , fHistEta(0)
   , fHistPt(0)
   , fHistPhi(0)
@@ -130,9 +133,11 @@ AliAnalysisTaskStronglyIntensiveCorrTree::AliAnalysisTaskStronglyIntensiveCorrTr
   }
   DefineInput(0, TChain::Class());
   DefineOutput(1, TTree::Class());
- if(fIsMC) DefineOutput(3, TTree::Class());
   DefineOutput(2, TList::Class());
- if(fIsMC) DefineOutput(4, TTree::Class());
+  if(fIsMC){
+          DefineOutput(3, TTree::Class());
+          DefineOutput(4, TTree::Class());
+  }
 }
 
 AliAnalysisTaskStronglyIntensiveCorrTree::~AliAnalysisTaskStronglyIntensiveCorrTree() {
@@ -148,12 +153,17 @@ AliAnalysisTaskStronglyIntensiveCorrTree::~AliAnalysisTaskStronglyIntensiveCorrT
     delete fTreeMC;
     fTreeMC = NULL;
   }
+   if(fOutputList) 	  delete fOutputList;
 }
 
 void AliAnalysisTaskStronglyIntensiveCorrTree::UserCreateOutputObjects() {
  
 
   TDirectory *owd = NULL;
+  owd = gDirectory;
+  
+  OpenFile(1);
+  
   
   fTree = new TTree;
   fTree->SetName("TreeLRC");
@@ -164,17 +174,18 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserCreateOutputObjects() {
   fTree->Branch("MagneticFiled", &fMagneticField);
   fTree->Branch("Nf", &fNf, "n[15]/S");
   fTree->Branch("Nb", &fNb, "n[15]/S");
+  if(fIsMC){
+          OpenFile(2);
+          fTreePrim = new TTree;
+          fTreePrim->SetName("TreeLRC_MCPrim");
 
-  fTreePrim = new TTree;
-  fTreePrim->SetName("TreeLRC_MCPrim");
-
-  fTreePrim->Branch("RunNumber",  &fRunNumber);
-  fTreePrim->Branch("VertexZ",    &fVertexZ);
-  fTreePrim->Branch("Centrality", &fCent, "V0M/F:TRK:ZEMvsZDC:b");
-  fTreePrim->Branch("MagneticFiled", &fMagneticField);
-  fTreePrim->Branch("Nf", &fNf_MCPrim, "n[15]/S");
-  fTreePrim->Branch("Nb", &fNb_MCPrim, "n[15]/S");
-  
+          fTreePrim->Branch("RunNumber",  &fRunNumber);
+          fTreePrim->Branch("VertexZ",    &fVertexZ);
+          fTreePrim->Branch("Centrality", &fCent, "V0M/F:TRK:ZEMvsZDC:b");
+          fTreePrim->Branch("MagneticFiled", &fMagneticField);
+          fTreePrim->Branch("Nf", &fNf_MCPrim, "n[15]/S");
+          fTreePrim->Branch("Nb", &fNb_MCPrim, "n[15]/S");
+  }
   // Event statistics
   fEventStatistics = new TH1I("fEventStatistics","",10,0,10);
   
@@ -230,7 +241,6 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserCreateOutputObjects() {
   fOutputList->Add(fEventStatistics);
   
   if(fIsMC){
-  
           fOutputList->Add(fHistEtaMC);
           fOutputList->Add(fHistPtMC);
           fOutputList->Add(fHistPhiMC);
@@ -254,9 +264,8 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserCreateOutputObjects() {
           fOutputList->Add(fHist2D_EtaDcaZPrim);
           fOutputList->Add(fHist2D_EtaPtPrim);
           fOutputList->Add(fHist2D_EtaPhiPrim);
-
-          OpenFile(3);
           
+          OpenFile(3);
           fTreeMC = new TTree;
           fTreeMC->SetName("TreeLRC_MC");
           fTreeMC->Branch("RunNumber",  &fRunNumber);
@@ -268,13 +277,12 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserCreateOutputObjects() {
        
   }
 
-  if (NULL != owd)
-          owd->cd();
+  if (NULL != owd) owd->cd();
 
   PostData(1, fTree);
   PostData (2,  fOutputList);
   
-  if (fIsMC){
+ if (fIsMC){
           PostData(3,fTreePrim);
           PostData(4, fTreeMC);
  }
@@ -301,8 +309,8 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserExec(Option_t* ) {
 
   TClonesArray *arrayMC(NULL);
   if (fIsMC) {
-    arrayMC = dynamic_cast<TClonesArray*>(pAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-    if (NULL == arrayMC) return;
+          arrayMC = dynamic_cast<TClonesArray*>(pAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+          if (NULL == arrayMC) return;
   }
 
   // physics selection
@@ -310,6 +318,9 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserExec(Option_t* ) {
   
   UInt_t fSelectMask= fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask & fTrigger;
+  
+  //cout<<"Trigger "<<fTrigger<<endl;
+  //cout<<"FilterBit "<<fTrackFilter<<endl;
   
   if(!isINT7selected) { return;}
   fEventStatistics->Fill("physics selection",1);
@@ -322,7 +333,6 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserExec(Option_t* ) {
   
  
   fMagneticField=pAOD->GetMagneticField();
-  
   pAOD->GetPrimaryVertex()->Print();
 
   // vertex selection -- data
@@ -353,138 +363,146 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserExec(Option_t* ) {
  
   TObjArray* tracksData(GetAcceptedTracks(pAOD, arrayMC,0));
   if (NULL != tracksData) {
-    for (Long64_t i(0), n(tracksData->GetEntries()); i<n; ++i) {
-      LRCParticle *lp = dynamic_cast<LRCParticle*>(tracksData->At(i));
-      if (NULL == lp) continue;
-      const Double_t eta(lp->Eta());
-      const Double_t pt(lp->Pt());
-      const Double_t dcaX(lp->XAtDCA()-v[0]);
-      const Double_t dcaY(lp->YAtDCA()-v[1]);
-      const Double_t dcaZ(lp->ZAtDCA());
-      const Double_t phi(lp->Phi());
-      if(fVertexZ<10. && fVertexZ>-10 && eta >-0.8 && eta <0.8 ){
-        	fHistEta->Fill(eta);
-        	fHistPt->Fill(pt);
-        	fHistPhi->Fill(phi);
-        	fHistDcaX->Fill(dcaX);
-        	fHistDcaY->Fill(dcaY);
-        	fHistDcaZ->Fill(dcaZ);
+          for (Long64_t i(0), n(tracksData->GetEntries()); i<n; ++i) {
+                    TrackInfoCorr *lp = dynamic_cast<TrackInfoCorr*>(tracksData->At(i));
+                    if (NULL == lp) continue;
+                    const Double_t eta(lp->Eta());
+                    const Double_t pt(lp->Pt());
+                    const Double_t dcaX(lp->XAtDCA()-v[0]);
+                    const Double_t dcaY(lp->YAtDCA()-v[1]);
+                    const Double_t dcaZ(lp->ZAtDCA());
+                    const Double_t phi(lp->Phi());
+                    if(fVertexZ<10. && fVertexZ>-10 && eta >-0.8 && eta <0.8 ){
+                              fHistEta->Fill(eta);
+        	                    fHistPt->Fill(pt);
+        	                    fHistPhi->Fill(phi);
+        	                    fHistDcaX->Fill(dcaX);
+        	                    fHistDcaY->Fill(dcaY);
+        	                    fHistDcaZ->Fill(dcaZ);
         
-        	fHist2D_EtaDcaX->Fill(eta,dcaX);
-        	fHist2D_EtaDcaY->Fill(eta,dcaY);
-        	fHist2D_EtaDcaZ->Fill(eta,dcaZ);
-        	fHist2D_EtaPt->Fill(eta,pt);
-        	fHist2D_EtaPhi->Fill(eta,phi);
-      }
+        	                    fHist2D_EtaDcaX->Fill(eta,dcaX);
+        	                    fHist2D_EtaDcaY->Fill(eta,dcaY);
+        	                    fHist2D_EtaDcaZ->Fill(eta,dcaZ);
+        	                    fHist2D_EtaPt->Fill(eta,pt);
+        	                    fHist2D_EtaPhi->Fill(eta,phi);
+                    }
       
-      for (Int_t j=0; j<15; ++j) {
-	 if (eta >=  0.1*j     && eta <  0.1*j+0.2)
-	    ++fNf[j];
-	 if (eta >=  -0.1*j-0.2 && eta <  -0.1*j)
-	    ++fNb[j];
-      }
-    }
+                    for (Int_t j=0; j<15; ++j) {
+	          if (eta >=  0.1*j     && eta <  0.1*j+0.2)
+	                    ++fNf[j];
+	          if (eta >=  -0.1*j-0.2 && eta <  -0.1*j)
+	                    ++fNb[j];
+                    }
+          }
    
-    fTree->Fill();
-    delete tracksData;
+          fTree->Fill();
+          delete tracksData;
   }
-for (Int_t j(0); j<15; ++j)
-    fNf_MCPrim[j] = fNb_MCPrim[j] = 0;
+  if(fIsMC) {
+          for (Int_t j(0); j<15; ++j)
+          fNf_MCPrim[j] = fNb_MCPrim[j] = 0;
 
-  TObjArray* tracksMCPrim(GetAcceptedTracks(pAOD, arrayMC,1));
-  if (NULL != tracksMCPrim) {
-    for (Long64_t i(0), n(tracksMCPrim->GetEntries()); i<n; ++i) {
-      LRCParticle *lp = dynamic_cast<LRCParticle*>(tracksMCPrim->At(i));
-      if (NULL == lp) continue;
-      const Double_t eta(lp->Eta());
-      const Double_t pt(lp->Pt());
-      const Double_t dcaX(lp->XAtDCA());
-      const Double_t dcaY(lp->YAtDCA());
-      const Double_t dcaZ(lp->ZAtDCA());
-      const Double_t phi(lp->Phi());
+          TObjArray* tracksMCPrim(GetAcceptedTracks(pAOD, arrayMC,1));
+          if (NULL != tracksMCPrim) {
+                    for (Long64_t i(0), n(tracksMCPrim->GetEntries()); i<n; ++i) {
+                              TrackInfoCorr *lp = dynamic_cast<TrackInfoCorr*>(tracksMCPrim->At(i));
+                              if (NULL == lp) continue;
+                              const Double_t eta(lp->Eta());
+                              const Double_t pt(lp->Pt());
+                              const Double_t dcaX(lp->XAtDCA());
+                              const Double_t dcaY(lp->YAtDCA());
+                              const Double_t dcaZ(lp->ZAtDCA());
+                              const Double_t phi(lp->Phi());
       
-      if(fVertexZ<10. && fVertexZ>-10 && eta >-0.8 && eta <0.8 && fIsMC){
-        	fHistEtaPrim->Fill(eta);
-        	fHistPtPrim->Fill(pt);
-        	fHistPhiPrim->Fill(phi);
-        	fHistDcaXPrim->Fill(dcaX);
-        	fHistDcaYPrim->Fill(dcaY);
-        	fHistDcaZPrim->Fill(dcaZ);
+                              if(fVertexZ<10. && fVertexZ>-10 && eta >-0.8 && eta <0.8 && fIsMC){
+        	                              fHistEtaPrim->Fill(eta);
+        	                              fHistPtPrim->Fill(pt);
+        	                              fHistPhiPrim->Fill(phi);
+        	                              fHistDcaXPrim->Fill(dcaX);
+        	                              fHistDcaYPrim->Fill(dcaY);
+        	                              fHistDcaZPrim->Fill(dcaZ);
         
-        	fHist2D_EtaDcaXPrim->Fill(eta,dcaX);
-        	fHist2D_EtaDcaYPrim->Fill(eta,dcaY);
-        	fHist2D_EtaDcaZPrim->Fill(eta,dcaZ);
-        	fHist2D_EtaPtPrim->Fill(eta,pt);
-        	fHist2D_EtaPhiPrim->Fill(eta,phi);
-      }
-      for (Int_t j=0; j<15; ++j) {
-	 if (eta >=  0.1*j     && eta <  0.1*j+0.2)
-	    ++fNf_MCPrim[j];
-	 if (eta >=  -0.1*j-0.2 && eta <  -0.1*j)
-	    ++fNb_MCPrim[j];
-      }
-    }
+        	                              fHist2D_EtaDcaXPrim->Fill(eta,dcaX);
+        	                              fHist2D_EtaDcaYPrim->Fill(eta,dcaY);
+        	                              fHist2D_EtaDcaZPrim->Fill(eta,dcaZ);
+        	                              fHist2D_EtaPtPrim->Fill(eta,pt);
+        	                              fHist2D_EtaPhiPrim->Fill(eta,phi);
+                              }
+                              for (Int_t j=0; j<15; ++j) {
+	                              if (eta >=  0.1*j     && eta <  0.1*j+0.2)
+	                                        ++fNf_MCPrim[j];
+	                              if (eta >=  -0.1*j-0.2 && eta <  -0.1*j)
+	                                        ++fNb_MCPrim[j];
+                              }
+          }
     //printf("tracksData: (%5d) ", tracksMCPrim->GetEntries());
     
-    fTreePrim->Fill();
-    delete tracksMCPrim;
+          fTreePrim->Fill();
+          delete tracksMCPrim;
+          }
   }
-
   // MC
   if (fIsMC && NULL != arrayMC) {
-    for (Int_t j(0); j<15; ++j)
-      fNf_MC[j] = fNb_MC[j] = 0;
+          for (Int_t j(0); j<15; ++j)
+          fNf_MC[j] = fNb_MC[j] = 0;
     
-    TObjArray* tracksMC(GetAcceptedTracks(arrayMC,1));
-    if (NULL != tracksMC) {      
-      for (Long64_t i(0), n(tracksMC->GetEntries()); i<n; ++i) {
-	LRCParticle *lp = dynamic_cast<LRCParticle*>(tracksMC->At(i));
-	if (NULL == lp) continue;
-	const Double_t eta(lp->Eta());
-        
-      	const Double_t pt(lp->Pt());
-      
-      	const Double_t phi(lp->Phi());
-      	if(fVertexZ<10. && fVertexZ>-10 && eta >-0.8 && eta <0.8 ){
-        	fHistEtaMC->Fill(eta);
-        	fHistPtMC->Fill(pt);
-        	fHistPhiMC->Fill(phi);
-        	fHist2D_EtaPtMC->Fill(eta,pt);
-        	fHist2D_EtaPhiMC->Fill(eta,phi);
-        	
-        	
-      	}
-	for (Int_t j=0; j<15; ++j) {
-	 if (eta >=  0.1*j     && eta <  0.1*j+0.2)
-	    ++fNf_MC[j];
-	if (eta >=  -0.1*j-0.2 && eta <  -0.1*j)
-	    ++fNb_MC[j];
-	}
-      }
+          TObjArray* tracksMC(GetAcceptedTracks(arrayMC,1));
+          if (NULL != tracksMC) {      
+                    for (Long64_t i(0), n(tracksMC->GetEntries()); i<n; ++i) {
+	                    TrackInfoCorr *lp = dynamic_cast<TrackInfoCorr*>(tracksMC->At(i));
+	                    if (NULL == lp) continue;
+	                    const Double_t eta(lp->Eta());
+      	                    const Double_t pt(lp->Pt());
+      	                    const Double_t phi(lp->Phi());
+      	                    if(fVertexZ<10. && fVertexZ>-10 && eta >-0.8 && eta <0.8 ){
+        	                              fHistEtaMC->Fill(eta);
+        	                              fHistPtMC->Fill(pt);
+        	                              fHistPhiMC->Fill(phi);
+        	                              fHist2D_EtaPtMC->Fill(eta,pt);
+        	                              fHist2D_EtaPhiMC->Fill(eta,phi);
+      	                    }
+	                    for (Int_t j=0; j<15; ++j) {
+	                              if (eta >=  0.1*j     && eta <  0.1*j+0.2)
+	                                        ++fNf_MC[j];
+	                              if (eta >=  -0.1*j-0.2 && eta <  -0.1*j)
+	                                         ++fNb_MC[j];
+	                    }
+                    }
      // printf("tracksMC  : (%5d) ", tracksMC->GetEntries());
-      for (Int_t j=0; j<15; ++j)
-	printf("%3d,%3d|", fNf_MC[j],fNb_MC[j]);
-      printf("\n");
-      fTreeMC->Fill();
-      delete tracksMC;
-    }
+                    for (Int_t j=0; j<15; ++j) printf("%3d,%3d|", fNf_MC[j],fNb_MC[j]);
+                    printf("\n");
+                    fTreeMC->Fill();
+                    delete tracksMC;
+          }
   }
   PostData(1, fTree);
  
   PostData(2,  fOutputList);
   
-  if (fIsMC)
-    PostData(3, fTreePrim);
-    PostData(4, fTreeMC);
-   
+  if(fIsMC){
+          PostData(3, fTreePrim);
+          PostData(4, fTreeMC);
+  }
 }
 
 void AliAnalysisTaskStronglyIntensiveCorrTree::Terminate(Option_t* ) {
   //
   fTree = dynamic_cast<TTree*>(GetOutputData(1));
   if (NULL == fTree) {
-    AliFatal("NULL == fTree");
-    return; // needed to avoid coverity warning
+          AliFatal("NULL == fTree");
+          return;
+  }
+  if(fIsMC){
+          fTreePrim = dynamic_cast<TTree*>(GetOutputData(3));
+          if (NULL == fTreePrim) {
+                    AliFatal("NULL == fTree");
+                    return;
+          }
+          fTreeMC = dynamic_cast<TTree*>(GetOutputData(4));
+          if (NULL == fTreeMC) {
+                    AliFatal("NULL == fTree");
+                    return; // needed to avoid coverity warning
+          }
   }
 }
 
@@ -538,7 +556,7 @@ TObjArray* AliAnalysisTaskStronglyIntensiveCorrTree::GetAcceptedTracks(AliAODEve
     if (pAODTrack->Phi() < fPhiMin || pAODTrack->Phi() > fPhiMax) continue;
     if (pAODTrack->Pt()  < fPtMin  || pAODTrack->Pt()  > fPtMax)  continue;
 
-    tracks->Add(new LRCParticle(pAODTrack->Eta(), pAODTrack->Phi(),pAODTrack->Pt(), pAODTrack->XAtDCA(),pAODTrack->YAtDCA(), pAODTrack->ZAtDCA()));
+    tracks->Add(new TrackInfoCorr(pAODTrack->Eta(), pAODTrack->Phi(),pAODTrack->Pt(), pAODTrack->XAtDCA(),pAODTrack->YAtDCA(), pAODTrack->ZAtDCA()));
   } // next track
   return tracks;
 }
@@ -587,7 +605,7 @@ TObjArray* AliAnalysisTaskStronglyIntensiveCorrTree::GetAcceptedTracks(TClonesAr
     if (pMCTrack->Phi() < fPhiMin || pMCTrack->Phi() > fPhiMax) continue;
     if (pMCTrack->Pt()  < fPtMin  || pMCTrack->Pt()  > fPtMax)  continue;
    
-    tracks->Add(new LRCParticle(pMCTrack->Eta(), pMCTrack->Phi(),pMCTrack->Pt(),0, 0, 0));
+    tracks->Add(new TrackInfoCorr(pMCTrack->Eta(), pMCTrack->Phi(),pMCTrack->Pt(),0, 0, 0));
   } // next track
   return tracks;
 }

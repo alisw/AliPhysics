@@ -4,7 +4,8 @@ AliAnalysisTaskStronglyIntensiveCorrTree* AddMyTask(TString name               =
 					  UInt_t collisionCandidates = AliVEvent::kINT7,
 					  Bool_t isMC = kFALSE,
 					  Int_t filterBit = 128,
-					 
+					  Double_t ptMin=0.2,
+					  Double_t ptMax=5
 					  )
 {
     // get the manager via the static access member. since it's static, you don't need
@@ -33,15 +34,18 @@ AliAnalysisTaskStronglyIntensiveCorrTree* AddMyTask(TString name               =
     // add your task to the manager
     task->SetTrackBit(filterBit);
     task->SetMCStatus(isMC);
+    task->SetPtRange(ptMin,ptMax)
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
     mgr->ConnectOutput(task,1,mgr->CreateContainer("fTree", TTree::Class(),
 						   AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer("OutputList", TList::Class(),
+						   AliAnalysisManager::kOutputContainer, fileName.Data()));
     if(isMC) mgr->ConnectOutput(task,3,mgr->CreateContainer("fTreeMCPrim", TTree::Class(),
 						   AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer("OutputList", TList::Class(),
+    if(isMC) mgr->ConnectOutput(task,4,mgr->CreateContainer("fTreeMC", TTree::Class(),
 						   AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid

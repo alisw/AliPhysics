@@ -25,7 +25,7 @@ class TObjArray;
 class AliAODEvent;
 class AliAODHeader;
 class AliEventPoolManager;
-
+class AliTHn;
 
 #include <TObject.h>
 #include "AliAnalysisTaskSE.h"
@@ -40,13 +40,11 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
-  virtual void         SelectCollisionCandidates(UInt_t i){fTrigger = i;}
-  virtual void         SetTrackBit(Int_t i){fTrackFilter = i;}
   
-  void SetMCStatus(Bool_t isMC=kTRUE) { fIsMC = isMC; }
-
-  void SetTrackFilter(Int_t trackFilter)   { fTrackFilter  = trackFilter; }
-
+  
+  void SelectCollisionCandidates(UInt_t triggerInfo)   {fTrigger = triggerInfo;}
+  void SetTrackBit(Int_t trackFilter)                  {fTrackFilter = trackFilter;}
+  void SetMCStatus(Bool_t isMC=kFALSE)                  {fIsMC = isMC;}
   void SetPtRange(Double_t ptMin, Double_t ptMax) {
     fPtMin = ptMin; fPtMax = ptMax;
   }
@@ -64,9 +62,9 @@ private:
   TTree                *fTree;   //!
   TTree                *fTreeMC; //!
   TTree                *fTreePrim; //!
-  Bool_t               fIsMC;               //! MC flag
-  Int_t                fTrackFilter;        //!
-  UInt_t               fTrigger; //!
+  Bool_t               fIsMC; //  MC flag            
+  Int_t                fTrackFilter; // filter bit selection      
+  UInt_t               fTrigger; // physics selection
   Double_t             fCentMin, fCentMax;  // centrality range
   Double_t             fPtMin, fPtMax;      // P_{T} range
   Double_t             fPhiMin, fPhiMax;    // #phi range
@@ -86,41 +84,41 @@ private:
   Short_t fNf_MCPrim[15]; //!
   Short_t fNb_MCPrim[15]; //!
 
-  TList*               fOutputList; // ! list of all Histo
-  TH1F *               fHistEta ; // ! eta Histogram
-  TH1F *               fHistPt ;  // ! pt Histogram
-  TH1F *               fHistPhi ; // ! phi Histogram
-  TH1F *               fHistDcaX ;  // ! dcaX Histogram
-  TH1F *               fHistDcaY ;  // ! dcaY Histogram
-  TH1F *               fHistDcaZ ;  // ! dcaZ Histogram
-  TH2F *               fHist2D_EtaDcaX ; // ! eta_dcaX Histogram
-  TH2F *               fHist2D_EtaDcaY ; // ! eta_dcaY Histogram
-  TH2F *               fHist2D_EtaDcaZ ; // ! eta_dcaZ Histogram
-  TH2F *               fHist2D_EtaPt ;   // ! eta_pt Histogram
-  TH2F *               fHist2D_EtaPhi ;  // ! eta_phi Histogram
-  TH1F *               fHistEtaMC ; // ! eta Histogram
-  TH1F *               fHistPtMC ;  // ! pt Histogram
-  TH1F *               fHistPhiMC ; // ! phi Histogram
-  TH1F *               fHistDcaXMC ;  // ! dcaX Histogram
-  TH1F *               fHistDcaYMC ;  // ! dcaY Histogram
-  TH1F *               fHistDcaZMC ;  // ! dcaZ Histogram
-  TH1I *               fEventStatistics ;// ! Events Stat
-  TH2F *               fHist2D_EtaDcaXMC ; // ! eta_dcaX Histogram
-  TH2F *               fHist2D_EtaDcaYMC ; // ! eta_dcaY Histogram
-  TH2F *               fHist2D_EtaDcaZMC ; // ! eta_dcaZ Histogram
-  TH2F *               fHist2D_EtaPtMC ;   // ! eta_pt Histogram
-  TH2F *               fHist2D_EtaPhiMC ;  // ! eta_phi Histogram
-  TH1F *               fHistEtaPrim ; // ! eta Histogram
-  TH1F *               fHistPtPrim ;  // ! pt Histogram
-  TH1F *               fHistPhiPrim ; // ! phi Histogram
-  TH1F *               fHistDcaXPrim ;  // ! dcaX Histogram
-  TH1F *               fHistDcaYPrim ;  // ! dcaY Histogram
-  TH1F *               fHistDcaZPrim ;  // ! dcaZ Histogram
-  TH2F *               fHist2D_EtaDcaXPrim ; // ! eta_dcaX Histogram
-  TH2F *               fHist2D_EtaDcaYPrim ; // ! eta_dcaY Histogram
-  TH2F *               fHist2D_EtaDcaZPrim ; // ! eta_dcaZ Histogram
-  TH2F *               fHist2D_EtaPtPrim ;   // ! eta_pt Histogram
-  TH2F *               fHist2D_EtaPhiPrim ;  // ! eta_phi Histogram
+  TList*               fOutputList; //! list of all Histo
+  TH1F *               fHistEta ; //! eta Histogram
+  TH1F *               fHistPt ;  //! pt Histogram
+  TH1F *               fHistPhi ; //! phi Histogram
+  TH1F *               fHistDcaX ;  //! dcaX Histogram
+  TH1F *               fHistDcaY ;  //! dcaY Histogram
+  TH1F *               fHistDcaZ ;  //! dcaZ Histogram
+  TH2F *               fHist2D_EtaDcaX ; //! eta_dcaX Histogram
+  TH2F *               fHist2D_EtaDcaY ; //! eta_dcaY Histogram
+  TH2F *               fHist2D_EtaDcaZ ; //! eta_dcaZ Histogram
+  TH2F *               fHist2D_EtaPt ;   //! eta_pt Histogram
+  TH2F *               fHist2D_EtaPhi ;  //! eta_phi Histogram
+  TH1F *               fHistEtaMC ; //! eta Histogram
+  TH1F *               fHistPtMC ;  //! pt Histogram
+  TH1F *               fHistPhiMC ; //! phi Histogram
+  TH1F *               fHistDcaXMC ;  //! dcaX Histogram
+  TH1F *               fHistDcaYMC ;  //! dcaY Histogram
+  TH1F *               fHistDcaZMC ;  //! dcaZ Histogram
+  TH1I *               fEventStatistics ;//! Events Stat
+  TH2F *               fHist2D_EtaDcaXMC ; //! eta_dcaX Histogram
+  TH2F *               fHist2D_EtaDcaYMC ; //! eta_dcaY Histogram
+  TH2F *               fHist2D_EtaDcaZMC ; //! eta_dcaZ Histogram
+  TH2F *               fHist2D_EtaPtMC ;   //! eta_pt Histogram
+  TH2F *               fHist2D_EtaPhiMC ;  //! eta_phi Histogram
+  TH1F *               fHistEtaPrim ; //! eta Histogram
+  TH1F *               fHistPtPrim ;  //! pt Histogram
+  TH1F *               fHistPhiPrim ; //! phi Histogram
+  TH1F *               fHistDcaXPrim ;  //! dcaX Histogram
+  TH1F *               fHistDcaYPrim ;  //! dcaY Histogram
+  TH1F *               fHistDcaZPrim ;  //! dcaZ Histogram
+  TH2F *               fHist2D_EtaDcaXPrim ; //! eta_dcaX Histogram
+  TH2F *               fHist2D_EtaDcaYPrim ; //! eta_dcaY Histogram
+  TH2F *               fHist2D_EtaDcaZPrim ; //! eta_dcaZ Histogram
+  TH2F *               fHist2D_EtaPtPrim ;   //! eta_pt Histogram
+  TH2F *               fHist2D_EtaPhiPrim ;  //! eta_phi Histogram
   
   
   
@@ -131,11 +129,11 @@ private:
   ClassDef(AliAnalysisTaskStronglyIntensiveCorrTree, 1);
 } ; 
 
-class LRCParticle : public TObject {
+class TrackInfoCorr : public TObject {
 public:
-   LRCParticle(Double_t eta=0, Double_t phi=0,Double_t pt=0, Double_t dcaX=0, Double_t dcaY=0, Double_t dcaZ=0)
+   TrackInfoCorr(Double_t eta=0, Double_t phi=0,Double_t pt=0, Double_t dcaX=0, Double_t dcaY=0, Double_t dcaZ=0)
     : fEta(eta), fPhi(phi), fPt(pt), fDcaX(dcaX), fDcaY(dcaY), fDcaZ(dcaZ) {}
-  virtual ~LRCParticle() {}
+  virtual ~TrackInfoCorr() {}
 
   Double_t Eta()  const { return fEta; }
   Double_t Phi()  const { return fPhi; }
@@ -146,8 +144,8 @@ public:
 
 protected:
 private:
-  LRCParticle(const LRCParticle&);
-  LRCParticle& operator=(const LRCParticle&);
+  TrackInfoCorr(const TrackInfoCorr&);
+  TrackInfoCorr& operator=(const TrackInfoCorr&);
 
   Double_t fEta;
   Double_t fPhi;
@@ -155,7 +153,7 @@ private:
   Double_t fDcaX;
   Double_t fDcaY;
   Double_t fDcaZ;
-  ClassDef(LRCParticle, 1);
+  ClassDef(TrackInfoCorr, 1);
 } ;
 
 #endif // _AliAnalysisTaskStronglyIntensiveCorrTree_H_
