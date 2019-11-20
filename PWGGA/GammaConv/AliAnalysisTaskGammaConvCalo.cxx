@@ -96,6 +96,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fMesonCutArray(NULL),
   fMesonCuts(NULL),
   fConvJetReader(NULL),
+  fOutlierJetReader(NULL),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
   fJetHistograms(NULL),
@@ -494,6 +495,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fMesonCutArray(NULL),
   fMesonCuts(NULL),
   fConvJetReader(NULL),
+  fOutlierJetReader(NULL),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
   fJetHistograms(NULL),
@@ -1030,7 +1032,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
     if(!fConvJetReader){printf("Error: No AliAnalysisTaskConvJet");return;} // GetV0Reader
   }
-
+  if(((AliConvEventCuts*)fEventCutArray->At(0))->GetUseJetFinderForOutliers()){
+    fOutlierJetReader=(AliAnalysisTaskJetOutlierRemoval*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetOutlierRemoval");
+    if(!fOutlierJetReader){AliFatal("Error: No AliAnalysisTaskJetOutlierRemoval");} // Get jet outlier task
+    else{printf("Found AliAnalysisTaskJetOutlierRemoval used for outlier removal!\n");}
+  }
   if (fIsMC == 2){
     fDoClusterQA      = 0;
     fDoTHnSparse      = kFALSE;
@@ -3152,7 +3158,9 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
     if(fIsMC>0){
       fWeightJetJetMC       = 1;
   //     cout << fMCEvent << endl;
-      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC, fInputEvent );
+      Float_t maxjetpt      = -1.;
+      if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetUseJetFinderForOutliers()) maxjetpt = fOutlierJetReader->GetMaxJetPt();
+      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC, fInputEvent, maxjetpt);
       if (fIsMC == 3){
         Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;
