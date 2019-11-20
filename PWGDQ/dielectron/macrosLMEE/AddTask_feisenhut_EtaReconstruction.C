@@ -1,4 +1,3 @@
-
 AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString name = "name",
                                                                 Bool_t isAOD,
                                                                 Bool_t getFromAlien = kFALSE,
@@ -143,6 +142,7 @@ bool debug = false;
   // #########################################################
   // #########################################################
   // Set mass cuts for primary and secondary pairs
+  task->SetMassCut(DoMassCut);
   task->SetMassCutPrimaries(MassCutPrimaries);
   task->SetMassCutSecondaries(MassCutSecondaries);
 
@@ -205,11 +205,15 @@ bool debug = false;
   // #########################################################
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
-  AddSingleLegMCSignal(task);
-  AddPairMCSignal(task);
+  AddSinglePrimaryLegMCSignal(task);
+  AddSingleSecondaryLegMCSignal(task);
+  AddPrimaryPairMCSignal(task);
+  AddSecondaryPairMCSignal(task);
   AddFourPairMCSignal(task);
-  std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
-  task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+  std::vector<bool> PrimaryDielectronsPairNotFromSameMother = AddSinglePrimaryLegMCSignal(task);
+  std::vector<bool> SecondaryDielectronsPairNotFromSameMother = AddSingleSecondaryLegMCSignal(task);
+  task->AddMCSignalsWherePrimaryDielectronPairNotFromSameMother(PrimaryDielectronsPairNotFromSameMother);
+  task->AddMCSignalsWhereSecondaryDielectronPairNotFromSameMother(SecondaryDielectronsPairNotFromSameMother);
 
 
   // #########################################################
