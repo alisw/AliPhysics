@@ -331,6 +331,8 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
 //    printf("SM3 nCells %d, sum E cells %2.2f \n",nCellsPerSM[0][3],eCellsPerSM[0][3] );
   
   // LED event rejection trial
+  // use the total N cells or E sum for E cell > 0.5
+  // Low activity in SM3 and very large activiy on any of the other SM
   //
   Bool_t acceptEvent = kTRUE;
   if ( nCellsPerSM[0][3] < 2 || eCellsPerSM[0][3] < 1 )
@@ -346,10 +348,15 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     if ( !acceptEvent )
     {
       printf("Reject event: ");
-      for(Int_t jsm = 0; jsm < 20; jsm++){
-        if ( nCellsPerSM[0][jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,nCellsPerSM[0][jsm],eCellsPerSM[0][jsm]);}
+      for(Int_t jsm = 0; jsm < 20; jsm++)
+      {
+        if ( nCellsPerSM[0][jsm] > 0 ) 
+          printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,nCellsPerSM[0][jsm],eCellsPerSM[0][jsm]);
+        
+      }
     }
   }
+  // LED Event rejection
   //
 
   for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
