@@ -1782,6 +1782,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
      Int_t qual = multSelection->GetEvSelCode();
      if (qual == 199)  lCentrality = -999;
    } else{
+     /*
      Float_t sum = 0., max = 0.;
      for(Int_t i = 32; i < 64; ++i)
        {      sum +=fvzero->GetMultiplicity(i);
@@ -1790,13 +1791,11 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
        }
      sum -= max;
      fV0Amultmodi->Fill(sum);
-     
-     /*
-       Float_t v0amult=fvzero->GetMTotV0A();
+     Float_t v0amult=fvzero->GetMTotV0A();
      Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(v0amult);
      lCentrality=fhcorr[0]->GetBinContent(nbinmult);
      */
-     /*
+     
      AliAODMCHeader* aodMCheader=(AliAODMCHeader*)fEvent->FindListObject(AliAODMCHeader::StdBranchName());
      TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
      if(!mcArray){
@@ -1821,10 +1820,10 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
       fV0Amultprim->Fill(ntrackv0aprimary);
       Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(ntrackv0aprimary);
       lCentrality=fhcorr[0]->GetBinContent(nbinmult);
-     */
+      
    }
 
-   return;
+   
    
      if (lCentrality < 0. || lCentrality > 100. - 0.0000001)   return;
      Double_t *CentBins = fCentBins;
