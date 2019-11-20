@@ -178,6 +178,7 @@ fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0)
   for(Int_t i = 0; i < fgkNEBins; i++) 
   {
     fhM02ExoNCells        [i] = 0;
+    fhM02ExoNCellsNotAllSameTCard[i] = 0;
     fhClusterColRowExo [0][i] = 0;
     fhClusterColRowExo [1][i] = 0;  
 //  fhClusterColRowExoW[0][i] = 0;
@@ -1058,6 +1059,11 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
         if ( en > fEMinForExo  )
           fhEtaPhiGridExoEnCutSameFracCut->Fill(icolMaxAbs, irowMaxAbs, exoticity, GetEventWeight());
       }
+      else
+      {
+        if ( ebin >= 0 && ebin < fgkNEBins-1 )
+          fhM02ExoNCellsNotAllSameTCard[ebin]->Fill(m20, exoticity, nCaloCellsPerCluster, GetEventWeight()); ;
+      }
       
       if ( nCellDiffW == 0 )
       {
@@ -1155,7 +1161,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       fhM20EnergyExoM02MinCut->Fill(en, m20, exoticity, GetEventWeight());
     
     if ( ebin >= 0 && ebin < fgkNEBins-1 )
-      fhM02ExoNCells[ebin]->Fill(m20, exoticity, nCaloCellsPerCluster, GetEventWeight()); ;
+      fhM02ExoNCells[ebin]->Fill(m20, exoticity, nCaloCellsPerCluster, GetEventWeight()); 
     
     // Track matching
     //
@@ -2728,6 +2734,21 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   
   if ( fFillAllCellSameTCardHisto )
   {
+    for(Int_t i = 0; i < fgkNEBins-1; i++) 
+    {
+      fhM02ExoNCellsNotAllSameTCard[i] = new TH3F 
+      (Form("hM02ExoNCellsNotAllSameTCard_Ebin%d",i),
+       Form("#sigma^{2}_{long} vs #it{F}_{+} vs #it{n}_{cells}, %2.1f < #it{E} < %2.1f GeV, #it{n}_{cells-diff}^{#it{w}} > 0",fEnergyBins[i],fEnergyBins[i+1]),
+       //100,0,0.5,nexobinsS,exominS,exomaxS,nceclbins,nceclmin,nceclmax); 
+       ssBinsArray.GetSize() - 1, ssBinsArray.GetArray(),
+        fBinsArray.GetSize() - 1,  fBinsArray.GetArray(), 
+        nBinsArray.GetSize() - 1,  nBinsArray.GetArray());
+      fhM02ExoNCellsNotAllSameTCard[i]->SetXTitle("#sigma^{2}_{long}");
+      fhM02ExoNCellsNotAllSameTCard[i]->SetYTitle("#it{F}_{+}");
+      fhM02ExoNCellsNotAllSameTCard[i]->SetZTitle("#it{n}_{cells}");
+      outputContainer->Add(fhM02ExoNCellsNotAllSameTCard[i]); 
+    }
+    
     fhExoticityEClusAllSameTCard = new TH2F 
     ("hExoticityEClusAllSameTCard","cell #it{F}_{+} vs #it{E}_{cluster}, #it{n}_{cell} > 1, #it{n}_{cells} = #it{n}_{cells-same}",
      //nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
