@@ -125,6 +125,13 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
     fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300.);
   }
 
+  // A bit of QA stuff
+  fHistos->CreateTH2("hQANEFPt", "Neutral energy fraction; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZchPt", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQANChPt", "Number of charged constituents; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
+  fHistos->CreateTH2("hQANnePt", "Number of neutral constituents; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
+
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
 }
@@ -178,6 +185,23 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
       fHistos->FillTH2("hRgVsPtWeighted", zgparams[2], jet->Pt(), weight);
       fHistos->FillTH2("hNsdVsPtWeighted", zgparams[5], jet->Pt(), weight);
     } 
+
+    // Fill QA plots - trigger cluster independent
+    // Those plots have been in before (as part of the Tree) but were 
+    // removed in order to reduce the disk space consumption.
+    fHistos->FillTH2("hQANEFPt", jet->Pt(), jet->NEF(), weight);
+    if(clusters){
+      auto leadcluster = jet->GetLeadingCluster(clusters->GetArray());
+      TLorentzVector ptvec;
+      leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+      fHistos->FillTH2("hQAZnePt", jet->Pt(), jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
+    }
+    if(tracks){
+      auto leadingtrack = jet->GetLeadingTrack(tracks->GetArray());
+      fHistos->FillTH2("hQAZchPt", jet->Pt(), jet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
+    }
+    fHistos->FillTH2("hQANChPt", jet->Pt(), jet->GetNumberOfTracks(), weight);
+    fHistos->FillTH2("hQANnePt", jet->Pt(), jet->GetNumberOfClusters(), weight);
   }
   return true;
 }
