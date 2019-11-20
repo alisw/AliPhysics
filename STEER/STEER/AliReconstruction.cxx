@@ -2562,7 +2562,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
 
     if (fRunCustomPileupFinders) {
-      if (RunCustomPileUpFinders(fesd)) {
+      if (!RunCustomPileUpFinders(fesd)) {
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
