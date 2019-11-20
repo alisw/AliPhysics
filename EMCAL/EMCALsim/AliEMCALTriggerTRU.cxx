@@ -572,5 +572,7 @@ void AliEMCALTriggerTRU::Reset()
   ZeroRegion();
   
   for (Int_t i=0;i<96;i++) for (Int_t j=0;j<256;j++) fADC[i][j] = 0;
+
+  fL0Time = 0;
 }
 
