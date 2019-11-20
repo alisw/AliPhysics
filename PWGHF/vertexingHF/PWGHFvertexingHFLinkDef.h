@@ -134,6 +134,9 @@
 #pragma link C++ class AliHFMLResponse+;
 #pragma link C++ class AliHFMLResponseDplustoKpipi+;
 #pragma link C++ class AliHFMLResponseDstoKKpi+;
+#pragma link C++ class AliHFMLVarHandler+;
+#pragma link C++ class AliHFMLVarHandlerDplustoKpipi+;
+#pragma link C++ class AliHFMLVarHandlerDstoKKpi+;
 #endif
 
 #endif

@@ -160,7 +160,7 @@ set(SRCS
   AliAnalysisTaskSEXicTopKpi.cxx
   AliRDHFCutsXictopKpi.cxx
   AliRDHFCutsCdeuterontodKpi.cxx
-   )
+)
 
 # Sources for ROOT6 only - alphabetical order
 if(ROOT_VERSION_MAJOR EQUAL 6)
@@ -169,6 +169,9 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
       vHFML/AliHFMLResponse.cxx
       vHFML/AliHFMLResponseDplustoKpipi.cxx
       vHFML/AliHFMLResponseDstoKKpi.cxx
+      vHFML/AliHFMLVarHandler.cxx
+      vHFML/AliHFMLVarHandlerDplustoKpipi.cxx
+      vHFML/AliHFMLVarHandlerDstoKKpi.cxx
       AliAnalysisTaskSEDplus.cxx
       AliAnalysisTaskSEDs.cxx
       charmFlow/AliAnalysisTaskSECharmHadronvn.cxx
