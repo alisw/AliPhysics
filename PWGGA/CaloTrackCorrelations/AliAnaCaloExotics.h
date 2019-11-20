@@ -55,6 +55,8 @@ public:
   
   void         ClusterHistograms(const TObjArray * clusters, AliVCaloCells * cells);
   
+  void         StripHistograms(AliVCaloCells *cells);
+
   // Setters and getters
   
   Float_t      GetCellAmpMin()      const   { return fCellAmpMin          ; } 
@@ -97,6 +99,9 @@ public:
  
   void         SwitchOnFillCellHisto()              { fFillCellHisto             = kTRUE  ; }
   void         SwitchOffFillCellHisto()             { fFillCellHisto             = kFALSE ; }
+
+  void         SwitchOnFillStripHisto()             { fFillStripHisto            = kTRUE  ; }
+  void         SwitchOffFillStripHisto()            { fFillStripHisto            = kFALSE ; }
   
   void         SwitchOnFillMatchingHisto()          { fFillMatchingHisto         = kTRUE  ; }
   void         SwitchOffFillMatchingHisto()         { fFillMatchingHisto         = kFALSE ; }
@@ -151,8 +156,10 @@ public:
   Float_t  fCellEnMinBins[fgkNCellEnMinBins];   ///<  Energy bins for some histograms for cells
   
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
- 
+   
   Bool_t   fFill1CellHisto;                     ///<  Fill histograms for 1 cell clusters
+  
+  Bool_t   fFillStripHisto;                     ///<  Fill histograms for strip of cells (2x48)
   
   Bool_t   fFillMatchingHisto;                  ///<  Fill histograms for track-cluster matching
   
@@ -334,6 +341,8 @@ public:
     
   // Apply cut on number of cells of cluster all in same TCard
   //
+  TH3F *   fhM02ExoNCellsNotAllSameTCard[fgkNEBins]; //!<! Cluster M02 vs exoticity vs n cells, different E bins for n diff > 0
+
   TH2F *   fhExoticityEClusAllSameTCard;        //!<! Exoticity vs energy, all cells in same T-Card, n diff = 0
   TH2F *   fhM02EnergyAllSameTCard;             //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff = 0
   TH2F *   fhNCellsPerClusterAllSameTCard;      //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0  
@@ -419,6 +428,15 @@ public:
   TH2F *   fhFracNCellsPerSMAcceptEvent     [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, LED rejected, per SM
   TH2F *   fhFracSumEnCellsPerSMAcceptEvent [fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, LED rejected, per SM
   
+  TH1F *   fhSumEnCellsPerStrip        [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip 
+  TH1F *   fhNCellsPerStrip            [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip
+  TH1F *   fhSumEnCellsPerStripNHigh20 [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, 1 cluster with n_cell_w>20, per SM 
+  TH1F *   fhNCellsPerStripNHigh20     [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, 1 cluster with n_cell_w>20, per SM 
+  TH2F *   fhSumEnCellsPerStripPerSM   [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, per SM 
+  TH2F *   fhNCellsPerStripPerSM       [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM
+  TH2F *   fhSumEnCellsPerStripPerSMNHigh20[fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, per SM, 1 cluster with n_cell_w>20, per SM  
+  TH2F *   fhNCellsPerStripPerSMNHigh20[fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM, 1 cluster with n_cell_w>20, per SM  
+  
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;
     
@@ -426,7 +444,7 @@ public:
   AliAnaCaloExotics(              const AliAnaCaloExotics & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloExotics,8) ;
+  ClassDef(AliAnaCaloExotics,9) ;
   /// \endcond
 
 } ;
