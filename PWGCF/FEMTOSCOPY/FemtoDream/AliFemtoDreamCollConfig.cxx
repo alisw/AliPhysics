@@ -11,6 +11,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
     : TNamed(),
       fMultBinning(false),
       fCentBinning(false),
+      fkTandMultBinning(false),
       fkTBinning(false),
       fmTBinning(false),
       fPtQA(false),
@@ -53,6 +54,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
     : TNamed(config),
       fMultBinning(config.fMultBinning),
       fCentBinning(config.fCentBinning),
+      fkTandMultBinning(config.fkTandMultBinning),
       fkTBinning(config.fkTBinning),
       fmTBinning(config.fmTBinning),
       fPtQA(config.fPtQA),
@@ -95,6 +97,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
     : TNamed(name, title),
       fMultBinning(false),
       fCentBinning(false),
+      fkTandMultBinning(false),
       fkTBinning(false),
       fmTBinning(false),
       fPtQA(false),
@@ -136,6 +139,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     TNamed::operator=(config);
     this->fMultBinning = config.fMultBinning;
     this->fCentBinning = config.fCentBinning;
+    this->fkTandMultBinning = config.fkTandMultBinning;
     this->fkTBinning = config.fkTBinning;
     this->fmTBinning = config.fmTBinning;
     this->fPtQA = config.fPtQA;

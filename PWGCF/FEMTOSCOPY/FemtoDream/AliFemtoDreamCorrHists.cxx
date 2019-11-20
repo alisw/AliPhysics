@@ -26,6 +26,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fSameEventCentDist(nullptr),
       fSameEventmTDist(nullptr),
       fSameEventkTDist(nullptr),
+      fSameEventkTandMultDist(nullptr),
       fSameEventkTCentDist(nullptr),
       fPtQADist(nullptr),
       fPtQADistSEPartOne(nullptr),
@@ -41,6 +42,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fMixedEventCentDist(nullptr),
       fMixedEventmTDist(nullptr),
       fMixedEventkTDist(nullptr),
+      fMixedEventkTandMultDist(nullptr),
       fMixedEventkTCentDist(nullptr),
       fPairCounterME(nullptr),
       fMomResolution(nullptr),
@@ -59,6 +61,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fdEtadPhiMEmT(nullptr),
       fEffMixingDepth(nullptr),
       fDoMultBinning(false),
+      fDokTandMultBinning(false),
       fDoCentBinning(false),
       fDokTBinning(false),
       fDomTBinning(false),
@@ -89,6 +92,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fSameEventCentDist(hists.fSameEventCentDist),
       fSameEventmTDist(hists.fSameEventmTDist),
       fSameEventkTDist(hists.fSameEventkTDist),
+      fSameEventkTandMultDist(hists.fSameEventkTandMultDist),
       fSameEventkTCentDist(hists.fSameEventkTCentDist),
       fPtQADist(hists.fPtQADist),
       fPtQADistSEPartOne(hists.fPtQADistSEPartOne),
@@ -104,6 +108,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fMixedEventCentDist(hists.fMixedEventCentDist),
       fMixedEventmTDist(hists.fMixedEventmTDist),
       fMixedEventkTDist(hists.fMixedEventkTDist),
+      fMixedEventkTandMultDist(hists.fMixedEventkTandMultDist),
       fMixedEventkTCentDist(hists.fMixedEventkTCentDist),
       fPairCounterME(hists.fPairCounterME),
       fMomResolution(hists.fMomResolution),
@@ -123,6 +128,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fEffMixingDepth(hists.fEffMixingDepth),
       fDoMultBinning(hists.fDoMultBinning),
       fDoCentBinning(hists.fDoCentBinning),
+      fDokTandMultBinning(hists.fDokTandMultBinning),
       fDokTBinning(hists.fDokTBinning),
       fDomTBinning(hists.fDomTBinning),
       fPtQA(hists.fPtQA),
@@ -152,6 +158,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fSameEventCentDist(nullptr),
       fSameEventmTDist(nullptr),
       fSameEventkTDist(nullptr),
+      fSameEventkTandMultDist(nullptr),
       fSameEventkTCentDist(nullptr),
       fPtQADist(nullptr),
       fPtQADistSEPartOne(nullptr),
@@ -167,6 +174,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fMixedEventCentDist(nullptr),
       fMixedEventmTDist(nullptr),
       fMixedEventkTDist(nullptr),
+      fMixedEventkTandMultDist(nullptr),
       fMixedEventkTCentDist(nullptr),
       fPairCounterME(nullptr),
       fMomResolution(nullptr),
@@ -187,6 +195,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTBinning(false),
+      fDokTandMultBinning(false),
       fDomTBinning(false),
       fPtQA(false),
       fMassQA(false),
@@ -204,6 +213,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fDoCentBinning = conf->GetDoCentBinning();
   fDokTBinning = conf->GetDokTBinning();
   fDokTCentralityBins = conf->GetDokTCentralityBinning();
+  fDokTandMultBinning = conf->GetDokTandMultBinning();
   fDomTBinning = conf->GetDomTBinning();
   fPtQA = conf->GetDoPtQA();
   fMassQA = conf->GetDoMassQA();
@@ -233,6 +243,11 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   std::vector<float>::iterator itKMax = kRelMax.begin();
   fmTdEtadPhiBins = conf->GetmTBins();
   const unsigned int nmTBins = fmTdEtadPhiBins.size();
+  if (fDokTandMultBinning) {
+    if (multbins == 0) {
+      AliWarning("Did you set the Multiplicity bins, since their size is 0?\n");
+    }
+  }
   if (nHists != NBinsHist.size() || nHists != kRelMin.size()
       || nHists != kRelMax.size()) {
     //Todo: Replace by AliFatal!
@@ -320,6 +335,13 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   } else {
     fSameEventMultDist = nullptr;
     fMixedEventMultDist = nullptr;
+  }
+  if (fDokTandMultBinning) {
+    fSameEventkTandMultDist = new TH2F**[nHists];
+    fMixedEventkTandMultDist = new TH2F**[nHists];
+  } else {
+    fSameEventkTandMultDist = nullptr;
+    fMixedEventkTandMultDist = nullptr;
   }
   if (fDoCentBinning) {
     fSameEventCentDist = new TH2F*[nHists];
@@ -469,7 +491,30 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                 centBins);
         fPairs[Counter]->Add(fMixedEventCentDist[Counter]);
       }
+      // kT Binning for different multbins
+      if (fillHists && fDokTandMultBinning) {
+        fSameEventkTandMultDist[Counter] = new TH2F*[multbins];
+        fMixedEventkTandMultDist[Counter] = new TH2F*[multbins];
+        for (int iMult = 1; iMult < multbins + 1; ++iMult) {
+          TString SamekTandMultEventName = Form(
+              "SEkTandMultDist_Mult%i_Particle%d_Particle%d", iMult,
+              iPar1, iPar2);
+          fSameEventkTandMultDist[Counter][iMult] = new TH2F(
+              SamekTandMultEventName.Data(), SamekTandMultEventName.Data(), *itNBins,
+                                             *itKMin, *itKMax, *itNBins / 10,
+                                             *itKMin, *itKMax * 1.5);
+          fPairs[Counter]->Add(fSameEventkTandMultDist[Counter][iMult]);
 
+          TString MixedkTandMultEventName = Form(
+              "MEkTandMultDist_Mult%i_Particle%d_Particle%d", iMult,
+              iPar1, iPar2);
+          fMixedEventkTandMultDist[Counter][iMult] = new TH2F(
+              MixedkTandMultEventName.Data(), MixedkTandMultEventName.Data(), *itNBins,
+                                             *itKMin, *itKMax, *itNBins / 10,
+                                             *itKMin, *itKMax * 1.5);
+          fPairs[Counter]->Add(fMixedEventkTandMultDist[Counter][iMult]);
+        }
+      }
       if (fillHists && fDokTBinning) {
         TString SamekTEventName = Form("SEkTDist_Particle%d_Particle%d", iPar1,
                                        iPar2);
@@ -905,6 +950,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fMassQADistPart1 = hists.fMassQADistPart1;
     this->fMassQADistPart2 = hists.fMassQADistPart2;
     this->fPairInvMassQAD = hists.fPairInvMassQAD;
+    this->fSameEventkTandMultDist = hists.fSameEventkTandMultDist;
     this->fSameEventkTCentDist = hists.fSameEventkTCentDist;
     this->fPairCounterSE = hists.fPairCounterSE;
     this->fMixedEventDist = hists.fMixedEventDist;
@@ -912,6 +958,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fMixedEventCentDist = hists.fMixedEventCentDist;
     this->fMixedEventmTDist = hists.fMixedEventmTDist;
     this->fMixedEventkTDist = hists.fMixedEventkTDist;
+    this->fMixedEventkTandMultDist = hists.fMixedEventkTandMultDist;
     this->fMixedEventkTCentDist = hists.fMixedEventkTCentDist;
     this->fPairCounterME = hists.fPairCounterME;
     this->fMomResolution = hists.fMomResolution;
@@ -968,6 +1015,10 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
     delete[] fPairInvMassQAD;
   }
 
+  if (fSameEventkTandMultDist) {
+    delete[] fSameEventkTandMultDist;
+    delete fSameEventkTandMultDist;
+  }
   if (fSameEventkTDist) {
     delete[] fSameEventkTDist;
     delete fSameEventDist;
@@ -991,6 +1042,10 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   if (fMixedEventkTDist) {
     delete[] fMixedEventkTDist;
     delete fMixedEventDist;
+  }
+  if (fMixedEventkTandMultDist) {
+    delete[] fMixedEventkTandMultDist;
+    delete fMixedEventkTandMultDist;
   }
   if (fMixedEventkTCentDist) {
     delete[] fMixedEventkTCentDist;
