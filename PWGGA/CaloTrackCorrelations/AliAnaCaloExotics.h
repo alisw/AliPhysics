@@ -394,11 +394,11 @@ public:
   TH1F *   fhFracNCellsNHigh20    [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV, 1 cluster with n_cell_w>20
   TH1F *   fhFracSumEnCellsNHigh20[fgkNCellEnMinBinsFr];      //!<! sum of cells with E > 1 GeV over emin, 1 cluster with n_cell_w>20
  
-  TH1F *   fhSumEnCellsCutSM3     [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy, low SM3 activity 
-  TH1F *   fhNCellsCutSM3         [fgkNCellEnMinBins];        //!<! For E cell > emin, count number of cells, low SM3 activity
-  TH1F *   fhAverSumEnCellsCutSM3 [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy / total cells number, low SM3 activity
-  TH1F *   fhFracNCellsCutSM3     [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV, low SM3 activity
-  TH1F *   fhFracSumEnCellsCutSM3 [fgkNCellEnMinBinsFr];      //!<! sum of cells with E > 1 GeV over emin, low SM3 activity
+  TH1F *   fhSumEnCellsAcceptEvent     [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy, LED rejected 
+  TH1F *   fhNCellsAcceptEvent         [fgkNCellEnMinBins];        //!<! For E cell > emin, count number of cells, LED rejected
+  TH1F *   fhAverSumEnCellsAcceptEvent [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy / total cells number, LED rejected
+  TH1F *   fhFracNCellsAcceptEvent     [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV, LED rejected
+  TH1F *   fhFracSumEnCellsAcceptEvent [fgkNCellEnMinBinsFr];      //!<! sum of cells with E > 1 GeV over emin, LED rejected
   
   // Per SM
   TH2F *   fhSumEnCellsPerSM           [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, per SM 
@@ -413,11 +413,11 @@ public:
   TH2F *   fhFracNCellsPerSMNHigh20    [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, 1 cluster with n_cell_w>20, per SM
   TH2F *   fhFracSumEnCellsPerSMNHigh20[fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, 1 cluster with n_cell_w>20, per SM
 
-  TH2F *   fhSumEnCellsPerSMCutSM3     [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, low SM3 activity, per SM
-  TH2F *   fhNCellsPerSMCutSM3         [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, low SM3 activity, per SM 
-  TH2F *   fhAverSumEnCellsPerSMCutSM3 [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy / total cells number, low SM3 activity, per SM
-  TH2F *   fhFracNCellsPerSMCutSM3     [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, low SM3 activity, per SM
-  TH2F *   fhFracSumEnCellsPerSMCutSM3 [fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, low SM3 activity, per SM
+  TH2F *   fhSumEnCellsPerSMAcceptEvent     [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, LED rejected, per SM
+  TH2F *   fhNCellsPerSMAcceptEvent         [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, LED rejected, per SM 
+  TH2F *   fhAverSumEnCellsPerSMAcceptEvent [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy / total cells number, LED rejected, per SM
+  TH2F *   fhFracNCellsPerSMAcceptEvent     [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, LED rejected, per SM
+  TH2F *   fhFracSumEnCellsPerSMAcceptEvent [fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, LED rejected, per SM
   
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;
