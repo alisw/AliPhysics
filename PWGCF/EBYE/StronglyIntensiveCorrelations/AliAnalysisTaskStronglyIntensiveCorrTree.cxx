@@ -333,7 +333,7 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserExec(Option_t* ) {
   
  
   fMagneticField=pAOD->GetMagneticField();
-  pAOD->GetPrimaryVertex()->Print();
+  //pAOD->GetPrimaryVertex()->Print();
 
   // vertex selection -- data
   const Int_t nVertex(pAOD->GetNumberOfVertices());
