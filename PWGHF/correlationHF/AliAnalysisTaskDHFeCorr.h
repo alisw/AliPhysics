@@ -225,6 +225,7 @@ namespace AliDHFeCorr {
         std::unique_ptr<AliRDHFCuts> fDMesonCuts;
         Float_t fPtMin{-999.};
         Float_t fPtMaxPID{999.};
+        Bool_t fUsePID{true}; //automatically set from fDMesonCuts. Used to keep track in case it changes
     } AliDMesonSelection;
 
     //Structs to hold QA plots
@@ -428,9 +429,9 @@ private:
     AliDHFeCorr::AliDMeson fDmeson;///< D meson information that will be used in the fDmesonTree
 
     bool fIsMC{false}; ///< Flag for MC analysis
-    bool fIsEffMode{false}; ///< Fills only the trees with true D mesons and electrons. No correlation analysis.
+    bool fIsEffMode{false}; ///< Fills only the trees with true D mesons and electrons
     bool fKeepAllCandidates{true}; ///< Keep all candidates (even if no electron is present)
-    bool fReducedElectronInfo{false};
+    bool fReducedElectronInfo{false}; ///< Keep only basic information (pt, eta, phi)
     DMeson_t fDmesonSpecies{kD0}; ///< The D meson species (D0, D+ or D*)
 
     //YAML configuration
