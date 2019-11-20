@@ -34,7 +34,7 @@ AliAnalysisTaskStronglyIntensiveCorrTree* AddMyTask(TString name               =
     // add your task to the manager
     task->SetTrackBit(filterBit);
     task->SetMCStatus(isMC);
-    task->SetPtRange(ptMin,ptMax)
+    task->SetPtRange(ptMin,ptMax);
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());

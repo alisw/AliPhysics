@@ -469,8 +469,8 @@ void AliAnalysisTaskStronglyIntensiveCorrTree::UserExec(Option_t* ) {
 	                    }
                     }
      // printf("tracksMC  : (%5d) ", tracksMC->GetEntries());
-                    for (Int_t j=0; j<15; ++j) printf("%3d,%3d|", fNf_MC[j],fNb_MC[j]);
-                    printf("\n");
+                    //for (Int_t j=0; j<15; ++j) printf("%3d,%3d|", fNf_MC[j],fNb_MC[j]);
+                   // printf("\n");
                     fTreeMC->Fill();
                     delete tracksMC;
           }
@@ -519,7 +519,7 @@ TObjArray* AliAnalysisTaskStronglyIntensiveCorrTree::GetAcceptedTracks(AliAODEve
     if (NULL == pAODTrack) continue;
    
     if (!pAODTrack->TestFilterBit(fTrackFilter)) continue;
-    Printf("Filterbit %d", fTrackFilter);
+    //Printf("Filterbit %d", fTrackFilter);
    
     if (NULL != arrayMC) {
       //const Int_t label(pAODTrack->GetLabel());
