@@ -20,6 +20,10 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt()
     fAntiProtonTrack(nullptr),
     fDeuteronTrack(nullptr),
     fAntiDeuteronTrack(nullptr),
+    fProtonTrackNoTOF(nullptr),
+    fAntiProtonTrackNoTOF(nullptr),
+    fDeuteronTrackNoTOF(nullptr),
+    fAntiDeuteronTrackNoTOF(nullptr),
     fConfig(nullptr),
     fIsMC(false),
     fEvtList(nullptr),
@@ -31,6 +35,14 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt()
     fDeuteronMCList(nullptr),
     fAntiDeuteronList(nullptr),
     fAntiDeuteronMCList(nullptr),
+    fProtonNoTOFList(nullptr),
+    fProtonMCNoTOFList(nullptr),
+    fAntiProtonNoTOFList(nullptr),
+    fAntiProtonMCNoTOFList(nullptr),
+    fDeuteronNoTOFList(nullptr),
+    fDeuteronMCNoTOFList(nullptr),
+    fAntiDeuteronNoTOFList(nullptr),
+    fAntiDeuteronMCNoTOFList(nullptr),
     fGTI(nullptr),
     fProtonRestMass(nullptr),
     fAntiProtonRestMass(nullptr),
@@ -54,6 +66,10 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt(
     fAntiProtonTrack(nullptr),
     fDeuteronTrack(nullptr),
     fAntiDeuteronTrack(nullptr),
+    fProtonTrackNoTOF(nullptr),
+    fAntiProtonTrackNoTOF(nullptr),
+    fDeuteronTrackNoTOF(nullptr),
+    fAntiDeuteronTrackNoTOF(nullptr),
     fConfig(nullptr),
     fIsMC(isMC),
     fEvtList(nullptr),
@@ -65,6 +81,14 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt(
     fDeuteronMCList(nullptr),
     fAntiDeuteronList(nullptr),
     fAntiDeuteronMCList(nullptr),
+    fProtonNoTOFList(nullptr),
+    fProtonMCNoTOFList(nullptr),
+    fAntiProtonNoTOFList(nullptr),
+    fAntiProtonMCNoTOFList(nullptr),
+    fDeuteronNoTOFList(nullptr),
+    fDeuteronMCNoTOFList(nullptr),
+    fAntiDeuteronNoTOFList(nullptr),
+    fAntiDeuteronMCNoTOFList(nullptr),
     fGTI(nullptr),
     fProtonRestMass(nullptr),
     fAntiProtonRestMass(nullptr),
@@ -80,13 +104,17 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt(
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
   DefineOutput(4, TList::Class());  //Output for the Dueteron Cuts
   DefineOutput(5, TList::Class());  //Output for the AntiDeuteron Cuts
-  DefineOutput(6, TList::Class());  //Output for the Results
-  DefineOutput(7, TList::Class());  //Output for the Results QA
+  DefineOutput(6, TList::Class());  //Output for the ProtonNoTOF Cuts
+  DefineOutput(7, TList::Class());  //Output for the AntiProtonNoTOF Cuts
+  DefineOutput(8, TList::Class());  //Output for the DueteronNoTOF Cuts
+  DefineOutput(9, TList::Class());  //Output for the AntiDeuteronNoTOF Cuts
+  DefineOutput(10, TList::Class());  //Output for the Results
+  DefineOutput(11, TList::Class());  //Output for the Results QA
   if (isMC) {
-    DefineOutput(8, TList::Class());  //Output for the Proton MC
-    DefineOutput(9, TList::Class());  //Output for the AntiProton MC
-    DefineOutput(10, TList::Class());  //Output for the Deuteron MC
-    DefineOutput(11, TList::Class());  //Output for the AntiDeuteron MC
+    DefineOutput(12, TList::Class());  //Output for the Proton MC
+    DefineOutput(13, TList::Class());  //Output for the AntiProton MC
+    DefineOutput(14, TList::Class());  //Output for the Deuteron MC
+    DefineOutput(15, TList::Class());  //Output for the AntiDeuteron MC
   }
 }
 
@@ -101,6 +129,10 @@ AliAnalysisTaskNanoPt::~AliAnalysisTaskNanoPt() {
   delete fAntiProtonTrack;
   delete fDeuteronTrack;
   delete fAntiDeuteronTrack;
+  delete fProtonTrackNoTOF;
+  delete fAntiProtonTrackNoTOF;
+  delete fDeuteronTrackNoTOF;
+  delete fAntiDeuteronTrackNoTOF;
   delete fPairCleaner;
   delete fPartColl;
 }
@@ -172,6 +204,51 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     fAntiDeuteronList->Add(fAntiDeuteronRestMass);
 
   }
+//--------------------------------------------------------------------------------------------------------------------
+  if (!fProtonTrackNoTOF) {
+    AliError("No ProtonNoTOF cuts \n");
+  } else {
+    fProtonTrackNoTOF->Init();
+    fProtonRestMassNoTOF = new TH2F("fProtonRestMassNoTOF", "Proton NoTOF", 36, 0.5, 4.05, 180, 0.2, 2.);
+    fProtonRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
+    fProtonRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fProtonNoTOFList = fProtonTrackNoTOF->GetQAHists();
+    fProtonNoTOFList->Add(fProtonRestMassNoTOF);
+  }
+
+  if (!fAntiProtonTrackNoTOF) {
+    AliError("No AntiProtonNoTOF cuts \n");
+  } else {
+    fAntiProtonTrackNoTOF->Init();
+    fAntiProtonRestMassNoTOF = new TH2F("fAntiProtonRestMassNoTOF", "AntiProtonNoTOF", 36, 0.5, 4.05, 180, 0.2, 2.);
+    fAntiProtonRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
+    fAntiProtonRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fAntiProtonNoTOFList = fAntiProtonTrack->GetQAHists();
+    fAntiProtonNoTOFList->Add(fAntiProtonRestMassNoTOF);
+  }
+
+  if (!fDeuteronTrackNoTOF) {
+    AliError("No DeuteronNoTOF cuts \n");
+  } else {
+    fDeuteronTrackNoTOF->Init();
+    fDeuteronRestMassNoTOF = new TH2F("fDeuteronRestMassNoTOF", "DeuteronNoTOF", 36, 0.5, 4.05, 180, 0.2, 2.);
+    fDeuteronRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
+    fDeuteronRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fDeuteronNoTOFList = fDeuteronTrackNoTOF->GetQAHists();
+    fDeuteronNoTOFList->Add(fDeuteronRestMassNoTOF);
+  }
+
+  if (!fAntiDeuteronTrackNoTOF) {
+    AliError("No AntiDeuteronNoTOF cuts \n");
+  } else {
+    fAntiDeuteronTrackNoTOF->Init();
+    fAntiDeuteronRestMassNoTOF = new TH2F("fAntiDeuteronRestMassNoTOF", "AntiDeuteronNoTOF", 36, 0.5, 4.05, 180, 0.2, 2.);
+    fAntiDeuteronRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
+    fAntiDeuteronRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fAntiDeuteronNoTOFList = fAntiDeuteronTrackNoTOF->GetQAHists();
+    fAntiDeuteronNoTOFList->Add(fAntiDeuteronRestMassNoTOF);
+
+  }
 
   if (!fConfig) {
     AliError("No Correlation Config \n");
@@ -189,7 +266,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
   //fAntiProtonTrack->SetUseMCInfo();
 // fDeuteronTrack->SetUseMCInfo();
 // fAntiDeuteronTrack->SetUseMCInfo();
-   fTrack->SetUseMCInfo(fIsMC);
+  fTrack->SetUseMCInfo(fIsMC);
   if (!fEvtCuts->GetMinimalBooking()) {
     fEvtList = fEvtCuts->GetHistList();
   } else {
@@ -197,7 +274,6 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     fEvtList->SetName("EventCuts");
     fEvtList->SetOwner();
   }
-
 
   fResultsQA = new TList();
   fResultsQA->SetOwner();
@@ -220,8 +296,12 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
   PostData(3, fAntiProtonList);
   PostData(4, fDeuteronList);
   PostData(5, fAntiDeuteronList);
-  PostData(6, fResults);
-  PostData(7, fResultsQA);
+  PostData(6, fProtonList);
+  PostData(7, fAntiProtonList);
+  PostData(8, fDeuteronList);
+  PostData(9, fAntiDeuteronList);
+  PostData(10, fResults);
+  PostData(11, fResultsQA);
 
 //-----------------------------------------MCTracks------------------------------------------------------------------------------
   if (fProtonTrack->GetIsMonteCarlo()) {
@@ -232,7 +312,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       fProtonMCList->SetName("MCProtOnTrackCuts");
       fProtonMCList->SetOwner();
     }
-    PostData(8, fProtonMCList);
+    PostData(12, fProtonMCList);
   }
   if (fAntiProtonTrack->GetIsMonteCarlo()) {
     if (!fAntiProtonTrack->GetMinimalBooking()) {
@@ -242,7 +322,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       fAntiProtonMCList->SetName("MCAntiProtonTrackCuts");
       fAntiProtonMCList->SetOwner();
     }
-    PostData(9, fAntiProtonMCList);
+    PostData(13, fAntiProtonMCList);
   }
 
   if (fDeuteronTrack->GetIsMonteCarlo()) {
@@ -253,7 +333,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       fDeuteronMCList->SetName("MCDeuteronTrackCuts");
       fDeuteronMCList->SetOwner();
     }
-    PostData(10, fDeuteronMCList);
+    PostData(14, fDeuteronMCList);
   }
   if (fAntiDeuteronTrack->GetIsMonteCarlo()) {
     if (!fAntiDeuteronTrack->GetMinimalBooking()) {
@@ -263,7 +343,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       fAntiDeuteronMCList->SetName("MCAntiDeuteronTrackCuts");
       fAntiDeuteronMCList->SetOwner();
     }
-    PostData(11, fAntiDeuteronMCList);
+    PostData(15, fAntiDeuteronMCList);
   }
 
 }
@@ -302,6 +382,16 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
     return;
   }
 
+
+  if (!fProtonTrackNoTOF || !fAntiProtonTrackNoTOF) {
+    AliError("ProtonNoTOF Cuts missing");
+    return;
+  }
+
+  if (!fDeuteronTrackNoTOF || !fAntiDeuteronTrackNoTOF) {
+    AliError("DeuteronNoTOF Cuts missing");
+    return;
+  }
 
   // EVENT SELECTION
   fEvent->SetEvent(fInputEvent);
@@ -348,27 +438,25 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
       fAntiDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
       AntiDeuteron.push_back(*fTrack);
     }
-  }
-  if (fIsMC) {
-    AliAODInputHandler *eventHandler =
-      dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
-                                        ->GetInputEventHandler());
-    AliMCEvent* fMC = eventHandler->MCEvent();
-    for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
-      AliAODMCParticle *mcPart = static_cast<AliAODMCParticle *>(fMC->GetTrack(iPart));
-      if (TMath::Abs(mcPart->Eta()) < 0.8 && mcPart->IsPhysicalPrimary()) {
-        if (mcPart->GetPdgCode() == fProtonTrack->GetPDGCode()) {
-          fProtonTrack->FillGenerated(mcPart->Pt());
-        } else if (mcPart->GetPdgCode() == fAntiProtonTrack->GetPDGCode()) {
-          fAntiProtonTrack->FillGenerated(mcPart->Pt());
-        } else if (mcPart->GetPdgCode() == fDeuteronTrack->GetPDGCode()) {
-          fDeuteronTrack->FillGenerated(mcPart->Pt());
-        } else if (mcPart->GetPdgCode() == fAntiDeuteronTrack->GetPDGCode()) {
-          fAntiDeuteronTrack->FillGenerated(mcPart->Pt());
-        }
-      }
+
+    if (fProtonTrackNoTOF->isSelected(fTrack)) {
+      fProtonRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+      Proton.push_back(*fTrack);
+    }
+    if (fAntiProtonTrackNoTOF->isSelected(fTrack)) {
+      fAntiProtonRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+      AntiProton.push_back(*fTrack);
+    }
+    if (fDeuteronTrackNoTOF->isSelected(fTrack)) {
+      fDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+      Deuteron.push_back(*fTrack);
+    }
+    if (fAntiDeuteronTrackNoTOF->isSelected(fTrack)) {
+      fAntiDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+      AntiDeuteron.push_back(*fTrack);
     }
   }
+
 
 
   fPairCleaner->CleanTrackAndDecay(&Proton, &Deuteron, 0);
@@ -392,21 +480,25 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
   PostData(3, fAntiProtonList);
   PostData(4, fDeuteronList);
   PostData(5, fAntiDeuteronList);
-  PostData(6, fResults);
-  PostData(7, fResultsQA);
+  PostData(6, fProtonNoTOFList);
+  PostData(7, fAntiProtonNoTOFList);
+  PostData(8, fDeuteronNoTOFList);
+  PostData(9, fAntiDeuteronNoTOFList);
+  PostData(10, fResults);
+  PostData(11, fResultsQA);
   //-----------------------------------------MCTracksStorage------------------------------------------------------------------------------
   if (fProtonTrack->GetIsMonteCarlo()) {
-    PostData(8, fProtonMCList);
+    PostData(12, fProtonMCList);
   }
   if (fAntiProtonTrack->GetIsMonteCarlo()) {
-    PostData(9, fAntiProtonMCList);
+    PostData(13, fAntiProtonMCList);
   }
 
   if (fDeuteronTrack->GetIsMonteCarlo()) {
-    PostData(10, fDeuteronMCList);
+    PostData(14, fDeuteronMCList);
   }
   if (fAntiDeuteronTrack->GetIsMonteCarlo()) {
-    PostData(11, fAntiDeuteronMCList);
+    PostData(15, fAntiDeuteronMCList);
   }
 }
 

@@ -42,6 +42,20 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   void SetAntiDeuteronCuts(AliFemtoDreamTrackCuts *cuts) {
     fAntiDeuteronTrack = cuts;
   }
+  void SetProtonCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
+    fProtonTrackNoTOF = cuts;
+  }
+
+  void SetAntiProtonCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
+    fAntiProtonTrackNoTOF = cuts;
+  }
+  void SetDeuteronCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
+    fDeuteronTrackNoTOF = cuts;
+  }
+
+  void SetAntiDeuteronCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
+    fAntiDeuteronTrackNoTOF = cuts;
+  }
 
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
     fConfig = config;
@@ -63,7 +77,10 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts *fAntiProtonTrack;          //
   AliFemtoDreamTrackCuts *fDeuteronTrack;              //
   AliFemtoDreamTrackCuts *fAntiDeuteronTrack;          //
-
+  AliFemtoDreamTrackCuts *fProtonTrackNoTOF;              //
+  AliFemtoDreamTrackCuts *fAntiProtonTrackNoTOF;          //
+  AliFemtoDreamTrackCuts *fDeuteronTrackNoTOF;              //
+  AliFemtoDreamTrackCuts *fAntiDeuteronTrackNoTOF;          //
   int fTrackBufferSize; //
   AliVTrack **fGTI;  //!
   TList *fEvtList;//!
@@ -75,7 +92,14 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   TList* fDeuteronMCList;//!
   TList *fAntiDeuteronList;//!
   TList* fAntiDeuteronMCList;//!
-
+  TList *fProtonNoTOFList;//!
+  TList* fProtonMCNoTOFList;//!
+  TList *fAntiProtonNoTOFList;//!
+  TList* fAntiProtonMCNoTOFList;//!
+  TList *fDeuteronNoTOFList;//!
+  TList* fDeuteronMCNoTOFList;//!
+  TList *fAntiDeuteronNoTOFList;//!
+  TList* fAntiDeuteronMCNoTOFList;//!
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
@@ -85,6 +109,10 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   TH2F  *fAntiProtonRestMass; //!
   TH2F  *fDeuteronRestMass; //!
   TH2F  *fAntiDeuteronRestMass; //!
-  ClassDef(AliAnalysisTaskNanoPt, 1)
+  TH2F  *fProtonRestMassNoTOF; //!
+  TH2F  *fAntiProtonRestMassNoTOF; //!
+  TH2F  *fDeuteronRestMassNoTOF; //!
+  TH2F  *fAntiDeuteronRestMassNoTOF; //!
+  ClassDef(AliAnalysisTaskNanoPt, 2)
 };
 #endif
