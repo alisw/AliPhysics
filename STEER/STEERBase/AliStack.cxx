@@ -179,6 +179,7 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg, const Float_t *pmo
     } else {
 	AliWarning(Form("Particle type %d not defined in PDG Database !", pdg));
 	AliWarning("Particle skipped !");
+	ntr = -1;
     }
 }
 
