@@ -579,10 +579,12 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                     float array4ntuple[22] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)hInvMassIntToFit->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)VnBkgFunc,(float)vnvsmassfitter->GetRawYield(),(float)vnvsmassfitter->GetRawYieldUncertainty(),(float)vnvsmassfitter->GetMean(),(float)vnvsmassfitter->GetMeanUncertainty(),(float)vnvsmassfitter->GetSigma(),(float)vnvsmassfitter->GetSigmaUncertainty(),(float)vnvsmassfitter->GetReducedChiSquare(),(float)vnvsmassfitter->GetVn(),(float)vnvsmassfitter->GetVnUncertainty(),(float)qnmin,(float)qnmax,(float)iTrial};
 
                                     multiTrialNtuple->Fill(array4ntuple);
-                                    if(vnvsmassfitter->GetReducedChiSquare()<maxRedChi2) {
-                                        hVnResSimFit[iPt]->Fill(vnvsmassfitter->GetVn()-vnRef);
 
-                                        gVnVsTrialSimFit[iPt]->SetPoint(iTrial,iTrial,vnvsmassfitter->GetVn());
+                                    double vnEst = vnvsmassfitter->GetVn();
+                                    if(vnvsmassfitter->GetReducedChiSquare() < maxRedChi2 && TMath::Abs(vnEst - 0.10) > 1e-6) {
+                                        hVnResSimFit[iPt]->Fill(vnEst - vnRef);
+
+                                        gVnVsTrialSimFit[iPt]->SetPoint(iTrial,iTrial,vnEst);
                                         gVnVsTrialSimFit[iPt]->SetPointError(iTrial,0.,0.,vnvsmassfitter->GetVnUncertainty(),vnvsmassfitter->GetVnUncertainty());
                                     }
                                 }
