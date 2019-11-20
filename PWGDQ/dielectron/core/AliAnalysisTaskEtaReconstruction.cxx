@@ -1253,17 +1253,17 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // Fill support histograms with first cutsetting and first mcsignal
     // if(part.isMCSignal_primary[fSupportMCSignal] == true && part.isReconstructed_primary[fSupportCutsetting] == kTRUE){
     AliVParticle* mcPart1 = fMC->GetTrack(abslabel);
-    for (size_t j = 0; j < part.isReconstructed_primary.size(); j++) {
-      if(part.isReconstructed_primary[j] == kTRUE){
+    for (int j = 0; j < part.isReconstructed_primary.size(); j++) {
+      if(part.isReconstructed_primary[j] == kTRUE){    // check if part is reconstructed in each primary cut setting
         if (part.isMCSignal_primary[0] == kTRUE) {
-          FillTrackHistograms_Primary(track, mcPart1); // Fill primary support histograms
+          FillTrackHistograms_Primary(track, mcPart1, j); // Fill primary support histograms
         }
       }
     }
-    for (size_t j = 0; j < part.isReconstructed_secondary.size(); j++) {
+    for (int j = 0; j < part.isReconstructed_secondary.size(); j++) {
       if(part.isReconstructed_secondary[j] == kTRUE){
         if (part.isMCSignal_secondary[0] == kTRUE) {
-          FillTrackHistograms_Secondary(track, mcPart1); // Fill secondary support histograms
+          FillTrackHistograms_Secondary(track, mcPart1, j); // Fill secondary support histograms
         }
       }
     }
@@ -1516,7 +1516,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
 // ############################################################################
 // ############################################################################
-void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack){
+void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack, int iCutList){
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
 
@@ -1527,7 +1527,7 @@ void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Primary(AliVPartic
   // std::cout << fPrimarySupportHistos << std::endl;
   TString genname;
 
-  for (size_t iCutList = 0; iCutList < fCutListVecPrim.size(); iCutList++) {
+  // for (size_t iCutList = 0; iCutList < fCutListVecPrim.size(); iCutList++) {
     (dynamic_cast<TH1D *>(fCutListVecPrim.at(iCutList)->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
     (dynamic_cast<TH2D *>(fCutListVecPrim.at(iCutList)->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
     (dynamic_cast<TH2D *>(fCutListVecPrim.at(iCutList)->At(2)))->Fill(values[AliDielectronVarManager::kPIn], values[AliDielectronVarManager::kTPCnSigmaEle]);
@@ -1558,10 +1558,10 @@ void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Primary(AliVPartic
     (dynamic_cast<TH1D *>(fCutListVecPrim.at(iCutList)->At(24)))->Fill(values[AliDielectronVarManager::kImpactParXY]);
     (dynamic_cast<TH1D *>(fCutListVecPrim.at(iCutList)->At(25)))->Fill(values[AliDielectronVarManager::kImpactParZ]);
     // (dynamic_cast<TH1D *>(fCutListVecPrim.at(iCutList)->At(26)))->Fill(values[AliDielectronVarManager::kR]);
-  }
+  // }
 }
 
-void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack){
+void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack, int iCutList){
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
 
@@ -1571,7 +1571,7 @@ void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Secondary(AliVPart
   // std::cout << "TPCnSig manager = " << values[AliDielectronVarManager::kTPCnSigmaEle] << std::endl;
   // std::cout << fCutListVecSec.at(iCutList) << std::endl;
   TString genname;
-  for (size_t iCutList = 0; iCutList < fCutListVecSec.size(); iCutList++) {
+  // for (size_t iCutList = 0; iCutList < fCutListVecSec.size(); iCutList++) {
     (dynamic_cast<TH1D *>(fCutListVecSec.at(iCutList)->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
     (dynamic_cast<TH2D *>(fCutListVecSec.at(iCutList)->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
     (dynamic_cast<TH2D *>(fCutListVecSec.at(iCutList)->At(2)))->Fill(values[AliDielectronVarManager::kPIn], values[AliDielectronVarManager::kTPCnSigmaEle]);
@@ -1602,7 +1602,7 @@ void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Secondary(AliVPart
     (dynamic_cast<TH1D *>(fCutListVecSec.at(iCutList)->At(24)))->Fill(values[AliDielectronVarManager::kImpactParXY]);
     (dynamic_cast<TH1D *>(fCutListVecSec.at(iCutList)->At(25)))->Fill(values[AliDielectronVarManager::kImpactParZ]);
     // (dynamic_cast<TH1D *>(fCutListVecSec.at(iCutList)->At(26)))->Fill(values[AliDielectronVarManager::kR]);
-  }
+  // }
 }
 
 
