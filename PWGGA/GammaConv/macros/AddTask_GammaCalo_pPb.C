@@ -107,6 +107,7 @@ void AddTask_GammaCalo_pPb(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage  = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -125,6 +126,12 @@ void AddTask_GammaCalo_pPb(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -972,9 +979,9 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008d123","411790105f032230000","01631031000000d0"); // EG1
 
   } else if (trainConfig == 2020){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","411793105f032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008d123","411793105f032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
+    // cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
+    // cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
   } else if (trainConfig == 2021){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
     cuts.AddCutCalo("80010123","411793205f032230000","01631031000000d0"); // INT7
     cuts.AddCutCalo("8008e123","411793205f032230000","01631031000000d0"); // EG2
@@ -1003,8 +1010,8 @@ void AddTask_GammaCalo_pPb(
   // no TM
   } else if (trainConfig == 2030){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
     cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
+    // cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
+    // cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
   } else if (trainConfig == 2031){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
     cuts.AddCutCalo("80010123","4117932050032230000","01631031000000d0"); // INT7
     cuts.AddCutCalo("8008e123","4117932050032230000","01631031000000d0"); // EG2
@@ -1280,6 +1287,8 @@ void AddTask_GammaCalo_pPb(
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);
