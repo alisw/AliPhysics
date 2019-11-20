@@ -250,8 +250,8 @@ void AliAnalysisTaskHe3::UserCreateOutputObjects()
 	fOutputEvent->Add(fNchHeader);
 
 
-	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz");
-	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz");
+	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2");
+	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2");
 
 
     // track cuts config
@@ -561,10 +561,10 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
 		if (isHelium3Selected){
 			if (track->Charge() > 0){
 				FillHistosTrack(fHistsHe3, track);
-				if (track->GetTPCsignal() >100) {fNtupleHe3->Fill(track->P(), track->Pt(), track->GetTPCsignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz);}
+				if (track->GetTPCsignal() >100) {fNtupleHe3->Fill(track->P(), track->Pt(), track->GetTPCsignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz, GetMass2TOF(GetTOFBeta(track), track));}
 			} else if (track->Charge() < 0) {
 				FillHistosTrack(fHistsAHe3,track);
-				if (track->GetTPCsignal() > 100) {fNtupleAHe3->Fill(track->P(), track->Pt(), track->GetTPCsignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz);} //The TPC Signal requirement is to exclude the large amount of well seperated background which would make the Ntuple too large to compile & analyse. The histograms do not have this requirement and the seperation of the two signals can be seen in them.
+				if (track->GetTPCsignal() > 100) {fNtupleAHe3->Fill(track->P(), track->Pt(), track->GetTPCsignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz, GetMass2TOF(GetTOFBeta(track), track));} //The TPC Signal requirement is to exclude the large amount of well seperated background which would make the Ntuple too large to compile & analyse. The histograms do not have this requirement and the seperation of the two signals can be seen in them.
 			}
 		}
         
