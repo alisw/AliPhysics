@@ -68,6 +68,11 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
     if(fReadMC) fFillOnlySignal = opt;
     else AliError("fReadMC has to be kTRUE");
   }
+  void EnableMLTreeEvtSampling(Float_t fractokeep, ULong_t seed) {
+    fEnableEvtSampling = true;
+    fFracToKeep = fractokeep;
+    fSeedSampling = seed;
+  }
   
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -201,9 +206,12 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   int fPIDopt = AliHFMLVarHandlerDstoKKpi::kNsigmaDetAndCombPID;  /// option for PID variables
   Bool_t fAddSingleTrackVar = kFALSE;           /// option to store single track variables
   Bool_t fFillOnlySignal = kFALSE;              /// option to store only signal when using MC
+  Bool_t fEnableEvtSampling = false;            /// flag to apply event sampling
+  Float_t fFracToKeep = 1.1;                    /// fraction of events to be kept by event sampling
+  ULong_t fSeedSampling = 0;                /// seed for sampling
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,37);       /// AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,38);       /// AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

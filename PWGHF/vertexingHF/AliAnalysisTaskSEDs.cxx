@@ -30,6 +30,7 @@
 #include <TMath.h>
 #include <THnSparse.h>
 #include <TDatabasePDG.h>
+#include <TRandom.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
@@ -468,6 +469,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
+  PostData(3, fCounter);
 
   //Loading of ML models
   if(fApplyML) {
@@ -489,9 +491,12 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fMLtree->SetMaxVirtualSize(1.e+8);
     PostData(4, fMLtree);
   }
+
+  //Set seed of gRandom
+  if(fEnableEvtSampling)
+    gRandom->SetSeed(fSeedSampling);
   
   PostData(1, fOutput);
-  PostData(3, fCounter);
 
   return;
 }
@@ -502,6 +507,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
   /// Ds selection for current event, fill mass histos and selecetion variable histo
   /// separate signal and backgound if fReadMC is activated
 
+  if(fEnableEvtSampling && gRandom->Rndm() > fFracToKeep)
+    return;
+  
   AliAODEvent *aod = dynamic_cast<AliAODEvent *>(InputEvent());
 
   fHistNEvents->Fill(0); // all events
