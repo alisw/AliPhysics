@@ -70,6 +70,11 @@ class AliCalorimeterUtils : public TObject {
   Bool_t        IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
                                   Int_t & rowDiff, Int_t & colDiff) const ;
   
+  void          GetEnergyAndNumberOfCellsInTCard(AliVCluster* clus, AliVCaloCells* cells,
+                                                 Int_t   & nDiff, Int_t   & nSame, 
+                                                 Float_t & eDiff, Float_t & eSame, 
+                                                 Float_t   emin = 0.);
+  
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells)  ;
   
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
