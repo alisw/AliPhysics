@@ -35,6 +35,7 @@
 #include "AliAODHandler.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliExternalTrackParam.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliVertexingHFUtils.h"
@@ -216,6 +217,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
   TClonesArray *mcs=static_cast<TClonesArray*>(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
   if (!mcs) return;
 
+  AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
   //  loop 3 prongs
   Int_t n3Prong = array3Prong->GetEntriesFast();
   for (Int_t icand = 0; icand < n3Prong; icand++) {
@@ -230,6 +232,8 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
       d->SetOwnPrimaryVtx(fvtx1);
       unsetvtx=kTRUE;
     }
+
+    if((vHF->FillRecoCand(aod,d))) {
     Int_t selection;
     //is selected for LambdaC
     if(fApplyFixesITS3AnalysiskAll)selection=fRDCutsAnalysisLc->IsSelected(d,AliRDHFCuts::kAll,aod);
@@ -258,6 +262,8 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
     FillHistos(d,mcs,aod,mcHeader);
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
+}
+  delete vHF;
   return;
 }
 
