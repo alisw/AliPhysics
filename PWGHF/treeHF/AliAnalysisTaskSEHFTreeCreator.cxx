@@ -1247,7 +1247,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
      (fWriteVariableTreeBplus && fWriteVariableTreeLb && (fFiltCutsBplustoD0pi->IsEventSelected(aod)!=fFiltCutsLbtoLcpi->IsEventSelected(aod))) ||
      (fWriteVariableTreeDstar && fWriteVariableTreeLb && (fFiltCutsDstartoKpipi->IsEventSelected(aod)!=fFiltCutsLbtoLcpi->IsEventSelected(aod))) ||
      (fWriteVariableTreeLc2V0bachelor && fWriteVariableTreeLb && (fFiltCutsLc2V0bachelor->IsEventSelected(aod)!=fFiltCutsLbtoLcpi->IsEventSelected(aod))) ||
-     (fFiltCutsBstoDspi && fWriteVariableTreeLb && (fFiltCutsBstoDspi->IsEventSelected(aod)!=fFiltCutsLbtoLcpi->IsEventSelected(aod)))
+     (fWriteVariableTreeBs && fWriteVariableTreeLb && (fFiltCutsBstoDspi->IsEventSelected(aod)!=fFiltCutsLbtoLcpi->IsEventSelected(aod)))
      ){
     Printf("AliAnalysisTaskSEHFTreeCreator::UserExec: differences in the event selection cuts different meson");
     return;
@@ -3414,7 +3414,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
         fTreeHandlerGenBplus->FillTree();
       }
       else if(absPDG == 531 && fWriteVariableTreeBs) {
-        deca = AliVertexingHFUtils::CheckBsDecay(arrayMC,mcPart,labDau4pr);
+        deca = AliVertexingHFUtils::CheckBsDecay(arrayMC,mcPart,labDau4pr,kTRUE);
         //Only accept Bs-> pi Ds(->phipi->KKpi) decays
 
         //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
