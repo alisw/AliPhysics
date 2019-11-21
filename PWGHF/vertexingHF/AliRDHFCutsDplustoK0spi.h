@@ -25,7 +25,7 @@ class AliESDtrackCuts;
 class AliRDHFCutsDplustoK0spi : public AliRDHFCuts
 {
 public:
-   
+
 
    AliRDHFCutsDplustoK0spi(const char* name="CutsDplustoK0spi");
    AliRDHFCutsDplustoK0spi(const AliRDHFCutsDplustoK0spi& source);
@@ -45,7 +45,8 @@ public:
 
    using   AliRDHFCuts::IsSelectedPID;
    virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
-   
+
+   using   AliRDHFCuts::PreSelect;
    Bool_t PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack);
 
    using   AliRDHFCuts::IsInFiducialAcceptance;
@@ -82,11 +83,11 @@ protected:
    Float_t           fV0Type;                /// V0 type -- should be defined as in AliRDHFCuts.h
    AliESDtrackCuts*  fV0daughtersCuts;       /// cuts for v0 daughters (AOD converted to ESD on the fly!)
 
-   
+
    /// \cond CLASSIMP
    ClassDef(AliRDHFCutsDplustoK0spi, 1);   /// class for cuts on AOD reconstructed D+ -> K0S + pi
    /// \endcond
-   
+
 };
 
 #endif
