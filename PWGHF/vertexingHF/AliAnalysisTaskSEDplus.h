@@ -14,6 +14,8 @@
 /// \author Renu Bala, bala@to.infn.it
 /// \author F. Prino, prino@to.infn.it
 /// \author G. Ortona, ortona@to.infn.it
+/// \author F. Grosa, fabrizio.grosa@cern.ch
+/// \author F. Catalano, fabio.catalano@cern.ch
 //*************************************************************************
 
 #include <TROOT.h>
@@ -27,6 +29,7 @@
 
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliHFMLResponseDplustoKpipi.h"
+#include "AliHFMLVarHandlerDplustoKpipi.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliNormalizationCounter.h"
@@ -40,7 +43,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   enum {kpp, kPbPb};
 
   AliAnalysisTaskSEDplus();
-  AliAnalysisTaskSEDplus(const char *name, AliRDHFCutsDplustoKpipi* analysiscuts,Int_t fillNtuple=0);
+  AliAnalysisTaskSEDplus(const char *name, AliRDHFCutsDplustoKpipi* analysiscuts, Bool_t createMLtree);
   virtual ~AliAnalysisTaskSEDplus();
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
@@ -74,29 +77,22 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
     fNtrcklMax=Ntrckmax;
   }
 
-  void SetFillOnlySignalSparses(bool fillonlysig=kTRUE) {fFillOnlySignalSparses=fillonlysig;}
-  void SetUseFinePtBinsForSparse(bool usefinebins=kTRUE) {fUseFinPtBinsForSparse=kTRUE;} //use only in case of few candidates (e.g. MC signal only)
-
-  Float_t GetUpperMassLimit(){return fUpmasslimit;}
-  Float_t GetLowerMassLimit(){return fLowmasslimit;}
-  Int_t GetNBinsPt(){return fNPtBins;}
-  Float_t GetBinWidth(){return fBinWidth;}
-  Int_t GetNBinsHistos();
-
-  void LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS);
-
-  void CreateLikeSignHistos();
-  void CreateImpactParameterHistos();
-  void CreateCutVarsSparses();
-  void CreateTrackVarHistos();
-  void CreateMCAcceptanceHistos();
-
-  Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
-  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+  void SetFillOnlySignalSparses(Bool_t fillonlysig=kTRUE) {fFillOnlySignalSparses=fillonlysig;}
+  void SetUseFinePtBinsForSparse(Bool_t usefinebins=kTRUE) {fUseFinPtBinsForSparse=kTRUE;} //use only in case of few candidates (e.g. MC signal only)
+  void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=kTRUE) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
 
   /// methods for ML application
   void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
   void SetMLConfigFile(TString path = "")      {fConfigPath = path;}
+  void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
+  /// methods for ML tree creation
+  void SetCreateMLTree(Bool_t flag = kTRUE) {fCreateMLtree = flag;}
+  void SetMLTreePIDopt(int opt) {fPIDopt = opt;} // default AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID
+  void SetMLTreeAddTrackVar(Bool_t flag = kTRUE) {fAddSingleTrackVar = flag;}
+  void SetFillOnlySignalInMLtree(Bool_t opt = kTRUE) {
+    if(fReadMC) fFillOnlySignal = opt;
+    else AliError("fReadMC has to be kTRUE");
+  }
 
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -116,97 +112,124 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t GetTrueImpactParameter(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const;
   Float_t GetStrangenessWeights(const AliAODRecoDecayHF3Prong* d, TClonesArray* arrayMC, Float_t factor[3]) const;
 
+  Float_t GetUpperMassLimit(){return fUpmasslimit;}
+  Float_t GetLowerMassLimit(){return fLowmasslimit;}
+  Int_t GetNBinsPt(){return fNPtBins;}
+  Float_t GetBinWidth(){return fBinWidth;}
+  Int_t GetNBinsHistos();
+
+  void LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS);
+
+  void CreateLikeSignHistos();
+  void CreateImpactParameterHistos();
+  void CreateCutVarsSparses();
+  void CreateTrackVarHistos();
+  void CreateMCAcceptanceHistos();
+
+  Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+
   enum {kVarForSparse=13,kVarForSparseFD=14,kVarForSparseAcc=2,kVarForSparseAccFD=3,kVarForTrackSparse=7,kVarForImpPar=3};
 
-  TList* fOutput;                             //!<! list send on output slot 0
-  TH1F* fHistNEvents;                         //!<! hist. for No. of events
-  TH1F* fHistNCandidates;                     //!<! hist. for No. of candidates
-  TH1F** fMassHist;                           //!<! hist. for inv mass (topol+PID cuts)
-  TH1F** fMassHistPlus;                       //!<! hist. for D+ inv mass (topol+PID cuts)
-  TH1F** fMassHistMinus;                      //!<! hist. for D- inv mass (topol+PID cuts)
-  TH1F** fMassHistNoPid;                      //!<! hist. for inv mass (w/o PID)
-  TH1F** fCosPHist;                           //!<!hist. for PointingAngle (topol+PID)
-  TH1F** fDLenHist;                           //!<!hist. for Dec Length (topol+PID)
-  TH1F** fSumd02Hist;                         //!<!hist. for sum d02 (topol+PID)
-  TH1F** fSigVertHist;                        //!<!hist. for sigVert (topol+PID)
-  TH1F** fPtMaxHist;                          //!<!hist. for Pt Max (topol+PID)
-  TH1F** fPtKHist;                            //!<!hist. for PtK (topol+PID)
-  TH1F** fPtpi1Hist;                          //!<!hist. for PtPi1 (topol+PID)
-  TH1F** fPtpi2Hist;                          //!<!hist. for PtPi2 (topol+PID)
-  TH1F** fDCAHist;                            //!<!hist. for DCA (topol+PID)
-  TH1F** fDLxy;                               //!<!hist. for DLxy (topol+PID)
-  TH1F** fCosxy;                              //!<!hist. for Cosxy (topol+PID)
-  TH2F *fCorreld0Kd0pi[3];                    //!<!hist. for d0k*d0pi vs. d0k*d0pi (topol+PID)
-  TH2F *fHistCentrality[3];                   //!<!hist. for cent distr (all,sel ev, )
-  THnSparseF *fHistMassPtImpPar[5];           //!<! histograms for impact parameter
-  THnSparseF *fSparseCutVars[3];              //!<! histograms for cut variation study
-  THnSparseF *fHistTrackVar;                  //!<! histograms for track cuts study
-  THnSparseF *fMCAccPrompt;                   //!<!histo for StepMCAcc for Dplus prompt (pt,y,ptB)
-  THnSparseF *fMCAccBFeed;                    //!<!histo for StepMCAcc for Dplus FD (pt,y,ptB)
-  TH2F *fPtVsMassNoPid;                       //!<! hist. of pt vs. mass (w/o PID)
-  TH2F *fPtVsMass;                            //!<! hist. of pt vs. mass (topol+PID cuts)
-  TH2F *fPtVsMassPlus;                        //!<! hist. of pt vs. mass, D+ candidates (topol+PID cuts)
-  TH2F *fPtVsMassMinus;                       //!<! hist. of pt vs. mass, D- candidates (topol+PID cuts)
-  TH2F *fPtVsMassBadDaus;                     //!<! hist. of pt vs. mass (topol+PID cuts)
-  TH2F *fPtVsMassGoodDaus;                    //!<! hist. of pt vs. mass (topol+PID cuts)
-  TH3F *fYVsPtNoPid;                          //!<! hist. of Y vs. Pt vs. Mass(w/o PID)
-  TH3F *fYVsPt;                               //!<! hist. of Y vs. Pt vs. Mass (topol+PID cuts)
-  TH2F *fYVsPtSigNoPid;                       //!<! hist. of Y vs. Pt (MC, only sig, w/o PID)
-  TH2F *fYVsPtSig;                            //!<! hist. of Y vs. Pt (MC, only sig, topol+PID cuts)
-  TH2F *fPhiEtaCand;                          //!<! hist. with eta/phi distribution of candidates
-  TH2F *fPhiEtaCandSigReg;                    //!<! hist. eta/phi of candidates in D+ mass region
-  TH1F *fSPDMult;                             //!<! hist. of spd mult
-  TH1F* fDaughterClass;                       //!<! hist
-  TH1F* fDeltaID;                             //!<! hist
-  TH2F* fIDDauVsIDTra;                        //!<! hist
+  TList* fOutput = nullptr;                                           //!<! list send on output slot 0
+  TH1F* fHistNEvents = nullptr;                                       //!<! hist. for No. of events
+  TH1F* fHistNCandidates = nullptr;                                   //!<! hist. for No. of candidates
+  TH1F** fMassHist = nullptr;                                         //!<! hist. for inv mass (topol+PID cuts)
+  TH1F** fMassHistPlus = nullptr;                                     //!<! hist. for D+ inv mass (topol+PID cuts)
+  TH1F** fMassHistMinus = nullptr;                                    //!<! hist. for D- inv mass (topol+PID cuts)
+  TH1F** fMassHistNoPid = nullptr;                                    //!<! hist. for inv mass (w/o PID)
+  TH1F** fCosPHist = nullptr;                                         //!<! hist. for PointingAngle (topol+PID)
+  TH1F** fDLenHist = nullptr;                                         //!<! hist. for Dec Length (topol+PID)
+  TH1F** fSumd02Hist = nullptr;                                       //!<! hist. for sum d02 (topol+PID)
+  TH1F** fSigVertHist = nullptr;                                      //!<! hist. for sigVert (topol+PID)
+  TH1F** fPtMaxHist = nullptr;                                        //!<! hist. for Pt Max (topol+PID)
+  TH1F** fPtKHist = nullptr;                                          //!<! hist. for PtK (topol+PID)
+  TH1F** fPtpi1Hist = nullptr;                                        //!<! hist. for PtPi1 (topol+PID)
+  TH1F** fPtpi2Hist = nullptr;                                        //!<! hist. for PtPi2 (topol+PID)
+  TH1F** fDCAHist = nullptr;                                          //!<! hist. for DCA (topol+PID)
+  TH1F** fDLxy = nullptr;                                             //!<! hist. for DLxy (topol+PID)
+  TH1F** fCosxy = nullptr;                                            //!<! hist. for Cosxy (topol+PID)
+  TH2F *fCorreld0Kd0pi[3] = {};                                       //!<! hist. for d0k*d0pi vs. d0k*d0pi (topol+PID)
+  TH2F *fHistCentrality[3] = {};                                      //!<! hist. for cent distr (all,sel ev, )
+  THnSparseF *fHistMassPtImpPar[5] = {};                              //!<! histograms for impact parameter
+  THnSparseF *fSparseCutVars[3] = {};                                 //!<! histograms for cut variation study
+  THnSparseF *fHistTrackVar = nullptr;                                //!<! histograms for track cuts study
+  THnSparseF *fMCAccPrompt = nullptr;                                 //!<! histo for StepMCAcc for Dplus prompt (pt,y,ptB)
+  THnSparseF *fMCAccBFeed = nullptr;                                  //!<! histo for StepMCAcc for Dplus FD (pt,y,ptB)
+  TH2F *fPtVsMassNoPid = nullptr;                                     //!<! hist. of pt vs. mass (w/o PID)
+  TH2F *fPtVsMass = nullptr;                                          //!<! hist. of pt vs. mass (topol+PID cuts)
+  TH2F *fPtVsMassPlus = nullptr;                                      //!<! hist. of pt vs. mass, D+ candidates (topol+PID cuts)
+  TH2F *fPtVsMassMinus = nullptr;                                     //!<! hist. of pt vs. mass, D- candidates (topol+PID cuts)
+  TH2F *fPtVsMassBadDaus = nullptr;                                   //!<! hist. of pt vs. mass (topol+PID cuts)
+  TH2F *fPtVsMassGoodDaus = nullptr;                                  //!<! hist. of pt vs. mass (topol+PID cuts)
+  TH3F *fYVsPtNoPid = nullptr;                                        //!<! hist. of Y vs. Pt vs. Mass(w/o PID)
+  TH3F *fYVsPt = nullptr;                                             //!<! hist. of Y vs. Pt vs. Mass (topol+PID cuts)
+  TH2F *fYVsPtSigNoPid = nullptr;                                     //!<! hist. of Y vs. Pt (MC, only sig, w/o PID)
+  TH2F *fYVsPtSig = nullptr;                                          //!<! hist. of Y vs. Pt (MC, only sig, topol+PID cuts)
+  TH2F *fPhiEtaCand = nullptr;                                        //!<! hist. with eta/phi distribution of candidates
+  TH2F *fPhiEtaCandSigReg = nullptr;                                  //!<! hist. eta/phi of candidates in D+ mass region
+  TH1F *fSPDMult = nullptr;                                           //!<! hist. of spd mult
+  TH1F* fDaughterClass = nullptr;                                     //!<! hist
+  TH1F* fDeltaID = nullptr;                                           //!<! hist
+  TH2F* fIDDauVsIDTra = nullptr;                                      //!<! hist
 
-  TH1F** fMassHistLS;                         //!<!hist. for LS inv mass (topol+PID)
-  TH1F** fCosPHistLS;                         //!<!hist. for LS cuts variable 1 (topol+PID)
-  TH1F** fDLenHistLS;                         //!<!hist. for LS cuts variable 2 (topol+PID)
-  TH1F** fSumd02HistLS;                       //!<!hist. for LS cuts variable 3 (topol+PID)
-  TH1F** fSigVertHistLS;                      //!<!hist. for LS cuts variable 4 (topol+PID)
-  TH1F** fPtMaxHistLS;                        //!<!hist. for LS cuts variable 5 (topol+PID)
-  TH1F** fDCAHistLS;                          //!<!hist. for LS cuts variable 6 (topol+PID)
+  TH1F** fMassHistLS = nullptr;                                       //!<!hist. for LS inv mass (topol+PID)
+  TH1F** fCosPHistLS = nullptr;                                       //!<!hist. for LS cuts variable 1 (topol+PID)
+  TH1F** fDLenHistLS = nullptr;                                       //!<!hist. for LS cuts variable 2 (topol+PID)
+  TH1F** fSumd02HistLS = nullptr;                                     //!<!hist. for LS cuts variable 3 (topol+PID)
+  TH1F** fSigVertHistLS = nullptr;                                    //!<!hist. for LS cuts variable 4 (topol+PID)
+  TH1F** fPtMaxHistLS = nullptr;                                      //!<!hist. for LS cuts variable 5 (topol+PID)
+  TH1F** fDCAHistLS = nullptr;                                        //!<!hist. for LS cuts variable 6 (topol+PID)
 
-  TNtuple *fNtupleDplus;                      //!<! output ntuple
-  Float_t fUpmasslimit;                       /// upper inv mass limit for histos
-  Float_t fLowmasslimit;                      /// lower inv mass limit for histos
-  Int_t fNPtBins;                             /// Number of Pt Bins
-  Float_t fBinWidth;                          /// width of one bin in output histos
-  TList *fListCuts;                           /// list of cuts
-  AliRDHFCutsDplustoKpipi *fRDCutsAnalysis;   /// Cuts for Analysis
-  AliNormalizationCounter *fCounter;          //!<!Counter for normalization
-  Int_t fFillNtuple;                          /// flag for filling ntuple 0 no NTuple 1 big Ntuple 2 small NTuple
-  Int_t fAODProtection;                       /// flag to activate protection against AOD-dAOD mismatch.
-                                              /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-  Bool_t fReadMC;                             /// flag for access to MC
-  Bool_t fUseStrangeness;                     /// flag to enhance strangeness in MC to fit to data
-  Bool_t fUseBit;                             /// flag to use bitmask
-  Bool_t fCutsDistr;                          /// flag to activate cuts distr histos
-  Bool_t fDoImpPar;                           /// flag to activate impact paramter histos
-  Bool_t fDoSparse;                           /// flag to activate sparses for cut variation study
-  Bool_t fDoTrackVarHist;                     ///flag to activate track variable cut studies
-  Bool_t fStepMCAcc;                          /// flag to activate histos for StepMCAcc
-  Bool_t fUseQuarkTagInKine;                  /// flag for quark/hadron level identification of prompt and feeddown
-  Int_t  fNImpParBins;                        /// nunber of bins in impact parameter histos
-  Float_t fLowerImpPar;                       /// lower limit in impact parameter (um)
-  Float_t fHigherImpPar;                      /// higher limit in impact parameter (um)
-  Int_t  fDoLS;                               /// flag to do LS analysis
-  Int_t fEtaSelection;                        /// eta region to accept D+ 0=all, -1 = negative, 1 = positive
-  Int_t fSystem;                              /// 0=pp,1=PbPb
-  Int_t fNtrcklMin;                           ///minimum number of tracklets
-  Int_t fNtrcklMax;                           ///maximum number of tracklets
-  Bool_t fCutOnTrckl;                         ///flag to activate the cut on the number of tracklets
-  Bool_t fFillOnlySignalSparses;              ///flag to fill only signal sparses in case of MC
-  Bool_t fUseFinPtBinsForSparse;              ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
+  Float_t fUpmasslimit = 1.965;                                       /// upper inv mass limit for histos
+  Float_t fLowmasslimit = 1.765;                                      /// lower inv mass limit for histos
+  Int_t fNPtBins = 1;                                                 /// Number of Pt Bins
+  Float_t fBinWidth = 0.002;                                          /// width of one bin in output histos
+  TList *fListCuts = nullptr;                                         /// list of cuts
+  AliRDHFCutsDplustoKpipi *fRDCutsAnalysis = nullptr;                 /// Cuts for Analysis
+  AliNormalizationCounter *fCounter = nullptr;                        //!<! Counter for normalization
+  Int_t fAODProtection = 1;                                           /// flag to activate protection against AOD-dAOD mismatch.
+                                                                      /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+  Bool_t fReadMC = kFALSE;                                            /// flag for access to MC
+  Bool_t fUseStrangeness = kFALSE;                                    /// flag to enhance strangeness in MC to fit to data
+  Bool_t fUseBit = kTRUE;                                             /// flag to use bitmask
+  Bool_t fCutsDistr = kFALSE;                                         /// flag to activate cuts distr histos
+  Bool_t fDoImpPar = kFALSE;                                          /// flag to activate impact paramter histos
+  Bool_t fDoSparse = kFALSE;                                          /// flag to activate sparses for cut variation study
+  Bool_t fDoTrackVarHist = kFALSE;                                    /// flag to activate track variable cut studies
+  Bool_t fStepMCAcc = kFALSE;                                         /// flag to activate histos for StepMCAcc
+  Bool_t fUseQuarkTagInKine = kTRUE;                                  /// flag for quark/hadron level identification of prompt and feeddown
+  Int_t  fNImpParBins = 400;                                          /// nunber of bins in impact parameter histos
+  Float_t fLowerImpPar = -1000.;                                      /// lower limit in impact parameter (um)
+  Float_t fHigherImpPar = 1000.;                                      /// higher limit in impact parameter (um)
+  Int_t  fDoLS = 0;                                                   /// flag to do LS analysis
+  Int_t fEtaSelection = 0;                                            /// eta region to accept D+ 0=all, -1 = negative, 1 = positive
+  Int_t fSystem = kpp;                                                /// 0=pp,1=PbPb
+  Int_t fNtrcklMin = 0;                                               /// minimum number of tracklets
+  Int_t fNtrcklMax = 1000000000;                                      /// maximum number of tracklets
+  Bool_t fCutOnTrckl = kFALSE;                                        /// flag to activate the cut on the number of tracklets
+  Bool_t fFillOnlySignalSparses = kFALSE;                             /// flag to fill only signal sparses in case of MC
+  Bool_t fUseFinPtBinsForSparse = kFALSE;                             /// flag to fill pt axis of sparse with 0.1 GeV/c wide bins
+  Bool_t fKeepOnlyBkgFromHIJING = kFALSE;                             /// flag to keep background from HIJING only
 
   /// variables for ML application
-  Bool_t fApplyML;                            /// flag to enable ML application
-  TString fConfigPath;                        /// path to ML config file
-  AliHFMLResponseDplustoKpipi* fMLResponse;   //!<! object to handle ML response
+  Bool_t fApplyML = kFALSE;                                           /// flag to enable ML application
+  TString fConfigPath = "";                                           /// path to ML config file
+  AliHFMLResponseDplustoKpipi* fMLResponse = nullptr;                 //!<! object to handle ML response
+  Int_t fNMLBins = 300;                                               /// number of bins for ML output axis in THnSparse
+  Double_t fMLOutputMin = 0.85;                                       /// min for ML output axis in THnSparse
+  Double_t fMLOutputMax = 1.0;                                        /// max for ML output axis in THnSparse
+
+  /// variables for tree creation
+  Bool_t fCreateMLtree = kFALSE;
+  AliHFMLVarHandlerDplustoKpipi* fMLhandler = nullptr;                //!<! object to handle ML tree creation and filling
+  TTree* fMLtree = nullptr;                                           //!<! tree with candidates for ML
+  int fPIDopt = AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID;  /// option for PID variables
+  Bool_t fAddSingleTrackVar = kFALSE;                                 /// option to store single track variables
+  Bool_t fFillOnlySignal = kFALSE;                                    /// option to store only signal when using MC
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,33); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,34); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 
