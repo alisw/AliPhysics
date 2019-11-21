@@ -3089,9 +3089,20 @@ Bool_t AliMultSelectionTask::IsEPOSLHC() const {
     //Function to check if this is DPMJet
     Bool_t lReturnValue = kFALSE;
     AliMCEvent*  mcEvent = MCEvent();
-    if (mcEvent) {
+    TList* cocktList = mcEvent->GetCocktailList();
+    if (cocktList) {
+        TIter next(cocktList);
+        while (const TObject *obj=next()){
+            //A bit uncivilized, but hey, if it works...
+            TString lHeaderTitle = obj->GetName();
+            if (lHeaderTitle.Contains("EPOSLHC")) {
+                //This header has "EPOS" in its title!
+                lReturnValue = kTRUE;
+                break;
+            }
+        }
+    } else {
         AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-        //A bit uncivilized, but hey, if it works...
         TString lHeaderTitle = mcGenH->GetName();
         if (lHeaderTitle.Contains("EPOSLHC")) {
             //This header has "EPOS" in its title!
