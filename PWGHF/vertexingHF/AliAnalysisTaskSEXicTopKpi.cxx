@@ -153,6 +153,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fSigmaCfromLcOnTheFly(kTRUE),
   fCheckOnlyTrackEfficiency(kFALSE),
   fIsCdeuteronAnalysis(kFALSE)
+  ,fminpT_treeFill(2.)
+  ,fmaxpT_treeFill(36.)
 {
   /// Default constructor
 
@@ -232,6 +234,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fSigmaCfromLcOnTheFly(kTRUE),
   fCheckOnlyTrackEfficiency(kFALSE),
   fIsCdeuteronAnalysis(kFALSE)
+  ,fminpT_treeFill(2.)
+  ,fmaxpT_treeFill(36.)
 {
   /// Default constructor
 
@@ -239,6 +243,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   DefineOutput(1,TH1F::Class());  //My private output
   DefineOutput(2,AliNormalizationCounter::Class());
   DefineOutput(3,TList::Class());
+  DefineOutput(4,TTree::Class());
   fCuts=cuts;
 }
 
@@ -592,7 +597,7 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     fTreeVar->Branch(varNames[k].Data(),&var[k]);
   }
   fTreeVar->Branch(varNames[33].Data(),&resp);
-  fOutput->Add(fTreeVar);
+  //fOutput->Add(fTreeVar);
 
 
   fOutput->Add(fDist12Signal);
@@ -630,6 +635,7 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   PostData(1,fNentries);
   PostData(2,fCounter);  
   PostData(3,fOutput);
+  PostData(4,fTreeVar);
 //   PostData(6,fOutputMassPt);
 //   PostData(7,fVariablesTree);
 //   PostData(8, fDetSignal);
@@ -1669,6 +1675,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   PostData(1,fNentries);
   PostData(2,fCounter);
   PostData(3,fOutput);
+  PostData(4,fTreeVar);
   
   return;
 }
@@ -2222,6 +2229,9 @@ Int_t AliAnalysisTaskSEXicTopKpi::FlagCandidateWithVariousCuts(AliAODRecoDecayHF
 //
 void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer, Int_t flagMC,AliAODEvent *aod, AliAODMCParticle* p=0x0, TClonesArray* array_MC=0x0){ 
   varPointer[0]=cand->Pt();
+  // to save memory, let's discard all candidates with pT out of range
+  if((varPointer[0]<fminpT_treeFill || varPointer[0]>fmaxpT_treeFill) && !fIsCdeuteronAnalysis)  return;
+
   varPointer[1]=cand->CosPointingAngle();
   varPointer[2]=cand->DecayLengthXY();
   varPointer[3]=cand->NormalizedDecayLengthXY();
@@ -2280,6 +2290,9 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
     // modified
   Double_t mass_pKpi = cand->InvMassLcpKpi();
   Double_t mass_piKp = cand->InvMassLcpiKp();
+  // to save memory, let's discard candidates with invariant mass too far from the expected one (2.467 GeV/c^2)
+  if(!fIsCdeuteronAnalysis && ( (mass_pKpi<2.3 || mass_pKpi>2.7) && (mass_piKp<2.3 || mass_piKp>2.7) ) )  return;
+
   if(fIsCdeuteronAnalysis) {
     mass_pKpi = cand->InvMassCdeuterondKpi();
     mass_piKp = cand->InvMassCdeuteronpiKd();
