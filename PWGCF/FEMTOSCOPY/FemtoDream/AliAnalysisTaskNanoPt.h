@@ -103,16 +103,31 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
-  TList *fResults;//!
-  TList *fResultsQA;//!
-  TH2F  *fProtonRestMass; //!
-  TH2F  *fAntiProtonRestMass; //!
-  TH2F  *fDeuteronRestMass; //!
-  TH2F  *fAntiDeuteronRestMass; //!
-  TH2F  *fProtonRestMassNoTOF; //!
-  TH2F  *fAntiProtonRestMassNoTOF; //!
-  TH2F  *fDeuteronRestMassNoTOF; //!
-  TH2F  *fAntiDeuteronRestMassNoTOF; //!
-  ClassDef(AliAnalysisTaskNanoPt, 2)
+  TList *fResults;                          //!
+  TList *fResultsQA;                        //!
+  TH2F  *fProtonRestMass;                   //!
+  TH2F  *fAntiProtonRestMass;               //!
+  TH2F  *fDeuteronRestMass;                 //!
+  TH2F  *fAntiDeuteronRestMass;             //!
+  TH2F  *fProtonRestMassNoTOF;              //!
+  TH2F  *fAntiProtonRestMassNoTOF;          //!
+  TH2F  *fDeuteronRestMassNoTOF;            //!
+  TH2F  *fAntiDeuteronRestMassNoTOF;        //!
+  TH2F  *fProtonRestMassMC;                 //!
+  TH2F  *fAntiProtonRestMassMC;             //!
+  TH2F  *fDeuteronRestMassMC;               //!
+  TH2F  *fAntiDeuteronRestMassMC;           //!
+  TH2F  *fKaonRestMassMC;                   //!
+  TH2F  *fAntiKaonRestMassMC;               //!
+  TH2F  *fDProtonRestMassMC;                //!
+  TH2F  *fDKaonRestMassMC;                  //!
+  TH2F  *fAntiDProtonRestMassMC;            //!
+  TH2F  *fAntiDKaonRestMassMC;              //!
+  TH2F  *fPionRestMassMC;                   //!
+  TH2F  *fAntiPionRestMassMC;               //!
+  TH2F  *fDPionRestMassMC;                  //!
+  TH2F  *fAntiDPionRestMassMC;              //!
+ 
+  ClassDef(AliAnalysisTaskNanoPt, 3)
 };
 #endif
