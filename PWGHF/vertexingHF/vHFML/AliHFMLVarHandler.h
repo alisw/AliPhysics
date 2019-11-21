@@ -81,8 +81,6 @@ class AliHFMLVarHandler : public TObject
         bool SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     
         //utils methods
-        double CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF);
-        float ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF* cand, float bfield);
         float GetTOFmomentum(AliAODTrack* track, AliAODPidHF* pidrespo);
 
         TTree* fTreeVar = nullptr;                                     //!<! tree with variables

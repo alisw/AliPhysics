@@ -20,6 +20,7 @@
 
 #include "AliHFMLResponseDplustoKpipi.h"
 #include "AliAODRecoDecayHF3Prong.h"
+#include "AliVertexingHFUtils.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFMLResponseDplustoKpipi);
@@ -85,7 +86,7 @@ void AliHFMLResponseDplustoKpipi::SetMapOfVariables(AliAODRecoDecayHF *cand, dou
     fVars["cos_p_xy"] = cand->CosPointingAngleXY();
     fVars["imp_par_xy"] = cand->ImpParXY();
     fVars["sig_vert"] = dynamic_cast<AliAODRecoDecayHF3Prong *>(cand)->GetSigmaVert();
-    fVars["max_norm_d0d0exp"] = ComputeMaxd0MeasMinusExp(cand, bfield);
+    fVars["max_norm_d0d0exp"] = AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(cand, bfield);
 
     for (int iProng = 0; iProng < 3; iProng++)
     {
@@ -102,7 +103,7 @@ void AliHFMLResponseDplustoKpipi::SetMapOfVariables(AliAODRecoDecayHF *cand, dou
         fVars[Form("nsigTOF_Pi_%d", iProng)] = nsigmaTOFpi;
         fVars[Form("nsigTOF_K_%d", iProng)]  = nsigmaTOFK;
 
-        fVars[Form("nsigComb_Pi_%d", iProng)] = CombineNsigmaTPCTOF(nsigmaTPCpi, nsigmaTOFpi);
-        fVars[Form("nsigComb_K_%d", iProng)]  = CombineNsigmaTPCTOF(nsigmaTPCK, nsigmaTOFK);
+        fVars[Form("nsigComb_Pi_%d", iProng)] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCpi, nsigmaTOFpi);
+        fVars[Form("nsigComb_K_%d", iProng)]  = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCK, nsigmaTOFK);
     }
 }

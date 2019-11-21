@@ -951,8 +951,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           Double_t cosPiDs = -99.;
           Double_t cosPiKPhiNoabs = -99.;
           Double_t cosPiKPhi = -99.;
-          Double_t normIP = -999.;      //to store the maximum topomatic var. among the 3 prongs
-          Double_t normIPprong[nProng]; //to store IP of k,k,pi
+          Double_t normIP = AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(d, aod->GetMagneticField());
           Double_t absimpparxy = TMath::Abs(d->ImpParXY());
           //variables for ML application
           AliAODPidHF *Pid_HF = nullptr;
@@ -960,17 +959,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           bool isMLsel = true;
           if(fApplyML)
             Pid_HF = fAnalysisCuts->GetPidHF();
-
-          for (Int_t ip = 0; ip < nProng; ip++)
-          {
-            Double_t diffIP, errdiffIP;
-            d->Getd0MeasMinusExpProng(ip, aod->GetMagneticField(), diffIP, errdiffIP);
-            normIPprong[ip] = diffIP / errdiffIP;
-            if (ip == 0)
-              normIP = normIPprong[ip];
-            else if (TMath::Abs(normIPprong[ip]) > TMath::Abs(normIP))
-              normIP = normIPprong[ip];
-          }
 
           if (isPhiKKpi)
           {
@@ -1227,18 +1215,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           Double_t sigvert = d->GetSigmaVert();
           Double_t cosPiDs = -99.;
           Double_t cosPiKPhi = -99.;
-          Double_t normIP = -999.;      //to store the maximum topomatic var. among the 3 prongs
-          Double_t normIPprong[nProng]; //to store IP of k,k,pi
-          for (Int_t ip = 0; ip < nProng; ip++)
-          {
-            Double_t diffIP, errdiffIP;
-            d->Getd0MeasMinusExpProng(ip, aod->GetMagneticField(), diffIP, errdiffIP);
-            normIPprong[ip] = diffIP / errdiffIP;
-            if (ip == 0)
-              normIP = normIPprong[ip];
-            else if (TMath::Abs(normIPprong[ip]) > TMath::Abs(normIP))
-              normIP = normIPprong[ip];
-          }
+          Double_t normIP = AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(d, aod->GetMagneticField());
           Double_t sumD02 = d->Getd0Prong(0) * d->Getd0Prong(0) + d->Getd0Prong(1) * d->Getd0Prong(1) + d->Getd0Prong(2) * d->Getd0Prong(2);
           Double_t dca = d->GetDCA();
           Double_t ptmax = 0;

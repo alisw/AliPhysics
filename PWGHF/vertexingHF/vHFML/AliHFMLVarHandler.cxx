@@ -18,6 +18,7 @@
 #include "AliHFMLVarHandler.h"
 #include "AliPID.h"
 #include "AliESDtrack.h"
+#include "AliVertexingHFUtils.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFMLVarHandler);
@@ -220,7 +221,8 @@ bool AliHFMLVarHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidr
                         sig[iProng][kTOF][iPartHypo] = nSigmaTOF;
                     }
                     if((fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID) && useTPC && useTOF) {
-                        sigComb[iProng][iPartHypo] = CombineNsigmaDiffDet(sig[iProng][kTPC][iPartHypo], sig[iProng][kTOF][iPartHypo]);
+                        sigComb[iProng][iPartHypo] = AliVertexingHFUtils::CombineNsigmaTPCTOF(sig[iProng][kTPC][iPartHypo], 
+                                                                                              sig[iProng][kTOF][iPartHypo]);
                     }
                 }
             }
@@ -333,36 +335,6 @@ bool AliHFMLVarHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidr
     }
 
     return true;
-}
-
-//________________________________________________________________
-double AliHFMLVarHandler::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF)
-{
-    if(nsigmaTPC > -998. && nsigmaTOF > -998.)
-        return TMath::Sqrt((nsigmaTPC * nsigmaTPC + nsigmaTOF * nsigmaTOF) / 2);
-    else if(nsigmaTPC > -998. && nsigmaTOF < -998.) 
-        return TMath::Abs(nsigmaTPC);
-    else if(nsigmaTPC < -998. && nsigmaTOF > -998.) 
-        return TMath::Abs(nsigmaTOF);
-    else 
-        return -999.;
-}
-
-//________________________________________________________________
-float AliHFMLVarHandler::ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF* cand, float bfield)
-{
-    float dd0max = 0;
-    unsigned int fNProngs_cand = (unsigned int)cand->GetNProngs();
-    for(unsigned int iProng = 0; iProng < fNProngs_cand; iProng++) {
-        double d0diff, errd0diff;
-        cand->Getd0MeasMinusExpProng(iProng, bfield, d0diff, errd0diff);
-        float normdd0 = d0diff/errd0diff;
-        if(iProng == 0) 
-            dd0max = normdd0;
-        else if(TMath::Abs(normdd0) > TMath::Abs(dd0max)) 
-            dd0max = normdd0;
-    }
-    return dd0max;
 }
 
 //________________________________________________________________
