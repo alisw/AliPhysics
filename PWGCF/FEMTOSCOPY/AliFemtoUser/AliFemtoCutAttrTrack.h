@@ -782,47 +782,48 @@ struct TrackCutAttrTpcSigmaPion {
 struct TrackCutAttrTofSigmaPion {
 
   double tof_sigma_pion;
+  double tof_pion_momentum_limit;
   bool require_tof;
 
   bool Pass(const AliFemtoTrack &track) const
     {
+      // out of TOF range
+      if (track.P().Mag2() < tof_pion_momentum_limit * tof_pion_momentum_limit) {
+        return true;
+      }
+
+      // Reject TOF "no signal" value
+      if (require_tof && track.TOFpionTime() == 100000.0f) {
+        return false;
+      }
+
       if (std::isnan(tof_sigma_pion)) {
         return true;
       }
 
-      const double sigma = track.NSigmaTOFPi();
-
-      if (std::abs(sigma) < tof_sigma_pion) {
-        return true;
-      }
-
-      // If TOF not required signal, allow "no signal" value
-      if (!require_tof) {
-        // return sigma == -1000.0;
-        return track.TOFsignal() == 99999.0f;
-      }
-
-      return false;
+      return std::abs(track.NSigmaTOFPi()) < tof_sigma_pion;
     }
 
   TrackCutAttrTofSigmaPion()
     : tof_sigma_pion(5.0)
-    , require_tof(false)
+    , tof_pion_momentum_limit(0.5)
+    , require_tof(true)
     { }
 
   TrackCutAttrTofSigmaPion(AliFemtoConfigObject &cfg)
     : tof_sigma_pion(cfg.pop_num("tof_sigma_pion", 5.0))
-    , require_tof(cfg.pop_num("tof_required", false))
+    , tof_pion_momentum_limit(cfg.pop_num("tof_pion_momentum_limit", 0.5))
+    , require_tof(cfg.pop_num("tof_required", true))
     { }
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      if (std::isnan(tof_sigma_pion)) {
-        return;
-      }
-
-      cfg.insert("tof_sigma_pion", tof_sigma_pion);
       cfg.insert("tof_required", require_tof);
+      cfg.insert("tof_pion_momentum_limit", tof_pion_momentum_limit);
+
+      if (!std::isnan(tof_sigma_pion)) {
+        cfg.insert("tof_sigma_pion", tof_sigma_pion);
+      }
     }
 
   virtual ~TrackCutAttrTofSigmaPion()

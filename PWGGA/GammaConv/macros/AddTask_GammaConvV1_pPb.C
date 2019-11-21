@@ -30,7 +30,7 @@ void AddTask_GammaConvV1_pPb(
     Int_t     enableQAPhotonTask            = 0,        // enable additional QA task
     Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
     Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-    Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+    Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
     TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
     Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -77,6 +77,7 @@ void AddTask_GammaConvV1_pPb(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -95,6 +96,12 @@ void AddTask_GammaConvV1_pPb(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -1261,7 +1268,10 @@ void AddTask_GammaConvV1_pPb(
     if(fMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
-      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
+      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);

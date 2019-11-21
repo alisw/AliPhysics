@@ -253,7 +253,40 @@ void AliSigma0PhotonCuts::PhotonCuts(
     if(nanoPos) v0 = nullptr; // for NanoAODs we dont have a v0 matching!
 
     if (ProcessPhoton(event, mcEvent, PhotonCandidate, v0, pos, neg)) {
-      container.push_back( { PhotonCandidate, pos, neg, inputEvent });
+      AliFemtoDreamBasePart photon(PhotonCandidate, pos, neg, inputEvent);
+      if (fIsMC) {
+        TClonesArray *mcarray = dynamic_cast<TClonesArray *>(event->FindListObject(
+            "mcparticles"));
+        if (!mcarray) {
+          AliError("PhotonCuts: MC Array not found");
+        }
+        RelabelAODPhotonCandidates(PhotonCandidate, event);
+        const int labelPos = PhotonCandidate->GetMCLabelPositive();
+        const int labelNeg = PhotonCandidate->GetMCLabelNegative();
+        AliAODMCParticle * mcPartPos = (AliAODMCParticle*) mcarray->At(labelPos);
+        AliAODMCParticle * mcPartNeg = (AliAODMCParticle*) mcarray->At(labelNeg);
+
+        if (mcPartPos && mcPartNeg) {
+          if (mcPartPos->GetMother() > -1
+              && (mcPartNeg->GetMother() == mcPartPos->GetMother())) {
+            AliAODMCParticle *mcParticle = (AliAODMCParticle*) mcarray->At(
+                mcPartPos->GetMother());
+
+            if(mcParticle) {
+              photon.SetMCParticle(mcParticle, mcEvent);
+              photon.SetMCPDGCode(mcParticle->GetPdgCode());
+
+            if (mcParticle->PdgCode() == 22) {
+              fHistMCV0Pt->Fill(photon.GetPt());
+              const int pdgMother = ((AliAODMCParticle*) mcarray->At(
+                  mcParticle->GetMother()))->GetPdgCode();
+              fHistV0Mother->Fill(photon.GetPt(), TMath::Abs(pdgMother));
+            }
+            }
+          }
+        }
+      }
+      container.push_back(photon);
     }
   }
 }
@@ -541,34 +574,6 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
     fHistSingleParticleDCAtoPVAfter[1]->Fill(negPt, dcaDaughterToPVNeg);
     fHistSingleParticlePID[1]->Fill(negPt, pidNeg);
   }
-
-  if (fIsMC) {
-    TClonesArray *mcarray = dynamic_cast<TClonesArray *>(event->FindListObject(
-        "mcparticles"));
-    if (!mcarray) {
-      AliError("PhotonCuts: MC Array not found");
-    }
-    RelabelAODPhotonCandidates(PhotonCandidate, event);
-    const int labelPos = PhotonCandidate->GetMCLabelPositive();
-    const int labelNeg = PhotonCandidate->GetMCLabelNegative();
-    AliAODMCParticle * mcPartPos = (AliAODMCParticle*) mcarray->At(labelPos);
-    AliAODMCParticle * mcPartNeg = (AliAODMCParticle*) mcarray->At(labelNeg);
-
-    if (mcPartPos && mcPartNeg) {
-      if (mcPartPos->GetMother() > -1
-          && (mcPartNeg->GetMother() == mcPartPos->GetMother())) {
-        AliAODMCParticle *mcParticle = (AliAODMCParticle*) mcarray->At(
-            mcPartPos->GetMother());
-        if (mcParticle && mcParticle->PdgCode() == 22) {
-          fHistMCV0Pt->Fill(pt);
-          const int pdgMother = ((AliAODMCParticle*) mcarray->At(
-              mcParticle->GetMother()))->GetPdgCode();
-          fHistV0Mother->Fill(pt, TMath::Abs(pdgMother));
-        }
-      }
-    }
-  }
-
   return true;
 }
 

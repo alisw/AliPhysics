@@ -279,32 +279,3 @@ int AliHFMLResponse::FindPtBin(double pt)
 
     return bin;
 }
-
-//________________________________________________________________
-double AliHFMLResponse::ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF *cand, double bfield)
-{
-    double dd0max = 0;
-    unsigned int fNProngsCand = static_cast<unsigned int>(cand->GetNProngs());
-    for (unsigned int iProng = 0; iProng < fNProngsCand; iProng++)
-    {
-        double d0diff, errd0diff;
-        cand->Getd0MeasMinusExpProng(iProng, bfield, d0diff, errd0diff);
-        double normdd0 = d0diff / errd0diff;
-        if (iProng == 0 || TMath::Abs(normdd0) > TMath::Abs(dd0max))
-            dd0max = normdd0;
-    }
-    return dd0max;
-}
-
-//________________________________________________________________
-double AliHFMLResponse::CombineNsigmaTPCTOF(double nsigmaTPC, double nsigmaTOF)
-{
-    if (nsigmaTPC > -998. && nsigmaTOF > -998.)
-        return TMath::Sqrt((nsigmaTPC * nsigmaTPC + nsigmaTOF * nsigmaTOF) / 2);
-    else if (nsigmaTPC > -998. && nsigmaTOF < -998.)
-        return TMath::Abs(nsigmaTPC);
-    else if (nsigmaTPC < -998. && nsigmaTOF > -998.)
-        return TMath::Abs(nsigmaTOF);
-    else
-        return -999.;
-}

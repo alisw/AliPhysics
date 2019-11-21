@@ -492,14 +492,23 @@ Bool_t AliJCatalystTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 //______________________________________________________________________________
 void AliJCatalystTask::SetEffConfig( int effMode, int FilterBit)
 {
-	fEffMode = effMode;
-	fEffFilterBit = 0; // as default
-	if( FilterBit == 128 )
-		fEffFilterBit = 0;
-	if( FilterBit == 768 )
-		fEffFilterBit = 5;
-	cout << "setting to EffCorr Mode : " << effMode << endl;
-	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
+        fEffMode = effMode;
+        switch(FilterBit){
+        case 128:
+                fEffFilterBit = 0;
+                break;
+        case 96:
+                fEffFilterBit = 4;
+                break;
+        case 768:
+                fEffFilterBit = 5;
+                break;
+        default:
+                fEffFilterBit = 0;
+                break;
+        }
+        cout << "setting to EffCorr Mode : " << effMode << endl;
+        cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }
 //______________________________________________________________________________
 void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fcent)

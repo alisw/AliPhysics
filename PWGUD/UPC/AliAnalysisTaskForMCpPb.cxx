@@ -759,7 +759,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
                                           266940, 266915, 266912, 266886, 266885, 266883, 266882, 266880, 266878, 266857,
                                           266807, 266805, 266800, 266776, 266775, 266708, 266706, 266703, 266702, 266676,
                                           266674, 266669, 266668, 266665, 266659, 266658, 266657, 266630, 266621, 266618,
-                                          266615, 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
+                                          /*266615,*/ 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
                                           266543, 266539, 266534, 266533, 266525, 266523, 266522, 266520, 266518, 266516,
                                           266514, 266487, 266480, 266479, 266472, 266441, 266439, 295585 };
   Bool_t checkIfGoodRun = kFALSE;
@@ -767,7 +767,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
   // for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
   //   if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
   // }
-  for( Int_t iRunLHC16s = 0; iRunLHC16s <  /*77*/ 78; iRunLHC16s++){
+  for( Int_t iRunLHC16s = 0; iRunLHC16s <  77; iRunLHC16s++){
     if( fRunNum == listOfGoodRunNumbersLHC16s[iRunLHC16s] ) checkIfGoodRun = kTRUE;
   }
   if(checkIfGoodRun != 1) {
@@ -914,6 +914,16 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
         // track[nGoodMuons] = 0x0;
         continue;
     }
+
+
+    /* -
+     * - Compatibility with Run 1 analysis.
+     * -
+     */
+    if ( !( (track[nGoodMuons]->Eta() < -2.5) && (track[nGoodMuons]->Eta() > -3.7) ) ) {
+      continue;
+    }
+
 
     // MUON SELECTION
     /* - This is Eugeny Krishen's MUON selection from the talk in 14/1/2019 for
@@ -1178,8 +1188,9 @@ void AliAnalysisTaskForMCpPb::ProcessMCParticles(AliMCEvent* fMCEventArg)
       AliError(Form("Could not receive track %d", iPart));
       continue;
     }
-    if (  !mcParticle->IsPrimary()                 ) continue;
-    if (   mcParticle->Charge()              == 0  ) continue;
+    if (  !mcParticle->IsPrimary()                                ) continue;
+    if (   mcParticle->Charge()              == 0                 ) continue;
+    // if ( !(mcParticle->Eta() < -2.5 && mcParticle->Eta() > -3.7 ) ) continue;
     if (   TMath::Abs(mcParticle->PdgCode()) == 13 ) {
       if ( nGoodMuonsMC < 2 ) {
         // cout << "Ok" << nGoodMuonsMC << endl;

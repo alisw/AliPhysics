@@ -87,13 +87,13 @@ void AliPP13FeeddownSelection::InitSelectionHistograms()
 
 	for (Int_t i = 0; i < 2; ++i)
 	{
-		fInvMass[i] = new TH2F(Form("h%sMassPt", i == 0 ? "" : "Mix") , "(M,p_{T})_{#gamma#gamma}, N_{cell}>2; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
+		fInvMass[i] = new TH2F(Form("h%sMassPt", i == 0 ? "" : "Mix") , "(M,p_{T})_{#gamma#gamma}, N_{cell}>2; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax);
 		fListOfHistos->Add(fInvMass[i]);
 	}
-	fFeedownK0s[0] = new TH2F("hMassPt_#pi^{0}_feeddown_K^{s}_{0}", "(M,p_{T})_{#gamma#gamma} originating form K^{s}_{0}; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
+	fFeedownK0s[0] = new TH2F("hMassPt_#pi^{0}_feeddown_K^{s}_{0}", "(M,p_{T})_{#gamma#gamma} originating form K^{s}_{0}; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax);
 	fListOfHistos->Add(fFeedownK0s[0]);
 
-	fFeedownK0s[1] = new TH1F("hMassPt_#pi^{0}_feeddown_K^{s}_{0}_generated", "(M,p_{T})_{#gamma#gamma} originating form K^{s}_{0}; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nPt, ptMin, ptMax);
+	fFeedownK0s[1] = new TH1F("hMassPt_#pi^{0}_feeddown_K^{s}_{0}_generated", "(M,p_{T})_{#gamma#gamma} originating form K^{s}_{0}; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nPt, ptMin, ptMax);
 	fListOfHistos->Add(fFeedownK0s[1]);
 
 	for (Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)

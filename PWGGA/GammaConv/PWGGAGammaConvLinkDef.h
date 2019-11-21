@@ -12,6 +12,7 @@
 #pragma link C++ class AliAnalysisTaskConversionQA+;
 #pragma link C++ class AliAnalysisTaskConversionTree+;
 #pragma link C++ class AliAnalysisTaskConvJet+;
+#pragma link C++ class AliAnalysisTaskJetOutlierRemoval+;
 #pragma link C++ class AliAnalysisTaskClusterQA+;
 #pragma link C++ class AliAnalysisTaskMaterial+;
 #pragma link C++ class AliAnalysisTaskMaterialHistos+;
@@ -37,6 +38,8 @@
 #pragma link C++ class AliAnalysisTRDEfficiency+;
 #pragma link C++ class AliIdentifiedPrimarySelector+;
 #pragma link C++ class AliIdentifiedPrimaryCuts+;
+
+
 
 // Old tasks
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;

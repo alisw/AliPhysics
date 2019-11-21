@@ -81,7 +81,7 @@ fDoJetProb(kFALSE),
 fFillCorrelations(kFALSE),
 fDoLundPlane(kFALSE),
 fDoTCTagging(kFALSE),
-fDoProbTagging(kFALSE),
+fDoProbTagging(0),
 kTagLevel(3),
 fFracs(0),
 fXsectionWeightingFactor(1),
@@ -184,7 +184,7 @@ fDoJetProb(kFALSE),
 fFillCorrelations(kFALSE),
 fDoLundPlane(kFALSE),
 fDoTCTagging(kFALSE),
-fDoProbTagging(kFALSE),
+fDoProbTagging(0),
 kTagLevel(3),
 fFracs(0),
 fXsectionWeightingFactor(1.),
@@ -577,6 +577,22 @@ void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, b
                                 }
                             }*/
 }
+
+void AliAnalysisTaskHFJetIPQA::FillIPTemplateHists(double jetpt, int iN,int jetflavour, double* params){
+    const char * stype  [4] = {"fh2dJetSignedImpParXY","fh2dJetSignedImpParXYSignificance","fh2dJetSignedImpParXYZ","fh2dJetSignedImpParXYZSignificance"};
+    const char * subord [3] = {"First","Second","Third"};
+    const char * subtype[5] = {"Unidentified","udsg","c","b","s"};
+
+    for (Int_t iType = 0 ;iType <2 ;++iType){
+        TString hname = Form("%s%s",stype[iType],subord[iN]);
+        FillHist(hname.Data(),jetpt,params[iType],1);
+        if(fIsPythia){
+          TString hnameflav = Form("%s%s%s",stype[iType],subtype[jetflavour],subord[iN]);
+          FillHist(hnameflav.Data(),jetpt,params[iType],1);
+        }
+    }
+}
+
 
 void AliAnalysisTaskHFJetIPQA::FillTrackTypeResHists(){
    printf("Filling track type resolution hists");
@@ -974,10 +990,13 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 //if(hasIPs[2])printf("N=3: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(2).first, sImpParXYSig.at(2).second, sImpParXYSig.at(2).trackLabel, sImpParXYSig.at(2).trackpt);
                 //printf("*********************************************************\n");
 
-                //if(hasIPs[0])FillHist("fh1dTrackPt_n_1_all_Accepted",sImpParXYSig.at(0).trackpt,1);
-                //if(hasIPs[1])FillHist("fh1dTrackPt_n_2_all_Accepted",sImpParXYSig.at(1).trackpt,1);
-                //if(hasIPs[2])FillHist("fh1dTrackPt_n_3_all_Accepted",sImpParXYSig.at(2).trackpt,1);
                 FillIPTypePtHists(jetflavour, jetpt, hasIPs);
+                for(int iN=0;iN<3;iN++){
+                  if(!hasIPs[iN]) continue;
+                  //printf("iN=%i, jetflavour=%i xy=%f, xysig=%f\n",iN,jetflavour,sImpParXY.at(iN).first,sImpParXYSig.at(iN).first);
+                  Double_t params [4] ={sImpParXY.at(iN).first,sImpParXYSig.at(iN).first,sImpParXYZ.at(iN).first,sImpParXYZSig.at(iN).first};
+                  FillIPTemplateHists(jetpt,iN,jetflavour, params);
+                }
 
                 /*if(fFillCorrelations || fUseTreeForCorrelations){
                     FillCorrelations(hasIPs,ipval,jetpt);
@@ -988,26 +1007,39 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     }
                 }*/
 
-                //________________________________
-                //MC Track Counting
-                if(fIsPythia&&fDoTCTagging){
-                  bool ** kTagDec=new bool*[fNThresholds];
-                  for(int iThresh=0;iThresh<fNThresholds;iThresh++){
-                    kTagDec[iThresh]=new bool[6];
-                    for(int iType=0;iType<6;iType++){
-                      kTagDec[iThresh][iType]=0;
-                    }
+                //____________________________________________
+                //TAGGING
+                bool ** kTagDec=new bool*[fNThresholds];
+                for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+                  kTagDec[iThresh]=new bool[6];
+                  for(int iType=0;iType<6;iType++){
+                    kTagDec[iThresh][iType]=0;
                   }
-                  DoJetTaggingThreshold(jetpt, hasIPs,ipval, kTagDec);
-                  FillTCEfficiencyHists(kTagDec, jetflavour, jetpt,hasIPs[0]);
                 }
 
-                //___________________________________
-                //MC Probability Tagging
-                if(fIsPythia&&fDoTCTagging){
-                  double probval=0;
-                  probval=GetTrackProbability(jetpt,hasIPs, ipval);
-                  if(probval>0)FillProbabilityHists(jetpt,  probval, jetflavour);
+                if(fIsPythia){
+                  if(fDoTCTagging&&fDoProbTagging) AliError("Don't do track counting and probability tagging simultaneously!");
+
+                  //MC Track Counting
+                  if(fDoTCTagging){
+                    DoTCTagging(jetpt, hasIPs,ipval, kTagDec);
+                    FillEfficiencyHists(kTagDec, jetflavour, jetpt,hasIPs[0]);
+                  }
+
+                  //Generation of Track Probability Hists
+                  if(fDoJetProb){
+                    double probval=0;
+                    probval=GetTrackProbability(jetpt,hasIPs, ipval);
+                    if(probval>0)FillProbabilityHists(jetpt,  probval, jetflavour);
+                  }
+
+                  //MC Prob Tagging
+                  if(fDoProbTagging){
+                    double probval=0;
+                    probval=GetTrackProbability(jetpt,hasIPs, ipval);
+                    DoProbTagging(probval, jetpt,kTagDec);
+                    FillEfficiencyHists(kTagDec, jetflavour, jetpt,hasIPs[0]);
+                  }
                 }
 
                 if(sImpParXY.size()!=0){
@@ -1419,11 +1451,11 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH1("fh1dJetGenPtb","generator level b jets;pt (GeV/c); count",250,0,250,"s");
     fHistManager.CreateTH1("fh1dJetGenPts","generator level s jets;pt (GeV/c); count",250,0,250,"s");
     fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt","detector momentum response;gen pt;rec pt",500,0,250,500,0,250,"s");*/
-    fHistManager.CreateTH1("fh1dJetRecPtudsg","detector level jets;pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetRecPtUnidentified","detector level jets;pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetRecPtc","detector level jets;pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetRecPtb","detector level jets;pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetRecPts","detector level jets;pt (GeV/c); count",250,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetRecPtudsg","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetRecPtUnidentified","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetRecPtc","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetRecPtb","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetRecPts","detector level jets;pt (GeV/c); count",500,0,250,"s");
   }
 
   fh1DCutInclusive=(TH1D*)AddHistogramm("fh1DCutInclusive","fh1DCutInclusive",30,0,30);
@@ -1475,12 +1507,12 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     h2DProbDistss=(TH2D*)AddHistogramm("h2DProbDistss","h2DProbDistsS",200, 0, 1,500, 0, 250);
     h2DProbDists=(TH2D*)AddHistogramm("h2DProbDists","h2DProbDistsAll",200, 0, 1,500, 0, 250);
   
-    h2DLNProbDistsUnid=(TH2D*)AddHistogramm("h2DLNProbDistsUnid","h2DProbDistsUnid",200, 0, 15,500, 0, 250);
-    h2DLNProbDistsudsg=(TH2D*)AddHistogramm("h2DLNProbDistsudsg","h2DProbDistsUDSG",200, 0, 15,500, 0, 250);
-    h2DLNProbDistsc=(TH2D*)AddHistogramm("h2DLNProbDistsc","h2DProbDistsC",200, 0, 15,500, 0, 250);
-    h2DLNProbDistsb=(TH2D*)AddHistogramm("h2DLNProbDistsb","h2DProbDistsB",200, 0, 15,500, 0, 250);
-    h2DLNProbDistss=(TH2D*)AddHistogramm("h2DLNProbDistss","h2DProbDistsS",200, 0, 15,500, 0, 250);
-    h2DLNProbDists=(TH2D*)AddHistogramm("h2DLNProbDists","h2DProbDistsAll",200, 0, 15,500, 0, 250);
+    h2DLNProbDistsUnid=(TH2D*)AddHistogramm("h2DLNProbDistsUnid","h2DProbDistsUnid",300, 0, 15,500, 0, 250);
+    h2DLNProbDistsudsg=(TH2D*)AddHistogramm("h2DLNProbDistsudsg","h2DProbDistsUDSG",300, 0, 15,500, 0, 250);
+    h2DLNProbDistsc=(TH2D*)AddHistogramm("h2DLNProbDistsc","h2DProbDistsC",300, 0, 15,500, 0, 250);
+    h2DLNProbDistsb=(TH2D*)AddHistogramm("h2DLNProbDistsb","h2DProbDistsB",300, 0, 15,500, 0, 250);
+    h2DLNProbDistss=(TH2D*)AddHistogramm("h2DLNProbDistss","h2DProbDistsS",300, 0, 15,500, 0, 250);
+    h2DLNProbDists=(TH2D*)AddHistogramm("h2DLNProbDists","h2DProbDistsAll",300, 0, 15,500, 0, 250);
 
   }
   for(int iThresh=0;iThresh<fNThresholds;iThresh++){
@@ -3522,8 +3554,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *t
 }
 
 
-void AliAnalysisTaskHFJetIPQA::SetThresholds(int nthresh, TObjArray** &threshs){
-  for(int iProbSet=0;iProbSet<nthresh;iProbSet++){
+void AliAnalysisTaskHFJetIPQA::SetTCThresholds(TObjArray** &threshs){
+  for(int iProbSet=0;iProbSet<fNThresholds;iProbSet++){
     TObjArray* oa=(TObjArray*)threshs[iProbSet];
 
     //printf("Pointer oa=%p\n",oa);
@@ -3555,6 +3587,54 @@ void AliAnalysisTaskHFJetIPQA::SetThresholds(int nthresh, TObjArray** &threshs){
     }*/
 }
 
+void AliAnalysisTaskHFJetIPQA::SetProbThresholds(TObjArray** &threshs){
+  for(int iProbSet=0;iProbSet<fNThresholds;iProbSet++){
+    TObjArray* oa=(TObjArray*)threshs[iProbSet];
+    if(!oa) AliError(Form(" No %i'th Probability Threshold object array!\n",iProbSet));
+    printf("Pointer oa=%p\n",oa);
+    h1DProbThresholds.push_back((TH1D*)oa->At(0));
+    if(!h1DProbThresholds.back()) AliError(Form(" No %i'th Probability Threshold hist!\n",iProbSet));
+  }
+
+  /*int nPoints=h1DProbThresholds[0]->GetNbinsX();
+  for(int iPoint=0;iPoint<nPoints;iPoint++){
+    printf("iPoint=%i, xval=%f, yval=%f\n",iPoint, h1DProbThresholds[0]->GetXaxis()->GetBinLowEdge(iPoint),h1DProbThresholds[0]->GetBinContent(iPoint));
+  }*/
+}
+
+// Read Threshold Histograms
+//==============================================================================
+void AliAnalysisTaskHFJetIPQA::ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh){
+    TFile* fileThresholds=TFile::Open(PathToThresholds.Data());
+    if(!fileThresholds ||(fileThresholds&& !fileThresholds->IsOpen())){AliError(Form("%s :: File with threshold values not found",taskname.Data()));}
+
+    Printf("%s :: File %s successfully loaded, setting up threshold functions.",taskname.Data(),PathToThresholds.Data());
+
+    if(fileThresholds){
+        printf("Reading threshold histograms for track counting...\n");
+
+        //TC Thresholds
+        TObjArray** oaTCThresh=new TObjArray*[nTCThresh];
+        for(int iThresh=0;iThresh<nTCThresh;iThresh++){
+          fileThresholds->GetObject(Form("TCThres_%i",iThresh),oaTCThresh[iThresh]);
+        }
+
+        //ProbLookup hists
+        TObjArray* oLookup;
+        fileThresholds->GetObject("ProbLookup",oLookup);
+
+        TObjArray** oaProbThresh=new TObjArray*[nTCThresh];
+        for(int iThresh=0;iThresh<nTCThresh;iThresh++){
+          fileThresholds->GetObject(Form("ProbThres_%i",iThresh),oaProbThresh[iThresh]);
+        }
+
+        this->setfNThresholds(nTCThresh);
+        this->SetTCThresholds(oaTCThresh);
+        this->SetProbThresholds(oaProbThresh);
+        this->ReadProbvsIPLookup(oLookup);
+    }
+}
+
 void AliAnalysisTaskHFJetIPQA::ReadProbvsIPLookup(TObjArray*& oLookup){
 
   for(int iN=0;iN<3;iN++){
@@ -3562,7 +3642,7 @@ void AliAnalysisTaskHFJetIPQA::ReadProbvsIPLookup(TObjArray*& oLookup){
   }
 }
 
-void AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec){
+void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec){
   //threshold values for tracks with largest, second and third largest IP
   int iJetPtBin=h1DThresholdsFirst[0]->FindBin(jetpt);
   double IPthresN1[fNThresholds];  //IP threshold values for individual separation power
@@ -3579,7 +3659,7 @@ void AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs,
 
   for(int iThresh=0;iThresh<fNThresholds;iThresh++){
     if(!hasIPs[0]) continue;
-    //printf("DoJetTaggingThreshold:\n");
+    //printf("DoTCTagging:\n");
     //printf("      iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[iThresh],IPthresN2[iThresh], IPthresN3[iThresh]);
 
 
@@ -3641,11 +3721,24 @@ void AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs,
   }
 }
 
-void AliAnalysisTaskHFJetIPQA::FillTCEfficiencyHists(bool** kTagDec, int jetflavour, double jetpt, bool hasIPs){
+void AliAnalysisTaskHFJetIPQA::DoProbTagging(double probval, double jetpt,bool **kTagDec){
+  int iJetPtBin=h1DProbThresholds[0]->FindBin(jetpt);
+  for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+    double threshval=h1DProbThresholds[iThresh]->GetBinContent(iJetPtBin);
+    //printf(" iThres=%i, iJetPtBin=%i, jetpt=%f, iThreshold=%f, probval=%f", iThresh, iJetPtBin, jetpt, threshval, probval);
+
+    if(probval>threshval){
+        kTagDec[iThresh][Full]=kTRUE;
+        //printf("Tagging condition fullfilled %i!\n",jetflavour);
+    }
+  }
+}
+
+void AliAnalysisTaskHFJetIPQA::FillEfficiencyHists(bool** kTagDec, int jetflavour, double jetpt, bool hasIPs){
   //printf("Receiving BTagged decision: %i\n", kTagDec[Full]);
   for(int iThresh=0;iThresh<fNThresholds;iThresh++){
     //printf("kTagDec=%i, jetflavour=%i, hasIPs=%i\n",kTagDec[iThresh][Full],jetflavour, hasIPs);
-    if(kTagDec[iThresh][Full])FillHist(Form("h1DTagged_%0.2f",fFracs[iThresh]),jetpt,1);
+    if(kTagDec[iThresh][Full]&&(jetflavour!=0))FillHist(Form("h1DTagged_%0.2f",fFracs[iThresh]),jetpt,1);
 
     if(kTagDec[iThresh][Full]&&(jetflavour==3)&&hasIPs){
       //printf("################################ Before: FoundJet with tagindex=%i!\n",kTagDec[iThresh][Full]);

@@ -784,20 +784,20 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     }
     
     fhEMCALClusterTimeE  = new TH2F 
-    ("hEMCALReaderTimeE","time vs #it{E} after cuts (if no calib, shifted -615 ns)", 100,0,100,400,-400,400);
-    fhEMCALClusterTimeE->SetXTitle("#it{E} (GeV)");
-    fhEMCALClusterTimeE->SetYTitle("#it{time} (ns)");
+    ("hEMCALReaderTimeE","#it{time}_{cluster} vs #it{E}_{cluster} after cuts", 250,0,250,1201,-1201,1201);
+    fhEMCALClusterTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhEMCALClusterTimeE->SetYTitle("#it{time}_{cluster} (ns)");
     fOutputContainer->Add(fhEMCALClusterTimeE);
     
     fhEMCALClusterEtaPhi  = new TH2F 
-    ("hEMCALReaderEtaPhi","#eta vs #varphi",40,-2, 2,50, 0,10);
+    ("hEMCALReaderEtaPhi","#eta vs #varphi",80,-2, 2,100, 0,10);
     // Very open limits to check problems
     fhEMCALClusterEtaPhi->SetXTitle("#eta");
     fhEMCALClusterEtaPhi->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhi);    
     
     fhEMCALClusterEtaPhiFidCut  = new TH2F 
-    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",40,-2, 2,50, 0,10);
+    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",80,-2, 2,100, 0,10);
     fhEMCALClusterEtaPhiFidCut->SetXTitle("#eta");
     fhEMCALClusterEtaPhiFidCut->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhiFidCut);
@@ -1123,9 +1123,9 @@ void AliCaloTrackReader::InitParameters()
   fAODBranchList   = new TList ;
   fOutputContainer = new TList ;
   
-  fEnergyHistogramNbins    = 200;
-  fEnergyHistogramLimit[0] = 0  ;
-  fEnergyHistogramLimit[1] = 100;
+  fEnergyHistogramNbins    = 500 ;
+  fEnergyHistogramLimit[0] = 0.  ;
+  fEnergyHistogramLimit[1] = 250.;
   
   fPileUpParamSPD[0] = 3   ; fPileUpParamSPD[1] = 0.8 ;
   fPileUpParamSPD[2] = 3.0 ; fPileUpParamSPD[3] = 2.0 ; fPileUpParamSPD[4] = 5.0;
@@ -2190,7 +2190,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
 
   // Shift time in case of no calibration with rough factor
   Double_t tofShift = tof;
-  if(tof > 400) tofShift-=615;
+  //if(tof > 400) tofShift-=615;
   fhEMCALClusterTimeE->Fill(clus->E(),tofShift);
   
   if(!IsInTimeWindow(tof,clus->E()))
@@ -3230,29 +3230,84 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
   // Count number of cells with energy larger than 0.1 any SM, cut on this number
   else if ( fRemoveLEDEvents > 1 )
   {
-    Int_t ncellsSM[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    
+    Int_t   ncellsSM[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    Float_t ecellsSM[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+
     for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
     {
       Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
       Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
-      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1) ncellsSM[sm]++;
-    }
-    
-    Int_t ncellcut = 21;
-    if(GetFiredTriggerClasses().Contains("EMC")) ncellcut = 35;
-    
-    for(Int_t ism = 0; ism <  GetCaloUtils()->GetEMCALGeometry()->GetNumberOfSuperModules(); ism++)
-    {
-      if(ncellsSM[ism] >= ncellcut)
+      Float_t amp = fInputEvent->GetEMCALCells()->GetAmplitude(icell);
+      Float_t exo =  1;
+      if ( amp > 0 ) exo = 1-GetCaloUtils()->GetECross(absID,fInputEvent->GetEMCALCells(),0)/amp;
+
+      if ( amp  >= 0.5 && exo < 0.95 ) 
       {
-        AliDebug(1,Form("Reject event with ncells in SM%d %d, cut %d, trig %s",
-                        ism,ncellsSM[ism],ncellcut,GetFiredTriggerClasses().Data()));
-        
-        return kTRUE;
+        ncellsSM[sm]++;
+        ecellsSM[sm]+=amp;
       }
     }
-  }
+    
+    if ( fRemoveLEDEvents  == 2 ) // Run2
+    {
+      // if there is some activity in SM3, accept the event
+      if ( ncellsSM[3] > 1 || ecellsSM[3] > 0.5 ) 
+        return kFALSE;
+      
+//      printf("Empty SM3 ncells %d sum E cells %3.1f\n", ncellsSM[3],ecellsSM[3]);
+//      for(Int_t jsm = 0; jsm < 20; jsm++){
+//        if(ncellsSM[jsm]>0)printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+      
+      // Empty SM3 check the other SM
+      //Bool_t bSMEn[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+      //Bool_t bSMNc[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+      Float_t acc = 1.;
+      for(Int_t ism = 0; ism < 20; ism++)
+      {
+        if ( ism == 3 ) continue;
+
+        // Different cut depending SM acceptance
+        //if (ism > 11 && ism < 18 ) acc = 2./3.;
+        //else if ( sm > 9 )         acc = 1./3.;
+        
+        //if ( ncellsSM[ism] >=  80*acc ) bSMNc = kTRUE;
+        //if ( ecellsSM[ism] >= 700*acc ) bSMEn = kTRUE;
+        if ( ncellsSM[ism] >=  100*acc )
+        {
+          printf("Reject event because of SM%d: ",ism);
+          for(Int_t jsm = 0; jsm < 20; jsm++){
+            if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+          return kTRUE;
+        }
+        
+        if ( ecellsSM[ism] >= 500*acc )
+        {
+          printf("Reject event because of SM%d: ",ism);
+          for(Int_t jsm = 0; jsm < 20; jsm++) {
+            if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+          return kTRUE;
+        }
+      }
+      
+      return kFALSE;
+    }
+    else // Simple case for testing ...
+    {
+      Int_t ncellcut = 21;
+      if(GetFiredTriggerClasses().Contains("EMC")) ncellcut = 35;
+      
+      for(Int_t ism = 0; ism <  GetCaloUtils()->GetEMCALGeometry()->GetNumberOfSuperModules(); ism++)
+      {
+        if(ncellsSM[ism] >= ncellcut)
+        {
+          AliDebug(1,Form("Reject event with ncells in SM%d %d, cut %d, trig %s",
+                          ism,ncellsSM[ism],ncellcut,GetFiredTriggerClasses().Data()));
+          
+          return kTRUE;
+        }
+      } // SM loop
+    }
+  } // fRemoveLEDEvents > 1
   
   return kFALSE;
 }

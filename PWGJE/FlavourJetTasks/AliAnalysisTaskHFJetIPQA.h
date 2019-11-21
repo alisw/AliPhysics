@@ -175,6 +175,7 @@ public:
     void FillRecHistograms(int jetflavour, double jetpt, double eta, double phi);
     void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen);
     void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks);
+    void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params);
     void FillTrackTypeResHists();
 
     //________________________________
@@ -197,6 +198,7 @@ public:
     void setDoNotCheckIsPhysicalPrimary(Bool_t value){fDoNotCheckIsPhysicalPrimary = value;}
     void setDoJetProb(Bool_t value){fDoJetProb = value;}
     void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
+    void setDoProbTagging(Int_t value) {fDoProbTagging=value;}
 
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
@@ -217,10 +219,13 @@ public:
           Triple,
     };
 
-    void DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec);
-    void FillTCEfficiencyHists(bool** kTagDec, int jetflavour, double jetpt,bool hasIPs);
-    void SetThresholds(int nthresh, TObjArray** &threshs);
+    void DoTCTagging(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec);
+    void DoProbTagging(double probval, double jetpt, bool** kTagDec);
+    void FillEfficiencyHists(bool** kTagDec, int jetflavour, double jetpt,bool hasIPs);
+    void SetTCThresholds(TObjArray** &threshs);
+    void SetProbThresholds(TObjArray** &threshs);
     void ReadProbvsIPLookup(TObjArray *&oLookup);
+    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
 
     //________________________________
@@ -304,7 +309,7 @@ private:
     Bool_t   fFillCorrelations;//
     Bool_t fDoLundPlane;//
     Bool_t fDoTCTagging;//
-    Bool_t fDoProbTagging;//
+    Int_t fDoProbTagging;//  //0: no probability tagging, 1: use JP for tagging, 2: use lnJP for tagging
 
     //_____________________
     //variables
@@ -359,6 +364,8 @@ private:
     TH2D* h2DLNProbDistsb;//!
     TH2D* h2DLNProbDistss;//!
     TH2D* h2DLNProbDists;//!
+
+    std::vector<TH1D*> h1DProbThresholds;//
 
     //______________________________
     //Cut Histograms
@@ -459,7 +466,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 44)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 45)
 };
 
 #endif

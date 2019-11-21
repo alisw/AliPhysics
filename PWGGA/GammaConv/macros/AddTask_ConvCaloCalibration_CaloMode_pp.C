@@ -35,7 +35,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -190,14 +190,22 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   } else if (trainConfig == 3){ // pp 5 TeV EMCal + DCal - iteration2 test
     cuts.AddCutCalo("00010113","4117917007032220000","01631031000000d0"); // MB
   } else if (trainConfig == 4){ // pp 13 TeV EMCal + DCal iteration 2 test
-    cuts.AddCutCalo("00010113","411790006f032230000","01631031000000d0"); // INT7 No NL
     cuts.AddCutCalo("00010113","411791206f032230000","01631031000000d0"); // INT7 NL12
   } else if (trainConfig == 5){ // pp 13 TeV EMCal + DCal iteration 2 test
-    cuts.AddCutCalo("0008e113","411790006f032230000","01631031000000d0"); // EG2  No NL
-    cuts.AddCutCalo("0008e113","411791206f032230000","01631031000000d0"); // EG2  NL12
+    cuts.AddCutCalo("0008e113","411791206f032230000","01631031000000d0"); // EG2  NL12  Trigger mimicking: TriggerMaker
+    cuts.AddCutCalo("0008d113","411791206f032230000","01631031000000d0"); // EG1  NL12  Trigger mimicking: TriggerMaker
   } else if (trainConfig == 6){ // pp 13 TeV EMCal + DCal iteration 2 test
-    cuts.AddCutCalo("0008d113","411790006f032230000","01631031000000d0"); // EG1  No NL
-    cuts.AddCutCalo("0008d113","411791206f032230000","01631031000000d0"); // EG1  NL12
+    cuts.AddCutCalo("0008e113","411791206f032230000","01631031000000d0"); // EG2  NL12  Trigger mimicking: Normal
+    cuts.AddCutCalo("0008d113","411791206f032230000","01631031000000d0"); // EG1  NL12  Trigger mimicking: Normal
+  } else if (trainConfig == 7){ // pp 13 TeV EMCal + DCal iteration 2 test
+    cuts.AddCutCalo("0008e113","411791206f032230000","01631031000000d0"); // EG2  NL12  Trigger mimicking: simple patch ( 3 cell dist )
+    cuts.AddCutCalo("0008d113","411791206f032230000","01631031000000d0"); // EG1  NL12  Trigger mimicking: simple patch ( 3 cell dist )
+  } else if (trainConfig == 8){ // pp 13 TeV EMCal + DCal iteration 2 test
+    cuts.AddCutCalo("0008e113","411791206f032230000","01631031000000d0"); // EG2  NL12  Trigger mimicking: simple patch ( 4 cell dist )
+    cuts.AddCutCalo("0008d113","411791206f032230000","01631031000000d0"); // EG1  NL12  Trigger mimicking: simple patch ( 4 cell dist )
+  } else if (trainConfig == 9){ // pp 13 TeV EMCal + DCal iteration 2 test
+    cuts.AddCutCalo("0008e113","411791206f032230000","01631031000000d0"); // EG2  NL12  Trigger mimicking: simple patch ( 5 cell dist )
+    cuts.AddCutCalo("0008d113","411791206f032230000","01631031000000d0"); // EG1  NL12  Trigger mimicking: simple patch ( 5 cell dist )
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

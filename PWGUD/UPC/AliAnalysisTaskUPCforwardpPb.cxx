@@ -82,6 +82,7 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb()
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
+      fEtaDimuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
       fInvariantMassDistributionRapidityBinsH{ 0, 0 },
@@ -89,6 +90,8 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb()
       fInvariantMassDistribution0N0NH(0),
       fInvariantMassDistributionRapidityBins0N0NH{ 0, 0 },
       fInvariantMassDistributionMoreRapidityBins0N0NH{ 0, 0, 0 },
+      fInvariantMassDistributionSmall0N0NH(0),
+      fInvariantMassDistributionRapidityBinsSmall0N0NH{ 0, 0 },
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fRunNumberTriggerCMUP11ClassH(0),
@@ -114,6 +117,9 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb()
       fInvariantMassDistributionIncoherentShiftPlusOneH(0),
       fInvariantMassDistributionIncoherentShiftPlusTwoH(0),
       fDimuonPtDistributionH(0),
+      fDimuonPtDistributionRestrictedRapidity0N0NH(0),
+      fDimuonPtDistributionRestrictedRapidity0N0N36to31H(0),
+      fDimuonPtDistributionRestrictedRapidity0N0N31to26H(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
       fInvariantMassDistributionIncoherentExtendedH(0),
@@ -168,6 +174,7 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb(const char* name)
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
+      fEtaDimuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
       fInvariantMassDistributionRapidityBinsH{ 0, 0 },
@@ -175,6 +182,8 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb(const char* name)
       fInvariantMassDistribution0N0NH(0),
       fInvariantMassDistributionRapidityBins0N0NH{ 0, 0 },
       fInvariantMassDistributionMoreRapidityBins0N0NH{ 0, 0, 0 },
+      fInvariantMassDistributionSmall0N0NH(0),
+      fInvariantMassDistributionRapidityBinsSmall0N0NH{ 0, 0 },
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fRunNumberTriggerCMUP11ClassH(0),
@@ -200,6 +209,9 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb(const char* name)
       fInvariantMassDistributionIncoherentShiftPlusOneH(0),
       fInvariantMassDistributionIncoherentShiftPlusTwoH(0),
       fDimuonPtDistributionH(0),
+      fDimuonPtDistributionRestrictedRapidity0N0NH(0),
+      fDimuonPtDistributionRestrictedRapidity0N0N36to31H(0),
+      fDimuonPtDistributionRestrictedRapidity0N0N31to26H(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
       fInvariantMassDistributionIncoherentExtendedH(0),
@@ -299,8 +311,11 @@ void AliAnalysisTaskUPCforwardpPb::UserCreateOutputObjects()
   fCounterH = new TH1F("fCounterH", "fCounterH", 24, -0.5, 23.5);
   fOutputList->Add(fCounterH);
 
-  fEtaMuonH = new TH1F("fEtaMuonH", "fEtaMuonH", 90, -2, -5);
+  fEtaMuonH = new TH1F("fEtaMuonH", "fEtaMuonH", 160, -1, -5);
   fOutputList->Add(fEtaMuonH);
+
+  fEtaDimuonH = new TH1F("fEtaDimuonH", "fEtaDimuonH", 160, -1, -5);
+  fOutputList->Add(fEtaDimuonH);
 
   fRAbsMuonH = new TH1F("fRAbsMuonH", "fRAbsMuonH", 100, 0, 100);
   fOutputList->Add(fRAbsMuonH);
@@ -341,6 +356,17 @@ void AliAnalysisTaskUPCforwardpPb::UserCreateOutputObjects()
                         Form("fInvariantMassDistributionMoreRapidityBins0N0NH_%d", iRapidity),
                         2000, 0, 20);
     fOutputList->Add(fInvariantMassDistributionMoreRapidityBins0N0NH[iRapidity]);
+  }
+
+  fInvariantMassDistributionSmall0N0NH = new TH1F("fInvariantMassDistributionSmall0N0NH", "fInvariantMassDistributionSmall0N0NH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionSmall0N0NH);
+
+  for( Int_t iRapidity = 0; iRapidity < 2; iRapidity++ ) {
+    fInvariantMassDistributionRapidityBinsSmall0N0NH[iRapidity]
+            = new TH1F( Form("fInvariantMassDistributionRapidityBinsSmall0N0NH_%d", iRapidity),
+                        Form("fInvariantMassDistributionRapidityBinsSmall0N0NH_%d", iRapidity),
+                        2000, 0, 20);
+    fOutputList->Add(fInvariantMassDistributionRapidityBinsSmall0N0NH[iRapidity]);
   }
 
 
@@ -458,6 +484,14 @@ void AliAnalysisTaskUPCforwardpPb::UserCreateOutputObjects()
   fDimuonPtDistributionShiftPlusOneH = new TH1F("fDimuonPtDistributionShiftPlusOneH", "fDimuonPtDistributionShiftPlusOneH", 4000, 0.02, 20.02);
   fOutputList->Add(fDimuonPtDistributionShiftPlusOneH);
 
+  fDimuonPtDistributionRestrictedRapidity0N0NH = new TH1F("fDimuonPtDistributionRestrictedRapidity0N0NH", "fDimuonPtDistributionRestrictedRapidity0N0NH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionRestrictedRapidity0N0NH);
+
+  fDimuonPtDistributionRestrictedRapidity0N0N36to31H = new TH1F("fDimuonPtDistributionRestrictedRapidity0N0N36to31H", "fDimuonPtDistributionRestrictedRapidity0N0N36to31H", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionRestrictedRapidity0N0N36to31H);
+
+  fDimuonPtDistributionRestrictedRapidity0N0N31to26H = new TH1F("fDimuonPtDistributionRestrictedRapidity0N0N31to26H", "fDimuonPtDistributionRestrictedRapidity0N0N31to26H", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionRestrictedRapidity0N0N31to26H);
 
   /* - These histograms have an EXTENDED range (0,20)->(0,40)
      -
@@ -759,14 +793,14 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
                                           266940, 266915, 266912, 266886, 266885, 266883, 266882, 266880, 266878, 266857,
                                           266807, 266805, 266800, 266776, 266775, 266708, 266706, 266703, 266702, 266676,
                                           266674, 266669, 266668, 266665, 266659, 266658, 266657, 266630, 266621, 266618,
-                                          266615, 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
+                                          /*266615,*/ 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
                                           266543, 266539, 266534, 266533, 266525, 266523, 266522, 266520, 266518, 266516,
                                           266514, 266487, 266480, 266479, 266472, 266441, 266439/*, 296552, 296510, 296549, 296618, 296551, 296553, 296623, 296511, 296552*/ };
   Bool_t checkIfGoodRun = kFALSE;
-  for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
-    if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
-  }
-  for( Int_t iRunLHC16s = 0; iRunLHC16s <  77 /*86*/; iRunLHC16s++){
+  // for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
+  //   if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
+  // }
+  for( Int_t iRunLHC16s = 0; iRunLHC16s <  76 /*86*/; iRunLHC16s++){
     if( fRunNum == listOfGoodRunNumbersLHC16s[iRunLHC16s] ) checkIfGoodRun = kTRUE;
   }
   if(checkIfGoodRun != 1) {
@@ -940,6 +974,15 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
         continue;
     }
 
+
+    /* -
+     * - Compatibility with Run 1 analysis.
+     * -
+     */
+    if ( !( (track[nGoodMuons]->Eta() < -2.5) && (track[nGoodMuons]->Eta() > -3.7) ) ) {
+      continue;
+    }
+
     // MUON SELECTION
     /* - This is Eugeny Krishen's MUON selection from the talk in 14/1/2019 for
        - the PWG-UD (UPC oriented) meeting. The event selection requires:
@@ -1005,6 +1048,7 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
         possibleJPsi += muons[indexMuon];
         chargeOfMuons[indexMuon] = track[indexMuon]->Charge();
   }
+  fEtaDimuonH->Fill(possibleJPsi.Rapidity());
   fInvariantMassDistributionH->Fill(possibleJPsi.Mag());
   fInvariantMassDistributionExtendedH->Fill(possibleJPsi.Mag());
 
@@ -1247,7 +1291,33 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
                 } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
                   fInvariantMassDistributionMoreRapidityBins0N0NH[2]->Fill(possibleJPsi.Mag());
                 }
+                /**
+                 * - Pt-integrated analysis
+                 * - in 2 rapidity bins.
+                 * -
+                 */
+                if (        possibleJPsi.Rapidity() > -3.60 && possibleJPsi.Rapidity() <= -3.10 ) {
+                  fInvariantMassDistributionSmall0N0NH               ->Fill(possibleJPsi.Mag());
+                  fInvariantMassDistributionRapidityBinsSmall0N0NH[0]->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionRestrictedRapidity0N0NH       ->Fill(ptOfTheDimuonPair);
+                  // fDimuonPtDistributionRestrictedRapidity0N0N36to31H ->Fill(ptOfTheDimuonPair);
+                } else if ( possibleJPsi.Rapidity() > -3.10 && possibleJPsi.Rapidity() <= -2.60 ) {
+                  fInvariantMassDistributionSmall0N0NH               ->Fill(possibleJPsi.Mag());
+                  fInvariantMassDistributionRapidityBinsSmall0N0NH[1]->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionRestrictedRapidity0N0NH       ->Fill(ptOfTheDimuonPair);
+                  // fDimuonPtDistributionRestrictedRapidity0N0N31to26H ->Fill(ptOfTheDimuonPair);
+                }
+
             }
+
+            if (        (possibleJPsi.Rapidity() > -3.60) && (possibleJPsi.Rapidity() <= -3.10) && (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) {
+              fDimuonPtDistributionRestrictedRapidity0N0NH       ->Fill(ptOfTheDimuonPair);
+              fDimuonPtDistributionRestrictedRapidity0N0N36to31H ->Fill(ptOfTheDimuonPair);
+            } else if ( (possibleJPsi.Rapidity() > -3.10) && (possibleJPsi.Rapidity() <= -2.60) && (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) {
+              fDimuonPtDistributionRestrictedRapidity0N0NH       ->Fill(ptOfTheDimuonPair);
+              fDimuonPtDistributionRestrictedRapidity0N0N31to26H ->Fill(ptOfTheDimuonPair);
+            }
+
         }
   }
 

@@ -672,7 +672,7 @@ fOutputList->Add(fInvmassULS);
 fInvmassLS_2D = new TH2F("fInvmassLS_2D","Invmass of LS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,400,0.0,20.0);
 fOutputList->Add(fInvmassLS_2D);
 
-fInvmassULS_2D = new TH2F("fInvmassULS_2D","Invmass of ULS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,200,0.0,10.0);
+fInvmassULS_2D = new TH2F("fInvmassULS_2D","Invmass of ULS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,400,0.0,20.0);
 fOutputList->Add(fInvmassULS_2D);
 
 fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC",160,-0.8,0.8);
@@ -1797,7 +1797,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
         Int_t EMCalIndex = -1;
         EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
-        cout << "EMCalIndex = " << EMCalIndex << endl;
+        //cout << "EMCalIndex = " << EMCalIndex << endl;
 
 	//cout << "EMCal Index = " << EMCalIndex << endl;
 
@@ -2024,7 +2024,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		fEMCTrkMatchPhi->Fill(fPhiDiff);
 		fEMCTrkMatchEta->Fill(fEtaDiff);
 
-                cout << "fPhiDiff = "<< fPhiDiff << endl;
+                //cout << "fPhiDiff = "<< fPhiDiff << endl;
 
 		if(TMath::Abs(fPhiDiff)>0.05 || TMath::Abs(fEtaDiff)>0.05)continue;
 

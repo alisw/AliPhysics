@@ -98,6 +98,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fLowpT_down = down_lowpT;
     fHighpT_down = down_highpT;
   }
+  // pT limits for TTree filling
+  void SetpTlimsTTreeFilling(Float_t min, Float_t max){
+    fminpT_treeFill = min;
+    fmaxpT_treeFill = max;
+  }
 
   // require the calculation of dist12 and dist23
   void SetCalculate_dist12_dist23(Bool_t flag){ fCompute_dist12_dist23 = flag; }
@@ -109,6 +114,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetSigmaCDeltaMassWindow(Double_t maxDeltaM){fSigmaCDeltaMassWindow=maxDeltaM;}
   void SetOnTheFlyLcCandidatesForSigmaC(Bool_t onthefly){fSigmaCfromLcOnTheFly=onthefly;}
   void SetFillOnlyTrackSparse(Bool_t fillonlysparse){fCheckOnlyTrackEfficiency=fillonlysparse;}
+  void SetIsCdeuteronAnalysis(Bool_t iscd){fIsCdeuteronAnalysis=iscd;}
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -195,6 +201,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH2F *fhistMCSpectrumAccLc;//! hist with MC spectrum of cand in acceptance
   TH2F *fhistMCSpectrumAccSc;//! hist with MC spectrum of cand in acceptance
   TH2F *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
+  TH2F *fhistMCSpectrumAccCdeuteron;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
   THnSparseF* fhSparseAnalysisSigma;//! sparse for analysis of SigmaC (with deltaM)
   THnSparseF* fhSparsePartReco;//! sparse for single track efficiency (reco spectra)
@@ -277,6 +284,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Float_t fLowpT_down;      /// downsampling factor at low pT
   Float_t fHighpT_down;     /// downsampling factor at high pT
 
+  // pT limits for TTree filling
+  Float_t fminpT_treeFill;   /// min. pT
+  Float_t fmaxpT_treeFill;   /// max. pT
+
   Bool_t fCompute_dist12_dist23;  /// flag to require the calculation of dist12 and dist23
 
   Bool_t fExplore_PIDstdCuts; /// flag to switch on the exporation of PID cuts with standard strategy
@@ -284,8 +295,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t fSigmaCDeltaMassWindow; /// mass window for accetping sigma_C candidate
   Bool_t fSigmaCfromLcOnTheFly; /// switch to use on-the-fly Lc or filtered Lc from delta file
   Bool_t fCheckOnlyTrackEfficiency;// flag for filling only the single-track sparse and return
+  Bool_t fIsCdeuteronAnalysis;// flag for doing the c deuteron analysis (inv mass)
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,5); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,6); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

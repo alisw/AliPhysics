@@ -370,7 +370,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
       void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
-      void    SetTriggerMimicking(Bool_t value)                                     { fMimicTrigger = value                                     ;
+      void    SetTriggerMimicking(Int_t value)                                      { fMimicTrigger = value                                     ;
                                                                                       if(value)AliInfo("enabled trigger mimicking")             ; }
       void    SetTriggerOverlapRejecion (Bool_t value)                              { fRejectTriggerOverlap = value                             ;
                                                                                       if(value)AliInfo("enabled trigger overlap rejection")     ; }
@@ -385,6 +385,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetFillCutHistograms( TString name="",
                                     Bool_t preCut = kTRUE)                          { if(!fHistograms){ InitCutHistograms(name,preCut);}        ; }
       void    SetEtaShift(Double_t etaShift)                                        { fEtaShift = etaShift                                      ; } // Eta shift Setting
+      void    SetUseJetFinderForOutliers(Bool_t useJetFinder)                       { fUseJetFinderForOutlier = useJetFinder                    ; } // Eta shift Setting
       void    SetEtaShift(TString pPbOrPbp)                                         { Double_t etaShift = 0.0                                   ;
                                                                                       if(!pPbOrPbp.CompareTo("pPb"))      etaShift = -0.465     ;
                                                                                       else if(!pPbOrPbp.CompareTo("Pbp")) etaShift =  0.465     ;
@@ -496,6 +497,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t     GetNumberOfContributorsVtx(AliVEvent *event);
       Double_t  GetEtaShift()                                                       { return fEtaShift                                          ; }
       Bool_t    GetDoEtaShift()                                                     { return fDoEtaShift                                        ; }
+      Bool_t    GetUseJetFinderForOutliers()                                        { return fUseJetFinderForOutlier                            ; }
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
@@ -562,7 +564,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *event);
       Bool_t    IsPileUpV0MTPCout(AliVEvent *event);
       Bool_t    VertexZCut(AliVEvent *event);
-      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event = 0x0);
+      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event = 0x0, Double_t maxJetPt = -1);
       Float_t   GetPtHard(AliMCEvent *mcEvent, AliVEvent* event = 0x0);
       void      GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSection, Float_t &NTrials, AliVEvent* event = 0x0 );
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
@@ -643,6 +645,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       AliAnalysisUtils*           fUtils;                                 ///<
       Double_t                    fEtaShift;                              ///<
       Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
+      Bool_t                      fUseJetFinderForOutlier;                ///< Flag for Etashift
       Int_t                       fDoCentralityFlat;                      ///<
       TString                     fPathWeightsFlatCent;                   ///<
       TString                     fNameHistoNotFlatCentrality;            ///<
@@ -712,7 +715,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t                     fMinFacPtHard;                          ///< minimum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHard;                          ///< maximum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHardSingleParticle;            ///< maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
-      Bool_t                      fMimicTrigger;                          ///< enable trigger mimiking
+      Int_t                       fMimicTrigger;                          ///< enable trigger mimiking
       TString                     fPathTriggerMimicSpecialInput;          ///< set special trigger mimiking OADB file
       Bool_t                      fRejectTriggerOverlap;                  ///< enable trigger overlap rejections
       //
@@ -726,7 +729,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,73)
+      ClassDef(AliConvEventCuts,74)
       /// \endcond
 };
 

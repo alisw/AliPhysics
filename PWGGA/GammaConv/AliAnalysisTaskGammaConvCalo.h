@@ -13,6 +13,7 @@
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskConvJet.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
@@ -182,6 +183,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList*                              fMesonCutArray;         // List with Meson Cuts
     AliConversionMesonCuts*             fMesonCuts;             // MesonCutObject
     AliAnalysisTaskConvJet*             fConvJetReader;         // JetReader
+    AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     Bool_t                              fDoJetAnalysis;         // Bool to produce Jet Plots
     Bool_t                              fDoJetQA;               // Bool to produce Jet QA Plots
     TList**                             fJetHistograms;         // Jet Histograms
@@ -586,7 +588,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 56);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 57);
 };
 
 #endif

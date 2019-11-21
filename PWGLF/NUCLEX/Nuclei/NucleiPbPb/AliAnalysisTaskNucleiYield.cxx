@@ -416,28 +416,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
   fCentrality = -1.f;
 
+  bool EventAccepted = true;
   if (!nanoHeader) {
-    bool EventAccepted = fEventCut.AcceptEvent(ev);
-
+    EventAccepted = fEventCut.AcceptEvent(ev);
     /// The centrality selection in PbPb uses the percentile determined with V0.
     fCentrality = fEventCut.GetCentrality(fEstimator);
-
-    std::array <AliEventCuts::NormMask,4> norm_masks {
-      AliEventCuts::kAnyEvent,
-      AliEventCuts::kPassesNonVertexRelatedSelections,
-      AliEventCuts::kHasReconstructedVertex,
-      AliEventCuts::kPassesAllCuts
-    };
-    for (int iC = 0; iC < 4; ++iC) {
-      if (fEventCut.CheckNormalisationMask(norm_masks[iC])) {
-          fNormalisationHist->Fill(fCentrality,iC);
-      }
-    }
-
-    if (!EventAccepted) {
-      PostData(1, fList);
-      return;
-    }
   } else {
     if (fNanoPIDindexTPC == -1 || fNanoPIDindexTOF == -1) {
       AliNanoAODTrack::InitPIDIndex();
@@ -446,6 +429,39 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
 
     fCentrality = nanoHeader->GetCentralityV0M();
+  }
+
+  bool specialTrigger = true;
+  if (fINT7intervals.size()) {
+    if (nanoHeader)
+      ::Fatal("AliAnalysisTaskNucleiYield::UserExec", "Nano not supported with special trigger selections");
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+    for (int iInt = 0; iInt < fINT7intervals.size(); iInt +=2) {
+      if (fCentrality >= fINT7intervals[iInt] && fCentrality < fINT7intervals[iInt+1])
+        if ((handl->IsEventSelected() & AliVEvent::kINT7) != AliVEvent::kINT7)
+          EventAccepted = false;
+          specialTrigger = false;
+    }
+  }
+  
+  if (!nanoHeader) {
+    std::array <AliEventCuts::NormMask,4> norm_masks {
+      AliEventCuts::kAnyEvent,
+      AliEventCuts::kPassesNonVertexRelatedSelections,
+      AliEventCuts::kHasReconstructedVertex,
+      AliEventCuts::kPassesAllCuts
+    };
+    for (int iC = 0; iC < 4; ++iC) {
+      if (fEventCut.CheckNormalisationMask(norm_masks[iC]) && (iC == 0 || specialTrigger)) {
+        fNormalisationHist->Fill(fCentrality,iC);
+      }
+    }
+  }
+
+  if (!EventAccepted) {
+    PostData(1, fList);
+    return;
   }
 
   /// To perform the majority of the analysis - and also this one - the standard PID handler is

@@ -120,8 +120,13 @@
   4.5) The signal correlation function is calculated using the superposition principle from the inclusive
     e+e- - hadron and the background correlation function using CalculateSignalCorrelation().
 
-  4.6) If a hadron efficiency map is provided, the signal correlation function is corrected for the associated
-    hadron efficiency using EfficiencyCorrection().
+  4.6) There are two ways an efficiency correction can be applied, depending on if the J/psi should be efficiency
+    corrected or not: 1) If no J/psi efficicency correction is required, a hadron efficiency map (1D) can be set
+    using SetHadronEfficiencyHistogram(). The signal correlation will then be corrected for the hadron
+    efficiency after the signal extraction has been performed. 2) In case a J/psi efficiency correction is required
+    in addition to the hadron efficiency correction, the input correlation histograms already have to be corrected
+    for the efficiency using a 1/(eff_jpsi x eff_hadron) weight when filling the input histograms. If this is the case,
+    the J/psi efficiency must be provided via SetJpsiEfficiency() in order to properly correct the trigger normalization.
 
  5) Output ------------------------------------------------------------------------------------------------------
 
@@ -225,7 +230,8 @@ class AliCorrelationExtraction : public TObject {
     void SetMEOSPairHistogram(THnF* h) {fMEOSPair = h; fProcessDone = kFALSE;}
     void SetSELSPairHistogram(THnF* hpp, THnF* hmm) {fSEPPPair = hpp; fSEMMPair = hmm; fProcessDone = kFALSE;}
     void SetMELSPairHistogram(THnF* hpp, THnF* hmm) {fMEPPPair = hpp; fMEMMPair = hmm; fProcessDone = kFALSE;}
-    void SetHadronEfficiencyHistogram(TH1D* h, Int_t var) {fHadronEff = h; fEfficiencyVariable = var; fProcessDone = kFALSE;}
+    void SetJpsiEfficiency(Double_t eff, Double_t effErr) {fJpsiEff = eff; fJpsiEffErr = effErr; fUseJpsiEfficiency = kTRUE; fProcessDone = kFALSE;}
+    void SetHadronEfficiencyHistogram(TH1D* h, Int_t var) {fHadronEff = h; fHadronEfficiencyVariable = var; fProcessDone = kFALSE;}
     void SetAliResonanceFitsObject(AliResonanceFits* resonanceFits) {fResonanceFits = (AliResonanceFits*)resonanceFits->Clone("ResonanceFits"); fProcessDone = kFALSE;}
     void SetBackgroundMethod(Int_t method, Bool_t integrateDeltaEta=kFALSE);
     void SetBackgroundFitFunction(TF1* fitFunc) {fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction"); fProcessDone = kFALSE;}
@@ -367,13 +373,18 @@ class AliCorrelationExtraction : public TObject {
     Int_t     fDeltaPhiVariableIndex;
     Int_t     fDeltaEtaVariable;
     Int_t     fDeltaEtaVariableIndex;
-    Int_t     fEfficiencyVariable;                            // variable the efficiency (fHadronEff) is a function of
-    Int_t     fEfficiencyVariableIndex;                       // index of fEfficiencyVariable in fSEOS, etc.
+    Int_t     fHadronEfficiencyVariable;                      // variable the efficiency (fHadronEff) is a function of
+    Int_t     fHadronEfficiencyVariableIndex;                 // index of fHadronEfficiencyVariable in fSEOS, etc.
+
+    // J/psi efficiency
+    Double_t  fJpsiEff;
+    Double_t  fJpsiEffErr;
 
     // user options
     Bool_t            fVerboseFlag;
     Bool_t            fUseMixingVars;
     Bool_t            fIntegrateDeltaEta[kNBackgroundMethods];
+    Bool_t            fUseJpsiEfficiency;
     AliResonanceFits* fResonanceFits;
     Int_t             fOptionBkgMethod;
     TF1*              fBkgFitFunction;
@@ -408,9 +419,9 @@ class AliCorrelationExtraction : public TObject {
     Bool_t  CalculateBackgroundCorrelationSuperposition();
     Bool_t  CalculateBackgroundCorrelationSuperpositionTwoComponent();
     Bool_t  CalculateSignalCorrelation();
-    Bool_t  EfficiencyCorrection();
+    Bool_t  HadronEfficiencyCorrection();
   
-  ClassDef(AliCorrelationExtraction, 2);
+  ClassDef(AliCorrelationExtraction, 3);
 };
 
 #endif

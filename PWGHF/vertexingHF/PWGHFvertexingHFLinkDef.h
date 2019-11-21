@@ -124,6 +124,7 @@
 #pragma link C++ class AliAnalysisTaskSELbtoLcpi4+;
 #pragma link C++ class AliAnalysisTaskSEXicTopKpi+;
 #pragma link C++ class AliRDHFCutsXictopKpi+;
+#pragma link C++ class AliRDHFCutsCdeuterontodKpi+;
 
 //classes working only in ROOT6
 #ifdef __CLING__
@@ -133,6 +134,9 @@
 #pragma link C++ class AliHFMLResponse+;
 #pragma link C++ class AliHFMLResponseDplustoKpipi+;
 #pragma link C++ class AliHFMLResponseDstoKKpi+;
+#pragma link C++ class AliHFMLVarHandler+;
+#pragma link C++ class AliHFMLVarHandlerDplustoKpipi+;
+#pragma link C++ class AliHFMLVarHandlerDstoKKpi+;
 #endif
 
 #endif

@@ -7,10 +7,13 @@
 // TString names=("cut1_pt75;cut2_pt75;cut3_pt75;cut4_pt75;cut5_pt75;cut6_pt75;cut7_pt75;cut8_pt75;cut9_pt75;cut10_pt75");
 
 // Cuts for primary electrons
-// TString names_Prim_Cuts=("noPID");
+// TString names_Prim_Cuts=("noPID");     // still has kin cuts (pt 75 MeV/c)
+// TString names_Prim_Cuts=("noPID_pt200");  // still has kin cuts (pt 200 MeV/c)
 // TString names_Prim_Cuts=("onlyJPID_sum_noTrackCuts");
-TString names_Prim_Cuts=("JPID_sum_pt75");
+// TString names_Prim_Cuts=("JPID_sum_pt75");
+// TString names_Prim_Cuts=("JPID_sum_pt200");
 // TString names_Prim_Cuts=("JPID_sum_pt75_secondary");
+TString names_Prim_Cuts=("noPID;TESTCutsOnlyImpParXY;TESTCutsOnlyImpParZ;TESTCutsOnlyNclsTPC;TESTCutsOnlyTPCchi2Cl;TESTCutsOnlySharedCls;JPID_sum_pt75");
                                                                                 // TString names_Prim_Cuts=("onlyPIDcut1_noTrackCuts");
                                                                                 // TString names_Prim_Cuts=("cut1_pt75");
                                                                                 // TString names_Prim_Cuts=("noPID;cut1_pt75");
@@ -18,10 +21,13 @@ TString names_Prim_Cuts=("JPID_sum_pt75");
                                                                                 // TString names_Prim_Cuts=("cut1_pt75_secondary");
 
 // Cuts for secondary electrons
-// TString names_Sec_Cuts=("noPID");
+// TString names_Sec_Cuts=("noPID");      // still has kin cuts (pt 75 MeV/c)
+// TString names_Sec_Cuts=("noPID_pt200");   // still has kin cuts (pt 200 MeV/c)
 // TString names_Sec_Cuts=("onlyJPID_sum_noTrackCuts");
 // TString names_Sec_Cuts=("JPID_sum_pt75");
-TString names_Sec_Cuts=("JPID_sum_pt75_secondary");
+// TString names_Sec_Cuts=("JPID_sum_pt75_secondary");
+// TString names_Sec_Cuts=("JPID_sum_pt200_secondary");
+TString names_Sec_Cuts=("noPID;TESTCutsOnlyImpParXY;TESTCutsOnlyImpParZ;TESTCutsOnlyNclsTPC;TESTCutsOnlyTPCchi2Cl;TESTCutsOnlySharedCls;JPID_sum_pt75_secondary");
                                                                                 // TString names_Sec_Cuts=("onlyPIDcut1_noTrackCuts");
                                                                                 // TString names_Sec_Cuts=("cut1_pt75_secondary");
                                                                                 // TString names_Sec_Cuts=("cut1_pt75");
@@ -54,6 +60,7 @@ bool DoPairing      = true;
 bool DoFourPairing  = true;
 bool DoULSLS        = false;
 bool DeactivateLS   = true;
+bool DoMassCut      = true;
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -92,6 +99,7 @@ const double maxGenEta =  1.5;
 // const double maxPtCut = 100.0;
 // const double minEtaCut = -100;
 // const double maxEtaCut =  100;
+// const double minPtCut = 0.200;
 const double minPtCut = 0.075;
 const double maxPtCut = 8.0;
 const double minEtaCut = -0.8;
@@ -107,11 +115,18 @@ double ptBins[] = {0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,8.0
   };
+
+// double ptBins[] = {0.000,0.015,0.030,0.045,0.060,0.075,0.090,0.100,0.110,0.120,0.130,0.140,0.150,0.160,0.170,0.180,0.190,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
+  // 1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
+  // 4.00,5.0,6.0,7.0,8.0
+  // };
+
 const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
 const double minPtBin = 0;
 const double maxPtBin = 8;
 const int    stepsPtBin = 320;
+// const int    stepsPtBin = 800;
 
 const double minEtaBin = -1.0;
 const double maxEtaBin =  1.0;
@@ -126,11 +141,12 @@ const double maxThetaBin =  TMath::TwoPi();
 const int    stepsThetaBin = 60;
 
 const double minMassBin = 0;
-const double maxMassBin =  5;
+const double maxMassBin =  1;
 const int    stepsMassBin = 1000;
 const double minPairPtBin = 0;
 const double maxPairPtBin =  8;
 const int    stepsPairPtBin = 80;
+// const int    stepsPairPtBin = 320;
 
 // Binning of resolution histograms
 const int    NbinsDeltaMom    = 1000;
@@ -273,270 +289,128 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
 
 
   LMEECutLib* LMcutlib = new LMEECutLib();
-  if (cutDefinition == "kPbPb2015_Pt100_ResolutionCuts"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt100_ResolutionCuts);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kResolutionTrackCuts);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_pt75_woSITS"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_woSharedCluster);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "noPID"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt75_noPID);
+
+  if (cutDefinition == "noPID"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut5_pt75_noPID_wSharedCluster"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt75_noPID);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_pt75_noPID_noSharedCluster"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt75_noPID);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_0SharedCluster);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_pt75_0SITS"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_0SharedCluster);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_pt75_noPIDcuts"){
-    AnaCut.SetPIDAna(LMEECutLib::kPDGelectron);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_openKinematicCuts"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt100_ResolutionCuts);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_openKinematicCuts_without_CrossedOverFindableCut"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt100_ResolutionCuts);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5_without_CrossedOverFindableCut);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "kPbPb2015_Pt75_PID_cutoff_pion_kaon_proton"){
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt75_PID_cutoff_pion_kaon_proton);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+
+
+  else if (cutDefinition == "noPID_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt200_noPID);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "cut5_pt400"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt400);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut11_pt400"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11_pt400);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut23_pt400"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_23_pt400);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+  else if (cutDefinition == "onlyJPID_sum_noTrackCuts"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "cut1_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt75);
+  // Primary Cut settings
+  /////////////////////////////////////////////////////
+  else if (cutDefinition == "JPID_sum_pt75"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut2_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_2_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut3_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_3_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut4_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_4_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_4);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut6_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_6_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_6);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut7_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_7_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_7);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut8_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_8_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_8);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut9_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_9_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_9);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut10_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_10_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_10);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut11_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_11);
+
+  else if (cutDefinition == "JPID_sum_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "cut12_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_12_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_12);
+  // Secondary Cut settings
+  /////////////////////////////////////////////////////
+  else if (cutDefinition == "JPID_sum_pt75_secondary"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut13_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_13_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_13);
+  else if (cutDefinition == "JPID_sum_pt200_secondary"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_pt200);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut14_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_14_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_14);
+
+
+  //  one TEST Cut setting
+    else if (cutDefinition == "TESTCutsOnlyImpParXY"){
+      // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
+      AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+      // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
+      // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+      AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyImpParXY);
+      // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+      // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+      AnaCut.SetCentrality(centrality);
+      AnaCut.SetStandardCut();
+    }
+
+  else if (cutDefinition == "TESTCutsOnlyImpParZ"){
+    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
+    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyImpParZ);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut15_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_15_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_15);
+
+  else if (cutDefinition == "TESTCutsOnlyNclsTPC"){
+    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
+    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyNclsTPC);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut16_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_16_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_16);
+
+  else if (cutDefinition == "TESTCutsOnlyTPCchi2Cl"){
+    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
+    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyTPCchi2Cl);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut17_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_17_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_17);
+
+  else if (cutDefinition == "TESTCutsOnlySharedCls"){
+    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
+    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyShCls);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-  else if (cutDefinition == "cut18_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_18_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_18);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut19_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_19_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_19);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut20_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_20_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_20);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut21_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_21_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_21);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut22_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_22_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_22);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut23_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_23_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_23);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut24_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_24_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_24);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut25_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_25_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_25);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut26_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_26_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_26);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut27_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_27_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_27);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut28_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_28_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_28);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut29_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_29_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_29);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut30_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_30_pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_30);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "cut5_pt75_looserPionRejection"){
-    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt75_looserPionRejection);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+
+  // Old Cut settings from CaKlein
+  else if (cutDefinition == "cut1_pt75"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt75);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -554,29 +428,6 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
-
-
-
-  else if (cutDefinition == "onlyJPID_sum_noTrackCuts"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "JPID_sum_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "JPID_sum_pt75_secondary"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
 
   if (!isAOD) anaFilter->AddCuts( LMcutlib->GetESDTrackCutsAna(AnaCut) );
   anaFilter->AddCuts( LMcutlib->GetPIDCutsAna(AnaCut) );
@@ -604,7 +455,7 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
 
 // #########################################################
 // #########################################################
-std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
+std::vector<bool> AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
   /*AliDielectronSignalMC partFinalState("partFinalState","partFinalState");
   partFinalState.SetLegPDGs(0,1);//dummy second leg (never MCtrue)\n"
   partFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -688,6 +539,47 @@ std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
   PhotonFinalStateFromPion.SetMotherPDGs(111, 111); // open charm mesons and baryons together
   PhotonFinalStateFromPion.SetCheckBothChargesMothers(kTRUE,kTRUE);
 
+
+
+
+  task->AddSinglePrimaryLegMCSignal(eleFinalState);
+  // task->AddSinglePrimaryLegMCSignal(partFinalState);
+  task->AddSinglePrimaryLegMCSignal(eleFinalStateFromPion);
+  // task->AddSinglePrimaryLegMCSignal(eleFinalStateFromD);
+  // task->AddSinglePrimaryLegMCSignal(eleFinalStateFromB);
+  // task->AddSinglePrimaryLegMCSignal(eleFinalStateFromSameMotherMeson);
+  task->AddSinglePrimaryLegMCSignal(eleFinalStateFromEta);
+  // //
+  // task->AddSinglePrimaryLegMCSignal(PhotonFinalState);
+  // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromPion);
+  // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromD);
+  // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromB);
+  // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromSameMotherMeson);
+  // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromEta);
+
+
+  // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
+  // ordering is according to MCSignals of single legs
+ std::vector<bool> DielectronsPairNotFromSameMother;
+ DielectronsPairNotFromSameMother.push_back(true);
+ DielectronsPairNotFromSameMother.push_back(true);
+ DielectronsPairNotFromSameMother.push_back(true);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ // DielectronsPairNotFromSameMother.push_back(false);
+ return DielectronsPairNotFromSameMother;
+}
+
+
+std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
+
   AliDielectronSignalMC eleSecondary("eleSecondary","eleSecondary");
   eleSecondary.SetLegPDGs(11,1);//dummy second leg (never MCtrue)
   eleSecondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -706,6 +598,17 @@ std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
   eleSecondaryFromPhoton.SetCheckBothChargesMothers(kTRUE,kTRUE);
   // eleSecondaryFromPhoton.SetMotherSource(AliDielectronSignalMC::kSecondary);
 
+  AliDielectronSignalMC eleSecondaryFromPhotonFromEta("eleSecondaryFromPhotonFromEta","eleSecondaryFromPhotonFromEta");
+  eleSecondaryFromPhotonFromEta.SetLegPDGs(11,1);//dummy second leg (never MCtrue)
+  eleSecondaryFromPhotonFromEta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleSecondaryFromPhotonFromEta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+  eleSecondaryFromPhotonFromEta.SetMotherPDGs(22, 1); // open charm mesons and baryons together
+  eleSecondaryFromPhotonFromEta.SetCheckBothChargesMothers(kTRUE,kTRUE);
+  // eleSecondaryFromPhotonFromEta.SetMotherSource(AliDielectronSignalMC::kSecondary);
+  eleSecondaryFromPhotonFromEta.SetGrandMotherPDGs(221, 1); // open charm mesons and baryons together
+  eleSecondaryFromPhotonFromEta.SetCheckBothChargesMothers(kTRUE,kTRUE);
+
+
   AliDielectronSignalMC PhotonSecondary("PhotonSecondary","PhotonSecondary");
   PhotonSecondary.SetLegPDGs(22,1);//dummy second leg (never MCtrue)
   PhotonSecondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -716,46 +619,19 @@ std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
   eleDontCare.SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleDontCare.SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
 
-
-  task->AddSingleLegMCSignal(eleFinalState);
-  // task->AddSingleLegMCSignal(partFinalState);
-  task->AddSingleLegMCSignal(eleFinalStateFromPion);
-  // task->AddSingleLegMCSignal(eleFinalStateFromD);
-  // task->AddSingleLegMCSignal(eleFinalStateFromB);
-  // task->AddSingleLegMCSignal(eleFinalStateFromSameMotherMeson);
-  task->AddSingleLegMCSignal(eleFinalStateFromEta);
-  // //
-  // task->AddSingleLegMCSignal(PhotonFinalState);
-  // task->AddSingleLegMCSignal(PhotonFinalStateFromPion);
-  // task->AddSingleLegMCSignal(PhotonFinalStateFromD);
-  // task->AddSingleLegMCSignal(PhotonFinalStateFromB);
-  // task->AddSingleLegMCSignal(PhotonFinalStateFromSameMotherMeson);
-  // task->AddSingleLegMCSignal(PhotonFinalStateFromEta);
   //
-  // task->AddSingleLegMCSignal(eleDontCare);
-  // task->AddSingleLegMCSignal(eleSecondary);
-  task->AddSingleLegMCSignal(eleSecondaryFromPhoton);
-  // task->AddSingleLegMCSignal(PhotonSecondary);
-  // task->AddSingleLegMCSignal(PhotonDontCare);
+  // task->AddSingleSecondaryLegMCSignal(eleDontCare);
+  // task->AddSingleSecondaryLegMCSignal(eleSecondary);
+  task->AddSingleSecondaryLegMCSignal(eleSecondaryFromPhoton);
+  // task->AddSingleSecondaryLegMCSignal(eleSecondaryFromPhotonFromEta);
+  // task->AddSingleSecondaryLegMCSignal(PhotonSecondary);
+  // task->AddSingleSecondaryLegMCSignal(PhotonDontCare);
 
 
   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   // ordering is according to MCSignals of single legs
  std::vector<bool> DielectronsPairNotFromSameMother;
  DielectronsPairNotFromSameMother.push_back(true);
- DielectronsPairNotFromSameMother.push_back(true);
- DielectronsPairNotFromSameMother.push_back(true);
- DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
@@ -763,10 +639,30 @@ std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
  return DielectronsPairNotFromSameMother;
 }
 
+// #########################################################
+// #########################################################
+void AddPrimaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
-// #########################################################
-// #########################################################
-void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
+    AliDielectronSignalMC pair_sameMother_finalstate("pair_sameMother_finalstate","pair_sameMother_finalstate");
+    pair_sameMother_finalstate.SetLegPDGs(11,-11);
+    pair_sameMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_sameMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_sameMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+
+    AliDielectronSignalMC pair_DifferentMother_finalstate("pair_DifferentMother_finalstate","pair_DifferentMother_finalstate");
+    pair_DifferentMother_finalstate.SetLegPDGs(11,-11);
+    pair_DifferentMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_DifferentMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_DifferentMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+
+    AliDielectronSignalMC pair_UndefinedMother_finalstate("pair_UndefinedMother_finalstate","pair_UndefinedMother_finalstate");
+    pair_UndefinedMother_finalstate.SetLegPDGs(11,-11);
+    pair_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
     AliDielectronSignalMC pair_sameMother_photon_finalstate("pair_sameMother_photon_finalstate","pair_sameMother_photon_finalstate");
     pair_sameMother_photon_finalstate.SetLegPDGs(11,-11);
@@ -775,6 +671,87 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     //mother
     pair_sameMother_photon_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother_photon_finalstate.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.
+
+    AliDielectronSignalMC pair_sameMother_eta_finalstate("pair_sameMother_eta_finalstate","pair_sameMother_eta_finalstate");
+    pair_sameMother_eta_finalstate.SetLegPDGs(11,-11);
+    pair_sameMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_sameMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_sameMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    pair_sameMother_eta_finalstate.SetMotherPDGs(221,221);
+
+    AliDielectronSignalMC pair_DifferentMother_eta_finalstate("pair_DifferentMother_eta_finalstate","pair_DifferentMother_eta_finalstate");
+    pair_DifferentMother_eta_finalstate.SetLegPDGs(11,-11);
+    pair_DifferentMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_DifferentMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_DifferentMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    pair_DifferentMother_eta_finalstate.SetMotherPDGs(221,221);
+
+    AliDielectronSignalMC pair_UndefinedMother_eta_finalstate("pair_UndefinedMother_eta_finalstate","pair_UndefinedMother_eta_finalstate");
+    pair_UndefinedMother_eta_finalstate.SetLegPDGs(11,-11);
+    pair_UndefinedMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_UndefinedMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_UndefinedMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    pair_UndefinedMother_eta_finalstate.SetMotherPDGs(221,221);
+
+    AliDielectronSignalMC pair_sameMother_pion_finalstate("pair_sameMother_pion_finalstate","pair_sameMother_pion_finalstate");
+    pair_sameMother_pion_finalstate.SetLegPDGs(11,-11);
+    pair_sameMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_sameMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_sameMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    pair_sameMother_pion_finalstate.SetMotherPDGs(111,111); //
+
+    AliDielectronSignalMC pair_DifferentMother_pion_finalstate("pair_DifferentMother_pion_finalstate","pair_DifferentMother_pion_finalstate");
+    pair_DifferentMother_pion_finalstate.SetLegPDGs(11,-11);
+    pair_DifferentMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_DifferentMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_DifferentMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    pair_DifferentMother_pion_finalstate.SetMotherPDGs(111,111);
+
+    AliDielectronSignalMC pair_UndefinedMother_pion_finalstate("pair_UndefinedMother_pion_finalstate","pair_UndefinedMother_pion_finalstate");
+    pair_UndefinedMother_pion_finalstate.SetLegPDGs(11,-11);
+    pair_UndefinedMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_UndefinedMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_UndefinedMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    pair_UndefinedMother_pion_finalstate.SetMotherPDGs(111,111);
+
+    AliDielectronSignalMC pair_sameMother_CharmedMesonsWithSameMother("CharmedMesonsWithSameMother","CharmedMesonsWithSameMother");
+    pair_sameMother_CharmedMesonsWithSameMother.SetLegPDGs(11,-11);
+    pair_sameMother_CharmedMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_sameMother_CharmedMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_sameMother_CharmedMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
+    pair_sameMother_CharmedMesonsWithSameMother.SetMotherPDGs(402, 402); //
+
+    AliDielectronSignalMC pair_sameMother_BeautyMesonsWithSameMother("BeautyMesonsWithSameMother","BeautyMesonsWithSameMother");
+    pair_sameMother_BeautyMesonsWithSameMother.SetLegPDGs(11,-11);
+    pair_sameMother_BeautyMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_sameMother_BeautyMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_sameMother_BeautyMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
+    pair_sameMother_BeautyMesonsWithSameMother.SetMotherPDGs(502, 502); //
+
+
+    task->AddPrimaryPairMCSignal(pair_sameMother_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_DifferentMother_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_UndefinedMother_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_sameMother_photon_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_sameMother_eta_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_DifferentMother_eta_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_UndefinedMother_eta_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
+    // task->AddPrimaryPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
+}
+
+void AddSecondaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
     AliDielectronSignalMC pair_sameMother_photon_secondary("pair_sameMother_photon_secondary","pair_sameMother_photon_secondary");
     pair_sameMother_photon_secondary.SetLegPDGs(11,-11);
@@ -827,30 +804,6 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     pair_sameMother_photon_secondary_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother_photon_secondary_eta.SetGrandMotherPDGs(221,221);
 
-    AliDielectronSignalMC pair_sameMother_eta_finalstate("pair_sameMother_eta_finalstate","pair_sameMother_eta_finalstate");
-    pair_sameMother_eta_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_eta_finalstate.SetMotherPDGs(221,221);
-
-    AliDielectronSignalMC pair_DifferentMother_eta_finalstate("pair_DifferentMother_eta_finalstate","pair_DifferentMother_eta_finalstate");
-    pair_DifferentMother_eta_finalstate.SetLegPDGs(11,-11);
-    pair_DifferentMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_DifferentMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
-    pair_DifferentMother_eta_finalstate.SetMotherPDGs(221,221);
-
-    AliDielectronSignalMC pair_UndefinedMother_eta_finalstate("pair_UndefinedMother_eta_finalstate","pair_UndefinedMother_eta_finalstate");
-    pair_UndefinedMother_eta_finalstate.SetLegPDGs(11,-11);
-    pair_UndefinedMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_UndefinedMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
-    pair_UndefinedMother_eta_finalstate.SetMotherPDGs(221,221);
-
     AliDielectronSignalMC pair_conversion_secondary("pair_conversion_secondary","pair_conversion_secondary");
     pair_conversion_secondary.SetLegPDGs(11,-11);
     pair_conversion_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -863,65 +816,14 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     pair_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
     pair_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
 
-    AliDielectronSignalMC pair_sameMother_pion_finalstate("pair_sameMother_pion_finalstate","pair_sameMother_pion_finalstate");
-    pair_sameMother_pion_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_pion_finalstate.SetMotherPDGs(111,111); //
-
-    AliDielectronSignalMC pair_DifferentMother_pion_finalstate("pair_DifferentMother_pion_finalstate","pair_DifferentMother_pion_finalstate");
-    pair_DifferentMother_pion_finalstate.SetLegPDGs(11,-11);
-    pair_DifferentMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_DifferentMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
-    pair_DifferentMother_pion_finalstate.SetMotherPDGs(111,111);
-
-    AliDielectronSignalMC pair_UndefinedMother_pion_finalstate("pair_UndefinedMother_pion_finalstate","pair_UndefinedMother_pion_finalstate");
-    pair_UndefinedMother_pion_finalstate.SetLegPDGs(11,-11);
-    pair_UndefinedMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_UndefinedMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
-    pair_UndefinedMother_pion_finalstate.SetMotherPDGs(111,111);
-
-    AliDielectronSignalMC pair_sameMother_CharmedMesonsWithSameMother("CharmedMesonsWithSameMother","CharmedMesonsWithSameMother");
-    pair_sameMother_CharmedMesonsWithSameMother.SetLegPDGs(11,-11);
-    pair_sameMother_CharmedMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_CharmedMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_CharmedMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_CharmedMesonsWithSameMother.SetMotherPDGs(402, 402); //
-
-    AliDielectronSignalMC pair_sameMother_BeautyMesonsWithSameMother("BeautyMesonsWithSameMother","BeautyMesonsWithSameMother");
-    pair_sameMother_BeautyMesonsWithSameMother.SetLegPDGs(11,-11);
-    pair_sameMother_BeautyMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_BeautyMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_BeautyMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_BeautyMesonsWithSameMother.SetMotherPDGs(502, 502); //
-
-
-
-    task->AddPairMCSignal(pair_sameMother_photon_finalstate);
-    task->AddPairMCSignal(pair_sameMother_photon_secondary);
-    task->AddPairMCSignal(pair_sameMother_photon_secondaryfromMaterial);
-    task->AddPairMCSignal(pair_sameMother_photon_secondaryfromWD);
-    task->AddPairMCSignal(pair_UndefinedMother_photon_secondary);
-    task->AddPairMCSignal(pair_DifferentMother_photon_secondary);
-    task->AddPairMCSignal(pair_sameMother_photon_secondary_eta);
-    task->AddPairMCSignal(pair_sameMother_eta_finalstate);
-    task->AddPairMCSignal(pair_DifferentMother_eta_finalstate);
-    task->AddPairMCSignal(pair_UndefinedMother_eta_finalstate);
-    task->AddPairMCSignal(pair_conversion_secondary);
-    task->AddPairMCSignal(pair_random_secondary);
-    task->AddPairMCSignal(pair_sameMother_pion_finalstate);
-    task->AddPairMCSignal(pair_DifferentMother_pion_finalstate);
-    task->AddPairMCSignal(pair_UndefinedMother_pion_finalstate);
-    // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-    // task->AddPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
+    task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary);
+    // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromMaterial);
+    // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromWD);
+    // task->AddSecondaryPairMCSignal(pair_DifferentMother_photon_secondary);
+    // task->AddSecondaryPairMCSignal(pair_UndefinedMother_photon_secondary);
+    // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_eta);
+    // task->AddSecondaryPairMCSignal(pair_conversion_secondary);
+    // task->AddSecondaryPairMCSignal(pair_random_secondary);
 }
 
 void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
@@ -954,8 +856,7 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     ULSFourElePair2_FromEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
     ULSFourElePair2_FromEta.SetGrandMotherPDGs(221, 221); //
 
-
-
+//________________________________________________________
     // First Pair
       AliDielectronSignalMC ULSFourElePair1_FinalState("ULSFourElePair1_FinalState","ULSFourElePair1_FinalState");
       ULSFourElePair1_FinalState.SetLegPDGs(11,-11);
@@ -1001,8 +902,10 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 //________________________________________________________
     // task->AddFourPairMCSignal(ULSFourElePair1_FromEta);
     // task->AddFourPairMCSignal(ULSFourElePair2_FromEta);
+
     task->AddFourPairMCSignal(ULSFourElePair1_FinalState);
     task->AddFourPairMCSignal(ULSFourElePair2_Secondary_from_Photon);
+
     // task->AddFourPairMCSignal(ULSFourElePair1_FromPion);
     // task->AddFourPairMCSignal(ULSFourElePair2_FromPion);
 

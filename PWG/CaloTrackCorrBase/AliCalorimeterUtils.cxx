@@ -1180,7 +1180,8 @@ Bool_t  AliCalorimeterUtils::GetFECCorrelatedCellAbsId(Int_t absId, Int_t absIdC
 }
 
 //________________________________________________________________________________________
-/// Check if 2 cells belong to the same TCard
+/// Check if 2 cells belong to the same T-Card
+/// Only for EMCal.
 ///
 ///  \param absId1: Reference absId cell
 ///  \param absId2: Cross checked cell absId
@@ -1236,6 +1237,62 @@ Bool_t  AliCalorimeterUtils::IsAbsIDsFromTCard(Int_t absId1, Int_t absId2,
     return kFALSE;
 }
 
+//________________________________________________________________________________________
+/// Count the number of cells in same or different T-Card
+/// as the highest energy cell in the cluster.
+/// Only for EMCal.
+///
+///  \param clus: AliVCluster
+///  \param cells: AliVCaloCells
+///  \param nDiff: number of cells in different T-Card
+///  \param nSame: number of cells in same T-Card
+///  \param eDiff: sum of energy of cells in different T-Card
+///  \param eSame: sum of energy of cells in same T-Card
+///  \param emin: apply a min energy cut on cells while counting
+///
+//________________________________________________________________________________________
+void AliCalorimeterUtils::GetEnergyAndNumberOfCellsInTCard
+(AliVCluster* clus, AliVCaloCells* cells,
+ Int_t   & nDiff, Int_t   & nSame, 
+ Float_t & eDiff, Float_t & eSame, 
+ Float_t   emin)
+{
+  Int_t nCaloCellsPerCluster = clus->GetNCells();
+
+  // Get absId of highest energy cell in cluster
+  Float_t maxCellFraction = 0.;
+  Int_t absIdMax = GetMaxEnergyCell(cells, clus, maxCellFraction);
+  
+  nDiff = 0;
+  nSame = 0;
+  Int_t   absId   = -1;
+  Float_t amp     = 0;
+  Int_t   rowDiff = -100, colDiff = -100;
+
+  // Loop on cluster cells count those in same or different T-Card
+  // with respect highest energy cell.
+  for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
+  {
+    absId = clus->GetCellsAbsId()[ipos];  
+    
+    amp   = cells->GetCellAmplitude(absId);
+    
+    if ( absId == absIdMax || amp < emin ) continue;
+        
+    if ( IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff) ) 
+    { 
+      nSame++; 
+      eSame+=amp; 
+    }
+    else             
+    { 
+      nDiff++; 
+      eDiff+= amp; 
+    }
+    
+  } // cell cluster loop
+
+}
 
 //________________________________________________________________________________________
 /// For a given CaloCluster, it gets the absId of the cell with maximum energy deposit.

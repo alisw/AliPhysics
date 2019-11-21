@@ -35,7 +35,7 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -415,7 +415,7 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
   } else if (trainConfig == 904){ // for eta prime
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // INT7
     cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // PHI7
-  
+
 
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EDC configurations

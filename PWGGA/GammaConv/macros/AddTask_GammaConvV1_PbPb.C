@@ -33,7 +33,7 @@ void AddTask_GammaConvV1_PbPb(
   Int_t     enableQAPhotonTask            = 0,        // enable additional QA task
   Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   TString   settingMaxFacPtHard           = "3.",     // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -94,6 +94,7 @@ void AddTask_GammaConvV1_PbPb(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -112,6 +113,12 @@ void AddTask_GammaConvV1_PbPb(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -2798,25 +2805,25 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("17810a13","0dm00009f9730000dge0404000","0143103100000000"); //
     cuts.AddCutPCM("18910a13","0dm00009f9730000dge0404000","0143103100000000"); //
 
-   // ************************************** 
-   //  RBins studies for 5.02TeV Pb-Pb 18qr  
-   // **************************************   
-  } else if (trainConfig == 701){ // LHC15o, kINT7, cent. from V0M, reject added particles
-    cuts.AddCutPCM("10110013","00200009f9730200dge0404000", "0652501500000000"); //  0-10%
-    cuts.AddCutPCM("10110013","00a00009f9730200dge0404000", "0652501500000000"); //  0-10%  a
-    cuts.AddCutPCM("10110013","00b00009f9730200dge0404000", "0652501500000000"); //  0-10%  b
-    cuts.AddCutPCM("10110013","00c00009f9730200dge0404000", "0652501500000000"); //  0-10%  c
-  } else if (trainConfig == 702){ // LHC15o, kINT7, cent. from V0M, reject added particles
-    cuts.AddCutPCM("12510013","00200009f9730200dge0404000", "0652501500000000"); //  20-50%
-    cuts.AddCutPCM("12510013","00a00009f9730200dge0404000", "0652501500000000"); //  20-50%  a
-    cuts.AddCutPCM("12510013","00b00009f9730200dge0404000", "0652501500000000"); //  20-50%  b
-    cuts.AddCutPCM("12510013","00c00009f9730200dge0404000", "0652501500000000"); //  20-50%  c
+   // **************************************
+   //  RBins studies for 5.02TeV Pb-Pb 18qr
+   // **************************************
+  } else if (trainConfig == 701){ // central , a,b,c bins , V0-TPC pileup rejection
+    cuts.AddCutPCM("10110a13","00200009f9730200dge0404000", "0652501500000000"); //  0-10%
+    cuts.AddCutPCM("10110a13","00a00009f9730200dge0404000", "0652501500000000"); //  0-10%  a
+    cuts.AddCutPCM("10110a13","00b00009f9730200dge0404000", "0652501500000000"); //  0-10%  b
+    cuts.AddCutPCM("10110a13","00c00009f9730200dge0404000", "0652501500000000"); //  0-10%  c
+  } else if (trainConfig == 702){ // semicentral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("12510a13","00200009f9730200dge0404000", "0652501500000000"); //  20-50%
+    cuts.AddCutPCM("12510a13","00a00009f9730200dge0404000", "0652501500000000"); //  20-50%  a
+    cuts.AddCutPCM("12510a13","00b00009f9730200dge0404000", "0652501500000000"); //  20-50%  b
+    cuts.AddCutPCM("12510a13","00c00009f9730200dge0404000", "0652501500000000"); //  20-50%  c
 
-  } else if (trainConfig == 703){ // LHC15o, kINT7, cent. from V0M, reject added particles
-    cuts.AddCutPCM("15910013","00200009f9730200dge0404000", "0652501500000000"); //  50-90%
-    cuts.AddCutPCM("15910013","00a00009f9730200dge0404000", "0652501500000000"); //  50-90%  a
-    cuts.AddCutPCM("15910013","00b00009f9730200dge0404000", "0652501500000000"); //  50-90%  b
-    cuts.AddCutPCM("15910013","00c00009f9730200dge0404000", "0652501500000000"); //  50-90%  c
+  } else if (trainConfig == 703){ // peripheral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("15910a13","00200009f9730200dge0404000", "0652501500000000"); //  50-90%
+    cuts.AddCutPCM("15910a13","00a00009f9730200dge0404000", "0652501500000000"); //  50-90%  a
+    cuts.AddCutPCM("15910a13","00b00009f9730200dge0404000", "0652501500000000"); //  50-90%  b
+    cuts.AddCutPCM("15910a13","00c00009f9730200dge0404000", "0652501500000000"); //  50-90%  c
 
 
 
@@ -3380,6 +3387,8 @@ void AddTask_GammaConvV1_PbPb(
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);

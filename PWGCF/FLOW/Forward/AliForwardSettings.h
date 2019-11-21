@@ -49,7 +49,6 @@ class AliForwardSettings : public TObject {
   TH3F* nuaforward;
   TH3F* seccorr_fwd;
   TH3F* seccorr_cent;
-
   bool doNUA;
 
   Double_t gap;
@@ -222,6 +221,7 @@ class AliForwardSettings : public TObject {
   };
 
   Int_t nua_runnumber;
+  TH3F* correct_nua_mc;
 
 private:
   ClassDef(AliForwardSettings, 1);

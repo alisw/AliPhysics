@@ -6,11 +6,14 @@
  */
 #include "AliAnalysisTaskNanoBBar.h"
 #include "AliNanoAODTrack.h"
+#include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisTaskNanoBBar)
 AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar()
     : AliAnalysisTaskSE(),
       fisLightWeight(false),
+      fIsMC(false),
       fQA(nullptr),
       fEvent(nullptr),
       fEventCuts(nullptr),
@@ -29,6 +32,13 @@ AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar()
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
       fAntiLambdaMCList(nullptr),
+      fCascade(nullptr),
+      fXi(nullptr),
+      fXiList(nullptr),
+      fXiMCList(nullptr),
+      fAntiXi(nullptr),
+      fAntiXiList(nullptr),
+      fAntiXiMCList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -44,6 +54,7 @@ AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar()
 AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar(const char* name, bool isMC)
     : AliAnalysisTaskSE(name),
       fisLightWeight(false),
+      fIsMC(false),
       fQA(nullptr),
       fEvent(nullptr),
       fEventCuts(nullptr),
@@ -62,6 +73,13 @@ AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar(const char* name, bool isMC)
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
       fAntiLambdaMCList(nullptr),
+      fCascade(nullptr),
+      fXi(nullptr),
+      fXiList(nullptr),
+      fXiMCList(nullptr),
+      fAntiXi(nullptr),
+      fAntiXiList(nullptr),
+      fAntiXiMCList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -78,15 +96,19 @@ AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar(const char* name, bool isMC)
   DefineOutput(4, TList::Class());  //Output for the AntiProton Cuts
   DefineOutput(5, TList::Class());  //Output for the Lambda Cuts
   DefineOutput(6, TList::Class());  //Output for the AntiLambda Cuts
-  DefineOutput(7, TList::Class());  //Output for the Results
-  DefineOutput(8, TList::Class());  //Output for the Results QA
+  DefineOutput(7, TList::Class());  //Output for the Cascade Cuts
+  DefineOutput(8, TList::Class());  //Output for the AntiCascade Cuts
   DefineOutput(9, TList::Class());  //Output for the Results
   DefineOutput(10, TList::Class());  //Output for the Results QA
+  DefineOutput(11, TList::Class());  //Output for the Results Sample
+  DefineOutput(12, TList::Class());  //Output for the Results Sample QA
   if (isMC) {
-    DefineOutput(11, TList::Class());  //Output for the Track MC
-    DefineOutput(12, TList::Class());  //Output for the Anti Track MC
-    DefineOutput(13, TList::Class());  //Output for the V0 MC
-    DefineOutput(14, TList::Class());  //Output for the Anti V0 MC
+    DefineOutput(13, TList::Class());  //Output for the Track MC
+    DefineOutput(14, TList::Class());  //Output for the Anti Track MC
+    DefineOutput(15, TList::Class());  //Output for the V0 MC
+    DefineOutput(16, TList::Class());  //Output for the Anti V0 MC
+    DefineOutput(17, TList::Class());  //Output for the Xi MC
+    DefineOutput(18, TList::Class());  //Output for the Anti Xi MC
   }
 }
 
@@ -114,6 +136,15 @@ AliAnalysisTaskNanoBBar::~AliAnalysisTaskNanoBBar() {
   }
   if (fAntiLambda) {
     delete fAntiLambda;
+  }
+    if (fCascade) {
+    delete fCascade;
+  }
+  if (fXi) {
+    delete fXi;
+  }
+  if (fAntiXi) {
+    delete fAntiXi;
   }
   if (fPairCleaner) {
     delete fPairCleaner;
@@ -150,16 +181,26 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
     fLambda->Init();
   }
   if (!fAntiLambda) {
-    AliError("No AntiXi cuts \n");
+    AliError("No AntiLambda cuts \n");
   } else {
     fAntiLambda->Init();
+  }
+ if (!fXi) {
+    AliError("No Xi cuts \n");
+  } else {
+    fXi->Init();
+  }
+  if (!fAntiXi) {
+    AliError("No AntiXi cuts \n");
+  } else {
+    fAntiXi->Init();
   }
   if (!fConfig) {
     AliError("No Correlation Config \n");
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                                 fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(2, 3,
+    fPairCleaner = new AliFemtoDreamPairCleaner(4, 6,
                                                 fConfig->GetMinimalBookingME());
     if (fConfig->GetUsePhiSpinning()) {
       fSample = new AliFemtoDreamControlSample(fConfig);
@@ -186,6 +227,21 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
   fv0->GetNegDaughter()->SetUseMCInfo(
       fLambda->GetIsMonteCarlo() || fAntiLambda->GetIsMonteCarlo());
 
+  fCascade = new AliFemtoDreamCascade();
+  fCascade->SetUseMCInfo(fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
+  //PDG Codes should be set assuming Xi- to also work for Xi+
+  fCascade->SetPDGCode(3312);
+  fCascade->SetPDGDaugPos(2212);
+  fCascade->GetPosDaug()->SetUseMCInfo(
+      fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
+  fCascade->SetPDGDaugNeg(211);
+  fCascade->GetNegDaug()->SetUseMCInfo(
+      fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
+  fCascade->SetPDGDaugBach(211);
+  fCascade->GetBach()->SetUseMCInfo(
+      fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
+  fCascade->Setv0PDGCode(3122);
+
   fQA = new TList();
   fQA->SetOwner();
   fQA->SetName("QA");
@@ -204,6 +260,9 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
   fAntiProtonList = fAntiProton->GetQAHists();
   fLambdaList = fLambda->GetQAHists();
   fAntiLambdaList = fAntiLambda->GetQAHists();
+  std::cout << "Debug 1 " << std::endl;
+  fXiList = fXi->GetQAHists();
+  fAntiXiList = fAntiXi->GetQAHists();
 
   fResultsQA = new TList();
   fResultsQA->SetOwner();
@@ -244,10 +303,12 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
   PostData(4, fAntiProtonList);
   PostData(5, fLambdaList);
   PostData(6, fAntiLambdaList);
-  PostData(7, fResults);
-  PostData(8, fResultsQA);
-  PostData(9, fResultsSample);
-  PostData(10, fResultsSampleQA);
+  PostData(7, fXiList);
+  PostData(8, fAntiXiList);
+  PostData(9, fResults);
+  PostData(10, fResultsQA);
+  PostData(11, fResultsSample);
+  PostData(12, fResultsSampleQA);
   if (fProton->GetIsMonteCarlo()) {
     if (!fProton->GetMinimalBooking()) {
       fProtonMCList = fProton->GetMCQAHists();
@@ -256,7 +317,7 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
       fProtonMCList->SetName("MCTrkCuts");
       fProtonMCList->SetOwner();
     }
-    PostData(11, fProtonMCList);
+    PostData(13, fProtonMCList);
   }
   if (fAntiProton->GetIsMonteCarlo()) {
     if (!fAntiProton->GetMinimalBooking()) {
@@ -266,7 +327,7 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
       fAntiProtonMCList->SetName("MCAntiTrkCuts");
       fAntiProtonMCList->SetOwner();
     }
-    PostData(12, fAntiProtonMCList);
+    PostData(14, fAntiProtonMCList);
   }
 
   if (fLambda->GetIsMonteCarlo()) {
@@ -277,7 +338,7 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
       fLambdaMCList->SetName("MCv0Cuts");
       fLambdaMCList->SetOwner();
     }
-    PostData(13, fLambdaMCList);
+    PostData(15, fLambdaMCList);
   }
   if (fAntiLambda->GetIsMonteCarlo()) {
     if (!fAntiLambda->GetMinimalBooking()) {
@@ -287,7 +348,27 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
       fAntiLambdaMCList->SetName("MCAntiv0Cuts");
       fAntiLambdaMCList->SetOwner();
     }
-    PostData(14, fAntiLambdaMCList);
+    PostData(16, fAntiLambdaMCList);
+  }
+    if (fXi->GetIsMonteCarlo()) {
+    if (!fXi->GetMinimalBooking()) {
+      fXiMCList = fXi->GetMCQAHists();
+    } else {
+      fXiMCList = new TList();
+      fXiMCList->SetName("MCXiCuts");
+      fXiMCList->SetOwner();
+    }
+    PostData(17, fXiMCList);
+  }
+  if (fAntiXi->GetIsMonteCarlo()) {
+    if (!fAntiXi->GetMinimalBooking()) {
+      fAntiXiMCList = fAntiXi->GetMCQAHists();
+    } else {
+      fAntiXiMCList = new TList();
+      fAntiXiMCList->SetName("MCAntiv0Cuts");
+      fAntiXiMCList->SetOwner();
+    }
+    PostData(18, fAntiXiMCList);
   }
 }
 
@@ -343,19 +424,71 @@ void AliAnalysisTaskNanoBBar::UserExec(Option_t *option) {
       AntiLambdas.push_back(*fv0);
     }
   }
+
+  std::vector<AliFemtoDreamBasePart> Xis;
+  std::vector<AliFemtoDreamBasePart> AntiXis;
+  for (int iCasc = 0;
+      iCasc
+          < static_cast<TClonesArray *>(aodEvt->GetCascades())->GetEntriesFast();
+      ++iCasc) {
+    AliAODcascade* casc = aodEvt->GetCascade(iCasc);
+    fCascade->SetCascade(fInputEvent, casc);
+    if (fXi->isSelected(fCascade)) {
+      Xis.push_back(*fCascade);
+    }
+    if (fAntiXi->isSelected(fCascade)) {
+      AntiXis.push_back(*fCascade);
+    }
+  }
+
+  //loop once over the MC stack to calculate Efficiency/Purity
+  if (fIsMC) {
+    AliAODInputHandler *eventHandler =
+        dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
+            ->GetInputEventHandler());
+    AliMCEvent* fMC = eventHandler->MCEvent();
+
+    for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
+      if (TMath::Abs(mcPart->Eta()) < 0.8 && mcPart->IsPhysicalPrimary()) {
+        if (mcPart->GetPdgCode() == fProton->GetPDGCode()) {
+          fProton->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiProton->GetPDGCode()) {
+          fAntiProton->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fLambda->GetPDGv0()) {
+          fLambda->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiLambda->GetPDGv0()) {
+          fAntiLambda->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fXi->GetPDGv0()) {
+          fXi->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiXi->GetPDGv0()) {
+          fAntiXi->FillGenerated(mcPart->Pt());
+        }
+      }
+    }
+  }
+
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Protons, &AntiLambdas, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &Lambdas, 1);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &AntiXis, 2);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &Xis, 3);
+
 
   fPairCleaner->CleanDecay(&Lambdas, 0);
   fPairCleaner->CleanDecay(&AntiLambdas, 1);
   fPairCleaner->CleanDecayAndDecay(&Lambdas, &AntiLambdas, 2);
+  fPairCleaner->CleanDecay(&Xis, 3);
+  fPairCleaner->CleanDecay(&AntiXis, 4);
+  fPairCleaner->CleanDecayAndDecay(&Xis, &AntiXis, 5);
 
 
   fPairCleaner->StoreParticle(Protons);
   fPairCleaner->StoreParticle(AntiProtons);
   fPairCleaner->StoreParticle(Lambdas);
   fPairCleaner->StoreParticle(AntiLambdas);
+  fPairCleaner->StoreParticle(Xis);
+  fPairCleaner->StoreParticle(AntiXis);
   if (fPairCleaner->GetCounter() > 0) {
     if (fConfig->GetUseEventMixing()) {
       fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
@@ -372,21 +505,29 @@ void AliAnalysisTaskNanoBBar::UserExec(Option_t *option) {
   PostData(4, fAntiProtonList);
   PostData(5, fLambdaList);
   PostData(6, fAntiLambdaList);
-  PostData(7, fResults);
-  PostData(8, fResultsQA);
-  PostData(9, fResultsSample);
-  PostData(10, fResultsSampleQA);
+  PostData(7, fXiList);
+  PostData(8, fAntiXiList);
+  PostData(9, fResults);
+  PostData(10, fResultsQA);
+  PostData(11, fResultsSample);
+  PostData(12, fResultsSampleQA);
   if (fProton->GetIsMonteCarlo()) {
-    PostData(11, fProtonMCList);
+    PostData(13, fProtonMCList);
   }
   if (fAntiProton->GetIsMonteCarlo()) {
-    PostData(12, fAntiProtonMCList);
+    PostData(14, fAntiProtonMCList);
   }
   if (fLambda->GetIsMonteCarlo()) {
-    PostData(13, fLambdaMCList);
+    PostData(15, fLambdaMCList);
   }
   if (fAntiLambda->GetIsMonteCarlo()) {
-    PostData(14, fAntiLambdaMCList);
+    PostData(16, fAntiLambdaMCList);
+  }
+  if (fXi->GetIsMonteCarlo()) {
+    PostData(17, fXiMCList);
+  }
+  if (fAntiXi->GetIsMonteCarlo()) {
+    PostData(18, fAntiXiMCList);
   }
 }
 
