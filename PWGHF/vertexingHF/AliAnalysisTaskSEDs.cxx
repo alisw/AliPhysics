@@ -493,7 +493,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   }
 
   //Set seed of gRandom
-  if(fEnableEvtSampling)
+  if(fCreateMLtree && fEnableEvtSampling)
     gRandom->SetSeed(fSeedSampling);
   
   PostData(1, fOutput);
@@ -504,10 +504,10 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 {
-  /// Ds selection for current event, fill mass histos and selecetion variable histo
+  /// Ds selection for current event, fill mass histos and selection variable histo
   /// separate signal and backgound if fReadMC is activated
 
-  if(fEnableEvtSampling && gRandom->Rndm() > fFracToKeep)
+  if(fCreateMLtree && fEnableEvtSampling && gRandom->Rndm() > fFracEvtToKeep)
     return;
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent *>(InputEvent());
@@ -726,6 +726,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Double_t masspK = 0;
     Double_t invMass_KKpi = 0.;
     Double_t invMass_piKK = 0.;
+
+    if(fCreateMLtree && fEnableCandSampling) { // apply sampling in pt
+      Double_t pseudoRand = ptCand * 1000. - (long)(ptCand * 1000);
+      if(pseudoRand > fFracCandToKeep && ptCand < fMaxCandPtSampling) 
+        continue;
+    }
 
     if (isFidAcc)
     {

@@ -53,8 +53,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
   void SetSystem(Int_t system){fSystem = system;}
   void SetUseFinePtBinsForSparse(Bool_t usefinebins=kTRUE) {fUseFinPtBinsForSparse=usefinebins;} //use only in case of few candidates (e.g. MC signal only)
-  void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=true) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
-  void SetFillBkgSparse(Bool_t dofill=true) {fFillBkgSparse = dofill;}
+  void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=kTRUE) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
+  void SetFillBkgSparse(Bool_t dofill=kTRUE) {fFillBkgSparse = dofill;}
   /// methods for ML application
   void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
@@ -69,9 +69,14 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
     else AliError("fReadMC has to be kTRUE");
   }
   void EnableMLTreeEvtSampling(Float_t fractokeep, ULong_t seed) {
-    fEnableEvtSampling = true;
-    fFracToKeep = fractokeep;
+    fEnableEvtSampling = kTRUE;
+    fFracEvtToKeep = fractokeep;
     fSeedSampling = seed;
+  }
+  void EnableMLTreeCandSampling(Float_t fractokeep, Float_t maxptsampling) {
+    fEnableCandSampling = kTRUE;
+    fFracCandToKeep = fractokeep;
+    fMaxCandPtSampling = maxptsampling;
   }
   
   /// Implementation of interface methods
@@ -206,9 +211,12 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   int fPIDopt = AliHFMLVarHandlerDstoKKpi::kNsigmaDetAndCombPID;  /// option for PID variables
   Bool_t fAddSingleTrackVar = kFALSE;           /// option to store single track variables
   Bool_t fFillOnlySignal = kFALSE;              /// option to store only signal when using MC
-  Bool_t fEnableEvtSampling = false;            /// flag to apply event sampling
-  Float_t fFracToKeep = 1.1;                    /// fraction of events to be kept by event sampling
-  ULong_t fSeedSampling = 0;                /// seed for sampling
+  Bool_t fEnableEvtSampling = kFALSE;           /// flag to apply event sampling
+  Float_t fFracEvtToKeep = 1.1;                 /// fraction of events to be kept by event sampling
+  ULong_t fSeedSampling = 0;                    /// seed for sampling
+  Bool_t fEnableCandSampling = kFALSE;          /// flag to apply candidate sampling
+  Float_t fFracCandToKeep = 1.1;                /// fraction of candidates to be kept by sampling
+  Float_t fMaxCandPtSampling = 0.;              /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskSEDs,38);       /// AliAnalysisTaskSE for Ds mass spectra
