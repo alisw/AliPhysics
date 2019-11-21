@@ -78,7 +78,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   }
 
   void SetFillOnlySignalSparses(Bool_t fillonlysig=kTRUE) {fFillOnlySignalSparses=fillonlysig;}
-  void SetUseFinePtBinsForSparse(Bool_t usefinebins=kTRUE) {fUseFinPtBinsForSparse=kTRUE;} //use only in case of few candidates (e.g. MC signal only)
+  void SetUseFinePtBinsForSparse(Bool_t usefinebins=kTRUE) {fUseFinPtBinsForSparse=usefinebins;} //use only in case of few candidates (e.g. MC signal only)
   void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=kTRUE) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
 
   /// methods for ML application
