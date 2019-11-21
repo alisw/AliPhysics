@@ -23,11 +23,21 @@ include_directories(${AliPhysics_SOURCE_DIR}/ML
 )
 
 # Additional includes - alphabetical order except ROOT
-include_directories(${TREELITE_ROOT}/include
+include_directories(${ROOT_INCLUDE_DIRS}
+                    ${ALIROOT_INCLUDE_DIRS}
+                    ${TREELITE_ROOT}/include
+                    ${YAML_CPP_SOURCE_DIR}/include
 )
 set(SRCS
     AliExternalBDT.cxx
 )
+
+if(ROOT_VERSION_MAJOR EQUAL 6)
+    set(SRCS
+	    ${SRCS}
+        AliMLResponse.cxx
+    )
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -37,9 +47,13 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Net)
+set(ALIROOT_DEPENDENCIES)
+
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS treelite treelite_runtime)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes
@@ -52,6 +66,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 target_link_libraries(${MODULE} -L${TREELITE_ROOT}/lib ${LIBDEPS})
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
