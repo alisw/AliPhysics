@@ -1062,7 +1062,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       else
       {
         if ( ebin >= 0 && ebin < fgkNEBins-1 )
-          fhM02ExoNCellsNotAllSameTCard[ebin]->Fill(m20, exoticity, nCaloCellsPerCluster, GetEventWeight()); ;
+          fhM02ExoNCellsNotAllSameTCard[ebin]->Fill(m02, exoticity, nCaloCellsPerCluster, GetEventWeight()); ;
       }
       
       if ( nCellDiffW == 0 )
@@ -1161,7 +1161,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       fhM20EnergyExoM02MinCut->Fill(en, m20, exoticity, GetEventWeight());
     
     if ( ebin >= 0 && ebin < fgkNEBins-1 )
-      fhM02ExoNCells[ebin]->Fill(m20, exoticity, nCaloCellsPerCluster, GetEventWeight()); 
+      fhM02ExoNCells[ebin]->Fill(m02, exoticity, nCaloCellsPerCluster, GetEventWeight()); 
     
     // Track matching
     //
