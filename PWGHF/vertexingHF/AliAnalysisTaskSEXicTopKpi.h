@@ -98,6 +98,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fLowpT_down = down_lowpT;
     fHighpT_down = down_highpT;
   }
+  // pT limits for TTree filling
+  void SetpTlimsTTreeFilling(Float_t min, Float_t max){
+    fminpT_treeFill = min;
+    fmaxpT_treeFill = max;
+  }
 
   // require the calculation of dist12 and dist23
   void SetCalculate_dist12_dist23(Bool_t flag){ fCompute_dist12_dist23 = flag; }
@@ -279,6 +284,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Float_t fLowpT_down;      /// downsampling factor at low pT
   Float_t fHighpT_down;     /// downsampling factor at high pT
 
+  // pT limits for TTree filling
+  Float_t fminpT_treeFill;   /// min. pT
+  Float_t fmaxpT_treeFill;   /// max. pT
+
   Bool_t fCompute_dist12_dist23;  /// flag to require the calculation of dist12 and dist23
 
   Bool_t fExplore_PIDstdCuts; /// flag to switch on the exporation of PID cuts with standard strategy
@@ -288,7 +297,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fCheckOnlyTrackEfficiency;// flag for filling only the single-track sparse and return
   Bool_t fIsCdeuteronAnalysis;// flag for doing the c deuteron analysis (inv mass)
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,5); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,6); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 
