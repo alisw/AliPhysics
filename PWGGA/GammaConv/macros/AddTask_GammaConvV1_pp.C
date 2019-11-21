@@ -1843,10 +1843,14 @@ if(!cuts.AreValid()){
     TString mcInputMultHisto      = "";
     TString triggerString         = (cuts.GetEventCut(i)).Data();
     triggerString                 = triggerString(3,2);
+
     if (triggerString.CompareTo("03")==0)
       triggerString               = "00";
     if (periodNameAnchor.CompareTo("LHC13g") == 0 && triggerString.CompareTo("10")== 0 )
       triggerString               = "00";
+    if ( ((periodNameAnchor.CompareTo("LHC16d") == 0) || (periodNameAnchor.CompareTo("LHC17c") == 0) || (periodNameAnchor.CompareTo("LHC18b") == 0)) && triggerString.CompareTo("10")== 0 )
+      triggerString               = "000";
+
 
     dataInputMultHisto            = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
     mcInputMultHisto              = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
