@@ -17,6 +17,7 @@
 
 #include "AliHFMLVarHandlerDplustoKpipi.h"
 #include "AliAODRecoDecayHF3Prong.h"
+#include "AliVertexingHFUtils.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFMLVarHandlerDplustoKpipi);
@@ -100,7 +101,7 @@ bool AliHFMLVarHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float 
     fCosPXY = cand->CosPointingAngleXY();
     fImpParXY = cand->ImpParXY();
     fDCA = cand->GetDCA();
-    fNormd0MeasMinusExp = ComputeMaxd0MeasMinusExp(cand, bfield);
+    fNormd0MeasMinusExp = AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(cand, bfield);
 
     //D+ -> Kpipi variables
     AliAODRecoDecayHF3Prong* cand3p = (AliAODRecoDecayHF3Prong*)cand;
