@@ -21,6 +21,7 @@
 #include <TH2F.h>
 #include <TF1.h>
 #include <TParticle.h>
+#include <TLorentzVector.h>
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODMCHeader.h"
@@ -2677,7 +2678,7 @@ Int_t AliVertexingHFUtils::CheckB0toDminuspiDecay(TClonesArray* arrayMC, AliAODM
   return decayB0;
 }
 //____________________________________________________________________________
-Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
+Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd){
   /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
   /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
@@ -2733,6 +2734,28 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
         }
       }
 
+      //In ITS2 Upgrade production, phi not "stored", so decay read as non-resonant
+      if(decayDs==3 && ITS2UpgradeProd){
+        TParticle* dauK1 = mcEvent->Particle(labDauDs[0]);
+        TParticle* dauK2 = mcEvent->Particle(labDauDs[1]);
+        TParticle* dauK3 = mcEvent->Particle(labDauDs[2]);
+
+        TLorentzVector vK1, vK2, vKK;
+        if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK2->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK2->Momentum(vK2);
+        } else if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK3->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        } else {
+          dauK2->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        }
+        vKK = vK1 + vK2;
+        //Small window around phi-mass, tag as Ds->phipi->KKpi if inside
+        if(vKK.M() > 1.00 && vKK.M() < 1.04) decayDs = 1;
+      }
+
       if (decayDs < 0 || labDauDs[0] == -1) return -1;
       decayBs = decayDs;
       nPions++;
@@ -2769,7 +2792,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
   return decayBs;
 }
 //____________________________________________________________________________
-Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd){
   /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
   /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
@@ -2818,6 +2841,28 @@ Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle 
             else decayDs=3;
           }
         }
+      }
+
+      //In ITS2 Upgrade production, phi not "stored", so decay read as non-resonant
+      if(decayDs==3 && ITS2UpgradeProd){
+        AliAODMCParticle* dauK1=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[0]));
+        AliAODMCParticle* dauK2=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[1]));
+        AliAODMCParticle* dauK3=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[2]));
+
+        TLorentzVector vK1, vK2, vKK;
+        if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK2->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK2->Momentum(vK2);
+        } else if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK3->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        } else {
+          dauK2->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        }
+        vKK = vK1 + vK2;
+        //Small window around phi-mass, tag as Ds->phipi->KKpi if inside
+        if(vKK.M() > 1.00 && vKK.M() < 1.04) decayDs = 1;
       }
 
       if (decayDs < 0 || labDauDs[0] == -1) return -1;
