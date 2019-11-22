@@ -1426,6 +1426,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3813){  // variation track matching to cluster & mass variations new defaults
     cuts.AddCutMergedCalo("00010113","1111131060032200000","1111131060022700001","0163300000000000"); // no TM
     cuts.AddCutMergedCalo("00010113","1111131067032200000","1111131067022700001","0163300000000000"); // EMC TM
+  } else if (trainConfig == 3814){ // M02 var 1
+    cuts.AddCutMergedCalo("00010113","111113806f032200000","111113806f022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00010113","111113906f032200000","111113906f022700001","0163300000000000"); // nl via indiv. cells
 
   // EMC7 configs
   } else if (trainConfig == 3820){ // M02 var 1
@@ -1469,6 +1472,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3833){  // variation track matching to cluster & mass variations new defaults
     cuts.AddCutMergedCalo("00052113","1111131060032200000","1111131060022700001","0163300000000000"); // no TM
     cuts.AddCutMergedCalo("00052113","1111131067032200000","1111131067022700001","0163300000000000"); // EMC TM
+  } else if (trainConfig == 3834){ // M02 var 1
+    cuts.AddCutMergedCalo("00052113","111113806f032200000","111113806f022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00052113","111113906f032200000","111113906f022700001","0163300000000000"); // nl via indiv. cells
 
   // EGA configs
   } else if (trainConfig == 3840){ // M02 var 1
@@ -1512,6 +1518,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3853){  // variation track matching to cluster & mass variations new defaults
     cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // no TM
     cuts.AddCutMergedCalo("00081113","1111131067032200000","1111131067022700001","0163300000000000"); // EMC TM
+  } else if (trainConfig == 3854){ // M02 var 1
+    cuts.AddCutMergedCalo("00081113","111113806f032200000","111113806f022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00081113","111113906f032200000","111113906f022700001","0163300000000000"); // nl via indiv. cells
 
   // systematics pp 8 TeV no TM
   // MB configs
@@ -1547,6 +1556,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3910){  // timing cuts 2
     cuts.AddCutMergedCalo("00010113","1111131030032200000","1111131030022700001","0163300000000000"); // -200 to 200
     cuts.AddCutMergedCalo("00010113","1111131020032200000","1111131020022700001","0163300000000000"); // -500 to 500
+  } else if (trainConfig == 3911){ // M02 var 1
+    cuts.AddCutMergedCalo("00010113","1111138060032200000","1111138060022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00010113","1111139060032200000","1111139060022700001","0163300000000000"); // nl via indiv. cells
 
   // EMC7 configs
   } else if (trainConfig == 3920){ // M02 var 1
@@ -1581,6 +1593,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3930){  // timing cuts 2
     cuts.AddCutMergedCalo("00052113","1111131030032200000","1111131030022700001","0163300000000000"); // -200 to 200
     cuts.AddCutMergedCalo("00052113","1111131020032200000","1111131020022700001","0163300000000000"); // -500 to 500
+  } else if (trainConfig == 3931){ // M02 var 1
+    cuts.AddCutMergedCalo("00052113","1111138060032200000","1111138060022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00052113","1111139060032200000","1111139060022700001","0163300000000000"); // nl via indiv. cells
 
   // EGA configs
   } else if (trainConfig == 3940){ // M02 var 1
@@ -1615,6 +1630,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3950){  // timing cuts 2
     cuts.AddCutMergedCalo("00081113","1111131030032200000","1111131030022700001","0163300000000000"); // -200 to 200
     cuts.AddCutMergedCalo("00081113","1111131020032200000","1111131020022700001","0163300000000000"); // -500 to 500
+  } else if (trainConfig == 3951){ // M02 var 1
+    cuts.AddCutMergedCalo("00081113","1111138060032200000","1111138060022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00081113","1111139060032200000","1111139060022700001","0163300000000000"); // nl via indiv. cells
 
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

@@ -1897,6 +1897,18 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00081113","00200009f9730000dge0400000","111113107f032230000","0163103100000010"); // 30ns
 
 
+  } else if (trainConfig == 790){ // EMCAL clusters 8 TeV LHC12, TB+finetuning CCRF
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","111113106f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00052113","00200009f9730000dge0400000","111113106f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00081113","00200009f9730000dge0400000","111113106f032230000","0163103100000010"); // std
+  } else if (trainConfig == 791){ // EMCAL clusters 8 TeV LHC12, TB+finetuning CCRF
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","111113806f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00052113","00200009f9730000dge0400000","111113806f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00081113","00200009f9730000dge0400000","111113806f032230000","0163103100000010"); // std
+  } else if (trainConfig == 792){ // EMCAL clusters 8 TeV LHC12, TB+finetuning CCRF
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","111113906f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00052113","00200009f9730000dge0400000","111113906f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00081113","00200009f9730000dge0400000","111113906f032230000","0163103100000010"); // std
 
   //*************************************************************************************************
   // 5 TeV PHOS - setup
@@ -2858,12 +2870,17 @@ void AddTask_GammaConvCalo_pp(
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
-  if(enableQAPhotonTask>1){
-    for(Int_t i = 0; i<numberOfCuts; i++){
-      mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),cuts.GetClusterCut(i).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+  Int_t nContainer = 2;
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(enableQAPhotonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+      nContainer++;
+    }
+    if(enableQAMesonTask>1){
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+      nContainer++;
     }
   }
-
   return;
 
 }

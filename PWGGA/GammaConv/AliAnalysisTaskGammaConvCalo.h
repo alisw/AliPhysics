@@ -547,6 +547,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // additional variables
     Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
+    TTree**                 tESDMesonsInvMassPtDcazMinDcazMaxFlag;              //!
+    Float_t                 fInvMass;                                           //!
+    Float_t                 fPt;                                                //!
+    Float_t                 fDCAzGammaMin;                                      //!
+    Float_t                 fDCAzGammaMax;                                      //!
+    UChar_t                 iFlag;                                              //!
+    UChar_t                 iMesonMCInfo;                                       //!
     TRandom3                fRandom;                                            // random
     Int_t                   fNGammaCandidates;                                  // number of gamma candidates in event
     Double_t*               fUnsmearedPx;                                       //[fNGammaCandidates]
@@ -588,7 +595,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 57);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 58);
 };
 
 #endif
