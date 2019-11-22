@@ -85,6 +85,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fClusterCutArray(NULL),
   fConvJetReader(NULL),
   fDoJetAnalysis(kFALSE),
+  fDoIsolatedAnalysis(kFALSE),
+  fDoHighPtHadronAnalysis(kFALSE),
   fDoJetQA(kFALSE),
   fJetHistograms(NULL),
   fTrueJetHistograms(NULL),
@@ -93,6 +95,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoCaloGammaPt(NULL),
   fHistoCaloGammaE(NULL),
   fHistoConvGammaPt(NULL),
+  fHistoConvGammaPtwithHighPtHadron(NULL),
+  fHistoConvGammaPtwithoutHighPtHadron(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
@@ -107,6 +111,11 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   iCatPhoton(0),
   iPhotonMCInfo(0),
   fHistoMotherInvMassPt(NULL),
+  fHistoMotherInvMassPtIso(NULL),
+  fHistoMotherInvMassPtNonIso(NULL),
+  fHistoMotherEisoPt(NULL),
+  fHistoMotherRisoPt(NULL),
+  fHistoMotherNtracksIsoPt(NULL),
   sESDMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
   sESDMotherBackInvMassPtZM(NULL),
@@ -372,6 +381,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fClusterCutArray(NULL),
   fConvJetReader(NULL),
   fDoJetAnalysis(kFALSE),
+  fDoIsolatedAnalysis(kFALSE),
+  fDoHighPtHadronAnalysis(kFALSE),
   fDoJetQA(kFALSE),
   fJetHistograms(NULL),
   fTrueJetHistograms(NULL),
@@ -380,6 +391,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoCaloGammaPt(NULL),
   fHistoCaloGammaE(NULL),
   fHistoConvGammaPt(NULL),
+  fHistoConvGammaPtwithHighPtHadron(NULL),
+  fHistoConvGammaPtwithoutHighPtHadron(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
@@ -394,6 +407,11 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   iCatPhoton(0),
   iPhotonMCInfo(0),
   fHistoMotherInvMassPt(NULL),
+  fHistoMotherInvMassPtIso(NULL),
+  fHistoMotherInvMassPtNonIso(NULL),
+  fHistoMotherEisoPt(NULL),
+  fHistoMotherRisoPt(NULL),
+  fHistoMotherNtracksIsoPt(NULL),
   sESDMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
   sESDMotherBackInvMassPtZM(NULL),
@@ -762,9 +780,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   }
 
   if(fDoMesonAnalysis){ //Same Jet Finder MUST be used within same trainconfig
-    if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoJetAnalysis())  fDoJetAnalysis = kTRUE;
-    if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoJetQA())        fDoJetQA       = kTRUE;
+    if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoJetAnalysis())          fDoJetAnalysis = kTRUE;
+    if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoJetQA())                fDoJetQA       = kTRUE;
+    if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoIsolatedAnalysis())     fDoIsolatedAnalysis = kTRUE;
   }
+  if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoHighPtHadronAnalysis()) fDoHighPtHadronAnalysis = kTRUE;
 
   if(fDoJetAnalysis){
     fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
@@ -1038,6 +1058,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
   // gamma histos:
   fHistoConvGammaPt                          = new TH1F*[fnCuts];
+  if(fDoHighPtHadronAnalysis){
+    fHistoConvGammaPtwithHighPtHadron        = new TH2F*[fnCuts];
+    fHistoConvGammaPtwithoutHighPtHadron     = new TH2F*[fnCuts];
+  }
   if (fDoPhotonQA > 0 && fIsMC < 2 ){
     fHistoConvGammaPsiPairPt    = new TH2F*[fnCuts];
     fHistoConvGammaR            = new TH1F*[fnCuts];
@@ -1071,6 +1095,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     if(fDoMesonQA == 3){
       sPtRDeltaROpenAngle       = new THnSparseF*[fnCuts];
     }
+  }
+  if(fDoIsolatedAnalysis){
+    fHistoMotherInvMassPtIso        = new TH2F*[fnCuts];
+    fHistoMotherInvMassPtNonIso     = new TH2F*[fnCuts];
+    fHistoMotherEisoPt              = new TH2F*[fnCuts];
+    fHistoMotherRisoPt              = new TH2F*[fnCuts];
+    fHistoMotherNtracksIsoPt        = new TH2F*[fnCuts];
   }
   if(fDoJetAnalysis){
     fJetHistograms            = new TList*[fnCuts];
@@ -1283,9 +1314,19 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoConvGammaPt[iCut]         = new TH1F("ESD_ConvGamma_Pt", "ESD_ConvGamma_Pt", nBinsPt, arrPtBinning);
     if(fDoCentralityFlat > 0 ) fHistoConvGammaPt[iCut]->Sumw2();
     fESDList[iCut]->Add(fHistoConvGammaPt[iCut]);
+    if(fDoHighPtHadronAnalysis){
+      fHistoConvGammaPtwithHighPtHadron[iCut]         = new TH2F("ESD_ConvGamma_Pt_withHighPtHadron", "ESD_ConvGamma_Pt_withHighPtHadron", nBinsPt, arrPtBinning, nTracks, 0, nTracks);
+      fESDList[iCut]->Add(fHistoConvGammaPtwithHighPtHadron[iCut]);
+      fHistoConvGammaPtwithoutHighPtHadron[iCut]         = new TH2F("ESD_ConvGamma_Pt_withoutHighPtHadron", "ESD_ConvGamma_Pt_withoutHighPtHadron", nBinsPt, arrPtBinning, nTracks, 0, nTracks);
+      fESDList[iCut]->Add(fHistoConvGammaPtwithoutHighPtHadron[iCut]);
+    }
 
     if (  (fIsMC > 1) || (fIsMC>0 && fDoMaterialBudgetWeightingOfGammasForTrueMesons) ) {
       fHistoConvGammaPt[iCut]->Sumw2();
+      if(fDoHighPtHadronAnalysis){
+        fHistoConvGammaPtwithHighPtHadron[iCut]->Sumw2();
+        fHistoConvGammaPtwithoutHighPtHadron[iCut]->Sumw2();
+      }
     }
 
     if (fIsMC > 1){
@@ -1366,6 +1407,26 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoMotherInvMassPt[iCut]->Sumw2();
         fHistoMotherBackInvMassPt[iCut]->Sumw2();
         fHistoMotherInvMassEalpha[iCut]->Sumw2();
+      }
+
+      if(fDoIsolatedAnalysis){
+        fHistoMotherInvMassPtIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_Iso", "ESD_Mother_InvMass_Pt_Iso", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherInvMassPtIso[iCut]);
+        fHistoMotherInvMassPtNonIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_NonIso", "ESD_Mother_InvMass_Pt_NonIso", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherInvMassPtNonIso[iCut]);
+        fHistoMotherEisoPt[iCut]   = new TH2F("ESD_Mother_EIso_Pt", "ESD_Mother_EIso_Pt", 400, 0, 40, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherEisoPt[iCut]);
+        fHistoMotherRisoPt[iCut]   = new TH2F("ESD_Mother_RIso_Pt", "ESD_Mother_RIso_Pt", 800, 0, 8, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherRisoPt[iCut]);
+        fHistoMotherNtracksIsoPt[iCut]   = new TH2F("ESD_Mother_NTracksIso_Pt", "ESD_Mother_NTracksIso_Pt", 100, 0, 100, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherNtracksIsoPt[iCut]);
+        if (fIsMC > 1 ){
+          fHistoMotherInvMassPtIso[iCut]->Sumw2();
+          fHistoMotherInvMassPtNonIso[iCut]->Sumw2();
+          fHistoMotherEisoPt[iCut]->Sumw2();
+          fHistoMotherRisoPt[iCut]->Sumw2();
+          fHistoMotherNtracksIsoPt[iCut]->Sumw2();
+        }
       }
 
       if(fDoMesonQA == 2){
@@ -2402,6 +2463,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
     ProcessPhotonCandidates(); // Process this cuts gammas
     if(fEnableBDT) ProcessPhotonBDT(); //
     if(fDoJetAnalysis)   ProcessJets(); //Process jets
+    if(fDoHighPtHadronAnalysis) ProcessPhotonsHighPtHadronAnalysis();
 
     if(!fDoLightOutput){
       if(fDoCentralityFlat > 0){
@@ -2806,6 +2868,30 @@ void AliAnalysisTaskGammaConvV1::ProcessJets()
       fTrueVectorJetPt.clear();
       fTrueVectorJetEta.clear();
       fTrueVectorJetPhi.clear();
+    }
+  }
+}
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
+{
+  Bool_t DoesEventContainHighPtHadron = kFALSE;
+  Double_t NTotalTracks = fInputEvent->GetNumberOfTracks();
+  for(Int_t iTracks = 0; iTracks<NTotalTracks; iTracks++){
+    AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+    if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+    if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+    if(TMath::Abs(curTrack->Eta())>0.8) continue;
+    if(curTrack->Pt()>10) DoesEventContainHighPtHadron = kTRUE;
+  }
+  if(fGammaCandidates->GetEntries()>1){
+    for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
+      AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+      if(gamma==NULL) continue;
+      if(DoesEventContainHighPtHadron){
+        fHistoConvGammaPtwithHighPtHadron[fiCut]->Fill(gamma->Pt(),NTotalTracks);
+      } else {
+        fHistoConvGammaPtwithoutHighPtHadron[fiCut]->Fill(gamma->Pt(),NTotalTracks);
+      }
     }
   }
 }
@@ -3952,6 +4038,40 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
           } else {
             if(TMath::Abs(pi0cand->GetAlpha())<0.1) fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E(),fWeightJetJetMC);
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+            if(fDoIsolatedAnalysis){
+              //Check if the pi0 is isolated
+              Double_t Iso_E_Pi0 = 0;
+              Double_t Iso_R_Pi0 = 0;
+              Int_t Iso_counter = 0;
+              //loop over all charged tracks
+              for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
+                AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+                if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+                if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+                if(TMath::Abs(curTrack->Eta())>0.8) continue;
+                if(curTrack->Pt()<0.15) continue;
+                Double_t Iso_DeltaEta = curTrack->Eta()-pi0cand->Eta();
+                Double_t Iso_DeltaPhi = abs(curTrack->Phi()-pi0cand->Phi());
+                if(Iso_DeltaPhi > M_PI) {
+                  Iso_DeltaPhi = 2*M_PI - Iso_DeltaPhi;
+                }
+                Iso_R_Pi0 = TMath::Sqrt(pow((Iso_DeltaEta),2)+pow((Iso_DeltaPhi),2));
+                fHistoMotherRisoPt[fiCut]->Fill(Iso_R_Pi0,pi0cand->Pt());
+                if(Iso_R_Pi0 < 0.4){
+                  Iso_counter++;
+                  Iso_E_Pi0 += curTrack->E();
+                }
+              }
+              fHistoMotherEisoPt[fiCut]->Fill(Iso_E_Pi0,pi0cand->Pt());
+              if(Iso_E_Pi0 < 2){
+                //pi0 is isolated
+                fHistoMotherInvMassPtIso[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                fHistoMotherNtracksIsoPt[fiCut]->Fill(Iso_counter,pi0cand->Pt());
+              }else{
+                //pi0 is not isolated
+                fHistoMotherInvMassPtNonIso[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+              }
+            }
             if(fDoJetAnalysis){
               if(fConvJetReader->GetNJets()>0){
                 fVectorJetPt = fConvJetReader->GetVectorJetPt();

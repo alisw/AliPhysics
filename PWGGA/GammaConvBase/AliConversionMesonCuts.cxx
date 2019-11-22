@@ -165,6 +165,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fBackgroundMode(4),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
+  fDoIsolatedAnalysis(kFALSE),
+  fDoHighPtHadronAnalysis(kFALSE),
   fDoGammaMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.)
@@ -271,6 +273,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fBackgroundMode(4),
   fDoJetAnalysis(ref.fDoJetAnalysis),
   fDoJetQA(ref.fDoJetQA),
+  fDoIsolatedAnalysis(ref.fDoIsolatedAnalysis),
+  fDoHighPtHadronAnalysis(ref.fDoHighPtHadronAnalysis),
   fDoGammaMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.)
@@ -1820,6 +1824,14 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fMesonKind = 0;
     fDoJetAnalysis = kTRUE;
     fDoJetQA = kTRUE;
+    break;
+  case 4:
+    fMesonKind = 0;
+    fDoIsolatedAnalysis = kTRUE;
+    break;
+  case 5:
+    fMesonKind = 0;
+    fDoHighPtHadronAnalysis = kTRUE;
     break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
