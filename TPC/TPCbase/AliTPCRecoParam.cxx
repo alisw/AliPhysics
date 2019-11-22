@@ -125,6 +125,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fDistFluctUncorrFracMC(0.0),
   fSystErrClInnerRegZ(0),
   fSystErrClInnerRegZSigInv(0),
+  fUseClusterErrordEdxCorrection(false),     ///< switch to use the dEdx correction  - default is false - for  back compatibility
+  fUseClusterErrordEdxMultCorrection(false),     ///< switch to use the dEdx, multiplicity  correction  - for  back compatibility
   fUseSystematicCorrelation(kTRUE)
 {
   /// constructor

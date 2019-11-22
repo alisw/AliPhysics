@@ -208,6 +208,11 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   
   void    SetUseSystematicCorrelation(Bool_t useCorrelation)  {fUseSystematicCorrelation=useCorrelation;}
   Bool_t  GetUseSystematicCorrelation() const { return fUseSystematicCorrelation;}
+  //
+  Bool_t GetUseClusterErrordEdxCorrection(){return fUseClusterErrordEdxCorrection;}
+  void   SettUseClusterErrordEdxCorrection(Bool_t useClusterErrordEdxCorrection){ fUseClusterErrordEdxCorrection=useClusterErrordEdxCorrection;}
+  Bool_t GetUseClusterErrordEdxMultCorrection(){return fUseClusterErrordEdxMultCorrection;}
+  void   SettUseClusterErrordEdxMultCorrection(Bool_t useClusterErrordEdxMultCorrection){ fUseClusterErrordEdxMultCorrection=useClusterErrordEdxMultCorrection;}
 
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env.
@@ -219,7 +224,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   static  const Double_t * GetPrimaryDCACut()                { return (fgPrimaryDCACut)? fgPrimaryDCACut->GetMatrixArray():0; }
   static  void  SetSystematicErrorClusterCustom( TVectorD *vec ) { fgSystErrClustCustom=vec;}
   static  void SetPrimaryDCACut( TVectorD *dcacut )              { fgPrimaryDCACut=dcacut;}
-
+  //
   //
  protected:
 
@@ -321,7 +326,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fBadPadMaxDistXYZD[4];            ///< pad considered bad if abs distortion / dispersion exceeds this value
   Double_t fBadClusMaxErrYZ[2];              ///< pad considered bad if syst.error on cluster exceeds this value
   Bool_t fUseSystematicCorrelation;         ///< switch to use the correlation for the sys
-
+  //
+  Bool_t fUseClusterErrordEdxCorrection;     ///< switch to use the dEdx correction
+  Bool_t fUseClusterErrordEdxMultCorrection;     ///< switch to use the dEdx, multiplicity  correction
   static TVectorD* fgSystErrClustCustom;  //< custom systematic errors for the TPC clusters overriding persistent data member
   static TVectorD* fgPrimaryDCACut;       //< only primaries passing DCAYZ cut are reconstructed
 
@@ -331,7 +338,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 35)
+  ClassDef(AliTPCRecoParam, 36)
   /// \endcond
 };
 
