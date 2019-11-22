@@ -40,7 +40,7 @@
 #include "AliVertexerTracks.h"
 
 // This analysis builds histograms to enable and check the impact parameter
-// correction in phi, z, and pT for the 15o PbPb data set
+// correction in phi, z, and pT for the 15o and 18qr PbPb data set
 // Author: Martin Voelkl
 
 
@@ -717,11 +717,18 @@ void AliAnalysisTaskHFEIPCorrection::Process(AliAODEvent *const aodEvent)
   // Main loop
   // Called for each event
   EventSelectionSteps->Fill(4);
-  //if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB))) //return;
+  if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB | AliVEvent::kINT7)))
+    return;
   bool SelectedBySemicentralTrigger = false;
-  if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) 
+  if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) 
     SelectedBySemicentralTrigger = true;
+
+  //if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB)))
+    //return;
+
+  //if(!SelectedBySemicentralTrigger) return;
   EventSelectionSteps->Fill(5);
+
 
   if (!aodEvent) {
     Printf("ERROR: aodEvent not available");
@@ -766,7 +773,6 @@ if(!MultSelection){
   if(lProductionName.Contains("LHC18")) // 18r and q have same correction
     centrality = fV0Cent; // 18qr calib does not seem to work yet
 }
-
 
   const AliAODVertex *vertex = aodEvent->GetPrimaryVertex();
   const AliAODVertex *vertexSPD = aodEvent->GetPrimaryVertexSPD();
@@ -937,12 +943,12 @@ if(!MultSelection){
             DeltaPhi->Fill(DPhi);
             if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040IP->Fill(track->Pt(), IPCorrectedChField);
+              if(centrality>=20.0 && centrality<=40.0 && !SelectedBySemicentralTrigger) fpTIP2040IP->Fill(track->Pt(), IPCorrectedChField);
               if(centrality>=30.0 && centrality<=50.0) fpTIP3050IP->Fill(track->Pt(), IPCorrectedChField);
             }
             else
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040OOP->Fill(track->Pt(), IPCorrectedChField);
+              if(centrality>=20.0 && centrality<=40.0 && !SelectedBySemicentralTrigger) fpTIP2040OOP->Fill(track->Pt(), IPCorrectedChField);
               if(centrality>=30.0 && centrality<=50.0) fpTIP3050OOP->Fill(track->Pt(), IPCorrectedChField);
             }
           }
@@ -1086,7 +1092,7 @@ if(!MultSelection){
         }
 
         // TOF eff occupancy dependence
-        if(TMath::Abs(V0MotherPdg)==22 && centrality>=20.0 && centrality<=40.0)
+        if(TMath::Abs(V0MotherPdg)==22 && centrality>=30.0 && centrality<=50.0)
         {
           V0Daughter[0] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(0)); // This is how to get the daughter particles in AODs, apparently
           V0Daughter[1] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(1));
