@@ -721,7 +721,12 @@ public:
     kCentralityCL0plus10,    //event centrality VO AP +1.0%
     kCentralityCL0minus10,    //event centrality VO AP -1.0%
 
-
+    kTransverseSpherocity,    // transverse Spherocity of the event
+    kTransverseSpherocityFast,  // faster calculation of the transverse Spherocity of the event for more than 10 charged tracks
+    kTransverseSpherocityESD,  // transverse Spherocity of the event on ESDs
+    kTransverseSpherocityFastESD,  // faster calculation of the transverse Spherocity of the event for more than 10 charged tracks on ESDs
+    kTransverseSpherocityESDwoPtWeight,  // transverse Spherocity of the event on ESDs without pT weighting of the tracks
+    kTransverseSpherocityFastESDwoPtWeight,  // faster calculation of the transverse Spherocity of the event for more than 10 charged tracks on ESDs without pT weighting of the tracks
 
     kTriggerInclONL,         // online trigger bits fired (inclusive)
     kTriggerInclOFF,         // offline trigger bits fired (inclusive)
@@ -2702,6 +2707,9 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kCentralityCL0plus10]    = 0.;
   values[AliDielectronVarManager::kCentralityCL0minus10]   = 0.;
 
+  values[AliDielectronVarManager::kTransverseSpherocity] = -1.;
+  values[AliDielectronVarManager::kTransverseSpherocityFast] = -1.;
+
   AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection");
   if(!multSelection){
     // only for debugging purpose
@@ -2739,6 +2747,9 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   if(Req(kNacc))            values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
+
+  if(Req(kTransverseSpherocity))     values[AliDielectronVarManager::kTransverseSpherocity] = AliDielectronHelper::GetTransverseSpherocity(event);
+  if(Req(kTransverseSpherocityFast)) values[AliDielectronVarManager::kTransverseSpherocityFast] = AliDielectronHelper::GetTransverseSpherocityTracks(event);
 
   if(Req(kMatchEffITSTPCinPlane) || Req(kMatchEffITSTPCoutPlane)){
 
@@ -3006,6 +3017,15 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kCentralityV0A] = centralityV0A;
   values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
   values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
+
+  values[AliDielectronVarManager::kTransverseSpherocityESD] = -1.;
+  if(Req(kTransverseSpherocityESD)) values[AliDielectronVarManager::kTransverseSpherocityESD] = AliDielectronHelper::GetTransverseSpherocityESD(event);
+  values[AliDielectronVarManager::kTransverseSpherocityFastESD] = -1.;
+  if(Req(kTransverseSpherocityFastESD)) values[AliDielectronVarManager::kTransverseSpherocityFastESD] = AliDielectronHelper::GetTransverseSpherocityESDtracks(event);
+  values[AliDielectronVarManager::kTransverseSpherocityESDwoPtWeight] = -1.;
+  if(Req(kTransverseSpherocityESDwoPtWeight)) values[AliDielectronVarManager::kTransverseSpherocityESDwoPtWeight] = AliDielectronHelper::GetTransverseSpherocityESDwoPtWeight(event);
+  values[AliDielectronVarManager::kTransverseSpherocityFastESDwoPtWeight] = -1.;
+  if(Req(kTransverseSpherocityFastESDwoPtWeight)) values[AliDielectronVarManager::kTransverseSpherocityFastESDwoPtWeight] = AliDielectronHelper::GetTransverseSpherocityESDtracksWoPtWeight(event);
 
   const AliESDVertex *vtxTPC = event->GetPrimaryVertexTPC();
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);

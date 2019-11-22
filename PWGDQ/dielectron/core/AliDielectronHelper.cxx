@@ -38,6 +38,7 @@
 #include <AliVParticle.h>
 #include <AliKFParticle.h>
 #include <AliESDtrackCuts.h>
+#include <AliESDtrack.h>
 #include <AliESDEvent.h>
 #include <AliMCEvent.h>
 #include <AliAODEvent.h>
@@ -195,6 +196,328 @@ Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange, Bool_
     }
   }
   return nCh;
+}
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocity(const AliVEvent *ev){
+
+  //GetNtracks
+  const Int_t Ntracks = ev->GetNumberOfTracks();
+
+  //fPx fPy
+  AliVParticle *part=0x0;
+  Double_t Px=-99;
+  Double_t Py=-99;
+
+  if(Ntracks < 10)
+    return -1;
+  Double_t stepSize=0.1;
+  Double_t RetTransverseSpherocity = 1000;
+  Double_t sumpt = 0;
+  Int_t steplimit = 360/stepSize;
+  for(Int_t i = 0; i < steplimit; ++i) {
+    //Divide the whole azimuth into segments and do the projection on these segments (below)
+    Double_t phiparam = ((TMath::Pi()) * i * stepSize) / 180;
+    Double_t nx = TMath::Cos(phiparam); // x component of a unitary vector n
+    Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      part= ev->GetTrack(j);
+      Px = part->Px(); 
+      Py = part->Py();
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += TMath::Sqrt(Px*Px + Py*Py);
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+  };
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+
+  return RetTransverseSpherocity;
+}
+
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityTracks(const AliVEvent *ev){
+
+  //GetNtracks
+  const Int_t Ntracks = ev->GetNumberOfTracks();
+
+  //fPx fPy
+  AliVParticle *part=0x0;
+  Double_t Px=-99;
+  Double_t Py=-99;
+
+
+  if(Ntracks < 10)
+    return -1;
+
+  Double_t RetTransverseSpherocity = 1000;
+  Double_t sumpt = 0;
+  //const Double_t pt = 1;
+  for(Int_t i = 0; i < Ntracks; i++) {
+
+    part = ev->GetTrack(i);
+    Px = part->Px(); 
+    Py = part->Py();
+    Double_t pt = part->Pt();
+    Double_t nx = Px / pt; // x component of a unitary vector n
+    Double_t ny = Py / pt; // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      part = ev->GetTrack(j);
+      Px = part->Px(); 
+      Py = part->Py();
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += part->Pt();
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  { //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+    };
+  };
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+
+  return RetTransverseSpherocity;
+ 
+}
+
+//_____________________________________________________________________________
+Bool_t AliDielectronHelper::CheckESDtrack(AliESDtrack *track){
+
+  AliESDtrackCuts* TrackCutsTPCRefit = new AliESDtrackCuts("AliESDtrackCutsTPCRefit","AliESDtrackCutsTPCRefit");
+  TrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
+  TrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
+  TrackCutsTPCRefit->SetEtaRange(-0.8,0.8);
+
+  if(TrackCutsTPCRefit->AcceptTrack(track)) return kTRUE;
+  else return kFALSE;
+
+}
+
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityESD(const AliESDEvent *ev){
+
+  //GetNtracks
+  const Int_t Ntracks = ev->GetNumberOfTracks();
+
+  //fPx fPy
+  AliESDtrack *part=0x0;
+  Double_t Px=-99;
+  Double_t Py=-99;
+
+  Double_t stepSize=0.1;
+  Double_t RetTransverseSpherocity = 1000;
+  Double_t sumpt = 0;
+  Int_t steplimit = 360/stepSize;
+  for(Int_t i = 0; i < steplimit; ++i) {
+    //Divide the whole azimuth into segments and do the projection on these segments (below)
+    Double_t phiparam = ((TMath::Pi()) * i * stepSize) / 180;
+    Double_t nx = TMath::Cos(phiparam); // x component of a unitary vector n
+    Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      
+      part= ev->GetTrack(j);
+      if(!CheckESDtrack(part)) continue;
+      Px = part->Px(); 
+      Py = part->Py();
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += TMath::Sqrt(Px*Px + Py*Py);
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+  };
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+
+  return RetTransverseSpherocity;
+}
+
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityESDtracks(const AliESDEvent *ev){
+
+  //GetNtracks
+  const Int_t Ntracks = ev->GetNumberOfTracks();
+  Int_t NaccTracks = 0;
+
+  //fPx fPy
+  AliESDtrack *part=0x0;
+  Double_t Px=-99.;
+  Double_t Py=-99.;
+
+  Double_t RetTransverseSpherocity = 1000.;
+  Double_t sumpt = 0;
+  Int_t firstTrack = 0;
+  //const Double_t pt = 1;
+  for(Int_t i = 0; i < Ntracks; i++) {
+
+    part = ev->GetTrack(i);
+    if(!CheckESDtrack(part)){
+      if(i==firstTrack) firstTrack++;
+      continue;
+    }
+    else NaccTracks++;
+    Px = part->Px();
+    Py = part->Py();
+    Double_t pt = part->Pt();
+    Double_t nx = Px / pt; // x component of a unitary vector n
+    Double_t ny = Py / pt; // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      part = ev->GetTrack(j);
+      if(!CheckESDtrack(part)) continue;
+      Px = part->Px();
+      Py = part->Py();
+      //Px = TMath::Cos(part->Phi());
+      //Py = TMath::Sin(part->Phi());
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==firstTrack)
+        sumpt += part->Pt();
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  { //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+    };
+  };
+
+  if(NaccTracks < 10)
+    return -1;
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+  if(RetTransverseSpherocity < 0.) return -1.1;
+  if(RetTransverseSpherocity > 1.) return -0.9;
+  return RetTransverseSpherocity;
+
+}
+
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityESDwoPtWeight(const AliESDEvent *ev){
+
+  //GetNtracks
+  const Int_t Ntracks = ev->GetNumberOfTracks();
+
+  //fPx fPy
+  AliESDtrack *part=0x0;
+  Double_t Px=-99;
+  Double_t Py=-99;
+
+  Double_t stepSize=0.1;
+  Double_t RetTransverseSpherocity = 1000;
+  Double_t sumpt = 0;
+  Int_t steplimit = 360/stepSize;
+  for(Int_t i = 0; i < steplimit; ++i) {
+    //Divide the whole azimuth into segments and do the projection on these segments (below)
+    Double_t phiparam = ((TMath::Pi()) * i * stepSize) / 180;
+    Double_t nx = TMath::Cos(phiparam); // x component of a unitary vector n
+    Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      
+      part= ev->GetTrack(j);
+      if(!CheckESDtrack(part)) continue;
+      Px = part->Px() / part->Pt(); 
+      Py = part->Py() / part->Pt();
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += TMath::Sqrt(Px*Px + Py*Py);
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+  };
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+
+  return RetTransverseSpherocity;
+}
+
+
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityESDtracksWoPtWeight(const AliESDEvent *ev){
+
+  //GetNtracks
+  const Int_t Ntracks = ev->GetNumberOfTracks();
+  Int_t NaccTracks = 0;
+
+  //fPx fPy
+  AliESDtrack *part=0x0;
+  Double_t Px=-99.;
+  Double_t Py=-99.;
+
+  Double_t RetTransverseSpherocity = 1000.;
+  Double_t sumpt = 0;
+  Int_t firstTrack = 0;
+  //const Double_t pt = 1;
+  for(Int_t i = 0; i < Ntracks; i++) {
+
+    part = ev->GetTrack(i);
+    if(!CheckESDtrack(part)){
+      if(i==firstTrack) firstTrack++;
+      continue;
+    }
+    else NaccTracks++;
+    Px = part->Px();
+    Py = part->Py();
+    Double_t pt = part->Pt();
+    Double_t nx = Px / pt; // x component of a unitary vector n
+    Double_t ny = Py / pt; // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      part = ev->GetTrack(j);
+      if(!CheckESDtrack(part)) continue;
+      Px = part->Px() / part->Pt();
+      Py = part->Py() / part->Pt();
+      //Px = TMath::Cos(part->Phi());
+      //Py = TMath::Sin(part->Phi());
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==firstTrack)
+        sumpt += TMath::Sqrt( Px*Px + Py*Py);
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  { //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+    };
+  };
+
+  if(NaccTracks < 10)
+    return -1;
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+  if(RetTransverseSpherocity < 0.) return -1.1;
+  if(RetTransverseSpherocity > 1.) return -0.9;
+
+  return RetTransverseSpherocity;
+
 }
 
 
