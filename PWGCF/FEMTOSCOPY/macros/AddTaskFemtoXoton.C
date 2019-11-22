@@ -40,12 +40,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
 
   //Cascade Cuts
   AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
-      isMC, false);TFile*   TheResolutionMatrix = TFile::Open("TheResolutionMatrix.root","recreate");
-  //  TheResolutionMatrix->cd();
-  //  res10MeV->Write("hSigmaMeV_AntiProton_AntiXim_10MeV");
-  //  respXi->Write("hSigmaMeV_AntiProton_AntiXim_20MeV");
-  //  TheResolutionMatrix->Close();
-  //  return;
+      isMC, false);
   CascadeCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
       isMC, true, false);
