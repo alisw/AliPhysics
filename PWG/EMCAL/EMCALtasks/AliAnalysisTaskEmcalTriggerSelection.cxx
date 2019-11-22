@@ -244,7 +244,7 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2015MCPP5TeV(const char *dataset)
 }
 
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016MCPP(const char *dataset) const {
-  std::vector<TString> supportedProductions = {"lhc17f8", "lhc18f5", "lhc18g2", "lhc19a1"};
+  std::vector<TString> supportedProductions = {"lhc17f8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3"};
   return IsSupportedMCSample(dataset, supportedProductions);
 }
 
@@ -1013,7 +1013,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureFromYAML(const char *configf
     selectionmethod = DecodeEnergyDefinition(energydef);
   } catch(ConfigValueException &e) {
     AliErrorStream() << e.what() << " - not processing trigger classes" << std::endl;
-    return; 
+    return;
   }
   for(auto t : triggerclasses) {
     double threshold;
@@ -1137,8 +1137,8 @@ void AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::GetHistos
 
 }
 
-AliAnalysisTaskEmcalTriggerSelection::ConfigValueException::ConfigValueException(const char *key, const char *value): 
-  fKey(key), 
+AliAnalysisTaskEmcalTriggerSelection::ConfigValueException::ConfigValueException(const char *key, const char *value):
+  fKey(key),
   fValue(value),
   fMessage()
 {
