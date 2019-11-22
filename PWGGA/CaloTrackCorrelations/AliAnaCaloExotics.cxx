@@ -160,7 +160,8 @@ fhEOverP1Cell(0),
 // Cells
 fhCellExoAmp(0),                                               
 fhCellExoAmpTime(0),                    fhCellExoGrid(0),    
-fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0)
+fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0),
+fhSM3NCellsSumEnSuspiciousEvents(0)
 {        
   AddToHistogramsName("AnaCaloExotic_");
   
@@ -174,7 +175,7 @@ fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0)
   fEnergyBins [6] =  75; fEnergyBins [7] = 100;  fEnergyBins [8] = 125;
   fEnergyBins [9] = 150; fEnergyBins[10] = 175;  fEnergyBins[11] = 200;
   
-  fCellEnMins[0] = 0.3; fCellEnMins[1] = 0.5;
+  fCellEnMins[0] = 0.5; fCellEnMins[1] = 0.3;
   fCellEnMins[2] = 1.0; fCellEnMins[3] = 2.0;
   fCellEnMax = 15;
   
@@ -350,7 +351,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
   // Low activity in SM3 and very large activiy on any of the other SM
   //
   Bool_t acceptEvent = kTRUE;
-  if ( nCellsPerSM[0][3] < 2 || eCellsPerSM[0][3] < 1 )
+  if ( nCellsPerSM[0][3] <= 3 || eCellsPerSM[0][3] <= 2 )
   {
     for(Int_t ism = 0; ism < 20; ism++)
     {
@@ -371,6 +372,22 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       }
     }
   }
+  else
+  {
+    Bool_t suspiciousEvent = kFALSE;
+
+    for(Int_t ism = 0; ism < 20; ism++)
+    {
+      if ( ism == 3 ) continue;
+      
+      if ( nCellsPerSM[0][ism] >=  100 ) suspiciousEvent = kTRUE;
+      if ( eCellsPerSM[0][ism] >=  500 ) suspiciousEvent = kTRUE;
+    }
+  
+    if ( suspiciousEvent ) 
+      fhSM3NCellsSumEnSuspiciousEvents->Fill(nCellsPerSM[0][3], eCellsPerSM[0][3]);    
+  }
+  
   // LED Event rejection
   //
   
@@ -450,7 +467,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       fhFracSumEnCellsNHigh20[icut-1]->Fill(frEnCells, GetEventWeight());
     }
     
-    if ( nCellsPerSM[0][3] < 2 || eCellsPerSM[0][3] < 1 )
+    if ( nCellsPerSM[0][3] <= 3 || eCellsPerSM[0][3] <= 2 )
     {
       fhFracNCellsAcceptEvent    [icut-1]->Fill(frNCells , GetEventWeight());
       fhFracSumEnCellsAcceptEvent[icut-1]->Fill(frEnCells, GetEventWeight());
@@ -3473,7 +3490,13 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       outputContainer->Add(fhFracSumEnCellsPerSMAcceptEvent[icut-1]);   
       
     }
-
+    
+    fhSM3NCellsSumEnSuspiciousEvents = new TH2F 
+    ("hSM3NCellsSumEnSuspiciousEvents","After event rejection, SM3 activity when high energy events in other SM",1152,0,1152,100,0,100);
+    fhSM3NCellsSumEnSuspiciousEvents->SetZTitle("Counts");
+    fhSM3NCellsSumEnSuspiciousEvents->SetYTitle("#it{n}_{cells}^{#it{E}_{#it{i}}>0.5}");
+    fhSM3NCellsSumEnSuspiciousEvents->SetXTitle("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>0.5}");
+    outputContainer->Add(fhSM3NCellsSumEnSuspiciousEvents);   
   } 
   
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
