@@ -684,6 +684,13 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"CentralityCL0plus10",        "centrality_{V0M AP +1.0%}",                     "(%)"},
   {"CentralityCL0minus10",       "centrality_{V0M AP -1.0%}",                     "(%)"},
 
+  {"Transversecity",       "transverse spherocity",                          ""},
+  {"TransverseSpherocityFast",   " fast transverse spherocity",                    ""},
+  {"TransverseSpherocityESD",    " transverse spherocity on ESDs",                 ""},
+  {"TransverseSpherocityFastESD"," fast transverse spherocity on ESDs",            ""},
+  {"TransverseSpherocityESDwoPtWeight"," transverse spherocity on ESDs without pT weighting", ""},
+  {"TransverseSpherocityFastESDwoPtWeight"," fast transverse spherocity on ESDs without pT weighting", ""},
+
 
   {"TriggerInclONL",         "online trigger bit (inclusive)",                     ""},
   {"TriggerInclOFF",         "offline trigger bit (inclusive)",                    ""},
