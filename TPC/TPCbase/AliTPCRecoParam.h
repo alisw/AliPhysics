@@ -177,7 +177,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t  GetMinFraction() const {return fMinFraction;}           // truncated mean - lower threshold
   Float_t  GetMaxFraction() const {return fMaxFaction;}            // truncated mean - upper threshold
   Int_t    GetNeighborRowsDedx() const {return fNeighborRowsDedx;}
-
+  void     SetMissingClusterdEdxFraction(Float_t fraction){fMissingClusterdEdxFraction=fraction;}
+  Float_t   GetMissingClusterdEdxFraction() const {return fMissingClusterdEdxFraction;}
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
   void     SetSystematicErrorCluster(Double_t *systematic){ for (Int_t i=0; i<2;i++) fSystematicErrorCluster[i]=systematic[i];}
@@ -298,6 +299,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t fMinFraction;           ///< truncated mean - lower threshold
   Float_t fMaxFaction;            ///< truncated mean - upper threshold
   Int_t   fNeighborRowsDedx;      ///< number of neighboring rows to identify cluster below thres in dEdx calculation 0 -> switch off
+  Float_t fMissingClusterdEdxFraction; /// mising cluster will be replaced by truncated mean of observed clusters 1+ Nclmissing*fMissingClusterdEdxFraction;
   Int_t   fGainCorrectionHVandPTMode; ///< switch for the usage of GainCorrectionHVandPT (see AliTPCcalibDB::GetGainCorrectionHVandPT
   Int_t   fAccountDistortions;        ///< account for distortions in tracking
   Double_t fSkipTimeBins;        ///< number of time bins to be skiiped (corrupted signal druing gating opening)

@@ -110,9 +110,10 @@ AliTPCRecoParam::AliTPCRecoParam():
   fMinFraction(0.01),           // truncated mean - lower threshold
   fMaxFaction(0.7),            // truncated mean - upper threshold
   fNeighborRowsDedx(2),           // neighbour rows for below threshold dEdx calculation
+  fMissingClusterdEdxFraction(0), /// missing cluster will be replaced by truncated mean of observed clusters 1+ Nclmissing*fMissingClusterdEdxFraction; - - default 0 to be back compatible
   fGainCorrectionHVandPTMode(0), // switch for the usage of GainCorrectionHVandPT (see AliTPCcalibDB::GetGainCorrectionHVandPT
   fAccountDistortions(kFALSE),
-  fSkipTimeBins(5),              // number of time bins to be skiiped (corrupted signal druing gating opening)
+  fSkipTimeBins(5),              // number of time bins to be skipped (corrupted signal druing gating opening)
   fUseTOFCorrection(kTRUE),
   fUseCorrectionMap(kFALSE),
   fCorrMapTimeDepMethod(kCorrMapInterpolation),

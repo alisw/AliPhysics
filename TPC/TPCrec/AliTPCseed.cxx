@@ -1474,6 +1474,15 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
       ampWithBelow[iCl] = amp[indexes[iCl - nclBelowThr]];
     }
   }
+  Double_t factor=recoParam->GetMissingClusterdEdxFraction();
+  if (factor>0){
+    Double_t missingChargeReplacement= 0;
+    Int_t nClForReplacement=factor*nclBelowThr;
+    if (nClForReplacement>ncl*up) nClForReplacement = ncl*up;
+    missingChargeReplacement=TMath::Mean(nClForReplacement,&(amp[nclBelowThr]));
+    for(Int_t iCl = 0; iCl < nclBelowThr; iCl++)  ampWithBelow[iCl]=missingChargeReplacement;
+  }
+
   //printf("DEBUG: %i shit %f", nclBelowThr, amp[indexes[0]]);
   //
   Float_t suma=0;
