@@ -209,9 +209,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void    SetUseSystematicCorrelation(Bool_t useCorrelation)  {fUseSystematicCorrelation=useCorrelation;}
   Bool_t  GetUseSystematicCorrelation() const { return fUseSystematicCorrelation;}
   //
-  Bool_t GetUseClusterErrordEdxCorrection(){return fUseClusterErrordEdxCorrection;}
+  Bool_t GetUseClusterErrordEdxCorrection() const {return fUseClusterErrordEdxCorrection;}
   void   SettUseClusterErrordEdxCorrection(Bool_t useClusterErrordEdxCorrection){ fUseClusterErrordEdxCorrection=useClusterErrordEdxCorrection;}
-  Bool_t GetUseClusterErrordEdxMultCorrection(){return fUseClusterErrordEdxMultCorrection;}
+  Bool_t GetUseClusterErrordEdxMultCorrection() const {return fUseClusterErrordEdxMultCorrection;}
   void   SettUseClusterErrordEdxMultCorrection(Bool_t useClusterErrordEdxMultCorrection){ fUseClusterErrordEdxMultCorrection=useClusterErrordEdxMultCorrection;}
 
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.

@@ -317,7 +317,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     const Float_t kSnpMult=1.5;
     Double_t multM = fTotalClusters * kClusterNorm;
     Float_t mdEdx = 1;
-    if (seed->GetESD()) if (seed->GetESD()->GetTPCsignal()>0)  mdEdx=TMath::Min(kMIP / seed->GetESD()->GetTPCsignal(), 1.);
+    if (seed->GetESD()) if (seed->GetESD()->GetTPCsignal()>0)  mdEdx=TMath::Min(kdEdxMIP / seed->GetESD()->GetTPCsignal(), 1.);
     if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
       Float_t mQ = kClusterMIP / cluster->GetMax();
       Float_t baselineRatio2 = (cluster->GetMax() > 0) ? cluster->GetBaselineTail() / cluster->GetMax() : 0;
