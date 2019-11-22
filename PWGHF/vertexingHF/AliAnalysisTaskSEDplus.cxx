@@ -1155,20 +1155,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
           dlenxy = d->DecayLengthXY();
           ndlenxy = d->NormalizedDecayLengthXY();
           cospxy = d->CosPointingAngleXY();
-          for (Int_t i = 0; i < 3; i++)
-          {
-            if (d->PtProng(i) > ptmax)
-              ptmax = d->PtProng(i);
-            if (d->PtProng(i) < minPtDau)
-              minPtDau = d->PtProng(i);
-            Double_t diffIP, errdiffIP;
-            d->Getd0MeasMinusExpProng(i, aod->GetMagneticField(), diffIP, errdiffIP);
-            Double_t normdd0 = diffIP / errdiffIP;
-            if (i == 0)
-              dd0max = normdd0;
-            else if (TMath::Abs(normdd0) > TMath::Abs(dd0max))
-              dd0max = normdd0;
-          }
+          dd0max = AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(d, aod->GetMagneticField());
         }
         Double_t impparXY = d->ImpParXY() * 10000.;
         Double_t resSel = 0;
