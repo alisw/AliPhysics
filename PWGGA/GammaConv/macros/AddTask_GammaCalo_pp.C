@@ -2290,7 +2290,7 @@ void AddTask_GammaCalo_pp(
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(trainConfig == 2002 || (trainConfig >= 2020 && trainConfig <= 2037)) task->SetDoPi0Only(kTRUE);
+  if(trainConfig == 2002 || (trainConfig >= 2020 && trainConfig <= 2045)) task->SetDoPi0Only(kTRUE);
   if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){
