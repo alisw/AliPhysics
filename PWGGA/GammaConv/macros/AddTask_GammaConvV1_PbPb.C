@@ -2805,6 +2805,12 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("17810a13","0dm00009f9730000dge0404000","0143103100000000"); //
     cuts.AddCutPCM("18910a13","0dm00009f9730000dge0404000","0143103100000000"); //
 
+  } else if (trainConfig == 670){//additional highpthadron studies
+    cuts.AddCutPCM("10130a13","0dm00009f9730000dge0404000","5143103100000000"); //
+    cuts.AddCutPCM("11310a13","0dm00009f9730000dge0404000","5143103100000000"); //
+    cuts.AddCutPCM("13530a13","0dm00009f9730000dge0404000","5143103100000000"); //
+    cuts.AddCutPCM("15910a13","0dm00009f9730000dge0404000","5143103100000000"); //
+
    // **************************************
    //  RBins studies for 5.02TeV Pb-Pb 18qr
    // **************************************
