@@ -309,21 +309,30 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   Double_t sy2=0,sy2M=0;//ErrY2(seed,cluster);
   Double_t sz2=0,sz2M=0;//ErrZ2(seed,cluster);
   ErrY2Z2(seed,cluster,sy2,sz2);
-  if (1) {     /// add multiiplicity correction TODO add swith and calibration into the RecoParam - see calibration in ATO-452
-    //hardvired normalization of MIP to 1 for Qmax and mdEdx - to be calibrated
-    Double_t multM = fTotalClusters * 0.0000001;
+  if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxCorrection()||AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
+    // const Float_t NclCenral=3000000;
+    const Float_t kClusterNorm=0.0000001*0.008;
+    const Float_t kdEdxMIP=50., kClusterMIP=30;
+    const Float_t kXinner=83;
+    const Float_t kSnpMult=1.5;
+    Double_t multM = fTotalClusters * kClusterNorm;
     Float_t mdEdx = 1;
-    if (seed->GetESD()) if (seed->GetESD()->GetTPCsignal()>0)  mdEdx=TMath::Min(50. / seed->GetESD()->GetTPCsignal(), 1.);
-    Float_t baselineRatio2 = (cluster->GetMax()>0) ? cluster->GetBaselineTail() / cluster->GetMax():0;
-    baselineRatio2 *= baselineRatio2;
-    Float_t snp2=seed->GetSnp(); snp2*=snp2;
-    Float_t normR=(cluster->GetX()>0)? 83./cluster->GetX():1; normR*=normR;
-    sy2M = 0.004 * multM * (0.25+0.5*(mdEdx+30./cluster->GetMax()))*(0.5+0.5*normR) + 2. * baselineRatio2+0.01*snp2;
-    sz2M = 0.004 * multM * (0.25+0.5*(mdEdx+30./cluster->GetMax()))*(0.5+0.5*normR) + 2. * baselineRatio2+0.01*snp2;
-    sy2M *=(1.+1.5*snp2)*0.8;       /// empirical factor - broad cluster more sensitive to rate
+    if (seed->GetESD()) if (seed->GetESD()->GetTPCsignal()>0)  mdEdx=TMath::Min(kMIP / seed->GetESD()->GetTPCsignal(), 1.);
+    if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
+      Float_t mQ = kClusterMIP / cluster->GetMax();
+      Float_t baselineRatio2 = (cluster->GetMax() > 0) ? cluster->GetBaselineTail() / cluster->GetMax() : 0;
+      baselineRatio2 *= baselineRatio2;
+      Float_t snp2 = seed->GetSnp();
+      snp2 *= snp2;
+      Float_t normR = (cluster->GetX() > 0) ? kXinner / cluster->GetX() : 1;
+      normR *= normR;
+      sy2M = multM * (1 + normR) * (0.25 + 0.5 * (mdEdx + mQ)) + baselineRatio2;    // central event MIP - additional error ~0.8 mm in mean
+      sz2M = multM * (1 + normR) * (0.25 + 0.5 * (mdEdx + mQ)) + baselineRatio2;
+      sy2M *= (1. + kSnpMult * snp2);       /// empirical factor - broad cluster more sensitive to rate
+    }
     //
-    seed->SetErrorY2(sy2* (0.25 + mdEdx)+2*sy2M);   ///
-    seed->SetErrorZ2(sz2* (0.25 + mdEdx)+2*sz2M);   ///
+    seed->SetErrorY2(sy2* (0.25 + mdEdx)+ sy2M);   ///
+    seed->SetErrorZ2(sz2* (0.25 + mdEdx)+ sz2M);   ///
   }
   Double_t sdistancey2 = sy2+seed->GetSigmaY2();
   Double_t sdistancez2 = sz2+seed->GetSigmaZ2();
