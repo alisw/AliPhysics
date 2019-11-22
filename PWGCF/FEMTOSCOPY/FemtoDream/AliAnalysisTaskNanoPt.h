@@ -127,7 +127,11 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   TH2F  *fAntiPionRestMassMC;               //!
   TH2F  *fDPionRestMassMC;                  //!
   TH2F  *fAntiDPionRestMassMC;              //!
- 
+  TH2F  *fProtonBackgroungMC;               //!
+  TH2F  *fAntiProtonBackgroundMC;           //!
+  TH2F  *fDeuteronBackgroundMC;             //!
+  TH2F  *fAntiDeuteronBackgroundMC;         //!
+
   ClassDef(AliAnalysisTaskNanoPt, 3)
 };
 #endif
