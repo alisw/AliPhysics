@@ -100,6 +100,9 @@ public:
   void         SwitchOnFillCellHisto()              { fFillCellHisto             = kTRUE  ; }
   void         SwitchOffFillCellHisto()             { fFillCellHisto             = kFALSE ; }
 
+  void         SwitchOnFillAllCellEventHisto( Int_t opt = 1 ) { fFillAllCellEventParamHisto = opt  ; }
+  void         SwitchOffFillAllCellEventHisto()     { fFillAllCellEventParamHisto= 0 ; }
+  
   void         SwitchOnFillStripHisto()             { fFillStripHisto            = kTRUE  ; }
   void         SwitchOffFillStripHisto()            { fFillStripHisto            = kFALSE ; }
   
@@ -156,6 +159,8 @@ public:
   Float_t  fCellEnMinBins[fgkNCellEnMinBins];   ///<  Energy bins for some histograms for cells
   
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
+  
+  Int_t    fFillAllCellEventParamHisto;         ///<  Fill histograms summing our counting cells per event, 0-not filled, 1-n and sum E, 2 all fractions
    
   Bool_t   fFill1CellHisto;                     ///<  Fill histograms for 1 cell clusters
   
