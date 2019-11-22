@@ -114,6 +114,9 @@
 #pragma link C++ class std::vector<SHypertriton3>+;
 #pragma link C++ class REvent+;
 
+/// * ReducedTreeNuclei
+#pragma link C++ class AliAnalysisTaskHypertritonKFTree+;
+
 /// Hyp3body Selector
 #ifdef __CLING__
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
