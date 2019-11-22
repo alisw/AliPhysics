@@ -83,10 +83,13 @@ public:
                            { if ( i < fgkNEBins && i >= 0 ) fEnergyBins[i] = en ; }
 
   Float_t      GetCellEMinBinLimit(Int_t i) const  
-                           { if ( i < fgkNCellEnMinBins && i >= 0 ) return fCellEnMinBins[i] ;
+                           { if ( i < fgkNCellEnMinBins && i >= 0 ) return fCellEnMins[i] ;
                              else                                return -1     ; }
   void         SetCellEMinBinLimit(Int_t i, Float_t en) 
-                           { if ( i < fgkNCellEnMinBins && i >= 0 ) fCellEnMinBins[i] = en ; }
+                           { if ( i < fgkNCellEnMinBins && i >= 0 ) fCellEnMins[i] = en ; }
+  
+  Float_t      GetCellEMaxBinLimit()           { return fCellEnMax ; } 
+  void         SetCellEMaxBinLimit(Float_t en) { fCellEnMax = en   ; } 
   
 //  Float_t      GetCellMinEnergy(Int_t i) const  
 //                           { if ( i < fgkNCellMinEnBins && i >= 0 ) return fCellMinEnBins[i] ;
@@ -156,7 +159,8 @@ public:
  
   static const Int_t fgkNCellEnMinBins = 4;
   static const Int_t fgkNCellEnMinBinsFr = 3;
-  Float_t  fCellEnMinBins[fgkNCellEnMinBins];   ///<  Energy bins for some histograms for cells
+  Float_t  fCellEnMins[fgkNCellEnMinBins];      ///<  Energy minimum for some histograms for cells
+  Float_t  fCellEnMax;                          ///<  Energy maximum for some histograms for cells 
   
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
   
