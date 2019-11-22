@@ -23,7 +23,7 @@
 #include "TParticle.h"
 #include <TVector3.h>
 #include "TF1.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
@@ -61,6 +61,7 @@ ClassImp(AliAnalysisKinkTaskPbPb2018)
 //________________________________________________________________________
 AliAnalysisKinkTaskPbPb2018::AliAnalysisKinkTaskPbPb2018(const char *name) 
   : AliAnalysisTaskSE(name)
+  , fEventCuts(kFALSE)
   , fMultiplicityBeforeCuts(0)
   , fIncompletEv(0)
   , fMultiplicityAfterTriggerBit(0)
@@ -167,6 +168,7 @@ AliAnalysisKinkTaskPbPb2018::AliAnalysisKinkTaskPbPb2018(const char *name)
   , fhPS(0)
   , fhvtxP(0)
   , fESDtrackCuts(0)
+  , fpercentile(0)
 //  , fUtils(0)
 {
   // Constructor
@@ -328,6 +330,7 @@ void AliAnalysisKinkTaskPbPb2018::UserCreateOutputObjects()
    fVertexNet= new TH1D("fVertexNet", "ESD charge mult. Main Vertex", 60,-15.,15.);
    fhPS = new TH1F("fhPS", " ",10, 0.0,10.0);
    fhvtxP = new TH1F("fhvtxP", " ",10, 0.0,10.0);
+   fpercentile =  new TH1F("fpercentile", " ", 100, 0.0, 100.0);
    
    fListOfHistos=new TList();
    
@@ -428,6 +431,7 @@ void AliAnalysisKinkTaskPbPb2018::UserCreateOutputObjects()
    fListOfHistos->Add(fVertexNet);
    fListOfHistos->Add(fhPS);
    fListOfHistos->Add(fhvtxP);
+   fListOfHistos->Add(fpercentile);
    
 //   fAnUtils = new AliAnalysisUtils();
 //   if(! fUtils ) {
@@ -468,6 +472,8 @@ void AliAnalysisKinkTaskPbPb2018::UserExec(Option_t *)
 
   // check incomplete events
 
+  fEventCuts.SetManualMode();
+  fEventCuts.SetupPbPb2018();
   if (!fEventCuts.AcceptEvent(event)) return;
   
   ///if (esd->IsIncompleteDAQ()) return;
@@ -522,6 +528,8 @@ void AliAnalysisKinkTaskPbPb2018::UserExec(Option_t *)
 
       //if(isTracklet== kFALSE) return;
    
+      fpercentile->Fill(lPercentile);
+
       fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/pt^1.01");
       fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
       
