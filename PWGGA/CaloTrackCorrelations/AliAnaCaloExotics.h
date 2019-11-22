@@ -83,10 +83,13 @@ public:
                            { if ( i < fgkNEBins && i >= 0 ) fEnergyBins[i] = en ; }
 
   Float_t      GetCellEMinBinLimit(Int_t i) const  
-                           { if ( i < fgkNCellEnMinBins && i >= 0 ) return fCellEnMinBins[i] ;
+                           { if ( i < fgkNCellEnMinBins && i >= 0 ) return fCellEnMins[i] ;
                              else                                return -1     ; }
   void         SetCellEMinBinLimit(Int_t i, Float_t en) 
-                           { if ( i < fgkNCellEnMinBins && i >= 0 ) fCellEnMinBins[i] = en ; }
+                           { if ( i < fgkNCellEnMinBins && i >= 0 ) fCellEnMins[i] = en ; }
+  
+  Float_t      GetCellEMaxBinLimit()           { return fCellEnMax ; } 
+  void         SetCellEMaxBinLimit(Float_t en) { fCellEnMax = en   ; } 
   
 //  Float_t      GetCellMinEnergy(Int_t i) const  
 //                           { if ( i < fgkNCellMinEnBins && i >= 0 ) return fCellMinEnBins[i] ;
@@ -100,6 +103,9 @@ public:
   void         SwitchOnFillCellHisto()              { fFillCellHisto             = kTRUE  ; }
   void         SwitchOffFillCellHisto()             { fFillCellHisto             = kFALSE ; }
 
+  void         SwitchOnFillAllCellEventHisto( Int_t opt = 1 ) { fFillAllCellEventParamHisto = opt  ; }
+  void         SwitchOffFillAllCellEventHisto()     { fFillAllCellEventParamHisto= 0 ; }
+  
   void         SwitchOnFillStripHisto()             { fFillStripHisto            = kTRUE  ; }
   void         SwitchOffFillStripHisto()            { fFillStripHisto            = kFALSE ; }
   
@@ -153,9 +159,12 @@ public:
  
   static const Int_t fgkNCellEnMinBins = 4;
   static const Int_t fgkNCellEnMinBinsFr = 3;
-  Float_t  fCellEnMinBins[fgkNCellEnMinBins];   ///<  Energy bins for some histograms for cells
+  Float_t  fCellEnMins[fgkNCellEnMinBins];      ///<  Energy minimum for some histograms for cells
+  Float_t  fCellEnMax;                          ///<  Energy maximum for some histograms for cells 
   
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
+  
+  Int_t    fFillAllCellEventParamHisto;         ///<  Fill histograms summing our counting cells per event, 0-not filled, 1-n and sum E, 2 all fractions
    
   Bool_t   fFill1CellHisto;                     ///<  Fill histograms for 1 cell clusters
   
@@ -436,6 +445,8 @@ public:
   TH2F *   fhNCellsPerStripPerSM       [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM
   TH2F *   fhSumEnCellsPerStripPerSMNHigh20[fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, per SM, 1 cluster with n_cell_w>20, per SM  
   TH2F *   fhNCellsPerStripPerSMNHigh20[fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM, 1 cluster with n_cell_w>20, per SM  
+  
+  TH2F *   fhSM3NCellsSumEnSuspiciousEvents;                  //!<! Control histogram to check SM3 activity when there is high activity event in other SM, after event cut
   
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;

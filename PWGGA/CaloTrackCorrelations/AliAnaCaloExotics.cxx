@@ -53,7 +53,9 @@ fExoCut(0),                            fNCellHighCut(0),
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
 fLED20(0),                             fLED12(0),   
 fLED20Time(0),                         fLED12Time(0),
-fFillCellHisto(1),                     fFill1CellHisto(0),    
+fCellEnMax(0),
+fFillCellHisto(1),                     fFillAllCellEventParamHisto(1),
+fFill1CellHisto(0),    
 fFillStripHisto(1),
 fFillMatchingHisto(0),                 fFillSameDiffFracHisto(0),
 fFillExoEnMinCut(0),                   fFillAllCellSameTCardHisto(1),
@@ -158,7 +160,8 @@ fhEOverP1Cell(0),
 // Cells
 fhCellExoAmp(0),                                               
 fhCellExoAmpTime(0),                    fhCellExoGrid(0),    
-fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0)
+fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0),
+fhSM3NCellsSumEnSuspiciousEvents(0)
 {        
   AddToHistogramsName("AnaCaloExotic_");
   
@@ -172,8 +175,9 @@ fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0)
   fEnergyBins [6] =  75; fEnergyBins [7] = 100;  fEnergyBins [8] = 125;
   fEnergyBins [9] = 150; fEnergyBins[10] = 175;  fEnergyBins[11] = 200;
   
-  fCellEnMinBins[0] = 0.5; fCellEnMinBins[1] = 1.0;
-  fCellEnMinBins[2] = 2.0; fCellEnMinBins[3] = 5.0;
+  fCellEnMins[0] = 0.5; fCellEnMins[1] = 0.3;
+  fCellEnMins[2] = 1.0; fCellEnMins[3] = 2.0;
+  fCellEnMax = 15;
   
   for(Int_t i = 0; i < fgkNEBins; i++) 
   {
@@ -253,7 +257,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
   if( ncells <= 0 ) return;
   
   AliDebug(1,Form("%s cell entries %d", GetCalorimeterString().Data(), ncells));
-  
+
   Int_t    icol   = -1, icolAbs = -1;
   Int_t    irow   = -1, irowAbs = -1;
   Int_t    iRCU   = -1;
@@ -327,7 +331,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     
     for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
     {
-      if ( amp > fCellEnMinBins[icut] )
+      if ( amp > fCellEnMins[icut] && amp < fCellEnMax )
       {
         fhCellGridTime[icut]->Fill(icolAbs, irowAbs, time, GetEventWeight());
         
@@ -338,7 +342,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       }
     }
   } // Cell loop
-  
+
 //  if ( nCellsPerSM[0][3] < 2 || eCellsPerSM[0][3] < 1 )
 //    printf("SM3 nCells %d, sum E cells %2.2f \n",nCellsPerSM[0][3],eCellsPerSM[0][3] );
   
@@ -347,7 +351,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
   // Low activity in SM3 and very large activiy on any of the other SM
   //
   Bool_t acceptEvent = kTRUE;
-  if ( nCellsPerSM[0][3] < 2 || eCellsPerSM[0][3] < 1 )
+  if ( nCellsPerSM[0][3] <= 3 || eCellsPerSM[0][3] <= 2 )
   {
     for(Int_t ism = 0; ism < 20; ism++)
     {
@@ -368,9 +372,27 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       }
     }
   }
+  else
+  {
+    Bool_t suspiciousEvent = kFALSE;
+
+    for(Int_t ism = 0; ism < 20; ism++)
+    {
+      if ( ism == 3 ) continue;
+      
+      if ( nCellsPerSM[0][ism] >=  100 ) suspiciousEvent = kTRUE;
+      if ( eCellsPerSM[0][ism] >=  500 ) suspiciousEvent = kTRUE;
+    }
+  
+    if ( suspiciousEvent ) 
+      fhSM3NCellsSumEnSuspiciousEvents->Fill(nCellsPerSM[0][3], eCellsPerSM[0][3]);    
+  }
+  
   // LED Event rejection
   //
-
+  
+  if ( fFillAllCellEventParamHisto  < 1 ) return;
+  
   for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
   {
     Float_t averECells = 0;
@@ -378,20 +400,24 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     
     fhSumEnCells    [icut]->Fill(eCells[icut], GetEventWeight());
     fhNCells        [icut]->Fill(nCells[icut], GetEventWeight());
-    fhAverSumEnCells[icut]->Fill(averECells  , GetEventWeight());
+    
+    if ( fFillAllCellEventParamHisto  > 1 )
+      fhAverSumEnCells[icut]->Fill(averECells  , GetEventWeight());
 
     if ( fLED20 ) 
     {
       fhSumEnCellsNHigh20    [icut]->Fill(eCells[icut], GetEventWeight());
       fhNCellsNHigh20        [icut]->Fill(nCells[icut], GetEventWeight());
-      fhAverSumEnCellsNHigh20[icut]->Fill(averECells  , GetEventWeight());
+      if ( fFillAllCellEventParamHisto  > 1 )
+        fhAverSumEnCellsNHigh20[icut]->Fill(averECells  , GetEventWeight());
     }
     
     if ( acceptEvent )
     {
       fhSumEnCellsAcceptEvent    [icut]->Fill(eCells[icut], GetEventWeight());
       fhNCellsAcceptEvent        [icut]->Fill(nCells[icut], GetEventWeight());
-      fhAverSumEnCellsAcceptEvent[icut]->Fill(averECells  , GetEventWeight());
+      if ( fFillAllCellEventParamHisto  > 1 )
+        fhAverSumEnCellsAcceptEvent[icut]->Fill(averECells  , GetEventWeight());
     }
     
     for(Int_t ism = 0; ism < 20; ism++)
@@ -402,22 +428,27 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       
       fhSumEnCellsPerSM    [icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
       fhNCellsPerSM        [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
-      fhAverSumEnCellsPerSM[icut]->Fill(averECells            , ism, GetEventWeight());
+      if ( fFillAllCellEventParamHisto  > 1 )
+        fhAverSumEnCellsPerSM[icut]->Fill(averECells            , ism, GetEventWeight());
       
       if ( fLED20 ) 
       {
         fhSumEnCellsPerSMNHigh20    [icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
         fhNCellsPerSMNHigh20        [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
-        fhAverSumEnCellsPerSMNHigh20[icut]->Fill(averECells            , ism, GetEventWeight());
+        if ( fFillAllCellEventParamHisto  > 1 )
+          fhAverSumEnCellsPerSMNHigh20[icut]->Fill(averECells            , ism, GetEventWeight());
       }
       
       if ( acceptEvent )
       {
         fhSumEnCellsPerSMAcceptEvent    [icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
         fhNCellsPerSMAcceptEvent        [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
-        fhAverSumEnCellsPerSMAcceptEvent[icut]->Fill(averECells            , ism, GetEventWeight());
+        if ( fFillAllCellEventParamHisto  > 1 )
+          fhAverSumEnCellsPerSMAcceptEvent[icut]->Fill(averECells            , ism, GetEventWeight());
       }
     } // Per SM
+    
+    if ( fFillAllCellEventParamHisto < 2 ) continue; 
     
     if ( icut  == 0 ) continue; 
     
@@ -436,7 +467,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       fhFracSumEnCellsNHigh20[icut-1]->Fill(frEnCells, GetEventWeight());
     }
     
-    if ( nCellsPerSM[0][3] < 2 || eCellsPerSM[0][3] < 1 )
+    if ( nCellsPerSM[0][3] <= 3 || eCellsPerSM[0][3] <= 2 )
     {
       fhFracNCellsAcceptEvent    [icut-1]->Fill(frNCells , GetEventWeight());
       fhFracSumEnCellsAcceptEvent[icut-1]->Fill(frEnCells, GetEventWeight());
@@ -505,13 +536,13 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
 
         for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
         {
-          if ( amp1 > fCellEnMinBins[icut] )
+          if ( amp1 > fCellEnMins[icut] && amp1 < fCellEnMax )
           {            
             nCellsStrip[icut]++;
             eCellsStrip[icut]+=amp1;
           }
           
-          if ( amp2 > fCellEnMinBins[icut] )
+          if ( amp2 > fCellEnMins[icut] && amp2 < fCellEnMax )
           {            
             nCellsStrip[icut]++;
             eCellsStrip[icut]+=amp2;
@@ -1062,7 +1093,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       else
       {
         if ( ebin >= 0 && ebin < fgkNEBins-1 )
-          fhM02ExoNCellsNotAllSameTCard[ebin]->Fill(m20, exoticity, nCaloCellsPerCluster, GetEventWeight()); ;
+          fhM02ExoNCellsNotAllSameTCard[ebin]->Fill(m02, exoticity, nCaloCellsPerCluster, GetEventWeight()); ;
       }
       
       if ( nCellDiffW == 0 )
@@ -1161,7 +1192,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
       fhM20EnergyExoM02MinCut->Fill(en, m20, exoticity, GetEventWeight());
     
     if ( ebin >= 0 && ebin < fgkNEBins-1 )
-      fhM02ExoNCells[ebin]->Fill(m20, exoticity, nCaloCellsPerCluster, GetEventWeight()); 
+      fhM02ExoNCells[ebin]->Fill(m02, exoticity, nCaloCellsPerCluster, GetEventWeight()); 
     
     // Track matching
     //
@@ -1251,7 +1282,10 @@ TObjString * AliAnaCaloExotics::GetAnalysisCuts()
 
   snprintf(onePar,buffersize,"fill cluster with 1 cell histo: %d;",fFill1CellHisto) ;
   parList+=onePar ;
- 
+
+  snprintf(onePar,buffersize,"fill cells in event histo: %d;",fFillAllCellEventParamHisto) ;
+  parList+=onePar ;
+  
   snprintf(onePar,buffersize,"fill strip histo: %d;",fFillStripHisto) ;
   parList+=onePar ;
   
@@ -3069,8 +3103,8 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
     {
       fhCellGridTime[icut]    = new TH3F 
-      (Form("hCellGridTime_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("Cell hits row-column vs cell time for #it{E}_{cell} > %1.1f GeV",fCellEnMinBins[icut]), 
+      (Form("hCellGridTime_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("Cell hits row-column vs cell time for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax), 
        colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
        rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
         t2BinsArray.GetSize() - 1,  t2BinsArray.GetArray());
@@ -3079,360 +3113,390 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       fhCellGridTime[icut]->SetZTitle("#it{t}_{cell} (ns)");
       outputContainer->Add(fhCellGridTime[icut]);
       
-      fhSumEnCells[icut] = new TH1F 
-      (Form("hSumEnCells_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} for #it{E}_{#it{i}} > %1.1f GeV",fCellEnMinBins[icut]), 
-       10000,0,10000);
-      fhSumEnCells[icut]->SetYTitle("Counts per event");
-      fhSumEnCells[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
-      outputContainer->Add(fhSumEnCells[icut]);   
+      // Per Strip
+      //
+      if ( fFillStripHisto )
+      {
+        // Count cells in strip
+        fhNCellsPerStrip[icut] = new TH1F 
+        (Form("hNCellsPerStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#it{n}_{cells} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax),
+         48,-0.5,47.5);
+        fhNCellsPerStrip[icut]->SetYTitle("Counts per event");
+        fhNCellsPerStrip[icut]->SetXTitle("#it{n}_{cells}^{strip}");
+        outputContainer->Add(fhNCellsPerStrip[icut]);   
+        
+        fhNCellsPerStripNHigh20[icut] = new TH1F 
+        (Form("hNCellsPerStripNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#it{n}_{cells} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax),
+         48,-0.5,47.5);
+        fhNCellsPerStripNHigh20[icut]->SetYTitle("Counts per event");
+        fhNCellsPerStripNHigh20[icut]->SetXTitle("#it{n}_{cells}^{strip}");
+        outputContainer->Add(fhNCellsPerStripNHigh20[icut]);   
+        
+        // Per SM
+        fhNCellsPerStripPerSM[icut] = new TH2F 
+        (Form("hNCellsPerStripPerSM_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#it{n}_{cells} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax),
+         48,-0.5,47.5, totalSM, fFirstModule-0.5, fLastModule+0.5);
+        fhNCellsPerStripPerSM[icut]->SetZTitle("Counts per event");
+        fhNCellsPerStripPerSM[icut]->SetYTitle("SM");
+        fhNCellsPerStripPerSM[icut]->SetXTitle("#it{n}_{cells}^{strip}");
+        outputContainer->Add(fhNCellsPerStripPerSM[icut]);   
+        
+        fhNCellsPerStripPerSMNHigh20[icut] = new TH2F 
+        (Form("hNCellsPerStripPerSMNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#it{n}_{cells} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax),
+         48,-0.5,47.5, totalSM, fFirstModule-0.5, fLastModule+0.5);
+        fhNCellsPerStripPerSMNHigh20[icut]->SetZTitle("Counts per event");
+        fhNCellsPerStripPerSMNHigh20[icut]->SetYTitle("SM");
+        fhNCellsPerStripPerSMNHigh20[icut]->SetXTitle("#it{n}_{cells}^{strip}");
+        outputContainer->Add(fhNCellsPerStripPerSMNHigh20[icut]);   
+       
+        // Sum strip cells energy
+        //
+        fhSumEnCellsPerStrip[icut] = new TH1F 
+        (Form("hSumEnCellsPerStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#Sigma #it{E}_{#it{i}} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax), 
+         1500,0,1500);
+        fhSumEnCellsPerStrip[icut]->SetYTitle("Counts per event");
+        fhSumEnCellsPerStrip[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
+        outputContainer->Add(fhSumEnCellsPerStrip[icut]);   
+        
+        fhSumEnCellsPerStripNHigh20[icut] = new TH1F 
+        (Form("hSumEnCellsPerStripNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#Sigma #it{E}_{#it{i}} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV,at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax), 
+         1500,0,1500);
+        fhSumEnCellsPerStripNHigh20[icut]->SetYTitle("Counts per event");
+        fhSumEnCellsPerStripNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
+        outputContainer->Add(fhSumEnCellsPerStripNHigh20[icut]);   
       
+        // Per Strip per SM
+        fhSumEnCellsPerStripPerSM[icut] = new TH2F 
+        (Form("hSumEnCellsPerStripPerSM_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#Sigma #it{E}_{#it{i}} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax), 
+         1500,0,1500, totalSM, fFirstModule-0.5, fLastModule+0.5);
+        fhSumEnCellsPerStripPerSM[icut]->SetZTitle("Counts per event");
+        fhSumEnCellsPerStripPerSM[icut]->SetYTitle("SM");
+        fhSumEnCellsPerStripPerSM[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
+        outputContainer->Add(fhSumEnCellsPerStripPerSM[icut]);   
+        
+        fhSumEnCellsPerStripPerSMNHigh20[icut] = new TH2F 
+        (Form("hSumEnCellsPerStripPerSMNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#Sigma #it{E}_{#it{i}} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV,at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax), 
+         1500,0,1500, totalSM, fFirstModule-0.5, fLastModule+0.5);
+        fhSumEnCellsPerStripPerSMNHigh20[icut]->SetZTitle("Counts per event");
+        fhSumEnCellsPerStripPerSMNHigh20[icut]->SetYTitle("SM");
+        fhSumEnCellsPerStripPerSMNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
+        outputContainer->Add(fhSumEnCellsPerStripPerSMNHigh20[icut]);   
+      }
+      
+      if ( fFillAllCellEventParamHisto < 1 ) continue;      
+
+      // N cells in event
+      //
       fhNCells[icut] = new TH1F 
-      (Form("hNCells_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV", fCellEnMinBins[icut]),
+      (Form("hNCells_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax),
        17000,0,17000);
       fhNCells[icut]->SetYTitle("Counts per event");
       fhNCells[icut]->SetXTitle("#it{n}_{cells}");
-      outputContainer->Add(fhNCells[icut]);   
-      
-      fhAverSumEnCells[icut] = new TH1F 
-      (Form("hAverSumEnCells_EnMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV", fCellEnMinBins[icut]), 
-       10000,0,10000);
-      fhAverSumEnCells[icut]->SetYTitle("Counts per event");
-      fhAverSumEnCells[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
-      outputContainer->Add(fhAverSumEnCells[icut]);  
-      
-      fhSumEnCellsNHigh20[icut] = new TH1F 
-      (Form("hSumEnCellsNHigh20_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} for #it{E}_{#it{i}} > %1.1f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMinBins[icut]), 
-       10000,0,10000);
-      fhSumEnCellsNHigh20[icut]->SetYTitle("Counts per event");
-      fhSumEnCellsNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
-      outputContainer->Add(fhSumEnCellsNHigh20[icut]);   
+      outputContainer->Add(fhNCells[icut]);  
       
       fhNCellsNHigh20[icut] = new TH1F 
-      (Form("hNCellsNHigh20_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20", fCellEnMinBins[icut]),
+      (Form("hNCellsNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax),
        17000,0,17000);
       fhNCellsNHigh20[icut]->SetYTitle("Counts per event");
       fhNCellsNHigh20[icut]->SetXTitle("#it{n}_{cells}");
       outputContainer->Add(fhNCellsNHigh20[icut]);   
       
-      fhAverSumEnCellsNHigh20[icut] = new TH1F 
-      (Form("hAverSumEnCellsNHigh20_EnMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20", fCellEnMinBins[icut]), 
-       10000,0,10000);
-      fhAverSumEnCellsNHigh20[icut]->SetYTitle("Counts per event");
-      fhAverSumEnCellsNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
-      outputContainer->Add(fhAverSumEnCellsNHigh20[icut]);  
-      
-      fhSumEnCellsAcceptEvent[icut] = new TH1F 
-      (Form("hSumEnCellsAcceptEvent_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} for #it{E}_{#it{i}} > %1.1f GeV, low activity SM3",fCellEnMinBins[icut]), 
-       10000,0,10000);
-      fhSumEnCellsAcceptEvent[icut]->SetYTitle("Counts per event");
-      fhSumEnCellsAcceptEvent[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
-      outputContainer->Add(fhSumEnCellsAcceptEvent[icut]);   
-      
       fhNCellsAcceptEvent[icut] = new TH1F 
-      (Form("hNCellsAcceptEvent_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV, low activity SM3", fCellEnMinBins[icut]),
+      (Form("hNCellsAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, reject high activity events in any SM but SM3",fCellEnMins[icut],fCellEnMax),
        17000,0,17000);
       fhNCellsAcceptEvent[icut]->SetYTitle("Counts per event");
       fhNCellsAcceptEvent[icut]->SetXTitle("#it{n}_{cells}");
       outputContainer->Add(fhNCellsAcceptEvent[icut]);   
       
-      fhAverSumEnCellsAcceptEvent[icut] = new TH1F 
-      (Form("hAverSumEnCellsAcceptEvent_EnMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV, low activity SM3", fCellEnMinBins[icut]), 
-       10000,0,10000);
-      fhAverSumEnCellsAcceptEvent[icut]->SetYTitle("Counts per event");
-      fhAverSumEnCellsAcceptEvent[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
-      outputContainer->Add(fhAverSumEnCellsAcceptEvent[icut]);  
-      
-      // Per Strip
-      fhSumEnCellsPerStrip[icut] = new TH1F 
-      (Form("hSumEnCellsPerStrip_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} in strip for #it{E}_{cell, #it{i}} > %1.1f GeV",fCellEnMinBins[icut]), 
-       1500,0,1500);
-      fhSumEnCellsPerStrip[icut]->SetYTitle("Counts per event");
-      fhSumEnCellsPerStrip[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
-      outputContainer->Add(fhSumEnCellsPerStrip[icut]);   
-      
-      fhNCellsPerStrip[icut] = new TH1F 
-      (Form("hNCellsPerStrip_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} in strip for #it{E}_{#it{i}} > %1.1f GeV", fCellEnMinBins[icut]),
-       48,-0.5,47.5);
-      fhNCellsPerStrip[icut]->SetYTitle("Counts per event");
-      fhNCellsPerStrip[icut]->SetXTitle("#it{n}_{cells}^{strip}");
-      outputContainer->Add(fhNCellsPerStrip[icut]);   
-      
-      fhSumEnCellsPerStripNHigh20[icut] = new TH1F 
-      (Form("hSumEnCellsPerStripNHigh20_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} in strip for #it{E}_{cell, #it{i}} > %1.1f GeV,at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMinBins[icut]), 
-       1500,0,1500);
-      fhSumEnCellsPerStripNHigh20[icut]->SetYTitle("Counts per event");
-      fhSumEnCellsPerStripNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
-      outputContainer->Add(fhSumEnCellsPerStripNHigh20[icut]);   
-      
-      fhNCellsPerStripNHigh20[icut] = new TH1F 
-      (Form("hNCellsPerStripNHigh20_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} in strip for #it{E}_{#it{i}} > %1.1f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20", fCellEnMinBins[icut]),
-       48,-0.5,47.5);
-      fhNCellsPerStripNHigh20[icut]->SetYTitle("Counts per event");
-      fhNCellsPerStripNHigh20[icut]->SetXTitle("#it{n}_{cells}^{strip}");
-      outputContainer->Add(fhNCellsPerStripNHigh20[icut]);   
-      
       // Per SM
-      
-      fhSumEnCellsPerSM[icut] = new TH2F 
-      (Form("hSumEnCellsPerSM_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} for #it{E}_{#it{i}} > %1.1f GeV, per SM",fCellEnMinBins[icut]), 
-       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhSumEnCellsPerSM[icut]->SetZTitle("Counts per event");
-      fhSumEnCellsPerSM[icut]->SetYTitle("SM");
-      fhSumEnCellsPerSM[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
-      outputContainer->Add(fhSumEnCellsPerSM[icut]);   
-      
       fhNCellsPerSM[icut] = new TH2F 
-      (Form("hNCellsPerSM_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV, per SM", fCellEnMinBins[icut]),
+      (Form("hNCellsPerSM_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, per SM",fCellEnMins[icut],fCellEnMax),
        1152, 0, 1152, totalSM, fFirstModule-0.5, fLastModule+0.5);
       fhNCellsPerSM[icut]->SetZTitle("Counts per event");
       fhNCellsPerSM[icut]->SetYTitle("SM");
       fhNCellsPerSM[icut]->SetXTitle("#it{n}_{cells}");
       outputContainer->Add(fhNCellsPerSM[icut]);   
-      
-      fhAverSumEnCellsPerSM[icut] = new TH2F 
-      (Form("hAverSumEnCellsPerSM_EnMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV, per SM", fCellEnMinBins[icut]), 
-       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhAverSumEnCellsPerSM[icut]->SetZTitle("Counts per event");
-      fhAverSumEnCellsPerSM[icut]->SetYTitle("SM");
-      fhAverSumEnCellsPerSM[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
-      outputContainer->Add(fhAverSumEnCellsPerSM[icut]);  
-      
-      fhSumEnCellsPerSMNHigh20[icut] = new TH2F 
-      (Form("hSumEnCellsPerSMNHigh20_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} for #it{E}_{#it{i}} > %1.1f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20, per SM",fCellEnMinBins[icut]), 
-       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhSumEnCellsPerSMNHigh20[icut]->SetZTitle("Counts per event");
-      fhSumEnCellsPerSMNHigh20[icut]->SetYTitle("SM");
-      fhSumEnCellsPerSMNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
-      outputContainer->Add(fhSumEnCellsPerSMNHigh20[icut]);   
-      
+     
       fhNCellsPerSMNHigh20[icut] = new TH2F 
-      (Form("hNCellsPerSMNHigh20_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20, per SM", fCellEnMinBins[icut]),
+      (Form("hNCellsPerSMNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20, per SM",fCellEnMins[icut],fCellEnMax),
        1152, 0, 1152, totalSM, fFirstModule-0.5, fLastModule+0.5);
       fhNCellsPerSMNHigh20[icut]->SetZTitle("Counts per event");
       fhNCellsPerSMNHigh20[icut]->SetYTitle("SM");
       fhNCellsPerSMNHigh20[icut]->SetXTitle("#it{n}_{cells}");
       outputContainer->Add(fhNCellsPerSMNHigh20[icut]);   
       
-      fhAverSumEnCellsPerSMNHigh20[icut] = new TH2F 
-      (Form("hAverSumEnCellsPerSMNHigh20_EnMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20, per SM", fCellEnMinBins[icut]), 
-       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhAverSumEnCellsPerSMNHigh20[icut]->SetZTitle("Counts per event");
-      fhAverSumEnCellsPerSMNHigh20[icut]->SetYTitle("SM");
-      fhAverSumEnCellsPerSMNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
-      outputContainer->Add(fhAverSumEnCellsPerSMNHigh20[icut]);  
-      
-      fhSumEnCellsPerSMAcceptEvent[icut] = new TH2F 
-      (Form("hSumEnCellsPerSMAcceptEvent_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} for #it{E}_{#it{i}} > %1.1f GeV, low Activity SM3, per SM",fCellEnMinBins[icut]), 
-       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhSumEnCellsPerSMAcceptEvent[icut]->SetZTitle("Counts per event");
-      fhSumEnCellsPerSMAcceptEvent[icut]->SetYTitle("SM");
-      fhSumEnCellsPerSMAcceptEvent[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
-      outputContainer->Add(fhSumEnCellsPerSMAcceptEvent[icut]);   
-      
       fhNCellsPerSMAcceptEvent[icut] = new TH2F 
-      (Form("hNCellsPerSMAcceptEvent_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} for #it{E}_{#it{#it{i}}} > %1.1f GeV, low activity SM3, per SM", fCellEnMinBins[icut]),
+      (Form("hNCellsPerSMAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, reject high activity events in any SM but SM3, per SM",fCellEnMins[icut],fCellEnMax),
        1152, 0, 1152, totalSM, fFirstModule-0.5, fLastModule+0.5);
       fhNCellsPerSMAcceptEvent[icut]->SetZTitle("Counts per event");
       fhNCellsPerSMAcceptEvent[icut]->SetYTitle("SM");
       fhNCellsPerSMAcceptEvent[icut]->SetXTitle("#it{n}_{cells}");
       outputContainer->Add(fhNCellsPerSMAcceptEvent[icut]);   
       
+      // Sum of cells energy in event
+      fhSumEnCells[icut] = new TH1F 
+      (Form("hSumEnCells_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000);
+      fhSumEnCells[icut]->SetYTitle("Counts per event");
+      fhSumEnCells[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
+      outputContainer->Add(fhSumEnCells[icut]);   
+      
+      fhSumEnCellsNHigh20[icut] = new TH1F 
+      (Form("hSumEnCellsNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000);
+      fhSumEnCellsNHigh20[icut]->SetYTitle("Counts per event");
+      fhSumEnCellsNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
+      outputContainer->Add(fhSumEnCellsNHigh20[icut]);   
+      
+      fhSumEnCellsAcceptEvent[icut] = new TH1F 
+      (Form("hSumEnCellsAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} for %1.1f < #it{E}_{cell} < %2.0f GeV, reject high activity events in any SM but SM3",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000);
+      fhSumEnCellsAcceptEvent[icut]->SetYTitle("Counts per event");
+      fhSumEnCellsAcceptEvent[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
+      outputContainer->Add(fhSumEnCellsAcceptEvent[icut]);   
+      
+      // Per SM
+      fhSumEnCellsPerSM[icut] = new TH2F 
+      (Form("hSumEnCellsPerSM_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} for %1.1f < #it{E}_{cell} < %2.0f GeV, per SM",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhSumEnCellsPerSM[icut]->SetZTitle("Counts per event");
+      fhSumEnCellsPerSM[icut]->SetYTitle("SM");
+      fhSumEnCellsPerSM[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
+      outputContainer->Add(fhSumEnCellsPerSM[icut]);   
+      
+      fhSumEnCellsPerSMNHigh20[icut] = new TH2F 
+      (Form("hSumEnCellsPerSMNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20, per SM",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhSumEnCellsPerSMNHigh20[icut]->SetZTitle("Counts per event");
+      fhSumEnCellsPerSMNHigh20[icut]->SetYTitle("SM");
+      fhSumEnCellsPerSMNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
+      outputContainer->Add(fhSumEnCellsPerSMNHigh20[icut]);   
+  
+      fhSumEnCellsPerSMAcceptEvent[icut] = new TH2F 
+      (Form("hSumEnCellsPerSMAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} for %1.1f < #it{E}_{cell} < %2.0f GeV, low Activity SM3, per SM",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhSumEnCellsPerSMAcceptEvent[icut]->SetZTitle("Counts per event");
+      fhSumEnCellsPerSMAcceptEvent[icut]->SetYTitle("SM");
+      fhSumEnCellsPerSMAcceptEvent[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
+      outputContainer->Add(fhSumEnCellsPerSMAcceptEvent[icut]);   
+      
+      if ( fFillAllCellEventParamHisto < 2 ) continue ;
+
+      // Average energy
+      //
+      fhAverSumEnCells[icut] = new TH1F 
+      (Form("hAverSumEnCells_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000);
+      fhAverSumEnCells[icut]->SetYTitle("Counts per event");
+      fhAverSumEnCells[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
+      outputContainer->Add(fhAverSumEnCells[icut]);  
+      
+      fhAverSumEnCellsNHigh20[icut] = new TH1F 
+      (Form("hAverSumEnCellsNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000);
+      fhAverSumEnCellsNHigh20[icut]->SetYTitle("Counts per event");
+      fhAverSumEnCellsNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
+      outputContainer->Add(fhAverSumEnCellsNHigh20[icut]);  
+      
+      fhAverSumEnCellsAcceptEvent[icut] = new TH1F 
+      (Form("hAverSumEnCellsAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, reject high activity events in any SM but SM3",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000);
+      fhAverSumEnCellsAcceptEvent[icut]->SetYTitle("Counts per event");
+      fhAverSumEnCellsAcceptEvent[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
+      outputContainer->Add(fhAverSumEnCellsAcceptEvent[icut]);  
+      
+      fhAverSumEnCellsPerSM[icut] = new TH2F 
+      (Form("hAverSumEnCellsPerSM_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, per SM",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhAverSumEnCellsPerSM[icut]->SetZTitle("Counts per event");
+      fhAverSumEnCellsPerSM[icut]->SetYTitle("SM");
+      fhAverSumEnCellsPerSM[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
+      outputContainer->Add(fhAverSumEnCellsPerSM[icut]);  
+      
+      fhAverSumEnCellsPerSMNHigh20[icut] = new TH2F 
+      (Form("hAverSumEnCellsPerSMNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20, per SM",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhAverSumEnCellsPerSMNHigh20[icut]->SetZTitle("Counts per event");
+      fhAverSumEnCellsPerSMNHigh20[icut]->SetYTitle("SM");
+      fhAverSumEnCellsPerSMNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
+      outputContainer->Add(fhAverSumEnCellsPerSMNHigh20[icut]);  
+      
       fhAverSumEnCellsPerSMAcceptEvent[icut] = new TH2F 
-      (Form("hAverSumEnCellsPerSMAcceptEvent_EnMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for #it{E}_{#it{i}} > %1.1f GeV, low activity SM3, per SM", fCellEnMinBins[icut]), 
+      (Form("hAverSumEnCellsPerSMAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, reject high activity events in any SM but SM3, per SM",fCellEnMins[icut],fCellEnMax), 
        10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
       fhAverSumEnCellsPerSMAcceptEvent[icut]->SetZTitle("Counts per event");
       fhAverSumEnCellsPerSMAcceptEvent[icut]->SetYTitle("SM");
       fhAverSumEnCellsPerSMAcceptEvent[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} / #it{n}_{cells} (GeV)");
       outputContainer->Add(fhAverSumEnCellsPerSMAcceptEvent[icut]);  
       
-      // Per Strip per SM
-      fhSumEnCellsPerStripPerSM[icut] = new TH2F 
-      (Form("hSumEnCellsPerStripPerSM_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} in strip for #it{E}_{cell, #it{i}} > %1.1f GeV",fCellEnMinBins[icut]), 
-       1500,0,1500, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhSumEnCellsPerStripPerSM[icut]->SetZTitle("Counts per event");
-      fhSumEnCellsPerStripPerSM[icut]->SetYTitle("SM");
-      fhSumEnCellsPerStripPerSM[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
-      outputContainer->Add(fhSumEnCellsPerStripPerSM[icut]);   
-      
-      fhNCellsPerStripPerSM[icut] = new TH2F 
-      (Form("hNCellsPerStripPerSM_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} in strip for #it{E}_{#it{i}} > %1.1f GeV", fCellEnMinBins[icut]),
-       48,-0.5,47.5, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhNCellsPerStripPerSM[icut]->SetZTitle("Counts per event");
-      fhNCellsPerStripPerSM[icut]->SetYTitle("SM");
-      fhNCellsPerStripPerSM[icut]->SetXTitle("#it{n}_{cells}^{strip}");
-      outputContainer->Add(fhNCellsPerStripPerSM[icut]);   
-      
-      fhSumEnCellsPerStripPerSMNHigh20[icut] = new TH2F 
-      (Form("hSumEnCellsPerStripPerSMNHigh20_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}} in strip for #it{E}_{cell, #it{i}} > %1.1f GeV,at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMinBins[icut]), 
-       1500,0,1500, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhSumEnCellsPerStripPerSMNHigh20[icut]->SetZTitle("Counts per event");
-      fhSumEnCellsPerStripPerSMNHigh20[icut]->SetYTitle("SM");
-      fhSumEnCellsPerStripPerSMNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
-      outputContainer->Add(fhSumEnCellsPerStripPerSMNHigh20[icut]);   
-      
-      fhNCellsPerStripPerSMNHigh20[icut] = new TH2F 
-      (Form("hNCellsPerStripPerSMNHigh20_EnMin%1.1f",fCellEnMinBins[icut]),
-       Form("#it{n}_{cells} in strip for #it{E}_{#it{i}} > %1.1f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20", fCellEnMinBins[icut]),
-       48,-0.5,47.5, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhNCellsPerStripPerSMNHigh20[icut]->SetZTitle("Counts per event");
-      fhNCellsPerStripPerSMNHigh20[icut]->SetYTitle("SM");
-      fhNCellsPerStripPerSMNHigh20[icut]->SetXTitle("#it{n}_{cells}^{strip}");
-      outputContainer->Add(fhNCellsPerStripPerSMNHigh20[icut]);   
-      
       if ( icut == 0 ) continue ;
 
-      fhFracSumEnCells[icut-1] = new TH1F 
-      (Form("hFracSumEnCells_EMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
-       201,0,1.005);
-      fhFracSumEnCells[icut-1]->SetYTitle("Counts per event");
-      fhFracSumEnCells[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
-                                               fCellEnMinBins[icut], fCellEnMinBins[0]));
-      outputContainer->Add(fhFracSumEnCells[icut-1]);   
-      
+      // Fraction of n cells
+      //
       fhFracNCells[icut-1] = new TH1F 
-      (Form("hFracNCells_EMin%1.1f", fCellEnMinBins[icut]),
+      (Form("hFracNCells_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
        Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
+            fCellEnMins[icut], fCellEnMins[0]), 
        201,0,1.005);
       fhFracNCells[icut-1]->SetYTitle("Counts per event");
       fhFracNCells[icut-1]->SetXTitle(Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}", 
-                                           fCellEnMinBins[icut], fCellEnMinBins[0]));
+                                           fCellEnMins[icut], fCellEnMins[0]));
       outputContainer->Add(fhFracNCells[icut-1]);   
       
-      fhFracSumEnCellsNHigh20[icut-1] = new TH1F 
-      (Form("hFracSumEnCellsNHigh20_EMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20", fCellEnMinBins[icut], fCellEnMinBins[0]), 
-       201,0,1.005);
-      fhFracSumEnCellsNHigh20[icut-1]->SetYTitle("Counts per event");
-      fhFracSumEnCellsNHigh20[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
-                                                      fCellEnMinBins[icut], fCellEnMinBins[0]));
-      outputContainer->Add(fhFracSumEnCellsNHigh20[icut-1]);   
-      
       fhFracNCellsNHigh20[icut-1] = new TH1F 
-      (Form("hFracNCellsNHigh20_EMin%1.1f", fCellEnMinBins[icut]),
+      (Form("hFracNCellsNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
        Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
+            fCellEnMins[icut], fCellEnMins[0]), 
        201,0,1.005);
       fhFracNCellsNHigh20[icut-1]->SetYTitle("Counts per event");
       fhFracNCellsNHigh20[icut-1]->SetXTitle(Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}", 
-                                                  fCellEnMinBins[icut], fCellEnMinBins[0]));
-      outputContainer->Add(fhFracNCellsNHigh20[icut-1]);   
-      
-      fhFracSumEnCellsAcceptEvent[icut-1] = new TH1F 
-      (Form("hFracSumEnCellsAcceptEvent_EMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, low activity SM3", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
-       201,0,1.005);
-      fhFracSumEnCellsAcceptEvent[icut-1]->SetYTitle("Counts per event");
-      fhFracSumEnCellsAcceptEvent[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", fCellEnMinBins[icut]));
-      outputContainer->Add(fhFracSumEnCellsAcceptEvent[icut-1]);   
+                                                  fCellEnMins[icut], fCellEnMins[0]));
+      outputContainer->Add(fhFracNCellsNHigh20[icut-1]); 
       
       fhFracNCellsAcceptEvent[icut-1] = new TH1F 
-      (Form("hFracNCellsAcceptEvent_EMin%1.1f", fCellEnMinBins[icut]),
-       Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}, low activity SM3", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
+      (Form("hFracNCellsAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}, reject high activity events in any SM but SM3", 
+            fCellEnMins[icut], fCellEnMins[0]), 
        201,0,1.005);
       fhFracNCellsAcceptEvent[icut-1]->SetYTitle("Counts per event");
       fhFracNCellsAcceptEvent[icut-1]->SetXTitle(Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}", 
-                                                 fCellEnMinBins[icut], fCellEnMinBins[0]));
-      outputContainer->Add(fhFracNCellsAcceptEvent[icut-1]);   
+                                                      fCellEnMins[icut], fCellEnMins[0]));
+      outputContainer->Add(fhFracNCellsAcceptEvent[icut-1]);  
       
       // Per SM
-      
-      fhFracSumEnCellsPerSM[icut-1] = new TH2F 
-      (Form("hFracSumEnCellsPerSM_EMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, per SM", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
-       201,0,1.005, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhFracSumEnCellsPerSM[icut-1]->SetZTitle("Counts per event");
-      fhFracSumEnCellsPerSM[icut-1]->SetYTitle("SM");
-      fhFracSumEnCellsPerSM[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
-                                                    fCellEnMinBins[icut], fCellEnMinBins[0]));
-      outputContainer->Add(fhFracSumEnCellsPerSM[icut-1]);   
-      
+
       fhFracNCellsPerSM[icut-1] = new TH2F 
-      (Form("hFracNCellsPerSM_EMin%1.1f", fCellEnMinBins[icut]),
+      (Form("hFracNCellsPerSM_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
        Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}, per SM", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
+            fCellEnMins[icut], fCellEnMins[0]), 
        201,0,1.005, totalSM, fFirstModule-0.5, fLastModule+0.5);
       fhFracNCellsPerSM[icut-1]->SetZTitle("Counts per event");
       fhFracNCellsPerSM[icut-1]->SetYTitle("SM");
       fhFracNCellsPerSM[icut-1]->SetXTitle(Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}", 
-                                                fCellEnMinBins[icut], fCellEnMinBins[0]));
+                                                fCellEnMins[icut], fCellEnMins[0]));
       outputContainer->Add(fhFracNCellsPerSM[icut-1]);   
       
-      fhFracSumEnCellsPerSMNHigh20[icut-1] = new TH2F 
-      (Form("hFracSumEnCellsPerSMNHigh20_EMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20, per SM", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
-       201,0,1.005, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhFracSumEnCellsPerSMNHigh20[icut-1]->SetZTitle("Counts per event");
-      fhFracSumEnCellsPerSMNHigh20[icut-1]->SetYTitle("SM");
-      fhFracSumEnCellsPerSMNHigh20[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
-                                                           fCellEnMinBins[icut], fCellEnMinBins[0]));
-      outputContainer->Add(fhFracSumEnCellsPerSMNHigh20[icut-1]);   
-      
       fhFracNCellsPerSMNHigh20[icut-1] = new TH2F 
-      (Form("hFracNCellsPerSMNHigh20_EMin%1.1f", fCellEnMinBins[icut]),
+      (Form("hFracNCellsPerSMNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
        Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20, per SM", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
+            fCellEnMins[icut], fCellEnMins[0]), 
        201,0,1.005, totalSM, fFirstModule-0.5, fLastModule+0.5);
       fhFracNCellsPerSMNHigh20[icut-1]->SetZTitle("Counts per event");
       fhFracNCellsPerSMNHigh20[icut-1]->SetYTitle("SM");
       fhFracNCellsPerSMNHigh20[icut-1]->SetXTitle(Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}", 
-                                                       fCellEnMinBins[icut], fCellEnMinBins[0]));
-      outputContainer->Add(fhFracNCellsPerSMNHigh20[icut-1]);   
-      
-      fhFracSumEnCellsPerSMAcceptEvent[icut-1] = new TH2F 
-      (Form("hFracSumEnCellsPerSMAcceptEvent_EMin%1.1f", fCellEnMinBins[icut]),
-       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, low activity SM3, per SM", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
-       201,0,1.005, totalSM, fFirstModule-0.5, fLastModule+0.5);
-      fhFracSumEnCellsPerSMAcceptEvent[icut-1]->SetZTitle("Counts per event");
-      fhFracSumEnCellsPerSMAcceptEvent[icut-1]->SetYTitle("SM");
-      fhFracSumEnCellsPerSMAcceptEvent[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
-                                                          fCellEnMinBins[icut], fCellEnMinBins[0]));
-      outputContainer->Add(fhFracSumEnCellsPerSMAcceptEvent[icut-1]);   
+                                                       fCellEnMins[icut], fCellEnMins[0]));
+      outputContainer->Add(fhFracNCellsPerSMNHigh20[icut-1]);    
       
       fhFracNCellsPerSMAcceptEvent[icut-1] = new TH2F 
-      (Form("hFracNCellsPerSMAcceptEvent_EMin%1.1f", fCellEnMinBins[icut]),
-       Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}, low activity SM3, per SM", 
-            fCellEnMinBins[icut], fCellEnMinBins[0]), 
+      (Form("hFracNCellsPerSMAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}, reject high activity events in any SM but SM3, per SM", 
+            fCellEnMins[icut], fCellEnMins[0]), 
        201,0,1.005, totalSM, fFirstModule-0.5, fLastModule+0.5);
       fhFracNCellsPerSMAcceptEvent[icut-1]->SetZTitle("Counts per event");
       fhFracNCellsPerSMAcceptEvent[icut-1]->SetYTitle("SM");
       fhFracNCellsPerSMAcceptEvent[icut-1]->SetXTitle(Form("#it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f} / #it{n}_{cells}^{#it{E}_{#it{i}}>%1.1f}", 
-                                                      fCellEnMinBins[icut], fCellEnMinBins[0]));
+                                                           fCellEnMins[icut], fCellEnMins[0]));
       outputContainer->Add(fhFracNCellsPerSMAcceptEvent[icut-1]);   
       
+      // Fraction of summed energy
+      //
+      fhFracSumEnCells[icut-1] = new TH1F 
+      (Form("hFracSumEnCells_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
+            fCellEnMins[icut], fCellEnMins[0]), 
+       201,0,1.005);
+      fhFracSumEnCells[icut-1]->SetYTitle("Counts per event");
+      fhFracSumEnCells[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
+                                               fCellEnMins[icut], fCellEnMins[0]));
+      outputContainer->Add(fhFracSumEnCells[icut-1]);   
+      
+      fhFracSumEnCellsNHigh20[icut-1] = new TH1F 
+      (Form("hFracSumEnCellsNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20", fCellEnMins[icut], fCellEnMins[0]), 
+       201,0,1.005);
+      fhFracSumEnCellsNHigh20[icut-1]->SetYTitle("Counts per event");
+      fhFracSumEnCellsNHigh20[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
+                                                      fCellEnMins[icut], fCellEnMins[0]));
+      outputContainer->Add(fhFracSumEnCellsNHigh20[icut-1]);   
+      
+      fhFracSumEnCellsAcceptEvent[icut-1] = new TH1F 
+      (Form("hFracSumEnCellsAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, reject high activity events in any SM but SM3", 
+            fCellEnMins[icut], fCellEnMins[0]), 
+       201,0,1.005);
+      fhFracSumEnCellsAcceptEvent[icut-1]->SetYTitle("Counts per event");
+      fhFracSumEnCellsAcceptEvent[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}",fCellEnMins[icut]));
+      outputContainer->Add(fhFracSumEnCellsAcceptEvent[icut-1]);   
+      
+      // Per SM
+      
+      fhFracSumEnCellsPerSM[icut-1] = new TH2F 
+      (Form("hFracSumEnCellsPerSM_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, per SM", 
+            fCellEnMins[icut], fCellEnMins[0]), 
+       201,0,1.005, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhFracSumEnCellsPerSM[icut-1]->SetZTitle("Counts per event");
+      fhFracSumEnCellsPerSM[icut-1]->SetYTitle("SM");
+      fhFracSumEnCellsPerSM[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
+                                                    fCellEnMins[icut], fCellEnMins[0]));
+      outputContainer->Add(fhFracSumEnCellsPerSM[icut-1]);   
+      
+      fhFracSumEnCellsPerSMNHigh20[icut-1] = new TH2F 
+      (Form("hFracSumEnCellsPerSMNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20, per SM", 
+            fCellEnMins[icut], fCellEnMins[0]), 
+       201,0,1.005, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhFracSumEnCellsPerSMNHigh20[icut-1]->SetZTitle("Counts per event");
+      fhFracSumEnCellsPerSMNHigh20[icut-1]->SetYTitle("SM");
+      fhFracSumEnCellsPerSMNHigh20[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
+                                                           fCellEnMins[icut], fCellEnMins[0]));
+      outputContainer->Add(fhFracSumEnCellsPerSMNHigh20[icut-1]);   
+      
+      fhFracSumEnCellsPerSMAcceptEvent[icut-1] = new TH2F 
+      (Form("hFracSumEnCellsPerSMAcceptEvent_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}, reject high activity events in any SM but SM3, per SM", 
+            fCellEnMins[icut], fCellEnMins[0]), 
+       201,0,1.005, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhFracSumEnCellsPerSMAcceptEvent[icut-1]->SetZTitle("Counts per event");
+      fhFracSumEnCellsPerSMAcceptEvent[icut-1]->SetYTitle("SM");
+      fhFracSumEnCellsPerSMAcceptEvent[icut-1]->SetXTitle(Form("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f} / #Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>%1.1f}", 
+                                                          fCellEnMins[icut], fCellEnMins[0]));
+      outputContainer->Add(fhFracSumEnCellsPerSMAcceptEvent[icut-1]);   
+      
     }
+    
+    fhSM3NCellsSumEnSuspiciousEvents = new TH2F 
+    ("hSM3NCellsSumEnSuspiciousEvents","After event rejection, SM3 activity when high energy events in other SM",1152,0,1152,100,0,100);
+    fhSM3NCellsSumEnSuspiciousEvents->SetZTitle("Counts");
+    fhSM3NCellsSumEnSuspiciousEvents->SetYTitle("#it{n}_{cells}^{#it{E}_{#it{i}}>0.5}");
+    fhSM3NCellsSumEnSuspiciousEvents->SetXTitle("#Sigma #it{E}_{#it{i}}^{#it{E}_{#it{i}}>0.5}");
+    outputContainer->Add(fhSM3NCellsSumEnSuspiciousEvents);   
   } 
   
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
@@ -3473,6 +3537,7 @@ void AliAnaCaloExotics::Print(const Option_t * opt) const
   printf("NCell cut: %d \n", fNCellHighCut) ;
   printf("Time range: [%2.2f,%2.2f] ns\n",fTimeCutMin,fTimeCutMax);
   printf("Fill cell histo : %d GeV/c\n", fFillCellHisto) ;
+  printf("Fill cell all cell event histo : %d GeV/c\n", fFillAllCellEventParamHisto) ;
   printf("Fill strip histo : %d GeV/c\n", fFillStripHisto) ;
   printf("Fill 1 cell cluster histo : %d GeV/c\n", fFill1CellHisto) ;
   printf("Fill Matching histo : %d GeV/c\n", fFillMatchingHisto) ;
