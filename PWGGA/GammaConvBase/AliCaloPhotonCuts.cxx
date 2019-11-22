@@ -6429,6 +6429,39 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         }
       }
       break;
+    case 38:
+      // Testbeam nonlinearity based on leading cell energy
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
+          AliVCaloCells* cells = event->GetEMCALCells();
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC(cells->GetCellAmplitude(FindLargestCellInCluster(cluster,event)));
+          energy /= FunctionNL_kSDM(energy, 0.987534, -3.87469, -0.128085) ;
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data(cells->GetCellAmplitude(FindLargestCellInCluster(cluster,event)));
+        }
+      }
+      break;
+    case 39:
+      // Testbeam nonlinearity based on individual cell energy
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
+        AliVCaloCells* cells = event->GetEMCALCells();
+        const Int_t nCells   = cluster->GetNCells();
+        if(isMC){
+          Float_t tempClsE = 0;
+          for (Int_t iCell = 0;iCell < nCells;iCell++){
+            tempClsE+= cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell])/FunctionNL_OfficialTB_100MeV_MC(cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell]));
+          }
+          energy = tempClsE;
+          energy /= FunctionNL_kSDM(energy, 0.987534, -3.87469, -0.128085) ;
+        } else {
+          Float_t tempClsE = 0;
+          for (Int_t iCell = 0;iCell < nCells;iCell++){
+            tempClsE+= cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell])/FunctionNL_OfficialTB_100MeV_Data(cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell]));
+          }
+          energy = tempClsE;
+        }
+      }
+      break;
 // *************** 40 + x **** default tender Settings - pPb
     // NonLinearity LHC13 pPb ConvCalo  - only shifting MC
     case 41:
