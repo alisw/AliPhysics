@@ -53,7 +53,8 @@ fExoCut(0),                            fNCellHighCut(0),
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
 fLED20(0),                             fLED12(0),   
 fLED20Time(0),                         fLED12Time(0),
-fCellEnMax(0),
+fEventNStripActive(0),                 fCellEnMax(0),
+
 fFillCellHisto(1),                     fFillAllCellEventParamHisto(1),
 fFill1CellHisto(0),    
 fFillStripHisto(1),
@@ -161,7 +162,8 @@ fhEOverP1Cell(0),
 fhCellExoAmp(0),                                               
 fhCellExoAmpTime(0),                    fhCellExoGrid(0),    
 fhCellGridTimeHighNCell20(0),           fhCellGridTimeHighNCell12(0),
-fhSM3NCellsSumEnSuspiciousEvents(0)
+fhSM3NCellsSumEnSuspiciousEvents(0),
+fhNStripsPerEvent(0),                   fhNStripsPerEventPerSM(0)
 {        
   AddToHistogramsName("AnaCaloExotic_");
   
@@ -195,7 +197,11 @@ fhSM3NCellsSumEnSuspiciousEvents(0)
     fhEnNCellsSameDiffExo [i] = 0;  
   }
   
-  for(Int_t i = 0; i < 20; i++)  fhNCellsPerClusterExoPerSM[i] = 0;
+  for(Int_t i = 0; i < 20; i++)  
+  {
+    fhNCellsPerClusterExoPerSM[i] = 0;
+    fEventNStripActiveSM      [i] = 0;
+  }
   
   for(Int_t iemin = 0; iemin < fgkNCellEnMinBins; iemin++)
   {
@@ -219,15 +225,25 @@ fhSM3NCellsSumEnSuspiciousEvents(0)
     fhNCellsPerSMAcceptEvent         [iemin] = 0;
     fhAverSumEnCellsPerSMAcceptEvent [iemin] = 0;
     
+    fhSumEnCellsAcceptEventStrip[iemin] = 0;                     
+    fhNCellsAcceptEventStrip    [iemin] = 0;
+    fhSumEnCellsPerSMAcceptEventStrip[iemin] = 0;                     
+    fhNCellsPerSMAcceptEventStrip[iemin] = 0;
+    
     fhSumEnCellsPerStrip        [iemin] = 0;                     
     fhNCellsPerStrip            [iemin] = 0;
     fhSumEnCellsPerStripPerSM   [iemin] = 0;                     
     fhNCellsPerStripPerSM       [iemin] = 0;
-
+    
     fhSumEnCellsPerStripNHigh20     [iemin] = 0;                     
     fhNCellsPerStripNHigh20         [iemin] = 0;
     fhSumEnCellsPerStripPerSMNHigh20[iemin] = 0;                     
     fhNCellsPerStripPerSMNHigh20    [iemin] = 0;
+    
+    fhSumEnCellsPerStripAcceptEventStrip     [iemin] = 0;                     
+    fhNCellsPerStripAcceptEventStrip         [iemin] = 0;
+    fhSumEnCellsPerStripPerSMAcceptEventStrip[iemin] = 0;                     
+    fhNCellsPerStripPerSMAcceptEventStrip    [iemin] = 0;
     
     if ( iemin == 3 ) continue;
     
@@ -409,26 +425,32 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     Float_t averECells = 0;
     if ( nCells[icut] > 0 ) averECells = eCells[icut] / nCells[icut];
     
-    fhSumEnCells    [icut]->Fill(eCells[icut], GetEventWeight());
-    fhNCells        [icut]->Fill(nCells[icut], GetEventWeight());
+    fhSumEnCells[icut]->Fill(eCells[icut], GetEventWeight());
+    fhNCells    [icut]->Fill(nCells[icut], GetEventWeight());
     
     if ( fFillAllCellEventParamHisto  > 1 )
       fhAverSumEnCells[icut]->Fill(averECells  , GetEventWeight());
 
     if ( fLED20 ) 
     {
-      fhSumEnCellsNHigh20    [icut]->Fill(eCells[icut], GetEventWeight());
-      fhNCellsNHigh20        [icut]->Fill(nCells[icut], GetEventWeight());
+      fhSumEnCellsNHigh20[icut]->Fill(eCells[icut], GetEventWeight());
+      fhNCellsNHigh20    [icut]->Fill(nCells[icut], GetEventWeight());
       if ( fFillAllCellEventParamHisto  > 1 )
         fhAverSumEnCellsNHigh20[icut]->Fill(averECells  , GetEventWeight());
     }
     
     if ( acceptEvent )
     {
-      fhSumEnCellsAcceptEvent    [icut]->Fill(eCells[icut], GetEventWeight());
-      fhNCellsAcceptEvent        [icut]->Fill(nCells[icut], GetEventWeight());
+      fhSumEnCellsAcceptEvent[icut]->Fill(eCells[icut], GetEventWeight());
+      fhNCellsAcceptEvent    [icut]->Fill(nCells[icut], GetEventWeight());
       if ( fFillAllCellEventParamHisto  > 1 )
-        fhAverSumEnCellsAcceptEvent[icut]->Fill(averECells  , GetEventWeight());
+        fhAverSumEnCellsAcceptEvent[icut]->Fill(averECells, GetEventWeight());
+    }
+ 
+    if ( fEventNStripActive < 3 )
+    {
+      fhSumEnCellsAcceptEventStrip[icut]->Fill(eCells[icut], GetEventWeight());
+      fhNCellsAcceptEventStrip    [icut]->Fill(nCells[icut], GetEventWeight());
     }
     
     for(Int_t ism = 0; ism < 20; ism++)
@@ -437,25 +459,31 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       if ( nCellsPerSM[icut][ism] > 0 ) 
         averECells = eCellsPerSM[icut][ism] / nCellsPerSM[icut][ism];
       
-      fhSumEnCellsPerSM    [icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
-      fhNCellsPerSM        [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
+      fhSumEnCellsPerSM[icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
+      fhNCellsPerSM    [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
       if ( fFillAllCellEventParamHisto  > 1 )
-        fhAverSumEnCellsPerSM[icut]->Fill(averECells            , ism, GetEventWeight());
+        fhAverSumEnCellsPerSM[icut]->Fill(averECells, ism, GetEventWeight());
       
       if ( fLED20 ) 
       {
-        fhSumEnCellsPerSMNHigh20    [icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
-        fhNCellsPerSMNHigh20        [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
+        fhSumEnCellsPerSMNHigh20[icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
+        fhNCellsPerSMNHigh20    [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
         if ( fFillAllCellEventParamHisto  > 1 )
-          fhAverSumEnCellsPerSMNHigh20[icut]->Fill(averECells            , ism, GetEventWeight());
+          fhAverSumEnCellsPerSMNHigh20[icut]->Fill(averECells, ism, GetEventWeight());
       }
       
       if ( acceptEvent )
       {
-        fhSumEnCellsPerSMAcceptEvent    [icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
-        fhNCellsPerSMAcceptEvent        [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
+        fhSumEnCellsPerSMAcceptEvent[icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
+        fhNCellsPerSMAcceptEvent    [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
         if ( fFillAllCellEventParamHisto  > 1 )
-          fhAverSumEnCellsPerSMAcceptEvent[icut]->Fill(averECells            , ism, GetEventWeight());
+          fhAverSumEnCellsPerSMAcceptEvent[icut]->Fill(averECells, ism, GetEventWeight());
+      }
+      
+      if ( fEventNStripActive < 3 )
+      {
+        fhSumEnCellsPerSMAcceptEventStrip[icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
+        fhNCellsPerSMAcceptEventStrip    [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
       }
     } // Per SM
     
@@ -523,15 +551,25 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
   Int_t ncells = cells->GetNumberOfCells();
   if( ncells <= 0 ) return;
   
+  fEventNStripActive = 0;
+
   Float_t amp1   = 0., amp2   = 0. ;
   Int_t   absId1 = -1, absId2 = -1 ;
+  Float_t eCellsStrip[4][20][24];
+  Int_t   nCellsStrip[4][20][24];
+
   for (Int_t ism = 0; ism < 20; ism++)
   {
+    fEventNStripActiveSM[ism] = 0;
+    
     for (Int_t ieta = 0; ieta < 48; ieta=ieta+2)
     {
-      Float_t eCellsStrip[] = {0.,0., 0., 0.};
-      Int_t   nCellsStrip[] = {0 ,0 , 0 , 0 };
-
+      for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
+      {
+        eCellsStrip[icut][ism][ieta/2] = 0.; 
+        nCellsStrip[icut][ism][ieta/2] = 0 ; 
+      }
+      
       for (Int_t iphi = 0; iphi < 24; iphi++)
       {
         absId1 = GetEMCALGeometry()->GetAbsCellIdFromCellIndexes(ism, iphi, ieta);
@@ -549,14 +587,14 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
         {
           if ( amp1 > fCellEnMins[icut] && amp1 < fCellEnMax )
           {            
-            nCellsStrip[icut]++;
-            eCellsStrip[icut]+=amp1;
+            nCellsStrip[icut][ism][ieta/2]++;
+            eCellsStrip[icut][ism][ieta/2]+=amp1;
           }
           
           if ( amp2 > fCellEnMins[icut] && amp2 < fCellEnMax )
           {            
-            nCellsStrip[icut]++;
-            eCellsStrip[icut]+=amp2;
+            nCellsStrip[icut][ism][ieta/2]++;
+            eCellsStrip[icut][ism][ieta/2]+=amp2;
           }
         } //  e cut
         
@@ -565,21 +603,74 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
       // Fill histograms per Strip
       for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
       {        
-        fhSumEnCellsPerStrip     [icut]->Fill(eCellsStrip[icut],      GetEventWeight());
-        fhNCellsPerStrip         [icut]->Fill(nCellsStrip[icut],      GetEventWeight());
-        fhSumEnCellsPerStripPerSM[icut]->Fill(eCellsStrip[icut], ism, GetEventWeight());
-        fhNCellsPerStripPerSM    [icut]->Fill(nCellsStrip[icut], ism, GetEventWeight());
+        fhSumEnCellsPerStrip     [icut]->Fill(eCellsStrip[icut][ism][ieta/2],      GetEventWeight());
+        fhNCellsPerStrip         [icut]->Fill(nCellsStrip[icut][ism][ieta/2],      GetEventWeight());
+        fhSumEnCellsPerStripPerSM[icut]->Fill(eCellsStrip[icut][ism][ieta/2], ism, GetEventWeight());
+        fhNCellsPerStripPerSM    [icut]->Fill(nCellsStrip[icut][ism][ieta/2], ism, GetEventWeight());
         
         if ( fLED20 ) 
         {
-          fhSumEnCellsPerStripNHigh20     [icut]->Fill(eCellsStrip[icut],      GetEventWeight());
-          fhNCellsPerStripNHigh20         [icut]->Fill(nCellsStrip[icut],      GetEventWeight());
-          fhSumEnCellsPerStripPerSMNHigh20[icut]->Fill(eCellsStrip[icut], ism, GetEventWeight());
-          fhNCellsPerStripPerSMNHigh20    [icut]->Fill(nCellsStrip[icut], ism, GetEventWeight());
+          fhSumEnCellsPerStripNHigh20     [icut]->Fill(eCellsStrip[icut][ism][ieta/2],      GetEventWeight());
+          fhNCellsPerStripNHigh20         [icut]->Fill(nCellsStrip[icut][ism][ieta/2],      GetEventWeight());
+          fhSumEnCellsPerStripPerSMNHigh20[icut]->Fill(eCellsStrip[icut][ism][ieta/2], ism, GetEventWeight());
+          fhNCellsPerStripPerSMNHigh20    [icut]->Fill(nCellsStrip[icut][ism][ieta/2], ism, GetEventWeight());
         }
       }
     } // ieta
   }// sm    
+  
+  // Count per event over event cut
+  // Low activity on SM3 for emin = 0.5
+  Bool_t bSM3 = kFALSE;
+  for (Int_t ieta = 0; ieta < 24; ieta++)
+  {
+    if ( eCellsStrip[0][3][ieta] <= 2 ) bSM3 = kTRUE;
+    if ( nCellsStrip[0][3][ieta] <= 3 ) bSM3 = kTRUE;
+  }
+  
+  if ( bSM3 )
+  {
+    Int_t maxNCells = 20;
+    for (Int_t ism = 0; ism < 20; ism++)
+    {
+      if (ism == 3 ) continue ;
+     
+      maxNCells = 20;
+      if(ism == 10 || ism == 11 || ism == 18 || ism == 19) 
+        maxNCells = 12;
+      
+      for (Int_t ieta = 0; ieta < 24; ieta++)
+      {
+        if( (eCellsStrip[0][ism][ieta] > 50 || nCellsStrip[0][ism][ieta] > maxNCells ) )
+        {
+          fEventNStripActive++;
+          fEventNStripActiveSM[ism]++;          
+        }
+      } // ieta
+    } // ism
+  } // bSM03
+  
+  fhNStripsPerEvent->Fill(fEventNStripActive, GetEventWeight());
+  for (Int_t ism = 0; ism < 20; ism++)
+    fhNStripsPerEventPerSM->Fill(fEventNStripActiveSM[ism], ism, GetEventWeight());
+  
+  // Strip activity if cut on number of active strips
+  if ( fEventNStripActive < 3 )
+  {
+    for (Int_t ism = 0; ism < 20; ism++)
+    {
+      for (Int_t ieta = 0; ieta < 24; ieta++)
+      {
+        for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
+        { 
+          fhSumEnCellsPerStripAcceptEventStrip     [icut]->Fill(eCellsStrip[icut][ism][ieta],      GetEventWeight());
+          fhNCellsPerStripAcceptEventStrip         [icut]->Fill(nCellsStrip[icut][ism][ieta],      GetEventWeight());
+          fhSumEnCellsPerStripPerSMAcceptEventStrip[icut]->Fill(eCellsStrip[icut][ism][ieta], ism, GetEventWeight());
+          fhNCellsPerStripPerSMAcceptEventStrip    [icut]->Fill(nCellsStrip[icut][ism][ieta], ism, GetEventWeight());
+        } // icut
+      } // ieta
+    } // sm
+  } // strip event cut
 }
 
 //____________________________________________________________________________
@@ -3228,6 +3319,14 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
         fhNCellsPerStrip[icut]->SetXTitle("#it{n}_{cells}^{strip}");
         outputContainer->Add(fhNCellsPerStrip[icut]);   
         
+        fhNCellsPerStripAcceptEventStrip[icut] = new TH1F 
+        (Form("hNCellsPerStripAcceptEventStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#it{n}_{cells} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax),
+         48,-0.5,47.5);
+        fhNCellsPerStripAcceptEventStrip[icut]->SetYTitle("Counts per event");
+        fhNCellsPerStripAcceptEventStrip[icut]->SetXTitle("#it{n}_{cells}^{strip}");
+        outputContainer->Add(fhNCellsPerStripAcceptEventStrip[icut]);           
+        
         fhNCellsPerStripNHigh20[icut] = new TH1F 
         (Form("hNCellsPerStripNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
          Form("#it{n}_{cells} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax),
@@ -3246,6 +3345,15 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
         fhNCellsPerStripPerSM[icut]->SetXTitle("#it{n}_{cells}^{strip}");
         outputContainer->Add(fhNCellsPerStripPerSM[icut]);   
         
+        fhNCellsPerStripPerSMAcceptEventStrip[icut] = new TH2F 
+        (Form("hNCellsPerStripPerSMAcceptEventStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#it{n}_{cells} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax),
+         48,-0.5,47.5, totalSM, fFirstModule-0.5, fLastModule+0.5);
+        fhNCellsPerStripPerSMAcceptEventStrip[icut]->SetZTitle("Counts per event");
+        fhNCellsPerStripPerSMAcceptEventStrip[icut]->SetYTitle("SM");
+        fhNCellsPerStripPerSMAcceptEventStrip[icut]->SetXTitle("#it{n}_{cells}^{strip}");
+        outputContainer->Add(fhNCellsPerStripPerSMAcceptEventStrip[icut]);   
+        
         fhNCellsPerStripPerSMNHigh20[icut] = new TH2F 
         (Form("hNCellsPerStripPerSMNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
          Form("#it{n}_{cells} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV, at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax),
@@ -3254,7 +3362,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
         fhNCellsPerStripPerSMNHigh20[icut]->SetYTitle("SM");
         fhNCellsPerStripPerSMNHigh20[icut]->SetXTitle("#it{n}_{cells}^{strip}");
         outputContainer->Add(fhNCellsPerStripPerSMNHigh20[icut]);   
-       
+        
         // Sum strip cells energy
         //
         fhSumEnCellsPerStrip[icut] = new TH1F 
@@ -3265,6 +3373,14 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
         fhSumEnCellsPerStrip[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
         outputContainer->Add(fhSumEnCellsPerStrip[icut]);   
         
+        fhSumEnCellsPerStripAcceptEventStrip[icut] = new TH1F 
+        (Form("hSumEnCellsPerStripAcceptEventStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#Sigma #it{E}_{#it{i}} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax), 
+         1500,0,1500);
+        fhSumEnCellsPerStripAcceptEventStrip[icut]->SetYTitle("Counts per event");
+        fhSumEnCellsPerStripAcceptEventStrip[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
+        outputContainer->Add(fhSumEnCellsPerStripAcceptEventStrip[icut]);   
+        
         fhSumEnCellsPerStripNHigh20[icut] = new TH1F 
         (Form("hSumEnCellsPerStripNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
          Form("#Sigma #it{E}_{#it{i}} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV,at least 1 cluster with #it{n}_{cells}^{#it{w}}>20",fCellEnMins[icut],fCellEnMax), 
@@ -3272,7 +3388,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
         fhSumEnCellsPerStripNHigh20[icut]->SetYTitle("Counts per event");
         fhSumEnCellsPerStripNHigh20[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
         outputContainer->Add(fhSumEnCellsPerStripNHigh20[icut]);   
-      
+        
         // Per Strip per SM
         fhSumEnCellsPerStripPerSM[icut] = new TH2F 
         (Form("hSumEnCellsPerStripPerSM_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
@@ -3282,6 +3398,15 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
         fhSumEnCellsPerStripPerSM[icut]->SetYTitle("SM");
         fhSumEnCellsPerStripPerSM[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
         outputContainer->Add(fhSumEnCellsPerStripPerSM[icut]);   
+        
+        fhSumEnCellsPerStripPerSMAcceptEventStrip[icut] = new TH2F 
+        (Form("hSumEnCellsPerStripPerSMAcceptEventStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+         Form("#Sigma #it{E}_{#it{i}} in strip for %1.1f < #it{E}_{cell} < %2.0f GeV",fCellEnMins[icut],fCellEnMax), 
+         1500,0,1500, totalSM, fFirstModule-0.5, fLastModule+0.5);
+        fhSumEnCellsPerStripPerSMAcceptEventStrip[icut]->SetZTitle("Counts per event");
+        fhSumEnCellsPerStripPerSMAcceptEventStrip[icut]->SetYTitle("SM");
+        fhSumEnCellsPerStripPerSMAcceptEventStrip[icut]->SetXTitle("#Sigma #it{E}_{#it{i}}^{strip} (GeV)");
+        outputContainer->Add(fhSumEnCellsPerStripPerSMAcceptEventStrip[icut]);
         
         fhSumEnCellsPerStripPerSMNHigh20[icut] = new TH2F 
         (Form("hSumEnCellsPerStripPerSMNHigh20_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
@@ -3320,6 +3445,14 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       fhNCellsAcceptEvent[icut]->SetYTitle("Counts per event");
       fhNCellsAcceptEvent[icut]->SetXTitle("#it{n}_{cells}");
       outputContainer->Add(fhNCellsAcceptEvent[icut]);   
+   
+      fhNCellsAcceptEventStrip[icut] = new TH1F 
+      (Form("hNCellsAcceptEventStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, reject high activity events in any SM but SM3",fCellEnMins[icut],fCellEnMax),
+       17000,0,17000);
+      fhNCellsAcceptEventStrip[icut]->SetYTitle("Counts per event");
+      fhNCellsAcceptEventStrip[icut]->SetXTitle("#it{n}_{cells}");
+      outputContainer->Add(fhNCellsAcceptEventStrip[icut]);   
       
       // Per SM
       fhNCellsPerSM[icut] = new TH2F 
@@ -3348,6 +3481,15 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       fhNCellsPerSMAcceptEvent[icut]->SetYTitle("SM");
       fhNCellsPerSMAcceptEvent[icut]->SetXTitle("#it{n}_{cells}");
       outputContainer->Add(fhNCellsPerSMAcceptEvent[icut]);   
+ 
+      fhNCellsPerSMAcceptEventStrip[icut] = new TH2F 
+      (Form("hNCellsPerSMAcceptEventStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#it{n}_{cells} for %1.1f < #it{E}_{cell} < %2.0f GeV, reject high activity events in any SM but SM3, per SM",fCellEnMins[icut],fCellEnMax),
+       1152, 0, 1152, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhNCellsPerSMAcceptEventStrip[icut]->SetZTitle("Counts per event");
+      fhNCellsPerSMAcceptEventStrip[icut]->SetYTitle("SM");
+      fhNCellsPerSMAcceptEventStrip[icut]->SetXTitle("#it{n}_{cells}");
+      outputContainer->Add(fhNCellsPerSMAcceptEventStrip[icut]);   
       
       // Sum of cells energy in event
       fhSumEnCells[icut] = new TH1F 
@@ -3373,6 +3515,14 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       fhSumEnCellsAcceptEvent[icut]->SetYTitle("Counts per event");
       fhSumEnCellsAcceptEvent[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
       outputContainer->Add(fhSumEnCellsAcceptEvent[icut]);   
+ 
+      fhSumEnCellsAcceptEventStrip[icut] = new TH1F 
+      (Form("hSumEnCellsAcceptEventStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} for %1.1f < #it{E}_{cell} < %2.0f GeV, reject high activity events in any SM but SM3",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000);
+      fhSumEnCellsAcceptEventStrip[icut]->SetYTitle("Counts per event");
+      fhSumEnCellsAcceptEventStrip[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
+      outputContainer->Add(fhSumEnCellsAcceptEventStrip[icut]);   
       
       // Per SM
       fhSumEnCellsPerSM[icut] = new TH2F 
@@ -3401,6 +3551,15 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       fhSumEnCellsPerSMAcceptEvent[icut]->SetYTitle("SM");
       fhSumEnCellsPerSMAcceptEvent[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
       outputContainer->Add(fhSumEnCellsPerSMAcceptEvent[icut]);   
+   
+      fhSumEnCellsPerSMAcceptEventStrip[icut] = new TH2F 
+      (Form("hSumEnCellsPerSMAcceptEventStrip_EnMin%1.1f_Max%2.0f",fCellEnMins[icut],fCellEnMax),
+       Form("#Sigma #it{E}_{#it{i}} for %1.1f < #it{E}_{cell} < %2.0f GeV, low Activity SM3, per SM",fCellEnMins[icut],fCellEnMax), 
+       10000,0,10000, totalSM, fFirstModule-0.5, fLastModule+0.5);
+      fhSumEnCellsPerSMAcceptEventStrip[icut]->SetZTitle("Counts per event");
+      fhSumEnCellsPerSMAcceptEventStrip[icut]->SetYTitle("SM");
+      fhSumEnCellsPerSMAcceptEventStrip[icut]->SetXTitle("#Sigma #it{E}_{#it{i}} (GeV)");
+      outputContainer->Add(fhSumEnCellsPerSMAcceptEventStrip[icut]);   
       
       if ( fFillAllCellEventParamHisto < 2 ) continue ;
 
@@ -3601,6 +3760,23 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     outputContainer->Add(fhSM3NCellsSumEnSuspiciousEvents);   
   } 
   
+  if ( fFillStripHisto )
+  {
+    fhNStripsPerEvent = new TH1F 
+    ("hNStripsPerEvent","#it{n}_{strips} active, Low SM3 activity and high energy strips in other SM",450,0,450);
+    fhNStripsPerEvent->SetYTitle("Counts");
+    fhNStripsPerEvent->SetXTitle("#it{n}_{strips}^{high activity}");
+    outputContainer->Add(fhNStripsPerEvent);
+    
+    fhNStripsPerEventPerSM = new TH2F 
+    ("hNStripsPerEventPerSM","#it{n}_{strips} active per SM, Low SM3 activity and high energy strips in other SM",
+     450,0,450,totalSM,fFirstModule-0.5, fLastModule+0.5);
+    fhNStripsPerEventPerSM->SetZTitle("Counts");
+    fhNStripsPerEventPerSM->SetYTitle("SM");
+    fhNStripsPerEventPerSM->SetXTitle("#it{n}_{strips}^{high activity}");
+    outputContainer->Add(fhNStripsPerEventPerSM);
+  }
+  
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
   //    printf("i=%d, name= %s\n",i,outputContainer->At(i)->GetName());
   
@@ -3681,11 +3857,11 @@ void  AliAnaCaloExotics::MakeAnalysisFillHistograms()
   // Clusters
   ClusterHistograms(caloClusters,cells);
   
+  // Strips of cells 2x24
+  if ( fFillStripHisto )  StripHistograms(cells);
+  
   // Cells  
   if ( fFillCellHisto )  CellHistograms(cells);
- 
-  // Strips  
-  if ( fFillStripHisto )  StripHistograms(cells);
   
   AliDebug(1,"End");
 }

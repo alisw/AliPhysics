@@ -148,10 +148,14 @@ public:
   Float_t  fTimeCutMin  ;                       ///<  Remove clusters with time smaller than this value, in ns
   Float_t  fTimeCutMax  ;                       ///<  Remove clusters with time larger than this value, in ns
   
-  Bool_t    fLED20      ;                      ///<  There is at least a cluster with 20 cells with w > 0 in the event; internal
-  Bool_t    fLED12      ;                      ///<  There is at least a cluster with 12 cells with w > 0 in the event; internal
-  Float_t   fLED20Time  ;                      ///<  Time of LED cluster with 20 cells 
-  Float_t   fLED12Time  ;                      ///<  Time of LED cluster with 12 cells
+  Bool_t   fLED20       ;                      ///<  There is at least a cluster with 20 cells with w > 0 in the event; internal
+  Bool_t   fLED12       ;                      ///<  There is at least a cluster with 12 cells with w > 0 in the event; internal
+  Float_t  fLED20Time   ;                      ///<  Time of LED cluster with 20 cells 
+  Float_t  fLED12Time   ;                      ///<  Time of LED cluster with 12 cells
+ 
+  Int_t    fEventNStripActive ;                ///<  Number of strips per event with multiple high energy cells
+  Int_t    fEventNStripActiveSM[20];           ///<  Number of strips per event with multiple high energy cells per SM
+
   
   /// Total number of cluster energy bins histograms
   static const Int_t fgkNEBins = 12;
@@ -417,11 +421,16 @@ public:
   TH1F *   fhFracNCellsNHigh20    [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV, 1 cluster with n_cell_w>20
   TH1F *   fhFracSumEnCellsNHigh20[fgkNCellEnMinBinsFr];      //!<! sum of cells with E > 1 GeV over emin, 1 cluster with n_cell_w>20
  
-  TH1F *   fhSumEnCellsAcceptEvent     [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy, LED rejected 
-  TH1F *   fhNCellsAcceptEvent         [fgkNCellEnMinBins];        //!<! For E cell > emin, count number of cells, LED rejected
-  TH1F *   fhAverSumEnCellsAcceptEvent [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy / total cells number, LED rejected
-  TH1F *   fhFracNCellsAcceptEvent     [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV, LED rejected
-  TH1F *   fhFracSumEnCellsAcceptEvent [fgkNCellEnMinBinsFr];      //!<! sum of cells with E > 1 GeV over emin, LED rejected
+  TH1F *   fhSumEnCellsAcceptEvent     [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, LED rejected 
+  TH1F *   fhNCellsAcceptEvent         [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, LED rejected
+  TH1F *   fhAverSumEnCellsAcceptEvent [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy / total cells number, LED rejected
+  TH1F *   fhFracNCellsAcceptEvent     [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, LED rejected
+  TH1F *   fhFracSumEnCellsAcceptEvent [fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, LED rejected
+ 
+  TH1F *   fhSumEnCellsAcceptEventStrip[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, LED rejected, based on n strip 
+  TH1F *   fhNCellsAcceptEventStrip    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, LED rejected, based on n strip
+  TH2F *   fhSumEnCellsPerSMAcceptEventStrip[fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy, per SM, LED rejected, based on n strip 
+  TH2F *   fhNCellsPerSMAcceptEventStrip    [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells, per SM, LED rejected, based on n strip
   
   // Per SM
   TH2F *   fhSumEnCellsPerSM           [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, per SM 
@@ -451,7 +460,15 @@ public:
   TH2F *   fhSumEnCellsPerStripPerSMNHigh20[fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, per SM, 1 cluster with n_cell_w>20, per SM  
   TH2F *   fhNCellsPerStripPerSMNHigh20[fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM, 1 cluster with n_cell_w>20, per SM  
   
+  TH1F *   fhSumEnCellsPerStripAcceptEventStrip[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, accept event based on n strip 
+  TH1F *   fhNCellsPerStripAcceptEventStrip    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, accept event based on n strip
+  TH2F *   fhSumEnCellsPerStripPerSMAcceptEventStrip[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, per SM, accept event based on n strip 
+  TH2F *   fhNCellsPerStripPerSMAcceptEventStrip    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM, accept event based on n strip
+  
   TH2F *   fhSM3NCellsSumEnSuspiciousEvents;                  //!<! Control histogram to check SM3 activity when there is high activity event in other SM, after event cut
+  
+  TH1F *   fhNStripsPerEvent;                                 //!<! Number of active strips per event, low activity SM3
+  TH2F *   fhNStripsPerEventPerSM;                            //!<! Number of active strips per event, per SM, low activity SM3
   
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;
@@ -460,7 +477,7 @@ public:
   AliAnaCaloExotics(              const AliAnaCaloExotics & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloExotics,9) ;
+  ClassDef(AliAnaCaloExotics,10) ;
   /// \endcond
 
 } ;
