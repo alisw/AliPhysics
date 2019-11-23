@@ -87,6 +87,7 @@ void AddTask_GammaConvV1_pp(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -105,6 +106,12 @@ void AddTask_GammaConvV1_pp(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -1013,6 +1020,10 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("o5k10113", "00200009f9730000dge0400000", "0152103500000000"); // 5-20%
     cuts.AddCutPCM("p2610113", "00200009f9730000dge0400000", "0152103500000000"); // 20-60%
     cuts.AddCutPCM("p6a10113", "00200009f9730000dge0400000", "0152103500000000"); // 60-100%
+  } else if (trainConfig == 455){ // PCM Isolated Pi0 analysis
+    cuts.AddCutPCM("00010113", "08200009f9730000dge0400000", "4152103500000000");
+  } else if (trainConfig == 456){ // PCM HighPtHadron analysis
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "5152103500000000");
 
   //---------configs for V0AND 8TeV --------------------------//
   } else if (trainConfig == 460) {
@@ -1845,10 +1856,14 @@ if(!cuts.AreValid()){
     TString mcInputMultHisto      = "";
     TString triggerString         = (cuts.GetEventCut(i)).Data();
     triggerString                 = triggerString(3,2);
+
     if (triggerString.CompareTo("03")==0)
       triggerString               = "00";
     if (periodNameAnchor.CompareTo("LHC13g") == 0 && triggerString.CompareTo("10")== 0 )
       triggerString               = "00";
+    if ( ((periodNameAnchor.CompareTo("LHC16d") == 0) || (periodNameAnchor.CompareTo("LHC17c") == 0) || (periodNameAnchor.CompareTo("LHC18b") == 0)) && triggerString.CompareTo("10")== 0 )
+      triggerString               = "000";
+
 
     dataInputMultHisto            = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
     mcInputMultHisto              = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
@@ -1866,7 +1881,10 @@ if(!cuts.AreValid()){
     if(fMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
-      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
+    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);

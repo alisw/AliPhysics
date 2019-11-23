@@ -64,8 +64,6 @@ public:
 protected:
     string GetFile(const string path);
     int FindPtBin(double pt);
-    double ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF *cand, double bfield);
-    double CombineNsigmaTPCTOF(double nsigmaTPC, double nsigmaTOF);
 
     /// method used to define map of name <-> variables (features) --> to be implemented for each derived class
     virtual void SetMapOfVariables(AliAODRecoDecayHF * /*cand*/, double /*bfield*/, AliAODPidHF * /*pidHF*/, int /*masshypo*/) { return; }

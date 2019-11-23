@@ -150,6 +150,7 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     fHistos->CreateTH1("QA/hEtaPion", "", 40, -2, 2);
     fHistos->CreateTH1("QA/hDCAPVPion", "", 300, 0, 3, "s");
     fHistos->CreateTH1("QA/hDCArPVPion", "", 300, 0, 3, "s");
+    fHistos->CreateTH1("QA/hPtPion", "", 200, 0, 20);
     fHistos->CreateTH2("QA/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
     fHistos->CreateTH2("QA/hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
     fHistos->CreateTH2("QA/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 2000, 0,
@@ -169,6 +170,7 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     fHistos->CreateTH1("QAcut/hEtaPion", "", 40, -2, 2);
     fHistos->CreateTH1("QAcut/hDCAPVPion", "", 300, 0, 3, "s");
     fHistos->CreateTH1("QAcut/hDCArPVPion", "", 300, 0, 3, "s");
+    fHistos->CreateTH1("QAcut/hPtPion", "", 200, 0, 20);
     fHistos->CreateTH2("QAcut/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
     fHistos->CreateTH2("QAcut/hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
     fHistos->CreateTH2("QAcut/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 2000, 0,
@@ -316,6 +318,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
         fHistos->FillTH1("QA/hDCAPVPion", pionZ);
         fHistos->FillTH1("QA/hDCArPVPion", pionDCA_r);
         fHistos->FillTH1("QA/hEtaPion", fEta);
+        fHistos->FillTH1("QA/hPtPion", pionPt);
         fHistos->FillTH2("QA/hTPCPIDPion", track->GetTPCmomentum(), track->GetTPCsignal());
 
         if (TMath::Abs(fTPCNSigPion) > fTPCNsigSigmaStarPionCut)
@@ -332,6 +335,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
         fHistos->FillTH1("QAcut/hDCAPVPion", pionZ);
         fHistos->FillTH1("QAcut/hDCArPVPion", pionDCA_r);
         fHistos->FillTH1("QAcut/hEtaPion", fEta);
+        fHistos->FillTH1("QAcut/hPtPion", pionPt);
         fHistos->FillTH2("QAcut/hTPCPIDPion", track->GetTPCmomentum(), track->GetTPCsignal());
 
         goodtrackindices.push_back(it);

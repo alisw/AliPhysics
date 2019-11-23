@@ -21,6 +21,7 @@
 #include <TH2F.h>
 #include <TF1.h>
 #include <TParticle.h>
+#include <TLorentzVector.h>
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODMCHeader.h"
@@ -275,7 +276,8 @@ Double_t AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(AliAODEvent* ev){
 }
 
 //______________________________________________________________________
-void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t ptmin,Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig,Float_t sigmaRangeForBkg, Float_t minMass, Float_t maxMass, Int_t rebin){
+void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t ptmin,Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, 
+                                    TF1* funcB2, Float_t sigmaRangeForSig,Float_t sigmaRangeForBkg, Float_t minMass, Float_t maxMass, Int_t rebin){
 
   /// Compute <pt> from 2D histogram M vs pt
 
@@ -283,7 +285,8 @@ void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t
   Int_t start=hMassD->FindBin(ptmin);
   Int_t end=hMassD->FindBin(ptmax)-1;
   const Int_t nx=end-start;
-  TH2F *hMassDpt=new TH2F("hptmass","hptmass",nx,ptmin,ptmax,hMassD->GetNbinsY(),hMassD->GetYaxis()->GetBinLowEdge(1),hMassD->GetYaxis()->GetBinLowEdge(hMassD->GetNbinsY())+hMassD->GetYaxis()->GetBinWidth(hMassD->GetNbinsY()));
+  TH2F *hMassDpt=new TH2F("hptmass","hptmass",nx,ptmin,ptmax,hMassD->GetNbinsY(),hMassD->GetYaxis()->GetBinLowEdge(1),
+                          hMassD->GetYaxis()->GetBinLowEdge(hMassD->GetNbinsY())+hMassD->GetYaxis()->GetBinWidth(hMassD->GetNbinsY()));
   for(Int_t ix=start;ix<end;ix++){
     for(Int_t iy=1;iy<=hMassD->GetNbinsY();iy++){
       hMassDpt->SetBinContent(ix-start+1,iy,hMassD->GetBinContent(ix,iy));
@@ -2677,7 +2680,7 @@ Int_t AliVertexingHFUtils::CheckB0toDminuspiDecay(TClonesArray* arrayMC, AliAODM
   return decayB0;
 }
 //____________________________________________________________________________
-Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
+Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd){
   /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
   /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
@@ -2733,6 +2736,28 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
         }
       }
 
+      //In ITS2 Upgrade production, phi not "stored", so decay read as non-resonant
+      if(decayDs==3 && ITS2UpgradeProd){
+        TParticle* dauK1 = mcEvent->Particle(labDauDs[0]);
+        TParticle* dauK2 = mcEvent->Particle(labDauDs[1]);
+        TParticle* dauK3 = mcEvent->Particle(labDauDs[2]);
+
+        TLorentzVector vK1, vK2, vKK;
+        if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK2->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK2->Momentum(vK2);
+        } else if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK3->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        } else {
+          dauK2->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        }
+        vKK = vK1 + vK2;
+        //Small window around phi-mass, tag as Ds->phipi->KKpi if inside
+        if(vKK.M() > 1.00 && vKK.M() < 1.04) decayDs = 1;
+      }
+
       if (decayDs < 0 || labDauDs[0] == -1) return -1;
       decayBs = decayDs;
       nPions++;
@@ -2769,7 +2794,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
   return decayBs;
 }
 //____________________________________________________________________________
-Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd){
   /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
   /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
@@ -2818,6 +2843,28 @@ Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle 
             else decayDs=3;
           }
         }
+      }
+
+      //In ITS2 Upgrade production, phi not "stored", so decay read as non-resonant
+      if(decayDs==3 && ITS2UpgradeProd){
+        AliAODMCParticle* dauK1=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[0]));
+        AliAODMCParticle* dauK2=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[1]));
+        AliAODMCParticle* dauK3=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[2]));
+
+        TLorentzVector vK1, vK2, vKK;
+        if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK2->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK2->Momentum(vK2);
+        } else if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK3->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        } else {
+          dauK2->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        }
+        vKK = vK1 + vK2;
+        //Small window around phi-mass, tag as Ds->phipi->KKpi if inside
+        if(vKK.M() > 1.00 && vKK.M() < 1.04) decayDs = 1;
       }
 
       if (decayDs < 0 || labDauDs[0] == -1) return -1;
@@ -3360,7 +3407,9 @@ TH1* AliVertexingHFUtils::AdaptTemplateRangeAndBinning(const TH1 *hMC,TH1 *hData
 
 //___________________________________________________________________________________//
 //method that performs simultaneus fit of in-plane and out-of-plane inv-mass spectra
-ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, Double_t massD, vector<UInt_t> commonpars) {
+ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, 
+                                                                            TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, 
+                                                                            Double_t massD, vector<UInt_t> commonpars) {
 
   cout << "\nIn-plane - out-of-plane simultaneus fit" << endl;
   cout << "\nIndependent prefits" << endl;
@@ -3477,4 +3526,32 @@ ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliH
 
   cout << "\n" << endl;
   return result;
+}
+
+//________________________________________________________________________
+Double_t AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF *cand, Double_t bfield) {
+  // Compute maximum difference between observed and expected impact parameter of the candidate prongs
+  Double_t dd0max = 0;
+  UInt_t fNProngsCand = static_cast<UInt_t>(cand->GetNProngs());
+  for (UInt_t iProng = 0; iProng < fNProngsCand; iProng++) {
+    Double_t d0diff, errd0diff;
+    cand->Getd0MeasMinusExpProng(iProng, bfield, d0diff, errd0diff);
+    Double_t normdd0 = d0diff / errd0diff;
+    if (iProng == 0 || TMath::Abs(normdd0) > TMath::Abs(dd0max))
+        dd0max = normdd0;
+  }
+  return dd0max;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::CombineNsigmaTPCTOF(Double_t nsigmaTPC, Double_t nsigmaTOF) {
+  // Combine TPC and TOF nsigma (sum in quadrature + special cases)
+  if (nsigmaTPC > -998. && nsigmaTOF > -998.)
+      return TMath::Sqrt((nsigmaTPC * nsigmaTPC + nsigmaTOF * nsigmaTOF) / 2);
+  else if (nsigmaTPC > -998. && nsigmaTOF < -998.)
+      return TMath::Abs(nsigmaTPC);
+  else if (nsigmaTPC < -998. && nsigmaTOF > -998.)
+      return TMath::Abs(nsigmaTOF);
+  else
+      return -999.;
 }

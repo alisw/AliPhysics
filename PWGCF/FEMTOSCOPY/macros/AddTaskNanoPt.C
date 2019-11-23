@@ -36,8 +36,6 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   evtCuts->CleanUpMult(false, false, false, true);
 
   // =====================================================================
-
-
   //Proton track Cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCuts =
     AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
@@ -63,6 +61,40 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
 
   AntiTrackCutsDeuteron->SetMinimalBooking(false);
   AntiTrackCutsDeuteron->SetCutCharge(-1);
+
+/////////////////////For no NSigmaTOF information///
+// =====================================================================
+  //Proton track Cuts----------------------------------------------------------------------------
+  AliFemtoDreamTrackCuts *TrackCutsNoTOF =
+    AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
+
+  TrackCutsNoTOF->SetMinimalBooking(false);
+  TrackCutsNoTOF->SetCutCharge(1);
+  TrackCutsNoTOF->SetPID(AliPID::kProton, 999.);
+  //Antiproton track Cuts-------------------------------------------------------------------------
+  AliFemtoDreamTrackCuts *AntiTrackCutsNoTOF =
+    AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
+
+  AntiTrackCutsNoTOF->SetMinimalBooking(false);
+  AntiTrackCutsNoTOF->SetCutCharge(-1);
+  AntiTrackCutsNoTOF-> SetPID(AliPID::kProton, 999.);
+  //deuteron track cuts----------------------------------------------------------------------------
+  AliFemtoDreamTrackCuts *TrackCutsDeuteronNoTOF = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true,
+      CombSigma, ContributionSplitting);
+
+  TrackCutsDeuteronNoTOF->SetMinimalBooking(false);
+  TrackCutsDeuteronNoTOF->SetCutCharge(1);
+  TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
+  //Antideuteron track cuts----------------------------------------------------------------------------
+  AliFemtoDreamTrackCuts *AntiTrackCutsDeuteronNoTOF = AliFemtoDreamTrackCuts::PrimDeuteronCuts( isMC, true,
+      CombSigma, ContributionSplitting);
+
+  AntiTrackCutsDeuteronNoTOF->SetMinimalBooking(false);
+  AntiTrackCutsDeuteronNoTOF->SetCutCharge(-1);
+  AntiTrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
+//====================================================================================================================================
+
+
 
 
   std::vector<int> PDGParticles;
@@ -211,6 +243,10 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetDeuteronCuts(TrackCutsDeuteron);
   task->SetAntiDeuteronCuts(AntiTrackCutsDeuteron);
+  task->SetProtonCutsNoTOF(TrackCutsNoTOF);
+  task->SetAntiProtonCutsNoTOF(AntiTrackCutsNoTOF);
+  task->SetDeuteronCutsNoTOF(TrackCutsDeuteronNoTOF);
+  task->SetAntiDeuteronCutsNoTOF(AntiTrackCutsDeuteronNoTOF);
   task->SetCollectionConfig(config);
   mgr->AddTask(task);
 
@@ -259,6 +295,35 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrackCutsDeuteronName.Data()));
   mgr->ConnectOutput(task, 5, coutputAntiTrkCutsDeuteron);
+//============== NoTOF STUFF========================================
+  TString TrackCutsNoTOFName = Form("%sProtonNoTOF%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputTrkCutsNoTOF = mgr->CreateContainer(
+        TrackCutsNoTOFName.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), TrackCutsNoTOFName.Data()));
+  mgr->ConnectOutput(task, 6, coutputTrkCutsNoTOF);
+
+  TString AntiTrackCutsNoTOFName = Form("%sAntiProtonNoTOF%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputAntiTrkCutsNoTOF = mgr->CreateContainer(
+        AntiTrackCutsNoTOFName.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrackCutsNoTOFName.Data()));
+  mgr->ConnectOutput(task, 7, coutputAntiTrkCutsNoTOF);
+
+  TString TrackCutsDeuteronNoTOFName = Form("%sDeuteronNoTOF%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputTrkCutsDeuteronNoTOF = mgr->CreateContainer(
+        TrackCutsDeuteronNoTOFName.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), TrackCutsDeuteronNoTOFName.Data()));
+  mgr->ConnectOutput(task, 8, coutputTrkCutsDeuteronNoTOF);
+
+  TString AntiTrackCutsDeuteronNoTOFName = Form("%sAntiDeuteronNoTOF%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputAntiTrkCutsDeuteronNoTOF = mgr->CreateContainer(
+        AntiTrackCutsDeuteronNoTOFName.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrackCutsDeuteronNoTOFName.Data()));
+  mgr->ConnectOutput(task, 9, coutputAntiTrkCutsDeuteronNoTOF);
+
 
   AliAnalysisDataContainer *coutputResults;
 
@@ -268,7 +333,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                      ResultsName.Data(),
                      TList::Class(), AliAnalysisManager::kOutputContainer,
                      Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 6, coutputResults);
+  mgr->ConnectOutput(task, 10, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
 
@@ -279,7 +344,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                        TList::Class(),
                        AliAnalysisManager::kOutputContainer,
                        Form("%s:%s", file.Data(), ResultsQAName.Data()));
-  mgr->ConnectOutput(task, 7, coutputResultsQA);
+  mgr->ConnectOutput(task, 11, coutputResultsQA);
 
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
@@ -289,7 +354,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 8, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 12, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%sAntiProtonMC%s", addon.Data(),
@@ -300,7 +365,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                              TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 9, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 13, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sDeuteronMC%s", addon.Data(), suffix.Data());
@@ -310,7 +375,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                         TList::Class(),
                         AliAnalysisManager::kOutputContainer,
                         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 10, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 14, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%sAntiDeuteronMC%s", addon.Data(),
@@ -321,7 +386,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                             TList::Class(),
                             AliAnalysisManager::kOutputContainer,
                             Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 11, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 15, coutputAntiv0CutsMC);
 
   }
 

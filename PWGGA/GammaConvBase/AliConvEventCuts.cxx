@@ -120,6 +120,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fUtils(NULL),
   fEtaShift(0.0),
   fDoEtaShift(kFALSE),
+  fUseJetFinderForOutlier(kFALSE),
   fDoCentralityFlat(0),
   fPathWeightsFlatCent(""),
   fNameHistoNotFlatCentrality(""),
@@ -249,6 +250,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fUtils(NULL),
   fEtaShift(ref.fEtaShift),
   fDoEtaShift(ref.fDoEtaShift),
+  fUseJetFinderForOutlier(ref.fUseJetFinderForOutlier),
   fDoCentralityFlat(ref.fDoCentralityFlat),
   fPathWeightsFlatCent(ref.fPathWeightsFlatCent),
   fNameHistoNotFlatCentrality(ref.fNameHistoNotFlatCentrality),
@@ -424,7 +426,6 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(hSPDClusterTrackletBackground);
     }
   }
-
   // if(fIsHeavyIon > 0){ // commented as mult. dep. analyses in pp started
     hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",210,0,105);
     fHistograms->Add(hCentrality);
@@ -3210,7 +3211,7 @@ Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 //________________________________________________________________________
 // Analysing Jet-Jet MC's
 //________________________________________________________________________
-Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event ){
+Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event, Double_t maxJetPt ){
   AliGenCocktailEventHeader *cHeader   = 0x0;
   Bool_t headerFound                   = kFALSE;
   weight                               = -1;
@@ -3260,14 +3261,21 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         Int_t nTriggerJets = dynamic_cast<AliGenPythiaEventHeader*>(gh)->NTriggerJets();
         Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
         Float_t tmpjet[]={0,0,0,0};
-        for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
-          dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
-          TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
-          //Compare jet pT and pt Hard
-          if(jet.Pt() > fMaxFacPtHard * ptHard)
+        if(maxJetPt==-1){
+          for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+            dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
+            TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+            //Compare jet pT and pt Hard
+            if(jet.Pt() > fMaxFacPtHard * ptHard)
+              eventAccepted= kFALSE;
+            //set highest jet pT
+            if (jet.Pt() > fMaxPtJetMC) fMaxPtJetMC = jet.Pt();
+          }
+        } else {
+          fMaxPtJetMC = maxJetPt;
+          if(maxJetPt > (fMaxFacPtHard * ptHard)){
             eventAccepted= kFALSE;
-          //set highest jet pT
-          if (jet.Pt() > fMaxPtJetMC) fMaxPtJetMC = jet.Pt();
+          }
         }
         // if minimum jet pT compared to pT hard is required, reject event based on it
         if(fMaxPtJetMC < fMinFacPtHard * ptHard)
@@ -3535,15 +3543,24 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
       Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
       Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
       Float_t tmpjet[]={0,0,0,0};
-      for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
-        dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
-        TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
-        //Compare jet pT and pt Hard
-        if(jet.Pt() > fMaxFacPtHard * ptHard){
+      if(maxJetPt==-1){
+        for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+          dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
+          TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+          //Compare jet pT and pt Hard
+          if(jet.Pt() > fMaxFacPtHard * ptHard){
+            eventAccepted= kFALSE;
+          }
+          //set highest jet pT
+          if (jet.Pt() > fMaxPtJetMC){
+            fMaxPtJetMC = jet.Pt();
+          }
+        }
+      } else {
+        fMaxPtJetMC = maxJetPt;
+        if(maxJetPt > (fMaxFacPtHard * ptHard)){
           eventAccepted= kFALSE;
         }
-        //set highest jet pT
-        if (jet.Pt() > fMaxPtJetMC) fMaxPtJetMC = jet.Pt();
       }
       // if minimum jet pT compared to pT hard is required, reject event based on it
       if(fMaxPtJetMC < fMinFacPtHard * ptHard){

@@ -116,6 +116,7 @@ void AddTask_GammaConvCalo_pPb(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -134,6 +135,12 @@ void AddTask_GammaConvCalo_pPb(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -536,6 +543,14 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411793105f032230000","0h63103100000010");
     cuts.AddCutPCMCalo("8008e123","0dm00009f9730000dge0404000","411793105f032230000","0h63103100000010");
     cuts.AddCutPCMCalo("8008d123","0dm00009f9730000dge0404000","411793105f032230000","0h63103100000010");
+  } else if (trainConfig == 2026) { // including eta<0.8, DC, R region rej.
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411793805f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008e123","0dm00009f9730000dge0404000","411793805f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","0dm00009f9730000dge0404000","411793805f032230000","0h63103100000010");
+  } else if (trainConfig == 2027) { // including eta<0.8, DC, R region rej.
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411793905f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008e123","0dm00009f9730000dge0404000","411793905f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","0dm00009f9730000dge0404000","411793905f032230000","0h63103100000010");
 
   // Nonlin testing configs (TB only)
   } else if (trainConfig == 2030) { // NL 01 -> 100 MeV aggregation
@@ -930,6 +945,8 @@ void AddTask_GammaConvCalo_pPb(
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
@@ -1020,9 +1037,15 @@ void AddTask_GammaConvCalo_pPb(
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
-  if(enableQAPhotonTask>1){
-    for(Int_t i = 0; i<numberOfCuts; i++){
-      mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),cuts.GetClusterCut(i).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+  Int_t nContainer = 2;
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(enableQAPhotonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+      nContainer++;
+    }
+    if(enableQAMesonTask>1){
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+      nContainer++;
     }
   }
 

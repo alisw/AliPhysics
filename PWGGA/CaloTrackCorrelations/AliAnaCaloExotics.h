@@ -55,6 +55,8 @@ public:
   
   void         ClusterHistograms(const TObjArray * clusters, AliVCaloCells * cells);
   
+  void         StripHistograms(AliVCaloCells *cells);
+
   // Setters and getters
   
   Float_t      GetCellAmpMin()      const   { return fCellAmpMin          ; } 
@@ -81,10 +83,13 @@ public:
                            { if ( i < fgkNEBins && i >= 0 ) fEnergyBins[i] = en ; }
 
   Float_t      GetCellEMinBinLimit(Int_t i) const  
-                           { if ( i < fgkNCellEnMinBins && i >= 0 ) return fCellEnMinBins[i] ;
+                           { if ( i < fgkNCellEnMinBins && i >= 0 ) return fCellEnMins[i] ;
                              else                                return -1     ; }
   void         SetCellEMinBinLimit(Int_t i, Float_t en) 
-                           { if ( i < fgkNCellEnMinBins && i >= 0 ) fCellEnMinBins[i] = en ; }
+                           { if ( i < fgkNCellEnMinBins && i >= 0 ) fCellEnMins[i] = en ; }
+  
+  Float_t      GetCellEMaxBinLimit()           { return fCellEnMax ; } 
+  void         SetCellEMaxBinLimit(Float_t en) { fCellEnMax = en   ; } 
   
 //  Float_t      GetCellMinEnergy(Int_t i) const  
 //                           { if ( i < fgkNCellMinEnBins && i >= 0 ) return fCellMinEnBins[i] ;
@@ -97,6 +102,12 @@ public:
  
   void         SwitchOnFillCellHisto()              { fFillCellHisto             = kTRUE  ; }
   void         SwitchOffFillCellHisto()             { fFillCellHisto             = kFALSE ; }
+
+  void         SwitchOnFillAllCellEventHisto( Int_t opt = 1 ) { fFillAllCellEventParamHisto = opt  ; }
+  void         SwitchOffFillAllCellEventHisto()     { fFillAllCellEventParamHisto= 0 ; }
+  
+  void         SwitchOnFillStripHisto()             { fFillStripHisto            = kTRUE  ; }
+  void         SwitchOffFillStripHisto()            { fFillStripHisto            = kFALSE ; }
   
   void         SwitchOnFillMatchingHisto()          { fFillMatchingHisto         = kTRUE  ; }
   void         SwitchOffFillMatchingHisto()         { fFillMatchingHisto         = kFALSE ; }
@@ -137,10 +148,14 @@ public:
   Float_t  fTimeCutMin  ;                       ///<  Remove clusters with time smaller than this value, in ns
   Float_t  fTimeCutMax  ;                       ///<  Remove clusters with time larger than this value, in ns
   
-  Bool_t    fLED20      ;                      ///<  There is at least a cluster with 20 cells with w > 0 in the event; internal
-  Bool_t    fLED12      ;                      ///<  There is at least a cluster with 12 cells with w > 0 in the event; internal
-  Float_t   fLED20Time  ;                      ///<  Time of LED cluster with 20 cells 
-  Float_t   fLED12Time  ;                      ///<  Time of LED cluster with 12 cells
+  Bool_t   fLED20       ;                      ///<  There is at least a cluster with 20 cells with w > 0 in the event; internal
+  Bool_t   fLED12       ;                      ///<  There is at least a cluster with 12 cells with w > 0 in the event; internal
+  Float_t  fLED20Time   ;                      ///<  Time of LED cluster with 20 cells 
+  Float_t  fLED12Time   ;                      ///<  Time of LED cluster with 12 cells
+ 
+  Int_t    fEventNStripActive ;                ///<  Number of strips per event with multiple high energy cells
+  Int_t    fEventNStripActiveSM[20];           ///<  Number of strips per event with multiple high energy cells per SM
+
   
   /// Total number of cluster energy bins histograms
   static const Int_t fgkNEBins = 12;
@@ -148,11 +163,16 @@ public:
  
   static const Int_t fgkNCellEnMinBins = 4;
   static const Int_t fgkNCellEnMinBinsFr = 3;
-  Float_t  fCellEnMinBins[fgkNCellEnMinBins];   ///<  Energy bins for some histograms for cells
+  Float_t  fCellEnMins[fgkNCellEnMinBins];      ///<  Energy minimum for some histograms for cells
+  Float_t  fCellEnMax;                          ///<  Energy maximum for some histograms for cells 
   
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
- 
+  
+  Int_t    fFillAllCellEventParamHisto;         ///<  Fill histograms summing our counting cells per event, 0-not filled, 1-n and sum E, 2 all fractions
+   
   Bool_t   fFill1CellHisto;                     ///<  Fill histograms for 1 cell clusters
+  
+  Bool_t   fFillStripHisto;                     ///<  Fill histograms for strip of cells (2x48)
   
   Bool_t   fFillMatchingHisto;                  ///<  Fill histograms for track-cluster matching
   
@@ -202,6 +222,7 @@ public:
   
   TH2F *   fhNCellsPerCluster;                  //!<! Cluster energy vs N cells in cluster
   TH2F *   fhNCellsPerClusterW;                 //!<! Cluster energy vs N cells in cluster with w > 0
+  TH2F *   fhNCellsPerClusterTimeDiff;          //!<! Cluster energy vs N cells in cluster with t diff < 50 ns
   TH2F *   fhNCellsPerClusterEMaxCell;          //!<! Cell max energy vs N cells in cluster
   TH2F *   fhNCellsPerClusterWEMaxCell;         //!<! Cell max energy vs N cells in cluster with w > 0
   TH2F *   fhNCellsPerClusterOpenTime;          //!<! Cluster energy vs N cells in cluster, no time cut
@@ -226,6 +247,7 @@ public:
   TH3F *   fhTimeEnergyExo;                     //!<! Cluster Energy vs Time vs Exoticity, n cells > 1
   TH2F *   fhTimeEnergy1Cell;                   //!<! Cluster Energy vs Time vs n cells = 1
   TH3F *   fhTimeDiffClusCellExo;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity
+  TH3F *   fhTimeDiffClusCellDiffTCardExo;      //!<! Difference of the time of cell with maximum dep energy and the rest of cells in different T-Card vs cluster energy vs exoticity
   TH3F *   fhTimeDiffWClusCellExo;              //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity, for cells with weight
   TH3F *   fhTimeDiffAmpClusCellExo;            //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs secondary cell energy vs exoticity for E > fEMinForExo
   TH3F *   fhTimeEnergyM02;                     //!<! Cluster Energy vs Time vs M02, n cells > 1
@@ -245,9 +267,12 @@ public:
   TH2F *   fhNCellsPerClusterSame5;             //!<! Cluster E vs n cells in same T-Card as max E cell, neighbour cells
   TH2F *   fhNCellsPerClusterDiff5;             //!<! Cluster E vs n cells in different T-Card as max E cell, neighbour cells 
   TH2F *   fhNCellsPerClusterSameW ;            //!<! Cluster E vs n cells with w > 0 in same T-Card as max E cell
-  TH2F *   fhNCellsPerClusterDiffW ;            //!<! Cluster E vs n cells with w > 0 in same T-Card as max E cell
+  TH2F *   fhNCellsPerClusterDiffW ;            //!<! Cluster E vs n cells with w > 0 in diff T-Card as max E cell
+  TH2F *   fhNCellsPerClusterSameTimeDiff;      //!<! Cluster E vs n cells with t diff < 50 ns in same T-Card as max E cell
+  TH2F *   fhNCellsPerClusterDiffTimeDiff;      //!<! Cluster E vs n cells with t diff < 50 ns in diff T-Card as max E cell
   TH3F *   fhNCellsPerClusterSameDiff;          //!<! Cluster E vs n cells in same vs different T-Card as max E cell
   TH3F *   fhNCellsPerClusterSameDiffW;         //!<! Cluster E vs n cells in same vs different T-Card as max E cell, cells with weight
+  TH3F *   fhNCellsPerClusterSameDiffTimeDiff;  //!<! Cluster E vs n cells in same vs different T-Card as max E cell, cells with t diff < 50 ns
   TH2F *   fhNCellsPerClusterSameFrac;          //!<! Cluster E vs fraction n cells in same T-Card as max E cell
   TH3F *   fhNCellsPerClusterSameFracExo;       //!<! Cluster E vs fraction n cells in same T-Card as max E cell vs exoticity
   TH2F *   fhNCellsPerClusterSameFracW;         //!<! Cluster E vs fraction n cells with weight in same T-Card as max E cell
@@ -299,6 +324,10 @@ public:
   TH3F *   fhEnNCellsSameDiffExo[fgkNEBins];    //!<! Sum of E in / n cell in same vs diff vs exoticity, different  cluster E bins
   TH3F *   fhCellEnSameExo;                     //!<! Cluster E vs cell E in same T-Card vs exoticity
   TH3F *   fhCellEnDiffExo;                     //!<! Cluster E vs cell E in diff T-Card vs exoticity
+  TH2F *   fhCellEnSameColRowDiff[4][4];        //!<! Cluster E vs cell E in same T-Card vs distance to max E cell
+  TH2F *   fhCellEnDiffColRowDiff[4][4];        //!<! Cluster E vs cell E in diff T-Card vs distance to max E cell
+  TH2F *   fhCellEnSameColRowDiffExoCut[4][4];  //!<! Cluster E vs cell E in same T-Card vs distance to max E cell, for exoticity > fExoCut
+  TH2F *   fhCellEnDiffColRowDiffExoCut[4][4];  //!<! Cluster E vs cell E in diff T-Card vs distance to max E cell, for exoticity > fExoCut
   TH3F *   fhCellEnNCellWOpenTime;              //!<! Cluster E vs cell E vs n cells with w > 0, no time cut
   TH3F *   fhCellEnNCellW;                      //!<! Cluster E vs cell E vs n cells with w > 0
   TH3F *   fhCellEnNCellWEMaxOpenTime;          //!<! Cluster cell max E vs cell E vs n cells with w > 0, no time cut
@@ -334,6 +363,8 @@ public:
     
   // Apply cut on number of cells of cluster all in same TCard
   //
+  TH3F *   fhM02ExoNCellsNotAllSameTCard[fgkNEBins]; //!<! Cluster M02 vs exoticity vs n cells, different E bins for n diff > 0
+
   TH2F *   fhExoticityEClusAllSameTCard;        //!<! Exoticity vs energy, all cells in same T-Card, n diff = 0
   TH2F *   fhM02EnergyAllSameTCard;             //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff = 0
   TH2F *   fhNCellsPerClusterAllSameTCard;      //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0  
@@ -344,6 +375,11 @@ public:
   TH2F *   fhNCellsPerClusterAllSameTCardW;     //!<! Cluster energy vs N cells, all cells in same T-Card, n diff_w = 0  
   TH3F *   fhEtaPhiGridExoEnCutSameFracCutW;    //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff_w = 0
 
+  TH2F *   fhExoticityEClusAllSameTCardTimeDiff;   //!<! Exoticity vs energy, all cells in same T-Card, n diff =0, tdiff < 50 ns
+  TH2F *   fhM02EnergyAllSameTCardTimeDiff;        //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff =0, tdiff< 50 ns
+  TH2F *   fhNCellsPerClusterAllSameTCardTimeDiff; //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0, tdiff < 50 ns  
+  TH3F *   fhEtaPhiGridExoEnCutSameFracCutTimeDiff;//!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff = 0, tdiff<50 ns
+  
   TH3F *   fhExoticityEClusAllSameTCardMinEnCut;   //!<! Exoticity vs energy, all cells in same T-Card, n diff =0 for E min cut
   TH3F *   fhM02EnergyAllSameTCardMinEnCut;        //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff =0 for E min cut
   TH3F *   fhNCellsPerClusterAllSameTCardMinEnCut; //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0 for E min cut
@@ -394,11 +430,16 @@ public:
   TH1F *   fhFracNCellsNHigh20    [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV, 1 cluster with n_cell_w>20
   TH1F *   fhFracSumEnCellsNHigh20[fgkNCellEnMinBinsFr];      //!<! sum of cells with E > 1 GeV over emin, 1 cluster with n_cell_w>20
  
-  TH1F *   fhSumEnCellsCutSM3     [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy, low SM3 activity 
-  TH1F *   fhNCellsCutSM3         [fgkNCellEnMinBins];        //!<! For E cell > emin, count number of cells, low SM3 activity
-  TH1F *   fhAverSumEnCellsCutSM3 [fgkNCellEnMinBins];        //!<! For E cell > emin, sum of cells energy / total cells number, low SM3 activity
-  TH1F *   fhFracNCellsCutSM3     [fgkNCellEnMinBinsFr];      //!<! total number of cells with E > emin over 0.5 GeV, low SM3 activity
-  TH1F *   fhFracSumEnCellsCutSM3 [fgkNCellEnMinBinsFr];      //!<! sum of cells with E > 1 GeV over emin, low SM3 activity
+  TH1F *   fhSumEnCellsAcceptEvent     [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, LED rejected 
+  TH1F *   fhNCellsAcceptEvent         [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, LED rejected
+  TH1F *   fhAverSumEnCellsAcceptEvent [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy / total cells number, LED rejected
+  TH1F *   fhFracNCellsAcceptEvent     [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, LED rejected
+  TH1F *   fhFracSumEnCellsAcceptEvent [fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, LED rejected
+ 
+  TH1F *   fhSumEnCellsAcceptEventStrip[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, LED rejected, based on n strip 
+  TH1F *   fhNCellsAcceptEventStrip    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, LED rejected, based on n strip
+  TH2F *   fhSumEnCellsPerSMAcceptEventStrip[fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy, per SM, LED rejected, based on n strip 
+  TH2F *   fhNCellsPerSMAcceptEventStrip    [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells, per SM, LED rejected, based on n strip
   
   // Per SM
   TH2F *   fhSumEnCellsPerSM           [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, per SM 
@@ -413,11 +454,30 @@ public:
   TH2F *   fhFracNCellsPerSMNHigh20    [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, 1 cluster with n_cell_w>20, per SM
   TH2F *   fhFracSumEnCellsPerSMNHigh20[fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, 1 cluster with n_cell_w>20, per SM
 
-  TH2F *   fhSumEnCellsPerSMCutSM3     [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, low SM3 activity, per SM
-  TH2F *   fhNCellsPerSMCutSM3         [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, low SM3 activity, per SM 
-  TH2F *   fhAverSumEnCellsPerSMCutSM3 [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy / total cells number, low SM3 activity, per SM
-  TH2F *   fhFracNCellsPerSMCutSM3     [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, low SM3 activity, per SM
-  TH2F *   fhFracSumEnCellsPerSMCutSM3 [fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, low SM3 activity, per SM
+  TH2F *   fhSumEnCellsPerSMAcceptEvent     [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, LED rejected, per SM
+  TH2F *   fhNCellsPerSMAcceptEvent         [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, LED rejected, per SM 
+  TH2F *   fhAverSumEnCellsPerSMAcceptEvent [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy / total cells number, LED rejected, per SM
+  TH2F *   fhFracNCellsPerSMAcceptEvent     [fgkNCellEnMinBinsFr]; //!<! total number of cells with E > emin over 0.5 GeV, LED rejected, per SM
+  TH2F *   fhFracSumEnCellsPerSMAcceptEvent [fgkNCellEnMinBinsFr]; //!<! sum of cells with E > 1 GeV over emin, LED rejected, per SM
+  
+  TH1F *   fhSumEnCellsPerStrip        [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip 
+  TH1F *   fhNCellsPerStrip            [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip
+  TH1F *   fhSumEnCellsPerStripNHigh20 [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, 1 cluster with n_cell_w>20, per SM 
+  TH1F *   fhNCellsPerStripNHigh20     [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, 1 cluster with n_cell_w>20, per SM 
+  TH2F *   fhSumEnCellsPerStripPerSM   [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, per SM 
+  TH2F *   fhNCellsPerStripPerSM       [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM
+  TH2F *   fhSumEnCellsPerStripPerSMNHigh20[fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, per SM, 1 cluster with n_cell_w>20, per SM  
+  TH2F *   fhNCellsPerStripPerSMNHigh20[fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM, 1 cluster with n_cell_w>20, per SM  
+  
+  TH1F *   fhSumEnCellsPerStripAcceptEventStrip[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, accept event based on n strip 
+  TH1F *   fhNCellsPerStripAcceptEventStrip    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, accept event based on n strip
+  TH2F *   fhSumEnCellsPerStripPerSMAcceptEventStrip[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, per SM, accept event based on n strip 
+  TH2F *   fhNCellsPerStripPerSMAcceptEventStrip    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM, accept event based on n strip
+  
+  TH2F *   fhSM3NCellsSumEnSuspiciousEvents;                  //!<! Control histogram to check SM3 activity when there is high activity event in other SM, after event cut
+  
+  TH1F *   fhNStripsPerEvent;                                 //!<! Number of active strips per event, low activity SM3
+  TH2F *   fhNStripsPerEventPerSM;                            //!<! Number of active strips per event, per SM, low activity SM3
   
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;
@@ -426,7 +486,7 @@ public:
   AliAnaCaloExotics(              const AliAnaCaloExotics & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloExotics,8) ;
+  ClassDef(AliAnaCaloExotics,10) ;
   /// \endcond
 
 } ;

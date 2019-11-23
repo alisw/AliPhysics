@@ -88,6 +88,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fEventCuts(nullptr),
   fConversionCuts(nullptr),
   fClusterCuts(nullptr),
+  fOutlierJetReader(nullptr),
   fTreePiPiSameMother(nullptr),
   fTreePiPiPiSameMother(nullptr),
   fTreeEventInfoHNM(nullptr),
@@ -331,6 +332,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fEventCuts(nullptr),
   fConversionCuts(nullptr),
   fClusterCuts(nullptr),
+  fOutlierJetReader(nullptr),
   fTreePiPiSameMother(nullptr),
   fTreePiPiPiSameMother(nullptr),
   fTreeEventInfoHNM(nullptr),
@@ -641,6 +643,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   //
   // Create ouput objects
   //
+
+  if(((AliConvEventCuts*)fEventCutArray->At(0))->GetUseJetFinderForOutliers()){
+    fOutlierJetReader=(AliAnalysisTaskJetOutlierRemoval*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetOutlierRemoval");
+    if(!fOutlierJetReader){AliFatal("Error: No AliAnalysisTaskJetOutlierRemoval");} // GetV0Reader
+    else{printf("Found AliAnalysisTaskJetOutlierRemoval used for outlier removal!\n");}
+  }
 
   // Set pT and mass ranges
   Double_t HistoNMassBins                             = 600;
@@ -2154,7 +2162,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
 
     fWeightJetJetMC       = 1;
     if (fIsMC > 1){
-      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC , fInputEvent);
+      Float_t maxjetpt      = -1.;
+      if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetUseJetFinderForOutliers()) maxjetpt = fOutlierJetReader->GetMaxJetPt();
+      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC , fInputEvent, maxjetpt);
       if (fIsMC == 3){
         Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;

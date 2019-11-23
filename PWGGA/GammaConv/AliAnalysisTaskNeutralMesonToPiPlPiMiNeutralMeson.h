@@ -14,6 +14,7 @@
 #include "AliConvEventCuts.h"
 #include "AliCaloPhotonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "TProfile2D.h"
 #include "TArrayI.h"
 #include <vector>
@@ -167,6 +168,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     AliConvEventCuts*                 fEventCuts;                                         //!<! current event cuts
     AliConversionPhotonCuts*          fConversionCuts;                                    //!<! current conversion cuts
     AliCaloPhotonCuts*                fClusterCuts;                                       //!<! current cluster cuts
+    AliAnalysisTaskJetOutlierRemoval* fOutlierJetReader;                                  // JetReader
 
     // TTrees
     /** Tree containing info about the mother of two pions who have the same mother, if ID isn't covered by current implementations */
@@ -409,7 +411,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 13);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 14);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

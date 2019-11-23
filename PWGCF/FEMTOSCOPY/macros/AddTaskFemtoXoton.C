@@ -154,11 +154,11 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
     pairQA.push_back(0);
     closeRejection.push_back(false);
     if (suffix == "0") {
-      NBins.push_back(1500);
+      NBins.push_back(1200);
       kMin.push_back(0.);
       kMax.push_back(6.);
     } else {
-      NBins.push_back(250);
+      NBins.push_back(200);
       kMin.push_back(0.);
       kMax.push_back(1.);
     }

@@ -96,6 +96,7 @@ void AddTask_GammaCaloMerged_pp(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -114,6 +115,12 @@ void AddTask_GammaCaloMerged_pp(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -1419,6 +1426,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3813){  // variation track matching to cluster & mass variations new defaults
     cuts.AddCutMergedCalo("00010113","1111131060032200000","1111131060022700001","0163300000000000"); // no TM
     cuts.AddCutMergedCalo("00010113","1111131067032200000","1111131067022700001","0163300000000000"); // EMC TM
+  } else if (trainConfig == 3814){ // M02 var 1
+    cuts.AddCutMergedCalo("00010113","111113806f032200000","111113806f022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00010113","111113906f032200000","111113906f022700001","0163300000000000"); // nl via indiv. cells
 
   // EMC7 configs
   } else if (trainConfig == 3820){ // M02 var 1
@@ -1462,6 +1472,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3833){  // variation track matching to cluster & mass variations new defaults
     cuts.AddCutMergedCalo("00052113","1111131060032200000","1111131060022700001","0163300000000000"); // no TM
     cuts.AddCutMergedCalo("00052113","1111131067032200000","1111131067022700001","0163300000000000"); // EMC TM
+  } else if (trainConfig == 3834){ // M02 var 1
+    cuts.AddCutMergedCalo("00052113","111113806f032200000","111113806f022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00052113","111113906f032200000","111113906f022700001","0163300000000000"); // nl via indiv. cells
 
   // EGA configs
   } else if (trainConfig == 3840){ // M02 var 1
@@ -1505,6 +1518,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3853){  // variation track matching to cluster & mass variations new defaults
     cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // no TM
     cuts.AddCutMergedCalo("00081113","1111131067032200000","1111131067022700001","0163300000000000"); // EMC TM
+  } else if (trainConfig == 3854){ // M02 var 1
+    cuts.AddCutMergedCalo("00081113","111113806f032200000","111113806f022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00081113","111113906f032200000","111113906f022700001","0163300000000000"); // nl via indiv. cells
 
   // systematics pp 8 TeV no TM
   // MB configs
@@ -1540,6 +1556,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3910){  // timing cuts 2
     cuts.AddCutMergedCalo("00010113","1111131030032200000","1111131030022700001","0163300000000000"); // -200 to 200
     cuts.AddCutMergedCalo("00010113","1111131020032200000","1111131020022700001","0163300000000000"); // -500 to 500
+  } else if (trainConfig == 3911){ // M02 var 1
+    cuts.AddCutMergedCalo("00010113","1111138060032200000","1111138060022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00010113","1111139060032200000","1111139060022700001","0163300000000000"); // nl via indiv. cells
 
   // EMC7 configs
   } else if (trainConfig == 3920){ // M02 var 1
@@ -1574,6 +1593,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3930){  // timing cuts 2
     cuts.AddCutMergedCalo("00052113","1111131030032200000","1111131030022700001","0163300000000000"); // -200 to 200
     cuts.AddCutMergedCalo("00052113","1111131020032200000","1111131020022700001","0163300000000000"); // -500 to 500
+  } else if (trainConfig == 3931){ // M02 var 1
+    cuts.AddCutMergedCalo("00052113","1111138060032200000","1111138060022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00052113","1111139060032200000","1111139060022700001","0163300000000000"); // nl via indiv. cells
 
   // EGA configs
   } else if (trainConfig == 3940){ // M02 var 1
@@ -1608,6 +1630,9 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 3950){  // timing cuts 2
     cuts.AddCutMergedCalo("00081113","1111131030032200000","1111131030022700001","0163300000000000"); // -200 to 200
     cuts.AddCutMergedCalo("00081113","1111131020032200000","1111131020022700001","0163300000000000"); // -500 to 500
+  } else if (trainConfig == 3951){ // M02 var 1
+    cuts.AddCutMergedCalo("00081113","1111138060032200000","1111138060022700001","0163300000000000"); // nl via lead cell
+    cuts.AddCutMergedCalo("00081113","1111139060032200000","1111139060022700001","0163300000000000"); // nl via indiv. cells
 
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -1725,6 +1750,8 @@ void AddTask_GammaCaloMerged_pp(
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if(periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);

@@ -1,8 +1,8 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPion(
-    bool isMC=false, float fSpherDown=0.7, float fdPhidEta=0.04,
-    TString CentEst="kInt7", const char *cutVariation = "0") {
+    bool isMC=false, float fSpherDown=0.7, float fdPhidEta=0.01,
+    TString CentEst="kInt7", const char *cutVar = "0") {
 
-  TString suffix = TString::Format("%s", cutVariation);
+  TString suffix = TString::Format("%s", cutVar);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -25,7 +25,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   evtCuts->CleanUpMult(false,false,false,true);
   evtCuts->SetZVtxPosition(-10., 10.);
   // Only use those events where more than two primary tracks with |eta|<0.8 and pT>0.5 GeV/c see AN
-  evtCuts->SetSphericityCuts(fSpherDown, 1.0);
+  if (suffix == "5") {
+    evtCuts->SetSphericityCuts(0., 1.0);
+  } else {
+        evtCuts->SetSphericityCuts(fSpherDown, 1.0);
+  }
 
   //Track Cuts are defined here
   //positive pions
@@ -101,10 +105,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   //The Multiplicity bins are set here
   std::vector<int> MultBins;
   MultBins.push_back(0);
-  MultBins.push_back(14);
-  MultBins.push_back(22);
-  MultBins.push_back(31);
-  MultBins.push_back(55);
+  MultBins.push_back(13);
+  MultBins.push_back(21);
+  MultBins.push_back(30);
+  MultBins.push_back(54);
 
   //The next part is for the result histograms. The order of hist. is the following:
   //                Particle1     Particle2
@@ -132,6 +136,33 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   closeRejection.push_back(true); // pi+ pi+
   closeRejection.push_back(false); // pi+ pi- 
   closeRejection.push_back(true); // pi- pi-
+
+  if (suffix == "5") {
+    //Deactivate the ClosePairRejection
+    fdPhidEta=0.;
+    closeRejection.clear();
+    closeRejection.push_back(false); // pi+ pi+
+    closeRejection.push_back(false); // pi+ pi-
+    closeRejection.push_back(false); // pi- pi-
+  }
+
+  //Variations for fdPhidEta
+  if (suffix == "1") {
+    fdPhidEta=0.035;
+  }
+
+  if (suffix == "2") {
+    fdPhidEta=0.03;
+  }
+
+  if (suffix == "3") {
+    fdPhidEta=0.025;
+  }
+
+  if (suffix == "4") {
+    fdPhidEta=0.02;
+  }
+
   //QA plots for tracks
   std::vector<int> pairQA;
   pairQA.push_back(11); // pi+ pi+
@@ -160,6 +191,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   config->SetmTBinning(true);
   config->SetMinimalBookingME(false);
   config->SetdPhidEtaPlots(true);
+  config->SetkTandMultBinning(true);
+  config->SetdPhidEtaPlotsSmallK(true);
+  config->SetPhiEtaBinnign(true);
   
   if (isMC) {
       config->SetMomentumResolution(true);
@@ -224,4 +258,3 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
 
   return task;
 }
-
