@@ -34,8 +34,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
-                    ${AliPhysics_SOURCE_DIR}/PWG/muon
-                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${TREELITE_ROOT}/include
   )
 
@@ -192,7 +190,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT)
+set(LIBDEPS ANALYSISalice PWGflowTasks PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT)
 # Dependencies for ROOT6 only
 if(ROOT_VERSION_MAJOR EQUAL 6)
   set(LIBDEPS ${LIBDEPS} ML)
