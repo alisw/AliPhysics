@@ -439,9 +439,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
     for (int iInt = 0; iInt < fINT7intervals.size(); iInt +=2) {
       if (fCentrality >= fINT7intervals[iInt] && fCentrality < fINT7intervals[iInt+1])
-        if ((handl->IsEventSelected() & AliVEvent::kINT7) != AliVEvent::kINT7)
+        if ((handl->IsEventSelected() & AliVEvent::kINT7) != AliVEvent::kINT7){
           EventAccepted = false;
           specialTrigger = false;
+        }
     }
   }
   
