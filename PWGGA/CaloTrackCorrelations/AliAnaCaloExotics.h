@@ -222,6 +222,7 @@ public:
   
   TH2F *   fhNCellsPerCluster;                  //!<! Cluster energy vs N cells in cluster
   TH2F *   fhNCellsPerClusterW;                 //!<! Cluster energy vs N cells in cluster with w > 0
+  TH2F *   fhNCellsPerClusterTimeDiff;          //!<! Cluster energy vs N cells in cluster with t diff < 50 ns
   TH2F *   fhNCellsPerClusterEMaxCell;          //!<! Cell max energy vs N cells in cluster
   TH2F *   fhNCellsPerClusterWEMaxCell;         //!<! Cell max energy vs N cells in cluster with w > 0
   TH2F *   fhNCellsPerClusterOpenTime;          //!<! Cluster energy vs N cells in cluster, no time cut
@@ -266,9 +267,12 @@ public:
   TH2F *   fhNCellsPerClusterSame5;             //!<! Cluster E vs n cells in same T-Card as max E cell, neighbour cells
   TH2F *   fhNCellsPerClusterDiff5;             //!<! Cluster E vs n cells in different T-Card as max E cell, neighbour cells 
   TH2F *   fhNCellsPerClusterSameW ;            //!<! Cluster E vs n cells with w > 0 in same T-Card as max E cell
-  TH2F *   fhNCellsPerClusterDiffW ;            //!<! Cluster E vs n cells with w > 0 in same T-Card as max E cell
+  TH2F *   fhNCellsPerClusterDiffW ;            //!<! Cluster E vs n cells with w > 0 in diff T-Card as max E cell
+  TH2F *   fhNCellsPerClusterSameTimeDiff;      //!<! Cluster E vs n cells with t diff < 50 ns in same T-Card as max E cell
+  TH2F *   fhNCellsPerClusterDiffTimeDiff;      //!<! Cluster E vs n cells with t diff < 50 ns in diff T-Card as max E cell
   TH3F *   fhNCellsPerClusterSameDiff;          //!<! Cluster E vs n cells in same vs different T-Card as max E cell
   TH3F *   fhNCellsPerClusterSameDiffW;         //!<! Cluster E vs n cells in same vs different T-Card as max E cell, cells with weight
+  TH3F *   fhNCellsPerClusterSameDiffTimeDiff;  //!<! Cluster E vs n cells in same vs different T-Card as max E cell, cells with t diff < 50 ns
   TH2F *   fhNCellsPerClusterSameFrac;          //!<! Cluster E vs fraction n cells in same T-Card as max E cell
   TH3F *   fhNCellsPerClusterSameFracExo;       //!<! Cluster E vs fraction n cells in same T-Card as max E cell vs exoticity
   TH2F *   fhNCellsPerClusterSameFracW;         //!<! Cluster E vs fraction n cells with weight in same T-Card as max E cell
@@ -371,6 +375,11 @@ public:
   TH2F *   fhNCellsPerClusterAllSameTCardW;     //!<! Cluster energy vs N cells, all cells in same T-Card, n diff_w = 0  
   TH3F *   fhEtaPhiGridExoEnCutSameFracCutW;    //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff_w = 0
 
+  TH2F *   fhExoticityEClusAllSameTCardTimeDiff;   //!<! Exoticity vs energy, all cells in same T-Card, n diff =0, tdiff < 50 ns
+  TH2F *   fhM02EnergyAllSameTCardTimeDiff;        //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff =0, tdiff< 50 ns
+  TH2F *   fhNCellsPerClusterAllSameTCardTimeDiff; //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0, tdiff < 50 ns  
+  TH3F *   fhEtaPhiGridExoEnCutSameFracCutTimeDiff;//!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff = 0, tdiff<50 ns
+  
   TH3F *   fhExoticityEClusAllSameTCardMinEnCut;   //!<! Exoticity vs energy, all cells in same T-Card, n diff =0 for E min cut
   TH3F *   fhM02EnergyAllSameTCardMinEnCut;        //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff =0 for E min cut
   TH3F *   fhNCellsPerClusterAllSameTCardMinEnCut; //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0 for E min cut
