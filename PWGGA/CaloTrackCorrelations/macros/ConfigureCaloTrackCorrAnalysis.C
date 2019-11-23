@@ -1585,9 +1585,9 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
   ana->SwitchOffFill1CellHisto(); 
   ana->SwitchOffFillMatchingHisto(); 
   
-  ana->SetEMinForExo(30);
+  ana->SetEMinForExo(50);
 
-  ana->SetCellAmpMin(0.5); 
+  ana->SetCellAmpMin(0.2); 
     
   ana->SetTimeCut(-20,20);
   
