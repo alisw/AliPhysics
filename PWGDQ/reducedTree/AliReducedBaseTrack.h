@@ -72,7 +72,9 @@ class AliReducedBaseTrack : public TObject {
     void   ResetFlags() {fFlags=0;}
     void   SetFlags(ULong_t flags) {fFlags=flags;}
     Bool_t SetFlag(UShort_t iflag)  {if(iflag>=8*sizeof(ULong_t)) return kFALSE; fFlags|=(ULong_t(1)<<iflag); return kTRUE;}
-    Bool_t UnsetFlag(UShort_t iflag) {if(iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestFlag(iflag)) fFlags^=(ULong_t(1)<<iflag); return kTRUE;}  
+    Bool_t UnsetFlag(UShort_t iflag) {if(iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestFlag(iflag)) fFlags^=(ULong_t(1)<<iflag); return kTRUE;}
+    void   ResetQualityFlags() {fQualityFlags=0;}
+    void   SetQualityFlags(ULong_t flags) {fQualityFlags=flags;}
     Bool_t SetQualityFlag(UShort_t iflag)      {if (iflag>=8*sizeof(ULong_t)) return kFALSE; fQualityFlags|=(ULong_t(1)<<iflag); return kTRUE;}
     Bool_t UnsetQualityFlag(UShort_t iflag)  {if (iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestQualityFlag(iflag)) fQualityFlags^=(ULong_t(1)<<iflag); return kTRUE;}
     void    SetMCFlags(UInt_t flags) {fMCFlags = flags;}
@@ -115,7 +117,7 @@ class AliReducedBaseTrack : public TObject {
         
     AliReducedBaseTrack& operator= (const AliReducedBaseTrack &c);
     
-    ClassDef(AliReducedBaseTrack, 5)
+    ClassDef(AliReducedBaseTrack, 6)
 };
 
 //_______________________________________________________________________________
