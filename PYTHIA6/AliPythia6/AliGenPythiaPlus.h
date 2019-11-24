@@ -256,7 +256,7 @@ class AliGenPythiaPlus : public AliGenMC
     void     MakeHeader();    
     void     GeneratePileup();
     
-    AliPythiaBase *fPythia;         //Pythia 
+    AliPythiaBase *fPythia;         //!Pythia 
     Process_t   fProcess;           //Process type
     StrucFunc_t fStrucFunc;         //Structure Function
     Float_t     fKineBias;          //!Bias from kinematic selection
