@@ -51,9 +51,15 @@ AliAnaCaloTrackCorrBaseClass(),
 fCellAmpMin(),                         fEMinForExo(0),                         
 fExoCut(0),                            fNCellHighCut(0),
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
+fHighEnergyCutSM(0),                   fHighNCellsCutSM(0), 
+fLowEnergyCutSM3(0),                   fLowNCellsCutSM3(0),
+fEventMaxNumberOfStrips(0),
+fCellEnMax(0),                         fConstantTimeShift(0),                 
+fClusterMomentum(),
+
 fLED20(0),                             fLED12(0),   
 fLED20Time(0),                         fLED12Time(0),
-fEventNStripActive(0),                 fCellEnMax(0),
+fEventNStripActive(0),
 
 fFillCellHisto(1),                     fFillAllCellEventParamHisto(1),
 fFill1CellHisto(0),    
@@ -61,8 +67,7 @@ fFillStripHisto(1),
 fFillMatchingHisto(0),                 fFillSameDiffFracHisto(0),
 fFillExoEnMinCut(0),                   fFillAllCellSameTCardHisto(1),
 fFillPerSMHisto(1),                    fFillClusterColRowHisto(0),
-fFillOpenTimeHisto(1),
-fConstantTimeShift(0),                 fClusterMomentum(),         
+fFillOpenTimeHisto(1),         
 
 // Histograms
 fhNClusterPerEventNCellHigh20(0),      fhNClusterPerEventNCellHigh12(0),        
@@ -169,11 +174,11 @@ fhNStripsPerEventAccept(0),             fhNStripsPerEventAcceptPerSM(0),
 fhSM3NCellsSumEnSuspiciousEvents(0),
 fhSumEnCellsPerSMEventSuspicious(0),    fhNCellsPerSMEventSuspicious(0),
 fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
-
-
 {        
   AddToHistogramsName("AnaCaloExotic_");
   
+  // Init main cuts
+  //
   fCellAmpMin = 0.5;
   fEMinForExo = 10.0;
   fExoCut     = 0.97;
@@ -187,6 +192,15 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
   fCellEnMins[0] = 0.5;  fCellEnMins[1] = 1.0; fCellEnMins[2] = 2.0;
   fCellEnMax = 15;
   
+  fHighEnergyCutSM = 500.; fHighNCellsCutSM = 100;
+  fLowEnergyCutSM3 = 2   ; fLowNCellsCutSM3 = 3;
+  
+  fEventMaxNumberOfStrips = 2; 
+  fHighEnergyCutStrip[0] = 45; fHighEnergyCutStrip[1] = 20; 
+  fHighNCellsCutStrip[0] = 20; fHighNCellsCutStrip[1] = 12;
+  
+  // Init to zero
+  //
   for(Int_t i = 0; i < fgkNEBins; i++) 
   {
     fhM02ExoNCells        [i] = 0;
@@ -293,7 +307,6 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
       fhCellEnSameColRowDiffExoCut[i][j] = 0;
     }
   }
-  
 
   for (Int_t ieta = 0; ieta < 24; ieta++)
   {
@@ -353,7 +366,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
   
   for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
   {
-    if ( cells->GetCellNumber(iCell) < 0 ||  cells->GetAmplitude(iCell) < fCellAmpMin ) continue; 
+    if ( cells->GetCellNumber(iCell) < 0 || cells->GetAmplitude(iCell) < fCellAmpMin ) continue; 
     
     AliDebug(2,Form("Cell : amp %f, absId %d", cells->GetAmplitude(iCell), cells->GetCellNumber(iCell)));
     
@@ -416,14 +429,14 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
   // Low activity in SM3 and very large activiy on any of the other SM
   //
   Bool_t acceptEvent = kTRUE;
-  if ( nCellsPerSM[0][3] <= 3 || eCellsPerSM[0][3] <= 2 )
+  if ( nCellsPerSM[0][3] <= fLowNCellsCutSM3 || eCellsPerSM[0][3] <= fLowEnergyCutSM3 )
   {
     for(Int_t ism = 0; ism < 20; ism++)
     {
       if ( ism == 3 ) continue;
       
-      if ( nCellsPerSM[0][ism] >=  100 ) acceptEvent = kFALSE;
-      if ( eCellsPerSM[0][ism] >=  500 ) acceptEvent = kFALSE;
+      if ( nCellsPerSM[0][ism] >= fHighNCellsCutSM ) acceptEvent = kFALSE;
+      if ( eCellsPerSM[0][ism] >= fHighEnergyCutSM ) acceptEvent = kFALSE;
     }
    
     if ( !acceptEvent )
@@ -445,8 +458,8 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     {
       if ( ism == 3 ) continue;
       
-      if ( nCellsPerSM[0][ism] >=  100 ) suspiciousEvent = kTRUE;
-      if ( eCellsPerSM[0][ism] >=  500 ) suspiciousEvent = kTRUE;
+      if ( nCellsPerSM[0][ism] >= fHighNCellsCutSM ) suspiciousEvent = kTRUE;
+      if ( eCellsPerSM[0][ism] >= fHighEnergyCutSM ) suspiciousEvent = kTRUE;
     }
   
     if ( suspiciousEvent ) 
@@ -526,7 +539,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
         fhAverSumEnCellsAcceptEvent[icut]->Fill(averECells, GetEventWeight());
     }
  
-    if ( fEventNStripActive < 1 )
+    if ( fEventNStripActive <= fEventMaxNumberOfStrips )
     {
       fhSumEnCellsAcceptEventStrip [icut]->Fill(eCells[icut], GetEventWeight());
       fhNCellsAcceptEventStrip     [icut]->Fill(nCells[icut], GetEventWeight());
@@ -564,7 +577,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
           fhAverSumEnCellsPerSMAcceptEvent[icut]->Fill(averECells, ism, GetEventWeight());
       }
       
-      if ( fEventNStripActive < 1 )
+      if ( fEventNStripActive <= fEventMaxNumberOfStrips )
       {
         fhSumEnCellsPerSMAcceptEventStrip [icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
         fhNCellsPerSMAcceptEventStrip     [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
@@ -591,7 +604,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       fhFracSumEnCellsNHigh20[icut-1]->Fill(frEnCells, GetEventWeight());
     }
     
-    if ( nCellsPerSM[0][3] <= 3 || eCellsPerSM[0][3] <= 2 )
+    if ( nCellsPerSM[0][3] <= fLowNCellsCutSM3 || eCellsPerSM[0][3] <= fLowEnergyCutSM3 )
     {
       fhFracNCellsAcceptEvent    [icut-1]->Fill(frNCells , GetEventWeight());
       fhFracSumEnCellsAcceptEvent[icut-1]->Fill(frEnCells, GetEventWeight());
@@ -624,7 +637,6 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     } // Per SM
   }
 }
-
 
 //
 //____________________________________________________________
@@ -713,7 +725,6 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
     } // ieta
   }// sm    
   
-  
   for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
   {
     for (Int_t ieta = 0; ieta < 24; ieta++)
@@ -733,32 +744,36 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
   
   // Count per event over event cut
   // Low activity on SM3 for emin = 0.5
-  Bool_t bSM3 = kFALSE;
+  Bool_t bSM3StripsLowActivity = kTRUE;
   for (Int_t ieta = 0; ieta < 24; ieta++)
   {
-    if ( fEnCellsStrip[0][3][ieta] <= 2 ) bSM3 = kTRUE;
-    if ( fnCellsStrip [0][3][ieta] <= 3 ) bSM3 = kTRUE;
+    if ( fEnCellsStrip[0][3][ieta] > fLowEnergyCutSM3 || 
+         fnCellsStrip [0][3][ieta] > fLowNCellsCutSM3   ) 
+      bSM3StripsLowActivity = kFALSE;
   }
   
-  if ( bSM3 )
+  if ( bSM3StripsLowActivity )
   {
+    
     Int_t   maxNCells = 20;
-    Float_t maxECells = 50;
+    Float_t maxECells = 45;
     for (Int_t ism = 0; ism < 20; ism++)
     {
-      if (ism == 3 ) continue ;
+      if ( ism == 3 ) continue ;
      
-      maxNCells = 20;
-      maxECells = 50;
-      if(ism == 10 || ism == 11 || ism == 18 || ism == 19) 
+      maxNCells = fHighNCellsCutStrip[0];
+      maxECells = fHighEnergyCutStrip[0];
+      if ( ism == 10 || ism == 11 || 
+           ism == 18 || ism == 19   ) 
       {
-        maxNCells = 12;
-        maxECells = 20;
+        maxNCells = fHighNCellsCutStrip[1];
+        maxECells = fHighEnergyCutStrip[1];
       }
       
       for (Int_t ieta = 0; ieta < 24; ieta++)
       {
-        if( fEnCellsStrip[0][ism][ieta] > maxECells || fnCellsStrip[0][ism][ieta] > maxNCells )
+        if( fEnCellsStrip[0][ism][ieta] > maxECells || 
+            fnCellsStrip [0][ism][ieta] > maxNCells   )
         {
           fEventNStripActive++;
           fEventNStripActiveSM[ism]++;          
@@ -772,9 +787,8 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
     fhNStripsPerEventPerSM->Fill(fEventNStripActiveSM[ism], ism, GetEventWeight());
   
   // Strip activity if cut on number of active strips
-  if ( fEventNStripActive < 3 )
+  if ( fEventNStripActive <= fEventMaxNumberOfStrips )
   {
-    
     for(Int_t icut = 0; icut < fgkNCellEnMinBins; icut++)
     { 
       for (Int_t ieta = 0; ieta < 24; ieta++)
@@ -884,6 +898,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
         positive = (track->Charge()>0);
       }
     }
+    
     // Residuals
     Float_t deta  = clus->GetTrackDz();
     Float_t dphi  = clus->GetTrackDx();  
@@ -1551,6 +1566,17 @@ TObjString * AliAnaCaloExotics::GetAnalysisCuts()
   parList+=onePar ;
   
   snprintf(onePar,buffersize,"NcellsW > %d;",fNCellHighCut) ;
+  parList+=onePar ;
+  
+  snprintf(onePar,buffersize,"SM: nCell > %d, Sum E > %2.0f;",fHighNCellsCutSM,fHighEnergyCutSM) ;
+  parList+=onePar ;
+ 
+  snprintf(onePar,buffersize,"SM3: nCell < %d, Sum E < %2.0f;",fLowNCellsCutSM3,fLowEnergyCutSM3) ;
+  parList+=onePar ;
+ 
+  snprintf(onePar,buffersize,"Strip: nCell > %d-%d, Sum E > %2.0f-%2.0f; Event N Strips < %d;",
+           fHighNCellsCutStrip[0], fHighNCellsCutStrip[1],
+           fHighEnergyCutStrip[0], fHighEnergyCutStrip[1], fEventMaxNumberOfStrips) ;
   parList+=onePar ;
   
   snprintf(onePar,buffersize,"%2.0f < time < %2.0f ns;",fTimeCutMin,fTimeCutMax) ;
@@ -4191,7 +4217,6 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhNStripsPerEventPerSM->SetXTitle("#it{n}_{strips}^{high activity}");
     outputContainer->Add(fhNStripsPerEventPerSM);
     
-    
     if ( fFillCellHisto && fFillAllCellEventParamHisto > 0 )
     {
       fhNStripsPerEventAccept = new TH1F 
@@ -4247,6 +4272,13 @@ void AliAnaCaloExotics::Print(const Option_t * opt) const
   printf("Exoticity cut: %2.1f \n", fExoCut) ;
   printf("NCell cut: %d \n", fNCellHighCut) ;
   printf("Time range: [%2.2f,%2.2f] ns\n",fTimeCutMin,fTimeCutMax);
+  
+  printf("SM : nCell >= %d - Sum E >= %2.0f\n",fHighNCellsCutSM,fHighEnergyCutSM) ;
+  printf("SM3: nCell <= %d - Sum E <= %2.0f\n",fLowNCellsCutSM3,fLowEnergyCutSM3) ;
+  printf("Strip: nCell > %d-%d - Sum E > %2.0f-%2.0f; Event N Strips <= %d\n",
+         fHighNCellsCutStrip[0], fHighNCellsCutStrip[1],
+         fHighEnergyCutStrip[0], fHighEnergyCutStrip[1], fEventMaxNumberOfStrips) ;
+  
   printf("Fill cell histo : %d GeV/c\n", fFillCellHisto) ;
   printf("Fill cell all cell event histo : %d GeV/c\n", fFillAllCellEventParamHisto) ;
   printf("Fill strip histo : %d GeV/c\n", fFillStripHisto) ;
