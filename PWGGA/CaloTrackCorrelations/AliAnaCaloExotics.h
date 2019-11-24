@@ -166,6 +166,9 @@ public:
   Float_t  fCellEnMins[fgkNCellEnMinBins];      ///<  Energy minimum for some histograms for cells
   Float_t  fCellEnMax;                          ///<  Energy maximum for some histograms for cells 
   
+  Float_t  fEnCellsStrip[fgkNCellEnMinBins][20][24]; ///< Number of cells in strip per event, per SM and per cell min En cut
+  Int_t    fnCellsStrip [fgkNCellEnMinBins][20][24]; ///< Sum of energy of cells in strip per event, per SM and per cell min En cut
+  
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
   
   Int_t    fFillAllCellEventParamHisto;         ///<  Fill histograms summing our counting cells per event, 0-not filled, 1-n and sum E, 2 all fractions
@@ -473,11 +476,23 @@ public:
   TH1F *   fhNCellsPerStripAcceptEventStrip    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, accept event based on n strip
   TH2F *   fhSumEnCellsPerStripPerSMAcceptEventStrip[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, per SM, accept event based on n strip 
   TH2F *   fhNCellsPerStripPerSMAcceptEventStrip    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM, accept event based on n strip
-  
-  TH2F *   fhSM3NCellsSumEnSuspiciousEvents;                  //!<! Control histogram to check SM3 activity when there is high activity event in other SM, after event cut
+ 
+  TH1F *   fhSumEnCellsPerStripEventAccept[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, accept event based on n strip 
+  TH1F *   fhNCellsPerStripEventAccept    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, accept event based on n strip
+  TH2F *   fhSumEnCellsPerStripPerSMEventAccept[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy in a strip, per SM, accept event based on n strip 
+  TH2F *   fhNCellsPerStripPerSMEventAccept    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells in a strip, per SM, accept event based on n strip
   
   TH1F *   fhNStripsPerEvent;                                 //!<! Number of active strips per event, low activity SM3
   TH2F *   fhNStripsPerEventPerSM;                            //!<! Number of active strips per event, per SM, low activity SM3
+  TH1F *   fhNStripsPerEventAccept;                           //!<! Number of active strips per accepted event, low activity SM3
+  TH2F *   fhNStripsPerEventAcceptPerSM;                      //!<! Number of active strips per accepted event, per SM, low activity SM3
+  
+  TH2F *   fhSM3NCellsSumEnSuspiciousEvents;                  //!<! Control histogram to check SM3 activity when there is high activity event in other SM, after event cut
+  TH2F *   fhSumEnCellsPerSMEventSuspicious;                  //!<! For E cell > emin, sum of cells energy, per SM 
+  TH2F *   fhNCellsPerSMEventSuspicious;                      //!<! For E cell > emin, count number of cells, per SM 
+  TH1F *   fhNStripsPerEventSuspicious;                       //!<! Number of active strips per event, accepted event but suspicious
+  TH2F *   fhNStripsPerEventSuspiciousPerSM;                  //!<! Number of active strips per event, accepted event but suspicious
+ 
   
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;
