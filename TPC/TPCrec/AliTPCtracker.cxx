@@ -306,33 +306,41 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   // RS: use propagation only if the seed in far from the cluster
   const double kTolerance = 10e-4; // assume track is at cluster X if X-distance below this
   if (TMath::Abs(seed->GetX()-cluster->GetX())>kTolerance) seed->GetProlongation(cluster->GetX(),yt,zt); 
-  Double_t sy2=0,sy2M=0;//ErrY2(seed,cluster);
-  Double_t sz2=0,sz2M=0;//ErrZ2(seed,cluster);
+  Double_t sy2=0,sy2M=0,sy2E=0;//ErrY2(seed,cluster);
+  Double_t sz2=0,sz2M=0,sz2E=0;//ErrZ2(seed,cluster);
   ErrY2Z2(seed,cluster,sy2,sz2);
+  sy2E=sy2;
+  sz2E=sz2;
   if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxCorrection()||AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
     // const Float_t NclCenral=3000000;
-    const Float_t kClusterNorm=0.0000001*0.008;
+    const Float_t kClusterNorm=0.0000001*0.02;
     const Float_t kdEdxMIP=50., kClusterMIP=30;
     const Float_t kXinner=83;
     const Float_t kSnpMult=1.5;
+    const Float_t kMaxSigma2=0.3*0.3;
+    const Float_t kMinSigma2=0.03*0.03;
     Double_t multM = fTotalClusters * kClusterNorm;
     Float_t mdEdx = 1;
+    Float_t snp2 = seed->GetSnp(); snp2 *= snp2;
+    Float_t tanPhi2 = (snp2>0)? snp2/(1-snp2):0;
+    Float_t tgl2 = seed->GetTgl(); tgl2 *= tgl2;
     if (seed->GetESD()) if (seed->GetESD()->GetTPCsignal()>0)  mdEdx=TMath::Min(kdEdxMIP / seed->GetESD()->GetTPCsignal(), 1.);
     if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
       Float_t mQ = kClusterMIP / cluster->GetMax();
       Float_t baselineRatio2 = (cluster->GetMax() > 0) ? cluster->GetBaselineTail() / cluster->GetMax() : 0;
       baselineRatio2 *= baselineRatio2;
-      Float_t snp2 = seed->GetSnp();
-      snp2 *= snp2;
       Float_t normR = (cluster->GetX() > 0) ? kXinner / cluster->GetX() : 1;
       normR *= normR;
-      sy2M = multM * (1 + normR) * (0.25 + 0.5 * (mdEdx + mQ)) + baselineRatio2;    // central event MIP - additional error ~0.8 mm in mean
-      sz2M = multM * (1 + normR) * (0.25 + 0.5 * (mdEdx + mQ)) + baselineRatio2;
-      sy2M *= (1. + kSnpMult * snp2);       /// empirical factor - broad cluster more sensitive to rate
+      sy2M = multM * (1 + normR) * (0.5 + 0.5 * (mdEdx + mQ)) + baselineRatio2;    // central event MIP - additional error ~0.8 mm in mean
+      sz2M = multM * (1 + normR) * (0.5 + 0.5 * (mdEdx + mQ)) + baselineRatio2;
+      sy2M *= (1. + kSnpMult * tanPhi2);       /// empirical factor - broad cluster more sensitive to rate
+      if (sy2M>kMaxSigma2) sy2M=kMaxSigma2;
+      if (sz2M>kMaxSigma2) sz2M=kMaxSigma2;
     }
-    //
-    seed->SetErrorY2(sy2* (0.25 + mdEdx)+ sy2M);   ///
-    seed->SetErrorZ2(sz2* (0.25 + mdEdx)+ sz2M);   ///
+    sy2E=(sy2+0.3*0.3*tanPhi2)*0.5*(1 + mdEdx);
+    sz2E=(sz2+0.0*0.0*tgl2)*0.5*(1 + mdEdx);
+    seed->SetErrorY2(sy2E+ sy2M+kMinSigma2);   ///
+    seed->SetErrorZ2(sz2E+ sz2M+kMinSigma2);   ///
   }
   Double_t sdistancey2 = sy2+seed->GetSigmaY2();
   Double_t sdistancez2 = sz2+seed->GetSigmaZ2();
@@ -388,6 +396,8 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
       "errz2="<<sz2<<
       "erry2M="<<sy2M<<
       "errz2M="<<sz2M<<
+      "erry2E="<<sy2E<<
+      "errz2E="<<sz2E<<
       "rmsy2="<<rmsy2<<
       "rmsz2="<<rmsz2<<	
       "rmsy2p30="<<rmsy2p30<<
