@@ -169,6 +169,9 @@ public:
   Float_t  fEnCellsStrip[fgkNCellEnMinBins][20][24]; ///< Number of cells in strip per event, per SM and per cell min En cut
   Int_t    fnCellsStrip [fgkNCellEnMinBins][20][24]; ///< Sum of energy of cells in strip per event, per SM and per cell min En cut
   
+  Float_t  fEnCellsStripAllSM[fgkNCellEnMinBins][24]; ///< Number of cells in strip per event, all SM and per cell min En cut
+  Int_t    fnCellsStripAllSM [fgkNCellEnMinBins][24]; ///< Sum of energy of cells in strip per event, all SM and per cell min En cut
+  
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
   
   Int_t    fFillAllCellEventParamHisto;         ///<  Fill histograms summing our counting cells per event, 0-not filled, 1-n and sum E, 2 all fractions
