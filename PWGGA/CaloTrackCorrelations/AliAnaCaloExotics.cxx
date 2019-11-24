@@ -498,7 +498,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
         fhAverSumEnCellsAcceptEvent[icut]->Fill(averECells, GetEventWeight());
     }
  
-    if ( fEventNStripActive < 3 )
+    if ( fEventNStripActive < 1 )
     {
       fhSumEnCellsAcceptEventStrip[icut]->Fill(eCells[icut], GetEventWeight());
       fhNCellsAcceptEventStrip    [icut]->Fill(nCells[icut], GetEventWeight());
@@ -531,7 +531,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
           fhAverSumEnCellsPerSMAcceptEvent[icut]->Fill(averECells, ism, GetEventWeight());
       }
       
-      if ( fEventNStripActive < 3 )
+      if ( fEventNStripActive < 1 )
       {
         fhSumEnCellsPerSMAcceptEventStrip[icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
         fhNCellsPerSMAcceptEventStrip    [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
@@ -679,18 +679,23 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
   
   if ( bSM3 )
   {
-    Int_t maxNCells = 20;
+    Int_t   maxNCells = 20;
+    Float_t maxECells = 50;
     for (Int_t ism = 0; ism < 20; ism++)
     {
       if (ism == 3 ) continue ;
      
       maxNCells = 20;
+      maxECells = 50;
       if(ism == 10 || ism == 11 || ism == 18 || ism == 19) 
+      {
         maxNCells = 12;
+        maxECells = 20;
+      }
       
       for (Int_t ieta = 0; ieta < 24; ieta++)
       {
-        if( (fEnCellsStrip[0][ism][ieta] > 50 || fnCellsStrip [0][ism][ieta] > maxNCells ) )
+        if( fEnCellsStrip[0][ism][ieta] > maxECells || fnCellsStrip [0][ism][ieta] > maxNCells )
         {
           fEventNStripActive++;
           fEventNStripActiveSM[ism]++;          
