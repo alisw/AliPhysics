@@ -143,6 +143,7 @@ set(SRCS
   upgrade/AliAnalysisTaskCountLcEta.cxx
   upgrade/AliAnalysisTaskSEImproveITS3.cxx
   upgrade/AliAnalysisTaskSELbtoLcpi4.cxx
+  upgrade/AliAnalysisTaskSECharmTriggerStudy.cxx
   AliAnalysisTaskSELc2eleLambdafromAODtracks.cxx
   AliAnalysisTaskSELc2V0bachelorTMVA.cxx
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
