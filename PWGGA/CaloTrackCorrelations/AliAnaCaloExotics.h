@@ -161,7 +161,7 @@ public:
   static const Int_t fgkNEBins = 12;
   Float_t  fEnergyBins[fgkNEBins];              ///<  Energy bins for some histograms
  
-  static const Int_t fgkNCellEnMinBins = 4;
+  static const Int_t fgkNCellEnMinBins = 3;
   static const Int_t fgkNCellEnMinBinsFr = 3;
   Float_t  fCellEnMins[fgkNCellEnMinBins];      ///<  Energy minimum for some histograms for cells
   Float_t  fCellEnMax;                          ///<  Energy maximum for some histograms for cells 

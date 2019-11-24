@@ -184,8 +184,7 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
   fEnergyBins [6] =  75; fEnergyBins [7] = 100;  fEnergyBins [8] = 125;
   fEnergyBins [9] = 150; fEnergyBins[10] = 175;  fEnergyBins[11] = 200;
   
-  fCellEnMins[0] = 0.5; fCellEnMins[1] = 0.3;
-  fCellEnMins[2] = 1.0; fCellEnMins[3] = 2.0;
+  fCellEnMins[0] = 0.5;  fCellEnMins[1] = 1.0; fCellEnMins[2] = 2.0;
   fCellEnMax = 15;
   
   for(Int_t i = 0; i < fgkNEBins; i++) 
