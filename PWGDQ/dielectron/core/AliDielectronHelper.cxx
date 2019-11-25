@@ -22,8 +22,8 @@
 //   Frederick Kramer <Frederick.Kramer@cern.ch>
 //   Julian Book <Julian.Book@cern.ch>
 
-
-
+#include <iostream>
+#include <vector>
 
 #include <TError.h>
 #include <TMath.h>
@@ -308,13 +308,40 @@ Bool_t AliDielectronHelper::CheckESDtrack(AliESDtrack *track){
 
 
 //_____________________________________________________________________________
-Double_t AliDielectronHelper::GetTransverseSpherocityESD(const AliESDEvent *ev){
+std::vector<AliESDtrack*> AliDielectronHelper::GetESDtracks(const AliESDEvent *ev){
 
   //GetNtracks
   const Int_t Ntracks = ev->GetNumberOfTracks();
 
+  AliESDtrackCuts* TrackCutsTPCRefit = new AliESDtrackCuts("AliESDtrackCutsTPCRefit","AliESDtrackCutsTPCRefit");
+  TrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
+  TrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
+  TrackCutsTPCRefit->SetEtaRange(-0.8,0.8);
+
+  AliESDtrack *track = 0x0;
+  std::vector<AliESDtrack *> tracks;
+  for(Int_t i=0; i<Ntracks; i++){
+
+    track = ev->GetTrack(i); 
+    if(TrackCutsTPCRefit->AcceptTrack(track)) tracks.push_back((AliESDtrack*)track->Clone());
+  }
+
+  return tracks;
+
+}
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityESD(const AliESDEvent *ev){ 
+
+  std::vector<AliESDtrack *> tracks;
+  AliESDtrack *track = 0x0;
+  tracks = GetESDtracks(ev);
+
+  const int Ntracks = tracks.size();
+  if(Ntracks<2)
+    return -1.;
+
   //fPx fPy
-  AliESDtrack *part=0x0;
   Double_t Px=-99;
   Double_t Py=-99;
 
@@ -331,10 +358,9 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESD(const AliESDEvent *ev){
     Double_t num = 0;
     for(Int_t j = 0; j < Ntracks; j++) {
       
-      part= ev->GetTrack(j);
-      if(!CheckESDtrack(part)) continue;
-      Px = part->Px(); 
-      Py = part->Py();
+      track = tracks.at(j);
+      Px = track->Px(); 
+      Py = track->Py();
       num += TMath::Abs(ny*Px - nx*Py);
 
       if(i==0)
@@ -355,12 +381,15 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESD(const AliESDEvent *ev){
 //_____________________________________________________________________________
 Double_t AliDielectronHelper::GetTransverseSpherocityESDtracks(const AliESDEvent *ev){
 
-  //GetNtracks
-  const Int_t Ntracks = ev->GetNumberOfTracks();
-  Int_t NaccTracks = 0;
+  std::vector<AliESDtrack *> tracks;
+  AliESDtrack *track = 0x0;
+  tracks = GetESDtracks(ev);
+
+  const int Ntracks = tracks.size();
+  if(Ntracks<10)
+    return -1.;
 
   //fPx fPy
-  AliESDtrack *part=0x0;
   Double_t Px=-99.;
   Double_t Py=-99.;
 
@@ -370,30 +399,24 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESDtracks(const AliESDEvent
   //const Double_t pt = 1;
   for(Int_t i = 0; i < Ntracks; i++) {
 
-    part = ev->GetTrack(i);
-    if(!CheckESDtrack(part)){
-      if(i==firstTrack) firstTrack++;
-      continue;
-    }
-    else NaccTracks++;
-    Px = part->Px();
-    Py = part->Py();
-    Double_t pt = part->Pt();
+    track = tracks.at(i);
+    Px = track->Px();
+    Py = track->Py();
+    Double_t pt = track->Pt();
     Double_t nx = Px / pt; // x component of a unitary vector n
     Double_t ny = Py / pt; // y component of a unitary vector n
 
     Double_t num = 0;
     for(Int_t j = 0; j < Ntracks; j++) {
-      part = ev->GetTrack(j);
-      if(!CheckESDtrack(part)) continue;
-      Px = part->Px();
-      Py = part->Py();
+      track = tracks.at(j);
+      Px = track->Px();
+      Py = track->Py();
       //Px = TMath::Cos(part->Phi());
       //Py = TMath::Sin(part->Phi());
       num += TMath::Abs(ny*Px - nx*Py);
 
-      if(i==firstTrack)
-        sumpt += part->Pt();
+      if(i==0)
+        sumpt += TMath::Sqrt(Px*Px + Py*Py);
     }
 
     Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
@@ -401,9 +424,6 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESDtracks(const AliESDEvent
       RetTransverseSpherocity = pFull;
     };
   };
-
-  if(NaccTracks < 10)
-    return -1;
 
   RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
   if(RetTransverseSpherocity < 0.) return -1.1;
@@ -416,11 +436,15 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESDtracks(const AliESDEvent
 //_____________________________________________________________________________
 Double_t AliDielectronHelper::GetTransverseSpherocityESDwoPtWeight(const AliESDEvent *ev){
 
-  //GetNtracks
-  const Int_t Ntracks = ev->GetNumberOfTracks();
+  std::vector<AliESDtrack *> tracks;
+  AliESDtrack *track = 0x0;
+  tracks = GetESDtracks(ev);
+
+  const int Ntracks = tracks.size();
+  if(Ntracks<2)
+    return -1.;
 
   //fPx fPy
-  AliESDtrack *part=0x0;
   Double_t Px=-99;
   Double_t Py=-99;
 
@@ -437,10 +461,9 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESDwoPtWeight(const AliESDE
     Double_t num = 0;
     for(Int_t j = 0; j < Ntracks; j++) {
       
-      part= ev->GetTrack(j);
-      if(!CheckESDtrack(part)) continue;
-      Px = part->Px() / part->Pt(); 
-      Py = part->Py() / part->Pt();
+      track = tracks.at(j);
+      Px = track->Px() / track->Pt(); 
+      Py = track->Py() / track->Pt();
       num += TMath::Abs(ny*Px - nx*Py);
 
       if(i==0)
@@ -462,12 +485,15 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESDwoPtWeight(const AliESDE
 //_____________________________________________________________________________
 Double_t AliDielectronHelper::GetTransverseSpherocityESDtracksWoPtWeight(const AliESDEvent *ev){
 
-  //GetNtracks
-  const Int_t Ntracks = ev->GetNumberOfTracks();
-  Int_t NaccTracks = 0;
+  std::vector<AliESDtrack *> tracks;
+  AliESDtrack *track = 0x0;
+  tracks = GetESDtracks(ev);
+
+  const int Ntracks = tracks.size();
+  if(Ntracks<10)
+    return -1.;
 
   //fPx fPy
-  AliESDtrack *part=0x0;
   Double_t Px=-99.;
   Double_t Py=-99.;
 
@@ -477,29 +503,23 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESDtracksWoPtWeight(const A
   //const Double_t pt = 1;
   for(Int_t i = 0; i < Ntracks; i++) {
 
-    part = ev->GetTrack(i);
-    if(!CheckESDtrack(part)){
-      if(i==firstTrack) firstTrack++;
-      continue;
-    }
-    else NaccTracks++;
-    Px = part->Px();
-    Py = part->Py();
-    Double_t pt = part->Pt();
+    track = tracks.at(i);
+    Px = track->Px();
+    Py = track->Py();
+    Double_t pt = track->Pt();
     Double_t nx = Px / pt; // x component of a unitary vector n
     Double_t ny = Py / pt; // y component of a unitary vector n
 
     Double_t num = 0;
     for(Int_t j = 0; j < Ntracks; j++) {
-      part = ev->GetTrack(j);
-      if(!CheckESDtrack(part)) continue;
-      Px = part->Px() / part->Pt();
-      Py = part->Py() / part->Pt();
+      track = tracks.at(j);
+      Px = track->Px() / track->Pt();
+      Py = track->Py() / track->Pt();
       //Px = TMath::Cos(part->Phi());
       //Py = TMath::Sin(part->Phi());
       num += TMath::Abs(ny*Px - nx*Py);
 
-      if(i==firstTrack)
+      if(i==0)
         sumpt += TMath::Sqrt( Px*Px + Py*Py);
     }
 
@@ -509,8 +529,6 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESDtracksWoPtWeight(const A
     };
   };
 
-  if(NaccTracks < 10)
-    return -1;
 
   RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
   if(RetTransverseSpherocity < 0.) return -1.1;
