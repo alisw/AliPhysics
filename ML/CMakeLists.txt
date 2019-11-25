@@ -56,6 +56,9 @@ set(LIBDEPS treelite treelite_runtime)
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Link against yaml-cpp. It must be included _after_ the ROOT map because it is static rather than shared!
+set(LIBDEPS ${LIBDEPS} yaml-cpp)
+
 # Generate a PARfile target for this library. Note the extra includes
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 

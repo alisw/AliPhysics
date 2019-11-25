@@ -118,7 +118,7 @@ void AliMLResponse::Config() {
   try {
     nodeList = YAML::LoadFile(fConfigFilePath);
   } catch (std::exception &e) {
-    AliFatal(Form("Yaml-ccp error: %s! Exit", e.what());
+    AliFatal(Form("Yaml-ccp error: %s! Exit", e.what()));
   }
   /// manage empty config file
   if (nodeList.IsNull()) AliFatal("Empty .yaml config file! Exit");
