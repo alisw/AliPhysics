@@ -126,6 +126,20 @@
 #pragma link C++ class AliRDHFCutsXictopKpi+;
 #pragma link C++ class AliRDHFCutsCdeuterontodKpi+;
 #pragma link C++ class AliAnalysisTaskSECharmTriggerStudy+;
+#pragma link C++ class Charm2Prong+;
+#pragma link C++ class Charm3Prong+;
+#pragma link C++ class Dstar+;
+#pragma link C++ class CharmCascade+;
+#pragma link C++ class Beauty3Prong+;
+#pragma link C++ class Beauty4Prong+;
+#pragma link C++ class GenHadron+;
+#pragma link C++ class std::vector<Charm2Prong>+;
+#pragma link C++ class std::vector<Charm3Prong>+;
+#pragma link C++ class std::vector<Dstar>+;
+#pragma link C++ class std::vector<CharmCascade>+;
+#pragma link C++ class std::vector<Beauty3Prong>+;
+#pragma link C++ class std::vector<Beauty4Prong>+;
+#pragma link C++ class std::vector<GenHadron>+;
 
 //classes working only in ROOT6
 #ifdef __CLING__
