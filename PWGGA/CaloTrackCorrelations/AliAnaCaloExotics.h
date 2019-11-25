@@ -76,6 +76,20 @@ public:
   void         SetTimeCut(Float_t min, Float_t max) { fTimeCutMin = min   ; 
                                                       fTimeCutMax = max   ; }
   
+  void         SetHighEnergyCutSM(Float_t e) { fHighEnergyCutSM = e ; }   
+  void         SetHighNCellsCutSM(Int_t   n) { fHighNCellsCutSM = n ; }   
+
+  void         SetLowEnergyCutSM3(Float_t e) { fLowEnergyCutSM3 = e ; }   
+  void         SetLowNCellsCutSM3(Int_t   n) { fLowNCellsCutSM3 = n ; }   
+  
+  void         SetEventMaxNumberOfStrips(Int_t n) { fEventMaxNumberOfStrips = n ; }   
+  
+  void         SetfHighEnergyCutStrip(Float_t eFull, Float_t eThird)
+                { fHighEnergyCutStrip[0] = eFull; fHighEnergyCutStrip[1] = eThird; }
+ 
+  void         SetfHighNCellsCutStrip(Int_t nFull, Int_t nThird)
+                { fHighNCellsCutStrip[0] = nFull; fHighNCellsCutStrip[1] = nThird; }
+  
   Float_t      GetEBinLimit(Int_t i) const  
                            { if ( i < fgkNEBins && i >= 0 ) return fEnergyBins[i] ;
                              else                           return -1     ; }
@@ -88,14 +102,8 @@ public:
   void         SetCellEMinBinLimit(Int_t i, Float_t en) 
                            { if ( i < fgkNCellEnMinBins && i >= 0 ) fCellEnMins[i] = en ; }
   
-  Float_t      GetCellEMaxBinLimit()           { return fCellEnMax ; } 
-  void         SetCellEMaxBinLimit(Float_t en) { fCellEnMax = en   ; } 
-  
-//  Float_t      GetCellMinEnergy(Int_t i) const  
-//                           { if ( i < fgkNCellMinEnBins && i >= 0 ) return fCellMinEnBins[i] ;
-//    else                           return -1     ; }
-//  void         SetCellMinEnergy(Int_t i, Float_t en) 
-//                           { if ( i < fgkNCellMinEnBins && i >= 0 ) fCellMinEnBins[i] = en ; }
+  Float_t      GetCellEMaxBinLimit()                { return fCellEnMax ; } 
+  void         SetCellEMaxBinLimit(Float_t en)      { fCellEnMax = en   ; } 
   
   void         SwitchOnFill1CellHisto()             { fFill1CellHisto            = kTRUE  ; }
   void         SwitchOffFill1CellHisto()            { fFill1CellHisto            = kFALSE ; }
@@ -129,14 +137,17 @@ public:
   
   void         SwitchOnFillOpenTimeHisto()          { fFillOpenTimeHisto         = kTRUE  ; }
   void         SwitchOffFillOpenTimeHisto()         { fFillOpenTimeHisto         = kFALSE ; }
+ 
+  void         SwitchOnFillExoticity50nsHisto()     { fFillExo50ns               = kTRUE  ; }
+  void         SwitchOffFillExoticity50nsHisto()    { fFillExo50ns               = kFALSE ; }
   
   void         SetConstantTimeShift(Float_t shift) { fConstantTimeShift = shift  ; }
   
  private:
       
  
-  // Cell amplitude cut
-  
+  // Different analysis cuts
+  //
   Float_t  fCellAmpMin;                         ///<  Amplitude Threshold on calorimeter cells 
   
   Float_t  fEMinForExo;                         ///<  Minimum energy cut for integrated histograms over E. Exotics start at about 4 GeV.
@@ -148,23 +159,37 @@ public:
   Float_t  fTimeCutMin  ;                       ///<  Remove clusters with time smaller than this value, in ns
   Float_t  fTimeCutMax  ;                       ///<  Remove clusters with time larger than this value, in ns
   
-  Bool_t   fLED20       ;                      ///<  There is at least a cluster with 20 cells with w > 0 in the event; internal
-  Bool_t   fLED12       ;                      ///<  There is at least a cluster with 12 cells with w > 0 in the event; internal
-  Float_t  fLED20Time   ;                      ///<  Time of LED cluster with 20 cells 
-  Float_t  fLED12Time   ;                      ///<  Time of LED cluster with 12 cells
- 
-  Int_t    fEventNStripActive ;                ///<  Number of strips per event with multiple high energy cells
-  Int_t    fEventNStripActiveSM[20];           ///<  Number of strips per event with multiple high energy cells per SM
-
+  Float_t  fHighEnergyCutSM;                    ///<  SM is too active if energy above this value
+  Int_t    fHighNCellsCutSM;                    ///<  SM is too active if n cells above this value
+  Float_t  fLowEnergyCutSM3;                    ///<  SM3 low activity if energy above this value
+  Int_t    fLowNCellsCutSM3;                    ///<  SM3 low activity if n cells above this value
   
+  Int_t    fEventMaxNumberOfStrips;             ///<  Cut on events on number of too active strips
+  Float_t  fHighEnergyCutStrip[2];              ///<  Strip is too active if energy above this value
+  Int_t    fHighNCellsCutStrip[2];              ///<  Strip is too active if n cells above this value
+
   /// Total number of cluster energy bins histograms
   static const Int_t fgkNEBins = 12;
   Float_t  fEnergyBins[fgkNEBins];              ///<  Energy bins for some histograms
  
-  static const Int_t fgkNCellEnMinBins = 3;
+  static const Int_t fgkNCellEnMinBins   = 3;
   static const Int_t fgkNCellEnMinBinsFr = 3;
   Float_t  fCellEnMins[fgkNCellEnMinBins];      ///<  Energy minimum for some histograms for cells
   Float_t  fCellEnMax;                          ///<  Energy maximum for some histograms for cells 
+  
+  Float_t  fConstantTimeShift;                  ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
+
+  // Internal values containers
+  //  
+  TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
+  
+  Bool_t   fLED20       ;                       ///<  There is at least a cluster with 20 cells with w > 0 in the event; internal
+  Bool_t   fLED12       ;                       ///<  There is at least a cluster with 12 cells with w > 0 in the event; internal
+  Float_t  fLED20Time   ;                       ///<  Time of LED cluster with 20 cells 
+  Float_t  fLED12Time   ;                       ///<  Time of LED cluster with 12 cells
+  
+  Int_t    fEventNStripActive ;                 ///<  Number of strips per event with multiple high energy cells
+  Int_t    fEventNStripActiveSM[20];            ///<  Number of strips per event with multiple high energy cells per SM
   
   Float_t  fEnCellsStrip[fgkNCellEnMinBins][20][24]; ///< Number of cells in strip per event, per SM and per cell min En cut
   Int_t    fnCellsStrip [fgkNCellEnMinBins][20][24]; ///< Sum of energy of cells in strip per event, per SM and per cell min En cut
@@ -172,6 +197,8 @@ public:
   Float_t  fEnCellsStripAllSM[fgkNCellEnMinBins][24]; ///< Number of cells in strip per event, all SM and per cell min En cut
   Int_t    fnCellsStripAllSM [fgkNCellEnMinBins][24]; ///< Sum of energy of cells in strip per event, all SM and per cell min En cut
   
+  // Histogram/analysis switchs
+  //
   Bool_t   fFillCellHisto;                      ///<  Fill histograms single cells
   
   Int_t    fFillAllCellEventParamHisto;         ///<  Fill histograms summing our counting cells per event, 0-not filled, 1-n and sum E, 2 all fractions
@@ -194,12 +221,10 @@ public:
 
   Bool_t   fFillOpenTimeHisto;                  ///<  Fill histograms when time cut not applied (not needed in MC)
   
-  Float_t  fConstantTimeShift;                  ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
-  
-  TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
+  Bool_t   fFillExo50ns;                        ///<  Fill histograms  with exoticity with 50 ns cut on difference in time with max
   
   // Histograms
-  
+  //
   TH1F *   fhNClusterPerEventNCellHigh20;        //!<! N clusters with NCells > 20 per event
   TH1F *   fhNClusterPerEventNCellHigh12;        //!<! N clusters with NCells > 12 per event
   
@@ -380,15 +405,18 @@ public:
   TH2F *   fhM02EnergyAllSameTCardW;            //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff_w =0
   TH2F *   fhNCellsPerClusterAllSameTCardW;     //!<! Cluster energy vs N cells, all cells in same T-Card, n diff_w = 0  
   TH3F *   fhEtaPhiGridExoEnCutSameFracCutW;    //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff_w = 0
-
-  TH2F *   fhExoticityEClusAllSameTCardTimeDiff;   //!<! Exoticity vs energy, all cells in same T-Card, n diff =0, tdiff < 50 ns
-  TH2F *   fhM02EnergyAllSameTCardTimeDiff;        //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff =0, tdiff< 50 ns
-  TH2F *   fhNCellsPerClusterAllSameTCardTimeDiff; //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0, tdiff < 50 ns  
-  TH3F *   fhEtaPhiGridExoEnCutSameFracCutTimeDiff;//!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff = 0, tdiff<50 ns
-  
+ 
   TH3F *   fhExoticityEClusAllSameTCardMinEnCut;   //!<! Exoticity vs energy, all cells in same T-Card, n diff =0 for E min cut
   TH3F *   fhM02EnergyAllSameTCardMinEnCut;        //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff =0 for E min cut
   TH3F *   fhNCellsPerClusterAllSameTCardMinEnCut; //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0 for E min cut
+  
+  // Apply 50 ns cut on exoticity
+  TH2F *   fhExoticity50nsEClus;                //!<! Exoticity vs cluster energy, tdiff < 50 ns
+  TH2F *   fhExoticity50ns1Cell;                //!<! Exoticity vs energy for 1 cell clusters, tdiff < 50 ns
+  TH2F *   fhExoticity50nsEClusAllSameTCard;    //!<! Exoticity vs energy, all cells in same T-Card, n diff = 0, tdiff < 50 ns
+  TH3F *   fhNCellsPerClusterExo50ns;           //!<! Cluster energy vs N cells in cluster vs Exoticity, tdiff < 50 ns   
+  TH3F *   fhM02EnergyExo50ns;                  //!<! Cluster M02 vs Energy vs exoticity, tdiff < 50 ns
+  TH3F *   fhM02Exo50nsNCells[fgkNEBins];       //!<! Cluster M02 vs exoticity vs n cells, different E bins, tdiff < 50 ns
   
   // Cluster-Track matching
   //
@@ -417,6 +445,7 @@ public:
     
   TH2F *   fhCellExoAmp;                        //!<! Cell amplitude vs exoticity
   TH3F *   fhCellExoAmpTime;                    //!<! Cell amplitude vs time vs exoticity
+  TH2F *   fhCellExo50nsAmp;                    //!<! Cell amplitude vs exoticity, tdiff < 50 ns
   
   TH3F *   fhCellExoGrid ;                      //!<! Cells ordered in column/row vs exoticity when amplitude > fEMinForExo 
   TH3F *   fhCellGridTimeHighNCell20 ;          //!<! Cells ordered in column/row vs cluster time when at least 1 cluster n cellsW > 20

@@ -2881,6 +2881,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
     if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
     if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
     if(TMath::Abs(curTrack->Eta())>0.8) continue;
+    if(curTrack->Pt()<0.15) continue;
     if(curTrack->Pt()>10) DoesEventContainHighPtHadron = kTRUE;
   }
   if(fGammaCandidates->GetEntries()>1){
