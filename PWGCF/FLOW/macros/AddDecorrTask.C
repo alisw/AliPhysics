@@ -56,18 +56,13 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = ""
     if(!task) return 0x0;
 
     Bool_t useWeights3D = task->GetUseWeights3D();
-
+    
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("ObservableContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("ReferenceFlowContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("DifferentialFlowContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("DifferentialPtAContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("PtA_PtB_Container_%s",dirname.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("FlowList_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
