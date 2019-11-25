@@ -137,6 +137,9 @@ public:
   
   void         SwitchOnFillOpenTimeHisto()          { fFillOpenTimeHisto         = kTRUE  ; }
   void         SwitchOffFillOpenTimeHisto()         { fFillOpenTimeHisto         = kFALSE ; }
+ 
+  void         SwitchOnFillExoticity50nsHisto()     { fFillExo50ns               = kTRUE  ; }
+  void         SwitchOffFillExoticity50nsHisto()    { fFillExo50ns               = kFALSE ; }
   
   void         SetConstantTimeShift(Float_t shift) { fConstantTimeShift = shift  ; }
   
@@ -217,6 +220,8 @@ public:
   Bool_t   fFillClusterColRowHisto;             ///<  Fill histograms with cluster coll and row size
 
   Bool_t   fFillOpenTimeHisto;                  ///<  Fill histograms when time cut not applied (not needed in MC)
+  
+  Bool_t   fFillExo50ns;                        ///<  Fill histograms  with exoticity with 50 ns cut on difference in time with max
   
   // Histograms
   //
@@ -410,6 +415,14 @@ public:
   TH3F *   fhM02EnergyAllSameTCardMinEnCut;        //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff =0 for E min cut
   TH3F *   fhNCellsPerClusterAllSameTCardMinEnCut; //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0 for E min cut
   
+  // Apply 50 ns cut on exoticity
+  TH2F *   fhExoticity50nsEClus;                //!<! Exoticity vs cluster energy, tdiff < 50 ns
+  TH2F *   fhExoticity50ns1Cell;                //!<! Exoticity vs energy for 1 cell clusters, tdiff < 50 ns
+  TH2F *   fhExoticity50nsEClusAllSameTCard;    //!<! Exoticity vs energy, all cells in same T-Card, n diff = 0, tdiff < 50 ns
+  TH3F *   fhNCellsPerClusterExo50ns;           //!<! Cluster energy vs N cells in cluster vs Exoticity, tdiff < 50 ns   
+  TH3F *   fhM02EnergyExo50ns;                  //!<! Cluster M02 vs Energy vs exoticity, tdiff < 50 ns
+  TH3F *   fhM02Exo50nsNCells[fgkNEBins];       //!<! Cluster M02 vs exoticity vs n cells, different E bins, tdiff < 50 ns
+  
   // Cluster-Track matching
   //
   TH3F *   fhTrackMatchedDEtaNegExo;            //!<! Eta distance between - track and cluster vs cluster E vs exoticity, n cells > 1
@@ -437,6 +450,7 @@ public:
     
   TH2F *   fhCellExoAmp;                        //!<! Cell amplitude vs exoticity
   TH3F *   fhCellExoAmpTime;                    //!<! Cell amplitude vs time vs exoticity
+  TH2F *   fhCellExo50nsAmp;                    //!<! Cell amplitude vs exoticity, tdiff < 50 ns
   
   TH3F *   fhCellExoGrid ;                      //!<! Cells ordered in column/row vs exoticity when amplitude > fEMinForExo 
   TH3F *   fhCellGridTimeHighNCell20 ;          //!<! Cells ordered in column/row vs cluster time when at least 1 cluster n cellsW > 20
