@@ -290,6 +290,18 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // AllCat          //E
       cuts.AddCutPCM("00010113", "0d200009227300008250424000", "0152103500000000"); // Cat1   TPC
       cuts.AddCutPCM("00010113", "0d200009227300008250454000", "0152103500000000"); // Cat2,3 ITS
+    } else if (trainConfig == 446){//
+      cuts.AddCutPCM("00010113", "0d200079227300008250404000", "0152103500000000"); // min pT no cut
+      cuts.AddCutPCM("00010113", "0d200049227300008250404000", "0152103500000000"); // min pT 75 MeV
+      cuts.AddCutPCM("00010113", "0d200019227300008250404000", "0152103500000000"); // min pT 100 MeV
+      cuts.AddCutPCM("00010113", "0d200029227300008250404000", "0152103500000000"); // min pT 150 MeV
+    } else if (trainConfig == 447){//
+      cuts.AddCutPCM("00010113", "0d200008227300008250404000", "0152103500000000"); // TPC cluster 35%
+      cuts.AddCutPCM("00010113", "0d200006227300008250404000", "0152103500000000"); // TPC cluster 70%
+    } else if (trainConfig == 448){//
+      cuts.AddCutPCM("00010113", "0d200009a27300008250404000", "0152103500000000"); // edEdx -3,3
+      cuts.AddCutPCM("00010113", "0d200009b27300008250404000", "0152103500000000"); // edEdx -3,2,3.2
+      cuts.AddCutPCM("00010113", "0d200009c27300008250404000", "0152103500000000"); // edEdx -2.8,2.8
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL;
@@ -395,6 +407,19 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("80010113", "0dg00009a27300008250404000", "0162103500000000"); // R 95-180
     } else if (trainConfig == 449){// Ana's request
       cuts.AddCutPCM("80010113", "0dm00009a27300008250404000", "0162103500000000"); // R 5-180, exclude 55-72
+    } else if (trainConfig == 450){//
+      cuts.AddCutPCM("80010113", "0d200079a27300008250404000", "0162103500000000"); // min pT no cut
+      cuts.AddCutPCM("80010113", "0d200049a27300008250404000", "0162103500000000"); // min pT 75 cut
+    } else if (trainConfig == 451){//
+      cuts.AddCutPCM("80010113", "0d200019a27300008250404000", "0162103500000000"); // min pT 100 cut
+      cuts.AddCutPCM("80010113", "0d200029a27300008250404000", "0162103500000000"); // min pT 150 cut
+    } else if (trainConfig == 452){//
+      cuts.AddCutPCM("80010113", "0d200001a27300008250404000", "0162103500000000"); // TPC cluster 35%
+      cuts.AddCutPCM("80010113", "0d200002a27300008250404000", "0162103500000000"); // TPC cluster 70%
+    } else if (trainConfig == 453){//
+      cuts.AddCutPCM("80010113", "0d200009227300008250404000", "0162103500000000"); // edEdx -3,4
+      cuts.AddCutPCM("80010113", "0d200009b27300008250404000", "0162103500000000"); // edEdx -3,2,3.2
+      cuts.AddCutPCM("80010113", "0d200009c27300008250404000", "0162103500000000"); // edEdx -2.8,2.8
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL; 
