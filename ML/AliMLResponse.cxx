@@ -31,18 +31,18 @@ ClassImp(AliMLResponse);
 /// \endcond
 
 //________________________________________________________________
-AliMLResponse::AliMLResponse() : TObject(), fConfigFilePath{}, fModels{} {
+AliMLResponse::AliMLResponse() : TObject(), fConfigFilePath{}, fModel{}, fCentClasses{}, fPtBins{}, fCtBins{} {
   //
   // Default constructor
   //
 }
 
 //________________________________________________________________
-AliMLResponse::AliMLResponse(string configfilename) : TObject(), fConfigFilePath{configfilename}, fModels{} {
+AliMLResponse::AliMLResponse(string configfilename)
+    : TObject(), fConfigFilePath{configfilename}, fModel{}, fCentClasses{}, fPtBins{}, fCtBins{} {
   //
   // Standard constructor
   //
-  // if (configfilename != "") SetConfigFile(configfilename);
 }
 
 //________________________________________________________________
@@ -54,7 +54,8 @@ AliMLResponse::~AliMLResponse() {
 
 //--------------------------------------------------------------------------
 AliMLResponse::AliMLResponse(const AliMLResponse &source)
-    : TObject(source), fConfigFilePath{source.fConfigFilePath}, fModels(source.fModels) {
+    : TObject(source), fConfigFilePath{source.fConfigFilePath}, fModel{source.fModel},
+      fCentClasses{source.fCentClasses}, fPtBins{source.fPtBins}, fCtBins{source.fCtBins} {
   //
   // Copy constructor
   //
@@ -69,8 +70,10 @@ AliMLResponse &AliMLResponse::operator=(const AliMLResponse &source) {
   TObject::operator=(source);
 
   fConfigFilePath = source.fConfigFilePath;
-  // fModels         = source.fModels;
-  // fModels          = source.fModels;
+  fModel          = source.fModel;
+  fCentClasses    = source.fCentClasses;
+  fPtBins         = source.fPtBins;
+  fCtBins         = source.fCtBins;
   // fModelLibraries  = source.fModelLibraries;
   // fModelVarNames   = source.fModelVarNames;
   // fModelPaths      = source.fModelPaths;
@@ -83,58 +86,66 @@ AliMLResponse &AliMLResponse::operator=(const AliMLResponse &source) {
 }
 
 //_________________________________________________________________________
-string AliMLResponse::SetConfigFilePath(const string path) {
-  if (path.find("alien:") != string::npos) {
-    string modelName = path.substr(path.find_last_of("/") + 1);
+void AliMLResponse::ImportConfigFile() {
+  // if (path.find("alien:") != string::npos) {
+  string modelName = fConfigFilePath.substr(fConfigFilePath.find_last_of("/") + 1);
 
+  if (gGrid == nullptr) {
+    TGrid::Connect("alien://");
     if (gGrid == nullptr) {
-      TGrid::Connect("alien://");
-      if (gGrid == nullptr) {
-        AliFatal("Connection to GRID not established! Exit");
-      }
+      AliFatal("Connection to GRID not established! Exit");
     }
-
-    string newPath    = gSystem->pwd() + string("/") + modelName.data();
-    string oldRootDir = gDirectory->GetPath();
-
-    bool cpStatus = TFile::Cp(path.data(), newPath.data());
-    gDirectory->Cd(oldRootDir.data());
-
-    if (!cpStatus) {
-      AliFatal("Error in coping file from Alien! Exit");
-    }
-    return newPath;
-
-  } else {
-    return path;
   }
+
+  string newPath    = gSystem->pwd() + string("/") + modelName.data();
+  string oldRootDir = gDirectory->GetPath();
+
+  bool cpStatus = TFile::Cp(fConfigFilePath.data(), newPath.data());
+  gDirectory->Cd(oldRootDir.data());
+
+  if (!cpStatus) {
+    AliFatal("Error in coping file from Alien! Exit");
+  }
+  // } else {
+  //   return path;
+  // }
 }
 
 //________________________________________________________________
-// void AliMLResponse::SetConfigFile(const string configfilename) {
-//   string configFilePath = GetFilePath(configfilename);
-//   YAML::Node configFile = YAML::LoadFile(configFilePath.data());
-//   if (configFile.IsNull()) AliFatal("Yaml config file not found! Exit");
+void AliMLResponse::Config() {
+  YAML::Node nodeList;
+  /// manage wrong config file path and empty config file
+  try {
+    nodeList = YAML::LoadFile(fConfigFilePath);
+  } catch (std::exception &e) {
+    AliFatal(Form("Yaml-ccp error: %s! Exit", e.what());
+  }
+  /// manage empty config file
+  if (nodeList.IsNull()) AliFatal("Empty .yaml config file! Exit");
 
-//   fModelVarNames   = configFile["VarNames"].as<vector<string>>();
-//   fModelPaths      = configFile["ModelNames"].as<vector<string>>();
-//   fModelOutputCuts = configFile["ModelOutputCuts"].as<vector<double>>();
-//   fPtBinsModel     = configFile["PtBins"].as<vector<double>>();
-//   fModelLibraries  = configFile["ModelLibraries"].as<vector<string>>();
+  // ora devo gestire i 2 casi di configurazioni
+  // creo una funzione che genera le configurazioni base (no cent)
+  // e poi la chiamo in un loop sulle centralità
 
-//   // for consistency check
-//   unsigned int numModels = configFile["NumModels"].as<unsigned int>();
-//   unsigned int numVars   = configFile["NumVars"].as<unsigned int>();
+  // fModelVarNames   =nodeList["VarNames"].as<vector<string>>();
+  // fModelPaths      =nodeList["ModelNames"].as<vector<string>>();
+  // fModelOutputCuts =nodeList["ModelOutputCuts"].as<vector<double>>();
+  // fPtBinsModel     =nodeList["PtBins"].as<vector<double>>();
+  // fModelLibraries  =nodeList["ModelLibraries"].as<vector<string>>();
 
-//   if (numModels != fModelPaths.size() || numModels != fModelLibraries.size() || numModels != fModelOutputCuts.size()
-//   ||
-//       numModels != fPtBinsModel.size() - 1)
-//     AliFatal("Inconsistency found in the number of models loaded from your yaml config file, please check it! Exit");
+  // // for consistency check
+  // unsigned int numModels =nodeList["NumModels"].as<unsigned int>();
+  // unsigned int numVars   =nodeList["NumVars"].as<unsigned int>();
 
-//   if (numVars != fModelVarNames.size())
-//     AliFatal("Inconsistency found in the number of variables (features) loaded from your yaml config file, please "
-//              "check it! Exit");
-// }
+  // if (numModels != fModelPaths.size() || numModels != fModelLibraries.size() || numModels != fModelOutputCuts.size()
+  // ||
+  //     numModels != fPtBinsModel.size() - 1)
+  //   AliFatal("Inconsistency found in the number of models loaded from your yaml config file, please check it! Exit");
+
+  // if (numVars != fModelVarNames.size())
+  //   AliFatal("Inconsistency found in the number of variables (features) loaded from your yaml config file, please "
+  //            "check it! Exit");
+}
 
 //_________________________________________________________________________
 // void AliMLResponse::InitModels() {

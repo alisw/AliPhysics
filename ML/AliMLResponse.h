@@ -23,6 +23,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 #include "AliExternalBDT.h"
 
@@ -30,6 +31,15 @@ using std::map;
 using std::pair;
 using std::string;
 using std::vector;
+
+struct MLModel {
+  AliExternalBDT model;
+
+  string modelPath;
+  string modelLibrary;
+
+  float modelSelection;
+};
 
 class AliMLResponse : public TObject {
 public:
@@ -46,7 +56,11 @@ public:
   // void InitModels();
 
   /// method to set yaml config file
-  string SetConfigFilePath(const string configfilename);
+  void SetConfigFilePath(const string configfilepath) { fConfigFilePath = configfilepath; }
+  /// method to import the config file from alien
+  void ImportConfigFile();
+  /// method to configure the AliMLResponse object from the config file
+  void Config();
   /// method to set the list of varibles used for predictions
   // void SetVariableList(const vector<string> &variablelist);
 
@@ -74,7 +88,16 @@ protected:
 
   // map<string, int> kLibMap = {{"kXGBoost", kXGBoost}, {"kLightGBM", kLightGBM}, {"kModelLibrary", kModelLibrary}};
   string fConfigFilePath;         /// path of the config file
-  pair <float [2], vector<AliExternalBDT>> fModels; /// vector of ML models
+
+  vector<MLModel> fModel;
+
+  vector<int> fCentClasses;  /// centrality classes ([cent_min, cent_max])
+
+  vector<float> fPtBins;
+  vector<float> fCtBins;
+
+
+  // pair<float[2], vector<AliExternalBDT>> fModels; /// vector of ML models
   // vector<string> fModelLibraries;  /// python libraries used to train ML model (kXGBoost, kLightGBM, or
   // kModelLibrary) vector<string> fModelVarNames;   /// vector with names of variables (features) used in ML model (in
   // the correct order) vector<string> fModelPaths;      /// vector of paths of the files containing the ML model
