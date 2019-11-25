@@ -535,6 +535,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoNGammaCandidates;                             //! array of histos with number of gamma candidates per event
     TH2F**                  fHistoNGoodESDTracksVsNGammaCandidates;             //! array of histos with number of good tracks vs gamma candidates
     TH2F**                  fHistoSPDClusterTrackletBackground;                 //! array of histos with SPD tracklets vs SPD clusters for background rejection
+    TH2F**                  fHistoV0MultVsNumberTPCoutTracks;                   //! correlation V=Mult vs number TPC out Tracks
     TH1F**                  fHistoNV0Tracks;                                    //! array of histos with V0 counts
     TProfile**              fProfileEtaShift;                                   //! array of profiles with eta shift
     TProfile**              fProfileJetJetXSection;                             //! array of profiles with xsection for jetjet
@@ -595,7 +596,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 58);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 59);
 };
 
 #endif
