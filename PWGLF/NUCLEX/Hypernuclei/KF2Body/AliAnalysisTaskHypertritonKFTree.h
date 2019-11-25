@@ -9,10 +9,12 @@
 #include "AliAnalysisTaskSE.h"
 #endif
 
+#include "KFParticle.h"
+#include "KFVertex.h"
+
 class AliEventCuts;
 class THnSparse;
 class KFParticle;
-class KFVertex;
 
 class AliAnalysisTaskHypertritonKFTree : public AliAnalysisTaskSE  
 {
