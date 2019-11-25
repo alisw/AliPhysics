@@ -188,6 +188,7 @@ Float_t AliAnalysisTaskNanoPt::GetMass2sq(AliFemtoDreamTrack *track) const {
   Float_t p = track->GetP();
   Float_t mass2sq = -999;
   Float_t beta = track->GetbetaTOF();
+  cout<<"/////////////////////////////value of beta to Mass Function=" << beta << endl;
   if (!(beta > 0)) {
     mass2sq = ((1 / (beta * beta)) - 1) * (p * p);
   }
@@ -414,7 +415,9 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
 
   fEvent = new AliFemtoDreamEvent(false, true, GetCollisionCandidates(), false);
   fTrack = new AliFemtoDreamTrack();
+
   fTrack->SetUseMCInfo(fIsMC);
+
   if (!fEvtCuts->GetMinimalBooking()) {
     fEvtList = fEvtCuts->GetHistList();
   } else {
@@ -544,9 +547,15 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
   //fTrack->SetUseMCInfo(true);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
+
     fTrack->SetTrack(track, fInputEvent, multiplicity);
+       cout<<"/////////////////////////////Before selection of cuts ProtonBetaWithTOF=" << fTrack->GetbetaTOF()<< endl;
+   
+
 
     if (fProtonTrack->isSelected(fTrack)) {
+      cout<<"/////////////////////////////ProtonBetaWithTOF=" << fTrack->GetbetaTOF()<< endl;
+      cout<<"/////////////////////////////"<<endl;
       fProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
       Proton.push_back(*fTrack);
     }
@@ -584,10 +593,7 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
           fPionRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
 
         } else {
-
-
           fProtonBackgroungMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
-
         }
       }
     }
