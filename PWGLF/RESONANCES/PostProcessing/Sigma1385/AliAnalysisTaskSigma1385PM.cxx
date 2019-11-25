@@ -224,7 +224,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
         (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()
             ->GetInputEventHandler();
 
-    bool IsEvtSelected{false}, IsINEL0True{false};
+    bool IsEvtSelected{false}, IsINEL0True{false}, IsSelectedTrig{false}, IsVtxInZCut{false};
     if (!nanoHeader) {
         IsEvtSelected = fEventCuts.AcceptEvent(event);
         if (IsMC) {
@@ -238,12 +238,18 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
         fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
         if (!fPIDResponse)
             AliInfo("No PIDd");
+        IsVtxInZCut =
+            fEventCuts.PassedCut(AliEventCuts::kVertexPosition);
+        IsSelectedTrig = fEventCuts.PassedCut(AliEventCuts::kTrigger);
     } else {
         if(!IsNano)
             IsNano = kTRUE;
         IsEvtSelected = true;
         fCent = nanoHeader->GetCentr("V0M");
     }
+
+    if (IsMC) // including all effects
+        FillMCinput(fMCEvent);
 
     if (!IsEvtSelected) {
         PostData(1, fHistos->GetListOfHistograms());
@@ -253,8 +259,8 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
 
     fHistos->FillTH1("hMultiplicity", (double)fCent);
 
-    if (IsMC)
-        FillMCinput(fMCEvent);
+    // if (IsMC)
+    //     FillMCinput(fMCEvent);
     if (fEvt->IsA() == AliAODEvent::Class())
         vertex = ((AliAODEvent*)fEvt)->GetPrimaryVertex();
     const AliVVertex* pVtx = fEvt->GetPrimaryVertex();
