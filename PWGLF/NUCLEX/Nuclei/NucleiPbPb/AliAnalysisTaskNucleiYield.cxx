@@ -433,16 +433,22 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
   bool specialTrigger = true;
   if (fINT7intervals.size()) {
+    unsigned int trigger = 0u;
     if (nanoHeader)
-      ::Fatal("AliAnalysisTaskNucleiYield::UserExec", "Nano not supported with special trigger selections");
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+      trigger = nanoHeader->GetOfflineTrigger();
+    else {
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+      trigger = handl->IsEventSelected() ;
+    }
+    bool kINT7trigger = (trigger & AliVEvent::kINT7) == AliVEvent::kINT7;
+
     for (int iInt = 0; iInt < fINT7intervals.size(); iInt +=2) {
-      if (fCentrality >= fINT7intervals[iInt] && fCentrality < fINT7intervals[iInt+1])
-        if ((handl->IsEventSelected() & AliVEvent::kINT7) != AliVEvent::kINT7){
-          EventAccepted = false;
-          specialTrigger = false;
-        }
+      if (fCentrality >= fINT7intervals[iInt] && fCentrality < fINT7intervals[iInt+1]) {
+        EventAccepted = kINT7trigger;
+        specialTrigger = kINT7trigger;
+        break;
+      }
     }
   }
   
