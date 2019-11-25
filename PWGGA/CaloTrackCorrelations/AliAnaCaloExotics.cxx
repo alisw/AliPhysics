@@ -2722,8 +2722,8 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       outputContainer->Add(fhCellEnDiffColRowDiff[icoldiff][irowdiff] );     
       
       fhCellEnDiffColRowDiffExoCut[icoldiff][irowdiff] = new TH2F 
-      (Form("hCellEnDiff_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
-       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d, #it{F}_{+}>0.2%f",icoldiff,irowdiff,fExoCut),
+      (Form("hCellEnDiffExo_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
+       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d, #it{F}_{+}>%0.2f",icoldiff,irowdiff,fExoCut),
        //nptbins,ptmin,ptmax, 200,0,20, nexobins,exomin,exomax); 
         eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
        e2BinsArray.GetSize() - 1, e2BinsArray.GetArray());
@@ -2744,8 +2744,8 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       outputContainer->Add(fhCellEnSameColRowDiff[icoldiff][irowdiff] );    
       
       fhCellEnSameColRowDiffExoCut[icoldiff][irowdiff]  = new TH2F 
-      (Form("hCellEnSame_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
-       Form("#it{E}_{cluster} vs #it{E}_{cell}^{same}, #Delta col=%d - #Delta row=%d, #it{F}_{+}>0.2%f",icoldiff,irowdiff,fExoCut),
+      (Form("hCellEnSameExo_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
+       Form("#it{E}_{cluster} vs #it{E}_{cell}^{same}, #Delta col=%d - #Delta row=%d, #it{F}_{+}>%0.2f",icoldiff,irowdiff,fExoCut),
        //nptbins,ptmin,ptmax, 200,0,20, nexobins,exomin,exomax); 
         eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
        e2BinsArray.GetSize() - 1, e2BinsArray.GetArray());
