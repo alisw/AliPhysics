@@ -631,7 +631,7 @@ Bool_t AliAnalysisManager::Notify()
 
    fIOTimer->Start(kTRUE); 
    if (!fTree) return kFALSE;
-   if (!TObject::TestBit(AliAnalysisManager::kTrueNotify)) return kFALSE;
+   if (!TObject::TestBit(AliAnalysisManager::kTrueNotify)) return kTRUE;
 
    fTable.Clear("nodelete"); // clearing the hash table may not be needed -> C.L.
    if (fMode == kProofAnalysis) fIsRemote = kTRUE;
