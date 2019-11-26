@@ -64,7 +64,7 @@
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
 
-#include "AliTRDTriggerAnalysis.h"
+//#include "AliTRDTriggerAnalysis.h"
 
 #include "AliAnalysisTaskSEHFQA.h"
 
@@ -1689,8 +1689,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t nSelTracksTPCITS1SPD=0;
   Int_t ntracksFBit4=0;
 
-  AliTRDTriggerAnalysis trdSelection;
-  trdSelection.CalcTriggers(aod);
+  // AliTRDTriggerAnalysis trdSelection;
+  // trdSelection.CalcTriggers(aod);
 
   if(fReadMC) {
     if(aod->GetTriggerMask()==0 &&
@@ -1846,12 +1846,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigMul->Fill(16.,multiplicity);
       trigCount2->Count(Form("triggerType:TRD/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HJT")){ // trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
       fHisTrigCent->Fill(17.,centrality);
       fHisTrigMul->Fill(17.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHJT/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HSE")){ //trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
       fHisTrigCent->Fill(18.,centrality);
       fHisTrigMul->Fill(18.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHSE/Run:%d",runNumber));
@@ -2007,11 +2007,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigCentSel->Fill(16.,centrality);
       fHisTrigMulSel->Fill(16.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HJT")){ //trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
       fHisTrigCentSel->Fill(17.,centrality);
       fHisTrigMulSel->Fill(17.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HSE")){ // trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
       fHisTrigCentSel->Fill(18.,centrality);
       fHisTrigMulSel->Fill(18.,multiplicity);
     }
