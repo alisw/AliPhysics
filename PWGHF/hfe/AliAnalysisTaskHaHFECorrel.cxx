@@ -5634,6 +5634,11 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
     Double_t PtMotherWeight=1.; 
     // Double_t ExcludePion[9] = {130,211, 310, 321, 2212, 3122,3222,3322,5122}; // K0L, PI+, K0S, K+, p, Lambd0, Sigma+, Xci0, lambda b0
     // Double_t ExcludeEta[0] = {};
+
+    Int_t MotherIsHeavy =  Int_t (PDGCodeMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeMother))));
+    Int_t GrandMotherIsHeavy =  Int_t (PDGCodeGrandMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeGrandMother))));
+    Int_t GGMotherIsHeavy =  Int_t (PDGCodeGGMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeGGMother))));
+    
     if (PDGCode==11) { // only correct contributions which have been used for correction (primaries
       if (PDGCodeMother==22 && GrandMotherIsPrimary) {
 	IsPrimary=kTRUE;
@@ -5644,8 +5649,9 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	  PtMotherWeight=GetPionWeight(PtGrandMother); 
 	  //	for (Int_t j=0; j<9; j++) if (PDGCodeGGMother==ExcludePion[j]) PtMotherWeight=1.;
 	}
-	else if (PDGCodeGrandMother<=400 || PDGCodeGrandMother==443 || PDGCodeGrandMother==553) { //  exclude HF but include quarkonia
+	else if (GrandMotherIsHeavy<4 &&  GGMotherIsHeavy<4) { //  exclude HF but include quarkonia
 	  PtMotherWeight=GetBackgroundWeight(PDGCodeGrandMother, PtGrandMother);
+	  //	  CheckParticleOrigin(MClabel);
 	}
       }
       else if (MotherIsPrimary) {
@@ -5657,8 +5663,9 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	  PtMotherWeight=GetPionWeight(PtMother); 
 	  //for (Int_t j=0; j<9; j++) if (PDGCodeGGMother==ExcludePion[j]) PtMotherWeight=1.;
 	}
-	else if (PDGCodeMother<=400 || PDGCodeMother==443 || PDGCodeMother==553) {
+	else if (MotherIsHeavy<4 &&  GrandMotherIsHeavy<4 && GGMotherIsHeavy<4) {
 	  PtMotherWeight=GetBackgroundWeight(PDGCodeMother, PtMother);
+	  //	  CheckParticleOrigin(MClabel);
 	}
       }
     }
@@ -5695,7 +5702,7 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	if (trueULSPartner) fTagTruePairsMult->Fill(pt,mult, PtMotherWeight*EventWeight);
 	if (trueULSPartner && !(LSPartner>0 || ULSPartner>0)) cout << "ERROR ULSLS" << endl;
       }
-      else if ((PDGCodeMother<400 && PDGCodeMother>100) || (PDGCodeMother==22 &&( PDGCodeGrandMother<400 || PDGCodeGrandMother>100))) {
+      else if ((MotherIsHeavy<4 &&  GrandMotherIsHeavy<4 && GGMotherIsHeavy<4)  && ((PDGCodeMother>100) || (PDGCodeMother==22 && PDGCodeGrandMother>100))) {
 	fTagEffInclBGMult->Fill(pt, mult, PtMotherWeight*EventWeight);
 	for (int j=0; j<LSPartner; j++)  fTagEffULSBGMult->Fill(pt,mult, -1.*PtMotherWeight*EventWeight);
 	for (int j=0; j<ULSPartner; j++) fTagEffULSBGMult->Fill(pt,mult, PtMotherWeight*EventWeight);
@@ -7141,4 +7148,18 @@ void AliAnalysisTaskHaHFECorrel::SetPhotVarOpt(Int_t VarOpt) {
     fPhotCorrCase = 4;
     break;
   }
+}
+
+Int_t AliAnalysisTaskHaHFECorrel::CheckParticleOrigin(Int_t Label) {
+  AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMC->GetTrack(abs(Label));    
+  Int_t PDGCode = abs(MCParticle->GetPdgCode());
+  cout << "Track with label: " << Label << "\t is a " << PDGCode << endl;
+  while( MCParticle->GetMother()>=0) {
+    MCParticle = (AliAODMCParticle*) fMC->GetTrack(MCParticle->GetMother());
+    PDGCode = abs(MCParticle->GetPdgCode());
+    cout << PDGCode << "\t";
+  }
+  cout << endl;
+  return PDGCode;
+
 }
