@@ -306,45 +306,59 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   // RS: use propagation only if the seed in far from the cluster
   const double kTolerance = 10e-4; // assume track is at cluster X if X-distance below this
   if (TMath::Abs(seed->GetX()-cluster->GetX())>kTolerance) seed->GetProlongation(cluster->GetX(),yt,zt); 
-  Double_t sy2=0,sy2M=0,sy2E=0;//ErrY2(seed,cluster);
-  Double_t sz2=0,sz2M=0,sz2E=0;//ErrZ2(seed,cluster);
+  Double_t sy2=0,  erry2LM=0,  erry2HM=0, erry2Res=0;//ErrY2(seed,cluster);
+  Double_t sz2=0,  errz2LM=0,  errz2HM=0, errz2Res=0;//ErrZ2(seed,cluster);
   ErrY2Z2(seed,cluster,sy2,sz2);
-  sy2E=sy2;
-  sz2E=sz2;
+  erry2Res=sy2;
+  errz2Res=sz2;
   const Float_t kMinSigma2=0.02*0.02;
   if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxCorrection()||AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
-    // const Float_t NclCenral=3000000;
-    const Float_t kClusterNorm=0.0000001*0.01;
-    const Float_t kdEdxMIP=50., kClusterMIP=30;
+    const Float_t kdEdxMIP=50., kClusterMIP=20;
     const Float_t kXinner=83;
-    const Float_t kSnpMult=1.5;
     const Float_t kMaxSigma2=0.3*0.3;
-
-    Double_t multM = fTotalClusters * kClusterNorm;
+    Double_t occu6 = fTotalClusters*0.0000001;
     Float_t mdEdx = 1;
     Float_t snp2 = seed->GetSnp(); snp2 *= snp2;
     Float_t tanPhi2 = (snp2>0)? snp2/(1-snp2):0;
     Float_t tgl2 = seed->GetTgl(); tgl2 *= tgl2;
     if (seed->GetESD()) if (seed->GetESD()->GetTPCsignal()>0)  mdEdx=TMath::Min(kdEdxMIP / seed->GetESD()->GetTPCsignal(), 1.);
     if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
+      // error tuning in https://gitlab.cern.ch/alice-tpc-offline/alice-tpc-notes/blob/0e00a7739d6c3cf89438f48c107b7e530a780e80/JIRA/PWGPP-570/clusterPerfromanceDF.C
+      //      tree->SetAlias("erry2LM", "(erry2+(0.2**2)*TanPhi2)*(0.5+mdEdx+0.3*mQ)*0.25");
+      //      tree->SetAlias("errz2LM", "(errz2+(0.0**2)*Theta**2)*(0.5+mdEdx+0.3*mQ)*0.5");
       Float_t mQ = kClusterMIP / cluster->GetMax();
-      Float_t baselineRatio2 = (cluster->GetMax() > 0) ? cluster->GetBaselineTail() / cluster->GetMax() : 0; baselineRatio2 *= baselineRatio2;
-      Float_t baselineRatioPos2 = (cluster->GetMax() > 0) ? cluster->GetBaselineTailPos() / cluster->GetMax() : 0; baselineRatioPos2 *= baselineRatioPos2;
-      Float_t normR = (cluster->GetX() > 0) ? kXinner / cluster->GetX() : 1;
-      normR *= normR;
-      sy2M = multM * (1 + normR) * (0.5 + 0.5 * (mdEdx + mQ)) + 0.5*(baselineRatio2+baselineRatioPos2);    // central event MIP - additional error ~0.8 mm in mean
-      sz2M = multM * (1 + normR) * (0.5 + 0.5 * (mdEdx + mQ)) + 0.5*(baselineRatio2+baselineRatioPos2);
-      sy2M *= (1. + kSnpMult * tanPhi2);       /// empirical factor - broad cluster more sensitive to rate
-      if (sy2M>kMaxSigma2) sy2M=kMaxSigma2;
-      if (sz2M>kMaxSigma2) sz2M=kMaxSigma2;
+      erry2LM=(sy2+0.04*tanPhi2)*(0.5+mdEdx+0.3/mQ)*0.25;
+      errz2LM=(sz2)*(0.5+mdEdx+0.3/mQ)*0.5;
+      //      tree->SetAlias("Occu6N", "Occu6*(1.+83/Cl.fX)*0.5");
+      //      tree->SetAlias("posRatio", "(Cl.fBaselineTailPos/Cl.fMax)");
+      //      tree->SetAlias("negRatio", "(Cl.fBaselineTail/Cl.fMax)");
+      Float_t occu6N=occu6*(1+kXinner/cluster->GetX());
+      Float_t posRatio=cluster->GetBaselineTailPos()/(0.1+cluster->GetMax());
+      Float_t negRatio=cluster->GetBaselineTail()/(0.1+cluster->GetMax());
+      //      tree->SetAlias("erry2OccudEdx", "0.12*0.12*Occu6N*mdEdx");
+      //      tree->SetAlias("erry2Ratio", "0.07*negRatio+0.15*posRatio");
+      //      tree->SetAlias("erry2HM", "(erry2OccudEdx+erry2Ratio)*(0.3+TanPhi2)");
+      //      tree->SetAlias("errz2OccudEdx", "0.09*0.09*Occu6N*mdEdx");
+      //      tree->SetAlias("errz2Ratio", "0.01*negRatio+0.05*posRatio");
+      //      tree->SetAlias("errz2HM", "(errz2OccudEdx+errz2Ratio)*(1+Theta**2)*0.5");
+
+      Float_t erry2OccudEdx = 0.12*0.12*occu6N*mdEdx;
+      Float_t erry2Ratio   = 0.07*negRatio+0.15*posRatio;
+      erry2HM      = (erry2OccudEdx+erry2Ratio)*(0.3+tanPhi2);
+      Float_t errz2OccudEdx = 0.09*0.09*occu6N*mdEdx;
+      Float_t errz2Ratio   = 0.01*negRatio+0.05*posRatio;
+      errz2HM      = (errz2OccudEdx+errz2Ratio)*(1+tgl2)*0.5;
+      //
+      if (erry2HM>kMaxSigma2) erry2HM=kMaxSigma2;
+      if (errz2HM>kMaxSigma2) errz2HM=kMaxSigma2;
     }
-    sy2E=(sy2+0.3*0.3*tanPhi2)*0.5*(1 + mdEdx);
-    sz2E=(sz2+0.0*0.0*tgl2)*0.5*(1 + mdEdx);
-    seed->SetErrorY2(sy2E+ sy2M+kMinSigma2);   ///
-    seed->SetErrorZ2(sz2E+ sz2M+kMinSigma2);   ///
+    erry2Res+=erry2LM+erry2HM+kMinSigma2;
+    errz2Res+=errz2LM+errz2HM+kMinSigma2;
+    seed->SetErrorY2(erry2Res);   ///
+    seed->SetErrorZ2(errz2Res);   ///
   }
-  Double_t sdistancey2 = sy2E+sy2M+kMinSigma2+seed->GetSigmaY2();
-  Double_t sdistancez2 = sz2E+sz2M+kMinSigma2+seed->GetSigmaZ2();
+  Double_t sdistancey2 = erry2Res+seed->GetSigmaY2();
+  Double_t sdistancez2 = errz2Res+seed->GetSigmaZ2();
   Double_t dy=seed->GetCurrentCluster()->GetY()-yt;
   Double_t dz=seed->GetCurrentCluster()->GetZ()-zt;
   Double_t rdistancey2 = dy*dy/sdistancey2;
@@ -395,10 +409,12 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
       "gtr.="<<&gtr<<
       "erry2="<<sy2<<
       "errz2="<<sz2<<
-      "erry2M="<<sy2M<<
-      "errz2M="<<sz2M<<
-      "erry2E="<<sy2E<<
-      "errz2E="<<sz2E<<
+      "erry2LMC="<<erry2LM<<
+      "errz2LMC="<<errz2LM<<
+      "erry2HMC="<<erry2HM<<
+      "errz2HMC="<<errz2HM<<
+      "erry2ResC="<<erry2Res<<
+      "errz2ResC="<<errz2Res<<
       "rmsy2="<<rmsy2<<
       "rmsz2="<<rmsz2<<	
       "rmsy2p30="<<rmsy2p30<<
@@ -4154,7 +4170,8 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
     AddCovariance(seed);
 
     MakeESDBitmaps(seed, esd);
-    seed->CookdEdx(0.02,0.6);
+    //seed->CookdEdx(0.02,0.6);
+    seed->CookdEdx(AliTPCReconstructor::GetRecoParam()->GetMinFraction(), AliTPCReconstructor::GetRecoParam()->GetMaxFraction());
     CookLabel(seed,0.1); //For comparison only
     //
     if (((AliTPCReconstructor::StreamLevel()&kStreamRefitInward)>0) && seed!=0) {
@@ -4331,7 +4348,8 @@ Int_t AliTPCtracker::PropagateBack(AliESDEvent *event)
 	seed->SetNumberOfClusters(ncl);
       }
     }
-    seed->CookdEdx(0.02,0.6);
+    //seed->CookdEdx(0.02,0.6);
+    seed->CookdEdx(AliTPCReconstructor::GetRecoParam()->GetMinFraction(), AliTPCReconstructor::GetRecoParam()->GetMaxFraction());
     CookLabel(seed,0.1); //For comparison only
     if (seed->GetNumberOfClusters()>15){
       esd->UpdateTrackParams(seed,AliESDtrack::kTPCout);
@@ -7896,7 +7914,8 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       }
       track0->SetClustersArrayTMP(seedClusters);
     }
-    track0->CookdEdx(0.02,0.6);
+    //track0->CookdEdx(0.02,0.6);
+    track0->CookdEdx(AliTPCReconstructor::GetRecoParam()->GetMinFraction(), AliTPCReconstructor::GetRecoParam()->GetMaxFraction());
     track0->CookPID();
     if (!seedClustersSave) track0->SetClustersArrayTMP(0);
   }
@@ -8509,7 +8528,8 @@ Int_t AliTPCtracker::Clusters2Tracks() {
     for (Int_t i=0; i<fSeeds->GetEntriesFast(); i++) {
       AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt;    
       if (!pt) continue;    
-      pt->CookdEdx(0.02,0.6);
+      //pt->CookdEdx(0.02,0.6);
+      pt->CookdEdx(AliTPCReconstructor::GetRecoParam()->GetMinFraction(), AliTPCReconstructor::GetRecoParam()->GetMaxFraction());
       CookLabel(pt,0.1);
     }
     
@@ -8618,7 +8638,8 @@ Int_t AliTPCtracker::Clusters2Tracks() {
       }
       t.SetClustersArrayTMP(seedClusters);
     }
-    t.CookdEdx(0.02,0.6);
+    //t.CookdEdx(0.02,0.6);
+    t.CookdEdx(AliTPCReconstructor::GetRecoParam()->GetMinFraction(), AliTPCReconstructor::GetRecoParam()->GetMaxFraction());
     if (!seedClustersSave) t.SetClustersArrayTMP(0);
     //
   }
