@@ -314,7 +314,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   const Float_t kMinSigma2=0.02*0.02;
   if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxCorrection()||AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
     // const Float_t NclCenral=3000000;
-    const Float_t kClusterNorm=0.0000001*0.02;
+    const Float_t kClusterNorm=0.0000001*0.01;
     const Float_t kdEdxMIP=50., kClusterMIP=30;
     const Float_t kXinner=83;
     const Float_t kSnpMult=1.5;
@@ -328,12 +328,12 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     if (seed->GetESD()) if (seed->GetESD()->GetTPCsignal()>0)  mdEdx=TMath::Min(kdEdxMIP / seed->GetESD()->GetTPCsignal(), 1.);
     if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
       Float_t mQ = kClusterMIP / cluster->GetMax();
-      Float_t baselineRatio2 = (cluster->GetMax() > 0) ? cluster->GetBaselineTail() / cluster->GetMax() : 0;
-      baselineRatio2 *= baselineRatio2;
+      Float_t baselineRatio2 = (cluster->GetMax() > 0) ? cluster->GetBaselineTail() / cluster->GetMax() : 0; baselineRatio2 *= baselineRatio2;
+      Float_t baselineRatioPos2 = (cluster->GetMax() > 0) ? cluster->GetBaselineTailPos() / cluster->GetMax() : 0; baselineRatioPos2 *= baselineRatioPos2;
       Float_t normR = (cluster->GetX() > 0) ? kXinner / cluster->GetX() : 1;
       normR *= normR;
-      sy2M = multM * (1 + normR) * (0.5 + 0.5 * (mdEdx + mQ)) + baselineRatio2;    // central event MIP - additional error ~0.8 mm in mean
-      sz2M = multM * (1 + normR) * (0.5 + 0.5 * (mdEdx + mQ)) + baselineRatio2;
+      sy2M = multM * (1 + normR) * (0.5 + 0.5 * (mdEdx + mQ)) + 0.5*(baselineRatio2+baselineRatioPos2);    // central event MIP - additional error ~0.8 mm in mean
+      sz2M = multM * (1 + normR) * (0.5 + 0.5 * (mdEdx + mQ)) + 0.5*(baselineRatio2+baselineRatioPos2);
       sy2M *= (1. + kSnpMult * tanPhi2);       /// empirical factor - broad cluster more sensitive to rate
       if (sy2M>kMaxSigma2) sy2M=kMaxSigma2;
       if (sz2M>kMaxSigma2) sz2M=kMaxSigma2;
