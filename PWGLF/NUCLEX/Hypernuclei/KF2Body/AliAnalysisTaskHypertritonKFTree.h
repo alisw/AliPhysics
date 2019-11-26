@@ -14,7 +14,6 @@
 
 class AliEventCuts;
 class THnSparse;
-class KFParticle;
 
 class AliAnalysisTaskHypertritonKFTree : public AliAnalysisTaskSE  
 {
@@ -69,49 +68,51 @@ private:
   // Branches
   Float_t CentralityPercentile;                // Event centrality
   // Hypertrition candidate variables
-  Float_t mass;                    // mass of the reconstructed candidate
-  Float_t p;                       // momentum of the reconstructed candidate
-  Float_t pT;                      // transverse momentum of the reconstructed candidate
-  Float_t Rapidity;                // Rapidity of the candidate
-  Float_t massTopo;                // mass of the reconstructed candidate (with PV constraint)
-  Float_t pTopo;                   // momentum of the reconstructed candidate (with PV constraint)
-  Float_t pTTopo;                  // transverse momentum of the reconstructed candidate (with PV constraint)
-  Float_t RapidityTopo;            // Rapidity of the candidate (with PV constraint)
-  Int_t SignOfPair;                // Sign of the pair (LS or ULS) - for signal and background determination
-  Float_t CosPointingAngle;        // Cosine of the pointing angle
-  Float_t Chi2PerNDF;              // Chi2 per NDF for candidates
-  Float_t Chi2PerNDFTopo;          // Chi2 per NDF for candidates (constrained to the primary vertex)
-//  Float_t Chi2PerNDFMass;          // Chi2 per NDF for candidates (constrained to the mass 2.99131)
-  Float_t DecayLength;             // Decay Length for candidates (constrained to the primary vertex)
-  Float_t ErrorDecayLength;        // Error on the decay Length for candidates (constrained to the primary vertex)
-  Float_t DecayLengthXY;           // Decay Length for candidates (constrained to the primary vertex) in xy
-  Float_t ErrorDecayLengthXY;      // Error on the decay Length for candidates (constrained to the primary vertex) in xy
-  Float_t DistanceToPV;            // Distance of closest approach to the primary vertex of the hypertriton candidate (KF information)
-  Float_t DeviationFromPV;         // Deviation from the primary vertex of the hypertriton candidate (KF information)
-  Float_t DistanceToPVXY;          // Distance of closest approach to the primary vertex of the hypertriton candidate (KF information) in xy
-  Float_t DeviationFromPVXY;       // Deviation from the primary vertex of the hypertriton candidate (KF information) in xy
+  Float_t mass;                   // mass of the reconstructed candidate
+  Float_t ErrorMass;              // mass of the reconstructed candidate
+  Float_t p;                      // momentum of the reconstructed candidate
+  Float_t pT;                     // transverse momentum of the reconstructed candidate
+  Float_t Rapidity;               // Rapidity of the candidate
+  Float_t massTopo;               // mass of the reconstructed candidate (with PV constraint)
+  Float_t ErrorMassTopo;                // mass of the reconstructed candidate (with PV constraint)
+  Float_t pTopo;                  // momentum of the reconstructed candidate (with PV constraint)
+  Float_t pTTopo;                 // transverse momentum of the reconstructed candidate (with PV constraint)
+  Float_t RapidityTopo;           // Rapidity of the candidate (with PV constraint)
+  Int_t SignOfPair;               // Sign of the pair (LS or ULS) - for signal and background determination
+  Float_t CosPointingAngle;       // Cosine of the pointing angle
+  Float_t Chi2PerNDF;             // Chi2 per NDF for candidates
+  Float_t Chi2PerNDFTopo;         // Chi2 per NDF for candidates (constrained to the primary vertex)
+//  Float_t Chi2PerNDFMass;       // Chi2 per NDF for candidates (constrained to the mass 2.99131)
+  Float_t DecayLength;            // Decay Length for candidates (constrained to the primary vertex)
+  Float_t ErrorDecayLength;       // Error on the decay Length for candidates (constrained to the primary vertex)
+  Float_t DecayLengthXY;          // Decay Length for candidates (constrained to the primary vertex) in xy
+  Float_t ErrorDecayLengthXY;     // Error on the decay Length for candidates (constrained to the primary vertex) in xy
+  Float_t DistanceToPV;           // Distance of closest approach to the primary vertex of the hypertriton candidate (KF information)
+  Float_t DeviationFromPV;        // Deviation from the primary vertex of the hypertriton candidate (KF information)
+  Float_t DistanceToPVXY;         // Distance of closest approach to the primary vertex of the hypertriton candidate (KF information) in xy
+  Float_t DeviationFromPVXY;      // Deviation from the primary vertex of the hypertriton candidate (KF information) in xy
   
   // Daughter variables
-  Float_t DistanceOfDaughters;     // Distance between the daughter tracks
-  Float_t DeviationOfDaughters;    // chi2 deviation of the daughter tracks
-  Float_t DistanceOfDaughtersXY;   // Distance between the daughter tracks in xy
-  Float_t DeviationOfDaughtersXY;  // chi2 deviation of the daughter tracks  in xy
+  Float_t DistanceOfDaughters;    // Distance between the daughter tracks
+  Float_t DeviationOfDaughters;   // chi2 deviation of the daughter tracks
+  Float_t DistanceOfDaughtersXY;  // Distance between the daughter tracks in xy
+  Float_t DeviationOfDaughtersXY; // chi2 deviation of the daughter tracks  in xy
 
 //  pion
-  Float_t pPion;                   // Momentum of the pion daughter
-  Float_t pTPion;                   // Momentum of the pion daughter
-  Float_t DCAPion;                 // Distance of closest approach to the primary vertex of the pion daughter (AOD information)
-  Float_t DistanceToPVPion;        // Distance of closest approach to the primary vertex of the pion daughter (KF information)
-  Float_t DeviationFromPVPion;     // Deviation from the primary vertex of the pion daughter (KF information)
-  Float_t DCAPionXY;               // Radial distance of closest approach to the primary vertex of the pion daughter (AOD information)
-  Float_t DistanceToPVPionXY;      // Radial distance of closest approach to the primary vertex of the pion daughter (KF information)
-  Float_t DeviationFromPVPionXY;   // Radial deviation from the primary vertex of the pion daughter (KF information)
+  Float_t pPion;                  // Momentum of the pion daughter
+  Float_t pTPion;                 // Momentum of the pion daughter
+  Float_t DCAPion;                // Distance of closest approach to the primary vertex of the pion daughter (AOD information)
+  Float_t DistanceToPVPion;       // Distance of closest approach to the primary vertex of the pion daughter (KF information)
+  Float_t DeviationFromPVPion;    // Deviation from the primary vertex of the pion daughter (KF information)
+  Float_t DCAPionXY;              // Radial distance of closest approach to the primary vertex of the pion daughter (AOD information)
+  Float_t DistanceToPVPionXY;     // Radial distance of closest approach to the primary vertex of the pion daughter (KF information)
+  Float_t DeviationFromPVPionXY;  // Radial deviation from the primary vertex of the pion daughter (KF information)
 
-  Float_t NClusterTPCPion;          // For Pion candidates
-  Float_t NPIDClusterTPCPion;       // For Pion candidates
+  Int_t NClusterTPCPion;          // For Pion candidates
+  Int_t NPIDClusterTPCPion;       // For Pion candidates
   
-  Float_t TPCMomPion;               // For Pion candidates
-  Float_t TPCnSigmaPion;            // For pion candidates
+  Float_t TPCMomPion;             // For Pion candidates
+  Float_t TPCnSigmaPion;          // For pion candidates
 
   Bool_t HasPointOnITSLayer0Pion;
   Bool_t HasPointOnITSLayer1Pion;
@@ -121,21 +122,21 @@ private:
   Bool_t HasPointOnITSLayer5Pion;
   
 //  He3
-  Float_t p3He;                    // Momentum of the 3He daughter
-  Float_t pT3He;                    // Transverse momentum of the 3He daughter
-  Float_t DCA3He;                  // Distance of closest approach to the primary vertex of the pion daughter (AOD information)
-  Float_t DistanceToPV3He;         // Distance of closest approach to the primary vertex of the pion daughter (KF information)
-  Float_t DeviationFromPV3He;      // Deviation from the primary vertex of the pion daughter (KF information)
-  Float_t DCA3HeXY;                // Radial distance of closest approach to the primary vertex of the pion daughter (AOD information)
-  Float_t DistanceToPV3HeXY;       // Radial distance of closest approach to the primary vertex of the pion daughter (KF information)
-  Float_t DeviationFromPV3HeXY;    // Radial deviation from the primary vertex of the pion daughter (KF information)
+  Float_t p3He;                   // Momentum of the 3He daughter
+  Float_t pT3He;                  // Transverse momentum of the 3He daughter
+  Float_t DCA3He;                 // Distance of closest approach to the primary vertex of the pion daughter (AOD information)
+  Float_t DistanceToPV3He;        // Distance of closest approach to the primary vertex of the pion daughter (KF information)
+  Float_t DeviationFromPV3He;     // Deviation from the primary vertex of the pion daughter (KF information)
+  Float_t DCA3HeXY;               // Radial distance of closest approach to the primary vertex of the pion daughter (AOD information)
+  Float_t DistanceToPV3HeXY;      // Radial distance of closest approach to the primary vertex of the pion daughter (KF information)
+  Float_t DeviationFromPV3HeXY;   // Radial deviation from the primary vertex of the pion daughter (KF information)
   
-  Float_t NClusterTPC3He;          // For 3He candidates
-  Float_t NPIDClusterTPC3He;       // For 3He candidates
+  Int_t NClusterTPC3He;           // For 3He candidates
+  Int_t NPIDClusterTPC3He;        // For 3He candidates
   
-  Float_t TPCMom3He;                // For 3He candidates
-  Float_t TPCnSigma3He;             // For 3He candidates
-  Float_t TPCnSigma3H;              // For 3He candidates
+  Float_t TPCMom3He;              // For 3He candidates
+  Float_t TPCnSigma3He;           // For 3He candidates
+  Float_t TPCnSigma3H;            // For 3He candidates
   
   Bool_t HasPointOnITSLayer0He3;
   Bool_t HasPointOnITSLayer1He3;
@@ -145,12 +146,12 @@ private:
   Bool_t HasPointOnITSLayer5He3;
     
   // MC output
-  TTree* fGeneratedTreeMC;          //! Tree with generated hypertriton (denominator for efficiency)
-  TTree* fCandidateTreeMC;          //! Tree with hypertriton candidates
+  TTree* fGeneratedTreeMC;        //! Tree with generated hypertriton (denominator for efficiency)
+  TTree* fCandidateTreeMC;        //! Tree with hypertriton candidates
 
   // Outputs for QA and corrections
-  TH2F* fHistNsigmaTPCvsP3He;    //! Nsigma vs momentum (to check PID selection for 3He)
-  TH2F* fHistNsigmaTPCvsPPion;   //! Nsigma vs momentum (to check PID selection for pions)
+  TH2F* fHistNsigmaTPCvsP3He;     //! Nsigma vs momentum (to check PID selection for 3He)
+  TH2F* fHistNsigmaTPCvsPPion;    //! Nsigma vs momentum (to check PID selection for pions)
 
   TH2F* fHistPxTrueRecHe3;        //! MC p_x true vs reconstructed
   TH2F* fHistPyTrueRecHe3;        //! MC p_y true vs reconstructed

@@ -7,7 +7,7 @@
 #include <TTree.h>
 #endif
 
-AliAnalysisTaskHypertritonKFTree* AddHypertritonKFTree(Bool_t RunAsData=true, Bool_t DoQA = false, Bool_t IsMC = false, Bool_t DoMCQA = false)
+AliAnalysisTaskHypertritonKFTree* AddHypertritonKFTree(UInt_t triggerMask = AliVEvent::kINT7, Bool_t RunAsData=true, Bool_t DoQA = false, Bool_t IsMC = false, Bool_t DoMCQA = false)
 {
   // get the manager via the static access member. since it's static, you don't need
   // an instance of the class to call the function
@@ -28,6 +28,7 @@ AliAnalysisTaskHypertritonKFTree* AddHypertritonKFTree(Bool_t RunAsData=true, Bo
   AliAnalysisTaskHypertritonKFTree* task = new AliAnalysisTaskHypertritonKFTree("TaskHypertriton");
   if(!task) return 0x0;
   
+  task->SelectCollisionCandidates(triggerMask);
   task->SetRunAsData(RunAsData);
   task->SetQA(DoQA);
   task->SetIsMC(IsMC);
@@ -42,7 +43,7 @@ AliAnalysisTaskHypertritonKFTree* AddHypertritonKFTree(Bool_t RunAsData=true, Bo
   mgr->ConnectOutput(task,3,mgr->CreateContainer("CandidateTree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   mgr->ConnectOutput(task,4,mgr->CreateContainer("CandidateTreeMC", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   mgr->ConnectOutput(task,5,mgr->CreateContainer("GeneratedTreeMC", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-  
+
   // in the end, this macro returns a pointer to your task. this will be convenient later on
   // when you will run your analysis in an analysis train on grid
   return task;
