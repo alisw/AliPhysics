@@ -12,6 +12,25 @@ class AliESDtrackCuts;
 
 class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
    public:
+    enum{
+        kFilterBit = 0,
+        kTPCNsigSigmaStarPionCut,
+        kSigmaStarPionEtaCut,
+        kSigmaStarPionZVertexCut,
+        kSigmaStarPionXYVertexSigmaCut,
+        kTPCNsigLambdaProtonCut,
+        kTPCNsigLambdaPionCut,
+        kDCADistLambdaDaughtersCut,
+        kDCArDistLambdaPVCut,
+        kV0CosineOfPointingAngleCut,
+        kMaxLambdaRapidity,
+        kLambdaLowRadius,
+        kLambdaHighRadius,
+        kLambdaLifetime,
+        kV0MassWindowCut,
+        kSigmaStarYCutHigh,
+        kSigmaStarYCutLow
+    }
     AliAnalysisTaskSigma1385PM();
     AliAnalysisTaskSigma1385PM(const char* name, Bool_t MCcase);
     virtual ~AliAnalysisTaskSigma1385PM();
@@ -81,7 +100,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
 
     Bool_t GoodTracksSelection();
     Bool_t GoodV0Selection();
-    void FillTracks();
+    void FillTracks(int sys = 0);
     void FillNtuples();
     void FillMCinput(AliMCEvent* fMCEvent);
     void FillTrackToEventPool();
@@ -167,10 +186,11 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     std::vector<UInt_t> goodtrackindices;  //!
     std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
-    ClassDef(AliAnalysisTaskSigma1385PM, 4);
+    ClassDef(AliAnalysisTaskSigma1385PM, 5);
     // Add rapidity/radius/Lifetime/Y cut of lambda
     // Add NanoOption
     // 4: Add GetImpactParm function for nano
+    // 5: Update functionality for sysetmatics study
 };
 
 #endif

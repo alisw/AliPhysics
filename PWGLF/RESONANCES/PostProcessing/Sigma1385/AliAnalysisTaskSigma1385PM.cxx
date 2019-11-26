@@ -77,7 +77,15 @@ enum {
     kSigmaStarN_GEN,
     kAntiSigmaStarP_GEN,
     kAntiSigmaStarN_GEN,
-    kSigmaStarP_REC,  // 13
+    kSigmaStarP_GEN_INEL10,  // 13
+    kSigmaStarN_GEN_INEL10,
+    kAntiSigmaStarP_GEN_INEL10,
+    kAntiSigmaStarN_GEN_INEL10,
+    kSigmaStarP_GEN_INEL10_IGZ0,  // 17
+    kSigmaStarN_GEN_INEL10_IGZ0,
+    kAntiSigmaStarP_GEN_INEL10_IGZ0,
+    kAntiSigmaStarN_GEN_INEL10_IGZ0,
+    kSigmaStarP_REC,  // 21
     kSigmaStarN_REC,
     kAntiSigmaStarP_REC,
     kAntiSigmaStarN_REC,
@@ -141,8 +149,8 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     auto binMass = AxisFix("Mass", 2000, 1.0, 3.0);
     binZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10});
 
-    CreateTHnSparse("Sigma1385", "Sigma1385", 4,
-                    {binType, binCent, binPt, binMass}, "s");
+    CreateTHnSparse("Sigma1385_data", "Sigma1385_data", 5,
+                    {systype ,binType, binCent, binPt, binMass}, "s");
     fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
     fHistos->CreateTH1("hMultiplicity", "", 100, 0, 100, "s");
 
@@ -272,16 +280,20 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
     zbin = binZ.FindBin(lPosPV[2]) - 1;           // Event mixing z-bin
     centbin = binCent.FindBin(fCent) - 1;  // Event mixing cent bin
 
-    bool checkPion = GoodTracksSelection();
-    bool checkV0 = GoodV0Selection();
+    for (int sys = 0; sys < fSysCheck.size(); sys++) {
+        bool checkPion = GoodTracksSelection();
+        bool checkV0 = GoodV0Selection();
 
-    if (checkPion && checkV0) {
-        FillTracks();  // Fill the histogram
-        if (fFillnTuple)
-            FillNtuples();
-    }
-    if (fsetmixing && goodtrackindices.size()) {
-        FillTrackToEventPool();  // use only pion track pool.
+        if (checkPion && checkV0) {
+            FillTracks(sys);  // Fill the histogram
+        }
+        if (sys == 0) {
+            if (fsetmixing && goodtrackindices.size()) {
+                FillTrackToEventPool();  // use only pion track pool.
+            }
+            if (checkPion && checkV0 && fFillnTuple)
+                FillNtuples();
+        }
     }
     PostData(1, fHistos->GetListOfHistograms());
     PostData(2, fNtupleSigma1385);
