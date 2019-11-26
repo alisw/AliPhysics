@@ -907,11 +907,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					else if (ichg==18 || ichg==25 || ichg==32)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambda, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus);
 					else if (ichg==19 || ichg==26 || ichg==33)
-					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus);*/
+					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus);
 
 
 
-					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
+					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);*/
 
 
 					Manager->AddAnalysis(anetaphitpc[aniter]);
