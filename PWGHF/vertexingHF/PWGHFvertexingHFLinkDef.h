@@ -93,9 +93,7 @@
 #pragma link C++ class AliAnalysisTaskSEImproveITSCVMFS+;
 #pragma link C++ class AliAnalysisTaskCombinHF+;
 #pragma link C++ class AliEventPlaneResolutionHandler+;
-#pragma link C++ class AliAnalysisTaskSEHFvn+;
 #pragma link C++ class AliAnalysisTaskHFv1+;
-#pragma link C++ class AliAnalysisTaskFlowD2H+;
 #pragma link C++ class AliHFAfterBurner+;
 #pragma link C++ class AliHFQnVectorHandler+;
 #pragma link C++ class AliAnalysisTaskSEHFTenderQnVectors+;

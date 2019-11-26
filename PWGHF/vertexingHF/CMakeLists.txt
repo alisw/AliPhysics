@@ -124,10 +124,8 @@ set(SRCS
   AliAnalysisTaskSEImproveITSCVMFS.cxx
   AliAnalysisTaskCombinHF.cxx
   charmFlow/AliEventPlaneResolutionHandler.cxx
-  charmFlow/AliAnalysisTaskSEHFvn.cxx
   charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx
-  charmFlow/AliAnalysisTaskFlowD2H.cxx
   charmFlow/AliHFQnVectorHandler.cxx
   charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
