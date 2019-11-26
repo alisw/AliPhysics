@@ -1477,8 +1477,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Double_t factor=recoParam->GetMissingClusterdEdxFraction();
   if (factor>0) {
     Double_t missingChargeReplacement = 0;
-    Int_t nClForReplacement = factor * nclBelowThr+1;
-    if (nClForReplacement > ncl * up) nClForReplacement = ncl * up;
+    Int_t nClForReplacement = TMath::Min(int(nclBelowThr+1), int(ncl * up));
     missingChargeReplacement = TMath::Mean(nClForReplacement, &(ampWithBelow[nclBelowThr]));
     for(Int_t iCl = 0; iCl < nclBelowThr; iCl++)  ampWithBelow[iCl]=missingChargeReplacement;
   }
@@ -1494,8 +1493,8 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Float_t sumL=0, sumL2=0, sumLN=0;
   Float_t sumD=0, sumD2=0, sumDN=0;
 
-  Int_t icl0=TMath::Nint((ncl + nclBelowThr)*low);
-  Int_t icl1=TMath::Nint((ncl + nclBelowThr)*up);
+  Int_t icl0=TMath::Nint((ncl + nclBelowThr)*low + nclBelowThr*factor);
+  Int_t icl1=TMath::Nint((ncl + nclBelowThr)*up+nclBelowThr*factor);
   Int_t iclm=TMath::Nint((ncl + nclBelowThr)*(low +(up+low)*0.5));
   //
   for (Int_t icl=icl0; icl<icl1;icl++){
