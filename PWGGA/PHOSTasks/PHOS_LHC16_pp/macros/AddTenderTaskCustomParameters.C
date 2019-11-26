@@ -17,8 +17,8 @@ AliPHOSTenderTask * AddTenderTaskCustomParameters(Bool_t isMC = kFALSE, TString 
     // Setup PHOS Tender
     //
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C");
-    TString tenderOption = isMC ? "Run2NoNcellCut" : "Run2Tune";
 
+    TString tenderOption = "Run2Default";
     AliPHOSTenderTask * tenderPHOS = AddAODPHOSTender("PHOSTenderTask", "PHOStender", tenderOption, 1, isMC);
     AliPHOSTenderSupply * PHOSSupply = tenderPHOS->GetPHOSTenderSupply();
     // IMPORTANT: Set the map of bad channels
@@ -31,7 +31,7 @@ AliPHOSTenderTask * AddTenderTaskCustomParameters(Bool_t isMC = kFALSE, TString 
         // ZS threshold in unit of GeV
         Double_t zs_threshold = 0.020;
         PHOSSupply->ApplyZeroSuppression(zs_threshold);
-        PHOSSupply->SetNonlinearityVersion("Run2TuneMCNoNcell");
+        PHOSSupply->SetNonlinearityVersion("Run2TuneMC");
     }
 
     return tenderPHOS;
