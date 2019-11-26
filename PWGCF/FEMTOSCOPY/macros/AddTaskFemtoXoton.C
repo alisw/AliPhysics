@@ -241,6 +241,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   if (fullBlastQA) {
     config->SetkTBinning(true);
     config->SetPtQA(true);
+    config->SetMassQA(true);
   }
 
   if (!fullBlastQA || Systematic) {
