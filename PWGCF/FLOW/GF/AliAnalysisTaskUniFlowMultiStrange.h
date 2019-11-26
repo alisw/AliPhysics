@@ -204,7 +204,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void  SetDCANegToPrimaryVtxXiMin(Double_t value){fdcaNegToPrimaryVtxXiMin = value;}
       void  SetCascadesRejectKinks(Bool_t reject) { fCutCascadesrejectKinks = reject; }
       void  SetXiPIDSigma(Double_t value){fXiPIDsigma = value;}
-
+      void  SetXiMasswindow(Double_t value){fXiMasswindow = value;}
 
 
 
@@ -303,8 +303,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
 
       void                    Propagate( Double_t vv[3],Double_t x[3],Double_t p[3],Double_t bz,Double_t sign) const;
-      void                    IsCascadexi( const AliAODcascade* xi, Int_t& strangePar) const;
-      Double_t               PIDCorrectionHF(const AliAODTrack *track, const Int_t ispecies) const;
+      Double_t                PIDCorrectionHF(const AliAODTrack *track, const Int_t ispecies) const;
 
        Bool_t  Is2018Data;//
        Double_t fXiPseMin;//
@@ -324,7 +323,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
        Double_t fdcaNegToPrimaryVtxXiMin;//
        Bool_t   fCutCascadesrejectKinks; // Reject Kink cascade daughter tracks ?
        Double_t fXiPIDsigma;//
-
+       Double_t fXiMasswindow;//
        //----------------track-------------------------------------------------  
        Double_t fTPCNcls; // number of TPC clusters   
        Double_t fTrackEta;//
@@ -659,6 +658,63 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
 };
+
+AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
+fbDoRefs(0),
+fbDoPOIs(0),
+fiNumHarm(0),
+fiNumGaps(0),
+fiHarm(std::vector<Int_t>()),
+fdGaps(std::vector<Double_t>()),
+fsName(TString()),
+fsLabel(TString())
+{};
+
+
+// ============================================================================
+
+
+AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask(Bool_t refs, Bool_t pois, std::vector<Int_t> harm, std::vector<Double_t> gaps) :
+fbDoRefs(refs),
+fbDoPOIs(pois),
+fiNumHarm(0),
+fiNumGaps(0),
+fiHarm(harm),
+fdGaps(gaps),
+fsName(TString()),
+fsLabel(TString())
+{
+    // constructor of CorrTask
+    
+    fiNumHarm = harm.size();
+    fiNumGaps = gaps.size();
+    
+    if(fiNumHarm < 2) { return; }
+    
+    // generating name
+    TString sName = Form("<<%d>>(%d",fiNumHarm,fiHarm[0]);
+    for(Int_t i(1); i < fiNumHarm; ++i) { sName += Form(",%d",fiHarm[i]); }
+    sName += ")";
+    
+    if(fiNumGaps > 0) {
+        sName += Form("_%dsub(%.2g",fiNumGaps+1,fdGaps[0]);
+        for(Int_t i(1); i < fiNumGaps; ++i) { sName += Form(",%.2g",fdGaps[i]); }
+        sName += ")";
+    }
+    
+    // generating label
+    TString sLabel = Form("<<%d>>_{%d",fiNumHarm,fiHarm[0]);
+    for(Int_t i(1); i < fiNumHarm; ++i) { sLabel += Form(",%d",fiHarm[i]); }
+    sLabel += "}";
+    
+    if(fiNumGaps > 0) {
+        sLabel += Form(" %dsub(|#Delta#eta| > %.2g",fiNumGaps+1,fdGaps[0]);
+        for(Int_t i(1); i < fiNumGaps; ++i) { sLabel += Form(", |#Delta#eta| > %.2g",fdGaps[i]); }
+        sLabel += ")";
+    }    
+    fsName = sName;
+    fsLabel = sLabel;
+}
 
 
 #endif

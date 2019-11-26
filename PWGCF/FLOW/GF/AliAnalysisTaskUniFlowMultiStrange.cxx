@@ -12,12 +12,10 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
 // =================================================================================================
-// // =================================================================================================
-// // AliAnalysisTaskUniFlowMultiStrange - Used for Multi-Strange Flow analysis with Multi-particle
-// // cumulant method and ESE analysis. Extension of AliAnalysisTaskUniFlowMultiStrange class (impl. by Vojtech Pacik, NBI).
-// // Author: Ya Zhu (ya.zhu@cern.ch), CCNU, 2016-2019
-// // =================================================================================================
+// AliAnalysisTaskUniFlowMultiStrange - ALICE Unified Flow framework
+// Author: Vojtech Pacik (vojtech.pacik@cern.ch), NBI, 2016-2019
 // =================================================================================================
 //
 // ALICE analysis task for universal study of flow via 2-(or multi-)particle correlations
@@ -112,7 +110,7 @@ ClassImp(AliAnalysisTaskUniFlowMultiStrange);
 // AliAnalysisTaskUniFlowMultiStrange::CorrTask
 // ############################################################################
 // ============================================================================
-AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
+/*AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
   fbDoRefs(0),
   fbDoPOIs(0),
   fiNumHarm(0),
@@ -165,6 +163,9 @@ AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask(Bool_t refs, Bool_t pois,
   fsName = sName;
   fsLabel = sLabel;
 }
+
+*/
+
 // ============================================================================
 void AliAnalysisTaskUniFlowMultiStrange::CorrTask::Print() const
 {
@@ -174,6 +175,7 @@ void AliAnalysisTaskUniFlowMultiStrange::CorrTask::Print() const
   for(Int_t i(0); i < fiNumGaps; ++i) { printf("%0.2f ",fdGaps[i]); }
   printf("}\n");
 }
+
 // ============================================================================
 // ############################################################################
 // AliAnalysisTaskUniFlowMultiStrange
@@ -288,24 +290,23 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fCutPhiInvMassMax(1.07),
 
 
-
-
   fXiPseMin(-0.8),
   fXiPseMax(0.8),
-  fV0RadiusXiMin(0.9),
+  fV0RadiusXiMin(3),
   fV0RadiusXiMax(100),
   fXiRadiusMin(0.9),
   fXiRadiusMax(100),
   fdcaXiDaughtersMax(0.3),
   fXiCosOfPointingAngleMin(0.999),
   fdcaV0ToPrimaryVtxXiMin(0.05),
-  fdcaBachToPrimaryVtxXiMin(0.03),
+  fdcaBachToPrimaryVtxXiMin(0.05),
   fLambdaMassWind(0.008),
   fdcaV0DaughtersXi(1),
   fV0CosOfPointingAngleXiMin(0.998),
-  fdcaPosToPrimaryVtxXiMin(0.1),
-  fdcaNegToPrimaryVtxXiMin(0.1),
+  fdcaPosToPrimaryVtxXiMin(0.15),
+  fdcaNegToPrimaryVtxXiMin(0.15),
   fCutCascadesrejectKinks(kTRUE),
+  fXiMasswindow(0.01),
   fXiPIDsigma(5),
   //--------track-------------------------------------------------  
    // fPrimaryTrackEta(0),
@@ -586,20 +587,21 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
 
   fXiPseMin(-0.8),
   fXiPseMax(0.8),
-  fV0RadiusXiMin(0.9),
+  fV0RadiusXiMin(3),
   fV0RadiusXiMax(100),
   fXiRadiusMin(0.9),
   fXiRadiusMax(100),
   fdcaXiDaughtersMax(0.3),
   fXiCosOfPointingAngleMin(0.999),
   fdcaV0ToPrimaryVtxXiMin(0.05),
-  fdcaBachToPrimaryVtxXiMin(0.03),
+  fdcaBachToPrimaryVtxXiMin(0.05),
   fLambdaMassWind(0.008),
   fdcaV0DaughtersXi(1),
   fV0CosOfPointingAngleXiMin(0.998),
-  fdcaPosToPrimaryVtxXiMin(0.1),
-  fdcaNegToPrimaryVtxXiMin(0.1),
+  fdcaPosToPrimaryVtxXiMin(0.15),
+  fdcaNegToPrimaryVtxXiMin(0.15),
   fCutCascadesrejectKinks(kTRUE),
+  fXiMasswindow(0.01),
   fXiPIDsigma(5),
   //--------track-------------------------------------------------  
    // fPrimaryTrackEta(0),
@@ -1227,11 +1229,6 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   if(fIndexCentrality < 0) { return; }
   if(fCentMin > 0 && fIndexCentrality < fCentMin) { return; }
   if(fCentMax > 0 && fIndexCentrality > fCentMax) { return; }
-
-  if(Is2018Data){
-  if(fIndexCentrality < 30) { return; }
-  if(fIndexCentrality > 50) { return; }
-  }
 
   fhEventCounter->Fill("Cent/Mult OK",1);
 
@@ -1884,6 +1881,11 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsV0aK0s(const AliAODv0* v0) const
     if (daughterPos->GetTPCsignalN() < fCutV0sDaughterNumTPCClsPIDMin || daughterNeg->GetTPCsignalN() < fCutV0sDaughterNumTPCClsPIDMin) { return kFALSE; }
     Float_t nSigmaPiPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterPos, AliPID::kPion));
     Float_t nSigmaPiNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterNeg, AliPID::kPion));
+    if (Is2018Data){
+    nSigmaPiPos=TMath::Abs(PIDCorrectionHF(daughterPos,2));
+    nSigmaPiNeg=TMath::Abs(PIDCorrectionHF(daughterNeg,2));
+   }
+
     if(nSigmaPiPos > fCutV0sK0sPionNumTPCSigmaMax || nSigmaPiNeg > fCutV0sK0sPionNumTPCSigmaMax) { return kFALSE; }
   }
   fhV0sCounterK0s->Fill("Daughters PID",1);
@@ -2002,8 +2004,20 @@ Int_t AliAnalysisTaskUniFlowMultiStrange::IsV0aLambda(const AliAODv0* v0) const
 
     if(fCutV0sLambdaPionNumTPCSigmaMax > 0.0) // check pions
     {
-      if(bIsPosOK) dSigmaPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackDaughterPos, AliPID::kPion)); else dSigmaPos = 999.9;
-      if(bIsNegOK) dSigmaNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackDaughterNeg, AliPID::kPion)); else dSigmaNeg = 999.9;
+      if(bIsPosOK) {dSigmaPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackDaughterPos, AliPID::kPion));
+       if (Is2018Data){
+        dSigmaPos=TMath::Abs(PIDCorrectionHF(trackDaughterPos,2));
+       }
+      } 
+        else {dSigmaPos = 999.9;}
+      if(bIsNegOK) {dSigmaNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackDaughterNeg, AliPID::kPion));
+       
+        if (Is2018Data){
+        dSigmaNeg=TMath::Abs(PIDCorrectionHF(trackDaughterNeg,2));
+       }
+       }
+
+       else {dSigmaNeg = 999.9;}
 
       if(bIsLambda && (!bIsNegOK || dSigmaNeg > fCutV0sLambdaPionNumTPCSigmaMax)) { bIsLambda = kFALSE; }
       if(bIsALambda && (!bIsPosOK || dSigmaPos > fCutV0sLambdaPionNumTPCSigmaMax)) { bIsALambda = kFALSE; }
@@ -2011,8 +2025,19 @@ Int_t AliAnalysisTaskUniFlowMultiStrange::IsV0aLambda(const AliAODv0* v0) const
 
     if(fCutV0sLambdaProtonNumTPCSigmaMax > 0.0) // check protons
     {
-      if(bIsPosOK) dSigmaPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackDaughterPos, AliPID::kProton)); else dSigmaPos = 999.9;
-      if(bIsNegOK) dSigmaNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackDaughterNeg, AliPID::kProton)); else dSigmaNeg = 999.9;
+      if(bIsPosOK) {dSigmaPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackDaughterPos, AliPID::kProton)); 
+      if (Is2018Data){
+        dSigmaPos=TMath::Abs(PIDCorrectionHF(trackDaughterPos,4));
+      }
+     }
+    else {dSigmaPos = 999.9;}
+     
+    if(bIsNegOK) {dSigmaNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackDaughterNeg, AliPID::kProton));
+       if (Is2018Data){
+        dSigmaNeg=TMath::Abs(PIDCorrectionHF(trackDaughterNeg,4));
+       }
+      }
+    else {dSigmaNeg = 999.9;}
 
       if(bIsLambda && (!bIsPosOK || dSigmaPos > fCutV0sLambdaProtonNumTPCSigmaMax)) { bIsLambda = kFALSE; }
       if(bIsALambda && (!bIsNegOK || dSigmaNeg > fCutV0sLambdaProtonNumTPCSigmaMax)) { bIsALambda = kFALSE; }
@@ -2346,8 +2371,16 @@ void AliAnalysisTaskUniFlowMultiStrange::FillQAV0s(const Int_t iQAindex, const A
         fhQAV0sDaughterTPCdEdxK0s[iQAindex]->Fill(trackDaughter[1]->P(), trackDaughter[1]->GetTPCsignal());
 
         // Pion PID for daughters
+        if (!Is2018Data){
         fhQAV0sDaughterNumSigmaPionK0s[iQAindex]->Fill(v0->Pt(), fPIDResponse->NumberOfSigmasTPC(trackDaughter[0], AliPID::kPion));
         fhQAV0sDaughterNumSigmaPionK0s[iQAindex]->Fill(v0->Pt(), fPIDResponse->NumberOfSigmasTPC(trackDaughter[1], AliPID::kPion));
+        }
+
+       if (Is2018Data){
+        fhQAV0sDaughterNumSigmaPionK0s[iQAindex]->Fill(v0->Pt(), PIDCorrectionHF(trackDaughter[0], 2));
+        fhQAV0sDaughterNumSigmaPionK0s[iQAindex]->Fill(v0->Pt(), PIDCorrectionHF(trackDaughter[1], 2));
+        }
+
       }
 
       if(bCandLambda || bCandAntiLambda)
@@ -2358,14 +2391,25 @@ void AliAnalysisTaskUniFlowMultiStrange::FillQAV0s(const Int_t iQAindex, const A
 
         if(bCandLambda)
         {
+          if (!Is2018Data){
           fhQAV0sDaughterNumSigmaProtonLambda[iQAindex]->Fill(v0->Pt(), fPIDResponse->NumberOfSigmasTPC(trackDaughter[0], AliPID::kProton));
           fhQAV0sDaughterNumSigmaPionLambda[iQAindex]->Fill(v0->Pt(), fPIDResponse->NumberOfSigmasTPC(trackDaughter[1], AliPID::kPion));
+         }
+          if (Is2018Data){
+           fhQAV0sDaughterNumSigmaProtonLambda[iQAindex]->Fill(v0->Pt(),PIDCorrectionHF(trackDaughter[0], 4));
+           fhQAV0sDaughterNumSigmaPionLambda[iQAindex]->Fill(v0->Pt(),PIDCorrectionHF(trackDaughter[1], 2));
+         }
         }
-
         if(bCandAntiLambda)
         {
+         if (!Is2018Data){
           fhQAV0sDaughterNumSigmaProtonALambda[iQAindex]->Fill(v0->Pt(), fPIDResponse->NumberOfSigmasTPC(trackDaughter[1], AliPID::kProton));
-          fhQAV0sDaughterNumSigmaPionALambda[iQAindex]->Fill(v0->Pt(), fPIDResponse->NumberOfSigmasTPC(trackDaughter[0], AliPID::kPion));
+          fhQAV0sDaughterNumSigmaPionALambda[iQAindex]->Fill(v0->Pt(), fPIDResponse->NumberOfSigmasTPC(trackDaughter[0], AliPID::kPion));}
+        if (Is2018Data){
+           fhQAV0sDaughterNumSigmaProtonALambda[iQAindex]->Fill(v0->Pt(),PIDCorrectionHF(trackDaughter[1], 4));
+           fhQAV0sDaughterNumSigmaPionALambda[iQAindex]->Fill(v0->Pt(),PIDCorrectionHF(trackDaughter[0], 2));
+
+         }
         }
       }
     }
@@ -2605,9 +2649,16 @@ AliAnalysisTaskUniFlowMultiStrange::PartSpecies AliAnalysisTaskUniFlowMultiStran
 
 
   for(Int_t iSpec(0); iSpec < fPIDNumSpecies; ++iSpec) {
+
+   if (!Is2018Data){
     dNumSigmaTPC[iSpec] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::EParticleType(iSpec)));
     dNumSigmaTOF[iSpec] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::EParticleType(iSpec)));
-  }
+   } 
+   if (Is2018Data){
+    dNumSigmaTPC[iSpec] = TMath::Abs(PIDCorrectionHF(track, AliPID::EParticleType(iSpec)));
+    dNumSigmaTOF[iSpec] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::EParticleType(iSpec)));
+   }
+ }
 
   if(fCutUseBayesPID) {
     UInt_t iDetUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, dProbPID); // filling probabilities to dPropPID array
@@ -2745,7 +2796,13 @@ void AliAnalysisTaskUniFlowMultiStrange::FillQAPID(const Int_t iQAindex, const A
       fhQAPIDTPCdEdx[iQAindex]->Fill(track->P(), dTPCdEdx);
 
       for(Int_t iSpec(0); iSpec < fPIDNumSpecies; ++iSpec) {
+        if (!Is2018Data){
         dNumSigmaTPC[iSpec] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::EParticleType(iSpec));
+        }
+        if (Is2018Data){
+        dNumSigmaTPC[iSpec] =PIDCorrectionHF(track, AliPID::EParticleType(iSpec)); 
+        }
+        
         dTPCdEdxDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, track, AliPID::EParticleType(iSpec));
       }
   }
@@ -3046,10 +3103,25 @@ void AliAnalysisTaskUniFlowMultiStrange::CalculateCorrelations(CorrTask* task, P
       break;
     }
 
-
     case kK0s:
     case kLambda:
     case kPhi:
+    {
+      if(bFillPos)
+      {
+        TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample0",task->fsName.Data()));
+        if(!prof) { AliError(Form("Profile '%s_Pos_sample0' not found!", task->fsName.Data())); return; }
+        prof->Fill(fIndexCentrality, dPt, dMass, dValue, dDenom);
+      }
+
+      if(bFillNeg)
+      {
+        TProfile3D* profNeg = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Neg_sample0",task->fsName.Data()));
+        if(!profNeg) { AliError(Form("Profile '%s_Neg_sample0' not found!", task->fsName.Data())); return; }
+        profNeg->Fill(fIndexCentrality, dPt, dMass, dValueNeg, dDenomNeg);
+      }
+      break;
+    }
     case kXi:
     case kOmega:
 
@@ -3070,11 +3142,6 @@ void AliAnalysisTaskUniFlowMultiStrange::CalculateCorrelations(CorrTask* task, P
       break;
     }
      
-
-
-
-    // case kXi:
-    // case kOmega:
      case kUnknown:
       return;
   }
@@ -3668,7 +3735,8 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
         for(Int_t iSample(0); iSample < fNumSamples; ++iSample)
         {
           if(iSample > 0 && !fSampling) { break; }
-        //  if(iSample > 0 && HasMass(PartSpecies(iSpec))) { break; } // reconstructed are not sampled
+
+          if((iSample > 0) && (PartSpecies(iSpec)==5 || PartSpecies(iSpec)==6 || PartSpecies(iSpec)==7)) { break; } // reconstructed are not sampled
 
           TH1* profile = 0x0;
           TH1* profileNeg = 0x0;
@@ -3775,7 +3843,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
     sLabelCand[SparseCand::kCent] = GetCentEstimatorLabel(fCentEstimator);
     sLabelCand[SparseCand::kPt] = "#it{p}_{T} (GeV/c)";
     sLabelCand[SparseCand::kEta] = "#eta";
-     sLabelCand[SparseCand::kSample] = "sample";
+    sLabelCand[SparseCand::kSample] = "sample";
     TString sAxes = TString(); for(Int_t i(0); i < SparseCand::kDim; ++i) { sAxes += Form("%s; ",sLabelCand[i].Data()); }
 
     Int_t iNumBinsCand[SparseCand::kDim]; Double_t dMinCand[SparseCand::kDim]; Double_t dMaxCand[SparseCand::kDim];
@@ -4294,8 +4362,7 @@ void AliAnalysisTaskUniFlowMultiStrange::FilterCascades() const
 
    if(!IsCascadeSelected(xi)){continue;}
 
-
-    Double_t XiP[3] = {-999., -999., -999.};
+   Double_t XiP[3] = {-999., -999., -999.};
 
    Double_t XiPx = xi->MomXiX();
    Double_t XiPy = xi->MomXiY();
@@ -4319,50 +4386,89 @@ void AliAnalysisTaskUniFlowMultiStrange::FilterCascades() const
 
    Double_t XiPhi = TMath::Pi() + TMath::ATan2(-XiP[1],-XiP[0]);//phi   
    
-   int MS= 1000;
 
-   IsCascadexi(xi,MS);  
+    AliAODTrack *pTrkXi = dynamic_cast<AliAODTrack*>( xi->GetDaughter(0) );
+    AliAODTrack *nTrkXi = dynamic_cast<AliAODTrack*>( xi->GetDaughter(1) );
+    AliAODTrack *bTrkXi
+      = dynamic_cast<AliAODTrack*>( xi->GetDecayVertexXi()->GetDaughter(0) );
 
+    if(!pTrkXi || !nTrkXi || !bTrkXi) {continue;}//no effect
 
-   if (MS == 0)//xi
-     {
+    Bool_t isBachelorKaonForTPC = kFALSE;
+    Bool_t isBachelorPionForTPC = kFALSE;
+    Bool_t isNegPionForTPC = kFALSE;
+    Bool_t isPosPionForTPC = kFALSE;
+    Bool_t isNegProtonForTPC = kFALSE;
+    Bool_t isPosProtonForTPC = kFALSE;
+
+    Double_t NumBKaon=0;
+    Double_t NumBPion=0;
+    Double_t NumNPion=0;
+    Double_t NumNProton=0;
+    Double_t NumPPion=0;
+    Double_t NumPProton=0;
+    if (!Is2018Data ){
+    NumBKaon=fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kKaon);
+    NumBPion=fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kPion);
+    NumNPion=fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kPion);
+    NumNProton=fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kProton);
+    NumPPion=fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kPion);
+    NumPProton=fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kProton);
+    }
+
+   if (Is2018Data){
+      NumBKaon= PIDCorrectionHF(bTrkXi,3);
+      NumBPion= PIDCorrectionHF(bTrkXi,2);
+      NumNPion= PIDCorrectionHF(nTrkXi,2);
+      NumNProton= PIDCorrectionHF(nTrkXi,4);
+      NumPPion= PIDCorrectionHF(pTrkXi,2);
+      NumPProton = PIDCorrectionHF(pTrkXi,4); 
+   }
+  
+    if(TMath::Abs(NumBKaon)<fXiPIDsigma)
+       {isBachelorKaonForTPC = kTRUE;}
+
+    if(TMath::Abs(NumBPion)<fXiPIDsigma)
+       {isBachelorPionForTPC = kTRUE;}
+     //Negative V0 daughter
+    if(TMath::Abs(NumNPion)<fXiPIDsigma)
+       {isNegPionForTPC = kTRUE;}
+    if(TMath::Abs(NumNProton)<fXiPIDsigma)
+       {isNegProtonForTPC = kTRUE;}
+     //Positive V0 daughter
+    if(TMath::Abs(NumPPion)< fXiPIDsigma)
+       {isPosPionForTPC = kTRUE;}
+    if(TMath::Abs(NumPProton)<fXiPIDsigma)
+       {isPosProtonForTPC = kTRUE;}
+
+     if(xi->ChargeXi() < 0){
+        if(isPosProtonForTPC && isNegPionForTPC && isBachelorPionForTPC){
         AliPicoTrack* pico = new AliPicoTrack(XiPt,XiEta,XiPhi,xi->ChargeXi(),0,0,0,0,0,0,xi->MassXi());
         fVector[kXi]->push_back(pico);
         FillSparseCand(fhsCandXi, pico);
         if(!FillFlowWeightCascade(xi, kXi)) { AliFatal("Flow weight filling failed!"); return; }
-      }
-    if (MS == 1)//omega
-
-     {
+     }//xi
+        if (isPosProtonForTPC && isNegPionForTPC && isBachelorKaonForTPC && TMath::Abs(xi->MassXi()-1.321)>fXiMasswindow){
       AliPicoTrack* pico = new AliPicoTrack(XiPt,XiEta,XiPhi,xi->ChargeXi(),0,0,0,0,0,0,xi->MassOmega());
       fVector[kOmega]->push_back(pico);
       FillSparseCand(fhsCandOmega, pico);
       if(!FillFlowWeightCascade(xi, kOmega)) { AliFatal("Flow weight filling failed!"); return; }
-      }
+      }//omega
 
-    if (MS == 2)//(anti)xi
-
-     {
-      AliPicoTrack* pico = new AliPicoTrack(XiPt,XiEta,XiPhi,xi->ChargeXi(),0,0,0,0,0,0,xi->MassXi());
+    }
+    if(xi->ChargeXi() > 0){
+        if(isNegProtonForTPC && isPosPionForTPC && isBachelorPionForTPC){
+       AliPicoTrack* pico = new AliPicoTrack(XiPt,XiEta,XiPhi,xi->ChargeXi(),0,0,0,0,0,0,xi->MassXi());
       fVector[kXi]->push_back(pico);
-      
       FillSparseCand(fhsCandXi, pico);
-     // FillSparseCand(fhsCandXi, pico);
        if(!FillFlowWeightCascade(xi, kXi)) { AliFatal("Flow weight filling failed!"); return; }
-      }
-
-    if (MS == 3)//(anti)omega
-
-     {
-      AliPicoTrack* pico = new AliPicoTrack(XiPt,XiEta,XiPhi,xi->ChargeXi(),0,0,0,0,0,0,xi->MassOmega());
+      }//(anti)xi
+        if(isNegProtonForTPC && isPosPionForTPC && isBachelorKaonForTPC && TMath::Abs(xi->MassXi()-1.321)>fXiMasswindow){
+       AliPicoTrack* pico = new AliPicoTrack(XiPt,XiEta,XiPhi,xi->ChargeXi(),0,0,0,0,0,0,xi->MassOmega());
       fVector[kOmega]->push_back(pico);
       FillSparseCand(fhsCandOmega, pico);
-      if(!FillFlowWeightCascade(xi, kOmega)) { AliFatal("Flow weight filling failed!"); return; }
-
-
-      }
-
-
+      if(!FillFlowWeightCascade(xi, kOmega)) { AliFatal("Flow weight filling failed!"); return; }}//(anti)omega
+   }
   }
 }
 
@@ -4505,85 +4611,6 @@ void AliAnalysisTaskUniFlowMultiStrange::Propagate( Double_t vv[3],
   
 //  p[1] = p[1]*TMath::Cos(rho*len) + p0  *TMath::Sin(rho*len);
 }
-
-void  AliAnalysisTaskUniFlowMultiStrange::IsCascadexi( const AliAODcascade* xi, Int_t& strangePar) const//0-->xi;1-->omega;2-->(anti)xi;3-->(anti)omega
-{
-
-    AliAODTrack *pTrkXi = dynamic_cast<AliAODTrack*>( xi->GetDaughter(0) );
-    AliAODTrack *nTrkXi = dynamic_cast<AliAODTrack*>( xi->GetDaughter(1) );
-    AliAODTrack *bTrkXi
-      = dynamic_cast<AliAODTrack*>( xi->GetDecayVertexXi()->GetDaughter(0) );
-
-    if(!pTrkXi || !nTrkXi || !bTrkXi) strangePar=3000;//no effect
-
-    Bool_t isBachelorKaonForTPC = kFALSE;
-    Bool_t isBachelorPionForTPC = kFALSE;
-    Bool_t isNegPionForTPC = kFALSE;
-    Bool_t isPosPionForTPC = kFALSE;
-    Bool_t isNegProtonForTPC = kFALSE;
-    Bool_t isPosProtonForTPC = kFALSE;
-
-    Double_t NumBKaon;
-    Double_t NumBPion;
-    Double_t NumNPion;
-    Double_t NumNProton;
-    Double_t NumPPion;
-    Double_t NumPProton;
-   if (!Is2018Data ){
-    NumBKaon=fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kKaon);
-    NumBPion=fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kPion);
-    NumNPion=fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kPion);
-    NumNProton=fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kProton);
-    NumPPion=fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kPion);
-    NumPProton=fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kProton);
-    }
-   if (Is2018Data){
-
-      NumBKaon= PIDCorrectionHF(bTrkXi,3);
-      NumBPion= PIDCorrectionHF(bTrkXi,2);
-      NumNPion= PIDCorrectionHF(nTrkXi,2);
-      NumNProton= PIDCorrectionHF(nTrkXi,4);
-      NumPPion= PIDCorrectionHF(pTrkXi,2);
-      NumPProton = PIDCorrectionHF(pTrkXi,4);
- 
- }
-if(TMath::Abs(NumBKaon)<fXiPIDsigma)
-       {isBachelorKaonForTPC = kTRUE;}
-
-    if(TMath::Abs(NumBPion)<fXiPIDsigma)
-       {isBachelorPionForTPC = kTRUE;}
-     //Negative V0 daughter
-    if(TMath::Abs(NumNPion)<fXiPIDsigma)
-       {isNegPionForTPC = kTRUE;}
-    if(TMath::Abs(NumNProton)<fXiPIDsigma)
-       {isNegProtonForTPC = kTRUE;}
-     //Positive V0 daughter
-    if(TMath::Abs(NumPPion)< fXiPIDsigma)
-       {isPosPionForTPC = kTRUE;}
-    if(TMath::Abs(NumPProton)<fXiPIDsigma)
-       {isPosProtonForTPC = kTRUE;}
-  
-    strangePar=4000;
-
-    if(xi->ChargeXi() < 0){
-        if(isPosProtonForTPC && isNegPionForTPC && isBachelorPionForTPC){
-    strangePar=0;}//xi
-
-        else if (isPosProtonForTPC && isNegPionForTPC && isBachelorKaonForTPC){
-    strangePar=1;}//omega
-
-    }
-    if(xi->ChargeXi() > 0){
-        if(isNegProtonForTPC && isPosPionForTPC && isBachelorPionForTPC){
-    strangePar=2;}//(anti)xi
-        if(isNegProtonForTPC && isPosPionForTPC && isBachelorKaonForTPC){
-    strangePar=3;}//(anti)omega
-   }
-  
-}
-
-
-
 
 //---------------------------------------------------------------------------------------------------------------------
 
