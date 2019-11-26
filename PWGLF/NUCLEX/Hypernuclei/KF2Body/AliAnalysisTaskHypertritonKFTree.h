@@ -9,8 +9,11 @@
 #include "AliAnalysisTaskSE.h"
 #endif
 
+// includes added to play with KFParticle
+#define HomogeneousField
 #include "KFParticle.h"
 #include "KFVertex.h"
+#include "KFPTrack.h"
 
 class AliEventCuts;
 class THnSparse;

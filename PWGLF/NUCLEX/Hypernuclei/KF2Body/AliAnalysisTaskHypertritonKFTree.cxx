@@ -31,11 +31,7 @@
 #include "AliPIDResponse.h"
 #include "AliMultSelection.h"
 
-// includes added to play with KFParticle
 #include <vector>
-#define HomogeneousField
-#include "KFPTrack.h"
-
 #include<iostream>
 
 #include "AliAnalysisTaskHypertritonKFTree.h"
