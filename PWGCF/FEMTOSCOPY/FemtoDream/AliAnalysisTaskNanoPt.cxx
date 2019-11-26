@@ -188,8 +188,7 @@ Float_t AliAnalysisTaskNanoPt::GetMass2sq(AliFemtoDreamTrack *track) const {
   Float_t p = track->GetP();
   Float_t mass2sq = -999;
   Float_t beta = track->GetbetaTOF();
-  cout<<"/////////////////////////////value of beta to Mass Function=" << beta << endl;
-  if (!(beta > 0)) {
+  if ((beta > 0)) {
     mass2sq = ((1 / (beta * beta)) - 1) * (p * p);
   }
   return mass2sq;
@@ -371,7 +370,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       fDeuteronMCList->Add(fDProtonRestMassMC);
       fDeuteronMCList->Add(fDKaonRestMassMC);
       fDeuteronMCList->Add(fDPionRestMassMC);
-      fDeuteronMCList->Add(fDeuteronBackgroundMC);//fProtonBackgroungMC//fAntiProtonBackgroundMC//fDeuteronBackgroundMC//fAntiDeuteronBackgroundMC
+      fDeuteronMCList->Add(fDeuteronBackgroundMC);
     }
 
     if (!fAntiDeuteronTrackNoTOF) {
@@ -549,13 +548,9 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
 
     fTrack->SetTrack(track, fInputEvent, multiplicity);
-       cout<<"/////////////////////////////Before selection of cuts ProtonBetaWithTOF=" << fTrack->GetbetaTOF()<< endl;
-   
-
-
+       
     if (fProtonTrack->isSelected(fTrack)) {
-      cout<<"/////////////////////////////ProtonBetaWithTOF=" << fTrack->GetbetaTOF()<< endl;
-      cout<<"/////////////////////////////"<<endl;
+
       fProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
       Proton.push_back(*fTrack);
     }
@@ -577,9 +572,7 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
       ProtonNoTOF.push_back(*fTrack);
 
       if (fIsMC) {
-        // cout << "//////////////////////////////////////PDGCODE//////////////////////////////" << endl;
-        // cout << fTrack->GetMCPDGCode() << endl;
-        // cout << "//////////////////////////////////////PDGCODE//////////////////////////////" << endl;
+      
         if (fTrack->GetMCPDGCode() == 2212) {
 
           fProtonRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
@@ -621,7 +614,8 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
       }
 
     }
-    if (fDeuteronTrackNoTOF->isSelected(fTrack)) {
+    if (fDeuteronTrackNoTOF->isSelected(fTrack)) {       
+
       fDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
       DeuteronNoTOF.push_back(*fTrack);
 
