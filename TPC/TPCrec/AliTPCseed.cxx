@@ -1476,6 +1476,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   }
   Double_t factor=recoParam->GetMissingClusterdEdxFraction();
   if (factor>0) {
+    if (factor>1) factor=1.;
     Double_t missingChargeReplacement = 0;
     Int_t nClForReplacement = TMath::Min(int(nclBelowThr+1), int(ncl * up));
     missingChargeReplacement = TMath::Mean(nClForReplacement, &(ampWithBelow[nclBelowThr]));
