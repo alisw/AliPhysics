@@ -306,8 +306,8 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   // RS: use propagation only if the seed in far from the cluster
   const double kTolerance = 10e-4; // assume track is at cluster X if X-distance below this
   if (TMath::Abs(seed->GetX()-cluster->GetX())>kTolerance) seed->GetProlongation(cluster->GetX(),yt,zt); 
-  Double_t sy2=0,  erry2LM=0,  erry2HM=0, erry2Res=0;//ErrY2(seed,cluster);
-  Double_t sz2=0,  errz2LM=0,  errz2HM=0, errz2Res=0;//ErrZ2(seed,cluster);
+  Double_t sy2=0,  erry2LM=0,  erry2HM=0, erry2Res=0,erry2OccudEdx=0, erry2Ratio=0;//ErrY2(seed,cluster);
+  Double_t sz2=0,  errz2LM=0,  errz2HM=0, errz2Res=0,errz2OccudEdx=0, errz2Ratio=0;//ErrZ2(seed,cluster);
   ErrY2Z2(seed,cluster,sy2,sz2);
   erry2Res=sy2;
   errz2Res=sz2;
@@ -342,11 +342,11 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
       //      tree->SetAlias("errz2Ratio", "0.01*negRatio+0.05*posRatio");
       //      tree->SetAlias("errz2HM", "(errz2OccudEdx+errz2Ratio)*(1+Theta**2)*0.5");
 
-      Float_t erry2OccudEdx = 0.12*0.12*occu6N*mdEdx;
-      Float_t erry2Ratio   = 0.07*negRatio+0.15*posRatio;
+      erry2OccudEdx = 0.12*0.12*occu6N*mdEdx;
+      erry2Ratio   = 0.07*negRatio+0.15*posRatio;
       erry2HM      = (erry2OccudEdx+erry2Ratio)*(0.3+tanPhi2);
-      Float_t errz2OccudEdx = 0.09*0.09*occu6N*mdEdx;
-      Float_t errz2Ratio   = 0.01*negRatio+0.05*posRatio;
+      errz2OccudEdx = 0.09*0.09*occu6N*mdEdx;
+      errz2Ratio   = 0.01*negRatio+0.05*posRatio;
       errz2HM      = (errz2OccudEdx+errz2Ratio)*(1+tgl2)*0.5;
       //
       if (erry2HM>kMaxSigma2) erry2HM=kMaxSigma2;
@@ -415,6 +415,10 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
       "errz2HMC="<<errz2HM<<
       "erry2ResC="<<erry2Res<<
       "errz2ResC="<<errz2Res<<
+      "erry2OccudEdxC="<<erry2OccudEdx<<
+      "erry2OccudEdxC="<<errz2OccudEdx<<
+      "erry2RatioC="<<erry2Ratio<<
+      "errz2RatioC="<<errz2Ratio<<
       "rmsy2="<<rmsy2<<
       "rmsz2="<<rmsz2<<	
       "rmsy2p30="<<rmsy2p30<<
