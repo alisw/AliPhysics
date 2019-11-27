@@ -16,9 +16,9 @@ public:
     
   }
   static AliDielectronPID* GetPIDCutsAna();
-  AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="NONE");
+  AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="NONE", Bool_t isUPC=kFALSE);
   AliDielectronCutGroup* GetPairCuts(int pairsel=0);
-  AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax, Bool_t usePileUpRej=kFALSE);
+  AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax, Bool_t usePileUpRej=kFALSE, Bool_t isUPC=kFALSE);
   void SetEtaCorrection( Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel);
   static AliDielectronPID* pidFilterCuts;
   static TBits *fUsedVars;               // used variables
@@ -136,16 +136,17 @@ TH3D LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t 
 }  
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t centMax, Bool_t usePileUpRej) {
+AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t centMax, Bool_t usePileUpRej, Bool_t isUPC) {
   ::Info("LMEE_CutLib_slehner","setting event cuts");
   
   AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts","evcuts");
-  
-  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  eventCuts->SetRequireVertex();
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,+10.);
-  if(centMax!=0) eventCuts->SetCentralityRange(centMin,centMax,kTRUE);    //isRun2 = true 
+  if(!isUPC){
+    eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
+    eventCuts->SetRequireVertex();
+    eventCuts->SetMinVtxContributors(1);
+    eventCuts->SetVertexZ(-10.,+10.);
+    if(centMax!=0) eventCuts->SetCentralityRange(centMin,centMax,kTRUE);    //isRun2 = true 
+  }
   
   if(usePileUpRej){
     Double_t pileUpCutsTPCClustersMin = 2.0e+06;
@@ -458,7 +459,7 @@ AliDielectronCutGroup* LMEECutLib::GetPairCuts(int selPair) {
     return pairCutsGr;
 
 }
-AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MVACut, Bool_t useAODFilterCuts, TString TMVAweight) {
+AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MVACut, Bool_t useAODFilterCuts, TString TMVAweight, Bool_t isUPC) {
   
   
   AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("CutsAna","CutsAna",AliDielectronCutGroup::kCompAND);
@@ -781,7 +782,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
               trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
               trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.6, 1.05);
               break;
-              
+
    // track cut chosen for the results in 70-90% in 0.5-2.7 gev/c^2 (Track cut 30) and  1.1-2.7 gev/c^2 (Track cut 12) with additional event plane cuts  for tracks  
         case 300:    
               trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
@@ -838,7 +839,6 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
               trackCutsAOD->AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2,     3*TMath::Pi()/4., TMath::Pi(),kTRUE);     //out of event plane       
               break;
     }
-    
   
   trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);   //(1<<4) -> error
   trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
@@ -889,6 +889,6 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
     trackCuts->AddCut(trkCutsFilter);
   }
   trackCuts->AddCut(trackCutsDiel);
-  trackCuts->AddCut(trackCutsAOD);    
+  if(!isUPC)trackCuts->AddCut(trackCutsAOD);    
   return trackCuts;
 }
