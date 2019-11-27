@@ -5,7 +5,6 @@
 #include "AliEventCuts.h"
 #include "AliAODTrack.h"
 #include "AliGFWWeights.h"
-#include "TComplex.h"
 
 class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 {
@@ -37,18 +36,20 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetFlowPOIsPt(Double_t min, Double_t max) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; } 
 
         void                    SetWeights(Bool_t kOwn) { bUseOwnWeights = kOwn; }
-        
+        //input root file (PhiEtaWeights)
+        TH2F*                   nuacentral; 
 
         //runAnalysis inputs
         Bool_t                  fFlowRunByRunWeights;
         Bool_t                  bUseOwnWeights;
+        Bool_t                  bRunByRun;
 
         Double_t                dGap;
 
     private:
 
-    static const Int_t      fNumHarms = 13; // maximum harmonics length of flow vector array
-    static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
+    static const Int_t      fNumHarms = 10; // maximum harmonics length of flow vector array
+    static const Int_t      fNumPowers = 10; // maximum weight power length of flow vector array
     static const Int_t      fNumHarmHists = 3; // how many harmonics hists
     static const Int_t      fNumCentHists = 7; // how many cent hists should there be
     static const Int_t      fnqCuts = 11;        // number of q selection cuts from 0-10 in 10% intervals --- probably not used anywhere?
@@ -68,8 +69,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         //list in lists WIP
 
         TList*                  fFlowWeightsList; //! list of weights
-        TList*                  fqCutsList;     //! list of q selection cuts
-        TH1F*                   fHistqCuts[3][fnqCuts];     //!
+        TTree*                  fqCutsTree;     //!
         AliGFWWeights*          fWeights;           //!
         //output histograms
         TH2F*                   fHistPhiEta;    //!
@@ -98,9 +98,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         ///////////////////////////////////////////////////////////////
 
         TH1F*                   fHistq2_red_cent_30_31;                     //!
-        TH1F*                   fHistqn_red_cent_0_1[2];                     //!
-
-        TProfile*               fProfNPar; //!
 
         // fill dphi/deta/dpt histograms for weights
         void FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD);
@@ -219,6 +216,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t                fFlowRFPsPtMax; // [5.0] (GeV/c) max pT treshold for RFPs particle for reference flow
         Double_t                fFlowPOIsPtMin; // [0] (GeV/c) min pT treshold for POIs for differential flow
         Double_t                fFlowPOIsPtMax; // [10] (GeV/c) max pT treshold for POIs for differential flow
+        Double_t                fqnCuts[fNumHarmHists][fNumCentHists];
 
 
         ClassDef(AliAnalysisTaskESEFlow, 1);
