@@ -110,7 +110,7 @@ ClassImp(AliAnalysisTaskUniFlowMultiStrange);
 // AliAnalysisTaskUniFlowMultiStrange::CorrTask
 // ############################################################################
 // ============================================================================
-/*AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
+AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
   fbDoRefs(0),
   fbDoPOIs(0),
   fiNumHarm(0),
@@ -163,9 +163,6 @@ AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask(Bool_t refs, Bool_t pois,
   fsName = sName;
   fsLabel = sLabel;
 }
-
-*/
-
 // ============================================================================
 void AliAnalysisTaskUniFlowMultiStrange::CorrTask::Print() const
 {
