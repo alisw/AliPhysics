@@ -282,13 +282,13 @@ private:
     float fGenZvtx;                             /// Z of the generated primary vertex
     int fNtracklets;                            /// number of tracklets in |eta| < 1
 
-    vector<Charm2Prong> fCharm2Prong;           /// vector of charm 2 prongs
-    vector<Charm3Prong> fCharm3Prong;           /// vector of charm 3 prongs
-    vector<Dstar> fDstar;                       /// vector of Dstar
-    vector<CharmCascade> fCharmCascade;         /// vector of charm cascades
-    vector<Beauty3Prong> fBeauty3Prong;         /// vector of beauty 3 prongs
-    vector<Beauty4Prong> fBeauty4Prong;         /// vector of beauty 4 prongs
-    vector<GenHadron> fGenHadron;               /// vector of generated charm/beauty hadrons
+    vector<Charm2Prong> fCharm2Prong;           //!<! vector of charm 2 prongs
+    vector<Charm3Prong> fCharm3Prong;           //!<! vector of charm 3 prongs
+    vector<Dstar> fDstar;                       //!<! vector of Dstar
+    vector<CharmCascade> fCharmCascade;         //!<! vector of charm cascades
+    vector<Beauty3Prong> fBeauty3Prong;         //!<! vector of beauty 3 prongs
+    vector<Beauty4Prong> fBeauty4Prong;         //!<! vector of beauty 4 prongs
+    vector<GenHadron> fGenHadron;               //!<! vector of generated charm/beauty hadrons
 
     bool fEnable2Prongs;                        /// flag to enable 2-prong branch
     int fEnable3Prongs;                         /// flag to enable 3-prong branch (with D+ and/or Ds+ and/or Lc)

@@ -6339,6 +6339,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
           // if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a || fCurrentMC==kPP8T12P2Pyt8 || fCurrentMC==kPP8T12P2Pho || fCurrentMC==kPP8T12P2JJ) {
             energy /= FunctionNL_kSDM(energy, 0.987534, -3.87469, -0.128085) ;
+
+            if(fCurrentMC==k14j4) energy /= 1.0073711044; // additional finetuning needed prob. due to diff nmb of SM
           // }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data(energy);

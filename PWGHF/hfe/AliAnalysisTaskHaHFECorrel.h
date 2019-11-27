@@ -228,6 +228,8 @@ public:
     Double_t              Sphericity(const TObjArray* tracks, Double_t MaxEta, Double_t MinPt);
     Bool_t                Thrust(const TObjArray* tracks, Double_t t[2], Double_t MaxEta, Double_t MinPt);
 
+    Int_t                 CheckParticleOrigin(Int_t Label);
+
     Int_t                 fRunNumber;               //
     Bool_t                fUseTender;               // Use tender
     Int_t                 fWhichPeriod;             // period

@@ -10,13 +10,16 @@ Bool_t AliPP13ClusterCuts::AcceptCluster(AliVCluster * clus) const
 	if (clus->GetType() != AliVCluster::kPHOSNeutral)
 		return kFALSE; // don't use CPV
 
-	if (clus->E() < 0.1)
-		return kFALSE;
+	// if (clus->E() < 0.1)
+	// 	return kFALSE;
 
-	if (clus->E() > 1. && clus->GetNCells() < fNCellsCut)
-		return kFALSE;
+	// if (clus->E() > 1. && clus->GetNCells() < fNCellsCut)
+	// 	return kFALSE;
 
-	if (clus->E() > 1. && clus->GetM02() < 0.1)
+	// if (clus->E() > 1. && clus->GetM02() < 0.1)
+	// 	return kFALSE;
+
+	if (clus->GetNCells() < fNCellsCut)
 		return kFALSE;
 
 	if (clus->E() < fClusterMinE)
@@ -50,7 +53,7 @@ AliPP13ClusterCuts AliPP13ClusterCuts::GetClusterCuts(Int_t ctype)
 	(void) ctype;
 	AliPP13ClusterCuts cuts;
 	cuts.fNCellsCut = 3;
-	cuts.fClusterMinE = 0.1;
+	cuts.fClusterMinE = 0.3;
 	cuts.fTimingCut = 12.5e-9;
 	cuts.fAsymmetryCut = 1.0;
 	cuts.fNContributors = 1;

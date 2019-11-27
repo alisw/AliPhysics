@@ -150,8 +150,6 @@ fhExoticityEClusAllSameTCard(0),       fhM02EnergyAllSameTCard(0),
 fhNCellsPerClusterAllSameTCard(0),     fhEtaPhiGridExoEnCutSameFracCut(0),
 fhExoticityEClusAllSameTCardW(0),      fhM02EnergyAllSameTCardW(0),
 fhNCellsPerClusterAllSameTCardW(0),    fhEtaPhiGridExoEnCutSameFracCutW(0),
-fhExoticityEClusAllSameTCardTimeDiff(0),      fhM02EnergyAllSameTCardTimeDiff(0),
-fhNCellsPerClusterAllSameTCardTimeDiff(0),    fhEtaPhiGridExoEnCutSameFracCutTimeDiff(0),
 fhExoticityEClusAllSameTCardMinEnCut(0), fhM02EnergyAllSameTCardMinEnCut(0),
 fhNCellsPerClusterAllSameTCardMinEnCut(0),
 
@@ -1423,15 +1421,6 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
         fhM02EnergyAllSameTCardW       ->Fill(en, m02                 , GetEventWeight());
         if ( en > fEMinForExo  )
           fhEtaPhiGridExoEnCutSameFracCutW->Fill(icolMaxAbs, irowMaxAbs, exoticity, GetEventWeight());
-      }
-  
-      if ( nCellDiffTimeDiff == 0 )
-      {
-        fhNCellsPerClusterAllSameTCardTimeDiff->Fill(en, nCaloCellsPerCluster, GetEventWeight());
-        fhExoticityEClusAllSameTCardTimeDiff  ->Fill(en, exoticity           , GetEventWeight());
-        fhM02EnergyAllSameTCardTimeDiff       ->Fill(en, m02                 , GetEventWeight());
-        if ( en > fEMinForExo  )
-          fhEtaPhiGridExoEnCutSameFracCutTimeDiff->Fill(icolMaxAbs, irowMaxAbs, exoticity, GetEventWeight());
       }
       
       for(Int_t imin = 0; imin < nMinEnCut; imin++)
@@ -2722,8 +2711,8 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       outputContainer->Add(fhCellEnDiffColRowDiff[icoldiff][irowdiff] );     
       
       fhCellEnDiffColRowDiffExoCut[icoldiff][irowdiff] = new TH2F 
-      (Form("hCellEnDiff_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
-       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d, #it{F}_{+}>0.2%f",icoldiff,irowdiff,fExoCut),
+      (Form("hCellEnDiffExo_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
+       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d, #it{F}_{+}>%0.2f",icoldiff,irowdiff,fExoCut),
        //nptbins,ptmin,ptmax, 200,0,20, nexobins,exomin,exomax); 
         eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
        e2BinsArray.GetSize() - 1, e2BinsArray.GetArray());
@@ -2744,8 +2733,8 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       outputContainer->Add(fhCellEnSameColRowDiff[icoldiff][irowdiff] );    
       
       fhCellEnSameColRowDiffExoCut[icoldiff][irowdiff]  = new TH2F 
-      (Form("hCellEnSame_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
-       Form("#it{E}_{cluster} vs #it{E}_{cell}^{same}, #Delta col=%d - #Delta row=%d, #it{F}_{+}>0.2%f",icoldiff,irowdiff,fExoCut),
+      (Form("hCellEnSameExo_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
+       Form("#it{E}_{cluster} vs #it{E}_{cell}^{same}, #Delta col=%d - #Delta row=%d, #it{F}_{+}>%0.2f",icoldiff,irowdiff,fExoCut),
        //nptbins,ptmin,ptmax, 200,0,20, nexobins,exomin,exomax); 
         eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
        e2BinsArray.GetSize() - 1, e2BinsArray.GetArray());
@@ -3392,46 +3381,6 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     fhEtaPhiGridExoEnCutSameFracCutW->SetZTitle("#it{F}_{+}");
     outputContainer->Add(fhEtaPhiGridExoEnCutSameFracCutW);
 
-    //
-    fhExoticityEClusAllSameTCardTimeDiff = new TH2F 
-    ("hExoticityEClusAllSameTCardTimeDiff","cell #it{F}_{+} vs #it{E}_{cluster}, #it{n}_{cell} > 1, #it{n}_{cells} = #it{n}_{cells-same}, #it{n}_{cells-diff}^{#Delta #it{t} < 50} = 0",
-     //nptbins,ptmin,ptmax, nexobins,exomin,exomax); 
-     eBinsArray.GetSize() - 1, eBinsArray.GetArray(), 
-     fBinsArray.GetSize() - 1, fBinsArray.GetArray());
-    fhExoticityEClusAllSameTCardTimeDiff->SetXTitle("#it{E}_{cluster} (GeV)");
-    fhExoticityEClusAllSameTCardTimeDiff->SetYTitle("#it{F}_{+}");
-    outputContainer->Add(fhExoticityEClusAllSameTCardTimeDiff);    
-    
-    fhNCellsPerClusterAllSameTCardTimeDiff  = new TH2F 
-    ("hNCellsPerClusterAllSameTCardTimeDiff","# cells per cluster vs #it{E}_{cluster}, #it{n}_{cells}=#it{n}_{cells-same}, #it{n}_{cells-diff}^{#Delta #it{t} < 50} = 0",
-     //nptbins,ptmin,ptmax, 17,0,17); 
-     eBinsArray.GetSize() - 1, eBinsArray.GetArray(), 
-     nBinsArray.GetSize() - 1, nBinsArray.GetArray());
-    fhNCellsPerClusterAllSameTCardTimeDiff->SetXTitle("#it{E}_{cluster} (GeV)");
-    fhNCellsPerClusterAllSameTCardTimeDiff->SetYTitle("#it{n}_{cells}");
-    outputContainer->Add(fhNCellsPerClusterAllSameTCardTimeDiff);
-    
-    fhM02EnergyAllSameTCardTimeDiff  = new TH2F 
-    ("hM02EnergyNCellAllSameTCardTimeDiff","#sigma^{2}_{long} vs #it{E}_{cluster}, #it{n}_{cells} = #it{n}_{cells-same}, #it{n}_{cells-diff}^{#Delta #it{t} < 50} = 0",
-     //nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
-     ssBinsArray.GetSize() - 1, ssBinsArray.GetArray());
-    fhM02EnergyAllSameTCardTimeDiff->SetXTitle("#it{E}_{cluster} (GeV)");
-    fhM02EnergyAllSameTCardTimeDiff->SetYTitle("#sigma^{2}_{long}");
-    outputContainer->Add(fhM02EnergyAllSameTCardTimeDiff); 
-    
-    fhEtaPhiGridExoEnCutSameFracCutTimeDiff = new TH3F 
-    ("hEtaPhiGridExoEnCutSameFracCutTimeDiff",
-     Form("colum (#eta) vs row (#varphi) vs #it{F}_{+}, #it{E}_{cluster}> %2.1f, #it{n}_{cells}>1, #it{n}_{cells-diff}^{#Delta #it{t} < 50} = 0",fEMinForExo),
-     //ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax,nexobinsS,exominS,exomaxS); 
-     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
-     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray(), 
-       fBinsArray.GetSize() - 1,   fBinsArray.GetArray());
-    fhEtaPhiGridExoEnCutSameFracCutTimeDiff->SetXTitle("column-#eta");
-    fhEtaPhiGridExoEnCutSameFracCutTimeDiff->SetYTitle("row-#varphi (rad)");
-    fhEtaPhiGridExoEnCutSameFracCutTimeDiff->SetZTitle("#it{F}_{+}");
-    outputContainer->Add(fhEtaPhiGridExoEnCutSameFracCutTimeDiff);
-    
     //
     
     fhExoticityEClusAllSameTCardMinEnCut = new TH3F 

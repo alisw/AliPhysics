@@ -2876,6 +2876,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
 {
   Bool_t DoesEventContainHighPtHadron = kFALSE;
   Double_t NTotalTracks = fInputEvent->GetNumberOfTracks();
+  Int_t NTracks = 0;
   for(Int_t iTracks = 0; iTracks<NTotalTracks; iTracks++){
     AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
     if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
@@ -2883,15 +2884,16 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
     if(TMath::Abs(curTrack->Eta())>0.8) continue;
     if(curTrack->Pt()<0.15) continue;
     if(curTrack->Pt()>10) DoesEventContainHighPtHadron = kTRUE;
+    NTracks++;
   }
   if(fGammaCandidates->GetEntries()>1){
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
       AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
       if(gamma==NULL) continue;
       if(DoesEventContainHighPtHadron){
-        fHistoConvGammaPtwithHighPtHadron[fiCut]->Fill(gamma->Pt(),NTotalTracks);
+        fHistoConvGammaPtwithHighPtHadron[fiCut]->Fill(gamma->Pt(),NTracks);
       } else {
-        fHistoConvGammaPtwithoutHighPtHadron[fiCut]->Fill(gamma->Pt(),NTotalTracks);
+        fHistoConvGammaPtwithoutHighPtHadron[fiCut]->Fill(gamma->Pt(),NTracks);
       }
     }
   }

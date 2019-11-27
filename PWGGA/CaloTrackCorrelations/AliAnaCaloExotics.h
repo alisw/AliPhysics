@@ -405,12 +405,7 @@ public:
   TH2F *   fhM02EnergyAllSameTCardW;            //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff_w =0
   TH2F *   fhNCellsPerClusterAllSameTCardW;     //!<! Cluster energy vs N cells, all cells in same T-Card, n diff_w = 0  
   TH3F *   fhEtaPhiGridExoEnCutSameFracCutW;    //!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff_w = 0
-
-  TH2F *   fhExoticityEClusAllSameTCardTimeDiff;   //!<! Exoticity vs energy, all cells in same T-Card, n diff =0, tdiff < 50 ns
-  TH2F *   fhM02EnergyAllSameTCardTimeDiff;        //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff =0, tdiff< 50 ns
-  TH2F *   fhNCellsPerClusterAllSameTCardTimeDiff; //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0, tdiff < 50 ns  
-  TH3F *   fhEtaPhiGridExoEnCutSameFracCutTimeDiff;//!<! column vs row vs exoticity when E > fEMinForExo and n cells > 1 and n diff = 0, tdiff<50 ns
-  
+ 
   TH3F *   fhExoticityEClusAllSameTCardMinEnCut;   //!<! Exoticity vs energy, all cells in same T-Card, n diff =0 for E min cut
   TH3F *   fhM02EnergyAllSameTCardMinEnCut;        //!<! Cluster M02 vs Energy, all cells in same T-Card, n diff =0 for E min cut
   TH3F *   fhNCellsPerClusterAllSameTCardMinEnCut; //!<! Cluster energy vs N cells, all cells in same T-Card, n diff = 0 for E min cut

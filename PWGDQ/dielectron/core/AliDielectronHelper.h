@@ -13,7 +13,8 @@
 //                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-
+#include <iostream>
+#include <vector>
 #include <TVectorDfwd.h>
 
 class AliKFParticle;
@@ -41,10 +42,12 @@ TVectorD* MakeArbitraryBinning(const char* bins);
   Double_t GetTransverseSpherocity(const AliVEvent *ev);
   Double_t GetTransverseSpherocityTracks(const AliVEvent *ev);
   Bool_t CheckESDtrack(AliESDtrack *track);
+  std::vector<AliESDtrack*> GetESDtracks(const AliESDEvent *ev);
   Double_t GetTransverseSpherocityESD(const AliESDEvent *ev);
   Double_t GetTransverseSpherocityESDtracks(const AliESDEvent *ev);
   Double_t GetTransverseSpherocityESDwoPtWeight(const AliESDEvent *ev);
   Double_t GetTransverseSpherocityESDtracksWoPtWeight(const AliESDEvent *ev);
+
 
 void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev=0x0);
 Int_t GetNMothers(const AliMCEvent *ev=0x0, Double_t etaRange=0.9, Int_t pdgMother=-999, Int_t pdgDaughter=-999, Int_t prim=-1);

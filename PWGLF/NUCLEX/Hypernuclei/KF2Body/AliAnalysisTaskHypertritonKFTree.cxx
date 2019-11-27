@@ -31,13 +31,7 @@
 #include "AliPIDResponse.h"
 #include "AliMultSelection.h"
 
-// includes added to play with KFParticle
 #include <vector>
-#define HomogeneousField
-#include "KFParticle.h"
-#include "KFVertex.h"
-#include "KFPTrack.h"
-
 #include<iostream>
 
 #include "AliAnalysisTaskHypertritonKFTree.h"
@@ -63,10 +57,12 @@ histoEventCentrality(nullptr),
 fCandidateTree(nullptr),
 CentralityPercentile(-1),
 mass(-1),
+ErrorMass(-1),
 p(-1),
 pT(-1),
 Rapidity(-1),
 massTopo(-1),
+ErrorMassTopo(-1),
 pTopo(-1),
 pTTopo(-1),
 RapidityTopo(-1),
@@ -153,10 +149,12 @@ histoEventCentrality(nullptr),
 fCandidateTree(nullptr),
 CentralityPercentile(-1),
 mass(-1),
+ErrorMass(-1),
 p(-1),
 pT(-1),
 Rapidity(-1),
 massTopo(-1),
+ErrorMassTopo(-1),
 pTopo(-1),
 pTTopo(-1),
 RapidityTopo(-1),
@@ -290,10 +288,12 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     fCandidateTree = new TTree("fCandidateTree","fCandidateTree");
     fCandidateTree->Branch("CentralityPercentile",&CentralityPercentile,"CentralityPercentile/F");
     fCandidateTree->Branch("mass",&mass,"mass/F");
+    fCandidateTree->Branch("ErrorMass",&ErrorMass,"ErrorMass/F");
     fCandidateTree->Branch("p",&p,"p/F");
     fCandidateTree->Branch("pT",&pT,"pT/F");
     fCandidateTree->Branch("Rapidity",&Rapidity,"Rapidity/F");
     fCandidateTree->Branch("massTopo",&massTopo,"massTopo/F");
+    fCandidateTree->Branch("ErrorMassTopo",&ErrorMassTopo,"ErrorMassTopo/F");
     fCandidateTree->Branch("pTopo",&pTopo,"pTopo/F");
     fCandidateTree->Branch("pTTopo",&pTTopo,"pTTopo/F");
     fCandidateTree->Branch("RapidityTopo",&RapidityTopo,"RapidityTopo/F");
@@ -325,8 +325,8 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     fCandidateTree->Branch("DCAPionXY",&DCAPionXY,"DCAPionXY/F");
     fCandidateTree->Branch("DistanceToPVPionXY",&DistanceToPVPionXY,"DistanceToPVPionXY/F");
     fCandidateTree->Branch("DeviationFromPVPionXY",&DeviationFromPVPionXY,"DeviationFromPVPionXY/F");
-    fCandidateTree->Branch("NClusterTPCPion",&NClusterTPCPion,"NClusterTPCPion/F");
-    fCandidateTree->Branch("NPIDClusterTPCPion",&NPIDClusterTPCPion,"NPIDClusterTPCPion/F");
+    fCandidateTree->Branch("NClusterTPCPion",&NClusterTPCPion,"NClusterTPCPion/I");
+    fCandidateTree->Branch("NPIDClusterTPCPion",&NPIDClusterTPCPion,"NPIDClusterTPCPion/I");
     fCandidateTree->Branch("TPCMomPion",&TPCMomPion,"TPCMomPion/F");
     fCandidateTree->Branch("TPCnSigmaPion",&TPCnSigmaPion,"TPCnSigmaPion/F");
     fCandidateTree->Branch("HasPointOnITSLayer0Pion",&HasPointOnITSLayer0Pion,"HasPointOnITSLayer0Pion/O");
@@ -344,6 +344,8 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     fCandidateTree->Branch("DCA3HeXY",&DCA3HeXY,"DCA3HeXY/F");
     fCandidateTree->Branch("DistanceToPV3HeXY",&DistanceToPV3HeXY,"DistanceToPV3HeXY/F");
     fCandidateTree->Branch("DeviationFromPV3HeXY",&DeviationFromPV3HeXY,"DeviationFromPV3HeXY/F");
+    fCandidateTree->Branch("NClusterTPC3He",&NClusterTPC3He,"NClusterTPC3He/I");
+    fCandidateTree->Branch("NPIDClusterTPC3He",&NPIDClusterTPC3He,"NPIDClusterTPC3He/I");
     fCandidateTree->Branch("TPCMom3He",&TPCMom3He,"TPCMom3He/F");
     fCandidateTree->Branch("TPCnSigma3He",&TPCnSigma3He,"TPCnSigma3He/F");
     fCandidateTree->Branch("TPCnSigma3H",&TPCnSigma3H,"TPCnSigma3H/F");
@@ -371,10 +373,12 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     fCandidateTreeMC = new TTree("fCandidateTreeMC","fCandidateTreeMC");
     fCandidateTreeMC->Branch("CentralityPercentile",&CentralityPercentile,"CentralityPercentile/F");
     fCandidateTreeMC->Branch("mass",&mass,"mass/F");
+    fCandidateTreeMC->Branch("ErrorMass",&ErrorMass,"ErrorMass/F");
     fCandidateTreeMC->Branch("p",&p,"p/F");
     fCandidateTreeMC->Branch("pT",&pT,"pT/F");
     fCandidateTreeMC->Branch("Rapidity",&Rapidity,"Rapidity/F");
     fCandidateTreeMC->Branch("massTopo",&massTopo,"massTopo/F");
+    fCandidateTreeMC->Branch("ErrorMassTopo",&ErrorMassTopo,"ErrorMassTopo/F");
     fCandidateTreeMC->Branch("pTopo",&pTopo,"pTopo/F");
     fCandidateTreeMC->Branch("pTTopo",&pTTopo,"pTTopo/F");
     fCandidateTreeMC->Branch("RapidityTopo",&RapidityTopo,"RapidityTopo/F");
@@ -406,8 +410,8 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     fCandidateTreeMC->Branch("DCAPionXY",&DCAPionXY,"DCAPionXY/F");
     fCandidateTreeMC->Branch("DistanceToPVPionXY",&DistanceToPVPionXY,"DistanceToPVPionXY/F");
     fCandidateTreeMC->Branch("DeviationFromPVPionXY",&DeviationFromPVPionXY,"DeviationFromPVPionXY/F");
-    fCandidateTreeMC->Branch("NClusterTPCPion",&NClusterTPCPion,"NClusterTPCPion/F");
-    fCandidateTreeMC->Branch("NPIDClusterTPCPion",&NPIDClusterTPCPion,"NPIDClusterTPCPion/F");
+    fCandidateTreeMC->Branch("NClusterTPCPion",&NClusterTPCPion,"NClusterTPCPion/I");
+    fCandidateTreeMC->Branch("NPIDClusterTPCPion",&NPIDClusterTPCPion,"NPIDClusterTPCPion/I");
     fCandidateTreeMC->Branch("TPCMomPion",&TPCMomPion,"TPCMomPion/F");
     fCandidateTreeMC->Branch("TPCnSigmaPion",&TPCnSigmaPion,"TPCnSigmaPion/F");
     fCandidateTreeMC->Branch("HasPointOnITSLayer0Pion",&HasPointOnITSLayer0Pion,"HasPointOnITSLayer0Pion/O");
@@ -425,8 +429,8 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     fCandidateTreeMC->Branch("DCA3HeXY",&DCA3HeXY,"DCA3HeXY/F");
     fCandidateTreeMC->Branch("DistanceToPV3HeXY",&DistanceToPV3HeXY,"DistanceToPV3HeXY/F");
     fCandidateTreeMC->Branch("DeviationFromPV3HeXY",&DeviationFromPV3HeXY,"DeviationFromPV3HeXY/F");
-    fCandidateTreeMC->Branch("NClusterTPC3He",&NClusterTPC3He,"NClusterTPC3He/F");
-    fCandidateTreeMC->Branch("NPIDClusterTPC3He",&NPIDClusterTPC3He,"NPIDClusterTPC3He/F");
+    fCandidateTreeMC->Branch("NClusterTPC3He",&NClusterTPC3He,"NClusterTPC3He/I");
+    fCandidateTreeMC->Branch("NPIDClusterTPC3He",&NPIDClusterTPC3He,"NPIDClusterTPC3He/I");
     fCandidateTreeMC->Branch("TPCMom3He",&TPCMom3He,"TPCMom3He/F");
     fCandidateTreeMC->Branch("TPCnSigma3He",&TPCnSigma3He,"TPCnSigma3He/F");
     fCandidateTreeMC->Branch("TPCnSigma3H",&TPCnSigma3H,"TPCnSigma3H/F");
@@ -793,7 +797,7 @@ Bool_t AliAnalysisTaskHypertritonKFTree::PassedBasicTrackQualityCuts (AliAODTrac
   
   //  additional track selection
   if(abs(track->Eta()) > 0.9) return false; // Geometrical acceptance
-  if(track->GetTPCNcls() < 70) return false; // Additional constraint on the number of clusters in the TPC
+//  if(track->GetTPCNcls() < 70) return false; // Additional constraint on the number of clusters in the TPC; 25.11.2019 (not used by default anymore -> Issue wit MC matching)
   //  if(track->GetITSNcls() < 2) return false; // Additional constraint on the number of hits in the ITS
   
   return true;
@@ -847,24 +851,17 @@ Bool_t AliAnalysisTaskHypertritonKFTree::HypertritonCandidateSelection (KFPartic
   // rapidity selection
   if ( (kfpMother.E() - kfpMother.Pz()) <= 0 || (kfpMother.E() + kfpMother.Pz()) < 0 ) return false; // Missing protection for GetRapidity
   Rapidity = kfpMother.GetRapidity();
-  mass = kfpMother.GetMass();
-  
+  Bool_t MassCalculated = kfpMother.GetMass(mass, ErrorMass);
+  if (MassCalculated !=0) return false;
+//
   // pre-selection
   if( mass < 2.94 || mass > 3.2 ) return false;
   if ( abs(Rapidity) > 0.5 ) return false;
   Chi2PerNDF = kfpMother.GetChi2()/kfpMother.GetNDF();
   if ( Chi2PerNDF > 100) return false;
   CosPointingAngle = CalculatePointingAngle(kfpMother,PrimVertex);
-  if ( CosPointingAngle < 0.) return false;
-  
-  DistanceToPV =  kfpMother.GetDistanceFromVertex(PrimVertex);
-  DistanceToPVXY =  kfpMother.GetDistanceFromVertexXY(PrimVertex);
-  DeviationFromPV = kfpMother.GetDeviationFromVertex(PrimVertex);
-  DeviationFromPVXY = kfpMother.GetDeviationFromVertexXY(PrimVertex);
-  
-  p = kfpMother.GetP();
-  pT = kfpMother.GetPt();
-  
+  if ( CosPointingAngle < 0.9) return false;
+    
   KFParticle kfpMotherTopo;
   kfpMotherTopo = kfpMother;
     
@@ -875,20 +872,35 @@ Bool_t AliAnalysisTaskHypertritonKFTree::HypertritonCandidateSelection (KFPartic
   
   kfpMotherTopo.SetProductionVertex(PrimVertex); // if primary vertex is modified above use the modified version
   Chi2PerNDFTopo = kfpMotherTopo.GetChi2()/kfpMotherTopo.GetNDF();
+  if ( Chi2PerNDFTopo < 0) return false; // use for analysis as a function of ct or which use topological constraint
+  
+  // fill variables
+  DistanceToPV =  kfpMother.GetDistanceFromVertex(PrimVertex);
+  DistanceToPVXY =  kfpMother.GetDistanceFromVertexXY(PrimVertex);
+  DeviationFromPV = kfpMother.GetDeviationFromVertex(PrimVertex);
+  DeviationFromPVXY = kfpMother.GetDeviationFromVertexXY(PrimVertex);
+  
+  p = kfpMother.GetP();
+  pT = kfpMother.GetPt();
 
-  massTopo = kfpMotherTopo.GetMass();
+  Bool_t MassCalculatedTopo = kfpMotherTopo.GetMass(massTopo, ErrorMassTopo);
+  if (MassCalculatedTopo!=0) {
+    massTopo = -1;
+    ErrorMassTopo = -1;
+  }
+  
   pTopo = kfpMotherTopo.GetP();
   pTTopo = kfpMotherTopo.GetPt();
   if ( (kfpMotherTopo.E() - kfpMotherTopo.Pz()) <= 0 || (kfpMotherTopo.E() + kfpMotherTopo.Pz()) < 0 ) return false; // Missing protection for GetRapidity
   RapidityTopo = kfpMotherTopo.GetRapidity();
   
   bool DecayLengthCalculated = kfpMotherTopo.GetDecayLength(DecayLength, ErrorDecayLength); // returns 0 is correctly calculated
-  if (DecayLengthCalculated > 0) {
+  if (DecayLengthCalculated != 0) {
     DecayLength = -1;
     ErrorDecayLength = -1;
   }
   bool DecayLengthXYCalculated = kfpMotherTopo.GetDecayLengthXY(DecayLengthXY, ErrorDecayLengthXY); // returns 0 is correctly calculated
-  if (DecayLengthXYCalculated > 0){
+  if (DecayLengthXYCalculated != 0){
     DecayLengthXY = -99;
     ErrorDecayLengthXY = -99;
   }
@@ -1041,8 +1053,8 @@ void AliAnalysisTaskHypertritonKFTree::FillHe3Variables (AliAODTrack* track, KFP
   HasPointOnITSLayer4He3 = track->HasPointOnITSLayer(4);
   HasPointOnITSLayer5He3 = track->HasPointOnITSLayer(5);
   
-  NClusterTPC3He = track->GetTPCNcls();
-  NPIDClusterTPC3He = track->GetTPCsignalN();
+  NClusterTPC3He = (Int_t) track->GetTPCNcls();
+  NPIDClusterTPC3He = (Int_t) track->GetTPCsignalN();
 
 }
 
@@ -1068,8 +1080,8 @@ void AliAnalysisTaskHypertritonKFTree::FillPionVariables (AliAODTrack* track, KF
   HasPointOnITSLayer4Pion = track->HasPointOnITSLayer(4);
   HasPointOnITSLayer5Pion = track->HasPointOnITSLayer(5);
   
-  NClusterTPCPion = track->GetTPCNcls();
-  NPIDClusterTPCPion = track->GetTPCsignalN();
+  NClusterTPCPion = (Int_t) track->GetTPCNcls();
+  NPIDClusterTPCPion =  (Int_t) track->GetTPCsignalN();
 
 }
 //____________________________________________________________
