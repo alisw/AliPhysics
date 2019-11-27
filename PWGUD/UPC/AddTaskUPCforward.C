@@ -1,5 +1,9 @@
-AliAnalysisTaskUPCforward* AddTaskUPCforward(TString name = "name")
+AliAnalysisTaskUPCforward* AddTaskUPCforward(  const char* suffix = "" )
 {
+    TString name = "UPCforward";
+    TString combinedName;
+    combinedName.Form("UPCforward_%s", suffix);
+
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
