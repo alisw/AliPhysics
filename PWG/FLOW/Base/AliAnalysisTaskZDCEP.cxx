@@ -23,9 +23,6 @@
 #define AliAnalysisTaskZDCEP_cxx
 
 #include "Riostream.h"
-#include "AliFlowCommonConstants.h"
-#include "AliFlowCommonHist.h"
-#include "AliFlowCommonHistResults.h"
 #include "TChain.h"
 
 #include "TFile.h"
@@ -41,10 +38,6 @@
 #include "TPaveLabel.h"
 #include "TCanvas.h"
 #include "TVector2.h"
-#include "AliFlowEventSimple.h"
-#include "AliFlowVector.h"
-#include "AliFlowTrackSimple.h"
-#include "AliFlowAnalysisCRC.h"
 #include "TRandom.h"
 #include "TF1.h"
 #include "TNtuple.h"
@@ -55,7 +48,8 @@
 #include "AliAODZDC.h"
 #include "TProfile2D.h"
 #include "TProfile3D.h"
-#include "AliFlowEvent.h"
+#include "AliFlowEventSimple.h"
+#include "AliFlowVector.h"
 
 class TH1;
 class TH2;
@@ -70,7 +64,6 @@ class TCanvas;
 class TSystem;
 class TROOT;
 class TVector2;
-class AliFlowVector;
 
 AliAnalysisTaskZDCEP::AliAnalysisTaskZDCEP () :
 AliAnalysisTaskSE (),
@@ -272,7 +265,7 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
     fAnalysisUtils->SetUseMVPlpSelection(kTRUE);
     fAnalysisUtils->SetUseOutOfBunchPileUp(kTRUE);
     
-    fFlowEvent = new AliFlowEvent(1);
+    fFlowEvent = new AliFlowEventSimple(1);
 }
 
 //=====================================================================
