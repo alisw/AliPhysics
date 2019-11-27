@@ -313,7 +313,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   errz2Res=sz2;
   const Float_t kMinSigma2=0.02*0.02;
   if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxCorrection()||AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
-    const Float_t kdEdxMIP=50., kClusterMIP=20;
+    const Float_t kdEdxMIP=50., kClusterMIP=20.;
     const Float_t kXinner=83;
     const Float_t kMaxSigma2=0.3*0.3;
     Double_t occu6 = fTotalClusters*0.0000001;
@@ -327,8 +327,8 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
       //      tree->SetAlias("erry2LM", "(erry2+(0.2**2)*TanPhi2)*(0.5+mdEdx+0.3*mQ)*0.25");
       //      tree->SetAlias("errz2LM", "(errz2+(0.0**2)*Theta**2)*(0.5+mdEdx+0.3*mQ)*0.5");
       Float_t mQ = kClusterMIP / cluster->GetMax();
-      erry2LM=(sy2+0.04*tanPhi2)*(0.5+mdEdx+0.3/mQ)*0.25;
-      errz2LM=(sz2)*(0.5+mdEdx+0.3/mQ)*0.5;
+      erry2LM=(sy2+0.04*tanPhi2)*(0.5+mdEdx+0.3*mQ)*0.25;
+      errz2LM=(sz2)*(0.5+mdEdx+0.3*mQ)*0.5;
       //      tree->SetAlias("Occu6N", "Occu6*(1.+83/Cl.fX)*0.5");
       //      tree->SetAlias("posRatio", "(Cl.fBaselineTailPos/Cl.fMax)");
       //      tree->SetAlias("negRatio", "(Cl.fBaselineTail/Cl.fMax)");
