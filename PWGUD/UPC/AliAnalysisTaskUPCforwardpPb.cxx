@@ -589,14 +589,10 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
   if (    !(
             // trigger.Contains("CMUP3")   ||
             // trigger.Contains("CMUP8")
-
             trigger.Contains("CMUP14-B-NOPF-MUFAST")   ||
 	          trigger.Contains("CMUP15-B-NOPF-ALLNOTRD") ||
 	          trigger.Contains("CMUP23-B-NOPF-MUFAST")   ||
-            trigger.Contains("CMUP22-B-NOPF-ALLNOTRD") ||
-
-
-            /*trigger.Contains("CMUP11-B-NOPF-MUFAST")*/
+            trigger.Contains("CMUP22-B-NOPF-ALLNOTRD") 
             )
           )  {
                     PostData(1, fOutputList);
