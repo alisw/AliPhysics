@@ -47,8 +47,11 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetPOIsPt(Double_t min, Double_t max) { fPOIsPtmin = min; fPOIsPtmax = max; }
         void                    SetRFPsPt(Double_t min, Double_t max) { fRFPsPtMin = min; fRFPsPtMax = max; }
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
+        void                    SetEtaBins(Int_t bins) { fEtaBinNum = bins; }
+        void                    SetPhiBins(Int_t bins) { fPhiBinNum = bins; }
         void                    SetEtaGap(double etaGap) { dEtaGap = etaGap; }
         void                    SetUseWeights3D(Bool_t use) { fUseWeights3D = use; }
+        void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }
         Bool_t                  GetUseWeights3D() { return fUseWeights3D; }
         void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }
 
@@ -66,7 +69,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         static const Int_t      NPtBinMax = 30;             //
 
         TList*                  fFlowList;                //! output list
-
+        TList*                  fFlowWeights;             //! 
 
 
         Bool_t                  InitTask();
@@ -80,6 +83,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         AliGFWWeights*          fWeights;                   //!
         TList*                  fWeightList;                //!
         TH2D*                   fh2Weights;                 //!
+        TH3D*                   fh3Weights;                 //!
+        Bool_t                  FillWeights(AliAODEvent* fAOD);
         
         //Flow methods
         bool                    IsWithinRP(const AliAODTrack* track) const;
@@ -187,7 +192,10 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //cuts & selection: flow
         Double_t                fAbsEtaMax;
         Double_t                dEtaGap;
+        Int_t                   fEtaBinNum;
+        Int_t                   fPhiBinNum;
         Bool_t                  fUseWeights3D;
+        Bool_t                  fFillWeights;
         Int_t                   fNumSamples;        //Number of samples for bootstrapping
         Bool_t                  bHasGap;
         Bool_t                  bDiff;

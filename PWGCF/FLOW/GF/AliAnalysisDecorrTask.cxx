@@ -64,7 +64,10 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     bRef(kTRUE),
     bPtB(kTRUE),
     fUseWeights3D(kTRUE),
+    fFillWeights(kFALSE),
     dEtaGap(1.0),
+    fEtaBinNum{0},
+    fPhiBinNum{60},
     fFilterBit(96),
     fPOIsPtmax(10.0),
     fPOIsPtmin(0.0),        //why these values?
@@ -76,7 +79,9 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fCentAxis(0),
     fWeights(0),
     fWeightList(0),
+    fFlowWeights(0),
     fh2Weights(nullptr),
+    fh3Weights(nullptr),
     nuacentral()
 
 {}
@@ -100,7 +105,10 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     bRef(kTRUE),
     bPtB(kFALSE),
     fUseWeights3D(kTRUE),
+    fFillWeights(kFALSE),
     dEtaGap(1.0),
+    fEtaBinNum{0},
+    fPhiBinNum{60},
     fFilterBit(96),
     fPOIsPtmax(10.0),
     fPOIsPtmin(0.2),
@@ -112,12 +120,15 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fCentAxis(new TAxis()),
     fWeights(0),
     fWeightList(0),
+    fFlowWeights(0),
     fh2Weights(nullptr),
+    fh3Weights(nullptr),
     nuacentral()
 {
     DefineInput(0, TChain::Class());
     DefineInput(1, TList::Class()); 
     DefineOutput(1, TList::Class());
+    DefineOutput(2, TList::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisDecorrTask::~AliAnalysisDecorrTask()
@@ -126,10 +137,26 @@ AliAnalysisDecorrTask::~AliAnalysisDecorrTask()
     if(fFlowList) {
         delete fFlowList;
     }
+    if(fFlowWeights) {
+        delete fFlowWeights;
+    }
 }
 
 Bool_t AliAnalysisDecorrTask::InitTask()
 {
+    if(fFillWeights) { AliWarning("\n\n\n\n\n Filling weights. No analysis will be produced!\n\n\n\n\n"); return kTRUE; }
+
+    if(fEtaBinNum < 1)
+    {
+        AliWarning("fEtaBinNum not set. Setting automatically");
+        fEtaBinNum = 2.0*fAbsEtaMax/0.05;
+    }
+    if(fPhiBinNum < 1)
+    {
+        AliFatal("fPhiBin wrong! Terminating!");
+        return kFALSE;
+    }
+
     if (!fUseWeights3D) { 
         fWeightList = (TList*) GetInputData(1);
         if(!fWeightList) { AliFatal("\n\n\n\n\n\n\n\n\n Weight List not found! \n\n\n\n\n\n\n\n"); return kFALSE; }
@@ -139,6 +166,7 @@ Bool_t AliAnalysisDecorrTask::InitTask()
     }
 
     AliInfo("Weight List loaded");
+
     return kTRUE;
 }
 
@@ -148,6 +176,8 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
 
     fFlowList = new TList();
     fFlowList->SetOwner(kTRUE);
+    fFlowWeights = new TList();
+    fFlowWeights->SetOwner(kTRUE);
 
     fInitTask = InitTask();
     if(!fInitTask) { return; }
@@ -249,7 +279,28 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         } //End for iSample
     } //End for iTask
 
+    if(fFillWeights)
+    {
+        if(fUseWeights3D)
+        {
+            const char* weightName = Form("fh3Weights");
+            const char* weightLabel = Form("3D weights; #varphi; #eta; PVtxZ");
+            fh3Weights = new TH3D(weightName, weightLabel, fPhiBinNum, 0, TMath::TwoPi(), fEtaBinNum, -fAbsEtaMax, fAbsEtaMax, 2*fPVtxCutZ, -fPVtxCutZ, fPVtxCutZ);
+            fh3Weights->Sumw2();
+            fFlowWeights->Add(fh3Weights);
+        }
+        else
+        {
+            const char* weightName = Form("fh2Weights");
+            const char* weightLabel = Form("2D weights; #varphi; #eta");
+            fh2Weights = new TH2D(weightName, weightLabel, fPhiBinNum, 0, TMath::TwoPi(), fEtaBinNum, -fAbsEtaMax, fAbsEtaMax);    
+            fh2Weights->Sumw2();
+            fFlowWeights->Add(fh2Weights);
+        } 
+    }
+
     PostData(1, fFlowList);
+    PostData(2, fFlowWeights);
 }
 
 Bool_t AliAnalysisDecorrTask::LoadWeights()
@@ -284,6 +335,29 @@ Bool_t AliAnalysisDecorrTask::LoadWeights()
     }
 }
 
+Bool_t AliAnalysisDecorrTask::FillWeights(AliAODEvent* fAOD)
+{
+    int iPart(fAOD->GetNumberOfTracks());
+    if(iPart < 1) { return kFALSE; }
+    double dVz = fAOD->GetPrimaryVertex()->GetZ();
+
+    for(int index(0); index < iPart; ++index)
+    {   
+        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
+        if(!track || !IsTrackSelected(track)) { continue; }
+
+        //double dPt = POItrack->Pt(); Keep for efficiency corrections one day
+        double dPhi = track->Phi();
+        double dEta = track->Eta(); 
+
+        if(fUseWeights3D) { fh3Weights->Fill(dPhi,dEta,dVz); }
+        else { fh2Weights->Fill(dPhi,dEta); }
+    }
+    
+
+    return kTRUE;
+}
+
 //_____________________________________________________________________________
 void AliAnalysisDecorrTask::UserExec(Option_t *)
 {
@@ -296,6 +370,12 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     
     //Event selection
     if(!IsEventSelected()) { return; }
+
+    if(fFillWeights) 
+    { 
+        FillWeights(fAOD);
+        return; 
+    }
 
     if(!LoadWeights())
     {
@@ -360,6 +440,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
 
     
     PostData(1, fFlowList);
+    PostData(2, fFlowWeights);
 
 }
 
@@ -532,10 +613,7 @@ void AliAnalysisDecorrTask::FillRPvectors(AliAODEvent* fAOD, double dEtaGap)
         double dEta = track->Eta();
         double dPt = track->Pt();
 
-        //Fill stat histograms
-
-        //Calculating weights
-        
+        //Calculating weights    
         double dWeight = GetWeights(dPhi, dEta, dVz);
         if(dWeight <= 0.0) { dWeight = 1.0; }
         
@@ -906,12 +984,7 @@ double AliAnalysisDecorrTask::GetWeights(double dPhi, double dEta, double dVz)
     
 }
 
-/*
-void AliAnalysisDecorrTask::AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs, Bool_t doPOIs)
-{
-    fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps));
-}
-*/
+
 //Implemented from You's Generic Framework
 
 //_____________________________________________________________________
