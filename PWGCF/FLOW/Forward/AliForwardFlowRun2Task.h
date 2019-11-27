@@ -21,7 +21,6 @@
 #include "AliForwardFlowUtil.h"
 #include "AliForwardTaskValidation.h"
 #include "AliForwardFlowResultStorage.h"
-
 class TH2D;
 class THn;
 
@@ -97,6 +96,9 @@ public:
   AliVEvent* fAOD;      //! input event
   TList* fOutputList;   //! output list
   TList* fAnalysisList; //!
+  TList* fReferenceList; //!
+  TList* fStandardList; //!
+  TList* fMixedList; //!
   TList* fEventList;    //!
 
   TRandom fRandom; //!
