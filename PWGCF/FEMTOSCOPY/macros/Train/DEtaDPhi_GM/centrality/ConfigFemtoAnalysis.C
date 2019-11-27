@@ -28,6 +28,7 @@
 #include "AliFemtoCorrFctnDEtaDPhiCorrections.h"
 #include "AliFemtoCorrFctnDEtaDPhi.h"
 #include "AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.h"
+#include "AliFemtoCorrFctnDEtaDPhiSimple.h"
 #include "AliFemtoCorrFctnDYDPhiSimple.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
@@ -153,7 +154,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int runmults[numOfMultBins] = {0, 0, 0, 0, 1};
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
-	int multbins[numOfMultBins+1] = {2, 20, 50, 150, 0, 1000};
+	int multbins[numOfMultBins+1] = {2, 20, 50, 150, 2, 1000};
 
 	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1,/* Xis */ 0, 0, 0, 0};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL","PXim","aPXim" ,"PXip","aPXip"};
@@ -333,7 +334,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc2etaphitpc[aniter]->SetCharge(-1.0);
 					dtc2etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 					dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal);
-					dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
+					// dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc2etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
 					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==35 || ichg==37) //antiprotons
@@ -652,7 +653,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
 					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
                  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-								 sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
+                 sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
                  sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
                  sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
 								 sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
