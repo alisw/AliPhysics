@@ -316,7 +316,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     const Float_t kdEdxMIP=50., kClusterMIP=20.;
     const Float_t kXinner=83;
     const Float_t kMaxSigma2=0.3*0.3;
-    Double_t occu6 = fTotalClusters*0.0000001;
+    Double_t occu6 = fTotalClusters*0.000001;
     Float_t mdEdx = 1;
     Float_t snp2 = seed->GetSnp(); snp2 *= snp2;
     Float_t tanPhi2 = (snp2>0)? snp2/(1-snp2):0;
