@@ -332,7 +332,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
       //      tree->SetAlias("Occu6N", "Occu6*(1.+83/Cl.fX)*0.5");
       //      tree->SetAlias("posRatio", "(Cl.fBaselineTailPos/Cl.fMax)");
       //      tree->SetAlias("negRatio", "(Cl.fBaselineTail/Cl.fMax)");
-      Float_t occu6N=occu6*(1+kXinner/cluster->GetX());
+      Float_t occu6N=occu6*(1+kXinner/cluster->GetX())*0.5;
       Float_t posRatio=cluster->GetBaselineTailPos()/(0.1+cluster->GetMax());
       Float_t negRatio=cluster->GetBaselineTail()/(0.1+cluster->GetMax());
       //      tree->SetAlias("erry2OccudEdx", "0.12*0.12*Occu6N*mdEdx");
