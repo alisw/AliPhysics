@@ -184,7 +184,7 @@ ptmaxname.Form("%d",(int)(maxpt*10));
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, coutput_recon);
-Bool_t doNUA = kTRUE;
+  Bool_t doNUA = kFALSE;
   TString nua_file =  "/home/thoresen/Documents/PhD/plots/nua/Datasets/LHC17i2f/fmdreco_tpcreco_runsz.root";
 
   if (doNUA){

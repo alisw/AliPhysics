@@ -47,6 +47,10 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 {
 
   for (Int_t etaBin = 1; etaBin <= dNdetadphi->GetNbinsX(); etaBin++) {
+    if ((!fSettings.use_primaries_fwd && !fSettings.esd) && useFMD){
+      Int_t valid = dNdetadphi->GetBinContent(etaBin, 0);
+      if (!valid) continue; // No data expected for this eta 
+    }
 
     Double_t eta = dNdetadphi->GetXaxis()->GetBinCenter(etaBin);
     Double_t difEtaBin = fpvector->GetAxis(3)->FindBin(eta);
@@ -56,132 +60,68 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
     Double_t refEta = fQvector->GetAxis(3)->GetBinCenter(refEtaBin);
 
     for (Int_t phiBin = 1; phiBin <= dNdetadphi->GetNbinsY(); phiBin++) {
+
       Double_t phi = dNdetadphi->GetYaxis()->GetBinCenter(phiBin);
       Double_t weight = dNdetadphi->GetBinContent(etaBin, phiBin);
-
-      if (!fSettings.use_primaries_fwd && !fSettings.esd){
-        if (!fSettings.mc){
-          if (dNdetadphi->GetBinContent(etaBin, 0) == 0 && useFMD) break;
-        }
-      }
-      // for NUA closure
-        // if ((fSettings.nua_mode & fSettings.kInterpolate) && useFMD) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
-        // if (fSettings.makeFakeHoles && useFMD){
-        //   AliForwardFlowUtil util = AliForwardFlowUtil();
-        //   util.MakeFakeHoles(*dNdetadphi);
-        // }
-
-
+      if (!weight || weight == 0) continue;
 
       if (fSettings.doNUA){
-        // holes in the FMD
-        if ((fSettings.nua_mode & fSettings.kFill) && useFMD){
-          if (etaBin >= 125 && etaBin <=137){
-            if (phiBin == 17 || phiBin == 18) weight = 1.;
-          }
-          if (etaBin >= 168 && etaBin <=185){
-            if (phiBin == 14) weight = 1.;
-          }
-        }
-
-        if ((fSettings.nua_mode & fSettings.kInterpolate) && useFMD) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
-        //if (fSettings.makeFakeHoles && useFMD) fUtil.MakeFakeHoles(*dNdetadphi);
-
-        if (!useFMD && !fSettings.use_primaries_cen) {
-          Int_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
-          Int_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
-          Int_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
-          weight = weight*fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
-        }
-
-        if (useFMD && !fSettings.use_primaries_fwd) {
-          Int_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
-          Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
-          Int_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
-          weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
-        }
+        if (useFMD) weight = applyNUAforward(dNdetadphi, etaBin, phiBin, eta, phi, zvertex, weight);
+        else weight = applyNUAcentral(eta, phi, zvertex, weight);
       }
+      
 
-    if (weight == 0) continue; 
-    for (Int_t n = 0; n <= 4; n++) {
+      if (weight == 0) continue; 
+      for (Int_t n = 0; n <= 4; n++) {
 
-      if (useFMD && fSettings.sec_corr){
+        if ((useFMD && fSettings.sec_corr) && n >=2) weight = applySecondaryCorr(n, eta, zvertex, cent, weight);
 
-        if ((fSettings.ref_mode & fSettings.kFMDref)){ //doRefFlow && 
-          if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
-            Int_t seceta = fSettings.seccorr_fwd->GetZaxis()->FindBin(eta);
-            Int_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
-            Int_t seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent);
-            Int_t secn = n-1;//fSettings.seccorr_fwd->GetZaxis()->FindBin(n-2);
-            weight = weight*fSettings.seccorr_fwd->GetBinContent(secn,secvtz,seceta);
-            weight = weight*fSettings.seccorr_cent->GetBinContent(secn,seceta,seccent);
+        if (weight == 0) continue;
+
+        for (Int_t p = 1; p <= 4; p++) {
+          Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
+          Double_t imPart =   TMath::Power(weight, p)*TMath::Sin(n*phi);
+
+          Double_t re[4] = {0.5, Double_t(n), Double_t(p), difEta};
+          Double_t im[4] = {-0.5, Double_t(n), Double_t(p), difEta};
+
+          if (doDiffFlow){
+            fpvector->Fill(re, realPart);
+            fpvector->Fill(im, imPart);
+
+            if (!useFMD){
+              fqvector->Fill(re, realPart);
+              fqvector->Fill(im, imPart);
+            }
           }
-        }
-      }
 
-      if (weight == 0) continue;
-
-      for (Int_t p = 1; p <= 4; p++) {
-        Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
-        Double_t imPart =   TMath::Power(weight, p)*TMath::Sin(n*phi);
-
-        Double_t re[4] = {0.5, Double_t(n), Double_t(p), difEta};
-        Double_t im[4] = {-0.5, Double_t(n), Double_t(p), difEta};
-
-        if (doDiffFlow){
-          fpvector->Fill(re, realPart);
-          fpvector->Fill(im, imPart);
-
-          //if (!(fSettings.etagap) && doRefFlow){
-          if (!useFMD){
-            fqvector->Fill(re, realPart);
-            fqvector->Fill(im, imPart);
-             // if (weight > 1.00001 ){
-             //   fAutoDiff.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
-             // }
+          if (doRefFlow){
+            if ((fSettings.etagap) && TMath::Abs(eta)<=fSettings.gap) continue;
+            //if (fSettings.etagap && TMath::Abs(eta)>3.0) continue;
+            if (fSettings.ref_mode & fSettings.kFMDref) {
+              if (TMath::Abs(eta) < fSettings.fmdlowcut) continue;
+              if (TMath::Abs(eta) > fSettings.fmdhighcut) continue;
+            }
+            Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
+            Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
+            fQvector->Fill(req, realPart);
+            fQvector->Fill(imq, imPart);
           }
-        }
-
-        if (doRefFlow){
-          if ((fSettings.etagap) && TMath::Abs(eta)<=fSettings.gap) continue;
-          //if (fSettings.etagap && TMath::Abs(eta)>3.0) continue;
-          if (fSettings.ref_mode & fSettings.kFMDref) {
-            if (TMath::Abs(eta) < fSettings.fmdlowcut) continue;
-            if (TMath::Abs(eta) > fSettings.fmdhighcut) continue;
-          }
-          Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
-          Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
-          fQvector->Fill(req, realPart);
-          fQvector->Fill(imq, imPart);
-           // if (weight > 1.00001){
-           //   fAutoRef.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
-           // }
-        }
-      } // end p loop
-    } // End of n loop
-  } // End of phi loop
-} // end of eta
+        } // end p loop
+      } // End of n loop
+    } // End of phi loop
+  } // end of eta
 
   return;
 }
 
 
 
-void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, double zvertex,UInt_t r, Int_t ptn){
-  TList* analysisList = static_cast<TList*>(outputList->FindObject("cumulants"));
+void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r, Int_t ptn){
 
-  THnD* cumuRef = static_cast<THnD*>(analysisList->At(0));
-  THnD* mixed_cumuDiff = 0x0;
-  THnD* standard_cumuDiff = 0x0;
-  if (!fSettings.standard_only) {
-    mixed_cumuDiff = static_cast<THnD*>(analysisList->At(2));
-  }
-  else {
-    standard_cumuDiff = static_cast<THnD*>(analysisList->At(1));
-  }
 
   // For each n we loop over the hists
-  Double_t noSamples = static_cast<Double_t>(r);
+  Double_t sample = static_cast<Double_t>(r);
 
   for (Int_t n = 2; n <= 4; n++) {
     Int_t prevRefEtaBin = kTRUE;
@@ -191,7 +131,6 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
 
       Int_t refEtaBinA = fQvector->GetAxis(3)->FindBin(eta);
       Int_t refEtaBinB = refEtaBinA;
-
       Int_t etaBinB = etaBin;
 
       if ((fSettings.etagap)) {
@@ -208,70 +147,42 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         // REFERENCE FLOW --------------------------------------------------------------------------------
         if (prevRefEtaBin){ // only used once
 
-          // if (!(fSettings.etagap)){
-          //   Double_t z[5] = {noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW2Two)};
-          //   fQcorrfactor->Fill(z, fAutoRef.GetBinContent(etaBin));
-          // }
-
           // two-particle cumulant
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
           double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
 
-          Double_t x[7] = {Double_t(n-2),Double_t(ptn),noSamples, zvertex, refEtaA, cent, Double_t(fSettings.rW2Two)};//kW4FourA
-
-          //x[4] = Double_t(fSettings.kW2Two);//kW2TwoA
-
-          cumuRef->Fill(x, two);
-          x[6] = Double_t(fSettings.rW2);//kW2A
-          cumuRef->Fill(x, dn2);
+          fill(cumu_rW2Two, n, ptn, sample, zvertex, refEtaA, cent, two);
+          fill(cumu_rW2, n, ptn, sample, zvertex, refEtaA, cent, dn2);
 
           // four-particle cumulant
           double four = Four(n, n, -n, -n, refEtaBinA, refEtaBinB).Re();
           double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();
-
-          x[6] = Double_t(fSettings.rW4Four);//kW4FourA
-          cumuRef->Fill(x, four);
-          x[6] = Double_t(fSettings.rW4);//kW4A
-          cumuRef->Fill(x, dn4);
+          fill(cumu_rW4Four, n, ptn, sample, zvertex, refEtaA, cent, four);
+          fill(cumu_rW4, n, ptn, sample, zvertex, refEtaA, cent, dn4);
 
           prevRefEtaBin = kFALSE;
         }
+
         // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
-        // if (n == 2 && (!(fSettings.etagap))){
-        //   Double_t k[5] = {noSamples, zvertex, eta, cent, Double_t(fSettings.kW2Two)};
-        //   fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
-        // }
 
-        // two-particle cumulant
-        double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
-        double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
-
-        Double_t y[7] = {Double_t(n-2),Double_t(ptn),noSamples, zvertex, eta, cent, Double_t(fSettings.dW2TwoB)};//kW2TwoB
         if (fSettings.standard_only){
-          standard_cumuDiff->Fill(y, twodiff);
-          y[6] = Double_t(fSettings.dW2B);//kW2B
-          standard_cumuDiff->Fill(y, dn2diff);
+          // two-particle cumulant
+          double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
+          double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
+          fill(cumu_dW2TwoB, n, ptn, sample, zvertex, eta, cent, twodiff);
+          fill(cumu_dW2B, n, ptn, sample, zvertex, eta, cent, dn2diff);
 
           // A side
-          
           twodiff = TwoDiff(n, -n, refEtaBinA, etaBin).Re();
           dn2diff = TwoDiff(0,0, refEtaBinA, etaBin).Re();
-
-          y[6] = Double_t(fSettings.dW2TwoA);
-          standard_cumuDiff->Fill(y, twodiff);
-          y[6] = Double_t(fSettings.dW2A);
-          standard_cumuDiff->Fill(y, dn2diff);
-          
-
+          fill(cumu_dW2TwoA, n, ptn, sample, zvertex, eta, cent, twodiff);
+          fill(cumu_dW2A, n, ptn, sample, zvertex, eta, cent, dn2diff);
 
           // four-particle cumulant
           double fourdiff = FourDiff(n, n, -n, -n, refEtaBinA, refEtaBinB, etaBin,etaBin).Re(); // A is same side
           double dn4diff = FourDiff(0,0,0,0, refEtaBinA, refEtaBinB, etaBin,etaBin).Re();
-
-          y[6] = Double_t(fSettings.dW4Four);//kW4FourB
-          standard_cumuDiff->Fill(y, fourdiff);
-          y[6] = Double_t(fSettings.dW4);//kW4B
-          standard_cumuDiff->Fill(y, dn4diff);
+          fill(cumu_dW4Four, n, ptn, sample, zvertex, eta, cent, fourdiff);
+          fill(cumu_dW4, n, ptn, sample, zvertex, eta, cent, dn4diff);
         }
 
 
@@ -279,32 +190,22 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
           if (eta > 0.0) {
             // R_{n,n; 2} numerator
             double over = (TwoDiff(-2,2,refEtaBinB, etaBin)*TwoDiff(2,-2,refEtaBinA, etaBinB)).Re();
-            y[6] = Double_t(fSettings.dWTwoTwoN);
-            mixed_cumuDiff->Fill(y, over);
-
-            // R_{n,n; 2} denominator
             double under = (TwoDiff(-2,2,refEtaBinB, etaBinB)*TwoDiff(2,-2,refEtaBinA, etaBin)).Re();
-            y[6] = Double_t(fSettings.dWTwoTwoD);
-            mixed_cumuDiff->Fill(y, under);
+
+            fill(cumu_dWTwoTwoN, n, ptn, sample, zvertex, eta, cent, over);
+            fill(cumu_dWTwoTwoD, n, ptn, sample, zvertex, eta, cent, under);
           }
 
           // four-particle cumulant SC(4,2)        
           double fourtwodiff = TwoDiff(2,4,refEtaBinA,etaBin)*TwoDiff(-2,-4,refEtaBinB,etaBinB).Re();
-          //double fourtwodiff = FourDiff(4, 2, -4, -2, refEtaBinA,refEtaBinB, etaBin,etaBin).Re();
-
-          y[6] = Double_t(fSettings.dW4FourTwo);//kW4FourTwoB
-          mixed_cumuDiff->Fill(y, fourtwodiff);
+          fill(cumu_dW4FourTwo, n, ptn, sample, zvertex, eta, cent, fourtwodiff);
 
           // four-particle cumulant SC(3,2)
-          // double threetwodiff = FourDiff(3, 2, -3, -2, refEtaBinA,refEtaBinB, etaBin,etaBin).Re();
           double threetwodiff = TwoDiff(2,3,refEtaBinA,etaBin)*TwoDiff(-2,-3,refEtaBinB,etaBinB).Re();
-          y[6] = Double_t(fSettings.dW4ThreeTwo);//kW4ThreeTwoB
-          mixed_cumuDiff->Fill(y, threetwodiff);
-
+          fill(cumu_dW4ThreeTwo, n, ptn, sample, zvertex, eta, cent, threetwodiff);
 
           double dn4diff = TwoDiff(2,3,refEtaBinA,etaBin)*TwoDiff(-2,-3,refEtaBinB,etaBinB).Re();
-          y[6] = Double_t(fSettings.dW4_mixed);//kW4ThreeTwoB
-          mixed_cumuDiff->Fill(y, dn4diff);
+          fill(cumu_dW4_mixed, n, ptn, sample, zvertex, eta, cent, dn4diff);
         }
 
 
@@ -335,6 +236,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
 
       } // if w2 > 0
     } //eta
+
   } // moment
   return;
 }
@@ -372,10 +274,6 @@ TComplex AliForwardGenericFramework::q(Int_t n, Int_t p, Int_t etabin)
 }
 
 
-
-
-
-
 TComplex AliForwardGenericFramework::Two(Int_t n1, Int_t n2, Int_t eta1, Int_t eta2)
 {
   TComplex formula = 0;
@@ -387,8 +285,6 @@ TComplex AliForwardGenericFramework::Two(Int_t n1, Int_t n2, Int_t eta1, Int_t e
   }
   return formula;
 }
-
-
 
 
 TComplex AliForwardGenericFramework::TwoDiff(Int_t n1, Int_t n2, Int_t refetabin, Int_t diffetabin)
