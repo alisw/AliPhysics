@@ -1426,7 +1426,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
   if(pSigmaC){
     ptsigmacMC=pSigmaC->Pt();
     if(pSigmaC->GetNDaughters()!=2)return;
-    for(Int_t k=TMath::Abs(pSigmaC->GetDaughterLabel(0));k<=TMath::Abs(k<pSigmaC->GetDaughterLabel(1));k++){
+    for(Int_t k=TMath::Abs(pSigmaC->GetDaughterLabel(0));k<=TMath::Abs(pSigmaC->GetDaughterLabel(1));k++){
       if(k>=0){
 	AliAODMCParticle *mcpartScdau=(AliAODMCParticle*)fmcArray->At(k);
 	if(TMath::Abs(mcpartScdau->GetPdgCode())==211){
