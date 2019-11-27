@@ -19,11 +19,13 @@
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
-#include <iostream>
+
+#include "yaml-cpp/yaml.h"
 
 #include "AliExternalBDT.h"
 
@@ -32,19 +34,34 @@ using std::pair;
 using std::string;
 using std::vector;
 
-struct MLModel {
+/////////////////////////////////////////////////////////////////////////////////////////
+
+class ModelHandler {
+public:
+  ModelHandler() : model(), path(), library(), scorecut() {}
+  ModelHandler(const YAML::Node &node)
+      : model(), path(node["path"].as<string>()), library(node["library"].as<string>()),
+        scorecut(node["cut"].as<float>()) {}
+
+  string const &GetPath() const { return path; }
+  string const &GetLibrary() const { return library; }
+  float const &GetScoreCut() const { return scorecut; }
+
+  bool CompileModel();
+
+private:
   AliExternalBDT model;
 
-  string modelPath;
-  string modelLibrary;
+  string path;
+  string library;
 
-  float modelSelection;
+  float scorecut;
 };
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 class AliMLResponse : public TObject {
 public:
-  enum libraries { kXGBoost, kLightGBM, kModelLibrary };
-
   AliMLResponse();
   AliMLResponse(string configfilename);
   virtual ~AliMLResponse();
@@ -52,64 +69,28 @@ public:
   AliMLResponse(const AliMLResponse &source);
   AliMLResponse &operator=(const AliMLResponse &source);
 
-  /// method to initialise and compile models (it has to be done run time)
-  // void InitModels();
-
   /// method to set yaml config file
   void SetConfigFilePath(const string configfilepath) { fConfigFilePath = configfilepath; }
-  /// method to import the config file from alien
-  void ImportConfigFile();
-  /// method to configure the AliMLResponse object from the config file
-  void Config();
-  /// method to set the list of varibles used for predictions
-  // void SetVariableList(const vector<string> &variablelist);
+  /// method to check whether the config file is formally correct
+  void CheckConfigFile(YAML::Node nodelist);
+  /// method to configure the AliMLResponse object from the config file and compile the models usign treelite
+  void MLResponseInit();    /// (it has to be done run time)
 
-  /// methods to get ML response
-  //   bool IsSelectedML(double &prob, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr,
-  //                     int masshypo = 0);
-  //   bool IsSelectedML(double &prob, double pt, vector<double> variables);
-  //   double PredictProbaML(AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
-  //   double PredictProbaML(double pt, vector<double> variables);
+  /// TODO: metterle private quando i test sono ok
 
-  /// method to get variable (feature) from map
-  //   double GetVariable(string name = "") { return fVars[name]; }
+  string fConfigFilePath;    /// path of the config file
+
+  vector<ModelHandler> fModels;
+
+  vector<int> fCentClasses;    /// centrality classes ([cent_min, cent_max])
+
+  vector<float> fBins;    /// bin edges for the binned variable (pt/ct)
+
+  vector<string> fVariableNames;    /// bin edges for the binned variable (pt/ct)
 
 protected:
-  // string GetFilePath(const string path);
-  // int FindModelForCandidate(double pt);
-  // int FindModelForCandidate(double pt, pair<int, int>);
-  // int FindModelForCandidate(double pt, pair<int, int>, double ct);
-
-  /// method used to define map of name <-> variables (features) --> to be implemented for each derived class
-  // virtual void SetMapOfVariables(AliAODRecoDecayHF * /*cand*/, double /*bfield*/, AliAODPidHF * /*pidHF*/,
-  //                                int /*masshypo*/) {
-  //   return;
-  // }
-
-  // map<string, int> kLibMap = {{"kXGBoost", kXGBoost}, {"kLightGBM", kLightGBM}, {"kModelLibrary", kModelLibrary}};
-  string fConfigFilePath;         /// path of the config file
-
-  vector<MLModel> fModel;
-
-  vector<int> fCentClasses;  /// centrality classes ([cent_min, cent_max])
-
-  vector<float> fPtBins;
-  vector<float> fCtBins;
-
-
-  // pair<float[2], vector<AliExternalBDT>> fModels; /// vector of ML models
-  // vector<string> fModelLibraries;  /// python libraries used to train ML model (kXGBoost, kLightGBM, or
-  // kModelLibrary) vector<string> fModelVarNames;   /// vector with names of variables (features) used in ML model (in
-  // the correct order) vector<string> fModelPaths;      /// vector of paths of the files containing the ML model
-  // vector<double> fModelOutputCuts; /// vector of model output cuts
-  // vector<double> fPtBinsModel;     /// vector with pT bins defined for the ML model application
-  // vector<pair<int, int>> fCentClassModel; /// vector with cent classes for the ML model application
-  // vector<double> fCtBinsModel;            /// vector with pT bins defined for the ML model application
-  // map<string, double> fVars;              /// map of variables (features) that can be used for the ML model
-  // application
-
   /// \cond CLASSIMP
-  ClassDef(AliMLResponse, 1); ///
-                              /// \endcond
+  ClassDef(AliMLResponse, 1);    ///
+  /// \endcond
 };
 #endif
