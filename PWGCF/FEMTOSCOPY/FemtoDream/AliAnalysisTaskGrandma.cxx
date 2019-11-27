@@ -136,18 +136,15 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
   fFemtov0->GetNegDaughter()->SetUseMCInfo(fIsMC);
 
   fCascade = new AliFemtoDreamCascade();
-  fCascade->SetUseMCInfo(fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
-  //PDG Codes should be set assuming Xi- to also work for Xi+
   fCascade->SetPDGCode(3312);
+  fCascade->SetUseMCInfo(fIsMC);
+  //PDG Codes should be set assuming Xi- to also work for Xi+
   fCascade->SetPDGDaugPos(2212);
-  fCascade->GetPosDaug()->SetUseMCInfo(
-      fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
+  fCascade->GetPosDaug()->SetUseMCInfo(fIsMC);
   fCascade->SetPDGDaugNeg(211);
-  fCascade->GetNegDaug()->SetUseMCInfo(
-      fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
+  fCascade->GetNegDaug()->SetUseMCInfo(fIsMC);
   fCascade->SetPDGDaugBach(211);
-  fCascade->GetBach()->SetUseMCInfo(
-      fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
+  fCascade->GetBach()->SetUseMCInfo(fIsMC);
   fCascade->Setv0PDGCode(3122);
 
   //the pair cleaner you have to setup yourself depending on the pairs you want to investigate
@@ -237,6 +234,7 @@ if (fv0Cuts) {
   } else {
     AliWarning("Xi cuts are missing! \n");
   }
+
   if (fAntiXi) {
     fAntiXi->Init();
     if (fAntiXi->GetQAHists()) {
@@ -334,12 +332,13 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
 
   std::vector<AliFemtoDreamBasePart> Xis;
   std::vector<AliFemtoDreamBasePart> AntiXis;
-  for (int iCasc = 0;
-      iCasc
-          < static_cast<TClonesArray *>(Event->GetCascades())->GetEntriesFast();
-      ++iCasc) {
+
+  TClonesArray *Xi1 = static_cast<TClonesArray*>(Event->GetCascades());
+  fCascade->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  int entriesXi = Xi1->GetEntriesFast();
+  for (int iCasc = 0; iCasc< entriesXi; ++iCasc) {
     AliAODcascade* casc = Event->GetCascade(iCasc);
-    fCascade->SetCascade(fInputEvent, casc);
+    fCascade->SetCascade(Event, casc);
     if (fXi->isSelected(fCascade)) {
       Xis.push_back(*fCascade);
     }

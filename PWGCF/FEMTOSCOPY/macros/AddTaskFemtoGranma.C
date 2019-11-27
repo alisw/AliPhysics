@@ -1354,6 +1354,8 @@ if (etaPhiPlotsAtTPCRadii) {
   task->SetAntiTrackCuts(AntiTrackCuts);
   task->Setv0Cuts(v0Cuts);
   task->SetAntiv0Cuts(Antiv0Cuts);
+  task->SetXiCuts(CascadeCuts);
+  task->SetAntiXiCuts(AntiCascadeCuts);
   task->SetCollectionConfig(config);
   mgr->AddTask(task);
 
@@ -1464,7 +1466,7 @@ if(Systematic){
   if(Systematic){
     XiCutsName = Form("%sXiCuts%s_%s",addon.Data(),suffix.Data(),suffixvar.Data());
   } else{
-   XiCutsName = Form("%sv0Cuts%s",addon.Data(),suffix.Data());
+   XiCutsName = Form("%sXiCuts%s",addon.Data(),suffix.Data());
 }
   couputXiCuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
