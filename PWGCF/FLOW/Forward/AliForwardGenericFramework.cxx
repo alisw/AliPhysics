@@ -186,7 +186,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
         }
 
 
-        if (!fSettings.standard_only){
+        //if (!fSettings.standard_only){
           if (eta > 0.0) {
             // R_{n,n; 2} numerator
             double over = (TwoDiff(-2,2,refEtaBinB, etaBin)*TwoDiff(2,-2,refEtaBinA, etaBinB)).Re();
@@ -206,7 +206,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
 
           double dn4diff = TwoDiff(2,3,refEtaBinA,etaBin)*TwoDiff(-2,-3,refEtaBinB,etaBinB).Re();
           fill(cumu_dW4_mixed, n, ptn, sample, zvertex, eta, cent, dn4diff);
-        }
+        //}
 
 
         // A side
