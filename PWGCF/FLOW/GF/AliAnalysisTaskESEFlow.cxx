@@ -32,10 +32,10 @@
 #include "AliAODEvent.h"
 #include "AliMultSelection.h"
 #include "AliAODInputHandler.h"
+#include "AliAnalysisTaskESEFlow.h"
 #include "AliGFWWeights.h"
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
-#include "AliAnalysisTaskESEFlow.h"
 
 #include <iostream>
 
@@ -52,8 +52,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fInit{0},
     fqRun{0},
     fFlowWeightsList{nullptr},
-    fqCutsList{nullptr},
-    fHistqCuts{0},
+    fqCutsTree{nullptr},
     fWeights(0),
     bUseOwnWeights(0),
     fOutputList(0),
@@ -89,16 +88,16 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fHistqn_reduced{0},
     fProfPTdn_2gap_small{0},
     fProfPTdn_2gap_large{0},
-    fHistq2_red_cent_30_31(0),
-    fHistqn_red_cent_0_1{0},
-    fProfNPar{0},
     fProfcn_2gap_smallqn{0},
     fProfcn_2gap_largeqn{0},
     fProfPTdn_2gap_B{0},
     fHistPDG{0},
     fReadMC{kFALSE},
     fMCEvent{0},
-    fProfcn_2gap_qn{0}
+    bRunByRun(0),
+    fProfcn_2gap_qn{0},
+    fqnCuts{0},
+    nuacentral()
 {}
 //_____________________________________________________________________________
 AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTaskSE(name),
@@ -107,8 +106,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTa
     fInit{0},
     fqRun{0},
     fFlowWeightsList{nullptr},
-    fqCutsList{nullptr},
-    fHistqCuts{0},
+    fqCutsTree{nullptr},
     fWeights(0),
     bUseOwnWeights(0),
     fOutputList(0),
@@ -145,20 +143,21 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTa
     fProfPTdn_2gap_small{0},
     fProfPTdn_2gap_large{0},
     fHistq2_red_cent_30_31(0),
-    fHistqn_red_cent_0_1{0},
-    fProfNPar{0},
     fProfcn_2gap_smallqn{0},
     fProfcn_2gap_largeqn{0},
     fProfPTdn_2gap_B{0},
     fHistPDG{0},
     fReadMC{kFALSE},
     fMCEvent{0},
-    fProfcn_2gap_qn{0}
+    bRunByRun(0),
+    fProfcn_2gap_qn{0},
+    fqnCuts{0},
+    nuacentral()
 {
     //define input and output
     DefineInput(0, TChain::Class());
     DefineInput(1, TList::Class());
-    DefineInput(2, TList::Class());
+    DefineInput(2, TTree::Class());
 
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class());
@@ -192,11 +191,12 @@ Bool_t AliAnalysisTaskESEFlow::InitializeTask()
         if(!fFlowWeightsList) { AliFatal("\n \n \n \n \n \n \n \n \n \n \n \n Flow weights list 2 not found! Terminating! \n \n \n \n \n \n \n \n \n \n \n \n "); return kFALSE; }
     }
 
-    fqCutsList = (TList*) GetInputData(2);
-    if(!fqCutsList) { AliFatal("\n \n \n \n \n \n \n \n \n \n \n \n q-selection cuts file not found! Terminating! \n \n \n \n \n \n \n \n \n \n \n \n "); return kFALSE; }
+    fqCutsTree = (TTree*) GetInputData(2);
+    if(!fqCutsTree) { AliFatal("\n \n \n \n \n \n \n \n \n \n \n \n q-selection cuts tree not found! Terminating! \n \n \n \n \n \n \n \n \n \n \n \n "); return kFALSE; }
 
     if(!LoadqCuts()) { AliFatal("\n \n \n \n \n \n \n \n \n \n q selection cuts not loaded! \n \n \n \n \n \n \n \n \n \n "); return kFALSE; }
     
+
     AliInfo("Initialization succes");
     return kTRUE;
 }
@@ -226,7 +226,13 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
 
     const int NvnPtBin = 28;
     double PtEdgesvn[NvnPtBin+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,3.75,4.0,4.5,5.0,5.5,6.0,7.0,8.0,9.0,10.0};
+    /*const int Nv3PtBin = 20;
+    double PtEdgesv3[Nv3PtBin+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,8.0};
+    const int Nv4PtBin = 17;
+    double PtEdgesv4[Nv4PtBin+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,6.0,10.0};
 
+    double* PtEdgesvn[3] = {PtEdgesv2,PtEdgesv3,PtEdgesv4};
+    int nBinsPTvn[3] = {Nv2PtBin, Nv3PtBin, Nv4PtBin};*/
     
 
     fHistPhiEta = new TH2F("fHistPhiEta", "fHistPhiEta; phi; eta", 120, 0.0, TwoPi(), 120, -1.0, 1.0);
@@ -234,7 +240,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fHistEta = new TH1F("fHistEta", "fHistEta", 120,-1.0, 1.0);
     fHistPt = new TH1F("fHistPt", "fHistPt", NvnPtBin,PtEdgesvn);
     fHistZVertex = new TH1F("fHistZVertex", "fHistZVertex", 100,-15,15);
-    fProfNPar = new TProfile("fProfNparvsCent",";Centrality;N_{particles}",100,0,100);
+
 
     const int nBins = 9;
     double binedge[nBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80.};
@@ -280,8 +286,6 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     }
 
     fHistq2_red_cent_30_31 = new TH1F("fHistq2_red_cent_30_31", "fHistq2_red_cent_30_31",100,0,10);
-    fHistqn_red_cent_0_1[0] = new TH1F("fHistq2_red_cent_0_1","",100,0,10);
-    fHistqn_red_cent_0_1[1] = new TH1F("fHistq3_red_cent_0_1","",100,0,10);
 
     if(fReadMC)
     {
@@ -294,10 +298,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fObservables->Add(fHistEta);
     fObservables->Add(fHistPt);
     fObservables->Add(fHistZVertex);
-    fObservables->Add(fProfNPar);
     fqnDist->Add(fHistq2_red_cent_30_31);
-    fqnDist->Add(fHistqn_red_cent_0_1[0]);
-    fqnDist->Add(fHistqn_red_cent_0_1[1]);
 
     PostData(1, fOutputList);
     PostData(2, fObservables);
@@ -323,14 +324,12 @@ void AliAnalysisTaskESEFlow::UserExec(Option_t *)
     AliMultSelection *multSelection =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
     if(multSelection) centrality = multSelection->GetMultiplicityPercentile(fCentEstimator);
 
-    if(fFlowRunByRunWeights){
+    if(bRunByRun){
         if(!LoadWeights()) { AliFatal("\n \n \n \n \n \n \n \n \n \n Weights not loaded! \n \n \n \n \n \n \n \n \n \n "); return; }
     }
 
     FillObsDistributions(iTracks, fAOD);
     ReducedRFPVectors(centrality, iTracks, fAOD);
-
-    fProfNPar->Fill(centrality,iTracks);
     if(!fqRun){
     RFPVectors(centrality, iTracks, fAOD);
     POIVectors(centrality, iTracks, fAOD);
@@ -393,6 +392,7 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality, const Int_t iT
                 double dPhi = track->Phi();
                 double dPt = track->Pt();
 
+                // Get weights from separate macro (nuacentral=PhiEtaWeights)
                 Double_t dWeight = GetFlowWeight(track,dVz);
                 
                 // no eta gap
@@ -622,7 +622,7 @@ void AliAnalysisTaskESEFlow::FillIntegratecqnCut(const Float_t centrality, const
 
     for(Int_t nCentHist(0); nCentHist<fNumCentHists; ++nCentHist){
         for(Int_t iCut(0); iCut<10; ++iCut){
-            if(qvector_red[q_i][1] > GetqSelectionCut(q_i,nCentHist,iCut) && qvector_red[q_i][1] < GetqSelectionCut(q_i,nCentHist,iCut+1)){
+            if(qvector_red[q_i][1] > GetqSelectionCut(nHarm,nCentHist,iCut) && qvector_red[q_i][1] < GetqSelectionCut(nHarm,nCentHist,iCut+1)){
                 fProfcn_2gap_qn[q_iHist][nHist][nCentHist][iCut]->Fill(centrality,c,c_weight);
             }
         }
@@ -679,10 +679,6 @@ void AliAnalysisTaskESEFlow::Fillqnreduced(const Float_t centrality)
     if(centrality >= 30 && centrality <= 31)
     {
         fHistq2_red_cent_30_31->Fill(qvector_red[2][1]);
-    }
-    if(centrality >=0 && centrality <= 1){
-        fHistqn_red_cent_0_1[0]->Fill(qvector_red[2][1]);
-        fHistqn_red_cent_0_1[1]->Fill(qvector_red[3][1]);
     }
     for(int j(0); j<fNumHarmHists; ++j)
     {
@@ -752,7 +748,7 @@ Double_t AliAnalysisTaskESEFlow::GetFlowWeight(const AliAODTrack* track, const f
 {    
     Double_t dWeight = 1.0;
 
-    if(fFlowRunByRunWeights){
+    if(bRunByRun){
         if(bUseOwnWeights)
         {
         Int_t iBin = fh2Weights->FindFixBin(track->Phi(),track->Eta()); //fh2Weights
@@ -770,18 +766,31 @@ Double_t AliAnalysisTaskESEFlow::GetFlowWeight(const AliAODTrack* track, const f
 }
 Bool_t AliAnalysisTaskESEFlow::LoadqCuts()
 {
-    for (int i(0); i<3;++i){
-        for (int j(0); j < fNumCentHists; ++j){
-            fHistqCuts[i][j] = (TH1F*) fqCutsList->FindObject(Form("q%i_%.0f_%.0f",i+2,fCentInterval[j],fCentInterval[j+1]));
-        }    
+    //Double_t qnCuts[3][7];
+    for(Int_t nHarm(0); nHarm<fNumHarmHists; ++nHarm){
+        fqCutsTree->SetBranchAddress(Form("q%i_0_5",nHarm+2),&fqnCuts[nHarm][0]); 
+        fqCutsTree->SetBranchAddress(Form("q%i_5_10",nHarm+2),&fqnCuts[nHarm][1]);
+        fqCutsTree->SetBranchAddress(Form("q%i_10_20",nHarm+2),&fqnCuts[nHarm][2]); 
+        fqCutsTree->SetBranchAddress(Form("q%i_20_30",nHarm+2),&fqnCuts[nHarm][3]);
+        fqCutsTree->SetBranchAddress(Form("q%i_30_40",nHarm+2),&fqnCuts[nHarm][4]); 
+        fqCutsTree->SetBranchAddress(Form("q%i_40_50",nHarm+2),&fqnCuts[nHarm][5]);
+        fqCutsTree->SetBranchAddress(Form("q%i_50_60",nHarm+2),&fqnCuts[nHarm][6]);
     }
+
+    
+    cout << "\n \n \n \n \n \n \n \n " << endl;
+    for (Int_t i(0); i<fnqCuts;++i){
+        fqCutsTree->GetEntry(i);
+        cout << fqnCuts[0][0] << endl;
+    }
+    cout << "\n \n \n \n \n \n \n \n " << endl;
 
 
     return kTRUE;
 }
 Double_t AliAnalysisTaskESEFlow::GetqSelectionCut(Int_t nHarm, Int_t CentRange, Int_t Entry)
 {
-    
+    fqCutsTree->GetEntry(Entry);
     // CentRange: 
     // 0: 0-5
     // 1: 5-10
@@ -790,10 +799,7 @@ Double_t AliAnalysisTaskESEFlow::GetqSelectionCut(Int_t nHarm, Int_t CentRange, 
     // 4: 30-40
     // 5: 40-50
     // 6: 50-60
-    Double_t temp;
-    temp = fHistqCuts[nHarm-2][CentRange]->GetBinContent(Entry);
-
-    return temp;
+    return fqnCuts[nHarm-2][CentRange]; 
 }
 // ######################### Generic FW #########################
 void AliAnalysisTaskESEFlow::ResetFlowVector(TComplex (&array)[fNumHarms][fNumPowers])

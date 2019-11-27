@@ -1,6 +1,3 @@
-class AliAnalysisDataContainer;
-class AliAnalysisTaskESEFlow;
-
 AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "", TString sqSelCuts = "")
 {
     // get the manager via the static access member. since it's static, you don't need
@@ -19,6 +16,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     Bool_t bUseOwnWeights = kFALSE;
     Bool_t bUseqSelCuts = kTRUE;
 
+    Bool_t bUseMyWeights = kFALSE; //dont ever change this to kTRUE
 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -42,11 +40,12 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
+
   // RUN BY RUN
   if(bUseOwnWeights) 
   {
     TObjArray* taskContainers = mgr->GetContainers();
-    if(!taskContainers) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+    if(!taskContainers) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
 
     // check if the input weights are already loaded (e.g. in different subwagon)
     AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
@@ -58,10 +57,10 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
       if(sWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
 
       TFile* weights_file = TFile::Open(sWeightsFile.Data(),"READ");
-      if(!weights_file) { printf("E-AddTaskESEFlow: Input file with weights not found!\n"); return NULL; }
+      if(!weights_file) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
 
       TList* weights_list = (TList*) weights_file->Get("weights");
-      if(!weights_list) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
+      if(!weights_list) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
 
       AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
       cInputWeights->SetData(weights_list);
@@ -76,7 +75,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
   if(!bUseOwnWeights)
   {
     TObjArray* taskContainersVy = mgr->GetContainers();
-    if(!taskContainersVy) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+    if(!taskContainersVy) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
 
     // check if the input weights are already loaded (e.g. in different subwagon)
     AliAnalysisDataContainer* weightsVy = (AliAnalysisDataContainer*) taskContainersVy->FindObject("inputWeights");
@@ -86,10 +85,10 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
       if(sVWeights.Contains("alien://")) { gGrid->Connect("alien://"); }
 
       TFile* weights_fileVy = TFile::Open(sVWeights.Data(),"READ");
-      if(!weights_fileVy) { printf("E-AddTaskESEFlow: Input file with weights not found!\n"); return NULL; }
+      if(!weights_fileVy) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
 
       TList* weights_listVy = (TList*) weights_fileVy->Get("WeightList");
-      if(!weights_listVy) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); weights_fileVy->ls(); return NULL; }
+      if(!weights_listVy) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights_fileVy->ls(); return NULL; }
 
       AliAnalysisDataContainer* cInputWeightsVy = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
       cInputWeightsVy->SetData(weights_listVy);
@@ -102,29 +101,26 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
   }
 
   if(bUseqSelCuts){
-    TObjArray* taskContainersCuts = mgr->GetContainers();
-    if(!taskContainersCuts) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+    TObjArray* taskContainersqSel = mgr->GetContainers();
+    if(!taskContainersqSel) { printf("Task containers for q Selection does not exist!\n"); return NULL; }
 
-    // check if the input weights are already loaded (e.g. in different subwagon)
-    AliAnalysisDataContainer* qcuts = (AliAnalysisDataContainer*) taskContainersCuts->FindObject("inputCuts");
-    if(!qcuts) 
-    { 
-      if(sWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+    AliAnalysisDataContainer* qSelcuts = (AliAnalysisDataContainer*) taskContainersqSel->FindObject("inputqCuts");
 
-      TFile* qcuts_file = TFile::Open(sqSelCuts.Data(),"READ");
-      if(!qcuts_file) { printf("E-AddTaskESEFlow: Input file with q-cuts not found!\n"); return NULL; }
+    if(!qSelcuts){
+      if(sqSelCuts.Contains("alien://")) { gGrid->Connect("alien://"); }
 
-      TList* qcuts_list = (TList*) qcuts_file->Get("qCuts");
-      if(!qcuts_list) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); qcuts_file->ls(); return NULL; }
+      TFile* qCuts_file = TFile::Open(sqSelCuts.Data(),"READ");
+      if(!qCuts_file) { printf("Input file with q selections cuts not found! \n"); return NULL; }
 
-      AliAnalysisDataContainer* cInputCuts = mgr->CreateContainer("inputCuts",TList::Class(), AliAnalysisManager::kInputContainer);
-      cInputCuts->SetData(qcuts_list);
-      mgr->ConnectInput(task,2,cInputCuts);
+      TTree* qCuts_Tree = (TTree*) qCuts_file->Get("q_nSel");
+      if(!qCuts_Tree) { printf("Input tree with q selection cuts not found! \n"); qCuts_file->ls(); return NULL; }
+
+      AliAnalysisDataContainer* cinputqCuts = mgr->CreateContainer("inputqCuts",TTree::Class(), AliAnalysisManager::kInputContainer);
+      cinputqCuts->SetData(qCuts_Tree);
+      mgr->ConnectInput(task,2,cinputqCuts);
     }
-    else 
-    {
-      // connect existing container
-      mgr->ConnectInput(task,2,qcuts);
+    else{ 
+      mgr->ConnectInput(task,2,qSelcuts);
     }
   }
     
