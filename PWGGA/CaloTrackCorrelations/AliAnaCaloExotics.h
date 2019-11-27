@@ -279,6 +279,13 @@ public:
   TH2F *   fhTimeEnergy1Cell;                   //!<! Cluster Energy vs Time vs n cells = 1
   TH3F *   fhTimeDiffClusCellExo;               //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity
   TH3F *   fhTimeDiffClusCellDiffTCardExo;      //!<! Difference of the time of cell with maximum dep energy and the rest of cells in different T-Card vs cluster energy vs exoticity
+  TH3F *   fhTimeDiffClusCellSameTCardExo;      //!<! Difference of the time of cell with maximum dep energy and the rest of cells in same T-Card vs cluster energy vs exoticity
+  
+  TH2F *   fhTimeDiffClusSameCellColRowDiff[4][4];       //!<! Cluster E vs time max-sec in same T-Card vs distance to max E cell
+  TH2F *   fhTimeDiffClusDiffCellColRowDiff[4][4];       //!<! Cluster E vs time max-sec in diff T-Card vs distance to max E cell
+  TH2F *   fhTimeDiffClusSameCellColRowDiffExoCut[4][4]; //!<! Cluster E vs time max-sec in same T-Card vs distance to max E cell, for exoticity > fExoCut
+  TH2F *   fhTimeDiffClusDiffCellColRowDiffExoCut[4][4]; //!<! Cluster E vs time max-sec in diff T-Card vs distance to max E cell, for exoticity > fExoCut
+  
   TH3F *   fhTimeDiffWClusCellExo;              //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs cluster energy vs exoticity, for cells with weight
   TH3F *   fhTimeDiffAmpClusCellExo;            //!<! Difference of the time of cell with maximum dep energy and the rest of cells vs secondary cell energy vs exoticity for E > fEMinForExo
   TH3F *   fhTimeEnergyM02;                     //!<! Cluster Energy vs Time vs M02, n cells > 1
@@ -394,6 +401,10 @@ public:
     
   // Apply cut on number of cells of cluster all in same TCard
   //
+  TH3F *   fhNCellsPerClusterMinEnCut;         //!<! Cluster energy vs N cells vs E min in cell  
+  TH3F *   fhNCellsPerClusterDiffMinEnCut;     //!<! Cluster energy vs N cells in different T-Card as max cell vs E min in cell 
+  TH3F *   fhNCellsPerClusterSameMinEnCut;     //!<! Cluster energy vs N cells in same TCard as max cell vs E min in cell 
+  
   TH3F *   fhM02ExoNCellsNotAllSameTCard[fgkNEBins]; //!<! Cluster M02 vs exoticity vs n cells, different E bins for n diff > 0
 
   TH2F *   fhExoticityEClusAllSameTCard;        //!<! Exoticity vs energy, all cells in same T-Card, n diff = 0
