@@ -17,6 +17,7 @@
 
 /////////////////////////////////////////////////////////////
 //  MC ONGOING CHANGES:
+// - EXPLORE PID CASES: MUST MATCH THE RIGHT MASS HYPO!! CHECK
 //  - CHECK WHAT HAPPENS FOR RESONANT CHANNELS (Lc ones + Xic to K*0: should be ok
 //  - DEVELOP MC PART: CHECK SIGMA_C (all histos at reco level should be filled inside SigmaC loop, only if also the partner pion is found --> should be fixed by the addition of extra steps before calling SigmaCloop and specifc flagging insied); 
 // FILLING FOR SPARSES AND TREE: CANDIDATE PT SHOULD BE THAT AT GEN LEVEL: should be ok now
@@ -1043,7 +1044,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	Double_t pointlcsc[6];
 	if(fReadMC){
 	  part=MatchRecoCandtoMC(io3Prong,isTrueLambdaCorXic,checkOrigin);	  
-	  
+
 	  //  static Int_t CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 	  //  AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray,)
 	  if(!part) {
@@ -1425,7 +1426,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
   if(pSigmaC){
     ptsigmacMC=pSigmaC->Pt();
     if(pSigmaC->GetNDaughters()!=2)return;
-    for(Int_t k=TMath::Abs(pSigmaC->GetDaughterLabel(0));TMath::Abs(k<pSigmaC->GetDaughterLabel(1));k++){
+    for(Int_t k=TMath::Abs(pSigmaC->GetDaughterLabel(0));k<=TMath::Abs(k<pSigmaC->GetDaughterLabel(1));k++){
       if(k>=0){
 	AliAODMCParticle *mcpartScdau=(AliAODMCParticle*)fmcArray->At(k);
 	if(TMath::Abs(mcpartScdau->GetPdgCode())==211){
@@ -2512,18 +2513,18 @@ AliAODMCParticle* AliAnalysisTaskSEXicTopKpi::MatchRecoCandtoMC(AliAODRecoDecayH
 	      isTrueLambdaCorXic+=2;
 	    }
 	  }
-	}      
+	}
+	return part;
       }
-      return part;
     }  
   }
 
   if(partind>=0){
     part=(AliAODMCParticle*)fmcArray->At(partind);
-    if(part){
-      Int_t pdgMother_checkQuark = AliVertexingHFUtils::CheckOrigin(fmcArray,part,kTRUE);
-      if(pdgMother_checkQuark==4) isTrueLambdaCorXic*=4;      // from quark c
-      else if(pdgMother_checkQuark==5) isTrueLambdaCorXic*=5; // from quark b
+    if(part){      
+      checkOrigin= AliVertexingHFUtils::CheckOrigin(fmcArray,part,kTRUE);
+      if(checkOrigin==4) isTrueLambdaCorXic*=4;      // from quark c
+      else if(checkOrigin==5) isTrueLambdaCorXic*=5; // from quark b
       //
       // check if it is pKpi or piKp
       //
