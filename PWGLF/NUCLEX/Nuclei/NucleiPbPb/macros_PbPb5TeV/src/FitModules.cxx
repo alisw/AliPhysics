@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "RooGausExp.h"
 #include "RooGausDExp.h"
+#include "RooDSCBShape.h"
 #include "Utils.h"
 using namespace utils;
 
@@ -170,6 +171,23 @@ FitExpPolTailGaus::FitExpPolTailGaus(RooRealVar *x) : FitModule(x) {
                                        RooArgList(*mKbkg));
   mAlpha0 = utils::make_unique<RooRealVar>("#alpha_{0}","Alpha0",1.6,3.); // tight range based on low pT
   mSignal = utils::make_unique<RooGausExp>("mSignal","Signal",*mX,*mMu,*mSigma,*mAlpha0);
+  mTemplate = utils::make_unique<RooAddPdf>("mTemplate","Template",RooArgList(*mSignal,*mBackground),
+                                     RooArgList(*mSigCounts,*mBkgCounts));
+}
+
+FitExpPolDSCrystalBall::FitExpPolDSCrystalBall(RooRealVar *x) : FitModule(x) {
+  mTau0 = utils::make_unique<RooRealVar>("#tau_{0}","#tau_{0}",-6.5,-2.);
+  mTau1 = utils::make_unique<RooRealVar>("#tau_{1}","#tau_{1}",-2.,-0.001);
+  a1 = utils::make_unique<RooRealVar>("a1","a1",0,+10.);
+  n1 = utils::make_unique<RooRealVar>("n1","n1",0,+10.);
+  a2 = utils::make_unique<RooRealVar>("a2","a2",0,+10.);
+  n2 = utils::make_unique<RooRealVar>("n2","n2",0,+10.);
+  mKbkg = utils::make_unique<RooRealVar>("K_{bkg}","K_{bkg}",0.,0.,1.);
+  mBkg0 = utils::make_unique<RooExponential>("mBkg0","background1",*mX,*mTau0);
+  mBkg1 = utils::make_unique<RooExponential>("mBkg1","background2",*mX,*mTau1);
+  mBackground = utils::make_unique<RooAddPdf>("mBackground","Background",RooArgList(*mBkg0,*mBkg1),
+                                       RooArgList(*mKbkg));
+  mSignal = utils::make_unique<RooDSCBShape>("mSignal","Signal",*mX,*mMu,*mSigma,*a1, *n1, *a2, *n2);
   mTemplate = utils::make_unique<RooAddPdf>("mTemplate","Template",RooArgList(*mSignal,*mBackground),
                                      RooArgList(*mSigCounts,*mBkgCounts));
 }

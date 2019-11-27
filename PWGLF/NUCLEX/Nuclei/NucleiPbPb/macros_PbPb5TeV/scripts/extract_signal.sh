@@ -6,6 +6,7 @@ else
   root -b -l << EOF
 .L src/RooGausExp.cxx+
 .L src/RooGausDExp.cxx+
+.L src/RooDSCBShape.cxx+
 .L src/FitModules.cxx+
 .x Signal.cc+g
 EOF

@@ -152,4 +152,20 @@ public:
   std::unique_ptr<RooRealVar> mAlpha0;
 };
 
+class FitExpPolDSCrystalBall : public FitModule {
+public:
+  FitExpPolDSCrystalBall(RooRealVar *xm);
+  
+  std::unique_ptr<RooExponential> mBkg0;
+  std::unique_ptr<RooExponential> mBkg1;
+  std::unique_ptr<RooRealVar> mTau0;
+  std::unique_ptr<RooRealVar> mTau1;
+  std::unique_ptr<RooRealVar> a1;
+  std::unique_ptr<RooRealVar> n1;
+  std::unique_ptr<RooRealVar> a2;
+  std::unique_ptr<RooRealVar> n2;
+  std::unique_ptr<RooRealVar> mKbkg;
+
+};
+
 #endif /* FitModules_hpp */

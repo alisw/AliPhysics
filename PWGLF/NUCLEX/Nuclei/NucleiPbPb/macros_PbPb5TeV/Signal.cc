@@ -50,9 +50,9 @@ void Signal() {
   TFile output_file(kSignalOutput.data(),"recreate");
 
   /// Setting up the fitting environment for TOF analysis
-  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-1.2,1.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m("dm2","m^{2} - m^{2}_{d}",kFitminPt,kFitmaxPt,"GeV^{2}/#it{c}^{4}");
   m.setBins(1000,"cache");
-  m.setRange("Full", -1.2, 1.5);
+  m.setRange("Full", kFitminPt,kFitmaxPt);
 
   FitExpExpTailGaus fExpExpTailGaus(&m);
   fExpExpTailGaus.mMu->setRange(0.00001,0.5);
@@ -61,21 +61,34 @@ void Signal() {
   fExpExpTailGaus.mSigma->setRange(0.05,0.15);
   fExpExpTailGaus.mSigma->setVal(0.1);
   fExpExpTailGaus.mSigma->setUnit("GeV^{2}/#it{c}^{4}");
-  fExpExpTailGaus.mAlpha0->setRange(0.9,3.);
+  fExpExpTailGaus.mAlpha0->setRange(1.1,3.);
   fExpExpTailGaus.mAlpha0->setVal(1.2);
   fExpExpTailGaus.mAlpha0->setUnit("GeV^{2}/#it{c}^{4}");
-  fExpExpTailGaus.mSigCounts->setRange(0.,100000.);
+  fExpExpTailGaus.mSigCounts->setRange(0.,kFitmaxNBkg);
   fExpExpTailGaus.mTau0->setUnit("GeV^{-2}#it{c}^{4}");
-  fExpExpTailGaus.mTau1 ->setUnit("GeV^{-2}#it{c}^{4}");
+  fExpExpTailGaus.mTau1->setUnit("GeV^{-2}#it{c}^{4}");
 
   //Background
-  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-1.2,1.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",kFitminPt,kFitmaxPt,"GeV^{2}/#it{c}^{4}");
   m_bis.setBins(1000,"cache");
-  m_bis.setRange("Full", -1.2, 1.5);
+  m_bis.setRange("Full", kFitminPt,kFitmaxPt);
   FitExpExpTailGaus fBkg(&m_bis);
   fBkg.UseSignal(false);
   fBkg.mTau0->setUnit("GeV^{-2}#it{c}^{4}");
   fBkg.mTau1->setUnit("GeV^{-2}#it{c}^{4}");
+
+  // Low pTbins
+  FitExpPolDSCrystalBall fExpPolDSCrystalBall(&m);
+  fExpPolDSCrystalBall.mMu->setRange(0.00001,0.5);
+  fExpPolDSCrystalBall.mMu->setVal(0.1);
+  fExpPolDSCrystalBall.mMu->setUnit("GeV^{2}/#it{c}^{4}");
+  fExpPolDSCrystalBall.mSigma->setRange(0.05,0.15);
+  fExpPolDSCrystalBall.mSigma->setVal(0.1);
+  fExpPolDSCrystalBall.mSigma->setUnit("GeV^{2}/#it{c}^{4}");
+  fExpPolDSCrystalBall.mSigCounts->setRange(0.,kFitmaxNBkg);
+  fExpPolDSCrystalBall.mTau0->setUnit("GeV^{-2}#it{c}^{4}");
+  fExpPolDSCrystalBall.mTau1->setUnit("GeV^{-2}#it{c}^{4}");
+  
 
   // Setting up the fitting environment for the TPC analysis
   RooRealVar ns("ns","n#sigma_{d}",-3.,3,"a. u.");
@@ -196,9 +209,11 @@ void Signal() {
         for (int iC = 0; iC < kCentLength; ++iC) {
           // TOF analysis
           if (pt_axis->GetBinCenter(iB+1) > kCentPtLimits[iC]) continue;
-          TString iTitle = Form(" %1.0f - %1.0f %% %1.1f #leq #it{p}_{T} < %1.1f GeV/#it{c}", cent_labels[kCentBinsArray[iC][0]-1], cent_labels[kCentBinsArray[iC][1]], pt_labels[iB], pt_labels[iB + 1]);
+          // std::cout <<"test" <<std::endl;
+          TString iTitle = Form(" %1.0f - %1.0f %% %1.1f #leq #it{p}_{T} < %1.1f GeV/#it{c}", cent_labels[kCentBinsArray[iC][0]], cent_labels[kCentBinsArray[iC][1]], pt_labels[iB], pt_labels[iB + 1]);
           TString iName = Form("d%i_%i",iC,iB);
           TH1D *dat = tof_histo[iS]->ProjectionZ(Form("data%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iB + 1,iB + 1);
+          // std::cout <<"test2" <<std::endl;
           // if (pt_axis->GetBinCenter(iB+1) > kPtRebin[iC]){
           //   dat->Rebin();
           //   fExpExpTailGaus.mTau0->setRange(-10.,-3.);
@@ -218,13 +233,19 @@ void Signal() {
           /// TailTail
           base_dir->cd(Form("%s/TailTail/C_%d",kNames[iS].data(),iC));
           if(iB<=8){
-            fExpExpTailGaus.UseBackground(false);
-            fExpExpTailGaus.mSigma->setRange(0.05,0.15);
+            fExpExpTailGaus.UseBackground(true);
+            fExpExpTailGaus.mMu->setRange(-0.5,1.5);
+            fExpExpTailGaus.mSigma->setRange(0.05,0.3);
             fExpExpTailGaus.mSigma->setVal(0.1);
+
+            fExpPolDSCrystalBall.UseBackground(true);
+            fExpPolDSCrystalBall.mMu->setRange(-0.5,1.5);
+            fExpPolDSCrystalBall.mSigma->setRange(0.05,0.3);
+            fExpPolDSCrystalBall.mSigma->setVal(0.1);
           }
           else{
             fExpExpTailGaus.UseBackground(true);
-            fExpExpTailGaus.mSigma->setRange(0.05,0.2);
+            fExpExpTailGaus.mSigma->setRange(0.05,0.3);
             fExpExpTailGaus.mSigma->setVal(0.1);
             if(iB>=9 && iB<=10){
               fExpExpTailGaus.mKbkg->setVal(0.);
@@ -247,15 +268,26 @@ void Signal() {
           //   fExpExpTailGaus.mSigma->setVal(sigma_deut[iC]);
           //   fExpExpTailGaus.mSigma->setConstant(true);
           // }
-          RooPlot* expExpTailTailGausPlot = fExpExpTailGaus.FitData(dat, iName, iTitle, "Full", "Full",false,-1.2,1.5);
-          fExpExpTailGaus.mSigma->setConstant(false);
-          if(iS==0) sigma_deut[iC] = fExpExpTailGaus.mSigma->getVal();
-          if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) expExpTailTailGausPlot->Write();
-          hSignalTailTailGaus[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mSigCounts->getVal());
-          hSignalTailTailGaus[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mSigCounts->getError());
-          hRawCounts[iS][iC]->SetBinContent(iB + 1, fExpExpTailGaus.mSigCounts->getVal());
-          hRawCounts[iS][iC]->SetBinError(iB + 1, fExpExpTailGaus.mSigCounts->getError());
-
+          if(iB<=8){
+              RooPlot* expPolDSCrystalBall = fExpPolDSCrystalBall.FitData(dat, iName, iTitle, "Full", "Full",false,kFitminPt,kFitmaxPt);
+            fExpPolDSCrystalBall.mSigma->setConstant(false);
+            if(iS==0) sigma_deut[iC] = fExpPolDSCrystalBall.mSigma->getVal();
+            if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) expPolDSCrystalBall->Write();
+            hSignalTailTailGaus[iS][iC]->SetBinContent(iB+1,fExpPolDSCrystalBall.mSigCounts->getVal());
+            hSignalTailTailGaus[iS][iC]->SetBinError(iB+1,fExpPolDSCrystalBall.mSigCounts->getError());
+            hRawCounts[iS][iC]->SetBinContent(iB + 1, fExpPolDSCrystalBall.mSigCounts->getVal());
+            hRawCounts[iS][iC]->SetBinError(iB + 1, fExpPolDSCrystalBall.mSigCounts->getError());
+          }
+          else{
+            RooPlot* expExpTailTailGausPlot = fExpExpTailGaus.FitData(dat, iName, iTitle, "Full", "Full",false,kFitminPt,kFitmaxPt);
+            fExpExpTailGaus.mSigma->setConstant(false);
+            if(iS==0) sigma_deut[iC] = fExpExpTailGaus.mSigma->getVal();
+            if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) expExpTailTailGausPlot->Write();
+            hSignalTailTailGaus[iS][iC]->SetBinContent(iB+1,fExpExpTailGaus.mSigCounts->getVal());
+            hSignalTailTailGaus[iS][iC]->SetBinError(iB+1,fExpExpTailGaus.mSigCounts->getError());
+            hRawCounts[iS][iC]->SetBinContent(iB + 1, fExpExpTailGaus.mSigCounts->getVal());
+            hRawCounts[iS][iC]->SetBinError(iB + 1, fExpExpTailGaus.mSigCounts->getError());
+          }
           /// Bin counting TOF
           float residual_vector[n_sigma_vec.size()];
           for(size_t iSigma=0; iSigma < n_sigma_vec.size(); iSigma++){
@@ -267,8 +299,8 @@ void Signal() {
             float right_edge_float = dat->GetBinLowEdge(right_edge_bin+1);
             fBkg.mX->setRange("signal",left_edge_float,right_edge_float);
             if (iSigma==0) {
-              fBkg.mX->setRange("left",-1.2,left_edge_float);
-              fBkg.mX->setRange("right",right_edge_float,1.5);
+              fBkg.mX->setRange("left",kFitminPt,left_edge_float);
+              fBkg.mX->setRange("right",right_edge_float,kFitmaxPt);
               RooPlot* bkgPlot = fBkg.FitData(dat, Form("%s_sideband",iName.Data()), iTitle, "left,right","Full");
               base_dir->cd(Form("%s/Sidebands/C_%d",kNames[iS].data(),iC));
               bkgPlot->Write();
@@ -410,6 +442,7 @@ void Signal() {
       }
     }
     base_dir->Close();
+    break;
   }
   output_file.Close();
 }
