@@ -323,9 +323,11 @@ std::vector<AliESDtrack*> AliDielectronHelper::GetESDtracks(const AliESDEvent *e
   for(Int_t i=0; i<Ntracks; i++){
 
     track = ev->GetTrack(i); 
-    if(TrackCutsTPCRefit->AcceptTrack(track)) tracks.push_back((AliESDtrack*)track->Clone());
+    if(TrackCutsTPCRefit->AcceptTrack(track)) tracks.push_back(track);
   }
 
+  delete TrackCutsTPCRefit;
+  TrackCutsTPCRefit=0x0;
   return tracks;
 
 }
