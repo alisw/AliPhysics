@@ -432,19 +432,15 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
       "\n";
     }
   }
-  //return 0;  // temporary
-  if (rdistance2>32) return 3;
-  
-  
-  if ((rdistancey2>9. || rdistancez2>9.) && cluster->GetType()==0)  
-    return 2;  //suspisiouce - will be changed
-  
-  if ((rdistancey2>6.25 || rdistancez2>6.25) && cluster->GetType()>0)  
+  const TMatrixF &nSigma2Cut =AliTPCReconstructor::GetRecoParam()->GetClusterNSigma2Cut();
+  if (rdistance2>nSigma2Cut(1,2)) return 3; // default cut - it was 32 in version in RUN1,RUN2
+  if ((rdistancey2>nSigma2Cut(1,0) || rdistancez2>nSigma2Cut(1,1)) && cluster->GetType()==0)
+    return 2;  // normal cluster cuts - it was 3*3  in hardwired version in RUN1,RUN2
+  if ((rdistancey2>nSigma2Cut(2,0) || rdistancez2>nSigma2Cut(2,1)) && cluster->GetType()>0)
     // strict cut on overlaped cluster
-    return  2;  //suspisiouce - will be changed
-  
-  if ( (rdistancey2>1. || rdistancez2>6.25 ) 
-       && cluster->GetType()<0){
+    return  2;  //cut for unfolded clusters - - it was 6.25  in hardwired version in RUN1,RUN2
+  if ( (rdistancey2>nSigma2Cut(0,0)  || rdistancez2>nSigma2Cut(0,1) )    /// edge n sigma cut - was 1, 6.25 in the RUN1,RUN2
+       && cluster->GetType()<0){                      /// edge cut
     seed->SetNFoundable(seed->GetNFoundable()-1);
     return 2;    
   }
