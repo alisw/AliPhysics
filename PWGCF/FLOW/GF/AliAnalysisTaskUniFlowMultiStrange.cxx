@@ -4731,7 +4731,16 @@ Double_t AliAnalysisTaskUniFlowMultiStrange::PIDCorrectionHF(const AliAODTrack *
     Int_t ip = -999;
     Int_t iEta = -999;
     eta= TMath::Abs(eta);
-    
+    if (ispecies ==2){
+     SigmaValue = NumPion;
+    }
+  if (ispecies ==3){
+     SigmaValue = NumKaon;
+    }
+  if (ispecies ==4){
+      SigmaValue = NumProton;
+    }
+   
     if (pTPC>0.3){
 if(iRunNumber>=295585 && iRunNumber<=296623 && fIndexCentrality >= 0 && fIndexCentrality<= 10) { //LHC18q 0-10%
     Float_t meanPion[] = {
@@ -4999,19 +5008,6 @@ if(iRunNumber>=295585 && iRunNumber<=296623 && fIndexCentrality >= 0 && fIndexCe
          }
      }
     }
-    
-  else{
-
-  if (ispecies ==2){
-     SigmaValue = NumPion;
-  }
-  if (ispecies ==3){
-     SigmaValue = NumKaon;
-  }
-  if (ispecies ==4){
-      SigmaValue = NumProton;
-   }
-  }
   
     return SigmaValue;
 }
