@@ -217,6 +217,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void   SettUseClusterErrordEdxMultCorrection(Bool_t useClusterErrordEdxMultCorrection){ fUseClusterErrordEdxMultCorrection=useClusterErrordEdxMultCorrection;}
   const TMatrixF& GetClusterNSigma2Cut() const {return fClusterNSigma2Cut;}
   void SetClusterNSigma2Cut(TMatrixF cuts){fClusterNSigma2Cut=cuts;}
+  void SetClusterNSigma2Cut(Int_t row, Int_t column,Float_t cut){fClusterNSigma2Cut(row,column)=cut;}
 
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env.
