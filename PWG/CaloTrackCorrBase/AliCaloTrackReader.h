@@ -213,6 +213,12 @@ public:
   void             SwitchOnUseParametrizedTimeCut()        { fUseParamTimeCut = kTRUE      ; }
   void             SwitchOffUseParametrizedTimeCut()       { fUseParamTimeCut = kFALSE     ; }
 
+  Float_t          GetEMCALHighEnergyNdiffCut()     const  { return fEMCALHighEnergyNdiffCut;}
+  void             SetEMCALHighEnergyNdiffCut(Float_t en)  { fEMCALHighEnergyNdiffCut = en ; }
+ 
+  Float_t          GetEMCALMinCellEnNdiffCut()      const  { return fEMCALMinCellEnNdiffCut; }
+  void             SetEMCALMinCellEnNdiffCut(Float_t en)   { fEMCALMinCellEnNdiffCut  = en ; }
+  
   // Fidutial cuts
   
   virtual AliFiducialCut * GetFiducialCut()                { 
@@ -801,6 +807,9 @@ public:
   Int_t            fEMCALNCellsCut ;               ///<  Accept for the analysis EMCAL clusters with more than fNCellsCut cells
   Int_t            fPHOSNCellsCut ;                ///<  Accept for the analysis PHOS clusters with more than fNCellsCut cells
   
+  Float_t          fEMCALHighEnergyNdiffCut;       ///<  Minimum energy for which the cut on n diff T-Card = 0 is applied
+  Float_t          fEMCALMinCellEnNdiffCut;        ///<  Minimum energy of cells used counting n diff in T-Card 
+  
   Bool_t           fUseEMCALTimeCut;               ///<  Do time cut selection.
   Bool_t           fUseParamTimeCut;               ///<  Use simple or parametrized time cut.
   Bool_t           fUseTrackTimeCut;               ///<  Do time cut selection.
@@ -1007,7 +1016,7 @@ public:
   TH2F  *          fhEMCALClusterEtaPhi;           //!<! Control histogram on EMCAL clusters acceptance, before fiducial cuts
   TH2F  *          fhEMCALClusterEtaPhiFidCut;     //!<! Control histogram on EMCAL clusters acceptance, after fiducial cuts
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
-  TH1F  *          fhEMCALClusterCutsE[8];         //!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH1F  *          fhEMCALClusterCutsE[9];         //!<! Control histogram on the different EMCal cluster selection cuts, E
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
  
@@ -1034,7 +1043,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,84) ;
+  ClassDef(AliCaloTrackReader,85) ;
   /// \endcond
 
 } ;

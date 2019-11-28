@@ -67,6 +67,7 @@ fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0),
 fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0),
 fEMCALBadChMinDist(0),       fPHOSBadChMinDist (0),           
 fEMCALNCellsCut(0),          fPHOSNCellsCut(0),
+fEMCALHighEnergyNdiffCut(0), fEMCALMinCellEnNdiffCut(0),
 fUseEMCALTimeCut(1),         fUseParamTimeCut(0),
 fUseTrackTimeCut(0),         fAccessTrackTOF(0),
 fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
@@ -769,11 +770,11 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
 
   if(fFillEMCAL)
   {
-    for(Int_t i = 0; i < 8; i++)
+    for(Int_t i = 0; i < 9; i++)
     {
       TString names[] = 
       { "NoCut", "Corrected", "GoodCluster", "NonLinearity", 
-        "EnergyAndFidutial", "NCells", "BadDist", "Time" } ;
+        "EnergyAndFidutial", "NCells", "BadDist", "Time","NcellsDiff" } ;
       
       fhEMCALClusterCutsE[i] = new TH1F(Form("hEMCALReaderClusterCuts_%d_%s",i,names[i].Data()),
                                         Form("EMCal %d, %s",i,names[i].Data()),   
@@ -858,6 +859,8 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   snprintf(onePar,buffersize,"Dist to bad channel: EMC > %2.1f, PHOS > %2.1f; ",fEMCALBadChMinDist,fPHOSBadChMinDist) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"N cells: EMC > %d, PHOS > %d; ",fEMCALNCellsCut,fPHOSNCellsCut) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"N cells diff TCard: E > %2.2f, Ecell > %1.2f; ",fEMCALHighEnergyNdiffCut,fEMCALMinCellEnNdiffCut) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"EMC time cut single window (%2.2f,%2.2f); ",fEMCALTimeCutMin,fEMCALTimeCutMax) ;
   parList+=onePar ;
@@ -1066,6 +1069,12 @@ void AliCaloTrackReader::InitParameters()
   
   fEMCALNCellsCut    = 0; // open, 1; // standard          
   fPHOSNCellsCut     = 0; // open, 2; // standard
+  
+  // For clusters with energy above fEMCALHighEnergyNdiffCut, count cells
+  // with E > fEMCALMinCellEnNdiffCut in different T-Card than highest energy cell.
+  // Reject if 0.
+  fEMCALHighEnergyNdiffCut = 50.;
+  fEMCALMinCellEnNdiffCut  = 0.;
   
   //Track DCA cuts
   // dca_xy cut = 0.0105+0.0350/TMath::Power(pt,1.1);
@@ -1303,16 +1312,18 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   fIsTriggerMatchOpenCut[2] = kFALSE ;
 
   fCurrentParIndex = 0;
-  if(IsParRun()){
+  if(IsParRun())
+  {
     ULong64_t globalEventID = (ULong64_t)fInputEvent->GetBunchCrossNumber() + (ULong64_t)fInputEvent->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fInputEvent->GetPeriodNumber() * (ULong64_t)59793994260;
-    for(Short_t ipar=0;ipar<GetCaloUtils()->GetEMCALRecoUtils()->GetNPars();ipar++){
-      if(globalEventID >= GetCaloUtils()->GetEMCALRecoUtils()->GetGlobalIDPar(ipar)) {
-	fCurrentParIndex++;
+    for(Short_t ipar=0;ipar<GetCaloUtils()->GetEMCALRecoUtils()->GetNPars();ipar++)
+    {
+      if(globalEventID >= GetCaloUtils()->GetEMCALRecoUtils()->GetGlobalIDPar(ipar)) 
+      {
+        fCurrentParIndex++;
       }
     }
   }
   GetCaloUtils()->GetEMCALRecoUtils()->SetCurrentParNumber(fCurrentParIndex);
-
   
   //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent)
@@ -2210,6 +2221,25 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Check effect of time cut
   fhEMCALClusterCutsE[7]->Fill(clus->E());
   
+  //----------------------------------------
+  // Apply cut on number of cells in different T-Card
+  // than highest energy cell. At high E it should be more than 0
+  // if not, sign of exotic cluster 
+  
+  Int_t   nDiff = 0, nSame = 0;
+  Float_t eDiff = 0, eSame = 0;
+  GetCaloUtils()->GetEnergyAndNumberOfCellsInTCard(clus, GetEMCALCells(), 
+                                                   nDiff, nSame, eDiff, eSame,
+                                                   fEMCALMinCellEnNdiffCut);  
+  if ( nDiff == 0 && clus->E() > fEMCALHighEnergyNdiffCut )
+  {
+    printf("** Reader: Reject cluster with E = %2.1f (min %2.1f) and n cells in diff TCard = %d, for Ecell min = %1.2f; m02 %2.2f, ncells %d\n",
+           clus->E(),fEMCALHighEnergyNdiffCut,nDiff,fEMCALMinCellEnNdiffCut,clus->GetM02(),clus->GetNCells());
+    return;
+  }
+  
+  fhEMCALClusterCutsE[8]->Fill(clus->E());
+
   //----------------------------------------------------
   // Smear the SS to try to match data and simulations,
   // do it only for simulations.
@@ -3162,6 +3192,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("PHOS  Bad Dist > %2.1f \n"     , fPHOSBadChMinDist) ;
   printf("EMCAL N cells  > %d \n"        , fEMCALNCellsCut) ;
   printf("PHOS  N cells  > %d \n"        , fPHOSNCellsCut) ;
+  printf("EMCAL Reject cluster N cells in diff = 0, for E>%2.2f and E cell > %1.2f \n", fEMCALHighEnergyNdiffCut,fEMCALMinCellEnNdiffCut) ;
   printf("EMCAL Time Cut: %3.1f < TOF  < %3.1f\n", fEMCALTimeCutMin, fEMCALTimeCutMax);
   printf("Use CTS         =     %d\n",     fFillCTS) ;
   printf("Use EMCAL       =     %d\n",     fFillEMCAL) ;
@@ -3251,7 +3282,7 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
     if ( fRemoveLEDEvents  == 2 ) // Run2
     {
       // if there is some activity in SM3, accept the event
-      if ( ncellsSM[3] > 1 || ecellsSM[3] > 0.5 ) 
+      if ( ncellsSM[3] > 3 || ecellsSM[3] > 2 ) 
         return kFALSE;
       
 //      printf("Empty SM3 ncells %d sum E cells %3.1f\n", ncellsSM[3],ecellsSM[3]);
