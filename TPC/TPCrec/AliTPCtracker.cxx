@@ -342,10 +342,10 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
       //      tree->SetAlias("errz2Ratio", "0.01*negRatio+0.05*posRatio");
       //      tree->SetAlias("errz2HM", "(errz2OccudEdx+errz2Ratio)*(1+Theta**2)*0.5");
 
-      erry2OccudEdx = 0.12*0.12*occu6N*mdEdx;
+      erry2OccudEdx = 0.12*0.12*occu6N*(mdEdx+0.3*mQ);
       erry2Ratio   = 0.07*negRatio+0.15*posRatio;
       erry2HM      = (erry2OccudEdx+erry2Ratio)*(0.3+tanPhi2);
-      errz2OccudEdx = 0.09*0.09*occu6N*mdEdx;
+      errz2OccudEdx = 0.09*0.09*occu6N*(mdEdx+0.3*mQ);
       errz2Ratio   = 0.01*negRatio+0.05*posRatio;
       errz2HM      = (errz2OccudEdx+errz2Ratio)*(1+tgl2)*0.5;
       //
