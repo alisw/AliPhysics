@@ -59,12 +59,12 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
     fAntiv0Cuts = cuts;
   }
   ;
-  void SetXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
-    fXi = cascCuts;
+  void SetXiCuts(AliFemtoDreamCascadeCuts* cuts) {
+    fXi = cuts;
   }
   ;
-  void SetAntiXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
-    fAntiXi = cascCuts;
+  void SetAntiXiCuts(AliFemtoDreamCascadeCuts* cuts) {
+    fAntiXi = cuts;
   }
   ;
   void SetTrackBufferSize(int trackBuffer) {
