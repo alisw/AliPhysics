@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  * Author: Ahsan Mehmood Khan(ahsan.mehmood.khan@cern.ch)                 * 
- *         Feng Fan (feng.fan@cern.ch)                                    *
+ *         Feng Fan (Feng.Fan@cern.ch)				                                  *
  *         Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)                *
  **************************************************************************/
 
@@ -221,6 +221,8 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 
 
 	const Char_t * nameReg[3]={"NS","AS","TS"};
+if(fUseMC)
+{
 	hNchTSGen = new TH1D("hNchTSGen","",100,-0.5,99.5);
 	fOutputList->Add(hNchTSGen);
 
@@ -231,6 +233,7 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 		hPhiGen[i]= new TH1D(Form("hPhiGen_%s",nameReg[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 		fOutputList->Add(hPhiGen[i]);
 	}
+}
 
 	hNchTSRec = new TH1D("hNchTSRec","",100,-0.5,99.5);
 	fOutputList->Add(hNchTSRec);
@@ -297,7 +300,6 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	hPtLeadingMeasured = new TH1D("hPtLeadingMeasured","",ptNbins,ptbins1);
 	fOutputList->Add(hPtLeadingMeasured);
 
-	//fEventCuts.AddQAplotsToList(fOutputList);
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
 
 }
@@ -541,6 +543,7 @@ void AliAnalysisTaskMcKnoUe::GetBinByBinCorrections(){
 	}
 
 }
+
 void AliAnalysisTaskMcKnoUe::GetDetectorResponse() {
 
 	Int_t multTSgen=0;
@@ -617,6 +620,7 @@ void AliAnalysisTaskMcKnoUe::GetDetectorResponse() {
 
 }
 
+
 void AliAnalysisTaskMcKnoUe::GetUEObservables(){
 
 	Int_t nch_top[3];
@@ -675,7 +679,7 @@ void AliAnalysisTaskMcKnoUe::GetUEObservables(){
 
 		if(!track) continue;
 
-		if(!fTrackFilter->IsSelected(track))
+		if(!fLeadingTrackFilter->IsSelected(track))
 			continue;
 
 		if(TMath::Abs(track->Eta()) > fEtaCut)
