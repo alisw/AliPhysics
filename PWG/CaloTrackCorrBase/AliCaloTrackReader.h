@@ -337,7 +337,12 @@ public:
   void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; }
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
   Bool_t           RejectLEDEvents();
-  
+  void             SetLEDHighEnergyCutSM(Float_t e)        { fLEDHighEnergyCutSM = e ; }   
+  void             SetLEDHighNCellsCutSM(Int_t   n)        { fLEDHighNCellsCutSM = n ; }   
+  void             SetLEDLowEnergyCutSM3(Float_t e)        { fLEDLowEnergyCutSM3 = e ; }   
+  void             SetLEDLowNCellsCutSM3(Int_t   n)        { fLEDLowNCellsCutSM3 = n ; }   
+  void             SetLEDMinCellEnergy  (Float_t e)        { fLEDMinCellEnergy   = e ; }   
+
   void             SetFiredTriggerClassName(TString name)  { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
   TString          GetFiredTriggerClasses()          const { return GetInputEvent()->GetFiredTriggerClasses() ; }
@@ -927,8 +932,14 @@ public:
   
   Float_t          fZvtxCut ;	                     ///<  Cut on vertex position.
   Bool_t           fAcceptFastCluster;             ///<  Accept events from fast cluster, exclude these events for LHC11a.
+ 
   Int_t            fRemoveLEDEvents;               ///<  Remove events where LED was wrongly firing - only EMCAL LHC11a for this equal to 1, generalized to any SM for larger
-  
+  Float_t          fLEDHighEnergyCutSM;            ///<  SM is too active if energy above this value, likely LED event 
+  Int_t            fLEDHighNCellsCutSM;            ///<  SM is too active if n cells above this value, likely LED event 
+  Float_t          fLEDLowEnergyCutSM3;            ///<  SM3 low activity if energy below this value, check activity on other SM for LED event (Run2)
+  Int_t            fLEDLowNCellsCutSM3;            ///<  SM3 low activity if n cells below this value, check activity on other SM LED event (Run2)
+  Float_t          fLEDMinCellEnergy;              ///<  Count or sum cells energy above this value to determine if event had LEDs
+
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
   Int_t            fTriggerPatchTimeWindow[2];     ///<  Trigger patch selection window.
@@ -1020,6 +1031,9 @@ public:
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
  
+  TH2F  *          fhEMCALNSumEnCellsPerSM;        //!<! Control histogram of LED events rejection
+  TH2F  *          fhEMCALNSumEnCellsPerSMAfter;   //!<! Control histogram of LED events rejection, after cut
+  
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
   
