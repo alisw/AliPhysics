@@ -128,6 +128,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fSystErrClInnerRegZSigInv(0),
   fUseClusterErrordEdxCorrection(false),     ///< switch to use the dEdx correction  - default is false - for  back compatibility
   fUseClusterErrordEdxMultCorrection(false),     ///< switch to use the dEdx, multiplicity  correction  - for  back compatibility
+  fClusterNSigma2Cut(3,3),                       /// < n sigma cluster/track cut
   fUseSystematicCorrelation(kTRUE)
 {
   /// constructor
@@ -159,6 +160,11 @@ AliTPCRecoParam::AliTPCRecoParam():
   //
   SetBadPadMaxDistXYZD(999.,999.,999.,999.); // by default accept any distortions
   SetBadClusMaxErrYZ(999.,999.);        // by default accept any errors
+  //
+  fClusterNSigma2Cut(0,0)=1; fClusterNSigma2Cut(0,1)=6.25; fClusterNSigma2Cut(0,2)=2*6.25;         // edge n sigma cut
+  fClusterNSigma2Cut(1,0)=9; fClusterNSigma2Cut(1,1)=9; fClusterNSigma2Cut(1,2)=32;                // normal clusters cut
+  fClusterNSigma2Cut(2,0)=6.25; fClusterNSigma2Cut(2,1)=6.25; fClusterNSigma2Cut(2,2)=2*6.25;      // unfolded clusters cut
+
 }
 
 //_____________________________________________________________________________

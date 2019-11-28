@@ -10,6 +10,7 @@
 #include "AliDetectorRecoParam.h"
 #include "TVectorF.h"
 #include "TVectorD.h"
+#include  "TMatrixF.h"
 
 class AliTPCRecoParam : public AliDetectorRecoParam
 {
@@ -214,6 +215,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void   SettUseClusterErrordEdxCorrection(Bool_t useClusterErrordEdxCorrection){ fUseClusterErrordEdxCorrection=useClusterErrordEdxCorrection;}
   Bool_t GetUseClusterErrordEdxMultCorrection() const {return fUseClusterErrordEdxMultCorrection;}
   void   SettUseClusterErrordEdxMultCorrection(Bool_t useClusterErrordEdxMultCorrection){ fUseClusterErrordEdxMultCorrection=useClusterErrordEdxMultCorrection;}
+  const TMatrixF& GetClusterNSigma2Cut() const {return fClusterNSigma2Cut;}
+  void SetClusterNSigma2Cut(TMatrixF cuts){fClusterNSigma2Cut=cuts;}
 
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env.
@@ -331,6 +334,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   Bool_t fUseClusterErrordEdxCorrection;     ///< switch to use the dEdx correction
   Bool_t fUseClusterErrordEdxMultCorrection;     ///< switch to use the dEdx, multiplicity  correction
+  TMatrixF fClusterNSigma2Cut;                    /// < n sigma cluster/trac cut
   static TVectorD* fgSystErrClustCustom;  //< custom systematic errors for the TPC clusters overriding persistent data member
   static TVectorD* fgPrimaryDCACut;       //< only primaries passing DCAYZ cut are reconstructed
 
