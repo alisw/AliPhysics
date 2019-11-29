@@ -51,7 +51,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  *
                                  * \param name , the name taken by the AliAnalysisTaskSE object.
                                  */
-                                AliAnalysisTaskUPCforward(const char *name);
+                                AliAnalysisTaskUPCforward( const char *name, Int_t _fSetSingleMuonPt );
 
                                 /**
                                  * Virtual destructor for the class. It will
@@ -1608,7 +1608,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 44);
+        ClassDef(AliAnalysisTaskUPCforward, 45);
 };
 
 #endif
