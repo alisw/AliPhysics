@@ -116,8 +116,6 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Bool_t fIsPileupFromSPDInMultBins;
     Bool_t fIsPileupMV;//SPD multi vertexer
 
-    vector<Float_t> fPileupTrackZ;
-    vector<Float_t> fPileupTracktgl;
     Int_t fTPCpileupMultiplicity[2];
     Float_t fTPCpileupZ[2];
 
@@ -185,6 +183,8 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<vector<Float_t>>fTrackMCProdVtx;//production vertex in MC for track
     vector<Int_t>fTrackMCGeneratorIndex;
     vector<Bool_t> fTrackMCIsPhysicalPrimary;
+    vector<Bool_t> fTrackMCIsSecondaryFromMaterial;
+    vector<Bool_t> fTrackMCIsSecondaryFromWeakDecay;
     vector<Int_t>fTrackMCIndex;
     vector<Int_t>fTrackMCPdgCode;
     vector<Int_t>fTrackMCMotherIndex;
@@ -194,6 +194,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<vector<Float_t>> fTrackMCFirstMotherMomentum;
 
     //V0 info
+    vector<Bool_t> fV0OnFly;//N
     vector<vector<vector<Float_t>>> fV0legMomentum;//N x 2 x 3
     vector<vector<Float_t>> fV0legPin;//N x 2
     vector<Float_t> fV0Lxy;//N
@@ -247,7 +248,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 15);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 16);
 
 };
 
