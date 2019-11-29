@@ -471,6 +471,14 @@ public:
   void     SwitchOffRejectExoticCluster()             { fRejectExoticCluster = kFALSE  ; }
   Bool_t   IsRejectExoticCluster()              const { return fRejectExoticCluster    ; }
 
+  Bool_t   IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
+                             Int_t & rowDiff, Int_t & colDiff) const ;
+  
+  void     GetEnergyAndNumberOfCellsInTCard(AliVCluster* clus, Int_t absIdMax, AliVCaloCells* cells,
+                                            Int_t   & nDiff, Int_t   & nSame, 
+                                            Float_t & eDiff, Float_t & eSame, 
+                                            Float_t   emin = 0.);
+  
   // Cluster selection
   Bool_t   IsGoodCluster(AliVCluster *cluster, const AliEMCALGeometry *geom, 
                          AliVCaloCells* cells, Int_t bc =-1);
