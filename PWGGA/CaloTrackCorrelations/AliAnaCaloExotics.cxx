@@ -203,8 +203,8 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
   fLowEnergyCutSM3 = 2   ; fLowNCellsCutSM3 = 3;
   
   fEventMaxNumberOfStrips = 2; 
-  fHighEnergyCutStrip[0] = 45; fHighEnergyCutStrip[1] = 20; 
-  fHighNCellsCutStrip[0] = 20; fHighNCellsCutStrip[1] = 12;
+  fHighEnergyCutStrip[0] = 45; fHighEnergyCutStrip[1] = 32; 
+  fHighNCellsCutStrip[0] = 20; fHighNCellsCutStrip[1] = 14;
   
   // Init to zero
   //
@@ -766,8 +766,8 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
       
       for (Int_t ieta = 0; ieta < 24; ieta++)
       {
-        if( fEnCellsStrip[0][ism][ieta] > maxECells || 
-            fnCellsStrip [0][ism][ieta] > maxNCells   )
+        if( fEnCellsStrip[0][ism][ieta] >= maxECells || 
+            fnCellsStrip [0][ism][ieta] >= maxNCells   )
         {
           fEventNStripActive++;
           fEventNStripActiveSM[ism]++;          
