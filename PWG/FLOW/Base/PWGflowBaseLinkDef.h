@@ -45,4 +45,6 @@
 #pragma link C++ class AliFlowOnTheFlyEventGenerator+;
 #pragma link C++ class AliFlowAnalysisWithMultiparticleCorrelations+;
 
+#pragma link C++ class AliAnalysisTaskZDCEP+;
+
 #endif
