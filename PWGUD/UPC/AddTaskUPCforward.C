@@ -1,8 +1,9 @@
-AliAnalysisTaskUPCforward* AddTaskUPCforward(  const char* suffix = "" )
+AliAnalysisTaskUPCforward* AddTaskUPCforward( TString name = "name", Int_t _fSetSingleMuonPt = 0, const char* suffix = "" )
 {
-    TString name = "UPCforward";
-    TString combinedName;
-    combinedName.Form("UPCforward_%s", suffix);
+    // TString name = "UPCforward";
+    // TString combinedName;
+    // combinedName.Form("UPCforward_%s", suffix);
+
 
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -18,9 +19,10 @@ AliAnalysisTaskUPCforward* AddTaskUPCforward(  const char* suffix = "" )
     }
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += ":MyTask";      // create a subfolder in the file
+    fileName += Form(":MyTask%s", suffix);      // create a subfolder in the file
+    // fileName += ":MyTask";      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskUPCforward* task = new AliAnalysisTaskUPCforward(name.Data());
+    AliAnalysisTaskUPCforward* task = new AliAnalysisTaskUPCforward(name.Data(), _fSetSingleMuonPt);
     if(!task) return 0x0;
     // task->SelectCollisionCandidates(AliVEvent::kAnyINT);     // Physics Selection used by "everybody" but NOT in UPC
     // add your task to the manager

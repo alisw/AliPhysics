@@ -361,11 +361,11 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
 }
 
 //_____________________________________________________________________________
-AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
+AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward( const char* name, Int_t _fSetSingleMuonPt = 0 )
     : AliAnalysisTaskSE(name),
       fAOD(0),
       fOutputList(0),
-      fSetSingleMuonPt(0),
+      fSetSingleMuonPt(_fSetSingleMuonPt),
       fPtSingleMuonH(0),
       fNumberMuonsH(0),
       fCounterH(0),
