@@ -481,10 +481,13 @@ public:
  
   TH1F *   fhSumEnCellsAcceptEventStrip[fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, LED rejected, based on n strip 
   TH1F *   fhNCellsAcceptEventStrip    [fgkNCellEnMinBins];   //!<! For E cell > emin, count number of cells, LED rejected, based on n strip
- 
+  TH1F *   fhSumEnCellsAcceptEventBoth[fgkNCellEnMinBins];    //!<! For E cell > emin, sum of cells energy, LED rejected, based on n strip and SM activity
+  TH1F *   fhNCellsAcceptEventBoth    [fgkNCellEnMinBins];    //!<! For E cell > emin, count number of cells, LED rejected, based on n strip and SM activity
+  
   TH2F *   fhNSumEnCells                [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy 
   TH2F *   fhNSumEnCellsAcceptEvent     [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy, LED rejected 
   TH2F *   fhNSumEnCellsAcceptEventStrip[fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy, LED rejected, based on n strip 
+  TH2F *   fhNSumEnCellsAcceptEventBoth [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy, LED rejected, based on n strip and SM activity 
 
   // Per SM
   TH2F *   fhSumEnCellsPerSM           [fgkNCellEnMinBins];   //!<! For E cell > emin, sum of cells energy, per SM 
@@ -507,10 +510,13 @@ public:
   
   TH2F *   fhSumEnCellsPerSMAcceptEventStrip[fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy, per SM, LED rejected, based on n strip 
   TH2F *   fhNCellsPerSMAcceptEventStrip    [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells, per SM, LED rejected, based on n strip
+  TH2F *   fhSumEnCellsPerSMAcceptEventBoth [fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy, per SM, LED rejected, based on n strip and SM activity 
+  TH2F *   fhNCellsPerSMAcceptEventBoth     [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells, per SM, LED rejected, based on n strip and SM activity 
   
   TH3F *   fhNSumEnCellsPerSM                [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy, per SM 
   TH3F *   fhNSumEnCellsPerSMAcceptEvent     [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy, per SM, LED rejected 
   TH3F *   fhNSumEnCellsPerSMAcceptEventStrip[fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy, per SM, LED rejected, based on n strip 
+  TH3F *   fhNSumEnCellsPerSMAcceptEventBoth[fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy, per SM, LED rejected, based on n strip and SM activity 
   
   // Per Strip
   //
@@ -526,21 +532,27 @@ public:
   
   TH1F *   fhSumEnCellsPerStripAcceptEventStrip[fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, accept event based on n strip 
   TH1F *   fhNCellsPerStripAcceptEventStrip    [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells in a strip, accept event based on n strip
-  TH1F *   fhSumEnCellsPerStripEventAccept     [fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, accept event based on n strip 
-  TH1F *   fhNCellsPerStripEventAccept         [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells in a strip, accept event based on n strip
+  TH1F *   fhSumEnCellsPerStripAcceptEventBoth [fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, accept event based on n strip and SM activity
+  TH1F *   fhNCellsPerStripAcceptEventBoth     [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells in a strip, accept event based on n strip and SM activity
+  TH1F *   fhSumEnCellsPerStripEventAccept     [fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, accept event based on SM activity
+  TH1F *   fhNCellsPerStripEventAccept         [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells in a strip, accept event based on SM activity
   
   TH2F *   fhSumEnCellsPerStripPerSMEventAccept     [fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, per SM, accept event based on n strip 
   TH2F *   fhNCellsPerStripPerSMEventAccept         [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells in a strip, per SM, accept event based on n strip
   TH2F *   fhSumEnCellsPerStripPerSMAcceptEventStrip[fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, per SM, accept event based on n strip 
   TH2F *   fhNCellsPerStripPerSMAcceptEventStrip    [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells in a strip, per SM, accept event based on n strip
+  TH2F *   fhSumEnCellsPerStripPerSMAcceptEventBoth [fgkNCellEnMinBins]; //!<! For E cell > emin, sum of cells energy in a strip, per SM, accept event based on n strip 
+  TH2F *   fhNCellsPerStripPerSMAcceptEventBoth     [fgkNCellEnMinBins]; //!<! For E cell > emin, count number of cells in a strip, per SM, accept event based on n strip
   
   TH2F *   fhNSumEnCellsPerStrip                [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy in a strip
   TH2F *   fhNSumEnCellsPerStripAcceptEvent     [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy in a strip, LED rejected 
   TH2F *   fhNSumEnCellsPerStripAcceptEventStrip[fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy in a strip, LED rejected, based on n strip
+  TH2F *   fhNSumEnCellsPerStripAcceptEventBoth[fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy in a strip, LED rejected, based on n strip
 
   TH3F *   fhNSumEnCellsPerStripPerSM                [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy in a strip
   TH3F *   fhNSumEnCellsPerStripPerSMAcceptEvent     [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy in a strip, per SM, LED rejected 
   TH3F *   fhNSumEnCellsPerStripPerSMAcceptEventStrip[fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy in a strip, per SM, LED rejected, based on n strip
+  TH3F *   fhNSumEnCellsPerStripPerSMAcceptEventBoth [fgkNCellEnMinBins];  //!<! For E cell > emin, N vs sum of cells energy in a strip, per SM, LED rejected, based on n strip
   
   //
   
