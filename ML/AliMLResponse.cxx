@@ -86,7 +86,9 @@ ClassImp(AliMLResponse);
 /// \endcond
 
 //________________________________________________________________
-AliMLResponse::AliMLResponse() : TObject(), fConfigFilePath{}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{} {
+AliMLResponse::AliMLResponse()
+    : TObject(), fConfigFilePath{}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{}, fNVariables{},
+      fBinsBegin{}, fRaw{} {
   //
   // Default constructor
   //
@@ -94,7 +96,8 @@ AliMLResponse::AliMLResponse() : TObject(), fConfigFilePath{}, fModels{}, fCentC
 
 //________________________________________________________________
 AliMLResponse::AliMLResponse(string configfilename)
-    : TObject(), fConfigFilePath{configfilename}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{} {
+    : TObject(), fConfigFilePath{configfilename}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{},
+      fNVariables{}, fBinsBegin{}, fRaw{} {
   //
   // Standard constructor
   //
@@ -110,7 +113,8 @@ AliMLResponse::~AliMLResponse() {
 //--------------------------------------------------------------------------
 AliMLResponse::AliMLResponse(const AliMLResponse &source)
     : TObject(source), fConfigFilePath{source.fConfigFilePath}, fModels{source.fModels},
-      fCentClasses{source.fCentClasses}, fBins{source.fBins}, fVariableNames{source.fVariableNames} {
+      fCentClasses{source.fCentClasses}, fBins{source.fBins}, fVariableNames{source.fVariableNames},
+      fNBins{source.fNBins}, fNVariables{source.fNVariables}, fBinsBegin{source.fBinsBegin}, fRaw{source.fRaw} {
   //
   // Copy constructor
   //
@@ -129,6 +133,10 @@ AliMLResponse &AliMLResponse::operator=(const AliMLResponse &source) {
   fCentClasses    = source.fCentClasses;
   fBins           = source.fBins;
   fVariableNames  = source.fVariableNames;
+  fNBins          = source.fNBins;
+  fNVariables     = source.fNVariables;
+  fBinsBegin      = source.fBinsBegin;
+  fRaw            = source.fRaw;
 
   return *this;
 }
@@ -165,6 +173,10 @@ void AliMLResponse::MLResponseInit() {
 
   fVariableNames = nodeList["VAR_NAMES"].as<vector<string>>();
   fBins          = nodeList["BINS"].as<vector<float>>();
+  fNBins         = nodeList["N_MODELS"].as<int>();
+  fNVariables    = nodeList["NUM_VARS"].as<int>();
+  fRaw           = nodeList["RAW_SCORE"].as<bool>();
+  fBinsBegin     = fBins.begin();
 
   for (const auto &model : nodeList["MODELS"]) {
     fModels.push_back(ModelHandler{model});
@@ -176,6 +188,36 @@ void AliMLResponse::MLResponseInit() {
       AliFatal("Error in model compilation! Exit");
     }
   }
+}
+
+//________________________________________________________________
+int AliMLResponse::FindBin(double binvar) {
+  vector<float>::iterator low;
+  low = std::lower_bound(fBins.begin(), fBins.end(), binvar);
+  return low - fBinsBegin;
+}
+
+//________________________________________________________________
+double AliMLResponse::Predict(double binvar, map<string, double> varmap, bool useraw) {
+  if ((int)varmap.size() >= fNVariables) {
+    AliFatal("The variables map you provided to the predictor have a size different from the variable list size! Exit");
+  }
+
+  vector<double> features;
+  for (const auto &varname : fVariableNames) {
+    if (varmap.find(varname) == varmap.end()) {
+      AliFatal(Form("Variable |%s| not found in variable list provided in config! Exit", varname.data()));
+    }
+    features.push_back(varmap[varname]);
+  }
+
+  int bin = FindBin(binvar);
+  if (bin == 0 || bin == fNBins) {
+    AliWarning("Binned variable outside range, no model available! Exit");
+    return -999.;
+  }
+
+  return fModels[bin - 1].GetModel().Predict(&features[0], fNVariables, useraw);
 }
 
 // TODO: far fare la compilazione e testare il tutto con i file presi dal mio alien

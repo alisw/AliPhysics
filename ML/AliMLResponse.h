@@ -19,6 +19,7 @@
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////////////////////////////////
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <string>
@@ -41,11 +42,13 @@ public:
   ModelHandler() : model(), path(), library(), scorecut() {}
   ModelHandler(const YAML::Node &node)
       : model(), path(node["path"].as<string>()), library(node["library"].as<string>()),
-        scorecut(node["cut"].as<float>()) {}
+        scorecut(node["cut"].as<double>()) {}
 
   string const &GetPath() const { return path; }
   string const &GetLibrary() const { return library; }
-  float const &GetScoreCut() const { return scorecut; }
+  double const &GetScoreCut() const { return scorecut; }
+
+  AliExternalBDT  &GetModel() { return model; }
 
   bool CompileModel();
 
@@ -55,7 +58,7 @@ private:
   string path;
   string library;
 
-  float scorecut;
+  double scorecut;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -76,17 +79,27 @@ public:
   /// method to configure the AliMLResponse object from the config file and compile the models usign treelite
   void MLResponseInit();    /// (it has to be done run time)
 
+  /// return the bin index
+  int FindBin(double binvar);
+
+  /// return the MLModel predicted score (raw or proba, depending on useraw)
+  double Predict(double binvar, map<string, double> varmap, bool useraw);
+
   /// TODO: metterle private quando i test sono ok
 
   string fConfigFilePath;    /// path of the config file
 
   vector<ModelHandler> fModels;
-
-  vector<int> fCentClasses;    /// centrality classes ([cent_min, cent_max])
-
-  vector<float> fBins;    /// bin edges for the binned variable (pt/ct)
-
+  vector<int> fCentClasses;         /// centrality classes ([cent_min, cent_max])
+  vector<float> fBins;              /// bin edges for the binned variable (pt/ct)
   vector<string> fVariableNames;    /// bin edges for the binned variable (pt/ct)
+
+  int fNBins;         /// number of bins stored for consistency checks
+  int fNVariables;    /// number of variables (features) stored for checks
+
+  vector<float>::iterator fBinsBegin;    /// evaluate just once is better
+
+  bool fRaw;
 
 protected:
   /// \cond CLASSIMP
