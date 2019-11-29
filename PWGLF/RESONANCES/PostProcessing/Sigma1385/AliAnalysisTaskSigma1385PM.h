@@ -173,7 +173,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     // Add rapidity/radius/Lifetime/Y cut of lambda
     // Add NanoOption
     // 4: Add GetImpactParm function for nano
-    // 5: Seprate MC Sparse, INEL stduy capability
+    // 5: Seprate MC Sparse, INEL study capability
 };
 
 #endif
