@@ -189,10 +189,10 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT yaml-cpp CORRFW)
+set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW)
 # Dependencies for ROOT6 only
 if(ROOT_VERSION_MAJOR EQUAL 6)
-  set(LIBDEPS ${LIBDEPS} ML)
+  set(LIBDEPS ${LIBDEPS} ML yaml-cpp)
 endif()
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
