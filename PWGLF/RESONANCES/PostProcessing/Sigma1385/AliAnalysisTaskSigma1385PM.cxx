@@ -73,23 +73,28 @@ enum {
     kSigmaStarN_MIX,
     kAntiSigmaStarP_MIX,
     kAntiSigmaStarN_MIX,
-    kSigmaStarP_GEN,  // 9
+};
+enum {
+    kSigmaStarP_GEN = 1,  // 1
     kSigmaStarN_GEN,
     kAntiSigmaStarP_GEN,
     kAntiSigmaStarN_GEN,
-    kSigmaStarP_GEN_INEL10,  // 13
+    kSigmaStarP_GEN_INEL10,  // 5
     kSigmaStarN_GEN_INEL10,
     kAntiSigmaStarP_GEN_INEL10,
     kAntiSigmaStarN_GEN_INEL10,
-    kSigmaStarP_GEN_INEL10_IGZ0,  // 17
-    kSigmaStarN_GEN_INEL10_IGZ0,
-    kAntiSigmaStarP_GEN_INEL10_IGZ0,
-    kAntiSigmaStarN_GEN_INEL10_IGZ0,
-    kSigmaStarP_REC,  // 21
+    kSigmaStarP_GEN_INEL10_IGZ,  // 9
+    kSigmaStarN_GEN_INEL10_IGZ,
+    kAntiSigmaStarP_GEN_INEL10_IGZ,
+    kAntiSigmaStarN_GEN_INEL10_IGZ,
+    kSigmaStarP_GEN_TRIG,  // 13
+    kSigmaStarN_GEN_TRIG,
+    kAntiSigmaStarP_TRIG,
+    kAntiSigmaStarN_TRIG,
+    kSigmaStarP_REC,  // 17
     kSigmaStarN_REC,
     kAntiSigmaStarP_REC,
     kAntiSigmaStarN_REC,
-    kAllType
 };
 
 class AliAnalysisTaskSigma1385PM;
@@ -101,7 +106,7 @@ ClassImp(AliAnalysisTaskSigma1385PM)
 //_____________________________________________________________________________
 AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
                                                            Bool_t MCcase)
-    : AliAnalysisTaskSE(name), fEvt(0), IsMC(MCcase), fNtupleSigma1385(0) {
+    : AliAnalysisTaskSE(name), fEvt(0), fIsMC(MCcase), fNtupleSigma1385(0) {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     DefineOutput(2, TNtupleD::Class());
@@ -137,9 +142,15 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     auto binType = AxisStr(
         "Type", {"SigmaStarP", "SigmaStarN", "AntiSigmaStarP", "AntiSigmaStarN",
                  "SigmaStarP_mix", "SigmaStarN_mix", "AntiSigmaStarP_mix",
-                 "AntiSigmaStarN_mix", "SigmaStarP_gen", "SigmaStarN_gen",
-                 "AntiSigmaStarP_gen", "AntiSigmaStarN_gen", "SigmaStarP_rec",
-                 "SigmaStarN_rec", "AntiSigmaStarP_rec", "AntiSigmaStarN_rec"});
+                 "AntiSigmaStarN_mix"});
+    auto binTypeMC = AxisStr(
+        "Type", {"SigmaStarP_gen", "SigmaStarN_gen","AntiSigmaStarP_gen",
+                 "AntiSigmaStarN_gen","SigmaStarP_gen_inel10", "SigmaStarN_gen_inel10",
+                 "AntiSigmaStarP_gen_inel10", "AntiSigmaStarN_gen_inel10","SigmaStarP_gen_inel10_igz",
+                 "SigmaStarN_gen_inel10_igz","AntiSigmaStarP_gen_inel10_igz", "AntiSigmaStarN_gen_inel10_igz",
+                 "SigmaStarP_gen_trig", "SigmaStarN_gen_trig","AntiSigmaStarP_gen_trig",
+                 "AntiSigmaStarN_gen_trig", "SigmaStarP_rec", "SigmaStarN_rec", "AntiSigmaStarP_rec",
+                 "AntiSigmaStarN_rec"});
 
     std::vector<double> centaxisbin = {
         0,  1,  5,  10, 15, 20, 30,
@@ -149,8 +160,11 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     auto binMass = AxisFix("Mass", 2000, 1.0, 3.0);
     binZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10});
 
-    CreateTHnSparse("Sigma1385_data", "Sigma1385_data", 5,
-                    {systype ,binType, binCent, binPt, binMass}, "s");
+    CreateTHnSparse("Sigma1385_data", "Sigma1385_data", 4,
+                    {binType, binCent, binPt, binMass}, "s");
+    if(fIsMC)
+        CreateTHnSparse("Sigma1385_mc", "Sigma1385_mc", 4,
+                        {binTypeMC, binCent, binPt, binMass}, "s");
     fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
     fHistos->CreateTH1("hMultiplicity", "", 100, 0, 100, "s");
 
@@ -235,7 +249,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
     bool IsEvtSelected{false}, IsINEL0True{false}, IsSelectedTrig{false}, IsVtxInZCut{false};
     if (!nanoHeader) {
         IsEvtSelected = fEventCuts.AcceptEvent(event);
-        if (IsMC) {
+        if (fIsMC) {
             if (fEvt->IsA() != AliESDEvent::Class())
                 fMCArray = (TClonesArray*)fEvt->FindListObject(
                     "mcparticles");  // AOD Case
@@ -250,14 +264,20 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
             fEventCuts.PassedCut(AliEventCuts::kVertexPosition);
         IsSelectedTrig = fEventCuts.PassedCut(AliEventCuts::kTrigger);
     } else {
-        if(!IsNano)
-            IsNano = kTRUE;
+        if(!fIsNano)
+            fIsNano = kTRUE;
         IsEvtSelected = true;
         fCent = nanoHeader->GetCentr("V0M");
     }
 
-    if (IsMC) // including all effects
-        FillMCinput(fMCEvent);
+    if (fIsMC){
+        if(IsVtxInZCut)
+            FillMCinput(fMCEvent, 1);
+        if(IsINEL0True && IsVtxInZCut)
+            FillMCinput(fMCEvent, 2);
+        if(IsSelectedTrig)
+            FillMCinput(fMCEvent ,3);
+    }
 
     if (!IsEvtSelected) {
         PostData(1, fHistos->GetListOfHistograms());
@@ -267,8 +287,8 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
 
     fHistos->FillTH1("hMultiplicity", (double)fCent);
 
-    // if (IsMC)
-    //     FillMCinput(fMCEvent);
+    if (fIsMC)
+        FillMCinput(fMCEvent);
     if (fEvt->IsA() == AliAODEvent::Class())
         vertex = ((AliAODEvent*)fEvt)->GetPrimaryVertex();
     const AliVVertex* pVtx = fEvt->GetPrimaryVertex();
@@ -279,21 +299,19 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
     // Event Mixing pool -----------------------------------------------------
     zbin = binZ.FindBin(lPosPV[2]) - 1;           // Event mixing z-bin
     centbin = binCent.FindBin(fCent) - 1;  // Event mixing cent bin
+    if (isINEL)
+        centbin = 0;                       // for INEL case
 
-    for (int sys = 0; sys < fSysCheck.size(); sys++) {
-        bool checkPion = GoodTracksSelection();
-        bool checkV0 = GoodV0Selection();
+    bool checkPion = GoodTracksSelection();
+    bool checkV0 = GoodV0Selection();
 
-        if (checkPion && checkV0) {
-            FillTracks(sys);  // Fill the histogram
-        }
-        if (sys == 0) {
-            if (fsetmixing && goodtrackindices.size()) {
-                FillTrackToEventPool();  // use only pion track pool.
-            }
-            if (checkPion && checkV0 && fFillnTuple)
-                FillNtuples();
-        }
+    if (checkPion && checkV0) {
+        FillTracks();  // Fill the histogram
+        if (fFillnTuple)
+            FillNtuples();
+    }
+    if (fsetmixing && goodtrackindices.size()) {
+        FillTrackToEventPool();  // use only pion track pool.
     }
     PostData(1, fHistos->GetListOfHistograms());
     PostData(2, fNtupleSigma1385);
@@ -322,7 +340,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
                 continue;
         }  // ESD Case
         else {
-            if (!IsNano && !((AliAODTrack*)track)->TestFilterBit(32))
+            if (!fIsNano && !((AliAODTrack*)track)->TestFilterBit(32))
                 continue;
         }  // AOD Case
 
@@ -762,10 +780,10 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
             if (isAnti && !isPionPlus)
                 sign = kAntiSigmaStarP;
 
-            FillTHnSparse("Sigma1385", {(double)sign, (double)fCent,
+            FillTHnSparse("Sigma1385_data", {(double)sign, (double)fCent,
                                         vecsum.Pt(), vecsum.M()});
 
-            if (IsMC &&
+            if (fIsMC &&
                 IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j])) {
                 if (!isAnti && isPionPlus)
                     sign = kSigmaStarP_REC;
@@ -776,7 +794,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
                 if (isAnti && !isPionPlus)
                     sign = kAntiSigmaStarP_REC;
 
-                FillTHnSparse("Sigma1385", {(double)sign, (double)fCent,
+                FillTHnSparse("Sigma1385_mc", {(double)sign, (double)fCent,
                                             vecsum.Pt(), vecsum.M()});
             }
         }  // pion loop
@@ -814,7 +832,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
                 if (isAnti && !isPionPlus)
                     sign = kAntiSigmaStarP_MIX;
 
-                FillTHnSparse("Sigma1385", {(double)sign, (double)fCent,
+                FillTHnSparse("Sigma1385_data", {(double)sign, (double)fCent,
                                             vecsum.Pt(), vecsum.M()});
             }
         }
@@ -966,7 +984,7 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
             // tmp[13] = v0ESD->Eta(); //EtaV0
             // tmp[14] = v0ESD->Phi(); //PhiV0
 
-            if (IsMC) {
+            if (fIsMC) {
                 if (IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j]))
                     tmp[15] = (int)sign;  // MCflag
                 else
@@ -977,7 +995,7 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
         }                     // pion loop
     }
 }
-void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent) {
+void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent, int Fillbin) {
     auto sign = kAllType;
     if (fEvt->IsA() == AliESDEvent::Class()) {
         for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++) {
@@ -998,15 +1016,15 @@ void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent) {
                 (mcInputTrack->Y() < fSigmaStarYCutLow))
                 continue;
             if (v0PdgCode == kSigmaStarPCode)
-                sign = kSigmaStarP_GEN;
+                sign = kSigmaStarP_GEN + Fillbin*4;
             if (v0PdgCode == -kSigmaStarPCode)
-                sign = kAntiSigmaStarP_GEN;
+                sign = kAntiSigmaStarP_GEN + Fillbin*4;
             if (v0PdgCode == kSigmaStarNCode)
-                sign = kSigmaStarN_GEN;
+                sign = kSigmaStarN_GEN + Fillbin*4;
             if (v0PdgCode == -kSigmaStarNCode)
-                sign = kAntiSigmaStarN_GEN;
+                sign = kAntiSigmaStarN_GEN + Fillbin*4;
 
-            FillTHnSparse("Sigma1385",
+            FillTHnSparse("Sigma1385_mc",
                           {(double)sign, (double)fCent, mcInputTrack->Pt(),
                            mcInputTrack->GetCalcMass()});
         }
@@ -1033,15 +1051,15 @@ void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent) {
                 continue;
 
             if (v0PdgCode == kSigmaStarPCode)
-                sign = kSigmaStarP_GEN;
+                sign = kSigmaStarP_GEN + Fillbin*4;
             if (v0PdgCode == -kSigmaStarPCode)
-                sign = kAntiSigmaStarP_GEN;
+                sign = kAntiSigmaStarP_GEN + Fillbin*4;
             if (v0PdgCode == kSigmaStarNCode)
-                sign = kSigmaStarN_GEN;
+                sign = kSigmaStarN_GEN + Fillbin*4;
             if (v0PdgCode == -kSigmaStarNCode)
-                sign = kAntiSigmaStarN_GEN;
+                sign = kAntiSigmaStarN_GEN + Fillbin*4;
 
-            FillTHnSparse("Sigma1385",
+            FillTHnSparse("Sigma1385_mc",
                           {(double)sign, (double)fCent, mcInputTrack->Pt(),
                            mcInputTrack->GetCalcMass()});
         }

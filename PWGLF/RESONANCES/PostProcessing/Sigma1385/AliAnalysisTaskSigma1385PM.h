@@ -12,25 +12,6 @@ class AliESDtrackCuts;
 
 class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
    public:
-    enum{
-        kFilterBit = 0,
-        kTPCNsigSigmaStarPionCut,
-        kSigmaStarPionEtaCut,
-        kSigmaStarPionZVertexCut,
-        kSigmaStarPionXYVertexSigmaCut,
-        kTPCNsigLambdaProtonCut,
-        kTPCNsigLambdaPionCut,
-        kDCADistLambdaDaughtersCut,
-        kDCArDistLambdaPVCut,
-        kV0CosineOfPointingAngleCut,
-        kMaxLambdaRapidity,
-        kLambdaLowRadius,
-        kLambdaHighRadius,
-        kLambdaLifetime,
-        kV0MassWindowCut,
-        kSigmaStarYCutHigh,
-        kSigmaStarYCutLow
-    }
     AliAnalysisTaskSigma1385PM();
     AliAnalysisTaskSigma1385PM(const char* name, Bool_t MCcase);
     virtual ~AliAnalysisTaskSigma1385PM();
@@ -41,6 +22,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void SetMixing(Bool_t setmixing) { fsetmixing = setmixing; }
     void SetnMix(Int_t nMix) { fnMix = nMix; }
     void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
+    void SetINEL(Bool_t input) { fIsINEL = input; }
     void SetFillnTuple(Bool_t fillntuple) { fFillnTuple = fillntuple; }
 
     // Setter for cut variables
@@ -100,9 +82,9 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
 
     Bool_t GoodTracksSelection();
     Bool_t GoodV0Selection();
-    void FillTracks(int sys = 0);
+    void FillTracks();
     void FillNtuples();
-    void FillMCinput(AliMCEvent* fMCEvent);
+    void FillMCinput(AliMCEvent* fMCEvent, int Fillbin = 0);
     void FillTrackToEventPool();
     Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion);
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
@@ -144,10 +126,11 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     THistManager* fHistos = nullptr;  //!
     AliAODVertex* vertex = nullptr;   //!
     Bool_t fsetmixing = kFALSE;
-    Bool_t IsMC = kFALSE;
+    Bool_t fIsMC = kFALSE;
     Bool_t IsPrimaryMC = kFALSE;
     Bool_t fFillnTuple = kFALSE;
-    Bool_t IsNano = kFALSE;
+    Bool_t fIsNano = kFALSE;
+    Bool_t fIsINEL = kFALSE;
     TNtupleD* fNtupleSigma1385;        //! Ntuple for the analysis
     TClonesArray* fMCArray = nullptr;  //!
     mixingpool fEMpool;                //!
@@ -190,7 +173,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     // Add rapidity/radius/Lifetime/Y cut of lambda
     // Add NanoOption
     // 4: Add GetImpactParm function for nano
-    // 5: Update functionality for sysetmatics study
+    // 5: Seprate MC Sparse, INEL stduy capability
 };
 
 #endif
