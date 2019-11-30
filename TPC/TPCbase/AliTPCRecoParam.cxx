@@ -102,6 +102,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseMultiplicityCorrectionDedx(kTRUE), // use Dedx multiplicity correction
   fUseAlignmentTime(kTRUE),              // use time dependent alignment correction
   fUseIonTailCorrection(0),   // no ion tail correction for now
+  fIonTailCorrection(1),      ///< ion tail tail correction factor - NEW SINCE 2018- additonal scaling correcting for imperfect knowledge of the integral of ion tail - shoudl be ~ 1
   fCrosstalkCorrection(0),   // crosstalk correction factor (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
   fCrosstalkCorrectionMissingCharge(1),   // crosstalk correction factor - missing charge (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
  //
@@ -109,9 +110,10 @@ AliTPCRecoParam::AliTPCRecoParam():
   fMinFraction(0.01),           // truncated mean - lower threshold
   fMaxFaction(0.7),            // truncated mean - upper threshold
   fNeighborRowsDedx(2),           // neighbour rows for below threshold dEdx calculation
+  fMissingClusterdEdxFraction(0), /// missing cluster will be replaced by truncated mean of observed clusters 1+ Nclmissing*fMissingClusterdEdxFraction; - - default 0 to be back compatible
   fGainCorrectionHVandPTMode(0), // switch for the usage of GainCorrectionHVandPT (see AliTPCcalibDB::GetGainCorrectionHVandPT
   fAccountDistortions(kFALSE),
-  fSkipTimeBins(5),              // number of time bins to be skiiped (corrupted signal druing gating opening)
+  fSkipTimeBins(5),              // number of time bins to be skipped (corrupted signal druing gating opening)
   fUseTOFCorrection(kTRUE),
   fUseCorrectionMap(kFALSE),
   fCorrMapTimeDepMethod(kCorrMapInterpolation),
@@ -124,6 +126,9 @@ AliTPCRecoParam::AliTPCRecoParam():
   fDistFluctUncorrFracMC(0.0),
   fSystErrClInnerRegZ(0),
   fSystErrClInnerRegZSigInv(0),
+  fUseClusterErrordEdxCorrection(false),     ///< switch to use the dEdx correction  - default is false - for  back compatibility
+  fUseClusterErrordEdxMultCorrection(false),     ///< switch to use the dEdx, multiplicity  correction  - for  back compatibility
+  fClusterNSigma2Cut(3,3),                       /// < n sigma cluster/track cut
   fUseSystematicCorrelation(kTRUE)
 {
   /// constructor
@@ -155,6 +160,11 @@ AliTPCRecoParam::AliTPCRecoParam():
   //
   SetBadPadMaxDistXYZD(999.,999.,999.,999.); // by default accept any distortions
   SetBadClusMaxErrYZ(999.,999.);        // by default accept any errors
+  //
+  fClusterNSigma2Cut(0,0)=1; fClusterNSigma2Cut(0,1)=6.25; fClusterNSigma2Cut(0,2)=2*6.25;         // edge n sigma cut
+  fClusterNSigma2Cut(1,0)=9; fClusterNSigma2Cut(1,1)=9; fClusterNSigma2Cut(1,2)=32;                // normal clusters cut
+  fClusterNSigma2Cut(2,0)=6.25; fClusterNSigma2Cut(2,1)=6.25; fClusterNSigma2Cut(2,2)=2*6.25;      // unfolded clusters cut
+
 }
 
 //_____________________________________________________________________________

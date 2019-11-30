@@ -10,6 +10,7 @@
 #include "AliDetectorRecoParam.h"
 #include "TVectorF.h"
 #include "TVectorD.h"
+#include  "TMatrixF.h"
 
 class AliTPCRecoParam : public AliDetectorRecoParam
 {
@@ -139,6 +140,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseExBCorrection(Int_t flag){fUseExBCorrection=flag;}
   void  SetUseTOFCorrection(Bool_t flag) {fUseTOFCorrection = flag;}
   void  SetUseIonTailCorrection(Int_t flag) {fUseIonTailCorrection = flag;}
+  void  SetIonTailCorrection(Float_t factor) {fIonTailCorrection = factor;}
   void  SetCrosstalkCorrection(Float_t crosstalkCorrection) {fCrosstalkCorrection= crosstalkCorrection; }
   void  SetCrosstalkCorrectionMissingCharge(Float_t crosstalkCorrection) {fCrosstalkCorrectionMissingCharge= crosstalkCorrection; }
   //
@@ -162,6 +164,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetUseExBCorrection() const {return fUseExBCorrection;}
   Bool_t GetUseTOFCorrection() {return fUseTOFCorrection;}
   Int_t GetUseIonTailCorrection() const {return fUseIonTailCorrection;}
+  Float_t GetIonTailCorrection() const {return fIonTailCorrection;}
   Double_t GetCrosstalkCorrection() const {return fCrosstalkCorrection;}
  Double_t GetCrosstalkCorrectionMissingCharge() const {return fCrosstalkCorrectionMissingCharge;}
 
@@ -175,7 +178,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t  GetMinFraction() const {return fMinFraction;}           // truncated mean - lower threshold
   Float_t  GetMaxFraction() const {return fMaxFaction;}            // truncated mean - upper threshold
   Int_t    GetNeighborRowsDedx() const {return fNeighborRowsDedx;}
-
+  void     SetMissingClusterdEdxFraction(Float_t fraction){fMissingClusterdEdxFraction=fraction;}
+  Float_t   GetMissingClusterdEdxFraction() const {return fMissingClusterdEdxFraction;}
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
   void     SetSystematicErrorCluster(Double_t *systematic){ for (Int_t i=0; i<2;i++) fSystematicErrorCluster[i]=systematic[i];}
@@ -206,6 +210,14 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   
   void    SetUseSystematicCorrelation(Bool_t useCorrelation)  {fUseSystematicCorrelation=useCorrelation;}
   Bool_t  GetUseSystematicCorrelation() const { return fUseSystematicCorrelation;}
+  //
+  Bool_t GetUseClusterErrordEdxCorrection() const {return fUseClusterErrordEdxCorrection;}
+  void   SettUseClusterErrordEdxCorrection(Bool_t useClusterErrordEdxCorrection){ fUseClusterErrordEdxCorrection=useClusterErrordEdxCorrection;}
+  Bool_t GetUseClusterErrordEdxMultCorrection() const {return fUseClusterErrordEdxMultCorrection;}
+  void   SettUseClusterErrordEdxMultCorrection(Bool_t useClusterErrordEdxMultCorrection){ fUseClusterErrordEdxMultCorrection=useClusterErrordEdxMultCorrection;}
+  const TMatrixF& GetClusterNSigma2Cut() const {return fClusterNSigma2Cut;}
+  void SetClusterNSigma2Cut(TMatrixF cuts){fClusterNSigma2Cut=cuts;}
+  void SetClusterNSigma2Cut(Int_t row, Int_t column,Float_t cut){fClusterNSigma2Cut(row,column)=cut;}
 
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env.
@@ -217,7 +229,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   static  const Double_t * GetPrimaryDCACut()                { return (fgPrimaryDCACut)? fgPrimaryDCACut->GetMatrixArray():0; }
   static  void  SetSystematicErrorClusterCustom( TVectorD *vec ) { fgSystErrClustCustom=vec;}
   static  void SetPrimaryDCACut( TVectorD *dcacut )              { fgPrimaryDCACut=dcacut;}
-
+  //
   //
  protected:
 
@@ -281,6 +293,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t fUseMultiplicityCorrectionDedx; ///< use Dedx multiplicity correction
   Bool_t fUseAlignmentTime;              ///< use time dependent alignment correction
   Int_t fUseIonTailCorrection;   ///< use ion tail correction
+  Float_t fIonTailCorrection;      ///< ion tail tail correction factor - NEW SINCE 2018- additonal scaling correcting for imperfect knowledge of the integral of ion tail - shoudl be ~ 1
   Double_t fCrosstalkCorrection;   ///< crosstalk correction factor (fro each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
   Double_t fCrosstalkCorrectionMissingCharge;   ///< crosstalk correction factor - missing charge factor (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing  capacitors in 2012
  //
@@ -290,6 +303,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t fMinFraction;           ///< truncated mean - lower threshold
   Float_t fMaxFaction;            ///< truncated mean - upper threshold
   Int_t   fNeighborRowsDedx;      ///< number of neighboring rows to identify cluster below thres in dEdx calculation 0 -> switch off
+  Float_t fMissingClusterdEdxFraction; /// mising cluster will be replaced by truncated mean of observed clusters 1+ Nclmissing*fMissingClusterdEdxFraction;
   Int_t   fGainCorrectionHVandPTMode; ///< switch for the usage of GainCorrectionHVandPT (see AliTPCcalibDB::GetGainCorrectionHVandPT
   Int_t   fAccountDistortions;        ///< account for distortions in tracking
   Double_t fSkipTimeBins;        ///< number of time bins to be skiiped (corrupted signal druing gating opening)
@@ -318,7 +332,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fBadPadMaxDistXYZD[4];            ///< pad considered bad if abs distortion / dispersion exceeds this value
   Double_t fBadClusMaxErrYZ[2];              ///< pad considered bad if syst.error on cluster exceeds this value
   Bool_t fUseSystematicCorrelation;         ///< switch to use the correlation for the sys
-
+  //
+  Bool_t fUseClusterErrordEdxCorrection;     ///< switch to use the dEdx correction
+  Bool_t fUseClusterErrordEdxMultCorrection;     ///< switch to use the dEdx, multiplicity  correction
+  TMatrixF fClusterNSigma2Cut;                    /// < n sigma cluster/trac cut
   static TVectorD* fgSystErrClustCustom;  //< custom systematic errors for the TPC clusters overriding persistent data member
   static TVectorD* fgPrimaryDCACut;       //< only primaries passing DCAYZ cut are reconstructed
 
@@ -328,7 +345,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 33)
+  ClassDef(AliTPCRecoParam, 36)
   /// \endcond
 };
 

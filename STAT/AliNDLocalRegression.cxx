@@ -1210,7 +1210,6 @@ AliNDLocalRegression * AliNDLocalRegression::MakeRegression(TTree* tree, TString
   return regression;
 }
 
-
 Bool_t AliNDLocalRegression::RemoveQAInformation(){
   //
   delete fLocalFitQuality;

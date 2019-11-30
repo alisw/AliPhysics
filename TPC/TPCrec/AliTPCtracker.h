@@ -275,6 +275,7 @@ public:
    const AliTPCParam *fkParam;          //pointer to the parameters
    TTreeSRedirector *fDebugStreamer;     //!debug streamer
    Int_t  fUseHLTClusters;              // use HLT clusters instead of offline clusters
+   Int_t  fTotalClusters;               // total number of clusters
    //
    Double_t fClExtraRoadY;              //! extra additiom to Y road for FindCluster
    Double_t fClExtraRoadZ;              //! extra addition Z road for FindCluster

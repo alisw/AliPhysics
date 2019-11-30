@@ -331,6 +331,12 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
 
   // set up the fitter
   TVirtualFitter *minuit = TVirtualFitter::Fitter(nullptr, nParam);
+  if (minuit->GetNumberFreeParameters()!=nParam){
+    /// there is a bug??? in the TVirtual fitter, returned cached vaile can have differnte number of parameters
+    /// TODO - create own Minuit fitter??? - option to check
+    delete minuit;
+    minuit = TVirtualFitter::Fitter(nullptr, nParam);
+  }
   minuit->SetObjectFit(this);
   minuit->SetFCN(AliTMinuitToolkit::FitterFCN);
   if ((fVerbose& kPrintMinuit)==0){  // MAKE minuit QUIET!!
@@ -346,6 +352,10 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
   for (Int_t iParam=0; iParam<nParam; iParam++){
     if (sOption.Contains("rndmInit")){
       Double_t initValue=(*fInitialParam)(iParam, 0)+gRandom->Gaus()*(*fInitialParam)(iParam,1);
+      if ((*fInitialParam)(iParam, 2)< (*fInitialParam)(iParam, 3)){
+        if (initValue<(*fInitialParam)(iParam, 2)) initValue=(*fInitialParam)(iParam, 2);
+        if (initValue>(*fInitialParam)(iParam, 3)) initValue=(*fInitialParam)(iParam, 3);
+      }
       minuit->SetParameter(iParam, Form("p[%d]",iParam), initValue, (*fInitialParam)(iParam,1), (*fInitialParam)(iParam, 2), (*fInitialParam)(iParam, 3));
     }else{
       minuit->SetParameter(iParam, Form("p[%d]",iParam), (*fInitialParam)(iParam,0), (*fInitialParam)(iParam,1), (*fInitialParam)(iParam, 2), (*fInitialParam)(iParam, 3));
@@ -425,7 +435,7 @@ Long64_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TStrin
   Int_t nVal= fValueNames->GetEntries();
   Int_t nVars= fVarNames->GetEntries();
   if (doReset == 0 && fPoints != nullptr){
-    if (fPoints->GetNrows()!=nVars){
+    if (fPoints->GetNcols()!=nVars){
       ::Error("AliTMinuitToolkit::FillFitter","Non compatible number of variables: %d instead of %d: variables:  %s",nVars, fPoints->GetNrows(), query.Data());
       return -1;
     }
@@ -462,7 +472,7 @@ Long64_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TStrin
 /// \brief Format alias string for the for tree alias or for fit title
 /// \param option  - use latex in case of title request
 /// \return        - string description
-TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree){
+TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree, Int_t precision){
   //
   // construct string TTree alias for fit function
   TString inputString(fFormula->GetTitle());
@@ -488,14 +498,14 @@ TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree)
     }else{
       if ((*GetRMSEstimator())[0]>0) {
         inputString.ReplaceAll(TString::Format("[%d]", iPar).Data(),
-                               TString::Format("(%2.2f#pm%2.2f)", (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
+                               TString::Format("(%.*f#pm%0.*f)", precision, precision, (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
       }else{
         inputString.ReplaceAll(TString::Format("[%d]", iPar).Data(),
-                               TString::Format("(%2.2f#pm%2.2f)", (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
+                               TString::Format("(%.*f#pm%.*f)",  precision, precision, (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
       }
     }
   }
-  return inputString;
+  return TString(inputString.Data());
 }
 
 /// \brief Random gaus generator as static function (to use in root TFormula, TTreeFormula)
