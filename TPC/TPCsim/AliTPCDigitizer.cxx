@@ -798,15 +798,9 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option) {
         if (lastGraph != nullptr) timeResArr->AddAt(new TGraphErrors(*lastGraph), ires);
       }
     }
-<<<<<<< HEAD
     timeResFunc.AddAt(timeResArr,isec); // Fill all trfs into a single TObjArray 
-    nIonTailBins = graphRes[3]->GetN();
-    delete[] trfIndexArr;
-=======
-    timeResFunc.AddAt(timeResArr, isec); // Fill all trfs into a single TObjArray
     nIonTailBins = graphRes[0]->GetN();
-    delete trfIndexArr;
->>>>>>> # ATO-452: convolut common mode signal with ion tail
+    delete[] trfIndexArr;
   }
 
   //
