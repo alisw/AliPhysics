@@ -71,13 +71,11 @@ class AliCalorimeterUtils : public TObject {
                                   Int_t & rowDiff, Int_t & colDiff) const 
                 { return fEMCALRecoUtils->IsAbsIDsFromTCard(absId1, absId2, rowDiff, colDiff) ; }
   
-  void          GetEnergyAndNumberOfCellsInTCard(AliVCluster* clus, AliVCaloCells* cells,
+  void          GetEnergyAndNumberOfCellsInTCard(AliVCluster* clus, Int_t absIdMax, AliVCaloCells* cells,
                                                  Int_t   & nDiff, Int_t   & nSame, 
                                                  Float_t & eDiff, Float_t & eSame, 
                                                  Float_t   emin = 0.)
-                  { Float_t maxCellFraction = 0.;
-                    Int_t absIdMax = GetMaxEnergyCell(cells, clus, maxCellFraction);
-                    fEMCALRecoUtils->GetEnergyAndNumberOfCellsInTCard(clus, absIdMax, cells, nDiff, nSame, eDiff, eSame, emin) ; }
+                  { fEMCALRecoUtils->GetEnergyAndNumberOfCellsInTCard(clus, absIdMax, cells, nDiff, nSame, eDiff, eSame, emin) ; }
   
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells)  ;
   

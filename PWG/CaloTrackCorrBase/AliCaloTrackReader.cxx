@@ -110,7 +110,7 @@ fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(0),
 fLEDHighEnergyCutSM(0),      fLEDHighNCellsCutSM(0), 
 fLEDLowEnergyCutSM3(0),      fLEDLowNCellsCutSM3(0),
-fLEDMinCellEnergy(0),
+fLEDMinCellEnergy(0),        fLEDMaxCellEnergy(0),
 
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
@@ -909,8 +909,9 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   
   if ( fRemoveLEDEvents > 0 )
   {
-    snprintf(onePar,buffersize,"Remove LED %d, Ecell > %1.2f : SM - nCell > %d, Sum E > %2.0f; SM3 - nCell < %d, Sum E < %2.0f;",
-            fRemoveLEDEvents, fLEDMinCellEnergy,fLEDHighNCellsCutSM, fLEDHighEnergyCutSM, fLEDLowNCellsCutSM3, fLEDLowEnergyCutSM3);
+    snprintf(onePar,buffersize,"Remove LED %d, %2.1f < Ecell < %1.2f : SM - nCell > %d, Sum E > %2.0f; SM3 - nCell < %d, Sum E < %2.0f;",
+             fRemoveLEDEvents, fLEDMinCellEnergy, fLEDMaxCellEnergy, 
+             fLEDHighNCellsCutSM, fLEDHighEnergyCutSM, fLEDLowNCellsCutSM3, fLEDLowEnergyCutSM3);
     parList+=onePar ;
   }
   
@@ -1129,6 +1130,7 @@ void AliCaloTrackReader::InitParameters()
   fLEDHighEnergyCutSM = 500.; fLEDHighNCellsCutSM = 100;
   fLEDLowEnergyCutSM3 = 2   ; fLEDLowNCellsCutSM3 = 3;
   fLEDMinCellEnergy = 0.5;
+  fLEDMaxCellEnergy = 15.;
   
   //We want tracks fitted in the detectors:
   //fTrackStatus=AliESDtrack::kTPCrefit;
@@ -2259,7 +2261,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   
   Int_t   nDiff = 0, nSame = 0;
   Float_t eDiff = 0, eSame = 0;
-  GetCaloUtils()->GetEnergyAndNumberOfCellsInTCard(clus, GetEMCALCells(), 
+  GetCaloUtils()->GetEnergyAndNumberOfCellsInTCard(clus, absIdMax, GetEMCALCells(), 
                                                    nDiff, nSame, eDiff, eSame,
                                                    fEMCALMinCellEnNdiffCut);  
   if ( nDiff == 0 && clus->E() > fEMCALHighEnergyNdiffCut )
@@ -3253,7 +3255,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   
   if ( fRemoveLEDEvents > 0 )
   {
-    printf("Remove LED events %d, Emin > %1.2f:   \n", fRemoveLEDEvents   , fLEDMinCellEnergy  );
+    printf("Remove LED events %d, %2.1f < Ecell < %1.2f:\n", fRemoveLEDEvents, fLEDMinCellEnergy, fLEDMaxCellEnergy  );
     printf("\t SM - nCell >= %d - Sum E >= %2.0f; \n", fLEDHighNCellsCutSM, fLEDHighEnergyCutSM);
     printf("\t SM3: nCell <= %d - Sum E <= %2.0f  \n", fLEDLowNCellsCutSM3, fLEDLowEnergyCutSM3);
   }
@@ -3310,7 +3312,7 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
       Float_t exo =  1;
       if ( amp > 0 ) exo = 1-GetCaloUtils()->GetECross(absID,fInputEvent->GetEMCALCells(),0)/amp;
 
-      if ( amp  >= fLEDMinCellEnergy && exo < 0.95 ) 
+      if ( amp >= fLEDMinCellEnergy && amp <= fLEDMaxCellEnergy && exo < 0.95 ) 
       {
         ncellsSM[sm]++;
         ecellsSM[sm]+=amp;

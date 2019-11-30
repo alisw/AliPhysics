@@ -342,6 +342,7 @@ public:
   void             SetLEDLowEnergyCutSM3(Float_t e)        { fLEDLowEnergyCutSM3 = e ; }   
   void             SetLEDLowNCellsCutSM3(Int_t   n)        { fLEDLowNCellsCutSM3 = n ; }   
   void             SetLEDMinCellEnergy  (Float_t e)        { fLEDMinCellEnergy   = e ; }   
+  void             SetLEDMaxCellEnergy  (Float_t e)        { fLEDMaxCellEnergy   = e ; }   
 
   void             SetFiredTriggerClassName(TString name)  { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
@@ -939,6 +940,7 @@ public:
   Float_t          fLEDLowEnergyCutSM3;            ///<  SM3 low activity if energy below this value, check activity on other SM for LED event (Run2)
   Int_t            fLEDLowNCellsCutSM3;            ///<  SM3 low activity if n cells below this value, check activity on other SM LED event (Run2)
   Float_t          fLEDMinCellEnergy;              ///<  Count or sum cells energy above this value to determine if event had LEDs
+  Float_t          fLEDMaxCellEnergy;              ///<  Count or sum cells energy below this value to determine if event had LEDs
 
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
