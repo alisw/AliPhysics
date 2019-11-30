@@ -163,10 +163,13 @@ void AliReducedAnalysisJpsi2ee::AddTrackCut(AliReducedInfoCut* cut) {
    fMixingHandler->SetNParallelCuts(fMixingHandler->GetNParallelCuts()+1);
    TString histClassNames = fMixingHandler->GetHistClassNames();
    if (fPairCuts.GetEntries()>1) {
-      for (Int_t i=0; i<fPairCuts.GetEntries(); i++) {
-         histClassNames += Form("PairMEPP_%s_%s;", cut->GetName(), fPairCuts.At(i)->GetName());
-         histClassNames += Form("PairMEPM_%s_%s;", cut->GetName(), fPairCuts.At(i)->GetName());
-         histClassNames += Form("PairMEMM_%s_%s;", cut->GetName(), fPairCuts.At(i)->GetName());
+      histClassNames = "";
+      for (Int_t iPairCut=0; iPairCut<fPairCuts.GetEntries(); iPairCut++) {
+         for (Int_t iTrackCut=0; iTrackCut<fTrackCuts.GetEntries(); iTrackCut++) {
+            histClassNames += Form("PairMEPP_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+            histClassNames += Form("PairMEPM_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+            histClassNames += Form("PairMEMM_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+         }
       }
    } else {
       histClassNames += Form("PairMEPP_%s;", cut->GetName());
@@ -184,15 +187,13 @@ void AliReducedAnalysisJpsi2ee::AddPairCut(AliReducedInfoCut* cut) {
    fPairCuts.Add(cut);
    fMixingHandler->SetNParallelPairCuts(fMixingHandler->GetNParallelPairCuts()+1);
    if (fPairCuts.GetEntries()>1) {
-      TString histClassNames     = fMixingHandler->GetHistClassNames();
-      TString histClassNamesNew  = "";
-      TObjArray* histClassNamesArr = histClassNames.Tokenize(";");
-      for (Int_t iCut=0; iCut<fPairCuts.GetEntries(); iCut++) {
-         for (Int_t iClass=0; iClass<histClassNamesArr->GetEntries(); iClass++) {
-            TString histClassNameTmp = Form("%s", histClassNamesArr->At(iClass)->GetName());
-            if (histClassNameTmp.Contains(fPairCuts.At(iCut)->GetName())) continue;
-            histClassNamesNew += Form("%s_%s;", histClassNameTmp.Data(), fPairCuts.At(iCut)->GetName());
-         }
+      TString histClassNamesNew = "";
+      for (Int_t iPairCut=0; iPairCut<fPairCuts.GetEntries(); iPairCut++) {
+         for (Int_t iTrackCut=0; iTrackCut<fTrackCuts.GetEntries(); iTrackCut++) {
+            histClassNamesNew += Form("PairMEPP_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+            histClassNamesNew += Form("PairMEPM_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+            histClassNamesNew += Form("PairMEMM_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+          }
       }
       fMixingHandler->SetHistClassNames(histClassNamesNew.Data());
    }
