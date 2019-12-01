@@ -76,6 +76,8 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name, AliRDHFCutsDplu
   /// Standrd constructor
   //
 
+  fNPtBins = fRDCutsAnalysis->GetNPtBins();
+
   for (Int_t iHist = 0; iHist < 3; iHist++)
   {
     fHistCentrality[iHist] = nullptr;
