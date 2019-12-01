@@ -1494,9 +1494,10 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Float_t sumL=0, sumL2=0, sumLN=0;
   Float_t sumD=0, sumD2=0, sumDN=0;
 
-  Int_t icl0=TMath::Nint((ncl + nclBelowThr)*low + nclBelowThr*factor);
-  Int_t icl1=TMath::Nint((ncl + nclBelowThr)*up+nclBelowThr*factor);
-  Int_t iclm=TMath::Nint((ncl + nclBelowThr)*(low +(up+low)*0.5));
+  Int_t iclN=TMath::Nint((ncl + nclBelowThr*(1-factor))*(up-low));
+  Int_t icl0=TMath::Nint((ncl + nclBelowThr*factor)*low);
+  Int_t icl1=icl0+iclN;
+  Int_t iclm=icl0+iclN/2;
   //
   for (Int_t icl=icl0; icl<icl1;icl++){
     if (ampWithBelow[icl]<0.1) continue;
