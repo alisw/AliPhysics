@@ -572,7 +572,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kEMCEGAHighTriggered]  = 0;
   if (values[kEMCEGATriggered]) {
     TString trgClasses = event->TriggerClass();
-    if (trgClasses.Contains("EG1") || trgClasses.Contains("EG2")) values[kEMCEGAHighTriggered] = 1;
+    if (trgClasses.Contains("EG1") || trgClasses.Contains("DG1")) values[kEMCEGAHighTriggered] = 1;
   }
   values[kIsPhysicsSelection]   = (event->IsPhysicsSelection() ? 1.0 : 0.0);
   values[kIsSPDPileup]          = event->IsSPDPileup();
