@@ -1043,7 +1043,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	AliAODMCParticle *part=0x0;
 	Double_t pointlcsc[6];
 	if(fReadMC){
-	  part=MatchRecoCandtoMC(io3Prong,isTrueLambdaCorXic,checkOrigin);	  
+	  part=MatchRecoCandtoMCAcc(io3Prong,isTrueLambdaCorXic,checkOrigin);	  
 
 	  //  static Int_t CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 	  //  AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray,)
@@ -1559,7 +1559,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		  pointSigma[10]=ptsigmacMC;
 		  pointSigma[0]=ptlambdacMC;		 
 		  fhSparseAnalysisSigma->Fill(pointSigma);
-		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		  //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
 		  pointlcsc[0]=ptlambdacMC;
 		  pointlcsc[1]=kRecoPID;
 		  pointlcsc[2]=checkorigin;
@@ -1633,7 +1633,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		  pointSigma[10]=ptsigmacMC;
 		  pointSigma[0]=ptlambdacMC;
 		  fhSparseAnalysisSigma->Fill(pointSigma);
-		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		  //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
 		  pointlcsc[0]=ptlambdacMC;
 		  pointlcsc[1]=kRecoPID;
 		  pointlcsc[2]=checkorigin;
@@ -2736,7 +2736,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
     }       
     AliAODMCParticle* part=0x0;
     if( fDebug>=0 && fReadMC){
-      part=MatchRecoCandtoMC(d,isTrueLambdaCorXic,checkOrigin);	  
+      part=MatchRecoCandtoMCAcc(d,isTrueLambdaCorXic,checkOrigin);	  
     }
     if(!(fvHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.
       continue;
