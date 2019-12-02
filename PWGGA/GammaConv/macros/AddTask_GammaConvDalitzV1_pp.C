@@ -1,6 +1,6 @@
 
 void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
-                                    Bool_t isMC   = kFALSE, //run MC
+                                    Bool_t isMC   = kFALSE, //0 Exp data, 1 MC data, 2 JJ MC for improves.
                                     TString photonCutNumberV0Reader       = "",  
                                     TString periodNameV0Reader            = "",
                                     Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvDalitzV1
@@ -374,10 +374,12 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   } else if (trainConfig == 420) {//Test with mass cut removed on primary selection
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202273010", "0152103500000000");
     //New Standard+0.9 single pt cut
-    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202243010", "0152103500000000");
-    //New Standard+0.5 single pt cut
-    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6420263202223010", "0152103500000000");
-    //New Standard+Low Rejection for pions kaons and protons, one sigma
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "20476400263202283010", "0152103500000000");
+    //New Standard+1.1 single pt cut + pion rejection improve
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "20476450263202223010", "0152103500000000");
+    //New Standard+Low Rejection for kaons protons and pions, 2,2,2.5 sigmas + pion rejection improve
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f97300007ge0404000", "204c6400263202223710", "0152103500000000");
+    //New Standard with qt < 0.15 flat
   } else if (trainConfig == 421) {//Test with mass cut removed on primary selection + Event selection
     cuts.AddCutPCMDalitz("0008d113", "0dm00009f9730000dge0404000", "204c6400263202223010", "0152103500000000");
     //New Standard
