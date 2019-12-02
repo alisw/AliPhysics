@@ -33,49 +33,50 @@ enum kLibrary { kXGBoost, kLightGBM, kModelLibrary };
 map<string, int> kLibraryMap = {{"kXGBoost", kXGBoost}, {"kLightGBM", kLightGBM}, {"kModelLibrary", kModelLibrary}};
 
 string ImportFile(string path) {
-  if (path.find("alien:") != string::npos) {
-    string modelname = path.substr(path.find_last_of("/") + 1);
+  string modelname = path.substr(path.find_last_of("/") + 1);
 
+  if (path.find("alien:") != string::npos) {
     if (gGrid == nullptr) {
       TGrid::Connect("alien://");
       assert(gGrid != nullptr && "Connection to GRID not established! Exit");
     }
-
-    string newpath = gSystem->pwd() + string("/") + modelname.data();
-    string oldpath = gDirectory->GetPath();
-
-    bool cpStatus = TFile::Cp(path.data(), newpath.data());
-    assert(cpStatus && "Error in coping file from Alien! Exit");
-
-    gDirectory->Cd(oldpath.data());
-
-    return newpath;
-
-  } else {
-    return path;
   }
+
+  string newpath = gSystem->pwd() + string("/") + modelname.data();
+  string oldpath = gDirectory->GetPath();
+
+  bool cpStatus = TFile::Cp(path.data(), newpath.data());
+  assert(cpStatus && "Error in coping file in the working directory! Exit");
+
+  gDirectory->Cd(oldpath.data());
+
+  return newpath;
 }
 }    // namespace
 
 bool ModelHandler::CompileModel() {
   // TODO: try without local copy of the model
-  string localpath = ImportFile(path);
+  string localpath = ImportFile(this->path);
 
   switch (kLibraryMap[GetLibrary()]) {
   case kXGBoost: {
-    return model.LoadXGBoostModel(localpath);
+    bool comp = this->model.LoadXGBoostModel(localpath.data());
+    return comp;
     break;
   }
   case kLightGBM: {
-    return model.LoadLightGBMModel(localpath);
+    bool comp = this->model.LoadLightGBMModel(localpath.data());
+    return comp;
     break;
   }
   case kModelLibrary: {
-    return model.LoadModelLibrary(localpath);
+    bool comp = this->model.LoadModelLibrary(localpath.data());
+    return comp;
     break;
   }
   default: {
-    return model.LoadXGBoostModel(localpath);
+    bool comp = this->model.LoadXGBoostModel(localpath.data());
+    return comp;
     break;
   }
   }
@@ -161,6 +162,8 @@ void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
 
 //________________________________________________________________
 void AliMLResponse::MLResponseInit() {
+  /// import config file from alien path
+  ImportFile(fConfigFilePath);
   YAML::Node nodeList;
   /// manage wrong config file path
   try {
@@ -174,9 +177,10 @@ void AliMLResponse::MLResponseInit() {
   fVariableNames = nodeList["VAR_NAMES"].as<vector<string>>();
   fBins          = nodeList["BINS"].as<vector<float>>();
   fNBins         = nodeList["N_MODELS"].as<int>();
-  fNVariables    = nodeList["NUM_VARS"].as<int>();
-  fRaw           = nodeList["RAW_SCORE"].as<bool>();
-  fBinsBegin     = fBins.begin();
+  fNVariables    = nodeList["NUM_VAR"].as<int>();
+  // fRaw           = nodeList["RAW_SCORE"].as<bool>();
+
+  fBinsBegin = fBins.begin();
 
   for (const auto &model : nodeList["MODELS"]) {
     fModels.push_back(ModelHandler{model});
@@ -184,9 +188,9 @@ void AliMLResponse::MLResponseInit() {
 
   for (auto &model : fModels) {
     bool comp = model.CompileModel();
-    if (!comp) {
-      AliFatal("Error in model compilation! Exit");
-    }
+    // if (!comp) {
+    //   AliFatal("Error in model compilation! Exit");
+    // }
   }
 }
 

@@ -48,7 +48,7 @@ public:
   string const &GetLibrary() const { return library; }
   double const &GetScoreCut() const { return scorecut; }
 
-  AliExternalBDT  &GetModel() { return model; }
+  AliExternalBDT &GetModel() { return model; }
 
   bool CompileModel();
 
