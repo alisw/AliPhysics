@@ -4562,7 +4562,7 @@ void AliAnaCaloExotics::Print(const Option_t * opt) const
   printf("Select Calorimeter %s \n",GetCalorimeterString().Data());
   printf("Min Amplitude : %2.1f GeV/c\n", fCellAmpMin) ;
   printf("Min Energy for exotic : %2.1f GeV/c\n", fEMinForExo) ;
-  printf("Exoticity cut: %2.1f \n", fExoCut) ;
+  printf("Exoticity cut: %0.2f \n", fExoCut) ;
   printf("NCell cut: %d \n", fNCellHighCut) ;
   printf("Time range: [%2.2f,%2.2f] ns\n",fTimeCutMin,fTimeCutMax);
   
@@ -4571,6 +4571,10 @@ void AliAnaCaloExotics::Print(const Option_t * opt) const
   printf("Strip: nCell > %d-%d - Sum E > %2.0f-%2.0f; Event N Strips <= %d\n",
          fHighNCellsCutStrip[0], fHighNCellsCutStrip[1],
          fHighEnergyCutStrip[0], fHighEnergyCutStrip[1], fEventMaxNumberOfStrips) ;
+  
+  printf("Min Cell Energy cut: ");
+  for(Int_t i = 0; i < fgkNCellEnMinBins; i++) printf("%d) E %1.2f; ", i,fCellEnMins[i] );
+  printf("\n");
   
   printf("Fill cell histo: %d\n"          , fFillCellHisto) ;
   printf("Fill all cell event histo: %d\n", fFillAllCellEventParamHisto) ;
