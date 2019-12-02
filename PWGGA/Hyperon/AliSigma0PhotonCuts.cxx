@@ -298,10 +298,12 @@ void AliSigma0PhotonCuts::PhotonCuts(
               && (mcPartNeg->GetMother() == mcPartPos->GetMother())) {
             AliAODMCParticle *mcParticle = (AliAODMCParticle*) mcarray->At(
                 mcPartPos->GetMother());
+            photon.SetID(mcPartPos->GetMother());
 
             if (mcParticle) {
               photon.SetMCParticle(mcParticle, mcEvent);
               photon.SetMCPDGCode(mcParticle->GetPdgCode());
+              photon.SetMotherID(mcParticle->GetMother());  // otherwise the Sigma0 is not set properly as the mother of the photon
 
               if (mcParticle->PdgCode() == 22) {
                 fHistMCV0Pt->Fill(photon.GetPt());
