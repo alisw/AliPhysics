@@ -139,17 +139,4 @@
 #pragma link C++ class std::vector<Beauty4Prong>+;
 #pragma link C++ class std::vector<GenHadron>+;
 
-//classes working only in ROOT6
-#ifdef __CLING__
-#pragma link C++ class AliAnalysisTaskSEDplus+;
-#pragma link C++ class AliAnalysisTaskSEDs+;
-#pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
-#pragma link C++ class AliHFMLResponse+;
-#pragma link C++ class AliHFMLResponseDplustoKpipi+;
-#pragma link C++ class AliHFMLResponseDstoKKpi+;
-#pragma link C++ class AliHFMLVarHandler+;
-#pragma link C++ class AliHFMLVarHandlerDplustoKpipi+;
-#pragma link C++ class AliHFMLVarHandlerDstoKKpi+;
-#endif
-
 #endif

@@ -18,24 +18,21 @@ set(MODULE PWGHFvertexingHF)
 add_definitions(-D_MODULE_="${MODULE}")
 add_subdirectory (TMVA)
 add_subdirectory (vHFBDT)
+add_subdirectory (vHFML)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
-include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
-                    ${TREELITE_ROOT}/include
-                    ${YAML_CPP_SOURCE_DIR}/include
-  )
+)
 
 # Sources - alphabetical order
 set(SRCS
@@ -159,22 +156,6 @@ set(SRCS
   AliRDHFCutsCdeuterontodKpi.cxx
 )
 
-# Sources for ROOT6 only - alphabetical order
-if(ROOT_VERSION_MAJOR EQUAL 6)
-  set(SRCS
-      ${SRCS}
-      vHFML/AliHFMLResponse.cxx
-      vHFML/AliHFMLResponseDplustoKpipi.cxx
-      vHFML/AliHFMLResponseDstoKKpi.cxx
-      vHFML/AliHFMLVarHandler.cxx
-      vHFML/AliHFMLVarHandlerDplustoKpipi.cxx
-      vHFML/AliHFMLVarHandlerDstoKKpi.cxx
-      AliAnalysisTaskSEDplus.cxx
-      AliAnalysisTaskSEDs.cxx
-      charmFlow/AliAnalysisTaskSECharmHadronvn.cxx
-  )
-endif()
-
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS} IClassifierReader.h)
@@ -190,10 +171,6 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW)
-# Dependencies for ROOT6 only
-if(ROOT_VERSION_MAJOR EQUAL 6)
-  set(LIBDEPS ${LIBDEPS} ML yaml-cpp)
-endif()
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -253,4 +230,3 @@ install(DIRECTORY
 
 install(DIRECTORY upgrade DESTINATION PWGHF/vertexingHF)
 install(DIRECTORY charmFlow DESTINATION PWGHF/vertexingHF)
-install(DIRECTORY vHFML DESTINATION PWGHF/vertexingHF)
