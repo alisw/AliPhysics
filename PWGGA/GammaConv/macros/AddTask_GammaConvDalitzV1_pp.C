@@ -1,6 +1,6 @@
 
 void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
-                                    Int_t isMC   = 0, //0 Exp data, 1 MC data, 2 JJ MC for improves.
+                                    Bool_t isMC   = kFALSE, //0 Exp data, 1 MC data, 2 JJ MC for improves.
                                     TString photonCutNumberV0Reader       = "",  
                                     TString periodNameV0Reader            = "",
                                     Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvDalitzV1
