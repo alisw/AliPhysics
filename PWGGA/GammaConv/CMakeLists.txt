@@ -84,6 +84,7 @@ set(SRCS
     AliAnalysisTaskGammaCocktailMC.cxx
     AliAnalysisTaskGammaTriggerQA.cxx
     AliAnalysisTaskHadronicCocktailMC.cxx
+    AliAnalysisTaskQA.cxx
     AliGammaConversionAODBGHandler.cxx
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx

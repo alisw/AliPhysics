@@ -22,7 +22,7 @@
 #include "AliFMDStripIndex.h"
 #include "AliFMDEncodedEdx.h"
 #include "AliFMDMCTrackDensity.h"
-
+#include <valarray>
 class AliForwardFlowUtil : public TObject {
   typedef std::vector< Double_t > edgeContainer;
 
@@ -77,7 +77,6 @@ class AliForwardFlowUtil : public TObject {
   void MakeFakeHoles(TH2D& forwarddNdedp);
   Bool_t FMDAcceptanceExistMC(Double_t eta,Double_t phi,Double_t vertex);
 
-
   AliVEvent* fevent; //!
   AliAODEvent* fAODevent; //!
   AliMCEvent* fMCevent; //!
@@ -130,6 +129,14 @@ class AliForwardFlowUtil : public TObject {
   Double_t GetTrackRefTheta(const AliTrackReference* ref) const;
 
   AliTrackReference* fStored; //! Last stored
+
+
+
+// For a new value newValue, compute the new count, new mean, the new M2.
+// mean accumulates the mean of the entire dataset
+// M2 aggregates the squared distance from the mean
+// count aggregates the number of samples seen so far
+
 
 
 private:

@@ -219,7 +219,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       // dataset contains also the setup for pp 2.76 TeV
       fTriggerMaker->ConfigureForPPb2013();
       dataset = "p-Pb 2013";
-    } else if((runnumber >= 224891 && runnumber <= 244628) || (runnumber >= 253434 && runnumber <= 294960)){
+    } else if((runnumber >= 224891 && runnumber <= 244628) || (runnumber >= 252235 && runnumber <= 294960)){
       // Configuration starting with LHC15f
       fTriggerMaker->ConfigureForPP2015();
       dataset = "pp 2015-2016";

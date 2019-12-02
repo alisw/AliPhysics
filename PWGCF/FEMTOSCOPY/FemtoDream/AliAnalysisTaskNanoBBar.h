@@ -75,18 +75,18 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   TList* fAntiProtonMCList;//!
   AliFemtoDreamv0* fv0;//!
   AliFemtoDreamv0Cuts* fLambda;//
-  TList* fLambdaList;
-  TList* fLambdaMCList;
+  TList* fLambdaList;//!
+  TList* fLambdaMCList;//!
   AliFemtoDreamv0Cuts* fAntiLambda;//
-  TList* fAntiLambdaList;
-  TList* fAntiLambdaMCList;
+  TList* fAntiLambdaList;//!
+  TList* fAntiLambdaMCList;//!
   AliFemtoDreamCascade* fCascade;//!
   AliFemtoDreamCascadeCuts* fXi;//
-  TList* fXiList;
-  TList* fXiMCList;
+  TList* fXiList;//!
+  TList* fXiMCList;//!
   AliFemtoDreamCascadeCuts* fAntiXi;//
-  TList* fAntiXiList;
-  TList* fAntiXiMCList;
+  TList* fAntiXiList;//!
+  TList* fAntiXiMCList;//!
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!

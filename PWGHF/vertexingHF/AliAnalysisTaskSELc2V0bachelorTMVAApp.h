@@ -422,6 +422,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   AliPIDCombined *fPIDCombined;       //!<! combined PID response object
   Bool_t fIsK0sAnalysis;              /// switch between Lpi and K0sp
   AliNormalizationCounter *fCounter;  //!<! AliNormalizationCounter on output slot 4
+  AliNormalizationCounter *fCounterC; //!<! AliNormalizationCounter on output slot 4, corrected with multiplicity dependence
   AliRDHFCutsLctoV0 *fAnalCuts;       /// Cuts - sent to output slot 5
   TList *fListCuts;                   //!<! list of cuts
   TList *fListWeight;                 /// list of weights
@@ -615,7 +616,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2F* fHistoVzVsNtrCorr;           //!<! hist. Vz vs corrected tracklets
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 10); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 11); /// class for Lc->p K0
   /// \endcond    
 };
 

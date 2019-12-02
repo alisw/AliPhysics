@@ -663,6 +663,9 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         Bplus.SetProngIDs(2, id);
 
                         FillBeauty3Prong(&Bplus, d, true);
+
+                        delete vertexBplus;
+                        vertexBplus = nullptr;
                     }
                 }
             }
@@ -809,6 +812,9 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         B.SetProngIDs(2, id);
 
                         FillBeauty4Prong(&B, d, true);
+
+                        delete vertexB;
+                        vertexB = nullptr;
                     }
                 }
             }

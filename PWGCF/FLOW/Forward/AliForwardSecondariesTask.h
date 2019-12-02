@@ -225,16 +225,16 @@ protected:
   Bool_t   fTrackGammaToPi0;
 
   AliTrackReference*  ProcessRef(AliMCParticle* particle, AliMCParticle* mother, AliTrackReference* ref,
-                                 std::vector<Int_t> listOfMothers, Double_t randomInt, Float_t event_vtx_z);
+                                 std::vector<Int_t> listOfMothers, Double_t cent, Float_t event_vtx_z);
 
   void BeginTrackRefs();
   void EndTrackRefs();
 
   void StoreParticle(AliMCParticle* particle, AliMCParticle* mother, AliTrackReference* ref,
-                     std::vector<Int_t> listOfMothers, Double_t randomInt, Float_t event_vtx_z);
+                     std::vector<Int_t> listOfMothers, Double_t cent, Float_t event_vtx_z);
 
   Bool_t ProcessTrack(AliMCParticle* particle, AliMCParticle* mother, 
-                     std::vector<Int_t> listOfMothers, Double_t randomInt, Float_t event_vtx_z);
+                     std::vector<Int_t> listOfMothers, Double_t cent, Float_t event_vtx_z);
 
   Double_t GetTrackRefTheta(const AliTrackReference* ref) const;
   // Get the eta and phi coordinates where the FMD track reference was created

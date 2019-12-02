@@ -22,13 +22,14 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
+#include <TTree.h>
 #include <TClonesArray.h>
-#include <TNtuple.h>
 #include <TList.h>
 #include <TString.h>
-#include <TH1F.h>
 #include <TMath.h>
-#include <THnSparse.h>
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 
@@ -41,10 +42,13 @@
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF3Prong.h"
-#include "AliAnalysisVertexingHF.h"
 #include "AliNormalizationCounter.h"
-#include "AliAnalysisTaskSEDs.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliVertexingHFUtils.h"
+#include "AliRDHFCutsDstoKKpi.h"
+#include "AliHFMLResponseDstoKKpi.h"
+
+#include "AliAnalysisTaskSEDs.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSEDs);

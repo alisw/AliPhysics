@@ -362,11 +362,14 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       case EventValidation::kNoEventCut:
         this->fIsValidEvent = this->NoCut(); break;
       case EventValidation::kIsAODEvent:
-        if (!fSettings.esd) this->IsAODEvent(); break;
+        if (!fSettings.esd) this->IsAODEvent(); 
+        break;
       case EventValidation::kTrigger:
-        if (!fSettings.esd) this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); break;
+        if (!fSettings.esd) this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); 
+        break;
       case EventValidation::kHasFMD:
-        if (!fSettings.esd) this->fIsValidEvent = this->HasFMD(); break;
+        if (!fSettings.esd) this->fIsValidEvent = this->HasFMD(); 
+        break;
       case EventValidation::kHasEntriesFMD:
         this->fIsValidEvent = this->HasEntriesFMD(); break;
       case EventValidation::kHasValidFMD:
@@ -374,7 +377,8 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       case EventValidation::kHasEntriesV0:
         this->fIsValidEvent = this->HasEntriesV0(); break;
       case EventValidation::kPassesAliEventCuts:
-        if (!fSettings.esd) this->fIsValidEvent = this->PassesAliEventCuts(); break;
+        if (!fSettings.esd) this->fIsValidEvent = this->PassesAliEventCuts(); 
+        break;
       case EventValidation::kPassesFMD_V0CorrelatioCut:
         this->fIsValidEvent = this->PassesFMDV0CorrelatioCut(true); break;
       case EventValidation::kHasValidVertex:
@@ -545,10 +549,6 @@ Bool_t AliForwardTaskValidation::HasValidVertex() {
 }
 
 AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetFMDhits() const {
-    // Relies on the event being vaild (no extra checks if object exists done here)
-  AliAODForwardMult* aodForward =
-    static_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
-  // Shape of d2Ndetadphi: 200, -4, 6, 20, 0, 2pi
 
   Int_t nEta = this->forwardDist->GetXaxis()->GetNbins();
   Int_t nPhi = this->forwardDist->GetYaxis()->GetNbins();

@@ -20,7 +20,6 @@
 
 #include <TROOT.h>
 #include <TSystem.h>
-#include <TNtuple.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>

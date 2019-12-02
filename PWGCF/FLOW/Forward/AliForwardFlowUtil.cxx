@@ -816,7 +816,23 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
         if(fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax) continue;
         if(fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax) continue;
       }
-      cen->Fill(track->Eta(),track->Phi(), 1);
+
+      Double_t weight = 1;
+      if (fSettings.doNUE){
+          Int_t nueeta = fSettings.nuehist->GetXaxis()->FindBin(track->Eta());
+          Int_t nuevtz = 0;
+
+
+          if (this->fSettings.mc) nuevtz= fMCevent->GetPrimaryVertex()->GetZ();
+          else nuevtz= fevent->GetPrimaryVertex()->GetZ();
+
+          Int_t nuept = fSettings.nuehist->GetZaxis()->FindBin(track->Pt());
+          Double_t factor = fSettings.nuehist->GetBinContent(nueeta,nuept,nuevtz);
+          if (factor) weight = weight*factor;
+          else weight = 0;
+      }
+
+      if (weight != 0 ) cen->Fill(track->Eta(),track->Phi(), weight);
     }
   }
 }

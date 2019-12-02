@@ -35,6 +35,7 @@ AliMixingHandler::AliMixingHandler(Int_t mixingSetup /* = kMixResonanceLegs*/) :
   fPoolsLeg1("TClonesArray"),
   fPoolsLeg2("TClonesArray"),
   fNParallelCuts(0),
+  fNParallelPairCuts(0),
   fHistClassNames(""),
   fPoolSize(),
   fIsInitialized(kFALSE),
@@ -74,6 +75,7 @@ AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title, Int_
   fPoolsLeg1("TClonesArray"),
   fPoolsLeg2("TClonesArray"),
   fNParallelCuts(0),
+  fNParallelPairCuts(0),
   fHistClassNames(""),
   fPoolSize(),
   fIsInitialized(kFALSE),
@@ -160,10 +162,18 @@ void AliMixingHandler::Init() {
   Int_t nClassesPerCut = 0;
   if(fMixingSetup==kMixResonanceLegs) nClassesPerCut = 3;
   if(fMixingSetup==kMixCorrelation) nClassesPerCut = 1;
-  if(histClassArr->GetEntries()!=nClassesPerCut*fNParallelCuts) {  
-    cout << "AliMixingHandler::Init(): ERROR The number of cuts and the number of hist class names provided do not match!" << endl;
-    cout << "                   hist classes: " << histClassArr->GetEntries() << ";    n-parallel cuts: " << fNParallelCuts << endl;
-    return;
+  if (fNParallelPairCuts>1) {
+      if(histClassArr->GetEntries()!=nClassesPerCut*fNParallelCuts*fNParallelPairCuts) {
+        cout << "AliMixingHandler::Init(): ERROR The number of cuts and the number of hist class names provided do not match!" << endl;
+        cout << "                   hist classes: " << histClassArr->GetEntries() << ";    n-parallel cuts: " << fNParallelCuts << ";    n-parallel pair cuts: " << fNParallelPairCuts << endl;
+        return;
+      }
+  } else {
+    if(histClassArr->GetEntries()!=nClassesPerCut*fNParallelCuts) {
+      cout << "AliMixingHandler::Init(): ERROR The number of cuts and the number of hist class names provided do not match!" << endl;
+      cout << "                   hist classes: " << histClassArr->GetEntries() << ";    n-parallel cuts: " << fNParallelCuts << endl;
+      return;
+    }
   }
 
   Int_t size = 1;
@@ -454,14 +464,33 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
           // fill cross-pairs (leg1 - leg2) for the enabled bits
           if(fMixingSetup==kMixResonanceLegs) AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg2, type, values);
           if(fMixingSetup==kMixCorrelation)   AliReducedVarManager::FillCorrelationInfo(ev1Leg1, ev2Leg2, values);
-          if(!IsPairSelected(values, 1)) continue;   // fill histograms only if pair cuts are fulfilled
+          ULong_t pairCutMask = IsPairSelected(values, 1);
+          if(!pairCutMask) continue;   // fill histograms only if pair cuts are fulfilled
           for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
             if((testFlags2)&(ULong_t(1)<<ibit)) { 
-              if(fMixingSetup==kMixResonanceLegs) fHistos->FillHistClass(histClassArr->At(ibit*3+1)->GetName(), values);
+              if(fMixingSetup==kMixResonanceLegs) {
+                if (fNParallelPairCuts>1) {
+                  for (Int_t jbit=0; jbit<fNParallelPairCuts; jbit++) {
+                    if (!((pairCutMask)&(ULong_t(1)<<jbit))) continue;
+                    fHistos->FillHistClass(histClassArr->At(ibit*3+jbit*3*fNParallelCuts+1)->GetName(), values);
+                  }
+                } else {
+                  fHistos->FillHistClass(histClassArr->At(ibit*3+1)->GetName(), values);
+                }
+              }
               if(fMixingSetup==kMixCorrelation) {
                 Int_t pairType = (reinterpret_cast<AliReducedPairInfo*>(ev1Leg1))->PairType();
-                if (fMixLikeSign) fHistos->FillHistClass(histClassArr->At(ibit*3+pairType)->GetName(), values);
-                else              fHistos->FillHistClass(histClassArr->At(ibit)->GetName(), values);
+                if (fNParallelPairCuts>1) {
+                  ULong_t pairCutMaskCorr = (reinterpret_cast<AliReducedPairInfo*>(ev1Leg1))->GetQualityFlags();
+                  for (Int_t jbit=0; jbit<fNParallelPairCuts; jbit++) {
+                    if (!((pairCutMaskCorr)&(ULong_t(1)<<jbit))) continue;
+                    if (fMixLikeSign) fHistos->FillHistClass(histClassArr->At(ibit*3+jbit*fNParallelCuts+pairType)->GetName(), values);
+                    else              fHistos->FillHistClass(histClassArr->At(ibit+jbit*fNParallelCuts)->GetName(), values);
+                  }
+                } else {
+                  if (fMixLikeSign) fHistos->FillHistClass(histClassArr->At(ibit*3+pairType)->GetName(), values);
+                  else              fHistos->FillHistClass(histClassArr->At(ibit)->GetName(), values);
+                }
               }
             }
           }  
@@ -479,11 +508,20 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	  
 	  // fill like-pairs (leg1 - leg1) for the enabled bits
 	  AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg1, type, values);
-          if(!IsPairSelected(values, 0)) continue;   // fill histograms only if pair cuts are fulfilled
+    ULong_t pairCutMask = IsPairSelected(values, 0);
+    if(!pairCutMask) continue;   // fill histograms only if pair cuts are fulfilled
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
-            if((testFlags2)&(ULong_t(1)<<ibit)) 
-              fHistos->FillHistClass(histClassArr->At(ibit*3+0)->GetName(), values);
-          }  
+      if((testFlags2)&(ULong_t(1)<<ibit)) {
+        if (fNParallelPairCuts>1) {
+          for (Int_t jbit=0; jbit<fNParallelPairCuts; jbit++) {
+            if (!((pairCutMask)&(ULong_t(1)<<jbit))) continue;
+            fHistos->FillHistClass(histClassArr->At(ibit*3+jbit*3*fNParallelCuts+0)->GetName(), values);
+          }
+        } else {
+          fHistos->FillHistClass(histClassArr->At(ibit*3+0)->GetName(), values);
+        }
+      }
+    }
 	}  // end loop over the ev2-leg1 list
       }  // end loop over the ev1-leg1 list
       
@@ -507,11 +545,20 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	  
 	  // fill like-pairs (leg2 - leg2) for the enabled bits
 	  AliReducedVarManager::FillPairInfoME(ev1Leg2, ev2Leg2, type, values);
-          if(!IsPairSelected(values, 2)) continue;   // fill histograms only if pair cuts are fulfilled
+    ULong_t pairCutMask = IsPairSelected(values, 2);
+    if(!pairCutMask) continue;   // fill histograms only if pair cuts are fulfilled
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
-            if((testFlags2)&(ULong_t(1)<<ibit)) 
-              fHistos->FillHistClass(histClassArr->At(ibit*3+2)->GetName(), values);
-          }  
+      if((testFlags2)&(ULong_t(1)<<ibit)) {
+        if (fNParallelPairCuts>1) {
+          for (Int_t jbit=0; jbit<fNParallelPairCuts; jbit++) {
+            if (!((pairCutMask)&(ULong_t(1)<<jbit))) continue;
+            fHistos->FillHistClass(histClassArr->At(ibit*3+jbit*3*fNParallelCuts+2)->GetName(), values);
+          }
+        } else {
+          fHistos->FillHistClass(histClassArr->At(ibit*3+2)->GetName(), values);
+        }
+      }
+    }
 	}  // end loop over the ev2-leg2 list
       }  // end loop over the ev1-leg2 list
     }  // end second event loop
@@ -584,7 +631,7 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 
 
 //_________________________________________________________________________
-Bool_t AliMixingHandler::IsPairSelected(Float_t* values, Int_t pairType) {
+ULong_t AliMixingHandler::IsPairSelected(Float_t* values, Int_t pairType) {
    //
    // apply pair cuts
    //
@@ -602,15 +649,16 @@ Bool_t AliMixingHandler::IsPairSelected(Float_t* values, Int_t pairType) {
       default:
          break;
    };
-   if(!cutList) return kTRUE;
-   if(cutList->GetEntries()==0) return kTRUE;
+   if(!cutList) return 1;
+   if(cutList->GetEntries()==0) return 1;
    
    // loop over all the cuts and make a logical AND between all of them
-   for(Int_t i=0; i<cutList->GetEntries(); ++i) {
+   ULong_t mask = 0;
+   for (Int_t i=0; i<cutList->GetEntries(); ++i) {
       AliReducedInfoCut* cut = (AliReducedInfoCut*)cutList->At(i);
-      if(!cut->IsSelected(values)) return kFALSE;
+      if (cut->IsSelected(values)) mask|=(ULong_t(1)<<i);
    }
-   return kTRUE;
+   return mask;
 }
 
 

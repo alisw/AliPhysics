@@ -175,7 +175,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDstoKKpi->SetUseCentrality(kFALSE);
   cutsDstoKKpi->SetUseTrackSelectionWithFilterBits(kFALSE);	
   cutsDstoKKpi->SetUsePID(kFALSE);
-  Float_t cutsArrayDstoKKpi[20]={0.3,0.3,0.3,0.,0.,0.,0.06,0.02,0.,0.9,0.,100000.,0.02,0.0001,-1.,1.,0.,0.,0.,-1.};
+  Float_t cutsArrayDstoKKpi[20]={0.3,0.3,0.3,0.,0.,0.,0.06,0.,0.,0.9,0.,100000.,0.02,0.0001,-1.,1.,0.,0.,0.,-1.};
   cutsDstoKKpi->SetPtBins(nptbins,ptlimits);
   cutsDstoKKpi->SetCuts(20,cutsArrayDstoKKpi);
   cutsDstoKKpi->AddTrackCuts(esdTrackCuts);

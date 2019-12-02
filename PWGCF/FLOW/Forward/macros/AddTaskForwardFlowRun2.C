@@ -53,6 +53,35 @@ AliAnalysisDataContainer* makeWeightContainer(TString nua_file, TString containe
 }
 
 
+AliAnalysisDataContainer* makeWeightContainerNUE(TString nue_file, TString containerName){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer* weights;
+  if (nue_file.Contains("alien:") ) TGrid::Connect("alien:");
+  TFile* file;
+  //if (sec_file.Contains(containerName))
+  file = TFile::Open(nue_file.Data(), "READ");
+
+  if(!file) { printf("E-AddTaskForwardFlowRun2: Input file with secondary weights not found!\n"); return NULL; }
+
+  TList* weights_list = new TList();
+  weights_list->SetName("nue_corr");
+  
+  TH3F* nuehist = new TH3F();
+  TH3F* nuaforward = new TH3F();
+
+  file->GetObject("correction", nuehist);
+  nuehist->SetDirectory(0);
+  nuehist->SetNameTitle("nue_corr","nue_corr");
+
+  file->Close();
+
+  weights_list->Add(nuehist);
+
+  weights = mgr->CreateContainer(containerName,TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
+  weights->SetData(weights_list);
+  return weights;
+}
+
 AliAnalysisDataContainer* makeWeightContainerSec(TString sec_file, TString containerName){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer* weights;
@@ -141,14 +170,22 @@ void connectSecContainer(AliAnalysisDataContainer* container,AliForwardFlowRun2T
   task->fSettings.seccorr_fwd->SetDirectory(0);
 }
 
+
+void connectNUEContainer(AliAnalysisDataContainer* container,AliForwardFlowRun2Task* task){
+
+  task->fSettings.nuehist = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("nue_corr") );
+  task->fSettings.nuehist->SetDirectory(0);
+}
+
+
 void connectSecContainerCent(AliAnalysisDataContainer* container,AliForwardFlowRun2Task* task){
 
   task->fSettings.seccorr_cent = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("sec_corr_cent") );
   task->fSettings.seccorr_cent->SetDirectory(0);
 }
 
-AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, 
-                                          TString nua_file, 
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,bool doNUE, 
+                                          TString nua_file, TString nue_file, 
                                           UShort_t nua_mode, 
                                           bool doetagap, Double_t gap, 
                                           bool mc,  bool esd, bool prim_cen,bool prim_fwd , 
@@ -254,6 +291,16 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
       weights = makeWeightContainer(nua_file,nuaobject);
     }
     connectContainer( weights, task);
+  }
+
+  if (nue_file != ""){
+        TObjArray* taskContainers = mgr->GetContainers();
+    AliAnalysisDataContainer* nue_weights;
+    
+    nue_weights = (AliAnalysisDataContainer*) taskContainers->FindObject("nue");
+
+    if (!nue_weights) nue_weights = makeWeightContainerNUE(nue_file,"nue");   
+    connectNUEContainer(nue_weights, task);
   }
   
 

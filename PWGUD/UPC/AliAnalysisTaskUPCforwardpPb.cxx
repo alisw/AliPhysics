@@ -586,11 +586,13 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
    * -
    */
   TString trigger = fAOD->GetFiredTriggerClasses();
-  if (    !(trigger.Contains("CMUP14-B-NOPF-MUFAST")   ||
+  if (    !(
+            // trigger.Contains("CMUP3")   ||
+            // trigger.Contains("CMUP8")
+            trigger.Contains("CMUP14-B-NOPF-MUFAST")   ||
 	          trigger.Contains("CMUP15-B-NOPF-ALLNOTRD") ||
 	          trigger.Contains("CMUP23-B-NOPF-MUFAST")   ||
-            trigger.Contains("CMUP22-B-NOPF-ALLNOTRD") /*||
-            trigger.Contains("CMUP11-B-NOPF-MUFAST")*/
+            trigger.Contains("CMUP22-B-NOPF-ALLNOTRD") 
             )
           )  {
                     PostData(1, fOutputList);
@@ -796,6 +798,14 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
                                           /*266615,*/ 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
                                           266543, 266539, 266534, 266533, 266525, 266523, 266522, 266520, 266518, 266516,
                                           266514, 266487, 266480, 266479, 266472, 266441, 266439/*, 296552, 296510, 296549, 296618, 296551, 296553, 296623, 296511, 296552*/ };
+  Int_t listRunOne[] = {
+    197089, 197011, 197003, 196974, 196973, 196972, 196965, 196876, 196869, 196774, 196773,
+    196772, 196722, 196721, 196720, 196702, 196701, 196648, 196646, 196608, 196605, 196601,
+    196568, 196566, 196564, 196563, 196535, 196528, 196477, 196475, 196474,
+    197388, 197387, 197386, 197349, 197348, 197342, 197341, 197302, 197299, 197298, 197258,
+    197256, 197255, 197254, 197247, 197189, 197184, 197153, 197152, 197150, 197148, 197147,
+    197145, 197144, 197143, 197142, 197139, 197138, 197099, 197098, 197092, 197091, 197089
+  };
   Bool_t checkIfGoodRun = kFALSE;
   // for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
   //   if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
@@ -803,6 +813,9 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
   for( Int_t iRunLHC16s = 0; iRunLHC16s <  76 /*86*/; iRunLHC16s++){
     if( fRunNum == listOfGoodRunNumbersLHC16s[iRunLHC16s] ) checkIfGoodRun = kTRUE;
   }
+  // for( Int_t iRunLHC13 = 0; iRunLHC13 <  64 /*86*/; iRunLHC13++){
+  //   if( fRunNum == listRunOne[iRunLHC13] ) checkIfGoodRun = kTRUE;
+  // }
   if(checkIfGoodRun != 1) {
        PostData(1, fOutputList);
        // cout << "OPS!" << endl;
@@ -899,6 +912,8 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
        PostData(1, fOutputList);
        return;
   }
+
+
   /* - Empty V0C decision
    * - or at least in beam timing.
    */
@@ -917,10 +932,6 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
      -
      - Trying a more readable and immediate approach.
    */
-  // if( !(fV0TotalNCells < 2) ) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
   if( fV0TotalNCells > 2 ) {
        PostData(1, fOutputList);
        return;

@@ -33,8 +33,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
-                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${TREELITE_ROOT}/include
+                    ${YAML_CPP_SOURCE_DIR}/include
   )
 
 # Sources - alphabetical order
@@ -189,10 +189,10 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT)
+set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW)
 # Dependencies for ROOT6 only
 if(ROOT_VERSION_MAJOR EQUAL 6)
-  set(LIBDEPS ${LIBDEPS} ML)
+  set(LIBDEPS ${LIBDEPS} ML yaml-cpp)
 endif()
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 

@@ -200,7 +200,7 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                                 fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(4, 6,
+    fPairCleaner = new AliFemtoDreamPairCleaner(8, 12,
                                                 fConfig->GetMinimalBookingME());
     if (fConfig->GetUsePhiSpinning()) {
       fSample = new AliFemtoDreamControlSample(fConfig);
@@ -260,7 +260,6 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
   fAntiProtonList = fAntiProton->GetQAHists();
   fLambdaList = fLambda->GetQAHists();
   fAntiLambdaList = fAntiLambda->GetQAHists();
-  std::cout << "Debug 1 " << std::endl;
   fXiList = fXi->GetQAHists();
   fAntiXiList = fAntiXi->GetQAHists();
 

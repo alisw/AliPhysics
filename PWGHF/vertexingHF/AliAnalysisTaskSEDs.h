@@ -13,18 +13,24 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TH3F.h>
 #include <THnSparse.h>
-#include <TTree.h>
-
 #include "AliAnalysisTaskSE.h"
-#include "AliRDHFCutsDstoKKpi.h"
-#include "AliHFMLResponseDstoKKpi.h"
+#include "AliLog.h"
 #include "AliHFMLVarHandlerDstoKKpi.h"
 
+class TH1F;
+class TH2F;
+class TH3F;
+class TTree;
+class TClonesArray;
+
+class AliAODMCHeader;
+class AliAODMCParticle;
 class AliNormalizationCounter;
+class AliAODRecoDecayHF3Prong;
+class AliRDHFCutsDstoKKpi;
+class AliHFMLResponseDstoKKpi;
+
 
 class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {

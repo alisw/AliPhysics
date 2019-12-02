@@ -94,6 +94,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fPIDCombined(0),
   fIsK0sAnalysis(kFALSE),
   fCounter(0),
+  fCounterC(0),
   fAnalCuts(0),
   fListCuts(0),
   fListWeight(0),
@@ -259,6 +260,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fPIDCombined(0),
   fIsK0sAnalysis(kFALSE),
   fCounter(0),
+  fCounterC(0),
   fAnalCuts(analCuts),
   fListCuts(0),
   fListWeight(0),
@@ -450,6 +452,11 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::~AliAnalysisTaskSELc2V0bachelorTMVAApp() 
   if (fCounter) {
     delete fCounter;
     fCounter = 0;
+  }
+
+  if (fCounterC) {
+    delete fCounterC;
+    fCounterC = 0;
   }
 
   if (fAnalCuts) {
@@ -898,10 +905,15 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
 
+  fCounterC = new AliNormalizationCounter("NormalizationCounterCorrMult");
+  fCounterC->SetStudyMultiplicity(kTRUE,1.);
+  fCounterC->Init();
+
   fListCounters = new TList();
   fListCounters->SetOwner();
   fListCounters->SetName("ListCounters");
   fListCounters->Add(fCounter);
+  fListCounters->Add(fCounterC);
   
   PostData(2, fListCounters);
   
@@ -1279,6 +1291,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
       }
     }
   }
+
+  fCounterC->StoreEvent(aodEvent, fAnalCuts, fUseMCInfo,countCorr);
   
   Bool_t isSelectedMultCut = kTRUE;
   if(fUseMultiplicityCut){

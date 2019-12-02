@@ -17,6 +17,7 @@
 
 /////////////////////////////////////////////////////////////
 //  MC ONGOING CHANGES:
+// - EXPLORE PID CASES: MUST MATCH THE RIGHT MASS HYPO!! CHECK
 //  - CHECK WHAT HAPPENS FOR RESONANT CHANNELS (Lc ones + Xic to K*0: should be ok
 //  - DEVELOP MC PART: CHECK SIGMA_C (all histos at reco level should be filled inside SigmaC loop, only if also the partner pion is found --> should be fixed by the addition of extra steps before calling SigmaCloop and specifc flagging insied); 
 // FILLING FOR SPARSES AND TREE: CANDIDATE PT SHOULD BE THAT AT GEN LEVEL: should be ok now
@@ -1042,8 +1043,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	AliAODMCParticle *part=0x0;
 	Double_t pointlcsc[6];
 	if(fReadMC){
-	  part=MatchRecoCandtoMC(io3Prong,isTrueLambdaCorXic,checkOrigin);	  
-	  
+	  part=MatchRecoCandtoMCAcc(io3Prong,isTrueLambdaCorXic,checkOrigin);	  
+
 	  //  static Int_t CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 	  //  AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray,)
 	  if(!part) {
@@ -1425,7 +1426,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
   if(pSigmaC){
     ptsigmacMC=pSigmaC->Pt();
     if(pSigmaC->GetNDaughters()!=2)return;
-    for(Int_t k=TMath::Abs(pSigmaC->GetDaughterLabel(0));TMath::Abs(k<pSigmaC->GetDaughterLabel(1));k++){
+    for(Int_t k=pSigmaC->GetDaughterLabel(0);k<=pSigmaC->GetDaughterLabel(1);k++){
       if(k>=0){
 	AliAODMCParticle *mcpartScdau=(AliAODMCParticle*)fmcArray->At(k);
 	if(TMath::Abs(mcpartScdau->GetPdgCode())==211){
@@ -1558,7 +1559,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		  pointSigma[10]=ptsigmacMC;
 		  pointSigma[0]=ptlambdacMC;		 
 		  fhSparseAnalysisSigma->Fill(pointSigma);
-		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		  //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
 		  pointlcsc[0]=ptlambdacMC;
 		  pointlcsc[1]=kRecoPID;
 		  pointlcsc[2]=checkorigin;
@@ -1632,7 +1633,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		  pointSigma[10]=ptsigmacMC;
 		  pointSigma[0]=ptlambdacMC;
 		  fhSparseAnalysisSigma->Fill(pointSigma);
-		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		  //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
 		  pointlcsc[0]=ptlambdacMC;
 		  pointlcsc[1]=kRecoPID;
 		  pointlcsc[2]=checkorigin;
@@ -1660,7 +1661,7 @@ Int_t AliAnalysisTaskSEXicTopKpi::CheckXicpKpiDecay(TClonesArray* arrayMC, AliAO
 
   Int_t nDau=mcPart->GetNDaughters();
   //Int_t labelFirstDau = mcPart->GetDaughter(0); // old
-  Int_t labelFirstDau = TMath::Abs(mcPart->GetDaughterLabel(0));
+  Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
   Int_t nKaons=0;
   Int_t nPions=0;
   Int_t nProtons=0;
@@ -1703,7 +1704,7 @@ Int_t AliAnalysisTaskSEXicTopKpi::CheckXicpKpiDecay(TClonesArray* arrayMC, AliAO
 	Int_t nResDau=dau->GetNDaughters();
 	if(nResDau!=2) return -1;
 	//Int_t indFirstResDau=dau->GetDaughter(0); // old
-	Int_t indFirstResDau=TMath::Abs(dau->GetDaughterLabel(0));
+	Int_t indFirstResDau=dau->GetDaughterLabel(0);
 	for(Int_t resDau=0; resDau<2; resDau++){
 	  Int_t indResDau=indFirstResDau+resDau;
 	  if(indResDau<0) return -1;
@@ -2097,7 +2098,7 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
   //else if(flagMC==1 && p && array_MC){ // flagMC==1 means that the reconstructed particle is connected to a generated Lc
   else if(flagMC>0.5 /*&& flagMC<5.5*/ && p && array_MC){ 
     //Int_t index_firstProng = p->GetDaughter(0); // old
-    Int_t index_firstProng = TMath::Abs(p->GetDaughterLabel(0));
+    Int_t index_firstProng = p->GetDaughterLabel(0);
     AliAODMCParticle *mc_firstProng=(AliAODMCParticle*)array_MC->At(index_firstProng);
     varPointer[22]=Weight_fromLc_toXic(p,mc_firstProng);
   }
@@ -2512,18 +2513,18 @@ AliAODMCParticle* AliAnalysisTaskSEXicTopKpi::MatchRecoCandtoMC(AliAODRecoDecayH
 	      isTrueLambdaCorXic+=2;
 	    }
 	  }
-	}      
+	}
+	return part;
       }
-      return part;
     }  
   }
 
   if(partind>=0){
     part=(AliAODMCParticle*)fmcArray->At(partind);
-    if(part){
-      Int_t pdgMother_checkQuark = AliVertexingHFUtils::CheckOrigin(fmcArray,part,kTRUE);
-      if(pdgMother_checkQuark==4) isTrueLambdaCorXic*=4;      // from quark c
-      else if(pdgMother_checkQuark==5) isTrueLambdaCorXic*=5; // from quark b
+    if(part){      
+      checkOrigin= AliVertexingHFUtils::CheckOrigin(fmcArray,part,kTRUE);
+      if(checkOrigin==4) isTrueLambdaCorXic*=4;      // from quark c
+      else if(checkOrigin==5) isTrueLambdaCorXic*=5; // from quark b
       //
       // check if it is pKpi or piKp
       //
@@ -2658,7 +2659,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	      fhistMCSpectrumAccSc->Fill(ptpartSc,kGenAccMother,checkOrigin);// Gen Acc Mother
 	      
 	      if(isInAcc){// both Sc and Lc in fiducial acceptance + Lc daughter in Acc
-		for(Int_t k=TMath::Abs(mcpartMum->GetDaughterLabel(0));k<TMath::Abs(mcpartMum->GetDaughterLabel(1));k++){
+		for(Int_t k=mcpartMum->GetDaughterLabel(0);k<mcpartMum->GetDaughterLabel(1);k++){
 		  if(k>=0){AliAODMCParticle *mcpartMumdau=(AliAODMCParticle*)fmcArray->At(k);
 		    if(TMath::Abs(mcpartMumdau->GetPdgCode()==211)&&TMath::Abs(mcpartMumdau->Eta())>0.9){
 		      isInAccSc=kFALSE;
@@ -2735,7 +2736,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
     }       
     AliAODMCParticle* part=0x0;
     if( fDebug>=0 && fReadMC){
-      part=MatchRecoCandtoMC(d,isTrueLambdaCorXic,checkOrigin);	  
+      part=MatchRecoCandtoMCAcc(d,isTrueLambdaCorXic,checkOrigin);	  
     }
     if(!(fvHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.
       continue;

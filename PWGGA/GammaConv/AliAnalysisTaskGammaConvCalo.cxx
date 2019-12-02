@@ -5432,7 +5432,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
               fDCAzGammaMin = gamma1->GetDCAzToPrimVtx();
               fDCAzGammaMax = gamma0->GetDCAzToPrimVtx();
             }
-            iFlag = pi0cand->GetMesonQuality();
+            iFlag = gamma0->GetPhotonQuality()+gamma1->GetPhotonQuality();//pi0cand->GetMesonQuality();
             if (fIsHeavyIon == 1 && fPt > 0.399 && fPt < 20. ) {
               if (fInvMass > 0.08 && fInvMass < 0.2) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
               if ((fInvMass > 0.45 && fInvMass < 0.6) &&  (fPt > 0.999 && fPt < 20.) )tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();

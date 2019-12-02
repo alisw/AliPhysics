@@ -779,7 +779,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  fPIDsigma = nSigmaDistElectron;
   	  vJPsiCandidate = vElectron[0]+vElectron[1];
   	  fChannel = -1;
-  	  FillTree(fTreeJPsi,vJPsiCandidate);
 	  if(!isMC) FillTree(fTreeJPsi,vJPsiCandidate);
 	  else FillTree(fTreeJPsi,vJPsiCandidate,vMC);
   	  }

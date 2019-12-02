@@ -12,6 +12,7 @@ ClassImp(AliPP13SelectionWeightsTOF);
 ClassImp(AliPP13SelectionWeightsMC);
 ClassImp(AliPP13SelectionWeightsFeeddown);
 ClassImp(AliPP13SelectionWeightsSPMC);
+ClassImp(AliPP13SelectionWeightsScan);
 
 //________________________________________________________________
 Double_t AliPP13SelectionWeightsTOF::TofEfficiency(Double_t energy) const
@@ -26,30 +27,26 @@ Double_t AliPP13SelectionWeightsTOF::TofEfficiency(Double_t energy) const
 
 
 //________________________________________________________________
-Double_t AliPP13SelectionWeightsMC::Nonlinearity(Double_t x) const
+Double_t AliPP13SelectionWeightsScan::Nonlinearity(Double_t x) const
 {
-    if (fNonGlobal < 0)
-        return 1.0;
-
     // These magic numbers are taken from the official tender configuration
     // https://github.com/alisw/AliPhysics/blob/master/TENDER/TenderSupplies/AliPHOSTenderSupply.cxx
 
+    // When changing these parameters chagne the fE and fD as well
     Double_t p0 = 1.04397;
     Double_t p1 = 0.512307;
     Double_t p2 = 0.133812;
     Double_t p3 = -0.150093;
     Double_t p4 = -0.455062;
 
-    // Use only when fNonGlobal is > 0
-    if (fNonGlobal > 0)
-    {
-        p4 = fNonA;
-        p2 = fNonSigma;
-    }
+    // Override the parameters for scan
+    p2 = fE;
+    p4 = fD;
+
+    // Correct in the following way: p *= nonlin(E);
     return p0 + p1 / x + p2 / x / x + p3 / TMath::Sqrt(x) + p4 / x / TMath::Sqrt(x);
 }
     
-
 
 //________________________________________________________________
 Double_t AliPP13SelectionWeightsSPMC::Weights(Double_t pT, const EventFlags & eflags) const
@@ -114,6 +111,9 @@ AliPP13SelectionWeights & AliPP13SelectionWeights::Init(Mode m)
 
     if (m == kSingleEtaMC)
         return AliPP13SelectionWeightsSPMC::SingleEta();
+
+    if (m == kScan)
+        return * new AliPP13SelectionWeightsScan();
 
     if (m == kFeeddown)
         return * new AliPP13SelectionWeightsFeeddown();

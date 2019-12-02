@@ -74,7 +74,6 @@ set(SRCS
   AliAnalysisTaskMultiparticleFemtoscopy.cxx
   AliAnalysisTaskForStudents.cxx
   AliAnalysisTaskZDCGainEq.cxx
-  AliAnalysisTaskZDCEP.cxx
   AliAnalysisTaskPiKpK0Lamba.cxx
   AliAnalysisTaskCmeEse.cxx
   AliAnalysisTaskCMEV0.cxx

@@ -3150,7 +3150,10 @@ Bool_t AliConvEventCuts::IsPileUpV0MTPCout(AliVEvent *event)
   Double_t multV0M;
   Double_t valFunc;
   if (fIsHeavyIon==2){
-      multV0M =  event->GetVZEROData()->GetMTotV0A();
+      if(event->GetRunNumber()>266400 && event->GetRunNumber()<267140)
+        multV0M =  event->GetVZEROData()->GetMTotV0C(); // for Pbp
+      else
+        multV0M =  event->GetVZEROData()->GetMTotV0A(); // for pPb
   }else{
       multV0M = event->GetVZEROData()->GetMTotV0A() + event->GetVZEROData()->GetMTotV0C() ;
   }
