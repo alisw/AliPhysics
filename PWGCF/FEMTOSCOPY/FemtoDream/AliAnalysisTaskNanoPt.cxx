@@ -210,7 +210,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     AliError("No Proton cuts \n");
   } else {
     fProtonTrack->Init();
-    fProtonRestMass = new TH2F("fProtonRestMass", "Proton", 36, 0.5, 4.05, 180, 0.00, 3);
+    fProtonRestMass = new TH2F("fProtonRestMass", "Proton", 36, 0.5, 4.05, 400, 0.00, 3);
     fProtonRestMass->GetXaxis()->SetTitle("pT(GeV)");
     fProtonRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
     fProtonList = fProtonTrack->GetQAHists();
@@ -221,7 +221,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     AliError("No AntiProton cuts \n");
   } else {
     fAntiProtonTrack->Init();
-    fAntiProtonRestMass = new TH2F("fAntiProtonRestMass", "AntiProton", 36, 0.5, 4.05, 180, 0.00, 3);
+    fAntiProtonRestMass = new TH2F("fAntiProtonRestMass", "AntiProton", 36, 0.5, 4.05, 400, 0.00, 3);
     fAntiProtonRestMass->GetXaxis()->SetTitle("pT(GeV)");
     fAntiProtonRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
     fAntiProtonList = fAntiProtonTrack->GetQAHists();
@@ -232,7 +232,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     AliError("No Proton cuts \n");
   } else {
     fDeuteronTrack->Init();
-    fDeuteronRestMass = new TH2F("fDeuteronRestMass", "Deuteron", 36, 0.5, 4.05, 180, 0.00, 5);
+    fDeuteronRestMass = new TH2F("fDeuteronRestMass", "Deuteron", 36, 0.5, 4.05, 400, 0.00, 5);
     fDeuteronRestMass->GetXaxis()->SetTitle("pT(GeV)");
     fDeuteronRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
     fDeuteronList = fDeuteronTrack->GetQAHists();
@@ -243,7 +243,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     AliError("No Proton cuts \n");
   } else {
     fAntiDeuteronTrack->Init();
-    fAntiDeuteronRestMass = new TH2F("fAntiDeuteronRestMass", "AntiDeuteron", 36, 0.5, 4.05, 180, 0.00, 5);
+    fAntiDeuteronRestMass = new TH2F("fAntiDeuteronRestMass", "AntiDeuteron", 36, 0.5, 4.05, 400, 0.00, 5);
     fAntiDeuteronRestMass->GetXaxis()->SetTitle("pT(GeV)");
     fAntiDeuteronRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
     fAntiDeuteronList = fAntiDeuteronTrack->GetQAHists();
@@ -255,7 +255,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     AliError("No ProtonNoTOF cuts \n");
   } else {
     fProtonTrackNoTOF->Init();
-    fProtonRestMassNoTOF = new TH2F("fProtonRestMassNoTOF", "Proton NoTOF", 36, 0.5, 4.05, 180, 0.00, 3);
+    fProtonRestMassNoTOF = new TH2F("fProtonRestMassNoTOF", "Proton NoTOF", 36, 0.5, 4.05, 400, 0.00, 3);
     fProtonRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
     fProtonRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
     fProtonNoTOFList = fProtonTrackNoTOF->GetQAHists();
@@ -266,7 +266,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     AliError("No AntiProtonNoTOF cuts \n");
   } else {
     fAntiProtonTrackNoTOF->Init();
-    fAntiProtonRestMassNoTOF = new TH2F("fAntiProtonRestMassNoTOF", "AntiProtonNoTOF", 36, 0.5, 4.05, 180,0.00, 3);
+    fAntiProtonRestMassNoTOF = new TH2F("fAntiProtonRestMassNoTOF", "AntiProtonNoTOF", 36, 0.5, 4.05, 400,0.00, 3);
     fAntiProtonRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
     fAntiProtonRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
     fAntiProtonNoTOFList = fAntiProtonTrackNoTOF->GetQAHists();
@@ -277,7 +277,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     AliError("No DeuteronNoTOF cuts \n");
   } else {
     fDeuteronTrackNoTOF->Init();
-    fDeuteronRestMassNoTOF = new TH2F("fDeuteronRestMassNoTOF", "DeuteronNoTOF", 36, 0.5, 4.05, 180, 0.00, 5);
+    fDeuteronRestMassNoTOF = new TH2F("fDeuteronRestMassNoTOF", "DeuteronNoTOF", 36, 0.5, 4.05, 400, 0.00, 5);
     fDeuteronRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
     fDeuteronRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
     fDeuteronNoTOFList = fDeuteronTrackNoTOF->GetQAHists();
@@ -288,7 +288,7 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     AliError("No AntiDeuteronNoTOF cuts \n");
   } else {
     fAntiDeuteronTrackNoTOF->Init();
-    fAntiDeuteronRestMassNoTOF = new TH2F("fAntiDeuteronRestMassNoTOF", "AntiDeuteronNoTOF", 36, 0.5, 4.05, 180, 0.0, 5);
+    fAntiDeuteronRestMassNoTOF = new TH2F("fAntiDeuteronRestMassNoTOF", "AntiDeuteronNoTOF", 36, 0.5, 4.05, 400, 0.0, 5);
     fAntiDeuteronRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
     fAntiDeuteronRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
     fAntiDeuteronNoTOFList = fAntiDeuteronTrackNoTOF->GetQAHists();
@@ -301,16 +301,16 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       AliError("No Proton cuts \n");
     } else {
       //fProtonTrackNoTOF->Init();
-      fProtonRestMassMC = new TH2F("fProtonRestMassMC", "Proton", 36, 0.5, 4.05, 180,0.0, 3);
+      fProtonRestMassMC = new TH2F("fProtonRestMassMC", "Proton", 36, 0.5, 4.05, 400,0.0, 3);
       fProtonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fProtonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fKaonRestMassMC = new TH2F("fKaonRestMassMC", "kaon", 36, 0.5, 4.05, 180, 0.0, 3);
+      fKaonRestMassMC = new TH2F("fKaonRestMassMC", "kaon", 36, 0.5, 4.05, 400, 0.0, 3);
       fKaonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fKaonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fPionRestMassMC = new TH2F("fPionRestMassMC", "pion", 36, 0.5, 4.05, 180, 0.0, 3);
+      fPionRestMassMC = new TH2F("fPionRestMassMC", "pion", 36, 0.5, 4.05, 400, 0.0, 3);
       fPionRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fPionRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fProtonBackgroungMC = new TH2F("fProtonBackgroungMC", "background", 36, 0.5, 4.05, 180, 0.0, 3);
+      fProtonBackgroungMC = new TH2F("fProtonBackgroungMC", "background", 36, 0.5, 4.05, 400, 0.0, 3);
       fProtonBackgroungMC->GetXaxis()->SetTitle("pT(GeV)");
       fProtonBackgroungMC->GetYaxis()->SetTitle("m^2(Gev)^2");
       fProtonMCList = fProtonTrackNoTOF->GetQAHists();
@@ -325,16 +325,16 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       AliError("No AntiProton cuts \n");
     } else {
       //fAntiProtonTrackNoTOF->Init();
-      fAntiProtonRestMassMC = new TH2F("fAntiProtonRestMassMC", "AntiProton", 36, 0.5, 4.05, 180,0.00, 3);
+      fAntiProtonRestMassMC = new TH2F("fAntiProtonRestMassMC", "AntiProton", 36, 0.5, 4.05, 400,0.00, 3);
       fAntiProtonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiProtonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fAntiKaonRestMassMC = new TH2F("fAntiKaonRestMassMC", "AntiProton", 36, 0.5, 4.05, 180, 0.00, 3);
+      fAntiKaonRestMassMC = new TH2F("fAntiKaonRestMassMC", "AntiProton", 36, 0.5, 4.05, 400, 0.00, 3);
       fAntiKaonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiKaonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fAntiPionRestMassMC = new TH2F("fAntiPionRestMassMC", "AntiPion", 36, 0.5, 4.05, 180, 0.00, 3);
+      fAntiPionRestMassMC = new TH2F("fAntiPionRestMassMC", "AntiPion", 36, 0.5, 4.05, 400, 0.00, 3);
       fAntiPionRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiPionRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fAntiProtonBackgroundMC = new TH2F("fAntiProtonBackgroundMC", "AntiProtonBackgroundMC", 36, 0.5, 4.05, 180, 0.00, 3);
+      fAntiProtonBackgroundMC = new TH2F("fAntiProtonBackgroundMC", "AntiProtonBackgroundMC", 36, 0.5, 4.05, 400, 0.00, 3);
       fAntiProtonBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiProtonBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
       fAntiProtonMCList = fAntiProtonTrackNoTOF->GetQAHists();
@@ -349,19 +349,19 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       AliError("No Proton cuts \n");
     } else {
       //fDeuteronTrackNoTOF->Init();
-      fDeuteronRestMassMC = new TH2F("fDeuteronRestMassMC", "Deuteron", 36, 0.5, 4.05, 180, 0.00, 5);
+      fDeuteronRestMassMC = new TH2F("fDeuteronRestMassMC", "Deuteron", 36, 0.5, 4.05, 400, 0.00, 5);
       fDeuteronRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fDeuteronRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fDProtonRestMassMC = new TH2F("fDProtonRestMassMC", "Proton", 36, 0.5, 4.05, 180, 0.00, 5);
+      fDProtonRestMassMC = new TH2F("fDProtonRestMassMC", "Proton", 36, 0.5, 4.05, 400, 0.00, 5);
       fDProtonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fDProtonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fDKaonRestMassMC = new TH2F("fDKaonRestMassMC", "Kaon", 36, 0.5, 4.05, 180, 0.00, 5);
+      fDKaonRestMassMC = new TH2F("fDKaonRestMassMC", "Kaon", 36, 0.5, 4.05, 400, 0.00, 5);
       fDKaonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fDKaonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fDPionRestMassMC = new TH2F("fDPionRestMassMC", "Pion", 36, 0.5, 4.05, 180, 0.00, 5);
+      fDPionRestMassMC = new TH2F("fDPionRestMassMC", "Pion", 36, 0.5, 4.05, 400, 0.00, 5);
       fDPionRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fDPionRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fDeuteronBackgroundMC = new TH2F("fDeuteronBackgroundMC", "Pion", 36, 0.5, 4.05, 180, 0.00, 5);
+      fDeuteronBackgroundMC = new TH2F("fDeuteronBackgroundMC", "Pion", 36, 0.5, 4.05, 400, 0.00, 5);
       fDeuteronBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
       fDeuteronBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
       fDeuteronMCList = fDeuteronTrackNoTOF->GetQAHists();
@@ -377,19 +377,19 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       AliError("No Proton cuts \n");
     } else {
       //fAntiDeuteronTrackNoTOF->Init();
-      fAntiDeuteronRestMassMC = new TH2F("fAntiDeuteronRestMassMC", "AntiDeuteron", 36, 0.5, 4.05, 180, 0.00, 5);
+      fAntiDeuteronRestMassMC = new TH2F("fAntiDeuteronRestMassMC", "AntiDeuteron", 36, 0.5, 4.05, 400, 0.00, 5);
       fAntiDeuteronRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiDeuteronRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fAntiDProtonRestMassMC = new TH2F("fAntiDProtonRestMassMC", "AntiProton", 36, 0.5, 4.05, 180, 0.00, 5);
+      fAntiDProtonRestMassMC = new TH2F("fAntiDProtonRestMassMC", "AntiProton", 36, 0.5, 4.05, 400, 0.00, 5);
       fAntiDProtonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiDProtonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fAntiDKaonRestMassMC = new TH2F("fAntiDKaonRestMassMC", "AntiKaon", 36, 0.5, 4.05, 180, 0.00, 5);
+      fAntiDKaonRestMassMC = new TH2F("fAntiDKaonRestMassMC", "AntiKaon", 36, 0.5, 4.05, 400, 0.00, 5);
       fAntiDKaonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiDKaonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fAntiDPionRestMassMC = new TH2F("fAntiDPionRestMassMC", "AntiPion", 36, 0.5, 4.05, 180, 0.00, 5);
+      fAntiDPionRestMassMC = new TH2F("fAntiDPionRestMassMC", "AntiPion", 36, 0.5, 4.05, 400, 0.00, 5);
       fAntiDPionRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiDPionRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-      fAntiDeuteronBackgroundMC = new TH2F("fAntiDeuteronBackgroundMC", "AntiDeuteronBackgroundMC", 36, 0.5, 4.05, 180,0.00, 5);
+      fAntiDeuteronBackgroundMC = new TH2F("fAntiDeuteronBackgroundMC", "AntiDeuteronBackgroundMC", 36, 0.5, 4.05, 400,0.00, 5);
       fAntiDeuteronBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiDeuteronBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
       fAntiDeuteronMCList = fAntiDeuteronTrackNoTOF->GetQAHists();
