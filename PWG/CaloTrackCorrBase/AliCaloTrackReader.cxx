@@ -810,13 +810,13 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     if ( fRemoveLEDEvents > 1 )
     {
       fhEMCALNSumEnCellsPerSM = new TH2F 
-      ("hEMCALNSumEnCellsPerSM","Total number of cells and energy in any SM",144,0,1152,100,0,1000);
+      ("hEMCALNSumEnCellsPerSM","Total number of cells and energy in any SM",144,0,1152,250,0,5000);
       fhEMCALNSumEnCellsPerSM->SetXTitle("#it{n}_{cells}^{SM}");
       fhEMCALNSumEnCellsPerSM->SetYTitle("#Sigma #it{E}_{cells}^{SM} (GeV)");
       fOutputContainer->Add(fhEMCALNSumEnCellsPerSM);
       
       fhEMCALNSumEnCellsPerSMAfter = new TH2F 
-      ("hEMCALNSumEnCellsPerSMAfter","Total number of cells and energy in any SM",144,0,1152,100,0,1000);
+      ("hEMCALNSumEnCellsPerSMAfter","Total number of cells and energy in any SM",144,0,1152,250,0,5000);
       fhEMCALNSumEnCellsPerSMAfter->SetXTitle("#it{n}_{cells}^{SM}");
       fhEMCALNSumEnCellsPerSMAfter->SetYTitle("#Sigma #it{E}_{cells}^{SM} (GeV)");
       fOutputContainer->Add(fhEMCALNSumEnCellsPerSMAfter);
@@ -3309,10 +3309,8 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
       Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
       Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
       Float_t amp = fInputEvent->GetEMCALCells()->GetAmplitude(icell);
-      Float_t exo =  1;
-      if ( amp > 0 ) exo = 1-GetCaloUtils()->GetECross(absID,fInputEvent->GetEMCALCells(),0)/amp;
-
-      if ( amp >= fLEDMinCellEnergy && amp <= fLEDMaxCellEnergy && exo < 0.95 ) 
+      
+      if ( amp >= fLEDMinCellEnergy && amp <= fLEDMaxCellEnergy ) 
       {
         ncellsSM[sm]++;
         ecellsSM[sm]+=amp;
@@ -3322,48 +3320,33 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
     for(Int_t ism = 0; ism < 20; ism++)
       fhEMCALNSumEnCellsPerSM->Fill(ncellsSM[ism],ecellsSM[ism]);
     
-    if ( fRemoveLEDEvents  == 2 ) // Run2
+    if ( fRemoveLEDEvents == 2 ) // Run2
     {
       // if there is some activity in SM3, accept the event
-      if ( ncellsSM[3] > fLEDLowNCellsCutSM3 || ecellsSM[3] > fLEDLowEnergyCutSM3 ) 
-      {
+      if ( ncellsSM[3] <= fLEDLowNCellsCutSM3 || ecellsSM[3] <= fLEDLowEnergyCutSM3 ) 
+      {      
         for(Int_t ism = 0; ism < 20; ism++)
-          fhEMCALNSumEnCellsPerSMAfter->Fill(ncellsSM[ism],ecellsSM[ism]);
-        
-        return kFALSE;
-      }
-//      printf("Empty SM3 ncells %d sum E cells %3.1f\n", ncellsSM[3],ecellsSM[3]);
-//      for(Int_t jsm = 0; jsm < 20; jsm++){
-//        if(ncellsSM[jsm]>0)printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+        {
+          if ( ism == 3 ) continue;
+          
+          if ( ncellsSM[ism] >=  fLEDHighNCellsCutSM )
+          {
+            printf("Reject event because of SM%d: ",ism);
+            for(Int_t jsm = 0; jsm < 20; jsm++){
+              if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+            return kTRUE;
+          }
+          
+          if ( ecellsSM[ism] >= fLEDHighEnergyCutSM )
+          {
+            printf("Reject event because of SM%d: ",ism);
+            for(Int_t jsm = 0; jsm < 20; jsm++) {
+              if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+            return kTRUE;
+          }
+        }
+      } // SM3 activity
       
-      // Empty SM3 check the other SM
-      //Bool_t bSMEn[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-      //Bool_t bSMNc[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-      Float_t acc = 1.;
-      for(Int_t ism = 0; ism < 20; ism++)
-      {
-        if ( ism == 3 ) continue;
-
-        // Different cut depending SM acceptance
-        //if (ism > 11 && ism < 18 ) acc = 2./3.;
-        //else if ( sm > 9 )         acc = 1./3.;
-        
-        if ( ncellsSM[ism] >=  fLEDHighNCellsCutSM*acc )
-        {
-          printf("Reject event because of SM%d: ",ism);
-          for(Int_t jsm = 0; jsm < 20; jsm++){
-            if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
-          return kTRUE;
-        }
-        
-        if ( ecellsSM[ism] >= fLEDHighEnergyCutSM*acc )
-        {
-          printf("Reject event because of SM%d: ",ism);
-          for(Int_t jsm = 0; jsm < 20; jsm++) {
-            if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
-          return kTRUE;
-        }
-      }
     }
     else // Simple case for testing ...
     {
