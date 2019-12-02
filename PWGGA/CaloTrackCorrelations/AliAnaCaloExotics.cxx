@@ -54,6 +54,7 @@ fTimeCutMin(-10000),                   fTimeCutMax(10000),
 fHighEnergyCutSM(0),                   fHighNCellsCutSM(0), 
 fLowEnergyCutSM3(0),                   fLowNCellsCutSM3(0),
 fEventMaxNumberOfStrips(0),
+fLowEnergyCutSM3Strip(0),              fLowNCellsCutSM3Strip(0),
 fCellEnMax(0),                         fConstantTimeShift(0),                 
 fClusterMomentum(),
 
@@ -200,12 +201,14 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
   fCellEnMax = 15;
   
   fHighEnergyCutSM = 500.; fHighNCellsCutSM = 100;
-  fLowEnergyCutSM3 = 2   ; fLowNCellsCutSM3 = 3;
+  fLowEnergyCutSM3 = 20. ; fLowNCellsCutSM3 = 20;
   
   fEventMaxNumberOfStrips = 0; 
   fHighEnergyCutStrip[0] = 45; fHighEnergyCutStrip[1] = 32; 
   fHighNCellsCutStrip[0] = 20; fHighNCellsCutStrip[1] = 14;
-  
+  fLowEnergyCutSM3Strip  = 100; // open
+  fLowNCellsCutSM3Strip  = 100; // open
+ 
   // Init to zero
   //
   for(Int_t i = 0; i < fgkNEBins; i++) 
@@ -660,7 +663,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       fhFracSumEnCellsNHigh20[icut-1]->Fill(frEnCells, GetEventWeight());
     }
     
-    if ( nCellsPerSM[0][3] <= fLowNCellsCutSM3 || eCellsPerSM[0][3] <= fLowEnergyCutSM3 )
+    if ( acceptEvent )
     {
       fhFracNCellsAcceptEvent    [icut-1]->Fill(frNCells , GetEventWeight());
       fhFracSumEnCellsAcceptEvent[icut-1]->Fill(frEnCells, GetEventWeight());
@@ -780,8 +783,8 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
   Bool_t bSM3StripsLowActivity = kTRUE;
   for (Int_t ieta = 0; ieta < 24; ieta++)
   {
-    if ( fEnCellsStrip[0][3][ieta] > fLowEnergyCutSM3 || 
-         fnCellsStrip [0][3][ieta] > fLowNCellsCutSM3   ) 
+    if ( fEnCellsStrip[0][3][ieta] > fLowEnergyCutSM3Strip || 
+         fnCellsStrip [0][3][ieta] > fLowNCellsCutSM3Strip   ) 
       bSM3StripsLowActivity = kFALSE;
   }
   
@@ -1635,6 +1638,9 @@ TObjString * AliAnaCaloExotics::GetAnalysisCuts()
   snprintf(onePar,buffersize,"Strip: nCell > %d-%d, Sum E > %2.0f-%2.0f; Event N Strips < %d;",
            fHighNCellsCutStrip[0], fHighNCellsCutStrip[1],
            fHighEnergyCutStrip[0], fHighEnergyCutStrip[1], fEventMaxNumberOfStrips) ;
+  parList+=onePar ;
+  
+  snprintf(onePar,buffersize,"SM3 strips: nCell < %d, Sum E < %2.0f;",fLowNCellsCutSM3Strip,fLowEnergyCutSM3Strip) ;
   parList+=onePar ;
   
   snprintf(onePar,buffersize,"%2.0f < time < %2.0f ns;",fTimeCutMin,fTimeCutMax) ;
@@ -4571,7 +4577,8 @@ void AliAnaCaloExotics::Print(const Option_t * opt) const
   printf("Strip: nCell > %d-%d - Sum E > %2.0f-%2.0f; Event N Strips <= %d\n",
          fHighNCellsCutStrip[0], fHighNCellsCutStrip[1],
          fHighEnergyCutStrip[0], fHighEnergyCutStrip[1], fEventMaxNumberOfStrips) ;
-  
+  printf("SM3 strips: nCell <= %d - Sum E <= %2.0f\n",fLowNCellsCutSM3Strip,fLowEnergyCutSM3Strip) ;
+
   printf("Min Cell Energy cut: ");
   for(Int_t i = 0; i < fgkNCellEnMinBins; i++) printf("%d) E %1.2f; ", i,fCellEnMins[i] );
   printf("\n");

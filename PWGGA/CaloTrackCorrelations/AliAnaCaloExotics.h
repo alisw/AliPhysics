@@ -90,6 +90,9 @@ public:
   void         SetfHighNCellsCutStrip(Int_t nFull, Int_t nThird)
                 { fHighNCellsCutStrip[0] = nFull; fHighNCellsCutStrip[1] = nThird; }
   
+  void         SetLowEnergyCutSM3Strip(Float_t e) { fLowEnergyCutSM3Strip = e ; }
+  void         SetLowNCellsCutSM3Strip(Int_t   n) { fLowNCellsCutSM3Strip = n ; }
+  
   Float_t      GetEBinLimit(Int_t i) const  
                            { if ( i < fgkNEBins && i >= 0 ) return fEnergyBins[i] ;
                              else                           return -1     ; }
@@ -167,7 +170,9 @@ public:
   Int_t    fEventMaxNumberOfStrips;             ///<  Cut on events on number of too active strips
   Float_t  fHighEnergyCutStrip[2];              ///<  Strip is too active if energy above this value
   Int_t    fHighNCellsCutStrip[2];              ///<  Strip is too active if n cells above this value
-
+  Float_t  fLowEnergyCutSM3Strip;               ///<  SM3 strips low activity if energy above this value
+  Int_t    fLowNCellsCutSM3Strip;               ///<  SM3 strips low activity if n cells above this value
+  
   /// Total number of cluster energy bins histograms
   static const Int_t fgkNEBins = 12;
   Float_t  fEnergyBins[fgkNEBins];              ///<  Energy bins for some histograms
