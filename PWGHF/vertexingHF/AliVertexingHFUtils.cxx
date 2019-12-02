@@ -625,6 +625,109 @@ Bool_t AliVertexingHFUtils::HasCascadeCandidateAnyDaughInjected(AliAODRecoCascad
   return kFALSE;
 }
 //____________________________________________________________________________
+Int_t AliVertexingHFUtils::PreSelectITSUpgrade(TClonesArray* arrayMC, AliAODMCHeader *header, TObjArray aodTracks, Int_t nDaug, Int_t pdgabs, const Int_t *pdgDg){
+  /// Preselect function for ITS Upgrade MC's, to make a fast general preselection before filling the HF candidate
+  /// Returns 0 when combination of injected+HIJING
+  /// Returns 1 when purely injected + matched to MC
+  /// Returns 2 when purely injected + not matched
+  /// Returns 3 when purely HIJING
+
+  Bool_t injected = kFALSE;
+  Bool_t hijing = kFALSE;
+
+  AliAODTrack *track[(const Int_t)nDaug];
+  Int_t dgLabels[(const Int_t)nDaug];
+  for(Int_t iD=0; iD<nDaug; iD++) {
+    track[iD] = (AliAODTrack*)aodTracks.At(iD);
+    dgLabels[iD] = track[iD]->GetLabel();
+
+    Bool_t isTrInjected = IsTrackInjected(track[iD],header,arrayMC);
+    if(isTrInjected) injected = kTRUE;
+    else             hijing = kTRUE;
+
+    //Combination of injected signal + HIJING background
+    if(injected && hijing) return 0;
+  }
+
+  //Purely HIJING background, no need to MatchToMC
+  if(hijing) return 3;
+
+  //Purely injected signal, check by Matching to MC if it is considered as signal
+  //  Mimic MatchToMC (can't access as it is protected), code below is the same as:
+  //  Int_t MatchedToLabel = AliAODRecoDecay::MatchToMC(pdgabs, arrayMC, dgLabels, nDaug, 0, pdgDg);
+  if(injected){
+    //Label of mother particle, or -1 when some operation failed.
+    Int_t MatchedToLabel = 0;
+
+    Int_t labMom[10]={0,0,0,0,0,0,0,0,0,0};
+    Int_t i,j,lab,labMother,pdgMother,pdgPart;
+    AliAODMCParticle *part=0;
+    AliAODMCParticle *mother=0;
+    Bool_t pdgUsed[10]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+
+    // loop on daughter labels
+    for(i=0; i<nDaug; i++) {
+      if(MatchedToLabel == -1) continue;
+
+      labMom[i]=-1;
+      lab = TMath::Abs(dgLabels[i]);
+      if(lab<0){ MatchedToLabel = -1; continue; }
+
+      part = (AliAODMCParticle*)arrayMC->At(lab);
+      if(!part){ MatchedToLabel = -1; continue; }
+
+      // check the PDG of the daughter, if requested
+      pdgPart=TMath::Abs(part->GetPdgCode());
+      for(j=0; j<nDaug; j++) {
+        if(!pdgUsed[j] && pdgPart==pdgDg[j]) {
+          pdgUsed[j]=kTRUE;
+          break;
+        }
+      }
+
+      mother = part;
+      while(mother->GetMother()>=0) {
+        labMother=mother->GetMother();
+        mother = (AliAODMCParticle*)arrayMC->At(labMother);
+        if(!mother) break;
+
+        pdgMother = TMath::Abs(mother->GetPdgCode());
+        if(pdgMother==pdgabs) {
+          labMom[i]=labMother;
+          break;
+        } else if(pdgMother>pdgabs || pdgMother<10) {
+          break;
+        }
+      }
+      if(labMom[i]==-1) MatchedToLabel = -1; // mother PDG not ok for this daughter
+    } // end loop on daughters
+
+    if(MatchedToLabel == 0){
+      // check if the candidate is signal
+      labMother=labMom[0];
+      // all labels have to be the same and !=-1
+      for(i=0; i<nDaug; i++) {
+        if(labMom[i]==-1)        MatchedToLabel = -1;
+        if(labMom[i]!=labMother) MatchedToLabel = -1;
+      }
+
+      // check that all daughter PDGs are matched
+      for(i=0; i<nDaug; i++) {
+        if(pdgUsed[i]==kFALSE) MatchedToLabel = -1;
+      }
+    }
+
+    if(MatchedToLabel==0) MatchedToLabel = labMother;
+
+    if(MatchedToLabel != -1) return 1; //injected, matched to  MC
+    else                     return 2; //injected, not matched to MC
+  }
+
+  //Should not reach this, if so check. Return 0 for compilation warning
+  printf("AliVertexingHFUtils::PreSelectITSUpgrade: Neither injected, nor HIJING");
+  return 0;
+}
+//____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckOrigin(AliMCEvent* mcEvent, AliMCParticle *mcPart, Bool_t searchUpToQuark){
   /// checking whether the mother of the particles come from a charm or a bottom quark
 
