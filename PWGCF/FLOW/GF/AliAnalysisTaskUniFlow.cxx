@@ -1599,6 +1599,7 @@ void AliAnalysisTaskUniFlow::FillSparseCand(THnSparse* sparse, const AliVTrack* 
   dValues[SparseCand::kInvMass] = track->M();
   dValues[SparseCand::kPt] = track->Pt();
   dValues[SparseCand::kEta] = track->Eta();
+  dValues[SparseCand::kSample] = fIndexSampling;
   sparse->Fill(dValues);
 
   return;
@@ -3323,15 +3324,15 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
     {
       if(bFillPos)
       {
-        TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample0",task->fsName.Data()));
-        if(!prof) { AliError(Form("Profile '%s_Pos_sample0' not found!", task->fsName.Data())); return; }
+        TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d",task->fsName.Data(),fIndexSampling));
+        if(!prof) { AliError(Form("Profile '%s_Pos_sample%d' not found!", task->fsName.Data(),fIndexSampling)); return; }
         prof->Fill(fIndexCentrality, dPt, dMass, dValue, dDenom);
       }
 
       if(bFillNeg)
       {
-        TProfile3D* profNeg = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Neg_sample0",task->fsName.Data()));
-        if(!profNeg) { AliError(Form("Profile '%s_Neg_sample0' not found!", task->fsName.Data())); return; }
+        TProfile3D* profNeg = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Neg_sample%d",task->fsName.Data(),fIndexSampling));
+        if(!profNeg) { AliError(Form("Profile '%s_Neg_sample%d' not found!", task->fsName.Data(),fIndexSampling)); return; }
         profNeg->Fill(fIndexCentrality, dPt, dMass, dValueNeg, dDenomNeg);
       }
       if(bHas3sub)
@@ -3340,16 +3341,16 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
           for(Int_t poiPos(0); poiPos < 3; poiPos++)
             for(Int_t rfPos(0); rfPos < 3; rfPos++){
               if(poiPos == rfPos) continue;
-              TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample0_poi_%c_rfp_%c",task->fsName.Data(),sides[poiPos],sides[rfPos]));
-              if(!prof) { AliError(Form("Profile '%s_Pos_sample0_poi_%c_rfp_%c' not found!", task->fsName.Data(),sides[poiPos],sides[rfPos])); return; }
+              TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_poi_%c_rfp_%c",task->fsName.Data(),fIndexSampling,sides[poiPos],sides[rfPos]));
+              if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_poi_%c_rfp_%c' not found!", task->fsName.Data(),fIndexSampling,sides[poiPos],sides[rfPos])); return; }
               if(bFill3sub[poiPos][rfPos]) prof->Fill(fIndexCentrality, dPt, dMass, dValue3Sub[poiPos][rfPos], dDenom3Sub[poiPos][rfPos]);
             }
           }
         else if(iNumHarm == 4){
           for(Int_t poiPos(0); poiPos < 3; poiPos++)
             for(Int_t twoPos(0); twoPos < 3; twoPos++){
-              TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample0_poi_%c_two_%c",task->fsName.Data(),sides[poiPos],sides[twoPos]));
-              if(!prof) { AliError(Form("Profile '%s_Pos_sample0_poi_%c_two_%c' not found!", task->fsName.Data(),sides[poiPos],sides[twoPos])); return; }
+              TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_poi_%c_two_%c",task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos]));
+              if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_poi_%c_two_%c' not found!", task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos])); return; }
               if(bFill3sub[poiPos][twoPos]) prof->Fill(fIndexCentrality, dPt, dMass, dValue3Sub[poiPos][twoPos], dDenom3Sub[poiPos][twoPos]);
             }
         }
@@ -5375,7 +5376,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
         for(Int_t iSample(0); iSample < fNumSamples; ++iSample)
         {
           if(iSample > 0 && !fSampling) { break; }
-          if(iSample > 0 && HasMass(PartSpecies(iSpec))) { break; } // reconstructed are not sampled
+          // if(iSample > 0 && HasMass(PartSpecies(iSpec))) {  } // reconstructed are not sampled
 
           TH1* profile = nullptr;
           TH1* profileNeg = nullptr;
@@ -5600,11 +5601,21 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     sLabelCand[SparseCand::kCent] = GetCentEstimatorLabel(fCentEstimator);
     sLabelCand[SparseCand::kPt] = "#it{p}_{T} (GeV/c)";
     sLabelCand[SparseCand::kEta] = "#eta";
+    sLabelCand[SparseCand::kSample] = "iSample";
     TString sAxes = TString(); for(Int_t i(0); i < SparseCand::kDim; ++i) { sAxes += Form("%s; ",sLabelCand[i].Data()); }
 
-    Int_t iNumBinsCand[SparseCand::kDim]; Double_t dMinCand[SparseCand::kDim]; Double_t dMaxCand[SparseCand::kDim];
-    iNumBinsCand[SparseCand::kCent] = fCentBinNum; dMinCand[SparseCand::kCent] = fCentMin; dMaxCand[SparseCand::kCent] = fCentMax;
-    iNumBinsCand[SparseCand::kEta] = fFlowEtaBinNum; dMinCand[SparseCand::kEta] = -fFlowEtaMax; dMaxCand[SparseCand::kEta] = fFlowEtaMax;
+    Int_t iNumBinsCand[SparseCand::kDim];
+    Double_t dMinCand[SparseCand::kDim];
+    Double_t dMaxCand[SparseCand::kDim];
+    iNumBinsCand[SparseCand::kCent] = fCentBinNum;
+    dMinCand[SparseCand::kCent] = fCentMin;
+    dMaxCand[SparseCand::kCent] = fCentMax;
+    iNumBinsCand[SparseCand::kEta] = fFlowEtaBinNum;
+    dMinCand[SparseCand::kEta] = -fFlowEtaMax;
+    dMaxCand[SparseCand::kEta] = fFlowEtaMax;
+    iNumBinsCand[SparseCand::kSample] = fNumSamples;
+    dMinCand[SparseCand::kSample] = 0;
+    dMaxCand[SparseCand::kSample] = fNumSamples;
 
     // species dependent
     if(fProcessSpec[kK0s] || fProcessSpec[kLambda])
