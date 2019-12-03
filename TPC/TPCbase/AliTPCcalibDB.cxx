@@ -788,7 +788,7 @@ Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** gra
     TString objname(trfObj->GetName());
     if (!objname.Contains(rocType)) continue;
     TObjArray *objArr1 = objname.Tokenize("_");
-    if (objArr1->GetEntries()<4){
+    if (objArr1->GetEntries()<4) {
       ::Fatal("AliTPCcalibDB::GetTailcancelationGraphs","Unexpected graph name %s", objname.Data());
     }
     Int_t voltage = atoi(static_cast<TObjString*>(objArr1->At(2))->GetName());
@@ -796,9 +796,16 @@ Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** gra
     Float_t dCOG  = atof(static_cast<TObjString*>(objArr1->At(4))->GetName());
     //
     // TRF eliminations
+    /*
     if ( !objname.Contains(rocType) ) continue; // choose ROC type
     if ( angle!=trackAngle ) continue; // choose track angle
     if ( !(voltage==tempVoltage || voltage<0) ) continue; // choose voltage
+    */
+    if ( !objname.Contains(rocType) || ( angle!=trackAngle ) || !(voltage==tempVoltage || voltage<0) ) {
+      delete objArr1;
+      continue; // choose voltage
+    }
+
     //
     // fill arrays for proper position and amplitude selections
     indexAmpGraphs[igraph] = dCOG/10.; // distance to center of gravity
@@ -806,7 +813,7 @@ Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** gra
     // select voltage and assign graphs
     Double_t voltageScaled = (rocVoltage>0 && voltage>0) ? Double_t(voltage)/Double_t(rocVoltage) : 1.; // for jens how come 0 HV ?
     const Int_t nPoints  = TMath::Nint(voltageScaled*trfObj->GetN())-1;
-      delete graphRes[igraph];
+    delete graphRes[igraph];
     graphRes[igraph] = new TGraphErrors(nPoints);
     //
     // Apply Voltage scaling
@@ -815,14 +822,14 @@ Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** gra
         x = TMath::Nint(j*(voltageScaled));
         y = (j<trfObj->GetN()) ? (1./voltageScaled)*trfObj->GetY()[j] : 0.;
         graphRes[igraph]->SetPoint(j,x,y);
-      }
+    }
     //
-      // smooth voltage scaled graph
+    // smooth voltage scaled graph
     for (Int_t m=1; m<nPoints;m++){
-        if (graphRes[igraph]->GetY()[m]==0) graphRes[igraph]->GetY()[m] = graphRes[igraph]->GetY()[m-1];
-      }
-      igraph++;
-  delete objArr1;
+      if (graphRes[igraph]->GetY()[m]==0) graphRes[igraph]->GetY()[m] = graphRes[igraph]->GetY()[m-1];
+    }
+    igraph++;
+    delete objArr1;
   }
   return kTRUE;
 }
@@ -846,7 +853,6 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
    in.close();
 
    TObjArray *arrFileLine = sFile.Tokenize("\n");
-
    TIter nextLine(arrFileLine);
 
    TObjString *sObjLine=0x0;

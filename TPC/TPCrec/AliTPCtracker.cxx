@@ -91,6 +91,7 @@
 //
 
 /* $Id$ */
+#include "AliSysInfo.h" // memory snapshots
 
 #include "Riostream.h"
 #include <TClonesArray.h>
@@ -1674,6 +1675,7 @@ Int_t  AliTPCtracker::LoadClusters()
   cout << " =================================================================================================================================== " << endl;
 
   if (AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection()) ApplyTailCancellation();
+
   if (AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()!=0.) CalculateXtalkCorrection();
   if (AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()!=0.) ApplyXtalkCorrection();
   //if (AliTPCReconstructor::GetRecoParam()->GetUseOulierClusterFilter()) FilterOutlierClusters();  
@@ -1989,6 +1991,7 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
   const Int_t nTRFs = 20;
   Int_t nIonTailBins = 0;
   TObjArray timeResFunc(nROCs);
+  timeResFunc.SetOwner(kTRUE);
   for (Int_t isec = 0; isec < nROCs; isec++) {        //loop overs sectors
     //
     // Array of TGraphErrors for a given sector
@@ -2014,7 +2017,8 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
     }
     timeResFunc.AddAt(timeResArr, isec); // Fill all trfs into a single TObjArray
     nIonTailBins = graphRes[0]->GetN();
-    delete trfIndexArr;
+    delete[] trfIndexArr;
+    delete[] graphRes;
   }
 
 
@@ -2732,6 +2736,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
           }//end of first loop over cluster
           // delete rowClusterArray; // RS was moved to stack allocation
         }//end of loop over rows
+
         for (int i=0; i<20; i++) delete graphRes[i];
         //        delete [] graphRes; //RS was changed to stack allocation
         //        delete [] indexAmpGraphs;
