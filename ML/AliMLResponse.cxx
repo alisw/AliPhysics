@@ -118,7 +118,6 @@ AliMLResponse &AliMLResponse::operator=(const AliMLResponse &source) {
 
   TNamed::operator=(source);
 
-  fMLResponseName = source.fMLResponseName;
   fConfigFilePath = source.fConfigFilePath;
   fModels         = source.fModels;
   fCentClasses    = source.fCentClasses;
@@ -153,11 +152,11 @@ void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
 //________________________________________________________________
 void AliMLResponse::MLResponseInit() {
   /// import config file from alien path
-  ImportFile(fConfigFilePath);
+  string configPath = ImportFile(fConfigFilePath);
   YAML::Node nodeList;
   /// manage wrong config file path
   try {
-    nodeList = YAML::LoadFile(fConfigFilePath);
+    nodeList = YAML::LoadFile(configPath);
   } catch (std::exception &e) {
     AliFatal(Form("Yaml-ccp error: %s! Exit", e.what()));
   }

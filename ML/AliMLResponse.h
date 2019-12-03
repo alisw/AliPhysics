@@ -51,7 +51,7 @@ public:
   bool CompileModel();
 
 private:
-  AliExternalBDT model;
+  AliExternalBDT model;    //!
 
   string path;
   string library;
@@ -64,14 +64,12 @@ private:
 class AliMLResponse : public TNamed {
 public:
   AliMLResponse();
-  AliMLResponse(const Char_t* name, const Char_t* title);
+  AliMLResponse(const Char_t *name, const Char_t *title);
   virtual ~AliMLResponse();
 
   AliMLResponse(const AliMLResponse &source);
   AliMLResponse &operator=(const AliMLResponse &source);
 
-  /// method to set the object name
-  void SetName(const string name) { fMLResponseName = name; }
   /// method to set yaml config file
   void SetConfigFilePath(const string configfilepath) { fConfigFilePath = configfilepath; }
 
@@ -88,7 +86,6 @@ public:
   bool IsSelected(double binvar, map<string, double> varmap);
 
 protected:
-  string fMLResponseName;    /// unique name of this ML response object
   string fConfigFilePath;    /// path of the config file
 
   vector<ModelHandler> fModels;
