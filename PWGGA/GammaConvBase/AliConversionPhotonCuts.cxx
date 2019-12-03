@@ -167,6 +167,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fUseCorrectedTPCClsInfo(kFALSE),
   fUseTOFpid(kFALSE),
   fUseTOFtiming(kFALSE),
+  fTOFtimeMin(-1000),
+  fTOFtimeMax(1000),
   fTOFtimingBothLegs(kFALSE),
   fOpeningAngle(0.005),
   fPsiPairCut(10000),
@@ -342,6 +344,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fUseCorrectedTPCClsInfo(ref.fUseCorrectedTPCClsInfo),
   fUseTOFpid(ref.fUseTOFpid),
   fUseTOFtiming(ref.fUseTOFtiming),
+  fTOFtimeMin(ref.fTOFtimeMin),
+  fTOFtimeMax(ref.fTOFtimeMax),
   fTOFtimingBothLegs(ref.fTOFtimingBothLegs),
   fOpeningAngle(ref.fOpeningAngle),
   fPsiPairCut(ref.fPsiPairCut),
@@ -1726,15 +1730,14 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   }
   // TOF timing cut (fill at same place as single pT)
   if(fUseTOFtiming){
-    // fill histogram with timing info (in ns) versus momentum
-    if(posTrack->GetStatus()&AliVTrack::kTOFout){
-      fHistoTOFtimeVSMomentum->Fill(posTrack->GetTOFsignal()/1000,posTrack->Pt());
-    }
-    if(negTrack->GetStatus()&AliVTrack::kTOFout){
-      fHistoTOFtimeVSMomentum->Fill(negTrack->GetTOFsignal()/1000,negTrack->Pt());
-    }
     if(fTOFtimingBothLegs){
       if( !((posTrack->GetStatus()&AliVTrack::kTOFout) && (negTrack->GetStatus()&AliVTrack::kTOFout)) ){ // no timing on both legs
+        if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
+        return kFALSE;
+      } else if(
+        (((posTrack->GetStatus()&AliVTrack::kTOFout) && (posTrack->GetTOFsignal()/1000 > fTOFtimeMax)) || posTrack->GetTOFsignal()/1000 < fTOFtimeMin) ||
+        (((negTrack->GetStatus()&AliVTrack::kTOFout) && (negTrack->GetTOFsignal()/1000 > fTOFtimeMax)) || negTrack->GetTOFsignal()/1000 < fTOFtimeMin)
+        ){ // timing outside of cut windows on either leg that has timing information
         if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
         return kFALSE;
       }
@@ -1742,7 +1745,20 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
       if( !((posTrack->GetStatus()&AliVTrack::kTOFout) || (negTrack->GetStatus()&AliVTrack::kTOFout)) ){ // timing on at least one leg
         if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
         return kFALSE;
+      } else if(
+        (((posTrack->GetStatus()&AliVTrack::kTOFout) && (posTrack->GetTOFsignal()/1000 > fTOFtimeMax)) || posTrack->GetTOFsignal()/1000 < fTOFtimeMin) ||
+        (((negTrack->GetStatus()&AliVTrack::kTOFout) && (negTrack->GetTOFsignal()/1000 > fTOFtimeMax)) || negTrack->GetTOFsignal()/1000 < fTOFtimeMin)
+        ){ // timing outside of cut windows on either leg that has timing information
+        if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
+        return kFALSE;
       }
+    }
+    // fill histogram with timing info (in ns) versus momentum
+    if(posTrack->GetStatus()&AliVTrack::kTOFout){
+      fHistoTOFtimeVSMomentum->Fill(posTrack->GetTOFsignal()/1000,posTrack->Pt());
+    }
+    if(negTrack->GetStatus()&AliVTrack::kTOFout){
+      fHistoTOFtimeVSMomentum->Fill(negTrack->GetTOFsignal()/1000,negTrack->Pt());
     }
   }
   cutIndex++;
@@ -3558,6 +3574,20 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
   case 7: // TOF timing both legs
     fUseTOFpid = kFALSE;
     fUseTOFtiming = kTRUE;
+    fTOFtimingBothLegs = kTRUE;
+    break;
+  case 8: // TOF timing one leg and within 100ns
+    fUseTOFpid = kFALSE;
+    fUseTOFtiming = kTRUE;
+    fTOFtimeMin = -100;
+    fTOFtimeMax = 100;
+    fTOFtimingBothLegs = kFALSE;
+    break;
+  case 9: // TOF timing both legs and within 100ns
+    fUseTOFpid = kFALSE;
+    fUseTOFtiming = kTRUE;
+    fTOFtimeMin = -100;
+    fTOFtimeMax = 100;
     fTOFtimingBothLegs = kTRUE;
     break;
   default:
