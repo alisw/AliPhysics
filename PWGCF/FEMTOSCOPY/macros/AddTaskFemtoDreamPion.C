@@ -40,7 +40,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   AliFemtoDreamTrackCuts *fTrackCutsPosPion=new AliFemtoDreamTrackCuts();
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
   fTrackCutsPosPion->SetCutCharge(1);
-  fTrackCutsPosPion->SetFilterBit(128); // Indico Filterbit 7
+  fTrackCutsPosPion->SetFilterBit(96); // Indico Filterbit 7
   fTrackCutsPosPion->SetPtRange(0.14, 4.0);
   fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsPosPion->SetNClsTPC(80);
@@ -51,7 +51,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   // Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
   fTrackCutsPosPion->SetCutSharedCls(true);
   fTrackCutsPosPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
-  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
   fTrackCutsPosPion->SetMinimalBooking(false);
   fTrackCutsPosPion->SetChi2Cut(0., 4.0);
@@ -64,7 +64,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
   fTrackCutsNegPion->SetIsMonteCarlo(isMC);
   fTrackCutsNegPion->SetCutCharge(-1);
-  fTrackCutsNegPion->SetFilterBit(128);
+  fTrackCutsNegPion->SetFilterBit(96);
   fTrackCutsNegPion->SetPtRange(0.14, 4.0);
   fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsNegPion->SetNClsTPC(80);
@@ -73,7 +73,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   fTrackCutsNegPion->SetDCAVtxXY(0.3);
   fTrackCutsNegPion->SetCutSharedCls(true);
   fTrackCutsNegPion->SetNClsTPC(80);
-  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetChi2Cut(0., 4.0);
   fTrackCutsNegPion->SetMinimalBooking(false);
@@ -232,6 +232,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   task->SetTrackCutsPosPion(fTrackCutsPosPion);
   task->SetTrackCutsNegPion(fTrackCutsNegPion);
   task->SetCollectionConfig(config);
+  task->SetIsMC(isMC);
 
   mgr->AddTask(task);
 
