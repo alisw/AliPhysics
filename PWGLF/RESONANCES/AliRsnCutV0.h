@@ -38,6 +38,7 @@ public:
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
    void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
    void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
+   void           SetMaxPseudorapidity(Double_t value)           {fMaxPseudorapidity = value;}
    
    void           SetPIDCutProton(Double_t value)          {fPIDCutProton = value;}
    void           SetPIDCutPion(Double_t value)            {fPIDCutPion = value;}
@@ -74,6 +75,7 @@ protected:
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
    Int_t            fMinTPCcluster;    // min allowed TOC cluster
    Double_t         fMaxRapidity;      // max allowed V0 rapidity
+   Double_t         fMaxPseudorapidity; // max allowed V0 pseudorapidity
    Bool_t           fCustomTrackDCACuts; // Use different DCA cuts for positive and negative V0 tracks
    Double_t         fMinDCAPositiveTrack; // DCA of positive V0 track to vertex
    Double_t         fMinDCANegativeTrack; // DCA of negative V0 track to vertex

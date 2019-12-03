@@ -64,6 +64,7 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fMaxDaughtersDCA(0.5),
    fMinTPCcluster(70),
    fMaxRapidity(0.8),
+   fMaxPseudorapidity(1e20),
    fPID(pid),
    fPID2(pid2),
    fPIDCutProton(0),
@@ -101,6 +102,7 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
    fMinTPCcluster(copy.fMinTPCcluster),
    fMaxRapidity(copy.fMaxRapidity),
+   fMaxPseudorapidity(copy.fMaxPseudorapidity),
    fPID(copy.fPID),
    fPID2(copy.fPID2),
    fPIDCutProton(copy.fPIDCutProton),
@@ -152,6 +154,7 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
    fMinTPCcluster = copy.fMinTPCcluster;
    fMaxRapidity = copy.fMaxRapidity;
+   fMaxPseudorapidity = copy.fMaxPseudorapidity;
    fCutQuality = copy.fCutQuality;
    fPID = copy.fPID;
    fPID2 = copy.fPID2;
@@ -288,6 +291,10 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    }
    if (TMath::Abs(v0->Y(fHypothesis)) > fMaxRapidity) {
       AliDebugClass(2, "Failed check on V0 rapidity");
+      return kFALSE;
+   }
+   if (TMath::Abs(v0->Eta()) > fMaxPseudorapidity) {
+      AliDebugClass(2, "Failed check on V0 pseudorapidity");
       return kFALSE;
    }
    //
@@ -620,6 +627,11 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
 
    if (TMath::Abs(v0->RapLambda()) > fMaxRapidity) {
       AliDebugClass(2, "Failed check on V0 rapidity");
+      return kFALSE;
+   }
+
+   if (TMath::Abs(v0->Eta()) > fMaxPseudorapidity) {
+      AliDebugClass(2, "Failed check on V0 pseusorapidity");
       return kFALSE;
    }
 
