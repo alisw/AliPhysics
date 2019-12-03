@@ -158,6 +158,7 @@ public:
     void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
     void SetGoodTrackEtaRange(Double_t d) { fGoodTrackEtaRange = d; }
     void SetGoodTrackMinPt(Double_t d) { fGoodTrackMinPt = d; }
+    void SetITSUpgradeStudy(Bool_t b) { fITSUpgradeStudy = b; }
   
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
     void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
@@ -387,6 +388,7 @@ private:
     Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackEtaRange;                    /// Setting eta-range for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackMinPt;                       /// Setting min pT for bachelor on-the-fly reconstruction candidate
+    Bool_t                  fITSUpgradeStudy;                      /// Setting for analysing an ITS Upgrade production
 
     // Particles (tracks / MC particles)
     // Add a single AliTrackContainer and/or AliMCParticleContainer to select particles
@@ -462,7 +464,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,22);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,23);
     /// \endcond
 };
 
