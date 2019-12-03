@@ -10,14 +10,10 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-//**************************************************************************************
-// \class AliMLResponse
-// \brief helper class to handle application of ML models trained with python libraries
-// \authors:
-// F. Catalano, fabio.catalano@cern.ch
-// P. Fecchio, pietro.fecchio@cern.ch
-// F. Grosa, fabrizio.grosa@cern.ch
-/////////////////////////////////////////////////////////////////////////////////////////
+/// \file AliMLResponse.h
+/// \brief Implementation of a C++ interface in AliPhysics for the
+///        configuration of ML application on grid
+/// \author pietro.fecchio@cern.ch, maximiliano.puccio@cern.ch
 
 #include <algorithm>
 #include <iostream>
@@ -29,6 +25,8 @@
 #include "yaml-cpp/yaml.h"
 
 #include "AliExternalBDT.h"
+
+#include "TNamed.h"
 
 using std::map;
 using std::pair;
@@ -63,17 +61,20 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class AliMLResponse : public TObject {
+class AliMLResponse : public TNamed {
 public:
   AliMLResponse();
-  AliMLResponse(string configfilename);
+  AliMLResponse(const Char_t* name, const Char_t* title);
   virtual ~AliMLResponse();
 
   AliMLResponse(const AliMLResponse &source);
   AliMLResponse &operator=(const AliMLResponse &source);
 
+  /// method to set the object name
+  void SetName(const string name) { fMLResponseName = name; }
   /// method to set yaml config file
   void SetConfigFilePath(const string configfilepath) { fConfigFilePath = configfilepath; }
+
   /// method to check whether the config file is formally correct
   void CheckConfigFile(YAML::Node nodelist);
   /// method to configure the AliMLResponse object from the config file and compile the models usign treelite
@@ -81,14 +82,13 @@ public:
 
   /// return the bin index
   int FindBin(double binvar);
-
   /// return the MLModel predicted score (raw or proba, depending on useraw)
   double Predict(double binvar, map<string, double> varmap);
   /// return true if predicted score for map is above the threshold given in the config
   bool IsSelected(double binvar, map<string, double> varmap);
 
-  /// TODO: metterle private quando i test sono ok
 protected:
+  string fMLResponseName;    /// unique name of this ML response object
   string fConfigFilePath;    /// path of the config file
 
   vector<ModelHandler> fModels;

@@ -7,14 +7,8 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-//**************************************************************************************
-// \class AliMLResponse
-// \brief helper class to handle application of ML models trained with python libraries
-// \authors:
-// F. Catalano, fabio.catalano@cern.ch
-// P. Fecchio, pietro.fecchio@cern.ch
-// F. Grosa, fabrizio.grosa@cern.ch
-/////////////////////////////////////////////////////////////////////////////////////////
+/// \file AliMLResponse.cxx
+/// \author pietro.fecchio@cern.ch, maximiliano.puccio@cern.ch
 
 #include <TDirectory.h>
 #include <TFile.h>
@@ -83,7 +77,7 @@ ClassImp(AliMLResponse);
 
 //________________________________________________________________
 AliMLResponse::AliMLResponse()
-    : TObject(), fConfigFilePath{}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{}, fNVariables{},
+    : TNamed(), fConfigFilePath{}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{}, fNVariables{},
       fBinsBegin{}, fRaw{} {
   //
   // Default constructor
@@ -91,8 +85,8 @@ AliMLResponse::AliMLResponse()
 }
 
 //________________________________________________________________
-AliMLResponse::AliMLResponse(string configfilename)
-    : TObject(), fConfigFilePath{configfilename}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{},
+AliMLResponse::AliMLResponse(const Char_t* name, const Char_t* title)
+    : TNamed(name, title), fConfigFilePath{""}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{},
       fNVariables{}, fBinsBegin{}, fRaw{} {
   //
   // Standard constructor
@@ -108,7 +102,7 @@ AliMLResponse::~AliMLResponse() {
 
 //--------------------------------------------------------------------------
 AliMLResponse::AliMLResponse(const AliMLResponse &source)
-    : TObject(source), fConfigFilePath{source.fConfigFilePath}, fModels{source.fModels},
+    : TNamed(source.GetName(), source.GetTitle()), fConfigFilePath{source.fConfigFilePath}, fModels{source.fModels},
       fCentClasses{source.fCentClasses}, fBins{source.fBins}, fVariableNames{source.fVariableNames},
       fNBins{source.fNBins}, fNVariables{source.fNVariables}, fBinsBegin{source.fBinsBegin}, fRaw{source.fRaw} {
   //
@@ -122,8 +116,9 @@ AliMLResponse &AliMLResponse::operator=(const AliMLResponse &source) {
   //
   if (&source == this) return *this;
 
-  TObject::operator=(source);
+  TNamed::operator=(source);
 
+  fMLResponseName = source.fMLResponseName;
   fConfigFilePath = source.fConfigFilePath;
   fModels         = source.fModels;
   fCentClasses    = source.fCentClasses;
