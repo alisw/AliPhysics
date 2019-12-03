@@ -80,7 +80,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
                                                                               , fSinglePrimaryLegMCSignal(), fSingleSecondaryLegMCSignal(), fPrimaryPairMCSignal(), fSecondaryPairMCSignal(), fFourPairMCSignal(), fPrimaryDielectronPairNotFromSameMother(), fSecondaryDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0), fMassCutPrimaries(), fMassCutSecondaries()
+                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0), fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries()
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
@@ -113,7 +113,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
                                                                               , fSinglePrimaryLegMCSignal(), fSingleSecondaryLegMCSignal(), fPrimaryPairMCSignal(), fSecondaryPairMCSignal(), fFourPairMCSignal(), fPrimaryDielectronPairNotFromSameMother(), fSecondaryDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0), fMassCutPrimaries(), fMassCutSecondaries()
+                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0), fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries()
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
@@ -1427,63 +1427,6 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
   } // End of pairing
 
-  // if (fDoULSandLS && !fDeactivateLS){
-  //   //LS--
-  //   for (unsigned int neg_i = 0; neg_i < fRecNegPart_primary.size(); ++neg_i){
-  //     for (unsigned int neg_j = neg_i + 1; neg_j < fRecNegPart_primary.size(); ++neg_j){
-  //       if (!fRecNegPart_primary[neg_i].GetULSSignalPair() || !fRecNegPart_primary[neg_j].GetULSSignalPair()) continue;
-  //       // Calculated for single leg signals like sign
-  //       TLorentzVector Lvec1;
-  //       TLorentzVector Lvec2;
-  //       Lvec1.SetPtEtaPhiM(fRecNegPart_primary[neg_i].fPt, fRecNegPart_primary[neg_i].fEta, fRecNegPart_primary[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-  //       Lvec2.SetPtEtaPhiM(fRecNegPart_primary[neg_j].fPt, fRecNegPart_primary[neg_j].fEta, fRecNegPart_primary[neg_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-  //       TLorentzVector LvecM = Lvec1 + Lvec2;
-  //       double mass = LvecM.M();
-  //       double pairpt = LvecM.Pt();
-  //
-  //       for (unsigned int i = 0; i < fRecNegPart_primary[neg_i].isMCSignal.size(); ++i){
-  //         // if (fRecNegPart_primary[neg_i].isMCSignal[i] == kTRUE && fRecNegPart_primary[neg_j].isMCSignal[i] == kTRUE){
-  //         if (fRecNegPart_primary[neg_i].isMCSignal[i] == true && fRecNegPart_primary[neg_j].isMCSignal[i] == true &&
-  //             fRecNegPart_primary[neg_i].DielectronPairFromSameMother[i] == false && fRecNegPart_primary[neg_j].DielectronPairFromSameMother[i] == false){
-  //           for (unsigned int j = 0; j < fRecNegPart_primary[neg_i].isReconstructed_primary.size(); ++j){
-  //             if (fRecNegPart_primary[neg_i].isReconstructed_primary[j] == kTRUE && fRecNegPart_primary[neg_j].isReconstructed_primary[j] == kTRUE){
-  //               fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 2]->Fill(mass, pairpt, centralityWeight);
-  //             }// is selected by cutsetting
-  //           } // end of loop over all cutsettings
-  //         } // is selected by MC Signal
-  //       } // end of loop over all MCsignals
-  //     }
-  //   }
-  //   // LS++
-  //   for (unsigned int pos_i = 0; pos_i < fRecPosPart_primary.size(); ++pos_i){
-  //     for (unsigned int pos_j = pos_i + 1; pos_j < fRecPosPart_primary.size(); ++pos_j){
-  //       if (!fRecPosPart_primary[pos_i].GetULSSignalPair() || !fRecPosPart_primary[pos_j].GetULSSignalPair()) continue;
-  //       // Calculated for single leg signals like sign
-  //       TLorentzVector Lvec1;
-  //       TLorentzVector Lvec2;
-  //       Lvec1.SetPtEtaPhiM(fRecPosPart_primary[pos_i].fPt, fRecPosPart_primary[pos_i].fEta, fRecPosPart_primary[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-  //       Lvec2.SetPtEtaPhiM(fRecPosPart_primary[pos_j].fPt, fRecPosPart_primary[pos_j].fEta, fRecPosPart_primary[pos_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-  //       TLorentzVector LvecM = Lvec1 + Lvec2;
-  //       double mass = LvecM.M();
-  //       double pairpt = LvecM.Pt();
-  //
-  //       for (unsigned int i = 0; i < fRecPosPart_primary[pos_i].isMCSignal.size(); ++i){
-  //         // if (fRecPosPart_primary[pos_i].isMCSignal[i] == kTRUE && fRecPosPart_primary[pos_j].isMCSignal[i] == kTRUE){
-  //         if (fRecPosPart_primary[pos_i].isMCSignal[i] == true && fRecPosPart_primary[pos_j].isMCSignal[i] == true &&
-  //             fRecPosPart_primary[pos_i].DielectronPairFromSameMother[i] == false && fRecPosPart_primary[pos_j].DielectronPairFromSameMother[i] == false){
-  //           for (unsigned int j = 0; j < fRecPosPart_primary[pos_i].isReconstructed_primary.size(); ++j){
-  //             if (fRecPosPart_primary[pos_i].isReconstructed_primary[j] == kTRUE && fRecPosPart_primary[pos_j].isReconstructed_primary[j] == kTRUE){
-  //               fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 1]->Fill(mass, pairpt, centralityWeight);
-  //             }// is selected by cutsetting
-  //           } // end of loop over all cutsettings
-  //         } // is selected by MC Signal
-  //       } // end of loop over all MCsignals
-  //     }
-  //   }
-  //
-  //
-  // }
-
   /*  ------ \/ ------ added by feisenhut ------ \/ ------  */
   if (fDoFourPairing){
     //##########################################################
@@ -2240,8 +2183,8 @@ void AliAnalysisTaskEtaReconstruction::SetWidthCorrFunction(Detector det, TObjec
       double pairpt = LvecM.Pt();
       double weight = 1.;
 
-      if (fDoMassCut == kTRUE && PartPrimary == kTRUE  && mass > 0.547862) continue; // Aplly mass cuts for primary pairs
-      if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass > 0.04)     continue; // Aplly mass cuts for  secondary pairs
+      if (fDoMassCut == kTRUE && PartPrimary == kTRUE  && fUpperMassCutPrimaries > mass > fLowerMassCutPrimaries)       continue; // Aplly mass cuts for primary pairs
+      if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass > fMassCutSecondaries)     continue; // Aplly mass cuts for  secondary pairs
 
       if (fCocktailFile) {
         if (vec_negParticle->at(neg_i).GetMotherID() == vec_posParticle->at(pos_i).GetMotherID()){
@@ -2396,8 +2339,8 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairing(std::vector<Particle> fRe
       Lvec2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), AliPID::ParticleMass(AliPID::kElectron));
       TLorentzVector LvecM = Lvec1 + Lvec2;
       double mass = LvecM.M();
-      if (fDoMassCut == kTRUE && PartPrimary == kTRUE  && mass >= fMassCutPrimaries     ) continue; // mass cut for primaries
-      if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass >= fMassCutSecondaries   ) continue; // mass cut for primaries
+      if (fDoMassCut == kTRUE && PartPrimary == kTRUE  && fUpperMassCutPrimaries > mass > fLowerMassCutPrimaries     ) continue; // mass cut for primaries
+      if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass > fMassCutSecondaries   ) continue; // mass cut for primaries
       double pairpt = LvecM.Pt();
       double weight = 1.;
       if (fCocktailFile) {
