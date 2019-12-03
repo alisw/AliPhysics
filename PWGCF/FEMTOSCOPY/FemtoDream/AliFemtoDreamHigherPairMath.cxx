@@ -11,8 +11,8 @@
 static const float piHi = TMath::Pi();
 
 AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
-    AliFemtoDreamCollConfig *conf)
-    : fHists(new AliFemtoDreamCorrHists(conf, conf->GetMinimalBookingSample())),
+    AliFemtoDreamCollConfig *conf, bool minBooking)
+    : fHists(new AliFemtoDreamCorrHists(conf, minBooking)),
       fWhichPairs(conf->GetWhichPairs()),
       fBField(-99.),
       fDeltaPhiEtaMax(conf->GetSqDeltaPhiEtaMax()),
