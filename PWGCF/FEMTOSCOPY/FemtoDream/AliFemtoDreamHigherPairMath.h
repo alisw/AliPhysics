@@ -16,7 +16,7 @@
 #include <vector>
 class AliFemtoDreamHigherPairMath {
  public:
-  AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf);
+  AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf, bool minBooking = true);
   virtual ~AliFemtoDreamHigherPairMath();
   AliFemtoDreamHigherPairMath(const AliFemtoDreamHigherPairMath& samp);
   AliFemtoDreamHigherPairMath& operator=(
