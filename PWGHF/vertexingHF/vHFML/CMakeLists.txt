@@ -31,6 +31,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${TREELITE_ROOT}/include
+                    ${TREELITE_ROOT}/runtime/native/include
                     ${YAML_CPP_SOURCE_DIR}/include         
 )
 
