@@ -322,6 +322,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     Float_t tanPhi2 = (snp2>0)? snp2/(1-snp2):0;
     Float_t tgl2 = seed->GetTgl(); tgl2 *= tgl2;
     if (seed->GetESD()) if (seed->GetESD()->GetTPCsignal()>0)  mdEdx=TMath::Min(kdEdxMIP / seed->GetESD()->GetTPCsignal(), 1.);
+    if (cluster->GetMax()<=1 ) cluster->SetMax(2); // it can happend that common mode shift cluster bellow 0 -rocover such cluster
     if (AliTPCReconstructor::GetRecoParam()->GetUseClusterErrordEdxMultCorrection()) {
       // error tuning in https://gitlab.cern.ch/alice-tpc-offline/alice-tpc-notes/blob/0e00a7739d6c3cf89438f48c107b7e530a780e80/JIRA/PWGPP-570/clusterPerfromanceDF.C
       //      tree->SetAlias("erry2LM", "(erry2+(0.2**2)*TanPhi2)*(0.5+mdEdx+0.3*mQ)*0.25");
