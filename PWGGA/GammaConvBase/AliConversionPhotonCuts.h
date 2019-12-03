@@ -338,6 +338,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fUseCorrectedTPCClsInfo;              ///< flag to use corrected tpc cl info
     Bool_t            fUseTOFpid;                           ///< flag to use tof pid
     Bool_t            fUseTOFtiming;                        ///< flag to use tof timing information
+    Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
+    Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
     Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
@@ -430,7 +432,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,31)
+    ClassDef(AliConversionPhotonCuts,32)
     /// \endcond
 };
 

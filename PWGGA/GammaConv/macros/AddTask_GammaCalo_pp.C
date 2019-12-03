@@ -677,6 +677,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00052113","111116906f032230000","01631031000000d0"); // std
     cuts.AddCutCalo("00081113","111116906f032230000","01631031000000d0"); // std
 
+  } else if (trainConfig == 185){ // no NCell cut
+    cuts.AddCutCalo("00010113","111113106f030230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00052113","111113106f030230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00081113","111113106f030230000","01631031000000d0"); // std
 
   //multiple std dirGAMMA cuts for different studies
   } else if (trainConfig == 190){ // EMCAL clusters pp 8 TeV
