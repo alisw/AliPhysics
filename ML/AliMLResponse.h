@@ -83,10 +83,12 @@ public:
   int FindBin(double binvar);
 
   /// return the MLModel predicted score (raw or proba, depending on useraw)
-  double Predict(double binvar, map<string, double> varmap, bool useraw);
+  double Predict(double binvar, map<string, double> varmap);
+  /// return true if predicted score for map is above the threshold given in the config
+  bool IsSelected(double binvar, map<string, double> varmap);
 
   /// TODO: metterle private quando i test sono ok
-
+protected:
   string fConfigFilePath;    /// path of the config file
 
   vector<ModelHandler> fModels;
@@ -101,7 +103,6 @@ public:
 
   bool fRaw;
 
-protected:
   /// \cond CLASSIMP
   ClassDef(AliMLResponse, 1);    ///
   /// \endcond

@@ -55,28 +55,23 @@ string ImportFile(string path) {
 }    // namespace
 
 bool ModelHandler::CompileModel() {
-  // TODO: try without local copy of the model
   string localpath = ImportFile(this->path);
 
   switch (kLibraryMap[GetLibrary()]) {
   case kXGBoost: {
-    bool comp = this->model.LoadXGBoostModel(localpath.data());
-    return comp;
+    return this->model.LoadXGBoostModel(localpath.data());
     break;
   }
   case kLightGBM: {
-    bool comp = this->model.LoadLightGBMModel(localpath.data());
-    return comp;
+    return this->model.LoadLightGBMModel(localpath.data());
     break;
   }
   case kModelLibrary: {
-    bool comp = this->model.LoadModelLibrary(localpath.data());
-    return comp;
+    return this->model.LoadModelLibrary(localpath.data());
     break;
   }
   default: {
-    bool comp = this->model.LoadXGBoostModel(localpath.data());
-    return comp;
+    return this->model.LoadXGBoostModel(localpath.data());
     break;
   }
   }
@@ -178,7 +173,7 @@ void AliMLResponse::MLResponseInit() {
   fBins          = nodeList["BINS"].as<vector<float>>();
   fNBins         = nodeList["N_MODELS"].as<int>();
   fNVariables    = nodeList["NUM_VAR"].as<int>();
-  // fRaw           = nodeList["RAW_SCORE"].as<bool>();
+  fRaw           = nodeList["RAW_SCORE"].as<bool>();
 
   fBinsBegin = fBins.begin();
 
@@ -188,9 +183,9 @@ void AliMLResponse::MLResponseInit() {
 
   for (auto &model : fModels) {
     bool comp = model.CompileModel();
-    // if (!comp) {
-    //   AliFatal("Error in model compilation! Exit");
-    // }
+    if (!comp) {
+      AliFatal("Error in model compilation! Exit");
+    }
   }
 }
 
@@ -202,7 +197,7 @@ int AliMLResponse::FindBin(double binvar) {
 }
 
 //________________________________________________________________
-double AliMLResponse::Predict(double binvar, map<string, double> varmap, bool useraw) {
+double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
   if ((int)varmap.size() >= fNVariables) {
     AliFatal("The variables map you provided to the predictor have a size different from the variable list size! Exit");
   }
@@ -221,7 +216,13 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap, bool us
     return -999.;
   }
 
-  return fModels[bin - 1].GetModel().Predict(&features[0], fNVariables, useraw);
+  return fModels[bin - 1].GetModel().Predict(&features[0], fNVariables, fRaw);
 }
 
-// TODO: far fare la compilazione e testare il tutto con i file presi dal mio alien
+//________________________________________________________________
+bool AliMLResponse::IsSelected(double binvar, map<string, double> varmap) {
+  int bin     = FindBin(binvar);
+  double pred = Predict(binvar, varmap);
+
+  return pred >= fModels[bin - 1].GetScoreCut();
+}
