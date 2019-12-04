@@ -54,7 +54,6 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
   fTrackCutsPosPion->SetMinimalBooking(false);
-  fTrackCutsPosPion->SetChi2Cut(0., 4.0);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
   // Not mention in AN oder Indico
@@ -75,7 +74,6 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
-  fTrackCutsNegPion->SetChi2Cut(0., 4.0);
   fTrackCutsNegPion->SetMinimalBooking(false);
   //fTrackCutsNegPion->SetCutSmallestSig(true);
 
