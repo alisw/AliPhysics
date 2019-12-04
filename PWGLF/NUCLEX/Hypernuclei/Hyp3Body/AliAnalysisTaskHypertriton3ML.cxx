@@ -20,21 +20,30 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TList.h>
-#include <TMath.h>
+// #include <TMath.h>
+#include <TLorentzVector.h>
 #include <TRandom3.h>
+#include <TVector3.h>
 
 #include <array>
 #include <map>
-#include <stdio.h>
+// #include <stdio.h>
+#include <cmath>
 #include <unordered_map>
 #include <vector>
 
-using std::cout;
-using std::endl;
+// using std::cout;
+// using std::endl;
 
 ClassImp(AliAnalysisTaskHypertriton3ML);
 
 namespace {
+
+constexpr float kHyperTritonMass{2.99131};
+
+constexpr float kDeuMass{1.87561};
+constexpr float kPMass{0.938272};
+constexpr float kPiMass{0.13957};
 
 bool IsHyperTriton3(const AliVParticle *vPart, AliMCEvent *mcEvent) {
   int nDaughters = 0;
@@ -92,8 +101,27 @@ bool HasTOF(AliVTrack *track) {
   return hasTOFout && hasTOFtime && (len > 350.);
 }
 
-} // namespace
+/// get nClsITS from cluster map
+int GetNClsITS(unsigned char clsMap) {
+  int ncls = 0;
+  for (int i = 0; i < 6; i++) {
+    ncls += (int)(clsMap >> i) & 1;
+  }
+  return ncls;
+}
 
+/// helper functions
+template <typename T> double Pot2(T a) { return a * a; }
+template <typename T> double DistanceZ(T v1, T v2) { return std::sqrt(Pot2(v1[2] - v2[2])); }
+template <typename T> double DistanceXY(T v1, T v2) { return std::sqrt(Pot2(v1[0] - v2[0]) + Pot2(v1[1] - v2[1])); }
+template <typename T> double Distance3D(T v1, T v2) {
+  return std::sqrt(Pot2(v1[0] - v2[0]) + Pot2(v1[1] - v2[1]) + Pot2(v1[2] - v2[2]));
+}
+template <typename F> double Hypot4(F a, F b, F c, F d) { return std::sqrt(a * a + b * b + c * c + d * d); }
+
+}    // namespace
+
+//________________________________________________________________
 AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fListHist{nullptr}, fTreeHyp3{nullptr},
       fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false}, fDownscaling{false},
@@ -103,7 +131,7 @@ AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::strin
       fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.}, fMaxNSigmaTOFPi{5.},
       fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.}, fMinCosPA{0.993},
       fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05}, fMaxPtPion{1.},
-      fSHypertriton{}, fRHypertriton{}, fREvent{}, fDeuVector{}, fPVector{}, fPiVector{} {
+      fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{}, fDeuVector{}, fPVector{}, fPiVector{}, fMLResponse{} {
 
   // Settings for the custom vertexer
   fVertexer.SetToleranceGuessCompatibility(fVertexerToleranceGuessCompatibility);
@@ -111,10 +139,11 @@ AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::strin
 
   // Standard output
   DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class()); // Basic Histograms
-  DefineOutput(2, TTree::Class()); // Hypertriton Candidates Tree output
+  DefineOutput(1, TList::Class());    // Basic Histograms
+  DefineOutput(2, TTree::Class());    // Hypertriton Candidates Tree output
 }
 
+//________________________________________________________________
 AliAnalysisTaskHypertriton3ML::~AliAnalysisTaskHypertriton3ML() {
   if (fListHist) {
     delete fListHist;
@@ -127,6 +156,7 @@ AliAnalysisTaskHypertriton3ML::~AliAnalysisTaskHypertriton3ML() {
   }
 }
 
+//________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fInputHandler           = (AliInputEventHandler *)(man->GetInputEventHandler());
@@ -135,8 +165,9 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   fInputHandler->SetNeedField();
 
   fTreeHyp3 = new TTree("fHypertritonTree", "Hypertriton3 Candidates");
-  fTreeHyp3->Branch("REvent", &fREvent);
-  fTreeHyp3->Branch("RHypertriton", &fRHypertriton);
+  if (!fApplyML) fTreeHyp3->Branch("REvent", &fREvent);
+  if (!fApplyML) fTreeHyp3->Branch("RHypertriton", &fRHypertriton);
+  if (fApplyML) fTreeHyp3->Branch("MLSelected", &fMLSelected);
   if (man->GetMCtruthEventHandler()) fTreeHyp3->Branch("SHypertriton", &fSHypertriton);
 
   fListHist = new TList();
@@ -150,8 +181,8 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   fHistNSigmaPi =
       new TH2D("fHistNSigmaPi", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Pion; Counts", 100, 0., 10., 80, -5.0, 5.0);
 
-  fHistInvMass = new TH2D("fHistInvMass", ";m_{dp#pi}(GeV/#it{c^2}); #it{p}_{T} (GeV/#it{c}); Counts", 30, 2.96,
-                          3.05, 100, 0, 10);
+  fHistInvMass =
+      new TH2D("fHistInvMass", ";m_{dp#pi}(GeV/#it{c^2}); #it{p}_{T} (GeV/#it{c}); Counts", 30, 2.96, 3.05, 100, 0, 10);
 
   fListHist->Add(fHistNSigmaDeu);
   fListHist->Add(fHistNSigmaP);
@@ -163,7 +194,7 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   PostData(2, fTreeHyp3);
 
   AliPDG::AddParticlesToPdgDataBase();
-} // end UserCreateOutputObjects
+}    // end UserCreateOutputObjects
 
 void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
@@ -455,6 +486,23 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 
         hyp3r.fIsMatter = deu->Charge() > 0;
 
+        if (fApplyML) {
+          auto fMap = FeaturesMap(hyp3r, fREvent);
+
+          float ct = fMap["ct"];
+          float invmass = fMap["InvMass"];
+          float hyppt = fMap["HypCandPt"];
+
+          if (ct > 1. && ct < 35. && fREvent.fCent < 90.) {
+            double score;
+            if (fMLResponse->IsSelected(ct, fMap, &score)) {
+              MLSelected hyp3ml{score, invmass, ct, fREvent.fCent, hyppt};
+              fMLSelected.push_back(hyp3ml);
+            }
+          }
+          continue;
+        }
+
         fRHypertriton.push_back(hyp3r);
 
         fHistNSigmaDeu->Fill(deu->Pt(), nSigmaDeu);
@@ -472,7 +520,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     PostData(1, fListHist);
     PostData(2, fTreeHyp3);
   }
-  if (!fMC && (int)fRHypertriton.size() > 0) {
+  if (!fMC && ((int)fRHypertriton.size() > 0 || (int)fMLSelected.size() > 0)) {
     fTreeHyp3->Fill();
 
     PostData(1, fListHist);
@@ -480,8 +528,107 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   }
 }
 
+//________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::Terminate(Option_t *) {}
 
+//________________________________________________________________
+map<string, double> AliAnalysisTaskHypertriton3ML::FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv) {
+  map<string, double> fMap;
+
+  /// position of the primary vertex
+  const TVector3 primaryVtxPos(rEv.fX, rEv.fY, rEv.fZ);
+
+  /// n cluster TPC
+  fMap["nClsTPCDeu"] = hypCand.fNClusterTPCDeu;
+  fMap["nClsTPCP"]   = hypCand.fNClusterTPCP;
+  fMap["nClsTPCPi"]  = hypCand.fNClusterTPCPi;
+  /// n cluster ITS from ITS clustermap
+  fMap["nClsITSDeu"] = GetNClsITS(hypCand.fITSClusterMapDeu);
+  fMap["nClsITSP"]   = GetNClsITS(hypCand.fITSClusterMapP);
+  fMap["nClsITSPi"]  = GetNClsITS(hypCand.fITSClusterMapPi);
+  /// PID with TPC and TOF
+  fMap["nSigmaTPCDeu"] = hypCand.fNSigmaTPCDeu;
+  fMap["nSigmaTPCP"]   = hypCand.fNSigmaTPCP;
+  fMap["nSigmaTPCPi"]  = hypCand.fNSigmaTPCPi;
+  fMap["nSigmaTOFDeu"] = hypCand.fNSigmaTOFDeu;
+  fMap["nSigmaTOFP"]   = hypCand.fNSigmaTOFP;
+  fMap["nSigmaTOFPi"]  = hypCand.fNSigmaTOFPi;
+  // tracks and decay vertex chi2
+  fMap["trackChi2Deu"] = hypCand.fTrackChi2Deu;
+  fMap["trackChi2P"]   = hypCand.fTrackChi2P;
+  fMap["trackChi2Pi"]  = hypCand.fTrackChi2Pi;
+  fMap["vertexChi2"]   = hypCand.fDecayVertexChi2NDF;
+
+  /// daughter DCAs to primary vertex
+  fMap["DCA2xyPrimaryVtxDeu"] = hypCand.fDCAxyDeu;
+  fMap["DCAxyPrimaryVtxP"]    = hypCand.fDCAxyP;
+  fMap["DCAxyPrimaryVtxPi"]   = hypCand.fDCAxyPi;
+  fMap["DCAzPrimaryVtxDeu"]   = hypCand.fDCAzDeu;
+  fMap["DCAzPrimaryVtxP"]     = hypCand.fDCAzP;
+  fMap["DCAzPrimaryVtxPi"]    = hypCand.fDCAzPi;
+  fMap["DCAPrimaryVtxDeu"]    = std::hypot(hypCand.fDCAxyDeu, hypCand.fDCAzDeu);
+  fMap["DCAPrimaryVtxP"]      = std::hypot(hypCand.fDCAxyP, hypCand.fDCAzP);
+  fMap["DCAPrimaryVtxPi"]     = std::hypot(hypCand.fDCAxyPi, hypCand.fDCAzPi);
+
+  /// vectors of the closest position to the decay vertex of the daughter's tracks
+  const TVector3 decayVtxPos(hypCand.fDecayVtxX, hypCand.fDecayVtxY, hypCand.fDecayVtxZ);
+  const TVector3 deuPosVector(hypCand.fPosXDeu, hypCand.fPosYDeu, hypCand.fPosZDeu);
+  const TVector3 pPosVector(hypCand.fPosXP, hypCand.fPosYP, hypCand.fPosZP);
+  const TVector3 piPosVector(hypCand.fPosXPi, hypCand.fPosYPi, hypCand.fPosZPi);
+
+  /// DCA to the decay vertex
+  fMap["DCAxyDecayVtxDeu"] = DistanceXY(decayVtxPos, deuPosVector);
+  fMap["DCAxyDecayVtxP"]   = DistanceXY(decayVtxPos, pPosVector);
+  fMap["DCAxyDecayVtxPi"]  = DistanceXY(decayVtxPos, piPosVector);
+  fMap["DCAzDecayVtxDeu"]  = DistanceZ(decayVtxPos, deuPosVector);
+  fMap["DCAzDecayVtxP"]    = DistanceZ(decayVtxPos, pPosVector);
+  fMap["DCAzDecayVtxPi"]   = DistanceZ(decayVtxPos, piPosVector);
+  fMap["DCADecayVtxDeu"]   = Distance3D(decayVtxPos, deuPosVector);
+  fMap["DCADecayVtxP"]     = Distance3D(decayVtxPos, pPosVector);
+  fMap["DCADecayVtxPi"]    = Distance3D(decayVtxPos, piPosVector);
+
+  /// compute the distance between the daughter tracks at the decay vertex
+  const float deuPos[3] = {hypCand.fPosXDeu, hypCand.fPosYDeu, hypCand.fPosZDeu};
+  const float pPos[3]   = {hypCand.fPosXP, hypCand.fPosYP, hypCand.fPosZP};
+  const float piPos[3]  = {hypCand.fPosXPi, hypCand.fPosYPi, hypCand.fPosZPi};
+
+  fMap["TrackDistDeuP"]  = Distance3D(deuPos, pPos);
+  fMap["TrackDistPPi"]   = Distance3D(pPos, piPos);
+  fMap["TrackDistDeuPi"] = Distance3D(deuPos, piPos);
+
+  /// compute the 4-vector of the daughter tracks
+  const double eDeu = Hypot4(hypCand.fPxDeu, hypCand.fPyDeu, hypCand.fPzDeu, kDeuMass);
+  const double eP   = Hypot4(hypCand.fPxP, hypCand.fPyP, hypCand.fPzP, kPMass);
+  const double ePi  = Hypot4(hypCand.fPxPi, hypCand.fPyPi, hypCand.fPzPi, kPiMass);
+
+  const TLorentzVector deu4Vector{hypCand.fPxDeu, hypCand.fPyDeu, hypCand.fPzDeu, eDeu};
+  const TLorentzVector p4Vector{hypCand.fPxP, hypCand.fPyP, hypCand.fPzP, eP};
+  const TLorentzVector pi4Vector{hypCand.fPxPi, hypCand.fPyPi, hypCand.fPzPi, ePi};
+
+  fMap["PtDeu"] = deu4Vector.Pt();
+  fMap["PtP"]   = p4Vector.Pt();
+  fMap["PtPi"]  = pi4Vector.Pt();
+
+  /// compute the 4-vector of the hypertriton candidate
+  const TLorentzVector hyper4Vector = deu4Vector + p4Vector + pi4Vector;
+
+  /// hypertriton candidate pT and invariant mass
+  fMap["HypCandPt"] = hyper4Vector.Pt();
+  fMap["InvMass"]   = hyper4Vector.M();
+
+  /// decay lenght vector
+  const TVector3 decayLenghtVector = decayVtxPos - primaryVtxPos;
+
+  // hypertriton candidate ct
+  fMap["ct"] = kHyperTritonMass * decayLenghtVector.Mag() / hyper4Vector.P();
+
+  // compute the cos(theta pointing)
+  fMap["CosPA"] = std::cos(hyper4Vector.Angle(decayLenghtVector));
+
+  return fMap;
+}
+
+//________________________________________________________________
 AliAnalysisTaskHypertriton3ML *AliAnalysisTaskHypertriton3ML::AddTask(bool isMC, TString suffix) {
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
