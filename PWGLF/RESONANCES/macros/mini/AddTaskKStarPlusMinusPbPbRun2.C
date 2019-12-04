@@ -222,17 +222,16 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
     PairCutsMix->SetCutScheme(cutY->GetName());
     //
     // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-         gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPbRun2.C");
-     //gROOT->LoadMacro("ConfigKStarPlusMinusPbPbRun2.C");
-     //gROOT->LoadMacro("ConfigKStarPlusMinuspPbRun2.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPbRun2.C");
+
+    //    gROOT->LoadMacro("ConfigKStarPlusMinusPbPbRun2.C");
+
+    //gROOT->LoadMacro("ConfigKStarPlusMinuspPbRun2.C");
      if (isMC) {
        Printf("========================== MC analysis - PID cuts not used");
     } else
        Printf("========================== DATA analysis - PID cuts used");
     
-     //    if(!ConfigKStarPlusMinuspPbRun2(task, isMC, isPP,isGT,isRotate,piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame,PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
-
-
      if(!ConfigKStarPlusMinusPbPbRun2(task, isMC, isPP,isGT,isRotate,piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame,PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
     
      //
