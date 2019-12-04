@@ -4069,7 +4069,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 5: // EMC-EMC (optimized for 5 TeV with 31 NonLin)
-          mass = 1.30527e-01 + (1.95889e-03 * pt) + (-1.25235e-04 * pow(pt,2.)) + (-6.59348e-06 * pow(pt,3)) + (7.59190e-07 * pow(pt,4));
+          mass = 1.22498e-01  + (4.97752e-03 * pt) + (-8.49570e-04 * pow(pt,2.)) + (6.05847e-05 * pow(pt,3)) + (-13e-07 * pow(pt,4));
           FWHM =   1.33790e-02 + (-9.40866e-04 * pt) + ( 7.01518e-05 * pow(pt,2));
           if(mass < 0.12) mass = 0.12;
           sigma = FWHM/2.35;
@@ -4077,7 +4077,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 6: // PCM-EMC (optimized for 5 TeV with 31 NonLin)
-          mass = 1.35057e-01 + 1.49470e-04 * pt;
+          mass = 1.31116e-01 + 4.20087e-04 * pt;
           FWHM = 9.25937e-03 + ( ( -4.89863e-04) * pt ) + (4.57442e-05 * pt * pt);
           if(FWHM>0.015) FWHM = 0.015;
           sigma = FWHM/2.35;
@@ -4104,7 +4104,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 9: // PCM-PCM (optimized for 5 TeV)
-          mass = 1.34615e-01 + (4.57531e-03 * exp(-2.63508 * pt)) + -1.71924e-04 * pt;
+          mass = 1.33587e-01  + (2.59437e-03 * exp(-1.18999e+00 * pt)) + -3.45476e-05 * pt;
           FWHM =   0.00223215 + ( (0.000349362) * pt ) + (-1.13689e-05 * pt * pt);
           if (mass>0.137) mass = 0.137;
           if (FWHM < 0.001 ) {FWHM =0.001;}
