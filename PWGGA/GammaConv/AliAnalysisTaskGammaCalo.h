@@ -355,6 +355,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TProfile**            fProfileEtaShift;                                     //! array of profiles with eta shift
     TProfile**            fProfileJetJetXSection;                               //! array of profiles with xsection for jetjet
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
+    TH2F**                fHistoPtHardJJWeight;                                 //! array of histos with ntrials for jetjet
     TH1F**                fHistoEventSphericity;                                //! array of histos with event Sphericity
     TH1F**                fHistoEventSphericityAxis;                            //! array of histos with phi of the event Sphericity axis
     TH2F**                fHistoEventSphericityvsNtracks;                       //! array of histos with event Sphericity vs Ntracks

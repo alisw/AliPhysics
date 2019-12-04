@@ -1509,8 +1509,9 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
     fWeightJetJetMC = 1;
     //     cout << fMCEvent << endl;
     Float_t maxjetpt      = -1.;
+    Float_t pthard = -1;
     if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetUseJetFinderForOutliers()) maxjetpt = fOutlierJetReader->GetMaxJetPt();
-    Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC , fInputEvent, maxjetpt);
+    Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC ,pthard, fInputEvent, maxjetpt);
     if (!isMCJet){
       fHistoNEvents[iCut]->Fill(10,fWeightJetJetMC);
       if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(10);
