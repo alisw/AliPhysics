@@ -97,6 +97,18 @@ enum {
     kAntiSigmaStarP_REC,
     kAntiSigmaStarN_REC,
 };
+enum {
+    kAll = 1,  // 1
+    kINEL10,
+    kINEL10_vtx,
+    kINEL10_vtx_trig,
+    kINELg0,
+    kINELg010,
+    kINELg010_vtx, 
+    kINELg010_vtx_trig,
+    kTrig, 
+    kSelected
+};
 
 class AliAnalysisTaskSigma1385PM;
 
@@ -163,9 +175,16 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
 
     CreateTHnSparse("Sigma1385_data", "Sigma1385_data", 4,
                     {binType, binCent, binPt, binMass}, "s");
-    if(fIsMC)
+    if (fIsMC) {
+        auto binTypeMCNorm = AxisStr(
+        "Type", {"kAll", "kINEL10", "kINEL10_vtx", "kINEL10_vtx_trig", "kINELg0",
+                 "kINELg010", "kINELg010_vtx","kINELg010_vtx_trig", "kTrig"
+                 "kSelected"});
         CreateTHnSparse("Sigma1385_mc", "Sigma1385_mc", 4,
                         {binTypeMC, binCent, binPt, binMass}, "s");
+        CreateTHnSparse("Normalisation", "", 2, {binTypeMCNorm, binCent},
+                        "s");
+    }
     fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
     fHistos->CreateTH1("hMultiplicity", "", 100, 0, 100, "s");
 
@@ -247,7 +266,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
         (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()
             ->GetInputEventHandler();
 
-    bool IsEvtSelected{false}, IsINEL0True{false}, IsSelectedTrig{false}, IsVtxInZCut{false};
+    bool IsEvtSelected{false}, IsINEL0True{false}, IsSelectedTrig{false}, IsVtxInZCut{false}, IsGoodVertex{false};
     if (!nanoHeader) {
         IsEvtSelected = fEventCuts.AcceptEvent(event);
         if (fIsMC) {
@@ -264,6 +283,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
         IsVtxInZCut =
             fEventCuts.PassedCut(AliEventCuts::kVertexPosition);
         IsSelectedTrig = fEventCuts.PassedCut(AliEventCuts::kTrigger);
+        IsGoodVertex = fEventCuts.PassedCut(AliEventCuts::kVertexQuality);
     } else {
         if(!fIsNano)
             fIsNano = kTRUE;
@@ -278,6 +298,37 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
             FillMCinput(fMCEvent, 2);
         if(IsSelectedTrig)
             FillMCinput(fMCEvent ,3);
+        FillTHnSparse("Normalisation",
+                            {(int)kALL, (double)fCent});
+        if (IsINEL0True) {
+            FillTHnSparse("Normalisation",
+                            {(int)kINELg0, (double)fCent});
+            if(IsVtxInZCut){
+                FillTHnSparse("Normalisation",
+                            {(int)kINELg010, (double)fCent});
+                if(IsGoodVertex){
+                    FillTHnSparse("Normalisation",
+                            {(int)kINELg010_vtx, (double)fCent});
+                    if(IsSelectedTrig) {
+                        FillTHnSparse("Normalisation",
+                                {(int)kINELg010_vtx_trig, (double)fCent});
+                    }
+                }
+            }
+        }
+        if(IsVtxInZCut){
+            FillTHnSparse("Normalisation",
+                        {(int)kINEL10, (double)fCent});
+            if(IsGoodVertex){
+                FillTHnSparse("Normalisation",
+                        {(int)kINEL10_vtx, (double)fCent});
+                if(IsSelectedTrig) {
+                    FillTHnSparse("Normalisation",
+                            {(int)kINEL10_vtx_trig, (double)fCent});
+                }
+            }
+        }
+
     }
 
     if (!IsEvtSelected) {
@@ -288,8 +339,11 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
 
     fHistos->FillTH1("hMultiplicity", (double)fCent);
 
-    if (fIsMC)
+    if (fIsMC){
         FillMCinput(fMCEvent);
+        FillTHnSparse("Normalisation",
+                            {(int)kSelected, (double)fCent});
+    }
     if (fEvt->IsA() == AliAODEvent::Class())
         vertex = ((AliAODEvent*)fEvt)->GetPrimaryVertex();
     const AliVVertex* pVtx = fEvt->GetPrimaryVertex();
@@ -326,7 +380,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
     AliVTrack* track;
     Float_t b[2];
     Float_t bCov[3];
-    Double_t fTPCNSigPion, pionZ, pionPt, pionSigmaDCA_r, pionDCA_r, fEta;
+    Double_t nTPCNSigPion, pionZ, pionPt, pionSigmaDCA_r, pionDCA_r, fEta;
 
     for (UInt_t it = 0; it < nTracks; it++) {
         track = (AliVTrack*)fEvt->GetTrack(it);
@@ -346,7 +400,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
         }  // AOD Case
 
         pionZ = b[1];
-        fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
+        nTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
         pionPt = track->Pt();
         pionSigmaDCA_r = (0.0026 + 0.0050 / pionPt);
         pionDCA_r = b[0];
@@ -358,7 +412,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
         fHistos->FillTH1("QA/hPtPion", pionPt);
         fHistos->FillTH2("QA/hTPCPIDPion", track->GetTPCmomentum(), track->GetTPCsignal());
 
-        if (TMath::Abs(fTPCNSigPion) > fTPCNsigSigmaStarPionCut)
+        if (TMath::Abs(nTPCNSigPion) > fTPCNsigSigmaStarPionCut)
             continue;
         if (fEta > fSigmaStarPionEtaCut)
             continue;
@@ -417,14 +471,14 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
                 AcceptedV0 = kFALSE;
 
             // PID cuts
-            Double_t fTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
-            Double_t fTPCNSigAntiProton =
+            Double_t nTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
+            Double_t nTPCNSigAntiProton =
                 GetTPCnSigma(nTrackV0, AliPID::kProton);
-            Double_t fTPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
-            Double_t fTPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
+            Double_t nTPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
+            Double_t nTPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
 
-            if ((TMath::Abs(fTPCNSigProton) < fTPCNsigLambdaProtonCut) 
-                && (TMath::Abs(fTPCNSigPion) < fTPCNsigLambdaPionCut) 
+            if ((TMath::Abs(nTPCNSigProton) < fTPCNsigLambdaProtonCut) 
+                && (TMath::Abs(nTPCNSigPion) < fTPCNsigLambdaPionCut) 
                 && (nTrackV0->GetSign() < 0) ){
                 
                 fPIDLambda = kTRUE;
@@ -438,8 +492,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
                                  nTrackV0->GetTPCmomentum(),
                                  nTrackV0->GetTPCsignal());
             }
-            else if ((TMath::Abs(fTPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
-                    && (TMath::Abs(fTPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
+            else if ((TMath::Abs(nTPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
+                    && (TMath::Abs(nTPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
                     && (nTrackV0->GetSign() > 0)){
 
                 v0ESD->ChangeMassHypothesis(kLambda0Bar);
@@ -557,14 +611,14 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
                 AcceptedV0 = kFALSE;
 
             // PID cuts
-            Double_t fTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
-            Double_t fTPCNSigAntiProton =
+            Double_t nTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
+            Double_t nTPCNSigAntiProton =
                 GetTPCnSigma(nTrackV0, AliPID::kProton);
-            Double_t fTPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
-            Double_t fTPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
+            Double_t nTPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
+            Double_t nTPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
 
-            if ((TMath::Abs(fTPCNSigProton) < fTPCNsigLambdaProtonCut) 
-                && (TMath::Abs(fTPCNSigPion) < fTPCNsigLambdaPionCut) 
+            if ((TMath::Abs(nTPCNSigProton) < fTPCNsigLambdaProtonCut) 
+                && (TMath::Abs(nTPCNSigPion) < fTPCNsigLambdaPionCut) 
                 && (nTrackV0->GetSign() < 0) ){
                 
                 fPIDLambda = kTRUE;
@@ -577,8 +631,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
                                  nTrackV0->GetTPCmomentum(),
                                  nTrackV0->GetTPCsignal());
             }
-            else if ((TMath::Abs(fTPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
-                    && (TMath::Abs(fTPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
+            else if ((TMath::Abs(nTPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
+                    && (TMath::Abs(nTPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
                     && (nTrackV0->GetSign() > 0)){
 
                 fPIDAntiLambda = kTRUE;
@@ -679,7 +733,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
     AliVTrack* track1;
     AliESDv0* v0ESD;
     AliAODv0* v0AOD;
-    Double_t fTPCNSigProton, fTPCNSigAntiProton, fTPCNSigPion, fTPCNSigAntiPion;
+    Double_t nTPCNSigProton, nTPCNSigAntiProton, nTPCNSigPion, nTPCNSigAntiPion;
     Bool_t isAnti, isPionPlus;
     Bool_t SkipMixing = kFALSE;
     Int_t pID, nID;
@@ -843,7 +897,7 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
     AliVTrack* track1 = nullptr;
     AliESDv0* v0ESD = nullptr;
     AliAODv0* v0AOD = nullptr;
-    Double_t fTPCNSigProton, fTPCNSigAntiProton, fTPCNSigPion, fTPCNSigAntiPion;
+    Double_t nTPCNSigProton, nTPCNSigAntiProton, nTPCNSigPion, nTPCNSigAntiPion;
     Bool_t isAnti, isPionPlus;
     Int_t pID, nID;
     Double_t tmp[16];
@@ -878,12 +932,17 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
 
             temp1.SetXYZM(v0ESD->Px(), v0ESD->Py(), v0ESD->Pz(),
                           v0ESD->GetEffMass());
+            
+            nTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
+            nTPCNSigAntiProton = GetTPCnSigma(nTrackV0, AliPID::kProton);
+            nTPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
+            nTPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
 
             // nTuple
-            tmp[5] = fTPCNSigProton;                     // PIDV0pTrackProton
-            tmp[6] = fTPCNSigAntiProton;                 // PIDV0pTrackPion
-            tmp[7] = fTPCNSigPion;                       // PIDV0nTrackProton
-            tmp[8] = fTPCNSigAntiPion;                   // PIDV0nTrackPion
+            tmp[5] = nTPCNSigProton;                     // PIDV0pTrackProton
+            tmp[6] = nTPCNSigAntiProton;                 // PIDV0pTrackPion
+            tmp[7] = nTPCNSigPion;                       // PIDV0nTrackProton
+            tmp[8] = nTPCNSigAntiPion;                   // PIDV0nTrackPion
             tmp[9] = TMath::Abs(v0ESD->GetDcaV0Daughters());   // DCAV0Daughters
             tmp[10] = TMath::Abs(v0ESD->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));  // DCAV0ToPrimVertex
             tmp[11] = v0ESD->GetV0CosineOfPointingAngle(
@@ -913,11 +972,17 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
             else
                 temp1.SetXYZM(v0AOD->MomV0X(), v0AOD->MomV0Y(), v0AOD->MomV0Z(),
                               v0AOD->MassAntiLambda());
+                              
+            nTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
+            nTPCNSigAntiProton = GetTPCnSigma(nTrackV0, AliPID::kProton);
+            nTPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
+            nTPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
+            
             // nTuple
-            tmp[5] = fTPCNSigProton;                     // PIDV0pTrackProton
-            tmp[6] = fTPCNSigAntiProton;                 // PIDV0pTrackPion
-            tmp[7] = fTPCNSigPion;                       // PIDV0nTrackProton
-            tmp[8] = fTPCNSigAntiPion;                   // PIDV0nTrackPion
+            tmp[5] = nTPCNSigProton;                     // PIDV0pTrackProton
+            tmp[6] = nTPCNSigAntiProton;                 // PIDV0pTrackPion
+            tmp[7] = nTPCNSigPion;                       // PIDV0nTrackProton
+            tmp[8] = nTPCNSigAntiPion;                   // PIDV0nTrackPion
             tmp[9] = TMath::Abs(v0AOD->DcaV0Daughters());      // DCAV0Daughters
             tmp[10] = TMath::Abs(v0AOD->DcaV0ToPrimVertex());  // DCAV0ToPrimVertex
             tmp[11] = v0AOD->CosPointingAngle(vertex);   // CosPointingAngleV0
@@ -974,10 +1039,10 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
             tmp[3] = track1->Eta();            // EtaSigmaStarPion
             tmp[4] = track1->Phi();            // PhiSigmaStarPion
             // nTuple -> See above
-            // tmp[5] = fTPCNSigProton;//PIDV0pTrackProton
-            // tmp[6] = fTPCNSigAntiProton;//PIDV0pTrackPion
-            // tmp[7] = fTPCNSigPion;//PIDV0nTrackProton
-            // tmp[8] = fTPCNSigAntiPion;//PIDV0nTrackPion
+            // tmp[5] = nTPCNSigProton;//PIDV0pTrackProton
+            // tmp[6] = nTPCNSigAntiProton;//PIDV0pTrackPion
+            // tmp[7] = nTPCNSigPion;//PIDV0nTrackProton
+            // tmp[8] = nTPCNSigAntiPion;//PIDV0nTrackPion
             // tmp[9] = TMath::Abs(v0ESD->GetDcaV0Daughters()); //DCAV0Daughters
             // tmp[10] = TMath::Abs(v0ESD->GetD(lPosPV[0], lPosPV[1], lPosPV[2])); //DCAV0ToPrimVertex
             // tmp[11] = v0ESD->GetV0CosineOfPointingAngle(lPosPV[0], lPosPV[1],
