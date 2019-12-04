@@ -27,11 +27,14 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${ALIROOT_INCLUDE_DIRS}
                     $ENV{KFPARTICLE_ROOT}/include
+                    ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
 		                ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
 		                ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
+                    ${TREELITE_ROOT}/include
+                    ${YAML_CPP_SOURCE_DIR}/include
   )
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
@@ -115,7 +118,7 @@ set(ALIROOT_DEPENDENCIES ANALYSISalice OADB PWGPPevcharQn PWGflowTasks EVGEN PWG
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} KFParticle)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} KFParticle ML yaml-cpp)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
