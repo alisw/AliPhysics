@@ -143,9 +143,9 @@ bool debug = false;
   // #########################################################
   // Set mass cuts for primary and secondary pairs
   task->SetMassCut(DoMassCut);
-  task->SetUpperMassCutPrimaries(UpperMassCutPrimaries);
-  task->SetLowerMassCutPrimaries(LowerMassCutPrimaries);
-  task->SetMassCutSecondaries(MassCutSecondaries);
+  task->SetUpperMassCutPrimaries(upperMassCutPrimaries);
+  task->SetLowerMassCutPrimaries(lowerMassCutPrimaries);
+  task->SetMassCutSecondaries(massCutSecondaries);
 
 
   // #########################################################
