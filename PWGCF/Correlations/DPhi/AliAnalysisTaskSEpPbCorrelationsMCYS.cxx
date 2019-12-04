@@ -1844,8 +1844,6 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
       
      
    }
-
-   //   return;
    
      if (lCentrality < 0. || lCentrality > 100. - 0.0000001)   return;
      Double_t *CentBins = fCentBins;
@@ -2181,8 +2179,6 @@ if(fAnaMode=="TPCTPC"){
     FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksMC2,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
     DumpTObjTable("End of fill  Correlation");
   }
-  
-
   
   selectedTracksLeading->Clear();
   delete selectedTracksLeading;
