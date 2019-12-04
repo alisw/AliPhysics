@@ -97,6 +97,7 @@ void AddTask_GammaCaloMerged_pp(
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
   Bool_t fJetFinderUsage      = kFALSE;
+  Bool_t fUsePtHardFromFile      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -120,6 +121,12 @@ void AddTask_GammaCaloMerged_pp(
       if(strTempSetting.Atoi()==1){
         cout << "using MC jet finder for outlier removal" << endl;
         fJetFinderUsage        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+      strTempSetting.Replace(0,12,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fUsePtHardFromFile        = kTRUE;
       }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
@@ -1752,6 +1759,8 @@ void AddTask_GammaCaloMerged_pp(
       analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
     if(fJetFinderUsage)
       analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
+    if(fUsePtHardFromFile)
+      analysisEventCuts[i]->SetUsePtHardBinFromFile(kTRUE);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if(periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);

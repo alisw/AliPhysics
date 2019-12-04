@@ -386,6 +386,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                     Bool_t preCut = kTRUE)                          { if(!fHistograms){ InitCutHistograms(name,preCut);}        ; }
       void    SetEtaShift(Double_t etaShift)                                        { fEtaShift = etaShift                                      ; } // Eta shift Setting
       void    SetUseJetFinderForOutliers(Bool_t useJetFinder)                       { fUseJetFinderForOutlier = useJetFinder                    ; } // Eta shift Setting
+      void    SetUsePtHardBinFromFile(Bool_t useFilePathPth)                        { fUseFilePathForPthard = useFilePathPth                    ; } // Eta shift Setting
       void    SetEtaShift(TString pPbOrPbp)                                         { Double_t etaShift = 0.0                                   ;
                                                                                       if(!pPbOrPbp.CompareTo("pPb"))      etaShift = -0.465     ;
                                                                                       else if(!pPbOrPbp.CompareTo("Pbp")) etaShift =  0.465     ;
@@ -498,6 +499,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Double_t  GetEtaShift()                                                       { return fEtaShift                                          ; }
       Bool_t    GetDoEtaShift()                                                     { return fDoEtaShift                                        ; }
       Bool_t    GetUseJetFinderForOutliers()                                        { return fUseJetFinderForOutlier                            ; }
+      Bool_t    GetUsePtHardBinFromFile()                                           { return fUseFilePathForPthard                              ; }
+
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
@@ -564,8 +567,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *event);
       Bool_t    IsPileUpV0MTPCout(AliVEvent *event);
       Bool_t    VertexZCut(AliVEvent *event);
-      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event = 0x0, Double_t maxJetPt = -1);
+      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, Float_t& pthard, AliVEvent* event = 0x0, Double_t maxJetPt = -1);
       Float_t   GetPtHard(AliMCEvent *mcEvent, AliVEvent* event = 0x0);
+      Int_t     GetPtHardBinFromPath(const char* currFile, AliVEvent *event);
       void      GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSection, Float_t &NTrials, AliVEvent* event = 0x0 );
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
       Bool_t    MimicTrigger( AliVEvent *event,
@@ -646,6 +650,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Double_t                    fEtaShift;                              ///<
       Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
       Bool_t                      fUseJetFinderForOutlier;                ///< Flag for Etashift
+      Bool_t                      fUseFilePathForPthard;                  ///< Flag for Etashift
       Int_t                       fDoCentralityFlat;                      ///<
       TString                     fPathWeightsFlatCent;                   ///<
       TString                     fNameHistoNotFlatCentrality;            ///<

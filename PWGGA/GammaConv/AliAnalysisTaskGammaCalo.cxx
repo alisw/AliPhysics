@@ -281,6 +281,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
+  fHistoPtHardJJWeight(NULL),
   fHistoEventSphericity(NULL),
   fHistoEventSphericityAxis(NULL),
   fHistoEventSphericityvsNtracks(NULL),
@@ -685,6 +686,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
+  fHistoPtHardJJWeight(NULL),
   fHistoEventSphericity(NULL),
   fHistoEventSphericityAxis(NULL),
   fHistoEventSphericityvsNtracks(NULL),
@@ -1236,6 +1238,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   if(fIsMC == 2){
     fProfileJetJetXSection  = new TProfile*[fnCuts];
     fHistoJetJetNTrials     = new TH1F*[fnCuts];
+    fHistoPtHardJJWeight     = new TH2F*[fnCuts];
   }
 
   Bool_t EnableSphericity = kFALSE;
@@ -1370,7 +1373,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fESDList[iCut]->SetOwner(kTRUE);
     fCutFolder[iCut]->Add(fESDList[iCut]);
 
-    fHistoNEvents[iCut]     = new TH1F("NEvents", "NEvents", 15, -0.5, 13.5);
+    fHistoNEvents[iCut]     = new TH1F("NEvents", "NEvents", 15, -0.5, 14.5);
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -1395,7 +1398,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fESDList[iCut]->Add(fHistoNEvents[iCut]);
 
     if (fIsMC > 1){
-      fHistoNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight", "NEventsWOWeight", 15, -0.5, 13.5);
+      fHistoNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight", "NEventsWOWeight", 15, -0.5, 14.5);
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -1425,6 +1428,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoJetJetNTrials[iCut]     = new TH1F("NTrials", "#sum{NTrials}", 1, 0, 1);
       fHistoJetJetNTrials[iCut]->GetXaxis()->SetBinLabel(1,"#sum{NTrials}");
       fESDList[iCut]->Add(fHistoJetJetNTrials[iCut]);
+      fHistoPtHardJJWeight[iCut]     = new TH2F("fHistoPtHardJJWeight", "fHistoPtHardJJWeight", 400, 0, 200, 60, 0, 30);
+      fESDList[iCut]->Add(fHistoPtHardJJWeight[iCut]);
     }
 
     if(fIsHeavyIon == 1)
@@ -3295,8 +3300,10 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
     if (fIsMC > 0){
       fWeightJetJetMC       = 1;
       Float_t maxjetpt      = -1.;
+      Float_t pthard = -1;
       if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetUseJetFinderForOutliers()) maxjetpt = fOutlierJetReader->GetMaxJetPt();
-      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC , fInputEvent, maxjetpt);
+      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC ,pthard, fInputEvent, maxjetpt);
+      if(isMCJet)           fHistoPtHardJJWeight[iCut]->Fill(pthard,fWeightJetJetMC);
       if (fIsMC == 3){
         Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;
