@@ -1457,6 +1457,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     amp[ncl]/=gainChamber;
     amp[ncl]/=corrDipAngle;
     amp[ncl]/=corrDipAngleAbs;
+    amp[ncl]/=corrTimeGain;
     //
     ncl++;
   }
@@ -1494,13 +1495,14 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Float_t sumL=0, sumL2=0, sumLN=0;
   Float_t sumD=0, sumD2=0, sumDN=0;
 
-  Int_t icl0=TMath::Nint((ncl + nclBelowThr)*low + nclBelowThr*factor);
-  Int_t icl1=TMath::Nint((ncl + nclBelowThr)*up+nclBelowThr*factor);
-  Int_t iclm=TMath::Nint((ncl + nclBelowThr)*(low +(up+low)*0.5));
+  Int_t iclN=TMath::Nint((ncl + nclBelowThr*(1-factor))*(up-low));
+  Int_t icl0=TMath::Nint((ncl + nclBelowThr*(1-factor))*low+ nclBelowThr*factor);
+  Int_t icl1=icl0+iclN;
+  Int_t iclm=icl0+iclN/2;
   //
   for (Int_t icl=icl0; icl<icl1;icl++){
     if (ampWithBelow[icl]<0.1) continue;
-    Double_t camp=ampWithBelow[icl]/corrTimeGain;
+    Double_t camp=ampWithBelow[icl];  // CHANGE 02.12.2019 - make time gain correction together with other corrections
     if (mode==1) camp= TMath::Log(camp);
     if (icl<icl1){
       suma+=camp;
@@ -1554,8 +1556,16 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   if (mode==1) meanD=TMath::Exp(meanD);  // lower truncation
   //
   //delete [] ampWithBelow; //return? // RS made on stack
-  
-
+  if ((AliTPCReconstructor::StreamLevel()&AliTPCtracker::kStreamSeeddEdx)) {
+    Float_t dEdx0=0,dEdx1=0, dEdxF=0;
+    if (1){ /// this is to check with debugger
+      dEdx0= TMath::Mean(TMath::Nint((ncl + nclBelowThr)*(up-low)),&ampWithBelow[TMath::Nint((ncl+nclBelowThr)*low)]);
+      dEdx1=TMath::Mean(TMath::Nint(ncl*(up-low)),&ampWithBelow[TMath::Nint(ncl*low+nclBelowThr)]);
+      dEdxF=TMath::Mean(iclN,&ampWithBelow[icl0]);
+      // if (gRandom->Rndm()<0.01 && nclBelowThr>2) printf("%f\t%f\t%f\t%d\n",dEdx0, dEdx1,dEdxF,nclBelowThr);
+    }
+    if (gRandom->Rndm() < 0.01 && nclBelowThr > 2) printf("dEdx %f\t%f\t%f\t%f\t%d\n", dEdx0, dEdx1, dEdxF, mean, nclBelowThr);   // to be transformed to the DebugStreamer
+  }
   //
   if(returnVec){
       (*returnVec)(0) = mean;
