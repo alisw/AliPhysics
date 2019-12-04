@@ -250,6 +250,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,bool doNUE,
   task->fSettings.maxpt = maxpt;
   
   task->fSettings.doNUA = doNUA;
+  task->fSettings.doNUE = doNUE;
   task->fSettings.nua_mode = nua_mode; 
   task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 
@@ -293,16 +294,17 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,bool doNUE,
     connectContainer( weights, task);
   }
 
-  if (nue_file != ""){
-        TObjArray* taskContainers = mgr->GetContainers();
-    AliAnalysisDataContainer* nue_weights;
-    
-    nue_weights = (AliAnalysisDataContainer*) taskContainers->FindObject("nue");
+  if (doNUE){
+    if (nue_file != ""){
+          TObjArray* taskContainers = mgr->GetContainers();
+      AliAnalysisDataContainer* nue_weights;
+      
+      nue_weights = (AliAnalysisDataContainer*) taskContainers->FindObject("nue");
 
-    if (!nue_weights) nue_weights = makeWeightContainerNUE(nue_file,"nue");   
-    connectNUEContainer(nue_weights, task);
+      if (!nue_weights) nue_weights = makeWeightContainerNUE(nue_file,"nue");   
+      connectNUEContainer(nue_weights, task);
+    }
   }
-  
 
   if (sec_file_fwd != ""){
     TObjArray* taskContainers = mgr->GetContainers();

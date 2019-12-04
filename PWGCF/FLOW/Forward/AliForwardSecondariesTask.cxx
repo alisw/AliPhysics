@@ -277,50 +277,59 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
     AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
 
    // Ignore things that do not make a signal in the FMD
-    AliTrackReference* tr = fUtil.IsHitFMD(p);
-     if (tr && p->Charge() != 0){
+    //AliTrackReference* tr = fUtil.IsHitFMD(p);
 
-       AliMCParticle* mother = GetMother(p);
-       if (!mother) mother = p;
-
-       Double_t phi_mother = mother->Phi();
-       Double_t eta_mother = mother->Eta();
-
-       Double_t *etaPhi = new Double_t[2];
-       this->GetTrackRefEtaPhi(tr, etaPhi);
-
-       Double_t phi_tr = etaPhi[1];
-       Double_t eta_tr = etaPhi[0];
-
-       Double_t weight = 1;
-        Int_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta_tr);
-        Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi_tr);
-        Int_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(event_vtx_z);
-        weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
-        if (weight == 0) continue;
-       // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
-       Double_t phi[4] = {event_vtx_z, phi_mother - phi_tr, eta_tr,cent};//wrappi
-       Double_t eta[4] = {event_vtx_z, eta_tr - eta_mother, phi_tr,cent};
-
-       delta_phi_eta->Fill(phi,weight);
-       delta_eta_phi->Fill(eta,weight);
-
-       Double_t phi1[4] = {event_vtx_z, phi_mother - phi_tr, phi_tr,cent};//wrappi
-       Double_t eta1[4] = {event_vtx_z, eta_tr - eta_mother, eta_tr,cent};
+    //if (tr){
+      for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
+        AliTrackReference* tr = p->GetTrackReference(iTrRef);
+        if (!tr || AliTrackReference::kFMD != tr->DetectorId()) continue;    
 
 
-       delta_phi_phi->Fill(phi1,weight);
-       delta_eta_eta->Fill(eta1,weight);
+
+       //if (tr && p->Charge() != 0){
+
+         AliMCParticle* mother = GetMother(p);
+         if (!mother) mother = p;
+
+         Double_t phi_mother = mother->Phi();
+         Double_t eta_mother = mother->Eta();
+
+         Double_t *etaPhi = new Double_t[2];
+         this->GetTrackRefEtaPhi(tr, etaPhi);
+
+         Double_t phi_tr = etaPhi[1];
+         Double_t eta_tr = etaPhi[0];
+
+         Double_t weight = 1;
+          // Int_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta_tr);
+          // Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi_tr);
+          // Int_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(event_vtx_z);
+          // weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
+          // if (weight == 0) continue;
+         // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
+         Double_t phi[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), eta_tr,cent};//wrappi
+         Double_t eta[4] = {event_vtx_z, eta_tr - eta_mother, phi_tr,cent};
+
+         delta_phi_eta->Fill(phi,weight);
+         delta_eta_phi->Fill(eta,weight);
+
+         // Double_t phi1[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), phi_tr,cent};//wrappi
+         // Double_t eta1[4] = {event_vtx_z, eta_tr - eta_mother, eta_tr,cent};
 
 
-       Double_t x_prim[3] =  {event_vtx_z,eta_tr, cent};
-       Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
-       if (!isNewPrimary){
-         listOfMothers.push_back(mother->GetLabel());
-         fnoPrim->Fill(x_prim,1);
+         // delta_phi_phi->Fill(phi1,weight);
+         // delta_eta_eta->Fill(eta1,weight);
+
+
+         Double_t x_prim[3] =  {event_vtx_z,eta_tr, cent};
+         Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
+         if (!isNewPrimary){
+           listOfMothers.push_back(mother->GetLabel());
+           fnoPrim->Fill(x_prim,1);
+         }
        }
      }
-   }
+   //}
 
 /*
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {

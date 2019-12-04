@@ -48,8 +48,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
   for (Int_t etaBin = 1; etaBin <= dNdetadphi->GetNbinsX(); etaBin++) {
     if ((!fSettings.use_primaries_fwd && !fSettings.esd) && useFMD){
-      Int_t valid = dNdetadphi->GetBinContent(etaBin, 0);
-      if (!valid) continue; // No data expected for this eta 
+      if (dNdetadphi->GetBinContent(etaBin, 0) == 0) continue;
+      //if (!valid) continue; // No data expected for this eta 
     }
 
     Double_t eta = dNdetadphi->GetXaxis()->GetBinCenter(etaBin);
@@ -71,12 +71,12 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
       }
       
 
-      if (weight == 0) continue; 
+      if (!weight || weight == 0) continue;
       for (Int_t n = 0; n <= 4; n++) {
 
         if ((useFMD && fSettings.sec_corr) && n >=2) weight = applySecondaryCorr(n, eta, zvertex, cent, weight);
 
-        if (weight == 0) continue;
+      if (!weight || weight == 0) continue;
 
         for (Int_t p = 1; p <= 4; p++) {
           Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
@@ -143,14 +143,13 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
 
       // index to get sum of weights
       Int_t index1[4] = {2, 1, 1, refEtaBinB};
-      if (fQvector->GetBinContent(index1) > 0){
+      if (!(fQvector->GetBinContent(index1) > 0)) continue;
         // REFERENCE FLOW --------------------------------------------------------------------------------
         if (prevRefEtaBin){ // only used once
 
           // two-particle cumulant
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
           double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
-
           fill(cumu_rW2Two, n, ptn, sample, zvertex, refEtaA, cent, two);
           fill(cumu_rW2, n, ptn, sample, zvertex, refEtaA, cent, dn2);
 
@@ -164,11 +163,15 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
         }
 
         // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
-
-        if (fSettings.standard_only){
+      //Int_t index2[4] = {2, 1, 1, refEtaBinB};
+       // if (fSettings.standard_only){
           // two-particle cumulant
           double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
           double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
+          
+
+          //if (!(twodiff > 0 || twodiff < 0) || !(dn2diff > 0 || dn2diff < 0)) continue;
+
           fill(cumu_dW2TwoB, n, ptn, sample, zvertex, eta, cent, twodiff);
           fill(cumu_dW2B, n, ptn, sample, zvertex, eta, cent, dn2diff);
 
@@ -183,7 +186,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
           double dn4diff = FourDiff(0,0,0,0, refEtaBinA, refEtaBinB, etaBin,etaBin).Re();
           fill(cumu_dW4Four, n, ptn, sample, zvertex, eta, cent, fourdiff);
           fill(cumu_dW4, n, ptn, sample, zvertex, eta, cent, dn4diff);
-        }
+        // }
 
 
         //if (!fSettings.standard_only){
@@ -191,7 +194,6 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
             // R_{n,n; 2} numerator
             double over = (TwoDiff(-2,2,refEtaBinB, etaBin)*TwoDiff(2,-2,refEtaBinA, etaBinB)).Re();
             double under = (TwoDiff(-2,2,refEtaBinB, etaBinB)*TwoDiff(2,-2,refEtaBinA, etaBin)).Re();
-
             fill(cumu_dWTwoTwoN, n, ptn, sample, zvertex, eta, cent, over);
             fill(cumu_dWTwoTwoD, n, ptn, sample, zvertex, eta, cent, under);
           }
@@ -204,8 +206,8 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
           double threetwodiff = TwoDiff(2,3,refEtaBinA,etaBin)*TwoDiff(-2,-3,refEtaBinB,etaBinB).Re();
           fill(cumu_dW4ThreeTwo, n, ptn, sample, zvertex, eta, cent, threetwodiff);
 
-          double dn4diff = TwoDiff(2,3,refEtaBinA,etaBin)*TwoDiff(-2,-3,refEtaBinB,etaBinB).Re();
-          fill(cumu_dW4_mixed, n, ptn, sample, zvertex, eta, cent, dn4diff);
+          // double dn4diff = TwoDiff(2,3,refEtaBinA,etaBin)*TwoDiff(-2,-3,refEtaBinB,etaBinB).Re();
+          // fill(cumu_dW4_mixed, n, ptn, sample, zvertex, eta, cent, dn4diff);
         //}
 
 
@@ -234,7 +236,6 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
         // cumuDiff->Fill(y, threetwodiff);
         
 
-      } // if w2 > 0
     } //eta
 
   } // moment
