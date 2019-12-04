@@ -299,7 +299,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
         if(IsSelectedTrig)
             FillMCinput(fMCEvent ,3);
         FillTHnSparse("Normalisation",
-                            {(int)kALL, (double)fCent});
+                            {(int)kAll, (double)fCent});
         if (IsINEL0True) {
             FillTHnSparse("Normalisation",
                             {(int)kINELg0, (double)fCent});
