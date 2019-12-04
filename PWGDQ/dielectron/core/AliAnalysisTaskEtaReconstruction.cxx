@@ -67,7 +67,7 @@ AliAnalysisTaskEtaReconstruction::~AliAnalysisTaskEtaReconstruction(){
 // ############################################################################
 // ############################################################################
 AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysisTaskSE(), fEventFilter(0x0)
-                                                                              , fdebug(false), /*fGenNegPart_PrimAndSec(), fGenPosPart_PrimAndSec(),*/ fRecNegPart_PrimAndSec(), fRecPosPart_PrimAndSec()/*, PrimGenPairVec(), SecGenPairVec(), PrimGenSmearPairVec(), SecGenSmearPairVec()*/
+                                                                              , fdebug(false), run1analysis()
                                                                               , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
                                                                               , fOutputList(0x0), fSingleElectronList(0x0), fPairList(0x0), fFourPairList(0x0), fResolutionList(0x0)
                                                                               , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
@@ -78,17 +78,18 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
+                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries()
                                                                               , fSinglePrimaryLegMCSignal(), fSingleSecondaryLegMCSignal(), fPrimaryPairMCSignal(), fSecondaryPairMCSignal(), fFourPairMCSignal(), fPrimaryDielectronPairNotFromSameMother(), fSecondaryDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0), fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries()
+                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
-                                                                              , fOutputListSupportHistos(0x0)
+                                                                              , fOutputListSupportHistos(0x0), fCutListVecPrim(), fCutListVecSec()
                                                                               , fHistGenPrimaryPosPart(), fHistGenPrimaryNegPart(), fHistGenSecondaryPosPart(), fHistGenSecondaryNegPart(), fHistGenSmearedPrimaryPosPart(), fHistGenSmearedPrimaryNegPart(), fHistGenSmearedSecondaryPosPart(), fHistGenSmearedSecondaryNegPart(), fHistRecPrimaryPosPart(), fHistRecPrimaryNegPart(), fHistRecSecondaryPosPart(), fHistRecSecondaryNegPart()
-                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistRecFourPair(), fHistGenPair_ULSandLS(), fHistGenFourPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistGenSmearedFourPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fHistRecFourPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99)
+                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair(), fHistGenPair_ULSandLS(), fHistGenFourPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistGenSmearedFourPair_ULSandLS(), fHistRecPair_ULSandLS(), fHistRecFourPair_ULSandLS(), fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
                                                                               , fDoPairing(false), fDoFourPairing(false), fDoULSandLS(false), fDeactivateLS(false), fDoMassCut()
-                                                                              , fGenNegPart(), fGenPosPart(), fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart(), fGenSmearedPosPart(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary()
+                                                                              , fGenNegPart(), fGenPosPart(), fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart(), fGenSmearedPosPart(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fRecNegPart_PrimAndSec(), fRecPosPart_PrimAndSec(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
                                                                               fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
@@ -100,7 +101,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
 // ############################################################################
 // ############################################################################
 AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * name) : AliAnalysisTaskSE(name), fEventFilter(0x0)
-                                                                              , fdebug(false), /*fGenNegPart_PrimAndSec(), fGenPosPart_PrimAndSec(),*/ fRecNegPart_PrimAndSec(), fRecPosPart_PrimAndSec()/*, PrimGenPairVec(), SecGenPairVec(), PrimGenSmearPairVec(), SecGenSmearPairVec()*/
+                                                                              , fdebug(false), run1analysis()
                                                                               , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
                                                                               , fOutputList(0x0), fSingleElectronList(0x0), fPairList(0x0), fFourPairList(0x0), fResolutionList(0x0)
                                                                               , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
@@ -111,17 +112,18 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
+                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries()
                                                                               , fSinglePrimaryLegMCSignal(), fSingleSecondaryLegMCSignal(), fPrimaryPairMCSignal(), fSecondaryPairMCSignal(), fFourPairMCSignal(), fPrimaryDielectronPairNotFromSameMother(), fSecondaryDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0), fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries()
+                                                                              , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
-                                                                              , fOutputListSupportHistos(0x0)
+                                                                              , fOutputListSupportHistos(0x0), fCutListVecPrim(), fCutListVecSec()
                                                                               , fHistGenPrimaryPosPart(), fHistGenPrimaryNegPart(), fHistGenSecondaryPosPart(), fHistGenSecondaryNegPart(), fHistGenSmearedPrimaryPosPart(), fHistGenSmearedPrimaryNegPart(), fHistGenSmearedSecondaryPosPart(), fHistGenSmearedSecondaryNegPart(), fHistRecPrimaryPosPart(), fHistRecPrimaryNegPart(), fHistRecSecondaryPosPart(), fHistRecSecondaryNegPart()
-                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistRecFourPair(), fHistGenPair_ULSandLS(), fHistGenFourPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistGenSmearedFourPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fHistRecFourPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99)
+                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair(), fHistGenPair_ULSandLS(), fHistGenFourPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistGenSmearedFourPair_ULSandLS(), fHistRecPair_ULSandLS(), fHistRecFourPair_ULSandLS(), fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
                                                                               , fDoPairing(false), fDoFourPairing(false), fDoULSandLS(false), fDeactivateLS(false), fDoMassCut()
-                                                                              , fGenNegPart(), fGenPosPart(), fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart(), fGenSmearedPosPart(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(),fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary()
+                                                                              , fGenNegPart(), fGenPosPart(), fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart(), fGenSmearedPosPart(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fRecNegPart_PrimAndSec(), fRecPosPart_PrimAndSec(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
                                                                               fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
@@ -811,13 +813,6 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   fRecPairVec_primary.clear();
   fRecPairVec_secondary.clear();
 
-
-  // PrimGenPairVec.clear();
-  // PrimGenSmearPairVec.clear();
-  // SecGenPairVec.clear();
-  // SecGenSmearPairVec.clear();
-
-
   // ##########################################################
   // Set MC event
   if(!AliDielectronMC::Instance()->ConnectMCEvent()) return;
@@ -1253,14 +1248,14 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // Fill support histograms with first cutsetting and first mcsignal
     // if(part.isMCSignal_primary[fSupportMCSignal] == true && part.isReconstructed_primary[fSupportCutsetting] == kTRUE){
     AliVParticle* mcPart1 = fMC->GetTrack(abslabel);
-    for (int j = 0; j < part.isReconstructed_primary.size(); j++) {
+    for (unsigned int j = 0; j < part.isReconstructed_primary.size(); j++) {
       if(part.isReconstructed_primary[j] == kTRUE){    // check if part is reconstructed in each primary cut setting
         if (part.isMCSignal_primary[0] == kTRUE) {
           FillTrackHistograms_Primary(track, mcPart1, j); // Fill primary support histograms
         }
       }
     }
-    for (int j = 0; j < part.isReconstructed_secondary.size(); j++) {
+    for (unsigned int j = 0; j < part.isReconstructed_secondary.size(); j++) {
       if(part.isReconstructed_secondary[j] == kTRUE){
         if (part.isMCSignal_secondary[0] == kTRUE) {
           FillTrackHistograms_Secondary(track, mcPart1, j); // Fill secondary support histograms
@@ -1470,7 +1465,6 @@ void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Primary(AliVPartic
   // std::cout << fPrimarySupportHistos << std::endl;
   TString genname;
 
-  // for (size_t iCutList = 0; iCutList < fCutListVecPrim.size(); iCutList++) {
     (dynamic_cast<TH1D *>(fCutListVecPrim.at(iCutList)->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
     (dynamic_cast<TH2D *>(fCutListVecPrim.at(iCutList)->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
     (dynamic_cast<TH2D *>(fCutListVecPrim.at(iCutList)->At(2)))->Fill(values[AliDielectronVarManager::kPIn], values[AliDielectronVarManager::kTPCnSigmaEle]);
@@ -1501,7 +1495,6 @@ void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Primary(AliVPartic
     (dynamic_cast<TH1D *>(fCutListVecPrim.at(iCutList)->At(24)))->Fill(values[AliDielectronVarManager::kImpactParXY]);
     (dynamic_cast<TH1D *>(fCutListVecPrim.at(iCutList)->At(25)))->Fill(values[AliDielectronVarManager::kImpactParZ]);
     // (dynamic_cast<TH1D *>(fCutListVecPrim.at(iCutList)->At(26)))->Fill(values[AliDielectronVarManager::kR]);
-  // }
 }
 
 void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack, int iCutList){
@@ -1514,7 +1507,6 @@ void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Secondary(AliVPart
   // std::cout << "TPCnSig manager = " << values[AliDielectronVarManager::kTPCnSigmaEle] << std::endl;
   // std::cout << fCutListVecSec.at(iCutList) << std::endl;
   TString genname;
-  // for (size_t iCutList = 0; iCutList < fCutListVecSec.size(); iCutList++) {
     (dynamic_cast<TH1D *>(fCutListVecSec.at(iCutList)->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
     (dynamic_cast<TH2D *>(fCutListVecSec.at(iCutList)->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
     (dynamic_cast<TH2D *>(fCutListVecSec.at(iCutList)->At(2)))->Fill(values[AliDielectronVarManager::kPIn], values[AliDielectronVarManager::kTPCnSigmaEle]);
@@ -1545,7 +1537,6 @@ void    AliAnalysisTaskEtaReconstruction::FillTrackHistograms_Secondary(AliVPart
     (dynamic_cast<TH1D *>(fCutListVecSec.at(iCutList)->At(24)))->Fill(values[AliDielectronVarManager::kImpactParXY]);
     (dynamic_cast<TH1D *>(fCutListVecSec.at(iCutList)->At(25)))->Fill(values[AliDielectronVarManager::kImpactParZ]);
     // (dynamic_cast<TH1D *>(fCutListVecSec.at(iCutList)->At(26)))->Fill(values[AliDielectronVarManager::kR]);
-  // }
 }
 
 
@@ -1557,8 +1548,8 @@ AliAnalysisTaskEtaReconstruction::Particle AliAnalysisTaskEtaReconstruction::Cre
   double  phi1     = mcPart1->Phi();
   short   charge1  = mcPart1->Charge();
   Particle part(pt1, eta1, phi1, charge1);
-  part.PrimaryDielectronPairFromSameMother.resize(fPrimaryDielectronPairNotFromSameMother.size(), false);
-  part.SecondaryDielectronPairFromSameMother.resize(fSecondaryDielectronPairNotFromSameMother.size(), false);
+  part.primaryDielectronPairFromSameMother.resize(fPrimaryDielectronPairNotFromSameMother.size(), false);
+  part.secondaryDielectronPairFromSameMother.resize(fSecondaryDielectronPairNotFromSameMother.size(), false);
 
 
   return part;
@@ -1584,15 +1575,15 @@ void AliAnalysisTaskEtaReconstruction::CheckIfFromMotherWithDielectronAsDaughter
           // std::cout << "Daughter[" << daughter_i << "] with pdgcode: " << pdgCode << std::endl;
         }
         if (ele_from_same_mother == true && pos_from_same_mother == true) {
-          part.PrimaryDielectronPairFromSameMother[k] = true;
+          part.primaryDielectronPairFromSameMother[k] = true;
           // std::cout << "dielectron pair from same mother" << std::endl;
         }
         else{
-          part.PrimaryDielectronPairFromSameMother[k] = false;
+          part.primaryDielectronPairFromSameMother[k] = false;
         }
       }
       else{
-        part.PrimaryDielectronPairFromSameMother[k] = false;
+        part.primaryDielectronPairFromSameMother[k] = false;
       }
     }
     for (unsigned int k = 0; k < fSecondaryDielectronPairNotFromSameMother.size(); ++k){
@@ -1612,23 +1603,23 @@ void AliAnalysisTaskEtaReconstruction::CheckIfFromMotherWithDielectronAsDaughter
           // std::cout << "Daughter[" << daughter_i << "] with pdgcode: " << pdgCode << std::endl;
         }
         if (ele_from_same_mother == true && pos_from_same_mother == true) {
-          part.SecondaryDielectronPairFromSameMother[k] = true;
+          part.secondaryDielectronPairFromSameMother[k] = true;
           // std::cout << "dielectron pair from same mother" << std::endl;
         }
         else{
-          part.SecondaryDielectronPairFromSameMother[k] = false;
+          part.secondaryDielectronPairFromSameMother[k] = false;
         }
       }
       else{
-        part.SecondaryDielectronPairFromSameMother[k] = false;
+        part.secondaryDielectronPairFromSameMother[k] = false;
       }
     }
   }
-  if (part.PrimaryDielectronPairFromSameMother.size() != fPrimaryDielectronPairNotFromSameMother.size() && part.SecondaryDielectronPairFromSameMother.size() != fPrimaryDielectronPairNotFromSameMother.size()){
+  if (part.primaryDielectronPairFromSameMother.size() != fPrimaryDielectronPairNotFromSameMother.size() && part.secondaryDielectronPairFromSameMother.size() != fPrimaryDielectronPairNotFromSameMother.size()){
     std::cout << "ERROR IN SOME PART" << std::endl;
     // vec = std::vector<bool>(fPrimaryDielectronPairNotFromSameMother.size(), false);
   }
-  // part.PrimaryDielectronPairFromSameMother = vec;
+  // part.primaryDielectronPairFromSameMother = vec;
 
 }
 
@@ -2183,8 +2174,8 @@ void AliAnalysisTaskEtaReconstruction::SetWidthCorrFunction(Detector det, TObjec
       double pairpt = LvecM.Pt();
       double weight = 1.;
 
-      if (fDoMassCut == kTRUE && PartPrimary == kTRUE  && fUpperMassCutPrimaries > mass > fLowerMassCutPrimaries)       continue; // Aplly mass cuts for primary pairs
-      if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass > fMassCutSecondaries)     continue; // Aplly mass cuts for  secondary pairs
+      if (fDoMassCut == kTRUE && PartPrimary == kTRUE  && (fLowerMassCutPrimaries >= mass || mass >= fUpperMassCutPrimaries)) continue; // Aplly mass cuts for primary pairs
+      if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass >= fMassCutSecondaries)     continue; // Aplly mass cuts for  secondary pairs
 
       if (fCocktailFile) {
         if (vec_negParticle->at(neg_i).GetMotherID() == vec_posParticle->at(pos_i).GetMotherID()){
@@ -2339,8 +2330,8 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairing(std::vector<Particle> fRe
       Lvec2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), AliPID::ParticleMass(AliPID::kElectron));
       TLorentzVector LvecM = Lvec1 + Lvec2;
       double mass = LvecM.M();
-      if (fDoMassCut == kTRUE && PartPrimary == kTRUE  && fUpperMassCutPrimaries > mass > fLowerMassCutPrimaries     ) continue; // mass cut for primaries
-      if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass > fMassCutSecondaries   ) continue; // mass cut for primaries
+      if (fDoMassCut == kTRUE && PartPrimary == kTRUE  && (fLowerMassCutPrimaries >= mass || mass >= fUpperMassCutPrimaries)) continue; // mass cut for primaries
+      if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass >= fMassCutSecondaries   ) continue; // mass cut for primaries
       double pairpt = LvecM.Pt();
       double weight = 1.;
       if (fCocktailFile) {

@@ -60,7 +60,7 @@ bool DoPairing      = true;
 bool DoFourPairing  = true;
 bool DoULSLS        = false;
 bool DeactivateLS   = true;
-bool DoMassCut      = false;
+bool DoMassCut      = true;
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -106,9 +106,9 @@ const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
 
 
-const double UpperMassCutPrimaries = 0.547862;
-const double LowerMassCutPrimaries = 0.1349766;
-const double MassCutSecondaries = 0.01;
+const double upperMassCutPrimaries = 0.547862;
+const double lowerMassCutPrimaries = 0.1349766;
+const double massCutSecondaries = 0.01;
 
 // binning of single leg histograms
 bool usePtVector = true;
