@@ -27,7 +27,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
 
         //Analysis setters
         void                    SetSampling(Bool_t sample, Int_t iNum) { fSampling = sample; fNumSamples = iNum; }
-        void                    SetFillQAHistos(Bool_t fill = kTRUE) { fFillQA = fill; }
+        void                    SetFillQA(Bool_t fill = kTRUE) { fFillQA = fill; }
         //event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
@@ -38,11 +38,12 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
         AliEventCuts            fEventCuts;
         //track selection
-        void                    SetChargedDCAzMax(Double_t dcaz) {  fCutChargedDCAzMax = dcaz; }
-        void                    SetChargedDCAxyMax(Double_t dcaxy) {  fCutChargedDCAxyMax = dcaxy; }
-        void                    SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
-        void                    SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; }
-        //Flow selection
+        void                    SetDCAzMax(Double_t dcaz) {  fCutDCAzMax = dcaz; }
+        void                    SetDCAxyMax(Double_t dcaxy) {  fCutDCAxyMax = dcaxy; }
+        void                    SetNumTPCclsMin(UShort_t tpcCls) { fCutNumTPCclsMin = tpcCls; }
+        void                    SetUseLikeSign(Bool_t use, Int_t sign) { bUseLikeSign = use; iSign = sign; }
+        void                    SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; } //Not implemented
+        //Flow se
         void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
         void                    SetPOIsPt(Double_t min, Double_t max) { fPOIsPtmin = min; fPOIsPtmax = max; }
         void                    SetRFPsPt(Double_t min, Double_t max) { fRFPsPtMin = min; fRFPsPtMax = max; }
@@ -84,14 +85,14 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TList*                  fWeightList;                //!
         TH2D*                   fh2Weights;                 //!
         TH3D*                   fh3Weights;                 //!
-        Bool_t                  FillWeights(AliAODEvent* fAOD);
+        Bool_t                  FillWeights();
         
         //Flow methods
         bool                    IsWithinRP(const AliAODTrack* track) const;
         bool                    IsWithinPOI(const AliAODTrack* track) const;
-        void                    FillRPvectors(AliAODEvent *fAOD, double dEtaLimit);
-        void                    FillPOIvectors(AliAODEvent* fAOD, const double dEtaLimit, const double dPtLow, const double dPtHigh); 
-        void                    FillPtBvectors(AliAODEvent* fAOD, const double dEtaLimit, const double dPtLow, const double dPtHigh); 
+        void                    FillRPvectors(double dEtaLimit);
+        void                    FillPOIvectors(const double dEtaLimit, const double dPtLow, const double dPtHigh); 
+        void                    FillPtBvectors(const double dEtaLimit, const double dPtLow, const double dPtHigh); 
         void                    CalculateCorrelations(const AliUniFlowCorrTask* task, double centrality, double dPtA, double dPtB, Bool_t doRef, Bool_t doDiff, Bool_t doPtB);
 
         //Flow vectors
@@ -131,6 +132,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TComplex TwoDiffGap10P(int n1, int n2);
         TComplex TwoDiff_Pt(int n1, int n2);
         TComplex TwoDiffGap10_Pt(int n1, int n2);
+        TComplex TwoDiffGap10_PtB(int n1, int n2);
         TComplex TwoDiff_PtA(int n1, int n2);
         TComplex TwoDiff_PtB(int n1, int n2);
         TComplex TwoDiffGap10M_PtA(int n1, int n2);
@@ -151,6 +153,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TComplex FourDiff_PtA_PtA(int n1, int n2, int n3, int n4);
         TComplex FourDiff_PtA_PtB(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10_PtA_PtB(int n1, int n2, int n3, int n4);
+        TComplex FourDiffGap10_OS_PtA_PtB(int n1, int n2, int n3, int n4);
         TComplex Five(int n1, int n2, int n3, int n4, int n5);
         TComplex Six(int n1, int n2, int n3, int n4, int n5, int n6);
         TComplex SixDiff(int n1, int n2, int n3, int n4, int n5, int n6);
@@ -186,9 +189,11 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fPVtxCutZ;
         //cuts & selection: tracks
         UInt_t                  fCutChargedTrackFilterBit; // (-) tracks filter bit
-        UShort_t                fCutChargedNumTPCclsMin;  // (-) Minimal number of TPC clusters used for track reconstruction
-        Double_t                fCutChargedDCAzMax; // (cm) Maximal DCA-z cuts for tracks (pile-up rejection suggested for LHC16)
-        Double_t                fCutChargedDCAxyMax; // (cm) Maximal DCA-xy cuts for tracks (pile-up rejection suggested for LHC16)
+        UShort_t                fCutNumTPCclsMin;  // (-) Minimal number of TPC clusters used for track reconstruction
+        Double_t                fCutDCAzMax; // (cm) Maximal DCA-z cuts for tracks (pile-up rejection suggested for LHC16)
+        Double_t                fCutDCAxyMax; // (cm) Maximal DCA-xy cuts for tracks (pile-up rejection suggested for LHC16)
+        Bool_t                  bUseLikeSign;  //Select same charge particle tracks
+        Int_t                   iSign;         //+1 or -1
         //cuts & selection: flow
         Double_t                fAbsEtaMax;
         Double_t                dEtaGap;

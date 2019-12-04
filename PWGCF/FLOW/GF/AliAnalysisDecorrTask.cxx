@@ -47,39 +47,47 @@ ClassImp(AliAnalysisDecorrTask)
 
 AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fEventCuts(),
-    fAOD(0),
+    fAOD(nullptr),
     fTrigger(AliVEvent::kINT7),
     fEventRejectAddPileUp(kFALSE),
+    fFilterBit(96),
     fPVtxCutZ{10.0},
-    fCutChargedTrackFilterBit{96},
-    fCutChargedNumTPCclsMin{70},
-    fCutChargedDCAzMax{0.0},
-    fCutChargedDCAxyMax{0.0},
+    fCentEstimator("V0M"), 
+    fPtAxis(new TAxis()),
+    fCentAxis(new TAxis()),
+
     fSampling{kFALSE},
     fNumSamples{1},
+    fFillQA(kFALSE),
+
+    fCutChargedTrackFilterBit{96},
+    fCutNumTPCclsMin{70},
+    fCutDCAzMax{0.0},
+    fCutDCAxyMax{0.0},
+    bUseLikeSign(kFALSE),
+    iSign(0),
+
     fInitTask{kFALSE},
     fVecCorrTask{},
     bHasGap(kTRUE),
-    bDiff(kTRUE),
+    bDiff(kFALSE),
     bRef(kTRUE),
-    bPtB(kTRUE),
-    fUseWeights3D(kTRUE),
-    fFillWeights(kFALSE),
+    bPtB(kFALSE),
+
     dEtaGap(1.0),
+    fAbsEtaMax(0.8),
     fEtaBinNum{0},
     fPhiBinNum{60},
-    fFilterBit(96),
     fPOIsPtmax(10.0),
-    fPOIsPtmin(0.0),        //why these values?
+    fPOIsPtmin(0.2),
     fRFPsPtMax(5.0),
     fRFPsPtMin(0.2),
-    fAbsEtaMax(0.8),
-    fCentEstimator("V0M"),
-    fPtAxis(0),
-    fCentAxis(0),
+
+    fUseWeights3D(kTRUE),
+    fFillWeights(kFALSE),
     fWeights(0),
-    fWeightList(0),
-    fFlowWeights(0),
+    fWeightList{nullptr},
+    fFlowWeights{nullptr},
     fh2Weights(nullptr),
     fh3Weights(nullptr),
     nuacentral()
@@ -88,39 +96,47 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTaskSE(name),
     fEventCuts(),
-    fAOD(0),
+    fAOD(nullptr),
     fTrigger(AliVEvent::kINT7),
     fEventRejectAddPileUp(kFALSE),
+    fFilterBit(96),
     fPVtxCutZ{10.0},
-    fCutChargedTrackFilterBit{96},
-    fCutChargedNumTPCclsMin{70},
-    fCutChargedDCAzMax{0.0},
-    fCutChargedDCAxyMax{0.0},
+    fCentEstimator("V0M"), 
+    fPtAxis(new TAxis()),
+    fCentAxis(new TAxis()),
+
     fSampling{kFALSE},
     fNumSamples{1},
+    fFillQA(kFALSE),
+
+    fCutChargedTrackFilterBit{96},
+    fCutNumTPCclsMin{70},
+    fCutDCAzMax{0.0},
+    fCutDCAxyMax{0.0},
+    bUseLikeSign(kFALSE),
+    iSign(0),
+
     fInitTask{kFALSE},
     fVecCorrTask{},
     bHasGap(kTRUE),
     bDiff(kFALSE),
     bRef(kTRUE),
     bPtB(kFALSE),
-    fUseWeights3D(kTRUE),
-    fFillWeights(kFALSE),
+
     dEtaGap(1.0),
+    fAbsEtaMax(0.8),
     fEtaBinNum{0},
     fPhiBinNum{60},
-    fFilterBit(96),
     fPOIsPtmax(10.0),
     fPOIsPtmin(0.2),
     fRFPsPtMax(5.0),
     fRFPsPtMin(0.2),
-    fAbsEtaMax(0.8),
-    fCentEstimator("V0M"),  //Changed kV0M to "V0M"
-    fPtAxis(new TAxis()),
-    fCentAxis(new TAxis()),
+
+    fUseWeights3D(kTRUE),
+    fFillWeights(kFALSE),
     fWeights(0),
-    fWeightList(0),
-    fFlowWeights(0),
+    fWeightList{nullptr},
+    fFlowWeights{nullptr},
     fh2Weights(nullptr),
     fh3Weights(nullptr),
     nuacentral()
@@ -134,12 +150,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
 AliAnalysisDecorrTask::~AliAnalysisDecorrTask()
 {
     
-    if(fFlowList) {
-        delete fFlowList;
-    }
-    if(fFlowWeights) {
-        delete fFlowWeights;
-    }
+    if(fFlowList) delete fFlowList;
+    if(fFlowWeights) delete fFlowWeights;
 }
 
 Bool_t AliAnalysisDecorrTask::InitTask()
@@ -299,8 +311,11 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         } 
     }
 
+    
+
     PostData(1, fFlowList);
     PostData(2, fFlowWeights);
+
 }
 
 Bool_t AliAnalysisDecorrTask::LoadWeights()
@@ -335,7 +350,7 @@ Bool_t AliAnalysisDecorrTask::LoadWeights()
     }
 }
 
-Bool_t AliAnalysisDecorrTask::FillWeights(AliAODEvent* fAOD)
+Bool_t AliAnalysisDecorrTask::FillWeights()
 {
     int iPart(fAOD->GetNumberOfTracks());
     if(iPart < 1) { return kFALSE; }
@@ -373,7 +388,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
 
     if(fFillWeights) 
     { 
-        FillWeights(fAOD);
+        FillWeights();
         return; 
     }
 
@@ -396,7 +411,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         //Multiplicity
         Int_t iTracks(fAOD->GetNumberOfTracks());
         //Fill RP vectors
-        FillRPvectors(fAOD,dEtaGap);
+        FillRPvectors(dEtaGap);
         Bool_t doRef = kFALSE;
         Bool_t doDiff = kFALSE;
         Bool_t doPtB = kFALSE;
@@ -415,7 +430,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                 double dPtLow = fPtAxis->GetBinLowEdge(iPtA);
                 double dPtHigh = fPtAxis->GetBinUpEdge(iPtA);
 
-                FillPOIvectors(fAOD, dEtaGap, dPtLow, dPtHigh);
+                FillPOIvectors(dEtaGap, dPtLow, dPtHigh);
                 if(bDiff) { doDiff = kTRUE; }
                 CalculateCorrelations(fVecCorrTask.at(iTask), centrality, dPt, -1.0, doRef, doDiff, doPtB);
                 doDiff = kFALSE;
@@ -428,7 +443,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                         double dPtB = fPtAxis->GetBinCenter(iPtB);
                         double dPtBLow = fPtAxis->GetBinLowEdge(iPtB);
                         double dPtBHigh = fPtAxis->GetBinUpEdge(iPtB);
-                        FillPtBvectors(fAOD, dEtaGap, dPtBLow, dPtBHigh);
+                        FillPtBvectors(dEtaGap, dPtBLow, dPtBHigh);
                         if(bPtB) { doPtB = kTRUE;}
                         CalculateCorrelations(fVecCorrTask.at(iTask), centrality, dPt, dPtB, doRef, doDiff, doPtB); 
                         doPtB = kFALSE;   
@@ -512,8 +527,16 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliUniFlowCorrTask* cons
                 cNumDiff = FourDiffGap10M(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
             }
             if(doPtB) {
-                cDnPtB = FourDiffGap10_PtA_PtB(0,0,0,0);
-                cNumPtB = FourDiffGap10_PtA_PtB(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                if(task->fiHarm[1] > 0)         //if associate particle have same sign take associate from eta regions: M:AA and P:TT    (M = negative, P = positive, A = associate, T = trigger)
+                {
+                    cDnPtB = FourDiffGap10_PtA_PtB(0,0,0,0);
+                    cNumPtB = FourDiffGap10_PtA_PtB(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                }
+                else                            //if associate particle have opposite sign take from eta regions: M:AT and P:AT
+                {
+                    cDnPtB = FourDiffGap10_OS_PtA_PtB(0,0,0,0);
+                    cNumPtB = FourDiffGap10_OS_PtA_PtB(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                }
             }
             if(doRef) {
                 cDn = FourGap10(0,0,0,0);
@@ -588,7 +611,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliUniFlowCorrTask* cons
 }
 
 //Method to fill RP vectors and stat histograms
-void AliAnalysisDecorrTask::FillRPvectors(AliAODEvent* fAOD, double dEtaGap)
+void AliAnalysisDecorrTask::FillRPvectors(double dEtaGap)
 {
 
     ResetFlowVector(Qvector);
@@ -659,7 +682,7 @@ void AliAnalysisDecorrTask::FillRPvectors(AliAODEvent* fAOD, double dEtaGap)
 }
 
 //Method to fill POIs into pvectors
-void AliAnalysisDecorrTask::FillPOIvectors(AliAODEvent* fAOD, const double dEtaGap, const double dPtLow, const double dPtHigh)
+void AliAnalysisDecorrTask::FillPOIvectors(const double dEtaGap, const double dPtLow, const double dPtHigh)
 {
 
     ResetFlowVector(pvector);
@@ -749,7 +772,7 @@ void AliAnalysisDecorrTask::FillPOIvectors(AliAODEvent* fAOD, const double dEtaG
 }
 
 //Method to fill POIs into pvectors
-void AliAnalysisDecorrTask::FillPtBvectors(AliAODEvent* fAOD, const double dEtaGap, const double dPtLow, const double dPtHigh)
+void AliAnalysisDecorrTask::FillPtBvectors(const double dEtaGap, const double dPtLow, const double dPtHigh)
 {
 
     ResetFlowVector(pvectorPtB);
@@ -886,14 +909,37 @@ Bool_t AliAnalysisDecorrTask::IsEventSelected()
   Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);    
   if(dPercentile > 100 || dPercentile < 0) { AliWarning("Centrality percentile estimated not within 0-100 range. Returning -1"); return -1; }
   if(fEventRejectAddPileUp && dPercentile > 0 && dPercentile < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
+  if(TMath::Abs(fAOD->GetPrimaryVertex()->GetZ()) > fPVtxCutZ) { return kFALSE; }
   return kTRUE;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisDecorrTask::IsTrackSelected(const AliAODTrack* track) const
 {
   if(!track->TestFilterBit(fFilterBit)) { return kFALSE; }
-  if(track->GetTPCNcls() < fCutChargedNumTPCclsMin && fFilterBit != 2) { return kFALSE; }
+  if(track->GetTPCNcls() < fCutNumTPCclsMin && fFilterBit != 2) { return kFALSE; }
   if(fAbsEtaMax > 0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
+
+  Double_t dTrackXYZ[3] = {0.0,0.0,0.0};
+  Double_t dVtxXYZ[3] = {0.0,0.0,0.0};
+  Double_t dDCAXYZ[3] = {0.0,0.0,0.0};
+  if(fCutDCAzMax > 0.0 || fCutDCAxyMax > 0.0)
+  {
+      const AliAODVertex* vtx = fAOD->GetPrimaryVertex();
+      if(!vtx) { return kFALSE; }
+
+      track->GetXYZ(dTrackXYZ);
+      vtx->GetXYZ(dVtxXYZ);
+      for(Int_t i(0); i < 3; ++i) { dDCAXYZ[i] = dTrackXYZ[i]-dVtxXYZ[i]; }
+
+      if(fCutDCAzMax > 0.0 && TMath::Abs(dDCAXYZ[2]) > fCutDCAzMax) { return kFALSE; }
+      if(fCutDCAxyMax > 0.0 && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0]+dDCAXYZ[1]*dDCAXYZ[1]) > fCutDCAxyMax) { return kFALSE; }
+  }
+  if(bUseLikeSign)
+  {
+      if(!(track->Charge() == iSign)) { return kFALSE; }
+  }
+
+
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -930,7 +976,7 @@ Bool_t AliAnalysisDecorrTask::IsEventRejectedAddPileUp() const
     {
       multTPC32++;
       if(TMath::Abs(track->GetTOFsignalDz()) <= 10.0 && track->GetTOFsignal() >= 12000.0 && track->GetTOFsignal() <= 25000.0) { multTOF++; }
-      if((TMath::Abs(track->Eta())) < fAbsEtaMax && (track->GetTPCNcls() >= fCutChargedNumTPCclsMin) && (track->Pt() >= fRFPsPtMin) && (track->Pt() < fRFPsPtMax)) { multTrk++; }
+      if((TMath::Abs(track->Eta())) < fAbsEtaMax && (track->GetTPCNcls() >= fCutNumTPCclsMin) && (track->Pt() >= fRFPsPtMin) && (track->Pt() < fRFPsPtMax)) { multTrk++; }
     }
 
     if(track->TestFilterBit(128)) { multTPC128++; }
@@ -1183,6 +1229,11 @@ TComplex AliAnalysisDecorrTask::TwoDiffGap10P_PtB(int n1, int n2)
     TComplex formula = pPtBGap10P(n1,1)*pPtBGap10P(n2,1) - pPtBGap10P(n1+n2,2);
     return formula;
 }
+TComplex AliAnalysisDecorrTask::TwoDiffGap10_PtB(int n1, int n2)
+{
+    TComplex formula = pPtBGap10P(n1,1)*pPtBGap10M(n2,1);
+    return formula;
+}
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::TwoDiff_PtB(int n1, int n2)
 {
@@ -1290,6 +1341,12 @@ TComplex AliAnalysisDecorrTask::FourDiff_PtA_PtB(int n1, int n2, int n3, int n4)
 TComplex AliAnalysisDecorrTask::FourDiffGap10_PtA_PtB(int n1, int n2, int n3, int n4)
 {
     TComplex formula = TwoDiffGap10M_PtA(n1, n2)*TwoDiffGap10P_PtB(n3, n4);
+    return formula;
+}
+//___________________________________________________________________
+TComplex AliAnalysisDecorrTask::FourDiffGap10_OS_PtA_PtB(int n1, int n2, int n3, int n4)
+{
+    TComplex formula = TwoDiffGap10_Pt(n1, n2)*TwoDiffGap10_PtB(n3, n4);
     return formula;
 }
 //____________________________________________________________________
