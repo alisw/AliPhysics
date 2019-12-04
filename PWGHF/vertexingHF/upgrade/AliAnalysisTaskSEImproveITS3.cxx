@@ -288,7 +288,8 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
   // D0->Kpi
   TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
   if (array2Prong && !fOnlyProcessFilledCand) {
-    for (Int_t icand=0;icand<array2Prong->GetEntriesFast();++icand) {
+    Int_t ncand = array2Prong->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
       vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay);
     }
@@ -296,7 +297,8 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
   // Dstar->Kpipi
   TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
   if (arrayCascade && !fOnlyProcessFilledCand) {
-    for (Int_t icand=0;icand<arrayCascade->GetEntriesFast();++icand) {
+    Int_t ncand = arrayCascade->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
       vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE);
     }
@@ -304,7 +306,8 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
   // Three prong
   TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
   if (array3Prong && !fOnlyProcessFilledCand) {
-    for (Int_t icand=0;icand<array3Prong->GetEntriesFast();++icand) {
+    Int_t ncand = array3Prong->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
       vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay);
     }
@@ -324,7 +327,8 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
   // Recalculate all candidates
   // D0->Kpi
   if (array2Prong) {
-      for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+    Int_t ncand = array2Prong->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
       if(fOnlyProcessFilledCand && decay->GetIsFilled()!=2) continue;
 
@@ -388,7 +392,8 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
 
   // Dstar->Kpipi
   if (arrayCascade) {
-    for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+    Int_t ncand = arrayCascade->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
       if(fOnlyProcessFilledCand && decayDstar->GetIsFilled()!=2) continue;
 
@@ -440,7 +445,8 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
 
   // Three prong
   if (array3Prong) {
-    for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
+    Int_t ncand = array3Prong->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
       if(fOnlyProcessFilledCand && decay->GetIsFilled()!=2) continue;
 
