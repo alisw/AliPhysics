@@ -3310,10 +3310,10 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
     
     if ( fRemoveLEDStripEvents > 0 )
     {
-      printf("Remove LED strip? %d, with n strip > %d: "
-               "\t Full SM, nCell > %d, Sum E > %2.0f; "
-               "\t  1/3 SM, nCell > %d, Sum E > %2.0f; "
-               "\t     SM3, nCell < %d, Sum E < %2.0f;",
+      printf("Remove LED strip? %d, with n strip > %d\n: "
+               "\t Full SM, nCell > %d, Sum E > %2.0f;\n "
+               "\t  1/3 SM, nCell > %d, Sum E > %2.0f;\n "
+               "\t     SM3, nCell < %d, Sum E < %2.0f\n",
                fRemoveLEDStripEvents    , fLEDEventMaxNumberOfStrips, 
                fLEDHighNCellsCutStrip[0], fLEDHighEnergyCutStrip[0], 
                fLEDHighNCellsCutStrip[1], fLEDHighEnergyCutStrip[1], 
