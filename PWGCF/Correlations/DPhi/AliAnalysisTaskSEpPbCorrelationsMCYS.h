@@ -291,6 +291,8 @@ private:
   TH2F*fh2_V0A;
   TH2F*fh2_V0A_all;
   TH2F*fh2_V0C;
+  TH2F*fh2_V0A_comp;
+  TH2F*fh2_V0A_comp_prim;
   
   TH2F *fHist_vzeromult;
   TH2F *fHist_vzeromultEqweighted;

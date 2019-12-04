@@ -28,6 +28,8 @@ public:
       kMassRange,
       kAsymRange,
       kAsymRangeMC,
+      kPseudorapidityRange,
+      kPseudorapidityRangeMC,
       kTypes
    };
 

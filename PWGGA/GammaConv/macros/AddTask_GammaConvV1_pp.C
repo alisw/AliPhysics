@@ -1611,6 +1611,10 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730600dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
   } else if (trainConfig == 1501) { // TOF both leg cut
     cuts.AddCutPCM("00010113", "0dm00009f9730700dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
+  } else if (trainConfig == 1502) { // TOF single leg cut
+    cuts.AddCutPCM("00010113", "0dm00009f9730800dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
+  } else if (trainConfig == 1503) { // TOF both leg cut
+    cuts.AddCutPCM("00010113", "0dm00009f9730900dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
 
 
   } else if (trainConfig == 2001) { // Double Gap event selection  special trigger 11

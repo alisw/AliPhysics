@@ -1136,6 +1136,20 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008e123","411796905f032230000","01631031000000d0"); // EG2
     cuts.AddCutCalo("8008d123","411796905f032230000","01631031000000d0"); // EG1
 
+  } else if (trainConfig == 2080){ // no NCell cut
+    cuts.AddCutCalo("80010123","4117931050030230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117931050030230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117931050030230000","01631031000000d0"); // EG1
+
+  } else if (trainConfig == 2090){ // EMC only
+    cuts.AddCutCalo("80010123","1111131050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80085123","1111131050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("80083123","1111131050032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2091){ // DMC only
+    cuts.AddCutCalo("80010123","3885531050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80085123","3885531050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("80083123","3885531050032230000","01631031000000d0"); // EG1
+
   // systematics for pPb8TeV PRL
   } else if (trainConfig == 2200) { // CALO variations
     cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // std

@@ -68,14 +68,75 @@ AliMultSelectionTask *AddTaskMultSelection(
 
 #endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
+#ifdef __CLING__
+#include "Riostream.h"
+#include "TSystem.h"
+#include "TSystemDirectory.h"
+#include "TSystemFile.h"
+#include "TChain.h"
+#include "TGrid.h"
+#include "AliAnalysisAlien.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+#include "AliAnalysisTask.h"
+#include "AliAnalysisManager.h"
+#include "AliAODInputHandler.h"
+#include "AliAnalysisTaskPIDResponse.h"
+#include "AliAnalysisTaskPIDqa.h"
+#include "AliPhysicsSelectionTask.h"
+#include "AliCentralitySelectionTask.h"
+#include "AliTaskCDBconnect.h"
+#include "AliAnalysisTaskPIDCombined.h"
+#include "AliESDInputHandler.h"
+#include "AliMCEventHandler.h"
+#include "AliMultSelectionTask.h"
+#include "AliMultiInputEventHandler.h"
+#include "AliPIDResponseInputHandler.h"
+#include "AliTender.h"
+#include "AliVZEROTenderSupply.h"
+#include "AliTPCTenderSupply.h"
+#include "AliTrackFixTenderSupply.h"
+#include "AliT0TenderSupply.h"
+#include "AliTOFTenderSupply.h"
+#include "AliTRDTenderSupply.h"
+#include "AliVtxTenderSupply.h"
+#include "AliEMCALTenderSupply.h"
+#include "AliPIDTenderSupply.h"
+#include "AliForwardCorrectionManager.h"
+// ROOT6 macro inclusion
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runAnalysis.H>
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/loadRunOptions.C>
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/CreateAlienHandler.C>
+#include <TENDER/TenderSupplies/AddTaskTender.C>
+#include <OADB/macros/AddTaskPhysicsSelection.C>
+#include <OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C>
+#include <OADB/macros/AddTaskCentrality.C>
+#include <PWGPP/PilotTrain/AddTaskCDBconnect.C>
+namespace esdtype {
+#include <PWG/EMCAL/macros/CreateESDChain.C>
+}
+namespace aodtype {
+#include <PWG/EMCAL/macros/CreateAODChain.C>
+}
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrections.C>
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskQnVectorAnalysis.C>
+R__ADD_INCLUDE_PATH($ALICE_ROOT)
+#include <ANALYSIS/macros/AddTaskPIDResponse.C>
+#endif
+
+
 using std::cout;
 using std::endl;
 
 void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE, const char *configpath = ".") {
 
   /* strange way of including the header file is for lego train scenarios */
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runAnalysis.H");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/loadRunOptions.C");
+#endif
   if (!loadRunOptions(kFALSE, configpath)) {
     cout << "ERROR: configuration options not loaded. ABORTING!!!" << endl;
     return;
@@ -122,7 +183,10 @@ void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE, const 
     }
 
     if(bGRIDPlugin) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/CreateAlienHandler.C");
+#endif
       alienHandler = CreateAlienHandler(sRunMode,gridMerge);
       if (!alienHandler) return;
 
@@ -130,12 +194,18 @@ void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE, const 
     }
 
     if( bUsePIDResponse ) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+#endif
       AliAnalysisTaskPIDResponse *pidTask = AddTaskPIDResponse(bMC,kTRUE,kTRUE,2);
     }
 
     if( bUseTender ) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
       gROOT->LoadMacro("$ALICE_PHYSICS/TENDER/TenderSupplies/AddTaskTender.C");
+#endif
       AliAnalysisTaskSE *tender = AddTaskTender(kFALSE,  /* V0 */
                                                 kTRUE,   /* TPC */
                                                 kTRUE,   /* TOF */
@@ -149,17 +219,26 @@ void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE, const 
 
     if(bUseESD) {
       if(bUsePhysicsSelection) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+#endif
         AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(bMC);
       }
 
       if (bUseMultiplicityTask) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+#endif
         AliMultSelectionTask * task = AddTaskMultSelection(kFALSE); // user mode:
       }
 
       if( bUseCentralityTask  ) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+#endif
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
         if (bMC) {
           taskCentrality->SetMCInput();
@@ -169,7 +248,10 @@ void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE, const 
 
 
     if (bUseCDB) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+#endif
       AliTaskCDBconnect* cdbTask = AddTaskCDBconnect();
     }
 
@@ -188,11 +270,17 @@ void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE, const 
     /* this ends what we do outside the trains scope */
   }
 
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrections.C");
+#endif
   AliAnalysisDataContainer *corrTask = AddTaskFlowQnVectorCorrections();
 
   if (bRunQnVectorAnalysisTask) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskQnVectorAnalysis.C");
+#endif
     AliAnalysisTaskQnVectorAnalysis* taskQn = AddTaskQnVectorAnalysis(bUseMultiplicity, b2015DataSet);
     taskQn->SetExpectedCorrectionPass(szCorrectionPass.Data());
     taskQn->SetAlternativeCorrectionPass(szAltCorrectionPass.Data());
@@ -234,12 +322,22 @@ void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE, const 
       }
       // No need to create a chain - this is handled by the plugin
       if (bUseESD) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
         gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
         chain = CreateESDChain(szLocalFileList,numFiles);
+#else
+        chain = esdtype::CreateESDChain(szLocalFileList,numFiles);
+#endif
       }
       else if (bUseAOD) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
         gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
         chain = CreateAODChain(szLocalFileList,numFiles);
+#else
+        chain = aodtype::CreateAODChain(szLocalFileList,numFiles);
+#endif
       }
     }
 

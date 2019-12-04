@@ -607,6 +607,7 @@ void AliFemtoDreamv0::SetMCMotherInfo(TClonesArray *mcarray, AliAODv0 *v0) {
     //this should be kFake
     this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
   } else {
+    this->SetID(label); // to keep track of the actual MC particle
     AliAODMCParticle* mcPart = (AliAODMCParticle*) mcarray->At(label);
     if (!mcPart) {
       //this should be fIsSet!

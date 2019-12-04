@@ -66,9 +66,9 @@ fFillCellHisto(1),                     fFillAllCellEventParamHisto(1),
 fFill1CellHisto(0),    
 fFillStripHisto(1),
 fFillMatchingHisto(0),                 fFillSameDiffFracHisto(0),
-fFillExoEnMinCut(0),                   fFillAllCellSameTCardHisto(1),
-fFillPerSMHisto(1),                    fFillClusterColRowHisto(0),
-fFillOpenTimeHisto(1),                 fFillExo50ns(1),
+fFillExoEnMinCut(0),                   fFillAllCellSameTCardHisto(0),
+fFillPerSMHisto(0),                    fFillClusterColRowHisto(0),
+fFillOpenTimeHisto(1),                 fFillExo50ns(0),
 
 // Histograms
 fhNClusterPerEventNCellHigh20(0),      fhNClusterPerEventNCellHigh12(0),        

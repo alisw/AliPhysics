@@ -125,7 +125,8 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
   reader->SwitchOffLEDEventsRemoval();
   if (  cutsString.Contains("RemoveLEDEvents1")  ) reader->SwitchOnLEDEventsRemoval(1); // LHC11a
   if (  cutsString.Contains("RemoveLEDEvents2")  ) reader->SwitchOnLEDEventsRemoval(2); // Run2 pp 13 TeV
-  
+  if (  cutsString.Contains("RemoveLEDEvents") && cutsString.Contains("Strip") ) 
+    reader->SwitchOnLEDStripEventsRemoval();
   //
   // Calorimeter Trigger Selection
   //
@@ -594,6 +595,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///       * GamJet: Compare cluster pt and generated parton pt, careful, test before using
 ///    * FullCalo: Use EMCal+DCal acceptances
 ///    * RemoveLEDEvents1/2: Remove events contaminated with LED, 1: LHC11a, 2: Run2 pp
+///       * Strip: Consider also removing LED flashing single strips
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (

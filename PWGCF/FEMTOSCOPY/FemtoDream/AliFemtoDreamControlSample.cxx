@@ -45,7 +45,7 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
 
 AliFemtoDreamControlSample::AliFemtoDreamControlSample(
     AliFemtoDreamCollConfig *conf)
-    : fHigherMath(new AliFemtoDreamHigherPairMath(conf)),
+    : fHigherMath(new AliFemtoDreamHigherPairMath(conf, conf->GetMinimalBookingSample())),
       fPDGParticleSpecies(conf->GetPDGCodes()),
       fRejPairs(conf->GetClosePairRej()),
       fMultBins(conf->GetMultBins()),

@@ -592,9 +592,13 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
 
       if (fIsMC) {
         // Get the mother of the particles
-        AliAODMCParticle *partMotherV0 =
+        AliAODMCParticle *partV0 =
             static_cast<AliAODMCParticle *>(fMCEvent->GetTrack(
-                lambda.GetMotherID()));
+                lambda.GetID()));
+        // we need the first mother of the Lambda, not after the full cascade to match this to a Sigma0
+        AliAODMCParticle *partMotherV0 = (partV0) ?
+            static_cast<AliAODMCParticle *>(fMCEvent->GetTrack(
+                partV0->GetMother())) : nullptr;
         AliAODMCParticle *partMotherPhoton =
             static_cast<AliAODMCParticle *>(fMCEvent->GetTrack(
                 photon.GetMotherID()));
@@ -607,7 +611,7 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
               TMath::Abs(partMotherV0->GetPdgCode()),
               TMath::Abs(partMotherPhoton->GetPdgCode()));
 
-          if (lambda.GetMotherID() == photon.GetMotherID() && TMath::Abs(partMotherV0->GetPdgCode() == fPDG)) {
+          if (partMotherV0 == partMotherPhoton && TMath::Abs(partMotherV0->GetPdgCode() == fPDG)) {
             sigma.SetMCParticle(partMotherV0, fMCEvent);
             fHistMCV0Mother->Fill(invMass, TMath::Abs(partMotherV0->GetPdgCode()));
 

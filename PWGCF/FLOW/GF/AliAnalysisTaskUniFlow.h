@@ -42,7 +42,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       enum    AnalType {kAOD = 0, kESD}; // tag for analysis type
       enum    CentEst {kRFP = 0, kV0A, kV0C, kV0M, kCL0, kCL1, kZNA, kZNC}; // multiplicity/centrality estimator as AliMultSelection
       enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
-      enum    SparseCand {kInvMass = 0, kCent, kPt, kEta, kDim}; // reconstructed candidates dist. dimensions
+      enum    SparseCand {kInvMass = 0, kCent, kPt, kEta, kSample, kDim}; // reconstructed candidates dist. dimensions
       enum    QAindex { kBefore = 0, kAfter, kNumQA}; // index for filling QA status
 
                               AliAnalysisTaskUniFlow(); // constructor
@@ -65,6 +65,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
       void                    SetProcessPID(Bool_t use = kTRUE) { fProcessSpec[kPion] = use; fProcessSpec[kKaon] = use; fProcessSpec[kProton] = use; }
       void                    SetProcessV0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; fProcessSpec[kLambda] = use; }
+      void                    SetProcessK0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; }
+      void                    SetProcessLambda(Bool_t use = kTRUE) { fProcessSpec[kLambda] = use; }
       void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
       // flow related setters
       void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE);

@@ -13,7 +13,7 @@
 // TString names_Prim_Cuts=("JPID_sum_pt75");
 // TString names_Prim_Cuts=("JPID_sum_pt200");
 // TString names_Prim_Cuts=("JPID_sum_pt75_secondary");
-TString names_Prim_Cuts=("noPID;TESTCutsOnlyImpParXY;TESTCutsOnlyImpParZ;TESTCutsOnlyNclsTPC;TESTCutsOnlyTPCchi2Cl;TESTCutsOnlySharedCls;JPID_sum_pt75");
+TString names_Prim_Cuts=("noPID;JPID_sum1_pt75;JPID_sum2_pt75;JPID_sum3_pt75;JPID_sum4_pt75;JPID_sum5_pt75;JPID_sum_pt75");
                                                                                 // TString names_Prim_Cuts=("onlyPIDcut1_noTrackCuts");
                                                                                 // TString names_Prim_Cuts=("cut1_pt75");
                                                                                 // TString names_Prim_Cuts=("noPID;cut1_pt75");
@@ -60,7 +60,7 @@ bool DoPairing      = true;
 bool DoFourPairing  = true;
 bool DoULSLS        = false;
 bool DeactivateLS   = true;
-bool DoMassCut      = true;
+bool DoMassCut      = false;
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -106,8 +106,9 @@ const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
 
 
-const double MassCutPrimaries = 5.;
-const double MassCutSecondaries = 5.;
+const double UpperMassCutPrimaries = 0.547862;
+const double LowerMassCutPrimaries = 0.1349766;
+const double MassCutSecondaries = 0.01;
 
 // binning of single leg histograms
 bool usePtVector = true;
@@ -347,6 +348,36 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
 
 
   //  one TEST Cut setting
+  else if (cutDefinition == "JPID_sum1_pt75"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "JPID_sum2_pt75"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "JPID_sum3_pt75"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "JPID_sum4_pt75"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "JPID_sum5_pt75"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
     else if (cutDefinition == "TESTCutsOnlyImpParXY"){
       // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
       AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
@@ -738,15 +769,15 @@ void AddPrimaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
 
     task->AddPrimaryPairMCSignal(pair_sameMother_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_DifferentMother_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_UndefinedMother_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_sameMother_photon_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_sameMother_eta_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_DifferentMother_eta_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_UndefinedMother_eta_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(pair_DifferentMother_finalstate);
+    task->AddPrimaryPairMCSignal(pair_UndefinedMother_finalstate);
+    task->AddPrimaryPairMCSignal(pair_sameMother_photon_finalstate);
+    task->AddPrimaryPairMCSignal(pair_sameMother_eta_finalstate);
+    task->AddPrimaryPairMCSignal(pair_DifferentMother_eta_finalstate);
+    task->AddPrimaryPairMCSignal(pair_UndefinedMother_eta_finalstate);
+    task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
     // task->AddPrimaryPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
     // task->AddPrimaryPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
 }
@@ -819,10 +850,10 @@ void AddSecondaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary);
     // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromMaterial);
     // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromWD);
-    // task->AddSecondaryPairMCSignal(pair_DifferentMother_photon_secondary);
-    // task->AddSecondaryPairMCSignal(pair_UndefinedMother_photon_secondary);
-    // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_eta);
-    // task->AddSecondaryPairMCSignal(pair_conversion_secondary);
+    task->AddSecondaryPairMCSignal(pair_DifferentMother_photon_secondary);
+    task->AddSecondaryPairMCSignal(pair_UndefinedMother_photon_secondary);
+    task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_eta);
+    task->AddSecondaryPairMCSignal(pair_conversion_secondary);
     // task->AddSecondaryPairMCSignal(pair_random_secondary);
 }
 

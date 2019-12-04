@@ -5173,7 +5173,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   if( (IsSpecialTrigger() == 1 || IsSpecialTrigger() == 3) && !hasV0And)
     return 8; // V0AND requested but no fired
 
-  // Special EMCAL checks due to hardware issues in LHC11a
+  // Special EMCAL checks due to hardware issues in LHC11a or LHC12x or LHC16rs
   if (isEMCALAnalysis || IsSpecialTrigger() == 5 || IsSpecialTrigger() == 8 || IsSpecialTrigger() == 9 ){
     Int_t runnumber = event->GetRunNumber();
     if ((runnumber>=144871) && (runnumber<=146860)) {
@@ -5206,6 +5206,39 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
             fIsLedEvent = kTRUE;
         }
       }
+      if (fIsLedEvent) {
+        return 9;
+      }
+    }
+    Bool_t fRejectEMCalLEDevents = kTRUE;
+    if (fRejectEMCalLEDevents && (fPeriodEnum == kLHC12 || fPeriodEnum == kLHC16r || fPeriodEnum == kLHC16s)) {
+      AliVCaloCells *cells   = event->GetEMCALCells();
+      const Short_t nCells   = cells->GetNumberOfCells();
+
+      if(!fGeomEMCAL) fGeomEMCAL = AliEMCALGeometry::GetInstance();
+      if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
+
+      // count cells above threshold
+      Int_t nStripsLED = 0;
+      Int_t nCellCountInStrip[480] = {0};
+
+      Int_t nSupMod=0, nModule=0, nIphi=0, nIeta=0, row=0, column=0;
+      for(Int_t iCell=0; iCell<nCells; ++iCell) {
+        // Get SM number and relative row/column for SM
+        fGeomEMCAL->GetCellIndex(cells->GetCellNumber(iCell), nSupMod,nModule,nIphi,nIeta);
+        fGeomEMCAL->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, row,column);
+
+        Short_t cellId = cells->GetCellNumber(iCell);
+        Double_t cellE = cells->GetCellAmplitude(cellId);
+        Int_t strip       = nSupMod*24 + column/2;
+        if (cellE>0.1) nCellCountInStrip[strip]++;
+      }
+
+      Bool_t fIsLedEvent = kFALSE;
+      for(Int_t istrip=0; istrip<480; istrip++) {
+        if(nCellCountInStrip[istrip]>40) nStripsLED++;
+      }
+      if(nStripsLED>=3) fIsLedEvent = kTRUE;
       if (fIsLedEvent) {
         return 9;
       }

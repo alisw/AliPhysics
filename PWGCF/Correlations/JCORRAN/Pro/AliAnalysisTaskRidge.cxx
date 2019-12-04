@@ -203,7 +203,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D ltpttrackbin = {
 	0.2, 3.0, 4.0, 5.0, 6.0, 7.0, 9.0, 13.0, 20.0};
 	Double1D jetptbin = {
-	0, 20, 40, 60, 80, 100 };
+	0, 20, 40, 60, 80, 100, 1e5 };
 
 	binLtpt = AxisVar("LPPt",ltpttrackbin);
 	binJetpT = AxisVar("JetPt",jetptbin);

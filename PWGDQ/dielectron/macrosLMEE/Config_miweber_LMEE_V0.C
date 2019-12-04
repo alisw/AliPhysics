@@ -350,15 +350,15 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //add histograms to pair classes
   histos->UserHistogram("Pair",
                         "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
-                        500,0.,5.,250,0.,5.,
+                        500,0.,0.05,250,0.,5.,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
 
   histos->UserHistogram("Pair","InvMass_R","Inv.Mass:R;Inv. Mass (GeV/c^{2});R",
-                        500,0.,5.,500,0.,50.,
+                        500,0.,0.05,500,0.,50.,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kR);  
   						
    histos->UserHistogram("Pair","ArmAlpha_ArmPt","ArmAlpha:ArmPt;#alpha;Armenteros Pt (GeV/c)",
-                        500,-1.,1.,500,0.,5.,
+                        500,-1.,1.,500,0.,0.5,
                         AliDielectronVarManager::kArmAlpha, AliDielectronVarManager::kArmPt); 
 
   die->SetHistogramManager(histos);

@@ -333,16 +333,29 @@ public:
                                                              fRejectEventsWithBit.AddAt(bit,n) ; }
   /// Activate removal of LED events depending on number of cells in SM
   /// \param opt: 1- default, check only SM3, 2- or larger check all SMs
-  void             SwitchOnLEDEventsRemoval(Int_t opt = 1) { fRemoveLEDEvents       = opt    ; }
-  void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; }
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
   Bool_t           RejectLEDEvents();
-  void             SetLEDHighEnergyCutSM(Float_t e)        { fLEDHighEnergyCutSM = e ; }   
-  void             SetLEDHighNCellsCutSM(Int_t   n)        { fLEDHighNCellsCutSM = n ; }   
-  void             SetLEDLowEnergyCutSM3(Float_t e)        { fLEDLowEnergyCutSM3 = e ; }   
-  void             SetLEDLowNCellsCutSM3(Int_t   n)        { fLEDLowNCellsCutSM3 = n ; }   
-  void             SetLEDMinCellEnergy  (Float_t e)        { fLEDMinCellEnergy   = e ; }   
-  void             SetLEDMaxCellEnergy  (Float_t e)        { fLEDMaxCellEnergy   = e ; }   
+  
+  void             SwitchOnLEDEventsRemoval(Int_t opt = 1) { fRemoveLEDEvents       = opt    ; }
+  void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = 0      ; }
+  
+  void             SetLEDHighEnergyCutSM(Float_t e)        { fLEDHighEnergyCutSM         = e ; }   
+  void             SetLEDHighNCellsCutSM(Int_t   n)        { fLEDHighNCellsCutSM         = n ; }   
+  void             SetLEDLowEnergyCutSM3(Float_t e)        { fLEDLowEnergyCutSM3         = e ; }   
+  void             SetLEDLowNCellsCutSM3(Int_t   n)        { fLEDLowNCellsCutSM3         = n ; }   
+  void             SetLEDMinCellEnergy  (Float_t e)        { fLEDMinCellEnergy           = e ; }   
+  void             SetLEDMaxCellEnergy  (Float_t e)        { fLEDMaxCellEnergy           = e ; }  
+  
+  void             SwitchOnLEDStripEventsRemoval()         { fRemoveLEDStripEvents  = kTRUE  ; }
+  void             SwitchOffLEDStripEventsRemoval()        { fRemoveLEDStripEvents  = kFALSE ; }
+  
+  void             SetLEDStripHighEnergyCutSM(Float_t eFull, Float_t eThird)   
+                                                           { fLEDHighEnergyCutStrip[0] = eFull ; fLEDHighEnergyCutStrip[1] = eThird ; }   
+  void             SetLEDStripHighNCellsCutSM(Int_t   nFull, Int_t   nThird) 
+                                                           { fLEDHighNCellsCutStrip[0] = nFull ; fLEDHighNCellsCutStrip[0] = nThird ; }   
+  void             SetLEDStripLowEnergyCutSM3(Float_t e)   { fLEDLowEnergyCutSM3Strip    = e ; }   
+  void             SetLEDStripLowNCellsCutSM3(Int_t   n)   { fLEDLowNCellsCutSM3Strip    = n ; }   
+  void             SetLEDEventMaxNumberOfStrips(Int_t n)   { fLEDEventMaxNumberOfStrips  = n ; }   
 
   void             SetFiredTriggerClassName(TString name)  { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
@@ -934,6 +947,7 @@ public:
   Float_t          fZvtxCut ;	                     ///<  Cut on vertex position.
   Bool_t           fAcceptFastCluster;             ///<  Accept events from fast cluster, exclude these events for LHC11a.
  
+  // LED events
   Int_t            fRemoveLEDEvents;               ///<  Remove events where LED was wrongly firing - only EMCAL LHC11a for this equal to 1, generalized to any SM for larger
   Float_t          fLEDHighEnergyCutSM;            ///<  SM is too active if energy above this value, likely LED event 
   Int_t            fLEDHighNCellsCutSM;            ///<  SM is too active if n cells above this value, likely LED event 
@@ -942,6 +956,14 @@ public:
   Float_t          fLEDMinCellEnergy;              ///<  Count or sum cells energy above this value to determine if event had LEDs
   Float_t          fLEDMaxCellEnergy;              ///<  Count or sum cells energy below this value to determine if event had LEDs
 
+  Int_t            fRemoveLEDStripEvents;          ///<  Remove events where an LED strip or more was wrongly firing - only EMCAL 
+  Int_t            fLEDEventMaxNumberOfStrips;     ///<  Cut on events with a number of too active strips
+  Float_t          fLEDHighEnergyCutStrip[2];      ///<  SM strip is too active if energy above this value, likely LED event. [0] Full SM, [1] 1/3 SM 
+  Int_t            fLEDHighNCellsCutStrip[2];      ///<  SM strip is too active if n cells above this value, likely LED event. [0] Full SM, [1] 1/3 SM  
+  Float_t          fLEDLowEnergyCutSM3Strip;       ///<  SM3 strip low activity if energy below this value, check activity on other SM for LED event (Run2)
+  Int_t            fLEDLowNCellsCutSM3Strip;       ///<  SM3 strip low activity if n cells below this value, check activity on other SM LED event (Run2)
+ 
+  // Triggered event selection
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
   Int_t            fTriggerPatchTimeWindow[2];     ///<  Trigger patch selection window.
@@ -1035,6 +1057,9 @@ public:
  
   TH2F  *          fhEMCALNSumEnCellsPerSM;        //!<! Control histogram of LED events rejection
   TH2F  *          fhEMCALNSumEnCellsPerSMAfter;   //!<! Control histogram of LED events rejection, after cut
+  TH2F  *          fhEMCALNSumEnCellsPerSMAfterStripCut; //!<! Control histogram of LED events rejection, after LED strip rejection
+  TH2F  *          fhEMCALNSumEnCellsPerStrip;     //!<! Control histogram of LED events on strips rejection, after LED SM rejection
+  TH2F  *          fhEMCALNSumEnCellsPerStripAfter;//!<! Control histogram of LED events on strips rejection, after strip LED and SM rejection
   
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
