@@ -10,7 +10,7 @@ Modified for Spherocity analysis by Suman Deb (suman.deb@cern.ch) 0n 03-12-2019
 // (2) cuts at all levels: single daughters, tracks, events
 // (3) output objects: histograms or trees
 //
-Bool_t ConfigKStarPlusMinusRun2sp_bin
+Bool_t ConfigKStarPlusMinusRun2sp_bin_new
 (
     AliRsnMiniAnalysisTask *task,
     Int_t                  binning_sphero,

@@ -49,7 +49,7 @@ enum eventMixConfig { kDisabled = -1,
 };
 
 
-AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2sp_bin
+AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2sp_bin_new
 (
  Int_t       binning_sphero=100, ///change [03-12-2019]
  Double_t    min_sphero=0.0,
@@ -295,7 +295,7 @@ TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 500.,0.,1.0);//change-SD-
     } else
         Printf("========================== DATA analysis - PID cuts used");
    
-if (!ConfigKStarPlusMinusRun2sp_bin(task,binning_sphero,min_sphero,max_sphero,mult_binning,mult_min,mult_max,HIST,isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
+if (!ConfigKStarPlusMinusRun2sp_bin_new(task,binning_sphero,min_sphero,max_sphero,mult_binning,mult_min,mult_max,HIST,isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
     
     //
     // -- CONTAINERS --------------------------------------------------------------------------------
