@@ -387,6 +387,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetEtaShift(Double_t etaShift)                                        { fEtaShift = etaShift                                      ; } // Eta shift Setting
       void    SetUseJetFinderForOutliers(Bool_t useJetFinder)                       { fUseJetFinderForOutlier = useJetFinder                    ; } // Eta shift Setting
       void    SetUsePtHardBinFromFile(Bool_t useFilePathPth)                        { fUseFilePathForPthard = useFilePathPth                    ; } // Eta shift Setting
+      void    SetUseAdditionalOutlierRejection(Bool_t useOutlierRej)                { fUseAdditionalOutlierRejection = useOutlierRej            ; } // Eta shift Setting
       void    SetEtaShift(TString pPbOrPbp)                                         { Double_t etaShift = 0.0                                   ;
                                                                                       if(!pPbOrPbp.CompareTo("pPb"))      etaShift = -0.465     ;
                                                                                       else if(!pPbOrPbp.CompareTo("Pbp")) etaShift =  0.465     ;
@@ -651,6 +652,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
       Bool_t                      fUseJetFinderForOutlier;                ///< Flag for Etashift
       Bool_t                      fUseFilePathForPthard;                  ///< Flag for Etashift
+      Bool_t                      fUseAdditionalOutlierRejection;         ///< Flag for Etashift
       Int_t                       fDoCentralityFlat;                      ///<
       TString                     fPathWeightsFlatCent;                   ///<
       TString                     fNameHistoNotFlatCentrality;            ///<
