@@ -52,7 +52,7 @@ set(ALIROOT_DEPENDENCIES)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS treelite treelite_runtime ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+set(LIBDEPS STEERBase treelite treelite_runtime ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Link against yaml-cpp. It must be included _after_ the ROOT map because it is static rather than shared!
