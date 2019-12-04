@@ -143,6 +143,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetIonTailCorrection(Float_t factor) {fIonTailCorrection = factor;}
   void  SetCrosstalkCorrection(Float_t crosstalkCorrection) {fCrosstalkCorrection= crosstalkCorrection; }
   void  SetCrosstalkCorrectionMissingCharge(Float_t crosstalkCorrection) {fCrosstalkCorrectionMissingCharge= crosstalkCorrection; }
+  void  SetCrosstalkIonTail(Bool_t crosstalkIonTail) {fCrosstalkIonTail= crosstalkIonTail; }
   //
   Int_t  GetCorrMapTimeDepMethod()      const {return fCorrMapTimeDepMethod;}
   void   SetCorrMapTimeDepMethod(int m)       {fCorrMapTimeDepMethod = m;}
@@ -167,6 +168,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t GetIonTailCorrection() const {return fIonTailCorrection;}
   Double_t GetCrosstalkCorrection() const {return fCrosstalkCorrection;}
  Double_t GetCrosstalkCorrectionMissingCharge() const {return fCrosstalkCorrectionMissingCharge;}
+ Bool_t   GetCrosstalkIonTail() const {return fCrosstalkIonTail;}
 
   Bool_t GetUseMultiplicityCorrectionDedx() const {return fUseMultiplicityCorrectionDedx;}
   Int_t  GetGainCorrectionHVandPTMode() const  { return   fGainCorrectionHVandPTMode;}
@@ -296,7 +298,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t fIonTailCorrection;      ///< ion tail tail correction factor - NEW SINCE 2018- additonal scaling correcting for imperfect knowledge of the integral of ion tail - shoudl be ~ 1
   Double_t fCrosstalkCorrection;   ///< crosstalk correction factor (fro each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
   Double_t fCrosstalkCorrectionMissingCharge;   ///< crosstalk correction factor - missing charge factor (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing  capacitors in 2012
- //
+  Bool_t   fCrosstalkIonTail;            /// < flag calculate crosstalk for ion tail
+  //
   // dEdx switches
   //
   Bool_t   fUseTotCharge;          ///< switch use total or max charge

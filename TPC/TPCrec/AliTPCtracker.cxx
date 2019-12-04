@@ -2022,8 +2022,8 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
     delete[] graphRes;
   }
 
-
-  for (Int_t isector = 0; isector < nROCs; isector++) {  //set all elements of crosstalk matrix to 0
+  Bool_t crosstalkIonTail=AliTPCReconstructor::GetRecoParam()->GetCrosstalkIonTail();
+  if (crosstalkIonTail) for (Int_t isector = 0; isector < nROCs; isector++) {  //set all elements of crosstalk matrix to 0
     TMatrixD *crossTalkMatrix = (TMatrixD *) fCrossTalkSignalArray->At(isector);
     TMatrixD matrixTail(crossTalkMatrix->GetNrows(), crossTalkMatrix->GetNcols());
     TObjArray *arrTRF = (TObjArray *) timeResFunc.At(isector); /// get ion tail for sector
