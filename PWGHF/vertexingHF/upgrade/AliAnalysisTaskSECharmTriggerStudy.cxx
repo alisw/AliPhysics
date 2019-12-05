@@ -459,6 +459,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                     decay = AliVertexingHFUtils::CheckDplusDecay(fMCArray, part, labDau);
                     if (decay >= 1 && labDau[0] >= 0 && labDau[1] >= 0)
                     {
+                        dauInAcc = AreDauInAcc(3, labDau);
                         FillGenerated(part, origin, kDplustoKpipi, dauInAcc);
                         continue;
                     }
