@@ -80,6 +80,8 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
       case kPseudorapidityRangeMC:
          fCutValueD = pair->Eta(1);
          return OkRangeD();
+      case kPassesOOBPileupCut:
+         return pair->PassesOOBPileupCut();
 
    default:
          AliWarning("Undefined enum value");

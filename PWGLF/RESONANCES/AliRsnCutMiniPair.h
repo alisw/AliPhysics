@@ -30,6 +30,7 @@ public:
       kAsymRangeMC,
       kPseudorapidityRange,
       kPseudorapidityRangeMC,
+      kPassesOOBPileupCut,
       kTypes
    };
 
