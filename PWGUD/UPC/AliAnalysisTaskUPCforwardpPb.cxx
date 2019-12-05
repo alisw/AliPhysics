@@ -82,10 +82,16 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb()
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
+      fEtaDimuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
       fInvariantMassDistributionRapidityBinsH{ 0, 0 },
       fInvariantMassDistributionMoreRapidityBinsH{ 0, 0, 0 },
+      fInvariantMassDistribution0N0NH(0),
+      fInvariantMassDistributionRapidityBins0N0NH{ 0, 0 },
+      fInvariantMassDistributionMoreRapidityBins0N0NH{ 0, 0, 0 },
+      fInvariantMassDistributionSmall0N0NH(0),
+      fInvariantMassDistributionRapidityBinsSmall0N0NH{ 0, 0 },
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fRunNumberTriggerCMUP11ClassH(0),
@@ -111,9 +117,22 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb()
       fInvariantMassDistributionIncoherentShiftPlusOneH(0),
       fInvariantMassDistributionIncoherentShiftPlusTwoH(0),
       fDimuonPtDistributionH(0),
+      fDimuonPtDistributionRestrictedRapidity0N0NH(0),
+      fDimuonPtDistributionRestrictedRapidity0N0N36to31H(0),
+      fDimuonPtDistributionRestrictedRapidity0N0N31to26H(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
       fInvariantMassDistributionIncoherentExtendedH(0),
+      fZNCEnergyAgainstEntriesH(0),
+      fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
+      fZNCEnergyAgainstEntriesExtendedH(0),
+      fZNAEnergyAgainstEntriesExtendedH(0),
+      fZNCEnergyAgainstEntriesExtendedHv2(0),
+      fZNAEnergyAgainstEntriesExtendedHv2(0),
+      fZNCEnergyBeforeTimingSelectionExtendedH(0),
+      fZNAEnergyBeforeTimingSelectionExtendedH(0),
       fMuonTrackCuts(0x0),
       fRunNum(0),
       fTracklets(0),
@@ -155,10 +174,16 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb(const char* name)
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
+      fEtaDimuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
       fInvariantMassDistributionRapidityBinsH{ 0, 0 },
       fInvariantMassDistributionMoreRapidityBinsH{ 0, 0, 0 },
+      fInvariantMassDistribution0N0NH(0),
+      fInvariantMassDistributionRapidityBins0N0NH{ 0, 0 },
+      fInvariantMassDistributionMoreRapidityBins0N0NH{ 0, 0, 0 },
+      fInvariantMassDistributionSmall0N0NH(0),
+      fInvariantMassDistributionRapidityBinsSmall0N0NH{ 0, 0 },
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fRunNumberTriggerCMUP11ClassH(0),
@@ -184,9 +209,22 @@ AliAnalysisTaskUPCforwardpPb::AliAnalysisTaskUPCforwardpPb(const char* name)
       fInvariantMassDistributionIncoherentShiftPlusOneH(0),
       fInvariantMassDistributionIncoherentShiftPlusTwoH(0),
       fDimuonPtDistributionH(0),
+      fDimuonPtDistributionRestrictedRapidity0N0NH(0),
+      fDimuonPtDistributionRestrictedRapidity0N0N36to31H(0),
+      fDimuonPtDistributionRestrictedRapidity0N0N31to26H(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
       fInvariantMassDistributionIncoherentExtendedH(0),
+      fZNCEnergyAgainstEntriesH(0),
+      fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
+      fZNCEnergyAgainstEntriesExtendedH(0),
+      fZNAEnergyAgainstEntriesExtendedH(0),
+      fZNCEnergyAgainstEntriesExtendedHv2(0),
+      fZNAEnergyAgainstEntriesExtendedHv2(0),
+      fZNCEnergyBeforeTimingSelectionExtendedH(0),
+      fZNAEnergyBeforeTimingSelectionExtendedH(0),
       fMuonTrackCuts(0x0),
       fRunNum(0),
       fTracklets(0),
@@ -273,8 +311,11 @@ void AliAnalysisTaskUPCforwardpPb::UserCreateOutputObjects()
   fCounterH = new TH1F("fCounterH", "fCounterH", 24, -0.5, 23.5);
   fOutputList->Add(fCounterH);
 
-  fEtaMuonH = new TH1F("fEtaMuonH", "fEtaMuonH", 90, -2, -5);
+  fEtaMuonH = new TH1F("fEtaMuonH", "fEtaMuonH", 160, -1, -5);
   fOutputList->Add(fEtaMuonH);
+
+  fEtaDimuonH = new TH1F("fEtaDimuonH", "fEtaDimuonH", 160, -1, -5);
+  fOutputList->Add(fEtaDimuonH);
 
   fRAbsMuonH = new TH1F("fRAbsMuonH", "fRAbsMuonH", 100, 0, 100);
   fOutputList->Add(fRAbsMuonH);
@@ -297,6 +338,37 @@ void AliAnalysisTaskUPCforwardpPb::UserCreateOutputObjects()
                         2000, 0, 20);
     fOutputList->Add(fInvariantMassDistributionMoreRapidityBinsH[iRapidity]);
   }
+
+  fInvariantMassDistribution0N0NH = new TH1F("fInvariantMassDistribution0N0NH", "fInvariantMassDistribution0N0NH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistribution0N0NH);
+
+  for( Int_t iRapidity = 0; iRapidity < 2; iRapidity++ ) {
+    fInvariantMassDistributionRapidityBins0N0NH[iRapidity]
+            = new TH1F( Form("fInvariantMassDistributionRapidityBins0N0NH_%d", iRapidity),
+                        Form("fInvariantMassDistributionRapidityBins0N0NH_%d", iRapidity),
+                        2000, 0, 20);
+    fOutputList->Add(fInvariantMassDistributionRapidityBins0N0NH[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ) {
+    fInvariantMassDistributionMoreRapidityBins0N0NH[iRapidity]
+            = new TH1F( Form("fInvariantMassDistributionMoreRapidityBins0N0NH_%d", iRapidity),
+                        Form("fInvariantMassDistributionMoreRapidityBins0N0NH_%d", iRapidity),
+                        2000, 0, 20);
+    fOutputList->Add(fInvariantMassDistributionMoreRapidityBins0N0NH[iRapidity]);
+  }
+
+  fInvariantMassDistributionSmall0N0NH = new TH1F("fInvariantMassDistributionSmall0N0NH", "fInvariantMassDistributionSmall0N0NH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionSmall0N0NH);
+
+  for( Int_t iRapidity = 0; iRapidity < 2; iRapidity++ ) {
+    fInvariantMassDistributionRapidityBinsSmall0N0NH[iRapidity]
+            = new TH1F( Form("fInvariantMassDistributionRapidityBinsSmall0N0NH_%d", iRapidity),
+                        Form("fInvariantMassDistributionRapidityBinsSmall0N0NH_%d", iRapidity),
+                        2000, 0, 20);
+    fOutputList->Add(fInvariantMassDistributionRapidityBinsSmall0N0NH[iRapidity]);
+  }
+
 
   fEntriesAgainstRunNumberH = new TH1F("fEntriesAgainstRunNumberH", "fEntriesAgainstRunNumberH", 10000, 290000, 300000);
   fOutputList->Add(fEntriesAgainstRunNumberH);
@@ -412,6 +484,14 @@ void AliAnalysisTaskUPCforwardpPb::UserCreateOutputObjects()
   fDimuonPtDistributionShiftPlusOneH = new TH1F("fDimuonPtDistributionShiftPlusOneH", "fDimuonPtDistributionShiftPlusOneH", 4000, 0.02, 20.02);
   fOutputList->Add(fDimuonPtDistributionShiftPlusOneH);
 
+  fDimuonPtDistributionRestrictedRapidity0N0NH = new TH1F("fDimuonPtDistributionRestrictedRapidity0N0NH", "fDimuonPtDistributionRestrictedRapidity0N0NH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionRestrictedRapidity0N0NH);
+
+  fDimuonPtDistributionRestrictedRapidity0N0N36to31H = new TH1F("fDimuonPtDistributionRestrictedRapidity0N0N36to31H", "fDimuonPtDistributionRestrictedRapidity0N0N36to31H", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionRestrictedRapidity0N0N36to31H);
+
+  fDimuonPtDistributionRestrictedRapidity0N0N31to26H = new TH1F("fDimuonPtDistributionRestrictedRapidity0N0N31to26H", "fDimuonPtDistributionRestrictedRapidity0N0N31to26H", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionRestrictedRapidity0N0N31to26H);
 
   /* - These histograms have an EXTENDED range (0,20)->(0,40)
      -
@@ -425,6 +505,35 @@ void AliAnalysisTaskUPCforwardpPb::UserCreateOutputObjects()
   fInvariantMassDistributionIncoherentExtendedH = new TH1F("fInvariantMassDistributionIncoherentExtendedH", "fInvariantMassDistributionIncoherentExtendedH", 4000, 0, 40);
   fOutputList->Add(fInvariantMassDistributionIncoherentExtendedH);
 
+  fZNCEnergyAgainstEntriesH = new TH1F("fZNCEnergyAgainstEntriesH", "fZNCEnergyAgainstEntriesH", 20000, -10000, 40000);
+  fOutputList->Add(fZNCEnergyAgainstEntriesH);
+
+  fZNAEnergyAgainstEntriesH = new TH1F("fZNAEnergyAgainstEntriesH", "fZNAEnergyAgainstEntriesH", 20000, -10000, 40000);
+  fOutputList->Add(fZNAEnergyAgainstEntriesH);
+
+  fZNCEnergyBeforeTimingSelectionH = new TH1F("fZNCEnergyBeforeTimingSelectionH", "fZNCEnergyBeforeTimingSelectionH", 20000, -10000, 40000);
+  fOutputList->Add(fZNCEnergyBeforeTimingSelectionH);
+
+  fZNAEnergyBeforeTimingSelectionH = new TH1F("fZNAEnergyBeforeTimingSelectionH", "fZNAEnergyBeforeTimingSelectionH", 20000, -10000, 40000);
+  fOutputList->Add(fZNAEnergyBeforeTimingSelectionH);
+
+  fZNCEnergyAgainstEntriesExtendedH = new TH1F("fZNCEnergyAgainstEntriesExtendedH", "fZNCEnergyAgainstEntriesExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyAgainstEntriesExtendedH);
+
+  fZNAEnergyAgainstEntriesExtendedH = new TH1F("fZNAEnergyAgainstEntriesExtendedH", "fZNAEnergyAgainstEntriesExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyAgainstEntriesExtendedH);
+
+  fZNCEnergyAgainstEntriesExtendedHv2 = new TH1F("fZNCEnergyAgainstEntriesExtendedHv2", "fZNCEnergyAgainstEntriesExtendedHv2", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyAgainstEntriesExtendedHv2);
+
+  fZNAEnergyAgainstEntriesExtendedHv2 = new TH1F("fZNAEnergyAgainstEntriesExtendedHv2", "fZNAEnergyAgainstEntriesExtendedHv2", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyAgainstEntriesExtendedHv2);
+
+  fZNCEnergyBeforeTimingSelectionExtendedH = new TH1F("fZNCEnergyBeforeTimingSelectionExtendedH", "fZNCEnergyBeforeTimingSelectionExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyBeforeTimingSelectionExtendedH);
+
+  fZNAEnergyBeforeTimingSelectionExtendedH = new TH1F("fZNAEnergyBeforeTimingSelectionExtendedH", "fZNAEnergyBeforeTimingSelectionExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyBeforeTimingSelectionExtendedH);
 
 
 
@@ -477,10 +586,13 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
    * -
    */
   TString trigger = fAOD->GetFiredTriggerClasses();
-  if (    !(trigger.Contains("CMUP14-B-NOPF-MUFAST")   ||
+  if (    !(
+            // trigger.Contains("CMUP3")   ||
+            // trigger.Contains("CMUP8")
+            trigger.Contains("CMUP14-B-NOPF-MUFAST")   ||
 	          trigger.Contains("CMUP15-B-NOPF-ALLNOTRD") ||
 	          trigger.Contains("CMUP23-B-NOPF-MUFAST")   ||
-            trigger.Contains("CMUP22-B-NOPF-ALLNOTRD")
+            trigger.Contains("CMUP22-B-NOPF-ALLNOTRD") 
             )
           )  {
                     PostData(1, fOutputList);
@@ -683,16 +795,27 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
                                           266940, 266915, 266912, 266886, 266885, 266883, 266882, 266880, 266878, 266857,
                                           266807, 266805, 266800, 266776, 266775, 266708, 266706, 266703, 266702, 266676,
                                           266674, 266669, 266668, 266665, 266659, 266658, 266657, 266630, 266621, 266618,
-                                          266615, 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
+                                          /*266615,*/ 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
                                           266543, 266539, 266534, 266533, 266525, 266523, 266522, 266520, 266518, 266516,
-                                          266514, 266487, 266480, 266479, 266472, 266441, 266439 };
+                                          266514, 266487, 266480, 266479, 266472, 266441, 266439/*, 296552, 296510, 296549, 296618, 296551, 296553, 296623, 296511, 296552*/ };
+  Int_t listRunOne[] = {
+    197089, 197011, 197003, 196974, 196973, 196972, 196965, 196876, 196869, 196774, 196773,
+    196772, 196722, 196721, 196720, 196702, 196701, 196648, 196646, 196608, 196605, 196601,
+    196568, 196566, 196564, 196563, 196535, 196528, 196477, 196475, 196474,
+    197388, 197387, 197386, 197349, 197348, 197342, 197341, 197302, 197299, 197298, 197258,
+    197256, 197255, 197254, 197247, 197189, 197184, 197153, 197152, 197150, 197148, 197147,
+    197145, 197144, 197143, 197142, 197139, 197138, 197099, 197098, 197092, 197091, 197089
+  };
   Bool_t checkIfGoodRun = kFALSE;
-  for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
-    if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
-  }
-  for( Int_t iRunLHC16s = 0; iRunLHC16s <  77; iRunLHC16s++){
+  // for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
+  //   if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
+  // }
+  for( Int_t iRunLHC16s = 0; iRunLHC16s <  76 /*86*/; iRunLHC16s++){
     if( fRunNum == listOfGoodRunNumbersLHC16s[iRunLHC16s] ) checkIfGoodRun = kTRUE;
   }
+  // for( Int_t iRunLHC13 = 0; iRunLHC13 <  64 /*86*/; iRunLHC13++){
+  //   if( fRunNum == listRunOne[iRunLHC13] ) checkIfGoodRun = kTRUE;
+  // }
   if(checkIfGoodRun != 1) {
        PostData(1, fOutputList);
        // cout << "OPS!" << endl;
@@ -789,6 +912,8 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
        PostData(1, fOutputList);
        return;
   }
+
+
   /* - Empty V0C decision
    * - or at least in beam timing.
    */
@@ -807,10 +932,6 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
      -
      - Trying a more readable and immediate approach.
    */
-  // if( !(fV0TotalNCells < 2) ) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
   if( fV0TotalNCells > 2 ) {
        PostData(1, fOutputList);
        return;
@@ -862,6 +983,15 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
     if(!fMuonTrackCuts->IsSelected(track[nGoodMuons])) {
         // track[nGoodMuons] = 0x0;
         continue;
+    }
+
+
+    /* -
+     * - Compatibility with Run 1 analysis.
+     * -
+     */
+    if ( !( (track[nGoodMuons]->Eta() < -2.5) && (track[nGoodMuons]->Eta() > -3.7) ) ) {
+      continue;
     }
 
     // MUON SELECTION
@@ -929,6 +1059,7 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
         possibleJPsi += muons[indexMuon];
         chargeOfMuons[indexMuon] = track[indexMuon]->Charge();
   }
+  fEtaDimuonH->Fill(possibleJPsi.Rapidity());
   fInvariantMassDistributionH->Fill(possibleJPsi.Mag());
   fInvariantMassDistributionExtendedH->Fill(possibleJPsi.Mag());
 
@@ -1012,6 +1143,194 @@ void AliAnalysisTaskUPCforwardpPb::UserExec(Option_t *)
     fInvariantMassDistributionIncoherentShiftPlusTwoH ->Fill(possibleJPsi.Mag());
   }
 
+
+
+
+  /* - Now this is a critical part of  the analysis. What happens next is a
+     - differential analysis in terms of the energy perceived by the neutron ZDC.
+     - What it means is that now we may cut on those sensible values to select
+     - only those J/Psi candidates falling under a certain peak of the neutron
+     - ZNC energy distribution. It will be seen that the fZNCEnergyAgainstEntriesH
+     - plot will present many gaussian-like peaks. Each peak represent an
+     - increasingly large number of neutrons seen by the ZNC.
+     -
+     - Starting from the first peak, 0n, then 1n, hopefully 2n, but anything
+     - else is more like a guess. If my understanding is good enough, even the
+     - 2n peak requires user input to facilitate the minimizer's job.
+     -
+     - So, first thing first, Guillermo Contreras has suggested the preliminary
+     - cut on the ZDC time, quoting:
+     - "The energy value makes sense only when the time information is not
+     - -999... You can choose times |t|<5 ns to plot the energy distributions
+     - in the neutron ZDC".
+     -
+     - This happens with the request |fZNCTime|<5 if I have understood correctly.
+     - After this we can fill whatever histogram we want to.
+     -
+     -
+     -
+     - NEW: after UPC meeting 5/3/2019
+     - On ZDC timing. Usually we use time information from TDCs corresponding to
+     - the common PMT (reads all four ZN sectors) on both sides. Each AOD event
+     - contains information on up to four consecutive timing hits from these
+     - TDCs within +/-12 bcs around the trigger bunch crossing. These hits are
+     - stored in fZNATDCm and fZNCTDCm arrays:
+     - https://github.com/alisw/AliRoot/blob/master/STEER/AOD/AliAODZDC.h#L153
+     - and can be accessed as in:
+     -
+     - AliAODZDC* aodZDC = aod->GetZDCData();
+     - for (Int_t i=0;i<4;i++) fZNATDC[i] = aodZDC->GetZNATDCm(i);
+     - for (Int_t i=0;i<4;i++) fZNCTDC[i] = aodZDC->GetZNCTDCm(i);
+     -
+     - These hits may come from hadronic or EMD processes in neighbouring bcs.
+     - In Pb-Pb we usually have 0-2 hits within +/-12 bcs mainly due to EMD.
+     - Unused timing slots in these arrays are filled with large negative value
+     - (-999). In order to check if there was a timing hit in the trigger bc,
+     - you have to check if at least one timing hit out of four is within +/-2
+     - ns around 0.
+     -
+     - Regarding these getters GetZNATime() and GetZNCTime(), defined here:
+     - https://github.com/alisw/AliRoot/blob/master/STEER/AOD/AliAODZDC.h#L51
+     - They are outdated because, as mentioned here, they return timing
+     - information from the first slot in those arrays (fZNATDCm[0], fZNCTDCm[0]):
+     - https://github.com/alisw/AliRoot/blob/master/STEER/AOD/AliAODZDC.h#L145
+     - The first hit often corresponds to previous bunch crossings (e.g. EMD),
+     - while interesting hit around 0 may be stored in the next slots.
+     -
+     -
+   */
+  Bool_t isZNAfired = kFALSE;
+  Bool_t isZNCfired = kFALSE;
+  Bool_t isZNAfiredStrict = kFALSE;
+  Bool_t isZNCfiredStrict = kFALSE;
+  Int_t  counterZNA = 0;
+  Int_t  counterZNC = 0;
+  /* - Note that in C++ the && and || operators "short-circuit". That means that
+     - they only evaluate a parameter if required. If the first parameter to &&
+     - is false, or the first to || is true, the rest will not be evaluated.
+     - That means that writing:
+     - if ( (isZNAfired == 0) && (...) )
+     - should mean effectively
+     - if ( isZNAfired != 0 ) continue;
+     - hence it should be *at least* one hit!!!
+     -
+   */
+  for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
+    if ( (isZNAfired == 0) && (fZNATDC[iZDC] > -2.) && (fZNATDC[iZDC] < 2.) ) {
+      isZNAfired = kTRUE;
+      /* - After mail with Chiara Oppedisano, it seems like the best way
+         - to proceed is to firstly call the IsZNAfired() and then filling...
+         -
+         - If this doesn't appear in later pulls it is because this
+         - doesn't seem to suit my case...
+         -
+       */
+      // if( dataZDC->IsZNAfired() ) {
+      //   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+      //     fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+      //   }
+      // }
+      // fCounterZNAH->Fill(counterZNA);
+    }
+    if ( (isZNCfired == 0) && (fZNCTDC[iZDC] > -2.) && (fZNCTDC[iZDC] < 2.) ) {
+      isZNCfired = kTRUE;
+      // if( dataZDC->IsZNCfired() ) {
+      //   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+      //     fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+      //   }
+      // }
+      // fCounterZNCH->Fill(counterZNC);
+    }
+    counterZNA++;
+    counterZNC++;
+  }
+
+  if ( isZNCfired != 0 ) {
+    fZNCEnergyAgainstEntriesH        ->Fill(fZNCEnergy);
+    fZNCEnergyAgainstEntriesExtendedH->Fill(fZNCEnergy);
+    // if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
+    // if ( calibrated == 1 ) {
+    //   fZNCEnergyCalibratedH          ->Fill( fZNCEnergy );
+    //   fZNCEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNCTowerEnergyLR()[0] );
+    // }
+  }
+  fZNCEnergyBeforeTimingSelectionH        ->Fill(fZNCEnergy);
+  fZNCEnergyBeforeTimingSelectionExtendedH->Fill(fZNCEnergy);
+  if ( dataZDC->IsZNCfired() && ( isZNCfired != 0 ) ) {
+    fZNCEnergyAgainstEntriesExtendedHv2->Fill(fZNCEnergy);
+  }
+  if ( dataZDC->IsZNAfired() && ( isZNAfired != 0 ) ) {
+    fZNAEnergyAgainstEntriesExtendedHv2->Fill(fZNAEnergy);
+  }
+  if ( isZNAfired != 0 ) {
+    fZNAEnergyAgainstEntriesH        ->Fill(fZNAEnergy);
+    fZNAEnergyAgainstEntriesExtendedH->Fill(fZNAEnergy);
+    // if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
+    // if ( calibrated == 1 ) {
+    //   fZNAEnergyCalibratedH          ->Fill( fZNAEnergy );
+    //   fZNAEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNATowerEnergyLR()[0] );
+    // }
+  }
+  fZNAEnergyBeforeTimingSelectionH        ->Fill(fZNAEnergy);
+  fZNAEnergyBeforeTimingSelectionExtendedH->Fill(fZNAEnergy);
+
+
+
+  if( isZNCfired == 0 ) {
+        if( isZNAfired == 0 ) {
+            if ( ptOfTheDimuonPair < 1.00 ) {
+                fInvariantMassDistribution0N0NH->Fill(possibleJPsi.Mag());
+                /**
+                 * - Pt-integrated analysis
+                 * - in 2 rapidity bins.
+                 * -
+                 */
+                if (        possibleJPsi.Rapidity() > -4.00 && possibleJPsi.Rapidity() <= -3.25 ) {
+                  fInvariantMassDistributionRapidityBins0N0NH[0]->Fill(possibleJPsi.Mag());
+                } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -2.50 ) {
+                  fInvariantMassDistributionRapidityBins0N0NH[1]->Fill(possibleJPsi.Mag());
+                }
+                /**
+                 * - Pt-integrated analysis
+                 * - in 3 rapidity bins.
+                 * -
+                 */
+                if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                  fInvariantMassDistributionMoreRapidityBins0N0NH[0]->Fill(possibleJPsi.Mag());
+                } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                  fInvariantMassDistributionMoreRapidityBins0N0NH[1]->Fill(possibleJPsi.Mag());
+                } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                  fInvariantMassDistributionMoreRapidityBins0N0NH[2]->Fill(possibleJPsi.Mag());
+                }
+                /**
+                 * - Pt-integrated analysis
+                 * - in 2 rapidity bins.
+                 * -
+                 */
+                if (        possibleJPsi.Rapidity() > -3.60 && possibleJPsi.Rapidity() <= -3.10 ) {
+                  fInvariantMassDistributionSmall0N0NH               ->Fill(possibleJPsi.Mag());
+                  fInvariantMassDistributionRapidityBinsSmall0N0NH[0]->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionRestrictedRapidity0N0NH       ->Fill(ptOfTheDimuonPair);
+                  // fDimuonPtDistributionRestrictedRapidity0N0N36to31H ->Fill(ptOfTheDimuonPair);
+                } else if ( possibleJPsi.Rapidity() > -3.10 && possibleJPsi.Rapidity() <= -2.60 ) {
+                  fInvariantMassDistributionSmall0N0NH               ->Fill(possibleJPsi.Mag());
+                  fInvariantMassDistributionRapidityBinsSmall0N0NH[1]->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionRestrictedRapidity0N0NH       ->Fill(ptOfTheDimuonPair);
+                  // fDimuonPtDistributionRestrictedRapidity0N0N31to26H ->Fill(ptOfTheDimuonPair);
+                }
+
+            }
+
+            if (        (possibleJPsi.Rapidity() > -3.60) && (possibleJPsi.Rapidity() <= -3.10) && (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) {
+              fDimuonPtDistributionRestrictedRapidity0N0NH       ->Fill(ptOfTheDimuonPair);
+              fDimuonPtDistributionRestrictedRapidity0N0N36to31H ->Fill(ptOfTheDimuonPair);
+            } else if ( (possibleJPsi.Rapidity() > -3.10) && (possibleJPsi.Rapidity() <= -2.60) && (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) {
+              fDimuonPtDistributionRestrictedRapidity0N0NH       ->Fill(ptOfTheDimuonPair);
+              fDimuonPtDistributionRestrictedRapidity0N0N31to26H ->Fill(ptOfTheDimuonPair);
+            }
+
+        }
+  }
 
 
 

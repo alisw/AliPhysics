@@ -345,18 +345,13 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     Double_t mLcpKpi=0.,mLcpiKp=0.;
     Int_t okLcpKpi=1,okLcpiKp=1;
 
-    Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
-
-    mLcpKpi=d->InvMassLcpKpi();
-    mLcpiKp=d->InvMassLcpiKp();
-
-    if(TMath::Abs(mLcpKpi-mLcPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okLcpKpi = 0;
-    if(TMath::Abs(mLcpiKp-mLcPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okLcpiKp = 0;
-    if(!okLcpKpi && !okLcpiKp) return 0;
 
   switch (fCutsStrategy) {
 
     case kStandard:
+    if(d->GetSigmaVert(aod)>fCutsRD[GetGlobalIndex(6,ptbin)]) return 0;
+    //DCA
+    for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]) return 0;
     if(TMath::Abs(d->PtProng(1)) < fCutsRD[GetGlobalIndex(1,ptbin)] || TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]) return 0;//Kaon
     if(d->Pt()>=3. && d->PProng(1)<0.55) return 0;
     if(fUseSpecialCut) {
@@ -383,10 +378,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     
     if(TMath::Abs(d->PtProng(0))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(1))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(2))<fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
     if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) return 0;
-    if(d->GetSigmaVert(aod)>fCutsRD[GetGlobalIndex(6,ptbin)]) return 0;
     
-    //DCA
-    for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]) return 0;
 
     break;
 
@@ -416,7 +408,16 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     }
     break;
 
-   }
+  }
+  
+    Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+
+    mLcpKpi=d->InvMassLcpKpi();
+    mLcpiKp=d->InvMassLcpiKp();
+
+    if(TMath::Abs(mLcpKpi-mLcPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okLcpKpi = 0;
+    if(TMath::Abs(mLcpiKp-mLcPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okLcpiKp = 0;
+    if(!okLcpKpi && !okLcpiKp) return 0;
 
     if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
     if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp

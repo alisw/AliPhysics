@@ -815,6 +815,22 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       return 0;
     }
  
+    //sec vert
+    Double_t sigmavert=d->GetSigmaVert(aod);
+    if(sigmavert>fCutsRD[GetGlobalIndex(6,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
+    // decay length and pointing angle
+    if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
+    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx); 
+      return 0;
+    }
+
     Double_t mDsPDG = TDatabasePDG::Instance()->GetParticle(431)->Mass();
     Double_t mDsKKpi=d->InvMassDsKKpi();
     Double_t mDspiKK=d->InvMassDspiKK();
@@ -824,8 +840,6 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
-
-
 
     // cuts on resonant decays (via Phi or K0*)
     if(fCutOnResonances){
@@ -900,13 +914,8 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       return 0;
     }
 
-    // Cuts on candidate triplet
 
 
-    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]){
-      CleanOwnPrimaryVtx(d,aod,origownvtx); 
-      return 0;
-    }
      
     if(d->Pt2Prong(0)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && 
        d->Pt2Prong(1)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && 
@@ -915,10 +924,6 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       return 0;
     }
 
-    if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]){
-      CleanOwnPrimaryVtx(d,aod,origownvtx);
-      return 0;
-    }
 
 
     Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
@@ -928,12 +933,6 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     }
 
    
-    //sec vert
-    Double_t sigmavert=d->GetSigmaVert(aod);
-    if(sigmavert>fCutsRD[GetGlobalIndex(6,ptbin)]){
-      CleanOwnPrimaryVtx(d,aod,origownvtx);
-      return 0;
-    }
     
     // decay length XY
     if(d->DecayLengthXY()<fCutsRD[GetGlobalIndex(16,ptbin)]){

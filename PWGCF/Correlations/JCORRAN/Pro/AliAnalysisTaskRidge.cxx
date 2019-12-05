@@ -155,13 +155,18 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	// TrackCuts for strangeness measure-------------------------------------
 	fHistos = new THistManager("Ridgehists");
 
-	Double1D varcentbinHigh = {0,0.001,0.01,0.02,0.05,0.1,0.5,1};
+	Double1D varcentbinHigh = {
+		   0, 0.001, 0.01, 0.02,
+		0.05,   0.1,  0.5,    1};
+
         Double1D varcentbin = {0,1,2,5,10,20,50,100};
 	Double1D varcentbinHeavy = {0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
 
+	binCent = AxisVar("Cent",varcentbinHigh);
+
 	if( IsAA ) binCent = AxisVar("Cent",varcentbinHeavy);
 	if( fOption.Contains("HighMult") ){ binCent = AxisVar("Cent",varcentbinHigh); }
-	else{ binCent = AxisVar("Cent",varcentbin); }
+	else if( !fOption.Contains("HighMult") ){ binCent = AxisVar("Cent",varcentbin); }
 
 	Double1D ptbin = {0.1,0.5,1.0,1.5,2.0,2.5,3.0,4.0,6.0,14.0,100};
 
@@ -198,16 +203,18 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D ltpttrackbin = {
 	0.2, 3.0, 4.0, 5.0, 6.0, 7.0, 9.0, 13.0, 20.0};
 	Double1D jetptbin = {
-	0, 20, 40, 60, 80, 100 };
+	0, 20, 40, 60, 80, 100, 1e5 };
 
 	binLtpt = AxisVar("LPPt",ltpttrackbin);
 	binJetpT = AxisVar("JetPt",jetptbin);
 
-	Double1D verzbin = {-8,-6,-4,-2,0,2,4,6,8};
+	Double1D verzbin = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
 
 	Double1D verzbinFine = {
+	-10, -9, 
 	 -8, -7, -6, -5, -4, -3, -2,
-	  2,  3,  4,  5,  6,  7,  8};
+	  2,  3,  4,  5,  6,  7,  8,
+	  9, 10 };
 
 	binZ = AxisVar("Z",verzbin);
 	if( fOption.Contains("FineBkg") ){
@@ -221,8 +228,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	CreateTHnSparse("hRidgeMixingSLT","RidgeMixingSLT",6,{binCent,binPhi,binEta,binTPt,binAPt,binLtpt},"s");
 	CreateTHnSparse("hNtrig","hNtrig",4,{binCent,binTPt,binNtrig,binLtpt},"s");
 
-        CreateTHnSparse("hRidgeJet","RidgeLT",6,{binCent,binPhi,binEta,binTPt,binAPt,binJetpT},"s");
-        CreateTHnSparse("hRidgeMixingSJet","RidgeMixingSLT",6,{binCent,binPhi,binEta,binTPt,binAPt,binJetpT},"s");
+        CreateTHnSparse("hRidgeJet","RidgeJet",6,{binCent,binPhi,binEta,binTPt,binAPt,binJetpT},"s");
+        CreateTHnSparse("hRidgeMixingSJet","RidgeMixingSJet",6,{binCent,binPhi,binEta,binTPt,binAPt,binJetpT},"s");
 	CreateTHnSparse("hNtrigJet","hNtrigJet",4,{binCent,binTPt,binNtrig,binJetpT},"s");
 
 	CreateTHnSparse("hTrackData","hTrackData",6,{binPt,binPhiTrack,binEtaTrack,binZ,binTrkEff,binCent},"s");
@@ -390,13 +397,11 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		else if( runnumber >= 293475 && runnumber <= 293898 ) Period = "LHC18o";
 		else if( runnumber >= 294009 && runnumber <= 294925 ) Period = "LHC18p";
 
-		cout << "Period : " << Period << endl;
 
 		TH2D* hEfficiencyHist;
 		TH3D* hEfficiency3DHist;
 
 		if( !fefficiencyFile ){
-                	cout << "No Eff file " << endl;
                 	for(int i=0;i<fEff_npT_step;i++){
                 	        for(int j=0;j<fEff_neta_step;j++){
                 	                Eff[i][j] = 0.5;
@@ -405,7 +410,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		}
 
 		if( fOption.Contains("Add3DEff") && !fefficiency3DFile ){
-			cout << "No Eff 3D file " << endl;
 			for(int i=0;i<fEff_npT_step;i++){
 				for(int j=0;j<fEff_neta_step;j++){
 					for(int k=0;k<fEff_nphi_step;k++){
@@ -508,11 +512,13 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	fJetPt = 0.0;
 	double JetEta = -10.0;
 	double JetPhi = -10.0;
+
 	if( Ljet ){
 		fJetPt = Ljet->Pt();
 		JetEta = Ljet->Eta();
 		JetPhi = Ljet->Phi();
 	}
+
         const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC() ;
         const AliVVertex* spdVtx   = fEvt->GetPrimaryVertexSPD() ;
 
@@ -522,7 +528,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
                 if( cHeaderAOD ) fZ_gen = cHeaderAOD -> GetVtxZ();
         }
 
-
+	AbsZmax = 8.0;
 	if( fOption.Contains("TightVtx") ) AbsZmax = 6.0;
 	
 	Bool_t IsTriggered = kFALSE;
@@ -538,13 +544,13 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
                 IsTriggered = (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7);
         }
         else if(fRunTable->IsPP() ){
-                IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
+                IsTriggered = (inputHandler -> IsEventSelected()) & AliVEvent::kINT7;
                 if( fOption.Contains("HighMult") ){
-                        IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
+                        IsTriggered = (inputHandler -> IsEventSelected()) & AliVEvent::kHighMultV0;
                 }
 	}
 	if( IsMC ){
-                IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
+                IsTriggered = (inputHandler -> IsEventSelected()) & AliVEvent::kINT7;
 //                if( fOption.Contains("HighMult") ){
 //                        IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
 //                }
@@ -564,6 +570,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 
 //IsGoodVtx************************************
+	zbin = -1;
 	if( spdVtx ){
 	        if( spdVtx->GetNContributors() > 0.5 ) IsValidVtx = kTRUE;
 	        fZ = spdVtx->GetZ();
@@ -582,7 +589,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	        sel->GetThisEventINELgtZERO() &&
 	        sel->GetThisEventPassesTrackletVsCluster() &&
 	        sel->GetThisEventHasNoInconsistentVertices() &&
-	        fabs(fZ) < 10.0 ){
+	        fabs(fZ) < 8.0 ){
 	                IsSelectedFromAliMultSelectionForSysZ = kTRUE;
 	        }
 	}
@@ -592,7 +599,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	        sel->GetThisEventHasNoInconsistentVertices() &&
 	        sel->GetThisEventPassesTrackletVsCluster() ){
 	                IsSelectedFromAliMultSelection = kTRUE;
-	                if( fabs(fZ) < 10.0 ){
+	                if( fabs(fZ) < 8.0 ){
 	                        IsSelectedFromAliMultSelectionForSysZ = kTRUE;
 	                }
 	        }
@@ -611,10 +618,9 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 //IsMultiplicityInsideBin Flag Configuration********
 	centbin = binCent.FindBin(fCent) -1;
-	if( centbin >= 0 ) IsMultiplicityInsideBin = kTRUE;
+	if( centbin >= 0 && centbin < binCent.GetNbins() ) IsMultiplicityInsideBin = kTRUE;
 //******************************************
-		
-
+	
 	if( IsTriggered ) fHistos->FillTH1("hEventNumbers","IsTriggered",1);
 	if( IsTriggered && IsNotPileup ) fHistos->FillTH1("hEventNumbers","IsNotPileup",1);
 	if( IsTriggered && IsNotPileup && IsValidVtx ) fHistos->FillTH1("hEventNumbers","IsValidVtx",1);
@@ -622,11 +628,13 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection ) fHistos->FillTH1("hEventNumbers","IsSelectedFromAliMultSelection",1);
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 	        fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
+
 		if( Ljet ){
 			fHistos->FillTH1("hJetPt",fJetPt,1.0);
 			fHistos->FillTH1("hJetEta",JetEta,1.0);
 			fHistos->FillTH1("hJetPhi",JetPhi,1.0);
 		}
+
 	        if( !fOption.Contains("HighMult") ){
 	                fHistos->FillTH1("hMB",fCent,1);
 	                fHistos->FillTH2("hMB_V0M",fCent,v0amplitude,1);
@@ -669,9 +677,10 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 			if( fOption.Contains("Glb") && !fOption.Contains("SDD") ){ 
 								if( this -> GoodTracksSelection( 4 ) ){ this -> FillTracks(); } }
 			else if( fOption.Contains("GlbSDD") ){ 	if( this -> GoodTracksSelection( 5 ) ){ this -> FillTracks(); } }
-			else{ 					if( this -> GoodTracksSelection( 1 ) ){ this -> FillTracks(); } }
-
+			else{ 					if( this -> GoodTracksSelection( 2 ) ){ this -> FillTracks(); } }
+//			else{  this -> GoodTracksSelection( 2 ); }
 			if( fOption.Contains("MC") ){ if( this -> GoodTracksSelectionMC() ){ this -> FillTracksMC(); } }
+
 		}
 		else if( fOption.Contains("EffCorrection") ){
 			fsetmixing = kFALSE;
@@ -754,11 +763,14 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 	eventpool *ep;
 
 	//Event mixing pool
-	if (fsetmixing && centbin>=0 && zbin>=0){
+	if (fsetmixing && centbin>=0 && zbin>=0 &&
+	centbin < binCent.GetNbins() && zbin < binZ.GetNbins() ){
 		ep = &fEMpool[centbin][zbin];
 		ep -> push_back( tracklist() ); //
+//		ep -> push_back( etl );
 		etl = &(ep->back());
 	}
+
 	fNTracks = 0;
 	for (UInt_t it = 0; it<ntracks; it++){
 		if (fEvt->IsA()==AliESDEvent::Class()){
@@ -771,8 +783,8 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 			track = (AliAODTrack*) fEvt ->GetTrack(it);
 			if (!track) continue;
 
-			if( trk < 2.5 ){ if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue; } //for hybrid
-			else if( trk > 2.5 ){ if( ! ((AliAODTrack*) track)->TestFilterMask(fFilterBit)) continue; } //for global
+			if( trk < 3.5 ){ if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue; } //for hybrid
+			else if( trk > 3.5 ){ if( ! ((AliAODTrack*) track)->TestFilterMask(fFilterBit)) continue; } //for global
 
 
                         if( IsMC && fabs( dynamic_cast<AliAODMCHeader*>(fEvt->FindListObject(AliAODMCHeader::StdBranchName()))->GetVtxZ() ) < 10 ){
@@ -1250,7 +1262,8 @@ void AliAnalysisTaskRidge::FillTracks(){
 
 
         int epsize=1;
-        if (fsetmixing && centbin>=0 && zbin>=0){
+        if (fsetmixing && centbin>=0 && zbin>=0 &&
+	centbin < binCent.GetNbins() && zbin < binZ.GetNbins() ){
                 eventpool &ep = fEMpool[centbin][zbin];
                 epsize = ep.size();
                 if (ep.size()<bookingsize  ) return;

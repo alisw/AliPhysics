@@ -51,7 +51,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  *
                                  * \param name , the name taken by the AliAnalysisTaskSE object.
                                  */
-                                AliAnalysisTaskUPCforward(const char *name);
+                                AliAnalysisTaskUPCforward( const char *name, Int_t _fSetSingleMuonPt );
 
                                 /**
                                  * Virtual destructor for the class. It will
@@ -141,6 +141,18 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         Double_t                AccEffCorrection( Double_t CosThetaToBeWeighted );
 
                                 /**
+                                 * This function sets the muon pt for the
+                                 * Trigger Efficiency computation in the
+                                 * range (0.85->1.15) GeV with 0.05 Gev steps.
+                                 *
+                                 * The aim is to check how the different
+                                 * selections change the polarisation
+                                 * parameters for now, maybe in the future
+                                 * the Neutron Emission Yield.
+                                 */
+        void                    SetSingleMuonPt( Int_t _fSetSingleMuonPt ){ fSetSingleMuonPt = _fSetSingleMuonPt; }
+
+                                /**
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
@@ -162,6 +174,13 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TList*                  fOutputList;        //!
 
                                 /**
+                                 * The flag to select the single muons
+                                 * Pt for the Trigger Efficiency
+                                 * systematic source.
+                                 */
+        Int_t                   fSetSingleMuonPt;
+
+                                /**
                                  * Utility type histo. It counts the GOOD muons
                                  * per event.
                                  */
@@ -176,10 +195,14 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fCounterH;          //!
 
                                 /**
-                                 * As far as I understand, it should be the
-                                 * pseudorapidity distribution of the many muons.
+                                 * Pseudorapidity distribution of the many muons.
                                  */
         TH1F*                   fEtaMuonH;          //!
+
+                                /**
+                                 * Pt distribution of the many muons.
+                                 */
+        TH1F*                   fPtSingleMuonH;          //!
 
                                 /**
                                  *
@@ -1585,7 +1608,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 43);
+        ClassDef(AliAnalysisTaskUPCforward, 45);
 };
 
 #endif

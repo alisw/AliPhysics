@@ -2,15 +2,15 @@
 mc_mode: false
 calculate_only_efficiency: false #ignore background, saves space in MC
 keep_all_candidates: true #ignores the requirement of having both D meson and electron in the same event
+reduced_electron_info: false #saves only Pt, Eta and Phi
 
 d_meson_species: 'D0'
-
 
 event:
     properties:
         zvxt_range: [-10.,10.]
     multiplicity:
-        estimator: "ZNA"
+        estimator: "V0M"
         multiplicity_range: [-2.,101.]
 
 D_meson:
@@ -24,12 +24,11 @@ main_electron:
     track:
         pt_range: [0.5,10.0]
         eta_range: [-0.8,0.8] 
-        filter_bit: kTrkGlobalNoDCA #as defined in AliAODTrack
+        filter_bit: kTrkGlobal #as defined in AliAODTrack
         min_TPC_cls: 70
-        min_TPC_cls_dedx: 80
+        min_TPC_cls_dedx: 0
         min_ITS_hits: 2
         pixel_req: kAny #check possibilities in AliAnalysisTaskDHFeCorr::ITSPixel_t
-        recalculate_dca: true
         dca_z: 5.0
         dca_xy: 5.0
     PID:
@@ -42,11 +41,10 @@ partner_electron:
         pt_range: [0.2,100.0]
         eta_range: [-0.8,0.8] 
         filter_bit: kTrkGlobalNoDCA #as defined in AliAODTrack
-        min_TPC_cls: 80
-        min_TPC_cls_dedx: 60
+        min_TPC_cls: 60
+        min_TPC_cls_dedx: 0
         min_ITS_hits: 2
         pixel_req: kAny #check possibilities in AliAnalysisTaskDHFeCorr::ITSPixel_t
-        recalculate_dca: true
         dca_z: 5.0
         dca_xy: 5.0
     PID:

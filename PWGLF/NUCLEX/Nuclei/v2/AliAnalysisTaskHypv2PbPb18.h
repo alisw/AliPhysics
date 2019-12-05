@@ -37,6 +37,7 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   Bool_t   PassedBasicTrackQualityCuts_Pos (AliESDtrack *track);
   Bool_t   PassedBasicTrackQualityCuts_Neg (AliESDtrack *track);
   Double_t GetTransverseDCA                (AliESDtrack *track);
+  Double_t GetDCA                          (AliESDtrack *track);
   Bool_t   PassedMinimalQualityCutsV0      (AliESDv0 *V0);
   Bool_t   IsHyperTritonCandidate          (AliESDv0 *V0);
   Double_t GetDecayLengthV0                (AliESDv0 *V0);
@@ -91,9 +92,8 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   TH2F  *fHistTrackMultiplicity;           // track multiplicity
   
   TH2F  *fhBB;                             // ScatterPlot Total
-  TH2F  *fhBBDeu;                          // ScatterPlot Total
-  TH2F  *fhTOF;                            // ScatterPlot Total TOF
-  TH1F  *fhMassTOF;                        // Mass Distribution TOF
+  TH2F  *fhBBHyp;                          // ScatterPlot Total
+  TH2F  *fhBBAHyp;                          // ScatterPlot Total
   
   // Event Plane vs Centrality
   
@@ -166,6 +166,10 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   AliESDtrackCuts *fESDtrackCuts_Neg;
   AliESDtrackCuts *fESDtrackCutsEP;
   //--------------------------
+
+  AliAnalysisTaskHypv2PbPb18(const AliAnalysisTaskHypv2PbPb18&);
+  AliAnalysisTaskHypv2PbPb18& operator=(const AliAnalysisTaskHypv2PbPb18&);
+  
   ClassDef(AliAnalysisTaskHypv2PbPb18, 1);    //Analysis task for high pt analysis
   
 };

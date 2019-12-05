@@ -288,7 +288,8 @@ void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd)
 
         Double_t phi_tr = this->GetTrackRefPhi(tr);
         Double_t eta_tr = this->GetTrackRefEta(tr);
-        if ((phi_tr > 0) & (eta_tr > -10)) fwd->Fill(eta_tr,phi_tr,1);
+
+        fwd->Fill(eta_tr,phi_tr,1);
       }
     }
   }
@@ -515,7 +516,7 @@ AliForwardFlowUtil::StoreParticle(AliMCParticle*       particle,
   Double_t phi_tr = this->GetTrackRefPhi(particle); //Wrap02pi
   Double_t eta_tr = this->GetTrackRefEta(particle);
 
-  if ((phi_tr > 0) & (eta_tr > -10)) fwd->Fill(eta_tr,phi_tr,1);
+  fwd->Fill(eta_tr,phi_tr,1);
   return;
 }
 
@@ -815,7 +816,23 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
         if(fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax) continue;
         if(fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax) continue;
       }
-      cen->Fill(track->Eta(),track->Phi(), 1);
+
+      Double_t weight = 1;
+      if (fSettings.doNUE){
+          Int_t nueeta = fSettings.nuehist->GetXaxis()->FindBin(track->Eta());
+          Int_t nuevtz = 0;
+
+
+          if (this->fSettings.mc) nuevtz= fMCevent->GetPrimaryVertex()->GetZ();
+          else nuevtz= fevent->GetPrimaryVertex()->GetZ();
+
+          Int_t nuept = fSettings.nuehist->GetZaxis()->FindBin(track->Pt());
+          Double_t factor = fSettings.nuehist->GetBinContent(nueeta,nuept,nuevtz);
+          if (factor) weight = weight*factor;
+          else weight = 0;
+      }
+
+      if (weight != 0 ) cen->Fill(track->Eta(),track->Phi(), weight);
     }
   }
 }
@@ -859,4 +876,15 @@ void AliForwardFlowUtil::MakeFakeHoles(TH2D& forwarddNdedp){
   for (Int_t etaBin = 168; etaBin <= 185; etaBin++){
     forwarddNdedp.SetBinContent(etaBin,14, 0.0);
   }
+}
+
+
+
+Bool_t AliForwardFlowUtil::FMDAcceptanceExistMC(Double_t eta,Double_t phi,Double_t vertex){
+  Int_t nuaeta = fSettings.correct_nua_mc->GetXaxis()->FindBin(eta);
+  Int_t nuaphi = fSettings.correct_nua_mc->GetYaxis()->FindBin(phi);
+  Int_t nuavtz = fSettings.correct_nua_mc->GetZaxis()->FindBin(vertex);
+  Double_t weight = fSettings.correct_nua_mc->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
+  if (weight > 0) return kTRUE;
+  else return kFALSE;
 }

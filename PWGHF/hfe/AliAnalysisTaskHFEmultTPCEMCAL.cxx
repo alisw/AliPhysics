@@ -163,11 +163,13 @@ AliAnalysisTaskSE(),
 	fAssopTMin(0.1),
 	fAssoEtarange(0.9),
 	fAssoTPCnsig(3.5),
+	fdeltaeta(0.01),
+   fdeltaphi(0.01),
 
 	//-------------Analysis
 	fHistPt(0), fHistMult(0), fTPCSignal(0), feta(0), fNentries(0), fNentries2(0),
 	fVtxZ(0),fVtxZ_corr(0),
-	   fClusEtaPhi(0),
+	fClusEtaPhi(0),
    fClusT(0),
    fNCells(0), 
    fClusE(0),
@@ -345,7 +347,9 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
 	fAssopTMin(0.1),
 	fAssoEtarange(0.9),
 	fAssoTPCnsig(3.5),
-
+	fdeltaeta(0.01),
+   fdeltaphi(0.01),
+   
 	//-------------Analysis
 	fHistPt(0), fHistMult(0), fTPCSignal(0), feta(0),fNentries(0), fNentries2(0),
 	fVtxZ(0),fVtxZ_corr(0),
@@ -1039,7 +1043,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(Profile_MeanCorr);
    
   //-----------------------------------------------------------------
-  fNentries2=new TH1F("CutSet", "", 28,-0.5,26.5);
+  fNentries2=new TH1F("CutSet", "", 30,-0.5,29.5);
   fNentries2->GetXaxis()->SetBinLabel(1,"trigger");
   fNentries2->GetXaxis()->SetBinLabel(2,"TPCNclus");
   fNentries2->GetXaxis()->SetBinLabel(3,"ITSNclus");
@@ -1068,6 +1072,8 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fNentries2->GetXaxis()->SetBinLabel(26,"fCutM20Max");
   fNentries2->GetXaxis()->SetBinLabel(27,"fCutEopEMin");
   fNentries2->GetXaxis()->SetBinLabel(28,"fCutEopEMax");
+  fNentries2->GetXaxis()->SetBinLabel(29,"deltaeta");
+  fNentries2->GetXaxis()->SetBinLabel(30,"deltaphi");
   fOutputList->Add(fNentries2);
   
   fNentries2->SetBinContent(1,ftrigger);
@@ -1098,6 +1104,8 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fNentries2->SetBinContent(26,fCutM20Max);
   fNentries2->SetBinContent(27,fCutEopEMin);
   fNentries2->SetBinContent(28,fCutEopEMax);
+  fNentries2->SetBinContent(29,fdeltaeta);
+  fNentries2->SetBinContent(30,fdeltaphi);
  
 
    
@@ -1486,7 +1494,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 		  GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
 		  fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
 
-		  if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue;
+		  if(TMath::Abs(fPhiDiff) > fdeltaeta || TMath::Abs(fEtaDiff)> fdeltaeta) continue;
 
 		  /////////////////////////////////
 		  //Select EMCAL or DCAL clusters//
@@ -1682,6 +1690,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 				fNonHFE->SetHistMass(fInvmassULS1);
 				}
 				fNonHFE->FindNonHFE(iTracks,track,fAOD,fTracks_tender,fUseTender);
+				
 			
 				Int_t fNULS = fNonHFE->GetNULS();
 				Int_t fNLS = fNonHFE->GetNLS();
@@ -2774,4 +2783,5 @@ void AliAnalysisTaskHFEmultTPCEMCAL::Terminate(Option_t *)
 	if (!fOutputList)return;
 
 }
+
 

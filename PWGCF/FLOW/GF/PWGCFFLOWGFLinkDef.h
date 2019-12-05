@@ -17,4 +17,5 @@
 #pragma link C++ class AliAnalysisTaskUniFlow+;
 #pragma link C++ class AliAnalysisTaskUniFlowMultiStrange+;
 #pragma link C++ class AliAnalysisDecorrTask+;
+#pragma link C++ class AliAnalysisTaskESEFlow+;
 #endif

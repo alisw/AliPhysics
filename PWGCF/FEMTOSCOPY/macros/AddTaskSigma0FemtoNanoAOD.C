@@ -580,10 +580,6 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     antiSigmaCuts->SetLightweight(true);
   }
 
-  // RUN A TEST TO SEE WHETHER THIS MAKES A DIFFERENCE!
-  sigmaCuts->SetDeltaPhiEtaMax(0.0001);
-  antiSigmaCuts->SetDeltaPhiEtaMax(0.0001);
-
   // vary the sidebands
   if (suffix == "1") {
     sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighLow);
@@ -737,6 +733,12 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     pairQA[25] = 12;   // barpbarLambda
     pairQA[27] = 12;   // barpPhoton(Sigma0)
     pairQA[28] = 12;   // barpPhoton
+
+    closeRejection[0] = true;  // pp
+    closeRejection[11] = true;  // barp barp
+  } else {
+    closeRejection[0] = true;  // pp
+    closeRejection[8] = true;  // barp barp
   }
 
   AliFemtoDreamCollConfig *config =
@@ -797,12 +799,9 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     config->SetMomentumResolution(true);
   }
 
-  if (trigger == "kHighMultV0") {
-    // no close pair rejection since we don't care about pp
-    config->SetDeltaEtaMax(0.);
-    config->SetDeltaPhiMax(0.);
-    config->SetClosePairRejection(closeRejection);
-  }
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
+  config->SetClosePairRejection(closeRejection);
 
   if (suffix == "0" && fullBlastQA) {
     config->SetPhiEtaBinnign(true);

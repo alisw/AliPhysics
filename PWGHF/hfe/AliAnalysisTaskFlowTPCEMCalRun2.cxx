@@ -237,6 +237,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fScalProdLimit(0.4),
 	fMinCentr(30.),
 	fMaxCentr(50.),
+        iCentral(kFALSE),
+        iSemiCentral(kTRUE),
 	fSparseElectron(0),
 	fvalueElectron(0),
         iTree(kFALSE)
@@ -443,6 +445,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fScalProdLimit(0.4),
 	fMinCentr(30.),
 	fMaxCentr(50.),
+        iCentral(kFALSE),
+        iSemiCentral(kTRUE),
 	fSparseElectron(0),
 	fvalueElectron(0),
         iTree(kFALSE)
@@ -672,7 +676,7 @@ fOutputList->Add(fInvmassULS);
 fInvmassLS_2D = new TH2F("fInvmassLS_2D","Invmass of LS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,400,0.0,20.0);
 fOutputList->Add(fInvmassLS_2D);
 
-fInvmassULS_2D = new TH2F("fInvmassULS_2D","Invmass of ULS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,200,0.0,10.0);
+fInvmassULS_2D = new TH2F("fInvmassULS_2D","Invmass of ULS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,400,0.0,20.0);
 fOutputList->Add(fInvmassULS_2D);
 
 fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC",160,-0.8,0.8);
@@ -735,19 +739,19 @@ fEta3050 = new TF1("fEta3050","[0]*x/pow([1]+x/[2]+x*x/[3],[4])",0,100);
 fEta3050 -> SetParameters(5.87918e+01,2.14009e-01,4.03579e+00,2.38693e+00,2.52382e+00);
 //fOutputList -> Add(fEta3050);
 
-fHistPhoPi0 = new TH1F("fHistPhoPi0","total pi0 in sample;p_{T}(GeV/c)",600,0,60);
+fHistPhoPi0 = new TH1F("fHistPhoPi0","total pi0 in sample;p_{T}(GeV/c)",500,0,100);
 fHistPhoPi0->Sumw2();
 fOutputList->Add(fHistPhoPi0);
 
-fHistPhoEta = new TH1F("fHistPhoEta","total Eta in sample;p_{T}(GeV/c)",600,0,60);
+fHistPhoEta = new TH1F("fHistPhoEta","total Eta in sample;p_{T}(GeV/c)",500,0,100);
 fHistPhoEta->Sumw2();
 fOutputList->Add(fHistPhoEta);
 
-fHistPhoPi01 = new TH1F("fHistPhoPi01","reco Pi0 in sample;p_{T}(GeV/c)",600,0,60);
+fHistPhoPi01 = new TH1F("fHistPhoPi01","reco Pi0 in sample;p_{T}(GeV/c)",500,0,100);
 fHistPhoPi01->Sumw2();
 fOutputList->Add(fHistPhoPi01);
 
-fHistPhoEta1 = new TH1F("fHistPhoEta1","reco Eta in sample;p_{T}(GeV/c)",600,0,60);
+fHistPhoEta1 = new TH1F("fHistPhoEta1","reco Eta in sample;p_{T}(GeV/c)",500,0,100);
 fHistPhoEta1->Sumw2();
 fOutputList->Add(fHistPhoEta1);
 
@@ -1049,6 +1053,8 @@ cout << "emcss_mim = " << femcss_mim << endl;
 cout << "emcss_max = " << femcss_max << endl;
 cout << "invmass = " << finvmass << endl;
 cout << "invmass_pt = " << finvmass_pt << endl;
+cout << "iCentralt = " << iCentral << endl;
+cout << "iSemiCentralt = " << iSemiCentral << endl;
 cout << "-------------------------------------" << endl;
 
 //===================================================
@@ -1103,11 +1109,11 @@ cout << "-------------------------------------" << endl;
       	    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
       }
 
-
     flPercentile -> Fill(lPercentile);
 
 
     //if(TMath::Abs(lPercentile)<30 || TMath::Abs(lPercentile)>50)return;
+    //cout <<"lPercentile = "<< lPercentile << endl;
     if(TMath::Abs(lPercentile)<fMinCentr || TMath::Abs(lPercentile)>fMaxCentr)return;
 
     ///////Event Plane for 2015//////
@@ -1595,6 +1601,9 @@ cout << "-------------------------------------" << endl;
 
     if(fMCarray)CheckMCgen(fMCheader,0.6);
 
+    //cout << "--------- NembMCpi0 ; NembMCeta " << endl;
+    //cout << NembMCpi0 << " ;  " << NembMCeta << endl;
+
 ////////////////////////////// EMCAL cluster loop////////////////////////////////////
 
 Int_t Nclust = fVevent->GetNumberOfCaloClusters();
@@ -1797,7 +1806,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
         Int_t EMCalIndex = -1;
         EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
-        cout << "EMCalIndex = " << EMCalIndex << endl;
+        //cout << "EMCalIndex = " << EMCalIndex << endl;
 
 	//cout << "EMCal Index = " << EMCalIndex << endl;
 
@@ -1875,13 +1884,12 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		if(pid_eleD || pid_eleB)fNDB->Fill(1);
 
 		if(pidM==111){
-
 			if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
 			if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
 		}
 		if(pidM==221){
-
+                        
 			if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
 		}
@@ -1892,8 +1900,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 			FindMother(fMCparticleM, ilabelM, pidM, pTmom);
 
 			if(pidM==111){
-
-				if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
+		 		if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
 				if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
 			}
@@ -1927,12 +1934,12 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	if(iEmbPi0){
 
-           if(lPercentile>=0 && lPercentile<10.0)
+           if(iCentral)
              {
                 WeightPho = fPi010->Eval(pTmom);
              }
 
-            if(lPercentile>=30.0 && lPercentile<50.0)
+            if(iSemiCentral)
              {
               if(pTmom<4.0)
                  {
@@ -1947,11 +1954,11 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	if(iEmbEta){
 
-           if(lPercentile>=0 && lPercentile<10.0)
+           if(iCentral)
              {
                 WeightPho = fEta010->Eval(pTmom);
              }
-           if(lPercentile>=30 && lPercentile<50.0)
+           if(iSemiCentral)
              {
 		WeightPho = fEta3050 -> Eval(pTmom);
              }
@@ -2024,7 +2031,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		fEMCTrkMatchPhi->Fill(fPhiDiff);
 		fEMCTrkMatchEta->Fill(fEtaDiff);
 
-                cout << "fPhiDiff = "<< fPhiDiff << endl;
+                //cout << "fPhiDiff = "<< fPhiDiff << endl;
 
 		if(TMath::Abs(fPhiDiff)>0.05 || TMath::Abs(fEtaDiff)>0.05)continue;
 
@@ -2076,13 +2083,15 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		if(fTPCnSigma > ftpcnsig && fTPCnSigma <3){ //TPC nsigma & shower shape cut
 
                 if(track->Pt()<3.0){
-                      if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) || (fTPCnSigma<0) )continue;
+                      //if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) || (fTPCnSigma<0) )continue;
+                      if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) )continue;
                        }
 
 
 			//if(eop>0.9 && eop<1.3){ //eop cut
 			if(eop>femceop && eop<1.3 && (m20 > femcss_mim && m20 < femcss_max)){ //eop cut
 
+				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
 				////electron v2////
 
 				//if(track->Pt() > 1.5){
@@ -2157,14 +2166,13 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 				fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
 				/////Identify Non-HFE/////
-
-				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
+				//SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
 
 				if(pid_eleP){
 
 					fHistPhoReco0 -> Fill(track->Pt());
 
-					cout << "WeightPho1" << WeightPho << endl;
+					//cout << "iSemiCentral = " << iSemiCentral << " ; iEmbPi0 = " << iEmbPi0 << " ; WeightPho1 = " << WeightPho << endl;
 
 					if(iEmbPi0)fHistPhoPi0->Fill(track->Pt(),WeightPho);
 					if(iEmbEta)fHistPhoEta->Fill(track->Pt(),WeightPho);
@@ -2461,26 +2469,29 @@ void AliAnalysisTaskFlowTPCEMCalRun2::CheckMCgen(AliAODMCHeader* fMCheader,Doubl
 
 	if(lh)
 {
-		for(int igene=0; igene<lh->GetEntries(); igene++)
+		//for(int igene=0; igene<lh->GetEntries(); igene++)
+		for(int igene=0; igene<lh->GetEntries()-1; igene++)
 		{
 			AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
 			if(gh)
 			{
 				MCgen = gh->GetName();
+                                //cout << "MCgen = " << MCgen << endl;
 				if(igene==0)NpureMC = gh->NProduced(); //generated by PYTHIA or HIJING
 
 				if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;
 				if(MCgen.Contains(embeta))NembMCeta = NpureMCproc;
 
 				NpureMCproc += gh->NProduced(); //generated by PYTHIA or HIJING
+                                //cout << "NpureMCproc = " << NpureMCproc << endl;
 			}
 		}
 }
 
 for(int imc=0; imc<NpureMCproc; imc++)
 {
-	Bool_t iEnhance = kFALSE;
-	if(imc>=NpureMC)iEnhance = kTRUE;
+	Bool_t iEnhance = kTRUE;
+	//if(imc>=NpureMC)iEnhance = kFALSE;
 	Int_t iHijing = 1; //select particles from Hijing or PYTHIA
 
 	fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);

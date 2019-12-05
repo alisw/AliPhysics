@@ -129,7 +129,7 @@ private:
     Float_t fEventTimeRes = -999.f; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
     UChar_t fEventTimeMask = 0u;    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
 
-  } vtx; /// structure to keep the primary vertex (avoid name conflicts)
+  } vtx; //! structure to keep the primary vertex (avoid name conflicts)
 
   // PH: The MC informafion has to be stored separately!
 #ifdef USE_MC
@@ -195,7 +195,7 @@ private:
     Float_t fTRDsignal = -999.f; /// dE/dX TRD
     Float_t fTOFsignal = -999.f; /// TOFsignal
     Float_t fLength = -999.f;    /// Int.Lenght @ TOF
-  } tracks;
+  } tracks;                      //! structure to keep track information
 
 #ifdef USE_MC
   // Track labels
@@ -229,7 +229,7 @@ private:
     Float_t fDz = -999.f;          /// Residual along z
     Float_t fToT = -999.f;         /// ToT
     Float_t fLengthRatio = -999.f; /// Ratio of the integrated track length @ TOF to the cluster with respect to the matched cluster
-  } tofClusters;
+  } tofClusters;                   //! structure to keep TOF clusters
 #endif
 
   struct {
@@ -242,7 +242,7 @@ private:
     Float_t fTime = -999.f;       /// Cell time
     Char_t fCellType = -1;        /// EMCAL: High Gain: 0 / Low Gain: 1 / TRU: 2 / LEDmon 3 (see DataFromatsEMCAL/Constants.h)
     Char_t fType = -1;            /// Cell type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
-  } calo;
+  } calo;                         //! structure to keep EMCAL info
   
   struct {
     // Calorimeter trigger data (EMCAL & PHOS)
@@ -254,7 +254,7 @@ private:
     Char_t fNL0Times = -1;        /// Number of L0 times
     Int_t fTriggerBits = 0;       /// Online trigger bits
     Char_t fType = -1;            /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
-  } calotrigger;
+  } calotrigger;                  //! structure to keep calo trigger info
 
   struct {
     // MUON track data
@@ -280,7 +280,7 @@ private:
     /// Global tracking info
     Float_t fChi2;                ///< chi2 in the MUON track fit
     Float_t fChi2MatchTrigger;    ///< chi2 of trigger/track matching
-  } muons;
+  } muons;                        //! structure to keep muons information
 
   struct {
     // Muon clister data
@@ -293,7 +293,7 @@ private:
     Float_t fErrY;      ///< transverse position errors
     Float_t fCharge;    ///< cluster charge
     Float_t fChi2;      ///< cluster chi2
-  } mucls;
+  } mucls;              //! structure to keep muon clusters information
 
   struct {
     // ZDC: it is not clear what is the minimal set of information (PH)
@@ -316,7 +316,7 @@ private:
     Float_t   fZDCTDCCorrected[32][4]; /// ZDC TDC data in ns corrected 4 phase shift
 
     UChar_t   fFired;                  /// Bits: 0 - ZNA, 1 - ZNC, 2 - ZPA, 3 - ZPC, 4 - ZEM1, 5 - ZEM2
-  } zdc;
+  } zdc;                             //! structure to keep ZDC information
 
   struct {
     /// VZERO as proxy for FIT
@@ -328,21 +328,21 @@ private:
     Float_t fWidth[64];        ///  time width for each channel
     ULong64_t fBBFlag;         ///  BB Flags from Online V0 Electronics
     ULong64_t fBGFlag;         ///  BG Flags from Online V0 Electronics
-  } vzero;
+  } vzero;                     //! structure to keep VZERO information
 
   struct {
     /// V0s (Ks, Lambda)
 
     Int_t fPosTrackID; // Positive track ID
     Int_t fNegTrackID; // Negative track ID
-  } v0s;
+  } v0s;               //! structure to keep v0sinformation
 
   struct {
     /// Cascades
 
     Int_t fV0ID; // V0 ID
     Int_t fBachelorID; // Bachelor track ID
-  } cascs;
+  } cascs;             //! structure to keep cascades information
 
   /// Offsets to convert the IDs within one collision to global IDs
   Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track IDs (used in the clusters)

@@ -33,6 +33,7 @@
 #include <AliAODMCParticle.h>
 
 #include <TH3F.h>
+#include <vector>
 
 #define LIGHT_SPEED 2.99792457999999984e-02 // in the units that TOF likes
 #define EPS 1.e-16
@@ -150,6 +151,8 @@ public:
   bool                fPropagateTracks; /// Workaround for troublesome productions
   TArrayF             fPtCorrectionA;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for anti-matter
   TArrayF             fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
+
+  std::vector<float>  fINT7intervals;        ///< Array containing the centrality interval where we select only kINT7 triggers  
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);

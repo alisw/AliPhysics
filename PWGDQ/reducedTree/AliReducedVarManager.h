@@ -549,8 +549,6 @@ class AliReducedVarManager : public TObject {
     kPairEff,                     // pair efficiency
     kOneOverPairEff,             // 1 / pair efficiency (correction factor) 
     kOneOverPairEffSq,             // 1 / pair efficiency squared (correction factor)
-    kAssocHadronEff,                    // associated hadron efficiency
-    kOneOverAssocHadronEff,             // 1 / associated hadron efficiency (correction factor)
     kPairLegITSchi2,              // the ITS chi2 for the pair legs, used in correlations between pair legs
     kPairLegTPCchi2=kPairLegITSchi2+2,              // the TPC chi2 for the pair legs, used in correlations between pair legs
     kPairLegPt=kPairLegTPCchi2+2,                 // pair leg pt
@@ -669,6 +667,12 @@ class AliReducedVarManager : public TObject {
     kAssociatedEtaBoosted,
     kAssociatedPhi,         // phi of associated track
     kAssociatedPhiBoosted,
+    kTriggerEff,                            // J/psi candidate efficiency
+    kOneOverTriggerEff,                     // 1 / J/psi candidate efficiency
+    kAssocHadronEff,                        // associated hadron efficiency
+    kOneOverAssocHadronEff,                 // 1 / associated hadron efficiency (correction factor)
+    kTriggerEffTimesAssocHadronEff,         // J/psi candidate efficiency x associated hadron efficiency
+    kOneOverTriggerEffTimesAssocHadronEff,  // 1 / (J/psi candidate efficiency x associated hadron efficiency)
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets
     kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
@@ -758,10 +762,9 @@ class AliReducedVarManager : public TObject {
   static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
   static void SetTPCpidCalibMaps(Int_t pid, THnF* centroidMap, THnF* widthMap, THnI* statusMap);
   static void SetTPCpidCalibDepVars(Variables vars[]);
-  static void SetPairEfficiencyMap(TH2F* effMap, Variables xVarDep, Variables yVarDep);
-  static void SetAssociatedHadronEfficiencyMap(TH1F* map, Variables varX);
-  static void SetAssociatedHadronEfficiencyMap(TH2F* map, Variables varX, Variables varY);
-  static void SetAssociatedHadronEfficiencyMap(TH3F* map, Variables varX, Variables varY, Variables varZ);
+  static void SetPairEfficiencyMap(TH1* map, Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
+  static void SetPairEfficiencyMapDependeciesCorrelation(Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
+  static void SetAssociatedHadronEfficiencyMap(TH1* map, Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
   static void SetupGRPinformation(const Char_t* filename);
@@ -801,12 +804,14 @@ class AliReducedVarManager : public TObject {
   static THnF* fgTPCpidCalibWidth[3];       // TPC calib width 4D map
   static THnI* fgTPCpidCalibStatus[3];      // TPC calib status 4D map
   static Variables fgTPCpidCalibVars[4];    // variables used for TPC pid 4D calibration
-  static TH2F* fgPairEffMap;                // 2D pair efficiency map
+  static TH1*      fgPairEffMap;                  // pair efficiency map
   static Variables fgEffMapVarDependencyX;        // varX in the pair eff maps
   static Variables fgEffMapVarDependencyY;        // varY in the pair eff maps
-  static TH1F* fgAssocHadronEffMap1D;       // 1D pair efficiency map
-  static TH2F* fgAssocHadronEffMap2D;       // 2D pair efficiency map
-  static TH3F* fgAssocHadronEffMap3D;       // 3D pair efficiency map
+  static Variables fgEffMapVarDependencyZ;        // varZ in the pair eff maps
+  static Variables fgEffMapVarDependencyXCorr;        // varX in the pair eff maps, used for correlation
+  static Variables fgEffMapVarDependencyYCorr;        // varY in the pair eff maps, used for correlation
+  static Variables fgEffMapVarDependencyZCorr;        // varZ in the pair eff maps, used for correlation
+  static TH1*      fgAssocHadronEffMap;               // assoc hadron efficiency map
   static Variables fgAssocHadronEffMapVarDependencyX; // varX in assoc hadron eff map
   static Variables fgAssocHadronEffMapVarDependencyY; // varY in assoc hadron eff map
   static Variables fgAssocHadronEffMapVarDependencyZ; // varZ in assoc hadron eff map
@@ -843,7 +848,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 14);
+  ClassDef(AliReducedVarManager, 16);
 };
 
 #endif

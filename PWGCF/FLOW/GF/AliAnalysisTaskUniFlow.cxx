@@ -1599,6 +1599,7 @@ void AliAnalysisTaskUniFlow::FillSparseCand(THnSparse* sparse, const AliVTrack* 
   dValues[SparseCand::kInvMass] = track->M();
   dValues[SparseCand::kPt] = track->Pt();
   dValues[SparseCand::kEta] = track->Eta();
+  dValues[SparseCand::kSample] = fIndexSampling;
   sparse->Fill(dValues);
 
   return;
@@ -2534,7 +2535,7 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     AliAODTrack* track = static_cast<AliAODTrack*>(*part);
     if(!track) { continue; }
 
-    if(fColSystem == kPP || fColSystem == kPPb) {
+    if((fCentEstimator != kRFP) && (fColSystem == kPP || fColSystem == kPPb)) {
       Int_t counter = fIndexCentrality/10;
       fh2MeanMultRFP[counter]->Fill(track->Pt(), fVector[kCharged]->size());
     }
@@ -3323,16 +3324,38 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
     {
       if(bFillPos)
       {
-        TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample0",task->fsName.Data()));
-        if(!prof) { AliError(Form("Profile '%s_Pos_sample0' not found!", task->fsName.Data())); return; }
+        TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d",task->fsName.Data(),fIndexSampling));
+        if(!prof) { AliError(Form("Profile '%s_Pos_sample%d' not found!", task->fsName.Data(),fIndexSampling)); return; }
         prof->Fill(fIndexCentrality, dPt, dMass, dValue, dDenom);
       }
 
       if(bFillNeg)
       {
-        TProfile3D* profNeg = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Neg_sample0",task->fsName.Data()));
-        if(!profNeg) { AliError(Form("Profile '%s_Neg_sample0' not found!", task->fsName.Data())); return; }
+        TProfile3D* profNeg = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Neg_sample%d",task->fsName.Data(),fIndexSampling));
+        if(!profNeg) { AliError(Form("Profile '%s_Neg_sample%d' not found!", task->fsName.Data(),fIndexSampling)); return; }
         profNeg->Fill(fIndexCentrality, dPt, dMass, dValueNeg, dDenomNeg);
+      }
+      if(bHas3sub)
+      {
+        if(iNumHarm == 2){
+          for(Int_t poiPos(0); poiPos < 3; poiPos++)
+            for(Int_t rfPos(0); rfPos < 3; rfPos++){
+              if(poiPos == rfPos) continue;
+              TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_poi_%c_rfp_%c",task->fsName.Data(),fIndexSampling,sides[poiPos],sides[rfPos]));
+              if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_poi_%c_rfp_%c' not found!", task->fsName.Data(),fIndexSampling,sides[poiPos],sides[rfPos])); return; }
+              if(bFill3sub[poiPos][rfPos]) prof->Fill(fIndexCentrality, dPt, dMass, dValue3Sub[poiPos][rfPos], dDenom3Sub[poiPos][rfPos]);
+            }
+          }
+        else if(iNumHarm == 4){
+          for(Int_t poiPos(0); poiPos < 3; poiPos++)
+            for(Int_t twoPos(0); twoPos < 3; twoPos++){
+              TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_poi_%c_two_%c",task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos]));
+              if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_poi_%c_two_%c' not found!", task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos])); return; }
+              if(bFill3sub[poiPos][twoPos]) prof->Fill(fIndexCentrality, dPt, dMass, dValue3Sub[poiPos][twoPos], dDenom3Sub[poiPos][twoPos]);
+            }
+        }
+        else
+          return;
       }
       break;
     }
@@ -5353,7 +5376,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
         for(Int_t iSample(0); iSample < fNumSamples; ++iSample)
         {
           if(iSample > 0 && !fSampling) { break; }
-          if(iSample > 0 && HasMass(PartSpecies(iSpec))) { break; } // reconstructed are not sampled
+          // if(iSample > 0 && HasMass(PartSpecies(iSpec))) {  } // reconstructed are not sampled
 
           TH1* profile = nullptr;
           TH1* profileNeg = nullptr;
@@ -5381,7 +5404,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                   }
                 }
                 else {
-                  AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- or 4-particle correlations.\n",iTask));
+                  AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- and 4-particle correlations.\n",iTask));
                   return;
                 }
               }
@@ -5415,7 +5438,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                       }
                   }
                   else {
-                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 4-particle correlations.\n",iTask));
+                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- & 4-particle correlations.\n",iTask));
                     return;
                   }
                 }
@@ -5431,6 +5454,25 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                     profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax);
                     if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax); }
                 }
+                if(bHas3sub){
+                  if(corrOrder == 2) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t rfPos(0); rfPos < 3; rfPos++){
+                        if(poiPos == rfPos) continue;
+                        profile3sub[poiPos][rfPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_rfp_%c",corName,iSample,sides[poiPos],sides[rfPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax);
+                      }
+                  }
+                  else if(corrOrder == 4) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                        profile3sub[poiPos][twoPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_two_%c",corName,iSample,sides[poiPos],sides[twoPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax);
+                      }
+                  }
+                  else {
+                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- & 4-particle correlations.\n",iTask));
+                    return;
+                  }
+                }
                 break;
             }
 
@@ -5443,6 +5485,25 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                     profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax);
                     if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax); }
                 }
+                if(bHas3sub){
+                  if(corrOrder == 2) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t rfPos(0); rfPos < 3; rfPos++){
+                        if(poiPos == rfPos) continue;
+                        profile3sub[poiPos][rfPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_rfp_%c",corName,iSample,sides[poiPos],sides[rfPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax);
+                      }
+                  }
+                  else if(corrOrder == 4) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                        profile3sub[poiPos][twoPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_two_%c",corName,iSample,sides[poiPos],sides[twoPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax);
+                      }
+                  }
+                  else {
+                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- & 4-particle correlations.\n",iTask));
+                    return;
+                  }
+                }
                 break;
             }
 
@@ -5454,6 +5515,25 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                 } else {
                     profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax);
                     if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax); }
+                }
+                if(bHas3sub){
+                  if(corrOrder == 2) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t rfPos(0); rfPos < 3; rfPos++){
+                        if(poiPos == rfPos) continue;
+                        profile3sub[poiPos][rfPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_rfp_%c",corName,iSample,sides[poiPos],sides[rfPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax);
+                      }
+                  }
+                  else if(corrOrder == 4) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                        profile3sub[poiPos][twoPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_two_%c",corName,iSample,sides[poiPos],sides[twoPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax);
+                      }
+                  }
+                  else {
+                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- & 4-particle correlations.\n",iTask));
+                    return;
+                  }
                 }
                 break;
             }
@@ -5521,11 +5601,21 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     sLabelCand[SparseCand::kCent] = GetCentEstimatorLabel(fCentEstimator);
     sLabelCand[SparseCand::kPt] = "#it{p}_{T} (GeV/c)";
     sLabelCand[SparseCand::kEta] = "#eta";
+    sLabelCand[SparseCand::kSample] = "iSample";
     TString sAxes = TString(); for(Int_t i(0); i < SparseCand::kDim; ++i) { sAxes += Form("%s; ",sLabelCand[i].Data()); }
 
-    Int_t iNumBinsCand[SparseCand::kDim]; Double_t dMinCand[SparseCand::kDim]; Double_t dMaxCand[SparseCand::kDim];
-    iNumBinsCand[SparseCand::kCent] = fCentBinNum; dMinCand[SparseCand::kCent] = fCentMin; dMaxCand[SparseCand::kCent] = fCentMax;
-    iNumBinsCand[SparseCand::kEta] = fFlowEtaBinNum; dMinCand[SparseCand::kEta] = -fFlowEtaMax; dMaxCand[SparseCand::kEta] = fFlowEtaMax;
+    Int_t iNumBinsCand[SparseCand::kDim];
+    Double_t dMinCand[SparseCand::kDim];
+    Double_t dMaxCand[SparseCand::kDim];
+    iNumBinsCand[SparseCand::kCent] = fCentBinNum;
+    dMinCand[SparseCand::kCent] = fCentMin;
+    dMaxCand[SparseCand::kCent] = fCentMax;
+    iNumBinsCand[SparseCand::kEta] = fFlowEtaBinNum;
+    dMinCand[SparseCand::kEta] = -fFlowEtaMax;
+    dMaxCand[SparseCand::kEta] = fFlowEtaMax;
+    iNumBinsCand[SparseCand::kSample] = fNumSamples;
+    dMinCand[SparseCand::kSample] = 0;
+    dMaxCand[SparseCand::kSample] = fNumSamples;
 
     // species dependent
     if(fProcessSpec[kK0s] || fProcessSpec[kLambda])
@@ -5642,7 +5732,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     fhChargedCounter = new TH1D("fhChargedCounter","Charged tracks: Counter",iNBinsChargedCounter,0,iNBinsChargedCounter);
     for(Int_t i(0); i < iNBinsChargedCounter; i++) fhChargedCounter->GetXaxis()->SetBinLabel(i+1, sChargedCounterLabel[i].Data() );
     fQACharged->Add(fhChargedCounter);
-    if(fColSystem == kPP || fColSystem == kPPb){
+    if( (fCentEstimator != kRFP) && (fColSystem == kPP || fColSystem == kPPb) ){
       Int_t counter = fCentBinNum/10;
       for(Int_t iCen(0); iCen < counter; ++iCen)
       {

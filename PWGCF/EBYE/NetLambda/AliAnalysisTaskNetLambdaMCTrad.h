@@ -2,7 +2,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//Update Oct 2019
+//Update Nov 2019
 
 #ifndef AliAnalysisTaskNetLambdaMCTrad_h
 #define AliAnalysisTaskNetLambdaMCTrad_h

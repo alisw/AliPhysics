@@ -70,6 +70,9 @@ void AliRsnMiniPair::Fill
       if (p1->IndexBachelor() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
       if (p1->IndexBachelor() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
    }
+
+   fPassesOOBPileupCut = kFALSE;
+   if (p1->PassesOOBPileupCut() || p2->PassesOOBPileupCut()) fPassesOOBPileupCut = kTRUE;
 }
 
 //__________________________________________________________________________________________________

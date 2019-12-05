@@ -167,7 +167,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  auto binTrig = AxisFix("Trig",2,-0.5,1.5);
  auto binParType = AxisFix("ParType",2,-0.5,1.5);
 
- fHistos = new THistManager("Inclusivef0f2Temphists");
+ fHistos = new THistManager("Inclusivef0f2hists");
 
 //Event Selection ****************
  vector<TString> ent ={
@@ -390,6 +390,8 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
  if( fOption.Contains("2018") ){
 	fEventCuts.SetupPbPb2018();
+ }
+ if( fOption.Contains("PbPb") ){
 	fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) ); 
 	fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
  }
@@ -418,8 +420,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 	: fEvt = dynamic_cast<AliAODEvent*>(event);
  if(!fEvt) return;
 
- bool IsEventSelectedPbPb2018 = kFALSE;
- if( fOption.Contains("2018") ) IsEventSelectedPbPb2018 = fEventCuts.AcceptEvent( event );
+ bool IsEventSelectedPbPb = kFALSE;
+ if( fOption.Contains("PbPb") ) IsEventSelectedPbPb = fEventCuts.AcceptEvent( event );
 
  IsMC = kFALSE;
 // if( IsFirstEvent ){
@@ -634,7 +636,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx ) fHistos->FillTH1("hEventNumbers","IsGoodVtx",1);
  if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection ) fHistos->FillTH1("hEventNumbers","IsSelectedFromAliMultSelection",1);
  if( ( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && !fOption.Contains("2018") ) ||
-	( IsEventSelectedPbPb2018 && fOption.Contains("2018") ) ){
+	( IsEventSelectedPbPb && fOption.Contains("2018") ) ){
 	fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
 	if( !fOption.Contains("HighMult") ){
 		fHistos->FillTH1("hMB",fCent,1);
@@ -654,7 +656,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( !fOption.Contains("EvtSelStudy") ){
 	if( !fOption.Contains("Sys") ){
 		if( ( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && !fOption.Contains("2018") ) ||
-			( IsEventSelectedPbPb2018 && fOption.Contains("2018") ) ){
+			( IsEventSelectedPbPb && fOption.Contains("2018") ) ){
 			if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
 			fHistos->FillTH1("hEvtNumberUsed",1,1);
 			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
@@ -739,14 +741,16 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 
 //Corrections for event selection******************
  if( IsMC && IsTriggered && IsINEL ){
-	if( IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() && IsGoodVtx ){
+//	if( IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() && IsGoodVtx ){
+	if( IsValidVtx && IsGoodVtx ){
 		FillTHnSparse("VtxSelection",{fCent,1.0}, 1.0);
 	}
 	else{ FillTHnSparse("VtxSelection",{fCent,0.0}, 1.0); }
  }
 
  if( IsMC && IsTriggered && IsINEL0 ){
-        if( IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() && IsGoodVtx ){
+//        if( IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() && IsGoodVtx ){
+	if( IsValidVtx && IsGoodVtx ){
                 FillTHnSparse("VtxSelection0",{fCent,1.0}, 1.0);
         }
         else{ FillTHnSparse("VtxSelection0",{fCent,0.0}, 1.0); }

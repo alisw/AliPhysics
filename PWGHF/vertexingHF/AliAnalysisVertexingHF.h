@@ -267,6 +267,7 @@ class AliAnalysisVertexingHF : public TNamed {
                              /// the primary vertex
 
   AliESDVertex *fV1; /// primary vertex
+  AliAODVertex *fV1AOD; /// primary vertex (AOD format)
 
   /// flag to enable candidates production
   Bool_t fD0toKpi;   /// D0->Kpi
@@ -361,7 +362,9 @@ class AliAnalysisVertexingHF : public TNamed {
 		       const TObjArray *trkArray) const;
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliVEvent *event,
 				      AliAODVertex *secVert,Double_t dcap1n1,
-				      Bool_t &okD0,Bool_t &okJPSI,Bool_t &okD0fromDstar, Bool_t refill=kFALSE, AliAODRecoDecayHF2Prong *rd=0x0);
+				      Bool_t &okD0,Bool_t &okJPSI,Bool_t &okD0fromDstar,
+				      Bool_t callFromCascade=kFALSE, Bool_t refill=kFALSE,
+				      AliAODRecoDecayHF2Prong *rd=0x0);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliVEvent *event,
 				      AliAODVertex *secVert,
 				      Double_t dispersion,
@@ -409,6 +412,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t SelectInvMassAndPt3prong(TObjArray *trkArray);
   Bool_t SelectInvMassAndPt4prong(TObjArray *trkArray);
   Bool_t SelectInvMassAndPtDstarD0pi(TObjArray *trkArray);
+  Bool_t SelectInvMassAndPtCascade(TObjArray *trkArray);
 
   void   SelectTracksAndCopyVertex(const AliVEvent *event,Int_t trkEntries,
 				   TObjArray &seleTrksArray,
@@ -425,7 +429,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisVertexingHF,29);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,30);  // Reconstruction of HF decay candidates
   /// \endcond
 };
 

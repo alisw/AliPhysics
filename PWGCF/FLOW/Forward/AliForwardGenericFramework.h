@@ -24,6 +24,10 @@
 #include "AliForwardSettings.h"
 #include "TComplex.h"
 #include "AliForwardFlowUtil.h"
+#include <valarray>
+#include <iostream>
+#include "AliForwardNUATask.h"
+
 /**
  * Class to handle cumulant calculations.
  */
@@ -53,7 +57,7 @@ public:
    */
   void CumulantsAccumulate(TH2D*& dNdetadphi, double cent,double vertexpos,Bool_t useFMD,Bool_t doRefFlow, Bool_t doDiffFlow);
 
-  void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r, Int_t ptn);
+  void saveEvent(double cent, double vertexpos,UInt_t r, Int_t ptn);
 
   /**
    * Constants
@@ -84,6 +88,95 @@ public:
   TComplex Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4,Int_t eta1, Int_t eta2);
   TComplex FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t refetabinA, Int_t refetabinB, Int_t diffetabin,Int_t qetabin);
 
+
+  void fill(THnD*& cumu, Int_t n, Int_t ptn, Double_t sample,
+                        Double_t zvertex,  
+                        Double_t eta,     
+                        Double_t cent,    
+                        Double_t value)
+  { 
+    if (TMath::IsNaN(value)) return; 
+    Double_t values[6] = {Double_t(n-2),Double_t(ptn),sample, zvertex, eta, cent};//kW4FourA
+    cumu->Fill(values,value);
+    return;
+  }
+
+  Double_t applyNUAcentral(Double_t eta, Double_t phi, Double_t zvertex, Double_t weight){
+    if (!fSettings.use_primaries_cen) {
+      Int_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
+      Int_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
+      Int_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
+      Double_t factor = fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
+      if (factor) weight = weight*factor;
+      else weight = 0.;
+    }
+    return weight;
+  }
+
+
+  Double_t applyNUAforward(TH2D*& dNdetadphi, Int_t etaBin, Int_t phiBin, Double_t eta, Double_t phi, Double_t zvertex, Double_t weight){
+    // for NUA closure
+    // if ((fSettings.nua_mode & fSettings.kInterpolate) && useFMD) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
+    // if (fSettings.makeFakeHoles && useFMD){
+    //   AliForwardFlowUtil util = AliForwardFlowUtil();
+    //   util.MakeFakeHoles(*dNdetadphi);
+    // }
+    // holes in the FMD
+    if (fSettings.nua_mode & fSettings.kFill){
+      if (etaBin >= 125 && etaBin <=137){
+        if (phiBin == 17 || phiBin == 18) weight = 1.;
+      }
+      if (etaBin >= 168 && etaBin <=185){
+        if (phiBin == 14) weight = 1.;
+      }
+    }
+
+    if (fSettings.nua_mode & fSettings.kInterpolate) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
+    //if (fSettings.makeFakeHoles && useFMD) fUtil.MakeFakeHoles(*dNdetadphi);
+    if (!fSettings.use_primaries_fwd) {
+      Int_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
+      Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
+      Int_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
+      Double_t factor = fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
+      if (factor) weight = weight*factor;
+      else weight = 0.;
+    }
+    return weight;
+  }
+
+  Double_t applySecondaryCorr(Int_t n, Double_t eta,Double_t zvertex,Double_t cent, Double_t weight){
+    Int_t secn = n-1;//fSettings.seccorr_fwd->GetZaxis()->FindBin(n-2);
+
+    if (fSettings.seccorr_fwd){
+      Int_t seceta = fSettings.seccorr_fwd->GetZaxis()->FindBin(eta);
+      Int_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
+      weight = weight*fSettings.seccorr_fwd->GetBinContent(secn,secvtz,seceta);
+    }
+    if (fSettings.seccorr_cent){
+      Int_t seceta = fSettings.seccorr_cent->GetYaxis()->FindBin(eta);
+      Int_t seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent);
+      weight = weight*fSettings.seccorr_cent->GetBinContent(secn,seceta,seccent);
+    }
+    return weight;
+  }
+
+  THnD* cumu_dW2A        ;//!  // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  THnD* cumu_dW2TwoA     ;//!  // <w2*two>
+  THnD* cumu_dW2B        ;//!  // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
+  THnD* cumu_dW2TwoB     ;//!  // <w2*two>  Int_t kW4          = 3; // <w4>
+  THnD* cumu_dW4         ;//! 
+  THnD* cumu_dW4Four     ;//! 
+
+  THnD* cumu_dW4FourTwo  ;//! 
+  THnD* cumu_dW4ThreeTwo ;//! 
+  //THnD* cumu_dW4_mixed   ;//! 
+  THnD* cumu_dWTwoTwoN   ;//!  // Numerator of R_{n,n; 2}
+  THnD* cumu_dWTwoTwoD   ;//!  // Denominator of R_{n,n; 2}
+
+  THnD* cumu_rW2         ;//!  // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  THnD* cumu_rW2Two      ;//!  // <w2*two>
+  THnD* cumu_rW4         ;//! 
+  THnD* cumu_rW4Four     ;//!   
 
   ClassDef(AliForwardGenericFramework, 1); // object for eta dependent cumulant ananlysis
 };

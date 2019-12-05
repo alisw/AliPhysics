@@ -165,6 +165,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fBackgroundMode(4),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
+  fDoIsolatedAnalysis(kFALSE),
+  fDoHighPtHadronAnalysis(kFALSE),
   fDoGammaMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.)
@@ -271,6 +273,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fBackgroundMode(4),
   fDoJetAnalysis(ref.fDoJetAnalysis),
   fDoJetQA(ref.fDoJetQA),
+  fDoIsolatedAnalysis(ref.fDoIsolatedAnalysis),
+  fDoHighPtHadronAnalysis(ref.fDoHighPtHadronAnalysis),
   fDoGammaMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.)
@@ -1821,6 +1825,14 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fDoJetAnalysis = kTRUE;
     fDoJetQA = kTRUE;
     break;
+  case 4:
+    fMesonKind = 0;
+    fDoIsolatedAnalysis = kTRUE;
+    break;
+  case 5:
+    fMesonKind = 0;
+    fDoHighPtHadronAnalysis = kTRUE;
+    break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
     return kFALSE;
@@ -1895,6 +1907,11 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fDoGammaMinEnergyCut = kTRUE;
     fNDaughterEnergyCut  = 1;
     fSingleDaughterMinE  = 5.;
+    break;
+  case 15: // f
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 7.5;
     break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
@@ -3453,7 +3470,18 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearing     = 0.002;
       fPSigSmearingCte  = 0.012;
       break;
-
+    case 22:     //m
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.004;
+      fPSigSmearingCte  = 0.011;
+      break;
+    case 23:     //n
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.009;
+      fPSigSmearingCte  = 0.011;
+      break;
     default:
       AliError("Warning: UseMCPSmearing not defined");
       return kFALSE;
@@ -4040,17 +4068,17 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
-        case 5: // EMC-EMC (optimized for 5 TeV)
-          mass = 1.30716e-01 + (-1.91861e-02 * exp(-5.89839e-01 * pt)) + 3.51796e-04  * pt;
-          FWHM =  7.68479e-03  + (2.04498e-02  * exp(-7.38029e-01  * pt)) + 5.18666e-04   * pt;
+        case 5: // EMC-EMC (optimized for 5 TeV with 31 NonLin)
+          mass = 1.22498e-01  + (4.97752e-03 * pt) + (-8.49570e-04 * pow(pt,2.)) + (6.05847e-05 * pow(pt,3)) + (-13e-07 * pow(pt,4));
+          FWHM =   1.33790e-02 + (-9.40866e-04 * pt) + ( 7.01518e-05 * pow(pt,2));
           if(mass < 0.12) mass = 0.12;
           sigma = FWHM/2.35;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
-        case 6: // PCM-EMC (optimized for 5 TeV)
-          mass = 0.129584 + 0.000611824 * pt;
-          FWHM =   0.00990291 + ( ( -0.00114665) * pt ) + (0.000128015 * pt * pt);
+        case 6: // PCM-EMC (optimized for 5 TeV with 31 NonLin)
+          mass = 1.31116e-01 + 4.20087e-04 * pt;
+          FWHM = 9.25937e-03 + ( ( -4.89863e-04) * pt ) + (4.57442e-05 * pt * pt);
           if(FWHM>0.015) FWHM = 0.015;
           sigma = FWHM/2.35;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
@@ -4076,7 +4104,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 9: // PCM-PCM (optimized for 5 TeV)
-          mass = 1.34615e-01 + (4.57531e-03 * exp(-2.63508 * pt)) + -1.71924e-04 * pt;
+          mass = 1.33587e-01  + (2.59437e-03 * exp(-1.18999e+00 * pt)) + -3.45476e-05 * pt;
           FWHM =   0.00223215 + ( (0.000349362) * pt ) + (-1.13689e-05 * pt * pt);
           if (mass>0.137) mass = 0.137;
           if (FWHM < 0.001 ) {FWHM =0.001;}

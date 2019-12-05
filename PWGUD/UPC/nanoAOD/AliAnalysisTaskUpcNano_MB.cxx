@@ -271,6 +271,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fNGoodTracksDCA", &fNGoodTracksDCA, "fNGoodTracksDCA/I");
   fTreeJPsi ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
   fTreeJPsi ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[6]/F");
+  fTreeJPsi ->Branch("fTrackPhiPos", &fTrackPhiPos[0],"fTrackPhiPos[2]/F");
   if(isMC){
 	fTreeJPsi ->Branch("fPtGen", &fPtGen, "fPtGen/F");
 	fTreeJPsi ->Branch("fPtGenDaughter", &fPtGenDaughter[0], "fPtGenDaughter[2]/F");
@@ -696,6 +697,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	  fTrackLenght[iTrack] = trk->GetLengthInActiveZone(1, 1.5, 220, fEvent->GetMagneticField());
 	  fTrackLenght[iTrack+2] = trk->GetLengthInActiveZone(1, 2.0, 220, fEvent->GetMagneticField());
 	  fTrackLenght[iTrack+4] = trk->GetLengthInActiveZone(1, 2.5, 220, fEvent->GetMagneticField());
+	  fTrackPhiPos[iTrack] = trk->GetInnerParam()->PhiPos();
 	  }
 	  
     	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
@@ -777,7 +779,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  fPIDsigma = nSigmaDistElectron;
   	  vJPsiCandidate = vElectron[0]+vElectron[1];
   	  fChannel = -1;
-  	  FillTree(fTreeJPsi,vJPsiCandidate);
 	  if(!isMC) FillTree(fTreeJPsi,vJPsiCandidate);
 	  else FillTree(fTreeJPsi,vJPsiCandidate,vMC);
   	  }

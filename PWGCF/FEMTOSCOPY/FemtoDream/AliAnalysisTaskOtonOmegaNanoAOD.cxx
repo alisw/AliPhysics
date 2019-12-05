@@ -270,9 +270,8 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserCreateOutputObjects() {
   fOmegaTree->Branch("ProtonTPCsigma",&fTProtonTPCsigma,"fTProtonTPCsigma[fTnProton]/F");
   fOmegaTree->Branch("ProtonTOFsigma",&fTProtonTOFsigma,"fTProtonTOFsigma[fTnProton]/F");
   fOmegaTree->Branch("ProtonNcl",&fTProtonNcl,"fTProtonNcl[fTnProton]/I");
-  fOmegaTree->Branch("ProtonCrF",&fTProtonCrF,"fTProtonCrF[fTnProton]/F");
-  fOmegaTree->Branch("ProtonFilterBit",&fTProtonFilterBit,"fTProtonFilterBit[fTnProton]/i");
   fOmegaTree->Branch("ProtonPhi",&fTProtonPhi,"fTProtonPhi[fTnProton]/F");
+  fOmegaTree->Branch("ProtonDCA",&fTProtonDCA,"fTProtonDCA[fTnProton]/F");
   fOmegaTree->Branch("ProtonID",&fTProtonID,"fTProtonID[fTnProton]/I");
  //omegas:
  fOmegaTree->Branch("nCascade",&fTnCascade,"fTnCascade/I");
@@ -297,10 +296,11 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserCreateOutputObjects() {
  fOmegaTree->Branch("TrackTPCsigma",&fTTrackTPCsigma,"fTTrackTPCsigma[fTnCascade][3]/F");
  fOmegaTree->Branch("TrackTOFsigma",&fTTrackTOFsigma,"fTTrackTOFsigma[fTnCascade][3]/F");
  fOmegaTree->Branch("TrackNcl",&fTTrackNcl,"fTTrackNcl[fTnCascade][3]/I");
+ fOmegaTree->Branch("TrackCrR",&fTTrackCrR,"fTTrackCrR[fTnCascade][3]/F");
  fOmegaTree->Branch("TrackCrF",&fTTrackCrF,"fTTrackCrF[fTnCascade][3]/F");
  fOmegaTree->Branch("TrackITStime",&fTTrackITStime,"fTTrackITStime[fTnCascade][3]/O");
  fOmegaTree->Branch("TrackTOFtime",&fTTrackTOFtime,"fTTrackTOFtime[fTnCascade][3]/O");
- //fOmegaTree->Branch("TrackFilterBit",&fTTrackFilterBit,"fTTrackFilterBit[fTnCascade][3]/O");
+ fOmegaTree->Branch("TrackFilterBit",&fTTrackFilterBit,"fTTrackFilterBit[fTnCascade][3]/O");
  fOmegaTree->Branch("TrackPhi",&fTTrackPhi,"fTTrackPhi[fTnCascade][3]/F");
  fOmegaTree->Branch("TrackID",&fTTrackID,"fTTrackID[fTnCascade][3]/I");
 
@@ -327,13 +327,17 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
     return;
   }
 
-  //fTRunNumber = fInputEvent->GetRunNumber();
-  AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
-  fTRunNumber = nanoHeader->GetVarInt(nanoHeader->GetRunNumberIndex());
+  //fTRunNumber = fInputEvent->GetRunNumber(); // Old method for ESD/AOD (not working for NanoAOD)
+
+  //// For NanoAOD LHC16/17/18 starting with filtering train #100:
+  //AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
+  //fTRunNumber = nanoHeader->GetVarInt(nanoHeader->GetRunNumberIndex());
+
+  fTRunNumber = 0.; //For NanoAOD filtering trains <100, no info
 
   Double_t PrimVtx[3];
   fInputEvent->GetPrimaryVertex()->GetXYZ(PrimVtx);
-  fTVz = PrimVtx[1];
+  fTVz = PrimVtx[2];
   fTMult = fEvent->GetMultiplicity();
 
 //init tree
@@ -354,7 +358,6 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
    fTProtonTPCsigma[ii]=-100000.;
    fTProtonTOFsigma[ii]=-100000.;
    fTProtonNcl[ii]=-100000;
-   fTProtonCrF[ii]=-100000.;
    fTProtonShared[ii]=-100000;
    fTProtonTPCchi2[ii]=-100000.;
    fTProtonITStime[ii]=kFALSE;
@@ -363,14 +366,10 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
    fTProtonITScomplementary[ii]=kFALSE;
    fTProtonITSpure[ii]=kFALSE;
    fTProtonGLOBAL[ii]=kFALSE;
-   fTProtonFilterBit[ii]=0;
    fTProtonPhi[ii]=-100000.;
    fTProtonID[ii]=-100000;
   }
   fTnProton=0;
-
-  //Define the random:
-  TRandom3* frndm = new TRandom3();
 
   // PROTON SELECTION  (proton loop)
   ResetGlobalTrackReference();
@@ -446,6 +445,7 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
     fTTrackTPCsigma[ii][jj]=-100000.;
     fTTrackTOFsigma[ii][jj]=-100000.;
     fTTrackNcl[ii][jj]=-100000;
+    fTTrackCrR[ii][jj]=-100000.;
     fTTrackCrF[ii][jj]=-100000.;
     fTTrackShared[ii][jj]=-100000;
     fTTrackTPCchi2[ii][jj]=-100000.;
@@ -499,31 +499,22 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
 
   }
 
-
   //fill Tree
   if(fTnProton>0&&fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 proton AND 1 cascade
   //if(fTnProton>0||fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 proton OR 1 cascade
 
-  // -> Now fill also 3% of events with protons
-  //if there is a proton, intialize the random and seed it with the proton px:
-  //if(fTnProton>0){
-  // frndm->SetSeed(fTProtonPx[0]);
-  // if( fTnCascade>0 || frndm->Rndm()<.03 ) fOmegaTree->Fill();
-  //}
-
- 
   //pair cleaner
   fPairCleaner->ResetArray();
 
   fPairCleaner->CleanTrackAndDecay(&Protons, &Xis, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiXis, 1);
-  fPairCleaner->CleanTrackAndDecay(&Protons, &Omegas, 0); //lets try adding this
-  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiOmegas, 1); //lets try adding this
+  fPairCleaner->CleanTrackAndDecay(&Protons, &Omegas, 0); //this is apparently working
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiOmegas, 1); //this is apparently working
 
   fPairCleaner->CleanDecay(&Xis, 0);
   fPairCleaner->CleanDecay(&AntiXis, 1);
-  fPairCleaner->CleanDecay(&Omegas, 0); //lets try adding this
-  fPairCleaner->CleanDecay(&AntiOmegas, 1); //lets try adding this
+  fPairCleaner->CleanDecay(&Omegas, 0); 
+  fPairCleaner->CleanDecay(&AntiOmegas, 1); 
 
   fPairCleaner->StoreParticle(Protons);
   fPairCleaner->StoreParticle(AntiProtons);
@@ -634,6 +625,7 @@ Bool_t AliAnalysisTaskOtonOmegaNanoAOD::FillCascade(AliFemtoDreamCascade *TheCas
   fTTrackCharge[fTnCascade][jj] = TheTrack->GetCharge().at(0);
   fTTrackNcl[fTnCascade][jj] = TheTrack->GetNClsTPC();
   fTTrackCrF[fTnCascade][jj] = TheTrack->GetRatioCr();
+  fTTrackCrR[fTnCascade][jj] = TheTrack->GetTPCCrossedRows();
   fTTrackITStime[fTnCascade][jj] = TheTrack->GetHasITSHit();
   fTTrackTOFtime[fTnCascade][jj] = TheTrack->GetTOFTimingReuqirement();
   fTTrackFilterBit[fTnCascade][jj] = TheTrack->GetFilterMap();
@@ -661,9 +653,8 @@ Bool_t AliAnalysisTaskOtonOmegaNanoAOD::FillProton(AliFemtoDreamTrack *TheTrack)
  fTProtonTPCsigma[fTnProton] = (TheTrack->GetnSigmaTPC((int) (AliPID::kProton)));
  fTProtonTOFsigma[fTnProton] = (TheTrack->GetnSigmaTOF((int) (AliPID::kProton)));
  fTProtonNcl[fTnProton] = TheTrack->GetNClsTPC();
- fTProtonCrF[fTnProton] = TheTrack->GetRatioCr();
- fTProtonFilterBit[fTnProton] = TheTrack->GetFilterMap();
  fTProtonPhi[fTnProton] = (TheTrack->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
+ fTProtonDCA[fTnProton] = TheTrack->GetDCAXYProp();
  fTProtonID[fTnProton] = TheTrack->GetIDTracks().at(0);
 
  fTnProton++;

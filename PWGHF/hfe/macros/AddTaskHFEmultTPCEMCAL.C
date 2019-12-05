@@ -29,7 +29,9 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 		Bool_t AssoITSRefit= kTRUE ,
 		Double_t AssopTMin= 0.1  ,
 		Double_t AssoEtarange= 0.9 ,
-		Double_t AssoTPCnsig=  3.5
+		Double_t AssoTPCnsig=  3.5,
+		Double_t Deltaeta = 0.01,
+		Double_t Deltaphi = 0.01
 		)
 {
   
@@ -125,6 +127,7 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 	taskhfe->SetAssopTMin(AssopTMin);
 	taskhfe->SetAssoEtarange(AssoEtarange);
 	taskhfe->SetAssoTPCnsig(AssoTPCnsig);
+	taskhfe->SetDeltaEtaDeltaPhi(Deltaeta,Deltaphi);
 	
 	
 	if(trigger==AliVEvent::kINT7){

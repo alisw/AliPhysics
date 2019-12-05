@@ -30,7 +30,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_PbPb(
     Int_t     selectHeavyNeutralMeson     = 0,                        //run eta prime instead of omega
     Int_t     enableQAMesonTask           = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
     Int_t     enableExtMatchAndQA         = 0,                        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-    Bool_t    enableTriggerMimicking      = kFALSE,                   // enable trigger mimicking
+    Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
     TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
     Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
@@ -155,13 +155,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_PbPb(
     cuts.AddCutHeavyMesonCalo("11310a13","411798305k0b2220000","32c51070a","0103603700000000","0453503000000000"); //
     cuts.AddCutHeavyMesonCalo("13530a13","411798305k032220000","32c51070a","0103603700000000","0453503000000000"); //
     cuts.AddCutHeavyMesonCalo("15910a13","411798305k032220000","32c51070a","0103603700000000","0453503000000000"); //
-  
+
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
+
   } else if( trainConfig == 200 ) {
     cuts.AddCutHeavyMesonCalo("10130a13","411798305k0a2220000","32c510700","0103603l00000000","0453503000000000");
     cuts.AddCutHeavyMesonCalo("11310a13","411798305k0b2220000","32c510700","0103603l00000000","0453503000000000");

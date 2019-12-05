@@ -750,7 +750,7 @@ Bool_t AliRDHFCutsLctoV0::PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bache
   if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)]) return 0;
 
   // cuts on the minimum pt of the bachelor
-  if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
+  if (bachelorTrack->Pt() < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
 
   Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();

@@ -52,6 +52,7 @@ class AliRsnCutCascade : public AliRsnCut {
 
     void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
     void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
+    void           SetMaxPseudorapidity(Double_t value)     {fMaxPseudorapidity = value;}
 
     void           SetPIDCutV0Proton(Double_t value)        {fPIDCutV0Proton = value;}
     void           SetPIDCutV0Pion(Double_t value)          {fPIDCutV0Pion = value;}
@@ -88,6 +89,7 @@ protected:
     Double_t         fCascadeMaxDaughtersDCA;  // max allowed DCA between the two Cascade daughers
     Int_t            fMinTPCcluster;           // min allowed TPC cluster
     Double_t         fMaxRapidity;             // max allowed Cascade rapidity
+    Double_t         fMaxPseudorapidity;       // max allowed Cascade pseudorapidity
     
     AliPID::EParticleType fPID;                // PID for track
     AliPID::EParticleType fPID2;               // PID for track

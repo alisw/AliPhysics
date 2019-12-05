@@ -165,7 +165,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	void SetAssopTMin(Double_t AssopTMin){fAssopTMin = AssopTMin;}
 	void SetAssoEtarange(Double_t AssoEtarange){fAssoEtarange=AssoEtarange;}
 	void SetAssoTPCnsig(Double_t AssoTPCnsig){fAssoTPCnsig=AssoTPCnsig;}
-	
+	void SetDeltaEtaDeltaPhi(Double_t Deltaeta,Double_t Deltaphi){fdeltaeta=Deltaeta;fdeltaphi=Deltaphi;}
 	
 	private:
 	
@@ -194,7 +194,8 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	Double_t fAssopTMin;  
 	Double_t fAssoEtarange;  
 	Double_t fAssoTPCnsig;  
-	
+	Double_t fdeltaeta;
+	Double_t fdeltaphi;
 	
 	Double_t fDCAxy;  
 	Double_t fDCAz;  
@@ -406,3 +407,4 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 };
 	
 #endif	
+

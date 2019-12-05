@@ -11,8 +11,8 @@
 static const float piHi = TMath::Pi();
 
 AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
-    AliFemtoDreamCollConfig *conf)
-    : fHists(new AliFemtoDreamCorrHists(conf, conf->GetMinimalBookingSample())),
+    AliFemtoDreamCollConfig *conf, bool minBooking)
+    : fHists(new AliFemtoDreamCorrHists(conf, minBooking)),
       fWhichPairs(conf->GetWhichPairs()),
       fBField(-99.),
       fDeltaPhiEtaMax(conf->GetSqDeltaPhiEtaMax()),
@@ -172,6 +172,10 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     fHists->FillSameEventmTDist(iHC, RelativePairmT(PartOne, PartTwo),
                                 RelativeK);
   }
+  if (fillHists && fHists->GetDokTandMultBinning()) {
+    fHists->FillSameEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
+                                RelativeK, Mult + 1);
+  }
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtQADist(iHC, RelativeK, Part1Momentum.Pt(),
                          Part2Momentum.Pt());
@@ -232,6 +236,10 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
   if (fillHists && fHists->GetDomTBinning()) {
     fHists->FillMixedEventmTDist(iHC, RelativePairmT(PartOne, PartTwo),
                                  RelativeK);
+  }
+  if (fillHists && fHists->GetDokTandMultBinning()) {
+    fHists->FillMixedEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
+                                RelativeK, Mult + 1);
   }
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtMEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);

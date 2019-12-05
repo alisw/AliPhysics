@@ -1786,9 +1786,6 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
 
 
 
-  /*  ------ \/ ------ added by feisenhut ------ \/ ------  */
-
-
   //________________________________________________________________________________
   // Define IsMCTruth for 2 pairs
 Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair1, const AliDielectronPair* pair2, const AliDielectronSignalMC* signalMC1, const AliDielectronSignalMC* signalMC2) const {
@@ -2574,8 +2571,6 @@ Bool_t AliDielectronMC::IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, AliVPa
   // If no MC particle is filled
   return false;
 }
-
-  /*  ------ /\ ------ added by feisenhut ------ /\ ------  */
 
 
 //________________________________________________________________________________

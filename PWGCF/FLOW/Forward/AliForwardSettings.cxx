@@ -16,12 +16,15 @@ AliForwardSettings::AliForwardSettings() :
   fnoSamples(10),
   fNRefEtaBins(1),
   fNDiffEtaBins(50),
-  fCentBins(10),
+  fCentBins(80),
+  fCentUpEdge(80),
   nuacentral(),
   nuaforward(),
   seccorr_fwd(),
   seccorr_cent(),
-  doNUA(false),
+  nuehist(),
+  doNUA(true),
+  doNUE(false),
   gap(0.0),
   minpt(0.2),
   maxpt(5),
@@ -51,6 +54,8 @@ AliForwardSettings::AliForwardSettings() :
   standard_only(kTRUE),
   fmdlowcut(2.0),
   fmdhighcut(3.5),
-  nua_runnumber(0)
+  track_sample(0),
+  nua_runnumber(0),
+  correct_nua_mc()
 {
 }

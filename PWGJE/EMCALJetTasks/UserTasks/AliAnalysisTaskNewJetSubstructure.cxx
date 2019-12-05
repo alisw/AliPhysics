@@ -718,12 +718,17 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
       PseudoTracks.set_user_index(fJet->TrackAt(i) + 100);
       fInputVectors.push_back(PseudoTracks);
     }
-  fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
-  fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
-
-  fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
+   fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+   fastjet::JetDefinition fJetDef(jetalgo, 1.,
                                  static_cast<fastjet::RecombinationScheme>(0),
                                  fastjet::BestFJ30);
+
+  
+  fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
+  // fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
+  // fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
+  //                              static_cast<fastjet::RecombinationScheme>(0),
+  //                             fastjet::BestFJ30);
   fastjet::AreaDefinition fAreaDef(fastjet::passive_area, ghost_spec);
   try {
     fastjet::ClusterSequenceArea fClustSeqSA(fInputVectors, fJetDef, fAreaDef);

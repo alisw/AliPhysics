@@ -70,21 +70,14 @@
 #include "AliRDHFCutsLctopKpi.h"
 
 #include "AliEventplane.h"
-#include "AliFlowTrack.h"
-#include "AliFlowVector.h"
-#include "AliFlowTrackCuts.h"
-#include "AliFlowEvent.h"
 
 #include "AliAnalysisVertexingHF.h"
-#include "AliEventplane.h"
-#include "AliFlowTrack.h"
-#include "AliFlowVector.h"
-#include "AliFlowTrackCuts.h"
-#include "AliFlowEvent.h"
 #include "AliMultSelection.h"
 #include "AliQnCorrectionsManager.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
 #include "AliAnalysisTaskZDCEP.h"
+#include "AliFlowEventSimple.h"
+#include "AliFlowVector.h"
 
 #include "AliAnalysisTaskHFv1.h"
 
@@ -783,7 +776,7 @@ void AliAnalysisTaskHFv1::UserExec(Option_t */*option*/)
             AliAnalysisTaskZDCEP *fZDCEPTask = dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"));
             if (fZDCEPTask != NULL) {
                 // get ZDC Q-vectors
-                AliFlowEvent* anEvent = dynamic_cast<AliFlowEvent*>(GetInputData(1));
+                AliFlowEventSimple* anEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(1));
                 if(anEvent) {
                     // Get Q vectors for the subevents
                     AliFlowVector vQarray[2];
@@ -1978,7 +1971,7 @@ Float_t AliAnalysisTaskHFv1::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, Ali
 //   dummy->SetEvent(aodEvent,MCEvent());
 
 //   //////////////// construct the flow event container ////////////
-//   AliFlowEvent flowEvent(cutsRP,dummy);
+//   AliFlowEventSimple flowEvent(cutsRP,dummy);
 //   flowEvent.SetReferenceMultiplicity( 64 );
 //   for(Int_t i=0;i<64&&binx>0;i++){
 //     AliFlowTrack *flowTrack=flowEvent.GetTrack(i);

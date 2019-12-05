@@ -31,6 +31,9 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
 
+  // =====================================================================
+  // Proton cuts
+
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -47,7 +50,9 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     AntiTrackCuts->SetMinimalBooking(true);
   }
 
+  // =====================================================================
   // Lambda Cuts
+
   AliFemtoDreamv0Cuts *v0Cuts =
       AliFemtoDreamv0Cuts::LambdaSigma0Cuts(isMC, false, false);
   AliFemtoDreamTrackCuts *Posv0Daug =
@@ -72,61 +77,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     v0Cuts->SetMinimalBooking(true);
     antiv0Cuts->SetMinimalBooking(true);
   }
-  if (suffix == "2") {
-    v0Cuts->SetCutTransverseRadius(0.375, 100);
-    antiv0Cuts->SetCutTransverseRadius(0.375, 100);
-  } else if (suffix == "3") {
-    v0Cuts->SetCutTransverseRadius(0.5, 100);
-    antiv0Cuts->SetCutTransverseRadius(0.5, 100);
-  } else if (suffix == "4") {
-    v0Cuts->SetCutTransverseRadius(0.75, 100);
-    antiv0Cuts->SetCutTransverseRadius(0.75, 100);
-  } else if (suffix == "5") {
-    v0Cuts->SetCutTransverseRadius(1, 100);
-    antiv0Cuts->SetCutTransverseRadius(1, 100);
-  } else if (suffix == "6") {
-    v0Cuts->SetCutTransverseRadius(1.5, 100);
-    antiv0Cuts->SetCutTransverseRadius(1.5, 100);
-  } else if (suffix == "7") {
-    v0Cuts->SetCutTransverseRadius(2, 100);
-    antiv0Cuts->SetCutTransverseRadius(2, 100);
-  } else if (suffix == "8") {
-    v0Cuts->SetCutTransverseRadius(2.5, 100);
-    antiv0Cuts->SetCutTransverseRadius(2.5, 100);
-  } else if (suffix == "9") {
-    v0Cuts->SetCutTransverseRadius(3, 100);
-    antiv0Cuts->SetCutTransverseRadius(3, 100);
-  } else if (suffix == "10") {
-    v0Cuts->SetCutTransverseRadius(3.5, 100);
-    antiv0Cuts->SetCutTransverseRadius(3.5, 100);
-  } else if (suffix == "11") {
-    v0Cuts->SetCutTransverseRadius(5, 100);
-    antiv0Cuts->SetCutTransverseRadius(5, 100);
-  } else if (suffix == "12") {
-    v0Cuts->SetCutTransverseRadius(0.2, 90);
-    antiv0Cuts->SetCutTransverseRadius(0.2, 90);
-  } else if (suffix == "13") {
-    v0Cuts->SetCutTransverseRadius(0.2, 80);
-    antiv0Cuts->SetCutTransverseRadius(0.2, 80);
-  } else if (suffix == "14") {
-    v0Cuts->SetCutTransverseRadius(0.2, 70);
-    antiv0Cuts->SetCutTransverseRadius(0.2, 70);
-  } else if (suffix == "15") {
-    v0Cuts->SetCutTransverseRadius(0.2, 60);
-    antiv0Cuts->SetCutTransverseRadius(0.2, 60);
-  } else if (suffix == "16") {
-    v0Cuts->SetCutTransverseRadius(0.2, 50);
-    antiv0Cuts->SetCutTransverseRadius(0.2, 50);
-  } else if (suffix == "17") {
-    v0Cuts->SetCutTransverseRadius(0.2, 40);
-    antiv0Cuts->SetCutTransverseRadius(0.2, 40);
-  } else if (suffix == "18") {
-    v0Cuts->SetCutTransverseRadius(0.2, 30);
-    antiv0Cuts->SetCutTransverseRadius(0.2, 30);
-  } else if (suffix == "19") {
-    v0Cuts->SetCutTransverseRadius(0.2, 20);
-    antiv0Cuts->SetCutTransverseRadius(0.2, 20);
-  }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -139,7 +89,17 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiv0Cuts->SetPDGCodeNegDaug(2212);  // Proton
   antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
 
+  // =====================================================================
+  // Photon Cuts
+
   AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
+  photon->SetIsMC(isMC);
+  if (suffix != "0") {
+    photon->SetLightweight(true);
+  }
+
+  // =====================================================================
+  // Sigma Cuts
 
   AliSigma0AODPhotonMotherCuts *sigmaCuts =
       AliSigma0AODPhotonMotherCuts::DefaultCuts();
@@ -156,21 +116,77 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
   }
+
+  // vary the sidebands
   if (suffix == "1") {
-    sigmaCuts->SetSigmaSideband(0.0035, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.0035, 0.1);
+    sigmaCuts->SetSigmaSideband(0.003, 0.025);
+    antiSigmaCuts->SetSigmaSideband(0.003, 0.025);
+  } else if (suffix == "2") {
+    sigmaCuts->SetSigmaSideband(0.003, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.003, 0.05);
+  } else if (suffix == "3") {
+    sigmaCuts->SetSigmaSideband(0.003, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.003, 0.075);
+  } else if (suffix == "4") {
+    sigmaCuts->SetSigmaSideband(0.003, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.003, 0.1);
+  } else if (suffix == "5") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.025);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.025);
+  } else if (suffix == "6") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.05);
+  } else if (suffix == "7") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.075);
+  } else if (suffix == "8") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.1);
+  } else if (suffix == "9") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.025);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.025);
+  } else if (suffix == "10") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.02);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.05);
+  } else if (suffix == "11") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.075);
+  } else if (suffix == "12") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.1);
+  } else if (suffix == "13") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.05);
+  } else if (suffix == "14") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.075);
+  } else if (suffix == "15") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
+  } else if (suffix == "16") {
+    sigmaCuts->SetDeltaPhiEtaMax(0.0001);
+    antiSigmaCuts->SetDeltaPhiEtaMax(0.0001);
   }
 
   // Femto Collection
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212);
-  PDGParticles.push_back(2212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
+  PDGParticles.push_back(2212); // 0
+  PDGParticles.push_back(2212); // 1
+  PDGParticles.push_back(3212); // 2
+  PDGParticles.push_back(3212); // 3
+  PDGParticles.push_back(3212); // 4
+  PDGParticles.push_back(3212); // 5
+  PDGParticles.push_back(3212); // 6
+  PDGParticles.push_back(3212); // 7
+  if (suffix == "0" && fullBlastQA) {
+    PDGParticles.push_back(3122); // 8
+    PDGParticles.push_back(3122); // 9
+    PDGParticles.push_back(3122); // 10
+    PDGParticles.push_back(3122); // 11
+    PDGParticles.push_back(22); // 12
+    PDGParticles.push_back(22); // 13
+    PDGParticles.push_back(22); // 14
+  }
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -190,7 +206,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  const int nPairs = 36;
+  const int nPairs = (suffix == "0" && fullBlastQA) ? 120 : 36;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
@@ -207,16 +223,33 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
 
   NBins[0] = 250;  // pp
   NBins[8] = 250;  // barp barp
+  pairQA[0] = 11;   // pp
+  pairQA[8] = 11;   // pbarpbar
+  pairQA[2] = 14;  // pSigma
+  pairQA[10] = 14;  // barp bSigma
 
   // do extended QA for the pairs in default mode
-  if (suffix == "0") {
-    NBins[0] = 750;  // pp
-    NBins[8] = 750;  // barp barp
+  if (suffix == "0" && fullBlastQA) {
+
+    pairQA[0] = 11;   // pp
+    pairQA[2] = 14;   // pSigma
+    pairQA[8] = 12;   // pLambda(Sigma0)
+    pairQA[10] = 12;   // pLambda
+    pairQA[12] = 12;   // pPhoton(Sigma0)
+    pairQA[14] = 12;   // pPhoton
+    pairQA[15] = 11;  // barp barp
+    pairQA[17] = 14;  // barp bSigma
+    pairQA[23] = 12;   // barpbarLambda(barSigma0)
+    pairQA[25] = 12;   // barpbarLambda
+    pairQA[27] = 12;   // barpPhoton(Sigma0)
+    pairQA[28] = 12;   // barpPhoton
+
+    closeRejection[0] = true;  // pp
+    closeRejection[11] = true;  // barp barp
+  } else {
+    closeRejection[0] = true;  // pp
+    closeRejection[8] = true;  // barp barp
   }
-  pairQA[0] = 11;   // pp
-  pairQA[2] = 14;   // pSigma
-  pairQA[8] = 11;   // barp barp
-  pairQA[10] = 14;  // barp bSigma
 
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
@@ -276,19 +309,21 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     config->SetMomentumResolution(true);
   }
 
-  if (trigger == "kHighMultV0") {
-    // no close pair rejection since we don't care about pp
-    config->SetDeltaEtaMax(0.);
-    config->SetDeltaPhiMax(0.);
-    config->SetClosePairRejection(closeRejection);
-  }
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
+  config->SetClosePairRejection(closeRejection);
 
   if (suffix == "0" && fullBlastQA) {
     config->SetPhiEtaBinnign(true);
     config->SetkTBinning(true);
     config->SetmTBinning(true);
   }
+
   config->SetUsePhiSpinning(false);
+  config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
+  config->SetCorrelationRange(0.1); // to be validated
+  config->SetSpinningDepth(1);      // to be validated
+
   config->SetPtQA(true);
   config->SetMassQA(true);
   config->SetdPhidEtaPlots(false);
@@ -300,6 +335,9 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   config->SetMinimalBookingME(false);
+  if (suffix != "0") {
+    config->SetMinimalBookingSample(true);
+  }
 
   AliAnalysisTaskNanoAODSigma0Femto *task =
       new AliAnalysisTaskNanoAODSigma0Femto("AliAnalysisTaskNanoAODSigma0Femto", isMC);
@@ -316,6 +354,10 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
 
   if (suffix != "0" && suffix != "999") {
     task->SetLightweight(true);
+  }
+
+  if (suffix == "0" && fullBlastQA) {
+    task->SetCheckDaughterCF(true);
   }
 
   mgr->AddTask(task);
@@ -455,7 +497,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     TString AntiV0CutsMCName =
         Form("%sAntiv0CutsMC%s", addon.Data(), suffix.Data());
     AliAnalysisDataContainer *coutputAntiV0CutsMC = mgr->CreateContainer(
-        AntiTrkCutsMCName.Data(), TList::Class(),
+        AntiV0CutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiV0CutsMCName.Data()));
     mgr->ConnectOutput(task, 17, coutputAntiV0CutsMC);

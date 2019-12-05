@@ -89,7 +89,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
     fUtil()
 {
   // Apply all cuts by default
-  if (!fSettings.esd) {
+  //if (!fSettings.esd) {
     fEventValidators.push_back(EventValidation::kNoEventCut);
     fEventValidators.push_back(EventValidation::kIsAODEvent);
     fEventValidators.push_back(EventValidation::kTrigger);
@@ -106,12 +106,13 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
     fEventValidators.push_back(EventValidation::kNotSPDPU);
     fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
     fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
-  }
+  //}
 
     fEventValidatorsMC.push_back(EventValidationMC::kNoEventCutMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasEntriesFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasValidFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasPrimariesMC);
+
   //}
   // Default track cuts
   //if (!fSettings.esd){
@@ -252,7 +253,7 @@ if (fSettings.mc){
 outlist->Add(this->fQA_event_discard_flow);
 outlist->Add(this->fQA_event_discard_flow_MC);
 
-  if (!fSettings.esd){
+  //if (!fSettings.esd){
 
   /// Track discard flow
   this->fQA_track_discard_flow = new TH1F("qa_track_discard_flow",
@@ -275,7 +276,7 @@ outlist->Add(this->fQA_event_discard_flow_MC);
     }
   }
   outlist->Add(this->fQA_track_discard_flow);
-  }
+  //}
 
 }
 
@@ -301,7 +302,7 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
   this->CreateQAHistograms(this->fOutputList);
 
   // FMD V0 QA histograms
-  if (!fSettings.esd){
+  //if (!fSettings.esd){
     this->fFMDV0 = new TH2F("FMDV0", "FMD vs V0 pre cut;FMD;V0;",
   			  2000, 0, 2000, 2000, 0, 2000);
     this->fOutputList->Add(this->fFMDV0);
@@ -323,7 +324,7 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
     this->fFMDV0C_post = new TH2F("FMDV0C_post", "FMD vs V0C post cut;FMD;V0C;",
   				1000, 0, 1000, 1000, 0, 1000);
     this->fOutputList->Add(this->fFMDV0C_post);
-  }
+  //}
 
   // Slot 0 is reserved; 1 needs to be called here to get at least empty histograms
   PostData(1, fOutputList);
@@ -356,47 +357,51 @@ void AliForwardTaskValidation::UserExec(Option_t *)
   forwardDist->SetDirectory(0);
 
   if (fSettings.useEventcuts){
-  for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
-    switch (this->fEventValidators[idx]) {
-    case EventValidation::kNoEventCut:
-      this->fIsValidEvent = this->NoCut(); break;
-    case EventValidation::kIsAODEvent:
-      this->fIsValidEvent = this->IsAODEvent(); break;
-    case EventValidation::kTrigger:
-      this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); break;
-    case EventValidation::kHasFMD:
-      this->fIsValidEvent = this->HasFMD(); break;
-    case EventValidation::kHasEntriesFMD:
-      this->fIsValidEvent = this->HasEntriesFMD(); break;
+    for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
+      switch (this->fEventValidators[idx]) {
+      case EventValidation::kNoEventCut:
+        this->fIsValidEvent = this->NoCut(); break;
+      case EventValidation::kIsAODEvent:
+        if (!fSettings.esd) this->IsAODEvent(); 
+        break;
+      case EventValidation::kTrigger:
+        if (!fSettings.esd) this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); 
+        break;
+      case EventValidation::kHasFMD:
+        if (!fSettings.esd) this->fIsValidEvent = this->HasFMD(); 
+        break;
+      case EventValidation::kHasEntriesFMD:
+        this->fIsValidEvent = this->HasEntriesFMD(); break;
       case EventValidation::kHasValidFMD:
         this->fIsValidEvent = this->HasValidFMD(); break;
-    case EventValidation::kHasEntriesV0:
-      this->fIsValidEvent = this->HasEntriesV0(); break;
-    case EventValidation::kPassesAliEventCuts:
-      this->fIsValidEvent = this->PassesAliEventCuts(); break;
-    case EventValidation::kPassesFMD_V0CorrelatioCut:
-      this->fIsValidEvent = this->PassesFMDV0CorrelatioCut(true); break;
-    case EventValidation::kHasValidVertex:
-      this->fIsValidEvent = this->HasValidVertex(); break;
-    case EventValidation::kHasMultSelection:
-      this->fIsValidEvent = this->HasMultSelection(); break;
-    case EventValidation::kNotOutOfBunchPU:
-      this->fIsValidEvent = this->NotOutOfBunchPU(); break;
-    case EventValidation::kNotMultiVertexPU:
-      this->fIsValidEvent = this->NotMultiVertexPU(); break;
-    case EventValidation::kNotSPDPU:
-      this->fIsValidEvent = this->NotSPDPU(); break;
-    case EventValidation::kNotSPDClusterVsTrackletBG:
-      this->fIsValidEvent = this->NotSPDClusterVsTrackletBG(); break;
-    }
-    if (this->fIsValidEvent) {
-      this->fQA_event_discard_flow->Fill(idx);
-    } else {
-      // Stop checking once this event has been flaged as invalid
-      break;
+      case EventValidation::kHasEntriesV0:
+        this->fIsValidEvent = this->HasEntriesV0(); break;
+      case EventValidation::kPassesAliEventCuts:
+        if (!fSettings.esd) this->fIsValidEvent = this->PassesAliEventCuts(); 
+        break;
+      case EventValidation::kPassesFMD_V0CorrelatioCut:
+        this->fIsValidEvent = this->PassesFMDV0CorrelatioCut(true); break;
+      case EventValidation::kHasValidVertex:
+        this->fIsValidEvent = this->HasValidVertex(); break;
+      case EventValidation::kHasMultSelection:
+        this->fIsValidEvent = this->HasMultSelection(); break;
+      case EventValidation::kNotOutOfBunchPU:
+        this->fIsValidEvent = this->NotOutOfBunchPU(); break;
+      case EventValidation::kNotMultiVertexPU:
+        this->fIsValidEvent = this->NotMultiVertexPU(); break;
+      case EventValidation::kNotSPDPU:
+        this->fIsValidEvent = this->NotSPDPU(); break;
+      case EventValidation::kNotSPDClusterVsTrackletBG:
+        this->fIsValidEvent = this->NotSPDClusterVsTrackletBG(); break;
+      }
+      if (this->fIsValidEvent) {
+        this->fQA_event_discard_flow->Fill(idx);
+      } else {
+        // Stop checking once this event has been flaged as invalid
+        break;
+      }
     }
   }
-}
 if (this->fIsValidEvent){
 
   if (fSettings.mc){
@@ -426,7 +431,8 @@ if (this->fIsValidEvent){
 }
 
 Bool_t AliForwardTaskValidation::IsAODEvent() {
-  return fUtil.fAODevent ? true : false;
+  //return fUtil.fAODevent ? true : false;
+  return true;
 }
 
 Bool_t AliForwardTaskValidation::HasPrimaries(){
@@ -543,28 +549,24 @@ Bool_t AliForwardTaskValidation::HasValidVertex() {
 }
 
 AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetFMDhits() const {
-    // Relies on the event being vaild (no extra checks if object exists done here)
-  AliAODForwardMult* aodForward =
-    static_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
-  // Shape of d2Ndetadphi: 200, -4, 6, 20, 0, 2pi
-  const TH2D& d2Ndetadphi = aodForward->GetHistogram();
-  Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
-  Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
+
+  Int_t nEta = this->forwardDist->GetXaxis()->GetNbins();
+  Int_t nPhi = this->forwardDist->GetYaxis()->GetNbins();
   Tracks ret_vector;
   // FMD has no pt resolution!
   Double_t pt = 0;
   for (Int_t iEta = 1; iEta <= nEta; iEta++) {
-    Int_t valid = Int_t(d2Ndetadphi.GetBinContent(iEta, 0));
+    Int_t valid = Int_t(this->forwardDist->GetBinContent(iEta, 0));
     if (!valid) {
        // No data expected for this eta
       continue;
     }
-    Float_t eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta);
+    Float_t eta = this->forwardDist->GetXaxis()->GetBinCenter(iEta);
     for (Int_t iPhi = 1; iPhi <= nPhi; iPhi++) {
       // Bin content is most likely number of particles!
-      Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
+      Float_t mostProbableN = this->forwardDist->GetBinContent(iEta, iPhi);
       if (mostProbableN > 0) {
-	Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
+	Float_t phi = this->forwardDist->GetYaxis()->GetBinCenter(iPhi);
 	ret_vector.push_back(AliForwardTaskValidation::Track(eta, phi, pt, mostProbableN));
       }
     }

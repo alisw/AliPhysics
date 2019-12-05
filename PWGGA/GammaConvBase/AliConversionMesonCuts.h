@@ -197,6 +197,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
+    Bool_t   DoIsolatedAnalysis(){return fDoIsolatedAnalysis;}
+    Bool_t   DoHighPtHadronAnalysis(){return fDoHighPtHadronAnalysis;}
     Bool_t   UseElecSharingCut(){return fDoSharedElecCut;}
     Bool_t   UseToCloseV0sCut(){return fDoToCloseV0sCut;}
     Bool_t   UseMCPSmearing(){return fUseMCPSmearing;}
@@ -314,6 +316,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fBackgroundMode;                ///< default is 4: all pions from different event
     Bool_t      fDoJetAnalysis;                 ///< switch to run a jet analysis
     Bool_t      fDoJetQA;                       ///< switch to run a jet QA analysis
+    Bool_t      fDoIsolatedAnalysis;            ///< switch to run a isolated pi0 analysis
+    Bool_t      fDoHighPtHadronAnalysis;        ///< switch to run a pi0 analysis with a high pt hadron in the event
 
     Bool_t      fDoGammaMinEnergyCut;           ///< if enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson need to fulfill fMinSingleDaughterE
     Int_t       fNDaughterEnergyCut;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
@@ -322,7 +326,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,36)
+    ClassDef(AliConversionMesonCuts,37)
     /// \endcond
 };
 

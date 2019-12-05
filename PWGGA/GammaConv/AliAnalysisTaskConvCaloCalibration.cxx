@@ -114,9 +114,6 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoClusGammaE(NULL),
   fHistoClusGammaPtSM(NULL),
   fHistoClusGammaESM(NULL),
-  fHistoClusOverlapHeadersGammaPt(NULL),
-  fHistoClusAllHeadersGammaPt(NULL),
-  fHistoClusRejectedHeadersGammaPt(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -225,9 +222,6 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoClusGammaE(NULL),
   fHistoClusGammaPtSM(NULL),
   fHistoClusGammaESM(NULL),
-  fHistoClusOverlapHeadersGammaPt(NULL),
-  fHistoClusAllHeadersGammaPt(NULL),
-  fHistoClusRejectedHeadersGammaPt(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -802,9 +796,6 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
           if (fHistoClusGammaPt[iCut]) fHistoClusGammaPt[iCut]->Sumw2();
           if (fHistoClusGammaE[iCut]) fHistoClusGammaE[iCut]->Sumw2();
-          if (fHistoClusOverlapHeadersGammaPt[iCut]) fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
-          if (fHistoClusAllHeadersGammaPt[iCut]) fHistoClusAllHeadersGammaPt[iCut]->Sumw2();
-          if (fHistoClusRejectedHeadersGammaPt[iCut]) fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
         }
       }
     }
@@ -859,7 +850,9 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     if (fIsMC > 1){
       fHistoMotherInvMassPt[iCut]->Sumw2();
       fHistoMotherBackInvMassPt[iCut]->Sumw2();
-      if (fHistoMotherMatchedInvMassPt[iCut]) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
+      if (fMesonRecoMode == 1){
+        if (fHistoMotherMatchedInvMassPt[iCut]) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
+      }
     }
 
     if (fDoMesonQA > 0 ){
@@ -909,8 +902,8 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     }
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
-  
-    
+
+
     //********************************************************************************************************//
     //*****************************  NOT NEEDED FOR CALIBRATION???    ****************************************//
     //********************************************************************************************************//
@@ -1015,43 +1008,51 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
       }
 
-      Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,isRunningEMCALrelAna);
 
-      Bool_t triggered = kTRUE;
+      if (fIsMC > 0){
+        fWeightJetJetMC       = 1;
+        Float_t pthard = -1;
+        Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC , pthard, fInputEvent);
+        if (fIsMC == 3){
+          Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
+          fWeightJetJetMC       = fWeightJetJetMC*weightMult;
+        }
 
-      if(eventNotAccepted!= 0){
-        // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
-        fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
-        if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
-        // if (eventNotAccepted==3 && fIsMC > 0){
-        //   triggered = kFALSE;
-        // }else {
+        if (!isMCJet){
+          fHistoNEvents[iCut]->Fill(10,fWeightJetJetMC);
+          if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(10);
           continue;
-        // }
-      }
-      if(eventQuality != 0){// Event Not Accepted
-        // cout << "event rejected due to: " <<eventQuality << endl;
-        fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
-        continue;
-      }
-
-      if (triggered==kTRUE){
-        fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC); // Should be 0 here
-        if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
-
-        fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
-        fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
-        if(!fDoLightOutput){
-          fHistoVertexX[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetX(), fWeightJetJetMC);
-          fHistoVertexY[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetY(), fWeightJetJetMC);
-          fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)),fWeightJetJetMC);
-          if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)  fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(), fWeightJetJetMC);
-          else fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightJetJetMC);
         }
       }
 
+      Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,isRunningEMCALrelAna);
 
-      if (triggered==kFALSE) continue;
+      if(eventNotAccepted!= 0){
+        fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
+        if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
+        // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
+        continue;
+      }
+      if(eventQuality != 0){// Event Not Accepted
+        //cout << "event rejected due to: " <<eventQuality << endl;
+        fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
+        if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
+        continue;
+      }
+
+      fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC); // Should be 0 here
+      if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
+
+      fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
+      fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
+      if(!fDoLightOutput){
+        fHistoVertexX[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetX(), fWeightJetJetMC);
+        fHistoVertexY[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetY(), fWeightJetJetMC);
+        fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)),fWeightJetJetMC);
+        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)  fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(), fWeightJetJetMC);
+        else fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightJetJetMC);
+      }
+
       // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
       if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) // process calo clusters
         ProcessClusters();

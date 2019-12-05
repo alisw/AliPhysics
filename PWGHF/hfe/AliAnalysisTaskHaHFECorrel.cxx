@@ -2653,6 +2653,13 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     
     fTagTruePairsMult = new TH2F("fTagTruePairsMult", "fTagTruePairsMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
     fOutputListMain->Add(fTagTruePairsMult);
+
+    fTagEffInclBGMult = new TH2F("fTagEffInclBGMult", "fTagEffInclBGMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fOutputListMain->Add(fTagEffInclBGMult);
+
+    fTagEffULSBGMult = new TH2F("fTagEffULSBGMult", "fTagEffULSBGMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fOutputListMain->Add(fTagEffULSBGMult);
+  
   }
 
   
@@ -3761,7 +3768,6 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
 
   AliAODTrack *AODtrack = dynamic_cast<AliAODTrack*>(Vtrack);
   if(!AODtrack) return;
-
   lsPartner=0;
   ulsPartner=0;
   trueULSPartner=kFALSE; // only for MC use
@@ -3991,7 +3997,7 @@ void AliAnalysisTaskHaHFECorrel::CheckPhotonicPartner(AliVTrack* Vtrack, Bool_t 
     if (abs(mcPart->GetPdgCode())!=11) continue;
     if (mcPart->GetMother()!=Mother) continue;
     // cout << "partner " << i << endl;
-    if (foundPartner) cout << "should never happen " << endl; // but in p0->eeee
+    if (foundPartner) cout << "p0->eeee? " << endl; // but in p0->eeee
     Double_t p1[3], p2[3];
     MCParticle->PxPyPz(p1);
     mcPart->PxPyPz(p2);
@@ -4355,15 +4361,19 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
 	    }
 	    if (MotherPDG==11 || MotherPDG==15) {
 	      Int_t IsHeavyGM =  Int_t (GMotherPDG / TMath::Power(10, Int_t(TMath::Log10(GMotherPDG))));
-	      Double_t BGWeight = GetBackgroundWeight(MotherPDG, MCParticleAOD->Pt());
 	      if (IsHeavyGM>3 && IsHeavyGM<6)  fSignalElecHa->Fill(fillSparse, EventWeight/(recEffH*recEffE));
-	      else fBackgroundElecHa->Fill(fillSparse, EventWeight/(recEffH*recEffE));
+	      else if (!RedTrack->IsPhotonic()){
+		Double_t BGWeight = GetBackgroundWeight(MotherPDG, MCParticleAOD->Pt());
+		fBackgroundElecHa->Fill(fillSparse, BGWeight*EventWeight/(recEffH*recEffE));
+	      }
 	    }
 	    else {
 	      Int_t  IsHeavy =  Int_t (MotherPDG / TMath::Power(10, Int_t(TMath::Log10(MotherPDG))));
-	      Double_t BGWeight = GetBackgroundWeight(MotherPDG, MCParticleAOD->Pt());
 	      if (IsHeavy>3 && IsHeavy<6)  fSignalElecHa->Fill(fillSparse, EventWeight/(recEffH*recEffE));
-	      else  fBackgroundElecHa->Fill(fillSparse, EventWeight/(recEffH*recEffE));
+	      else if (!RedTrack->IsPhotonic()) {
+		Double_t BGWeight = GetBackgroundWeight(MotherPDG, MCParticleAOD->Pt());
+		fBackgroundElecHa->Fill(fillSparse, BGWeight*EventWeight/(recEffH*recEffE));
+	      }
 	    }
 	    if  (RedTrack->IsPhotonic()) {
 	      Double_t PtMotherWeight=1.;
@@ -5482,6 +5492,8 @@ void AliAnalysisTaskHaHFECorrel::MCEfficiencyCorrections(const AliVVertex * RecV
 	  else if (mcPDG==221) fMCEtaProd->Fill(fillSparse);
 	  else if (mcPDG==211) fMCPiPlusProd->Fill(fillSparse);
 	  else{
+	    // if (mcPart->IsSecondaryFromWeakDecay()) cout<< "SecFromWeakDecay" << mcPDG << "\t" << endl; // mcMotherPDG << endl;
+	    // else cout << "primary" << endl;
 	    fillSparse[4]=fillSparse[3]; //Mother
 	    fillSparse[3]=PDGMap.find(mcPDG)->second;
 	    fMCBGProd->Fill(fillSparse);
@@ -5622,6 +5634,11 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
     Double_t PtMotherWeight=1.; 
     // Double_t ExcludePion[9] = {130,211, 310, 321, 2212, 3122,3222,3322,5122}; // K0L, PI+, K0S, K+, p, Lambd0, Sigma+, Xci0, lambda b0
     // Double_t ExcludeEta[0] = {};
+
+    Int_t MotherIsHeavy =  Int_t (PDGCodeMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeMother))));
+    Int_t GrandMotherIsHeavy =  Int_t (PDGCodeGrandMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeGrandMother))));
+    Int_t GGMotherIsHeavy =  Int_t (PDGCodeGGMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeGGMother))));
+    
     if (PDGCode==11) { // only correct contributions which have been used for correction (primaries
       if (PDGCodeMother==22 && GrandMotherIsPrimary) {
 	IsPrimary=kTRUE;
@@ -5632,8 +5649,9 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	  PtMotherWeight=GetPionWeight(PtGrandMother); 
 	  //	for (Int_t j=0; j<9; j++) if (PDGCodeGGMother==ExcludePion[j]) PtMotherWeight=1.;
 	}
-	else if (PDGCodeGrandMother<=400 || PDGCodeGrandMother==443 || PDGCodeGrandMother==553) { //  exclude HF but include quarkonia
+	else if (GrandMotherIsHeavy<4 &&  GGMotherIsHeavy<4) { //  exclude HF but include quarkonia
 	  PtMotherWeight=GetBackgroundWeight(PDGCodeGrandMother, PtGrandMother);
+	  //	  CheckParticleOrigin(MClabel);
 	}
       }
       else if (MotherIsPrimary) {
@@ -5645,8 +5663,9 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	  PtMotherWeight=GetPionWeight(PtMother); 
 	  //for (Int_t j=0; j<9; j++) if (PDGCodeGGMother==ExcludePion[j]) PtMotherWeight=1.;
 	}
-	else if (PDGCodeMother<=400 || PDGCodeMother==443 || PDGCodeMother==553) {
+	else if (MotherIsHeavy<4 &&  GrandMotherIsHeavy<4 && GGMotherIsHeavy<4) {
 	  PtMotherWeight=GetBackgroundWeight(PDGCodeMother, PtMother);
+	  //	  CheckParticleOrigin(MClabel);
 	}
       }
     }
@@ -5683,8 +5702,18 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	if (trueULSPartner) fTagTruePairsMult->Fill(pt,mult, PtMotherWeight*EventWeight);
 	if (trueULSPartner && !(LSPartner>0 || ULSPartner>0)) cout << "ERROR ULSLS" << endl;
       }
-
-    }      
+      else if ((MotherIsHeavy<4 &&  GrandMotherIsHeavy<4 && GGMotherIsHeavy<4)  && ((PDGCodeMother>100) || (PDGCodeMother==22 && PDGCodeGrandMother>100))) {
+	fTagEffInclBGMult->Fill(pt, mult, PtMotherWeight*EventWeight);
+	for (int j=0; j<LSPartner; j++)  fTagEffULSBGMult->Fill(pt,mult, -1.*PtMotherWeight*EventWeight);
+	for (int j=0; j<ULSPartner; j++) fTagEffULSBGMult->Fill(pt,mult, PtMotherWeight*EventWeight);
+      }
+      else {
+	//	cout << "primary, but neither photonic or default bg" << PDGCodeMother <<  endl; // usually heavy particles
+      }
+    }
+    else {
+      //   cout << "not primary" <<endl;
+    }
 	
 
     
@@ -6215,12 +6244,13 @@ Double_t AliAnalysisTaskHaHFECorrel::GetPionWeight(Double_t pt) {
 Double_t AliAnalysisTaskHaHFECorrel::GetBackgroundWeight(Int_t PDGMother, Double_t pt) {
 
   if (fBgWeight.IsZombie()) {
-    cout<< "Zombie Histogram" << endl;
+    // cout<< "Zombie Histogram" << endl;
     return 1.;
   }
   Int_t Bin = fBgWeight.FindBin(1.*PDGMother, pt);
   if (fBgWeight.IsBinUnderflow(Bin) || fBgWeight.IsBinOverflow(Bin)){
-    //    cout << "BGWeightDef1 " << PDGMother << "\t" << 1. << endl;
+    //  cout << "BGWeightDef1 " << PDGMother << "\t" << 1. << endl;
+ 
     return 1.;
   }
   //  cout << "BGWeight " << PDGMother << "\t" << fBgWeight.GetBinContent(Bin) << endl;  
@@ -7118,4 +7148,18 @@ void AliAnalysisTaskHaHFECorrel::SetPhotVarOpt(Int_t VarOpt) {
     fPhotCorrCase = 4;
     break;
   }
+}
+
+Int_t AliAnalysisTaskHaHFECorrel::CheckParticleOrigin(Int_t Label) {
+  AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMC->GetTrack(abs(Label));    
+  Int_t PDGCode = abs(MCParticle->GetPdgCode());
+  cout << "Track with label: " << Label << "\t is a " << PDGCode << endl;
+  while( MCParticle->GetMother()>=0) {
+    MCParticle = (AliAODMCParticle*) fMC->GetTrack(MCParticle->GetMother());
+    PDGCode = abs(MCParticle->GetPdgCode());
+    cout << PDGCode << "\t";
+  }
+  cout << endl;
+  return PDGCode;
+
 }

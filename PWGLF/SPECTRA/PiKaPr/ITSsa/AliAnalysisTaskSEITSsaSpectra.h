@@ -256,7 +256,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
 
   // Reconstructed
   TH2F *fHistReco[kNchg * kNspc];         //!<! NSigma histos for 6 species
-  THnSparseF *fHistRecoMC[kNchg * kNspc]; //!<! NSigma histos for 6 species
+  THnSparseF *fHistRecoMC[kNchg * kNspc]; //!<! momentum correlation with nsigma PID for 6 species
+  THnSparseF *fHistRecoTrueMC[kNchg * kNspc]; //!<! momentum correlation with true PID for 6 species
 
   // MC histograms using reco values
   TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt reco)

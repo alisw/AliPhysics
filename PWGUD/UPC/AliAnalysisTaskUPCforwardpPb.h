@@ -126,10 +126,11 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
         TH1F*                   fCounterH;          //!
 
                                 /**
-                                 * As far as I understand, it should be the
-                                 * pseudorapidity distribution of the many muons.
+                                 * Pseudorapidity distribution of the single muons.
+                                 * Followed by the same for the dimuons.
                                  */
         TH1F*                   fEtaMuonH;          //!
+        TH1F*                   fEtaDimuonH;        //!
 
                                 /**
                                  *
@@ -142,11 +143,63 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
                                  *
                                  * Rapidity Bins => 2 of them
                                  * More Bins     => 3 of them!
+                                 *
+                                 * When using 0N0N: timing selection on the
+                                 * single ZDC hits to select the 0N0N
+                                 * component.
                                  */
-        TH1F*                   fInvariantMassDistributionH;                      //!
-        TH1F*                   fInvariantMassDistributionRapidityBinsH[2];       //!
-        TH1F*                   fInvariantMassDistributionMoreRapidityBinsH[3];   //!
+        TH1F*                   fInvariantMassDistributionH;                          //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsH[2];           //!
+        TH1F*                   fInvariantMassDistributionMoreRapidityBinsH[3];       //!
 
+        TH1F*                   fInvariantMassDistribution0N0NH;                      //!
+        TH1F*                   fInvariantMassDistributionRapidityBins0N0NH[2];       //!
+        TH1F*                   fInvariantMassDistributionMoreRapidityBins0N0NH[3];   //!
+
+        TH1F*                   fInvariantMassDistributionSmall0N0NH;                 //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsSmall0N0NH[2];  //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. This plot should
+                                 * show the relative components of the 0 neutron
+                                 * peak, the 1 neutron peak and possibly the
+                                 * 2 neutrons peak. Anything higher than that,
+                                 * requires help from the user and is more like
+                                 * a guess...
+                                 */
+        TH1F*                   fZNCEnergyAgainstEntriesH;                 //!
+        TH1F*                   fZNCEnergyAgainstEntriesExtendedH;         //!
+        TH1F*                   fZNCEnergyAgainstEntriesExtendedHv2;       //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. This plot should
+                                 * show the relative components of the 0 neutron
+                                 * peak, the 1 neutron peak and possibly the
+                                 * 2 neutrons peak. Anything higher than that,
+                                 * requires help from the user and is more like
+                                 * a guess...
+                                 */
+        TH1F*                   fZNAEnergyAgainstEntriesH;                 //!
+        TH1F*                   fZNAEnergyAgainstEntriesExtendedH;         //!
+        TH1F*                   fZNAEnergyAgainstEntriesExtendedHv2;       //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNCEnergyBeforeTimingSelectionH;                 //!
+        TH1F*                   fZNCEnergyBeforeTimingSelectionExtendedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNAEnergyBeforeTimingSelectionH;                 //!
+        TH1F*                   fZNAEnergyBeforeTimingSelectionExtendedH;         //!
 
                                 /**
                                  * This histogram records the number of entries
@@ -317,9 +370,15 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
                                  * of the dimuon pairs.
                                  *
                                  * Shift +1 => 20 Mev/c shift
+                                 *
+                                 * Restricted rapidity: -3.6 < y < -2.6
                                  */
-        TH1F*                   fDimuonPtDistributionH;                     //!
-        TH1F*                   fDimuonPtDistributionShiftPlusOneH;         //!
+        TH1F*                   fDimuonPtDistributionH;                              //!
+        TH1F*                   fDimuonPtDistributionShiftPlusOneH;                  //!
+
+        TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0NH;        //!
+        TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N36to31H;  //!
+        TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N31to26H;  //!
 
 
         //_______________________________
@@ -411,7 +470,7 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardpPb, 2);
+        ClassDef(AliAnalysisTaskUPCforwardpPb, 7);
 };
 
 #endif

@@ -87,8 +87,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
   fConfig->GetXaxis()->SetBinLabel(24, "TOF Timing");
   fConfig->GetXaxis()->SetBinLabel(25, "Pile Up Rej");
   fConfig->GetXaxis()->SetBinLabel(26, "TPC Refit");
-  fConfig->GetXaxis()->SetBinLabel(27, "#chi2 min");
-  fConfig->GetXaxis()->SetBinLabel(28, "#chi2 max");
+  fConfig->GetXaxis()->SetBinLabel(27, "#chi^{2} min");
+  fConfig->GetXaxis()->SetBinLabel(28, "#chi^{2} max");
   fConfig->GetXaxis()->SetBinLabel(29, "ESDFiltering");
 
 
@@ -112,17 +112,19 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
   fCutCounter->GetXaxis()->SetBinLabel(14, "TPC Refit");
   fCutCounter->GetXaxis()->SetBinLabel(15, "TPC Crossed Rows");
   fCutCounter->GetXaxis()->SetBinLabel(16, "TPC Row Ratio");
-  fCutCounter->GetXaxis()->SetBinLabel(17, "#chi2 OK");
-  fCutCounter->GetXaxis()->SetBinLabel(18, "TPC OK");
-  fCutCounter->GetXaxis()->SetBinLabel(19, "Reject Pions");
-  fCutCounter->GetXaxis()->SetBinLabel(20, "TPC PID");
-  fCutCounter->GetXaxis()->SetBinLabel(21, "ITS PID");
-  fCutCounter->GetXaxis()->SetBinLabel(22, "TPC TOF OK");
-  fCutCounter->GetXaxis()->SetBinLabel(23, "TPC TOF PID");
-  fCutCounter->GetXaxis()->SetBinLabel(24, "Smallest Sig");
-  fCutCounter->GetXaxis()->SetBinLabel(25, "Passes PID");
-  fCutCounter->GetXaxis()->SetBinLabel(26, "DCA_{Z}");
-  fCutCounter->GetXaxis()->SetBinLabel(27, "DCA_{XY}");
+  fCutCounter->GetXaxis()->SetBinLabel(17, "#chi^{2} OK");
+  fCutCounter->GetXaxis()->SetBinLabel(18, "ITS OK");
+  fCutCounter->GetXaxis()->SetBinLabel(19, "TPC OK");
+  fCutCounter->GetXaxis()->SetBinLabel(20, "TOF OK");
+  fCutCounter->GetXaxis()->SetBinLabel(21, "TPC TOF OK");
+  fCutCounter->GetXaxis()->SetBinLabel(22, "ITS PID");
+  fCutCounter->GetXaxis()->SetBinLabel(23, "TPC PID");
+  fCutCounter->GetXaxis()->SetBinLabel(24, "TPC TOF PID");
+  fCutCounter->GetXaxis()->SetBinLabel(25, "Reject Pions");
+  fCutCounter->GetXaxis()->SetBinLabel(26, "Smallest Sig");
+  fCutCounter->GetXaxis()->SetBinLabel(27, "Passes PID");
+  fCutCounter->GetXaxis()->SetBinLabel(28, "DCA_{Z}");
+  fCutCounter->GetXaxis()->SetBinLabel(29, "DCA_{XY}");
   fCutCounter->GetYaxis()->SetTitle("Entries");
 
   fHistList->Add(fCutCounter);
@@ -240,7 +242,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
 
     TString TOFbetaName = Form("TOFbeta_%s", sName[i].Data());
     fTOFbeta[i] = new TH2F(TOFbetaName.Data(), TOFbetaName.Data(), ptBins,
-                           ptmin, ptmax, 3.5 * twoDBins, 0.4, 1.1);
+                           ptmin, ptmax, 12 * twoDBins, -0.1, 1.1);
     fTOFbeta[i]->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
     fTOFbeta[i]->GetYaxis()->SetTitle("#beta_{TOF}");
 

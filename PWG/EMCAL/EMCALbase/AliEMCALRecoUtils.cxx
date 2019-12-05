@@ -629,12 +629,16 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
 /// \param tcell: time of cell under control
 /// \param cells: full list of cells
 /// \param bc: bunch crossing number
+/// \param cellMinEn: add the cell energy if large enough (for high energy clusters)
+/// \param useWeight: add the cell energy if w > 0
+/// \param energy: cluster or cell max energy, used for weight calculation
 ///
 /// \return float E_cross
 ///
 //___________________________________________________________________________
 Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
-                                     AliVCaloCells* cells, Int_t bc)
+                                     AliVCaloCells* cells, Int_t bc, 
+                                     Float_t cellMinEn, Bool_t useWeight, Float_t energy )
 {  
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   
@@ -693,8 +697,142 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
   if (TMath::Abs(tcell-tcell2)*1.e9 > fExoticCellDiffTime) ecell2 = 0 ;
   if (TMath::Abs(tcell-tcell3)*1.e9 > fExoticCellDiffTime) ecell3 = 0 ;
   if (TMath::Abs(tcell-tcell4)*1.e9 > fExoticCellDiffTime) ecell4 = 0 ;
+ 
+  Float_t w1 = 1, w2 = 1, w3 = 1, w4 = 1;
+  if ( useWeight )
+  {
+    w1 = GetCellWeight(ecell1,energy);
+    w2 = GetCellWeight(ecell2,energy);
+    w3 = GetCellWeight(ecell3,energy);
+    w4 = GetCellWeight(ecell4,energy);
+  }
   
+  if ( ecell1 < cellMinEn || w1 <= 0 ) ecell1 = 0 ;
+  if ( ecell2 < cellMinEn || w2 <= 0 ) ecell2 = 0 ;
+  if ( ecell3 < cellMinEn || w3 <= 0 ) ecell3 = 0 ;
+  if ( ecell4 < cellMinEn || w4 <= 0 ) ecell4 = 0 ;
+ 
   return ecell1+ecell2+ecell3+ecell4;
+}
+
+//________________________________________________________________________________________
+/// Check if 2 cells belong to the same T-Card
+/// Only for EMCal.
+///
+///  \param absId1: Reference absId cell
+///  \param absId2: Cross checked cell absId
+///  \param rowDiff: Distance in rows
+///  \param colDiff: Distance in columns
+///  \return true if belong to same TCard
+///
+//________________________________________________________________________________________
+Bool_t  AliEMCALRecoUtils::IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
+                                             Int_t & rowDiff, Int_t & colDiff) const
+{  
+  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+  
+  if ( !geom )
+  {
+    AliError("No instance of the geometry is available");
+    return -1;
+  }
+  
+  rowDiff = -100;
+  colDiff = -100;
+  
+  if(absId1 == absId2) return kFALSE;
+  
+  // Check if in same SM, if not for sure not same TCard
+  Int_t sm1 = geom->GetSuperModuleNumber(absId1);
+  Int_t sm2 = geom->GetSuperModuleNumber(absId2);
+  if ( sm1 != sm2 ) return kFALSE ;
+  
+  // Get the column and row of each absId
+  Int_t iTower = -1, iIphi = -1, iIeta = -1;
+  
+  Int_t col1, row1;
+  geom->GetCellIndex(absId1,sm1,iTower,iIphi,iIeta);
+  geom->GetCellPhiEtaIndexInSModule(sm1,iTower,iIphi, iIeta,row1,col1);
+  
+  Int_t col2, row2;
+  geom->GetCellIndex(absId2,sm2,iTower,iIphi,iIeta);
+  geom->GetCellPhiEtaIndexInSModule(sm2,iTower,iIphi, iIeta,row2,col2);
+  
+  Int_t row0 = Int_t(row1-row1%8);
+  Int_t col0 = Int_t(col1-col1%2);
+  
+  Int_t rowDiff0 = row2-row0;
+  Int_t colDiff0 = col2-col0;
+  
+  rowDiff = row1-row2;
+  colDiff = col1-col2;
+  
+  // TCard is made by 2x8 towers
+  if ( colDiff0 >=0 && colDiff0 < 2 && rowDiff0 >=0 && rowDiff0 < 8 ) 
+  {
+    
+    //    printf("\t absId (%d,%d), sm %d; col (%d,%d), colDiff %d; row (%d,%d),rowDiff %d\n",
+    //           absId1 , absId2, sm1, 
+    //           col1, col2, colDiff, 
+    //           row1, row2, rowDiff);
+    return kTRUE ;
+  }
+  else
+    return kFALSE;
+}
+
+//________________________________________________________________________________________
+/// Count the number of cells in same or different T-Card
+/// as the highest energy cell in the cluster.
+/// Only for EMCal.
+///
+///  \param clus: AliVCluster
+///  \param absIdMax: Abs Id number of highest energy cell in the cluster
+///  \param cells: AliVCaloCells
+///  \param nDiff: number of cells in different T-Card
+///  \param nSame: number of cells in same T-Card
+///  \param eDiff: sum of energy of cells in different T-Card
+///  \param eSame: sum of energy of cells in same T-Card
+///  \param emin: apply a min energy cut on cells while counting
+///
+//________________________________________________________________________________________
+void AliEMCALRecoUtils::GetEnergyAndNumberOfCellsInTCard
+(AliVCluster* clus, Int_t absIdMax, AliVCaloCells* cells,
+ Int_t   & nDiff, Int_t   & nSame, 
+ Float_t & eDiff, Float_t & eSame, 
+ Float_t   emin)
+{
+  Int_t nCaloCellsPerCluster = clus->GetNCells();
+  
+  nDiff = 0;
+  nSame = 0;
+  Int_t   absId   = -1;
+  Float_t amp     = 0;
+  Int_t   rowDiff = -100, colDiff = -100;
+  
+  // Loop on cluster cells count those in same or different T-Card
+  // with respect highest energy cell.
+  for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
+  {
+    absId = clus->GetCellsAbsId()[ipos];  
+    
+    amp   = cells->GetCellAmplitude(absId);
+    
+    if ( absId == absIdMax || amp < emin ) continue;
+    
+    if ( IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff) ) 
+    { 
+      nSame++; 
+      eSame+=amp; 
+    }
+    else             
+    { 
+      nDiff++; 
+      eDiff+= amp; 
+    }
+    
+  } // cell cluster loop
+  
 }
 
 ///

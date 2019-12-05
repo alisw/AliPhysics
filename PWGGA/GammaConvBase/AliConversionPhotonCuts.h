@@ -337,6 +337,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fMaxPhotonAsymmetry;                  ///< Asymmetry Cut
     Bool_t            fUseCorrectedTPCClsInfo;              ///< flag to use corrected tpc cl info
     Bool_t            fUseTOFpid;                           ///< flag to use tof pid
+    Bool_t            fUseTOFtiming;                        ///< flag to use tof timing information
+    Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
+    Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
+    Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
     Int_t             fDo2DPsiPairChi2;                     ///<
@@ -403,6 +407,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoAsymmetryafter;                 ///< asymmetry plot after cuts
     TH2F*             fHistoAcceptanceCuts;                 ///< bookkeeping for acceptance cuts
     TH1F*             fHistoCutIndex;                       ///< bookkeeping for cuts
+    TH2F*             fHistoTOFtimeVSMomentum;              ///< TOF timing (ns) versus e+- momentum
     TH1F*             fHistoEventPlanePhi;                  ///< EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           ///< Flag for preselection cut used in V0Reader
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
@@ -427,7 +432,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,30)
+    ClassDef(AliConversionPhotonCuts,32)
     /// \endcond
 };
 

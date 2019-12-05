@@ -29,7 +29,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_PbPb(
     TString   photonCutNumberV0Reader     = "",                       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
     Int_t     selectHeavyNeutralMeson     = 0,                        //run eta prime instead of omega
     Int_t     enableQAMesonTask           = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
-    Bool_t    enableTriggerMimicking      = kFALSE,                   // enable trigger mimicking
+    Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
     TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
     Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
@@ -89,7 +89,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_PbPb(
 
   //================================================
   //========= Add Pion Selector ====================
-  TString PionCuts          = "000000200";        
+  TString PionCuts          = "000000200";
 
   if( !(AliPrimaryPionSelector*)mgr->GetTask("PionSelector") ){
     AliPrimaryPionSelector *fPionSelector = new AliPrimaryPionSelector("PionSelector");
@@ -141,24 +141,24 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_PbPb(
 
    // Test for EMCal (13 TeV) without background calculation
   } else if ( trainConfig == 1000) { // with TPC refit + ITS requirement
-    cuts.AddCutHeavyMesonPCM("10130a13","00200009f9730000dge0400000","32c51070a","0103603700000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCM("11310a13","00200009f9730000dge0400000","32c51070a","0103603700000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCM("13530a13","00200009f9730000dge0400000","32c51070a","0103603700000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCM("15910a13","00200009f9730000dge0400000","32c51070a","0103603700000000","0453503000000000"); 
-  
+    cuts.AddCutHeavyMesonPCM("10130a13","00200009f9730000dge0400000","32c51070a","0103603700000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCM("11310a13","00200009f9730000dge0400000","32c51070a","0103603700000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCM("13530a13","00200009f9730000dge0400000","32c51070a","0103603700000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCM("15910a13","00200009f9730000dge0400000","32c51070a","0103603700000000","0453503000000000");
+
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
+
   } else if( trainConfig == 2000 ) {
     // everything open, min pt charged pi = 100 MeV
-    cuts.AddCutHeavyMesonPCM("10130a13","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCM("11310a13","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCM("13530a13","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCM("15910a13","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); 
-  
+    cuts.AddCutHeavyMesonPCM("10130a13","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCM("11310a13","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCM("13530a13","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCM("15910a13","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000");
+
   } else {
     Error(Form("GammaConvNeutralMeson_ConvMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -262,7 +262,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_PbPb(
   task->SetPionCutList(PionCutList);
 
   task->SetMoveParticleAccordingToVertex(kTRUE);
-  
+
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask);

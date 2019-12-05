@@ -44,6 +44,7 @@
 #pragma link C++ class AliLightNEventCuts+;
 #pragma link C++ class AliLightNTrackMCHist+;
 #pragma link C++ class AliAnalysisTaskAntipd+;
+#pragma link C++ class AliAnalysisTaskHe3+;
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
@@ -112,6 +113,9 @@
 #pragma link C++ class std::vector<RHypertriton3>+;
 #pragma link C++ class std::vector<SHypertriton3>+;
 #pragma link C++ class REvent+;
+
+/// * KF2Body
+#pragma link C++ class AliAnalysisTaskHypertritonKFTree+;
 
 /// Hyp3body Selector
 #ifdef __CLING__

@@ -41,6 +41,7 @@ set(SRCS
 	AliJFlowBaseTask.cxx
 	AliJFlowCMBTask.cxx
 	AliJCIaaEPTask.cxx
+	AliJSoundsTask.cxx
 )
 
 # Headers from sources

@@ -53,19 +53,19 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fDebug(0),fSavePool(0),fPlotQA(0),
   fUseManualEventCuts(0),fCorrectEff(0),
   fRtoD(0),fSubDetector(0),
-  fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
-  fRmvMTrack(0),fHadCorr(0),fHadCorrConstant(0.290),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
+  fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
+  fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.290),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
   fPoolMgr(0x0),fTrackDepth(0),fTargetFraction(0.1),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(1), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),
   fQnCorrEventPlaneAngle(0.0),
-  fParticleLevel(kFALSE),fIsMC(0),fMCParticles(0),fMCPi0List(0),
+  fParticleLevel(kFALSE),fIsMC(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
   fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
-  fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),
+  fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),fEtaPhiMCPion(0),
   fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),
-  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),
+  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),fHistTrackPsiEPPtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -93,19 +93,19 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fDebug(0),fSavePool(0),fPlotQA(0),
   fUseManualEventCuts(0),fCorrectEff(0),
   fRtoD(0),fSubDetector(0),
-  fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
-  fRmvMTrack(0),fHadCorr(0),fHadCorrConstant(0.290),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
+  fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
+  fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.290),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
   fPoolMgr(0x0),fTrackDepth(0),fTargetFraction(0.1),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(1), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),
   fQnCorrEventPlaneAngle(0.0),
-  fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCParticles(0),fMCPi0List(0),
+  fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
   fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
-  fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),
+  fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),fEtaPhiMCPion(0),
   fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),
-  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),
+  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),fHistTrackPsiEPPtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -293,12 +293,51 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	// Energy Range: [1.50 - 119.94]     Bins: 4 6
 	// Asym Range:   [0.00 - 1.0]        Bins: 1 5
 	// Angle Min Range:   [0.017 - 3.142]    Bins: 6 23
-	Double_t fPi0MassFixedValue_0[kNoGammaBins] = {0.138350, 0.130986, 0.137813,
-			0.145594, 0.156744, 0.175125,
-			0.220000, 0.220000, 0.220000};
-	Double_t fPi0SigmaFixedValue_0[kNoGammaBins] = {0.012870, 0.021483, 0.015919,
+  // Not split up by cent bins (all cent bins identical
+	Double_t fPi0MassFixedValue_0[kNMainCentBins][kNoGammaBins] = {
+      {
+        0.138350, 0.130986, 0.137813,
+        0.145594, 0.156744, 0.175125,
+        0.220000, 0.220000, 0.220000
+      },
+      {
+        0.138350, 0.130986, 0.137813,
+        0.145594, 0.156744, 0.175125,
+        0.220000, 0.220000, 0.220000
+      },
+      {
+        0.138350, 0.130986, 0.137813,
+        0.145594, 0.156744, 0.175125,
+        0.220000, 0.220000, 0.220000
+      },
+      {
+        0.138350, 0.130986, 0.137813,
+        0.145594, 0.156744, 0.175125,
+        0.220000, 0.220000, 0.220000
+      }
+  };
+	Double_t fPi0SigmaFixedValue_0[kNMainCentBins][kNoGammaBins] = {
+    {
+      0.012870, 0.021483, 0.015919,
 			0.016042, 0.017068, 0.021500,
-			0.031488, 0.031488, 0.031488}; //9
+			0.031488, 0.031488, 0.031488
+    },
+    {
+      0.012870, 0.021483, 0.015919,
+			0.016042, 0.017068, 0.021500,
+			0.031488, 0.031488, 0.031488
+    },
+    {
+      0.012870, 0.021483, 0.015919,
+			0.016042, 0.017068, 0.021500,
+			0.031488, 0.031488, 0.031488
+    },
+    {
+      0.012870, 0.021483, 0.015919,
+			0.016042, 0.017068, 0.021500,
+			0.031488, 0.031488, 0.031488
+    }
+  }; //9
 	
 	// These are the values add for GA triggered data on 20180824
 	// Lambda Range: [0.10 - 0.50]     Bins: 1 5
@@ -306,14 +345,35 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	// Asym Range:   [0.00 - 0.80]     Bins: 1 4
 	// OpeningAngle Range:   [0.017 - 3.142]     Bins: 6 29
 	// EOverP Cut    [0.60 - 1.40]
-	Double_t fPi0MassFixedValue_1[kNoGammaBins] = {
-	0.140730, 0.135875, 0.139245,
-	0.146724, 0.158606, 0.173285,
-	0.190328, 0.200000, 0.200000};
-	Double_t fPi0SigmaFixedValue_1[kNoGammaBins] = {
-	0.016273, 0.016512, 0.015727,
-	0.016063, 0.017414, 0.017614,
-	0.018374, 0.011323, 0.011323}; //9
+	Double_t fPi0MassFixedValue_1[kNMainCentBins][kNoGammaBins] = {
+    {
+      0.140730, 0.135875, 0.139245,
+      0.146724, 0.158606, 0.173285,
+      0.190328, 0.200000, 0.200000
+    },
+    {
+      0.140730, 0.135875, 0.139245,
+      0.146724, 0.158606, 0.173285,
+      0.190328, 0.200000, 0.200000
+    },
+    {
+      0.140730, 0.135875, 0.139245,
+      0.146724, 0.158606, 0.173285,
+      0.190328, 0.200000, 0.200000
+    },
+    {
+      0.140730, 0.135875, 0.139245,
+      0.146724, 0.158606, 0.173285,
+      0.190328, 0.200000, 0.200000
+    }
+  };
+	Double_t fPi0SigmaFixedValue_1[kNMainCentBins][kNoGammaBins] = {
+    {
+      0.016273, 0.016512, 0.015727,
+      0.016063, 0.017414, 0.017614,
+      0.018374, 0.011323, 0.011323
+    }
+  }; //9
 	
 	// These are the values add for MB data on 20180824
 	// Lambda Range: [0.10 - 0.50]     Bins: 1 5
@@ -321,16 +381,77 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	// Asym Range:   [0.00 - 0.80]     Bins: 1 4
 	// OpeningAngle Range:   [0.017 - 3.142]     Bins: 6 29
   // EOverP Cut    [0.60 - 1.40]
-	Double_t fPi0MassFixedValue_2[kNoGammaBins] = {
-	0.138988, 0.138666, 0.140109,
-	0.147061, 0.158484, 0.200000,
-	0.200000, 0.197369, 0.197369};
-	Double_t fPi0SigmaFixedValue_2[kNoGammaBins] = {
-	0.013807, 0.014188, 0.014031,
-	0.015245, 0.014975, 0.160000,
-	0.160000, 0.020498, 0.020498};
+	Double_t fPi0MassFixedValue_2[kNMainCentBins][kNoGammaBins] = {
+    {
+      0.138988, 0.138666, 0.140109,
+      0.147061, 0.158484, 0.200000,
+      0.200000, 0.197369, 0.197369
+    },
+    {
+      0.138988, 0.138666, 0.140109,
+      0.147061, 0.158484, 0.200000,
+      0.200000, 0.197369, 0.197369
+    },
+    {
+      0.138988, 0.138666, 0.140109,
+      0.147061, 0.158484, 0.200000,
+      0.200000, 0.197369, 0.197369
+    },
+    {
+      0.138988, 0.138666, 0.140109,
+      0.147061, 0.158484, 0.200000,
+      0.200000, 0.197369, 0.197369
+    }
+  };
+	Double_t fPi0SigmaFixedValue_2[kNMainCentBins][kNoGammaBins] = {
+    {
+      0.013807, 0.014188, 0.014031,
+      0.015245, 0.014975, 0.160000,
+      0.160000, 0.020498, 0.020498
+    },
+    {
+      0.013807, 0.014188, 0.014031,
+      0.015245, 0.014975, 0.160000,
+      0.160000, 0.020498, 0.020498
+    },
+    {
+      0.013807, 0.014188, 0.014031,
+      0.015245, 0.014975, 0.160000,
+      0.160000, 0.020498, 0.020498
+    },
+    {
+      0.013807, 0.014188, 0.014031,
+      0.015245, 0.014975, 0.160000,
+      0.160000, 0.020498, 0.020498
+    }
+  };
+
+  // These are the values for GA Data on 20191202
+  // Lambda Range: [0.10 - 0.70]     Bins: 1 7
+  // Energy Range: [2.00 - 100.00]     Bins: 1 3
+  // Asym Range:   [0.00 - 0.70]     Bins: 1 1
+  // OpeningAngle Range:   [0.017 - 3.142]     Bins: 3 12
+  // Track Cluster Correction: Subtraction
+
+  // note: last three bins are basically fake
+	Double_t fPi0MassFixedValue_3[kNMainCentBins][kNoGammaBins] = {
+    { 0.129265, 0.130740, 0.138696, 0.147779, 0.160138, 0.177054, 0.177054,0.177054,0.177054},
+    { 0.131305, 0.131078, 0.137113, 0.143671, 0.153884, 0.171041, 0.171041,0.171041,0.171041},
+    { 0.130332, 0.129157, 0.134172, 0.140263, 0.151399, 0.162242, 0.162242,0.162242,0.162242},
+    { 0.127595, 0.128214, 0.132793, 0.137396, 0.148063, 0.167322, 0.167322,0.167322,0.167322}
+  };
+	Double_t fPi0SigmaFixedValue_3[kNMainCentBins][kNoGammaBins] = {
+    { 0.019000, 0.019000, 0.017793, 0.017149, 0.017567, 0.011105, 0.011105,0.011105,0.011105},
+    { 0.019000, 0.019000, 0.013467, 0.012001, 0.014112, 0.013643, 0.011105,0.011105,0.011105},
+    { 0.019000, 0.016856, 0.010454, 0.010690, 0.011508, 0.011226, 0.011226,0.011226,0.011226},
+    { 0.019000, 0.003000, 0.009186, 0.011264, 0.014117, 0.012515, 0.012515,0.012515,0.012515}
+  };
 
 	switch (fPi0MassSelection) {
+    case 3:
+			memcpy (fPi0MassFixed , fPi0MassFixedValue_3, sizeof(fPi0MassFixed));
+			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_3, sizeof(fPi0SigmaFixed));
+      break;
 		case 2:
 			memcpy (fPi0MassFixed , fPi0MassFixedValue_2 , sizeof(fPi0MassFixed));
 			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_2, sizeof(fPi0SigmaFixed));
@@ -1307,6 +1428,24 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//   Michael's Special Histograms
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+  Int_t nEventPlaneBins = 128; // For histograms spanning delta psi_{EP,RP}
+  Double_t fEventPlaneMin = 0;
+  Double_t fEventPlaneMax = TMath::Pi()/2.;
+  Double_t fEventPlaneBinArray[nEventPlaneBins+1];
+  GenerateFixedBinArray(nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,fEventPlaneBinArray);
+
+  // pt bins for tracks
+  Int_t nTrackPtBins = 150;
+  Double_t fTrackPtMin = 0;
+  Double_t fTrackPtMax = 30;
+  Double_t fTrackPtArray[nTrackPtBins+1];
+  GenerateFixedBinArray(nTrackPtBins,fTrackPtMin,fTrackPtMax,fTrackPtArray);
+
+  fHistTrackPsiEPPtCent = new TH3F("fHistTrackPsiEPPtCent","Track #Delta#Psi_{EP};#Delta#Psi_{EP};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlaneBinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
+  fOutput->Add(fHistTrackPsiEPPtCent);
+  fHistTrackPsiRPPtCent = new TH3F("fHistTrackPsiRPPtCent","Track #Delta#Psi_{RP};#Delta#Psi_{RP};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlaneBinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
+  fOutput->Add(fHistTrackPsiRPPtCent);
+
 
 
 
@@ -1325,11 +1464,23 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fMassPionRej = new TH1F("fMassPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2)",3000,0,0.75);
 		fOutput->Add(fMassPionRej);
 
-    fPtEPAnglePionAcc = new TH2F("PtEPAnglePionAcc","PtEPAnglePionAcc",128,0,TMath::Pi(),60,0,30);
+    fPtEPAnglePionAcc = new TH2F("PtEPAnglePionAcc","PtEPAnglePionAcc;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,60,0,30);
     fOutput->Add(fPtEPAnglePionAcc);
-    fPtEPAngleMCPion = new TH2F("PtEPAngleMCPion","fPtEPAngleMCPion",128,0,TMath::Pi(),60,0,30);
+    fPtEPAngleMCPion = new TH2F("PtEPAngleMCPion","PtEPAngleMCPion;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,60,0,30);
     fOutput->Add(fPtEPAngleMCPion);
+    fPtEPAngleTrueRecMCPion = new TH2F("PtEPAngleTrueRecMCPion","PtEPAngleTrueRecMCPion;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,60,0,30);
+    fOutput->Add(fPtEPAngleTrueRecMCPion);
+    fMCReactionPlane = new TH1F("MCReactionPlane","Reaction Plane (MC Truth)",256,-TMath::Pi(),TMath::Pi());
+    fOutput->Add(fMCReactionPlane);
+    fPtRPAnglePionAcc = new TH2F("PtRPAnglePionAcc","Accepted Pion vs Reaction Plane;#Delta#Psi_{RP}",nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,60,0,30);
+    fOutput->Add(fPtRPAnglePionAcc);
+    fPtRPAngleMCPion = new TH2F("PtRPAngleMCPion","PtEPAngleMCPion;#Delta#Psi_{RP}",nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,60,0,30);
+    fOutput->Add(fPtRPAngleMCPion);
+    fPtRPAngleTrueRecMCPion = new TH2F("PtRPAngleTrueRecMCPion","PtRPAngleTrueRecMCPion;#Delta#Psi_{RP}",nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,60,0,30);
+    fOutput->Add(fPtRPAngleTrueRecMCPion);
 
+		fEtaPhiMCPion = new TH2F("fEtaPhiMCPion","MC Pi0 Coordinates (within acceptance);#eta;#phi",200,-0.9,0.9,200,0,2*TMath::Pi());
+		fOutput->Add(fEtaPhiMCPion);
 		fEtaPhiPionAcc = new TH2F("fEtaPhiPionAcc","Accepted Pi0 Coordinates;#eta;#phi",200,-0.9,0.9,200,0,2*TMath::Pi());
 		fOutput->Add(fEtaPhiPionAcc);
 
@@ -1742,11 +1893,16 @@ Bool_t AliAnalysisTaskGammaHadron::Run()
 	fCurrentEventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
 	if (fIsMC) {
+    fMCHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+    if (!fMCHeader) AliWarning("Missing MC Header");
 		fMCParticles = GetMCParticleContainer("mcparticles");
 		if (!fMCParticles) AliWarning("Missing \"mcparticles\" container"); 
     else {
       fMCParticles->SetParticleEtaLimits(-0.8, 0.8); // Loose cut for all MC particles
     }
+
+
+
 	}
 
 	//..Get the ClusterContainer for the event
@@ -1799,11 +1955,15 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 
   // Getting corrected event plane, saving information
   LoadQnCorrectedEventPlane();
+  if (fIsMC && fMCHeader) {
+    fMCReactionPlaneAngle = fMCHeader->GetReactionPlaneAngle();
+    fMCReactionPlane->Fill(fMCReactionPlaneAngle);
+  }
 
-
-  //  Initialize array of acceptance status FIXME
   AliClusterContainer *clusters = GetClusterContainer(0);
 	if (!clusters) return 0;
+
+  clusters->SetDefaultClusterEnergy(fClusEnergyType);
 
 	// 1. First get an event pool corresponding in mult (cent) and
 	//    zvertex to the current event. Once initialized, the pool
@@ -1892,6 +2052,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	{
 		if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,1,1);//correlate with same event
 		else               CorrelatePi0AndTrack(tracks,0,1,1);    //correlate with same event
+    FillTrackHistograms(tracks);
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//    Mixed Trigger section
@@ -1934,6 +2095,34 @@ TObjArray* AliAnalysisTaskGammaHadron::CloneToCreateTObjArray(AliParticleContain
 	if(tracksClone->GetEntries()!=tracks->GetNAcceptedParticles())cout<<"!!!!!!! Major error!!!! "<<"Accepted tracks in event: "<<tracks->GetNAcceptedParticles()<<", Tracks in TObjArray: "<<tracksClone->GetEntries()<<endl;
 
 	return tracksClone;
+}
+void AliAnalysisTaskGammaHadron::FillTrackHistograms(AliParticleContainer* tracks) {
+
+  // fHistTrackPsiRPPtCent fHistTrackPsiEPPtCent
+	Int_t NoOfTracksInEvent =tracks->GetNParticles();
+	AliVParticle* track=0;
+	for(Int_t NoTrack = 0; NoTrack < NoOfTracksInEvent; NoTrack++)
+	{
+		track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
+		if(!track)continue; //check if the track is a good track
+
+    TLorentzVector fLocalVector;
+    tracks->GetMomentumFromParticle(fLocalVector,track);
+
+    Double_t fLocalPhi = track->Phi();
+    if (fLocalPhi < 0) fLocalPhi += TMath::TwoPi(); // LocalPhi in [0,2pi]
+
+    // Reconstructed event plane angle
+    Double_t fDeltaPsiEP = abs(DeltaPhi(fLocalVector,fQnCorrEventPlaneAngle)); // DeltaPhi in [-pi,pi]
+    if ((TMath::Pi() - fDeltaPsiEP) < fDeltaPsiEP) fDeltaPsiEP = TMath::Pi() - fDeltaPsiEP; //DeltaPsi in [0,pi/2]
+    fHistTrackPsiEPPtCent->Fill(fDeltaPsiEP,track->Pt(),fCent);
+    // MC True ReactionPlaneAngle
+    Double_t fDeltaPsiRP = abs(DeltaPhi(fLocalVector,fMCReactionPlaneAngle));
+    if ((TMath::Pi() - fDeltaPsiRP) < fDeltaPsiRP) fDeltaPsiRP = TMath::Pi() - fDeltaPsiRP;
+    fHistTrackPsiRPPtCent->Fill(fDeltaPsiRP,track->Pt(),fCent);
+
+  }
+  return;
 }
 ///
 /// Select tracks and clusters to correlate with each other
@@ -2033,7 +2222,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 						TLorentzVector CaloClusterVec2;
 						TLorentzVector CaloClusterVecpi0;
 						clusters->GetMomentum(CaloClusterVec2, cluster2);
-						if(cluster2->GetNonLinCorrEnergy()>fClEnergyMin && cluster->GetNonLinCorrEnergy()>fClEnergyMin)
+						if(cluster2->GetUserDefEnergy(fClusEnergyType)>fClEnergyMin && cluster->GetUserDefEnergy(fClusEnergyType)>fClEnergyMin)
 						{
 							CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
 							fHistPi0->Fill(CaloClusterVecpi0.M());
@@ -2115,9 +2304,16 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
   //  for (Int_t i = 0; i < fMCParticles->Get
     AliAODMCParticle   * fMCParticle = 0;
 
-    while ((fMCParticle = fMCParticles->GetNextAcceptMCParticle())) {
+  // FIXME Get container cuts to work
+   // while ((fMCParticle = fMCParticles->GetNextAcceptMCParticle())) {
+    for (Int_t i = 0; i < fMCParticles->GetNParticles(); i++) {
+      fMCParticle = fMCParticles->GetMCParticle(i);
+      //AliInfo(Form("Investigating MC particle (code = %d) with eta phi = (%.3f,%.1f)\n",fMCParticle->GetPdgCode(),fMCParticle->Eta(),fMCParticle->Phi()));
+      if (fMCParticle->GetPdgCode() != 111) continue;
       Double_t fMCEtaAbs = fabs(fMCParticle->Eta()); // assuming all cuts sym. w.r.t sign of eta
-      Double_t fMCPhi = fMCParticle->Phi() * fRtoD; // Degrees [0,360)
+      Double_t fMCPhi = fMCParticle->Phi();
+      if (fMCPhi < 0) fMCPhi += TMath::TwoPi();
+      fMCPhi = fMCPhi * fRtoD; // Degrees [0,360)
       if (fMCEtaAbs > clusters->GetMaxEta()) continue; //0.7 or so cut
       // 80 < $\varphi$ < 187 degrees
       if ((fMCPhi > 80.) && (fMCPhi < 187.)) { // EMCal Main
@@ -2164,7 +2360,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
 			if(!cluster || !AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
 
-			fClusEnergy->Fill(cluster->GetNonLinCorrEnergy(),Weight);
+			fClusEnergy->Fill(cluster->GetUserDefEnergy(fClusEnergyType),Weight);
 			Int_t iMCIndexClus1 = -1;
 			if (fIsMC && fPlotQA) {
 				iMCIndexClus1 = FindMCPartForClus(cluster);
@@ -2241,7 +2437,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
           if (fDoPosSwapMixing > 0 && NoOfClustersInEvent > 2) {
 
             // Filling the position swap modification functions
-            Double_t fMinClusEnergy = TMath::Min(cluster->GetNonLinCorrEnergy(),cluster2->GetNonLinCorrEnergy());
+            Double_t fMinClusEnergy = TMath::Min(cluster->GetUserDefEnergy(fClusEnergyType),cluster2->GetUserDefEnergy(fClusEnergyType));
             // May move to separate function
             Double_t ModArray[8];
             /*
@@ -2298,7 +2494,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
                 // Fill the mass modification histograms
 
                 Double_t f3MaxClusM02 = TMath::Max(fMaxClusM02,cluster3->GetM02());
-                Double_t f3MinClusEnergy = TMath::Min(fMinClusEnergy,cluster3->GetNonLinCorrEnergy());
+                Double_t f3MinClusEnergy = TMath::Min(fMinClusEnergy,cluster3->GetUserDefEnergy(fClusEnergyType));
 
                 // Theta31 vs Theta32?
                 Double_t Theta31 = CaloClusterVec3.Angle(CaloClusterVec.Vect());
@@ -2334,14 +2530,14 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
                   //VMatrix
   //                ModArray[0] = TMath::Sqrt(cluster->GetNonLinCorrEnergy()/cluster2->GetNonLinCorrEnergy());
-                  ModArray[1] = (cluster3->GetNonLinCorrEnergy() + cluster->GetNonLinCorrEnergy()) /
-                  (cluster3->GetNonLinCorrEnergy() + cluster2->GetNonLinCorrEnergy());
+                  ModArray[1] = (cluster3->GetUserDefEnergy(fClusEnergyType) + cluster->GetUserDefEnergy(fClusEnergyType)) /
+                  (cluster3->GetUserDefEnergy(fClusEnergyType) + cluster2->GetUserDefEnergy(fClusEnergyType));
                   if (bLogPSMod) {
-                    ModArray[0] = 0.5 * (TMath::Log(cluster->GetNonLinCorrEnergy()) - TMath::Log(cluster2->GetNonLinCorrEnergy()));
+                    ModArray[0] = 0.5 * (TMath::Log(cluster->GetUserDefEnergy(fClusEnergyType)) - TMath::Log(cluster2->GetUserDefEnergy(fClusEnergyType)));
                     //ModArray[0] = TMath::Log(ModArray[0]);
                     ModArray[1] = TMath::Log(ModArray[1]);
                   } else {
-                    ModArray[0] = TMath::Sqrt(cluster->GetNonLinCorrEnergy()/cluster2->GetNonLinCorrEnergy());
+                    ModArray[0] = TMath::Sqrt(cluster->GetUserDefEnergy(fClusEnergyType)/cluster2->GetUserDefEnergy(fClusEnergyType));
                   }
                   fVScaleMatrix->Fill(ModArray,Weight);
                   if (bLogPSMod) {
@@ -2593,8 +2789,14 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			{
         Double_t fLocalPhi = aliCaloClusterVecpi0.Phi();
         if (fLocalPhi < 0) fLocalPhi += 2*pi;
-        Double_t evtPlaneAngle=DeltaPhi(aliCaloClusterVecpi0,fQnCorrEventPlaneAngle);
+        Double_t evtPlaneAngle=abs(DeltaPhi(aliCaloClusterVecpi0,fQnCorrEventPlaneAngle));
+        if ((pi - evtPlaneAngle) < evtPlaneAngle) evtPlaneAngle = pi - evtPlaneAngle;
         fPtEPAnglePionAcc->Fill(evtPlaneAngle,aliCaloClusterVecpi0.Pt());
+
+        Double_t reactionPlaneAngle=abs(DeltaPhi(aliCaloClusterVecpi0,fMCReactionPlaneAngle));
+        if ((pi - reactionPlaneAngle) < reactionPlaneAngle) reactionPlaneAngle = pi - reactionPlaneAngle;
+        fPtRPAnglePionAcc->Fill(reactionPlaneAngle,aliCaloClusterVecpi0.Pt());
+
 				fEtaPhiPionAcc->Fill(aliCaloClusterVecpi0.Eta(),fLocalPhi);
 				fMassPtPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt());
 				fMassPtCentPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt(),fCent);
@@ -2696,6 +2898,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterVec, AliTLorentzVector CaloClusterVec2, AliTLorentzVector CaloClusterVecPi0, Double_t fMaxClusM02, Double_t Weight, Int_t isMixed, Int_t mcIndex1, Int_t mcIndex2, Int_t PosSwapStatus)
 {
 	Double_t pi = TMath::Pi();
+  Double_t FillWeight = Weight; // May want to modify weight
 
 	Double_t valueArray[11];
 	valueArray[0]=CaloClusterVecPi0.Pt();
@@ -2747,7 +2950,21 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 				Int_t iLCA = FindMCLowComAnc(mcIndex1,mcIndex2); // Lowest Common Ancestor of clusters
 				if (iLCA != -1) {
 					AliAODMCParticle * pLCA = fMCParticles->GetMCParticle(iLCA);
+          TLorentzVector fLCAVector;
+          fMCParticles->GetMomentumFromParticle(fLCAVector,pLCA);
 					Int_t iLCAPdg = pLCA->GetPdgCode();
+
+          Int_t iLCAStatus = pLCA->MCStatusCode(); // 1 for embedded (0 otherwise)
+
+          if (fMCEmbedReweightMode > 0) {
+            if (iLCAStatus == 1) { // is embedded particle
+          //    Double_t pLCA_Pt = pLCA->Pt();
+          //    Double_t pLCA_M  = pLCA->M();
+            }
+            if (fMCEmbedReweightMode == 2 && iLCAPdg == 221) return; // Vetoing on embedded eta
+          }
+
+
 					if (iLCAPdg == 111) {
 						Int_t nLCADaughters = pLCA->GetNDaughters();
 						if (nLCADaughters == 2) { // 2 Gammas
@@ -2755,6 +2972,16 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
               AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+1);
 							if (pDaughter1 && pDaughter2 && pDaughter1->GetPdgCode() == 22 && pDaughter2->GetPdgCode() == 22) {
 								MCMatchStatus = 2;
+
+                // Reaction Plane Angle information
+                Double_t fTrueAngleFromEventPlane = abs(DeltaPhi(fLCAVector,fQnCorrEventPlaneAngle));
+                if ((TMath::Pi() - fTrueAngleFromEventPlane) < fTrueAngleFromEventPlane) fTrueAngleFromEventPlane = TMath::Pi() - fTrueAngleFromEventPlane;
+                Double_t fTrueAngleFromReactionPlane = abs(DeltaPhi(fLCAVector,fMCReactionPlaneAngle));
+                if ((TMath::Pi() - fTrueAngleFromReactionPlane) < fTrueAngleFromReactionPlane) fTrueAngleFromReactionPlane = TMath::Pi() - fTrueAngleFromReactionPlane;
+
+                fPtEPAngleTrueRecMCPion->Fill(fTrueAngleFromEventPlane,pLCA->Pt());
+                fPtRPAngleTrueRecMCPion->Fill(fTrueAngleFromReactionPlane,pLCA->Pt());
+
                 if (PosSwapStatus == 1) {
                   MCMatchStatus = 10;
                 } else if (PosSwapStatus == 2) {
@@ -2824,7 +3051,7 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 						}
 					}
 					else if (iLCAPdg == 22) MCMatchStatus = 8;
-					else MCMatchStatus = 9;
+					else MCMatchStatus = 9; // FIXME check if it is a parton? Then jet.
 
 				} else {
 					MCMatchStatus = 0;
@@ -2840,7 +3067,7 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 	}
 
 
-	fPi0Cands->Fill(valueArray,Weight);
+	fPi0Cands->Fill(valueArray,FillWeight);
 
 	if (!fDoRotBkg) return;
 	if (isMixed) return; // don't do rotational background if off or if this is looking at mixed cluster pairs
@@ -3029,7 +3256,7 @@ void AliAnalysisTaskGammaHadron::FillQAHistograms(Int_t identifier,AliClusterCon
 	TLorentzVector caloClusterVec;
 	clusters->GetMomentum(caloClusterVec,caloCluster);
 	AliTLorentzVector aliCaloClusterVec = AliTLorentzVector(caloClusterVec); //..can acess phi from
-	Double_t energy= caloCluster->GetNonLinCorrEnergy();
+	Double_t energy= caloCluster->GetUserDefEnergy(fClusEnergyType);
 
 	if(identifier==0 && fPlotQA>0 && fGammaOrPi0==0 && energy >=1)
 	{
@@ -3128,7 +3355,7 @@ void AliAnalysisTaskGammaHadron::FillQAHistograms(Int_t identifier,AliClusterCon
 	}
 	/*do similar test here?*/fHistDEtaDPhiGammaQA[identifier] ->Fill(caloClusterVec.Eta(),aliCaloClusterVec.Phi_0_2pi()*fRtoD,weight);
 	if(TrackVec)             fHistDEtaDPhiTrackQA[identifier] ->Fill(TrackVec->Eta(),TrackVec->Phi()*fRtoD,weight);
-	fHistClusterTime[identifier]  ->Fill(caloCluster->GetTOF()*1000000000,caloCluster->GetNonLinCorrEnergy(),weight);
+	fHistClusterTime[identifier]  ->Fill(caloCluster->GetTOF()*1000000000,caloCluster->GetUserDefEnergy(fClusEnergyType),weight);
 }
 //
 // Fills histograms for MC Pi0 information
@@ -3144,8 +3371,21 @@ void AliAnalysisTaskGammaHadron::FillMCPi0Hists(Int_t fMultiplicity) {
 
     Double_t fLocalPhi = fMCPi0_Part->Phi();
     if (fLocalPhi < 0) fLocalPhi += TMath::TwoPi();
-    Double_t evtPlaneAngle=DeltaPhi(vMCPi0,fQnCorrEventPlaneAngle);
+
+    fEtaPhiMCPion->Fill(fMCPi0_Part->Eta(),fLocalPhi);
+
+    // Reconstructed angle
+    Double_t evtPlaneAngle=abs(DeltaPhi(vMCPi0,fQnCorrEventPlaneAngle)); // DeltaPhi is [-pi,pi]
+    //if (evtPlaneAngle < 0) evtPlaneAngle += TMath::TwoPi();
+    if ((TMath::Pi() - evtPlaneAngle) < evtPlaneAngle) evtPlaneAngle = TMath::Pi() - evtPlaneAngle;
     fPtEPAngleMCPion->Fill(evtPlaneAngle,fMCPi0_Part->Pt());
+
+    // MC Truth angle
+    Double_t reactionPlaneAngle=abs(DeltaPhi(vMCPi0,fMCReactionPlaneAngle));
+    // Map to [0,-pi/2]
+    //if (reactionPlaneAngle < 0) reactionPlaneAngle += TMath::TwoPi();
+    if ((TMath::Pi() - reactionPlaneAngle) < reactionPlaneAngle) reactionPlaneAngle = TMath::Pi() - reactionPlaneAngle;
+    fPtRPAngleMCPion->Fill(reactionPlaneAngle,fMCPi0_Part->Pt());
 
     //fMCPi0s = new TH3F("fHistMCPi0s","fHistMCPi0s;p_{T}^{#pi^{0}};",20,fMCPi0Bins,7,fMCPi0EtaBins,kNEMCalMultBins,fMixBEMCalMult->GetXbins()->GetArray());
     fHistMCPi0_PtEtaMult->Fill(fMCPi0_Part->Pt(),fMCPi0_Part->Eta(),fMultiplicity);
@@ -3180,7 +3420,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	//-----------------------------
 	//..Check if the cluster energy is above set threshold
   //..This is check is done first for efficiency
-  if (caloCluster->GetNonLinCorrEnergy() < fClEnergyMin) {
+  if (caloCluster->GetUserDefEnergy(fClusEnergyType) < fClEnergyMin) {
     return 0;
   }
 
@@ -3224,7 +3464,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
   if(fHadCorr>0) // Had Corr may lower cluster E below threshold
   {
     //..Check if the cluster energy is now below the threshold
-    if (caloCluster->GetNonLinCorrEnergy() < fClEnergyMin) {
+    if (caloCluster->GetUserDefEnergy(fClusEnergyType) < fClEnergyMin) {
       return 0;
     }
   }
@@ -3270,8 +3510,8 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
 	//..Accepts clusters if certain conditions are fulfilled
 	Bool_t Accepted=1; //..By default accepted
 
-	Double_t fE1 = cluster1->GetNonLinCorrEnergy();
-	Double_t fE2 = cluster2->GetNonLinCorrEnergy();
+	Double_t fE1 = cluster1->GetUserDefEnergy(fClusEnergyType);
+	Double_t fE2 = cluster2->GetUserDefEnergy(fClusEnergyType);
 
   // This check should be redundant now ...
   if (fE1<fClEnergyMin || fE2<fClEnergyMin) return 0;  // Check cluster energy min.
@@ -3288,6 +3528,8 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
   Double_t Pi0Mass  = 0;
   Double_t Pi0Sigma = 0;
   Double_t SBsplit  = 0;
+
+  if (Pi0Pt > fMaxPi0Pt) return 0;
 
   if (fUseParamMassSigma)
   {
@@ -3311,16 +3553,26 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
     // Finding pT Bin:
     Int_t ptBin = 0; // Default is to use lowest bin
 
-    for (Int_t k = 0; k < kNoGammaBins-1; k++)
-    {
+    for (Int_t k = 0; k < kNoGammaBins-1; k++) {
       if ((Pi0Pt >= fArray_G_Bins[k]) && (Pi0Pt < fArray_G_Bins[k+1]))
       {
         ptBin = k;
         break;
       }
     }
-    Pi0Mass  = fPi0MassFixed[ptBin];
-    Pi0Sigma = fPi0SigmaFixed[ptBin];
+
+    Double_t centBinArray[kNMainCentBins+1]  = {0.0,10.0,30.0,50.0,90.0};
+    Int_t iCentBin = 0;
+
+    for (Int_t k = 0; k < kNMainCentBins; k++) {
+      if ((fCent >= centBinArray[k]) && (fCent < centBinArray[k+1]))
+      {
+        iCentBin = k;
+        break;
+      }
+    }
+    Pi0Mass  = fPi0MassFixed[iCentBin][ptBin];
+    Pi0Sigma = fPi0SigmaFixed[iCentBin][ptBin];
     SBsplit  = (0.5-(Pi0Mass+Pi0Sigma*3))*0.5; //..Upper range 500MeV lower range mass+3sigma
   }
   //..if you select the pi0 peak region
@@ -3420,7 +3672,7 @@ Int_t AliAnalysisTaskGammaHadron::FindMCPartForClus(AliVCluster * caloCluster) {
 	TLorentzVector caloClusterVec;
 	caloCluster->GetMomentum(caloClusterVec,0);
 
-	Double_t fClus_E   = caloCluster->GetNonLinCorrEnergy();
+	Double_t fClus_E   = caloCluster->GetUserDefEnergy(fClusEnergyType);
 	Double_t fClus_Eta = caloClusterVec.Eta();
 
 	Int_t iLabel = caloCluster->GetLabel();
@@ -3596,7 +3848,7 @@ Int_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluster
 			if (!fIsMC || (fMinMCLabel <= 0 || TMath::Abs(track->GetLabel()) > fMinMCLabel)) // label check copied from AliClusterContainer
 			{
         Double_t fP = track->P();
-        Double_t fE = caloCluster->GetNonLinCorrEnergy();
+        Double_t fE = caloCluster->GetUserDefEnergy(AliVCluster::kNonLinCorr); // Use the non linearity corrected energy here
         if (fP > 1e-6) fHistEOverPvE->Fill(fE,fE/fP);
         if (fE > 1e-6) fHistPOverEvE->Fill(fE,fP/fE);
 //					if (track->P() > 1e-6) fHistEOverPvE->Fill(caloCluster->GetNonLinCorrEnergy()/track->P(),caloCluster->GetNonLinCorrEnergy()); 
@@ -3612,7 +3864,7 @@ Int_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluster
 				etadiff = fEtaDiff;
 				phidiff = fPhiDiff;
         if (!bApplyHadCorr) break; // If we are not applying the hadronic correction, break at first match
-        caloCluster->SetNonLinCorrEnergy(fE - fHadCorrConstant);
+        caloCluster->SetHadCorrEnergy(fE - fHadCorrConstant);
         // may get negative energy clusters
 			}
 		}
@@ -3762,6 +4014,11 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane()"<<endl;
 
   fQnCorrEventPlaneAngle = fEPV0; // Default to uncorrected V0M if QnVectors are not set up correctly
+
+  if (fIsMC && fUseMCReactionPlane && fMCHeader) {
+    fQnCorrEventPlaneAngle = fMCHeader->GetReactionPlaneAngle();
+    return;
+  }
 
   if (fFlowQnVectorMgr == 0) return;
 

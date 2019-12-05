@@ -29,7 +29,7 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
 }
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
     AliFemtoDreamCollConfig *conf, bool MinimalBooking)
-    : fHigherMath(new AliFemtoDreamHigherPairMath(conf)),
+    : fHigherMath(new AliFemtoDreamHigherPairMath(conf, MinimalBooking)),
       fNSpecies(conf->GetNParticles()),
       fZVtxMultBuffer(
           conf->GetNZVtxBins(),
