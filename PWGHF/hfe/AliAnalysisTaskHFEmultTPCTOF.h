@@ -5,7 +5,7 @@
 
 class TH1F;
 class TH2F;
-class TH2D;
+class TH2F;
 class TH3F;
 class AliAODEvent;
 class TList;
@@ -69,8 +69,10 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	Int_t GetElecSourceType(AliAODMCParticle *, TClonesArray *,Double_t &ptm);
 	Int_t GetPi0EtaType(AliAODMCParticle *, TClonesArray *);
 
-	void SelectPhotonicElectronR(Int_t itrack, AliAODTrack *track, Int_t motherindex, Int_t pdg,Int_t source,Double_t V0Mmult1 , Double_t SPDntr1);
+	void SelectPhotonicElectronR(Int_t itrack, AliAODTrack *track, Int_t motherindex, Int_t pdg,Int_t source,Double_t V0Mmult1 , Double_t SPDntr1,Double_t ptmotherwg);
+	Double_t WeightMCncCorr(Int_t multSPDtr);
 	Double_t Beta(AliAODTrack *track);
+	Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 	AliHFEpid *GetPID() const { return fPID; }
 	  
 	//Setters
@@ -164,7 +166,7 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	Bool_t fIsMC;
 	TList       *fOutputList; //! Output list
 
-	TH1D        *fcount;//!
+	TH1F        *fcount;//!
 	TH1F        *fHistPt; //! Pt spectrum
 	TH1F        *fHistMult; //! Multiplicity Distribution
 	TH1F        *fTPCSignal; //! TPCSignal vs entries
@@ -180,6 +182,7 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	TH2F	      *fdEdxVsP_TPC_cut ;//!
 	TH2F	      *fnSigmaVsP_TPC;//!
 	TH2F	      *fnSigmaVsP_TPC_cut;//!
+	TH2F	      *fnSigmaVsPt_TPC_cut;//!
 	TH2F	      *fnSigmaVsP_TOF;//!
 	TH2F	      *fnBetaVsP_TOF;//!
 	
@@ -195,11 +198,12 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	TH1F        *fNentries2;         	//!histogram with number of events on output slot 3 
 	TF1	   *fLandau;//!
 	TF1	   *fErr;//!
+	TF1	   *func_MCnchCorr;//!
 	  
-	TH1D *fHadCot_Landau;//!
-	TH1D *fHadCot_Err;	//!
-	TH1D *fPt_incl_e_Landau;//!
-	TH1D *fPt_incl_e_Err;	//!	
+	TH1F *fHadCot_Landau;//!
+	TH1F *fHadCot_Err;	//!
+	TH1F *fPt_incl_e_Landau;//!
+	TH1F *fPt_incl_e_Err;	//!	
 
   	Double_t fMultiPercentile;
   	Double_t fMultiPercentileSPD;
@@ -290,6 +294,7 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	TH1F        *fPt_elec_gamma_MB_LS;//!
    
    THnSparseF  *fInvMULSnSp;//!
+   THnSparseF  *fInvMULSnSpwg;//!
    THnSparseF  *fPi0EtaSpectra;//!
 	THnSparseF  *fPi0EtaSpectraSp;//!
 	TH2F        *fInvMULSpi0;//!
@@ -307,8 +312,29 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
     TH1F        *pi0MC_1;//!
 	TH1F        *etaMC_1;//!
 	TH1F        *gammaMC_1;//!
+	
+	//++++++++++Weights++++++++++++++++++++
+	TH1F *fPt_elec_phot2;//!
+	TH1F *fPtElec_ULS_MC2;//!
+	TH1F *fPtElec_LS_MC2;//!
+	TH2F *fPt_elec_phot2_multSPD;//!
+	TH2F *fPtElec_ULS_MC2_multSPD;//!
+	TH2F *fPtElec_LS_MC2_multSPD;//!
+	TH1F *fPt_elec_from_pi02;//!
+	TH1F *fPtElec_ULS_MC_from_pi02;//!
+	TH1F *fPtElec_LS_MC_from_pi02;//!
+	TH1F *fPt_elec_from_eta2;//!
+	TH1F *fPtElec_ULS_MC_from_eta2;//!
+	TH1F *fPtElec_LS_MC_from_eta2;//!
+	TH1F *fPt_elec_from_gamma2;//!
+	TH1F *fPtElec_ULS_MC_from_gamma2;//!
+	TH1F *fPtElec_LS_MC_from_gamma2;//!
 
-   
+   TF1 *f0a;//!
+	TF1 *f0b;//!
+	TF1 *f1;//!
+	TF1 *f1a;//!
+	TF1 *f1b;//!
    //-------------------------SPD V0M Multiplicity -------------------------------
    
 		
@@ -325,6 +351,7 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
   	
   	TH1F *fSPDCorrMultDist_min;//!
   	TH1F *fSPDCorrMultDist_max;//!
+  	TH1F *fSPDWeightedCorrMultDist_max;//!
   
    TProfile* GetEstimatorHistogram(const AliAODEvent* fAOD);
   
@@ -341,10 +368,23 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
   	TH2F *fMultV0M_vs_alimult;//!
   	TH2F *fNchVsZvtx;//!
   	TH2F *SPDNtrCorrVsNch;//!
+  	TH2F *SPDNtrCorrVsNchweights;//!
 	TH2F *V0MCorrVsNch;//!
 	THnSparseF  *fSPDNtrCorrVsV0MCorrVsNch;//!
   
-  	
+  	 TProfile*               Profile_Mean; //!
+  	 TProfile*               Profile_MeanCorr;//!
+
+    
+    TH1F *fPtHFEMC_aftertrackcut;//!
+    TH1F *fPtHFEMC_aftertofcut;//!
+    TH1F *fPtHFEMC_aftertpcnsigcut;//!
+    TH1F *fPtHFEMC_aftertoftpcnsigcut;//!
+    TH2F *fPtHFEMC_aftertrackcut_SPD;//!
+    TH2F *fPtHFEMC_aftertofcut_SPD;//!
+    TH2F *fPtHFEMC_aftertpcnsigcut_SPD;//!
+    TH2F *fPtHFEMC_aftertoftpcnsigcut_SPD;//!
+  
 	//-------------------------------------------------------------------------------------
 	  
 	AliAnalysisTaskHFEmultTPCTOF(const AliAnalysisTaskHFEmultTPCTOF&); // not implemented
