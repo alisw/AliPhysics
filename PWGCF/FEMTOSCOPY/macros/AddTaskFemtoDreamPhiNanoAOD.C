@@ -40,12 +40,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 //    }
 
   // Proton cuts
-  const float ProtonPtlow = 0.4;
-  const float ProtonPtup = 0.6;
-  const float ProtonEtaLow = 0.75;
-  const float ProtonEtaUp = 0.85;
-  const float ProtonNsigmaLow = 2.5;
-  const float ProtonNsigmaUp = 3.5;
+  const float ProtonPtlow = 0.45;
+  const float ProtonPtup = 0.55;
+  const float ProtonEtaLow = 0.78;
+  const float ProtonEtaUp = 0.82;
+  const float ProtonNsigmaLow = 2.7;
+  const float ProtonNsigmaUp = 3.3;
   const float ProtonNClsLow = 70;
   const float ProtonNClsUp = 90;
 
@@ -192,8 +192,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   // Kaon cuts
   const float KaonPtlow = 0.1;
   const float KaonPtup = 0.2;
-  const float KaonEtaLow = 0.75;
-  const float KaonEtaUp = 0.85;
+  const float KaonEtaLow = 0.78;
+  const float KaonEtaUp = 0.82;
   const float KaonNsigmaLow = 4.5;
   const float KaonNsigmaUp = 5.5;
   const float KaonNClsLow = 70;
