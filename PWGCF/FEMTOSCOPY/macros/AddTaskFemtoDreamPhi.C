@@ -43,6 +43,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 //  TrackNegKaonCuts->SetPID(AliPID::kKaon, 999, 5);
 //  TrackNegKaonCuts->SetPlotTOFMass(true);
 
+  TrackPosKaonCuts->SetDCAVtxZ(0.4);
+  TrackNegKaonCuts->SetDCAVtxZ(0.4);
+  TrackPosKaonCuts->SetDCAVtxXY(0.8);
+  TrackNegKaonCuts->SetDCAVtxXY(0.8);
+  TrackPosKaonCuts->SetFilterBit(128);
+  TrackNegKaonCuts->SetFilterBit(128);
+
 //  if (suffix != "0") {
 //    TrackPosKaonCuts->SetMinimalBooking(true);
 //    TrackNegKaonCuts->SetMinimalBooking(true);
@@ -61,11 +68,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   TrackCutsPhi->SetPDGCodePosDaug(321);
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
-
-  TrackPosKaonCuts->SetDCAVtxZ(0.4);
-  TrackNegKaonCuts->SetDCAVtxZ(0.4);
-  TrackPosKaonCuts->SetDCAVtxXY(0.8);
-  TrackNegKaonCuts->SetDCAVtxXY(0.8);
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
