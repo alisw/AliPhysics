@@ -41,6 +41,8 @@ public:
     //This is in addition to the "IsTriggered" functionality. 
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType; fCheckTriggerType=kTRUE; }
     
+    void SetFiredTriggerString(TString lData) { fFiredTrigString = lData.Data(); } 
+    
     //Run Ranges Interface
     Long_t GetNRunRanges() const {return fNRunRanges; }
     void AddRunRange ( Int_t lFirst, Int_t lLast, AliMultSelection *lMultSelProvided );
@@ -93,6 +95,7 @@ private:
     Bool_t fCheckTriggerType; 
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type to calibrate
     Bool_t fPrefilterOnly; //stop before calibrating stuff
+    TString fFiredTrigString; //select on fired trigger string if desired
     
     //Run Ranges map - master storage
     Long_t fNRunRanges;
