@@ -10,6 +10,7 @@
 
 AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
                                      bool isMC = false, bool isNano = true,
+                                     int iDepth = 10,
                                      bool Systematic = false,
                                      const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
@@ -182,7 +183,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(iDepth);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   if (isMC) {
