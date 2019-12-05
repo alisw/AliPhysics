@@ -20,82 +20,84 @@
 // Finland
 //////////////////////////////////////////////////////////////////////////////
 
-#include "AliAnalysisUtils.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAODHandler.h"
-#include "AliAODMCParticle.h"
-#include "AliMCEvent.h"
-#include "AliGenHijingEventHeader.h"
+#include <TGrid.h>
+#include <TRandom.h>
+#include <AliAnalysisUtils.h>
+#include <AliAnalysisTaskSE.h>
+#include <AliAODMCParticle.h>
+#include <AliMCEvent.h>
+#include <AliGenHijingEventHeader.h>
+#include <AliAnalysisManager.h>
+#include <AliAnalysisDataContainer.h>
+#include <AliAODEvent.h>
+//#include <AliInputEventHandler.h>
+#include <AliMultSelection.h>
 #include "AliJCatalystTask.h"
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
-#include "AliAODEvent.h"
 #include "AliJTrack.h"
-#include "AliJMCTrack.h"
-#include "AliJEventHeader.h"
 #include "AliJHistManager.h"
-#include "AliInputEventHandler.h"
 #include "AliJEfficiency.h"
-#include "AliMultSelection.h"
 #include "AliJRunTable.h"
 //#pragma GCC diagnostic warning "-Wall"
 //______________________________________________________________________________
 AliJCatalystTask::AliJCatalystTask():
 	AliAnalysisTaskSE(),
-	fRunNum(-1),
+	fInputList(0),
+	fInputListALICE(0),
+	fCentDetName("V0M"),
 	fcent(-999),
 	fZvert(-999),
 	fnoCentBin(false),
-	fInputList(0),
-	fInputListALICE(0),
-	fOutput(0)
+	fDebugLevel(0),
+	fEvtNum(0),
+	fFilterBit(0),
+	fEffMode(0),
+	fEffFilterBit(0),
+	fRunNum(-1),
+	fPcharge(0),
+	fNumTPCClusters(70),
+	fEta_min(-0.8),
+	fEta_max(0.8),
+	fPt_min(0.2),
+	fPt_max(5.0),
+	fzvtxCut(10.0),
+	fOutput(0),
+	flags(0),
+	fJCatalystEntry(0),
+	fIsGoodEvent(false),
+	inputIndex(1)
 {
-	fEvtNum=0;
-	fFilterBit = 0;
-	fEta_min = 0;
-	fEta_max = 0;
-	fDebugLevel = 0;
-	fEffMode =0;
-	fEffFilterBit=0;
-	fPt_min=0;
-	fPt_max=0;
-	fCentDetName="V0M";
-	flags = 0;
-
-	fzvtxCut = 10;  // default z vertex cut
-	fJCatalystEntry = 0;
-	fIsGoodEvent = false; //
-	//  DefineOutput(1, TDirectory::Class());
+	//
 }
 
 //______________________________________________________________________________
 AliJCatalystTask::AliJCatalystTask(const char *name):
-	AliAnalysisTaskSE(name),
-	fRunNum(-1),
+	fInputList(0),
+	fInputListALICE(0),
+	fTaskName(name),
+	fCentDetName("V0M"),
 	fcent(-999),
 	fZvert(-999),
 	fnoCentBin(false),
-	fInputList(0),
-	fInputListALICE(0),
-	fOutput(0)
+	fDebugLevel(0),
+	fEvtNum(0),
+	fFilterBit(0),
+	fEffMode(0),
+	fEffFilterBit(0),
+	fRunNum(-1),
+	fPcharge(0),
+	fNumTPCClusters(70),
+	fEta_min(-0.8),
+	fEta_max(0.8),
+	fPt_min(0.2),
+	fPt_max(5.0),
+	fzvtxCut(10.0),
+	fOutput(0),
+	flags(0),
+	fJCatalystEntry(0),
+	fIsGoodEvent(false),
+	inputIndex(1)
 {
 	DefineOutput(1, TDirectory::Class());
-	fTaskName = name;
-
-	fEvtNum=0;
-	fFilterBit = 0;
-	fEta_min = 0;
-	fEta_max = 0;
-	fDebugLevel = 0;
-	fEffFilterBit=0;
-	fPt_min=0;
-	fPt_max=0;
-	fCentDetName="V0M";
-	flags = 0;
-
-	fzvtxCut = 10;
-	fJCatalystEntry = 0;
-	fIsGoodEvent = false; //
 }
 
 //____________________________________________________________________________
@@ -300,6 +302,8 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				Error("ReadEventAOD", "Could not read particle %d", (int) it);
 				continue;
 			}
+			if(track->GetTPCNcls() < fNumTPCClusters)
+				continue;
 			if(track->TestFilterBit( fFilterBit )){ //
 				if( fPt_min > 0){
 					double Pt = track->Pt();
@@ -340,12 +344,12 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 	if(zvert < -fzvtxCut || zvert > fzvtxCut)
 		return kFALSE;
 
-	/*if(flags & FLUC_CENT_FLATTENING){
+	if(flags & FLUC_CENT_FLATTENING){
 		float fCent = ReadCentrality(event,fCentDetName);
 		TH1 *pweightMap = GetCentCorrection();
 		if(gRandom->Uniform(0,1) > pweightMap->GetBinContent(pweightMap->GetXaxis()->FindBin(fCent)))
 			return kFALSE;
-	}*/
+	}
 
 	if(flags & FLUC_KINEONLY)
 		return kTRUE;
@@ -584,5 +588,34 @@ double AliJCatalystTask::GetCentralityFromImpactPar(double ip) {
 			return centmean[i];
 	}
 	return 0.0;
+}
+
+UInt_t AliJCatalystTask::ConnectInputContainer(const TString fname, const TString listName){
+	DefineInput(inputIndex,TList::Class());
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+		
+	TString containerName = Form("CorrectionMap-%u",fname.Hash());
+	cout<<"Container: "<<containerName<<endl;
+
+	TObjArray *ptaskContainer = mgr->GetContainers();
+	AliAnalysisDataContainer *pCorrMapCont = (AliAnalysisDataContainer*)ptaskContainer->FindObject(containerName);
+	if(!pCorrMapCont){
+		TGrid::Connect("alien:");
+		TFile *pfile = TFile::Open(fname);
+		TList *plist = (TList*)pfile->Get(listName);
+		pCorrMapCont = mgr->CreateContainer(containerName,
+			TList::Class(),AliAnalysisManager::kInputContainer);
+		pCorrMapCont->SetData(plist);
+	}
+	
+	mgr->ConnectInput(this,inputIndex,pCorrMapCont);
+
+	return inputIndex++;
+}
+
+void AliJCatalystTask::EnableCentFlattening(const TString fname){
+	centInputIndex = ConnectInputContainer(fname,"CentralityWeights");//inputIndex++;
+	cout<<"Centrality flattening enabled: "<<fname.Data()<<" (index "<<centInputIndex<<")"<<endl;
 }
 
