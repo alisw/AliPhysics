@@ -149,7 +149,7 @@ void AliAnalysisTaskAODXioton::UserCreateOutputObjects() {
                                                 fConfig->GetMinimalBookingME());
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
-                                  GetCollisionCandidates(), false);
+                                  GetCollisionCandidates(), true);
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
 
   fTrack = new AliFemtoDreamTrack();
