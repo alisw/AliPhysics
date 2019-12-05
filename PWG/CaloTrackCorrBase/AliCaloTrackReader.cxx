@@ -1170,7 +1170,7 @@ void AliCaloTrackReader::InitParameters()
   
   fRemoveLEDEvents = 0;
   fLEDHighEnergyCutSM = 500.; fLEDHighNCellsCutSM = 100;
-  fLEDLowEnergyCutSM3 = 2   ; fLEDLowNCellsCutSM3 = 3;
+  fLEDLowEnergyCutSM3 = 20. ; fLEDLowNCellsCutSM3 = 20;
   fLEDMinCellEnergy = 0.5;
   fLEDMaxCellEnergy = 15.;
   
@@ -3472,14 +3472,26 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
           
           if ( amp1 > fLEDMinCellEnergy && amp1 < fLEDMaxCellEnergy )
           {            
-            nCellsStrip[ism][ieta/2]++;
+             nCellsStrip[ism][ieta/2]++;
             enCellsStrip[ism][ieta/2]+=amp1;
+//            printf("Reader: cell1 %d amp %f; SM %d, strip %d, n cells %d, sum E %f \n",
+//                   absId1, amp1,
+//                   ism,ieta,
+//                    nCellsStrip[ism][ieta/2],
+//                   enCellsStrip[ism][ieta/2] 
+//                   );
           }
           
-          if ( amp2 > fLEDMinCellEnergy && amp2 < fLEDMinCellEnergy )
+          if ( amp2 > fLEDMinCellEnergy && amp2 < fLEDMaxCellEnergy )
           {            
-            nCellsStrip[ism][ieta/2]++;
+             nCellsStrip[ism][ieta/2]++;
             enCellsStrip[ism][ieta/2]+=amp2;
+//            printf("Reader: cell2 %d amp %f; SM %d, strip %d, n cells %d, sum E %f \n",
+//                   absId2, amp2,
+//                   ism,ieta,
+//                    nCellsStrip[ism][ieta/2],
+//                   enCellsStrip[ism][ieta/2] 
+//                   );
           }
         }// iphi
         
@@ -3509,7 +3521,7 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
       for (Int_t ism = 0; ism < 20; ism++)
       {
         if ( ism == 3 ) continue ;
-        
+
         maxNCells = fLEDHighNCellsCutStrip[0];
         maxECells = fLEDHighEnergyCutStrip[0];
         if ( ism == 10 || ism == 11 || 
@@ -3518,9 +3530,16 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
           maxNCells = fLEDHighNCellsCutStrip[1];
           maxECells = fLEDHighEnergyCutStrip[1];
         }
-        
+  
         for (Int_t ieta = 0; ieta < 24; ieta++)
         {
+//          if ( nCellsStrip[ism][ieta] > 0 || enCellsStrip[ism][ieta] > 0 )
+//            printf("Reader: SM %d, strip %d, n cells %d < %d , sum E %f < %f \n",
+//                   ism,ieta,
+//                   nCellsStrip[ism][ieta],maxNCells,
+//                   enCellsStrip[ism][ieta],maxECells 
+//                   );
+
           if( enCellsStrip[ism][ieta] >= maxECells || 
                nCellsStrip[ism][ieta] >= maxNCells   )
           {
@@ -3530,6 +3549,8 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
       } // ism
     } // bSM03
     
+    //printf("Reader: Number of strips %d\n",nStrips);
+
     if ( nStrips > fLEDEventMaxNumberOfStrips ) return kTRUE;
     
     for (Int_t ism = 0; ism < 20; ism++)

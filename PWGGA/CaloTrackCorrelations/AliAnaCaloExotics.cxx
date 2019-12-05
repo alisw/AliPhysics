@@ -204,8 +204,8 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
   fLowEnergyCutSM3 = 20. ; fLowNCellsCutSM3 = 20;
   
   fEventMaxNumberOfStrips = 0; 
-  fHighEnergyCutStrip[0] = 45; fHighEnergyCutStrip[1] = 32; 
-  fHighNCellsCutStrip[0] = 20; fHighNCellsCutStrip[1] = 14;
+  fHighEnergyCutStrip[0] = 80; fHighEnergyCutStrip[1] = 55; 
+  fHighNCellsCutStrip[0] = 24; fHighNCellsCutStrip[1] = 15;
   fLowEnergyCutSM3Strip  = 100; // open
   fLowNCellsCutSM3Strip  = 100; // open
  
@@ -743,12 +743,26 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
           {            
             fnCellsStrip [icut][ism][ieta/2]++;
             fEnCellsStrip[icut][ism][ieta/2]+=amp1;
+//            if( icut == 0 && (fnCellsStrip [icut][ism][ieta/2] > 0 || fEnCellsStrip[icut][ism][ieta/2] > 0))
+//              printf("Task: cell1 %d amp %f; SM %d, strip %d, n cells %d, sum E %f \n",
+//                     absId1, amp1,
+//                     ism,ieta,
+//                     fnCellsStrip [0][ism][ieta/2],
+//                     fEnCellsStrip[0][ism][ieta/2] 
+//                     );
           }
           
           if ( amp2 > fCellEnMins[icut] && amp2 < fCellEnMax )
           {            
             fnCellsStrip [icut][ism][ieta/2]++;
             fEnCellsStrip[icut][ism][ieta/2]+=amp2;
+//            if( icut == 0 && (fnCellsStrip [icut][ism][ieta/2] > 0 || fEnCellsStrip[icut][ism][ieta/2] > 0))
+//              printf("Task: cell2 %d amp %f; SM %d, strip %d, n cells %d , sum E %f \n",
+//                     absId2, amp2,
+//                     ism,ieta,
+//                     fnCellsStrip [0][ism][ieta/2],
+//                     fEnCellsStrip[0][ism][ieta/2] 
+//                     );
           }
         } //  e cut
         
@@ -808,6 +822,12 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
       
       for (Int_t ieta = 0; ieta < 24; ieta++)
       {
+//        if(fnCellsStrip[0][ism][ieta] > 0 || fEnCellsStrip[0][ism][ieta] > 0 )
+//          printf("Task: SM %d, strip %d, n cells %d < %d , sum E %f < %f \n",
+//               ism,ieta,
+//               fnCellsStrip [0][ism][ieta],maxNCells,
+//               fEnCellsStrip[0][ism][ieta],maxECells 
+//               );
         if( fEnCellsStrip[0][ism][ieta] >= maxECells || 
             fnCellsStrip [0][ism][ieta] >= maxNCells   )
         {
@@ -821,6 +841,8 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
   fhNStripsPerEvent->Fill(fEventNStripActive, GetEventWeight());
   for (Int_t ism = 0; ism < 20; ism++)
     fhNStripsPerEventPerSM->Fill(fEventNStripActiveSM[ism], ism, GetEventWeight());
+  
+  //printf("Task: Number of strips %d\n",fEventNStripActive);
   
   // Strip activity if cut on number of active strips
   if ( fEventNStripActive <= fEventMaxNumberOfStrips )
