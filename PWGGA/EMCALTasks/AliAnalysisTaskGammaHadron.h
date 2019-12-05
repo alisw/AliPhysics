@@ -58,7 +58,7 @@ public:
   void                        SetPoolTrackDepth(Int_t input)                        { fTrackDepth      = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
-  void                        SetPi0MassSelection(Int_t input)                      { fPi0MassSelection= input  ; }
+  void                        SetPi0MassSelection(Int_t input);
   void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input  ; }
   void                        SetSubDetector(Int_t input)                           { fSubDetector     = input  ; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
