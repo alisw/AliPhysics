@@ -105,6 +105,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fIonTailCorrection(1),      ///< ion tail tail correction factor - NEW SINCE 2018- additonal scaling correcting for imperfect knowledge of the integral of ion tail - shoudl be ~ 1
   fCrosstalkCorrection(0),   // crosstalk correction factor (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
   fCrosstalkCorrectionMissingCharge(1),   // crosstalk correction factor - missing charge (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
+  fCrosstalkIonTail(kFALSE),            /// < flag calculate crosstalk for ion tail
  //
   fUseTotCharge(kTRUE),          // switch use total or max charge
   fMinFraction(0.01),           // truncated mean - lower threshold
