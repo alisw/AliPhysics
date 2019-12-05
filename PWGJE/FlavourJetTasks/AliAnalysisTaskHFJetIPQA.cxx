@@ -40,6 +40,7 @@
 #include "AliVertexerTracks.h"
 #include "AliEmcalList.h"
 #include "THnSparse.h"
+#include "TObjectTable.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
 
@@ -91,6 +92,7 @@ fFracs(0),
 fXsectionWeightingFactor(1),
 fProductionNumberPtHard(-1),
 fNThresholds(1),
+sTemplateFlavour(0),
 fJetRadius(0.4),
 fDaughtersRadius(1),
 fNoJetConstituents(0),
@@ -142,6 +144,10 @@ fh1V0CounterCentALambda(nullptr),
 fh2dKshortMassVsPt(nullptr),
 fh2dLamdaMassVsPt(nullptr),
 fh2dAnLamdaMassVsPt(nullptr),
+h1DV0FalseRec(nullptr),
+h1DV0TrueRec(nullptr),
+h1DV0TrueDataDef(nullptr),
+h1DV0TrueMCDef(nullptr),
 fh1dKshortPtMC(nullptr),
 fh1dLamdaPtMC(nullptr),
 fh1dAnLamdaPtMC(nullptr),
@@ -217,6 +223,7 @@ fFracs(0),
 fXsectionWeightingFactor(1.),
 fProductionNumberPtHard(-1),
 fNThresholds(1),
+sTemplateFlavour(0),
 fJetRadius(0.4),
 fDaughtersRadius(1),
 fNoJetConstituents(0),
@@ -268,6 +275,10 @@ fh1V0CounterCentALambda(nullptr),
 fh2dKshortMassVsPt(nullptr),
 fh2dLamdaMassVsPt(nullptr),
 fh2dAnLamdaMassVsPt(nullptr),
+h1DV0FalseRec(nullptr),
+h1DV0TrueRec(nullptr),
+h1DV0TrueDataDef(nullptr),
+h1DV0TrueMCDef(nullptr),
 fh1dKshortPtMC(nullptr),
 fh1dLamdaPtMC(nullptr),
 fh1dAnLamdaPtMC(nullptr),
@@ -567,99 +578,28 @@ void AliAnalysisTaskHFJetIPQA::FillGenHistograms(int jetflavour, AliEmcalJet* je
 }
 
 
-void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks){
+void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks, bool isV0Jet){
     //Fill histograms for jets which have largest, second largest and third largest impact parameter
     //tracks passing the selection criterion
-
-    const char * subtype[5] = {"Unidentified","udsg","c","b","s"};
 
     for (Int_t iN = 1 ; iN <=3 ;++iN){
       if(!nTracks[iN]) continue;
       FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",iN,"all"),jetpt,1);     //*this->fXsectionWeightingFactor );
 
       if(jetflavour==0) continue;
-      FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",iN,subtype[jetflavour]),jetpt,1);     //*this->fXsectionWeightingFactor );
+      FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",iN,sTemplateFlavour[jetflavour].Data()),jetpt,1);     //*this->fXsectionWeightingFactor );
     }
-      /*Double_t params [4] ={sImpParXY.at(ot).first,sImpParXYSig.at(ot).first,sImpParXYZ.at(ot).first,sImpParXYZSig.at(ot).first};
-            Double_t weights[4] ={sImpParXY.at(ot).second,sImpParXYSig.at(ot).second,sImpParXYZ.at(ot).second,sImpParXYZSig.at(ot).second};
-            Int_t    correctionwindex[4] ={sImpParXY.at(ot).trackLabel,sImpParXYSig.at(ot).trackLabel,sImpParXYZ.at(ot).trackLabel,sImpParXYZSig.at(ot).trackLabel};
-
-            for (Int_t ost = 0 ; ost <4 ;++ost){
-                TString hname = Form("%s%s",stype[ost],subord[ot]);
-                if(fIsPythia)   FillHist(hname.Data(),jetpt,params[ost],weights[ost] *  1);     //this->fXsectionWeightingFactor );
-                else  FillHist(hname.Data(),jetpt,params[ost], this->fXsectionWeightingFactor );
-
-
-            }*/
-            /*if(fIsPythia){
-
-                            if(ot ==0){//N=1
-                              FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_all",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                              FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_all",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                if(jetflavour==3) {//b
-                                    FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_b",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                    FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_b",correctionwindex[1]+0.5,jetpt, 1);     /this->fXsectionWeightingFactor );
-                                }
-                            else   if(jetflavour==2) {//c
-                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_c",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_c",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                            }
-                            else   if(jetflavour==1) {//lf
-                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_lf",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_lf",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                            }
-
-                        }
-                            else  if(ot ==1){//N=2
-                                FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_all",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_all",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                    if(jetflavour==3) {//b
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_b",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_b",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                    }
-                                    else   if(jetflavour==2) {//c
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_c",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_c",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                    }
-                                    else   if(jetflavour==1) {//lf
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_lf",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_lf",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                    }
-
-                                }
-                            else  if(ot==2){//N=3
-                                FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_all",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                    if(jetflavour==3) {//b
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_b",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                    }
-                                    else   if(jetflavour==2) {//c
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_c",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                    }
-                                    else   if(jetflavour==1) {//lf
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_lf",correctionwindex[0]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf",correctionwindex[1]+0.5,jetpt, 1);     //this->fXsectionWeightingFactor );
-                                    }
-                                }
-                                for (Int_t ost = 0 ; ost <4 ;++ost){
-                                    TString hname = Form("%s%s%s",stype[ost],subtype[jetflavour],subord[ot]);
-                                    FillHist(hname.Data(),jetpt,params[ost],weights[ost]* 1);     //this->fXsectionWeightingFactor );
-                                }
-                            }*/
 }
 
-void AliAnalysisTaskHFJetIPQA::FillIPTemplateHists(double jetpt, int iN,int jetflavour, double* params){
+void AliAnalysisTaskHFJetIPQA::FillIPTemplateHists(double jetpt, int iN,int jetflavour, double* params,bool isV0Jet){
     const char * stype  [4] = {"fh2dJetSignedImpParXY","fh2dJetSignedImpParXYSignificance","fh2dJetSignedImpParXYZ","fh2dJetSignedImpParXYZSignificance"};
     const char * subord [3] = {"First","Second","Third"};
-    const char * subtype[5] = {"Unidentified","udsg","c","b","s"};
 
     for (Int_t iType = 0 ;iType <2 ;++iType){
         TString hname = Form("%s%s",stype[iType],subord[iN]);
         FillHist(hname.Data(),jetpt,params[iType],1);
         if(fIsPythia){
-          TString hnameflav = Form("%s%s%s",stype[iType],subtype[jetflavour],subord[iN]);
+          TString hnameflav = Form("%s%s%s",stype[iType],sTemplateFlavour[jetflavour].Data(),subord[iN]);
           FillHist(hnameflav.Data(),jetpt,params[iType],1);
         }
     }
@@ -1039,16 +979,16 @@ void AliAnalysisTaskHFJetIPQA::GetV0MCTrueCandidates(AliAODEvent *fAODIn){
       }
     }
   }
+  //delete jetMC;
   jetMC=NULL;
-  delete jetMC;
   pAOD=NULL;
-  delete pAOD;
+  //delete pAOD;
   headerMC=NULL;
-  delete headerMC;
+  //delete headerMC;
 }
 
 //////////////////////////////////////////////////
-Bool_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODTrack* track){
+Int_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODTrack* track){
         if(!track)return kFALSE;
         AliAODv0* v0aod = 0x0;
         int posid = -1;
@@ -1059,17 +999,24 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODTrack* track){
 
         const AliAODTrack* trackPos =0x0;
         const AliAODTrack* trackNeg =0x0; // negative daughter track
-        int tracklabel=-99;
+        AliAODMCParticle *v0MC=0x0;
+        AliAODMCParticle *v0Daugh=0x0;
+        int tracklabel=track->GetLabel();
         int posdaughlabel=-99;
         int negdaughlabel=-99;
+        int iMCLabelMother=-99;
+        int iMCPdgMother=-99;
+        int iMCPdgDaughter=-99;
+        int iV0Tag=V0No;
 
-        //printf("--------------------------Start candidates------------------------\n");
+        //printf("--------------------------Start with %i candidated------------------------\n",fV0CandidateArray->GetEntriesFast());
         for(int i = 0; i < fV0CandidateArray->GetEntriesFast(); ++i) {
                 v0aod = dynamic_cast<AliAODv0*>(fV0CandidateArray->At(i));
-                if(!v0aod) continue;
+                if(!v0aod){
+                  continue;
+                }
                 trackPos=(AliAODTrack*) (AliAODTrack*)v0aod->GetDaughter(0); // positive daughter track
                 trackNeg=(AliAODTrack*)(AliAODTrack*)v0aod->GetDaughter(1); // positive daughter track
-                //v0aod->Print();
                 posid = trackPos->GetID();
                 negid = trackNeg->GetID();
                 trackid = track->GetID();
@@ -1078,7 +1025,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODTrack* track){
                 if(fIsPythia){
                   posdaughlabel=trackPos->GetLabel();
                   negdaughlabel=trackNeg->GetLabel();
-                  tracklabel=track->GetLabel();
 
                   if((tracklabel==posdaughlabel)||(tracklabel==negdaughlabel)){
                     //printf("Matched track to daughter: tracklabel=%i, posdaughlabel=%i, negdaughlabel=%i, trackID=%i, posID=%i, negIP=%i\n", tracklabel, posdaughlabel, negdaughlabel, trackid, posid, negid);
@@ -1093,29 +1039,54 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODTrack* track){
 
                 if(posid == trackid || negid == trackid) {
                     //printf("Reject V0 candidate: posid=%i, negid=%i, trackid=%i\n", posid, negid, trackid);
-                    return kTRUE;
+                    iV0Tag=V0Rec;
                 }
         }
+        if(fIsPythia){
+          if(tracklabel>(fMCArray->GetEntriesFast())||(tracklabel<0)) return 0;
+          v0Daugh=dynamic_cast<AliAODMCParticle*>(fMCArray->At(tracklabel));
+          if(!v0Daugh) return 0;
+          iMCLabelMother=v0Daugh->GetMother();
+          v0MC=dynamic_cast<AliAODMCParticle*>(fMCArray->At(iMCLabelMother));
+          if(!v0MC){
+            return 0;
+          }
+          iMCPdgMother=v0MC->GetPdgCode();
+          iMCPdgDaughter=v0Daugh->GetPdgCode();
+          //printf("TrackLabel=%i, iMCLabelMother=%i,  pdgduaghter=%i,pdgmother=%i\n",tracklabel,iMCLabelMother, iMCPdgDaughter,iMCPdgMother);
+          //printf("Daughter print!\n");
+          //v0Daugh->Print();
+          //printf("Mother print!\n");
+          //v0MC->Print();
+          if(((iMCPdgMother==310)||(iMCPdgMother==3122)||(iMCPdgMother==-3122))&&(iV0Tag!=V0Rec)){
+              iV0Tag=V0MC;
+              //printf("V0MC\n");
+          }
+          if(((iMCPdgMother==310)||(iMCPdgMother==3122)||(iMCPdgMother==-3122))&&(iV0Tag==V0Rec)){
+              iV0Tag=V0TrueRec;
+              //printf("TrueRec!\n");
+          }
+        }
         //printf("--------------------------End candidates------------------------\n");
-        return kFALSE;
+        return iV0Tag;
 }
 
-void AliAnalysisTaskHFJetIPQA::PrintV0(SV0Cand*& sV0){
+void AliAnalysisTaskHFJetIPQA::SV0Cand::Print() const{
   printf("----------------- V0  -----------------\n");
-  printf("bOnFly=%i, bDaughsMissing=%i\n", sV0->bOnFly, sV0->bDaughsMissing);
-  printf("fDCAV0DaughvsDaugh=%f, fPA=%f, fDecayRadius=%f, fLifetimeK0=%f, fLifetimeLambda=%f\n", sV0->fDCAV0DaughvsDaugh,sV0->fPA,sV0->fDecayRadius,sV0->fLifetimeK0,sV0->fLifetimeLambda);
-  printf("fEta=%f, fPt=%f, fRapK0=%f, fRapLambda=%f, fDecayLength3D=%f, fDecayLength2D=%f\n",sV0->fEta, sV0->fPt, sV0->fRapK0, sV0->fRapLambda, sV0->fDecayLength3D, sV0->fDecayLength3D);
-  printf("fArmenterosAlpha=%f, fArmenterosPt=%f, fMassK0=%f, fMassLambda=%f, fMassAntilambda=%f\n",sV0->fArmenterosAlpha,sV0->fArmenterosPt,sV0->fMassK0,sV0->fMassLambda,sV0->fMassAntilambda);
-  printf("fSigmaPosPion=%f fSigmaPosProton=%f fSigmaNegPion=%f fSigmaNegProton=%f\n", sV0->fSigmaPosPion,sV0->fSigmaPosProton,sV0->fSigmaNegPion,sV0->fSigmaNegProton);
-  printf("bIsCandidateK0s=%i ,bIsCandidateLambda=%i, bIsCandidateALambda=%i, bIsInPeakK0s=%i bIsInPeakLambda=%i bIsInPeakALambda=%i\n", sV0->bIsCandidateK0s,sV0->bIsCandidateLambda,sV0->bIsCandidateALambda,sV0->bIsInPeakK0s,sV0->bIsInPeakLambda,sV0->bIsInPeakALambda);
-  printf("bIsInConeJet=%i, bIsInConePerp=%i, bIsInConeRnd=%i, bIsInConeMed=%i, bIsOutsideCones=%i\n",sV0->bIsInConeJet,sV0->bIsInConePerp,sV0->bIsInConeRnd,sV0->bIsInConeMed,sV0->bIsOutsideCones);
+  printf("bOnFly=%i, bDaughsMissing=%i\n", bOnFly, bDaughsMissing);
+  printf("fDCAV0DaughvsDaugh=%f, fPA=%f, fDecayRadius=%f, fLifetimeK0=%f, fLifetimeLambda=%f\n", fDCAV0DaughvsDaugh,fPA,fDecayRadius,fLifetimeK0,fLifetimeLambda);
+  printf("fEta=%f, fPt=%f, fRapK0=%f, fRapLambda=%f, fDecayLength3D=%f, fDecayLength2D=%f\n",fEta, fPt, fRapK0, fRapLambda, fDecayLength3D, fDecayLength3D);
+  printf("fArmenterosAlpha=%f, fArmenterosPt=%f, fMassK0=%f, fMassLambda=%f, fMassAntilambda=%f\n",fArmenterosAlpha,fArmenterosPt,fMassK0,fMassLambda,fMassAntilambda);
+  printf("fSigmaPosPion=%f fSigmaPosProton=%f fSigmaNegPion=%f fSigmaNegProton=%f\n", fSigmaPosPion,fSigmaPosProton,fSigmaNegPion,fSigmaNegProton);
+  printf("bIsCandidateK0s=%i ,bIsCandidateLambda=%i, bIsCandidateALambda=%i, bIsInPeakK0s=%i bIsInPeakLambda=%i bIsInPeakALambda=%i\n", bIsCandidateK0s,bIsCandidateLambda,bIsCandidateALambda,bIsInPeakK0s,bIsInPeakLambda,bIsInPeakALambda);
+  printf("bIsInConeJet=%i, bIsInConePerp=%i, bIsInConeRnd=%i, bIsInConeMed=%i, bIsOutsideCones=%i\n",bIsInConeJet,bIsInConePerp,bIsInConeRnd,bIsInConeMed,bIsOutsideCones);
   printf("-----------------------------------------\n");
 }
 
-void AliAnalysisTaskHFJetIPQA::PrintV0Daugh(SV0Daugh*& sV0Daugh){
+void AliAnalysisTaskHFJetIPQA::SV0Daugh::Print() const{
   printf("----------------- V0 Daugh -----------------\n");
-  printf("fPT=%f, fEta=%f, iCharge=%i\n", sV0Daugh->fPt, sV0Daugh->fEta, sV0Daugh->iCharge);
-  printf("iCrossedTPC=%i iNoTPCCluster=%i  fDCAtoPV=%f  bTPCRefitOn=%i bIsKink=%i\n", sV0Daugh->iCrossedTPC, sV0Daugh->iNoTPCCluster, sV0Daugh->fDCAtoPV, sV0Daugh->bTPCRefitOn, sV0Daugh->bIsKink);
+  printf("fPT=%f, fEta=%f, iCharge=%i\n", fPt, fEta, iCharge);
+  printf("iCrossedTPC=%i iNoTPCCluster=%i  fDCAtoPV=%f  bTPCRefitOn=%i bIsKink=%i\n", iCrossedTPC, iNoTPCCluster, fDCAtoPV, bTPCRefitOn, bIsKink);
   printf("-----------------------------------------\n");
 }
 
@@ -1232,7 +1203,7 @@ int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(AliAODEvent* fAODIn, AliAODv0* v0, boo
   if((TMath::Abs(dRapV0Gen) > fV0Cuts[MaxV0Rap])) return 0;
   if(dPtV0Gen <0.15) return 0;
   if((TMath::Abs(fPosEta) > fV0Cuts[DaughMaxEta])||(TMath::Abs(fNegEta) > fV0Cuts[DaughMaxEta])) return 0;
-  if((fPosPt<fV0Cuts[DaughMinPt])||(fPosPt<fV0Cuts[DaughMinPt])) return 0;
+  if((fPosPt<fV0Cuts[DaughMinPt])||(fNegPt<fV0Cuts[DaughMinPt])) return 0;
 
   // Skip not interesting particles
   if((iPdgCodeMother != iPdgCodeK0s) && (TMath::Abs(iPdgCodeMother) != iPdgCodeLambda)) return 0;
@@ -1280,6 +1251,9 @@ int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(AliAODEvent* fAODIn, AliAODv0* v0, boo
 
 void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(AliAODEvent *fAODIn){
     AliAODv0* v0 = 0; // pointer to V0 candidates
+    SV0Cand* sV0=new SV0Cand();
+    SV0Daugh* sPosDaugh=new SV0Daugh();
+    SV0Daugh* sNegDaugh=new SV0Daugh();
 
 
     fV0CandidateArray->Delete();//Reset the TClonesArray
@@ -1293,9 +1267,12 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(AliAODEvent *fAODIn){
       v0 = fAODIn->GetV0(iV0); // get next candidate from the list in AOD
       if(!v0) continue;
 
-      SV0Cand* sV0=new SV0Cand();
-      SV0Daugh* sPosDaugh=new SV0Daugh();
-      SV0Daugh* sNegDaugh=new SV0Daugh();
+      sV0->Reset();
+      sPosDaugh->Reset();
+      sNegDaugh->Reset();
+
+      //sV0->Print();
+      //sPosDaugh->Print();
 
       GetV0Properties(sV0,  v0);
       bool hasNoDaughters=sV0->bDaughsMissing;
@@ -1522,22 +1499,23 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(AliAODEvent *fAODIn){
       if(sV0->bIsCandidateALambda) {fh2dAnLamdaMassVsPt->Fill(sV0->fPt, sV0->fMassAntilambda,1); }
 
       //Is true MC V0?
-      int iVetoDec=0;
-      iVetoDec=(int) GetV0MCVeto(fAODIn,v0,sV0->bIsCandidateK0s,sV0->bIsCandidateLambda,sV0->bIsCandidateALambda);
-      Double_t fIsMCTrueK0=0.;
-      Double_t fIsMCTrueLambda=0.;
-      Double_t fIsMCTrueALambda=0.;
-      if(iVetoDec==1) fIsMCTrueK0=1.;
-      if(iVetoDec==2) fIsMCTrueLambda=1.;
-      if(iVetoDec==3) fIsMCTrueALambda=1.;
+      if(fIsPythia){
+        int iVetoDec=0;
+        iVetoDec=(int) GetV0MCVeto(fAODIn,v0,sV0->bIsCandidateK0s,sV0->bIsCandidateLambda,sV0->bIsCandidateALambda);
+        Double_t fIsMCTrueK0=0.;
+        Double_t fIsMCTrueLambda=0.;
+        Double_t fIsMCTrueALambda=0.;
+        if(iVetoDec==1) fIsMCTrueK0=1.;
+        if(iVetoDec==2) fIsMCTrueLambda=1.;
+        if(iVetoDec==3) fIsMCTrueALambda=1.;
 
-      //printf("VetoDecision=%i, fIsMCTrueK0=%f, fIsMCTrueLambda=%f, fIsMCTrueALamda=%f\n",iVetoDec,fIsMCTrueK0,fIsMCTrueLambda,fIsMCTrueALambda);
+        //printf("VetoDecision=%i, fIsMCTrueK0=%f, fIsMCTrueLambda=%f, fIsMCTrueALamda=%f\n",iVetoDec,fIsMCTrueK0,fIsMCTrueLambda,fIsMCTrueALambda);
 
-      AliEmcalJet * jetrec  = 0x0;
-      double fJetPt=0;
-      if(!jetconrec)printf("No jet container with reconstructed jets!\n");
+        AliEmcalJet * jetrec  = 0x0;
+        double fJetPt=0;
+        if(!jetconrec)printf("No jet container with reconstructed jets!\n");
 
-      while ((jetrec = jetconrec->GetNextAcceptJet())){
+        while ((jetrec = jetconrec->GetNextAcceptJet())){
             fJetPt= jetrec->Pt();
             //if(!(fJetContainerData->GetRhoParameter() == 0x0)){
             //        fJetPt = fJetPt - fJetContainerData->GetRhoVal() * jetrec->Area();
@@ -1563,20 +1541,22 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(AliAODEvent *fAODIn){
               //printf("massalambda=%f, pt=%f, eta=%f, jetpt=%f, istrue=%f\n",sV0->fMassK0, sV0->fPt, sV0->fEta,fJetPt,fIsMCTrueALambda);
             }
 
-       }
-      jetconrec->ResetCurrentID();
-      jetrec=NULL; delete jetrec;
+        }
+        jetconrec->ResetCurrentID();
+        jetrec=NULL;
+        //delete jetrec;
 
+      }
       //Store V0 candidate for later rejection of daughter tracks
       if(sV0->bIsCandidateK0s || sV0->bIsCandidateLambda || sV0->bIsCandidateALambda){
         int nBins=fV0CandidateArray->GetEntriesFast();
         //v0->Print();
         new((*fV0CandidateArray)[nBins]) AliAODv0(*v0);
       }
-      delete sV0;
-      delete sPosDaugh;
-      delete sNegDaugh;
     }
+    delete sV0;
+    delete sPosDaugh;
+    delete sNegDaugh;
     //printf("################## Select candidates End########################\n");
 
 }
@@ -1628,7 +1608,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
     if(fApplyV0Rej){
       SelectV0Candidates(ev);
-      GetV0MCTrueCandidates(ev);
+      if(fIsPythia) GetV0MCTrueCandidates(ev);
     }
     IncHist("fh1dEventsAcceptedInRun",1);
 
@@ -1717,7 +1697,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             jetflavour = IsMCJetPartonFast(jetmatched,fJetRadius,is_udgjet); //Event based association to save memory
           }
           else{
-            jetflavour=0;
+            jetflavour=Unid;
           }
         }
         FillRecHistograms( jetflavour, jetpt, jetrec->Eta(),jetrec->Phi());
@@ -1728,12 +1708,14 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         std::vector<SJetIpPati> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
         AliVParticle *vp=0x0;
         int NJetParticles=0;  //Used for counting particles per jet
+        int isV0=kFALSE;
         Double_t dca[2] = {-99999,-99999};
         Double_t cov[3] = {-99999,-99999,-99999};
         Double_t sign=0;
 
         for(UInt_t i = 0; i < jetrec->GetNumberOfTracks(); i++) {//start trackloop
           TrackWeight=1;
+          isV0=kFALSE;
           Double_t xyzatcda[3];
 
           vp = static_cast<AliVParticle*>(jetrec->TrackAt(i, jetconrec->GetParticleContainer()->GetArray()));
@@ -1750,7 +1732,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
           if (!trackV || !jetrec)            continue;
           if (fIsPythia&&!IsTrackAccepted((AliAODTrack*)trackV,jetflavour))   continue;
-          if (IsV0Daughter(trackV))continue;
+          isV0=IsV0Daughter(trackV);
           ++NJetParticles;
 
           //FillTrackTypeResHists();
@@ -1775,11 +1757,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
               FillHist(Form("fh2dJetSignedImpParXY%s",subtype[jetflavour]),jetpt,cursImParXY,TrackWeight);     //*this->fXsectionWeightingFactor );
               FillHist(Form("fh2dJetSignedImpParXYSignificance%s",subtype[jetflavour]),jetpt,cursImParXYSig,TrackWeight);     //*this->fXsectionWeightingFactor );
             }
-            SJetIpPati a(cursImParXY, TrackWeight,kFALSE,kFALSE,corridx,trackV->Pt()); sImpParXY.push_back(a);
-            SJetIpPati b(cursImParXYZ, TrackWeight,kFALSE,kFALSE,corridx,trackV->Pt()); sImpParXYZ.push_back(b);
-            SJetIpPati c(cursImParXYSig, TrackWeight,kFALSE,kFALSE,corridx,trackV->Pt());sImpParXYSig.push_back(c);
-            SJetIpPati d(cursImParXYZSig, TrackWeight,kFALSE,kFALSE,corridx,trackV->Pt());sImpParXYZSig.push_back(d);
-            //printf("curImParXY=%f, TrackWeight=%f,  corridx=%i, pt=%f\n",cursImParXYSig,TrackWeight,corridx, trackV->Pt());
+            SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,trackV->Pt()); sImpParXY.push_back(a);
+            SJetIpPati b(cursImParXYZ, TrackWeight,isV0,kFALSE,corridx,trackV->Pt()); sImpParXYZ.push_back(b);
+            SJetIpPati c(cursImParXYSig, TrackWeight,isV0,kFALSE,corridx,trackV->Pt());sImpParXYSig.push_back(c);
+            SJetIpPati d(cursImParXYZSig, TrackWeight,isV0,kFALSE,corridx,trackV->Pt());sImpParXYZSig.push_back(d);
+            //printf("curImParXY=%f, isV0=%i, pt=%f\n",sImpParXYSig.back().first,sImpParXYSig.back().is_V0, sImpParXYSig.back().trackpt);
 
            }
          }//end trackloop
@@ -1835,12 +1817,22 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 //if(hasIPs[2])printf("N=3: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(2).first, sImpParXYSig.at(2).second, sImpParXYSig.at(2).trackLabel, sImpParXYSig.at(2).trackpt);
                 //printf("*********************************************************\n");
 
-                FillIPTypePtHists(jetflavour, jetpt, hasIPs);
+                //_____________________________
+                //V0 tag decisions
+
+                //printf("isV0=%i, jetflaovur=%i, jetpt=%f", );
+                bool isV0Jet=kFALSE;
+                if(hasIPs[0]&&fIsPythia)FillV0EfficiencyHists(sImpParXYSig[0].is_V0, jetflavour, jetpt, isV0Jet);
+                if((hasIPs[0])&&(!fIsPythia)&&(sImpParXYSig[0].is_V0==V0Rec))isV0Jet=kTRUE;
+                //printf("New jetflavour=%i, isV0Jet=%i\n",jetflavour, isV0Jet);
+
+                FillIPTypePtHists(jetflavour, jetpt, hasIPs, isV0Jet);
+
                 for(int iN=0;iN<3;iN++){
                   if(!hasIPs[iN]) continue;
                   //printf("iN=%i, jetflavour=%i xy=%f, xysig=%f\n",iN,jetflavour,sImpParXY.at(iN).first,sImpParXYSig.at(iN).first);
                   Double_t params [4] ={sImpParXY.at(iN).first,sImpParXYSig.at(iN).first,sImpParXYZ.at(iN).first,sImpParXYZSig.at(iN).first};
-                  FillIPTemplateHists(jetpt,iN,jetflavour, params);
+                  FillIPTemplateHists(jetpt,iN,jetflavour, params, isV0Jet);
                 }
 
                 /*if(fFillCorrelations || fUseTreeForCorrelations){
@@ -1894,6 +1886,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 sImpParXYSig.clear();
                 sImpParXYZ.clear();
                 sImpParXYZSig.clear();
+
+                for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+                  delete kTagDec[iThresh];
+                }
+                delete [] kTagDec;
               }//end jetloop*/
             return kTRUE;
           }
@@ -2153,6 +2150,11 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     "c"/*17*/,
   };
 
+  TString sTemp[6]={"Unidentified","udsg","c","b","udsgV0","cV0"};
+  for(int iS=0;iS<6;iS++){
+      sTemplateFlavour.push_back(sTemp[iS]);
+  }
+
   fIsMixSignalReady_n1=kFALSE;
   fIsMixSignalReady_n2=kFALSE;
   fIsMixSignalReady_n3=kFALSE;
@@ -2309,21 +2311,24 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
         fHistManager.CreateTH1(Form("h1DTrueBTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
         fHistManager.CreateTH1(Form("h1DFalseCTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
         fHistManager.CreateTH1(Form("h1DFalseUDSGTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
+        fHistManager.CreateTH1(Form("h1DFalseV0Tagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
       }
     }
 
-    h2DProbDistsUnid=(TH2D*)AddHistogramm("h2DProbDistsUnid","h2DProbDistsUnid",200, 0, 1,500, 0, 250);
-    h2DProbDistsudsg=(TH2D*)AddHistogramm("h2DProbDistsudsg","h2DProbDistsUDSG",200, 0, 1,500, 0, 250);
-    h2DProbDistsc=(TH2D*)AddHistogramm("h2DProbDistsc","h2DProbDistsC",200, 0, 1,500, 0, 250);
-    h2DProbDistsb=(TH2D*)AddHistogramm("h2DProbDistsb","h2DProbDistsB",200, 0, 1,500, 0, 250);
-    h2DProbDistss=(TH2D*)AddHistogramm("h2DProbDistss","h2DProbDistsS",200, 0, 1,500, 0, 250);
+    h2DProbDistsUnid=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[0].Data()),"h2DProbDistsUnid",200, 0, 1,500, 0, 250);
+    h2DProbDistsudsg=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[1].Data()),"h2DProbDistsUDSG",200, 0, 1,500, 0, 250);
+    h2DProbDistsc=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[2].Data()),"h2DProbDistsC",200, 0, 1,500, 0, 250);
+    h2DProbDistsb=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[3].Data()),"h2DProbDistsB",200, 0, 1,500, 0, 250);
+    h2DProbDistss=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[4].Data()),"h2DProbDistsUDSGV0",200, 0, 1,500, 0, 250);
+    h2DProbDistss=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[5].Data()),"h2DProbDistsCV0",200, 0, 1,500, 0, 250);
     h2DProbDists=(TH2D*)AddHistogramm("h2DProbDists","h2DProbDistsAll",200, 0, 1,500, 0, 250);
   
-    h2DLNProbDistsUnid=(TH2D*)AddHistogramm("h2DLNProbDistsUnid","h2DProbDistsUnid",300, 0, 15,500, 0, 250);
-    h2DLNProbDistsudsg=(TH2D*)AddHistogramm("h2DLNProbDistsudsg","h2DProbDistsUDSG",300, 0, 15,500, 0, 250);
-    h2DLNProbDistsc=(TH2D*)AddHistogramm("h2DLNProbDistsc","h2DProbDistsC",300, 0, 15,500, 0, 250);
-    h2DLNProbDistsb=(TH2D*)AddHistogramm("h2DLNProbDistsb","h2DProbDistsB",300, 0, 15,500, 0, 250);
-    h2DLNProbDistss=(TH2D*)AddHistogramm("h2DLNProbDistss","h2DProbDistsS",300, 0, 15,500, 0, 250);
+    h2DLNProbDistsUnid=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[0].Data()),"h2DProbDistsUnid",300, 0, 15,500, 0, 250);
+    h2DLNProbDistsudsg=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[1].Data()),"h2DProbDistsUDSG",300, 0, 15,500, 0, 250);
+    h2DLNProbDistsc=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[2].Data()),"h2DProbDistsC",300, 0, 15,500, 0, 250);
+    h2DLNProbDistsb=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[3].Data()),"h2DProbDistsB",300, 0, 15,500, 0, 250);
+    h2DLNProbDistss=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[4].Data()),"h2DProbDistsUDSGV0",300, 0, 15,500, 0, 250);
+    h2DLNProbDistss=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[5].Data()),"h2DProbDistsCV0",300, 0, 15,500, 0, 250);
     h2DLNProbDists=(TH2D*)AddHistogramm("h2DLNProbDists","h2DProbDistsAll",300, 0, 15,500, 0, 250);
 
   }
@@ -2347,28 +2352,14 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     //****************************************
     //Pt Distributions for N1,N2,N3 Tracks
     if(fIsPythia){
-      fHistManager.CreateTH1("fh1dJetRecPt_n_1_b_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-      fHistManager.CreateTH1("fh1dJetRecPt_n_2_b_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-      fHistManager.CreateTH1("fh1dJetRecPt_n_3_b_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-
-      fHistManager.CreateTH1("fh1dJetRecPt_n_1_c_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-      fHistManager.CreateTH1("fh1dJetRecPt_n_2_c_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-      fHistManager.CreateTH1("fh1dJetRecPt_n_3_c_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-
-      fHistManager.CreateTH1("fh1dJetRecPt_n_1_udsg_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-      fHistManager.CreateTH1("fh1dJetRecPt_n_2_udsg_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-      fHistManager.CreateTH1("fh1dJetRecPt_n_3_udsg_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-
-      fHistManager.CreateTH1("fh1dJetRecPt_n_1_s_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-      fHistManager.CreateTH1("fh1dJetRecPt_n_2_s_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-      fHistManager.CreateTH1("fh1dJetRecPt_n_3_s_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+      for(int iN=1;iN<=3;iN++){
+        fHistManager.CreateTH1(Form("fh1dJetRecPt_n_%i_all_Accepted",iN),"detector level jets;pt (GeV/c); count",500,0,250,"s");
+        fHistManager.CreateTH1(Form("fh1dTrackPt_n_%i_all_Accepted",iN),"detector level jets;pt (GeV/c); count",500,0,200,"s");
+        for(int iFlav=0;iFlav<sTemplateFlavour.size();iFlav++){
+          fHistManager.CreateTH1(Form("fh1dJetRecPt_n_%i_%s_Accepted",iN,sTemplateFlavour[iFlav].Data()),"detector level jets;pt (GeV/c); count",500,0,250,"s");
+        }
+      }
     }
-    fHistManager.CreateTH1("fh1dJetRecPt_n_1_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetRecPt_n_2_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetRecPt_n_3_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-    fHistManager.CreateTH1("fh1dTrackPt_n_1_all_Accepted","detector level jets;pt (GeV/c); count",500,0,200,"s");
-    fHistManager.CreateTH1("fh1dTrackPt_n_2_all_Accepted","detector level jets;pt (GeV/c); count",500,0,200,"s");
-    fHistManager.CreateTH1("fh1dTrackPt_n_3_all_Accepted","detector level jets;pt (GeV/c); count",500,0,200,"s");
 
     //V0Cuts
     if(fApplyV0Rej){
@@ -2415,6 +2406,12 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       fh2dLamdaPtVsJetPtMC = new TH2D("fh2dLamdaPtVsJetPtMC","Lamda Pt Vs Jet Pt MC;p_{T,V0} (GeV/c);#it{p}_{T,jet} (GeV/#it{c})",200,0,50,200,0,200);
       fh2dAnLamdaPtVsJetPtMC = new TH2D("fh2dAnLamdaPtVsJetPtMC","Anti Lamda Pt Vs Jet Pt MC;p_{T,V0} (GeV/c);#it{p}_{T,jet} (GeV/#it{c})",200,0,50,200,0,200);
 
+      //V0 Tagging efficiency
+      h1DV0FalseRec=(TH1D*)AddHistogramm("h1DV0FalseRec",";jetpt (GeV/c); N_{V0}",500,0,250);
+      h1DV0TrueDataDef =(TH1D*)AddHistogramm("h1DV0TrueDataDef",";jetpt;N_{V0}",500,0,250);
+      h1DV0TrueMCDef =(TH1D*)AddHistogramm("h1DV0TrueMCDef",";jetpt;N_{V0}",500,0,250);
+      h1DV0TrueRec =(TH1D*)AddHistogramm("h1DV0TrueRec",";jetpt;N_{V0}",500,0,250);
+
       fOutput->Add(fh1dKshortPtMC);
       fOutput->Add(fh1dLamdaPtMC);
       fOutput->Add(fh1dAnLamdaPtMC);
@@ -2424,7 +2421,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     }
 
     //Impact Parameter Template Generation
-    const char * flavour[6]  = {"Unidentified","udsg","c","b","s",""};
     const char * base = "fh2dJetSignedImpPar";
     const char * dim[2]  = {"XY","XYZ"};
     const char * typ[2]  = {"","Significance"};
@@ -2438,7 +2434,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     Double_t iplow = -.5;
     Double_t iphigh = .5;
     for (Int_t id = 0;id<1;++id)  // XY or XY/
-      for (Int_t ifl = 0;ifl<6;++ifl)  //flavour
+      for (unsigned int ifl = 0;ifl<sTemplateFlavour.size();++ifl)  //flavour
         for (Int_t io = 0;io<4;++io)        //order parameter
           for (Int_t is = 0;is<1;++is)          //special comment
             for (Int_t it = 1;it<2;++it){           //significance or not
@@ -2454,8 +2450,8 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
               }
               if(id==0)  ipbins =1000;//2000;
                 if((fIsPythia||(!fIsPythia && ifl==5))){
-                  fHistManager.CreateTH2(Form("%s%s%s%s%s%s",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
-                                Form("%s%s%s%s%s%s;;",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
+                  fHistManager.CreateTH2(Form("%s%s%s%s%s%s",base,dim[id],typ[it],sTemplateFlavour[ifl].Data(),ordpar[io],special[is]),
+                                Form("%s%s%s%s%s%s;;",base,dim[id],typ[it],sTemplateFlavour[ifl].Data(),ordpar[io],special[is]),
                                 ptbins,ptlow,pthigh,ipbins,iplow,iphigh,"s");
                   //printf("Generating%s%s%s%s%s%s",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]);
 
@@ -3037,7 +3033,7 @@ bool AliAnalysisTaskHFJetIPQA::IsDCAAccepted(double decaylength, double ipwrtjet
     }
     if(dca[1]>fAnalysisCuts[bAnalysisCut_MaxDCA_Z]){
         FillCandidateJet(bAnalysisCut_MaxDCA_Z,jetflavour);
-        printf("Throw away due to z cut = %f, cutvalue=%f",dca[1],fAnalysisCuts[bAnalysisCut_MaxDCA_Z]);
+        //printf("Throw away due to z cut = %f, cutvalue=%f",dca[1],fAnalysisCuts[bAnalysisCut_MaxDCA_Z]);
         return kFALSE;
     }
     if(decaylength>fAnalysisCuts[bAnalysisCut_MaxDecayLength]){
@@ -3906,12 +3902,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
         //check for b jet
         for (Int_t icj = 0 ; icj <(Int_t)fPBJet.size();++icj ){
             //printf("Bottom Flavour Jet!\n");
-            return 3;
+            return B;
         }
         //check for c jet
         for (Int_t icj = 0 ; icj <(Int_t)fPCJet.size();++icj ){
             //printf("Charm Flavour Jet!\n");
-            return 2;
+            return C;
         }
         //check for s and light jet
         if(fPUdsgJet.size()!=0){
@@ -3925,13 +3921,13 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
 
         if(p_s_max>p_udsg_max){
           //printf("S prefered with psmax=%f, pudsgmax=%f\n", p_s_max,p_udsg_max);
-          return 4;
+          return UDSG;
         }
         else{
             if(fPUdsgJet.size()!=0){
                 //printf("Light prefered with psmax=%f, pudsgmax=%f\n", p_s_max,p_udsg_max);
                 is_udg =kTRUE;
-                return 1;
+                return UDSG;
             }
         }
         return 0;
@@ -4409,7 +4405,7 @@ void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* i
         }
       }
     }
-   /* printf("Testing kTagLevel::\n ");
+    /*printf("Testing kTagLevel::\n ");
     for(int iThresh=0;iThresh<fNThresholds;iThresh++){
       for(int iType=0;iType<6;iType++){
         printf("iThresh=%f, %i, kTagDec=%i\n",fFracs[iThresh],iType,kTagDec[iThresh][iType]);
@@ -4435,9 +4431,9 @@ void AliAnalysisTaskHFJetIPQA::FillEfficiencyHists(bool** kTagDec, int jetflavou
   //printf("Receiving BTagged decision: %i\n", kTagDec[Full]);
   for(int iThresh=0;iThresh<fNThresholds;iThresh++){
     //printf("kTagDec=%i, jetflavour=%i, hasIPs=%i\n",kTagDec[iThresh][Full],jetflavour, hasIPs);
-    if(kTagDec[iThresh][Full]&&(jetflavour!=0))FillHist(Form("h1DTagged_%0.2f",fFracs[iThresh]),jetpt,1);
+    if(kTagDec[iThresh][Full]&&(jetflavour!=Unid))FillHist(Form("h1DTagged_%0.2f",fFracs[iThresh]),jetpt,1);
 
-    if(kTagDec[iThresh][Full]&&(jetflavour==3)&&hasIPs){
+    if(kTagDec[iThresh][Full]&&(jetflavour==B)&&hasIPs){
       //printf("################################ Before: FoundJet with tagindex=%i!\n",kTagDec[iThresh][Full]);
 
       FillHist(Form("h1DTrueBTagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
@@ -4447,9 +4443,9 @@ void AliAnalysisTaskHFJetIPQA::FillEfficiencyHists(bool** kTagDec, int jetflavou
       if(kTagDec[iThresh][Double])FillHist(Form("h1DTrueBTagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
       if(kTagDec[iThresh][Triple])FillHist(Form("h1DTrueBTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
 
-      //printf("################################ FoundJet with tagindex=%i!\n",kTagDec[iThresh][Full]);
+     //printf("################################ FoundJet with tagindex=%i!\n",kTagDec[iThresh][Full]);
     }
-    if(kTagDec[iThresh][Full]&&(jetflavour==2)&&hasIPs){
+    if(kTagDec[iThresh][Full]&&(jetflavour==C)&&hasIPs){
       FillHist(Form("h1DFalseCTagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
       if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DFalseCTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
       if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DFalseCTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
@@ -4458,7 +4454,7 @@ void AliAnalysisTaskHFJetIPQA::FillEfficiencyHists(bool** kTagDec, int jetflavou
       if(kTagDec[iThresh][Triple])FillHist(Form("h1DFalseCTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
       //printf("################################ CMistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[iThresh][Full]);
     }
-    if(kTagDec[iThresh][Full]&&(jetflavour==1||jetflavour==4)&&hasIPs){
+    if(kTagDec[iThresh][Full]&&(jetflavour==UDSG)&&hasIPs){
       FillHist(Form("h1DFalseUDSGTagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
       if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DFalseUDSGTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
       if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DFalseUDSGTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
@@ -4467,8 +4463,59 @@ void AliAnalysisTaskHFJetIPQA::FillEfficiencyHists(bool** kTagDec, int jetflavou
       if(kTagDec[iThresh][Triple])FillHist(Form("h1DFalseUDSGTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
       //printf("################################ LightMistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[iThresh][Full]);
     }
-    if(!kTagDec[iThresh][Full]&&jetflavour==3&&hasIPs){
+    if((kTagDec[iThresh][Full])&&((jetflavour==UDSGV0)||(jetflavour==CV0))&&hasIPs){
+      FillHist(Form("h1DFalseV0Tagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
+      if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DFalseV0Tagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
+      if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DFalseV0Tagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
+      if(kTagDec[iThresh][Single3rd]) FillHist(Form("h1DFalseV0Tagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
+      if(kTagDec[iThresh][Double])FillHist(Form("h1DFalseV0Tagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
+      if(kTagDec[iThresh][Triple])FillHist(Form("h1DFalseV0Tagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
+      //printf("################################ v0Mistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[iThresh][Full]);
+    }
+    if(!kTagDec[iThresh][Full]&&jetflavour==B&&hasIPs){
       //printf("################################ Missed one: flavour is=%i\n", jetflavour);
+    }
+  }
+}
+
+void AliAnalysisTaskHFJetIPQA::FillV0EfficiencyHists(int isV0, int &jetflavour, double jetpt, bool &isV0Jet){
+  //printf("isV0=%i, jetflavour=%i, jetpt=%f\n",isV0, jetflavour, jetpt);
+
+  if((!fIsPythia)&&(isV0==V0Rec)){
+      FillHist(Form("h1DV0TrueRec"), jetpt, 1);
+      isV0Jet=kTRUE;
+  }
+  else{
+    switch (isV0){
+      case V0Rec:
+          FillHist(Form("h1DV0FalseRec"), jetpt, 1);
+          //printf("Found false Tag\n");
+          break;
+
+      case V0MC:
+        FillHist(Form("h1DV0TrueDataDef"), jetpt, 1);
+        if((jetflavour!=B)){
+          FillHist(Form("h1DV0TrueMCDef"), jetpt, 1);
+          //printf("Found MC def true V0\n");
+        }
+        //printf("Found MC true V0 Jet: jetflavour=%i\n",jetflavour);
+        if(jetflavour==UDSG) jetflavour=UDSGV0;
+        if(jetflavour==C) jetflavour=CV0;
+        isV0Jet=kTRUE;
+          break;
+
+      case V0TrueRec:
+        FillHist(Form("h1DV0TrueDataDef"), jetpt, 1);
+        FillHist(Form("h1DV0TrueRec"), jetpt, 1);
+        if(jetflavour==UDSG) jetflavour=UDSGV0;
+        if(jetflavour==C) jetflavour=CV0;
+        isV0Jet=kTRUE;
+        if(jetflavour!=B){
+          FillHist(Form("h1DV0TrueMCDef"), jetpt, 1);
+          //printf("Found MC def true V0\n");
+        }
+        //printf("Found Rec true V0 Jet: jetflavour=%i\n",jetflavour);
+          break;
     }
   }
 }
@@ -4525,15 +4572,14 @@ double AliAnalysisTaskHFJetIPQA::GetTrackProbability(double jetpt, bool* hasIPs,
 
 void AliAnalysisTaskHFJetIPQA::FillProbabilityHists(double jetpt,double probval,int jetflavour){
   //  printf("Filling iflavou=%i, jetpt=%f, probval=%f into histogram\n", jetflavour,jetpt,probval);
-  const char * flavour[6]  = {"Unid","udsg","c","b","s",""};
   double lnprobval=-TMath::Log(probval);
 
   //printf("logval=%f\n",lnprobval);
 
-  FillHist(Form("h2DProbDists%s",flavour[jetflavour]),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
+  FillHist(Form("h2DProbDists%s",sTemplateFlavour[jetflavour].Data()),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
   FillHist(Form("h2DProbDists"),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
 
-  FillHist(Form("h2DLNProbDists%s",flavour[jetflavour]),lnprobval,jetpt,1);     //*this->fXsectionWeightingFactor );
+  FillHist(Form("h2DLNProbDists%s",sTemplateFlavour[jetflavour].Data()),lnprobval,jetpt,1);     //*this->fXsectionWeightingFactor );
   FillHist(Form("h2DLNProbDists"),lnprobval,jetpt,1);     //*this->fXsectionWeightingFactor );
 }
 
