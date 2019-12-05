@@ -140,6 +140,8 @@ void AliJCatalystTask::UserCreateOutputObjects()
 	fInputListALICE = new TClonesArray("AliJBaseTrack" , 2500);
 	fInputListALICE->SetOwner(kTRUE);
 
+	gRandom->SetSeed();
+
 	OpenFile(1);
 	fOutput = gDirectory;
 	fOutput->cd();
