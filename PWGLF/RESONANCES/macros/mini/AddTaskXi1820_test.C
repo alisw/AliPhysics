@@ -63,7 +63,7 @@ void AddMonitorOutput_V0TPCpip(TString s="",TObjArray* m=0,TString o="",AliRsnLo
 void AddMonitorOutput_LambdaProtonPID(TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 void AddMonitorOutput_LambdaAntiProtonPID(TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 
-AliRsnMiniAnalysisTask* AddTaskXi1820(
+AliRsnMiniAnalysisTask* AddtaskXi1820_test(
                                          TString lname,
                                          Bool_t isMC,
                                          Int_t system,
@@ -78,7 +78,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
     // retrieve analysis manager
     AliAnalysisManager* mgr=AliAnalysisManager::GetAnalysisManager();
     if(!mgr){
-        ::Error("AddTaskXi1820", "No analysis manager to connect to.");
+        ::Error("AddtaskXi1820_test", "No analysis manager to connect to.");
         return NULL;
     }
     
@@ -115,7 +115,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
     task->SetNMix(nmix);
     task->SetMaxDiffVz(maxDiffVzMix);
     task->SetMaxDiffMult(maxDiffMultMix);
-    ::Info("AddTaskXi1820", "%s", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+    ::Info("AddtaskXi1820_test", "%s", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
     
     // vertex cuts
     float vtxZcut=10;
@@ -147,7 +147,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
     // set the check for pileup
     if(isPP && (!isMC) && cutVertex){
         cutVertex->SetCheckPileUp(rejectPileUp);
-        ::Info("AddTaskXi1820", "%s", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
+        ::Info("AddtaskXi1820_test", "%s", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
     }
     
     // define and fill cut set for event cuts
@@ -231,7 +231,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
     // ----- CONTAINERS -----
     
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
-    Printf("AddTaskXi1820 - Set OutputFileName : \n %s\n", outputFileName.Data() );
+    Printf("AddtaskXi1820_test - Set OutputFileName : \n %s\n", outputFileName.Data() );
     
     AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",lname.Data()),
                                                             TList::Class(),
