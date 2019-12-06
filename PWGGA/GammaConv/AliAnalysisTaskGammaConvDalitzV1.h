@@ -287,7 +287,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH1F                              **hESDTruePi0DalitzSecConvGammaPt;
     TH1F                              **hESDTruePi0DalitzSecPositronPt;
     TH1F                              **hESDTruePi0DalitzSecElectronPt;
-    TH1I                              **hNEvents;
+    TH1F                              **hNEvents;
     TH1I                              **hNGoodESDTracks;
     TH2F                              **hNGoodESDTracksVsNGoodGammas;
     TH2F                              **hNGoodESDTracksVsNGoodVGammas;
