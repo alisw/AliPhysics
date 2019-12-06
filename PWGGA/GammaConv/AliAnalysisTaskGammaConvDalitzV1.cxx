@@ -657,7 +657,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
   fBackList        = new TList*[fnCuts];
   fMotherList        = new TList*[fnCuts];
   }
-  hNEvents        = new TH1I*[fnCuts];
+  hNEvents        = new TH1F*[fnCuts];
   hNGoodESDTracks      = new TH1I*[fnCuts];
   hNV0Tracks        = new TH1I*[fnCuts];
   hEtaShift        = new TProfile*[fnCuts];
@@ -765,7 +765,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
     fESDList[iCut]->SetName(Form("%s_%s_%s_%s ESD histograms",cutstringEvent.Data(),cutstringGamma.Data(),cutstringElectron.Data(),cutstringMeson.Data()));
     fESDList[iCut]->SetOwner(kTRUE);
 
-    hNEvents[iCut] = new TH1I("NEvents","NEvents",13,-0.5,12.5);
+    hNEvents[iCut] = new TH1F("NEvents","NEvents",14,-0.5,13.5);
     hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
@@ -778,6 +778,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
     hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
+    hNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
     fESDList[iCut]->Add(hNEvents[iCut]);
 
     if(fIsHeavyIon == 1 || fIsHeavyIon == 2) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",3000,0,3000);
