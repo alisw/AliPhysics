@@ -43,6 +43,8 @@ struct Charm2Prong
     Double32_t fNormDecayLengthXY;      //[0.0,102.4,10]
     Double32_t fImpParProd;             //[-0.32768,0.32768,16]
     int fGenLabel;                      /// label to match with MC
+    int fProngIdx0;                     /// prong index 0
+    int fProngIdx1;                     /// prong index 1
     unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
     unsigned char fDecay;               /// flag for decay channel
     int fSelBit;                        /// selection bit
@@ -67,6 +69,9 @@ struct Charm3Prong
     Double32_t fNormDecayLengthXY;      //[0.0,102.3,10]
     Double32_t fSigmaVtx;               //[0.0,0.08190,12]
     int fGenLabel;                      /// label to match with MC
+    int fProngIdx0;                     /// prong index 0
+    int fProngIdx1;                     /// prong index 1
+    int fProngIdx2;                     /// prong index 2
     unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
     unsigned char fDecay;               /// flag for decay channel
     int fSelBit;                        /// selection bit

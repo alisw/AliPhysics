@@ -983,6 +983,8 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharm2Prong(AliAODRecoDecayHF2Prong
     ch2Prong.fDecayLength = cand->DecayLength();
     ch2Prong.fNormDecayLengthXY = cand->NormalizedDecayLengthXY();
     ch2Prong.fImpParProd = cand->Getd0Prong(0) * cand->Getd0Prong(1);
+    ch2Prong.fProngIdx0 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(0))->GetID();
+    ch2Prong.fProngIdx1 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(1))->GetID();
 
     ch2Prong.fSelBit = 0;
     if (issel == 1 || issel == 3)
@@ -1064,6 +1066,10 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharm3Prong(AliAODRecoDecayHF3Prong
     ch3Prong.fDecayLength = cand->DecayLength();
     ch3Prong.fNormDecayLengthXY = cand->NormalizedDecayLengthXY();
     ch3Prong.fSigmaVtx = cand->GetSigmaVert();
+    ch3Prong.fProngIdx0 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(0))->GetID();
+    ch3Prong.fProngIdx1 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(1))->GetID();
+    ch3Prong.fProngIdx2 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(2))->GetID();
+
     ch3Prong.fSelBit = 0;
     if (isselDplus)
     {
