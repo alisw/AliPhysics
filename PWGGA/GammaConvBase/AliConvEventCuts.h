@@ -140,6 +140,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15h1,         //!< anchored LHC12[a-h] pass 2
         kLHC15h2,         //!< anchored LHC12[a-h] pass 2
         kLHC12P2JJ,       //!< anchored LHC12[a-h] pass 2 - JJ
+        kLHC17g5b,        //!< anchored LHC12[a-h] pass 2 - dec gamma JJ
+        kLHC17g5c,        //!< anchored LHC12[a-h] pass 2 - dec gamma JJ
 
         // 2013
         kLHC13bc,         //!< pPb 5.023TeV
@@ -261,6 +263,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17a3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
         kLHC17a4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
         kLHC17a4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
+        kLHC17g6b2a,          //!< anchored LHC16rs pass 1 - decay gamma 3.5 GeV EMCal GeV JJ
+        kLHC17g6b2b,          //!< anchored LHC16rs pass 1 - decay gamma 3.5 GeV DCal/PHOS GeV JJ
+        kLHC17g6b3a,          //!< anchored LHC16rs pass 1 - decay gamma 7 GeV EMCal GeV JJ
+        kLHC17g6b3b,          //!< anchored LHC16rs pass 1 - decay gamma 7 GeV DCal/PHOS GeV JJ
         kLHC18f3bc,           //!< anchored LHC16rs pass 1 - general purpose DPMJET
         kLHC17f2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
         kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
@@ -736,7 +742,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,74)
+      ClassDef(AliConvEventCuts,75)
       /// \endcond
 };
 

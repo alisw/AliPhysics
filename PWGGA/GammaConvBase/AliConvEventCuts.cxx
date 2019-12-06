@@ -2583,6 +2583,10 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC17f4 :
     case kLHC17f4a :
     case kLHC17f4b :
+    case kLHC17g6b2a :
+    case kLHC17g6b2b :
+    case kLHC17g6b3a :
+    case kLHC17g6b3b :
     case kLHC16rP1JJ :
     case kLHC16sP1JJ :
     // Xe-Xe 5.44 TeV
@@ -3231,6 +3235,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         fPeriodEnum != kLHC17i3c1 &&                                                                // LHC16ijklop JetJet MC EMCal triggered
         fPeriodEnum != kLHC17g8a &&                                                                 // LHC16qt pPb 5TeV JetJet MC's
         fPeriodEnum != kLHC16rP1JJ &&  fPeriodEnum != kLHC16sP1JJ &&                                // LHC16sr pPb 8TeV JetJet MC's
+        fPeriodEnum != kLHC17g6b2a &&  fPeriodEnum != kLHC17g6b2b &&                                // LHC16sr pPb 8TeV JetJet MC's
+        fPeriodEnum != kLHC17g6b3a &&  fPeriodEnum != kLHC17g6b3b &&                                // LHC16sr pPb 8TeV JetJet MC's
         fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                               // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC17P1JJ && fPeriodEnum != kLHC17P1JJLowB &&                               // LHC17X Jet Jet MC's
         fPeriodEnum != kLHC18P1JJ &&                                                                // LHC18X Jet Jet MC's
@@ -3240,7 +3246,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC19a4 &&                                                                  // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC12P2JJ &&                                                                // LHC12 JetJet MC
+        fPeriodEnum != kLHC12P2JJ && fPeriodEnum != kLHC17g5b && fPeriodEnum != kLHC17g5c &&        // LHC12 JetJet MC
         fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
      ){
 
@@ -3319,7 +3325,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 20) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
 
         } else  if ( fPeriodEnum == kLHC16P1JJ || fPeriodEnum == kLHC17P1JJ || fPeriodEnum == kLHC18P1JJ ){
@@ -3338,7 +3344,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 20) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
 
         } else  if ( fPeriodEnum == kLHC16h3 ){
@@ -3356,7 +3362,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 20) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
 
 
@@ -3369,7 +3375,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 6) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC14k1b ){
           Double_t ptHardBinRanges[8]  = { 10,  14,  19, 26, 35,
@@ -3380,7 +3386,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 7) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC15a3b || fPeriodEnum == kLHC15g1b ){
           Double_t ptHardBinRanges[13]  = { 5,  7,  9, 12, 16,
@@ -3394,7 +3400,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 12) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC15g1a ){
           Double_t ptHardBinRanges[20]  = { 5,      11,     21,     36,      57,
@@ -3413,7 +3419,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 19) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC15a3a || fPeriodEnum == kLHC15a3a_plus ) {
           Double_t ptHardBinRanges[20]  = { 5,      11,     21,     36,      57,
@@ -3432,7 +3438,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 19) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC18b10 ){
           Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
@@ -3444,7 +3450,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 6) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC18l2 ){
           Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
@@ -3470,7 +3476,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             if (bin < 20) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC16c3a ){ // ALIROOT-5901
           Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
@@ -3480,7 +3486,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 5) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if (fPeriodEnum == kLHC16c3b ){ // ALIROOT-5901
           Double_t ptHardBinRanges[7]   = {  14, 19, 26, 35, 48, 66, 1000};
@@ -3490,7 +3496,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 6) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if (fPeriodEnum == kLHC16c3c ){ // ALIROOT-5901
           Double_t ptHardBinRanges[8]   = {  0, 5, 11, 21, 36, 57, 84, 1000};
@@ -3500,7 +3506,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 7) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC13b4_fix || fPeriodEnum == kLHC13b4_plus ){
           Double_t ptHardBinRanges[11]  = { 5,     11,   21,   36,   57,
@@ -3513,7 +3519,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 10) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC19a4 ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
@@ -3523,7 +3529,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 20) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC17g8a ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
@@ -3533,7 +3539,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 20) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC16rP1JJ ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
@@ -3543,7 +3549,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 20) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC16sP1JJ ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
@@ -3553,7 +3559,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 20) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC17i3a1 ){ // weights obtained from ga_pp_mc_aod train 912
            Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
@@ -3563,7 +3569,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
            if (bin < 6) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC17i3c1 ){ // preliminary weights obtained from local running
            Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
@@ -3573,7 +3579,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
            if (bin < 8) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC18l6c1 ){ // preliminary weights obtained from local running
            Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
@@ -3583,7 +3589,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
            if (bin < 8) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC18l6b1 ){ // preliminary weights obtained from local running
            Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 21, 10000};
@@ -3593,7 +3599,67 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
            if (bin < 6) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+        } else if ( fPeriodEnum == kLHC17g5b ){ // preliminary weights obtained from local running
+          Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
+          Double_t weightsBins[6]  = { 0.0235115, 0.0186173, 0.0182963, 0.0135686, 0.00874758, 0.0115796};
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 6) weight = weightsBins[bin];
+          if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+        } else if ( fPeriodEnum == kLHC17g5c ){ // preliminary weights obtained from local running
+          Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
+          Double_t weightsBins[8]  = { 0.00039861, 0.000868597, 0.000939155, 0.000917328, 0.00068357, 0.000475878, 0.000266069, 0.000203764};
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 8) weight = weightsBins[bin];
+          if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+      } else if ( fPeriodEnum == kLHC17g6b2a ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
+        Double_t weightsBins[6]  = { 0.0267755, 0.0206222, 0.0199551, 0.0149312, 0.00936012, 0.0124922};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 6) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+      } else if ( fPeriodEnum == kLHC17g6b2b ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
+        Double_t weightsBins[6]  = { 0.0186043, 0.0144098, 0.0145382, 0.0106785, 0.00688777, 0.00923482};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 6) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+      } else if ( fPeriodEnum == kLHC17g6b3a ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
+        Double_t weightsBins[8]  = { 0.000460503, 0.000942402, 0.00101341, 0.00103905, 0.000734619, 0.000520764, 0.000297075, 0.000217233};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 8) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+      } else if ( fPeriodEnum == kLHC17g6b3b ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
+        Double_t weightsBins[8]  = { 0.000305143, 0.000672797, 0.000737654, 0.0007214, 0.000543925, 0.000377044, 0.000214699, 0.00015541};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 8) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else {
           weight = 1;
@@ -3692,7 +3758,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 20) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else  if ( fPeriodEnum == kLHC16P1JJ || fPeriodEnum == kLHC17P1JJ || fPeriodEnum == kLHC18P1JJ){
         Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
@@ -3710,7 +3776,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 20) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else  if ( fPeriodEnum == kLHC16h3 ){
         Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
@@ -3727,7 +3793,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 20) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC15a3b || fPeriodEnum == kLHC15g1b ){
         Double_t ptHardBinRanges[13]  = { 5,  7,  9, 12, 16,
@@ -3741,7 +3807,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 12) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC15g1a ){
         Double_t ptHardBinRanges[20]  = { 5,      11,     21,     36,      57,
@@ -3760,7 +3826,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 19) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC15a3a || fPeriodEnum == kLHC15a3a_plus ) {
         Double_t ptHardBinRanges[20]  = { 5,      11,     21,     36,      57,
@@ -3779,7 +3845,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 19) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC12P2JJ ){
         Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
@@ -3796,7 +3862,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 20) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC16c3a ){ //ALIROOT-5901
         Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
@@ -3806,7 +3872,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 5) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if (fPeriodEnum == kLHC16c3b ){ //ALIROOT-5901
         Double_t ptHardBinRanges[7]   = {  14, 19, 26, 35, 48, 66, 1000};
@@ -3816,7 +3882,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 6) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if (fPeriodEnum == kLHC16c3c ){ //ALIROOT-5901
         Double_t ptHardBinRanges[8]   = {  0, 5, 11, 21, 36, 57, 84, 1000};
@@ -3826,7 +3892,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 7) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC14k1a ){
         Double_t ptHardBinRanges[7]  = { 5,  7,  9, 12, 16,
@@ -3837,7 +3903,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 6) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC14k1b ){
         Double_t ptHardBinRanges[8]  = { 10,  14,  19, 26, 35,
@@ -3848,7 +3914,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 7) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC13b4_fix || fPeriodEnum == kLHC13b4_plus ){
         Double_t ptHardBinRanges[11]  = { 5,     11,   21,   36,   57,
@@ -3861,7 +3927,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 10) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC19a4 ){
         Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
@@ -3871,7 +3937,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 20) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
     } else if ( fPeriodEnum == kLHC17g8a ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
@@ -3881,7 +3947,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 20) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
     } else if ( fPeriodEnum == kLHC16rP1JJ ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
@@ -3891,7 +3957,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 20) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
     } else if ( fPeriodEnum == kLHC16sP1JJ ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
@@ -3901,7 +3967,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 20) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC17i3a1 ){ // weights obtained from ga_pp_mc_aod train 912
         Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
@@ -3911,7 +3977,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
          if (bin < 6) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC17i3c1 ){ // preliminary weights obtained from local running
          Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
@@ -3921,7 +3987,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
          if (bin < 8) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC18b8 ){
         Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
@@ -3935,7 +4001,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 20) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC18b10 ){
         Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
@@ -3947,7 +4013,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 6) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC18l2 ){
         Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
@@ -3959,7 +4025,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 6) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC18l6c1 ){ // preliminary weights obtained from local running
          Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
@@ -3969,7 +4035,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
          if (bin < 8) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC18l6b1 ){ // preliminary weights obtained from local running
          Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 21, 10000};
@@ -3979,7 +4045,67 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
          if (bin < 6) weight = weightsBins[bin];
         if(fUseFilePathForPthard && (pthardbin > -1)){
             weight = weightsBins[pthardbin-1];
-            if(fUseAdditionalOutlierRejection && (ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin])) eventAccepted= kFALSE;
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+      } else if ( fPeriodEnum == kLHC17g5b ){ // preliminary weights obtained from local running
+          Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
+          Double_t weightsBins[6]  = { 0.0235115, 0.0186173, 0.0182963, 0.0135686, 0.00874758, 0.0115796};
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 6) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+          weight = weightsBins[pthardbin-1];
+          if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+        }
+      } else if ( fPeriodEnum == kLHC17g5c ){ // preliminary weights obtained from local running
+          Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
+          Double_t weightsBins[8]  = { 0.00039861, 0.000868597, 0.000939155, 0.000917328, 0.00068357, 0.000475878, 0.000266069, 0.000203764};
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 8) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+          weight = weightsBins[pthardbin-1];
+          if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+        }
+      } else if ( fPeriodEnum == kLHC17g6b2a ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
+        Double_t weightsBins[6]  = { 0.0267755, 0.0206222, 0.0199551, 0.0149312, 0.00936012, 0.0124922};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 6) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+      } else if ( fPeriodEnum == kLHC17g6b2b ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
+        Double_t weightsBins[6]  = { 0.0186043, 0.0144098, 0.0145382, 0.0106785, 0.00688777, 0.00923482};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 6) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+      } else if ( fPeriodEnum == kLHC17g6b3a ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
+        Double_t weightsBins[8]  = { 0.000460503, 0.000942402, 0.00101341, 0.00103905, 0.000734619, 0.000520764, 0.000297075, 0.000217233};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 8) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+      } else if ( fPeriodEnum == kLHC17g6b3b ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
+        Double_t weightsBins[8]  = { 0.000305143, 0.000672797, 0.000737654, 0.0007214, 0.000543925, 0.000377044, 0.000214699, 0.00015541};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 8) weight = weightsBins[bin];
+        if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
     } else {
       weight = 1;
@@ -4008,6 +4134,8 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC17i3c1 &&                                                                // LHC16ijklop JetJet MC EMCal triggered
         fPeriodEnum != kLHC17g8a &&                                                                 // LHC16qt pPb 5TeV JetJet MC's
         fPeriodEnum != kLHC16rP1JJ &&  fPeriodEnum != kLHC16sP1JJ &&                                // LHC16sr pPb 8TeV JetJet MC's
+        fPeriodEnum != kLHC17g6b2a &&  fPeriodEnum != kLHC17g6b2b &&                                // LHC16sr pPb 8TeV JetJet MC's
+        fPeriodEnum != kLHC17g6b3a &&  fPeriodEnum != kLHC17g6b3b &&                                // LHC16sr pPb 8TeV JetJet MC's
         fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                               // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC17P1JJ && fPeriodEnum != kLHC17P1JJLowB &&                               // LHC17X Jet Jet MC's
         fPeriodEnum != kLHC18P1JJ &&                                                                // LHC18X Jet Jet MC's
@@ -4017,7 +4145,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC19a4 &&                                                                  // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC12P2JJ  &&                                                               // LHC12 JetJet MC
+        fPeriodEnum != kLHC12P2JJ  &&  fPeriodEnum != kLHC17g5b  &&  fPeriodEnum != kLHC17g5c  &&   // LHC12 JetJet MC
         fPeriodEnum != kLHC18b11a  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
         fPeriodEnum != kLHC18b11b  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
         fPeriodEnum != kLHC18b11c  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
@@ -4109,6 +4237,8 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent, AliVEvent* event){
         fPeriodEnum != kLHC18l6b1 && fPeriodEnum != kLHC18l6c1 &&                                   // LHC17 JetJet MC with decay photons in EMCal acc.
         fPeriodEnum != kLHC17g8a &&                                                                 // LHC16qt pPb 5TeV JetJet MC's
         fPeriodEnum != kLHC16rP1JJ &&  fPeriodEnum != kLHC16sP1JJ &&                                // LHC16sr pPb 8TeV JetJet MC's
+        fPeriodEnum != kLHC17g6b2a &&  fPeriodEnum != kLHC17g6b2b &&                                // LHC16sr pPb 8TeV JetJet MC's
+        fPeriodEnum != kLHC17g6b3a &&  fPeriodEnum != kLHC17g6b3b &&                                // LHC16sr pPb 8TeV JetJet MC's
         fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                               // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC17P1JJ && fPeriodEnum != kLHC17P1JJLowB &&                               // LHC17X Jet Jet MC's
         fPeriodEnum != kLHC18P1JJ &&                                                                // LHC18X Jet Jet MC's
@@ -4118,7 +4248,7 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent, AliVEvent* event){
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC19a4 &&                                                                  // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC12P2JJ  &&                                                               // LHC12 JetJet MC
+        fPeriodEnum != kLHC12P2JJ  && fPeriodEnum != kLHC17g5b  && fPeriodEnum != kLHC17g5c  &&     // LHC12 JetJet MC
         fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
     ) return -1;
 
@@ -6674,6 +6804,12 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC12P2JJ") == 0 || periodName.CompareTo("LHC16c2") == 0 || periodName.CompareTo("LHC16c2_plus") == 0){
     fPeriodEnum = kLHC12P2JJ;
     fEnergyEnum = k8TeV;
+  } else if (periodName.CompareTo("LHC17g5b") == 0){
+    fPeriodEnum = kLHC17g5b;
+    fEnergyEnum = k8TeV;
+  } else if (periodName.CompareTo("LHC17g5c") == 0){
+    fPeriodEnum = kLHC17g5c;
+    fEnergyEnum = k8TeV;
   // LHC13x anchored MCs
   } else if (periodName.Contains("LHC13b2_efix")){
     fPeriodEnum = kLHC13b2_efix;
@@ -7037,6 +7173,18 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kpPb8TeV;
   } else if (periodName.CompareTo("LHC17a4b") == 0){
     fPeriodEnum = kLHC17a4b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17g6b2a") == 0){
+    fPeriodEnum = kLHC17g6b2a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17g6b2b") == 0){
+    fPeriodEnum = kLHC17g6b2b;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17g6b3a") == 0){
+    fPeriodEnum = kLHC17g6b3a;
+    fEnergyEnum = kpPb8TeV;
+  } else if (periodName.CompareTo("LHC17g6b3b") == 0){
+    fPeriodEnum = kLHC17g6b3b;
     fEnergyEnum = kpPb8TeV;
   } else if (periodName.CompareTo("LHC17g8b") == 0 || periodName.CompareTo("LHC18b9b") == 0){
     fPeriodEnum = kLHC16rP1JJ;

@@ -7433,6 +7433,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC12P2JJ") == 0 ||
             namePeriod.CompareTo("LHC16c2") == 0 ||
             namePeriod.CompareTo("LHC16c2_plus") == 0 ) return kPP8T12P2JJ;
+  else if ( namePeriod.CompareTo("LHC17g5b") == 0 ) return kPP8T12P2GJLow;
+  else if ( namePeriod.CompareTo("LHC17g5c") == 0 ) return kPP8T12P2GJHigh;
 
   // pPb 5 TeV 2013 MC pass 2
   else if(  namePeriod.Contains("LHC13b2_efix"))        return kPPb5T13P2DPMJet;
@@ -7580,6 +7582,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC17f4b") == 0  )    return k17f4b;
   else if ( namePeriod.Contains("LHC18f3b") ||
             namePeriod.Contains("LHC18f3c") )           return k18f3bc;
+  // pPb 8 TeV 2016 decay gamma MC
+  else if ( namePeriod.CompareTo("LHC17g6b2a") == 0  )    return k17g6b2a;
+  else if ( namePeriod.CompareTo("LHC17g6b2b") == 0  )    return k17g6b2b;
+  else if ( namePeriod.CompareTo("LHC17g6b3a") == 0  )    return k17g6b3a;
+  else if ( namePeriod.CompareTo("LHC17g6b3b") == 0  )    return k17g6b3b;
   // pPb 8 TeV 2016 JJ MC
   else if ( namePeriod.CompareTo("LHC17g8b") == 0  )    return k17g8b;
   else if ( namePeriod.CompareTo("LHC17g8c") == 0  )    return k17g8c;
