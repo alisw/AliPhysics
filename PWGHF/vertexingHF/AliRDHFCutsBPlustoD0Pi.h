@@ -46,6 +46,8 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel){ return IsSelected(obj,selectionLevel,0); }
   virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
 
+  Bool_t IsThisDaughterSelected(AliAODTrack *track, AliAODVertex *primary, const AliAODEvent* aod);
+
   //Last three for MVA, first two for standard analysis (TBD: Merge them?)
   Int_t IsD0FromBPlusSelected(Double_t ptBPlus, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t bCutArray[75]);
   Int_t IsD0forD0ptbinSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);

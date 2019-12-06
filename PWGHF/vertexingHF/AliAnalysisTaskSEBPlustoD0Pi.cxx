@@ -1839,14 +1839,14 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mc
   return;
 }
 //-------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header) {
+Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header, AliAODEvent* aodEvent) {
 
   // we select the D0 pion and save its information
   if (!aodTrack) AliFatal("Not a standard AOD");
 
   //quick quality cut
   if (aodTrack->GetITSNcls() < 1) return kFALSE;
-  if (aodTrack->GetTPCNcls() < 1) return kFALSE;
+  // if (aodTrack->GetTPCNcls() < 1) return kFALSE;
   if (aodTrack->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
   if (!(aodTrack->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
   if (aodTrack->GetID() < 0) return kFALSE;
@@ -1927,7 +1927,9 @@ Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0FirstDaughterSelection(AliAODTrack* aodTr
     bCut = kTRUE;
   }
 
-  if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0FirstDaughter()) {
+  // TPC cluster cut turned off, cut is done with crossed row method instead using the IsThisDaughterSelected function
+  // if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0FirstDaughter()) {
+  if (!fCuts->IsThisDaughterSelected(aodTrack,primaryVertex,aodEvent)) {
     if (isDesiredCandidate) {
       ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(4);
     } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(4);
@@ -2068,14 +2070,14 @@ Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0FirstDaughterSelection(AliAODTrack* aodTr
   return kTRUE;
 }
 //-------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header) {
+Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header, AliAODEvent* aodEvent) {
 
   // we select the D0 pion and save its information
   if (!aodTrack) AliFatal("Not a standard AOD");
 
   //quick quality cut
   if (aodTrack->GetITSNcls() < 1) return kFALSE;
-  if (aodTrack->GetTPCNcls() < 1) return kFALSE;
+  // if (aodTrack->GetTPCNcls() < 1) return kFALSE;
   if (aodTrack->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
   if (!(aodTrack->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
   if (aodTrack->GetID() < 0) return kFALSE;
@@ -2155,7 +2157,9 @@ Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0SecondDaughterSelection(AliAODTrack* aodT
     bCut = kTRUE;
   }
 
-  if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0SecondDaughter()) {
+  // TPC cluster cut turned off, cut is done with crossed row method instead using the IsThisDaughterSelected function
+  // if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0SecondDaughter()) {
+  if (!fCuts->IsThisDaughterSelected(aodTrack,primaryVertex,aodEvent)) {
     if (isDesiredCandidate) {
       ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(4);
     } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(4);
@@ -2306,18 +2310,18 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusPionSelection(AliAODEvent* aodEvent, Ali
 
     //quick quality cut
     if (aodTrack->GetITSNcls() < 1) continue;
-    if (aodTrack->GetTPCNcls() < 1) continue;
+    // if (aodTrack->GetTPCNcls() < 1) continue;
     if (aodTrack->GetStatus()&AliESDtrack::kITSpureSA) continue;
     if (!(aodTrack->GetStatus()&AliESDtrack::kITSin)) continue;
     if (aodTrack->GetID() < 0) continue;
     Double_t covtest[21];
     if (!aodTrack->GetCovarianceXYZPxPyPz(covtest)) continue;
 
-    Double_t pos[3],cov[6];
-    primaryVertex->GetXYZ(pos);
-    primaryVertex->GetCovarianceMatrix(cov);
-    const AliESDVertex vESD(pos,cov,100.,100);
-    if(!fCuts->IsDaughterSelected(aodTrack,&vESD,fCuts->GetTrackCuts(),aodEvent)) continue;
+    // Double_t pos[3],cov[6];
+    // primaryVertex->GetXYZ(pos);
+    // primaryVertex->GetCovarianceMatrix(cov);
+    // const AliESDVertex vESD(pos,cov,100.,100);
+    // if(!fCuts->IsDaughterSelected(aodTrack,&vESD,fCuts->GetTrackCuts(),aodEvent)) continue;
 
     Int_t mcLabelParticle = -1;
     mcLabelParticle = aodTrack->GetLabel();
@@ -2420,7 +2424,9 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusPionSelection(AliAODEvent* aodEvent, Ali
       bCut = kTRUE;
     }
 
-    if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsBPlusPion()) {
+    // TPC cluster cut turned off, cut is done with crossed row method instead using the IsThisDaughterSelected function
+    // if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsBPlusPion()) {
+    if (!fCuts->IsThisDaughterSelected(aodTrack,primaryVertex,aodEvent)) {
       if (isDesiredCandidate) {
         ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(4);
       } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(4);
@@ -2598,8 +2604,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::D0Selection(AliAODEvent* aodEvent, AliAODVert
 
     AliAODTrack * trackFirstDaughter = (AliAODTrack*)(trackD0->GetDaughter(0));
     AliAODTrack * trackSecondDaughter = (AliAODTrack*)(trackD0->GetDaughter(1));
-    if (!D0FirstDaughterSelection(trackFirstDaughter, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, header)) continue;
-    if (!D0SecondDaughterSelection(trackSecondDaughter, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, header)) continue;
+    if (!D0FirstDaughterSelection(trackFirstDaughter, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, header, aodEvent)) continue;
+    if (!D0SecondDaughterSelection(trackSecondDaughter, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, header, aodEvent)) continue;
 
 
     AliAODVertex *vertexMother = (AliAODVertex*)trackD0->GetSecondaryVtx();
@@ -4380,16 +4386,16 @@ void AliAnalysisTaskSEBPlustoD0Pi::CutOptimizationVariableValues(AliAODRecoDecay
     // D0 window - invariant mass
     Int_t chargeBPlus = candidateBPlus->Charge();
     UInt_t prongs[2];
-    if(chargeBPlus==1)
+    if (chargeBPlus == -1)
     {
       prongs[0] = 211;
       prongs[1] = 321;
-    } 
-    else if (chargeBPlus==-1)
+    }
+    else if (chargeBPlus == 1)
     {
-      prongs[1] = 211;
       prongs[0] = 321;
-    } 
+      prongs[1] = 211;
+    }
     else 
     {
       std::cout << "Wrong charge BPlus." << std::endl;
