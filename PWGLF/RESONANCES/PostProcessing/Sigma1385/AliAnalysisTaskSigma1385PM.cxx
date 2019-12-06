@@ -165,11 +165,10 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
                  "AntiSigmaStarN_gen_trig", "SigmaStarP_rec", "SigmaStarN_rec", "AntiSigmaStarP_rec",
                  "AntiSigmaStarN_rec"});
     
-    std::vector<double> centaxisbin = (fIsHM) ? {
-        0,  0.001,  0.01,  0.05, 0.1} : {
-        0,  1,  5,  10, 15, 20, 30,
-        40, 50, 60, 70, 80, 90, 100}
-        ;  // can be use from pp to PbPb
+    std::vector<double> centaxisbin;
+    (fIsHM) ? centaxisbin = { 0,  0.001,  0.01,  0.05, 0.1} 
+            : centaxisbin = { 0,  1,  5,  10, 15, 20, 30,
+                              40, 50, 60, 70, 80, 90, 100};  // can be use from pp to PbPb
     binCent = AxisVar("Cent", centaxisbin);
     auto binPt = AxisFix("Pt", 200, 0, 20);
     auto binMass = AxisFix("Mass", 2000, 1.0, 3.0);
