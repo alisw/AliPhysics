@@ -22,7 +22,8 @@ AliAnalysisTaskUPCforward* AddTaskUPCforward( TString name = "name", Int_t _fSet
     fileName += ":MyTask";      // create a subfolder in the file
     // fileName += ":MyTask";      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskUPCforward* task = new AliAnalysisTaskUPCforward(name.Data(), _fSetSingleMuonPt);
+    // AliAnalysisTaskUPCforward* task = new AliAnalysisTaskUPCforward(name.Data(), _fSetSingleMuonPt);
+    AliAnalysisTaskUPCforward* task = new AliAnalysisTaskUPCforward(Form("MyOutputContainer%s", suffix), _fSetSingleMuonPt);
     if(!task) return 0x0;
     // task->SelectCollisionCandidates(AliVEvent::kAnyINT);     // Physics Selection used by "everybody" but NOT in UPC
     // add your task to the manager
