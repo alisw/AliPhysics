@@ -143,11 +143,11 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   fCentBins[1] = 0.f;
   fCentBins[2] = 100.f;
 
-  float ptBins[kNbins + 1] = { 0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
+  double ptBins[kNbins + 1] = { 0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
                                0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.0 };
   fPtBins.Set(kNbins + 1, ptBins);
   const int nDCAbins = 2000;
-  float dcaBins[nDCAbins];
+  double dcaBins[nDCAbins];
   SetBins(nDCAbins, -2, 2, dcaBins);
   SetDCABins(nDCAbins, dcaBins);
 
@@ -174,6 +174,9 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   }
   for (int iL = 0; iL < 4; ++iL)
     fHistCharge[iL] = NULL;
+
+  fHistMCGenCharged = NULL;
+  fHistRecoChargedMC = NULL;
 
   // dEdx distributions
   fHistPosHypPi = NULL;
@@ -288,12 +291,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   const int nPtBins = fPtBins.GetSize() - 1;
   const int nCentBins = fCentBins.GetSize() - 1;
   const int nDCABins = fDCABins.GetSize() - 1;
-  const float *ptBins = fPtBins.GetArray();
-  const float *centBins = fCentBins.GetArray();
-  const float *dcaBins = fDCABins.GetArray();
+  const double *ptBins = fPtBins.GetArray();
+  const double *centBins = fCentBins.GetArray();
+  const double *dcaBins = fDCABins.GetArray();
 
-  float evBins[kNEvtCuts + 1];
-  SetBins(kNEvtCuts, .5f, kNEvtCuts + .5f, evBins);
+  double evBins[kNEvtCuts + 1];
+  SetBins(kNEvtCuts, .5, kNEvtCuts + .5, evBins);
 
   const char *notApp = "_notApplied";
   fHistNEvents =
@@ -361,7 +364,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fOutput->Add(fHistMultAftEvtSel);
 
   const int nVtxBins = 400;
-  float vtxBins[nVtxBins + 1];
+  double vtxBins[nVtxBins + 1];
   SetBins(nVtxBins, -20, 20, vtxBins);
 
   fHistVtxZ = new TH2F("fHistVtxZ", "Vtx Z distribution;Centrality (%);Z_vtx", nCentBins, centBins, nVtxBins, vtxBins);
@@ -375,8 +378,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   std::string hist_name;
 
   const int nTrkBins = 20;
-  float trkBins[nTrkBins + 1];
-  SetBins(nTrkBins, .5f, nTrkBins + .5f, trkBins);
+  double trkBins[nTrkBins + 1];
+  SetBins(nTrkBins, .5, nTrkBins + .5, trkBins);
 
   // Histo with track cuts
   for (int i_chg = 0; i_chg < kNchg; ++i_chg) {
@@ -432,12 +435,31 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 900, 0, 1000);
   fOutput->Add(fHistDEDXdouble);
 
+  if (fIsMC) { //for correlation between momenta (MC)
+    const UInt_t nDimsP = 4;                                         // cent, recP, genP, IsPrim/Sec
+    int nBinsP[nDimsP] = { nCentBins, hnbins, hnbins, 4 }; //
+    double minBinP[nDimsP] = { 0., 0.01, 0.01, -.5 };         // Dummy limits for cent, recP, genP
+    double maxBinP[nDimsP] = { 1., 10., 10., 3.5 };           // Dummy limits for cent, recP, genP
+    fHistRecoChargedMC =
+      new THnSparseF("fHistRecoChargedMC", ";Centrality (%);#it{p} (GeV/#it{c});#it{p} (GeV/#it{c});", nDimsP,
+                     nBinsP, minBinP, maxBinP);
+    fHistRecoChargedMC->GetAxis(0)->Set(nCentBins, centBins); // Real limits for cent
+    fHistRecoChargedMC->GetAxis(1)->Set(hnbins, hxbins);     // Real limits for rec p
+    fHistRecoChargedMC->GetAxis(2)->Set(hnbins, hxbins);     // Real limits for gen p
+    fOutput->Add(fHistRecoChargedMC);
+
+    //for efficiency calculation
+    fHistMCGenCharged = new TH3F("fHistMCGenCharged", ";Centrality (%);#it{p} (GeV/#it{c});", nCentBins, centBins,
+                                  hnbins, hxbins, kNEvtCuts, evBins);
+    fOutput->Add(fHistMCGenCharged);
+  }
+
   for (int i_spc = 0; i_spc < kNspc; ++i_spc) {
     for (int i_chg = 0; i_chg < kNchg; ++i_chg) {
       int index = i_spc * kNchg + i_chg;
 
       const int nDEDXbins = 1000;
-      float dedxBins[nDEDXbins + 1];
+      double dedxBins[nDEDXbins + 1];
       SetBins(nDEDXbins, 0., 1000., dedxBins);
       hist_name = Form("fHistNSigmaSep%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
       fHistNSigmaSep[index] = new TH2F(hist_name.data(), hist_name.data(), hnbins, hxbins, 1000, -10., 10.);
@@ -498,7 +520,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
         //        // Histograms MC part Rec.
         const int nPhysBins = 4;
-        float physBins[nPhysBins + 1] = {-0.5, 0.5, 1.5, 2.5, 3.5};
+        double physBins[nPhysBins + 1] = {-0.5, 0.5, 1.5, 2.5, 3.5};
         hist_name = Form("fHistTruePIDMCReco%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
         fHistTruePIDMCReco[index] = new TH3F(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});", nCentBins,
                                              centBins, nPtBins, ptBins, nPhysBins, physBins);
@@ -576,8 +598,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
     if (fIsMC) {
       const int nBins = 175;
-      float dEdxBins[nBins + 1];
-      SetBins(nBins, -3.5f, 3.5f, dEdxBins);
+      double dEdxBins[nBins + 1];
+      SetBins(nBins, -3.5, 3.5, dEdxBins);
       fHistMCPosOtherHypPion =
         new TH2F("fHistMCPosOtherHypPion", "fHistMCPosOtherHypPion", nPtBins, ptBins, nBins, dEdxBins); // MC truth
       fHistMCPosOtherHypKaon =
@@ -986,11 +1008,13 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       int lMCpdg = -999;
       int lMCspc = AliPID::kElectron;
       float lMCpt = -999;
+      float lMCp = -999;
       if (fIsMC) {
         lMCtrk = TMath::Abs(track->GetLabel());
         AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
         lMCpdg = trkMC->PdgCode();
-        lMCpt = trkMC->Pt();
+        lMCpt  = trkMC->Pt();
+        lMCp   = trkMC->P();
 
         //        if (TMath::Abs(lMCpdg) ==   11 && fPid == AliPID::kPion) lMCspc = AliPID::kPion;
         //        if (TMath::Abs(lMCpdg) ==   13 && fPid == AliPID::kPion) lMCspc = AliPID::kPion;
@@ -1042,9 +1066,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       fHistSepPowerReco[lPidIndex]->Fill(trkPt, dEdx);
       // Filling Histos for Reco Efficiency
       // information from the MC kinematics (truth PID)
+      int ptype = 0;
       if (fIsMC && lIsGoodPart) {
         fHistSepPowerTrue[lMCtIndex]->Fill(lMCpt, dEdx);
-        int ptype;
         if (lMCevent->IsPhysicalPrimary(lMCtrk)){
           fHistTruePIDMCReco[lMCtIndex]->Fill(fEvtMult, trkPt, 0);
           fHistTruePIDMCGen[lMCtIndex]->Fill(fEvtMult, lMCpt, 0);
@@ -1082,6 +1106,11 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
                                (lMCevent->IsPhysicalPrimary(lMCtrk)) ? 0. : 1. };
         fHistRecoMC[lPidIndex]->Fill(tmp_vect);
       } // end y
+
+      if(fIsMC){//correlation between momenta (measured and true ones)
+        double tmp_vect[4] = {fEvtMult, track->GetP(), lMCp, static_cast<double>(ptype)};
+        fHistRecoChargedMC->Fill(tmp_vect);
+      }
 
       if (lIsGoodTrack && fFillIntDistHist) {
         //
@@ -1663,11 +1692,15 @@ void AliAnalysisTaskSEITSsaSpectra::AnalyseMCParticles(AliMCEvent *lMCevent, EEv
       continue;
 
     double mcPt = mcTrk->Pt();
+    double mcP  = mcTrk->P();
+    bool lIsPhysPrimary = lMCevent->IsPhysicalPrimary(i_mcTrk);
+    for (int istep = (int)kIsReadable; istep <= (int)lastEvtCutPassed; ++istep)//before the cut on pt and rap is applied
+      if(lIsPhysPrimary) fHistMCGenCharged->Fill(fEvtMult, TMath::Abs(mcP), istep);
+
     if (mcPt > 1.0)
       continue; // pt cut
     double mcEta = mcTrk->Eta();
     double mcRap = mcTrk->Y() + fCMSRapFct;
-    bool lIsPhysPrimary = lMCevent->IsPhysicalPrimary(i_mcTrk);
     if (fFillNtuple) {
       // filling MC ntuple
       float xntMC[8];
@@ -2037,9 +2070,9 @@ void AliAnalysisTaskSEITSsaSpectra::ComputeBayesProbabilities(double *probs, con
 //
 //
 //________________________________________________________________________
-void AliAnalysisTaskSEITSsaSpectra::SetBins(const int nbins, float min, float max, float *bins)
+void AliAnalysisTaskSEITSsaSpectra::SetBins(const int nbins, double min, double max, double *bins)
 {
-  const float delta = (max - min) / nbins;
+  const double delta = (max - min) / nbins;
   for (int iB = 0; iB < nbins; ++iB) {
     bins[iB] = min + iB * delta;
   }
@@ -2049,14 +2082,14 @@ void AliAnalysisTaskSEITSsaSpectra::SetBins(const int nbins, float min, float ma
 //
 //
 //________________________________________________________________________
-void AliAnalysisTaskSEITSsaSpectra::SetCentBins(int nbins, float *bins) { fCentBins.Set(nbins + 1, bins); }
+void AliAnalysisTaskSEITSsaSpectra::SetCentBins(int nbins, double *bins) { fCentBins.Set(nbins + 1, bins); }
 
 //
 //
 //________________________________________________________________________
-void AliAnalysisTaskSEITSsaSpectra::SetDCABins(int nbins, float *bins) { fDCABins.Set(nbins + 1, bins); }
+void AliAnalysisTaskSEITSsaSpectra::SetDCABins(int nbins, double *bins) { fDCABins.Set(nbins + 1, bins); }
 
 //
 //
 //________________________________________________________________________
-void AliAnalysisTaskSEITSsaSpectra::SetPtBins(int nbins, float *bins) { fPtBins.Set(nbins + 1, bins); }
+void AliAnalysisTaskSEITSsaSpectra::SetPtBins(int nbins, double *bins) { fPtBins.Set(nbins + 1, bins); }
