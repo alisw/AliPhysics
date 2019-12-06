@@ -581,7 +581,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   fAnalysisUtil->SetUseOutOfBunchPileUp(kTRUE);
 
   //pid response object
-  //fPIDResponse=inputHandler->GetPIDResponse();
+  fPIDResponse=inputHandler->GetPIDResponse();
     
   fListHist = new TList();
   fListHist->SetOwner(kTRUE);
@@ -1229,7 +1229,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
   //--------- Check if I have PID response object --------
-  /*
+  
   if(!fPIDResponse){
      AliAnalysisManager   *mgr=AliAnalysisManager::GetAnalysisManager();
      AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
@@ -1239,7 +1239,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
        return;
      }
   }
-  */
+ 
 
 
 
@@ -2098,14 +2098,14 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   Double_t dEta1, dEta2, ptw1,  ptw2, deltaPhi;
   Double_t mom, w1NUA, w2NUA, WgtEP;
 
-  /*
+  
   Double_t nSigTOFpion,  nSigTPCpion;
   Double_t nSigTOFkaon,  nSigTPCkaon;
   Double_t nSigTOFproton,nSigTPCproton;
-  Double_t nSigTOFpion2,  nSigTPCpion2;
-  Double_t nSigTOFkaon2,  nSigTPCkaon2;
-  Double_t nSigTOFproton2,nSigTPCproton2;
-  */
+  //Double_t nSigTOFpion2,  nSigTPCpion2;
+  //Double_t nSigTOFkaon2,  nSigTPCkaon2;
+  //Double_t nSigTOFproton2,nSigTPCproton2;
+ 
 
   //Tof variables
   //Double_t length, tofTime, probMis, mass, beta;
@@ -2134,9 +2134,10 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
   Double_t Chi2Trk1=0, Chi2Trk2=0;
 
-  //Double_t ptwPion1,ptwKaon1,ptwProton1; 
+  Double_t ptwPion1,ptwKaon1,ptwProton1; 
+  Double_t wNUAPion1,wNUAKaon1,wNUAProton1;
+
   //Double_t ptwPion2,ptwKaon2,ptwProton2;
-  //Double_t wNUAPion1,wNUAKaon1,wNUAProton1;
   //Double_t wNUAPion2,wNUAKaon2,wNUAProton2;
 
   //Double_t    WgtEPPion = 1.0;
@@ -2147,6 +2148,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   Bool_t isPion1 = kFALSE;
   Bool_t isKaon1  = kFALSE;
   Bool_t isProton1 = kFALSE;
+
   Bool_t isPion2 = kFALSE;
   Bool_t isKaon2  = kFALSE;
   Bool_t isProton2 = kFALSE;
@@ -2302,9 +2304,10 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
     //-------- Apply Default track cuts for analysis: ---------
-    if((dPt1 > fMaxPtCut) || (dPt1 < fMinPtCut) || (dEta1 > fMaxEtaCut) || (dEta1 < fMinEtaCut) || (dEdx1 < fdEdxMin) || (track->GetTPCNcls() < fTPCclustMin)  || (Chi2Trk1 < fTrkChi2Min) || (Chi2Trk1 > 4.0) || (track->DCA() > fDCAxyMax) || (track->ZAtDCA() > fDCAzMax)  || !(TMath::Abs(gCharge1)))
-      continue;
-
+    // if((dPt1 > fMaxPtCut) || (dPt1 < fMinPtCut) || (dEta1 > fMaxEtaCut) || (dEta1 < fMinEtaCut) || (dEdx1 < fdEdxMin) || (track->GetTPCNcls() < fTPCclustMin)  || (Chi2Trk1 < fTrkChi2Min) || (Chi2Trk1 > 4.0) || (track->DCA() > fDCAxyMax) || (track->ZAtDCA() > fDCAzMax)  || !(TMath::Abs(gCharge1)))  continue;
+    //Rihan Dec05,2019: Added new cuts for new Analysis. !!! Cuts for CME run-2 is commented out above^
+    if((dPt1 > fMaxPtCut) || (dPt1 < fMinPtCut) || (dEta1 > fMaxEtaCut) || (dEta1 < fMinEtaCut) || (dEdx1 < fdEdxMin) || (track->GetTPCNcls() < fTPCclustMin)  || (Chi2Trk1 < fTrkChi2Min) || (Chi2Trk1 > 4.0) || !(TMath::Abs(gCharge1)))  continue;
+    
     multPOI1st++;
 
 
@@ -2329,29 +2332,39 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     isKaon1  = kFALSE;
     isProton1 = kFALSE;
 
-    /*
-    //------> Pion
+    //----> Rihan Dec05,2019:  Using TPC/TOF for PID
+    nSigTPCpion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+    nSigTPCkaon  = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+    nSigTPCproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+    
+    nSigTOFpion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+    nSigTOFkaon  = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+    nSigTOFproton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+      
+    //----- Pion
     if(dPt1<=0.6 && TMath::Abs(nSigTPCpion)<=3.0){
       isPion1 = kTRUE;
-    }
+    }/// Pion and Kaon max pT = 2.0 GeV
     else if(dPt1>0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCpion)<=3.0 && TMath::Abs(nSigTOFpion)<=2.0 ){
-      isPion1 = kTRUE;
+     isPion1 = kTRUE;
     }
-    //------> Kaon
+    //----- Kaon
     if(dPt1<=0.45 && TMath::Abs(nSigTPCkaon)<=3.0){
       isKaon1 = kTRUE;
-    }
+    }/// Pion and Kaon max pT = 2.0 GeV
     else if(dPt1>0.45 && dPt1<=2.0 && TMath::Abs(nSigTPCkaon)<=3.0 && TMath::Abs(nSigTOFkaon)<=2.0){
       isKaon1 = kTRUE;
     }
-    //------> Proton 
+    //----- Proton 
     if(dPt1<=0.8 && TMath::Abs(nSigTPCproton)<=3.0){
       isProton1 = kTRUE;
       if(dPt1<0.4) isProton1 = kFALSE;      //Proton below 0.4 GeV is garbage
-    }
-    else if(dPt1>0.8 && dPt1<=2.0 && TMath::Abs(nSigTPCproton)<=3.0 && TMath::Abs(nSigTOFproton)<=3.0){  //0.8 to 3.5 was used earlier.
+    }/// Proton max pT = 4.0 GeV
+    else if(dPt1>0.8 && dPt1<=4.0 && TMath::Abs(nSigTPCproton)<=3.0 && TMath::Abs(nSigTOFproton)<=3.0){  
       isProton1 = kTRUE;
-    } */
+    }
+
+    //<---------------------------------------------------------------------------------
 
 
 
@@ -2362,14 +2375,14 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
     //=================  MC wgt and NUA wgt for PID =================
-    /*
     ptwPion1 = 1.0;
     ptwKaon1  = 1.0;
     ptwProton1 = 1.0;
     wNUAPion1 = 1.0;
     wNUAKaon1  = 1.0;
     wNUAProton1 = 1.0;
-
+    
+    /*
     //------ get MC weight and NUA for Pion track1 --------------
     if(isPion1){
       if(fFB_Efficiency_Pion_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Pion Efficiency file when available.
@@ -3103,8 +3116,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     //------------- Fill QA histograms ------------
     if(TMath::Abs(pVtxZ) < 8.0 && gCharge1 > 0){
       
-      fQAEtaPhiAfterNUA->Fill(dPhi1,dEta1,w1NUA);
-      /*
+      fQAEtaPhiAfterNUA->Fill(dPhi1,dEta1,w1NUA);  
+      //Rihan Dec05,2019: Filling PID QA:
+      
       if(isPion1){
         fQAEtaPhiAfterNUAPion->Fill(dPhi1,dEta1,wNUAPion1);
       }
@@ -3113,7 +3127,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       }
       if(isProton1){
 	fQAEtaPhiAfterNUAProton->Fill(dPhi1,dEta1,wNUAProton1);
-      } */
+      } 
     }
 
 
