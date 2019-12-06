@@ -711,9 +711,9 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
 
             if (!(fEnable3Prongs >> 0 & 1) && !(fEnableBeauty4Prongs >> 0 & 1) && (!isselDs && !isselLc))
                 continue;
-            if (!(fEnable3Prongs >> 1 & 1) && (!isselDplus && !isselLc))
+            if (!(fEnable3Prongs >> 1 & 1) && !(fEnableBeauty4Prongs >> 1 & 1) && (!isselDplus && !isselLc))
                 continue;
-            if (!(fEnable3Prongs >> 2 & 1) && (!isselDplus && !isselDs))
+            if (!(fEnable3Prongs >> 2 & 1) && !(fEnableBeauty4Prongs >> 2 & 1) && (!isselDplus && !isselDs))
                 continue;
 
             fHistNEvents->Fill(8);
@@ -746,17 +746,27 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
 
             if (fEnableBeauty4Prongs)
             {
-                if(!isselDplus)
+                if(((fEnableBeauty4Prongs >> 0 & 1) && !isselDplus) || 
+                ((fEnableBeauty4Prongs >> 1 & 1) && (!(isselDs & 4) && !(isselDs & 8))) || 
+                ((fEnableBeauty4Prongs >> 2 & 1) && !isselLc))
                     continue;
+
                 for (int iTrack = 0; iTrack < fAOD->GetNumberOfTracks(); iTrack++)
                 {
+
+                    bool isselB0 = isselDplus;
+                    bool isselBs = static_cast<bool>(isselDs);
+                    bool isselLb = static_cast<bool>(isselLc);
+
                     AliAODTrack *track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(iTrack));
                     if (!track)
                         continue;
 
                     if (!track->TestFilterBit(4) || TMath::Abs(track->Eta()) > 0.8 || track->Pt() < 0.3) //minimal track cuts
                         continue;
-                    if ((track->Charge() > 0 && d->Charge() > 0) || (track->Charge() < 0 && d->Charge() < 0)) //keep only correct charge
+
+                    //keep only correct charge
+                    if((track->Charge() > 0 && d->Charge() > 0) || (track->Charge() < 0 && d->Charge() < 0))
                         continue;
 
                     //we check if the IDs of the tracks are different
@@ -812,7 +822,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         B.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                         B.SetProngIDs(2, id);
 
-                        FillBeauty4Prong(&B, d, true);
+                        FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc);
 
                         delete vertexB;
                         vertexB = nullptr;
@@ -1360,7 +1370,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Pron
     b3Prong.fCosPXYD0 = dau->CosPointingAngleXY();
     b3Prong.fDecayLengthD0 = dau->DecayLength();
     b3Prong.fNormDecayLengthXYD0 = dau->NormalizedDecayLengthXY();
-    b3Prong.fImpParProd = dau->Getd0Prong(0) * dau->Getd0Prong(1);
+    b3Prong.fImpParProdD0 = dau->Getd0Prong(0) * dau->Getd0Prong(1);
     if (cand->Charge() > 0)
         b3Prong.fInvMassD0 = dau->InvMassD0bar();
     else
@@ -1398,19 +1408,48 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Pron
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool issel)
+void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc)
 {
     Beauty4Prong b4Prong;
     unsigned int pdgDgB0toDminuspi[2] = {211, 411};
     int pdgDgDplustopipiK[3] = {211, 211, 321};
-    double invmassB0 = cand->InvMass(2, pdgDgB0toDminuspi);
-    double massB0PDG = TDatabasePDG::Instance()->GetParticle(511)->Mass();
-    if (TMath::Abs(massB0PDG - invmassB0) > 0.4) //check mass
-        return;
 
-    b4Prong.fInvMassB0toDminuspi = invmassB0;
+    unsigned int pdgDgBstoDsminuspi[2] = {211, 431};
+    int pdgDgDstopiKK[3] = {211, 321, 321};
+
+    unsigned int pdgDgLbtoLcpi[2] = {211, 4122};
+    int pdgDgLctopKpi[3] = {2212, 321, 211};
+
+    double massB0PDG = TDatabasePDG::Instance()->GetParticle(511)->Mass();
+    double massBsPDG = TDatabasePDG::Instance()->GetParticle(531)->Mass();
+    double massLbPDG = TDatabasePDG::Instance()->GetParticle(5122)->Mass();
+
+    if(isselB0)
+    {
+        double invmassB0 = cand->InvMass(2, pdgDgB0toDminuspi);
+        b4Prong.fInvMassB0toDminuspi = invmassB0;
+        if (TMath::Abs(massB0PDG - invmassB0) > 0.4) //check mass
+            isselB0 = false;
+    }
+    if(isselBs)
+    {
+        double invmassBs = cand->InvMass(2, pdgDgBstoDsminuspi);
+        b4Prong.fInvMassBstoDsminuspi = invmassBs;
+        if (TMath::Abs(massBsPDG - invmassBs) > 0.4) //check mass
+            isselBs = false;
+    }
+    if(isselLb)
+    {
+        double invmassLb = cand->InvMass(2, pdgDgLbtoLcpi);
+        b4Prong.fInvMassLbtoLcpluspi = invmassLb;
+        if (TMath::Abs(massLbPDG - invmassLb) > 0.4) //check mass
+            isselLb = false;
+    }
+
     b4Prong.fPt = cand->Pt();
-    b4Prong.fY = cand->Y(511);
+    b4Prong.fYB0 = cand->Y(511);
+    b4Prong.fYBs = cand->Y(531);
+    b4Prong.fYLb = cand->Y(5122);
     b4Prong.fDecayLength = cand->DecayLength();
     b4Prong.fNormDecayLengthXY = cand->NormalizedDecayLengthXY();
     b4Prong.fCosP = cand->CosPointingAngle();
@@ -1422,11 +1461,26 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
     b4Prong.fDecayLengthD = dau->DecayLength();
     b4Prong.fNormDecayLengthXYD = dau->NormalizedDecayLengthXY();
     b4Prong.fSigmaVtxD = dau->GetSigmaVert();
-    b4Prong.fInvMassD = dau->InvMassDplus();
+
+    b4Prong.fInvMassDplus = dau->InvMassDplus();
+    b4Prong.fInvMassDs = -1.;
+    b4Prong.fInvMassLc = -1.;
+    if(isselDs & 4)
+        b4Prong.fInvMassDs = dau->InvMassDsKKpi();
+    else if(isselDs & 8)
+        b4Prong.fInvMassDs = dau->InvMassDspiKK();
+    if(isselLc == 1 || isselLc == 3)
+        b4Prong.fInvMassLc = dau->InvMassLcpKpi();
+    else if(isselLc == 2)
+        b4Prong.fInvMassLc = dau->InvMassLcpKpi();
 
     b4Prong.fSelBit = 0;
-    if (issel)
+    if (isselB0)
         b4Prong.fSelBit |= kB0toDminuspiCuts;
+    if (isselBs)
+        b4Prong.fSelBit |= kBstoDminuspiCuts;
+    if (isselLb)
+        b4Prong.fSelBit |= kLbtoLcpluspiCuts;
 
     b4Prong.fDecay = kNone;
     b4Prong.fCandType = 0;
@@ -1437,9 +1491,23 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
         b4Prong.fGenLabel = cand->MatchToMCB3Prong(511, 411, reinterpret_cast<int *>(pdgDgB0toDminuspi), pdgDgDplustopipiK, fMCArray);
         if (b4Prong.fGenLabel < 0)
         {
-            b4Prong.fCandType |= kBackground;
-            if (fFillOnlySignal)
-                return;
+            b4Prong.fGenLabel = cand->MatchToMCB3Prong(531, 431, reinterpret_cast<int *>(pdgDgBstoDsminuspi), pdgDgDstopiKK, fMCArray);
+            if (b4Prong.fGenLabel < 0)
+            {
+                b4Prong.fGenLabel = cand->MatchToMCB3Prong(5122, 4122, reinterpret_cast<int *>(pdgDgLbtoLcpi), pdgDgLctopKpi, fMCArray);
+                if (b4Prong.fGenLabel >= 0)
+                {
+                    b4Prong.fCandType |= kSignal;
+                    b4Prong.fCandType |= kPrompt; //beauty always prompt
+                    b4Prong.fDecay = kLbtoLcpluspi;
+                }
+            }
+            else
+            {
+                b4Prong.fCandType |= kSignal;
+                b4Prong.fCandType |= kPrompt; //beauty always prompt
+                b4Prong.fDecay = kBstoDsminuspi;
+            }
         }
         else
         {
@@ -1448,8 +1516,19 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
             b4Prong.fDecay = kB0toDminuspi;
         }
 
-        if (IsInFiducialAcceptance(b4Prong.fPt, b4Prong.fY))
+        if (b4Prong.fGenLabel < 0)
+        {
+            b4Prong.fCandType |= kBackground;
+            if (fFillOnlySignal)
+                return;
+        }
+
+        if (IsInFiducialAcceptance(b4Prong.fPt, b4Prong.fYB0))
             b4Prong.fSelBit |= kB0toDminuspiFidAcc;
+        if (IsInFiducialAcceptance(b4Prong.fPt, b4Prong.fYBs))
+            b4Prong.fSelBit |= kBstoDsminuspiFidAcc;
+        if (IsInFiducialAcceptance(b4Prong.fPt, b4Prong.fYLb))
+            b4Prong.fSelBit |= kLbtoLcpluspiFidAcc;
     }
 
     fBeauty4Prong.push_back(b4Prong);
