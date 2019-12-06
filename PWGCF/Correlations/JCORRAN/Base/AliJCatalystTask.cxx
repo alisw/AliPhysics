@@ -266,8 +266,6 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 						}
 					}
 				} // weak decay particles are exclude
-				Char_t ch = (Char_t) track->Charge();
-				if (ch == 0 ) continue; // Remove all others than charged particles
 
 				if(fPt_min > 0){
 					double Pt = track->Pt();
@@ -276,18 +274,19 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				}
 
 				Int_t pdg = track->GetPdgCode();
-				// partile charge selection
-				if( fPcharge != 0){ // fPcharge : 0 all particle
-					if( fPcharge==1 && ch<0 )
-						continue; // 1 for + charge
-					if( fPcharge==-1 && ch>0)
-						continue; // -1 for - charge
-				}
-				if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
-				Int_t label = track->GetLabel();
+				Char_t ch = (Char_t) track->Charge();
+				if(ch < 0){
+					if(fPcharge == 1)
+						continue;
+				}else
+				if(ch > 0){
+					if(fPcharge == -1)
+						continue;
+				}else continue;
+
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
-				itrack->SetLabel( label );
-				itrack->SetParticleType(pdg);
+				itrack->SetLabel(track->GetLabel());
+				itrack->SetParticleType( pdg);
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 				itrack->SetCharge(ch) ;
 			}
@@ -302,20 +301,22 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				continue;
 			}
 			if(track->TestFilterBit( fFilterBit )){ //
-				Char_t ch = (Char_t)track->Charge();
 				if( fPt_min > 0){
 					double Pt = track->Pt();
 					if( Pt < fPt_min || Pt > fPt_max )
 						continue ; // pt cut
 				}
 
-				if( fPcharge !=0){ // fPcharge 0 : all particle
-					if( fPcharge==1 && ch<0)
-						continue; // 1 for + particle
-					if( fPcharge==-1 && ch>0)
-						continue; // -1 for - particle
-				}
-				if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
+				Char_t ch = (Char_t)track->Charge();
+				if(ch < 0){
+					if(fPcharge == 1)
+						continue;
+				}else
+				if(ch > 0){
+					if(fPcharge == -1)
+						continue;
+				}else continue;
+
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
@@ -339,6 +340,13 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 	if(zvert < -fzvtxCut || zvert > fzvtxCut)
 		return kFALSE;
 
+	/*if(flags & FLUC_CENT_FLATTENING){
+		float fCent = ReadCentrality(event,fCentDetName);
+		TH1 *pweightMap = GetCentCorrection();
+		if(gRandom->Uniform(0,1) > pweightMap->GetBinContent(pweightMap->GetXaxis()->FindBin(fCent)))
+			return kFALSE;
+	}*/
+
 	if(flags & FLUC_KINEONLY)
 		return kTRUE;
 
@@ -347,7 +355,7 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 	fRunTable->SetRunNumber(fRunNum);
 
 	int fperiod = fRunTable->GetRunNumberToPeriod(fRunNum);
-	if(fperiod == AliJRunTable::kLHC15o){
+	if(fperiod == AliJRunTable::kLHC15o || fperiod == AliJRunTable::kLHC18q || fperiod == AliJRunTable::kLHC18r){
 		const AliVVertex* vtTrc = event->GetPrimaryVertex();
 		const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
 		double covTrc[6],covSPD[6];
@@ -414,7 +422,7 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 	}
 
 	if(flags & FLUC_CUT_OUTLIERS){
-		if(fperiod == AliJRunTable::kLHC15o){
+		if(fperiod == AliJRunTable::kLHC15o || fperiod == AliJRunTable::kLHC18q || fperiod == AliJRunTable::kLHC18r){
 			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
 			if(!pms){
 				AliError("MultSelection unavailable.");
@@ -442,7 +450,7 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
 				return kFALSE;
 		}
-
+			
 	}
 
 	return kTRUE;
@@ -492,14 +500,23 @@ Bool_t AliJCatalystTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 //______________________________________________________________________________
 void AliJCatalystTask::SetEffConfig( int effMode, int FilterBit)
 {
-	fEffMode = effMode;
-	fEffFilterBit = 0; // as default
-	if( FilterBit == 128 )
-		fEffFilterBit = 0;
-	if( FilterBit == 768 )
-		fEffFilterBit = 5;
-	cout << "setting to EffCorr Mode : " << effMode << endl;
-	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
+        fEffMode = effMode;
+        switch(FilterBit){
+        case 128:
+                fEffFilterBit = 0;
+                break;
+        case 96:
+                fEffFilterBit = 4;
+                break;
+        case 768:
+                fEffFilterBit = 5;
+                break;
+        default:
+                fEffFilterBit = 0;
+                break;
+        }
+        cout << "setting to EffCorr Mode : " << effMode << endl;
+        cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }
 //______________________________________________________________________________
 void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fcent)
@@ -532,16 +549,17 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 
 			Int_t pdg = particle->GetPdgCode();
 			Char_t ch = (Char_t) track->Charge();
-			if(ch==0) continue; // Remove all others than charged particles
-			if(fPcharge != 0){ // fPcharge 0 : all particle
-				if(fPcharge == 1 && ch < 0)
-					continue; // 1 for + particle
-				if(fPcharge == -1 && ch > 0)
-					continue; // -1 for - particle
-			}
+			if(ch < 0){
+				if(fPcharge == 1)
+					continue;
+			}else
+			if(ch > 0){
+				if(fPcharge == -1)
+					continue;
+			}else continue;
 			if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
-			Int_t label = track->GetLabel();
 			AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
+			Int_t label = track->GetLabel();
 			itrack->SetLabel( label );
 			itrack->SetParticleType(pdg);
 			itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );

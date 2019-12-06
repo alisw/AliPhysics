@@ -912,14 +912,14 @@ AliAnalysisTaskDHFeCorr::FilterDmesons(const std::vector<AliDHFeCorr::AliDMeson>
 
     for (const auto &candidate: dmeson_candidates) {
         const auto d_candidate = candidate.fRecoObj;
+        // Enforce that the PID has the original value
+        selectionDMeson.fDMesonCuts->SetUsePID(selectionDMeson.fUsePID);
 
         //Check if it is in fiducial acceptance
         if (!selectionDMeson.fDMesonCuts->IsInFiducialAcceptance(d_candidate->Pt(), d_candidate->Y(pdg_dmeson)))
             continue;
 
-        //Use PID only for values smaller than fPtMaxPID
-        Bool_t pid_configuration = selectionDMeson.fDMesonCuts->GetIsUsePID();
-
+        //Use PID only for values smaller than fPtMaxPID, it will be restored to the original value after the
         if (candidate.fPt > selectionDMeson.fPtMaxPID)
             selectionDMeson.fDMesonCuts->SetUsePID(kFALSE);
 
@@ -939,11 +939,9 @@ AliAnalysisTaskDHFeCorr::FilterDmesons(const std::vector<AliDHFeCorr::AliDMeson>
         //Set PID status to True to obtain the default PID value
         selectionDMeson.fDMesonCuts->SetUsePID(kTRUE);
         Int_t pid_selection_status = selectionDMeson.fDMesonCuts->IsSelected(d_candidate, AliRDHFCuts::kPID, aod_event);
-        //return the PID selection to the original value
-        selectionDMeson.fDMesonCuts->SetUsePID(pid_configuration);
-
         AliDHFeCorr::AliDMeson cand(candidate);
         cand.fSelectionStatusDefaultPID = pid_selection_status;
+
         d_mesons.push_back(cand);
     }
     d_mesons.shrink_to_fit();
@@ -1194,6 +1192,7 @@ bool AliAnalysisTaskDHFeCorr::ConfigureDMesons(const std::string &name, AliDHFeC
 
     fYAMLConfig.GetProperty({name, "selection", "min_pt"}, opt_config.fPtMin, true);
     fYAMLConfig.GetProperty({name, "selection", "max_pt_pid"}, opt_config.fPtMaxPID, true);
+    opt_config.fUsePID = opt_config.fDMesonCuts->GetIsUsePID();
 
     return true;
 }

@@ -61,13 +61,13 @@ CellEnergy:                                         # Cell Energy correction com
     createHistos: false                             # Whether the task should create output histograms
     enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
-    load1DRecalibFactors: true                      # Flag to load a 1D energy recalibration histogram
+    load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellBadChannel:                                     # Bad channel removal at the cell level component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    load1DBadChMap: true                            # Flag to load 1D bad channel map
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
     customBadChannelFilePath: ""                    # Full path to a custom bad channel OADB object
     acceptDead: false                               # Declare dead channels as good
     acceptHot: false                                # Declare hot channels as good
@@ -77,7 +77,7 @@ CellBadChannel:                                     # Bad channel removal at the
 CellTimeCalib:                                      # Cell Time Calibration component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    doMergedBCs: true                               # Whether the task should use the merged BC histogram
+    doMergedBCs: false                              # Whether the task should use the merged BC histogram
     doCalibrateLowGain: false                       # Whether the task should calibrate the low gain cells
     doCalibMergedLG: false                          # Whether the task should calibrate the low gain cells using the all periods merged LG histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
@@ -161,7 +161,7 @@ CellCombineCollections:                             # Utility task to combine tw
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    load1DBadChMap: true                            # Flag to load 1D bad channel map
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
     clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
     unfold: false                                   # Activate cluster unfolding
     unfoldRejectBelowThreshold: false               #  split (false-default) or reject (true) cell energy below threshold after UF
@@ -194,6 +194,8 @@ ClusterExotics:                                     # Cluster exotics identifica
     fExoticMinCellAmplitude: 4.                     # Min energy of leading cell in order for exotic cut to be attempted
     fMaxFcross: 0.97                                # Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
     fCellCrossMaxTimeDiff: 1e6                      # Max time difference allowed between leading cell and cross cells (in ns)
+    fHighEnergyNdiffCut: 300                        # Apply the cut on number of cells in different T-Card above this value (GeV). Recomended to set E>50 GeV 
+    fMinCellEnNdiffCut: 0                           # Count cells in different T-Card above this value (GeV), for tests, use 0
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction

@@ -1,5 +1,5 @@
 /*
- * AliAnalysisTaskNanoXioton.h
+ * AliAnalysisTaskNanoBBar.h
  *
  *  Created on: May 13, 2019
  *      Author: schmollweger
@@ -14,6 +14,8 @@
 #include "AliFemtoDreamTrack.h"
 #include "AliFemtoDreamv0.h"
 #include "AliFemtoDreamv0Cuts.h"
+#include "AliFemtoDreamCascade.h"
+#include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
@@ -46,6 +48,12 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   void SetAntiv0Cuts(AliFemtoDreamv0Cuts* v0Cuts) {
     fAntiLambda = v0Cuts;
   }
+  void SetXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
+    fXi = cascCuts;
+  }
+  void SetAntiXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
+    fAntiXi = cascCuts;
+  }
   void SetCorrelationConfig(AliFemtoDreamCollConfig* config) {
     fConfig=config;
   }
@@ -53,6 +61,7 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   AliAnalysisTaskNanoBBar(const AliAnalysisTaskNanoBBar &task);
   AliAnalysisTaskNanoBBar &operator=(const AliAnalysisTaskNanoBBar &task);
   bool fisLightWeight;//
+  bool fIsMC;        //
   TList *fQA;        //!
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//
@@ -66,11 +75,18 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   TList* fAntiProtonMCList;//!
   AliFemtoDreamv0* fv0;//!
   AliFemtoDreamv0Cuts* fLambda;//
-  TList* fLambdaList;
-  TList* fLambdaMCList;
+  TList* fLambdaList;//!
+  TList* fLambdaMCList;//!
   AliFemtoDreamv0Cuts* fAntiLambda;//
-  TList* fAntiLambdaList;
-  TList* fAntiLambdaMCList;
+  TList* fAntiLambdaList;//!
+  TList* fAntiLambdaMCList;//!
+  AliFemtoDreamCascade* fCascade;//!
+  AliFemtoDreamCascadeCuts* fXi;//
+  TList* fXiList;//!
+  TList* fXiMCList;//!
+  AliFemtoDreamCascadeCuts* fAntiXi;//
+  TList* fAntiXiList;//!
+  TList* fAntiXiMCList;//!
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
@@ -81,7 +97,7 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   TList *fResultsSampleQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskNanoBBar,1)
+  ClassDef(AliAnalysisTaskNanoBBar,3)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOBBAR_H_ */

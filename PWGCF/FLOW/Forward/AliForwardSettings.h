@@ -44,12 +44,15 @@ class AliForwardSettings : public TObject {
   Int_t fNRefEtaBins; // eta bins in reference histograms
   Int_t fNDiffEtaBins; // eta bins in differential histograms
   Int_t fCentBins; // bins in centrality
+  Int_t fCentUpEdge; // up edge in centrality
 
   TH3F* nuacentral;
   TH3F* nuaforward;
   TH3F* seccorr_fwd;
   TH3F* seccorr_cent;
+  TH3F* nuehist;
   bool doNUA;
+  bool doNUE;
 
   Double_t gap;
   Double_t minpt;
@@ -179,6 +182,9 @@ class AliForwardSettings : public TObject {
   //   kW4ThreeTwoA,
   //   kW4ThreeTwoB
   // };
+  Int_t kCountBin = 0;
+  Int_t kMBin = 1;
+  Int_t kMeanBin = 2;
 
   Int_t dW2A         = 1; // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
   Int_t dW2TwoA      = 2; // <w2*two>
@@ -205,7 +211,7 @@ class AliForwardSettings : public TObject {
   Int_t  kW4Four=4;           // <w4*four>
   // Int_t  kW4FourTwo=5;
   // Int_t  kW4ThreeTwo=6;
-
+  Int_t track_sample;
   // enum {
   //   kW2 =1,               // <w2>
   //   kW2Two,             // <w2*two>

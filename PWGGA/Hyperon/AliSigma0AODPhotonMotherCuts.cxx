@@ -590,19 +590,36 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
         fHistArmenterosAfter->Fill(armAlpha, armQt);
       }
 
-      // TODO Implement MC handling
-      if(fIsMC) {
-        sigma.SetMCPDGCode(fPDG);
+      if (fIsMC) {
+        // Get the mother of the particles
+        AliAODMCParticle *partV0 =
+            static_cast<AliAODMCParticle *>(fMCEvent->GetTrack(
+                lambda.GetID()));
+        // we need the first mother of the Lambda, not after the full cascade to match this to a Sigma0
+        AliAODMCParticle *partMotherV0 = (partV0) ?
+            static_cast<AliAODMCParticle *>(fMCEvent->GetTrack(
+                partV0->GetMother())) : nullptr;
+        AliAODMCParticle *partMotherPhoton =
+            static_cast<AliAODMCParticle *>(fMCEvent->GetTrack(
+                photon.GetMotherID()));
+
+        fHistMCV0Check->Fill(TMath::Abs(lambda.GetMCPDGCode()),
+                             TMath::Abs(photon.GetMCPDGCode()));
+
+        if (partMotherV0 && partMotherPhoton) {
+          fHistMCV0MotherCheck->Fill(
+              TMath::Abs(partMotherV0->GetPdgCode()),
+              TMath::Abs(partMotherPhoton->GetPdgCode()));
+
+          if (partMotherV0 == partMotherPhoton && TMath::Abs(partMotherV0->GetPdgCode() == fPDG)) {
+            sigma.SetMCParticle(partMotherV0, fMCEvent);
+            fHistMCV0Mother->Fill(invMass, TMath::Abs(partMotherV0->GetPdgCode()));
+
+            fHistMCV0Pt->Fill(pT);
+            fHistMCV0Mass->Fill(invMass);
+          }
+        }
       }
-      // int label = -10;
-      // int pdgLambdaMother = 0;
-      // int pdgPhotonMother = 0;
-      // if (fIsMC) {
-      //        label =
-      //            sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1,
-      //            fPDGDaughter2}},
-      //                            pdgLambdaMother, pdgPhotonMother);
-      //      }
 
       // Now write out the stuff to the Femto containers
       if (invMass < GetMassSigmaPt(pT) + fSigmaMassCut &&
@@ -638,45 +655,6 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
 
       fHistInvMass->Fill(invMass);
       fHistInvMassPtRaw->Fill(pT, invMass);
-
-      if (fIsMC) {
-        //        if (label > 0) {
-        //          fHistMCV0Pt->Fill(sigma.GetPt());
-        //          fHistMCV0Mass->Fill(invMass);
-        //        }
-        //        if (!fIsLightweight) {
-        //          // let's where the other particle comes from if one of them
-        //          stems
-        //          // from
-        //          // a Sigma0
-        //          if (TMath::Abs(pdgLambdaMother) == 3212 &&
-        //              TMath::Abs(pdgLambdaMother) != 3212) {
-        //            fHistMCV0Mother->Fill(invMass,
-        //            TMath::Abs(pdgPhotonMother));
-        //          }
-        //          if (TMath::Abs(pdgLambdaMother) == 3212 &&
-        //              TMath::Abs(pdgLambdaMother) != 3212) {
-        //            fHistMCV0Mother->Fill(invMass,
-        //            TMath::Abs(pdgLambdaMother));
-        //          }
-        //          fHistMCV0MotherCheck->Fill(TMath::Abs(pdgLambdaMother),
-        //                                     TMath::Abs(pdgPhotonMother));
-        //
-        //          const int labV0 = photon.GetMCLabelV0();
-        //          const int labPhoton = lambda.GetMCLabelV0();
-        //          if (labV0 < 0 || labPhoton < 0) continue;
-        //
-        //          AliMCParticle *partV0 =
-        //              static_cast<AliMCParticle *>(fMCEvent->GetTrack(labV0));
-        //          AliMCParticle *partPhoton =
-        //              static_cast<AliMCParticle
-        //              *>(fMCEvent->GetTrack(labPhoton));
-        //          if (!partV0 || !partPhoton) continue;
-        //
-        //          fHistMCV0Check->Fill(TMath::Abs(partV0->PdgCode()),
-        //                               TMath::Abs(partPhoton->PdgCode()));
-        //        }
-      }
     }
   }
   fHistNSigma->Fill(nSigma);

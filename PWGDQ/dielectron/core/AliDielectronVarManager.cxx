@@ -220,7 +220,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"PhivPair",               "#Phi_{v}^{pair}",                                    "(rad.)"},
   {"ITSscPair",              "ITS shared Cluster of pair",                         ""},
   {"DeltaCotTheta",          "#Delta cot(#Theta)",                                 ""},
-  {"DeltaPhiSumDiff",       "Delta Phi(Sum,Diff)",                                "(rad.)"},
+  {"DeltaPhiSumDiff",        "#Delta #phi(Sum,Diff)",                              "(rad.)"},
+  {"DeltaPhiSumPos",         "#Delta #phi(Sum,e^{+})",                             "(rad.)"},
+  {"DeltaPhiSumNeg",         "#Delta #phi(Sum,e^{-})",                             "(rad.)"},
   {"PairPlaneAngle1A",       "#Phi_{1A}",                                          "(rad.)"},
   {"PairPlaneAngle2A",       "#Phi_{2A}",                                          "(rad.)"},
   {"PairPlaneAngle3A",       "#Phi_{3A}",                                          "(rad.)"},
@@ -681,6 +683,13 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"CentralityCL0minus05",       "centrality_{V0M AP -0.5%}",                     "(%)"},
   {"CentralityCL0plus10",        "centrality_{V0M AP +1.0%}",                     "(%)"},
   {"CentralityCL0minus10",       "centrality_{V0M AP -1.0%}",                     "(%)"},
+
+  {"Transversecity",       "transverse spherocity",                          ""},
+  {"TransverseSpherocityFast",   " fast transverse spherocity",                    ""},
+  {"TransverseSpherocityESD",    " transverse spherocity on ESDs",                 ""},
+  {"TransverseSpherocityFastESD"," fast transverse spherocity on ESDs",            ""},
+  {"TransverseSpherocityESDwoPtWeight"," transverse spherocity on ESDs without pT weighting", ""},
+  {"TransverseSpherocityFastESDwoPtWeight"," fast transverse spherocity on ESDs without pT weighting", ""},
 
 
   {"TriggerInclONL",         "online trigger bit (inclusive)",                     ""},

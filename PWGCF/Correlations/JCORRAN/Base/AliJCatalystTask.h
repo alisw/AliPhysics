@@ -75,6 +75,7 @@ class AliJCatalystTask : public AliAnalysisTaskSE {
 		void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fCent);
 		void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl;}
 		void SetEffConfig( int effMode, int FilterBit );
+		int  GetEffFilterBit() const{return fEffFilterBit;}
 		void SetEtaRange( double eta_min, double eta_max ){
 			fEta_min = eta_min; fEta_max = eta_max; cout << "setting Eta ragne as " << fEta_min << " ~ " <<	fEta_max << endl;}
 		void SetPtRange( double pt_min, double pt_max){

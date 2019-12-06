@@ -58,7 +58,7 @@ public:
   void                        SetPoolTrackDepth(Int_t input)                        { fTrackDepth      = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
-  void                        SetPi0MassSelection(Int_t input)                      { fPi0MassSelection= input  ; }
+  void                        SetPi0MassSelection(Int_t input);
   void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input  ; }
   void                        SetSubDetector(Int_t input)                           { fSubDetector     = input  ; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
@@ -70,7 +70,8 @@ public:
   void                        SetClusterEnergyType(Int_t input)                     { fClusEnergyType = input   ; }
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;} // dEta, dPhi = -1 or 0 will use pt parametrized cut
   void                        SetHadronicCorrection(Int_t input, Double_t dEta=-1, Double_t dPhi=-1) { // dEta, dPhi = -1 or 0 will use pt parametrized cut
-  fHadCorr = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi; fClusEnergyType = AliVCluster::kHadCorr;
+  fHadCorr = input; if(fHadCorr == 0) return;
+  fTrackMatchEta=dEta; fTrackMatchPhi=dPhi; fClusEnergyType = AliVCluster::kHadCorr;
   AliWarning("This configuration modifies the HadCorr energy of input clusters. Following tasks beware!"); }
   void                        SetHadronicCorrectionEnergy(Double_t input)           { fHadCorrConstant = input;}
   void                        SetEOverPLimits(Double_t inputMin, Double_t inputMax) { fTrackMatchEOverPLow = inputMin; fTrackMatchEOverPHigh = inputMax; }
@@ -161,6 +162,9 @@ public:
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
   Bool_t                      fCorrectEff;               ///< Correct efficiency of associated tracks
+
+  static const Int_t kNMainCentBins = 4;                 ///< Centrality bins that the analysis is done in (and mass windows are defined in)
+
   //..Input histograms
   TF1 						 *funcpT_low[4];            ///< input functions for the efficiency correction
   TF1 						 *funcpT_high[4];
@@ -330,13 +334,13 @@ public:
   TH2             *fHistEtaMCDPhiDEta;         //!<! 2D Angle Difference between det. Eta and MC Eta.
 
 
-  Bool_t          fUseParamMassSigma;          ///< Whether to use parametrized or fixed mass,sigma
-  Double_t        fPi0MassFixed[kNoGammaBins]; ///< Fixed Mass Peak per pT bin
-  Double_t        fPi0SigmaFixed[kNoGammaBins];///< Fixed Sigma per pT bin
-  Double_t        fPi0MassFitPars[5];          ///< Fit Parameters for mass peak
-  Double_t        fPi0SigmaFitPars[5];         ///< Fit Parameters for sigma
-  Float_t         fPi0NSigma;                  ///< number of sigma to cut on peak
-  Float_t         fPi0AsymCut;                 ///< Asymmetry cut for Pi0 candidates
+  Bool_t          fUseParamMassSigma;                           ///< Whether to use parametrized or fixed mass,sigma
+  Double_t        fPi0MassFixed[kNMainCentBins][kNoGammaBins];  ///< Fixed Mass Peak per pT bin, per Main Cent bin
+  Double_t        fPi0SigmaFixed[kNMainCentBins][kNoGammaBins]; ///< Fixed Sigma per pT bin, per Main Cent bin
+  Double_t        fPi0MassFitPars[5];                           ///< Fit Parameters for mass peak
+  Double_t        fPi0SigmaFitPars[5];                          ///< Fit Parameters for sigma
+  Float_t         fPi0NSigma;                                   ///< number of sigma to cut on peak
+  Float_t         fPi0AsymCut;                                  ///< Asymmetry cut for Pi0 candidates
 
   TH2                      **fEffCorrectionCheck;      //!<! applied efficiency correction in eta-pT to cross check
   TH1 					    *fHistEvsPt;               //!<! E vs pT

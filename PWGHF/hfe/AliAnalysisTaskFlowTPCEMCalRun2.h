@@ -67,6 +67,9 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		void SetMinCentrality(float mincentr=30.) {fMinCentr = mincentr;}
 		void SetMaxCentrality(float maxcentr=50.) {fMaxCentr = maxcentr;}
 
+		void SetMCCentral(Bool_t MCCentral) {iCentral = MCCentral;}
+		void SetMCSemiCentral(Bool_t MCSemiCentral) {iSemiCentral = MCSemiCentral;}
+
                 void SetTree(Bool_t itree){iTree=itree;}
 
 		//virtual void LocalInit();
@@ -280,6 +283,9 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
 		float fMinCentr;
 		float fMaxCentr;
+
+                Bool_t iCentral;
+                Bool_t iSemiCentral;
 
 		TList* fqnSplinesList[6];
 

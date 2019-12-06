@@ -3,6 +3,7 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, TString userPathWeightFi
 void SetTPCCorr(AliDielectron *die);
 const AliDielectronEventCuts *GetEventCuts();
 void SetupMCsignals(AliDielectron* die);
+TVectorD* getBinVec(int val);
 AliDielectronCutGroup* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Int_t MVACut=0., Bool_t useAODFilterCuts, TString TMVAweight);
         
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
@@ -10,6 +11,8 @@ Bool_t kRot = kFALSE;
 Bool_t kMix = kTRUE;
 Bool_t randomizeDau = kTRUE;
 Bool_t bUsePileUpCutsTPCClusters=kTRUE;
+
+enum {kMee = 0, kPtee, kPhi, kCent};
 
 // available cut defintions
 const Int_t nMax = 3; 
@@ -23,8 +26,8 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
   Int_t MVACut=0;
   Int_t pairCut=-1;
   
-//  for(int glcut = 0; glcut <=30; ++glcut){
-  for(int glcut = 0; glcut <=3; glcut++){
+  for(int glcut = 0; glcut <=30; ++glcut){
+//  for(int glcut = 0; glcut <=0; glcut++){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
     if(glcut>0 && glcut<21) continue;    
     if(glcut==0){
@@ -49,7 +52,7 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
 //    if(glcut==3) PIDCut=12;
 //    if(glcut==3) pairCut=0;
     
-    for(MVACut = 0; MVACut<5;MVACut++){
+    for(MVACut = 0; MVACut<10;MVACut++){
 //      if(MVACut!=0 && MVACut!=3) continue;
       TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
 //      TString name=TString::Format("DieleTr%d_PID%d_Pair%d_MVA%d",trackCut,PIDCut, pairCut, MVACut);
@@ -339,87 +342,35 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
   TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
   TVectorD* phibins= AliDielectronHelper::MakeLinBinning(20,0,TMath::Pi());
   
-//  histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
-//                        mbins, ptbins, centbins,
-//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
+  histos->UserHistogram("Pair","InvMass_pPt_cent",";Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
+                        getBinVec(kMee), getBinVec(kPtee), getBinVec(kCent),
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
 
-  histos->UserHistogram("Pair","InvMass_pPt_DeltaPhiSumDiff","Inv.Mass:PairPt:DeltaPhiSumDiff;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c);DeltaPhiSumDiff (rad)",
-                        mbins, ptbins, phibins,
+  histos->UserHistogram("Pair","InvMass_pPt_DeltaPhiSumDiff",";Inv. Mass (GeV/c^{2});Pair Pt (GeV/c);DeltaPhiSumDiff (rad)",
+                        getBinVec(kMee), getBinVec(kPtee), getBinVec(kPhi),
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kDeltaPhiSumDiff);
-  
-//  histos->UserHistogram("Pair","InvMass_pPt_OpAngPairLeg2","Inv.Mass:PairPt:OpAngPairLeg2;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); OpAngPairLeg2 (rad)",
-//                        mbins, ptbins, phibins,
-//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kOpAngPairLeg2);
 
-//  histos->UserHistogram("Pair","OpAngPairLeg1:kPt", "",ptbins,phibins,AliDielectronVarManager::kPt,AliDielectronVarManager::kOpAngPairLeg1);   
-//  histos->UserHistogram("Pair","OpAngPairLeg2:kPt", "",ptbins,phibins,AliDielectronVarManager::kPt,AliDielectronVarManager::kOpAngPairLeg2);   
-  
-//  histos->UserHistogram("Pair","DeltaPhiTPCrpH2:cent", "",100,0,100, 100,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kCentrality,AliDielectronVarManager::kQnDeltaPhiTPCrpH2);   
-//  histos->UserHistogram("Pair","MinPhiTPCEv:cent","MinPhiTPCEv:cent;Centrality (V0M);TPCEv",
-//                        10,0,100,20,0,TMath::Pi()/2.,
-//                        AliDielectronVarManager::kCentrality,AliDielectronVarManager::kQnMinDeltaPhiTPCrpH2);
-//  histos->UserHistogram("Pair","MaxPhiTPCEv:cent","MaxPhiTPCEv:cent;Centrality (V0M);TPCEv",
-//                        10,0,100,20,0,TMath::Pi()/2.,
-//                        AliDielectronVarManager::kCentrality, AliDielectronVarManager::kQnMaxDeltaPhiTPCrpH2);
-//  histos->UserHistogram("Pair","TPCEv:cent","TPCEv:cent;Centrality (V0M);TPCEv",
-//                        10,0,100,20,0,TMath::Pi()/2.,
-//                        AliDielectronVarManager::kCentrality, AliDielectronVarManager::kQnTPCrpH2);
+  histos->UserHistogram("Pair","InvMass_pPt_DeltaPhiSumPos",";Inv. Mass (GeV/c^{2});Pair Pt (GeV/c);DeltaPhiSumPos (rad)",
+                        getBinVec(kMee), getBinVec(kPtee), getBinVec(kPhi),
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kDeltaPhiSumPos);
 
-//////low ptee squared  
-//  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
-//  TVectorD* ptsqbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.0005, 0.001, 0.0015, 0.002, 0.003, 0.004, 0.006, 0.008, 0.01,0.05,0.1,1.0,8.");
-//  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
-//  histos->UserHistogram("Pair","InvMass_pPtSq_cent","Inv.Mass:PairPtSq:Cent;Inv. Mass (GeV/c^{2});Pair Pt Squared (GeV/c)^{2}; Centrality (V0M)",
-//                        mbins, ptsqbins, centbins,
-//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPtSq, AliDielectronVarManager::kCentrality);
-//
-//////angular deflection  
-//  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
-//  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 8");
-//  TVectorD* magbins= AliDielectronHelper::MakeLinBinning(20,0,100);
-//  histos->UserHistogram("Pair","InvMass_pPt_mag","Inv.Mass:PairPtSq:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); PairPlaneMag",
-//                        mbins, ptbins, magbins,
-//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairPlaneMagInPro);
-  
-//
-//  histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
-//                        600,0.,6., 600,0.,6., 20,0.,TMath::Pi(),
-//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);  
-//  						
-//  histos->UserHistogram("Pair",
-//                        "Eta_phi_pair","Eta vs Phi (pair);Eta;Phi",
-//                        50,-1.,1.,80,0.,6.4,
-//                        AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
-//			
-//  histos->UserHistogram("Pair",
-//                        "InvMass_PhivPair","InvMass_PhivPair;InvMass;PhivPair",
-//                         50, 0. , 0.5, 160 , 0., 3.2,
-//                         AliDielectronVarManager::kM , AliDielectronVarManager::kPhivPair );
-//
-//  histos->UserHistogram("Pair",
-//		            	"InvMass_OpAngle","InvMass_OpAngle;Invariant Mass;Opening angle",
-//		            	100, 0., 0.5 ,160, 0., 3.2,
-//		            	AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
-//
-//  histos->UserHistogram("Pair",
-//                        "Y","Y;counts;Y",
-//                        60, -1.2 , 1.2, 
-//                        AliDielectronVarManager::kY);
+  histos->UserHistogram("Pair","InvMass_pPt_DeltaPhiSumNeg",";Inv. Mass (GeV/c^{2});Pair Pt (GeV/c);DeltaPhiSumNeg (rad)",
+                        getBinVec(kMee), getBinVec(kPtee), getBinVec(kPhi),
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kDeltaPhiSumNeg);
 
-//  if(cutDefinition > nPF){ 
-//    histos->UserHistogram("Pre","Pt",";Pt [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPt);
-//
-//    histos->UserHistogram("RejPair","Pt",";Pt [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPt);
-//
-//    histos->UserHistogram("RejPair",
-//                          "OpAngle_InvMass","InvMass_openingAngle;Invariant Mass;opening angle",
-//                          100, 0., 0.2, 100, 0. ,0.2,
-//                          AliDielectronVarManager::kM, AliDielectronVarManager::kOpeningAngle);
-//                        
-//    histos->UserHistogram("RejTrack","Pt",";Pt [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPt); 
-//  
-//    histos->UserHistogram("Track_Legs","Pt",";Pt [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPt); 
-//  }
+  histos->UserHistogram("Pair","DeltaPhiSumDiff_DeltaPhiSumPos",";DeltaPhiSumDiff (rad);DeltaPhiSumPos (rad)",
+                        getBinVec(kPhi), getBinVec(kPhi),
+                        AliDielectronVarManager::kDeltaPhiSumDiff, AliDielectronVarManager::kDeltaPhiSumPos);
+
+  histos->UserHistogram("Pair","DeltaPhiSumDiff_DeltaPhiSumNeg",";DeltaPhiSumDiff (rad);DeltaPhiSumNeg (rad)",
+                        getBinVec(kPhi), getBinVec(kPhi),
+                        AliDielectronVarManager::kDeltaPhiSumDiff, AliDielectronVarManager::kDeltaPhiSumNeg);
+
+  histos->UserHistogram("Pair","DeltaPhiSumPos_DeltaPhiSumNeg",";DeltaPhiSumPos (rad);DeltaPhiSumNeg (rad)",
+                        getBinVec(kPhi), getBinVec(kPhi),
+                        AliDielectronVarManager::kDeltaPhiSumPos, AliDielectronVarManager::kDeltaPhiSumNeg);
+
+
   
   die->SetHistogramManager(histos);
 
@@ -643,3 +594,14 @@ void SetupMCsignals(AliDielectron* die){
   
 }
 
+TVectorD* getBinVec(int val){
+  switch(val){
+      case kMee:   return AliDielectronHelper::MakeArbitraryBinning(" 0.0,0.1,0.4,0.5 ,0.6 , 0.7 ,1.1, 1.5, 2.0 ,2.7 , 2.9, 3.1 , 5.0");
+      case kPtee:  return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0");
+      case kPhi:   return AliDielectronHelper::MakeLinBinning(20,0,TMath::Pi());
+      case kCent:  return AliDielectronHelper::MakeLinBinning(20,0,100);
+      default: std::cout << "ERROR: in 'GetVector(...var)' variable for axis range not defined!" << std::endl;
+      break;
+  }
+  return 0x0;      
+}

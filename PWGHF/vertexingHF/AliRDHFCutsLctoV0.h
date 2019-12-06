@@ -46,14 +46,14 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
 
   using AliRDHFCuts::IsSelected;
-  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) 
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel)
                          {return IsSelected(obj,selectionLevel,0);}
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
 
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
 
-
+  using AliRDHFCuts::PreSelect;
   Bool_t PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack);
 
   Int_t IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex, AliAODEvent* aod=0x0);
@@ -85,7 +85,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Float_t GetLowPtCut() const {return fLowPtCut;};
 
   void SetMinCombinedProbability(Int_t nPBins, Float_t *minProb);
-  const Float_t *GetMinCombinedProbability() {return fMinCombProb;}
+  Float_t *GetMinCombinedProbability() const {return fMinCombProb;}
 
   void SetExcludedCut(Int_t excludedCut) {fExcludedCut=excludedCut;}
   Int_t GetExcludedCut(){return fExcludedCut;}
@@ -107,12 +107,12 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   void SetBachelorPLimitsForPID(Int_t nPBins, Float_t *pMin);
   const Float_t *GetBachelorPLimitsForPID() {return fBachelorPLimitsForPID;}
 
-  const Float_t GetNTPCSigmaCutForPreselection() {return fNTPCSigmaCutForPreselection;}
+  Float_t GetNTPCSigmaCutForPreselection() const {return fNTPCSigmaCutForPreselection;}
   void SetGetNTPCSigmaCutForPreselection(Float_t a) {fNTPCSigmaCutForPreselection = a;}
 
   virtual void PrintAll() const;
 
-  const Int_t GetNBachelorPBins() {return fNBachelorPBins;}
+  Int_t GetNBachelorPBins() const {return fNBachelorPBins;}
   void SetNBachelorPBins(Int_t nPbins) {fNBachelorPBins=nPbins;}
 
  protected:
@@ -139,7 +139,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 
   //UShort_t fV0channel;
 
-  /// \cond CLASSIMP    
+  /// \cond CLASSIMP
   ClassDef(AliRDHFCutsLctoV0,9);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
   /// \endcond
 };

@@ -90,6 +90,7 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb()
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
+      fEtaDimuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
       fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
@@ -189,6 +190,7 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb( const char* name )
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
+      fEtaDimuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
       fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
@@ -341,8 +343,11 @@ void AliAnalysisTaskForMCpPb::UserCreateOutputObjects()
   fCounterH = new TH1F("fCounterH", "fCounterH", 24, -0.5, 23.5);
   fOutputList->Add(fCounterH);
 
-  fEtaMuonH = new TH1F("fEtaMuonH", "fEtaMuonH", 90, -2, -5);
+  fEtaMuonH = new TH1F("fEtaMuonH", "fEtaMuonH", 160, -1, -5);
   fOutputList->Add(fEtaMuonH);
+
+  fEtaDimuonH = new TH1F("fEtaDimuonH", "fEtaDimuonH", 160, -1, -5);
+  fOutputList->Add(fEtaDimuonH);
 
   fRAbsMuonH = new TH1F("fRAbsMuonH", "fRAbsMuonH", 100, 0, 100);
   fOutputList->Add(fRAbsMuonH);
@@ -989,6 +994,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
         possibleJPsi += muons[indexMuon];
         chargeOfMuons[indexMuon] = track[indexMuon]->Charge();
   }
+  fEtaDimuonH ->Fill( possibleJPsi.Rapidity() );
   fInvariantMassDistributionH->Fill(possibleJPsi.Mag());
   if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
     fInvariantMassDistributionRapidityBinsH[0]->Fill(possibleJPsi.Mag());

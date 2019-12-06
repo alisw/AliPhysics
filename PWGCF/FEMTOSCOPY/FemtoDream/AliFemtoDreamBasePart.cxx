@@ -413,13 +413,10 @@ AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
 
 void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,
                                           AliMCEvent *evt) {
-  this->SetPt(mcPart->Pt());
-  this->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz());
-  this->SetEta(mcPart->Eta());
-  this->SetTheta(mcPart->Theta());
-  this->SetPhi(mcPart->Phi());
-  this->SetCharge(mcPart->Charge());
-  this->SetPDGCode(mcPart->GetPdgCode());
+  this->SetMCPt(mcPart->Pt());
+  this->SetMCMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz());
+  this->SetMCTheta(mcPart->Theta());
+  this->SetMCPhi(mcPart->Phi());
   this->fIsSet = true;
   this->SetUse(true);
   this->fIsReset = false;

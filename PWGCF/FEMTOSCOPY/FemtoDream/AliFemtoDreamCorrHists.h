@@ -34,6 +34,10 @@ class AliFemtoDreamCorrHists {
     return fDokTBinning;
   }
   ;
+  bool GetDokTandMultBinning() {
+    return fDokTandMultBinning;
+  }
+  ;
   bool GetDomTBinning() {
     return fDomTBinning;
   }
@@ -81,7 +85,15 @@ class AliFemtoDreamCorrHists {
     if (fDokTCentralityBins)
       FillSameEventkTCentDist(i, kT, RelK, cent);
   }
+
   void FillSameEventkTCentDist(int i, float kT, float RelK, float cent);
+
+  void FillSameEventkTandMultDist(int i, float kT, float RelK, int multBin) {
+    fSameEventkTandMultDist[i][multBin]->Fill(RelK, kT);
+  }
+  void FillMixedEventkTandMultDist(int i, float kT, float RelK, int multBin) {
+    fMixedEventkTandMultDist[i][multBin]->Fill(RelK, kT);
+  }
   void FillSameEventmTDist(int i, float mT, float RelK) {
     if (fSameEventmTDist[i])
       fSameEventmTDist[i]->Fill(RelK, mT);
@@ -144,6 +156,7 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
+
   void FillMixedEventMultDist(int i, int iMult, float RelK) {
     if (fMixedEventMultDist[i])
       fMixedEventMultDist[i]->Fill(RelK, iMult);
@@ -247,6 +260,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventCentDist;
   TH2F **fSameEventmTDist;
   TH2F **fSameEventkTDist;
+  TH2F ***fSameEventkTandMultDist;
   TH2F ***fSameEventkTCentDist;
   TH2F **fPtQADist;
   TH2F **fPtQADistSEPartOne;
@@ -262,6 +276,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fMixedEventCentDist;
   TH2F **fMixedEventmTDist;
   TH2F **fMixedEventkTDist;
+  TH2F ***fMixedEventkTandMultDist;
   TH2F ***fMixedEventkTCentDist;
   TH2F **fPairCounterME;
   TH2F **fMomResolution;
@@ -281,6 +296,7 @@ class AliFemtoDreamCorrHists {
   TH1F **fEffMixingDepth;
   bool fDoMultBinning;
   bool fDoCentBinning;
+  bool fDokTandMultBinning;
   bool fDokTBinning;
   bool fDomTBinning;
   bool fPtQA;

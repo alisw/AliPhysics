@@ -60,8 +60,10 @@ set(SRCS
   AliAnalysisTaskFemtoDreamDeuteron.cxx
   AliAnalysisTaskNanoPt.cxx
   AliAnalysisTaskNanoXioton.cxx
+  AliAnalysisTaskAODXioton.cxx
   AliAnalysisTaskNanoXioton1530.cxx
   AliAnalysisTaskNanoLoton.cxx
+  AliAnalysisTaskAODLoton.cxx
   AliAnalysisTaskNanoBBar.cxx  
   AliAnalysisTaskFemtoDreamPhi.cxx
   AliAnalysisTaskNanoAODFemtoDreamPhi.cxx

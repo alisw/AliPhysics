@@ -1180,64 +1180,6 @@ Bool_t  AliCalorimeterUtils::GetFECCorrelatedCellAbsId(Int_t absId, Int_t absIdC
 }
 
 //________________________________________________________________________________________
-/// Check if 2 cells belong to the same TCard
-///
-///  \param absId1: Reference absId cell
-///  \param absId2: Cross checked cell absId
-///  \param rowDiff: Distance in rows
-///  \param colDiff: Distance in columns
-///  \return true if belong to same TCard
-///
-//________________________________________________________________________________________
-Bool_t  AliCalorimeterUtils::IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
-                                               Int_t & rowDiff, Int_t & colDiff) const
-{  
-  rowDiff = -100;
-  colDiff = -100;
-  
-  if(absId1 == absId2) return kFALSE;
-  
-  // Check if in same SM, if not for sure not same TCard
-  Int_t sm1 = fEMCALGeo->GetSuperModuleNumber(absId1);
-  Int_t sm2 = fEMCALGeo->GetSuperModuleNumber(absId2);
-  if ( sm1 != sm2 ) return kFALSE ;
-  
-  // Get the column and row of each absId
-  Int_t iTower = -1, iIphi = -1, iIeta = -1;
-
-  Int_t col1, row1;
-  fEMCALGeo->GetCellIndex(absId1,sm1,iTower,iIphi,iIeta);
-  fEMCALGeo->GetCellPhiEtaIndexInSModule(sm1,iTower,iIphi, iIeta,row1,col1);
-  
-  Int_t col2, row2;
-  fEMCALGeo->GetCellIndex(absId2,sm2,iTower,iIphi,iIeta);
-  fEMCALGeo->GetCellPhiEtaIndexInSModule(sm2,iTower,iIphi, iIeta,row2,col2);
-  
-  Int_t row0 = Int_t(row1-row1%8);
-  Int_t col0 = Int_t(col1-col1%2);
-  
-  Int_t rowDiff0 = row2-row0;
-  Int_t colDiff0 = col2-col0;
-  
-  rowDiff = row1-row2;
-  colDiff = col1-col2;
-  
-  // TCard is made by 2x8 towers
-  if ( colDiff0 >=0 && colDiff0 < 2 && rowDiff0 >=0 && rowDiff0 < 8 ) 
-  {
- 
-//    printf("\t absId (%d,%d), sm %d; col (%d,%d), colDiff %d; row (%d,%d),rowDiff %d\n",
-//           absId1 , absId2, sm1, 
-//           col1, col2, colDiff, 
-//           row1, row2, rowDiff);
-    return kTRUE ;
-  }
-  else
-    return kFALSE;
-}
-
-
-//________________________________________________________________________________________
 /// For a given CaloCluster, it gets the absId of the cell with maximum energy deposit.
 //________________________________________________________________________________________
 Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells * cells,

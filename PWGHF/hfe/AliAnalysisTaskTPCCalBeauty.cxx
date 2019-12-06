@@ -62,6 +62,9 @@ fNclusTPC(80),
 fDCAzCut(3.2),
 fMinMass(0.),
 fMaxMass(0.1),
+fAssoDCAxy(0.25),
+fAssoDCAz(1.),
+fAssoTPCnCls(80),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
@@ -294,6 +297,9 @@ fNclusTPC(80),
 fDCAzCut(3.2),
 fMinMass(0.),
 fMaxMass(0.1),
+fAssoDCAxy(0.25),
+fAssoDCAz(1.),
+fAssoTPCnCls(80),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
@@ -2913,7 +2919,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
     Double_t d0z0Asso[2]={-999,-999}, covAsso[3];
-    Double_t DCAxyCut = 0.25, DCAzCut = 1;
+    //Double_t DCAxyCut = 0.25, DCAzCut = 1;
     Int_t fPDGe1 = 11, fPDGe2 = 11;
     
     Double_t ptAsso=-999., nsigmaAsso=-999.;
@@ -2934,7 +2940,10 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
         AliAODTrack *trackAsso = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(jtrack));
         if(!trackAsso) continue;
         if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-        if(trackAsso->GetTPCNcls() < 80) continue;
+        if(trackAsso->GetTPCNcls() < fAssoTPCnCls) continue;
+        
+        //Refit
+        if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         
         nsigmaAsso = fpidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);
         ptAsso = trackAsso->Pt();
@@ -2948,7 +2957,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
         if(nsigmaAsso < fMinNSigAssoCut || nsigmaAsso > 3) continue;
         
         if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
-            if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;
+            if(TMath::Abs(d0z0Asso[0]) > fAssoDCAxy || TMath::Abs(d0z0Asso[1]) > fAssoDCAz) continue;
         
         if(charge>0) fPDGe1 = -11; //-11 in PDG is for positron, just to be confusing
         if(chargeAsso>0) fPDGe2 = -11;
@@ -2991,7 +3000,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
     Double_t d0z0Asso[2]={-999,-999}, covAsso[3];
-    Double_t DCAxyCut = 0.25, DCAzCut = 1;
+    //Double_t DCAxyCut = 0.25, DCAzCut = 1;
     Int_t fPDGe1 = 11, fPDGe2 = 11;
     
     Double_t ptAsso=-999., nsigmaAsso=-999.;
@@ -3012,7 +3021,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
         AliAODTrack *trackAsso = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(jtrack));
         if(!trackAsso) continue;
         if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-        if(trackAsso->GetTPCNcls() < 80) continue;
+        if(trackAsso->GetTPCNcls() < fAssoTPCnCls) continue;
         
         //Refit
         if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
@@ -3027,7 +3036,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
         if(nsigmaAsso < fMinNSigAssoCut || nsigmaAsso > 3) continue;
         
         if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
-            if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;
+            if(TMath::Abs(d0z0Asso[0]) > fAssoDCAxy || TMath::Abs(d0z0Asso[1]) > fAssoDCAz) continue;
         
         if(charge>0) fPDGe1 = -11; //-11 in PDG is for positron, just to be confusing
         if(chargeAsso>0) fPDGe2 = -11;

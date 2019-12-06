@@ -58,7 +58,7 @@ struct EventFlags
 
 struct AliPP13SelectionWeights: TObject
 {
-	enum Mode {kData, kMC, kFeeddown, kSinglePi0MC, kSingleEtaMC, kPlain};
+	enum Mode {kData, kMC, kFeeddown, kSinglePi0MC, kSingleEtaMC, kScan, kPlain};
 
 	// NB: One needs default constructor for IO readsons
 	AliPP13SelectionWeights(): TObject() {}
@@ -142,29 +142,18 @@ protected:
 struct AliPP13SelectionWeightsMC: public AliPP13SelectionWeights
 {
 	// NB: One needs default constructor for IO readsons
-	AliPP13SelectionWeightsMC(Double_t a = 0, Double_t s = 0, Double_t g = -1):
-		AliPP13SelectionWeights(),
-		fNonGlobal(g),
-		fNonA(a),
-		fNonSigma(s)
+	AliPP13SelectionWeightsMC():
+		AliPP13SelectionWeights()
 	{
 	}
 
-	virtual Double_t Nonlinearity(Double_t x) const;
 	virtual void Report(TList * listOfHistos) const
 	{
-		const char * lab = "Nonlinearity parameters; NonGlobal = %.6g, NonA = %.6g, NonSigma = %.6g";
-		TString weights = Form(lab, fNonGlobal, fNonA, fNonSigma);
+		const char * lab = "Nonlinearity from tender";
 		listOfHistos->AddFirst(
-			new TH1C("selection_nonlinearity", weights, 1, 0, 1)
+			new TH1C("selection_nonlinearity", lab, 1, 0, 1)
 		);
 	}
-
-	// Parameters for Nonlinearity
-	Double_t fNonGlobal;
-	Double_t fNonA;
-	Double_t fNonSigma;
-
 protected:
 	ClassDef(AliPP13SelectionWeightsMC, 2)
 
@@ -173,8 +162,8 @@ protected:
 struct AliPP13SelectionWeightsFeeddown: public AliPP13SelectionWeightsMC
 {
 	// NB: One needs default constructor for IO readsons
-	AliPP13SelectionWeightsFeeddown(Double_t a = 0, Double_t s = 0, Double_t g = -1):
-		AliPP13SelectionWeightsMC(a, s, g),
+	AliPP13SelectionWeightsFeeddown():
+		AliPP13SelectionWeightsMC(),
 		fDataMCRatio(0)
 	{
 		fDataMCRatio =  new TF1(
@@ -191,10 +180,9 @@ struct AliPP13SelectionWeightsFeeddown: public AliPP13SelectionWeightsMC
 	virtual Double_t Weights(Double_t x, const EventFlags & eflags) const;
 	virtual void Report(TList * listOfHistos) const
 	{
-		const char * lab = "Nonlinearity parameters; NonGlobal = %.6g, NonA = %.6g, NonSigma = %.6g";
-		TString weights = Form(lab, fNonGlobal, fNonA, fNonSigma);
+		const char * lab = "Nonlinearity from tender";
 		listOfHistos->AddFirst(
-			new TH1C("selection_nonlinearity", weights, 1, 0, 1)
+			new TH1C("selection_nonlinearity", lab, 1, 0, 1)
 		);
 		fDataMCRatio->SetNpx(1000);
 		TH1 * mcratio = fDataMCRatio->GetHistogram();
@@ -213,8 +201,8 @@ protected:
 struct AliPP13SelectionWeightsSPMC: public AliPP13SelectionWeightsMC
 {
 	// NB: One needs default constructor for IO readsons
-	AliPP13SelectionWeightsSPMC(Double_t a = 0, Double_t s = 0, Double_t g = -1):
-		AliPP13SelectionWeightsMC(g, a, s),
+	AliPP13SelectionWeightsSPMC():
+		AliPP13SelectionWeightsMC(),
 		fW0(0.014875782846110793),
 		fW1(0.28727403800708634),
 		fW2(9.9198075195331),
@@ -225,10 +213,9 @@ struct AliPP13SelectionWeightsSPMC: public AliPP13SelectionWeightsMC
 	virtual Double_t Weights(Double_t x, const EventFlags & eflags) const;
 	virtual void Report(TList * listOfHistos) const
 	{
-		const char * lab = "Nonlinearity parameters; NonGlobal = %.6g, NonA = %.6g, NonSigma = %.6g";
-		TString weights = Form(lab, fNonGlobal, fNonA, fNonSigma);
+		const char * lab = "Nonlinearity from tender";
 		listOfHistos->AddFirst(
-			new TH1C("selection_nonlinearity", weights, 1, 0, 1)
+			new TH1C("selection_nonlinearity", lab, 1, 0, 1)
 		);
 
 		const char * labt = "Tsallis parameters for Single Particle MC; fW0 = %.4g, fW1 = %.4g, fW2 = %.4g, fW3 = %.4g, fW4 = %.4g";
@@ -252,5 +239,36 @@ struct AliPP13SelectionWeightsSPMC: public AliPP13SelectionWeightsMC
 protected:
 	ClassDef(AliPP13SelectionWeightsSPMC, 2)
 };
+
+
+
+struct AliPP13SelectionWeightsScan: public AliPP13SelectionWeightsSPMC
+{
+	// NB: One needs default constructor for IO readsons
+	AliPP13SelectionWeightsScan():
+		AliPP13SelectionWeightsSPMC(),
+		fE(0.133812),
+		fD(-0.455062)
+	{
+	}
+
+	virtual Double_t Nonlinearity(Double_t x) const;
+	virtual void Report(TList * listOfHistos) const
+	{
+		const char * lab = "Nonlinearity parameters; e = %.6g, d = %.6g";
+		TString weights = Form(lab, fE, fD);
+		listOfHistos->AddFirst(
+			new TH1C("selection_nonlinearity", weights, 1, 0, 1)
+		);
+	}
+
+	Double_t fE;
+	Double_t fD;
+
+protected:
+	ClassDef(AliPP13SelectionWeightsScan, 2)
+
+};
+
 
 #endif

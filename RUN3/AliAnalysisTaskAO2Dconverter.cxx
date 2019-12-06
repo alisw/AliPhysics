@@ -795,14 +795,15 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   if (MCEvt) {
     TParticle* particle = nullptr;
     for (Int_t i = 0; i < MCEvt->GetNumberOfTracks(); i++) { //loop on primary MC tracks Before Event Selection
-      particle = MCEvt->Particle(i);
+      AliVParticle* vpt = MCEvt->GetTrack(i);
+      particle = vpt->Particle(i);
 
       //Get the kinematic values of the particles
       fPdgCode = particle->GetPdgCode();
-      fMother[0] = particle->GetFirstMother();
-      fMother[1] = particle->GetSecondMother();
-      fDaughter[0] = particle->GetFirstDaughter();
-      fDaughter[1] = particle->GetLastDaughter();
+      fMother[0] = vpt->GetMother();
+      fMother[1] = vpt->GetMother();
+      fDaughter[0] = particle->GetDaughterFirst();
+      fDaughter[1] = particle->GetDaughterFirst();
 
       fPx = particle->Px();
       fPy = particle->Py();

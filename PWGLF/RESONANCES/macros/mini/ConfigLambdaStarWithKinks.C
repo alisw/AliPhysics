@@ -8,6 +8,7 @@ Bool_t ConfigLambdaStarWithKinks(AliRsnMiniAnalysisTask *task,
 		Bool_t                 isMC, 
 		AliPIDResponse::EBeamType collSys = AliPIDResponse::kPBPB, //=0, kPPB=1, kPBPB=2
                 AliRsnCutSet           *cutsPair,             //cuts on the pair
+                AliRsnCutSet           *cutsPairY,             //cuts on the pair
 		Bool_t                 enaMultSel = kTRUE,    //enable multiplicity axis
       		Float_t                masslow = 1.4,         //inv mass axis low edge 
 		Float_t                massup = 2.2,           //inv mass axis upper edge 
@@ -132,6 +133,9 @@ Bool_t ConfigLambdaStarWithKinks(AliRsnMiniAnalysisTask *task,
   /* 1st daughter p       */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP, kFALSE);
   /* 2nd daughter p       */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP, kFALSE);
    /* gener. transv. mom.  */
+  /* Asymmetry data       */ Int_t asymd   = task->CreateValue(AliRsnMiniValue::kAsym, kFALSE);
+  /* Asymmetry            */ Int_t asym   = task->CreateValue(AliRsnMiniValue::kAsym, kTRUE);
+
   if (isMC) Int_t ptIDgen= task->CreateValue(AliRsnMiniValue::kPt, kTRUE);
 
   TString output[6] = {"HIST",      "HIST",          "HIST",      "HIST",          "HIST",        "HIST"          }; // or "SPARSE"
@@ -160,10 +164,23 @@ Bool_t ConfigLambdaStarWithKinks(AliRsnMiniAnalysisTask *task,
     // axis X: invmass 
     out->AddAxis(imID, nbins, masslow, massup);
     //axis Y: mother pt
-    out->AddAxis(ptID, 100, 0.0, 10.0); //default use mother pt
+    out->AddAxis(ptID, 150, 0.0, 15.0); //default use mother pt
     //axis Z: multiplicity
       if (enaMultSel) out->AddAxis(multID, 100, 0.0, 100.0);
   }
+
+    AliRsnMiniOutput *outasmd = task->CreateOutput("hAsymmetryDAtaLambda", "HIST", "PAIR");
+    outasmd->SetDaughter(0, AliRsnDaughter::kProton);
+    outasmd->SetDaughter(1, AliRsnDaughter::kKaon);
+    outasmd->SetCutID(0, icutPr);
+    outasmd->SetCutID(1, icutKaon);
+    outasmd->SetMotherPDG(3124);
+    outasmd->SetMotherMass(1.5195);
+    outasmd->SetPairCuts(cutsPair);
+    outasmd->SetCharge(0, charge1[0]);
+    outasmd->SetCharge(1, charge2[0]);
+    outasmd->AddAxis(asymd, 200, -1.0, 1.0);
+    if (enaMultSel) outasmd->AddAxis(multID, 100, 0.0, 100.0);   
  
   // AddMonitorOutput_LambdaPt(cutSetLs->GetMonitorOutput());
 
@@ -185,7 +202,7 @@ Bool_t ConfigLambdaStarWithKinks(AliRsnMiniAnalysisTask *task,
     out->SetPairCuts(cutsPair);
     // binnings
     out->AddAxis(imID, 800, 1.4, 2.2);
-    out->AddAxis(ptID, 100, 0.0, 10.0);
+    out->AddAxis(ptID, 150, 0.0, 15.0);
     
     if (enaMultSel) out->AddAxis(multID, 100, 0.0, 100.0);
 
@@ -204,20 +221,29 @@ Bool_t ConfigLambdaStarWithKinks(AliRsnMiniAnalysisTask *task,
     out->SetPairCuts(cutsPair);
     // binnings
     out->AddAxis(imID, 800, 1.4, 2.2);
-    out->AddAxis(ptID, 100, 0.0, 10.0);
+    out->AddAxis(ptID, 150, 0.0, 15.0);
     //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
     
     if (enaMultSel) out->AddAxis(multID, 100, 0.0, 100.0);
     
     //GENERATED PAIRS
+    AliRsnMiniOutput *outasm = task->CreateOutput("hAsymmetryMCLambda", "HIST", "MOTHER");
+    outasm->SetDaughter(0, AliRsnDaughter::kProton);
+    outasm->SetDaughter(1, AliRsnDaughter::kKaon);
+    outasm->SetMotherPDG(3124);
+    outasm->SetMotherMass(1.5195);
+    outasm->SetPairCuts(cutsPairY);
+    outasm->AddAxis(asym, 200, -1.0, 1.0);
+    if (enaMultSel) outasm->AddAxis(multID, 100, 0.0, 100.0);
+
     output[0] = "HIST";
     AliRsnMiniOutput * outm = task->CreateOutput(Form("motherLambda1520Kinkpt_%s", name[0].Data()), output[0].Data(),"MOTHER");
     outm->SetDaughter(0, AliRsnDaughter::kProton);
     outm->SetDaughter(1, AliRsnDaughter::kKaon);
     outm->SetMotherPDG(3124);
     outm->SetMotherMass(1.5195);
-    outm->SetPairCuts(cutsPair);
-    outm->AddAxis(ptIDgen, 100, 0.0, 10.0);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
     if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
 
     output[1] = "HIST";
@@ -226,8 +252,8 @@ Bool_t ConfigLambdaStarWithKinks(AliRsnMiniAnalysisTask *task,
     outm->SetDaughter(1, AliRsnDaughter::kKaon);
     outm->SetMotherPDG(-3124);
     outm->SetMotherMass(1.5195);
-    outm->SetPairCuts(cutsPair);
-    outm->AddAxis(ptIDgen, 100, 0.0, 10.0);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
     if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
  
   }

@@ -28,6 +28,9 @@ public:
       kMassRange,
       kAsymRange,
       kAsymRangeMC,
+      kPseudorapidityRange,
+      kPseudorapidityRangeMC,
+      kPassesOOBPileupCut,
       kTypes
    };
 

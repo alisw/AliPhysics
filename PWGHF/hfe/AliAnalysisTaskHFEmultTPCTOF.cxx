@@ -107,6 +107,7 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAnalysisUtils.h"
 #include "AliESDUtils.h"
+#include "TRandom.h"
 using std::cout;
 using std::endl;
 
@@ -163,6 +164,7 @@ fdEdxVsP_TPC(0),
 fnSigmaVsP_TPC(0),
 fdEdxVsP_TPC_cut(0),
 fnSigmaVsP_TPC_cut(0),
+fnSigmaVsPt_TPC_cut(0),
 fnSigmaVsP_TOF(0), 
 fnBetaVsP_TOF(0),
 fnSigmaVsEta_TPC(0), 
@@ -173,7 +175,7 @@ fnSigmaVsPt_TPC(0),
 fnSigmaVsPt_TOF(0), 
 fnBetaVsPt_TOF(0), 
 
-fLandau(0),fErr(0),fHadCot_Landau(0),fHadCot_Err(0),fPt_incl_e_Landau(0),fPt_incl_e_Err(0),
+fLandau(0),fErr(0),fHadCot_Landau(0),fHadCot_Err(0),fPt_incl_e_Landau(0),fPt_incl_e_Err(0),func_MCnchCorr(0),
 
 //Multiplicity dep
 
@@ -190,13 +192,22 @@ fV0Mult(0),fV0MultCorr(0),fV0AMult(0),fV0CMult(0),fSPD_tracklet_NoEtaCut(0),fSPD
 fCent(0),fCentSPD(0), 
 fMultV0M_vs_alimult(0),fMultSPD_vs_alimult(0),
 fileEstimator(0),
-fSPDCorrMultDist_min(0),fSPDCorrMultDist_max(0),
-fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),
+fSPDCorrMultDist_min(0),fSPDCorrMultDist_max(0),fSPDWeightedCorrMultDist_max(0),
+fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),Profile_Mean(0),Profile_MeanCorr(0),
 fRefMult(13.079),
 fV0MultVsZvtx(0),fV0MultCorrVsZvtx(0),
 fSPDCorrMultDist_min_vs_AliSPDMult(0),
-fNchVsZvtx(0),SPDNtrCorrVsNch(0),V0MCorrVsNch(0),fSPDNtrCorrVsV0MCorrVsNch(0),
+fNchVsZvtx(0),SPDNtrCorrVsNch(0),SPDNtrCorrVsNchweights(0),V0MCorrVsNch(0),fSPDNtrCorrVsV0MCorrVsNch(0),
  
+    fPtHFEMC_aftertrackcut(0),
+    fPtHFEMC_aftertofcut(0),
+    fPtHFEMC_aftertpcnsigcut(0),
+    fPtHFEMC_aftertoftpcnsigcut(0),
+    fPtHFEMC_aftertrackcut_SPD(0),
+    fPtHFEMC_aftertofcut_SPD(0),
+    fPtHFEMC_aftertpcnsigcut_SPD(0),
+    fPtHFEMC_aftertoftpcnsigcut_SPD(0),
+  
 //------------------------Non-Hfe
 fNonHFE(new AliSelectNonHFE()),
 fInvmassLS1(0),fInvmassULS1(0),
@@ -265,6 +276,7 @@ fPt_elec_gamma_MB_ULS(0),
 fPt_elec_gamma_MB_LS(0),
 
 fInvMULSnSp(0),
+fInvMULSnSpwg(0),
 fInvMULSpi0(0),
 fInvMULSeta(0),
 fInvMULSgamma(0),
@@ -274,8 +286,23 @@ fPtHFEMC_reco_SPD(0),
 fPtHFEMC_reco_V0M(0),
 
 fPi0EtaSpectra(0),
-fPi0EtaSpectraSp(0)
-
+fPi0EtaSpectraSp(0),
+fPt_elec_phot2(0),
+fPtElec_ULS_MC2(0),
+fPtElec_LS_MC2(0),
+fPt_elec_phot2_multSPD(0),
+fPtElec_ULS_MC2_multSPD(0),
+fPtElec_LS_MC2_multSPD(0),
+fPt_elec_from_pi02(0),
+fPtElec_ULS_MC_from_pi02(0),
+fPtElec_LS_MC_from_pi02(0),
+fPt_elec_from_eta2(0),
+fPtElec_ULS_MC_from_eta2(0),
+fPtElec_LS_MC_from_eta2(0),
+fPt_elec_from_gamma2(0),
+fPtElec_ULS_MC_from_gamma2(0),
+fPtElec_LS_MC_from_gamma2(0),
+f0a(0),f0b(0),f1(0),f1a(0),f1b(0)
 
 {
   fPID = new AliHFEpid("hfePid");
@@ -329,6 +356,7 @@ fdEdxVsP_TPC(0),
 fnSigmaVsP_TPC(0),
 fdEdxVsP_TPC_cut(0),
 fnSigmaVsP_TPC_cut(0),
+fnSigmaVsPt_TPC_cut(0),
 fnSigmaVsP_TOF(0), 
 fnBetaVsP_TOF(0),
 fnSigmaVsEta_TPC(0), 
@@ -339,7 +367,7 @@ fnSigmaVsPt_TPC(0),
 fnSigmaVsPt_TOF(0), 
 fnBetaVsPt_TOF(0),
 
-fLandau(0),fErr(0),fHadCot_Landau(0),fHadCot_Err(0),fPt_incl_e_Landau(0),fPt_incl_e_Err(0),
+fLandau(0),fErr(0),fHadCot_Landau(0),fHadCot_Err(0),fPt_incl_e_Landau(0),fPt_incl_e_Err(0),func_MCnchCorr(0),
 
 //Multiplicity dep
 
@@ -356,13 +384,22 @@ fV0Mult(0),fV0MultCorr(0),fV0AMult(0),fV0CMult(0),fSPD_tracklet_NoEtaCut(0),fSPD
 fCent(0),fCentSPD(0), 
 fMultV0M_vs_alimult(0),fMultSPD_vs_alimult(0),
 fileEstimator(0),
-fSPDCorrMultDist_min(0),fSPDCorrMultDist_max(0),
-fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),
+fSPDCorrMultDist_min(0),fSPDCorrMultDist_max(0),fSPDWeightedCorrMultDist_max(0),
+fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),Profile_Mean(0),Profile_MeanCorr(0),
 fRefMult(13.079),
 fV0MultVsZvtx(0),fV0MultCorrVsZvtx(0),
 fSPDCorrMultDist_min_vs_AliSPDMult(0),
-fNchVsZvtx(0),SPDNtrCorrVsNch(0),V0MCorrVsNch(0),fSPDNtrCorrVsV0MCorrVsNch(0),
- 
+fNchVsZvtx(0),SPDNtrCorrVsNch(0),SPDNtrCorrVsNchweights(0),V0MCorrVsNch(0),fSPDNtrCorrVsV0MCorrVsNch(0),
+
+    fPtHFEMC_aftertrackcut(0),
+    fPtHFEMC_aftertofcut(0),
+    fPtHFEMC_aftertpcnsigcut(0),
+    fPtHFEMC_aftertoftpcnsigcut(0),
+    fPtHFEMC_aftertrackcut_SPD(0),
+    fPtHFEMC_aftertofcut_SPD(0),
+    fPtHFEMC_aftertpcnsigcut_SPD(0),
+    fPtHFEMC_aftertoftpcnsigcut_SPD(0),
+  
 //------------------------Non-Hfe
 fNonHFE(new AliSelectNonHFE()),
 fInvmassLS1(0),fInvmassULS1(0),
@@ -430,6 +467,7 @@ fPt_elec_gamma_MB_ULS(0),
 fPt_elec_gamma_MB_LS(0),
 
 fInvMULSnSp(0),
+fInvMULSnSpwg(0),
 fInvMULSpi0(0),
 fInvMULSeta(0),
 fInvMULSgamma(0),
@@ -439,8 +477,24 @@ fPtHFEMC_reco_SPD(0),
 fPtHFEMC_reco_V0M(0),
 
 fPi0EtaSpectra(0),
-fPi0EtaSpectraSp(0)
+fPi0EtaSpectraSp(0),
 
+fPt_elec_phot2(0),
+fPtElec_ULS_MC2(0),
+fPtElec_LS_MC2(0),
+fPt_elec_phot2_multSPD(0),
+fPtElec_ULS_MC2_multSPD(0),
+fPtElec_LS_MC2_multSPD(0),
+fPt_elec_from_pi02(0),
+fPtElec_ULS_MC_from_pi02(0),
+fPtElec_LS_MC_from_pi02(0),
+fPt_elec_from_eta2(0),
+fPtElec_ULS_MC_from_eta2(0),
+fPtElec_LS_MC_from_eta2(0),
+fPt_elec_from_gamma2(0),
+fPtElec_ULS_MC_from_gamma2(0),
+fPtElec_LS_MC_from_gamma2(0),
+f0a(0),f0b(0),f1(0),f1a(0),f1b(0)
 
 
 
@@ -501,21 +555,61 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
 
 	}
 
-
+  f0a = new TF1("f0a","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",0.5,2.5);
+  f0b = new TF1("f0b","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",2.5,10);
+  
+  f0a->FixParameter(0,5.80666e+01);
+  f0a->FixParameter(1,-1.64680e+01);
+  f0a->FixParameter(2,1.25223e+01);
+  f0a->FixParameter(3,1.25515e-03);
+  f0a->FixParameter(4,4.71063e-01 );
+  
+  f0b->FixParameter(0,1.54389e+00);
+  f0b->FixParameter(1,-1.43139e+03);
+  f0b->FixParameter(2,4.58994e+02);
+  f0b->FixParameter(3,2.04094e+03);
+  f0b->FixParameter(4,-9.34144e-05);
+  
+  
+  f1 = new TF1("f1","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",0.5,2.3);
+  f1a = new TF1("f1a","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",2.3,4.1);
+  f1b = new TF1("f1b","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",4.0,10.);
+ 
+  f1->FixParameter(0,2.14780e+00);
+  f1->FixParameter(1,-2.10239e+00);
+  f1->FixParameter(2,4.14568e+00);
+  f1->FixParameter(3,1.87072e+00);
+  f1->FixParameter(4,3.06386e-01);
+  
+  f1a->FixParameter(0,9.59262e+00 );
+  f1a->FixParameter(1,-1.43061e+01);
+  f1a->FixParameter(2,2.60984e+01 );
+  f1a->FixParameter(3,1.74946e-04);
+  f1a->FixParameter(4,1.63876e-01);
+  
+  f1b->FixParameter(0,1.58238e+00);
+  f1b->FixParameter(1,-6.25753e+01);
+  f1b->FixParameter(2,7.27244e+00);
+  f1b->FixParameter(3,1.83220e-14);
+  f1b->FixParameter(4,-1.11985e-03);
+	
+  func_MCnchCorr= new TF1("func_MCnchCorr","expo(0)+expo(2)", 40.,120.);
+  func_MCnchCorr->SetParameters(-1.88813e+00, 3.43870e-02,1.18702e+00,-5.74526e-02);
+  
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
 	
   Double_t pi=TMath::Pi();
 
-  fcount = new TH1D("fcount", "fcount", 10, 0.0, 10.0);
+  fcount = new TH1F("fcount", "fcount", 10, 0.0, 10.0);
   fcount->Sumw2();  
   
-  fHistPt = new TH1F("fHistPt", "P_{T} distribution", 15, 0.1, 15.1);
-  fOutputList->Add(fHistPt);
+  fHistPt = new TH1F("fHistPt", "P_{T} distribution", 150, 0.1, 15.1);
+  //fOutputList->Add(fHistPt);
   fHistMult = new TH1F("fHistMult", "Multiplicity distribution", 500, 0, 500);
-  fOutputList->Add(fHistMult);
+  //fOutputList->Add(fHistMult);
   fTPCSignal = new TH1F("fTPCSignal", "fTPCSignal distribution", 100, 0, 100);
-  fOutputList->Add(fTPCSignal);
+  //fOutputList->Add(fTPCSignal);
 	
 	//--------------------------Vertex Dist------------------------------------
 	fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
@@ -525,24 +619,24 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   fOutputList->Add(fVtxZ_corr);
 
   fVtxY = new TH1F("fVtxY","Y vertex position;Vtx_{y};counts",1000,-50,50);
-  fOutputList->Add(fVtxY);
+  //fOutputList->Add(fVtxY);
 
   fVtxX = new TH1F("fVtxX","X vertex position;Vtx_{x};counts",1000,-50,50);
-  fOutputList->Add(fVtxX);
+  //fOutputList->Add(fVtxX);
   
  
   //--------------------------DCA Dist------------------------------------
 	fDCAZvsPt = new TH2F("fDCAZvsPt","DCAZ ;p_{T};DCA_{z}",300,0,100,100,-5,5);
-  fOutputList->Add(fDCAZvsPt);
+  //fOutputList->Add(fDCAZvsPt);
 
   fDCAXYvsPt = new TH2F("fDCAXYvsPt","DCAXY ;p_{T};DCA_{xy}",300,0,100,100,-5,5);
-  fOutputList->Add(fDCAXYvsPt);
+  //fOutputList->Add(fDCAXYvsPt);
 
 	
 	//--------------------------TPC dedx nsig vs p ----------------------------------------------
   fdEdxVsP_TPC = new TH2F("fdEdxVsP_TPC", "fdEdxVsP_TPC distribution",300,0,15,750,10,160);
   fdEdxVsP_TPC->Sumw2();
-  fOutputList->Add(fdEdxVsP_TPC);
+  //fOutputList->Add(fdEdxVsP_TPC);
   
   fnSigmaVsP_TPC= new TH2F("fnSigmaVsP_TPC", "fnSigmaVsP_TPC distribution",300,0.,15.,750,-15.,15.);
   fnSigmaVsP_TPC->Sumw2(); 
@@ -550,11 +644,15 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   
   fdEdxVsP_TPC_cut = new TH2F("fdEdxVsP_TPC_cut", "fdEdxVsP_TPC_cut distribution",300,0,15,750,10,160);
   fdEdxVsP_TPC_cut->Sumw2();
-  fOutputList->Add(fdEdxVsP_TPC_cut);
+  //fOutputList->Add(fdEdxVsP_TPC_cut);
   
  	fnSigmaVsP_TPC_cut = new TH2F("fnSigmaVsP_TPC_cut", "fnSigmaVsP_TPC_cut distribution",300,0,15,250,-15,10); 
   fnSigmaVsP_TPC_cut->Sumw2(); 
   fOutputList->Add(fnSigmaVsP_TPC_cut);
+  
+  	fnSigmaVsPt_TPC_cut = new TH2F("fnSigmaVsPt_TPC_cut", "fnSigmaVsPt_TPC_cut distribution",300,0,15,250,-15,10); 
+  fnSigmaVsPt_TPC_cut->Sumw2(); 
+  fOutputList->Add(fnSigmaVsPt_TPC_cut);
 
   
   fnSigmaVsP_TOF= new TH2F("fnSigmaVsP_TOF", "fnSigmaVsP_TOF distribution",300,0.,15.,1000,-10.,20.);
@@ -563,164 +661,134 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   
   fnBetaVsP_TOF= new TH2F("fnBetaVsP_TOF", "fnBetaVsP_TOF distribution",300,0.,15.,1000,-0.5,1.5);
 	fnBetaVsP_TOF->Sumw2(); 
-	fOutputList->Add(fnBetaVsP_TOF);
+	//fOutputList->Add(fnBetaVsP_TOF);
 
 
  //--------------------------TPC dedx nsig vs pt ----------------------------------------------
   fdEdxVsPt_TPC = new TH2F("fdEdxVsPt_TPC", "fdEdxVsPt_TPC distribution",300,0,15,750,10,160);
   fdEdxVsPt_TPC->Sumw2();
-  fOutputList->Add(fdEdxVsPt_TPC);
+  //fOutputList->Add(fdEdxVsPt_TPC);
   
   fnSigmaVsPt_TPC= new TH2F("fnSigmaVsPt_TPC", "fnSigmaVsPt_TPC distribution",300,0.,15.,750,-15.,15.);
   fnSigmaVsPt_TPC->Sumw2(); 
-  fOutputList->Add(fnSigmaVsPt_TPC);
+  //fOutputList->Add(fnSigmaVsPt_TPC);
   
   fnSigmaVsPt_TOF= new TH2F("fnSigmaVsPt_TOF", "fnSigmaVsPt_TOF distribution",300,0.,15.,1000,-10.,20.);
   fnSigmaVsPt_TOF->Sumw2(); 
-  fOutputList->Add(fnSigmaVsPt_TOF);
+  //fOutputList->Add(fnSigmaVsPt_TOF);
   
   fnBetaVsPt_TOF= new TH2F("fnBetaVsPt_TOF", "fnBetaVsPt_TOF distribution",300,0.,15.,1000,-0.5,1.5);
 	fnBetaVsPt_TOF->Sumw2(); 
-	fOutputList->Add(fnBetaVsPt_TOF);
+	//fOutputList->Add(fnBetaVsPt_TOF);
 
 
  
  //--------------------------TPC  nsig vs eta ----------------------------------------------
   fnSigmaVsEta_TPC = new TH2F("fnSigmaVsEta_TPC", "fnSigmaVsEta_TPC distribution",1600,-0.8,0.8,750,-15.,15.);
   fnSigmaVsEta_TPC->Sumw2();
-  fOutputList->Add(fnSigmaVsEta_TPC);
+  //fOutputList->Add(fnSigmaVsEta_TPC);
   
   fnSigmaVsEta_TPC_cut = new TH2F("fnSigmaVsEta_TPC_cut", "fnSigmaVsEta_TPC_cut distribution",1600,-0.8,0.8,750,-15.,15.);
   fnSigmaVsEta_TPC_cut->Sumw2(); 
-  fOutputList->Add(fnSigmaVsEta_TPC_cut);
+  //fOutputList->Add(fnSigmaVsEta_TPC_cut);
   
  
   //-----------------Incl e Spectrum and Hadron Contamination---------------------------------------------
-  fHadCot_Landau = new TH1D("fHadCot_Landau", "fHadCot_Landau Distribution",300,0,15);
-  fHadCot_Landau->Sumw2();
-  fOutputList->Add(fHadCot_Landau); 
+  //fHadCot_Landau = new TH1F("fHadCot_Landau", "fHadCot_Landau Distribution",300,0,15);
+  //fHadCot_Landau->Sumw2();
+  //fOutputList->Add(fHadCot_Landau); 
   
-  fHadCot_Err = new TH1D("fHadCot_Err", "fHadCot_Err Distribution",300,0,15);
+  fHadCot_Err = new TH1F("fHadCot_Err", "fHadCot_Err Distribution",300,0,15);
   fHadCot_Err->Sumw2();
   fOutputList->Add(fHadCot_Err);
   
-  fPt_incl_e_Landau = new TH1D("fPt_incl_e_Landau", "fPt_incl_e_Landau Distribution",300,0,15);
+  fPt_incl_e_Landau = new TH1F("fPt_incl_e_Landau", "fPt_incl_e_Landau Distribution",300,0,15);
   fPt_incl_e_Landau->Sumw2();
-  fOutputList->Add(fPt_incl_e_Landau); 
+  //fOutputList->Add(fPt_incl_e_Landau); 
   
-  fPt_incl_e_Err = new TH1D("fPt_incl_e_Err", "fPt_incl_e_Err Distribution",300,0,15);
+  fPt_incl_e_Err = new TH1F("fPt_incl_e_Err", "fPt_incl_e_Err Distribution",300,0,15);
   fPt_incl_e_Err->Sumw2();
   fOutputList->Add(fPt_incl_e_Err);
-  
-  //------------------Centrality and Multiplicity------------------------------------------------- 
+
+  //=================================================================================
+
+  	fPtHFEMC_aftertrackcut  = new TH1F("fPtHFEMC_aftertrackcut", "fPtHFEMC_aftertrackcut Distribution",300,0,15);
+  	fPtHFEMC_aftertrackcut->Sumw2();
+  	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertrackcut);
+
+	fPtHFEMC_aftertofcut  = new TH1F("ffPtHFEMC_aftertofcut", "fPtHFEMC_aftertofcut",300,0,15);
+	fPtHFEMC_aftertofcut->Sumw2();
+  	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertofcut);
+	
+	fPtHFEMC_aftertpcnsigcut  = new TH1F("fPtHFEMC_aftertpcnsigcut", "fPtHFEMC_aftertpcnsigcut",300,0,15);
+	fPtHFEMC_aftertpcnsigcut->Sumw2();
+  	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertpcnsigcut);
+
+	fPtHFEMC_aftertoftpcnsigcut  = new TH1F("fPtHFEMC_aftertoftpcnsigcut", "fPtHFEMC_aftertoftpcnsigcut Distribution",300,0,15);
+	fPtHFEMC_aftertoftpcnsigcut->Sumw2();
+  	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertoftpcnsigcut);
+
+  	fPtHFEMC_aftertrackcut_SPD = new TH2F("fPtHFEMC_aftertrackcut_SPD", "fPtHFEMC_aftertrackcut_SPD Distribution",300,0,15,-0.5,299.5);
+  	fPtHFEMC_aftertrackcut_SPD->Sumw2();
+  	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertrackcut_SPD);
+
+	fPtHFEMC_aftertofcut_SPD  = new TH2F("ffPtHFEMC_aftertofcut_SPD", "fPtHFEMC_aftertofcut_SPD",300,0,15,-0.5,299.5);
+	fPtHFEMC_aftertofcut_SPD->Sumw2();
+  	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertofcut_SPD);
+	
+	fPtHFEMC_aftertpcnsigcut_SPD  = new TH2F("fPtHFEMC_aftertpcnsigcut_SPD", "fPtHFEMC_aftertpcnsigcut_SPD",300,0,15,-0.5,299.5);
+	fPtHFEMC_aftertpcnsigcut_SPD->Sumw2();
+  	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertpcnsigcut_SPD);
+
+	fPtHFEMC_aftertoftpcnsigcut_SPD  = new TH2F("fPtHFEMC_aftertoftpcnsigcut_SPD", "fPtHFEMC_aftertoftpcnsigcut_SPD Distribution",300,0,15,-0.5,299.5);
+	fPtHFEMC_aftertoftpcnsigcut_SPD->Sumw2();
+  	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertoftpcnsigcut_SPD);
+
+//------------------Centrality and Multiplicity------------------------------------------------- 
  
-  fV0Mult = new TH1F("fV0Mult", "fV0Mult Distribution",1000,0,1000);
-  fV0Mult->Sumw2();
-  fOutputList->Add(fV0Mult);
-  
-  fV0MultCorr = new TH1F("fV0MultCorr", "fV0MultCorr Distribution",1000,0,1000);
-  fV0MultCorr->Sumw2();
-  fOutputList->Add(fV0MultCorr);
-  
-  fV0AMult = new TH1F("fV0AMult", "fV0AMult Distribution",1000,0,1000);
-  fV0AMult->Sumw2();
-  fOutputList->Add(fV0AMult);
-  
-  fV0CMult = new TH1F("fV0CMult", "fV0CMult Distribution",1000,0,1000);
-  fV0CMult->Sumw2();
-  fOutputList->Add(fV0CMult); 
+ 
   
   
- 	//-----------------AliMultSelection Class------------------------------------------------------
- 	fCent = new TH1F("fCent","Centrality",100,0,100);
- 	fCent->Sumw2();
-  fOutputList->Add(fCent);
-  
-  fCentSPD = new TH1F("fCentSPD","Centrality",100,0,100);
- 	fCentSPD->Sumw2();
-  fOutputList->Add(fCentSPD);
-  
-	fMultV0M_vs_alimult = new TH2F("fMultV0M_vs_alimult","Track multiplicity",1000,0,1000.,100,0,100);
-  fOutputList->Add(fMultV0M_vs_alimult);
-  
-  fMultSPD_vs_alimult = new TH2F("fMultSPD_vs_alimult","Track multiplicity after cuts",200,0,200,100,0,100);
-  fOutputList->Add(fMultSPD_vs_alimult);
-  
+
   //................................
   
-  fPteV0M_Lan = new TH2F("fPteV0M_Lan","Track multiplicity vs pt",300,0,15.,1000,0,1000.);
-	fPteV0M_Lan->Sumw2();
-  fOutputList->Add(fPteV0M_Lan);
   
-  fPteV0M_Err = new TH2F("fPteV0M_Err","Track multiplicity vs pt",300,0,15.,1000,0,1000.);
-	fPteV0M_Err->Sumw2();
-  fOutputList->Add(fPteV0M_Err);
+  //fPteSPD_Lan = new TH2F("fPteSPD_Lan","Track multiplicity vs pt",300,0,15.,200,0,200.);
+  //fPteSPD_Lan->Sumw2();
+  //fOutputList->Add(fPteSPD_Lan);
   
-  fPteSPD_Lan = new TH2F("fPteSPD_Lan","Track multiplicity vs pt",300,0,15.,200,0,200.);
-  fPteSPD_Lan->Sumw2();
-  fOutputList->Add(fPteSPD_Lan);
-  
-  fPteSPD_Err = new TH2F("fPteSPD_Err","Track multiplicity vs pt",300,0,15.,200,0,200.);
+  fPteSPD_Err = new TH2F("fPteSPD_Err","Track multiplicity vs pt",300,0,15.,300,-0.5,299.5);
   fPteSPD_Err->Sumw2();
   fOutputList->Add(fPteSPD_Err);
  
  //................................
  
- 	fPteV0M= new TH2F("fPteV0M","Track multiplicity vs pt",300,0,15.,1000,0,1000.);
-	fPteV0M->Sumw2();
-  fOutputList->Add(fPteV0M);
   
-  fPteSPD= new TH2F("fPteSPD","Track multiplicity vs pt",300,0,15.,200,0,200.);
+  fPteSPD= new TH2F("fPteSPD","Track multiplicity vs pt",300,0,15.,300,-0.5,299.5);
 	fPteSPD->Sumw2();
   fOutputList->Add(fPteSPD);
   	
   //................................
+ 
   
-  fHadV0MLan= new TH2F("fHadV0MLan","Track multiplicity vs pt",300,0,15.,1000,0,1000.);
-	fHadV0MLan->Sumw2();
-  fOutputList->Add(fHadV0MLan);
+  //fHadSPDLan= new TH2F("fHadSPDLan","Track multiplicity vs pt",300,0,15.,200,0,200.);
+	//fHadSPDLan->Sumw2();
+  //fOutputList->Add(fHadSPDLan);
   
-  fHadSPDLan= new TH2F("fHadSPDLan","Track multiplicity vs pt",300,0,15.,200,0,200.);
-	fHadSPDLan->Sumw2();
-  fOutputList->Add(fHadSPDLan);
-  
-  fHadV0MErr= new TH2F("fHadV0MErr","Track multiplicity vs pt",300,0,15.,1000,0,1000.);
-	fHadV0MErr->Sumw2();
-  fOutputList->Add(fHadV0MErr);
-  
-  fHadSPDErr= new TH2F("fHadSPDErr","Track multiplicity vs pt",300,0,15.,200,0,200.);
+  fHadSPDErr= new TH2F("fHadSPDErr","Track multiplicity vs pt",300,0,15.,300,-0.5,299.5);
 	fHadSPDErr->Sumw2();
   fOutputList->Add(fHadSPDErr);
   
 
 //-------------------------------------------------------------------------------------------------------------
   
-  Int_t nbinsTPCnsigmaVsPcut[4] = {100, 250, 200,1000};
-  Double_t binlowTPCnsigmaVsPcut[4] = {0., -15, 0., 0.};
-  Double_t binupTPCnsigmaVsPcut[4] = {10., 10, 200, 1000};
+  Int_t nbinsTPCnsigmaVsPcut[4] = {100, 250, 300,1000};
+  Double_t binlowTPCnsigmaVsPcut[4] = {0., -15, -0.5, 0.};
+  Double_t binupTPCnsigmaVsPcut[4] = {10., 10, 299.5, 1000};
 
   fnSigmaVsP_TPC_cut_mult = new THnSparseF("fnSigmaVsP_TPC_cut_mult", "fnSigmaVsP_TPC_cut_mult;p;nsig;SPD;V0M", 4, nbinsTPCnsigmaVsPcut, binlowTPCnsigmaVsPcut, binupTPCnsigmaVsPcut);
   fnSigmaVsP_TPC_cut_mult->Sumw2();
-  fOutputList->Add(fnSigmaVsP_TPC_cut_mult);
-	
-
-/*
-  fnSigmaVsP_TPC_cut_multV0M= new TH3F("fnSigmaVsP_TPC_cut_multV0M","",100,0,5.,250,-15,10,800,0,800.);
-	fnSigmaVsP_TPC_cut_multV0M->Sumw2();
-  fOutputList->Add(fnSigmaVsP_TPC_cut_multV0M);
-  
-  fnSigmaVsP_TPC_cut_multSPD= new TH3F("fnSigmaVsP_TPC_cut_multSPD","",300,0,15.,250,-15,10,200,0,200.);
-	fnSigmaVsP_TPC_cut_multSPD->Sumw2();
-  fOutputList->Add(fnSigmaVsP_TPC_cut_multSPD);
-*/
-/*  
-  fnSigmaVsPt_TPC_cut_multV0M= new TH3F("fnSigmaVsPt_TPC_cut_multV0M","",100,0,5.,250,-15,10,1000,0,1000.);
-	fnSigmaVsPt_TPC_cut_multV0M->Sumw2();
-  fOutputList->Add(fnSigmaVsPt_TPC_cut_multV0M);
-  
-  fnSigmaVsPt_TPC_cut_multSPD= new TH3F("fnSigmaVsPt_TPC_cut_multSPD","",300,0,15.,250,-15,10,200,0,200.);
-	fnSigmaVsPt_TPC_cut_multSPD->Sumw2();
-  fOutputList->Add(fnSigmaVsPt_TPC_cut_multSPD);*/
+  //fOutputList->Add(fnSigmaVsP_TPC_cut_mult);
   
   //-----------------NonHFE-----------------------------------------------------------------------------------------
   fPte_ULS = new TH1F("fPte_ULS", "ULS electron pt",300,0,15);
@@ -739,252 +807,244 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
 	
 	//....................................................................................
 	
-	fPte_ULS_multV0M = new TH2F("fPte_ULS_multV0M", "ULS electron pt in percentile",300,0,15,1000,0,1000);
-	fPte_ULS_multV0M->Sumw2();
-  fOutputList->Add(fPte_ULS_multV0M);
-  
-  fPte_LS_multV0M = new TH2F("fPte_LS_multV0M", "LS electron pt in percentile",300,0,15,1000,0,1000);
-  fPte_LS_multV0M->Sumw2();
-  fOutputList->Add(fPte_LS_multV0M);
   
  
-  fPte_ULS_multSPD = new TH2F("fPte_ULS_multSPD", "ULS electron pt in percentile",300,0,15,200,0,200);
+  fPte_ULS_multSPD = new TH2F("fPte_ULS_multSPD", "ULS electron pt in percentile",300,0,15,300,-0.5,299.5);
   fPte_ULS_multSPD->Sumw2();
   fOutputList->Add(fPte_ULS_multSPD);
   
-  fPte_LS_multSPD = new TH2F("fPte_LS_multSPD", "LS electron pt in percentile",300,0,15,200,0,200);
+  fPte_LS_multSPD = new TH2F("fPte_LS_multSPD", "LS electron pt in percentile",300,0,15,300,-0.5,299.5);
   fPte_LS_multSPD->Sumw2();
   fOutputList->Add(fPte_LS_multSPD);
   
 
   
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  fPtHFEMCtot = new TH1F("fPtHFEMCtot",";p_{t} (GeV/c)",300,0,15);
-  fPtHFEMCtot->Sumw2();
-  fOutputList->Add(fPtHFEMCtot);
+
   
-  fPtHFEMCtot_SPD = new TH2F("fPtHFEMCtot_SPD",";p_{t} (GeV/c)",300,0,15,200,0,200);
-  fPtHFEMCtot_SPD->Sumw2();
-  fOutputList->Add(fPtHFEMCtot_SPD);
-  
-  fPtHFEMCtot_V0M = new TH2F("fPtHFEMCtot_V0M",";p_{t} (GeV/c)",300,0,15,1000,0,1000);
-  fPtHFEMCtot_V0M->Sumw2();
-  fOutputList->Add(fPtHFEMCtot_V0M);
-  
+ 
   fPtHFEMC = new TH1F("fPtHFEMC",";p_{t} (GeV/c)",300,0,15);
   fPtHFEMC->Sumw2();
-  fOutputList->Add(fPtHFEMC);
+  if(fIsMC) fOutputList->Add(fPtHFEMC);
   
-  fPtHFEMC_SPD = new TH2F("fPtHFEMC_SPD",";p_{t} (GeV/c)",300,0,15,200,0,200);
+  fPtHFEMC_SPD = new TH2F("fPtHFEMC_SPD",";p_{t} (GeV/c)",300,0,15,300,-0.5,299.5);
   fPtHFEMC_SPD->Sumw2();
-  fOutputList->Add(fPtHFEMC_SPD);
+  if(fIsMC) fOutputList->Add(fPtHFEMC_SPD);
+ 
+
   
-  fPtHFEMC_V0M = new TH2F("fPtHFEMC_V0M",";p_{t} (GeV/c)",300,0,15,1000,0,1000);
-  fPtHFEMC_V0M->Sumw2();
-  fOutputList->Add(fPtHFEMC_V0M);
-  
-  fPtHFEMC_aftertrackcuts= new TH1F("fPtHFEMC_aftertrackcuts",";p_{t} (GeV/c)",300,0,15.);
-  fPtHFEMC_aftertrackcuts->Sumw2();
-  fOutputList->Add(fPtHFEMC_aftertrackcuts);
-  
-  fPtHFEMC_aftertrackcuts_SPD= new TH2F("fPtHFEMC_aftertrackcuts_SPD",";p_{t} (GeV/c)",300,0,15.,200,0,200);
-  fPtHFEMC_aftertrackcuts_SPD->Sumw2();
-  fOutputList->Add(fPtHFEMC_aftertrackcuts_SPD);
-  
-  fPtHFEMC_aftertrackcuts_V0M= new TH2F("fPtHFEMC_aftertrackcuts_V0M",";p_{t} (GeV/c)",300,0,15.,1000,0,1000);
-  fPtHFEMC_aftertrackcuts_V0M->Sumw2();
-  fOutputList->Add(fPtHFEMC_aftertrackcuts_V0M);
-  
-  fPtHFEMC_aftertracktofcuts= new TH1F("fPtHFEMC_aftertracktofcuts",";p_{t} (GeV/c)",300,0,15.);
-  fPtHFEMC_aftertracktofcuts->Sumw2();
-  fOutputList->Add(fPtHFEMC_aftertracktofcuts);
-  
-  fPtHFEMC_aftertracktofcuts_SPD= new TH2F("fPtHFEMC_aftertracktofcuts_SPD",";p_{t} (GeV/c)",300,0,15.,200,0,200);
-  fPtHFEMC_aftertracktofcuts_SPD->Sumw2();
-  fOutputList->Add(fPtHFEMC_aftertracktofcuts_SPD);
-  
-  fPtHFEMC_aftertracktofcuts_V0M= new TH2F("fPtHFEMC_aftertracktofcuts_V0M",";p_{t} (GeV/c)",300,0,15.,1000,0,1000);
-  fPtHFEMC_aftertracktofcuts_V0M->Sumw2();
-  fOutputList->Add(fPtHFEMC_aftertracktofcuts_V0M);
-  
+   
   pi0MC= new TH1F("pi0MC",";p_{t} (GeV/c)",300,0,15.);
   pi0MC->Sumw2();
-  fOutputList->Add(pi0MC);
+  //fOutputList->Add(pi0MC);
   
   etaMC= new TH1F("etaMC",";p_{t} (GeV/c)",300,0,15.);
   etaMC->Sumw2();
-  fOutputList->Add(etaMC);
+  //fOutputList->Add(etaMC);
   
   gammaMC= new TH1F("gammaMC",";p_{t} (GeV/c)",300,0,15.);
   gammaMC->Sumw2();
-  fOutputList->Add(gammaMC);
+  //fOutputList->Add(gammaMC);
   
   
   pi0MC_1= new TH1F("pi0MC_1",";p_{t} (GeV/c)",300,0,15.);
   pi0MC_1->Sumw2();
-  fOutputList->Add(pi0MC_1);
+  //fOutputList->Add(pi0MC_1);
   
   etaMC_1= new TH1F("etaMC_1",";p_{t} (GeV/c)",300,0,15.);
   etaMC_1->Sumw2();
-  fOutputList->Add(etaMC_1);
+  //fOutputList->Add(etaMC_1);
   
   gammaMC_1= new TH1F("gammaMC_1",";p_{t} (GeV/c)",300,0,15.);
   gammaMC_1->Sumw2();
-  fOutputList->Add(gammaMC_1);
+  //fOutputList->Add(gammaMC_1);
   
   
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
-  fPt_elec_phot= new TH1F("fPt_elec_phot", "; p_{T}(GeV/c); counts;",300,0,15.);
-  fPt_elec_phot->Sumw2();
-  fOutputList->Add(fPt_elec_phot);
+ 
   
   fPt_elec_phot1= new TH1F("fPt_elec_phot1", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_phot1->Sumw2();
-  fOutputList->Add(fPt_elec_phot1);
+  if(fIsMC) fOutputList->Add(fPt_elec_phot1);
   
   fpt_e_nonphot_MC= new TH1F("fpt_e_nonphot_MC", "; p_{T}(GeV/c); counts;",300,0,15.);
   fpt_e_nonphot_MC->Sumw2();
-  fOutputList->Add(fpt_e_nonphot_MC);
+  //fOutputList->Add(fpt_e_nonphot_MC);
   
   fElecNos = new TH1F("fElecNos","no of electrons",10,-0.5,9.5);
   fElecNos->GetXaxis()->SetBinLabel(1,"Total no. of Particles");
   fElecNos->GetXaxis()->SetBinLabel(2,"Inclusive Electrons");
   fElecNos->GetXaxis()->SetBinLabel(3,"Non-hfe Electrons");
-  fOutputList->Add(fElecNos);
+  //fOutputList->Add(fElecNos);
  
   fPT_elec_MCtrue = new TH1F("fPT_elec_MCtrue","Pt of e from MC_True",300,0.,15.);
   fPT_elec_MCtrue->Sumw2();
-  fOutputList->Add(fPT_elec_MCtrue);
+  //fOutputList->Add(fPT_elec_MCtrue);
   
   fpt_incl_elec_MC= new TH1F("fpt_incl_elec_MC","Pt of inclusive e from MC",300,0.,15.);
   fpt_incl_elec_MC->Sumw2();
-  fOutputList->Add(fpt_incl_elec_MC);
+  //fOutputList->Add(fpt_incl_elec_MC);
   
   fPi0_Pt_MC = new TH1F("fPi0_Pt_MC","Pt of e mother Pi0 from MC",300,0.,15.);
   fPi0_Pt_MC->Sumw2();
-  fOutputList->Add(fPi0_Pt_MC);
+  //fOutputList->Add(fPi0_Pt_MC);
   
   fEta_Pt_MC = new TH1F("fEta_Pt_MC","Pt of e mother Eta from MC",300,0.,15.);
   fEta_Pt_MC->Sumw2();
-  fOutputList->Add(fEta_Pt_MC);
+  //fOutputList->Add(fEta_Pt_MC);
   
   fGamma_Pt_MC = new TH1F("fGamma_Pt_MC","Pt of e mother Gamma from MC",300,0.,15.);
   fGamma_Pt_MC->Sumw2();
-  fOutputList->Add(fGamma_Pt_MC);
+  //fOutputList->Add(fGamma_Pt_MC);
   
   fPte_ULS_MC = new TH1F("fPte_ULS_MC","Pt of ULS from MC",300,0.,15.);
   fPte_ULS_MC->Sumw2(); 
-  fOutputList->Add(fPte_ULS_MC);
+  if(fIsMC)fOutputList->Add(fPte_ULS_MC);
   
   fPte_LS_MC = new TH1F("fPte_LS_MC","Pt of LS from MC",300,0.,15.);
   fPte_LS_MC->Sumw2();
-  fOutputList->Add(fPte_LS_MC);
-  
-  fPte_ULS_MC_multV0M = new TH2F("fPte_ULS_MC_multV0M","Pt of ULS from MC",300,0.,15.,1000,0.,1000); 
-  fPte_ULS_MC_multV0M->Sumw2();
-  fOutputList->Add(fPte_ULS_MC_multV0M);
-  
-  fPte_LS_MC_multV0M = new TH2F("fPte_LS_MC_multV0M","Pt of LS from MC",300,0.,15.,1000,0.,1000);
-  fPte_LS_MC_multV0M->Sumw2();
-  fOutputList->Add(fPte_LS_MC_multV0M);
-  
-  fPte_ULS_MC_multSPD = new TH2F("fPte_ULS_MC_multSPD","Pt of ULS from MC",300,0.,15.,200,0.,200.);
+  if(fIsMC)fOutputList->Add(fPte_LS_MC);
+ 
+  fPte_ULS_MC_multSPD = new TH2F("fPte_ULS_MC_multSPD","Pt of ULS from MC",300,0.,15.,300,-0.5,299.5);
   fPte_ULS_MC_multSPD->Sumw2(); 
-  fOutputList->Add(fPte_ULS_MC_multSPD);
+  if(fIsMC)fOutputList->Add(fPte_ULS_MC_multSPD);
   
-  fPte_LS_MC_multSPD = new TH2F("fPte_LS_MC_multSPD","Pt of LS from MC",300,0.,15.,200,0.,200.);
+  fPte_LS_MC_multSPD = new TH2F("fPte_LS_MC_multSPD","Pt of LS from MC",300,0.,15.,300,-0.5,299.5);
   fPte_LS_MC_multSPD->Sumw2();
-  fOutputList->Add(fPte_LS_MC_multSPD);
+  if(fIsMC)fOutputList->Add(fPte_LS_MC_multSPD);
   
-  fPte_ULS_invMss_MC = new TH1F("fPte_ULS_invMss_MC","Pt of ULS invmass from MC",300,0.,15.);
-  fPte_ULS_invMss_MC->Sumw2();
-  fOutputList->Add(fPte_ULS_invMss_MC);
-  
-  fPte_LS_invMss_MC = new TH1F("fPte_LS_invMss_MC","Pt of LS invmss from MC",300,0.,15.);
-  fPte_LS_invMss_MC->Sumw2();
-  fOutputList->Add(fPte_LS_invMss_MC);
   
   fInvMULS = new TH2F("fInvMULS","Pt and InvMass from MC",300,0.,15.,1000,0,1.0);
   fInvMULS->Sumw2();
-  fOutputList->Add(fInvMULS);
+  if(fIsMC)fOutputList->Add(fInvMULS);
   
-/*
-  fInvMULS_multV0M = new TH3F("fInvMULS_multV0M","Pt and InvMass from MC",300,0.,15.,100,0,1.0,1000,0.,1000.);
-  fInvMULS_multV0M->Sumw2();
-  fOutputList->Add(fInvMULS_multV0M);
-  
-  fInvMULS_multSPD = new TH3F("fInvMULS_multSPD","Pt and InvMass from MC",300,0.,15.,100,0,1.0,200,0.,200.);
-  fInvMULS_multSPD->Sumw2();
-  fOutputList->Add(fInvMULS_multSPD);
- */ 
-  
-  fPt_elec_phot_multV0M= new TH2F("fPt_elec_phot_multV0M", "; p_{T}(GeV/c); counts;",300,0,15.,1000,0,1000.);
-  fPt_elec_phot_multV0M->Sumw2();
-  fOutputList->Add(fPt_elec_phot_multV0M);
-  
-  fPt_elec_phot_multSPD= new TH2F("fPt_elec_phot_multSPD", "; p_{T}(GeV/c); counts;",300,0,15.,200,0,200.);
-  fPt_elec_phot_multSPD->Sumw2();
-  fOutputList->Add(fPt_elec_phot_multSPD);
-  
-  fPt_elec_phot1_multV0M= new TH2F("fPt_elec_phot1_multV0M", "; p_{T}(GeV/c); counts;",300,0,15.,1000,0,1000.);
-  fPt_elec_phot1_multV0M->Sumw2();
-  fOutputList->Add(fPt_elec_phot1_multV0M);
-  
-  fPt_elec_phot1_multSPD= new TH2F("fPt_elec_phot1_multSPD", "; p_{T}(GeV/c); counts;",300,0,15.,200,0,200.);
+
+ 
+  fPt_elec_phot1_multSPD= new TH2F("fPt_elec_phot1_multSPD", "; p_{T}(GeV/c); counts;",300,0,15.,300,-0.5,299.5);
   fPt_elec_phot1_multSPD->Sumw2();
-  fOutputList->Add(fPt_elec_phot1_multSPD);
+  if(fIsMC)fOutputList->Add(fPt_elec_phot1_multSPD);
   
   //----pi0---------------
   fPt_elec_pi0_MB= new TH1F("fPt_elec_pi0_MB", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_pi0_MB->Sumw2();
-  fOutputList->Add(fPt_elec_pi0_MB);
+  //fOutputList->Add(fPt_elec_pi0_MB);
   
   fPt_elec_pi0_MB_LS= new TH1F("fPt_elec_pi0_MB_LS", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_pi0_MB_LS->Sumw2();
-  fOutputList->Add(fPt_elec_pi0_MB_LS);
+  //fOutputList->Add(fPt_elec_pi0_MB_LS);
   
   fPt_elec_pi0_MB_ULS= new TH1F("fPt_elec_pi0_MB_ULS", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_pi0_MB_ULS->Sumw2();
-  fOutputList->Add(fPt_elec_pi0_MB_ULS);
+  //fOutputList->Add(fPt_elec_pi0_MB_ULS);
   
   //----eta---------------
   fPt_elec_eta_MB= new TH1F("fPt_elec_eta_MB", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_eta_MB->Sumw2();
-  fOutputList->Add(fPt_elec_eta_MB);
+  //fOutputList->Add(fPt_elec_eta_MB);
   
   fPt_elec_eta_MB_LS= new TH1F("fPt_elec_eta_MB_LS", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_eta_MB_LS->Sumw2();
-  fOutputList->Add(fPt_elec_eta_MB_LS);
+  //fOutputList->Add(fPt_elec_eta_MB_LS);
   
   fPt_elec_eta_MB_ULS= new TH1F("fPt_elec_eta_MB_ULS", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_eta_MB_ULS->Sumw2();
-  fOutputList->Add(fPt_elec_eta_MB_ULS);
+  //fOutputList->Add(fPt_elec_eta_MB_ULS);
   
   
   //----gamma---------------
   fPt_elec_gamma_MB= new TH1F("fPt_elec_gamma_MB", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_gamma_MB->Sumw2();
-  fOutputList->Add(fPt_elec_gamma_MB);
+  //fOutputList->Add(fPt_elec_gamma_MB);
   
   fPt_elec_gamma_MB_LS= new TH1F("fPt_elec_gamma_MB_LS", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_gamma_MB_LS->Sumw2();
-  fOutputList->Add(fPt_elec_gamma_MB_LS);
+  //fOutputList->Add(fPt_elec_gamma_MB_LS);
   
   fPt_elec_gamma_MB_ULS= new TH1F("fPt_elec_gamma_MB_ULS", "; p_{T}(GeV/c); counts;",300,0,15.);
   fPt_elec_gamma_MB_ULS->Sumw2();
-  fOutputList->Add(fPt_elec_gamma_MB_ULS); 
+  //fOutputList->Add(fPt_elec_gamma_MB_ULS); 
+  
+  //Weights============================================
+  fPt_elec_phot2 = new TH1F("fPt_elec_phot2","",300,0,15.);
+  fPt_elec_phot2->Sumw2();
+	if(fIsMC)fOutputList->Add(fPt_elec_phot2);
+	
+   fPtElec_ULS_MC2 = new TH1F("fPtElec_ULS_MC2","p_{T} [GeV/c]",300,0,15.);
+   fPtElec_ULS_MC2->Sumw2();
+	if(fIsMC)fOutputList->Add(fPtElec_ULS_MC2);
+		
+	fPtElec_LS_MC2 = new TH1F("fPtElec_LS_MC2","p_{T} [GeV/c]",300,0,15.);
+	fPtElec_LS_MC2->Sumw2();
+   if(fIsMC)fOutputList->Add(fPtElec_LS_MC2);
+	
+	
+	fPt_elec_phot2_multSPD= new TH2F("fPt_elec_phot2_multSPD","",300,0,15.,300,-0.5,299.5);
+	fPt_elec_phot2_multSPD->Sumw2();
+	if(fIsMC)fOutputList->Add(fPt_elec_phot2_multSPD);
+	
+	
+   fPtElec_ULS_MC2_multSPD = new TH2F("fPtElec_ULS_MC2_multSPD","p_{T} [GeV/c]",300,0,15.,300,-0.5,299.5);
+   fPtElec_ULS_MC2_multSPD->Sumw2();
+	if(fIsMC)fOutputList->Add(fPtElec_ULS_MC2_multSPD);
+	
+   fPtElec_LS_MC2_multSPD = new TH2F("fPtElec_LS_MC2_multSPD","p_{T} [GeV/c]",300,0,15.,300,-0.5,299.5);
+   fPtElec_LS_MC2_multSPD->Sumw2();
+    if(fIsMC)fOutputList->Add(fPtElec_LS_MC2_multSPD);
+	
+	
+	/*
+	fPt_elec_from_pi02 = new TH1F("fPt_elec_from_pi02","",300,0,15.);
+	fOutputList->Add(fPt_elec_from_pi02);
+	//fPt_elec_from_pi02->Sumw2();
+	
+	fPtElec_ULS_MC_from_pi02 = new TH1F("fPtElec_ULS_MC_from_pi02","p_{T} [GeV/c]",300,0,15.);
+	fOutputList->Add(fPtElec_ULS_MC_from_pi02);
+	//fPtElec_ULS_MC_from_pi02->Sumw2();
+	
+	fPtElec_LS_MC_from_pi02 = new TH1F("fPtElec_LS_MC_from_pi02","p_{T} [GeV/c]",300,0,15.);
+    fOutputList->Add(fPtElec_LS_MC_from_pi02);
+	//fPtElec_LS_MC_from_pi02->Sumw2();
+	
+	fPt_elec_from_eta2 = new TH1F("fPt_elec_from_eta2","",300,0,15.);
+	fOutputList->Add(fPt_elec_from_eta2);
+	fPt_elec_from_eta2->Sumw2();
+	
+	fPtElec_ULS_MC_from_eta2 = new TH1F("fPtElec_ULS_MC_from_eta2","p_{T} [GeV/c]",300,0,15.);
+	fOutputList->Add(fPtElec_ULS_MC_from_eta2);
+	fPtElec_ULS_MC_from_eta2->Sumw2();
+	
+	fPtElec_LS_MC_from_eta2 = new TH1F("fPtElec_LS_MC_from_eta2","p_{T} [GeV/c]",300,0,15.);
+    fOutputList->Add(fPtElec_LS_MC_from_eta2);
+	fPtElec_LS_MC_from_eta2->Sumw2();
+	
+	fPt_elec_from_gamma2 = new TH1F("fPt_elec_from_gamma2","",300,0,15.);
+	fOutputList->Add(fPt_elec_from_gamma2);
+	fPt_elec_from_gamma2->Sumw2();
+	
+	fPtElec_ULS_MC_from_gamma2 = new TH1F("fPtElec_ULS_MC_from_gamma2","p_{T} [GeV/c]",300,0,15.);
+	fOutputList->Add(fPtElec_ULS_MC_from_gamma2);
+	fPtElec_ULS_MC_from_gamma2->Sumw2();
+	
+	fPtElec_LS_MC_from_gamma2 = new TH1F("fPtElec_LS_MC_from_gamma2","p_{T} [GeV/c]",300,0,15.);
+    fOutputList->Add(fPtElec_LS_MC_from_gamma2);
+	fPtElec_LS_MC_from_gamma2->Sumw2();*/
+//===========================================================================================================
   
   //-------------------------------------------------------------------------------------------------------------
   
-  Int_t nbinsInvMULS[5] = {100, 6, 100, 200,1000};
-  Double_t binlowInvMULS[5] = {0., 0, 0., 0.,0.};
-  Double_t binupInvMULS[5] = {10, 6, 1., 200,1000};
+  Int_t nbinsInvMULS[4] = {100, 6, 100, 300};
+  Double_t binlowInvMULS[4] = {0., 0, 0., -0.5};
+  Double_t binupInvMULS[4] = {10, 6., 1., 299.5};
 
-	fInvMULSnSp = new THnSparseF("fInvMULSnSp", "fInvMULSnSp;pt;source;mass;multdepSPD;multdepV0M", 5, nbinsInvMULS, binlowInvMULS, binupInvMULS);
+	fInvMULSnSp = new THnSparseF("fInvMULSnSp", "fInvMULSnSp;pt;source;mass;multdepSPD", 4, nbinsInvMULS, binlowInvMULS, binupInvMULS);
 	fInvMULSnSp->Sumw2();
-	fOutputList->Add(fInvMULSnSp);
+	if(fIsMC)fOutputList->Add(fInvMULSnSp);
 	
+	fInvMULSnSpwg = new THnSparseF("fInvMULSnSpwg", "fInvMULSnSpwg;pt;source;mass;multdepSPD", 4, nbinsInvMULS, binlowInvMULS, binupInvMULS);
+	fInvMULSnSpwg->Sumw2();
+	if(fIsMC)fOutputList->Add(fInvMULSnSpwg);
+	
+	/*
   fInvMULSpi0 = new TH2F("fInvMULSpi0","Pt and InvMass from MC",300,0.,15.,100,0,1.0);
   fInvMULSpi0->Sumw2();
   fOutputList->Add(fInvMULSpi0);
@@ -997,66 +1057,73 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   fInvMULSgamma->Sumw2();
   fOutputList->Add(fInvMULSgamma);
   
-  
+  */
 
   //--------------------------------------------------------------------------------------------------
   
   //----------------------------------------------------------------------------------------------------------
-  fPtHFEMC_reco = new TH1F("fPtHFEMC_reco",";p_{t} (GeV/c)",300,0,15);
+  fPtHFEMC_reco = new TH1F("fPtHFEMC_reco",";p_{t} (GeV/c)",300,0.,15.0);
   fPtHFEMC_reco->Sumw2();
-  fOutputList->Add(fPtHFEMC_reco);
+  if(fIsMC)fOutputList->Add(fPtHFEMC_reco);
   
-  fPtHFEMC_reco_SPD = new TH2F("fPtHFEMC_reco_SPD",";p_{t} (GeV/c)",300,0,15,200,0,200);
+  fPtHFEMC_reco_SPD = new TH2F("fPtHFEMC_reco_SPD",";p_{t} (GeV/c)",300,0.,15.0,300,-0.5,299.5);
   fPtHFEMC_reco_SPD->Sumw2();
-  fOutputList->Add(fPtHFEMC_reco_SPD);
+  if(fIsMC)fOutputList->Add(fPtHFEMC_reco_SPD);
   
-  fPtHFEMC_reco_V0M = new TH2F("fPtHFEMC_reco_V0M",";p_{t} (GeV/c)",300,0,15,1000,0,1000);
-  fPtHFEMC_reco_V0M->Sumw2();
-  fOutputList->Add(fPtHFEMC_reco_V0M);
- 
+
  //--------------------------------------------------------------------------------------------------
  //--------SPD correction---------------------------------
   
   const char *estimatorName="tr"; //SPD  
   
-  fSPD_tracklet_NoEtaCut = new TH1F("fSPD_tracklet_NoEtaCut", "fSPD_tracklet_NoEtaCut Distribution",300,0,300);
-  fSPD_tracklet_NoEtaCut->Sumw2(); 
-  fOutputList->Add(fSPD_tracklet_NoEtaCut); 
-  
-  fSPD_tracklet = new TH1F("fSPD_tracklet", "fSPD_tracklet Distribution",300,0,300);
+  fSPD_tracklet = new TH1F("fSPD_tracklet", "fSPD_tracklet Distribution",300,-0.5,299.5);
   fSPD_tracklet->Sumw2(); 
   fOutputList->Add(fSPD_tracklet); 
   
-  fSPDCorrMultDist_min = new TH1F("fSPDCorrMultDist_min",Form("Corrected Mult Dist;  N_{%s};Counts;",estimatorName),300,0,300); //
+  fSPDCorrMultDist_min = new TH1F("fSPDCorrMultDist_min",Form("Corrected Mult Dist;  N_{%s};Counts;",estimatorName),300,-0.5,299.5); //
+  fSPDCorrMultDist_min->Sumw2();
   fOutputList->Add(fSPDCorrMultDist_min);
   
- 	fSPDCorrMultDist_max = new TH1F("fSPDCorrMultDist_max",Form("Corrected Mult Dist; N_{%s};Counts;",estimatorName),300,0,300); //
+  fSPDCorrMultDist_max = new TH1F("fSPDCorrMultDist_max",Form("Corrected Mult Dist; N_{%s};Counts;",estimatorName),300,-0.5,299.5); //
+  fSPDCorrMultDist_max->Sumw2();
   fOutputList->Add(fSPDCorrMultDist_max);
   
-  fHistNtrVsZvtx = new TH2F("hNtrVsZvtx",Form("N%s vs VtxZ; Z_{vtx};N_{%s};",estimatorName,estimatorName),300,-15,15,300,0,300); //
+  fSPDWeightedCorrMultDist_max= new TH1F("fSPDWeightedCorrMultDist_max",Form("Corrected Mult Dist; N_{%s};Counts;",estimatorName),300,-0.5,299.5); //
+  fSPDWeightedCorrMultDist_max->Sumw2();
+  if(fIsMC)fOutputList->Add(fSPDWeightedCorrMultDist_max);
+ 
+  fHistNtrVsZvtx = new TH2F("hNtrVsZvtx",Form("N%s vs VtxZ; Z_{vtx};N_{%s};",estimatorName,estimatorName),300,-15.0,15.0,300,-0.5,299.5); //
+  fHistNtrVsZvtx->Sumw2();
   fOutputList->Add(fHistNtrVsZvtx);
   
-  fHistNtrCorrVsZvtx_min = new TH2F("hNtrCorrVsZvtx_min",Form("N%s vs VtxZ; Z_{vtx};N_{%s};",estimatorName,estimatorName),300,-15,15,300,0,300); //
+  fHistNtrCorrVsZvtx_min = new TH2F("hNtrCorrVsZvtx_min",Form("N%s vs VtxZ; Z_{vtx};N_{%s};",estimatorName,estimatorName),300,-15.0,15.0,300,-0.5,299.5); //
+  fHistNtrCorrVsZvtx_min->Sumw2();
   fOutputList->Add(fHistNtrCorrVsZvtx_min);
   					
-  fHistNtrCorrVsZvtx_max = new TH2F("hNtrCorrVsZvtx_max",Form("N%s vs VtxZ; Z_{vtx};N_{%s};",estimatorName,estimatorName),300,-15,15,300,0,300); //
+  fHistNtrCorrVsZvtx_max = new TH2F("hNtrCorrVsZvtx_max",Form("N%s vs VtxZ; Z_{vtx};N_{%s};",estimatorName,estimatorName),300,-15.0,15.0,300,-0.5,299.5); //
+  fHistNtrCorrVsZvtx_max->Sumw2();
   fOutputList->Add(fHistNtrCorrVsZvtx_max);
-   
-  fV0MultVsZvtx= new TH2F("fV0MultVsZvtx","UnCorrected Mult Dist; N_VOM;Counts;",300,-15,15,1000,0,1000); //
-  fOutputList->Add(fV0MultVsZvtx);
+
+  Profile_Mean = new TProfile("Profile_Mean","Profile_Mean",300,-15.0,15.0);
+  Profile_Mean->Sumw2();
+  fOutputList->Add(Profile_Mean); 
   
-  fV0MultCorrVsZvtx= new TH2F("fV0MultCorrVsZvtx","Corrected Mult Dist; N_VOM;Counts;",300,-15,15,1000,0,1000); //
-  fOutputList->Add(fV0MultCorrVsZvtx);	
+  Profile_MeanCorr = new TProfile("Profile_MeanCorr","Profile_MeanCorr",300,-15.0,15.0);
+  Profile_MeanCorr->Sumw2();
+  fOutputList->Add(Profile_MeanCorr);
  
-  fNchVsZvtx= new TH2F("fNchVsZvtx","Corrected Mult Dist;Nch;Counts;",300,-15,15,1000,0,1000); //
-  fOutputList->Add(fNchVsZvtx);
+  fNchVsZvtx= new TH2F("fNchVsZvtx","Corrected Mult Dist;Nch;Counts;",300,-15.0,15.0,400,-0.5,399.5); //
+  fNchVsZvtx->Sumw2();
+  if(fIsMC)fOutputList->Add(fNchVsZvtx);
   
-  SPDNtrCorrVsNch = new TH2F("SPDNtrCorrVsNch","",200,0,200.,400,0,400.); //
-  fOutputList->Add(SPDNtrCorrVsNch);	
+  SPDNtrCorrVsNch = new TH2F("SPDNtrCorrVsNch","",300,-0.5,299.5,400,-0.5,399.5); //
+  SPDNtrCorrVsNch->Sumw2();
+  if(fIsMC)fOutputList->Add(SPDNtrCorrVsNch);	
   
-  V0MCorrVsNch= new TH2F("V0MCorrVsNch","",1000,0,1000.,400,0,400.); //
-  fOutputList->Add(V0MCorrVsNch);
-  
+  SPDNtrCorrVsNchweights= new TH2F("SPDNtrCorrVsNchweights","",300,-0.5,299.5,400,-0.5,399.5); //
+  SPDNtrCorrVsNchweights->Sumw2();
+  if(fIsMC)fOutputList->Add(SPDNtrCorrVsNchweights);
+   
 
   Int_t nbinsSPDV0MNch[3] = {200, 1000,400};
   Double_t binlowSPDV0MNch[3] = {0., 0, 0.};
@@ -1064,7 +1131,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
 
   fSPDNtrCorrVsV0MCorrVsNch = new THnSparseF("fSPDNtrCorrVsV0MCorrVsNch", "fSPDNtrCorrVsV0MCorrVsNch;SPD;V0M;Nch", 3, nbinsSPDV0MNch,binlowSPDV0MNch,binupSPDV0MNch);
   fSPDNtrCorrVsV0MCorrVsNch->Sumw2();
-  fOutputList->Add(fSPDNtrCorrVsV0MCorrVsNch);
+  //fOutputList->Add(fSPDNtrCorrVsV0MCorrVsNch);
 
   
   	
@@ -1100,7 +1167,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
     fPi0EtaSpectra->SetBinEdges(2,binLimg);
     fPi0EtaSpectra->SetBinEdges(3,binLimtype);
     fPi0EtaSpectra->Sumw2();
-    fOutputList->Add(fPi0EtaSpectra);
+    //fOutputList->Add(fPi0EtaSpectra);
   
   
   
@@ -1110,7 +1177,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   Double_t binup[3] = {10, 3, 6.};
 	fPi0EtaSpectraSp = new THnSparseF("fPi0EtaSpectraSp", "fPi0EtaSpectraSp;pt;source;type", 3, nbinspt, binlow,binup);
 	fPi0EtaSpectraSp->Sumw2();
-   fOutputList->Add(fPi0EtaSpectraSp);
+   //fOutputList->Add(fPi0EtaSpectraSp);
    
  //===================================================================================================//
  
@@ -1217,6 +1284,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 	
 	fNentries->Fill(2);
 	
+	
 	Bool_t isPileupfromSPDmulbins=fAOD->IsPileupFromSPDInMultBins(); //This function checks if there was a pile up reconstructed with SPD
 	
 	if(isPileupfromSPDmulbins) return;
@@ -1235,8 +1303,8 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 	
 	if(isPileupFromMV) return;
 	fNentries->Fill(3);
-/*
-	//For Pb-Pb ---------------
+
+/*	//For Pb-Pb ---------------
    ///Correlation cuts between vertexes:
 	AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
 	if (pVtx->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
@@ -1252,10 +1320,30 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 	fNentries->Fill(3);
 	///Number of events rejected by the correlation cuts between SPD and track vertexes
 	///Track vertex cut:
-*/		
+	*/
+	  
+  
 	if(TMath::Abs(Zvertex)>10){return;} 
 	fNentries->Fill(4);
   
+  
+   /*//====DhananJaya's Code
+   const AliVVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
+   fVtxZ->Fill(spdVtx->GetZ());
+    if (!spdVtx || spdVtx->GetNContributors()<=0) return;
+    Float_t zvtx = spdVtx->GetZ();
+    Double_t Zvertex= spdVtx->GetZ();
+    if (spdVtx->GetNContributors()<=0) return;
+    Double_t cov[6]={0};
+    spdVtx->GetCovarianceMatrix(cov);
+    Double_t zRes = TMath::Sqrt(cov[5]);
+
+    if (zRes>0.25) return;
+    //if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
+    //if (TMath::Abs(zvtx) > 10) return;
+    if (TMath::Abs(spdVtx->GetZ()) > 10) return;
+*/
+
 	fVtxZ_corr->Fill(Zvertex);
 	
 	Int_t runNumber = fAOD->GetRunNumber();
@@ -1285,21 +1373,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 	}
 
 	
-	AliMultSelection *fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
-	//if(!fMultSelection-> IsEventSelected()){return;}
-	if(!fMultSelection) 
-	{
-		//If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-		AliWarning("AliMultSelection object not found!");
-	}
-	else{
-		fMultiPercentile = fMultSelection->GetMultiplicityPercentile("V0M", false); //or use "SPDTracklets" V0M, i used CL0 also
-		fMultiPercentileSPD = fMultSelection->GetMultiplicityPercentile("SPDTracklets", false);
-	}
-
-	fCent->Fill(fMultiPercentile); //centrality dist.
-	fCentSPD->Fill(fMultiPercentileSPD);
-
+	
 	fpidResponse = fInputHandler->GetPIDResponse();
 	if(!fpidResponse)
 	{
@@ -1308,7 +1382,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 		fPID->SetPIDResponse(fpidResponse);
 	}
 	fPID->SetPIDResponse(fpidResponse);
-	
+	/*
 	//===============V0 Multiplicity===========================
 	AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(fAOD)->GetVZEROData());
 	Int_t V0AMult = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
@@ -1316,19 +1390,17 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 	fV0AMult->Fill(V0AMult);
 	fV0CMult->Fill(V0CMult);
 	Int_t V0Mult=V0AMult+V0CMult;
-  
-	fV0Mult->Fill(V0Mult);
-	fV0MultVsZvtx->Fill(Zvertex,V0Mult);
+
+
 	//V0M Correction
   Int_t V0AMultCorr=V0AMult, V0CMultCorr=V0CMult, V0MultCorr=V0Mult;
   V0AMultCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(V0AMult,Zvertex));
   V0CMultCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0C(V0CMult,Zvertex));
  	 V0MultCorr = V0AMultCorr + V0CMultCorr;
 
- 	fV0MultCorr->Fill(V0MultCorr);
- 	fV0MultCorrVsZvtx->Fill(Zvertex,V0MultCorr);
 	Double_t V0Mmult = V0MultCorr;
- 
+ */
+ Double_t V0Mmult=1;
 	//===============SPD Tracklet==============================
 	Int_t nAcceta=0.;
 	AliAODTracklets *tracklets = ((AliAODEvent*)fAOD)->GetTracklets();
@@ -1339,7 +1411,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 		Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
 		if (TMath::Abs(eta) < 1.) nAcceta++;
 	}
-	fSPD_tracklet_NoEtaCut->Fill(nTracklets); 
+
 	fSPD_tracklet->Fill(nAcceta);
  	
 
@@ -1352,25 +1424,28 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
   
   TProfile* estimatorAvg = GetEstimatorHistogram(fAOD);
   if(estimatorAvg){
-       counteta1Corr_min=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcceta,Zvertex,fRefMult1_min));
-	     N_corr_tr_eta1=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcceta,Zvertex,fRefMult)); //48.75 fRefMult
+       counteta1Corr_min=static_cast<Int_t>(GetCorrectedNtracklets(estimatorAvg,nAcceta,Zvertex,fRefMult1_min));
+	     N_corr_tr_eta1=static_cast<Int_t>(GetCorrectedNtracklets(estimatorAvg,nAcceta,Zvertex,fRefMult)); //48.75 fRefMult
   } 
   
 	
 	
   Double_t SPDntr = N_corr_tr_eta1;
+  
+ 
+  
 
   fSPDCorrMultDist_min->Fill(counteta1Corr_min);
   fSPDCorrMultDist_max->Fill(SPDntr);
   	
   fHistNtrVsZvtx->Fill(Zvertex,nAcceta);
+  Profile_Mean->Fill(Zvertex,nAcceta);
   fHistNtrCorrVsZvtx_min->Fill(Zvertex,counteta1Corr_min);
   fHistNtrCorrVsZvtx_max->Fill(Zvertex,SPDntr);
-  	
- 	fMultV0M_vs_alimult->Fill(fMultiPercentile,V0Mmult);
-	fMultSPD_vs_alimult->Fill(fMultiPercentileSPD,SPDntr);
-	
-	
+  Profile_MeanCorr->Fill(Zvertex,SPDntr);
+  
+   
+		
 	
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////========================================MC LOOP===================================================/////
@@ -1391,15 +1466,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 
 			fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
 			pdg = fMCparticle->GetPdgCode();
-			
-			if(TMath::Abs(pdg) == 11){
-				Int_t IsElecHf=GetHFE(fMCparticle,fMCarray);
-				if((IsElecHf==kBeauty) || (IsElecHf==kCharm)){
-			 		fPtHFEMCtot->Fill(fMCparticle->Pt());
-			 		fPtHFEMCtot_SPD->Fill(fMCparticle->Pt(),SPDntr);
-					fPtHFEMCtot_V0M->Fill(fMCparticle->Pt(),V0Mmult);
-			 	}
-			}
+
 			///For the reconstruction efficiency of HFE:-----------
 			if(TMath::Abs(fMCparticle->Eta()) <=fEtarange  )
 			{					
@@ -1409,13 +1476,15 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 					if((IsElecHf==kBeauty) || (IsElecHf==kCharm)){
 						fPtHFEMC->Fill(fMCparticle->Pt());
 						fPtHFEMC_SPD->Fill(fMCparticle->Pt(),SPDntr);
-						fPtHFEMC_V0M->Fill(fMCparticle->Pt(),V0Mmult);
+					
 					}
 				}
 			} //eta <0.8 condition
 			
 			//pt spectra for pi0 and eta
-			if(TMath::Abs(fMCparticle->Y()>0.5 )) continue;
+			//if(TMath::Abs(fMCparticle->Y())>0.5 ) continue;
+			if(fMCparticle->Y()<-0.8 || fMCparticle->Y()>0.8) continue;
+				
 			
 			if (TMath::Abs(fMCparticle->GetPdgCode())==111) pi0MC->Fill(fMCparticle->Pt());  // pdg=111 pi0
 			if (TMath::Abs(fMCparticle->GetPdgCode())==221) etaMC->Fill(fMCparticle->Pt());  // pdg=221 eta	
@@ -1443,17 +1512,11 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 				qaweights[3]=type;
 				pi0etaweights[2]=type;
 					
-				// Fill
-				if(qaweights[1]>0.) fPi0EtaSpectra->Fill(qaweights);
-				if(pi0etaweights[1]>0.) fPi0EtaSpectraSp->Fill(pi0etaweights);
+				//- Fill
+				//if(qaweights[1]>0.) fPi0EtaSpectra->Fill(qaweights);
+				//if(pi0etaweights[1]>0.) fPi0EtaSpectraSp->Fill(pi0etaweights);
 				
-				if(type==kNoFeedDown)
-				{
-						if (TMath::Abs(fMCparticle->GetPdgCode())==111) pi0MC_1->Fill(fMCparticle->Pt());  // pdg=111 pi0
-						if (TMath::Abs(fMCparticle->GetPdgCode())==221) etaMC_1->Fill(fMCparticle->Pt());  // pdg=221 eta	
-						if (TMath::Abs(fMCparticle->GetPdgCode())==22) gammaMC_1->Fill(fMCparticle->Pt());   // pdg=22  gamma
-				
-				}
+			
 				///-----------------------------------------------------
 		
 		       			
@@ -1464,21 +1527,29 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 	}
 
 
-
-	if(fIsMC) 
-	{ 	
-		Int_t nch = GetNcharged();
-
-		Double_t SPDV0MNch[3];
+   if(fIsMC) 
+	{
+		Double_t weigtsMC=1.;
+		Double_t SPDntrnoweights=SPDntr;
+		if(SPDntr>40 && SPDntr<=115) weigtsMC=func_MCnchCorr->Eval(SPDntr);
+		else if (SPDntr<=40) weigtsMC=WeightMCncCorr(SPDntr);
+	 
+	  fSPDWeightedCorrMultDist_max->Fill(SPDntr,weigtsMC);
+	  Int_t nch = GetNcharged();
+		/*Double_t SPDV0MNch[3];
 		SPDV0MNch[0]=SPDntr;
 		SPDV0MNch[1]=V0Mmult;
 		SPDV0MNch[2]=nch;
-
+      */
 		SPDNtrCorrVsNch->Fill(SPDntr,nch);
-		V0MCorrVsNch->Fill(V0Mmult,nch);
-		fSPDNtrCorrVsV0MCorrVsNch->Fill(SPDV0MNch);
+		SPDNtrCorrVsNchweights->Fill(SPDntr,nch,weigtsMC);
+		//fSPDNtrCorrVsV0MCorrVsNch->Fill(SPDV0MNch);
 		fNchVsZvtx->Fill(Zvertex,nch);
 	}
+	
+	
+	
+	Double_t weight_eta=0., weight_pi0=0.;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////======================================TRACK LOOP==================================================/////
 //////==================================================================================================/////
@@ -1486,7 +1557,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 	for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) 
   {
 		AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
-   
+   //cout<<" iTracks "<<iTracks<<endl;
     if(!track) AliFatal("Not a standard AOD");
   		
     Int_t tracktypeTrig=ClassifyTrack(track,pVtx);  //track classify
@@ -1509,21 +1580,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 		}
 		if(!kinkmotherpass) continue;
 		
-		if(fIsMC && track->GetLabel()>=0)
-   	{
-   		fMCparticle=(AliAODMCParticle*)fMCarray->At(track->GetLabel());
-			pdg = fMCparticle->GetPdgCode();
-			if(TMath::Abs(pdg) == 11)
-			{		
-				Int_t IsElecHf=GetHFE(fMCparticle,fMCarray);
-				if((IsElecHf==kBeauty) || (IsElecHf==kCharm)){
-					fPtHFEMC_aftertrackcuts->Fill(track->Pt());
-					fPtHFEMC_aftertrackcuts_SPD->Fill(track->Pt(),SPDntr);
-					fPtHFEMC_aftertrackcuts_V0M->Fill(track->Pt(),V0Mmult);
-				}
-			}
-   	}
-   	
+	
 		num++;
     	
 		Double_t pt=0., p=0., eta=-999, dEdx_TPC=-999., Signal_TOF=-999., TOFbeta=-999., fTPCnSigma=-999.0, fTOFnSigma=-999.0;    
@@ -1558,39 +1615,55 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 		fnSigmaVsPt_TPC->Fill(pt,fTPCnSigma);
 		fnSigmaVsPt_TOF->Fill(pt,fTOFnSigma);
 		fnBetaVsPt_TOF->Fill(pt,TOFbeta);
-		  
+
+		if(fIsMC && track->GetLabel()>=0)
+     	{		
+			fMCparticle=(AliAODMCParticle*)fMCarray->At(track->GetLabel());
+			pdg = fMCparticle->GetPdgCode();
+			if(TMath::Abs(pdg) == 11)
+			{													
+     			Int_t IsElecHf=GetHFE(fMCparticle,fMCarray);
+				if((IsElecHf==kBeauty) || (IsElecHf==kCharm))
+				{
+					fPtHFEMC_aftertrackcut->Fill(pt);
+					fPtHFEMC_aftertrackcut_SPD->Fill(pt,SPDntr);
+					
+			
+					if(TMath::Abs(fTOFnSigma) < fTOFnsig){
+						fPtHFEMC_aftertofcut->Fill(pt);
+						fPtHFEMC_aftertofcut_SPD->Fill(pt,SPDntr);
+					}
+					if(fTPCnSigma>fTPCnsigmin && fTPCnSigma<fTPCnsigmax) {
+						fPtHFEMC_aftertpcnsigcut->Fill(pt);
+						fPtHFEMC_aftertpcnsigcut_SPD->Fill(pt,SPDntr);
+					}
+					if(TMath::Abs(fTOFnSigma) < fTOFnsig){
+						if(fTPCnSigma>fTPCnsigmin && fTPCnSigma<fTPCnsigmax) {
+							fPtHFEMC_aftertoftpcnsigcut->Fill(pt);
+							fPtHFEMC_aftertoftpcnsigcut_SPD->Fill(pt,SPDntr);
+						}
+					}
+				}
+			}	
+		}
+
+
 		if(TMath::Abs(fTOFnSigma) < fTOFnsig) 
 		{
 			fdEdxVsP_TPC_cut->Fill(p,dEdx_TPC);
 			fnSigmaVsP_TPC_cut->Fill(p,fTPCnSigma);
+			fnSigmaVsPt_TPC_cut->Fill(pt,fTPCnSigma);
 			fnSigmaVsEta_TPC_cut->Fill(eta,fTPCnSigma);
        			
 			Double_t TPCnsigmult[4];
     	  		TPCnsigmult[0]=p;
 		    	TPCnsigmult[1]=fTPCnSigma;
         		TPCnsigmult[2]=SPDntr;
-        		TPCnsigmult[3]=V0Mmult;
-			fnSigmaVsP_TPC_cut_mult->Fill(TPCnsigmult);
+        		//TPCnsigmult[3]=V0Mmult;
+			//fnSigmaVsP_TPC_cut_mult->Fill(TPCnsigmult);
 
-			//fnSigmaVsP_TPC_cut_multV0M->Fill(p,fTPCnSigma,V0Mmult);
-			//fnSigmaVsP_TPC_cut_multSPD->Fill(p,fTPCnSigma,SPDntr);
-       	
-      if(fIsMC && track->GetLabel()>=0)
-   		{
-   			fMCparticle=(AliAODMCParticle*)fMCarray->At(track->GetLabel());
-				pdg = fMCparticle->GetPdgCode();
-				if(TMath::Abs(pdg) == 11)
-				{		
-					Int_t IsElecHf=GetHFE(fMCparticle,fMCarray);
-					if((IsElecHf==kBeauty) || (IsElecHf==kCharm)){
-					fPtHFEMC_aftertracktofcuts->Fill(pt);
-					fPtHFEMC_aftertracktofcuts_SPD->Fill(pt,SPDntr);
-					fPtHFEMC_aftertracktofcuts_V0M->Fill(pt,V0Mmult);
-					}
-				}
-   		}
-       	
-       		
+	       	
+	
 			weight_lan=fLandau->Eval(p);
 			weight_err=fErr->Eval(p);
 			weight_lan_inv=1-weight_lan;
@@ -1598,23 +1671,17 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
        		       		
 			if(fTPCnSigma>fTPCnsigmin && fTPCnSigma<fTPCnsigmax) 
 			{ 		
-				fHadCot_Landau->Fill(pt,weight_lan);
+				//fHadCot_Landau->Fill(pt,weight_lan);
 				fHadCot_Err->Fill(pt,weight_err);
-				fPt_incl_e_Landau->Fill(pt,weight_lan_inv);
+				//fPt_incl_e_Landau->Fill(pt,weight_lan_inv);
 				fPt_incl_e_Err->Fill(pt,weight_err_inv);
   						
 				//---------Multiplicity----------------------
-				fPteV0M_Lan->Fill(pt,V0Mmult,weight_lan_inv);
-				fPteSPD_Lan->Fill(pt,SPDntr,weight_lan_inv);
-				fPteV0M_Err->Fill(pt,V0Mmult,weight_err_inv);
+			
+				//fPteSPD_Lan->Fill(pt,SPDntr,weight_lan_inv);
 				fPteSPD_Err->Fill(pt,SPDntr,weight_err_inv);
-  				
-				fPteV0M->Fill(pt,V0Mmult);
 				fPteSPD->Fill(pt,SPDntr);
-  				
-				fHadV0MLan->Fill(pt,V0Mmult,weight_lan);
-				fHadSPDLan->Fill(pt,SPDntr,weight_lan);
-				fHadV0MErr->Fill(pt,V0Mmult,weight_err);
+				//fHadSPDLan->Fill(pt,SPDntr,weight_lan);
  				fHadSPDErr->Fill(pt,SPDntr,weight_err);	
   				
 			
@@ -1629,8 +1696,31 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 				//fNonHFE->SetDCACut(fDCAcut);
 				//fNonHFE-> SetDCAPartnerCuts(1,2);   //SetDCAPartnerCuts(Double_t xy, Double_t z)
 				fNonHFE->SetAdditionalCuts(fAssopTMin,fAssoTPCCluster);  //
+				/*fNonHFE->SetHistMassBack(fInvmassLS1);
+				fNonHFE->SetHistMass(fInvmassULS1);
+					if(pt>=0.5 && pt<4.5){
 				fNonHFE->SetHistMassBack(fInvmassLS1);
 				fNonHFE->SetHistMass(fInvmassULS1);
+				}*/
+				if(pt>=0.5 && pt<1.5){
+				  
+				fNonHFE->SetHistMassBack(fInvmassLS1);
+				fNonHFE->SetHistMass(fInvmassULS1);
+				}
+				/*
+				else if(pt>=1.5 && pt<2.5){
+			
+				fNonHFE->SetHistMassBack(fInvmassLS1_2);
+				fNonHFE->SetHistMass(fInvmassULS1_2);
+				}
+				else if(pt>=2.5 && pt<3.5){
+				fNonHFE->SetHistMassBack(fInvmassLS1_3);
+				fNonHFE->SetHistMass(fInvmassULS1_3);
+				}
+				else if(pt>=3.5 && pt<4.5){
+				fNonHFE->SetHistMassBack(fInvmassLS1_4);
+				fNonHFE->SetHistMass(fInvmassULS1_4);
+				}*/
 				fNonHFE->FindNonHFE(iTracks,track,fAOD);
 			
 				Int_t fNULS = fNonHFE->GetNULS();
@@ -1639,28 +1729,26 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 				if(fNonHFE->IsULS())
 				{
 					fPte_ULS->Fill(track->Pt(),fNULS);
-					fPte_ULS_multV0M->Fill(track->Pt(),V0Mmult,fNULS);
 					fPte_ULS_multSPD->Fill(track->Pt(),SPDntr,fNULS);
 				}
 				if(fNonHFE->IsLS())
 				{
 					fPte_LS->Fill(track->Pt(),fNLS);
-					fPte_LS_multV0M->Fill(track->Pt(),V0Mmult,fNLS);
 					fPte_LS_multSPD->Fill(track->Pt(),SPDntr,fNLS);
 				}
   
 				if(fIsMC && track->GetLabel()>=0)
-   			{
+   				{
 				
 					fElecNos->Fill(0);   						
 					fMCparticle=(AliAODMCParticle*)fMCarray->At(track->GetLabel());
 					pdg = fMCparticle->GetPdgCode();
 					Float_t ptMC= fMCparticle->Pt();
-					fPT_elec_MCtrue->Fill(ptMC);
+					//fPT_elec_MCtrue->Fill(ptMC);
 					
 					if(TMath::Abs(pdg)!=11) continue ;      //Is electron:
 					
-					fpt_incl_elec_MC->Fill(pt);
+					//fpt_incl_elec_MC->Fill(pt);
 					fElecNos->Fill(1);
 								
 					Int_t fMCmotherindex=fMCparticle->GetMother(); //Getting Electron Mother
@@ -1673,9 +1761,6 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 					if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 22 || TMath::Abs(pdg_mother) == 221)
 					{
 						fElecNos->Fill(2);
-						fPt_elec_phot->Fill(pt);
-						fPt_elec_phot_multSPD->Fill(pt,SPDntr);
-						fPt_elec_phot_multV0M->Fill(pt,V0Mmult);
 							
 						if(TMath::Abs(pdg_mother) == 111) fPi0_Pt_MC->Fill(fMCmother->Pt());
 						if(TMath::Abs(pdg_mother) == 221) fEta_Pt_MC->Fill(fMCmother->Pt());
@@ -1688,10 +1773,8 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 						{						
 							fPt_elec_phot1->Fill(pt);
 							fPt_elec_phot1_multSPD->Fill(pt,SPDntr);
-							fPt_elec_phot1_multV0M->Fill(pt,V0Mmult);
 												
-											
-							SelectPhotonicElectronR(iTracks, track, fMCmotherindex, pdg,elec_source, V0Mmult, SPDntr);
+							SelectPhotonicElectronR(iTracks, track, fMCmotherindex, pdg,elec_source, V0Mmult, SPDntr,ptmotherw);
 		
 						  fNonHFE->FindNonHFE(iTracks,track,fAOD);
 						  		
@@ -1702,42 +1785,124 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 						  if(fNonHFE->IsULS())
 						  {
 								fPte_ULS_MC->Fill(track->Pt(),fNULS_MC);
-								fPte_ULS_MC_multV0M->Fill(track->Pt(),V0Mmult,fNULS_MC);
-								fPte_ULS_MC_multSPD->Fill(track->Pt(),SPDntr,fNULS_MC);
+										fPte_ULS_MC_multSPD->Fill(track->Pt(),SPDntr,fNULS_MC);
 							}
 
 						  if(fNonHFE->IsLS())
 						  {
 								fPte_LS_MC->Fill(track->Pt(),fNLS_MC);
-								fPte_LS_MC_multV0M->Fill(track->Pt(),V0Mmult,fNLS_MC);
-								fPte_LS_MC_multSPD->Fill(track->Pt(),SPDntr,fNLS_MC);
+											fPte_LS_MC_multSPD->Fill(track->Pt(),SPDntr,fNLS_MC);
 							} 
 							
-							if((elec_source==kPi0NoFeedDown)){
-								fPt_elec_pi0_MB->Fill(pt);  
+						  if((elec_source==kPi0NoFeedDown)){
+								/*fPt_elec_pi0_MB->Fill(pt);  
 								if(fNonHFE->IsULS()) fPt_elec_pi0_MB_ULS->Fill(pt,fNULS_MC);
 								if(fNonHFE->IsLS()) fPt_elec_pi0_MB_LS->Fill(pt,fNLS_MC);
+								*/
+								
+								weight_pi0=0;
+								if(ptmotherw >= 0.5 && ptmotherw <= 2.5) weight_pi0 = f0a->Eval(ptmotherw);
+								if(ptmotherw >2.5 && ptmotherw < 15) weight_pi0 = f0b->Eval(ptmotherw);
+								
+								/*fPt_elec_from_pi02->Fill(pt,weight_pi0);
+								if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_pi02->Fill(pt,fNonHFE->GetNULS()*weight_pi0);
+								if(fNonHFE->IsLS()) fPtElec_LS_MC_from_pi02->Fill(pt,fNonHFE->GetNLS()*weight_pi0);
+								*/
+								fPt_elec_phot2->Fill(pt,weight_pi0);
+								fPt_elec_phot2_multSPD->Fill(pt,SPDntr,weight_pi0);
+						
+							  
+								if(fNonHFE->IsULS()){ fPtElec_ULS_MC2->Fill(pt,fNonHFE->GetNULS()*weight_pi0);
+								   fPtElec_ULS_MC2_multSPD->Fill(pt,SPDntr,fNonHFE->GetNULS()*weight_pi0);
+								}
+								if(fNonHFE->IsLS()){ fPtElec_LS_MC2->Fill(pt,fNonHFE->GetNLS()*weight_pi0);
+								  fPtElec_LS_MC2_multSPD->Fill(pt,SPDntr,fNonHFE->GetNLS()*weight_pi0);
+								}
+								
 							}
 							if((elec_source==kEtaNoFeedDown)){
-								fPt_elec_eta_MB->Fill(pt);  
+								/*fPt_elec_eta_MB->Fill(pt);  
 								if(fNonHFE->IsULS()) fPt_elec_eta_MB_ULS->Fill(pt,fNULS_MC);
 								if(fNonHFE->IsLS()) fPt_elec_eta_MB_LS->Fill(pt,fNLS_MC);
+								*/
+								weight_eta=0;
+								if(ptmotherw >= 0.5 && ptmotherw < 2.3) weight_eta = f1->Eval(ptmotherw);
+								if(ptmotherw >= 2.3 && ptmotherw < 4.1) weight_eta = f1a->Eval(ptmotherw);
+								if(ptmotherw >= 4.1 && ptmotherw < 15) weight_eta = f1b->Eval(ptmotherw);
+								
+								/*fPt_elec_from_eta2->Fill(pt,weight_eta);
+								if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_eta2->Fill(pt,fNonHFE->GetNULS()*weight_eta);
+								if(fNonHFE->IsLS()) fPtElec_LS_MC_from_eta2->Fill(pt,fNonHFE->GetNLS()*weight_eta);
+								*/
+								fPt_elec_phot2->Fill(pt,weight_eta);
+								fPt_elec_phot2_multSPD->Fill(pt,SPDntr,weight_eta);
+							
+							    
+								if(fNonHFE->IsULS()){ fPtElec_ULS_MC2->Fill(pt,fNonHFE->GetNULS()*weight_eta);
+								   fPtElec_ULS_MC2_multSPD->Fill(pt,SPDntr,fNonHFE->GetNULS()*weight_eta);
+								}
+								if(fNonHFE->IsLS()){ fPtElec_LS_MC2->Fill(pt,fNonHFE->GetNLS()*weight_eta);
+								  fPtElec_LS_MC2_multSPD->Fill(pt,SPDntr,fNonHFE->GetNLS()*weight_eta);
+								}
+								
 							}
-							if((elec_source==kGPi0NoFeedDown)||(elec_source==kGEtaNoFeedDown)){
-								fPt_elec_gamma_MB->Fill(pt);  
+							if((elec_source==kGPi0NoFeedDown)){
+								/*fPt_elec_gamma_MB->Fill(pt);  
 								if(fNonHFE->IsULS()) fPt_elec_gamma_MB_ULS->Fill(pt,fNULS_MC);
 								if(fNonHFE->IsLS()) fPt_elec_gamma_MB_LS->Fill(pt,fNLS_MC);
+								*/
+								weight_pi0=0;
+								if(ptmotherw >= 0.5 && ptmotherw <= 2.5) weight_pi0 = f0a->Eval(ptmotherw);
+								if(ptmotherw >2.5 && ptmotherw < 15) weight_pi0 = f0b->Eval(ptmotherw);
+								
+								/*fPt_elec_from_gamma2->Fill(pt,weight_pi0);
+								if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_gamma2->Fill(pt,fNonHFE->GetNULS()*weight_pi0);
+								if(fNonHFE->IsLS()) fPtElec_LS_MC_from_gamma2->Fill(pt,fNonHFE->GetNLS()*weight_pi0);
+								*/
+								fPt_elec_phot2->Fill(pt,weight_pi0); 
+								fPt_elec_phot2_multSPD->Fill(pt,SPDntr,weight_pi0);
+							
+								if(fNonHFE->IsULS()){ fPtElec_ULS_MC2->Fill(pt,fNonHFE->GetNULS()*weight_pi0);
+								   fPtElec_ULS_MC2_multSPD->Fill(pt,SPDntr,fNonHFE->GetNULS()*weight_pi0);
+								}
+								if(fNonHFE->IsLS()){ fPtElec_LS_MC2->Fill(pt,fNonHFE->GetNLS()*weight_pi0);
+								  fPtElec_LS_MC2_multSPD->Fill(pt,SPDntr,fNonHFE->GetNLS()*weight_pi0);
+								}
+							}
+							if((elec_source==kGEtaNoFeedDown)){
+								/*fPt_elec_gamma_MB->Fill(pt);  
+								if(fNonHFE->IsULS()) fPt_elec_gamma_MB_ULS->Fill(pt,fNULS_MC);
+								if(fNonHFE->IsLS()) fPt_elec_gamma_MB_LS->Fill(pt,fNLS_MC);
+								*/
+								weight_eta=0;
+								if(ptmotherw >= 0.5 && ptmotherw < 2.3) weight_eta = f1->Eval(ptmotherw);
+								if(ptmotherw >= 2.3 && ptmotherw < 4.1) weight_eta = f1a->Eval(ptmotherw);
+								if(ptmotherw >= 4.1 && ptmotherw < 15) weight_eta = f1b->Eval(ptmotherw);
+								/*fPt_elec_from_gamma2->Fill(pt,weight_eta);
+								if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_gamma2->Fill(pt,fNonHFE->GetNULS()*weight_eta);
+								if(fNonHFE->IsLS()) fPtElec_LS_MC_from_gamma2->Fill(pt,fNonHFE->GetNLS()*weight_eta);
+								*/
+								fPt_elec_phot2->Fill(pt,weight_eta);
+								fPt_elec_phot2_multSPD->Fill(pt,SPDntr,weight_eta);
+						
+							    
+								if(fNonHFE->IsULS()){ fPtElec_ULS_MC2->Fill(pt,fNonHFE->GetNULS()*weight_eta);
+								   fPtElec_ULS_MC2_multSPD->Fill(pt,SPDntr,fNonHFE->GetNULS()*weight_eta);
+								}
+								if(fNonHFE->IsLS()){ fPtElec_LS_MC2->Fill(pt,fNonHFE->GetNLS()*weight_eta);
+								  fPtElec_LS_MC2_multSPD->Fill(pt,SPDntr,fNonHFE->GetNLS()*weight_eta);
+								}  
 							}	
 						}			
 					}	
-					else fpt_e_nonphot_MC->Fill(track->Pt());	
+				//	else fpt_e_nonphot_MC->Fill(track->Pt());	
 							
 					Int_t IsElecHf=GetHFE(fMCparticle,fMCarray);
 					if((IsElecHf==kBeauty) || (IsElecHf==kCharm))
 					{
 						fPtHFEMC_reco->Fill(pt);
 						fPtHFEMC_reco_SPD->Fill(pt,SPDntr);
-						fPtHFEMC_reco_V0M->Fill(pt,V0Mmult);
+						
 					}		
 				} //------------fIsMC Loop------------------
 			}	//------------TPC n sigma Cut (-1,3)--------
@@ -1753,7 +1918,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 
 //_________________________________________
 
-void AliAnalysisTaskHFEmultTPCTOF::SelectPhotonicElectronR(Int_t itrack, AliAODTrack *track, Int_t motherindex, Int_t pdg1, Int_t source,Double_t V0Mmult1 , Double_t SPDntr1)
+void AliAnalysisTaskHFEmultTPCTOF::SelectPhotonicElectronR(Int_t itrack, AliAODTrack *track, Int_t motherindex, Int_t pdg1, Int_t source,Double_t V0Mmult1 , Double_t SPDntr1,Double_t ptmotherwg)
 {
  
     // load MC array
@@ -1839,26 +2004,93 @@ void AliAnalysisTaskHFEmultTPCTOF::SelectPhotonicElectronR(Int_t itrack, AliAODT
         // Mother associated track
         
         Double_t invms[5];
-    	invms[0]=track->Pt();
-	invms[1]=source;
+    	  invms[0]=track->Pt();
+	     invms[1]=source;
         invms[2]=mass;
         invms[3]=SPDntr1;
-	invms[4]=V0Mmult1;
+	    // invms[4]=V0Mmult1;
         
+							
         if(fFlagULS){
         	fInvMULS->Fill(track->Pt(),mass);
         	//fInvMULS_multV0M->Fill(track->Pt(),mass,V0Mmult1);
         	//fInvMULS_multSPD->Fill(track->Pt(),mass,SPDntr1);
         	
         	fInvMULSnSp->Fill(invms);
-			if(source==kPi0NoFeedDown)fInvMULSpi0->Fill(track->Pt(),mass);
+			/*if(source==kPi0NoFeedDown)fInvMULSpi0->Fill(track->Pt(),mass);
 			if(source==kEtaNoFeedDown)fInvMULSeta->Fill(track->Pt(),mass);
-			if((source==kGPi0NoFeedDown)||(source==kGEtaNoFeedDown))fInvMULSgamma->Fill(track->Pt(),mass);
+			if((source==kGPi0NoFeedDown)||(source==kGEtaNoFeedDown))fInvMULSgamma->Fill(track->Pt(),mass);*/
 		}
+		
+		  Double_t weight_pe=0.;//,weight_eta=0.;
+		  if(  (source==kPi0NoFeedDown)  || (source==kGPi0NoFeedDown) )
+		  {
+		  		if(ptmotherwg >= 0.5 && ptmotherwg <= 2.5) weight_pe = f0a->Eval(ptmotherwg);
+				if(ptmotherwg >2.5 && ptmotherwg < 15) weight_pe = f0b->Eval(ptmotherwg);
+		  }					
+		  if((source==kEtaNoFeedDown)  || (source==kGEtaNoFeedDown)  )
+		  {      
+				  if(ptmotherwg >= 0.5 && ptmotherwg < 2.3) weight_pe = f1->Eval(ptmotherwg);
+				  if(ptmotherwg >= 2.3 && ptmotherwg < 4.1) weight_pe= f1a->Eval(ptmotherwg);
+				  if(ptmotherwg >= 4.1 && ptmotherwg < 15) weight_pe = f1b->Eval(ptmotherwg);
+		 }
+		   if(fFlagULS){
+        	fInvMULSnSpwg->Fill(invms,weight_pe);
+        	}
 	}
 }
 
+Double_t AliAnalysisTaskHFEmultTPCTOF::WeightMCncCorr(Int_t multSPDtr)
+{
+Double_t  MCnchweight=1.;
+if(multSPDtr==0) MCnchweight= 1.81234;
+else if(multSPDtr==1) MCnchweight= 1.13862;
+else if(multSPDtr==2) MCnchweight= 0.979267;
+else if(multSPDtr==3) MCnchweight= 0.901707;
+else if(multSPDtr==4) MCnchweight= 0.878856;
+else if(multSPDtr==5) MCnchweight= 0.889499;
+else if(multSPDtr==6) MCnchweight= 0.918609;
+else if(multSPDtr==7) MCnchweight= 0.953161;
+else if(multSPDtr==8) MCnchweight= 0.981919;
+else if(multSPDtr==9) MCnchweight= 1.008;
+else if(multSPDtr==10) MCnchweight= 1.02534;
+else if(multSPDtr==11) MCnchweight= 1.04052;
+else if(multSPDtr==12) MCnchweight= 1.05301;
+else if(multSPDtr==13) MCnchweight= 1.05925;
+else if(multSPDtr==14) MCnchweight= 1.06661;
+else if(multSPDtr==15) MCnchweight= 1.06843;
+else if(multSPDtr==16) MCnchweight= 1.06544;
+else if(multSPDtr==17) MCnchweight= 1.06622;
+else if(multSPDtr==18) MCnchweight= 1.06464;
+else if(multSPDtr==19) MCnchweight= 1.05136;
+else if(multSPDtr==20) MCnchweight= 1.04541;
+else if(multSPDtr==21) MCnchweight= 1.03675;
+else if(multSPDtr==22) MCnchweight= 1.02735;
+else if(multSPDtr==23) MCnchweight= 1.01762;
+else if(multSPDtr==24) MCnchweight= 1.00628;
+else if(multSPDtr==25) MCnchweight= 0.998685;
+else if(multSPDtr==26) MCnchweight= 0.989993;
+else if(multSPDtr==27) MCnchweight= 0.973123;
+else if(multSPDtr==28) MCnchweight= 0.973184;
+else if(multSPDtr==29) MCnchweight= 0.96248;
+else if(multSPDtr==30) MCnchweight= 0.950655;
+else if(multSPDtr==31) MCnchweight= 0.944755;
+else if(multSPDtr==32) MCnchweight= 0.932536;
+else if(multSPDtr==33) MCnchweight= 0.928509;
+else if(multSPDtr==34) MCnchweight= 0.925921;
+else if(multSPDtr==35) MCnchweight= 0.923119;
+else if(multSPDtr==36) MCnchweight= 0.921073;
+else if(multSPDtr==37) MCnchweight= 0.916071;
+else if(multSPDtr==38) MCnchweight= 0.928057;
+else if(multSPDtr==39) MCnchweight= 0.916297;
+else if(multSPDtr==40) MCnchweight= 0.921829;
+else if(multSPDtr==41) MCnchweight= 0.940199;
 
+return MCnchweight;
+
+
+
+}
 //=================================================================================================================================
 Int_t AliAnalysisTaskHFEmultTPCTOF::ClassifyTrack(AliAODTrack* track,const AliVVertex* pVtx)
 {  
@@ -1992,7 +2224,7 @@ Int_t AliAnalysisTaskHFEmultTPCTOF::GetPi0EtaType(AliAODMCParticle *pi0eta, TClo
 Int_t AliAnalysisTaskHFEmultTPCTOF::GetHFE(AliAODMCParticle *electron, TClonesArray *mcArray)
 {
 	Int_t motherindex=electron->GetMother(); //Getting Electron Mother
-	if(motherindex<0) kNoMother;
+	if(motherindex<0) return kNoMother;
 	AliAODMCParticle *mother = (AliAODMCParticle*)mcArray->At(motherindex);					
 	Int_t motherpdg = mother->GetPdgCode();		  
 	if ( (int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty;
@@ -2038,7 +2270,7 @@ TProfile* AliAnalysisTaskHFEmultTPCTOF::GetEstimatorHistogram(const AliAODEvent*
   Int_t period = -1; 
    
         
-  if (runNo>=258919 && runNo<=259888){
+  if (runNo>=258962 && runNo<=259888){
    period = 0;
    if(fIsMC) period = 1;
   } 
@@ -2051,6 +2283,31 @@ TProfile* AliAnalysisTaskHFEmultTPCTOF::GetEstimatorHistogram(const AliAODEvent*
     
   return fMultEstimatorAvg[period];
 }
+Double_t AliAnalysisTaskHFEmultTPCTOF::GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult) {
+  //
+  // Correct the number of accepted tracklets based on a TProfile Hist
+  //
+  //
+
+  if(TMath::Abs(vtxZ)>10.0){
+    //    printf("ERROR: Z vertex out of range for correction of multiplicity\n");
+    return uncorrectedNacc;
+  }
+
+  if(!estimatorAvg){
+    printf("ERROR: Missing TProfile for correction of multiplicity\n");
+    return uncorrectedNacc;
+  }
+
+  Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
+
+  Double_t deltaM = uncorrectedNacc*(refMult/localAvg - 1);
+
+  Double_t correctedNacc = uncorrectedNacc + (deltaM>0 ? 1 : -1) * gRandom->Poisson(TMath::Abs(deltaM));
+
+  return correctedNacc;
+}
+
 //===================================================================================
 Double_t AliAnalysisTaskHFEmultTPCTOF::Beta(AliAODTrack *track)
 {

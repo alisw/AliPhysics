@@ -45,6 +45,12 @@ AliAnalysisTaskSigma1385PM* AddTaskSigma1385(
         std::cout << "AliAnalysisTaskSigma1385PM:: HighMultV0 mode "
                   << std::endl;
     }
+    if (foption.Contains("INEL")) {
+        taskSigma1385->fEventCuts.fCentralityFramework = 0;
+        taskSigma1385->fEventCuts.SelectOnlyInelGt0(false);
+        taskSigma1385->SetINEL(kTRUE);  // default: kFALSE
+        std::cout << "AliAnalysisTaskSigma1385PM:: Inelastic mode " << std::endl;
+    }
     if (foption.Contains("Study")) {
         taskSigma1385->SetCutOpen();
         taskSigma1385->SetFillnTuple(true);

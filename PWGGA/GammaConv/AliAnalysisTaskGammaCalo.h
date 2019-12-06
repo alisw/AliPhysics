@@ -12,6 +12,7 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisTaskConvJet.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
 #include "TH3.h"
@@ -152,6 +153,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList*                fMesonCutArray;                                       // List with Meson Cuts
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
+    AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     AliConversionPhotonCuts*  fConversionCuts;                                  // ConversionPhotonCutObject
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
@@ -353,6 +355,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TProfile**            fProfileEtaShift;                                     //! array of profiles with eta shift
     TProfile**            fProfileJetJetXSection;                               //! array of profiles with xsection for jetjet
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
+    TH2F**                fHistoPtHardJJWeight;                                 //! array of histos with ntrials for jetjet
     TH1F**                fHistoEventSphericity;                                //! array of histos with event Sphericity
     TH1F**                fHistoEventSphericityAxis;                            //! array of histos with phi of the event Sphericity axis
     TH2F**                fHistoEventSphericityvsNtracks;                       //! array of histos with event Sphericity vs Ntracks
@@ -552,7 +555,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 72);
+    ClassDef(AliAnalysisTaskGammaCalo, 73);
 };
 
 #endif

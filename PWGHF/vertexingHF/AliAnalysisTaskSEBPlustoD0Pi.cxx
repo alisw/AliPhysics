@@ -1353,7 +1353,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
     for (Int_t i = 1; i < 100; ++i)
     {
       TString integerText = "";
-      integerText += i;
+      integerText += i - 1;
       effectOfCuts->GetXaxis()->SetBinLabel(i + 1, integerText);
     }
     listout->Add(effectOfCuts);
@@ -1367,7 +1367,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
     for (Int_t i = 1; i < 100; ++i)
     {
       TString integerText = "";
-      integerText += i;
+      integerText += i - 1;
       effectOfCutsSignal->GetXaxis()->SetBinLabel(i + 1, integerText);
     }
     listout->Add(effectOfCutsSignal);
@@ -2728,38 +2728,22 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
 
       if (trackBPlusPion->GetID() == idProng0 || trackBPlusPion->GetID() == idProng1) continue;
 
-      UInt_t prongsD0[2];
-      prongsD0[0] = 211;
-      prongsD0[1] = 321;
-
-
-      UInt_t prongsD02[2];
-      prongsD02[1] = 211;
-      prongsD02[0] = 321;
-
-      // D0 window - invariant mass cut
-      Double_t invariantMassD0 = trackD0->InvMass(2, prongsD0);
-      Double_t invariantMassD02 = trackD0->InvMass(2, prongsD02);
-
-      Double_t pdgMassD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-      Double_t massWindowD0 = 0.06; //GeV/c^2   //-----------------------------------------fcuts get mass window --------------------------------------------------------------------------
       Int_t pdgD0 = 421;
+      if (trackBPlusPion->Charge() == 1) pdgD0 = -421;
 
       //we check if the pions have the opposite charge
+      //this only works if pid is turned on
       Bool_t bWrongSign = kFALSE;
       if (trackBPlusPion->Charge() == -1)
       {
         if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 2)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 3))) bWrongSign = kFALSE;
         else if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 3)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 2))) bWrongSign = kTRUE;
         else continue;
-        if (TMath::Abs(invariantMassD0 - pdgMassD0) > massWindowD0) continue;
-
       } else if (trackBPlusPion->Charge() == 1) {
         pdgD0 = -421;
         if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 3)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 2))) bWrongSign = kFALSE;
         else if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 2)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 3))) bWrongSign = kTRUE;
         else continue;
-        if (TMath::Abs(invariantMassD02 - pdgMassD0) > massWindowD0) continue;
       }
 
       //location BPlus pion rotation around PV
@@ -3591,6 +3575,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::FillD0Histograms(AliAODRecoDecayHF2Prong * se
 
   Double_t eKaon = selectedMother->EProng(1, 321);
   Double_t invMassKaon = TMath::Sqrt(eKaon * eKaon - secondDaughter->P() * secondDaughter->P());
+  if (pdgCodeMother == -421) eKaon = selectedMother->EProng(0, 321);
+  if (pdgCodeMother == -421) invMassKaon = TMath::Sqrt(eKaon * eKaon - firstDaughter->P() * firstDaughter->P());
   Double_t invMassD0 = selectedMother->InvMassD0();
   invmassDelta = invMassD0 - invMassKaon;
 

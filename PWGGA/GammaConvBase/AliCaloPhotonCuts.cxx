@@ -5856,11 +5856,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==2) { //13 TeV Low-B PCM-PHOS Exponential function fitted
               energy /= FunctionNL_kSDM(energy, 1.00571, -2.03882, -2.12252);
           }
-          if(fClusterType==4) energy /= FunctionNL_kSDM(energy, 0.966959, -3.53435, -0.505337);
+          if(fClusterType==4){
+              energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
+              energy /= FunctionNL_DExp(energy, 1.0159084018,1.2750123076,-5.3386138658,1.0298030020,0.1990324073,-3.2530714859,1.0000000000,1.0000000000);
+          }
         } else fPeriodNameAvailable = kFALSE;
 
       } else if (isMC == 0){  // Test Beam Non Lin applied on data
-        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow ){
           if(fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
           } else if(fClusterType==2) {
@@ -5945,7 +5948,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.608886);
           if(fClusterType==4){
-            energy /= FunctionNL_kSDM(energy, 0.976068, -3.71153, -0.235854);
+              energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
+              energy /= FunctionNL_kSDM(energy, 1.00014,-4.23453,-0.295388);
           }
         } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.57881);
@@ -5969,7 +5973,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 
         } else fPeriodNameAvailable = kFALSE;
       } else if (isMC == 0){  // Test Beam Non Lin applied on data
-        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow ){
           if(fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
           } else if(fClusterType==2) {
@@ -6182,11 +6186,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else if ( fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB  || fCurrentMC==kPP13T18P1Pyt8LowB){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0496452471, -0.1047424135, -0.2108759639, 1.1740021856, -0.2000000000, -0.1917378883));
           if(fClusterType==2) energy /= (FunctionNL_DPOW(energy, 1.0167588250, 0.0501002307, -0.8336787497, 0.9500009312, 0.0944118922, -0.1043983134));
-          if(fClusterType==4) energy /= (FunctionNL_DExp(energy, 0.9723711900, 0.9001022734, -2.8174607935, 1.0057909166, 0.6891843904, -2.4636790962));
+          if(fClusterType==4){
+              energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
+              energy /= (FunctionNL_DExp(energy, 1.0165527931, 1.1409808600, -5.0616465676, 1.0294887393, 0.2032383394, -3.2609652697));
+          }
         } else fPeriodNameAvailable = kFALSE;
 
       } else if (isMC == 0){  // Test Beam Non Lin applied on data
-        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV  || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow){
           if(fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
           }
@@ -6264,7 +6271,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB  || fCurrentMC==kPP13T18P1Pyt8LowB){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0187401756, -0.0857332791, -0.5000000000, 1.1585209386, -0.1999999989, -0.2646540338));
           if(fClusterType==4){
-            energy /= (FunctionNL_DExp(energy, 0.9647640867, 0.9446253821, -2.2018067056, 0.9883660174, 0.8346902048, -2.0388408673));
+              energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
+              energy /= (FunctionNL_DExp(energy, 1.0081025411, 1.6128870550, -2.2169593027, 1.0059639295, 1.0337987081, -2.4897316300));
           }
 
         } else if ( fCurrentMC==kPP13T17b1JJdecay || fCurrentMC==kPP13T17c1JJdecay){
@@ -6278,7 +6286,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 
         } else fPeriodNameAvailable = kFALSE;
       } else if (isMC == 0){  // Test Beam Non Lin applied on data
-        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV  || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow){
           if(fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
           }
@@ -6331,6 +6339,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
           // if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a || fCurrentMC==kPP8T12P2Pyt8 || fCurrentMC==kPP8T12P2Pho || fCurrentMC==kPP8T12P2JJ) {
             energy /= FunctionNL_kSDM(energy, 0.987534, -3.87469, -0.128085) ;
+
+            if(fCurrentMC==k14j4) energy /= 1.0073711044; // additional finetuning needed prob. due to diff nmb of SM
           // }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
@@ -6418,6 +6428,39 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= (FunctionNL_ExpExp(energy, 0.9872432434, 0.3665071019, -2.8842177373, 7.4181896132)/FunctionNL_ExpExp(energy, 1.0469170329,   0.2974710295, -2.4204052267, 7.2038176960));
             energy /= (FunctionNL_DExp(energy, 1.0361977366, 0.3308840475, -2.4266515809, 1.0396249348, 0.3489018147, -2.3611819266));
           }
+        }
+      }
+      break;
+    case 38:
+      // Testbeam nonlinearity based on leading cell energy
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
+          AliVCaloCells* cells = event->GetEMCALCells();
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC(cells->GetCellAmplitude(FindLargestCellInCluster(cluster,event)));
+          energy /= FunctionNL_kSDM(energy, 0.987534, -3.87469, -0.128085) ;
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data(cells->GetCellAmplitude(FindLargestCellInCluster(cluster,event)));
+        }
+      }
+      break;
+    case 39:
+      // Testbeam nonlinearity based on individual cell energy
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
+        AliVCaloCells* cells = event->GetEMCALCells();
+        const Int_t nCells   = cluster->GetNCells();
+        if(isMC){
+          Float_t tempClsE = 0;
+          for (Int_t iCell = 0;iCell < nCells;iCell++){
+            tempClsE+= cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell])/FunctionNL_OfficialTB_100MeV_MC(cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell]));
+          }
+          energy = tempClsE;
+          energy /= FunctionNL_kSDM(energy, 0.987534, -3.87469, -0.128085) ;
+        } else {
+          Float_t tempClsE = 0;
+          for (Int_t iCell = 0;iCell < nCells;iCell++){
+            tempClsE+= cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell])/FunctionNL_OfficialTB_100MeV_Data(cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell]));
+          }
+          energy = tempClsE;
         }
       }
       break;

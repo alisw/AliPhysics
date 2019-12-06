@@ -20,6 +20,8 @@
 #include <TNtuple.h>
 #include <TTree.h>
 #include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
 #include <THnSparse.h>
 #include <TArrayI.h>
 #include <TClonesArray.h>
@@ -38,11 +40,12 @@ class AliAODTrack;
 class AliPIDResponse;
 class AliAODVertex;
 class AliAODRecoDecayHF3Prong;
+class AliAnalysisVertexingHF;
 
 class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 {
  public:
-  enum ECandStatus {kGenLimAcc=1,kGenAccMother,kGenAcc,kReco=6,kRecoCuts};
+  enum ECandStatus {kGenLimAcc=1,kGenAccMother,kGenAcc,kReco=6,kRecoCuts,kRecoPID,kRecoLc=13,kRecoLcCuts,kRecoLcPID};
 
   AliAnalysisTaskSEXicTopKpi();
   AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFCutsD0toKpi* cuts);
@@ -98,7 +101,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fLowpT_down = down_lowpT;
     fHighpT_down = down_highpT;
   }
-
+  // pT limits for TTree filling
+   void SetpTlimsTTreeFilling(Float_t min, Float_t max){
+     fminpT_treeFill = min;
+     fmaxpT_treeFill = max;
+   }
   // require the calculation of dist12 and dist23
   void SetCalculate_dist12_dist23(Bool_t flag){ fCompute_dist12_dist23 = flag; }
   Short_t SetMapCutsResponse(Int_t massHypo_filtering, Int_t response_onlyCuts, Int_t response_onlyPID);
@@ -159,12 +166,16 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // calculate weight to treat reco true Lc as Xic (mfaggin)
   
-  void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselpKpi=0x0,Bool_t *arrayPIDselpiKpi=0x0,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1,AliAODMCParticle *pSigmaC=0x0);
+  void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselpKpi=0x0,Bool_t *arrayPIDselpiKpi=0x0,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1,AliAODMCParticle *pSigmaC=0x0,Int_t checkorigin=-1);
   void FillArrayVariableSparse(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Double_t *point,Int_t massHypothesis);  
   Double_t Weight_fromLc_toXic(AliAODMCParticle* p, AliAODMCParticle* prong);
   void PrepareTracks(AliAODEvent *aod,TClonesArray *mcArray=0x0);
   Int_t ConvertXicMCinfo(Int_t infoMC);
-
+  AliAODMCParticle* MatchRecoCandtoMC(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
+  AliAODMCParticle* MatchRecoCandtoMCAcc(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
+  void LoopOverGenParticles();
+  void LoopOverFilteredCandidates(TClonesArray *lcArray,AliAODEvent *aod);  
+  AliAnalysisVertexingHF *fvHF;   //!<! temporary object for filling reco cands
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts 
   //AliRDHFCutsLctopKpi *fCutsLc;  // Lc Cuts
   AliRDHFCutsXictopKpi *fCutsXic;  // Xic Cuts
@@ -193,9 +204,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   AliESDtrackCuts *fESDtrackCutsSoftPion;//
   AliAODVertex *fprimVtx;//! pointer to prim. vertex
   TH2F *fhistInvMassCheck;//! hist with generic inv. mass distr (for checks)
-  TH2F *fhistMCSpectrumAccLc;//! hist with MC spectrum of cand in acceptance
-  TH2F *fhistMCSpectrumAccSc;//! hist with MC spectrum of cand in acceptance
-  TH2F *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
+  TH3F *fhistMCSpectrumAccLc;//! hist with MC spectrum of cand in acceptance
+  THnSparseF *fhistMCSpectrumAccLcFromSc;//! hist with MC spectrum of cand in acceptance
+  TH3F *fhistMCSpectrumAccSc;//! hist with MC spectrum of cand in acceptance
+  TH3F *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
   TH2F *fhistMCSpectrumAccCdeuteron;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
   THnSparseF* fhSparseAnalysisSigma;//! sparse for analysis of SigmaC (with deltaM)
@@ -278,9 +290,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Float_t fpT_down;         /// pT value that discriminates between low and high pT for the downsampling 
   Float_t fLowpT_down;      /// downsampling factor at low pT
   Float_t fHighpT_down;     /// downsampling factor at high pT
-
+  // pT limits for TTree filling
+   Float_t fminpT_treeFill;   /// min. pT
+   Float_t fmaxpT_treeFill;   /// max. pT
   Bool_t fCompute_dist12_dist23;  /// flag to require the calculation of dist12 and dist23
-
   Bool_t fExplore_PIDstdCuts; /// flag to switch on the exporation of PID cuts with standard strategy
   Double_t fLcMassWindowForSigmaC; /// lc mass window for used in sigma_C loop
   Double_t fSigmaCDeltaMassWindow; /// mass window for accetping sigma_C candidate
@@ -288,7 +301,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fCheckOnlyTrackEfficiency;// flag for filling only the single-track sparse and return
   Bool_t fIsCdeuteronAnalysis;// flag for doing the c deuteron analysis (inv mass)
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,5); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,7); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

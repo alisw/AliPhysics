@@ -70,6 +70,11 @@ public:
                         fMinMass = minM;
                         fMaxMass = maxM;
                     };
+    void            SetAssoDCACut(Double_t assoXYdca, Double_t assoZdca) {
+        fAssoDCAxy = assoXYdca;
+        fAssoDCAz = assoZdca;
+    };
+    void            SetAssoTPCClus(Int_t nAssoTPCclusters) {fAssoTPCnCls = nAssoTPCclusters;};
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     void            SetTrkMatch(Double_t maxTrkMatch) {fTrkMatch = maxTrkMatch;};
@@ -126,6 +131,9 @@ private:
     Double_t            fDCAzCut;        // set DCA z cut
     Double_t            fMinMass;        // set min inv mass
     Double_t            fMaxMass;        // set max inv mass
+    Double_t            fAssoDCAxy;     //asso track dcaXY cut
+    Double_t            fAssoDCAz;      //asso track dcaZ cut
+    Int_t               fAssoTPCnCls;   //TPC nCls cut for asso track
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
     Double_t            fTrkMatch; //set distance to cluster

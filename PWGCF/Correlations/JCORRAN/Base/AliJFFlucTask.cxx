@@ -206,7 +206,8 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		fFFlucAna->SetEventImpactParameter( fImpactParameter );
 		fFFlucAna->SetEventVertex( fvertex );
 		fFFlucAna->SetEtaRange( fEta_min, fEta_max ) ;
-		fFFlucAna->UserExec(""); // doing some analysis here.
+
+		fFFlucAna->UserExec("");
 
 	} else { // Kine
 		AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -237,16 +238,13 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if(flags & FLUC_PHI_CORRECTION){
 			int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 			if(cbin != -1){
-				/*std::map<UInt_t, TH1 *>::const_iterator m = PhiWeightMap[cbin].find(fRunNum);
-				if(m != PhiWeightMap[cbin].end())
-					fFFlucAna->SetPhiWeights(m->second);*/
 				TH1 *pweightMap = GetCorrectionMap(fRunNum,cbin);
 				if(pweightMap)
 					fFFlucAna->SetPhiWeights(pweightMap);
 			}
 		}
 
-		fFFlucAna->UserExec(""); // doing some analysis here.
+		fFFlucAna->UserExec("");
 		//
 	} // AOD
 }
@@ -325,23 +323,8 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 						continue ; // pt cut
 				}
 
-				/*if(flags & FLUC_PHI_REJECTION){
-					int isub = (int)(track->Eta() > 0.0);
-					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
-					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
-						continue;
-				}*/
-
 				Int_t pdg = track->GetPdgCode();
 				Char_t ch = (Char_t) track->Charge();
-				/*// partile charge selection
-				if( fPcharge != 0){ // fPcharge : 0 all particle
-					if( fPcharge==1 && ch<0 )
-						continue; // 1 for + charge
-					if( fPcharge==-1 && ch>0)
-						continue; // -1 for - charge
-				}*/
 				if(ch < 0){
 					if(fPcharge == 1)
 						continue;
@@ -351,9 +334,8 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 						continue;
 				}else continue;
 
-				Int_t label = track->GetLabel();
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
-				itrack->SetLabel( label );
+				itrack->SetLabel(track->GetLabel());
 				itrack->SetParticleType( pdg);
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 				itrack->SetCharge(ch) ;
@@ -377,23 +359,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 						continue ; // pt cut
 				}
 
-				/*if(flags & FLUC_PHI_REJECTION){
-					int isub = (int)(track->Eta() > 0.0);
-					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-					if(cbin != -1){
-						int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
-						if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
-							continue;
-					}
-				}*/
-
 				Char_t ch = (Char_t)track->Charge();
-				/*if( fPcharge !=0){ // fPcharge 0 : all particle
-					if( fPcharge==1 && ch<0)
-						continue; // 1 for + particle
-					if( fPcharge==-1 && ch>0)
-						continue; // -1 for - particle
-				}*/
 				if(ch < 0){
 					if(fPcharge == 1)
 						continue;
@@ -404,7 +370,6 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 				}else continue;
 
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
-				//itrack->SetID( track->GetID() );
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 				itrack->SetParticleType(kJHadron);
@@ -425,14 +390,6 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	if(zvert < -fzvtxCut || zvert > fzvtxCut)
 		return kFALSE;
 
-	// event cent flatting  --- do it only when IsCentFlat is true
-	/*if(flags & FLUC_CENT_FLATTENING){
-		//float centrality = ReadAODCentrality( event, fCentDetName); //"V0M"
-		float centrality = ReadCentrality(event,fCentDetName);
-		double cent_flat_ratio = h_ratio->GetBinContent( (h_ratio->GetXaxis()->FindBin(centrality))) ;
-		if (gRandom->Uniform(0, cent_flat_ratio) > 1 )
-			return kFALSE;
-	}*/
 	if(flags & FLUC_CENT_FLATTENING){
 		float fCent = ReadCentrality(event,fCentDetName);
 		TH1 *pweightMap = GetCentCorrection();
@@ -650,12 +607,6 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 
 			Int_t pdg = particle->GetPdgCode();
 			Char_t ch = (Char_t) track->Charge();
-			/*if(fPcharge != 0){ // fPcharge 0 : all particle
-				if(fPcharge == 1 && ch < 0)
-					continue; // 1 for + particle
-				if(fPcharge == -1 && ch > 0)
-					continue; // -1 for - particle
-			}*/
 			if(ch < 0){
 				if(fPcharge == 1)
 					continue;
@@ -665,9 +616,8 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 					continue;
 			}else continue;
 
-			Int_t label = track->GetLabel();
 			AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
-			itrack->SetLabel( label );
+			itrack->SetLabel(track->GetLabel());
 			itrack->SetParticleType( pdg);
 			itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 			itrack->SetCharge(ch) ;

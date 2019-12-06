@@ -43,6 +43,7 @@ public:
 	void       GetUEObservables();
 	void       GetPtLeadingMisRecCorrection();
 	void       GetMultiplicityDistributions();
+        void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
 	void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}   // use to analyse MC data
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 			Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
@@ -59,6 +60,7 @@ private:
 	AliAnalysisFilter*  fLeadingTrackFilter;
 	AliAnalysisFilter*  fTrackFilter;
 	TList*                  fOutputList;                                      //! output list in the root file
+
 	Double_t fEtaCut;
 	Double_t fPtMin;
 	Double_t fLeadPtCutMin;

@@ -85,8 +85,8 @@ void AliPP13TagAndProbeSelection::InitSelectionHistograms()
 	for (Int_t i = 0; i < 2; ++i)
 	{
 		const char * sf = (i == 0) ? "" : "Mix";
-		TH2F * hist1 = new TH2F(Form("h%sMassEnergyAll_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma}, GeV; E_{probe}, GeV", nM, mMin, mMax, nE, eMin, eMax);
-		TH2F * hist2 = new TH2F(Form("h%sMassEnergyTOF_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma}, GeV; E_{probe}, GeV", nM, mMin, mMax, nE, eMin, eMax);
+		TH2F * hist1 = new TH2F(Form("h%sMassEnergyAll_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma} (GeV/#it{c}^{2}); E_{probe}, GeV", nM, mMin, mMax, nE, eMin, eMax);
+		TH2F * hist2 = new TH2F(Form("h%sMassEnergyTOF_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma} (GeV/#it{c}^{2}); E_{probe}, GeV", nM, mMin, mMax, nE, eMin, eMax);
 
 		fMassEnergyAll[i] = new AliPP13DetectorHistogram(hist1, fListOfHistos, AliPP13DetectorHistogram::kModules);
 		fMassEnergyTOF[i] = new AliPP13DetectorHistogram(hist2, fListOfHistos, AliPP13DetectorHistogram::kModules);

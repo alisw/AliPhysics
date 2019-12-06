@@ -141,7 +141,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TRandom3 * fRd;
   TSpline3 * fSplineCorr;
   
-  ClassDef(AliAnalysisTaskHFEIPCorrection, 2);
+  ClassDef(AliAnalysisTaskHFEIPCorrection, 3);
 };
 
 #endif

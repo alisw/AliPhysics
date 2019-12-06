@@ -301,7 +301,9 @@ public:
     kITSscPair,              // ITS shared cluster of both daughters of a pair
     kDeltaCotTheta,          // difference of cotangens of theta of daughters
 
-    kDeltaPhiSumDiff,
+    kDeltaPhiSumDiff,        //Azimuthal angle between sum and difference of momentum vector   
+    kDeltaPhiSumPos,         //Azimuthal angle between pair momentum vector (= sum of legs) and positron momentum vector   
+    kDeltaPhiSumNeg,         //Azimuthal angle between pair momentum vector (= sum of legs) and electron momentum vector   
     
     kPairPlaneAngle1A,         // angle between ee decay plane and x'-z reaction plane by using V0-A
     kPairPlaneAngle2A,         // angle between ee decay plane and (p1+p2) rot ez
@@ -719,7 +721,12 @@ public:
     kCentralityCL0plus10,    //event centrality VO AP +1.0%
     kCentralityCL0minus10,    //event centrality VO AP -1.0%
 
-
+    kTransverseSpherocity,    // transverse Spherocity of the event
+    kTransverseSpherocityFast,  // faster calculation of the transverse Spherocity of the event for more than 10 charged tracks
+    kTransverseSpherocityESD,  // transverse Spherocity of the event on ESDs
+    kTransverseSpherocityFastESD,  // faster calculation of the transverse Spherocity of the event for more than 10 charged tracks on ESDs
+    kTransverseSpherocityESDwoPtWeight,  // transverse Spherocity of the event on ESDs without pT weighting of the tracks
+    kTransverseSpherocityFastESDwoPtWeight,  // faster calculation of the transverse Spherocity of the event for more than 10 charged tracks on ESDs without pT weighting of the tracks
 
     kTriggerInclONL,         // online trigger bits fired (inclusive)
     kTriggerInclOFF,         // offline trigger bits fired (inclusive)
@@ -1993,27 +2000,48 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]     = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
   
   values[AliDielectronVarManager::kDeltaPhiSumDiff]=-999; 
-  if(Req(kDeltaPhiSumDiff)){
+  values[AliDielectronVarManager::kDeltaPhiSumPos]=-999; 
+  values[AliDielectronVarManager::kDeltaPhiSumNeg]=-999; 
+  if(Req(kDeltaPhiSumDiff)||Req(kDeltaPhiSumPos)||Req(kDeltaPhiSumNeg)){
     // get track references from pair
     AliVParticle* d1 = pair->GetFirstDaughterP();
     AliVParticle* d2 = pair->GetSecondDaughterP();
-
+    AliVParticle* dpos;      // positron track     
+    AliVParticle* dneg;      // positron track     
     //randomly swap to eliminate any biases in the assignment of the first and second pair leg
     if(gRandom->Uniform()>0.5){
-        d1 = pair->GetSecondDaughterP();
-        d2 = pair->GetFirstDaughterP();
+      d1 = pair->GetSecondDaughterP();
+      d2 = pair->GetFirstDaughterP();
     }    
-    if (d1 && d2) {     
-        Double_t p1[3];
-        Double_t p2[3];
-        static_cast<AliAODTrack*>(d1)->PxPyPz(p1);
-        static_cast<AliAODTrack*>(d2)->PxPyPz(p2);
-        TVector3 vl1(p1[0],p1[1],p1[2]);
-        TVector3 vl2(p2[0],p2[1],p2[2]);
-        TVector3 vSum=vl1+vl2;
-        TVector3 vDiff=vl1-vl2;     
-        values[AliDielectronVarManager::kDeltaPhiSumDiff]=TMath::Abs(vSum.DeltaPhi(vDiff));   
-    }
+    if (d1 && d2) { 
+      if(d1->Charge()>0) dpos=d1;
+      else if(d2->Charge()>0) dpos=d2;
+      else dpos=0;
+      if(d1->Charge()<0) dneg=d1;
+      else if(d2->Charge()<0) dneg=d2;
+      else dneg=0;    
+      Double_t p1[3];
+      Double_t p2[3];
+      static_cast<AliAODTrack*>(d1)->PxPyPz(p1);
+      static_cast<AliAODTrack*>(d2)->PxPyPz(p2);
+      TVector3 vl1(p1[0],p1[1],p1[2]);
+      TVector3 vl2(p2[0],p2[1],p2[2]);
+      TVector3 vSum=vl1+vl2;
+      TVector3 vDiff=vl1-vl2;     
+      values[AliDielectronVarManager::kDeltaPhiSumDiff]=TMath::Abs(vSum.DeltaPhi(vDiff));       
+      if(dpos!=0){ 
+        Double_t ppos[3];  
+        static_cast<AliAODTrack*>(dpos)->PxPyPz(ppos);   
+        TVector3 vl(ppos[0],ppos[1],ppos[2]);
+        values[AliDielectronVarManager::kDeltaPhiSumPos]=TMath::Abs(vSum.DeltaPhi(vl));           
+      }
+      if(dneg!=0){ 
+        Double_t pneg[3];  
+        static_cast<AliAODTrack*>(dneg)->PxPyPz(pneg);   
+        TVector3 vlneg(pneg[0],pneg[1],pneg[2]);
+        values[AliDielectronVarManager::kDeltaPhiSumNeg]=TMath::Abs(vSum.DeltaPhi(vlneg));           
+      }
+    }  
   } 
     
   values[AliDielectronVarManager::kITSscPair]   = -999;
@@ -2679,6 +2707,9 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kCentralityCL0plus10]    = 0.;
   values[AliDielectronVarManager::kCentralityCL0minus10]   = 0.;
 
+  values[AliDielectronVarManager::kTransverseSpherocity] = -1.;
+  values[AliDielectronVarManager::kTransverseSpherocityFast] = -1.;
+
   AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection");
   if(!multSelection){
     // only for debugging purpose
@@ -2716,6 +2747,9 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   if(Req(kNacc))            values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
+
+  if(Req(kTransverseSpherocity))     values[AliDielectronVarManager::kTransverseSpherocity] = AliDielectronHelper::GetTransverseSpherocity(event);
+  if(Req(kTransverseSpherocityFast)) values[AliDielectronVarManager::kTransverseSpherocityFast] = AliDielectronHelper::GetTransverseSpherocityTracks(event);
 
   if(Req(kMatchEffITSTPCinPlane) || Req(kMatchEffITSTPCoutPlane)){
 
@@ -2983,6 +3017,15 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kCentralityV0A] = centralityV0A;
   values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
   values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
+
+  values[AliDielectronVarManager::kTransverseSpherocityESD] = -1.;
+  if(Req(kTransverseSpherocityESD)) values[AliDielectronVarManager::kTransverseSpherocityESD] = AliDielectronHelper::GetTransverseSpherocityESD(event);
+  values[AliDielectronVarManager::kTransverseSpherocityFastESD] = -1.;
+  if(Req(kTransverseSpherocityFastESD)) values[AliDielectronVarManager::kTransverseSpherocityFastESD] = AliDielectronHelper::GetTransverseSpherocityESDtracks(event);
+  values[AliDielectronVarManager::kTransverseSpherocityESDwoPtWeight] = -1.;
+  if(Req(kTransverseSpherocityESDwoPtWeight)) values[AliDielectronVarManager::kTransverseSpherocityESDwoPtWeight] = AliDielectronHelper::GetTransverseSpherocityESDwoPtWeight(event);
+  values[AliDielectronVarManager::kTransverseSpherocityFastESDwoPtWeight] = -1.;
+  if(Req(kTransverseSpherocityFastESDwoPtWeight)) values[AliDielectronVarManager::kTransverseSpherocityFastESDwoPtWeight] = AliDielectronHelper::GetTransverseSpherocityESDtracksWoPtWeight(event);
 
   const AliESDVertex *vtxTPC = event->GetPrimaryVertexTPC();
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);

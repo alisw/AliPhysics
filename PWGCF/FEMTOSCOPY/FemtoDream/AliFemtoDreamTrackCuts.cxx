@@ -218,7 +218,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(22);
+        fHists->FillTrackCounter(26);
     }
   }
   if (pass) {
@@ -394,12 +394,18 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
 
   if (Track->GetstatusITS() == AliPIDResponse::kDetPidOk) {
     ITSisthere = true;
+    if (!fMinimalBooking)
+      fHists->FillTrackCounter(17);
   }
   if (Track->GetstatusTPC() == AliPIDResponse::kDetPidOk) {
     TPCisthere = true;
+    if (!fMinimalBooking)
+      fHists->FillTrackCounter(18);
   }
   if (Track->GetstatusTOF() == AliPIDResponse::kDetPidOk) {
     TOFisthere = true;
+    if (!fMinimalBooking)
+      fHists->FillTrackCounter(19);
   }
   //Below a threshold where the bands are well seperated in the TPC use only
   //TPC for PID, since the TOF has only limited matching efficiency. Above
@@ -411,8 +417,6 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
       if (!TPCisthere) {
         pass = false;
       } else {
-        if (!fMinimalBooking)
-          fHists->FillTrackCounter(16);
         if (fRejectPions && TOFisthere) {
           float nSigTOF = (Track->GetnSigmaTOF((int) (AliPID::kPion)));
           if (TMath::Abs(nSigTOF) < fNSigValue) {
@@ -425,7 +429,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(18);
+              fHists->FillTrackCounter(24);
           }
         }
         if (pass) {
@@ -434,7 +438,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(19);
+              fHists->FillTrackCounter(22);
           }
         }
       }
@@ -443,7 +447,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(16);
+          fHists->FillTrackCounter(20);
         if (fRejectPions && TOFisthere) {
           float nSigTOF = (Track->GetnSigmaTOF((int) (AliPID::kPion)));
           if (TMath::Abs(nSigTOF) < fNSigValue) {
@@ -456,7 +460,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(18);
+              fHists->FillTrackCounter(24);
           }
         }
         if (pass) {
@@ -466,7 +470,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
               pass = false;
             } else {
               if (!fMinimalBooking)
-                fHists->FillTrackCounter(19);
+                fHists->FillTrackCounter(22);
             }
           } else {
             if (ITSisthere) {  //if there is no tpc, check its
@@ -475,7 +479,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
                 pass = false;
               } else {
                 if (!fMinimalBooking)
-                  fHists->FillTrackCounter(20);
+                  fHists->FillTrackCounter(21);
               }
             }
           }
@@ -487,7 +491,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(21);
+        fHists->FillTrackCounter(20);
       float nSigTPC = (Track->GetnSigmaTPC((int) (fParticleID)));
       float nSigTOF = (Track->GetnSigmaTOF((int) (fParticleID)));
       float nSigComb = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
@@ -495,13 +499,13 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(22);
+          fHists->FillTrackCounter(23);
         if (fCutHighPtSig) {
           if (!SmallestNSig(Track)) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(23);
+              fHists->FillTrackCounter(25);
           }
         }
       }
@@ -542,14 +546,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(25);
+          fHists->FillTrackCounter(27);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAZ()) < fDCAToVertexZ)) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(25);
+          fHists->FillTrackCounter(27);
       }
     }
   }
@@ -583,14 +587,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(26);
+          fHists->FillTrackCounter(28);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAXY()) < fDCAToVertexXY)) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(26);
+          fHists->FillTrackCounter(28);
       }
     }
   }

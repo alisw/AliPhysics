@@ -1074,15 +1074,15 @@ Int_t AliRDHFCutsBPlustoD0Pi::IsD0FromBPlusSelected(Double_t ptBPlus, TObject* o
     // D0 window - invariant mass
     Int_t chargeBPlus = candidateBPlus->Charge();
     UInt_t prongs[2];
-    if (chargeBPlus == 1)
+    if (chargeBPlus == -1)
     {
       prongs[0] = 211;
       prongs[1] = 321;
     }
-    else if (chargeBPlus == -1)
+    else if (chargeBPlus == 1)
     {
-      prongs[1] = 211;
       prongs[0] = 321;
+      prongs[1] = 211;
     }
     else
     {
@@ -2196,15 +2196,15 @@ Int_t AliRDHFCutsBPlustoD0Pi::IsD0FromBPlusSelectedMVA(Double_t ptBPlus, TObject
     // D0 window - invariant mass
     Int_t chargeBPlus = candidateBPlus->Charge();
     UInt_t prongs[2];
-    if (chargeBPlus == 1)
+    if (chargeBPlus == -1)
     {
       prongs[0] = 211;
       prongs[1] = 321;
     }
-    else if (chargeBPlus == -1)
+    else if (chargeBPlus == 1)
     {
-      prongs[1] = 211;
       prongs[0] = 321;
+      prongs[1] = 211;
     }
     else
     {

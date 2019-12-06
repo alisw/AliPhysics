@@ -35,7 +35,8 @@ AnalysisOptions:
     MLSelection:
         ApplyML: 0 # 0->false, 1->true, enable only if you applied your ML model in the vn task
         #each element of the lists corresponds to a pT bin
-        CutValues: [ 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99 ]
+        CutValuesMin: [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]
+        CutValuesMax: [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
 
 FitSystematicsOptions: #common for all pT bins
     Rebin: [ 1, 2, 3, 4, 5 ]
