@@ -43,6 +43,8 @@ struct Charm2Prong
     Double32_t fNormDecayLengthXY;      //[0.0,102.4,10]
     Double32_t fImpParProd;             //[-0.32768,0.32768,16]
     int fGenLabel;                      /// label to match with MC
+    int fProngIdx0;                     /// prong index 0
+    int fProngIdx1;                     /// prong index 1
     unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
     unsigned char fDecay;               /// flag for decay channel
     int fSelBit;                        /// selection bit
@@ -67,6 +69,9 @@ struct Charm3Prong
     Double32_t fNormDecayLengthXY;      //[0.0,102.3,10]
     Double32_t fSigmaVtx;               //[0.0,0.08190,12]
     int fGenLabel;                      /// label to match with MC
+    int fProngIdx0;                     /// prong index 0
+    int fProngIdx1;                     /// prong index 1
+    int fProngIdx2;                     /// prong index 2
     unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
     unsigned char fDecay;               /// flag for decay channel
     int fSelBit;                        /// selection bit
@@ -130,9 +135,15 @@ struct Beauty3Prong
 struct Beauty4Prong
 {
     float fInvMassB0toDminuspi;
-    float fInvMassD;
+    float fInvMassBstoDsminuspi;
+    float fInvMassLbtoLcpluspi;
+    float fInvMassDplus;
+    float fInvMassDs;
+    float fInvMassLc;
     Double32_t fPt;                     //[0.0,65.535,16]
-    Double32_t fY;                      //[-1.023,1.023,11]
+    Double32_t fYB0;                    //[-1.023,1.023,11]
+    Double32_t fYBs;                    //[-1.023,1.023,11]
+    Double32_t fYLb;                    //[-1.023,1.023,11]
     Double32_t fCosP;                   //[0.67233000,1.,15]
     Double32_t fCosPXY;                 //[0.67233000,1.,15]
     Double32_t fDecayLength;            //[0.0,6.5536,16]
@@ -188,7 +199,9 @@ public:
         kLctopK0s,
         kLctopiLambda,
         kBplustoD0pi,
-        kB0toDminuspi
+        kB0toDminuspi,
+        kBstoDsminuspi,
+        kLbtoLcpluspi
     };
 
     enum kSelBit
@@ -204,23 +217,27 @@ public:
         kLctoV0bachCuts      = BIT(8),
         kBplustoD0piCuts     = BIT(9),
         kB0toDminuspiCuts    = BIT(10),
-        kDzerotoKpiCutsPID   = BIT(11),
-        kDzerotopiKCutsPID   = BIT(12),
-        kDplustoKpipiCutsPID = BIT(13),
-        kDstartoKpipiCutsPID = BIT(14),
-        kDstoKKpiCutsPID     = BIT(15),
-        kDstopiKKCutsPID     = BIT(16),
-        kLctopKpiCutsPID     = BIT(17),
-        kLctopiKpCutsPID     = BIT(18),
-        kLctoV0bachCutsPID   = BIT(19),
-        kDzerotoKpiFidAcc    = BIT(20),
-        kDplustoKpipiFidAcc  = BIT(21),
-        kDstartoKpipiFidAcc  = BIT(22),
-        kDstoKKpiFidAcc      = BIT(23),
-        kLctopKpiFidAcc      = BIT(24),
-        kLctoV0bachFidAcc    = BIT(25),
-        kBplustoD0piFidAcc   = BIT(26),
-        kB0toDminuspiFidAcc  = BIT(27)
+        kBstoDminuspiCuts    = BIT(11),
+        kLbtoLcpluspiCuts    = BIT(12),
+        kDzerotoKpiCutsPID   = BIT(13),
+        kDzerotopiKCutsPID   = BIT(14),
+        kDplustoKpipiCutsPID = BIT(15),
+        kDstartoKpipiCutsPID = BIT(16),
+        kDstoKKpiCutsPID     = BIT(17),
+        kDstopiKKCutsPID     = BIT(18),
+        kLctopKpiCutsPID     = BIT(19),
+        kLctopiKpCutsPID     = BIT(20),
+        kLctoV0bachCutsPID   = BIT(21),
+        kDzerotoKpiFidAcc    = BIT(22),
+        kDplustoKpipiFidAcc  = BIT(23),
+        kDstartoKpipiFidAcc  = BIT(24),
+        kDstoKKpiFidAcc      = BIT(25),
+        kLctopKpiFidAcc      = BIT(26),
+        kLctoV0bachFidAcc    = BIT(27),
+        kBplustoD0piFidAcc   = BIT(28),
+        kB0toDminuspiFidAcc  = BIT(29),
+        kBstoDsminuspiFidAcc = BIT(30),
+        kLbtoLcpluspiFidAcc  = BIT(31)
     };
 
     enum kSystem
@@ -260,7 +277,7 @@ private:
     void FillDstar(AliAODRecoCascadeHF* cand, AliAODRecoDecayHF2Prong* dau, bool issel);
     void FillCharmCascade(AliAODRecoCascadeHF* cand, AliAODv0* dau, int issel);
     void FillBeauty3Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF2Prong* dau, bool issel);
-    void FillBeauty4Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF3Prong* dau, bool issel);
+    void FillBeauty4Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF3Prong* dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc);
     void FillGenerated(AliAODMCParticle* part, int origin, int decay, bool aredauinacc);
     bool RecalcOwnPrimaryVertex(AliAODRecoDecayHF* cand);
     void CleanOwnPrimaryVertex(AliAODRecoDecayHF* cand, AliAODVertex* origvtx);
