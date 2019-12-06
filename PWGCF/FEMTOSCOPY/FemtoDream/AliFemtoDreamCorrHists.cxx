@@ -497,21 +497,21 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fMixedEventkTandMultDist[Counter] = new TH2F*[multbins];
         for (int iMult = 1; iMult < multbins + 1; ++iMult) {
           TString SamekTandMultEventName = Form(
-              "SEkTandMultDist_Mult%i_Particle%d_Particle%d", iMult,
-              iPar1, iPar2);
+              "SEkTandMultDist_Mult%i_Particle%d_Particle%d", iMult, iPar1,
+              iPar2);
           fSameEventkTandMultDist[Counter][iMult] = new TH2F(
-              SamekTandMultEventName.Data(), SamekTandMultEventName.Data(), *itNBins,
-                                             *itKMin, *itKMax, *itNBins / 10,
-                                             *itKMin, *itKMax * 1.5);
+              SamekTandMultEventName.Data(), SamekTandMultEventName.Data(),
+              *itNBins, *itKMin, *itKMax, *itNBins / 10, *itKMin,
+              *itKMax * 1.5);
           fPairs[Counter]->Add(fSameEventkTandMultDist[Counter][iMult]);
 
           TString MixedkTandMultEventName = Form(
-              "MEkTandMultDist_Mult%i_Particle%d_Particle%d", iMult,
-              iPar1, iPar2);
+              "MEkTandMultDist_Mult%i_Particle%d_Particle%d", iMult, iPar1,
+              iPar2);
           fMixedEventkTandMultDist[Counter][iMult] = new TH2F(
-              MixedkTandMultEventName.Data(), MixedkTandMultEventName.Data(), *itNBins,
-                                             *itKMin, *itKMax, *itNBins / 10,
-                                             *itKMin, *itKMax * 1.5);
+              MixedkTandMultEventName.Data(), MixedkTandMultEventName.Data(),
+              *itNBins, *itKMin, *itKMax, *itNBins / 10, *itKMin,
+              *itKMax * 1.5);
           fPairs[Counter]->Add(fMixedEventkTandMultDist[Counter][iMult]);
         }
       }
@@ -763,17 +763,14 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         }
 
         if (fillHists && fMomentumResolution) {
-          //take twice the number of bins we use for the CF to be sure, the range is
+          //Take a 1 MeV binning, this should be rebinned to the users liking, the range is
           //hard coded. This assumed that the input is in GeV!
-          //          *itNBins,*itKMin,*itKMax,
-          double dNBin = (*itKMax - *itKMin) / (double) (*itNBins);
-          dNBin /= 2;
-          int nBims = (int) (1 / dNBin);
+
           TString MomResoName = Form("MomentumResolution_Particle%d_Particle%d",
                                      iPar1, iPar2);
           fMomResolution[Counter] = new TH2F(MomResoName.Data(),
-                                             MomResoName.Data(), nBims, 0, 1,
-                                             nBims, 0, 1);
+                                             MomResoName.Data(), 1000, 0, 1,
+                                             1000, 0, 1);
           fMomResolution[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolution[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolution[Counter]);
@@ -782,7 +779,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
               "MomentumResolutionDist_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionDist[Counter] = new TH2F(MomResoDistName.Data(),
                                                  MomResoDistName.Data(), 500,
-                                                 -0.3, 0.3, nBims, 0, 1);
+                                                 -0.3, 0.3, 1000, 0, 1);
           fMomResolutionDist[Counter]->GetXaxis()->SetTitle(
               "k_{Reco}-k_{Generated}");
           fMomResolutionDist[Counter]->GetYaxis()->SetTitle("k_{Generated}");

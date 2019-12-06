@@ -60,7 +60,7 @@ fClusterMomentum(),
 
 fLED20(0),                             fLED12(0),   
 fLED20Time(0),                         fLED12Time(0),
-fEventNStripActive(0),
+fAcceptEvent(1),                       fEventNStripActive(0),
 
 fFillCellHisto(1),                     fFillAllCellEventParamHisto(1),
 fFill1CellHisto(0),    
@@ -69,6 +69,7 @@ fFillMatchingHisto(0),                 fFillSameDiffFracHisto(0),
 fFillExoEnMinCut(0),                   fFillAllCellSameTCardHisto(0),
 fFillPerSMHisto(0),                    fFillClusterColRowHisto(0),
 fFillOpenTimeHisto(1),                 fFillExo50ns(0),
+fFillClusterHistoAfterEventCut(1),
 
 // Histograms
 fhNClusterPerEventNCellHigh20(0),      fhNClusterPerEventNCellHigh12(0),        
@@ -204,8 +205,8 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
   fLowEnergyCutSM3 = 20. ; fLowNCellsCutSM3 = 20;
   
   fEventMaxNumberOfStrips = 0; 
-  fHighEnergyCutStrip[0] = 45; fHighEnergyCutStrip[1] = 32; 
-  fHighNCellsCutStrip[0] = 20; fHighNCellsCutStrip[1] = 14;
+  fHighEnergyCutStrip[0] = 80; fHighEnergyCutStrip[1] = 55; 
+  fHighNCellsCutStrip[0] = 24; fHighNCellsCutStrip[1] = 15;
   fLowEnergyCutSM3Strip  = 100; // open
   fLowNCellsCutSM3Strip  = 100; // open
  
@@ -349,6 +350,14 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
       }
     }
   }
+  
+  for (Int_t icase = 0; icase < 4; icase++)
+  {
+    fhEventCutClusterEnergyTime    [icase] = 0;
+    fhEventCutClusterEnergy        [icase] = 0;
+    fhEventCutClusterEnergyECellMax[icase] = 0;
+    fhEventCutClusterEtaPhiGrid    [icase] = 0; 
+  }
 }
 
 //
@@ -463,18 +472,18 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
   // use the total N cells or E sum for E cell > 0.5
   // Low activity in SM3 and very large activiy on any of the other SM
   //
-  Bool_t acceptEvent = kTRUE;
+  fAcceptEvent = kTRUE;
   if ( nCellsPerSM[0][3] <= fLowNCellsCutSM3 || eCellsPerSM[0][3] <= fLowEnergyCutSM3 )
   {
     for(Int_t ism = 0; ism < 20; ism++)
     {
       if ( ism == 3 ) continue;
       
-      if ( nCellsPerSM[0][ism] >= fHighNCellsCutSM ) acceptEvent = kFALSE;
-      if ( eCellsPerSM[0][ism] >= fHighEnergyCutSM ) acceptEvent = kFALSE;
+      if ( nCellsPerSM[0][ism] >= fHighNCellsCutSM ) fAcceptEvent = kFALSE;
+      if ( eCellsPerSM[0][ism] >= fHighEnergyCutSM ) fAcceptEvent = kFALSE;
     }
    
-    if ( !acceptEvent )
+    if ( !fAcceptEvent )
     {
       printf("Reject event: ");
       for(Int_t jsm = 0; jsm < 20; jsm++)
@@ -512,7 +521,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
     }
   }
   
-  if ( acceptEvent && fFillStripHisto )
+  if ( fAcceptEvent && fFillStripHisto )
   {
     fhNStripsPerEventAccept->Fill(fEventNStripActive, GetEventWeight());
     for (Int_t ism = 0; ism < 20; ism++)
@@ -575,7 +584,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
         fhAverSumEnCellsNHigh20[icut]->Fill(averECells  , GetEventWeight());
     }
     
-    if ( acceptEvent )
+    if ( fAcceptEvent )
     {
       fhSumEnCellsAcceptEvent [icut]->Fill(eCells[icut], GetEventWeight());
       fhNCellsAcceptEvent     [icut]->Fill(nCells[icut], GetEventWeight());
@@ -590,7 +599,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       fhSumEnCellsAcceptEventStrip [icut]->Fill(eCells[icut], GetEventWeight());
       fhNCellsAcceptEventStrip     [icut]->Fill(nCells[icut], GetEventWeight());
       fhNSumEnCellsAcceptEventStrip[icut]->Fill(eCells[icut],nCells[icut], GetEventWeight());
-      if ( acceptEvent )
+      if ( fAcceptEvent )
       {
         fhSumEnCellsAcceptEventBoth [icut]->Fill(eCells[icut], GetEventWeight());
         fhNCellsAcceptEventBoth     [icut]->Fill(nCells[icut], GetEventWeight());
@@ -619,7 +628,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
           fhAverSumEnCellsPerSMNHigh20[icut]->Fill(averECells, ism, GetEventWeight());
       }
       
-      if ( acceptEvent )
+      if ( fAcceptEvent )
       {
         fhSumEnCellsPerSMAcceptEvent [icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
         fhNCellsPerSMAcceptEvent     [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
@@ -635,7 +644,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
         fhNCellsPerSMAcceptEventStrip     [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
         fhNSumEnCellsPerSMAcceptEventStrip[icut]->Fill(eCellsPerSM[icut][ism],nCellsPerSM[icut][ism], ism, GetEventWeight());
         
-        if ( acceptEvent )
+        if ( fAcceptEvent )
         {
           fhSumEnCellsPerSMAcceptEventBoth [icut]->Fill(eCellsPerSM[icut][ism], ism, GetEventWeight());
           fhNCellsPerSMAcceptEventBoth     [icut]->Fill(nCellsPerSM[icut][ism], ism, GetEventWeight());
@@ -663,7 +672,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
       fhFracSumEnCellsNHigh20[icut-1]->Fill(frEnCells, GetEventWeight());
     }
     
-    if ( acceptEvent )
+    if ( fAcceptEvent )
     {
       fhFracNCellsAcceptEvent    [icut-1]->Fill(frNCells , GetEventWeight());
       fhFracSumEnCellsAcceptEvent[icut-1]->Fill(frEnCells, GetEventWeight());
@@ -688,7 +697,7 @@ void AliAnaCaloExotics::CellHistograms(AliVCaloCells *cells)
         fhFracSumEnCellsPerSMNHigh20[icut-1]->Fill(frEnCells, ism, GetEventWeight());
       }
       
-      if ( acceptEvent )
+      if ( fAcceptEvent )
       {
         fhFracNCellsPerSMAcceptEvent    [icut-1]->Fill(frNCells , ism, GetEventWeight());
         fhFracSumEnCellsPerSMAcceptEvent[icut-1]->Fill(frEnCells, ism, GetEventWeight());
@@ -743,12 +752,26 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
           {            
             fnCellsStrip [icut][ism][ieta/2]++;
             fEnCellsStrip[icut][ism][ieta/2]+=amp1;
+//            if( icut == 0 && (fnCellsStrip [icut][ism][ieta/2] > 0 || fEnCellsStrip[icut][ism][ieta/2] > 0))
+//              printf("Task: cell1 %d amp %f; SM %d, strip %d, n cells %d, sum E %f \n",
+//                     absId1, amp1,
+//                     ism,ieta,
+//                     fnCellsStrip [0][ism][ieta/2],
+//                     fEnCellsStrip[0][ism][ieta/2] 
+//                     );
           }
           
           if ( amp2 > fCellEnMins[icut] && amp2 < fCellEnMax )
           {            
             fnCellsStrip [icut][ism][ieta/2]++;
             fEnCellsStrip[icut][ism][ieta/2]+=amp2;
+//            if( icut == 0 && (fnCellsStrip [icut][ism][ieta/2] > 0 || fEnCellsStrip[icut][ism][ieta/2] > 0))
+//              printf("Task: cell2 %d amp %f; SM %d, strip %d, n cells %d , sum E %f \n",
+//                     absId2, amp2,
+//                     ism,ieta,
+//                     fnCellsStrip [0][ism][ieta/2],
+//                     fEnCellsStrip[0][ism][ieta/2] 
+//                     );
           }
         } //  e cut
         
@@ -808,6 +831,12 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
       
       for (Int_t ieta = 0; ieta < 24; ieta++)
       {
+//        if(fnCellsStrip[0][ism][ieta] > 0 || fEnCellsStrip[0][ism][ieta] > 0 )
+//          printf("Task: SM %d, strip %d, n cells %d < %d , sum E %f < %f \n",
+//               ism,ieta,
+//               fnCellsStrip [0][ism][ieta],maxNCells,
+//               fEnCellsStrip[0][ism][ieta],maxECells 
+//               );
         if( fEnCellsStrip[0][ism][ieta] >= maxECells || 
             fnCellsStrip [0][ism][ieta] >= maxNCells   )
         {
@@ -821,6 +850,8 @@ void AliAnaCaloExotics::StripHistograms(AliVCaloCells *cells)
   fhNStripsPerEvent->Fill(fEventNStripActive, GetEventWeight());
   for (Int_t ism = 0; ism < 20; ism++)
     fhNStripsPerEventPerSM->Fill(fEventNStripActiveSM[ism], ism, GetEventWeight());
+  
+  //printf("Task: Number of strips %d\n",fEventNStripActive);
   
   // Strip activity if cut on number of active strips
   if ( fEventNStripActive <= fEventMaxNumberOfStrips )
@@ -1609,6 +1640,123 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
   
 }
 
+//____________________________________________________________________________
+/// Fill basic clusters related histograms 
+/// for different Event activity selections
+/// \param caloClusters: full list of clusters
+/// \param cells: full list of cells
+//____________________________________________________________________________
+void AliAnaCaloExotics::ClusterHistogramsAfterEventCut
+(const TObjArray *caloClusters, AliVCaloCells* cells)
+{
+  Int_t  nCaloClusters = caloClusters->GetEntriesFast() ;
+  Int_t  bc            = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+  
+  // Get vertex, not needed.
+  Double_t v[3] = {0,0,0};
+    
+  AliDebug(1,Form("In %s there are %d clusters", GetCalorimeterString().Data(), nCaloClusters));
+  
+  // Loop over CaloClusters
+  for(Int_t iclus = 0; iclus < nCaloClusters; iclus++)
+  {
+    AliDebug(1,Form("Cluster: %d/%d, data %d",iclus+1,nCaloClusters,GetReader()->GetDataType()));
+    
+    AliVCluster* clus =  (AliVCluster*) caloClusters->At(iclus);
+    
+    // Get cluster kinematics
+    clus->GetMomentum(fClusterMomentum,v);
+    
+    Float_t en  = fClusterMomentum.E();
+    
+    Int_t    nCaloCellsPerCluster = clus->GetNCells();
+    //Int_t  nLabel = clus->GetNLabels();
+    //Int_t *labels = clus->GetLabels();
+    
+    // Get the 1-fraction of the cluster energy that carries the cell with highest energy and its absId
+    Float_t maxCellFraction = 0.;
+    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus,maxCellFraction);
+    
+    Int_t icolMax  = -1, icolMaxAbs = -1;
+    Int_t irowMax  = -1, irowMaxAbs = -1;
+    Int_t iRCU     = -1;
+    //Int_t nSM  =
+    GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), 
+                                         icolMax   , irowMax, iRCU,
+                                         icolMaxAbs, irowMaxAbs    );
+    
+    // Get time of max cell/cluster
+    Double_t tmax  = cells->GetCellTime(absIdMax);
+    tmax*=1.e9;
+    tmax-=fConstantTimeShift;
+    
+    Float_t ampMax = cells->GetCellAmplitude(absIdMax);
+    Float_t enOrg  = ampMax/(1-maxCellFraction); // cluster energy without non linearity correction
+    
+    Float_t exoticity  = 1-GetCaloUtils()->GetECross(absIdMax,cells,bc)/ampMax;
+    
+    Float_t m02  = clus->GetM02();
+    
+//    if(fAcceptEvent)                                 
+//      if ( fEventNStripActive <= fEventMaxNumberOfStrips )
+//        if ( fAcceptEvent && fEventNStripActive <= fEventMaxNumberOfStrips )
+//
+    
+    // Take only non exotic clusters
+    if ( exoticity > 0.95 || m02 < 0.15 || nCaloCellsPerCluster < 3 ) continue;
+    
+    fhEventCutClusterEnergyTime[0]->Fill(en, tmax, GetEventWeight());
+    
+    if ( fAcceptEvent )
+      fhEventCutClusterEnergyTime[1]->Fill(en, tmax, GetEventWeight());
+    
+    if ( fEventNStripActive <= fEventMaxNumberOfStrips )
+    {
+      fhEventCutClusterEnergyTime[2]->Fill(en, tmax, GetEventWeight());
+      
+      if ( fAcceptEvent )
+        fhEventCutClusterEnergyTime[3]->Fill(en, tmax, GetEventWeight());
+    }
+    
+    // Take clusters within good time window
+    if ( tmax < fTimeCutMin || tmax> fTimeCutMax ) continue;
+
+    fhEventCutClusterEnergy[0]->Fill(en, GetEventWeight());
+    fhEventCutClusterEnergyECellMax[0]->Fill(enOrg, ampMax, GetEventWeight());
+   
+    if ( en > fEMinForExo ) 
+      fhEventCutClusterEtaPhiGrid[0]->Fill(icolMaxAbs, irowMaxAbs, GetEventWeight());
+   
+    if ( fAcceptEvent )
+    {
+      fhEventCutClusterEnergy[1]->Fill(en, GetEventWeight());
+      fhEventCutClusterEnergyECellMax[1]->Fill(enOrg, ampMax, GetEventWeight());
+     
+      if ( en > fEMinForExo ) 
+        fhEventCutClusterEtaPhiGrid[1]->Fill(icolMaxAbs, irowMaxAbs, GetEventWeight());
+    }
+   
+    if ( fEventNStripActive <= fEventMaxNumberOfStrips )
+    {
+      fhEventCutClusterEnergy[2]->Fill(en, GetEventWeight());
+      fhEventCutClusterEnergyECellMax[2]->Fill(enOrg, ampMax, GetEventWeight());
+      
+      if ( en > fEMinForExo ) 
+        fhEventCutClusterEtaPhiGrid[2]->Fill(icolMaxAbs, irowMaxAbs, GetEventWeight());
+      
+      if ( fAcceptEvent )
+      {
+        fhEventCutClusterEnergy[3]->Fill(en, GetEventWeight());
+        fhEventCutClusterEnergyECellMax[3]->Fill(enOrg, ampMax, GetEventWeight());
+        
+        if ( en > fEMinForExo ) 
+          fhEventCutClusterEtaPhiGrid[3]->Fill(icolMaxAbs, irowMaxAbs, GetEventWeight());
+      } // fAcceptEvent
+    } // good strips
+    
+  } // cluster loop
+  
+}
 
 //_________________________________________________
 /// Save parameters used for analysis in a string.
@@ -1672,6 +1820,9 @@ TObjString * AliAnaCaloExotics::GetAnalysisCuts()
   parList+=onePar ;
  
   snprintf(onePar,buffersize,"fill cluster exoticity 50ns histo: %d;",fFillExo50ns) ;
+  parList+=onePar ;
+ 
+  snprintf(onePar,buffersize,"fill cluster histo after event cuts: %d;",fFillClusterHistoAfterEventCut) ;
   parList+=onePar ;
   
   //Get parameters set in base class.
@@ -4545,6 +4696,48 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     }
   }
   
+  if ( fFillClusterHistoAfterEventCut )
+  {
+    TString evtSelName[] = {"Open","PassLEDSM","PassLEDStrip","PassLEDBoth"};
+    for (Int_t icase = 0; icase < 4; icase++)
+    {
+      fhEventCutClusterEnergyTime[icase]  = new TH2F 
+      (Form("hEventCutClusterEnergyTime_%s",evtSelName[icase].Data()),
+       Form("#it{E}_{cluster} vs #it{t}_{cluster} after exotic cuts, %s",evtSelName[icase].Data()),
+       eBinsArray.GetSize() - 1, eBinsArray.GetArray(), 
+       tBinsArray.GetSize() - 1, tBinsArray.GetArray()); 
+      fhEventCutClusterEnergyTime[icase]->SetXTitle("#it{E} (GeV)");
+      fhEventCutClusterEnergyTime[icase]->SetYTitle("#it{t}_{cluster} (ns)");
+      outputContainer->Add(fhEventCutClusterEnergyTime[icase]);
+      
+      fhEventCutClusterEnergy[icase]  = new TH1F 
+      (Form("hEventCutClusterEnergy_%s",evtSelName[icase].Data()),
+       Form("#it{E}_{cluster} after time and exotic cuts, %s",evtSelName[icase].Data()),
+       eBinsArray.GetSize() - 1, eBinsArray.GetArray()) ;
+      fhEventCutClusterEnergy[icase]->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhEventCutClusterEnergy[icase]);
+      
+      fhEventCutClusterEnergyECellMax[icase]  = new TH2F 
+      (Form("hEventCutClusterEnergyECellMax_%s",evtSelName[icase].Data()),
+       Form("#it{E}_{cluster} vs #it{E}^{max}_{cell} after time and exotic cuts, %s",evtSelName[icase].Data()),
+       eBinsArray.GetSize() - 1, eBinsArray.GetArray(), 
+       eBinsArray.GetSize() - 1, eBinsArray.GetArray()); 
+      fhEventCutClusterEnergyECellMax[icase]->SetXTitle("#it{E}^{org}_{cluster} (GeV)");
+      fhEventCutClusterEnergyECellMax[icase]->SetYTitle("#it{E}^{max}_{cell} (GeV)");
+      outputContainer->Add(fhEventCutClusterEnergyECellMax[icase]);
+      
+      fhEventCutClusterEtaPhiGrid[icase] = new TH2F 
+      (Form("hEventCutClusterEtaPhiGrid_%s",evtSelName[icase].Data()),
+       Form("colum (#eta) vs row (#varphi) after time and exotic cuts, #it{E}_{cluster}> %2.1f, %s",
+            fEMinForExo,evtSelName[icase].Data()),
+       colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+       rowBinsArray.GetSize() - 1, rowBinsArray.GetArray());
+      fhEventCutClusterEtaPhiGrid[icase]->SetXTitle("column-#eta");
+      fhEventCutClusterEtaPhiGrid[icase]->SetYTitle("row-#varphi (rad)");
+      outputContainer->Add(fhEventCutClusterEtaPhiGrid[icase]);
+    }
+  }
+  
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
   //    printf("i=%d, name= %s\n",i,outputContainer->At(i)->GetName());
   
@@ -4600,6 +4793,7 @@ void AliAnaCaloExotics::Print(const Option_t * opt) const
   printf("Fill 1 cell cluster histo: %d\n", fFill1CellHisto) ;
   printf("Fill Matching histo: %d\n"      , fFillMatchingHisto) ;
   printf("Fill Exoticity 50ns cut: %d\n"  , fFillExo50ns) ;
+  printf("Fill cluster histo after event cut: %d\n"  , fFillClusterHistoAfterEventCut) ;
 }
 
 
@@ -4643,6 +4837,9 @@ void  AliAnaCaloExotics::MakeAnalysisFillHistograms()
   
   // Cells  
   if ( fFillCellHisto )  CellHistograms(cells);
+  
+  if ( fFillClusterHistoAfterEventCut )
+    ClusterHistogramsAfterEventCut(caloClusters,cells);
   
   AliDebug(1,"End");
 }

@@ -64,11 +64,11 @@ fStored(0)
 
 
 Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
-  if (runnumber >= 244917 && runnumber <= 245068) return kTRUE;
+  if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
   if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
 
-  Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246089, 246153, 246185, 246225};
-  for (Int_t i = 0; i < 15; i++){
+  Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246089, 246153, 246185, 246225, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+  for (Int_t i = 0; i < 17; i++){
     if (runnumber == HIR_goodruns[i]) return kTRUE;
   }
   return kFALSE;
@@ -82,7 +82,7 @@ Int_t AliForwardFlowUtil::GetNUARunNumber(Int_t runnumber){
   if (runnumber == 246225) return 2;
 
   // lowIR
-  if (runnumber >= 244917 && runnumber <= 245068) return 0;
+  if (runnumber >= 244918 && runnumber <= 245068) return 0;
   if (runnumber >= 246390 && runnumber <= 246392) return 1;
 
   else return 0;

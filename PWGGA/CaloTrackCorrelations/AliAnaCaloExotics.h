@@ -57,6 +57,8 @@ public:
   
   void         StripHistograms(AliVCaloCells *cells);
 
+  void         ClusterHistogramsAfterEventCut(const TObjArray * clusters, AliVCaloCells * cells);
+  
   // Setters and getters
   
   Float_t      GetCellAmpMin()      const   { return fCellAmpMin          ; } 
@@ -143,8 +145,11 @@ public:
  
   void         SwitchOnFillExoticity50nsHisto()     { fFillExo50ns               = kTRUE  ; }
   void         SwitchOffFillExoticity50nsHisto()    { fFillExo50ns               = kFALSE ; }
+ //
+  void         SwitchOnFillClusterEventCutHisto()   { fFillClusterHistoAfterEventCut = kTRUE  ; }
+  void         SwitchOffFillClusterEventCutHisto()  { fFillClusterHistoAfterEventCut = kFALSE ; }
   
-  void         SetConstantTimeShift(Float_t shift) { fConstantTimeShift = shift  ; }
+  void         SetConstantTimeShift(Float_t shift)  { fConstantTimeShift = shift  ; }
   
  private:
       
@@ -193,6 +198,8 @@ public:
   Float_t  fLED20Time   ;                       ///<  Time of LED cluster with 20 cells 
   Float_t  fLED12Time   ;                       ///<  Time of LED cluster with 12 cells
   
+  Float_t  fAcceptEvent ;                       ///<  Event passes the SM n cells or energy cuts
+  
   Int_t    fEventNStripActive ;                 ///<  Number of strips per event with multiple high energy cells
   Int_t    fEventNStripActiveSM[20];            ///<  Number of strips per event with multiple high energy cells per SM
   
@@ -224,6 +231,8 @@ public:
   Bool_t   fFillOpenTimeHisto;                  ///<  Fill histograms when time cut not applied (not needed in MC)
   
   Bool_t   fFillExo50ns;                        ///<  Fill histograms  with exoticity with 50 ns cut on difference in time with max
+  
+  Bool_t   fFillClusterHistoAfterEventCut;      ///<  Full histograms for clusters after event cuts
   
   // Histograms
   //
@@ -572,6 +581,11 @@ public:
   TH1F *   fhNStripsPerEventSuspicious;                       //!<! Number of active strips per event, accepted event but suspicious
   TH2F *   fhNStripsPerEventSuspiciousPerSM;                  //!<! Number of active strips per event, accepted event but suspicious
  
+  // Control event rejection, 4 cases: no selection, SM LED, Strip LED, both LED
+  TH2F *   fhEventCutClusterEnergyTime[4];                    //!<! Cluster energy vs time, for event selection criteria, non exotic
+  TH1F *   fhEventCutClusterEnergy[4];                        //!<! Cluster energy, for event selection criteria, non exotic, within time cut range
+  TH2F *   fhEventCutClusterEnergyECellMax[4];                //!<! Cluster energy vs max cell energy, for event selection criteria, non exotic, within time cut range
+  TH2F *   fhEventCutClusterEtaPhiGrid[4];                    //!<! Highest energy cell location in column-row map, for event selection criteria, non exotic, within time cut range, above fEMinForExo
   
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;

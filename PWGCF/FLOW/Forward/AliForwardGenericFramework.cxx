@@ -176,10 +176,10 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
           fill(cumu_dW2B, n, ptn, sample, zvertex, eta, cent, dn2diff);
 
           // A side
-          twodiff = TwoDiff(n, -n, refEtaBinA, etaBin).Re();
-          dn2diff = TwoDiff(0,0, refEtaBinA, etaBin).Re();
-          fill(cumu_dW2TwoA, n, ptn, sample, zvertex, eta, cent, twodiff);
-          fill(cumu_dW2A, n, ptn, sample, zvertex, eta, cent, dn2diff);
+          // twodiff = TwoDiff(n, -n, refEtaBinA, etaBin).Re();
+          // dn2diff = TwoDiff(0,0, refEtaBinA, etaBin).Re();
+          // fill(cumu_dW2TwoA, n, ptn, sample, zvertex, eta, cent, twodiff);
+          // fill(cumu_dW2A, n, ptn, sample, zvertex, eta, cent, dn2diff);
 
           // four-particle cumulant
           double fourdiff = FourDiff(n, n, -n, -n, refEtaBinA, refEtaBinB, etaBin,etaBin).Re(); // A is same side
@@ -190,21 +190,21 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
 
 
         //if (!fSettings.standard_only){
-          if (eta > 0.0) {
-            // R_{n,n; 2} numerator
-            double over = (TwoDiff(-2,2,refEtaBinB, etaBin)*TwoDiff(2,-2,refEtaBinA, etaBinB)).Re();
-            double under = (TwoDiff(-2,2,refEtaBinB, etaBinB)*TwoDiff(2,-2,refEtaBinA, etaBin)).Re();
-            fill(cumu_dWTwoTwoN, n, ptn, sample, zvertex, eta, cent, over);
-            fill(cumu_dWTwoTwoD, n, ptn, sample, zvertex, eta, cent, under);
-          }
+          // if (eta > 0.0) {
+          //   // R_{n,n; 2} numerator
+          //   double over = (TwoDiff(-2,2,refEtaBinB, etaBin)*TwoDiff(2,-2,refEtaBinA, etaBinB)).Re();
+          //   double under = (TwoDiff(-2,2,refEtaBinB, etaBinB)*TwoDiff(2,-2,refEtaBinA, etaBin)).Re();
+          //   fill(cumu_dWTwoTwoN, n, ptn, sample, zvertex, eta, cent, over);
+          //   fill(cumu_dWTwoTwoD, n, ptn, sample, zvertex, eta, cent, under);
+          // }
 
-          // four-particle cumulant SC(4,2)        
-          double fourtwodiff = TwoDiff(2,4,refEtaBinA,etaBin)*TwoDiff(-2,-4,refEtaBinB,etaBinB).Re();
-          fill(cumu_dW4FourTwo, n, ptn, sample, zvertex, eta, cent, fourtwodiff);
+          // // four-particle cumulant SC(4,2)        
+          // double fourtwodiff = TwoDiff(2,4,refEtaBinA,etaBin)*TwoDiff(-2,-4,refEtaBinB,etaBinB).Re();
+          // fill(cumu_dW4FourTwo, n, ptn, sample, zvertex, eta, cent, fourtwodiff);
 
-          // four-particle cumulant SC(3,2)
-          double threetwodiff = TwoDiff(2,3,refEtaBinA,etaBin)*TwoDiff(-2,-3,refEtaBinB,etaBinB).Re();
-          fill(cumu_dW4ThreeTwo, n, ptn, sample, zvertex, eta, cent, threetwodiff);
+          // // four-particle cumulant SC(3,2)
+          // double threetwodiff = TwoDiff(2,3,refEtaBinA,etaBin)*TwoDiff(-2,-3,refEtaBinB,etaBinB).Re();
+          // fill(cumu_dW4ThreeTwo, n, ptn, sample, zvertex, eta, cent, threetwodiff);
 
           // double dn4diff = TwoDiff(2,3,refEtaBinA,etaBin)*TwoDiff(-2,-3,refEtaBinB,etaBinB).Re();
           // fill(cumu_dW4_mixed, n, ptn, sample, zvertex, eta, cent, dn4diff);

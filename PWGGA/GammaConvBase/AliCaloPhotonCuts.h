@@ -129,6 +129,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP8T12P2Pyt8,
       kPP8T12P2Pho,
       kPP8T12P2JJ,
+      kPP8T12P2GJLow,
+      kPP8T12P2GJHigh,
       // pPb 5 TeV 2013
       kPPb5T13P2DPMJet,
       kPPb5T13P4JJ,
@@ -192,6 +194,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17f4a,
       k17f4b,
       k18f3bc,
+      k17g6b2a,
+      k17g6b2b,
+      k17g6b3a,
+      k17g6b3b,
       k17g8b,
       k17g8c,
       k18b9b,
@@ -645,7 +651,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,98)
+    ClassDef(AliCaloPhotonCuts,99)
 };
 
 #endif

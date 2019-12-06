@@ -130,28 +130,47 @@ public:
         ProblnJP
     };
 
+    enum V0TagType{
+        V0No,
+        V0Rec,
+        V0MC,
+        V0TrueRec
+    };
+
+    enum TemplateFlavour{
+        Unid,
+        UDSG,
+        C,
+        B,
+        UDSGV0,
+        CV0
+    };
+
 
     //UTILITY STRUCT DEFINITIONS
     struct SJetIpPati {
-        SJetIpPati(Double_t v1, Double_t v2, Bool_t b, Bool_t c,Int_t tl,Double_t pt): first(v1),second(v2),is_electron(b),is_fromB(c),trackLabel(tl),trackpt(pt){}
+        SJetIpPati(Double_t v1, Double_t v2, Int_t isv0, Bool_t c,Int_t tl,Double_t pt): first(v1),second(v2),is_V0(isv0),is_fromB(c),trackLabel(tl),trackpt(pt){}
         Double_t first; // to be compatible with std::pair
         Double_t second;// to be compatible with std::pair
-        Bool_t   is_electron; // added for electron contribution check
+        Int_t   is_V0; // added for electron contribution check
         Bool_t   is_fromB; // added for electron contribution check
-        Int_t trackLabel=-1 ;
-        Double_t trackpt=-99;
+        Int_t trackLabel;
+        Double_t trackpt;
     };
 
     struct SV0Daugh {
         SV0Daugh(): fPt(0), fEta(0), iCharge(0), iCrossedTPC(0), iNoTPCCluster(0), fDCAtoPV(0), bTPCRefitOn(kFALSE), bIsKink(kFALSE){}
-          double fPt=0;
-          double fEta=0;
-          int iCharge=0;
-          int iCrossedTPC=0;
-          int iNoTPCCluster=0;
-          double fDCAtoPV=0;
-          bool bTPCRefitOn=kFALSE;
-          bool bIsKink=kFALSE;
+          double fPt;
+          double fEta;
+          int iCharge;
+          int iCrossedTPC;
+          int iNoTPCCluster;
+          double fDCAtoPV;
+          bool bTPCRefitOn;
+          bool bIsKink;
+
+          void Reset() {memset(this,0, sizeof(*this));}
+          void Print() const;
     };
 
     struct SV0Cand {
@@ -191,6 +210,7 @@ public:
         bIsInConeMed (kFALSE), // candidate within the median-cluster cone
          bIsOutsideCones (kFALSE) // candidate outside excluded cones
         {}
+
         bool bOnFly;
         double fDCAV0DaughvsDaugh;
         double fPA;
@@ -225,6 +245,9 @@ public:
         Bool_t bIsInConeRnd ; // candidate within the random cone
         Bool_t bIsInConeMed ; // candidate within the median-cluster cone
         Bool_t bIsOutsideCones ; // candidate outside excluded cones
+
+        void Reset() {memset(this,0, sizeof(*this)); bIsCandidateK0s=bIsCandidateLambda=bIsCandidateALambda=kTRUE;}
+        void Print() const;
     };
 
     //_________________________
@@ -275,14 +298,13 @@ public:
     void GetV0Properties(SV0Cand*&  sV0, AliAODv0* &v0);
     void GetV0DaughProperties(SV0Daugh* & sTrack,AliAODv0* &v0, bool isPos);
     void FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut);
-    Bool_t IsV0Daughter(const AliAODTrack* track);
+    Int_t IsV0Daughter(const AliAODTrack* track);
     void SelectV0Candidates(AliAODEvent *fAODIn);
     void GetV0MCTrueCandidates(AliAODEvent *fAODIn);
-    void PrintV0(SV0Cand*& sV0);
-    void PrintV0Daugh(SV0Daugh*& sV0);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
     AliAODMCParticle* GetMCTrack(int iLabel);
     int GetV0MCVeto(AliAODEvent* fAODIn, AliAODv0* v0, bool bIsCandidateK0s,bool bIsCandidateLambda, bool bIsCandidateALambda);
+    void FillV0EfficiencyHists(int isV0, int & jetflavour, double jetpt, bool &isV0Jet);
 
     void FillCandidateJet(Int_t CutIndex, Int_t JetFlavor);
     bool IsFromElectron(AliAODTrack *track);
@@ -312,8 +334,8 @@ public:
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
     void FillRecHistograms(int jetflavour, double jetpt, double eta, double phi);
     void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen);
-    void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks);
-    void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params);
+    void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks, bool isV0Jet);
+    void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params, bool isV0Jet);
     void FillTrackTypeResHists();
 
     //________________________________
@@ -467,6 +489,7 @@ private:
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
     Int_t fNThresholds;//
+    vector<TString> sTemplateFlavour;
 
     //______________________
     //Cuts
@@ -541,6 +564,11 @@ private:
     TH2D* fh2dKshortMassVsPt; //!
     TH2D* fh2dLamdaMassVsPt; //!
     TH2D* fh2dAnLamdaMassVsPt; //!
+
+    TH1D* h1DV0FalseRec; //!
+    TH1D* h1DV0TrueRec; //!
+    TH1D* h1DV0TrueDataDef; //!
+    TH1D* h1DV0TrueMCDef; //!
 
     TH1D* fh1dKshortPtMC;//!
     TH1D* fh1dLamdaPtMC;//!
@@ -635,7 +663,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 46)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 47)
 };
 
 #endif
