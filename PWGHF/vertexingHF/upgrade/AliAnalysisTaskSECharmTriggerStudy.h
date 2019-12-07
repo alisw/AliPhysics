@@ -262,7 +262,9 @@ public:
     void EnableDstars(bool enable = true)                {fEnableDstars = enable;}
     void EnableCascades(bool enable = true)              {fEnableCascades = enable;}
     void EnableBeauty3Prongs(bool enable = true)         {fEnableBeauty3Prongs = enable;}
-    void EnableBeauty4Prongs(bool enableB0 = true)       {fEnableBeauty4Prongs = 0; if(enableB0) fEnableBeauty4Prongs |= BIT(0);}
+    void EnableBeauty4Prongs(bool enableB0 = true,
+                             bool enableBs = true,
+                             bool enableLb = true)       {fEnableBeauty4Prongs = 0; if(enableB0) fEnableBeauty4Prongs |= BIT(0); if(enableBs) fEnableBeauty4Prongs |= BIT(1); if(enableLb) fEnableBeauty4Prongs |= BIT(2);}
     void SetFillOnlySignal(bool fillonlysignal = true)   {fFillOnlySignal = fillonlysignal;}
     void SetFillGenTree(bool fill = true)                {fFillGenTree = fill;}
 

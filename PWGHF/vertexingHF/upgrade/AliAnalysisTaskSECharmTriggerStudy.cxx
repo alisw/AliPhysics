@@ -429,7 +429,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 continue;
 
             int pdgCode = TMath::Abs(part->GetPdgCode());
-            if (pdgCode == 411 || pdgCode == 421 || pdgCode == 431 || pdgCode == 413 || pdgCode == 4122 || pdgCode == 521 || pdgCode == 511)
+            if (pdgCode == 411 || pdgCode == 421 || pdgCode == 431 || pdgCode == 413 || pdgCode == 4122 || pdgCode == 521 || pdgCode == 511 || pdgCode == 531 || pdgCode == 5122)
             {
                 int origin = 4; //beauty assumed to be always prompt
                 if (pdgCode != 521 && pdgCode != 511)
@@ -437,7 +437,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 if (origin != 4 && origin != 5)
                     continue; //keep only prompt or feed-down
 
-                int labDau[3] = {-1, -1, -1};
+                int labDau[4] = {-1, -1, -1, -1};
                 int pdgCodeDau0 = -1;
                 int decay = -1;
                 bool dauInAcc = false;
@@ -542,8 +542,26 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                     if (decay < 1 || labDau[0] == -1 || labDau[1] < 0)
                         continue;
 
-                    dauInAcc = AreDauInAcc(3, labDau);
+                    dauInAcc = AreDauInAcc(4, labDau);
                     FillGenerated(part, origin, kB0toDminuspi, dauInAcc);
+                }
+                if(pdgCode == 531 && fEnableBeauty4Prongs >> 1 & 1) //Bs
+                {
+                    decay = AliVertexingHFUtils::CheckBsDecay(fMCArray, part, labDau);
+                    if (decay < 1 || labDau[0] == -1 || labDau[1] < 0)
+                        continue;
+
+                    dauInAcc = AreDauInAcc(4, labDau);
+                    FillGenerated(part, origin, kBstoDsminuspi, dauInAcc);
+                }
+                if(pdgCode == 5122 && fEnableBeauty4Prongs >> 2 & 1) //Lb
+                {
+                    decay = AliVertexingHFUtils::CheckLbDecay(fMCArray, part, labDau);
+                    if (decay < 1 || labDau[0] == -1 || labDau[1] < 0)
+                        continue;
+
+                    dauInAcc = AreDauInAcc(4, labDau);
+                    FillGenerated(part, origin, kLbtoLcpluspi, dauInAcc);
                 }
             }
         }
