@@ -432,7 +432,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             if (pdgCode == 411 || pdgCode == 421 || pdgCode == 431 || pdgCode == 413 || pdgCode == 4122 || pdgCode == 521 || pdgCode == 511 || pdgCode == 531 || pdgCode == 5122)
             {
                 int origin = 4; //beauty assumed to be always prompt
-                if (pdgCode != 521 && pdgCode != 511)
+                if (pdgCode != 521 && pdgCode != 511 && pdgCode != 531 && pdgCode != 5122)
                     origin = AliVertexingHFUtils::CheckOrigin(fMCArray, part, true);
                 if (origin != 4 && origin != 5)
                     continue; //keep only prompt or feed-down
