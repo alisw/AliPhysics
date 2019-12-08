@@ -1001,6 +1001,10 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharm2Prong(AliAODRecoDecayHF2Prong
     ch2Prong.fDecayLength = cand->DecayLength();
     ch2Prong.fNormDecayLengthXY = cand->NormalizedDecayLengthXY();
     ch2Prong.fImpParProd = cand->Getd0Prong(0) * cand->Getd0Prong(1);
+    double ptDau[2] = {dynamic_cast<AliAODTrack*>(cand->GetDaughter(0))->Pt(), dynamic_cast<AliAODTrack*>(cand->GetDaughter(1))->Pt()};
+    double absd0Dau[2] = {TMath::Abs(cand->Getd0Prong(0)), TMath::Abs(cand->Getd0Prong(1))};
+    ch2Prong.fd0MinDau = *std::min_element(absd0Dau, absd0Dau+2);
+    ch2Prong.fPtMinDau = *std::min_element(ptDau, ptDau+2);
     ch2Prong.fProngIdx0 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(0))->GetID();
     ch2Prong.fProngIdx1 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(1))->GetID();
 
@@ -1084,6 +1088,10 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharm3Prong(AliAODRecoDecayHF3Prong
     ch3Prong.fDecayLength = cand->DecayLength();
     ch3Prong.fNormDecayLengthXY = cand->NormalizedDecayLengthXY();
     ch3Prong.fSigmaVtx = cand->GetSigmaVert();
+    double ptDau[3] = {dynamic_cast<AliAODTrack*>(cand->GetDaughter(0))->Pt(), dynamic_cast<AliAODTrack*>(cand->GetDaughter(1))->Pt(), dynamic_cast<AliAODTrack*>(cand->GetDaughter(2))->Pt()};
+    double absd0Dau[3] = {TMath::Abs(cand->Getd0Prong(0)), TMath::Abs(cand->Getd0Prong(1)), TMath::Abs(cand->Getd0Prong(2))};
+    ch3Prong.fd0MinDau = *std::min_element(absd0Dau, absd0Dau+3);
+    ch3Prong.fPtMinDau = *std::min_element(ptDau, ptDau+3);
     ch3Prong.fProngIdx0 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(0))->GetID();
     ch3Prong.fProngIdx1 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(1))->GetID();
     ch3Prong.fProngIdx2 = dynamic_cast<AliAODTrack*>(cand->GetDaughter(2))->GetID();
@@ -1235,6 +1243,13 @@ void AliAnalysisTaskSECharmTriggerStudy::FillDstar(AliAODRecoCascadeHF *cand, Al
     dstar.fCosPXYD0 = dau->CosPointingAngleXY();
     dstar.fDecayLengthD0 = dau->DecayLength();
     dstar.fNormDecayLengthXYD0 = dau->NormalizedDecayLengthXY();
+    double ptDau[3] = {dynamic_cast<AliAODTrack*>(cand->GetBachelor())->Pt(), dynamic_cast<AliAODTrack*>(dau->GetDaughter(0))->Pt(), dynamic_cast<AliAODTrack*>(dau->GetDaughter(1))->Pt()};
+    double absd0Dau[3] = {TMath::Abs(cand->Getd0Prong(0)), TMath::Abs(dau->Getd0Prong(0)), TMath::Abs(dau->Getd0Prong(1))};
+    dstar.fd0MinDau = *std::min_element(absd0Dau, absd0Dau+3);
+    dstar.fPtMinDau = *std::min_element(ptDau, ptDau+3);
+    dstar.fProngIdx0 = dynamic_cast<AliAODTrack*>(cand->GetBachelor())->GetID();
+    dstar.fProngIdx1 = dynamic_cast<AliAODTrack*>(dau->GetDaughter(0))->GetID();
+    dstar.fProngIdx2 = dynamic_cast<AliAODTrack*>(dau->GetDaughter(1))->GetID();
 
     dstar.fSelBit = 0;
     if (issel)
@@ -1301,6 +1316,13 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharmCascade(AliAODRecoCascadeHF *c
     chCasc.fY = cand->Y(4122);
     chCasc.fCosPV0 = cand->CosV0PointingAngle();
     chCasc.fCosPXYV0 = cand->CosV0PointingAngleXY();
+    double ptDau[3] = {dynamic_cast<AliAODTrack*>(cand->GetBachelor())->Pt(), dynamic_cast<AliAODTrack*>(dau->GetDaughter(0))->Pt(), dynamic_cast<AliAODTrack*>(dau->GetDaughter(1))->Pt()};
+    double absd0Dau[3] = {TMath::Abs(cand->Getd0Prong(0)), TMath::Abs(dau->Getd0Prong(0)), TMath::Abs(dau->Getd0Prong(1))};
+    chCasc.fd0MinDau = *std::min_element(absd0Dau, absd0Dau+3);
+    chCasc.fPtMinDau = *std::min_element(ptDau, ptDau+3);
+    chCasc.fProngIdx0 = dynamic_cast<AliAODTrack*>(cand->GetBachelor())->GetID();
+    chCasc.fProngIdx1 = dynamic_cast<AliAODTrack*>(dau->GetDaughter(0))->GetID();
+    chCasc.fProngIdx2 = dynamic_cast<AliAODTrack*>(dau->GetDaughter(1))->GetID();
 
     chCasc.fSelBit = 0;
     if (issel)
