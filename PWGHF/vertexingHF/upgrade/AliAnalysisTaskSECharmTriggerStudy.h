@@ -42,6 +42,8 @@ struct Charm2Prong
     Double32_t fDecayLength;            //[0.0,6.5536,16]
     Double32_t fNormDecayLengthXY;      //[0.0,102.4,10]
     Double32_t fImpParProd;             //[-0.32768,0.32768,16]
+    Double32_t fPtMinDau;               //[0.0,65.535,16]
+    Double32_t fd0MinDau;               //[0.0,0.065536,16]
     int fGenLabel;                      /// label to match with MC
     int fProngIdx0;                     /// prong index 0
     int fProngIdx1;                     /// prong index 1
@@ -68,6 +70,8 @@ struct Charm3Prong
     Double32_t fDecayLength;            //[0.0,6.5535,16]
     Double32_t fNormDecayLengthXY;      //[0.0,102.3,10]
     Double32_t fSigmaVtx;               //[0.0,0.08190,12]
+    Double32_t fPtMinDau;               //[0.0,65.535,16]
+    Double32_t fd0MinDau;               //[0.0,0.065536,16]
     int fGenLabel;                      /// label to match with MC
     int fProngIdx0;                     /// prong index 0
     int fProngIdx1;                     /// prong index 1
@@ -87,7 +91,12 @@ struct Dstar
     Double32_t fCosPXYD0;               //[0.67233000,1.,15]
     Double32_t fDecayLengthD0;          //[0.0,6.5535,16]
     Double32_t fNormDecayLengthXYD0;    //[0.0,102.3,10]
+    Double32_t fPtMinDau;               //[0.0,65.535,16]
+    Double32_t fd0MinDau;               //[0.0,0.065536,16]
     int fGenLabel;                      /// label to match with MC
+    int fProngIdx0;                     /// prong index 0
+    int fProngIdx1;                     /// prong index 1
+    int fProngIdx2;                     /// prong index 2
     unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
     unsigned char fDecay;               /// flag for decay channel
     int fSelBit;                        /// selection bit
@@ -103,7 +112,12 @@ struct CharmCascade
     Double32_t fY;                      //[-1.023,1.023,11]
     Double32_t fCosPV0;                 //[0.67233000,1.,15]
     Double32_t fCosPXYV0;               //[0.67233000,1.,15]
+    Double32_t fPtMinDau;               //[0.0,65.535,16]
+    Double32_t fd0MinDau;               //[0.0,0.065536,16]
     int fGenLabel;                      /// label to match with MC
+    int fProngIdx0;                     /// prong index 0
+    int fProngIdx1;                     /// prong index 1
+    int fProngIdx2;                     /// prong index 2
     unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
     unsigned char fDecay;               /// flag for decay channel
     int fSelBit;                        /// selection bit
