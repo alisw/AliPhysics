@@ -1530,7 +1530,8 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==1 || resp_onlyPID==3) )  {
 	  if(!pSigmaC) fhSparseAnalysisSigma->Fill(pointSigma);
 	  else {
-	    AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(io3Prong->GetDaughterLabel(0)));
+	    AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
+	    AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 	    if(TMath::Abs(pProt->GetPdgCode())==2212){
 	      pointSigma[10]=ptsigmacMC;
 	      pointSigma[0]=ptlambdacMC;
@@ -1554,7 +1555,8 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		fhSparseAnalysisSigma->Fill(pointSigma);	    
 	      }
 	      else {
-		AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(io3Prong->GetDaughterLabel(0)));
+		AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
+		AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 		if(TMath::Abs(pProt->GetPdgCode())==2212){
 		  pointSigma[10]=ptsigmacMC;
 		  pointSigma[0]=ptlambdacMC;		 
@@ -1604,7 +1606,8 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==2 || resp_onlyPID==3)) {
 	  if(!pSigmaC)fhSparseAnalysisSigma->Fill(pointSigma);	    
 	  else {
-	    AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(io3Prong->GetDaughterLabel(2)));
+	    AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
+	    AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 	    if(TMath::Abs(pProt->GetPdgCode())==2212){
 	      pointSigma[10]=ptsigmacMC;
 	      pointSigma[0]=ptlambdacMC;
@@ -1628,7 +1631,8 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		fhSparseAnalysisSigma->Fill(pointSigma);	    
 	      }
 	      else{
-		AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(io3Prong->GetDaughterLabel(2)));
+		AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
+		AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 		if(TMath::Abs(pProt->GetPdgCode())==2212){
 		  pointSigma[10]=ptsigmacMC;
 		  pointSigma[0]=ptlambdacMC;
@@ -2444,7 +2448,10 @@ Int_t AliAnalysisTaskSEXicTopKpi::ConvertXicMCinfo(Int_t infoMC){
 AliAODMCParticle* AliAnalysisTaskSEXicTopKpi::MatchRecoCandtoMCAcc(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin){
    
   AliAODMCParticle *part=MatchRecoCandtoMC(io3Prong,isTrueLambdaCorXic,checkOrigin);  
-  if(!part)return 0x0;
+  if(!part){
+    isTrueLambdaCorXic=0;
+    return 0x0;
+  }
 
   Bool_t isInAcc=kTRUE;
   // check GenAcc level
@@ -2452,20 +2459,24 @@ AliAODMCParticle* AliAnalysisTaskSEXicTopKpi::MatchRecoCandtoMCAcc(AliAODRecoDec
     if(!fCutsXic->IsInFiducialAcceptance(part->Pt(),part->Y())){
       isInAcc=kFALSE;
       part=0x0;
+      isTrueLambdaCorXic=0;
     }
   }
   else {
     if(TMath::Abs(part->Y())>0.8){
       isInAcc=kFALSE;
       part=0x0;
+      isTrueLambdaCorXic=0;
     }
   }
   if(isInAcc){
     for(Int_t k=0;k<3;k++){
-      AliAODMCParticle *mcpartdau=(AliAODMCParticle*)fmcArray->At(TMath::Abs(io3Prong->GetDaughterLabel(k)));
+      AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(k);
+      AliAODMCParticle *mcpartdau=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
       if(TMath::Abs(mcpartdau->Eta())>0.9){
 	isInAcc=kFALSE;
 	part=0x0;
+	isTrueLambdaCorXic=0;
 	break;
       }
     }
