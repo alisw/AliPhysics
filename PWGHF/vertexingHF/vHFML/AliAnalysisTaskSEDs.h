@@ -70,9 +70,12 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetCreateMLTree(Bool_t flag = kTRUE) {fCreateMLtree = flag;}
   void SetMLTreePIDopt(int opt) {fPIDopt = opt;} // default AliHFMLVarHandlerDstoKKpi::kNsigmaDetAndCombPID
   void SetMLTreeAddTrackVar(Bool_t flag = kTRUE) {fAddSingleTrackVar = flag;}
-  void SetFillOnlySignalInMLtree(Bool_t opt = kTRUE){
+  void SetFillOnlySignalInMLtree(Bool_t opt = kTRUE) {
     if(fReadMC) fFillOnlySignal = opt;
-    else AliError("fReadMC has to be kTRUE");
+    else {
+      if(opt)
+        AliError("fReadMC has to be kTRUE");
+    }
   }
   void EnableMLTreeEvtSampling(Float_t fractokeep, ULong_t seed) {
     fEnableEvtSampling = kTRUE;
