@@ -513,7 +513,7 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   /// Run 1 pp
   if ((fCurrentRun >= 140164 && fCurrentRun <= 146860) ||  // pp 2.76 TeV (LHC11a)
       (fCurrentRun >= 121692 && fCurrentRun <= 126437) ||  // pp 7 TeV (LHC10d)
-      (fCurrentRun >= 176701 && fCurrentRun <= 192772)) {  // pp 8 TeV (LHC12a-i)
+      (fCurrentRun >= 172439 && fCurrentRun <= 193766)) {  // pp 8 TeV (LHC12a-i)
     SetupRun1pp();
     return;
   }
