@@ -90,7 +90,10 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetMLTreeAddTrackVar(Bool_t flag = kTRUE) {fAddSingleTrackVar = flag;}
   void SetFillOnlySignalInMLtree(Bool_t opt = kTRUE) {
     if(fReadMC) fFillOnlySignal = opt;
-    else AliError("fReadMC has to be kTRUE");
+    else {
+      if(opt)
+        AliError("fReadMC has to be kTRUE");
+    }
   }
 
   /// Implementation of interface methods
