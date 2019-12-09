@@ -150,9 +150,9 @@ void AliForwardNUATask::UserExec(Option_t *)
   //
   // Get the event validation object
   Bool_t isgoodrun = kTRUE;
-  if (!fSettings.mc){
-    isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
-  }
+  // if (!fSettings.mc){
+  //   isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
+  // }
 
   ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
   if (!ev_val->IsValidEvent() || !isgoodrun){
