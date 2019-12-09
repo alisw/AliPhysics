@@ -978,7 +978,7 @@ Int_t  AliGenPythiaPlus::GenerateMB()
 	}
 
 	if(fCutOnChild && TMath::Abs(pdg) == fPdgCodeParticleforAcceptanceCut) {
-	  Int_t mi = partCheck->GetFirstMother() - 1;
+	  Int_t mi = (fPythia->Version() == 6) ? (partCheck->GetFirstMother() - 1) :(partCheck->GetFirstMother()) ;
 	  if(mi<0) continue;
 	  mother = (TParticle*)fParticles.At(mi);
 	  mpdg=TMath::Abs(mother->GetPdgCode());
