@@ -2485,6 +2485,18 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
     
     if (isLc2V0bachelortagged && fWriteVariableTreeLc2V0bachelor){
       
+      if(fFiltCutsLc2V0bachelor->GetUsePreselect()){
+        TObjArray arrTracks(2);
+        for(Int_t ipr=0;ipr<2;ipr++){
+          AliAODTrack *tr;
+          if(ipr==0) tr=vHF->GetProng(aod,d,ipr);
+          else tr = (AliAODTrack*)(aod->GetV0(d->GetProngID(1)));
+          arrTracks.AddAt(tr,ipr);
+        }
+        Int_t PreSelectLc = fFiltCutsLc2V0bachelor->PreSelect(arrTracks);
+        if(PreSelectLc==0) continue;
+      }
+
       fNentries->Fill(33);
       nFilteredLc2V0bachelor++;
       if((vHF->FillRecoCasc(aod,d,kFALSE,fLc2V0bachelorCalcSecoVtx))) {//Fill the data members of the candidate only if they are empty.
