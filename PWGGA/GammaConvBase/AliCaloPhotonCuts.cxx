@@ -5830,9 +5830,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= 0.9930726691;
           }
         //pp 13 TeV LHC16 || LHC17 || LHC18
-      } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
-        if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
-        if(fClusterType==2) { //13 TeV PCM-PHOS Exponential function fitted
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
+          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
+          if(fClusterType==2) { //13 TeV PCM-PHOS Exponential function fitted
             // energy /= FunctionNL_kSDM(energy, 0.964058, -2.46552, -0.384301); //old
             energy /= FunctionNL_kSDM(energy, 0.966115, -2.7256, -1.02957, 1.0);
             energy /= 1.022224;
@@ -6080,6 +6080,24 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= (FunctionNL_kSDM(energy, 0.94723, -3.44986, -0.483821));
           }
         } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+    case 19:
+      if(isMC>0){
+         // pp 13 TeV PCM-PHOS NL with PHOS finetuning
+         if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
+           if(fClusterType==2) { //13 TeV PCM-PHOS Exponential function fitted, corrected by PHOS
+               energy /= FunctionNL_kSDM(energy, 0.966115, -2.7256, -1.02957, 1.0);
+               energy /= 1.022224;
+               energy /= FunctionNL_LinLogConst(energy,  0.374346, 2.08291, 1.12166, -0.33141, 0.00247156, -0.124062, -0.119848);
+           }
+        } else fPeriodNameAvailable = kFALSE;
+      } else if (isMC==0){
+          if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow ){
+              if(fClusterType==2) {
+                energy /= 1.022224;
+              }
+          }
       }
       break;
 
@@ -7272,6 +7290,29 @@ Float_t AliCaloPhotonCuts::FunctionNL_ExpExp(Float_t e, Float_t p0, Float_t p1, 
       return 1.;
 }
 
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_LinLogConst(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t const1, Float_t const2){
+    //Function splitted into multiple parts:
+    //Constant Correction, whole energery range
+    //Linear Function, from 0 to p0
+    //Logarithmic Function from p0 to p1
+    //Constant from p1
+    //    p2+((e<p0)*(p3*e))+((e>=p0)*(e<p1)*( (p3*p0)+(TMath::Log(p4*(e-p0)+1))))+((e>=p1)*((p3*p0)+(TMath::Log(p4*(p1-p0)+1))));
+    // => p2+((e<p0)*(p3*e))+((e>=p0)*(e<p1)*((const1)+(TMath::Log(p4*(e-p0)+1))))+((e>=p1)*const2);
+    Float_t ret=p2;
+    if (e<p0){
+        ret+=e*p3;
+    } else if ((e>=p0)&&(e<p1)) {
+        ret+=const1+TMath::Log(p4*(e-p0)+1);
+    } else {
+        ret+=const2;
+    }
+    if (ret != 0.)
+      return ret;
+    else
+      return 1.;
+}
 
 
 //************************************************************************
