@@ -711,6 +711,7 @@ void AliGenPythiaPlus::Generate()
 		    if (kfl == fFlavorSelect) flavorOK = kTRUE;
 		}
 		switch (fStackFillOpt) {
+		case kHeavyFlavor:
 		case kFlavorSelection:
 		    selectOK = kTRUE;
 		    break;
@@ -1029,6 +1030,8 @@ Int_t  AliGenPythiaPlus::GenerateMB()
 	if ((ks == 1  && kf!=0 && KinematicSelection(iparticle, 0)) ||
 	    (ks != 1) ||
 	    ((fProcess == kPyJets || fProcess == kPyJetsPWHG) && ks == 21 && km == 0 && i>1)) {
+
+	    if(fStackFillOpt == kHeavyFlavor && !IsFromHeavyFlavor(i)) continue;
 	    nc++;
 	    if (ks == 1) trackIt = 1;
 
@@ -1529,6 +1532,27 @@ void AliGenPythiaPlus::RotatePhi(Bool_t& okdd)
   
   // reset the value for next event
   fPHOSRotateCandidate = -1;
+}
+
+/// Check if this is a heavy flavor decay product
+Bool_t AliGenPythiaPlus::IsFromHeavyFlavor(Int_t ipart)
+{
+  TParticle *  part = (TParticle *) fParticles.At(ipart);
+  Int_t mpdg = TMath::Abs(part->GetPdgCode());
+  Int_t mfl  = Int_t (mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg))));
+  if (mfl >= 4 && mfl < 6) return kTRUE; // HF hadron
+  
+  // seach if originates from HF haron decay
+  Int_t imo = (fPythia->Version() == 6) ? (part->GetFirstMother()-1) : (part->GetFirstMother());
+  TParticle* pm = part;
+  while (imo >  -1) {
+    pm  =  (TParticle*)fParticles.At(imo);
+    mpdg = TMath::Abs(pm->GetPdgCode());
+    mfl  = Int_t (mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg))));
+    if ((mfl > 3) && (mfl <6) && mpdg > 400) return kTRUE;
+    imo = (fPythia->Version() == 6) ? (pm->GetFirstMother()-1) : (pm->GetFirstMother());
+  }
+  return kFALSE;
 }
 
 ///

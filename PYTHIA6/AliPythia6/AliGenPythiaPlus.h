@@ -33,7 +33,7 @@ class AliGenPythiaPlus : public AliGenMC
 {
  public:
 
-    typedef enum {kFlavorSelection, kParentSelection} StackFillOpt_t;
+    typedef enum {kFlavorSelection, kParentSelection, kHeavyFlavor} StackFillOpt_t;
     typedef enum {kCountAll, kCountParents, kCountTrackables} CountMode_t;
     typedef enum {kCluster, kCell} JetRecMode_t;
 	  
@@ -142,6 +142,7 @@ class AliGenPythiaPlus : public AliGenMC
     Bool_t IsInEMCAL(Float_t phi, Float_t eta) const;
     Bool_t IsInPHOS  (Float_t phi, Float_t eta, Int_t iparticle) ;
     Bool_t IsInBarrel(Float_t eta) const;
+    Bool_t IsFromHeavyFlavor(Int_t ipart);
 
     
     virtual void  SetCheckPHOS         (Bool_t b) {fCheckPHOS    = b;}
