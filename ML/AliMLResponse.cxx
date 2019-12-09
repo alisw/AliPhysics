@@ -85,7 +85,7 @@ AliMLResponse::AliMLResponse()
 }
 
 //________________________________________________________________
-AliMLResponse::AliMLResponse(const Char_t* name, const Char_t* title)
+AliMLResponse::AliMLResponse(const Char_t *name, const Char_t *title)
     : TNamed(name, title), fConfigFilePath{""}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{},
       fNVariables{}, fBinsBegin{}, fRaw{} {
   //
@@ -206,7 +206,7 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
 
   int bin = FindBin(binvar);
   if (bin == 0 || bin == fNBins) {
-    AliWarning("Binned variable outside range, no model available! Exit");
+    AliWarning("Binned variable outside range, no model available!");
     return -999.;
   }
 
@@ -218,5 +218,14 @@ bool AliMLResponse::IsSelected(double binvar, map<string, double> varmap) {
   int bin     = FindBin(binvar);
   double pred = Predict(binvar, varmap);
 
+  return pred >= fModels[bin - 1].GetScoreCut();
+}
+
+//________________________________________________________________
+bool AliMLResponse::IsSelected(double binvar, map<string, double> varmap, double *score) {
+  int bin     = FindBin(binvar);
+  double pred = Predict(binvar, varmap);
+
+  *score = pred;
   return pred >= fModels[bin - 1].GetScoreCut();
 }

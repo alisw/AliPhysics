@@ -2132,6 +2132,29 @@ Int_t AliRDHFCutsBPlustoD0Pi::IsSelected(TObject* obj, Int_t selectionLevel, Ali
 
   return 1;
 }
+
+Bool_t AliRDHFCutsBPlustoD0Pi::IsThisDaughterSelected(AliAODTrack *track, AliAODVertex *primary, const AliAODEvent* aod) {
+  //
+  // Daughter track selection
+  //
+
+  if(!fTrackCuts) return kTRUE;
+  if(!track) {return kFALSE;}
+  if(track->Charge()==0) return kFALSE; // it's not a track, but a V0
+
+  Double_t pos[3],cov[6];
+  primary->GetXYZ(pos);
+  primary->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+
+  Bool_t retval=kTRUE;
+
+  // SetUseTPCtrackCutsOnThisDaughter(kTRUE);
+  if(!IsDaughterSelected(track,&vESD,fTrackCuts,aod)) retval = kFALSE;
+
+  return retval;
+}
+
 //_________________________________________________________________________________________________
 Int_t AliRDHFCutsBPlustoD0Pi::IsD0FromBPlusSelectedMVA(Double_t ptBPlus, TObject* obj, Int_t selectionLevel, AliAODEvent* /*aod*/, AliAODVertex *primaryVertex, Double_t bz) {
   //

@@ -35,7 +35,7 @@ public:
   void SetImproveTracks(Bool_t flag=kTRUE) { fImproveTracks=flag; return; }
   void SetUpdateSTCovMatrix(Bool_t opt=kTRUE){fUpdateSTCovMatrix=opt;}
   void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
-  void SetOnlyProcessFilledCand(Bool_t flag=kTRUE){ fOnlyProcessFilledCand = kTRUE;}
+  void SetOnlyProcessFilledCand(Bool_t flag=kTRUE){ fOnlyProcessFilledCand = flag;}
 
 private:
   AliAnalysisTaskSEImproveITS3(const AliAnalysisTaskSEImproveITS3&);

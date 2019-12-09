@@ -84,6 +84,8 @@ public:
   double Predict(double binvar, map<string, double> varmap);
   /// return true if predicted score for map is above the threshold given in the config
   bool IsSelected(double binvar, map<string, double> varmap);
+  /// overload for getting the model score too
+  bool IsSelected(double binvar, map<string, double> varmap, double *score);
 
 protected:
   string fConfigFilePath;    /// path of the config file

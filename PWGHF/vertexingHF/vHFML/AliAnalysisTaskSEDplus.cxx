@@ -761,7 +761,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     fMLhandler->SetAddSingleTrackVars(fAddSingleTrackVar);
     if (fReadMC && fFillOnlySignal)
       fMLhandler->SetFillOnlySignal();
-    fMLtree = fMLhandler->BuildTree("treeMLDs", "treeMLDs");
+    fMLtree = fMLhandler->BuildTree("treeMLDplus", "treeMLDplus");
     fMLtree->SetMaxVirtualSize(1.e+8);
     PostData(4, fMLtree);
   }
