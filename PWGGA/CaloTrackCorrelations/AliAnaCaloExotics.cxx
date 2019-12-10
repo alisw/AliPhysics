@@ -357,6 +357,7 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
     fhEventCutClusterEnergy        [icase] = 0;
     fhEventCutClusterEnergyECellMax[icase] = 0;
     fhEventCutClusterEtaPhiGrid    [icase] = 0; 
+    fhEventCutBunchCrossing        [icase] = 0;
   }
 }
 
@@ -1656,6 +1657,21 @@ void AliAnaCaloExotics::ClusterHistogramsAfterEventCut
   Double_t v[3] = {0,0,0};
     
   AliDebug(1,Form("In %s there are %d clusters", GetCalorimeterString().Data(), nCaloClusters));
+  
+  //if ( bc < 0 || bc > 3563 ) printf("Unexpected BC: %d\n", bc);
+  
+  fhEventCutBunchCrossing[0]->Fill(bc, GetEventWeight());
+  
+  if ( fAcceptEvent )
+  fhEventCutBunchCrossing[1]->Fill(bc, GetEventWeight());
+  
+  if ( fEventNStripActive <= fEventMaxNumberOfStrips )
+  {
+    fhEventCutBunchCrossing[2]->Fill(bc, GetEventWeight());
+    
+    if ( fAcceptEvent )
+    fhEventCutBunchCrossing[3]->Fill(bc, GetEventWeight());
+  }
   
   // Loop over CaloClusters
   for(Int_t iclus = 0; iclus < nCaloClusters; iclus++)
@@ -4735,6 +4751,13 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       fhEventCutClusterEtaPhiGrid[icase]->SetXTitle("column-#eta");
       fhEventCutClusterEtaPhiGrid[icase]->SetYTitle("row-#varphi (rad)");
       outputContainer->Add(fhEventCutClusterEtaPhiGrid[icase]);
+      
+      fhEventCutBunchCrossing[icase] = new TH1I 
+      (Form("hEventCutBunchCrossing_%s"        ,evtSelName[icase].Data()),
+       Form("Selected event bunch crossing, %s",evtSelName[icase].Data()),
+       3564, -0.5, 3563.5) ;
+      fhEventCutBunchCrossing[icase]->SetXTitle("Bunch Crossing");
+      outputContainer->Add(fhEventCutBunchCrossing[icase]);
     }
   }
   

@@ -587,6 +587,9 @@ public:
   TH2F *   fhEventCutClusterEnergyECellMax[4];                //!<! Cluster energy vs max cell energy, for event selection criteria, non exotic, within time cut range
   TH2F *   fhEventCutClusterEtaPhiGrid[4];                    //!<! Highest energy cell location in column-row map, for event selection criteria, non exotic, within time cut range, above fEMinForExo
   
+  TH1I *   fhEventCutBunchCrossing[4];                        //!<! Bunch crossing of events for different event selection criteria
+
+  
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;
     
