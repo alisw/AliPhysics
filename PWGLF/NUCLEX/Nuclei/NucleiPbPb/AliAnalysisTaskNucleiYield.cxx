@@ -35,7 +35,6 @@
 #include "AliInputEventHandler.h"
 #include "AliVEventHandler.h"
 #include "AliAODTrack.h"
-#include "AliESDtrack.h"
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
 
@@ -151,8 +150,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireITSpidSigmas{-1.f}
    ,fRequireTOFpidSigmas{-1.f}
    ,fRequireMinEnergyLoss{0.}
-   ,fRequireDeadZoneWidth{0.},
-   ,fRequireCutGeoNcrNclLength{0.},
+   ,fRequireDeadZoneWidth{0.}
+   ,fRequireCutGeoNcrNclLength{0.}
    ,fRequireCutGeoNcrNclGeom1Pt{0.}
    ,fRequireVetoSPD{false}
    ,fRequireMaxMomentum{-1.}

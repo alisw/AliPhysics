@@ -28,6 +28,7 @@
 #include <AliPIDResponse.h>
 #include <AliPID.h>
 #include <TLorentzVector.h>
+#include "AliESDtrack.h"
 #include "AliEventCuts.h"
 #include <AliMCEvent.h>
 #include <AliAODMCParticle.h>
