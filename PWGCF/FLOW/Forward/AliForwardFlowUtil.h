@@ -27,9 +27,9 @@ class AliForwardFlowUtil : public TObject {
   typedef std::vector< Double_t > edgeContainer;
 
  public:
-   AliForwardFlowUtil();
-   Int_t GetNUARunNumber(Int_t runnumber);
-   Bool_t IsGoodRun(Int_t runnumber);
+  AliForwardFlowUtil();
+  Int_t GetNUARunNumber(Int_t runnumber);
+  Bool_t IsGoodRun(Int_t runnumber);
   Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc,TH2D* hOutliers);
   void FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& forwardDist);
   void FillDataCentral(TH2D*& centralDist);
