@@ -143,19 +143,6 @@ AliAnalysisDataContainer* makeWeightContainerSecCent(TString sec_file, TString c
 }
 
 
-AliAnalysisDataContainer* makeEmptyContainer(){
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliAnalysisDataContainer* weights;
-
-  TList* weights_list = new TList();
-  weights_list->SetName("empty");
-  
-  weights = mgr->CreateContainer("emptyContainer",TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
-
-  return weights;
-}
-
-
 void connectContainer(AliAnalysisDataContainer* container,AliForwardFlowRun2Task* task){
 
   task->fSettings.nuacentral = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("nuacentral") );

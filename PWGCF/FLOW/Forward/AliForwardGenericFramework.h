@@ -107,7 +107,7 @@ public:
       Int_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
       Int_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
       Double_t factor = fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
-      if (factor) weight = weight*factor;
+      if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*factor;
       else weight = 0.;
     }
     return weight;
@@ -138,7 +138,7 @@ public:
       Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
       Int_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
       Double_t factor = fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
-      if (factor) weight = weight*factor;
+      if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*factor;
       else weight = 0.;
     }
     return weight;
@@ -150,12 +150,16 @@ public:
     if (fSettings.seccorr_fwd){
       Int_t seceta = fSettings.seccorr_fwd->GetZaxis()->FindBin(eta);
       Int_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
-      weight = weight*fSettings.seccorr_fwd->GetBinContent(secn,secvtz,seceta);
+      Double_t factor = fSettings.seccorr_fwd->GetBinContent(secn,secvtz,seceta);
+      if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*factor;
+      else weight = 0.;
     }
     if (fSettings.seccorr_cent){
       Int_t seceta = fSettings.seccorr_cent->GetYaxis()->FindBin(eta);
       Int_t seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent);
-      weight = weight*fSettings.seccorr_cent->GetBinContent(secn,seceta,seccent);
+      Double_t factor = fSettings.seccorr_cent->GetBinContent(secn,seceta,seccent);
+      if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*factor;
+      else weight = 0.;      
     }
     return weight;
   }
