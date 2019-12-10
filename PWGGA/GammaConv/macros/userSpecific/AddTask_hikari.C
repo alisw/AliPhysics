@@ -463,18 +463,21 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
 
     TString dataInputMultHisto    = "";
     TString mcInputMultHisto      = "";
-    TString triggerString         = (cuts.GetEventCut(i)).Data();
-    triggerString                 = triggerString(3,2);
-    if (triggerString.CompareTo("03")==0)  triggerString  = "00";
-
-    dataInputMultHisto            = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
-    mcInputMultHisto              = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
-
     if (doMultWeight){
-      cout << "enabling mult weighting" << endl;
-      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
+      cout << "INFO enableling mult weighting" << endl;
+      if( periodNameAnchor.CompareTo("LHC15n")==0  ||
+	  periodNameAnchor.CompareTo("LHC16d")==0  ||
+	  periodNameAnchor.CompareTo("LHC17p")==0  ||
+	  periodNameAnchor.CompareTo("LHC17q")==0  ||
+	  periodNameAnchor.CompareTo("LHC16qt")==0  ){
+	TString cutNumber = cuts.GetEventCut(i);
+	TString centCut = cutNumber(0,3);  // first three digits of event cut
+	dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
+	mcInputMultHisto   = Form("%s_%s", periodNameV0Reader.Data(), centCut.Data());
+	cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+	analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
+      }
     }
-
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);
