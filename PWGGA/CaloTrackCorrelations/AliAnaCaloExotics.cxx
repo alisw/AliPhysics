@@ -197,6 +197,7 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
   fEnergyBins [3] =  22; fEnergyBins [4] =  30;  fEnergyBins [5] =  50;
   fEnergyBins [6] =  75; fEnergyBins [7] = 100;  fEnergyBins [8] = 125;
   fEnergyBins [9] = 150; fEnergyBins[10] = 175;  fEnergyBins[11] = 200;
+  fEnergyBins [12]= 250; fEnergyBins[13] = 300;  
   
   fCellEnMins[0] = 0.5;  fCellEnMins[1] = 1.0; fCellEnMins[2] = 2.0;
   fCellEnMax = 15;
@@ -1886,10 +1887,12 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   e2Binning.SetMinimum(0.1);
   e2Binning.AddStep(  2,0.10); // 19
   e2Binning.AddStep(  5,0.25); // 12
-  e2Binning.AddStep( 10,0.50); // 10
-  e2Binning.AddStep( 25,1.00); // 15
-  e2Binning.AddStep( 50,2.50); //  8
-  e2Binning.AddStep(100,5.00); // 10
+  if(ptmax >  5) e2Binning.AddStep( 10, 0.50); // 10
+  if(ptmax > 10) e2Binning.AddStep( 25, 1.00); // 15
+  if(ptmax > 25) e2Binning.AddStep( 50, 2.50); //  8
+  if(ptmax > 50) e2Binning.AddStep(100, 5.00); // 10
+  if(ptmax > 100)e2Binning.AddStep(200,10.00); // 10
+  if(ptmax > 200)e2Binning.AddStep(300,25.00); // 4
   TArrayD e2BinsArray;
   e2Binning.CreateBinEdges(e2BinsArray);
   

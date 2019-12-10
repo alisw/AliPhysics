@@ -179,7 +179,7 @@ public:
   Int_t    fLowNCellsCutSM3Strip;               ///<  SM3 strips low activity if n cells above this value
   
   /// Total number of cluster energy bins histograms
-  static const Int_t fgkNEBins = 12;
+  static const Int_t fgkNEBins = 14;
   Float_t  fEnergyBins[fgkNEBins];              ///<  Energy bins for some histograms
  
   static const Int_t fgkNCellEnMinBins   = 3;
