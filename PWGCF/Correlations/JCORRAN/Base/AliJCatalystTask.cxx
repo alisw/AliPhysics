@@ -71,6 +71,7 @@ AliJCatalystTask::AliJCatalystTask():
 
 //______________________________________________________________________________
 AliJCatalystTask::AliJCatalystTask(const char *name):
+	AliAnalysisTaskSE(name),
 	fInputList(0),
 	fInputListALICE(0),
 	fTaskName(name),
