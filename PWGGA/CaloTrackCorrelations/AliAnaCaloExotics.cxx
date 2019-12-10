@@ -1402,13 +1402,16 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
         if( colDiffAbs < 4 && rowDiffAbs < 4 ) 
         {
           if(colDiffAbs > 1) printf("Same colDiff %d rowDiff %d\n",colDiffAbs,rowDiffAbs);
-          
-          fhCellEnSameColRowDiff[colDiffAbs][rowDiffAbs]->Fill(en, amp, GetEventWeight());
-          fhTimeDiffClusSameCellColRowDiff[colDiffAbs][rowDiffAbs]->Fill(en, tdiff, GetEventWeight());
+         
           if ( exoticity > fExoCut )
           {
             fhCellEnSameColRowDiffExoCut[colDiffAbs][rowDiffAbs]->Fill(en, amp, GetEventWeight());
             fhTimeDiffClusSameCellColRowDiffExoCut[colDiffAbs][rowDiffAbs]->Fill(en, tdiff, GetEventWeight());
+          }
+          else
+          {
+            fhCellEnSameColRowDiff[colDiffAbs][rowDiffAbs]->Fill(en, amp, GetEventWeight());
+            fhTimeDiffClusSameCellColRowDiff[colDiffAbs][rowDiffAbs]->Fill(en, tdiff, GetEventWeight());
           }
         }
 
@@ -1420,13 +1423,15 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
 
         if( colDiffAbs < 4 && rowDiffAbs < 4 ) 
         {
-          fhCellEnDiffColRowDiff[colDiffAbs][rowDiffAbs]->Fill(en, amp, GetEventWeight());
-          fhTimeDiffClusDiffCellColRowDiff[colDiffAbs][rowDiffAbs]->Fill(en, tdiff, GetEventWeight());
-
           if ( exoticity > fExoCut )
           {
             fhCellEnDiffColRowDiffExoCut[colDiffAbs][rowDiffAbs]->Fill(en, amp, GetEventWeight());
             fhTimeDiffClusDiffCellColRowDiffExoCut[colDiffAbs][rowDiffAbs]->Fill(en, tdiff, GetEventWeight());
+          }
+          else
+          {
+            fhCellEnDiffColRowDiff[colDiffAbs][rowDiffAbs]->Fill(en, amp, GetEventWeight());
+            fhTimeDiffClusDiffCellColRowDiff[colDiffAbs][rowDiffAbs]->Fill(en, tdiff, GetEventWeight());
           }
         }
       } // diff T-Card     
@@ -2917,7 +2922,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       
       fhCellEnDiffColRowDiff[icoldiff][irowdiff] = new TH2F 
       (Form("hCellEnDiff_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
-       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d",icoldiff,irowdiff),
+       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d, #it{F}_{+}<%0.2f",icoldiff,irowdiff,fExoCut),
        //nptbins,ptmin,ptmax, 200,0,20, nexobins,exomin,exomax); 
         eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
        e2BinsArray.GetSize() - 1, e2BinsArray.GetArray());
@@ -2937,7 +2942,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       
       fhTimeDiffClusDiffCellColRowDiff[icoldiff][irowdiff] = new TH2F 
       (Form("hTimeDiffClusDiffCell_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
-       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d",icoldiff,irowdiff),
+       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d, #it{F}_{+}<%0.2f",icoldiff,irowdiff,fExoCut),
         eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
        tdBinsArray.GetSize() - 1, tdBinsArray.GetArray());
       fhTimeDiffClusDiffCellColRowDiff[icoldiff][irowdiff] ->SetXTitle("#it{E}_{cluster} (GeV)");
@@ -2957,7 +2962,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       
       fhCellEnSameColRowDiff[icoldiff][irowdiff]  = new TH2F 
       (Form("hCellEnSame_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
-       Form("#it{E}_{cluster} vs #it{E}_{cell}^{same}, #Delta col=%d - #Delta row=%d",icoldiff,irowdiff),
+       Form("#it{E}_{cluster} vs #it{E}_{cell}^{same}, #Delta col=%d - #Delta row=%d, #it{F}_{+}<%0.2f",icoldiff,irowdiff,fExoCut),
        //nptbins,ptmin,ptmax, 200,0,20, nexobins,exomin,exomax); 
         eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
        e2BinsArray.GetSize() - 1, e2BinsArray.GetArray());
@@ -2977,7 +2982,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       
       fhTimeDiffClusSameCellColRowDiff[icoldiff][irowdiff] = new TH2F 
       (Form("hTimeDiffClusSameCell_DiffCol%d_DiffRow%d",icoldiff,irowdiff),
-       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d",icoldiff,irowdiff),
+       Form("#it{E}_{cluster} vs #it{E}_{cell}^{diff}, #Delta col=%d - #Delta row=%d, #it{F}_{+}<%0.2f",icoldiff,irowdiff,fExoCut),
        eBinsArray.GetSize() - 1,  eBinsArray.GetArray(), 
        tdBinsArray.GetSize() - 1, tdBinsArray.GetArray());
       fhTimeDiffClusSameCellColRowDiff[icoldiff][irowdiff] ->SetXTitle("#it{E}_{cluster} (GeV)");
