@@ -299,6 +299,7 @@ Bool_t AliDielectronHelper::CheckESDtrack(AliESDtrack *track){
   AliESDtrackCuts* TrackCutsTPCRefit = new AliESDtrackCuts("AliESDtrackCutsTPCRefit","AliESDtrackCutsTPCRefit");
   TrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
   TrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
+  TrackCutsTPCRefit->SetRequireITSRefit(kTRUE);
   TrackCutsTPCRefit->SetEtaRange(-0.8,0.8);
 
   if(TrackCutsTPCRefit->AcceptTrack(track)) return kTRUE;
@@ -316,6 +317,7 @@ std::vector<AliESDtrack*> AliDielectronHelper::GetESDtracks(const AliESDEvent *e
   AliESDtrackCuts* TrackCutsTPCRefit = new AliESDtrackCuts("AliESDtrackCutsTPCRefit","AliESDtrackCutsTPCRefit");
   TrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
   TrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
+  TrackCutsTPCRefit->SetRequireITSRefit(kTRUE);
   TrackCutsTPCRefit->SetEtaRange(-0.8,0.8);
 
   AliESDtrack *track = 0x0;
@@ -340,7 +342,7 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESD(const AliESDEvent *ev){
   tracks = GetESDtracks(ev);
 
   const int Ntracks = tracks.size();
-  if(Ntracks<2)
+  if(Ntracks<4)
     return -1.;
 
   //fPx fPy
@@ -443,7 +445,7 @@ Double_t AliDielectronHelper::GetTransverseSpherocityESDwoPtWeight(const AliESDE
   tracks = GetESDtracks(ev);
 
   const int Ntracks = tracks.size();
-  if(Ntracks<2)
+  if(Ntracks<4)
     return -1.;
 
   //fPx fPy
