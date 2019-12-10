@@ -28,22 +28,17 @@
 
 #include "TNamed.h"
 
-using std::map;
-using std::pair;
-using std::string;
-using std::vector;
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
 class ModelHandler {
 public:
   ModelHandler() : model(), path(), library(), scorecut() {}
   ModelHandler(const YAML::Node &node)
-      : model(), path(node["path"].as<string>()), library(node["library"].as<string>()),
+      : model(), path(node["path"].as<std::string>()), library(node["library"].as<std::string>()),
         scorecut(node["cut"].as<double>()) {}
 
-  string const &GetPath() const { return path; }
-  string const &GetLibrary() const { return library; }
+  std::string const &GetPath() const { return path; }
+  std::string const &GetLibrary() const { return library; }
   double const &GetScoreCut() const { return scorecut; }
 
   AliExternalBDT &GetModel() { return model; }
@@ -53,8 +48,8 @@ public:
 private:
   AliExternalBDT model;    //!
 
-  string path;
-  string library;
+  std::string path;
+  std::string library;
 
   double scorecut;
 };
@@ -71,7 +66,7 @@ public:
   AliMLResponse &operator=(const AliMLResponse &source);
 
   /// method to set yaml config file
-  void SetConfigFilePath(const string configfilepath) { fConfigFilePath = configfilepath; }
+  void SetConfigFilePath(const std::string configfilepath) { fConfigFilePath = configfilepath; }
 
   /// method to check whether the config file is formally correct
   void CheckConfigFile(YAML::Node nodelist);
@@ -81,24 +76,25 @@ public:
   /// return the bin index
   int FindBin(double binvar);
   /// return the MLModel predicted score (raw or proba, depending on useraw)
-  double Predict(double binvar, map<string, double> varmap);
+  double Predict(double binvar, std::map<std::string, double> varmap);
   /// return true if predicted score for map is above the threshold given in the config
-  bool IsSelected(double binvar, map<string, double> varmap);
+  bool IsSelected(double binvar, std::map<std::string, double> varmap);
   /// overload for getting the model score too
-  bool IsSelected(double binvar, map<string, double> varmap, double *score);
+  template<typename F>
+  bool IsSelected(double binvar, std::map<std::string, double> varmap, F &score);
 
 protected:
-  string fConfigFilePath;    /// path of the config file
+  std::string fConfigFilePath;    /// path of the config file
 
-  vector<ModelHandler> fModels;
-  vector<int> fCentClasses;         /// centrality classes ([cent_min, cent_max])
-  vector<float> fBins;              /// bin edges for the binned variable (pt/ct)
-  vector<string> fVariableNames;    /// bin edges for the binned variable (pt/ct)
+  std::vector<ModelHandler> fModels;
+  std::vector<int> fCentClasses;         /// centrality classes ([cent_min, cent_max])
+  std::vector<float> fBins;              /// bin edges for the binned variable (pt/ct)
+  std::vector<std::string> fVariableNames;    /// bin edges for the binned variable (pt/ct)
 
   int fNBins;         /// number of bins stored for consistency checks
   int fNVariables;    /// number of variables (features) stored for checks
 
-  vector<float>::iterator fBinsBegin;    /// evaluate just once is better
+  std::vector<float>::iterator fBinsBegin;    /// evaluate just once is better
 
   bool fRaw;
 
@@ -106,4 +102,17 @@ protected:
   ClassDef(AliMLResponse, 1);    ///
   /// \endcond
 };
+
+template<typename F>
+bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap, F &score) {
+  int bin     = FindBin(binvar);
+  score = Predict(binvar, varmap);
+  return score >= fModels[bin - 1].GetScoreCut();
+}
+
+inline bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap) {
+  float score{0.f};
+  return IsSelected(binvar, varmap, score);
+}
+
 #endif
