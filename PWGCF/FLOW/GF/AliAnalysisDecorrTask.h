@@ -26,7 +26,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
 
         //Analysis setters
-        void                    SetSampling(Bool_t sample, Int_t iNum) { fSampling = sample; fNumSamples = iNum; }
+        void                    SetSampling(Bool_t sample, Int_t iNum) { fSampling = sample; fNumSamples = iNum; }      //Use jack-knife resampling
         void                    SetFillQA(Bool_t fill = kTRUE) { fFillQA = fill; }
         //event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -35,6 +35,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
         void                    SetPVtxZMax(Double_t z) { fPVtxCutZ = z; }
         void                    SetCentBin(Int_t nbins, Double_t *bins) { fCentAxis->Set(nbins,bins); }
+        void                    SetCentLim(Double_t min, Double_t max) { fCentMin = min; fCentMax = max; }
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
         AliEventCuts            fEventCuts;
         //track selection
@@ -43,7 +44,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetNumTPCclsMin(UShort_t tpcCls) { fCutNumTPCclsMin = tpcCls; }
         void                    SetUseLikeSign(Bool_t use, Int_t sign) { bUseLikeSign = use; iSign = sign; }
         void                    SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; } //Not implemented
-        //Flow se
+        //Flow selection
         void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
         void                    SetPOIsPt(Double_t min, Double_t max) { fPOIsPtmin = min; fPOIsPtmax = max; }
         void                    SetRFPsPt(Double_t min, Double_t max) { fRFPsPtMin = min; fRFPsPtMax = max; }
@@ -51,15 +52,16 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetEtaBins(Int_t bins) { fEtaBinNum = bins; }
         void                    SetPhiBins(Int_t bins) { fPhiBinNum = bins; }
         void                    SetEtaGap(double etaGap) { dEtaGap = etaGap; }
-        void                    SetUseWeights3D(Bool_t use) { fUseWeights3D = use; }
-        void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }
-        Bool_t                  GetUseWeights3D() { return fUseWeights3D; }
-        void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }
+        void                    SetUseWeights3D(Bool_t use) { fUseWeights3D = use; }    //Use 3D weights (phi, eta Vz)
+        void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Only fill histograms for weights calculations
+        Bool_t                  GetUseWeights3D() { return fUseWeights3D; }             //Check if 3D weights are used for macro path to weights
+        void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; } 
+        void                    CalculateHigherOrderVn(Bool_t calc) { bHigherOrder = calc; }   //Calculate higher order particle correlation differential vn with jack-knife resampling
 
         //Observable selection
-        void                    DoRFPs(Bool_t ref) { bRef = ref; }
-        void                    DoDiff(Bool_t diff) { bDiff = diff; }
-        void                    DoPtB(Bool_t ptb) { bPtB = ptb; }
+        void                    DoRFPs(Bool_t ref) { bRef = ref; }              //Calculate integrad flow
+        void                    DoDiff(Bool_t diff) { bDiff = diff; }           //Calculate pt differential flow
+        void                    DoPtB(Bool_t ptb) { bPtB = ptb; }               //Calculate flow with particles from different pt bins
         TH2F*                   nuacentral;
 
     
@@ -186,6 +188,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Int_t                   NPtBin;
         Double_t                centEdges[NcentBinMax+1];
         Double_t                PtEdges[NPtBinMax+1];
+        Double_t                fCentMin;
+        Double_t                fCentMax;
         Double_t                fPVtxCutZ;
         //cuts & selection: tracks
         UInt_t                  fCutChargedTrackFilterBit; // (-) tracks filter bit
@@ -206,6 +210,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Bool_t                  bDiff;
         Bool_t                  bRef;
         Bool_t                  bPtB;
+        Bool_t                  bHigherOrder;
         Double_t                fPOIsPtmax;
         Double_t                fPOIsPtmin;
         Double_t                fRFPsPtMax;
