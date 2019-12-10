@@ -115,7 +115,6 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRTree{nullptr}
    ,fSTree{nullptr}
    ,fCutVec{}
-   ,fIsNano{false}
    ,fPDG{0}
    ,fPDGMass{0}
    ,fPDGMassOverZ{0}
@@ -415,15 +414,13 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
 
   AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
-  if (!fIsNano && nanoHeader)
-    fIsNano = true;
   
   AliVEvent *ev = InputEvent();
 
   fCentrality = -1.f;
 
   bool EventAccepted = true;
-  if (!fIsNano) {
+  if (!nanoHeader) {
     EventAccepted = fEventCut.AcceptEvent(ev);
     /// The centrality selection in PbPb uses the percentile determined with V0.
     fCentrality = fEventCut.GetCentrality(fEstimator);
@@ -440,7 +437,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   bool specialTrigger = true;
   if (fINT7intervals.size()) {
     unsigned int trigger = 0u;
-    if (fIsNano)
+    if (nanoHeader)
       trigger = nanoHeader->GetOfflineTrigger();
     else {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -458,7 +455,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
   }
   
-  if (!fIsNano) {
+  if (!nanoHeader) {
     std::array <AliEventCuts::NormMask,4> norm_masks {
       AliEventCuts::kAnyEvent,
       AliEventCuts::kPassesNonVertexRelatedSelections,
@@ -529,7 +526,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(ev->GetTrack(iT));
     AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
-    if (fIsNano)
+    if (nanoHeader)
       TrackLoop(nanoTrack, true);
     else
       TrackLoop(aodTrack, false);

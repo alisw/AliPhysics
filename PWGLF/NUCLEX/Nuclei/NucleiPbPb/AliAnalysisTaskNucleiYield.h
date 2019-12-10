@@ -187,7 +187,6 @@ private:
   TTree                *fRTree;                 ///<  Output reconstructed ttree
   TTree                *fSTree;                 ///<  Output simulated ttree
   TLorentzVector        fCutVec;                ///<  Vector used to perform some cuts
-  Bool_t                fIsNano;                ///<  Check if the task is running on nano
   Int_t                 fPDG;                   ///<  PDG code of the particle of interest
   Float_t               fPDGMass;               ///<  PDG mass
   Float_t               fPDGMassOverZ;          ///<  PDG mass over z
