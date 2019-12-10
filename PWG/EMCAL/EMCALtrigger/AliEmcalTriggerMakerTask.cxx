@@ -307,6 +307,8 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
       if(patchIter.IsJetHighSimple() || patchIter.IsJetLowSimple())       FillQAHistos("EJEOffline", patchIter);
       if(patchIter.IsGammaHighSimple() || patchIter.IsGammaLowSimple())   FillQAHistos("EGAOffline", patchIter);
       if(patchIter.IsLevel0())                                            FillQAHistos("EL0Online", patchIter);
+      if(patchIter.IsLevel0Simple())                                      FillQAHistos("EL0Offline", patchIter);
+      if(patchIter.IsLevel0Recalc())                                      FillQAHistos("EL0Recalc", patchIter);
       if(patchIter.IsRecalcJet())                                         FillQAHistos("EJERecalc", patchIter);
       if(patchIter.IsRecalcGamma())                                       FillQAHistos("EGARecalc", patchIter);
       // Redo checking of found trigger bits after masking of unwanted triggers

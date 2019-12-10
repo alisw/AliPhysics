@@ -131,6 +131,15 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
                                    fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, 
                                    fSettings.fCentBins} ;
 
+
+  Double_t sc_dmin[dimensions]     = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0};
+
+  Double_t sc_dmax[dimensions]     = {1,double(ptnmax+1),double(fSettings.fnoSamples),
+                                   fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, double(fSettings.fCentUpEdge)};
+  Int_t sc_dbins[dimensions]   = {1,ptnmax + 1,fSettings.fnoSamples, 
+                                   fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, 
+                                   fSettings.fCentBins} ;
+
   fCalculator.cumu_rW2     = new THnD("cumu_rW2",     "cumu_rW2",     dimensions,rbins,dmin,dmax);
   fCalculator.cumu_rW2Two  = new THnD("cumu_rW2Two" , "cumu_rW2Two" , dimensions,rbins,dmin,dmax); 
   fCalculator.cumu_rW4     = new THnD("cumu_rW4"    , "cumu_rW4"    , dimensions,rbins,dmin,dmax);;
@@ -145,31 +154,29 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
 
 
-  // fCalculator.cumu_dW2A    = new THnD("cumu_dW2A"   , "cumu_dW2A"   , dimensions, dbins, dmin, dmax); // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-  // fCalculator.cumu_dW2TwoA = new THnD("cumu_dW2TwoA", "cumu_dW2TwoA", dimensions, dbins, dmin, dmax); // <w2*two>
+  fCalculator.cumu_dW2A    = new THnD("cumu_dW2A"   , "cumu_dW2A"   , dimensions, dbins, dmin, dmax); // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  fCalculator.cumu_dW2TwoA = new THnD("cumu_dW2TwoA", "cumu_dW2TwoA", dimensions, dbins, dmin, dmax); // <w2*two>
   fCalculator.cumu_dW2B    = new THnD("cumu_dW2B"   , "cumu_dW2B"   , dimensions, dbins, dmin, dmax); // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
   fCalculator.cumu_dW2TwoB = new THnD("cumu_dW2TwoB", "cumu_dW2TwoB", dimensions, dbins, dmin, dmax); // <w2*two>  Int_t kW4          = 3; // <w4>
   fCalculator.cumu_dW4     = new THnD("cumu_dW4"    , "cumu_dW4"    , dimensions, dbins, dmin, dmax);
   fCalculator.cumu_dW4Four = new THnD("cumu_dW4Four", "cumu_dW4Four", dimensions, dbins, dmin, dmax);
 
-  // TList* list_dW2A    = new TList(); list_dW2A   ->SetName("dW2A"   ); list_dW2A   ->Add(fCalculator.cumu_dW2A   ); fStandardList->Add(list_dW2A   );
-  // TList* list_dW2TwoA = new TList(); list_dW2TwoA->SetName("dW2TwoA"); list_dW2TwoA->Add(fCalculator.cumu_dW2TwoA); fStandardList->Add(list_dW2TwoA);
+  TList* list_dW2A    = new TList(); list_dW2A   ->SetName("dW2A"   ); list_dW2A   ->Add(fCalculator.cumu_dW2A   ); fStandardList->Add(list_dW2A   );
+  TList* list_dW2TwoA = new TList(); list_dW2TwoA->SetName("dW2TwoA"); list_dW2TwoA->Add(fCalculator.cumu_dW2TwoA); fStandardList->Add(list_dW2TwoA);
   TList* list_dW2B    = new TList(); list_dW2B   ->SetName("dW2B"   ); list_dW2B   ->Add(fCalculator.cumu_dW2B   ); fStandardList->Add(list_dW2B   );
   TList* list_dW2TwoB = new TList(); list_dW2TwoB->SetName("dW2TwoB"); list_dW2TwoB->Add(fCalculator.cumu_dW2TwoB); fStandardList->Add(list_dW2TwoB);
   TList* list_dW4     = new TList(); list_dW4    ->SetName("dW4"    ); list_dW4    ->Add(fCalculator.cumu_dW4    ); fStandardList->Add(list_dW4    );
   TList* list_dW4Four = new TList(); list_dW4Four->SetName("dW4Four"); list_dW4Four->Add(fCalculator.cumu_dW4Four); fStandardList->Add(list_dW4Four);
 
-  // fCalculator.cumu_dW4FourTwo  = new THnD("cumu_dW4FourTwo" , "cumu_dW4FourTwo" , dimensions, dbins, dmin, dmax) ;
-  // fCalculator.cumu_dW4ThreeTwo = new THnD("cumu_dW4ThreeTwo", "cumu_dW4ThreeTwo", dimensions, dbins, dmin, dmax) ;
-  // fCalculator.cumu_dW4_mixed   = new THnD("cumu_dW4_mixed"  , "cumu_dW4_mixed"  , dimensions, dbins, dmin, dmax) ;
-  // fCalculator.cumu_dWTwoTwoN   = new THnD("cumu_dWTwoTwoN"  , "cumu_dWTwoTwoN"  , dimensions, dbins, dmin, dmax) ; // Numerator of R_{n,n; 2}
-  // fCalculator.cumu_dWTwoTwoD   = new THnD("cumu_dWTwoTwoD"  , "cumu_dWTwoTwoD"  , dimensions, dbins, dmin, dmax) ; // Denominator of R_{n,n; 2}
+  fCalculator.cumu_dW4FourTwo  = new THnD("cumu_dW4FourTwo" , "cumu_dW4FourTwo" , dimensions, sc_dbins, sc_dmin, sc_dmax) ;
+  fCalculator.cumu_dW4ThreeTwo = new THnD("cumu_dW4ThreeTwo", "cumu_dW4ThreeTwo", dimensions, sc_dbins, sc_dmin, sc_dmax) ;
+  fCalculator.cumu_dWTwoTwoN   = new THnD("cumu_dWTwoTwoN"  , "cumu_dWTwoTwoN"  , dimensions, dbins, dmin, dmax) ; // Numerator of R_{n,n; 2}
+  fCalculator.cumu_dWTwoTwoD   = new THnD("cumu_dWTwoTwoD"  , "cumu_dWTwoTwoD"  , dimensions, dbins, dmin, dmax) ; // Denominator of R_{n,n; 2}
 
-  // TList* list_dW4FourTwo  = new TList(); list_dW4FourTwo ->SetName("dW4FourTwo" ); list_dW4FourTwo ->Add(fCalculator.cumu_dW4FourTwo ); fMixedList->Add(list_dW4FourTwo );
-  // TList* list_dW4ThreeTwo = new TList(); list_dW4ThreeTwo->SetName("dW4ThreeTwo"); list_dW4ThreeTwo->Add(fCalculator.cumu_dW4ThreeTwo); fMixedList->Add(list_dW4ThreeTwo);
-  // TList* list_dW4_mixed   = new TList(); list_dW4_mixed  ->SetName("dW4_mixed"  ); list_dW4_mixed  ->Add(fCalculator.cumu_dW4_mixed  ); fMixedList->Add(list_dW4_mixed  );
-  // TList* list_dWTwoTwoN   = new TList(); list_dWTwoTwoN  ->SetName("dWTwoTwoN"  ); list_dWTwoTwoN  ->Add(fCalculator.cumu_dWTwoTwoN  ); fMixedList->Add(list_dWTwoTwoN  );
-  // TList* list_dWTwoTwoD   = new TList(); list_dWTwoTwoD  ->SetName("dWTwoTwoD"  ); list_dWTwoTwoD  ->Add(fCalculator.cumu_dWTwoTwoD  ); fMixedList->Add(list_dWTwoTwoD  );
+  TList* list_dW4FourTwo  = new TList(); list_dW4FourTwo ->SetName("dW4FourTwo" ); list_dW4FourTwo ->Add(fCalculator.cumu_dW4FourTwo ); fMixedList->Add(list_dW4FourTwo );
+  TList* list_dW4ThreeTwo = new TList(); list_dW4ThreeTwo->SetName("dW4ThreeTwo"); list_dW4ThreeTwo->Add(fCalculator.cumu_dW4ThreeTwo); fMixedList->Add(list_dW4ThreeTwo);
+  TList* list_dWTwoTwoN   = new TList(); list_dWTwoTwoN  ->SetName("dWTwoTwoN"  ); list_dWTwoTwoN  ->Add(fCalculator.cumu_dWTwoTwoN  ); fMixedList->Add(list_dWTwoTwoN  );
+  TList* list_dWTwoTwoD   = new TList(); list_dWTwoTwoD  ->SetName("dWTwoTwoD"  ); list_dWTwoTwoD  ->Add(fCalculator.cumu_dWTwoTwoD  ); fMixedList->Add(list_dWTwoTwoD  );
 
 
   // Make centralDist

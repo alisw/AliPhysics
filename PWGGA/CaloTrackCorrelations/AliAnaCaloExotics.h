@@ -179,7 +179,7 @@ public:
   Int_t    fLowNCellsCutSM3Strip;               ///<  SM3 strips low activity if n cells above this value
   
   /// Total number of cluster energy bins histograms
-  static const Int_t fgkNEBins = 12;
+  static const Int_t fgkNEBins = 14;
   Float_t  fEnergyBins[fgkNEBins];              ///<  Energy bins for some histograms
  
   static const Int_t fgkNCellEnMinBins   = 3;
@@ -292,8 +292,8 @@ public:
   TH3F *   fhTimeDiffClusCellDiffTCardExo;      //!<! Difference of the time of cell with maximum dep energy and the rest of cells in different T-Card vs cluster energy vs exoticity
   TH3F *   fhTimeDiffClusCellSameTCardExo;      //!<! Difference of the time of cell with maximum dep energy and the rest of cells in same T-Card vs cluster energy vs exoticity
   
-  TH2F *   fhTimeDiffClusSameCellColRowDiff[4][4];       //!<! Cluster E vs time max-sec in same T-Card vs distance to max E cell
-  TH2F *   fhTimeDiffClusDiffCellColRowDiff[4][4];       //!<! Cluster E vs time max-sec in diff T-Card vs distance to max E cell
+  TH2F *   fhTimeDiffClusSameCellColRowDiff[4][4];       //!<! Cluster E vs time max-sec in same T-Card vs distance to max E cell, for exoticity < fExoCut
+  TH2F *   fhTimeDiffClusDiffCellColRowDiff[4][4];       //!<! Cluster E vs time max-sec in diff T-Card vs distance to max E cell, for exoticity < fExoCut
   TH2F *   fhTimeDiffClusSameCellColRowDiffExoCut[4][4]; //!<! Cluster E vs time max-sec in same T-Card vs distance to max E cell, for exoticity > fExoCut
   TH2F *   fhTimeDiffClusDiffCellColRowDiffExoCut[4][4]; //!<! Cluster E vs time max-sec in diff T-Card vs distance to max E cell, for exoticity > fExoCut
   
@@ -373,8 +373,8 @@ public:
   TH3F *   fhEnNCellsSameDiffExo[fgkNEBins];    //!<! Sum of E in / n cell in same vs diff vs exoticity, different  cluster E bins
   TH3F *   fhCellEnSameExo;                     //!<! Cluster E vs cell E in same T-Card vs exoticity
   TH3F *   fhCellEnDiffExo;                     //!<! Cluster E vs cell E in diff T-Card vs exoticity
-  TH2F *   fhCellEnSameColRowDiff[4][4];        //!<! Cluster E vs cell E in same T-Card vs distance to max E cell
-  TH2F *   fhCellEnDiffColRowDiff[4][4];        //!<! Cluster E vs cell E in diff T-Card vs distance to max E cell
+  TH2F *   fhCellEnSameColRowDiff[4][4];        //!<! Cluster E vs cell E in same T-Card vs distance to max E cell, for exoticity < fExoCut
+  TH2F *   fhCellEnDiffColRowDiff[4][4];        //!<! Cluster E vs cell E in diff T-Card vs distance to max E cell, for exoticity < fExoCut
   TH2F *   fhCellEnSameColRowDiffExoCut[4][4];  //!<! Cluster E vs cell E in same T-Card vs distance to max E cell, for exoticity > fExoCut
   TH2F *   fhCellEnDiffColRowDiffExoCut[4][4];  //!<! Cluster E vs cell E in diff T-Card vs distance to max E cell, for exoticity > fExoCut
   TH3F *   fhCellEnNCellWOpenTime;              //!<! Cluster E vs cell E vs n cells with w > 0, no time cut
@@ -586,6 +586,9 @@ public:
   TH1F *   fhEventCutClusterEnergy[4];                        //!<! Cluster energy, for event selection criteria, non exotic, within time cut range
   TH2F *   fhEventCutClusterEnergyECellMax[4];                //!<! Cluster energy vs max cell energy, for event selection criteria, non exotic, within time cut range
   TH2F *   fhEventCutClusterEtaPhiGrid[4];                    //!<! Highest energy cell location in column-row map, for event selection criteria, non exotic, within time cut range, above fEMinForExo
+  
+  TH1I *   fhEventCutBunchCrossing[4];                        //!<! Bunch crossing of events for different event selection criteria
+
   
   /// Copy constructor not implemented.
   AliAnaCaloExotics & operator = (const AliAnaCaloExotics & qa) ;

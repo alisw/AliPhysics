@@ -112,6 +112,8 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   fHistosQA->CreateTH2("hFastOrColRowFrequencyL0", "FastOr Frequency (col-row) at Level0; col; row", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
   fHistosQA->CreateTH2("hFastOrColRowFrequencyL1", "FastOr Frequency (col-row) at Level1; col; row", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
   fHistosQA->CreateTH2("hEnergyFastorCell", "Sum of cell energy vs. fastor Energy", 1000, 0., 20., 1000 , 0., 20.);
+  fHistosQA->CreateTH2("hEnergyFastorCellL0", "Sum of cell energy vs. fastor Energy (L0)", 1000, 0., 20., 1000 , 0., 20.);
+  fHistosQA->CreateTH2("hEnergyFastorCellL0Amp", "Sum of cell energy vs. fastor Amplitude (L0)", 1000, 0., 20., 1000 , 0., 1000.);
 
   // Helper histograms checking the mask status of cells and FastORs
   fHistosQA->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 3001, -0.5, 3000.5);
@@ -126,6 +128,7 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   onlineaxis.SetNameTitle("onlineenergy", "E_{FastOR} (GeV)");
   cellmaskaxis.SetNameTitle("maskedcells", "Number of masked cells");
   fHistosQA->CreateTHnSparse("hFastOrEnergyOfflineOnline", "FastOr Offline vs Online energy", 4, sparseaxis);
+  fHistosQA->CreateTHnSparse("hFastOrEnergyOfflineOnlineL0", "FastOr Offline vs Online energy (L0)", 4, sparseaxis);
 
   TAxis adcAxisL0(2101, -0.5, 2100.5), adcAxisL1(2101, -0.5, 2100.5);
   const TAxis *adcaxes[3] = {&fastorIDAxis, &adcAxisL0, &adcAxisL1};
@@ -206,6 +209,7 @@ bool AliEmcalFastOrMonitorTask::IsEventSelected() {
 }
 
 bool AliEmcalFastOrMonitorTask::Run() {
+  const Double_t kEMCL0ADCtoGeV = 0.018970588*4;
   LoadEventCellData();
   fHistosQA->FillTH1("hEvents", 1);
   AliVCaloTrigger *triggerdata = InputEvent()->GetCaloTrigger("EMCAL");
@@ -232,6 +236,8 @@ bool AliEmcalFastOrMonitorTask::Run() {
       fHistosQA->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
       fHistosQA->FillTH2("hFastOrTransverseTimeSum", fastOrID, GetTransverseTimeSum(fastOrID, l1timesum, fVertex));
       fHistosQA->FillTH2("hEnergyFastorCell", fCellData(globCol, globRow), l1timesum * EMCALTrigger::kEMCL1ADCtoGeV);
+      fHistosQA->FillTH2("hEnergyFastorCellL0", fCellData(globCol, globRow), amp * kEMCL0ADCtoGeV);
+      fHistosQA->FillTH2("hEnergyFastorCellL0Amp", fCellData(globCol, globRow), amp);
       int ncellmasked = 0;
       int fastorCells[4];
       fGeom->GetTriggerMapping()->GetCellIndexFromFastORIndex(fastOrID, fastorCells);
@@ -245,6 +251,8 @@ bool AliEmcalFastOrMonitorTask::Run() {
             static_cast<double>(ncellmasked)
       };
       fHistosQA->FillTHnSparse("hFastOrEnergyOfflineOnline", energydata);
+      energydata[2] = amp * kEMCL0ADCtoGeV;
+      fHistosQA->FillTHnSparse("hFastOrEnergyOfflineOnlineL0", energydata);
       double adcdata[3] = {
             static_cast<double>(fastOrID),
             amp * 4.,         // correction for the bit shift

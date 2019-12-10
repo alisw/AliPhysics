@@ -77,9 +77,11 @@ Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
 
 Int_t AliForwardFlowUtil::GetNUARunNumber(Int_t runnumber){
   // HIR
-  if (runnumber >= 245683 && runnumber <= 246808) return 0;
-  if (runnumber >= 246089 && runnumber <= 246185) return 1;
-  if (runnumber == 246225) return 2;
+  Double_t HIR_goodruns1[] = {245683,  245705,  245833,  245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+  Double_t HIR_goodruns2[] = {246089, 246153, 246185, 246225};
+
+  for (Int_t i = 0; i < 13; i++) if (runnumber == HIR_goodruns1[i]) return 0;
+  for (Int_t i = 0; i < 4; i++)  if (runnumber == HIR_goodruns2[i]) return 1;
 
   // lowIR
   if (runnumber >= 244918 && runnumber <= 245068) return 0;
@@ -820,15 +822,16 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
       Double_t weight = 1;
       if (fSettings.doNUE){
           Int_t nueeta = fSettings.nuehist->GetXaxis()->FindBin(track->Eta());
-          Int_t nuevtz = 0;
+          Double_t vtz = 0;
 
 
-          if (this->fSettings.mc) nuevtz= fMCevent->GetPrimaryVertex()->GetZ();
-          else nuevtz= fevent->GetPrimaryVertex()->GetZ();
+          if (this->fSettings.mc) vtz= fMCevent->GetPrimaryVertex()->GetZ();
+          else vtz= fevent->GetPrimaryVertex()->GetZ();
 
           Int_t nuept = fSettings.nuehist->GetZaxis()->FindBin(track->Pt());
+          Int_t nuevtz = fSettings.nuehist->GetZaxis()->FindBin(vtz);
           Double_t factor = fSettings.nuehist->GetBinContent(nueeta,nuept,nuevtz);
-          if (factor) weight = weight*factor;
+          if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*(1./factor);
           else weight = 0;
       }
 

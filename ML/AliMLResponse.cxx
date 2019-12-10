@@ -20,6 +20,12 @@
 
 #include "assert.h"
 
+
+using std::map;
+using std::pair;
+using std::string;
+using std::vector;
+
 namespace {
 
 enum kLibrary { kXGBoost, kLightGBM, kModelLibrary };
@@ -211,21 +217,4 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
   }
 
   return fModels[bin - 1].GetModel().Predict(&features[0], fNVariables, fRaw);
-}
-
-//________________________________________________________________
-bool AliMLResponse::IsSelected(double binvar, map<string, double> varmap) {
-  int bin     = FindBin(binvar);
-  double pred = Predict(binvar, varmap);
-
-  return pred >= fModels[bin - 1].GetScoreCut();
-}
-
-//________________________________________________________________
-bool AliMLResponse::IsSelected(double binvar, map<string, double> varmap, double *score) {
-  int bin     = FindBin(binvar);
-  double pred = Predict(binvar, varmap);
-
-  *score = pred;
-  return pred >= fModels[bin - 1].GetScoreCut();
 }

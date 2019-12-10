@@ -1,5 +1,3 @@
-
-
 #ifdef __CINT__
 
 #pragma link off all globals;
@@ -107,12 +105,6 @@
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
-#pragma link C++ class AliAnalysisTaskHypertriton3ML+;
-#pragma link C++ class RHypertriton3+;
-#pragma link C++ class SHypertriton3+;
-#pragma link C++ class std::vector<RHypertriton3>+;
-#pragma link C++ class std::vector<SHypertriton3>+;
-#pragma link C++ class REvent+;
 
 /// * KF2Body
 #pragma link C++ class AliAnalysisTaskHypertritonKFTree+;
@@ -120,6 +112,14 @@
 /// Hyp3body Selector
 #ifdef __CLING__
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
+#pragma link C++ class AliAnalysisTaskHypertriton3ML+;
+#pragma link C++ class RHypertriton3+;
+#pragma link C++ class SHypertriton3+;
+#pragma link C++ class MLSelected+;
+#pragma link C++ class std::vector<RHypertriton3>+;
+#pragma link C++ class std::vector<SHypertriton3>+;
+#pragma link C++ class std::vector<MLSelected3>+;
+#pragma link C++ class REvent+;
 #endif
 
 /// * VertexerHyp3Body

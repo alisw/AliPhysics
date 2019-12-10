@@ -54,6 +54,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
 
   using AliRDHFCuts::PreSelect;
+  virtual Int_t PreSelect(TObjArray aodtracks);
   Bool_t PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack);
 
   Int_t IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex, AliAODEvent* aod=0x0);
