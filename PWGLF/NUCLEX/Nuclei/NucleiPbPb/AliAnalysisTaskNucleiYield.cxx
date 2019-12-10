@@ -423,7 +423,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   fCentrality = -1.f;
 
   bool EventAccepted = true;
-  if (fIsNano) {
+  if (!fIsNano) {
     EventAccepted = fEventCut.AcceptEvent(ev);
     /// The centrality selection in PbPb uses the percentile determined with V0.
     fCentrality = fEventCut.GetCentrality(fEstimator);
@@ -458,7 +458,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
   }
   
-  if (fIsNano) {
+  if (!fIsNano) {
     std::array <AliEventCuts::NormMask,4> norm_masks {
       AliEventCuts::kAnyEvent,
       AliEventCuts::kPassesNonVertexRelatedSelections,
