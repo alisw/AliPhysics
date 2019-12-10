@@ -494,10 +494,9 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
           float hyppt = fMap["HypCandPt"];
 
           if (ct > 1. && ct < 35. && fREvent.fCent < 90.) {
-            double score;
-            if (fMLResponse->IsSelected(ct, fMap, &score)) {
-              MLSelected hyp3ml{score, invmass, ct, fREvent.fCent, hyppt};
-              fMLSelected.push_back(hyp3ml);
+            float score{0.f};
+            if (fMLResponse->IsSelected(ct, fMap, score)) {
+              fMLSelected.emplace_back(MLSelected{score, invmass, ct, fREvent.fCent, hyppt});
             }
           }
           continue;
