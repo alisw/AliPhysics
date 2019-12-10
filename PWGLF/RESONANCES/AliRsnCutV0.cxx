@@ -74,7 +74,8 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fAODTestFilterBit(5),
    fCustomTrackDCACuts(kFALSE),
    fMinDCAPositiveTrack(0.001),
-   fMinDCANegativeTrack(0.001)
+   fMinDCANegativeTrack(0.001),
+   fCheckOOBPileup(kFALSE)
 {
 //
 // Default constructor.
@@ -112,7 +113,8 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fAODTestFilterBit(copy.fAODTestFilterBit),
    fCustomTrackDCACuts(copy.fCustomTrackDCACuts),
    fMinDCAPositiveTrack(copy.fMinDCAPositiveTrack),
-   fMinDCANegativeTrack(copy.fMinDCANegativeTrack)
+   fMinDCANegativeTrack(copy.fMinDCANegativeTrack),
+   fCheckOOBPileup(copy.fCheckOOBPileup)
 {
 //
 // Copy constructor.
@@ -166,6 +168,7 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fCustomTrackDCACuts = copy.fCustomTrackDCACuts;
    fMinDCAPositiveTrack = copy.fMinDCAPositiveTrack;
    fMinDCANegativeTrack = copy.fMinDCANegativeTrack;
+   fCheckOOBPileup = copy.fCheckOOBPileup;
 
    return (*this);
 }
@@ -237,6 +240,12 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    if ( TMath::Abs( ((pTrack->GetSign()) - (nTrack->GetSign())) ) < 0.1) {
       AliDebugClass(2, "Failed like-sign V0 check");
       return kFALSE;
+   }
+
+   if (fCheckOOBPileup) {
+      Double_t bfield = lESDEvent->GetMagneticField();
+      if(!TrackPassesOOBPileupCut(pTrack, bfield) &&
+         !TrackPassesOOBPileupCut(nTrack, bfield)) return kFALSE;
    }
 
   // check quality cuts
@@ -690,12 +699,18 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
 
 }
 
-
-
 //_________________________________________________________________________________________________
 void AliRsnCutV0::Print(const Option_t *) const
 {
 //
 // Print information on this cut
 //
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutV0::TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b){
+   if (!t) return true;
+   if ((t->GetStatus() & AliESDtrack::kITSrefit) == AliESDtrack::kITSrefit) return true;
+   if (t->GetTOFExpTDiff(b, true) + 2500 > 1e-6) return true;
+   return false;
 }
