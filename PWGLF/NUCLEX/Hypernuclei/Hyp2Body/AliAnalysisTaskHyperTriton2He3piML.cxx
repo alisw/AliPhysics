@@ -248,11 +248,11 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   unsigned char tgr = 0x0;
 
   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)
-    tgr = kINT7;
+    tgr |= kINT7;
   if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)
-    tgr = kCentral;
+    tgr |= kCentral;
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
-    tgr = kSemiCentral;
+    tgr |= kSemiCentral;
   int magField = esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
   fRCollision.fTrigger = tgr + magField;
