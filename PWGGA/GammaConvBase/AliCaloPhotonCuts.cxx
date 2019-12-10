@@ -2009,20 +2009,25 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       if (fUseNLM)
         if( nLM < fMinNLM || nLM > fMaxNLM )
           failed = kTRUE;
-      if (fUseM02 == 1){
-        if( cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02 )
-          failedM02  = kTRUE;
-      } else if (fUseM02 ==2 ) {
-        if( cluster->GetM02()< CalculateMinM02(fMinM02CutNr, cluster->E()) ||
-            cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()) )
-          failedM02  = kTRUE;
+      if(!fUseNCells && cluster->GetNCells()<2){
+        // no cut to be applied in this case on M20
+        // as cluster needs at least 2 cells for M20 calculation
+      } else {
+        if (fUseM02 == 1){
+          if( cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02 )
+            failedM02  = kTRUE;
+        } else if (fUseM02 ==2 ) {
+          if( cluster->GetM02()< CalculateMinM02(fMinM02CutNr, cluster->E()) ||
+              cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()) )
+            failedM02  = kTRUE;
+        }
+        if (fUseM20)
+          if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 )
+            failed = kTRUE;
+        if (fUseDispersion)
+          if( cluster->GetDispersion()> fMaxDispersion)
+            failed = kTRUE;
       }
-      if (fUseM20)
-        if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 )
-          failed = kTRUE;
-      if (fUseDispersion)
-        if( cluster->GetDispersion()> fMaxDispersion)
-          failed = kTRUE;
       if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster){
         if( CheckClusterForTrackMatch(cluster) )
           failed = kTRUE;
@@ -2062,14 +2067,17 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//5, next cut
 
   // M02 cut
-  if (fUseM02 == 1){
+  if(!fUseNCells && cluster->GetNCells()<2){
+    // no cut to be applied in this case on M02
+    // as cluster needs at least 2 cells for M02 calculation
+  } else if (fUseM02 == 1){
     if( cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02 ) {
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//6
       return kFALSE;
     }
   } else if (fUseM02 ==2 ) {
-    if( cluster->GetM02()< CalculateMinM02(fMinM02CutNr, cluster->E()) ||
-      cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()) ) {
+    if(  cluster->GetM02()< CalculateMinM02(fMinM02CutNr, cluster->E()) ||
+      cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E())  ) {
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//6
       return kFALSE;
     }
@@ -2077,7 +2085,10 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//6, next cut
 
   // M20 cut
-  if (fUseM20){
+  if(!fUseNCells && cluster->GetNCells()<2){
+    // no cut to be applied in this case on M20
+    // as cluster needs at least 2 cells for M20 calculation
+  } else if (fUseM20){
     if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 ) {
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//7
       return kFALSE;
@@ -2499,10 +2510,15 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if (fUseMinEnergy && (cluster->E() < fMinEnergy)){continue;}
     if (fUseNCells && (cluster->GetNCells() < fMinNCells)){continue;}
     if (fUseNLM && (nLM < fMinNLM || nLM > fMaxNLM)){continue;}
-    if (fUseM02 == 1 && (cluster->GetM02() < fMinM02 || cluster->GetM02() > fMaxM02)){continue;}
-    if (fUseM02 == 2 && (cluster->GetM02() < CalculateMinM02(fMinM02CutNr, cluster->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()))){continue;}
-    if (fUseM20 && (cluster->GetM20() < fMinM20 || cluster->GetM20() > fMaxM20)){continue;}
-    if (fUseDispersion && (cluster->GetDispersion() > fMaxDispersion)){continue;}
+    if(!fUseNCells && cluster->GetNCells()<2){
+      // no cut to be applied in this case on M20
+      // as cluster needs at least 2 cells for M20 calculation
+    } else {
+      if (fUseM02 == 1 && (cluster->GetM02() < fMinM02 || cluster->GetM02() > fMaxM02)){continue;}
+      if (fUseM02 == 2 && (cluster->GetM02() < CalculateMinM02(fMinM02CutNr, cluster->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()))){continue;}
+      if (fUseM20 && (cluster->GetM20() < fMinM20 || cluster->GetM20() > fMaxM20)){continue;}
+      if (fUseDispersion && (cluster->GetDispersion() > fMaxDispersion)){continue;}
+    }
     //cluster within timing cut
     if( fUseTimingEfficiencyMCSimCluster==2 ){
       if ( cluster->E() < 5 ) {
@@ -2557,11 +2573,15 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       if (fUseMinEnergy && (clusterMatched->E() < fMinEnergy)){continue;}
       if (fUseNCells && (clusterMatched->GetNCells() < fMinNCells)){continue;}
       if (fUseNLM && (nLMMatched < fMinNLM || nLMMatched > fMaxNLM)){continue;}
-      if (fUseM02 == 1 && (clusterMatched->GetM02() < fMinM02 || clusterMatched->GetM02() > fMaxM02)){continue;}
-      if (fUseM02 == 2 && (clusterMatched->GetM02() < CalculateMinM02(fMinM02CutNr, clusterMatched->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, clusterMatched->E()))){continue;}
-      if (fUseM20 && (clusterMatched->GetM20() < fMinM20 || clusterMatched->GetM20() > fMaxM20)){continue;}
-      if (fUseDispersion && (clusterMatched->GetDispersion() > fMaxDispersion)){continue;}
-
+      if(!fUseNCells && cluster->GetNCells()<2){
+        // no cut to be applied in this case on M20
+        // as cluster needs at least 2 cells for M20 calculation
+      } else {
+        if (fUseM02 == 1 && (clusterMatched->GetM02() < fMinM02 || clusterMatched->GetM02() > fMaxM02)){continue;}
+        if (fUseM02 == 2 && (clusterMatched->GetM02() < CalculateMinM02(fMinM02CutNr, clusterMatched->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, clusterMatched->E()))){continue;}
+        if (fUseM20 && (clusterMatched->GetM20() < fMinM20 || clusterMatched->GetM20() > fMaxM20)){continue;}
+        if (fUseDispersion && (clusterMatched->GetDispersion() > fMaxDispersion)){continue;}
+      }
       // Get rowdiff and coldiff
 
       Int_t matched_largestCellicol = -1, matched_largestCellirow = -1;
