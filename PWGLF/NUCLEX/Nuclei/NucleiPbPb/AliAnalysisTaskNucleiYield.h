@@ -176,6 +176,8 @@ private:
 
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
+  Bool_t IsSelectedTPCGeoCut(AliAODTrack *track);
+  Bool_t IsSelectedTPCGeoCut(AliNanoAODTrack *track);
 
 
   TString               fCurrentFileName;       ///<  Currently analysed file name
@@ -185,6 +187,7 @@ private:
   TTree                *fRTree;                 ///<  Output reconstructed ttree
   TTree                *fSTree;                 ///<  Output simulated ttree
   TLorentzVector        fCutVec;                ///<  Vector used to perform some cuts
+  Bool_t                fIsNano;                ///<  Check if the task is running on nano
   Int_t                 fPDG;                   ///<  PDG code of the particle of interest
   Float_t               fPDGMass;               ///<  PDG mass
   Float_t               fPDGMassOverZ;          ///<  PDG mass over z
@@ -445,13 +448,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(track_t *track, Float_t dca[2]) {
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
   if (fTRDvintage != 0 && fTRDin != IsInTRD(track->Pt(), track->Phi(), track->Charge())) return false;
   if (fRequireCutGeoNcrNclGeom1Pt > 0 && fRequireCutGeoNcrNclLength > 0 && fRequireDeadZoneWidth > 0) {
-    AliESDtrack esdTrack(track);
-    esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
-    esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
-    esdTrack.SetTPCPointsF(track->GetTPCNclsF());
-    float lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(0,fRequireDeadZoneWidth,220.,fMagField);
-    double cutGeoNcrNclLength=fRequireCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fRequireCutGeoNcrNclGeom1Pt);
-    if (lengthInActiveZoneTPC < cutGeoNcrNclLength) return false;
+    if(!IsSelectedTPCGeoCut(track)) return false;
   }
 
   /// ITS related cuts

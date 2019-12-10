@@ -115,6 +115,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRTree{nullptr}
    ,fSTree{nullptr}
    ,fCutVec{}
+   ,fIsNano{false}
    ,fPDG{0}
    ,fPDGMass{0}
    ,fPDGMassOverZ{0}
@@ -414,13 +415,15 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
 
   AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
-
+  if (!fIsNano && nanoHeader)
+    fIsNano = true;
+  
   AliVEvent *ev = InputEvent();
 
   fCentrality = -1.f;
 
   bool EventAccepted = true;
-  if (!nanoHeader) {
+  if (fIsNano) {
     EventAccepted = fEventCut.AcceptEvent(ev);
     /// The centrality selection in PbPb uses the percentile determined with V0.
     fCentrality = fEventCut.GetCentrality(fEstimator);
@@ -437,7 +440,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   bool specialTrigger = true;
   if (fINT7intervals.size()) {
     unsigned int trigger = 0u;
-    if (nanoHeader)
+    if (fIsNano)
       trigger = nanoHeader->GetOfflineTrigger();
     else {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -455,7 +458,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
   }
   
-  if (!nanoHeader) {
+  if (fIsNano) {
     std::array <AliEventCuts::NormMask,4> norm_masks {
       AliEventCuts::kAnyEvent,
       AliEventCuts::kPassesNonVertexRelatedSelections,
@@ -526,7 +529,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(ev->GetTrack(iT));
     AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
-    if (nanoHeader)
+    if (fIsNano)
       TrackLoop(nanoTrack, true);
     else
       TrackLoop(aodTrack, false);
@@ -850,4 +853,28 @@ float AliAnalysisTaskNucleiYield::HasTOF(AliNanoAODTrack *track, AliPIDResponse 
   const float tim = track->GetTOFsignal() - pid->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
   const float beta = len / (tim * LIGHT_SPEED);
   return beta;
+}
+
+/// This function checks whether a track pass TPC Geometrical cut
+///
+/// \param track Track that has to be checked
+/// \return Boolean value: true means that track passed TPC Geometrical cut
+///
+Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliAODTrack *track) {
+  Bool_t checkResult = kTRUE;
+  AliESDtrack esdTrack(track);
+  esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+  esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+  esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+
+  float lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(0,fRequireDeadZoneWidth,220.,fMagField);
+  double cutGeoNcrNclLength=fRequireCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fRequireCutGeoNcrNclGeom1Pt);
+  
+  if (lengthInActiveZoneTPC < cutGeoNcrNclLength) checkResult = kFALSE;
+  return checkResult;
+}
+Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {
+  Bool_t checkResult = kTRUE;
+  // Currently NanoCut is not implemented !!
+  return checkResult;
 }
