@@ -224,7 +224,7 @@ private:
   Float_t               fRequireITSpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireTOFpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
-  float_t               fRequireDeadZoneWidth;  ///<  Cut on on TPC Geometrical Selection Deadzone width
+  Float_t               fRequireDeadZoneWidth;  ///<  Cut on on TPC Geometrical Selection Deadzone width
   Float_t               fRequireCutGeoNcrNclLength; ///<  Cut on TPC Geometrical Selection Length
   Float_t               fRequireCutGeoNcrNclGeom1Pt; ///<  Cut on TPC Geometrical Selection 1 Pt
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
