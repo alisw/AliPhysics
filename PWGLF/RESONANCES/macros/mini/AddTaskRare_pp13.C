@@ -2050,10 +2050,14 @@ Bool_t Config_Lambdak0(
     Bool_t enableMonitor=kTRUE;
     
     // selections for V0 daughters
-    
+
     Int_t K0sCuts=TrackCutsK%1000;
     Bool_t CheckOOBP = true;
-    if(TrackCutsK>1000) CheckOOBP=false;
+    Bool_t CheckOOBPv0 = false;
+    if(TrackCutsK>1000){
+        CheckOOBP=false;
+        CheckOOBPv0=true;
+    }
     
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
@@ -2099,6 +2103,7 @@ Bool_t Config_Lambdak0(
     cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
     cutK0s->SetMaxPseudorapidity(0.8);
     cutK0s->SetMinTPCcluster(-1);
+    cutK0s->SetCheckOOBPileup(CheckOOBPv0);
     
     AliRsnCutSet* cutSetK0s=new AliRsnCutSet("setK0s",AliRsnTarget::kDaughter);
     cutSetK0s->AddCut(cutK0s);
@@ -2140,6 +2145,7 @@ Bool_t Config_Lambdak0(
     cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
     cutLambda->SetMaxPseudorapidity(0.8);
     cutLambda->SetMinTPCcluster(-1);
+    cutLambda->SetCheckOOBPileup(CheckOOBPv0);
     
     AliRsnCutSet* cutSetLambda=new AliRsnCutSet("setLambda",AliRsnTarget::kDaughter);
     cutSetLambda->AddCut(cutLambda);
@@ -2162,6 +2168,7 @@ Bool_t Config_Lambdak0(
     cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
     cutAntiLambda->SetMaxPseudorapidity(0.8);
     cutAntiLambda->SetMinTPCcluster(-1);
+    cutAntiLambda->SetCheckOOBPileup(CheckOOBPv0);
     
     AliRsnCutSet* cutSetAntiLambda=new AliRsnCutSet("setAntiLambda",AliRsnTarget::kDaughter);
     cutSetAntiLambda->AddCut(cutAntiLambda);
