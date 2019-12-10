@@ -40,6 +40,7 @@ AliAnalysisTaskSigma1385PM* AddTaskSigma1385(
                   << ") mode " << std::endl;
     }
     if (foption.Contains("HM")) {
+        taskSigma1385->SetHighMult(kTRUE); // default: kFALSE
         taskSigma1385->fEventCuts.fTriggerMask =
             AliVEvent::kHighMultV0;  // default: kINT7
         std::cout << "AliAnalysisTaskSigma1385PM:: HighMultV0 mode "
