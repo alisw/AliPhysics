@@ -584,7 +584,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         && (aodtrack->Chi2perNDF() < 4.0)
         && (0.15 <= aodtrack->Pt() && aodtrack->Pt() < 20)
         && (aodtrack->GetTPCNcls() > 70)
-        && (aodtrack->Eta() < 0.8)) {
+        && (TMath::Abs(aodtrack->Eta()) < 0.8)) {
       tNormMult++;
     }
 
