@@ -13,7 +13,7 @@ class AliAnalysisTaskEmcalJet;
 
 /**
  * \class AliAnalysisTaskEmcalJetCorrection
- * \brief Analysis task that corrects jet pT/mass with Python code
+ * \brief Analysis task that corrects jet pT with scikit-learn models
  *
  * This task changes the pT of the input jet collection to a corrected value
  * which is calculated with a sklearn estimator
@@ -31,15 +31,13 @@ class AliAnalysisTaskEmcalJetCorrection : public AliAnalysisTaskEmcalJet {
   static AliAnalysisTaskEmcalJetCorrection* AddTaskEmcalJetCorrection(TString modelName, TString trackArray, TString jetArray, TString rhoObject, Double_t jetRadius, const char* taskNameSuffix);
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
-  void                        SetCustomPackages(const char* val)                          {fCustomPackages = val;}
   void                        SetModelName(const char* val)                               {fModelName = val;}
   void                        SetBackgroundModelFileName(const char* val)                 {fBackgroundModelFileName = val;}
   void                        SetBackgroundModelInputParameters(const char* val)          {fBackgroundModelInputParameters = val;}
-  void                        SetCorrectAlsoMass(Bool_t val)                              {fCorrectAlsoMass = val;}
  protected:
   void                        ExecOnce();
   Bool_t                      Run();
-  void                        GetPtAndMassFromModel(AliEmcalJet* jet, Float_t& pt_ML, Float_t& mass_ML);
+  void                        GetPtFromModel(AliEmcalJet* jet, Float_t& pt_ML);
   TString                     GetBackgroundModelArrayString(AliEmcalJet* jet);
   void                        CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& angularity, Double_t& momentumDispersion, Double_t& trackPtMean, Double_t& trackPtMedian);
 
@@ -49,10 +47,8 @@ class AliAnalysisTaskEmcalJetCorrection : public AliAnalysisTaskEmcalJet {
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliParticleContainer       *fTracksCont;                              //!<! Tracks
   TClonesArray*               fJetOutputArray;                          //!<! Array of corr. jets, attached to event
-  TString                     fCustomPackages;                          ///< Custom pip packages to be installed
   TString                     fBackgroundModelFileName;                 ///< MVA model file name
   TString                     fBackgroundModelInputParameters;          ///< MVA model input parameters (comma-separated)
-  Bool_t                      fCorrectAlsoMass;                         ///< mass is also approximated by model or not
   TString                     fModelName;                               ///< Name of model (used for jet collection suffix)
 
   // ################## HELPER FUNCTIONS
@@ -74,7 +70,7 @@ class AliAnalysisTaskEmcalJetCorrection : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetCorrection &operator=(const AliAnalysisTaskEmcalJetCorrection&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetCorrection, 1) // Jet correction task
+  ClassDef(AliAnalysisTaskEmcalJetCorrection, 2) // Jet correction task
   /// \endcond
 };
 
