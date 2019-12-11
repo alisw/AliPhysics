@@ -97,10 +97,10 @@ enum {
     kSigmaStarN_REC,
     kAntiSigmaStarP_REC,
     kAntiSigmaStarN_REC,
-    kSigmaStarP_REC_Mix,  // 21
-    kSigmaStarN_REC_Mix,
-    kAntiSigmaStarP_REC_Mix,
-    kAntiSigmaStarN_REC_Mix,
+    kLambdaStar_typeA,  // 21
+    kLambdaStar_typeB,
+    kAntiLambdaStar_typeA,
+    kAntiLambdaStar_typeB,
 };
 enum {
     kAll = 1,  // 1
@@ -168,13 +168,15 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
                  "SigmaStarN_gen_inel10_igz","AntiSigmaStarP_gen_inel10_igz", "AntiSigmaStarN_gen_inel10_igz",
                  "SigmaStarP_gen_trig", "SigmaStarN_gen_trig","AntiSigmaStarP_gen_trig",
                  "AntiSigmaStarN_gen_trig", "SigmaStarP_rec", "SigmaStarN_rec", "AntiSigmaStarP_rec",
-                 "AntiSigmaStarN_rec", "SigmaStarP_rec_mix", "SigmaStarN_rec_mix", "AntiSigmaStarP_rec_mix",
-                 "AntiSigmaStarN_rec_mix"});
+                 "AntiSigmaStarN_rec", "LambdaStar_TypeA", "LambdaStar_TypeB", "AntiLambdaStar_TypeA",
+                 "AntiLambdaStar_TypeB"});
     
     std::vector<double> centaxisbin;
     (fIsHM) ? centaxisbin = { 0,  0.001,  0.01,  0.05, 0.1} 
             : centaxisbin = { 0,  1,  5,  10, 15, 20, 30,
                               40, 50, 60, 70, 80, 90, 100};  // can be use from pp to PbPb
+    if (fIsMC) centaxisbin = { 0,  0.001,  0.01,  0.05, 0.1,  1,  5,  10, 15, 20, 30,
+                              40, 50, 60, 70, 80, 90, 100};  // for general MC
     binCent = AxisVar("Cent", centaxisbin);
     auto binPt = AxisFix("Pt", 200, 0, 20);
     auto binMass = AxisFix("Mass", 2000, 1.0, 3.0);
@@ -898,7 +900,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
                                         vecsum.Pt(), vecsum.M()});
 
             if (fIsMC &&
-                IsTrueSigmaStar(goodv0indices[i][0], track1)) {
+                IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j])) {
                 if (!isAnti && isPionPlus)
                     sign = kSigmaStarP_REC;
                 if (!isAnti && !isPionPlus)
@@ -907,6 +909,20 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
                     sign = kAntiSigmaStarN_REC;
                 if (isAnti && !isPionPlus)
                     sign = kAntiSigmaStarP_REC;
+
+                FillTHnSparse("Sigma1385_mc", {(double)sign, (double)fCent,
+                                            vecsum.Pt(), vecsum.M()});
+            }
+            if (fIsMC &&
+                IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j], true)) {
+                if (!isAnti && isPionPlus)
+                    sign = kLambdaStar_typeA;
+                if (!isAnti && !isPionPlus)
+                    sign = kLambdaStar_typeB;
+                if (isAnti && isPionPlus)
+                    sign = kAntiLambdaStar_typeA;
+                if (isAnti && !isPionPlus)
+                    sign = kAntiLambdaStar_typeB;
 
                 FillTHnSparse("Sigma1385_mc", {(double)sign, (double)fCent,
                                             vecsum.Pt(), vecsum.M()});
@@ -948,19 +964,6 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
 
                 FillTHnSparse("Sigma1385_data", {(double)sign, (double)fCent,
                                             vecsum.Pt(), vecsum.M()});
-                if (fIsMC && IsTrueSigmaStar(goodv0indices[i][0], track1, true)) {
-                    if (!isAnti && isPionPlus)
-                        sign = kSigmaStarP_REC_Mix;
-                    if (!isAnti && !isPionPlus)
-                        sign = kSigmaStarN_REC_Mix;
-                    if (isAnti && isPionPlus)
-                        sign = kAntiSigmaStarN_REC_Mix;
-                    if (isAnti && !isPionPlus)
-                        sign = kAntiSigmaStarP_REC_Mix;
-
-                    FillTHnSparse("Sigma1385_mc", {(double)sign, (double)fCent,
-                                                vecsum.Pt(), vecsum.M()});
-                }
             }
         }
     }
@@ -1123,7 +1126,7 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
             // tmp[14] = v0ESD->Phi(); //PhiV0
 
             if (fIsMC) {
-                if (IsTrueSigmaStar(goodv0indices[i][0], track1))
+                if (IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j]))
                     tmp[15] = (int)sign;  // MCflag
                 else
                     tmp[15] = 5;  // MCflag -> not true
@@ -1204,14 +1207,14 @@ void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent, int Fillbin) 
     }
 }
 Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
-                                                   AliVTrack* pionTrack,
+                                                   UInt_t pionIndex,
                                                    Bool_t LambdaStarCheck) {
     Bool_t trueSigmaStar = kFALSE;
     AliVTrack* track1;
     AliESDv0* v0ESD;
     AliAODv0* v0AOD;
-    
-    track1 = (AliVTrack*)pionTrack;
+
+    track1 = (AliVTrack*)fEvt->GetTrack(pionIndex);
 
     if (fEvt->IsA() == AliESDEvent::Class()) {
         v0ESD = ((AliESDEvent*)fEvt)->GetV0(v0Index);
@@ -1261,20 +1264,6 @@ Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
                                     trueSigmaStar = kTRUE;
                                 }
                             }  // Sigma Star check
-                            if (LambdaStarCheck) {
-                                if ((TMath::Abs(MCSigmaStar->GetPdgCode()) ==
-                                    kLambdaStarCode) ||
-                                    (TMath::Abs(MCSigmaStar->GetPdgCode()) ==
-                                    kLambdaStarCode)) {
-                                    if (IsPrimaryMC) {
-                                        if (MCSigmaStar->IsPrimary()) {
-                                            trueSigmaStar = kTRUE;
-                                        }  // Primary(input) SigmaStar check
-                                    } else {
-                                        trueSigmaStar = kTRUE;
-                                    }
-                                }  // Lambda Star check
-                            } // Lambda1520 Daughter Check
                         }      // Pion mother = Lambda mother
                     }          // pion check
                 }              // Lambda check
