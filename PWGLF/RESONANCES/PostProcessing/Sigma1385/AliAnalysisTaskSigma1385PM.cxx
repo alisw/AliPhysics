@@ -143,10 +143,16 @@ void AliAnalysisTaskSigma1385PM::SetCutOpen() {
     // Lambda cuts
     SetMaxNsigV0Proton(5);
     SetMaxNsigV0Pion(5);
+    SetMaxDCAPVV0PosDaughter(99);
+    SetMaxDCAPVV0NegDaughter(99);
     SetMaxDCAV0daughters(999);
     SetMaxDCAPVV0(999);
     SetMinCPAV0(0.9);
+    SetMaxRapidityV0(0.8);
     SetMaxMassWindowV0(999);
+    SetLowRadiusV0(0);
+    SetHighRadiusV0(999);
+    SetLifetimeV0(999);
 
     // Sigma Star cut
     SetSigmaStarRapidityCutHigh(1);
@@ -709,7 +715,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
                 fDCADist_LambdaPion_PV = v0AOD->DcaPosToPrimVertex();
                 fDCADist_LambdaProton_PV = v0AOD->DcaNegToPrimVertex();
             }
-            
+            if(TMath::Abs(fDCADist_LambdaProton_PV) < fDCAPositiveTrack)
+                AcceptedV0 = kFALSE;
+            if(TMath::Abs(fDCADist_LambdaPion_PV) < fDCANegativeTrack)
+                AcceptedV0 = kFALSE;
             fHistos->FillTH1("QA/hDCALambdaPVProton", fDCADist_LambdaProton_PV);
             fHistos->FillTH1("QA/hDCALambdaPVPion", fDCADist_LambdaPion_PV);
             

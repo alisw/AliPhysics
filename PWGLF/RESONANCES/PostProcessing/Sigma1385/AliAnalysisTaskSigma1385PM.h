@@ -64,7 +64,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void SetMinCPAV0(Double_t lParameter) {
         fV0CosineOfPointingAngleCut = lParameter;
     }
-    void SetMaxRapidity0(Double_t lParameter) {
+    void SetMaxRapidityV0(Double_t lParameter) {
         fMaxLambdaRapidity = lParameter;
     }
     void SetLowRadiusV0(Double_t lParameter) {
