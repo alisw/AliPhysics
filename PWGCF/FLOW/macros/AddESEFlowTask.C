@@ -37,8 +37,8 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
   mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("c_n{n} distributions%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("d_n{n} distributions%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("q_n distributions%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-  mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("d_n{n} dist after q selection%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-  mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("c_n{n} dist after q selection%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("d_n{n} ESE%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("c_n{n} ESE%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("fQAEvents%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   // in the end, this macro returns a pointer to your task. this will be convenient later on
   // when you will run your analysis in an analysis train on grid
@@ -61,7 +61,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
       TFile* weights_file = TFile::Open(sWeightsFile.Data(),"READ");
       if(!weights_file) { printf("E-AddTaskESEFlow: Input file with weights not found!\n"); return NULL; }
 
-      TList* weights_list = (TList*) weights_file->Get("weights");
+      TList* weights_list = static_cast<TList*>(weights_file->Get("weights"));
       if(!weights_list) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
 
       AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
@@ -89,7 +89,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
       TFile* weights_fileVy = TFile::Open(sVWeights.Data(),"READ");
       if(!weights_fileVy) { printf("E-AddTaskESEFlow: Input file with weights not found!\n"); return NULL; }
 
-      TList* weights_listVy = (TList*) weights_fileVy->Get("WeightList");
+      TList* weights_listVy = static_cast<TList*>(weights_fileVy->Get("WeightList"));
       if(!weights_listVy) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); weights_fileVy->ls(); return NULL; }
 
       AliAnalysisDataContainer* cInputWeightsVy = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
@@ -114,7 +114,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
       TFile* qcuts_file = TFile::Open(sqSelCuts.Data(),"READ");
       if(!qcuts_file) { printf("E-AddTaskESEFlow: Input file with q-cuts not found!\n"); return NULL; }
 
-      TList* qcuts_list = (TList*) qcuts_file->Get("qCuts");
+      TList* qcuts_list = static_cast<TList*>(qcuts_file->Get("qCuts"));
       if(!qcuts_list) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); qcuts_file->ls(); return NULL; }
 
       AliAnalysisDataContainer* cInputCuts = mgr->CreateContainer("inputCuts",TList::Class(), AliAnalysisManager::kInputContainer);

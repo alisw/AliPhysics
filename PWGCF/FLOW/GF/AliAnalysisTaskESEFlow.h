@@ -58,8 +58,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
     Bool_t                  fInit; // ini check
     Bool_t                  fqRun;
 
-        AliAODEvent*            fAOD;           //! input event
-        TList*                  fOutputList;    //! output list
+        AliAODEvent*            fAOD;           //!
+        TList*                  fOutputList;    //!
         TList*                  fObservables;   //!
         TList*                  fCorrDist;      //!
         TList*                  fpTDiff;        //!
@@ -70,9 +70,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         //list in lists WIP
 
-        TList*                  fFlowWeightsList; //! list of weights
-        TList*                  fqCutsList;     //! list of q selection cuts
-        TH1F*                   fHistqCuts[2][fnqCuts];     //!
+        TList*                  fFlowWeightsList; //! 
+        TList*                  fqCutsList;     //!
+        TH1F*                   fHistqCuts[2][fNumCentHists];   //!
         AliGFWWeights*          fWeights;           //!
         //output histograms
         TH3F*                   fHistPhiEtaVz;    //!
@@ -82,21 +82,22 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistZVertex;   //!
 
         TProfile*               fProfcn_2gap[fNumHarmHists]; //!
+        TProfile*               fProfcn_2gapINC[fNumHarmHists]; //!
 
         TProfile*               fProfPTdn_2gap[fNumHarmHists][fNumCentHists];    //!
         TH1F*                   fHistqn_reduced[fNumHarmHists][fNumCentHists];     //!
 
         TProfile*               fProfPTdn_2gap_B[fNumHarmHists][fNumCentHists];    //!
 
-        TH2D*                   fh2Weights; //! contains phi eta weights
+        TH2D*                   fh2Weights; //!
 
-        TH1F*                   fHistPDG; //! histogram of pdg codes for MC
+        TH1F*                   fHistPDG; //!
 
         /////////////////// Work in progress //////////////////////////
         TProfile*               fProfcn_2gap_qn[2][fNumHarmHists][fNumCentHists][10]; //!        
         TProfile*               fProfdn_2gap_qn[2][fNumHarmHists][fNumCentHists][10]; //! 
 
-        TProfile*               fProfcn_2gap_q2[fNumHarmHists][fNumCentHists];  //!
+        TProfile2D*             fProfcn_2gap_q2[fNumHarmHists];  //!
 
         TProfile*               fProfcn_4gap_qn[2][fNumCentHists][10]; //!        
         TProfile*               fProfdn_4gap_qn[2][fNumCentHists][10]; //! 
@@ -115,7 +116,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
         void POIVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
         void ReducedRFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
-        void FillRFP(const Float_t centrality, const int nHarm, const int nCorr);
+        void FillRFP(const Float_t centrality,const Int_t iTracks, const int nHarm, const int nCorr);
         void Filldn(const Float_t centrality, const double dPt, const int nHarm, const int nCorr);
         void Fillqnreduced(const Float_t centrality);
         void FillPOI(const Double_t dPtL, const Double_t dPtLow, const Double_t dPtHigh, const float dVz, const Int_t iTracks);
@@ -212,13 +213,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         AliVEvent::EOfflineTriggerTypes    fTrigger;
         Bool_t                  fEventRejectAddPileUp;
         UInt_t                  fFilterBit;
-        Double_t                fPtMin;
-        Double_t                fPtMax;
         Double_t                fAbsEtaMax;
         TString                 fCentEstimator;
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
+
         Bool_t                  fReadMC;
         AliMCEvent*             fMCEvent;       //! corresponding MC event
         Float_t                 fCentInterval[12];
