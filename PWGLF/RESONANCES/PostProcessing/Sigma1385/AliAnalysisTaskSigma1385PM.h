@@ -55,6 +55,12 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void SetMaxDCAPVV0(Double_t lParameter) {
         fDCArDistLambdaPVCut = lParameter;
     }
+    void SetMaxDCAPVV0PosDaughter(Double_t lParameter) {
+        fDCAPositiveTrack = lParameter;
+    }
+    void SetMaxDCAPVV0NegDaughter(Double_t lParameter) {
+        fDCANegativeTrack = lParameter;
+    }
     void SetMinCPAV0(Double_t lParameter) {
         fV0CosineOfPointingAngleCut = lParameter;
     }
@@ -87,7 +93,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void FillNtuples();
     void FillMCinput(AliMCEvent* fMCEvent, int Fillbin = 0);
     void FillTrackToEventPool();
-    Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion);
+    Bool_t IsTrueSigmaStar(UInt_t v0, AliVTrack* pionTrack, Bool_t LambdaStarCheck = kFALSE);
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
     void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
     void SetCutOpen();
@@ -155,12 +161,14 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     // Lambda cuts
     Double_t fTPCNsigLambdaProtonCut = 3.0;
     Double_t fTPCNsigLambdaPionCut = 3.0;
-    Double_t fDCADistLambdaDaughtersCut = 0.5;    // 0.5
-    Double_t fDCArDistLambdaPVCut = 0.3;          // 0.3
-    Double_t fV0CosineOfPointingAngleCut = 0.99;  // 0.99
+    Double_t fDCADistLambdaDaughtersCut = 1.6;
+    Double_t fDCArDistLambdaPVCut = 0.3;
+    Double_t fDCAPositiveTrack = 0.05;
+    Double_t fDCANegativeTrack = 0.05;
+    Double_t fV0CosineOfPointingAngleCut = 0.99;
     Double_t fMaxLambdaRapidity = 0.5;
-    Double_t fLambdaLowRadius = 0.5;
-    Double_t fLambdaHighRadius = 200.0;
+    Double_t fLambdaLowRadius = 1.4;
+    Double_t fLambdaHighRadius = 100.0;
     Double_t fLambdaLifetime = 30.0;
     Double_t fV0MassWindowCut = 0.01;
 
@@ -171,11 +179,12 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     std::vector<UInt_t> goodtrackindices;  //!
     std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
-    ClassDef(AliAnalysisTaskSigma1385PM, 5);
+    ClassDef(AliAnalysisTaskSigma1385PM, 6);
     // Add rapidity/radius/Lifetime/Y cut of lambda
     // Add NanoOption
     // 4: Add GetImpactParm function for nano
     // 5: Seprate MC Sparse, INEL study capability
+    // 6: Update some of deafult vaules
 };
 
 #endif
