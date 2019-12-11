@@ -948,7 +948,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
 
                 FillTHnSparse("Sigma1385_data", {(double)sign, (double)fCent,
                                             vecsum.Pt(), vecsum.M()});
-                if (fIsMC && IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j]), true) {
+                if (fIsMC && IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j], true)) {
                     if (!isAnti && isPionPlus)
                         sign = kSigmaStarP_REC_Mix;
                     if (!isAnti && !isPionPlus)
