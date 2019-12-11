@@ -156,15 +156,9 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
-    if (suffix == "0") {
-      NBins.push_back(1200);
-      kMin.push_back(0.);
-      kMax.push_back(6.);
-    } else {
-      NBins.push_back(200);
-      kMin.push_back(0.);
-      kMax.push_back(1.);
-    }
+    NBins.push_back(200);
+    kMin.push_back(0.);
+    kMax.push_back(1.);
   }
   pairQA[0] = 11;
   pairQA[4] = 11;
