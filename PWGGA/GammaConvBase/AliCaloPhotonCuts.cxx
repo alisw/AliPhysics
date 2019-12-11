@@ -2009,7 +2009,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       if (fUseNLM)
         if( nLM < fMinNLM || nLM > fMaxNLM )
           failed = kTRUE;
-      if(!fUseNCells && cluster->GetNCells()<2){
+      if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
         // no cut to be applied in this case on M20
         // as cluster needs at least 2 cells for M20 calculation
       } else {
@@ -2067,7 +2067,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//5, next cut
 
   // M02 cut
-  if(!fUseNCells && cluster->GetNCells()<2){
+  if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
     // no cut to be applied in this case on M02
     // as cluster needs at least 2 cells for M02 calculation
   } else if (fUseM02 == 1){
@@ -2085,7 +2085,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//6, next cut
 
   // M20 cut
-  if(!fUseNCells && cluster->GetNCells()<2){
+  if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
     // no cut to be applied in this case on M20
     // as cluster needs at least 2 cells for M20 calculation
   } else if (fUseM20){
@@ -2510,7 +2510,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if (fUseMinEnergy && (cluster->E() < fMinEnergy)){continue;}
     if (fUseNCells && (cluster->GetNCells() < fMinNCells)){continue;}
     if (fUseNLM && (nLM < fMinNLM || nLM > fMaxNLM)){continue;}
-    if(!fUseNCells && cluster->GetNCells()<2){
+    if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
       // no cut to be applied in this case on M20
       // as cluster needs at least 2 cells for M20 calculation
     } else {
@@ -2573,7 +2573,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       if (fUseMinEnergy && (clusterMatched->E() < fMinEnergy)){continue;}
       if (fUseNCells && (clusterMatched->GetNCells() < fMinNCells)){continue;}
       if (fUseNLM && (nLMMatched < fMinNLM || nLMMatched > fMaxNLM)){continue;}
-      if(!fUseNCells && cluster->GetNCells()<2){
+      if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
         // no cut to be applied in this case on M20
         // as cluster needs at least 2 cells for M20 calculation
       } else {
