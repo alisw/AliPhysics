@@ -132,7 +132,7 @@ public:
     }
 
     if (fSettings.nua_mode & fSettings.kInterpolate) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
-    //if (fSettings.makeFakeHoles && useFMD) fUtil.MakeFakeHoles(*dNdetadphi);
+    if (fSettings.makeFakeHoles && useFMD) fUtil.MakeFakeHoles(*dNdetadphi);
     if (!fSettings.use_primaries_fwd) {
       Int_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
       Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
