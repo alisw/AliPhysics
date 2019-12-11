@@ -192,7 +192,8 @@ fPhiCut(TMath::Pi()-0.6),
 fRandom(0),
 fJetR(0.4),
 fJetAcut(0.),
-fRhoType(0)                            
+fRhoType(0),
+kOldV0MC(kFALSE)                            
 {
    //default constructor
    
@@ -525,7 +526,8 @@ fPhiCut(TMath::Pi()-0.6),
 fRandom(0),
 fJetR(0.4),
 fJetAcut(0.),
-fRhoType(0)                           
+fRhoType(0),                           
+kOldV0MC(kFALSE)                            
 {
    //Constructor
    
@@ -911,7 +913,6 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
          jetContTrue->ConnectParticleContainer(trackContTrue);
          jetContTrue->SetPercAreaCut(acut);
          jetContTrue->SetMinPt(0.15);
-         jetContTrue->SetMaxTrackPt(100.);
          jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
@@ -922,7 +923,6 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       if(jetContTrueKT){
          jetContTrueKT->ConnectParticleContainer(trackContTrue);
          jetContTrueKT->SetMinPt(0.);
-         jetContTrueKT->SetMaxTrackPt(100.);
          jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
       }
@@ -2775,6 +2775,11 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
   // and to put it on the output list.
   // Note: Saving to file with e.g. OpenFile(0) is must be before creating other objects.
   //fOutput TList defined in the mother class
+
+   if(kOldV0MC){
+      fHelperEA->SetV0MeanForMCWithDeltaElectronBug(); //cout set old V0M MC values which suffered from delta electron bug 
+   }                            
+
    AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
    Bool_t oldStatus = TH1::AddDirectoryStatus();

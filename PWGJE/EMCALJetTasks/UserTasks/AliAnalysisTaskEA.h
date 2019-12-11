@@ -144,6 +144,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
   void        SetJetAcut(Double_t ac){ fJetAcut = ac;} 
 
+  void        SetV0MeanForMCWithDeltaElectronBug() { kOldV0MC = kTRUE;}  
 
 
   Bool_t      PassedGATrigger();
@@ -484,10 +485,12 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    Bool_t fRhoType;                               //rho type   0=kt ;   1=cms
 
+   Bool_t kOldV0MC;                                // set old MC settings for V0 which had a bug in delta electrons 
+
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 26); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 27); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

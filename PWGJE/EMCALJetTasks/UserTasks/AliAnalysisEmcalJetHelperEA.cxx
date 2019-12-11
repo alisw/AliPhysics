@@ -42,9 +42,9 @@ AliAnalysisEmcalJetHelperEA::AliAnalysisEmcalJetHelperEA():
    fMeanV0A_PartLevel(13.6185),
    fMeanV0C_PartLevel(13.4742),
    fMeanV0M_PartLevel(27.0927),
-   fMeanV0A_DetLevel(41.7158),
-   fMeanV0C_DetLevel(58.3741),
-   fMeanV0M_DetLevel(100.09)
+   fMeanV0A_DetLevel(29.703500),
+   fMeanV0C_DetLevel(44.605673),
+   fMeanV0M_DetLevel(74.309173)
 {
    //default constructor
 
@@ -134,8 +134,15 @@ Double_t AliAnalysisEmcalJetHelperEA::GetV0C(Int_t runnumber) const {
    return  fMeanV0C[irun]; 
 }
 
+//_____________________________________________________________________________________________
 
-
+void AliAnalysisEmcalJetHelperEA::SetV0MeanForMCWithDeltaElectronBug(){
+   //MC productions for pp13 before Aug 2019 suffer from bug in V0 delta electron energy counting 
+   //these are the corresponding MC mean V0 values  
+   fMeanV0A_DetLevel  = 41.7158;
+   fMeanV0C_DetLevel  = 58.3741;
+   fMeanV0M_DetLevel  = 100.09;
+}
 
 
 
