@@ -162,6 +162,7 @@ public:
   
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
     void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
+    void SetLc2V0type(Int_t opt=1) {fV0typeForLc2V0bachelor=opt;}
   
     void SetTreeSingleTrackVarsOpt(Int_t opt) {fTreeSingleTrackVarsOpt=opt;}
   
@@ -377,6 +378,7 @@ private:
   
     Int_t                   fDsMassKKOpt;                          /// option for Ds massKK (mass or delta mass)
     Int_t                   fLc2V0bachelorCalcSecoVtx;             /// option to calculate the secondary vertex for Lc2V0bachelor. False by default, has to be added to AddTask in case we want to start using it.
+    Int_t                   fV0typeForLc2V0bachelor;               /// option to select Offline+OnTheFly (0), only Offline (1=default), only OnTheFly (2) V0's for the Lc->V0bachelor decay
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
 
@@ -466,7 +468,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,23);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,24);
     /// \endcond
 };
 

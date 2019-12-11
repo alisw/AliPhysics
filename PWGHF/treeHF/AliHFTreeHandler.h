@@ -182,7 +182,7 @@ class AliHFTreeHandler : public TObject
     const float kCSPEED = 2.99792457999999984e-02; // cm / ps
 
     //helper methods for derived clases (to be used in BuildTree and SetVariables functions)
-    void AddCommonDmesonVarBranches();
+    void AddCommonDmesonVarBranches(Bool_t HasSecVtx = kTRUE);
     void AddSingleTrackBranches();
     void AddJetBranches();
     void AddGenJetBranches();
