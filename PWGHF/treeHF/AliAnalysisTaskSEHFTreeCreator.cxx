@@ -230,6 +230,8 @@ fTriggerOnlineHighMultV0(false),
 fTriggerBitINT7(false),
 fTriggerBitHighMultSPD(false),
 fTriggerBitHighMultV0(false),
+fTriggerBitCentral(false),
+fTriggerBitSemiCentral(false),
 fTriggerClasses(""),
 fTriggerClassINT7(false),
 fTriggerClassHighMultSPD(false),
@@ -239,9 +241,11 @@ fnV0MEq(0),
 fnV0MCorr(0),
 fnV0MEqCorr(0),
 fPercV0M(0.),
+fMultV0M(0.),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
+fV0typeForLc2V0bachelor(1),
 fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars),
 fJetRadius(0.4),
 fSubJetRadius(0.2),
@@ -288,6 +292,8 @@ fEnableNsigmaTPCDataCorr(false),
 fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone),
 fCorrNtrVtx(false),
 fCorrV0MVtx(false),
+fMultEstimatorAvg(),
+fMultEstimatorAvgSHM(),
 fApplyPhysicsSelOnline(false),
 fEnableEventDownsampling(false),
 fFracToKeepEventDownsampling(1.1),
@@ -594,6 +600,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("trigger_hasbit_INT7", &fTriggerBitINT7);
   fTreeEvChar->Branch("trigger_hasbit_HighMultSPD", &fTriggerBitHighMultSPD);
   fTreeEvChar->Branch("trigger_hasbit_HighMultV0", &fTriggerBitHighMultV0);
+  fTreeEvChar->Branch("trigger_hasbit_Central", &fTriggerBitCentral);
+  fTreeEvChar->Branch("trigger_hasbit_SemiCentral", &fTriggerBitSemiCentral);
   fTreeEvChar->Branch("trigger_classes", &fTriggerClasses);
   fTreeEvChar->Branch("trigger_hasclass_INT7", &fTriggerClassINT7);
   fTreeEvChar->Branch("trigger_hasclass_HighMultSPD", &fTriggerClassHighMultSPD);
@@ -1384,6 +1392,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fTriggerBitINT7 = static_cast<bool>(fTriggerMask & AliVEvent::kINT7);
   fTriggerBitHighMultSPD = static_cast<bool>(fTriggerMask & AliVEvent::kHighMultSPD);
   fTriggerBitHighMultV0 = static_cast<bool>(fTriggerMask & AliVEvent::kHighMultV0);
+  fTriggerBitCentral = static_cast<bool>(fTriggerMask & AliVEvent::kCentral);
+  fTriggerBitSemiCentral = static_cast<bool>(fTriggerMask & AliVEvent::kSemiCentral);
   
   fTriggerClasses = aod->GetFiredTriggerClasses();
   fTriggerClassINT7 = fTriggerClasses.Contains("CINT7-B");
@@ -2081,6 +2091,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
           if(!dplus->GetOwnPrimaryVtx()){
             dplus->SetOwnPrimaryVtx(vtx1);
             unsetvtx=kTRUE;
+            // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+            // Pay attention if you use continue inside this loop!!!
           }
           Bool_t recVtx=kFALSE;
           AliAODVertex *origownvtx=0x0;
@@ -2157,6 +2169,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
         if(!lctopkpi->GetOwnPrimaryVtx()){
           lctopkpi->SetOwnPrimaryVtx(vtx1);
           unsetvtx=kTRUE;
+          // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+          // Pay attention if you use continue inside this loop!!!
         }
         Bool_t recVtx=kFALSE;
         AliAODVertex *origownvtx=0x0;
@@ -2485,7 +2499,15 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
     
     if (isLc2V0bachelortagged && fWriteVariableTreeLc2V0bachelor){
       
-      if(fFiltCutsLc2V0bachelor->GetUsePreselect()){
+      AliAODv0 * v0part;
+      if(d->GetIsFilled() == 0) v0part = (AliAODv0*)(aod->GetV0(d->GetProngID(1)));
+      else                      v0part = d->Getv0();
+      Bool_t isOnFlyV0 = v0part->GetOnFlyStatus();
+
+      if(fV0typeForLc2V0bachelor==1 && isOnFlyV0 == kTRUE) continue;
+      if(fV0typeForLc2V0bachelor==2 && isOnFlyV0 == kFALSE) continue;
+
+      if(fFiltCutsLc2V0bachelor->GetUsePreselect() && d->GetIsFilled() == 0){
         TObjArray arrTracks(2);
         for(Int_t ipr=0;ipr<2;ipr++){
           AliAODTrack *tr;
@@ -2501,7 +2523,9 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
       nFilteredLc2V0bachelor++;
       if((vHF->FillRecoCasc(aod,d,kFALSE,fLc2V0bachelorCalcSecoVtx))) {//Fill the data members of the candidate only if they are empty.
         
-        //Add vHF->RecoSecondaryVertexForCascades() for fLc2V0bachelorCalcSecoVtx=kTRUE if we want to save properties as d_len, cos_p for Lc also in pp/pPb. For PbPb it is automatically done with vHF->FillRecoCasc above
+        //To calculate secondary vertex for pp/pPb if requested
+        //Remember to run also CleanUpTask!
+        if(d->GetIsFilled()==1 && fLc2V0bachelorCalcSecoVtx) vHF->RecoSecondaryVertexForCascades(aod, d);
         
         //To be added in AliRDHFCutsLctoV0 IsSelected. If the case, move down after isSelectedFilt as for other mesons
         Bool_t unsetvtx=kFALSE;
@@ -2519,12 +2543,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
           else fFiltCutsLc2V0bachelor->CleanOwnPrimaryVtx(d,aod,origownvtx);
         }
         
-        //Automatically selects offline V0's. If one wants to use on-the-fly V0's some flag needs to be added
-        AliAODv0 * v0part = (AliAODv0*)d->Getv0();
-        Bool_t isOnFlyV0 = v0part->GetOnFlyStatus();
-        
         Int_t isSelectedFilt = fFiltCutsLc2V0bachelor->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
-        if(isSelectedFilt > 0 && !isOnFlyV0){
+        if(isSelectedFilt > 0){
           fNentries->Fill(34);
           nSelectedLc2V0bachelor++;
           
@@ -3197,6 +3217,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
         if(!lctopkpi->GetOwnPrimaryVtx()){
           lctopkpi->SetOwnPrimaryVtx(vtx1);
           unsetvtx=kTRUE;
+          // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+          // Pay attention if you use continue inside this loop!!!
         }
         Bool_t recVtx=kFALSE;
         AliAODVertex *origownvtx=0x0;

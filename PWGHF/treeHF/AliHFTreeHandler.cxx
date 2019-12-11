@@ -302,7 +302,7 @@ void AliHFTreeHandler::SetCandidateType(bool issignal, bool isbkg, bool isprompt
 }
 
 //________________________________________________________________
-void AliHFTreeHandler::AddCommonDmesonVarBranches() {
+void AliHFTreeHandler::AddCommonDmesonVarBranches(Bool_t HasSecVtx) {
 
   fTreeVar->Branch("run_number",&fRunNumber);
   fTreeVar->Branch("ev_id",&fEvID);
@@ -313,13 +313,15 @@ void AliHFTreeHandler::AddCommonDmesonVarBranches() {
   fTreeVar->Branch("y_cand",&fY);
   fTreeVar->Branch("eta_cand",&fEta);
   fTreeVar->Branch("phi_cand",&fPhi);
-  fTreeVar->Branch("d_len",&fDecayLength);
-  fTreeVar->Branch("d_len_xy",&fDecayLengthXY);
-  fTreeVar->Branch("norm_dl_xy",&fNormDecayLengthXY);
-  fTreeVar->Branch("cos_p",&fCosP);
-  fTreeVar->Branch("cos_p_xy",&fCosPXY);
-  fTreeVar->Branch("imp_par_xy",&fImpParXY);
-  fTreeVar->Branch("dca",&fDCA);
+  if(HasSecVtx){
+    fTreeVar->Branch("d_len",&fDecayLength);
+    fTreeVar->Branch("d_len_xy",&fDecayLengthXY);
+    fTreeVar->Branch("norm_dl_xy",&fNormDecayLengthXY);
+    fTreeVar->Branch("cos_p",&fCosP);
+    fTreeVar->Branch("cos_p_xy",&fCosPXY);
+    fTreeVar->Branch("imp_par_xy",&fImpParXY);
+    fTreeVar->Branch("dca",&fDCA);
+  }
 } 
 
 //________________________________________________________________
