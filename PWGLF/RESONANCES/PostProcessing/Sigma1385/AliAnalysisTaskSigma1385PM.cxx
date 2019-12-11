@@ -151,7 +151,7 @@ void AliAnalysisTaskSigma1385PM::SetCutOpen() {
     SetMaxRapidityV0(0.8);
     SetMaxMassWindowV0(999);
     SetLowRadiusV0(0);
-    SetMaxRadiusV0(999);
+    SetHighRadiusV0(999);
     SetLifetimeV0(999);
 
     // Sigma Star cut
