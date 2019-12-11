@@ -898,7 +898,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
                                         vecsum.Pt(), vecsum.M()});
 
             if (fIsMC &&
-                IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j])) {
+                IsTrueSigmaStar(goodv0indices[i][0], track1)) {
                 if (!isAnti && isPionPlus)
                     sign = kSigmaStarP_REC;
                 if (!isAnti && !isPionPlus)
@@ -948,7 +948,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
 
                 FillTHnSparse("Sigma1385_data", {(double)sign, (double)fCent,
                                             vecsum.Pt(), vecsum.M()});
-                if (fIsMC && IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j], true)) {
+                if (fIsMC && IsTrueSigmaStar(goodv0indices[i][0], track1, true)) {
                     if (!isAnti && isPionPlus)
                         sign = kSigmaStarP_REC_Mix;
                     if (!isAnti && !isPionPlus)
@@ -1123,7 +1123,7 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
             // tmp[14] = v0ESD->Phi(); //PhiV0
 
             if (fIsMC) {
-                if (IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j]))
+                if (IsTrueSigmaStar(goodv0indices[i][0], track1))
                     tmp[15] = (int)sign;  // MCflag
                 else
                     tmp[15] = 5;  // MCflag -> not true
@@ -1204,14 +1204,14 @@ void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent, int Fillbin) 
     }
 }
 Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
-                                                   UInt_t pionIndex,
+                                                   AliVTrack* pionTrack,
                                                    Bool_t LambdaStarCheck) {
     Bool_t trueSigmaStar = kFALSE;
     AliVTrack* track1;
     AliESDv0* v0ESD;
     AliAODv0* v0AOD;
-
-    track1 = (AliVTrack*)fEvt->GetTrack(pionIndex);
+    
+    track1 = (AliVTrack*)pionTrack;
 
     if (fEvt->IsA() == AliESDEvent::Class()) {
         v0ESD = ((AliESDEvent*)fEvt)->GetV0(v0Index);

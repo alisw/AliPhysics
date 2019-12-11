@@ -93,7 +93,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void FillNtuples();
     void FillMCinput(AliMCEvent* fMCEvent, int Fillbin = 0);
     void FillTrackToEventPool();
-    Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion, Bool_t LambdaStarCheck = kFALSE);
+    Bool_t IsTrueSigmaStar(UInt_t v0, AliVTrack* pionTrack, Bool_t LambdaStarCheck = kFALSE);
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
     void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
     void SetCutOpen();
