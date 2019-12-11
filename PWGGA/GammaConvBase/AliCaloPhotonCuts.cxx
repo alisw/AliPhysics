@@ -5674,7 +5674,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
               if( fCurrentMC==k14j4 ){
                   energy *= FunctionNL_PHOSOnlyMC(energy, 1.008, 0.015, 0.4);
                   // for LHC13bc
-              } else if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC==kPPb5T13P4DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == kPPb5T13P2HIJAdd){
+              } else if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC==kPPb5T13P4DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == kPPb5T13P2HIJAdd || fCurrentMC == kPPb5T13P4JJhigh || fCurrentMC == kPPb5T13P4JJlow){
                   energy *= FunctionNL_PHOSOnlyMC(energy, 1.0135, 0.018, 1.9);
               } else if(  // pp 5 TeV 2015
                   fCurrentMC == k16h3  || fCurrentMC == k16h8a || fCurrentMC == k16h8b || fCurrentMC == k16k3a  || fCurrentMC == k16k5a ||  fCurrentMC == k16k5b || fCurrentMC == k17e2 || fCurrentMC == k18j3 ||
@@ -6513,7 +6513,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= FunctionNL_kSDM(energy, 0.987513, -4.34641, -0.522125) ;
             energy /= 0.9935;
           }
-        } else if( fCurrentMC==kPPb5T13P4JJ  ){
+        } else if( fCurrentMC==kPPb5T13P4JJ || fCurrentMC == kPPb5T13P4JJhigh || fCurrentMC == kPPb5T13P4JJlow  ){
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.965112, -3.45484, -1.33685) ;
           }
@@ -6560,7 +6560,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= (FunctionNL_kSDM(energy, 0.987611, -4.14227, -0.282541) * 1.0036264536 );
             energy /= 0.9935;
           }
-        } else if( fCurrentMC==kPPb5T13P4JJ ) {
+        } else if( fCurrentMC==kPPb5T13P4JJ || fCurrentMC == kPPb5T13P4JJhigh || fCurrentMC == kPPb5T13P4JJlow) {
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.967048, -2.30814, -2.0672) ;
           }
@@ -7509,6 +7509,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC16c3a2") == 0 )    return k16c3a;
   else if ( namePeriod.CompareTo("LHC16c3b") == 0 ||
             namePeriod.CompareTo("LHC16c3b2") == 0 )    return k16c3b;
+  else if ( namePeriod.CompareTo("LHC17g6a2") == 0 )    return kPPb5T13P4JJlow;
+  else if ( namePeriod.CompareTo("LHC17g6a3") == 0 )    return kPPb5T13P4JJhigh;
   // pPb 5 TeV 2013 MC GJ
   else if ( namePeriod.CompareTo("LHC16c3c") == 0 ||
             namePeriod.CompareTo("LHC16c3c2") == 0 )    return k16c3c;

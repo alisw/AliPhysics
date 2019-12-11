@@ -157,6 +157,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16c3a,        //!< anchored LHC13[d-e] pass 2 - JJ
         kLHC16c3b,        //!< anchored LHC13[d-e] pass 2 - JJ
         kLHC16c3c,        //!< anchored LHC13[d-e] pass 2 - GJ
+        kLHC17g6a1,       //!< anchored LHC13[d-f] pass 2 - GJ
+        kLHC17g6a2,       //!< anchored LHC13[d-f] pass 2 - JJ low
+        kLHC17g6a3,       //!< anchored LHC13[d-f] pass 2 - JJ high
         kLHC18j5,         //!< anchored LHC13[b-c] pass 4 - General Purpose
         kLHC19a4,         //!< anchored LHC13[b-f] pass 4 - jj
         kLHC15g2,         //!< anchored LHC13g pass 1
