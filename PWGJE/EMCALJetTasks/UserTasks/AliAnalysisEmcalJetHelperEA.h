@@ -38,6 +38,7 @@ class AliAnalysisEmcalJetHelperEA : public TObject {
   Double_t  GetV0CDetLevel() const { return fMeanV0C_DetLevel;} 
   Double_t  GetV0MDetLevel() const { return fMeanV0M_DetLevel;} 
 
+  void      SetV0MeanForMCWithDeltaElectronBug();
 
  private:
 
@@ -61,7 +62,7 @@ class AliAnalysisEmcalJetHelperEA : public TObject {
    AliAnalysisEmcalJetHelperEA& operator=(const AliAnalysisEmcalJetHelperEA&);
 
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisEmcalJetHelperEA, 2); 
+   ClassDef(AliAnalysisEmcalJetHelperEA, 3); 
    /// \endcond
 
 };
