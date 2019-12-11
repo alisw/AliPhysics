@@ -69,6 +69,44 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
 
+  if (suffix != "0") {
+    TrackCutsPhi->SetMinimalBooking(true);
+  }
+  if (suffix == "1") {
+    TrackCutsPhi->SetCutWindow(0.987,1.011);
+  }
+  if (suffix == "2") {
+    TrackCutsPhi->SetCutWindow(1.027,1.1);
+  }
+  if (suffix == "3") {
+    TrackCutsPhi->SetCutWindow(1.1,1.2);
+  }
+  if (suffix == "4") {
+    TrackCutsPhi->SetCutWindow(1.2,1.3);
+  }
+  if (suffix == "5") {
+    TrackCutsPhi->SetCutWindow(1.3,1.4);
+  }
+  if (suffix == "6") {
+    TrackCutsPhi->SetCutWindow(1.4,1.5);
+  }
+  if (suffix == "7") {
+    TrackCutsPhi->SetCutWindow(1.5,1.6);
+  }
+  if (suffix == "8") {
+    TrackCutsPhi->SetCutWindow(1.6,1.7);
+  }
+  if (suffix == "9") {
+    TrackCutsPhi->SetCutWindow(1.7,1.8);
+  }
+  if (suffix == "10") {
+    TrackCutsPhi->SetCutWindow(1.8,1.9);
+  }
+  if (suffix == "11") {
+    TrackCutsPhi->SetCutWindow(1.9,2);
+  }
+
+
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
   // std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
