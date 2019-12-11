@@ -1413,7 +1413,7 @@ void AliAnalysisTaskV0ChCorrelation::UserExec(Option_t *)
     Double_t lPVx = primVertex->GetX();
     Double_t lPVy = primVertex->GetY();
     Double_t lPVz = primVertex->GetZ();
-    if (TMath::Abs(lPVx)<fVtxXMin && TMath::Abs(lPVy)<fVtxYMin&& TMath::Abs(lPVz)<fVtxZMin) return;
+    if (TMath::Abs(lPVx)<10e-5 && TMath::Abs(lPVy)<10e-5&& TMath::Abs(lPVz)<10e-5) return;
   
     Short_t binVertex = Short_t((lPVz+7.)/2.);
 
@@ -1729,7 +1729,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
     Int_t nRecTracks = selectedMCTracks->GetEntriesFast();
     for(Int_t i = 0; i < nRecTracks; i++){
       AliAODTrack* tr = (AliAODTrack*)selectedMCTracks->At(i);
-      if ( tr->Pt() < fTrackMCPtMin ) continue;
+      if ( tr->Pt() < fTrackPtMin ) continue;
       if((tr->Pt())>fTrackPtMax) continue;
 
       if(tr->Charge() == 0.) continue;

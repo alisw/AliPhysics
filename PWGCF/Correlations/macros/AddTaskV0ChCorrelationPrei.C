@@ -1,16 +1,16 @@
 // AddTask for AliAnalysisTaskV0ChCorrelation task
 
-AliAnalysisTaskV0ChCorrelation* AddTaskV0ChCorrelation(
+AliAnalysisTaskV0ChCorrelation* AddTaskV0ChCorrelationPrei(
                               float cenMin, float cenMax,
                               bool effCorr = 0, bool isMC=0){
-   AddTaskV0ChCorrelation( 
+   AddTaskV0ChCorrelationPrei( 
                             cenMin,  cenMax,
                             Form("Cent%d_%d", Int_t(cenMin), Int_t(cenMax)),
                             Form("Cent%d_%d", Int_t(cenMin), Int_t(cenMax)),
                             effCorr, isMC);
 }
 
- AliAnalysisTaskV0ChCorrelation* AddTaskV0ChCorrelation(
+ AliAnalysisTaskV0ChCorrelation* AddTaskV0ChCorrelationPrei(
                               float cenMin, float cenMax,
                               TString folderName="myFolder",
                               TString suffixName="mySuffix",
@@ -25,7 +25,7 @@ AliAnalysisTaskV0ChCorrelation* AddTaskV0ChCorrelation(
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskV0ChCorrelation", "No analysis manager to connect to.");
+    ::Error("AddTaskV0ChCorrelationPrei", "No analysis manager to connect to.");
     return NULL;
   }
 //===================================
@@ -34,7 +34,7 @@ if (!mgr->GetInputEventHandler()) {
     }
 //=====================================  
   // create task
-  AliAnalysisTaskV0ChCorrelation* task = new AliAnalysisTaskV0ChCorrelation(Form("V0ChCorrelation_%s",suffixName.Data()),  cenMin,cenMax,effCorr);  
+  AliAnalysisTaskV0ChCorrelation* task = new AliAnalysisTaskV0ChCorrelation(Form("V0ChCorrelationPrei_%s",suffixName.Data()),  cenMin,cenMax,effCorr);  
 
   task->SetAnalysisMC(isMC);
   //------------------------------Mixing part------------------------------
@@ -45,8 +45,8 @@ if (!mgr->GetInputEventHandler()) {
  // task->SetVtxXMin(10e-5);
  // task->SetVtxYMin(10e-5);
  // task->SetVtxZMin(10e-5);
-  task->SetCentMin(0);
-  task->SetCentMax(10.);
+  task->SetCentMin(50);
+  task->SetCentMax(80.);
   //-----------------------------Track-------------------------------------
  // task->SetTrackMCPtMin(1);
 
@@ -123,7 +123,7 @@ AliAnalysisDataContainer *coutput7
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
    
-    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/V0Efficiency0_10.root");
+    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/V0Efficiency50_90.root");
 
     if(!file) {
       printf("ERROR: efficiency file is not available!\n");
