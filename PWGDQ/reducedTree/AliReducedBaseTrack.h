@@ -106,6 +106,7 @@ class AliReducedBaseTrack : public TObject {
                                                    // AOD
                                                    // BIT(15+i) toggled if track has filter bit 0+i , 0 <= i <= 10
                                                    // BIT26 toggled if this is a track matched in TRD
+                                                   // BIT27 toggled if the track was used in the vertex determination
                                                    
                                                    // For AliReducedPairInfo objects
                                                    // BIT1 toggled for pure V0 K0s candidates
