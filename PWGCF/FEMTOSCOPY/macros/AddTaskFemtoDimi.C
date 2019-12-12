@@ -505,6 +505,28 @@ if (etaPhiPlotsAtTPCRadii) {
       Form("%s:%s", file.Data(), ResultQAName.Data()));
   mgr->ConnectOutput(task, 10, coutputResultQA);
 
+    AliAnalysisDataContainer *coutputResultsSample;
+  TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(),
+                                   suffix.Data());
+  coutputResultsSample = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleName.Data()));
+  mgr->ConnectOutput(task, 11, coutputResultsSample);
+
+  AliAnalysisDataContainer *coutputResultsSampleQA;
+  TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(),
+                                     suffix.Data());
+  coutputResultsSampleQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
+  mgr->ConnectOutput(task, 12, coutputResultsSampleQA);
+
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("%sTrkCutsMC%s",addon.Data(),suffix.Data());
@@ -514,7 +536,7 @@ if (etaPhiPlotsAtTPCRadii) {
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 13, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sv0CutsMC%s",addon.Data(),suffix.Data());
@@ -524,7 +546,7 @@ if (etaPhiPlotsAtTPCRadii) {
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 12, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 14, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s",addon.Data(),suffix.Data());
@@ -534,7 +556,7 @@ if (etaPhiPlotsAtTPCRadii) {
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 13, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 15, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s",addon.Data(),suffix.Data());
@@ -544,7 +566,7 @@ if (etaPhiPlotsAtTPCRadii) {
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
 
     AliAnalysisDataContainer *coutputXiCutsMC;
     TString XiCutsMCName = Form("%sXiCutsMC%s",addon.Data(),suffix.Data());
@@ -554,7 +576,7 @@ if (etaPhiPlotsAtTPCRadii) {
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), XiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 15, coutputXiCutsMC);
+    mgr->ConnectOutput(task, 17, coutputXiCutsMC);
 
      AliAnalysisDataContainer *coutputAntiXiCutsMC;
     TString AntiXiCutsMCName = Form("%sAntiXiCutsMC%s",addon.Data(),suffix.Data());
@@ -564,7 +586,7 @@ if (etaPhiPlotsAtTPCRadii) {
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
+    mgr->ConnectOutput(task, 18, coutputAntiXiCutsMC);
   }
 
   return task;

@@ -50,6 +50,9 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma()
       fConfig(nullptr),
       fResultList(nullptr),
       fResultQAList(nullptr),
+      fSample(nullptr),
+      fResultsSample(nullptr),
+      fResultsSampleQA(nullptr),
       fGTI(nullptr) {
 }
 
@@ -91,7 +94,11 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
       fConfig(nullptr),
       fResultList(nullptr),
       fResultQAList(nullptr),
+      fSample(nullptr),
+      fResultsSample(nullptr),
+      fResultsSampleQA(nullptr),
       fGTI(nullptr) {
+
   DefineOutput(1, TList::Class());  //Output for the Event Class and Pair Cleaner
   DefineOutput(2, TList::Class());  //Output for the Event Cuts
   DefineOutput(3, TList::Class());  //Output for the Track Cuts
@@ -102,6 +109,8 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
   DefineOutput(8, TList::Class());  //Output for the AntiCascade Cuts
   DefineOutput(9, TList::Class());  //Output for the Results
   DefineOutput(10, TList::Class());  //Output for the Results QA
+  DefineOutput(11, TList::Class());  //Output for the Results Sample
+  DefineOutput(12, TList::Class());  //Output for the Results Sample QA
   if (fIsMC){
     DefineOutput(11, TList::Class());  //Output for the MC Track Cuts
     DefineOutput(12, TList::Class());  //Output for the MC V0 Cuts
@@ -253,6 +262,12 @@ if (fv0Cuts) {
     fResultList = fPartColl->GetHistList();
     fResultQAList = fPartColl->GetQAList();
   }
+  if (fConfig->GetUsePhiSpinning()) {
+    fSample = new AliFemtoDreamControlSample(fConfig);
+    fResultsSample = fSample->GetHistList();
+    fResultsSampleQA = fSample->GetQAList();
+  }
+
   PostData(1, fQA);
   PostData(2, fEvtHistList);
   PostData(3, fTrackCutHistList);
@@ -263,13 +278,15 @@ if (fv0Cuts) {
   PostData(8, fAntiXiList);
   PostData(9, fResultList);
   PostData(10, fResultQAList);
+  PostData(11, fResultsSample);
+  PostData(12, fResultsSampleQA);
   if (fIsMC){
-    PostData(11, fTrackCutHistMCList);
-    PostData(12, fv0CutHistMCList);
-    PostData(13, fAntiTrackCutHistMCList);
-    PostData(14, fAntiv0CutHistMCList);
-    PostData(15, fXiMCList);
-    PostData(16, fAntiXiMCList);
+    PostData(13, fTrackCutHistMCList);
+    PostData(14, fv0CutHistMCList);
+    PostData(15, fAntiTrackCutHistMCList);
+    PostData(16, fAntiv0CutHistMCList);
+    PostData(17, fXiMCList);
+    PostData(18, fAntiXiMCList);
 
   }
 }
@@ -401,11 +418,15 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
       fPairCleaner->StoreParticle(AntiDecays);
       fPairCleaner->StoreParticle(Xis);
       fPairCleaner->StoreParticle(AntiXis);
+
       if (fConfig->GetUseEventMixing()) {
         fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
                             fEvent->GetZVertex(), fEvent->GetMultiplicity(),
                             fEvent->GetV0MCentrality());
       }
+      if (fConfig->GetUsePhiSpinning()) {
+      fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
+    }
     }
   }
   PostData(1, fQA);
@@ -418,13 +439,15 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
   PostData(8, fAntiXiList);
   PostData(9, fResultList);
   PostData(10, fResultQAList);
+  PostData(11, fResultsSample);
+  PostData(12, fResultsSampleQA);
   if (fIsMC){
-    PostData(11, fTrackCutHistMCList);
-    PostData(12, fv0CutHistMCList);
-    PostData(13, fAntiTrackCutHistMCList);
-    PostData(14, fAntiv0CutHistMCList);
-    PostData(15, fXiMCList);
-    PostData(16, fAntiXiMCList);
+    PostData(13, fTrackCutHistMCList);
+    PostData(14, fv0CutHistMCList);
+    PostData(15, fAntiTrackCutHistMCList);
+    PostData(16, fAntiv0CutHistMCList);
+    PostData(17, fXiMCList);
+    PostData(18, fAntiXiMCList);
   }
   return;
 }
