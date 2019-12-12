@@ -153,20 +153,20 @@ void AliForwardSecondariesTask::UserCreateOutputObjects()
   Int_t dimensions = 4;
   fSettings.fCentBins = 10;
 
-  Int_t bins_phi_eta[4] = {fSettings.fNZvtxBins, phibins+1, etabins, fSettings.fCentBins} ;
+  Int_t bins_phi_eta[4] = {fSettings.fNZvtxBins, phibins+1, etabins, 1} ;
   Double_t xmin_phi_eta[4] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), -4, 0};
   Double_t xmax_phi_eta[4] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 6, 100}; 
 
-  Int_t bins_eta_phi[4] = {fSettings.fNZvtxBins, etabins+1, phibins, fSettings.fCentBins} ;
+  Int_t bins_eta_phi[4] = {fSettings.fNZvtxBins, etabins+1, phibins, 1} ;
   Double_t xmin_eta_phi[4] = {fSettings.fZVtxAcceptanceLowEdge, -6, 0, 0};
   Double_t xmax_eta_phi[4] = {fSettings.fZVtxAcceptanceUpEdge, 6, 2*TMath::Pi(),100}; 
 
-  Int_t bins_eta_eta[4] = {fSettings.fNZvtxBins, etabins + 1, etabins, fSettings.fCentBins} ;
+  Int_t bins_eta_eta[4] = {fSettings.fNZvtxBins, etabins + 1, etabins, 1} ;
   Double_t xmin_eta_eta[4] = {fSettings.fZVtxAcceptanceLowEdge, -6, -4, 0};
   Double_t xmax_eta_eta[4] = {fSettings.fZVtxAcceptanceUpEdge, 6, 6, 100}; 
 
 
-  Int_t bins_phi_phi[4] = {fSettings.fNZvtxBins, phibins + 1, phibins,fSettings.fCentBins} ;
+  Int_t bins_phi_phi[4] = {fSettings.fNZvtxBins, phibins + 1, phibins,1} ;
   Double_t xmin_phi_phi[4] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, 0};
   Double_t xmax_phi_phi[4] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 2*TMath::Pi(), 100}; 
 
