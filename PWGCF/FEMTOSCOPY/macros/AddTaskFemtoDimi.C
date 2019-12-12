@@ -2,14 +2,12 @@
 #include "TSystem.h"
 
 AliAnalysisTaskSE* AddTaskFemtoDimi(
-    bool isMC = false,//1
-    TString CentEst = "kInt7",//3
-    bool MomReso = false,//6 to set to true only when running on MC
-    bool etaPhiPlotsAtTPCRadii=true,//7 to set to true only when running on MC but very Mem. Consuming
-    bool dPhidEtaPlots=true,//10
-    bool kTCentBins=false,//13
-    bool DeltaEtaDeltaPhiCut=false,//14
-    const char *mixmethod = "0") {
+    bool isMC = false,                //1
+    TString CentEst = "kInt7",        //2
+    bool MomReso = false,             //3 to set to true only when running on MC
+    bool etaPhiPlotsAtTPCRadii=true,  //4 to set to true only when running on MC but very Mem. Consuming
+    bool dPhidEtaPlots=true,          //5
+    const char *mixmethod = "0") {    //6
 
   TString suffix=Form("%s",mixmethod);
 
@@ -31,7 +29,7 @@ AliAnalysisTaskSE* AddTaskFemtoDimi(
       // IMPORTANT - SET WHEN USING DIFFERENT PASS
       AliAnalysisTaskPIDResponse *pidResponse =
           reinterpret_cast<AliAnalysisTaskPIDResponse *>(
-              gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/"
+              gInterpreter->ExecuteMacro("$AL5ICE_ROOT/ANALYSIS/macros/"
                   "AddTaskPIDResponse.C (kTRUE, kTRUE, "
                   "kTRUE, \"1\")"));
     } else {
