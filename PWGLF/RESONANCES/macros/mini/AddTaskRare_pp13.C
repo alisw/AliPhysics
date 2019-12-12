@@ -3,6 +3,12 @@
  Macro to configure the resonance package for searches for rare resonances.
  ****************************************************************************/
 
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#include <PWGLF/RESONANCES/macros/mini/qa/AddMonitorOutputV0.C>
+#include <PWGLF/RESONANCES/macros/mini/qa/AddMonitorOutputCascade.C>
+
  Bool_t Config_pipi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
  Bool_t Config_pikx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
  Bool_t Config_pik0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
@@ -21,6 +27,8 @@
  Bool_t Config_Xik0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
  Bool_t Config_XiP(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
  Bool_t Config_XiLambda(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+
+#endif
 
 AliRsnMiniAnalysisTask* AddTaskRare_pp13(
                                          TString lname,
