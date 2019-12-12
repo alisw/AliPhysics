@@ -130,6 +130,8 @@ struct MLSelected {
 class AliAnalysisTaskHypertriton3ML : public AliAnalysisTaskSE {
 
 public:
+  enum kReducedTrigger { kINT7 = BIT(0), kCentral = BIT(1), kSemiCentral = BIT(2), kPositiveB = BIT(3) };
+
   AliAnalysisTaskHypertriton3ML(bool mc = false, std::string name = "HyperTriton2He3piML");
   virtual ~AliAnalysisTaskHypertriton3ML();
 

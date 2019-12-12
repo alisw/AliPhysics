@@ -196,6 +196,7 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   AliPDG::AddParticlesToPdgDataBase();
 }    // end UserCreateOutputObjects
 
+//________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
   if (!esdEvent) {
@@ -226,11 +227,14 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 
   unsigned char tgr = 0x0;
 
-  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) tgr = 1;
-  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) tgr = 2;
-  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr = 4;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) tgr |= kINT7;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) tgr |= kCentral;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr |= kSemiCentral;
 
-  fREvent.fTrigger = tgr;
+  double b     = esdEvent->GetMagneticField();
+  int magField = b > 0 ? kPositiveB : 0;
+
+  fREvent.fTrigger = tgr + magField;
 
   std::unordered_map<int, int> mcMap;
 
@@ -298,8 +302,6 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   fDeuVector.clear();
   fPVector.clear();
   fPiVector.clear();
-
-  double b = esdEvent->GetMagneticField();
 
   for (int iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) {
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
@@ -489,9 +491,9 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         if (fApplyML) {
           auto fMap = FeaturesMap(hyp3r, fREvent);
 
-          float ct = fMap["ct"];
+          float ct      = fMap["ct"];
           float invmass = fMap["InvMass"];
-          float hyppt = fMap["HypCandPt"];
+          float hyppt   = fMap["HypCandPt"];
 
           if (ct > 1. && ct < 35. && fREvent.fCent < 90.) {
             float score{0.f};
