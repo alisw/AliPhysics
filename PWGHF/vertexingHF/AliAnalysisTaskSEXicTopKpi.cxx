@@ -537,7 +537,7 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   const Int_t nbinsAccLcFromSc=6;
   Int_t binsAccLcFromSc[nbinsAccLcFromSc]={250,20,2,20,250,40};
   Double_t lowedgesAccLcFromSc[nbinsAccLcFromSc]={0,-0.5,3.5,-1,0,-2};
-  Double_t upedgesAccLcFromSc[nbinsAccLcFromSc]={50,19,5.5,1,50,2};
+  Double_t upedgesAccLcFromSc[nbinsAccLcFromSc]={50,19.5,5.5,1,50,2};
   fhistMCSpectrumAccLcFromSc=new THnSparseF("fhistMCSpectrumAccLcFromSc","fhistMCSpectrumAccLcFromSc;ptLc:codeLc:Qorigin:yLc:ptSc:ySc",nbinsAccLcFromSc,binsAccLcFromSc,lowedgesAccLcFromSc,upedgesAccLcFromSc); // 
 
   fhistMCSpectrumAccXic=new TH3F("fhistMCSpectrumAccXic","fhistMCSpectrumAccXic",250,0,50,20,-0.5,19.5,2,3.5,5.5); // 
@@ -1105,7 +1105,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	else {
 	  io3Prong->SetDist12toPrim(0.05);  //needed to pass pp filtering cuts
 	  io3Prong->SetDist23toPrim(0.05);	  
-	}      
+	}
 	Double_t pcand[3];
 	io3Prong->PxPyPz(pcand);
 	AliAODTrack *trPr;
