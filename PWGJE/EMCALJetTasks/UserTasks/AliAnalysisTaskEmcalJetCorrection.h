@@ -34,7 +34,10 @@ class AliAnalysisTaskEmcalJetCorrection : public AliAnalysisTaskEmcalJet {
   void                        SetModelName(const char* val)                               {fModelName = val;}
   void                        SetBackgroundModelFileName(const char* val)                 {fBackgroundModelFileName = val;}
   void                        SetBackgroundModelInputParameters(const char* val)          {fBackgroundModelInputParameters = val;}
- protected:
+  void                        SetCustomPackages(const char* val)                          {fCustomPackages = val;}
+  void                        SetPythonModulePath(const char* val)                        {fPythonModulePath = val;}
+
+protected:
   void                        ExecOnce();
   Bool_t                      Run();
   void                        GetPtFromModel(AliEmcalJet* jet, Float_t& pt_ML);
@@ -44,6 +47,8 @@ class AliAnalysisTaskEmcalJetCorrection : public AliAnalysisTaskEmcalJet {
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   TPython*                    fPythonCLI;
   #endif
+  TString                     fCustomPackages;                          ///< Custom python modules to be installed locally
+  TString                     fPythonModulePath;                        ///< The path of custom python modules (depends on local python version)
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliParticleContainer       *fTracksCont;                              //!<! Tracks
   TClonesArray*               fJetOutputArray;                          //!<! Array of corr. jets, attached to event
