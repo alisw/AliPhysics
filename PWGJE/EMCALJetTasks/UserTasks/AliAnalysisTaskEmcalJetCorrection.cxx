@@ -45,7 +45,7 @@ AliAnalysisTaskEmcalJetCorrection::AliAnalysisTaskEmcalJetCorrection() :
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   fPythonCLI(),
   #endif
-  fCustomPackages("joblib"),
+  fCustomPackages(),
   fPythonModulePath("lib/python3.6/site-packages/"),
   fJetsCont(),
   fTracksCont(),
@@ -63,7 +63,7 @@ AliAnalysisTaskEmcalJetCorrection::AliAnalysisTaskEmcalJetCorrection(const char 
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   fPythonCLI(),
   #endif
-  fCustomPackages("joblib"),
+  fCustomPackages(),
   fPythonModulePath("lib/python3.6/site-packages/"),
   fJetsCont(),
   fTracksCont(),

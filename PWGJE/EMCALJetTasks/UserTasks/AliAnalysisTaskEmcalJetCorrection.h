@@ -34,7 +34,10 @@ class AliAnalysisTaskEmcalJetCorrection : public AliAnalysisTaskEmcalJet {
   void                        SetModelName(const char* val)                               {fModelName = val;}
   void                        SetBackgroundModelFileName(const char* val)                 {fBackgroundModelFileName = val;}
   void                        SetBackgroundModelInputParameters(const char* val)          {fBackgroundModelInputParameters = val;}
- protected:
+  void                        SetCustomPackages(const char* val)                          {fCustomPackages = val;}
+  void                        SetPythonModulePath(const char* val)                        {fPythonModulePath = val;}
+
+protected:
   void                        ExecOnce();
   Bool_t                      Run();
   void                        GetPtFromModel(AliEmcalJet* jet, Float_t& pt_ML);
