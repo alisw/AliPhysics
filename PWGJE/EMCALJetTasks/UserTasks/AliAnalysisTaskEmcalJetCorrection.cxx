@@ -45,6 +45,8 @@ AliAnalysisTaskEmcalJetCorrection::AliAnalysisTaskEmcalJetCorrection() :
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   fPythonCLI(),
   #endif
+  fCustomPackages("joblib"),
+  fPythonModulePath("lib/python3.6/site-packages/"),
   fJetsCont(),
   fTracksCont(),
   fJetOutputArray(),
@@ -61,6 +63,8 @@ AliAnalysisTaskEmcalJetCorrection::AliAnalysisTaskEmcalJetCorrection(const char 
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   fPythonCLI(),
   #endif
+  fCustomPackages("joblib"),
+  fPythonModulePath("lib/python3.6/site-packages/"),
   fJetsCont(),
   fTracksCont(),
   fJetOutputArray(),
@@ -106,13 +110,33 @@ void AliAnalysisTaskEmcalJetCorrection::ExecOnce()
 
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
     fPythonCLI = new TPython();
+    // ### Install custom packages locally on worker node
+    if(!fCustomPackages.IsNull())
+    {
+      std::ofstream outFile;
+      outFile.open("./myScript.sh");
+      outFile << "#!/bin/bash" << std::endl;
+      outFile << "export PYTHONUSERBASE=./my-local-python" << std::endl;
+      outFile << "export PATH=\"$PYTHONUSERBASE/bin:$PATH\"" << std::endl;
+      TObjArray* packages = fCustomPackages.Tokenize(",");
+      for(Int_t iPackage = 0; iPackage < packages->GetEntries(); iPackage++)
+      {
+        TString package = ((TObjString *)(packages->At(iPackage)))->String();
+        outFile << "pip install --user " << package.Data() << std::endl;
+      }
+      outFile.close();
+      gSystem->Exec("bash ./myScript.sh");
 
+      packages->SetOwner();
+      delete packages;
+    }
     // ### Get background model from alien and load it
     TGrid::Connect("alien://");
     if (gSystem->AccessPathName(fBackgroundModelFileName.Data()))
       AliFatal(Form("Background model %s does not exist!", fBackgroundModelFileName.Data()));
     TFile::Cp(fBackgroundModelFileName.Data(), "./Model.joblib");
-
+    fPythonCLI->Exec("import sys");
+    fPythonCLI->Exec(Form("sys.path.insert(0, './my-local-python/%s')", fPythonModulePath.Data()));
     fPythonCLI->Exec("import sklearn, numpy, joblib");
     fPythonCLI->Exec("estimator = joblib.load(\"./Model.joblib\")");
   #endif

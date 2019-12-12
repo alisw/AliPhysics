@@ -44,6 +44,8 @@ class AliAnalysisTaskEmcalJetCorrection : public AliAnalysisTaskEmcalJet {
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   TPython*                    fPythonCLI;
   #endif
+  TString                     fCustomPackages;                          ///< Custom python modules to be installed locally
+  TString                     fPythonModulePath;                        ///< The path of custom python modules (depends on local python version)
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliParticleContainer       *fTracksCont;                              //!<! Tracks
   TClonesArray*               fJetOutputArray;                          //!<! Array of corr. jets, attached to event
