@@ -144,12 +144,12 @@ void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
     AliFatal("Empty .yaml config file, please check it! Exit");
   }
   /// error for bin/model number inconsistencies
-  if ((nodelist["BINS"].as<vector<float>>().size() - 1) != nodelist["N_MODELS"].as<float>() ||
-      (nodelist["N_MODELS"].as<float>() != nodelist["MODELS"].size())) {
+  if ((nodelist["BINS"].as<vector<float>>().size() - 1) != nodelist["N_MODELS"].as<unsigned int>() ||
+      (nodelist["N_MODELS"].as<unsigned int>() != nodelist["MODELS"].size())) {
     AliFatal("Inconsistency found in the number of bins/models, please check it! Exit");
   }
   /// error for variables/numberofvariable inconsistency
-  if (nodelist["NUM_VAR"].as<float>() != nodelist["VAR_NAMES"].size()) {
+  if (nodelist["NUM_VAR"].as<unsigned int>() != nodelist["VAR_NAMES"].size()) {
     AliFatal("Inconsistency found in the number of varibles, please check it! Exit");
   }
   return;
