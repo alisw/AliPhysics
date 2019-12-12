@@ -45,6 +45,7 @@ public:
 	void       GetMultiplicityDistributions();
         void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
 	void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}   // use to analyse MC data
+	bool       HasRecVertex();
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 			Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
 protected:
@@ -99,6 +100,14 @@ private:
 	TProfile * pNumDenTrue[3];
 	TProfile * pSumPtMeasured[3];
 	TProfile * pSumPtTrue[3];
+
+	TH2D * hPtVsUEGenTest[3];
+	TH2D * hPtVsUERecTest[3];
+
+	TH1D * hPtLeadingRecPS;
+	TH1D * hPtLeadingRecPSV;
+	TH1D * hPtLeadingGenPS;
+	TH1D * hPtLeadingGenPSV;
 
 	AliAnalysisTaskMcKnoUe(const AliAnalysisTaskMcKnoUe&);                  // not implemented
 	AliAnalysisTaskMcKnoUe& operator=(const AliAnalysisTaskMcKnoUe&);       // not implemented
