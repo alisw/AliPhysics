@@ -32,9 +32,6 @@
 #include <unordered_map>
 #include <vector>
 
-// using std::cout;
-// using std::endl;
-
 ClassImp(AliAnalysisTaskHypertriton3ML);
 
 namespace {
@@ -131,7 +128,8 @@ AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::strin
       fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.}, fMaxNSigmaTOFPi{5.},
       fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.}, fMinCosPA{0.993},
       fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05}, fMaxPtPion{1.},
-      fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{}, fDeuVector{}, fPVector{}, fPiVector{}, fMLResponse{} {
+      fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{}, fDeuVector{}, fPVector{}, fPiVector{}, fMLResponse{},
+      fMLResponseConfigfilePath{} {
 
   // Settings for the custom vertexer
   fVertexer.SetToleranceGuessCompatibility(fVertexerToleranceGuessCompatibility);
@@ -163,6 +161,12 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   fPIDResponse            = fInputHandler->GetPIDResponse();
 
   fInputHandler->SetNeedField();
+
+  if (fApplyML) {
+    fMLResponse = new AliMLResponse("Hypertriton3MLResponse", "Hypertriton3MLResponse");
+    fMLResponse->SetConfigFilePath(fMLResponseConfigfilePath);
+    fMLResponse->MLResponseInit();
+  }
 
   fTreeHyp3 = new TTree("fHypertritonTree", "Hypertriton3 Candidates");
   if (!fApplyML) fTreeHyp3->Branch("REvent", &fREvent);
@@ -533,8 +537,9 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 void AliAnalysisTaskHypertriton3ML::Terminate(Option_t *) {}
 
 //________________________________________________________________
-map<string, double> AliAnalysisTaskHypertriton3ML::FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv) {
-  map<string, double> fMap;
+std::map<std::string, double> AliAnalysisTaskHypertriton3ML::FeaturesMap(const RHypertriton3 &hypCand,
+                                                                         const REvent &rEv) {
+  std::map<std::string, double> fMap;
 
   /// position of the primary vertex
   const TVector3 primaryVtxPos(rEv.fX, rEv.fY, rEv.fZ);
