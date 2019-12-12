@@ -63,6 +63,7 @@ set(SRCS
   Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
   Hypernuclei/KF2Body/AliAnalysisTaskHypertritonKFTree.cxx
+  Hypernuclei/DoubleHypNuc/AliAnalysisTaskDoubleHypNucTree.cxx
   Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskLightN.cxx
   Nuclei/AbsorptionRatios/AliLightNEventHist.cxx

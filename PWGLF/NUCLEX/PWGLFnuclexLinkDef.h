@@ -126,6 +126,9 @@
 #pragma link C++ class AliVertexerHyperTriton2Body+;
 #pragma link C++ class AliVertexerHyperTriton3Body+;
 
+// * DoubleHypNuc
+#pragma link C++ class AliAnalysisTaskDoubleHypNucTree+;
+
 /// Utils
 /// * CODEX
 #pragma link C++ class AliAnalysisCODEX::Header+;
