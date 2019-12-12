@@ -51,6 +51,7 @@ set(SRCS
     AliAnalysisTaskConversionQA.cxx
     AliAnalysisTaskConversionTree.cxx
     AliAnalysisTaskConvJet.cxx
+    AliAnalysisTaskJetOutlierRemoval.cxx
     AliAnalysisTaskClusterQA.cxx
     AliAnalysisTaskdPhi.cxx
     AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
@@ -72,7 +73,8 @@ set(SRCS
     AliAnalysisTaskHeavyNeutralMesonToGG.cxx
     AliAnalysisTaskK0toPi0Pi0.cxx
     AliAnalysisTaskPi0v2.cxx
-    AliAnalysisTaskTrackQA.cxx	
+    AliAnalysisTaskTrackQA.cxx
+    AliAnalysisTRDEfficiency.cxx
     AliIdentifiedPrimaryCuts.cxx
     AliIdentifiedPrimarySelector.cxx
     AliAnalysisTaskResolution.cxx
@@ -82,6 +84,7 @@ set(SRCS
     AliAnalysisTaskGammaCocktailMC.cxx
     AliAnalysisTaskGammaTriggerQA.cxx
     AliAnalysisTaskHadronicCocktailMC.cxx
+    AliAnalysisTaskQA.cxx
     AliGammaConversionAODBGHandler.cxx
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
@@ -99,7 +102,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree TMVA)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGCaloTrackCorrBase PWGGAUtils PWGJETFW )
-set(ALIPHYSICS_DEPENDENCIES PWGCocktail PWGGAGammaConvBase)
+set(ALIPHYSICS_DEPENDENCIES PWGCocktail PWGGAGammaConvBase PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger)
 
 # Generate the ROOT map
 # Dependecies

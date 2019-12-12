@@ -762,7 +762,12 @@ Bool_t AliPrimaryPionCuts::InitializeCutsFromCutString(const TString analysisCut
 	}
 
 	fEsdTrackCutsGC = (AliESDtrackCuts*) fEsdTrackCuts->Clone();
-	fEsdTrackCutsGC->SetRequireITSRefit(kFALSE);
+	
+	if(fRunFlag==1500){
+		fEsdTrackCutsGC->SetRequireITSRefit(kTRUE);
+	} else{
+		fEsdTrackCutsGC->SetRequireITSRefit(kFALSE);
+	}
 	fEsdTrackCutsGC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 
 
@@ -1420,7 +1425,7 @@ void AliPrimaryPionCuts::SetHybridTrackCutsAODFiltering(Int_t runflag= 1000){
 	 // so that ESD results are comparable to
 	 // SetHybridFilterMaskGlobalConstrainedGlobal
     if(runflag == 0){
-        if (fEsdTrackCuts==NULL) fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+        fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
     } else if(runflag==1){
 		fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
 	} else if(runflag==1500){
@@ -1431,6 +1436,7 @@ void AliPrimaryPionCuts::SetHybridTrackCutsAODFiltering(Int_t runflag= 1000){
 		fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 		fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
 	} else if(runflag==1000){
+		fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
 		TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
 		fEsdTrackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
 		fEsdTrackCuts->SetMinNClustersTPC(70);

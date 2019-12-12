@@ -1508,7 +1508,7 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliVTrack *track,Double_t bz) {
   // Correct reference points and frames according to MC
   // TODO: B-Field correct?
   // TODO: failing propagation....
-  et.PropagateToDCA(&vtx,track->GetBz(),10.);
+  et.PropagateToDCA(&vtx,bz,10.);
   et.Rotate(mct.GetAlpha());
 
   // Select appropriate smearing functions

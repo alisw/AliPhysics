@@ -79,7 +79,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
  private:
 
-  enum EVarsTree {kNumOfIntVar=11, kNumOfFloatVar=34};
+  enum EVarsTree {kNumOfIntVar=14, kNumOfFloatVar=34};
 
   AliAnalysisTaskCheckESDTracks(const AliAnalysisTaskCheckESDTracks &source);
   AliAnalysisTaskCheckESDTracks& operator=(const AliAnalysisTaskCheckESDTracks &source);
@@ -223,7 +223,6 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
 
   AliESDtrackCuts* fTrCutsTPC;        // TPC track cuts
-  AliESDtrackCuts* fTrCutsTPCPrimary; // TPC track cuts for primary tracks
   Int_t   fMinNumOfTPCPIDclu;  // cut on min. of TPC clust for PID
   Bool_t  fUseTOFbcSelection;  // flag use/not use TOF for pileup rejection
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
@@ -237,7 +236,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,17);
+  ClassDef(AliAnalysisTaskCheckESDTracks,18);
 };
 
 

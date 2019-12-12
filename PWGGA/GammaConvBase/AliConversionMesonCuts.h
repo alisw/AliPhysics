@@ -154,6 +154,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t SetMesonKind(Int_t mesonKind);
     Bool_t SetSelectionWindowCut(Int_t selectionCut);
     Bool_t SetSelectionWindowMergedCut(Int_t selectionCut);
+    Bool_t SetSelectionWindowCutPtDep(Int_t selectionCut);
     Bool_t SetAlphaMesonCut(Int_t alphaMesonCut);
     Bool_t SetAlphaMesonMergedCut(Int_t alphaMesonCut);
     Bool_t SetRapidityMesonCut(Int_t RapidityMesonCut);
@@ -171,6 +172,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
     void   SetEnableOpeningAngleCut (Bool_t isOn) {fEnableMinOpeningAngleCut = isOn;}
     void   SetIsMergedClusterCut(Int_t merged)                { fIsMergedClusterCut = merged; return;}
+    void   SetUsePtDepSelectionWindow(Bool_t ptdep)                { fUsePtDepSelectionWindow = ptdep; return;}
+    Bool_t GetUsePtDepSelectionWindow(Bool_t ptdep)                { return fUsePtDepSelectionWindow;}
     Int_t  GetIsMergedClusterCut()                            { return fIsMergedClusterCut;}
     Double_t GetRapidityCutValue()                            { return fRapidityCutMeson; }
 
@@ -194,6 +197,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
+    Bool_t   DoIsolatedAnalysis(){return fDoIsolatedAnalysis;}
+    Bool_t   DoHighPtHadronAnalysis(){return fDoHighPtHadronAnalysis;}
     Bool_t   UseElecSharingCut(){return fDoSharedElecCut;}
     Bool_t   UseToCloseV0sCut(){return fDoToCloseV0sCut;}
     Bool_t   UseMCPSmearing(){return fUseMCPSmearing;}
@@ -201,7 +206,6 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSelectionLow() const {return fSelectionLow;}
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
     Double_t GetAcceptMassFlag() const {return fAcceptMesonMass;}
-    Double_t GetUsePtDepSelectionWindow() const {return fUsePtDepSelectionWindow;}
     Double_t GetMinPt() const {return fMinPt;}
     Bool_t   UseLikeSignMixing() {return fBackgroundUseLikeSign;}
     Bool_t   UseSidebandMixing() {return fBackgroundUseSideband;}
@@ -213,6 +217,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSidebandMixingRightLow() const {return fSidebandMixingRightLow;}
     Double_t GetSidebandMixingRightHigh() const {return fSidebandMixingRightHigh;}
     Int_t    GetBackgroundMode() const {return fBackgroundMode;}
+    Bool_t   DoGammaMinEnergyCut() const {return fDoGammaMinEnergyCut;}
+    Int_t    GetNDaughterEnergyCut() const {return fNDaughterEnergyCut;}
+    Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
 
   protected:
     TRandom3    fRandom;                        ///<
@@ -267,6 +274,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fMode;                          ///< running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
     Int_t       fMesonKind;                     ///<
     Int_t       fIsMergedClusterCut;            ///< flag for merged cluster and di cluster analysis
+    Int_t       fUsePtDepSelectionWindow;       ///< flag for usage of pT dependent selection window cut
     Int_t       fSelectionWindowCut;            ///< selection window for merged ana in mass
     Int_t       fNDegreeRotationPMForBG;        ///<
     Int_t       fNumberOfBGEvents;              ///<
@@ -279,7 +287,6 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoMinPtCut;                    ///< do min pT cut
     Bool_t      fEnableMassCut;                 ///< flag to enable mass cut
     Bool_t      fAcceptMesonMass;               ///< flag to distinguish rejecting and accepting meson mass window for further analysis
-    Bool_t      fUsePtDepSelectionWindow;       ///< flago to enable selection of NDM with parametrisation for mass and width
     Bool_t      fUseRotationMethodInBG;         ///< flag to apply rotation method for meson bg estimation
     Bool_t      fUsePtmaxMethodForBG;           ///< flag to apply Ptmax method
     Bool_t      fDoBG;                          ///< flag to intialize BG
@@ -309,11 +316,17 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fBackgroundMode;                ///< default is 4: all pions from different event
     Bool_t      fDoJetAnalysis;                 ///< switch to run a jet analysis
     Bool_t      fDoJetQA;                       ///< switch to run a jet QA analysis
+    Bool_t      fDoIsolatedAnalysis;            ///< switch to run a isolated pi0 analysis
+    Bool_t      fDoHighPtHadronAnalysis;        ///< switch to run a pi0 analysis with a high pt hadron in the event
+
+    Bool_t      fDoGammaMinEnergyCut;           ///< if enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson need to fulfill fMinSingleDaughterE
+    Int_t       fNDaughterEnergyCut;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
+    Float_t     fSingleDaughterMinE;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
 
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,34)
+    ClassDef(AliConversionMesonCuts,37)
     /// \endcond
 };
 

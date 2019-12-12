@@ -155,6 +155,7 @@ set(SRCS
   AliFemtoCutMonitorV0CosPointingAngle.cxx
   AliFemtoCutMonitorPairMomRes.cxx
   AliFemtoCorrFctnPairsForCorrFit.cxx
+  AliFemtoWRzTrackCut.cxx
   )
 
 

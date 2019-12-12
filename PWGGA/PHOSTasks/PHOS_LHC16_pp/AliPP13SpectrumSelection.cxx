@@ -26,7 +26,7 @@ void AliPP13SpectrumSelection::InitSelectionHistograms()
 		const char * s = (i == 0) ? "" : "Mix";
 		TH1 * hist = new TH2F(
 			Form("h%sMassPt", s),
-			"(M,p_{T})_{#gamma#gamma}, ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c",
+			"(M,p_{T})_{#gamma#gamma}, ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})",
 			fLimits.nM, fLimits.mMin, fLimits.mMax,
 			fLimits.nPt, fLimits.ptMin, fLimits.ptMax
 		);
@@ -44,7 +44,7 @@ void AliPP13SpectrumSelection::InitSelectionHistograms()
 	// Don't do any analysis with these histograms.
 	//
 
-	fClusters = new TH1F("hClusterPt_SM0", "Cluster p_{T} spectrum with default cuts, all modules; p_{T}, GeV/c", fLimits.nPt, fLimits.ptMin, fLimits.ptMax);	
+	fClusters = new TH1F("hClusterPt_SM0", "Cluster p_{T} spectrum with default cuts, all modules; p_{T} (GeV/#it{c})", fLimits.nPt, fLimits.ptMin, fLimits.ptMax);	
 	fListOfHistos->Add(fClusters);
 }
 

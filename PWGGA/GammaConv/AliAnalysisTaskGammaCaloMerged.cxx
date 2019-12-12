@@ -84,6 +84,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fClusterMergedCutArray(NULL),
   fMesonCutArray(NULL),
   fMesonCuts(NULL),
+  fOutlierJetReader(NULL),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherPtY(NULL),
   fHistoMotherPtAlpha(NULL),
@@ -270,6 +271,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fClusterMergedCutArray(NULL),
   fMesonCutArray(NULL),
   fMesonCuts(NULL),
+  fOutlierJetReader(NULL),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherPtY(NULL),
   fHistoMotherPtAlpha(NULL),
@@ -445,6 +447,11 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
+  if(((AliConvEventCuts*)fEventCutArray->At(0))->GetUseJetFinderForOutliers()){
+    fOutlierJetReader=(AliAnalysisTaskJetOutlierRemoval*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetOutlierRemoval");
+    if(!fOutlierJetReader){AliFatal("Error: No AliAnalysisTaskJetOutlierRemoval");} // GetV0Reader
+    else{printf("Found AliAnalysisTaskJetOutlierRemoval used for outlier removal!\n");}
+  }
 
   Int_t invMassBins                           = 800;
   Float_t startMass                           = 0;
@@ -487,22 +494,17 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ||
-             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ){
-    ptBins                                    = 610;
-    startPt                                   = 10;
+             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2  ||
+             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
+             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV){
+    ptBins                                    = 120;
+    startPt                                   = 0;
     endPt                                     = 200;
-    // pT dependet binning for very high pT analyses
-    for(Int_t i=0; i<ptBins+2;i++){
-      if(i<400)
-        arrPtBinning[i]                        = 10.+0.1*i;
-      else if(i<500)
-        arrPtBinning[i]                        = 50.+0.2*(i-400);
-      else if(i<540)
-        arrPtBinning[i]                        = 70.+0.5*(i-500);
-      else if(i<570)
-        arrPtBinning[i]                        = 90.+1.0*(i-540);
-      else
-        arrPtBinning[i]                        = 120+2.0*(i-570);
+    // pT dependent binning for very high pT analyses
+    for(Int_t i=0; i<ptBins+1;i++){
+      if(i<100)      arrPtBinning[i]          = 1.0*i;
+      else if(i<120) arrPtBinning[i]          = 100.+5*(i-100);
+      else           arrPtBinning[i]          = endPt;
     }
     ptBinsLog                                 = 475;
     startPtLog                                = 10;
@@ -510,8 +512,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     ptBinsDefClus                             = 1000;
     startPtDefClus                            = 0;
     endPtDefClus                              = 200;
-  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
-             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV  ){
+  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB  ){
     ptBins                                    = 900;
     startPt                                   = 10;
     endPt                                     = 100;
@@ -1508,7 +1509,10 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 
     fWeightJetJetMC = 1;
     //     cout << fMCEvent << endl;
-    Bool_t isMCJet = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC, fInputEvent );
+    Float_t maxjetpt      = -1.;
+    Float_t pthard = -1;
+    if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetUseJetFinderForOutliers()) maxjetpt = fOutlierJetReader->GetMaxJetPt();
+    Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC ,pthard, fInputEvent, maxjetpt);
     if (!isMCJet){
       fHistoNEvents[iCut]->Fill(10,fWeightJetJetMC);
       if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(10);

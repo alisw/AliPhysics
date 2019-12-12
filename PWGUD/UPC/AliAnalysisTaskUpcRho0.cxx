@@ -55,7 +55,8 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
   	fRhoTree(0), fMCTree(0),
 	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
-  	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
+  	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), 
+  	VBAfired_T(0), VBCfired_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
   	ZPAenergy_T(0), ZPCenergy_T(0), VtxContrib_T(0), SpdVtxContrib_T(0),
   	VtxChi2_T(0),VtxNDF_T(0),
   	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
@@ -73,7 +74,8 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
   	fRhoTree(0), fMCTree(0),
   	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
-  	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
+  	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), 
+  	VBAfired_T(0), VBCfired_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
   	ZPAenergy_T(0), ZPCenergy_T(0),VtxContrib_T(0), SpdVtxContrib_T(0),
   	VtxChi2_T(0),VtxNDF_T(0),
   	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
@@ -175,6 +177,10 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fRhoTree->Branch("V0Cdecision_T",&V0Cdecision_T,"V0Cdecision_T/I");
 	fRhoTree->Branch("ADAdecision_T",&ADAdecision_T,"ADAdecision_T/I");
 	fRhoTree->Branch("ADCdecision_T",&ADCdecision_T,"ADCdecision_T/I");
+	fRhoTree->Branch("UBAfired_T",&UBAfired_T,"UBAfired_T/O");
+	fRhoTree->Branch("UBCfired_T",&UBCfired_T,"UBCfired_T/O");
+	fRhoTree->Branch("VBAfired_T",&VBAfired_T,"VBAfired_T/O");
+	fRhoTree->Branch("VBCfired_T",&VBCfired_T,"VBCfired_T/O");
 	fRhoTree->Branch("Ntracklets_T",&Ntracklets_T,"Ntracklets_T/I");
 	// fRhoTree->Branch("ITSModule_T",&ITSModule_T,"ITSModule_T/I");
 	fRhoTree->Branch("ChipCut_T",&ChipCut_T,"ChipCut_T/O");
@@ -370,6 +376,11 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		ADCdecision_T = fADdata->GetADCDecision();
 	}
 
+	UBAfired_T = esd->GetHeader()->IsTriggerInputFired("0UBA");
+	UBCfired_T = esd->GetHeader()->IsTriggerInputFired("0UBC");
+	VBAfired_T = esd->GetHeader()->IsTriggerInputFired("0VBA");
+	VBCfired_T = esd->GetHeader()->IsTriggerInputFired("0VBC");
+
 	// ZN energy
 	ZNAenergy_T = fZDCdata->GetZNATowerEnergy()[0];
 	ZNCenergy_T = fZDCdata->GetZNCTowerEnergy()[0];
@@ -476,6 +487,14 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
 		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
 		)) ChipCut_T = 1;
+	if ((fTriggerName == "CCUP4-B") &&
+		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
+		)) ChipCut_T = 1;
+	if ((fTriggerName == "C1ZED") &&
+		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
+		)) ChipCut_T = 1;
 
     Int_t fFOcounter = 0;
   	for(Int_t chipkey=0;chipkey<1200;chipkey++){
@@ -530,6 +549,7 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	Bool_t SM2 = kFALSE;
 	Bool_t SH1 = kFALSE;
 	Bool_t OM2 = kFALSE;
+	Bool_t OMU = kFALSE;
 	//SPD inputs
 	Int_t bcMod4 = 0;
 	if (isUsingEffi) bcMod4 = TMath::Nint(hBCmod4->GetRandom());
@@ -568,9 +588,11 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	ADC = esd->GetHeader()->IsTriggerInputFired("0UBC");
 	// TOF
 	OM2 = esd->GetHeader()->IsTriggerInputFired("0OM2");
+	OMU = esd->GetHeader()->IsTriggerInputFired("0OMU");
 	  
 	if ((fTriggerName == "CCUP9-B") && (!V0A && !V0C && !ADA && !ADC && STP)) return kTRUE; // CCUP9 is fired
-	if ((fTriggerName == "CCUP2-B") && (!V0A && !V0C && SH1 && OM2)) return kTRUE; // CCUP2 is fired
+	if ((fTriggerName == "CCUP2-B") && (!V0A && !V0C && SM2 && OM2)) return kTRUE; // CCUP2 is fired works only in 2015
+	if ((fTriggerName == "CCUP4-B") && (!V0A && !V0C && SM2 && OMU)) return kTRUE; // CCUP4 is fired works only in 2015
 
 	else return kFALSE;
 } // end of MC trigger

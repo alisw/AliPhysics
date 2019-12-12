@@ -18,26 +18,21 @@ set(MODULE PWGHFvertexingHF)
 add_definitions(-D_MODULE_="${MODULE}")
 add_subdirectory (TMVA)
 add_subdirectory (vHFBDT)
+add_subdirectory (vHFML)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
-
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
-                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
-                    ${AliPhysics_SOURCE_DIR}/PWG/muon
-                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
-                    ${TREELITE_ROOT}/include
-  )
+)
 
 # Sources - alphabetical order
 set(SRCS
@@ -52,6 +47,7 @@ set(SRCS
   AliRDHFCuts.cxx
   AliVertexingHFUtils.cxx
   AliHFSystErr.cxx
+  AliRDHFCutsB0toDPi.cxx
   AliRDHFCutsB0toDStarPi.cxx
   AliRDHFCutsBPlustoD0Pi.cxx
   AliRDHFCutsD0toKpi.cxx
@@ -71,6 +67,7 @@ set(SRCS
   AliRDHFCutsXicZerotoXiPifromAODtracks.cxx
   AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliAnalysisVertexingHF.cxx
+  AliAnalysisTaskSEB0toDPi.cxx
   AliAnalysisTaskSEB0toDStarPi.cxx
   AliAnalysisTaskSEBPlustoD0Pi.cxx
   AliAnalysisTaskSEVertexingHF.cxx
@@ -78,7 +75,6 @@ set(SRCS
   AliAnalysisTaskSESelectHF.cxx
   AliAnalysisTaskSECleanupVertexingHF.cxx
   AliAnalysisTaskSECompareHF.cxx
-  AliAnalysisTaskSEDplus.cxx
   AliAnalysisTaskSELambdac.cxx
   AliAnalysisTaskSED0BDT.cxx
   AliAnalysisTaskSED0Mass.cxx
@@ -125,13 +121,10 @@ set(SRCS
   AliAnalysisTaskSEImproveITSCVMFS.cxx
   AliAnalysisTaskCombinHF.cxx
   charmFlow/AliEventPlaneResolutionHandler.cxx
-  charmFlow/AliAnalysisTaskSEHFvn.cxx
   charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx
-  charmFlow/AliAnalysisTaskFlowD2H.cxx
   charmFlow/AliHFQnVectorHandler.cxx
   charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
-  charmFlow/AliAnalysisTaskSECharmHadronvn.cxx  
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerDplus.cxx
@@ -145,6 +138,7 @@ set(SRCS
   upgrade/AliAnalysisTaskCountLcEta.cxx
   upgrade/AliAnalysisTaskSEImproveITS3.cxx
   upgrade/AliAnalysisTaskSELbtoLcpi4.cxx
+  upgrade/AliAnalysisTaskSECharmTriggerStudy.cxx
   AliAnalysisTaskSELc2eleLambdafromAODtracks.cxx
   AliAnalysisTaskSELc2V0bachelorTMVA.cxx
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
@@ -159,15 +153,8 @@ set(SRCS
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
   AliAnalysisTaskSEXicTopKpi.cxx
   AliRDHFCutsXictopKpi.cxx
-   )
-
-# Sources for ROOT6 only - alphabetical order
-if(ROOT_VERSION_MAJOR EQUAL 6)
-  set(SRCS
-      ${SRCS}
-      AliAnalysisTaskSEDs.cxx
-  )
-endif()
+  AliRDHFCutsCdeuterontodKpi.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -183,11 +170,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT)
-# Dependencies for ROOT6 only
-if(ROOT_VERSION_MAJOR EQUAL 6)
-  set(LIBDEPS ${LIBDEPS} ML)
-endif()
+set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

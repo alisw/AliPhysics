@@ -24,6 +24,7 @@
 #include "TH1F.h"
 #include "TCanvas.h"
 #include "TList.h"
+#include "THnSparse.h"
 #include "AliMultSelection.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -48,7 +49,6 @@
 //#include "AliQnCorrectionsQnVector.h"
 //#include "AliAnalysisTaskQnVectorAnalysis.h"
 #include "AliAnalysisTaskSEHFTenderQnVectors.h"
-#include "AliAnalysisTaskSECharmHadronvn.h"
 #include "AliHFQnVectorHandler.h"
 //#include "AliAODHandler.h"
 //#include "AliAODVertex.h"
@@ -66,8 +66,8 @@ ClassImp(AliAnalysisTaskFlowTPCEMCalRun2) // classimp: necessary for root
 
 //_____________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *name) : AliAnalysisTaskSE(name),
-	fAOD(0), 
-	fOutputList(0), 
+	fAOD(0),
+	fOutputList(0),
 	fVevent(0),
 	fpidResponse(0),
 	fHistPt(0),
@@ -97,6 +97,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fClsEtaPhiAftMatch(0),
 	fTPCnsig(0),
         fTOFnsig(0),
+        fITSnsig(0),
         fTPCnsig_TOFnsig(0),
         fHistele_TOFcuts(0),
         fHisthad_TOFcuts(0),
@@ -170,6 +171,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
         fTrkPhisin2_elelow(0),
         fTrkPhicos2_elehigh(0),
         fTrkPhisin2_elehigh(0),
+        fTrkPhicos2_hfehigh(0),
+        fTrkPhisin2_hfehigh(0),
         fTrkPhicos2_hadhigh(0),
         fTrkPhisin2_hadhigh(0),
         fTrkPhicos2_phoLShigh(0),
@@ -180,6 +183,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	//fOutplane(0),
         fInplane_ele(0),
         fOutplane_ele(0),
+        fInplane_hfe(0),
+        fOutplane_hfe(0),
         fInplane_LSpho(0),
         fOutplane_LSpho(0),
         fInplane_ULSpho(0),
@@ -187,7 +192,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	DCAxy(3.0),
 	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
-	fDCAxy_Pt_had(0), 
+	fDCAxy_Pt_had(0),
         ftpcnsig(-1.0),
         femceop(0.9),
         femcss_mim(0.01),
@@ -231,7 +236,12 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
 	fMinCentr(30.),
-	fMaxCentr(50.)
+	fMaxCentr(50.),
+        iCentral(kFALSE),
+        iSemiCentral(kTRUE),
+	fSparseElectron(0),
+	fvalueElectron(0),
+        iTree(kFALSE)
 
 
 {
@@ -244,7 +254,7 @@ for(int iHisto=0; iHisto<3; iHisto++){
 
 
 	for(int iDet=0; iDet<6; iDet++){
-		
+
 		fqnSplinesList[iDet] = nullptr;
 		fHistqnVsCentrPercCalib[iDet] = nullptr;
 		fHistEvPlaneQncorr[iDet] = nullptr;
@@ -252,17 +262,19 @@ for(int iHisto=0; iHisto<3; iHisto++){
 	}
 
 
+        fvalueElectron = new Double_t[6];
+
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
-	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
+	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms
 
 }
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysisTaskSE("HFEflowRun2"), 
-	fAOD(0), 
-	fOutputList(0), 
-	fVevent(0), 
+AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysisTaskSE("HFEflowRun2"),
+	fAOD(0),
+	fOutputList(0),
+	fVevent(0),
 	fpidResponse(0),
 	fHistPt(0),
 	fNevents(0),
@@ -291,6 +303,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fClsEtaPhiAftMatch(0),
 	fTPCnsig(0),
         fTOFnsig(0),
+        fITSnsig(0),
         fTPCnsig_TOFnsig(0),
         //fTrkPt_TPCnsig_TOFnsig(0),
         fHistele_TOFcuts(0),
@@ -365,6 +378,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
         fTrkPhisin2_elelow(0),
         fTrkPhicos2_elehigh(0),
         fTrkPhisin2_elehigh(0),
+        fTrkPhicos2_hfehigh(0),
+        fTrkPhisin2_hfehigh(0),
         fTrkPhicos2_hadhigh(0),
         fTrkPhisin2_hadhigh(0),
         fTrkPhicos2_phoLShigh(0),
@@ -375,6 +390,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	//fOutplane(0),
         fInplane_ele(0),
         fOutplane_ele(0),
+        fInplane_hfe(0),
+        fOutplane_hfe(0),
         fInplane_LSpho(0),
         fOutplane_LSpho(0),
         fInplane_ULSpho(0),
@@ -427,7 +444,12 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
 	fMinCentr(30.),
-	fMaxCentr(50.)
+	fMaxCentr(50.),
+        iCentral(kFALSE),
+        iSemiCentral(kTRUE),
+	fSparseElectron(0),
+	fvalueElectron(0),
+        iTree(kFALSE)
 
 	// Standard constructor
 {
@@ -448,26 +470,25 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	}
 
 
-
-
+        fvalueElectron = new Double_t[6];
 
 	// default constructor, don't allocate memory here!
 	// this is used by root for IO purposes, it needs to remain empty
 	// constructor
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
-	// this chain is created by the analysis manager, so no need to worry about it, 
+	// this chain is created by the analysis manager, so no need to worry about it,
 	// it does its work automatically
-	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
+	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms
 	// you can add more output objects by calling DefineOutput(2, classname::Class())
 	// if you add more output objects, make sure to call PostData for all of them, and to
 	// make changes to your AddTask macro!
 }
 //_____________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalRun2::~AliAnalysisTaskFlowTPCEMCalRun2()
-{ 
+{
 	// destructor
   //   if(fOutputList) {
-  // 	    delete fOutputList;   
+  // 	    delete fOutputList;
   // 	//    delete fTracks_tender;
   // // at the end of your task, it is deleted from memory by calling this function
   //   }
@@ -477,6 +498,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::~AliAnalysisTaskFlowTPCEMCalRun2()
 		delete fHistEvPlaneQncorr[iDet];
 		delete fHistEvPlane[iDet];
 		delete fHistqnVsCentrPercCalib[iDet];
+                delete []fvalueElectron;
 
 	}
 
@@ -510,7 +532,7 @@ void AliAnalysisTaskFlowTPCEMCalRun2::UserCreateOutputObjects()
     // create output objects
     //
     // this function is called ONCE at the start of your analysis (RUNTIME)
-    // here you ceate the histograms that you want to use 
+    // here you ceate the histograms that you want to use
     //
     // the histograms are in this case added to a tlist, this list is in the end saved
     // to an output file
@@ -526,7 +548,7 @@ void AliAnalysisTaskFlowTPCEMCalRun2::UserCreateOutputObjects()
     fOutputList->Add(fHistPt);          // don't forget to add it to the list! the list will be written to file, so if you want
                                         // your histogram in the output file, add it to the list!
 
-//No of events    
+//No of events
 fNevents = new TH1F("fNevents","No of events",3,-0.5,2.5);
 fOutputList->Add(fNevents);
 fNevents->GetYaxis()->SetTitle("counts");
@@ -609,6 +631,9 @@ fOutputList->Add(fTPCnsig);
 fTOFnsig = new TH2F("fTOFnsig","All Track TOF Nsigma distribution;p (GeV/c);#sigma_{TOF-dE/dx}",500,0,50,200,-10,10);
 fOutputList->Add(fTOFnsig);
 
+fITSnsig = new TH2F("fITSnsig","All Track ITS Nsigma distribution;p (GeV/c);#sigma_{ITS-dE/dx}",500,0,50,200,-10,10);
+fOutputList->Add(fITSnsig);
+
 fTPCnsig_TOFnsig = new TH2F("fTPCnsig_TOFnsig","All Track TOF vs TPC Nsigma distribution;#sigma {TOF-dE/dx};#sigma_{TPC-dE/dx}",200,-10,10,200,-10,10);
 fOutputList->Add(fTPCnsig_TOFnsig);
 
@@ -651,7 +676,7 @@ fOutputList->Add(fInvmassULS);
 fInvmassLS_2D = new TH2F("fInvmassLS_2D","Invmass of LS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,400,0.0,20.0);
 fOutputList->Add(fInvmassLS_2D);
 
-fInvmassULS_2D = new TH2F("fInvmassULS_2D","Invmass of ULS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,200,0.0,10.0);
+fInvmassULS_2D = new TH2F("fInvmassULS_2D","Invmass of ULS vs P_{T};mass(GeV/c^2);P_{T} (GeV/c)",500,0,1.0,400,0.0,20.0);
 fOutputList->Add(fInvmassULS_2D);
 
 fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC",160,-0.8,0.8);
@@ -714,19 +739,19 @@ fEta3050 = new TF1("fEta3050","[0]*x/pow([1]+x/[2]+x*x/[3],[4])",0,100);
 fEta3050 -> SetParameters(5.87918e+01,2.14009e-01,4.03579e+00,2.38693e+00,2.52382e+00);
 //fOutputList -> Add(fEta3050);
 
-fHistPhoPi0 = new TH1F("fHistPhoPi0","total pi0 in sample;p_{T}(GeV/c)",600,0,60);
+fHistPhoPi0 = new TH1F("fHistPhoPi0","total pi0 in sample;p_{T}(GeV/c)",500,0,100);
 fHistPhoPi0->Sumw2();
 fOutputList->Add(fHistPhoPi0);
 
-fHistPhoEta = new TH1F("fHistPhoEta","total Eta in sample;p_{T}(GeV/c)",600,0,60);
+fHistPhoEta = new TH1F("fHistPhoEta","total Eta in sample;p_{T}(GeV/c)",500,0,100);
 fHistPhoEta->Sumw2();
 fOutputList->Add(fHistPhoEta);
 
-fHistPhoPi01 = new TH1F("fHistPhoPi01","reco Pi0 in sample;p_{T}(GeV/c)",600,0,60);
+fHistPhoPi01 = new TH1F("fHistPhoPi01","reco Pi0 in sample;p_{T}(GeV/c)",500,0,100);
 fHistPhoPi01->Sumw2();
 fOutputList->Add(fHistPhoPi01);
 
-fHistPhoEta1 = new TH1F("fHistPhoEta1","reco Eta in sample;p_{T}(GeV/c)",600,0,60);
+fHistPhoEta1 = new TH1F("fHistPhoEta1","reco Eta in sample;p_{T}(GeV/c)",500,0,100);
 fHistPhoEta1->Sumw2();
 fOutputList->Add(fHistPhoEta1);
 
@@ -796,6 +821,12 @@ fOutputList->Add(fTrkPhicos2_elehigh);
 fTrkPhisin2_elehigh = new TH2F("fTrkPhisin2_elehigh","fTrkPhisin2_elehigh",200,0,20,200,-1,1);
 fOutputList->Add(fTrkPhisin2_elehigh);
 
+fTrkPhicos2_hfehigh = new TH2F("fTrkPhicos2_hfehigh","fTrkPhicos2_hfehigh",200,0,20,200,-1,1);
+fOutputList->Add(fTrkPhicos2_hfehigh);
+//
+fTrkPhisin2_hfehigh = new TH2F("fTrkPhisin2_hfehigh","fTrkPhisin2_hfehigh",200,0,20,200,-1,1);
+fOutputList->Add(fTrkPhisin2_hfehigh);
+
 fTrkPhicos2_hadhigh = new TH2F("fTrkPhicos2_hadhigh","fTrkPhicos2_hadhigh",200,0,20,200,-1,1);
 fOutputList->Add(fTrkPhicos2_hadhigh);
 //
@@ -826,6 +857,12 @@ fOutputList->Add(fInplane_ele);
 
 fOutplane_ele = new TH1F("fOutplane_ele","p_{T} distribution of outplane_ele",200,0,20);
 fOutputList->Add(fOutplane_ele);
+
+fInplane_hfe = new TH1F("fInplane_hfe","p_{T} distribution of inplane_hfe",200,0,20);
+fOutputList->Add(fInplane_hfe);
+
+fOutplane_hfe = new TH1F("fOutplane_hfe","p_{T} distribution of outplane_hfe",200,0,20);
+fOutputList->Add(fOutplane_hfe);
 
 fInplane_LSpho = new TH1F("fInplane_LSpho","p_{T} distribution of inplane_LSpho",200,0,20);
 fOutputList->Add(fInplane_LSpho);
@@ -893,12 +930,21 @@ fOutputList->Add(fcorcentOutplane);
 //fQy3 = new TH2F("fQy3","centrality vs Qy3",40,0,80,320,-1.6,1.6);
 //fOutputList->Add(fQy3);
 
+
+//add by sudo
+Int_t Sparsebins[6]={  100, 100, 100,  50,  50, 200}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
+Double_t Sparsexmin[6]={ 0,   0, -10,  -5,  -5,   0};
+Double_t Sparsexmax[6]={10,  10,  10,   5,   5,   2};
+fSparseElectron = new THnSparseD ("fSparseElectron","correlation;Pt;P;TPCnsigma;ITSnsigma;TOFnsigma;E/p;",6,Sparsebins,Sparsexmin,Sparsexmax);
+if(iTree)fOutputList -> Add(fSparseElectron);
+
+
 const int ncentbins = static_cast<int>(fMaxCentr-fMinCentr);
 
 TString detConfName[6] = {"TPC","TPCPosEta","TPCNegEta","V0","V0A","V0C"};
 
 TString qnaxisname=Form("#it{q}_{%d}",fHarmonic);
-//cout << "fqnMeth = " << fqnMeth << endl;  
+//cout << "fqnMeth = " << fqnMeth << endl;
 switch(fqnMeth) {
 	case kq2TPC:
 		qnaxisname=Form("#it{q}_{%d}^{TPC}",fHarmonic);
@@ -924,7 +970,7 @@ switch(fqnMeth) {
 
 TString qnpercaxisname = qnaxisname + " (%)";
 TString qnaxisnamefill = qnaxisname;
-if(fPercentileqn) 
+if(fPercentileqn)
 	qnaxisnamefill = qnpercaxisname;
 
 	int nqnbins=1; //single bin if unbiased analysis
@@ -948,9 +994,9 @@ for(int iDet = 0; iDet < 6; iDet++){
 	//fHistEvPlane[iDet] = new TH1F(Form("fHistEvPlane%s",detConfName[iDet].Data()),Form("hEvPlane%s",detConfName[iDet].Data()),200,0.,TMath::Pi());
 	fHistEvPlane[iDet] = new TH1F(Form("fHistEvPlane%s",detConfName[iDet].Data()),Form("hEvPlane%s",detConfName[iDet].Data()),200,-TMath::Pi()/2.,TMath::Pi()/2.);
 	fOutputList->Add(fHistEvPlane[iDet]);
-	
+
 	fHistEvPlaneQncorr[iDet] = new TH2F(Form("fHistEvPlaneQncorr%sVsCent",detConfName[iDet].Data()),Form("hEvPlaneQncorr%s;centrality(%%);#psi_{%d}",detConfName[iDet].Data(),fHarmonic),ncentbins,fMinCentr,fMaxCentr,200,0.,TMath::Pi());
-	
+
 	//fHistEvPlaneQncorr[iDet] = new TH3F(Form("fHistEvPlaneQncorr%sVsqnVsCent",detConfName[iDet].Data()),Form("hEvPlaneQncorr%s;centrality(%%);%s;#psi_{%d}",detConfName[iDet].Data(),qnaxisnamefill.Data(),fHarmonic),ncentbins,fMinCentr,fMaxCentr,nqnbins,qnmin,qnmax,200,0.,TMath::Pi());
 	fOutputList->Add(fHistEvPlaneQncorr[iDet]);
 
@@ -984,7 +1030,7 @@ for(int iResoHisto=0; iResoHisto<3; iResoHisto++){
 
 
 
-PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
+PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
 // fOutputList object. the manager will in the end take care of writing your output to file
 // so it needs to know what's in the output
 }
@@ -993,7 +1039,7 @@ void AliAnalysisTaskFlowTPCEMCalRun2::UserExec(Option_t *)
 {
 
 //============= Systematic Parameter ================
-//Track cut 
+//Track cut
 Double_t CutDCAxy = DCAxy;
 Double_t CutDCAz = DCAz;
 
@@ -1001,12 +1047,14 @@ Double_t CutDCAz = DCAz;
 Double_t CutEopHad = -3.5;
 
 cout << "cut selections ---------------------" << endl;
-cout << "tpcnsig = " << ftpcnsig << endl; 
-cout << "emceop = " << femceop << endl; 
-cout << "emcss_mim = " << femcss_mim << endl; 
-cout << "emcss_max = " << femcss_max << endl; 
-cout << "invmass = " << finvmass << endl; 
-cout << "invmass_pt = " << finvmass_pt << endl; 
+cout << "tpcnsig = " << ftpcnsig << endl;
+cout << "emceop = " << femceop << endl;
+cout << "emcss_mim = " << femcss_mim << endl;
+cout << "emcss_max = " << femcss_max << endl;
+cout << "invmass = " << finvmass << endl;
+cout << "invmass_pt = " << finvmass_pt << endl;
+cout << "iCentralt = " << iCentral << endl;
+cout << "iSemiCentralt = " << iSemiCentral << endl;
 cout << "-------------------------------------" << endl;
 
 //===================================================
@@ -1014,14 +1062,14 @@ cout << "-------------------------------------" << endl;
 
     // user exec
     // this function is called once for each event
-    // the manager will take care of reading the events from file, and with the static function InputEvent() you 
-    // have access to the current event. 
+    // the manager will take care of reading the events from file, and with the static function InputEvent() you
+    // have access to the current event.
     // once you return from the UserExec function, the manager will retrieve the next event from the chain
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());    // get an event (called fAOD) from the input file
                                                         // there's another event format (ESD) which works in a similar wya
                                                         // but is more cpu/memory unfriendly. for now, we'll stick with aod's
     if(!fAOD) return;                                   // if the pointer to the event is empty (getting it failed) skip this event
-        // example part: i'll show how to loop over the tracks in an event 
+        // example part: i'll show how to loop over the tracks in an event
         // and extract some information from them which we'll store in a histogram
     fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
@@ -1031,7 +1079,7 @@ cout << "-------------------------------------" << endl;
     if (!fVevent) {
 	    printf("ERROR: fVEvent not available\n");
 	    return;
-    }  
+    }
 
 
   //TString firedTrigger;
@@ -1051,8 +1099,8 @@ cout << "-------------------------------------" << endl;
     fpidResponse = fInputHandler->GetPIDResponse();
 
     /////////Centrality////////
-     Float_t lPercentile = 300; 
-     AliMultSelection *MultSelection = 0x0; 
+     Float_t lPercentile = 300;
+     AliMultSelection *MultSelection = 0x0;
       MultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
       if( !MultSelection) {
       	    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -1061,13 +1109,13 @@ cout << "-------------------------------------" << endl;
       	    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
       }
 
-
     flPercentile -> Fill(lPercentile);
 
-      
+
     //if(TMath::Abs(lPercentile)<30 || TMath::Abs(lPercentile)>50)return;
+    //cout <<"lPercentile = "<< lPercentile << endl;
     if(TMath::Abs(lPercentile)<fMinCentr || TMath::Abs(lPercentile)>fMaxCentr)return;
-     
+
     ///////Event Plane for 2015//////
 //   flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *> (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
 //
@@ -1257,17 +1305,17 @@ cout << "-------------------------------------" << endl;
     //double evCentr = fRDCuts->GetCentrality(fAOD);
 
 	//Get Qn-vectors from tender task
-    AliHFQnVectorHandler *HFQnVectorHandler = nullptr; 
+    AliHFQnVectorHandler *HFQnVectorHandler = nullptr;
     bool isHandlerFound = false;
-  
+
     cout << "<----------- fTenderTaskName = " << fTenderTaskName << endl;
     AliAnalysisTaskSEHFTenderQnVectors *HFQnVectorTask = dynamic_cast<AliAnalysisTaskSEHFTenderQnVectors*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fTenderTaskName.Data()));
- 
-    cout << "<----------- HFQnVectorTask = " << HFQnVectorTask << endl; 
+
+    cout << "<----------- HFQnVectorTask = " << HFQnVectorTask << endl;
 
     if(HFQnVectorTask){
 
-	    //cout << "HFQnVectorTask = " << HFQnVectorTask << endl; 
+	    //cout << "HFQnVectorTask = " << HFQnVectorTask << endl;
 
 	    HFQnVectorHandler = HFQnVectorTask->GetQnVectorHandler();
 
@@ -1310,7 +1358,7 @@ cout << "-------------------------------------" << endl;
     }
 
     else{//create a new handler if not found in tender task
-	    
+
 	    //cout << "isHandlerFound =" << isHandlerFound << endl;
 
 	    AliWarning("Qn-vector tender task not found! Create a new one");
@@ -1475,7 +1523,7 @@ cout << "-------------------------------------" << endl;
     fHistEvPlane[4]->Fill(PsinV0A);
     fHistEvPlane[5]->Fill(PsinV0C);
 
-    
+
     //centrality vs EP
     fHistEvPlaneQncorr[0]->Fill(evCentr,PsinFullTPC);
     fHistEvPlaneQncorr[1]->Fill(evCentr,PsinPosTPC);
@@ -1553,6 +1601,9 @@ cout << "-------------------------------------" << endl;
 
     if(fMCarray)CheckMCgen(fMCheader,0.6);
 
+    //cout << "--------- NembMCpi0 ; NembMCeta " << endl;
+    //cout << NembMCpi0 << " ;  " << NembMCeta << endl;
+
 ////////////////////////////// EMCAL cluster loop////////////////////////////////////
 
 Int_t Nclust = fVevent->GetNumberOfCaloClusters();
@@ -1564,7 +1615,7 @@ int NclustE3 = 0;//Number of cluster E>0.5
 
 for(Int_t icl=0; icl<Nclust; icl++)
 {
-	AliVCluster *clust = 0x0;     
+	AliVCluster *clust = 0x0;
 	//clust = (AliVCluster*)fVevent->GetCaloCluster(icl); // address cluster matched to track
         clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));
 
@@ -1623,7 +1674,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
     //Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
     Int_t iTracks(fTracks_tender->GetEntries());           // see how many tracks there are in the event
     for(Int_t i = 0; i < iTracks; i++) {                 // loop over all these tracks
-     
+
 	//AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
 	AliAODTrack* track = dynamic_cast<AliAODTrack*>(fTracks_tender->At(i));         // get a track (type AliAODTrack) from the event
 
@@ -1639,7 +1690,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	//////////////Track properties//////////
 	Bool_t fFlagNonHFE=kFALSE;
 
-	Double_t dEdx=-999, fTPCnSigma=-999, fTOFnSigma=-999;
+	Double_t dEdx=-999, fTPCnSigma=-999, fTOFnSigma=-999, fITSnSigma=-999;
 	Double_t TrkPhi=-999, TrkPt=-999,TrkEta=-999,TrkP=-999;
 
 	TrkPhi = track->Phi();
@@ -1647,9 +1698,10 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	TrkEta = track->Eta();
 	if(TrkEta < -0.6 || TrkEta > 0.6)continue;
 	TrkP = track->P();
-	dEdx = track->GetTPCsignal();     
+	dEdx = track->GetTPCsignal();
 	fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
         fTOFnSigma = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+	fITSnSigma = fpidResponse->NumberOfSigmasITS(track, AliPID::kElectron);
 
 	fTrkPt -> Fill(TrkPt);
 	fTrkphi -> Fill(TrkPhi);
@@ -1658,7 +1710,15 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	fdEdx -> Fill(TrkP,dEdx);
 	fTPCnsig -> Fill(TrkP,fTPCnSigma);
         fTOFnsig -> Fill(TrkP,fTOFnSigma);
+        fITSnsig -> Fill(TrkP,fITSnSigma);
         fTPCnsig_TOFnsig -> Fill(fTOFnSigma,fTPCnSigma);
+
+        fvalueElectron[0] = TrkPt;
+        fvalueElectron[1] = TrkP;
+        fvalueElectron[2] = fTPCnSigma;
+        fvalueElectron[3] = fITSnSigma;
+        fvalueElectron[4] = fTOFnSigma;
+        fvalueElectron[5] = -1.0;
 
 	////Charged Particle v2////
 
@@ -1746,7 +1806,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
         Int_t EMCalIndex = -1;
         EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
-        cout << "EMCalIndex = " << EMCalIndex << endl;
+        //cout << "EMCalIndex = " << EMCalIndex << endl;
 
 	//cout << "EMCal Index = " << EMCalIndex << endl;
 
@@ -1824,13 +1884,12 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		if(pid_eleD || pid_eleB)fNDB->Fill(1);
 
 		if(pidM==111){
-
 			if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
 			if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
 		}
 		if(pidM==221){
-
+                        
 			if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
 		}
@@ -1841,8 +1900,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 			FindMother(fMCparticleM, ilabelM, pidM, pTmom);
 
 			if(pidM==111){
-
-				if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
+		 		if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
 				if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
 			}
@@ -1876,12 +1934,12 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	if(iEmbPi0){
 
-           if(lPercentile>=0 && lPercentile<10.0)
+           if(iCentral)
              {
                 WeightPho = fPi010->Eval(pTmom);
              }
-    
-            if(lPercentile>=30.0 && lPercentile<50.0)
+
+            if(iSemiCentral)
              {
               if(pTmom<4.0)
                  {
@@ -1896,11 +1954,11 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	if(iEmbEta){
 
-           if(lPercentile>=0 && lPercentile<10.0)
+           if(iCentral)
              {
                 WeightPho = fEta010->Eval(pTmom);
              }
-           if(lPercentile>=30 && lPercentile<50.0)
+           if(iSemiCentral)
              {
 		WeightPho = fEta3050 -> Eval(pTmom);
              }
@@ -1952,8 +2010,17 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
         if(EMCalIndex>=0) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 
 	//cout << "Charge = " << track -> Charge() << endl;
-	
-	Double_t emcphi = -999, emceta = -999;        
+
+	if(clustMatch && clustMatch->IsEMCAL())
+	{
+	 Double_t clustMatchE = clustMatch->E();
+	 if(track->P()>0) fvalueElectron[5] = clustMatchE/track->P();
+        }
+        if(iTree)fSparseElectron->Fill(fvalueElectron);
+
+
+
+	Double_t emcphi = -999, emceta = -999;
 
 	if(clustMatch && clustMatch->IsEMCAL())
 	{
@@ -1964,7 +2031,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		fEMCTrkMatchPhi->Fill(fPhiDiff);
 		fEMCTrkMatchEta->Fill(fEtaDiff);
 
-                cout << "fPhiDiff = "<< fPhiDiff << endl;
+                //cout << "fPhiDiff = "<< fPhiDiff << endl;
 
 		if(TMath::Abs(fPhiDiff)>0.05 || TMath::Abs(fEtaDiff)>0.05)continue;
 
@@ -1998,6 +2065,8 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		m02 = clustMatch->GetM02();
 		m20 = clustMatch->GetM20();
 
+		//add by sudo
+
 		if(track->Pt()>2.0){
 			fHistNsigEop->Fill(eop,fTPCnSigma);
 		}
@@ -2011,17 +2080,24 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		Double_t TrkPhisin2_elehigh = -999;
 
 		//if((fTPCnSigma > -1 && fTPCnSigma <3) && (m20 > 0.01 && m20 < 0.3)){ //TPC nsigma & shower shape cut
-		if((fTPCnSigma > ftpcnsig && fTPCnSigma <3) && (m20 > femcss_mim && m20 < femcss_max)){ //TPC nsigma & shower shape cut
+		if(fTPCnSigma > ftpcnsig && fTPCnSigma <3){ //TPC nsigma & shower shape cut
+
+                if(track->Pt()<3.0){
+                      //if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) || (fTPCnSigma<0) )continue;
+                      if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) )continue;
+                       }
+
 
 			//if(eop>0.9 && eop<1.3){ //eop cut
-			if(eop>femceop && eop<1.3){ //eop cut
+			if(eop>femceop && eop<1.3 && (m20 > femcss_mim && m20 < femcss_max)){ //eop cut
 
+				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
 				////electron v2////
 
 				//if(track->Pt() > 1.5){
 
 				TrkPhiEPV0A_ele = TrkPhiPI - PsinV0A;
-				
+
 				if(TrkPhiEPV0A_ele > TMath::Pi()/2.){
 					TrkPhiEPV0A_ele -= TMath::Pi();
 				}
@@ -2050,15 +2126,38 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 				fTrkPhisin2_elehigh -> Fill(track->Pt(),TrkPhisin2_elehigh);
 				//}
 
+                                if(!fFlagNonHFE){
+
+                                fTrkPhicos2_hfehigh -> Fill(track->Pt(),TrkPhicos2_elehigh);
+                                fTrkPhisin2_hfehigh -> Fill(track->Pt(),TrkPhisin2_elehigh);
+
+                                }
+
+
 				if(TrkPhiEPV0A_ele > -TMath::Pi()/4. && TrkPhiEPV0A_ele < TMath::Pi()/4.){
 
 					fInplane_ele -> Fill(track->Pt());
 
+                                         if(!fFlagNonHFE){
+
+                                                 fInplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
+
+                                         }
+
+
 				}
+
+
 
 				if(TrkPhiEPV0A_ele > TMath::Pi()/4. || TrkPhiEPV0A_ele < -TMath::Pi()/4.){
 
 					fOutplane_ele -> Fill(track->Pt());
+
+                                        if(!fFlagNonHFE){
+
+                                                fOutplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
+
+                                          }
 
 				}
 
@@ -2067,14 +2166,13 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 				fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
 				/////Identify Non-HFE/////
-
-				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
+				//SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
 
 				if(pid_eleP){
 
 					fHistPhoReco0 -> Fill(track->Pt());
 
-					cout << "WeightPho1" << WeightPho << endl;
+					//cout << "iSemiCentral = " << iSemiCentral << " ; iEmbPi0 = " << iEmbPi0 << " ; WeightPho1 = " << WeightPho << endl;
 
 					if(iEmbPi0)fHistPhoPi0->Fill(track->Pt(),WeightPho);
 					if(iEmbEta)fHistPhoEta->Fill(track->Pt(),WeightPho);
@@ -2088,8 +2186,8 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 					}
 
 					else{
-						fHistPhoReco2 -> Fill(track->Pt());		
-					}			
+						fHistPhoReco2 -> Fill(track->Pt());
+					}
 				}
 
 			}
@@ -2103,8 +2201,12 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 		if((fTPCnSigma < -3) && (m20 > 0.01 && m20 < 3.0)){
 
+                if(track->Pt()<3.0){
+                              if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) )continue;
+                      }
+
 				TrkPhiEPV0A_had = TrkPhiPI - PsinV0A;
-				
+
 				if(TrkPhiEPV0A_had > TMath::Pi()/2.){
 					TrkPhiEPV0A_had -= TMath::Pi();
 				}
@@ -2112,7 +2214,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 				if(TrkPhiEPV0A_had < -TMath::Pi()/2.){
 					TrkPhiEPV0A_had += TMath::Pi();
 				}
-			
+
 				TrkPhicos2_hadhigh = cos(2*TrkPhiEPV0A_had);
 				TrkPhisin2_hadhigh = sin(2*TrkPhiEPV0A_had);
 
@@ -2121,6 +2223,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 			fHisthadron -> Fill(eop,track->Pt());
 			fDCAxy_Pt_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
 
 		}
 
@@ -2256,7 +2359,7 @@ Double_t CutmassMin = massMin;
 	Double_t TrkPhicos2_phoLShigh = -999., TrkPhisin2_phoLShigh = -999.;
 	Double_t TrkPhicos2_phoULShigh = -999., TrkPhisin2_phoULShigh = -999.;
 
-	if(fFlagLS && track->Pt()>1){ 
+	if(fFlagLS && track->Pt()>1){
 
 		fInvmassLS->Fill(mass);
 		fInvmassLS_2D->Fill(mass,track->Pt());
@@ -2296,7 +2399,7 @@ Double_t CutmassMin = massMin;
 		}
 	}
 
-	if(fFlagULS && track->Pt()>1){ 
+	if(fFlagULS && track->Pt()>1){
 
 		fInvmassULS->Fill(mass);
 		fInvmassULS_2D->Fill(mass,track->Pt());
@@ -2366,26 +2469,29 @@ void AliAnalysisTaskFlowTPCEMCalRun2::CheckMCgen(AliAODMCHeader* fMCheader,Doubl
 
 	if(lh)
 {
-		for(int igene=0; igene<lh->GetEntries(); igene++)
+		//for(int igene=0; igene<lh->GetEntries(); igene++)
+		for(int igene=0; igene<lh->GetEntries()-1; igene++)
 		{
 			AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
 			if(gh)
 			{
 				MCgen = gh->GetName();
+                                //cout << "MCgen = " << MCgen << endl;
 				if(igene==0)NpureMC = gh->NProduced(); //generated by PYTHIA or HIJING
 
 				if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;
 				if(MCgen.Contains(embeta))NembMCeta = NpureMCproc;
 
 				NpureMCproc += gh->NProduced(); //generated by PYTHIA or HIJING
+                                //cout << "NpureMCproc = " << NpureMCproc << endl;
 			}
 		}
 }
 
 for(int imc=0; imc<NpureMCproc; imc++)
 {
-	Bool_t iEnhance = kFALSE;
-	if(imc>=NpureMC)iEnhance = kTRUE;
+	Bool_t iEnhance = kTRUE;
+	//if(imc>=NpureMC)iEnhance = kFALSE;
 	Int_t iHijing = 1; //select particles from Hijing or PYTHIA
 
 	fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
@@ -2588,13 +2694,13 @@ void AliAnalysisTaskFlowTPCEMCalRun2::GetMainQnVectorInfo(double &mainPsin,doubl
 	HFQnVectorHandler->GetMultQnVecV0(MultQnFullV0,MultQnV0A,MultQnV0C);
 
 	HFQnVectorHandler->GetEventPlaneAngleTPC(PsinFullTPC,PsinPosTPC,PsinNegTPC);
-	HFQnVectorHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C); 
+	HFQnVectorHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C);
 
 	if(fEtaGapInTPCHalves>0.) {
 		vector<AliAODTrack*> trackstoremove;
 		for(int iTrack=0; iTrack<fAOD->GetNumberOfTracks(); iTrack++) {
 			AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
-			if(TMath::Abs(track->Eta())<fEtaGapInTPCHalves/2)   
+			if(TMath::Abs(track->Eta())<fEtaGapInTPCHalves/2)
 				trackstoremove.push_back(track);
 		}
 		HFQnVectorHandler->RemoveTracksFromQnTPC(trackstoremove, QnFullTPC, QnPosTPC, QnNegTPC, MultQnFullTPC, MultQnPosTPC, MultQnNegTPC, true);
@@ -2614,7 +2720,7 @@ void AliAnalysisTaskFlowTPCEMCalRun2::GetMainQnVectorInfo(double &mainPsin,doubl
 			mainPsin   = PsinPosTPC;
 			mainMultQn = MultQnPosTPC;
 			mainQn[0]  = QnPosTPC[0];
-			mainQn[1]  = QnPosTPC[1];        
+			mainQn[1]  = QnPosTPC[1];
 			break;
 		case kNegTPC:
 			mainPsin   = PsinNegTPC;
@@ -2632,13 +2738,13 @@ void AliAnalysisTaskFlowTPCEMCalRun2::GetMainQnVectorInfo(double &mainPsin,doubl
 			mainPsin   = PsinV0A;
 			mainMultQn = MultQnV0A;
 			mainQn[0]  = QnV0A[0];
-			mainQn[1]  = QnV0A[1];        
+			mainQn[1]  = QnV0A[1];
 			break;
 		case kV0C:
 			mainPsin   = PsinV0C;
 			mainMultQn = MultQnV0C;
 			mainQn[0]  = QnV0C[0];
-			mainQn[1]  = QnV0C[1];        
+			mainQn[1]  = QnV0C[1];
 			break;
 	}
 
@@ -2653,7 +2759,7 @@ void AliAnalysisTaskFlowTPCEMCalRun2::GetMainQnVectorInfo(double &mainPsin,doubl
 			SubAPsin   = PsinPosTPC;
 			SubAMultQn = MultQnPosTPC;
 			SubAQn[0]  = QnPosTPC[0];
-			SubAQn[1]  = QnPosTPC[1];        
+			SubAQn[1]  = QnPosTPC[1];
 			break;
 		case kNegTPC:
 			SubAPsin   = PsinNegTPC;
@@ -2671,13 +2777,13 @@ void AliAnalysisTaskFlowTPCEMCalRun2::GetMainQnVectorInfo(double &mainPsin,doubl
 			SubAPsin   = PsinV0A;
 			SubAMultQn = MultQnV0A;
 			SubAQn[0]  = QnV0A[0];
-			SubAQn[1]  = QnV0A[1];        
+			SubAQn[1]  = QnV0A[1];
 			break;
 		case kV0C:
 			SubAPsin   = PsinV0C;
 			SubAMultQn = MultQnV0C;
 			SubAQn[0]  = QnV0C[0];
-			SubAQn[1]  = QnV0C[1];        
+			SubAQn[1]  = QnV0C[1];
 			break;
 	}
 
@@ -2692,7 +2798,7 @@ void AliAnalysisTaskFlowTPCEMCalRun2::GetMainQnVectorInfo(double &mainPsin,doubl
 			SubBPsin   = PsinPosTPC;
 			SubBMultQn = MultQnPosTPC;
 			SubBQn[0]  = QnPosTPC[0];
-			SubBQn[1]  = QnPosTPC[1];        
+			SubBQn[1]  = QnPosTPC[1];
 			break;
 		case kNegTPC:
 			SubBPsin   = PsinNegTPC;
@@ -2710,13 +2816,13 @@ void AliAnalysisTaskFlowTPCEMCalRun2::GetMainQnVectorInfo(double &mainPsin,doubl
 			SubBPsin   = PsinV0A;
 			SubBMultQn = MultQnV0A;
 			SubBQn[0]  = QnV0A[0];
-			SubBQn[1]  = QnV0A[1];        
+			SubBQn[1]  = QnV0A[1];
 			break;
 		case kV0C:
 			SubBPsin   = PsinV0C;
 			SubBMultQn = MultQnV0C;
 			SubBQn[0]  = QnV0C[0];
-			SubBQn[1]  = QnV0C[1];        
+			SubBQn[1]  = QnV0C[1];
 			break;
 	}
 

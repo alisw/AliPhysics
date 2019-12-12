@@ -38,7 +38,7 @@ ClassImp(AliAnalysisTaskTransTask) // classimp: necessary for root
 
 AliAnalysisTaskTransTask::AliAnalysisTaskTransTask() : AliAnalysisTaskSE(), 
   fAOD(0), fESD(0), fType(0), fOutputList(0), fAnaTree(0), fRunNum(0), fTracklets(0), fCtrue(0),
-  fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0),
+  fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0), fGoodTracks(0),
   fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),fZNATime(0),fZNCTime(0),
   fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), 
   fIR1Map(0),fIR2Map(0),fBCrossNum(0),fCounter(0),isMC(kFALSE)
@@ -51,7 +51,7 @@ AliAnalysisTaskTransTask::AliAnalysisTaskTransTask() : AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisTaskTransTask::AliAnalysisTaskTransTask(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0), fESD(0), fType(0), fOutputList(0), fAnaTree(0), fRunNum(0), fTracklets(0), fCtrue(0),
-  fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0),                  
+  fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0), fGoodTracks(0),                  
   fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),fZNATime(0),fZNCTime(0),
   fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), 
   fIR1Map(0),fIR2Map(0),fBCrossNum(0),fCounter(0),isMC(kFALSE)
@@ -90,6 +90,7 @@ void AliAnalysisTaskTransTask::UserCreateOutputObjects()
   fAnaTree = new TTree("fAnaTree", "fAnaTree");
   fAnaTree ->Branch("fRunNum", &fRunNum, "fRunNum/I");
   fAnaTree ->Branch("fTracklets", &fTracklets, "fTracklets/I"); 
+  fAnaTree ->Branch("fGoodTracks", &fGoodTracks, "fGoodTracks/I"); 
   fAnaTree ->Branch("fCtrue", &fCtrue, "fCtrue/I");
   fAnaTree ->Branch("fC1zed", &fC1zed, "fC1zed/I");  
   fAnaTree ->Branch("fL0inputs", &fL0inputs, "L0inputs/i");
@@ -151,7 +152,33 @@ void AliAnalysisTaskTransTask::RunAOD()
   fCounter->Fill(3);    
 
   // tracks
-  // if (fAOD->GetNumberOfTracks() > 0) {PostData(2, fOutputList); return;}
+  // primary vertex
+  AliAODVertex *fAODVertex = (AliAODVertex*) fAOD->GetPrimaryVertex();
+  // if (fESD->GetNumberOfTracks() > 0) {PostData(2, fOutputList); return;}
+  Int_t nGoodTracks=0;
+  //Track loop - cuts
+  for(Int_t itr=0; itr<fAOD ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itr));
+    if( !trk ) continue;
+    if(!(trk->GetStatus() && AliAODTrack::kTPCrefit) ) continue;
+    if(!(trk->GetStatus() && AliAODTrack::kITSrefit) ) continue;
+    if(trk->GetTPCNcls() < 50)continue;
+    // if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
+    if((!(trk->HasPointOnITSLayer(0))&&(trk->HasPointOnITSLayer(1)))) continue;
+    // Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
+    // if(!trk->RelateToVertex(fAODVertex, fAOD->GetMagneticField(),300.,&cParam)) continue;
+    Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+    AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+    if(!trk_clone->PropagateToDCA(fAODVertex,fAOD->GetMagneticField(),300.,dca,cov)) continue;
+    delete trk_clone;
+    if(TMath::Abs(dca[1]) > 2) continue;
+    Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+    if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+    nGoodTracks++;
+  }//Track loop end
+
+  fGoodTracks = nGoodTracks;
+
   fCounter->Fill(4);    
 
   // event info
@@ -202,7 +229,6 @@ void AliAnalysisTaskTransTask::RunAOD()
     fADADecision = dataAD->GetADADecision();
     fADCDecision = dataAD->GetADCDecision();
     }
-
   // fill the tree
   fAnaTree->Fill();
   
@@ -234,7 +260,30 @@ void AliAnalysisTaskTransTask::RunESD()
   fCounter->Fill(3);    
 
   // tracks
+  // primary vertex
+  AliESDVertex *fESDVertex = (AliESDVertex*) fESD->GetPrimaryVertex();
   // if (fESD->GetNumberOfTracks() > 0) {PostData(2, fOutputList); return;}
+  Int_t nGoodTracks=0;
+  //Track loop - cuts
+  for(Int_t itr=0; itr<fESD ->GetNumberOfTracks(); itr++) {
+    AliESDtrack *trk = fESD->GetTrack(itr);
+    if( !trk ) continue;
+    if(!(trk->GetStatus() && AliESDtrack::kTPCrefit) ) continue;
+    if(!(trk->GetStatus() && AliESDtrack::kITSrefit) ) continue;
+    if(trk->GetTPCNcls() < 50)continue;
+    // if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
+    if((!(trk->HasPointOnITSLayer(0))&&(trk->HasPointOnITSLayer(1)))) continue;
+    Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
+    if(!trk->RelateToVertex(fESDVertex, fESD->GetMagneticField(),300.,&cParam)) continue;
+    trk->GetImpactParameters(dca[0],dca[1]);
+    if(TMath::Abs(dca[1]) > 2) continue;
+    Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+    if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+    nGoodTracks++;
+  }//Track loop end
+
+  fGoodTracks = nGoodTracks;
+
   fCounter->Fill(4);    
 
   // event info
@@ -287,7 +336,6 @@ void AliAnalysisTaskTransTask::RunESD()
     fADADecision = dataAD->GetADADecision();
     fADCDecision = dataAD->GetADCDecision();
     }
-
   // fill the tree
   fAnaTree->Fill();
   

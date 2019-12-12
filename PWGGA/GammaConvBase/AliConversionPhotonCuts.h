@@ -157,6 +157,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t GetBDTVariableValues(AliConversionPhotonBase *gamma, AliVEvent *event, Float_t* values);
 
     // Cut Selection
+    Bool_t TrackIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
     Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
     Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
@@ -260,9 +261,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}
     Int_t GetDoElecDeDxPostCalibration() {return fDoElecDeDxPostCalibration;}
     void  SetElecDeDxPostCalibrationCustomFile(TString filename){fFileNameElecDeDxPostCalibration = filename; return;};
-    Bool_t  LoadElecDeDxPostCalibration(Int_t runNumber);
-    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl);
-
+    Bool_t InitializeElecDeDxPostCalibration(TString filename);
+    Bool_t LoadElecDeDxPostCalibration(Int_t runNumber);
+    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
+    void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
@@ -335,6 +337,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fMaxPhotonAsymmetry;                  ///< Asymmetry Cut
     Bool_t            fUseCorrectedTPCClsInfo;              ///< flag to use corrected tpc cl info
     Bool_t            fUseTOFpid;                           ///< flag to use tof pid
+    Bool_t            fUseTOFtiming;                        ///< flag to use tof timing information
+    Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
+    Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
+    Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
     Int_t             fDo2DPsiPairChi2;                     ///<
@@ -371,7 +377,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
     Float_t           fKappaMinCut;                         ///< maximum Kappa cut
     Float_t           fKappaMaxCut;                         ///< maximum Kappa cut
-    Bool_t            fDoElecDeDxPostCalibration;                   ///<
+    Bool_t            fDoElecDeDxPostCalibration;           ///<
+    Bool_t            fIsRecalibDepTPCCl;                   ///<
     // Histograms
     TH1F*             fHistoEtaDistV0s;                     ///< eta-distribution of all V0s after Finder selection
     TH1F*             fHistoEtaDistV0sAfterdEdxCuts;        ///< eta-distribution of all V0s after Finder selection after dEdx cuts
@@ -400,12 +407,14 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoAsymmetryafter;                 ///< asymmetry plot after cuts
     TH2F*             fHistoAcceptanceCuts;                 ///< bookkeeping for acceptance cuts
     TH1F*             fHistoCutIndex;                       ///< bookkeeping for cuts
+    TH2F*             fHistoTOFtimeVSMomentum;              ///< TOF timing (ns) versus e+- momentum
     TH1F*             fHistoEventPlanePhi;                  ///< EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           ///< Flag for preselection cut used in V0Reader
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     TProfile*         fProfileContainingMaterialBudgetWeights;
     TString           fFileNameElecDeDxPostCalibration;     ///< name of recalibration file (if no special non-OADB is required)
+    Bool_t            fElecDeDxPostCalibrationInitialized;  ///< flag to check that initialization worked
     Int_t             fRecalibCurrentRun;                   ///< runnumber for correct loading of recalib from OADB
     Int_t             fnRBins;                              //
     TH2S**            fHistoEleMapRecalib;  //[fnRBins]
@@ -423,7 +432,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,27)
+    ClassDef(AliConversionPhotonCuts,32)
     /// \endcond
 };
 

@@ -68,6 +68,7 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
 
   // Load 1D bad channel map
   GetProperty("load1DBadChMap", fLoad1DBadChMap);
+  fRecoUtils->SetUse1DBadChannelMap(fLoad1DBadChMap);
   
   return kTRUE;
 }

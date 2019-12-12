@@ -130,7 +130,7 @@ void SetNumOfCaloModules              ( Int_t nModules)                         
   // Function to enable MC label sorting
   void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
 
-
+  void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
 
 protected:
@@ -196,9 +196,6 @@ protected:
   TH1F**                  fHistoClusGammaE;                                   //! array of histos with cluster, E
   TH1F***                 fHistoClusGammaPtSM;                                //! array of histos with cluster, pt
   TH1F***                 fHistoClusGammaESM;                                 //! array of histos with cluster, E
-  TH1F**                  fHistoClusOverlapHeadersGammaPt;                    //! array of histos with cluster, pt overlapping with other headers
-  TH1F**                  fHistoClusAllHeadersGammaPt;                        //! array of histos with cluster, pt all headers
-  TH1F**                  fHistoClusRejectedHeadersGammaPt;                   //! array of histos with cluster, pt rejected headers
   TH1F**                  fHistoMotherInvMassRejected;                        //! array of histos with invariant mass pairs which were rejected
   TH1F**                  fHistoNEvents;                                      //! array of histos with event information
   TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
@@ -254,12 +251,13 @@ protected:
   Bool_t                  fDoInvMassShowerShapeTree;                          // flag for producing tree tESDInvMassShowerShape
   Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
   Bool_t                  fEnableClusterCutsForTrigger;                       // enable CLusterCuts output for trigger only
+  Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
 
 private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 3);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 4);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H

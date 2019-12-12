@@ -82,11 +82,13 @@ Bool_t AliEmcalTriggerSelectionCuts::SelectPatchType(const AliEMCALTriggerPatchI
     if(patch->IsJetHighSimple() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetHighPatch))) return kTRUE;
     if(patch->IsGammaLowSimple() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaLowPatch))) return kTRUE;
     if(patch->IsGammaHighSimple() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaHighPatch))) return kTRUE;
+    if(patch->IsLevel0Simple() && fPatchType == kL0Patch) return kTRUE;
   } else if(fUseRecalc) {
     if(patch->IsJetLowRecalc() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetLowPatch))) return kTRUE;
     if(patch->IsJetHighRecalc() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetHighPatch))) return kTRUE;
     if(patch->IsGammaLowRecalc() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaLowPatch))) return kTRUE;
     if(patch->IsGammaHighRecalc() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaHighPatch))) return kTRUE;
+    if(patch->IsLevel0Recalc() && fPatchType == kL0Patch) return kTRUE;
   } else {
     if(patch->IsJetLow() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetLowPatch))) return kTRUE;
     if(patch->IsJetHigh() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetHighPatch))) return kTRUE;

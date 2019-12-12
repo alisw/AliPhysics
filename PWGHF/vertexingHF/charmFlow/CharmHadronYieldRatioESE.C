@@ -71,7 +71,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
     double qnmin = config["AnalysisOptions"]["qnMin"].as<double>();
     double qnmax = config["AnalysisOptions"]["qnMax"].as<double>();
     vector<double> PtMin = config["AnalysisOptions"]["PtMin"].as<vector<double> >();
-    vector<double> PtMax = config["AnalysisOptions"]["PtMax"].as<vector<double> >();    
+    vector<double> PtMax = config["AnalysisOptions"]["PtMax"].as<vector<double> >();
     vector<double> MassMin = config["AnalysisOptions"]["MassMin"].as<vector<double> >();
     vector<double> MassMax = config["AnalysisOptions"]["MassMax"].as<vector<double> >();
     vector<int> Rebin = config["AnalysisOptions"]["Rebin"].as<vector<int> >();
@@ -110,21 +110,31 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
 
     const unsigned int nPtBins = PtMin.size();
     double PtLims[nPtBins+1];
-    for(unsigned int iPt=0; iPt<nPtBins; iPt++) 
+    for(unsigned int iPt=0; iPt<nPtBins; iPt++)
         PtLims[iPt] = PtMin[iPt];
     PtLims[nPtBins] = PtMax[nPtBins-1];
 
-    //Load input file    
+    //arguments for ML application
+    bool doMLsel = false;
+    vector<double> CutValuesMLmin = {};
+    vector<double> CutValuesMLmax = {};
+    if (config["AnalysisOptions"]["MLSelection"]) {
+        doMLsel = static_cast<bool>(config["AnalysisOptions"]["MLSelection"]["ApplyML"].as<int>());
+        CutValuesMLmin = config["AnalysisOptions"]["MLSelection"]["CutValuesMin"].as<vector<double> >();
+        CutValuesMLmax = config["AnalysisOptions"]["MLSelection"]["CutValuesMax"].as<vector<double> >();
+    }
+
+    //Load input file
     TList* list = LoadTListFromTaskOutput(config);
     if(!list) return;
     THnSparseF* sMassVsPtVsPhiVsCentrVsqn = static_cast<THnSparseF*>(list->FindObject("fHistMassPtPhiqnCentr"));
     TH3F* hPerqnVsqnVsCentr = static_cast<TH3F*>(list->FindObject("fHistPercqnVsqnVsCentr"));
 
     //Load reflections file
-    TH1F* hMCSgn[nPtBins]; 
+    TH1F* hMCSgn[nPtBins];
     TH1F* hMCRefl[nPtBins];
     if(useRefl)
-       useRefl = LoadD0toKpiReflHistos(reflFileName, nPtBins, hMCSgn, hMCRefl); 
+       useRefl = LoadD0toKpiReflHistos(reflFileName, nPtBins, hMCSgn, hMCRefl);
 
     TCanvas* cMassUnb = new TCanvas("cMassUnb","Unbiased",1920,1080);
     TCanvas* cMassFreeSigmaESE = new TCanvas("cMassFreeSigmaESE","ESE - free sigma",1920,1080);
@@ -137,7 +147,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
     DivideCanvas(cMassSimFitUnb,nPtBins);
     DivideCanvas(cMassSimFitESE,nPtBins);
 
-    TH1D* hRawYieldUnb          = new TH1D("hRawYieldUnb",";#it{p}_{T} (GeV/#it{c}); raw yields",nPtBins,PtLims); 
+    TH1D* hRawYieldUnb          = new TH1D("hRawYieldUnb",";#it{p}_{T} (GeV/#it{c}); raw yields",nPtBins,PtLims);
     TH1D* hRawYieldFreeSigmaESE = new TH1D("hRawYieldFreeSigmaESE",";#it{p}_{T} (GeV/#it{c});raw yields",nPtBins,PtLims);
     TH1D* hRawYieldFixSigmaESE  = new TH1D("hRawYieldFixSigmaESE",";#it{p}_{T} (GeV/#it{c});raw yields",nPtBins,PtLims);
     TH1D* hRawYieldSimFitUnb    = new TH1D("hRawYieldSimFitUnb",";#it{p}_{T} (GeV/#it{c});raw yields",nPtBins,PtLims);
@@ -148,7 +158,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
     SetHistoStyle(hRawYieldSimFitUnb,kBlack,kOpenSquare);
     SetHistoStyle(hRawYieldSimFitESE,kRed,kOpenCircle);
 
-    TH1D* hMeanUnb          = new TH1D("hMeanUnb",";#it{p}_{T} (GeV/#it{c});mean (GeV/#it{c}^{2}) ",nPtBins,PtLims); 
+    TH1D* hMeanUnb          = new TH1D("hMeanUnb",";#it{p}_{T} (GeV/#it{c});mean (GeV/#it{c}^{2}) ",nPtBins,PtLims);
     TH1D* hMeanFreeSigmaESE = new TH1D("hMeanFreeSigmaESE",";#it{p}_{T} (GeV/#it{c});mean (GeV/#it{c}^{2})",nPtBins,PtLims);
     TH1D* hMeanFixSigmaESE  = new TH1D("hMeanFixSigmaESE",";#it{p}_{T} (GeV/#it{c});mean (GeV/#it{c}^{2})",nPtBins,PtLims);
     TH1D* hMeanSimFitUnb    = new TH1D("hMeanSimFitUnb",";#it{p}_{T} (GeV/#it{c});mean (GeV/#it{c}^{2})",nPtBins,PtLims);
@@ -159,7 +169,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
     SetHistoStyle(hMeanSimFitUnb,kBlack,kOpenSquare);
     SetHistoStyle(hMeanSimFitESE,kRed,kOpenCircle);
 
-    TH1D* hSigmaUnb          = new TH1D("hSigmaUnb",";#it{p}_{T} (GeV/#it{c});width (GeV/#it{c}^{2})",nPtBins,PtLims); 
+    TH1D* hSigmaUnb          = new TH1D("hSigmaUnb",";#it{p}_{T} (GeV/#it{c});width (GeV/#it{c}^{2})",nPtBins,PtLims);
     TH1D* hSigmaFreeSigmaESE = new TH1D("hSigmaFreeSigmaESE",";#it{p}_{T} (GeV/#it{c});width (GeV/#it{c}^{2})",nPtBins,PtLims);
     TH1D* hSigmaFixSigmaESE  = new TH1D("hSigmaFixSigmaESE",";#it{p}_{T} (GeV/#it{c});width (GeV/#it{c}^{2})",nPtBins,PtLims);
     TH1D* hSigmaSimFitUnb    = new TH1D("hSigmaSimFitUnb",";#it{p}_{T} (GeV/#it{c});width (GeV/#it{c}^{2})",nPtBins,PtLims);
@@ -170,7 +180,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
     SetHistoStyle(hSigmaSimFitUnb,kBlack,kOpenSquare);
     SetHistoStyle(hSigmaSimFitESE,kRed,kOpenCircle);
 
-    TH1D* hRedChi2Unb          = new TH1D("hRedChi2Unb",";#it{p}_{T} (GeV/#it{c});#chi^{2} / ndf",nPtBins,PtLims); 
+    TH1D* hRedChi2Unb          = new TH1D("hRedChi2Unb",";#it{p}_{T} (GeV/#it{c});#chi^{2} / ndf",nPtBins,PtLims);
     TH1D* hRedChi2FreeSigmaESE = new TH1D("hRedChi2FreeSigmaESE",";#it{p}_{T} (GeV/#it{c});#chi^{2} / ndf",nPtBins,PtLims);
     TH1D* hRedChi2FixSigmaESE  = new TH1D("hRedChi2FixSigmaESE",";#it{p}_{T} (GeV/#it{c});#chi^{2} / ndf",nPtBins,PtLims);
     TH1D* hRedChi2SimFitUnb    = new TH1D("hRedChi2SimFitUnb",";#it{p}_{T} (GeV/#it{c});#chi^{2} / ndf",nPtBins,PtLims);
@@ -187,13 +197,13 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
 
         int SgnFunc = -1, BkgFunc = -1, VnBkgFunc = -1;
 
-        if(sSgnFunc[iPt]=="kGaus") 
+        if(sSgnFunc[iPt]=="kGaus")
             SgnFunc = AliHFInvMassFitter::kGaus;
-        else if(sSgnFunc[iPt]=="k2Gaus") 
+        else if(sSgnFunc[iPt]=="k2Gaus")
             SgnFunc = AliHFInvMassFitter::k2Gaus;
-        else if(sSgnFunc[iPt]=="k2GausSigmaRatioPar") 
+        else if(sSgnFunc[iPt]=="k2GausSigmaRatioPar")
             SgnFunc = AliHFInvMassFitter::k2GausSigmaRatioPar;
-        
+
         if(sBkgFunc[iPt]=="kExpo")
             BkgFunc = AliHFInvMassFitter::kExpo;
         else if(sBkgFunc[iPt]=="kLin")
@@ -212,6 +222,8 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
 	        SoverR=(hMCRefl[iPt]->Integral(hMCRefl[iPt]->FindBin(MassMin[iPt]*1.0001),hMCRefl[iPt]->FindBin(MassMax[iPt]*0.9999)))/(hMCSgn[iPt]->Integral(hMCSgn[iPt]->FindBin(MassMin[iPt]*1.0001),hMCSgn[iPt]->FindBin(MassMax[iPt]*0.9999)));
 
         ApplySelection(sMassVsPtVsPhiVsCentrVsqn, 1, PtMin[iPt], PtMax[iPt]);
+        if(doMLsel)
+            ApplySelection(sMassVsPtVsPhiVsCentrVsqn, 9, CutValuesMLmin[iPt], CutValuesMLmax[iPt]);
         hInvMassUnb[iPt] = reinterpret_cast<TH1F*>(sMassVsPtVsPhiVsCentrVsqn->Projection(0));
         hInvMassUnb[iPt]->SetName(Form("hInvMassUnb_Pt%d", iPt));
         ApplySelection(sMassVsPtVsPhiVsCentrVsqn, 8, qnmin, qnmax);
@@ -219,7 +231,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
         hInvMassESE[iPt]->SetName(Form("hInvMassESE_Pt%d", iPt));
 
         ResetAxes(sMassVsPtVsPhiVsCentrVsqn);
-    
+
         //fit unbiased
         TH1F* hMassUnbForFit = reinterpret_cast<TH1F*>(AliVertexingHFUtils::RebinHisto(hInvMassUnb[iPt],Rebin[iPt]));
         hMassUnbForFit->SetTitle(Form("%0.f < #it{p}_{T} < %0.f GeV/#it{c};%s;Counts per %0.f MeV/#it{c}^{2}", PtMin[iPt], PtMax[iPt], hInvMassUnb[iPt]->GetXaxis()->GetTitle(), hMassUnbForFit->GetBinWidth(1)*1000));
@@ -232,7 +244,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
             massfitterUnb[iPt]->IncludeSecondGausPeak(massDplus,false,0.008,false);
         else if(meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi)
             massfitterUnb[iPt]->SetInitialGaussianSigma(0.001);
-        if(useRefl) {       
+        if(useRefl) {
             massfitterUnb[iPt]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iPt],MassMax[iPt]);
             massfitterUnb[iPt]->SetFixReflOverS(SoverR);
         }
@@ -258,7 +270,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
             massfitterFreeSigmaESE[iPt]->IncludeSecondGausPeak(massDplus,true,0.008,true);
         else if(meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi)
             massfitterFreeSigmaESE[iPt]->SetInitialGaussianSigma(0.001);
-        if(useRefl) {       
+        if(useRefl) {
             massfitterFreeSigmaESE[iPt]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iPt],MassMax[iPt]);
             massfitterFreeSigmaESE[iPt]->SetFixReflOverS(SoverR);
         }
@@ -280,7 +292,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
 
         if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
             massfitterFixSigmaESE[iPt]->IncludeSecondGausPeak(massDplus,true,0.008,true);
-        if(useRefl) {       
+        if(useRefl) {
             massfitterFixSigmaESE[iPt]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iPt],MassMax[iPt]);
             massfitterFixSigmaESE[iPt]->SetFixReflOverS(SoverR);
         }
@@ -304,7 +316,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
             massfitterSimFitUnb[iPt]->IncludeSecondGausPeak(massDplus,false,0.008,false);
         else if(meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi)
             massfitterSimFitUnb[iPt]->SetInitialGaussianSigma(0.001);
-        if(useRefl) {       
+        if(useRefl) {
             massfitterSimFitUnb[iPt]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iPt],MassMax[iPt]);
             massfitterSimFitUnb[iPt]->SetFixReflOverS(SoverR);
         }
@@ -319,7 +331,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
             massfitterSimFitESE[iPt]->IncludeSecondGausPeak(massDplus,true,0.008,true);
         else if(meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi)
             massfitterSimFitESE[iPt]->SetInitialGaussianSigma(0.001);
-        if(useRefl) {       
+        if(useRefl) {
             massfitterSimFitESE[iPt]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iPt],MassMax[iPt]);
             massfitterSimFitESE[iPt]->SetFixReflOverS(SoverR);
         }
@@ -391,7 +403,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
     hNorm->SetBinContent(1,nEvUnb);
     hNorm->SetBinContent(2,nEvESE);
 
-    TH1D* hNormRawYieldUnb          = static_cast<TH1D*>(hRawYieldUnb->Clone("hNormRawYieldUnb")); 
+    TH1D* hNormRawYieldUnb          = static_cast<TH1D*>(hRawYieldUnb->Clone("hNormRawYieldUnb"));
     TH1D* hNormRawYieldFreeSigmaESE = static_cast<TH1D*>(hRawYieldFreeSigmaESE->Clone("hNormRawYieldFreeSigmaESE"));
     TH1D* hNormRawYieldFixSigmaESE  = static_cast<TH1D*>(hRawYieldFixSigmaESE->Clone("hNormRawYieldFixSigmaESE"));
     TH1D* hNormRawYieldSimFitUnb    = static_cast<TH1D*>(hRawYieldSimFitUnb->Clone("hNormRawYieldSimFitUnb"));
@@ -507,7 +519,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
     hRatioRawYieldFixSigmaESE->Draw("same");
     hRatioRawYieldSimFitESE->Draw("same");
     legRatio->Draw();
-    
+
     //output files
     string outputdir = config["OutputDir"]["Analysis"].as<string>();
     cMassUnb->SaveAs(Form("%s/InvMassFitsUnbiased%s_q%d_%0.f-%0.f.pdf",outputdir.data(),mesonname.data(),harmonic,qnmin,qnmax));
@@ -589,7 +601,7 @@ void ApplySelection(THnSparseF *sparse, int axisnum, double min, double max) {
 //___________________________________________________________________________________//
 //method that resets selections on sparse axes
 void ResetAxes(THnSparseF *sparse, int axisnum) {
-    if(axisnum >= 0) 
+    if(axisnum >= 0)
         sparse->GetAxis(axisnum)->SetRange(-1,-1);
     else
         for(int iAxis=0; iAxis<sparse->GetNdimensions(); iAxis++) sparse->GetAxis(iAxis)->SetRange(-1,-1);
@@ -598,12 +610,12 @@ void ResetAxes(THnSparseF *sparse, int axisnum) {
 //___________________________________________________________________________________//
 //method that returns TList from task output file
 TList* LoadTListFromTaskOutput(YAML::Node config) {
-    
+
     vector<string> filename = config["InputFile"]["FileName"].as<vector<string> >();
     string suffix = config["InputFile"]["Suffix"].as<string>();
     string mesonname = config["InputFile"]["Meson"].as<string>();
     string flowmethodname = config["InputFile"]["FlowMethod"].as<string>();
-    
+
     TList* list = new TList();
     list->SetOwner();
     TList* listtomerge = new TList();
@@ -623,10 +635,10 @@ TList* LoadTListFromTaskOutput(YAML::Node config) {
         if(iFile==0)
             list = listtmp;
         else
-            listtomerge->Add(listtmp);            
+            listtomerge->Add(listtmp);
     }
     list->Merge(listtomerge);
-    
+
     delete listtomerge;
     return list;
 }
@@ -645,7 +657,7 @@ bool LoadD0toKpiReflHistos(string reflFileName, int nPtBins, TH1F* hMCSgn[], TH1
         hMCSgn[iPt] = NULL;
         hMCSgn[iPt] = static_cast<TH1F*>(ReflFile->Get(Form("histSgn_%d",iPt)));
         if(!hMCSgn[iPt]) {
-            cerr << Form("histSgn_%d not found! Turning off reflections usage",iPt) << endl; 
+            cerr << Form("histSgn_%d not found! Turning off reflections usage",iPt) << endl;
             return false;
         }
         hMCSgn[iPt]->SetName(Form("histSgn_%d",iPt));
@@ -653,7 +665,7 @@ bool LoadD0toKpiReflHistos(string reflFileName, int nPtBins, TH1F* hMCSgn[], TH1
         hMCRefl[iPt] = NULL;
         hMCRefl[iPt] = static_cast<TH1F*>(ReflFile->Get(Form("histRflFittedDoubleGaus_ptBin%d",iPt)));
         if(!hMCRefl[iPt]) {
-            cerr << Form("histRflFittedDoubleGaus_ptBin%d not found! Turning off reflections usage",iPt) << endl; 
+            cerr << Form("histRflFittedDoubleGaus_ptBin%d not found! Turning off reflections usage",iPt) << endl;
             return false;
         }
         hMCRefl[iPt]->SetName(Form("histRfl_%d",iPt));

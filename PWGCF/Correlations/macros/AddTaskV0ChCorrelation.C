@@ -39,25 +39,23 @@ if (!mgr->GetInputEventHandler()) {
   task->SetAnalysisMC(isMC);
   //------------------------------Mixing part------------------------------
   task->SetMixingTracks(50000);
-  //task->SetMixingTracks(10000);
-  //task->SetPoolSize(200); 
-  task->SetPoolSize(200); 
+    task->SetPoolSize(500); 
  //--------------------------------Variable--------------------------------
   task->SetVtxCut(7.);
-  task->SetVtxXMin(10e-5);
-  task->SetVtxYMin(10e-5);
-  task->SetVtxZMin(10e-5);
+ // task->SetVtxXMin(10e-5);
+ // task->SetVtxYMin(10e-5);
+ // task->SetVtxZMin(10e-5);
   task->SetCentMin(0);
-  task->SetCentMax(90.);
+  task->SetCentMax(10.);
   //-----------------------------Track-------------------------------------
-  task->SetTrackMCPtMin(1);
+ // task->SetTrackMCPtMin(1);
 
   task->SetTrackPtMin(1.);
   task->SetTrackPtMax(8.);
   task->SetTrackEta(0.8);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
-  task->SetV0MCPtMin(3);
+  //task->SetV0MCPtMin(3);
   task->SetV0PtMin(3.);
   task->SetV0PtMax(15.);
   task->SetV0Eta(0.7);
@@ -159,4 +157,5 @@ AliAnalysisDataContainer *coutput7
 return task;
 
 }
+
 

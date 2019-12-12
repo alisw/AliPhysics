@@ -19,6 +19,7 @@
 #include <TClonesArray.h>
 #include "AliJBaseTrack.h"
 #include "AliJCDijetHistos.h"
+#include "TRandom3.h"
 
 // Fastjet includes
 #include "FJ_includes.h"
@@ -46,13 +47,16 @@ class AliJCDijetAna : public TObject
                          double lJetCone,
                          double lktJetCone,
                          int    lktScheme,
-                         bool   lusePionMassInkt,
+                         int    lantiktScheme,
+                         bool   lusePionMass,
                          bool   luseDeltaPhiBGSubtr,
                          double lConstituentCut,
                          double lLeadingJetCut,
                          double lSubleadingJetCut,
+                         double lMinJetPt,
                          double lDeltaPhiCut,
-                         double lmatchingR);
+                         double lmatchingR,
+                         double ltrackingIneff);
 
         void CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
@@ -60,6 +64,7 @@ class AliJCDijetAna : public TObject
         void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos);
         void ResetObjects();
         double DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2);
+        double DeltaR(double eta1, double eta2, double phi1, double phi2);
         bool CheckDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet, double deltaPhiCut);
         double GetDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet);
 #endif
@@ -68,7 +73,7 @@ class AliJCDijetAna : public TObject
         int fDebug;
         double fParticleEtaCut;
         double fParticlePtCut;
-        bool fusePionMassInkt;
+        bool fusePionMass;
         bool fUseDeltaPhiBGSubtr;
         double fConstituentCut;
         double fLeadingJetCut;
@@ -81,6 +86,7 @@ class AliJCDijetAna : public TObject
         double fktJetCone;
         double pionmass;
         double matchingR;
+        double ftrackingIneff;
         bool bEvtHasAreaInfo;
 
         enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
@@ -93,6 +99,8 @@ class AliJCDijetAna : public TObject
         bool bHasDijet;
         bool bHasDeltaPhiDijet;
         bool bHasDeltaPhiSubLeadJet;
+        TRandom3 *randomGenerator;
+        double fDeltaPt;
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<fastjet::PseudoJet> chparticles;
@@ -103,10 +111,10 @@ class AliJCDijetAna : public TObject
         vector<fastjet::PseudoJet> rawJets;
         vector<fastjet::PseudoJet> rawKtJets;
         vector<fastjet::PseudoJet> rhoEstJets;
-        vector<fastjet::PseudoJet> constituents;
         vector<vector<vector<fastjet::PseudoJet>>> dijets;
 
         fastjet::RecombinationScheme ktScheme;
+        fastjet::RecombinationScheme antiktScheme;
         fastjet::PseudoJet jetAreaVector;
         fastjet::PseudoJet jet_bgSubtracted;
         fastjet::PseudoJet dijet;

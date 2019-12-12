@@ -91,7 +91,7 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
   fTreeVar = new TTree(name.Data(), title.Data());
 
   //set common variables
-  AddCommonDmesonVarBranches();
+  AddCommonDmesonVarBranches(fCalcSecoVtx);
 
   //set Lc variables
   fTreeVar->Branch("cos_t_star", &fCosThetaStar);

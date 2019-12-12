@@ -877,23 +877,24 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
   fOutputBPlusResults->Add(histogram_mc_D0_kaon_pseudorapidity_true);
   fResultsHistogramArray[0][14] = histogram_mc_D0_kaon_pseudorapidity_true;
 
-  if(fPerformCutOptimization)
+  if (fPerformCutOptimization)
   {
     Int_t nCuts = fCuts->GetnCutsForOptimization();
     Int_t nVariables = fCuts->GetnVariablesForCutOptimization();
-    Int_t nCutOptimizationBins = TMath::Power(nCuts,nVariables);
+    Int_t nCutOptimizationBins = TMath::Power(nCuts, nVariables);
+    Int_t nSigmaBins = fCuts->GetNumberOfSigmaBinsForCutOptimization();
 
-    for (Int_t k = 0; k < fnPtBins; ++k) 
+    for (Int_t k = 0; k < fnPtBins; ++k)
     {
       TString ptBinMother = "";
-      ptBinMother += "_ptbin_"; 
-      ptBinMother += fPtBinLimits[k]; 
-      ptBinMother += "_to_"; 
-      ptBinMother += fPtBinLimits[k+1];
+      ptBinMother += "_ptbin_";
+      ptBinMother += fPtBinLimits[k];
+      ptBinMother += "_to_";
+      ptBinMother += fPtBinLimits[k + 1];
 
       TString name_cut_optimization_signal = "cut_optimization_signal";
       name_cut_optimization_signal += ptBinMother;
-      TH2F* hist_cut_optimization_signal = new TH2F(name_cut_optimization_signal.Data(), "Total signal for different cuts; Cut number; Entries", nCutOptimizationBins, 0, nCutOptimizationBins, 18, -9, 9);
+      TH2F* hist_cut_optimization_signal = new TH2F(name_cut_optimization_signal.Data(), "Total signal for different cuts; Cut number; Entries", nCutOptimizationBins, 0, nCutOptimizationBins, 2 * nSigmaBins, -nSigmaBins, nSigmaBins);
       hist_cut_optimization_signal->Sumw2();
       hist_cut_optimization_signal->SetLineColor(6);
       hist_cut_optimization_signal->SetMarkerStyle(20);
@@ -905,7 +906,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
 
       TString name_cut_optimization_background = "cut_optimization_background";
       name_cut_optimization_background += ptBinMother;
-      TH2F* hist_cut_optimization_background = new TH2F(name_cut_optimization_background.Data(), "Total background for different cuts; Cut number; Entries", nCutOptimizationBins, 0, nCutOptimizationBins, 18, -9, 9);
+      TH2F* hist_cut_optimization_background = new TH2F(name_cut_optimization_background.Data(), "Total background for different cuts; Cut number; Entries", nCutOptimizationBins, 0, nCutOptimizationBins, 2 * nSigmaBins, -nSigmaBins, nSigmaBins);
       hist_cut_optimization_background->Sumw2();
       hist_cut_optimization_background->SetLineColor(6);
       hist_cut_optimization_background->SetMarkerStyle(20);
@@ -1352,7 +1353,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
     for (Int_t i = 1; i < 100; ++i)
     {
       TString integerText = "";
-      integerText += i;
+      integerText += i - 1;
       effectOfCuts->GetXaxis()->SetBinLabel(i + 1, integerText);
     }
     listout->Add(effectOfCuts);
@@ -1366,7 +1367,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
     for (Int_t i = 1; i < 100; ++i)
     {
       TString integerText = "";
-      integerText += i;
+      integerText += i - 1;
       effectOfCutsSignal->GetXaxis()->SetBinLabel(i + 1, integerText);
     }
     listout->Add(effectOfCutsSignal);
@@ -1838,14 +1839,14 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mc
   return;
 }
 //-------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header) {
+Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header, AliAODEvent* aodEvent) {
 
   // we select the D0 pion and save its information
   if (!aodTrack) AliFatal("Not a standard AOD");
 
   //quick quality cut
   if (aodTrack->GetITSNcls() < 1) return kFALSE;
-  if (aodTrack->GetTPCNcls() < 1) return kFALSE;
+  // if (aodTrack->GetTPCNcls() < 1) return kFALSE;
   if (aodTrack->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
   if (!(aodTrack->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
   if (aodTrack->GetID() < 0) return kFALSE;
@@ -1926,7 +1927,9 @@ Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0FirstDaughterSelection(AliAODTrack* aodTr
     bCut = kTRUE;
   }
 
-  if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0FirstDaughter()) {
+  // TPC cluster cut turned off, cut is done with crossed row method instead using the IsThisDaughterSelected function
+  // if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0FirstDaughter()) {
+  if (!fCuts->IsThisDaughterSelected(aodTrack,primaryVertex,aodEvent)) {
     if (isDesiredCandidate) {
       ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(4);
     } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(4);
@@ -2067,14 +2070,14 @@ Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0FirstDaughterSelection(AliAODTrack* aodTr
   return kTRUE;
 }
 //-------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header) {
+Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header, AliAODEvent* aodEvent) {
 
   // we select the D0 pion and save its information
   if (!aodTrack) AliFatal("Not a standard AOD");
 
   //quick quality cut
   if (aodTrack->GetITSNcls() < 1) return kFALSE;
-  if (aodTrack->GetTPCNcls() < 1) return kFALSE;
+  // if (aodTrack->GetTPCNcls() < 1) return kFALSE;
   if (aodTrack->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
   if (!(aodTrack->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
   if (aodTrack->GetID() < 0) return kFALSE;
@@ -2154,7 +2157,9 @@ Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0SecondDaughterSelection(AliAODTrack* aodT
     bCut = kTRUE;
   }
 
-  if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0SecondDaughter()) {
+  // TPC cluster cut turned off, cut is done with crossed row method instead using the IsThisDaughterSelected function
+  // if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0SecondDaughter()) {
+  if (!fCuts->IsThisDaughterSelected(aodTrack,primaryVertex,aodEvent)) {
     if (isDesiredCandidate) {
       ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(4);
     } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(4);
@@ -2305,18 +2310,18 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusPionSelection(AliAODEvent* aodEvent, Ali
 
     //quick quality cut
     if (aodTrack->GetITSNcls() < 1) continue;
-    if (aodTrack->GetTPCNcls() < 1) continue;
+    // if (aodTrack->GetTPCNcls() < 1) continue;
     if (aodTrack->GetStatus()&AliESDtrack::kITSpureSA) continue;
     if (!(aodTrack->GetStatus()&AliESDtrack::kITSin)) continue;
     if (aodTrack->GetID() < 0) continue;
     Double_t covtest[21];
     if (!aodTrack->GetCovarianceXYZPxPyPz(covtest)) continue;
 
-    Double_t pos[3],cov[6];
-    primaryVertex->GetXYZ(pos);
-    primaryVertex->GetCovarianceMatrix(cov);
-    const AliESDVertex vESD(pos,cov,100.,100);
-    if(!fCuts->IsDaughterSelected(aodTrack,&vESD,fCuts->GetTrackCuts(),aodEvent)) continue;
+    // Double_t pos[3],cov[6];
+    // primaryVertex->GetXYZ(pos);
+    // primaryVertex->GetCovarianceMatrix(cov);
+    // const AliESDVertex vESD(pos,cov,100.,100);
+    // if(!fCuts->IsDaughterSelected(aodTrack,&vESD,fCuts->GetTrackCuts(),aodEvent)) continue;
 
     Int_t mcLabelParticle = -1;
     mcLabelParticle = aodTrack->GetLabel();
@@ -2419,7 +2424,9 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusPionSelection(AliAODEvent* aodEvent, Ali
       bCut = kTRUE;
     }
 
-    if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsBPlusPion()) {
+    // TPC cluster cut turned off, cut is done with crossed row method instead using the IsThisDaughterSelected function
+    // if (aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsBPlusPion()) {
+    if (!fCuts->IsThisDaughterSelected(aodTrack,primaryVertex,aodEvent)) {
       if (isDesiredCandidate) {
         ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(4);
       } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(4);
@@ -2597,8 +2604,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::D0Selection(AliAODEvent* aodEvent, AliAODVert
 
     AliAODTrack * trackFirstDaughter = (AliAODTrack*)(trackD0->GetDaughter(0));
     AliAODTrack * trackSecondDaughter = (AliAODTrack*)(trackD0->GetDaughter(1));
-    if (!D0FirstDaughterSelection(trackFirstDaughter, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, header)) continue;
-    if (!D0SecondDaughterSelection(trackSecondDaughter, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, header)) continue;
+    if (!D0FirstDaughterSelection(trackFirstDaughter, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, header, aodEvent)) continue;
+    if (!D0SecondDaughterSelection(trackSecondDaughter, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, header, aodEvent)) continue;
 
 
     AliAODVertex *vertexMother = (AliAODVertex*)trackD0->GetSecondaryVtx();
@@ -2727,38 +2734,22 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
 
       if (trackBPlusPion->GetID() == idProng0 || trackBPlusPion->GetID() == idProng1) continue;
 
-      UInt_t prongsD0[2];
-      prongsD0[0] = 211;
-      prongsD0[1] = 321;
-
-
-      UInt_t prongsD02[2];
-      prongsD02[1] = 211;
-      prongsD02[0] = 321;
-
-      // D0 window - invariant mass cut
-      Double_t invariantMassD0 = trackD0->InvMass(2, prongsD0);
-      Double_t invariantMassD02 = trackD0->InvMass(2, prongsD02);
-
-      Double_t pdgMassD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-      Double_t massWindowD0 = 0.06; //GeV/c^2   //-----------------------------------------fcuts get mass window --------------------------------------------------------------------------
       Int_t pdgD0 = 421;
+      if (trackBPlusPion->Charge() == 1) pdgD0 = -421;
 
       //we check if the pions have the opposite charge
+      //this only works if pid is turned on
       Bool_t bWrongSign = kFALSE;
       if (trackBPlusPion->Charge() == -1)
       {
         if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 2)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 3))) bWrongSign = kFALSE;
         else if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 3)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 2))) bWrongSign = kTRUE;
         else continue;
-        if (TMath::Abs(invariantMassD0 - pdgMassD0) > massWindowD0) continue;
-
       } else if (trackBPlusPion->Charge() == 1) {
         pdgD0 = -421;
         if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 3)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 2))) bWrongSign = kFALSE;
         else if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 2)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 3))) bWrongSign = kTRUE;
         else continue;
-        if (TMath::Abs(invariantMassD02 - pdgMassD0) > massWindowD0) continue;
       }
 
       //location BPlus pion rotation around PV
@@ -3048,36 +3039,26 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
         if (!bWrongSign && fPerformCutOptimization)
         {
           Double_t sigmaWindowForCutOptimization = fCuts->GetSigmaForCutOptimization(ptBin);
+          Int_t nSigmaBins = fCuts->GetNumberOfSigmaBinsForCutOptimization();
           Double_t massDifference = TMath::Abs(invariantMassMother - pdgMassMother);
-          if(massDifference < 9 * sigmaWindowForCutOptimization)
+
+          if (massDifference < nSigmaBins * sigmaWindowForCutOptimization)
           {
-            Int_t nSigmaBin = 10;
+            Int_t nSigmaBin = 0;
             if (invariantMassMother < pdgMassMother)
             {
-              if (massDifference > 8 * sigmaWindowForCutOptimization) {nSigmaBin = -9;}
-              else if (massDifference > 7 * sigmaWindowForCutOptimization) nSigmaBin = -8;
-              else if (massDifference > 6 * sigmaWindowForCutOptimization) nSigmaBin = -7;
-              else if (massDifference > 5 * sigmaWindowForCutOptimization) nSigmaBin = -6;
-              else if (massDifference > 4 * sigmaWindowForCutOptimization) nSigmaBin = -5;
-              else if (massDifference > 3 * sigmaWindowForCutOptimization) nSigmaBin = -4;
-              else if (massDifference > 2 * sigmaWindowForCutOptimization) nSigmaBin = -3;
-              else if (massDifference > 1 * sigmaWindowForCutOptimization) nSigmaBin = -2;
-              else nSigmaBin = -1;
+              for (Int_t iSigma = 0; iSigma < nSigmaBins; ++iSigma)
+              {
+                if ((massDifference > iSigma * sigmaWindowForCutOptimization) && (massDifference < (iSigma + 1) * sigmaWindowForCutOptimization)) {nSigmaBin = -(iSigma + 1); break;}
+              }
             }
             if (invariantMassMother > pdgMassMother)
             {
-              if (massDifference > 8 * sigmaWindowForCutOptimization) {nSigmaBin = 8;}
-              else if (massDifference > 7 * sigmaWindowForCutOptimization) nSigmaBin = 7;
-              else if (massDifference > 6 * sigmaWindowForCutOptimization) nSigmaBin = 6;
-              else if (massDifference > 5 * sigmaWindowForCutOptimization) nSigmaBin = 5;
-              else if (massDifference > 4 * sigmaWindowForCutOptimization) nSigmaBin = 4;
-              else if (massDifference > 3 * sigmaWindowForCutOptimization) nSigmaBin = 3;
-              else if (massDifference > 2 * sigmaWindowForCutOptimization) nSigmaBin = 2;
-              else if (massDifference > 1 * sigmaWindowForCutOptimization) nSigmaBin = 1;
-              else nSigmaBin = 0;
+              for (Int_t iSigma = 0; iSigma < nSigmaBins; ++iSigma)
+              {
+                if ((massDifference > iSigma * sigmaWindowForCutOptimization) && (massDifference < (iSigma + 1) * sigmaWindowForCutOptimization)) {nSigmaBin = iSigma; break;}
+              }
             }
-
-            if(nSigmaBin == 10) std::cout << "nSigmaBin has wrong value" << std::endl;
 
             Int_t nStartVariable = 0;
             Int_t nStartFillNumber = 0;
@@ -3085,7 +3066,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
             Int_t nCuts = fCuts->GetnCutsForOptimization();
             CutOptimizationVariableValues(&trackBPlus, aodEvent);
             CutOptimizationLoop(nStartVariable, nVariables, nCuts, ptBin, nStartFillNumber, isDesiredCandidate, nSigmaBin);
-          } 
+          }
         }
 
 
@@ -3600,6 +3581,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::FillD0Histograms(AliAODRecoDecayHF2Prong * se
 
   Double_t eKaon = selectedMother->EProng(1, 321);
   Double_t invMassKaon = TMath::Sqrt(eKaon * eKaon - secondDaughter->P() * secondDaughter->P());
+  if (pdgCodeMother == -421) eKaon = selectedMother->EProng(0, 321);
+  if (pdgCodeMother == -421) invMassKaon = TMath::Sqrt(eKaon * eKaon - firstDaughter->P() * firstDaughter->P());
   Double_t invMassD0 = selectedMother->InvMassD0();
   invmassDelta = invMassD0 - invMassKaon;
 
@@ -4403,16 +4386,16 @@ void AliAnalysisTaskSEBPlustoD0Pi::CutOptimizationVariableValues(AliAODRecoDecay
     // D0 window - invariant mass
     Int_t chargeBPlus = candidateBPlus->Charge();
     UInt_t prongs[2];
-    if(chargeBPlus==1)
+    if (chargeBPlus == -1)
     {
       prongs[0] = 211;
       prongs[1] = 321;
-    } 
-    else if (chargeBPlus==-1)
+    }
+    else if (chargeBPlus == 1)
     {
-      prongs[1] = 211;
       prongs[0] = 321;
-    } 
+      prongs[1] = 211;
+    }
     else 
     {
       std::cout << "Wrong charge BPlus." << std::endl;

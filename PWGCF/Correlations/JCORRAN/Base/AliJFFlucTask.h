@@ -73,7 +73,8 @@ public:
 	double GetCentralityFromImpactPar(double ip);
 	//void SetIsWeakDeacyExclude( Bool_t WeakDecay){
 		//IsExcludeWeakDecay=WeakDecay; cout << "Setting Exclude Weak Decay Particles = " << WeakDecay <<	endl;}
-	void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "setting TestFilterBit = " << FilterBit << endl; }
+	void SetTestFilterBit( UInt_t FilterBit){ fFilterBit = FilterBit; cout << "setting TestFilterBit = " << FilterBit << endl; }
+	void SetNumTPCClusters( UInt_t NumTPCClusters){ fNumTPCClusters = NumTPCClusters; }
 	void SetEtaRange( double eta_min, double eta_max ){
 		fEta_min = eta_min; fEta_max = eta_max; cout << "setting Eta range as " << fEta_min << " ~ " <<	fEta_max << endl;}
 	void SetPtRange( double pt_min, double pt_max){
@@ -141,39 +142,40 @@ public:
 	}
 
 private:
-	 TClonesArray *fInputList;  // tracklist
-	 TDirectory *fOutput;     // output
-	 AliJFFlucAnalysis *fFFlucAna; // analysis code
-	 std::map<UInt_t, TH1 *> PhiWeightMap[CENTN_NAT];
+	TClonesArray *fInputList;  // tracklist
+	TDirectory *fOutput;     // output
+	AliJFFlucAnalysis *fFFlucAna; // analysis code
+	std::map<UInt_t, TH1 *> PhiWeightMap[CENTN_NAT];
 
-	 TString fTaskName;
-	 TString fCentDetName;
-	 UInt_t fEvtNum;
-	 UInt_t fFilterBit;
-	 UInt_t fEffMode;
-	 UInt_t fEffFilterBit;
-	 int fPcharge;
-	 int fRunNum;
-	 UInt_t GlobTracks;
-	 UInt_t TPCTracks;
-	 UInt_t FB32Tracks;
-	 UInt_t FB32TOFTracks;
-	 double fEta_min;
-	 double fEta_max;
-	 double fQC_eta_min;
-	 double fQC_eta_max;
-	 double fPt_min;
-	 double fPt_max;
-	 double fzvtxCut;
+	TString fTaskName;
+	TString fCentDetName;
+	UInt_t fEvtNum;
+	UInt_t fFilterBit;
+	UInt_t fNumTPCClusters;
+	UInt_t fEffMode;
+	UInt_t fEffFilterBit;
+	int fPcharge;
+	int fRunNum;
+	UInt_t GlobTracks;
+	UInt_t TPCTracks;
+	UInt_t FB32Tracks;
+	UInt_t FB32TOFTracks;
+	double fEta_min;
+	double fEta_max;
+	double fQC_eta_min;
+	double fQC_eta_max;
+	double fPt_min;
+	double fPt_max;
+	double fzvtxCut;
 
-	 UInt_t subeventMask;
+	UInt_t subeventMask;
 
-	 UInt_t flags;
-	 UInt_t inputIndex;
-	 UInt_t phiInputIndex;
-	 UInt_t centInputIndex;
+	UInt_t flags;
+	UInt_t inputIndex;
+	UInt_t phiInputIndex;
+	UInt_t centInputIndex;
 
-	 ClassDef(AliJFFlucTask, 1);
+	ClassDef(AliJFFlucTask, 1);
 
 };
 #endif // AliJFFlucTask_H

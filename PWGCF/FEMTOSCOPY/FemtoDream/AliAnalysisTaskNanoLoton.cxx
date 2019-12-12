@@ -17,13 +17,17 @@ AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton()
       fTrack(nullptr),
       fProton(nullptr),
       fProtonList(nullptr),
+      fProtonMCList(nullptr),
       fAntiProton(nullptr),
       fAntiProtonList(nullptr),
+      fAntiProtonMCList(nullptr),
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
+      fLambdaMCList(nullptr),
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
+      fAntiLambdaMCList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -36,7 +40,7 @@ AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton()
       fGTI(nullptr) {
 }
 
-AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton(const char* name)
+AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton(const char* name, bool isMC)
     : AliAnalysisTaskSE(name),
       fisLightWeight(false),
       fEvent(nullptr),
@@ -45,13 +49,17 @@ AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton(const char* name)
       fTrack(nullptr),
       fProton(nullptr),
       fProtonList(nullptr),
+      fProtonMCList(nullptr),
       fAntiProton(nullptr),
       fAntiProtonList(nullptr),
+      fAntiProtonMCList(nullptr),
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
+      fLambdaMCList(nullptr),
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
+      fAntiLambdaMCList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -71,6 +79,12 @@ AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton(const char* name)
   DefineOutput(7, TList::Class());  //Output for the Results QA
   DefineOutput(8, TList::Class());  //Output for the Results
   DefineOutput(9, TList::Class());  //Output for the Results QA
+  if (isMC) {
+    DefineOutput(10, TList::Class());  //Output for the Track MC
+    DefineOutput(11, TList::Class());  //Output for the Anti Track MC
+    DefineOutput(12, TList::Class());  //Output for the V0 MC
+    DefineOutput(13, TList::Class());  //Output for the Anti V0 MC
+  }
 }
 
 AliAnalysisTaskNanoLoton::~AliAnalysisTaskNanoLoton() {
@@ -151,18 +165,23 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
                                   GetCollisionCandidates(), false);
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
+  fEvent->SetCalcSpherocity(fEventCuts->GetDoSpherocityCuts());
 
   fTrack = new AliFemtoDreamTrack();
-  fTrack->SetUseMCInfo(false);
+  fTrack->SetUseMCInfo(
+      fProton->GetIsMonteCarlo() || fAntiProton->GetIsMonteCarlo());
 
   fv0 = new AliFemtoDreamv0();
-  fv0->SetUseMCInfo(false);
+  fv0->SetUseMCInfo(
+      fLambda->GetIsMonteCarlo() || fAntiLambda->GetIsMonteCarlo());
   //PDG Codes should be set assuming Lambda0 to also work for AntiLambda
   fv0->SetPDGCode(3122);
   fv0->SetPDGDaughterPos(2212);
-  fv0->GetPosDaughter()->SetUseMCInfo(false);
+  fv0->GetPosDaughter()->SetUseMCInfo(
+      fLambda->GetIsMonteCarlo() || fAntiLambda->GetIsMonteCarlo());
   fv0->SetPDGDaughterNeg(211);
-  fv0->GetNegDaughter()->SetUseMCInfo(false);
+  fv0->GetNegDaughter()->SetUseMCInfo(
+      fLambda->GetIsMonteCarlo() || fAntiLambda->GetIsMonteCarlo());
 
   if (!fEventCuts->GetMinimalBooking()) {
     fEvtList = fEventCuts->GetHistList();
@@ -171,34 +190,12 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
     fEvtList->SetName("EventCuts");
     fEvtList->SetOwner();
   }
-  if (!fProton->GetMinimalBooking()) {
-    fProtonList = fProton->GetQAHists();
-  } else {
-    fProtonList = new TList();
-    fProtonList->SetName("TrackCuts");
-    fProtonList->SetOwner();
-  }
-  if (!fAntiProton->GetMinimalBooking()) {
-    fAntiProtonList = fAntiProton->GetQAHists();
-  } else {
-    fAntiProtonList = new TList();
-    fAntiProtonList->SetName("AntiTrackCuts");
-    fAntiProtonList->SetOwner();
-  }
-  if (!fLambda->GetMinimalBooking()) {
-    fLambdaList = fLambda->GetQAHists();
-  } else {
-    fLambdaList = new TList();
-    fLambdaList->SetName("LambdaCuts");
-    fLambdaList->SetOwner();
-  }
-  if (!fAntiLambda->GetMinimalBooking()) {
-    fAntiLambdaList = fAntiLambda->GetQAHists();
-  } else {
-    fAntiLambdaList = new TList();
-    fAntiLambdaList->SetName("AntiLambdaCuts");
-    fAntiLambdaList->SetOwner();
-  }
+
+  fProtonList = fProton->GetQAHists();
+  fAntiProtonList = fAntiProton->GetQAHists();
+  fLambdaList = fLambda->GetQAHists();
+  fAntiLambdaList = fAntiLambda->GetQAHists();
+
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
@@ -241,6 +238,47 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
   PostData(7, fResultsQA);
   PostData(8, fResultsSample);
   PostData(9, fResultsSampleQA);
+  if (fProton->GetIsMonteCarlo()) {
+    if (!fProton->GetMinimalBooking()) {
+      fProtonMCList = fProton->GetMCQAHists();
+    } else {
+      fProtonMCList = new TList();
+      fProtonMCList->SetName("MCTrkCuts");
+      fProtonMCList->SetOwner();
+    }
+    PostData(10, fProtonMCList);
+  }
+  if (fAntiProton->GetIsMonteCarlo()) {
+    if (!fAntiProton->GetMinimalBooking()) {
+      fAntiProtonMCList = fAntiProton->GetMCQAHists();
+    } else {
+      fAntiProtonMCList = new TList();
+      fAntiProtonMCList->SetName("MCAntiTrkCuts");
+      fAntiProtonMCList->SetOwner();
+    }
+    PostData(11, fAntiProtonMCList);
+  }
+
+  if (fLambda->GetIsMonteCarlo()) {
+    if (!fLambda->GetMinimalBooking()) {
+      fLambdaMCList = fLambda->GetMCQAHists();
+    } else {
+      fLambdaMCList = new TList();
+      fLambdaMCList->SetName("MCv0Cuts");
+      fLambdaMCList->SetOwner();
+    }
+    PostData(12, fLambdaMCList);
+  }
+  if (fAntiLambda->GetIsMonteCarlo()) {
+    if (!fAntiLambda->GetMinimalBooking()) {
+      fAntiLambdaMCList = fAntiLambda->GetMCQAHists();
+    } else {
+      fAntiLambdaMCList = new TList();
+      fAntiLambdaMCList->SetName("MCAntiv0Cuts");
+      fAntiLambdaMCList->SetOwner();
+    }
+    PostData(13, fAntiLambdaMCList);
+  }
 }
 
 void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
@@ -325,6 +363,18 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
   PostData(7, fResultsQA);
   PostData(8, fResultsSample);
   PostData(9, fResultsSampleQA);
+  if (fProton->GetIsMonteCarlo()) {
+    PostData(10, fProtonMCList);
+  }
+  if (fAntiProton->GetIsMonteCarlo()) {
+    PostData(11, fAntiProtonMCList);
+  }
+  if (fLambda->GetIsMonteCarlo()) {
+    PostData(12, fLambdaMCList);
+  }
+  if (fAntiLambda->GetIsMonteCarlo()) {
+    PostData(13, fAntiLambdaMCList);
+  }
 }
 
 //____________________________________________________________________________________________________

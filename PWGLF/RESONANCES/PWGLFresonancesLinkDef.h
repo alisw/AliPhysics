@@ -79,6 +79,8 @@
 #pragma link C++ class AliRsnCutPIDkink+;
 // Xi1530
 #pragma link C++ class AliAnalysisTaskXi1530+;
+// NanoCheck
+#pragma link C++ class AliAnalysisTaskNanoCheck+;
 // Sigma1385
 #pragma link C++ class AliAnalysisTaskSigma1385PM+ ;
 //f0980

@@ -45,11 +45,11 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
          return OkRangeD();
       case kRapidityFiducialRegion:
          fCutValueD = pair->Y(0);
-	 fRefPtValueD = pair->Pt(0);
+         fRefPtValueD = pair->Pt(0);
          return OkRangeD();
       case kRapidityFiducialRegionMC:
          fCutValueD = pair->Y(1);
-	 fRefPtValueD = pair->Pt(1);
+         fRefPtValueD = pair->Pt(1);
          return OkRangeD();  
       case kMomentumComparison:
          AliWarning("TODO: implement this");
@@ -60,14 +60,28 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
       case kDeltaCosRange:
          fCutValueD = pair->DeltaCos(kFALSE);
          return OkRangeD();
-       case kPhiVRange:
-          fCutValueD = pair->PhiV(kFALSE);
-          return OkRangeD();
+      case kPhiVRange:
+         fCutValueD = pair->PhiV(kFALSE);
+         return OkRangeD();
       case kContainsV0Daughter:
-          return pair->ContainsV0Daughter();
+         return pair->ContainsV0Daughter();
       case kMassRange:
-	  fCutValueD = pair->InvMass(0);
-	  return OkRangeD();
+         fCutValueD = pair->InvMass(0);
+         return OkRangeD();
+      case kAsymRange:
+         fCutValueD = pair->PairAsymmetry(0);
+         return OkRangeD();
+      case kAsymRangeMC:
+         fCutValueD = pair->PairAsymmetry(1);
+         return OkRangeD();
+      case kPseudorapidityRange:
+         fCutValueD = pair->Eta(0);
+         return OkRangeD();
+      case kPseudorapidityRangeMC:
+         fCutValueD = pair->Eta(1);
+         return OkRangeD();
+      case kPassesOOBPileupCut:
+         return pair->PassesOOBPileupCut();
 
    default:
          AliWarning("Undefined enum value");

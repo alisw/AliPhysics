@@ -648,7 +648,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle  , TString 
   ana->SetMinPt(5);
   
   ana->SwitchOffStudyTracksInCone() ;
-  ana->SwitchOnUEBandSubtractionHistoFill();
+  //ana->SwitchOnUEBandSubtractionHistoFill();
 
   ana->SwitchOffDecayTaggedHistoFill() ;
   ana->SwitchOnSSHistoFill();
@@ -691,7 +691,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle  , TString 
   AliIsolationCut * ic =  ana->GetIsolationCut();
   ic->SetDebug(debugLevel);
   ic->SetParticleTypeInCone(AliIsolationCut::kNeutralAndCharged);
-  ic->SetICMethod(AliIsolationCut::kSumPtIC);
+  ic->SetICMethod(AliIsolationCut::kSumBkgSubIC);
   if ( collision == "pp" || collision == "pPb" )
   {
     ic->SetPtThreshold(0.5);

@@ -51,6 +51,8 @@ class AliAnalysisTaskNanoLX : public AliAnalysisTaskSE {
     fConfig=config;
   }
  private:
+  AliAnalysisTaskNanoLX(const AliAnalysisTaskNanoLX &task);
+  AliAnalysisTaskNanoLX &operator=(const AliAnalysisTaskNanoLX &task);
   bool fisLightWeight;//
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//

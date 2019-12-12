@@ -43,6 +43,8 @@
 #pragma link C++ class V0Correlationparticle+;
 #pragma link C++ class AliAnalysisTaskV0ChCorrelation+;
 #pragma link C++ class AliV0XiParticle+;
+#pragma link C++ class AliAnalysisTaskV0ChCorrelationpp+;
+#pragma link C++ class AliV0hParticle+;
 #pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;
 #pragma link C++ class LRCParticle;
 #pragma link C++ class AliAnalysisTaskMuonHadronCorrelations+;
@@ -72,9 +74,13 @@
 #pragma link C++ class AliAnaTaskMomScan+;
 #pragma link C++ class AliCorrelationAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsYS+;
+#pragma link C++ class AliAnalysisTaskSEpPbCorrelationsMCYS+;
 #pragma link C++ class AliAssociatedTrackYS+;
 #pragma link C++ class AliMixTrackYS+;
 #pragma link C++ class AliAssociatedVZEROYS+;
+#pragma link C++ class AliAssociatedTrackYSMC+;
+#pragma link C++ class AliMixTrackYSMC+;
+#pragma link C++ class AliAssociatedVZEROYSMC+;
 #pragma link C++ class AliAnalysisTaskCorrelationsStudies+;
 #pragma link C++ class AliCSAnalysisCutsBase+;
 #pragma link C++ class AliCSEventCuts+;

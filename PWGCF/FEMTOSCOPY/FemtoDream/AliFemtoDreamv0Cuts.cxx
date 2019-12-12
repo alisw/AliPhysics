@@ -233,7 +233,7 @@ AliFemtoDreamv0Cuts *AliFemtoDreamv0Cuts::LambdaSigma0Cuts(bool isMC,
   LambdaCuts->SetCheckOnFlyStatus(false);  //online = kTRUE, offline = kFALSE
   LambdaCuts->SetCutCharge(0);
   LambdaCuts->SetPtRange(0.3, 999.);
-  LambdaCuts->SetKaonRejection(0.492, 0.503);
+  LambdaCuts->SetKaonRejection(0.493, 0.504);
   LambdaCuts->SetCutMaxDecayVtx(100);
   LambdaCuts->SetCutTransverseRadius(0.2, 100);
   LambdaCuts->SetCutDCADaugToPrimVtx(0.05);

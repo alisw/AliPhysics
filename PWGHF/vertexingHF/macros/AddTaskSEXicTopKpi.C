@@ -28,7 +28,7 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
     return NULL;
   }   
 
-  TString filename="",out1name="", out2name="", out3name="",inname="";
+  TString filename="",out1name="", out2name="", out3name="", out4name="" ,inname="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_";
 
@@ -37,11 +37,17 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
     //AliNormalizationCounter
     out2name="normalizationCounter";
     out3name="outputList";
+    out4name="varTree";
     filename+=suffix.Data();
     
     inname="cinputmassD0_1";
 
     inname += finDirname.Data();
+    inname += suffix.Data();
+    out1name += suffix.Data();
+    out2name += suffix.Data();
+    out3name += suffix.Data();
+    out4name += suffix.Data();
 
    //setting my cut values
 
@@ -90,10 +96,14 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
   massXicTask->SetDebugLevel(-1);
   massXicTask->SetReadMC(readMC);
   massXicTask->SetSystem(system); //0=pp, 1=pPb, 2=PbPb
-  massXicTask->SetUseLcTrackFilteringCut(kTRUE);
-  massXicTask->SetMaxPtSPDkFirst(kTRUE,1.);
+
+  // moved in RunAnalysis (i.e.: macro customization)
+  //massXicTask->SetUseLcTrackFilteringCut(kTRUE);
+  //massXicTask->SetMaxPtSPDkFirst(kTRUE,1.);
   //massXicTask->SetFillTree(2);  // moved in RunAnalysis (i.e.: macro customization)
-  massXicTask->SetMaxChi2Cut(1.5);
+  //massXicTask->SetMaxChi2Cut(1.5);
+
+
   if(!strLcCutFile.IsNull()){
     TFile *flc=TFile::Open(strLcCutFile.Data(),"READ");
     //printf("\n===== Lc cut file open: %s =====\n\n",strLcCutFile.Data());
@@ -132,12 +142,14 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
   //  AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer(out4name,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
   AliAnalysisDataContainer *coutputmass2 = mgr->CreateContainer(out2name,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //counter
   AliAnalysisDataContainer *coutputmass3 = mgr->CreateContainer(out3name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //counter
-  
+  AliAnalysisDataContainer *coutputmass4 = mgr->CreateContainer(out4name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
+
   mgr->ConnectInput(massXicTask,0,mgr->GetCommonInputContainer());
 
   mgr->ConnectOutput(massXicTask,1,coutputmass1);
   mgr->ConnectOutput(massXicTask,2,coutputmass2);
   mgr->ConnectOutput(massXicTask,3,coutputmass3);
+  mgr->ConnectOutput(massXicTask,4,coutputmass4);
 
   return massXicTask;
 }

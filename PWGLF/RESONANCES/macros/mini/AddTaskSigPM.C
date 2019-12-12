@@ -11,7 +11,7 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
  TString     outNameSuffix = "SigPM",                         //suffix for output container
  Bool_t      isMC          = kFALSE,                            //MC flag
  AliPIDResponse::EBeamType collSys = AliPIDResponse::kPBPB, //=0, kPPB=1, kPBPB=2 outNameSuffix
- UInt_t      triggerMask   = AliVEvent::kCentral,             //trigger selection
+ Int_t       triggerMask   = 0,                            //trigger selection
  Bool_t      enaMultSel    = kTRUE,                        //enable multiplicity axis
  Float_t     nsigma        = 3.0,   //PID cut
  Float_t     masslow       = 1.2,   //inv mass range lower boundary
@@ -30,49 +30,27 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
  Float_t     radiuslow=5.,            // radius low 
  Bool_t      doCustomDCAcuts=kTRUE,  //custom dca cuts for V0 daughters
  Double_t    dcaProton=0.1,           // proton dca
- Double_t    dcaPion=0.1)             //pion dca
-
+ Double_t    dcaPion=0.1,             //pion dca
+ Double_t    minAsym = 0.3,           //pair lower abs(asym)
+ Double_t    maxAsym=0.95)            //pair maximum abs(asym)  
 {  
 
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
-  /*Trigger selection
-  Std minimum bias trigger AliVEvent::kMB, corresponding to (V0A | V0C | SPD) to be used with 
-  - pp 7 TeV (2010 data)
-  - PbPb 2.76 TeV (2010 data and 2011 data)
-  - pp 2.76 TeV (2011 data)
-  Centrality triggers AliVEvent::kCentral, AliVEvent::kSemicentral to be used with 
-  - PbPb 2.76 TeV (2011 data)
-  Std minimum bias trigger AliVEvent::kINT7, corrsesponding to (V0A & V0C) to be used with 
-  - pA 5.02 TeV (2013 data)
-  - pp 13 TeV (2015 data)
-  */
+
   Double_t vtxZcut            = 10.0; //cm, default cut on vtx z
   Bool_t rejectPileUp         = kTRUE; //rejects pileup from SPD
   Bool_t useMVPileUpSelection = kFALSE; //alternative pile-up rejection, default is SPD
   Int_t  MinPlpContribSPD     = 5; //default value if used
   Int_t  MinPlpContribMV      = 5; //default value if used
-  // // Bool_t selectDPMJETevtNSDpA = kFALSE; //cut to select true NSD events in DPMJET
 
   //-------------------------------------------
   //pair rapidity cut
   //-------------------------------------------
   Double_t minYlab = -0.5;
   Double_t maxYlab =  0.5;
-      
-  // if (pairCutSetID==pairYCutSet::kCentralTight) { //|y_cm|<0.3
-  //   minYlab = -0.3;    maxYlab = 0.3;
-  // }
 
-  // if (pairCutSetID==pairYCutSet::kpADefault) { //-0.5<y_cm<0.0
-  //   minYlab = -0.465;    maxYlab = 0.035;
-  // }
-  
-  // if (pairCutSetID==pairYCutSet::kpACentral) { //|y_cm|<0.3
-  //   minYlab = -0.765;    maxYlab = -0.165;
-  // }
-  
   //-------------------------------------------
   //mixing settings
   //-------------------------------------------
@@ -94,17 +72,25 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   TString taskName = Form("RsnTaskSigPM");
   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
 
-  //trigger 
-  if (!isMC) task->UseESDTriggerMask(triggerMask); //ESD
-  if(isMC) task->UseESDTriggerMask(AliVEvent::kAnyINT);
-//  task->SelectCollisionCandidates(triggerMask); //AOD
-  
   //-----------------------------------------------------------------------------------------------
   // -- MULTIPLICITY/CENTRALITY -------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
   if (collSys==AliPIDResponse::kPP) task->UseMultiplicity("AliMultSelection_V0M");
   if (collSys==AliPIDResponse::kPPB) task->UseCentrality("AliMultSelection_V0A");
   if (collSys==AliPIDResponse::kPBPB)  task->UseMultiplicity("AliMultSelection_V0M"); //task->UseCentrality("AliMultSelection_V0M");
+
+  //trigger 
+  if (!isMC) {
+
+	if (triggerMask==0) task->UseESDTriggerMask(AliVEvent::kCentral); //ESD
+        if (triggerMask==1) task->UseESDTriggerMask(AliVEvent::kSemiCentral);
+        if (triggerMask==3) task->UseESDTriggerMask(AliVEvent::kINT7);
+        if (triggerMask==4) task->UseESDTriggerMask(AliVEvent::kSemiCentral|AliVEvent::kCentral|AliVEvent::kINT7); 
+ 
+  }
+   
+  if(isMC) task->UseESDTriggerMask(AliVEvent::kAnyINT);
+//  task->SelectCollisionCandidates(triggerMask); //AOD
   
   //-----------------------------------------------------------------------------------------------
   // -- EVENT MIXING CONFIG -----------------------------------------------------------------------
@@ -118,11 +104,11 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   //-----------------------------------------------------------------------------------------------
   // -- EVENT SELECTION ---------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
-  AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
-
   AliRsnEventCuts * rsnEventCuts = new AliRsnEventCuts("rsnEventCuts");
   rsnEventCuts->ForceSetupPbPb2018();
-  rsnEventCuts->SetUseMultSelectionEvtSel();
+//  rsnEventCuts->SetUseMultSelectionEvtSel();
+
+  AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
   eventCuts->AddCut(rsnEventCuts);
   eventCuts->SetCutScheme(Form("%s", rsnEventCuts->GetName()));
 
@@ -184,24 +170,27 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
   cutY->SetRangeD(minYlab, maxYlab);
 
+  AliRsnCutMiniPair *cutAsym = new AliRsnCutMiniPair("cutAsymmetry", AliRsnCutMiniPair::kAsymRange);
+  cutAsym->SetRangeD(minAsym, maxAsym);
+
   //AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
   
   AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
-  //cutsPair->AddCut(cutV0);
-  //cutsPair->SetCutScheme(TString::Format("%s&(!%s)",cutY->GetName(),cutV0->GetName()).Data());
-  cutsPair->SetCutScheme(cutY->GetName());
+  cutsPair->AddCut(cutAsym);
+  cutsPair->SetCutScheme(Form("%s & %s ",cutY->GetName(), cutAsym->GetName()));
+
+  AliRsnCutSet *cutsPairY = new AliRsnCutSet("pairCutsY", AliRsnTarget::kMother);
+  cutsPairY->AddCut(cutY);
+  cutsPairY->SetCutScheme(cutY->GetName());
   
-  // AliRsnCutSet* PairCutsMix=new AliRsnCutSet("PairCutsMix",AliRsnTarget::kMother);
-  // PairCutsMix->AddCut(cutY);
-  // PairCutsMix->SetCutScheme(cutY->GetName());
 
   //-----------------------------------------------------------------------------------------------
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
- gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
 //  gROOT->LoadMacro("ConfigSigPM.C");
- if (!ConfigSigPM(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, nsigma, 
+ if (!ConfigSigPM(task, isMC, collSys, cutsPair, cutsPairY, enaMultSel, masslow, massup, nbins, nsigma, 
 enableMonitor, pi_Ls_PIDCut, LsDCA, LsCosPoinAn, LsDaughDCA, massTol, massTolVeto, Switch, pLife, v0rapidity, radiuslow, doCustomDCAcuts, dcaProton, dcaPion)) 
 return 0x0;
   

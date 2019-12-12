@@ -35,7 +35,8 @@ public:
   void SetImproveTracks(Bool_t flag=kTRUE) { fImproveTracks=flag; return; }
   void SetUpdateSTCovMatrix(Bool_t opt=kTRUE){fUpdateSTCovMatrix=opt;}
   void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
-    
+  void SetOnlyProcessFilledCand(Bool_t flag=kTRUE){ fOnlyProcessFilledCand = flag;}
+
 private:
   AliAnalysisTaskSEImproveITS3(const AliAnalysisTaskSEImproveITS3&);
   AliAnalysisTaskSEImproveITS3& operator=(const AliAnalysisTaskSEImproveITS3&); 
@@ -90,8 +91,9 @@ private:
   TNtuple *fDebugNtuple; //! debug send on output slot 1
   Float_t *fDebugVars;   //! variables to store as degug info 
   Int_t   fNDebug;       // Max number of debug entries into Ntuple
+  Bool_t fOnlyProcessFilledCand; ///Flag to only process already filled candidates and skip others
 
-  ClassDef(AliAnalysisTaskSEImproveITS3,6);
+  ClassDef(AliAnalysisTaskSEImproveITS3,7);
 };
 
 #endif

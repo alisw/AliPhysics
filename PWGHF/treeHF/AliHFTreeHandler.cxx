@@ -95,7 +95,8 @@ AliHFTreeHandler::AliHFTreeHandler():
   fSubJetRadius(0.2),
   fJetAlgorithm(0),
   fSubJetAlgorithm(2),
-  fMinJetPt(0.0)
+  fMinJetPt(0.0),
+  fTrackingEfficiency(1.0)
 {
   //
   // Default constructor
@@ -196,7 +197,8 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fSubJetRadius(0.2),
   fJetAlgorithm(0),
   fSubJetAlgorithm(2),
-  fMinJetPt(0.0)
+  fMinJetPt(0.0),
+  fTrackingEfficiency(1.0)
 {
   //
   // Standard constructor
@@ -300,7 +302,7 @@ void AliHFTreeHandler::SetCandidateType(bool issignal, bool isbkg, bool isprompt
 }
 
 //________________________________________________________________
-void AliHFTreeHandler::AddCommonDmesonVarBranches() {
+void AliHFTreeHandler::AddCommonDmesonVarBranches(Bool_t HasSecVtx) {
 
   fTreeVar->Branch("run_number",&fRunNumber);
   fTreeVar->Branch("ev_id",&fEvID);
@@ -311,13 +313,15 @@ void AliHFTreeHandler::AddCommonDmesonVarBranches() {
   fTreeVar->Branch("y_cand",&fY);
   fTreeVar->Branch("eta_cand",&fEta);
   fTreeVar->Branch("phi_cand",&fPhi);
-  fTreeVar->Branch("d_len",&fDecayLength);
-  fTreeVar->Branch("d_len_xy",&fDecayLengthXY);
-  fTreeVar->Branch("norm_dl_xy",&fNormDecayLengthXY);
-  fTreeVar->Branch("cos_p",&fCosP);
-  fTreeVar->Branch("cos_p_xy",&fCosPXY);
-  fTreeVar->Branch("imp_par_xy",&fImpParXY);
-  fTreeVar->Branch("dca",&fDCA);
+  if(HasSecVtx){
+    fTreeVar->Branch("d_len",&fDecayLength);
+    fTreeVar->Branch("d_len_xy",&fDecayLengthXY);
+    fTreeVar->Branch("norm_dl_xy",&fNormDecayLengthXY);
+    fTreeVar->Branch("cos_p",&fCosP);
+    fTreeVar->Branch("cos_p_xy",&fCosPXY);
+    fTreeVar->Branch("imp_par_xy",&fImpParXY);
+    fTreeVar->Branch("dca",&fDCA);
+  }
 } 
 
 //________________________________________________________________
@@ -532,6 +536,7 @@ void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
   hfjetfinder.SetSubJetRadius(fSubJetRadius);
   hfjetfinder.SetSubJetAlgorithm(fSubJetAlgorithm);
   hfjetfinder.SetDoJetSubstructure(fDoJetSubstructure);
+  hfjetfinder.SetTrackingEfficiency(fTrackingEfficiency);
 
 }
 #endif
@@ -749,8 +754,8 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
 double AliHFTreeHandler::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF)
 {
   if(nsigmaTPC > -998. && nsigmaTOF > -998.) return TMath::Sqrt((nsigmaTPC*nsigmaTPC+nsigmaTOF*nsigmaTOF)/2);
-  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
-  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return nsigmaTOF;
+  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return TMath::Abs(nsigmaTPC);
+  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return TMath::Abs(nsigmaTOF);
   else return -999.;
 }
 

@@ -7,6 +7,7 @@
 #include "TFile.h"
 #include "THnSparse.h"
 #include "TCanvas.h"
+#include "TSpline.h"
 #include "TNtuple.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -39,7 +40,7 @@
 #include "AliVertexerTracks.h"
 
 // This analysis builds histograms to enable and check the impact parameter
-// correction in phi, z, and pT for the 15o PbPb data set
+// correction in phi, z, and pT for the 15o and 18qr PbPb data set
 // Author: Martin Voelkl
 
 
@@ -47,7 +48,7 @@ ClassImp(AliAnalysisTaskHFEIPCorrection)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), fSplineCorr(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentUncorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
 
   // default Constructor
@@ -71,13 +72,13 @@ AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
     
     //fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
 
-    // end HFE cuts
+    // end HFE cuts    
   
 }
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), fSplineCorr(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentUncorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // HFE cuts
     /*hfetrackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
@@ -126,7 +127,7 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     EPCent = new TH2D(Form("EPCent"),Form("EPCent"), 20, 0., TMath::Pi(), 10, 0., 100.);
     EPCentV0A = new TH2D(Form("EPCentV0A"),Form("EPCentV0A"), 20, 0., TMath::Pi(), 10, 0., 100.);
     EPCentV0C = new TH2D(Form("EPCentV0C"),Form("EPCentV0C"), 20, 0., TMath::Pi(), 10, 0., 100.);
-    EPCentCorrected = new TH2D(Form("EPCentCorrected"),Form("EPCentCorrected"), 20, 0., TMath::Pi(), 10, 0., 100.);
+    EPCentUncorrected = new TH2D(Form("EPCentUncorrected"),Form("EPCentUncorrected"), 20, 0., TMath::Pi(), 10, 0., 100.);
     
     DeltaPhi = new TH1D(Form("DeltaPhi"),Form("DeltaPhi"), 40, 0., TMath::Pi());
     fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
@@ -195,10 +196,12 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fDCAKaonsFineBins = new TH3D(Form("fDCAKaonsFineBins"),Form("fDCAKaonsFineBins"), 80, 0., 10., 400, -0.2, 0.2, 10, 0., 100.);
 
     
-
-    
-    
     fRd = new TRandom3(0);
+
+    double xspline[8] = {0.19635, 0.589049, 0.981748, 1.37445, 1.76715, 2.15984, 2.55254, 2.94524};
+    double ysplinecorr[8] = {0.921943, 0.916581, 0.929437, 0.963846, 0.960518, 0.925982, 0.911671, 0.919443};
+
+    fSplineCorr = new TSpline3("fSplineCorr", xspline, ysplinecorr, 8, "b2e2");
 
     fOutputContainer = new TObjArray(1);
     fOutputContainer->SetName(GetName());
@@ -206,7 +209,7 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fOutputContainer->Add(EPCent);
     fOutputContainer->Add(EPCentV0A);
     fOutputContainer->Add(EPCentV0C);
-    fOutputContainer->Add(EPCentCorrected);
+    fOutputContainer->Add(EPCentUncorrected);
     fOutputContainer->Add(DeltaPhi);
     fOutputContainer->Add(fpTIP2040IP);
     fOutputContainer->Add(fpTIP2040OOP);
@@ -714,8 +717,18 @@ void AliAnalysisTaskHFEIPCorrection::Process(AliAODEvent *const aodEvent)
   // Main loop
   // Called for each event
   EventSelectionSteps->Fill(4);
-  //if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB))) //return;
+  if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB | AliVEvent::kINT7)))
+    return;
+  bool SelectedBySemicentralTrigger = false;
+  if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) 
+    SelectedBySemicentralTrigger = true;
+
+  //if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB)))
+    //return;
+
+  //if(!SelectedBySemicentralTrigger) return;
   EventSelectionSteps->Fill(5);
+
 
   if (!aodEvent) {
     Printf("ERROR: aodEvent not available");
@@ -756,6 +769,9 @@ if(!MultSelection){
   fV0Cent = MultSelection->GetMultiplicityPercentile("V0M", false);
   fV0CentCalib = MultSelection->GetMultiplicityPercentile("V0M", true);
   centrality = fV0CentCalib;
+  TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
+  if(lProductionName.Contains("LHC18")) // 18r and q have same correction
+    centrality = fV0Cent; // 18qr calib does not seem to work yet
 }
 
   const AliAODVertex *vertex = aodEvent->GetPrimaryVertex();
@@ -773,7 +789,7 @@ if(!MultSelection){
   bool analyzeEvent=(TMath::Sqrt(vcov[5]) < 0.25 && TMath::Abs(vtx[2])<10. && TMath::Abs(vtx[2] - vtxSPD[2]) < 0.5 && centrality <= 100.);
   //hfetrackCuts->SetRecEvent(aodEvent);
 
-   if(centrality>=20.0 && centrality<=40.0)
+   if((centrality>=20.0 && centrality<=50.0))
    {
       EventSelectionSteps->Fill(0);
       if(TMath::Abs(vtx[2])<10.)
@@ -821,12 +837,20 @@ if(!MultSelection){
     if(V0APlanePhi > TMath::Pi()) V0APlanePhi = V0APlanePhi - TMath::Pi();
     V0CPlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,9,2,qVx,qVy));
     if(V0CPlanePhi > TMath::Pi()) V0CPlanePhi = V0CPlanePhi - TMath::Pi();
+    EPCentUncorrected->Fill(V0PlanePhi, centrality);
     double rndm = fRd->Rndm();
     if(centrality>=20.0 && centrality<=50.0)
     {
         if(V0PlanePhi<0) V0PlanePhi+= 3.14159;
         if(V0PlanePhi>3.14159) V0PlanePhi-= 3.14159; // Just to be safe
-        if(rndm>0.888359/(0.884154+0.171683*TMath::Gaus(V0PlanePhi,0.609013, 0.705609)+0.0634041*TMath::Erf((V0PlanePhi-1.99791)/0.492068))) EPFlatteningReject = true;
+        double correctionValue = 0.;
+        TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
+        if(lProductionName.Contains("LHC15o"))
+          correctionValue = 0.888359/(0.884154+0.171683*TMath::Gaus(V0PlanePhi,0.609013, 0.705609)+0.0634041*TMath::Erf((V0PlanePhi-1.99791)/0.492068));
+        if(lProductionName.Contains("LHC18")) // 18r and q have same correction
+          correctionValue = fSplineCorr->Eval(V0PlanePhi);
+
+        if(rndm>correctionValue) EPFlatteningReject = true;
     }
   }
 
@@ -848,7 +872,7 @@ if(!MultSelection){
       EPCent->Fill(V0PlanePhi, centrality);
       EPCentV0A->Fill(V0APlanePhi, centrality);
       EPCentV0C->Fill(V0CPlanePhi, centrality);
-      //EPCentCorrected->Fill(epCorr, centrality);
+      
         
     if(centrality>=20.0 && centrality<=40.0)
     {
@@ -919,12 +943,12 @@ if(!MultSelection){
             DeltaPhi->Fill(DPhi);
             if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040IP->Fill(track->Pt(), IPCorrectedChField);
+              if(centrality>=20.0 && centrality<=40.0 && !SelectedBySemicentralTrigger) fpTIP2040IP->Fill(track->Pt(), IPCorrectedChField);
               if(centrality>=30.0 && centrality<=50.0) fpTIP3050IP->Fill(track->Pt(), IPCorrectedChField);
             }
             else
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040OOP->Fill(track->Pt(), IPCorrectedChField);
+              if(centrality>=20.0 && centrality<=40.0 && !SelectedBySemicentralTrigger) fpTIP2040OOP->Fill(track->Pt(), IPCorrectedChField);
               if(centrality>=30.0 && centrality<=50.0) fpTIP3050OOP->Fill(track->Pt(), IPCorrectedChField);
             }
           }
@@ -1068,7 +1092,7 @@ if(!MultSelection){
         }
 
         // TOF eff occupancy dependence
-        if(TMath::Abs(V0MotherPdg)==22 && centrality>=20.0 && centrality<=40.0)
+        if(TMath::Abs(V0MotherPdg)==22 && centrality>=30.0 && centrality<=50.0)
         {
           V0Daughter[0] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(0)); // This is how to get the daughter particles in AODs, apparently
           V0Daughter[1] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(1));

@@ -92,7 +92,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   task->SetTriggerMask(triggerNames);
   task->SetEventFilter(cutlib->GetEventCuts(kFALSE, kFALSE)); // All cut sets have same event cuts
 
-
   // Set centrality requirements
   // There is certainly a better way to do this next section....
   TObjArray* centDetails = centrality.Tokenize(";");
@@ -102,6 +101,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   Float_t maxCent = tempMaxFloat.Atoi();
   std::cout << "CentMin = " <<  minCent << "  CentMax = " <<  maxCent << std::endl;
   task->SetCentrality(minCent, maxCent);
+  TString whichCentEst = TString(centDetails->At(2)->GetName());
+  task->SetCentralityEstimator(whichCentEst);
 
   // #########################################################
   // #########################################################

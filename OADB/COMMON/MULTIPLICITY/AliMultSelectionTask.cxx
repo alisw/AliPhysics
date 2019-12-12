@@ -3062,16 +3062,24 @@ Bool_t AliMultSelectionTask::IsHijing() const {
 }
 
 //______________________________________________________________________
-Bool_t AliMultSelectionTask::IsDPMJet() const { 
-    //Function to check if this is DPMJet
+Bool_t AliMultSelectionTask::IsDPMJet() const {
+    //Function to check if this is DPMJet MC
     Bool_t lReturnValue = kFALSE;
     AliMCEvent*  mcEvent = MCEvent();
-    if (mcEvent) {
-        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-        if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
-            //DPMJet Header is there!
-            lReturnValue = kTRUE;
+    TList* cocktList = mcEvent->GetCocktailList();
+    if (cocktList) {
+        TIter next(cocktList);
+        while (const TObject *obj=next()){
+            //Look for an object inheriting from the hijing header class
+            if ( obj->InheritsFrom(AliGenDPMjetEventHeader::Class()) ){
+                lReturnValue = kTRUE;
+                break;
+            }
         }
+    } // if cocktList
+    else {
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        lReturnValue = mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class());
     }
     return lReturnValue;
 }
@@ -3081,9 +3089,20 @@ Bool_t AliMultSelectionTask::IsEPOSLHC() const {
     //Function to check if this is DPMJet
     Bool_t lReturnValue = kFALSE;
     AliMCEvent*  mcEvent = MCEvent();
-    if (mcEvent) {
+    TList* cocktList = mcEvent->GetCocktailList();
+    if (cocktList) {
+        TIter next(cocktList);
+        while (const TObject *obj=next()){
+            //A bit uncivilized, but hey, if it works...
+            TString lHeaderTitle = obj->GetName();
+            if (lHeaderTitle.Contains("EPOSLHC")) {
+                //This header has "EPOS" in its title!
+                lReturnValue = kTRUE;
+                break;
+            }
+        }
+    } else {
         AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-        //A bit uncivilized, but hey, if it works...
         TString lHeaderTitle = mcGenH->GetName();
         if (lHeaderTitle.Contains("EPOSLHC")) {
             //This header has "EPOS" in its title!

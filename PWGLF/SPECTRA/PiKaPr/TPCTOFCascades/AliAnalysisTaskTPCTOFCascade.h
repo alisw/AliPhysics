@@ -50,7 +50,7 @@ public AliAnalysisTaskSE
   
   virtual void UserExec(Option_t *option); // user exec
   virtual void Terminate(Option_t *option); // terminate
-
+  virtual Int_t FindCommonMother(Int_t label_1, Int_t label_2);
 
 
   /* getters */

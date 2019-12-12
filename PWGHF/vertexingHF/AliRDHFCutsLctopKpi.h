@@ -113,6 +113,12 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   Bool_t GetUseImpParProdCorrCut() const {
     return fUseImpParProdCorrCut;
   }
+  void SetMaxDistanceSecPrimVertex(Double_t cut){
+    fMaxDistanceSecPrimVertex=cut;
+  }
+  Double_t GetMaxDistanceSecPrimVertex() const {
+    return fMaxDistanceSecPrimVertex;
+  }
 
   AliKFParticle* ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field,Bool_t constraint) const;
  protected:
@@ -125,9 +131,10 @@ private:
   Double_t fPIDThreshold[AliPID::kSPECIES]; /// PID threshold for each species
   ECutsStrategy fCutsStrategy;              /// cut strategy (standard or KF)
   Bool_t fUseSpecialCut;
+  Double_t fMaxDistanceSecPrimVertex;       /// upper cut on the decay length
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsLctopKpi,10);  /// class for cuts on AOD reconstructed Lc->pKpi
+  ClassDef(AliRDHFCutsLctopKpi,11);  /// class for cuts on AOD reconstructed Lc->pKpi
   /// \endcond
 };
 

@@ -92,6 +92,9 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fhPhiHybrPartCor(0x0),
 	fhPtDet(0x0),
 	fhPtDetMatchedToPart(0x0),
+	fhPtPartMatched(0x0),
+	fhPtPartMatchedCent(0x0),
+	fhPtPartMatchedWrongCent(0x0),
 	fhResidual(0x0),
 	fhPtResidual(0x0),
 	fhPhiResidual(0x0),
@@ -169,6 +172,9 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fhPhiHybrPartCor(0x0),
 	fhPtDet(0x0),
 	fhPtDetMatchedToPart(0x0),
+	fhPtPartMatched(0x0),
+	fhPtPartMatchedCent(0x0),
+	fhPtPartMatchedWrongCent(0x0),
 	fhResidual(0x0),
 	fhPtResidual(0x0),
 	fhPhiResidual(0x0),
@@ -559,6 +565,14 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fhPtDet->GetXaxis()->SetTitle("p^{reco,PYTHIA,ch}_{T} (GeV/c)"); 
 	fhPtDetMatchedToPart = new TH1F("hPtDetMatchedToPart","pT detector level matched to particle level jet",200,0,200);
 	fhPtDetMatchedToPart->GetXaxis()->SetTitle("p^{reco,PYTHIA,ch}_{T} (GeV/c)"); 
+	fhPtPartMatched= new TH1F("hPtPartMatched","pT particle level matched",200,0,200);
+	fhPtPartMatched->GetXaxis()->SetTitle("p^{part}_{T} (GeV/c)"); 
+	fhPtPartMatchedCent= new TH2F("hPtPartMatchedCent","pT particle level matched",200,0,200,100,0,100);
+	fhPtPartMatchedCent->GetXaxis()->SetTitle("p^{part}_{T} (GeV/c)"); 
+	fhPtPartMatchedCent->GetYaxis()->SetTitle("centrality (%)"); 
+	fhPtPartMatchedWrongCent= new TH2F("hPtPartMatchedWrongCent","pT particle level matched incorrectly",200,0,200,100,0,100);
+	fhPtPartMatchedWrongCent->GetXaxis()->SetTitle("p^{part}_{T} (GeV/c)"); 
+	fhPtPartMatchedWrongCent->GetYaxis()->SetTitle("centrality (%)"); 
 
 	fhPtHybrDetRecoil= new TH2F("hPtHybrDetRecoil","pT response Pb-Pb+PYTHIA vs PYTHIA",200,0,200,200,0,200);
 	fhPtHybrDetRecoil->GetXaxis()->SetTitle("p^{Pb-Pb+PYTHIA,ch}_{T} (GeV/c)"); 
@@ -606,6 +620,9 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fhPhiHybrPartCor);
 	fOutput->Add(fhPtDet);
 	fOutput->Add(fhPtDetMatchedToPart);
+	fOutput->Add(fhPtPartMatched);
+	fOutput->Add(fhPtPartMatchedCent);
+	fOutput->Add(fhPtPartMatchedWrongCent);
 	fOutput->Add(fhResidual);
 	fOutput->Add(fhPtResidual);
 	fOutput->Add(fhPhiResidual);
@@ -642,12 +659,12 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fhFractionSharedPtInclusive);
 	fOutput->Add(fhFractionSharedPtRecoil);
 
-  TString varNamesInclusive[8]={"centrality","ptRawRec","areaRec","ptCorrRec","phiRec","ptPart","phiPart","binPtHard"};
-  TString varNamesRecoil[11]={"centrality","ptTT","ptRawRec","areaRec","ptCorrRec","phiRec","DPhiRec","ptPart","phiPart","DPhiPart","binPtHard"};
+  TString varNamesInclusive[9]={"centrality","ptRawRec","areaRec","ptCorrRec","phiRec","ptPart","phiPart","ptLeadingTrackRec","ptLeadingTrackPart"};
+  TString varNamesRecoil[10]={"centrality","ptTT","ptRawRec","areaRec","ptCorrRec","phiRec","DPhiRec","ptPart","phiPart","DPhiPart"};
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) {
 		const char* nameEmbInclusive = GetOutputSlot(2)->GetContainer()->GetName();
 		fTreeEmbInclusive = new TTree(nameEmbInclusive, nameEmbInclusive);
-		for(Int_t ivar=0; ivar < 8; ivar++){
+		for(Int_t ivar=0; ivar < 9; ivar++){
 			fTreeEmbInclusive->Branch(varNamesInclusive[ivar].Data(), &fTreeVarsInclusive[ivar], Form("%s/F", varNamesInclusive[ivar].Data()));
 		}
 	}
@@ -655,7 +672,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && fFillRecoilTree) {
 		const char* nameEmbRecoil= GetOutputSlot(3)->GetContainer()->GetName();
 		fTreeEmbRecoil = new TTree(nameEmbRecoil, nameEmbRecoil);
-		for(Int_t ivar=0; ivar < 11; ivar++){
+		for(Int_t ivar=0; ivar < 10; ivar++){
 			fTreeEmbRecoil->Branch(varNamesRecoil[ivar].Data(), &fTreeVarsRecoil[ivar], Form("%s/F", varNamesRecoil[ivar].Data()));
 		}
 	}
@@ -850,7 +867,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 				// embedding for recoil jets
 				// get MC info
 				//
-				if(ptcorr<fMinEmbJetPt) continue;
 				Double_t ptTTMC = 0;
 				Double_t phiTTMC = 0;
 				Int_t TTmatched = 0;
@@ -912,6 +928,8 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 				fhDphiResidualRecoil->Fill(residualDphi);
 				fhDphiphiResidualRecoil->Fill(dPhiPart,residualDphi);
 
+				if(ptcorr<fMinEmbJetPt) continue;
+
 				if(fFillRecoilTree) {
 					fTreeVarsRecoil[0] = fCent;
 					fTreeVarsRecoil[1] = partback->Pt();
@@ -923,7 +941,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 					fTreeVarsRecoil[7] = ptJet3;
 					fTreeVarsRecoil[8] = phiJet3;
 					fTreeVarsRecoil[9] = dPhiPart;
-					fTreeVarsRecoil[10] = Float_t(fPtHardBin);
 					fTreeEmbRecoil->Fill();
 				}
 			}
@@ -999,10 +1016,11 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		Double_t phiJet1 = jet1->Phi();
 		Double_t area = jet1->Area();
 		Double_t ptCorr = ptJet1-rho*area;
-		if(ptCorr<fMinEmbJetPt) continue;
+		Double_t ptLeadingTrackJet1 = jet1->GetLeadingTrack()->Pt();
     // closest jet
     Double_t ptJet2=0, phiJet2=0;
     Double_t ptJet3=0, phiJet3=0;
+    Double_t ptLeadingTrackJet3=0;
 		if(fDebug) Printf("--- jet pt hybrid = %f\t ",ptJet1);
     if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
       auto jet2 = jet1->ClosestJet();
@@ -1020,6 +1038,13 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
       fhPtDetMatchedToPart->Fill(ptJet2);
       ptJet3 = jet3->Pt();
       phiJet3 = jet3->Phi();
+      ptLeadingTrackJet3 = jet3->GetLeadingTrack()->Pt();
+      if(ptJet3==ptJet1) {
+        fhPtPartMatchedWrongCent->Fill(ptJet3,fCent);
+        continue;
+      }
+      fhPtPartMatched->Fill(ptJet3);
+      fhPtPartMatchedCent->Fill(ptJet3,fCent);
     }
 
     if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) { // loop over detector jets
@@ -1066,6 +1091,8 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		fhPhiResidual->Fill(residualPhi);
 		fhPhiPhiResidual->Fill(phiJet3,residualPhi);
 
+		if(ptCorr<fMinEmbJetPt) continue;
+
 		if(fFillInclusiveTree && fRandom->Integer(fRejectionFactorInclusiveJets)==0 ) {
 			fTreeVarsInclusive[0] = fCent;
 			fTreeVarsInclusive[1] = ptJet1;
@@ -1074,7 +1101,8 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 			fTreeVarsInclusive[4] = phiJet1;
 			fTreeVarsInclusive[5] = ptJet3;
 			fTreeVarsInclusive[6] = phiJet3;
-			fTreeVarsInclusive[7] = Float_t(fPtHardBin);
+			fTreeVarsInclusive[7] = ptLeadingTrackJet1;
+			fTreeVarsInclusive[8] = ptLeadingTrackJet3;
 			fTreeEmbInclusive->Fill();
 		}
 	}

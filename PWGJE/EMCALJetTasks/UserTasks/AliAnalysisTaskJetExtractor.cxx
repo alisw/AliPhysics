@@ -262,8 +262,6 @@ void AliEmcalJetTree::FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadr
   fBuffer_Event_Weight = eventWeight;
   fBuffer_Event_ImpactParameter = impactParameter;
 }
-
-
 //________________________________________________________________________
 void AliEmcalJetTree::FillBuffer_PID(std::vector<Float_t>& trackPID_ITS, std::vector<Float_t>& trackPID_TPC, std::vector<Float_t>& trackPID_TOF, std::vector<Float_t>& trackPID_TRD, std::vector<Short_t>& trackPID_Reco, std::vector<Int_t>& trackPID_Truth)
 {
@@ -474,6 +472,7 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
     fJetTree->Branch("Jet_MC_TruePtFraction_PartLevel",&fBuffer_Jet_MC_TruePtFraction_PartLevel,"Jet_MC_TruePtFraction_PartLevel/F");
   }
 
+
   if(saveSecondaryVertices)
   {
     fJetTree->Branch("Jet_NumSecVertices",&fBuffer_NumSecVertices,"Jet_NumSecVertices/I");
@@ -513,10 +512,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fHadronMatchingRadius(0.4),
-  fMatchedDetLevelJetsArrayName(""),
-  fMatchedPartLevelJetsArrayName(""),
-  fMatchedDetLevelJetsRhoName(""),
-  fMatchedDetLevelJetsRhoMassName(""),
+  fJetMatchingRadius(0.3),
+  fJetMatchingSharedPtFraction(0.5),
   fMCParticleArrayName("mcparticles"),
   fNeedEmbedClusterContainer(0),
   fRandomSeed(0),
@@ -539,6 +536,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fRandomGeneratorCones(0),
   fVtxTagger(0),
   fIsEmbeddedEvent(kFALSE),
+  fDoDetLevelMatching(kFALSE),
+  fDoPartLevelMatching(kFALSE),
   fSimpleSecVertices()
 {
   fRandomGenerator = new TRandom3();
@@ -562,10 +561,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fHadronMatchingRadius(0.4),
-  fMatchedDetLevelJetsArrayName(""),
-  fMatchedPartLevelJetsArrayName(""),
-  fMatchedDetLevelJetsRhoName(""),
-  fMatchedDetLevelJetsRhoMassName(""),
+  fJetMatchingRadius(0.3),
+  fJetMatchingSharedPtFraction(0.5),
   fMCParticleArrayName("mcparticles"),
   fNeedEmbedClusterContainer(0),
   fRandomSeed(0),
@@ -588,6 +585,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fRandomGeneratorCones(0),
   fVtxTagger(0),
   fIsEmbeddedEvent(kFALSE),
+  fDoDetLevelMatching(kFALSE),
+  fDoPartLevelMatching(kFALSE),
   fSimpleSecVertices()
 {
   fRandomGenerator = new TRandom3();
@@ -621,13 +620,21 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   fRandomGenerator->SetSeed(fRandomSeed);
   fRandomGeneratorCones->SetSeed(fRandomSeedCones);
 
+  
   // Activate saving of trigger tracks if this is demanded
   if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
     fSaveTriggerTracks = kTRUE;
 
+  // Use the jet containers from the task to activate matching
+  if (GetJetContainer(1)) {
+    fDoDetLevelMatching = kTRUE;
+  }
+  if (GetJetContainer(2)) {
+    fDoPartLevelMatching = kTRUE;
+  }
   // ### Initialize the jet tree (settings must all be given at this stage)
   fJetTree->SetRandomGenerator(fRandomGenerator);
-  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, (fMatchedDetLevelJetsArrayName != ""), (fMatchedPartLevelJetsArrayName != ""), fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveSecondaryVertices, fSaveTriggerTracks);
+  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, fDoDetLevelMatching, fDoPartLevelMatching, fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveSecondaryVertices, fSaveTriggerTracks);
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
 
@@ -642,7 +649,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetArea", "Jet area", "COLZ", 200, 0., 2., 100, 0, 100, "Jet A", "Centrality", "dN^{Jets}/dA");
   AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
   AddHistogram2D<TH2D>("hConstituentPhiEta", "Jet constituent relative #phi/#eta distribution", "COLZ", 120, -0.6, 0.6, 120, -0.6, 0.6, "#Delta#phi", "#Delta#eta", "dN^{Const}/d#phi d#eta");
-  AddHistogram1D<TH1D>("hExtractionPercentage", "Extracted jets p_{T} distribution (background subtracted)", "e1p", 400, -100., 300., "p_{T, jet} (GeV/c)", "Extracted percentage");
+  AddHistogram1D<TH1D>("hExtractionPercentage", "Extracted jets p_{T} distribution (background subtracted)", "e1p", 400, -100., 600., "p_{T, jet} (GeV/c)", "Extracted percentage");
 
   // Track QA plots
   AddHistogram2D<TH2D>("hTrackPt", "Tracks p_{T} distribution", "", 300, 0., 300., 100, 0, 100, "p_{T} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
@@ -689,6 +696,8 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
     fVtxTagger = new AliHFJetsTaggingVertex();
     fVtxTagger->SetCuts(fVertexerCuts);
   }
+
+
 
   // ### Save tree extraction percentage to histogram
   std::vector<Float_t> extractionPtBins      = fJetTree->GetExtractionPercentagePtBins();
@@ -783,6 +792,9 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     }
   }
 
+  // Perform the matching before the main jet loop 
+  if(fDoDetLevelMatching) DoJetMatching();
+  
   // ################################### MAIN JET LOOP
   GetJetContainer(0)->ResetCurrentID();
   Int_t jetCount = 0;
@@ -819,11 +831,10 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       GetJetType(jet, currentJetType_HM, currentJetType_PM, currentJetType_IC);
       // Get true estimators: for pt, jet mass, ...
       GetTrueJetPtFraction(jet, truePtFraction, truePtFraction_PartLevel);
-      if(fMatchedDetLevelJetsArrayName != "")
-        GetMatchedJetObservables(jet, matchedJetPt_Det, matchedJetDistance_Det, matchedJetMass_Det, matchedJetAngularity_Det, matchedJetpTD_Det, kFALSE);
-      // if we have a second matching array name given, do the second Matching
-      if(fMatchedPartLevelJetsArrayName != "")
-        GetMatchedJetObservables(jet, matchedJetPt_Part, matchedJetDistance_Part, matchedJetMass_Part, matchedJetAngularity_Part, matchedJetpTD_Part, kTRUE);
+      
+      GetMatchedJetObservables(jet, matchedJetPt_Det, matchedJetPt_Part, matchedJetDistance_Det, matchedJetDistance_Part, matchedJetMass_Det, matchedJetMass_Part, matchedJetAngularity_Det, matchedJetAngularity_Part, matchedJetpTD_Det,matchedJetpTD_Part);
+
+      
       fJetTree->FillBuffer_MonteCarlo(currentJetType_PM,currentJetType_HM,currentJetType_IC,
                                       matchedJetDistance_Det,matchedJetPt_Det,matchedJetMass_Det,matchedJetAngularity_Det,matchedJetpTD_Det,
                                       matchedJetDistance_Part,matchedJetPt_Part,matchedJetMass_Part,matchedJetAngularity_Part,matchedJetpTD_Part,
@@ -1116,72 +1127,222 @@ void AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet, Double_
     truePtFraction_mcparticles = (pt_truth_mcparticles/pt_all);
   }
 }
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::DoJetMatching(){
+   // Perform the matching before the main jet loop (Only if we use the tagger for matching)                                              
+  AliJetContainer * jetsHybrid = GetJetContainer(0);
+  AliJetContainer * jetsDetLevel = GetJetContainer(1);
+  AliJetContainer * jetsPartLevel = GetJetContainer(2);
+
+  
+  // Now, begin the actual matching.
+  // Hybrid <-> det first
+  AliDebugStream(2) << "Matching hybrid to detector level jets.\n";
+  // First, we reset the tagging
+  for(auto j : jetsHybrid->all()){
+    j->ResetMatching();
+  }
+  for(auto j : jetsDetLevel->all()){
+    j->ResetMatching();
+  }
+  // Next, we perform the matching
+  PerformGeometricalJetMatching(*jetsHybrid, *jetsDetLevel, fJetMatchingRadius);
+  // Now, begin the next matching stage
+  // det <-> particle
+  AliDebugStream(2) << "Matching detector level to particle level jets.\n";
+  // First, we reset the tagging. We need to reset the det matching again to ensure
+  // that it doesn't accidentally keep some latent matches to the hybrid jets.
+  for(auto j : jetsDetLevel->all()){
+    j->ResetMatching();
+  }
+  // if we do not need to do particle level matching return
+  if(!fDoPartLevelMatching) return;
+  
+  for(auto j : jetsPartLevel->all()){
+    j->ResetMatching();
+  }
+  // Next, we perform the matching
+  PerformGeometricalJetMatching(*jetsHybrid, *jetsDetLevel, fJetMatchingRadius);
+  // Now, begin the next matching stage 
+  // det <-> particle
+  AliDebugStream(2) << "Matching detector level to particle level jets.\n";
+  // First, we reset the tagging. We need to reset the det matching again to ensure
+  // that it doesn't accidentally keep some latent matches to the hybrid jets.
+  for(auto j : jetsDetLevel->all()){
+    j->ResetMatching();
+  }
+  for(auto j : jetsPartLevel->all()){
+    j->ResetMatching();
+  }
+  // Next, we perform the matching
+  PerformGeometricalJetMatching(*jetsDetLevel, *jetsPartLevel, fJetMatchingRadius);
+}
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetDistance, Double_t& matchedJetMass, Double_t& matchedJetAngularity, Double_t& matchedJetpTD, Bool_t isPartLevelMatching)
+bool AliAnalysisTaskJetExtractor::PerformGeometricalJetMatching(AliJetContainer& contBase,
+                                    AliJetContainer& contTag, double maxDist) 
 {
-  // need to specify which array name to pick based on if this is the second matching
-  TString jet_array_name = "";
-  if(isPartLevelMatching)
-    jet_array_name = fMatchedPartLevelJetsArrayName;
-  else
-    jet_array_name = fMatchedDetLevelJetsArrayName;
+  // Note that this function is also utilized in /PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHPerformance.cxx. For more details, see this file.
+  // Setup
+  const Int_t kNacceptedBase = contBase.GetNAcceptedJets(), kNacceptedTag = contTag.GetNAcceptedJets();
+  if (!(kNacceptedBase && kNacceptedTag)) {
+    return false;
+  }
 
-  // #################################################################################
-  // ##### OBSERVABLES FROM MATCHED JETS: Jet pt, jet mass + angularity + pTD(momentum dispersion)
-  matchedJetDistance = 8.; // 8 is higher than maximum possible matching distance
-  if(jet_array_name != "")
-  {
-    // only look at background for first Matching (don't need this for truth level-info)
-    AliRhoParameter* rho = 0;
-    AliRhoParameter* rhoMass = 0;
-    Double_t trueRho = 0;
-    if(!isPartLevelMatching){
-      // "True" background for pt
-      rho = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fMatchedDetLevelJetsRhoName.Data()));
-      if(rho)
-       trueRho = rho->GetVal();
-      // "True" background for mass
-      rhoMass = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fMatchedDetLevelJetsRhoMassName.Data()));
-    }
-    TClonesArray* matchedJetArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", jet_array_name.Data())));
+  // Build up vectors of jet pointers to use when assigning the closest jets.
+  // The storages are needed later for applying the tagging, in order to avoid multiple occurrence of jet selection
+  std::vector<AliEmcalJet*> jetsBase(kNacceptedBase), jetsTag(kNacceptedTag);
 
-    // Loop over all true jets to find the best match & fill properties
-    matchedJetPt = 0;
-    matchedJetMass = 0;
-    if(matchedJetArray)
-    {
-      AliEmcalJet* bestMatchedJet = 0;
-      for(Int_t i=0; i<matchedJetArray->GetEntriesFast(); i++)
-      {
-        AliEmcalJet* matchedJet = static_cast<AliEmcalJet*>(matchedJetArray->At(i));
-        if(matchedJet->Pt() < 0.15)
-          continue;
-        Double_t deltaR = GetDistance(matchedJet->Eta(), jet->Eta(), matchedJet->Phi(), jet->Phi());
-        // Search for the best match
-        if(deltaR < matchedJetDistance)
-        {
-          matchedJetDistance = deltaR;
-          bestMatchedJet =  matchedJet;
-        }
+  int countBase(0), countTag(0);
+  for (auto jb : contBase.accepted()) {
+    jetsBase[countBase] = jb;
+    countBase++;
+  }
+  for (auto jt : contTag.accepted()) {
+    jetsTag[countTag] = jt;
+    countTag++;
+  }
+
+  TArrayI faMatchIndexTag(kNacceptedBase), faMatchIndexBase(kNacceptedTag);
+  faMatchIndexBase.Reset(-1);
+  faMatchIndexTag.Reset(-1);
+
+  // find the closest distance to the base jet
+  countBase = 0;
+  for (auto jet1 : contBase.accepted()) {
+    double distance = maxDist;
+
+    // Loop over all accepted jets and brute force search for the closest jet.
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contTagAcceptedIndex = 0;
+    for (auto jet2 : contTag.accepted()) {
+      double dR = jet1->DeltaR(jet2);
+      if (dR < distance && dR < maxDist) {
+        faMatchIndexTag[countBase] = contTagAcceptedIndex;
+        distance = dR;
       }
-      // Fill properties for best match
-      if(bestMatchedJet)
-      {
-        matchedJetPt   = bestMatchedJet->Pt() - bestMatchedJet->Area()* trueRho;
-        if(rhoMass)
-          matchedJetMass = bestMatchedJet->GetShapeProperties()->GetSecondOrderSubtracted();
-        else
-          matchedJetMass = bestMatchedJet->M();
+      contTagAcceptedIndex++;
+    }
 
-        Double_t leSub_noCorr = 0; Double_t trackPtMean = 0; Double_t trackPtMedian = 0;
-        matchedJetAngularity = 0; matchedJetpTD = 0;
-        CalculateJetShapes(bestMatchedJet, leSub_noCorr, matchedJetAngularity, matchedJetpTD, trackPtMean, trackPtMedian);
+
+    countBase++;
+  }
+
+  // other way around
+  countTag = 0;
+  for (auto jet1 : contTag.accepted()) {
+    double distance = maxDist;
+
+    // Loop over all accepted jets and brute force search for the closest jet.
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contBaseAcceptedIndex = 0;
+    for (auto jet2 : contBase.accepted()) {
+      double dR = jet1->DeltaR(jet2);
+      if (dR < distance && dR < maxDist) {
+        faMatchIndexBase[countTag] = contBaseAcceptedIndex;
+        distance = dR;
+      }
+      contBaseAcceptedIndex++;
+    }
+    countTag++;
+  }
+
+  // check for "true" correlations
+  // these are pairs where the base jet is the closest to the tag jet and vice versa
+  // As the lists are linear a loop over the outer base jet is sufficient.
+  AliDebugStream(1) << "Starting true jet loop: nbase(" << kNacceptedBase << "), ntag(" << kNacceptedTag << ")\n";
+  for (int ibase = 0; ibase < kNacceptedBase; ibase++) {
+    AliDebugStream(2) << "base jet " << ibase << ": match index in tag jet container " << faMatchIndexTag[ibase]
+             << "\n";
+    if (faMatchIndexTag[ibase] > -1) {
+      AliDebugStream(2) << "tag jet " << faMatchIndexTag[ibase] << ": matched base jet " << faMatchIndexBase[faMatchIndexTag[ibase]] << "\n";
+    }
+    // We have a true correlation where each jet points to the other.
+    if (faMatchIndexTag[ibase] > -1 && faMatchIndexBase[faMatchIndexTag[ibase]] == ibase) {
+      AliDebugStream(2) << "found a true match \n";
+      AliEmcalJet *jetBase = jetsBase[ibase], *jetTag = jetsTag[faMatchIndexTag[ibase]];
+      // We have a valid pair of matched jets, so set the closest jet properties.
+      if (jetBase && jetTag) {
+        Double_t dR = jetBase->DeltaR(jetTag);
+        jetBase->SetClosestJet(jetTag, dR);
+        jetTag->SetClosestJet(jetBase, dR);
       }
     }
   }
+  return true;
+}
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetDistance, Double_t& partJetDistance, Double_t& detJetMass, Double_t& partJetMass, Double_t& detJetAngularity, Double_t& partJetAngularity, Double_t& detJetpTD, Double_t& partJetpTD)
+{
+
+  
+  // Get the Matched Observables                                                                                                                   
+  AliJetContainer * hybridJetCont = GetJetContainer(0);
+  AliJetContainer * detJetCont    = GetJetContainer(1);
+  AliJetContainer * partJetCont   = GetJetContainer(2);
+  
+  // hybrid to detector level matching 
+  AliEmcalJet * jet2 = jet->ClosestJet();
+  if (!jet2) { return; }// if there is no match return.
+  Double_t ptJet2 = jet2->Pt() - detJetCont->GetRhoVal() * jet2->Area();
+  // This will retrieve the fraction of jet2's momentum in jet1.
+  Double_t fraction = hybridJetCont->GetFractionSharedPt(jet);
+  if (fraction < fJetMatchingSharedPtFraction) {
+    return;
+  }
+
+  // Set temp jet shape parameters
+  Double_t leSub_noCorr  = 0;
+  Double_t trackPtMean   = 0;
+  Double_t trackPtMedian = 0;
+
+  // if we are not doing the particle level match, fill all observables here and return
+  if(!fDoPartLevelMatching){
+    detJetPt          = ptJet2;
+    detJetDistance    = jet->DeltaR(jet2);
+    detJetMass        = jet2->M();
+
+    // Get Jet Shape parameters
+    detJetAngularity       = 0;
+    detJetpTD              = 0;
+    CalculateJetShapes(jet2, leSub_noCorr, detJetAngularity, detJetpTD, trackPtMean, trackPtMedian);
+    return; 
+  }
+  
+  // detector to particle matching
+  AliEmcalJet * jet3 = jet2->ClosestJet();
+  if(!jet3){return;}
+  Double_t ptJet3 = jet3->Pt() - partJetCont->GetRhoVal() * jet3->Area(); 
+  // make no fraction cut on the detector to particle
+
+  // if we are doing particle level matching, require that there is both a particle and detector level match
+  detJetPt  = ptJet2;
+  partJetPt = ptJet3;
+  detJetDistance  = jet->DeltaR(jet2);
+  partJetDistance = jet2->DeltaR(jet3);
+  detJetMass  = jet2->M();
+  partJetMass = jet3->M();
+
+  // Get Jet Shape Parameters
+  detJetAngularity          = 0;
+  detJetpTD                 = 0;
+  partJetAngularity         = 0;
+  partJetpTD                = 0; 
+
+  CalculateJetShapes(jet2, leSub_noCorr, detJetAngularity, detJetpTD, trackPtMean, trackPtMedian);
+
+  // reset the temp variables
+  leSub_noCorr     = 0;
+  trackPtMean      = 0;
+  trackPtMedian    = 0;
+
+  CalculateJetShapes(jet3, leSub_noCorr, partJetAngularity, partJetpTD, trackPtMean, trackPtMedian);
 }
 
+
+  
 
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractor::GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC)
@@ -1691,10 +1852,10 @@ void AliAnalysisTaskJetExtractor::PrintConfig()
   std::cout << "### Further settings ###" << std::endl;
   if(fIsEmbeddedEvent)
     std::cout << Form("* EMCal embedding framework will be used (at least on container has IsEmbedded() true)") << std::endl;
-  if(fMatchedDetLevelJetsArrayName != "")
-    std::cout << Form("* Detector level jet matching active , array=%s, rho=%s, rho_mass=%s", fMatchedDetLevelJetsArrayName.Data(), fMatchedDetLevelJetsRhoName.Data(), fMatchedDetLevelJetsRhoMassName.Data()) << std::endl;
-  if(fMatchedPartLevelJetsArrayName != "")
-    std::cout << Form("* Particle level jet matching active, array=%s",  fMatchedPartLevelJetsArrayName.Data()) << std::endl;
+  if(fDoDetLevelMatching)
+    std::cout << Form("* Detector level jet matching active with containger: %s  *", GetJetContainer(1)->GetName()) << std::endl;
+  if(fDoPartLevelMatching)
+    std::cout << Form("* Particle level jet matching active with container: %s *", GetJetContainer(2)->GetName()) << std::endl;
   if(fMCParticleArray)
     std::cout << Form("* Particle level information available (for jet origin calculation, particle code): %s", fMCParticleArrayName.Data()) << std::endl;
   if(extractionHM.size())

@@ -373,7 +373,7 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
   AliSigma0V0Cuts *v0Cuts = new AliSigma0V0Cuts();
   v0Cuts->SetV0OnFlyStatus(false);
   v0Cuts->SetV0PtMin(0.3);
-  v0Cuts->SetV0CosPAMin(0.99);
+  v0Cuts->SetV0CosPAMin(0.999);
   v0Cuts->SetV0RadiusMax(100.f);
   v0Cuts->SetV0RadiusMin(0.2);
   v0Cuts->SetV0DecayVertexMax(100.f);
@@ -384,7 +384,7 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
   v0Cuts->SetDaughterDCAtoPV(0.05);
   v0Cuts->SetLambdaSelection(1.115683 - 0.006, 1.115683 + 0.006);
   v0Cuts->SetPileUpRejectionMode(OneDaughterCombined);
-  v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  v0Cuts->SetK0Rejection(0.492, 0.503);
   return v0Cuts;
 }
 
@@ -1121,6 +1121,13 @@ void AliSigma0V0Cuts::PhotonQA(AliVEvent *inputEvent, AliMCEvent *mcEvent,
     auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(photons->At(iGamma));
     if (!PhotonCandidate) continue;
+
+    // cut on the DCA to the PV in transverse plane
+    PhotonCandidate->CalculateDistanceOfClossetApproachToPrimVtx(inputEvent->GetPrimaryVertex());
+    const float DCAr = PhotonCandidate->GetDCArToPrimVtx();
+    if (DCAr > 0.75) {
+      continue;
+    }
 
     const float pt = PhotonCandidate->GetPhotonPt();
     const float invMass = PhotonCandidate->GetPhotonMass();

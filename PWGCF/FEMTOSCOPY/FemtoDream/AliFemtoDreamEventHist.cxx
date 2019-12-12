@@ -53,6 +53,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fEvtCounter->GetXaxis()->SetBinLabel(11, "Sphericity");
   fEvtCounter->GetXaxis()->SetBinLabel(12, "Mult. percentile");
   fEvtCounter->GetXaxis()->SetBinLabel(13, "Spherocity");
+  fEvtCounter->GetYaxis()->SetTitle("Entries");
 
   fEventCutList->Add(fEvtCounter);
 
@@ -116,48 +117,56 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fEvtNCont[i] = new TH1F(nEvtNContName.Data(), nEvtNContName.Data(), 350.,
                             -0.5, 349.5);
     fEvtNCont[i]->GetXaxis()->SetTitle("Number of Contributors");
+    fEvtNCont[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fEvtNCont[i]);
 
     TString EvtVtxXName = Form("VtxX_%s", sName[i].Data());
-    fEvtVtxX[i] = new TH1F(EvtVtxXName.Data(), EvtVtxXName.Data(), 50, -2.5,
-                           2.5);
-    fEvtVtxX[i]->GetXaxis()->SetTitle("DCA_{x}");
+    fEvtVtxX[i] = new TH1F(EvtVtxXName.Data(), EvtVtxXName.Data(), 100, -0.15,
+                           0.35);
+    fEvtVtxX[i]->GetXaxis()->SetTitle("vtx_{x} (cm)");
+    fEvtVtxX[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fEvtVtxX[i]);
 
     TString EvtVtxYName = Form("VtxY_%s", sName[i].Data());
-    fEvtVtxY[i] = new TH1F(EvtVtxYName.Data(), EvtVtxYName.Data(), 50, -2.5,
-                           2.5);
-    fEvtVtxY[i]->GetXaxis()->SetTitle("DCA_{y}");
+    fEvtVtxY[i] = new TH1F(EvtVtxYName.Data(), EvtVtxYName.Data(), 100, 0.1,
+                           0.6);
+    fEvtVtxY[i]->GetXaxis()->SetTitle("vtx_{y} (cm)");
+    fEvtVtxY[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fEvtVtxY[i]);
 
     TString EvtVtxZName = Form("VtxZ_%s", sName[i].Data());
-    fEvtVtxZ[i] = new TH1F(EvtVtxZName.Data(), EvtVtxZName.Data(), 300, -15.,
-                           15.);
-    fEvtVtxZ[i]->GetXaxis()->SetTitle("DCA_{z}");
+    fEvtVtxZ[i] = new TH1F(EvtVtxZName.Data(), EvtVtxZName.Data(), 300, -12.5,
+                           12.5);
+    fEvtVtxZ[i]->GetXaxis()->SetTitle("vtx_{z} (cm)");
+    fEvtVtxZ[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fEvtVtxZ[i]);
 
     TString MultNameSPD = Form("MultiplicitySPD_%s", sName[i].Data());
     fMultDistSPD[i] = new TH1F(MultNameSPD.Data(), MultNameSPD.Data(), 600, 0.,
                                600.);
     fMultDistSPD[i]->GetXaxis()->SetTitle("Multiplicity (SPD)");
+    fMultDistSPD[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fMultDistSPD[i]);
 
     TString MultNameV0A = Form("MultiplicityV0A_%s", sName[i].Data());
     fMultDistV0A[i] = new TH1F(MultNameV0A.Data(), MultNameV0A.Data(), 600, 0.,
                                600.);
     fMultDistV0A[i]->GetXaxis()->SetTitle("Multiplicity (V0A)");
+    fMultDistV0A[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fMultDistV0A[i]);
 
     TString MultNameV0C = Form("MultiplicityV0C_%s", sName[i].Data());
     fMultDistV0C[i] = new TH1F(MultNameV0C.Data(), MultNameV0C.Data(), 600, 0.,
                                600.);
     fMultDistV0C[i]->GetXaxis()->SetTitle("Multiplicity (V0C)");
+    fMultDistV0C[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fMultDistV0C[i]);
 
     TString MultNameRefMult08 = Form("MultiplicityRef08_%s", sName[i].Data());
     fMultDistRef08[i] = new TH1F(MultNameRefMult08.Data(),
                                  MultNameRefMult08.Data(), 600, 0., 600.);
     fMultDistRef08[i]->GetXaxis()->SetTitle("Multiplicity (RefMult08)");
+    fMultDistRef08[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fMultDistRef08[i]);
 
     TString SPDtrklClsLy0Name = Form("SPDTrackletsVsClusterL0_%s",
@@ -191,31 +200,36 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fSPDTrackZVtx[i] = new TH2F(SPDvsTrkZVtxName.Data(),
                                 SPDvsTrkZVtxName.Data(), 300, -15, 15, 300, -15,
                                 15);
-    fSPDTrackZVtx[i]->GetXaxis()->SetTitle("zVtx Position SPD");
-    fSPDTrackZVtx[i]->GetYaxis()->SetTitle("zVtx Position Tracks");
+    fSPDTrackZVtx[i]->GetXaxis()->SetTitle("vtx_{z, SPD} (cm)");
+    fSPDTrackZVtx[i]->GetYaxis()->SetTitle("vtx_{z, Tracks} (cm)");
     fEvtCutQA[i]->Add(fSPDTrackZVtx[i]);
 
     TString SPDTrkZVtxDisplName = Form("SPDTrackZVtxDisplacement%s",
                                        sName[i].Data());
     fSPDTrkZVtxDispl[i] = new TH1F(SPDTrkZVtxDisplName.Data(),
                                    SPDTrkZVtxDisplName.Data(), 300, 0, 1.5);
-    fSPDTrkZVtxDispl[i]->GetXaxis()->SetTitle("zVtx Position |SPD - Tracks|");
+    fSPDTrkZVtxDispl[i]->GetXaxis()->SetTitle("|vtx_{z, SPD} - vtx_{z, Tracks}| (cm)");
+    fSPDTrkZVtxDispl[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fSPDTrkZVtxDispl[i]);
 
     TString BFieldName = Form("MagneticFieldkGauss_%s", sName[i].Data());
     fBField[i] = new TH1F(BFieldName.Data(), BFieldName.Data(), 20, -10, 10);
+    fBField[i]->GetXaxis()->SetTitle("B (G)");
+    fBField[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fBField[i]);
 
     TString EvtSpherName = Form("Sphericity_%s", sName[i].Data());
     fEvtSpher[i] = new TH1F(EvtSpherName.Data(), EvtSpherName.Data(), 50, 0.,
                             1.);
-    fEvtSpher[i]->GetXaxis()->SetTitle("Sphericity S_{T}");
+    fEvtSpher[i]->GetXaxis()->SetTitle("Sphericity #it{S}_{T}");
+    fEvtSpher[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fEvtSpher[i]);
 
     TString EvtSpheroName = Form("Spherocity_%s", sName[i].Data());
     fEvtSphero[i] = new TH1F(EvtSpheroName.Data(), EvtSpheroName.Data(), 50, 0.,
                             1.);
-    fEvtSphero[i]->GetXaxis()->SetTitle("Spherocity S_{0}");
+    fEvtSphero[i]->GetXaxis()->SetTitle("Spherocity #it{S}_{0}");
+    fEvtSphero[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fEvtSphero[i]);
 
   }

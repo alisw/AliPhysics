@@ -426,8 +426,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	      }
 	    }
 	}
-	Random_Number=Random.Rndm();
-	if(Random_Number > fTrackingEfficiency*fTrackingEfficiency) continue; // here it shows that the D did not get reconstructed cause one of the daughters was missing...however should we do this before incase the same daughter is involved multiple times?
+	//Random_Number=Random.Rndm();
+	//if(Random_Number > fTrackingEfficiency*fTrackingEfficiency) continue; // here it shows that the D did not get reconstructed cause one of the daughters was missing...however should we do this before incase the same daughter is involved multiple times?
 	fFastJetWrapper->Clear();
 	AliTLorentzVector D_Candidate_LorentzVector(0,0,0,0);
 	D_Candidate_LorentzVector.SetPtEtaPhiM(D_Candidate->Pt(), D_Candidate->Eta(), D_Candidate->Phi(), Inv_Mass_D);
@@ -758,8 +758,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	Inv_Mass_D_Truth=0.0;
       }
 
-      Random_Number=Random.Rndm();
-      if(Random_Number > fTrackingEfficiency*fTrackingEfficiency) continue;
+      //Random_Number=Random.Rndm();
+      //if(Random_Number > fTrackingEfficiency*fTrackingEfficiency) continue;
   
       fFastJetWrapper->Clear();
       AliTLorentzVector D_Candidate_LorentzVector(0,0,0,0);

@@ -7,7 +7,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Int_t genGroup=0,
                                                                 Bool_t fromAlien,
                                                                 TString date="ddmmyy",
-                                                                Int_t wagonnr=0
+                                                                Int_t wagonnr=0,
+                                                                Bool_t purej=kTRUE
         ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -74,7 +75,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 //  task->SetEnablePhysicsSelection(kTRUE);
 //  task->SetTriggerMask(triggerNames);
   task->SelectCollisionCandidates(triggerNames);
-  task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax)); // All cut sets have same event cuts
+  task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax,purej)); // All cut sets have same event cuts
   
 //  maybe redundant since already set in eventcuts above
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;

@@ -1,0 +1,34 @@
+configurationName: "EMCal Data Correction Cluster V2, Run2 T corrections, no exoticity cut"
+pass: "pass1"
+CellEnergy:
+    enabled: true
+    createHistos: true
+    enableNewTempCalib: true
+CellBadChannel:
+    enabled: true
+    createHistos: true
+CellTimeCalib:
+    enabled: true
+    createHistos: true
+Clusterizer:
+    enabled: true
+    clusterizer: kClusterizerv2
+    cellE: 0.1
+    seedE: 0.5
+    cellTimeMin: -500e-6
+    cellTimeMax:  500e-6
+    clusterTimeLength: 1e6
+    createHistos: true
+    recalDistToBadChannels: true
+    recalShowerShape: false
+ClusterExotics:
+    enabled: false
+    createHistos: false
+ClusterNonLinearity:
+    enabled: true
+    setForceClusterE: true
+    createHistos: true
+    nonLinFunct: kBeamTestCorrectedv4
+ClusterTrackMatcher:
+    enabled: true
+    createHistos: true

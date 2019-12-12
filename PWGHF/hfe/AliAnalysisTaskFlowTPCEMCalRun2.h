@@ -67,6 +67,11 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		void SetMinCentrality(float mincentr=30.) {fMinCentr = mincentr;}
 		void SetMaxCentrality(float maxcentr=50.) {fMaxCentr = maxcentr;}
 
+		void SetMCCentral(Bool_t MCCentral) {iCentral = MCCentral;}
+		void SetMCSemiCentral(Bool_t MCSemiCentral) {iSemiCentral = MCSemiCentral;}
+
+                void SetTree(Bool_t itree){iTree=itree;}
+
 		//virtual void LocalInit();
 
 		Bool_t IsPdecay(int mpid);
@@ -124,6 +129,7 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH2F* fClsEtaPhiAftMatch;
 		TH2F* fTPCnsig;
                 TH2F* fTOFnsig;
+                TH2F* fITSnsig;
 		TH2F* fTPCnsig_TOFnsig;
 		//TH3F* fTrkPt_TPCnsig_TOFnsig;
 		TH2F* fHistele_TOFcuts;
@@ -207,6 +213,8 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH2F* fTrkPhisin2_elelow;
 		TH2F* fTrkPhicos2_elehigh;
 		TH2F* fTrkPhisin2_elehigh;
+		TH2F* fTrkPhicos2_hfehigh;
+		TH2F* fTrkPhisin2_hfehigh;
 		TH2F* fTrkPhicos2_hadhigh;
 		TH2F* fTrkPhisin2_hadhigh;
 		TH2F* fTrkPhicos2_phoLShigh;
@@ -217,6 +225,8 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		//TH1F* fOutplane;
                 TH1F* fInplane_ele;
 		TH1F* fOutplane_ele;
+                TH1F* fInplane_hfe;
+		TH1F* fOutplane_hfe;
 		TH1F* fInplane_LSpho;
 		TH1F* fOutplane_LSpho;
 		TH1F* fInplane_ULSpho;
@@ -274,7 +284,14 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		float fMinCentr;
 		float fMaxCentr;
 
+                Bool_t iCentral;
+                Bool_t iSemiCentral;
+
 		TList* fqnSplinesList[6];
+
+		THnSparse  *fSparseElectron;//!Electron info
+		Double_t *fvalueElectron;//!Electron info
+                Bool_t iTree;
 
 		AliAnalysisTaskFlowTPCEMCalRun2(const AliAnalysisTaskFlowTPCEMCalRun2&); // not implemented
 		AliAnalysisTaskFlowTPCEMCalRun2& operator=(const AliAnalysisTaskFlowTPCEMCalRun2&); // not implemented

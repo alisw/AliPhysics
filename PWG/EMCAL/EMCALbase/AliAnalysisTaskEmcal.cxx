@@ -110,7 +110,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
-  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
@@ -227,7 +226,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
-  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
@@ -499,16 +497,13 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fOutput->Add(fHistEventPlane);
   }
 
-  fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
-  fHistEventRejection->SetBit(TH1::kCanRebin);
-#else
-  fHistEventRejection->SetCanExtend(TH1::kAllAxes);
-#endif
-  // We must keep track of the recycled embedded event count. If we use the builtin event selection, then
-  // this count is appended after all of the rest of the bins.
-  int recycleEmbeddedEventIndex = 1;
   if(fUseBuiltinEventSelection){
+    fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
+    fHistEventRejection->SetBit(TH1::kCanRebin);
+#else
+    fHistEventRejection->SetCanExtend(TH1::kAllAxes);
+#endif
     fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
     fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
     fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
@@ -523,15 +518,10 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
     fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
     fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
-    recycleEmbeddedEventIndex = 15;
     fHistEventRejection->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistEventRejection);
   }
-  // Finish setting up the event rejection histogram.
-  fHistEventRejection->GetXaxis()->SetBinLabel(recycleEmbeddedEventIndex,"RecycleEmbeddedEvent");
-  fOutput->Add(fHistEventRejection);
-
-  // Finish setting up AliEventCuts
-  if (!fUseBuiltinEventSelection) {
+  else {
     fAliEventCuts.AddQAplotsToList(fOutput);
   }
 
@@ -612,18 +602,6 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
-  // Recycle embedded events which do not pass the internal event selection in the embedding helper
-  if (fRecycleUnusedEmbeddedEventsMode) {
-    auto embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-    if (embeddingHelper && embeddingHelper->EmbeddedEventUsed() == false) {
-      if (fGeneralHistograms) {
-        fHistEventRejection->Fill("RecycleEmbeddedEvent",1);
-        fHistEventCount->Fill("Rejected",1);
-      }
-      return;
-    }
-  }
-
   if (!fLocalInitialized){
     ExecOnce();
     UserExecOnce();

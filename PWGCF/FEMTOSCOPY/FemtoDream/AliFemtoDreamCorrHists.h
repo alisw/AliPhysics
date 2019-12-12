@@ -34,6 +34,10 @@ class AliFemtoDreamCorrHists {
     return fDokTBinning;
   }
   ;
+  bool GetDokTandMultBinning() {
+    return fDokTandMultBinning;
+  }
+  ;
   bool GetDomTBinning() {
     return fDomTBinning;
   }
@@ -81,7 +85,15 @@ class AliFemtoDreamCorrHists {
     if (fDokTCentralityBins)
       FillSameEventkTCentDist(i, kT, RelK, cent);
   }
+
   void FillSameEventkTCentDist(int i, float kT, float RelK, float cent);
+
+  void FillSameEventkTandMultDist(int i, float kT, float RelK, int multBin) {
+    fSameEventkTandMultDist[i][multBin]->Fill(RelK, kT);
+  }
+  void FillMixedEventkTandMultDist(int i, float kT, float RelK, int multBin) {
+    fMixedEventkTandMultDist[i][multBin]->Fill(RelK, kT);
+  }
   void FillSameEventmTDist(int i, float mT, float RelK) {
     if (fSameEventmTDist[i])
       fSameEventmTDist[i]->Fill(RelK, mT);
@@ -91,31 +103,60 @@ class AliFemtoDreamCorrHists {
   }
   ;
   void FillPtQADist(int i, float kstar, float pt1, float pt2) {
-    // TODO for the moment the threshold is hardcoded to 200 MeV/c
-    if(fPtQADist[i] && kstar < 0.2) {
-      fPtQADist[i]->Fill(pt1, pt2);
+    if (!fMinimalBooking) {
+      // TODO for the moment the threshold is hardcoded to 200 MeV/c
+      if (fPtQADist[i] && kstar < 0.2) {
+        fPtQADist[i]->Fill(pt1, pt2);
+      }
+    }
+  }
+  void FillPtSEOneQADist(int i, float pt, int mult) {
+    if (!fMinimalBooking) {
+      fPtQADistSEPartOne[i]->Fill(pt, mult);
+    }
+  }
+  void FillPtSETwoQADist(int i, float pt, int mult) {
+    if (!fMinimalBooking) {
+      fPtQADistSEPartTwo[i]->Fill(pt, mult);
+    }
+  }
+  void FillPtMEOneQADist(int i, float pt, int mult) {
+    if (!fMinimalBooking) {
+      fPtQADistMEPartOne[i]->Fill(pt, mult);
+    }
+  }
+  void FillPtMETwoQADist(int i, float pt, int mult) {
+    if (!fMinimalBooking) {
+      fPtQADistMEPartTwo[i]->Fill(pt, mult);
     }
   }
   void FillMassQADist(int i, float kstar, float invMass1, float invMass2) {
-    if(fMassQADistPart1[i] && fMassQADistPart2[i]) {
-      fMassQADistPart1[i]->Fill(invMass1, kstar);
-      fMassQADistPart2[i]->Fill(invMass2, kstar);      
+    if (!fMinimalBooking) {
+      if (fMassQADistPart1[i] && fMassQADistPart2[i]) {
+        fMassQADistPart1[i]->Fill(invMass1, kstar);
+        fMassQADistPart2[i]->Fill(invMass2, kstar);
+      }
     }
+  }
 
-}
-
-  void FillPairInvMassQAD(int i, AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2) {
-    if(fPairInvMassQAD[i]) {
- 	TVector3 momPart1 = part1.GetMomentum();
+  void FillPairInvMassQAD(int i, AliFemtoDreamBasePart &part1,
+                          AliFemtoDreamBasePart &part2) {
+    if (!fMinimalBooking) {
+      if (fPairInvMassQAD[i]) {
+        TVector3 momPart1 = part1.GetMomentum();
         TVector3 momPart2 = part2.GetMomentum();
         TLorentzVector trackPos, trackNeg;
-          trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(), part1.GetInvMass());
-          trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(), part2.GetInvMass());
-         TLorentzVector trackSum = trackPos + trackNeg;
-    
-       fPairInvMassQAD[i]->Fill(trackSum.M());
-       }
- }
+        trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(),
+                         part1.GetInvMass());
+        trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(),
+                         part2.GetInvMass());
+        TLorentzVector trackSum = trackPos + trackNeg;
+
+        fPairInvMassQAD[i]->Fill(trackSum.M());
+      }
+    }
+  }
+
   void FillMixedEventMultDist(int i, int iMult, float RelK) {
     if (fMixedEventMultDist[i])
       fMixedEventMultDist[i]->Fill(RelK, iMult);
@@ -168,7 +209,8 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
-  void FillEtaPhiAverageSE(int hist, int iDaug, float dPhi, float dEta, bool BeforeOrAfter) {
+  void FillEtaPhiAverageSE(int hist, int iDaug, float dPhi, float dEta,
+                           bool BeforeOrAfter) {
     if (!fMinimalBooking && fPhiEtaPlots) {
       if (BeforeOrAfter) {
         fIntRadiiQAEtaPhiSEBefore[hist][iDaug]->Fill(dEta, dPhi);
@@ -177,7 +219,8 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
-  void FillEtaPhiAverageME(int hist, int iDaug, float dPhi, float dEta, bool BeforeOrAfter) {
+  void FillEtaPhiAverageME(int hist, int iDaug, float dPhi, float dEta,
+                           bool BeforeOrAfter) {
     if (!fMinimalBooking && fPhiEtaPlots) {
       if (BeforeOrAfter) {
         fIntRadiiQAEtaPhiMEBefore[hist][iDaug]->Fill(dEta, dPhi);
@@ -217,8 +260,13 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventCentDist;
   TH2F **fSameEventmTDist;
   TH2F **fSameEventkTDist;
+  TH2F ***fSameEventkTandMultDist;
   TH2F ***fSameEventkTCentDist;
   TH2F **fPtQADist;
+  TH2F **fPtQADistSEPartOne;
+  TH2F **fPtQADistSEPartTwo;
+  TH2F **fPtQADistMEPartOne;
+  TH2F **fPtQADistMEPartTwo;
   TH2F **fMassQADistPart1;
   TH2F **fMassQADistPart2;
   TH1F **fPairInvMassQAD;
@@ -228,6 +276,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fMixedEventCentDist;
   TH2F **fMixedEventmTDist;
   TH2F **fMixedEventkTDist;
+  TH2F ***fMixedEventkTandMultDist;
   TH2F ***fMixedEventkTCentDist;
   TH2F **fPairCounterME;
   TH2F **fMomResolution;
@@ -247,6 +296,7 @@ class AliFemtoDreamCorrHists {
   TH1F **fEffMixingDepth;
   bool fDoMultBinning;
   bool fDoCentBinning;
+  bool fDokTandMultBinning;
   bool fDokTBinning;
   bool fDomTBinning;
   bool fPtQA;
@@ -258,8 +308,8 @@ class AliFemtoDreamCorrHists {
   std::vector<int> fPDGCode;
   std::vector<float> fmTdEtadPhiBins;
   std::vector<unsigned int> fWhichPairs;
-  std::vector<int> fCentBins;
-  ClassDef(AliFemtoDreamCorrHists,8);
+  std::vector<int> fCentBins;ClassDef(AliFemtoDreamCorrHists,8)
+  ;
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */

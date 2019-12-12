@@ -17,7 +17,7 @@
 //***************************************************************************************
 //This AddTask is supposed to set up the main task
 //($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson.cxx) for
-//pp together with all supporting classes
+//PbPb together with all supporting classes
 //***************************************************************************************
 
 //***************************************************************************************
@@ -30,7 +30,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb(
     Int_t     selectHeavyNeutralMeson     = 0,                        //run eta prime instead of omega
     Int_t     enableQAMesonTask           = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
     Int_t     enableExtMatchAndQA         = 0,                        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-    Bool_t    enableTriggerMimicking      = kFALSE,                   // enable trigger mimicking
+    Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
     TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
     Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
@@ -56,14 +56,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb(
         TString tempType = tempStr;
         tempType.Replace(0,2,"");
         trackMatcherRunningMode = tempType.Atoi();
-        cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+        cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_PbPb will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
       }
     }
   }
   TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+    cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
 
   Int_t isHeavyIon = 1;
@@ -72,7 +72,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb(
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp_%i",trainConfig), "No analysis manager found.");
+    Error(Form("AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb_%i",trainConfig), "No analysis manager found.");
     return ;
   }
 
@@ -111,7 +111,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
         fPionCuts->SetFillCutHistograms("",kTRUE);
       }
-    } 
+    }
 
     fPionSelector->Init();
     mgr->AddTask(fPionSelector);
@@ -150,25 +150,25 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
    // Test for EMCal (13 TeV) without background calculation
   } else if ( trainConfig == 100) { // with TPC refit + ITS requirement
-    cuts.AddCutHeavyMesonPCMCalo("10130a13","00200009f9730000dge0400000","411798305k0a2220000","32c51070a","0103603700000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("11310a13","00200009f9730000dge0400000","411798305k0b2220000","32c51070a","0103603700000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("13530a13","00200009f9730000dge0400000","411798305k032220000","32c51070a","0103603700000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("15910a13","00200009f9730000dge0400000","411798305k032220000","32c51070a","0103603700000000","0453503000000000"); 
-  
+    cuts.AddCutHeavyMesonPCMCalo("10130a13","00200009f9730000dge0400000","411798305k0a2220000","32c51070a","0103603700000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("11310a13","00200009f9730000dge0400000","411798305k0b2220000","32c51070a","0103603700000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("13530a13","00200009f9730000dge0400000","411798305k032220000","32c51070a","0103603700000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("15910a13","00200009f9730000dge0400000","411798305k032220000","32c51070a","0103603700000000","0453503000000000");
+
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
+
   } else if( trainConfig == 200 ) {
     // everything open, min pt charged pi = 100 MeV
-    cuts.AddCutHeavyMesonPCMCalo("10130a13","00200009f9730000dge0400000","411798305k0a2220000","32c510700","0103603l00000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("11310a13","00200009f9730000dge0400000","411798305k0b2220000","32c510700","0103603l00000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("13530a13","00200009f9730000dge0400000","411798305k032220000","32c510700","0103603l00000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("15910a13","00200009f9730000dge0400000","411798305k032220000","32c510700","0103603l00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonPCMCalo("10130a13","00200009f9730000dge0400000","411798305k0a2220000","32c510700","0103603l00000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("11310a13","00200009f9730000dge0400000","411798305k0b2220000","32c510700","0103603l00000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("13530a13","00200009f9730000dge0400000","411798305k032220000","32c510700","0103603l00000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("15910a13","00200009f9730000dge0400000","411798305k032220000","32c510700","0103603l00000000","0453503000000000");
 
-    
+
   } else {
     Error(Form("GammaConvNeutralMeson_MixedMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

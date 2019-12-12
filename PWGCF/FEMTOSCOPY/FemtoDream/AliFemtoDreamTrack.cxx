@@ -13,7 +13,6 @@
 #include "AliESDVertex.h"
 #include "AliInputEventHandler.h"
 #include "AliFemtoDreamTrack.h"
-#include "AliNanoAODTrack.h"
 #include "AliLog.h"
 #include "TClonesArray.h"
 #include "TMath.h"
@@ -112,6 +111,14 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track, const int multiplicity) {
 
 void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event,
                                   const int multiplicity) {
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  if (man) {
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man
+        ->GetInputEventHandler());
+    if (inputHandler) {
+      fPIDResponse = inputHandler->GetPIDResponse();
+    }
+  }
   AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
   this->Reset();
   SetEventMultiplicity(multiplicity);
@@ -140,7 +147,7 @@ void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event,
     this->SetIDTracks(dynamic_cast<AliNanoAODTrack *>(fVGlobalTrack)->GetID());
     this->SetEvtNumber(event->GetRunNumber());
     if (fIsMC) {
-      this->SetMCInformation();
+      this->SetMCInformation(event);
     }
   } else {
     this->fIsSet = false;
@@ -542,8 +549,11 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
     this->fnoSharedClst = true;
   }
 
+  if (fPIDResponse) {
+    this->fbetaTOF = GetBeta(globalNanoTrack);
+  }
+
   // TODO
-  //  this->fbetaTOF = GetBeta(fVTrack);
   //   For the moment we don't need ITS PID
   //  this->fstatusITS = statusITS;
   //          this->fnSigmaITS)[i] =
@@ -571,9 +581,6 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   this->fdcaXY = fAODTrack->DCA();
   this->fdcaZ = fAODTrack->ZAtDCA();
   this->fChi2 = fAODTrack->Chi2perNDF();
-  double dcaVals[2] = { -99., -99. };
-  double pos[3] = { 0., 0., 0. };
-  double covar[3] = { 0., 0., 0. };
   fAODGlobalTrack->GetImpactParameters(fdcaXYProp,fdcaZProp);
 //  AliAODTrack copy(*fAODGlobalTrack);
 //  fAODGlobalTrack->GetPosition(pos);
@@ -744,10 +751,22 @@ void AliFemtoDreamTrack::SetMCInformation() {
   if (!mcarray) {
     AliError("SPTrack: MC Array not found");
   }
-  if (fAODGlobalTrack->GetLabel() > 0) {
-    AliAODMCParticle * mcPart = (AliAODMCParticle*) mcarray->At(
-        fAODGlobalTrack->GetLabel());
-    this->SetID(fAODGlobalTrack->GetLabel());
+  SetMCInformation(mcarray, fAODGlobalTrack->GetLabel());
+}
+
+void AliFemtoDreamTrack::SetMCInformation(AliVEvent *event) {
+  TClonesArray *mcarray = dynamic_cast<TClonesArray *>(event->FindListObject(
+      "mcparticles"));
+  if (!mcarray) {
+    AliError("SPTrack: MC Array not found");
+  }
+  SetMCInformation(mcarray, fVGlobalTrack->GetLabel());
+}
+
+void AliFemtoDreamTrack::SetMCInformation(TClonesArray* mcarray, int label) {
+  if (label > 0) {
+    AliAODMCParticle * mcPart = (AliAODMCParticle*) mcarray->At(label);
+    this->SetID(label);
     if (!(mcPart)) {
       this->fIsSet = false;
     } else {
@@ -826,44 +845,43 @@ void AliFemtoDreamTrack::SetMCInformation(AliMCEvent *mcEvent) {
   }
 }
 
-float AliFemtoDreamTrack::GetBeta(AliAODTrack *track) {
-  float beta = -999;
-  double integratedTimes[9] = { -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
-      -1.0 };
-
-  track->GetIntegratedTimes(integratedTimes);
-
-  const float c = 2.99792457999999984e-02;
-  float p = track->P();
-  float l = integratedTimes[0] * c;
-
-  float trackT0 = fPIDResponse->GetTOFResponse().GetStartTime(p);
-
-  float timeTOF = track->GetTOFsignal() - trackT0;
-  if (timeTOF > 0) {
-    beta = l / timeTOF / c;
+float AliFemtoDreamTrack::GetBeta(AliNanoAODTrack *track) const {
+  static float c = 2.99792457999999984e-02;
+  if (!fPIDResponse) {
+    return -0.075f;
   }
-  return beta;
+
+  const float len = track->GetIntegratedLength();
+  if (!(track->HasTOFpid() && (len > 350.))) {
+    return -0.05f;
+  }
+  const float tim = track->GetTOFsignal()
+      - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
+  return len / (tim * c);
 }
 
-float AliFemtoDreamTrack::GetBeta(AliESDtrack *track) {
-  float beta = -999;
-  double integratedTimes[9] = { -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
-      -1.0 };
-
-  track->GetIntegratedTimes(integratedTimes);
-
-  const float c = 2.99792457999999984e-02;
-  float p = track->P();
-  float l = integratedTimes[0] * c;
-
-  float trackT0 = fPIDResponse->GetTOFResponse().GetStartTime(p);
-
-  float timeTOF = track->GetTOFsignal() - trackT0;
-  if (timeTOF > 0) {
-    beta = l / timeTOF / c;
+float AliFemtoDreamTrack::GetBeta(AliAODTrack *track) const {
+  static float c = 2.99792457999999984e-02;
+  const float len = track->GetIntegratedLength();
+  if (!(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track)
+      && (len > 350.))) {
+    return -0.05f;
   }
-  return beta;
+  const float tim = track->GetTOFsignal()
+      - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
+  return len / (tim * c);
+}
+
+float AliFemtoDreamTrack::GetBeta(AliESDtrack *track) const {
+  static float c = 2.99792457999999984e-02;
+  const float len = track->GetIntegratedLength();
+  if (!(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track)
+      && (len > 350.))) {
+    return -0.05f;
+  }
+  const float tim = track->GetTOFsignal()
+      - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
+  return len / (tim * c);
 }
 
 bool AliFemtoDreamTrack::CheckGlobalTrack(const Int_t TrackID) {

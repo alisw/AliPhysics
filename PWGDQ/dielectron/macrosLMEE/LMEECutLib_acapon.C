@@ -11,6 +11,8 @@ class LMEECutLib {
     kTTreeCuts,
     // Current primary analysis cut
     kCutSet1,
+    kCutSet2, // Remove fITSshared clsuter cut
+    kCutSet3, // Lower pt cut to  10 GeV
     // Cut settings to obtain PID correction maps
     kV0_ITScorr,
     kV0_TPCcorr,
@@ -1200,9 +1202,64 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->Print();
       return trackCuts;
     case kCutSet1:
-
       varCutsFilter->AddCut(AliDielectronVarManager::kEta,            -0.80, 0.80);
       varCutsFilter->AddCut(AliDielectronVarManager::kPt,             0.2,   20.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      100.0, 200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,   1.1);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,  1.0);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,  3.0);
+      if(wSDD){
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0); // < 5
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
+      }else{
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0,   100.0); // < 3
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
+      }
+      varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
+
+      // Select filterbit 4
+      trackCutsFilter->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//or 1<<4
+      trackCutsFilter->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kFirst);
+      // Refits
+      trackCutsFilter->SetRequireITSRefit(kTRUE);
+      trackCutsFilter->SetRequireTPCRefit(kTRUE);
+
+      trackCuts->AddCut(varCutsFilter);
+      trackCuts->AddCut(trackCutsFilter);
+      trackCuts->AddCut(GetPIDCuts(PIDcuts));
+      trackCuts->Print();
+      return trackCuts;
+    case kCutSet2:
+      varCutsFilter->AddCut(AliDielectronVarManager::kEta,            -0.80, 0.80);
+      varCutsFilter->AddCut(AliDielectronVarManager::kPt,             0.2,   20.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      100.0, 200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,   1.1);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,  1.0);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,  3.0);
+      if(wSDD){
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0); // < 5
+      }else{
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0,   100.0); // < 3
+      }
+      varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
+
+      // Select filterbit 4
+      trackCutsFilter->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//or 1<<4
+      trackCutsFilter->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kFirst);
+      // Refits
+      trackCutsFilter->SetRequireITSRefit(kTRUE);
+      trackCutsFilter->SetRequireTPCRefit(kTRUE);
+
+      trackCuts->AddCut(varCutsFilter);
+      trackCuts->AddCut(trackCutsFilter);
+      trackCuts->AddCut(GetPIDCuts(PIDcuts));
+      trackCuts->Print();
+      return trackCuts;
+    case kCutSet3:
+      varCutsFilter->AddCut(AliDielectronVarManager::kEta,            -0.80, 0.80);
+      varCutsFilter->AddCut(AliDielectronVarManager::kPt,             0.2,   10.);
       varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  200.);
       varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      100.0, 200.);
       varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,   1.1);
@@ -1857,9 +1914,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,   -1., 1.);
       varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,    -3., 3.);
       varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      100., 160.);
-      varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,       100., 160.);
-      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.5, 1.1);
-      varCutsFilter->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 4.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80., 160.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.4, 1.1);
       varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,        3. , 10.);
       varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 5.5);
       varCutsFilter->AddCut(AliDielectronVarManager::kNclsSITS,       1.0, 6.0, kTRUE);

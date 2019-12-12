@@ -9,6 +9,9 @@
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
 /// * LambdaN
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
+#pragma link C++ class AliAnalysisTaskLambdaNRun2+;
+#pragma link C++ class AliAnalysisTaskLambdaNRun2::AnalysisV0+;
+#pragma link C++ class AliAnalysisTaskLambdaNRun2::AnalysisEvent+;
 /// * LambdaNN
 #pragma link C++ class AliAnalysisTaskLNNntuple+;
 #pragma link C++ class AliAnalysisTaskLNNv0Bkg+;
@@ -39,6 +42,7 @@
 #pragma link C++ class AliLightNEventCuts+;
 #pragma link C++ class AliLightNTrackMCHist+;
 #pragma link C++ class AliAnalysisTaskAntipd+;
+#pragma link C++ class AliAnalysisTaskHe3+;
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
@@ -68,6 +72,8 @@
 #pragma link C++ class AliAnalysishDEvent+;
 #pragma link C++ class AliAnalysishDEventCollection+;
 #pragma link C++ class AliAnalysisTaskDeuFlow2PC+;
+#pragma link C++ class AliAnalysisTaskHypv2PbPb18+;
+#pragma link C++ class AliAnalysisTaskNucleiv2PbPb18+;
 
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
@@ -99,16 +105,21 @@
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
-#pragma link C++ class AliAnalysisTaskHypertriton3ML+;
-#pragma link C++ class RHypertriton3+;
-#pragma link C++ class SHypertriton3+;
-#pragma link C++ class std::vector<RHypertriton3>+;
-#pragma link C++ class std::vector<SHypertriton3>+;
-#pragma link C++ class REvent+;
+
+/// * KF2Body
+#pragma link C++ class AliAnalysisTaskHypertritonKFTree+;
 
 /// Hyp3body Selector
 #ifdef __CLING__
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
+#pragma link C++ class AliAnalysisTaskHypertriton3ML+;
+#pragma link C++ class RHypertriton3+;
+#pragma link C++ class SHypertriton3+;
+#pragma link C++ class MLSelected+;
+#pragma link C++ class std::vector<RHypertriton3>+;
+#pragma link C++ class std::vector<SHypertriton3>+;
+#pragma link C++ class std::vector<MLSelected3>+;
+#pragma link C++ class REvent+;
 #endif
 
 /// * VertexerHyp3Body

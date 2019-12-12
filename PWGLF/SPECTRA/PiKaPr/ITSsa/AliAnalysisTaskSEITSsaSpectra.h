@@ -96,10 +96,10 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *);
 
   // Setters for histo bins
-  void SetBins(const int nbins, float min, float max, float *bins);
-  void SetCentBins(int nbins, float *bins);
-  void SetDCABins(int nbins, float *bins);
-  void SetPtBins(int nbins, float *bins);
+  void SetBins(const int nbins, double min, double max, double *bins);
+  void SetCentBins(int nbins, double *bins);
+  void SetDCABins(int nbins, double *bins);
+  void SetPtBins(int nbins, double *bins);
 
   // Setters for event selection settings
   void SetTriggerSel(UInt_t tg = AliVEvent::kMB) { fTriggerSel = tg; }
@@ -253,13 +253,19 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   // MC histograms with spectra of primaries from the MC truth
   TH3F *fHistMCPart[kNchg * kNspc];            //!<! histo from events w/o gen Zvtx cut
   TH3F *fHistMCPartGoodGenVtxZ[kNchg * kNspc]; //!<! histo from events w/  gen Zvtx cut (<10cm)
+  TH3F *fHistMCGenCharged;                     //!<! histo from events w/o gen Zvtx cut (with p instead of pt)
 
   // Reconstructed
   TH2F *fHistReco[kNchg * kNspc];         //!<! NSigma histos for 6 species
-  THnSparseF *fHistRecoMC[kNchg * kNspc]; //!<! NSigma histos for 6 species
+  THnSparseF *fHistRecoMC[kNchg * kNspc]; //!<! transverse momentum correlation with nsigma PID for 6 species
+  THnSparseF *fHistRecoTrueMC[kNchg * kNspc]; //!<! transverse momentum correlation with true PID for 6 species
+  THnSparseF *fHistRecoChargedMC; //!<! momentum correlation with true PID for 6 species
 
   // MC histograms using reco values
-  TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth
+  TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt reco)
+
+  //MC histograms using gen values
+  TH3F *fHistTruePIDMCGen[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt generated)
 
   // DCAxy distributions
   TH3F *fHistDCAReco[kNchg * kNspc]; //!<! histo with DCA distibution
@@ -316,9 +322,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistMCNegPrHypKaon;    //! histo with dedx using the MC truth
   TH2F *fHistMCNegPrHypProt;    //! histo with dedx using the MC truth
 
-  TArrayF fCentBins;
-  TArrayF fDCABins;
-  TArrayF fPtBins;
+  TArrayD fCentBins;
+  TArrayD fDCABins;
+  TArrayD fPtBins;
 
   // evt sel.
   UInt_t fTriggerSel;

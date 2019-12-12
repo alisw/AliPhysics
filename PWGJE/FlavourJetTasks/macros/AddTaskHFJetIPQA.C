@@ -7,11 +7,12 @@ Bool_t DefineCutsTaskpp(AliJetContainer* cont, double radius)
     cont->SetJetPtCut(5.);
     cont->SetJetPtCutMax(1000.);
     cont->SetJetEtaLimits(-0.9+radius, 0.9-radius);
+    cont->SetPercAreaCut(0.6);
     return kTRUE;
 }
 
 
-//
+
 
 
 AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
@@ -27,8 +28,9 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *njetsMC              = "Jets",
                                            const char *ntracksMC            = "tracksMC",
                                            const char *nrhoMC               = "RhoMC",
+                                           int nTCThresh                      =1,
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/k/kgarner/Weights_18_07_18.root",
-                                           TString PathToThresholds = "alien:///alice/cern.ch/user/k/kgarner/ThresholdHists_LHC16JJ.root",
+                                           TString PathToThresholds = "alien:///alice/cern.ch/user/k/kgarner/ThresholdHists_LHC16JJ_new.root",
                                           // TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
                                           // TString PathToJetProbabilityInput = "/home/katha/Uni/PhD/PhD/LinusCode/Anwendung/data/Binned_ResFct_XYSignificance_pp7TeV.root",
                                            TString PathToFlukaFactor="alien:///alice/cern.ch/user/k/kgarner/FlukaFactors_18_07_18.root",
@@ -144,32 +146,8 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         if(fileFlukaCorrection) fileFlukaCorrection->Close();
     }
 
-    // Load and setup Threshold values for Tagger
-    //==============================================================================
-    TFile* fileThresholds;
-    if( PathToThresholds.EqualTo("") ) {
-      } else {
-        fileThresholds=TFile::Open(PathToThresholds.Data());
-        if(!fileThresholds ||(fileThresholds&& !fileThresholds->IsOpen())){
-        printf("%s :: File with threshold values not found",taskname);
-        return 0x0;
-      }
-    }
+    jetTask->ReadThresholdHists(PathToThresholds, taskname, nTCThresh);
 
-    Printf("%s :: File %s successfully loaded, setting up threshold functions.",taskname,PathToThresholds.Data());
-
-    if(fileThresholds){
-        printf("Going here *****************************\n");
-        TObjArray* threshfirst;
-        TObjArray* threshsec;
-        TObjArray* threshthird;
-        fileThresholds->GetObject("Prob_0.65",threshfirst);
-        fileThresholds->GetObject("Prob_0.54",threshsec);
-        fileThresholds->GetObject("Prob_0.50",threshthird);
-        printf("Pointers in the C file: %p, %p, %p\n",threshfirst, threshsec,threshthird);
-
-        jetTask->SetThresholds(threshfirst,threshsec,threshthird);
-    }
 
     // Setup input containers
     //==============================================================================
@@ -196,7 +174,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
             jetContMC->ConnectParticleContainer(trackContMC);
             jetContMC->SetIsParticleLevel(kTRUE);
             jetContMC->SetMaxTrackPt(1000);
-            DefineCutsTaskpp(jetContMC, jetradius);
+            //DefineCutsTaskpp(jetContMC, jetradius);
         }
     }
 

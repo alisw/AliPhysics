@@ -2,15 +2,17 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskNanoLoton.h"
+#include "AliAnalysisTaskAODLoton.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 
-AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
-                                         0,
-                                     int nSpins = 1, double corrRange = 0.1,
-                                     bool Systematic = false,
+AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
+                                     bool isMC = false, bool isNano = true,
+                                     int phiSpinning = 0, int nSpins = 1,
+                                     double corrRange = 0.1, bool Systematic =
+                                         false,
                                      const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -32,23 +34,23 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
 
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-      false, false, false, false);
+      isMC, true, false, false);
   TrackCuts->SetFilterBit(128);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(false, false, false, false);
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   AntiTrackCuts->SetFilterBit(128);
   AntiTrackCuts->SetCutCharge(-1);
 
   //Lambda Cuts
-  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false, true,
+  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
                                                                 false);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
-      false, true, false);
+      isMC, true, false);
 
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
-      false, true, false);
+      isMC, true, false);
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -56,14 +58,13 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
   v0Cuts->SetPDGCodeNegDaug(211);  //Pion
   v0Cuts->SetPDGCodev0(3122);  //Lambda
 
-  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false,
-                                                                    false,
+  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
                                                                     false);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
-      false, true, false);
+      isMC, true, false);
   PosAntiv0Daug->SetCutCharge(1);
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
-      AliFemtoDreamTrackCuts::DecayProtonCuts(false, false, false);
+      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
   NegAntiv0Daug->SetCutCharge(-1);
 
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
@@ -203,6 +204,10 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
   config->SetdPhidEtaPlotsSmallK(false);
   config->SetdPhidEtaPlots(false);
   config->SetPhiEtaBinnign(false);
+
+  if (isMC) {
+    config->SetMomentumResolution(true);
+  }
 
   if (fullBlastQA) {
     config->SetkTBinning(true);
@@ -1152,37 +1157,19 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
     }
   }
 
-  AliAnalysisTaskNanoLoton* task = new AliAnalysisTaskNanoLoton("femtoLoton");
-  if (!fullBlastQA) {
-    task->SetRunTaskLightWeight(true);
-  }
-  task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-  task->SetEventCuts(evtCuts);
-  task->SetProtonCuts(TrackCuts);
-  task->SetAntiProtonCuts(AntiTrackCuts);
-  task->Setv0Cuts(v0Cuts);
-  task->SetAntiv0Cuts(Antiv0Cuts);
-  task->SetCorrelationConfig(config);
-  mgr->AddTask(task);
-
   TString addon = "PL";
-
   TString file = AliAnalysisManager::GetCommonFileName();
-
-  mgr->ConnectInput(task, 0, cinput);
 
   TString EvtCutsName = Form("%sEvtCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
       EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), EvtCutsName.Data()));
-  mgr->ConnectOutput(task, 1, coutputEvtCuts);
 
   TString TrackCutsName = Form("%sTrackCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *couputTrkCuts = mgr->CreateContainer(
       TrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), TrackCutsName.Data()));
-  mgr->ConnectOutput(task, 2, couputTrkCuts);
 
   TString AntiTrackCutsName = Form("%sAntiTrackCuts%s", addon.Data(),
                                    suffix.Data());
@@ -1190,7 +1177,6 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
       AntiTrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
-  mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
 
   AliAnalysisDataContainer *coutputv0Cuts;
   TString v0CutsName = Form("%sv0Cuts%s", addon.Data(), suffix.Data());
@@ -1199,7 +1185,6 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
       v0CutsName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), v0CutsName.Data()));
-  mgr->ConnectOutput(task, 4, coutputv0Cuts);
 
   AliAnalysisDataContainer *coutputAntiv0Cuts;
   TString Antiv0CutsName = Form("%sAntiv0Cuts%s", addon.Data(), suffix.Data());
@@ -1209,7 +1194,6 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
-  mgr->ConnectOutput(task, 5, coutputAntiv0Cuts);
 
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
@@ -1218,7 +1202,6 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
       ResultsName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 6, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
   TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
@@ -1228,7 +1211,6 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
-  mgr->ConnectOutput(task, 7, coutputResultsQA);
 
   AliAnalysisDataContainer *coutputResultsSample;
   TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(),
@@ -1239,7 +1221,6 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsSampleName.Data()));
-  mgr->ConnectOutput(task, 8, coutputResultsSample);
 
   AliAnalysisDataContainer *coutputResultsSampleQA;
   TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(),
@@ -1250,7 +1231,114 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false, int phiSpinning =
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
-  mgr->ConnectOutput(task, 9, coutputResultsSampleQA);
 
-  return task;
+  AliAnalysisDataContainer *coutputTrkCutsMC;
+  AliAnalysisDataContainer *coutputAntiTrkCutsMC;
+  AliAnalysisDataContainer *coutputv0CutsMC;
+  AliAnalysisDataContainer *coutputAntiv0CutsMC;
+  if (isMC) {
+    TString TrkCutsMCName = Form("%sTrkCutsMC%s", addon.Data(), suffix.Data());
+    coutputTrkCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        TrkCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
+
+    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s", addon.Data(),
+                                     suffix.Data());
+    coutputAntiTrkCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        AntiTrkCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
+
+    TString v0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
+    coutputv0CutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        v0CutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), v0CutsMCName.Data()));
+
+    TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s", addon.Data(),
+                                    suffix.Data());
+    coutputAntiv0CutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        Antiv0CutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
+
+  }
+
+  AliAnalysisTaskNanoLoton* taskNano;
+  AliAnalysisTaskAODLoton* taskAOD;
+
+  if (isNano) {
+    taskNano = new AliAnalysisTaskNanoLoton("femtoNanoLoton", isMC);
+    if (!fullBlastQA) {
+      taskNano->SetRunTaskLightWeight(true);
+    }
+    taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    taskNano->SetEventCuts(evtCuts);
+    taskNano->SetProtonCuts(TrackCuts);
+    taskNano->SetAntiProtonCuts(AntiTrackCuts);
+    taskNano->Setv0Cuts(v0Cuts);
+    taskNano->SetAntiv0Cuts(Antiv0Cuts);
+    taskNano->SetCorrelationConfig(config);
+    mgr->AddTask(taskNano);
+
+    mgr->ConnectInput(taskNano, 0, cinput);
+    mgr->ConnectOutput(taskNano, 1, coutputEvtCuts);
+    mgr->ConnectOutput(taskNano, 2, couputTrkCuts);
+    mgr->ConnectOutput(taskNano, 3, coutputAntiTrkCuts);
+    mgr->ConnectOutput(taskNano, 4, coutputv0Cuts);
+    mgr->ConnectOutput(taskNano, 5, coutputAntiv0Cuts);
+    mgr->ConnectOutput(taskNano, 6, coutputResults);
+    mgr->ConnectOutput(taskNano, 7, coutputResultsQA);
+    mgr->ConnectOutput(taskNano, 8, coutputResultsSample);
+    mgr->ConnectOutput(taskNano, 9, coutputResultsSampleQA);
+    if (isMC) {
+      mgr->ConnectOutput(taskNano, 10, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 11, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 12, coutputv0CutsMC);
+      mgr->ConnectOutput(taskNano, 13, coutputAntiv0CutsMC);
+    }
+  } else {
+    taskAOD = new AliAnalysisTaskAODLoton("femtoAODLoton", isMC);
+    if (!fullBlastQA) {
+      taskAOD->SetRunTaskLightWeight(true);
+    }
+    taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    taskAOD->SetEventCuts(evtCuts);
+    taskAOD->SetProtonCuts(TrackCuts);
+    taskAOD->SetAntiProtonCuts(AntiTrackCuts);
+    taskAOD->Setv0Cuts(v0Cuts);
+    taskAOD->SetAntiv0Cuts(Antiv0Cuts);
+    taskAOD->SetCorrelationConfig(config);
+    mgr->AddTask(taskAOD);
+    mgr->ConnectInput(taskAOD, 0, cinput);
+    mgr->ConnectOutput(taskAOD, 1, coutputEvtCuts);
+    mgr->ConnectOutput(taskAOD, 2, couputTrkCuts);
+    mgr->ConnectOutput(taskAOD, 3, coutputAntiTrkCuts);
+    mgr->ConnectOutput(taskAOD, 4, coutputv0Cuts);
+    mgr->ConnectOutput(taskAOD, 5, coutputAntiv0Cuts);
+    mgr->ConnectOutput(taskAOD, 6, coutputResults);
+    mgr->ConnectOutput(taskAOD, 7, coutputResultsQA);
+    mgr->ConnectOutput(taskAOD, 8, coutputResultsSample);
+    mgr->ConnectOutput(taskAOD, 9, coutputResultsSampleQA);
+    if (isMC) {
+      mgr->ConnectOutput(taskAOD, 10, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskAOD, 11, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskAOD, 12, coutputv0CutsMC);
+      mgr->ConnectOutput(taskAOD, 13, coutputAntiv0CutsMC);
+    }
+  }
+  if (isNano) {
+    return taskNano;
+  } else {
+    return taskAOD;
+  }
 }

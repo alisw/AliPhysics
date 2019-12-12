@@ -64,12 +64,7 @@
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
 
-#include "AliFlowEvent.h"
-#include "AliFlowTrackCuts.h"
-#include "AliFlowTrackSimple.h"
-#include "AliFlowVector.h"
-
-#include "AliTRDTriggerAnalysis.h"
+//#include "AliTRDTriggerAnalysis.h"
 
 #include "AliAnalysisTaskSEHFQA.h"
 
@@ -90,11 +85,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fOutputCounters(0x0)
   , fOutputCheckCentrality(0x0)
   , fOutputEvSelection(0x0)
-  , fOutputFlowObs(0x0)
   , fDecayChannel(AliAnalysisTaskSEHFQA::kD0toKpi)
   , fCuts(0x0)
-  , fFlowEvent(0x0)
-  , fRFPcuts(0x0)
   , fEstimator(AliRDHFCuts::kCentTRK)
   , fReadMC(kFALSE)
   , fSimpleMode(kFALSE)
@@ -248,22 +240,13 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHiszvtxvsSPDzvtx(0)
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
-  , fHisFEvents(0)
-  , fHisTPCVZE_AngleQ(0)
-  , fHisCentVsMultRPS(0)
 {
   /// default constructor
   fOnOff[0]=kTRUE;
   fOnOff[1]=kTRUE;
   fOnOff[2]=kTRUE;
   fOnOff[3]=kTRUE;
-  fOnOff[4]=kTRUE;
 
-  for (Int_t iii=0; iii<3; iii++) {
-    fHisQ[iii]=0;
-    fHisAngleQ[iii]=0;
-    fHisPhiEta[iii]=0;
-  }
 }
 
 //____________________________________________________________________________
@@ -275,11 +258,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fOutputCounters(0x0)
   , fOutputCheckCentrality(0x0)
   , fOutputEvSelection(0x0)
-  , fOutputFlowObs(0x0)
   , fDecayChannel(ch)
   , fCuts(0x0)
-  , fFlowEvent(0x0)
-  , fRFPcuts(0x0)
   , fEstimator(AliRDHFCuts::kCentTRK)
   , fReadMC(kFALSE)
   , fSimpleMode(kFALSE)
@@ -433,9 +413,6 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHiszvtxvsSPDzvtx(0)
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
-  , fHisFEvents(0)
-  , fHisTPCVZE_AngleQ(0)
-  , fHisCentVsMultRPS(0)
 {
   /// constructor
 
@@ -446,13 +423,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   fOnOff[1]=kTRUE;
   fOnOff[2]=kTRUE;
   fOnOff[3]=kTRUE;
-  fOnOff[4]=kTRUE;
 
-  for (Int_t iii=0; iii<3; iii++) {
-    fHisQ[iii]=0;
-    fHisAngleQ[iii]=0;
-    fHisPhiEta[iii]=0;
-  }
 
   // Output slot #1 writes into a TList container (number of events)
   DefineOutput(1,TList::Class());
@@ -492,7 +463,6 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   }
 
   if(fOnOff[3]) DefineOutput(7,TList::Class());  //My private output
-  if(fOnOff[4]) DefineOutput(8,TList::Class());  //My private output
 
 }
 
@@ -512,11 +482,6 @@ AliAnalysisTaskSEHFQA::~AliAnalysisTaskSEHFQA()
   delete fOutputCheckCentrality;
 
   delete fOutputEvSelection;
-
-  if(fOnOff[4]) {
-    delete fOutputFlowObs;
-    delete fFlowEvent;
-  }
 
 }
 
@@ -1439,65 +1404,6 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputEvSelection->Add(fHiszvtxvsSPDzvtxSelWithD);
 
   }
-  if(fOnOff[4]){ // FLOW OBSERVABLES
-    fOutputFlowObs=new TList();
-    fOutputFlowObs->SetOwner();
-    fOutputFlowObs->SetName(GetOutputSlot(8)->GetContainer()->GetName());
-
-    fFlowEvent = new AliFlowEvent(3000);
-    fRFPcuts = new AliFlowTrackCuts("rfpCuts");
-
-    fHisFEvents = new TH2F("hFlowEvents","FlowEvent Selection",7,0,7,7,-10,60);
-    fHisFEvents->GetXaxis()->SetBinLabel(1,"REACHED");
-    fHisFEvents->GetXaxis()->SetBinLabel(2,"TRIGGERED");
-    fHisFEvents->GetXaxis()->SetBinLabel(3,"kMB");
-    fHisFEvents->GetXaxis()->SetBinLabel(4,"kCent");
-    fHisFEvents->GetXaxis()->SetBinLabel(5,"kSemiC");
-    fHisFEvents->GetXaxis()->SetBinLabel(6,"Triggered + vtx cut");
-    fHisFEvents->GetXaxis()->SetBinLabel(7,"UnexpectedBehaviour");
-    fOutputFlowObs->Add(fHisFEvents);
-
-    TString ref[3] = {"FB1","FB128","VZE"};
-    Int_t etabin[3] = {40,40,20};
-    Int_t etamax[3] = { 1, 1, 5};
-    for(Int_t i=0; i<3; ++i) {
-      fHisQ[i]= new TProfile2D( Form("h%s_Q",ref[i].Data()),
-			     Form("Q_{2} components for %s",ref[i].Data()),
-			     4,0,4,12,0,60,"s");
-      fHisQ[i]->GetXaxis()->SetBinLabel(1,"Qx^{-}");
-      fHisQ[i]->GetXaxis()->SetBinLabel(2,"Qy^{-}");
-      fHisQ[i]->GetXaxis()->SetBinLabel(3,"Qx^{+}");
-      fHisQ[i]->GetXaxis()->SetBinLabel(4,"Qy^{+}");
-      fHisQ[i]->GetYaxis()->SetTitle("Centrality");
-      fOutputFlowObs->Add(fHisQ[i]);
-
-      fHisAngleQ[i] = new TH2F( Form("h%s_AngleQ",ref[i].Data()),
-			     Form("#Psi_{2} for %s",ref[i].Data()),
-			     72,0,TMath::Pi(),12,0,60);
-      fHisAngleQ[i]->GetXaxis()->SetTitle( Form("#Psi_{2}^{%s}",ref[i].Data()) );
-      fHisAngleQ[i]->GetYaxis()->SetTitle("Centrality");
-      fOutputFlowObs->Add(fHisAngleQ[i]);
-
-      fHisPhiEta[i] = new TH3F( Form("h%s_PhiEta",ref[i].Data()),
-			     Form("Eta vs Phi for %s",ref[i].Data()),
-			     144,0,TMath::TwoPi(),etabin[i],-1.0*etamax[i],+1.0*etamax[i],12,0,60);
-      fHisPhiEta[i]->GetXaxis()->SetTitle("Phi");
-      fHisPhiEta[i]->GetYaxis()->SetTitle("Eta");
-      fHisPhiEta[i]->GetZaxis()->SetTitle("Centrality");
-      fOutputFlowObs->Add(fHisPhiEta[i]);
-
-    }
-    fHisTPCVZE_AngleQ = new TH3F("hTPCVZE_AngleQ","#Psi_{2}^{VZERO} vs #Psi_{2}^{TPC}",   72,0,TMath::Pi(),72,0,TMath::Pi(),12,0,60);
-    fHisTPCVZE_AngleQ->GetXaxis()->SetTitle("#Psi_{2}^{TPC}");
-    fHisTPCVZE_AngleQ->GetYaxis()->SetTitle("#Psi_{2}^{VZE}");
-    fHisTPCVZE_AngleQ->GetZaxis()->SetTitle("Centrality");
-    fOutputFlowObs->Add(fHisTPCVZE_AngleQ);
-
-    fHisCentVsMultRPS = new TH2F("hCentVsMultRPS", " Centrality Vs. Multiplicity RPs",5000, 0, 5000.,12,0,60 );
-    fHisCentVsMultRPS->GetXaxis()->SetTitle("Multiplicity RPs");
-    fHisCentVsMultRPS->GetYaxis()->SetTitle("Centrality");
-    fOutputFlowObs->Add(fHisCentVsMultRPS);
-  }
 
   // Post the data
   PostData(1,fOutputEntries);
@@ -1507,7 +1413,6 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   PostData(4,fCuts);
   if(fOnOff[2]) PostData(5,fOutputCounters);
   if(fOnOff[3]) PostData(7,fOutputEvSelection);
-  if(fOnOff[4]) PostData(8,fOutputFlowObs);
 
   if(!fOnOff[0] && !fOnOff[1] && !fOnOff[2]) AliError("Nothing will be filled!");
 }
@@ -1784,8 +1689,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t nSelTracksTPCITS1SPD=0;
   Int_t ntracksFBit4=0;
 
-  AliTRDTriggerAnalysis trdSelection;
-  trdSelection.CalcTriggers(aod);
+  // AliTRDTriggerAnalysis trdSelection;
+  // trdSelection.CalcTriggers(aod);
 
   if(fReadMC) {
     if(aod->GetTriggerMask()==0 &&
@@ -1819,10 +1724,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     }
   }
 
-  if(fOnOff[4]) {
-    FillFlowObs(aod);
-    PostData(8,fOutputFlowObs);
-  }
   if(fOnOff[3]){
     AliCounterCollection* trigCount=(AliCounterCollection*)fOutputEvSelection->FindObject("trigCounter");
     AliCounterCollection* trigCount2=(AliCounterCollection*)fOutputEvSelection->FindObject("trigCounter2");
@@ -1945,12 +1846,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigMul->Fill(16.,multiplicity);
       trigCount2->Count(Form("triggerType:TRD/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HJT")){ // trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
       fHisTrigCent->Fill(17.,centrality);
       fHisTrigMul->Fill(17.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHJT/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HSE")){ //trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
       fHisTrigCent->Fill(18.,centrality);
       fHisTrigMul->Fill(18.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHSE/Run:%d",runNumber));
@@ -2106,11 +2007,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigCentSel->Fill(16.,centrality);
       fHisTrigMulSel->Fill(16.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HJT")){ //trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
       fHisTrigCentSel->Fill(17.,centrality);
       fHisTrigMulSel->Fill(17.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HSE")){ // trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
       fHisTrigCentSel->Fill(18.,centrality);
       fHisTrigMulSel->Fill(18.,multiplicity);
     }
@@ -2915,93 +2816,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   PostData(4,fCuts);
   if(fOnOff[2]) PostData(5,fOutputCounters);
   //Post data 6 done in case of centrality on
-}
-
-//____________________________________________________________________________
-void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
-  /// fills the flow observables
-  Double_t cc;
-  cc = fCuts->GetCentrality(aod);
-  fHisFEvents->Fill(0., cc);
-
-  UInt_t mask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  UInt_t trigger=AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-  if(mask & trigger) {
-    fHisFEvents->Fill(1.,cc); // fired
-    if (mask & AliVEvent::kMB) fHisFEvents->Fill(2.,cc);
-    if (mask & AliVEvent::kCentral) fHisFEvents->Fill(3.,cc);
-    if (mask & AliVEvent::kSemiCentral) fHisFEvents->Fill(4.,cc);
-    Bool_t rejected=false;
-    if(cc<0 || cc>60) rejected=true;
-    const AliVVertex *vertex = aod->GetPrimaryVertex();
-    Double_t zvtx=vertex->GetZ();
-    if(TMath::Abs(zvtx)>fCuts->GetMaxVtxZ()) rejected=true;
-    if(rejected) return; //not interesting for flow QA
-  } else {
-    return;
-  }
-
-  // event accepted
-  fHisFEvents->Fill(5.,cc);
-  fRFPcuts->SetParamType(AliFlowTrackCuts::kGlobal);
-  fRFPcuts->SetPtRange(0.2,5.);
-  fRFPcuts->SetEtaRange(-0.8,0.8);
-  fRFPcuts->SetMinNClustersTPC(70);
-  fRFPcuts->SetMinChi2PerClusterTPC(0.2);
-  fRFPcuts->SetMaxChi2PerClusterTPC(4.0);
-  fRFPcuts->SetAcceptKinkDaughters(kFALSE);
-  fRFPcuts->SetEvent(aod);
-
-  // "FB1" (i=0), "FB128" (i=1), "VZE" (i=2)
-  Double_t psi[3];
-  for(Int_t i=0; i!=3; ++i) {
-    if(i==0) { // switching to bit 1
-      fRFPcuts->SetMinimalTPCdedx(10.);
-      fRFPcuts->SetAODfilterBit(1);
-    } else { // switching to bit 128
-      fRFPcuts->SetMinimalTPCdedx(-1);
-      fRFPcuts->SetAODfilterBit(128);
-    }
-    if(i>1) {
-      fRFPcuts->SetParamType(AliFlowTrackCuts::kVZERO);
-      fRFPcuts->SetEtaRange(-5,+5);
-      fRFPcuts->SetPhiMin(0);
-      fRFPcuts->SetPhiMax(TMath::TwoPi());
-    }
-    fFlowEvent->Fill(fRFPcuts,fRFPcuts);
-    fFlowEvent->TagSubeventsInEta(-5,0,0,+5);
-    // getting informationt
-    AliFlowVector vQ, vQaQb[2];
-    fFlowEvent->Get2Qsub(vQaQb,2);
-    vQ = vQaQb[0]+vQaQb[1];
-    Double_t dMa=vQaQb[0].GetMult();
-    Double_t dMb=vQaQb[1].GetMult();
-    if( dMa<2 || dMb<2 ) {
-      fHisFEvents->Fill(6.,cc); //???
-      continue;
-    }
-    psi[i] = vQ.Phi()/2;
-    // publishing
-    fHisQ[i]->Fill(0,cc,vQaQb[0].X()/dMa,dMa); // Qx-
-    fHisQ[i]->Fill(1,cc,vQaQb[0].Y()/dMa,dMa); // Qy-
-    fHisQ[i]->Fill(2,cc,vQaQb[1].X()/dMb,dMb); // Qx+
-    fHisQ[i]->Fill(3,cc,vQaQb[1].Y()/dMb,dMb); // Qy+
-    fHisAngleQ[i]->Fill(psi[i],cc); // Psi
-    AliFlowTrackSimple *track;
-    for(Int_t t=0; t!=fFlowEvent->NumberOfTracks(); ++t) {
-      track = (AliFlowTrackSimple*) fFlowEvent->GetTrack(t);
-      if(!track) continue;
-      if(!track->InRPSelection()) continue;
-      fHisPhiEta[i]->Fill(track->Phi(),track->Eta(),cc,track->Weight()); //PhiEta
-    }
-
-  //histo filled only for TPCFB1
-  if (i==0) {
-    fHisCentVsMultRPS->Fill(fFlowEvent->GetNumberOfRPs(),cc);
-  }
-  }
-  // TPC vs VZERO
-  fHisTPCVZE_AngleQ->Fill(psi[0],psi[2],cc);
 }
 
 //____________________________________________________________________________

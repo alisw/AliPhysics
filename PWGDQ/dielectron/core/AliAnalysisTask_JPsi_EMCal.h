@@ -72,6 +72,9 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
 	void SetEMCalTriggerDG1() { fEMCDG1=kTRUE; };
 	void SetEMCalTriggerDG2() { fEMCDG2=kTRUE; };
+    //trigger selection for EMCal+DCal together
+    void SetEMCalTriggerEG1DG1() { fEMCEG1DG1=kTRUE; };
+    void SetEMCalTriggerEG2DG2() { fEMCEG2DG2=kTRUE; };
 	
 	void SetUseTender() { fUseTender=kTRUE;};
     
@@ -181,6 +184,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 //EMCal threshold separation
 	Bool_t				fEMCEG1;
 	Bool_t				fEMCEG2;
+    
+    
+    Bool_t               fEMCEG1DG1;//to run both EMCal and DCal triggers together
+    Bool_t               fEMCEG2DG2;
 	
 //DCal threshold separation
 	Bool_t				fEMCDG1;

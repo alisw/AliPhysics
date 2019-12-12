@@ -1,4 +1,4 @@
-Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaKaon = -1)
+Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaPart1 = -1, Double_t nSigmaPart2 = -1)
 {
 
     // -- Values ------------------------------------------------------------------------------------
@@ -8,24 +8,18 @@ Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bo
     /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
     /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
 
-     
-   // integrated pion cut
-   AliRsnCutDaughterKStar2010PP *cutPi = new AliRsnCutDaughterKStar2010PP("cutPionForKStar", AliPID::kPion);
-   // cut set
-   AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForKStar", AliRsnTarget::kDaughter);
-   cutSetPi->AddCut(cutPi);
-   cutSetPi->SetCutScheme(cutPi->GetName());
-   // add to task
-   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
    
-   // integrated kaon cut
-   AliRsnCutDaughterKStar2010PP *cutK = new AliRsnCutDaughterKStar2010PP("cutKaonForKStar", AliPID::kKaon);
-   // cut set
-   AliRsnCutSet *cutSetK = new AliRsnCutSet("setKaonForKStar", AliRsnTarget::kDaughter);
-   cutSetK->AddCut(cutK);
-   cutSetK->SetCutScheme(cutK->GetName());
-   // add to task
-   Int_t iCutK = task->AddTrackCuts(cutSetK);
+   // set daughter cuts
+  AliRsnCutSetDaughterParticle* cutSetPi;
+  AliRsnCutSetDaughterParticle* cutSetK;
+
+   AliRsnCutTrackQuality *fQualityTrackCut = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
+
+    cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2),fQualityTrackCut,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2);
+  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1),fQualityTrackCut,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1);
+  
+  Int_t iCutPi = task->AddTrackCuts(cutSetPi);
+  Int_t iCutK  = task->AddTrackCuts(cutSetK);
 
     // Defining output objects
     const Int_t dims = 8;

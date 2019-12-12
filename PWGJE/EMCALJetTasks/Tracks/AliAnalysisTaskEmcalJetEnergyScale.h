@@ -48,7 +48,7 @@ public:
   void SetNameDetJetContainer(const char *name)  { fNameDetectorJets = name; }
   void SetNamePartJetContainer(const char *name) { fNameParticleJets = name; }
   void SetTriggerName(const char *name)          { fTriggerSelectionString = name; }
-  void SetFractionResponseClosure(double fraction);
+  void SetFractionResponseClosure(double fraction) { fFractionResponseClosure = fraction; }
   void SetFillHSparse(Bool_t doFill)             { fFillHSparse = doFill; }
   void SetEnergyScaleShift(Double_t scaleshift)  { fScaleShift = scaleshift; }
 

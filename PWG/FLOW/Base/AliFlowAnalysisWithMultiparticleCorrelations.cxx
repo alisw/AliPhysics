@@ -257,7 +257,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
   for(Int_t t=0;t<nTracks;t++) // loop over all tracks
   {
    AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
-   if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FCH() !!!!");continue;}
+   if(!pTrack){printf("\n Error: pTrack is NULL in MPC::FCH() !!!!");continue;}
    if(!pTrack->InRPSelection()){continue;}
    if(pTrack)
    {
@@ -2013,11 +2013,11 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
    pTrack = anEvent->GetTrack((Int_t)fRandomIndicesRPs->GetAt(t));
   }
 
-  if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FillQvector(...) !!!!"); continue;}
+  if(!pTrack){printf("\n Error: pTrack is NULL in MPC::FillQvector(...) !!!!"); continue;}
 
   if(!TrackIsInSpecifiedIntervals(pTrack)){continue;} // TBI tmp gym
 
-  if(!(pTrack->InRPSelection() || pTrack->InPOISelection())){printf("\n AAAARGH: pTrack is neither RP nor POI !!!!"); continue;}
+  if(!(pTrack->InRPSelection() || pTrack->InPOISelection())){printf("\n Error: pTrack is neither RP nor POI !!!!"); continue;}
 
   if(pTrack->InRPSelection()) // fill Q-vector components only with reference particles
   {
@@ -2486,7 +2486,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
    {
     pTrack = anEvent->GetTrack((Int_t)fRandomIndicesRPs->GetAt(t));
    }
-   if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FCH() !!!!");continue;}
+   if(!pTrack){printf("\n Error: pTrack is NULL in MPC::FCH() !!!!");continue;}
    if(pTrack)
    {
 
@@ -5437,7 +5437,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSim
  for(Int_t t=0;t<nTracks;t++) // loop over all tracks
  {
   AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
-  if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::DumpThePoints(AliFlowEventSimple *anEvent) !!!!"); continue;}
+  if(!pTrack){printf("\n Error: pTrack is NULL in MPC::DumpThePoints(AliFlowEventSimple *anEvent) !!!!"); continue;}
   if(pTrack->InRPSelection()) 
   {
    dPhi = pTrack->Phi(); 

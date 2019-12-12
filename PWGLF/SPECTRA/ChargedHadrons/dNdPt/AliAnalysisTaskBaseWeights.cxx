@@ -70,10 +70,10 @@ void AliAnalysisTaskBaseWeights::BaseAddOutput()
 
     // if there are weights and they are used add them to the ouput
     if (fMCSpectraWeights && fUseMCWeights) {
-        //TODO 
+        //TODO
         // removed after comment from patrick, only store the histogram (see below)
         //fOutputList->Add(fMCSpectraWeights);
-        fOutputList->Add(fMCSpectraWeights->GetHistMCGenPrimTrackParticles());
+        fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCGenPrimTrackParticles());
     }
 
 }
@@ -169,11 +169,11 @@ Double_t AliAnalysisTaskBaseWeights::MCScalingFactor()
         // for now I pass the V0M multiplicity percentile
         // TODO check if this the correct one or what should be passed
 
-        // TODO maybe ideal is to pass simply the event and let the SpectraWeights decide on which mult to use                    
+        // TODO maybe ideal is to pass simply the event and let the SpectraWeights decide on which mult to use
         cout<<"fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), fMC)= "<<fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), fMC)<<endl; //DEBUG
         return fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), fMC);
-    } 
-    
+    }
+
     // if there are no spectraweights or for secondaries we use the static tools function
     // TODO this has to be modified, currently values for the LCH17pq are hardcoded
     // TODO also the systematic varation should be set in the addtask somewhere
@@ -247,7 +247,7 @@ AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(const
     //===========================================================================
     // collisionSystem is String "pp", "pPb", "XeXe", "PbPb"
     if (collisionSystem) {
-        AliMCSpectraWeights* weights = new AliMCSpectraWeights(collisionSystem, "fMCSpectraWeights", (AliMCSpectraWeights::SysFlag)sysFlag); 
+        AliMCSpectraWeights* weights = new AliMCSpectraWeights(collisionSystem, "fMCSpectraWeights", (AliMCSpectraWeights::SysFlag)sysFlag);
         // root file with fHistMCGenPrimTrackParticle (THnF)
         // or used SetSavedListName
         // prevTrainOutputPath is string, for lego train activate the check box addtask to get alien connection for addtask
@@ -257,7 +257,7 @@ AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(const
         // /alice/cern.ch/user/p/phuhn/AllPublishedFractions.root
         // (path fixed in AliMCSpectraWeights code)
         //  used void SetDataFractionsFile(const char* file) to set local path
- 
+
         if (prevTrainOutputPath) { weights->SetMCSpectraFile(prevTrainOutputPath); } // path to previous train output
         weights->Init();
         task->fMCSpectraWeights = weights;

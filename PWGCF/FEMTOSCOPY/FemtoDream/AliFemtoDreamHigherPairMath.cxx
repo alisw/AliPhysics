@@ -11,14 +11,17 @@
 static const float piHi = TMath::Pi();
 
 AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
-    AliFemtoDreamCollConfig *conf)
-    : fHists(new AliFemtoDreamCorrHists(conf, conf->GetMinimalBookingSample())),
+    AliFemtoDreamCollConfig *conf, bool minBooking)
+    : fHists(new AliFemtoDreamCorrHists(conf, minBooking)),
       fWhichPairs(conf->GetWhichPairs()),
       fBField(-99.),
       fDeltaPhiEtaMax(conf->GetSqDeltaPhiEtaMax()),
       fRandom(),
       fPi(TMath::Pi()) {
   fRandom.SetSeed(0);
+  TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
+                                        kTRUE, 0.0, 1, "Nucleus", 1000010020);
+  TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
 }
 
 AliFemtoDreamHigherPairMath::~AliFemtoDreamHigherPairMath() {
@@ -44,12 +47,12 @@ AliFemtoDreamHigherPairMath& AliFemtoDreamHigherPairMath::operator=(
   fBField = math.fBField;
   fDeltaPhiEtaMax = math.fDeltaPhiEtaMax;
   fRandom = math.fRandom;
-  fPi=TMath::Pi();
+  fPi = TMath::Pi();
   return *this;
 }
 
 bool AliFemtoDreamHigherPairMath::PassesPairSelection(
-    AliFemtoDreamBasePart* part1, AliFemtoDreamBasePart* part2,
+    AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2,
     bool Recalculate) {
   bool outBool = true;
   //Method calculates the average separation between two tracks
@@ -59,13 +62,15 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
     RecalculatePhiStar(part1);
     RecalculatePhiStar(part2);
   }
-  unsigned int nDaug1 = part1->GetPhiAtRaidius().size();
-  unsigned int nDaug2 = part2->GetPhiAtRaidius().size();
+  unsigned int nDaug1 = part1.GetPhiAtRaidius().size();
+  unsigned int nDaug2 = part2.GetPhiAtRaidius().size();
+//  std::cout << "nDaug1: " << nDaug1 << " nDaug2: " << nDaug2 << std::endl;
   // if nDaug == 1 => Single Track, else decay
-  std::vector<float> eta1 = part1->GetEta();
-  std::vector<float> eta2 = part2->GetEta();
+  std::vector<float> eta1 = part1.GetEta();
+  std::vector<float> eta2 = part2.GetEta();
+
   for (unsigned int iDaug1 = 0; iDaug1 < nDaug1 && outBool; ++iDaug1) {
-    std::vector<float> PhiAtRad1 = part1->GetPhiAtRaidius().at(iDaug1);
+    std::vector<float> PhiAtRad1 = part1.GetPhiAtRaidius().at(iDaug1);
     float etaPar1;
     if (nDaug1 == 1) {
       etaPar1 = eta1.at(0);
@@ -73,8 +78,8 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
       etaPar1 = eta1.at(iDaug1 + 1);
     }
     for (unsigned int iDaug2 = 0;
-        iDaug2 < part2->GetPhiAtRaidius().size() && outBool; ++iDaug2) {
-      std::vector<float> phiAtRad2 = part2->GetPhiAtRaidius().at(iDaug2);
+        iDaug2 < part2.GetPhiAtRaidius().size() && outBool; ++iDaug2) {
+      std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
       float etaPar2;
       if (nDaug2 == 1) {
         etaPar2 = eta2.at(0);
@@ -104,7 +109,7 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
 }
 
 void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
-    AliFemtoDreamBasePart *part) {
+    AliFemtoDreamBasePart &part) {
   //Only use this for Tracks, this was implemented for the case where particles
   //were added a random phi to obtain an uncorrelated sample. This should be extended
   //to the daughter tracks. For some reason the momentum is stored in a TVector3,
@@ -116,13 +121,13 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
     AliWarning(
         "BField was most probably not set! PhiStar Calculation meaningless. \n");
   }
-  part->ResizePhiAtRadii(0);
+  part.ResizePhiAtRadii(0);
   static float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225.,
       245. };
   std::vector<float> tmpVec;
-  auto phi0 = part->GetMomentum().Phi();
-  float pt = part->GetMomentum().Pt();
-  float chg = part->GetCharge().at(0);
+  auto phi0 = part.GetMomentum().Phi();
+  float pt = part.GetMomentum().Pt();
+  float chg = part.GetCharge().at(0);
   for (int radius = 0; radius < 9; radius++) {
     tmpVec.push_back(
         phi0
@@ -130,7 +135,7 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
                 0.1 * chg * fBField * 0.3 * TPCradii[radius] * 0.01
                     / (2. * pt)));
   }
-  part->SetPhiAtRadius(tmpVec);
+  part.SetPhiAtRadius(tmpVec);
 }
 
 float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
@@ -167,17 +172,25 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     fHists->FillSameEventmTDist(iHC, RelativePairmT(PartOne, PartTwo),
                                 RelativeK);
   }
+  if (fillHists && fHists->GetDokTandMultBinning()) {
+    fHists->FillSameEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
+                                RelativeK, Mult + 1);
+  }
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtQADist(iHC, RelativeK, Part1Momentum.Pt(),
                          Part2Momentum.Pt());
+    fHists->FillPtSEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
+    fHists->FillPtSETwoQADist(iHC, Part2Momentum.Pt(), Mult + 1);
   }
   return RelativeK;
 }
 
-void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK, float massOne,
-                                         float massTwo) {
+void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK,
+                                         AliFemtoDreamBasePart &part1,
+                                         AliFemtoDreamBasePart &part2) {
   if (fWhichPairs.at(iHC) && fHists->GetDoMassQA()) {
-    fHists->FillMassQADist(iHC, RelK, massOne, massTwo);
+    fHists->FillMassQADist(iHC, RelK, part1.GetInvMass(), part2.GetInvMass());
+    fHists->FillPairInvMassQAD(iHC, part1, part2);
   }
 }
 
@@ -224,29 +237,37 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
     fHists->FillMixedEventmTDist(iHC, RelativePairmT(PartOne, PartTwo),
                                  RelativeK);
   }
+  if (fillHists && fHists->GetDokTandMultBinning()) {
+    fHists->FillMixedEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
+                                RelativeK, Mult + 1);
+  }
+  if (fillHists && fHists->GetDoPtQA()) {
+    fHists->FillPtMEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
+    fHists->FillPtMETwoQADist(iHC, Part2Momentum.Pt(), Mult + 1);
+  }
   return RelativeK;
 }
 
 void AliFemtoDreamHigherPairMath::SEDetaDPhiPlots(int iHC,
-                                                  AliFemtoDreamBasePart* part1,
+                                                  AliFemtoDreamBasePart &part1,
                                                   int PDGPart1,
-                                                  AliFemtoDreamBasePart* part2,
+                                                  AliFemtoDreamBasePart &part2,
                                                   int PDGPart2, float RelativeK,
                                                   bool recalculate) {
   if (fWhichPairs.at(iHC) && fHists->GetEtaPhiPlots()) {
     DeltaEtaDeltaPhi(iHC, part1, part2, true, RelativeK, recalculate);
   }
   if (fWhichPairs.at(iHC) && fHists->GetDodPhidEtaPlots()) {
-    float deta = part1->GetEta().at(0) - part2->GetEta().at(0);
-    float dphi = part1->GetPhi().at(0) - part2->GetPhi().at(0);
+    float deta = part1.GetEta().at(0) - part2.GetEta().at(0);
+    float dphi = part1.GetPhi().at(0) - part2.GetPhi().at(0);
     float mT = 0;
     if (fHists->GetDodPhidEtamTPlots()) {
       TLorentzVector PartOne, PartTwo;
-      PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
-                      part1->GetMCMomentum().Z(),
+      PartOne.SetXYZM(part1.GetMCMomentum().X(), part1.GetMCMomentum().Y(),
+                      part1.GetMCMomentum().Z(),
                       TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
-      PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
-                      part2->GetMCMomentum().Z(),
+      PartTwo.SetXYZM(part2.GetMCMomentum().X(), part2.GetMCMomentum().Y(),
+                      part2.GetMCMomentum().Z(),
                       TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
       mT = RelativePairmT(PartOne, PartTwo);
     }
@@ -259,25 +280,25 @@ void AliFemtoDreamHigherPairMath::SEDetaDPhiPlots(int iHC,
 }
 
 void AliFemtoDreamHigherPairMath::MEDetaDPhiPlots(int iHC,
-                                                  AliFemtoDreamBasePart* part1,
+                                                  AliFemtoDreamBasePart &part1,
                                                   int PDGPart1,
-                                                  AliFemtoDreamBasePart* part2,
+                                                  AliFemtoDreamBasePart &part2,
                                                   int PDGPart2, float RelativeK,
                                                   bool recalculate) {
   if (fWhichPairs.at(iHC) && fHists->GetEtaPhiPlots()) {
     DeltaEtaDeltaPhi(iHC, part1, part2, false, RelativeK, recalculate);
   }
   if (fWhichPairs.at(iHC) && fHists->GetDodPhidEtaPlots()) {
-    float deta = part1->GetEta().at(0) - part2->GetEta().at(0);
-    float dphi = part1->GetPhi().at(0) - part2->GetPhi().at(0);
+    float deta = part1.GetEta().at(0) - part2.GetEta().at(0);
+    float dphi = part1.GetPhi().at(0) - part2.GetPhi().at(0);
     float mT = 0;
     if (fHists->GetDodPhidEtamTPlots()) {
       TLorentzVector PartOne, PartTwo;
-      PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
-                      part1->GetMCMomentum().Z(),
+      PartOne.SetXYZM(part1.GetMCMomentum().X(), part1.GetMCMomentum().Y(),
+                      part1.GetMCMomentum().Z(),
                       TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
-      PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
-                      part2->GetMCMomentum().Z(),
+      PartTwo.SetXYZM(part2.GetMCMomentum().X(), part2.GetMCMomentum().Y(),
+                      part2.GetMCMomentum().Z(),
                       TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
       mT = RelativePairmT(PartOne, PartTwo);
     }
@@ -358,8 +379,8 @@ float AliFemtoDreamHigherPairMath::RelativePairmT(TLorentzVector &PartOne,
 }
 
 void AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
-                                                   AliFemtoDreamBasePart *part1,
-                                                   AliFemtoDreamBasePart *part2,
+                                                   AliFemtoDreamBasePart &part1,
+                                                   AliFemtoDreamBasePart &part2,
                                                    bool SEorME, float relk,
                                                    bool recalculate) {
   if (recalculate) {
@@ -373,19 +394,19 @@ void AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
     AliWarning("you are doing something wrong \n");
   }
   unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
-  std::vector<float> eta1 = part1->GetEta();
-  std::vector<float> eta2 = part2->GetEta();
+  std::vector<float> eta1 = part1.GetEta();
+  std::vector<float> eta2 = part2.GetEta();
   for (unsigned int iDaug1 = 0; iDaug1 < nDaug1; ++iDaug1) {
-    std::vector<float> PhiAtRad1 = part1->GetPhiAtRaidius().at(iDaug1);
+    std::vector<float> PhiAtRad1 = part1.GetPhiAtRaidius().at(iDaug1);
     float etaPar1;
     if (nDaug1 == 1) {
       etaPar1 = eta1.at(0);
     } else {
       etaPar1 = eta1.at(iDaug1 + 1);
     }
-    for (unsigned int iDaug2 = 0; iDaug2 < part2->GetPhiAtRaidius().size();
+    for (unsigned int iDaug2 = 0; iDaug2 < part2.GetPhiAtRaidius().size();
         ++iDaug2) {
-      std::vector<float> phiAtRad2 = part2->GetPhiAtRaidius().at(iDaug2);
+      std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
       float etaPar2;
       if (nDaug2 == 1) {
         etaPar2 = eta2.at(0);

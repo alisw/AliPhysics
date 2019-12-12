@@ -215,11 +215,12 @@ class AliRDHFCutsXictopKpi : public AliRDHFCuts
   //-------------------------
 
 
-private:
   EPIDStrategy fPIDStrategy;                /// PIS strategy (nsigma, combined)
   Double_t fPIDThreshold[AliPID::kSPECIES]; /// PID threshold for each species
   ECutsStrategy fCutsStrategy;              /// cut strategy (standard or KF)
   Bool_t fUseSpecialCut;
+
+private:
 
   /// \cond CLASSIMP    
   ClassDef(AliRDHFCutsXictopKpi,1);  /// class for cuts on AOD reconstructed Xic->pKpi

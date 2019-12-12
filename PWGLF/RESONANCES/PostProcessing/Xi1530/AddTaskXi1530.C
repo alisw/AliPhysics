@@ -57,12 +57,16 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
         std::cout << "AliAnaylsisTaskXi1530:: Systematic Study mode " << std::endl;
     }
     if (foption.Contains("NoQA")) {
-        taskXi1530->SetNoQA(kFALSE);  // default: kTRUE
+        taskXi1530->SetQA(kFALSE);  // default: kTRUE
         std::cout << "AliAnaylsisTaskXi1530:: NoQA mode " << std::endl;
     }
     if (foption.Contains("EXO")) {
         taskXi1530->SetExoticFinder(kTRUE);  // default: kFALSE
         std::cout << "AliAnaylsisTaskXi1530:: ExoticFinder mode " << std::endl;
+    }
+    if (foption.Contains("HF")) {
+        taskXi1530->SetExoticFinder2(kTRUE);  // default: kFALSE
+        std::cout << "AliAnaylsisTaskXi1530:: ExoticFinder2 mode " << std::endl;
     }
     if (foption.Contains("INEL")) {
         taskXi1530->fEventCuts.fCentralityFramework = 0;

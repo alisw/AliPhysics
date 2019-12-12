@@ -22,6 +22,8 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void SetMixing(Bool_t setmixing) { fsetmixing = setmixing; }
     void SetnMix(Int_t nMix) { fnMix = nMix; }
     void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
+    void SetINEL(Bool_t input) { fIsINEL = input; }
+    void SetHighMult(Bool_t input) { fIsHM = input; }
     void SetFillnTuple(Bool_t fillntuple) { fFillnTuple = fillntuple; }
 
     // Setter for cut variables
@@ -53,8 +55,26 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void SetMaxDCAPVV0(Double_t lParameter) {
         fDCArDistLambdaPVCut = lParameter;
     }
+    void SetMaxDCAPVV0PosDaughter(Double_t lParameter) {
+        fDCAPositiveTrack = lParameter;
+    }
+    void SetMaxDCAPVV0NegDaughter(Double_t lParameter) {
+        fDCANegativeTrack = lParameter;
+    }
     void SetMinCPAV0(Double_t lParameter) {
         fV0CosineOfPointingAngleCut = lParameter;
+    }
+    void SetMaxRapidityV0(Double_t lParameter) {
+        fMaxLambdaRapidity = lParameter;
+    }
+    void SetLowRadiusV0(Double_t lParameter) {
+        fLambdaLowRadius = lParameter;
+    }
+    void SetHighRadiusV0(Double_t lParameter) {
+        fLambdaHighRadius = lParameter;
+    }
+    void SetLifetimeV0(Double_t lParameter) {
+        fLambdaLifetime = lParameter;
     }
     void SetMaxMassWindowV0(Double_t lParameter) {
         fV0MassWindowCut = lParameter;
@@ -71,10 +91,11 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     Bool_t GoodV0Selection();
     void FillTracks();
     void FillNtuples();
-    void FillMCinput(AliMCEvent* fMCEvent);
+    void FillMCinput(AliMCEvent* fMCEvent, int Fillbin = 0);
     void FillTrackToEventPool();
-    Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion);
+    Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion, Bool_t LambdaStarCheck = kFALSE);
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
+    void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
     void SetCutOpen();
 
     // helper
@@ -112,18 +133,18 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     THistManager* fHistos = nullptr;  //!
     AliAODVertex* vertex = nullptr;   //!
     Bool_t fsetmixing = kFALSE;
-    Bool_t IsMC = kFALSE;
+    Bool_t fIsMC = kFALSE;
     Bool_t IsPrimaryMC = kFALSE;
     Bool_t fFillnTuple = kFALSE;
+    Bool_t fIsNano = kFALSE;
+    Bool_t fIsINEL = kFALSE;
+    Bool_t fIsHM = kFALSE;
     TNtupleD* fNtupleSigma1385;        //! Ntuple for the analysis
     TClonesArray* fMCArray = nullptr;  //!
     mixingpool fEMpool;                //!
     TAxis binCent;                     //!
     TAxis binZ;                        //!
-    Double_t PVx = 999;
-    Double_t PVy = 999;
-    Double_t PVz = 999;
-    Double_t fZ = 999;
+    Double_t lPosPV[3];
 
     Double_t fCent = -1;
     Int_t fnMix = 10;
@@ -131,18 +152,24 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     Int_t zbin = -1;
 
     // Pion cuts
-    UInt_t fFilterBit = 32;
-    Double_t fTPCNsigSigmaStarPionCut = 3;
+    UInt_t fFilterBit = 32.0;
+    Double_t fTPCNsigSigmaStarPionCut = 3.0;
     Double_t fSigmaStarPionEtaCut = 0.8;
     Double_t fSigmaStarPionZVertexCut = 2.0;  // 2.0
-    Double_t fSigmaStarPionXYVertexSigmaCut = 7;
+    Double_t fSigmaStarPionXYVertexSigmaCut = 7.0;
 
     // Lambda cuts
-    Double_t fTPCNsigLambdaProtonCut = 3;
-    Double_t fTPCNsigLambdaPionCut = 3;
-    Double_t fDCADistLambdaDaughtersCut = 0.5;    // 0.5
-    Double_t fDCArDistLambdaPVCut = 0.3;          // 0.3
-    Double_t fV0CosineOfPointingAngleCut = 0.99;  // 0.99
+    Double_t fTPCNsigLambdaProtonCut = 3.0;
+    Double_t fTPCNsigLambdaPionCut = 3.0;
+    Double_t fDCADistLambdaDaughtersCut = 1.6;
+    Double_t fDCArDistLambdaPVCut = 0.3;
+    Double_t fDCAPositiveTrack = 0.05;
+    Double_t fDCANegativeTrack = 0.05;
+    Double_t fV0CosineOfPointingAngleCut = 0.99;
+    Double_t fMaxLambdaRapidity = 0.5;
+    Double_t fLambdaLowRadius = 1.4;
+    Double_t fLambdaHighRadius = 100.0;
+    Double_t fLambdaLifetime = 30.0;
     Double_t fV0MassWindowCut = 0.01;
 
     // Sigma Star cut
@@ -150,9 +177,14 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     Double_t fSigmaStarYCutLow = -0.5;
 
     std::vector<UInt_t> goodtrackindices;  //!
-    std::vector<UInt_t> goodv0indices;     //!
+    std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
-    ClassDef(AliAnalysisTaskSigma1385PM, 1);
+    ClassDef(AliAnalysisTaskSigma1385PM, 6);
+    // Add rapidity/radius/Lifetime/Y cut of lambda
+    // Add NanoOption
+    // 4: Add GetImpactParm function for nano
+    // 5: Seprate MC Sparse, INEL study capability
+    // 6: Update some of deafult vaules
 };
 
 #endif

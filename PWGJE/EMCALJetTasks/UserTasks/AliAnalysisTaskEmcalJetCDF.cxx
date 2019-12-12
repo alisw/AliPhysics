@@ -116,8 +116,8 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
   namespace CDF = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetCDF_NS;
   TString histname = "", groupname = "", fullgroupname = "";
 
-  TH2I* fSPclsvsSPDtrksBef = (TH2I*)GetHistogram("fSPclsvsSPDtrksBef_task");
-  TH2F* fMultV0onvsMultV0ofBef = (TH2F*)GetHistogram("fMultV0onvsMultV0ofBef_task");
+  TH2I* fSPclsvsSPDtrksBef = (TH2I*)fOutput->FindObject("fSPclsvsSPDtrksBef");
+  TH2F* fMultV0onvsMultV0ofBef = (TH2F*)fOutput->FindObject("fMultV0onvsMultV0ofBef");
 
   // Per event QA; N.B. Event is already selected
   AliAODEvent* aod = dynamic_cast<AliAODEvent*> (InputEvent());
@@ -516,10 +516,10 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
     if (fEmbeddingQA.Initialize()) { fEmbeddingQA.AddQAPlotsToList(fOutput); }
     }
 
-  TH2I* fSPclsvsSPDtrksBef = new TH2I("fSPclsvsSPDtrksBef_task", "fSPclsvsSPDtrksBef_task;SPD N_{tracklets};SPD N_{clusters}", 1000, -0.5, 6999.5, 1000, -0.5, 24999.5);
+  TH2I* fSPclsvsSPDtrksBef = new TH2I("fSPclsvsSPDtrksBef", "fSPclsvsSPDtrksBef;SPD N_{tracklets};SPD N_{clusters}", 1000, -0.5, 6999.5, 1000, -0.5, 24999.5);
   fOutput->Add(fSPclsvsSPDtrksBef);
 
-  TH2F* fMultV0onvsMultV0ofBef = new TH2F("fMultV0onvsMultV0ofBef_task", "fMultV0onvsMultV0ofBef_task;V0 offline;V0 online", 1000, 0, 50000, 1000, 0, 50000);
+  TH2F* fMultV0onvsMultV0ofBef = new TH2F("fMultV0onvsMultV0ofBef", "fMultV0onvsMultV0ofBef;V0 offline;V0 online", 1000, 0, 50000, 1000, 0, 50000);
   fOutput->Add(fMultV0onvsMultV0ofBef);
 
   TString histname = "", histtitle = "", groupname = "", fullgroupname = "";

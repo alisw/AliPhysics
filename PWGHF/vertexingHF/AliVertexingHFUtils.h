@@ -84,7 +84,7 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetFullEvResol(const TH1F* hSubEvCorr, Int_t k=1);
   static Double_t GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t k=1);
   static Double_t GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k=1);
-  static TString  GetGenerator(Int_t label, AliAODMCHeader* header); 
+  static TString  GetGenerator(Int_t label, AliAODMCHeader* header);
   static Bool_t IsTrackInjected(Int_t label,AliAODMCHeader *header,TClonesArray *arrayMC);
   static Bool_t IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC);
   static void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
@@ -92,9 +92,11 @@ class AliVertexingHFUtils : public TObject{
   static Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
   static Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODEvent* aod, AliAODMCHeader *header,TClonesArray *arrayMC);
   static Bool_t HasCascadeCandidateAnyDaughInjected(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
+  static Int_t PreSelectITSUpgrade(TClonesArray* arrayMC, AliAODMCHeader *header, TObjArray aodTracks, Int_t nDaug, Int_t pdgabs, const Int_t *pdgDg);
+
   /// Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
-    fMinEtaForTracklets=mineta; 
+    fMinEtaForTracklets=mineta;
     fMaxEtaForTracklets=maxeta;
   }
   static Int_t GetNumberOfTrackletsInEtaRange(AliAODEvent* ev, Double_t mineta, Double_t maxeta);
@@ -131,7 +133,8 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetVZEROCEqualizedMultiplicity(AliAODEvent* ev);
 
   /// Functions for computing average pt
-  static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Float_t minMass=0., Float_t maxMass=3., Int_t rebin=1);
+  static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, 
+                        TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Float_t minMass=0., Float_t maxMass=3., Int_t rebin=1);
 
   /// Functions for processing trigger information
   static Bool_t CheckT0TriggerFired(AliAODEvent* aodEv);
@@ -153,6 +156,7 @@ class AliVertexingHFUtils : public TObject{
   static Bool_t IsTrackFromBeauty(AliAODTrack* tr, TClonesArray* arrayMC);
   static Bool_t IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* tr, TClonesArray* arrayMC);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
+  static Double_t GetBeautyMotherPtAndPDG(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t &pdgGranma);
   static Int_t CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
   static Int_t CheckDplusDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
@@ -172,8 +176,10 @@ class AliVertexingHFUtils : public TObject{
   static Int_t CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckBplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
-  static Int_t CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
-  static Int_t CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckB0toDminuspiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckB0toDminuspiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd=kFALSE);
+  static Int_t CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd=kFALSE);
   static Int_t CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 
@@ -182,8 +188,8 @@ class AliVertexingHFUtils : public TObject{
   /// GlobalChi2 structure for simultaneus in-plane - out-of-plane fit
   struct GlobalInOutOfPlaneChi2 {
     GlobalInOutOfPlaneChi2(ROOT::Math::IMultiGenFunction & fInPlane, ROOT::Math::IMultiGenFunction & fOutOfPlane, Int_t npars, vector<UInt_t> commonpars) :
-    fChi2_InPlane(&fInPlane), 
-    fChi2_OutOfPlane(&fOutOfPlane), 
+    fChi2_InPlane(&fInPlane),
+    fChi2_OutOfPlane(&fOutOfPlane),
     fNpars(npars),
     fCommonPars() {
       fCommonPars.clear();
@@ -193,14 +199,14 @@ class AliVertexingHFUtils : public TObject{
     Double_t operator() (const Double_t *par) const {
       const UInt_t npars = fNpars;
       Double_t pInPlane[npars];
-      for(UInt_t iPar=0; iPar<npars; iPar++) 
+      for(UInt_t iPar=0; iPar<npars; iPar++)
         pInPlane[iPar]=par[iPar];
 
       UInt_t iParOutOfPlane = fNpars;
       Double_t pOutOfPlane[npars];
       vector<UInt_t> veccopy = fCommonPars;
       vector<UInt_t>::iterator iter;
-      for(UInt_t iPar=0; iPar<npars; iPar++) { 
+      for(UInt_t iPar=0; iPar<npars; iPar++) {
         iter = find(veccopy.begin(),veccopy.end(),iPar);
         if(iter!=veccopy.end()) { //is common
           pOutOfPlane[iPar] = par[iPar];
@@ -220,7 +226,13 @@ class AliVertexingHFUtils : public TObject{
     vector<UInt_t> fCommonPars;
   };
 
-  static ROOT::Fit::FitResult DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, Double_t massD, vector<UInt_t> commonpars);
+  static ROOT::Fit::FitResult DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, 
+                                                                TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, 
+                                                                Double_t massD, vector<UInt_t> commonpars);
+  
+  /// Helper functions for D-meson analyses
+  static Double_t ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF *cand, Double_t bfield);
+  static Double_t CombineNsigmaTPCTOF(Double_t nsigmaTPC, Double_t nsigmaTOF);
 
  private:
 
@@ -229,7 +241,7 @@ class AliVertexingHFUtils : public TObject{
   Double_t fMinEtaForTracklets; /// min eta for counting tracklets
   Double_t fMaxEtaForTracklets; /// min eta for counting tracklets
 
-  /// \cond CLASSIMP    
+  /// \cond CLASSIMP
   ClassDef(AliVertexingHFUtils,0);
   /// \endcond
 };

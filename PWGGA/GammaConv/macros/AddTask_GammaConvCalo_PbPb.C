@@ -34,7 +34,7 @@ void AddTask_GammaConvCalo_PbPb(
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   TString   settingMaxFacPtHard           = "3.",     // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -125,6 +125,9 @@ void AddTask_GammaConvCalo_PbPb(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
+  Bool_t fUsePtHardFromFile      = kFALSE;
+  Bool_t fUseAddOutlierRej      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -143,6 +146,24 @@ void AddTask_GammaConvCalo_PbPb(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+      strTempSetting.Replace(0,12,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fUsePtHardFromFile        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")){
+      strTempSetting.Replace(0,14,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using path based outlier removal" << endl;
+        fUseAddOutlierRej        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -991,6 +1012,30 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("11310a13","00200009f9730000dge0400000","411798305k0b2220000","0h33103100000010"); //
     cuts.AddCutPCMCalo("13530a13","00200009f9730000dge0400000","411798305k032220000","0h33103100000010"); //
     cuts.AddCutPCMCalo("15910a13","00200009f9730000dge0400000","411798305k032220000","0h33103100000010"); //
+  } else if (trainConfig == 755){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCutPCMCalo("30130a13","00200009f9730000dge0400000","411798305k0a2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("31230a13","00200009f9730000dge0400000","411798305k0a2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("11210a13","00200009f9730000dge0400000","411798305k0b2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("12310a13","00200009f9730000dge0400000","411798305k0b2220000","0h43103100000010"); //
+  } else if (trainConfig == 756){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCutPCMCalo("13430a13","00200009f9730000dge0400000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("14530a13","00200009f9730000dge0400000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("15610a13","00200009f9730000dge0400000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("16710a13","00200009f9730000dge0400000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("17810a13","00200009f9730000dge0400000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("18910a13","00200009f9730000dge0400000","411798305k032220000","0h43103100000010"); //
+  } else if (trainConfig == 757){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCutPCMCalo("30130a13","0dm00009f9730000dge0404000","411798305k0a2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("31230a13","0dm00009f9730000dge0404000","411798305k0a2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("11210a13","0dm00009f9730000dge0404000","411798305k0b2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("12310a13","0dm00009f9730000dge0404000","411798305k0b2220000","0h43103100000010"); //
+  } else if (trainConfig == 758){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCutPCMCalo("13430a13","0dm00009f9730000dge0404000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("14530a13","0dm00009f9730000dge0404000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("15610a13","0dm00009f9730000dge0404000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("16710a13","0dm00009f9730000dge0404000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("17810a13","0dm00009f9730000dge0404000","411798305k032220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("18910a13","0dm00009f9730000dge0404000","411798305k032220000","0h43103100000010"); //
   // **********************************************************************************************************
   // ***************************** PCM-PHOS       QA configurations PbPb run 2 2018 ***************************
   // **********************************************************************************************************
@@ -1017,6 +1062,30 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("11310a13","00200009f9730000dge0400000","24466810ha082200000","0h33103100000010"); //
     cuts.AddCutPCMCalo("13530a13","00200009f9730000dge0400000","24466810ha082200000","0h33103100000010"); //
     cuts.AddCutPCMCalo("15910a13","00200009f9730000dge0400000","24466810ha082200000","0h33103100000010"); //
+  } else if (trainConfig == 855){ // PHOS clusters - centrality selection for PbPb
+    cuts.AddCutPCMCalo("30130a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("31230a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("11210a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("12310a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+  } else if (trainConfig == 856){ // PHOS clusters - centrality selection for PbPb
+    cuts.AddCutPCMCalo("13430a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("14530a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("15610a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("16710a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("17810a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("18910a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+  } else if (trainConfig == 857){ // PHOS clusters - centrality selection for PbPb
+    cuts.AddCutPCMCalo("30130a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("31230a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("11210a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("12310a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+  } else if (trainConfig == 858){ // PHOS clusters - centrality selection for PbPb
+    cuts.AddCutPCMCalo("13430a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("14530a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("15610a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("16710a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("17810a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("18910a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
   // **********************************************************************************************************
   // ***************************** PCM-PHOS  HBT configurations PbPb run 2 2018 *******************************
   // **********************************************************************************************************
@@ -1026,9 +1095,8 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("10130a13","00200009327000008250400000","24466000ha082200000","0h33103100000010"); //
     cuts.AddCutPCMCalo("13530a13","00200009327000008250400000","24466000ha082200000","0h33103100000010"); //
   } else if (trainConfig == 951){ // PHOS clusters - centrality selection for PbPb
-    cuts.AddCutPCMCalo("10910a13","00600009a27000006250800000","24466810ha082200000","0h33103100000010"); //
-    cuts.AddCutPCMCalo("10130a13","00600009a27000006250800000","24466810ha082200000","0h33103100000010"); //
-    cuts.AddCutPCMCalo("13530a13","00600009a27000006250800000","24466810ha082200000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("10130a13","00200009f9730000dge0404000","24466810ha082200000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("13530a13","00200009f9730000dge0404000","24466810ha082200000","0h33103100000010"); //
   } else if (trainConfig == 952){ // PHOS clusters - centrality selection for PbPb
     cuts.AddCutPCMCalo("10910a13","00600009a27000006250800000","24466810ha082200000","0h33103100000010"); //
 
@@ -1269,6 +1337,12 @@ void AddTask_GammaConvCalo_PbPb(
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
+    if(fUsePtHardFromFile)
+      analysisEventCuts[i]->SetUsePtHardBinFromFile(kTRUE);
+    if(fUseAddOutlierRej)
+      analysisEventCuts[i]->SetUseAdditionalOutlierRejection(kTRUE);
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
@@ -1353,12 +1427,17 @@ void AddTask_GammaConvCalo_PbPb(
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
-  if(enableQAPhotonTask>1){
-    for(Int_t i = 0; i<numberOfCuts; i++){
-      mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),cuts.GetClusterCut(i).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+  Int_t nContainer = 2;
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(enableQAPhotonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+      nContainer++;
+    }
+    if(enableQAMesonTask>1){
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+      nContainer++;
     }
   }
-
   return;
 
 }

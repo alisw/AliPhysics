@@ -62,6 +62,7 @@ ClassImp (AliAnalysisTaskLNNv0Bkg)
   AliAnalysisTaskSE (),
   fMaxPtPion(0.55),
   fMinPtTriton(0.75),
+  fMC(kFALSE),
   fYear(2015),
   fBkgType(1),
   fEventCuts(),
@@ -84,6 +85,7 @@ AliAnalysisTaskLNNv0Bkg::AliAnalysisTaskLNNv0Bkg (const char *name):
  AliAnalysisTaskSE (name),
  fMaxPtPion(0.55),
  fMinPtTriton(0.75),
+ fMC(kFALSE),
  fYear(2015),
  fBkgType(1),
  fEventCuts(),
@@ -134,7 +136,7 @@ void AliAnalysisTaskLNNv0Bkg::UserCreateOutputObjects ()
  fListHist = new TList ();
  fListHist->SetOwner ();	// IMPORTANT!
  if(fYear==2015) fEventCuts.SetupLHC15o();
- if(fYear==2011) fEventCuts.SetupRun1PbPb();
+ //if(fYear==2011) fEventCuts.SetupRun1PbPb();
 
  if (!fHistEventMultiplicity)
  {
@@ -238,11 +240,11 @@ void AliAnalysisTaskLNNv0Bkg::UserCreateOutputObjects ()
  }
 
 
- if (!fNt)
- {
-   fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:nSElTof:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:triTRDPIDsig:triTRDsig");
-   fListHist->Add (fNt);
- }
+ if(fMC){
+          fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:nSElTof:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:triTRDPIDsig:triTRDsig:pdgPi:pdgTri:pdgMumPi:pdgMumTri");
+ } else { fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:nSElTof:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:triTRDPIDsig:triTRDsig");}
+ fListHist->Add (fNt);
+
 
 
  PostData (1, fListHist);
@@ -266,7 +268,8 @@ AliAnalysisTaskLNNv0Bkg::UserExec (Option_t *)
  }
 
 
- Info ("AliAnalysisTaskLNNv0Bkg for Data", "Starting UserExec");
+ if(fMC) Info ("AliAnalysisTaskLNNv0Bkg for MC", "Starting UserExec");
+ else Info ("AliAnalysisTaskLNNv0Bkg for Data", "Starting UserExec");
 
  // Load ESD event
  AliESDEvent *lESDevent = dynamic_cast < AliESDEvent * >(event);
@@ -275,6 +278,25 @@ AliAnalysisTaskLNNv0Bkg::UserExec (Option_t *)
   AliError ("Cannot get the ESD event");
   return;
  }
+
+
+ // Load MC if required
+ AliStack *stack = 0;
+ Int_t nbMcTracks=0;
+ if(fMC){
+  AliMCEvent *mcEvent = MCEvent();
+  if (!mcEvent) {
+   Printf("ERROR: Could not retrieve MC event");
+   return;
+  }
+  stack = mcEvent->Stack();
+  nbMcTracks = stack->GetNtrack();
+  if(!stack) {
+   Printf( "Stack not available, Exiting... \n");
+   return;
+  }
+ }
+
 
  fHistEventMultiplicity->Fill (0);
 
@@ -332,9 +354,9 @@ AliAnalysisTaskLNNv0Bkg::UserExec (Option_t *)
 
  // **** list the tracks for further V0 finding *****// 
  //Int_t piMax = 1000, triMax = 0;
-Double_t Rmin=0.2;    //min radius of the fiducial volume
-Double_t Rmax=200.;   //max radius of the fiducial volume
-Double_t Dmin=0.05;  //min imp parameter for each daughter
+ Double_t Rmin=0.2;    //min radius of the fiducial volume
+ Double_t Rmax=200.;   //max radius of the fiducial volume
+ Double_t Dmin=0.05;  //min imp parameter for each daughter
 
 
  TArrayI pionId (0), tritonId (0);
@@ -351,9 +373,9 @@ Double_t Dmin=0.05;  //min imp parameter for each daughter
   //******************//
   // V0 daughter dca must be > 0.05 cm and < 200 cm See AliESDV0vertexer::Tracks2V0vertices
   Double_t d=esdtrack->GetD(vtx->GetX(),vtx->GetY(),lMagneticField);
-     if (TMath::Abs(d)<Dmin) continue;
-     if (TMath::Abs(d)>Rmax) continue;
-  
+  if (TMath::Abs(d)<Dmin) continue;
+  if (TMath::Abs(d)>Rmax) continue;
+
   if (IsPionCandidate (esdtrack))
   {
    idPi++;
@@ -372,38 +394,38 @@ Double_t Dmin=0.05;  //min imp parameter for each daughter
 
  }
 
- 
+
  if(idTri==0) {
-   printf("no triton identified, skipping event \n");
-   return;
-  }
+  printf("no triton identified, skipping event \n");
+  return;
+ }
  if(idTri>0) printf("\n\n **** identified tritons %i and pions %i *** \n",idTri,idPi); 
  // *************** Loop over tracks to recompute V0 by rotating pions  ***************
  printf("size Array pion %i and triton %i \n",pionId.GetSize(),tritonId.GetSize());
 
  TArrayI trdInfoId(idTri); // here the TRD tracklet information corresponding to the triton AliESDtrack is stored
- 
-  Int_t nTrdTracks = lESDevent->GetNumberOfTrdTracks();  // one has to loop over the online tracks
 
-   for (Int_t iTrack = 0; iTrack < nTrdTracks; iTrack++) {
-    AliVTrdTrack *trdTrack = lESDevent->GetTrdTrack(iTrack);
-    if (!trdTrack) {
-        AliError(Form("Failed to get track %i", iTrack));
-        continue;
-    }
-   AliVTrack *matchedesdTrack = trdTrack->GetTrackMatch();  // checks if one has a matching offline track
-    if(!matchedesdTrack) continue; 
-    Int_t trdId = matchedesdTrack->GetID();
-    for(Int_t iLoop =0; iLoop < idTri; iLoop++){
-     AliESDtrack *trTmp = lESDevent->GetTrack(tritonId.At(iLoop));
-     trdInfoId.AddAt(-999,iLoop);
-     Int_t esdId = trTmp->GetID();
-     if(trdId==esdId){
-      trdInfoId.AddAt(trdTrack->GetPID(),iLoop); 
-    }
-    
-    }
+ Int_t nTrdTracks = lESDevent->GetNumberOfTrdTracks();  // one has to loop over the online tracks
+
+ for (Int_t iTrack = 0; iTrack < nTrdTracks; iTrack++) {
+  AliVTrdTrack *trdTrack = lESDevent->GetTrdTrack(iTrack);
+  if (!trdTrack) {
+   AliError(Form("Failed to get track %i", iTrack));
+   continue;
+  }
+  AliVTrack *matchedesdTrack = trdTrack->GetTrackMatch();  // checks if one has a matching offline track
+  if(!matchedesdTrack) continue; 
+  Int_t trdId = matchedesdTrack->GetID();
+  for(Int_t iLoop =0; iLoop < idTri; iLoop++){
+   AliESDtrack *trTmp = lESDevent->GetTrack(tritonId.At(iLoop));
+   trdInfoId.AddAt(-999,iLoop);
+   Int_t esdId = trTmp->GetID();
+   if(trdId==esdId){
+    trdInfoId.AddAt(trdTrack->GetPID(),iLoop); 
    }
+
+  }
+ }
 
  Int_t nv0 =0;
  Int_t nv0Tot =0;
@@ -412,14 +434,14 @@ Double_t Dmin=0.05;  //min imp parameter for each daughter
   for (Int_t ipi = 0; ipi < idPi; ipi++)
   {
 
-  nv0Tot++;
+   nv0Tot++;
    Double_t xn, xp;
    Double_t dca = 0.;
    if(pionId.At(ipi)==tritonId.At(itri)) continue;
    AliESDtrack *ppTrack = lESDevent->GetTrack (pionId.At (ipi));
    AliESDtrack *ttTrack = lESDevent->GetTrack (tritonId.At(itri));
-if (TMath::Abs(ppTrack->GetD(vtx->GetX(),vtx->GetY(),lMagneticField))<0.05)
-           if (TMath::Abs(ttTrack->GetD(vtx->GetX(),vtx->GetY(),lMagneticField))<0.05) continue;
+   if (TMath::Abs(ppTrack->GetD(vtx->GetX(),vtx->GetY(),lMagneticField))<0.05)
+    if (TMath::Abs(ttTrack->GetD(vtx->GetX(),vtx->GetY(),lMagneticField))<0.05) continue;
    Double_t TRDPIDsignal = 10.*(trdInfoId.At(itri)/10.);
    AliExternalTrackParam trackInPi (*ppTrack);
    AliExternalTrackParam trackIn3H (*ttTrack);
@@ -428,48 +450,46 @@ if (TMath::Abs(ppTrack->GetD(vtx->GetX(),vtx->GetY(),lMagneticField))<0.05)
    } else if(fBkgType==1) {
     if( ppTrack->GetSign ()*ttTrack->GetSign() < 0) continue;
    } else {
-   if( ppTrack->GetSign ()*ttTrack->GetSign() > 0) continue;
-  trackInPi.Set(ppTrack->GetX(), ppTrack->GetAlpha() + TMath::Pi(), ppTrack->GetParameter(),ppTrack->GetCovariance());
+    if( ppTrack->GetSign ()*ttTrack->GetSign() > 0) continue;
+    trackInPi.Set(ppTrack->GetX(), ppTrack->GetAlpha() + TMath::Pi(), ppTrack->GetParameter(),ppTrack->GetCovariance());
    }
 
 
    dca = trackInPi.GetDCA(ttTrack, lMagneticField, xn, xp);     //!dca (Neg to Pos)
    if (dca > 1) continue; // dca between v0 daughters < 1 cm!
-    if ((xn+xp) > 2*Rmax) continue; // see v0 vertexer
+   if ((xn+xp) > 2*Rmax) continue; // see v0 vertexer
+   if ((xn+xp) < 2*Rmin) continue;
+
+
+   AliExternalTrackParam *nt;
+   AliExternalTrackParam *pt;
+   if(fBkgType==1){
+    nt=ppTrack;
+    pt=ttTrack;
+   } else if(fBkgType==2 || fBkgType==0){
+    if(ppTrack->GetSign()>0){
+     pt=ppTrack;
+     nt=ttTrack;
+    } else {
+     nt=ppTrack;
+     pt=ttTrack;
+    }
+   }
+   Bool_t corrected=kFALSE;
+   if ((nt->GetX() > 3.) && (xn < 3.)) {
+    //correct for the beam pipe material
+    corrected=kTRUE;
+   }
+   if ((pt->GetX() > 3.) && (xp < 3.)) {
+    //correct for the beam pipe material
+    corrected=kTRUE;
+   }
+   if (corrected) {
+    dca=nt->GetDCA(pt,lMagneticField,xn,xp);
+    if (dca > 1.) continue;
+    if ((xn+xp) > 2*Rmax) continue;
     if ((xn+xp) < 2*Rmin) continue;
-
-
-        AliExternalTrackParam *nt;
-        AliExternalTrackParam *pt;
-        if(fBkgType==1){
-        nt=ppTrack;
-        pt=ttTrack;
-        } else if(fBkgType==2 || fBkgType==0){
-        if(ppTrack->GetSign()>0){
-          pt=ppTrack;
-          nt=ttTrack;
-         } else {
-         nt=ppTrack;
-         pt=ttTrack;
-         }
-        }
-        Bool_t corrected=kFALSE;
-         if ((nt->GetX() > 3.) && (xn < 3.)) {
-           //correct for the beam pipe material
-           corrected=kTRUE;
-         }
-         if ((pt->GetX() > 3.) && (xp < 3.)) {
-           //correct for the beam pipe material
-           corrected=kTRUE;
-         }
-         if (corrected) {
-           dca=nt->GetDCA(pt,lMagneticField,xn,xp);
-           if (dca > 1.) continue;
-           if ((xn+xp) > 2*Rmax) continue;
-           if ((xn+xp) < 2*Rmin) continue;
-         }
-
-
+   }
 
 
    trackInPi.PropagateToDCA(&trackIn3H, lMagneticField);
@@ -477,10 +497,10 @@ if (TMath::Abs(ppTrack->GetD(vtx->GetX(),vtx->GetY(),lMagneticField))<0.05)
 
    AliESDv0 v0tmp (trackInPi, pionId.At(ipi), trackIn3H,tritonId.At (itri));
    if (v0tmp.GetChi2V0 () > 30) continue;
-    Double_t x=v0tmp.Xv(), y=v0tmp.Yv();
-         Double_t r2=x*x + y*y;
-         if (r2 < 0.2*0.2) continue;
-         if (r2 > 200.*200.) continue;
+   Double_t x=v0tmp.Xv(), y=v0tmp.Yv();
+   Double_t r2=x*x + y*y;
+   if (r2 < Rmin*Rmin) continue;
+   if (r2 > Rmax*Rmax) continue;
 
 
    v0tmp.SetDcaV0Daughters(dca);
@@ -515,52 +535,88 @@ if (TMath::Abs(ppTrack->GetD(vtx->GetX(),vtx->GetY(),lMagneticField))<0.05)
    Float_t dcaTri[2] = { -100, -100 };
    Double_t Vtxpos[3] ={globVtx.X(), globVtx.Y(), globVtx.Z()};
    ttTrack->GetDZ(Vtxpos[0], Vtxpos[1], Vtxpos[2],lESDevent->GetMagneticField (), dcaTri);
-    Float_t dcaPi= trackInPi.GetD(Vtxpos[0],Vtxpos[1],lESDevent->GetMagneticField());
-    Double_t nSPi = fPIDResponse->NumberOfSigmasTPC (ppTrack,(AliPID::EParticleType) 2);
-    Double_t nSTri = fPIDResponse->NumberOfSigmasTPC (ttTrack,(AliPID::EParticleType) 6);
+   Float_t dcaPi= trackInPi.GetD(Vtxpos[0],Vtxpos[1],lESDevent->GetMagneticField());
+   Double_t nSPi = fPIDResponse->NumberOfSigmasTPC (ppTrack,(AliPID::EParticleType) 2);
+   Double_t nSTri = fPIDResponse->NumberOfSigmasTPC (ttTrack,(AliPID::EParticleType) 6);
 
-  AliESDVertex vtxV0 = v0tmp.GetVertex();
+   AliESDVertex vtxV0 = v0tmp.GetVertex();
 
-    Double_t sigmaVtxV0[2] = { trackInPi.GetD(v0tmp.Xv(), v0tmp.Yv(),lMagneticField), ttTrack->GetD (v0tmp.Xv(),v0tmp.Yv(), lMagneticField) };
-    Double_t err = TMath::Sqrt (sigmaVtxV0[0] * sigmaVtxV0[0] + sigmaVtxV0[1] * sigmaVtxV0[1]);
+   Double_t sigmaVtxV0[2] = { trackInPi.GetD(v0tmp.Xv(), v0tmp.Yv(),lMagneticField), ttTrack->GetD (v0tmp.Xv(),v0tmp.Yv(), lMagneticField) };
+   Double_t err = TMath::Sqrt (sigmaVtxV0[0] * sigmaVtxV0[0] + sigmaVtxV0[1] * sigmaVtxV0[1]);
 
 
-    Float_t isHele=0;
-    Int_t nTrackletsPID=0;
+   Float_t isHele=0;
+   Int_t nTrackletsPID=0;
 
-    Float_t eleEff[3] = {0.85,0.9,0.95};
-    AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD,ttTrack);
-    if(pidStatus!=AliPIDResponse::kDetPidOk) isHele = -1;
-    else {
-      for(Int_t iEff=0; iEff<3; iEff++)  {
-        Bool_t isEle =  fPIDResponse->IdentifiedAsElectronTRD(ttTrack,nTrackletsPID,eleEff[iEff],centrality,AliTRDPIDResponse::kLQ2D);
-        if(isEle && nTrackletsPID>3) isHele += (iEff+1)*TMath::Power(10,iEff);
-      }
+   Float_t eleEff[3] = {0.85,0.9,0.95};
+   AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD,ttTrack);
+   if(pidStatus!=AliPIDResponse::kDetPidOk) isHele = -1;
+   else {
+    for(Int_t iEff=0; iEff<3; iEff++)  {
+     Bool_t isEle =  fPIDResponse->IdentifiedAsElectronTRD(ttTrack,nTrackletsPID,eleEff[iEff],centrality,AliTRDPIDResponse::kLQ2D);
+     if(isEle && nTrackletsPID>3) isHele += (iEff+1)*TMath::Power(10,iEff);
+    }
+   }
+
+   Double_t nSPiFromPiTof = fPIDResponse->NumberOfSigmasTOF (ppTrack,(AliPID::EParticleType) 2);
+   Double_t nSPrTof = fPIDResponse->NumberOfSigmasTOF (ttTrack,(AliPID::EParticleType) 4); //check if 3H is identified as proton in TOF PID
+   Double_t nSPiTof = fPIDResponse->NumberOfSigmasTOF (ttTrack,(AliPID::EParticleType) 2); // check if 3H is identified as pion TOF PID
+   Double_t nSElTof = fPIDResponse->NumberOfSigmasTOF (ttTrack,(AliPID::EParticleType) 0); // check if 3H is identified as pion TOF PID
+
+
+   if(fMC){
+    Double_t pdgPi = -1 ;
+    Double_t pdgTri = -1 ;
+    Double_t pdgMumPi = -1 ;
+    Double_t pdgMumTri = -1 ;
+    TParticle *part;
+    TParticle *partMum;
+    if(TMath::Abs(ppTrack->GetLabel())<nbMcTracks){
+     part = stack->Particle(TMath::Abs(ppTrack->GetLabel()));
+     pdgPi = part->GetPdgCode();
+     if(part->GetMother(0)>-1){
+      partMum = stack->Particle(part->GetMother(0));
+      pdgMumPi = partMum->GetPdgCode();
+     }
     }
 
-    Double_t nSPiFromPiTof = fPIDResponse->NumberOfSigmasTOF (ppTrack,(AliPID::EParticleType) 2);
-    Double_t nSPrTof = fPIDResponse->NumberOfSigmasTOF (ttTrack,(AliPID::EParticleType) 4); //check if 3H is identified as proton in TOF PID
-    Double_t nSPiTof = fPIDResponse->NumberOfSigmasTOF (ttTrack,(AliPID::EParticleType) 2); // check if 3H is identified as pion TOF PID
-    Double_t nSElTof = fPIDResponse->NumberOfSigmasTOF (ttTrack,(AliPID::EParticleType) 0); // check if 3H is identified as pion TOF PID
+    if(TMath::Abs(ttTrack->GetLabel())<nbMcTracks){
+     part = stack->Particle(TMath::Abs(ttTrack->GetLabel()));
+     pdgTri = part->GetPdgCode();
+     if(part->GetMother(0)>-1){
+      partMum = stack->Particle(part->GetMother(0));
+      pdgMumTri = partMum->GetPdgCode();
+     }
+    }
 
-//  fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDcaZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:triTRDsig");
-   
-      Double_t ntuple[31] =
-      { momPi[0], momPi[1], momPi[2], momTri[0], momTri[1], momTri[2], // 6 
-       nSPi, nSTri, GetTOFmass (ttTrack),ppTrack->GetTPCsignal (), ttTrack->GetTPCsignal (),v0tmp.P (), //12
+    Double_t ntupleMC[35] =
+    {momPi[0], momPi[1], momPi[2], momTri[0], momTri[1], momTri[2], // 6 
+     nSPi, nSTri, GetTOFmass (ttTrack),ppTrack->GetTPCsignal (), ttTrack->GetTPCsignal (),v0tmp.P (), //12
      ptArm, alphaArm, dcaTri[0], dcaTri[1], v0tmp.GetDcaV0Daughters(), decayL.Mag(), decayLXY, // 19
-      v0tmp.GetD(vtx->GetX(), vtx->GetY(), vtx->GetZ()), CosPointingAngle,nSElTof,ppTrack->GetSign () + ttTrack->GetSign ()*10, //22
-       dcaPi, isHele, nSPiFromPiTof, nSPrTof, nSPiTof, ppTrack->GetNumberOfITSClusters()+100.*ttTrack->GetNumberOfITSClusters(),TRDPIDsignal,ttTrack->GetTRDsignal()};
+     v0tmp.GetD(vtx->GetX(), vtx->GetY(), vtx->GetZ()), CosPointingAngle,nSElTof,ppTrack->GetSign () + ttTrack->GetSign ()*10, //23
+     dcaPi, isHele, nSPiFromPiTof, nSPrTof, nSPiTof, ppTrack->GetNumberOfITSClusters()+100.*ttTrack->GetNumberOfITSClusters(),//29
+     TRDPIDsignal,ttTrack->GetTRDsignal(),//31
+     pdgPi,pdgTri,pdgMumPi,pdgMumTri};//35
 
+    printf(" ***** MC ntupleFilling with : TRD info %i or %f **** \n",trdInfoId.At(itri),TRDPIDsignal);
+    fNt->Fill (ntupleMC);
+
+   } else {
+
+    Double_t ntuple[31] =
+    { momPi[0], momPi[1], momPi[2], momTri[0], momTri[1], momTri[2], // 6 
+     nSPi, nSTri, GetTOFmass (ttTrack),ppTrack->GetTPCsignal (), ttTrack->GetTPCsignal (),v0tmp.P (), //12
+     ptArm, alphaArm, dcaTri[0], dcaTri[1], v0tmp.GetDcaV0Daughters(), decayL.Mag(), decayLXY, // 19
+     v0tmp.GetD(vtx->GetX(), vtx->GetY(), vtx->GetZ()), CosPointingAngle,nSElTof,ppTrack->GetSign () + ttTrack->GetSign ()*10, //22
+     dcaPi, isHele, nSPiFromPiTof, nSPrTof, nSPiTof, ppTrack->GetNumberOfITSClusters()+100.*ttTrack->GetNumberOfITSClusters(),TRDPIDsignal,ttTrack->GetTRDsignal()};
+   fNt->Fill (ntuple);
+   }
    printf(" ***** ntupleFilling with : TRD info %i or %f **** \n",trdInfoId.At(itri),TRDPIDsignal);
-      fNt->Fill (ntuple);
-    
 
   }
 
  }
-  printf("total number of V0 combinations  %i -> selected V0s %i \n",nv0Tot,nv0);
-  //if(nv0>0 || lESDevent->GetNumberOfV0s()>0) printf("new v0s %i  ESD v0 %i \n",nv0,(Int_t)(lESDevent->GetNumberOfV0s()));
+ printf("total number of V0 combinations  %i -> selected V0s %i \n",nv0Tot,nv0);
 
  PostData (1, fListHist);
 

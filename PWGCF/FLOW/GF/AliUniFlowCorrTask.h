@@ -17,12 +17,14 @@ class AliUniFlowCorrTask : public TObject
         virtual ~AliUniFlowCorrTask() { fiHarm.clear(); fdGaps.clear(); }
 
         Bool_t      HasGap() const { return (Bool_t) fiNumGaps; }; // check if Gap
-        void        Print() const; // print AliUniFlowCorrTask properties
+        void        PrintTask() const; // print AliUniFlowCorrTask properties
 
         Bool_t                fbDoRefs; // which particles are procesed (RFPs / POIs / both )
         Bool_t                fbDoPOIs; // which particles are procesed (RFPs / POIs / both )
         Int_t                 fiNumHarm; // correlation order <M>
         Int_t                 fiNumGaps; // number of subevents
+        Int_t                 fMaxWeightPower; //max power in q vector filling
+        Int_t                 fMaxHarm; //max harm in q vector filling
         TString               fsName; // automatically generated name: see Init() for format
         TString               fsLabel; // automatically generated label see Init() for format
         std::vector<Int_t>    fiHarm; // harmonics n1,n2,...,nM
@@ -30,7 +32,7 @@ class AliUniFlowCorrTask : public TObject
     protected:
     private:
 
-    ClassDef(AliUniFlowCorrTask, 1);
+    ClassDef(AliUniFlowCorrTask, 2);
 };
 
 

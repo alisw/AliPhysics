@@ -40,10 +40,17 @@ AliAnalysisTaskSigma1385PM* AddTaskSigma1385(
                   << ") mode " << std::endl;
     }
     if (foption.Contains("HM")) {
+        taskSigma1385->SetHighMult(kTRUE); // default: kFALSE
         taskSigma1385->fEventCuts.fTriggerMask =
             AliVEvent::kHighMultV0;  // default: kINT7
         std::cout << "AliAnalysisTaskSigma1385PM:: HighMultV0 mode "
                   << std::endl;
+    }
+    if (foption.Contains("INEL")) {
+        taskSigma1385->fEventCuts.fCentralityFramework = 0;
+        taskSigma1385->fEventCuts.SelectOnlyInelGt0(false);
+        taskSigma1385->SetINEL(kTRUE);  // default: kFALSE
+        std::cout << "AliAnalysisTaskSigma1385PM:: Inelastic mode " << std::endl;
     }
     if (foption.Contains("Study")) {
         taskSigma1385->SetCutOpen();
@@ -66,7 +73,7 @@ AliAnalysisTaskSigma1385PM* AddTaskSigma1385(
     mgr->ConnectOutput(taskSigma1385, 1, coutputSigma1385);
 
     AliAnalysisDataContainer* coutputSigma1385Tuple = mgr->CreateContainer(
-        "Sigma1385", TNtupleD::Class(), AliAnalysisManager::kOutputContainer,
+        Form("%s%s_tree",taskname, suffix), TNtupleD::Class(), AliAnalysisManager::kOutputContainer,
         "AnalysisResults.root");
     coutputSigma1385Tuple->SetSpecialOutput();
     mgr->ConnectOutput(taskSigma1385, 2, coutputSigma1385Tuple);

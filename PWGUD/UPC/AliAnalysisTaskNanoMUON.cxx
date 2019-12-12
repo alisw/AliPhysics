@@ -66,11 +66,9 @@ using namespace std;            // std namespace: so you can do things like 'cou
 
 ClassImp(AliAnalysisTaskNanoMUON) // classimp: necessary for root
 
-// Int_t fPeriod;
-// Bool_t fIsMC;
 //_____________________________________________________________________________
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(), 
-  fMuonTrackCuts(0x0), fPeriod(-10), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0),  fNumberMuonsH(0), fNumberMCMuonsH(0),  
+  fMuonTrackCuts(0x0), fPeriod(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0),  fNumberMuonsH(0), fNumberMCMuonsH(0),  
   // fRAbsMuonH(0), fMuMuMassPtH(0),  
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
@@ -95,7 +93,7 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON(const char* name) : AliAnalysisTaskSE(name),
-  fMuonTrackCuts(0x0), fPeriod(-10), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0),  fNumberMuonsH(0), fNumberMCMuonsH(0),  
+  fMuonTrackCuts(0x0), fPeriod(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0),  fNumberMuonsH(0), fNumberMCMuonsH(0),  
   // fRAbsMuonH(0), fMuMuMassPtH(0),  
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
@@ -288,19 +286,6 @@ void AliAnalysisTaskNanoMUON::NotifyRun()
   fMuonTrackCuts->SetRun(fInputHandler);
 }
 //_____________________________________________________________________________
-// void AliAnalysisTaskNanoMUON::SetPeriod(Int_t period)
-// {
-//   // set data period
-//   // 0: 2018 q, 1: 2018 r, 2: 2015 o, 3: 2016 r, 4: 2016 s
-//   fPeriod = period;
-// }
-//_____________________________________________________________________________
-// void AliAnalysisTaskNanoMUON::SetMC(Bool_t flag)
-// {
-//   // set if MC file
-//   fIsMC = flag;
-// }
-//_____________________________________________________________________________
 void AliAnalysisTaskNanoMUON::PostAllData()
 {
   // Post data
@@ -477,16 +462,12 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   //  Trigger information
   ////////////////////////////////////////////
   // in 2015 o and 2018 q,r:  CMUP11-B-NOPF-MUFAST,
-  // in 2015 o : CMUP10-B-NOPF-MUFAST,
-  // in 2016 r : CMUP14-B-NOPF-MUFAST
-  // in 2016 s : CMUP23-B-NOPF-MUFAST  
+  // in 2015 o : CMUP10-B-NOPF-MUFAST, 
   TString trigger = fAOD->GetFiredTriggerClasses();
   Bool_t isTriggered = kFALSE;
   if (fIsMC) isTriggered = kTRUE; // No trigger required for MC
-  if ((fPeriod == 0 || fPeriod == 1 || fPeriod == 2) &&  trigger.Contains("CMUP11-B-NOPF-MUFAST")) isTriggered = kTRUE;
-  if ((fPeriod == 2) &&  trigger.Contains("CMUP10-B-NOPF-MUFAST")) isTriggered = kTRUE;
-  if ((fPeriod == 3) &&  trigger.Contains("CMUP14-B-NOPF-MUFAST")) isTriggered = kTRUE;
-  if ((fPeriod == 4) &&  trigger.Contains("CMUP23-B-NOPF-MUFAST")) isTriggered = kTRUE;    
+  if ((fPeriod.Contains("15o") || fPeriod.Contains("18q") || fPeriod.Contains("18r")) &&  trigger.Contains("CMUP11-B-NOPF-MUFAST")) isTriggered = kTRUE;
+  if ((fPeriod.Contains("15o")) &&  trigger.Contains("CMUP10-B-NOPF-MUFAST")) isTriggered = kTRUE;  
   if (!isTriggered) {
     PostAllData();
     return;

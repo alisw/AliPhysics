@@ -54,9 +54,11 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),
   fSmearClusterEnergy(kFALSE),            fRandom(),
-  fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
+  fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
   fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
-  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),     fDoUseMergedBC(kFALSE),
+  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
+  fIsParRun(kFALSE),                      fCurrentParNumber(0),                   fNPars(0),                              fGlobalEventID(NULL),
+  fDoUseMergedBC(kFALSE),
   fUseRunCorrectionFactors(kFALSE),       
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),                  fUse1Dmap(kFALSE),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
@@ -107,12 +109,17 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fCellsRecalibrated(reco.fCellsRecalibrated),
-  fRecalibration(reco.fRecalibration),                       fEMCALRecalibrationFactors(NULL),
+  fRecalibration(reco.fRecalibration),                       fUse1Drecalib(reco.fUse1Drecalib),                   
+  fEMCALRecalibrationFactors(NULL),
   fConstantTimeShift(reco.fConstantTimeShift),  
   fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(NULL),
   fLowGain(reco.fLowGain),
   fUseL1PhaseInTimeRecalibration(reco.fUseL1PhaseInTimeRecalibration), 
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
+  fIsParRun(reco.fIsParRun),
+  fCurrentParNumber(reco.fCurrentParNumber),
+  fNPars(reco.fNPars),
+  fGlobalEventID(reco.fGlobalEventID),
   fDoUseMergedBC(reco.fDoUseMergedBC),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
@@ -196,6 +203,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   
   fCellsRecalibrated         = reco.fCellsRecalibrated;
   fRecalibration             = reco.fRecalibration;
+  fUse1Drecalib              = reco.fUse1Drecalib;
   
   fConstantTimeShift         = reco.fConstantTimeShift;
   fTimeRecalibration         = reco.fTimeRecalibration;
@@ -204,6 +212,11 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
   fEMCALL1PhaseInTimeRecalibration = reco.fEMCALL1PhaseInTimeRecalibration;
 
+  fIsParRun                  = reco.fIsParRun;
+  fCurrentParNumber          = reco.fCurrentParNumber;
+  fNPars                     = reco.fNPars;
+  fGlobalEventID             = reco.fGlobalEventID;
+  
   fDoUseMergedBC             = reco.fDoUseMergedBC;
   
   fUseRunCorrectionFactors   = reco.fUseRunCorrectionFactors;
@@ -386,6 +399,10 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
   delete fResidualPhi         ; 
   delete fPIDUtils            ;
 
+  if (fGlobalEventID){
+    delete fGlobalEventID;
+  }
+  
   InitTrackCuts();
 }
 
@@ -446,9 +463,12 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   
   //Recalibrate energy
   amp  = cells->GetCellAmplitude(absID);
-  if (!fCellsRecalibrated && IsRecalibrationOn())
-    amp *= GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
-  
+  if (!fCellsRecalibrated && IsRecalibrationOn()){
+    if(fUse1Drecalib)
+      amp *= GetEMCALChannelRecalibrationFactor1D(absID);
+    else
+      amp *= GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
+  }
   // Recalibrate time
   time = cells->GetCellTime(absID);
   time-=fConstantTimeShift*1e-9; // only in case of old Run1 simulation
@@ -457,7 +477,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   RecalibrateCellTime(absID,bc,time,isLowGain);
   
   //Recalibrate time with L1 phase 
-  RecalibrateCellTimeL1Phase(imod, bc, time);
+  RecalibrateCellTimeL1Phase(imod, bc, time, fCurrentParNumber);
 
   return kTRUE;
 }
@@ -609,12 +629,16 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
 /// \param tcell: time of cell under control
 /// \param cells: full list of cells
 /// \param bc: bunch crossing number
+/// \param cellMinEn: add the cell energy if large enough (for high energy clusters)
+/// \param useWeight: add the cell energy if w > 0
+/// \param energy: cluster or cell max energy, used for weight calculation
 ///
 /// \return float E_cross
 ///
 //___________________________________________________________________________
 Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
-                                     AliVCaloCells* cells, Int_t bc)
+                                     AliVCaloCells* cells, Int_t bc, 
+                                     Float_t cellMinEn, Bool_t useWeight, Float_t energy )
 {  
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   
@@ -673,8 +697,142 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
   if (TMath::Abs(tcell-tcell2)*1.e9 > fExoticCellDiffTime) ecell2 = 0 ;
   if (TMath::Abs(tcell-tcell3)*1.e9 > fExoticCellDiffTime) ecell3 = 0 ;
   if (TMath::Abs(tcell-tcell4)*1.e9 > fExoticCellDiffTime) ecell4 = 0 ;
+ 
+  Float_t w1 = 1, w2 = 1, w3 = 1, w4 = 1;
+  if ( useWeight )
+  {
+    w1 = GetCellWeight(ecell1,energy);
+    w2 = GetCellWeight(ecell2,energy);
+    w3 = GetCellWeight(ecell3,energy);
+    w4 = GetCellWeight(ecell4,energy);
+  }
   
+  if ( ecell1 < cellMinEn || w1 <= 0 ) ecell1 = 0 ;
+  if ( ecell2 < cellMinEn || w2 <= 0 ) ecell2 = 0 ;
+  if ( ecell3 < cellMinEn || w3 <= 0 ) ecell3 = 0 ;
+  if ( ecell4 < cellMinEn || w4 <= 0 ) ecell4 = 0 ;
+ 
   return ecell1+ecell2+ecell3+ecell4;
+}
+
+//________________________________________________________________________________________
+/// Check if 2 cells belong to the same T-Card
+/// Only for EMCal.
+///
+///  \param absId1: Reference absId cell
+///  \param absId2: Cross checked cell absId
+///  \param rowDiff: Distance in rows
+///  \param colDiff: Distance in columns
+///  \return true if belong to same TCard
+///
+//________________________________________________________________________________________
+Bool_t  AliEMCALRecoUtils::IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
+                                             Int_t & rowDiff, Int_t & colDiff) const
+{  
+  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+  
+  if ( !geom )
+  {
+    AliError("No instance of the geometry is available");
+    return -1;
+  }
+  
+  rowDiff = -100;
+  colDiff = -100;
+  
+  if(absId1 == absId2) return kFALSE;
+  
+  // Check if in same SM, if not for sure not same TCard
+  Int_t sm1 = geom->GetSuperModuleNumber(absId1);
+  Int_t sm2 = geom->GetSuperModuleNumber(absId2);
+  if ( sm1 != sm2 ) return kFALSE ;
+  
+  // Get the column and row of each absId
+  Int_t iTower = -1, iIphi = -1, iIeta = -1;
+  
+  Int_t col1, row1;
+  geom->GetCellIndex(absId1,sm1,iTower,iIphi,iIeta);
+  geom->GetCellPhiEtaIndexInSModule(sm1,iTower,iIphi, iIeta,row1,col1);
+  
+  Int_t col2, row2;
+  geom->GetCellIndex(absId2,sm2,iTower,iIphi,iIeta);
+  geom->GetCellPhiEtaIndexInSModule(sm2,iTower,iIphi, iIeta,row2,col2);
+  
+  Int_t row0 = Int_t(row1-row1%8);
+  Int_t col0 = Int_t(col1-col1%2);
+  
+  Int_t rowDiff0 = row2-row0;
+  Int_t colDiff0 = col2-col0;
+  
+  rowDiff = row1-row2;
+  colDiff = col1-col2;
+  
+  // TCard is made by 2x8 towers
+  if ( colDiff0 >=0 && colDiff0 < 2 && rowDiff0 >=0 && rowDiff0 < 8 ) 
+  {
+    
+    //    printf("\t absId (%d,%d), sm %d; col (%d,%d), colDiff %d; row (%d,%d),rowDiff %d\n",
+    //           absId1 , absId2, sm1, 
+    //           col1, col2, colDiff, 
+    //           row1, row2, rowDiff);
+    return kTRUE ;
+  }
+  else
+    return kFALSE;
+}
+
+//________________________________________________________________________________________
+/// Count the number of cells in same or different T-Card
+/// as the highest energy cell in the cluster.
+/// Only for EMCal.
+///
+///  \param clus: AliVCluster
+///  \param absIdMax: Abs Id number of highest energy cell in the cluster
+///  \param cells: AliVCaloCells
+///  \param nDiff: number of cells in different T-Card
+///  \param nSame: number of cells in same T-Card
+///  \param eDiff: sum of energy of cells in different T-Card
+///  \param eSame: sum of energy of cells in same T-Card
+///  \param emin: apply a min energy cut on cells while counting
+///
+//________________________________________________________________________________________
+void AliEMCALRecoUtils::GetEnergyAndNumberOfCellsInTCard
+(AliVCluster* clus, Int_t absIdMax, AliVCaloCells* cells,
+ Int_t   & nDiff, Int_t   & nSame, 
+ Float_t & eDiff, Float_t & eSame, 
+ Float_t   emin)
+{
+  Int_t nCaloCellsPerCluster = clus->GetNCells();
+  
+  nDiff = 0;
+  nSame = 0;
+  Int_t   absId   = -1;
+  Float_t amp     = 0;
+  Int_t   rowDiff = -100, colDiff = -100;
+  
+  // Loop on cluster cells count those in same or different T-Card
+  // with respect highest energy cell.
+  for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
+  {
+    absId = clus->GetCellsAbsId()[ipos];  
+    
+    amp   = cells->GetCellAmplitude(absId);
+    
+    if ( absId == absIdMax || amp < emin ) continue;
+    
+    if ( IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff) ) 
+    { 
+      nSame++; 
+      eSame+=amp; 
+    }
+    else             
+    { 
+      nDiff++; 
+      eDiff+= amp; 
+    }
+    
+  } // cell cluster loop
+  
 }
 
 ///
@@ -1385,7 +1543,7 @@ Bool_t AliEMCALRecoUtils::GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iR
       status = 0; // Channel is ok by default
   }else{
     AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
-    Int_t CellID = geom->GetAbsCellIdFromCellIndexes(iSM, iCol, iRow);
+    Int_t CellID = geom->GetAbsCellIdFromCellIndexes(iSM, iRow, iCol);
     if(fEMCALBadChannelMap) 
       status = (Int_t) ((TH1C*)fEMCALBadChannelMap->At(0))->GetBinContent(CellID); 
     else 
@@ -1534,8 +1692,12 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom,
       //printf("AliEMCALRecoUtils::GetMaxEnergyCell() - SHARED CLUSTER\n");
     }
 
-    if (!fCellsRecalibrated && IsRecalibrationOn()) 
-      recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    if (!fCellsRecalibrated && IsRecalibrationOn()){ 
+      if(fUse1Drecalib)
+        recalFactor = GetEMCALChannelRecalibrationFactor1D(cellAbsId);
+      else
+        recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    }
     
     eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
     //printf("b Cell %d, id, %d, amp %f, fraction %f\n",iDig,cellAbsId,eCell,fraction);
@@ -1688,6 +1850,34 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors()
   // In order to avoid rewriting the same histograms
   TH1::AddDirectory(oldStatus);    
 }
+///
+/// Init 1D EMCAL energy calibration factors container
+///
+//_____________________________________________________
+void AliEMCALRecoUtils::InitEMCALRecalibrationFactors1D()
+{
+  AliDebug(2,"AliCalorimeterUtils::InitEMCALRecalibrationFactors1D()");
+  
+  // In order to avoid rewriting the same histograms
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
+  fEMCALRecalibrationFactors = new TObjArray(1);
+
+  fEMCALRecalibrationFactors->Add(new TH1S("EMCALRecalFactors","EMCALRecalFactors", 48*24*22,0.,48*24*22));
+
+  //Init the histograms with 1
+  for (UInt_t icell = 0; icell < 48*24*22; icell++) 
+  {
+    SetEMCALChannelRecalibrationFactor1D(icell,1.);
+  }
+  
+  fEMCALRecalibrationFactors->SetOwner(kTRUE);
+  fEMCALRecalibrationFactors->Compress();
+  
+  // In order to avoid rewriting the same histograms
+  TH1::AddDirectory(oldStatus);    
+}
 
 ///
 /// Init EMCAL time calibration shifts container
@@ -1821,7 +2011,7 @@ void AliEMCALRecoUtils::InitEMCALL1PhaseInTimeRecalibration()
   fEMCALL1PhaseInTimeRecalibration->Add(new TH1C("h0","EMCALL1phaseForSM", 22, 0, 22));
   
   for (Int_t i = 0; i < 22; i++) //loop over SMs, default value = 0
-    SetEMCALL1PhaseInTimeRecalibrationForSM(i,0);
+    SetEMCALL1PhaseInTimeRecalibrationForSM(i,0,0);
   
   fEMCALL1PhaseInTimeRecalibration->SetOwner(kTRUE);
   fEMCALL1PhaseInTimeRecalibration->Compress();
@@ -1878,8 +2068,12 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
       geom->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
       if (fEMCALRecalibrationFactors->GetEntries() <= imod) 
         continue;
-      geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);      
-      factor = GetEMCALChannelRecalibrationFactor(imod,icol,irow);
+      geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
+
+      if(fUse1Drecalib)
+        factor = GetEMCALChannelRecalibrationFactor1D(absId);
+      else
+        factor = GetEMCALChannelRecalibrationFactor(imod,icol,irow);
       
       AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - recalibrate cell: module %d, col %d, row %d, cell fraction %f,recalibration factor %f, cell energy %f\n",
                       imod,icol,irow,frac,factor,cells->GetCellAmplitude(absId)));
@@ -1910,7 +2104,7 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   
   // Recalibrate time with L1 phase 
   if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn())
-    RecalibrateCellTimeL1Phase(imod, bc, time);
+    RecalibrateCellTimeL1Phase(imod, bc, time, fCurrentParNumber);
   
   cluster->SetTOF(time);
   
@@ -1989,16 +2183,17 @@ void AliEMCALRecoUtils::RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & ce
 /// \param iSM: supermodule number
 /// \param bc: bunch crossing number returned by esdevent->GetBunchCrossNumber()
 /// \param celltime: cell time to be returned calibrated
+/// \param par: Int_t, in case of PAR load another set of L1 shifts, 0-no or before PAR, 1-after 1st PAR etc
 ///
 //_______________________________________________________________________________________________________
-void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t & celltime) const
+void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t & celltime, Short_t par) const
 {
   if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn() && bc >= 0) 
   {
     bc=bc%4;
 
     Float_t offsetPerSM=0.;
-    Int_t l1PhaseShift = GetEMCALL1PhaseInTimeRecalibrationForSM(iSM);
+    Int_t l1PhaseShift = GetEMCALL1PhaseInTimeRecalibrationForSM(iSM,par);
     Int_t l1Phase=l1PhaseShift & 3; //bit operation
 
     if(bc >= l1Phase)
@@ -2191,7 +2386,10 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
       geom->GetCellIndex(absId,iSM,iTower,iIphi,iIeta); 
       geom->GetCellPhiEtaIndexInSModule(iSM,iTower,iIphi, iIeta,iphi,ieta);      
       if (IsRecalibrationOn()) {
-        recalFactor = GetEMCALChannelRecalibrationFactor(iSM,ieta,iphi);
+        if(fUse1Drecalib)
+          recalFactor = GetEMCALChannelRecalibrationFactor1D(absId);
+        else
+          recalFactor = GetEMCALChannelRecalibrationFactor(iSM,ieta,iphi);
       }
     }
     
@@ -2286,7 +2484,10 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALG
     if (!fCellsRecalibrated)
     {
       if (IsRecalibrationOn()) {
-        recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+        if(fUse1Drecalib)
+          recalFactor = GetEMCALChannelRecalibrationFactor1D(absId);
+        else
+          recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
       }
     }
     
@@ -2362,7 +2563,7 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
       // Check if tower is bad.
       Int_t status=0;
       if (fUse1Dmap)
-        status = hMap1D->GetBinContent(geom->GetAbsCellIdFromCellIndexes(iSupMod, icol, irow));
+        status = hMap1D->GetBinContent(geom->GetAbsCellIdFromCellIndexes(iSupMod, irow, icol));
       else
         status = hMap->GetBinContent(icol,irow);
 
@@ -2407,7 +2608,7 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
         // Check if tower is bad.
         Int_t status=0;
         if (fUse1Dmap)
-          status = hMap1D2->GetBinContent(geom->GetAbsCellIdFromCellIndexes(iSupMod2, icol, irow));
+          status = hMap1D2->GetBinContent(geom->GetAbsCellIdFromCellIndexes(iSupMod2, irow, icol));
         else
           status = hMap2->GetBinContent(icol,irow);
 
@@ -2542,8 +2743,12 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     fraction  = cluster->GetCellAmplitudeFraction(iDigit);
     if (fraction < 1e-4) fraction = 1.; // in case unfolding is off
     
-    if (IsRecalibrationOn()) 
-      recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    if (IsRecalibrationOn()){
+      if(fUse1Drecalib)
+        recalFactor = GetEMCALChannelRecalibrationFactor1D(absId);
+      else
+        recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    }
     
     eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
     tCell  = cells->GetCellTime     (absId);
@@ -2574,8 +2779,12 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     fraction  = cluster->GetCellAmplitudeFraction(iDigit);
     if (fraction < 1e-4) fraction = 1.; // in case unfolding is off
     
-    if (!fCellsRecalibrated && IsRecalibrationOn()) 
-        recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    if (!fCellsRecalibrated && IsRecalibrationOn()){
+        if(fUse1Drecalib)
+          recalFactor = GetEMCALChannelRecalibrationFactor1D(absId);
+        else
+          recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    }
     
     eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
     tCell  = cells->GetCellTime     (absId);
@@ -2664,8 +2873,12 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     //Get the cell energy, if recalibration is on, apply factors
     fraction  = cluster->GetCellAmplitudeFraction(iDigit);
     if (fraction < 1e-4) fraction = 1.; // in case unfolding is off
-    if (IsRecalibrationOn()) 
-      recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    if (IsRecalibrationOn()) {
+      if(fUse1Drecalib)
+        recalFactor = GetEMCALChannelRecalibrationFactor1D(absId);
+      else
+        recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    }
     
     eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
     tCell  = cells->GetCellTime     (absId);
@@ -3848,11 +4061,18 @@ void AliEMCALRecoUtils::SetEMCALChannelRecalibrationFactors(const TObjArray *map
     // Must claim ownership since the new objects are owend by this instance
     fEMCALRecalibrationFactors->SetOwner(kTRUE);
   }
-  for(int i = 0; i < map->GetEntries(); i++){
-    TH2F *hist = dynamic_cast<TH2F *>(map->At(i));
-    if(!hist) continue;
-    this->SetEMCALChannelRecalibrationFactors(i, hist);
+
+  if(!fUse1Drecalib){
+    for(int i = 0; i < map->GetEntries(); i++){
+      TH2F *hist = dynamic_cast<TH2F *>(map->At(i));
+      if(!hist) continue;
+      this->SetEMCALChannelRecalibrationFactors(i, hist);
+    }
+  }else{
+    TH1S *hist = dynamic_cast<TH1S *>(map->At(0));
+    this->SetEMCALChannelRecalibrationFactors1D(hist);
   }
+
 }
 
 void AliEMCALRecoUtils::SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h) { 
@@ -3865,6 +4085,39 @@ void AliEMCALRecoUtils::SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH
   TH2F *clone = new TH2F(*h);
   clone->SetDirectory(NULL);
   fEMCALRecalibrationFactors->AddAt(clone,iSM); 
+}
+
+void AliEMCALRecoUtils::SetEMCALChannelRecalibrationFactors1D(const TH1S* h) { 
+  if(!fEMCALRecalibrationFactors){
+    fEMCALRecalibrationFactors = new TObjArray(1);
+    fEMCALRecalibrationFactors->SetOwner(true);
+  }
+  if(fEMCALRecalibrationFactors->At(0)) fEMCALRecalibrationFactors->RemoveAt(0);
+  TH1S *clone = new TH1S(*h);
+  clone->SetDirectory(NULL);
+  fEMCALRecalibrationFactors->AddAt(clone,0); 
+}
+
+TH2F * AliEMCALRecoUtils::GetEMCALChannelRecalibrationFactors(Int_t iSM) const{
+
+  if(!fUse1Drecalib){
+    return (TH2F*)fEMCALRecalibrationFactors->At(iSM);
+  }else{
+    const  Double_t lowerLimit[]={0,1152,2304,3456,4608,5760,6912,8064,9216,10368,11520,11904,12288,13056,13824,14592,15360,16128,16896,17280};
+    const  Double_t upperLimit[]={1151 ,2303 ,3455 ,4607 ,5759 ,6911 ,8063 ,9215 ,10367,11519,11903,12287,13055,13823,14591,15359,16127,16895,17279,17663};
+
+    TH2F* hist = new TH2F(Form("EMCALRecalFactors_SM%d",iSM),Form("EMCALRecalFactors_SM%d",iSM), 48, 0, 48, 24, 0, 24);
+    AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+    Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+
+    for(Int_t iCell=lowerLimit[iSM]; iCell<upperLimit[iSM]; iCell++){
+      geom->GetCellIndex(iCell,imod,iTower,iIphi,iIeta); 
+      geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+      hist->SetBinContent(ieta, iphi, ((TH1S*)fEMCALRecalibrationFactors->At(0))->GetBinContent(iCell)/1000);
+    }
+    return hist;
+  }
+
 }
 
 void AliEMCALRecoUtils::SetEMCALChannelStatusMap(const TObjArray *map) { 
@@ -3930,7 +4183,7 @@ TH2I* AliEMCALRecoUtils::GetEMCALChannelStatusMap(Int_t iSM) const{
     for(Int_t iCell=lowerLimit[iSM]; iCell<upperLimit[iSM]; iCell++){
       geom->GetCellIndex(iCell,imod,iTower,iIphi,iIeta); 
       geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
-      hist->SetBinContent(iphi,ieta, (Int_t)((TH1C*)fEMCALBadChannelMap->At(0))->GetBinContent(iCell));
+      hist->SetBinContent(ieta, iphi, (Int_t)((TH1C*)fEMCALBadChannelMap->At(0))->GetBinContent(iCell));
     }
     return hist;
   }
@@ -3984,19 +4237,19 @@ void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArr
   for(int i = 0; i < map->GetEntries(); i++) {
     TH1C *hist = dynamic_cast<TH1C *>(map->At(i));
     if(!hist) continue;
-    SetEMCALL1PhaseInTimeRecalibrationForAllSM(hist);    
+    SetEMCALL1PhaseInTimeRecalibrationForAllSM(hist,i);    
   }
 }
 
-void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h) { 
+void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h, Short_t parNumber) { 
   if(!fEMCALL1PhaseInTimeRecalibration){
     fEMCALL1PhaseInTimeRecalibration = new TObjArray(1);
     fEMCALL1PhaseInTimeRecalibration->SetOwner(true);
   }
-  if(fEMCALL1PhaseInTimeRecalibration->GetEntries()<1) fEMCALL1PhaseInTimeRecalibration->Expand(1); 
+  if(fEMCALL1PhaseInTimeRecalibration->GetEntries()<parNumber+1) fEMCALL1PhaseInTimeRecalibration->Expand(parNumber+1); 
   TH1C *clone = new TH1C(*h);
   clone->SetDirectory(NULL);
-  fEMCALL1PhaseInTimeRecalibration->AddAt(clone,0); 
+  fEMCALL1PhaseInTimeRecalibration->AddAt(clone,parNumber); 
 }
 
 ///

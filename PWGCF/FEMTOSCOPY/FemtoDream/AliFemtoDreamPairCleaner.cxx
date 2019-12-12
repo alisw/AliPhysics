@@ -89,7 +89,7 @@ void AliFemtoDreamPairCleaner::CleanDecayAndDecay(
     if (itDecay1->UseParticle()) {
       for (auto itDecay2 = Decay2->begin(); itDecay2 != Decay2->end();
           ++itDecay2) {
-        if (itDecay1->UseParticle()) {
+        if (itDecay2->UseParticle()) {
           std::vector<int> IDDaug1 = itDecay1->GetIDTracks();
           std::vector<int> IDDaug2 = itDecay2->GetIDTracks();
           for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end();

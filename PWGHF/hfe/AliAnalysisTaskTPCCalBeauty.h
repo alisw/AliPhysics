@@ -51,6 +51,7 @@ public:
     void            SetPileUpCut2(Bool_t EnablePileupRejVZEROTPCout){fEnablePileupRejVZEROTPCout = EnablePileupRejVZEROTPCout;};
     void            SetEoPShift(Bool_t EnableShiftEoP){fShiftEoP = EnableShiftEoP;};
     void            SetTimeCut(Bool_t EnableTimeCut){fApplyTimeCut = EnableTimeCut;};
+    void            SetITSLayer(Int_t EnableLayer){fApplyITSLayer = EnableLayer;};
     void            SetTPCnCrossRows(Int_t nTpcCrossRowCut){fNCrossRows = nTpcCrossRowCut;};
     void            SetITSChi2(Int_t itsChi2Cut){fItsChi2 = itsChi2Cut;};
     
@@ -64,6 +65,16 @@ public:
     void            SetDCABinSize(Double_t dcaBinning) {fDCABinSize = dcaBinning;};
     void            SetStackLoop(Bool_t runStackLoop) {fFlagRunStackLoop = runStackLoop;};
     void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;};
+    void            SetDCAzCut(Double_t dcaZCut) {fDCAzCut = dcaZCut;};
+    void            SetMassCut(Double_t minM, Double_t maxM) {
+                        fMinMass = minM;
+                        fMaxMass = maxM;
+                    };
+    void            SetAssoDCACut(Double_t assoXYdca, Double_t assoZdca) {
+        fAssoDCAxy = assoXYdca;
+        fAssoDCAz = assoZdca;
+    };
+    void            SetAssoTPCClus(Int_t nAssoTPCclusters) {fAssoTPCnCls = nAssoTPCclusters;};
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     void            SetTrkMatch(Double_t maxTrkMatch) {fTrkMatch = maxTrkMatch;};
@@ -101,6 +112,7 @@ private:
     Bool_t              fEnablePileupRejVZEROTPCout; //add additional pile-up cuts
     Bool_t              fShiftEoP; //apply E/p shift in MC
     Bool_t              fApplyTimeCut; //apply cluster timing cuts
+    Int_t              fApplyITSLayer; //0=kAny, 1=kFirst, 2=kBoth
     Int_t              fNCrossRows; //set N of TPC crossed rows
     Int_t              fItsChi2; //set max ITS chi-2. if negative, does not apply any cut
     Double_t            fMinEoPCut;      // set min eID E/p cut
@@ -116,6 +128,12 @@ private:
     Bool_t              fFlagFillMCHistos; // switch to fill histos that require MC pid
     Bool_t              fFlagRunStackLoop; //switch to run stack loop to get D & B meson species info
     Int_t               fNclusTPC;       // set number of TPC clusters
+    Double_t            fDCAzCut;        // set DCA z cut
+    Double_t            fMinMass;        // set min inv mass
+    Double_t            fMaxMass;        // set max inv mass
+    Double_t            fAssoDCAxy;     //asso track dcaXY cut
+    Double_t            fAssoDCAz;      //asso track dcaZ cut
+    Int_t               fAssoTPCnCls;   //TPC nCls cut for asso track
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
     Double_t            fTrkMatch; //set distance to cluster
@@ -151,6 +169,7 @@ private:
     TH2F                *fnSigmaAftTrkMatch;  //! track dEdx after matching cal
     TH1F                *fCentCheck;     //! event centrality
     TH1F                *fTrigCheck;     //! checking trigger used
+    TH1F                *fITSLayerCheck;  //! checking ITS layer requirement
     TH2F                *fEMCTrkMatch;   //! plots distance of cluster from closest track
     
     TH1F                *fInvmassLS;     //! Plots LS mass dist
@@ -212,6 +231,8 @@ private:
     TH1F                *fDWeightNew; //!
     TH1F                *fDWeightVar1; //!
     TH1F                *fDWeightVar2; //!
+    TH1F                *fDPlusWeightVar1; //!
+    TH1F                *fDsWeightVar1; //!
     TH1F                *fLcWeightVar1; //!
     TH1F                *fLcWeightVar2; //!
     TH1F                *fBWeight; //!
@@ -254,6 +275,8 @@ private:
     TH1F                *fLambdaCPt; //!
     TH1F                *fD0MesonPtWeight;  //!
     TH1F                *fLambdaCPtWeight; //!
+    TH1F                *fDPlusMesonPtWeight; //!
+    TH1F                *fDsMesonPtWeight; //!
     TH1F                *fEtaCPt; //!
     TH1F                *fCBaryonPt; //!
     

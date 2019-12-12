@@ -28,8 +28,8 @@ enum eventCutSet { kEvtDefault=0,
 		   kNoPileUpCut, //=1
 		   kDefaultVtx12,//=2
 		   kDefaultVtx8, //=3
-		   kDefaultVtx5, //=4                    
-		   kMCEvtDefault, //=5                   
+		   kDefaultVtx5, //=4
+		   kMCEvtDefault, //=5
 		   kTriggered, //=6
 		   kNoVzCut, //=7
 		   kNoEvtSel, //=8
@@ -65,7 +65,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
  AliRsnMiniValue::EType yaxisvar=AliRsnMiniValue::kPt,
  TString     polarizationOpt="" /* J - Jackson,T - Transversity */
 )
-{  
+{
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
@@ -237,8 +237,10 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   double ybins[500];
   for(j=0;j<=401;j++) ybins[j]=j-0.5;
 
-  TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
-  hmc->GetYaxis()->SetTitle("QUALITY");
+  //TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
+  //hmc->GetYaxis()->SetTitle("QUALITY");
+  TH2F* hmc=new TH2F("TrackletsVsCent","", nmult,multbins, 401,ybins);
+  hmc->GetYaxis()->SetTitle("TRACKLETS");
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
   // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
@@ -257,7 +259,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   gROOT->LoadMacro(
       "$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C");
   #endif
-  if(!ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt,triggerMask)) return 0x0;
+  if(customQualityCutsID>=0 && !ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt,triggerMask)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------
 

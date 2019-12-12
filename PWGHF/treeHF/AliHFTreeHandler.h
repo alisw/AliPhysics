@@ -97,7 +97,7 @@ class AliHFTreeHandler : public TObject
 
 
     void FillTree() { //to be called for each candidate!
-      if(fFillOnlySignal && !(fCandType&kSignal)) { //if fill only signal and not signal candidate, do not store 
+      if(fFillOnlySignal && !(fCandType&kSignal) && !(fCandType&kRefl)) { //if fill only signal and not signal/reflection candidate, do not store
         fCandType=0;
       }
       else {      
@@ -110,6 +110,7 @@ class AliHFTreeHandler : public TObject
     //common methods
     void SetFillJets(bool FillJets) {fFillJets=FillJets;}
     void SetDoJetSubstructure(bool DoJetSubstructure) {fDoJetSubstructure=DoJetSubstructure;}
+    void SetTrackingEfficiency(Double_t TrackingEfficiency) {fTrackingEfficiency=TrackingEfficiency;}
     void SetJetProperties(Double_t JetRadius,Int_t JetAlgorithm,Double_t MinJetPt) {fJetRadius=JetRadius;fJetAlgorithm=JetAlgorithm;fMinJetPt=MinJetPt;}
     void SetSubJetProperties(Double_t SubJetRadius,Int_t SubJetAlgorithm) {fSubJetRadius=SubJetRadius;fSubJetAlgorithm=SubJetAlgorithm;}
     void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
@@ -181,7 +182,7 @@ class AliHFTreeHandler : public TObject
     const float kCSPEED = 2.99792457999999984e-02; // cm / ps
 
     //helper methods for derived clases (to be used in BuildTree and SetVariables functions)
-    void AddCommonDmesonVarBranches();
+    void AddCommonDmesonVarBranches(Bool_t HasSecVtx = kTRUE);
     void AddSingleTrackBranches();
     void AddJetBranches();
     void AddGenJetBranches();
@@ -278,6 +279,7 @@ class AliHFTreeHandler : public TObject
     Int_t fJetAlgorithm; //Jet finding algorithm
     Int_t fSubJetAlgorithm; //SubJet finding algorithm
     Double_t fMinJetPt; //Jet finding mimimum Jet pT
+    Double_t fTrackingEfficiency;
 
   /// \cond CLASSIMP
   ClassDef(AliHFTreeHandler,9); ///

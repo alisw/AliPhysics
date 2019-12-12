@@ -64,6 +64,7 @@ class AliAODEvent;
 class TClonesArray;
 class AliEmcalJet;
 class AliRhoParameter;
+class AliCDBEntry;
 
 class AliAnalysisTaskSEHFTreeCreator : public AliAnalysisTaskSE
 {
@@ -152,13 +153,16 @@ public:
     void SetJetAlgorithm(Int_t i) {fJetAlgorithm = i; }
     void SetSubJetAlgorithm(Int_t i) {fSubJetAlgorithm = i; }
     void SetMinJetPt(Double_t d) {fMinJetPt = d; }
+    void SetTrackingEfficiency(Double_t d) {fTrackingEfficiency = d;}
   
     void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
     void SetGoodTrackEtaRange(Double_t d) { fGoodTrackEtaRange = d; }
     void SetGoodTrackMinPt(Double_t d) { fGoodTrackMinPt = d; }
+    void SetITSUpgradeStudy(Bool_t b) { fITSUpgradeStudy = b; }
   
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
     void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
+    void SetLc2V0type(Int_t opt=1) {fV0typeForLc2V0bachelor=opt;}
   
     void SetTreeSingleTrackVarsOpt(Int_t opt) {fTreeSingleTrackVarsOpt=opt;}
   
@@ -184,7 +188,15 @@ public:
         fEnableNsigmaTPCDataCorr=true; 
         fSystemForNsigmaTPCDataCorr=syst; 
     }
-  
+
+    void ApplyPhysicsSelectionOnline(bool apply=true) { fApplyPhysicsSelOnline = apply; }
+
+    void EnableEventDownsampling(float fractokeep, unsigned long seed) {
+        fEnableEventDownsampling = true;
+        fFracToKeepEventDownsampling = fractokeep;
+        fSeedEventDownsampling = seed;
+    }
+
     // Particles (tracks or MC particles)
     //-----------------------------------------------------------------------------------------------
     void                        SetFillParticleTree(Bool_t b) {fFillParticleTree = b;}
@@ -325,7 +337,11 @@ private:
     Int_t                   fNcontributors;                        /// number of contributors
     Int_t                   fNtracks;                              /// number of tracks
     Int_t                   fIsEvRej;                              /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_INT7;                         /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_HighMultSPD;                  /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_HighMultV0;                   /// flag with information about rejection of the event
     Int_t                   fRunNumber;                            /// run number
+    Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
     UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
     TString                 fFileName;
     unsigned int            fDirNumber;
@@ -345,6 +361,8 @@ private:
     Bool_t                  fTriggerBitINT7;                       /// Flag explicitly whether bitmap contains INT7
     Bool_t                  fTriggerBitHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
     Bool_t                  fTriggerBitHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
+    Bool_t                  fTriggerBitCentral;                    /// Flag explicitly whether bitmap contains kCentral
+    Bool_t                  fTriggerBitSemiCentral;                /// Flag explicitly whether bitmap contains kSemiCentral
     TString                 fTriggerClasses;                       /// Collect all trigger classes
     Bool_t                  fTriggerClassINT7;                     /// Flag explicitly whether classes contain INT7
     Bool_t                  fTriggerClassHighMultSPD;              /// Flag explicitly whether classes contain HighMultSPD
@@ -354,11 +372,13 @@ private:
     Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
     Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
     Float_t                 fPercV0M;                              /// V0M multiplicity percentile
+    Float_t                 fMultV0M;                              /// V0M multiplicity from mult selection task
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
     Int_t                   fDsMassKKOpt;                          /// option for Ds massKK (mass or delta mass)
     Int_t                   fLc2V0bachelorCalcSecoVtx;             /// option to calculate the secondary vertex for Lc2V0bachelor. False by default, has to be added to AddTask in case we want to start using it.
+    Int_t                   fV0typeForLc2V0bachelor;               /// option to select Offline+OnTheFly (0), only Offline (1=default), only OnTheFly (2) V0's for the Lc->V0bachelor decay
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
 
@@ -367,10 +387,12 @@ private:
     Int_t                   fJetAlgorithm;                         //Setting the jet finding algorithm
     Int_t                   fSubJetAlgorithm;                      //Setting the jet finding algorithm
     Double_t                fMinJetPt;                             //Setting the jet finding min pT
+    Double_t                fTrackingEfficiency;                   //Setting the jet finding tracking efficiency
   
     Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackEtaRange;                    /// Setting eta-range for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackMinPt;                       /// Setting min pT for bachelor on-the-fly reconstruction candidate
+    Bool_t                  fITSUpgradeStudy;                      /// Setting for analysing an ITS Upgrade production
 
     // Particles (tracks / MC particles)
     // Add a single AliTrackContainer and/or AliMCParticleContainer to select particles
@@ -428,6 +450,7 @@ private:
     
     bool                    fFillJets;                             //FillJetInfo
     bool                    fDoJetSubstructure;                    //FillJetSubstructure
+    
   
     bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
     int fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
@@ -437,8 +460,15 @@ private:
     bool fCorrNtrVtx;
     bool fCorrV0MVtx;
 
+    bool fApplyPhysicsSelOnline;                                   /// flag to apply physics selection in the task
+    bool fEnableEventDownsampling;                                 /// flag to apply event downsampling
+    float fFracToKeepEventDownsampling;                            /// fraction of events to be kept by event downsampling
+    unsigned long fSeedEventDownsampling;                          /// seed for event downsampling
+
+    AliCDBEntry *fCdbEntry;
+
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,19);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,24);
     /// \endcond
 };
 
