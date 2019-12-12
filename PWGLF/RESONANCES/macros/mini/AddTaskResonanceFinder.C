@@ -1,10 +1,15 @@
-
 /***************************************************************************
  Anders Knospe: anders.knospe@cern.ch
  Macro to configure the resonance package for analyses using
  AliRsnMiniResonanceFinder (where one decay product is itself a resonance).
  
  ****************************************************************************/
+
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#include <PWGLF/RESONANCES/macros/mini/qa/AddMonitorOutputV0.C>
+//#include <PWGLF/RESONANCES/macros/mini/qa/AddMonitorOutputCascade.C>
 
 Bool_t Config_piphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 Bool_t Config_kxphi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
@@ -32,6 +37,8 @@ Bool_t Config_Kstar0Lambda(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,In
 Bool_t Config_KstarxLambda(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 
 Bool_t Config_k0kxpi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+
+#endif
 
 AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
                                                TString lname,
