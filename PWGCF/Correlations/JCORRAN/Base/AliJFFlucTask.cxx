@@ -130,6 +130,8 @@ void AliJFFlucTask::UserCreateOutputObjects()
 {
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
 	fFFlucAna->SelectSubevents(subeventMask);
+	if(flags & FLUC_MULT_BINS)
+		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_MULT_BINS);
 	if(flags & FLUC_SCPT)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_SCPT);
 	if(flags & FLUC_EBE_WEIGHTING)

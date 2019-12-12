@@ -77,21 +77,25 @@ public:
 	enum{
 		FLUC_PHI_CORRECTION = 0x2,
 		FLUC_SCPT = 0x4,
-		FLUC_EBE_WEIGHTING = 0x8
+		FLUC_EBE_WEIGHTING = 0x8,
+		FLUC_MULT_BINS = 0x10
 	};
 	void AddFlags(UInt_t nflags){
 		flags |= nflags;
 	}
 
 #define CENTN_NAT 9
-#define CENTN 7
-	static Double_t CentBin[CENTN_NAT+1]; //8
+#define MULTN 15
+	static Double_t CentBin[CENTN_NAT+1];
+	static Double_t MultBin[MULTN+1];
 	static Double_t pttJacek[74];
 	static UInt_t CentralityTranslationMap[CENTN_NAT];
 	static UInt_t NCentBin;
+	static UInt_t NMultBin;
 	static UInt_t NpttJacek;
 
 	static int GetCentralityClass(Double_t);
+	static int GetMultiplicityBin(Double_t);
 
 	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kH10, kH11, kH12, kNH}; //harmonics
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
@@ -125,8 +129,6 @@ private:
 
 	TComplex QvectorQC[kNH][nKL];
 	TComplex QvectorQCeta10[2][kNH][nKL]; // ksub
-
-	//TH1D *h_phi_module[CENTN][2]; //7 // cent, isub
 
 	AliJHistManager * fHMG;//!
 
