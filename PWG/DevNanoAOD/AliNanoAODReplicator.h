@@ -86,6 +86,10 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   void SetSaveV0s(Bool_t b)    { fSaveV0s = b; }
   void SetSaveCascades(Bool_t b) { fSaveCascades = b; }
   void SetSaveConversionPhotons(Bool_t b) { fSaveConversionPhotons = b; }
+  void SetPhotonDeltaBranchName(TString name) {
+    fPhotonFromDeltas = true;
+    fDeltaAODBranchName = name;
+  }
   
   void SetMCMode(Int_t mode)  { fMCMode = mode; }
   
@@ -143,6 +147,8 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   Bool_t fSaveV0s;    // if kTRUE AliAODv0 will be saved in AliAODEvent
   Bool_t fSaveCascades; // if kTRUE AliAODcascade will be saved in AliAODEvent
   Bool_t fSaveConversionPhotons; // If kTRUE gamme conversions are stored (needs delta AOD)
+  Bool_t fPhotonFromDeltas; // If kTRUE gamma conversions will be directly taken from the Delta AOD
+  TString fDeltaAODBranchName; // Name of the photon branch in the Delta AOD
 
   TString fInputArrayName; // name of array if tracks are stored in a TObjectArray
   TString fOutputArrayName; // name of the output array, where the NanoAODTracks are stored
@@ -153,7 +159,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   AliNanoAODReplicator(const AliNanoAODReplicator&);
   AliNanoAODReplicator& operator=(const AliNanoAODReplicator&);
 
-  ClassDef(AliNanoAODReplicator, 6) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliNanoAODReplicator, 7) // Branch replicator for ESD to muon AOD.
 };
 
 #endif
