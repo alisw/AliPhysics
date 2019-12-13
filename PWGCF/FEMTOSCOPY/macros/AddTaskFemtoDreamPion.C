@@ -1,5 +1,5 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPion(
-    bool isMC=false, float fSpherDown=0.7, float fdPhidEta=0.01,
+    bool isMC=false, bool MCtemplatefit=false , float fSpherDown=0.7, float fdPhidEta=0.01,
     TString CentEst="kInt7", const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
@@ -58,6 +58,16 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   //another particle has a smaller sigma, the track is rejected.
   // Not mention in AN oder Indico
   //fTrackCutsPosPion->SetCutSmallestSig(true);
+  fTrackCutsPosPion->SetPlotDCADist(true);
+
+  //MC Template treatment
+  if ( isMC && MCtemplatefit ) {
+    //fTrackCutsPosPion->SetPlotContrib(true);
+    fTrackCutsPosPion->CheckParticleMothers(true);
+    fTrackCutsPosPion->SetPlotDCADist(true);
+    //fTrackCutsPosPion->SetOriginMultiplicityHists(true);
+    fTrackCutsPosPion->SetFillQALater(true);
+  }
 
   //The same things for negative pions
   AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
@@ -76,6 +86,16 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   //fTrackCutsNegPion->SetCutSmallestSig(true);
+  fTrackCutsNegPion->SetPlotDCADist(true);
+
+  //MC Template treatment
+  if ( isMC && MCtemplatefit ) {
+    //fTrackCutsNegPion->SetPlotContrib(true);
+    fTrackCutsNegPion->CheckParticleMothers(true);
+    fTrackCutsNegPion->SetPlotDCADist(true);
+    //fTrackCutsNegPion->SetOriginMultiplicityHists(true);
+    fTrackCutsNegPion->SetFillQALater(true);
+  }
 
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
