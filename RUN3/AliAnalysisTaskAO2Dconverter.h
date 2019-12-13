@@ -106,8 +106,8 @@ private:
 
   struct {
     // Event data
-
-    ULong64_t fEventId = 0u;    /// Event (collision) unique id. Contains peiod, orbit and bunch crossing numbers
+    Int_t     fRunNumber;       /// Run Number (added in case of multirun skimming)
+    ULong64_t fEventId = 0u;    /// Event (collision) unique id. Contains period, orbit and bunch crossing numbers
     // Primary vertex position
     Float_t  fX = -999.f;       /// Primary vertex x coordinate
     Float_t  fY = -999.f;       /// Primary vertex y coordinate
@@ -131,19 +131,10 @@ private:
 
   } vtx; //! structure to keep the primary vertex (avoid name conflicts)
 
-  // PH: The MC informafion has to be stored separately!
-#ifdef USE_MC
-  // MC information on the event
-  Short_t fGeneratorID = 0u; /// Generator ID used for the MC
-  Float_t fMCVtxX = -999.f;  /// Primary vertex x coordinate from MC
-  Float_t fMCVtxY = -999.f;  /// Primary vertex y coordinate from MC
-  Float_t fMCVtxZ = -999.f;  /// Primary vertex z coordinate from MC
-#endif
-
   struct {
     // Track data
 
-    Int_t   fCollisionID;    /// The index of the collision vertex in the TF, to which the track is attached
+    Int_t   fCollisionsID;    /// The index of the collision vertex in the TF, to which the track is attached
 
     // Coordinate system parameters
     Float_t fX = -999.f;     /// X coordinate for the point of parametrisation
@@ -198,23 +189,41 @@ private:
   } tracks;                      //! structure to keep track information
 
 #ifdef USE_MC
+  struct {
+    Int_t     fRunNumber;       /// Run Number (added in case of multirun skimming)
+    // MC information on the event
+    Short_t fGeneratorsID = 0u; /// Generator ID used for the MC
+    Float_t fX = -999.f;  /// Primary vertex x coordinate from MC
+    Float_t fY = -999.f;  /// Primary vertex y coordinate from MC
+    Float_t fZ = -999.f;  /// Primary vertex z coordinate from MC
+    Float_t fT = -999.f;  /// Time of the collision from MC
+  } mcvtx;  //! MC vertices
+
   // Track labels
-  Int_t fLabel = -1;           /// Track label
-  Int_t fTOFLabel[3] = { -1 }; /// Label of the track matched to TOF
+  struct {
+    // Int_t fLabel = -1;           /// Track label
+    // Int_t fTOFLabel[3] = { -1 }; /// Label of the track matched to TOF
 
-  // MC information
-  Int_t fPdgCode = -99999;    /// PDG code of the particle
-  Int_t fMother[2] = { 0 };   /// Indices of the mother particles
-  Int_t fDaughter[2] = { 0 }; /// Indices of the daughter particles
+    Int_t   fCollisionsID;    /// The index of the MC collision vertex
 
-  Float_t fPx = -999.f; /// x component of momentum
-  Float_t fPy = -999.f; /// y component of momentum
-  Float_t fPz = -999.f; /// z component of momentum
+    // MC information (modified version of TParticle
+    Int_t fPdgCode    = -99999; /// PDG code of the particle
+    Int_t fStatusCode = -99999; /// generation status code
+    Int_t fMother[2]   = { 0 }; /// Indices of the mother particles
+    Int_t fDaughter[2] = { 0 }; /// Indices of the daughter particles
+    Float_t fWeight    = 1;     /// particle weight from the generator or ML
 
-  Float_t fVx = -999.f; /// x of production vertex
-  Float_t fVy = -999.f; /// y of production vertex
-  Float_t fVz = -999.f; /// z of production vertex
-  Float_t fVt = -999.f; /// t of production vertex
+    Float_t fPx = -999.f; /// x component of momentum
+    Float_t fPy = -999.f; /// y component of momentum
+    Float_t fPz = -999.f; /// z component of momentum
+    Float_t fE  = -999.f; /// Energy (covers the case of resonances, no need for calculated mass)
+
+    Float_t fVx = -999.f; /// x of production vertex
+    Float_t fVy = -999.f; /// y of production vertex
+    Float_t fVz = -999.f; /// z of production vertex
+    Float_t fVt = -999.f; /// t of production vertex
+    // We do not use the polarisation so far
+  } mcparticle;  //! MC particles from the kinematics tree
 #endif
 
   // To test the compilation uncoment the line below
@@ -235,7 +244,7 @@ private:
   struct {
     // Calorimeter data (EMCAL & PHOS)
 
-    Int_t   fCollisionID;         /// The index of the collision vertex in the TF, to which the track is attached
+    Int_t   fCollisionsID;         /// The index of the collision vertex in the TF, to which the track is attached
 
     Short_t fCellNumber = -1;     /// Cell absolute Id. number
     Float_t fAmplitude = -999.f;  /// Cell amplitude (= energy!)
@@ -246,7 +255,7 @@ private:
   
   struct {
     // Calorimeter trigger data (EMCAL & PHOS)
-    Int_t   fCollisionID;         /// The index of the collision vertex in the TF, to which the track is attached
+    Int_t   fCollisionsID;         /// The index of the collision vertex in the TF, to which the track is attached
     Short_t fFastorAbsID = - 1;   /// FastOR absolute ID
     Float_t fL0Amplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
     Float_t fL0Time = -1.f;       /// L0 time
@@ -259,7 +268,7 @@ private:
   struct {
     // MUON track data
 
-    Int_t   fCollisionID;            /// The index of the collision vertex, to which the muon is attached
+    Int_t   fCollisionsID;            /// The index of the collision vertex, to which the muon is attached
 
     /// Parameters at vertex
     Float_t fInverseBendingMomentum; ///< Inverse bending momentum (GeV/c ** -1) times the charge 
@@ -285,7 +294,7 @@ private:
   struct {
     // Muon clister data
     
-    Int_t   fMuTrackID; /// The index of the track to which the clusters are attached
+    Int_t   fMuonsID; /// The index of the muon track to which the clusters are attached
     Float_t fX;         ///< cluster X position
     Float_t fY;         ///< cluster Y position
     Float_t fZ;         ///< cluster Z position
@@ -298,7 +307,7 @@ private:
   struct {
     // ZDC: it is not clear what is the minimal set of information (PH)
 
-    Int_t     fCollisionID;          /// The index of the collision vertex
+    Int_t     fCollisionsID;          /// The index of the collision vertex
 
     Float_t   fZEM1Energy;   	     ///< E in ZEM1
     Float_t   fZEM2Energy;	     ///< E in ZEM2
@@ -321,7 +330,7 @@ private:
   struct {
     /// VZERO as proxy for FIT
 
-    Int_t   fCollisionID;      /// The index of the collision vertex
+    Int_t   fCollisionsID;      /// The index of the collision vertex
 
     Float_t fAdc[64];          ///  adc for each channel
     Float_t fTime[64];         ///  time for each channel
@@ -340,8 +349,8 @@ private:
   struct {
     /// Cascades
 
-    Int_t fV0ID; // V0 ID
-    Int_t fBachelorID; // Bachelor track ID
+    Int_t fV0sID; // V0 ID
+    Int_t fTracksID; // Bachelor track ID
   } cascs;             //! structure to keep cascades information
 
   /// Offsets to convert the IDs within one collision to global IDs
@@ -349,7 +358,7 @@ private:
   Int_t fOffsetTrackID = 0;   ///! Offset of track IDs (used in V0s)
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 3);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 4);
 };
 
 #endif
