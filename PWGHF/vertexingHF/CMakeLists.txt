@@ -154,6 +154,7 @@ set(SRCS
   AliAnalysisTaskSEXicTopKpi.cxx
   AliRDHFCutsXictopKpi.cxx
   AliRDHFCutsCdeuterontodKpi.cxx
+  AliAnalysisTaskSECharmHadronvnTMVA.cxx
 )
 
 # Headers from sources

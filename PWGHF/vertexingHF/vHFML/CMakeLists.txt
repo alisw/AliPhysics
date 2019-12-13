@@ -27,7 +27,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/charmFlow
-                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
@@ -46,7 +45,6 @@ set(SRCS
     AliAnalysisTaskSEDplus.cxx
     AliAnalysisTaskSEDs.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
-    AliAnalysisTaskSECharmHadronvnTMVA.cxx
 )
 
 # Headers from sources

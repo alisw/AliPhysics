@@ -31,7 +31,6 @@
 #include "AliAODEvent.h"
 #include "AliHFQnVectorHandler.h"
 #include "AliAnalysisVertexingHF.h"
-#include "AliHFMLResponse.h"
 
 class AliAODEvent;
 
@@ -89,9 +88,6 @@ class AliAnalysisTaskSECharmHadronvnTMVA : public AliAnalysisTaskSE
     void SetBDT2Cut(Double_t twocut1, Double_t twocut2, Double_t twocut3, Double_t twocut4, Double_t twocut5, Double_t twocut6, Double_t twocut7, Double_t twocut8, Double_t twocut9, Double_t twocut10, Double_t twocut11, Double_t twocut12, Double_t twocut13 ) {fBDT2Cut[0]=twocut1; fBDT2Cut[1]=twocut2; fBDT2Cut[2]=twocut3; fBDT2Cut[3]=twocut4; fBDT2Cut[4]=twocut5; fBDT2Cut[5]=twocut6; fBDT2Cut[6]=twocut7; fBDT2Cut[7]=twocut8; fBDT2Cut[8]=twocut9; fBDT2Cut[9]=twocut10; fBDT2Cut[10]=twocut11; fBDT2Cut[11]=twocut12; fBDT2Cut[12]=twocut13;}
 
     // methods for ML application
-    void SetDoMLApplication(bool flag = kTRUE) {fApplyML = flag;}
-    void SetMLConfigFile(TString path = ""){fConfigPath = path;}
-    void SetMLBinsForSparse(int nbins = 300, double min = 0.85, double max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
 
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -104,10 +100,10 @@ class AliAnalysisTaskSECharmHadronvnTMVA : public AliAnalysisTaskSE
     void CalculateInvMasses(AliAODRecoDecayHF* d,float* &masses,int& nmasses);
     void GetMainQnVectorInfo(double &mainPsin, double &mainMultQn, double mainQn[2], double &SubAPsin, double &SubAMultQn, double SubAQn[2], double &SubBPsin, double &SubBMultQn, double SubBQn[2], AliHFQnVectorHandler* HFQnVectorHandler);
     void GetDaughterTracksToRemove(AliAODRecoDecayHF* d, int nDau, vector<AliAODTrack*> &trackstoremove);
-    int IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, double modelPred[2]);
+    int IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0);
     bool LoadSplinesForqnPercentile();
 
-    static const int kVarForSparse = 10;
+    static const int kVarForSparse = 9;
 
     AliAODEvent* fAOD;                      /// AOD event
 
@@ -163,13 +159,6 @@ class AliAnalysisTaskSECharmHadronvnTMVA : public AliAnalysisTaskSE
     Double_t         fBDT1Cut[13];
     Double_t         fBDT2Cut[13];
 
-    /// variables for ML application
-    bool fApplyML;                          /// flag to enable ML application
-    TString fConfigPath;                    /// path to ML config file
-    AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
-    int fNMLBins;                           /// number of bins for ML axis in thnsparse
-    double fMLOutputMin;                    /// minimum value of ML ouptut in thnsparse axis
-    double fMLOutputMax;                    /// maximum value of ML ouptut in thnsparse axis
 
     ClassDef(AliAnalysisTaskSECharmHadronvnTMVA,6); // AliAnalysisTaskSE for the HF vn analysis
 };

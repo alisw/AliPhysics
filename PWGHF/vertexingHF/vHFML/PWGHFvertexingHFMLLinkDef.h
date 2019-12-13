@@ -8,7 +8,6 @@
 #pragma link C++ class AliAnalysisTaskSEDplus+;
 #pragma link C++ class AliAnalysisTaskSEDs+;
 #pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
-#pragma link C++ class AliAnalysisTaskSECharmHadronvnTMVA+;
 #pragma link C++ class AliHFMLResponse+;
 #pragma link C++ class AliHFMLResponseDplustoKpipi+;
 #pragma link C++ class AliHFMLResponseDstoKKpi+;
