@@ -71,8 +71,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         //list in lists WIP
 
         TList*                  fFlowWeightsList; //! 
-        TList*                  fqCutsList;     //!
-        TH1F*                   fHistqCuts[2][fNumCentHists];   //!
         AliGFWWeights*          fWeights;           //!
         //output histograms
         TH3F*                   fHistPhiEtaVz;    //!
@@ -85,7 +83,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TProfile*               fProfcn_2gapINC[fNumHarmHists]; //!
 
         TProfile*               fProfPTdn_2gap[fNumHarmHists][fNumCentHists];    //!
-        TH1F*                   fHistqn_reduced[fNumHarmHists][fNumCentHists];     //!
 
         TProfile*               fProfPTdn_2gap_B[fNumHarmHists][fNumCentHists];    //!
 
@@ -107,21 +104,31 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2D*                   fHistq2Cent;    //!
         TH2D*                   fHistq3Cent;    //!
 
+        TH2D*                   fHistq2CentV0C;    //!
+        TH2D*                   fHistq3CentV0C;    //!
+
+        TProfile2D*             fProfvnq2[fNumHarmHists];   //!
+
         TProfile*               fProfNPar; //!
+
+        TH1F*                   fHistAmpV0C;    //!
 
         // fill dphi/deta/dpt histograms for weights
         void CorrelationTask(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
-        void FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
+        void FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, const Float_t fV0C, const Float_t centrality);
         // Calculate flow vectors for reference and POIs
         void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
         void POIVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
-        void ReducedRFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
+        void ReducedqVectorsTPC(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
+        void ReducedqVectorsV0C(const Float_t centrality, const AliAODEvent* fAOD);
         void FillRFP(const Float_t centrality,const Int_t iTracks, const int nHarm, const int nCorr);
         void Filldn(const Float_t centrality, const double dPt, const int nHarm, const int nCorr);
         void Fillqnreduced(const Float_t centrality);
+        void FillqnreducedV0(const Float_t centrality);
         void FillPOI(const Double_t dPtL, const Double_t dPtLow, const Double_t dPtHigh, const float dVz, const Int_t iTracks);
         void FillIntegratecqnCut(const Float_t centrality, const int nHarm, const double c, const double c_weight, const int q_i,const int nCorr);
         void FillDifferentialdqnCut(const Float_t centrality, const int nHarm, const Double_t dPt, const double d, const double d_weight, const int q_i,const int nCorr);
+        Int_t CentrCode(const Float_t centrality);
         Bool_t WithinRFP(const AliVParticle* track) const;
         Bool_t WithinPOI(const AliVParticle* track) const;
         Bool_t ProcessMCParticles();
@@ -129,14 +136,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t InitializeTask();
         Bool_t LoadWeights(); // load weights histograms
         Double_t GetFlowWeight(const AliAODTrack* track, const float dVz) const;
-        Bool_t LoadqCuts();
-        Double_t GetqSelectionCut(Int_t nHarm, Int_t CentRange, Int_t Entry);
         //############ GENERIC FRAMEWORK ############# MODIFIED WITH ESE //
 
         double GetWeight(double phi, double eta, double vz,  double runNumber);
         double GetPtWeight(double pt, double eta, float vz,  double runNumber);
         void ResetFlowVector(TComplex (&array)[fNumHarms][fNumPowers]); // set values to TComplex(0,0,0) for given array
-        void ResetReducedFlowVector(Double_t (&array)[fNumHarms][fNumPowers]);
+        void ResetReducedFlowVector(Double_t (&array)[fNumHarms]);
 
         Bool_t sortPt(const AliAODTrack* t1, const AliAODTrack* t2) { return (t1->Pt() < t2->Pt()); } // function for std::sort
         
@@ -151,9 +156,15 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TComplex Qvector[fNumHarms][fNumPowers];
         TComplex Qvector10M[fNumHarms][fNumPowers];
         TComplex Qvector10P[fNumHarms][fNumPowers];
-        Double_t qvector_red[fNumHarms][fNumPowers];
-        Double_t sumCos[fNumHarms][fNumPowers];
-        Double_t sumSin[fNumHarms][fNumPowers];
+
+        Double_t qvector_red[fNumHarms];
+        Double_t sumCos[fNumHarms];
+        Double_t sumSin[fNumHarms];
+
+        Double_t qvector_redV0C[fNumHarms];
+        Double_t sumCosV0C[fNumHarms];
+        Double_t sumSinV0C[fNumHarms];
+        
 
         TComplex Q(int n, int p);
         TComplex QGap10M(int n, int p);
