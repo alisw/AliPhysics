@@ -118,7 +118,7 @@
 #pragma link C++ class MLSelected+;
 #pragma link C++ class std::vector<RHypertriton3>+;
 #pragma link C++ class std::vector<SHypertriton3>+;
-#pragma link C++ class std::vector<MLSelected3>+;
+#pragma link C++ class std::vector<MLSelected>+;
 #pragma link C++ class REvent+;
 #endif
 
