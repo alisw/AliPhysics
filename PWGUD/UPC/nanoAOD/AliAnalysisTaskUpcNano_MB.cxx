@@ -44,6 +44,7 @@
 #include "AliDataFile.h"
 #include "TString.h"
 #include "AliTimeRangeCut.h"
+#include "AliOADBContainer.h"
 
 #include "AliESDEvent.h" 
 #include "AliESDtrack.h" 
@@ -424,20 +425,16 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   
   AliVVZERO *fV0data = fEvent->GetVZEROData();
   AliVAD *fADdata = fEvent->GetADData();
-  
+    
   if(isMC){
     if(fRunNumber != fLoadedRun){
       if(!fSPDfile)fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDEfficiency18qr.root");
-      if(!fTOFfile)fTOFfile = AliDataFile::OpenOADB("PWGUD/UPC/TOFEfficiency18qr.root");
-      if(fTOFfile->Get(Form("ltm%i",fRunNumber))) hTOFeff  = (TH2F*) fTOFfile->Get(Form("ltm%i",fRunNumber));
-      if(fSPDfile->Get(Form("eff%i",fRunNumber))) hSPDeff  = (TH1D*) fSPDfile->Get(Form("eff%i",fRunNumber));
+      if(!fTOFfile)fTOFfile = AliDataFile::OpenOADB("PWGUD/TOFTriggerEfficiency.root");
+      AliOADBContainer* fTOFcont = (AliOADBContainer*)fTOFfile->Get("TOFTriggerEfficiency");
+      hTOFeff  = (TH2F*)fTOFcont->GetObject(fRunNumber,"Default");
       
+      if(fSPDfile->Get(Form("eff%i",fRunNumber))) hSPDeff  = (TH1D*) fSPDfile->Get(Form("eff%i",fRunNumber));
       Int_t tempRun = fRunNumber;
-      while(!hTOFeff){
-        tempRun--;
-        hTOFeff  = (TH2F*) fTOFfile->Get(Form("ltm%i",tempRun));
-      }
-      tempRun = fRunNumber;
       while(!hSPDeff){
         tempRun--;
         hSPDeff  = (TH1D*) fSPDfile->Get(Form("eff%i",tempRun));
@@ -923,8 +920,7 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
   if(NfiredMaxiPads>6)offlineOMU = kFALSE;
 
   if(offlineOMU)fTriggerInputsMC[4] = kTRUE;  //0OMU TOF two hits with topology
-  if(NfiredMaxiPads >= 2)fTriggerInputsMC[5] = kTRUE;	//0OM2 TOF two hits
-  		
+  if(NfiredMaxiPads >= 2)fTriggerInputsMC[5] = kTRUE;	//0OM2 TOF two hits	
 
   // ------------------------
   // STG trigger input
