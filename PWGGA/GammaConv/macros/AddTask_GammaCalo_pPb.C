@@ -463,8 +463,8 @@ void AddTask_GammaCalo_pPb(
   // Run 1 data PHOS clusters pPb 5TeV
   // ===============================================================================================
   } else if (trainConfig == 301) {  // min energy = 0.3 GeV/c
-    cuts.AddCutCalo("80010113","2444400041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCutCalo("80062113","2444400041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+    cuts.AddCutCalo("80010113","2444453041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCutCalo("80062113","2444453041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
   } else if (trainConfig == 302){ // Validation PHOS
     cuts.AddCutCalo("80010113","2444400041013200000","0163103100000010");
   } else if (trainConfig == 303){ // Validation PHOS, only added signals
