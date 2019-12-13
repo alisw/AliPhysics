@@ -90,7 +90,11 @@
 #include "AliPIDCombined.h"
 #include "AliLog.h"
 #include "AliAODEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliGenEventHeader.h"
+#include "AliPDG.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
 #include "AliPicoTrack.h"
@@ -111,7 +115,8 @@ namespace {
 AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fEventCuts{},
   fEventAOD{nullptr},
-  fEventMC{nullptr},
+  // fEventMC{nullptr},
+  fEvent{nullptr},
   fPVz{},
   fPIDResponse{nullptr},
   fPIDCombined{nullptr},
@@ -170,6 +175,9 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fCentMinAdd{0},
   fCentMaxAdd{0},
   fPVtxCutZ{10.0},
+  fVxMax{3.},
+  fVyMax{3.},
+  fVzMax{10.},
   fEventRejectAddPileUp{kFALSE},
   fCutChargedTrackFilterBit{96},
   fCutChargedNumTPCclsMin{70},
@@ -367,7 +375,8 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
 AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSys, Bool_t bUseWeights, Bool_t bIsMC) : AliAnalysisTaskSE(name),
   fEventCuts{},
   fEventAOD{nullptr},
-  fEventMC{nullptr},
+  // fEventMC{nullptr},
+  fEvent{nullptr},
   fPVz{},
   fPIDResponse{nullptr},
   fPIDCombined{nullptr},
@@ -426,6 +435,9 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fCentMinAdd{0},
   fCentMaxAdd{0},
   fPVtxCutZ{10.0},
+  fVxMax{3.},
+  fVyMax{3.},
+  fVzMax{10.},
   fEventRejectAddPileUp{kFALSE},
   fCutChargedTrackFilterBit{96},
   fCutChargedNumTPCclsMin{70},
@@ -817,7 +829,7 @@ void AliAnalysisTaskUniFlow::ClearVectors()
 
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
     if(!fProcessSpec[iSpec]) { continue; }
-    std::vector<AliVTrack*>* vector = fVector[iSpec];
+    std::vector<AliVParticle*>* vector = fVector[iSpec];
     if(!vector) { continue; }
     if(HasMass(PartSpecies(iSpec))) { for(auto part = vector->begin(); part != vector->end(); ++part) { delete *part; } }
     vector->clear();
@@ -845,7 +857,7 @@ Bool_t AliAnalysisTaskUniFlow::InitializeTask()
   // returns kTRUE if succesfull
   // *************************************************************
   AliInfo("Checking task setting");
-  if(fAnalType != kAOD)
+  if(fAnalType != kAOD && fAnalType != kMC)
   {
     AliFatal("Analysis type: not kAOD (not implemented for ESDs yet)! Terminating!");
     return kFALSE;
@@ -855,7 +867,7 @@ Bool_t AliAnalysisTaskUniFlow::InitializeTask()
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)mgr->GetInputEventHandler();
   fPIDResponse = inputHandler->GetPIDResponse();
-  if(!fPIDResponse)
+  if(!fPIDResponse && fAnalType != kMC)
   {
     AliFatal("AliPIDResponse object not found! Terminating!");
     return kFALSE;
@@ -1006,7 +1018,7 @@ Bool_t AliAnalysisTaskUniFlow::InitializeTask()
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec)
   {
     if(!fProcessSpec[iSpec]) { continue; }
-    fVector[iSpec] = new std::vector<AliVTrack*>();
+    fVector[iSpec] = new std::vector<AliVParticle*>();
     fVector[iSpec]->reserve(iReserve);
   }
 
@@ -1027,20 +1039,29 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   if(fRunMode == kTest && fEventCounter >= fNumEventsAnalyse) { return; }
 
   // event selection
-  fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!fEventAOD) { return; }
+  // fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  // if(!fEventAOD) { return; }
 
   // loading AliPIDResponse
   AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  AliVEventHandler* inputHandler = (AliVEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
-  if(!fPIDResponse) { AliFatal("AliPIDResponse not attached!"); return; }
+  if(!fPIDResponse && fAnalType != kMC) { AliFatal("AliPIDResponse not attached!"); return; }
 
   // loading array with MC particles
-  if(fMC) {
-    fEventMC = inputHandler->MCEvent();
-    if(!fEventMC) { AliFatal("fEventMC with MC particle not found!"); return; }
+  // if(fMC) {
+  //   fEventMC = inputHandler->MCEvent();
+  //   if(!fEventMC) { AliFatal("fEventMC with MC particle not found!"); return; }
+  // }
+
+  //loading VEvent with generated event / data
+  if(fAnalType == kMC){ fEvent = dynamic_cast<AliVEvent*>(MCEvent());}
+  else{
+    fEvent = dynamic_cast<AliVEvent*>(InputEvent());
+    fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fEventAOD) { AliFatal("AOD not found!"); return; }
   }
+  if(!fEvent) { AliFatal("fEvent not found!"); return; }
 
   // "valid" events before selection
   fhEventCounter->Fill("Input",1);
@@ -1048,16 +1069,19 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // Fill event QA BEFORE cuts
   if(fFillQA) { FillQAEvents(kBefore); }
 
-  Bool_t bEventSelected = IsEventSelected();
-  // if(!IsEventSelected()) { return; }
+  Bool_t bEventSelected = kFALSE;
+  if(fAnalType != kMC) bEventSelected = IsEventSelected();
+  else bEventSelected = IsMCEventSelected();
 
   DumpTObjTable("UserExec: after event selection");
   if(!bEventSelected) { return; }
 
   fhEventCounter->Fill("Event OK",1);
 
+  if(fAnalType == kMC && fFlowUseWeights) { AliFatal("Cannot generate events and use weights on in the same time! Terminating!"); return; }
+
   // checking the run number for aplying weights & loading TList with weights
-  if(fFlowUseWeights && fFlowRunByRunWeights && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
+  if(fAnalType != kMC && fFlowUseWeights && fFlowRunByRunWeights && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
 
   DumpTObjTable("UserExec: before filtering");
 
@@ -1065,7 +1089,9 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // NB: clear charged vectors because it might keep particles from previous event (not happen for other species)
   fVector[kRefs]->clear();
   fVector[kCharged]->clear();
-  FilterCharged();
+
+  if(!fMC) FilterCharged();
+  else FilterChargedMC();
 
   // checking if there is at least 4/6/8 particles: needed to "properly" calculate correlations
   UInt_t minNOfPar = 4;
@@ -1096,7 +1122,7 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   fIndexSampling = GetSamplingIndex();
 
   // extract PV-z for weights
-  fPVz = fEventAOD->GetPrimaryVertex()->GetZ();
+  fPVz = fEvent->GetPrimaryVertex()->GetZ();
 
   // Fill QA AFTER cuts (i.e. only in selected events)
   if(fFillQA) { FillQAEvents(kAfter); }
@@ -1115,32 +1141,32 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
     if(!FillFlowWeight(*part, kCharged)) { AliFatal("Flow weight filling failed!"); return; }
   }
 
+
   if(fFillQA) {
     // Charged QA before selection
-    for(Int_t iTrack(0); iTrack < fEventAOD->GetNumberOfTracks(); iTrack++) {
-      AliAODTrack* track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
+    for(Int_t iTrack(0); iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
+      AliVParticle* track = static_cast<AliVParticle*>(fEvent->GetTrack(iTrack));
       if(!track) { continue; }
       FillQACharged(kBefore,track);
     }
-
-    fhQAChargedMult[0]->Fill(fEventAOD->GetNumberOfTracks());
+    fhQAChargedMult[0]->Fill(fEvent->GetNumberOfTracks());
     fhQAChargedMult[1]->Fill(fVector[kCharged]->size());
     fhRefsMult->Fill(fVector[kRefs]->size());
   }
 
   // sorting charged hadrons
-  std::sort(fVector[kCharged]->begin(), fVector[kCharged]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+  std::sort(fVector[kCharged]->begin(), fVector[kCharged]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
 
   // Filtering other species
   if(fProcessSpec[kPion] || fProcessSpec[kKaon] || fProcessSpec[kProton]) { FilterPID(); }
   if(fProcessSpec[kK0s] || fProcessSpec[kLambda]) {
       FilterV0s();
-      std::sort(fVector[kK0s]->begin(), fVector[kK0s]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
-      std::sort(fVector[kLambda]->begin(), fVector[kLambda]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+      std::sort(fVector[kK0s]->begin(), fVector[kK0s]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
+      std::sort(fVector[kLambda]->begin(), fVector[kLambda]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
   }
   if(fProcessSpec[kPhi]) {
       FilterPhi();
-      std::sort(fVector[kPhi]->begin(), fVector[kPhi]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+      std::sort(fVector[kPhi]->begin(), fVector[kPhi]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
   }
 
   DumpTObjTable("UserExec: after filtering");
@@ -1154,10 +1180,10 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // particles (Phi, V0s) because here new AliPicoTracks are created
   ClearVectors();
 
-  if(fMC) { ProcessMC(); }
+  // if(fMC) { ProcessMC(); }
 
   // extracting run number here to store run number from previous event (for current run number use info in AliAODEvent)
-  fRunNumber = fEventAOD->GetRunNumber();
+  if(fAnalType == kAOD) fRunNumber = fEventAOD->GetRunNumber();
 
   DumpTObjTable("UserExec: end");
 
@@ -1183,6 +1209,8 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   // return kTRUE if event passes all criteria, kFALSE otherwise
   // *************************************************************
 
+  if(fAnalType == kMC) { AliFatal("Simulated event cannot pass 'IsEventSelected'! \n"); return kFALSE; }
+
   // Physics selection (trigger)
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
@@ -1193,7 +1221,7 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   fhEventCounter->Fill("Physics selection OK",1);
 
   // events passing AliEventCuts selection
-  if(!fEventCuts.AcceptEvent(fEventAOD)) { return kFALSE; }
+  if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
   fhEventCounter->Fill("EventCuts OK",1);
 
   // Additional pile-up rejection cuts for LHC15o dataset
@@ -1220,12 +1248,40 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   return kTRUE;
 }
 // ============================================================================
+Bool_t AliAnalysisTaskUniFlow::IsMCEventSelected()
+{
+  // Return kTRUE if event passes all criteria, kFALSE otherwise
+  // for simulated events only
+  // *************************************************************
+
+  if(fAnalType != kMC) { AliFatal("Real event cannot pass 'IsMCEventSelected'! \n"); return kFALSE; }
+
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+  if(!ev) { AliFatal("MC event not found!"); return kFALSE; }
+
+  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+  if(!header) { AliFatal("MC event not generated!"); return kFALSE; }
+
+  fhEventCounter->Fill("Physics selection OK",1);
+
+  const AliVVertex *vertex = ev->GetPrimaryVertex();
+  if(!ev) { AliError("Vertex of MC not found!"); }
+
+  if(TMath::Abs(vertex->GetX()) > fVxMax) return kFALSE;
+  if(TMath::Abs(vertex->GetY()) > fVyMax) return kFALSE;
+  if(TMath::Abs(vertex->GetZ()) > fVzMax) return kFALSE;
+
+  fhEventCounter->Fill("EventCuts OK",1);
+
+
+  return kTRUE;
+}
+// ============================================================================
 Bool_t AliAnalysisTaskUniFlow::IsEventRejectedAddPileUp() const
 {
   // Check for additional pile-up rejection in Run 2 Pb-Pb collisions (15o, 17n)
   // based on multiplicity correlations
   // ***************************************************************************
-
   Bool_t bIs17n = kFALSE;
   Bool_t bIs15o = kFALSE;
 
@@ -1353,7 +1409,7 @@ Bool_t AliAnalysisTaskUniFlow::LoadWeights()
   return kTRUE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlow::FillFlowWeight(const AliVTrack* track, const PartSpecies species) const
+Bool_t AliAnalysisTaskUniFlow::FillFlowWeight(const AliVParticle* track, const PartSpecies species) const
 {
   if(!track) { AliError("Track not exists!"); return kFALSE; }
   if(species == kUnknown) { AliError("Invalid species 'Unknown'!"); return kFALSE; }
@@ -1379,7 +1435,7 @@ Bool_t AliAnalysisTaskUniFlow::FillFlowWeight(const AliVTrack* track, const Part
   return kTRUE;
 }
 // ============================================================================
-Double_t AliAnalysisTaskUniFlow::GetFlowWeight(const AliVTrack* track, const PartSpecies species) const
+Double_t AliAnalysisTaskUniFlow::GetFlowWeight(const AliVParticle* track, const PartSpecies species) const
 {
   // if not applying for reconstructed
   if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
@@ -1404,23 +1460,36 @@ void AliAnalysisTaskUniFlow::FillQAEvents(const QAindex iQAindex) const
 
   if(iQAindex == 1)
   {
-    fhEventCentrality->Fill(fIndexCentrality);
-    fh2EventCentralityNumRefs->Fill(fIndexCentrality,fVector[kRefs]->size());
     fpRefsMult->Fill(fIndexCentrality,fVector[kRefs]->size(),1.0);
     fhEventSampling->Fill(fIndexCentrality,fIndexSampling);
   }
 
-  const AliAODVertex* aodVtx = fEventAOD->GetPrimaryVertex();
+  const AliVVertex* aodVtx = fEvent->GetPrimaryVertex();
   const Double_t dVtxZ = aodVtx->GetZ();
   const Int_t iNumContr = aodVtx->GetNContributors();
-  const AliAODVertex* spdVtx = fEventAOD->GetPrimaryVertexSPD();
-  const Int_t iNumContrSPD = spdVtx->GetNContributors();
-  const Double_t spdVtxZ = spdVtx->GetZ();
 
   fhQAEventsPVz[iQAindex]->Fill(dVtxZ);
   fhQAEventsNumContrPV[iQAindex]->Fill(iNumContr);
+
+  if(fAnalType == kMC) { return; }
+
+  if(iQAindex == 1)
+  {
+    fhEventCentrality->Fill(fIndexCentrality);
+    fh2EventCentralityNumRefs->Fill(fIndexCentrality,fVector[kRefs]->size());
+  }
+
+  const AliAODVertex* spdVtx = fEventAOD->GetPrimaryVertexSPD();
+  const Int_t iNumContrSPD = spdVtx->GetNContributors();
+  const Double_t spdVtxZ = spdVtx->GetZ();
   fhQAEventsNumSPDContrPV[iQAindex]->Fill(iNumContrSPD);
   fhQAEventsDistPVSPD[iQAindex]->Fill(TMath::Abs(dVtxZ - spdVtxZ));
+
+  // SPD vertexer resolution
+  Double_t cov[6] = {0};
+  spdVtx->GetCovarianceMatrix(cov);
+  Double_t zRes = TMath::Sqrt(cov[5]);
+  fhQAEventsSPDresol[iQAindex]->Fill(zRes);
 
   // // event / physics selection criteria
   // AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1432,25 +1501,19 @@ void AliAnalysisTaskUniFlow::FillQAEvents(const QAindex iQAindex) const
   // else if (fSelectMask& AliVEvent::kHighMultSPD) { fQAEventsTriggerSelection[iQAindex]->Fill("kHighMultSPD",1); }
   // else { fQAEventsTriggerSelection[iQAindex]->Fill("Other",1); }
 
-  // SPD vertexer resolution
-  Double_t cov[6] = {0};
-  spdVtx->GetCovarianceMatrix(cov);
-  Double_t zRes = TMath::Sqrt(cov[5]);
-  fhQAEventsSPDresol[iQAindex]->Fill(zRes);
-
   return;
 }
 // ============================================================================
 void AliAnalysisTaskUniFlow::ProcessMC() const
 {
-    if(!fEventMC) { AliError("fEventMC with MC particles not found!"); return; }
+    AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+    if(!ev) { AliFatal("MC event not found!"); return; }
 
-    const Int_t iNumTracksMC = fEventMC->GetNumberOfTracks();
+    const Int_t iNumTracksMC = ev->GetNumberOfTracks();
     for(Int_t iTrackMC(0); iTrackMC < iNumTracksMC; ++iTrackMC) {
 
-        AliAODMCParticle* trackMC = (AliAODMCParticle*) fEventMC->GetTrack(iTrackMC);
+        AliAODMCParticle* trackMC = (AliAODMCParticle*) ev->GetTrack(iTrackMC);
         if(!trackMC) { continue; }
-
 
         Double_t dEta = trackMC->Eta();
         Double_t dPt = trackMC->Pt();
@@ -1490,11 +1553,11 @@ void AliAnalysisTaskUniFlow::FilterCharged() const
   // If track passes all requirements its pointer is pushed to relevant vector container
   // *************************************************************
 
-  Int_t iNumTracks = fEventAOD->GetNumberOfTracks();
+  Int_t iNumTracks = fEvent->GetNumberOfTracks();
   if(iNumTracks < 1) { return; }
 
   for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) {
-    AliAODTrack* track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
+    AliAODTrack* track = static_cast<AliAODTrack*>(fEvent->GetTrack(iTrack));
     if(!track) { continue; }
 
     // passing reconstruction criteria
@@ -1512,6 +1575,32 @@ void AliAnalysisTaskUniFlow::FilterCharged() const
         if(fMC) { fh2MCPtEtaReco[kCharged]->Fill(track->Pt(), track->Eta()); }
     }
   } // end-for {iTrack}
+
+  return;
+}
+// ============================================================================
+void AliAnalysisTaskUniFlow::FilterChargedMC() const
+{
+  // Filtering input charged tracks for Monte Carlo POIs (stored in fVector[kCharged]) or RFPs (fVector[kRefs])
+  // If track passes all requirements its pointer is pushed to relevant vector container
+  // *************************************************************
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+  if(!ev) { AliFatal("MC event not found!"); return; }
+
+  Int_t iNumTracks = ev->GetNumberOfPrimaries();
+  if(iNumTracks < 1) { return; }
+
+  for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) {
+    AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
+    if(!track) { continue; }
+
+    //excluding non stable particles
+    if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+    if(track->Charge() == 0) continue;
+
+    if(IsWithinRefs(track)) { fVector[kRefs]->push_back(track); }
+    if(IsWithinPOIs(track)) { fVector[kCharged]->push_back(track); }
+  }
 
   return;
 }
@@ -1605,7 +1694,7 @@ void AliAnalysisTaskUniFlow::FillSparseCand(THnSparse* sparse, const AliVTrack* 
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::FillQARefs(const QAindex iQAindex, const AliAODTrack* track) const
+void AliAnalysisTaskUniFlow::FillQARefs(const QAindex iQAindex, const AliVParticle* track) const
 {
   // Filling various QA plots related to RFPs subset of charged track selection
   // *************************************************************
@@ -1620,34 +1709,40 @@ void AliAnalysisTaskUniFlow::FillQARefs(const QAindex iQAindex, const AliAODTrac
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::FillQACharged(const QAindex iQAindex, const AliAODTrack* track) const
+void AliAnalysisTaskUniFlow::FillQACharged(const QAindex iQAindex, AliVParticle* track) const
 {
   // Filling various QA plots related to charged track selection
   // *************************************************************
   if(!track) return;
 
+  // printf("charge %d, QA idx %d , pdg code %d \n", track->Charge(), iQAindex, track->PdgCode());
   // track charge
   fhQAChargedCharge[iQAindex]->Fill(track->Charge());
 
-  // number of TPC clusters
-  fhQAChargedNumTPCcls[iQAindex]->Fill(track->GetTPCNcls());
+  if(fAnalType != kMC){
+    AliAODTrack* tr =  dynamic_cast<AliAODTrack*>(track);
+    if(!tr) { AliFatal("AOD track not found!"); return; }
 
-  // track DCA
-  Double_t dDCAXYZ[3] = {-999., -999., -999.};
-  const AliAODVertex* vertex = fEventAOD->GetPrimaryVertex();
-  if(vertex)
-  {
-    Double_t dTrackXYZ[3] = {-999., -999., -999.};
-    Double_t dVertexXYZ[3] = {-999., -999., -999.};
+    // number of TPC clusters
+    fhQAChargedNumTPCcls[iQAindex]->Fill(tr->GetTPCNcls());
 
-    track->GetXYZ(dTrackXYZ);
-    vertex->GetXYZ(dVertexXYZ);
+    // track DCA
+    Double_t dDCAXYZ[3] = {-999., -999., -999.};
+    const AliVVertex* vertex = fEventAOD->GetPrimaryVertex();
+    if(vertex)
+    {
+      Double_t dTrackXYZ[3] = {-999., -999., -999.};
+      Double_t dVertexXYZ[3] = {-999., -999., -999.};
 
-    for(Short_t i(0); i < 3; i++)
-      dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+      tr->GetXYZ(dTrackXYZ);
+      vertex->GetXYZ(dVertexXYZ);
+
+      for(Short_t i(0); i < 3; i++)
+        dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+    }
+    fhQAChargedDCAxy[iQAindex]->Fill(TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]));
+    fhQAChargedDCAz[iQAindex]->Fill(dDCAXYZ[2]);
   }
-  fhQAChargedDCAxy[iQAindex]->Fill(TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]));
-  fhQAChargedDCAz[iQAindex]->Fill(dDCAXYZ[2]);
 
   // kinematics
   fhQAChargedPt[iQAindex]->Fill(track->Pt());
@@ -1991,14 +2086,15 @@ Double_t AliAnalysisTaskUniFlow::GetRapidity(const Double_t mass, const Double_t
 // ============================================================================
 AliAODMCParticle* AliAnalysisTaskUniFlow::GetMCParticle(const Int_t label) const
 {
-  if(!fEventMC) { AliError("fEventMC not found!"); return nullptr; }
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+  if(!ev) { AliFatal("MC event not found!"); return nullptr; }
 
   const Int_t labelAbs = TMath::Abs(label);
   // Negative label just indicate track with shared clustes, but otherwise should be used
   // absolute value has to be used
   // if(label < 0) { /*AliWarning("MC label negative");*/ return nullptr; }
 
-  AliAODMCParticle* mcTrack = (AliAODMCParticle*) fEventMC->GetTrack(labelAbs);
+  AliAODMCParticle* mcTrack = (AliAODMCParticle*) ev->GetTrack(labelAbs);
   if(!mcTrack) { AliWarning("Corresponding MC track not found!"); return nullptr; }
   return mcTrack;
 }
@@ -2532,7 +2628,7 @@ void AliAnalysisTaskUniFlow::FilterPID() const
 
   for(auto part = fVector[kCharged]->begin(); part != fVector[kCharged]->end(); ++part)
   {
-    AliAODTrack* track = static_cast<AliAODTrack*>(*part);
+    AliVParticle* track = static_cast<AliVParticle*>(*part);
     if(!track) { continue; }
 
     if((fCentEstimator != kRFP) && (fColSystem == kPP || fColSystem == kPPb)) {
@@ -2545,7 +2641,9 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     if(fFillQA) { FillQAPID(kBefore,track,kUnknown); } // filling QA for tracks before selection (but after charged criteria applied)
 
     // PID track selection (return most favourable species)
-    PartSpecies species = IsPIDSelected(track);
+    PartSpecies species = kUnknown;
+    if(fAnalType != kMC) species = IsPIDSelected(track);
+    else species = IsPIDSelectedMC(track);
     if(species != kPion && species != kKaon && species != kProton) { continue; }
 
     // check if only protons should be used
@@ -2560,12 +2658,12 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     if(fFillQA) { FillQAPID(kAfter,track,species); } // filling QA for tracks AFTER selection }
 
     if(fProcessSpec[kPion] && fProcessSpec[kKaon] && fProcessSpec[kProton]) { // NB: aka process PID (not just Kaons for Phi)
-      if(!FillFlowWeight(track, species)) { AliFatal("Flow weight filling failed!"); return; }
+      if(fAnalType != kMC && !FillFlowWeight(track, species)) { AliFatal("Flow weight filling failed!"); return; }
     }
 
     if(fMC) {
       fh2MCPtEtaReco[species]->Fill(track->Pt(), track->Eta());
-      if(CheckMCTruthReco(species,track)) { fh2MCPtEtaRecoTrue[species]->Fill(track->Pt(), track->Eta()); }
+      if(fAnalType != kMC && CheckMCTruthReco(species,track)) { fh2MCPtEtaRecoTrue[species]->Fill(track->Pt(), track->Eta()); }
     }
 
   } // end-for {part}
@@ -2580,12 +2678,14 @@ void AliAnalysisTaskUniFlow::FilterPID() const
   return;
 }
 // ============================================================================
-AliAnalysisTaskUniFlow::PartSpecies AliAnalysisTaskUniFlow::IsPIDSelected(const AliAODTrack* track) const
+AliAnalysisTaskUniFlow::PartSpecies AliAnalysisTaskUniFlow::IsPIDSelected(AliVParticle* tr) const
 {
   // Selection of PID tracks (pi,K,p) - track identification
   // Based on fCutUseBayesPID flag, either Bayes PID or nSigma cutting is used
   // returns AliAnalysisTaskUniFlow::PartSpecies enum : kPion, kKaon, kProton if any of this passed kUnknown otherwise
   // *************************************************************
+  AliAODTrack* track = dynamic_cast<AliAODTrack*>(tr);
+  if(!track) {AliError("AOD track not found!"); return kUnknown; }
 
   // checking detector statuses
   Bool_t bIsTPCok = HasTrackPIDTPC(track);
@@ -2687,20 +2787,52 @@ AliAnalysisTaskUniFlow::PartSpecies AliAnalysisTaskUniFlow::IsPIDSelected(const 
   return kUnknown;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack* track, const PartSpecies species) const
+AliAnalysisTaskUniFlow::PartSpecies AliAnalysisTaskUniFlow::IsPIDSelectedMC(AliVParticle* tr) const
+{
+  // Selection of PID tracks (pi,K,p) - track identification
+  // returns AliAnalysisTaskUniFlow::PartSpecies enum : kPion, kKaon, kProton if any of this passed kUnknown otherwise
+  // *************************************************************
+  if(!tr) {AliError("AliMCParticle not found!"); return kUnknown; }
+
+  Int_t id = TMath::Abs(tr->PdgCode());
+
+  if(id == 211) { return kPion; }
+  else if(id == 321) { return kKaon; }
+  else if(id == 2212) { return kProton; }
+  else { return kUnknown; }
+}
+// ============================================================================
+void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, AliVParticle* track, const PartSpecies species) const
 {
   // Filling various QA plots related to PID (pi,K,p) track selection
   // *************************************************************
   if(!track) { return; }
 
+  Int_t iPID = species - 2; // NB: translation from PartSpecies to PID QA index
+
+  if(fAnalType == kMC) {
+    AliMCParticle* tr = dynamic_cast<AliMCParticle*>(track);
+    if(!tr) { AliError("AliMCParticle not found!"); return; }
+
+    fhPIDPt[iPID]->Fill(tr->Pt());
+    fhPIDPhi[iPID]->Fill(tr->Phi());
+    fhPIDEta[iPID]->Fill(tr->Eta());
+    fhPIDCharge[iPID]->Fill(tr->Charge()/3.);
+
+    return;
+  }
+
   if(!fPIDResponse || !fPIDCombined) { AliError("AliPIDResponse or AliPIDCombined object not found!"); return; }
 
-  // TPC & TOF statuses & measures
-  AliPIDResponse::EDetPidStatus pidStatusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track);
-  AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
+  AliAODTrack* tr = dynamic_cast<AliAODTrack*>(track);
+  if(!tr) { AliError("AliAODTrack not found!"); return; }
 
-  Bool_t bIsTPCok = HasTrackPIDTPC(track);
-  Bool_t bIsTOFok = HasTrackPIDTOF(track);
+  // TPC & TOF statuses & measures
+  AliPIDResponse::EDetPidStatus pidStatusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, tr);
+  AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, tr);
+
+  Bool_t bIsTPCok = HasTrackPIDTPC(tr);
+  Bool_t bIsTOFok = HasTrackPIDTOF(tr);
 
   Double_t dBayesProb[fPIDNumSpecies];
   Float_t dNumSigmaTPC[fPIDNumSpecies];
@@ -2716,19 +2848,19 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
     dTOFbetaDelta[iSpec] = -999.9;
   }
 
-  Double_t dP = track->P();
-  Double_t dPt = track->Pt();
+  Double_t dP = tr->P();
+  Double_t dPt = tr->Pt();
 
   // TPC dEdx
-  Double_t dTPCdEdx = track->GetTPCsignal();
+  Double_t dTPCdEdx = tr->GetTPCsignal();
 
   // TOF beta
   Double_t dTOF[5];
-  track->GetIntegratedTimes(dTOF);
-  Double_t dTOFbeta = dTOF[0] / track->GetTOFsignal();
+  tr->GetIntegratedTimes(dTOF);
+  Double_t dTOFbeta = dTOF[0] / tr->GetTOFsignal();
 
   // filling Bayesian PID probabilities to dBayesProb array
-  UInt_t iDetUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, dBayesProb);
+  UInt_t iDetUsed = fPIDCombined->ComputeProbabilities(tr, fPIDResponse, dBayesProb);
 
   // check which detector were used
   Bool_t bUsedTPC = kFALSE;
@@ -2745,11 +2877,11 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
 
   if(iQAindex == 0 || bUsedTPC) {
       fhQAPIDTPCstatus[iQAindex]->Fill((Int_t) pidStatusTPC );
-      fhQAPIDTPCdEdx[iQAindex]->Fill(track->P(), dTPCdEdx);
+      fhQAPIDTPCdEdx[iQAindex]->Fill(tr->P(), dTPCdEdx);
 
       for(Int_t iSpec(0); iSpec < fPIDNumSpecies; ++iSpec) {
-        dNumSigmaTPC[iSpec] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::EParticleType(iSpec));
-        dTPCdEdxDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, track, AliPID::EParticleType(iSpec));
+        dNumSigmaTPC[iSpec] = fPIDResponse->NumberOfSigmasTPC(tr, AliPID::EParticleType(iSpec));
+        dTPCdEdxDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, tr, AliPID::EParticleType(iSpec));
       }
   }
   if(iQAindex == 0 || bUsedTOF) {
@@ -2757,25 +2889,23 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
       fhQAPIDTOFbeta[iQAindex]->Fill(dP,dTOFbeta);
 
       for(Int_t iSpec(0); iSpec < fPIDNumSpecies; ++iSpec) {
-        dNumSigmaTOF[iSpec] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::EParticleType(iSpec));
-        dTOFbetaDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTOF, track, AliPID::EParticleType(iSpec));
+        dNumSigmaTOF[iSpec] = fPIDResponse->NumberOfSigmasTOF(tr, AliPID::EParticleType(iSpec));
+        dTOFbetaDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTOF, tr, AliPID::EParticleType(iSpec));
       }
   }
 
-  fh3QAPIDnSigmaTPCTOFPtPion[iQAindex]->Fill(dNumSigmaTPC[2],dNumSigmaTOF[2],track->Pt());
-  fh3QAPIDnSigmaTPCTOFPtKaon[iQAindex]->Fill(dNumSigmaTPC[3],dNumSigmaTOF[3],track->Pt());
-  fh3QAPIDnSigmaTPCTOFPtProton[iQAindex]->Fill(dNumSigmaTPC[4],dNumSigmaTOF[4],track->Pt());
+  fh3QAPIDnSigmaTPCTOFPtPion[iQAindex]->Fill(dNumSigmaTPC[2],dNumSigmaTOF[2],tr->Pt());
+  fh3QAPIDnSigmaTPCTOFPtKaon[iQAindex]->Fill(dNumSigmaTPC[3],dNumSigmaTOF[3],tr->Pt());
+  fh3QAPIDnSigmaTPCTOFPtProton[iQAindex]->Fill(dNumSigmaTPC[4],dNumSigmaTOF[4],tr->Pt());
 
   if(species == kUnknown) { return; }
 
   // Here only selected particles (and iQAindex == 1 by construction)
 
-  Int_t iPID = species - 2; // NB: translation from PartSpecies to PID QA index
-
-  fhPIDPt[iPID]->Fill(track->Pt());
-  fhPIDPhi[iPID]->Fill(track->Phi());
-  fhPIDEta[iPID]->Fill(track->Eta());
-  fhPIDCharge[iPID]->Fill(track->Charge());
+  fhPIDPt[iPID]->Fill(tr->Pt());
+  fhPIDPhi[iPID]->Fill(tr->Phi());
+  fhPIDEta[iPID]->Fill(tr->Eta());
+  fhPIDCharge[iPID]->Fill(tr->Charge());
 
   // TODO: Potentially might be converted to fh2[fPIDNumSpecies][3]
 
@@ -3481,7 +3611,7 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
 {
   // Filling p,q and s flow vectors with POIs (given by species) for differential flow calculation
   // *************************************************************
-  std::vector<AliVTrack*>* vector = fVector[species];
+  std::vector<AliVParticle*>* vector = fVector[species];
   if(!vector) { AliError("Vector with selected POIs not found."); return 0; }
 
   Double_t dEtaLimit = dEtaGap / 2.0;
@@ -3512,7 +3642,7 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
 
   // for(auto part = vector->begin(); part != vector->end(); ++part)
   for(Int_t index(indStart); index < (Int_t) vector->size(); ++index) {
-    AliVTrack* part = vector->at(index);
+    AliVParticle* part = vector->at(index);
     if(!part) { AliError("Particle does not exists within given vector"); return -1; }
 
     Double_t dPhi = part->Phi();
@@ -3692,8 +3822,13 @@ Int_t AliAnalysisTaskUniFlow::GetCentralityIndex(CentEst est) const
 
   // assigning centrality based on number of selected charged tracks
   if(est == kRFP) {
-      iCentralityIndex = fVector[kRefs]->size();
+    iCentralityIndex = fVector[kRefs]->size();
   } else {
+    if(fMC) {
+      AliWarning("Monte Carlo run with centrality estimator different than Nch. Returning -1");
+      return -1;
+    }
+
     AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
     if(!multSelection) {
       AliError("AliMultSelection object not found! Returning -1");
@@ -5788,35 +5923,39 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     const Int_t iNBinsPIDstatus = 4;
     TString sPIDstatus[iNBinsPIDstatus] = {"kDetNoSignal","kDetPidOk","kDetMismatch","kDetNoParams"};
 
-    // event histogram
-    fEventCuts.AddQAplotsToList(fQAEvents);
-
     fhEventSampling = new TH2D("fhEventSampling",Form("Event sampling; %s; sample index", GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fNumSamples,0,fNumSamples);
     fQAEvents->Add(fhEventSampling);
-    fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); %s", GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
-    fQAEvents->Add(fhEventCentrality);
 
-    Int_t iMinRFPs = 0;
-    Int_t iMaxRFPs = 150;
-    Int_t iBinsRPFs = 150;
-    if(fColSystem == kPbPb) {
-        iMinRFPs = 0;
-        iMaxRFPs = 5000;
-        iBinsRPFs = 100;
-    }
-    fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, iBinsRPFs,iMinRFPs,iMaxRFPs);
-    fQAEvents->Add(fh2EventCentralityNumRefs);
 
-    if(fEventRejectAddPileUp)
-    {
-      fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
-      fQAEvents->Add(fhQAEventsfMult32vsCentr);
-      fhQAEventsMult128vsCentr = new TH2D("fhQAEventsfMult128vsCentr", "; centrality V0M; TPC multiplicity (FB128)", 100, 0, 100, 100, 0, 5000);
-      fQAEvents->Add(fhQAEventsMult128vsCentr);
-      fhQAEventsfMultTPCvsTOF = new TH2D("fhQAEventsfMultTPCvsTOF", "; TPC FB32 multiplicity; TOF multiplicity", 200, 0, 4000, 200, 0, 2000);
-      fQAEvents->Add(fhQAEventsfMultTPCvsTOF);
-      fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
-      fQAEvents->Add(fhQAEventsfMultTPCvsESD);
+    if(fAnalType != kMC){
+      fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); %s", GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
+      fQAEvents->Add(fhEventCentrality);
+
+      // event histogram
+      fEventCuts.AddQAplotsToList(fQAEvents);
+
+      Int_t iMinRFPs = 0;
+      Int_t iMaxRFPs = 150;
+      Int_t iBinsRPFs = 150;
+      if(fColSystem == kPbPb) {
+          iMinRFPs = 0;
+          iMaxRFPs = 5000;
+          iBinsRPFs = 100;
+      }
+      fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, iBinsRPFs,iMinRFPs,iMaxRFPs);
+      fQAEvents->Add(fh2EventCentralityNumRefs);
+
+      if(fEventRejectAddPileUp)
+      {
+        fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
+        fQAEvents->Add(fhQAEventsfMult32vsCentr);
+        fhQAEventsMult128vsCentr = new TH2D("fhQAEventsfMult128vsCentr", "; centrality V0M; TPC multiplicity (FB128)", 100, 0, 100, 100, 0, 5000);
+        fQAEvents->Add(fhQAEventsMult128vsCentr);
+        fhQAEventsfMultTPCvsTOF = new TH2D("fhQAEventsfMultTPCvsTOF", "; TPC FB32 multiplicity; TOF multiplicity", 200, 0, 4000, 200, 0, 2000);
+        fQAEvents->Add(fhQAEventsfMultTPCvsTOF);
+        fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
+        fQAEvents->Add(fhQAEventsfMultTPCvsESD);
+      }
     }
 
     // charged (tracks) histograms
