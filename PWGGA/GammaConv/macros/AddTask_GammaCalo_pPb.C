@@ -699,6 +699,9 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 514){
     cuts.AddCutCalo("80010113","2446642151012200000","0163103100000010"); // standard
     cuts.AddCutCalo("80010113","2446642101012200000","0163103100000010"); // standard without timing cut
+  } else if (trainConfig == 515) {  // PHOS  INT7
+    cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // standard without non-lin
+    cuts.AddCutCalo("80010113","244660005a012200000","0163103100000010"); // standard without non-lin
 
   } else if (trainConfig == 520) {  // JJ MC
     cuts.AddCutCalo("80010123","24466420ha012200000","0163103100000010"); // standard
