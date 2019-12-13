@@ -150,6 +150,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tEvents = CreateTree(kEvents);
   tEvents->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kEvents]) {
+    tEvents->Branch("fRunNumber", &vtx.fRunNumber, "fRunNumber/I");
     tEvents->Branch("fEventId", &vtx.fEventId, "fEventId/l");
     tEvents->Branch("fX", &vtx.fX, "fX/F");
     tEvents->Branch("fY", &vtx.fY, "fY/F");
@@ -157,22 +158,23 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tEvents->Branch("fEventTime", &vtx.fEventTime, "fEventTime/F");
     tEvents->Branch("fEventTimeRes", &vtx.fEventTimeRes, "fEventTimeRes/F");
     tEvents->Branch("fEventTimeMask", &vtx.fEventTimeMask, "fEventTimeMask/b");
+  }
+  PostTree(kEvents);
 #ifdef USE_MC
     if (fTaskMode == kMC) {
       tEvents->Branch("fGeneratorID", &fGeneratorID, "fGeneratorID/S");
-      tEvents->Branch("fMCVtxX", &fMCVtxX, "fMCVtxX/F");
-      tEvents->Branch("fMCVtxY", &fMCVtxY, "fMCVtxY/F");
-      tEvents->Branch("fMCVtxZ", &fMCVtxZ, "fMCVtxZ/F");
+      tEvents->Branch("fX", &mcvtx.fX, "fX/F");
+      tEvents->Branch("fY", &mcvtx.fY, "fY/F");
+      tEvents->Branch("fZ", &mcvtx.fZ, "fZ/F");
+      tEvents->Branch("fT", &mcvtx.fT, "fT/F");
     }
 #endif
-  }
-  PostTree(kEvents);
 
   // Associate branches for fTrackTree
   TTree* tTracks = CreateTree(kTracks);
   tTracks->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kTracks]) {
-    tTracks->Branch("fCollisionID", &tracks.fCollisionID, "fCollisionID/I");
+    tTracks->Branch("fCollisionsID", &tracks.fCollisionsID, "fCollisionsID/I");
     tTracks->Branch("fX", &tracks.fX, "fX/F");
     tTracks->Branch("fAlpha", &tracks.fAlpha, "fAlpha/F");
     tTracks->Branch("fY", &tracks.fY, "fY/F");
@@ -219,7 +221,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tCalo = CreateTree(kCalo);
   tCalo->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kCalo]) {
-    tCalo->Branch("fCollisionID", &calo.fCollisionID, "fCollisionID/I");
+    tCalo->Branch("fCollisionsID", &calo.fCollisionsID, "fCollisionsID/I");
     tCalo->Branch("fCellNumber", &calo.fCellNumber, "fCellNumber/S");
     tCalo->Branch("fAmplitude", &calo.fAmplitude, "fAmplitude/F");
     tCalo->Branch("fTime", &calo.fTime, "fTime/F");
@@ -231,7 +233,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree *tCaloTrigger = CreateTree(kCaloTrigger);
   tCaloTrigger->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kCaloTrigger]) {
-    tCaloTrigger->Branch("fCollisionID", &calotrigger.fCollisionID, "fCollisionID/I");
+    tCaloTrigger->Branch("fCollisionsID", &calotrigger.fCollisionsID, "fCollisionsID/I");
     tCaloTrigger->Branch("fFastOrAbsID", &calotrigger.fFastorAbsID, "fFastorAbsID/S");
     tCaloTrigger->Branch("fL0Amplitude", &calotrigger.fL0Amplitude, "fL0Amplitude/F");
     tCaloTrigger->Branch("fL1TimeSum", &calotrigger.fL1TimeSum, "fL1TimeSum/F");
@@ -245,7 +247,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tMuon = CreateTree(kMuon);
   tMuon->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kMuon]) {
-    tMuon->Branch("fCollisionID", &muons.fCollisionID, "fCollisionID/I");
+    tMuon->Branch("fCollisionsID", &muons.fCollisionsID, "fCollisionsID/I");
     tMuon->Branch("fInverseBendingMomentum", &muons.fInverseBendingMomentum, "fInverseBendingMomentum/F");
     tMuon->Branch("fThetaX", &muons.fThetaX, "fThetaX/F");
     tMuon->Branch("fThetaY", &muons.fThetaY, "fThetaY/F");
@@ -262,7 +264,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tMuonCls = CreateTree(kMuonCls);
   tMuonCls->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kMuonCls]) {
-    tMuonCls->Branch("fMuTrackID",&mucls.fMuTrackID,"fMuTrackID/I");
+    tMuonCls->Branch("fMuonsID",&mucls.fMuonsID,"fMuonsID/I");
     tMuonCls->Branch("fX",&mucls.fX,"fX/F");
     tMuonCls->Branch("fY",&mucls.fY,"fY/F");
     tMuonCls->Branch("fZ",&mucls.fZ,"fZ/F");
@@ -277,7 +279,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tZdc = CreateTree(kZdc);
   tZdc->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kZdc]) {
-    tZdc->Branch("fCollisionID", &zdc.fCollisionID, "fCollisionID/I");
+    tZdc->Branch("fCollisionsID", &zdc.fCollisionsID, "fCollisionsID/I");
     tZdc->Branch("fZEM1Energy", &zdc.fZEM1Energy, "fZEM1Energy/F");
     tZdc->Branch("fZEM2Energy", &zdc.fZEM2Energy, "fZEM2Energy/F");
     tZdc->Branch("fZNCTowerEnergy", zdc.fZNCTowerEnergy, "fZNCTowerEnergy[5]/F");
@@ -297,7 +299,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tVzero = CreateTree(kVzero);
   tVzero->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kVzero]) {
-    tVzero->Branch("fCollisionID", &vzero.fCollisionID, "fCollisionID/I");
+    tVzero->Branch("fCollisionsID", &vzero.fCollisionsID, "fCollisionsID/I");
     tVzero->Branch("fAdc", vzero.fAdc, "fAdc[64]/F");
     tVzero->Branch("fTime", vzero.fTime, "fTime[64]/F");
     tVzero->Branch("fWidth", vzero.fWidth, "fWidth[64]/F");
@@ -317,8 +319,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tCascades = CreateTree(kCascades);
   tCascades->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kCascades]) {
-    tCascades->Branch("fV0ID", &cascs.fV0ID, "fV0ID/I");
-    tCascades->Branch("fBachelorID", &cascs.fBachelorID, "fBachelorID/I");
+    tCascades->Branch("fV0sID", &cascs.fV0sID, "fV0sID/I");
+    tCascades->Branch("fTracksID", &cascs.fTracksID, "fTracksID/I");
   }
   PostTree(kCascades);
 
@@ -404,7 +406,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   // Configuration of the PID response
   AliPIDResponse* PIDResponse = (AliPIDResponse*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
   PIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
-  AliTOFPIDResponse TOFResponse = PIDResponse->GetTOFResponse();
+  AliTOFPIDResponse & TOFResponse = PIDResponse->GetTOFResponse();
 
   // Configuration of the MC event (if needed)
   AliMCEvent* MCEvt = nullptr;
@@ -428,6 +430,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   //---------------------------------------------------------------------------
   // Collision data
 
+  vtx.fRunNumber = fESD->GetRunNumber();
   vtx.fEventId = GetEventIdAsLong(fESD->GetHeader());
   vtx.fX = pvtx->GetX();
   vtx.fY = pvtx->GetY();
@@ -477,16 +480,16 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     AliGenEventHeader* mcGenH = MCEvt->GenEventHeader();
     for (Int_t gen = 0; gen < kGenerators; gen++) {
       if (mcGenH->InheritsFrom(Generator[gen]))
-        SETBIT(fGeneratorID, gen);
+        SETBIT(fGeneratorsID, gen);
       else
-        CLRBIT(fGeneratorID, gen);
+        CLRBIT(fGeneratorsID, gen);
     }
     if (mcGenH->InheritsFrom(Generator[kAliGenCocktailEventHeader])) {
       TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
       for (Int_t cocktail = 0; cocktail < headers->GetEntries(); headers++) {
         for (Int_t gen = 0; gen < kGenerators; gen++) {
           if (mcGenH->InheritsFrom(Generator[gen]))
-            SETBIT(fGeneratorID, gen);
+            SETBIT(fGeneratorsID, gen);
         }
       }
     }
@@ -504,7 +507,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     AliESDtrack *track = fESD->GetTrack(itrk);
 //    if (!fTrackFilter.IsSelected(track))
 //      continue;
-    tracks.fCollisionID = eventID;
+    tracks.fCollisionsID = eventID;
 
     tracks.fX = track->GetX();
     tracks.fAlpha = track->GetAlpha();
@@ -593,7 +596,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     Int_t mclabel;
     Double_t efrac;
 
-    calo.fCollisionID = eventID;
+    calo.fCollisionsID = eventID;
     
     cells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
     calo.fCellNumber = cellNumber;
@@ -608,7 +611,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   AliESDCaloTrigger *calotriggers = fESD->GetCaloTrigger("EMCAL");
   calotriggers->Reset();
   while(calotriggers->Next()){
-    calotrigger.fCollisionID = eventID;
+    calotrigger.fCollisionsID = eventID;
     int col, row, fastorID;
     calotriggers->GetPosition(col, row);
     geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
@@ -634,7 +637,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     Int_t mclabel;
     Double_t efrac;
 
-    calo.fCollisionID = eventID;
+    calo.fCollisionsID = eventID;
     
     cells->GetCell(icp, cellNumber, amplitude, time, mclabel, efrac);
     calo.fCellNumber = cellNumber;
@@ -648,7 +651,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   //---------------------------------------------------------------------------
   // Muon tracks
-  muons.fCollisionID  = eventID;
+  muons.fCollisionsID  = eventID;
   
   Int_t nmu = fESD->GetNumberOfMuonTracks();
   for (Int_t imu=0; imu<nmu; ++imu) {
@@ -677,7 +680,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     Int_t nmucl = mutrk->GetNClusters();
     for (Int_t imucl=0; imucl<nmucl; ++imucl){
       AliESDMuonCluster *muCluster = fESD->FindMuonCluster(mutrk->GetClusterId(imucl));
-      mucls.fMuTrackID = muTrackID;
+      mucls.fMuonsID = muTrackID;
       mucls.fX = muCluster->GetX();
       mucls.fY = muCluster->GetY();
       mucls.fZ = muCluster->GetZ();
@@ -692,7 +695,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   //---------------------------------------------------------------------------
   // ZDC
   AliESDZDC* esdzdc  =    fESD->GetESDZDC();
-  zdc.fCollisionID = eventID;
+  zdc.fCollisionsID = eventID;
   // ZEM
   zdc.fZEM1Energy = esdzdc->GetZEM1Energy();
   zdc.fZEM2Energy = esdzdc->GetZEM2Energy();
@@ -725,7 +728,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   //---------------------------------------------------------------------------
   // VZERO
   AliESDVZERO * vz = fESD->GetVZEROData();
-  vzero.fCollisionID  = eventID;
+  vzero.fCollisionsID  = eventID;
   for (Int_t ich=0; ich<64; ++ich) {
     vzero.fAdc[ich] = vz->GetAdc(ich);
     vzero.fTime[ich] = vz->GetTime(ich);
@@ -777,8 +780,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 	Int_t v0idx = TMath::BinarySearch(nv0, sortedPosNeg, currV0);
 	// Check if the match is exact
 	if (sortedPosNeg[v0idx] == currV0) {
-	  cascs.fV0ID = sortIdx[v0idx] + fOffsetV0ID;	  
-	  cascs.fBachelorID = cas->GetBindex() + fOffsetTrackID;
+	  cascs.fV0sID = sortIdx[v0idx] + fOffsetV0ID;
+	  cascs.fTracksID = cas->GetBindex() + fOffsetTrackID;
 	  FillTree(kCascades);
 	}
       }
