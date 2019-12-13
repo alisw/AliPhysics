@@ -881,10 +881,23 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","388553105f032230000","0h63103100000010");
     cuts.AddCutPCMCalo("8008b103","0dm00009f9730000dge0404000","388553105f032230000","0h63103100000010");
     cuts.AddCutPCMCalo("80089103","0dm00009f9730000dge0404000","388553105f032230000","0h63103100000010");
-  } else if (trainConfig == 2082) { // DCal-only config for decay gamma MC
+  } else if (trainConfig == 2082) { // EMCal+DCal config for decay gamma MC
     cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411793105f032230000","0h63103100000010");
     cuts.AddCutPCMCalo("8008e103","0dm00009f9730000dge0404000","411793105f032230000","0h63103100000010");
     cuts.AddCutPCMCalo("8008d103","0dm00009f9730000dge0404000","411793105f032230000","0h63103100000010");
+
+  } else if (trainConfig == 2090) { // EMCal-only config for decay gamma MC with smearing
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","111113105f032230000","0h63103100b00010");
+    cuts.AddCutPCMCalo("80085103","0dm00009f9730000dge0404000","111113105f032230000","0h63103100b00010");
+    cuts.AddCutPCMCalo("80083103","0dm00009f9730000dge0404000","111113105f032230000","0h63103100b00010");
+  } else if (trainConfig == 2091) { // DCal-only config for decay gamma MC with smearing
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","388553105f032230000","0h63103100b00010");
+    cuts.AddCutPCMCalo("8008b103","0dm00009f9730000dge0404000","388553105f032230000","0h63103100b00010");
+    cuts.AddCutPCMCalo("80089103","0dm00009f9730000dge0404000","388553105f032230000","0h63103100b00010");
+  } else if (trainConfig == 2092) { // EMCal+DCal config for decay gamma MC with smearing
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411793105f032230000","0h63103100b00010");
+    cuts.AddCutPCMCalo("8008e103","0dm00009f9730000dge0404000","411793105f032230000","0h63103100b00010");
+    cuts.AddCutPCMCalo("8008d103","0dm00009f9730000dge0404000","411793105f032230000","0h63103100b00010");
 
   } else if (trainConfig == 2730) { // PCM variations
     cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
