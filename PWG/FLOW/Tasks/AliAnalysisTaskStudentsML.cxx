@@ -513,7 +513,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
 		if(UsedCharge>0.)
 		{
 		   if(0 == CounterSameCharge%2) {angles_A[Multi_Ang_A] = phi; Multi_Ang_A+=1.; CounterSameCharge++; }
-		   else {angles_B[Multi_Ang_B] = phi; Multi_Ang_B+=1.; }
+		   else {angles_B[Multi_Ang_B] = phi; Multi_Ang_B+=1.; CounterSameCharge++;}
 		}
 
 	}//if(!bDifferentCharge)
