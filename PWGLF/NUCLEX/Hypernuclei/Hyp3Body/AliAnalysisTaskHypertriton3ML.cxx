@@ -294,6 +294,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   }
 
   fRHypertriton.clear();
+  fMLSelected.clear();
 
   fDeuVector.clear();
   fPVector.clear();
