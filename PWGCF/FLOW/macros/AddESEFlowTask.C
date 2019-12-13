@@ -1,7 +1,7 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskESEFlow;
 
-AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "", TString sqSelCuts = "")
+AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "")
 {
   // get the manager via the static access member. since it's static, you don't need
   // to create an instance of the class here to call the function
@@ -17,7 +17,6 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
   }
 
   Bool_t bUseOwnWeights = kFALSE;
-  Bool_t bUseqSelCuts = kTRUE;
 
 
   // by default, a file is open for writing. here, we get the filename
@@ -102,30 +101,6 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     }
   }
 
-  if(bUseqSelCuts){
-    TObjArray* taskContainersCuts = mgr->GetContainers();
-    if(!taskContainersCuts) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
-
-    AliAnalysisDataContainer* qcuts = (AliAnalysisDataContainer*) taskContainersCuts->FindObject("inputCuts");
-    if(!qcuts) 
-    { 
-      if(sWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
-
-      TFile* qcuts_file = TFile::Open(sqSelCuts.Data(),"READ");
-      if(!qcuts_file) { printf("E-AddTaskESEFlow: Input file with q-cuts not found!\n"); return NULL; }
-
-      TList* qcuts_list = static_cast<TList*>(qcuts_file->Get("qCuts"));
-      if(!qcuts_list) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); qcuts_file->ls(); return NULL; }
-
-      AliAnalysisDataContainer* cInputCuts = mgr->CreateContainer("inputCuts",TList::Class(), AliAnalysisManager::kInputContainer);
-      cInputCuts->SetData(qcuts_list);
-      mgr->ConnectInput(task,2,cInputCuts);
-    }
-    else 
-    {
-      mgr->ConnectInput(task,2,qcuts);
-    }
-  }
     
   return task;
 }
