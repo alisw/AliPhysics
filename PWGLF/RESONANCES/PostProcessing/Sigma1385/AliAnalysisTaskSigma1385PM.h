@@ -19,6 +19,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t* option);
     virtual void Terminate(Option_t* option);
+    void SetFillQAPlot(Bool_t input) { fFillQAPlot = input; }
     void SetMixing(Bool_t setmixing) { fsetmixing = setmixing; }
     void SetnMix(Int_t nMix) { fnMix = nMix; }
     void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
@@ -133,6 +134,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     THistManager* fHistos = nullptr;  //!
     AliAODVertex* vertex = nullptr;   //!
     Bool_t fsetmixing = kFALSE;
+    Bool_t fFillQAPlot = kTRUE;
     Bool_t fIsMC = kFALSE;
     Bool_t IsPrimaryMC = kFALSE;
     Bool_t fFillnTuple = kFALSE;
@@ -179,12 +181,13 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     std::vector<UInt_t> goodtrackindices;  //!
     std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
-    ClassDef(AliAnalysisTaskSigma1385PM, 6);
+    ClassDef(AliAnalysisTaskSigma1385PM, 7);
     // Add rapidity/radius/Lifetime/Y cut of lambda
     // Add NanoOption
     // 4: Add GetImpactParm function for nano
     // 5: Seprate MC Sparse, INEL study capability
     // 6: Update some of deafult vaules
+    // 7: Add option to skipping QA histos
 };
 
 #endif
