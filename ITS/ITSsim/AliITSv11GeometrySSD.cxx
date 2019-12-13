@@ -90,14 +90,14 @@ const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerLength       =  73.000*fgkmm
 const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerWidth        =   6.500*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerHeight       =   0.295*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerToChipDist   =   2.500*fgkmm;
-const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603CapLength  =  0.900*fgkmm;  // Includes solder
+const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603CapLength  =  1.000*fgkmm;  // Includes solder
 const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603Length   = 1.600*fgkmm; 
 const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603Width    =   0.870*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603Height   =   0.800*fgkmm;
-const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812CapLength  =  0.215*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812CapLength  =  0.700*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Length   =   4.600*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Width    =   3.400*fgkmm;
-const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Height   =   1.400*fgkmm;   
+const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Height   =   1.750*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDWireLength            =  30.000*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDWireRadius            =   0.185*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDConnectorPosition[2]  = {44.32*fgkmm, 0.33*fgkmm};
@@ -2455,9 +2455,12 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
   TGeoVolume* capacitor1812 = new TGeoVolume("Capacitor1812",capacitor1812shape,
                                              fSSDStiffener1812CapacitorMedium); 
   capacitor1812->SetLineColor(fColorAl);
-  TGeoTranslation* capacitor1812trans = new TGeoTranslation(0.0,
-                                        0.5*fgkSSDStiffenerWidth+ssdstiffenerseparation
-                                      - capacitor1812shape->GetDY()-fgkSSDConnectorPosition[1],0.5*(fgkSSDStiffenerHeight+fgkSSDCapacitor1812Height));
+  // MvL: move cap to other side
+  Double_t capYpos = -0.5*fgkSSDStiffenerWidth
+   //+ssdstiffenerseparation
+    + capacitor1812shape->GetDY()+fgkSSDConnectorPosition[1];
+  TGeoTranslation* capacitor1812trans = new TGeoTranslation(0.0, capYpos,
+							    0.5*(fgkSSDStiffenerHeight+fgkSSDCapacitor1812Height));
   ssdhybridcapacitormother->AddNode(capacitor1812,1,capacitor1812trans);
 
   TGeoBBox* capacitor1812capshape =  new TGeoBBox("Capacitor1812CapShape",
@@ -2466,16 +2469,15 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
   TGeoVolume* capacitor1812cap = new TGeoVolume("Capacitor1812Cap",capacitor1812capshape,
                                              fSSDStiffenerCapacitorCapMedium);
   capacitor1812cap->SetLineColor(fColorNiSn);
+
   TGeoTranslation* capacitor1812captrans1 = new TGeoTranslation(
 	- capacitor1812shape->GetDX() - capacitor1812capshape->GetDX(),
-        0.5*fgkSSDStiffenerWidth+ssdstiffenerseparation
-        - capacitor1812shape->GetDY() - fgkSSDConnectorPosition[1],
+        capYpos,
         0.5*(fgkSSDStiffenerHeight+fgkSSDCapacitor1812Height));
   ssdhybridcapacitormother->AddNode(capacitor1812cap,1,capacitor1812captrans1);
   TGeoTranslation* capacitor1812captrans2 = new TGeoTranslation(
 	capacitor1812shape->GetDX() + capacitor1812capshape->GetDX(),
-        0.5*fgkSSDStiffenerWidth+ssdstiffenerseparation
-        - capacitor1812shape->GetDY() - fgkSSDConnectorPosition[1],
+        capYpos,
         0.5*(fgkSSDStiffenerHeight+fgkSSDCapacitor1812Height));
   ssdhybridcapacitormother->AddNode(capacitor1812cap,2,capacitor1812captrans2);
 
