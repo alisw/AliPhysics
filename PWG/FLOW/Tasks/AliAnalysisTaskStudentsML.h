@@ -127,7 +127,9 @@ void SetCorrSet3(Bool_t booly, Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d,
 
   void SetDenominatorMinValue(Double_t top) {this->fDenominatorMinValue=top; }
 
-  void SetMixed(Bool_t top, Int_t nop){this->bDoMixed = top; this->fMixedHarmonic = nop;}
+  void SetMixed(Bool_t top, Int_t nop, Bool_t DifferentCharge, Bool_t PositiveCharge)
+  {this->bDoMixed = top; this->fMixedHarmonic = nop; this->bDifferentCharge = DifferentCharge; 
+	this->bSetSameChargePositiv = PositiveCharge;	}
 
   void SetMinCent(Float_t top){this->fMinCentrality = top;} 
   Float_t GetMinCent() const {return this->fMinCentrality;}
@@ -262,13 +264,18 @@ void SetCorrSet3(Bool_t booly, Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d,
   Bool_t bDoEbERatio;		 // if kTRUE: Do the EbE ratio, Default: kFALSE
   TProfile *fMixedParticleHarmonics; //Stores output for special mixed particle analysis
   Bool_t bDoMixed;		 //if kTRUE: Do special mixed particle analysis, default kFALSE (MainTask)
+  Bool_t bDifferentCharge; 	 //used in DoMixed: if kTRUE mixed particle analysis between positiv and negativ
+				 //		    if kFALSE mixed particle analysis between same charge 
+				 //		    (only positiv or only negativ particles)
+				 //Default kTRUE
+  Bool_t bSetSameChargePositiv;   //used if bDifferentCharge: if kTRUE use positiv, if kFALSE use negative (default kTRUE)
   Int_t fMixedHarmonic;		//Harmonic of special mixed particle analysis
   TH1F *fCounterHistogram;       // for some checks
   TList *fFinalResultsList;      // list to hold all histograms with final results
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,24);
+  ClassDef(AliAnalysisTaskStudentsML,25);
 
 };
 
