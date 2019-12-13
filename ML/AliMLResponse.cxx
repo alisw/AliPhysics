@@ -198,7 +198,7 @@ int AliMLResponse::FindBin(double binvar) {
 
 //________________________________________________________________
 double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
-  if ((int)varmap.size() >= fNVariables) {
+  if ((int)varmap.size() <= fNVariables) {
     AliFatal("The variables map you provided to the predictor have a size different from the variable list size! Exit");
   }
 
