@@ -13,7 +13,6 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 Int_t usePIDcorrMaps   = 4,      // 0=None, 1=ITS,2=TPC,3=TOF,4=All Three
                                 // Option to use AliEventCuts class for additional event cuts
                                 Int_t whichAliEvtCuts  = 0,      // 0=None, 1=Use, 2=Also use correlation cuts
-                                Bool_t useFinerBinning  = kFALSE, // Use very fine mass bins  (mee < 50 MeV)
                                 Bool_t plots3D         = kFALSE,
                                 Bool_t v0plots         = kTRUE,  // Plots for PID calibration
                                 Bool_t getFromAlien    = kFALSE) // Pull config+CutLib from alien directory
@@ -51,7 +50,6 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     std::cout << "Use TPCcorr     : " << useTPCcorr     << std::endl;
     std::cout << "Use TOFcorr     : " << useTOFcorr     << std::endl;
     std::cout << "Use AliEventCuts: " << whichAliEvtCuts<< std::endl;
-    std::cout << "Using fine bins : " << useFinerBinning<< std::endl;
     std::cout << "3D plots        : " << plots3D        << std::endl;
     std::cout << "v0 plots        : " << v0plots        << std::endl;
 
@@ -135,7 +133,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                               doPairing, applyPairCuts, doEventMixing,
                                               trackVarPlots, whichDetPlots, v0plots,
                                               useITScorr, useTPCcorr, useTOFcorr,
-                                              plots3D, useFinerBinning);
+                                              plots3D);
       if(!diel_low){
         continue;
       }
