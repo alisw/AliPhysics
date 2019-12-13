@@ -116,6 +116,9 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   AliFemtoDreamCollConfig *fConfig;         //
   TList *fResultList;                       //!
   TList *fResultQAList;                     //!
+  AliFemtoDreamControlSample *fSample;   //!
+  TList *fResultsSample;//!
+  TList *fResultsSampleQA;//!
   AliAODTrack **fGTI;                       //!
 ClassDef(AliAnalysisTaskGrandma,4)
 };
