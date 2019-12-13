@@ -14,10 +14,6 @@
 #include <string>
 #include <vector>
 
-using std::map;
-using std::string;
-using std::vector;
-
 class TH1D;
 class TH2D;
 class TList;
@@ -130,7 +126,9 @@ struct MLSelected {
 class AliAnalysisTaskHypertriton3ML : public AliAnalysisTaskSE {
 
 public:
-  AliAnalysisTaskHypertriton3ML(bool mc = false, std::string name = "HyperTriton2He3piML");
+  enum kReducedTrigger { kINT7 = BIT(0), kCentral = BIT(1), kSemiCentral = BIT(2), kPositiveB = BIT(3) };
+
+  AliAnalysisTaskHypertriton3ML(bool mc = false, std::string name = "HyperTriton3ML");
   virtual ~AliAnalysisTaskHypertriton3ML();
 
   virtual void UserCreateOutputObjects();
@@ -140,6 +138,7 @@ public:
   static AliAnalysisTaskHypertriton3ML *AddTask(bool isMC = false, TString suffix = "");
 
   void SetApplyML(bool applyML) { fApplyML = applyML; }
+  void SetMLResponseConfigfilePath(std::string configfilepath) { fMLResponseConfigfilePath = configfilepath; }
 
   void SetDownscaling(bool down) { fDownscaling = down; }
 
@@ -181,12 +180,12 @@ public:
 
   void SetMinCosPointingAngle(float minCosPA) { fMinCosPA = minCosPA; }
 
-  AliEventCuts fEventCuts;    /// Event cuts class
-
-  AliVertexerHyperTriton3Body fVertexer;    //
+  AliEventCuts fEventCuts;                  /// Event cuts class
+  AliVertexerHyperTriton3Body fVertexer;    /// custom 3-body decay vertexer
+  AliMLResponse *fMLResponse;               /// object for the ML application
 
 private:
-  map<string, double> FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv);
+  std::map<std::string, double> FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv);
 
   TList *fListHist;    //! List of Cascade histograms
   TTree *fTreeHyp3;    //! Output Tree, V0s
@@ -233,17 +232,17 @@ private:
 
   float fMaxPtPion;
 
-  vector<SHypertriton3> fSHypertriton;    //!
-  vector<RHypertriton3> fRHypertriton;    //!
-  REvent fREvent;                         //!
+  std::vector<SHypertriton3> fSHypertriton;    //!
+  std::vector<RHypertriton3> fRHypertriton;    //!
+  REvent fREvent;                              //!
 
-  vector<MLSelected> fMLSelected;    //!
+  std::vector<MLSelected> fMLSelected;    //!
 
-  vector<AliESDtrack *> fDeuVector;
-  vector<AliESDtrack *> fPVector;
-  vector<AliESDtrack *> fPiVector;
+  std::vector<AliESDtrack *> fDeuVector;
+  std::vector<AliESDtrack *> fPVector;
+  std::vector<AliESDtrack *> fPiVector;
 
-  AliMLResponse *fMLResponse;    /// object for the ML application
+  std::string fMLResponseConfigfilePath;    /// path for the ML config file
 
   AliAnalysisTaskHypertriton3ML(const AliAnalysisTaskHypertriton3ML &);               // not implemented
   AliAnalysisTaskHypertriton3ML &operator=(const AliAnalysisTaskHypertriton3ML &);    // not implemented

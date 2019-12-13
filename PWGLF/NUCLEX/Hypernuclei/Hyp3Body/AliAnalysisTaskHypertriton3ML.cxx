@@ -32,9 +32,6 @@
 #include <unordered_map>
 #include <vector>
 
-// using std::cout;
-// using std::endl;
-
 ClassImp(AliAnalysisTaskHypertriton3ML);
 
 namespace {
@@ -131,7 +128,8 @@ AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::strin
       fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.}, fMaxNSigmaTOFPi{5.},
       fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.}, fMinCosPA{0.993},
       fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05}, fMaxPtPion{1.},
-      fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{}, fDeuVector{}, fPVector{}, fPiVector{}, fMLResponse{} {
+      fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{}, fDeuVector{}, fPVector{}, fPiVector{}, fMLResponse{},
+      fMLResponseConfigfilePath{} {
 
   // Settings for the custom vertexer
   fVertexer.SetToleranceGuessCompatibility(fVertexerToleranceGuessCompatibility);
@@ -163,6 +161,12 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   fPIDResponse            = fInputHandler->GetPIDResponse();
 
   fInputHandler->SetNeedField();
+
+  if (fApplyML) {
+    fMLResponse = new AliMLResponse("Hypertriton3MLResponse", "Hypertriton3MLResponse");
+    fMLResponse->SetConfigFilePath(fMLResponseConfigfilePath);
+    fMLResponse->MLResponseInit();
+  }
 
   fTreeHyp3 = new TTree("fHypertritonTree", "Hypertriton3 Candidates");
   if (!fApplyML) fTreeHyp3->Branch("REvent", &fREvent);
@@ -196,6 +200,7 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   AliPDG::AddParticlesToPdgDataBase();
 }    // end UserCreateOutputObjects
 
+//________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
   if (!esdEvent) {
@@ -226,11 +231,14 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 
   unsigned char tgr = 0x0;
 
-  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) tgr = 1;
-  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) tgr = 2;
-  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr = 4;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) tgr |= kINT7;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) tgr |= kCentral;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr |= kSemiCentral;
 
-  fREvent.fTrigger = tgr;
+  double b     = esdEvent->GetMagneticField();
+  int magField = b > 0 ? kPositiveB : 0;
+
+  fREvent.fTrigger = tgr + magField;
 
   std::unordered_map<int, int> mcMap;
 
@@ -298,8 +306,6 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   fDeuVector.clear();
   fPVector.clear();
   fPiVector.clear();
-
-  double b = esdEvent->GetMagneticField();
 
   for (int iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) {
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
@@ -489,9 +495,9 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         if (fApplyML) {
           auto fMap = FeaturesMap(hyp3r, fREvent);
 
-          float ct = fMap["ct"];
+          float ct      = fMap["ct"];
           float invmass = fMap["InvMass"];
-          float hyppt = fMap["HypCandPt"];
+          float hyppt   = fMap["HypCandPt"];
 
           if (ct > 1. && ct < 35. && fREvent.fCent < 90.) {
             float score{0.f};
@@ -531,8 +537,9 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 void AliAnalysisTaskHypertriton3ML::Terminate(Option_t *) {}
 
 //________________________________________________________________
-map<string, double> AliAnalysisTaskHypertriton3ML::FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv) {
-  map<string, double> fMap;
+std::map<std::string, double> AliAnalysisTaskHypertriton3ML::FeaturesMap(const RHypertriton3 &hypCand,
+                                                                         const REvent &rEv) {
+  std::map<std::string, double> fMap;
 
   /// position of the primary vertex
   const TVector3 primaryVtxPos(rEv.fX, rEv.fY, rEv.fZ);
