@@ -138,5 +138,6 @@
 #pragma link C++ class std::vector<Beauty3Prong>+;
 #pragma link C++ class std::vector<Beauty4Prong>+;
 #pragma link C++ class std::vector<GenHadron>+;
+#pragma link C++ class AliAnalysisTaskSECharmHadronvnTMVA+;
 
 #endif
