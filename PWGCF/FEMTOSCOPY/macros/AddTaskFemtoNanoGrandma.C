@@ -86,12 +86,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-		  isMC, true, true, true);//DCAplots,CombSigma,ContribSplitting
+		  isMC, true, false, true);//DCAplots,CombSigma,ContribSplitting
   TrackCuts->SetFilterBit(fFilterBit);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, true);
   AntiTrackCuts->SetFilterBit(fFilterBit);
   AntiTrackCuts->SetCutCharge(-1);
 
