@@ -187,7 +187,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     // 4: Add GetImpactParm function for nano
     // 5: Seprate MC Sparse, INEL study capability
     // 6: Update some of deafult vaules
-    // 7: Add option to skipping QA histos
+    // 7: Add skipping option for QA histos
 };
 
 #endif
