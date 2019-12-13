@@ -141,7 +141,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fEvCentrality(NULL),
  bDoEbERatio(kFALSE),
  fMixedParticleHarmonics(NULL),
- bDoMixed(kFALSE),		
+ bDoMixed(kFALSE),
+ bDifferentCharge(kTRUE),
+ bSetSameChargePositiv(kTRUE),			
  fMixedHarmonic(0),
  fCounterHistogram(NULL),
  // Final results:
@@ -278,7 +280,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fEvCentrality(NULL),
  bDoEbERatio(kFALSE),
  fMixedParticleHarmonics(NULL),
- bDoMixed(kFALSE),		
+ bDoMixed(kFALSE),
+ bDifferentCharge(kTRUE),
+ bSetSameChargePositiv(kTRUE),		
  fMixedHarmonic(0),
  fCounterHistogram(NULL),
  fFinalResultsList(NULL)
@@ -366,6 +370,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
  Double_t* angles_B = NULL; 
  Int_t Multi_Ang_B = 0.; 
 
+ Int_t CounterSameCharge = 0.; //used if bDifferentCharge = kTRUE
 
  if(nTracks>0){fMultiHistoBeforeTrackSeletion->Fill(nTracks);} //multiplicity distribution before track selection
  for(Int_t u=0;u<nTracks;u++){fTotalMultBeforeTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class before track sel.
@@ -444,12 +449,30 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
      if(!bDoMixed) {Multi_Ang_A+=1.;}
      if(bDoMixed)
      {
-	if(charge>0.){Multi_Ang_A+=1.;}
-	if(charge<0.){Multi_Ang_B+=1.;}
-     }
+	if(bDifferentCharge)
+	{
+		if(charge>0.){Multi_Ang_A+=1.;}
+		if(charge<0.){Multi_Ang_B+=1.;}
+	}//if(bDifferentCharge)
+
+	if(!bDifferentCharge)
+	{
+		Double_t UsedCharge = 0.;
+		if(bSetSameChargePositiv) {UsedCharge = charge;}
+		if(!bSetSameChargePositiv) {UsedCharge = -1.*charge;}
+
+		if(UsedCharge>0.)
+		{
+		   if(0 == CounterSameCharge%2) {Multi_Ang_A+=1.; CounterSameCharge++; }
+		   else {Multi_Ang_B+=1.; CounterSameCharge++; }
+		}
+
+	}//if(!bDifferentCharge)
+
+     }//if(bDoMixed)
 
 
- } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
+ } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++): starting first loop over all tracks
 
         angles_A = new Double_t[Multi_Ang_A];
 	Multi_Ang_A = 0.; //Reset for filling
@@ -458,6 +481,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
 	else{angles_B = new Double_t[1]; angles_B[0]=0.;} //Dummy 
   	Multi_Ang_B = 0.; //Reset for filling
 
+	CounterSameCharge = 0.; //reset the same charge counter
 
 
 //b.1.1) Second Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
@@ -474,9 +498,27 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
      if(!bDoMixed) {angles_A[Multi_Ang_A] = phi; Multi_Ang_A+=1.;}
      if(bDoMixed)
      {
-	if(charge>0.){angles_A[Multi_Ang_A] = phi; Multi_Ang_A+=1.;}
-	if(charge<0.){angles_B[Multi_Ang_B] = phi; Multi_Ang_B+=1.;}
-     }
+	if(bDifferentCharge)
+	{	
+		if(charge>0.){angles_A[Multi_Ang_A] = phi; Multi_Ang_A+=1.;}
+		if(charge<0.){angles_B[Multi_Ang_B] = phi; Multi_Ang_B+=1.;}
+	}//if(bDifferentCharge)
+
+	if(!bDifferentCharge)
+	{
+		Double_t UsedCharge = 0.;
+		if(bSetSameChargePositiv) {UsedCharge = charge;}
+		if(!bSetSameChargePositiv) {UsedCharge = -1.*charge;}
+
+		if(UsedCharge>0.)
+		{
+		   if(0 == CounterSameCharge%2) {angles_A[Multi_Ang_A] = phi; Multi_Ang_A+=1.; CounterSameCharge++; }
+		   else {angles_B[Multi_Ang_B] = phi; Multi_Ang_B+=1.; }
+		}
+
+	}//if(!bDifferentCharge)
+
+     }//if(bDoMixed)
 
  } //second loop
 
@@ -509,7 +551,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
  delete [] angles_A; 
  Multi_Ang_B =0.;
  delete [] angles_B;
-
+ CounterSameCharge = 0.; //reset the same charge counter
  // d) PostData:
  PostData(1,fHistList);
 
