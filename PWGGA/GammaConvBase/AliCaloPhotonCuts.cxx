@@ -6783,9 +6783,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         goto label_case_51;// goto previous case for shifting MC
       } else if (fClusterType == 2) { // shift data an MC to pi0 mass
           if ( fCurrentMC == kPPb5T13P4DPMJet){
-            energy /= FunctionNL_SPOW(1.00132, 0.00598632, -2.167);
+            energy /= FunctionNL_SPOW(energy, 1.00132, 0.00598632, -2.167);
           } else {
-            energy /= FunctionNL_SPOW(0.997167, 0.000759949, -5.04513);
+            energy /= FunctionNL_SPOW(energy, 0.997167, 0.000759949, -5.04513);
           }
       }
       break;
