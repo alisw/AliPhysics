@@ -463,8 +463,8 @@ void AddTask_GammaCalo_pPb(
   // Run 1 data PHOS clusters pPb 5TeV
   // ===============================================================================================
   } else if (trainConfig == 301) {  // min energy = 0.3 GeV/c
-    cuts.AddCutCalo("80010113","2444400041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCutCalo("80062113","2444400041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+    cuts.AddCutCalo("80010113","2444453041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCutCalo("80062113","2444453041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
   } else if (trainConfig == 302){ // Validation PHOS
     cuts.AddCutCalo("80010113","2444400041013200000","0163103100000010");
   } else if (trainConfig == 303){ // Validation PHOS, only added signals
@@ -699,6 +699,9 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 514){
     cuts.AddCutCalo("80010113","2446642151012200000","0163103100000010"); // standard
     cuts.AddCutCalo("80010113","2446642101012200000","0163103100000010"); // standard without timing cut
+  } else if (trainConfig == 515) {  // PHOS  INT7
+    cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // standard without non-lin
+    cuts.AddCutCalo("80010113","244660005a012200000","0163103100000010"); // standard without non-lin
 
   } else if (trainConfig == 520) {  // JJ MC
     cuts.AddCutCalo("80010123","24466420ha012200000","0163103100000010"); // standard
