@@ -135,19 +135,19 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 		pSumPtMeasured[i]=0;// only for data
 
 
-                pNumDenMeasuredAll[i]=0;
-                pSumPtMeasuredAll[i]=0;
-                pNumDenMeasuredPS[i]=0;
-                pSumPtMeasuredPS[i]=0;
-                pNumDenMeasuredPSV[i]=0;
-                pSumPtMeasuredPSV[i]=0;
+		pNumDenMeasuredAll[i]=0;
+		pSumPtMeasuredAll[i]=0;
+		pNumDenMeasuredPS[i]=0;
+		pSumPtMeasuredPS[i]=0;
+		pNumDenMeasuredPSV[i]=0;
+		pSumPtMeasuredPSV[i]=0;
 
-                pNumDenTrueAll[i]=0;
-                pSumPtTrueAll[i]=0;
-                pNumDenTruePS[i]=0;
-                pSumPtTruePS[i]=0;
-                pNumDenTruePSV[i]=0;
-                pSumPtTruePSV[i]=0;
+		pNumDenTrueAll[i]=0;
+		pSumPtTrueAll[i]=0;
+		pNumDenTruePS[i]=0;
+		pSumPtTruePS[i]=0;
+		pNumDenTruePSV[i]=0;
+		pSumPtTruePSV[i]=0;
 		pNumDenTrue[i]=0;
 		pSumPtTrue[i]=0;
 	}
@@ -176,19 +176,19 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		pNumDenMeasured[i]=0;// only for data
 		pSumPtMeasured[i]=0;// only for data
 
-                pNumDenMeasuredAll[i]=0;
-                pSumPtMeasuredAll[i]=0;
-                pNumDenMeasuredPS[i]=0;
-                pSumPtMeasuredPS[i]=0;
-                pNumDenMeasuredPSV[i]=0;
-                pSumPtMeasuredPSV[i]=0;
+		pNumDenMeasuredAll[i]=0;
+		pSumPtMeasuredAll[i]=0;
+		pNumDenMeasuredPS[i]=0;
+		pSumPtMeasuredPS[i]=0;
+		pNumDenMeasuredPSV[i]=0;
+		pSumPtMeasuredPSV[i]=0;
 
-                pNumDenTrueAll[i]=0;
-                pSumPtTrueAll[i]=0;
-                pNumDenTruePS[i]=0;
-                pSumPtTruePS[i]=0;
-                pNumDenTruePSV[i]=0;
-                pSumPtTruePSV[i]=0;
+		pNumDenTrueAll[i]=0;
+		pSumPtTrueAll[i]=0;
+		pNumDenTruePS[i]=0;
+		pSumPtTruePS[i]=0;
+		pNumDenTruePSV[i]=0;
+		pSumPtTruePSV[i]=0;
 		pNumDenTrue[i]=0;
 		pSumPtTrue[i]=0;
 
@@ -442,6 +442,19 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 	hCounter->Fill(0);
 
+
+	AliHeader* headerMC = fMC->Header();
+
+	AliGenEventHeader* genHeader = headerMC->GenEventHeader();
+	TArrayF vtxMC(3); // primary vertex  MC 
+	vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
+	if (genHeader) {
+		genHeader->PrimaryVertex(vtxMC);
+	}
+	Bool_t isGoodVtxPosMC = kFALSE;
+	if(TMath::Abs(vtxMC[2])<=10)
+		isGoodVtxPosMC = kTRUE;
+
 	// Before trigger selection
 	if (fUseMC){
 		GetLeadingObject(kTRUE);// leading particle at gen level
@@ -450,7 +463,8 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 	GetLeadingObject(kFALSE);// leading particle at rec level
 
 	hPtLeadingRecAll->Fill(fRecLeadPt);
-	hPtLeadingGenAll->Fill(fGenLeadPt);
+	if(isGoodVtxPosMC)
+		hPtLeadingGenAll->Fill(fGenLeadPt);
 
 
 	vector<Double_t> ue_gen;// 0: nch_near, 1: nch_away, 2: nch_trans, 3: sumpt_near, ... 
@@ -460,9 +474,10 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 	for(Int_t i=0;i<3;++i){
 		pNumDenMeasuredAll[i]->Fill(fRecLeadPt,ue_rec[i]);
 		pSumPtMeasuredAll[i]->Fill(fRecLeadPt,ue_rec[i+3]);
-
-		pNumDenTrueAll[i]->Fill(fGenLeadPt,ue_gen[i]);
-		pSumPtTrueAll[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		if(isGoodVtxPosMC){
+			pNumDenTrueAll[i]->Fill(fGenLeadPt,ue_gen[i]);
+			pSumPtTrueAll[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		}
 	}
 
 	// Trigger selection
@@ -474,14 +489,16 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 
 	hPtLeadingRecPS->Fill(fRecLeadPt);
-	hPtLeadingGenPS->Fill(fGenLeadPt);
+	if(isGoodVtxPosMC)
+		hPtLeadingGenPS->Fill(fGenLeadPt);
 
 	for(Int_t i=0;i<3;++i){
 		pNumDenMeasuredPS[i]->Fill(fRecLeadPt,ue_rec[i]);
 		pSumPtMeasuredPS[i]->Fill(fRecLeadPt,ue_rec[i+3]);
-
-		pNumDenTruePS[i]->Fill(fGenLeadPt,ue_gen[i]);
-		pSumPtTruePS[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		if(isGoodVtxPosMC){
+			pNumDenTruePS[i]->Fill(fGenLeadPt,ue_gen[i]);
+			pSumPtTruePS[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		}
 	}
 
 	// Good vertex
@@ -490,14 +507,16 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 	if(!hasRecVertex)return;
 
 	hPtLeadingRecPSV->Fill(fRecLeadPt);
-	hPtLeadingGenPSV->Fill(fGenLeadPt);
+	if(isGoodVtxPosMC)
+		hPtLeadingGenPSV->Fill(fGenLeadPt);
 
 	for(Int_t i=0;i<3;++i){
 		pNumDenMeasuredPSV[i]->Fill(fRecLeadPt,ue_rec[i]);
 		pSumPtMeasuredPSV[i]->Fill(fRecLeadPt,ue_rec[i+3]);
-
-		pNumDenTruePSV[i]->Fill(fGenLeadPt,ue_gen[i]);
-		pSumPtTruePSV[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		if(isGoodVtxPosMC){
+			pNumDenTruePSV[i]->Fill(fGenLeadPt,ue_gen[i]);
+			pSumPtTruePSV[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		}
 	}
 
 	// Good events
@@ -509,16 +528,17 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 	Double_t randomUE = gRandom->Uniform(0.0,1.0);
 	if(randomUE<0.5){// corrections (50% stat.)
-		// KNO scaling
-		if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
-			GetDetectorResponse();
+		if(isGoodVtxPosMC){
+			// KNO scaling
+			if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
+				GetDetectorResponse();
 
-		// UE analysis
-		if(fGenLeadPt>=fPtMin){
-			GetBinByBinCorrections();
-			GetPtLeadingMisRecCorrection();
+			// UE analysis
+			if(fGenLeadPt>=fPtMin){
+				GetBinByBinCorrections();
+				GetPtLeadingMisRecCorrection();
+			}
 		}
-
 	}
 	else{// for testing the method
 		// KNO scaling
