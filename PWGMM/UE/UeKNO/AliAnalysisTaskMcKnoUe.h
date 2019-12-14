@@ -42,8 +42,9 @@ public:
 	void       GetBinByBinCorrections();
 	void       GetUEObservables();
 	void       GetPtLeadingMisRecCorrection();
+	void       GetMeanUEObservables(std::vector<Double_t> &gen, std::vector<Double_t> &rec);
 	void       GetMultiplicityDistributions();
-        void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
+	void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
 	void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}   // use to analyse MC data
 	bool       HasRecVertex();
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
@@ -101,6 +102,21 @@ private:
 	TProfile * pSumPtMeasured[3];
 	TProfile * pSumPtTrue[3];
 
+	TProfile * pNumDenMeasuredAll[3];
+	TProfile * pNumDenTrueAll[3];
+	TProfile * pSumPtMeasuredAll[3];
+	TProfile * pSumPtTrueAll[3];
+
+        TProfile * pNumDenMeasuredPS[3];
+        TProfile * pNumDenTruePS[3];
+        TProfile * pSumPtMeasuredPS[3];
+	TProfile * pSumPtTruePS[3];
+
+	TProfile * pNumDenMeasuredPSV[3];
+	TProfile * pNumDenTruePSV[3];
+	TProfile * pSumPtMeasuredPSV[3];
+	TProfile * pSumPtTruePSV[3];
+
 	TH2D * hPtVsUEGenTest[3];
 	TH2D * hPtVsUERecTest[3];
 
@@ -108,6 +124,8 @@ private:
 	TH1D * hPtLeadingRecPSV;
 	TH1D * hPtLeadingGenPS;
 	TH1D * hPtLeadingGenPSV;
+	TH1D * hPtLeadingRecAll;
+	TH1D * hPtLeadingGenAll;
 
 	AliAnalysisTaskMcKnoUe(const AliAnalysisTaskMcKnoUe&);                  // not implemented
 	AliAnalysisTaskMcKnoUe& operator=(const AliAnalysisTaskMcKnoUe&);       // not implemented
