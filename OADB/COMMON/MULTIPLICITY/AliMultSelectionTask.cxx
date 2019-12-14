@@ -2852,7 +2852,7 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber(int runNumber)
     if ( runNumber >= 278914 && runNumber <= 280140 ) lProductionName = "LHC17m";
     if ( runNumber >= 280282 && runNumber <= 281961 ) lProductionName = "LHC17o";
     if ( runNumber >= 282008 && runNumber <= 282343 ) lProductionName = "LHC17p";
-    if ( runNumber >= 282365 && runNumber <= 282367 ) lProductionName = "LHC17q";
+    if ( runNumber >= 282365 && runNumber <= 282441 ) lProductionName = "LHC17q";
     if ( runNumber >= 282504 && runNumber <= 282704 ) lProductionName = "LHC17r";
     
     //2018
@@ -2962,7 +2962,7 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber(int runNumber)
     if ( runNumber >= 278914 && runNumber <= 280140 ) lSystemType = "pp";
     if ( runNumber >= 280282 && runNumber <= 281961 ) lSystemType = "pp";
     if ( runNumber >= 282008 && runNumber <= 282343 ) lSystemType = "pp";
-    if ( runNumber >= 282365 && runNumber <= 282367 ) lSystemType = "pp";
+    if ( runNumber >= 282365 && runNumber <= 282441 ) lSystemType = "pp";
     if ( runNumber >= 282504 && runNumber <= 282704 ) lSystemType = "pp";
     
     //2018
