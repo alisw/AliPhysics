@@ -470,7 +470,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
     fESDList[iCut]->Add(hNEvents[iCut]);
-    if(fDoSelectBCNumber)
+    if(fDoSelectBCNumber){
     hBCNumber[iCut]              = new TH1F("BCNumber","BCNumber",3564,-0.5,3563.5);
     fESDList[iCut]->Add(hBCNumber[iCut]);
     }
