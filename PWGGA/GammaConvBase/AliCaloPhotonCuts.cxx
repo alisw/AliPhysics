@@ -6776,7 +6776,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       }
       break;
     // NonLinearity LHC13 pPb Calo  - kTestBeamv3 + shifting MC
-    /
     case 53:
       if (fClusterType == 1 || fClusterType == 3){
         energy *= FunctionNL_kTestBeamv3(energy);
