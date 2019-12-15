@@ -101,7 +101,7 @@ enum {
     kSigmaStarPBkg_type4,
     kSigmaStarNBkg_type4,
     kSigmaStarPBkg_type5,
-    kSigmaStarNBkg_type5,
+    kSigmaStarNBkg_type5
 };
 enum {
     kAll = 1,  // 1
@@ -173,7 +173,7 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
                  "SigmaStarP_gen_inel10_igz","SigmaStarN_gen_inel10_igz","SigmaStarP_gen_trig", "SigmaStarN_gen_trig",
                  "SigmaStarP_rec", "SigmaStarN_rec","kSigmaStarPBkg_type1", "kSigmaStarNBkg_type1", "kSigmaStarPBkg_type2",
                  "kSigmaStarNBkg_type2", "kSigmaStarPBkg_type3", "kSigmaStarNBkg_type3", "kSigmaStarPBkg_type4",
-                 "kSigmaStarNBkg_type4", "kSigmaStarPBkg_type5", "kSigmaStarNBkg_type5",});
+                 "kSigmaStarNBkg_type4", "kSigmaStarPBkg_type5", "kSigmaStarNBkg_type5"});
     
     std::vector<double> centaxisbin;
     (fIsHM) ? centaxisbin = { 0,  0.001,  0.01,  0.05, 0.1} 
@@ -1293,7 +1293,8 @@ Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
                     return kFALSE;
                 // Sigma1385 check
                 MCSigmaStar = (TParticle*)fMCEvent->GetTrack(TMath::Abs(MCSigmaZero->GetMother(0)))->Particle();
-                if (TMath::Abs(MCSigmaStar->GetPdgCode()) != kLambdaStarCode)
+                if ((TMath::Abs(MCSigmaStar->GetPdgCode()) != kSigmaStarPCode) &&
+                    (TMath::Abs(MCSigmaStar->GetPdgCode()) != kSigmaStarNCode))
                     return kFALSE;
                 if (IsPrimaryMC) {
                     if (MCSigmaStar->IsPrimary())
@@ -1452,7 +1453,8 @@ Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
                     return kFALSE;
                 // Sigma1385 check
                 MCSigmaStar = (AliAODMCParticle*)fMCArray->At(TMath::Abs(MCSigmaZero->GetMother()));
-                if (TMath::Abs(MCSigmaStar->GetPdgCode()) != kLambdaStarCode)
+                if ((TMath::Abs(MCSigmaStar->GetPdgCode()) != kSigmaStarPCode) &&
+                    (TMath::Abs(MCSigmaStar->GetPdgCode()) != kSigmaStarNCode))
                     return kFALSE;
                 if (IsPrimaryMC) {
                     if (MCSigmaStar->IsPrimary())
@@ -1485,7 +1487,7 @@ Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
                     return kTRUE;
                 break;
             case 4: // Bkg type C: Xi(1530)- through Xi0 
-                // Xi- check
+                // Xi0 check
                 MCXi = (AliAODMCParticle*)fMCArray->At(TMath::Abs(MCLam->GetMother()));
                 if (TMath::Abs(MCXi->GetPdgCode()) != kXiZeroCode)
                     return kFALSE;
