@@ -44,7 +44,9 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   void SetConversionCutList(Int_t nCuts, TList *CutArray)       {fnCuts                      = nCuts;
     fConversionCutArray         = CutArray;}
   void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
-
+  void SetDoSelectBCnumbers(Int_t flag )                        { fDoSelectBCNumber     = flag;}
+  void SetSelectBCnumbersBegin(UShort_t a)                      { fBCNumberBegin = a;}
+  void SetSelectBCnumbersEnd(UShort_t a)                        { fBCNumberEnd = a;}
 
 
   /* void SetDoTreesForMaterial(Bool_t flag)                              { fDoTreesForMaterial               = flag    ;} */
@@ -59,6 +61,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   Int_t CountTracks08pt300();
   Int_t CountTracks08pt400();
   Int_t CountTracks0814();
+  void DoSelectBCNumbers();
   
   AliV0ReaderV1 	  *fV0Reader;	                //
   TString           fV0ReaderName;
@@ -100,6 +103,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   Int_t             fDoMultWeights;               //
   Double_t          fWeightMultMC;                //
   TH1F**            hNEvents;                     //!
+  TH1F**            hBCNumber;                    //!
   TH1F**            hNGoodESDTracksEta08;         //!
   TH1F**            hNGoodESDTracksWeightedEta08; //!
   TH1F**            hNGoodESDTracksEta08pt200;         //!
@@ -180,12 +184,17 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   TH3F**            hElectrondEdxMapsR3;         //!
   Bool_t            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
   //Bool_t            fDoHistosForMaterial;             // flag for using Trees for Material Budget evaluation
-  
+  Bool_t            fDoSelectBCNumber;
+  UShort_t          fBCNumber;
+  UShort_t          fBCNumberBegin;
+  UShort_t          fBCNumberEnd;
+
+
   AliAnalysisTaskMaterialHistos(const AliAnalysisTaskMaterialHistos&); // not implemented
   AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
   
   
-  ClassDef(AliAnalysisTaskMaterialHistos, 23);
+  ClassDef(AliAnalysisTaskMaterialHistos, 24);
 };
 
 #endif
