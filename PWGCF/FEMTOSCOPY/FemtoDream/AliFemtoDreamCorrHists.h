@@ -185,9 +185,13 @@ class AliFemtoDreamCorrHists {
     if (!fMinimalBooking)
       fPairCounterME[hist]->Fill(nPart1, nPart2);
   }
-  void FillMomentumResolution(int hist, float RelKTrue, float RelKReco) {
+  void FillMomentumResolutionSE(int hist, float RelKTrue, float RelKReco) {
     if (!fMinimalBooking)
-      fMomResolution[hist]->Fill(RelKTrue, RelKReco);
+      fMomResolutionSE[hist]->Fill(RelKTrue, RelKReco);
+  }
+  void FillMomentumResolutionME(int hist, float RelKTrue, float RelKReco) {
+    if (!fMinimalBooking)
+      fMomResolutionME[hist]->Fill(RelKTrue, RelKReco);
     if (!fMinimalBooking)
       fMomResolutionDist[hist]->Fill(RelKReco - RelKTrue, RelKTrue);
   }
@@ -279,7 +283,8 @@ class AliFemtoDreamCorrHists {
   TH2F ***fMixedEventkTandMultDist;
   TH2F ***fMixedEventkTCentDist;
   TH2F **fPairCounterME;
-  TH2F **fMomResolution;
+  TH2F **fMomResolutionSE;
+  TH2F **fMomResolutionME;
   TH2F **fMomResolutionDist;
   TH2F ****fRadiiEtaPhiSE;
   TH2F ****fRadiiEtaPhiME;
