@@ -423,9 +423,9 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
 
   // BEFORE THE CUTS
   if (!fIsLightweight) {
-    fHistDecayVertexXBefore->Fill(pt, conv[0]);
-    fHistDecayVertexYBefore->Fill(pt, conv[1]);
-    fHistDecayVertexZBefore->Fill(pt, conv[2]);
+    fHistDecayVertexXBefore->Fill(pt, TMath::Abs(conv[0]));
+    fHistDecayVertexYBefore->Fill(pt, TMath::Abs(conv[1]));
+    fHistDecayVertexZBefore->Fill(pt, TMath::Abs(conv[2]));
     fHistTransverseRadiusBefore->Fill(pt, transRadius);
     fHistCosPABefore->Fill(pt, cosinePointingAngle);
     fHistArmenterosBefore->Fill(armAlpha, armQt);
@@ -494,7 +494,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
   }
   fHistCuts->Fill(7.f);
 
-  if (DCAz > fDCAzMax) {
+  if (TMath::Abs(DCAz) > fDCAzMax) {
     return false;
   }
   fHistCuts->Fill(8.f);
@@ -545,9 +545,9 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
     fHistCosPA->Fill(pt, cosinePointingAngle);
     fHistEtaPhi->Fill(eta, phi);
     fHistPsiPairAfter->Fill(pt, psiPair);
-    fHistDecayVertexXAfter->Fill(pt, conv[0]);
-    fHistDecayVertexYAfter->Fill(pt, conv[1]);
-    fHistDecayVertexZAfter->Fill(pt, conv[2]);
+    fHistDecayVertexXAfter->Fill(pt, TMath::Abs(conv[0]));
+    fHistDecayVertexYAfter->Fill(pt, TMath::Abs(conv[1]));
+    fHistDecayVertexZAfter->Fill(pt, TMath::Abs(conv[2]));
     fHistTransverseRadiusAfter->Fill(pt, transRadius);
     fHistCosPAAfter->Fill(pt, cosinePointingAngle);
     fHistArmenterosAfter->Fill(armAlpha, armQt);
@@ -980,29 +980,29 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     fHistDCArBefore = new TH2F(
         "fHistDCArBefore",
         "; #it{p}_{T} (GeV/#it{c}); DCA_{r} (cm)", 50, 0,
-        10, 100, 0, 10);
+        10, 100, 0, 5);
     fHistogramsBefore->Add(fHistDCArBefore);
 
     fHistDCArAfter = new TH2F(
         "fHistDCArAfter",
         "; #it{p}_{T} (GeV/#it{c}); DCA_{r} (cm)", 50, 0,
-        10, 100, 0, 10);
+        10, 100, 0, 5);
     fHistogramsAfter->Add(fHistDCArAfter);
 
     fHistDCAzBefore = new TH2F(
         "fHistDCAzBefore",
         "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0,
-        10, 100, 0, 10);
+        10, 200, -5, 5);
     fHistogramsBefore->Add(fHistDCAzBefore);
 
     fHistDCAzAfter = new TH2F(
         "fHistDCAzAfter",
         "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0,
-        10, 100, 0, 10);
+        10, 200, -5, 5);
     fHistogramsAfter->Add(fHistDCAzAfter);
 
     fHistDCA = new TH2F("fHistDCA", "; #it{p}_{T} (GeV/#it{c}); DCA to PV (cm)",
-                        50, 0, 10, 100, 0, 10);
+                        50, 0, 10, 100, 0, 5);
     fHistogramsAfter->Add(fHistDCA);
 
     fHistDecayLength = new TH2F("fHistDecayLength",
