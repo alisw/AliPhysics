@@ -157,6 +157,11 @@ public:
     fMinTPCclusters = minCl;
   }
 
+  void SetMinPIDcluster(unsigned char minClu)
+  {
+    fMinPIDclusters = minClu;
+  }  
+
   void SetMaxDeltaTheta(float maxDeltaTheta) { fMaxDeltaTheta = maxDeltaTheta; }
   void SetMaxDeltaPhi(float maxDeltaPhi) { fMaxDeltaPhi = maxDeltaPhi; }
   void SetMinTrackletCosP(float minTrackletCosP) { fMinTrackletCosP = minTrackletCosP; }
@@ -199,6 +204,8 @@ private:
   float fMaxTPChe3Sigma;
   float fMinHe3pt;
   unsigned char fMinTPCclusters;
+  unsigned char fMinPIDclusters;
+
 
   float fMaxDeltaPhi;
   float fMaxDeltaTheta;
@@ -221,7 +228,7 @@ private:
   AliAnalysisTaskHyperTriton2He3piML &operator=(
       const AliAnalysisTaskHyperTriton2He3piML &); // not implemented
 
-  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 4);
+  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 5);
 };
 
 #endif
