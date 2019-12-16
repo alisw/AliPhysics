@@ -84,10 +84,10 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistPt;        //!
         TH1F*                   fHistZVertex;   //!
 
-        TSpline3*               fSplq2TPC[90];  // q2 TPC cuts
-        TSpline3*               fSplq3TPC[90];  // q3 TPC cuts
-        TSpline3*               fSplq2V0C[90];  // q2 V0C cuts
-        TSpline3*               fSplq3V0C[90];  // q3 V0C cuts
+        TSpline3*               fSplq2TPC[90];  // q2 TPC splines
+        TSpline3*               fSplq3TPC[90];  // q3 TPC splines
+        TSpline3*               fSplq2V0C[90];  // q2 V0C splines
+        TSpline3*               fSplq3V0C[90];  // q3 V0C splines
 
         TProfile*               fcn2Gap[fNumHarmHists]; //!
         TProfile*               fcn2GapInclusive[fNumHarmHists]; //!

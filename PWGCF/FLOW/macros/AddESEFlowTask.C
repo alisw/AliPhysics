@@ -42,7 +42,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
-    // RUN BY RUN
+    // RUN BY RUN own
     if(bUseOwnWeights) 
     {
       TObjArray* taskContainers = mgr->GetContainers();
@@ -101,6 +101,6 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
         mgr->ConnectInput(task,1,weightsVy);
       }
     }
-    
+
   return task;
 }

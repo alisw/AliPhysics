@@ -353,6 +353,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         fOutputList->Add(fHistPDG);
     }
     
+    //load q-selection
     if(!gGrid) { TGrid::Connect("alien://"); }
 
     TFile* fFileSpq2TPC = TFile::Open("alien:///alice/cern.ch/user/j/joachimh/q2TPCSpRun15oPbPb.root");
