@@ -250,8 +250,8 @@ void AliAnalysisTaskHe3::UserCreateOutputObjects()
 	fOutputEvent->Add(fNchHeader);
 
 
-	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows");
-	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows");
+	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC");
+	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC");
 
 
     // track cuts config
@@ -560,9 +560,9 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
         }
 
 		if (isHelium3Selected){
-				Float_t vars[17];
+				Float_t vars[18];
 			   	vars[0] = track->P();
-			    vars[1] = track->Pt();
+			    	vars[1] = track->Pt();
 			   	vars[2] = track->GetTPCsignal();
 				vars[3] = nSigmaTPCHe3;
 				vars[4] = track->Charge();
@@ -578,6 +578,7 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
 				vars[14] = track->Chi2perNDF();
 				vars[15] = track->GetITSchi2();
 				vars[16] = track->GetTPCClusterInfo(2, 1);
+				vars[17] = track->GetTPCMomentum();
 				
 			if (track->Charge() > 0){
 				FillHistosTrack(fHistsHe3, track);
