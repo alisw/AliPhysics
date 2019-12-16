@@ -6786,7 +6786,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           } else if ( fCurrentMC == k13pPb5023GeV ) { // RUN1, data
             energy /= FunctionNL_SPOW(energy, 0.997167, -0.000759949, -5.04513);
           } else if ( fCurrentMC == kPPb5T16DPMJet ) { // RUN2, MB MC
-            energy /= FunctionNL_SPOW(energy, 0.976451, -0.0299577, -0.588015);
+            energy /= FunctionNL_SExp(energy, 0.991632, 1.22134, -2.97826, -1.);
           } else if ( fCurrentMC == k16pPb5023GeV ) { // RUN2, data
             energy /= FunctionNL_SExp(energy, 1.02521, 0.59747, -4.17083);
           }
@@ -7305,7 +7305,7 @@ Float_t AliCaloPhotonCuts::FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Fl
     return 1.;
 }
 Float_t     FunctionNL_SExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3){
-  return ( p0 - p3 * exp( - p1 * e + p2 ) );
+  return ( p0 - p3 * TMath::Exp( - p1 * e + p2 ) );
 }
 
 //________________________________________________________________________
