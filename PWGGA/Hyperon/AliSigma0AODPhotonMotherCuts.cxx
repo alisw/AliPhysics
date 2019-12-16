@@ -47,6 +47,7 @@ ClassImp(AliSigma0AODPhotonMotherCuts)
       fDeltaPhiEtaMax(-1.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
+      fHistNCandidates(nullptr),
       fHistNPhotonBefore(nullptr),
       fHistNPhotonAfter(nullptr),
       fHistNLambdaBefore(nullptr),
@@ -139,6 +140,7 @@ AliSigma0AODPhotonMotherCuts::AliSigma0AODPhotonMotherCuts(
       fDeltaPhiEtaMax(-1.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
+      fHistNCandidates(nullptr),
       fHistNPhotonBefore(nullptr),
       fHistNPhotonAfter(nullptr),
       fHistNLambdaBefore(nullptr),
@@ -550,6 +552,19 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
 
   int nSigma = 0;
   const float lambdaMass = fDataBasePDG.GetParticle(fPDGDaughter1)->Mass();
+
+  for (const auto &lambda : fLambdaCandidates) {
+    fHistNCandidates->Fill(0);
+    if (!lambda.UseParticle()) continue;
+    fHistNCandidates->Fill(1);
+  }
+
+  for (const auto &photon : fPhotonCandidates) {
+    fHistNCandidates->Fill(2);
+    if (!photon.UseParticle()) continue;
+    fHistNCandidates->Fill(3);
+  }
+
   // SAME EVENT
   AliFemtoDreamv0 sigma;
   for (const auto &photon : fPhotonCandidates) {
@@ -624,6 +639,8 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
       // Now write out the stuff to the Femto containers
       if (invMass < GetMassSigmaPt(pT) + fSigmaMassCut &&
           invMass > GetMassSigmaPt(pT) - fSigmaMassCut) {
+        fHistNCandidates->Fill(4);
+
         fSigma.push_back(sigma);
         fLambda.push_back(lambda);
         fPhoton.push_back(photon);
@@ -640,6 +657,7 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
       }
       if (invMass < GetMassSigmaPt(pT) + fSidebandCutUp &&
           invMass > GetMassSigmaPt(pT) + fSidebandCutDown) {
+        fHistNCandidates->Fill(5);
         fSidebandUp.push_back(sigma);
         if (!fIsLightweight) {
           fHistInvMassSelected->Fill(pT, invMass);
@@ -647,6 +665,7 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
       }
       if (invMass > GetMassSigmaPt(pT) - fSidebandCutUp &&
           invMass < GetMassSigmaPt(pT) - fSidebandCutDown) {
+        fHistNCandidates->Fill(6);
         fSidebandDown.push_back(sigma);
         if (!fIsLightweight) {
           fHistInvMassSelected->Fill(pT, invMass);
@@ -773,6 +792,16 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistNSigma =
       new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 10, 0, 10);
   fHistograms->Add(fHistNSigma);
+
+  fHistNCandidates = new TH1F("fHistNCandidates", ";;Counts", 10, 0, 10);
+  fHistNCandidates->GetXaxis()->SetBinLabel(1, "#Lambda in");
+  fHistNCandidates->GetXaxis()->SetBinLabel(2, "#Lambda ok");
+  fHistNCandidates->GetXaxis()->SetBinLabel(3, "#gamma in");
+  fHistNCandidates->GetXaxis()->SetBinLabel(4, "#gamma ok");
+  fHistNCandidates->GetXaxis()->SetBinLabel(5, "#Sigma^{0}");
+  fHistNCandidates->GetXaxis()->SetBinLabel(6, "SB up");
+  fHistNCandidates->GetXaxis()->SetBinLabel(7, "SB low");
+  fHistograms->Add(fHistNCandidates);
 
   if (!fIsLightweight) {
     fHistNPhotonBefore =

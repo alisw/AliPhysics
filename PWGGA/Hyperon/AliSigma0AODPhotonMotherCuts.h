@@ -140,6 +140,7 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   TProfile *fHistCutBooking;  //!
 
   TH1F *fHistNSigma;                                //!
+  TH1F *fHistNCandidates;                           //!
   TH1F *fHistNPhotonBefore;                         //!
   TH1F *fHistNPhotonAfter;                          //!
   TH1F *fHistNLambdaBefore;                         //!
@@ -193,7 +194,7 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0AODPhotonMotherCuts, 5)
+  ClassDef(AliSigma0AODPhotonMotherCuts, 6)
 };
 
 #endif

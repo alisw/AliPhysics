@@ -94,6 +94,10 @@ class AliSigma0PhotonCuts : public TObject {
     fTransvRadRejectionLow = low;
     fTransvRadRejectionUp = up;
   }
+  void SetPhotonQualityCut(int cut) {
+    fDoPhotonQualityCut = true;
+    fPhotonQuality = cut;
+  }
 
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const {
@@ -136,6 +140,9 @@ class AliSigma0PhotonCuts : public TObject {
   float fTransvRadRejectionLow; //
   float fTransvRadRejectionUp;  //
 
+  bool fDoPhotonQualityCut; //
+  int fPhotonQuality; //
+
   // Histograms
   // =====================================================================
   TProfile *fHistCutBooking;  //!
@@ -174,6 +181,8 @@ class AliSigma0PhotonCuts : public TObject {
   TH2F *fHistDecayLength;             //!
   TH2F *fHistArmenterosBefore;        //!
   TH2F *fHistArmenterosAfter;         //!
+  TH2F *fHistQualityBefore;           //!
+  TH2F *fHistQualityAfter;            //!
 
   TH1F* fHistMCTruthPhotonPt;         //;
   TH1F* fHistMCTruthPhotonSigmaPt;    //;
@@ -202,7 +211,7 @@ class AliSigma0PhotonCuts : public TObject {
   AliPIDResponse *fPIDResponse;  //!  pid response
 
  private:
-ClassDef(AliSigma0PhotonCuts, 6)
+ClassDef(AliSigma0PhotonCuts, 7)
 };
 
 #endif
