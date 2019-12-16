@@ -31,6 +31,7 @@
 class TList;
 class TH1F;
 
+class AliV0HypSel;
 class AliESDpid;
 class AliESDEvent;
 class AliPhysicsSelection;
@@ -215,6 +216,10 @@ public:
         fMinCentrality = lMinCent;
         fMaxCentrality = lMaxCent;
     }
+    
+    void SetV0HypSel(const TObjArray* selArr);
+    const TObjArray* GetV0HypSelArray() const {return fV0HypSelArray;}
+    
     void SetMassWindowAroundCascade     ( Double_t lMassWin ) {
         fMassWindowAroundCascade = lMassWin;
     }
@@ -367,7 +372,10 @@ private:
     Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
 
-    //Mass Window around masses of interest
+    //Mass window for V0s
+    const TObjArray* fV0HypSelArray; // array of V0 hypothesis to select
+    
+    //Mass Window around masses of interest (cascades)
     Double_t fMassWindowAroundCascade;
     
     Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test
