@@ -61,6 +61,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
       void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
       void					          SetNeedPIDCorrection(Bool_t pidCorr) { fNeedPIDCorrection = pidCorr; }
+      void					          SetIs2018data(Bool_t is2018data) { fIs2018data = is2018data; }
       void                    SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
       void                    SetEtaCheckRFP(Bool_t check = kFALSE) { fEtaCheckRFP = check; }
       void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
@@ -305,6 +306,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TList*                  fFlowWeightsList; //! list of weights from input file
       Bool_t                  fMC; // is running on mc?
       Bool_t                  fNeedPIDCorrection; // does data need PID correction?
+      Bool_t                  fIs2018data; // is 2018 data?
       Bool_t                  fInit; // initialization check
       Int_t                   fIndexSampling; // sampling index (randomly generated)
       Int_t                   fIndexCentrality; // centrality bin index (based on centrality est. or number of selected tracks)

@@ -123,6 +123,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fFlowWeightsList{nullptr},
   fMC{kFALSE},
   fNeedPIDCorrection{kFALSE},
+  fIs2018data{kFALSE},
   fInit{kFALSE},
   fIndexSampling{0},
   fIndexCentrality{-1},
@@ -384,6 +385,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fFlowWeightsList{nullptr},
   fMC{bIsMC},
   fNeedPIDCorrection{kFALSE},
+  fIs2018data{kFALSE},
   fInit{kFALSE},
   fIndexSampling{0},
   fIndexCentrality{-1},
@@ -1224,6 +1226,33 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
 
   // events passing AliEventCuts selection
   if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
+
+  if(fIs2018data){
+    //additional cut on correlation
+    AliAODVZERO* AODV0 = fEventAOD->GetVZEROData();
+    Float_t multV0a = AODV0->GetMTotV0A();
+    Float_t multV0c = AODV0->GetMTotV0C();
+    Float_t multV0Tot = multV0a + multV0c;
+    UShort_t multV0aOn = AODV0->GetTriggerChargeA();
+    UShort_t multV0cOn = AODV0->GetTriggerChargeC();
+    UShort_t multV0On = multV0aOn + multV0cOn;
+    AliAODTracklets* AODTrkl = (AliAODTracklets*)fEventAOD->GetTracklets();
+    Int_t nITSTrkls = AODTrkl->GetNumberOfTracklets();
+    Int_t nITSClsLy0 = fEventAOD->GetNumberOfITSClusters(0);
+    Int_t nITSClsLy1 = fEventAOD->GetNumberOfITSClusters(1);
+    Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
+    Int_t tpcClsTot = fEventAOD->GetNumberOfTPCClusters();
+
+    Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
+    TF1*fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fV0CutPU->SetParameters(parV0);
+    if (multV0On < fV0CutPU->Eval(multV0Tot)){return kFALSE;}
+    TF1*fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
+    if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)){return kFALSE;}
+    Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
+    if (nclsDif >200000){return kFALSE;}
+  }
+
   fhEventCounter->Fill("EventCuts OK",1);
 
   // Additional pile-up rejection cuts for LHC15o dataset
@@ -1244,7 +1273,6 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
     if(addCentIndex < fCentMinAdd) { return kFALSE; }
     if(addCentIndex > fCentMaxAdd) { return kFALSE; }
   }
-
   fhEventCounter->Fill("Cent/Mult OK",1);
 
   return kTRUE;
