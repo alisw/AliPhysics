@@ -648,7 +648,7 @@ AliAnalysisTaskHypertriton3ML *AliAnalysisTaskHypertriton3ML::AddTask(bool isMC,
   // Check the analysis type using the event handlers connected to the analysis
   // manager.
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskHyperTriton2BodyML", "This task requires an input event handler");
+    ::Error("AddTaskHyperTriton3ML", "This task requires an input event handler");
     return nullptr;
   }
 
