@@ -53,18 +53,18 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetTrackEta(0.8);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
-  task->SetV0MCPtMin(1);
-  task->SetV0PtMin(1.);
+  task->SetV0MCPtMin(3);
+  task->SetV0PtMin(3.);
   task->SetV0PtMax(15.);
   task->SetV0Eta(0.8);
   task->SetK0sLifeTimeMin(0);
   task->SetK0sLifeTimeMax(20);//6*2.68
   task->SetLambdaLifeTimeMin(0);
-  task->SetLambdaLifeTimeMax(30);//6*7.89
+  task->SetLambdaLifeTimeMax(25);//6*7.89
   
   
   task->SetDCAV0DaughtersMax(0.8);
-  task->SetLambdaCPA(0.995);
+  task->SetLambdaCPA(0.98);
   task->SetCosPointingAngleMin(0.975);
   task->Set2DFiducialMin(0.5);//0.5*0.5
   //task->Set2DFiducialMax(100);//100*100
