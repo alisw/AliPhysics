@@ -578,7 +578,7 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
 				vars[14] = track->Chi2perNDF();
 				vars[15] = track->GetITSchi2();
 				vars[16] = track->GetTPCClusterInfo(2, 1);
-				vars[17] = track->GetTPCMomentum();
+				vars[17] = track->GetTPCmomentum();
 				
 			if (track->Charge() > 0){
 				FillHistosTrack(fHistsHe3, track);
