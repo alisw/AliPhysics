@@ -70,10 +70,18 @@ class AliFemtoDreamHigherPairMath {
     return "HighMaths";
   }
   ;
+
+  static float RelativePairMomentum(AliFemtoDreamBasePart *PartOne, const int pdg1,
+                                    AliFemtoDreamBasePart *PartTwo, const int pdg2);
+  static float RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float RelativePairkT(AliFemtoDreamBasePart *PartOne, const int pdg1,
+                              AliFemtoDreamBasePart *PartTwo, const int pdg2);
+  static float RelativePairkT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float RelativePairmT(AliFemtoDreamBasePart *PartOne, const int pdg1,
+                              AliFemtoDreamBasePart *PartTwo, const int pdg2);
+  static float RelativePairmT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+
  private:
-  float RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
-  float RelativePairkT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
-  float RelativePairmT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
   void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
                         AliFemtoDreamBasePart &part2, bool SEorME, float relk,
                         bool recalculate);
