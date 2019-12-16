@@ -339,6 +339,19 @@ void AliFemtoDreamHigherPairMath::MEMomentumResolution(
 }
 
 float AliFemtoDreamHigherPairMath::RelativePairMomentum(
+    AliFemtoDreamBasePart *part1, const int pdg1, AliFemtoDreamBasePart *part2,
+    const int pdg2) {
+  TLorentzVector PartOne, PartTwo;
+  PartOne.SetXYZM(part1->GetMomentum().X(), part1->GetMomentum().Y(),
+                  part1->GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg1)->Mass());
+  PartTwo.SetXYZM(part2->GetMomentum().X(), part2->GetMomentum().Y(),
+                  part2->GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg2)->Mass());
+  return RelativePairMomentum(PartOne, PartTwo);
+}
+
+float AliFemtoDreamHigherPairMath::RelativePairMomentum(
     TLorentzVector &PartOne, TLorentzVector &PartTwo) {
   TLorentzVector trackSum = PartOne + PartTwo;
 
@@ -358,6 +371,20 @@ float AliFemtoDreamHigherPairMath::RelativePairMomentum(
   return 0.5 * trackRelK.P();
 }
 
+float AliFemtoDreamHigherPairMath::RelativePairkT(AliFemtoDreamBasePart *part1,
+                                                  const int pdg1,
+                                                  AliFemtoDreamBasePart *part2,
+                                                  const int pdg2) {
+  TLorentzVector PartOne, PartTwo;
+  PartOne.SetXYZM(part1->GetMomentum().X(), part1->GetMomentum().Y(),
+                  part1->GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg1)->Mass());
+  PartTwo.SetXYZM(part2->GetMomentum().X(), part2->GetMomentum().Y(),
+                  part2->GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg2)->Mass());
+  return RelativePairkT(PartOne, PartTwo);
+}
+
 float AliFemtoDreamHigherPairMath::RelativePairkT(TLorentzVector &PartOne,
                                                   TLorentzVector &PartTwo) {
   float results = 0.;
@@ -365,6 +392,20 @@ float AliFemtoDreamHigherPairMath::RelativePairkT(TLorentzVector &PartOne,
   trackSum = PartOne + PartTwo;
   results = 0.5 * trackSum.Pt();
   return results;
+}
+
+float AliFemtoDreamHigherPairMath::RelativePairmT(AliFemtoDreamBasePart *part1,
+                                                  const int pdg1,
+                                                  AliFemtoDreamBasePart *part2,
+                                                  const int pdg2) {
+  TLorentzVector PartOne, PartTwo;
+  PartOne.SetXYZM(part1->GetMomentum().X(), part1->GetMomentum().Y(),
+                  part1->GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg1)->Mass());
+  PartTwo.SetXYZM(part2->GetMomentum().X(), part2->GetMomentum().Y(),
+                  part2->GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg2)->Mass());
+  return RelativePairmT(PartOne, PartTwo);
 }
 
 float AliFemtoDreamHigherPairMath::RelativePairmT(TLorentzVector &PartOne,
