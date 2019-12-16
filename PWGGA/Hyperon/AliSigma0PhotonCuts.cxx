@@ -41,6 +41,8 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fDoTransvRadRejection(false),
       fTransvRadRejectionLow(0.),
       fTransvRadRejectionUp(0.),
+      fDoPhotonQualityCut(false),
+      fPhotonQuality(-1),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
       fHistNV0(nullptr),
@@ -74,6 +76,8 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistDecayLength(nullptr),
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
+      fHistQualityBefore(nullptr),
+      fHistQualityAfter(nullptr),
       fHistMCTruthPhotonPt(nullptr),
       fHistMCTruthPhotonSigmaPt(nullptr),
       fHistMCPhotonPt(nullptr),
@@ -131,6 +135,8 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fDoTransvRadRejection(false),
       fTransvRadRejectionLow(0.),
       fTransvRadRejectionUp(0.),
+      fDoPhotonQualityCut(false),
+      fPhotonQuality(-1),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
       fHistNV0(nullptr),
@@ -164,6 +170,8 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fHistDecayLength(nullptr),
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
+      fHistQualityBefore(nullptr),
+      fHistQualityAfter(nullptr),
       fHistMCTruthPhotonPt(nullptr),
       fHistMCTruthPhotonSigmaPt(nullptr),
       fHistMCPhotonPt(nullptr),
@@ -421,6 +429,22 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
                         AliNanoAODTrack::kSigmaTPC, AliPID::kElectron));
   }
 
+  int nClusterITSneg = 0;
+  int nClusterITSpos = 0;
+  for (int i = 0; i < 6; ++i) {
+    nClusterITSneg += neg->HasPointOnITSLayer(i);
+    nClusterITSpos += pos->HasPointOnITSLayer(i);
+  }
+
+  int photonQuality = 0;
+  if (nClusterITSneg > 1 && nClusterITSpos > 1) {
+    photonQuality = 3;
+  } else if (nClusterITSneg > 1 || nClusterITSpos > 1) {
+    photonQuality = 2;
+  } else {
+    photonQuality = 1;
+  }
+
   // BEFORE THE CUTS
   if (!fIsLightweight) {
     fHistDecayVertexXBefore->Fill(pt, TMath::Abs(conv[0]));
@@ -432,6 +456,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
     fHistDCArBefore->Fill(pt, DCAr);
     fHistDCAzBefore->Fill(pt, DCAz);
     fHistPsiPairBefore->Fill(pt, psiPair);
+    fHistQualityBefore->Fill(pt, photonQuality);
 
     fHistSingleParticleEtaBefore[0]->Fill(posPt, pos->Eta());
     fHistSingleParticleChi2Before[0]->Fill(posPt, chi2Pos);
@@ -533,6 +558,11 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
   }
   fHistCuts->Fill(14.f);
 
+  if (fDoPhotonQualityCut && photonQuality != fPhotonQuality) {
+    return false;
+  }
+  fHistCuts->Fill(15.f);
+
   // AFTER THE CUTS
   fHistV0MassPt->Fill(pt, invMass);
 
@@ -551,6 +581,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
     fHistTransverseRadiusAfter->Fill(pt, transRadius);
     fHistCosPAAfter->Fill(pt, cosinePointingAngle);
     fHistArmenterosAfter->Fill(armAlpha, armQt);
+    fHistQualityAfter->Fill(pt, photonQuality);
 
     fHistDCArAfter->Fill(pt, DCAr);
     fHistDCAzAfter->Fill(pt, DCAz);
@@ -738,7 +769,7 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     }
   }
 
-  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 16, 0, 16);
+  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 17, 0, 17);
   fHistCutBooking->GetXaxis()->SetBinLabel(1, "2-D Armenteros");
   fHistCutBooking->GetXaxis()->SetBinLabel(2, "#it{q}_{T} max");
   fHistCutBooking->GetXaxis()->SetBinLabel(3, "#it{p}_{T} min");
@@ -755,6 +786,7 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->GetXaxis()->SetBinLabel(14, "DCA_{r} max");
   fHistCutBooking->GetXaxis()->SetBinLabel(15, "Transv. radius rej. low");
   fHistCutBooking->GetXaxis()->SetBinLabel(16, "Transv. radius rej. up");
+  fHistCutBooking->GetXaxis()->SetBinLabel(17, "Photon quality");
   fHistograms->Add(fHistCutBooking);
 
   fHistCutBooking->Fill(0.f, static_cast<double>(f2DArmenterosCut));
@@ -773,14 +805,15 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->Fill(13.f, fDCArMax);
   fHistCutBooking->Fill(14.f, fTransvRadRejectionLow);
   fHistCutBooking->Fill(15.f, fTransvRadRejectionUp);
+  fHistCutBooking->Fill(16.f, fPhotonQuality);
 
   fHistV0MassPt = new TH2F(
       "InvMassPt", "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
       100, 0, 10, 100, 0., .1);
   fHistograms->Add(fHistV0MassPt);
 
-  fHistNV0 = new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 15, 0,
-                      15);
+  fHistNV0 = new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 16, 0,
+                      16);
   fHistograms->Add(fHistNV0);
 
   fHistCuts = new TH1F("fHistCuts", ";;Entries", 15, 0, 15);
@@ -799,6 +832,7 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistCuts->GetXaxis()->SetBinLabel(13, "Electron ratio findable");
   fHistCuts->GetXaxis()->SetBinLabel(14, "n#sigma TPC");
   fHistCuts->GetXaxis()->SetBinLabel(15, "Transverse radius rejection");
+  fHistCuts->GetXaxis()->SetBinLabel(16, "Photon quality");
   fHistograms->Add(fHistCuts);
 
   if (!fIsLightweight) {
@@ -1029,6 +1063,15 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
                                  "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}", 100,
                                  0, 10, 200, -pi / 2.f, pi / 2.f);
     fHistogramsAfter->Add(fHistPsiPairAfter);
+
+    fHistQualityBefore = new TH2F("fHistQualityBefore",
+                                  "; #it{p}_{T} (GeV/#it{c}); Photon quality",
+                                  50, 0, 10, 4, 0, 4);
+    fHistogramsBefore->Add(fHistQualityBefore);
+    fHistQualityAfter = new TH2F("fHistQualityAfter",
+                                 "; #it{p}_{T} (GeV/#it{c}); Photon quality",
+                                 50, 0, 10, 4, 0, 4);
+    fHistogramsAfter->Add(fHistQualityAfter);
 
     fHistograms->Add(fHistogramsBefore);
     fHistograms->Add(fHistogramsAfter);
