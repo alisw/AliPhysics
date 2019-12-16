@@ -534,68 +534,68 @@ void AliAnalysisTaskQA::UserCreateOutputObjects()
   TString suffix ="";
   if(fWriteVariableTree)  suffix = "tree";
   // Create User Output Objects
-  fTree = new TTree(Form("Gamma_%s_%s_%s",suffix.Data(),(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()),"GammaProp");      
+  fTree = new TTree(Form("Gamma_%s_%s_%s",suffix.Data(),(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()),"GammaProp");
 
-  fTree->Branch("CentralityV0M",         &fCentralityV0M);
-  fTree->Branch("CentralityV0A",         &fCentralityV0A);
-  fTree->Branch("CentralityV0C",         &fCentralityV0C);
-  fTree->Branch("RunNumber",            &fRunNumber);
-  fTree->Branch("VertexZ",            &fVertexZ);
-  fTree->Branch("Bunch",              &fBunch);
-  fTree->Branch("GoodESDTracks",      &fGoodESDTracks);
+  fTree->Branch("CentralityV0M",      &fCentralityV0M, "fCentralityV0M/F");
+  fTree->Branch("CentralityV0A",      &fCentralityV0A, "fCentralityV0A/F");
+  fTree->Branch("CentralityV0C",      &fCentralityV0C, "fCentralityV0C/F");
+  fTree->Branch("RunNumber",          &fRunNumber,     "fRunNumber/I");
+  fTree->Branch("VertexZ",            &fVertexZ,       "fVertexZ/F");
+  fTree->Branch("Bunch",              &fBunch,         "fBunch/I");
+  fTree->Branch("GoodESDTracks",      &fGoodESDTracks, "fGoodESDTracks/I");
 
-  fTree->Branch("theta",              &ftheta);
-  fTree->Branch("pt",                 &fpt);
-  fTree->Branch("phi",                &fphi);
-  fTree->Branch("chi2",               &fchi2);
-  fTree->Branch("qt",                 &fqt);
-  fTree->Branch("alpha",              &falpha);
-  fTree->Branch("psipair",            &fpsipair);
-  fTree->Branch("cosPA",              &fcosPA);
-  fTree->Branch("InvMass",            &fInvMass);
-  fTree->Branch("X",                  &fX);
-  fTree->Branch("Y",                  &fY);
-  fTree->Branch("Z",                  &fZ);
-  fTree->Branch("R",                  &fR);
-  fTree->Branch("Qual",               &fQual);
-  fTree->Branch("DCAz",               &fDCAz);
-  fTree->Branch("DCAr",               &fDCAr);
+  fTree->Branch("theta",              &ftheta,         "ftheta/F");
+  fTree->Branch("pt",                 &fpt,            "fpt/F");
+  fTree->Branch("phi",                &fphi,           "fphi/F");
+  fTree->Branch("chi2",               &fchi2,          "fchi2/F");
+  fTree->Branch("qt",                 &fqt,            "fqt/F");
+  fTree->Branch("alpha",              &falpha,         "falpha/F");
+  fTree->Branch("psipair",            &fpsipair,       "fpsipair/F");
+  fTree->Branch("cosPA",              &fcosPA,         "fcosPA/F");
+  fTree->Branch("InvMass",            &fInvMass,       "fInvMass/F");
+  fTree->Branch("X",                  &fX,             "fX/F");
+  fTree->Branch("Y",                  &fY,             "fY/F");
+  fTree->Branch("Z",                  &fZ,             "fZ/F");
+  fTree->Branch("R",                  &fR,             "fR/F");
+  fTree->Branch("Qual",               &fQual,          "fQual/I");
+  fTree->Branch("DCAz",               &fDCAz,          "fDCAz/F");
+  fTree->Branch("DCAr",               &fDCAr,          "fDCAr/F");
 
-  fTree->Branch("ele_theta",          &fele_theta);
-  fTree->Branch("ele_pt",             &fele_pt);
-  fTree->Branch("ele_phi",            &fele_phi);
-  fTree->Branch("ele_nSigmaTPC",      &fele_nSigmaTPC);
-  fTree->Branch("ele_nSigmaTPCpion",  &fele_nSigmaTPCpion);
-  fTree->Branch("ele_nSigmaTOF",      &fele_nSigmaTOF);
-  fTree->Branch("ele_nSigmaITS",      &fele_nSigmaITS);
-  fTree->Branch("ele_TPCsignal",      &fele_TPCsignal);
-  fTree->Branch("ele_TOFsignal",      &fele_TOFsignal);
-  fTree->Branch("ele_ITSsignal",      &fele_ITSsignal);
-  fTree->Branch("ele_Cls",            &fele_Cls);
-  fTree->Branch("ele_SPD1",           &fele_SPD1);
-  fTree->Branch("ele_SPD2",           &fele_SPD2);
-  fTree->Branch("ele_SDD1",           &fele_SDD1);
-  fTree->Branch("ele_SDD2",           &fele_SDD2);
-  fTree->Branch("ele_SSD1",           &fele_SSD1);
-  fTree->Branch("ele_SSD2",           &fele_SSD2);
+  fTree->Branch("ele_theta",          &fele_theta,     "fele_theta/F");
+  fTree->Branch("ele_pt",             &fele_pt,        "fele_pt/F");
+  fTree->Branch("ele_phi",            &fele_phi,       "fele_phi/F");
+  fTree->Branch("ele_nSigmaTPC",      &fele_nSigmaTPC, "fele_nSigmaTPC/F");
+  fTree->Branch("ele_nSigmaTPCpion",  &fele_nSigmaTPCpion,"fele_nSigmaTPCpion/F");
+  fTree->Branch("ele_nSigmaTOF",      &fele_nSigmaTOF, "fele_nSigmaTOF/F");
+  fTree->Branch("ele_nSigmaITS",      &fele_nSigmaITS, "fele_nSigmaITS/F");
+  fTree->Branch("ele_TPCsignal",      &fele_TPCsignal, "fele_TPCsignal/F");
+  fTree->Branch("ele_TOFsignal",      &fele_TOFsignal, "fele_TOFsignal/F");
+  fTree->Branch("ele_ITSsignal",      &fele_ITSsignal, "fele_ITSsignal/F");
+  fTree->Branch("ele_Cls",            &fele_Cls,       "fele_Cls/F");
+  fTree->Branch("ele_SPD1",           &fele_SPD1,      "fele_SPD1/O");
+  fTree->Branch("ele_SPD2",           &fele_SPD2,      "fele_SPD2/O");
+  fTree->Branch("ele_SDD1",           &fele_SDD1,      "fele_SDD1/O");
+  fTree->Branch("ele_SDD2",           &fele_SDD2,      "fele_SDD2/O");
+  fTree->Branch("ele_SSD1",           &fele_SSD1,      "fele_SSD1/O");
+  fTree->Branch("ele_SSD2",           &fele_SSD2,      "fele_SSD1/O");
           
-  fTree->Branch("pos_theta",          &fpos_theta);
-  fTree->Branch("pos_pt",             &fpos_pt);
-  fTree->Branch("pos_phi",            &fpos_phi);
-  fTree->Branch("pos_nSigmaTPC",      &fpos_nSigmaTPC);
-  fTree->Branch("pos_nSigmaTPCpion",  &fpos_nSigmaTPCpion);
-  fTree->Branch("pos_nSigmaTOF",      &fpos_nSigmaTOF);
-  fTree->Branch("pos_nSigmaITS",      &fpos_nSigmaITS);
-  fTree->Branch("pos_TPCsignal",      &fpos_TPCsignal);
-  fTree->Branch("pos_TOFsignal",      &fpos_TOFsignal);
-  fTree->Branch("pos_ITSsignal",      &fpos_ITSsignal);
-  fTree->Branch("pos_Cls",            &fpos_Cls);
-  fTree->Branch("pos_SPD1",           &fpos_SPD1);
-  fTree->Branch("pos_SPD2",           &fpos_SPD2);
-  fTree->Branch("pos_SDD1",           &fpos_SDD1);
-  fTree->Branch("pos_SDD2",           &fpos_SDD2);
-  fTree->Branch("pos_SSD1",           &fpos_SSD1);
-  fTree->Branch("pos_SSD2",           &fpos_SSD2);
+  fTree->Branch("pos_theta",          &fpos_theta,     "fpos_theta/F");
+  fTree->Branch("pos_pt",             &fpos_pt,        "fpos_pt/F");
+  fTree->Branch("pos_phi",            &fpos_phi,       "fpos_phi/F");
+  fTree->Branch("pos_nSigmaTPC",      &fpos_nSigmaTPC, "fpos_nSigmaTPC/F");
+  fTree->Branch("pos_nSigmaTPCpion",  &fpos_nSigmaTPCpion,"fpos_nSigmaTPCpion/F");
+  fTree->Branch("pos_nSigmaTOF",      &fpos_nSigmaTOF, "fpos_nSigmaTOF/F");
+  fTree->Branch("pos_nSigmaITS",      &fpos_nSigmaITS, "fpos_nSigmaITS/F");
+  fTree->Branch("pos_TPCsignal",      &fpos_TPCsignal, "fpos_TPCsignal/F");
+  fTree->Branch("pos_TOFsignal",      &fpos_TOFsignal, "fpos_TOFsignal/F");
+  fTree->Branch("pos_ITSsignal",      &fpos_ITSsignal, "fpos_ITSsignal/F");
+  fTree->Branch("pos_Cls",            &fpos_Cls,       "fpos_Cls/F");
+  fTree->Branch("pos_SPD1",           &fpos_SPD1,      "fpos_SPD1/O");
+  fTree->Branch("pos_SPD2",           &fpos_SPD2,      "fpos_SPD2/O");
+  fTree->Branch("pos_SDD1",           &fpos_SDD1,      "fpos_SDD1/O");
+  fTree->Branch("pos_SDD2",           &fpos_SDD2,      "fpos_SDD2/O");
+  fTree->Branch("pos_SSD1",           &fpos_SSD1,      "fpos_SSD1/O");
+  fTree->Branch("pos_SSD2",           &fpos_SSD2,      "fpos_SSD2/O");
 
   
   // if user set active branches
@@ -612,7 +612,7 @@ void AliAnalysisTaskQA::UserCreateOutputObjects()
   }
   
   if (fIsMC) {
-    fTree->Branch("kind",&fKind,"fKind/b");
+    fTree->Branch("kind",               &fKind,          "fKind/b");
   }   
   
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
@@ -660,20 +660,22 @@ void AliAnalysisTaskQA::UserExec(Option_t *){
   if(eventQuality != 0){// Event Not Accepted
     return;
   }
+
   fInputEvent = InputEvent();
   if(fIsMC) fMCEvent = MCEvent();
-
   Int_t eventNotAccepted =
     fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
   if(eventNotAccepted) return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
 
-  AliMultSelection* fMultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  Double_t cent=fMultSelection->GetMultiplicityPercentile("V0A");
-
-  fCentralityV0M = fMultSelection->GetMultiplicityPercentile("V0M");
-  fCentralityV0A = fMultSelection->GetMultiplicityPercentile("V0A");
-  fCentralityV0C = fMultSelection->GetMultiplicityPercentile("V0C");
-
+  AliMultSelection* fMultSelection;
+  Double_t cent;
+  if(fIsHeavyIon>0){
+    fMultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    cent=fMultSelection->GetMultiplicityPercentile("V0A");
+    fCentralityV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+    fCentralityV0A = fMultSelection->GetMultiplicityPercentile("V0A");
+    fCentralityV0C = fMultSelection->GetMultiplicityPercentile("V0C");
+  }
   fConversionGammas=fV0Reader->GetReconstructedGammas();
 
   if(fMCEvent){
@@ -697,7 +699,9 @@ void AliAnalysisTaskQA::UserExec(Option_t *){
   fGoodESDTracks = fV0Reader->GetNumberOfPrimaryTracks();
   
   if(ffillHistograms){
-    hCentralityV0A->Fill(cent);
+    if(fIsHeavyIon>0){
+      hCentralityV0A->Fill(cent);
+    }
     hBunch->Fill(fInputEvent->GetBunchCrossNumber());
     hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
     hNContributorsVertex->Fill(fEventCuts->GetNumberOfContributorsVtx(fInputEvent));
