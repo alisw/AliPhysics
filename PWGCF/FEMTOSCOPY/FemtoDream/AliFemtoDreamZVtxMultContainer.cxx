@@ -109,6 +109,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
           HigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
                                       *itPart2, *itPDGPar2, RelativeK, false);
+          HigherMath->SEMomentumResolution(HistCounter, &(*itPart1),
+                                                      *itPDGPar1, &(*itPart2),
+                                                      *itPDGPar2, RelativeK);
           ++itPart2;
         }
       }

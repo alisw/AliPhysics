@@ -45,7 +45,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fMixedEventkTandMultDist(nullptr),
       fMixedEventkTCentDist(nullptr),
       fPairCounterME(nullptr),
-      fMomResolution(nullptr),
+      fMomResolutionSE(nullptr),
+      fMomResolutionME(nullptr),
       fMomResolutionDist(nullptr),
       fRadiiEtaPhiSE(nullptr),
       fRadiiEtaPhiME(nullptr),
@@ -84,7 +85,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fPairs(hists.fPairs),
       fPairQA(hists.fPairQA),
       fMinimalBooking(hists.fMinimalBooking),
-      fMomentumResolution(hists.fMomResolution),
+      fMomentumResolution(hists.fMomResolutionME),
       fPhiEtaPlots(hists.fPhiEtaPlots),
       fRelKThreshold(hists.fRelKThreshold),
       fSameEventDist(hists.fSameEventDist),
@@ -111,7 +112,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fMixedEventkTandMultDist(hists.fMixedEventkTandMultDist),
       fMixedEventkTCentDist(hists.fMixedEventkTCentDist),
       fPairCounterME(hists.fPairCounterME),
-      fMomResolution(hists.fMomResolution),
+      fMomResolutionSE(hists.fMomResolutionSE),
+      fMomResolutionME(hists.fMomResolutionME),
       fMomResolutionDist(hists.fMomResolutionDist),
       fRadiiEtaPhiSE(hists.fRadiiEtaPhiSE),
       fRadiiEtaPhiME(hists.fRadiiEtaPhiME),
@@ -177,7 +179,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fMixedEventkTandMultDist(nullptr),
       fMixedEventkTCentDist(nullptr),
       fPairCounterME(nullptr),
-      fMomResolution(nullptr),
+      fMomResolutionSE(nullptr),
+      fMomResolutionME(nullptr),
       fMomResolutionDist(nullptr),
       fRadiiEtaPhiSE(nullptr),
       fRadiiEtaPhiME(nullptr),
@@ -281,10 +284,12 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fPairCounterME = new TH2F*[nHists];
     fEffMixingDepth = new TH1F*[nHists];
     if (fMomentumResolution) {
-      fMomResolution = new TH2F*[nHists];
+      fMomResolutionSE = new TH2F*[nHists];
+      fMomResolutionME = new TH2F*[nHists];
       fMomResolutionDist = new TH2F*[nHists];
     } else {
-      fMomResolution = nullptr;
+      fMomResolutionSE = nullptr;
+      fMomResolutionME = nullptr;
       fMomResolutionDist = nullptr;
     }
     if (fPhiEtaPlots) {
@@ -314,7 +319,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fPairCounterSE = nullptr;
     fPairCounterME = nullptr;
     fEffMixingDepth = nullptr;
-    fMomResolution = nullptr;
+    fMomResolutionSE = nullptr;
+    fMomResolutionME = nullptr;
     fMomResolutionDist = nullptr;
     fRadiiEtaPhiSE = nullptr;
     fRadiiEtaPhiME = nullptr;
@@ -766,14 +772,23 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           //Take a 1 MeV binning, this should be rebinned to the users liking, the range is
           //hard coded. This assumed that the input is in GeV!
 
-          TString MomResoName = Form("MomentumResolution_Particle%d_Particle%d",
+          TString MomResoSEName = Form("MomentumResolutionSE_Particle%d_Particle%d",
                                      iPar1, iPar2);
-          fMomResolution[Counter] = new TH2F(MomResoName.Data(),
-                                             MomResoName.Data(), 1000, 0, 1,
+          fMomResolutionSE[Counter] = new TH2F(MomResoSEName.Data(),
+                                               MomResoSEName.Data(), 1000, 0, 1,
                                              1000, 0, 1);
-          fMomResolution[Counter]->GetXaxis()->SetTitle("k_{Generated}");
-          fMomResolution[Counter]->GetYaxis()->SetTitle("k_{Reco}");
-          fPairQA[Counter]->Add(fMomResolution[Counter]);
+          fMomResolutionSE[Counter]->GetXaxis()->SetTitle("k_{Generated}");
+          fMomResolutionSE[Counter]->GetYaxis()->SetTitle("k_{Reco}");
+          fPairQA[Counter]->Add(fMomResolutionSE[Counter]);
+
+          TString MomResoMEName = Form("MomentumResolutionME_Particle%d_Particle%d",
+                                     iPar1, iPar2);
+          fMomResolutionME[Counter] = new TH2F(MomResoMEName.Data(),
+                                               MomResoMEName.Data(), 1000, 0, 1,
+                                             1000, 0, 1);
+          fMomResolutionME[Counter]->GetXaxis()->SetTitle("k_{Generated}");
+          fMomResolutionME[Counter]->GetYaxis()->SetTitle("k_{Reco}");
+          fPairQA[Counter]->Add(fMomResolutionME[Counter]);
 
           TString MomResoDistName = Form(
               "MomentumResolutionDist_Particle%d_Particle%d", iPar1, iPar2);
@@ -935,7 +950,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fPairs = hists.fPairs;
     this->fPairQA = hists.fPairQA;
     this->fMinimalBooking = hists.fMinimalBooking;
-    this->fMomentumResolution = hists.fMomResolution;
+    this->fMomentumResolution = hists.fMomResolutionME;
     this->fPhiEtaPlots = hists.fPhiEtaPlots;
     this->fRelKThreshold = hists.fRelKThreshold;
     this->fSameEventDist = hists.fSameEventDist;
@@ -958,7 +973,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fMixedEventkTandMultDist = hists.fMixedEventkTandMultDist;
     this->fMixedEventkTCentDist = hists.fMixedEventkTCentDist;
     this->fPairCounterME = hists.fPairCounterME;
-    this->fMomResolution = hists.fMomResolution;
+    this->fMomResolutionME = hists.fMomResolutionME;
     this->fMomResolutionDist = hists.fMomResolutionDist;
     this->fRadiiEtaPhiSE = hists.fRadiiEtaPhiSE;
     this->fRadiiEtaPhiME = hists.fRadiiEtaPhiME;

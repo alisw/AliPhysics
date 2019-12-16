@@ -310,6 +310,34 @@ void AliFemtoDreamHigherPairMath::MEDetaDPhiPlots(int iHC,
   }
 }
 
+void AliFemtoDreamHigherPairMath::SEMomentumResolution(
+    int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
+    AliFemtoDreamBasePart* part2, int PDGPart2, float RelativeK) {
+  if (fWhichPairs[iHC] && fHists->GetObtainMomentumResolution()) {
+    //It is sufficient to do this in Mixed events, which allows
+    //to increase the statistics. The Resolution of the tracks and therefore
+    //of the pairs does not change event by event.
+    //Now we only want to use the momentum of particles we are after, hence
+    //we check the PDG Code!
+    //This should not be used in the rotated sample, since the MC Truth is not rotated
+    if ((PDGPart1 == TMath::Abs(part1->GetMCPDGCode()))
+        && ((PDGPart2 == TMath::Abs(part2->GetMCPDGCode())))) {
+      TLorentzVector PartOne, PartTwo;
+      // Even if the Daughter tracks were switched up during PID doesn't play a role
+      // here cause we are
+      // only looking at the mother mass
+      PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
+                      part1->GetMCMomentum().Z(),
+                      TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+      PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
+                      part2->GetMCMomentum().Z(),
+                      TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+      float RelKTrue = RelativePairMomentum(PartOne, PartTwo);
+      fHists->FillMomentumResolutionSE(iHC, RelKTrue, RelativeK);
+    }
+  }
+}
+
 void AliFemtoDreamHigherPairMath::MEMomentumResolution(
     int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
     AliFemtoDreamBasePart* part2, int PDGPart2, float RelativeK) {
@@ -333,7 +361,7 @@ void AliFemtoDreamHigherPairMath::MEMomentumResolution(
                       part2->GetMCMomentum().Z(),
                       TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
       float RelKTrue = RelativePairMomentum(PartOne, PartTwo);
-      fHists->FillMomentumResolution(iHC, RelKTrue, RelativeK);
+      fHists->FillMomentumResolutionME(iHC, RelKTrue, RelativeK);
     }
   }
 }
