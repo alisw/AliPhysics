@@ -60,6 +60,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
       void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
+      void					          SetNeedPIDCorrection(Bool_t pidCorr) { fNeedPIDCorrection = pidCorr; }
+      void					          SetIs2018data(Bool_t is2018data) { fIs2018data = is2018data; }
       void                    SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
       void                    SetEtaCheckRFP(Bool_t check = kFALSE) { fEtaCheckRFP = check; }
       void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
@@ -201,6 +203,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  CheckMCPDG(const AliVParticle* track, const Int_t iPDGCode) const; // check if track has an associated MC particle which is the same species
       Bool_t                  CheckMCPDG(const AliVParticle* track, const PartSpecies species) const; // check if track has an associated MC particle which is the same species
       Bool_t                  CheckMCTruthReco(const PartSpecies species, const AliVParticle* track, const AliVParticle* daughterPos = nullptr, const AliVParticle* daughterNeg = nullptr) const; // check if Reco track has an associated MC particle which is the same species
+      Double_t                PIDCorrection(const AliAODTrack *track, const PartSpecies species) const; //PID correction for 2018 data
       Double_t                GetRapidity(Double_t mass, Double_t Pt, Double_t Eta) const; // calculate particle / track rapidity
       Bool_t                  HasMass(PartSpecies spec) const { return (spec == kK0s || spec == kLambda || spec == kPhi); }
       Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
@@ -302,6 +305,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
       TList*                  fFlowWeightsList; //! list of weights from input file
       Bool_t                  fMC; // is running on mc?
+      Bool_t                  fNeedPIDCorrection; // does data need PID correction?
+      Bool_t                  fIs2018data; // is 2018 data?
       Bool_t                  fInit; // initialization check
       Int_t                   fIndexSampling; // sampling index (randomly generated)
       Int_t                   fIndexCentrality; // centrality bin index (based on centrality est. or number of selected tracks)
@@ -577,7 +582,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 13);
+      ClassDef(AliAnalysisTaskUniFlow, 14);
 };
 
 #endif
