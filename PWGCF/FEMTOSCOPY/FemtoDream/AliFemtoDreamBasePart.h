@@ -260,6 +260,10 @@ class AliFemtoDreamBasePart {
     fVGTI = VGTI;
     fTrackBufferSize = size;
   }
+  void KillGlobalTrackArray() {
+    fGTI = nullptr;
+    fVGTI = nullptr;
+  }
   int GetEventMultiplicity() const {
     return fEvtMultiplicity;
   }
