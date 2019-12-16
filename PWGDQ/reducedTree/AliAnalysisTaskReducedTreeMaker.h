@@ -124,7 +124,7 @@ public:
   void SetEventWritingRequirement(Int_t minSelectedTracks, Int_t minSelectedBaseTracks=0, Double_t scaleDown=0.0)   {
      // deprecated method, do nothing
   }
-  void SetWriteUnbiasedEvents(Int_t scaleDown=1.0) {fScaleDownEvents=scaleDown;}
+  void SetWriteUnbiasedEvents(Double_t scaleDown=1.0) {fScaleDownEvents=scaleDown;}
 
     
  private:
@@ -141,7 +141,7 @@ public:
   
   Int_t     fTreeWritingOption;                 // one of the options described by ETreeWritingOptions
   Bool_t    fWriteTree;                         // if kFALSE don't write the tree, use task only to produce on the fly reduced events
-  Double_t  fScaleDownEvents;                   // allow writing events which do not fulfill the minimum number of tracks criteria with scale down factor (default is zero)
+  Double_t  fScaleDownEvents;                      // allow writing events which do not fulfill the minimum number of tracks criteria with scale down factor (default is zero)
   Bool_t    fWriteSecondTrackArray;       // write second array only if full+base tracks requested
   Bool_t    fSetTrackFilterUsed;          // specifier if SetTrackFilter method was used; deprecated
   std::vector<Bool_t> fWriteBaseTrack;  // specifier if tracks for certain track filter are reduced or base tracks

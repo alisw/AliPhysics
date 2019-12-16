@@ -428,35 +428,39 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   fEventsList->Add(fCentEventsList);
 
   // track statistics histogram
-  fTracksHistogram = new TH2I("TrackStatistics", "Track statistics", fTrackFilter.GetEntries()+14, -1.5, fTrackFilter.GetEntries()+12.5, 3, -0.5, 2.5);
+  fTracksHistogram = new TH2I("TrackStatistics", "Track statistics", fTrackFilter.GetEntries()+15, -1.5, fTrackFilter.GetEntries()+13.5, 3, -0.5, 2.5);
   fTracksHistogram->GetYaxis()->SetBinLabel(3, "base tracks");
   fTracksHistogram->GetYaxis()->SetBinLabel(2, "full tracks");
   fTracksHistogram->GetYaxis()->SetBinLabel(1, "total");
   fTracksHistogram->GetXaxis()->SetBinLabel(1, "total tracks");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+2, "Conversion electrons");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+3, "K^{0}_{s} pions");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+4, "#Lambda protons");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+5, "#Lambda pions");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+6, "total V0 pairs");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+7, "on the fly #gamma");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+8, "on the fly K^{0}_{s}");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+9, "on the fly #Lambda");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+10, "on the fly #bar{#Lambda}");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+11, "offline #gamma");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+12, "offline K^{0}_{s}");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+13, "offline #Lambda");
-  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+14, "offline #bar{#Lambda}");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+2, "Pure MC tracks");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+3, "Conversion electrons");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+4, "K^{0}_{s} pions");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+5, "#Lambda protons");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+6, "#Lambda pions");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+7, "total V0 pairs");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+8, "on the fly #gamma");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+9, "on the fly K^{0}_{s}");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+10, "on the fly #Lambda");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+11, "on the fly #bar{#Lambda}");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+12, "offline #gamma");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+13, "offline K^{0}_{s}");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+14, "offline #Lambda");
+  fTracksHistogram->GetXaxis()->SetBinLabel(fTrackFilter.GetEntries()+15, "offline #bar{#Lambda}");
   for(Int_t i=0; i<fTrackFilter.GetEntries(); i++)
     fTracksHistogram->GetXaxis()->SetBinLabel(i+2, Form("%s", ((AliAnalysisCuts*)fTrackFilter.At(i))->GetName()));
   fEventsList->Add(fTracksHistogram);
   // Add counters for the V0 prongs (conversion electrons, K0s pions, Lambda protons, Lambda pions)
   //        and V0 pairs (separately on the fly and offline)
+  // TODO: indexing has to be done in a less error prone way (define an enum)
   for(Int_t i=0; i<4; i++) {
     fNSelectedFullTracks.push_back(0);
     fNSelectedBaseTracks.push_back(0);
   }
   for(Int_t i=0; i<8; i++) fNSelectedFullTracks.push_back(0);
-  
+  // add counters for the MC tracks (full and base tracks)
+  fNSelectedFullTracks.push_back(0);
+  fNSelectedBaseTracks.push_back(0);
   
   // MC statistics histogram
   fMCSignalsHistogram = new TH2I("MCSignalsStatistics", "Monte-Carlo signals statistics", 
@@ -646,12 +650,16 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   FillEventInfo();
 
   // reset track counters
+  // TODO: indexing needs to be in a less error prone way (define an enum)
   for(Int_t i=0; i<fTrackFilter.GetEntries()+4; ++i) {
     fNSelectedFullTracks[i] = 0;
     fNSelectedBaseTracks[i] = 0;
   }
   // additional counters for the V0 pairs
   for(Int_t i=0; i<8; ++i) fNSelectedFullTracks[fTrackFilter.GetEntries()+4+i] = 0;
+  // counters for the MC tracks
+  fNSelectedFullTracks[fTrackFilter.GetEntries()+4+8] = 0;
+  fNSelectedBaseTracks[fTrackFilter.GetEntries()+4] = 0;
   
   // NOTE: It is important that FillV0PairInfo() is called before FillTrackInfo()
   if(fFillMCInfo) FillMCTruthInfo();
@@ -855,14 +863,18 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackStatisticsHistogram()
   }
   // counters for tracks belonging to V0s (first 4 elements), on the fly V0 pairs (next 4 elements) and offline V0 pairs (next 4 elements)
   for(Int_t i=0; i<4; i++) {
-    fTracksHistogram->Fill(fTrackFilter.GetEntries()+i, 0.0, fNSelectedFullTracks[fTrackFilter.GetEntries()+i]+fNSelectedBaseTracks[fTrackFilter.GetEntries()+i]);
-    fTracksHistogram->Fill(fTrackFilter.GetEntries()+i, 1.0, fNSelectedFullTracks[fTrackFilter.GetEntries()+i]);
-    fTracksHistogram->Fill(fTrackFilter.GetEntries()+i, 2.0, fNSelectedBaseTracks[fTrackFilter.GetEntries()+i]);
+    fTracksHistogram->Fill(fTrackFilter.GetEntries()+1+i, 0.0, fNSelectedFullTracks[fTrackFilter.GetEntries()+i]+fNSelectedBaseTracks[fTrackFilter.GetEntries()+i]);
+    fTracksHistogram->Fill(fTrackFilter.GetEntries()+1+i, 1.0, fNSelectedFullTracks[fTrackFilter.GetEntries()+i]);
+    fTracksHistogram->Fill(fTrackFilter.GetEntries()+1+i, 2.0, fNSelectedBaseTracks[fTrackFilter.GetEntries()+i]);
   }
   // counter for the total number of V0 pairs selected (also written if the fCandidates branch is not switched off)
-  fTracksHistogram->Fill(fTrackFilter.GetEntries()+4, 0.0, fReducedEvent->fCandidates->GetEntries());
+  fTracksHistogram->Fill(fTrackFilter.GetEntries()+5, 0.0, fReducedEvent->fCandidates->GetEntries());
   for(Int_t i=0; i<8; i++)
-    fTracksHistogram->Fill(fTrackFilter.GetEntries()+5+i, 0.0, fNSelectedFullTracks[fTrackFilter.GetEntries()+4+i]);
+    fTracksHistogram->Fill(fTrackFilter.GetEntries()+6+i, 0.0, fNSelectedFullTracks[fTrackFilter.GetEntries()+4+i]);
+  // MC tracks counters
+  fTracksHistogram->Fill(fTrackFilter.GetEntries(), 0.0, fNSelectedFullTracks[fTrackFilter.GetEntries()+12]+fNSelectedBaseTracks[fTrackFilter.GetEntries()+4]);
+  fTracksHistogram->Fill(fTrackFilter.GetEntries(), 1.0, fNSelectedFullTracks[fTrackFilter.GetEntries()+12]);
+  fTracksHistogram->Fill(fTrackFilter.GetEntries(), 2.0, fNSelectedBaseTracks[fTrackFilter.GetEntries()+4]);
 }
 
 //_________________________________________________________________________________
@@ -1542,6 +1554,9 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
          if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
             useFirstTrackArray = kFALSE;
       }
+      
+      if(writeBaseTrack) fNSelectedBaseTracks[fTrackFilter.GetEntries()+4] += 1;
+      else fNSelectedFullTracks[fTrackFilter.GetEntries()+12] += 1;
       
       TClonesArray* trackArrPointer = fReducedEvent->fTracks;
       if(!useFirstTrackArray) trackArrPointer = fReducedEvent->fTracks2;
