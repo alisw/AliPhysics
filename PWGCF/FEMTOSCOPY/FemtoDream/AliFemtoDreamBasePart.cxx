@@ -459,3 +459,55 @@ void AliFemtoDreamBasePart::PhiAtRadii(const AliVTrack *track,
                                         TPCradii[radius] * 0.01 / (2. * pt)));
   }
 }
+
+void AliFemtoDreamBasePart::DumpParticleInformation() {
+
+  auto dumpfloatVector = [](std::vector<float> &vec) {
+    for (auto it :vec) {
+      std::cout << it << " ";
+    }
+    std::cout << "\n";
+  };
+
+  auto dumpintVector = [](std::vector<int> &vec) {
+    for (auto it :vec) {
+      std::cout << it << " ";
+    }
+    std::cout << "\n";
+  };
+
+  std::cout << "Dumping the particle information\n";
+  std::cout << "Momentum- x: " << fP.X() << " y: " <<  fP.Y() << " z: " << fP.Z() << "\n";
+  std::cout << "Momentum (MC)  - x: " << fMCP.X() << " y: " << fMCP.Y() << " z: " << fMCP.Z() << "\n";
+  std::cout << "pT: " << fPt << "\n";
+  std::cout << "p TPC " << fP_TPC << "\n";
+  std::cout << "pT (MC): " << fMCPt << "\n";
+
+  std::cout << "Eta - entries " << fEta.size() << "\n";
+  dumpfloatVector(fEta);
+  std::cout << "Theta - entries " << fTheta.size() << "\n";
+  dumpfloatVector(fTheta);
+  std::cout << "Phi - entries " << fPhi.size() << "\n";
+  dumpfloatVector(fPhi);
+  std::cout << "Theta (MC) - entries " << fMCTheta.size() << "\n";
+  dumpfloatVector(fMCTheta);
+  std::cout << "Phi (MC) - entries " << fMCPhi.size() << "\n";
+  dumpfloatVector(fMCPhi);
+
+  std::cout << "Track IDs - entries " << fIDTracks.size() << "\n";
+  dumpintVector(fIDTracks);
+  std::cout << "Charge - entries " << fCharge.size() << "\n";
+  dumpintVector(fCharge);
+
+  std::cout << "CPA: " << fCPA << "\n";
+  std::cout << "Invariant mass " << fInvMass << "\n";
+  std::cout << "Origin " << fOrigin << "\n";
+  std::cout << "PDG code " << fPDGCode << "\n";
+  std::cout << "MC PDG code " << fMCPDGCode << "\n";
+  std::cout << "PDG Mother weak " << fPDGMotherWeak << "\n";
+  std::cout << "PDG Mother " << fMotherPDG << "\n";
+  std::cout << "Mother ID " << fMotherID << "\n";
+  std::cout << "ID " << fID << "\n";
+  std::cout << "Use particle " << fUse << "\n";
+  std::cout << "Is set " << fIsSet << "\n";
+}

@@ -270,6 +270,8 @@ class AliFemtoDreamBasePart {
   void SetEventMultiplicity(int evtMulti) {
     fEvtMultiplicity = evtMulti;
   }
+  void DumpParticleInformation();
+
  protected:
   bool fIsReset;
   AliAODTrack **fGTI;
