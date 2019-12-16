@@ -1,5 +1,5 @@
 AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
-    bool isMC=false, bool MCtemplatefit=false , float fSpherDown=0.7, float fdPhidEta=0.01,
+    bool isMC=false, bool MCtemplatefit=false, bool doSharedCut=false, float fSpherDown=0.7, float fdPhidEta=0.01,
     TString CentEst="kInt7", const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
@@ -49,7 +49,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsPosPion->SetDCAVtxZ(0.3);
   fTrackCutsPosPion->SetDCAVtxXY(0.3);
   // Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
-  fTrackCutsPosPion->SetCutSharedCls(true);
+  if ( doSharedCut ) { fTrackCutsPosPion->SetCutSharedCls(true);}
   fTrackCutsPosPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
   fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
@@ -79,7 +79,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetDCAReCalculation(true);
   fTrackCutsNegPion->SetDCAVtxZ(0.3);
   fTrackCutsNegPion->SetDCAVtxXY(0.3);
-  fTrackCutsNegPion->SetCutSharedCls(true);
+  if ( doSharedCut ) { fTrackCutsNegPion->SetCutSharedCls(true);}
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
