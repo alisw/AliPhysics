@@ -2889,6 +2889,8 @@ void AliAnalysisTaskWeakDecayVertexer::SetV0HypSel(TObjArray* selArr)
 //_____________________________________________________________________________
 void AliAnalysisTaskWeakDecayVertexer::AddV0HypSel(const AliV0HypSel& sel)
 {
+    if( !fV0HypSelArray )
+        fV0HypSelArray = new TObjArray();
     //Direct add functionality
     fV0HypSelArray->AddLast(new AliV0HypSel(sel));
 }
