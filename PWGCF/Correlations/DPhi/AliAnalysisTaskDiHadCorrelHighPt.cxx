@@ -648,7 +648,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 	Double_t lPVy = myPrimVertex->GetY();
 
     if(!fAnalysisMC&&fRejectEventPileUp){
-        cout << "event cuts" << endl;
         fAliEventCuts.SetupRun2pp();
         if(!fAliEventCuts.AcceptEvent(fAOD)) return;
     }

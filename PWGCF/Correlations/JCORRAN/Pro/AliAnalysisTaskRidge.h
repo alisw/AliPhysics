@@ -37,6 +37,7 @@ using namespace std;
 class AliMultSelection;
 class AliVMultiplicity;
 class TClonesArray;
+class AliJJetTask;
 class AliDirList;
 
 
@@ -98,16 +99,9 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 
         void SetOption(char * option) {fOption = option;}
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
-//	void SetEfficiencyFile(char * fname) { TGrid::Connect("alien://"); fefficiencyFile = new TFile(fname,"READ"); cout << "setter check " << endl; }
-//	void SetEfficiency3DFile(char * fname) { TGrid::Connect("alien://"); fefficiency3DFile = new TFile(fname,"READ"); }
 
 	void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile = TFile::Open(fname,"READ"); }
-//	void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile  = new TFile(fname,"READ"); }
 	void SetEfficiency3DFile(char* fname) { TGrid::Connect("alien://"); fefficiency3DFile = TFile::Open(fname,"READ"); }
-//	void SetEfficiencyFile(char* fname) { fefficiencyFile = (TFile*)TFile::Open(fname,"READ"); }
-//	void SetEfficiency3DFile(char* fname) { fefficiency3DFile = (TFile*)TFile::Open(fname,"READ"); }
-//	void SetEfficiencyFile(char* fname) { fefficiencyFile = TFile::Open(fname); }
-//	void SetEfficiency3DFile(char* fname) { fefficiency3DFile = TFile::Open(fname); }
 
         Bool_t  GoodTracksSelection(int trk);
         Bool_t  GoodTrackletSelection();
@@ -147,11 +141,6 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 		Int_t IsTrackRecon;
 	};
 
-//	TFile* fefficiencyFile=nullptr; //
-
-//	TFile* fefficiencyFile=0; //
-//	TFile* fefficiency3DFile=0; //
-
     private:
         typedef std::vector<AliVTrack*> tracklist;
         typedef std::deque<tracklist>  eventpool;
@@ -168,24 +157,9 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
       
         TString                         fOption;
 	AliDirList*				fOutput=nullptr; //!
-//        AliDirList*                          fOutput=nullptr; //!
-//	TFile*				fefficiencyFile=nullptr; //!
-//	TFile*				fefficiency3DFile=nullptr; //!
-//	TFile*                          fefficiencyFile=nullptr; //
-//	TFile*                          fefficiency3DFile=nullptr; //
-//	TFile*				fefficiencyFile=0; //
-//	TFile*				fefficiencyFile = new TFile("EffOut.root","read"); //
 
 	TFile*				fefficiencyFile= TFile::Open("EffOut.root","read"); //
 	TFile*				fefficiency3DFile=nullptr; //
-//	TFile*				fefficiencyFile=0; //!
-//	TFile*				fefficiency3DFile=0; //!
-
-//	TFile*				fefficiencyFile = TFile::Open("EffOut.root","read"); //
-//	TFile*				fefficiency3DFile=nullptr; //!
-
-//	TFile				fefficiencyFile;
-//	TFile				fefficiency3DFile;
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
@@ -199,34 +173,41 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         Float_t                         fCent;
         Double_t                        fZ;
 	Double_t			fZ_gen;
+
         std::vector < UInt_t >          goodtrackindices; //!
         std::vector < UInt_t >          goodtrackindicesMCALICE; //!
 	std::vector < UInt_t >          goodtrackindicesMCCMS; //!
-
 
 	std::vector < Double_t > 	NTracksPerPtBin;
 	std::vector < Double_t >        NTracksPerPtBinMCALICE;
 	std::vector < Double_t >        NTracksPerPtBinMCCMS;
 
-//        AliPIDCombined                 *fPIDCombined=nullptr; //!
-        //Histograms below are main
-        std::vector< std::vector< TH2D* > > fMass2D; //! signbins, centbins
-        //Histograms for pT_pair amd pT
-
         mixingpool                      fEMpool; //!
         mixingpooltracklet              fEMpooltracklet; //!
-	mixingpoolMC			fEMpoolMCALICE;
-	mixingpoolMC                    fEMpoolMCCMS;        
+	mixingpoolMC			fEMpoolMCALICE; //!
+	mixingpoolMC                    fEMpoolMCCMS; //!  
 
         TAxis                           binCent; //! 
         TAxis                           binZ; //!
-	TAxis				binTPt;
-	TAxis				binPt;
-	TAxis				binPt1;
-	TAxis				binNtrig;
-	TAxis				binLtpt;
-	TAxis				binJetpT;
-	TAxis				binEta;
+	TAxis				binTPt; //!
+	TAxis				binAPt; //!
+	TAxis				binPhi; //!
+	TAxis				binEta; //!
+	TAxis				binMCEta; //!
+	TAxis				binLtpt; //!
+	TAxis				binJetpT; //!
+
+	TAxis				binUnipT; //!
+	TAxis				binTrig; //!
+	TAxis				binV0Amp; //!
+	TAxis				binTrkEff; //!
+
+	TAxis				binPt; //!
+	TAxis				binPt1; //!
+	TAxis				binNtrig; //!
+
+	TAxis				binPhiTrack; //!
+	TAxis				binEtaTrack; //!
 
         Int_t                           centbin = -1 ;
         Int_t                           zbin = -1 ;

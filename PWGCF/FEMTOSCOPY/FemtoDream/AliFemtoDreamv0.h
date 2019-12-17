@@ -129,6 +129,8 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   void SetMotherInfo(AliAODEvent *evt, AliAODv0 *v0);
   void SetMotherInfo(AliESDEvent *evt, AliESDv0 *v0);
   void SetMCMotherInfo(AliAODEvent *evt, AliAODv0 *v0);
+  void SetMCMotherInfo(AliVEvent *evt, AliAODv0 *v0);
+  void SetMCMotherInfo(TClonesArray *mcarray, AliAODv0 *v0);
   bool fOnlinev0;
   bool fHasDaughter;
   AliFemtoDreamTrack *fpDaug;

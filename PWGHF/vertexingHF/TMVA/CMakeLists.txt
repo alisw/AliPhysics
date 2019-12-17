@@ -82,6 +82,20 @@ install(TARGETS ${MODULETMVA}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 
+install(DIRECTORY
+            ppvsMult
+        DESTINATION PWGHF/vertexingHF/TMVA/)
+
 install(FILES ${HDRS} DESTINATION include)
 
-install(FILES LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml DESTINATION PWGHF/vertexingHF/TMVA)
+install(FILES
+	LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml
+	LHC19c2a_TMVAClassification_BDT_2_2_5_noP.weights.xml
+	LHC19c2a_TMVAClassification_BDT_2_5_3_noP.weights.xml
+	LHC19c2a_TMVAClassification_BDT_3_3_5_noP.weights.xml
+	LHC19c2a_TMVAClassification_BDT_3_5_4_noP.weights.xml
+	LHC19c2a_TMVAClassification_BDT_4_4_5_noP.weights.xml
+	LHC19c2a_TMVAClassification_BDT_4_5_5_noP.weights.xml
+	LHC19c2a_TMVAClassification_BDT_5_5_5_noP.weights.xml
+	LHC19c2a_TMVAClassification_BDT_5_5_6_noP.weights.xml
+	DESTINATION PWGHF/vertexingHF/TMVA)

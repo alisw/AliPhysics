@@ -38,6 +38,7 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
     fAntiSigmaCuts = cuts;
   }
   void SetPhotonLegPileUpCut(bool pileup) { fPhotonLegPileUpCut = pileup; }
+  void SetPhotonDCArCut(bool dcar) { fDoPhotonDCArCut = dcar; }
 
   bool AcceptEvent(AliVEvent *event);
   bool AcceptEventRun1(AliVEvent *event);
@@ -67,6 +68,7 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   bool fIsLightweight;       //
   bool fIsRun1;              //
   bool fPhotonLegPileUpCut;  //
+  bool fDoPhotonDCArCut;    //
   float fV0PercentileMax;    //
   UInt_t fTrigger;           //
   UInt_t fMultMode;          //
@@ -89,6 +91,6 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   TH1F *fHistTriggerAfter;                  //!
   TH1I *fHistMultiplicity;                  //!
 
-  ClassDef(AliAnalysisTaskSigma0Run2, 8)
+  ClassDef(AliAnalysisTaskSigma0Run2, 9)
 };
 #endif

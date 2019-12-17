@@ -11,12 +11,12 @@ vector<TH1D*> GetStatSpectra(vector<vector<double>> multibin);
 TH1D* GetSpectrasys(double multi_start, double multi_end);
 TH1D* GetSpectrasysNocor(double multi_start, double multi_end);
 TH1D* GetSpectrastat(double multi_start, double multi_end);
-vector<double> GetdNdetawithError(double multi_start, double multi_end);
 vector<double> GetPidNdetawithError(double multi_start, double multi_end, int errortype = 1);
 vector<double> GetXidNdetawithError(double multi_start, double multi_end, int errortype = 1);
 vector<double> GetYieldError(double multi_start, double multi_end);
 vector<double> GetMeanPtError(double multi_start, double multi_end);
-TString finalfile = "AnalysisResults_Xi1530_systematic001030507000.root.root";
+TString GetFinalFileName(double multi_start, double multi_end);
+TString finalfile;
 //TString finalfile = "AnalysisResults_Xi1530_systematic0020507050100.root";
 TString workdirectory = "/Users/blim/alidock/Postprocessing/data/";
 enum {kFitExpPt=1, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave, kFitBoseEinstein, kFitFermiDirac};
@@ -32,7 +32,7 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     gStyle->SetLegendBorderSize(0);
     cResults->SetTickx();
     cResults->SetTicky();
-    //cResults->SetLogy();
+    cResults->SetLogy();
     cResults->SetTopMargin(0.05);
     cResults->SetLeftMargin(0.10);
     //cSigbkg->SetBottomMargin(0.01);
@@ -41,15 +41,16 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     cResults->Draw();
 
     vector<vector<double>> multibin = {
-        {0, 10}, {10, 30}, {30, 50}, {50, 70}, {70, 100}};
+        //{0, 10}, {10, 30}, {30, 50}, {50, 70}, {70, 100}};
         // {0, 20}, {20, 50}, {50, 70}, {70, 100}};
         // {0, 10}, {10, 30}, {30, 50}, {50, 100}};
-        //{0, 100}, {0, 10}, {10, 30}, {30, 50}, {50, 70}, {70, 100}, {30, 100}};
+        {0, 10}, {10, 30}, {30, 50}, {50, 70}, {70, 100}};
+        //{0, 0.01}, {0.01, 0.1}, {0, 0}, {0, 100}, {0, 10}, {10, 30}, {30, 50}, {50, 70}, {70, 100}};
         //{0, 100}};
 
 
+    
     /*
-
     TFile* fReweighting =
         TFile::Open("AnalysisResults_Xi1530_efficiencyReweighing.root","READ");
     
@@ -96,6 +97,7 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     hinput_temp->SetMarkerColor(kOrange + 10);
     hinput_temp->Scale(1e-7);
     hinput_temp->GetXaxis()->SetRangeUser(0, 10);
+    hinput_temp->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
     hinput_temp->SetMinimum(1e-6);
     hinput_temp->Draw();
 
@@ -147,6 +149,7 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
 
         iloop++;
     }
+    hinput_reweight[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
     hinput_reweight[0]->Draw();
 
     for (auto const& hInput : hinput_reweight)
@@ -162,6 +165,7 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     // Third
     heffi_reweight[0]->SetMarkerStyle(5);
     heffi_reweight[0]->SetMarkerColor(kOrange + 10);
+    heffi_reweight[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
     heffi_reweight[0]->Draw();
     auto legendweight3 = new TLegend(.6, .35, .85, .6);
     legendweight3->SetBorderSize(0);
@@ -187,6 +191,7 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     hdata_reweight[0]->SetMarkerStyle(5);
     hdata_reweight[0]->SetMarkerColor(kOrange + 10);
     hdata_reweight[0]->GetXaxis()->SetRangeUser(0, 4.8);
+    hdata_reweight[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
     hdata_reweight[0]->Draw();
     auto legendweight4 = new TLegend(.6, .6, .85, .85);
     legendweight4->SetBorderSize(0);
@@ -197,7 +202,7 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
         hInput->SetMarkerStyle(iloop+19);
         hInput->SetMarkerColor(sysColorPallet_reweight + hinput_reweight.size() - iloop);
         hInput->SetLineColor(sysColorPallet_reweight + hinput_reweight.size() - iloop);
-        hInput->GetXaxis()->SetRangeUser(0, 4.8);
+        hInput->GetXaxis()->SetRangeUser(0, 8.8);
         hInput->Draw("same");
         if(iloop > 1) legendweight4->AddEntry(hInput, Form("Iteration %d", iloop-1), "P");
         iloop++;
@@ -218,6 +223,7 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     hCorrectionfactor_rewight[0]->GetXaxis()->SetRangeUser(0, 8.8);
     hCorrectionfactor_rewight[0]->SetMaximum(1.1);
     hCorrectionfactor_rewight[0]->SetMinimum(0.9);
+    hCorrectionfactor_rewight[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
     hCorrectionfactor_rewight[0]->Draw("E");
     auto legendweight5 = new TLegend(.6, .6, .85, .85);
     legendweight5->SetBorderSize(0);
@@ -247,6 +253,7 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
                  workdirectory.Data()));
     gSystem->Exit(1);
     */
+    
 
     // Results
     vector<double> dNdetaAxis;
@@ -279,10 +286,22 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     vector<double> meanpt_sys_cor;
     vector<double> extraYields;
 
+    // output file
     TString bininfo = "";
-    for (auto const& bin : multibin)
-        bininfo += Form("%.0f", bin[0]);
-    bininfo += Form("%.0f", multibin.back()[1]);
+    for (auto const& bin : multibin){
+        if(bin[1] < 0.5){
+            bininfo += Form("%.2f", bin[0]);
+            bininfo += "-";
+            bininfo += Form("%.2f", bin[1]);
+        }
+        else {
+            bininfo += Form("%.0f", bin[0]);
+            bininfo += "-";
+            bininfo += Form("%.0f", bin[1]);
+        }
+        bininfo += "_";
+    }
+    bininfo += "bins";
     
     TH1* hout = new TH1D("hout", "", 9, 0, 9);
     TFile* resultfile =
@@ -320,14 +339,17 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
 
         double tempfinalsyserror = 0;
         tempfinalsyserror += pow(tempyield[2],2);
-        tempfinalsyserror += pow(tempyield[3],2);
+        tempfinalsyserror += pow((tempyield[3]+tempyield[4])/2,2); // avg(high+low)
 
-        double averageerror_correl = sqrt(tempfinalsyserror)/2;
-        double averageerror = sqrt(pow(averageerror_correl,2) + pow(0.0538*tempyield[0],2));
+        double averageerror_correl = sqrt(tempfinalsyserror);
+        double averageerror_uncorr = 0.0538*tempyield[0];
+        tempfinalsyserror += pow(averageerror_uncorr,2);
+        double averageerror = sqrt(tempfinalsyserror);
+        
 
         yield_syshe.push_back(averageerror);
         yield_sysle.push_back(averageerror);
-        yield_sys_cor.push_back(averageerror_correl);
+        yield_sys_cor.push_back(averageerror_uncorr);
 
         auto tempmeanpt = GetMeanPtError(multibin[imultibin][0],multibin[imultibin][1]);
         meanpt.push_back(tempmeanpt[0]);
@@ -335,18 +357,20 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
 
         double mtempfinalsyserror = 0;
         mtempfinalsyserror += pow(tempmeanpt[2],2);
-        mtempfinalsyserror += pow(tempmeanpt[3],2);
-        //mtempfinalsyserror += pow(0.0538*tempmeanpt[0],2);
+        mtempfinalsyserror += pow((tempmeanpt[3]+tempmeanpt[4])/2,2); // avg(high+low)
 
-        double averagpteerror_correl = sqrt(mtempfinalsyserror)/2;
-        double averagpteerror = sqrt(pow(averagpteerror_correl,2) + pow(0.0538*tempmeanpt[0],2));
+        double averagpteerror_correl = sqrt(mtempfinalsyserror);
+        double averagpteerror_uncorr = 0.0538*tempmeanpt[0];
+        mtempfinalsyserror += pow(averagpteerror_uncorr,2)
+        double averagpteerror = sqrt(mtempfinalsyserror);
+        
 
         meanpt_syshe.push_back(averagpteerror);
         meanpt_sysle.push_back(averagpteerror);
-        meanpt_sys_cor.push_back(averagpteerror_correl);
+        meanpt_sys_cor.push_back(averagpteerror_uncorr);
 
-        cout << Form("%2.f", multibin[imultibin][0]) << " - "
-             << Form("%2.f", multibin[imultibin][1]) << " ("
+        cout << Form("%.2f", multibin[imultibin][0]) << " - "
+             << Form("%.2f", multibin[imultibin][1]) << " ("
              << dNdetaAxis[imultibin] << ") "
              << "| " << yield[imultibin]*1000 << " +- " << yield_state[imultibin]*1000
              << " (" << 100 * (yield_state[imultibin] / yield[imultibin])
@@ -355,8 +379,9 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
              << 100 * (yield_syshe[imultibin] / yield[imultibin]) << "%%)"
              << " - " << yield_sysle[imultibin] << " ("
              << 100 * (yield_sysle[imultibin] / yield[imultibin]) << "%%)"
-             << " +- " << averageerror*1000 << " ("
-             << 100 * (averageerror / yield[imultibin]) << "%%)"
+             << " +- " << averageerror_uncorr*1000 << " ("
+             << 100 * (averageerror_uncorr / yield[imultibin]) << "%%) "
+             << (tempyield[5]/tempyield[0])*100 << "%"
 
              << "| " << meanpt[imultibin] << " +- " << meanpt_state[imultibin]
              << " (" << 100 * (meanpt_state[imultibin] / meanpt[imultibin])
@@ -365,8 +390,8 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
              << 100 * (meanpt_syshe[imultibin] / meanpt[imultibin]) << "%%)"
              << " - " << meanpt_sysle[imultibin] << " ("
              << 100 * (meanpt_sysle[imultibin] / meanpt[imultibin]) << "%%)"
-             << " +- " << averagpteerror << " ("
-             << 100 * (averagpteerror / meanpt[imultibin]) << "%%)" << endl;
+             << " +- " << averagpteerror_uncorr << " ("
+             << 100 * (averagpteerror_uncorr / meanpt[imultibin]) << "%%)" << endl;
     }
 
 
@@ -394,9 +419,9 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     ge_sys->GetXaxis()->SetTitle("< d#it{N}_{ch}/d#eta >");
     ge_sys->GetYaxis()->SetTitle("d#it{N}_{#Xi^{*0}}/dy");
     ge_sys->GetXaxis()->SetLimits(0,30);
-    ge_sys->GetYaxis()->SetRangeUser(0,0.007);
-    ge_sys->SetMinimum(0);
-    ge_sys->SetMaximum(0.008);
+    //ge_sys->GetYaxis()->SetRangeUser(0,0.007);
+    ge_sys->SetMinimum(1e-4);
+    ge_sys->SetMaximum(1e-1);
     //ge_sys->SetFillStyle(3001);
     ge_sys->SetLineColor(2);
     ge_sys->SetMarkerColor(2);
@@ -442,8 +467,8 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     auto hfinal = YieldMean(hSpectra_7TeV_staterr, hSpectra_7TeV_syserr, func, 0.0, 10, 0.01, 0.1);
     cout << "7TeV Yield: " << hfinal->GetBinContent(1) << " +- " << hfinal->GetBinContent(2) << " + " << hfinal->GetBinContent(3) << " - " << hfinal->GetBinContent(4) << endl;
     */
-    vector<double> x7 = {6.01};
-    vector<double> x7e = {0.10};
+    vector<double> x7 = {4.6};
+    vector<double> x7e = {0.34};
      
     // HEP data
     vector<double> y7 = {2.56e-3};
@@ -555,8 +580,8 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     */
     ge_sys->Draw("a5");
     ge_stat->Draw("P");
-    ge_sys_7TeV_HEP->Draw("5");
-    ge_stat_7TeV_HEP->Draw("P");
+    //ge_sys_7TeV_HEP->Draw("5");
+    //ge_stat_7TeV_HEP->Draw("P");
     if(recalculate7TeV){
         //ge_sys_7TeV->Draw("5");
         //ge_stat_7TeV->Draw("P");
@@ -592,7 +617,7 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     gpt_stat->GetXaxis()->SetTitle("< d#it{N}_{ch}/d#eta >");
     gpt_stat->GetYaxis()->SetTitle("< #it{p}_{T} > (GeV/c)");
     gpt_stat->GetXaxis()->SetRangeUser(0,30);
-    gpt_stat->GetYaxis()->SetRangeUser(1,1.7);
+    //gpt_stat->GetYaxis()->SetRangeUser(1,1.7);
     gpt_stat->SetLineColor(2);
     gpt_stat->SetMarkerColor(2);
     gpt_stat->SetMarkerStyle(20);
@@ -606,7 +631,9 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     gpt_sys->GetXaxis()->SetTitle("< d#it{N}_{ch}/d#eta >");
     gpt_sys->GetYaxis()->SetTitle("< #it{p}_{T} > (GeV/c)");
     gpt_sys->GetXaxis()->SetRangeUser(0,30);
-    gpt_sys->GetYaxis()->SetRangeUser(1,1.7);
+    gpt_sys->SetMaximum(1.9);
+    gpt_sys->SetMinimum(0.8);
+    //gpt_sys->GetYaxis()->SetRangeUser(1,1.7);
     //ge_sys->SetFillStyle(3001);
     gpt_sys->SetLineColor(2);
     gpt_sys->SetMarkerColor(2);
@@ -657,16 +684,16 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     gpt_sys_7TeV_HEP->Write("gMeanpT7TeV_syse");
 
     cResults->cd();
-    //cResults->SetLogy(true);
+    cResults->SetLogy(false);
     gpt_sys->Draw("a5");
     gpt_stat->Draw("P");
-    gpt_sys_7TeV_HEP->Draw("5");
-    gpt_stat_7TeV_HEP->Draw("P");
+    //gpt_sys_7TeV_HEP->Draw("5");
+    //gpt_stat_7TeV_HEP->Draw("P");
     if(recalculate7TeV){
         //gpt_sys_7TeV->Draw("5");
         //gpt_stat_7TeV->Draw("P");
     }
-    gpt_sys->GetXaxis()->SetLimits(0,30);
+    //gpt_sys->GetXaxis()->SetLimits(0,30);
 
     fStatusPad->Draw();
 
@@ -747,6 +774,27 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
         RatioToPi_sys.push_back(tempRatioToPi_sys);
         RatioToPi_sys_cor.push_back(tempRatioToPi_sys_cor);
 
+
+        cout << "$"<< Form("%2.f", multibin[j][0]) << " - "
+             << Form("%2.f", multibin[j][1]) << " ("
+             << dNdetaAxis[j] << ")$ & $"
+             << yield[j]*1000
+             << "$ & $" << dNdeta_Xi[j]*1000
+             << "$ & $" << tempRatioToXi
+             << " \\pm " << tempRatioToXi_e
+             << " \\pm " << tempRatioToXi_sys
+             << " \\pm " << tempRatioToXi_sys_cor
+             << "$ \\\\" << endl;
+        cout << "$"<< Form("%2.f", multibin[j][0]) << " - "
+             << Form("%2.f", multibin[j][1]) << " ("
+             << dNdetaAxis[j] << ")$ & $"
+             << "$ & $" << yield[j]*1000
+             << "$ & $" << dNdeta_pi[j]
+             << "$ & $" << tempRatioToPi*1000
+             << " \\pm " << tempRatioToPi_sys*1000
+             << " \\pm " << tempRatioToPi_sys_cor*1000
+             << "$ \\\\" << endl;
+
     }
 
     TGraphErrors* grRatioXistat = new TGraphErrors(multibin.size(), &dNdetaAxis[0], &RatioToXi[0], &zeroerror[0], &RatioToXi_e[0]);
@@ -758,11 +806,11 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
 
     grRatioXisys_uncor->SetMarkerColor(kOrange + 10);
     grRatioXisys_uncor->SetFillColorAlpha(kOrange + 10, 0.3);
-    grRatioXisys_uncor->SetFillStyle(3001);
+    //grRatioXisys_uncor->SetFillStyle(3001);
     grRatioXisys_uncor->SetLineColor(0);
     
-    grRatioXisys->SetMaximum(0.4);
-    grRatioXisys->SetMinimum(0);
+    grRatioXisys->SetMaximum(0.5);
+    grRatioXisys->SetMinimum(0.1);
     grRatioXisys->SetFillColorAlpha(kOrange + 10, 0.0);
     grRatioXisys->SetMarkerColor(kOrange + 10);
     grRatioXisys->SetLineColor(kOrange + 10);
@@ -778,11 +826,13 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
 
     cResults->cd();
 
+    grRatioXisys->GetXaxis()->SetLimits(0,30);
+
     grRatioXisys->Draw("a5");
     grRatioXisys_uncor->Draw("5");
     grRatioXistat->Draw("P");
-    grRatioXisys_7TeV->Draw("5");
-    grRatioXistat_7TeV->Draw("P");
+    //grRatioXisys_7TeV->Draw("5");
+    //grRatioXistat_7TeV->Draw("P");
 
     SaveCanvas(cResults,"RatioToXi","figs/");
     resultfile->cd();
@@ -801,8 +851,9 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     TGraphErrors* grRatioPisys_7TeV = new TGraphErrors(multibin.size(), &x7[0], &RatioToPi_7TeV[0], &x7e[0], &RatioToPi_7TeV_sys[0]);
     
     //grRatioPisys->SetMaximum(2e-3);
-    grRatioPisys->SetMaximum(1.4e-3);
-    grRatioPisys->SetMinimum(4e-4);
+    grRatioPisys->GetXaxis()->SetLimits(0,30);
+    grRatioPisys->SetMaximum(2e-3);
+    grRatioPisys->SetMinimum(5e-4);
     //grRatioPisys->GetXaxis()->SetLimits(1,2e3);
     //grRatioPisys->SetFillColorAlpha(kBlack, 0.0);
     grRatioPisys->SetMarkerColor(kOrange + 10);
@@ -823,8 +874,8 @@ void DrawXi1530PhysicsPlots(int fitFunc = 1){
     //cResults->SetLogy();
     grRatioPisys->Draw("a5");
     grRatioPistat->Draw("P");
-    grRatioPisys_7TeV->Draw("5");
-    grRatioPistat_7TeV->Draw("P");
+    //grRatioPisys_7TeV->Draw("5");
+    //grRatioPistat_7TeV->Draw("P");
 
     SaveCanvas(cResults,"RatioToPi","figs/");
     resultfile->cd();
@@ -864,6 +915,7 @@ vector<TH1D*> GetStatSpectra(vector<vector<double>> multibin){
     return buffer;
 }
 TH1D* GetSpectrasys(double multi_start, double multi_end){
+    finalfile = GetFinalFileName(multi_start,multi_end);
     TFile* inputfile = new TFile(finalfile.Data());
     TH1D* hr = (TH1D*)inputfile->Get(
         Form("hSpectra_%.2f_%.2f_sys", multi_start, multi_end));
@@ -871,6 +923,7 @@ TH1D* GetSpectrasys(double multi_start, double multi_end){
     return hr;
 }
 TH1D* GetSpectrasysNocor(double multi_start, double multi_end) {
+    finalfile = GetFinalFileName(multi_start,multi_end);
     TFile* inputfile = new TFile(finalfile.Data());
     TH1D* hr = (TH1D*)inputfile->Get(
         Form("hSpectra_%.2f_%.2f_sys_noCorrelation", multi_start, multi_end));
@@ -878,6 +931,7 @@ TH1D* GetSpectrasysNocor(double multi_start, double multi_end) {
     return hr;
 }
 TH1D* GetSpectrastat(double multi_start, double multi_end){
+    finalfile = GetFinalFileName(multi_start,multi_end);
     TFile* inputfile = new TFile(finalfile.Data());
     TH1D* hr = (TH1D*)inputfile->Get(Form("hSpectra_%.2f_%.2f_stat",
                                multi_start,
@@ -887,10 +941,25 @@ TH1D* GetSpectrastat(double multi_start, double multi_end){
 }
 vector<double> GetYieldError(double multi_start, double multi_end){
     vector<double> temp;
-    TString bininfo = Form("%.0f%.0f",multi_start,multi_end);
+    bool isINEL = false;
+    TString bininfo;
+    if ((multi_start == 0) && (multi_end == 0)){ 
+        //INEL case
+        bininfo = "INEL";
+        isINEL = true;
+    } 
+    else if(multi_end < 0.5)
+        bininfo = Form("%.2f-%.2f",multi_start,multi_end);
+    else
+        bininfo = Form("%.0f-%.0f",multi_start,multi_end);
     TFile* inputfile = new TFile(Form("AnalysisResults_Xi1530_YieldMean_%s.root",bininfo.Data()));
-    TH1D* hr = (TH1D*)inputfile->Get(
-        Form("hYield_%.2f-%.2f", multi_start, multi_end));
+
+    TString histname;
+    if (isINEL)
+        histname = "hYield_INEL";
+    else
+        histname = Form("hYield_%.2f-%.2f", multi_start, multi_end);
+    TH1D* hr = (TH1D*)inputfile->Get(histname);
     for(int i = 0; i < hr->GetNbinsX(); i++)
         temp.push_back(hr->GetBinContent(i+1));
 
@@ -898,104 +967,29 @@ vector<double> GetYieldError(double multi_start, double multi_end){
 }
 vector<double> GetMeanPtError(double multi_start, double multi_end){
     vector<double> temp;
-    TString bininfo = Form("%.0f%.0f",multi_start,multi_end);
+    bool isINEL = false;
+    TString bininfo;
+    if ((multi_start == 0) && (multi_end == 0)){ 
+        //INEL case
+        bininfo = "INEL";
+        isINEL = true;
+    } 
+    else if(multi_end < 0.5)
+        bininfo = Form("%.2f-%.2f",multi_start,multi_end);
+    else
+        bininfo = Form("%.0f-%.0f",multi_start,multi_end);
     TFile* inputfile = new TFile(Form("AnalysisResults_Xi1530_YieldMean_%s.root",bininfo.Data()));
-    TH1D* hr = (TH1D*)inputfile->Get(
-        Form("hMeanPt_%.2f-%.2f", multi_start, multi_end));
+
+    TString histname;
+    if (isINEL)
+        histname = "hMeanPt_INEL";
+    else
+        histname = Form("hMeanPt_%.2f-%.2f", multi_start, multi_end);
+    TH1D* hr = (TH1D*)inputfile->Get(histname);
     for(int i = 0; i < hr->GetNbinsX(); i++)
         temp.push_back(hr->GetBinContent(i+1));
 
     return temp;
-}
-
-vector<double> GetdNdetawithError(double multi_start, double multi_end){
-    // Return dN/deta with give Multiplicity bin.
-    // it works with only dedicated multiplicit bins(see below)
-    // return {value, err}
-
-    vector<double> returnarray;
-
-    //--dNdeta histogram
-    // Ref: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/
-    //      ReferenceMult#Multiplicity_dependent_pp_at_AN2
-    // LHC16k data.
-    // Error was asym error, so choosed bigger error for sym error.
-    
-    vector<double> dNchdeta_multibin = 
-    {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
-    vector<double> dNchdeta = 
-    {0, 26.02, 20.02, 16.17, 13.77, 12.04, 10.02, 7.95, 6.32, 4.50, 2.55};
-    vector<double> dNchdeta_e = 
-    {0,  0.35,  0.27,  0.22,  0.19,  0.17,  0.14, 0.11, 0.09, 0.07, 0.04};
-    
-
-    // 2nd Reference (LHC15 study)
-    // Ref: https://aliceinfo.cern.ch/Notes/node/510
-    /*
-    vector<double> dNchdeta_multibin = 
-    {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
-    vector<double> dNchdeta = 
-    {0, 26.18, 20.16, 16.40, 14.00, 12.28, 10.31, 8.24, 6.62, 4.77, 2.76};
-    vector<double> dNchdeta_e = 
-    {0,  0.55,  0.41,  0.31,  0.29,  0.25,  0.21, 0.17, 0.13, 0.09, 0.05};
-    */
-
-    // input must be in the multiplicity range
-    if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_start) == end(dNchdeta_multibin))
-        return {99,99};
-    if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_end) == end(dNchdeta_multibin))
-        return {99,99};
-
-    // special cases
-    if((multi_start == 0) && (multi_end == 0.01)){
-        returnarray = {35.37, 0.92};
-    }
-    else if((multi_start == 0.01) && (multi_end == 0.1)){
-        returnarray = {30.89, 0.57};
-    }
-    else if((multi_start == 0) && (multi_end == 5)){
-        returnarray = {21.20, 0.28};
-    }
-    else if((multi_start == 0) && (multi_end == 100)){
-        returnarray = {6.94, 0.10};
-    }
-    else if((multi_start == 0.1) && (multi_end == 0.5)){
-        returnarray = {26.96, 0.37};
-    }
-    else if((multi_start == 0.5) && (multi_end == 1)){
-        returnarray = {24.23, 0.36};
-    }
-    // Common case
-    else{
-        // Value
-        vector<double>::iterator itr_left = find(dNchdeta_multibin.begin(),
-                                dNchdeta_multibin.end(),
-                                multi_start);
-        vector<double>::iterator itr_right = find(dNchdeta_multibin.begin(),
-                                dNchdeta_multibin.end(),
-                                multi_end);
-        int left = distance(dNchdeta_multibin.begin(), itr_left);
-        int right = distance(dNchdeta_multibin.begin(), itr_right);
-
-        int gap = right - left;
-
-        double result = 0.;
-        for(int i = 1; i < gap+1; i++)
-            result += dNchdeta[i+left]*(dNchdeta_multibin[i+left] - dNchdeta_multibin[i+left-1]);
-            
-        result /= (multi_end - multi_start);
-        returnarray.push_back(result);
-
-        // Error
-        double error = 0.;
-        for(int i = 1; i < gap+1; i++)
-            error += pow( dNchdeta_e[i+left], 2); 
-            
-        error = sqrt(error);
-        returnarray.push_back(error);
-    }
-
-    return returnarray;
 }
 vector<double> GetPidNdetawithError(double multi_start, double multi_end, int errortype){
     // Return pion's dN/deta with give Multiplicity bin.
@@ -1004,8 +998,16 @@ vector<double> GetPidNdetawithError(double multi_start, double multi_end, int er
     // errortype:
     //   1: stat err.
     //   2: total sys err.
-
+    TFile* fPi =
+        TFile::Open("OutputYields_pp13mult.root","READ");
+    TGraphAsymmErrors* pisys;
+    if(errortype == 2)
+        pisys = (TGraphAsymmErrors*)fPi->Get("pi_Syst");
+    else
+        pisys = (TGraphAsymmErrors*)fPi->Get("pi_Stat");
+    
     vector<double> returnarray;
+    int lenpisys = pisys->GetN();
 
     //--dNdeta histogram of pion+ + pion-
     // Ref: given by Anders, need to update ref.
@@ -1013,6 +1015,16 @@ vector<double> GetPidNdetawithError(double multi_start, double multi_end, int er
 
     vector<double> dNchdeta_multibin = 
     {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
+    vector<double> dNchdeta = {0};
+    vector<double> dNchdeta_e = {0};
+    for(int i = 0; i < lenpisys+1; i++){
+        dNchdeta.push_back(pisys->GetY()[i]);
+        dNchdeta_e.push_back(pisys->GetErrorYhigh(i));
+        
+        cout << "bin :" << i << " " << dNchdeta[i] << " +- " << dNchdeta_e[i] << endl;
+    }
+    
+    /*
     vector<double> dNchdeta = 
     {0, 24.605455025, 19.016207266, 15.477779961, 13.241832514, 11.612550017, 9.742647922, 7.779575692,  6.241633459, 4.530678113, 2.713659699};
     vector<double> dNchdeta_e;
@@ -1020,7 +1032,7 @@ vector<double> GetPidNdetawithError(double multi_start, double multi_end, int er
         dNchdeta_e = {0,  1.121689195,  0.856354796,  0.685848455,  0.582627504,   0.498773083,  0.415988997, 0.327417792, 0.261067034, 0.186885663, 0.110000678};
     else
         dNchdeta_e = {0,  0.009062988,  0.004189384,  0.003506052,  0.003237967,   0.003090847,  0.002062999, 0.001795797, 0.001551303, 0.000883705, 0.000526020};
-
+    */
     // input must be in the multiplicity range
     if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_start) == end(dNchdeta_multibin))
         return {99,99};
@@ -1056,6 +1068,8 @@ vector<double> GetPidNdetawithError(double multi_start, double multi_end, int er
     error = sqrt(error);
     returnarray.push_back(error/2);
     
+    cout << "Pi yield" << endl;
+    cout << "$"<< multi_start << " - " << multi_end << "$ & $" << result << " \\pm " << error/2 << "$ \\\\" << endl;
 
     return returnarray;
 }
@@ -1130,7 +1144,8 @@ vector<double> GetXidNdetawithError(double multi_start, double multi_end, int er
     error = sqrt(error);
     returnarray.push_back(error/2);
     
-
+    cout << "Xi yield" << endl;
+    cout << "$"<< multi_start << " - " << multi_end << "$ & $" << result << " \\pm " << error/2 << "$ \\\\" << endl;
     return returnarray;
 }
 
@@ -1185,4 +1200,25 @@ TH1* ReturnExtremeHisto(TH1* hin, Float_t sign) {
         delete hout;
     }
     return hmax;
+}
+TString GetFinalFileName(double multi_start, double multi_end){
+    TString finalfile_text;
+    TString bininfo = "_";
+    if ((multi_start == 0) && (multi_end == 0)){ 
+        //INEL case
+        bininfo += "INEL";
+    }
+    else if (multi_end < 0.5) {
+        bininfo += Form("%.2f", multi_start);
+        bininfo += "-";
+        bininfo += Form("%.2f", multi_end);
+    }
+    else {
+        bininfo += Form("%.0f", multi_start);
+        bininfo += "-";
+        bininfo += Form("%.0f", multi_end);   
+    }
+    finalfile_text = Form("./AnalysisResults_Xi1530_systematic%s.root", bininfo.Data());
+
+    return finalfile_text;
 }

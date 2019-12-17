@@ -41,6 +41,7 @@ fV0MaxDaughtersDCA(0.5),
 fCascadeMaxDaughtersDCA(0.5),
 fMinTPCcluster(70),
 fMaxRapidity(0.8),
+fMaxPseudorapidity(1e20),
 fPID(pid),
 fPID2(pid2),
 fPID3(pid3),
@@ -81,6 +82,7 @@ fV0MaxDaughtersDCA(copy.fV0MaxDaughtersDCA),
 fCascadeMaxDaughtersDCA(copy.fCascadeMaxDaughtersDCA),
 fMinTPCcluster(copy.fMinTPCcluster),
 fMaxRapidity(copy.fMaxRapidity),
+fMaxPseudorapidity(copy.fMaxPseudorapidity),
 fPID(copy.fPID),
 fPID2(copy.fPID2),
 fPID3(copy.fPID3),
@@ -137,6 +139,7 @@ AliRsnCutCascade &AliRsnCutCascade::operator=(const AliRsnCutCascade &copy)
     fCascadeMaxDaughtersDCA = copy.fCascadeMaxDaughtersDCA;
     fMinTPCcluster = copy.fMinTPCcluster;
     fMaxRapidity = copy.fMaxRapidity;
+    fMaxPseudorapidity = copy.fMaxPseudorapidity;
     fCutQuality = copy.fCutQuality;
     fPID = copy.fPID;
     fPID2 = copy.fPID2;
@@ -270,6 +273,11 @@ Bool_t AliRsnCutCascade::CheckESD(AliESDcascade *Xi)
     
     if (TMath::Abs(Xi->Y(fHypothesis)) > fMaxRapidity) {
         AliDebugClass(2, "Failed check on Cascade rapidity");
+        return kFALSE;
+    }
+
+    if (TMath::Abs(Xi->Eta()) > fMaxPseudorapidity){
+        AliDebugClass(2, "Failed check on Cascade pseuorapidity");
         return kFALSE;
     }
     //
@@ -506,6 +514,14 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
             AliDebugClass(2, "Failed check on Cascade rapidity");
             return kFALSE;
         }
+    }
+    
+    Double_t pXi = sqrt(Xi->Ptot2Xi());
+    Double_t pzXi = Xi->MomXiZ();
+    Double_t etaXi = 0.5*TMath::Log((pXi+pzXi)/(pXi-pzXi+1.e-13));
+    if (TMath::Abs(etaXi) > fMaxPseudorapidity){
+        AliDebugClass(2, "Failed check on Cascade pseuorapidity");
+        return kFALSE;
     }
     
     Double_t V0radius = Xi->RadiusV0();

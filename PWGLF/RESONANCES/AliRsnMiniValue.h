@@ -52,6 +52,7 @@ public:
       kPairPtRes,       // pair pT resolution
       kPairYRes,        // pair rapidity resolution
       kPhiV,   // PhiV calculation
+      kAsym,   // pair asymmetry
       kTypes          // -- general limit ----------------------------------------------------------
    };
 

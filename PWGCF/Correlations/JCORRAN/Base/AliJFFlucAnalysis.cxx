@@ -106,6 +106,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 //Double_t AliJFFlucAnalysis::CentBin[8] = {0, 5, 10, 20, 30, 40, 50, 60};
 Double_t AliJFFlucAnalysis::CentBin[CENTN_NAT+1] = {0, 1, 2, 5, 10, 20, 30, 40, 50, 60};
 UInt_t AliJFFlucAnalysis::NCentBin = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
+Double_t AliJFFlucAnalysis::MultBin[MULTN+1] = {30.651,31.125,42.627,43.263,54.598,55.399,66.613,67.581,78.665,79.802,90.789,92.098,102.805,104.286,114.903,116.569};
+UInt_t AliJFFlucAnalysis::NMultBin = sizeof(AliJFFlucAnalysis::MultBin)/sizeof(AliJFFlucAnalysis::MultBin[0])-1;
 UInt_t AliJFFlucAnalysis::CentralityTranslationMap[CENTN_NAT] = {0,0,0,1,2,3,4,5,6};
 Double_t AliJFFlucAnalysis::pttJacek[74] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
 UInt_t AliJFFlucAnalysis::NpttJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof(AliJFFlucAnalysis::pttJacek[0])-1;
@@ -177,7 +179,10 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fBin_hh .Set("NHH","NHH","NHH:%d", AliJBin::kSingle).SetBin(kcNH);
 	fBin_kk .Set("KK","KK","KK:%d", AliJBin::kSingle).SetBin(nKL);
 
-	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(NCentBin);
+	if(flags & FLUC_MULT_BINS)
+		fHistCentBin.Set("MultBin","MultBin","Cent:%d",AliJBin::kSingle).SetBin(NMultBin);
+	else fHistCentBin.Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(NCentBin);
+
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
 	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(28);
 
@@ -185,7 +190,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	// set AliJTH1D here //
 	fh_cent
-		<< TH1D("h_cent","h_cent", 400, 0, 100)
+		<< TH1D("h_cent","h_cent", 200, 0, 100)
 		<< "END" ;
 
 	fh_ImpactParameter
@@ -336,7 +341,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 //________________________________________________________________________
 AliJFFlucAnalysis::~AliJFFlucAnalysis() {
-	delete fInputList;
 	delete fHMG;
 	delete fEfficiency;
 }
@@ -369,10 +373,14 @@ inline TComplex SixGap33(const TComplex (*pQq)[AliJFFlucAnalysis::kNH][AliJFFluc
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// find Centrality
-	fCBin = GetCentralityClass(fCent);
+	int trk_number = fInputList->GetEntriesFast();
+	if(flags & FLUC_MULT_BINS)
+		fCBin = GetMultiplicityBin((double)trk_number);
+	else fCBin = GetCentralityClass(fCent);
+
 	if(fCBin == -1)
 		return;
-	int trk_number = fInputList->GetEntriesFast();
+	
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
 	fh_cent->Fill(fCent) ;
 	fh_ImpactParameter->Fill( fImpactParameter);
@@ -380,7 +388,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	enum{kSubA, kSubB, kNSub};
 	enum{kMin, kMax};
-	enum{kReal, kImg, kNPhase};
 	Double_t Eta_config[kNSub][2];
 	Eta_config[kSubA][kMin] = fEta_min;  // 0.4 min for SubA
 	Eta_config[kSubA][kMax] = fEta_max;  // 0.8 max for SubA
@@ -923,3 +930,10 @@ int AliJFFlucAnalysis::GetCentralityClass(Double_t fCent){
 	return -1;
 }
 
+int AliJFFlucAnalysis::GetMultiplicityBin(Double_t fMult){
+	for(UInt_t iMbin = 0; iMbin < NMultBin; iMbin++){
+		if(fMult > MultBin[iMbin] && fMult < MultBin[iMbin+1])
+			return iMbin;
+	}
+	return -1;
+}

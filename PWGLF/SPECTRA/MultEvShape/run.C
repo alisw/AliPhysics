@@ -67,7 +67,8 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   // *******************  PID response  ******************
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   if(!mc) AddTaskPIDResponse();
-  else AddTaskPIDResponse(kTRUE,kTRUE,kTRUE,2);
+  // else AddTaskPIDResponse(kTRUE,kTRUE,kTRUE,2);
+  else AddTaskPIDResponse(kTRUE);
 
   // *******************  Tenders  ***********************
   AliTender *aliTender(NULL);

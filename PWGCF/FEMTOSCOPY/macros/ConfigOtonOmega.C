@@ -22,96 +22,183 @@ AliFemtoDreamTrackCuts *AntiOmegaPosCuts,
 AliFemtoDreamTrackCuts *AntiOmegaNegCuts,
 AliFemtoDreamTrackCuts *AntiOmegaBachCuts,
 AliFemtoDreamTrackCuts *TrackCuts,
-AliFemtoDreamTrackCuts *AntiTrackCuts
+AliFemtoDreamTrackCuts *AntiTrackCuts,
+int iCuts = 0
 ){
+
+//cut values: (iCuts 0 -> std, iCuts 1 -> open, for syst errors, iCuts 2 -> std+proton filterbit 96)
+//-----------
+Float_t XiDaughterDCA = .8; //std
+if(iCuts==1) XiDaughterDCA = 1.1;
+
+Float_t v0MaxDaughterDCA = 1.2; //std
+if(iCuts==1) v0MaxDaughterDCA = 1.6;
+
+Float_t v0MinDistToPrimVtx = 0.06; //std
+if(iCuts==1) v0MinDistToPrimVtx = 0.03;
+
+Float_t XiCPA = 0.995; //std
+if(iCuts==1) XiCPA = 0.993;
+
+Float_t v0CPA = 0.97; //std
+if(iCuts==1) v0CPA = 0.94;
+
+Float_t XiMinDistBachToPrimVtx = 0.04; //std
+if(iCuts==1) XiMinDistBachToPrimVtx = 0.02;
+
+Float_t v0MinDaugDistToPrimVtx = 0.04; //std
+if(iCuts==1) v0MinDaugDistToPrimVtx = 0.02;
+
+Float_t Eta = 0.8; //std
+if(iCuts==1) Eta = 0.9;
+
+Float_t nSigma = 4.; //std
+if(iCuts==1) nSigma = 5.;
+
+Int_t TPCcrR = 60; //std
+if(iCuts==1) TPCcrR = 50;
+
+Float_t CrF = 0.75; //std
+if(iCuts==1) CrF = 0.65;
+
+Float_t v0TransverseRadius = .000001; //std, no cut (cut in Vertexer?)
+
+Float_t XiTransverseRadius = .000001; //std, no cut (cut in Vertexer?)
+
+Float_t v0MassRange = 0.006; //std
+
+Float_t RejectXis = 0.008; //std
+
+Float_t PtRangeXi = 0.000001; //std, no cut (cut in Vertexer?)
+
+bool PionCheckPileUp = false; //std
+
 
   //Background selection
   //--------------------
+  CascadeCuts->SetXiMassRange(1.67245, 0.0575, 0.005);
+  CascadeCuts->SetCutXiDaughterDCA(XiDaughterDCA);
+  CascadeCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
+  CascadeCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
+  CascadeCuts->SetCutXiCPA(XiCPA);
+  CascadeCuts->SetCutv0CPA(v0CPA);
+  CascadeCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
+  CascadeCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
+  XiPosCuts->SetEtaRange(-1.*Eta,Eta);
+  XiNegCuts->SetEtaRange(-1.*Eta,Eta);
+  XiBachCuts->SetEtaRange(-1.*Eta,Eta);
+  XiPosCuts->SetPID(AliPID::kProton, 999., nSigma);
+  XiNegCuts->SetPID(AliPID::kPion, 999., nSigma);
+  //XiBachCuts->SetPID(AliPID::kKaon, 999., 4, true, 3); //old, for allowing ITS only
+  XiBachCuts->SetPID(AliPID::kKaon, 999., nSigma);
+  XiPosCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  XiNegCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  XiBachCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  CascadeCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
+  CascadeCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
+  CascadeCuts->Setv0MassRange(1.116, v0MassRange);
+  CascadeCuts->SetRejectXis(1.322, RejectXis);
+  CascadeCuts->SetPtRangeXi(PtRangeXi, 999.9);
+  XiNegCuts->SetCheckPileUp(PionCheckPileUp);
 
+//nsigma proton
+//fix in mT.C DCA xi standard 20 y change 0.3!!!!!
 
-  CascadeCuts->SetXiMassRange(1.6725, 0.0575, 0.005);
-//  CascadeCuts->SetXiMassRange(1.6725, 0.0575, 1.6725, 0.005);
-  CascadeCuts->SetCutXiDaughterDCA(.8);
-  CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.001);
-  CascadeCuts->SetCutXiCPA(0.995);
-  CascadeCuts->SetCutXiTransverseRadius(0.001, 200);
-  CascadeCuts->Setv0MassRange(1.116, 0.006);
-  CascadeCuts->SetCutv0MaxDaughterDCA(1.2);
-  CascadeCuts->SetCutv0CPA(0.97);
-  CascadeCuts->SetCutv0TransverseRadius(.001, 200);
-  CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
-  CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.001);
-  //CascadeCuts->SetRejectMass(1.322, 0.005, 3312);
-  CascadeCuts->SetRejectOmegas(1.322, 0.005);
-  CascadeCuts->SetPtRangeXi(0.001, 999.9);
-XiNegCuts->SetCheckPileUp(false);
-  XiPosCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  XiNegCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  XiBachCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  //XiBachCuts->SetPID(AliPID::kKaon, 999., 4, true, 3);
+  AntiCascadeCuts->SetXiMassRange(1.67245, 0.0575, 0.005);
+  AntiCascadeCuts->SetCutXiDaughterDCA(XiDaughterDCA);
+  AntiCascadeCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
+  AntiCascadeCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
+  AntiCascadeCuts->SetCutXiCPA(XiCPA);
+  AntiCascadeCuts->SetCutv0CPA(v0CPA);
+  AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
+  AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
+  AntiXiPosCuts->SetEtaRange(-1.*Eta,Eta);
+  AntiXiNegCuts->SetEtaRange(-1.*Eta,Eta);
+  AntiXiBachCuts->SetEtaRange(-1.*Eta,Eta);
+  AntiXiPosCuts->SetPID(AliPID::kPion, 999., nSigma);
+  AntiXiNegCuts->SetPID(AliPID::kProton, 999., nSigma);
+  //AntiXiBachCuts->SetPID(AliPID::kKaon, 999., 4,true, 3);
+  AntiXiBachCuts->SetPID(AliPID::kKaon, 999., nSigma);
+  AntiXiPosCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  AntiXiNegCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  AntiXiBachCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  AntiCascadeCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
+  AntiCascadeCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
+  AntiCascadeCuts->Setv0MassRange(1.116, v0MassRange);
+  AntiCascadeCuts->SetRejectXis(1.322, RejectXis);
+  AntiCascadeCuts->SetPtRangeXi(PtRangeXi, 999.9); 
+  AntiXiPosCuts->SetCheckPileUp(PionCheckPileUp);
 
-  AntiCascadeCuts->SetXiMassRange(1.6725, 0.0575, 0.005);
-  //AntiCascadeCuts->SetXiMassRange(1.6725, 0.0575, 1.6725, 0.005);
-  AntiCascadeCuts->SetCutXiDaughterDCA(.8);
-  AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.001);
-  AntiCascadeCuts->SetCutXiCPA(0.995);
-  AntiCascadeCuts->SetCutXiTransverseRadius(0.001, 200);
-  AntiCascadeCuts->Setv0MassRange(1.116, 0.006);
-  AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.2);
-  AntiCascadeCuts->SetCutv0CPA(0.97);
-  AntiCascadeCuts->SetCutv0TransverseRadius(.001, 200);
-  AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
-  AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.001);
-  //AntiCascadeCuts->SetRejectMass(1.322, 0.005, 3312);
-  AntiCascadeCuts->SetRejectOmegas(1.322, 0.005);
-  AntiCascadeCuts->SetPtRangeXi(0.001, 999.9); 
-AntiXiNegCuts->SetCheckPileUp(false);
-  AntiXiPosCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  AntiXiNegCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  AntiXiBachCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  AntiXiBachCuts->SetPID(AliPID::kKaon, 999., 4,true, 3);
+  //Signal selection
+  //----------------
+  CascadeOmegaCuts->SetXiMassRange(1.67245, 0.005);
+  CascadeOmegaCuts->SetCutXiDaughterDCA(XiDaughterDCA);
+  CascadeOmegaCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
+  CascadeOmegaCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
+  CascadeOmegaCuts->SetCutXiCPA(XiCPA);
+  CascadeOmegaCuts->SetCutv0CPA(v0CPA);
+  CascadeOmegaCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
+  CascadeOmegaCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
+  OmegaPosCuts->SetPID(AliPID::kProton, 999., nSigma);
+  OmegaNegCuts->SetPID(AliPID::kPion, 999., nSigma);
+  //OmegaBachCuts->SetPID(AliPID::kKaon, 999., 4,true, 3);
+  OmegaBachCuts->SetPID(AliPID::kKaon, 999., nSigma);
+  OmegaPosCuts->SetEtaRange(-1.*Eta,Eta);
+  OmegaNegCuts->SetEtaRange(-1.*Eta,Eta);
+  OmegaBachCuts->SetEtaRange(-1.*Eta,Eta);
+  OmegaPosCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  OmegaNegCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  OmegaBachCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  CascadeOmegaCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
+  CascadeOmegaCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
+  CascadeOmegaCuts->Setv0MassRange(1.116, v0MassRange);
+  CascadeOmegaCuts->SetRejectXis(1.322, RejectXis);
+  CascadeOmegaCuts->SetPtRangeXi(PtRangeXi, 999.9); 
+  OmegaNegCuts->SetCheckPileUp(PionCheckPileUp);
 
-  CascadeOmegaCuts->SetXiMassRange(1.6725, 0.005);
-//  CascadeOmegaCuts->SetXiMassRange(1.6725, 0.005, 0., 0.);
-  CascadeOmegaCuts->SetCutXiDaughterDCA(.8);
-  CascadeOmegaCuts->SetCutXiMinDistBachToPrimVtx(0.001);
-  CascadeOmegaCuts->SetCutXiCPA(0.995);
-  CascadeOmegaCuts->SetCutXiTransverseRadius(0.001, 200);
-  CascadeOmegaCuts->Setv0MassRange(1.116, 0.006);
-  CascadeOmegaCuts->SetCutv0MaxDaughterDCA(1.2);
-  CascadeOmegaCuts->SetCutv0CPA(0.97);
-  CascadeOmegaCuts->SetCutv0TransverseRadius(.001, 200);
-  CascadeOmegaCuts->SetCutv0MinDistToPrimVtx(0.06);
-  CascadeOmegaCuts->SetCutv0MinDaugDistToPrimVtx(0.001);
-  //CascadeOmegaCuts->SetRejectMass(1.322, 0.005, 3312);
-  CascadeOmegaCuts->SetRejectOmegas(1.322, 0.005);
-  CascadeOmegaCuts->SetPtRangeXi(0.001, 999.9); 
-OmegaNegCuts->SetCheckPileUp(false);
-  OmegaPosCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  OmegaNegCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  OmegaBachCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  OmegaBachCuts->SetPID(AliPID::kKaon, 999., 4,true, 3);
+  AntiCascadeOmegaCuts->SetXiMassRange(1.67245, 0.005);
+  AntiCascadeOmegaCuts->SetCutXiDaughterDCA(XiDaughterDCA);
+  AntiCascadeOmegaCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
+  AntiCascadeOmegaCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
+  AntiCascadeOmegaCuts->SetCutXiCPA(XiCPA);
+  AntiCascadeOmegaCuts->SetCutv0CPA(v0CPA);
+  AntiCascadeOmegaCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
+  AntiCascadeOmegaCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
+  AntiOmegaPosCuts->SetEtaRange(-1.*Eta,Eta);
+  AntiOmegaNegCuts->SetEtaRange(-1.*Eta,Eta);
+  AntiOmegaBachCuts->SetEtaRange(-1.*Eta,Eta);
+  AntiOmegaPosCuts->SetPID(AliPID::kPion, 999., nSigma);
+  AntiOmegaNegCuts->SetPID(AliPID::kProton, 999., nSigma);
+  //AntiOmegaBachCuts->SetPID(AliPID::kKaon, 999., 4,true,3);
+  AntiOmegaBachCuts->SetPID(AliPID::kKaon, 999., nSigma);
+  AntiOmegaPosCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  AntiOmegaNegCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  AntiOmegaBachCuts->SetCutTPCCrossedRows(true, TPCcrR, CrF);
+  AntiCascadeOmegaCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
+  AntiCascadeOmegaCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
+  AntiCascadeOmegaCuts->Setv0MassRange(1.116, v0MassRange);
+  AntiCascadeOmegaCuts->SetRejectXis(1.322, RejectXis);
+  AntiCascadeOmegaCuts->SetPtRangeXi(PtRangeXi, 999.9);    
+  AntiOmegaPosCuts->SetCheckPileUp(PionCheckPileUp);
 
-  AntiCascadeOmegaCuts->SetXiMassRange(1.6725, 0.005);
-//  AntiCascadeOmegaCuts->SetXiMassRange(1.6725, 0.005, 0., 0.);
-  AntiCascadeOmegaCuts->SetCutXiDaughterDCA(.8);
-  AntiCascadeOmegaCuts->SetCutXiMinDistBachToPrimVtx(0.001);
-  AntiCascadeOmegaCuts->SetCutXiCPA(0.995);
-  AntiCascadeOmegaCuts->SetCutXiTransverseRadius(0.001, 200);
-  AntiCascadeOmegaCuts->Setv0MassRange(1.116, 0.006);
-  AntiCascadeOmegaCuts->SetCutv0MaxDaughterDCA(1.2);
-  AntiCascadeOmegaCuts->SetCutv0CPA(0.97);
-  AntiCascadeOmegaCuts->SetCutv0TransverseRadius(.001, 200);
-  AntiCascadeOmegaCuts->SetCutv0MinDistToPrimVtx(0.06);
-  AntiCascadeOmegaCuts->SetCutv0MinDaugDistToPrimVtx(0.001);
-  //AntiCascadeOmegaCuts->SetRejectMass(1.322, 0.005, 3312);
-  AntiCascadeOmegaCuts->SetRejectOmegas(1.322, 0.005);
-  AntiCascadeOmegaCuts->SetPtRangeXi(0.001, 999.9);    
-AntiOmegaNegCuts->SetCheckPileUp(false);
-  AntiOmegaPosCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  AntiOmegaNegCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  AntiOmegaBachCuts->SetCutTPCCrossedRows(true, 60, 0.75);
-  AntiOmegaBachCuts->SetPID(AliPID::kKaon, 999., 4,true,3);
+  //Proton cuts:
+  //------------
+  if(iCuts==1){
+   TrackCuts->SetPtRange(0.4, 4.05); //std 0.5
+   TrackCuts->SetEtaRange(-0.9,0.9); //std 0.8
+   TrackCuts->SetNClsTPC(70); //std 80
+   TrackCuts->SetDCAVtxXY(2.5); //std 0.1
+   TrackCuts->SetPID(AliPID::kProton, 0.75, 4.); //std 3
 
-//Proton cuts:
+   AntiTrackCuts->SetPtRange(0.4, 4.05);
+   AntiTrackCuts->SetEtaRange(-0.9, 0.9);
+   AntiTrackCuts->SetNClsTPC(70);
+   AntiTrackCuts->SetDCAVtxXY(2.5);
+   AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 4.); 
+  }
+  if(iCuts==2) {
+   TrackCuts->SetFilterBit(96);
+   AntiTrackCuts->SetFilterBit(96);
+  }
+
 }

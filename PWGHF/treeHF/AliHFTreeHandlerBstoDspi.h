@@ -8,7 +8,7 @@
 
 //*************************************************************************
 // \class AliHFTreeHandlerBstoDspi
-// \brief helper class to handle a tree for B+ cut optimisation and MVA analyses
+// \brief helper class to handle a tree for Bs cut optimisation and MVA analyses
 // \authors:
 // L. Vermunt, luuk.vermunt@cern.ch
 // G. Innocenti, gian.michele.innocenti@cern.ch
@@ -35,12 +35,14 @@ class AliHFTreeHandlerBstoDspi : public AliHFTreeHandler
 
   private:
 
+    //Variables for Bs->Dspi
     float fImpParProng[knMaxProngs]; ///prong impact parameter
     float fCosThetaStar; ///candidate cos theta star
     float fImpParProd; ///candidate product of impact parameter
     float fNormd0MeasMinusExp; ///candidate topomatic variable
   
-    float fInvMass_Ds; ///candidate invariant mass Ds
+    //Variables for Ds->KKpi
+    float fInvMass_Ds; ///Ds invariant mass
     float fPt_Ds; ///Ds pt
     float fY_Ds; ///Ds rapidity
     float fEta_Ds; ///Ds pseudorapidity

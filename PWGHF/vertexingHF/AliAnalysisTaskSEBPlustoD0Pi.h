@@ -58,26 +58,26 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
 
   //selection and reconstruction
   void     BPlustoD0PiSignalTracksInMC(TClonesArray * mcTrackArray,AliAODEvent*  aodevent,TMatrix * BPlustoD0PiLabelMatrix, TList *listout);
-  Bool_t   D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, AliAODMCHeader * header);
-  Bool_t   D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, AliAODMCHeader * header);
+  Bool_t   D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, AliAODMCHeader * header, AliAODEvent* aodEvent);
+  Bool_t   D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, AliAODMCHeader * header, AliAODEvent* aodEvent);
   void     BPlusPionSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header);
 
   void     D0Selection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz,TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, TClonesArray * D0TracksFromFriendFile, AliAODMCHeader * header);
   void     BPlusSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, TClonesArray * D0TracksFromFriendFile, AliAODMCHeader * header);
   Int_t    IsTrackInjected(AliAODTrack *part,AliAODMCHeader *header,TClonesArray *arrayMC);
   Bool_t   IsCandidateInjected(AliAODRecoDecayHF2Prong *part, AliAODMCHeader *header,TClonesArray *arrayMC);
-  void     CutOptimizationLoop(Int_t variable, Int_t nVariables, Int_t nCuts, Int_t ptBin, Int_t fillNumber, Bool_t isDesiredCandidate);
+  void     CutOptimizationLoop(Int_t variable, Int_t nVariables, Int_t nCuts, Int_t ptBin, Int_t fillNumber, Bool_t isDesiredCandidate, Int_t nSigmaBin);
   void     CutOptimizationVariableValues(AliAODRecoDecayHF2Prong * candidateBPlus, AliAODEvent*  aod);
 
-  AliAODVertex* RecalculateVertex(const AliVVertex *primary,TObjArray *tracks,Double_t bField, Double_t dispersion);
+  AliAODVertex* RecalculateVertex(const AliVVertex *primary,TObjArray *tracks,Double_t bField, Double_t dispersion, Bool_t optUseFitter, Bool_t optPropagate, Bool_t optUseDiamondConstraint);
   void     FillFinalTrackHistograms(AliAODRecoDecayHF2Prong * selectedBPlus, AliAODVertex *primaryVertex, Double_t bz, Bool_t isDesiredCandidate,TClonesArray * mcTrackArray);
 
   void     FillD0Histograms(AliAODRecoDecayHF2Prong * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType, Int_t pdgCodeMother = -1);
   void     FillBPlusHistograms(AliAODRecoDecayHF2Prong * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType);
-  Int_t    MatchCandidateToMonteCarlo(Int_t pdgabs, AliAODRecoDecayHF2Prong * candidate, TClonesArray *mcArray, TMatrix * B0toDStarPiLabelMatrix) const;
+  Int_t    MatchCandidateToMonteCarlo(Int_t pdgabs, AliAODRecoDecayHF2Prong * candidate, TClonesArray *mcArray, TMatrix * B0toDStarPiLabelMatrix, Bool_t bCheckLabel = kFALSE) const;
 
-  void     TwoTrackCombinationInfo(AliExternalTrackParam * firstTrack, AliExternalTrackParam * secondTrack, AliAODVertex * primaryVertex, Double_t bz, Bool_t isDesiredCandidate, TString histogram_name, UInt_t prongs[2]);
-  void     ThreeTrackCombinationInfo(AliExternalTrackParam * firstTrack, AliExternalTrackParam * secondTrack, AliExternalTrackParam * thirdTrack, AliAODVertex * primaryVertex, Double_t bz, Bool_t isDesiredCandidate, TString histogram_name, UInt_t prongs[3]);
+  void     TwoTrackCombinationInfo(AliExternalTrackParam * firstTrack, AliExternalTrackParam * secondTrack, AliAODVertex * primaryVertex, Double_t bz, Bool_t isDesiredCandidate, Int_t histogramNumber, UInt_t prongs[2]);
+  void     ThreeTrackCombinationInfo(AliExternalTrackParam * firstTrack, AliExternalTrackParam * secondTrack, AliExternalTrackParam * thirdTrack, AliAODVertex * primaryVertex, Double_t bz, Bool_t isDesiredCandidate, Int_t histogramNumber, UInt_t prongs[3]);
 
   /// set MC usage
   void     SetMC(Bool_t bUseMCInfo) {fUseMCInfo = bUseMCInfo;}
@@ -86,19 +86,12 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   Double_t DeltaInvMassBPlusKpipi(AliAODRecoDecayHF2Prong * BPlus) const;
 
   void     SetQuickSignalAnalysis(Int_t value){fQuickSignalAnalysis = value;}
-  void     SetGetCutInfo(Bool_t value){fGetCutInfo = value;}
 
   void     SetShowMask(Bool_t bShowMask) {fShowMask = bShowMask;}
   Bool_t   GetShowMask() const {return fShowMask;}
 
   void     SetShowRejection(Bool_t bShowRejection) {fShowRejection = bShowRejection;}
   Bool_t   GetShowRejection() const {return fShowRejection;}
-
-  // void     SetUse3DHistograms(Bool_t bUse3DHistograms) {fUse3DHistograms = bUse3DHistograms;}
-  // Bool_t   GetUse3DHistograms() const {return fUse3DHistograms;}
-
-  // void     SetUpgradeSetting(Int_t nUpgradeSetting) {fUpgradeSetting = nUpgradeSetting;}
-  // Int_t    GetUpgradeSetting() const {return fUpgradeSetting;}
 
   void     SetHistMassWindow(Double_t value) {fHistMassWindow = value;}
   Double_t GetHistMassWindow() const {return fHistMassWindow;}
@@ -109,11 +102,11 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   void     SetNumberOfRotations(Int_t value) {fNumberOfRotations = value;}
   Int_t    GetNumberOfRotations() const {return fNumberOfRotations;}
 
-  void     SetCheckBackground(Bool_t value) {fCheckBackground = value;}
-  Bool_t   GetCheckBackground() const {return fCheckBackground;}
-
   void     SetPerformCutOptimization(Bool_t bPerformCutOptimization) {fPerformCutOptimization = bPerformCutOptimization;}
   Bool_t   GetPerformCutOptimization() const {return fPerformCutOptimization;}
+
+  void     SetRemoveInjected(Bool_t bRemoveInjected) {fRemoveInjected = bRemoveInjected;}
+  Bool_t   GetRemoveInjected() const {return fRemoveInjected;}
 
  private:
   
@@ -125,18 +118,15 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   Bool_t fShowMask;                              //
   Bool_t fShowRejection;                         //
   Int_t  fQuickSignalAnalysis;                   //
-  Bool_t fGetCutInfo;                            //
-  // Bool_t fUse3DHistograms;                       //
-  // Int_t  fUpgradeSetting;                        //
   Double_t fHistMassWindow;                      //  
   Int_t  fDegreePerRotation;                     //
   Int_t  fNumberOfRotations;                     //
-  Bool_t fCheckBackground;                       //
   Bool_t fPerformCutOptimization;                //
+  Bool_t fRemoveInjected;                        //
 
   TList *fOutput;                                //!<!  User output
   TList *fListCuts;                              //!<!  User output  
-  TList *fOutputBPlusMC;                         //!<!  User output
+  TList *fOutputBPlusResults;                    //!<!  User output
   TList *fOutputD0FirstDaughter;                 //!<!  User output
   TList *fOutputD0SecondDaughter;                //!<!  User output
   TList *fOutputBPlusPion;                       //!<!  User output
@@ -147,6 +137,8 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   AliRDHFCutsBPlustoD0Pi *fCuts;                 // Cuts - sent to output
   
   TH1F *fCEvents;                                //!<!
+  TH1F *fCTrigger;                               //!<!
+  TH1F *fCRejected;                              //!<!
 
   std::vector<Int_t> * fBPlusPionTracks;         //!
   std::vector<Int_t> * fD0Tracks;                //!
@@ -166,9 +158,11 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   TH1F* fMotherHistogramArray[6][99][60];        //!
   TH2F* fMotherHistogramArray2D[6][99][60];      //!
   TH1F* fMotherHistogramArrayExtra[7][10];       //!
+  TH1F* fResultsHistogramArray[20][99];          //!
+  TH2F* fResultsHistogramArray2D[20][99];        //!
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEBPlustoD0Pi,2); /// class for BPlus spectra
+  ClassDef(AliAnalysisTaskSEBPlustoD0Pi,3); /// class for BPlus spectra
   /// \endcond
 };
 

@@ -7,13 +7,17 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliAODConversionPhoton.h"
 #include "AliAODv0.h"
 #include "AliEventCuts.h"
+#include "AliAODMCParticle.h"
 
 ClassImp(AliAnalysisNanoAODTrackCuts)
 ClassImp(AliAnalysisNanoAODV0Cuts)
 ClassImp(AliAnalysisNanoAODCascadeCuts)
+ClassImp(AliAnalysisNanoAODPhotonCuts)
 ClassImp(AliAnalysisNanoAODEventCuts)
+ClassImp(AliAnalysisNanoAODMCParticleCuts)
 ClassImp(AliNanoAODSimpleSetter)
 
 
@@ -697,6 +701,39 @@ Bool_t AliAnalysisNanoAODCascadeParametricCuts::IsSelected(TObject* obj) {
     return true;
 }
 
+AliAnalysisNanoAODPhotonCuts::AliAnalysisNanoAODPhotonCuts()
+    : AliAnalysisCuts(),
+      fPhotonEtaMax(-1.f),
+      fPhotonConvRadiusMin(-1.f),
+      fPhotonConvRadiusMax(-1.f),
+      fPhotonPsiPairMax(-1.f)
+{ }
+
+Bool_t AliAnalysisNanoAODPhotonCuts::IsSelected(TObject* obj) {
+  // Photon selection
+
+  auto photonCandidate = dynamic_cast<AliAODConversionPhoton *>(obj);
+  if (!photonCandidate)
+    AliFatal("Did not pass a Photon Candidate");
+
+  if (fPhotonEtaMax > 0
+      && TMath::Abs(photonCandidate->GetPhotonEta()) > fPhotonEtaMax)
+    return false;
+
+  if (fPhotonConvRadiusMin > 0) {
+    const float transRadius = photonCandidate->GetConversionRadius();
+    if (transRadius > fPhotonConvRadiusMax
+        || transRadius < fPhotonConvRadiusMin)
+      return false;
+  }
+
+  if (fPhotonPsiPairMax > 0
+      && TMath::Abs(photonCandidate->GetPsiPair()) > fPhotonPsiPairMax) {
+    return false;
+  }
+
+  return kTRUE;
+}
 
 AliAnalysisNanoAODEventCuts::AliAnalysisNanoAODEventCuts():
   AliAnalysisCuts(), 
@@ -732,6 +769,45 @@ Bool_t AliAnalysisNanoAODEventCuts::IsSelected(TObject* obj)
   }
       
   return kTRUE;
+}
+
+AliAnalysisNanoAODMCParticleCuts::AliAnalysisNanoAODMCParticleCuts()
+    : AliAnalysisCuts(),
+      fDoSelectPrimaries(true),
+      fDoSelectCharged(true),
+      fMinPt(0.f),
+      fMaxEta(999.f),
+      fPDGToKeep(),
+      fPDGV0(),
+      fPDGV0Cascade(){
+}
+
+bool AliAnalysisNanoAODMCParticleCuts::IsSelected(TObject* obj) {
+  // Returns true if the MC particle is to be kept!
+  AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(obj);
+  if(!part) {
+    AliFatal("MC particle missing");
+  }
+
+  // if this is activated the specified particles are kept ignoring the cuts
+  for (auto it : fPDGToKeep) {
+    if (it == TMath::Abs(part->PdgCode())) {
+      return true;
+    }
+  }
+  if (part->Pt() < fMinPt) {
+    return false;
+  }
+  if (TMath::Abs(part->Eta()) > fMaxEta) {
+    return false;
+  }
+  if (fDoSelectPrimaries && !part->IsPhysicalPrimary()) {
+    return false;
+  }
+  if (fDoSelectCharged && !part->Charge()) {
+    return false;
+  }
+  return true;
 }
 
 void AliNanoAODSimpleSetter::Init(AliNanoAODHeader* head, TString varListHeader)

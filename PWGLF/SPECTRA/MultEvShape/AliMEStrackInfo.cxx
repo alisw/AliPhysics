@@ -126,7 +126,8 @@ AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCom
   fPID.fRaw[kTPC] = t->GetTPCsignal();
 
   // set PID TOF
-  pidComb->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+  // pidComb->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+  pidComb->SetDetectorMask(AliPIDResponse::kDetITS|AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
   pidComb->ComputeProbabilities(t, rpid, bayesProb);
   for(Int_t is(0); is<AliPID::kSPECIES; is++) fPID.fNsigma[kITS][is] = rpid->NumberOfSigmasTOF(t, AliPID::EParticleType(is));
   memcpy(fPID.fProb[kTOF], bayesProb, AliPID::kSPECIES*sizeof(Double_t));

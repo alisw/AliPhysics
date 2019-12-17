@@ -147,6 +147,8 @@ public:
   void     SwitchOnBadCellRemove()                        { fBadCellRemove = kTRUE           ;} 
   void     SwitchOffBadCellRemove()                       { fBadCellRemove = kFALSE          ;}  
 
+  void     Load1DBadChannelMap()                          { fLoad1DBadChMap = kTRUE          ;}
+
   void     SwitchOnClusterBadChannelCheck()               { fClusterBadChannelCheck = kTRUE  ;} 
   void     SwitchOffClusterBadChannelCheck()              { fClusterBadChannelCheck = kFALSE ;}  
 
@@ -157,7 +159,9 @@ public:
   void     SwitchOffClusterExoticChannelCheck()           { fRejectExoticClusters = kFALSE   ;}  
 
   void     SwitchOnCalibrateEnergy()                      { fCalibrateEnergy = kTRUE         ;} 
-  void     SwitchOffCalibrateEnergy()                     { fCalibrateEnergy = kFALSE        ;}  
+  void     SwitchOffCalibrateEnergy()                     { fCalibrateEnergy = kFALSE        ;}
+
+  void     Load1DRecalibration()                          { fLoad1DRecalibFactors = kTRUE    ;}  
 
   void     SwitchOnCalibrateTime()                        { fCalibrateTime = kTRUE           ;} 
   void     SwitchOffCalibrateTime()                       { fCalibrateTime = kFALSE          ;}  
@@ -241,6 +245,8 @@ private:
   Bool_t                 fCalibrateTimeL1Phase;   // flag cell time calibration with L1phase shift
   Bool_t                 fDoNonLinearity;         // nNon linearity correction flag
   Bool_t                 fBadCellRemove;          // zero bad cells
+  Bool_t                 fLoad1DBadChMap;         // Flag to load 1D bad channel map
+  Bool_t                 fLoad1DRecalibFactors;   // Falg to load 1D energy recalibration histogram
   Bool_t                 fRejectExoticCells;      // reject exotic cells
   Bool_t                 fRejectExoticClusters;   // recect clusters with exotic cells
   Bool_t                 fClusterBadChannelCheck; // check clusters for bad channels
@@ -307,6 +313,6 @@ private:
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 23); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 24); // EMCAL tender task
 };
 #endif

@@ -17,13 +17,17 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton()
       fTrack(nullptr),
       fProton(nullptr),
       fProtonList(nullptr),
+      fProtonMCList(nullptr),
       fAntiProton(nullptr),
       fAntiProtonList(nullptr),
+      fAntiProtonMCList(nullptr),
       fCascade(nullptr),
       fXi(nullptr),
       fXiList(nullptr),
+      fXiMCList(nullptr),
       fAntiXi(nullptr),
       fAntiXiList(nullptr),
+      fAntiXiMCList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -33,7 +37,8 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton()
       fGTI(nullptr) {
 }
 
-AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton(const char* name)
+AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton(const char* name,
+                                                     bool isMC)
     : AliAnalysisTaskSE(name),
       fisLightWeight(false),
       fEvent(nullptr),
@@ -42,13 +47,17 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton(const char* name)
       fTrack(nullptr),
       fProton(nullptr),
       fProtonList(nullptr),
+      fProtonMCList(nullptr),
       fAntiProton(nullptr),
       fAntiProtonList(nullptr),
+      fAntiProtonMCList(nullptr),
       fCascade(nullptr),
       fXi(nullptr),
       fXiList(nullptr),
+      fXiMCList(nullptr),
       fAntiXi(nullptr),
       fAntiXiList(nullptr),
+      fAntiXiMCList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -63,6 +72,12 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton(const char* name)
   DefineOutput(5, TList::Class());  //Output for the AntiXi Cuts
   DefineOutput(6, TList::Class());  //Output for the Results
   DefineOutput(7, TList::Class());  //Output for the Results QA
+  if (isMC) {
+    DefineOutput(8, TList::Class());  //Output for the Track MC
+    DefineOutput(9, TList::Class());  //Output for the Anti Track MC
+    DefineOutput(10, TList::Class());  //Output for the V0 MC
+    DefineOutput(11, TList::Class());  //Output for the Anti V0 MC
+  }
 }
 
 AliAnalysisTaskNanoXioton::~AliAnalysisTaskNanoXioton() {
@@ -139,18 +154,22 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
 
   fTrack = new AliFemtoDreamTrack();
-  fTrack->SetUseMCInfo(false);
+  fTrack->SetUseMCInfo(
+      fProton->GetIsMonteCarlo() || fAntiProton->GetIsMonteCarlo());
 
   fCascade = new AliFemtoDreamCascade();
-  fCascade->SetUseMCInfo(false);
+  fCascade->SetUseMCInfo(fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
   //PDG Codes should be set assuming Xi- to also work for Xi+
   fCascade->SetPDGCode(3312);
   fCascade->SetPDGDaugPos(2212);
-  fCascade->GetPosDaug()->SetUseMCInfo(false);
+  fCascade->GetPosDaug()->SetUseMCInfo(
+      fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
   fCascade->SetPDGDaugNeg(211);
-  fCascade->GetNegDaug()->SetUseMCInfo(false);
+  fCascade->GetNegDaug()->SetUseMCInfo(
+      fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
   fCascade->SetPDGDaugBach(211);
-  fCascade->GetBach()->SetUseMCInfo(false);
+  fCascade->GetBach()->SetUseMCInfo(
+      fXi->GetIsMonteCarlo() || fAntiXi->GetIsMonteCarlo());
   fCascade->Setv0PDGCode(3122);
 
   if (!fEventCuts->GetMinimalBooking()) {
@@ -160,41 +179,22 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
     fEvtList->SetName("EventCuts");
     fEvtList->SetOwner();
   }
-  if (!fProton->GetMinimalBooking()) {
-    fProtonList = fProton->GetQAHists();
-  } else {
-    fProtonList = new TList();
-    fProtonList->SetName("TrackCuts");
-    fProtonList->SetOwner();
-  }
-  if (!fAntiProton->GetMinimalBooking()) {
-    fAntiProtonList = fAntiProton->GetQAHists();
-  } else {
-    fAntiProtonList = new TList();
-    fAntiProtonList->SetName("AntiTrackCuts");
-    fAntiProtonList->SetOwner();
-  }
-  if (!fXi->GetMinimalBooking()) {
-    fXiList = fXi->GetQAHists();
-  } else {
-    fXiList = new TList();
-    fXiList->SetName("XiCuts");
-    fXiList->SetOwner();
-  }
-  if (!fAntiXi->GetMinimalBooking()) {
-    fAntiXiList = fAntiXi->GetQAHists();
-  } else {
-    fAntiXiList = new TList();
-    fAntiXiList->SetName("AntiXiCuts");
-    fAntiXiList->SetOwner();
-  }
+
+  fProtonList = fProton->GetQAHists();
+  fAntiProtonList = fAntiProton->GetQAHists();
+  fXiList = fXi->GetQAHists();
+  fAntiXiList = fAntiXi->GetQAHists();
+
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
-  if (!fConfig->GetMinimalBookingME()) {
+
+  if (fConfig->GetUseEventMixing()) {
     fResults = fPartColl->GetHistList();
-    fResultsQA->Add(fPartColl->GetQAList());
-    fResultsQA->Add(fPairCleaner->GetHistList());
+    if (!fConfig->GetMinimalBookingME()) {
+      fResultsQA->Add(fPartColl->GetQAList());
+      fResultsQA->Add(fPairCleaner->GetHistList());
+    }
   } else {
     fResults = new TList();
     fResults->SetOwner();
@@ -207,6 +207,48 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
   PostData(5, fAntiXiList);
   PostData(6, fResults);
   PostData(7, fResultsQA);
+
+  if (fProton->GetIsMonteCarlo()) {
+    if (!fProton->GetMinimalBooking()) {
+      fProtonMCList = fProton->GetMCQAHists();
+    } else {
+      fProtonMCList = new TList();
+      fProtonMCList->SetName("MCTrkCuts");
+      fProtonMCList->SetOwner();
+    }
+    PostData(8, fProtonMCList);
+  }
+  if (fAntiProton->GetIsMonteCarlo()) {
+    if (!fAntiProton->GetMinimalBooking()) {
+      fAntiProtonMCList = fAntiProton->GetMCQAHists();
+    } else {
+      fAntiProtonMCList = new TList();
+      fAntiProtonMCList->SetName("MCAntiTrkCuts");
+      fAntiProtonMCList->SetOwner();
+    }
+    PostData(9, fAntiProtonMCList);
+  }
+
+  if (fXi->GetIsMonteCarlo()) {
+    if (!fXi->GetMinimalBooking()) {
+      fXiMCList = fXi->GetMCQAHists();
+    } else {
+      fXiMCList = new TList();
+      fXiMCList->SetName("MCXiCuts");
+      fXiMCList->SetOwner();
+    }
+    PostData(10, fXiMCList);
+  }
+  if (fAntiXi->GetIsMonteCarlo()) {
+    if (!fAntiXi->GetMinimalBooking()) {
+      fAntiXiMCList = fAntiXi->GetMCQAHists();
+    } else {
+      fAntiXiMCList = new TList();
+      fAntiXiMCList->SetName("MCAntiv0Cuts");
+      fAntiXiMCList->SetOwner();
+    }
+    PostData(11, fAntiXiMCList);
+  }
 }
 
 void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
@@ -265,7 +307,6 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   fPairCleaner->CleanTrackAndDecay(&Protons, &Xis, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiXis, 1);
 
-
   fPairCleaner->CleanDecay(&Xis, 0);
   fPairCleaner->CleanDecay(&AntiXis, 1);
 
@@ -283,6 +324,18 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   PostData(5, fAntiXiList);
   PostData(6, fResults);
   PostData(7, fResultsQA);
+  if (fProton->GetIsMonteCarlo()) {
+    PostData(8, fProtonMCList);
+  }
+  if (fAntiProton->GetIsMonteCarlo()) {
+    PostData(9, fAntiProtonMCList);
+  }
+  if (fXi->GetIsMonteCarlo()) {
+    PostData(10, fXiMCList);
+  }
+  if (fAntiXi->GetIsMonteCarlo()) {
+    PostData(11, fAntiXiMCList);
+  }
 }
 
 //____________________________________________________________________________________________________

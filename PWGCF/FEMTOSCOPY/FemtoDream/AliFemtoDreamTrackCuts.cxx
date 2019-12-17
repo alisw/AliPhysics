@@ -32,7 +32,10 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fFilterBit(0),
       fpTmin(0.),
       fpTmax(0.),
+      fpTexmin(0.),
+      fpTexmax(0.),
       fcutPt(false),
+      fexclPt(false),
       fetamin(0.),
       fetamax(0.),
       fcutEta(false),
@@ -87,7 +90,10 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fFilterBit(cuts.fFilterBit),
       fpTmin(cuts.fpTmin),
       fpTmax(cuts.fpTmax),
+      fpTexmin(cuts.fpTexmin),
+      fpTexmax(cuts.fpTexmax),
       fcutPt(cuts.fcutPt),
+      fexclPt(cuts.fexclPt),
       fetamin(cuts.fetamin),
       fetamax(cuts.fetamax),
       fcutEta(cuts.fcutEta),
@@ -145,7 +151,10 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fFilterBit = cuts.fFilterBit;
   this->fpTmin = cuts.fpTmin;
   this->fpTmax = cuts.fpTmax;
+  this->fpTexmin = cuts.fpTexmin;
+  this->fpTexmax = cuts.fpTexmax;
   this->fcutPt = cuts.fcutPt;
+  this->fexclPt = cuts.fexclPt;
   this->fetamin = cuts.fetamin;
   this->fetamax = cuts.fetamax;
   this->fcutEta = cuts.fcutEta;
@@ -209,7 +218,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(22);
+        fHists->FillTrackCounter(26);
     }
   }
   if (pass) {
@@ -248,6 +257,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
         fHists->FillTrackCounter(1);
     }
   }
+
   if (pass && fcutPt) {
     if (Track->GetPt() < fpTmin || Track->GetPt() > fpTmax) {
       pass = false;
@@ -256,12 +266,20 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
         fHists->FillTrackCounter(2);
     }
   }
+  if (pass && fexclPt) {
+    if ( (Track->GetPt() < fpTexmax && Track->GetPt() > fpTexmin) ) {
+      pass = false;
+    } else {
+      if (!fMinimalBooking)
+        fHists->FillTrackCounter(3);
+    }
+  }
   if (pass && fcutEta) {
     if (eta[0] < fetamin || eta[0] > fetamax) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(3);
+        fHists->FillTrackCounter(4);
     }
   }
   if (pass && fcutCharge) {
@@ -269,7 +287,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(4);
+        fHists->FillTrackCounter(5);
     }
   }
   if (pass && fCheckPileUpITS) {
@@ -277,7 +295,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(5);
+        fHists->FillTrackCounter(6);
     }
   }
   if (pass && fCheckPileUpSPDTOF) {
@@ -285,7 +303,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(6);
+        fHists->FillTrackCounter(7);
     }
   }
   if (pass && fCheckPileUpTOF) {
@@ -293,7 +311,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(7);
+        fHists->FillTrackCounter(8);
     }
   }
   if (pass && fCheckPileUp) {
@@ -301,7 +319,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(8);
+        fHists->FillTrackCounter(9);
     }
   }
   if (pass && fcutnTPCCls) {
@@ -309,7 +327,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(9);
+        fHists->FillTrackCounter(10);
     }
   }
   if (pass && fCutSharedClsTPC) {
@@ -317,7 +335,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(10);
+        fHists->FillTrackCounter(11);
     }
   }
   if (pass && fCutSharedCls) {
@@ -325,7 +343,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(11);
+        fHists->FillTrackCounter(12);
     }
   }
   if (pass && fCheckTPCRefit) {
@@ -333,7 +351,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(12);
+        fHists->FillTrackCounter(13);
     }
   }
   if (pass && fCutTPCCrossedRows) {
@@ -341,14 +359,14 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(13);
+        fHists->FillTrackCounter(14);
     }
     if (pass) {
       if (Track->GetRatioCr() < fRatioCrossedRows) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(14);
+          fHists->FillTrackCounter(15);
       }
     }
   }
@@ -358,7 +376,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(15);
+        fHists->FillTrackCounter(16);
     }
   }
 
@@ -376,12 +394,18 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
 
   if (Track->GetstatusITS() == AliPIDResponse::kDetPidOk) {
     ITSisthere = true;
+    if (!fMinimalBooking)
+      fHists->FillTrackCounter(17);
   }
   if (Track->GetstatusTPC() == AliPIDResponse::kDetPidOk) {
     TPCisthere = true;
+    if (!fMinimalBooking)
+      fHists->FillTrackCounter(18);
   }
   if (Track->GetstatusTOF() == AliPIDResponse::kDetPidOk) {
     TOFisthere = true;
+    if (!fMinimalBooking)
+      fHists->FillTrackCounter(19);
   }
   //Below a threshold where the bands are well seperated in the TPC use only
   //TPC for PID, since the TOF has only limited matching efficiency. Above
@@ -393,8 +417,6 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
       if (!TPCisthere) {
         pass = false;
       } else {
-        if (!fMinimalBooking)
-          fHists->FillTrackCounter(16);
         if (fRejectPions && TOFisthere) {
           float nSigTOF = (Track->GetnSigmaTOF((int) (AliPID::kPion)));
           if (TMath::Abs(nSigTOF) < fNSigValue) {
@@ -407,7 +429,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(17);
+              fHists->FillTrackCounter(24);
           }
         }
         if (pass) {
@@ -416,7 +438,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(18);
+              fHists->FillTrackCounter(22);
           }
         }
       }
@@ -425,7 +447,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(16);
+          fHists->FillTrackCounter(20);
         if (fRejectPions && TOFisthere) {
           float nSigTOF = (Track->GetnSigmaTOF((int) (AliPID::kPion)));
           if (TMath::Abs(nSigTOF) < fNSigValue) {
@@ -438,7 +460,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(17);
+              fHists->FillTrackCounter(24);
           }
         }
         if (pass) {
@@ -448,7 +470,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
               pass = false;
             } else {
               if (!fMinimalBooking)
-                fHists->FillTrackCounter(18);
+                fHists->FillTrackCounter(22);
             }
           } else {
             if (ITSisthere) {  //if there is no tpc, check its
@@ -457,7 +479,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
                 pass = false;
               } else {
                 if (!fMinimalBooking)
-                  fHists->FillTrackCounter(19);
+                  fHists->FillTrackCounter(21);
               }
             }
           }
@@ -477,13 +499,13 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(21);
+          fHists->FillTrackCounter(23);
         if (fCutHighPtSig) {
           if (!SmallestNSig(Track)) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(22);
+              fHists->FillTrackCounter(25);
           }
         }
       }
@@ -524,14 +546,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(24);
+          fHists->FillTrackCounter(27);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAZ()) < fDCAToVertexZ)) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(24);
+          fHists->FillTrackCounter(27);
       }
     }
   }
@@ -565,14 +587,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(25);
+          fHists->FillTrackCounter(28);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAXY()) < fDCAToVertexXY)) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(25);
+          fHists->FillTrackCounter(28);
       }
     }
   }
@@ -841,91 +863,95 @@ void AliFemtoDreamTrackCuts::BookTrackCuts() {
       fHists->FillConfig(0, fpTmin);
       fHists->FillConfig(1, fpTmax);
     }
+    if (fexclPt) {
+      fHists->FillConfig(2, fpTexmin);
+      fHists->FillConfig(3, fpTexmax);
+    }
     if (fcutEta) {
-      fHists->FillConfig(2, fetamin);
-      fHists->FillConfig(3, fetamax);
+      fHists->FillConfig(4, fetamin);
+      fHists->FillConfig(5, fetamax);
     }
     if (fcutCharge) {
-      fHists->FillConfig(4, fCharge);
+      fHists->FillConfig(6, fCharge);
     }
 
     if (fcutnTPCCls) {
-      fHists->FillConfig(5, fnTPCCls);
+      fHists->FillConfig(7, fnTPCCls);
     }
 
     if (fCheckFilterBit) {
-      fHists->FillConfig(6, fFilterBit);
+      fHists->FillConfig(8, fFilterBit);
     } else {
-      fHists->FillConfig(6, -1);
+      fHists->FillConfig(8, -1);
     }
     if (fMCData) {
-      fHists->FillConfig(7, 1);
+      fHists->FillConfig(9, 1);
     }
     if (fCutDCAToVtxXY) {
-      fHists->FillConfig(8, fDCAToVertexXY);
+      fHists->FillConfig(10, fDCAToVertexXY);
     }
     if (fCutDCAToVtxZ) {
-      fHists->FillConfig(9, fDCAToVertexZ);
+      fHists->FillConfig(11, fDCAToVertexZ);
     }
     if (fCutSharedClsTPC) {
-      fHists->FillConfig(10, fMaxSharedClsTPC);
+      fHists->FillConfig(12, fMaxSharedClsTPC);
     }
     if (fCutSharedCls) {
-      fHists->FillConfig(11, 1);
+      fHists->FillConfig(13, 1);
     }
     if (fCutTPCCrossedRows) {
-      fHists->FillConfig(12, fCrossedRows);
-      fHists->FillConfig(13, fRatioCrossedRows);
-    } else {
-      fHists->FillConfig(12, 0);
-      fHists->FillConfig(13, 0);
-    }
-    if (fCutPID) {
-      fHists->FillConfig(14, fPIDPTPCThreshold);
-      fHists->FillConfig(15, fNSigValue);
-      if (fAllowITSonly) {
-        fHists->FillConfig(16, fNSigValueITS);
-      } else {
-        fHists->FillConfig(16, 0);
-      }
-      if (fRejectPions) {
-        fHists->FillConfig(17, 1);
-      } else {
-        fHists->FillConfig(17, 0);
-      }
-      if (fCutHighPtSig) {
-        fHists->FillConfig(18, 1);
-      } else {
-        fHists->FillConfig(18, 0);
-      }
+      fHists->FillConfig(14, fCrossedRows);
+      fHists->FillConfig(15, fRatioCrossedRows);
     } else {
       fHists->FillConfig(14, 0);
       fHists->FillConfig(15, 0);
+    }
+    if (fCutPID) {
+      fHists->FillConfig(16, fPIDPTPCThreshold);
+      fHists->FillConfig(17, fNSigValue);
+      if (fAllowITSonly) {
+        fHists->FillConfig(18, fNSigValueITS);
+      } else {
+        fHists->FillConfig(18, 0);
+      }
+      if (fRejectPions) {
+        fHists->FillConfig(19, 1);
+      } else {
+        fHists->FillConfig(19, 0);
+      }
+      if (fCutHighPtSig) {
+        fHists->FillConfig(20, 1);
+      } else {
+        fHists->FillConfig(20, 0);
+      }
+    } else {
       fHists->FillConfig(16, 0);
       fHists->FillConfig(17, 0);
       fHists->FillConfig(18, 0);
+      fHists->FillConfig(19, 0);
+      fHists->FillConfig(20, 0);
     }
     if (fCheckPileUpITS) {
-      fHists->FillConfig(19, 1);
-    }
-    if (fCheckPileUpSPDTOF) {
-      fHists->FillConfig(20, 1);
-    }
-    if (fCheckPileUpTOF) {
       fHists->FillConfig(21, 1);
     }
-    if (fCheckPileUp) {
+    if (fCheckPileUpSPDTOF) {
       fHists->FillConfig(22, 1);
     }
-    if (fCheckTPCRefit) {
+    if (fCheckPileUpTOF) {
       fHists->FillConfig(23, 1);
     }
+    if (fCheckPileUp) {
+      fHists->FillConfig(24, 1);
+    }
+    if (fCheckTPCRefit) {
+      fHists->FillConfig(25, 1);
+    }
     if (fCutChi2) {
-      fHists->FillConfig(24, fMinCutChi2);
-      fHists->FillConfig(25, fMaxCutChi2);
+      fHists->FillConfig(26, fMinCutChi2);
+      fHists->FillConfig(27, fMaxCutChi2);
     }
     if (fCheckESDFiltering) {
-      fHists->FillConfig(26, 1);
+      fHists->FillConfig(28, 1);
     }
   }
 }

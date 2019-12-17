@@ -3,6 +3,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliMLResponse.h"
 #include "AliVertexerHyperTriton3Body.h"
 #include "Math/Vector4D.h"
 
@@ -48,12 +49,12 @@ struct RHypertriton3 {
   float fPosYPi;
   float fPosZPi;
 
-  Double32_t fDCAxyDeu; // [0.0,5.12,9]
-  Double32_t fDCAzDeu;  // [0.0,5.12,9]
-  Double32_t fDCAxyP;   // [0.0,5.12,9]
-  Double32_t fDCAzP;    // [0.0,5.12,9]
-  Double32_t fDCAxyPi;  // [0.0,5.12,9]
-  Double32_t fDCAzPi;   // [0.0,5.12,9]
+  Double32_t fDCAxyDeu;    // [0.0,5.12,9]
+  Double32_t fDCAzDeu;     // [0.0,5.12,9]
+  Double32_t fDCAxyP;      // [0.0,5.12,9]
+  Double32_t fDCAzP;       // [0.0,5.12,9]
+  Double32_t fDCAxyPi;     // [0.0,5.12,9]
+  Double32_t fDCAzPi;      // [0.0,5.12,9]
 
   unsigned char fNClusterTPCDeu;
   unsigned char fNClusterTPCP;
@@ -63,23 +64,23 @@ struct RHypertriton3 {
   unsigned char fITSClusterMapP;
   unsigned char fITSClusterMapPi;
 
-  Double32_t fNSigmaTPCDeu; // [-5.12,5.12,8]
-  Double32_t fNSigmaTPCP;   // [-5.12,5.12,8]
-  Double32_t fNSigmaTPCPi;  // [-5.12,5.12,8]
+  Double32_t fNSigmaTPCDeu;    // [-5.12,5.12,8]
+  Double32_t fNSigmaTPCP;      // [-5.12,5.12,8]
+  Double32_t fNSigmaTPCPi;     // [-5.12,5.12,8]
 
-  Double32_t fNSigmaTOFDeu; //  [-5.12,5.12,8]
-  Double32_t fNSigmaTOFP;   //  [-5.12,5.12,8]
-  Double32_t fNSigmaTOFPi;  //  [-5.12,5.12,8]
+  Double32_t fNSigmaTOFDeu;    //  [-5.12,5.12,8]
+  Double32_t fNSigmaTOFP;      //  [-5.12,5.12,8]
+  Double32_t fNSigmaTOFPi;     //  [-5.12,5.12,8]
 
   bool fHasTOFDeu;
   bool fHasTOFP;
   bool fHasTOFPi;
 
-  Double32_t fTrackChi2Deu; // [0.0,10,24,10]
-  Double32_t fTrackChi2P;   // [0.0,10,24,10]
-  Double32_t fTrackChi2Pi;  // [0.0,10,24,10]
+  Double32_t fTrackChi2Deu;    // [0.0,10,24,10]
+  Double32_t fTrackChi2P;      // [0.0,10,24,10]
+  Double32_t fTrackChi2Pi;     // [0.0,10,24,10]
 
-  Double32_t fDecayVertexChi2NDF; // [0.0,102,4,10]
+  Double32_t fDecayVertexChi2NDF;    // [0.0,102,4,10]
 
   bool fIsMatter;
 };
@@ -95,7 +96,7 @@ struct REvent {
 };
 
 struct SHypertriton3 {
-  int fRecoIndex; /// To connect with the reconstructed information
+  int fRecoIndex;    /// To connect with the reconstructed information
 
   long fPdgCode;
 
@@ -114,10 +115,20 @@ struct SHypertriton3 {
   float fPzPi;
 };
 
+struct MLSelected {
+  float score;
+  float fInvMass;
+  float fCt;
+  float fCentrality;
+  float fCandPt;
+};
+
 class AliAnalysisTaskHypertriton3ML : public AliAnalysisTaskSE {
 
 public:
-  AliAnalysisTaskHypertriton3ML(bool mc = false, std::string name = "HyperTriton2He3piML");
+  enum kReducedTrigger { kINT7 = BIT(0), kCentral = BIT(1), kSemiCentral = BIT(2), kPositiveB = BIT(3) };
+
+  AliAnalysisTaskHypertriton3ML(bool mc = false, std::string name = "HyperTriton3ML");
   virtual ~AliAnalysisTaskHypertriton3ML();
 
   virtual void UserCreateOutputObjects();
@@ -125,6 +136,9 @@ public:
   virtual void Terminate(Option_t *);
 
   static AliAnalysisTaskHypertriton3ML *AddTask(bool isMC = false, TString suffix = "");
+
+  void SetApplyML(bool applyML) { fApplyML = applyML; }
+  void SetMLResponseConfigfilePath(std::string configfilepath) { fMLResponseConfigfilePath = configfilepath; }
 
   void SetDownscaling(bool down) { fDownscaling = down; }
 
@@ -166,48 +180,51 @@ public:
 
   void SetMinCosPointingAngle(float minCosPA) { fMinCosPA = minCosPA; }
 
-  AliEventCuts fEventCuts; /// Event cuts class
-
-  AliVertexerHyperTriton3Body fVertexer; //
+  AliEventCuts fEventCuts;                  /// Event cuts class
+  AliVertexerHyperTriton3Body fVertexer;    /// custom 3-body decay vertexer
+  AliMLResponse *fMLResponse;               /// object for the ML application
 
 private:
-  TList *fListHist; //! List of Cascade histograms
-  TTree *fTreeHyp3; //! Output Tree, V0s
+  std::map<std::string, double> FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv);
 
-  AliInputEventHandler *fInputHandler; //!
-  AliPIDResponse *fPIDResponse;        //! PID response object
+  TList *fListHist;    //! List of Cascade histograms
+  TTree *fTreeHyp3;    //! Output Tree, V0s
+
+  AliInputEventHandler *fInputHandler;    //!
+  AliPIDResponse *fPIDResponse;           //! PID response object
 
   bool fMC;
   bool fOnlyTrueCandidates;
   bool fDownscaling;
+  bool fApplyML;
 
   /// Control histograms to monitor the filtering
-  TH2D *fHistNSigmaDeu; //! # sigma TPC for the deuteron
-  TH2D *fHistNSigmaP;   //! # sigma TPC proton for the positive prong
-  TH2D *fHistNSigmaPi;  //! # sigma TPC pion for the negative prong
-  TH2D *fHistInvMass;   //! # Invariant mass histogram
+  TH2D *fHistNSigmaDeu;    //! # sigma TPC for the deuteron
+  TH2D *fHistNSigmaP;      //! # sigma TPC proton for the positive prong
+  TH2D *fHistNSigmaPi;     //! # sigma TPC pion for the negative prong
+  TH2D *fHistInvMass;      //! # Invariant mass histogram
 
-  float fDownscalingFactorByEvent;     // fraction of the events saved in the tree
-  float fDownscalingFactorByCandidate; // fraction of the candidates saved in the tree
+  float fDownscalingFactorByEvent;        // fraction of the events saved in the tree
+  float fDownscalingFactorByCandidate;    // fraction of the candidates saved in the tree
 
-  float fMinCanidatePtToSave; // min candidate pt to save
-  float fMaxCanidatePtToSave; // max candidate pt to save
+  float fMinCanidatePtToSave;    // min candidate pt to save
+  float fMaxCanidatePtToSave;    // max candidate pt to save
 
   unsigned char fMinITSNcluster;
   unsigned char fMinTPCNcluster;
 
-  float fMaxNSigmaTPCDeu; // nSigma TPC limit for deuteron
-  float fMaxNSigmaTPCP;   // nSigma TPC limit for proton
-  float fMaxNSigmaTPCPi;  // nSigma TPC limit for pion
+  float fMaxNSigmaTPCDeu;    // nSigma TPC limit for deuteron
+  float fMaxNSigmaTPCP;      // nSigma TPC limit for proton
+  float fMaxNSigmaTPCPi;     // nSigma TPC limit for pion
 
-  float fMaxNSigmaTOFDeu; // nSigma TOF limit for deuteron
-  float fMaxNSigmaTOFP;   // nSigma TOF limit for proton
-  float fMaxNSigmaTOFPi;  // nSigma TOF limit for pion
+  float fMaxNSigmaTOFDeu;    // nSigma TOF limit for deuteron
+  float fMaxNSigmaTOFP;      // nSigma TOF limit for proton
+  float fMaxNSigmaTOFPi;     // nSigma TOF limit for pion
 
-  int fVertexerToleranceGuessCompatibility; // minimum number of compatible tracks with the guess of the decay vertex
-  float fVertexerMaxDistanceInit;           // max distance from the guess vertex for the compatible tracks
+  int fVertexerToleranceGuessCompatibility;    // minimum number of compatible tracks with the guess of the decay vertex
+  float fVertexerMaxDistanceInit;              // max distance from the guess vertex for the compatible tracks
 
-  float fMinCosPA; // minimum cos(poninting angle) accepted
+  float fMinCosPA;    // minimum cos(poninting angle) accepted
 
   float fMinDCA2PrimaryVtxDeu;
   float fMinDCA2PrimaryVtxP;
@@ -215,16 +232,20 @@ private:
 
   float fMaxPtPion;
 
-  std::vector<SHypertriton3> fSHypertriton; //!
-  std::vector<RHypertriton3> fRHypertriton; //!
-  REvent fREvent;                           //!
+  std::vector<SHypertriton3> fSHypertriton;    //!
+  std::vector<RHypertriton3> fRHypertriton;    //!
+  REvent fREvent;                              //!
+
+  std::vector<MLSelected> fMLSelected;    //!
 
   std::vector<AliESDtrack *> fDeuVector;
   std::vector<AliESDtrack *> fPVector;
   std::vector<AliESDtrack *> fPiVector;
 
-  AliAnalysisTaskHypertriton3ML(const AliAnalysisTaskHypertriton3ML &);            // not implemented
-  AliAnalysisTaskHypertriton3ML &operator=(const AliAnalysisTaskHypertriton3ML &); // not implemented
+  std::string fMLResponseConfigfilePath;    /// path for the ML config file
+
+  AliAnalysisTaskHypertriton3ML(const AliAnalysisTaskHypertriton3ML &);               // not implemented
+  AliAnalysisTaskHypertriton3ML &operator=(const AliAnalysisTaskHypertriton3ML &);    // not implemented
 
   ClassDef(AliAnalysisTaskHypertriton3ML, 1);
 };

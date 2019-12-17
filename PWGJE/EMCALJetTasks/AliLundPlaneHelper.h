@@ -275,7 +275,7 @@ public:
      * Reclusters jet with the Cambridge/Aachen algorithm and traverses the cluster tree.
      * For each splitting the lund plane parameters defined in AliLundPlaneParamters are
      * evaluated and added to the splitting container. The declustering is done always on the 
-     * softer subjet until the abort condition (no more child subjets or subjet > hard cutoff) 
+     * harder subjet until the abort condition (no more child subjets or subjet > hard cutoff) 
      * is fulfilled. Needs track/particle/cluster containers in order to have acces to the jet 
      * constituents.
      * 

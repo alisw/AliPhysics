@@ -106,8 +106,8 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground){
     contName1 += "_DetBackground";
-    contName2 += "_DetBackgroundl";
-    contName3 += "_DetBackgroundl";
+    contName2 += "_DetBackground";
+    contName3 += "_DetBackground";
   }
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection){

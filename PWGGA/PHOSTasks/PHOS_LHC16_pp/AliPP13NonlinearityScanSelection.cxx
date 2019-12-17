@@ -27,22 +27,23 @@ TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentumBinned(const Ali
 void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 {
 	// pi0 mass spectrum
-	Int_t nM       = 750;
-	Double_t mMin  = 0.0;
-	Double_t mMax  = 1.5;
-	Int_t nPt      = 400;
-	Double_t ptMin = 0;
-	Double_t ptMax = 20;
+	Int_t nM       = fLimits.nM;
+	Double_t mMin  = fLimits.mMin;
+	Double_t mMax  = fLimits.mMax;
+	Int_t nPt      = fLimits.nPt;
+	Double_t ptMin = fLimits.ptMin;
+	Double_t ptMax = fLimits.ptMax;
+
 
 	for (Int_t ia = 0; ia < kNbinsA; ++ia)
 	{
-		for (Int_t ib = 0; ib < kNbinsSigma; ++ib)
+		for (Int_t ib = 0; ib < kNbinsB; ++ib)
 		{
-			Float_t a = fWeightsScan[ia][ib].fNonA;
-			Float_t b = fWeightsScan[ia][ib].fNonSigma;
+			Float_t a = fWeightsScan[ia][ib].fE;
+			Float_t b = fWeightsScan[ia][ib].fD;
 
-			fInvariantMass[ia][ib] = new TH2F(Form("hMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
-			fMixInvariantMass[ia][ib] = new TH2F(Form("hMixMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), 10, mMin, mMax, 10, ptMin, ptMax);
+			fInvariantMass[ia][ib] = new TH2F(Form("hMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
+			fMixInvariantMass[ia][ib] = new TH2F(Form("hMixMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", a, b), 10, mMin, mMax, 10, ptMin, ptMax);
 
 			fListOfHistos->Add(fInvariantMass[ia][ib]);
 			fListOfHistos->Add(fMixInvariantMass[ia][ib]);
@@ -50,7 +51,7 @@ void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 	}
 	fPtPrimaryPi0 = new TH1F(
 	    "hPt_primary_#pi^{0}_",
-	    "Generated p_{T} spectrum of primary #pi^{0}s; p_{T}, GeV/c",
+	    "Generated p_{T} spectrum of primary #pi^{0}s; p_{T} (GeV/#it{c})",
 	    nPt, ptMin, ptMax);
 
 
@@ -74,7 +75,7 @@ void AliPP13NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, cons
 
 	for (Int_t ia = 0; ia < kNbinsA; ++ia)
 	{
-		for (Int_t ib = 0; ib < kNbinsSigma; ++ib)
+		for (Int_t ib = 0; ib < kNbinsB; ++ib)
 		{
 			TLorentzVector p1 = ClusterMomentumBinned(c1, eflags, ia, ib);
 			TLorentzVector p2 = ClusterMomentumBinned(c2, eflags, ia, ib);

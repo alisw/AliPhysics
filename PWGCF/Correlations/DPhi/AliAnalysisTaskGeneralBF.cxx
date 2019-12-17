@@ -2116,7 +2116,7 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
       AliMCEvent * mcEvent = MCEvent();
       _nTracks = mcEvent -> GetNumberOfTracks();
       
-      //Track Loop starts here
+      //Track Loop for particle 1 starts here
       for ( int iTrack = 0; iTrack < _nTracks; iTrack++ )
       {
         AliAODMCParticle * t = ( AliAODMCParticle * ) mcEvent -> GetTrack( iTrack );
@@ -2127,6 +2127,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         }
         
         if( !t -> IsPhysicalPrimary() ) continue;
+        if( t -> IsSecondaryFromWeakDecay() )  continue;
+        if( t -> IsSecondaryFromMaterial() )  continue;
         
         q      = t -> Charge();
         
@@ -2216,10 +2218,16 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
                  || pdgCodeOfMother == 310 // K_Short
                  || pdgCodeOfMother == 130 // K_Long
+                 || pdgCodeOfMother == 313 // K_Star_0
+                 || pdgCodeOfMother == 323 // K_Star_+
                  || pdgCodeOfMother == 333 // phi
                  || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
                  || pdgCodeOfMother == 111 // pi0
                  || pdgCodeOfMother == 22 // photon
+                 || pdgCodeOfMother == 2224 // Delta_++
+                 || pdgCodeOfMother == 2214 // Delta_+
+                 || pdgCodeOfMother == 2114 // Delta_0
+                 || pdgCodeOfMother == 1114 // Delta_-
                  ) continue;
             }
           }
@@ -2313,7 +2321,141 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             }
           }
         } // if ( _requestedCharge_1 == charge )
+      } //Track Loop particle 1 ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+      
+      
+      //------------------------------------------------------------------------------------------------------------------------------------------------
+      //Track Loop for particle 2 starts here
+      for ( int iTrack = 0; iTrack < _nTracks; iTrack++ )
+      {
+        AliAODMCParticle * t = ( AliAODMCParticle * ) mcEvent -> GetTrack( iTrack );
         
+        if ( !t ) {
+          AliError(Form("Could not receive track %d", iTrack));
+          continue;
+        }
+        
+        if( !t -> IsPhysicalPrimary() ) continue;
+        if( t -> IsSecondaryFromWeakDecay() )  continue;
+        if( t -> IsSecondaryFromMaterial() )  continue;
+        
+        q      = t -> Charge();
+        
+        //cout << "step 1 Au-Au: q = " << q << endl;
+        
+        charge = int( q/3. ); // particle charges are 3s in HIJING truth
+        
+        //cout << "step 2 Au-Au: charge = " << charge << endl;
+        
+        phi    = t -> Phi();
+        pt     = t -> Pt();
+        eta    = t -> Eta();
+        //y_direct = t -> Y(); // rapidity
+        y      = t -> Y();
+        
+        if ( _singlesOnly )
+        {
+          _etadis_before_any_cuts -> Fill( eta );
+          _phidis_before_any_cuts -> Fill( phi );
+        }
+        
+        /*
+         const float mpion = 0.1395701835; // GeV/c2
+         const float mkaon = 0.493667; // GeV/c2
+         const float mproton = 0.93827204621; // GeV/c2
+         if ( particleSpecies == 0 )  mass = mpion;
+         if ( particleSpecies == 1 )  mass = mkaon;
+         if ( particleSpecies == 2 )  mass = mproton;
+         y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y
+         
+         //check if 2 ways of getting rapidity give same results
+         if( TMath::Abs( t -> GetPdgCode() ) == 321  )
+         {
+         cout << " y = " << y << endl;
+         cout << " y_direct = " << y_direct << endl;
+         }
+         */
+        
+        // Kinematics cuts:
+        if( charge == 0 ) continue;
+        if( pt < _min_pt_2 || pt > ptUpperLimit_2 ) continue;
+        if( y < _min_eta_2 || y > _max_eta_2 ) continue;
+        
+        /*
+         int pdg = t -> GetPdgCode();
+         // Compare to http://pdg.lbl.gov/2007/reviews/montecarlorpp.pdf
+         // Important ones:
+         // proton: +/- 2212
+         // neutron 2212 (maybe +/- for anti-neutrons)
+         // charged kaon: +/- 321
+         // charged pion: +/- 211
+         // electron: +/- 11
+         // muon: +/- 13
+         // If you get any other number, double-check!
+         double mass = TParticlePDG::Mass( pdg );
+         */
+        
+        // fill track QA histograms
+        if ( _singlesOnly )  _y_Pt_AllCh_MCAODTruth -> Fill( y, pt ); // All Charged particles
+        
+        if( particleSpecies_2 == 0 )
+        { if( TMath::Abs( t -> GetPdgCode() ) != 211  )  continue; }
+        else if( particleSpecies_2 == 1 )
+        { if( TMath::Abs( t -> GetPdgCode() ) != 321  )  continue; }
+        else if( particleSpecies_2 == 2 )
+        { if( TMath::Abs( t -> GetPdgCode() ) != 2212 )  continue; }
+        else   return;
+        
+        if ( _singlesOnly )
+        {
+          _etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
+          _ydis_POI_AliHelperPID     -> Fill( y );
+          _phidis_POI_AliHelperPID   -> Fill( phi );
+          _y_Pt_POI_MCAODTruth -> Fill( y, pt ); //POI
+        }
+        //cout << "step 3 Au-Au: particle ID: " << t -> GetPdgCode() << endl;
+        
+        //Exclude resonances
+        if( fExcludeResonancesInMC )
+        {
+          Int_t gMotherIndex = t -> GetMother();
+          if( gMotherIndex != -1 ) {
+            AliAODMCParticle * motherTrack = dynamic_cast<AliAODMCParticle *>( mcEvent -> GetTrack( gMotherIndex ) );
+            if( motherTrack ) {
+              Int_t pdgCodeOfMother = motherTrack -> GetPdgCode();
+              
+              if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
+                 || pdgCodeOfMother == 310 // K_Short
+                 || pdgCodeOfMother == 130 // K_Long
+                 || pdgCodeOfMother == 313 // K_Star_0
+                 || pdgCodeOfMother == 323 // K_Star_+
+                 || pdgCodeOfMother == 333 // phi
+                 || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
+                 || pdgCodeOfMother == 111 // pi0
+                 || pdgCodeOfMother == 22 // photon
+                 || pdgCodeOfMother == 2224 // Delta_++
+                 || pdgCodeOfMother == 2214 // Delta_+
+                 || pdgCodeOfMother == 2114 // Delta_0
+                 || pdgCodeOfMother == 1114 // Delta_-
+                 ) continue;
+            }
+          }
+        }
+        
+        //cout << "step 4 Au-Au" << endl;
+        
+        /*
+         //Exclude electrons with PDG
+         if( fExcludeElectronsInMC ) {
+         if( TMath::Abs( t -> GetPdgCode() ) == 11 ) continue;
+         }
+         */
+        
+        if ( _useRapidity )  eta = y;  //switch from eta to y
+        
+        //cout << "step 5 Au-Au" << endl;
+        
+        //Particle 2
         if ( _requestedCharge_2 == charge )
           //&& dedx >=  _dedxMin && dedx < _dedxMax)
         {
@@ -2380,8 +2522,10 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               return;
             }
           }
-        } //if ( _requestedCharge_2 == charge )
-      } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+        }//if ( _requestedCharge_2 == charge )
+      } //Track Loop particle 2 ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+      
+      
     } //end of "if ( fAnalysisType == "MCAOD" )"
   } //if( fAODEvent )
   
@@ -2626,7 +2770,7 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               
               if (veto_Lambda)
               {
-                if ( mInvLambda>1.114683 && mInvLambda<1.116683 ) continue; // for both US and LS pion-proton correlations  
+                if ( mInvLambda>1.114683 && mInvLambda<1.116683 ) continue; // for both US and LS pion-proton correlations
               }
               
               if (veto_Lambda_left_sideband)

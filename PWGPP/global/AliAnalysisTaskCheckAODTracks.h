@@ -47,6 +47,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetUseMCtruthForPID(Bool_t opt=kTRUE){
     fUseMCId=opt;
   }
+  void SetUseGenPtInPlots(Bool_t opt=kTRUE){
+    fUseGenPt=opt;
+  }
   void SetUsePhysicsSelection(Bool_t opt=kTRUE){
     fUsePhysSel=opt;
   }
@@ -236,8 +239,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Int_t   fRequireITSforV0dau; // ITSrefit/SPDany requests for V0 daughters
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
+  Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,18);
+  ClassDef(AliAnalysisTaskCheckAODTracks,19);
 };
 
 

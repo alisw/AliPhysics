@@ -1,5 +1,14 @@
 #include "TROOT.h"
 #include "TSystem.h"
+#include <vector>
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskFemtoDream.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamCascadeCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#include "AliAnalysisTaskPIDResponse.h"
 AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
                                      TString CentEst = "kInt7", bool notpp =
                                          true,  //1
@@ -32,6 +41,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   bool eventMixing = true;  //13
   bool InvMassPairs = false;  //20
 
+
+  
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -420,7 +431,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   config->SetmTBinning(mTkTPlot);
   config->SetkTCentralityBinning(kTCentPlot);
   if (kTCentPlot) {
-    std::vector<float> centBins;
+    std::vector<int> centBins;
     centBins.push_back(20);
     centBins.push_back(40);
     centBins.push_back(90);
@@ -463,7 +474,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   config->SetSpinningDepth(10);
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
-  config->SetUseStravinskyMethod(stravinskyPhiSpin);
+  config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin); 
+  //config->SetUseStravinskyMethod(stravinskyPhiSpin);
   config->SetMinimalBookingME(false);
   config->SetMinimalBookingSample(true);
   if (!notpp) {

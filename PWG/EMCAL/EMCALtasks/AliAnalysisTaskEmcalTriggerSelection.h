@@ -335,6 +335,47 @@ public:
   void AutoConfigure(const char *period);
 
   /**
+   * @brief Trigger configuration for data anchored to run1 pp 7TeV (2011)
+   *
+   * Configuration is representing the Level0 trigger available in the
+   * run1 data taking for pp in 2011. This configuration is for the 
+   * simulation mode, correspondingly the trigger patch selection
+   * is applied on trigger patches calulated from FEE energies with energy 
+   * smearing applied. The following table lists the trigger classes supported 
+   * together with the corresponding settings:
+   * 
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (ADC) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |       L0      |     EMCAL       |   EMCL0 (2x2)  |       292       |
+   * 
+   * The size of the jet patch and the subregion size are defined in the configuration
+   * of the trigger maker kernel.
+   * 
+   * The trigger thresholds are tuned to describe the data.
+   */
+  void ConfigurePP7TeV2011();
+
+  /**
+   * @brief Trigger configuration for MC anchored to run1 pp 7TeV (2011)
+   *
+   * Configuration is representing the Level9 trigger available in the
+   * run1 data taking for pp in 2011. This configuration is for the 
+   * simulation mode, correspondingly the trigger patch selection
+   * is applied on trigger patches calulated from FEE energies with energy 
+   * smearing applied. The following table lists the trigger classes supported 
+   * together with the corresponding settings:
+   * 
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (GeV) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |       L0      |     EMCAL       |   EMCL0 (2x2)  |       5.5       |
+   * 
+   * The size of the jet patch and the subregion size are defined in the configuration
+   * of the trigger maker kernel.
+   * 
+   * The trigger thresholds are tuned to describe the data.
+   */
+  void ConfigureMCPP7TeV2011();
+  /**
    * @brief Trigger configuration for run1 pp (2012) - data mode
    * 
    * Configuration is representing all Level1 triggers available in the
@@ -377,6 +418,93 @@ public:
    * The trigger thresholds are tuned to describe the data.
    */
   void ConfigureMCPP2012();
+  /**
+   * @brief Trigger configuration for run1 pPb (2013) - data mode
+   * 
+   * Configuration is representing all Level1 triggers available in the
+   * run1 data taking for pPb in 2013. This configuration is for the 
+   * online mode (data events), correspondingly the trigger patch selection
+   * is applied on trigger patches fulfilling the recalc type. The following
+   * table lists the trigger classes supported together with the corresponding
+   * settings:
+   * 
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (ADC) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |      L0       |     EMCAL       |   L0 (2x2)     |       158       |
+   * |     EG1       |     EMCAL       |   EGA (2x2)    |       140       |
+   * |     EG2       |     EMCAL       |   EGA (2x2)    |        89       |
+   * |     EJ1       |     EMCAL       |   EJE (16x16)  |       260       |
+   * |     EJ2       |     EMCAL       |   EJE (16x16)  |       127       |
+   * 
+   * The size of the jet patch and the subregion size are defined in the configuration
+   * of the trigger maker kernel.
+   * 
+   * The trigger thresholds match the ones in https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalTriggerOffline
+   */
+  void ConfigurePPB5TeV2013();
+
+  /**
+   * @brief Trigger configuration for MC anchored to run1 pPb (2013)
+   *
+   * Configuration is representing all Level1 triggers available in the
+   * run2 data taking for pPb in 2013. This configuration is for the 
+   * simulation mode, correspondingly the trigger patch selection
+   * is applied on trigger patches calulated from FEE energies with energy 
+   * smearing applied. The following table lists the trigger classes supported 
+   * together with the corresponding settings:
+   * 
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (GeV) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |      L0       |     EMCAL       |   L0 (2x2)     |       3.0       |
+   * |     EG1       |     EMCAL       |   EGA (2x2)    |       11.       |
+   * |     EG2       |     EMCAL       |   EGA (2x2)    |       7.0       |
+   * |     EJ1       |     EMCAL       |   EJE (16x16)  |       20.       |
+   * |     EJ2       |     EMCAL       |   EJE (16x16)  |       10.       |
+   * 
+   * The size of the jet patch and the subregion size are defined in the configuration
+   * of the trigger maker kernel.
+   * 
+   * The trigger thresholds are tuned to describe the data.
+   */
+  void ConfigureMCPPB5TeV2013();
+
+  /**
+   * @brief Trigger configuration for run2 pp 5TeV (2015) - data mode
+   * 
+   * Configuration is representing all Level0 triggers available in the
+   * run2 data taking for pp 2015. This configuration is for the 
+   * online mode (data events), correspondingly the trigger patch selection
+   * is applied on trigger patches fulfilling the recalc type. The following
+   * table lists the trigger classes supported together with the corresponding
+   * settings:
+   * 
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (ADC) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |      L0       |     EMCAL       |   L0 (2x2)     |       263       |
+   * |      L0       |     DCAL        |   L0 (2x2)     |       263       |
+   * 
+   * The trigger thresholds match the ones in https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalTriggerOffline
+   */
+  void ConfigurePP5TeV2015();
+
+  /**
+   * @brief Trigger configuration for MC anchored to run2 pp 5TeV (2015)
+   *
+   * Configuration is representing all Level0 triggers available in the
+   * run2 data taking for pp 5TeV 2015. This configuration is for the 
+   * simulation mode, correspondingly the trigger patch selection
+   * is applied on trigger patches calulated from FEE energies with energy 
+   * smearing applied. The following table lists the trigger classes supported 
+   * together with the corresponding settings:
+   * 
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (GeV) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |      L0       |     EMCAL       |   L0 (2x2)     |       5.0       |
+   * |      L0       |     DCAL        |   L0 (2x2)     |       5.0       |
+   * 
+   * The trigger thresholds are tuned to describe the data.
+   */
+  void ConfigureMCPP5TeV2015();
 
   /**
    * @brief Trigger configuration for run2 pp (2016 - 2018) - data mode
@@ -436,6 +564,156 @@ public:
    * The trigger thresholds are tuned to describe the data.
    */
   void ConfigureMCPP2016();
+
+  /**
+   * @brief Trigger configuration for run2 pPb 5TeV (2016) - data mode
+   * 
+   * Configuration is representing all Level1 triggers available in the
+   * run2 data taking for pPb 5TeV 2016. This configuration is for the 
+   * online mode (data events), correspondingly the trigger patch selection
+   * is applied on trigger patches fulfilling the recalc type. The following
+   * table lists the trigger classes supported together with the corresponding
+   * settings:
+   * 
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (ADC) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |     EG1       |     EMCAL       |   EGA (2x2)    |       140       |
+   * |     EG2       |     EMCAL       |   EGA (2x2)    |        83       |
+   * |     DG1       |     DCAL        |   EGA (2x2)    |       140       |
+   * |     DG2       |     DCAL        |   EGA (2x2)    |        83       |
+   * |     EJ1       |     EMCAL       |   EJE (16x16)  |       318       |
+   * |     EJ2       |     EMCAL       |   EJE (16x16)  |       255       |
+   * |     DJ1       |     DCAL        |   EJE (8x8)    |       318       |
+   * |     DJ2       |     DCAL        |   EJE (8x8)    |       255       |
+   * 
+   * The trigger thresholds match the ones in https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalTriggerOffline
+   */
+  void ConfigurePPB5TeV2016();
+
+  /**
+   * @brief Trigger configuration for MC anchored to run2 pPb 5 TeV (2016)
+   *
+   * Configuration is representing all Level1 triggers available in the
+   * run2 data taking for pPb 5TeV 2016. This configuration is for the
+   * simulation mode, correspondingly the trigger patch selection
+   * is applied on trigger patches calulated from FEE energies with energy
+   * smearing applied. The following table lists the trigger classes supported
+   * together with the corresponding settings:
+   *
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (GeV) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |     EG1       |     EMCAL       |   EGA (2x2)    |        11.      |
+   * |     EG2       |     EMCAL       |   EGA (2x2)    |        6.5      |
+   * |     DG1       |     DCAL        |   EGA (2x2)    |        11.      |
+   * |     DG2       |     DCAL        |   EGA (2x2)    |        6.5      |
+   * |     EJ1       |     EMCAL       |   EJE (16x16)  |        25.      |
+   * |     EJ2       |     EMCAL       |   EJE (16x16)  |        20.      |
+   * |     DJ1       |     DCAL        |   EJE (8x8)    |        25.      |
+   * |     DJ2       |     DCAL        |   EJE (8x8)    |        20.      |
+   *
+   * The trigger thresholds are tuned to describe the data.
+   */
+  void ConfigureMCPPB5TeV2016();
+
+  /**
+   * @brief Trigger configuration for run2 pPb 8TeV (2016) - data mode
+   *
+   * Configuration is representing all Level1 triggers available in the
+   * run2 data taking for pPb 8TeV 2016. This configuration is for the
+   * online mode (data events), correspondingly the trigger patch selection
+   * is applied on trigger patches fulfilling the recalc type. The following
+   * table lists the trigger classes supported together with the corresponding
+   * settings:
+   *
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (ADC) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |     EG1       |     EMCAL       |   EGA (2x2)    |       102       |
+   * |     EG2       |     EMCAL       |   EGA (2x2)    |        70       |
+   * |     DG1       |     DCAL        |   EGA (2x2)    |       102       |
+   * |     DG2       |     DCAL        |   EGA (2x2)    |        70       |
+   * |     EJ1       |     EMCAL       |   EJE (16x16)  |       293       |
+   * |     EJ2       |     EMCAL       |   EJE (16x16)  |       229       |
+   * |     DJ1       |     DCAL        |   EJE (8x8)    |       293       |
+   * |     DJ2       |     DCAL        |   EJE (8x8)    |       229       |
+   *
+   * The trigger thresholds match the ones in https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalTriggerOffline
+   */
+  void ConfigurePPB8TeV2016();
+
+  /**
+   * @brief Trigger configuration for MC anchored to run2 pPb 8 TeV (2016)
+   *
+   * Configuration is representing all Level1 triggers available in the
+   * run2 data taking for pPb 8TeV 2016. This configuration is for the
+   * simulation mode, correspondingly the trigger patch selection
+   * is applied on trigger patches calulated from FEE energies with energy
+   * smearing applied. The following table lists the trigger classes supported
+   * together with the corresponding settings:
+   *
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (GeV) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |     EG1       |     EMCAL       |   EGA (2x2)    |        8.0      |
+   * |     EG2       |     EMCAL       |   EGA (2x2)    |        5.5      |
+   * |     DG1       |     DCAL        |   EGA (2x2)    |        8.0      |
+   * |     DG2       |     DCAL        |   EGA (2x2)    |        5.5      |
+   * |     EJ1       |     EMCAL       |   EJE (16x16)  |        23.      |
+   * |     EJ2       |     EMCAL       |   EJE (16x16)  |        18.      |
+   * |     DJ1       |     DCAL        |   EJE (8x8)    |        23.      |
+   * |     DJ2       |     DCAL        |   EJE (8x8)    |        18.      |
+   *
+   * The trigger thresholds are tuned to describe the data.
+   */
+  void ConfigureMCPPB8TeV2016();
+
+  /**
+   * @brief Trigger configuration for run2 pp 5TeV (2017) - data mode
+   *
+   * Configuration is representing all Level1 triggers available in the
+   * run2 data taking for pp 5TeV 2017. This configuration is for the
+   * online mode (data events), correspondingly the trigger patch selection
+   * is applied on trigger patches fulfilling the recalc type. The following
+   * table lists the trigger classes supported together with the corresponding
+   * settings:
+   *
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (ADC) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |     EG1       |     EMCAL       |   EGA (2x2)    |       115       |
+   * |     EG2       |     EMCAL       |   EGA (2x2)    |        51       |
+   * |     DG1       |     DCAL        |   EGA (2x2)    |       115       |
+   * |     DG2       |     DCAL        |   EGA (2x2)    |        51       |
+   * |     EJ1       |     EMCAL       |   EJE (16x16)  |       255       |
+   * |     EJ2       |     EMCAL       |   EJE (16x16)  |       204       |
+   * |     DJ1       |     DCAL        |   EJE (8x8)    |       255       |
+   * |     DJ2       |     DCAL        |   EJE (8x8)    |       204       |
+   *
+   * The trigger thresholds match the ones in https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalTriggerOffline
+   */
+  void ConfigurePP5TeV2017();
+
+  /**
+   * @brief Trigger configuration for MC anchored to run2 pp 5 TeV (2017)
+   *
+   * Configuration is representing all Level1 triggers available in the
+   * run2 data taking for pp 5TeV 2017. This configuration is for the
+   * simulation mode, correspondingly the trigger patch selection
+   * is applied on trigger patches calulated from FEE energies with energy
+   * smearing applied. The following table lists the trigger classes supported
+   * together with the corresponding settings:
+   *
+   * | Trigger class | Acceptance type |   Patch Type   | Threshold (GeV) |
+   * |---------------|-----------------|----------------|-----------------|
+   * |     EG1       |     EMCAL       |   EGA (2x2)    |        9.0      |
+   * |     EG2       |     EMCAL       |   EGA (2x2)    |        4.0      |
+   * |     DG1       |     DCAL        |   EGA (2x2)    |        9.0      |
+   * |     DG2       |     DCAL        |   EGA (2x2)    |        4.0      |
+   * |     EJ1       |     EMCAL       |   EJE (16x16)  |        20.      |
+   * |     EJ2       |     EMCAL       |   EJE (16x16)  |        16.      |
+   * |     DJ1       |     DCAL        |   EJE (8x8)    |        20.      |
+   * |     DJ2       |     DCAL        |   EJE (8x8)    |        16.      |
+   *
+   * The trigger thresholds are tuned to describe the data.
+   */
+  void ConfigureMCPP5TeV2017();
 
   /**
    * @brief Output stream operator
@@ -581,10 +859,22 @@ protected:
    */
   void InitQA(const AliEmcalTriggerSelection *const sel);
 
+  Bool_t Is2011PP7TeV(const char *dataset) const;
+  Bool_t Is2011MCPP7TeV(const char *dataset) const;
   Bool_t Is2012PP(const char *dataset) const;
   Bool_t Is2012MCPP(const char *dataset) const;
+  Bool_t Is2013PPB(const char *dataset) const;
+  Bool_t Is2013MCPPB(const char *dataset) const;
+  Bool_t Is2015PP5TeV(const char *dataset) const;
+  Bool_t Is2015MCPP5TeV(const char *dataset) const;
+  Bool_t Is2016PPB5TeV(const char *dataset) const;
+  Bool_t Is2016MCPPB5TeV(const char *dataset) const;
+  Bool_t Is2016PPB8TeV(const char *dataset) const;
+  Bool_t Is2016MCPPB8TeV(const char *dataset) const;
   Bool_t Is2016PP(const char *dataset) const;
   Bool_t Is2016MCPP(const char *dataset) const;
+  Bool_t Is2017PP5TeV(const char *dataset) const;
+  Bool_t Is2017MCPP5TeV(const char *dataset) const;
   Bool_t IsSupportedMCSample(const char *period, std::vector<TString> &supportedProductions) const;
  
   AliEmcalTriggerSelectionCuts::AcceptanceType_t  DecodeAcceptanceString(const std::string &acceptancestring);

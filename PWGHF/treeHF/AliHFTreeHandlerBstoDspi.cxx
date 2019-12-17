@@ -167,7 +167,7 @@ bool AliHFTreeHandlerBstoDspi::SetVariables(int runnumber, unsigned int eventID,
   //TOCHECK: Is this true?
   fCandType &= ~kRefl; //protection --> Bs -> Dspi cannot be reflected
   
-  AliAODRecoDecayHF2Prong* candDs = (AliAODRecoDecayHF2Prong*)cand->GetDaughter(0); //Ds
+  AliAODRecoDecayHF3Prong* candDs = (AliAODRecoDecayHF3Prong*)cand->GetDaughter(0); //Ds
   
   //topological variables
   //common (Bs -> Ds pi)
@@ -225,7 +225,7 @@ bool AliHFTreeHandlerBstoDspi::SetVariables(int runnumber, unsigned int eventID,
   for(unsigned int iProng=0; iProng<3; iProng++) {
     fImpParProng[iProng]=candDs->Getd0Prong(iProng);
   }
-  fImpParProng[3]=cand->Getd0Prong(0);
+  fImpParProng[3]=cand->Getd0Prong(1);
 
   AliAODTrack* prongtracks[4];
   for(unsigned int iProng=0; iProng<3; iProng++) prongtracks[iProng] = (AliAODTrack*)candDs->GetDaughter(iProng);

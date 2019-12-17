@@ -39,6 +39,7 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
     
  public:
   enum massD0orD0bar{kmassD0,kmassD0bar}; //for D0_D0bar mass check
+  enum massDstarorDstarbar{kmassDstar, kmassDstarbar}; //for D*_D*bar mass check
 
   enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO,kZDC}; //Event plane to be calculated in the task

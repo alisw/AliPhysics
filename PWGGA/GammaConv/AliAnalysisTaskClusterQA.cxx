@@ -394,7 +394,8 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
   // }
 
   fWeightJetJetMC = 1;
-  Bool_t isMCJet = ((AliConvEventCuts*)fEventCuts)->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC, fInputEvent );
+  Float_t pthard = -1;
+  Bool_t isMCJet = ((AliConvEventCuts*)fEventCuts)->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC,pthard, fInputEvent );
   if (!isMCJet){
     return;
   }

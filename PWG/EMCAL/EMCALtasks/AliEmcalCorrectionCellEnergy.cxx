@@ -29,6 +29,7 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fUseAutomaticRunDepRecalib(1)
   ,fUseNewRunDepTempCalib(0)
   ,fCustomRecalibFilePath("")
+  ,fLoad1DRecalibFactors(0)
 {
 }
 
@@ -57,8 +58,13 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   // check the YAML configuration if a custom energy calibration is requested (default is empty string "")
   GetProperty("customRecalibFilePath",fCustomRecalibFilePath);
 
+  //
+  GetProperty("load1DRecalibFactors",fLoad1DRecalibFactors);
+
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
+
+  fRecoUtils->SetUse1DRecalibration(fLoad1DRecalibFactors);
     
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
@@ -149,10 +155,10 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   { //if fBasePath specified
     AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
 
-    recalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALRecalib.root",fBasePath.Data()),"read"));
+    recalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALRecalib%s.root",fBasePath.Data(), fLoad1DRecalibFactors ? "_1D" : "" ),"read"));
     if (!recalibFile || recalibFile->IsZombie())
     {
-      AliFatal(Form("EMCALRecalib.root not found in %s",fBasePath.Data()));
+      AliFatal(Form("EMCALRecalib%s.root not found in %s", fLoad1DRecalibFactors ? "_1D" : "", fBasePath.Data()));
       return 0;
     }
     
@@ -175,10 +181,10 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Recalib OADB from OADB/EMCAL");
     
-    recalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"read"));
+    recalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALRecalib%s.root", fLoad1DRecalibFactors ? "_1D" : "")).data(),"read"));
     if (!recalibFile || recalibFile->IsZombie())
     {
-      AliFatal("OADB/EMCAL/EMCALRecalib.root was not found");
+      AliFatal(Form("OADB/EMCAL/EMCALRecalib%s.root was not found", fLoad1DRecalibFactors ? "_1D" : ""));
       return 0;
     }
     
@@ -212,21 +218,36 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   }
   
   //AliDebug(1, recalib->Print());
-  
-  Int_t sms = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
-  for (Int_t i=0; i<sms; ++i)
-  {
-    TH2F *h = fRecoUtils->GetEMCALChannelRecalibrationFactors(i);
+ 
+
+  if(fLoad1DRecalibFactors){
+    TH1S *h = fRecoUtils->GetEMCALChannelRecalibrationFactors1D();
     if (h)
       delete h;
-    h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+    h=(TH1S*)recalib->FindObject("EMCALRecalFactors");
+      
     if (!h)
     {
-      AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
-      continue;
+      AliError("Can not get EMCALRecalFactors");
     }
     h->SetDirectory(0);
-    fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
+    fRecoUtils->SetEMCALChannelRecalibrationFactors1D(h);
+  }else{
+    Int_t sms = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
+    for (Int_t i=0; i<sms; ++i)
+    {
+      TH2F *h = fRecoUtils->GetEMCALChannelRecalibrationFactors(i);
+      if (h)
+        delete h;
+      h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+      if (!h)
+      {
+        AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+        continue;
+      }
+      h->SetDirectory(0);
+      fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
+    }
   }
   
   return 1;

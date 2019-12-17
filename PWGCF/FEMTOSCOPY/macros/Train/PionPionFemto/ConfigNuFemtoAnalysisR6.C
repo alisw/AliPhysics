@@ -50,6 +50,7 @@
 #include "AliFemtoModelCorrFctnTrueQ3DByParent.h"
 #include "AliFemtoKtBinnedCorrFunc.h"
 #include "AliFemtoModelCorrFctnTrueQ.h"
+#include "AliFemtoCorrFctnInvMass.h"
 
 #include <TROOT.h>
 #include <TBase64.h>
@@ -85,7 +86,7 @@ struct MacroParams : public TNamed {
 
   MacroParams(PionAnalysis::AnalysisParams &a, PionAnalysis::CutParams &c, TString params);
 
-  std::vector<std::pair<int,int>> centrality_ranges;
+  std::vector<std::pair<double,double>> centrality_ranges;
   std::set<PionAnalysis::PionType> pair_codes;
   std::vector<float> kt_ranges;
 
@@ -129,8 +130,8 @@ struct MacroParams : public TNamed {
   Float_t delta_eta_min { -0.1 };
   Float_t delta_eta_max { 0.1 };
 
-  UInt_t q3d_bin_count { 51 };
-  Float_t q3d_maxq { 0.1275 };
+  UInt_t q3d_bin_count { 41 };
+  Float_t q3d_maxq { 0.1025 };
 
   UInt_t avgsep_nbins { 100 };
   Float_t avgsep_max { 20.0 };
@@ -170,6 +171,12 @@ struct MacroParams : public TNamed {
   bool do_ylm_cf { false };
   bool do_kt_ylm_cf { false };
 
+  bool do_minv_cf { false };
+  bool do_kt_minv_cf { false };
+
+  bool do_minvee_cf { false };
+  bool do_kt_minvee_cf { false };
+
   // monte-carlo correlation functions
   bool do_trueq_cf { false };
   bool do_kt_trueq_cf { false };
@@ -190,7 +197,7 @@ struct MacroParams : public TNamed {
 
   bool do_detadphistar_cf { false };
   bool do_kt_detadphistar_cf { false };
-  double phistar_radius { 1.2 };
+  double phistar_radius { NAN };
   UInt_t detadphistar_nbins { 144 };
 
   bool RequestsMonteCarloData() const
@@ -324,7 +331,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
                                                         : "??";
 
       // build unique analysis name from centrality and pair types
-      const TString analysis_name = Form("PiPiAnalysis_%02d_%02d_%s",
+      const TString analysis_name = Form("PiPiAnalysis_%02g_%02g_%s",
                                          centrality_range.first,
                                          centrality_range.second,
                                          pair_type_str);
@@ -567,8 +574,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
                             ? new AliFemtoModelCorrFctnTrueQ3D("", obins, slbins, slbins, model_manager)
                             : AliFemtoModelCorrFctnTrueQ3D::Build()
                                   .NamePrefix("")
-                                  .BinCount(macro_config.q3d_bin_count)
-                                  .QRange(macro_config.q3d_maxq)
+                                  .PosOut(macro_config.q3d_bin_count, macro_config.q3d_maxq)
                                   .EnableExtraHists(macro_config.trueq3d_extra_bins)
                                   .EnableWeightedDenominators(macro_config.trueq3d_weighted_denoms)
                                   .Manager(model_manager).into_ptr();
@@ -641,6 +647,28 @@ ConfigFemtoAnalysis(const TString& param_str="")
                            .into_ptr();
 
         AddKtBinnedCorrFctn(*analysis, "KT_DEtaDPhiStar", kt_starcf, macro_config.kt_ranges);
+      }
+
+      if (macro_config.do_minv_cf) {
+        auto *minvcf = new AliFemtoCorrFctnInvMass("MINV", 3000, 0.0, 2.0, PionMass, PionMass);
+        analysis->AddCorrFctn(minvcf);
+      }
+
+      if (macro_config.do_kt_minv_cf) {
+        auto *minvcf = new AliFemtoCorrFctnInvMass("", 3000, 0.0, 2.0, PionMass, PionMass);
+        AddKtBinnedCorrFctn(*analysis, "KT_MINV", minvcf, macro_config.kt_ranges);
+      }
+
+      const double E_MASS = 0.000511;
+
+      if (macro_config.do_minvee_cf) {
+        auto *minvcf = new AliFemtoCorrFctnInvMass("MINVEE", 3000, 0.0, 2.0, E_MASS, E_MASS);
+        analysis->AddCorrFctn(minvcf);
+      }
+
+      if (macro_config.do_kt_minvee_cf) {
+        auto *minvcf = new AliFemtoCorrFctnInvMass("", 3000, 0.0, 2.0, E_MASS, E_MASS);
+        AddKtBinnedCorrFctn(*analysis, "KT_MINV_EE", minvcf, macro_config.kt_ranges);
       }
 
       if (macro_config.do_ylm_cf) {
@@ -751,9 +779,9 @@ BuildConfiguration(const TString &text,
         TObjArray *subrange = range_group->String().Tokenize(":");
         TIter next_subrange(subrange);
         TObjString *subrange_it = (TObjString *)next_subrange();
-        TString prev = TString::Format("%02d", subrange_it->String().Atoi());
+        TString prev = TString::Format("%f", subrange_it->String().Atof());
         while ((subrange_it = (TObjString *)next_subrange())) {
-          TString next = TString::Format("%02d", subrange_it->String().Atoi());
+          TString next = TString::Format("%f", subrange_it->String().Atof());
 
           cmd = macro_varname + "->centrality_ranges.emplace_back(" + prev + "," + next + ");";
           gROOT->ProcessLineFast(cmd);
@@ -801,7 +829,7 @@ BuildConfiguration(const TString &text,
 
     case '+':
       if (line == "+p") {
-        cmd = macro_varname + "->pair_codes.push_back(AliFemtoAnalysisPionPion::kPiPlus)";
+        cmd = macro_varname + "->pair_codes.insert(AliFemtoAnalysisPionPion::kPiPlus)";
       }
       else if (line == "+m") {
         cmd = macro_varname + "->pair_codes.insert(AliFemtoAnalysisPionPion::kPiMinus)";
@@ -841,6 +869,11 @@ MacroParams::MacroParams(PionAnalysis::AnalysisParams &analysis_config,
 {
   // Read parameter string and update configurations
   BuildConfiguration(params, analysis_config, c, *this);
+
+
+  if (std::isnan(phistar_radius)) {
+    phistar_radius = c.pair_phi_star_radius;
+  }
 
   if (RequestsMonteCarloData() && !analysis_config.is_mc_analysis) {
     std::cerr << "\nMonteCarlo correlation function requested when analysis is *not* MC\n\n";

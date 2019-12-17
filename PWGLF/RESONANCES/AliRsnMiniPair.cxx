@@ -70,6 +70,9 @@ void AliRsnMiniPair::Fill
       if (p1->IndexBachelor() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
       if (p1->IndexBachelor() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
    }
+
+   fPassesOOBPileupCut = kFALSE;
+   if (p1->PassesOOBPileupCut() || p2->PassesOOBPileupCut()) fPassesOOBPileupCut = kTRUE;
 }
 
 //__________________________________________________________________________________________________
@@ -412,4 +415,21 @@ Double_t AliRsnMiniPair::PairYRes() const
 //
   if (Y(1) <= 0.0) return 1E20;
   return (Y(0) - Y(1)) / Y(1);
+}
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PairAsymmetry(Bool_t mc) 
+{
+//
+// Return pair asymmetry
+//
+  TLorentzVector &p1 = fP1[ID(mc)];
+  TLorentzVector &p2 = fP2[ID(mc)];
+  
+  TVector3 P1 = p1.Vect();
+  TVector3 P2 = p2.Vect();
+
+  Double_t asym=TMath::Abs(P1.Mag()-P2.Mag())/(P1.Mag()+P2.Mag());
+
+  return asym;
+  
 }

@@ -67,6 +67,7 @@ protected:
   Bool_t  TestPID(Int_t iPID, AliCaloPhoton* p1, AliCaloPhoton* p2) ;
   Double_t PrimaryParticleWeight(AliAODMCParticle * particle) ;
   Int_t   FindPrimary(AliVCluster*, Bool_t&);
+  Double_t TOFCutEff(Double_t x );
   
   Bool_t   SelectCentrality(AliVEvent * event) ;
   Double_t TrigCentralityWeight(Double_t x); //Correction for PHOS trigger centrality bias

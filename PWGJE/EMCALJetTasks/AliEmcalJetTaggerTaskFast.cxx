@@ -79,24 +79,6 @@ namespace PWGJE {
       , fContainerErrorRateTag(nullptr)
 #endif
   {
-    fh3PtJet1VsDeltaEtaDeltaPhi  = new TH3*[fNcentBins];
-    fh2PtJet1VsDeltaR            = new TH2*[fNcentBins];
-    fh2PtJet2VsFraction          = new TH2*[fNcentBins];
-    fh2PtJet1VsLeadPtAllSel      = new TH2*[fNcentBins];
-    fh2PtJet1VsLeadPtTagged      = new TH2*[fNcentBins];
-    fh2PtJet1VsPtJet2            = new TH2*[fNcentBins];
-    fh2PtJet2VsRelPt             = new TH2*[fNcentBins];
-
-    for (Int_t i = 0; i < fNcentBins; i++) {
-      fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
-      fh2PtJet1VsDeltaR[i]           = 0;
-      fh2PtJet2VsFraction[i]         = 0;
-      fh2PtJet1VsLeadPtAllSel[i]     = 0;
-      fh2PtJet1VsLeadPtTagged[i]     = 0;
-      fh2PtJet1VsPtJet2[i]           = 0;
-      fh2PtJet2VsRelPt[i]            = 0;
-    }
-
     SetMakeGeneralHistograms(kTRUE);
   }
 
@@ -130,31 +112,14 @@ namespace PWGJE {
       , fContainerErrorRateTag(nullptr)
 #endif
   {
-
-    fh3PtJet1VsDeltaEtaDeltaPhi = new TH3*[fNcentBins];
-    fh2PtJet1VsDeltaR           = new TH2*[fNcentBins];
-    fh2PtJet2VsFraction         = new TH2*[fNcentBins];
-    fh2PtJet1VsLeadPtAllSel     = new TH2*[fNcentBins];
-    fh2PtJet1VsLeadPtTagged     = new TH2*[fNcentBins];
-    fh2PtJet1VsPtJet2           = new TH2*[fNcentBins];
-    fh2PtJet2VsRelPt            = new TH2*[fNcentBins];
-
-    for (Int_t i = 0; i < fNcentBins; i++) {
-      fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
-      fh2PtJet1VsDeltaR[i]           = 0;
-      fh2PtJet2VsFraction[i]         = 0;
-      fh2PtJet1VsLeadPtAllSel[i]     = 0;
-      fh2PtJet1VsLeadPtTagged[i]     = 0;
-      fh2PtJet1VsPtJet2[i]           = 0;
-      fh2PtJet2VsRelPt[i]            = 0;
-    }
-
     SetMakeGeneralHistograms(kTRUE);
-
   }
 
   void AliEmcalJetTaggerTaskFast::UserCreateOutputObjects() {
     AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+    // Notify the user to be careful.
+    AliErrorStream() << "This task isn't yet validated. Please use the standard AliAnalysisTaskEmcalJetTagger.\n";
 
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
@@ -175,6 +140,25 @@ namespace PWGJE {
     const Double_t maxDR       =  0.5;
     const Double_t minFraction =  -0.005;
     const Double_t maxFraction =  1.005;
+
+    // Prepare histograms
+    fh3PtJet1VsDeltaEtaDeltaPhi  = new TH3*[fNcentBins];
+    fh2PtJet1VsDeltaR            = new TH2*[fNcentBins];
+    fh2PtJet2VsFraction          = new TH2*[fNcentBins];
+    fh2PtJet1VsLeadPtAllSel      = new TH2*[fNcentBins];
+    fh2PtJet1VsLeadPtTagged      = new TH2*[fNcentBins];
+    fh2PtJet1VsPtJet2            = new TH2*[fNcentBins];
+    fh2PtJet2VsRelPt             = new TH2*[fNcentBins];
+
+    for (Int_t i = 0; i < fNcentBins; i++) {
+      fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
+      fh2PtJet1VsDeltaR[i]           = 0;
+      fh2PtJet2VsFraction[i]         = 0;
+      fh2PtJet1VsLeadPtAllSel[i]     = 0;
+      fh2PtJet1VsLeadPtTagged[i]     = 0;
+      fh2PtJet1VsPtJet2[i]           = 0;
+      fh2PtJet2VsRelPt[i]            = 0;
+    }
 
     TString histName = "";
     TString histTitle = "";
@@ -222,7 +206,7 @@ namespace PWGJE {
     fh3PtJetAreaDRConst = new TH3F("fh3PtJetAreaDRConst","fh3PtJetAreaDRConst;pT;A;#Delta R",nBinsPt,minPt,maxPt,50,0.,1.,50,0.,1.);
     fOutput->Add(fh3PtJetAreaDRConst);
 
-    fNAccJets = new TH1F("fNAccJets","fNAccJets;N/ev",11,-0.5, 9.5);
+    fNAccJets = new TH1F("fNAccJets","fNAccJets;N/ev",10,-0.5, 9.5);
     fOutput->Add(fNAccJets);
 
 #ifdef JETTAGGERFAST_TEST

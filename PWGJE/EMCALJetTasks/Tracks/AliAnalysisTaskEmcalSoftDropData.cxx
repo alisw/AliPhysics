@@ -113,6 +113,7 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
 
   fHistos = new THistManager("histosSoftdrop");
   fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hJetPtRaw", "raw jet pt", 300, 0., 300.);
   fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning);
   fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning);
   fHistos->CreateTH2("hNsdVsPt", "nsd vs pt", *nsdBinning, *fPtBinning);
@@ -121,7 +122,15 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
     fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning);
     fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning);
     fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
+    fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300.);
   }
+
+  // A bit of QA stuff
+  fHistos->CreateTH2("hQANEFPt", "Neutral energy fraction; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZchPt", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQANChPt", "Number of charged constituents; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
+  fHistos->CreateTH2("hQANnePt", "Number of neutral constituents; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -163,6 +172,8 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
 
   for(auto jet : jets->accepted()){
     AliDebugStream(2) << "Next accepted jet with pt " << jet->Pt() << std::endl;
+    fHistos->FillTH1("hJetPtRaw", jet->Pt());
+    if(fUseDownscaleWeight) fHistos->FillTH1("hJetPtRawWeighted", jet->Pt(), weight);
     if(jet->Pt() < fJetPtMin || jet->Pt() > fJetPtMax) continue;
     auto zgparams = MakeSoftdrop(*jet, jets->GetJetRadius(), tracks, clusters);
     AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << zgparams[0] << std::endl;
@@ -174,6 +185,23 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
       fHistos->FillTH2("hRgVsPtWeighted", zgparams[2], jet->Pt(), weight);
       fHistos->FillTH2("hNsdVsPtWeighted", zgparams[5], jet->Pt(), weight);
     } 
+
+    // Fill QA plots - trigger cluster independent
+    // Those plots have been in before (as part of the Tree) but were 
+    // removed in order to reduce the disk space consumption.
+    fHistos->FillTH2("hQANEFPt", jet->Pt(), jet->NEF(), weight);
+    if(clusters){
+      auto leadcluster = jet->GetLeadingCluster(clusters->GetArray());
+      TLorentzVector ptvec;
+      leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+      fHistos->FillTH2("hQAZnePt", jet->Pt(), jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
+    }
+    if(tracks){
+      auto leadingtrack = jet->GetLeadingTrack(tracks->GetArray());
+      fHistos->FillTH2("hQAZchPt", jet->Pt(), jet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
+    }
+    fHistos->FillTH2("hQANChPt", jet->Pt(), jet->GetNumberOfTracks(), weight);
+    fHistos->FillTH2("hQANnePt", jet->Pt(), jet->GetNumberOfClusters(), weight);
   }
   return true;
 }
@@ -315,7 +343,7 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
   std::stringstream taskname;
   taskname << "SoftdropDataMaker_R" << std::setw(2) << std::setfill('0') << int(jetradius*10) << trigger;  
   AliAnalysisTaskEmcalSoftDropData *datamaker = new AliAnalysisTaskEmcalSoftDropData(taskname.str().data());
-  datamaker->SelectCollisionCandidates(AliVEvent::kINT7);
+  datamaker->SelectCollisionCandidates(AliVEvent::kAny);
   mgr->AddTask(datamaker);
 
   AliTrackContainer *tracks(nullptr);

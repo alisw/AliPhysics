@@ -22,7 +22,7 @@ using namespace std;
 ClassImp(AliAodSkimTask)
 
 AliAodSkimTask::AliAodSkimTask(const char* name) :
-  AliAnalysisTaskSE(name), fClusMinE(-1), fTrackMinPt(-1), fDoBothMinTrackAndClus(0), fCutMC(1), fYCutMC(0.7), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
+  AliAnalysisTaskSE(name), fClusMinE(-1), fTrackMinPt(-1), fTrackMaxPt(-1), fDoBothMinTrackAndClus(0), fCutMC(1), fYCutMC(0.7), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
   fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoRemoveTracks(0), fDoCleanTracks(0),
   fDoRemCovMat(0), fDoRemPid(0), fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0),
   fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyMC(1), fDoCopyMCHeader(1), fDoVertWoRefs(0), fDoVertMain(0), fDoCleanTracklets(0),
@@ -166,10 +166,14 @@ void AliAodSkimTask::UserExec(Option_t *)
       if (pt>fTrackMinPt) {
         storePt = kTRUE;
       }
+      if(fTrackMaxPt > 0  &&  fTrackMaxPt < pt){
+        storePt = kFALSE;
+      } 
     }
   } else {
     storePt = kTRUE;
   }
+
 
   Bool_t store = kFALSE;
   if (fDoBothMinTrackAndClus && fClusMinE>0 && fTrackMinPt > 0){

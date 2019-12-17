@@ -38,7 +38,7 @@ public:
   void AddClusterCut(AliReducedInfoCut* cut) {fClusterCuts.Add(cut); fFillCaloClusterHistograms=kTRUE; }
   void AddTrackCut(AliReducedInfoCut* cut);
   void AddPrefilterTrackCut(AliReducedInfoCut* cut) {fPreFilterTrackCuts.Add(cut);}
-  void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
+  void AddPairCut(AliReducedInfoCut* cut);
   void AddPrefilterPairCut(AliReducedInfoCut* cut) {fPreFilterPairCuts.Add(cut);}
   void SetRunEventMixing(Bool_t option) {fOptionRunMixing = option;};
   void SetRunPairing(Bool_t option) {fOptionRunPairing = option;};
@@ -72,7 +72,9 @@ public:
   Int_t GetNClusterCuts() const {return fClusterCuts.GetEntries();}
   const Char_t* GetClusterCutName(Int_t i) const {return (i<fClusterCuts.GetEntries() ? fClusterCuts.At(i)->GetName() : "");}
   Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
-  const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");} 
+  const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");}
+  Int_t GetNPairCuts() const {return fPairCuts.GetEntries();}
+  const Char_t* GetPairCutName(Int_t i) const {return (i<fPairCuts.GetEntries() ? fPairCuts.At(i)->GetName() : "");}
   Bool_t GetRunOverMC() const {return fOptionRunOverMC;};
   Bool_t GetRunLikeSignPairing() const {return fOptionRunLikeSignPairing;}
   Bool_t GetRunEventMixing() const {return fOptionRunMixing;}
@@ -138,14 +140,14 @@ protected:
   Bool_t IsClusterSelected(AliReducedCaloClusterInfo* cluster, Float_t* values=0x0);
   Bool_t IsTrackSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
   Bool_t IsTrackPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
-  Bool_t IsPairSelected(Float_t* values);
+  ULong_t IsPairSelected(Float_t* values);
   Bool_t IsPairPreFilterSelected(Float_t* values);
   UInt_t CheckReconstructedLegMCTruth(AliReducedBaseTrack* ptrack, AliReducedBaseTrack* ntrack);
   UInt_t CheckReconstructedLegMCTruth(AliReducedBaseTrack* track);
   void    FindJpsiTruthLegs(AliReducedTrackInfo* mother, Int_t& leg1Label, Int_t& leg2Label);
   AliReducedTrackInfo* FindMCtruthTrackByLabel(Int_t label);
   void    LoopOverMCTracks(Int_t trackArray =1);
-  UInt_t CheckMotherMCTruth(AliReducedTrackInfo* mother);
+  UInt_t CheckMotherMCTruth(AliReducedTrackInfo* mother, Bool_t checkReweight=kFALSE);
   UInt_t CheckDaughterMCTruth(AliReducedTrackInfo* daughter);
   
   void RunPrefilter();
@@ -155,7 +157,7 @@ protected:
   void LoopOverTracks(Int_t arrayOption=1);
   void FillTrackHistograms(TString trackClass = "Track");
   void FillTrackHistograms(AliReducedBaseTrack* track, TString trackClass = "Track");
-  void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", UInt_t mcDecisions = 0);
+  void FillPairHistograms(ULong_t trackMask, ULong_t pairMask, Int_t pairType, TString pairClass = "PairSE", UInt_t mcDecisions = 0);
   void FillClusterHistograms(TString clusterClass="CaloCluster");
   void FillClusterHistograms(AliReducedCaloClusterInfo* cluster, TString clusterClass="CaloCluster");
   void FillMCTruthHistograms();
@@ -167,7 +169,7 @@ protected:
   Bool_t fSkipMCEvent;          // decision to skip MC event
   TH1F*  fMCJpsiPtWeights;            // weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
   
-  ClassDef(AliReducedAnalysisJpsi2ee,11);
+  ClassDef(AliReducedAnalysisJpsi2ee,12);
 };
 
 #endif

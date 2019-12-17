@@ -33,6 +33,11 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist()
       fMCSecondaryDCAXYPtBins(nullptr),
       fMCSecLambdaDCAXYPtBins(nullptr),
       fMCSecSigmaDCAXYPtBins(nullptr),
+      fMCSecXiDCAXYPtBins(nullptr),
+      fMCSecOmegaDCAXYPtBins(nullptr),
+      fMCSecKlongDCAXYPtBins(nullptr),
+      fMCSecKshortDCAXYPtBins(nullptr),
+      fMCSecKchDCAXYPtBins(nullptr),
       fPtResolution(nullptr),
       fThetaResolution(nullptr),
       fPhiResolution(nullptr) {
@@ -95,6 +100,11 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
       fMCSecondaryDCAXYPtBins(nullptr),
       fMCSecLambdaDCAXYPtBins(nullptr),
       fMCSecSigmaDCAXYPtBins(nullptr),
+      fMCSecXiDCAXYPtBins(nullptr),
+      fMCSecOmegaDCAXYPtBins(nullptr),
+      fMCSecKlongDCAXYPtBins(nullptr),
+      fMCSecKshortDCAXYPtBins(nullptr),
+      fMCSecKchDCAXYPtBins(nullptr),
       fPtResolution(nullptr),
       fThetaResolution(nullptr),
       fPhiResolution(nullptr) {
@@ -271,41 +281,82 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     TString MCSecdcaPtBinName = Form("DCAPtBinningSec");
     TString MCSecLamdcaPtBinName = Form("DCAPtBinningSecLam");
     TString MCSecSigdcaPtBinName = Form("DCAPtBinningSecSig");
+    TString MCSecXidcaPtBinName = Form("DCAPtBinningSecXi");
+    TString MCSecOmegadcaPtBinName = Form("DCAPtBinningSecOmega");
+    TString MCSecKlcaPtBinName = Form("DCAPtBinningSecKl");
+    TString MCSecKsdcaPtBinName = Form("DCAPtBinningSecKs");
+    TString MCSecKchdcaPtBinName = Form("DCAPtBinningSecKch");
+
 
     fMCPrimDCAXYPtBins = new TH2F(MCPridcaPtBinName.Data(),
                                   MCPridcaPtBinName.Data(), fpTbins, fpTmin,
                                   fpTmax, 500, -5, 5);
-    fMCPrimDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCPrimDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+    fMCPrimDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCPrimDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCPrimDCAXYPtBins);
 
     fMCMaterialDCAXYPtBins = new TH2F(MCMatdcaPtBinName.Data(),
                                       MCMatdcaPtBinName.Data(), fpTbins, fpTmin,
                                       fpTmax, 500, -5, 5);
-    fMCMaterialDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCMaterialDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+    fMCMaterialDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCMaterialDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCMaterialDCAXYPtBins);
 
     fMCSecondaryDCAXYPtBins = new TH2F(MCSecdcaPtBinName.Data(),
                                        MCSecdcaPtBinName.Data(), fpTbins,
                                        fpTmin, fpTmax, 500, -5, 5);
-    fMCSecondaryDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCSecondaryDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+    fMCSecondaryDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecondaryDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecondaryDCAXYPtBins);
 
     fMCSecLambdaDCAXYPtBins = new TH2F(MCSecLamdcaPtBinName.Data(),
                                        MCSecLamdcaPtBinName.Data(), fpTbins,
                                        fpTmin, fpTmax, 500, -5, 5);
-    fMCSecLambdaDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCSecLambdaDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+    fMCSecLambdaDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecLambdaDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecLambdaDCAXYPtBins);
 
     fMCSecSigmaDCAXYPtBins = new TH2F(MCSecSigdcaPtBinName.Data(),
                                       MCSecSigdcaPtBinName.Data(), fpTbins,
                                       fpTmin, fpTmax, 500, -5, 5);
-    fMCSecSigmaDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCSecSigmaDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+    fMCSecSigmaDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecSigmaDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecSigmaDCAXYPtBins);
+
+    fMCSecXiDCAXYPtBins = new TH2F(MCSecXidcaPtBinName.Data(),
+                                   MCSecXidcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 500, -5, 5);
+    fMCSecXiDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecXiDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecXiDCAXYPtBins);
+
+    fMCSecOmegaDCAXYPtBins = new TH2F(MCSecOmegadcaPtBinName.Data(),
+                                      MCSecOmegadcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 500, -5, 5);
+    fMCSecOmegaDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecOmegaDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecOmegaDCAXYPtBins);
+
+    fMCSecKlongDCAXYPtBins = new TH2F(MCSecKlcaPtBinName.Data(),
+                                      MCSecKlcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 500, -5, 5);
+    fMCSecKlongDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecKlongDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecKlongDCAXYPtBins);
+
+    fMCSecKshortDCAXYPtBins = new TH2F(MCSecKsdcaPtBinName.Data(),
+                                       MCSecKsdcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 500, -5, 5);
+    fMCSecKshortDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecKshortDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecKshortDCAXYPtBins);
+
+    fMCSecKchDCAXYPtBins = new TH2F(MCSecKchdcaPtBinName.Data(),
+                                    MCSecKchdcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 500, -5, 5);
+    fMCSecKchDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecKchDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecKchDCAXYPtBins);
 
     if (fDoMultiplicityBinning) {
       TString name1 = "DCAPtBinningPriMult_0_";
@@ -410,6 +461,11 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fMCSecondaryDCAXYPtBins = 0;
     fMCSecLambdaDCAXYPtBins = 0;
     fMCSecSigmaDCAXYPtBins = 0;
+    fMCSecXiDCAXYPtBins = 0;
+    fMCSecOmegaDCAXYPtBins = 0;
+    fMCSecKlongDCAXYPtBins = 0;
+    fMCSecKshortDCAXYPtBins = 0;
+    fMCSecKchDCAXYPtBins = 0;
   }
 }
 void AliFemtoDreamTrackMCHist::FillMCDCAXYPtBins(
@@ -449,6 +505,21 @@ void AliFemtoDreamTrackMCHist::FillMCDCAXYPtBins(
                                fMCSecLambdaDCAXYPtBinsMult[1],
                                fMCSecLambdaDCAXYPtBinsMult[2]);
       }
+    } else if (TMath::Abs(PDGCodeMoth) == 3312) {
+      fMCSecXiDCAXYPtBins->Fill(pT, dcaxy);
+
+    } else if (TMath::Abs(PDGCodeMoth) == 3334) {
+      fMCSecOmegaDCAXYPtBins->Fill(pT, dcaxy);
+      
+    } else if (TMath::Abs(PDGCodeMoth) == 130) {
+      fMCSecKlongDCAXYPtBins->Fill(pT, dcaxy);
+      
+    } else if (TMath::Abs(PDGCodeMoth) == 310) {
+      fMCSecKshortDCAXYPtBins->Fill(pT, dcaxy);
+      
+    } else if (TMath::Abs(PDGCodeMoth) == 321) {
+      fMCSecKchDCAXYPtBins->Fill(pT, dcaxy);
+      
     } else {
       TString ErrHistSP = Form("Feeddown for %d not implemented", PDGCodeMoth);
       AliWarning(ErrHistSP.Data());

@@ -30,10 +30,15 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto()
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fSample(nullptr),
+      fProtonSigmaDump(nullptr),
+      fAntiProtonAntiSigmaDump(nullptr),
+      fProtonSBDump(nullptr),
+      fAntiProtonAntiSBDump(nullptr),
       fIsMC(false),
       fIsLightweight(false),
       fCheckDaughterCF(false),
       fFemtoJanitor(true),
+      fUseDumpster(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fGammaArray(nullptr),
@@ -55,7 +60,8 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto()
       fResultList(nullptr),
       fResultQAList(nullptr),
       fResultsSample(nullptr),
-      fResultsSampleQA(nullptr) {
+      fResultsSampleQA(nullptr),
+      fDumpster(nullptr) {
   fRandom = new TRandom3();
 }
 
@@ -81,10 +87,15 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fSample(nullptr),
+      fProtonSigmaDump(nullptr),
+      fAntiProtonAntiSigmaDump(nullptr),
+      fProtonSBDump(nullptr),
+      fAntiProtonAntiSBDump(nullptr),
       fIsMC(isMC),
       fIsLightweight(false),
       fCheckDaughterCF(false),
       fFemtoJanitor(true),
+      fUseDumpster(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fGammaArray(nullptr),
@@ -106,7 +117,8 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
       fResultList(nullptr),
       fResultQAList(nullptr),
       fResultsSample(nullptr),
-      fResultsSampleQA(nullptr) {
+      fResultsSampleQA(nullptr),
+      fDumpster(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -121,13 +133,14 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
   DefineOutput(11, TList::Class());
   DefineOutput(12, TList::Class());
   DefineOutput(13, TList::Class());
+  DefineOutput(14, TList::Class());
 
   fRandom = new TRandom3();
   if (fIsMC) {
-    DefineOutput(14, TList::Class());
     DefineOutput(15, TList::Class());
     DefineOutput(16, TList::Class());
     DefineOutput(17, TList::Class());
+    DefineOutput(18, TList::Class());
   }
 }
 
@@ -309,6 +322,16 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
 
+
+  if (fUseDumpster) {
+    fProtonSigmaDump->SetEvent(Particles, sigma0particles, fEvent, 2212, 3212);
+    fAntiProtonAntiSigmaDump->SetEvent(AntiParticles, antiSigma0particles,
+                                       fEvent, -2212, -3212);
+    fProtonSBDump->SetEvent(Particles, sigma0sidebandUp, fEvent, 2212, 3212);
+    fAntiProtonAntiSBDump->SetEvent(AntiParticles, antiSigma0sidebandUp, fEvent,
+                                    2212, 3212);
+  }
+
   if (fConfig->GetUsePhiSpinning()) {
     fSample->SetEvent(fPairCleaner->GetCleanParticles(),
                       fEvent);
@@ -328,11 +351,12 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   PostData(11, fResultQAList);
   PostData(12, fResultsSample);
   PostData(13, fResultsSampleQA);
+  PostData(14, fDumpster);
   if (fIsMC) {
-    PostData(14, fTrackCutHistMCList);
-    PostData(15, fAntiTrackCutHistMCList);
-    PostData(16, fLambdaHistMCList);
-    PostData(17, fAntiLambdaHistMCList);
+    PostData(15, fTrackCutHistMCList);
+    PostData(16, fAntiTrackCutHistMCList);
+    PostData(17, fLambdaHistMCList);
+    PostData(18, fAntiLambdaHistMCList);
   }
 }
 
@@ -411,6 +435,24 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
                                               fConfig->GetMinimalBookingME());
   if (fConfig->GetUsePhiSpinning()) {
     fSample = new AliFemtoDreamControlSample(fConfig);
+  }
+
+  fDumpster = new TList();
+  fDumpster->SetName("Dumpster");
+  fDumpster->SetOwner(kTRUE);
+
+  if (fUseDumpster) {
+    fProtonSigmaDump = new AliFemtoDreamDump("pSigma0");
+    fDumpster->Add(fProtonSigmaDump->GetOutput());
+
+    fAntiProtonAntiSigmaDump = new AliFemtoDreamDump("apaSigma0");
+    fDumpster->Add(fAntiProtonAntiSigmaDump->GetOutput());
+
+    fProtonSBDump = new AliFemtoDreamDump("pSB");
+    fDumpster->Add(fProtonSBDump->GetOutput());
+
+    fAntiProtonAntiSBDump = new AliFemtoDreamDump("apaSB");
+    fDumpster->Add(fAntiProtonAntiSBDump->GetOutput());
   }
 
   fQA = new TList();
@@ -554,10 +596,11 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   PostData(11, fResultQAList);
   PostData(12, fResultsSample);
   PostData(13, fResultsSampleQA);
+  PostData(14, fDumpster);
   if (fIsMC) {
-    PostData(14, fTrackCutHistMCList);
-    PostData(15, fAntiTrackCutHistMCList);
-    PostData(16, fLambdaHistMCList);
-    PostData(17, fAntiLambdaHistMCList);
+    PostData(15, fTrackCutHistMCList);
+    PostData(16, fAntiTrackCutHistMCList);
+    PostData(17, fLambdaHistMCList);
+    PostData(18, fAntiLambdaHistMCList);
   }
 }

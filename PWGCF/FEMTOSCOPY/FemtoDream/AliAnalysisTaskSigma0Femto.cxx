@@ -35,7 +35,6 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
-      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -81,7 +80,6 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
-      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -172,102 +170,85 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   fEvent->SetEvent(evt);
   if (!fEvtCuts->isSelected(fEvent)) return;
 
-  // LAMBDA SELECTION
-  fV0Cuts->SelectV0(fInputEvent, fMCEvent);
+  // PROTON SELECTION
+  const int multiplicity = fEvent->GetMultiplicity();
+  UInt_t filterBitProton = fTrackCutsPartProton->GetFilterBit();
+  bool useTPConlyTrack = (filterBitProton == 128);
+  static std::vector<AliFemtoDreamBasePart> Particles;
+  Particles.clear();
+  static std::vector<AliFemtoDreamBasePart> AntiParticles;
+  AntiParticles.clear();
+  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
+    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(evt->GetTrack(iTrack));
+    fProtonTrack->SetTrack(esdTrack, fMCEvent, multiplicity, useTPConlyTrack);
+    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
+      Particles.push_back(*fProtonTrack);
+    }
+    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
+      AntiParticles.push_back(*fProtonTrack);
+    }
+  }
 
   // LAMBDA SELECTION
+  fV0Cuts->SelectV0(fInputEvent, fMCEvent);
   fAntiV0Cuts->SelectV0(fInputEvent, fMCEvent);
+
+  static std::vector<AliFemtoDreamBasePart> Decays;
+  static std::vector<AliFemtoDreamBasePart> AntiDecays;
+  CastToVector(fV0Cuts->GetV0s(), Decays, fMCEvent);
+  CastToVector(fAntiV0Cuts->GetV0s(), AntiDecays, fMCEvent);
 
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
   if (!fIsLightweight) {
     fPhotonQA->PhotonQA(fInputEvent, fMCEvent, fGammaArray);
   }
-  std::vector<AliSigma0ParticleV0> gammaConvContainer;
-  CastToVector(gammaConvContainer, fInputEvent);
+  static std::vector<AliFemtoDreamBasePart> Gammas;
+  Gammas.clear();
+  CastToVector(Gammas, fInputEvent);
 
-  // Sigma0 selection
-  fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
-                                 fV0Cuts->GetV0s());
+  fPairCleaner->CleanDecay(&Decays, 0);
+  fPairCleaner->CleanDecay(&AntiDecays, 1);
+  fPairCleaner->CleanDecay(&Gammas, 2);
+  fPairCleaner->CleanDecayAndDecay(&Decays, &AntiDecays, 3);
+  fPairCleaner->CleanDecayAndDecay(&Decays, &Gammas, 4);
+  fPairCleaner->CleanDecayAndDecay(&AntiDecays, &Gammas, 5);
 
-  // Sigma0 selection
-  fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
-                                     fAntiV0Cuts->GetV0s());
+  fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, Decays);
+  fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, AntiDecays);
 
-  // Convert the Sigma0 into Femto particles
-  static std::vector<AliFemtoDreamBasePart> sigma0particles;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0particles;
-  static std::vector<AliFemtoDreamBasePart> sigma0sidebandUp;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0sidebandUp;
-  static std::vector<AliFemtoDreamBasePart> sigma0sidebandLow;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0sidebandLow;
+  std::vector<AliFemtoDreamBasePart> sigma0particles, sigma0sidebandUp,
+      sigma0sidebandLow, antiSigma0particles, antiSigma0sidebandUp,
+      antiSigma0sidebandLow, sigma0lambda, antiSigma0lambda, sigma0photon, antiSigma0photon;
 
-  static std::vector<AliFemtoDreamBasePart> sigma0lambda;
-  static std::vector<AliFemtoDreamBasePart> sigma0photon;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0lambda;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0photon;
+  CastToVector(sigma0particles, fSigmaCuts->GetSigma());
+  CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp());
+  CastToVector(sigma0sidebandLow, fSigmaCuts->GetSidebandDown());
 
-  CastToVector(fSigmaCuts->GetSigma(), sigma0particles, fMCEvent);
-  CastToVector(fAntiSigmaCuts->GetSigma(), antiSigma0particles, fMCEvent);
-  CastToVector(fSigmaCuts->GetSidebandUp(), sigma0sidebandUp, fMCEvent);
-  CastToVector(fAntiSigmaCuts->GetSidebandUp(), antiSigma0sidebandUp, fMCEvent);
-  CastToVector(fSigmaCuts->GetSidebandDown(), sigma0sidebandLow, fMCEvent);
-  CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow,
-               fMCEvent);
+  CastToVector(antiSigma0particles, fAntiSigmaCuts->GetSigma());
+  CastToVector(antiSigma0sidebandUp, fAntiSigmaCuts->GetSidebandUp());
+  CastToVector(antiSigma0sidebandLow, fAntiSigmaCuts->GetSidebandDown());
 
-  // Get the Sigma0 daughters
+  fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0particles, 1);
+  fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandUp, 2);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandUp, 3);
+  fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandLow, 4);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandLow, 5);
   if (fCheckDaughterCF) {
-    static std::vector<AliSigma0ParticleV0> lambdaSigma;
-    static std::vector<AliSigma0ParticleV0> photonSigma;
-    static std::vector<AliSigma0ParticleV0> lambdaAntiSigma;
-    static std::vector<AliSigma0ParticleV0> photonAntiSigma;
-
-    fSigmaCuts->GetLambda(lambdaSigma);
-    fSigmaCuts->GetPhoton(photonSigma);
-    fAntiSigmaCuts->GetLambda(lambdaAntiSigma);
-    fAntiSigmaCuts->GetPhoton(photonAntiSigma);
-
-    CastToVector(lambdaSigma, sigma0lambda, fMCEvent);
-    CastToVector(photonSigma, sigma0photon, fMCEvent);
-    CastToVector(lambdaAntiSigma, antiSigma0lambda, fMCEvent);
-    CastToVector(photonAntiSigma, antiSigma0photon, fMCEvent);
+    fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0lambda, 6);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0lambda, 7);
+    fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 8);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 9);
+    fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0photon, 10);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0photon, 11);
+    fPairCleaner->CleanTrackAndDecay(&Particles, &Gammas, 12);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &Gammas, 13);
   }
-
-  // PROTON SELECTION
-  const int multiplicity = fEvent->GetMultiplicity();
-  UInt_t filterBitProton = fTrackCutsPartProton->GetFilterBit();
-  bool useTPConlyTrack = (filterBitProton == 128);
-  static std::vector<AliFemtoDreamBasePart> particles;
-  particles.clear();
-  static std::vector<AliFemtoDreamBasePart> antiParticles;
-  antiParticles.clear();
-  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
-    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-    fProtonTrack->SetTrack(esdTrack, fMCEvent, multiplicity, useTPConlyTrack);
-    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      particles.push_back(*fProtonTrack);
-    }
-    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      antiParticles.push_back(*fProtonTrack);
-    }
-  }
-
-  fPairCleaner->CleanTrackAndDecay(&particles, &sigma0particles, 0);
-  fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0particles, 1);
-  fPairCleaner->CleanTrackAndDecay(&particles, &sigma0sidebandUp, 2);
-  fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0sidebandUp, 3);
-  fPairCleaner->CleanTrackAndDecay(&particles, &sigma0sidebandLow, 4);
-  fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0sidebandLow, 5);
-  if (fCheckDaughterCF) {
-     fPairCleaner->CleanTrackAndDecay(&particles, &sigma0lambda, 6);
-     fPairCleaner->CleanTrackAndDecay(&particles, &sigma0photon, 7);
-     fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0lambda, 8);
-     fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0photon, 9);
-   }
 
   fPairCleaner->ResetArray();
-  fPairCleaner->StoreParticle(particles);
-  fPairCleaner->StoreParticle(antiParticles);
+  fPairCleaner->StoreParticle(Particles);
+  fPairCleaner->StoreParticle(AntiParticles);
   fPairCleaner->StoreParticle(sigma0particles);
   fPairCleaner->StoreParticle(antiSigma0particles);
   fPairCleaner->StoreParticle(sigma0sidebandUp);
@@ -275,10 +256,13 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(sigma0sidebandLow);
   fPairCleaner->StoreParticle(antiSigma0sidebandLow);
   if (fCheckDaughterCF) {
-     fPairCleaner->StoreParticle(sigma0lambda);
-     fPairCleaner->StoreParticle(sigma0photon);
-     fPairCleaner->StoreParticle(antiSigma0lambda);
-     fPairCleaner->StoreParticle(antiSigma0photon);
+    fPairCleaner->StoreParticle(sigma0lambda);
+    fPairCleaner->StoreParticle(antiSigma0lambda);
+    fPairCleaner->StoreParticle(Decays);
+    fPairCleaner->StoreParticle(AntiDecays);
+    fPairCleaner->StoreParticle(sigma0photon);
+    fPairCleaner->StoreParticle(antiSigma0photon);
+    fPairCleaner->StoreParticle(Gammas);
    }
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
@@ -304,7 +288,7 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskSigma0Femto::CastToVector(
-    std::vector<AliSigma0ParticleV0> &container, const AliVEvent *inputEvent) {
+    std::vector<AliFemtoDreamBasePart> &container, const AliVEvent *inputEvent) {
   for (int iGamma = 0; iGamma < fGammaArray->GetEntriesFast(); ++iGamma) {
     auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
@@ -315,6 +299,13 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
     auto neg =
         (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
     if (!pos || !neg) continue;
+
+    // cut on the DCA to the PV in transverse plane
+    PhotonCandidate->CalculateDistanceOfClossetApproachToPrimVtx(inputEvent->GetPrimaryVertex());
+    const float DCAr = PhotonCandidate->GetDCArToPrimVtx();
+    if (DCAr > 0.75) {
+      continue;
+    }
 
     // pile up check
     if (fPhotonLegPileUpCut) {
@@ -332,25 +323,18 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
 
       if (!posTrackCombined || !negTrackCombined) continue;
     }
-
-    AliSigma0ParticleV0 phot(PhotonCandidate, pos, neg, inputEvent);
-    if (fIsMC) {
-      phot.MatchToMC(fMCEvent, 22, {{11, -11}});
-    }
-    container.push_back(phot);
+    container.push_back( { PhotonCandidate, pos, neg, inputEvent });
   }
 }
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskSigma0Femto::CastToVector(
-    std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
-    std::vector<AliFemtoDreamBasePart> &particles, const AliMCEvent *mcEvent) {
-  particles.clear();
-
+    std::vector<AliFemtoDreamBasePart> &particlesOut,
+    std::vector<AliFemtoDreamBasePart> &particlesIn) {
+  particlesOut.clear();
   // Randomly pick one of the particles in the container
-  if (sigmaContainer.size() > 0) {
-    particles.push_back(
-        {sigmaContainer[fRandom->Rndm() * sigmaContainer.size()], mcEvent});
+  if (particlesIn.size() > 0) {
+    particlesOut.push_back(particlesIn[fRandom->Rndm() * particlesIn.size()]);
   }
 }
 
@@ -464,9 +448,9 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fAntiSigmaHistList = fAntiSigmaCuts->GetCutHistograms();
   }
 
-  const int nPairs = (fCheckDaughterCF) ? 10 : 6;
+  const int nPairs = (fCheckDaughterCF) ? 14 : 6;
   fPairCleaner =
-      new AliFemtoDreamPairCleaner(nPairs, 0, fConfig->GetMinimalBookingME());
+      new AliFemtoDreamPairCleaner(nPairs, 6, fConfig->GetMinimalBookingME());
   fPartColl =
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 

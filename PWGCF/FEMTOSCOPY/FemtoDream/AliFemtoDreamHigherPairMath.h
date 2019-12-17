@@ -16,10 +16,11 @@
 #include <vector>
 class AliFemtoDreamHigherPairMath {
  public:
-  AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf);
+  AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf, bool minBooking = true);
   virtual ~AliFemtoDreamHigherPairMath();
   AliFemtoDreamHigherPairMath(const AliFemtoDreamHigherPairMath& samp);
-  AliFemtoDreamHigherPairMath& operator=(const AliFemtoDreamHigherPairMath& math);
+  AliFemtoDreamHigherPairMath& operator=(
+      const AliFemtoDreamHigherPairMath& math);
   void SetBField(float bielefield) {
     fBField = bielefield;
   }
@@ -29,20 +30,18 @@ class AliFemtoDreamHigherPairMath {
     return 4;
   }
   ;
-  bool PassesPairSelection(AliFemtoDreamBasePart* part1,
-                           AliFemtoDreamBasePart* part2, bool Recalculate);
-  void RecalculatePhiStar(AliFemtoDreamBasePart *part);
+  bool PassesPairSelection(AliFemtoDreamBasePart& part1,
+                           AliFemtoDreamBasePart& part2, bool Recalculate);
+  void RecalculatePhiStar(AliFemtoDreamBasePart &part);
   float FillSameEvent(int iHC, int Mult, float cent, TVector3 Part1Momentum,
                       int PDGPart1, TVector3 Part2Momentum, int PDGPart2);
-  void MassQA(int iHC, float RelK, float massOne, float massTwo);
+  void MassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1,
+              AliFemtoDreamBasePart &part2);
+  void SEMomentumResolution(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
+                            AliFemtoDreamBasePart* part2, int PDGPart2,
+                            float RelativeK);
   void SEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart& part1, int PDGPart1,
                        AliFemtoDreamBasePart& part2, int PDGPart2,
-                       float RelativeK, bool recalculate) {
-    SEDetaDPhiPlots(iHC, &part1, PDGPart1, &part2, PDGPart2, RelativeK,
-                    recalculate);
-  }
-  void SEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
-                       AliFemtoDreamBasePart* part2, int PDGPart2,
                        float RelativeK, bool recalculate);
   void FillPairCounterSE(int iHC, unsigned int sizePartOne,
                          unsigned int sizePartTwo) {
@@ -56,13 +55,10 @@ class AliFemtoDreamHigherPairMath {
                             float RelativeK);
   void MEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart& part1, int PDGPart1,
                        AliFemtoDreamBasePart& part2, int PDGPart2,
-                       float RelativeK, bool recalculate) {
-    MEDetaDPhiPlots(iHC, &part1, PDGPart1, &part2, PDGPart2, RelativeK,
-                    recalculate);
-  }
-  void MEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
-                       AliFemtoDreamBasePart* part2, int PDGPart2,
                        float RelativeK, bool recalculate);
+  void FillEffectiveMixingDepth(int iHC, int iDepth) {
+    fHists->FillEffectiveMixingDepth(iHC, iDepth);
+  }
   void FillPairCounterME(int iHC, unsigned int sizePartOne,
                          unsigned int sizePartTwo) {
     fHists->FillPartnersME(iHC, sizePartOne, sizePartTwo);
@@ -77,12 +73,20 @@ class AliFemtoDreamHigherPairMath {
     return "HighMaths";
   }
   ;
+
+  static float RelativePairMomentum(AliFemtoDreamBasePart *PartOne, const int pdg1,
+                                    AliFemtoDreamBasePart *PartTwo, const int pdg2);
+  static float RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float RelativePairkT(AliFemtoDreamBasePart *PartOne, const int pdg1,
+                              AliFemtoDreamBasePart *PartTwo, const int pdg2);
+  static float RelativePairkT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float RelativePairmT(AliFemtoDreamBasePart *PartOne, const int pdg1,
+                              AliFemtoDreamBasePart *PartTwo, const int pdg2);
+  static float RelativePairmT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+
  private:
-  float RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
-  float RelativePairkT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
-  float RelativePairmT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
-  void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart *part1,
-                        AliFemtoDreamBasePart *part2, bool SEorME, float relk,
+  void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
+                        AliFemtoDreamBasePart &part2, bool SEorME, float relk,
                         bool recalculate);
   AliFemtoDreamCorrHists *fHists;
   std::vector<unsigned int> fWhichPairs;

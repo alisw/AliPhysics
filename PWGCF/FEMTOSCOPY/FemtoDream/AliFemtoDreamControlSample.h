@@ -36,21 +36,18 @@ class AliFemtoDreamControlSample {
   void CorrelatedSample(std::vector<AliFemtoDreamBasePart> &part1,
                         int &PDGPart1,
                         std::vector<AliFemtoDreamBasePart> &part2,
-                        int &PDGPart2, bool SameParticle,
-                        int HistCounter);
+                        int &PDGPart2, bool SameParticle, int HistCounter);
   void UncorrelatedSample(std::vector<AliFemtoDreamBasePart> &part1,
                           int &PDGPart1,
                           std::vector<AliFemtoDreamBasePart> &part2,
-                          int &PDGPart2, bool SameParticle,
-                          int HistCounter);
+                          int &PDGPart2, bool SameParticle, int HistCounter);
   void PhiSpinning(std::vector<AliFemtoDreamBasePart> &part1, int PDGPart1,
                    std::vector<AliFemtoDreamBasePart> &part2, int PDGPart2,
                    bool SameParticle, int HistCounter);
   void LimitedPhiSpinning(std::vector<AliFemtoDreamBasePart> &part1,
                           int PDGPart1,
                           std::vector<AliFemtoDreamBasePart> &part2,
-                          int PDGPart2, bool SameParticle,
-                          int HistCounter);
+                          int PDGPart2, bool SameParticle, int HistCounter);
   void Randomizer(std::vector<AliFemtoDreamBasePart*> &part);
   int FindBin(float Multiplicity);
   AliFemtoDreamHigherPairMath* fHigherMath;
@@ -66,8 +63,7 @@ class AliFemtoDreamControlSample {
   float fDeltaPhiMax;
   bool fDoDeltaEtaDeltaPhiCut;
   int fMult;
-  float fCent;
-ClassDef(AliFemtoDreamControlSample, 4)
+  float fCent;ClassDef(AliFemtoDreamControlSample, 4)
 };
 
 #endif

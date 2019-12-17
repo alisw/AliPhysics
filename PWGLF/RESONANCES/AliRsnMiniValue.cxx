@@ -131,6 +131,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPairPtRes:        return "PairPtResolution";
       case kPairYRes:         return "PairYResolution";
       case kPhiV:         return "PhiV";
+      case kAsym:         return "PairAsymmetry";
       default:            return "Undefined";
    }
 }
@@ -243,6 +244,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->PairYRes();     
       case kPhiV:
          return pair->PhiV(fUseMCInfo);
+      case kAsym:
+         return pair->PairAsymmetry(fUseMCInfo);
       default:
          AliError("Invalid value type");
          return 1E20;

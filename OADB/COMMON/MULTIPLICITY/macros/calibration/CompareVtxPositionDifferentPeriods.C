@@ -263,6 +263,10 @@ void CompareVtxPositionDifferentPeriods(
       collisionSystem = "p-Pb #sqrt{#it{s}_{_{NN}}} = 8.16 TeV";
   else if ( energy.CompareTo("XeXe_5TeV") == 0 )
     collisionSystem = "Xe-Xe #sqrt{#it{s}_{_{NN}}} = 5.44 TeV";
+  else if ( energy.CompareTo("5TeV") == 0 )
+    collisionSystem = "pp #sqrt{#it{s}} = 5.02 TeV";
+  else if ( energy.CompareTo("13TeVLowB") == 0 )
+    collisionSystem = "pp #sqrt{#it{s}} = 13 TeV, B = 0.2 T";
 
 
   TString nameOutputDir = Form("CalibrationQA/CompareDifferentPeriods%s_%s",addName.Data(), energy.Data());
@@ -295,15 +299,16 @@ void CompareVtxPositionDifferentPeriods(
   }
 
 
-  TString nameCalibrators[14] = { "V0A", "V0C", "V0M", "V0AEq", "V0CEq",
+  TString nameCalibrators[17] = { "V0A", "V0C", "V0M", "V0AEq", "V0CEq",
                                   "V0MEq", "SPDCl0", "SPDCl1", "SPDCl", "RefMultEta5",
-                                  "RefMultEta8", "NTracklets", "ZNA", "ZNC"};
-  TString axislabelPlot[14]   = { "V0A", "V0C", "V0M", "V0AEq", "V0CEq",
+                                  "RefMultEta8", "NTracklets", "ZNA", "ZNC", "V0AOnline", "V0COnline",
+                                  "V0MOnline",};
+  TString axislabelPlot[17]   = { "V0A", "V0C", "V0M", "V0AEq", "V0CEq",
                                   "V0MEq", "CL0", "CL1", "SPD cl.", "mult |#eta| < 0.5",
-                                  "mult |#eta| < 0.8", "SPD tracklets", "ZNA", "ZNC"};
+                                  "mult |#eta| < 0.8", "SPD tracklets", "ZNA", "ZNC", "V0A online", "V0C online", "V0M online",};
   TFile* commonOutputFile     = new TFile(outputFileName.Data(),"UPDATE");
 
-  for (Int_t cal = 0; cal< 14; cal++){
+  for (Int_t cal = 0; cal< 17; cal++){
     TProfile* hprofCalibrator[20] = {NULL};
     TF1* fitCalibrator[20]        = {NULL};
     TString currentNameProf       = Form("hprofVtxZvs%s", nameCalibrators[cal].Data());

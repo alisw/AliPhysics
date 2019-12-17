@@ -235,6 +235,47 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     
 }
 
+TString AliAnalysisTaskHFEBeautyMCTemplatesRun2::GetPeriodNameByLPM(TString lTag)  // This is copied from the mult selection task
+{
+    //==================================
+    // Setup initial Info
+    Bool_t lLocated = kFALSE;
+    TString lProductionName = "";
+    
+    //==================================
+    // Get alirootVersion object title
+    AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!handler) return lProductionName; //failed!
+    TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    if (!prodInfoData) return lProductionName; //failed!
+    TString lAlirootVersion(prodInfoData->GetTitle());
+    
+    //==================================
+    // Get Production name
+    TObjArray* lArrStr = lAlirootVersion.Tokenize(";");
+    if(lArrStr->GetEntriesFast()) {
+        TIter iString(lArrStr);
+        TObjString* os=0;
+        Int_t j=0;
+        while ((os=(TObjString*)iString())) {
+            if( os->GetString().Contains(lTag.Data()) ){
+                lLocated = kTRUE;
+                lProductionName = os->GetString().Data();
+                //Remove Label
+                lProductionName.ReplaceAll(lTag.Data(),"");
+                //Remove any remaining whitespace (just in case)
+                lProductionName.ReplaceAll("=","");
+                lProductionName.ReplaceAll(" ","");
+            }
+            j++;
+        }
+    }
+    //Memory cleanup
+    delete lArrStr;
+    //Return production name
+    return lProductionName;
+}
+
 Int_t AliAnalysisTaskHFEBeautyMCTemplatesRun2::FindSource(AliMCParticle * mcple, AliMCEvent* fMCEvent, Double_t &motherPt, Double_t &GroundStateMotherPt)
 {
   motherPt = 0.;
@@ -545,6 +586,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
   Int_t Source, SourceNew;
   Double_t CorrGaussWidth=0.;
   Int_t sourceTemp = 0;
+  TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
   
   if(analyzeEvent)
   {
@@ -565,14 +607,18 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         SourceNew = FindSource(mcple, fMCEvent, MotherPt, GSMotherPt); // This also fills the motherPt
         fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);
         dcaErr =  dcaxyD / dcaErr; // because dcaerr is actually the dca significance
-        CorrGaussWidth = TMath::Sqrt((1. + 0.085)*(1. + 0.085)-1.);
+        //if(lProductionName.Contains("LHC16i"))
+        CorrGaussWidth = TMath::Sqrt((1. + 0.085)*(1. + 0.085)-1.); // For now also use as default
+        if(lProductionName.Contains("LHC18l8") || lProductionName.Contains("LHC19f3"))
+          CorrGaussWidth = TMath::Sqrt((1.09375 + 0.0125*pt)*(1.09375 + 0.0125*pt)-1.);
+        
         IP = dcaxyD*track->Charge()*fieldConfiguration+fRd->Gaus(0., CorrGaussWidth*dcaErr); // 0.458 corresponds to a 10% width change
         if(Source == 0)
         {
            // Just to fill the motherpT
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
           //CorrCharm3050 = 15.1975*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)) / (15.1975*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519))); // previous
-          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519))); // 15o correction
           
           //CorrCharm3050 = 1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153)) // old (10h)
           //      /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
@@ -608,7 +654,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         if(SourceNew == 0)
         {
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
-          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519))); // 15o correction
           IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159+1);
           OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159);
           fDCACharmNew->Fill(pt, IP);
@@ -695,6 +741,9 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);  // DCA only calculated for electrons otherwise
         dcaErr =  dcaxyD / dcaErr; // because dcaerr is actually the dca significance
         CorrGaussWidth = TMath::Sqrt((1. + 0.085)*(1. + 0.085)-1.);
+        if(lProductionName.Contains("LHC18l8") || lProductionName.Contains("LHC19f3"))
+          CorrGaussWidth = TMath::Sqrt((1.09375 + 0.0125*pt)*(1.09375 + 0.0125*pt)-1.);
+        
         IP = dcaxyD*track->Charge()*fieldConfiguration+fRd->Gaus(0., CorrGaussWidth*dcaErr); // 0.458 corresponds to a 10% width change
         IPUncorr = dcaxyD*track->Charge()*fieldConfiguration;
         fDCAHadrons->Fill(pt, dcaxyD*track->Charge()*fieldConfiguration); // dcaxyD*track->Charge()*fieldConfiguration , for now leav factors out to check on center changes etc.

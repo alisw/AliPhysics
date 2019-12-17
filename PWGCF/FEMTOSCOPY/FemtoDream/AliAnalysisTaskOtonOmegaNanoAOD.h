@@ -146,7 +146,6 @@ class AliAnalysisTaskOtonOmegaNanoAOD : public AliAnalysisTaskSE {
   Float_t fTProtonTOFsigma[150];
   Float_t fTProtonDCA[150];
   Int_t fTProtonNcl[150];
-  Float_t fTProtonCrF[150];
   Int_t fTProtonShared[150];
   Float_t fTProtonTPCchi2[150];
   Bool_t fTProtonITStime[150];
@@ -155,7 +154,6 @@ class AliAnalysisTaskOtonOmegaNanoAOD : public AliAnalysisTaskSE {
   Bool_t fTProtonITScomplementary[150];
   Bool_t fTProtonITSpure[150];
   Bool_t fTProtonGLOBAL[150];
-  UInt_t fTProtonFilterBit[150];
   Float_t fTProtonPhi[150];
   Int_t fTProtonID[150];
   //cascades:
@@ -208,6 +206,7 @@ class AliAnalysisTaskOtonOmegaNanoAOD : public AliAnalysisTaskSE {
   Float_t fTTrackTPCsigma[300][3];
   Float_t fTTrackTOFsigma[300][3];
   Int_t fTTrackNcl[300][3];
+  Float_t fTTrackCrR[300][3];
   Float_t fTTrackCrF[300][3];
   Int_t fTTrackShared[300][3];
   Float_t fTTrackTPCchi2[300][3];

@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//update Jul 24
+//update Nov 2019
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -39,23 +39,18 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
-    TH1F*  fHistPA;
-    TH1F*  fHistPAparLambda;
-    TH1F*  fHistPAparLambdabar;
-    
-    
     
     TH3F*  f3fHistCentVsInvMassLambda1point0;
     TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
     
-    TH3F*  f3fHistCentVsInvMassLambda1point0Rap;
-    TH3F*  f3fHistCentVsInvMassLambda1point0MasscutRap;
+    TH3F*  f3fHistCentVsInvMassLambda1point0tight;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Masscuttight;
     
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
     
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Rap;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0MasscutRap;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0tight;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscuttight;
     
     
     Float_t fCentrality;
@@ -68,8 +63,8 @@ protected:
     
     
     THnSparse *fPtBinNplusNminusCh;
-    THnSparse *fPtBinNplusNminusChRap;
-
+    THnSparse *fPtBinNplusNminusChtight;
+    
     
     
     

@@ -58,7 +58,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
 
   AliParticleContainer *trackCont;// = task->AddTrackContainer(ntracks);
  
-  if ((jetShapeSub==AliAnalysisTaskNewJetSubstructure::kConstSub) && ((jetShapeType==AliAnalysisTaskNewJetSubstructure::kData) || (jetShapeType==AliAnalysisTaskNewJetSubstructure::kDetEmbPartPythia) || (jetShapeType==AliAnalysisTaskNewJetSubstructure::kPythiaDef))){
+  if ((jetShapeSub==AliAnalysisTaskNewJetSubstructure::kConstSub || jetShapeSub==AliAnalysisTaskNewJetSubstructure::kEventSub ) && ((jetShapeType==AliAnalysisTaskNewJetSubstructure::kData) || (jetShapeType==AliAnalysisTaskNewJetSubstructure::kDetEmbPartPythia) || (jetShapeType==AliAnalysisTaskNewJetSubstructure::kPythiaDef))){
     trackCont = task->AddParticleContainer(ntracks);}
   else trackCont = task->AddTrackContainer(ntracks);
 
@@ -129,7 +129,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
     
     }
     
-    if(jetShapeSub==AliAnalysisTaskNewJetSubstructure::kConstSub){
+    if(jetShapeSub==AliAnalysisTaskNewJetSubstructure::kConstSub || jetShapeSub==AliAnalysisTaskNewJetSubstructure::kEventSub){
       jetContUS=task->AddJetContainer(njetsUS,strType,R);
       if(jetContUS) {
         jetContUS->SetRhoName(nrhoBase);
@@ -204,7 +204,8 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
  
   if (jetShapeType == AliAnalysisTaskNewJetSubstructure::kPythiaDef) contName1 +="_PythiaDef";
   if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kNoSub) contName1 += "_NoSub"; 
-  if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kConstSub) contName1 += "_ConstSub"; 
+  if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kConstSub) contName1 += "_ConstSub";
+   if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kEventSub) contName1 += "_EventSub"; 
   if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kDerivSub) contName1 += "_DerivSub";
   
   if (jetSelection == AliAnalysisTaskNewJetSubstructure::kInclusive) contName1 += "_Incl";
@@ -216,7 +217,8 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
  
   if (jetShapeType == AliAnalysisTaskNewJetSubstructure::kPythiaDef) contName2 +="_PythiaDef";
   if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kNoSub) contName2 += "_NoSub"; 
-  if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kConstSub) contName2 += "_ConstSub"; 
+  if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kConstSub) contName2 += "_ConstSub";
+  if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kEventSub) contName2 += "_EventSub"; 
   if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kDerivSub) contName2 += "_DerivSub";
   
   if (jetSelection == AliAnalysisTaskNewJetSubstructure::kInclusive) contName2 += "_Incl";

@@ -109,6 +109,8 @@ class AliHFInvMassFitter : public TNamed {
     fSecondPeak=kTRUE; fSecMass=mass; fSecWidth=width;
     fFixSecMass=fixm;  fFixSecWidth=fixw;
   }
+  void SetCheckSignalCountsAfterFirstFit(Bool_t opt){fCheckSignalCountsAfterFirstFit=opt;}
+  
   Double_t GetRawYield()const {return fRawYield;}
   Double_t GetRawYieldError()const {return fRawYieldErr;}
   Double_t GetMean() const {return fMass;}
@@ -213,6 +215,7 @@ class AliHFInvMassFitter : public TNamed {
   Int_t     fNParsBkg;             /// fit parameters in background fit function
   Bool_t    fOnlySideBands;        /// kTRUE = only side bands considered
   Double_t  fNSigma4SideBands;     /// number of sigmas to veto the signal peak
+  Bool_t    fCheckSignalCountsAfterFirstFit; /// switch for check after first fit 
   TString   fFitOption;            /// L, LW or Chi2
   Double_t  fRawYield;             /// signal gaussian integral
   Double_t  fRawYieldErr;          /// err on signal gaussian integral
@@ -239,7 +242,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*      fTotFunc;              /// total fit function
 
   /// \cond CLASSIMP     
-  ClassDef(AliHFInvMassFitter,6); /// class for invariant mass fit
+  ClassDef(AliHFInvMassFitter,7); /// class for invariant mass fit
   /// \endcond
 };
 

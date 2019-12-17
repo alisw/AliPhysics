@@ -79,6 +79,7 @@ void AliLightNTrack::SetTrack(AliAODTrack *track) {
 
 void AliLightNTrack::SetTrackingInformation() {
     this->fFilterMap=fTrack->GetFilterMap();
+    this->SetTrackChi2perNDF(fTrack->Chi2perNDF());
     this->SetEta(fTrack->Eta());
     this->SetPhi(fTrack->Phi());
     this->SetTheta(fTrack->Theta());
@@ -328,6 +329,7 @@ void AliLightNTrack::Reset() {
         fTPCRefit=false;
         fP.SetXYZ(0,0,0);
         fMCP.SetXYZ(0,0,0);
+        fTrackChi2perNDF=0;
         fPt=0;
         fMCPt=0;
         fMCPt=0;

@@ -97,6 +97,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
   fUsePtDepXYDCA(kFALSE),
   fUseDCAToVertex2D(kFALSE),
   fMaxDCAToVertexXYPtDep(""),
+  fRunFlag(1500),
 	fCutString(NULL),
   fCutStringRead(""),
 	fHistCutIndex(NULL),
@@ -123,6 +124,77 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fPeriodName("")
 {
 	InitPIDResponse();
+	for(Int_t jj=0;jj<kNCuts;jj++){ fCuts[jj]=0; }
+	fCutString=new TObjString((GetCutNumber()).Data());
+
+	// Using standard function for setting Cuts
+	if (fEsdTrackCuts==NULL) fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+}
+
+//________________________________________________________________________
+AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnalysisCuts(ref),
+	fHistograms(NULL),
+    fDoLightOutput(ref.fDoLightOutput),
+	fPIDResponse(NULL),
+	fEsdTrackCuts(ref.fEsdTrackCuts),
+	fEsdTrackCutsGC(ref.fEsdTrackCutsGC),
+	fEtaCut(ref.fEtaCut),
+	fEtaShift(ref.fEtaShift),
+	fDoEtaCut(ref.fDoEtaCut),
+	fPtCut(ref.fPtCut),
+	fMinClsTPC(ref.fMinClsTPC), // minimum clusters in the TPC
+    fChi2PerClsTPC(ref.fChi2PerClsTPC), // maximum Chi2 per cluster in the TPC
+    fRequireTPCRefit(ref.fRequireTPCRefit), // require a refit in the TPC
+	fMinClsTPCToF(ref.fMinClsTPCToF), // minimum clusters to findable clusters
+	fMinClsITS(ref.fMinClsITS), // minimum clusters to findable clusters
+	fDodEdxSigmaITSCut(ref.fDodEdxSigmaITSCut),
+	fDodEdxSigmaTPCCut(ref.fDodEdxSigmaTPCCut),
+	fDoTOFsigmaCut(ref.fDoTOFsigmaCut), // RRnewTOF
+	fPIDnSigmaAbovePionLineITS(ref.fPIDnSigmaAbovePionLineITS),
+	fPIDnSigmaBelowPionLineITS(ref.fPIDnSigmaBelowPionLineITS),
+	fPIDnSigmaAbovePionLineTPC(ref.fPIDnSigmaAbovePionLineTPC),
+	fPIDnSigmaBelowPionLineTPC(ref.fPIDnSigmaBelowPionLineTPC),
+	fPIDnSigmaAbovePionLineTOF(ref.fPIDnSigmaAbovePionLineTOF),
+	fPIDnSigmaBelowPionLineTOF(ref.fPIDnSigmaBelowPionLineTOF),
+	fUseCorrectedTPCClsInfo(ref.fUseCorrectedTPCClsInfo),
+	fUseTOFpid(ref.fUseTOFpid),
+	fRequireTOF(ref.fRequireTOF),
+	fDoMassCut(ref.fDoMassCut),
+	fMassCut(ref.fMassCut),
+	fUse4VecForMass(ref.fUse4VecForMass),
+	fRequireVertexConstrain(ref.fRequireVertexConstrain),
+	fDoWeights(ref.fDoWeights),
+    fMaxDCAToVertexZ(ref.fMaxDCAToVertexZ),
+	fMaxDCAToVertexXY(ref.fMaxDCAToVertexXY),
+	fUsePtDepXYDCA(ref.fUsePtDepXYDCA),
+	fUseDCAToVertex2D(ref.fUseDCAToVertex2D),
+	fMaxDCAToVertexXYPtDep(ref.fMaxDCAToVertexXYPtDep),
+	fRunFlag(ref.fRunFlag),
+	fCutString(NULL),
+	fCutStringRead(""),
+	fHistCutIndex(NULL),
+	fHistdEdxCuts(NULL),
+	fHistITSdEdxbefore(NULL),
+	fHistITSdEdxafter(NULL),
+	fHistTPCdEdxbefore(NULL),
+	fHistTPCdEdxafter(NULL),
+	fHistTPCdEdxSignalbefore(NULL),
+	fHistTPCdEdxSignalafter(NULL),
+	fHistTOFbefore(NULL),
+	fHistTOFafter(NULL),
+	fHistTrackDCAxyPtbefore(NULL),
+	fHistTrackDCAxyPtafter(NULL),
+	fHistTrackDCAzPtbefore(NULL),
+	fHistTrackDCAzPtafter(NULL),
+	fHistTrackNFindClsPtTPCbefore(NULL),
+	fHistTrackNFindClsPtTPCafter(NULL),
+	fHistTrackSelectedEta(NULL),
+	fHistTrackSelectedPhi(NULL),
+	fHistTrackSelectedPt(NULL),
+	fHistTrackSelectedPtWithoutITS(NULL),
+	fStringITSClusterCut(""),
+	fPeriodName(ref.fPeriodName)
+{
 	for(Int_t jj=0;jj<kNCuts;jj++){ fCuts[jj]=0; }
 	fCutString=new TObjString((GetCutNumber()).Data());
 
@@ -660,14 +732,8 @@ Bool_t AliPrimaryPionCuts::InitializeCutsFromCutString(const TString analysisCut
   fCutStringRead = Form("%s",analysisCutSelection.Data());
   
   // Set basic cuts for AOD compability
-	if(fPeriodName.Contains("LHC10") || fPeriodName.Contains("LHC14j4")
-	   || fPeriodName.Contains("LHC14k1")){
-		AliInfo("Presetting ESD cuts for LHC10 AOD filtering");
-	  SetHybridTrackCutsAODFiltering(1000);
-	} else{
-		SetHybridTrackCutsAODFiltering(1500);
-		AliInfo("Presetting ESD cuts for run2 filtering");
-	}
+	SetHybridTrackCutsAODFiltering(fRunFlag);
+	AliInfo(Form("Presetting ESD cuts with prefiltering for runflag %d",fRunFlag));
 
 	// Initialize Cuts from a given Cut string
 
@@ -696,7 +762,12 @@ Bool_t AliPrimaryPionCuts::InitializeCutsFromCutString(const TString analysisCut
 	}
 
 	fEsdTrackCutsGC = (AliESDtrackCuts*) fEsdTrackCuts->Clone();
-	fEsdTrackCutsGC->SetRequireITSRefit(kFALSE);
+	
+	if(fRunFlag==1500){
+		fEsdTrackCutsGC->SetRequireITSRefit(kTRUE);
+	} else{
+		fEsdTrackCutsGC->SetRequireITSRefit(kFALSE);
+	}
 	fEsdTrackCutsGC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 
 
@@ -968,6 +1039,13 @@ Bool_t AliPrimaryPionCuts::SetITSClusterCut(Int_t clsITSCut){
 			break;
 		case 6: 
 			fMinClsITS = 5;
+			fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+			fEsdTrackCuts->SetMinNClustersITS(fMinClsITS);
+			fStringITSClusterCut= "first or second SPD cluster required, min number of ITS clusters = 5";
+			// 5 hits in total in the ITS. At least 1 hit in any layer of SPD
+			break;
+		case 7: 
+			fMinClsITS = 1;
 			fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 			fEsdTrackCuts->SetMinNClustersITS(fMinClsITS);
 			fStringITSClusterCut= "first or second SPD cluster required, min number of ITS clusters = 5";
@@ -1346,39 +1424,45 @@ void AliPrimaryPionCuts::SetHybridTrackCutsAODFiltering(Int_t runflag= 1000){
    // As preselection apply all cuts that are applied in AOD filtering
 	 // so that ESD results are comparable to
 	 // SetHybridFilterMaskGlobalConstrainedGlobal
-
-	if(runflag==1500){
+    if(runflag == 0){
+        fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+    } else if(runflag==1){
+		fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+	} else if(runflag==1500){
 		fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
 		fEsdTrackCuts->SetMaxDCAToVertexXY(2.4);
-  	fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
-  	fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
-  	fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-  	fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+		fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
+		fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
+		fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+		fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
 	} else if(runflag==1000){
+		fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
 		TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
-   	fEsdTrackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
-   	fEsdTrackCuts->SetMinNClustersTPC(70);
-   	fEsdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   	fEsdTrackCuts->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
-   	fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-   	fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
-   	fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-   	// ITS
-   	fEsdTrackCuts->SetRequireITSRefit(kTRUE);
-   	//accept secondaries
-   	fEsdTrackCuts->SetMaxDCAToVertexXY(2.4);
-   	fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
-   	fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
-   	//reject fakes
-   	fEsdTrackCuts->SetMaxChi2PerClusterITS(36);
-   	fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);	
+		fEsdTrackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
+		fEsdTrackCuts->SetMinNClustersTPC(70);
+		fEsdTrackCuts->SetMaxChi2PerClusterTPC(4);
+		fEsdTrackCuts->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
+		fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+		fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+		fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+		// ITS
+		fEsdTrackCuts->SetRequireITSRefit(kTRUE);
+		//accept secondaries
+		fEsdTrackCuts->SetMaxDCAToVertexXY(2.4);
+		fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
+		fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
+		//reject fakes
+		fEsdTrackCuts->SetMaxChi2PerClusterITS(36);
+		fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);	
 
-   	fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-   
-   	fEsdTrackCuts->SetEtaRange(-0.9,0.9);
-   	fEsdTrackCuts->SetPtRange(0.15, 1E+15);
+		fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+	
+		fEsdTrackCuts->SetEtaRange(-0.9,0.9);
+		fEsdTrackCuts->SetPtRange(0.15, 1E+15);
 
 	 	fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+	} else{
+		AliFatal(Form("Runflag %d is an invalid option for track preselection! ",runflag));
 	}
 }
 

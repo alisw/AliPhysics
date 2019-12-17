@@ -29,7 +29,15 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
                                      Double_t maxEoPCut = 1.2,
                                      Bool_t timeCut = kFALSE,
                                      Int_t nTpcCrossRows=0,
-                                     Int_t itsChi2 = -100)
+                                     Int_t itsChi2 = -100,
+                                     Int_t itsLayer = 0,
+                                     Double_t zDCA = 3.2,
+                                     Double_t minMass = 0.,
+                                     Double_t maxMass = 0.1,
+                                     Double_t assoDCAxy = 0.25,
+                                     Double_t assoDCAz = 1.,
+                                     Int_t assoTPCnCls = 80
+                                     )
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -57,6 +65,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEemc->SetPileUpCut2(pileup2);
     taskBFEemc->SetEoPShift(shiftEoP);
     taskBFEemc->SetTimeCut(timeCut);
+    taskBFEemc->SetITSLayer(itsLayer);
     taskBFEemc->SetTPCnCrossRows(nTpcCrossRows);
     taskBFEemc->SetITSChi2(itsChi2);
     taskBFEemc->SetSSCut(m20Cut);
@@ -72,10 +81,14 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEemc->SetDCABinSize(dcaBinSize);
     taskBFEemc->SetStackLoop(runStackLoop);
     taskBFEemc->SetTPCClus(nClsTPC);
+    taskBFEemc->SetDCAzCut(zDCA);
     taskBFEemc->SetClusterTypeEMC(kTRUE);
     taskBFEemc->SetClusterTypeDCAL(kFALSE);
     taskBFEemc->SetCentralitySelection(centMin,centMax);
     taskBFEemc->SelectCollisionCandidates(AliVEvent::kINT7);
+    taskBFEemc->SetMassCut(minMass,maxMass);
+    taskBFEemc->SetAssoDCACut(assoDCAxy,assoDCAz);
+    taskBFEemc->SetAssoTPCClus(assoTPCnCls);
     
     // Get the filename and make subfolders
     TString fileNameemc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -98,6 +111,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEdc->SetPileUpCut2(pileup2);
     taskBFEdc->SetEoPShift(shiftEoP);
     taskBFEdc->SetTimeCut(timeCut);
+    taskBFEdc->SetITSLayer(itsLayer);
     taskBFEdc->SetTPCnCrossRows(nTpcCrossRows);
     taskBFEdc->SetITSChi2(itsChi2);
     taskBFEdc->SetSSCut(m20Cut);
@@ -113,10 +127,14 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEdc->SetDCABinSize(dcaBinSize);
     taskBFEdc->SetStackLoop(runStackLoop);
     taskBFEdc->SetTPCClus(nClsTPC);
+    taskBFEdc->SetDCAzCut(zDCA);
     taskBFEdc->SetClusterTypeEMC(kFALSE);
     taskBFEdc->SetClusterTypeDCAL(kTRUE);
     taskBFEdc->SetCentralitySelection(centMin,centMax);
     taskBFEdc->SelectCollisionCandidates(AliVEvent::kINT7);
+    taskBFEdc->SetMassCut(minMass,maxMass);
+    taskBFEdc->SetAssoDCACut(assoDCAxy,assoDCAz);
+    taskBFEdc->SetAssoTPCClus(assoTPCnCls);
     
     // Get the filename and make subfolders
     TString fileNamedc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -171,6 +189,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEeg01emc->SetPileUpCut2(pileup2);
         taskBFEeg01emc->SetEoPShift(shiftEoP);
         taskBFEeg01emc->SetTimeCut(timeCut);
+        taskBFEeg01emc->SetITSLayer(itsLayer);
         taskBFEeg01emc->SetTPCnCrossRows(nTpcCrossRows);
         taskBFEeg01emc->SetITSChi2(itsChi2);
         taskBFEeg01emc->SetSSCut(m20Cut);
@@ -186,11 +205,15 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEeg01emc->SetDCABinSize(dcaBinSize);
         taskBFEeg01emc->SetStackLoop(runStackLoop);
         taskBFEeg01emc->SetTPCClus(nClsTPC);
+        taskBFEeg01emc->SetDCAzCut(zDCA);
         taskBFEeg01emc->SetClusterTypeEMC(kTRUE);
         taskBFEeg01emc->SetClusterTypeDCAL(kFALSE);
         taskBFEeg01emc->SetCentralitySelection(centMin,centMax);
         taskBFEeg01emc->SetEMCalTriggerEG1(kTRUE);
         taskBFEeg01emc->SetEMCalTriggerDG1(kFALSE);
+        taskBFEeg01emc->SetMassCut(minMass,maxMass);
+        taskBFEeg01emc->SetAssoDCACut(assoDCAxy,assoDCAz);
+        taskBFEeg01emc->SetAssoTPCClus(assoTPCnCls);
         
         // Get the filename and make subfolders
         TString fileNameEG01emc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -258,6 +281,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEdg01dc->SetPileUpCut2(pileup2);
         taskBFEdg01dc->SetEoPShift(shiftEoP);
         taskBFEdg01dc->SetTimeCut(timeCut);
+        taskBFEdg01dc->SetITSLayer(itsLayer);
         taskBFEdg01dc->SetTPCnCrossRows(nTpcCrossRows);
         taskBFEdg01dc->SetITSChi2(itsChi2);
         taskBFEdg01dc->SetSSCut(m20Cut);
@@ -273,11 +297,15 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEdg01dc->SetDCABinSize(dcaBinSize);
         taskBFEdg01dc->SetStackLoop(runStackLoop);
         taskBFEdg01dc->SetTPCClus(nClsTPC);
+        taskBFEdg01dc->SetDCAzCut(zDCA);
         taskBFEdg01dc->SetClusterTypeEMC(kFALSE);
         taskBFEdg01dc->SetClusterTypeDCAL(kTRUE);
         taskBFEdg01dc->SetCentralitySelection(centMin,centMax);
         taskBFEdg01dc->SetEMCalTriggerEG1(kFALSE);
         taskBFEdg01dc->SetEMCalTriggerDG1(kTRUE);
+        taskBFEdg01dc->SetMassCut(minMass,maxMass);
+        taskBFEdg01dc->SetAssoDCACut(assoDCAxy,assoDCAz);
+        taskBFEdg01dc->SetAssoTPCClus(assoTPCnCls);
         
         // Get the filename and make subfolders
         TString fileNameDG01dc = mgr->AliAnalysisManager::GetCommonFileName();

@@ -101,7 +101,7 @@ void CalibratePeriodpPb(  TString lPeriodName         = "LHC16s",
   Int_t runRangeLHC13e[6] = { 195935, 195988, 196083, 196184, 196308, 196312 };
   // some fills were merged due to too little statistics
   Int_t nMaxRunsLHC13f    = 13;
-  Int_t runRangeLHC13f[14]= { 196528, 196563, 196601, 196701, 196772, 196965, 197002, 197084, 197138, 197247,
+  Int_t runRangeLHC13f[15]= { 196528, 196563, 196601, 196701, 196772, 196965, 197002, 197084, 197138, 197247,
                               197296, 197341, 197386, 197389};
 
   //============================================================
@@ -117,9 +117,9 @@ void CalibratePeriodpPb(  TString lPeriodName         = "LHC16s",
   if ( lPeriodName.Contains("LHC13c") ) lCalib->SetRunToUseAsDefault( 195593 ); // LHC13c
   if ( lPeriodName.Contains("LHC13d") ) lCalib->SetRunToUseAsDefault( 195831 ); // LHC13d
   if ( lPeriodName.Contains("LHC13e") ) lCalib->SetRunToUseAsDefault( 196310 ); // LHC13e
-  if ( lPeriodName.Contains("LHC13f") ) lCalib->SetRunToUseAsDefault( 196433 ); // LHC13f
+  if ( lPeriodName.Contains("LHC13f") ) lCalib->SetRunToUseAsDefault( 196563 ); // LHC13f
   if ( lPeriodName.Contains("LHC16q") ) lCalib->SetRunToUseAsDefault( 265309 ); // LHC16q
-  if ( lPeriodName.Contains("LHC16r") ) lCalib->SetRunToUseAsDefault( 266025 ); // LHC16r
+  if ( lPeriodName.Contains("LHC16r") ) lCalib->SetRunToUseAsDefault( 266318 ); // LHC16r
   if ( lPeriodName.Contains("LHC16s") ) lCalib->SetRunToUseAsDefault( 266441 ); // LHC16s
   if ( lPeriodName.Contains("LHC16t") ) lCalib->SetRunToUseAsDefault( 267163 ); // LHC16t
 
@@ -157,11 +157,11 @@ void CalibratePeriodpPb(  TString lPeriodName         = "LHC16s",
   for (Int_t i = 0; i < 20; i++){
     if (fitCorrZVtx[i] && enableZVtxCorr[i]){
       TString currentFormula = fitCorrZVtx[i]->GetExpFormula();
-      for (Int_t i = 0; i < fitCorrZVtx[i]->GetNpar(); i++){
+      for (Int_t k = 0; k < fitCorrZVtx[i]->GetNpar(); k++){
         #ifndef __CLING__
-          currentFormula.ReplaceAll(Form("[p%d]",i), Form("(%.10f)",fitCorrZVtx[i]->GetParameter(i)));
+          currentFormula.ReplaceAll(Form("[p%d]",k), Form("(%.10f)",fitCorrZVtx[i]->GetParameter(k)));
         #else
-          currentFormula.ReplaceAll(Form("[%d]",i), Form("(%.10f)",fitCorrZVtx[i]->GetParameter(i)));
+          currentFormula.ReplaceAll(Form("[%d]",k), Form("(%.10f)",fitCorrZVtx[i]->GetParameter(k)));
         #endif
       }
       currentFormula.ReplaceAll("x","(fEvSel_VtxZ)");

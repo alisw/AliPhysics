@@ -10,7 +10,11 @@ AliAnalysisPIDCascade::AliAnalysisPIDCascade():
   fCascCosinePA(0),
   fPtCasc(0),
   fEtaCasc(0),
-  fCascDCAPV(-999)
+  fCascDCAPV(-999),
+  fCharge(0),
+  fV0DCA(-1),
+  fCascPdg(0),
+  fCascPrimary(kFALSE)
 {
   fBachAnalysisPIDTrack = new AliAnalysisPIDTrack();
   fV0AnalysisPIDV0 = new AliAnalysisPIDV0();
@@ -27,7 +31,11 @@ AliAnalysisPIDCascade::AliAnalysisPIDCascade(const AliAnalysisPIDCascade &source
   fCascCosinePA(source.fCascCosinePA),
   fPtCasc(source.fPtCasc),
   fEtaCasc(source.fEtaCasc),
-  fCascDCAPV(source.fCascDCAPV)
+  fCascDCAPV(source.fCascDCAPV),
+  fCharge(source.fCharge),
+  fV0DCA(source.fV0DCA),
+  fCascPdg(source.fCascPdg),
+  fCascPrimary(source.fCascPrimary)
 {
 };
 AliAnalysisPIDCascade &AliAnalysisPIDCascade::operator=(const AliAnalysisPIDCascade &source) {
@@ -43,9 +51,13 @@ AliAnalysisPIDCascade &AliAnalysisPIDCascade::operator=(const AliAnalysisPIDCasc
   fPtCasc = source.fPtCasc;
   fEtaCasc = source.fEtaCasc;
   fCascDCAPV = source.fCascDCAPV;
+  fCharge = source.fCharge;
+  fV0DCA = source.fV0DCA;
+  fCascPdg = source.fCascPdg;
+  fCascPrimary = source.fCascPrimary;
   return *this;
 };
-void AliAnalysisPIDCascade::Update(AliAnalysisPIDV0* V0, AliAnalysisPIDTrack* BachTrack, Double_t *InvMasses, Double_t CascRadius,  Double_t CascDCA, Double_t CascCosinePA, Double_t PtCasc, Double_t EtaCasc, Double_t CascDCAPV, Int_t Charge) {
+void AliAnalysisPIDCascade::Update(AliAnalysisPIDV0* V0, AliAnalysisPIDTrack* BachTrack, Double_t *InvMasses, Double_t CascRadius,  Double_t CascDCA, Double_t CascCosinePA, Double_t PtCasc, Double_t EtaCasc, Double_t CascDCAPV, Int_t Charge, Double_t V0DCA, Int_t CascPdg, Bool_t CascPrimary) {
   fV0AnalysisPIDV0 = V0;
   fBachAnalysisPIDTrack = BachTrack;
   fInvMXi=InvMasses[0];
@@ -57,6 +69,9 @@ void AliAnalysisPIDCascade::Update(AliAnalysisPIDV0* V0, AliAnalysisPIDTrack* Ba
   fEtaCasc = EtaCasc;
   fCascDCAPV = CascDCAPV;
   fCharge = Charge;
+  fV0DCA = V0DCA;
+  fCascPdg = CascPdg;
+  fCascPrimary = CascPrimary;
 };
 AliAnalysisPIDCascade::~AliAnalysisPIDCascade()
 {

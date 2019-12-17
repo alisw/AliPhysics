@@ -200,6 +200,26 @@ private:
     ClassDef(AliAnalysisNanoAODCascadeParametricCuts, 1); // track cut object for nano AOD filtering
 };
 
+class AliAnalysisNanoAODPhotonCuts : public AliAnalysisCuts
+{
+public:
+  AliAnalysisNanoAODPhotonCuts();
+  virtual ~AliAnalysisNanoAODPhotonCuts() {}
+  virtual Bool_t IsSelected(TObject* obj);  // TObject should be an AliAODv0
+  virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
+
+  void SetPhotonEtaMax(float EtaMax)               { fPhotonEtaMax = EtaMax; }
+  void SetConversionRadius(float min, Float_t max) { fPhotonConvRadiusMin = min; fPhotonConvRadiusMax = max; }
+  void SetPsiPairMax(float psiPairMax)             { fPhotonPsiPairMax = psiPairMax; }
+
+private:
+  float fPhotonEtaMax;
+  float fPhotonConvRadiusMin;
+  float fPhotonConvRadiusMax;
+  float fPhotonPsiPairMax;
+
+  ClassDef(AliAnalysisNanoAODPhotonCuts, 1); // track cut object for nano AOD filtering
+};
 
 
 class AliAnalysisNanoAODEventCuts : public AliAnalysisCuts
@@ -221,6 +241,45 @@ private:
   AliEventCuts fEventCuts; // AliEventCut object for Run 2
   
   ClassDef(AliAnalysisNanoAODEventCuts, 3); // event cut object for nano AOD filtering
+};
+
+class AliAnalysisNanoAODMCParticleCuts : public AliAnalysisCuts
+{
+public:
+  AliAnalysisNanoAODMCParticleCuts();
+  virtual ~AliAnalysisNanoAODMCParticleCuts() {}
+  virtual bool IsSelected(TObject* obj);  // TObject should be an AliAODMCParticle
+  virtual bool IsSelected(TList* /* list */) {
+    return kTRUE;
+  }
+  bool GetSelectPrimaries() const { return fDoSelectPrimaries; }
+  void SetSelectPrimaries(bool doIt) { fDoSelectPrimaries = doIt; }
+  bool GetSelectChargedParticles() const { return fDoSelectCharged; }
+  void SetSelectChargedParticles(bool doIt) { fDoSelectCharged = doIt; }
+  float GetMinPt() const { return fMinPt; }
+  void SetMinPt(float var) { fMinPt = var; }
+  float GetMaxEta() const { return fMaxEta; }
+  void SetMaxEta(float var) { fMaxEta = var; }
+  std::vector<int> &GetKeepParticles() { return fPDGToKeep; }
+  void SetKeepParticles(std::vector<int> pdgCodes) { fPDGToKeep = pdgCodes; }
+  void AddKeepParticles(int pdgCode) { fPDGV0.push_back(pdgCode); }
+  std::vector<int> &GetKeepV0s() { return fPDGV0; }
+  void SetKeepV0s(std::vector<int> pdgCodes) { fPDGV0 = pdgCodes; }
+  void AddKeepV0(int pdgCode) { fPDGV0.push_back(pdgCode); }
+  std::vector<int> &GetKeepV0sCascades() { return fPDGV0Cascade; }
+  void SetKeepCascadeV0s(std::vector<int> pdgCodes) { fPDGV0Cascade = pdgCodes; }
+  void AddKeepCascadeV0(int pdgCode) { fPDGV0Cascade.push_back(pdgCode); }
+
+private:
+  bool fDoSelectPrimaries; // switch to only select IsPhysicalPrimary() particles
+  bool fDoSelectCharged; // switch to only select charged particles
+  float fMinPt;  // miminum pt of the tracks
+  float fMaxEta; // MaxEta
+  std::vector<int> fPDGToKeep;  // vector of PDG codes that we want to keep anyways
+  std::vector<int> fPDGV0;  // vector of PDG codes that we want to match the V0s to
+  std::vector<int> fPDGV0Cascade;  // vector of PDG codes that we want to match the V0s to
+
+  ClassDef(AliAnalysisNanoAODMCParticleCuts,2); // MC particle cut object for nano AOD filtering
 };
 
 class AliNanoAODSimpleSetter : public AliNanoAODCustomSetter

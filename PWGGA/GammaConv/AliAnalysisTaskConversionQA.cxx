@@ -606,8 +606,8 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
   Double_t positronNSigmaTPC = pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
   Double_t positronNSigmaTPCCor=0.;
   if(fConversionCuts->GetDoElecDeDxPostCalibration()){
-    electronNSigmaTPCCor = fConversionCuts->GetCorrectedElectronTPCResponse(negTrack->Charge(),electronNSigmaTPC,negTrack->P(),negTrack->Eta(),negTrack->GetNcls(1));
-    positronNSigmaTPCCor = fConversionCuts->GetCorrectedElectronTPCResponse(posTrack->Charge(),positronNSigmaTPC,posTrack->P(),posTrack->Eta(),posTrack->GetNcls(1));
+    electronNSigmaTPCCor = fConversionCuts->GetCorrectedElectronTPCResponse(negTrack->Charge(),electronNSigmaTPC,negTrack->P(),negTrack->Eta(),negTrack->GetNcls(1),gamma->GetConversionRadius());
+    positronNSigmaTPCCor = fConversionCuts->GetCorrectedElectronTPCResponse(posTrack->Charge(),positronNSigmaTPC,posTrack->P(),posTrack->Eta(),posTrack->GetNcls(1),gamma->GetConversionRadius());
     fDaughterProp(3) =  positronNSigmaTPCCor;
     fDaughterProp(10) = electronNSigmaTPCCor;
   } else {

@@ -141,7 +141,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   /// sqrt s - mass dependent downsampling trigger (pt spectra as parameterized in https://iopscience.iop.org/article/10.1088/2399-6528/aab00f/pdf)
   static Double_t TsalisCharged(Double_t pt, Double_t mass, Double_t sqrts);
   static Int_t    DownsampleTsalisCharged(Double_t pt, Double_t factorPt, Double_t factor1Pt,  Double_t sqrts=5020, Double_t mass=0.2);
-  Int_t  PIDSelection(AliESDtrack *track);
+  Int_t  PIDSelection(AliESDtrack *track, TParticle *particle = nullptr);
  private:
   AliESDEvent *fESD;    //! ESD event
   AliMCEvent *fMC;      //! MC event

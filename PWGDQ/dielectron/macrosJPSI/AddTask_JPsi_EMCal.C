@@ -286,13 +286,13 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 	
 	//Create containers for input/output
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("hist_%d", trigger_index),  TList::Class(),    AliAnalysisManager::kOutputContainer, "OutPutData.root");
+	AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("hist_%d_config_%d", trigger_index, config),  TList::Class(),    AliAnalysisManager::kOutputContainer, "OutPutData.root");
 
 	//Connect input/output
 	mgr->ConnectInput(task, 0, cinput);
 	mgr->ConnectOutput(task, 1, coutput);
     
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Multi_%d", trigger_index), TList::Class(), AliAnalysisManager::kOutputContainer, "OutPutData.root"));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Multi_%d_config_%d", trigger_index, config), TList::Class(), AliAnalysisManager::kOutputContainer, "OutPutData.root"));
 	
 	return task;
 }

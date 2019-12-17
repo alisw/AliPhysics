@@ -56,6 +56,7 @@ void CalibratePeriodMC( TString lPeriodName         = "",
   }
 
   //Output OADB
+  lCalib -> SetDebugFile     ( Form("debug-%s%s.root",lPeriodName.Data(),addNameOutput.Data()) );
   lCalib -> SetOutputFile     ( Form("OADB-%s%s.root",lPeriodName.Data(),addNameOutput.Data()) );
   lCalib -> Calibrate     ();
 

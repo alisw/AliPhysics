@@ -26,6 +26,7 @@ ClassImp(AliAnalysisTaskSigma0Run2)
       fIsLightweight(false),
       fIsRun1(false),
       fPhotonLegPileUpCut(false),
+      fDoPhotonDCArCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fMultMode(AliVEvent::kINT7),
@@ -61,6 +62,7 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fIsLightweight(false),
       fIsRun1(false),
       fPhotonLegPileUpCut(false),
+      fDoPhotonDCArCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fMultMode(AliVEvent::kINT7),
@@ -290,6 +292,14 @@ void AliAnalysisTaskSigma0Run2::CastToVector(
       bool negTrackCombined = (negTrackITS || negTrackTOF);
 
       if (!posTrackCombined || !negTrackCombined) continue;
+    }
+
+    // cut on the DCA to the PV in transverse plane
+    if (fDoPhotonDCArCut) {
+      const AliVVertex *vertex = inputEvent->GetPrimaryVertex();
+      PhotonCandidate->CalculateDistanceOfClossetApproachToPrimVtx(vertex);
+      const float DCAr = PhotonCandidate->GetDCArToPrimVtx();
+      if ( DCAr > 0.75) continue;
     }
 
     AliSigma0ParticleV0 phot(PhotonCandidate, pos, neg, inputEvent);

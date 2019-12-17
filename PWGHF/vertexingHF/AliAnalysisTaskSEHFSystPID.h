@@ -28,7 +28,7 @@
 using namespace std;
 
 class AliAnalysisTaskSEHFSystPID : public AliAnalysisTaskSE {
-  
+
 public:
 
   enum tagflags {
@@ -95,23 +95,25 @@ public:
   void EnableSelectionWithAliEventCuts(bool useAliEventCuts=true, int opt=2)  {fUseAliEventCuts=useAliEventCuts; fApplyPbPbOutOfBunchPileupCuts=opt;}
   void SetUseTimeRangeCutForPbPb2018(bool opt)                                {fUseTimeRangeCutForPbPb2018=opt;}
 
+  void SetConversionFactordEdx(float factor)                                  {fConversionFactordEdx=factor;}
+
   void ConfigureCutGeoNcrNcl(double dz, double len, double onept, double fncr, double fncl) {
-    fDeadZoneWidth=dz;  
-    fCutGeoNcrNclLength=len; 
+    fDeadZoneWidth=dz;
+    fCutGeoNcrNclLength=len;
     fCutGeoNcrNclGeom1Pt=onept;
-    fCutGeoNcrNclFractionNcr=fncr; 
+    fCutGeoNcrNclFractionNcr=fncr;
     fCutGeoNcrNclFractionNcl=fncl;
   }
 
   void EnableParticleSpecies(bool pi=true, bool kao=true, bool pr=true, bool el=false, bool deu=false, bool tr=false, bool He3=false);
   void EnableDetectors(bool ITS=false, bool TPC=true, bool TOF=true, bool HMPID=false);
-  
+
 private:
 
   bool IsVertexAccepted();
   bool IsCentralitySelected();
   void GetTaggedV0s(vector<short> &idPionFromK0s, vector<short> &idPionFromL, vector<short> &idProtonFromL, vector<short> &idElectronFromGamma);
-  short GetPDGcodeFromMC(AliAODTrack* track, TClonesArray* arrayMC);
+  int GetPDGcodeFromMC(AliAODTrack* track, TClonesArray* arrayMC);
   AliAODTrack* IsKinkDaughter(AliAODTrack* track);
   void GetTaggedKaonsFromKinks(vector<short> &idKaonFromKinks);
   float MaxOpeningAngleKnu(float p);
@@ -123,7 +125,7 @@ private:
   int IsEventSelectedWithAliEventCuts();
   bool IsSelectedByGeometricalCut(AliAODTrack* track);
   bool FillNsigma(int iDet, AliAODTrack* track);
-  
+
   enum {kPion,kKaon,kProton,kElectron,kDeuteron,kTriton,kHe3};
   enum {kITS,kTPC,kTOF,kHMPID};
 
@@ -143,8 +145,8 @@ private:
   TH2F *fHistNsigmaVsPt[kNMaxDet][kNMaxHypo];                                        //!<! array of histos for nsigma vs pt (MC truth)
   TTree* fPIDtree;                                                                   //!<! tree with PID info
 
-  bool fEnabledSpecies[kNMaxHypo];                                                   /// array of flags to enable particle species 
-  bool fEnabledDet[kNMaxDet];                                                        /// array of flags to enable detectors 
+  bool fEnabledSpecies[kNMaxHypo];                                                   /// array of flags to enable particle species
+  bool fEnabledDet[kNMaxDet];                                                        /// array of flags to enable detectors
 
   short fPIDNsigma[kNMaxDet][kNMaxHypo];                                             /// Nsigma PID to fill the tree
   unsigned short fP;                                                                 /// Momentum at primary vertex to fill the tree
@@ -188,31 +190,33 @@ private:
   bool fIsMC;                                                                        /// flag to switch on the MC analysis for the efficiency estimation
   int fSystem;                                                                       /// system: 0->pp,pPb 1->PbPb
 
-  AliESDtrackCuts * fESDtrackCuts;                                                   /// single-track cut set 
+  float fConversionFactordEdx;                                                       /// conversion factor from float to short for dE/dx
+
+  AliESDtrackCuts * fESDtrackCuts;                                                   /// single-track cut set
   AliAODEvent *fAOD;                                                                 /// AOD object
   AliPIDResponse *fPIDresp;                                                          /// basic pid object
   AliAODv0KineCuts *fV0cuts;                                                         /// AOD V0 cuts
 
   bool fFillTreeWithPIDInfo;                                                         /// flag to enable filling of the tree with PID variables
   bool fFillTreeWithNsigmaPIDOnly;                                                   /// flag to enable filling of the tree with only Nsigma variables for the PID
-  bool fFillTreeWithRawPIDOnly;                                                      /// flag to enable filling of the tree with only raw variables for the PID  
+  bool fFillTreeWithRawPIDOnly;                                                      /// flag to enable filling of the tree with only raw variables for the PID
   bool fFillTreeWithTrackQualityInfo;                                                /// flag to enable filling of the tree with track selections
   bool fEnabledDownSampling;                                                         /// flag to enable/disable downsampling
   double fFracToKeepDownSampling;                                                    /// fraction to keep when downsampling activated
   double fPtMaxDownSampling;                                                         /// pT max of tracks to downsample
-  int fDownSamplingOpt;                                                              /// option for downsampling 
+  int fDownSamplingOpt;                                                              /// option for downsampling
 
   int fAODProtection;                                                                /// flag to activate protection against AOD-dAOD mismatch
 
   int fRunNumberPrevEvent;                                                           /// run number of previous event
   bool fEnableNsigmaTPCDataCorr;                                                     /// flag to enable data-driven NsigmaTPC correction
   int fSystNsigmaTPCDataCorr;                                                        /// system for data-driven NsigmaTPC correction
-  vector<vector<float> > fMeanNsigmaTPCPionData;                                     /// array of NsigmaTPC pion mean in data 
-  vector<vector<float> > fMeanNsigmaTPCKaonData;                                     /// array of NsigmaTPC kaon mean in data 
-  vector<vector<float> > fMeanNsigmaTPCProtonData;                                   /// array of NsigmaTPC proton mean in data 
-  vector<vector<float> > fSigmaNsigmaTPCPionData;                                    /// array of NsigmaTPC pion mean in data 
-  vector<vector<float> > fSigmaNsigmaTPCKaonData;                                    /// array of NsigmaTPC kaon mean in data 
-  vector<vector<float> > fSigmaNsigmaTPCProtonData;                                  /// array of NsigmaTPC proton mean in data 
+  vector<vector<float> > fMeanNsigmaTPCPionData;                                     /// array of NsigmaTPC pion mean in data
+  vector<vector<float> > fMeanNsigmaTPCKaonData;                                     /// array of NsigmaTPC kaon mean in data
+  vector<vector<float> > fMeanNsigmaTPCProtonData;                                   /// array of NsigmaTPC proton mean in data
+  vector<vector<float> > fSigmaNsigmaTPCPionData;                                    /// array of NsigmaTPC pion mean in data
+  vector<vector<float> > fSigmaNsigmaTPCKaonData;                                    /// array of NsigmaTPC kaon mean in data
+  vector<vector<float> > fSigmaNsigmaTPCProtonData;                                  /// array of NsigmaTPC proton mean in data
   float fPlimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxPBins+1];                         /// array of p limits for data-driven NsigmaTPC correction
   int fNPbinsNsigmaTPCDataCorr;                                                      /// number of p bins for data-driven NsigmaTPC correction
   float fEtalimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxEtaBins+1];                     /// vector of eta limits for data-driven NsigmaTPC correction
@@ -223,7 +227,7 @@ private:
   bool fUseTimeRangeCutForPbPb2018;                                                  /// flag to enable time-range cut in PbPb 2018
   AliTimeRangeCut fTimeRangeCut;                                                     /// object to manage time range cut
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 15);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 16);
 };
 
 #endif

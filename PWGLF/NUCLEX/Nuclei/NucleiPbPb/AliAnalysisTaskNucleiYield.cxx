@@ -150,6 +150,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireITSpidSigmas{-1.f}
    ,fRequireTOFpidSigmas{-1.f}
    ,fRequireMinEnergyLoss{0.}
+   ,fRequireDeadZoneWidth{0.}
+   ,fRequireCutGeoNcrNclLength{0.}
+   ,fRequireCutGeoNcrNclGeom1Pt{0.}
    ,fRequireVetoSPD{false}
    ,fRequireMaxMomentum{-1.}
    ,fFixForLHC14a6{false}
@@ -411,33 +414,16 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
 
   AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
-
+  
   AliVEvent *ev = InputEvent();
 
   fCentrality = -1.f;
 
+  bool EventAccepted = true;
   if (!nanoHeader) {
-    bool EventAccepted = fEventCut.AcceptEvent(ev);
-
+    EventAccepted = fEventCut.AcceptEvent(ev);
     /// The centrality selection in PbPb uses the percentile determined with V0.
     fCentrality = fEventCut.GetCentrality(fEstimator);
-
-    std::array <AliEventCuts::NormMask,4> norm_masks {
-      AliEventCuts::kAnyEvent,
-      AliEventCuts::kPassesNonVertexRelatedSelections,
-      AliEventCuts::kHasReconstructedVertex,
-      AliEventCuts::kPassesAllCuts
-    };
-    for (int iC = 0; iC < 4; ++iC) {
-      if (fEventCut.CheckNormalisationMask(norm_masks[iC])) {
-          fNormalisationHist->Fill(fCentrality,iC);
-      }
-    }
-
-    if (!EventAccepted) {
-      PostData(1, fList);
-      return;
-    }
   } else {
     if (fNanoPIDindexTPC == -1 || fNanoPIDindexTOF == -1) {
       AliNanoAODTrack::InitPIDIndex();
@@ -446,6 +432,46 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
 
     fCentrality = nanoHeader->GetCentralityV0M();
+  }
+
+  bool specialTrigger = true;
+  if (fINT7intervals.size()) {
+    unsigned int trigger = 0u;
+    if (nanoHeader)
+      trigger = nanoHeader->GetOfflineTrigger();
+    else {
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+      trigger = handl->IsEventSelected() ;
+    }
+    bool kINT7trigger = (trigger & AliVEvent::kINT7) == AliVEvent::kINT7;
+
+    for (int iInt = 0; iInt < fINT7intervals.size(); iInt +=2) {
+      if (fCentrality >= fINT7intervals[iInt] && fCentrality < fINT7intervals[iInt+1]) {
+        EventAccepted = kINT7trigger;
+        specialTrigger = kINT7trigger;
+        break;
+      }
+    }
+  }
+  
+  if (!nanoHeader) {
+    std::array <AliEventCuts::NormMask,4> norm_masks {
+      AliEventCuts::kAnyEvent,
+      AliEventCuts::kPassesNonVertexRelatedSelections,
+      AliEventCuts::kHasReconstructedVertex,
+      AliEventCuts::kPassesAllCuts
+    };
+    for (int iC = 0; iC < 4; ++iC) {
+      if (fEventCut.CheckNormalisationMask(norm_masks[iC]) && (iC == 0 || specialTrigger)) {
+        fNormalisationHist->Fill(fCentrality,iC);
+      }
+    }
+  }
+
+  if (!EventAccepted) {
+    PostData(1, fList);
+    return;
   }
 
   /// To perform the majority of the analysis - and also this one - the standard PID handler is
@@ -824,4 +850,28 @@ float AliAnalysisTaskNucleiYield::HasTOF(AliNanoAODTrack *track, AliPIDResponse 
   const float tim = track->GetTOFsignal() - pid->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
   const float beta = len / (tim * LIGHT_SPEED);
   return beta;
+}
+
+/// This function checks whether a track pass TPC Geometrical cut
+///
+/// \param track Track that has to be checked
+/// \return Boolean value: true means that track passed TPC Geometrical cut
+///
+Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliAODTrack *track) {
+  Bool_t checkResult = kTRUE;
+  AliESDtrack esdTrack(track);
+  esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+  esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+  esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+
+  float lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(0,fRequireDeadZoneWidth,220.,fMagField);
+  double cutGeoNcrNclLength=fRequireCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fRequireCutGeoNcrNclGeom1Pt);
+  
+  if (lengthInActiveZoneTPC < cutGeoNcrNclLength) checkResult = kFALSE;
+  return checkResult;
+}
+Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {
+  Bool_t checkResult = kTRUE;
+  // Currently NanoCut is not implemented !!
+  return checkResult;
 }

@@ -11,7 +11,7 @@ AliJJetTask* AddTaskJJet(
     int         isMC              = 0,  // If this event is MC ( both of particle, track )
     int         nR                = 3,  //Number(1-3) of R parameters in order from list 0.4, 0.5, 0.6
     int         doBackgroundEst   = 0,   // If user wants to do background estimation with kt-algorithm
-    int         doFullJets        = 1   //If user wants to use full jets
+    int         doFullJets        = 1   //If user wants to use full jets, 0=No full jets, 1=Include full jets
     )
 {  
 
@@ -45,9 +45,9 @@ AliJJetTask* AddTaskJJet(
   //TString clustersName = "EmcCaloClusters";
   //TString clustersCorrName = "CaloClustersCorr";
   TString tracksName        = "tracks";
-  TString clustersCorrName  = "caloClusters"; 
-  TString tracksNameMC      = "mcparticles";  //Check these
-  TString rhoName           = "";             // FIXME: Comment me  
+  TString clustersCorrName  = "caloClusters";
+  TString tracksNameMC      = "mcparticles";
+  TString rhoName           = "";
 
   if(nR < 1) nR = 1;
   if(nR > 3) nR = 3;
@@ -59,19 +59,21 @@ AliJJetTask* AddTaskJJet(
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   #endif
   int nTrackJetFinder, nMCParticleJetFinder;
-  if(doRecoTrackJet){
-    nTrackJetFinder       = 2*nR; 
+  if(doRecoTrackJet){ //If detector level jets are to be used
+    nTrackJetFinder       = (1+doFullJets)*nR;
   }else{
     nTrackJetFinder       = 0;
   }
-  if(doRecoMCPartleJet){
-    nMCParticleJetFinder  = 2*nR;
+  if(doRecoMCPartleJet){ //If particle level jets are to be used
+    nMCParticleJetFinder  = (1+doFullJets)*nR;
   }else{
     nMCParticleJetFinder  = 0;
 
   }
-  const int nJetFinder              = nMCParticleJetFinder + nTrackJetFinder;
+  const int nJetFinder              = nMCParticleJetFinder + nTrackJetFinder; //Total number of jet finders is the sum of detector and particle level finders
 
+
+  //kT jet finders for background estimation
   int nktTrackFinders, nktMCParticleFinders;
   if(doBackgroundEst){
       if(doRecoTrackJet){
@@ -93,15 +95,15 @@ AliJJetTask* AddTaskJJet(
   const int nktFinders = nktTrackFinders + nktMCParticleFinders;
 
   int countJetFinder                = 0;  // Counter for number of current Jet Finders
-  int iTypeStart = doFullJets ? 0 : 1;
 
   //-------------------------------------------------------
   // AliJJetTask , AliEmcalJetTask, AliJetContainer
   //-------------------------------------------------------
   AliJJetTask *jtTask = new AliJJetTask(name, nJetFinder + nktFinders);
-  jtTask->SetMC( isMC ) ; // Set isMC explicitly. 
-  jtTask->SetnR( nR ) ; // Set number of jet resolution parameters. 
-  jtTask->Setnkt( nktFinders ) ; // Set information about if kt algorithm reconstruction was done or not. 
+  jtTask->SetMC( isMC ) ; // Set isMC explicitly.
+  jtTask->SetnR( nR ) ; // Set number of jet resolution parameters.
+  jtTask->SetIncludeFullJets(doFullJets); //Set whether full jets are included
+  jtTask->Setnkt( nktFinders ) ; // Set information about if kt algorithm reconstruction was done or not.
   jtTask->SetDebug( debug );
   jtTask->SelectCollisionCandidates( trigger ); // WARNING: default is AliVEvent::kEMCEJE. Double check it!
 
@@ -124,6 +126,7 @@ AliJJetTask* AddTaskJJet(
   //-------------------------------------------------------
   double bConeSizes[3] = {0.4,0.5,0.3};
   AliJetContainer::EJetType_t bJetType[2] = {AliJetContainer::kFullJet,AliJetContainer::kChargedJet};
+  int iTypeStart = doFullJets ? 0 : 1; //Start from index 1 if full jets are to be ignored
   const AliJetContainer::ERecoScheme_t reco  = AliJetContainer::pt_scheme;
   TString bType[2] = {"EMCAL","TPC"};
   int iEnd;
@@ -150,7 +153,7 @@ AliJJetTask* AddTaskJJet(
     //for(int i=iStart ; i<iEnd; i++){
     for(int itype = iTypeStart; itype < 2; itype++){
       for(int iR = 0; iR < nR; iR++){
-        int iF = iStart + itype*nR + iR;
+        int iF = iStart + (itype-iTypeStart)*nR + iR; //Jet Finder index
         //== Variables
         double consize = bConeSizes[iR];
         AliJetContainer::EJetType_t jettype = bJetType[itype];
@@ -174,8 +177,8 @@ AliJJetTask* AddTaskJJet(
             jetCont[iF]->SetJetPtCut( 5 );
             jetCont[iF]->SetLeadingHadronType( 0 );
         }
-      } // for iR
-    } // for itype
+      } //  iR loop
+    } // itype loop
   } // if doRecoTrackJet
 
   //-------------------------------------------------------
@@ -198,7 +201,7 @@ AliJJetTask* AddTaskJJet(
     //================= LOOP for configuraion
     for(int itype = iTypeStart; itype < 2; itype++){
       for(int iR = 0; iR < nR; iR++){
-        int iF = iStart + itype*nR + iR;
+        int iF = iStart + (itype-iTypeStart)*nR + iR;
         double consizeMC = bConeSizes[iR];
         AliJetContainer::EJetType_t jettype = bJetType[itype];
         TString type = bType[itype];
@@ -221,8 +224,8 @@ AliJJetTask* AddTaskJJet(
           jetCont[iF]->SetJetPtCut( 5 );
           jetCont[iF]->SetLeadingHadronType( 0 );
         }
-      } // for iR
-    } // for itype
+      } // iR loop
+    } // itype loop
   } // if doRecoMCPartleJet
 
   //-------------------------------------------------------
