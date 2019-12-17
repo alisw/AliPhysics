@@ -6780,11 +6780,15 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if (fClusterType == 1 || fClusterType == 3){
         energy *= FunctionNL_kTestBeamv3(energy);
         goto label_case_51;// goto previous case for shifting MC
-      } else if (fClusterType == 2) { // shift data an MC to pi0 mass
-          if ( fCurrentMC == kPPb5T13P4DPMJet){
-            energy /= FunctionNL_SPOW(energy, 1.00132, 0.00598632, -2.167);
-          } else {
-            energy /= FunctionNL_SPOW(energy, 0.997167, 0.000759949, -5.04513);
+      } else if (fClusterType == 2) { // PHOS case: shift data and MC to pi0 mass (Calo-Calo)
+          if ( fCurrentMC == kPPb5T13P4DPMJet ){ // RUN1, MB MC
+            energy /= FunctionNL_SPOW(energy, 1.00132, -0.00598632, -2.167);
+          } else if ( fCurrentMC == k13pPb5023GeV ) { // RUN1, data
+            energy /= FunctionNL_SPOW(energy, 0.997167, -0.000759949, -5.04513);
+          } else if ( fCurrentMC == kPPb5T16DPMJet ) { // RUN2, MB MC
+            energy /= FunctionNL_SExp(energy, 0.991632, 1.22134, -2.97826, -1.);
+          } else if ( fCurrentMC == k16pPb5023GeV ) { // RUN2, data
+            energy /= FunctionNL_SExp(energy, 1.02521, 0.59747, -4.17083);
           }
       }
       break;
@@ -7299,6 +7303,9 @@ Float_t AliCaloPhotonCuts::FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Fl
     return ret;
   else
     return 1.;
+}
+Float_t     FunctionNL_SExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3){
+  return ( p0 - p3 * TMath::Exp( - p1 * e + p2 ) );
 }
 
 //________________________________________________________________________
