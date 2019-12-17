@@ -285,14 +285,7 @@ if (MomReso) {
         << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
   }
 }
-if (etaPhiPlotsAtTPCRadii) {
-  if (isMC) {
-    config->SetPhiEtaBinnign(true);
-  } else {
-    std::cout
-        << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
-  }
-}
+
 
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
