@@ -70,7 +70,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree()
 fPIDCheckOnly(kFALSE),
 ftrackAnalysis(kFALSE),
 fV0Analysis(kFALSE),
-fV0Combination(kTRUE),
+fV0Combination(kFALSE),
 fLi4Analysis(kFALSE),
 fInputHandler(0),
 fPID(0),
@@ -232,7 +232,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *nam
 fPIDCheckOnly(kFALSE),
 ftrackAnalysis(kFALSE),
 fV0Analysis(kFALSE),
-fV0Combination(kTRUE),
+fV0Combination(kFALSE),
 fLi4Analysis(kFALSE),
 fInputHandler(0),
 fPID(0),
@@ -671,11 +671,13 @@ if (fPeriod == 2015) {
   }
 }
 if (fPeriod == 2016 || fPeriod == 2017 || fPeriod == 2018) {
+  Int_t r = fESDevent->GetRunNumber();
+  if(r == 297219 || r == 297194 || r == 297029 || r == 296890 || r == 296849 || r == 296750 || r == 296749) fEventCuts.UseTimeRangeCut(); 
   if(!fEventCuts.AcceptEvent(fESDevent)) {
     PostData(1,fHistogramList);
     return;
   }
-    // 0 = V0M
+  // 0 = V0M
   centrality = fEventCuts.GetCentrality(0);
 }
 AliESDVertex *esdVer1 = new AliESDVertex(*vertex);
@@ -726,10 +728,8 @@ if(ftrackAnalysis){
   trackCutsSec.SetRequireTPCRefit(kTRUE);
   trackCutsSec.SetMaxChi2PerClusterTPC(5);
   trackCutsSec.SetMinNClustersTPC(60);
-    //trackCutsSec.SetMinDCAToVertexXY(0.1);
-    //trackCutsSec.SetMinDCAToVertexZ(0.1);
   trackCutsSec.SetMaxRel1PtUncertainty(0.2);
-    //trackCutsSec.SetPtRange(0.0, 10.0);
+  trackCutsSec.SetPtRange(0.0, 10.0);
 
   trackCutsTert.SetEtaRange(-0.9,0.9);
   trackCutsTert.SetAcceptKinkDaughters(kFALSE);
@@ -739,17 +739,15 @@ if(ftrackAnalysis){
   trackCutsTert.SetMinDCAToVertexXY(0.3);
   trackCutsTert.SetMinDCAToVertexZ(0.3);
   trackCutsTert.SetMaxRel1PtUncertainty(0.2);
-    //trackCutsTert.SetPtRange(0.0, 10.0);
+  trackCutsTert.SetPtRange(0.0, 10.0);
 
   trackCutsPi.SetEtaRange(-0.9,0.9);
   trackCutsPi.SetAcceptKinkDaughters(kFALSE);
   trackCutsPi.SetRequireTPCRefit(kTRUE);
   trackCutsPi.SetMaxChi2PerClusterTPC(5);
   trackCutsPi.SetMinNClustersTPC(60);
-    //trackCutsPi.SetMinDCAToVertexXY(0.1);
-    //trackCutsPi.SetMinDCAToVertexZ(0.1);
   trackCutsPi.SetMaxRel1PtUncertainty(0.2);
-    //trackCutsPi.SetPtRange(0.0, 10.0);
+  trackCutsPi.SetPtRange(0.0, 10.0);
 }
 if(fV0Combination){
 
@@ -766,8 +764,6 @@ if(fV0Combination){
   trackCutsTert.SetRequireTPCRefit(kTRUE);
   trackCutsTert.SetMaxChi2PerClusterTPC(5);
   trackCutsTert.SetMinNClustersTPC(60);
-    //trackCutsTert.SetMinDCAToVertexXY(0.3);
-    //trackCutsTert.SetMinDCAToVertexZ(0.3);
   trackCutsTert.SetMaxRel1PtUncertainty(0.1);
   trackCutsTert.SetPtRange(0.0, 10.0);
 
@@ -776,8 +772,6 @@ if(fV0Combination){
   trackCutsPi.SetRequireTPCRefit(kTRUE);
   trackCutsPi.SetMaxChi2PerClusterTPC(5);
   trackCutsPi.SetMinNClustersTPC(60);
-    //trackCutsPi.SetMinDCAToVertexXY(0.5);
-    //trackCutsPi.SetMinDCAToVertexZ(0.5);
   trackCutsPi.SetMaxRel1PtUncertainty(0.1);
   trackCutsPi.SetPtRange(0.0, 10.0);
 }
@@ -816,7 +810,7 @@ if(ITSClusterCut){
 }
 void AliAnalysisTaskDoubleHypNucTree::dEdxCheck(){
   AliESDtrackCuts* trackCutsPid = new AliESDtrackCuts("trackCutsPid", "trackCutsPid");
-  trackCutsPid = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,0);
+  trackCutsPid = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   trackCutsPid->SetEtaRange(-0.9,0.9);
   for (Int_t itrack = 0; itrack < fESDevent->GetNumberOfTracks(); itrack++) {
     AliESDtrack* track = fESDevent->GetTrack(itrack);
@@ -846,7 +840,7 @@ void AliAnalysisTaskDoubleHypNucTree::Li4Analysis(AliESDtrackCuts trackCutsSec){
       if(TMath::Abs(fPID->NumberOfSigmasTPC(trackA, AliPID::kHe3)) > 3) continue;
     }
     else {
-      if(TMath::Abs(Bethe(trackA, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) > 3) continue;
+      if(TMath::Abs(Bethe(*trackA, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) > 3) continue;
     }       
     //+++++++++++++++++++++++++++++++ p Track +++++++++++++++++++++++++++++++++++++++++++//
     for (Int_t BTracks = ATracks + 1; BTracks < fESDevent->GetNumberOfTracks(); BTracks++) {
@@ -870,11 +864,11 @@ void AliAnalysisTaskDoubleHypNucTree::Li4Analysis(AliESDtrackCuts trackCutsSec){
         if(TMath::Abs(fPID->NumberOfSigmasTPC(trackB, AliPID::kProton)) > 3) continue;
       }
       else {
-        if(TMath::Abs(Bethe(trackB, AliPID::ParticleMass(AliPID::kProton), 2, fBetheParamsT)) > 3) continue;
+        if(TMath::Abs(Bethe(*trackB, AliPID::ParticleMass(AliPID::kProton), 2, fBetheParamsT)) > 3) continue;
       }
       //------------------------------------------ --------------------------------------------------------------//
-      if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(trackA, AliPID::kHe3)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(trackA, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3)){
-        if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(trackB, AliPID::kProton)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(trackB, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3)) {
+      if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(trackA, AliPID::kHe3)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*trackA, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3)){
+        if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(trackB, AliPID::kProton)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*trackB, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3)) {
           //He3
           TLorentzVector fd(0.,0.,0.,0.);
           fd.SetXYZM(2*trackA->Px(), 2*trackA->Py(), 2*trackA->Pz(), AliPID::ParticleMass(AliPID::kHe3));
@@ -898,8 +892,8 @@ void AliAnalysisTaskDoubleHypNucTree::Li4Analysis(AliESDtrackCuts trackCutsSec){
             fhe3DedxSigma = fPID->NumberOfSigmasTPC(trackA, AliPID::kHe3);
             fpDedxSigma = fPID->NumberOfSigmasTPC(trackB, AliPID::kProton);
           } else {
-            fhe3DedxSigma = Bethe(trackA, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
-            fpDedxSigma = Bethe(trackB, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
+            fhe3DedxSigma = Bethe(*trackA, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
+            fpDedxSigma = Bethe(*trackB, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
           }
           //N Clusters TPC
           fhe3Ncls = trackA->GetTPCNcls();
@@ -949,11 +943,6 @@ void AliAnalysisTaskDoubleHypNucTree::V0Analysis(AliESDtrackCuts trackCutsV0, Do
 
     if(fPIDCheckOnly) continue;
     
-    //PID Seperation Cut
-    //if (trackN->GetTPCsignal() > 1500 || trackP->GetTPCsignal() > 1500) continue;
-    //P<5GeV/c
-    //    if (trackN->GetInnerParam()->GetP() > 10 || trackP->GetInnerParam()->GetP() > 10) continue;
-
     //special ITS Cluster cut, defined in UserExec
     if(ITSClusterCut){
       if(trackP->GetNumberOfITSClusters() <= SecClusters || trackN->GetNumberOfITSClusters() <= SecClusters) continue;  
@@ -982,9 +971,9 @@ void AliAnalysisTaskDoubleHypNucTree::V0Analysis(AliESDtrackCuts trackCutsV0, Do
     //Use own Splines for p, He3, Alpha
     } else {
 
-      if (TMath::Abs(Bethe(*trackP, AliPID::ParticleMass(AliPID::kAlpha),  2, fBetheParamsHe)) < 4) {
+      if (TMath::Abs(Bethe(*trackP, AliPID::ParticleMass(AliPID::kAlpha),  2, fBetheParamsHe)) < 3) {
         helium4Positive = kTRUE;
-      } else if (TMath::Abs(Bethe(*trackN, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe)) < 4) {
+      } else if (TMath::Abs(Bethe(*trackN, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe)) < 3) {
         helium4Negative = kTRUE;
       }
       else continue;
@@ -1014,10 +1003,6 @@ void AliAnalysisTaskDoubleHypNucTree::V0Analysis(AliESDtrackCuts trackCutsV0, Do
       fHistdEdxV0->Fill(trackN1->GetInnerParam()->GetP() * trackN1->GetSign(), trackN1->GetTPCsignal());
 
       if(fPIDCheckOnly) continue;
-      //PID Seperation Cut
-      //if (trackN1->GetTPCsignal() > 1500 || trackP1->GetTPCsignal() > 1500) continue;
-      //P<5GeV/c
-      //if (trackN1->GetInnerParam()->GetP() > 10 || trackP1->GetInnerParam()->GetP() > 10) continue;
       
       //special ITS Cluster cut, defined in UserExec
       if(ITSClusterCut){
@@ -1044,9 +1029,9 @@ void AliAnalysisTaskDoubleHypNucTree::V0Analysis(AliESDtrackCuts trackCutsV0, Do
         else continue;
       //Use own Splines for p, He3, Alpha
       } else {
-        if (TMath::Abs(Bethe(*trackP1, AliPID::ParticleMass(AliPID::kHe3),  2, fBetheParamsHe)) < 4) {
+        if (TMath::Abs(Bethe(*trackP1, AliPID::ParticleMass(AliPID::kHe3),  2, fBetheParamsHe)) < 3) {
           helium3Positive = kTRUE;
-        } else if (TMath::Abs(Bethe(*trackN1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 4) {
+        } else if (TMath::Abs(Bethe(*trackN1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3) {
           helium3Negative = kTRUE;
         }
         else continue;
@@ -1079,10 +1064,7 @@ void AliAnalysisTaskDoubleHypNucTree::V0Analysis(AliESDtrackCuts trackCutsV0, Do
         if(ITSClusterCut){
           if(trackP2->GetNumberOfITSClusters() >= TertClusters || trackN2->GetNumberOfITSClusters() >= TertClusters) continue;  
         }
-        //PID Seperation Cut
-        //if (trackN2->GetTPCsignal() > 1500 || trackP2->GetTPCsignal() > 1500) continue;
-        //P<5GeV/c
-        //if (trackN2->GetInnerParam()->GetP() > 10 || trackP2->GetInnerParam()->GetP() > 10) continue;
+        
         Bool_t pionPositive2     = kFALSE;
         Bool_t pionNegative2     = kFALSE;
         Bool_t protonPositive   = kFALSE;
@@ -1104,9 +1086,9 @@ void AliAnalysisTaskDoubleHypNucTree::V0Analysis(AliESDtrackCuts trackCutsV0, Do
           else continue;
         //Use own Splines for p, He3, Alpha
         } else {
-          if (TMath::Abs(Bethe(*trackP2, AliPID::ParticleMass(AliPID::kProton),  1, fBetheParamsT)) < 4) {
+          if (TMath::Abs(Bethe(*trackP2, AliPID::ParticleMass(AliPID::kProton),  1, fBetheParamsT)) < 3) {
             protonPositive = kTRUE;
-          } else if (TMath::Abs(Bethe(*trackN2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 4) {
+          } else if (TMath::Abs(Bethe(*trackN2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3) {
             protonNegative = kTRUE;
           }
           else continue;
@@ -1180,9 +1162,9 @@ void AliAnalysisTaskDoubleHypNucTree::V0Analysis(AliESDtrackCuts trackCutsV0, Do
             fhe4DedxSigma = Bethe(*trackP, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe);
             fhe3DedxSigma = Bethe(*trackP1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
             fpDedxSigma = Bethe(*trackP2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
-            fpiDedxSigma = Bethe(*trackN, AliPID::ParticleMass(AliPID::kPion), -1, fBetheParamsT);
-            fpi1DedxSigma = Bethe(*trackN1, AliPID::ParticleMass(AliPID::kPion), -1, fBetheParamsT);
-            fpi2DedxSigma = Bethe(*trackN2, AliPID::ParticleMass(AliPID::kPion), -1, fBetheParamsT);
+            fpiDedxSigma = fPID->NumberOfSigmasTPC(trackN, AliPID::kPion);
+            fpi1DedxSigma = fPID->NumberOfSigmasTPC(trackN1, AliPID::kPion);
+            fpi2DedxSigma = fPID->NumberOfSigmasTPC(trackN2, AliPID::kPion);
           }
           //DCA From primary Vertex
           fhe4Dca = TMath::Abs(trackP->GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -1401,9 +1383,9 @@ void AliAnalysisTaskDoubleHypNucTree::V0Analysis(AliESDtrackCuts trackCutsV0, Do
           fhe4DedxSigma = Bethe(*trackN, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe);
           fhe3DedxSigma = Bethe(*trackN1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
           fpDedxSigma = Bethe(*trackN2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
-          fpiDedxSigma = Bethe(*trackP, AliPID::ParticleMass(AliPID::kPion), -1, fBetheParamsT);
-          fpi1DedxSigma = Bethe(*trackP1, AliPID::ParticleMass(AliPID::kPion), -1, fBetheParamsT);
-          fpi2DedxSigma = Bethe(*trackP2, AliPID::ParticleMass(AliPID::kPion), -1, fBetheParamsT);
+          fpiDedxSigma = fPID->NumberOfSigmasTPC(trackP, AliPID::kPion);
+          fpi1DedxSigma = fPID->NumberOfSigmasTPC(trackP1, AliPID::kPion);
+          fpi2DedxSigma = fPID->NumberOfSigmasTPC(trackP2, AliPID::kPion);
         }
         //DCA From primary Vertex
         fhe4Dca = TMath::Abs(trackN->GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -1662,13 +1644,8 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsSec
 
           fHistdEdx->Fill(ptot3*sign3, track3->GetTPCsignal());
 
-          if(fBetheSplines){
-            if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
-          }
-          else {
-            if(TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) > 3) continue;
-          }
-
+          if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
+ 
           //++++++++++++++++++++++++++++++++ pi sec Track +++++++++++++++++++++++++++++++++++++++//
           for (Int_t lTracks = kTracks + 1; lTracks < fESDevent->GetNumberOfTracks(); lTracks++) {
 
@@ -1689,17 +1666,13 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsSec
 
             fHistdEdx->Fill(ptot4*sign4, track4->GetTPCsignal());
 
-            if(fBetheSplines){
               if(TMath::Abs(fPID->NumberOfSigmasTPC(track4, AliPID::kPion)) > 3) continue;
-            }
-            else {
-              if(TMath::Abs(Bethe(*track4, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) > 3) continue;
-            }        
+                  
             //--------------------------------------------------------------------------------------------------//
             if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track1, AliPID::kHe3)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3)){
               if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kProton)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3)) {
-                if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) < 3)) {
-                  if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track4, AliPID::kPion)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track4, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) < 3)) {
+                if (TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) {
+                  if (TMath::Abs(fPID->NumberOfSigmasTPC(track4, AliPID::kPion)) < 3) {
                     if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track5, AliPID::kAlpha)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track5, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe)) < 3)){      
 
                       //======= Vertex Reconstruction =======
@@ -1835,8 +1808,8 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsSec
                           fhe4DedxSigma = Bethe(*track5, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe);
                           fhe3DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
                           fpDedxSigma = Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
-                          fpiDedxSigma = Bethe(*track4, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
-                          fpi1DedxSigma = Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
+                          fpiDedxSigma = fPID->NumberOfSigmasTPC(track4, AliPID::kPion);
+                          fpi1DedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
                         }
                         //DCA prim Vertex
                         fhe4Dca = TMath::Abs(track5->GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -1975,8 +1948,8 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsSec
                           fhe4DedxSigma = Bethe(*track5, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe);
                           fhe3DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
                           fpDedxSigma = Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
-                          fpiDedxSigma = Bethe(*track4, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
-                          fpi1DedxSigma = Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
+                          fpiDedxSigma = fPID->NumberOfSigmasTPC(track4, AliPID::kPion);
+                          fpi1DedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
                         }
                         //DCA prim Vertex
                         fhe4Dca = TMath::Abs(track5->GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -2089,11 +2062,6 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
 
     if(fPIDCheckOnly) continue;
 
-    //PID Seperation Cut 
-    /*if (trackN->GetTPCsignal() > 1500 || trackP->GetTPCsignal() > 1500) continue;
-    //P<5GeV/c
-    if (trackN->GetInnerParam()->GetP() > 10 || trackP->GetInnerParam()->GetP() > 10) continue;*/
-
     //ITS Cluster Cut defined in User exec
     if(ITSClusterCut){
       if(trackP->GetNumberOfITSClusters() >= SecClusters || trackN->GetNumberOfITSClusters() >= SecClusters) continue;
@@ -2129,14 +2097,14 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
     //Use own Splines for p, He3, Alpha
     } else {
 
-      if (TMath::Abs(Bethe(*trackP, AliPID::ParticleMass(AliPID::kAlpha),  2, fBetheParamsHe)) < 4) {
+      if (TMath::Abs(Bethe(*trackP, AliPID::ParticleMass(AliPID::kAlpha),  2, fBetheParamsHe)) < 3) {
         helium4Positive = kTRUE;
-      } else if (TMath::Abs(Bethe(*trackN, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe)) < 4) {
+      } else if (TMath::Abs(Bethe(*trackN, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe)) < 3) {
         helium4Negative = kTRUE;
       }
-      else if (TMath::Abs(Bethe(*trackP, AliPID::ParticleMass(AliPID::kHe3),  2, fBetheParamsHe)) < 4) {
+      else if (TMath::Abs(Bethe(*trackP, AliPID::ParticleMass(AliPID::kHe3),  2, fBetheParamsHe)) < 3) {
         helium3Positive = kTRUE;
-      } else if (TMath::Abs(Bethe(*trackN, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 4) {
+      } else if (TMath::Abs(Bethe(*trackN, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3) {
         helium3Negative = kTRUE;
       }
       else continue;
@@ -2215,17 +2183,12 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
 
             fHistdEdx->Fill(ptot3*sign3, track3->GetTPCsignal());
 
-            if(fBetheSplines){
-              if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
-            }
-            else {
-              if(TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) > 3) continue;
-            }
-           
+            if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
+            
             //------------------------------------------------------------------------------------------------//
             if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track1, AliPID::kHe3)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3)){
               if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kProton)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3)) {
-                if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) < 3)) {
+                if (TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) {
 
                   //======= Vertex Reconstruction ======
                   TObjArray *trkArray = new TObjArray(3);
@@ -2371,8 +2334,8 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
                     fhe4DedxSigma = Bethe(*trackP, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe);
                     fhe3DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
                     fpDedxSigma = Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
-                    fpiDedxSigma = Bethe(*trackN, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
-                    fpi1DedxSigma = Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
+                    fpiDedxSigma = fPID->NumberOfSigmasTPC(trackN, AliPID::kPion);
+                    fpi1DedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
                   }
                   //DCA From primary Vertex
                   fhe4Dca = TMath::Abs(trackP->GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -2558,16 +2521,11 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
 
             fHistdEdx->Fill(ptot3*sign3, track3->GetTPCsignal());
 
-            if(fBetheSplines){
-              if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
-            }
-            else {
-              if(TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) > 3) continue;
-            }
+            if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
            
             if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track1, AliPID::kHe3)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3)){
               if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kProton)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3)) {
-                if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) < 3)) {
+                if (TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) {
 
                   //====== Vertex Reconstruction ========
                   TObjArray *trkArray = new TObjArray(3);
@@ -2710,8 +2668,8 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
                     fhe4DedxSigma = Bethe(*trackN, AliPID::ParticleMass(AliPID::kAlpha), 2, fBetheParamsHe);
                     fhe3DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
                     fpDedxSigma = Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
-                    fpiDedxSigma = Bethe(*trackP, AliPID::ParticleMass(AliPID::kPion), -1, fBetheParamsT);
-                    fpi1DedxSigma = Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), -1, fBetheParamsT);
+                    fpiDedxSigma = fPID->NumberOfSigmasTPC(trackP, AliPID::kPion);
+                    fpi1DedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
                   }
                   //DCA From primary Vertex
                   fhe4Dca = TMath::Abs(trackN->GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -2904,17 +2862,12 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
 
             fHistdEdx->Fill(ptot3*sign3, track3->GetTPCsignal());
 
-            if(fBetheSplines){
-              if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
-            }
-            else {
-              if(TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) > 3) continue;
-            }
-           
+            if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
+            
             //-------------------------------------------------------------------------------------------------//
             if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track1, AliPID::kHe3)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3)){
               if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kProton)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3)) {
-                if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) < 3)) {
+                if (TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) {
                   //======= Vertex Reconstruction ======
                   TObjArray *trkArray = new TObjArray(3);
 
@@ -3057,8 +3010,8 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
                     fhe4DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
                     fhe3DedxSigma = Bethe(*trackP, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
                     fpDedxSigma = Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
-                    fpiDedxSigma = Bethe(*trackN, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
-                    fpi1DedxSigma = Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
+                    fpiDedxSigma = fPID->NumberOfSigmasTPC(trackN, AliPID::kPion);
+                    fpi1DedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
                   }
                   //DCA From primary Vertex
                   fhe4Dca = TMath::Abs(track1->GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -3079,9 +3032,9 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
                   fpiNclsITS = trackN->GetNumberOfITSClusters();
                   fpi1NclsITS = track3->GetNumberOfITSClusters();
                   //He3 Track as Hypertriton!! + Proton + pi = 4LLH
-		  HypTrit->SetXYZM(2*track1->Px(), 2*track1->Py(), 2*track1->Pz(), 2.99131);
-		  Prot->SetXYZM(track2->Px(), track2->Py(), track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
-		  pi1->SetXYZM(track3->Px(), track3->Py(), track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
+		              HypTrit->SetXYZM(2*track1->Px(), 2*track1->Py(), 2*track1->Pz(), 2.99131);
+		              Prot->SetXYZM(track2->Px(), track2->Py(), track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
+		              pi1->SetXYZM(track3->Px(), track3->Py(), track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
                   fhe4P = HypTrit->Pt();
                   fpi1P = pi1->Pt();
                   fpP = Prot->Pt();
@@ -3121,10 +3074,10 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
                   fctSum2 = tertdiff.Mag() * fmDaughterSum2 / fpSum2;
                   //PA
                   Double_t PA3 = L4HeMother1.Angle(-(HypTritVertex - SecVtx));
-                  fPA4LHe = TMath::Cos(PA3);
+                  fPA4LHe1 = TMath::Cos(PA3);
 
                   Double_t PA2 = L4HeMother.Angle(-(SecVtx - fPrimaryVertex));
-                  fPA4LHe1 = TMath::Cos(PA2);
+                  fPA4LHe = TMath::Cos(PA2);
                   //DCA sec vtx
                   fhe4DcaSec = TMath::Abs(track1->GetD(SecVtx.X(), SecVtx.Y(), fMagneticField));
                   fhe3DcaTert = TMath::Abs(trackP->GetD(HypTritVertex.X(), HypTritVertex.Y(), fMagneticField));
@@ -3243,17 +3196,11 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
 
             fHistdEdx->Fill(ptot3*sign3, track3->GetTPCsignal());
 
-            if(fBetheSplines){
-              if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
-            }
-            else {
-              if(TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) > 3) continue;
-            }
+            if(TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) > 3) continue;
             
-           
             if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track1, AliPID::kHe3)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3)){
               if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kProton)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3)) {
-                if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT)) < 3)) {
+                if (TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) < 3) {
                   //======= Vertex Reconstruction ======
                   TObjArray *trkArray = new TObjArray(3);
 
@@ -3396,8 +3343,8 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
                     fhe4DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
                     fhe3DedxSigma = Bethe(*trackN, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
                     fpDedxSigma = Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT);
-                    fpiDedxSigma = Bethe(*trackP, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
-                    fpi1DedxSigma = Bethe(*track3, AliPID::ParticleMass(AliPID::kPion), 1, fBetheParamsT);
+                    fpiDedxSigma = fPID->NumberOfSigmasTPC(trackP, AliPID::kPion);
+                    fpi1DedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
                   }
                   //DCA From primary Vertex
                   fhe4Dca = TMath::Abs(track1->GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -3418,9 +3365,9 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
                   fpiNclsITS = trackP->GetNumberOfITSClusters();
                   fpi1NclsITS = track3->GetNumberOfITSClusters();
                   //Vectors
-		  HypTrit->SetXYZM(2*track1->Px(), 2*track1->Py(), 2*track1->Pz(), 2.99131);
-		  Prot->SetXYZM(track2->Px(), track2->Py(), track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
-		  pi1->SetXYZM(track3->Px(), track3->Py(), track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
+		              HypTrit->SetXYZM(2*track1->Px(), 2*track1->Py(), 2*track1->Pz(), 2.99131);
+		              Prot->SetXYZM(track2->Px(), track2->Py(), track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
+		              pi1->SetXYZM(track3->Px(), track3->Py(), track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
                   fhe4P = HypTrit->Pt();
                   fpi1P = pi1->Pt();
                   fpP = Prot->Pt();
@@ -3459,10 +3406,10 @@ void AliAnalysisTaskDoubleHypNucTree::CombinedAnalysis(AliESDtrackCuts trackCuts
                   fctSum2 = tertdiff.Mag() * fmDaughterSum2 / fpSum2;
                   //PA
                   Double_t PA3 = L4HeMother1.Angle(-(HypTritVertex - SecVtx));
-                  fPA4LHe = TMath::Cos(PA3);
+                  fPA4LHe1 = TMath::Cos(PA3);
 
                   Double_t PA2 = L4HeMother.Angle(-(SecVtx - fPrimaryVertex));
-                  fPA4LHe1 = TMath::Cos(PA2);
+                  fPA4LHe = TMath::Cos(PA2);
                   //DCA sec / tert Vtx
                   fhe4DcaSec = TMath::Abs(track1->GetD(SecVtx.X(), SecVtx.Y(), fMagneticField));
                   fhe3DcaTert = TMath::Abs(trackN->GetD(HypTritVertex.X(), HypTritVertex.Y(), fMagneticField));

@@ -56,7 +56,12 @@ class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
   void SetBetheSplines(Bool_t betheSplines = kTRUE ) {fBetheSplines = betheSplines;};
   void SetParamsHe(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsHe[i] = params[i];};
   void SetParamsT(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsT[i] = params[i];};
-  
+  void SetMethod(Int_t methodnum = 0) {
+    if(methodnum == 0) fV0Analysis = kTRUE;
+    if(methodnum == 1) ftrackAnalysis = kTRUE;
+    if(methodnum == 2) fV0Combination = kTRUE;
+    if(methodnum == 3) fLi4Analysis = kTRUE;
+  }
  private:
   AliESDInputHandler    *fInputHandler;        //!<! Input handler
   AliESDpid             *fPID;                 //!<! ESD pid
