@@ -871,8 +871,11 @@ void AliTOFtracker::MatchTracks( Int_t mLastStep){
     for (Int_t iclus= 0; iclus<nfound;iclus++) {
       AliTOFtrackPoint *matchableTOFcluster = (AliTOFtrackPoint*)fTOFtrackPoints->At(iclus);
       //if ( matchableTOFcluster->Distance()<mindist ) {
-      if ( TMath::Abs(matchableTOFcluster->DistanceX())<TMath::Abs(mindistX) &&
-	   TMath::Abs(matchableTOFcluster->DistanceX())<=stepSize ) {
+      //if ( TMath::Abs(matchableTOFcluster->DistanceX())<TMath::Abs(mindistX) &&
+	   //TMath::Abs(matchableTOFcluster->DistanceX())<=stepSize ) {
+        	   if ( TMath::Abs(matchableTOFcluster->Distance())<TMath::Abs(mindist) &&
+	    TMath::Abs(matchableTOFcluster->DistanceX())<=stepSize ) {                     /// MI - Temporary BUG FIX - use 3D distance instead of the localX (radial) distance
+
 	mindist = matchableTOFcluster->Distance();
 	mindistZ = matchableTOFcluster->DistanceZ(); // Z distance in the
 						     // RF of the hit pad
