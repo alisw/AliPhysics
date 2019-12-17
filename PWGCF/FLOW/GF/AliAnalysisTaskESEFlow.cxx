@@ -456,9 +456,9 @@ void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, const Int
     if( (CenterCode < 0) || (CenterCode > 9)) { return; }
 
     Int_t q2TPCCentCode = GetPercCode(q2TPCInp);
-    if (q2TPCCentCode<0) { printf("Problem with q_2 TPC percentile"); return; } 
+    if (q2TPCCentCode<0) { printf("Problem with q_2 TPC percentile: negative percentile \n"); return; } 
     Int_t q3TPCCentCode = GetPercCode(q3TPCInp);
-    if (q3TPCCentCode<0) { printf("Problem with q_3 TPC percentile"); return; } 
+    if (q3TPCCentCode<0) { printf("Problem with q_3 TPC percentile: negative percentile \n"); return; } 
 
 
     RFPVectors(centrality, iTracks, fAOD, dVz, q2TPCCentCode, q3TPCCentCode);

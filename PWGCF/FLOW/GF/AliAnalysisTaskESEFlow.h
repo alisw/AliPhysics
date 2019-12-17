@@ -47,23 +47,20 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetWeights(Bool_t kOwn) { bUseOwnWeights = kOwn; }
         
 
+    private:
         //runAnalysis inputs
         Bool_t                  fFlowRunByRunWeights;
         Bool_t                  bUseOwnWeights;
-
         Double_t                dGap;
 
-    private:
+        static const Int_t      fNumHarms = 13; // maximum harmonics length of flow vector array
+        static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
+        static const Int_t      fNumHarmHists = 5; // how many harmonics hists
+        static const Int_t      fNumCentHists = 10; // how many cent hists should there be
+        static const Int_t      fESECuts = 10; // amount of ESE percentiles 
 
-    static const Int_t      fNumHarms = 13; // maximum harmonics length of flow vector array
-    static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
-    static const Int_t      fNumHarmHists = 5; // how many harmonics hists
-    static const Int_t      fNumCentHists = 10; // how many cent hists should there be
-
-    static const Int_t      fESECuts = 10;
-
-    Bool_t                  fInit; // ini check
-    Bool_t                  fqRun;
+        Bool_t                  fInit; // ini check
+        Bool_t                  fqRun;
 
         AliAODEvent*            fAOD;           //!
         TList*                  fOutputList;    //!
@@ -104,6 +101,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TProfile*               fdn4GapPt[fNumCentHists];    //! 
         TProfile*               fcn4GapESETPC[2][fESECuts]; //!        
         TProfile*               fdn4GapESETPC[2][fNumCentHists][fESECuts]; //! 
+
+        //////////////////////////////////////////// 
+        
 
         ///////////////////////////////////////////////////////////////
         TH2D*                   fq2TPC;    //!
