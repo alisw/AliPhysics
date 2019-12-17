@@ -707,6 +707,26 @@ void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, I
 //
 // Force golden D decay modes
 //
+
+    //add D+ decays absent in PYTHIA8 decay table and set BRs from PDG for other
+    fPythia8->ReadString("411:oneChannel = 1 0.0752 0 -321 211 211");
+    fPythia8->ReadString("411:addChannel = 1 0.0104 0 -313 211");
+    fPythia8->ReadString("411:addChannel = 1 0.0156 0 311 211");
+    //add Lc decays absent in PYTHIA8 decay table and set BRs from PDG for other
+    fPythia8->ReadString("4122:oneChannel = 1 0.0196 100 2212 -313");
+    fPythia8->ReadString("4122:addChannel = 1 0.0108 100 2224 -321");
+    fPythia8->ReadString("4122:addChannel = 1 0.022 100 3124 211");
+    fPythia8->ReadString("4122:addChannel = 1 0.035 0 2212 -321 211");
+    fPythia8->ReadString("4122:addChannel = 1 0.0159 0 2212 311");
+    fPythia8->ReadString("4122:addChannel = 1 0.0130 0 3122 211");
+    //add Xic+ decays absent in PYTHIA8 decay table
+    fPythia8->ReadString("4232:addChannel = 1 0.2 0 2212 313");
+    fPythia8->ReadString("4232:addChannel = 1 0.2 0 2212 321 211");
+    fPythia8->ReadString("4232:addChannel = 1 0.2 0 3324 211");
+    fPythia8->ReadString("4232:addChannel = 1 0.2 0 3312 211 211");
+    //add Xic0 decays absent in PYTHIA8 decay table
+    fPythia8->ReadString("4132:addChannel = 1 0.2 0 3312 211");
+
     // K* -> K pi
     fPythia8->ReadString("313:onMode = off");
     fPythia8->ReadString("313:onIfAll = 321 211");
