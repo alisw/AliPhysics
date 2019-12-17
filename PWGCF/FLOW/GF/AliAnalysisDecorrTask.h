@@ -62,7 +62,6 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    DoRFPs(Bool_t ref) { bRef = ref; }              //Calculate integrad flow
         void                    DoDiff(Bool_t diff) { bDiff = diff; }           //Calculate pt differential flow
         void                    DoPtB(Bool_t ptb) { bPtB = ptb; }               //Calculate flow with particles from different pt bins
-        TH2F*                   nuacentral;
 
     
     private:
@@ -215,8 +214,6 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fPOIsPtmin;
         Double_t                fRFPsPtMax;
         Double_t                fRFPsPtMin;
-
-
 
         ClassDef(AliAnalysisDecorrTask, 1);
 };
