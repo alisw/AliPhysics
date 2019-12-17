@@ -377,7 +377,7 @@ void AliESDUtils::GetITSPileupVertexInfo(const AliESDEvent* event, TVectorF& ver
   if (nBufferPileUp>3) {
     Int_t nPoints= 0.7*nBufferPileUp;
     if (nPoints<3) nPoints=3;
-    AliMathBase::EvaluateUni(nBufferPileUp, bufferPrim, LTM,RMS, nPoints);
+    AliMathBase::EvaluateUni(nBufferPileUp, bufferPileUp, LTM,RMS, nPoints);
     vertexInfo[6]=LTM;
     vertexInfo[7]=RMS;
   }
