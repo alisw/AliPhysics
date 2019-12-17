@@ -58,6 +58,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   //another particle has a smaller sigma, the track is rejected.
   // Not mention in AN oder Indico
   //fTrackCutsPosPion->SetCutSmallestSig(true);
+  fTrackCutsPosPion->SetPlotDCADist(true);
 
   //MC Template treatment
   if ( isMC && MCtemplatefit ) {
@@ -85,6 +86,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   //fTrackCutsNegPion->SetCutSmallestSig(true);
+  fTrackCutsNegPion->SetPlotDCADist(true);
 
   //MC Template treatment
   if ( isMC && MCtemplatefit ) {
@@ -121,10 +123,9 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   //The Multiplicity bins are set here
   std::vector<int> MultBins;
   MultBins.push_back(0);
-  MultBins.push_back(13);
-  MultBins.push_back(21);
+  MultBins.push_back(18);
   MultBins.push_back(30);
-  MultBins.push_back(54);
+  MultBins.push_back(999);
 
   //The next part is for the result histograms. The order of hist. is the following:
   //                Particle1     Particle2
