@@ -910,6 +910,12 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
                     FillTHnSparse("Sigma1385_mc", {(double)binAnti, (double)sign, (double)fCent,
                                                     vecsum.Pt(), vecsum.M()});
                 }
+                else{
+                    // MC not true bkg
+                    (isPionPlus) ? sign = kSigmaStarP_MIX : sign = kSigmaStarN_MIX;
+                    FillTHnSparse("Sigma1385_data", {(double)binAnti, (double)sign, (double)fCent,
+                                            vecsum.Pt(), vecsum.M()});
+                }
                 if(IsTrueSigmaStar(goodv0indices[i][0], goodtrackindices[j], 1)) {
                     (isPionPlus) ? sign = kSigmaStarPBkg_type1 : sign = kSigmaStarNBkg_type1;
                     FillTHnSparse("Sigma1385_mc", {(double)binAnti, (double)sign, (double)fCent,
