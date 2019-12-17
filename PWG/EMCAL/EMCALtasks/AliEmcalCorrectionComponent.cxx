@@ -31,6 +31,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   TNamed("AliEmcalCorrectionComponent", "AliEmcalCorrectionComponent"),
   fYAMLConfig(),
   fCreateHisto(kTRUE),
+  fLoad1DBadChMap(kFALSE),
   fRun(-1),
   fFilepass(""),
   fGetPassFromFileName(kTRUE),
@@ -66,6 +67,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   TNamed(name, name),
   fYAMLConfig(),
   fCreateHisto(kTRUE),
+  fLoad1DBadChMap(kFALSE),
   fRun(-1),
   fFilepass(""),
   fGetPassFromFileName(kTRUE),
@@ -206,9 +208,22 @@ void AliEmcalCorrectionComponent::UpdateCells()
   
   Int_t bunchCrossNo = fEventManager.InputEvent()->GetBunchCrossNumber();
   
-  if (fRecoUtils)
+  if (fRecoUtils){
+    //In case of PAR run check global event ID
+    if(fRecoUtils->IsParRun()){
+      Short_t currentParIndex = 0;
+      ULong64_t globalEventID = (ULong64_t)bunchCrossNo + (ULong64_t)fEventManager.InputEvent()->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fEventManager.InputEvent()->GetPeriodNumber() * (ULong64_t)59793994260;
+      for(Short_t ipar=0;ipar<fRecoUtils->GetNPars();ipar++){
+	if(globalEventID >= fRecoUtils->GetGlobalIDPar(ipar)) {
+	  currentParIndex++;
+	}
+      }
+      fRecoUtils->SetCurrentParNumber(currentParIndex);      
+    }
+    //end of PAR run settings
+
     fRecoUtils->RecalibrateCells(fCaloCells, bunchCrossNo);
-  
+  }
   fCaloCells->Sort();
 }
 
@@ -330,10 +345,10 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   { //if fBasePath specified in the ->SetBasePath()
     AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
     
-    fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read"));
+    fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALBadChannels%s.root",fBasePath.Data(), fLoad1DBadChMap ? "_1D" : ""),"read"));
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s",fBasePath.Data()));
+      AliFatal(Form("EMCALBadChannels%s.root was not found in the path provided: %s", fLoad1DBadChMap ? "_1D" : "", fBasePath.Data()));
       return 0;
     }
     
@@ -356,10 +371,10 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    fbad = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"read"));
+    fbad = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALBadChannels%s.root", fLoad1DBadChMap ? "_1D" : "")).data(),"read"));
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal("OADB/EMCAL/EMCALBadChannels.root was not found");
+      AliFatal(Form("OADB/EMCAL/EMCALBadChannels%s.root was not found", fLoad1DBadChMap ? "_1D" : ""));
       return 0;
     }
     
@@ -378,23 +393,37 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
     return 2;
   }
   
-  Int_t sms = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
-  for (Int_t i=0; i<sms; ++i)
-  {
-    TH2I *h = fRecoUtils->GetEMCALChannelStatusMap(i);
+  if(fLoad1DBadChMap){
+    TH1C *h = fRecoUtils->GetEMCALChannelStatusMap1D();
     if (h)
       delete h;
-    h=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
-    
+    h=(TH1C*)arrayBC->FindObject("EMCALBadChannelMap");
+      
     if (!h)
     {
-      AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
-      continue;
+      AliError("Can not get EMCALBadChannelMap");
     }
     h->SetDirectory(0);
-    fRecoUtils->SetEMCALChannelStatusMap(i,h);
+    fRecoUtils->SetEMCALChannelStatusMap1D(h);
+  }else{
+    Int_t sms = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
+    for (Int_t i=0; i<sms; ++i)
+    {
+      TH2I *h = fRecoUtils->GetEMCALChannelStatusMap(i);
+      if (h)
+        delete h;
+      h=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+      
+      if (!h)
+      {
+        AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+        continue;
+      }
+      h->SetDirectory(0);
+      fRecoUtils->SetEMCALChannelStatusMap(i,h);
+    }
   }
-  
+    
   return 1;
 }
 

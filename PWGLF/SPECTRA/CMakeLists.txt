@@ -82,6 +82,7 @@ set(SRCS
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpherocity.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT_TPCTOF.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
@@ -119,6 +120,7 @@ set(SRCS
   Kinks/AliAnalysisTaskKinkpp5TeVMC.cxx
   Kinks/AliAnalysisTaskKinkPbPb.cxx
   Kinks/AliAnalysisTaskKinkPbPbMC.cxx
+  Kinks/AliAnalysisKinkTaskPbPb2018.cxx
   PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothEventCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothHistoManager.cxx

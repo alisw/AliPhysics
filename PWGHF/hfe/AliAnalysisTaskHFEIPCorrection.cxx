@@ -7,6 +7,7 @@
 #include "TFile.h"
 #include "THnSparse.h"
 #include "TCanvas.h"
+#include "TSpline.h"
 #include "TNtuple.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -39,7 +40,7 @@
 #include "AliVertexerTracks.h"
 
 // This analysis builds histograms to enable and check the impact parameter
-// correction in phi, z, and pT for the 15o PbPb data set
+// correction in phi, z, and pT for the 15o and 18qr PbPb data set
 // Author: Martin Voelkl
 
 
@@ -47,7 +48,7 @@ ClassImp(AliAnalysisTaskHFEIPCorrection)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), fSplineCorr(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentUncorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
 
   // default Constructor
@@ -71,13 +72,13 @@ AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
     
     //fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
 
-    // end HFE cuts
+    // end HFE cuts    
   
 }
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), fSplineCorr(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentUncorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // HFE cuts
     /*hfetrackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
@@ -126,7 +127,7 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     EPCent = new TH2D(Form("EPCent"),Form("EPCent"), 20, 0., TMath::Pi(), 10, 0., 100.);
     EPCentV0A = new TH2D(Form("EPCentV0A"),Form("EPCentV0A"), 20, 0., TMath::Pi(), 10, 0., 100.);
     EPCentV0C = new TH2D(Form("EPCentV0C"),Form("EPCentV0C"), 20, 0., TMath::Pi(), 10, 0., 100.);
-    EPCentCorrected = new TH2D(Form("EPCentCorrected"),Form("EPCentCorrected"), 20, 0., TMath::Pi(), 10, 0., 100.);
+    EPCentUncorrected = new TH2D(Form("EPCentUncorrected"),Form("EPCentUncorrected"), 20, 0., TMath::Pi(), 10, 0., 100.);
     
     DeltaPhi = new TH1D(Form("DeltaPhi"),Form("DeltaPhi"), 40, 0., TMath::Pi());
     fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
@@ -195,10 +196,12 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fDCAKaonsFineBins = new TH3D(Form("fDCAKaonsFineBins"),Form("fDCAKaonsFineBins"), 80, 0., 10., 400, -0.2, 0.2, 10, 0., 100.);
 
     
-
-    
-    
     fRd = new TRandom3(0);
+
+    double xspline[8] = {0.19635, 0.589049, 0.981748, 1.37445, 1.76715, 2.15984, 2.55254, 2.94524};
+    double ysplinecorr[8] = {0.921943, 0.916581, 0.929437, 0.963846, 0.960518, 0.925982, 0.911671, 0.919443};
+
+    fSplineCorr = new TSpline3("fSplineCorr", xspline, ysplinecorr, 8, "b2e2");
 
     fOutputContainer = new TObjArray(1);
     fOutputContainer->SetName(GetName());
@@ -206,7 +209,7 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fOutputContainer->Add(EPCent);
     fOutputContainer->Add(EPCentV0A);
     fOutputContainer->Add(EPCentV0C);
-    fOutputContainer->Add(EPCentCorrected);
+    fOutputContainer->Add(EPCentUncorrected);
     fOutputContainer->Add(DeltaPhi);
     fOutputContainer->Add(fpTIP2040IP);
     fOutputContainer->Add(fpTIP2040OOP);
@@ -485,9 +488,9 @@ void AliAnalysisTaskHFEIPCorrection::GetCorrectedImpactParameter(AliAODEvent *ao
   int PhiBin = int(track->Phi()/(2.*TMath::Pi())*40); // phi bin
   double z_SPD1 = primVertexZ+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))); // z position of track in inner SPD layer
   int zBin = int((z_SPD1+12.)/24.*12.); // z bin
-  int pt = track->Pt();
+  double pt = track->Pt();
   double oldIP, dcaErr;
-  //fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,oldIP,dcaErr); // changed
+  fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,oldIP,dcaErr); // changed
     
   double correctionMatrixEarlyRuns[40][12] = {
 { -0.000683 , -0.00104 , -0.000436 , -0.000785 , -0.001 , -0.00117 , -0.00103 , -0.000972 , -0.00149 , -0.0014 , -0.00147 , -0.00158 },
@@ -575,21 +578,135 @@ double correctionMatrixLateRuns[40][12] = {
 { -0.000854 , -0.000851 , -0.000773 , -0.000646 , -0.000455 , -0.00103 , -0.000426 , -0.0001 , -0.00087 , -0.000856 , -0.000199 , -0.000902 }
 };
 
+
+double correctionMatrix18qr[40][12] = {
+{ 3.01e-05 , -0.000348 , 0.000175 , -0.000178 , -0.000352 , -0.00048 , -9.39e-05 , -4.02e-05 , -0.000781 , -0.000814 , -0.000994 , -0.00118 },
+{ -3.66e-05 , 0.000134 , -0.000278 , -0.000282 , -0.000312 , -0.000596 , -0.000377 , -0.000285 , -0.000605 , -0.000816 , -0.00089 , -0.000993 },
+{ 0.000444 , 0.000189 , -0.000126 , -0.00023 , -0.00029 , -0.000784 , -0.000513 , -0.000792 , -0.000915 , -0.000563 , -0.00083 , -0.00115 },
+{ 0.000303 , 0.000198 , -0.000101 , -0.000236 , -0.000379 , -0.0006 , -0.000392 , -0.00017 , -0.000497 , -0.00079 , -0.000801 , -0.00132 },
+{ -5.63e-05 , -0.000232 , -0.000446 , -0.000258 , -0.000222 , -0.000611 , 0.00046 , 8.04e-05 , -0.000261 , -0.000168 , -0.000738 , -0.00104 },
+{ -0.000382 , 0.000214 , -0.000113 , -0.000266 , -0.000282 , -0.000571 , -7.03e-06 , 0.000378 , -0.000145 , -0.000658 , -0.000851 , -0.00126 },
+{ -0.000314 , -0.000131 , -0.000121 , -0.000658 , -0.00108 , -0.00127 , -0.000857 , -0.000313 , -0.00131 , -0.00222 , -0.0019 , -0.00216 },
+{ -0.000168 , -0.000175 , -0.000693 , -0.000546 , -0.00034 , -0.00122 , -0.00156 , -0.00148 , 0.00147 , 0.00485 , 0 , 0 },
+{ -0.000493 , -0.00042 , -0.0014 , -0.00105 , -0.000674 , -0.00177 , 0.00374 , 0.00464 , 0.00363 , 0.00285 , 0.00209 , 0.00217 },
+{ 0 , 0 , 0.00296 , -0.00198 , 0.00383 , 0.00409 , 0.00394 , 0.00364 , 0.00296 , 0.0023 , 0.00196 , 0.00182 },
+{ 0 , 0 , 0.0022 , -0.000315 , 0.00249 , 0.00136 , 0.00183 , 0.00176 , 0.00128 , 0.00089 , 0.0014 , 0.000997 },
+{ 0 , 0 , -0.000491 , -0.00314 , 0.000415 , -0.000828 , -0.000804 , -0.000343 , -0.000612 , -0.000756 , -9.92e-05 , -0.000223 },
+{ 0 , 0 , 0 , -0.00338 , -0.00133 , -0.0016 , -0.00148 , -0.000542 , -0.000532 , -0.00108 , -0.000266 , 5.56e-05 },
+{ 0 , 0 , -0.00197 , -0.000121 , 0.00274 , -0.00164 , -0.000737 , -0.000457 , -0.000738 , -0.000795 , -0.000303 , -0.000253 },
+{ 0.0381 , 0.0384 , 0.0382 , 0.0381 , 0.0327 , -0.00213 , -0.000641 , -0.000153 , -0.000493 , -0.00117 , -0.000505 , -0.000819 },
+{ 0.000697 , 0.000796 , 0.000488 , 0.000319 , 0.000648 , 0.000447 , -0.000593 , -0.000189 , -0.000621 , -0.000989 , -0.000166 , -0.000565 },
+{ 0.000641 , 0.000943 , 0.000484 , 0.00032 , 0.000398 , -7.95e-05 , -0.000884 , -0.000349 , -0.000552 , -0.000854 , -0.000398 , -0.000603 },
+{ 0.000994 , 0.00106 , 0.000681 , 0.000833 , 0.000968 , 0.000618 , 0.000948 , 0.00259 , 0.00247 , 0.00249 , 0.00254 , 0.00157 },
+{ -0.000193 , 0.000555 , -0.000574 , 0.000213 , 0.00032 , -0.000205 , -0.000259 , 0.00197 , 0.00202 , 0.0014 , 0.00175 , 0.00169 },
+{ -0.000254 , 0.000575 , 0.000249 , 0.000504 , 0.00055 , 0.000391 , 0.000349 , 0.000883 , 0.000766 , 0.000502 , 0.000708 , 0.00072 },
+{ 5.68e-05 , 0.000157 , -8.23e-05 , 0.000346 , 0.000356 , 0.000554 , 0.000616 , 0.000546 , 0.000718 , 0.000471 , 0.000653 , 0.000714 },
+{ -0.000778 , -0.00107 , -0.00155 , -0.0016 , -0.00175 , -0.00162 , -0.00174 , -0.00208 , -0.00142 , -0.000867 , -0.000789 , -0.000997 },
+{ -0.00152 , -0.00143 , -0.00212 , -0.00227 , -0.00274 , -0.00266 , -0.00292 , -0.00272 , -0.00297 , -0.00272 , -0.00239 , -0.00209 },
+{ -0.0157 , -0.0137 , -0.0128 , -0.0115 , -0.0105 , -0.009 , -0.00968 , -0.00967 , -0.00915 , -0.00824 , -0.00682 , -0.00729 },
+{ -0.00153 , -0.00165 , -0.00162 , -0.00109 , -0.00057 , -0.00013 , -0.000355 , -0.000806 , -0.00106 , -0.000644 , -2.2e-05 , 0.000153 },
+{ -0.00273 , -0.00193 , -0.00176 , -0.00144 , -0.00105 , -0.000498 , -0.000788 , -0.000203 , -0.000165 , -0.000284 , -0.000306 , 0.000395 },
+{ -0.00255 , -0.00264 , -0.00307 , -0.00271 , -0.00246 , -0.00186 , -0.00136 , -0.00145 , -0.00121 , -0.000624 , -0.000667 , -0.000184 },
+{ 0 , 0 , -0.000458 , -0.00131 , -0.00172 , 0.000326 , -0.00126 , -0.00105 , -0.000865 , -0.000789 , -0.000634 , -0.000581 },
+{ 0.00102 , -1.05e-06 , 2.36e-05 , 0.000512 , 0.000199 , 0.00039 , 7.07e-05 , -0.000186 , -0.000294 , 0.000207 , -0.000492 , -0.00066 },
+{ -0.00147 , -0.000115 , -0.00053 , -0.000636 , 0.000462 , 0.000681 , -0.000226 , 0.000333 , 0.000304 , -0.000599 , -0.000279 , 0.000134 },
+{ 0.000101 , 0.00133 , 0.00168 , 0.00163 , 0.00296 , 0.0066 , 0.000729 , -0.000416 , 0.000343 , 0.000614 , 7.65e-05 , 0.000909 },
+{ 0.000838 , 0.000816 , 0.00058 , 0.000685 , 0.000788 , 0.000709 , 0.000573 , 0.000725 , 0.000386 , 0.000624 , 0.00141 , 0.000649 },
+{ 0.000745 , 0.000744 , 0.000829 , 0.000603 , 0.00048 , 0.000523 , 0.000111 , 0.00048 , 0.00091 , 0.000984 , 0.000839 , 0.000888 },
+{ 0.000875 , 0.000709 , 0.000517 , 0.000414 , 0.000593 , 0.000453 , 0.00012 , 0.000404 , 0.000407 , 0.000602 , 0.000663 , 0.000876 },
+{ 0.00138 , 0.000892 , 0.00106 , 0.000703 , 0.00102 , 0.000924 , 0.00108 , -0.00381 , -0.00114 , 0 , 0 , 0 },
+{ 0.000745 , 0.000634 , 0.000695 , 0.000339 , 0.000852 , 0.0015 , 0.000817 , 0.000745 , 0.000152 , -0.000477 , 0.000581 , 0.000734 },
+{ -0.000665 , -0.000774 , -0.000275 , -0.00044 , -0.00036 , 0.000261 , -0.000452 , -2.83e-05 , 8.24e-05 , 0.000268 , 0.000279 , 6e-05 },
+{ -0.00102 , -0.000869 , -0.00086 , -0.00101 , -0.000839 , -0.000936 , -0.000224 , -1.18e-05 , 0.000113 , 0.000639 , 0.000569 , 0.00054 },
+{ -0.000759 , -0.000534 , -0.000496 , -0.000637 , -0.000512 , -0.000621 , 0.00024 , 8.03e-05 , -3.65e-06 , 0.000345 , 0.000294 , 0.000111 },
+{ -0.000334 , -0.000479 , -0.00044 , -0.00059 , -0.00033 , -0.000797 , -0.000106 , 0.000207 , -0.000844 , -0.000963 , -0.000238 , -0.000428 }
+};
+
   Double_t correctedDCA = 1.;
+
+  TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
+  if(lProductionName.Contains("LHC15o"))
+  {
   if(aodEvent->GetRunNumber() <= 246276 && pt > 0.) correctedDCA = oldIP - correctionMatrixEarlyRuns[PhiBin][zBin]*1.22/(1.+1./(0.57+9.8/(pt*pt)));
   if(aodEvent->GetRunNumber() > 246276 && pt > 0.) correctedDCA = oldIP - correctionMatrixLateRuns[PhiBin][zBin]*1.22/(1.+1./(0.57+9.8/(pt*pt)));
   dcaxy = correctedDCA;
+  }
+
+  if(lProductionName.Contains("LHC18")) // 18r and q have same correction
+  {
+  if(pt > 0.) correctedDCA = oldIP - correctionMatrix18qr[PhiBin][zBin]*1.22/(1.+1./(0.57+9.8/(pt*pt)));
+  dcaxy = correctedDCA;
+  }
 }
 
 
 
 Int_t AliAnalysisTaskHFEIPCorrection::ReturnRunBin(Int_t RunNr)
 {
-  Int_t runList[183]={
+  Int_t runList15o[183]={
   246994, 246991, 246989, 246984, 246982, 246980, 246949, 246948, 246945, 246942, 246937, 246930, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246855, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246806, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246755, 246751, 246750, 246676, 246675, 246671, 246648, 246639, 246583, 246575, 246568, 246567, 246553, 246543, 246540, 246495, 246493, 246488, 246487, 246434, 246433, 246431, 246428, 246424, 246392, 246391, 246390, 246276, 246275, 246272, 246271, 246225, 246222, 246220, 246217, 246187, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245996, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245793, 245785, 245775, 245766, 245759, 245752, 245738, 245731, 245729, 245705, 245702, 245700, 245692, 245683, 245554, 245545, 245544, 245543, 245542, 245540, 245535, 245507, 245505, 245504, 245501, 245497, 245496, 245454, 245453, 245452, 245450, 245446, 245441, 245439, 245411, 245410, 245409, 245407, 245401, 245397, 245396, 245353, 245349, 245347, 245346, 245345, 245343, 245341, 245259, 245256, 245253, 245233, 245232, 245231, 245230, 245152, 245151, 245148, 245146, 245145, 245068, 245066, 245064, 245061, 244983, 244982, 244980, 244975, 244972, 244918, 244917, 244911, 244889, 244827, 244824};
+
+
+  Int_t runList18r[171]={296649, 296690, 296691, 296692, 296693, 296694, 296696, 296698, 296749, 296750, 296752, 296780, 296781, 296782, 296783, 296784, 296785, 296786, 296787, 296790, 296791, 296792, 296793, 296794, 296799, 296835, 296836, 296838, 296839, 296848, 296849, 296850, 296851, 296852, 296890, 296891, 296893, 296894, 296899, 296900, 296903, 296930, 296931, 296932, 296934, 296935, 296938,  296940, 296941, 296966, 296967, 296968, 296969, 296970, 296971, 296972, 296973, 296974, 296975, 296976, 296977, 296979, 297028, 297029, 297030, 297031, 297035, 297036, 297085, 297116, 297117, 297118, 297119, 297123, 297124, 297127, 297128, 297129, 297132, 297133, 297193, 297194, 297195, 297196, 297218, 297219, 297220, 297221, 297222,  297277, 297278, 297310, 297311, 297312, 297313, 297315, 297316, 297317, 297318, 297319, 297320, 297321, 297322, 297323, 297324, 297325, 297326, 297328, 297329, 297331, 297332, 297333, 297335, 297336, 297363, 297366, 297367, 297370, 297371, 297372, 297379, 297380, 297403, 297404, 297405, 297406, 297407, 297408, 297413, 297414, 297415, 297441, 297442, 297443, 297444, 297445, 297446, 297447, 297448, 297449, 297450, 297451, 297452, 297479, 297481, 297483, 297484, 297485, 297512, 297513, 297537, 297538, 297539, 297540, 297541, 297542, 297543, 297544, 297547, 297548, 297549, 297555, 297556, 297557, 297558, 297588, 297589, 297590, 297595, 297623, 297624};
+
+  Int_t runList18q[234]={295274, 295369, 295370, 295402, 295408, 295419, 295420, 295424, 295426, 295427, 295428, 295429, 295430, 295431, 295432, 295434, 295435, 295436, 295437, 295438, 295439, 295440, 295456, 295488, 295494, 295525, 295526, 295530, 295579, 295581, 295582, 295584, 295585, 295586, 295587, 295588, 295589, 295610, 295611, 295612, 295615, 295665, 295666, 295667, 295668, 295671, 295673, 295675, 295676, 295677, 295712, 295713, 295714, 295716, 295717, 295718, 295719, 295720, 295721, 295722, 295723, 295725, 295753, 295754, 295755, 295756, 295757, 295758, 295759, 295760, 295761, 295762, 295763, 295786, 295787, 295788, 295791, 295816, 295817, 295818, 295819, 295820, 295821, 295822, 295825, 295826, 295829, 295830, 295831, 295853, 295854, 295855, 295856, 295857, 295859, 295860, 295861, 295862, 295863, 295872, 295878, 295881, 295906, 295907, 295908, 295909, 295910, 295912, 295913, 295914, 295915, 295916, 295936, 295937, 295938, 295941, 295942, 295943, 295945, 295946, 295947, 296008, 296009, 296012, 296013, 296016, 296060, 296061, 296062, 296063, 296064, 296065, 296066, 296067, 296068, 296074, 296123, 296124, 296127, 296128, 296132, 296133, 296134, 296135, 296136, 296137, 296141, 296142, 296143, 296191, 296192, 296194, 296195, 296196, 296197, 296198, 296240, 296241, 296242, 296243, 296244, 296246, 296247, 296269, 296270, 296273, 296275, 296277, 296278, 296279, 296280, 296303, 296304, 296305, 296307, 296309, 296310, 296312, 296352, 296353, 296354, 296355, 296357, 296358, 296359, 296360, 296375, 296376, 296377, 296378, 296379, 296380, 296381, 296382, 296383, 296414, 296415, 296419, 296420, 296421, 296422, 296423, 296424, 296433, 296472, 296508, 296509, 296510, 296511, 296512, 296513, 296514, 296515, 296516, 296517, 296547, 296548, 296549, 296550, 296551, 296552, 296553, 296554, 296555, 296594, 296614, 296615, 296616, 296617, 296618, 296619, 296621, 296622, 296623};
+
+  TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
+  
+  if(lProductionName.Contains("LHC15o"))
   for(int i=0;i<183;i++)
-    if(runList[i]==RunNr) return i+1;
+    if(runList15o[i]==RunNr) return i+1;
+
+  if(lProductionName.Contains("LHC18r"))
+  for(int i=0;i<171;i++)
+    if(runList18r[i]==RunNr) return i+1;
+
+  if(lProductionName.Contains("LHC18q"))
+  for(int i=0;i<234;i++)
+    if(runList18q[i]==RunNr) return i+1;
+  
   return 0;
+}
+
+TString AliAnalysisTaskHFEIPCorrection::GetPeriodNameByLPM(TString lTag)  // This is copied from the mult selection task
+{
+    //==================================
+    // Setup initial Info
+    Bool_t lLocated = kFALSE;
+    TString lProductionName = "";
+    
+    //==================================
+    // Get alirootVersion object title
+    AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!handler) return lProductionName; //failed!
+    TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    if (!prodInfoData) return lProductionName; //failed!
+    TString lAlirootVersion(prodInfoData->GetTitle());
+    
+    //==================================
+    // Get Production name
+    TObjArray* lArrStr = lAlirootVersion.Tokenize(";");
+    if(lArrStr->GetEntriesFast()) {
+        TIter iString(lArrStr);
+        TObjString* os=0;
+        Int_t j=0;
+        while ((os=(TObjString*)iString())) {
+            if( os->GetString().Contains(lTag.Data()) ){
+                lLocated = kTRUE;
+                lProductionName = os->GetString().Data();
+                //Remove Label
+                lProductionName.ReplaceAll(lTag.Data(),"");
+                //Remove any remaining whitespace (just in case)
+                lProductionName.ReplaceAll("=","");
+                lProductionName.ReplaceAll(" ","");
+            }
+            j++;
+        }
+    }
+    //Memory cleanup
+    delete lArrStr;
+    //Return production name
+    return lProductionName;
 }
 
 
@@ -600,8 +717,18 @@ void AliAnalysisTaskHFEIPCorrection::Process(AliAODEvent *const aodEvent)
   // Main loop
   // Called for each event
   EventSelectionSteps->Fill(4);
-  //if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB))) //return;
+  if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB | AliVEvent::kINT7)))
+    return;
+  bool SelectedBySemicentralTrigger = false;
+  if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) 
+    SelectedBySemicentralTrigger = true;
+
+  //if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB)))
+    //return;
+
+  //if(!SelectedBySemicentralTrigger) return;
   EventSelectionSteps->Fill(5);
+
 
   if (!aodEvent) {
     Printf("ERROR: aodEvent not available");
@@ -610,6 +737,8 @@ void AliAnalysisTaskHFEIPCorrection::Process(AliAODEvent *const aodEvent)
   AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*>( AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!(handler)) printf("AOD inputhandler not available \n");
 
+  
+  // TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
 
   AliPIDResponse *pid = NULL;
   if(handler){
@@ -640,6 +769,9 @@ if(!MultSelection){
   fV0Cent = MultSelection->GetMultiplicityPercentile("V0M", false);
   fV0CentCalib = MultSelection->GetMultiplicityPercentile("V0M", true);
   centrality = fV0CentCalib;
+  TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
+  if(lProductionName.Contains("LHC18")) // 18r and q have same correction
+    centrality = fV0Cent; // 18qr calib does not seem to work yet
 }
 
   const AliAODVertex *vertex = aodEvent->GetPrimaryVertex();
@@ -657,7 +789,7 @@ if(!MultSelection){
   bool analyzeEvent=(TMath::Sqrt(vcov[5]) < 0.25 && TMath::Abs(vtx[2])<10. && TMath::Abs(vtx[2] - vtxSPD[2]) < 0.5 && centrality <= 100.);
   //hfetrackCuts->SetRecEvent(aodEvent);
 
-   if(centrality>=20.0 && centrality<=40.0)
+   if((centrality>=20.0 && centrality<=50.0))
    {
       EventSelectionSteps->Fill(0);
       if(TMath::Abs(vtx[2])<10.)
@@ -705,12 +837,20 @@ if(!MultSelection){
     if(V0APlanePhi > TMath::Pi()) V0APlanePhi = V0APlanePhi - TMath::Pi();
     V0CPlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,9,2,qVx,qVy));
     if(V0CPlanePhi > TMath::Pi()) V0CPlanePhi = V0CPlanePhi - TMath::Pi();
+    EPCentUncorrected->Fill(V0PlanePhi, centrality);
     double rndm = fRd->Rndm();
     if(centrality>=20.0 && centrality<=50.0)
     {
         if(V0PlanePhi<0) V0PlanePhi+= 3.14159;
         if(V0PlanePhi>3.14159) V0PlanePhi-= 3.14159; // Just to be safe
-        if(rndm>0.888359/(0.884154+0.171683*TMath::Gaus(V0PlanePhi,0.609013, 0.705609)+0.0634041*TMath::Erf((V0PlanePhi-1.99791)/0.492068))) EPFlatteningReject = true;
+        double correctionValue = 0.;
+        TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
+        if(lProductionName.Contains("LHC15o"))
+          correctionValue = 0.888359/(0.884154+0.171683*TMath::Gaus(V0PlanePhi,0.609013, 0.705609)+0.0634041*TMath::Erf((V0PlanePhi-1.99791)/0.492068));
+        if(lProductionName.Contains("LHC18")) // 18r and q have same correction
+          correctionValue = fSplineCorr->Eval(V0PlanePhi);
+
+        if(rndm>correctionValue) EPFlatteningReject = true;
     }
   }
 
@@ -732,7 +872,7 @@ if(!MultSelection){
       EPCent->Fill(V0PlanePhi, centrality);
       EPCentV0A->Fill(V0APlanePhi, centrality);
       EPCentV0C->Fill(V0CPlanePhi, centrality);
-      //EPCentCorrected->Fill(epCorr, centrality);
+      
         
     if(centrality>=20.0 && centrality<=40.0)
     {
@@ -757,6 +897,7 @@ if(!MultSelection){
   
         // Fill Event plane Q vectors
         if((TrackStatus & AliVTrack::kTPCrefit)) // require only ITS+ TPC refit
+          if(track->GetTPCNcls()>=60 && TMath::Abs(track->Pt())>0.25) // basic tracking cuts
         {
           if(TMath::Abs(track->Eta()) < 0.8)
           {
@@ -802,12 +943,12 @@ if(!MultSelection){
             DeltaPhi->Fill(DPhi);
             if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040IP->Fill(track->Pt(), IPCorrectedChField);
+              if(centrality>=20.0 && centrality<=40.0 && !SelectedBySemicentralTrigger) fpTIP2040IP->Fill(track->Pt(), IPCorrectedChField);
               if(centrality>=30.0 && centrality<=50.0) fpTIP3050IP->Fill(track->Pt(), IPCorrectedChField);
             }
             else
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040OOP->Fill(track->Pt(), IPCorrectedChField);
+              if(centrality>=20.0 && centrality<=40.0 && !SelectedBySemicentralTrigger) fpTIP2040OOP->Fill(track->Pt(), IPCorrectedChField);
               if(centrality>=30.0 && centrality<=50.0) fpTIP3050OOP->Fill(track->Pt(), IPCorrectedChField);
             }
           }
@@ -832,6 +973,7 @@ if(!MultSelection){
               if(aodEvent->GetRunNumber() <= 246276) fDCAPhiZHadronsEarlyRuns->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
               else  fDCAPhiZHadronsLateRuns->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
               fDCAPhiZHadronsC->Fill(track->Phi(), IPCorrected, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              
               if(IsInMisalignedRegion(track, vtx[2])>0)fDCARegionRun->Fill(dcaxyD, IsInMisalignedRegion(track, vtx[2]) ,RunBin);
               else fDCARegionRun->Fill(dcaxyD, 5 ,RunBin);
             }
@@ -950,7 +1092,7 @@ if(!MultSelection){
         }
 
         // TOF eff occupancy dependence
-        if(TMath::Abs(V0MotherPdg)==22 && centrality>=20.0 && centrality<=40.0)
+        if(TMath::Abs(V0MotherPdg)==22 && centrality>=30.0 && centrality<=50.0)
         {
           V0Daughter[0] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(0)); // This is how to get the daughter particles in AODs, apparently
           V0Daughter[1] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(1));

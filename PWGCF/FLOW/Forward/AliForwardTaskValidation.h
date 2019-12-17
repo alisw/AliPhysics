@@ -101,7 +101,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // This function is `Fatal` if no MC tracks are found
   AliForwardTaskValidation::Tracks GetMCTruthTracks();
 
-  AliForwardSettings fSettings;//!
+  AliForwardSettings fSettings;
 
  protected:
   /// The Holy Grail: Is this a valid event? To be read be following tasks

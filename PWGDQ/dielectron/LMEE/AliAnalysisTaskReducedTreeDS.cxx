@@ -1,3 +1,4 @@
+#include <TObject.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
@@ -19,6 +20,8 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
+#include "AliESDv0.h"
+#include "AliESDv0KineCuts.h"
 
 #include "AliVEvent.h"
 #include "AliVHeader.h"
@@ -39,16 +42,17 @@
 #include "AliAODMCHeader.h"
 #include "AliAODHeader.h"
 #include "AliAODEvent.h"
-#include "AliAODv0.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
+#include "AliAODv0.h"
+#include "AliAODv0KineCuts.h"
+
 #include "AliAODMCParticle.h"
 #include "AliAODInputHandler.h"
 #include "AliAODTracklets.h"
 #include "AliAnalysisUtils.h"
 
 #include "AliKFVertex.h"
-#include "AliDielectronPair.h"
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -78,6 +82,8 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fMinTPCNsigmaEleCut(-5.),
   fMaxTPCNsigmaEleCut(5.),
   fESDtrackCutsGlobalNoDCA(0x0),
+  fESDv0KineCuts(0x0),
+  fAODv0KineCuts(0x0),
   fTree(0x0),
   fPIDResponse(0x0),
   fFlowQnVectorMgr(0x0),
@@ -146,6 +152,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fTPCNCrossedRows(0),
   fTPCNFindableCluster(0),
   fChi2TPCConstrainedVsGlobal(0),
+  fTPCsignalN(0),
   fTPCsignal(0),
   fTPCNsigmaEl(0),
   fTPCNsigmaPi(0),
@@ -165,6 +172,9 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fTrackMCMomentum(0),
   fTrackMCProdVtx(0),
   fTrackMCGeneratorIndex(0),
+  fTrackMCIsPhysicalPrimary(0),
+  fTrackMCIsSecondaryFromMaterial(0),
+  fTrackMCIsSecondaryFromWeakDecay(0),
   fTrackMCIndex(0),
   fTrackMCPdgCode(0),
   fTrackMCMotherIndex(0),
@@ -172,17 +182,14 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fTrackMCFirstMotherIndex(0),
   fTrackMCFirstMotherPdgCode(0),
   fTrackMCFirstMotherMomentum(0),
+  fV0OnFly(0),
   fV0legMomentum(0),
   fV0legPin(0),
   fV0Lxy(0),
   fV0alpha(0),
   fV0qT(0),
-  fV0DCA(0),
-  fV0PointingAngle(0),
-  fV0Chi2(0),
+  fV0Candidate(0),
   fV0Mass(0),
-  fV0legDCAxy(0),
-  fV0legDCAz(0),
   fV0legPointOnITSLayer(0),
   fV0legSharedPointOnITSLayer(0),
   fV0legTPCNsigmaEl(0),
@@ -213,6 +220,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fMCProdVtx(0),
   fMCGeneratorIndex(0),
   fMCGeneratorName(0),
+  fMCIsPhysicalPrimary(0),
   fMCIndex(0),
   fMCPdgCode(0),
   fMCMotherIndex(0),
@@ -243,6 +251,11 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fESDtrackCutsGlobalNoDCA->SetMaxDCAToVertexXY(2.4);
   fESDtrackCutsGlobalNoDCA->SetMaxDCAToVertexZ(3.2);
   fESDtrackCutsGlobalNoDCA->SetDCAToVertex2D(kTRUE);
+
+  fESDv0KineCuts = new AliESDv0KineCuts();
+  fAODv0KineCuts = new AliAODv0KineCuts();
+  fESDv0KineCuts->SetMode(AliESDv0KineCuts::kPurity,AliESDv0KineCuts::kPbPb);
+  fAODv0KineCuts->SetMode(AliAODv0KineCuts::kPurity,AliAODv0KineCuts::kPbPb);
 
 }
 //_______________________________________________________________________________________________
@@ -253,6 +266,8 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fMinTPCNsigmaEleCut(-5.),
   fMaxTPCNsigmaEleCut(5.),
   fESDtrackCutsGlobalNoDCA(0x0),
+  fESDv0KineCuts(0x0),
+  fAODv0KineCuts(0x0),
   fTree(0x0),
   fPIDResponse(0x0),
   fFlowQnVectorMgr(0x0),
@@ -321,6 +336,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fTPCNCrossedRows(0),
   fTPCNFindableCluster(0),
   fChi2TPCConstrainedVsGlobal(0),
+  fTPCsignalN(0),
   fTPCsignal(0),
   fTPCNsigmaEl(0),
   fTPCNsigmaPi(0),
@@ -340,6 +356,9 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fTrackMCMomentum(0),
   fTrackMCProdVtx(0),
   fTrackMCGeneratorIndex(0),
+  fTrackMCIsPhysicalPrimary(0),
+  fTrackMCIsSecondaryFromMaterial(0),
+  fTrackMCIsSecondaryFromWeakDecay(0),
   fTrackMCIndex(0),
   fTrackMCPdgCode(0),
   fTrackMCMotherIndex(0),
@@ -347,17 +366,14 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fTrackMCFirstMotherIndex(0),
   fTrackMCFirstMotherPdgCode(0),
   fTrackMCFirstMotherMomentum(0),
+  fV0OnFly(0),
   fV0legMomentum(0),
   fV0legPin(0),
   fV0Lxy(0),
   fV0alpha(0),
   fV0qT(0),
-  fV0DCA(0),
-  fV0PointingAngle(0),
-  fV0Chi2(0),
+  fV0Candidate(0),
   fV0Mass(0),
-  fV0legDCAxy(0),
-  fV0legDCAz(0),
   fV0legPointOnITSLayer(0),
   fV0legSharedPointOnITSLayer(0),
   fV0legTPCNsigmaEl(0),
@@ -388,6 +404,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fMCProdVtx(0),
   fMCGeneratorIndex(0),
   fMCGeneratorName(0),
+  fMCIsPhysicalPrimary(0),
   fMCIndex(0),
   fMCPdgCode(0),
   fMCMotherIndex(0),
@@ -419,6 +436,11 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fESDtrackCutsGlobalNoDCA->SetMaxDCAToVertexZ(3.2);
   fESDtrackCutsGlobalNoDCA->SetDCAToVertex2D(kTRUE);
 
+  fESDv0KineCuts = new AliESDv0KineCuts();
+  fAODv0KineCuts = new AliAODv0KineCuts();
+  fESDv0KineCuts->SetMode(AliESDv0KineCuts::kPurity,AliESDv0KineCuts::kPbPb);
+  fAODv0KineCuts->SetMode(AliAODv0KineCuts::kPurity,AliAODv0KineCuts::kPbPb);
+
   DefineInput(0,TChain::Class());
   DefineOutput(1,TTree::Class());  // reduced information tree
 
@@ -427,6 +449,8 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
 AliAnalysisTaskReducedTreeDS::~AliAnalysisTaskReducedTreeDS()
 {
   delete fESDtrackCutsGlobalNoDCA;
+  delete fESDv0KineCuts;
+  delete fAODv0KineCuts;
 }
 //_______________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
@@ -504,6 +528,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fTPCNFindableCluster",&fTPCNFindableCluster);
   fTree->Branch("fChi2TPCConstrainedVsGlobal",&fChi2TPCConstrainedVsGlobal);
 
+  fTree->Branch("fTPCsignalN",&fTPCsignalN);
   fTree->Branch("fTPCsignal",&fTPCsignal);
   fTree->Branch("fTPCNsigmaEl",&fTPCNsigmaEl);
   fTree->Branch("fTPCNsigmaPi",&fTPCNsigmaPi);
@@ -527,6 +552,9 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fTrackMCMomentum",&fTrackMCMomentum);
   fTree->Branch("fTrackMCProdVtx",&fTrackMCProdVtx);
   fTree->Branch("fTrackMCGeneratorIndex",&fTrackMCGeneratorIndex);
+  fTree->Branch("fTrackMCIsPhysicalPrimary",&fTrackMCIsPhysicalPrimary);
+  fTree->Branch("fTrackMCIsSecondaryFromMaterial",&fTrackMCIsSecondaryFromMaterial);
+  fTree->Branch("fTrackMCIsSecondaryFromWeakDecay",&fTrackMCIsSecondaryFromWeakDecay);
   fTree->Branch("fTrackMCIndex",&fTrackMCIndex);
   fTree->Branch("fTrackMCPdgCode",&fTrackMCPdgCode);
   fTree->Branch("fTrackMCMotherIndex",&fTrackMCMotherIndex);
@@ -535,19 +563,16 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fTrackMCFirstMotherPdgCode",&fTrackMCFirstMotherPdgCode);
   fTree->Branch("fTrackMCFirstMotherMomentum",&fTrackMCFirstMotherMomentum);
 
+  fTree->Branch("fV0OnFly",&fV0OnFly);
   fTree->Branch("fV0legMomentum",&fV0legMomentum);
   fTree->Branch("fV0legPin",&fV0legPin);
 
   fTree->Branch("fV0Lxy",&fV0Lxy);
   fTree->Branch("fV0alpha",&fV0alpha);
   fTree->Branch("fV0qT",&fV0qT);
-  fTree->Branch("fV0DCA",&fV0DCA);
 
-  fTree->Branch("fV0PointingAngle",&fV0PointingAngle);
-  fTree->Branch("fV0Chi2",&fV0Chi2);
+  fTree->Branch("fV0Candidate",&fV0Candidate);
   fTree->Branch("fV0Mass",&fV0Mass);
-  fTree->Branch("fV0legDCAxy",&fV0legDCAxy);
-  fTree->Branch("fV0legDCAz",&fV0legDCAz);
   fTree->Branch("fV0legPointOnITSLayer",&fV0legPointOnITSLayer);
   fTree->Branch("fV0legSharedPointOnITSLayer",&fV0legSharedPointOnITSLayer);
 
@@ -583,6 +608,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fMCProdVtx",&fMCProdVtx);
   fTree->Branch("fMCGeneratorIndex",&fMCGeneratorIndex);
   fTree->Branch("fMCGeneratorName",&fMCGeneratorName);
+  fTree->Branch("fMCIsPhysicalPrimary",&fMCIsPhysicalPrimary);
   fTree->Branch("fMCIndex",&fMCIndex);
   fTree->Branch("fMCPdgCode",&fMCPdgCode);
   fTree->Branch("fMCMotherIndex",&fMCMotherIndex);
@@ -650,7 +676,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
   fIsBadTimeRangeTPC = fTimeRangeCut.CutEvent(InputEvent());
 
   if(fESDEvent)      fHasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
-  else if(fAODEvent) fHasMC = (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->MCEvent()   != 0x0);
+  else if(fAODEvent) fHasMC = (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->MCEvent() != 0x0);
 
   AliInfo(Form("fHasMC = %d",fHasMC));
 
@@ -748,11 +774,11 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     fNTrackTPC   = fAODEvent->GetNumberOfTPCTracks();
   }
 
+  Float_t DCAxy_PU = -999, DCAz_PU = -999, tgl = 0;
   fTPCpileupMultiplicity[0] = 0;
   fTPCpileupMultiplicity[1] = 0;
   fTPCpileupZ[0] = 0;
   fTPCpileupZ[1] = 0;
-  Float_t DCAxy_PU = -999, DCAz_PU = -999, tgl = 0;
   vector<Float_t> vec_puZ_pos;
   vector<Float_t> vec_puZ_neg;
   vec_puZ_pos.clear();
@@ -770,14 +796,10 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
         if(tgl > +0.1) vec_puZ_pos.push_back(esdtrack->GetZ());
         if(tgl < -0.1) vec_puZ_neg.push_back(esdtrack->GetZ());
       }
-
     }//end of track loop
-
   }//end of ESD
   else if(fAODEvent){
     for(Int_t itrack=0;itrack<Ntrack;itrack++){
-      //AliVTrack* track = dynamic_cast<AliVTrack*>(fEvent->GetTrack(itrack));
-      //AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
       AliAODTrack *aodtrack = (AliAODTrack*)fEvent->GetTrack(itrack);
       if(aodtrack->IsOn(AliVTrack::kITSin)) continue;
 
@@ -788,10 +810,8 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
         if(tgl > +0.1) vec_puZ_pos.push_back(av->GetZ());
         if(tgl < -0.1) vec_puZ_neg.push_back(av->GetZ());
       }
-
     }//end of track loop
   }//end of AOD
-
   fTPCpileupMultiplicity[0] = Int_t(vec_puZ_pos.size());
   fTPCpileupMultiplicity[1] = Int_t(vec_puZ_neg.size());
   fTPCpileupZ[0] = Median(vec_puZ_pos);
@@ -810,7 +830,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
   if(fESDEvent)      FillV0InfoESD();
   else if(fAODEvent) FillV0InfoAOD();
 
-  AliInfo(Form("fNSPDTracklet05 = %d , fNSPDTracklet10 = %d , fNTPCCluster = %d , fNTrackTPCout = %d , fNTrackTPC = %d",fNSPDTracklet05,fNSPDTracklet10,fNTPCCluster,fNTrackTPCout,fNTrackTPC));
+  AliInfo(Form("fCentralityV0M = %3.2f %% , fNSPDTracklet05 = %d , fNSPDTracklet10 = %d , fNTPCCluster = %d , fNTrackTPC = %d",fCentralityV0M,fNSPDTracklet05,fNSPDTracklet10,fNTPCCluster,fNTrackTPC));
 
   if(fHasMC) ProcessMC(option);
 
@@ -851,17 +871,15 @@ void AliAnalysisTaskReducedTreeDS::FillTrackInfo()
       if(status & AliVTrack::kTPCout) fNTrackTPCout++;
     }
 
-    //track->GetImpactParameters(DCAxy,DCAz);
-    if(TMath::Abs(DCAxy) > 1.) continue;
-    if(TMath::Abs(DCAz) > 3.) continue;
-
     if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron) < fMinTPCNsigmaEleCut) continue;//pre-select electrons to reduce data size.
     if(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron) > fMaxTPCNsigmaEleCut) continue;//pre-select electrons to reduce data size.
 
-    if(track->GetNcls(0) < 3)  continue;//minimum number of ITS cluster 3
-    if(track->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
-    if((Double_t)(track->GetTPCchi2()) / (Double_t)(track->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
-    if((Double_t)(track->GetITSchi2()) / (Double_t)(track->GetNcls(0)) > 5.) continue;//maximum chi2 per cluster ITS
+//    if(TMath::Abs(DCAxy) > 1.) continue;
+//    if(TMath::Abs(DCAz) > 3.) continue;
+//    if(track->GetNcls(0) < 3)  continue;//minimum number of ITS cluster 3
+//    if(track->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
+//    if((Double_t)(track->GetTPCchi2()) / (Double_t)(track->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
+//    if((Double_t)(track->GetITSchi2()) / (Double_t)(track->GetNcls(0)) > 5.) continue;//maximum chi2 per cluster ITS
 
     vector<Float_t> vec(3,0);
     vec[0] = track->Pt();
@@ -894,6 +912,7 @@ void AliAnalysisTaskReducedTreeDS::FillTrackInfo()
     fChi2TPCConstrainedVsGlobal.push_back(Chi2Global);
 
     //TPC PID info
+    fTPCsignalN.push_back(track->GetTPCsignalN());
     fTPCsignal.push_back(track->GetTPCsignal());
     fTPCNsigmaEl.push_back(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
     fTPCNsigmaPi.push_back(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
@@ -942,6 +961,9 @@ void AliAnalysisTaskReducedTreeDS::FillTrackInfo()
       Int_t pdg = p->PdgCode();
       Int_t genID = p->GetGeneratorIndex();
       fTrackMCGeneratorIndex.push_back(genID);
+      fTrackMCIsPhysicalPrimary.push_back(p->IsPhysicalPrimary());
+      fTrackMCIsSecondaryFromMaterial.push_back(p->IsSecondaryFromMaterial());
+      fTrackMCIsSecondaryFromWeakDecay.push_back(p->IsSecondaryFromWeakDecay());
       fTrackMCIndex.push_back(label);
       fTrackMCPdgCode.push_back(pdg);
 
@@ -999,7 +1021,7 @@ void AliAnalysisTaskReducedTreeDS::FillTrackInfo()
         fmvec[0] = -999;
         fmvec[1] = -999;
         fmvec[2] = -999;
-        fMCFirstMotherMomentum.push_back(fmvec);
+        fTrackMCFirstMotherMomentum.push_back(fmvec);
         fmvec.clear();
       }
     }//end of hasMC
@@ -1012,52 +1034,58 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoESD()
 {
   const AliVVertex *vVertex = fEvent->GetPrimaryVertex();
   AliKFVertex primaryVertexKF(*vVertex);
-  Double_t secVtx[3] = {primaryVertexKF.GetX(), primaryVertexKF.GetY(), primaryVertexKF.GetZ()};
+  //Double_t secVtx[3] = {primaryVertexKF.GetX(), primaryVertexKF.GetY(), primaryVertexKF.GetZ()};
   const Double_t Me  = TDatabasePDG::Instance()->GetParticle(11)->Mass();
   const Double_t Mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
   const Double_t Mp  = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  Double_t M1 = 0;
+  Double_t M2 = 0;
+  Double_t V0xyz[3] = {0,0,0};
+  Float_t Lxy = 0;
+
+  fESDv0KineCuts->SetEvent(InputEvent());
+  fESDv0KineCuts->SetPrimaryVertex(&primaryVertexKF);
 
   //FillV0Info
   const Int_t Nv0 = fEvent->GetNumberOfV0s();  
   for(Int_t iv0=0;iv0<Nv0;iv0++){
     AliESDv0 *v0 = (AliESDv0*)fESDEvent->GetV0(iv0);
 
-    if(!v0->GetOnFlyStatus()) continue;//select v0 reconstructed on the fly.
+    //if(!v0->GetOnFlyStatus()) continue;//select v0 reconstructed on the fly.
 
-    if(v0->PtArmV0() > 0.3) continue;//qT < 0.3
-    if(TMath::Abs(v0->AlphaV0()) > 1.0) continue;//|alpha| < 1.0
-    if(v0->GetV0CosineOfPointingAngle(secVtx[0],secVtx[1],secVtx[2]) < 0.998) continue;
-    if(v0->GetRr() < 2. || 60. < v0->GetRr()) continue;//in cm
+    //if(v0->PtArmV0() > 0.3) continue;//qT < 0.3
+    //if(TMath::Abs(v0->AlphaV0()) > 1.0) continue;//|alpha| < 1.0
+    //if(v0->GetV0CosineOfPointingAngle(secVtx[0],secVtx[1],secVtx[2]) < 0.998) continue;
+    //if(v0->GetRr() < 2. || 60. < v0->GetRr()) continue;//in cm
 
-    Float_t dca = v0->GetDcaV0Daughters();
-    if(dca > 0.25) continue;
+    //Float_t dca = v0->GetDcaV0Daughters();
+    //if(dca > 0.25) continue;
 
     AliESDtrack* legPos = fESDEvent->GetTrack(v0->GetPindex());
     AliESDtrack* legNeg = fESDEvent->GetTrack(v0->GetNindex());
 
     if(legPos->Charge() * legNeg->Charge() > 0) continue;//reject same sign pair
 
-    if(legPos->Charge() < 0 && legNeg->Charge() >0){
-      AliInfo("charge is swapped.");
-      legPos = fESDEvent->GetTrack(v0->GetNindex());
-      legNeg = fESDEvent->GetTrack(v0->GetPindex());
-    }
+    //if(legPos->Charge() < 0 && legNeg->Charge() >0){
+    //  //AliInfo("charge is swapped.");
+    //  legPos = fESDEvent->GetTrack(v0->GetNindex());
+    //  legNeg = fESDEvent->GetTrack(v0->GetPindex());
+    //}
 
     if(legPos->Pt() < fMinPtCut) continue;
     if(legNeg->Pt() < fMinPtCut) continue;
+    if(TMath::Abs(legPos->Eta()) > fMaxEtaCut) continue;
+    if(TMath::Abs(legNeg->Eta()) > fMaxEtaCut) continue;
 
     Float_t DCAxy_leg = -999, DCAz_leg = -999;
     legPos->GetImpactParameters(DCAxy_leg,DCAz_leg);
     if(TMath::Abs(DCAxy_leg) > 1.) continue;
-    if(TMath::Abs(DCAz_leg) > 3.) continue;
+    if(TMath::Abs(DCAz_leg)  > 3.) continue;
 
     DCAxy_leg = -999; DCAz_leg = -999;
     legNeg->GetImpactParameters(DCAxy_leg,DCAz_leg);
     if(TMath::Abs(DCAxy_leg) > 1.) continue;
-    if(TMath::Abs(DCAz_leg) > 3.) continue;
-
-    if(TMath::Abs(legPos->Eta()) > fMaxEtaCut) continue;
-    if(TMath::Abs(legNeg->Eta()) > fMaxEtaCut) continue;
+    if(TMath::Abs(DCAz_leg)  > 3.) continue;
 
     if(legPos->GetKinkIndex(0) != 0) continue;
     if(legNeg->GetKinkIndex(0) != 0) continue;
@@ -1069,13 +1097,15 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoESD()
 
     if((Double_t)(legPos->GetTPCchi2()) / (Double_t)(legPos->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
     if((Double_t)(legNeg->GetTPCchi2()) / (Double_t)(legNeg->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
-    if(legPos->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
-    if(legNeg->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
+    //if(legPos->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
+    //if(legNeg->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
+    if(legPos->GetTPCCrossedRows() < 70) continue;//minimum number of TPC crossed rows 70
+    if(legNeg->GetTPCCrossedRows() < 70) continue;//minimum number of TPC crossed rows 70
     if(!(legPos->GetStatus() & AliVTrack::kTPCrefit)) continue;
     if(!(legNeg->GetStatus() & AliVTrack::kTPCrefit)) continue;
 
-    Float_t ratio_pos = legPos->GetTPCNclsF() > 0 ? (Float_t)legPos->GetTPCCrossedRows() / (Float_t)legPos->GetTPCNclsF() : -1;
-    Float_t ratio_neg = legNeg->GetTPCNclsF() > 0 ? (Float_t)legNeg->GetTPCCrossedRows() / (Float_t)legNeg->GetTPCNclsF() : -1;
+    Float_t ratio_pos = legPos->GetTPCNclsF() > 0 ? (Float_t)legPos->GetTPCCrossedRows() / (Float_t)legPos->GetTPCNclsF() : 1.0;
+    Float_t ratio_neg = legNeg->GetTPCNclsF() > 0 ? (Float_t)legNeg->GetTPCCrossedRows() / (Float_t)legNeg->GetTPCNclsF() : 1.0;
 
     if(ratio_pos < 0.8) continue;
     if(ratio_neg < 0.8) continue;
@@ -1085,21 +1115,43 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoESD()
     if(fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron) > fMaxTPCNsigmaEleCut) continue;
     if(fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron) > fMaxTPCNsigmaEleCut) continue;
 
-    //recalculate V0 info
-    AliKFParticle *kfp_Gamma      = CreateMotherParticle(legPos,legNeg,  11,  11);
-    AliKFParticle *kfp_K0S        = CreateMotherParticle(legPos,legNeg, 211, 211);
-    AliKFParticle *kfp_Lambda     = CreateMotherParticle(legPos,legNeg,2212, 211);
-    AliKFParticle *kfp_AntiLambda = CreateMotherParticle(legPos,legNeg, 211,2212);
+    Int_t pdgV0 = 0, pdgP = 0, pdgN = 0;
+    if(!fESDv0KineCuts->ProcessV0(v0,pdgV0,pdgP,pdgN)) continue;
 
-    Double_t chi2_Gamma      = kfp_Gamma     ->GetChi2() / kfp_Gamma     ->GetNDF();
-    Double_t chi2_K0S        = kfp_K0S       ->GetChi2() / kfp_K0S       ->GetNDF();
-    Double_t chi2_Lambda     = kfp_Lambda    ->GetChi2() / kfp_Lambda    ->GetNDF();
-    Double_t chi2_AntiLambda = kfp_AntiLambda->GetChi2() / kfp_AntiLambda->GetNDF();
+    if(pdgV0 == 22 && TMath::Abs(pdgP) == 11 && TMath::Abs(pdgN) == 11){
+      M1 = Me;
+      M2 = Me;
+    }
+    else if(pdgV0 == 310 && TMath::Abs(pdgP) == 211 && TMath::Abs(pdgN) == 211){
+      M1 = Mpi;
+      M2 = Mpi;
+    }
+    else if(pdgV0 == 3122 && (TMath::Abs(pdgP) == 2212 || TMath::Abs(pdgP) == 211) && (TMath::Abs(pdgN) == 211 || TMath::Abs(pdgN) == 2212)){
+      M1 = Mp;
+      M2 = Mpi;
 
-    if(chi2_Gamma      > 10
-    && chi2_K0S        > 10
-    && chi2_Lambda     > 10
-    && chi2_AntiLambda > 10) continue;
+      if(pdgP == -211 && pdgN == 2212){//swapped
+        legPos = fESDEvent->GetTrack(v0->GetNindex());//proton
+        legNeg = fESDEvent->GetTrack(v0->GetPindex());//pi-
+        M1 = Mpi;
+        M2 = Mp;
+      }
+    }
+    else if(pdgV0 == -3122 && (TMath::Abs(pdgP) == 2212 || TMath::Abs(pdgP) == 211) && (TMath::Abs(pdgN) == 211 || TMath::Abs(pdgN) == 2212)){
+      M1 = Mpi;
+      M2 = Mp;
+
+      if(pdgP == -2212 && pdgN == 211){//swapped
+        legPos = fESDEvent->GetTrack(v0->GetNindex());//pi+
+        legNeg = fESDEvent->GetTrack(v0->GetPindex());//anti-proton
+        M1 = Mp;
+        M2 = Mpi;
+      }
+    }
+    else continue;
+
+    fV0OnFly.push_back(v0->GetOnFlyStatus());
+    fV0Candidate.push_back(pdgV0);
 
     vector<vector<Float_t>> legP_vec_tmp;//0 for legPos, 1 for legNeg
     vector<Float_t>legPos_vec(3,0);
@@ -1115,16 +1167,16 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoESD()
     fV0legMomentum.push_back(legP_vec_tmp);
     legP_vec_tmp.clear();
 
-    fV0DCA.push_back(dca);
-    fV0Lxy.push_back(v0->GetRr());
+    v0->GetXYZ(V0xyz[0],V0xyz[1],V0xyz[2]);
+    Lxy = TMath::Sqrt(V0xyz[0]*V0xyz[0] + V0xyz[1]*V0xyz[1]);
+    fV0Lxy.push_back(Lxy);
+    //fV0Lxy.push_back(v0->GetRr());
     
     vector<Float_t> legPin_tmp(2,0);
     legPin_tmp[0] = legPos->GetTPCmomentum();
     legPin_tmp[1] = legNeg->GetTPCmomentum();
     fV0legPin.push_back(legPin_tmp);
     legPin_tmp.clear();
-
-    fV0PointingAngle.push_back(v0->GetV0CosineOfPointingAngle(secVtx[0],secVtx[1],secVtx[2]));
 
     fV0alpha.push_back(v0->AlphaV0());
     fV0qT.push_back(v0->PtArmV0());
@@ -1165,30 +1217,7 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoESD()
     fV0legSharedPointOnITSLayer.push_back(legSharedPointOnITS_tmp);
     legSharedPointOnITS_tmp.clear();
 
-    vector<Float_t> chi2_tmp(4,0);
-    chi2_tmp[0] = chi2_Gamma;
-    chi2_tmp[1] = chi2_K0S;
-    chi2_tmp[2] = chi2_Lambda;
-    chi2_tmp[3] = chi2_AntiLambda;
-    fV0Chi2.push_back(chi2_tmp);
-    chi2_tmp.clear();
-
-    vector<Float_t> mass_tmp(4,0);
-    mass_tmp[0] = v0->GetEffMassExplicit(Me,Me);
-    mass_tmp[1] = v0->GetEffMassExplicit(Mpi,Mpi);
-    mass_tmp[2] = v0->GetEffMassExplicit(Mp,Mpi);
-    mass_tmp[3] = v0->GetEffMassExplicit(Mpi,Mp);
-    fV0Mass.push_back(mass_tmp);
-    mass_tmp.clear();
-
-    vector<Float_t> legDCAxy_tmp(2,999);
-    vector<Float_t> legDCAz_tmp(2,999);
-    legPos->GetImpactParameters(legDCAxy_tmp[0],legDCAz_tmp[0]);
-    legNeg->GetImpactParameters(legDCAxy_tmp[1],legDCAz_tmp[1]);
-    fV0legDCAxy.push_back(legDCAxy_tmp);
-    fV0legDCAz.push_back(legDCAz_tmp);
-    legDCAxy_tmp.clear();
-    legDCAz_tmp.clear();
+    fV0Mass.push_back(v0->GetEffMassExplicit(M1,M2));
 
     vector<Float_t> v0_leg_TPCNsigmaEl_tmp(2,-999);//0 for legPos, 1 for legNeg
     v0_leg_TPCNsigmaEl_tmp[0] = fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron);
@@ -1421,47 +1450,54 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoAOD()
 {
   const AliVVertex *vVertex = fEvent->GetPrimaryVertex();
   AliKFVertex primaryVertexKF(*vVertex);
-  Double_t secVtx[3] = {primaryVertexKF.GetX(), primaryVertexKF.GetY(), primaryVertexKF.GetZ()};
+  //Double_t secVtx[3] = {primaryVertexKF.GetX(), primaryVertexKF.GetY(), primaryVertexKF.GetZ()};
+
+  fAODv0KineCuts->SetEvent(InputEvent());
+  fAODv0KineCuts->SetPrimaryVertex(&primaryVertexKF);
+
+  const Double_t Me  = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+  const Double_t Mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  const Double_t Mp  = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  Double_t M1 = 0;
+  Double_t M2 = 0;
 
   const Int_t Nv0 = fEvent->GetNumberOfV0s();  
   for(Int_t iv0=0;iv0<Nv0;iv0++){
     AliAODv0 *v0 = (AliAODv0*)fAODEvent->GetV0(iv0);
 
-    if(!v0->GetOnFlyStatus()) continue;//select v0 reconstructed on the fly.
+    //if(!v0->GetOnFlyStatus()) continue;//select v0 reconstructed on the fly.
 
-    if(v0->PtArmV0() > 0.3) continue;//qT < 0.3
-    if(TMath::Abs(v0->AlphaV0()) > 1.0) continue;//|alpha| < 1.0
-    if(v0->CosPointingAngle(secVtx) < 0.998) continue;
+    //if(v0->PtArmV0() > 0.3) continue;//qT < 0.3
+    //if(TMath::Abs(v0->AlphaV0()) > 1.0) continue;//|alpha| < 1.0
+    //if(v0->CosPointingAngle(secVtx) < 0.998) continue;
+    //if(v0->RadiusV0() < 2. || 60. < v0->RadiusV0()) continue;//in cm
+    //Float_t dca = v0->DcaV0Daughters();
+    //if(dca > 0.25) continue;
 
-    Float_t dca = v0->DcaV0Daughters();
-    if(dca > 0.25) continue;
-
-    if(v0->RadiusV0() < 2. || 60. < v0->RadiusV0()) continue;//in cm
-
-    if(v0->ChargeProng(0) * v0->ChargeProng(1) > 0) continue;//reject same sign pair
     AliAODTrack *legPos = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(0));
     AliAODTrack *legNeg = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(1));
-    if(v0->ChargeProng(0) < 0 && v0->ChargeProng(1) > 0){//swap charge sign //index0 is expect to be positive leg, index1 to be negative.//protection
-      AliInfo("charge is swapped.");
-      legPos = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(1));
-      legNeg = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(0));
-    }
+    if(legPos->Charge() * legNeg->Charge() > 0) continue;//reject same sign pair
+
+    //if(legPos->Charge() < 0 && legNeg->Charge() > 0){//swap charge sign //index0 is expect to be positive leg, index1 to be negative.//protection
+    //  //AliInfo("charge is swapped.");
+    //  legPos = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(1));
+    //  legNeg = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(0));
+    //}
 
     if(legPos->Pt() < fMinPtCut) continue;
     if(legNeg->Pt() < fMinPtCut) continue;
+    if(TMath::Abs(legPos->Eta()) > fMaxEtaCut) continue;
+    if(TMath::Abs(legNeg->Eta()) > fMaxEtaCut) continue;
 
     Float_t DCAxy_leg = -999, DCAz_leg = -999;
     legPos->GetImpactParameters(DCAxy_leg,DCAz_leg);
     if(TMath::Abs(DCAxy_leg) > 1.) continue;
-    if(TMath::Abs(DCAz_leg) > 3.) continue;
+    if(TMath::Abs(DCAz_leg)  > 3.) continue;
 
     DCAxy_leg = -999; DCAz_leg = -999;
     legNeg->GetImpactParameters(DCAxy_leg,DCAz_leg);
     if(TMath::Abs(DCAxy_leg) > 1.) continue;
-    if(TMath::Abs(DCAz_leg) > 3.) continue;
-
-    if(TMath::Abs(legPos->Eta()) > fMaxEtaCut) continue;
-    if(TMath::Abs(legNeg->Eta()) > fMaxEtaCut) continue;
+    if(TMath::Abs(DCAz_leg)  > 3.) continue;
 
     AliAODVertex *avp = (AliAODVertex*)legPos->GetProdVertex();
     AliAODVertex *avn = (AliAODVertex*)legNeg->GetProdVertex();
@@ -1475,13 +1511,15 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoAOD()
 
     if((Double_t)(legPos->GetTPCchi2()) / (Double_t)(legPos->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
     if((Double_t)(legNeg->GetTPCchi2()) / (Double_t)(legNeg->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
-    if(legPos->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
-    if(legNeg->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
+    //if(legPos->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
+    //if(legNeg->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
+    if(legPos->GetTPCCrossedRows() < 70) continue;//minimum number of TPC crossed rows 70
+    if(legNeg->GetTPCCrossedRows() < 70) continue;//minimum number of TPC crossed rows 70
     if(!(legPos->GetStatus() & AliVTrack::kTPCrefit)) continue;
     if(!(legNeg->GetStatus() & AliVTrack::kTPCrefit)) continue;
 
-    Float_t ratio_pos = legPos->GetTPCNclsF() > 0 ? (Float_t)legPos->GetTPCCrossedRows() / (Float_t)legPos->GetTPCNclsF() : -1;
-    Float_t ratio_neg = legNeg->GetTPCNclsF() > 0 ? (Float_t)legNeg->GetTPCCrossedRows() / (Float_t)legNeg->GetTPCNclsF() : -1;
+    Float_t ratio_pos = legPos->GetTPCNclsF() > 0 ? (Float_t)legPos->GetTPCCrossedRows() / (Float_t)legPos->GetTPCNclsF() : 1.0;
+    Float_t ratio_neg = legNeg->GetTPCNclsF() > 0 ? (Float_t)legNeg->GetTPCCrossedRows() / (Float_t)legNeg->GetTPCNclsF() : 1.0;
 
     if(ratio_pos < 0.8) continue;
     if(ratio_neg < 0.8) continue;
@@ -1491,20 +1529,45 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoAOD()
     if(fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron) > fMaxTPCNsigmaEleCut) continue;
     if(fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron) > fMaxTPCNsigmaEleCut) continue;
 
-    AliKFParticle *kfp_Gamma      = CreateMotherParticle(legPos,legNeg,  11,  11);
-    AliKFParticle *kfp_K0S        = CreateMotherParticle(legPos,legNeg, 211, 211);
-    AliKFParticle *kfp_Lambda     = CreateMotherParticle(legPos,legNeg,2212, 211);
-    AliKFParticle *kfp_AntiLambda = CreateMotherParticle(legPos,legNeg, 211,2212);
+    Int_t pdgV0 = 0, pdgP = 0, pdgN = 0;
+    if(!fAODv0KineCuts->ProcessV0(v0,pdgV0,pdgP,pdgN)) continue;
 
-    Double_t chi2_Gamma      = kfp_Gamma     ->GetChi2() / kfp_Gamma     ->GetNDF();
-    Double_t chi2_K0S        = kfp_K0S       ->GetChi2() / kfp_K0S       ->GetNDF();
-    Double_t chi2_Lambda     = kfp_Lambda    ->GetChi2() / kfp_Lambda    ->GetNDF();
-    Double_t chi2_AntiLambda = kfp_AntiLambda->GetChi2() / kfp_AntiLambda->GetNDF();
+    if(pdgV0 == 22 && TMath::Abs(pdgP) == 11 && TMath::Abs(pdgN) == 11){
+      M1 = Me;
+      M2 = Me;
+    }
+    else if(pdgV0 == 310 && TMath::Abs(pdgP) == 211 && TMath::Abs(pdgN) == 211){
+      M1 = Mpi;
+      M2 = Mpi;
+    }
+    else if(pdgV0 == 3122 && (TMath::Abs(pdgP) == 2212 || TMath::Abs(pdgP) == 211) && (TMath::Abs(pdgN) == 211 || TMath::Abs(pdgN) == 2212)){
+      M1 = Mp;
+      M2 = Mpi;
 
-    if(chi2_Gamma      > 10
-    && chi2_K0S        > 10
-    && chi2_Lambda     > 10
-    && chi2_AntiLambda > 10) continue;
+      if(pdgP == -211 && pdgN == 2212){//swapped
+        legPos = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(1));//pi+
+        legNeg = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(0));//anti-proton
+        M1 = Mpi;
+        M2 = Mp;
+      }
+    }
+    else if(pdgV0 == -3122 && (TMath::Abs(pdgP) == 2212 || TMath::Abs(pdgP) == 211) && (TMath::Abs(pdgN) == 211 || TMath::Abs(pdgN) == 2212)){
+      M1 = Mpi;
+      M2 = Mp;
+
+      if(pdgP == -2212 && pdgN == 211){//swapped
+        legPos = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(1));//pi-
+        legNeg = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(0));//proton
+        M1 = Mp;
+        M2 = Mpi;
+      }
+    }
+    else continue;
+
+    //AliInfo(Form("Mpos = %e GeV/c2 , Mneg = %e GeV/c2",M1,M2));
+
+    fV0OnFly.push_back(v0->GetOnFlyStatus());
+    fV0Candidate.push_back(pdgV0);
 
     vector<vector<Float_t>> legP_vec_tmp;//0 for legPos, 1 for legNeg
     vector<Float_t>legPos_vec(3,0);
@@ -1520,7 +1583,6 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoAOD()
     fV0legMomentum.push_back(legP_vec_tmp);
     legP_vec_tmp.clear();
 
-    fV0DCA.push_back(dca);
     fV0Lxy.push_back(v0->RadiusV0());
     
     vector<Float_t> legPin_tmp(2,0);
@@ -1528,8 +1590,6 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoAOD()
     legPin_tmp[1] = legNeg->GetTPCmomentum();
     fV0legPin.push_back(legPin_tmp);
     legPin_tmp.clear();
-
-    fV0PointingAngle.push_back(v0->CosPointingAngle(secVtx));
 
     fV0alpha.push_back(v0->AlphaV0());
     fV0qT.push_back(v0->PtArmV0());
@@ -1570,30 +1630,7 @@ void AliAnalysisTaskReducedTreeDS::FillV0InfoAOD()
     fV0legSharedPointOnITSLayer.push_back(legSharedPointOnITS_tmp);
     legSharedPointOnITS_tmp.clear();
 
-    vector<Float_t> chi2_tmp(4,0);
-    chi2_tmp[0] = chi2_Gamma;
-    chi2_tmp[1] = chi2_K0S;
-    chi2_tmp[2] = chi2_Lambda;
-    chi2_tmp[3] = chi2_AntiLambda;
-    fV0Chi2.push_back(chi2_tmp);
-    chi2_tmp.clear();
-
-    vector<Float_t> mass_tmp(4,0);
-    mass_tmp[0] = v0->InvMass2Prongs(0,1,11,11);
-    mass_tmp[1] = v0->MassK0Short();
-    mass_tmp[2] = v0->MassLambda();
-    mass_tmp[3] = v0->MassAntiLambda();
-    fV0Mass.push_back(mass_tmp);
-    mass_tmp.clear();
-
-    vector<Float_t> legDCAxy_tmp(2,999);
-    vector<Float_t> legDCAz_tmp(2,999);
-    legPos->GetImpactParameters(legDCAxy_tmp[0],legDCAz_tmp[0]);
-    legNeg->GetImpactParameters(legDCAxy_tmp[1],legDCAz_tmp[1]);
-    fV0legDCAxy.push_back(legDCAxy_tmp);
-    fV0legDCAz.push_back(legDCAz_tmp);
-    legDCAxy_tmp.clear();
-    legDCAz_tmp.clear();
+    fV0Mass.push_back(v0->InvMass2Prongs(0,1,TMath::Abs(pdgP),TMath::Abs(pdgN)));
 
     vector<Float_t> v0_leg_TPCNsigmaEl_tmp(2,-999);//0 for legPos, 1 for legNeg
     v0_leg_TPCNsigmaEl_tmp[0] = fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron);
@@ -1828,7 +1865,7 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
   fMCVertex[0] = MCvertex->GetX();//true vertex
   fMCVertex[1] = MCvertex->GetY();//true vertex
   fMCVertex[2] = MCvertex->GetZ();//true vertex
-  AliInfo(Form("MC vertex Z = %f (cm)",fMCVertex[2]));
+  //AliInfo(Form("MC vertex Z = %f (cm)",fMCVertex[2]));
 
   Int_t pdg = -1;
   Float_t pT = 0, eta = 0, phi = 0;
@@ -1880,19 +1917,12 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
     eta = p->Eta();//pseudo-rapidity
     phi = p->Phi();
     genID = p->GetGeneratorIndex();
-    //printf("   MC i = %d , genID = %d , pdg = %d , mother index = %d , first mother index = %d , pT = %f GeV/c , eta = %f , phi = %f rad\n",itrack,genID,pdg,p->GetMother(),GetFirstMother(p),pT,eta,phi);
+    //printf("   MC i = %d , genID = %d , pdg = %d , IsPhysicalPrimary() = %d , mother index = %d , first mother index = %d , pT = %f GeV/c , eta = %f , phi = %f rad\n",itrack,genID,pdg,p->IsPhysicalPrimary(),p->GetMother(),GetFirstMother(p),pT,eta,phi);
 
     //AliAODMCParticle *aodp = (AliAODMCParticle*)fMCEvent->GetTrack(itrack);
-    //printf("AODMC i = %d , genID = %d , pdg = %d , mother index = %d , first mother index = %d , pT = %f GeV/c , eta = %f , phi = %f rad\n",itrack,aodp->GetGeneratorIndex(),aodp->PdgCode(),aodp->GetMother(),GetFirstMother(aodp),aodp->Pt(),aodp->Eta(),aodp->Phi());
+    //printf("AODMC i = %d , genID = %d , pdg = %d , IsPhysicalPrimary() = %d , mother index = %d , first mother index = %d , pT = %f GeV/c , eta = %f , phi = %f rad\n",itrack,aodp->GetGeneratorIndex(),aodp->PdgCode(),aodp->IsPhysicalPrimary(),aodp->GetMother(),GetFirstMother(aodp),aodp->Pt(),aodp->Eta(),aodp->Phi());
 
     if(TMath::Abs(pdg) != 11) continue;//select only electrons
-
-    //Double_t dx = p->Xv() - fMCVertex[0];
-    //Double_t dy = p->Yv() - fMCVertex[1];
-    ////Double_t dz = p->Zv() - fMCVertex[2];
-    //Double_t R   = TMath::Sqrt(dx*dx + dy*dy);
-    ////Double_t Rho = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
-    //if(R > 1.) continue;//select electrons from primary vertex.
 
     if(!IsPrimaryElectron(p)) continue;
 
@@ -1911,6 +1941,7 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
     vec.clear();
 
     fMCGeneratorIndex.push_back(genID);
+    fMCIsPhysicalPrimary.push_back(p->IsPhysicalPrimary());
     fMCIndex.push_back(itrack);
     fMCPdgCode.push_back(pdg);//11 or -11
 
@@ -1989,15 +2020,15 @@ Bool_t AliAnalysisTaskReducedTreeDS::IsEWBoson(AliVParticle *p)
   Int_t mother_pdg = mp->PdgCode();
 
   if(mother_pdg == 22){
-    AliInfo("mother is photon. return kTRUE.");
+    //AliInfo("mother is photon. return kTRUE.");
     return kTRUE;
   }
   else if(mother_pdg == 23){
-    AliInfo("mother is Z boson. return kTRUE.");
+    //AliInfo("mother is Z boson. return kTRUE.");
     return kTRUE;
   }
   else if(mother_pdg == 24){
-    AliInfo("mother is W boson. return kTRUE.");
+    //AliInfo("mother is W boson. return kTRUE.");
     return kTRUE;
   }
   return kFALSE;
@@ -2017,15 +2048,14 @@ Bool_t AliAnalysisTaskReducedTreeDS::IsLF(AliVParticle *p)
   AliMCParticle *mp = (AliMCParticle*)fMCEvent->GetTrack(mother_index);
   Int_t mother_pdg = mp->PdgCode();
 
-  Int_t first_mother_index = GetFirstMother(p);
-  Int_t first_mother_pdg = 0;
-
-  if(mother_index != first_mother_index) return kFALSE;//reject vector meson->pi0->e
-
-  if(first_mother_index > -1){
-    AliMCParticle *fmp = (AliMCParticle*)fMCEvent->GetTrack(first_mother_index);
-    first_mother_pdg = fmp->PdgCode();
-  }
+//  Int_t first_mother_index = GetFirstMother(p);
+//  Int_t first_mother_pdg = 0;
+//
+//  if(mother_index != first_mother_index) return kFALSE;//reject vector meson->pi0->e
+//  if(first_mother_index > -1){
+//    AliMCParticle *fmp = (AliMCParticle*)fMCEvent->GetTrack(first_mother_index);
+//    first_mother_pdg = fmp->PdgCode();
+//  }
 
   //Double_t dx = mp->Xv() - fMCVertex[0];
   //Double_t dy = mp->Yv() - fMCVertex[1];
@@ -2084,7 +2114,7 @@ Bool_t AliAnalysisTaskReducedTreeDS::IsSemileptonicDecayFromHF(AliVParticle *p)
       //AliInfo(Form("Bottom baryon %d is matched at Rxy = %e. return kTRUE.",mother_pdg,R));
       return kTRUE;
     }
-    if(q1==4 || q2==4 || q3==5){
+    if(q1==4 || q2==4 || q3==4){
       //AliInfo(Form("Charmed baryon %d is matched at Rxy = %e. return kTRUE.",mother_pdg,R));
       return kTRUE;
     }
@@ -2096,11 +2126,11 @@ Bool_t AliAnalysisTaskReducedTreeDS::IsSemileptonicDecayFromHF(AliVParticle *p)
 
     Int_t q1 = str_q1.Atoi();
     Int_t q2 = str_q2.Atoi();
-    if(q1==5 ^ q2==5){
+    if((q1==5) ^ (q2==5)){
       //AliInfo(Form("Bottom meson %d is matched at Rxy = %e. return kTRUE.",mother_pdg,R));
       return kTRUE;
     }
-    if(q1==4 ^ q2==4){
+    if((q1==4) ^ (q2==4)){
       //AliInfo(Form("Charmed meson %d is matched at Rxy = %e. return kTRUE.",mother_pdg,R));
       return kTRUE;
     }
@@ -2181,7 +2211,7 @@ Double_t AliAnalysisTaskReducedTreeDS::PhivPair(AliAODv0 *v0, Float_t Bz)
     p2.SetXYZ(v0->MomNegX(),v0->MomNegY(),v0->MomNegZ());
   }
   else{//inverted
-    AliInfo("charge is swapped.");
+    //AliInfo("charge is swapped.");
     p2.SetXYZ(v0->MomPosX(),v0->MomPosY(),v0->MomPosZ());
     p1.SetXYZ(v0->MomNegX(),v0->MomNegY(),v0->MomNegZ());
   }
@@ -2222,6 +2252,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
   fTPCNFindableCluster.clear();
   fChi2TPCConstrainedVsGlobal.clear();
 
+  fTPCsignalN.clear();
   fTPCsignal.clear();
   fTPCNsigmaEl.clear();
   fTPCNsigmaPi.clear();
@@ -2244,6 +2275,9 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
   fTrackMCMomentum.clear();
   fTrackMCProdVtx.clear();
   fTrackMCGeneratorIndex.clear();
+  fTrackMCIsPhysicalPrimary.clear();
+  fTrackMCIsSecondaryFromMaterial.clear();
+  fTrackMCIsSecondaryFromWeakDecay.clear();
   fTrackMCIndex.clear();
   fTrackMCPdgCode.clear();
   fTrackMCMotherIndex.clear();
@@ -2253,17 +2287,14 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
   fTrackMCFirstMotherMomentum.clear();
 
   //clear V0 variables
+  fV0OnFly.clear();
   fV0legMomentum.clear();
   fV0legPin.clear();
   fV0Lxy.clear();
   fV0alpha.clear();
   fV0qT.clear();
-  fV0DCA.clear();
-  fV0PointingAngle.clear();
-  fV0Chi2.clear();
+  fV0Candidate.clear();
   fV0Mass.clear();
-  fV0legDCAxy.clear();
-  fV0legDCAz.clear();
   fV0legPointOnITSLayer.clear();
   fV0legSharedPointOnITSLayer.clear();
   fV0legTPCNsigmaEl.clear();
@@ -2296,6 +2327,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
   fMCProdVtx.clear();
   fMCGeneratorIndex.clear();
   fMCGeneratorName.clear();
+  fMCIsPhysicalPrimary.clear();
   fMCIndex.clear();
   fMCPdgCode.clear();
   fMCMotherIndex.clear();
@@ -2328,6 +2360,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   vector<Int_t>().swap(fTPCNFindableCluster);
   vector<Float_t>().swap(fChi2TPCConstrainedVsGlobal);
 
+  vector<Int_t>().swap(fTPCsignalN);
   vector<Float_t>().swap(fTPCsignal);
   vector<Float_t>().swap(fTPCNsigmaEl);
   vector<Float_t>().swap(fTPCNsigmaPi);
@@ -2351,6 +2384,9 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   vector<vector<Float_t>>().swap(fTrackMCMomentum);
   vector<vector<Float_t>>().swap(fTrackMCProdVtx);
   vector<Int_t>().swap(fTrackMCGeneratorIndex);
+  vector<Bool_t>().swap(fTrackMCIsPhysicalPrimary);
+  vector<Bool_t>().swap(fTrackMCIsSecondaryFromMaterial);
+  vector<Bool_t>().swap(fTrackMCIsSecondaryFromWeakDecay);
   vector<Int_t>().swap(fTrackMCIndex);
   vector<Int_t>().swap(fTrackMCPdgCode);
   vector<Int_t>().swap(fTrackMCMotherIndex);
@@ -2360,17 +2396,14 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   vector<vector<Float_t>>().swap(fTrackMCFirstMotherMomentum);
 
   //V0 info
+  vector<Bool_t>().swap(fV0OnFly);
   vector<vector<vector<Float_t>>>().swap(fV0legMomentum);
   vector<vector<Float_t>>().swap(fV0legPin);
   vector<Float_t>().swap(fV0Lxy);
   vector<Float_t>().swap(fV0alpha);
   vector<Float_t>().swap(fV0qT);
-  vector<Float_t>().swap(fV0DCA);
-  vector<Float_t>().swap(fV0PointingAngle);
-  vector<vector<Float_t>>().swap(fV0Chi2);
-  vector<vector<Float_t>>().swap(fV0Mass);
-  vector<vector<Float_t>>().swap(fV0legDCAxy);
-  vector<vector<Float_t>>().swap(fV0legDCAz);
+  vector<Int_t>().swap(fV0Candidate);
+  vector<Float_t>().swap(fV0Mass);
   vector<vector<vector<Bool_t>>>().swap(fV0legPointOnITSLayer);
   vector<vector<vector<Bool_t>>>().swap(fV0legSharedPointOnITSLayer);
   vector<vector<Float_t>>().swap(fV0legTPCNsigmaEl);
@@ -2404,6 +2437,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   vector<vector<Float_t>>().swap(fMCProdVtx);
   vector<Int_t>().swap(fMCGeneratorIndex);
   vector<TString>().swap(fMCGeneratorName);
+  vector<Bool_t>().swap(fMCIsPhysicalPrimary);
   vector<Int_t>().swap(fMCIndex);
   vector<Int_t>().swap(fMCPdgCode);
   vector<Int_t>().swap(fMCMotherIndex);
@@ -2420,7 +2454,7 @@ void AliAnalysisTaskReducedTreeDS::ExtractQnVectors()
   //AliInfo("extract Qn vectors from Qn correction framework.");
   const TString TPCEPname[3] = {"TPC","TPCNegEta","TPCPosEta"};
   const TString V0EPname[3]  = {"VZERO","VZEROA","VZEROC"};
-  const TString ZDCEPname[2]  = {"ZDCA","ZDCC"};
+  const TString ZDCEPname[2] = {"ZDCA","ZDCC"};
   const TString Qnorm = "QoverM";
   const Int_t harmonics = 2;
 
@@ -2542,35 +2576,6 @@ const AliQnCorrectionsQnVector *AliAnalysisTaskReducedTreeDS::GetQnVectorFromLis
     if(!(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)) theQnVector = NULL; //bad quality, discarded
   }
   return theQnVector;
-}
-//_______________________________________________________________________________________________
-AliKFParticle *AliAnalysisTaskReducedTreeDS::CreateMotherParticle(const AliVTrack* const pdaughter, const AliVTrack* const ndaughter, Int_t pspec, Int_t nspec) const
-{
-  /// Creates a mother particle
-
-  AliKFParticle pkfdaughter(*pdaughter, pspec);
-  AliKFParticle nkfdaughter(*ndaughter, nspec);
-
-  // Create the mother particle
-  AliKFParticle *m = new AliKFParticle(pkfdaughter, nkfdaughter);
-  m->SetField(fEvent->GetMagneticField());
-  if(TMath::Abs(kElectron) == pspec && TMath::Abs(kElectron) == nspec)  m->SetMassConstraint(0, 0.001);
-  else if(TMath::Abs(kPiPlus) == pspec && TMath::Abs(kPiPlus) == nspec) m->SetMassConstraint(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass(), 0.);
-  else if(TMath::Abs(kProton) == pspec && TMath::Abs(kPiPlus) == nspec) m->SetMassConstraint(TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass(), 0.);
-  else if(TMath::Abs(kPiPlus) == pspec && TMath::Abs(kProton) == nspec) m->SetMassConstraint(TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass(), 0.);
-  else{
-    AliErrorClass("Wrong daughter ID - mass constraint can not be set");
-  }
-
-  AliKFVertex *PrimaryVertex = new AliKFVertex(*(fEvent->GetPrimaryVertex()));
-  AliKFVertex improvedVertex = *PrimaryVertex;
-  improvedVertex += *m;
-  m->SetProductionVertex(improvedVertex);
-
-  delete PrimaryVertex;
-  PrimaryVertex = 0x0;
-
-  return m;
 }
 //_______________________________________________________________________________________________
 

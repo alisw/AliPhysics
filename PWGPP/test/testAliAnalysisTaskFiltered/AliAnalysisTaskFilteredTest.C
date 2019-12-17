@@ -25,7 +25,7 @@ void AliAnalysisTaskFilteredTest(const char *esdList,
                                  Int_t firstFile = 0,
                                  Int_t nEvents = 1000000000,
                                  Int_t firstEvent = 0,
-                                 Bool_t mc = kFALSE)
+                                 Bool_t mc = kTRUE)
 {
     TStopwatch timer;
     timer.Start();
@@ -70,8 +70,8 @@ void AliAnalysisTaskFilteredTest(const char *esdList,
   
 
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    Bool_t isMC=kFALSE; // kTRUE in case of MC
-    AddTaskPIDResponse(isMC); 
+    //Bool_t isMC=kFALSE; // kTRUE in case of MC
+    AddTaskPIDResponse(mc);
 
     //
     // Wagons to run 
@@ -82,6 +82,7 @@ void AliAnalysisTaskFilteredTest(const char *esdList,
     task->SetLowPtV0DownscaligF(scalingV0);
     task->SetFriendDownscaling(scalingFriend);
     task->SetUseESDfriends(kTRUE);
+    task->SetUseMCInfo(mc);
     task->Dump();
     // Init
     if (!mgr->InitAnalysis()) 

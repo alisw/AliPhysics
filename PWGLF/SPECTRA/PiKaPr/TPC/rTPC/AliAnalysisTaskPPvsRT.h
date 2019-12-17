@@ -53,6 +53,7 @@ public:
     virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
     virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
     virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
+    virtual void  SetLeadingCut(const double LeadingCut){fLeadingCut = LeadingCut;}
     virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
     virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
     virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
@@ -112,18 +113,19 @@ private:
     // Cuts and options
     //
     
-    Double_t     fVtxCut;             // Vtx cut on z position in cm
-    Int_t        fNcl;
-    Double_t     fEtaCut;             // Eta cut used to select particles
-    Int_t        cent; //minimum centrality
-    Float_t      fMinCent; //minimum centrality
-    Float_t      fMaxCent; //maximum centrality
+    double     fVtxCut;             // Vtx cut on z position in cm
+    double       fLeadingCut;
+    int        fNcl;
+    double     fEtaCut;             // Eta cut used to select particles
+    int        cent; //minimum centrality
+    float      fMinCent; //minimum centrality
+    float      fMaxCent; //maximum centrality
     const Double_t fDeDxMIPMin;
     const Double_t fDeDxMIPMax;
     const Double_t fdEdxHigh;
     const Double_t fdEdxLow;
     TString  fPeriod;
-    Double_t fMeanChT;
+    double fMeanChT;
     
     //
     // Help variables

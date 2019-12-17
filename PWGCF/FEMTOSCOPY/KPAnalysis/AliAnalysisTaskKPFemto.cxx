@@ -716,11 +716,11 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   fHistSecondTOFTPCsignalvsptAfter = new TH2F("fHistSecondTOFTPCsignalvsptAfter","fHistSecondTOFTPCsignalvsptAfter",200, 0., 10., 100, 0., 20);
   fOutputContainer->Add(fHistSecondTOFTPCsignalvsptAfter);
 
-  fHistFirstMassTOFvsPt3sTPC       = new TH2F("fHistFirstMassTOFvsPt3sTPC", "fHistFirstMassTOFvsPt3sTPC"  , 200, -2.5, 2.5, 100, 0.0, 10); 
-  fHistSecondMassTOFvsPt3sTPC      = new TH2F("fHistSecondMassTOFvsPt3sTPC", "fHistSecondMassTOFvsPt3sTPC", 200, -2.5, 2.5, 100, 0.0, 10);  
+  fHistFirstMassTOFvsPt3sTPC       = new TH2F("fHistFirstMassTOFvsPt3sTPC", "fHistFirstMassTOFvsPt3sTPC"  , 200, -2.5, 2.5, 200, -10.0, 10); 
+  fHistSecondMassTOFvsPt3sTPC      = new TH2F("fHistSecondMassTOFvsPt3sTPC", "fHistSecondMassTOFvsPt3sTPC", 200, -2.5, 2.5, 200, -10.0, 10);  
 
-  fHistFirstMassTOFvsPt3sTPC3sTOF  = new TH2F("fHistFirstMassTOFvsPt3sTPC3sTOF", "fHistFirstMassTOFvsPt3sTPC3sTOF"  , 200, -2.5 , 2.5, 100, 0.0, 10); 
-  fHistSecondMassTOFvsPt3sTPC3sTOF = new TH2F("fHistSecondMassTOFvsPt3sTPC3sTOF", "fHistSecondMassTOFvsPt3sTPC3sTOF", 200, -2.5 , 2.5, 100, 0.0, 10);  
+  fHistFirstMassTOFvsPt3sTPC3sTOF  = new TH2F("fHistFirstMassTOFvsPt3sTPC3sTOF", "fHistFirstMassTOFvsPt3sTPC3sTOF"  , 200, -2.5 , 2.5, 200, -10.0, 10); 
+  fHistSecondMassTOFvsPt3sTPC3sTOF = new TH2F("fHistSecondMassTOFvsPt3sTPC3sTOF", "fHistSecondMassTOFvsPt3sTPC3sTOF", 200, -2.5 , 2.5, 200, -10.0, 10);  
  
   fOutputContainer->Add(fHistFirstMassTOFvsPt3sTPC);
   fOutputContainer->Add(fHistSecondMassTOFvsPt3sTPC);
@@ -955,6 +955,12 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       PostData(3, fHistSparseBkg );
       return;
     }
+
+    if( fHMtrigger == kTRUE){ //modify trigger in event selection
+      fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0);
+      //fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAnyINT);
+    }
+   
     /// Use the event cut class to apply the required selections
     if (!fEventCuts.AcceptEvent(fAODevent)) {   
       PostData(1, fOutputContainer);
@@ -1007,7 +1013,9 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
      return;
      }
   */
+  
   fPIDResponse = inputHandler->GetPIDResponse();
+
   
   if(!fPIDResponse) {
     PostData(1,fOutputContainer );
@@ -1040,9 +1048,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   fHistEventMultiplicity->Fill(4);
 
 
-
   Float_t lcentrality = -99.;
-  
   //  AliMultSelection* centrality = 0x0;
   centrality = (AliMultSelection *) fAODevent->FindListObject("MultSelection");
   //  cout<<"centrality: "<<centrality<<endl;
@@ -1084,6 +1090,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     PostData(3, fHistSparseBkg );
     return;
   }
+  
   fHistEventMultiplicity->Fill(5);
   
 
@@ -1094,7 +1101,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   Bool_t isSelectedHM          = kFALSE;
   Bool_t isSelectedAny         = kFALSE;
   Bool_t isSelected            = kFALSE;
- 
+   
   if(fCollidingSystem == "PbPb"){
     isSelectedCentral     = (mask & AliVEvent::kCentral);
     isSelectedSemiCentral = (mask & AliVEvent::kSemiCentral);
@@ -1139,6 +1146,9 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     if(isSelectedInt7 )
       isSelected = kTRUE;
   }
+  
+  
+  //cout<<isSelectedAny<<" "<<isSelectedInt7<<" "<<isSelectedHM<<endl;
 
   if(isSelectedAny)
     fHistEventMultiplicity->Fill(6);
@@ -1189,6 +1199,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     }
     
   }
+  
 
   fHistEventMultiplicity->Fill(12); // is event selected for the analysis
   
@@ -1844,7 +1855,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
 	//cout<<"ptc1: "<<length<<" "<<ptot<<" "<<mass<<endl;
 	
-	fHistFirstMassTOFvsPt3sTPC->Fill(mass-fPDGfirst,track->Pt());
+	fHistFirstMassTOFvsPt3sTPC->Fill(mass-fPDGfirst,charge*track->Pt());
 	
 	if (TMath::Abs(nsigmaTOFf)< fnSigmaTPCTOFPIDfirstParticle && tTOF > 0. /*&& length>350*/) {
 
@@ -1854,7 +1865,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	  else if(fReadMCTruth == kFALSE)
 	    fHistFirstTPCdEdx->Fill(globaltrack->GetTPCmomentum()*charge, globaltrack->GetTPCsignal());
 	  
-	  fHistFirstMassTOFvsPt3sTPC3sTOF->Fill(mass-fPDGfirst,track->Pt());
+	  fHistFirstMassTOFvsPt3sTPC3sTOF->Fill(mass-fPDGfirst,charge*track->Pt());
 	  
 	  //------------------ Save first particle information
 	  
@@ -2183,7 +2194,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	gamma = 1/TMath::Sqrt(1 - beta*beta);
 	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
 	//	  cout<<" TMath::Sqrt(1 - beta*beta) "<< TMath::Sqrt(1 - beta*beta)<<" mass "<<mass<<endl;
-	fHistSecondMassTOFvsPt3sTPC->Fill(mass-fPDGsecond,track->Pt());
+	fHistSecondMassTOFvsPt3sTPC->Fill(mass-fPDGsecond,charge*track->Pt());
 	
 	if (TMath::Abs(nsigmaTOFs)< fnSigmaTPCTOFPIDsecondParticle && tTOF > 0. /*&&length>350*/) {
 	  
@@ -2192,7 +2203,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	  else if(fReadMCTruth == kFALSE)
 	    fHistSecondTPCdEdx->Fill(globaltrack->GetTPCmomentum()*charge, globaltrack->GetTPCsignal());
 
-	  fHistSecondMassTOFvsPt3sTPC3sTOF->Fill(mass-fPDGsecond,track->Pt());
+	  fHistSecondMassTOFvsPt3sTPC3sTOF->Fill(mass-fPDGsecond,charge*track->Pt());
 	  
 	  //------------------------------ Save second particle information
 	  fEvt->fReconstructedSecond[sCount].sCharge = charge;

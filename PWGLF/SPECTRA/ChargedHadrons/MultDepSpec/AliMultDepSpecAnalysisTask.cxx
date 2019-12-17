@@ -974,6 +974,8 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
   else if(controlstring.Contains("XeXe")){
     colsys = "XeXe";
     maxMult = 3700;
+    overridePbPbEventCuts = kTRUE;
+    useZDC = kTRUE;
   }
   else if(controlstring.Contains("PbPb")) {
     colsys = "PbPb";

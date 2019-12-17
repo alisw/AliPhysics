@@ -12,7 +12,17 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     Bool_t iMC = kFALSE,
     Double_t cmim = 30.0,
     Double_t cmax = 50.0,
-    TString ContNameExt= "semicentral")
+    TString ContNameExt= "semicentral",
+    Double_t tpcnsig = -1.0,
+    Double_t emceop = 0.9,
+    Double_t emcss_mim = 0.01,
+    Double_t emcss_max = 0.35,
+    Double_t invmass = 0.1,
+    Double_t invmass_pt = 0.2,
+    Bool_t cent = kFALSE,
+    Bool_t semi = kTRUE,
+    Bool_t TreeOn = kFALSE
+ )
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -59,6 +69,11 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
 
     task->SetMinCentrality(cmim);
     task->SetMaxCentrality(cmax);
+    task->SetPIDcuts(tpcnsig, emceop, emcss_mim, emcss_max);
+    task->SetMasscuts(invmass,invmass_pt);
+    task->SetMCCentral(cent);
+    task->SetMCSemiCentral(semi);
+    task->SetTree(TreeOn);
 
     mgr->AddTask(task);
 

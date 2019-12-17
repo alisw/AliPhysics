@@ -52,6 +52,7 @@ set(SRCS
   AliHFTreeHandlerBstoDspi.cxx
   AliHFTreeHandlerDstartoKpipi.cxx
   AliHFTreeHandlerLc2V0bachelor.cxx
+  AliHFTreeHandlerLbtoLcpi.cxx
   AliJetTreeHandler.cxx
   AliParticleTreeHandler.cxx
   AliTrackletTreeHandler.cxx

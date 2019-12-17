@@ -254,9 +254,11 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * This histogram records the pt-ditribution
                                  * of the dimuon pairs. This is the template
                                  * to be used for the Pt-distribution fit.
+                                 *
+                                 * Rapidity bin study too.
                                  */
-        TH1F*                   fTemplatePtDistributionH;         //!
-
+        TH1F*                   fTemplatePtDistributionH;              //!
+        TH1F*                   fTemplatePtDistributionRapidityH[3];   //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -600,6 +602,12 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH1F*                   fPhiCollinsSoperFrameJPsiTenRapidityBinsH[10];
 
+        /*________________________________________
+         *
+         * FINAL INCARNATION OF THE
+         * POLARISATION ANALYSIS
+         *
+         */
                                 /**
                                  * This histogram shows the angular distribution
                                  * of the positive muon in the HELICITY frame.
@@ -627,6 +635,43 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * frame. PHI distribution. GENERATED
                                  */
         TH1F*                   fMCPhiCollinsSoperFrameJPsiH;
+
+                                /**
+                                 * TEMPLATES NEEDED for the SIGNAL EXTRACTION
+                                 *
+                                 * Signal extraction in Phi, CosTheta, and
+                                 * TildePhi, with 25 bins only...
+                                 *
+                                 * NB: He => helicity frame
+                                 * NB: Cs => CS       frame
+                                 *
+                                 * NB: TH1F*** is the 2D ANALYSIS
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[25];       //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsH[25];       //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBinsH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsH[25];  //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * My variable binning: [-0.65, -0.35, -0.15,
+                                 * -0.05, 0.05, 0.15, 0.35, 0.65] vs
+                                 * 3.14*[1, 19/20, 18/20, 17/20, 13/20, 9/20,
+                                 * 6/20, 4/20, 2/20, 1/10, 0, negative side].
+                                 *
+                                 * NOTE: the first is in the helicity frame,
+                                 *       the second with Collins-Soper.
+                                 */
+        TH1F***                 fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH;  //!
+        TH1F***                 fInvariantMassDistributionForSignalExtractionCsFrameMyBinningH;        //!
+
+        //_____________________________________
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -963,15 +1008,21 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * This histogram shows CosTheta and Phi
                                  * distribution with my variable binning.
                                  * RECON level.
+                                 *
+                                 * NB: both HELICITY and COLLINS-SOPER
                                  */
         TH2F*                   fCosThetaAndPhiHelicityFrameMyBinningH;   //!
+        TH2F*                   fCosThetaAndPhiCsFrameMyBinningH;         //!
 
                                 /**
                                  * This histogram shows CosTheta and Phi
                                  * distribution with my variable binning.
                                  * GENERATED level.
+                                 *
+                                 * NB: both HELICITY and COLLINS-SOPER
                                  */
         TH2F*                   fMCCosThetaAndPhiHelicityFrameMyBinningH;   //!
+        TH2F*                   fMCCosThetaAndPhiCsFrameMyBinningH;         //!
 
         /* - 1D analysis.
          * - My variable binning.
@@ -1023,48 +1074,66 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80%.
                                  * RECON level.
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fCosThetaCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows CosTheta
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80%.
-                                 * GENERATED level.
+                                 * GENERATED level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fMCCosThetaHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fMCCosThetaCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows Phi
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80% (?).
-                                 * RECON level.
+                                 * RECON level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fPhiHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fPhiCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows Phi
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80% (?).
-                                 * GENERATED level.
+                                 * GENERATED level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fMCPhiCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows the TildePhi
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80% (?).
-                                 * RECON level.
+                                 * RECON level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fTildePhiCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows the TildePhi
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80% (?).
-                                 * GENERATED level.
+                                 * GENERATED level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fMCTildePhiCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows  Phi
@@ -1183,7 +1252,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 29);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 33);
 };
 
 #endif

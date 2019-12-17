@@ -69,7 +69,7 @@ class AliAODRecoDecay;
 #include "AliNanoAODHeader.h"
 #include "AliNanoAODCustomSetter.h"
 #include "AliV0ReaderV1.h"
-#include "AliAODConversionPhoton.h"
+#include "AliAnalysisNanoAODCuts.h"
 
 using std::cout;
 using std::endl;
@@ -83,6 +83,7 @@ AliAODBranchReplicator(),
   fV0Cuts(0), 
   fCascadeCuts(0), 
   fConversionPhotonCuts(0),
+  fMCParticleCuts(nullptr),
   fTracks(0x0), 
   fHeader(0x0), 
   fVertices(0x0), 
@@ -106,6 +107,8 @@ AliAODBranchReplicator(),
   fSaveV0s(0),
   fSaveCascades(kFALSE),
   fSaveConversionPhotons(kFALSE),
+  fPhotonFromDeltas(kFALSE),
+  fDeltaAODBranchName(""),
   fInputArrayName(""),
   fOutputArrayName("tracks"),
   fKeepDaughters(),
@@ -120,6 +123,7 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) 
   fV0Cuts(0), 
   fCascadeCuts(0), 
   fConversionPhotonCuts(0),
+  fMCParticleCuts(nullptr),
   fTracks(0x0), 
   fHeader(0x0), 
   fVertices(0x0), 
@@ -143,6 +147,8 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) 
   fSaveV0s(0),
   fSaveCascades(kFALSE),
   fSaveConversionPhotons(kFALSE),
+  fPhotonFromDeltas(kFALSE),
+  fDeltaAODBranchName(""),
   fInputArrayName(""),
   fOutputArrayName("tracks"),
   fKeepDaughters(),
@@ -223,11 +229,55 @@ Int_t AliNanoAODReplicator::GetNewLabel(Int_t i)
   return fLabelMap.GetValue(TMath::Abs(i));
 }
 
+
+//_____________________________________________________________________________
+void AliNanoAODReplicator::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate) {
+  // taken from PWGGA/GammaConvBase/AliV0ReaderV1.cxx
+
+  // Relabeling For AOD Event
+  // ESDiD -> AODiD
+  // MCLabel -> AODMCLabel
+  Bool_t AODLabelPos = kFALSE;
+  Bool_t AODLabelNeg = kFALSE;
+
+  TIter nextTRACK(fTracks);
+  AliNanoAODTrack* track;
+
+  while ((track = static_cast<AliNanoAODTrack*>(nextTRACK()))) {
+    if (!AODLabelPos) {
+      if (track->GetID() == PhotonCandidate->GetTrackLabelPositive()) {
+        PhotonCandidate->SetMCLabelPositive(TMath::Abs(track->GetLabel()));
+        // PhotonCandidate->SetLabelPositive(i);
+        AODLabelPos = kTRUE;
+      }
+    }
+    if (!AODLabelNeg) {
+      if (track->GetID() == PhotonCandidate->GetTrackLabelNegative()) {
+        PhotonCandidate->SetMCLabelNegative(TMath::Abs(track->GetLabel()));
+        // PhotonCandidate->SetLabelNegative(i);
+        AODLabelNeg = kTRUE;
+      }
+    }
+    if (AODLabelNeg && AODLabelPos) {
+      return;
+    }
+  }
+  if (!AODLabelPos || !AODLabelNeg) {
+    if (!AODLabelNeg) {
+      PhotonCandidate->SetMCLabelNegative(-999999);
+      PhotonCandidate->SetLabelNegative(-999999);
+    }
+    if (!AODLabelPos) {
+      PhotonCandidate->SetMCLabelPositive(-999999);
+      PhotonCandidate->SetLabelPositive(-999999);
+    }
+  }
+}
+
 //_____________________________________________________________________________
 void AliNanoAODReplicator::FilterMC(const AliAODEvent& source)
 {
   // Filter MC information
-
 
   AliAODMCHeader* mcHeader(0x0);
   TClonesArray* mcParticles(0x0);
@@ -236,192 +286,272 @@ void AliNanoAODReplicator::FilterMC(const AliAODEvent& source)
 
   //  std::cout << "MC Mode: " << fMCMode << ", Tracks " << fTracks->GetEntries() << std::endl;
   
-  if ( fMCMode>=2 && !fTracks->GetEntries() ) {
-    return;
-  }
-  // for fMCMode==1 we only copy MC information for events where there's at least one muon track
-    
   mcHeader = static_cast<AliAODMCHeader*>(source.FindListObject(AliAODMCHeader::StdBranchName()));
-  
-  if ( mcHeader ) 
-    {
-      *fMCHeader = *mcHeader;
-    }
-  
+  if (mcHeader) 
+    *fMCHeader = *mcHeader;
   
   mcParticles = static_cast<TClonesArray*>(source.FindListObject(AliAODMCParticle::StdBranchName()));
+  if (!mcParticles)
+    return;
   
-  if ( mcParticles && fMCMode>=2 )
-    {
-      // keep all primaries
-      TIter nextPart(mcParticles);
-      static Int_t iev = -1; // FIXME: remove this (debug)
-      iev ++;
-      AliAODMCParticle * prim = 0;
-      Int_t iprim = 0;  // We need iprim, we cannot rely on part->GetLabel, because some of the original mc particles are not kept in the stack, apparently
-      // also select all charged primaries 
-      while ((prim = (AliAODMCParticle*) nextPart())) {
-	if(prim->IsPhysicalPrimary() && prim->Charge()) SelectParticle(iprim);
-	// FIXME DEBUG
-	if(iev == 2009) {
-	  // std::cout << "IEV " << iev << std::endl;
-	  // std::cout << " PART " << iprim << " " << prim->IsPhysicalPrimary() <<","<<prim->Charge() << "=" << IsParticleSelected(iprim) <<  std::endl;
-	  if(iprim == 15) {
-	    prim->Print();
-	  }
-	  
-	}
-	iprim++;
-      } 
-
-      // loop on (kept) tracks to find their ancestors
-      TIter nextTRACK(fTracks);
-      AliNanoAODTrack* track;
-    
-      while ( ( track = static_cast<AliNanoAODTrack*>(nextTRACK()) ) )
-	{
-	  Int_t label = TMath::Abs(track->GetLabel()); 
-      
-	  while ( label >= 0 ) 
-	    {
-	      SelectParticle(label);
-	      AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(mcParticles->UncheckedAt(label));
-	      if (!mother)
-		{
-		  AliError(Form("Got a null mother ! Check that ! (label %d",label)); // FIXME: I think this error is not needed
-		  label = -1;
-		}
-	      else
-		{
-		  label = mother->GetMother();// do not only keep particles which created a track, but all their mothers
-		}
-	    }
-	}
-    
-      CreateLabelMap(source);
-    
-      // Actual filtering and label remapping (shamelessly taken for the implementation of AliAODHandler::StoreMCParticles)
-      TIter nextMC(mcParticles);
-      AliAODMCParticle* p;
-      Int_t nmc(0);  // We need nmc, we cannot rely on part->GetLabel, because some of the original mc particles are not kept in the stack, apparently
-      Int_t nmcout(0);
-    
-      while ( ( p = static_cast<AliAODMCParticle*>(nextMC()) ) )
-	{
-	  AliAODMCParticle c(*p);
-
-	  if ( IsParticleSelected(nmc) )
-	    {
-	      // 
-	      Int_t d0 =  p->GetDaughterLabel(0);
-	      Int_t d1 =  p->GetDaughterLabel(1);
-	      Int_t m =   p->GetMother();
-        
-	      // other than for the track labels, negative values mean
-	      // no daughter/mother so preserve it
-        
-	      if(d0<0 && d1<0)
-		{
-		  // no first daughter -> no second daughter
-		  // nothing to be done
-		  // second condition not needed just for sanity check at the end
-		  c.SetDaughter(0,d0);
-		  c.SetDaughter(1,d1);
-		} else if(d1 < 0 && d0 >= 0) 
-		{
-		  // Only one daughter
-		  // second condition not needed just for sanity check at the end
-		  if(IsParticleSelected(d0))
-		    {
-		      c.SetDaughter(0,GetNewLabel(d0));
-		    } else 
-		    {
-		      c.SetDaughter(0,-1);
-		    }
-		  c.SetDaughter(1,d1);
-		}
-	      else if (d0 > 0 && d1 > 0 )
-		{
-		  // we have two or more daughters loop on the stack to see if they are
-		  // selected
-		  Int_t d0tmp = -1;
-		  Int_t d1tmp = -1;
-		  for (int id = d0; id<=d1;++id)
-		    {
-		      if (IsParticleSelected(id))
-			{
-			  if(d0tmp==-1)
-			    {
-			      // first time
-			      d0tmp = GetNewLabel(id);
-			      d1tmp = d0tmp; // this is to have the same schema as on the stack i.e. with one daugther d0 and d1 are the same 
-			    }
-			  else d1tmp = GetNewLabel(id);
-			}
-		    }
-		  c.SetDaughter(0,d0tmp);
-		  c.SetDaughter(1,d1tmp);
-		} else 
-		{
-		  AliFatal(Form("Unxpected indices %d %d",d0,d1));
-		}
-        
-	      if ( m < 0 )
-		{
-		  c.SetMother(m);
-		} else 
-		{
-		  if (IsParticleSelected(m)) 
-		    {
-		      c.SetMother(GetNewLabel(m));              
-		    }
-		  // else // FIXME: re-enable this checj. Sometimes it gets here. Still to be understood why
-		  //   {
-		  //     //		      AliError(Form("PROBLEM Mother not selected %d", m));              
-		  //   }
-		}
-        
-	      new ((*fMCParticles)[nmcout++]) AliAODMCParticle(c);
-	    }
-      
-	  ++nmc;        
-	} //closes loop over MC particles
-    
-      // now remap the tracks...
-    
-      TIter nextTrack(fTracks);
-      AliNanoAODTrack* t;
-      //      std::cout << "Remapping tracks" << std::endl;
-    
-      while ( ( t = dynamic_cast<AliNanoAODTrack*>(nextTrack()) ) )
-	{
-	  
-	  t->SetLabel(GetNewLabel(t->GetLabel()));
-	}
-    
-    } // closes fMCMode == 1
-  else if ( mcParticles ) 
-    {
-      // simple copy of input MC particles to ouput MC particles
-      TIter nextMC(mcParticles);
-      AliAODMCParticle* p;
-      Int_t nmcout(0);
-    
-      while ( ( p = static_cast<AliAODMCParticle*>(nextMC()) ) )
-	{
-	  new ((*fMCParticles)[nmcout++]) AliAODMCParticle(*p);
-	}
+  if (fMCMode == 1)
+  {
+    // simple copy of input MC particles to ouput MC particles
+    TIter nextMC(mcParticles);
+    AliAODMCParticle* p;
+    Int_t nmcout(0);
+  
+    while ( ( p = static_cast<AliAODMCParticle*>(nextMC()) ) )
+      new ((*fMCParticles)[nmcout++]) AliAODMCParticle(*p);
+  }
+  else if (fMCMode == 2)
+  {
+    // keep all primaries
+    TIter nextPart(mcParticles);
+    AliAODMCParticle * prim = 0;
+    Int_t iprim = 0;  // We need iprim, we cannot rely on part->GetLabel, because some of the original mc particles are not kept in the stack, apparently
+    // also select all charged primaries 
+    while ((prim = (AliAODMCParticle*) nextPart())) {
+      if (fMCParticleCuts && fMCParticleCuts->IsSelected(prim)) {
+        SelectParticle(iprim);
+      }
+      iprim++;
     }
+
+    // loop on (kept) tracks to find their ancestors
+    TIter nextTRACK(fTracks);
+    AliNanoAODTrack* track;
+    while ((track = static_cast<AliNanoAODTrack*>(nextTRACK()))) {
+      Int_t label = TMath::Abs(track->GetLabel());
+      while (label >= 0) {
+        SelectParticle(label);
+        AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(mcParticles
+            ->UncheckedAt(label));
+        if (!mother) {
+          AliError(Form("Got a null mother ! Check that ! (label %d", label));  // FIXME: I think this error is not needed
+          label = -1;
+        } else {
+          label = mother->GetMother();  // do not only keep particles which created a track, but all their mothers
+        }
+      }
+    }
+
+    // loop on (kept) v0 to find their ancestors
+    TIter nextV0(fV0s);
+    AliAODv0* v0;
+    // Get the PDG codes we want to match to from the cut object
+    std::vector<int> pdgCodesV0;
+    if (fMCParticleCuts) {
+      pdgCodesV0 = static_cast<AliAnalysisNanoAODMCParticleCuts*>(fMCParticleCuts)->GetKeepV0s();
+    }
+    while ((v0 = static_cast<AliAODv0*>(nextV0()))) {
+      // Get the daughter labels
+      for (Int_t i = 0; i < v0->GetNDaughters(); ++i) {
+        AliNanoAODTrack *trk = (AliNanoAODTrack*) v0->GetDaughter(i);
+        SelectParticle(trk->GetLabel());
+      }
+      // loop over all PDG codes we want to match the V0 to
+      for (auto it : pdgCodesV0) {
+        int label = v0->MatchToMC(TMath::Abs(it), mcParticles);
+        while (label >= 0) {
+          SelectParticle(label);
+          AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(mcParticles
+              ->UncheckedAt(label));
+          if (!mother) {
+            AliError(Form("Got a null mother ! Check that ! (label %d", label));  // FIXME: I think this error is not needed
+            label = -1;
+          } else {
+            label = mother->GetMother();  // do not only keep particles which created a track, but all their mothers
+          }
+        }
+      }
+    }
+
+    // loop on (kept) cascades to find their ancestors
+    std::vector<int> pdgCodesV0Cascade;
+    if (fMCParticleCuts) {
+      pdgCodesV0Cascade =
+          static_cast<AliAnalysisNanoAODMCParticleCuts*>(fMCParticleCuts)
+              ->GetKeepV0sCascades();
+    }
+    TIter nextCascade(fCascades);
+    AliAODcascade* casc;
+
+    while ((casc = static_cast<AliAODcascade*>(nextCascade()))) {
+      AliNanoAODTrack *nTrackXi = (AliNanoAODTrack*) (casc->GetDaughter(1));
+      AliNanoAODTrack *pTrackXi = (AliNanoAODTrack*) (casc->GetDaughter(0));
+      AliNanoAODTrack *bachTrackXi =
+          (AliNanoAODTrack*) (casc->GetDecayVertexXi()->GetDaughter(0));
+      SelectParticle(nTrackXi->GetLabel());
+      SelectParticle(pTrackXi->GetLabel());
+      SelectParticle(bachTrackXi->GetLabel());
+      for (auto it : pdgCodesV0Cascade) {
+        // You might think this is wrong, its not ....
+        int MamaLauda = casc->MatchToMC(TMath::Abs(it), mcParticles);
+        auto mamaBachPart = ((AliAODMCParticle*) mcParticles->At(
+            bachTrackXi->GetLabel()));
+        int MamaBach = (mamaBachPart) ? mamaBachPart->GetMother() : -1;
+        // Is it a brother from another mother
+        if (MamaLauda > 0 && MamaLauda == MamaBach) {
+          int label = MamaLauda;
+          while (label >= 0) {
+            SelectParticle (label);
+            AliAODMCParticle* mother =
+                static_cast<AliAODMCParticle*>(mcParticles->UncheckedAt(label));
+            if (!mother) {
+              AliError(
+                  Form("Got a null mother ! Check that ! (label %d", label));  // FIXME: I think this error is not needed
+              label = -1;
+            } else {
+              label = mother->GetMother();  // do not only keep particles which created a track, but all their mothers
+            }
+          }
+        }
+      }
+    }
+
+    // loop on (kept) photons to find their ancestors
+    TIter nextPhoton(fConversionPhotons);
+    AliAODConversionPhoton* phot;
+
+    while ((phot = static_cast<AliAODConversionPhoton*>(nextPhoton()))) {
+      RelabelAODPhotonCandidates(phot);
+      const int labelPos = phot->GetMCLabelPositive();
+      const int labelNeg = phot->GetMCLabelNegative();
+      AliAODMCParticle * mcPartPos = (AliAODMCParticle*) mcParticles
+          ->UncheckedAt(labelPos);
+      AliAODMCParticle * mcPartNeg = (AliAODMCParticle*) mcParticles
+          ->UncheckedAt(labelNeg);
+      SelectParticle(labelPos);
+      SelectParticle(labelNeg);
+
+      if (mcPartPos && mcPartNeg) {
+        if (mcPartPos->GetMother() > -1
+            && (mcPartNeg->GetMother() == mcPartPos->GetMother())) {
+          int label = mcPartPos->GetMother();
+          while (label >= 0) {
+            SelectParticle(label);
+            AliAODMCParticle* mother =
+                static_cast<AliAODMCParticle*>(mcParticles->UncheckedAt(label));
+            if (!mother) {
+              AliError(
+                  Form("Got a null mother ! Check that ! (label %d", label));  // FIXME: I think this error is not needed
+              label = -1;
+            } else {
+              label = mother->GetMother();  // do not only keep particles which created a track, but all their mothers
+            }
+          }
+        }
+      }
+    }
+
+    // Actual filtering and label remapping (shamelessly taken for the implementation of AliAODHandler::StoreMCParticles)
+    CreateLabelMap(source);
+  
+    TIter nextMC(mcParticles);
+    AliAODMCParticle* p;
+    Int_t nmc(0);  // We need nmc, we cannot rely on part->GetLabel, because some of the original mc particles are not kept in the stack, apparently
+    Int_t nmcout(0);
+  
+    while ( ( p = static_cast<AliAODMCParticle*>(nextMC()) ) )
+    {
+      AliAODMCParticle c(*p);
+
+      if ( IsParticleSelected(nmc) )
+      {
+        // 
+        Int_t d0 =  p->GetDaughterLabel(0);
+        Int_t d1 =  p->GetDaughterLabel(1);
+        Int_t m =   p->GetMother();
+      
+        // other than for the track labels, negative values mean
+        // no daughter/mother so preserve it
+      
+        if(d0<0 && d1<0)
+        {
+          // no first daughter -> no second daughter
+          // nothing to be done
+          // second condition not needed just for sanity check at the end
+          c.SetDaughter(0,d0);
+          c.SetDaughter(1,d1);
+        } 
+        else if(d1 < 0 && d0 >= 0) 
+        {
+          // Only one daughter
+          // second condition not needed just for sanity check at the end
+          if(IsParticleSelected(d0))
+            {
+              c.SetDaughter(0,GetNewLabel(d0));
+            } else 
+            {
+              c.SetDaughter(0,-1);
+            }
+          c.SetDaughter(1,d1);
+        }
+        else if (d0 > 0 && d1 > 0 )
+        {
+          // we have two or more daughters loop on the stack to see if they are
+          // selected
+          Int_t d0tmp = -1;
+          Int_t d1tmp = -1;
+          for (int id = d0; id<=d1;++id)
+            {
+              if (IsParticleSelected(id))
+            {
+              if(d0tmp==-1)
+                {
+                  // first time
+                  d0tmp = GetNewLabel(id);
+                  d1tmp = d0tmp; // this is to have the same schema as on the stack i.e. with one daugther d0 and d1 are the same 
+                }
+              else d1tmp = GetNewLabel(id);
+            }
+            }
+          c.SetDaughter(0,d0tmp);
+          c.SetDaughter(1,d1tmp);
+        } 
+        else 
+        {
+          AliFatal(Form("Unxpected indices %d %d",d0,d1));
+        }
+        
+        if ( m < 0 )
+        {
+          c.SetMother(m);
+        } 
+        else 
+        {
+          if (IsParticleSelected(m)) 
+            {
+              c.SetMother(GetNewLabel(m));              
+            }
+          // else // FIXME: re-enable this checj. Sometimes it gets here. Still to be understood why
+          //   {
+          //     //              AliError(Form("PROBLEM Mother not selected %d", m));              
+          //   }
+        }
+        
+        new ((*fMCParticles)[nmcout++]) AliAODMCParticle(c);
+      }
+      
+      ++nmc;        
+    } //closes loop over MC particles
+    
+    // now remap the tracks...
+  
+    TIter nextTrack(fTracks);
+    AliNanoAODTrack* t;
+    //      std::cout << "Remapping tracks" << std::endl;
+  
+    while ( ( t = dynamic_cast<AliNanoAODTrack*>(nextTrack()) ) )
+    {
+      t->SetLabel(GetNewLabel(t->GetLabel()));
+    }
+  }
   
   AliDebug(1,Form("input mc %d output mc %d",
                   mcParticles ? mcParticles->GetEntries() : 0,
                   fMCParticles ? fMCParticles->GetEntries() : 0));
-  
-  Printf("input mc %d output mc %d",
-                  mcParticles ? mcParticles->GetEntries() : 0,
-                  fMCParticles ? fMCParticles->GetEntries() : 0);
-  
-
 }
 
 // //_____________________________________________________________________________
@@ -669,13 +799,18 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   // Photons
   std::list<Int_t> trackIDs; // tracks which should be kept as they are referred to
   if (fSaveConversionPhotons) {
+    TClonesArray* gammaArray = nullptr;
     Int_t nConvPhotons = 0;
     static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("ConvGammaAODProduction");
-    if (!photonReader)
-      AliFatal("No V0 reader but photon conversion requested");
-    if (photonReader->AreAODsRelabeled() != kFALSE)
-      AliFatal("This requires not relabled tracks");
-    TClonesArray* gammaArray = photonReader->GetReconstructedGammas();
+    if (photonReader) {
+      if (photonReader->AreAODsRelabeled() != kFALSE)
+        AliFatal("This requires not relabled tracks");
+      gammaArray = photonReader->GetReconstructedGammas();
+    } else if (fPhotonFromDeltas) {
+      gammaArray = dynamic_cast<TClonesArray*>(source.FindListObject(fDeltaAODBranchName.Data()));
+    } else {
+      AliFatal("No Photon reader and no branch name specified");
+    }
     for (int iGamma = 0; iGamma < gammaArray->GetEntriesFast(); ++iGamma) {
       auto *photonCandidate = dynamic_cast<AliAODConversionPhoton *>(gammaArray->At(iGamma));
       if (fConversionPhotonCuts && !fConversionPhotonCuts->IsSelected(photonCandidate))

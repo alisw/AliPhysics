@@ -115,12 +115,12 @@ AliForwardNUETask::AliForwardNUETask() : AliAnalysisTaskSE(),
 
     // create hist for tpc (eta, pt, z, filterbit )
     Int_t dimensions = 4;
-    Int_t bins[4] = {400, 100, fSettings.fNZvtxBins, 5} ;
-    Double_t xmin[5] = {-1.5, 0.0, fSettings.fZVtxAcceptanceLowEdge, -0.5};
-    Double_t xmax[5] = {1.5, 5.0, fSettings.fZVtxAcceptanceUpEdge, 4.5};
+    Int_t bins[4] = {300, 100, fSettings.fNZvtxBins, 5} ;
+    Double_t xmin[5] = {-1.2, 0.0, fSettings.fZVtxAcceptanceLowEdge, -0.5};
+    Double_t xmax[5] = {1.2, 5.0, fSettings.fZVtxAcceptanceUpEdge, 4.5};
 
     fOutputList->Add(new THnD("NUA_tpc", "NUA_tpc", dimensions, bins, xmin, xmax)); //(eta, n)
-    fOutputList->Add(new TH3F("NUA_tpc_prim","NUA_tpc_prim", 400, -1.5, 1.5, 100, 0.0, 5.0,fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
+    fOutputList->Add(new TH3F("NUA_tpc_prim","NUA_tpc_prim", 300, -1.2, 1.2, 100, 0.0, 5.0,fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
 
     fOutputList->Add(fEventList);
 
@@ -199,19 +199,19 @@ void AliForwardNUETask::UserExec(Option_t *)
         if (track->TestFilterBit(fSettings.kTPCOnly)){
           nua_tpc->Fill(x,1);
         }
-        else if (track->TestFilterBit(fSettings.kHybrid)){
+        if (track->TestFilterBit(fSettings.kHybrid)){
           x[3] = 1.0;
           nua_tpc->Fill(x,1);
         }
-        else if (track->TestFilterBit(fSettings.kGlobal)){
+        if (track->TestFilterBit(fSettings.kGlobal)){
           x[3] = 2.0;
           nua_tpc->Fill(x,1);
         }
-        else if (track->TestFilterBit(fSettings.kGlobalComb)){
+        if (track->TestFilterBit(fSettings.kGlobalComb)){
           x[3] = 3.0;
           nua_tpc->Fill(x,1);
         }
-        else if (track->TestFilterBit(fSettings.kGlobalLoose)){
+        if (track->TestFilterBit(fSettings.kGlobalLoose)){
           x[3] = 4.0;
           nua_tpc->Fill(x,1);
         }

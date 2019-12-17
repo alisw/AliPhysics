@@ -54,6 +54,7 @@ class AliMultSelection;
 class AliMultSelectionCuts;
 class AliOADBMultSelection;
 class AliOADBContainer;
+class AliStack; 
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -117,6 +118,8 @@ public:
     void SetHighMultQABinning( Bool_t lVar ) { fkHighMultQABinning = lVar; }
     void SetGeneratorOnly( Bool_t lVar ) { fkGeneratorOnly = lVar; }
     void SetSkipMCHeaders( Bool_t lVar ) { fkSkipMCHeaders = lVar; }
+    void SetCalculateSpherocityMC ( Bool_t lVar ) { fkDebugMCSpherocity = lVar; } 
+    void SetPreferSuperCalib( Bool_t lVar ) { fkPreferSuperCalib = lVar; }
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
@@ -143,6 +146,9 @@ public:
     void SetOADB ( TString lOADBfilename );
     AliOADBContainer* GetOADB() {return fOADB;}; //for expert manipulation only
     
+    static Double_t GetTransverseSpherocityMC( AliStack *lStack );
+    static Double_t GetTransverseSpherocityTracksMC( AliStack *lStack );
+    
     // Static method for AddTaskMultSelection
     static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, TString lContainerAppend = "", const TString lMasterJobSessionFlag = "");
 
@@ -168,12 +174,14 @@ private:
     Bool_t fkHighMultQABinning; //if true, use narrow binning for percentile histograms
     Bool_t fkGeneratorOnly; //if true, skip loading of reco objects
     Bool_t fkSkipMCHeaders; //if true, don't try to read headers
+    Bool_t fkPreferSuperCalib; //if true, prefer supercalib if available
     
     //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
     Bool_t fkDebugAliCentrality; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugAliPPVsMultUtils; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugIsMC; //if true, adds some MC info for cross-checks (needs MC)
+    Bool_t fkDebugMCSpherocity; //if true, calculates MC spherocity
     Bool_t fkDebugAdditional2DHisto; //if true, adds a 2D histogram Ntracks vs. N gen. particles
     
     //Default options
@@ -316,6 +324,8 @@ private:
     AliMultVariable *fMC_NchEta10;
     AliMultVariable *fMC_NchEta14;
     AliMultVariable *fMC_b;
+    AliMultVariable *fMC_Spherocity;
+    AliMultVariable *fMC_SpherocityTracks;
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
@@ -384,7 +394,7 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 10);
+    ClassDef(AliMultSelectionTask, 12);
     //3 - extra QA histograms
     //8 - fOADB ponter
 };

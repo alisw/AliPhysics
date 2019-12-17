@@ -94,6 +94,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fPIDCombined(0),
   fIsK0sAnalysis(kFALSE),
   fCounter(0),
+  fCounterC(0),
   fAnalCuts(0),
   fListCuts(0),
   fListWeight(0),
@@ -231,10 +232,23 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fNVarsSpectators(0),
   fVarsTMVASpectators(0),
   fXmlWeightsFile(""),
-  fBDTHistoTMVA(0)  
+  fBDTHistoTMVA(0),  
+  fRefMult(9.26),
+  fYearNumber(16),
+  fHistoNtrUnCorr(0),
+  fHistoNtrCorr(0),
+  fHistoVzVsNtrUnCorr(0),
+  fHistoVzVsNtrCorr(0),
+  fUseMultCorrection(kFALSE),
+  fMultiplicityEstimator(kNtrk10),
+  fDoVZER0ParamVertexCorr(1),
+  fUseMultiplicityCut(kFALSE),
+  fMultiplicityCutMin(0.),
+  fMultiplicityCutMax(99999.)
 {
   /// Default ctor
   //
+  for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
 }
 //___________________________________________________________________________
 AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(const Char_t* name,
@@ -246,6 +260,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fPIDCombined(0),
   fIsK0sAnalysis(kFALSE),
   fCounter(0),
+  fCounterC(0),
   fAnalCuts(analCuts),
   fListCuts(0),
   fListWeight(0),
@@ -384,12 +399,26 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fVarsTMVASpectators(0),
   fNamesTMVAVarSpectators(""),
   fXmlWeightsFile(""),
-  fBDTHistoTMVA(0)  
+  fBDTHistoTMVA(0),  
+  fRefMult(9.26),
+  fYearNumber(16),
+  fHistoNtrUnCorr(0),
+  fHistoNtrCorr(0),
+  fHistoVzVsNtrUnCorr(0),
+  fHistoVzVsNtrCorr(0),
+  fUseMultCorrection(kFALSE),
+  fMultiplicityEstimator(kNtrk10),
+  fDoVZER0ParamVertexCorr(1),
+  fUseMultiplicityCut(kFALSE),
+  fMultiplicityCutMin(0.),
+  fMultiplicityCutMax(99999.)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskSELc2V0bachelorTMVAApp","Calling Constructor");
+
+  for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
 
   DefineOutput(1, TList::Class());  // Tree signal + Tree Bkg + histoEvents
   DefineOutput(2, TList::Class()); // normalization counter object
@@ -423,6 +452,11 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::~AliAnalysisTaskSELc2V0bachelorTMVAApp() 
   if (fCounter) {
     delete fCounter;
     fCounter = 0;
+  }
+
+  if (fCounterC) {
+    delete fCounterC;
+    fCounterC = 0;
   }
 
   if (fAnalCuts) {
@@ -483,6 +517,10 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::~AliAnalysisTaskSELc2V0bachelorTMVAApp() 
   if (fVarsTMVASpectators) {
     delete fVarsTMVASpectators;
     fVarsTMVASpectators = 0;
+  }
+
+  for(Int_t i=0; i<14; i++){
+    if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
   }
 }
 //_________________________________________________
@@ -672,8 +710,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   
   fHistoCentrality = new TH1F("fHistoCentrality", "fHistoCentrality", 100, 0., 100.);
 
-  fHistoEvents = new TH1F("fHistoEvents", "fHistoEvents", 5, -0.5, 4.5);
-  TString labelEv[5] = {"RejectedDeltaMismatch", "AcceptedDeltaMismatch", "NotSelected", "TimeStampCut", "Selected"};
+  fHistoEvents = new TH1F("fHistoEvents", "fHistoEvents", 6, -0.5, 5.5);
+  TString labelEv[6] = {"RejectedDeltaMismatch", "AcceptedDeltaMismatch", "NotSelected", "TimeStampCut", "Selected","AcceptedMultCut"};
   for (Int_t ibin = 1; ibin <= fHistoEvents->GetNbinsX(); ibin++){
     fHistoEvents->GetXaxis()->SetBinLabel(ibin, labelEv[ibin-1].Data());
   }
@@ -814,6 +852,30 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fOutput->Add(fHistoNsigmaTOF);
   }
   
+  if(fUseMultCorrection){
+
+    Int_t nMultBins      = 200;
+    Float_t firstMultBin = -0.5;
+    Float_t lastMultBin  = 199.5;
+    const char *estimatorName="tracklets";
+    if(fMultiplicityEstimator==kVZERO || fMultiplicityEstimator==kVZEROA || fMultiplicityEstimator==kVZEROEq || fMultiplicityEstimator==kVZEROAEq) {
+      nMultBins = 400;
+      lastMultBin = 799.5;
+      estimatorName = "vzero";
+    }
+
+    fHistoNtrUnCorr = new TH1F("fHistoNtrUnCorr", Form("Uncorrected %s mulitplicity; %s; Entries",estimatorName,estimatorName),nMultBins, firstMultBin, lastMultBin);
+    fHistoNtrCorr   = new TH1F("fHistoNtrCorr", Form("Corrected %s mulitplicity; %s; Entries",estimatorName,estimatorName),nMultBins, firstMultBin, lastMultBin);
+
+    fHistoVzVsNtrUnCorr = new TH2F("fHistoVzVsNtrUnCorr", Form("VtxZ vs Uncorrected %s mulitplicity; VtxZ; %s; Entries",estimatorName,estimatorName), 300,-15.,15., nMultBins, firstMultBin, lastMultBin);
+    fHistoVzVsNtrCorr   = new TH2F("fHistoVzVsNtrCorr", Form("VtxZ vs Corrected %s mulitplicity; VtxZ; %s; Entries",estimatorName,estimatorName), 300,-15.,15., nMultBins, firstMultBin, lastMultBin);
+
+    fOutput->Add(fHistoNtrUnCorr);
+    fOutput->Add(fHistoNtrCorr);
+    fOutput->Add(fHistoVzVsNtrUnCorr);
+    fOutput->Add(fHistoVzVsNtrCorr);
+  }
+
   PostData(1, fOutput);
   PostData(4, fVariablesTreeSgn);
   PostData(5, fVariablesTreeBkg);
@@ -843,10 +905,15 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
 
+  fCounterC = new AliNormalizationCounter("NormalizationCounterCorrMult");
+  fCounterC->SetStudyMultiplicity(kTRUE,1.);
+  fCounterC->Init();
+
   fListCounters = new TList();
   fListCounters->SetOwner();
   fListCounters->SetName("ListCounters");
   fListCounters->Add(fCounter);
+  fListCounters->Add(fCounterC);
   
   PostData(2, fListCounters);
   
@@ -1158,9 +1225,91 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
     return;
   }
   
+  Int_t fNTracklets_03=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-0.3,0.3);
+  Int_t fNTracklets_05=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-0.5,0.5);
+  Int_t fNTracklets_16=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6);
+
+  Int_t vzeroMult=0, vzeroMultA=0, vzeroMultC=0;
+  Int_t vzeroMultEq=0, vzeroMultAEq=0, vzeroMultCEq=0;
+  AliAODVZERO *vzeroAOD = (AliAODVZERO*)aodEvent->GetVZEROData();
+  if(vzeroAOD) {
+    vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+    vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
+    vzeroMult = vzeroMultA + vzeroMultC;
+    vzeroMultAEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(aodEvent));
+    vzeroMultCEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(aodEvent));
+    vzeroMultEq = vzeroMultAEq + vzeroMultCEq;
+  }
+
+  Int_t countMult = fNTracklets_1;
+  if(fMultiplicityEstimator==kNtrk03) { countMult = fNTracklets_03; }
+  else if(fMultiplicityEstimator==kNtrk05) { countMult = fNTracklets_05; }
+  else if(fMultiplicityEstimator==kNtrk10to16) { countMult = fNTracklets_16  - fNTracklets_1; }
+  else if(fMultiplicityEstimator==kVZERO) { countMult = vzeroMult; }
+  else if(fMultiplicityEstimator==kVZEROA) { countMult = vzeroMultA; }
+  else if(fMultiplicityEstimator==kVZEROEq) { countMult = vzeroMultEq; }
+  else if(fMultiplicityEstimator==kVZEROAEq) { countMult = vzeroMultAEq; }
+
+  // Double_t countTreta1corr = fNTracklets_1;
+  Double_t countCorr=countMult;
+
+  if(fUseMultCorrection){
+    // In case of VZERO multiplicity, consider the zvtx correction flag
+    //  fDoVZER0ParamVertexCorr: 0= none, 1= usual d2h, 2=AliESDUtils
+    Bool_t isDataDrivenZvtxCorr=kTRUE;
+    Int_t vzeroMultACorr=vzeroMultA, vzeroMultCCorr=vzeroMultC, vzeroMultCorr=vzeroMult;
+    Int_t vzeroMultAEqCorr=vzeroMultAEq, vzeroMultCEqCorr=vzeroMultCEq, vzeroMultEqCorr=vzeroMultEq;
+
+    if( (fMultiplicityEstimator==kVZERO) || (fMultiplicityEstimator==kVZEROA) ||
+        (fMultiplicityEstimator==kVZEROEq) || (fMultiplicityEstimator==kVZEROAEq)  )
+    {
+      if(fDoVZER0ParamVertexCorr==0){
+        // do not correct
+        isDataDrivenZvtxCorr=kFALSE;
+      }
+      else if (fDoVZER0ParamVertexCorr==2){
+        // use AliESDUtils correction
+        Float_t zvtx = fVtx1->GetZ();
+        isDataDrivenZvtxCorr=kFALSE;
+        vzeroMultACorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultA,zvtx));
+        vzeroMultCCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0C(vzeroMultC,zvtx));
+        vzeroMultCorr = vzeroMultACorr + vzeroMultCCorr;
+        vzeroMultAEqCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultAEq,zvtx));
+        vzeroMultCEqCorr =static_cast<Int_t>( AliESDUtils::GetCorrV0C(vzeroMultCEq,zvtx));
+        vzeroMultEqCorr = vzeroMultAEqCorr + vzeroMultCEqCorr;
+        if(fMultiplicityEstimator==kVZERO) { countCorr = vzeroMultCorr; }
+        else if(fMultiplicityEstimator==kVZEROA) { countCorr = vzeroMultACorr; }
+        else if(fMultiplicityEstimator==kVZEROEq) { countCorr = vzeroMultEqCorr; }
+        else if(fMultiplicityEstimator==kVZEROAEq) { countCorr = vzeroMultAEqCorr; }
+      }
+    }
+    if(isDataDrivenZvtxCorr){
+      TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
+      if(estimatorAvg){
+        // countTreta1corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,fNTracklets_1,vtx1->GetZ(),fRefMult));
+        countCorr       = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countMult,fVtx1->GetZ(),fRefMult));
+      }
+    }
+  }
+
+  fCounterC->StoreEvent(aodEvent, fAnalCuts, fUseMCInfo,countCorr);
+  
+  Bool_t isSelectedMultCut = kTRUE;
+  if(fUseMultiplicityCut){
+    // Multiplicity cut used
+    if(countCorr >= fMultiplicityCutMin && countCorr < fMultiplicityCutMax){
+      // Within multiplicity range
+      fHistoEvents->Fill(5);
+    }
+    else{
+      // Outside multiplicity range
+      isSelectedMultCut = kFALSE;
+    }      
+  }
+
   fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent);
 
-  if ( !fIsEventSelected ) {
+  if ( !fIsEventSelected || !isSelectedMultCut) {
     fHistoEvents->Fill(2);
     return; // don't take into account not selected events
   }
@@ -1186,6 +1335,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
 
   fHistoCentrality->Fill(fCentrality);
     
+  if(fUseMultCorrection){
+    fHistoNtrUnCorr->Fill(countMult);
+    fHistoNtrCorr->Fill(countCorr);
+    fHistoVzVsNtrUnCorr->Fill(fVtx1->GetZ(),countMult);
+    fHistoVzVsNtrCorr->Fill(fVtx1->GetZ(),countCorr);
+  }
+    
   //Setting magnetic field for KF vertexing
   fBField = aodEvent->GetMagneticField();
   AliKFParticle::SetField(fBField);
@@ -1197,18 +1353,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
 			    array3Prong, mcHeader);
   }
   fCounter->StoreCandidates(aodEvent, nSelectedAnal, kFALSE);
-
-
-  //Method to get tracklet multiplicity from event
-  
-  //  Double_t countTreta1corr = fNTracklets_1;
-  
-  // //get corrected tracklet multiplicity
-  // TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
-  // if(estimatorAvg) {
-  //   countTreta1corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,fNTracklets_1,fVtx1->GetZ(),fRefMult));
-  // } 
-  
   
   Double_t nchWeight = 1.;
   if (fNTracklets_1 > 0) {
@@ -1896,11 +2040,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     Double_t countTreta1corr = fNTracklets_1; 
     
     AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
-    // TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
-    // if(estimatorAvg) {
-    //   countTreta1corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, fNTracklets_1, fVtx1->GetZ(), fRefMult));
-    // } 
-    
+
+    if(fUseMultCorrection){
+      TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
+      if(estimatorAvg) {
+        countTreta1corr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, fNTracklets_1, fVtx1->GetZ(), fRefMult));
+      }
+    }    
     
     AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(part->GetPrimaryVtx());
     
@@ -3003,42 +3149,59 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVAApp::FindLcLabel(AliAODRecoCascadeHF* ca
   
 }
 
+//____________________________________________________________________________
+TProfile* AliAnalysisTaskSELc2V0bachelorTMVAApp::GetEstimatorHistogram(const AliVEvent* event){
+  /// Get Estimator Histogram from period event->GetRunNumber();
+  ///
+  /// If you select SPD tracklets in |eta|<1 you should use type == 1
+    
+  Int_t runNo  = event->GetRunNumber();
+  Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+  
+  if(fYearNumber==10){
+    if(runNo>114930 && runNo<117223) period = 0;//10b
+    if(runNo>119158 && runNo<120830) period = 1;//10c
+    if(runNo>122373 && runNo<126438) period = 2;//10d
+    if(runNo>127711 && runNo<130851) period = 3;//10e
+    if(period<0 || period>3) return 0;
+  }else if(fYearNumber==16){
+    if(runNo>=252235 && runNo<=252375)period = 0;//16d
+    if(runNo>=252603 && runNo<=253591)period = 1;//16e
+    if(runNo>=254124 && runNo<=254332)period = 2;//16g
+    if(runNo>=254378  && runNo<=255469 )period = 3;//16h_1
+    if(runNo>=254418  && runNo<=254422 )period = 4;//16h_2 negative mag
+    if(runNo>=256146  && runNo<=256420 )period = 5;//16j
+    if(runNo>=256504  && runNo<=258537 )period = 6;//16k
+    if(runNo>=258883  && runNo<=260187)period = 7;//16l
+    if(runNo>=262395  && runNo<=264035 )period = 8;//16o
+    if(runNo>=264076  && runNo<=264347 )period = 9;//16p
+  }else if(fYearNumber==17){
+    if(runNo>=270822 && runNo<=270830)period = 0;//17e
+    if(runNo>=270854 && runNo<=270865)period = 1;//17f
+    if(runNo>=271868 && runNo<=273103)period = 2;//17h
+    if(runNo>=273591  && runNo<=274442)period = 3;//17i
+    if(runNo>=274593  && runNo<=274671)period = 4;//17j 
+    if(runNo>=274690  && runNo<=276508)period = 5;//17k
+    if(runNo>=276551  && runNo<=278216)period = 6;//17l
+    if(runNo>=278914  && runNo<=280140)period = 7;//17m
+    if(runNo>=280282   && runNo<=281961)period = 8;//17o
+    if(runNo>=282504  && runNo<=282704)period = 9;//17r
+  }else if(fYearNumber==18){     
+    if(runNo>=285008 && runNo<=285447)period = 0;//18b
+    if(runNo>=285978 && runNo<=286350)period = 1;//18d
+    if(runNo>=286380 && runNo<=286937)period = 2;//18e
+    if(runNo>=287000  && runNo<=287977)period = 3;//18f
+    if(runNo>=288619  && runNo<=288750)period = 4;//18g
+    if(runNo>=288804  && runNo<=288806)period = 5;//18h
+    if(runNo>=288861  && runNo<=288909 )period = 6;//18i
+    if(runNo==288943)period = 7;//18j
+    if(runNo>=289165   && runNo<=289201)period = 8;//18k
+    if(runNo>=289240  && runNo<=289971)period = 9;//18l
+    if(runNo>=290222  && runNo<=292839)period = 10;//18m
+    if(runNo>=293357   && runNo<=293359)period = 11;//18n
+    if(runNo>=293368   && runNo<=293898)period = 12;//18o
+    if(runNo>=294009  && runNo<=294925)period = 13;//18p
+  }
+  return fMultEstimatorAvg[period];
 
-// TProfile* AliAnalysisTaskSELc2V0bachelorTMVAApp::GetEstimatorHistogram(const AliVEvent* event){
-//   /// Get estimator histogram from period based on event->GetRunNumber();
-
-//   Int_t runNo = event->GetRunNumber();
-//   Int_t period = -1;
-//   switch (fAnalysisType) {    // flag to set which system and year is being used
-//       case kpPb2013: //0 = LHC13b, 1 = LHC13c
-//          if (runNo > 195343 && runNo < 195484) period = 0;
-//          if (runNo > 195528 && runNo < 195678) period = 1;
-//          if (period < 0 || period > 1)  { AliInfo(Form("Run number %d not found for LHC13!",runNo)); return 0;}
-//          break;
-//       case kpPb2016: //0 = LHC16q, 265499 -- 265525 || 265309 -- 265387, 1 = LHC16q, 265435, 2 = LHC16q, 265388 -- 265427, 3 = LHC16t, 267163 -- 267166
-//          if ((runNo >=265499 && runNo <=265525) || (runNo >= 265309 && runNo <= 265387)) period = 0;
-//          else if (runNo == 265435) period = 1;
-//          else if (runNo >= 265388 && runNo <= 265427) period = 2;
-//          else if (runNo >=267163 && runNo <=276166) period = 3;
-//          if (period < 0 || period > 3) { AliInfo(Form("Run number %d not found for LHC16 pPb!",runNo)); return 0;}
-//          break;
-//       case kpp2016: //0 = LHC16j, 1 = LHC16k, 2 = LHC16l
-//          if (runNo >= 256219 && runNo <= 256418) period = 0;
-//          else if (runNo >= 256504 && runNo <= 258537) period = 1;
-//          else if (runNo >= 258883 && runNo <= 260187) period = 2;
-//          if (period < 0 || period > 2) {AliInfo(Form("Run number %d not found for LHC16 pp!",runNo)); return 0;}
-//          break;
-//       case kpp2010: // 0 = LHC10b, 1 = LHC10c, 2 = LHC10d, 3 = LHC10e
-//          if (runNo > 114930 && runNo < 117223) period = 0;
-//          if (runNo > 119158 && runNo < 120830) period = 1;
-//          if (runNo > 122373 && runNo < 126438) period = 2;
-//          if (runNo > 127711 && runNo < 130851) period = 3; 
-//          if (period < 0 || period > 3) {AliInfo(Form("Run number %d not found for LHC10 pp!",runNo)); return 0;}
-//          break;
-//       default:       //no valid switch
-//          return 0;
-//       break;
-//   }
-
-//   return fMultEstimatorAvg[period];
-// }
+}

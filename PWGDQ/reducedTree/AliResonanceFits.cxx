@@ -88,6 +88,7 @@ AliResonanceFits::AliResonanceFits() :
   fBkgCombinatorial(0x0),
   fBkgResidual(0x0),
   fSoverB(0x0),
+  fSoverBfromMCshape(0x0),
   fFitValues(),
   fMatchingIsDone(kFALSE),
   fMinuitFitter(0x0),
@@ -110,13 +111,13 @@ AliResonanceFits::~AliResonanceFits()
   //
   // De-constructor
   //
-  if(fSEOS) delete fSEOS;
+  /*if(fSEOS) delete fSEOS;
   if(fMEOS) delete fMEOS;
   if(fSELSleg1) delete fSELSleg1;
   if(fSELSleg2) delete fSELSleg2;
   if(fMELSleg1) delete fMELSleg1;
   if(fMELSleg2) delete fMELSleg2;
-  if(fSEOS_MCtruth) delete fSEOS_MCtruth;
+  if(fSEOS_MCtruth) delete fSEOS_MCtruth;*/
   if(fMinuitFitter) delete fMinuitFitter;
   if(fResidualFitFunc) delete fResidualFitFunc;
 }
@@ -266,6 +267,7 @@ Bool_t AliResonanceFits::Initialize() {
    if(fBkgResidual) {delete fBkgResidual; fBkgResidual=0;}
    if(fBkg) {delete fBkg; fBkg = 0;}
    if(fSoverB) {delete fSoverB; fSoverB = 0;}
+   if(fSoverBfromMCshape) {delete fSoverBfromMCshape; fSoverBfromMCshape = 0;}
    
    // Check the needed user histograms
    if(!fSEOS) {
@@ -1072,7 +1074,7 @@ void AliResonanceFits::FitInvMass() {
       for(Int_t i=0;i<fBkgFitFunction->GetNpar();++i)
          fBkgFitFunction->SetParameter(i, fGlobalFitFunction->GetParameter(i+1));
       //fBkg->Scale(fGlobalFitFunction->GetParameter(1));
-      fSignalMCshape->Scale(fGlobalFitFunction->GetParameter(0));
+      //fSignalMCshape->Scale(fGlobalFitFunction->GetParameter(0));
       //fSplusResidualBkg->Draw();
       //fBkgFitFunction->Draw("same");
       
@@ -1116,6 +1118,7 @@ Bool_t AliResonanceFits::Process() {
       
    if(fSig) {delete fSig; fSig = 0;}
    if(fSoverB) {delete fSoverB; fSoverB = 0;}
+   if(fSoverBfromMCshape) {delete fSoverBfromMCshape; fSoverBfromMCshape = 0;}
    if(!(fOptionBkgMethod==kBkgFitFunction || fOptionBkgMethod==kBkgMixedEventAndResidualFit)) {
       // build the signal projection
       if(fgOptionUse2DMatching)
@@ -1125,8 +1128,9 @@ Bool_t AliResonanceFits::Process() {
       fSig->Add(fBkg, -1.0);
    
       // build the S/B projection
-      if(fgOptionUse2DMatching)
+      if(fgOptionUse2DMatching) {
          fSoverB = (TH2D*)fSig->Clone(Form("fSoverB_%.6f", gRandom->Rndm()));
+      }
       else {
          fSoverB = (TH1D*)fSig->Clone(Form("fSoverB_%.6f", gRandom->Rndm()));
       }
@@ -1140,14 +1144,26 @@ Bool_t AliResonanceFits::Process() {
          fSig->SetBinError(ib, fSplusB->GetBinError(ib));
       }
       fSoverB = (TH1D*)fSig->Clone(Form("fSoverB_%.6f", gRandom->Rndm()));
+      if(fSignalMCshape)
+         fSoverBfromMCshape = (TH1D*)fSig->Clone(Form("fSoverBfromMCshape_%.6f", gRandom->Rndm()));
       for(Int_t ib=1; ib<=fSoverB->GetXaxis()->GetNbins(); ++ib) {
+         Double_t m=fSoverB->GetXaxis()->GetBinCenter(ib);
          if(TMath::Abs(fBkgFitFunction->Eval(fSoverB->GetXaxis()->GetBinCenter(ib)))>1.0e-8) {
-            fSoverB->SetBinContent(ib, fSoverB->GetBinContent(ib) / fBkgFitFunction->Eval(fSoverB->GetXaxis()->GetBinCenter(ib)));
-            fSoverB->SetBinError(ib, fSoverB->GetBinError(ib) / fBkgFitFunction->Eval(fSoverB->GetXaxis()->GetBinCenter(ib)));
+            fSoverB->SetBinContent(ib, fSoverB->GetBinContent(ib) / fBkgFitFunction->Eval(m));
+            fSoverB->SetBinError(ib, fSoverB->GetBinError(ib) / fBkgFitFunction->Eval(m));
+            if(fSignalMCshape) {
+               Double_t mcSignal = fSignalMCshape->GetBinContent(fSignalMCshape->GetXaxis()->FindBin(m));
+               fSoverBfromMCshape->SetBinContent(ib, fGlobalFitFunction->GetParameter(0)*mcSignal / fBkgFitFunction->Eval(m));
+               fSoverBfromMCshape->SetBinError(ib, fGlobalFitFunction->GetParError(0)*mcSignal / fBkgFitFunction->Eval(m));
+            }
          }
          else { 
             fSoverB->SetBinContent(ib,0.);
             fSoverB->SetBinError(ib,0.);
+            if(fSignalMCshape) {
+               fSoverBfromMCshape->SetBinContent(ib,0.);
+               fSoverBfromMCshape->SetBinError(ib,0.);
+            }
          }
       }
       //fSig->Draw();
@@ -1159,14 +1175,26 @@ Bool_t AliResonanceFits::Process() {
          fSig->SetBinContent(ib, fSig->GetBinContent(ib)-fBkgFitFunction->Eval(fSig->GetXaxis()->GetBinCenter(ib)));
       }
       fSoverB = (TH1D*)fSig->Clone(Form("fSoverB_%.6f", gRandom->Rndm()));
+      if(fSignalMCshape)
+         fSoverBfromMCshape = (TH1D*)fSig->Clone(Form("fSoverBfromMCshape_%.6f", gRandom->Rndm()));
       for(Int_t ib=1; ib<=fSoverB->GetXaxis()->GetNbins(); ++ib) {
-         if(TMath::Abs(fBkg->GetBinContent(ib) + fBkgFitFunction->Eval(fSoverB->GetXaxis()->GetBinCenter(ib)))>1.0e-8) {
-            fSoverB->SetBinContent(ib, fSoverB->GetBinContent(ib) / (fBkg->GetBinContent(ib) + fBkgFitFunction->Eval(fSoverB->GetXaxis()->GetBinCenter(ib))));
-            fSoverB->SetBinError(ib, fSoverB->GetBinError(ib) / (fBkg->GetBinContent(ib) + fBkgFitFunction->Eval(fSoverB->GetXaxis()->GetBinCenter(ib))));
+         Double_t m=fSoverB->GetXaxis()->GetBinCenter(ib);
+         if(TMath::Abs(fBkg->GetBinContent(ib) + fBkgFitFunction->Eval(m))>1.0e-8) {
+            fSoverB->SetBinContent(ib, fSoverB->GetBinContent(ib) / (fBkg->GetBinContent(ib) + fBkgFitFunction->Eval(m)));
+            fSoverB->SetBinError(ib, fSoverB->GetBinError(ib) / (fBkg->GetBinContent(ib) + fBkgFitFunction->Eval(m)));
+            if(fSignalMCshape) {
+               Double_t mcSignal = fSignalMCshape->GetBinContent(fSignalMCshape->GetXaxis()->FindBin(m));
+               fSoverBfromMCshape->SetBinContent(ib, fGlobalFitFunction->GetParameter(0)*mcSignal / (fBkg->GetBinContent(ib) + fBkgFitFunction->Eval(m)));
+               fSoverBfromMCshape->SetBinError(ib, fGlobalFitFunction->GetParError(0)*mcSignal / (fBkg->GetBinContent(ib) + fBkgFitFunction->Eval(m)));
+            }
          }
          else {
             fSoverB->SetBinContent(ib,0.);
             fSoverB->SetBinError(ib,0.);
+            if(fSignalMCshape) {
+               fSoverBfromMCshape->SetBinContent(ib,0.);
+               fSoverBfromMCshape->SetBinError(ib,0.);
+            }
          }
       }
       //fSig->Draw();

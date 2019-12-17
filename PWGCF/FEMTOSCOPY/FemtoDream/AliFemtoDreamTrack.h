@@ -13,6 +13,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliFemtoDreamBasePart.h"
 #include "AliPIDResponse.h"
+#include "AliNanoAODTrack.h"
 class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
  public:
   AliFemtoDreamTrack();
@@ -148,8 +149,9 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliFemtoDreamTrack &operator=(const AliFemtoDreamTrack &obj);
   AliFemtoDreamTrack(const AliFemtoDreamTrack&);
   void Reset();
-  float GetBeta(AliAODTrack *track);
-  float GetBeta(AliESDtrack *track);
+  float GetBeta(AliNanoAODTrack *track) const;
+  float GetBeta(AliAODTrack *track) const;
+  float GetBeta(AliESDtrack *track) const;
   bool CheckGlobalTrack(const Int_t TrackID);
   bool CheckGlobalVTrack(const Int_t TrackID);
   void SetAODTrackingInformation();
@@ -162,6 +164,8 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   void SetAODPIDInformation();
   void SetESDPIDInformation();
   void SetMCInformation();
+  void SetMCInformation(AliVEvent* event);
+  void SetMCInformation(TClonesArray* array, int trackID);
   void SetMCInformation(AliMCEvent *mcEvent);
   AliPIDResponse *fPIDResponse;
   AliPIDResponse::EDetPidStatus fstatusITS;

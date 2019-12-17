@@ -265,6 +265,9 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2017pp5TeVLowPtAn();
   void InitD0toKpi2017pp5TeVLowPtAn_finebins();
   void InitD0toKpi2016pp13TeV();
+  void InitD0toKpi20161718pp13TeVmb();
+  void InitD0toKpi20161718pp13TeVlm();
+  void InitD0toKpi20161718pp13TeVhm();
   void InitD0toKpi2011PbPb07half();
   void InitD0toKpi2010PbPb020();
   void InitD0toKpi2010PbPb4080();
@@ -330,6 +333,7 @@ class AliHFSystErr : public TNamed
   void InitLctopKpi2013pPbBDT();
   void InitLctopKpi2016pPb();
   void InitLctopKpi2017pp();
+  void InitLctopKpi20161718pp13TeV();
 
   void InitLctopK0S2010pp();
   void InitLctopK0S2013pPb();
@@ -360,7 +364,9 @@ class AliHFSystErr : public TNamed
   void InitDstoKKpi2015PbPb3050();
   void InitDstoKKpi2015PbPb6080();
   void InitDstoKKpi2018PbPb010();
+  void InitDstoKKpi2018PbPb010BDT();
   void InitDstoKKpi2018PbPb3050();
+  void InitDstoKKpi2018PbPb3050BDT();
 
   void InitDstartoD0pi2015PbPb010();
   void InitDstartoD0pi2015PbPb3050();
@@ -371,7 +377,7 @@ class AliHFSystErr : public TNamed
 
   void InitD0toKpi2018PbPb010();
   void InitD0toKpi2018PbPb3050();
-
+  void InitD0toKpi2018PbPb010LowPtAn();
 
   TH1F* ReflectHisto(TH1F *hin) const;
 

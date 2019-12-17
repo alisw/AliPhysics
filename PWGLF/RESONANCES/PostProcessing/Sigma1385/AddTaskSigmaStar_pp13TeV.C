@@ -466,7 +466,8 @@ Bool_t Config_Lambdapi(
   for(Int_t i=0;i<22;i++){
     if(!use[i]) continue;
     // create output
-    AliRsnMiniOutput *out = task->CreateOutput(Form("Lambdapi_%s%s",name[i].Data(),suffix),"SPARSE",comp[i].Data());
+    AliRsnMiniOutput* out = task->CreateOutput(
+        Form("Lambdapi_%s%s", name[i].Data(), suffix), "HIST", comp[i].Data());
     // selection settings
     out->SetCutID(0,cutID1[i]);
     out->SetCutID(1,cutID2);

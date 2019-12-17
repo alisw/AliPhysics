@@ -53,6 +53,8 @@ public:
   void  SaveV0s(Bool_t var, AliAnalysisCuts* v0Cuts = 0)  { fReplicator->SetSaveV0s(var); fReplicator->SetV0Cuts(v0Cuts); if (fSaveCutsFlag && v0Cuts) fQAOutput->Add(v0Cuts); }
   void  SaveCascades(Bool_t var, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveCascades(var); fReplicator->SetCascadeCuts(cuts); if (fSaveCutsFlag && cuts) fQAOutput->Add(cuts); }
   void  SaveConversionPhotons(Bool_t var, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveConversionPhotons(var); fReplicator->SetConversionPhotonCuts(cuts); if (fSaveCutsFlag && cuts) fQAOutput->Add(cuts); }
+  void  SaveConversionPhotonsFromDelta(Bool_t var, TString name, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveConversionPhotons(var); fReplicator->SetPhotonDeltaBranchName(name); fReplicator->SetConversionPhotonCuts(cuts); if (fSaveCutsFlag && cuts) fQAOutput->Add(cuts); }
+  void  FilterMCStack(AliAnalysisCuts* cuts = nullptr) { fReplicator->SetMCParticleCuts(cuts); if (fSaveCutsFlag && cuts) fQAOutput->Add(cuts); }
   
   AliNanoAODReplicator* GetReplicator() { return fReplicator; }
 

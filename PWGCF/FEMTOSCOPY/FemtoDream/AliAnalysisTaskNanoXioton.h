@@ -21,7 +21,7 @@
 class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskNanoXioton();
-  AliAnalysisTaskNanoXioton(const char* name);
+  AliAnalysisTaskNanoXioton(const char* name, bool isMC);
   //AliAnalysisTaskNanoXioton(const AliAnalysisTaskNanoXioton& analysis) = default;
   //AliAnalysisTaskNanoXioton& operator=(const AliAnalysisTaskNanoXioton& analysis) = default;
   virtual ~AliAnalysisTaskNanoXioton();
@@ -51,6 +51,8 @@ class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
     fConfig=config;
   }
  private:
+  AliAnalysisTaskNanoXioton(const AliAnalysisTaskNanoXioton &task);
+  AliAnalysisTaskNanoXioton &operator=(const AliAnalysisTaskNanoXioton &task);
   bool fisLightWeight;//
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//
@@ -58,13 +60,17 @@ class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
   AliFemtoDreamTrack* fTrack;//!
   AliFemtoDreamTrackCuts* fProton;//
   TList* fProtonList;//!
+  TList* fProtonMCList;//!
   AliFemtoDreamTrackCuts* fAntiProton;//
   TList* fAntiProtonList;//!
+  TList* fAntiProtonMCList;//!
   AliFemtoDreamCascade* fCascade;//!
   AliFemtoDreamCascadeCuts* fXi;//
   TList* fXiList;
+  TList* fXiMCList;
   AliFemtoDreamCascadeCuts* fAntiXi;//
   TList* fAntiXiList;
+  TList* fAntiXiMCList;
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!

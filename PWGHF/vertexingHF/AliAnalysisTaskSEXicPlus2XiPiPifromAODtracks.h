@@ -135,16 +135,29 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fHistonSigmaTOFpi;                  //!<! nSigma of TOF pion
   TH1F*  fHistoProbPion;                     //!<! Probability to be pion
 
-  TH2F*  fHistoXiMassvsPtRef;                    //!<! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef1;                    //!<! Reference Xi mass spectra 
   TH2F*  fHistoXiMassvsPtRef2;                    //!<! Reference Xi mass spectra 
   TH2F*  fHistoXiMassvsPtRef3;                    //!<! Reference Xi mass spectra 
   TH2F*  fHistoXiMassvsPtRef4;                    //!<! Reference Xi mass spectra 
   TH2F*  fHistoXiMassvsPtRef5;                    //!<! Reference Xi mass spectra 
   TH2F*  fHistoXiMassvsPtRef6;                    //!<! Reference Xi mass spectra 
-  TH1F*  fHistoPiPtRef;                      //!<! Reference pi spectra 
-
+  TH1F*  fHistoPiPtRef;                      //!<! Reference pi spectra
+  TH1F*  fQAHistoNSelectedTracks;            //!<! QA histo for number of selected tracks/event
+  TH1F*  fQAHistoNSelectedCasc;            //!<! QA histo for number of selected Cascades/event
+  TH1F*  fQAHistoDCApi1pi2;                         //!<! QA histo for dca betwen two pions from XiC
+  TH1F*  fQAHistoAODPrimVertX;                   //!<! Coordinates of the primary vertex
+  TH1F*  fQAHistoAODPrimVertY;                   //!<! Coordinates of the primary vertex
+  TH1F*  fQAHistoAODPrimVertZ;                   //!<! Coordinates of the primary vertex
+  TH1F*  fQAHistoRecoPrimVertX;                   //!<! Coordinates of the reconstructed primary vertex without XiC decay tracks
+  TH1F*  fQAHistoRecoPrimVertY;                   //!<! Coordinates of the reconstructed primary vertex without XiC decay tracks
+  TH1F*  fQAHistoRecoPrimVertZ;                   //!<! Coordinates of the reconstructed primary vertex without XiC decay tracks
+  TH1F*  fQAHistoSecondaryVertexX;               //!<! Coordinates of the reconstructed secondary vertex
+  TH1F*  fQAHistoSecondaryVertexY;               //!<! Coordinates of the reconstructed secondary vertex
+  TH1F*  fQAHistoSecondaryVertexZ;               //!<! Coordinates of the reconstructed secondary vertex
+  TH1F*  fQAHistoSecondaryVertexXY;               //!<! Coordinates of the reconstructed secondary vertex
+  
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,6); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,7); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif

@@ -48,7 +48,7 @@ enum eventMixConfig { kDisabled = -1,
 };
 
 
-AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusMultiplicity
+ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusMult
 (
  Bool_t      isMC,
  Bool_t      isPP,

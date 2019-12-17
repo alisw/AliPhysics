@@ -23,10 +23,10 @@
 #ifndef ALITRDDIGITSFILTER_H
 #define ALITRDDIGITSFILTER_H
 
-#include "AliAnalysisTaskSE.h"
+#include "AliTRDdigitsTask.h"
 
-#include <list>
 #include <vector>
+#include <list>
 
 class TTreeStream;
 class AliInputEventHandler;
@@ -47,47 +47,37 @@ class Riostream;
 class TChain;
 class TArrayF;
 class TFile;
+class THnSparse;
 class TH2;
 class TF1;
 class TH1;
 class TObjArray;
 
 
-class AliTRDdigitsFilter : public AliAnalysisTaskSE {
+class AliTRDdigitsFilter : public AliTRDdigitsTask {
 
 public:
 
-  typedef enum {
-    kPidUndef = 0,
-    kPidError = 1,
-    kPidV0Electron = 2,
-    kPidV0Pion = 3,
-    kPidV0Proton = 4
-  } EPID_t;
-
   AliTRDdigitsFilter(const char *name = "trd_digits_filter");
   virtual ~AliTRDdigitsFilter();
+
   virtual void   UserCreateOutputObjects();
-  virtual Bool_t UserNotify();
+  //virtual Bool_t UserNotify();
   virtual void   UserExec(Option_t *);
-  virtual void   Process(AliESDEvent *const esdEvent=0);
-  virtual void   Terminate(const Option_t*);
+  virtual void   Process();
+  //virtual void   Terminate(const Option_t*);
 
-  AliESDv0KineCuts* GetV0cuts() {return fV0cuts;}
+  //AliESDv0KineCuts* GetV0cuts() {return fV0cuts;}
 
-  void AcceptParticles(TString label, EPID_t pid,
+  void AcceptTracks(TString label, EPID_t pid,
       Float_t minPt, Float_t maxPt, Float_t fraction);
 
-  //EPID_t GetPidTag(Int_t trackIndex) const;
+  void AcceptEvents(TString label,
+                    Float_t minCent, Float_t maxCent, Float_t fraction);
 
+  void PrintSettings();
 
-protected:
-
-  AliESDv0KineCuts *fV0cuts;        //! ESD V0 cuts
-
-  std::vector<EPID_t> fPidTags;     //! vector of PID infor for all tracks
-
-  struct AcceptCrit {
+  struct TrackCrit {
     TString fLabel;
     EPID_t fPid;
     Float_t fMinPt;
@@ -95,13 +85,30 @@ protected:
     Float_t fFraction;
   };
 
-  std::list<AcceptCrit> fAcceptCriteria; //! criteria to accept tracks
+  std::vector<TrackCrit> fTrackCriteria; // criteria to accept tracks
 
-  void ReadDigits();
-  void WriteDigits();
+  struct EventCrit {
+    TString fLabel;
+    Float_t fMinCent;
+    Float_t fMaxCent;
+    Float_t fFraction;
+  };
+
+  std::vector<EventCrit> fEventCriteria; // criteria to accept events
+
+
+protected:
+
+  //AliESDv0KineCuts *fV0cuts;        //! ESD V0 cuts
+
+  //std::vector<EPID_t> fPidTags;     //! vector of PID info for all tracks
+
+
+  //Bool_t ReadDigits();
+  //void WriteDigits();
 
   //void SetupV0qa();
-  void FillV0PIDlist();
+  //void FillV0PIDlist();
   //void ClearV0PIDlist();
 
   Bool_t PassTrackCuts(AliESDtrack *fESDTrack=0,Int_t thres=0);
@@ -110,27 +117,30 @@ protected:
 private:
   //
   //
-  AliESDEvent *fESDEvent;              //! ESD object
+  //AliESDEvent *fESDevent;              //! ESD object
 
-  TObjArray *fOutputContainer;         //! output data container
-  AliESDtrackCuts *fESDtrackCuts;      //! basic cut variables for all non-V0 tracks
-  AliESDtrackCuts *fESDtrackCutsV0;    //! basic cut variables for all V0 tracks
+  //TObjArray *fOutputContainer;         //! output data container
+  //AliESDtrackCuts *fESDtrackCuts;      //! basic cut variables for all non-V0 tracks
+  //AliESDtrackCuts *fESDtrackCutsV0;    //! basic cut variables for all V0 tracks
 
-  TList   *fListQA;                    //! List with filter QA histograms
+  //TList   *fListQA;                    //! List with filter QA histograms
 
-  TFile* fDigitsInputFile;             //! Digits file for reading
-  TFile* fDigitsOutputFile;            //! Digits file for writing
+  //TFile* fDigitsInputFile;             //! Digits file for reading
+  //TFile* fDigitsOutputFile;            //! Digits file for writing
 
-  Int_t fEventNoInFile;                //! Bookkeeping
+  //Int_t fEventNoInFile;                //! Bookkeeping
 
-  AliTRDdigitsManager* fDigMan;        //! digits manager
+  //AliTRDdigitsManager* fDigMan;        //! digits manager
 
   // Histograms
-  TH2F *fhArmenteros;                 //! 2D V0 QA Hist
-  TH1F *fhEventCuts;                  //! statistics of event cuts
-  TH1F *fhPtTag;                      //! pT of PID-tagged tracks
-  TH1F *fhPtGood;                     //! pT spectrum after quality cuts
-  TH1F *fhPtAcc;                      //! pT spectrum of accepted tracks
+  THnSparse*  fhAcc;                        //! summary hist of all acc tracks
+  TH1F*       fhEventCuts;                  //! statistics of event cuts
+  TH1F*       fhPtTag;                      //! pT of PID-tagged tracks
+  TH1F*       fhPtGood;                     //! pT spectrum after quality cuts
+  TH1F*       fhPtAcc;                      //! pT spectrum of accepted track
+  TH1F*       fhCent;                       //! Centrality of event
+  TH1F*       fhCentAcc;                    //! Accepted events based on centrality
+  //-------------------------------------------------------------------------
 
   //TH1F *fhPt[fgkNSpecies];            //! pT spectrum for different species
 

@@ -113,7 +113,6 @@ void AliEventTree::InitializeTree(Bool_t saveTracks)
   fTree->Branch("Event_Vertex_Y",&fBuffer_Event_Vertex_Y,"Event_Vertex_Y/F");
   fTree->Branch("Event_Vertex_Z",&fBuffer_Event_Vertex_Z,"Event_Vertex_Z/F");
   fTree->Branch("Event_ID",&fBuffer_Event_ID,"Event_ID/L");
-  
 
   fTree->Branch("Particles_Pt",fBuffer_Particles_Pt,"Particles_Pt[Event_Number_Particles]/F");
   fTree->Branch("Particles_Eta",fBuffer_Particles_Eta,"Particles_Eta[Event_Number_Particles]/F");
@@ -132,7 +131,6 @@ void AliEventTree::InitializeTree(Bool_t saveTracks)
     fTree->Branch("Tracks_Charge",fBuffer_Tracks_Charge,"Tracks_Charge[Event_Number_Tracks]/S");
     fTree->Branch("Tracks_Label",fBuffer_Tracks_Label,"Tracks_Label[Event_Number_Tracks]/I");
     fTree->Branch("Tracks_IsGlobal",fBuffer_Tracks_IsGlobal,"Tracks_IsGlobal[Event_Number_Tracks]/O");
-    
   }
 
   fInitialized = kTRUE;
@@ -250,13 +248,6 @@ void AliAnalysisTaskEventExtractor::ExecOnce()
   if(!GetTrackContainer(1) && fSaveTracks)
     AliFatal(Form("Track container not valid, but demanded"));
 
-  GetParticleContainer(0)->SetEtaLimits(-10, 10);
-
-  if(fSaveTracks)
-  {
-    GetTrackContainer(1)->SetEtaLimits(-2, 2);
-  }
-
   // ### Execute shell script at startup
   if(!fCustomStartupScript.IsNull())
   {
@@ -295,15 +286,15 @@ Bool_t AliAnalysisTaskEventExtractor::Run()
   std::vector<AliVParticle*> particles;
   std::vector<AliVTrack*>    tracks;
 
-  GetParticleContainer(0)->ResetCurrentID();
-  while(AliVParticle *part = static_cast<AliVParticle*>(GetParticleContainer(0)->GetNextAcceptParticle()))
+  for (auto part : GetParticleContainer(0)->accepted()) {
     particles.push_back(part);
+  }
 
   if(GetParticleContainer(1) && fSaveTracks)
   {
-    GetParticleContainer(1)->ResetCurrentID();
-    while(AliVTrack *track = static_cast<AliVTrack*>(GetParticleContainer(1)->GetNextAcceptParticle()))
+    for (auto track : GetTrackContainer(1)->accepted()) {
       tracks.push_back(track);
+    }
   }
   fTree->AddEventToTree(eventID, vtx, particles, tracks);
 
@@ -353,7 +344,7 @@ inline void AliAnalysisTaskEventExtractor::FillHistogram(const char * key, Doubl
     AliError(Form("Cannot find histogram <%s> ",key));
     return;
   }
-  
+
   tmpHist->Fill(x,y,add);
 }
 
@@ -366,7 +357,7 @@ inline void AliAnalysisTaskEventExtractor::FillHistogram3D(const char * key, Dou
     AliError(Form("Cannot find histogram <%s> ",key));
     return;
   }
-  
+
   if(add)
     tmpHist->Fill(x,y,z,add);
   else
@@ -423,7 +414,7 @@ template <class T> T* AliAnalysisTaskEventExtractor::AddHistogram3D(const char* 
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEventExtractor::Terminate(Option_t *) 
+void AliAnalysisTaskEventExtractor::Terminate(Option_t *)
 {
   // Called once at the end of the analysis.
 }
@@ -431,7 +422,7 @@ void AliAnalysisTaskEventExtractor::Terminate(Option_t *)
 // ### ADDTASK MACRO
 //________________________________________________________________________
 AliAnalysisTaskEventExtractor* AliAnalysisTaskEventExtractor::AddTaskEventExtractor(TString trackArray, TString particleArray, const char* taskNameSuffix)
-{  
+{
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   TString     suffix             = "";
   if(taskNameSuffix != 0)
@@ -452,7 +443,20 @@ AliAnalysisTaskEventExtractor* AliAnalysisTaskEventExtractor::AddTaskEventExtrac
   myTask->AddMCParticleContainer(particleArray);
   myTask->AddTrackContainer(trackArray);
 
-  
+  // Configure the eta limits for the particle and track containers.
+  // They are configured here so we could modify them later if so desired.
+  // The default values are selected because the eta distribution at particle level
+  // is quite similar to the detector level eta distribution. However, we add some
+  // additional margin to be certain that we aren't artificially distorting the particle
+  // level distribution.
+  double etaMin = -2.0;
+  double etaMax = 2.0;
+  myTask->GetParticleContainer(0)->SetEtaLimits(1.5*etaMin, 1.5*etaMax);
+  if (myTask->GetTrackContainer(1))
+  {
+    myTask->GetTrackContainer(1)->SetEtaLimits(etaMin, etaMax);
+  }
+
   mgr->AddTask(myTask);
 
   // ###### Connect inputs/outputs

@@ -1216,7 +1216,7 @@ short AliHFQnVectorHandler::GetCentBin() const
 {
     short centbin = -10;
     
-    if (fCentrality >= 0. && fCentrality < -10.)
+    if (fCentrality >= 0. && fCentrality < 10.)
         centbin = 0;
     else if (fCentrality >= 10. && fCentrality < 20.)
         centbin = 1;

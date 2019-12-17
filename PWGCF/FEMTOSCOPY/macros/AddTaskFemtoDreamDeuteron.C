@@ -1,20 +1,18 @@
 #include "TROOT.h"
 #include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
-    bool isMC = false,//1
-    TString CentEst = "kInt7",//2
-    bool DCAPlots = false,//3
-    bool CombSigma = false,//4
-    bool ContributionSplitting = false//5
-)
-{
+  bool isMC = false,//1
+  TString CentEst = "kInt7",//2
+  bool DCAPlots = false,//3
+  bool CombSigma = false,//4
+  bool ContributionSplitting = false//5
+) {
 
   //Framework specific blabla
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  if (!mgr)
-  {
+  if (!mgr) {
     printf("No analysis manager to connect to!\n");
     return nullptr;
   }
@@ -27,18 +25,18 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
 
   //Now we need to setup the Event cuts, we use the Don't worry event cuts
   //from the ALICE DPG which is the offical thing to use.
-  AliFemtoDreamEventCuts *evtCuts=
-      AliFemtoDreamEventCuts::StandardCutsRun2();
+  AliFemtoDreamEventCuts *evtCuts =
+    AliFemtoDreamEventCuts::StandardCutsRun2();
   //This sets the method we want to use to clean up events with negative or too
   //low multiplicity. Usually you use the matching multiplicity estiamtor in your
   //event collection
-  evtCuts->CleanUpMult(false,false,false,true);
+  evtCuts->CleanUpMult(false, false, false, true);
 
   //Track Cuts are defined here for deuterons
-  AliFemtoDreamTrackCuts *TrackCutsDeuteronDCA=AliFemtoDreamTrackCuts::PrimDeuteronCuts(
-      isMC, true, CombSigma, ContributionSplitting);
+  AliFemtoDreamTrackCuts *TrackCutsDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+        isMC, true, CombSigma, ContributionSplitting);
   TrackCutsDeuteronDCA->SetCutCharge(1);
-  AliFemtoDreamTrackCuts *TrackCutsDeuteronMass=new AliFemtoDreamTrackCuts();
+  AliFemtoDreamTrackCuts *TrackCutsDeuteronMass = new AliFemtoDreamTrackCuts();
   TrackCutsDeuteronMass->SetPlotDCADist(DCAPlots);
   TrackCutsDeuteronMass->SetPlotCombSigma(CombSigma);
   TrackCutsDeuteronMass->SetPlotContrib(ContributionSplitting);
@@ -55,7 +53,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCutsDeuteronMass->SetDCAVtxZ(0.2);
   TrackCutsDeuteronMass->SetDCAVtxXY(0.1);
   TrackCutsDeuteronMass->SetCutSharedCls(true);
-  TrackCutsDeuteronMass->SetCutTPCCrossedRows(true,70,0.83);
+  TrackCutsDeuteronMass->SetCutTPCCrossedRows(true, 70, 0.83);
   //Here you define the PID
   TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
   //We are looking for pions rejecting them would be obstructive.
@@ -65,10 +63,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCutsDeuteronMass->SetCutSmallestSig(false);
 
   //The same things for anti deuterons
-   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA=AliFemtoDreamTrackCuts::PrimDeuteronCuts(
-      isMC, true, CombSigma, ContributionSplitting);
+  AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+        isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiDeuteronDCA->SetCutCharge(-1);
-  AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronMass=new AliFemtoDreamTrackCuts();
+  AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronMass = new AliFemtoDreamTrackCuts();
   TrackCutsAntiDeuteronMass->SetPlotDCADist(DCAPlots);
   TrackCutsAntiDeuteronMass->SetPlotCombSigma(CombSigma);
   TrackCutsAntiDeuteronMass->SetPlotContrib(ContributionSplitting);
@@ -85,7 +83,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCutsAntiDeuteronMass->SetDCAVtxZ(0.2);
   TrackCutsAntiDeuteronMass->SetDCAVtxXY(0.1);
   TrackCutsAntiDeuteronMass->SetCutSharedCls(true);
-  TrackCutsAntiDeuteronMass->SetCutTPCCrossedRows(true,70,0.83);
+  TrackCutsAntiDeuteronMass->SetCutTPCCrossedRows(true, 70, 0.83);
   //Here you define the PID
   TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
   //We are looking for pions rejecting them would be obstructive.
@@ -95,10 +93,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCutsAntiDeuteronMass->SetCutSmallestSig(false);
 
   //Track Cuts are defined here for deuterons
-  AliFemtoDreamTrackCuts *TrackCutsProtonDCA=AliFemtoDreamTrackCuts::PrimProtonCuts(
-      isMC, true, CombSigma, ContributionSplitting);
+  AliFemtoDreamTrackCuts *TrackCutsProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
+        isMC, true, CombSigma, ContributionSplitting);
   TrackCutsProtonDCA->SetCutCharge(1);
-  AliFemtoDreamTrackCuts *TrackCutsProtonMass=new AliFemtoDreamTrackCuts();
+  AliFemtoDreamTrackCuts *TrackCutsProtonMass = new AliFemtoDreamTrackCuts();
   TrackCutsProtonMass->SetPlotDCADist(DCAPlots);
   TrackCutsProtonMass->SetPlotCombSigma(CombSigma);
   TrackCutsProtonMass->SetPlotContrib(ContributionSplitting);
@@ -115,20 +113,17 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCutsProtonMass->SetDCAVtxZ(0.2);
   TrackCutsProtonMass->SetDCAVtxXY(0.1);
   TrackCutsProtonMass->SetCutSharedCls(true);
-  TrackCutsProtonMass->SetCutTPCCrossedRows(true,70,0.83);
+  TrackCutsProtonMass->SetCutTPCCrossedRows(true, 70, 0.83);
   //Here you define the PID
   TrackCutsProtonMass->SetPID(AliPID::kProton, 999.);
-  //We are looking for pions rejecting them would be obstructive.
   TrackCutsProtonMass->SetRejLowPtPionsTOF(false);
-  //this checks if the sigma of the wanted hypothesis is the smallest, and if
-  //another particle has a smaller sigma, the track is rejected.
   TrackCutsProtonMass->SetCutSmallestSig(false);
 
   //The same things for anti deuterons
-   AliFemtoDreamTrackCuts *TrackCutsAntiProtonDCA=AliFemtoDreamTrackCuts::PrimProtonCuts(
-      isMC, true, CombSigma, ContributionSplitting);
+  AliFemtoDreamTrackCuts *TrackCutsAntiProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
+        isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiProtonDCA->SetCutCharge(-1);
-  AliFemtoDreamTrackCuts *TrackCutsAntiProtonMass=new AliFemtoDreamTrackCuts();
+  AliFemtoDreamTrackCuts *TrackCutsAntiProtonMass = new AliFemtoDreamTrackCuts();
   TrackCutsAntiProtonMass->SetPlotDCADist(DCAPlots);
   TrackCutsAntiProtonMass->SetPlotCombSigma(CombSigma);
   TrackCutsAntiProtonMass->SetPlotContrib(ContributionSplitting);
@@ -145,25 +140,46 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCutsAntiProtonMass->SetDCAVtxZ(0.2);
   TrackCutsAntiProtonMass->SetDCAVtxXY(0.1);
   TrackCutsAntiProtonMass->SetCutSharedCls(true);
-  TrackCutsAntiProtonMass->SetCutTPCCrossedRows(true,70,0.83);
+  TrackCutsAntiProtonMass->SetCutTPCCrossedRows(true, 70, 0.83);
   //Here you define the PID
   TrackCutsAntiProtonMass->SetPID(AliPID::kProton, 999.);
-  //We are looking for pions rejecting them would be obstructive.
   TrackCutsAntiProtonMass->SetRejLowPtPionsTOF(false);
-  //this checks if the sigma of the wanted hypothesis is the smallest, and if
-  //another particle has a smaller sigma, the track is rejected.
   TrackCutsAntiProtonMass->SetCutSmallestSig(false);
 
-  //Now we define stuff we want for our Particle collection
-  //Thanks, CINT - will not compile due to an illegal constructor
-  //std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
-  //First we need to tell him about the particles we mix, from the
-  //PDG code the mass is obtained.
+
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
   PDGParticles.push_back(1000010020);
   PDGParticles.push_back(1000010020);
+
+  std::vector<bool> closeRejection;
+  //pairs:
+  // pp             0
+  // p bar p        1
+  // p d            2
+  // p bar d        3
+  // bar p bar p    4
+  // bar p d        5
+  // bar p bar d    6
+  // d d            7
+  // d bar d        8
+  // bar d bar d    9
+
+  const int nPairs = 10;
+  for (int i = 0; i < nPairs; ++i) {
+
+    closeRejection.push_back(false);
+  }
+
+  closeRejection[0] = true;  // pp
+  closeRejection[2] = true;  // pd
+  closeRejection[4] = true;  // barp barp
+  closeRejection[6] = true;  // barp bard
+  closeRejection[7] = true;  // dd
+  closeRejection[9] = true;  // bard bard
+
+
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -247,7 +263,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
 
   //To put all this into the task we add it to our collection config object in
   //the following way:
-  AliFemtoDreamCollConfig *config=new AliFemtoDreamCollConfig("Femto","Femto");
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
   //Do you want to have an explicit binning of the correlation function for each multiplicity
@@ -257,7 +273,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  //Here we set the mixing depth.
+  config->SetClosePairRejection(closeRejection);
+  config->SetDeltaEtaMax(0.012); // and here you set the actual values
+  config->SetDeltaPhiMax(0.012); // and here you set the actual values
   config->SetMixingDepth(10);
   /*
   //This is just to show off what would be possible in case you are interested, don't be confused by this at the beginning
@@ -286,18 +304,18 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   }
    */
   //now we create the task
-  AliAnalysisTaskFemtoDreamDeuteron *task=
-      new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault",isMC);
+  AliAnalysisTaskFemtoDreamDeuteron *task =
+    new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault", isMC);
   //THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   //kINT7 == Minimum bias
   //kHighMultV0 high multiplicity triggered by the V0 detector
-  if(CentEst == "kInt7"){
+  if (CentEst == "kInt7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     std::cout << "Added kINT7 Trigger \n";
   } else if (CentEst == "kHM") {
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
     std::cout << "Added kHighMultV0 Trigger \n";
-  }else{
+  } else {
     std::cout << "=====================================================================" << std::endl;
     std::cout << "=====================================================================" << std::endl;
     std::cout << "Centrality Estimator not set, fix it else your Results will be empty!" << std::endl;
@@ -316,7 +334,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   task->SetTrackCutsAntiProtonDCA(TrackCutsAntiProtonDCA);
   task->SetTrackCutsAntiProtonMass(TrackCutsAntiProtonMass);
   task->SetCollectionConfig(config);
-
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
@@ -324,19 +341,19 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   mgr->ConnectInput(task, 0, cinput);
-  TString addon="";
-  if (CentEst=="kInt7") {
-    addon+="MB";
-  } else if (CentEst=="kHM") {
-    addon+="HM";
+  TString addon = "";
+  if (CentEst == "kInt7") {
+    addon += "MB";
+  } else if (CentEst == "kHM") {
+    addon += "HM";
   }
 
   AliAnalysisDataContainer *coutputQA;
-  TString QAName = Form("%sQA",addon.Data());
+  TString QAName = Form("%sQA", addon.Data());
   coutputQA = mgr->CreateContainer(
-      QAName.Data(), TList::Class(),
-      AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), QAName.Data()));
+                QAName.Data(), TList::Class(),
+                AliAnalysisManager::kOutputContainer,
+                Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
 
   return task;

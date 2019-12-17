@@ -29,6 +29,8 @@ public:
     TVector3 GetMomentum() const {return fP;};
     void SetMCMomentum(double px,double py,double pz) {fMCP.SetXYZ(px,py,pz);};
     TVector3 GetMCMomentum() const {return fMCP;};
+    void SetTrackChi2perNDF(double Chi2perNDF){fTrackChi2perNDF=Chi2perNDF;};
+    double GetTrackChi2perNDF() const {return fTrackChi2perNDF;};
     void SetP(double p){fMom=p;};
     double GetP() const {return fMom;};
     void SetPt(double pT){fPt=pT;};
@@ -73,6 +75,7 @@ protected:
     int fTrackBufferSize;
     TVector3 fP;
     TVector3 fMCP;
+    double fTrackChi2perNDF;
     double fMom;
     double fPt;
     double fMCPt;

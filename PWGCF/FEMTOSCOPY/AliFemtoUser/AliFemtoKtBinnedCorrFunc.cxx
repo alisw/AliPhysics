@@ -190,3 +190,19 @@ void AliFemtoKtBinnedCorrFunc::AddOutputObjectsTo(TCollection &olist)
 
   olist.Add(output);
 }
+
+void
+AliFemtoKtBinnedCorrFunc::EventBegin(const AliFemtoEvent* ev)
+{
+  for (auto *cf : fCFBuffer) {
+    cf->EventBegin(ev);
+  }
+}
+
+void
+AliFemtoKtBinnedCorrFunc::EventEnd(const AliFemtoEvent* ev)
+{
+  for (auto *cf : fCFBuffer) {
+    cf->EventEnd(ev);
+  }
+}

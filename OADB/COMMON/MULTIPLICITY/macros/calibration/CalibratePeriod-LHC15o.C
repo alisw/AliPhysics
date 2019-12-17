@@ -305,23 +305,7 @@ CalibratePeriod_LHC15o(TString lPeriodName = "LHC15o"){
     fEstCL0 -> SetAnchorPoint      ( lDefaultCL0Anchor   ) ;
     fEstCL0 -> SetAnchorPercentile ( lDefaultCL0Percentile  ) ;
 
-    //Plus and Minus
-    AliMultEstimator *fEstCL0plus10 = new AliMultEstimator("CL0plus10", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.0)*(0.004+((fEvSel_VtxZ)-1.0)*(-0.001)))");
-    fEstCL0plus10 -> SetUseAnchor        ( kTRUE  ) ;
-    fEstCL0plus10 -> SetAnchorPoint      ( lDefaultCL0Anchor   ) ;
-    fEstCL0plus10 -> SetAnchorPercentile ( lDefaultCL0Percentile + 1.0 ) ;
-    AliMultEstimator *fEstCL0plus05 = new AliMultEstimator("CL0plus05", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.0)*(0.004+((fEvSel_VtxZ)-1.0)*(-0.001)))");
-    fEstCL0plus05 -> SetUseAnchor        ( kTRUE  ) ;
-    fEstCL0plus05 -> SetAnchorPoint      ( lDefaultCL0Anchor   ) ;
-    fEstCL0plus05 -> SetAnchorPercentile ( lDefaultCL0Percentile + 0.5 ) ;
-    AliMultEstimator *fEstCL0minus05 = new AliMultEstimator("CL0minus05", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.0)*(0.004+((fEvSel_VtxZ)-1.0)*(-0.001)))");
-    fEstCL0minus05 -> SetUseAnchor        ( kTRUE  ) ;
-    fEstCL0minus05 -> SetAnchorPoint      ( lDefaultCL0Anchor   ) ;
-    fEstCL0minus05 -> SetAnchorPercentile ( lDefaultCL0Percentile - 0.5 ) ;
-    AliMultEstimator *fEstCL0minus10 = new AliMultEstimator("CL0minus10", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.0)*(0.004+((fEvSel_VtxZ)-1.0)*(-0.001)))");
-    fEstCL0minus10 -> SetUseAnchor        ( kTRUE  ) ;
-    fEstCL0minus10 -> SetAnchorPoint      ( lDefaultCL0Anchor   ) ;
-    fEstCL0minus10 -> SetAnchorPercentile ( lDefaultCL0Percentile - 1.0 ) ;
+
 
 
     //Config central CL1

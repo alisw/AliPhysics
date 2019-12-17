@@ -88,6 +88,8 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
     int trigger=EventCuts%10;
     if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
     else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+    else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kCentral);//PbPb
+    else if(trigger==3) task->UseESDTriggerMask(AliVEvent::kSemiCentral);//PbPb
     
     // multiplicity
     bool isPP=false;
@@ -173,7 +175,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
     int j,nmult=0;
     if(!MultBins){
         for(j=0;j<=401;j++){multbins[nmult]=j-0.5; nmult++;}
-    }else if(!trigger){
+    }else if((!trigger) || (trigger==2) || (trigger==3)){//!trigger
         for(j=0;j<=100;j++){multbins[nmult]=j; nmult++;}
     }else{
         for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
@@ -445,7 +447,7 @@ Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask* task,
     if(!MultBins){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.e6; nmult++;
-    }else if(!trigger){
+    }else if((!trigger) || (trigger==2) || (trigger==3)){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.; nmult++;
         multbins[nmult]=5.; nmult++;
@@ -972,7 +974,7 @@ Bool_t Config_Lambdak0(AliRsnMiniAnalysisTask* task,
     if(!MultBins){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.e6; nmult++;
-    }else if(!trigger){
+    }else if((!trigger) || (trigger==2) || (trigger==3)){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.; nmult++;
         multbins[nmult]=5.; nmult++;

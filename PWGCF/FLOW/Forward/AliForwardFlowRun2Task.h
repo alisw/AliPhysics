@@ -21,7 +21,6 @@
 #include "AliForwardFlowUtil.h"
 #include "AliForwardTaskValidation.h"
 #include "AliForwardFlowResultStorage.h"
-
 class TH2D;
 class THn;
 
@@ -44,6 +43,8 @@ class THn;
  * @ingroup pwglf_forward_flow
  *
  */
+#include <valarray>
+
 class AliForwardFlowRun2Task : public AliAnalysisTaskSE
 {
 public:
@@ -97,6 +98,9 @@ public:
   AliVEvent* fAOD;      //! input event
   TList* fOutputList;   //! output list
   TList* fAnalysisList; //!
+  TList* fReferenceList; //!
+  TList* fStandardList; //!
+  TList* fMixedList; //!
   TList* fEventList;    //!
 
   TRandom fRandom; //!
@@ -107,10 +111,6 @@ public:
 
   AliForwardFlowResultStorage* fStorage; //!
 
-  //TH2D* fdNdeta; //!
-  //TH1D* fCent;   //!
-  //TH1D* fVertex; //!
-
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
 
@@ -119,6 +119,8 @@ public:
   
   // Class for flow calculations using the Generic Framework
   AliForwardGenericFramework fCalculator;
+
+  std::valarray<int> fCentCounter;
 
   ClassDef(AliForwardFlowRun2Task, 1); // Analysis task for flow analysis
 };

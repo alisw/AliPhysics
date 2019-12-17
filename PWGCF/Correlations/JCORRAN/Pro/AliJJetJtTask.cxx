@@ -202,6 +202,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
     fJJetJtAnalysis->AddJets( fJetTask->GetAliJJetList( ij ),fJetTask->GetTrackOrMCParticle(ij), fJetTask->GetConeSize(ij));
   }
   fJJetJtAnalysis->SetJTracks(fJetTask->GetJTracks());
+  fJJetJtAnalysis->SetIncludeFullJets(fJetTask->GetIncludeFullJets());
   if(fDoMC){
     fJMCTracks = fJetTask->GetMCJTracks();
     fJJetJtAnalysis->SetMCJTracks(fJetTask->GetMCJTracks());
@@ -240,33 +241,20 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 
   // centrality
   float fcent = -999;
-  if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
-    if(fDebug > 6) cout << fRunTable->GetPeriodName() << endl;
-    if(fSelector != ""){
-      fcent = sel->GetMultiplicityPercentile(fSelector);
-    }else{
-      if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){
-        sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
-        if (sel) {
-          fcent = sel->GetMultiplicityPercentile("V0A");
-        }
-        else{
-          if(fDebug > 2) cout << "Sel not found" << endl;
-        }
-      }else{
-        AliCentrality *cent = event->GetCentrality();
-        if( ! cent ) return;
-        if(fRunTable->GetPeriodName().BeginsWith("LHC13")){
-          fcent = cent->GetCentralityPercentile("V0A");
-        }else{
-          fcent = cent->GetCentralityPercentile("V0M");
-        }
-      }
-    }
-  }
-  else {
-    fcent = -1;
-  }
+	if(fDebug > 6) cout << fRunTable->GetPeriodName() << endl;
+	sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
+	if (sel) {
+		if(!fSelector.IsNull()){ //If centrality selector is set in wagon configuration, otherwise default to V0A
+			fcent = sel->GetMultiplicityPercentile(fSelector.Data());
+		}else{
+			fcent = sel->GetMultiplicityPercentile("V0A");
+		}
+	}
+	else {
+		if(fDebug > 2) cout << "Sel not found" << endl;
+		fcent = -1;
+	}
+
   if(fcent > fCentCut){
     if(fDebug > 2) cout << "Skip event, Centrality was " << fcent << " and cut is " << fCentCut << endl;
     return;

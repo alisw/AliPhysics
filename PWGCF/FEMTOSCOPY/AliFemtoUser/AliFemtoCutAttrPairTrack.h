@@ -195,8 +195,8 @@ struct PairCutTrackAttrShareQuality {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("share_quality_max", share_quality_max);
-      cfg.insert("share_fraction_max", share_fraction_max);
+      cfg.insert("share_quality_max", std::min({share_quality_max, 1.0}));
+      cfg.insert("share_fraction_max", std::min({share_fraction_max, 1.0}));
     }
 
   virtual ~PairCutTrackAttrShareQuality() {}
@@ -235,7 +235,7 @@ struct PairCutTrackAttrDetaDphiStar {
   PairCutTrackAttrDetaDphiStar()
    : delta_eta_min(0.0)
    , delta_phistar_min(0.0)
-   , phistar_radius(1.2)
+   , phistar_radius(1.1)
    , fCurrentMagneticField(0.0)
    {
    }
@@ -243,7 +243,7 @@ struct PairCutTrackAttrDetaDphiStar {
   PairCutTrackAttrDetaDphiStar(AliFemtoConfigObject &cut)
    : delta_eta_min(cut.pop_num("delta_eta_min", 0.0))
    , delta_phistar_min(cut.pop_num("delta_phistar_min", 0.0))
-   , phistar_radius(cut.pop_num("phistar_radius", 1.2))
+   , phistar_radius(cut.pop_num("phistar_radius", 1.1))
    , fCurrentMagneticField(0.0)
    {
    }
@@ -254,7 +254,7 @@ struct PairCutTrackAttrDetaDphiStar {
                                 &p2 = track2.P();
 
       const double deta = calc_delta_eta(p1, p2);
-      if (delta_eta_min <= std::fabs(deta)) {
+      if (std::abs(deta) >= delta_eta_min) {
         return true;
       }
 
@@ -263,8 +263,16 @@ struct PairCutTrackAttrDetaDphiStar {
                             p2, track2.Charge(),
                             phistar_radius,
                             fCurrentMagneticField);
+      if (std::abs(dphi) >= delta_phistar_min) {
+        return true;
+      }
 
-      return delta_phistar_min * delta_phistar_min <= deta * deta + dphi * dphi;
+      const double
+        a = deta / delta_eta_min,
+        b = dphi / delta_phistar_min;
+
+      // cut within the ellipse
+      return a*a + b*b >= 1.0;
     }
 
   static double calc_delta_eta(const AliFemtoThreeVector &p1,
@@ -481,10 +489,15 @@ struct PairCutTrackAttrRemoveEE {
 
   bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
+      if (ee_minv_min == 0.0) {
+        return true;
+      }
+
       const double
         E_MASS = 0.000511,
         minv_sqrd = PairCutTrackAttrMinv::CalcMinvSqrd(track1.P(), track2.P(), E_MASS, E_MASS),
         minv = std::sqrt(minv_sqrd);
+
       return std::abs(minv - E_MASS) >= ee_minv_min;
     }
 
@@ -498,7 +511,9 @@ struct PairCutTrackAttrRemoveEE {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("ee_minv_min", ee_minv_min);
+      if (ee_minv_min != 0.0) {
+        cfg.insert("ee_minv_min", ee_minv_min);
+      }
     }
 
   virtual ~PairCutTrackAttrRemoveEE() {}

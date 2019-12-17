@@ -12,6 +12,7 @@ declare outputdir=$5
 declare templNameRoot=$6
 declare avstring="Weighted"
 declare saveawayside=$7
+declare betaTemplDir=$8
 
 if [ ${avopt} = 1 ]; then
     avstring="Arithmetic"
@@ -150,6 +151,7 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
 SystematicsMC_pp_03to99had($refl,"$templNameRoot")
 EOF
 
@@ -159,6 +161,7 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
 SystematicsMC_pp_1to99had($refl,"$templNameRoot")
 EOF
 
@@ -168,6 +171,7 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
 SystematicsMC_pp_03to1had($refl,"$templNameRoot")
 EOF
 
@@ -177,6 +181,7 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
 SystematicsMC_pp_2to99had($refl,"$templNameRoot")
 EOF
 
@@ -186,6 +191,7 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
 SystematicsMC_pp_3to99had($refl,"$templNameRoot")
 EOF
 
@@ -195,6 +201,7 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
 SystematicsMC_pp_1to2had($refl,"$templNameRoot")
 EOF
 
@@ -204,6 +211,7 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
 SystematicsMC_pp_2to3had($refl,"$templNameRoot")
 EOF
 

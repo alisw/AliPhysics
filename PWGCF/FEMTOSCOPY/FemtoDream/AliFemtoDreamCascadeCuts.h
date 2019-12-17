@@ -123,6 +123,11 @@ class AliFemtoDreamCascadeCuts {
     fRejOmegaMass = mass;
     fRejOmegaWidth = width;
   }
+  void SetRejectXis(float mass, float width) {
+    fRejXi = true;
+    fRejXiMass = mass;
+    fRejXiWidth = width;
+  }
   void SetPtRangeXi(float PtMin, float PtMax) {
     fPtMin = PtMin;
     fPtMax = PtMax;
@@ -258,6 +263,9 @@ class AliFemtoDreamCascadeCuts {
   bool fRejOmega;               //
   float fRejOmegaMass;          //
   float fRejOmegaWidth;         //
+  bool fRejXi;               //
+  float fRejXiMass;          //
+  float fRejXiWidth;         //
   int fPDGCasc;                 //
   int fPDGv0;                   //
   int fPDGPosDaug;              //

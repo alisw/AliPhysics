@@ -26,8 +26,9 @@ class AliSigma0PhotonCuts : public TObject {
   void PhotonCuts(AliAODEvent *inputEvent, AliMCEvent *mcEvent,
                   const TClonesArray *photons,
                   std::vector<AliFemtoDreamBasePart> &container);
-  bool ProcessPhoton(AliVEvent* event, AliAODConversionPhoton *PhotonCandidate,
+  bool ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent, AliAODConversionPhoton *PhotonCandidate,
                      AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg);
+  void RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate, AliVEvent* event);
   float ComputeInvMass(AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg, int pdgPos,
                        int pgdNeg) const;
   AliVTrack *GetTrack(AliVEvent * event, int label);
@@ -93,6 +94,10 @@ class AliSigma0PhotonCuts : public TObject {
     fTransvRadRejectionLow = low;
     fTransvRadRejectionUp = up;
   }
+  void SetPhotonQualityCut(int cut) {
+    fDoPhotonQualityCut = true;
+    fPhotonQuality = cut;
+  }
 
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const {
@@ -135,6 +140,9 @@ class AliSigma0PhotonCuts : public TObject {
   float fTransvRadRejectionLow; //
   float fTransvRadRejectionUp;  //
 
+  bool fDoPhotonQualityCut; //
+  int fPhotonQuality; //
+
   // Histograms
   // =====================================================================
   TProfile *fHistCutBooking;  //!
@@ -150,6 +158,8 @@ class AliSigma0PhotonCuts : public TObject {
   TH2F *fHistV0MassPt;         //!
   TH2F *fHistCosPA;            //!
   TH2F *fHistEtaPhi;           //!
+  TH1F* fHistMCV0Pt;           //!
+  TH2F* fHistV0Mother;         //!
   TH2F *fHistPsiPairBefore;          //!
   TH2F *fHistPsiPairAfter;          //!
 
@@ -171,6 +181,13 @@ class AliSigma0PhotonCuts : public TObject {
   TH2F *fHistDecayLength;             //!
   TH2F *fHistArmenterosBefore;        //!
   TH2F *fHistArmenterosAfter;         //!
+  TH2F *fHistQualityBefore;           //!
+  TH2F *fHistQualityAfter;            //!
+
+  TH1F* fHistMCTruthPhotonPt;         //;
+  TH1F* fHistMCTruthPhotonSigmaPt;    //;
+  TH1F* fHistMCPhotonPt;              //;
+  TH1F* fHistMCPhotonSigmaPt;         //;
 
   TH1F *fHistSingleParticleCuts[2];                        //!
   TH1F *fHistSingleParticlePt[2];                          //!
@@ -194,7 +211,7 @@ class AliSigma0PhotonCuts : public TObject {
   AliPIDResponse *fPIDResponse;  //!  pid response
 
  private:
-ClassDef(AliSigma0PhotonCuts, 4)
+ClassDef(AliSigma0PhotonCuts, 7)
 };
 
 #endif

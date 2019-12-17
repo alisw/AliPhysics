@@ -242,7 +242,7 @@ class AliRDHFCuts : public AliAnalysisCuts
       fRejectPlpFromDiffBCMV=kFALSE;
     }
   }
-  void ConfigurePileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
+  void ConfigurePileupCuts(Int_t /*minContrib=3*/, Float_t /*minDz=0.6*/){
     AliError("Obsolete method, call ConfigureSPDPileupCuts or the setters for MV pileup");
     return;
   }
@@ -306,10 +306,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t GetMinRatioSignalNOverCrossRowsTPC() const {return fCutRatioSignalNOverCrossRowsTPC;}
   Bool_t GetUseTPCtrackCutsOnThisDaughter() const {return fUseTPCtrackCutsOnThisDaughter;}
   Bool_t GetUseTimeRangeCutForPbPb2018() const {return fUseTimeRangeCutForPbPb2018;}
-  
+
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
-  virtual Int_t PreSelect(TObjArray aodtracks){return 3;}
+  virtual Int_t PreSelect(TObjArray /*aodtracks*/){return 3;}
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
   Bool_t IsEventSelectedForCentrFlattening(Float_t centvalue);
   Bool_t IsEventSelected(AliVEvent *event);
@@ -325,7 +325,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) = 0;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* /*aod*/)
                 {return IsSelected(obj,selectionLevel);}
-  Int_t PtBin(Double_t pt) const;
+  Int_t PtBin(Float_t pt) const {
+    if(pt<fPtBinLimits[0]) return -1;
+    for (Int_t i=0;i<fnPtBins;i++) if(pt<fPtBinLimits[i+1]) return i;
+    return -1;
+  }
   virtual void PrintAll()const;
   void PrintTrigger() const;
 
@@ -383,7 +387,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDueToTimeRangeCut(){
     return fEvRejectionBits&(1<<kBadTimeRange);
   }
-    
+
   void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
   void SetUsePhysicsSelection(Bool_t use=kTRUE){fUsePhysicsSelection=use; return;}
   Bool_t GetUsePhysicsSelection() const { return fUsePhysicsSelection; }
@@ -527,8 +531,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseTimeRangeCutForPbPb2018; /// flag to enable the timestamp based selection of good events in the 7 runs of LHC18r with problems in TPC dE/dx
   AliTimeRangeCut fTimeRangeCut;   /// object to manage time range cut
   Int_t  fCurrentRun;              /// needed to use the time range cut
-  
-  
+
+
   Bool_t fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
   Int_t fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
 

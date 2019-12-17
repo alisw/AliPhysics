@@ -1458,6 +1458,22 @@ AliOADBContainer* CreateTriggerAnalysisContainer(){
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysis_pp2017,270531,280140);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysis_pp2017->Clone("pp2017pqr"),282008,282704);
 
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC18b1 = new AliOADBTriggerAnalysis("lhc18b_isolated_bunches");
+  oadbTrigAnalysisLHC18b1->SetV0MOnVsOfA(0.);
+  oadbTrigAnalysisLHC18b1->SetV0MOnVsOfB(0.);
+  oadbTrigAnalysisLHC18b1->SetSPDOnVsOfA(0.);
+  oadbTrigAnalysisLHC18b1->SetSPDOnVsOfB(0.);
+  oadbTrigAnalysisLHC18b1->SetVIRBBAflags(33);
+  oadbTrigAnalysisLHC18b1->SetVIRBBCflags(33);
+  oadbTrigAnalysisLHC18b1->SetV0CasymA(0);
+  oadbTrigAnalysisLHC18b1->SetV0CasymB(0);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC18b1,284706,285015);
+  
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC18b2 = new AliOADBTriggerAnalysis("lhc18b_trains");
+  oadbTrigAnalysisLHC18b2->SetV0MOnVsOfA(-65.);
+  oadbTrigAnalysisLHC18b2->SetV0MOnVsOfB(4.3);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC18b2,285064,285203);
+  
   AliOADBTriggerAnalysis* oadbTrigAnalysisLHC18q = new AliOADBTriggerAnalysis("lhc18q");
   oadbTrigAnalysisLHC18q->SetV0MOnVsOfA(0.);
   oadbTrigAnalysisLHC18q->SetV0MOnVsOfB(0.);
@@ -1471,4 +1487,3 @@ AliOADBContainer* CreateTriggerAnalysisContainer(){
 
   return oadbContTriggerAnalysis;
 }
-

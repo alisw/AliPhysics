@@ -101,7 +101,7 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kProton);
     static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kProton);
     if (nanoTrack && bPIDAvailable)
-      Printf("  TPC_sigma_proton = %f  hasTOF = %d  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->HasTOFPID(), nanoTrack->GetVar(kcstNSigmaTOFPr));
+      Printf("  TPC_sigma_proton = %f  hasTOF = %d  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->HasTOFpid(), nanoTrack->GetVar(kcstNSigmaTOFPr));
 
     // Applying PID response on nano track
     static AliPIDResponse* pidResponse = 0;

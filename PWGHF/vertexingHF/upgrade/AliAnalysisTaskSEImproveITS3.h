@@ -33,6 +33,9 @@ public:
   virtual void UserExec(Option_t *option);
   //  virtual void Terminate(Option_t *option);
   void SetImproveTracks(Bool_t flag=kTRUE) { fImproveTracks=flag; return; }
+  void SetUpdateSTCovMatrix(Bool_t opt=kTRUE){fUpdateSTCovMatrix=opt;}
+  void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
+  void SetOnlyProcessFilledCand(Bool_t flag=kTRUE){ fOnlyProcessFilledCand = flag;}
 
 private:
   AliAnalysisTaskSEImproveITS3(const AliAnalysisTaskSEImproveITS3&);
@@ -81,14 +84,16 @@ private:
   TGraph *fPt1ResPiUpgSA ; // new standalone pt dep. 1/pt res. for pions
 */
   Bool_t fRunInVertexing; // flag to run hybrid task before the vertexingHF task or in standard mode
-  Bool_t fImproveTracks; // this is always kTRUE. kFALSE only if re-running on already improved AODs 
-                           
+  Bool_t fImproveTracks; // this is always kTRUE. kFALSE only if re-running on already improved AODs
+  Bool_t fUpdateSTCovMatrix; /// flag to switch on/off the update of the single track covariance matrix
+  Bool_t fUpdateSecVertCovMat; /// flag to swicth on/off the modification of the sec vert cov matrix
   TList   *fDebugOutput; //! collection of debug output
   TNtuple *fDebugNtuple; //! debug send on output slot 1
   Float_t *fDebugVars;   //! variables to store as degug info 
   Int_t   fNDebug;       // Max number of debug entries into Ntuple
+  Bool_t fOnlyProcessFilledCand; ///Flag to only process already filled candidates and skip others
 
-  ClassDef(AliAnalysisTaskSEImproveITS3,4);
+  ClassDef(AliAnalysisTaskSEImproveITS3,7);
 };
 
 #endif

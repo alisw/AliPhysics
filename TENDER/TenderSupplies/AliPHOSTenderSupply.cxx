@@ -863,10 +863,10 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
   if(fNonlinearityVersion=="Run2TuneMC"){ //Improved Run2 tune for MC
     if(en<=0.) return 0.;
 
-    const Double_t p0 = 1.04397;
-    const Double_t p1 = 0.512307;
-    const Double_t p2 = 0.133812;
-    const Double_t p3 = -0.150093;
+    const Double_t p0 = 1.031;
+    const Double_t p1 = 0.51786058;
+    const Double_t p2 = 0.13504396;
+    const Double_t p3 = -0.14737537;
     const Double_t p4 = -0.455062;
 
     const Double_t Nonlin = p0+p1/en+p2/en/en+p3/TMath::Sqrt(en)+p4/en/TMath::Sqrt(en);
@@ -892,16 +892,16 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
        const Double_t beta = 0.5*(0.5*b*sqrt(xMin)+c+1.5*d/sqrt(xMin)+2.*e/xMin)*TMath::Power((xMin*xMin+gamma*gamma),2)/
        (xMin*xMin*xMin);
        const Double_t alpha = (a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*xMin/(xMin*xMin+gamma*gamma))/xMin ;
-       ecorr= 1.0165898*(alpha*en+beta*en/(en*en+gamma*gamma)) ;  
+       ecorr= 1.0328783*(alpha*en+beta*en/(en*en+gamma*gamma)) ;  
     }
     else{
       if(en<xMax){
-         ecorr= 1.0165898*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+         ecorr= 1.0328783*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
       }
       else{
         const Double_t beta= b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax) ;
         const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
-        ecorr= 1.0165898*(alpha*en+beta*sqrt(en)) ;  
+        ecorr= 1.0328783*(alpha*en+beta*sqrt(en)) ;  
       }
     }
     if(ecorr<0){

@@ -150,6 +150,8 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
+  void Set1DCorrectionsXiPlus(TH1D *h1);
+  void Set1DCorrectionsXiMinus(TH1D *h1);
 
   void Set4DCorrectionsPions(THnSparse *h1);
   void Set4DCorrectionsKaons(THnSparse *h1);
@@ -179,7 +181,7 @@ protected:
                                             );
   virtual AliFemtoV0 *CopyAODtoFemtoV0(AliAODv0 *tAODv0);
   virtual AliFemtoXi *CopyAODtoFemtoXi(AliAODcascade *tAODxi);
-  virtual void CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack);
+  virtual void CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack);
 
   int            fNumberofEvent;    ///< number of Events in AOD file
   int            fCurEvent;         ///< number of current event
@@ -248,6 +250,8 @@ private:
   TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsXiPlus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsXiMinus;    ///<file with corrections, pT dependant
 
   THnSparse *f4DcorrectionsPions;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsKaons;    ///<file with corrections, pT dependant

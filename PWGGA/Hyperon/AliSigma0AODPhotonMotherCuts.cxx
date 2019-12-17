@@ -43,8 +43,11 @@ ClassImp(AliSigma0AODPhotonMotherCuts)
       fArmenterosQtUp(0.f),
       fArmenterosAlphaLow(0.f),
       fArmenterosAlphaUp(0.f),
+      fDoDeltaPhiEtaCut(false),
+      fDeltaPhiEtaMax(-1.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
+      fHistNCandidates(nullptr),
       fHistNPhotonBefore(nullptr),
       fHistNPhotonAfter(nullptr),
       fHistNLambdaBefore(nullptr),
@@ -52,6 +55,9 @@ ClassImp(AliSigma0AODPhotonMotherCuts)
       fHistNPhotonLabel(nullptr),
       fHistNLambdaLabel(nullptr),
       fHistNLambdaGammaLabel(nullptr),
+      fHistNPhotonSplit(nullptr),
+      fHistNLambdaSplit(nullptr),
+      fHistNLambdaGammaSplit(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassK0Gamma(nullptr),
@@ -130,8 +136,11 @@ AliSigma0AODPhotonMotherCuts::AliSigma0AODPhotonMotherCuts(
       fArmenterosQtUp(0.f),
       fArmenterosAlphaLow(0.f),
       fArmenterosAlphaUp(0.f),
+      fDoDeltaPhiEtaCut(false),
+      fDeltaPhiEtaMax(-1.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
+      fHistNCandidates(nullptr),
       fHistNPhotonBefore(nullptr),
       fHistNPhotonAfter(nullptr),
       fHistNLambdaBefore(nullptr),
@@ -139,6 +148,9 @@ AliSigma0AODPhotonMotherCuts::AliSigma0AODPhotonMotherCuts(
       fHistNPhotonLabel(nullptr),
       fHistNLambdaLabel(nullptr),
       fHistNLambdaGammaLabel(nullptr),
+      fHistNPhotonSplit(nullptr),
+      fHistNLambdaSplit(nullptr),
+      fHistNLambdaGammaSplit(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassK0Gamma(nullptr),
@@ -240,6 +252,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
 
   // Do the checks for the photons
   int nPhotonKilledLabel = 0;
+  int nPhotonKilledSplit = 0;
   for (auto photon1 = fPhotonCandidates.begin();
        photon1 < fPhotonCandidates.end(); ++photon1) {
     if (!photon1->UseParticle()) continue;
@@ -256,11 +269,12 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
       float photon2PosPhiStar = photon2->GetAveragePhiAtRadius(0);
       float photon2NegPhiStar = photon2->GetAveragePhiAtRadius(1);
 
+      float deltaPhistarPos = photon1PosPhiStar - photon2PosPhiStar;
+      float deltaPhistarNeg = photon1NegPhiStar - photon2NegPhiStar;
+      float deltaEtaPos = photon1Eta[1] - photon2Eta[1];
+      float deltaEtaNeg = photon1Eta[2] - photon2Eta[2];
+
       if (!fIsLightweight) {
-        float deltaPhistarPos = photon1PosPhiStar - photon2PosPhiStar;
-        float deltaPhistarNeg = photon1NegPhiStar - photon2NegPhiStar;
-        float deltaEtaPos = photon1Eta[1] - photon2Eta[1];
-        float deltaEtaNeg = photon1Eta[2] - photon2Eta[2];
         fHistDeltaEtaDeltaPhiGammaNegBefore->Fill(deltaEtaNeg, deltaPhistarNeg);
         fHistDeltaEtaDeltaPhiGammaPosBefore->Fill(deltaEtaPos, deltaPhistarPos);
       }
@@ -269,12 +283,19 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
                             photon1TrackLabels[1] == photon2TrackLabels[0] ||
                             photon1TrackLabels[1] == photon2TrackLabels[1] ||
                             photon1TrackLabels[0] == photon2TrackLabels[1]);
+      bool hasTrackSplitting =
+          (fDoDeltaPhiEtaCut
+              && (((deltaPhistarPos * deltaPhistarPos
+                  + deltaEtaPos * deltaEtaPos) < fDeltaPhiEtaMax)
+                  || ((deltaPhistarNeg * deltaPhistarNeg
+                      + deltaEtaNeg * deltaEtaNeg) < fDeltaPhiEtaMax)));
 
       // do the check for both daughters
-      if (hasSameLabels) {
+      if (hasSameLabels) ++nPhotonKilledLabel;
+      if (hasTrackSplitting) ++nPhotonKilledSplit;
+      if (hasSameLabels || hasTrackSplitting) {
         const float cpa1 = photon1->GetCPA();
         const float cpa2 = photon2->GetCPA();
-        ++nPhotonKilledLabel;
         if (cpa1 > cpa2) {
           photon2->SetUse(false);
         } else {
@@ -287,6 +308,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
 
   // Do the checks for the Lambdas
   int nLambdaKilledLabel = 0;
+  int nLambdaKilledSplit = 0;
   for (auto lambda1 = fLambdaCandidates.begin();
        lambda1 < fLambdaCandidates.end(); ++lambda1) {
     if (!lambda1->UseParticle()) continue;
@@ -303,11 +325,12 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
       float lambda2PosPhiStar = lambda2->GetAveragePhiAtRadius(0);
       float lambda2NegPhiStar = lambda2->GetAveragePhiAtRadius(1);
 
+      float deltaPhistarPos = lambda1PosPhiStar - lambda2PosPhiStar;
+      float deltaPhistarNeg = lambda1NegPhiStar - lambda2NegPhiStar;
+      float deltaEtaPos = lambda1Eta[1] - lambda2Eta[1];
+      float deltaEtaNeg = lambda1Eta[2] - lambda2Eta[2];
+
       if (!fIsLightweight) {
-        float deltaPhistarPos = lambda1PosPhiStar - lambda2PosPhiStar;
-        float deltaPhistarNeg = lambda1NegPhiStar - lambda2NegPhiStar;
-        float deltaEtaPos = lambda1Eta[1] - lambda2Eta[1];
-        float deltaEtaNeg = lambda1Eta[2] - lambda2Eta[2];
         fHistDeltaEtaDeltaPhiLambdaNegBefore->Fill(deltaEtaNeg,
                                                    deltaPhistarNeg);
         fHistDeltaEtaDeltaPhiLambdaPosBefore->Fill(deltaEtaPos,
@@ -318,10 +341,17 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
                             lambda1TrackLabels[1] == lambda2TrackLabels[0] ||
                             lambda1TrackLabels[1] == lambda2TrackLabels[1] ||
                             lambda1TrackLabels[0] == lambda2TrackLabels[1]);
+      bool hasTrackSplitting =
+          (fDoDeltaPhiEtaCut
+              && (((deltaPhistarPos * deltaPhistarPos
+                  + deltaEtaPos * deltaEtaPos) < fDeltaPhiEtaMax)
+                  || ((deltaPhistarNeg * deltaPhistarNeg
+                      + deltaEtaNeg * deltaEtaNeg) < fDeltaPhiEtaMax)));
 
       // do the check for both daughters
-      if (hasSameLabels) {
-        ++nLambdaKilledLabel;
+      if (hasSameLabels) ++nLambdaKilledLabel;
+      if (hasTrackSplitting) ++nLambdaKilledSplit;
+      if (hasSameLabels || hasTrackSplitting) {
         const float cpa1 = lambda1->GetCPA();
         const float cpa2 = lambda2->GetCPA();
         if (cpa1 > cpa2) {
@@ -336,6 +366,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
 
   // Now do the exercise for photon-Lambda combination
   int nPhotonLambdaKilledLabel = 0;
+  int nPhotonLambdaKilledSplit = 0;
   for (auto photon = fPhotonCandidates.begin(); photon < fPhotonCandidates.end();
        ++photon) {
     if (!photon->UseParticle()) continue;
@@ -352,11 +383,12 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
       float lambdaPosPhiStar = lambda->GetAveragePhiAtRadius(0);
       float lambdaNegPhiStar = lambda->GetAveragePhiAtRadius(1);
 
+      float deltaPhistarPos = photonPosPhiStar - lambdaPosPhiStar;
+      float deltaPhistarNeg = photonNegPhiStar - lambdaNegPhiStar;
+      float deltaEtaPos = photonEta[1] - lambdaEta[1];
+      float deltaEtaNeg = photonEta[2] - lambdaEta[2];
+
       if (!fIsLightweight) {
-        float deltaPhistarPos = photonPosPhiStar - lambdaPosPhiStar;
-        float deltaPhistarNeg = photonNegPhiStar - lambdaNegPhiStar;
-        float deltaEtaPos = photonEta[1] - lambdaEta[1];
-        float deltaEtaNeg = photonEta[2] - lambdaEta[2];
         fHistDeltaEtaDeltaPhiLambdaGammaNegBefore->Fill(deltaEtaNeg,
                                                         deltaPhistarNeg);
         fHistDeltaEtaDeltaPhiLambdaGammaPosBefore->Fill(deltaEtaPos,
@@ -367,12 +399,19 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
                             photonTrackLabels[1] == lambdaTrackLabels[0] ||
                             photonTrackLabels[1] == lambdaTrackLabels[1] ||
                             photonTrackLabels[0] == lambdaTrackLabels[1]);
+      bool hasTrackSplitting =
+          (fDoDeltaPhiEtaCut
+              && (((deltaPhistarPos * deltaPhistarPos
+                  + deltaEtaPos * deltaEtaPos) < fDeltaPhiEtaMax)
+                  || ((deltaPhistarNeg * deltaPhistarNeg
+                      + deltaEtaNeg * deltaEtaNeg) < fDeltaPhiEtaMax)));
 
       // do the check for both daughters
-      if (hasSameLabels) {
+      if (hasSameLabels) ++nPhotonLambdaKilledLabel;
+      if (hasTrackSplitting) ++nPhotonLambdaKilledSplit;
+      if (hasSameLabels || hasTrackSplitting) {
         const float cpaPhoton = photon->GetCPA();
         const float cpaLambda = lambda->GetCPA();
-        ++nPhotonLambdaKilledLabel;
         if (cpaPhoton > cpaLambda) {
           lambda->SetUse(false);
         } else {
@@ -480,6 +519,9 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
     fHistNPhotonLabel->Fill(nPhotonKilledLabel);
     fHistNLambdaLabel->Fill(nLambdaKilledLabel);
     fHistNLambdaGammaLabel->Fill(nPhotonLambdaKilledLabel);
+    fHistNPhotonSplit->Fill(nPhotonKilledSplit);
+    fHistNLambdaSplit->Fill(nLambdaKilledSplit);
+    fHistNLambdaGammaSplit->Fill(nPhotonLambdaKilledSplit);
   }
 }
 
@@ -510,6 +552,19 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
 
   int nSigma = 0;
   const float lambdaMass = fDataBasePDG.GetParticle(fPDGDaughter1)->Mass();
+
+  for (const auto &lambda : fLambdaCandidates) {
+    fHistNCandidates->Fill(0);
+    if (!lambda.UseParticle()) continue;
+    fHistNCandidates->Fill(1);
+  }
+
+  for (const auto &photon : fPhotonCandidates) {
+    fHistNCandidates->Fill(2);
+    if (!photon.UseParticle()) continue;
+    fHistNCandidates->Fill(3);
+  }
+
   // SAME EVENT
   AliFemtoDreamv0 sigma;
   for (const auto &photon : fPhotonCandidates) {
@@ -550,20 +605,42 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
         fHistArmenterosAfter->Fill(armAlpha, armQt);
       }
 
-      // TODO Implement MC handling
-      // int label = -10;
-      // int pdgLambdaMother = 0;
-      // int pdgPhotonMother = 0;
-      // if (fIsMC) {
-      //        label =
-      //            sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1,
-      //            fPDGDaughter2}},
-      //                            pdgLambdaMother, pdgPhotonMother);
-      //      }
+      if (fIsMC) {
+        // Get the mother of the particles
+        AliAODMCParticle *partV0 =
+            static_cast<AliAODMCParticle *>(fMCEvent->GetTrack(
+                lambda.GetID()));
+        // we need the first mother of the Lambda, not after the full cascade to match this to a Sigma0
+        AliAODMCParticle *partMotherV0 = (partV0) ?
+            static_cast<AliAODMCParticle *>(fMCEvent->GetTrack(
+                partV0->GetMother())) : nullptr;
+        AliAODMCParticle *partMotherPhoton =
+            static_cast<AliAODMCParticle *>(fMCEvent->GetTrack(
+                photon.GetMotherID()));
+
+        fHistMCV0Check->Fill(TMath::Abs(lambda.GetMCPDGCode()),
+                             TMath::Abs(photon.GetMCPDGCode()));
+
+        if (partMotherV0 && partMotherPhoton) {
+          fHistMCV0MotherCheck->Fill(
+              TMath::Abs(partMotherV0->GetPdgCode()),
+              TMath::Abs(partMotherPhoton->GetPdgCode()));
+
+          if (partMotherV0 == partMotherPhoton && TMath::Abs(partMotherV0->GetPdgCode() == fPDG)) {
+            sigma.SetMCParticle(partMotherV0, fMCEvent);
+            fHistMCV0Mother->Fill(invMass, TMath::Abs(partMotherV0->GetPdgCode()));
+
+            fHistMCV0Pt->Fill(pT);
+            fHistMCV0Mass->Fill(invMass);
+          }
+        }
+      }
 
       // Now write out the stuff to the Femto containers
       if (invMass < GetMassSigmaPt(pT) + fSigmaMassCut &&
           invMass > GetMassSigmaPt(pT) - fSigmaMassCut) {
+        fHistNCandidates->Fill(4);
+
         fSigma.push_back(sigma);
         fLambda.push_back(lambda);
         fPhoton.push_back(photon);
@@ -580,6 +657,7 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
       }
       if (invMass < GetMassSigmaPt(pT) + fSidebandCutUp &&
           invMass > GetMassSigmaPt(pT) + fSidebandCutDown) {
+        fHistNCandidates->Fill(5);
         fSidebandUp.push_back(sigma);
         if (!fIsLightweight) {
           fHistInvMassSelected->Fill(pT, invMass);
@@ -587,6 +665,7 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
       }
       if (invMass > GetMassSigmaPt(pT) - fSidebandCutUp &&
           invMass < GetMassSigmaPt(pT) - fSidebandCutDown) {
+        fHistNCandidates->Fill(6);
         fSidebandDown.push_back(sigma);
         if (!fIsLightweight) {
           fHistInvMassSelected->Fill(pT, invMass);
@@ -595,45 +674,6 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
 
       fHistInvMass->Fill(invMass);
       fHistInvMassPtRaw->Fill(pT, invMass);
-
-      if (fIsMC) {
-        //        if (label > 0) {
-        //          fHistMCV0Pt->Fill(sigma.GetPt());
-        //          fHistMCV0Mass->Fill(invMass);
-        //        }
-        //        if (!fIsLightweight) {
-        //          // let's where the other particle comes from if one of them
-        //          stems
-        //          // from
-        //          // a Sigma0
-        //          if (TMath::Abs(pdgLambdaMother) == 3212 &&
-        //              TMath::Abs(pdgLambdaMother) != 3212) {
-        //            fHistMCV0Mother->Fill(invMass,
-        //            TMath::Abs(pdgPhotonMother));
-        //          }
-        //          if (TMath::Abs(pdgLambdaMother) == 3212 &&
-        //              TMath::Abs(pdgLambdaMother) != 3212) {
-        //            fHistMCV0Mother->Fill(invMass,
-        //            TMath::Abs(pdgLambdaMother));
-        //          }
-        //          fHistMCV0MotherCheck->Fill(TMath::Abs(pdgLambdaMother),
-        //                                     TMath::Abs(pdgPhotonMother));
-        //
-        //          const int labV0 = photon.GetMCLabelV0();
-        //          const int labPhoton = lambda.GetMCLabelV0();
-        //          if (labV0 < 0 || labPhoton < 0) continue;
-        //
-        //          AliMCParticle *partV0 =
-        //              static_cast<AliMCParticle *>(fMCEvent->GetTrack(labV0));
-        //          AliMCParticle *partPhoton =
-        //              static_cast<AliMCParticle
-        //              *>(fMCEvent->GetTrack(labPhoton));
-        //          if (!partV0 || !partPhoton) continue;
-        //
-        //          fHistMCV0Check->Fill(TMath::Abs(partV0->PdgCode()),
-        //                               TMath::Abs(partPhoton->PdgCode()));
-        //        }
-      }
     }
   }
   fHistNSigma->Fill(nSigma);
@@ -752,6 +792,16 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistNSigma =
       new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 10, 0, 10);
   fHistograms->Add(fHistNSigma);
+
+  fHistNCandidates = new TH1F("fHistNCandidates", ";;Counts", 10, 0, 10);
+  fHistNCandidates->GetXaxis()->SetBinLabel(1, "#Lambda in");
+  fHistNCandidates->GetXaxis()->SetBinLabel(2, "#Lambda ok");
+  fHistNCandidates->GetXaxis()->SetBinLabel(3, "#gamma in");
+  fHistNCandidates->GetXaxis()->SetBinLabel(4, "#gamma ok");
+  fHistNCandidates->GetXaxis()->SetBinLabel(5, "#Sigma^{0}");
+  fHistNCandidates->GetXaxis()->SetBinLabel(6, "SB up");
+  fHistNCandidates->GetXaxis()->SetBinLabel(7, "SB low");
+  fHistograms->Add(fHistNCandidates);
 
   if (!fIsLightweight) {
     fHistNPhotonBefore =
@@ -878,6 +928,22 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->Add(fHistNPhotonLabel);
     fHistograms->Add(fHistNLambdaLabel);
     fHistograms->Add(fHistNLambdaGammaLabel);
+
+    fHistNPhotonSplit= new TH1F(
+        "fHistNPhotonSplit",
+        ";# #gamma candidates eliminated due to #Delta#eta#Delta#phi*; Entries", 15, 0,
+        15);
+    fHistNLambdaSplit = new TH1F(
+        "fHistNLambdaSplit",
+        ";# #Lambda candidates eliminated due to #Delta#eta#Delta#phi*; Entries", 15, 0,
+        15);
+    fHistNLambdaGammaSplit = new TH1F(
+        "fHistNLambdaGammaSplit",
+        ";#Candidates eliminated due to #Lambda-#gamma #Delta#eta#Delta#phi*; Entries",
+        15, 0, 15);
+    fHistograms->Add(fHistNPhotonSplit);
+    fHistograms->Add(fHistNLambdaSplit);
+    fHistograms->Add(fHistNLambdaGammaSplit);
 
     fHistLambdaPtPhi =
         new TH2F("fHistLambdaPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",

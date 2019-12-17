@@ -23,7 +23,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   };
   AliFemtoDreamCollConfig();
   AliFemtoDreamCollConfig(const AliFemtoDreamCollConfig& config);
-  AliFemtoDreamCollConfig(const char *name, const char *title, bool QACouts = false);
+  AliFemtoDreamCollConfig(const char *name, const char *title, bool QACouts =
+                              false);
   AliFemtoDreamCollConfig &operator=(const AliFemtoDreamCollConfig& config);
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt) {
@@ -40,6 +41,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   void SetmTBinning(bool doIt) {
     fmTBinning = doIt;
+  }
+  ;
+  void SetkTandMultBinning(bool doIt) {
+    fkTandMultBinning = doIt;
   }
   ;
   void SetPtQA(bool doIt) {
@@ -128,6 +133,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   bool GetDomTBinning() {
     return fmTBinning;
+  }
+  ;
+  bool GetDokTandMultBinning() {
+    return fkTandMultBinning;
   }
   ;
   bool GetDoPtQA() {
@@ -256,6 +265,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fCentBinning;            //
   bool fkTBinning;              //
   bool fmTBinning;              //
+  bool fkTandMultBinning;	//
   bool fPtQA;                   //
   bool fMassQA;                 //
   bool fMomentumResolution;     //
@@ -287,8 +297,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaEtaMax;           //
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
-  bool fCoutVariables;
-ClassDef(AliFemtoDreamCollConfig,14)
+  bool fCoutVariables;ClassDef(AliFemtoDreamCollConfig,15)
   ;
 };
 

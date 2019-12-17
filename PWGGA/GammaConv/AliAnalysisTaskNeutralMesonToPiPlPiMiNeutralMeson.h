@@ -14,6 +14,7 @@
 #include "AliConvEventCuts.h"
 #include "AliCaloPhotonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "TProfile2D.h"
 #include "TArrayI.h"
 #include <vector>
@@ -109,7 +110,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void ProcessPionCandidatesAOD();
     void ProcessMCParticles();
     void ProcessAODMCParticles();
-    void CalculateMesonCandidates();
+    void CalculateMesonCandidates(AliAODConversionPhoton *vParticle);
     void CalculateBackground(Int_t mode);
     void UpdateEventByEventData();
 
@@ -158,7 +159,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TList*                            fNeutralDecayParticleSidebandCandidates;            //!<! good neutral pion candidates from sideband
     TList*                            fPosPionCandidates;                                 //!<! good positive pion candidates
     TList*                            fNegPionCandidates;                                 //!<! good negative pion candidates
-    TList*                            fGoodVirtualParticles;                              //!<! combination of pi+pi- candidates
     TList*                            fEventCutArray;                                     ///< array with event cuts
     TList*                            fGammaCutArray;                                     ///< array with Conversion Cuts
     TList*                            fClusterCutArray;                                   ///< array with Cluster Cuts
@@ -168,6 +168,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     AliConvEventCuts*                 fEventCuts;                                         //!<! current event cuts
     AliConversionPhotonCuts*          fConversionCuts;                                    //!<! current conversion cuts
     AliCaloPhotonCuts*                fClusterCuts;                                       //!<! current cluster cuts
+    AliAnalysisTaskJetOutlierRemoval* fOutlierJetReader;                                  // JetReader
 
     // TTrees
     /** Tree containing info about the mother of two pions who have the same mother, if ID isn't covered by current implementations */
@@ -188,7 +189,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fZVertexHNMEvent;                                   ///< z position of primary vertex of an event where a true Eta was found
     Float_t                           fPtHNM;                                             ///< pT of a true Eta
     Float_t                           fPDGMassNDM;                                        ///< PDG mass of either pi0 or eta
-    Float_t                           fPDGMassChargedPion;                                        ///< PDG mass of either pi0 or eta
+    Float_t                           fNDMMinPtPossible;                                  ///< min pt of NDM measurable for each method
+    Float_t                           fPDGMassChargedPion;                                ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
     // reconstructed particles
@@ -266,9 +268,12 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoMCNegPionsFromNeutralMesonPt;                 //!<! array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
     TH1F**                            fHistoMCNegPionsFromNeutralMesonEta;                //!<! array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
     TH1F**                            fHistoMCNegPionsFromNeutralMesonPhi;                //!<! array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
-    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt;                           //!<! array of histos of produced etas via pi+pi-pi0 in the specified y range
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt;                           //!<! array of histos of produced NNM via pi+pi-pi0 in the specified y range
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMEta;                          //!<! array of histos of produced HNM via pi+pi-pi0 in the specified y range
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPhi;                          //!<! array of histos of produced HNM via pi+pi-pi0 in the specified y range
     /** array of histos of produced etas via pi+pi-pi0 in the specified y range, with decay products in respective y, eta ranges */
     TH1F**                            fHistoMCHNMPiPlPiMiNDMInAccPt;                      //!<!
+    TH2F**                            fHistoMCHNMInAccVsNDMPt;                            //!<!
     // MC truth properties for heavy meson (and decay products)
     TH1F**                            fHistoMCHeavyAllPt;                                 //!<! array of histos with pt of all heavy mesons
     TH1F**                            fHistoMCHeavyAllEta;                                //!<! array of histos with eta of all heavy mesons
@@ -406,7 +411,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 10);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 14);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

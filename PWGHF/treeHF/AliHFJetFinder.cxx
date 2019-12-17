@@ -14,6 +14,7 @@
 #include <limits>
 #include "AliHFJetFinder.h"
 #include "TMath.h"
+#include "TRandom3.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFJetFinder);
@@ -44,6 +45,7 @@ AliHFJetFinder::AliHFJetFinder():
   fMaxParticlePt(1000.0),
   fMaxParticleEta(0.9),
   fCharged(Charge::charged),
+  fTrackingEfficiency(1.0),
   fDoJetSubstructure(false),
   fFastJetWrapper(0x0)
 {
@@ -76,6 +78,7 @@ AliHFJetFinder::AliHFJetFinder(char *name):
   fMaxParticlePt(1000.0),
   fMaxParticleEta(0.9),
   fCharged(Charge::charged),
+  fTrackingEfficiency(1.0),
   fDoJetSubstructure(false),
   fFastJetWrapper(0x0)
 {
@@ -445,6 +448,12 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
 Bool_t AliHFJetFinder::CheckTrack(AliAODTrack *track) { 
   if(!track) return false;
 
+  TRandom3 Random;
+  Random.SetSeed(0);
+  Double_t Random_Number;
+  Random_Number=Random.Rndm();
+  if(Random_Number > fTrackingEfficiency) return false;
+
   AliTLorentzVector track_lvec(0,0,0,0);
   track_lvec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.139); //set to mass of Pion
  
@@ -465,9 +474,8 @@ Bool_t AliHFJetFinder::CheckTrack(AliAODTrack *track) {
 //Apply filter bit selection on tracks
 Bool_t AliHFJetFinder::CheckFilterBits(AliAODTrack *track) {
 
-  if(track->TestBits(BIT(4))/TMath::Power(2,4)!=1 ) return false;
+  if(!track->TestBit(BIT(4)) && !track->TestBit(BIT(9))) return false;
   if(!track->IsHybridGlobalConstrainedGlobal()) return false;
-
   return true;
 }
 

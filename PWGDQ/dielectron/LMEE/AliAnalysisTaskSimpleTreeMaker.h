@@ -87,6 +87,10 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     void writeKaonPIDtoTree(Bool_t answer){
       storeKaonPID = answer;
     }
+    // Proton PID values not saved by default
+    void writeProtonPIDtoTree(Bool_t answer){
+      storeProtonPID = answer;
+    }
 
     void SetMC(Bool_t answer){ hasMC = answer; }
 
@@ -285,6 +289,10 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     Float_t KnSigmaITS;
     Float_t KnSigmaTPC;
     Float_t KnSigmaTOF;
+    Bool_t storeProtonPID;
+    Float_t PrnSigmaITS;
+    Float_t PrnSigmaTPC;
+    Float_t PrnSigmaTOF;
     Float_t ITSsignal;
     Float_t TPCsignal;
     Float_t TOFsignal;

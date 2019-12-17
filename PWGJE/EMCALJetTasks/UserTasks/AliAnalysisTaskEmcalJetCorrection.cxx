@@ -45,13 +45,13 @@ AliAnalysisTaskEmcalJetCorrection::AliAnalysisTaskEmcalJetCorrection() :
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   fPythonCLI(),
   #endif
+  fCustomPackages(),
+  fPythonModulePath("lib/python3.6/site-packages/"),
   fJetsCont(),
   fTracksCont(),
   fJetOutputArray(),
-  fCustomPackages(),
   fBackgroundModelFileName(""),
   fBackgroundModelInputParameters(""),
-  fCorrectAlsoMass(kFALSE),
   fModelName("Model")
 {
   // nothing to do
@@ -63,13 +63,13 @@ AliAnalysisTaskEmcalJetCorrection::AliAnalysisTaskEmcalJetCorrection(const char 
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   fPythonCLI(),
   #endif
+  fCustomPackages(),
+  fPythonModulePath("lib/python3.6/site-packages/"),
   fJetsCont(),
   fTracksCont(),
   fJetOutputArray(),
-  fCustomPackages("sklearn,numpy"),
   fBackgroundModelFileName(""),
   fBackgroundModelInputParameters(""),
-  fCorrectAlsoMass(kFALSE),
   fModelName("Model")
   {
   // nothing to do
@@ -94,7 +94,6 @@ void AliAnalysisTaskEmcalJetCorrection::UserCreateOutputObjects()
     AliFatal("Particle input container not found attached to jets!");
 
   AddHistogram2D<TH2D>("hJetPtCorrelation", "Jet p_{T} (model vs. area-based)", "COLZ", 400, -100., 300., 400, -100., 300., "p_{T, ML} (GeV/c)", "p_{T} (GeV/c)", "dN2^{Jets}/d2p_{T}");
-  AddHistogram2D<TH2D>("hJetMassCorrelation", "Jet mass (model vs. corrected)", "COLZ", 400, -100., 300., 400, -100., 300., "m_{ML} (GeV/c2)", "m (GeV/c2)", "dN2^{Jets}/d2m");
 
   PostData(1, fOutput);
 
@@ -131,17 +130,15 @@ void AliAnalysisTaskEmcalJetCorrection::ExecOnce()
       packages->SetOwner();
       delete packages;
     }
-
     // ### Get background model from alien and load it
     TGrid::Connect("alien://");
     if (gSystem->AccessPathName(fBackgroundModelFileName.Data()))
       AliFatal(Form("Background model %s does not exist!", fBackgroundModelFileName.Data()));
-    TFile::Cp(fBackgroundModelFileName.Data(), "./Model.pkl");
-
+    TFile::Cp(fBackgroundModelFileName.Data(), "./Model.joblib");
     fPythonCLI->Exec("import sys");
-    fPythonCLI->Exec("sys.path.insert(0, './my-local-python/lib/python2.7/site-packages/')");
-    fPythonCLI->Exec("import sklearn, numpy");
-    fPythonCLI->Exec("estimator = sklearn.externals.joblib.load(\"./Model.pkl\")");
+    fPythonCLI->Exec(Form("sys.path.insert(0, './my-local-python/%s')", fPythonModulePath.Data()));
+    fPythonCLI->Exec("import sklearn, numpy, joblib");
+    fPythonCLI->Exec("estimator = joblib.load(\"./Model.joblib\")");
   #endif
 
   // ### Prepare jet output array
@@ -159,7 +156,6 @@ void AliAnalysisTaskEmcalJetCorrection::ExecOnce()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetCorrection::Run()
 {
-  AliRhoParameter* rhoMass = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fJetsCont->GetRhoMassName().Data()));
 
   // ################################### MAIN JET LOOP
   fJetsCont->ResetCurrentID();
@@ -167,14 +163,10 @@ Bool_t AliAnalysisTaskEmcalJetCorrection::Run()
   while(AliEmcalJet *jet = fJetsCont->GetNextAcceptJet())
   {
     Float_t pt_ML = 0;
-    Float_t mass_ML = 0;
-    GetPtAndMassFromModel(jet, pt_ML, mass_ML);
+    GetPtFromModel(jet, pt_ML);
     AliEmcalJet *outJet = new ((*fJetOutputArray)[jetCount]) AliEmcalJet(*jet);
     outJet->SetPtEtaPhi(pt_ML, jet->Eta(), jet->Phi());
-    if(fCorrectAlsoMass)
-      outJet->SetMass(mass_ML);
     FillHistogram("hJetPtCorrelation", pt_ML, jet->Pt()-jet->Area()*fJetsCont->GetRhoVal());
-    FillHistogram("hJetMassCorrelation", mass_ML, (rhoMass) ? jet->GetShapeProperties()->GetSecondOrderSubtracted() : jet->M());
     jetCount++;
   }
 
@@ -182,23 +174,14 @@ Bool_t AliAnalysisTaskEmcalJetCorrection::Run()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetCorrection::GetPtAndMassFromModel(AliEmcalJet* jet, Float_t& pt_ML, Float_t& mass_ML)
+void AliAnalysisTaskEmcalJetCorrection::GetPtFromModel(AliEmcalJet* jet, Float_t& pt_ML)
 {
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
     TString arrayStr = GetBackgroundModelArrayString(jet);
     // ####### Run Python script that does inference on jet
     fPythonCLI->Exec(Form("data_inference = numpy.array([[%s]])", arrayStr.Data()));
     fPythonCLI->Exec("result = estimator.predict(data_inference)");
-    if(fCorrectAlsoMass)
-    {
-      pt_ML   = fPythonCLI->Eval("result[0][0]");
-      mass_ML = fPythonCLI->Eval("result[0][1]");
-    }
-    else
-    {
-      pt_ML   = fPythonCLI->Eval("result[0]");
-      mass_ML = 0.0;
-    }
+    pt_ML   = fPythonCLI->Eval("result[0]");
   #endif
 }
 
@@ -208,8 +191,8 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
   // ####### Calculate inference input parameters
   std::vector<PWG::JETFW::AliEmcalParticleJetConstituent> tracks_sorted = jet->GetParticleConstituents();
   std::sort(tracks_sorted.rbegin(), tracks_sorted.rend());
-  Double_t* trackPts = new Double_t[TMath::Max(Int_t(tracks_sorted.size()), 100)];
-  for(Int_t i = 0; i < TMath::Max(Int_t(tracks_sorted.size()), 100); i++)
+  Double_t trackPts[100] = {0};
+  for(Int_t i = 0; i < TMath::Min(Int_t(tracks_sorted.size()), 100); i++)
   {
     const AliVParticle* particle = tracks_sorted[i].GetParticle();
     trackPts[i] = particle->Pt();
@@ -230,9 +213,9 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
     TString token = ((TObjString *)(data_tokens->At(iToken)))->String();
     if(token == "Jet_Pt")
       resultStr += Form("%E", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area());
-    else if(token == "Jet_NumConstituents")
+    else if(token == "Jet_NumTracks")
       resultStr += Form("%E", (Double_t)tracks_sorted.size());
-    else if(token == "Jet_Shape_Mass_NoCorr")
+    else if(token == "Jet_Shape_Mass")
       resultStr += Form("%E", jet->M());
     else if(token == "Jet_Shape_Mass_DerivCorr_1")
       resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtracted());
@@ -242,7 +225,7 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
       resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedpTD());
     else if(token == "Jet_Shape_pTD_DerivCorr_2")
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedpTD());
-    else if(token == "Jet_Shape_LeSub_NoCorr")
+    else if(token == "Jet_Shape_LeSub")
       resultStr += Form("%E", leSub_noCorr);
     else if(token == "Jet_Shape_LeSub_DerivCorr")
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub());
@@ -250,7 +233,7 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
       resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedSigma2());
     else if(token == "Jet_Shape_Sigma2_DerivCorr_2")
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedSigma2());
-    else if(token == "Jet_Shape_Angularity_NoCorr")
+    else if(token == "Jet_Shape_Angularity")
       resultStr += Form("%E", angularity);
     else if(token == "Jet_Shape_Angularity_DerivCorr_1")
       resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity());
@@ -260,7 +243,7 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
       resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedCircularity());
     else if(token == "Jet_Shape_Circularity_DerivCorr_2")
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedCircularity());
-    else if(token == "Jet_Shape_NumConst_DerivCorr")
+    else if(token == "Jet_Shape_NumTracks_DerivCorr")
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent());
     else if(token == "Jet_Shape_MomentumDispersion")
       resultStr += Form("%E", momentumDispersion);
@@ -276,7 +259,7 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
       resultStr += Form("%E", jet->Area());
     else if(token.BeginsWith("Jet_TrackPt"))
     {
-      TString num = token(17,(token.Length()-17));
+      TString num = token(11,(token.Length()-11));
       resultStr += Form("%E", trackPts[num.Atoi()]);
     }
 
@@ -287,7 +270,6 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
 
   data_tokens->SetOwner();
   delete data_tokens;
-  delete[] trackPts;
   return resultStr;
 }
 

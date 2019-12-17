@@ -19,6 +19,7 @@
 #include "AliStack.h"
 #include "AliV0ReaderV1.h"
 #include "TChain.h"
+#include "AliFemtoDreamBaseDump.h"
 
 class AliVParticle;
 class AliVTrack;
@@ -39,6 +40,7 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
   void SetCheckDaughterCF(bool doIt) { fCheckDaughterCF = doIt; }
   void SetGoDoThisFemtoJanitor(bool godothis) { fFemtoJanitor = godothis; }
+  void SetUseDumpster(bool godothis) { fUseDumpster = godothis; }
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) { fEvtCuts = cuts; }
@@ -89,11 +91,16 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   AliFemtoDreamPairCleaner *fPairCleaner;            //!
   AliFemtoDreamPartCollection *fPartColl;            //!
   AliFemtoDreamControlSample *fSample;               //!
+  AliFemtoDreamDump *fProtonSigmaDump;               //!
+  AliFemtoDreamDump *fAntiProtonAntiSigmaDump;       //!
+  AliFemtoDreamDump *fProtonSBDump;                  //!
+  AliFemtoDreamDump *fAntiProtonAntiSBDump;          //!
 
   bool fIsMC;              //
   bool fIsLightweight;     //
   bool fCheckDaughterCF;   //
   bool fFemtoJanitor;      //
+  bool fUseDumpster;       //
   float fV0PercentileMax;  //
   UInt_t fTrigger;         //
 
@@ -118,7 +125,8 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   TList *fResultQAList;            //!
   TList *fResultsSample;           //!
   TList *fResultsSampleQA;         //!
+  TList *fDumpster;                //!
 
-  ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 5)
+  ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 6)
 };
 #endif

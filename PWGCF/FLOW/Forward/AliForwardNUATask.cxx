@@ -113,10 +113,10 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
     fEventList->SetName("EventInfo");
 
-    Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
-    Int_t   centralPhiBins = (fSettings.useITS ? 20 : 400);
-    Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.5);
-    Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
+    Int_t   centralEtaBins = (fSettings.useITS ? 200 : 300);
+    Int_t   centralPhiBins = (fSettings.useITS ? 20 : 300);
+    Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.2);
+    Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.2);
 
     Int_t forwardBinsEta = (fSettings.use_primaries_fwd ? 200 : 200);
     Int_t forwardBinsPhi = (fSettings.use_primaries_fwd ? 20 : 20);
@@ -149,8 +149,13 @@ void AliForwardNUATask::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
+  Bool_t isgoodrun = kTRUE;
+  if (!fSettings.mc){
+    isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
+  }
+
   ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
-  if (!ev_val->IsValidEvent()){
+  if (!ev_val->IsValidEvent() || !isgoodrun){
      PostData(1, this->fOutputList);
     return;
   }
@@ -158,15 +163,16 @@ void AliForwardNUATask::UserExec(Option_t *)
     fUtil.fAODevent =  dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fUtil.fAODevent) throw std::runtime_error("Not AOD as expected");
   }
+  fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
 
   fUtil.fevent = fInputEvent;
   fUtil.fSettings = fSettings;
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
 
-  Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
-  Int_t   centralPhiBins = (fSettings.useITS ? 20 : 400);
-  Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.5);
-  Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
+  Int_t   centralEtaBins = (fSettings.useITS ? 200 : 300);
+  Int_t   centralPhiBins = (fSettings.useITS ? 20 : 300);
+  Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.2);
+  Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.2);
 
   TH2D centralDist_tmp = TH2D("c","",centralEtaBins,centralEtaMin,centralEtaMax,centralPhiBins,0,2*TMath::Pi());
   centralDist_tmp.SetDirectory(0);
@@ -174,7 +180,7 @@ void AliForwardNUATask::UserExec(Option_t *)
   refDist_tmp.SetDirectory(0);
 
   TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
-  TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
+  TH2D forwardPrim  ("fp","",200,-4,6,200,0,TMath::TwoPi());
   forwardTrRef.SetDirectory(0);
   forwardPrim.SetDirectory(0);
   forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
@@ -205,7 +211,6 @@ void AliForwardNUATask::UserExec(Option_t *)
 
   Double_t zvertex = fUtil.GetZ();
 
-  //TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
   static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
 
 
@@ -221,6 +226,13 @@ void AliForwardNUATask::UserExec(Option_t *)
     // loop for the FMD
     for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
       for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
+          Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
+          Double_t phi = forwardDist->GetYaxis()->GetBinCenter(phiBin);
+        if (fSettings.mc & fSettings.esd){
+
+
+          if (!fUtil.FMDAcceptanceExistMC(eta,phi,zvertex)) continue;
+        }
         Double_t weight = forwardDist->GetBinContent(etaBin,phiBin);
 
         if (fSettings.nua_mode & fSettings.kInterpolate)
@@ -228,7 +240,7 @@ void AliForwardNUATask::UserExec(Option_t *)
 
         if (weight == 0) continue;
 
-        nua_fmd->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetYaxis()->GetBinCenter(phiBin),zvertex,weight);
+        nua_fmd->Fill(eta,phi,zvertex,weight);
       }
     }
 

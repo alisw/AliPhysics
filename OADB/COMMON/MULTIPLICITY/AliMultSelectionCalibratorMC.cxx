@@ -31,6 +31,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC() :
     TNamed(), fInputFileNameData(""), fInputFileNameOADB(""), fInputFileNameMC(""),
     fBufferFileNameData("buffer.root"  ),
     fBufferFileNameMC  ("bufferMC.root"),
+    fDebugFileName  ("debug.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
     fkUseQuadraticMapping(kFALSE), fNV0MCutoffs(0), fV0MCutoffs()
@@ -54,6 +55,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, co
     TNamed(), fInputFileNameData(""), fInputFileNameOADB(""), fInputFileNameMC(""),
     fBufferFileNameData("buffer.root"  ),
     fBufferFileNameMC  ("bufferMC.root"),
+    fDebugFileName  ("debug.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
     fkUseQuadraticMapping(kFALSE), fNV0MCutoffs(0), fV0MCutoffs()
@@ -531,7 +533,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     Float_t lGlobalAxisScaling = 1.35;
     Float_t lRebinningSPD = 10;
     Float_t lRebinningEstimator = 10;
-    TFile *fOutputDebug = new TFile("debug.root", "RECREATE");
+    TFile *fOutputDebug = new TFile(fDebugFileName.Data(), "RECREATE");
 
     //Create 2D correlation plots as needed
     TH2F *l2dTrackletVsEstimatorData [1000] [lNEstimators];
@@ -552,12 +554,12 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             if ( !fSelection->GetEstimator(iEst)->IsInteger() ) {
                 l2dTrackletVsEstimatorData[iRun][iEst] = new TH2F(Form("l2dTrackletVsEstimatorData_%i_%s",lRunNumbers[iRun],
                         fSelection->GetEstimator(iEst)->GetName()), "",
-                        lNbinsSPD, -0.5, -0.5 + lSPDRange,
-                        200, 0.0, lGlobalAxisScaling*lMaxEst[iEst][iRun]);
+                        200, 0.0, lGlobalAxisScaling*lMaxEst[iEst][iRun],
+                        lNbinsSPD, -0.5, -0.5 + lSPDRange );
                 l2dTrackletVsEstimatorMC[iRun][iEst] = new TH2F(Form("l2dTrackletVsEstimatorMC_%i_%s",lRunNumbers[iRun],
                         fSelection->GetEstimator(iEst)->GetName()), "",
-                        lNbinsSPD, -0.5, -0.5 + lSPDRange,
-                        200, 0.0, lGlobalAxisScaling*lMaxEst[iEst][iRun]);
+                        200, 0.0, lGlobalAxisScaling*lMaxEst[iEst][iRun],
+                        lNbinsSPD, -0.5, -0.5 + lSPDRange );
             } else {
                 Int_t lNbinsEst = (Int_t) (lGlobalAxisScaling*lMaxEst[iEst][iRun]+1.0);
                 Float_t lLowEdgeEst = lMinEst[iEst][iRun]-0.5;
@@ -566,12 +568,12 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 lNbinsEst = lNbinsEst/lRebinningEstimator;
                 l2dTrackletVsEstimatorData[iRun][iEst] = new TH2F(Form("l2dTrackletVsEstimatorData_%i_%s",lRunNumbers[iRun],
                         fSelection->GetEstimator(iEst)->GetName()), "",
-                        lNbinsSPD, -0.5, -0.5 + lSPDRange,
-                        lNbinsEst, lLowEdgeEst, lHighEdgeEst);
+                        lNbinsEst, lLowEdgeEst, lHighEdgeEst,
+                        lNbinsSPD, -0.5, -0.5 + lSPDRange );
                 l2dTrackletVsEstimatorMC[iRun][iEst] = new TH2F(Form("l2dTrackletVsEstimatorMC_%i_%s",lRunNumbers[iRun],
                         fSelection->GetEstimator(iEst)->GetName()), "",
-                        lNbinsSPD, -0.5, -0.5 + lSPDRange,
-                        lNbinsEst, lLowEdgeEst, lHighEdgeEst);
+                        lNbinsEst, lLowEdgeEst, lHighEdgeEst ,
+                        lNbinsSPD, -0.5, -0.5 + lSPDRange );
             }
         }
     }
@@ -581,18 +583,19 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
             //Data Loop
             cout<<"Filling run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"): Data..."<<flush;
-            TString lEvalMe = fSelection->GetEstimator(iEst)->GetDefinition();
-            lEvalMe.Append(Form(":fnTracklets>>l2dTrackletVsEstimatorData_%i_%s",lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()));
+            TString lEvalMe = "";
+            lEvalMe.Append(Form("fnTracklets:%s>>l2dTrackletVsEstimatorData_%i_%s",((TString)fSelection->GetEstimator(iEst)->GetDefinition()).Data(),lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()));
             sTree[iRun] -> Draw( lEvalMe.Data() , "", "goff" );
             //MC loop
             cout<<"Done! MC..."<<flush;
-            lEvalMe = fSelection->GetEstimator(iEst)->GetDefinition();
+            TString current = fSelection->GetEstimator(iEst)->GetDefinition();
+            lEvalMe = "";
             //Ignore fired condition ONLY in MC
-            lEvalMe.ReplaceAll("fZnaFired", "1");
-            lEvalMe.ReplaceAll("fZncFired", "1");
-            lEvalMe.ReplaceAll("fZpaFired", "1");
-            lEvalMe.ReplaceAll("fZpcFired", "1");
-            lEvalMe.Append(Form(":fnTracklets>>l2dTrackletVsEstimatorMC_%i_%s",lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()));
+            current.ReplaceAll("fZnaFired", "1");
+            current.ReplaceAll("fZncFired", "1");
+            current.ReplaceAll("fZpaFired", "1");
+            current.ReplaceAll("fZpcFired", "1");
+            lEvalMe.Append(Form("fnTracklets:%s>>l2dTrackletVsEstimatorMC_%i_%s", current.Data(), lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()));
             sTreeMC[iRun] -> Draw( lEvalMe.Data() , "", "goff" );
             cout<<"Done!"<<endl;
         }
@@ -631,9 +634,9 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             if(!l2dTrackletVsEstimatorData[iRun][iEst]) cout<<"Null pointer for l2dTrackletVsEstimatorData"<<endl;
             if(!l2dTrackletVsEstimatorMC[iRun][iEst]) cout<<"Null pointer for l2dTrackletVsEstimatorMC"<<endl;
             cout<<"Profdata: setting up..."<<endl;
-            profdata[ iRun ][ iEst ] = l2dTrackletVsEstimatorData[iRun][iEst]->ProfileY(Form("profdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
+            profdata[ iRun ][ iEst ] = l2dTrackletVsEstimatorData[iRun][iEst]->ProfileX(Form("profdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
             cout<<"Profmc: setting up..."<<endl;
-            profmc[ iRun ][ iEst ] = l2dTrackletVsEstimatorMC[iRun][iEst]->ProfileY(Form("profmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
+            profmc[ iRun ][ iEst ] = l2dTrackletVsEstimatorMC[iRun][iEst]->ProfileX(Form("profmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
 
             fitdata[iRun][iEst] = new TF1(Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
             fitmc[iRun][iEst] = new TF1(Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
@@ -745,16 +748,16 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
 
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
-            l2dTrackletVsEstimatorData[iRun][iEst]->Write();
-            profdata[iRun][iEst]->Write();
-            fitdata[iRun][iEst]->Write();
+            l2dTrackletVsEstimatorData[iRun][iEst]->Write(l2dTrackletVsEstimatorData[iRun][iEst]->GetName(), TObject::kOverwrite);
+            profdata[iRun][iEst]->Write(profdata[iRun][iEst]->GetName(), TObject::kOverwrite);
+            fitdata[iRun][iEst]->Write(fitdata[iRun][iEst]->GetName(), TObject::kOverwrite);
         }
     }
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
-            l2dTrackletVsEstimatorMC[iRun][iEst]->Write();
-            profmc[iRun][iEst]->Write();
-            fitmc[iRun][iEst]->Write();
+            l2dTrackletVsEstimatorMC[iRun][iEst]->Write(l2dTrackletVsEstimatorMC[iRun][iEst]->GetName(), TObject::kOverwrite);
+            profmc[iRun][iEst]->Write(profmc[iRun][iEst]->GetName(), TObject::kOverwrite);
+            fitmc[iRun][iEst]->Write(fitmc[iRun][iEst]->GetName(), TObject::kOverwrite);
         }
     }
 

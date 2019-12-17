@@ -121,10 +121,10 @@ fCutList(0)
         CutVar[cv].fXiPlusPiPlus=0x0;
         CutVar[cv].fXiPlusPiMinus=0x0;
         //
-        CutVar[cv].fXiMinusPiPlusbkg=0x0;
-        CutVar[cv].fXiMinusPiMinusbkg=0x0;
-        CutVar[cv].fXiPlusPiPlusbkg=0x0;
-        CutVar[cv].fXiPlusPiMinusbkg=0x0;
+        //CutVar[cv].fXiMinusPiPlusbkg=0x0;
+        //CutVar[cv].fXiMinusPiMinusbkg=0x0;
+        //CutVar[cv].fXiPlusPiPlusbkg=0x0;
+        //CutVar[cv].fXiPlusPiMinusbkg=0x0;
         //
         CutVar[cv].fMCrecXi=0x0;
         CutVar[cv].fMCrecXibar=0x0;
@@ -187,10 +187,10 @@ fCutList(CutListOption)
         CutVar[cv].fXiPlusPiPlus=0x0;
         CutVar[cv].fXiPlusPiMinus=0x0;
         //
-        CutVar[cv].fXiMinusPiPlusbkg=0x0;
-        CutVar[cv].fXiMinusPiMinusbkg=0x0;
-        CutVar[cv].fXiPlusPiPlusbkg=0x0;
-        CutVar[cv].fXiPlusPiMinusbkg=0x0;
+        //CutVar[cv].fXiMinusPiPlusbkg=0x0;
+        //CutVar[cv].fXiMinusPiMinusbkg=0x0;
+        //CutVar[cv].fXiPlusPiPlusbkg=0x0;
+        //CutVar[cv].fXiPlusPiMinusbkg=0x0;
         //
         CutVar[cv].fMCrecXi=0x0;
         CutVar[cv].fMCrecXibar=0x0;
@@ -348,10 +348,10 @@ AliXiStarPbPb::~AliXiStarPbPb()
         if(CutVar[cv].fXiPlusPiPlus) delete CutVar[cv].fXiPlusPiPlus;
         if(CutVar[cv].fXiPlusPiMinus) delete CutVar[cv].fXiPlusPiMinus;
         //
-        if(CutVar[cv].fXiMinusPiPlusbkg) delete CutVar[cv].fXiMinusPiPlusbkg;
-        if(CutVar[cv].fXiMinusPiMinusbkg) delete CutVar[cv].fXiMinusPiMinusbkg;
-        if(CutVar[cv].fXiPlusPiPlusbkg) delete CutVar[cv].fXiPlusPiPlusbkg;
-        if(CutVar[cv].fXiPlusPiMinusbkg) delete CutVar[cv].fXiPlusPiMinusbkg;
+        //if(CutVar[cv].fXiMinusPiPlusbkg) delete CutVar[cv].fXiMinusPiPlusbkg;
+        //if(CutVar[cv].fXiMinusPiMinusbkg) delete CutVar[cv].fXiMinusPiMinusbkg;
+        //if(CutVar[cv].fXiPlusPiPlusbkg) delete CutVar[cv].fXiPlusPiPlusbkg;
+        //if(CutVar[cv].fXiPlusPiMinusbkg) delete CutVar[cv].fXiPlusPiMinusbkg;
         //
         if(CutVar[cv].fMCrecXi) delete CutVar[cv].fMCrecXi;
         if(CutVar[cv].fMCrecXibar) delete CutVar[cv].fMCrecXibar;
@@ -386,7 +386,7 @@ void AliXiStarPbPb::XiStarInit()
     
     
     if(fMCcase) fEventsToMix = 0;
-    else fEventsToMix = 2; //5
+    else fEventsToMix = 0; //5
     
     fMultLimits[0]=0, fMultLimits[1]=1250, fMultLimits[2]=2500, fMultLimits[3]=3750, fMultLimits[4]=5000, fMultLimits[5]=6250, fMultLimits[6]=7500, fMultLimits[7]=8750, fMultLimits[8]=10000, fMultLimits[9]=13000, fMultLimits[10]=20000;
     
@@ -898,10 +898,10 @@ void AliXiStarPbPb::UserCreateOutputObjects()
         TString *nameXiMinusPiMinus = new TString("fXiMinusPiMinus_");
         TString *nameXiPlusPiPlus = new TString("fXiPlusPiPlus_");
         TString *nameXiPlusPiMinus = new TString("fXiPlusPiMinus_");
-        TString *nameXiMinusPiPlusbkg = new TString("fXiMinusPiPlusbkg_");
-        TString *nameXiMinusPiMinusbkg = new TString("fXiMinusPiMinusbkg_");
-        TString *nameXiPlusPiPlusbkg = new TString("fXiPlusPiPlusbkg_");
-        TString *nameXiPlusPiMinusbkg = new TString("fXiPlusPiMinusbkg_");
+        //TString *nameXiMinusPiPlusbkg = new TString("fXiMinusPiPlusbkg_");
+        //TString *nameXiMinusPiMinusbkg = new TString("fXiMinusPiMinusbkg_");
+        //TString *nameXiPlusPiPlusbkg = new TString("fXiPlusPiPlusbkg_");
+        //TString *nameXiPlusPiMinusbkg = new TString("fXiPlusPiMinusbkg_");
         *nameXiMinusPiPlus += cv;
         *nameXiMinusPiMinus += cv;
         *nameXiPlusPiPlus += cv;
@@ -914,19 +914,19 @@ void AliXiStarPbPb::UserCreateOutputObjects()
         CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
         CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
         CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
-        CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
-        CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
-        CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
-        CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution",100,0,10,100,0,100, 75,1.4,1.7);
+        //CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        //CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        //CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        //CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution",100,0,10,100,0,100, 75,1.4,1.7);
         
         fOutputList->Add(CutVar[cv].fXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fXiMinusPiMinus);
         fOutputList->Add(CutVar[cv].fXiPlusPiPlus);
         fOutputList->Add(CutVar[cv].fXiPlusPiMinus);
-        fOutputList->Add(CutVar[cv].fXiMinusPiPlusbkg);
-        fOutputList->Add(CutVar[cv].fXiMinusPiMinusbkg);
-        fOutputList->Add(CutVar[cv].fXiPlusPiPlusbkg);
-        fOutputList->Add(CutVar[cv].fXiPlusPiMinusbkg);
+        //fOutputList->Add(CutVar[cv].fXiMinusPiPlusbkg);
+        //fOutputList->Add(CutVar[cv].fXiMinusPiMinusbkg);
+        //fOutputList->Add(CutVar[cv].fXiPlusPiPlusbkg);
+        //fOutputList->Add(CutVar[cv].fXiPlusPiMinusbkg);
         //
         
         //cent bin 10 to 100 April 7 on MC
@@ -1236,8 +1236,8 @@ void AliXiStarPbPb::Exec(Option_t *)
         else negativeTracks++;
         
         if(fTempStruct[myTracks].fNclusTPC < 60) continue;
-        if(fTempStruct[myTracks].fDCAZ > 1.) continue;
-        if(fTempStruct[myTracks].fEta > 0.8) continue;
+        if(fTempStruct[myTracks].fDCAZ > 2.) continue;
+       // if(fTempStruct[myTracks].fEta > 0.8) continue;
         myTracks++;
     }
     
@@ -1824,7 +1824,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                             CutVar[cv].fXiPlusPiPlus->Fill(xiStarPt, centralityV0M, xiStarMass);
                         }
                     }
-                    else {
+                    /*else {
                         if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiMinusPiMinusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
                         }
@@ -1837,7 +1837,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                         else {
                             CutVar[cv].fXiPlusPiPlusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
                         }
-                    }
+                    }*/
                     
                     
                     

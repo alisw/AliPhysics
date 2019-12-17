@@ -14,7 +14,7 @@ TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0"};
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16","16to24"};
 TString strPtAssocText[nbinAssocpt]={"#it{p}_{T}^{assoc} > 0.3 GeV/#it{c}","0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}","#it{p}_{T}^{assoc} > 1 GeV/#it{c}"};
 TString strPtMesonText[nbinDpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}", "16 < #it{p}_{T}^{D} < 24 GeV/#it{c}"};
-TString strDeltaEta="|#Delta#eta| < 1";
+TString strDeltaEta="|#Delta#it{#eta}| < 1";
 Double_t minYaxis[nbinAssocpt]={-0.7,-0.7,-0.48}; // or -0.6 for all  
 Double_t maxYaxis[nbinAssocpt]={4.45,2.1,3.3};// or 4.1 for the first , 2.9 for the middle and 1.9 for the last
 Double_t mesonptcenter[nbinDpt]={4.,6.5,12.,20.};// needed for getting the baseline
@@ -186,11 +186,11 @@ TH1D * GetHistoAndSyst(TString path, Int_t collsyst,TString hname, TString hname
 
   if(collsyst==0){
     if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.55,0.49,Form("%.0f#% scale uncertainty pp",hUncCorrMin->GetBinContent(1)*100.));
-    else tUncertainty=new TLatex(0.55,0.49,Form("{}^{#plus%.0f%s}_{#minus%.0f%s} scale unc. (pp)","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
+    else tUncertainty=new TLatex(0.55,0.49,Form("{}^{#scale[1.3]{#plus%.0f%s}}_{#scale[1.3]{#minus%.0f%s}} scale unc. (pp)","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
   }
   if(collsyst==1){
-    if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.55,0.45,Form("#bf{%.0f#% scale uncertainty p-Pb}",hUncCorrMin->GetBinContent(1)*100.));
-    else tUncertainty=new TLatex(0.55,0.45,Form("{}^{#plus%.0f%s}_{#minus%.0f%s} scale unc. (p-Pb)","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
+    if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.55,0.45,Form("#bf{%.0f#% scale uncertainty p#minusPb}",hUncCorrMin->GetBinContent(1)*100.));
+    else tUncertainty=new TLatex(0.55,0.45,Form("{}^{#scale[1.3]{#plus%.0f%s}}_{#scale[1.3]{#minus%.0f%s}} scale unc. (p#minusPb)","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
   }
 
   tUncertainty->SetNDC();
@@ -346,7 +346,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedpPb(Int_t binSystem, Int_t binAssoc,
   cout<<"sub -> "<<outputhisto->GetBinContent(5)<<endl;
   
   outputhisto->SetXTitle("#Delta#varphi (rad)");
-  outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} - baseline (rad^{-1})");
+  outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} #minus baseline (rad^{#scale[1.25]{-1}})");
   //  outputhisto->GetYaxis()->SetTitleOffset(1.5);
   //  outputhisto->GetYaxis()->SetTitleFont(42);
   //  outputhisto->GetXaxis()->SetTitleFont(42);
@@ -530,8 +530,8 @@ TLegend *GetLegendDataPoints(TH1D *h1,TH1D *h2,Int_t identifier){
     legend->SetMargin(0.15);
     legend->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
 			// old settings with font 42, still good (0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-    legend->AddEntry(h1,"pp, #sqrt{s} = 5.02 TeV, |#it{y}^{D}_{cms}| < 0.5","lep");
-    legend->AddEntry(h2,"p-Pb, #sqrt{s_{NN}} = 5.02 TeV, -0.96 < #it{y}^{D}_{cms} < 0.04","lep");
+    legend->AddEntry(h1,"pp, #sqrt{#it{s}} = 5.02 TeV, |#it{y}^{D}_{cms}| < 0.5","lp");
+    legend->AddEntry(h2,"p#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV, #minus0.96 < #it{y}^{D}_{cms} < 0.04","lp");
     legend->SetName(Form("LegendDataPPandpPb_%d",identifier));
     return legend;
   }
@@ -547,9 +547,9 @@ TLegend *GetLegendDataPointsFake(TH1D *hpp,TH1D *hpPb,Int_t identifier){
     legend->SetTextFont(43);
     legend->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
 			// old settings with font 42, still good (0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-    legend->AddEntry(hpp,"","lep");
+    legend->AddEntry(hpp,"","lp");
     legend->AddEntry((TObject*)0,"","");
-    legend->AddEntry(hpPb,"","lep");
+    legend->AddEntry(hpPb,"","lp");
     legend->SetName(Form("LegendDataPPandpPb_%d",identifier));
     return legend;
   }
@@ -576,7 +576,7 @@ TLegend *GetLegendBaselines(TGraphAsymmErrors *g1,TGraphAsymmErrors *g2,Int_t id
   legend->SetTextAlign(12);
   legend->SetTextSize(23*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42, 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
   legend->AddEntry(g1,"baseline-subtraction unc. (pp)","f");
-  legend->AddEntry(g2,"baseline-subtraction unc. (pPb)","f");
+  legend->AddEntry(g2,"baseline-subtraction unc. (p#minusPb)","f");
   // legend->AddEntry(box2[4],"v2 subtr p-Pb","f");
   legend->SetName(Form("LegendBaselineUncPPandpPb_%d",identifier));
   return legend;

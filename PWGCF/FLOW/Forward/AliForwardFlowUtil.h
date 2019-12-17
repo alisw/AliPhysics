@@ -22,14 +22,14 @@
 #include "AliFMDStripIndex.h"
 #include "AliFMDEncodedEdx.h"
 #include "AliFMDMCTrackDensity.h"
-
+#include <valarray>
 class AliForwardFlowUtil : public TObject {
   typedef std::vector< Double_t > edgeContainer;
 
  public:
-   AliForwardFlowUtil();
-
-
+  AliForwardFlowUtil();
+  Int_t GetNUARunNumber(Int_t runnumber);
+  Bool_t IsGoodRun(Int_t runnumber);
   Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc,TH2D* hOutliers);
   void FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& forwardDist);
   void FillDataCentral(TH2D*& centralDist);
@@ -69,10 +69,14 @@ class AliForwardFlowUtil : public TObject {
     // (first) track reference of such a hit
   AliTrackReference* IsHitTPC(AliMCParticle* p);
   AliTrackReference* IsHitFMD(AliMCParticle* p);
-  void GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi);
-  void GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* etaPhi);
+  Double_t GetTrackRefEta(AliMCParticle* p);
+  Double_t GetTrackRefEta(AliTrackReference* ref);
+  Double_t GetTrackRefPhi(AliMCParticle* p);
+  Double_t GetTrackRefPhi(AliTrackReference* ref);
 
   void MakeFakeHoles(TH2D& forwarddNdedp);
+  Bool_t FMDAcceptanceExistMC(Double_t eta,Double_t phi,Double_t vertex);
+
   AliVEvent* fevent; //!
   AliAODEvent* fAODevent; //!
   AliMCEvent* fMCevent; //!
@@ -125,6 +129,14 @@ class AliForwardFlowUtil : public TObject {
   Double_t GetTrackRefTheta(const AliTrackReference* ref) const;
 
   AliTrackReference* fStored; //! Last stored
+
+
+
+// For a new value newValue, compute the new count, new mean, the new M2.
+// mean accumulates the mean of the entire dataset
+// M2 aggregates the squared distance from the mean
+// count aggregates the number of samples seen so far
+
 
 
 private:

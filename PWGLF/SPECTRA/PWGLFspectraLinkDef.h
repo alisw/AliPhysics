@@ -47,6 +47,7 @@
 #pragma link C++ class AliAnalysisTaskPPvsMult+;
 #pragma link C++ class AliAnalysisTaskSpherocity+;
 #pragma link C++ class AliAnalysisTaskPPvsRT+;
+#pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
@@ -79,6 +80,7 @@
 #pragma link C++ class AliAnalysisTaskKinkpp5TeVMC+;
 #pragma link C++ class AliAnalysisTaskKinkPbPb+;
 #pragma link C++ class AliAnalysisTaskKinkPbPbMC+;
+#pragma link C++ class AliAnalysisKinkTaskPbPb2018+;
 
 #pragma link C++ class AliAnalysisTaskSpectraBoth+;
 #pragma link C++ class AliSpectraBothEventCuts+;

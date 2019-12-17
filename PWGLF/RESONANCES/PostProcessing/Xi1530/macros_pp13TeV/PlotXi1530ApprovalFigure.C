@@ -4,8 +4,11 @@
 int canvasCount = 1;
 vector<int> MaterialColors
     = {kOrange+10, kOrange-3, kTeal+2, kAzure+2, kViolet+4};
-
+//TString PhysicsFile = "AnalysisResults_Xi1530_PhysicsResult_0.00-0.00_0-100_0-10_10-30_30-50_50-70_70-100_bins.root";
+TString PhysicsFile = "AnalysisResults_Xi1530_PhysicsResult_0-10_10-30_30-50_50-70_70-100_bins.root";
 //General Text
+TLatex* t0 = new TLatex();
+TLatex* t0R = new TLatex();
 TLatex* t = new TLatex();
 TLatex* tR = new TLatex();
 TLatex* t2 = new TLatex();
@@ -33,6 +36,12 @@ void DrawRatioToXi();
 
 void PlotXi1530ApprovalFigure(){
     // Common latex
+    // for memo, super small
+    t0->SetNDC();
+    t0->SetTextSize(0.030);
+    t0R->SetNDC();
+    t0R->SetTextSize(0.030);
+    t0R->SetTextAlign(33);
     // for memo, small
     t->SetNDC();
     t->SetTextSize(0.035);
@@ -63,8 +72,11 @@ void PlotXi1530ApprovalFigure(){
     gStyle->SetOptTitle(0);
     gStyle->SetLegendBorderSize(0);
 
+    //DrawRatioToXi();
+    //gSystem->Exit(1);
+    
     //DrawSpectraMultiPi
-    //DrawSpectraMultiPi();
+    DrawSpectraMultiPi();
     
     // 1. Signal to Background figure
     DrawSignalBackground();
@@ -75,7 +87,7 @@ void PlotXi1530ApprovalFigure(){
     // 3. Rec.Effi
     DrawRecEffi();
     
-    // 4. pT Spectra 0-100
+    // 4. pT Spectra INEL
     DrawSpectraMB();
 
     // 4.1. Ratio to 7 TeV Result
@@ -95,11 +107,13 @@ void PlotXi1530ApprovalFigure(){
 
     // 9. Ratio to Xi
     DrawRatioToXi();
-
+    
+        
+    //DrawSpectraMBRatio();
     
 }
 void DrawSignalBackground(){
-    vector<double> fDrawRange = {1.48, 1.8};
+    vector<double> fDrawRange = {1.48, 1.79};
 
 
     TCanvas* cSigbkg = GetCanvas("cSigbkg");
@@ -118,18 +132,19 @@ void DrawSignalBackground(){
     hsignal->SetLineColor(kBlack);
     hsignal->SetMaximum(hsignal->GetMaximum()*1.1);
     hsignal->GetYaxis()->SetTitleOffset(1.2);
-    hsignal->GetXaxis()->SetTitleOffset(0.95);
+    hsignal->GetXaxis()->SetTitleOffset(1.2);
     hsignal->GetYaxis()->SetTitleSize(0.04);
+    hsignal->GetXaxis()->SetTitleSize(0.04);
     hsignal->GetXaxis()->SetRangeUser(fDrawRange[0], fDrawRange[1]);
     hsignal->GetYaxis()->SetTitle("Counts / (4.0 MeV/#it{c} ^{2})");
-    hsignal->GetXaxis()->SetTitle("#it{M}_{#pi#Xi} (GeV/#it{c}^{2})");
+    hsignal->GetXaxis()->SetTitle("#it{M}_{#Xi#pi} (GeV/#it{c}^{2})");
 
     hbkg->SetMarkerStyle(4);
     hbkg->SetMarkerColor(MaterialColors[0]);
     hbkg->GetXaxis()->SetRangeUser(fDrawRange[0], fDrawRange[1]);
     hbkgnorm->SetFillColor(MaterialColors[0]);
     hbkgnorm->SetFillStyle(3005);
-    hbkgnorm->SetLineColorAlpha(MaterialColors[0], 0);
+    hbkgnorm->SetLineColor(0);
     hbkgnorm->GetXaxis()->SetRangeUser(fDrawRange[0], fDrawRange[1]);
 
     cSigbkg->cd();
@@ -137,16 +152,16 @@ void DrawSignalBackground(){
     hbkgnorm->Draw("BAR same");
     hbkg->Draw("same");
 
-    t2R->DrawLatex(0.6, 0.91, "ALICE Preliminary");
-    t2R->DrawLatex(0.93, 0.91, "#bf{pp #sqrt{s} = 13 TeV (10 - 30%)}");
-    t2R->DrawLatex(0.93, 0.85, "#bf{V0M Multiplicity Event Classes, INEL>0}");
+    t2R->DrawLatex(0.72, 0.91, "ALICE Preliminary");
+    t2R->DrawLatex(0.93, 0.91, "#bf{pp #sqrt{#it{s}} = 13 TeV}");
+    t2R->DrawLatex(0.93, 0.85, "#bf{V0M Multiplicity Event Classes 10 - 30% }");
     t2R->DrawLatex(0.93, 0.79,
                   "#bf{1.6 < #it{p}_{T} < 2.0 GeV/#it{c}, |#it{y}| < 0.5}");
 
-    t3R->DrawLatex(0.93, 0.72,
-                  "#bf{#Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t2R->DrawLatex(0.93, 0.73,
+                  "#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} #rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}");
     //auto lSigBkg = new TLegend(0.13, 0.74, 0.45, 0.89);
-    auto lSigBkg = new TLegend(0.56, 0.47, 0.93, 0.63);
+    auto lSigBkg = new TLegend(0.56, 0.50, 0.93, 0.66);
     lSigBkg->SetFillStyle(0);
     lSigBkg->AddEntry(hsignal, "Data (stat. uncert.)", "PLE");
     lSigBkg->AddEntry(hbkg, "Mixed-event background", "PLE");
@@ -168,18 +183,21 @@ void DrawSignalBackground(){
     hsignal0100->SetLineColor(kBlack);
     hsignal0100->SetMaximum(hsignal0100->GetMaximum()*1.1);
     hsignal0100->GetYaxis()->SetTitleOffset(1.2);
-    hsignal0100->GetXaxis()->SetTitleOffset(0.95);
+    hsignal0100->GetXaxis()->SetTitleOffset(1.2);
     hsignal0100->GetYaxis()->SetTitleSize(0.04);
+    hsignal0100->GetXaxis()->SetTitleSize(0.04);
     hsignal0100->GetXaxis()->SetRangeUser(fDrawRange[0], fDrawRange[1]);
     hsignal0100->GetYaxis()->SetTitle("Counts / (4.0 MeV/#it{c} ^{2})");
-    hsignal0100->GetXaxis()->SetTitle("#it{M}_{#pi#Xi} (GeV/#it{c}^{2})");
+    hsignal0100->GetXaxis()->SetTitle("#it{M}_{#Xi#pi} (GeV/#it{c}^{2})");
 
     hbkg0100->SetMarkerStyle(4);
     hbkg0100->SetMarkerColor(MaterialColors[0]);
     hbkg0100->GetXaxis()->SetRangeUser(fDrawRange[0], fDrawRange[1]);
     hbkgnorm0100->SetFillColor(MaterialColors[0]);
     hbkgnorm0100->SetFillStyle(3005);
-    hbkgnorm0100->SetLineColorAlpha(MaterialColors[0], 0);
+    hbkgnorm0100->SetLineColor(0);
+    hbkgnorm0100->SetLineStyle(0);
+    //hbkgnorm0100->SetMarkerSyle(0);
     hbkgnorm0100->GetXaxis()->SetRangeUser(fDrawRange[0], fDrawRange[1]);
 
     cSigbkg->cd();
@@ -187,16 +205,17 @@ void DrawSignalBackground(){
     hbkgnorm0100->Draw("BAR same");
     hbkg0100->Draw("same");
 
-    t2R->DrawLatex(0.6, 0.91, "ALICE Preliminary");
-    t2R->DrawLatex(0.93, 0.91, "#bf{pp #sqrt{s} = 13 TeV (0 - 100%)}");
-    t2R->DrawLatex(0.93, 0.85, "#bf{V0M Multiplicity Event Classes, INEL>0}");
-    t2R->DrawLatex(0.93, 0.79,
+    t2R->DrawLatex(0.62, 0.91, "ALICE Preliminary");
+    t2R->DrawLatex(0.93, 0.91, "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV}");
+    //t2R->DrawLatex(0.93, 0.85, "#bf{V0M Multiplicity Event Classes 0 - 100% }");
+    t2R->DrawLatex(0.93, 0.85,
                   "#bf{1.6 < #it{p}_{T} < 2.0 GeV/#it{c}, |#it{y}| < 0.5}");
 
-    t3R->DrawLatex(0.93, 0.72,
-                  "#bf{#Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t2R->DrawLatex(0.93, 0.78,
+                  "#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} #rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}");
+    //t3R->DrawLatex(0.93, 0.72,"#bf{#Xi(1530)^{0} + cc #rightarrow #Xi^{#mp} + #pi^{#pm}}");
 
-    auto lSigBkg0100 = new TLegend(0.56, 0.47, 0.93, 0.63);
+    auto lSigBkg0100 = new TLegend(0.56, 0.52, 0.93, 0.68);
     lSigBkg0100->SetFillStyle(0);
     lSigBkg0100->AddEntry(hsignal0100, "Data (stat. uncert.)", "PLE");
     lSigBkg0100->AddEntry(hbkg0100, "Mixed-event background", "PLE");
@@ -225,16 +244,19 @@ void DrawFittedSignal(){
     hfitsignal->SetLineColor(kBlack);
     hfitsignal->SetMaximum(hfitsignal->GetMaximum()*1.3);
     hfitsignal->GetYaxis()->SetTitleOffset(1.2);
-    hfitsignal->GetXaxis()->SetTitleOffset(1);
+    hfitsignal->GetXaxis()->SetTitleOffset(1.2);
     hfitsignal->GetYaxis()->SetTitleSize(0.04);
+    hfitsignal->GetXaxis()->SetTitleSize(0.04);
     hfitsignal->GetXaxis()->SetRangeUser(fDrawRange[0], fDrawRange[1]);
     hfitsignal->GetYaxis()->SetTitle("Counts / (4.0 MeV/#it{c} ^{2})");
-    hfitsignal->GetXaxis()->SetTitle("#it{M}_{#pi#Xi} (GeV/#it{c}^{2})");
+    hfitsignal->GetXaxis()->SetTitle("#it{M}_{#Xi#pi} (GeV/#it{c}^{2})");
 
     fFitbkg->SetLineColor(kBlack);
     fFitbkg->SetLineWidth(2);
+    fFitbkg->SetRange(1.484, 1.6);
     fFitSum->SetLineColor(MaterialColors[0]);
     fFitSum->SetLineWidth(2);
+    fFitSum->SetNpx(500);
 
     cSignalFit->cd();
     hfitsignal->Draw("PZ");
@@ -242,16 +264,16 @@ void DrawFittedSignal(){
     fFitSum->Draw("same");
     //fFitPeak->Draw("same");
 
-    t2R->DrawLatex(0.6, 0.91, "ALICE Preliminary");
-    t2R->DrawLatex(0.93, 0.91, "#bf{pp #sqrt{s} = 13 TeV (10 - 30%)}");
-    t2R->DrawLatex(0.93, 0.85, "#bf{V0M Multiplicity Event Classes, INEL>0}");
+    t2R->DrawLatex(0.72, 0.91, "ALICE Preliminary");
+    t2R->DrawLatex(0.93, 0.91, "#bf{pp #sqrt{#it{s}} = 13 TeV}");
+    t2R->DrawLatex(0.93, 0.85, "#bf{V0M Multiplicity Event Classes 10 - 30% }");
     t2R->DrawLatex(0.93, 0.79,
                   "#bf{1.6 < #it{p}_{T} < 2.0 GeV/#it{c}, |#it{y}| < 0.5}");
+    t2R->DrawLatex(0.93, 0.70,
+                  "#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} #rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}");
+    //t3R->DrawLatex(0.93, 0.72,"#bf{#Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
 
-    t3R->DrawLatex(0.93, 0.72,
-                  "#bf{#Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
-
-    auto lSignalFit = new TLegend(0.56, 0.47, 0.95, 0.63);
+    auto lSignalFit = new TLegend(0.46, 0.3, 0.97, 0.48);
     lSignalFit->SetFillStyle(0);
     lSignalFit->AddEntry(hfitsignal, "Data (stat. uncert.)", "PLE");
     lSignalFit->AddEntry(fFitSum, Form("Voigtian peak + background"), "L");
@@ -275,33 +297,37 @@ void DrawFittedSignal(){
     hfitsignal0100->SetMarkerColor(kBlack);
     hfitsignal0100->SetLineColor(kBlack);
     hfitsignal0100->GetYaxis()->SetTitleOffset(1.2);
-    hfitsignal0100->GetXaxis()->SetTitleOffset(1);
+    hfitsignal0100->GetXaxis()->SetTitleOffset(1.2);
     hfitsignal0100->GetYaxis()->SetTitleSize(0.04);
+    hfitsignal0100->GetXaxis()->SetTitleSize(0.04);
     hfitsignal0100->GetXaxis()->SetRangeUser(fDrawRange[0], fDrawRange[1]);
     hfitsignal0100->GetYaxis()->SetTitle("Counts / (4.0 MeV/#it{c} ^{2})");
     hfitsignal0100->GetXaxis()->SetTitle(
-        "#it{M}_{#pi#Xi} (GeV/#it{c}^{2})");
+        "#it{M}_{#Xi#pi} (GeV/#it{c}^{2})");
 
     fFitbkg0100->SetLineColor(kBlack);
     fFitbkg0100->SetLineWidth(2);
+    fFitbkg0100->SetRange(1.484, 1.6);
     fFitSum0100->SetLineColor(MaterialColors[0]);
     fFitSum0100->SetLineWidth(2);
+    fFitSum0100->SetNpx(1000);
 
     cSignalFit->cd();
     hfitsignal0100->Draw("PZ");
     fFitbkg0100->Draw("same");
     fFitSum0100->Draw("same");
 
-    t2R->DrawLatex(0.6, 0.91, "ALICE Preliminary");
-    t2R->DrawLatex(0.93, 0.91, "#bf{pp #sqrt{s} = 13 TeV (0 - 100%)}");
-    t2R->DrawLatex(0.93, 0.85, "#bf{V0M Multiplicity Event Classes, INEL>0}");
-    t2R->DrawLatex(0.93, 0.79,
+        t2R->DrawLatex(0.62, 0.91, "ALICE Preliminary");
+    t2R->DrawLatex(0.93, 0.91, "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV}");
+    //t2R->DrawLatex(0.93, 0.85, "#bf{V0M Multiplicity Event Classes 0 - 100% }");
+    t2R->DrawLatex(0.93, 0.85,
                   "#bf{1.6 < #it{p}_{T} < 2.0 GeV/#it{c}, |#it{y}| < 0.5}");
 
-    t3R->DrawLatex(0.93, 0.72,
-                  "#bf{#Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t2R->DrawLatex(0.93, 0.76,
+                  "#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} #rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}");
+    //t3R->DrawLatex(0.93, 0.72,"#bf{#Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
 
-    auto lSignalFit0100 = new TLegend(0.56, 0.47, 0.95, 0.63);
+    auto lSignalFit0100 = new TLegend(0.46, 0.3, 0.97, 0.48);
     lSignalFit0100->SetFillStyle(0);
     lSignalFit0100->AddEntry(hfitsignal0100, "Data (stat. uncert.)", "PLE");
     lSignalFit0100->AddEntry(fFitSum0100, Form("Voigtian peak + background"),
@@ -315,27 +341,38 @@ void DrawFittedSignal(){
 void DrawRecEffi(){
     TCanvas* cRecEffi = GetCanvas("cRecEffi");
     cRecEffi->SetLeftMargin(0.15);
-    //cRecEffi->SetLogy();
+    cRecEffi->SetBottomMargin(0.13);
+    cRecEffi->SetLogy();
     cRecEffi->Draw();
     TFile* fResults = new TFile("data/AnalysisResults_Extracted_1_Multi_0.00-100.00_Default1.root");
 
     auto hSpectraSys =
         (TH1*)fResults->Get("hMCReconEffi");  // sys
-    hSpectraSys->SetMaximum(0.25);
-    hSpectraSys->SetMinimum(0);
+    hSpectraSys->SetMaximum(1);
+    hSpectraSys->SetMinimum(1e-3);
     hSpectraSys->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hSpectraSys->GetYaxis()->SetTitle("Acceptance x Efficiency x B.R.");
-    hSpectraSys->GetXaxis()->SetRangeUser(0.8, 8.8);
+    hSpectraSys->GetYaxis()->SetTitle("Acceptance #times Efficiency #times B.R.");
+    hSpectraSys->GetXaxis()->SetRangeUser(0.1, 8.8);
+    hSpectraSys->GetYaxis()->SetTitleOffset(1.2);
+    hSpectraSys->GetYaxis()->SetLabelSize(0.05);
+    hSpectraSys->GetXaxis()->SetLabelSize(0.05);
+    hSpectraSys->GetYaxis()->SetTitleSize(0.06);
+    hSpectraSys->GetXaxis()->SetTitleSize(0.06);
+    hSpectraSys->GetXaxis()->SetTitleOffset(0.95);
     hSpectraSys->SetLineWidth(2);
+    hSpectraSys->SetLineColor(kBlack);
+    hSpectraSys->SetMarkerColor(kBlack);
     hSpectraSys->SetMarkerStyle(20);
+    hSpectraSys->SetMarkerSize(1.5);
 
     cRecEffi->cd();
     hSpectraSys->Draw("E");
 
-    t2->DrawLatex(0.18, 0.88, "ALICE Simulation");
-    t->DrawLatex(0.45, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0 (0 - 100%)}");
-    t2->DrawLatex(0.18, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t3R->DrawLatex(0.93, 0.42, "ALICE Preliminary");
+    t2R->DrawLatex(0.93, 0.34, "#bf{pp #sqrt{#it{s}} = 13 TeV, INEL>0, |#it{y}| < 0.5}");
+    t3R->DrawLatex(0.93, 0.28,
+                  "#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} #rightarrow "
+                  "#Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}");
 
     //t2->DrawLatex(0.5, 0.15, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
     
@@ -343,17 +380,17 @@ void DrawRecEffi(){
 }
 void DrawSpectraMB(){
     TCanvas* cSpectra = GetCanvas("cSpectra",850,900);
-    cSpectra->SetLeftMargin(0.15);
+    cSpectra->SetLeftMargin(0.18);
     cSpectra->SetLogy();
     cSpectra->Draw();
-    TFile* fSpectra = new TFile("AnalysisResults_Xi1530_YieldMean_0100.root");
+    TFile* fSpectra = new TFile("AnalysisResults_Xi1530_YieldMean_INEL.root");
 
     auto hSpectraSys =
-        (TH1*)fSpectra->Get("0.00-100.00_SYS_corrected");  // sys
+        (TH1*)fSpectra->Get("INEL_SYS_corrected");  // sys
     auto hSpectraStat =
-        (TH1*)fSpectra->Get("0.00-100.00_stat_corrected");  // signal
+        (TH1*)fSpectra->Get("INEL_stat_corrected");  // signal
     auto hSpectraLeviFit =
-        (TF1*)fSpectra->Get("0.00-100.00_kFitLevi_0.80-8.80");  // signal
+        (TF1*)fSpectra->Get("INEL_kFitLevi_0.80-4.80");  // signal
 
     hSpectraSys->GetXaxis()->SetRangeUser(0, 10.0);
 
@@ -364,13 +401,14 @@ void DrawSpectraMB(){
         gSpectraStat->SetPointError(j, 0, gSpectraStat->GetErrorY(j));
     }
     gSpectraSys->GetYaxis()->SetTitle(
-        "1/N_{event}d^{2}N/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}");
+        "1/#it{N}_{event}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
     gSpectraSys->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     gSpectraSys->GetXaxis()->SetTitleSize(0.04);
     gSpectraSys->GetXaxis()->SetLabelSize(0.04);
+    gSpectraSys->GetXaxis()->SetTitleOffset(1.2);
     gSpectraSys->GetYaxis()->SetTitleSize(0.04);
     gSpectraSys->GetYaxis()->SetLabelSize(0.04);
-    gSpectraSys->GetYaxis()->SetTitleOffset(1.6);
+    gSpectraSys->GetYaxis()->SetTitleOffset(1.8);
     //gSpectraSys->GetXaxis()->SetTitleOffset(0.85);
 
     gSpectraSys->GetYaxis()->SetRangeUser(1e-7, 1e-2);
@@ -383,11 +421,11 @@ void DrawSpectraMB(){
     gSpectraStat->SetLineColor(kBlack);
     gSpectraStat->SetMarkerColor(kBlack);
     gSpectraStat->SetMarkerStyle(20);
-    gSpectraStat->SetMarkerSize(0.5);
+    gSpectraStat->SetMarkerSize(1);
     gSpectraStat->SetFillColor(kBlack);
     gSpectraStat->SetLineWidth(1);
 
-    hSpectraLeviFit->SetLineColor(kBlack);
+    hSpectraLeviFit->SetLineColor(MaterialColors[0]);
     hSpectraLeviFit->SetLineWidth(2);
     hSpectraLeviFit->SetLineStyle(2);
     hSpectraLeviFit->SetRange(0,10);
@@ -396,13 +434,12 @@ void DrawSpectraMB(){
     gSpectraStat->Draw("P");
     hSpectraLeviFit->Draw("same");
 
-    t2R->DrawLatex(0.67, 0.92, "ALICE Preliminary");
-    t2R->DrawLatex(0.95, 0.92, "#bf{pp #sqrt{s} = 13 TeV}");
-    tR->DrawLatex(0.95, 0.87,
-                  "#bf{INEL>0 (0 - 100%), |#it{y}| < 0.5}");
-    tR->DrawLatex(0.95, 0.82, "#bf{Uncertainties: stat.(bar), syst.(box)}");
+    t2R->DrawLatex(0.95, 0.92, "ALICE Preliminary");
+    t2R->DrawLatex(0.95, 0.87, "#bf{pp (INEL) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    //t0R->DrawLatex(0.95, 0.81,"#bf{V0M Multiplicity Event Classes 0 - 100%}");
+    t0R->DrawLatex(0.95, 0.81, "#bf{Uncertainties: stat.(bar), syst.(box)}");
 
-    t4R->DrawLatex(0.95, 0.74, "#Xi(1530)^{0}");
+    t4R->DrawLatex(0.93, 0.72, "#Xi(1530)^{0}");
     // t2->DrawLatex(0.64, 0.69,"#bf{#Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
     //t2->DrawLatex(0.15, 0.15, "#bf{Uncertainties: stat.(bar), syst.(box)}");
 
@@ -411,9 +448,9 @@ void DrawSpectraMB(){
 
     auto lSpectra = new TLegend(0.22, 0.18, 0.6, 0.33);
     lSpectra->SetFillStyle(0);
-    lSpectra->AddEntry(gSpectraSys, "#frac{(#Xi(1530)^{0} + #bar{#Xi(1530)^{0}}}{2}",
+    lSpectra->AddEntry(gSpectraSys, "#frac{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0}}{2}",
                        "FP");
-    lSpectra->AddEntry(hSpectraLeviFit, "Levy-Tsallis function", "L");
+    lSpectra->AddEntry(hSpectraLeviFit, "L#acute{e}vy-Tsallis function", "L");
     lSpectra->Draw();
 
     SaveCanvas(cSpectra, "figure_Spectra_preliminary", "figs/Approval/");
@@ -423,13 +460,13 @@ void DrawSpectraMBRatio(){
     cSpectraRatio->SetLeftMargin(0.10);
     cSpectraRatio->Draw();
 
-    TFile* fSpectra = new TFile("AnalysisResults_Xi1530_YieldMean_0100.root");
+    TFile* fSpectra = new TFile("AnalysisResults_Xi1530_YieldMean_INEL.root");
     auto hSpectraSys =
-        (TH1*)fSpectra->Get("0.00-100.00_SYS_corrected");  // sys
+        (TH1*)fSpectra->Get("INEL_SYS_corrected");  // sys
     auto hSpectraStat =
-        (TH1*)fSpectra->Get("0.00-100.00_stat_corrected");  // signal
+        (TH1*)fSpectra->Get("INEL_stat_corrected");  // signal
     auto hSpectraSys_cor =
-        (TH1*)fSpectra->Get("0.00-100.00_SYS_uncor_corrected");  // only pT dependent sys error.
+        (TH1*)fSpectra->Get("INEL_SYS_uncor_corrected");  // only pT dependent sys error.
     
     TFile* fSpectra7TeV = new TFile("AnalysisResults_Xi1530_YieldMean_7TeV.root");
     auto hSpectra7TeV_stat = (TH1*)fSpectra7TeV->Get("0.00-100.00_stat_corrected_7TeV");
@@ -477,10 +514,10 @@ void DrawSpectraMBRatio(){
         gRatio7TeV_stat->SetPointError(j, 0, gRatio7TeV_stat->GetErrorY(j));
     }
     gRatio7TeV_sys_cor->GetYaxis()->SetTitle(
-        "Yield ratio to 7 TeV (inelastic)");
+        "Yield ratio to 7 TeV");
     gRatio7TeV_sys_cor->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     gRatio7TeV_sys_cor->GetXaxis()->SetLimits(0.5,6);
-    gRatio7TeV_sys_cor->GetYaxis()->SetRangeUser(0.7,2.7);
+    gRatio7TeV_sys_cor->GetYaxis()->SetRangeUser(0.7,3.5);
     gRatio7TeV_sys_cor->GetXaxis()->SetTitleSize(0.05);
     gRatio7TeV_sys_cor->GetXaxis()->SetLabelSize(0.05);
     gRatio7TeV_sys_cor->GetYaxis()->SetTitleSize(0.05);
@@ -490,7 +527,7 @@ void DrawSpectraMBRatio(){
     gRatio7TeV_sys_cor->SetLineColor(0);
 
     gRatio7TeV_sys->GetYaxis()->SetTitle(
-        "Yield ratio to 7 TeV (inelastic)");
+        "Yield ratio to 7 TeV");
     gRatio7TeV_sys->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     gRatio7TeV_sys->GetXaxis()->SetLimits(0.5,6);
     gRatio7TeV_sys->GetYaxis()->SetRangeUser(0.7,2.7);
@@ -525,19 +562,19 @@ void DrawSpectraMBRatio(){
     tOneline->SetLineStyle(2);
     tOneline->Draw("same");
 
-    auto lMBRatio = new TLegend(0.13, 0.4, 0.5, 0.6);
+    auto lMBRatio = new TLegend(0.13, 0.5, 0.5, 0.7);
     lMBRatio->SetFillStyle(0);
     lMBRatio->AddEntry(gRatio7TeV_stat, "stat.", "LE");
     lMBRatio->AddEntry(gRatio7TeV_sys, "sys.","F");
     lMBRatio->AddEntry(gRatio7TeV_sys_cor, "uncorr. sys.", "F");
     lMBRatio->Draw();
 
-    t3->DrawLatex(0.13, 0.87, "ALICE Preliminary");
-    t3->DrawLatex(0.37, 0.87,
-                  "#bf{pp #sqrt{s} = 13 TeV, |#it{y}| < 0.5, INEL>0}");
-    t3->DrawLatex(0.13, 0.79, "#bf{Uncertainties: stat.(bar), syst.(box)}");
+    t3->DrawLatex(0.13, 0.86, "ALICE Preliminary");
+    t3->DrawLatex(0.36, 0.86,
+                  "#bf{pp (INEL) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    //t3->DrawLatex(0.13, 0.79, "#bf{Uncertainties: stat.(bar), syst.(box)}");
 
-    t4->DrawLatex(0.13, 0.67, "#Xi(1530)^{0} + #bar{#Xi(1530)^{0}}");
+    t4->DrawLatex(0.13, 0.74, "#Xi(1530)^{0} + #bar{#Xi}(1530)^{0}");
 
     SaveCanvas(cSpectraRatio, "figure_SpectraRatio_preliminary", "figs/Approval/");
 }
@@ -554,10 +591,10 @@ void DrawSpectraMulti(){
     vector<TH1*> buffer_multi_final_sys;
     vector<TH1*> buffer_multi_final_stat;
     vector<TF1*> buffer_multi_final_func;
-    TFile* fSpectra = new TFile("AnalysisResults_Xi1530_YieldMean_0100.root");
+    TFile* fSpectra = new TFile("AnalysisResults_Xi1530_YieldMean_0-100.root");
 
     for (int imultibin = 0; imultibin < multibincheck.size(); imultibin++) {
-        TFile* fSpectraMulti = new TFile(Form("AnalysisResults_Xi1530_YieldMean_%.0f%.0f.root",
+        TFile* fSpectraMulti = new TFile(Form("AnalysisResults_Xi1530_YieldMean_%.0f-%.0f.root",
                             multibincheck[imultibin][0],
                             multibincheck[imultibin][1]));
         buffer_file.push_back(fSpectraMulti);
@@ -643,7 +680,7 @@ void DrawSpectraMulti(){
     hdenomgsys[0]->GetYaxis()->SetLabelSize(0.1);
     hdenomgsys[0]->GetYaxis()->SetTitleSize(0.1);
     hdenomgsys[0]->GetYaxis()->SetTitleOffset(0.6);
-    hdenomgsys[0]->SetMinimum(6e-2);
+    hdenomgsys[0]->SetMinimum(2e-2);
     hdenomgsys[0]->SetMaximum(7);
     for (int j = 0; j < hdenomgsys[0]->GetN(); j++) {
         hdenomgstat[0]->SetPointError(
@@ -832,7 +869,7 @@ void DrawSpectraMulti(){
     // TeV}");
 
     t2R->DrawLatex(0.71, 0.95, "ALICE Preliminary");
-    t2R->DrawLatex(0.95, 0.95, "#bf{pp #sqrt{s} = 13 TeV}");
+    t2R->DrawLatex(0.95, 0.95, "#bf{pp #sqrt{#it{s}} = 13 TeV}");
     t2R->DrawLatex(0.95, 0.89, "#bf{INEL>0, |#it{y}| < 0.5}");
 
     t4R->DrawLatex(0.95, 0.82, "#Xi(1530)^{0}");
@@ -875,6 +912,7 @@ void DrawSpectraMulti(){
 }
 void DrawSpectraMultiPi(){
     vector<double> multibincheck = {0,1,5,10,15,20,30,40,50,70,100};
+    vector<double> multibincheck_draw = {0,10,30,50,70,100};
     vector<int> Markerset = {20, 21, 33, 34, 29, 24, 25, 26, 27, 28,
                          30, 3,  5,  42, 43, 46, 47, 48, 49, 50,
                          51, 20, 21, 33, 34, 29, 24, 25, 26};
@@ -1042,15 +1080,15 @@ void DrawSpectraMultiPi(){
     hdenomgsys[0]->SetLineWidth(1);
     hdenomgsys[0]->GetYaxis()->SetNdivisions(5);
     hdenomgsys[0]->SetTitle(";#it{p}_{T} (GeV/#it{c});Raito to INEL>0");
-    hdenomgsys[0]->GetXaxis()->SetRangeUser(0, 10);
+    hdenomgsys[0]->GetXaxis()->SetRangeUser(0, 9.5);
     hdenomgsys[0]->GetXaxis()->SetTitleSize(0.1);
     hdenomgsys[0]->GetXaxis()->SetLabelSize(0.1);
     hdenomgsys[0]->GetXaxis()->SetTitleOffset(0.95);
     hdenomgsys[0]->GetYaxis()->SetLabelSize(0.1);
     hdenomgsys[0]->GetYaxis()->SetTitleSize(0.1);
     hdenomgsys[0]->GetYaxis()->SetTitleOffset(0.6);
-    hdenomgsys[0]->SetMinimum(6e-2);
-    hdenomgsys[0]->SetMaximum(7);
+    hdenomgsys[0]->SetMinimum(6e-3);
+    hdenomgsys[0]->SetMaximum(10);
     for (int j = 0; j < hdenomgsys[0]->GetN(); j++) {
         hdenomgstat[0]->SetPointError(
             j, 0, 0,
@@ -1238,10 +1276,8 @@ void DrawSpectraMultiPi(){
     // TeV}");
 
     t2R->DrawLatex(0.71, 0.95, "ALICE Preliminary");
-    t2R->DrawLatex(0.95, 0.95, "#bf{pp #sqrt{s} = 13 TeV}");
+    t2R->DrawLatex(0.95, 0.95, "#bf{pp #sqrt{#it{s}} = 13 TeV}");
     t2R->DrawLatex(0.95, 0.89, "#bf{INEL>0, |#it{y}| < 0.5}");
-
-    t4R->DrawLatex(0.95, 0.82, "#Xi(1530)^{0}");
 
 
     //t->DrawLatex(0.7, 0.87, "#bf{pp #sqrt{#it{s}} = 13 TeV}");
@@ -1267,8 +1303,8 @@ void DrawSpectraMultiPi(){
 
         legend_hSpectra_ratio_final_spectra->AddEntry(
             buffer_multi_final_sys[imultibin],
-            Form("%.0f - %.0f (x2^{%d})", multibincheck[imultibin],
-                 multibincheck[imultibin+1],
+            Form("%.0f - %.0f (x2^{%d})", multibincheck_draw[imultibin],
+                 multibincheck_draw[imultibin+1],
                  int(buffer_multi_final_sys.size() - imultibin)),
             "PF");
     }
@@ -1279,19 +1315,34 @@ void DrawSpectraMultiPi(){
     SaveCanvas(c2, "figure_Spectra_Multi_Pi", "figs/Approval/");
 }
 void DrawdNdy(){
+    double ppYmax = 18e-3;
+    double ppYmin = 0;
+    double pPbYmax = 35e-3;
+    double pPbYmin = 0;
+    double PbPbYmax = 3;
+    double PbPbYmin = 5e-4;
+    bool draw7TeV = false;
 
     TCanvas* cdNdy = GetCanvas("cdNdy", 960, 720);
     cdNdy->SetLeftMargin(0.10);
     cdNdy->Draw();
 
-    TFile* fdNdy = new TFile(
-        "AnalysisResults_Xi1530_PhysicsResult_010305070100.root");
+    TFile* fdNdy = new TFile(PhysicsFile.Data());
     auto fdNdy_stat = (TGraphErrors*)fdNdy->Get("gYield_stat");  // signal
     auto fdNdy_sys = (TGraphErrors*)fdNdy->Get("gYield_syse");         // Fit
     auto fdNdy_sys_cor = (TGraphErrors*)fdNdy->Get("gYield_sys_cor");         // Fit
     auto fdNdy_stat_7Tev = (TGraphErrors*)fdNdy->Get("gYield7TeV_stat");      // Bkg
     auto fdNdy_sys_7Tev = (TGraphErrors*)fdNdy->Get("gYield7TeV_syse");      // Bkg
 
+    fdNdy_stat_7Tev->SetPointError(
+                0, 0, fdNdy_stat_7Tev->GetErrorY(0));    
+    /*
+    for (int j = 0; j < fdNdy_stat->GetN(); j++) {
+        fdNdy_stat->GetY()[j] *= 2;
+        fdNdy_sys->GetY()[j] *= 2;
+        fdNdy_sys_cor->GetY()[j] *= 2;
+    }
+    */
     fdNdy_sys_cor->SetMinimum(0.0);
     fdNdy_sys_cor->SetMarkerColor(MaterialColors[0]);
     fdNdy_sys_cor->SetFillColorAlpha(MaterialColors[0], 0.3);
@@ -1299,15 +1350,15 @@ void DrawdNdy(){
     fdNdy_sys_cor->SetLineColor(0);
     fdNdy_sys_cor->GetYaxis()->SetLabelSize(0.05);
     fdNdy_sys_cor->GetYaxis()->SetTitleOffset(0.7);
-    fdNdy_sys_cor->GetYaxis()->SetTitleSize(0.065);
+    fdNdy_sys_cor->GetYaxis()->SetTitleSize(0.05);
 
     fdNdy_sys_cor->GetXaxis()->SetLabelSize(0.05);
     //fdNdy_sys_cor->GetXaxis()->SetTitleOffset(0.95);
     fdNdy_sys_cor->GetXaxis()->SetTitleSize(0.05);
     //fdNdy_sys->SetMaximum(0.030);
-    fdNdy_sys_cor->SetMaximum(0.008);
+    fdNdy_sys_cor->SetMaximum(ppYmax);
     fdNdy_sys_cor->SetMarkerStyle(20);
-    fdNdy_sys_cor->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#eta #GT_{|#it{y}|<0.5}");
+    fdNdy_sys_cor->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
     fdNdy_sys_cor->GetYaxis()->SetTitle("d#it{N}/d#it{y}");
 
     //fdNdy_stat->SetMarkerStyle(20);
@@ -1316,9 +1367,9 @@ void DrawdNdy(){
     fdNdy_sys->SetLineColor(MaterialColors[0]);
     fdNdy_sys->SetFillColorAlpha(MaterialColors[0], 0.0);
     //fdNdy_sys->SetMaximum(0.030);
-    fdNdy_sys->SetMaximum(0.01);
+    fdNdy_sys->SetMaximum(ppYmax);
     fdNdy_sys->SetMarkerStyle(20);
-    fdNdy_sys->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#eta #GT_{|#it{y}|<0.5}");
+    fdNdy_sys->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
     fdNdy_sys->GetYaxis()->SetTitle("d#it{N}/d#it{y}");
 
 
@@ -1335,7 +1386,35 @@ void DrawdNdy(){
     fdNdy_sys_7Tev->SetFillColor(0);
 
     //0-100 bin
-    TFile* fdNdy0100 = new TFile("AnalysisResults_Xi1530_YieldMean_0100.root");
+    fdNdy_sys_7Tev->SetMinimum(0.0);
+    fdNdy_sys_7Tev->SetMarkerColor(MaterialColors[0]);
+    fdNdy_sys_7Tev->SetFillColorAlpha(MaterialColors[0], 0.3);
+    //fdNdy_sys_7Tev->SetFillStyle(3001);
+    fdNdy_sys_7Tev->SetLineColor(0);
+    fdNdy_sys_7Tev->GetYaxis()->SetLabelSize(0.05);
+    fdNdy_sys_7Tev->GetYaxis()->SetTitleOffset(0.6);
+    fdNdy_sys_7Tev->GetYaxis()->SetTitleSize(0.06);
+
+    fdNdy_sys_7Tev->GetXaxis()->SetLabelSize(0.05);
+    //fdNdy_sys_7Tev->GetXaxis()->SetTitleOffset(0.95);
+    fdNdy_sys_7Tev->GetXaxis()->SetTitleSize(0.05);
+    //fdNdy_sys->SetMaximum(0.030);
+    fdNdy_sys_7Tev->SetMarkerStyle(20);
+    fdNdy_sys_7Tev->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
+    fdNdy_sys_7Tev->GetYaxis()->SetTitle("d#it{N}/d#it{y}");
+
+    //fdNdy_stat->SetMarkerStyle(20);
+    //fdNdy_stat->SetMarkerSize(1);
+    fdNdy_sys_7Tev->SetMarkerColor(kBlack);
+    fdNdy_sys_7Tev->SetLineColor(kBlack);
+    fdNdy_sys_7Tev->SetFillColorAlpha(kBlack, 0.0);
+    //fdNdy_sys->SetMaximum(0.030);
+    fdNdy_sys_7Tev->SetMaximum(ppYmax);
+    fdNdy_sys_7Tev->SetMarkerStyle(20);
+    fdNdy_sys_7Tev->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
+    fdNdy_sys_7Tev->GetYaxis()->SetTitle("d#it{N}/d#it{y}");
+
+    TFile* fdNdy0100 = new TFile("AnalysisResults_Xi1530_YieldMean_0-100.root");
     auto fdNdy_YieldMean0100 = (TH1D*)fdNdy0100->Get("hYield_0.00-100.00");  // signal
     vector<double> yield0100;
     yield0100.push_back(fdNdy_YieldMean0100->GetBinContent(1));
@@ -1358,18 +1437,21 @@ void DrawdNdy(){
     TGraphErrors* ge_sys_0100 = new TGraphErrors(yield0100.size(), &x0100[0], &yield0100[0], &x0100e[0], &yield0100syse[0]);
     TGraphErrors* ge_sys_full_0100 = new TGraphErrors(yield0100.size(), &x0100[0], &yield0100[0], &x0100e[0], &yield0100syse_full[0]);
     ge_sys_0100->SetLineColor(0);
-    ge_sys_0100->SetMarkerColor(MaterialColors[3]);
-    ge_sys_0100->SetFillColorAlpha(MaterialColors[3], 0.3);
+    ge_sys_0100->SetMarkerColor(MaterialColors[0]);
+    ge_sys_0100->SetFillColorAlpha(MaterialColors[0], 0.3);
     ge_sys_0100->SetMarkerStyle(20);
     ge_sys_0100->SetMarkerSize(0.5);
 
     ge_stat_0100->SetMinimum(0.0);
-    ge_stat_0100->SetLineColor(MaterialColors[3]);
-    ge_sys_full_0100->SetMarkerColor(MaterialColors[3]);
+    ge_stat_0100->SetMarkerStyle(20);
+    ge_stat_0100->SetMarkerSize(0.5);
+    ge_stat_0100->SetMarkerColor(MaterialColors[0]);
+    ge_stat_0100->SetLineColor(MaterialColors[0]);
+    ge_sys_full_0100->SetMarkerColor(MaterialColors[0]);
     ge_sys_full_0100->SetMarkerStyle(20);
     //ge_sys_full_0100->SetMarkerSize(0.5);
 
-    ge_sys_full_0100->SetLineColor(MaterialColors[3]);
+    ge_sys_full_0100->SetLineColor(MaterialColors[0]);
     ge_sys_full_0100->SetMinimum(0.0);
     ge_sys_full_0100->SetMaximum(0.01);
     ge_sys_full_0100->SetFillColorAlpha(MaterialColors[3], 0.0);
@@ -1383,21 +1465,28 @@ void DrawdNdy(){
     fdNdy_sys_cor->Draw("a5");
     fdNdy_sys->Draw("5");
     fdNdy_stat->Draw("P");
-    fdNdy_sys_7Tev->Draw("5");
-    fdNdy_stat_7Tev->Draw("P");
-
+    if(draw7TeV){
+        fdNdy_sys_7Tev->Draw("5");
+        fdNdy_stat_7Tev->Draw("P");
+    }  
     t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.4, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.15, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
 
-    t2->DrawLatex(0.5, 0.15, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    t->DrawLatex(0.5, 0.17, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
 
-    auto ldNdy = new TLegend(0.13, 0.62, 0.5, 0.79);
+    TLegend* ldNdy;
+    if(draw7TeV) 
+        ldNdy = new TLegend(0.13, 0.56, 0.5, 0.73);
+    else
+        ldNdy = new TLegend(0.13, 0.64, 0.5, 0.73); 
     ldNdy->SetFillStyle(0);
-    ldNdy->AddEntry(fdNdy_sys, "#Xi(1530)^{0} pp 13 TeV (INEL>0)", "PEF");
-    ldNdy->AddEntry(fdNdy_sys_7Tev, "#Xi(1530)^{0} pp 7 TeV (inelastic)", "PEF");
-    ldNdy->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    ldNdy->AddEntry(fdNdy_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) ldNdy->AddEntry(fdNdy_sys_7Tev, "pp 7 TeV (INEL)", "PEF");
+    if(draw7TeV) ldNdy->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
     ldNdy->Draw();
     
     SaveCanvas(cdNdy,"figure_dNdy_preliminary","figs/Approval/");
@@ -1405,7 +1494,7 @@ void DrawdNdy(){
 
     // Further figure
     TCanvas* cdNdy2 = GetCanvas("cdNdy2", 960, 720);
-    cdNdy2->SetLeftMargin(0.10);
+    cdNdy2->SetLeftMargin(0.12);
     cdNdy2->Draw();
     // pPb Result
     // https://www.hepdata.net/record/ins1510878
@@ -1420,10 +1509,18 @@ void DrawdNdy(){
     
     TGraphErrors* ge_stat_pPb502TeV = new TGraphErrors(xpPb502.size(), &xpPb502[0], &ypPb502[0], &xpPb502zero[0], &ypPb502e[0]);
     TGraphErrors* ge_sys_pPb502TeV = new TGraphErrors(xpPb502.size(), &xpPb502[0], &ypPb502[0], &xpPb502e[0], &ypPb502se[0]);
+    
+    /*
+    for (int j = 0; j < ge_stat_pPb502TeV->GetN(); j++) {
+        ge_stat_pPb502TeV->GetY()[j] /= 1.5;
+        ge_sys_pPb502TeV->GetY()[j] /= 1.5;
+    }
+    */
+    
     ge_sys_pPb502TeV->SetLineColor(MaterialColors[3]);
     ge_sys_pPb502TeV->SetMarkerColor(MaterialColors[3]);
     ge_sys_pPb502TeV->SetMarkerStyle(20);
-    ge_sys_pPb502TeV->SetMarkerSize(0.5);
+    //ge_sys_pPb502TeV->SetMarkerSize(0.5);
 
     ge_stat_pPb502TeV->SetLineColor(MaterialColors[3]);
     ge_stat_pPb502TeV->SetMarkerColor(MaterialColors[3]);
@@ -1431,64 +1528,247 @@ void DrawdNdy(){
     ge_stat_pPb502TeV->SetMarkerSize(0.5);
     
     auto fdNdy_sys_cor2 = (TGraphErrors*)fdNdy_sys_cor->Clone();
-    fdNdy_sys_cor2->SetMaximum(0.040);
-    fdNdy_sys_cor2->GetYaxis()->SetTitleOffset(0.7);
-    fdNdy_sys_cor2->GetXaxis()->SetLimits(0,45);
+    fdNdy_sys_cor2->SetMaximum(pPbYmax);
+    fdNdy_sys_cor2->SetMinimum(pPbYmin);
+    fdNdy_sys_cor2->GetYaxis()->SetTitleOffset(0.9);
+    fdNdy_sys_cor2->GetXaxis()->SetLimits(1,46);
+
+    //fdNdy_sys_7Tev->GetYaxis()->SetTitle("d#it{N}/d#it{y}}");
+    fdNdy_sys_7Tev->GetYaxis()->SetTitleOffset(1.0);
+    fdNdy_sys_7Tev->SetMaximum(pPbYmax);
+    fdNdy_sys_7Tev->SetMinimum(pPbYmin);
+    fdNdy_sys_7Tev->GetXaxis()->SetLimits(0,5e1);
     
     cdNdy2->cd();
-    fdNdy_sys_cor2->Draw("a5");
+
+    fdNdy_sys_cor2->Draw("A5");
     fdNdy_sys->Draw("5");
     fdNdy_stat->Draw("P");
-    fdNdy_sys_7Tev->Draw("5");
-    fdNdy_stat_7Tev->Draw("P");
     ge_sys_pPb502TeV->Draw("5");
     ge_stat_pPb502TeV->Draw("P");
 
+    if(draw7TeV){
+        fdNdy_sys_7Tev->Draw("5");
+        fdNdy_stat_7Tev->Draw("P");
+    }  
+
+    //ge_sys_0100->Draw("5");
+    //ge_sys_full_0100->Draw("5");
+    //ge_stat_0100->Draw("P");
+
     t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.4, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.15, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
 
-    t2->DrawLatex(0.5, 0.15, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
 
-    auto ldNdy2 = new TLegend(0.13, 0.53, 0.5, 0.79);
+    TLegend* ldNdy2;
+    if(draw7TeV)
+        ldNdy2 = new TLegend(0.55, 0.20, 0.95, 0.45);
+    else
+        ldNdy2 = new TLegend(0.55, 0.20, 0.95, 0.35);
     ldNdy2->SetFillStyle(0);
-    ldNdy2->AddEntry(fdNdy_sys, "#Xi(1530)^{0} pp 13 TeV (INEL>0)", "PEF");
-    ldNdy2->AddEntry(fdNdy_sys_7Tev, "#Xi(1530)^{0} pp 7 TeV (inelastic)", "PEF");
-    ldNdy2->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
-    ldNdy2->AddEntry(ge_sys_pPb502TeV, "#Xi(1530)^{0} p-Pb 5.02TeV (NSD)", "PEF");
+    //ldNdy2->AddEntry(fdNdy_sys, "#Xi(1530)^{0} pp 13 TeV (INEL>0)", "PEF");
+    ldNdy2->AddEntry(fdNdy_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) ldNdy2->AddEntry(fdNdy_sys_7Tev, "pp 7 TeV (INEL)", "PEF");
+    if(draw7TeV) ldNdy2->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    ldNdy2->AddEntry(ge_sys_pPb502TeV, "p-Pb 5.02TeV (NSD)", "PEF");
     ldNdy2->AddEntry((TObject*)0, "Eur. Phys. J. C 77 (2017) 389", "");
     ldNdy2->Draw();
-
+    //cdNdy2->SetLogx();
+    //cdNdy2->SetLogy();
     SaveCanvas(cdNdy2,"figure_dNdy_withpPb502_preliminary","figs/Approval/");
 
-    // 0-100 case
+    // PbPb Result
+    TCanvas* cdNdyPbPb = GetCanvas("cdNdy2", 960, 720);
+    cdNdyPbPb->SetLeftMargin(0.10);
+    cdNdyPbPb->SetBottomMargin(0.15);
+    cdNdyPbPb->Draw();
+    cdNdyPbPb->cd();
+    // charged particle multiplicity
+    // https://arxiv.org/pdf/1012.1657.pdf
+    vector<double> xPbPb276 = {1447.5, 680.3, 130.25};
+    vector<double> xPbPb276e = {54.5, 25, 5.25};
+    vector<double> xPbPb276zero = {0, 0, 0};
+     
+    // Analysis note PbPb 2.76
+    vector<double> yPbPb276 = {686.4e-3, 338.7e-3, 82e-3};
+    vector<double> yPbPb276e = {18.2e-3, 5.9e-3, 2.5e-3};
+    vector<double> yPbPb276se = {228.5e-3, 80.4e-3, 21.4e-3};
+    
+    TGraphErrors* ge_stat_PbPb276TeV = new TGraphErrors(xPbPb276.size(), &xPbPb276[0], &yPbPb276[0], &xPbPb276zero[0], &yPbPb276e[0]);
+    TGraphErrors* ge_sys_PbPb276TeV = new TGraphErrors(xPbPb276.size(), &xPbPb276[0], &yPbPb276[0], &xPbPb276e[0], &yPbPb276se[0]);
+    
+    fdNdy_sys_cor2->GetYaxis()->SetTitleOffset(0.6);
+    fdNdy_sys_cor2->GetXaxis()->SetTitleOffset(1.35);
+    fdNdy_sys_cor2->GetXaxis()->SetLimits(2,5e3);
+    fdNdy_sys_cor2->SetMaximum(PbPbYmax);
+    fdNdy_sys_cor2->SetMinimum(PbPbYmin);
+
+    fdNdy_sys_cor2->SetMaximum(PbPbYmax);
+    fdNdy_sys_cor2->SetMinimum(PbPbYmin);
+
+    fdNdy_sys_cor2->Draw("A5");
+    fdNdy_sys->Draw("5");
+    fdNdy_stat->Draw("P");
+    ge_sys_pPb502TeV->Draw("5");
+    ge_stat_pPb502TeV->Draw("P");
+
+    //ge_sys_0100->Draw("5");
+    //ge_sys_full_0100->Draw("5");
+    //ge_stat_0100->Draw("P");
+    
+    if(draw7TeV){
+        fdNdy_sys_7Tev->Draw("5");
+        fdNdy_stat_7Tev->Draw("P");
+    }  
+    
+
+    t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
+
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    //t2->DrawLatex(0.5, 0.15, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    ge_sys_PbPb276TeV->Draw("5");
+    ge_stat_PbPb276TeV->Draw("P");
+    ge_sys_PbPb276TeV->SetMarkerStyle(20);
+    //ge_sys_PbPb276TeV->SetMarkerSize(0.5);
+    ge_stat_PbPb276TeV->SetMarkerStyle(20);
+    ge_stat_PbPb276TeV->SetMarkerSize(0.5);
+    ge_sys_PbPb276TeV->SetLineColor(MaterialColors[1]);
+    ge_sys_PbPb276TeV->SetMarkerColor(MaterialColors[1]);
+    ge_stat_PbPb276TeV->SetLineColor(MaterialColors[1]);
+    ge_stat_PbPb276TeV->SetMarkerColor(MaterialColors[1]);
+
+    fdNdy_sys_7Tev->GetYaxis()->SetTitleOffset(0.6);
+    fdNdy_sys_7Tev->GetXaxis()->SetTitleOffset(1.35);
+    fdNdy_sys_7Tev->GetXaxis()->SetLimits(2,5e3);
+    //fdNdy_sys_7Tev->SetMaximum(PbPbYmax);
+    //fdNdy_sys_7Tev->SetMinimum(PbPbYmin);
+    cdNdyPbPb->SetLogx();
+    cdNdyPbPb->SetLogy();
+
+    TLegend* ldNdyPbPb;
+    if(draw7TeV)
+        ldNdyPbPb = new TLegend(0.6, 0.18, 0.95, 0.5);
+    else
+        ldNdyPbPb = new TLegend(0.6, 0.18, 0.95, 0.4);
+    ldNdyPbPb->AddEntry(fdNdy_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) ldNdyPbPb->AddEntry(fdNdy_sys_7Tev, "pp 7 TeV (INEL)", "PEF");
+    if(draw7TeV) ldNdyPbPb->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    ldNdyPbPb->AddEntry(ge_sys_pPb502TeV, "p-Pb 5.02TeV (NSD)", "PEF");
+    ldNdyPbPb->AddEntry((TObject*)0, "Eur. Phys. J. C 77 (2017) 389", "");
+    ldNdyPbPb->AddEntry(ge_sys_PbPb276TeV, "Pb-Pb 2.76TeV (INEL)", "PEF");
+    ldNdyPbPb->AddEntry((TObject*)0, "ALICE prelimiary", "");
+    ldNdyPbPb->Draw();
+    ldNdyPbPb->SetFillStyle(0);
+
+    SaveCanvas(cdNdyPbPb,"figure_dNdy_withpPb502_preliminary_PbPb","figs/Approval/");
+    
+    // INEL case
+    TFile* fINEL = new TFile("AnalysisResults_Xi1530_YieldMean_INEL.root");
+    TH1D* hINEL = (TH1D*)fINEL->Get("hYield_INEL");
+
+    // x pp 13TeV inel https://doi.org/10.1016/j.physletb.2015.12.030
+    vector<double> xINEL = {5.31};
+    vector<double> xINELe_zero = {0};
+    vector<double> xINELe = {0.18};
+    vector<double> yieldINEL = {};
+    vector<double> yieldINEL_state = {};
+    vector<double> yieldINEL_syshe = {};
+    vector<double> yieldINEL_sysle = {};
+    vector<double> yieldINEL_sys_cor = {};
+
+    // INEL yield
+    yieldINEL.push_back(hINEL->GetBinContent(1));
+    yieldINEL_state.push_back(hINEL->GetBinContent(0));
+
+    double tempfinalsyserror = 0;
+    tempfinalsyserror += pow(hINEL->GetBinContent(2),2);
+    tempfinalsyserror += pow(hINEL->GetBinContent(3),2);
+
+    double averageerror_correl = sqrt(tempfinalsyserror)/2;
+    double averageerror = sqrt(pow(averageerror_correl,2) + pow(0.0538*hINEL->GetBinContent(1),2));
+    double averageerror_uncorr = 0.0538*hINEL->GetBinContent(1);
+
+    yieldINEL_syshe.push_back(averageerror);
+    yieldINEL_sysle.push_back(averageerror);
+    yieldINEL_sys_cor.push_back(averageerror_uncorr);
+
+    TGraphErrors* grdndyINEL_stat = new TGraphErrors(1, &xINEL[0], &yieldINEL[0], &xINELe_zero[0], &yieldINEL_state[0]);
+    TGraphErrors* grdndyINEL_sys = new TGraphErrors(1, &xINEL[0], &yieldINEL[0], &xINELe[0], &yieldINEL_sysle[0]);
+    TGraphErrors* grdndyINEL_sys_cor = new TGraphErrors(1, &xINEL[0], &yieldINEL[0], &xINELe[0], &yieldINEL_sys_cor[0]);
+    grdndyINEL_sys->SetTitle("");
+    grdndyINEL_sys->GetXaxis()->SetTitle("< d#it{N}_{ch}/d#eta >");
+    grdndyINEL_sys->GetYaxis()->SetTitle("d#it{N}_{#Xi^{*0}}/dy");
+    grdndyINEL_sys->GetXaxis()->SetLimits(1,10);
+    //ge_stat->GetYaxis()->SetRangeUser(0,0.007);
+    grdndyINEL_sys->SetMinimum(0);
+    grdndyINEL_sys->SetMaximum(0.005);
+    grdndyINEL_stat->SetLineColor(MaterialColors[3]);
+    grdndyINEL_stat->SetMarkerColor(MaterialColors[3]);
+    grdndyINEL_stat->SetMarkerStyle(20);
+    grdndyINEL_stat->SetMarkerSize(0.5);
+    grdndyINEL_stat->SetFillColor(MaterialColors[3]);
+
+    grdndyINEL_sys->SetLineColor(MaterialColors[3]);
+    grdndyINEL_sys->SetMarkerColor(MaterialColors[3]);
+    grdndyINEL_sys->SetFillColor(0);
+
+    grdndyINEL_sys_cor->SetMarkerColor(MaterialColors[3]);
+    grdndyINEL_sys_cor->SetFillColorAlpha(MaterialColors[3], 0.3);
+    grdndyINEL_sys_cor->SetLineColor(0);
+    grdndyINEL_sys_cor->SetMarkerStyle(20);
+
     TCanvas* cdNdy3 = GetCanvas("cdNdy3", 960, 720);
     cdNdy3->SetLeftMargin(0.10);
     cdNdy3->Draw();
 
+    fdNdy_sys_7Tev->SetMaximum(0.006);
+    fdNdy_sys_7Tev->GetXaxis()->SetLimits(4,9);
+
     cdNdy3->cd();
+    
     fdNdy_sys_cor->Draw("a5");
     fdNdy_sys->Draw("5");
     fdNdy_stat->Draw("P");
+    grdndyINEL_sys->Draw("5");
+    grdndyINEL_sys_cor->Draw("5");
+    fdNdy_sys_7Tev->Draw("5");
+    fdNdy_stat_7Tev->Draw("P");
+    grdndyINEL_stat->Draw("P");
+    
+    
+    
+    /*
+    fdNdy_sys_7Tev->Draw("A5");
+    fdNdy_stat_7Tev->Draw("P");
     ge_sys_0100->Draw("5");
     ge_sys_full_0100->Draw("5");
     ge_stat_0100->Draw("P");
-    fdNdy_sys_7Tev->Draw("5");
-    fdNdy_stat_7Tev->Draw("P");
-
+    */
     t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.4, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.15, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
 
-    t2->DrawLatex(0.5, 0.15, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
 
-    auto ldNdy3 = new TLegend(0.13, 0.59, 0.5, 0.79);
+    auto ldNdy3 = new TLegend(0.6, 0.18, 0.95, 0.4);
     ldNdy3->SetFillStyle(0);
-    ldNdy3->AddEntry(fdNdy_sys, "#Xi(1530)^{0} pp 13 TeV", "PEF");
-    ldNdy3->AddEntry(ge_sys_full_0100, "#Xi(1530)^{0} pp 13 TeV (0-100%)", "PEF");
-    ldNdy3->AddEntry(fdNdy_sys_7Tev, "#Xi(1530)^{0} pp 7 TeV", "PEF");
+    //ldNdy3->AddEntry(fdNdy_sys, "#Xi(1530)^{0} pp 13 TeV", "PEF");
+    ldNdy3->AddEntry(fdNdy_sys_cor, "#Xi(1530)^{0} pp (INEL>0) 13 TeV", "PEF");
+    ldNdy3->AddEntry(grdndyINEL_sys_cor, "#Xi(1530)^{0} pp (inel) 13 TeV", "PEF");
+    ldNdy3->AddEntry(fdNdy_sys_7Tev, "#Xi(1530)^{0} pp (inel) 7 TeV", "PEF");
     ldNdy3->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
     ldNdy3->Draw();
 
@@ -1496,19 +1776,21 @@ void DrawdNdy(){
     
 }
 void DrawMeanpT(){
+    double meanpTYmax = 2.2;
+    double meanpTYmin = 0.6;
+    bool draw7TeV = false;
     
     TCanvas* cMeanPt = GetCanvas("cMeanPt", 960, 720);
     cMeanPt->SetLeftMargin(0.10);
     cMeanPt->Draw();
 
-    TFile* fMeanPt = new TFile(
-        "AnalysisResults_Xi1530_PhysicsResult_010305070100.root");
-    auto fMeanPt_stat = (TGraphErrors*)fMeanPt->Get("gMeanpT_stat");  // signal
-    auto fMeanPt_sys = (TGraphErrors*)fMeanPt->Get("gMeanpT_syse");         // Fit
-    auto fMeanPt_sys_cor = (TGraphErrors*)fMeanPt->Get("gMeanpT_sys_cor");         // Fit
+    TFile* fMeanPt = new TFile(PhysicsFile.Data());
+    auto fMeanPt_stat = (TGraphErrors*)fMeanPt->Get("gMeanpT_stat");
+    auto fMeanPt_sys = (TGraphErrors*)fMeanPt->Get("gMeanpT_syse");
+    auto fMeanPt_sys_cor = (TGraphErrors*)fMeanPt->Get("gMeanpT_sys_cor");
     
-    auto fMeanPt_stat_7TeV = (TGraphErrors*)fMeanPt->Get("gMeanpT7TeV_stat");      // Bkg
-    auto fMeanPt_sys_7TeV = (TGraphErrors*)fMeanPt->Get("gMeanpT7TeV_syse");      // Bkg
+    auto fMeanPt_stat_7TeV = (TGraphErrors*)fMeanPt->Get("gMeanpT7TeV_stat");
+    auto fMeanPt_sys_7TeV = (TGraphErrors*)fMeanPt->Get("gMeanpT7TeV_syse");
 
     fMeanPt_sys->SetMarkerColor(MaterialColors[0]);
     fMeanPt_sys->SetLineColor(MaterialColors[0]);
@@ -1517,21 +1799,22 @@ void DrawMeanpT(){
     fMeanPt_sys_cor->SetMarkerColor(MaterialColors[0]);
     fMeanPt_sys_cor->SetLineColor(0);
     fMeanPt_sys_cor->SetFillColorAlpha(MaterialColors[0], 0.3);
+    fMeanPt_sys_cor->SetFillStyle(1000);
     fMeanPt_sys_cor->GetYaxis()->SetLabelSize(0.05);
-    fMeanPt_sys_cor->GetYaxis()->SetTitleOffset(0.7);
-    fMeanPt_sys_cor->GetYaxis()->SetTitleSize(0.060);
+    fMeanPt_sys_cor->GetYaxis()->SetTitleOffset(0.9);
+    fMeanPt_sys_cor->GetYaxis()->SetTitleSize(0.05);
     fMeanPt_sys_cor->GetXaxis()->SetLabelSize(0.05);
-    //fMeanPt_sys_cor->GetXaxis()->SetTitleOffset(0.95);
     fMeanPt_sys_cor->GetXaxis()->SetTitleSize(0.05);
-    // fMeanPt_sys->SetMaximum(0.008);
-    fMeanPt_sys_cor->SetMaximum(2.2);
-    fMeanPt_sys_cor->SetMinimum(0.7);
+    fMeanPt_sys_cor->SetMaximum(meanpTYmax);
+    fMeanPt_sys_cor->SetMinimum(meanpTYmin);
     fMeanPt_sys->SetMarkerStyle(20);
-    fMeanPt_sys_cor->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#eta #GT_{|#it{y}|<0.5}");
+    fMeanPt_sys_cor->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
     fMeanPt_sys_cor->GetYaxis()->SetTitle("#LT #it{p}_{T} #GT (GeV/c)");
 
     fMeanPt_stat->SetMarkerColor(MaterialColors[0]);
     fMeanPt_stat->SetLineColor(MaterialColors[0]);
+    fMeanPt_stat->SetMarkerStyle(20);
+    fMeanPt_stat->SetMarkerSize(0.5);
 
     fMeanPt_stat_7TeV->SetMarkerColor(kBlack);
     fMeanPt_stat_7TeV->SetLineColor(kBlack);
@@ -1541,25 +1824,47 @@ void DrawMeanpT(){
     fMeanPt_sys_7TeV->SetMarkerStyle(20);
     fMeanPt_sys_7TeV->SetFillColor(0);
 
+    fMeanPt_sys_7TeV->GetXaxis()->SetLimits(1,21);
+
+
+    fMeanPt_sys_7TeV->GetYaxis()->SetLabelSize(0.05);
+    fMeanPt_sys_7TeV->GetYaxis()->SetTitleOffset(0.9);
+    fMeanPt_sys_7TeV->GetYaxis()->SetTitleSize(0.05);
+    fMeanPt_sys_7TeV->GetXaxis()->SetLabelSize(0.05);
+    fMeanPt_sys_7TeV->GetXaxis()->SetTitleSize(0.05);
+    fMeanPt_sys_7TeV->SetMaximum(2.2);
+    fMeanPt_sys_7TeV->SetMinimum(0.7);
+    fMeanPt_sys_7TeV->SetMarkerStyle(20);
+    fMeanPt_sys_7TeV->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
+    fMeanPt_sys_7TeV->GetYaxis()->SetTitle("#LT #it{p}_{T} #GT (GeV/c)");
+
     cMeanPt->cd();
-    fMeanPt_sys_cor->Draw("a5");
+    fMeanPt_sys_cor->Draw("A5");
     fMeanPt_sys->Draw("5");
     fMeanPt_stat->Draw("P");
-    fMeanPt_sys_7TeV->Draw("5");
-    fMeanPt_stat_7TeV->Draw("P");
+    if(draw7TeV){
+        fMeanPt_sys_7TeV->Draw("5");
+        fMeanPt_stat_7TeV->Draw("P");
+    }
 
     t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.4, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.15, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
 
-    t->DrawLatex(0.14, 0.155, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
 
-    auto lMeanPt = new TLegend(0.6, 0.26, 0.95, 0.42);
+    TLegend* lMeanPt;
+    if(draw7TeV) 
+        lMeanPt = new TLegend(0.6, 0.26, 0.95, 0.42);
+    else 
+        lMeanPt = new TLegend(0.6, 0.26, 0.95, 0.36);
     lMeanPt->SetFillStyle(0);
-    lMeanPt->AddEntry(fMeanPt_sys, "#Xi(1530)^{0} pp 13 TeV", "PEF");
-    lMeanPt->AddEntry(fMeanPt_sys_7TeV, "#Xi(1530)^{0} pp 7 TeV", "PEF");
-    lMeanPt->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    lMeanPt->AddEntry(fMeanPt_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) lMeanPt->AddEntry(fMeanPt_sys_7TeV, "pp 7 TeV", "PEF");
+    if(draw7TeV) lMeanPt->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
     lMeanPt->Draw();
 
     SaveCanvas(cMeanPt,"figure_MeanPt_preliminary","figs/Approval/");
@@ -1569,7 +1874,7 @@ void DrawMeanpT(){
     cMeanPt2->SetLeftMargin(0.10);
     cMeanPt2->Draw();
 
-    TFile* fdNdy0100 = new TFile("AnalysisResults_Xi1530_YieldMean_0100.root");
+    TFile* fdNdy0100 = new TFile("AnalysisResults_Xi1530_YieldMean_0-100.root");
     auto fdNdy_YieldMean0100 = (TH1D*)fdNdy0100->Get("hMeanPt_0.00-100.00");  // signal
     vector<double> x0100 = {6.94};
     vector<double> x0100e = {0.10};
@@ -1593,43 +1898,45 @@ void DrawMeanpT(){
     TGraphErrors* gpt_sys_full_0100 = new TGraphErrors(mean0100.size(), &x0100[0], &mean0100[0], &x0100e[0], &ftemp_mean0100syse_full[0]);
 
     gpt_sys_0100->SetLineColor(0);
-    gpt_sys_0100->SetMarkerColor(MaterialColors[3]);
-    gpt_sys_0100->SetFillColorAlpha(MaterialColors[3], 0.3);
+    gpt_sys_0100->SetMarkerColor(MaterialColors[0]);
+    gpt_sys_0100->SetFillColor(kRed-9);
     gpt_sys_0100->SetMarkerStyle(20);
     gpt_sys_0100->SetMarkerSize(1);
 
-    gpt_stat_0100->SetLineColor(MaterialColors[3]);
+    gpt_stat_0100->SetLineColor(MaterialColors[0]);
     gpt_stat_0100->SetMarkerStyle(20);
     gpt_stat_0100->SetMarkerSize(1);
-    gpt_stat_0100->SetMarkerColor(MaterialColors[3]);
-    gpt_sys_full_0100->SetMarkerColor(MaterialColors[3]);
+    gpt_stat_0100->SetMarkerColor(MaterialColors[0]);
+    gpt_sys_full_0100->SetMarkerColor(MaterialColors[0]);
     gpt_sys_full_0100->SetMarkerStyle(20);
 
-    gpt_sys_full_0100->SetLineColor(MaterialColors[3]);
-    gpt_sys_full_0100->SetFillColorAlpha(MaterialColors[3], 0.0);
+    gpt_sys_full_0100->SetLineColor(MaterialColors[0]);
+    gpt_sys_full_0100->SetFillColor(0);
 
     cMeanPt2->cd();
-    fMeanPt_sys_cor->Draw("a5");
-    fMeanPt_sys->Draw("5");
-    fMeanPt_stat->Draw("P");
-    fMeanPt_sys_7TeV->Draw("5");
+    //fMeanPt_sys_cor->Draw("a5");
+    //fMeanPt_sys->Draw("5");
+    //fMeanPt_stat->Draw("P");
+    fMeanPt_sys_7TeV->Draw("A5");
     fMeanPt_stat_7TeV->Draw("P");;
     gpt_sys_0100->Draw("5");
     gpt_sys_full_0100->Draw("5");
     gpt_stat_0100->Draw("P");
 
     t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.4, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.15, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
 
-    t->DrawLatex(0.14, 0.155, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
 
     auto lMeanPt2 = new TLegend(0.6, 0.2, 0.95, 0.42);
     lMeanPt2->SetFillStyle(0);
-    lMeanPt2->AddEntry(fMeanPt_sys, "#Xi(1530)^{0} pp 13 TeV", "PEF");
-    lMeanPt2->AddEntry(gpt_sys_full_0100, "#Xi(1530)^{0} pp 13 TeV (0-100%)", "PEF");
-    lMeanPt2->AddEntry(fMeanPt_sys_7TeV, "#Xi(1530)^{0} pp 7 TeV", "PEF");
+    lMeanPt2->AddEntry(fMeanPt_sys, "pp 13 TeV (INEL>0)", "PEF");
+    lMeanPt2->AddEntry(gpt_sys_full_0100, "pp 13 TeV (INEL)", "PEF");
+    lMeanPt2->AddEntry(fMeanPt_sys_7TeV, "pp 7 TeV", "PEF");
     lMeanPt2->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
     lMeanPt2->Draw();
 
@@ -1654,54 +1961,128 @@ void DrawMeanpT(){
     gpt_sys_pPb502TeV->SetLineColor(MaterialColors[3]);
     gpt_sys_pPb502TeV->SetMarkerColor(MaterialColors[3]);
     //gpt_sys_pPb502TeV->SetFillColorAlpha(MaterialColors[3], 0.3);
-    gpt_sys_pPb502TeV->SetMarkerStyle(20);
-    gpt_sys_pPb502TeV->SetMarkerSize(1);
+    gpt_stat_pPb502TeV->SetMarkerStyle(20);
+    gpt_stat_pPb502TeV->SetMarkerSize(0.5);
 
     gpt_stat_pPb502TeV->SetLineColor(MaterialColors[3]);
-    gpt_stat_pPb502TeV->SetMarkerStyle(20);
-    gpt_stat_pPb502TeV->SetMarkerSize(1);
     gpt_stat_pPb502TeV->SetMarkerColor(MaterialColors[3]);
 
     auto fMeanPt_sys_cor2 = (TGraphErrors*)fMeanPt_sys_cor->Clone();
     //fMeanPt_sys_cor2->SetMaximum(0.040);
     //fMeanPt_sys_cor2->GetYaxis()->SetTitleOffset(0.7);
-    fMeanPt_sys_cor2->GetXaxis()->SetLimits(0,45);
+    fMeanPt_sys_cor2->GetXaxis()->SetLimits(0,46);
+    fMeanPt_sys_cor2->SetMinimum(meanpTYmin);
 
     cMeanPt3->cd();
     fMeanPt_sys_cor2->Draw("a5");
-    fMeanPt_sys->Draw("5");
-    fMeanPt_stat->Draw("P");
-    fMeanPt_sys_7TeV->Draw("5");
-    fMeanPt_stat_7TeV->Draw("P");;
     gpt_sys_pPb502TeV->Draw("5");
     gpt_stat_pPb502TeV->Draw("P");
+    fMeanPt_sys->Draw("5");
+    fMeanPt_stat->Draw("P");
+    if(draw7TeV) fMeanPt_sys_7TeV->Draw("A5");
+    if(draw7TeV) fMeanPt_stat_7TeV->Draw("P");;
+    //gpt_sys_0100->Draw("5");
+    //gpt_sys_full_0100->Draw("5");
+    //gpt_stat_0100->Draw("P");
 
     t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.4, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.15, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
 
-    t->DrawLatex(0.14, 0.155, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
 
-    auto lMeanPt3 = new TLegend(0.6, 0.2, 0.95, 0.42);
+    TLegend* lMeanPt3;
+    if(draw7TeV) 
+        lMeanPt3 = new TLegend(0.6, 0.26, 0.95, 0.48);
+    else 
+        lMeanPt3 = new TLegend(0.6, 0.26, 0.95, 0.42);
     lMeanPt3->SetFillStyle(0);
-    lMeanPt3->AddEntry(fMeanPt_sys, "#Xi(1530)^{0} pp 13 TeV (INEL>0)", "PEF");
-    lMeanPt3->AddEntry(fMeanPt_sys_7TeV, "#Xi(1530)^{0} pp 7 TeV (inelastic)", "PEF");
-    lMeanPt3->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
-    lMeanPt3->AddEntry(gpt_sys_pPb502TeV, "#Xi(1530)^{0} p-Pb 5.02TeV (NSD)", "PEF");
+    lMeanPt3->AddEntry(fMeanPt_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) lMeanPt3->AddEntry(fMeanPt_sys_7TeV, "pp 7 TeV (INEL)", "PEF");
+    if(draw7TeV) lMeanPt3->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    lMeanPt3->AddEntry(gpt_sys_pPb502TeV, "p-Pb 5.02TeV (NSD)", "PEF");
     lMeanPt3->AddEntry((TObject*)0, "Eur. Phys. J. C 77 (2017) 389", "");
     lMeanPt3->Draw();
 
     SaveCanvas(cMeanPt3,"figure_MeanPt_withpPb502_preliminary","figs/Approval/");
 
+    // PbPb Result
+    TCanvas* cMeanPtPbPb = GetCanvas("cdNdy2", 960, 720);
+    cMeanPtPbPb->SetLeftMargin(0.10);
+    cMeanPtPbPb->SetBottomMargin(0.15);
+    cMeanPtPbPb->SetLogx();
+    cMeanPtPbPb->Draw();
+    cMeanPtPbPb->cd();
+    // charged particle multiplicity
+    // https://arxiv.org/pdf/1012.1657.pdf
+    vector<double> xPbPb276 = {1447.5, 680.3, 130.25};
+    vector<double> xPbPb276e = {54.5, 25, 5.25};
+    vector<double> xPbPb276zero = {0, 0, 0};
+     
+    // Analysis note PbPb 2.76
+    vector<double> yPbPb276 = {1.748, 1.778, 1.515};
+    vector<double> yPbPb276e = {0.015, 0.017, 0.016};
+    vector<double> yPbPb276se = {0.250, 0.197, 0.156};
+    
+    TGraphErrors* gpt_stat_PbPb276TeV = new TGraphErrors(xPbPb276.size(), &xPbPb276[0], &yPbPb276[0], &xPbPb276zero[0], &yPbPb276e[0]);
+    TGraphErrors* gpt_sys_PbPb276TeV = new TGraphErrors(xPbPb276.size(), &xPbPb276[0], &yPbPb276[0], &xPbPb276e[0], &yPbPb276se[0]);
+
+    gpt_sys_PbPb276TeV->SetMarkerStyle(20);
+    //ge_sys_PbPb276TeV->SetMarkerSize(0.5);
+    gpt_stat_PbPb276TeV->SetMarkerStyle(20);
+    gpt_stat_PbPb276TeV->SetMarkerSize(0.5);
+    gpt_sys_PbPb276TeV->SetLineColor(MaterialColors[1]);
+    gpt_sys_PbPb276TeV->SetMarkerColor(MaterialColors[1]);
+    gpt_stat_PbPb276TeV->SetLineColor(MaterialColors[1]);
+    gpt_stat_PbPb276TeV->SetMarkerColor(MaterialColors[1]);
+    fMeanPt_sys_cor2->GetXaxis()->SetTitleOffset(1.3);
+    fMeanPt_sys_cor2->GetXaxis()->SetLimits(1,5e3);
+    fMeanPt_sys_cor2->SetMaximum(2.4);
+
+    fMeanPt_sys_cor2->Draw("A5");
+    fMeanPt_sys->Draw("5");
+    fMeanPt_stat->Draw("P");
+    gpt_sys_pPb502TeV->Draw("5");
+    gpt_stat_pPb502TeV->Draw("P");
+    if(draw7TeV) fMeanPt_sys_7TeV->Draw("5");
+    if(draw7TeV) fMeanPt_stat_7TeV->Draw("P");;
+    gpt_sys_PbPb276TeV->Draw("5");
+    gpt_stat_PbPb276TeV->Draw("P");
+
+    t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp #sqrt{#it{s}} = 13 TeV, INEL>0, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
+
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+
+    auto lMeanPtPbPb = new TLegend(0.6, 0.20, 0.95, 0.5);
+    lMeanPtPbPb->SetFillStyle(0);
+    lMeanPtPbPb->AddEntry(fMeanPt_sys, "pp 13 TeV (INEL>0)", "PEF");
+    lMeanPtPbPb->AddEntry(fMeanPt_sys_7TeV, "pp 7 TeV (INEL)", "PEF");
+    lMeanPtPbPb->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    lMeanPtPbPb->AddEntry(gpt_sys_pPb502TeV, "p-Pb 5.02TeV", "PEF");
+    lMeanPtPbPb->AddEntry((TObject*)0, "Eur. Phys. J. C 77 (2017) 389", "");
+    lMeanPtPbPb->AddEntry(gpt_sys_PbPb276TeV, "Pb-Pb 2.76TeV", "PEF");
+    lMeanPtPbPb->AddEntry((TObject*)0, "ALICE prelimiary", "");
+    lMeanPtPbPb->Draw();
+
+    SaveCanvas(cMeanPtPbPb,"figure_MeanPt_withpPb502_PbPb_preliminary","figs/Approval/");
 }
 void DrawRatioToPi(){
+    double ratioPiYmax = 2.5e-3;
+    double ratioPiYmin = 0.4e-3;
+    bool draw7TeV = false;
     TCanvas* cPiRatio = GetCanvas("cPiRatio", 960, 720);
     cPiRatio->SetLeftMargin(0.10);
     cPiRatio->Draw();
     
-    TFile* fPiRatio = new TFile(
-        "AnalysisResults_Xi1530_PhysicsResult_010305070100.root");
+    TFile* fPiRatio = new TFile(PhysicsFile.Data());
     
     auto gRatioPi_stat = (TGraphErrors*)fPiRatio->Get("gRatioPi_stat");  // signal
     auto gRatioPi_sys_cor = (TGraphErrors*)fPiRatio->Get("gRatioPi_sys");  // signal
@@ -1717,19 +2098,34 @@ void DrawRatioToPi(){
     gRatioPi_sys_cor->SetLineColor(0);
     gRatioPi_sys_cor->SetFillColorAlpha(MaterialColors[0], 0.3);
     gRatioPi_sys_cor->GetYaxis()->SetLabelSize(0.05);
-    gRatioPi_sys_cor->GetYaxis()->SetTitleOffset(0.7);
-    gRatioPi_sys_cor->GetYaxis()->SetTitleSize(0.060);
+    gRatioPi_sys_cor->GetYaxis()->SetTitleOffset(0.9);
+    gRatioPi_sys_cor->GetYaxis()->SetTitleSize(0.05);
     gRatioPi_sys_cor->GetXaxis()->SetLabelSize(0.05);
     gRatioPi_sys_cor->GetXaxis()->SetTitleSize(0.05);
     // fMeanPt_sys->SetMaximum(0.008);
-    gRatioPi_sys_cor->SetMaximum(2.0e-3);
-    gRatioPi_sys_cor->SetMinimum(0.0);
+    gRatioPi_sys_cor->SetMaximum(ratioPiYmax);
+    gRatioPi_sys_cor->SetMinimum(ratioPiYmin);
     gRatioPi_sys->SetMarkerStyle(20);
-    gRatioPi_sys_cor->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#eta #GT_{|#it{y}|<0.5}");
+    gRatioPi_sys_cor->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
     gRatioPi_sys_cor->GetYaxis()->SetTitle("Ratio to #pi");
 
     gRatioPi_stat->SetMarkerColor(MaterialColors[0]);
     gRatioPi_stat->SetLineColor(MaterialColors[0]);
+
+    gRatioPi_7TeV_sys->SetMarkerColor(MaterialColors[0]);
+    gRatioPi_7TeV_sys->SetLineColor(0);
+    gRatioPi_7TeV_sys->SetFillColorAlpha(MaterialColors[0], 0.3);
+    gRatioPi_7TeV_sys->GetYaxis()->SetLabelSize(0.05);
+    gRatioPi_7TeV_sys->GetYaxis()->SetTitleOffset(0.7);
+    gRatioPi_7TeV_sys->GetYaxis()->SetTitleSize(0.05);
+    gRatioPi_7TeV_sys->GetXaxis()->SetLabelSize(0.05);
+    gRatioPi_7TeV_sys->GetXaxis()->SetTitleSize(0.05);
+    // fMeanPt_sys->SetMaximum(0.008);
+    gRatioPi_7TeV_sys->SetMaximum(2.0e-3);
+    gRatioPi_7TeV_sys->SetMinimum(0.0);
+    gRatioPi_7TeV_sys->SetMarkerStyle(20);
+    gRatioPi_7TeV_sys->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
+    gRatioPi_7TeV_sys->GetYaxis()->SetTitle("Ratio to #pi");
 
     gRatioPi_7TeV_stat->SetMarkerColor(kBlack);
     gRatioPi_7TeV_stat->SetLineColor(kBlack);
@@ -1743,21 +2139,27 @@ void DrawRatioToPi(){
     gRatioPi_sys_cor->Draw("a5");
     gRatioPi_sys->Draw("5");
     gRatioPi_stat->Draw("P");
-    gRatioPi_7TeV_sys->Draw("5");
-    gRatioPi_7TeV_stat->Draw("P");
+    if(draw7TeV) gRatioPi_7TeV_sys->Draw("5");
+    if(draw7TeV) gRatioPi_7TeV_stat->Draw("P");
 
     t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.4, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.15, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
 
-    t->DrawLatex(0.14, 0.155, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
 
-    auto lPiRatio = new TLegend(0.6, 0.15, 0.95, 0.31);
+    TLegend* lPiRatio;
+    if(draw7TeV)
+        lPiRatio = new TLegend(0.55, 0.15, 0.90, 0.31);
+    else
+        lPiRatio = new TLegend(0.55, 0.2, 0.90, 0.25);
     lPiRatio->SetFillStyle(0);
-    lPiRatio->AddEntry(gRatioPi_sys, "#Xi(1530)^{0} pp 13 TeV", "PEF");
-    lPiRatio->AddEntry(gRatioPi_7TeV_sys, "#Xi(1530)^{0} pp 7 TeV", "PEF");
-    lPiRatio->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    lPiRatio->AddEntry(gRatioPi_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) lPiRatio->AddEntry(gRatioPi_7TeV_sys, "pp 7 TeV (INEL)", "PEF");
+    if(draw7TeV) lPiRatio->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
     lPiRatio->Draw();
 
     SaveCanvas(cPiRatio,"figure_RatioToPi_preliminary","figs/Approval/");
@@ -1787,6 +2189,50 @@ void DrawRatioToPi(){
     TGraphErrors* gRatioPi_stat_pPb502TeV = new TGraphErrors(xpPb502.size(), &xpPb502[0], &ypPb502[0], &xpPb502zero[0], &ypPb502e[0]);
     TGraphErrors* gRatioPi_sys_cor_pPb502TeV = new TGraphErrors(xpPb502.size(), &xpPb502[0], &ypPb502[0], &xpPb502e[0], &ypPb502se[0]);
     TGraphErrors* gRatioPi_sys_pPb502TeV = new TGraphErrors(xpPb502.size(), &xpPb502[0], &ypPb502[0], &xpPb502e[0], &ypPb502se_full[0]);
+    
+    //MB
+    TFile* fdNdy0100 = new TFile("AnalysisResults_Xi1530_YieldMean_0-100.root");
+    auto fdNdy_YieldMean0100 = (TH1D*)fdNdy0100->Get("hYield_0.00-100.00");  // signal
+    vector<double> yield0100;
+    yield0100.push_back(fdNdy_YieldMean0100->GetBinContent(1));
+    vector<double> yield0100state;
+    yield0100state.push_back(fdNdy_YieldMean0100->GetBinContent(2));
+    vector<double> yield0100syse;
+    double ftemp_yieldsyse = 0.0;
+    ftemp_yieldsyse += pow(fdNdy_YieldMean0100->GetBinContent(3),2);
+    ftemp_yieldsyse += pow(fdNdy_YieldMean0100->GetBinContent(4),2);
+    yield0100syse.push_back(sqrt(ftemp_yieldsyse)/2);
+    vector<double> yield0100syse_full;
+    ftemp_yieldsyse += pow(0.0538*yield0100[0],2);
+    yield0100syse_full.push_back(sqrt(ftemp_yieldsyse)/2);
+
+    vector<double> xppMB = {6.94};
+    vector<double> xppMBe = {0.10};
+    vector<double> xppMBzero = {0};
+
+    double piMB = 6.36830;
+    double piMBsys = 0.45657;
+
+    vector<double> yRatio;
+    vector<double> yRatioe;
+    vector<double> yRatiosyse;
+    yRatio.push_back(yield0100[0]/(piMB/2));
+    yRatioe.push_back(yRatio[0]*(yield0100state[0]/yield0100[0]));
+    yRatiosyse.push_back(yRatio[0]*sqrt(pow(piMBsys/piMB,2)+pow(yield0100syse_full[0]/yield0100[0],2)));
+    cout << yRatio[0] << endl;
+    TGraphErrors* ge_stat_MB = new TGraphErrors(yRatio.size(), &xppMB[0], &yRatio[0], &xppMBzero[0], &yRatioe[0]);
+    TGraphErrors* ge_sys_MB = new TGraphErrors(yRatio.size(), &xppMB[0], &yRatio[0], &xppMBe[0], &yRatiosyse[0]);
+    ge_stat_MB->SetLineColor(MaterialColors[0]);
+    ge_stat_MB->SetMarkerColor(MaterialColors[0]);
+    ge_sys_MB->SetLineColor(MaterialColors[0]);
+    ge_sys_MB->SetMarkerColor(MaterialColors[0]);
+    ge_sys_MB->SetFillColorAlpha(MaterialColors[3], 0.3);
+    ge_stat_MB->SetMarkerStyle(20);
+    ge_stat_MB->SetMarkerSize(0.5);
+
+    //
+
+
 
     gRatioPi_sys_cor_pPb502TeV->SetLineColor(0);
     gRatioPi_sys_cor_pPb502TeV->SetMarkerColor(MaterialColors[3]);
@@ -1798,7 +2244,7 @@ void DrawRatioToPi(){
     gRatioPi_sys_pPb502TeV->SetMarkerColor(MaterialColors[3]);
     gRatioPi_sys_pPb502TeV->SetFillColorAlpha(MaterialColors[3], 0.0);
     gRatioPi_sys_pPb502TeV->SetMarkerStyle(20);
-    gRatioPi_sys_pPb502TeV->SetMarkerSize(0.5);
+    //gRatioPi_sys_pPb502TeV->SetMarkerSize(0.5);
 
     gRatioPi_stat_pPb502TeV->SetLineColor(MaterialColors[3]);
     gRatioPi_stat_pPb502TeV->SetMarkerColor(MaterialColors[3]);
@@ -1806,52 +2252,190 @@ void DrawRatioToPi(){
     gRatioPi_stat_pPb502TeV->SetMarkerSize(0.5);
     
     auto gRatioPi_sys_cor2 = (TGraphErrors*)gRatioPi_sys_cor->Clone();
-    gRatioPi_sys_cor2->GetXaxis()->SetLimits(0,45);
-    gRatioPi_sys_cor2->SetMaximum(2.5e-3);
-    
+    //gRatioPi_sys_cor2->GetXaxis()->SetLimits(1,5e3);
+    gRatioPi_sys_cor2->GetXaxis()->SetLimits(1,46);
+
     cPiRatio2->cd();
+
     gRatioPi_sys_cor2->Draw("A5");
     gRatioPi_sys->Draw("5");
     gRatioPi_stat->Draw("P");
-    gRatioPi_7TeV_sys->Draw("5");
-    gRatioPi_7TeV_stat->Draw("P");
+
+    if(draw7TeV) gRatioPi_7TeV_sys->Draw("5");
+    if(draw7TeV) gRatioPi_7TeV_stat->Draw("P");
 
     gRatioPi_sys_cor_pPb502TeV->Draw("5");
     gRatioPi_sys_pPb502TeV->Draw("5");
     gRatioPi_stat_pPb502TeV->Draw("P");
 
+
+
     t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.4, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.15, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #pi^{#pm}}");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
 
-    t->DrawLatex(0.14, 0.155, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
 
-    auto lPiRatio2 = new TLegend(0.6, 0.2, 0.95, 0.42);
+    TLegend* lPiRatio2;
+    if(draw7TeV)
+        lPiRatio2 = new TLegend(0.55, 0.15, 0.90, 0.45);
+    else
+        lPiRatio2 = new TLegend(0.55, 0.15, 0.90, 0.35);
     lPiRatio2->SetFillStyle(0);
-    lPiRatio2->AddEntry(gRatioPi_sys, "#Xi(1530)^{0} pp 13 TeV", "PEF");
-    lPiRatio2->AddEntry(gRatioPi_7TeV_sys, "#Xi(1530)^{0} pp 7 TeV", "PEF");
-    lPiRatio2->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
-    lPiRatio2->AddEntry(gRatioPi_sys_pPb502TeV, "#Xi(1530)^{0} p-Pb 5.02TeV (NSD)", "PEF");
+    lPiRatio2->AddEntry(gRatioPi_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) lPiRatio2->AddEntry(gRatioPi_7TeV_sys, "pp 7 TeV (INEL)", "PEF");
+    if(draw7TeV) lPiRatio2->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    lPiRatio2->AddEntry(gRatioPi_sys_pPb502TeV, "p-Pb 5.02TeV (NSD)", "PEF");
     lPiRatio2->AddEntry((TObject*)0, "Eur. Phys. J. C 77 (2017) 389", "");
     lPiRatio2->Draw();
 
     SaveCanvas(cPiRatio2,"figure_RatioToPi_withpPb502_preliminary","figs/Approval/");
 
+    // PbPb Result
+    TCanvas* cPiRatioPbPb = GetCanvas("cdNdy2", 960, 720);
+    cPiRatioPbPb->SetLeftMargin(0.10);
+    cPiRatioPbPb->SetBottomMargin(0.15);
+    cPiRatioPbPb->Draw();
+    cPiRatioPbPb->cd();
+    // charged particle multiplicity
+    // https://arxiv.org/pdf/1012.1657.pdf
+    vector<double> xPbPb276 = {1447.5, 680.3, 130.25};
+    vector<double> xPbPb276e = {54.5, 25, 5.25};
+    vector<double> xPbPb276zero = {0, 0, 0};
+     
+    // Analysis note PbPb 2.76
+    vector<double> yPbPb276 = {1.03e-3, 1.06e-3, 1.36e-3};
+    vector<double> yPbPb276e = {0.02678e-3, 0.018e-3, 0.0408e-3};
+    vector<double> yPbPb276se = {0.35e-3, 0.26e-3, 0.36e-3};
+    
+    TGraphErrors* ge_stat_PbPb276TeV = new TGraphErrors(xPbPb276.size(), &xPbPb276[0], &yPbPb276[0], &xPbPb276zero[0], &yPbPb276e[0]);
+    TGraphErrors* ge_sys_PbPb276TeV = new TGraphErrors(xPbPb276.size(), &xPbPb276[0], &yPbPb276[0], &xPbPb276e[0], &yPbPb276se[0]);
+
+    ge_sys_PbPb276TeV->SetMarkerStyle(20);
+    ge_stat_PbPb276TeV->SetMarkerStyle(20);
+    ge_stat_PbPb276TeV->SetMarkerSize(0.5);
+    ge_sys_PbPb276TeV->SetLineColor(MaterialColors[1]);
+    ge_sys_PbPb276TeV->SetMarkerColor(MaterialColors[1]);
+    ge_stat_PbPb276TeV->SetLineColor(MaterialColors[1]);
+    ge_stat_PbPb276TeV->SetMarkerColor(MaterialColors[1]);
+    gRatioPi_sys_cor2->GetXaxis()->SetLimits(1,5e3);
+    gRatioPi_sys_cor2->SetMaximum(3e-3);
+    gRatioPi_sys_cor2->SetMinimum(0.5e-3);
+
+    gRatioPi_sys_cor2->GetYaxis()->SetTitleOffset(0.9);
+    gRatioPi_sys_cor2->GetXaxis()->SetTitleOffset(1.3);
+
+    gRatioPi_sys_cor2->Draw("A5");
+    gRatioPi_sys->Draw("5");
+    gRatioPi_stat->Draw("P");
+
+    if(draw7TeV) gRatioPi_7TeV_sys->Draw("A5");
+    if(draw7TeV) gRatioPi_7TeV_stat->Draw("P");
+
+    gRatioPi_sys_cor_pPb502TeV->Draw("5");
+    gRatioPi_sys_pPb502TeV->Draw("5");
+    gRatioPi_stat_pPb502TeV->Draw("P");
+    
+    //ge_sys_MB->Draw("5");
+    //ge_stat_MB->Draw("P");
+    ge_sys_PbPb276TeV->Draw("5");
+    ge_stat_PbPb276TeV->Draw("P");
+
+    cPiRatioPbPb->SetLogx();
+    //cPiRatioPbPb->SetLogy();
+    t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
+
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+
+
+    TLegend* lPiRatioPbPb;
+    if(draw7TeV)
+        lPiRatioPbPb = new TLegend(0.6, 0.57, 0.95, 0.92);
+    else
+        lPiRatioPbPb = new TLegend(0.6, 0.67, 0.95, 0.92);
+    lPiRatioPbPb->SetFillStyle(0);
+    lPiRatioPbPb->AddEntry(gRatioPi_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) lPiRatioPbPb->AddEntry(gRatioPi_7TeV_sys, "pp 7 TeV (INEL>0)", "PEF");
+    if(draw7TeV) lPiRatioPbPb->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    lPiRatioPbPb->AddEntry(gRatioPi_sys_pPb502TeV, "p-Pb 5.02TeV (NSD)", "PEF");
+    lPiRatioPbPb->AddEntry((TObject*)0, "Eur. Phys. J. C 77 (2017) 389", "");
+    lPiRatioPbPb->AddEntry(ge_sys_PbPb276TeV, "Pb-Pb 2.76TeV (INEL)", "PEF");
+    lPiRatioPbPb->AddEntry((TObject*)0, "ALICE prelimiary", "");
+    lPiRatioPbPb->Draw();
+
+    SaveCanvas(cPiRatioPbPb,"figure_RatioToPi_withpPb502_PbPb_preliminary","figs/Approval/");
+    
 }
 void DrawRatioToXi(){
+    double ratioXiYmax = 0.55;
+    double ratioXiYmin = 0.1;
+    bool draw7TeV = false;
+
     TCanvas* cXiRatio = GetCanvas("cXiRatio", 960, 720);
-    cXiRatio->SetLeftMargin(0.15);
+    cXiRatio->SetLeftMargin(0.10);
     cXiRatio->Draw();
     
-    TFile* fXiRatio = new TFile(
-        "AnalysisResults_Xi1530_PhysicsResult_010305070100.root");
+    TFile* fXiRatio = new TFile(PhysicsFile.Data());
     
     auto gRatioToXi_stat = (TGraphErrors*)fXiRatio->Get("gRatioToXi_stat");  // signal
     auto gRatioToXi_sys_cor = (TGraphErrors*)fXiRatio->Get("gRatioToXi_sys_cor");  // signal
     auto gRatioToXi_sys = (TGraphErrors*)fXiRatio->Get("gRatioToXi_sys");  // signal
     auto gRatioToXi_7TeV_stat = (TGraphErrors*)fXiRatio->Get("gRatioToXi_7TeV_stat");  // signal
     auto gRatioToXi_7TeV_sys = (TGraphErrors*)fXiRatio->Get("gRatioToXi_7TeV_sys");  // signal
+
+    //
+    //MB
+    TFile* fdNdy0100 = new TFile("AnalysisResults_Xi1530_YieldMean_0-100.root");
+    auto fdNdy_YieldMean0100 = (TH1D*)fdNdy0100->Get("hYield_0.00-100.00");  // signal
+    vector<double> yield0100;
+    yield0100.push_back(fdNdy_YieldMean0100->GetBinContent(1));
+    vector<double> yield0100state;
+    yield0100state.push_back(fdNdy_YieldMean0100->GetBinContent(2));
+    vector<double> yield0100syse;
+    double ftemp_yieldsyse = 0.0;
+    ftemp_yieldsyse += pow(fdNdy_YieldMean0100->GetBinContent(3),2);
+    ftemp_yieldsyse += pow(fdNdy_YieldMean0100->GetBinContent(4),2);
+    yield0100syse.push_back(sqrt(ftemp_yieldsyse)/2);
+    vector<double> yield0100syse_full;
+    ftemp_yieldsyse += pow(0.0538*yield0100[0],2);
+    yield0100syse_full.push_back(sqrt(ftemp_yieldsyse)/2);
+
+    vector<double> xppMB = {6.94};
+    vector<double> xppMBe = {0.10};
+    vector<double> xppMBzero = {0};
+
+    double XiMB = 0.0133295;
+    double XiMBe = 0.0001160;
+    double XiMBsys = 0.0005296;
+
+    vector<double> yRatio;
+    vector<double> yRatioe;
+    vector<double> yRatiosyse;
+    yRatio.push_back(yield0100[0]/(XiMB));
+    yRatioe.push_back(yRatio[0]*sqrt(pow(XiMBe/XiMB,2)+pow(yield0100state[0]/yield0100[0],2)));
+    yRatiosyse.push_back(yRatio[0]*sqrt(pow(XiMBsys/XiMB,2)+pow(yield0100syse_full[0]/yield0100[0],2)));
+    cout << yRatio[0] << endl;
+    TGraphErrors* ge_stat_MB = new TGraphErrors(yRatio.size(), &xppMB[0], &yRatio[0], &xppMBzero[0], &yRatioe[0]);
+    TGraphErrors* ge_sys_MB = new TGraphErrors(yRatio.size(), &xppMB[0], &yRatio[0], &xppMBe[0], &yRatiosyse[0]);
+    ge_stat_MB->SetLineColor(MaterialColors[0]);
+    ge_stat_MB->SetMarkerColor(MaterialColors[0]);
+    ge_sys_MB->SetLineColor(MaterialColors[0]);
+    ge_sys_MB->SetMarkerColor(MaterialColors[0]);
+    ge_sys_MB->SetFillColorAlpha(MaterialColors[0], 0.3);
+    ge_stat_MB->SetMarkerStyle(20);
+    ge_stat_MB->SetMarkerSize(0.5);
+
+    //
+    //  
+
 
     gRatioToXi_sys->SetMarkerColor(MaterialColors[0]);
     gRatioToXi_sys->SetLineColor(MaterialColors[0]);
@@ -1860,21 +2444,34 @@ void DrawRatioToXi(){
     gRatioToXi_sys_cor->SetMarkerColor(MaterialColors[0]);
     gRatioToXi_sys_cor->SetLineColor(0);
     gRatioToXi_sys_cor->SetFillColorAlpha(MaterialColors[0], 0.3);
-    gRatioToXi_sys_cor->GetYaxis()->SetLabelSize(0.05);
+    gRatioToXi_sys_cor->SetFillStyle(1000);
+    gRatioToXi_sys_cor->GetYaxis()->SetLabelSize(0.04);
     gRatioToXi_sys_cor->GetYaxis()->SetTitleOffset(1.0);
-    gRatioToXi_sys_cor->GetYaxis()->SetTitleSize(0.060);
-    gRatioToXi_sys_cor->GetXaxis()->SetLabelSize(0.05);
+    gRatioToXi_sys_cor->GetYaxis()->SetTitleSize(0.05);
+    gRatioToXi_sys_cor->GetXaxis()->SetTitleOffset(1.0);
     gRatioToXi_sys_cor->GetXaxis()->SetTitleSize(0.05);
     // fMeanPt_sys->SetMaximum(0.008);
-    gRatioToXi_sys_cor->SetMaximum(0.5);
-    gRatioToXi_sys_cor->SetMinimum(0.0);
+    gRatioToXi_sys_cor->SetMaximum(ratioXiYmax);
+    gRatioToXi_sys_cor->SetMinimum(ratioXiYmin);
     gRatioToXi_sys->SetMarkerStyle(20);
-    gRatioToXi_sys_cor->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#eta #GT_{|#it{y}|<0.5}");
+    gRatioToXi_sys_cor->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
     gRatioToXi_sys_cor->GetYaxis()->SetTitle("Ratio to #Xi");
 
     gRatioToXi_stat->SetMarkerColor(MaterialColors[0]);
     gRatioToXi_stat->SetLineColor(MaterialColors[0]);
+    gRatioToXi_stat->SetMarkerStyle(20);
+    gRatioToXi_stat->SetMarkerSize(0.5);
 
+    gRatioToXi_7TeV_sys->GetYaxis()->SetLabelSize(0.05);
+    gRatioToXi_7TeV_sys->GetYaxis()->SetTitleOffset(1.2);
+    gRatioToXi_7TeV_sys->GetYaxis()->SetTitleSize(0.05);
+    gRatioToXi_7TeV_sys->GetXaxis()->SetLabelSize(0.05);
+    gRatioToXi_7TeV_sys->GetXaxis()->SetTitleOffset(1.3);
+    gRatioToXi_7TeV_sys->GetXaxis()->SetTitleSize(0.07);
+    // fMeanPt_sys->SetMaximum(0.008);
+    gRatioToXi_7TeV_sys->SetMarkerStyle(20);
+    gRatioToXi_7TeV_sys->GetXaxis()->SetTitle("#LT d#it{N}_{ch}/d#it{#eta} #GT_{|#it{y}|<0.5}");
+    gRatioToXi_7TeV_sys->GetYaxis()->SetTitle("Ratio to #Xi");
     gRatioToXi_7TeV_stat->SetMarkerColor(kBlack);
     gRatioToXi_7TeV_stat->SetLineColor(kBlack);
 
@@ -1883,25 +2480,36 @@ void DrawRatioToXi(){
     gRatioToXi_7TeV_sys->SetMarkerStyle(20);
     gRatioToXi_7TeV_sys->SetFillColor(0);
 
+    gRatioToXi_sys_cor->GetXaxis()->SetLimits(0,25);
+
     cXiRatio->cd();
-    gRatioToXi_sys_cor->Draw("a5");
+    gRatioToXi_sys_cor->Draw("A5");
     gRatioToXi_sys->Draw("5");
     gRatioToXi_stat->Draw("P");
-    gRatioToXi_7TeV_sys->Draw("5");
-    gRatioToXi_7TeV_stat->Draw("P");
+    if(draw7TeV) gRatioToXi_7TeV_sys->Draw("5");
+    if(draw7TeV) gRatioToXi_7TeV_stat->Draw("P");
+    
+    //ge_sys_MB->Draw("5");
+    //ge_stat_MB->Draw("P");
 
-    t2->DrawLatex(0.18, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.43, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.18, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #Xi^{#pm}}");
+    t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
 
-    t->DrawLatex(0.17, 0.155, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
 
-    auto lXiRatio = new TLegend(0.6, 0.15, 0.95, 0.31);
+    TLegend* lXiRatio;
+    if(draw7TeV)
+        lXiRatio = new TLegend(0.55, 0.15, 0.90, 0.31);
+    else
+        lXiRatio = new TLegend(0.55, 0.20, 0.90, 0.25);
     lXiRatio->SetFillStyle(0);
-    lXiRatio->AddEntry(gRatioToXi_sys, "#Xi(1530)^{0} pp 13 TeV", "PEF");
-    lXiRatio->AddEntry(gRatioToXi_7TeV_sys, "#Xi(1530)^{0} pp 7 TeV", "PEF");
-    lXiRatio->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    lXiRatio->AddEntry(gRatioToXi_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) lXiRatio->AddEntry(gRatioToXi_7TeV_sys, "pp 7 TeV", "PEF");
+    if(draw7TeV) lXiRatio->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
     lXiRatio->Draw();
 
     SaveCanvas(cXiRatio,"figure_RatioToXi_preliminary","figs/Approval/");
@@ -1909,7 +2517,7 @@ void DrawRatioToXi(){
 
     // Further figure
     TCanvas* cXiRatio2 = GetCanvas("cXiRatio2", 960, 720);
-    cXiRatio2->SetLeftMargin(0.15);
+    cXiRatio2->SetLeftMargin(0.10);
     cXiRatio2->Draw();
     // pPb Result
     // https://www.hepdata.net/record/ins1510878
@@ -1942,7 +2550,7 @@ void DrawRatioToXi(){
     gRatioToXi_sys_pPb502TeV->SetMarkerColor(MaterialColors[3]);
     gRatioToXi_sys_pPb502TeV->SetFillColorAlpha(MaterialColors[3], 0.0);
     gRatioToXi_sys_pPb502TeV->SetMarkerStyle(20);
-    gRatioToXi_sys_pPb502TeV->SetMarkerSize(0.5);
+    //gRatioToXi_sys_pPb502TeV->SetMarkerSize(0.5);
 
     gRatioToXi_stat_pPb502TeV->SetLineColor(MaterialColors[3]);
     gRatioToXi_stat_pPb502TeV->SetMarkerColor(MaterialColors[3]);
@@ -1950,38 +2558,123 @@ void DrawRatioToXi(){
     gRatioToXi_stat_pPb502TeV->SetMarkerSize(0.5);
     
     auto gRatioToXi_sys_cor2 = (TGraphErrors*)gRatioToXi_sys_cor->Clone();
-    gRatioToXi_sys_cor2->GetXaxis()->SetLimits(0,45);
+    gRatioToXi_sys_cor2->GetXaxis()->SetLimits(0,46);
     //gRatioToXi_sys_cor2->SetMaximum(0.7);
-    
+    //cXiRatio2->SetLogx();
     cXiRatio2->cd();
+
     gRatioToXi_sys_cor2->Draw("A5");
     gRatioToXi_sys->Draw("5");
     gRatioToXi_stat->Draw("P");
-    gRatioToXi_7TeV_sys->Draw("5");
-    gRatioToXi_7TeV_stat->Draw("P");
 
     gRatioToXi_sys_cor_pPb502TeV->Draw("5");
     gRatioToXi_sys_pPb502TeV->Draw("5");
     gRatioToXi_stat_pPb502TeV->Draw("P");
+    
 
-    t2->DrawLatex(0.18, 0.88, "ALICE Preliminary");
-    t->DrawLatex(0.43, 0.88, "#bf{pp #sqrt{s} = 13 TeV, INEL>0}");
-    t2->DrawLatex(0.18, 0.82,
-                  "#bf{|#it{y}| < 0.5, #Xi(1530)^{0} #rightarrow #Xi^{#mp} + #Xi^{#pm}}");
 
-    t->DrawLatex(0.17, 0.155, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    if(draw7TeV) gRatioToXi_7TeV_sys->Draw("5");
+    if(draw7TeV) gRatioToXi_7TeV_stat->Draw("P");
 
-    auto lXiRatio2 = new TLegend(0.6, 0.2, 0.95, 0.42);
+    //ge_sys_MB->Draw("5");
+    //ge_stat_MB->Draw("P");
+
+    
+    t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
+
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    TLegend* lXiRatio2;
+    if(draw7TeV)
+        lXiRatio2 = new TLegend(0.6, 0.15, 0.95, 0.37);
+    else
+        lXiRatio2 = new TLegend(0.6, 0.15, 0.95, 0.27);
     lXiRatio2->SetFillStyle(0);
-    lXiRatio2->AddEntry(gRatioToXi_sys, "#Xi(1530)^{0} pp 13 TeV", "PEF");
-    lXiRatio2->AddEntry(gRatioToXi_7TeV_sys, "#Xi(1530)^{0} pp 7 TeV", "PEF");
-    lXiRatio2->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
-    lXiRatio2->AddEntry(gRatioToXi_sys_pPb502TeV, "#Xi(1530)^{0} p-Pb 5.02TeV (NSD)", "PEF");
+    lXiRatio2->AddEntry(gRatioToXi_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) lXiRatio2->AddEntry(gRatioToXi_7TeV_sys, "pp 7 TeV (INEL)", "PEF");
+    if(draw7TeV) lXiRatio2->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    lXiRatio2->AddEntry(gRatioToXi_sys_pPb502TeV, "p-Pb 5.02TeV (NSD)", "PEF");
     lXiRatio2->AddEntry((TObject*)0, "Eur. Phys. J. C 77 (2017) 389", "");
     lXiRatio2->Draw();
 
     SaveCanvas(cXiRatio2,"figure_RatioToXi_withpPb502_preliminary","figs/Approval/");
 
+    // PbPb Result
+    TCanvas* cXiRatioPbPb = GetCanvas("cdNdy2", 960, 720);
+    cXiRatioPbPb->SetLeftMargin(0.1);
+    cXiRatioPbPb->Draw();
+    cXiRatioPbPb->cd();
+    // charged particle multiplicity
+    // https://arxiv.org/pdf/1012.1657.pdf
+    vector<double> xPbPb276 = {1447.5, 680.3, 130.25};
+    vector<double> xPbPb276e = {54.5, 25, 5.25};
+    vector<double> xPbPb276zero = {0, 0, 0};
+     
+    // Analysis note PbPb 2.76
+    vector<double> yPbPb276 = {0.206, 0.166, 0.25};
+    vector<double> yPbPb276e = {0.006, 0.004, 0.009};
+    vector<double> yPbPb276se = {0.070, 0.041, 0.074};
+    
+    TGraphErrors* ge_stat_PbPb276TeV = new TGraphErrors(xPbPb276.size(), &xPbPb276[0], &yPbPb276[0], &xPbPb276zero[0], &yPbPb276e[0]);
+    TGraphErrors* ge_sys_PbPb276TeV = new TGraphErrors(xPbPb276.size(), &xPbPb276[0], &yPbPb276[0], &xPbPb276e[0], &yPbPb276se[0]);
+
+    ge_sys_PbPb276TeV->SetMarkerStyle(20);
+    ge_stat_PbPb276TeV->SetMarkerStyle(20);
+    ge_stat_PbPb276TeV->SetMarkerSize(0.5);
+    ge_sys_PbPb276TeV->SetLineColor(MaterialColors[1]);
+    ge_sys_PbPb276TeV->SetMarkerColor(MaterialColors[1]);
+    ge_stat_PbPb276TeV->SetLineColor(MaterialColors[1]);
+    ge_stat_PbPb276TeV->SetMarkerColor(MaterialColors[1]);
+    gRatioToXi_sys_cor2->GetXaxis()->SetLimits(1,5e3);
+    //gRatioPi_7TeV_sys->SetMaximum(4e-3);
+    //gRatioPi_7TeV_sys->SetMinimum(0);
+    gRatioToXi_sys_cor2->GetYaxis()->SetLabelSize(0.04);
+    gRatioToXi_sys_cor2->GetYaxis()->SetTitleOffset(1.0);
+    gRatioToXi_sys_cor2->GetYaxis()->SetTitleSize(0.05);
+
+
+    gRatioToXi_sys_cor2->Draw("A5");
+    gRatioToXi_sys->Draw("5");
+    gRatioToXi_stat->Draw("P");
+    gRatioToXi_sys_cor_pPb502TeV->Draw("5");
+    gRatioToXi_sys_pPb502TeV->Draw("5");
+    gRatioToXi_stat_pPb502TeV->Draw("P");
+    //ge_sys_MB->Draw("5");
+    //ge_stat_MB->Draw("P");
+    ge_sys_PbPb276TeV->Draw("5");
+    ge_stat_PbPb276TeV->Draw("P");  
+    if(draw7TeV) gRatioToXi_7TeV_sys->Draw("5");
+    if(draw7TeV) gRatioToXi_7TeV_stat->Draw("P");
+    cXiRatioPbPb->SetLogx();
+    
+    t2->DrawLatex(0.15, 0.88, "ALICE Preliminary");
+    t->DrawLatex(0.15, 0.82,
+                 "#bf{pp (INEL>0) #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}");
+    t2->DrawLatex(0.15, 0.76,
+                  "#bf{#Xi(1530)^{0} + #bar{#Xi}(1530)^{0} "
+                  "#rightarrow #Xi^{-}#pi^{+} + #bar{#Xi}^{+}#pi^{-}}");
+
+    t0->DrawLatex(0.15, 0.71, "#bf{Uncertainties: stat.(bars), syst.(boxes)}");
+    TLegend* lXiRatioPbPb;
+    if(draw7TeV)
+        lXiRatioPbPb = new TLegend(0.6, 0.57, 0.95, 0.92);
+    else
+        lXiRatioPbPb = new TLegend(0.6, 0.67, 0.95, 0.92);
+    lXiRatioPbPb->SetFillStyle(0);
+    lXiRatioPbPb->AddEntry(gRatioToXi_sys, "pp 13 TeV (INEL>0)", "PEF");
+    if(draw7TeV) lXiRatioPbPb->AddEntry(gRatioToXi_7TeV_sys, "pp 7 TeV (INEL)", "PEF");
+    if(draw7TeV) lXiRatioPbPb->AddEntry((TObject*)0, "Eur. Phys. J. C 75 (2015) 1", "");
+    lXiRatioPbPb->AddEntry(gRatioToXi_sys_pPb502TeV, "p-Pb 5.02TeV (NSD)", "PEF");
+    lXiRatioPbPb->AddEntry((TObject*)0, "Eur. Phys. J. C 77 (2017) 389", "");
+    lXiRatioPbPb->AddEntry(ge_sys_PbPb276TeV, "Pb-Pb 2.76TeV (INEL)", "PEF");
+    lXiRatioPbPb->AddEntry((TObject*)0, "ALICE prelimiary", "");
+    lXiRatioPbPb->Draw();
+
+    SaveCanvas(cXiRatioPbPb,"figure_RatioToXi_withpPb502_PbPb_preliminary","figs/Approval/");
 }
 TCanvas* GetCanvas(TString cname, double w, double h){
     TCanvas* c = new TCanvas(Form("%s%d",cname.Data(),canvasCount), Form("%s%d",cname.Data(),canvasCount), w, h);

@@ -25,14 +25,26 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrections();
 
 #endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
+#ifdef __CLING__
+// ROOT6 macro inclusion
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runAnalysis.H>
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/loadRunOptions.C>
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrections.C>
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskQnVectorAnalysis.C>
+#endif
+
 using std::cout;
 using std::endl;
 
 void AddTaskFlowQnVectorCorrectionsToLegoTrain(const char *configpath = ".") {
 
   /* strange way of including the header file is for lego train scenarios */
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runAnalysis.H");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/loadRunOptions.C");
+#endif
   if (!loadRunOptions(kFALSE, configpath)) {
     cout << "ERROR: configuration options not loaded. ABORTING!!!" << endl;
     return;
@@ -52,11 +64,17 @@ void AddTaskFlowQnVectorCorrectionsToLegoTrain(const char *configpath = ".") {
     mgr = AliAnalysisManager::GetAnalysisManager();
   }
 
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrections.C");
+#endif
   AliAnalysisDataContainer *corrTask = AddTaskFlowQnVectorCorrections();
 
   if (bRunQnVectorAnalysisTask) {
+#ifndef __CLING__
+//load external macros by LoadMacro only in root5
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskQnVectorAnalysis.C");
+#endif
     AliAnalysisTaskQnVectorAnalysis* taskQn = AddTaskQnVectorAnalysis(bUseMultiplicity, b2015DataSet);
     taskQn->SetExpectedCorrectionPass(szCorrectionPass.Data());
     taskQn->SetAlternativeCorrectionPass(szAltCorrectionPass.Data());

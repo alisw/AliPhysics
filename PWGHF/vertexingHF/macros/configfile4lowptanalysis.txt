@@ -27,7 +27,7 @@ MeanConfiguration:
 BackgroundOptions:
     NormalizationOption: 1
     RangeForNormalization: 0.05
-    UseEvMixWithLS: 1
+    UseEvMixWithLS: 0
     UseGeomMeanLS: 1
     RenormalizeLS: 1
     SmoothLS: 0
@@ -39,6 +39,7 @@ BackgroundOptions:
 FitConfiguration:
     FitOption: E
     BackgroundFunction: 2
+    PolDegreeFit: [ 3,3,2,2,2,2,2,2,2,2,2,2,2,2 ]
     CorrectForReflections: 1
     ReflectionOption: 2gaus
     ReflOverSignalModif: 1.

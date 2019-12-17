@@ -72,6 +72,11 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
     fMassWindowP2 = p2;
   }
 
+  void SetDeltaPhiEtaMax(float maxVal) {
+    fDeltaPhiEtaMax = maxVal;
+    fDoDeltaPhiEtaCut = true;
+  }
+
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const { return fHistograms; }
 
@@ -127,12 +132,15 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   float fArmenterosQtUp;      //
   float fArmenterosAlphaLow;  //
   float fArmenterosAlphaUp;   //
+  bool fDoDeltaPhiEtaCut;     //
+  float fDeltaPhiEtaMax;      //
 
   // Histograms
   // =====================================================================
   TProfile *fHistCutBooking;  //!
 
   TH1F *fHistNSigma;                                //!
+  TH1F *fHistNCandidates;                           //!
   TH1F *fHistNPhotonBefore;                         //!
   TH1F *fHistNPhotonAfter;                          //!
   TH1F *fHistNLambdaBefore;                         //!
@@ -140,6 +148,9 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   TH1F *fHistNPhotonLabel;                          //!
   TH1F *fHistNLambdaLabel;                          //!
   TH1F *fHistNLambdaGammaLabel;                     //!
+  TH1F *fHistNPhotonSplit;                          //!
+  TH1F *fHistNLambdaSplit;                          //!
+  TH1F *fHistNLambdaGammaSplit;                     //!
   TH1F *fHistMassCutPt;                             //!
   TH1F *fHistInvMass;                               //!
   TH1F* fHistInvMassK0Gamma;                        //!
@@ -183,7 +194,7 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0AODPhotonMotherCuts, 4)
+  ClassDef(AliSigma0AODPhotonMotherCuts, 6)
 };
 
 #endif

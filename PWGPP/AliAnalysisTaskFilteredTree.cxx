@@ -101,7 +101,7 @@ ClassImp(AliAnalysisTaskFilteredTree)
   , fESDtool(nullptr)
   , fOutput(0)
   , fPitList(0)
-  , fUseMCInfo(kFALSE)
+  , fUseMCInfo(kTRUE)
   , fUseESDfriends(kFALSE)
   , fReducePileUp(kTRUE)
   , fFillTree(kTRUE)
@@ -1017,6 +1017,13 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       AliESDtrack *track = esdEvent->GetTrack(iTrack);
       AliESDfriendTrack *friendTrack = NULL;
       Int_t numberOfFriendTracks = 0;
+      TParticle * particle= nullptr;
+      if(mcEvent && stack) {
+        Int_t label = TMath::Abs(track->GetLabel());
+        if (label <mcStackSize) {
+          particle = stack->Particle(label);
+        }
+      }
       if (esdFriend) numberOfFriendTracks = esdFriend->GetNumberOfTracks();
       if (esdFriend && iTrack < numberOfFriendTracks) {
         if (!esdFriend->TestSkipBit()) friendTrack = (AliESDfriendTrack *) track->GetFriendTrack();
@@ -1033,7 +1040,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       // if (downscaleCounter > 0 && TMath::Exp(2 * scalempt) < downscaleF) continue;
       /// New code using flat pt and flat q/pt mixture
       Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
-      Int_t selectionPIDMask=PIDSelection(track);
+      Int_t selectionPtMaskMC=0;
+      if (particle) selectionPtMaskMC=DownsampleTsalisCharged(particle->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
+      Int_t selectionPIDMask=PIDSelection(track, particle);
       fSelectedTracksMask->Fill(selectionPtMask);
       fSelectedPIDMask->Fill(selectionPIDMask);
       if( downscaleCounter>0 && selectionPtMask==0 && selectionPIDMask==0) continue;
@@ -1220,7 +1229,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       //
       // MC info
       //
-      TParticle *particle=NULL, *particleTPC=NULL, *particleITS=NULL;
+      TParticle *particleTPC=NULL, *particleITS=NULL;
       TParticle *particleMother=NULL, *particleMotherTPC=NULL, *particleMotherITS=NULL;
       Int_t mech=-1, mechTPC=-1, mechITS=-1;
       Bool_t isPrim=kFALSE, isPrimTPC=kFALSE, isPrimITS=kFALSE;
@@ -1469,16 +1478,21 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	tofClInfo[5]=track->GetIntegratedLength();
 
 	//get the nSigma information; NB particle number ID in the vectors follow the convention of AliPID
-        const Int_t nSpecies=AliPID::kSPECIES;
+        const Int_t nSpecies=AliPID::kSPECIESC;
 	TVectorD tpcNsigma(nSpecies); 
         TVectorD tofNsigma(nSpecies);
+        TVectorD itsNsigma(nSpecies);
+        TVectorD tofTime(nSpecies);
+
 	TVectorD tpcPID(nSpecies); // bayes
         TVectorD tofPID(nSpecies);
+        track->GetIntegratedTimes(tofTime.GetMatrixArray(),nSpecies);
 	if(pidResponse){
           for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie) {
-            if (ispecie == Int_t(AliPID::kMuon)) continue;
+            //if (ispecie == Int_t(AliPID::kMuon)) continue;
             tpcNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType)ispecie);
             tofNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType)ispecie);
+            itsNsigma[ispecie] = pidResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType)ispecie);
 	    //
           }	
 	  pidResponse->ComputePIDProbability(AliPIDResponse::kTPC, track, nSpecies, tpcPID.GetMatrixArray());
@@ -1490,6 +1504,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	    "downscaleCounter="<<downscaleCounter<<
 	    "fLowPtTrackDownscaligF="<<fLowPtTrackDownscaligF<<
 	    "selectionPtMask="<<selectionPtMask<<          // high pt trigger mask
+	    "selectionPtMaskMC="<<selectionPtMaskMC<<       // high pt trigger mask based on MC if available
 	    "selectionPIDMask="<<selectionPIDMask<<         // selection PIDmask
             "gid="<<gid<<
             "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
@@ -1517,6 +1532,8 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	    //            "friendTrack.="<<friendTrack<<      // esdFriendTrack associated to the esdTrack
 	    "tofNsigma.="<<&tofNsigma<<
 	    "tpcNsigma.="<<&tpcNsigma<<
+	    "itsNsigma.="<<&itsNsigma<<
+	    "tofTime.="<<&tofTime<<                // tof time
 	    "tofPID.="<<&tofPID<<                  // bayesian PID - without priors
 	    "tpcPID.="<<&tpcPID<<                  // bayesian PID - without priors
 	    
@@ -2469,12 +2486,17 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
 ///        bit 1.) TPC PID trigger
 /// TODO  - for the moment cuts are hardwired - assuming ITS/TPC is calibrated and stable. Should parameterize
 /// TODO      - we should get "Robust PID" before filtering - currently using Aleph default
-Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track){
+Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track, TParticle * particle){
   ///
-  if (track== nullptr) return 0;
-  if (track->GetInnerParam() == nullptr) return 0;
-  if (track->GetTPCClusterInfo(3,1)<100) return 0;
-  if (TMath::Abs(track->GetInnerParam()->P()/track->P()-1)>0.3) return 0;
+  Int_t mcTrigger=0;
+  if (particle!= nullptr){
+    // hack - we do not have particle id for nuclei available - trigger PDG code >proton
+    if (TMath::Abs(particle->GetPdgCode())>kProton) mcTrigger=4;
+  }
+  if (track== nullptr) return mcTrigger;
+  if (track->GetInnerParam() == nullptr) return mcTrigger;
+  if (track->GetTPCClusterInfo(3,1)<100) return mcTrigger;
+  if (TMath::Abs(track->GetInnerParam()->P()/track->P()-1)>0.6) return mcTrigger;
   Int_t triggerMask=0;
   static Double_t mass[5]={TDatabasePDG::Instance()->GetParticle("e+")->Mass(), TDatabasePDG::Instance()->GetParticle("mu+")->Mass(), TDatabasePDG::Instance()->GetParticle("pi+")->Mass(),
                            TDatabasePDG::Instance()->GetParticle("K+")->Mass(), TDatabasePDG::Instance()->GetParticle("proton")->Mass()};
@@ -2497,6 +2519,7 @@ Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track){
     if (track->GetITSsignal()>0) isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[4]))>10.5;
     triggerMask|=2*isOK;
   }
+  triggerMask|=mcTrigger;
   return triggerMask;
 }
 

@@ -3,7 +3,7 @@
 AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names                = "kCutSet1",
                                                                Int_t whichGen               = 0, // 0=all sources, 1=Jpsi, 2=HS
                                                                Int_t wagonnr                = 0,
-                                                               Int_t centrality             = 0,
+                                                               TString centrality           = "0;100;V0A", // min;max;estimator
                                                                Bool_t SDDstatus             = kTRUE,
                                                                Bool_t applyPIDcorr          = kTRUE,
                                                                std::string resoFilename     = "", // Leave blank to not use resolution files
@@ -20,7 +20,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
-  TObjArray *arrNames = names.Tokenize(";");
+  TObjArray* arrNames = names.Tokenize(";");
   Int_t nDie          = arrNames->GetEntries();
   Printf("Number of implemented cuts: %i", nDie);
 
@@ -92,14 +92,17 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   task->SetTriggerMask(triggerNames);
   task->SetEventFilter(cutlib->GetEventCuts(kFALSE, kFALSE)); // All cut sets have same event cuts
 
-  Double_t centMin = -99.;
-  Double_t centMax = -90.;
-  GetCentrality(centrality, centMin, centMax);
-  std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
-  task->SetCentrality(centMin, centMax);
-  if(centrality == 8){
-    task->SetRun1Analysis(kTRUE);
-  }
+  // Set centrality requirements
+  // There is certainly a better way to do this next section....
+  TObjArray* centDetails = centrality.Tokenize(";");
+  TString tempMinFloat = TString(centDetails->At(0)->GetName());
+  TString tempMaxFloat = TString(centDetails->At(1)->GetName());
+  Float_t minCent = tempMinFloat.Atoi();
+  Float_t maxCent = tempMaxFloat.Atoi();
+  std::cout << "CentMin = " <<  minCent << "  CentMax = " <<  maxCent << std::endl;
+  task->SetCentrality(minCent, maxCent);
+  TString whichCentEst = TString(centDetails->At(2)->GetName());
+  task->SetCentralityEstimator(whichCentEst);
 
   // #########################################################
   // #########################################################

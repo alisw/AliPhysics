@@ -7,7 +7,7 @@ my $file = $ARGV[0];
 
 my @treeInfo = `aliroot -q treeinfo.C'("$file")'`;
 
-my @keywords = ("tracks", "header", "vertices", "v0s", "cascades", "conversionphotons");
+my @keywords = ("tracks", "header", "vertices", "v0s", "cascades", "conversionphotons", "mcparticles", "fHeaders");
 my %totalSize = map { $_ => 0 } @keywords;
 my %comprSize = map { $_ => 0 } @keywords;
 # print %size;

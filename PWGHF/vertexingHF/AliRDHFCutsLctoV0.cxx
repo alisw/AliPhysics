@@ -724,6 +724,53 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
 
 }
 //---------------------------------------------------------------------------
+Int_t AliRDHFCutsLctoV0::PreSelect(TObjArray aodTracks){
+  //
+  // Apply pT and PID pre-selections, used before refilling candidate
+  // Note, PID checks only Lc -> pK0s case
+  //
+
+  if(!fUsePreselect) return 3;
+
+  Int_t retVal=3;
+
+  AliAODTrack *track0 = (AliAODTrack*)aodTracks.At(0);
+  AliAODTrack *track1 = (AliAODTrack*)aodTracks.At(1);
+
+  // calculate pt
+  Double_t px0=track0->Px();
+  Double_t px1=track1->Px();
+
+  Double_t py0=track0->Py();
+  Double_t py1=track1->Py();
+
+  Double_t ptD=TMath::Sqrt((px0+px1)*(px0+px1)+(py0+py1)*(py0+py1));
+
+  if(ptD<fMinPtCand) return 0;
+  if(ptD>fMaxPtCand) return 0;
+
+  Int_t ptbin=PtBin(ptD);
+  if (ptbin==-1) return 0;
+
+  // V0 pT min
+  if (track1->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)]) return 0;
+
+  // bachelor pT min
+  if (track0->Pt() < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
+
+  if(fUsePID){
+    Bool_t okLcK0Sp = kTRUE; // K0S case
+    Bool_t okLcLambdaBarPi = kTRUE; // LambdaBar case
+    Bool_t okLcLambdaPi = kTRUE; // Lambda case
+
+    CheckPID(track0,0x0,0x0,okLcK0Sp,okLcLambdaBarPi,okLcLambdaPi);
+
+    retVal = okLcK0Sp;
+  }
+
+  return retVal;
+}
+//---------------------------------------------------------------------------
 Bool_t AliRDHFCutsLctoV0::PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack){
   //
   // Apply pre-selections, used in the AOD filtering
@@ -750,7 +797,7 @@ Bool_t AliRDHFCutsLctoV0::PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bache
   if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)]) return 0;
 
   // cuts on the minimum pt of the bachelor
-  if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
+  if (bachelorTrack->Pt() < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
 
   Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();

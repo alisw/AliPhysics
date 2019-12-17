@@ -140,6 +140,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15h1,         //!< anchored LHC12[a-h] pass 2
         kLHC15h2,         //!< anchored LHC12[a-h] pass 2
         kLHC12P2JJ,       //!< anchored LHC12[a-h] pass 2 - JJ
+        kLHC17g5b,        //!< anchored LHC12[a-h] pass 2 - dec gamma JJ
+        kLHC17g5c,        //!< anchored LHC12[a-h] pass 2 - dec gamma JJ
 
         // 2013
         kLHC13bc,         //!< pPb 5.023TeV
@@ -155,6 +157,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16c3a,        //!< anchored LHC13[d-e] pass 2 - JJ
         kLHC16c3b,        //!< anchored LHC13[d-e] pass 2 - JJ
         kLHC16c3c,        //!< anchored LHC13[d-e] pass 2 - GJ
+        kLHC17g6a1,       //!< anchored LHC13[d-f] pass 2 - GJ
+        kLHC17g6a2,       //!< anchored LHC13[d-f] pass 2 - JJ low
+        kLHC17g6a3,       //!< anchored LHC13[d-f] pass 2 - JJ high
         kLHC18j5,         //!< anchored LHC13[b-c] pass 4 - General Purpose
         kLHC19a4,         //!< anchored LHC13[b-f] pass 4 - jj
         kLHC15g2,         //!< anchored LHC13g pass 1
@@ -261,6 +266,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17a3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
         kLHC17a4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
         kLHC17a4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
+        kLHC17g6b2a,          //!< anchored LHC16rs pass 1 - decay gamma 3.5 GeV EMCal GeV JJ
+        kLHC17g6b2b,          //!< anchored LHC16rs pass 1 - decay gamma 3.5 GeV DCal/PHOS GeV JJ
+        kLHC17g6b3a,          //!< anchored LHC16rs pass 1 - decay gamma 7 GeV EMCal GeV JJ
+        kLHC17g6b3b,          //!< anchored LHC16rs pass 1 - decay gamma 7 GeV DCal/PHOS GeV JJ
         kLHC18f3bc,           //!< anchored LHC16rs pass 1 - general purpose DPMJET
         kLHC17f2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
         kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
@@ -370,7 +379,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
       void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
-      void    SetTriggerMimicking(Bool_t value)                                     { fMimicTrigger = value                                     ;
+      void    SetTriggerMimicking(Int_t value)                                      { fMimicTrigger = value                                     ;
                                                                                       if(value)AliInfo("enabled trigger mimicking")             ; }
       void    SetTriggerOverlapRejecion (Bool_t value)                              { fRejectTriggerOverlap = value                             ;
                                                                                       if(value)AliInfo("enabled trigger overlap rejection")     ; }
@@ -385,6 +394,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetFillCutHistograms( TString name="",
                                     Bool_t preCut = kTRUE)                          { if(!fHistograms){ InitCutHistograms(name,preCut);}        ; }
       void    SetEtaShift(Double_t etaShift)                                        { fEtaShift = etaShift                                      ; } // Eta shift Setting
+      void    SetUseJetFinderForOutliers(Bool_t useJetFinder)                       { fUseJetFinderForOutlier = useJetFinder                    ; } // Eta shift Setting
+      void    SetUsePtHardBinFromFile(Bool_t useFilePathPth)                        { fUseFilePathForPthard = useFilePathPth                    ; } // Eta shift Setting
+      void    SetUseAdditionalOutlierRejection(Bool_t useOutlierRej)                { fUseAdditionalOutlierRejection = useOutlierRej            ; } // Eta shift Setting
       void    SetEtaShift(TString pPbOrPbp)                                         { Double_t etaShift = 0.0                                   ;
                                                                                       if(!pPbOrPbp.CompareTo("pPb"))      etaShift = -0.465     ;
                                                                                       else if(!pPbOrPbp.CompareTo("Pbp")) etaShift =  0.465     ;
@@ -398,6 +410,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fDoCentralityFlat = doFlattening                          ;
                                                                                       fPathWeightsFlatCent=pathC                                ;
                                                                                       fNameHistoNotFlatCentrality = histoCentNotFlat            ;
+                                                                                    }
+      void    SetCustomTriggerMimicOADBFile(TString pathOADB="")
+                                                                                    {
+                                                                                      AliInfo(Form("setting custom trigger mimic OADB from file: %s",pathOADB.Data()));
+                                                                                      fPathTriggerMimicSpecialInput=pathOADB                                ;
                                                                                     }
       void    SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE,
                                 Bool_t etareweight=kFALSE,
@@ -491,6 +508,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t     GetNumberOfContributorsVtx(AliVEvent *event);
       Double_t  GetEtaShift()                                                       { return fEtaShift                                          ; }
       Bool_t    GetDoEtaShift()                                                     { return fDoEtaShift                                        ; }
+      Bool_t    GetUseJetFinderForOutliers()                                        { return fUseJetFinderForOutlier                            ; }
+      Bool_t    GetUsePtHardBinFromFile()                                           { return fUseFilePathForPthard                              ; }
+
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
@@ -557,8 +577,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *event);
       Bool_t    IsPileUpV0MTPCout(AliVEvent *event);
       Bool_t    VertexZCut(AliVEvent *event);
-      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event = 0x0);
+      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, Float_t& pthard, AliVEvent* event = 0x0, Double_t maxJetPt = -1);
       Float_t   GetPtHard(AliMCEvent *mcEvent, AliVEvent* event = 0x0);
+      Int_t     GetPtHardBinFromPath(const char* currFile, AliVEvent *event);
       void      GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSection, Float_t &NTrials, AliVEvent* event = 0x0 );
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
       Bool_t    MimicTrigger( AliVEvent *event,
@@ -638,6 +659,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       AliAnalysisUtils*           fUtils;                                 ///<
       Double_t                    fEtaShift;                              ///<
       Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
+      Bool_t                      fUseJetFinderForOutlier;                ///< Flag for Etashift
+      Bool_t                      fUseFilePathForPthard;                  ///< Flag for Etashift
+      Bool_t                      fUseAdditionalOutlierRejection;         ///< Flag for Etashift
       Int_t                       fDoCentralityFlat;                      ///<
       TString                     fPathWeightsFlatCent;                   ///<
       TString                     fNameHistoNotFlatCentrality;            ///<
@@ -707,7 +731,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t                     fMinFacPtHard;                          ///< minimum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHard;                          ///< maximum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHardSingleParticle;            ///< maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
-      Bool_t                      fMimicTrigger;                          ///< enable trigger mimiking
+      Int_t                       fMimicTrigger;                          ///< enable trigger mimiking
+      TString                     fPathTriggerMimicSpecialInput;          ///< set special trigger mimiking OADB file
       Bool_t                      fRejectTriggerOverlap;                  ///< enable trigger overlap rejections
       //
       Bool_t                      fDoMultiplicityWeighting;               ///< Flag for multiplicity weighting
@@ -720,7 +745,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,72)
+      ClassDef(AliConvEventCuts,75)
       /// \endcond
 };
 

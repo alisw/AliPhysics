@@ -146,6 +146,9 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fEMCEG1(kFALSE)
 ,fEMCEG2(kFALSE)
 
+,fEMCEG1DG1(kFALSE)//to run both EMCal and DCal triggers together
+,fEMCEG2DG2(kFALSE)
+
 ,fEMCDG1(kFALSE)
 ,fEMCDG2(kFALSE)
 
@@ -193,11 +196,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fV0Mult_corr2(0)
 ,fSPDMult_corr(0)
 ,fRefMult(12.00)
-,gRandom(new TRandom3(0))
+,gRandom(new TRandom3(1607260721))
+//,gRandom(new TRandom3(0))
 
-,fRefMult_V0(139.0)
-,gRandom_V0(new TRandom3(0))
-
+,fRefMult_V0(103.5)
+,gRandom_V0(new TRandom3(1607260721))
+//,gRandom_V0(new TRandom3(0))
 
 ,fClus(0)
 ,fClus2(0)
@@ -441,6 +445,9 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fEMCEG1(kFALSE)
 ,fEMCEG2(kFALSE)
 
+,fEMCEG1DG1(kFALSE)//to run both EMCal and DCal triggers together
+,fEMCEG2DG2(kFALSE)
+
 ,fEMCDG1(kFALSE)
 ,fEMCDG2(kFALSE)
 
@@ -487,10 +494,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fV0Mult_corr2(0)
 ,fSPDMult_corr(0)
 ,fRefMult(12.00)
-,gRandom(new TRandom3(0))
+,gRandom(new TRandom3(1607260721))
+//,gRandom(new TRandom3(0))
 
-,fRefMult_V0(139.0)
-,gRandom_V0(new TRandom3(0))
+,fRefMult_V0(103.5)
+,gRandom_V0(new TRandom3(1607260721))
+//,gRandom_V0(new TRandom3(0))
 
 ,fClus(0)
 ,fClus2(0)
@@ -769,7 +778,10 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 ///Output Tlist
 //Create TList
 	fOutputList = new TList();
-	fOutputList->SetOwner();	
+	fOutputList->SetOwner();
+    
+    
+    gRandom->SetSeed(1607260721);
 
 
 //Store the number of events
@@ -1258,7 +1270,9 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     //printf("Multiplicity from V0 = %d, multiplicity from SPD =%d, VertexZ = %f\n", fV0Mult, fSPDMult, fZvtx);
     
     
-    
+  
+    //printf("Seed is %u \n", gRandom->GetSeed());
+    //printf("Random is %f \n", gRandom->PoissonD(3));//fixed difference to check random generated
     
     //=======
     //correction for multiplicity
@@ -1377,6 +1391,36 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		}
 		
 	}
+    
+    //=====================================================
+    fNevent2->Fill(2);
+    //EMCal + DCal trigger words together
+    if(fEMCEG1DG1){
+        fNevent2->Fill(3);
+        if(!firedTrigger.Contains(TriggerDG1) && !firedTrigger.Contains(TriggerEG1)) return;
+        fNevent2->Fill(4);
+        if(firedTrigger.Contains(TriggerDG1)){
+            fNevent2->Fill(5);//if passed, how much is DCal trigger
+        }
+        if(firedTrigger.Contains(TriggerEG1)){
+            fNevent2->Fill(6);//if passed, how much is EMCal trigger
+        }
+        
+    }
+    
+    if(fEMCEG2DG2){
+        fNevent2->Fill(7);
+        if(!firedTrigger.Contains(TriggerDG2) && !firedTrigger.Contains(TriggerEG2)) return;
+        fNevent2->Fill(8);
+        if(firedTrigger.Contains(TriggerDG2)){
+            fNevent2->Fill(9);//if passed, how much is DCal trigger
+        }
+        if(firedTrigger.Contains(TriggerEG2)){
+            fNevent2->Fill(10);//if passed, how much is EMCal trigger
+        }
+    }
+    fNevent2->Fill(11);
+
 
 	
 	//==============================================
@@ -2116,14 +2160,16 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 //emcal
 				  if(cphi > 1.39 && cphi < 3.265){
 					  fECluster_emcal[1]->Fill(fClus->E());
-                      fIsTrack1Emcal=kTRUE;
+                      //fIsTrack1Emcal=kTRUE;
 				  }
 				  
                 //dcal
 				  if(cphi > 4.53 && cphi < 5.708){
 					  fECluster_dcal[1]->Fill(fClus->E());
-                      fIsTrack1Dcal=kTRUE;
+                     // fIsTrack1Dcal=kTRUE;
 				  }
+                
+                fIsTrack1Emcal=kTRUE;
 			  
 			    //}
                 //EID THnsparse
@@ -2384,6 +2430,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 							    fTracksPt[7]->Fill(fPt2);
 							
 					//======================================// for Eta Phi distribution
+                            
 							fClus2->GetPosition(pos2);
 							TVector3 vpos2(pos2[0],pos2[1],pos2[2]);
 							Double_t cphi = vpos2.Phi();
@@ -2398,19 +2445,20 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 							
 							
                            
-                            
+                    
                             //emcal
 							if(cphi > 1.39 && cphi < 3.265){
 								fECluster_emcal[2]->Fill(fClus2->E());
-                                fIsTrack2Emcal=kTRUE;
+                               // fIsTrack2Emcal=kTRUE;
 							}
 							
 								//dcal
 							if(cphi > 4.53 && cphi < 5.708){
 								fECluster_dcal[2]->Fill(fClus2->E());
-                                fIsTrack2Dcal=kTRUE;
+                               // fIsTrack2Dcal=kTRUE;
 
 							}
+                            fIsTrack2Emcal=kTRUE;
 							
 					//======================================
 								//}
@@ -3368,6 +3416,7 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile2D* esti
     
     Double_t deltaM = 0;
     deltaM = uncorrectedNacc*(refMult/localAvg - 1);
+    
     
    
     

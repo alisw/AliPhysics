@@ -166,7 +166,7 @@ fHistV0OptimalTrackParamUseBachelor(0),
 fHistV0Statistics(0)
 //________________________________________________
 {
-    
+    SetUseImprovedFinding(); 
 }
 
 AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *name, TString lExtraOptions)
@@ -227,7 +227,7 @@ fHistV0OptimalTrackParamUseBachelor(0),
 fHistV0Statistics(0)
 //________________________________________________
 {
-    
+    SetUseImprovedFinding(); 
     //Re-vertex: Will only apply for cascade candidates
     
     fV0VertexerSels[0] =  33.  ;  // max allowed chi2
@@ -481,7 +481,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     nv0s = lESDevent->GetNumberOfV0s();
     fHistNumberOfCandidates->Fill(0.5, nv0s);
     
-    Info("UserExec","Number of pre-reco'ed V0 vertices: %i",nv0s);
+    AliWarning(Form("UserExec","Number of pre-reco'ed V0 vertices: %i",nv0s));
     
     if( fkRunV0Vertexer ){
         //reset only offline V0s, please
@@ -809,7 +809,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             //if ( nvtx % 10000 ) gObjectTable->Print(); //debug, REMOVE ME PLEASE
         }
     }
-    Info("Tracks2V0vertices","Number of reconstructed V0 vertices: %ld",nvtx);
+    AliWarning(Form("Tracks2V0vertices","Number of reconstructed V0 vertices: %ld",nvtx));
     return nvtx;
 }
 
@@ -1070,7 +1070,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0verticesMC(AliESDEvent *event)
             //if ( nvtx % 10000 ) gObjectTable->Print(); //debug, REMOVE ME PLEASE
         }
     }
-    Info("Tracks2V0vertices","Number of reconstructed V0 vertices: %ld",nvtx);
+    AliWarning(Form("Tracks2V0vertices","Number of reconstructed V0 vertices: %ld",nvtx));
     return nvtx;
 }
 
@@ -1408,7 +1408,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         } // end loop tracks
     } // end loop V0s
     
-    Info("V0sTracks2CascadeVertices","Number of reconstructed cascades: %ld",ncasc);
+    AliWarning(Form("V0sTracks2CascadeVertices","Number of reconstructed cascades: %ld",ncasc));
     
     return ncasc;
 }
@@ -1792,7 +1792,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         } // end loop tracks
     } // end loop V0s
     
-    Info("V0sTracks2CascadeVertices","Number of reconstructed cascades: %ld",ncasc);
+    AliWarning(Form("V0sTracks2CascadeVertices","Number of reconstructed cascades: %ld",ncasc));
     
     return ncasc;
 }
@@ -2002,7 +2002,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
         } // end loop tracks
     } // end loop V0s
     
-    Info("V0sTracks2CascadeVerticesUncheckedCharges","Number of reconstructed cascades: %d",ncasc);
+    AliWarning(Form("V0sTracks2CascadeVerticesUncheckedCharges","Number of reconstructed cascades: %d",ncasc));
     
     return 0;
 }

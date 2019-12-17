@@ -374,7 +374,17 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoElectronTotal(0),
   fHistoElectronTotalMCWeight(0),
   fHistoPositronTotal(0),
-  fHistoPositronTotalMCWeight(0)
+  fHistoPositronTotalMCWeight(0),
+  fHistoXicNonPromptMCGen(0),
+  fHistoXicNonPromptMCS(0),
+  fHistoXicPromptMCGen(0),
+  fHistoXicPromptMCS(0),
+  fHistoXicInclusiveMCGen(0),
+  fHistoXicMCGenWeight(0),
+  fHistoXicMCSWeight(0)
+
+
+
 {
   //
   // Default Constructor. 
@@ -687,7 +697,14 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoElectronTotal(0),
   fHistoElectronTotalMCWeight(0),
   fHistoPositronTotal(0),   
-  fHistoPositronTotalMCWeight(0)
+  fHistoPositronTotalMCWeight(0),
+  fHistoXicNonPromptMCGen(0),
+  fHistoXicNonPromptMCS(0),
+  fHistoXicPromptMCGen(0),
+  fHistoXicPromptMCS(0),
+  fHistoXicInclusiveMCGen(0),
+  fHistoXicMCGenWeight(0),
+  fHistoXicMCSWeight(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -1879,12 +1896,21 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 					if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgcasc_array[1])==4132){
 						Int_t labmotherxic = mcxic->GetMother();
 						Bool_t isbottomfd = kFALSE;
+						Bool_t isXicbottomfd = kFALSE;
+						Bool_t isXicprompt  = kFALSE;
+						
 						if(labmotherxic>=0)
 						{
 							AliAODMCParticle *motherxic = (AliAODMCParticle*)mcArray->At(labmotherxic);
 							Int_t pdgmotherxic = motherxic->GetPdgCode();
 							if(TMath::Abs(pdgmotherxic)==511||TMath::Abs(pdgmotherxic)==521||TMath::Abs(pdgmotherxic)==5122||TMath::Abs(pdgmotherxic)==5132||TMath::Abs(pdgmotherxic)==5232||TMath::Abs(pdgmotherxic)==5332){
 								isbottomfd = kTRUE;
+							}
+							if(TMath::Abs(pdgmotherxic)==5132|| TMath::Abs(pdgmotherxic)==5232 ){
+								isXicbottomfd = kTRUE;
+							}
+							if(!(TMath::Abs(pdgmotherxic)==511||TMath::Abs(pdgmotherxic)==521||TMath::Abs(pdgmotherxic)==5122||TMath::Abs(pdgmotherxic)==5132||TMath::Abs(pdgmotherxic)==5232||TMath::Abs(pdgmotherxic)==5332)){
+								isXicprompt = kTRUE;
 							}
 						}
 
@@ -1916,9 +1942,24 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							cont_xic[0] = mcxic->Pt();
 							cont_xic[1] = mcxic->Y();
 							cont_xic[2] = fCentrality;
-							fHistoXicMCS->Fill(cont_xic);
+						
+							fHistoXicMCS->Fill(cont_xic); // inclusive
+							fHistoXicMCSWeight -> Fill(cont_xic,fWeightFit->Eval(mcxic->Pt()));
+							
 							if(trk->Charge()>0) fHistoXicMCS1->Fill(cont_xic);
 							else fHistoXicMCS2->Fill(cont_xic);
+							
+							if(isXicbottomfd){
+									if( (trk->Charge()>0 && casc -> ChargeXi() < 0 ) || (trk -> Charge() < 0 && casc -> ChargeXi() > 0)){
+											fHistoXicNonPromptMCS -> Fill(cont_xic); //  non prompt
+										}
+									}	
+						
+					        if(isXicprompt){
+									if( (trk->Charge()>0 && casc -> ChargeXi() < 0 ) || (trk -> Charge() < 0 && casc -> ChargeXi() > 0)){
+											fHistoXicPromptMCS -> Fill(cont_xic); //  prompt
+										}
+									}		
 
 							Double_t cont_mcele[3];
 							cont_mcele[0] = mcele->Pt();
@@ -3334,7 +3375,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineMCTreeVariables()
   return;
 }
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle *mcpart, AliAODMCParticle *mcepart, AliAODMCParticle *mccascpart, Int_t decaytype) 
+void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle *mcpart, AliAODMCParticle *mcepart, AliAODMCParticle *mccascpart, Int_t decaytype,TClonesArray *mcArray ) 
 {
   //
   // Fill histograms or tree depending on fWriteMCVariableTree 
@@ -3414,6 +3455,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 
 	if(decaytype==0){
 		fHistoXicMCGen->Fill(contmc);
+		fHistoXicMCGenWeight -> Fill(contmc,fWeightFit->Eval(mcpart->Pt()));
+
 		if(mcpart->GetPdgCode()>0) fHistoXicMCGen1->Fill(contmc);//4132 is particle
 		if(mcpart->GetPdgCode()<0) fHistoXicMCGen2->Fill(contmc);//-4132 is anti-particle
 		fHistoXicElectronMCGen->Fill(contmcele);
@@ -3438,6 +3481,12 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 		}
 	}else if(decaytype==10){
 		fHistoXibMCGen->Fill(contmc);
+	}else if (decaytype ==11){
+		fHistoXicNonPromptMCGen -> Fill(contmc); //  non prompt
+	}else if (decaytype ==12){
+		fHistoXicPromptMCGen    -> Fill(contmc); //  prompt
+	}else if(decaytype == 13){
+		fHistoXicInclusiveMCGen -> Fill(contmc); //  inclusive
 	}
 
 	if(fWriteMCVariableTree)
@@ -3978,7 +4027,7 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fHistoXiQovPtvsPhi=new TH2F("fHistoXiQovPtvsPhi","",70,0.,7.,50,-2.,2.);
   fOutputAll->Add(fHistoXiQovPtvsPhi);
 
-  Int_t bins_xicmcgen[3]=	{100 ,20	,10};
+  Int_t bins_xicmcgen[3]=	{200 ,20	,10};
   Double_t xmin_xicmcgen[3]={0.,-1.0	,0.0};
   Double_t xmax_xicmcgen[3]={20.,1.0	,100};
   fHistoXicMCGen = new THnSparseF("fHistoXicMCGen","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
@@ -3993,14 +4042,39 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoXicMCS1);
   fHistoXicMCS2 = new THnSparseF("fHistoXicMCS2","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
   fOutputAll->Add(fHistoXicMCS2);
+  //=========== reweight for the efficiency ========
 
-  Int_t bins_xibmcgen[3]=	{100 ,20	,10};
+  fHistoXicMCGenWeight = new THnSparseF("fHistoXicMCGenWeight","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+  fOutputAll->Add(fHistoXicMCGenWeight);
+  fHistoXicMCSWeight = new THnSparseF("fHistoXicMCSWeight","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+  fOutputAll->Add(fHistoXicMCSWeight);
+
+
+  Int_t bins_xibmcgen[3]=	{200 ,20	,10};
   Double_t xmin_xibmcgen[3]={0.,-1.0	,0.0};
   Double_t xmax_xibmcgen[3]={50.,1.0	,100};
   fHistoXibMCGen = new THnSparseF("fHistoXibMCGen","",3,bins_xibmcgen,xmin_xibmcgen,xmax_xibmcgen);
   fOutputAll->Add(fHistoXibMCGen);
   fHistoXibMCS = new THnSparseF("fHistoXibMCS","",3,bins_xibmcgen,xmin_xibmcgen,xmax_xibmcgen);
   fOutputAll->Add(fHistoXibMCS);
+ //================== non prompt/ prompt / inclusive =====
+   Int_t bins_xibmcgen1[3]=  {200 ,20    ,10};
+   Double_t xmin_xibmcgen1[3]={0.,-1.0   ,0.0};
+   Double_t xmax_xibmcgen1[3]={20.,1.0   ,100};
+
+   fHistoXicNonPromptMCGen = new THnSparseF("fHistoXicNonPromptMCGen","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
+   fOutputAll -> Add(fHistoXicNonPromptMCGen);
+   fHistoXicNonPromptMCS = new THnSparseF("fHistoXicNonPromptMCS","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
+   fOutputAll -> Add(fHistoXicNonPromptMCS);
+
+   fHistoXicPromptMCGen = new THnSparseF("fHistoXicPromptMCGen","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
+   fOutputAll -> Add(fHistoXicPromptMCGen);
+   fHistoXicPromptMCS = new THnSparseF("fHistoXicPromptMCS","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
+   fOutputAll -> Add(fHistoXicPromptMCS);
+
+   fHistoXicInclusiveMCGen = new THnSparseF("fHistoXicInclusiveMCGen","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
+   fOutputAll -> Add(fHistoXicInclusiveMCGen);
+ //===========================================================
 
   Int_t bins_xibmcgen_withxic[3]=	{50 ,100	,100};
   Double_t xmin_xibmcgen_withxic[3]={0.,-5.,-5.};
@@ -4060,11 +4134,11 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoResponseElePt);
   fHistoResponseXiPt = new TH2D("fHistoResponseXiPt","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseXiPt);
-  fHistoResponseEleXiPt = new TH2D("fHistoResponseEleXiPt","",100,0.,20.,100,0.,20.);
+  fHistoResponseEleXiPt = new TH2D("fHistoResponseEleXiPt","",200,0.,20.,200,0.,20.);
   fOutputAll->Add(fHistoResponseEleXiPt);
 
   
-  fHistoResponseEleXiPtWeight = new TH2D("fHistoResponseEleXiPtWeight","",100,0.,20.,100,0.,20.);
+  fHistoResponseEleXiPtWeight = new TH2D("fHistoResponseEleXiPtWeight","",200,0.,20.,200,0.,20.);
   fOutputAll->Add(fHistoResponseEleXiPtWeight);
   
   
@@ -5013,7 +5087,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 			if(!e_flag&&!xi_flag)
 				fHistoMCXic0Decays->Fill(4);
 
-			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype);
+			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray );
 		}
 		if(TMath::Abs(mcpart->GetPdgCode())==5132 || TMath::Abs(mcpart->GetPdgCode())==5232){
 			Bool_t e_flag = kFALSE;
@@ -5063,7 +5137,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 
 			Int_t decaytype = -9999;
 			if(e_flag && xic_flag && xi_flag) decaytype = 10;
-			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype);
+			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
 		}
 		if(TMath::Abs(mcpart->GetPdgCode())==11 && mcpart->GetStatus()==1){
 			AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
@@ -5113,6 +5187,70 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
       }
     }
 	}
+
+  //======================== Non prompt/ Prompt / Inclusive =======================
+	for(int i = 0; i<nmcpart;i++){
+		 AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray -> At(i);
+			if(TMath::Abs(mcpart->GetPdgCode())==4132){ 
+			 Bool_t e_flag = kFALSE;
+             Bool_t xi_flag = kFALSE;
+             AliAODMCParticle *mcepart = 0;
+             AliAODMCParticle *mccascpart = 0;
+             for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
+             {
+                 if(idau<0) break;
+                 AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+                 if(!mcdau) continue;
+				 if(TMath::Abs(mcdau->GetPdgCode())==11){
+                     e_flag = kTRUE;
+                     mcepart = mcdau;
+                 }
+                 if(TMath::Abs(mcdau->GetPdgCode())==3312){
+                     xi_flag = kTRUE;
+                     mccascpart = mcdau;
+                 }
+		    } 
+			 int decaytype = -9999;
+			 if(e_flag&&xi_flag)                                                                             
+                 fHistoMCXic0Decays->Fill(1);
+             if(!e_flag&&xi_flag)
+                 fHistoMCXic0Decays->Fill(2);
+             if(e_flag&&!xi_flag)
+                 fHistoMCXic0Decays->Fill(3);
+             if(!e_flag&&!xi_flag)
+                 fHistoMCXic0Decays->Fill(4);
+			int findmother = mcpart -> GetMother();
+            if(findmother >= 0){
+					AliAODMCParticle *findmotherxic  = (AliAODMCParticle*)mcArray -> At(findmother);
+					if(((TMath::Abs(findmotherxic->GetPdgCode()))==5132) || ((TMath::Abs(findmotherxic->GetPdgCode()))==5232))
+					{	
+							if(e_flag&&xi_flag){
+									if((mcepart ->Charge()>0 && mccascpart ->Charge()< 0) ||(mcepart ->Charge()< 0 && mccascpart ->Charge() > 0)){	
+									 decaytype = 11;
+									FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
+									}
+								}
+					}
+					else{
+							if(e_flag&&xi_flag){
+					
+									if((mcepart ->Charge()>0 && mccascpart ->Charge()< 0) ||(mcepart ->Charge()< 0 && mccascpart ->Charge() > 0)){	
+										decaytype =12;
+										FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
+										}
+									}
+			
+					            }  
+
+			                        }  
+  
+			decaytype =13;
+			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
+   }
+  }
+
+  //================================================================================	
+
 
 	if(fMCDoPairAnalysis)
 	{

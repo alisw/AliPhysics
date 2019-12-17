@@ -6,8 +6,8 @@
 Int_t filBIT;
 
 AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
-                                   Bool_t MCthere = kFALSE,                     // DATA
-                                   //Bool_t MCthere = kTRUE,                    // MC
+                                   //Bool_t MCthere = kFALSE,                     // DATA
+                                   Bool_t MCthere = kTRUE,                    // MC
                                    Bool_t isAOD = kTRUE,
 				   Bool_t kNPERef = kFALSE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
 				   Bool_t kNPEkAny = kFALSE,
@@ -20,10 +20,10 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    Int_t  RunSyst = 0                            // switch statement useful for systematics (mfaggin, 06/07/2017)
                                    ,Int_t centrMin = 0          // min centrality
                                    ,Int_t centrMax = 10         // max centrality
-                          //         ,Int_t centrMin = 30          // min centrality
+                                   //,Int_t centrMin = 30          // min centrality
                                    //,Int_t centrMax = 50         // max centrality
                                    //,Int_t centrMin = 60          // min centrality
-                          //         ,Int_t centrMax = 80         // max centrality
+                                   //,Int_t centrMax = 80         // max centrality
                                    ,Bool_t kHadContSyst = kFALSE        // hadron contamination systematics
                                    ,Bool_t kPileUpIonutRejection = kFALSE
                                    ,Bool_t kCheckDCA = kFALSE    // additional check: set maximum value for DCA between inclusive and associated tracks (default: 3cm)
@@ -34,8 +34,8 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    ,Bool_t kTestWeightSmallerCentBins = kFALSE   // test weights in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
                                    ,Bool_t kTestNewWeights_MBfixedHIJING = kFALSE        // using weights for pi0, eta from MB production with fixed HIJING issues for pi0 decays
                                    ,Bool_t kTestNewWeights_MBfixedHIJING_asDefault = kTRUE        // using weights for pi0, eta from MB production with fixed HIJING issues for pi0 decays as default
-                                   //,Bool_t kTestCookedWeightsFrom276 = kTRUE    // testing weights from charged pions at 5.02TeV cooked from charged pions at 2.76 TeV
-                                   ,Bool_t kTestCookedWeightsFrom276 = kFALSE
+                                   ,Bool_t kTestCookedWeightsFrom276 = kFALSE    // testing weights from charged pions at 5.02TeV cooked from charged pions at 2.76 TeV
+                                   ,Bool_t kTestWeights_paperAfterCR1 = kTRUE   // testing weights from measured charged pions at 5 TeV (almost final, paper after CR1) (mfaggin, 13-Aug-2019)
                                    )		   
   
 {
@@ -206,6 +206,9 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
     // weights from charged pions at 5.02 TeV cooked from charged pions at 2.76 TeV with the ratio of charged particle spectrum at the two energy as follows:
     //  CHPION(5.02TeV) = CHPIONS(2.76TeV)*CHPART(5.02TeV)/CHPART(2.76TeV)
     ,k18e1_fixHIJING_weightsFrompiCharged276 = 81
+
+    // weights from measured charged pions ate 5 TeV almost final (paper after CR1)
+    ,k18e1_fixHIJING_weightsPion5TeV_afterCR1 = 82
 
   };
   //Int_t kWeightMC = k16g1;
@@ -623,6 +626,17 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+
+        // weights from measured charged pions ate 5 TeV almost final (paper after CR1)
+        if(kTestWeights_paperAfterCR1){
+                printf("\n#####\n");
+                printf("##### kTestWeights_paperAfterCR1 case - weights from measured charged pions at 5 TeV, almost final (paper after CR1)");
+                printf("\n#####\n");  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k18e1_fixHIJING_weightsPion5TeV_afterCR1);
+        }
 
         // testing weights from charged pions at 5.02TeV cooked from charged pions at 2.76 TeV
         if(kTestCookedWeightsFrom276){
@@ -1435,6 +1449,7 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
         else if(wei==73)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_smallerbins.root");
         else if(wei==80)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_allCentr_newMB_fixedHIJING.root");
         else if(wei==81)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_ScaledFrom276TeV_allCentr_newMB_fixedHIJING.root");
+        else if(wei==82)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_afterCR1_allCentr_newMB_fixedHIJING.root");
         else                        ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
   }
 

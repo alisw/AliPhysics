@@ -45,6 +45,7 @@ public:
       kTruePair,
       kMother,
       kMotherInAcc,
+      kSingle,
       kComputations
    };
 
@@ -60,6 +61,7 @@ public:
    Bool_t          IsTruePair()         const {return (fComputation == kTruePair);}
    Bool_t          IsMother()           const {return (fComputation == kMother);}
    Bool_t          IsMotherInAcc()      const {return (fComputation == kMotherInAcc);}
+   Bool_t          IsSingle()           const {return (fComputation == kSingle);}
    Bool_t          IsDefined()          const {return (IsEventOnly() || IsTrackPair() || IsTrackPairMix() || IsTruePair() || IsMother());}
    Bool_t          IsLikeSign()         const {return (fCharge[0] == fCharge[1]);}
    Bool_t          IsSameCut()          const {return (fCutID[0] == fCutID[1]);}
@@ -80,6 +82,7 @@ public:
    Double_t        GetMotherMass()      const {return fMotherMass;}
    Bool_t          GetFillHistogramOnlyInRange() { return fCheckHistRange; }
    Short_t         GetMaxNSisters()           {return fMaxNSisters;}
+   Bool_t          GetCheckSameCutID()  const {return fCheckSameCutID;}
 
    void            SetOutputType(EOutputType type)    {fOutputType = type;}
    void            SetComputation(EComputation src)   {fComputation = src;}
@@ -96,7 +99,8 @@ public:
    void            SetCheckMomentumConservation(Bool_t checkP) {fCheckP = checkP;}
    void            SetCheckFeedDown(Bool_t checkFeedDown)      {fCheckFeedDown = checkFeedDown;}
    void            SetDselection(UShort_t originDselection);
-   void 	   SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+   void            SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+   void            SetCheckSameCutID(Bool_t opt=true) {fCheckSameCutID=opt;}
 
    void            AddAxis(Int_t id, Int_t nbins, Double_t min, Double_t max);
    void            AddAxis(Int_t id, Double_t min, Double_t max, Double_t step);
@@ -108,6 +112,8 @@ public:
    Bool_t          Init(const char *prefix, TList *list);
    Bool_t          FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList);
    Bool_t          FillMotherInAcceptance(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList);
+   Bool_t          FillSingle(const AliMCParticle *particle, AliRsnMiniEvent *event, TClonesArray *valueList);
+   Bool_t          FillSingle(const AliAODMCParticle *particle, AliRsnMiniEvent *event, TClonesArray *valueList);
    Bool_t          FillEvent(AliRsnMiniEvent *event, TClonesArray *valueList);
    Int_t           FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList, Bool_t refFirst = kTRUE);
 
@@ -141,9 +147,10 @@ private:
    Bool_t           fCheckFeedDown;    // flag to set in order to check the particle feed down (specific for D meson analysis)
    UShort_t 	    fOriginDselection; // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty (specific for D meson analysis)
    Bool_t   	    fKeepDfromB;       // flag for the feed down from b quark decay (specific for D meson analysis)			  
-   Bool_t   	    fKeepDfromBOnly;   // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
-   Bool_t 	    fRejectIfNoQuark;  // flag to remove events not generated with PYTHIA
+   Bool_t           fKeepDfromBOnly;   // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
+   Bool_t           fRejectIfNoQuark;  // flag to remove events not generated with PYTHIA
    Bool_t           fCheckHistRange;   //  check if values is in histogram range
+   Bool_t           fCheckSameCutID; // alternate check for whether the two daughters are of the same type, using fCutID instead of fDaughter
 
    ClassDef(AliRsnMiniOutput, 7)  // AliRsnMiniOutput class
 };

@@ -126,17 +126,15 @@ void AliFemtoCorrFctnGammaMonitorAlpha::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnGammaMonitorAlpha::Report(){
+AliFemtoString AliFemtoCorrFctnGammaMonitorAlpha::Report()
+{
   // create report
-  string stemp = "Gamma MonitorAlpha Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumPMinvDAlpha->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenPMinvDAlpha->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "Gamma MonitorAlpha Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fNumPMinvDAlpha->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n",fDenPMinvDAlpha->GetEntries());
+  //  report += mCoulombWeight->Report();
+
+  return report;
 }
 //____________________________
 void AliFemtoCorrFctnGammaMonitorAlpha::AddRealPair( AliFemtoPair* pair){

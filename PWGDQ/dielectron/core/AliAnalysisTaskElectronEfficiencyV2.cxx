@@ -66,31 +66,140 @@ AliAnalysisTaskElectronEfficiencyV2::~AliAnalysisTaskElectronEfficiencyV2(){
 
 // ############################################################################
 // ############################################################################
-AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliAnalysisTaskSE(), fEventFilter(0x0)
-                                                                              , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
-                                                                              , fOutputList(0x0), fSingleElectronList(0x0), fPairList(0x0), fResolutionList(0x0)
-                                                                              , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
-                                                                              , fPGen_DeltaEta(0x0), fPtGen_DeltaEta(0x0), fPGen_DeltaTheta(0x0), fPGen_DeltaPhi_Ele(0x0), fPGen_DeltaPhi_Pos(0x0), fPtGen_DeltaPhi_Ele(0x0)
-                                                                              , fPtGen_DeltaPhi_Pos(0x0), fThetaGen_DeltaTheta(0x0), fPhiGen_DeltaPhi(0x0)
-                                                                              , fPtBins(), fEtaBins(), fPhiBins(), fThetaBins()
-                                                                              , fResolutionDeltaPtBins(), fResolutionRelPtBins(), fResolutionEtaBins(), fResolutionPhiBins(), fResolutionThetaBins()
-                                                                              , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
-                                                                              , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
-                                                                              , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
-                                                                              , fSingleLegMCSignal(), fPairMCSignal(), fDielectronPairNotFromSameMother()
-                                                                              , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts(), fUsedVars(0x0)
-                                                                              , fSupportMCSignal(0), fSupportCutsetting(0)
-                                                                              , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
-                                                                              , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
-                                                                              , fOutputListSupportHistos(0x0)
-                                                                              , fHistGenPosPart(), fHistGenNegPart(), fHistGenSmearedPosPart(), fHistGenSmearedNegPart(), fHistRecPosPart(), fHistRecNegPart()
-                                                                              , fHistGenPair(), fHistGenSmearedPair(), fHistRecPair(), fHistGenPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPair(), fTHnSparseRecLegsFromPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99) 
-                                                                              , fDoPairing(false), fDoULSandLS(false), fDeactivateLS(false)
-                                                                              , fGenNegPart(), fGenPosPart(), fRecNegPart(), fRecPosPart()
-                                                                              , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
-                                                                              , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
-                                                                              fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
+AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliAnalysisTaskSE(),
+  fEventFilter(0x0),
+  fResoFile(0x0),
+  fResoFilename(""),
+  fResoFilenameFromAlien(""),
+  fArrResoPt(0x0),
+  fArrResoEta(0x0),
+  fArrResoPhi_Pos(0x0),
+  fArrResoPhi_Neg(0x0),
+  fOutputList(0x0),
+  fSingleElectronList(0x0),
+  fPairList(0x0),
+  fResolutionList(0x0),
+  fPGen_DeltaP(0x0),
+  fPGen_PrecOverPGen(0x0),
+  fPtGen_DeltaPt(0x0),
+  fPtGen_DeltaPtOverPtGen(0x0),
+  fPtGen_PtRecOverPtGen(0x0),
+  fPtGen_DeltaPt_wGenSmeared(0x0),
+  fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0),
+  fPtGen_PtRecOverPtGen_wGenSmeared(0x0),
+  fPGen_DeltaEta(0x0),
+  fPtGen_DeltaEta(0x0),
+  fPGen_DeltaTheta(0x0),
+  fPGen_DeltaPhi_Ele(0x0),
+  fPGen_DeltaPhi_Pos(0x0),
+  fPtGen_DeltaPhi_Ele(0x0),
+  fPtGen_DeltaPhi_Pos(0x0),
+  fThetaGen_DeltaTheta(0x0),
+  fPhiGen_DeltaPhi(0x0),
+  fPtBins(),
+  fEtaBins(),
+  fPhiBins(),
+  fThetaBins(),
+  fResolutionDeltaPtBins(),
+  fResolutionRelPtBins(),
+  fResolutionEtaBins(),
+  fResolutionPhiBins(),
+  fResolutionThetaBins(),
+  fMassBins(),
+  fPairPtBins(),
+  fDoGenSmearing(false),
+  fPtMin(0.),
+  fPtMax(0.),
+  fEtaMin(-99.),
+  fEtaMax(99.),
+  fPtMinGen(0.),
+  fPtMaxGen(0.),
+  fEtaMinGen(-99.),
+  fEtaMaxGen(99.),
+  fSingleLegMCSignal(),
+  fPairMCSignal(),
+  fDielectronPairNotFromSameMother(),
+  fGeneratorName(""),
+  fGeneratorMCSignalName(""),
+  fGeneratorULSSignalName(""),
+  fGeneratorHashs(),
+  fGeneratorMCSignalHashs(),
+  fGeneratorULSSignalHashs(),
+  fPIDResponse(0x0),
+  fEvent(0x0),
+  fMC(0x0),
+  fTrack(0x0),
+  isAOD(false),
+  fSelectPhysics(false),
+  fTriggerMask(0),
+  fTrackCuts(),
+  fUsedVars(0x0),
+  fSupportMCSignal(0),
+  fSupportCutsetting(0),
+  fHistEvents(0x0),
+  fHistEventStat(0x0),
+  fHistCentrality(0x0),
+  fHistVertex(0x0),
+  fHistVertexContibutors(0x0),
+  fHistNTracks(0x0),
+  fMinCentrality(0.),
+  fMaxCentrality(100),
+  fCentralityEst("V0M"),
+  fCentralityFile(0x0),
+  fCentralityFilename(""),
+  fHistCentralityCorrection(0x0),
+  fOutputListSupportHistos(0x0),
+  fHistGenPosPart(),
+  fHistGenNegPart(),
+  fHistGenSmearedPosPart(),
+  fHistGenSmearedNegPart(),
+  fHistRecPosPart(),
+  fHistRecNegPart(),
+  fHistGenPair(),
+  fHistGenSmearedPair(),
+  fHistRecPair(),
+  fHistGenPair_ULSandLS(),
+  fHistGenSmearedPair_ULSandLS(),
+  fHistRecPair_ULSandLS(),
+  fWriteLegsFromPair(false),
+  fPtMinLegsFromPair(-99.),
+  fPtMaxLegsFromPair(-99.),
+  fEtaMinLegsFromPair(-99.),
+  fEtaMaxLegsFromPair(-99.),
+  fPhiMinLegsFromPair(-99.),
+  fPhiMaxLegsFromPair(-99.),
+  fOpAngleMinLegsFromPair(-99.),
+  fOpAngleMaxLegsFromPair(-99.),
+  fPtNBinsLegsFromPair(-99),
+  fEtaNBinsLegsFromPair(-99),
+  fPhiNBinsLegsFromPair(-99),
+  fOpAngleNBinsLegsFromPair(-99),
+  fTHnSparseGenSmearedLegsFromPair(),
+  fTHnSparseRecLegsFromPair(),
+  fDoPairing(false),
+  fDoULSandLS(false),
+  fDeactivateLS(false),
+  fGenNegPart(),
+  fGenPosPart(),
+  fRecNegPart(),
+  fRecPosPart(),
+  fDoCocktailWeighting(false),
+  fCocktailFilename(""),
+  fCocktailFilenameFromAlien(""),
+  fCocktailFile(0x0),
+  fPtPion(0x0),
+  fPtEta(0x0),
+  fPtEtaPrime(0x0),
+  fPtRho(0x0),
+  fPtOmega(0x0),
+  fPtPhi(0x0),
+  fPtJPsi(0x0),
+  fPostPIDCntrdCorrTPC(0x0),
+  fPostPIDWdthCorrTPC(0x0),
+  fPostPIDCntrdCorrITS(0x0),
+  fPostPIDWdthCorrITS(0x0),
+  fPostPIDCntrdCorrTOF(0x0),
+  fPostPIDWdthCorrTOF(0x0)
 {
 // ROOT IO constructor , don ’t allocate memory here !
 }
@@ -98,32 +207,140 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
 
 // ############################################################################
 // ############################################################################
-AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const char * name) : AliAnalysisTaskSE(name), fEventFilter(0x0)
-                                                                              , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
-                                                                              , fOutputList(0x0), fSingleElectronList(0x0), fPairList(0x0), fResolutionList(0x0)
-                                                                              , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
-                                                                              , fPGen_DeltaEta(0x0), fPtGen_DeltaEta(0x0), fPGen_DeltaTheta(0x0), fPGen_DeltaPhi_Ele(0x0), fPGen_DeltaPhi_Pos(0x0), fPtGen_DeltaPhi_Ele(0x0)
-                                                                              , fPtGen_DeltaPhi_Pos(0x0), fThetaGen_DeltaTheta(0x0), fPhiGen_DeltaPhi(0x0)
-                                                                              , fPtBins(), fEtaBins(), fPhiBins(), fThetaBins()
-                                                                              , fResolutionDeltaPtBins(), fResolutionRelPtBins(), fResolutionEtaBins(), fResolutionPhiBins(), fResolutionThetaBins()
-                                                                              , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
-                                                                              , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
-                                                                              , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
-                                                                              , fSingleLegMCSignal(), fPairMCSignal(), fDielectronPairNotFromSameMother()
-                                                                              , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts(), fUsedVars(0x0)
-                                                                              , fSupportMCSignal(0), fSupportCutsetting(0)
-                                                                              , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
-                                                                              , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
-                                                                              , fOutputListSupportHistos(0x0)
-                                                                              , fHistGenPosPart(), fHistGenNegPart(), fHistGenSmearedPosPart(), fHistGenSmearedNegPart(), fHistRecPosPart(), fHistRecNegPart()
-                                                                              , fHistGenPair(), fHistGenSmearedPair(), fHistRecPair(), fHistGenPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPair(), fTHnSparseRecLegsFromPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99)
-                                                                              , fDoPairing(false), fDoULSandLS(false), fDeactivateLS(false)
-                                                                              , fGenNegPart(), fGenPosPart(), fRecNegPart(), fRecPosPart()
-                                                                              , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
-                                                                              , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
-                                                                              fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
-
+AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const char * name) : AliAnalysisTaskSE(name),
+  fEventFilter(0x0),
+  fResoFile(0x0),
+  fResoFilename(""),
+  fResoFilenameFromAlien(""),
+  fArrResoPt(0x0),
+  fArrResoEta(0x0),
+  fArrResoPhi_Pos(0x0),
+  fArrResoPhi_Neg(0x0),
+  fOutputList(0x0),
+  fSingleElectronList(0x0),
+  fPairList(0x0),
+  fResolutionList(0x0),
+  fPGen_DeltaP(0x0),
+  fPGen_PrecOverPGen(0x0),
+  fPtGen_DeltaPt(0x0),
+  fPtGen_DeltaPtOverPtGen(0x0),
+  fPtGen_PtRecOverPtGen(0x0),
+  fPtGen_DeltaPt_wGenSmeared(0x0),
+  fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0),
+  fPtGen_PtRecOverPtGen_wGenSmeared(0x0),
+  fPGen_DeltaEta(0x0),
+  fPtGen_DeltaEta(0x0),
+  fPGen_DeltaTheta(0x0),
+  fPGen_DeltaPhi_Ele(0x0),
+  fPGen_DeltaPhi_Pos(0x0),
+  fPtGen_DeltaPhi_Ele(0x0),
+  fPtGen_DeltaPhi_Pos(0x0),
+  fThetaGen_DeltaTheta(0x0),
+  fPhiGen_DeltaPhi(0x0),
+  fPtBins(),
+  fEtaBins(),
+  fPhiBins(),
+  fThetaBins(),
+  fResolutionDeltaPtBins(),
+  fResolutionRelPtBins(),
+  fResolutionEtaBins(),
+  fResolutionPhiBins(),
+  fResolutionThetaBins(),
+  fMassBins(),
+  fPairPtBins(),
+  fDoGenSmearing(false),
+  fPtMin(0.),
+  fPtMax(0.),
+  fEtaMin(-99.),
+  fEtaMax(99.),
+  fPtMinGen(0.),
+  fPtMaxGen(0.),
+  fEtaMinGen(-99.),
+  fEtaMaxGen(99.),
+  fSingleLegMCSignal(),
+  fPairMCSignal(),
+  fDielectronPairNotFromSameMother(),
+  fGeneratorName(""),
+  fGeneratorMCSignalName(""),
+  fGeneratorULSSignalName(""),
+  fGeneratorHashs(),
+  fGeneratorMCSignalHashs(),
+  fGeneratorULSSignalHashs(),
+  fPIDResponse(0x0),
+  fEvent(0x0),
+  fMC(0x0),
+  fTrack(0x0),
+  isAOD(false),
+  fSelectPhysics(false),
+  fTriggerMask(0),
+  fTrackCuts(),
+  fUsedVars(0x0),
+  fSupportMCSignal(0),
+  fSupportCutsetting(0),
+  fHistEvents(0x0),
+  fHistEventStat(0x0),
+  fHistCentrality(0x0),
+  fHistVertex(0x0),
+  fHistVertexContibutors(0x0),
+  fHistNTracks(0x0),
+  fMinCentrality(0.),
+  fMaxCentrality(100),
+  fCentralityEst("V0M"),
+  fCentralityFile(0x0),
+  fCentralityFilename(""),
+  fHistCentralityCorrection(0x0),
+  fOutputListSupportHistos(0x0),
+  fHistGenPosPart(),
+  fHistGenNegPart(),
+  fHistGenSmearedPosPart(),
+  fHistGenSmearedNegPart(),
+  fHistRecPosPart(),
+  fHistRecNegPart(),
+  fHistGenPair(),
+  fHistGenSmearedPair(),
+  fHistRecPair(),
+  fHistGenPair_ULSandLS(),
+  fHistGenSmearedPair_ULSandLS(),
+  fHistRecPair_ULSandLS(),
+  fWriteLegsFromPair(false),
+  fPtMinLegsFromPair(-99.),
+  fPtMaxLegsFromPair(-99.),
+  fEtaMinLegsFromPair(-99.),
+  fEtaMaxLegsFromPair(-99.),
+  fPhiMinLegsFromPair(-99.),
+  fPhiMaxLegsFromPair(-99.),
+  fOpAngleMinLegsFromPair(-99.),
+  fOpAngleMaxLegsFromPair(-99.),
+  fPtNBinsLegsFromPair(-99),
+  fEtaNBinsLegsFromPair(-99),
+  fPhiNBinsLegsFromPair(-99),
+  fOpAngleNBinsLegsFromPair(-99),
+  fTHnSparseGenSmearedLegsFromPair(),
+  fTHnSparseRecLegsFromPair(),
+  fDoPairing(false),
+  fDoULSandLS(false),
+  fDeactivateLS(false),
+  fGenNegPart(),
+  fGenPosPart(),
+  fRecNegPart(),
+  fRecPosPart(),
+  fDoCocktailWeighting(false),
+  fCocktailFilename(""),
+  fCocktailFilenameFromAlien(""),
+  fCocktailFile(0x0),
+  fPtPion(0x0),
+  fPtEta(0x0),
+  fPtEtaPrime(0x0),
+  fPtRho(0x0),
+  fPtOmega(0x0),
+  fPtPhi(0x0),
+  fPtJPsi(0x0),
+  fPostPIDCntrdCorrTPC(0x0),
+  fPostPIDWdthCorrTPC(0x0),
+  fPostPIDCntrdCorrITS(0x0),
+  fPostPIDWdthCorrITS(0x0),
+  fPostPIDCntrdCorrTOF(0x0),
+  fPostPIDWdthCorrTOF(0x0)
 {
   DefineInput (0, TChain::Class());
   DefineOutput (1, TList::Class());
@@ -434,7 +651,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
           GeneratedSmearedPairs->Add(th2_tmp);
 
           if (fWriteLegsFromPair){
-          
+
             THnSparseF* fTHnSparseGenSmearedLegsFromPair_tmp= new THnSparseF(Form("fTHnSparseGenSmearedLegsFromPair_%s", fPairMCSignal.at(i).GetName()),Form("fTHnSparseGenSmearedLegsFromPair_%s;p_{t,Pos};#eta_{Pos};#phi_{Pos};p_{t,Neg};#eta_{Neg};#phi_{Neg};opAngle", fPairMCSignal.at(i).GetName()), nDim, nBins, min, max);
             fTHnSparseGenSmearedLegsFromPair_tmp->GetAxis(0)->SetName("ptPos");
             fTHnSparseGenSmearedLegsFromPair_tmp->GetAxis(1)->SetName("etaPos");
@@ -747,9 +964,15 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
   // Apply centrality selection
   double centralityF = -1;
   AliMultSelection *multSelection = (AliMultSelection*)fEvent->FindListObject("MultSelection");
-  if (multSelection) centralityF  = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
-  if (centralityF == -1 && fMaxCentrality == -1 && fMinCentrality == -1) {/*do nothing*/} // is used for pp and pPb analysis
-  else if (centralityF > fMaxCentrality || centralityF < fMinCentrality) { return;} // reject event
+  if(multSelection){
+    centralityF  = multSelection->GetMultiplicityPercentile(fCentralityEst, kFALSE);
+  }
+  if(centralityF == -1 || (fMaxCentrality == -1 && fMinCentrality == -1)){
+    /*Centrality estimation failed or no requirement requested.*/
+  }
+  else if(centralityF > fMaxCentrality || centralityF < fMinCentrality) {
+    return; // reject event
+  }
 
   fHistEventStat->Fill(kCentralityEvents);
   fHistEvents->Fill(0.5);
@@ -1184,7 +1407,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
                 etaPos = fGenPosPart[pos_i].fEta_smeared;
                 phiPos = fGenPosPart[pos_i].fPhi_smeared;
                 op_angle = Lvec2_smeared.Angle(Lvec1_smeared.Vect());
-               
+
                 double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
                 fTHnSparseGenSmearedLegsFromPair[i]->Fill(tuple);
               }
@@ -1378,7 +1601,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
                   etaPos = fRecPosPart[pos_i].fEta;
                   phiPos = fRecPosPart[pos_i].fPhi;
                   op_angle = Lvec2.Angle(Lvec1.Vect());
-                  
+
                   const double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
                   fTHnSparseRecLegsFromPair.at(j * mcSignal_acc.size() + i)->Fill(tuple);
                 }

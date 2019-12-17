@@ -28,11 +28,13 @@
 #include <AliPIDResponse.h>
 #include <AliPID.h>
 #include <TLorentzVector.h>
+#include "AliESDtrack.h"
 #include "AliEventCuts.h"
 #include <AliMCEvent.h>
 #include <AliAODMCParticle.h>
 
 #include <TH3F.h>
+#include <vector>
 
 #define LIGHT_SPEED 2.99792457999999984e-02 // in the units that TOF likes
 #define EPS 1.e-16
@@ -42,6 +44,7 @@ class TH2F;
 class TH3F;
 class AliFlowTrackCuts;
 class AliAODTrack;
+class AliESDtrack;
 class AliVVertex;
 class AliPIDResponse;
 class TList;
@@ -105,6 +108,9 @@ public:
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireTOFpidSigmas (float sig) { fRequireTOFpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
+  void SetRequireDeadZoneWidth (float dzone) { fRequireDeadZoneWidth = dzone; }
+  void SetRequireCutGeoNcrNclLength (float length) { fRequireCutGeoNcrNclLength = length; }
+  void SetRequireCutGeoNcrNclGeom1Pt (float gcut) { fRequireCutGeoNcrNclGeom1Pt = gcut; }
   void SetRequireVetoSPD (bool veto) { fRequireVetoSPD = veto; }
   void SetRequireMaxMomentum (float p) { fRequireMaxMomentum = p; }
   void SetEnablePtCorrection (bool cut) { fEnablePtCorrection = cut; }
@@ -150,6 +156,8 @@ public:
   bool                fPropagateTracks; /// Workaround for troublesome productions
   TArrayF             fPtCorrectionA;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for anti-matter
   TArrayF             fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
+
+  std::vector<float>  fINT7intervals;        ///< Array containing the centrality interval where we select only kINT7 triggers  
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
@@ -168,6 +176,8 @@ private:
 
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
+  Bool_t IsSelectedTPCGeoCut(AliAODTrack *track);
+  Bool_t IsSelectedTPCGeoCut(AliNanoAODTrack *track);
 
 
   TString               fCurrentFileName;       ///<  Currently analysed file name
@@ -217,6 +227,9 @@ private:
   Float_t               fRequireITSpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireTOFpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
+  Float_t               fRequireDeadZoneWidth;  ///<  Cut on on TPC Geometrical Selection Deadzone width
+  Float_t               fRequireCutGeoNcrNclLength; ///<  Cut on TPC Geometrical Selection Length
+  Float_t               fRequireCutGeoNcrNclGeom1Pt; ///<  Cut on TPC Geometrical Selection 1 Pt
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
   Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
@@ -433,6 +446,9 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(track_t *track, Float_t dca[2]) {
   if (track->GetTPCsignalN() < fRequireTPCsignal) return false;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
   if (fTRDvintage != 0 && fTRDin != IsInTRD(track->Pt(), track->Phi(), track->Charge())) return false;
+  if (fRequireCutGeoNcrNclGeom1Pt > 0 && fRequireCutGeoNcrNclLength > 0 && fRequireDeadZoneWidth > 0) {
+    if(!IsSelectedTPCGeoCut(track)) return false;
+  }
 
   /// ITS related cuts
   dca[0] = 0.;

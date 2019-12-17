@@ -158,7 +158,6 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fTreeVarFloat{nullptr},
   fTreeVarInt{nullptr},
   fTrCutsTPC{nullptr},
-  fTrCutsTPCPrimary{nullptr},
   fMinNumOfTPCPIDclu(0),
   fUseTOFbcSelection(kTRUE),
   fUsePhysSel(kTRUE),
@@ -189,20 +188,6 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   //  fTrCutsTPC->SetMaxChi2PerClusterITS(36);
   fTrCutsTPC->SetMaxDCAToVertexXY(2.);
   fTrCutsTPC->SetMaxDCAToVertexZ(3.);
-  fTrCutsTPCPrimary = new AliESDtrackCuts("esdtrackCutsTPCPrimaries");
-  fTrCutsTPCPrimary->SetEtaRange(-0.8,0.8);
-  fTrCutsTPCPrimary->SetPtRange(0.15,99999999.);
-  fTrCutsTPCPrimary->SetMinNClustersTPC(80);
-  fTrCutsTPCPrimary->SetMinNCrossedRowsTPC(50);
-  fTrCutsTPCPrimary->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  fTrCutsTPCPrimary->SetMaxDCAToVertexXY(2.);
-  fTrCutsTPCPrimary->SetMaxDCAToVertexZ(3.);
-  fTrCutsTPCPrimary->SetMaxChi2PerClusterTPC(4);
-  fTrCutsTPCPrimary->SetAcceptKinkDaughters(kFALSE);
-  fTrCutsTPCPrimary->SetRequireTPCRefit(kTRUE);
-  fTrCutsTPCPrimary->SetDCAToVertex2D(kFALSE);
-  fTrCutsTPCPrimary->SetRequireSigmaToVertex(kFALSE);
-  fTrCutsTPCPrimary->SetMaxFractionSharedTPCClusters(0.4);
   
   for(Int_t jsp=0; jsp<9; jsp++){
     fHistdEdxVsP[jsp]=0x0;
@@ -347,7 +332,6 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
   }
   delete fOutput;
   delete fTrCutsTPC;
-  delete fTrCutsTPCPrimary;
   delete [] fTreeVarFloat;
   delete [] fTreeVarInt;
 }
@@ -410,13 +394,16 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   intVarName[1]="ntracklets";
   intVarName[2]="charge";
   intVarName[3]="ITSrefit";
-  intVarName[4]="ITSclumap";
-  intVarName[5]="nTPCclu";
-  intVarName[6]="TOFbc";
-  intVarName[7]="trackPIDhip";
-  intVarName[8]="trackPIDhip0";
-  intVarName[9]="label";
-  intVarName[10]="truePID";
+  intVarName[4]="TPCrefit";
+  intVarName[5]="isKinkDau";
+  intVarName[6]="ITSclumap";
+  intVarName[7]="nTPCclu";
+  intVarName[8]="nCrossedRowsTPC";
+  intVarName[9]="TOFbc";
+  intVarName[10]="trackPIDhip";
+  intVarName[11]="trackPIDhip0";
+  intVarName[12]="label";
+  intVarName[13]="truePID";
   usedVar=kNumOfIntVar-2;
   if(fReadMC) usedVar=kNumOfIntVar;
   for(Int_t ivar=0; ivar<usedVar; ivar++){
@@ -883,6 +870,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Bool_t itsRefit=kFALSE;
     Int_t statusTrack=track->GetStatus();
     if(statusTrack&AliESDtrack::kITSrefit) itsRefit=kTRUE; 
+    Bool_t tpcRefit=kFALSE;
+    if(statusTrack&AliESDtrack::kTPCrefit) tpcRefit=kTRUE;
+    Bool_t isKinkDaughter=kFALSE;
+    if(track->GetKinkIndex(0)>0) isKinkDaughter=kTRUE;
     UChar_t clumap=track->GetITSClusterMap();
     Double_t chi2clus = track->GetTPCNcls() ? track->GetTPCchi2()/track->GetTPCNcls() : -999.;
     Double_t curvrelerr = TMath::Sqrt(track->GetSigma1Pt2())/track->OneOverPt();
@@ -912,9 +903,12 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 
     fTreeVarInt[2]=chtrack;
     fTreeVarInt[3]=itsRefit;
-    fTreeVarInt[4]=clumap;
-    fTreeVarInt[5]=nTPCclus;
-    fTreeVarInt[6]=tofOK;
+    fTreeVarInt[4]=tpcRefit;
+    fTreeVarInt[5]=isKinkDaughter;
+    fTreeVarInt[6]=clumap;
+    fTreeVarInt[7]=nTPCclus;
+    fTreeVarInt[8]=nCrossedRowsTPC;
+    fTreeVarInt[9]=tofOK;
 
     Int_t trlabel=track->GetLabel();
     Int_t abstrlabel=TMath::Abs(track->GetLabel());
@@ -937,8 +931,8 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     fTreeVarFloat[24]=nSigmaTPC[2];
     fTreeVarFloat[25]=nSigmaTPC[3];
     fTreeVarFloat[26]=nSigmaTPC[4];
-    fTreeVarInt[7]=pidtr;
-    fTreeVarInt[8]=pidtr0;
+    fTreeVarInt[10]=pidtr;
+    fTreeVarInt[11]=pidtr0;
     
     Float_t ptgen=-999.;
     Float_t pgen=-999.;
@@ -984,13 +978,15 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       fTreeVarFloat[31]=pgen;
       fTreeVarFloat[32]=etagen;
       fTreeVarFloat[33]=phigen;
-      fTreeVarInt[9]=trlabel;
-      fTreeVarInt[10]=pdgCode;
+      fTreeVarInt[12]=trlabel;
+      fTreeVarInt[13]=pdgCode;
     }
 
     if(pidtr>=0 && pidtr<9) fHistdEdxVsP[pidtr]->Fill(ptrackTPC,dedx);
     if(pidtr0>=0 && pidtr0<9) fHistdEdxVsP0[pidtr0]->Fill(ptrackTPC,dedx);
     
+    if (fFillTree) fTrackTree->Fill();
+
     if(!fTrCutsTPC->AcceptTrack(track)) continue;
     if(track->GetTPCsignalN()<fMinNumOfTPCPIDclu) continue;
     fHistNITSClu->Fill(track->GetNcls(0));
@@ -999,16 +995,13 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(clumap&(1<<iBit)) fHistCluInITSLay->Fill(iBit);
     }
 
-    if (fFillTree) fTrackTree->Fill();
-    Bool_t fillPhiPosHistos=kFALSE;
-    if(fTrCutsTPCPrimary->AcceptTrack(track)) fillPhiPosHistos=kTRUE;
     fHistEtaPhiPtTPCsel->Fill(etatrack,phitrack,pttrack);
     if(chtrack>0){
       fHistEtaPhiPtPosChargeTPCsel->Fill(etatrack,phitrack,pttrack);
-      if(fillPhiPosHistos) fHistEtaPhiPositionPtPosChargeTPCsel->Fill(etatrack,phiPositionTPC,pttrack);
+      fHistEtaPhiPositionPtPosChargeTPCsel->Fill(etatrack,phiPositionTPC,pttrack);
     }else if(chtrack<0){
       fHistEtaPhiPtNegChargeTPCsel->Fill(etatrack,phitrack,pttrack);
-      if(fillPhiPosHistos) fHistEtaPhiPositionPtNegChargeTPCsel->Fill(etatrack,phiPositionTPC,pttrack);
+      fHistEtaPhiPositionPtNegChargeTPCsel->Fill(etatrack,phiPositionTPC,pttrack);
     }
     fHistEtaPhiPtInnerTPCsel->Fill(etatrackTPC,phitrackTPC,pttrackTPC);
     fHistNtrackeltsPtTPCsel->Fill(ntracklets,pttrack);

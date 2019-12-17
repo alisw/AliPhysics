@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerName="femtolist", TString configMacroParameters="",  Bool_t kGridConfig = kFALSE, TString userName = "")
+AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerName="femtolist", TString configMacroParameters="",  Bool_t kGridConfig = kFALSE, TString userName = "", TString configFunName = "ConfigFemtoAnalysis")
 {
 // Creates a proton analysis task and adds it to the analysis manager.
 
@@ -16,6 +16,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerNam
   if (!mgr) {
     Error("AddTaskFemto", "No analysis manager to connect to.");
     return NULL;
+    
   }
 
   // B. Check the analysis type using the event handlers connected to the analysis
@@ -43,13 +44,14 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerNam
   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
+  AliAnalysisTaskFemto *taskfemto;
   if(kGridConfig)
     {
-        AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE,kTRUE,userName);
+      taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE,kTRUE,userName, configFunName);
     }
   else
     {
-      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE,userName);
+      taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE,userName, configFunName);
     }
   
   mgr->AddTask(taskfemto);
