@@ -102,6 +102,7 @@ class AliAODv0;
 #include "AliESDInputHandler.h"
 #include "AliLog.h"
 #include "AliTrackerBase.h"
+#include "AliV0HypSel.h"
 
 using std::cout;
 using std::endl;
@@ -153,6 +154,7 @@ fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ),
 fMaxPtCascade( 100.00 ),
+fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
 //________________________________________________
@@ -214,6 +216,7 @@ fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ), //pre-selection
 fMaxPtCascade( 100.00 ),
+fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
 //________________________________________________
@@ -645,6 +648,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
     
     if (nentr<2) return 0;
     
+    AliV0HypSel::AccountBField(b);
+    
     TArrayI neg(nentr);
     TArrayI pos(nentr);
     
@@ -669,6 +674,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         if (esdTrack->GetSign() < 0. && TMath::Abs(d)>fV0VertexerSels[1]) neg[nneg++]=i;
         if (esdTrack->GetSign() > 0. && TMath::Abs(d)>fV0VertexerSels[2]) pos[npos++]=i;
     }
+    
+      int nHypSel = fV0HypSelArray ? fV0HypSelArray->GetEntriesFast() : 0;
     
     for (i=0; i<nneg; i++) {
         Long_t nidx=neg[i];
@@ -801,6 +808,20 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             fHistV0Statistics->Fill(7.5); //within pT range
             if (lUsedOptimalParams) fHistV0Statistics->Fill(8.5); //good V0, used OTF params
+
+            if (nHypSel) { // do we select particular hypthesis? - i.e. does object exist
+                Bool_t reject = kTRUE;
+                float pt = vertex.Pt();
+                for (int ih=0;ih<nHypSel;ih++) {
+                    const AliV0HypSel* hyp = (const AliV0HypSel*)(*fV0HypSelArray)[ih];
+                    double m = vertex.GetEffMassExplicit(hyp->GetM0(),hyp->GetM1());
+                    if (TMath::Abs(m - hyp->GetMass())<hyp->GetMassMargin(pt)) {
+                        reject = kFALSE;
+                        break;
+                    }
+                }
+                if (reject) continue;
+            }
             
             event->AddV0(&vertex);
             
@@ -2853,4 +2874,14 @@ void AliAnalysisTaskWeakDecayVertexer::SelectiveResetV0s(AliESDEvent *event, Int
             iV0++;
         }
     }
+}
+
+///________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::SetV0HypSel(const TObjArray* selArr)
+{
+    if (!selArr || !selArr->GetEntriesFast()) {
+        AliInfo("No V0 hypothesis selection will be performed");
+        return;
+    }
+    fV0HypSelArray = selArr;
 }
