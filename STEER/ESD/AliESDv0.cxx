@@ -891,6 +891,12 @@ Double_t AliESDv0::GetEffMassExplicit(Double_t m1, Double_t m2) const {
   Double_t pmom[3]={0}, nmom[3]={0};
   paramP->GetPxPyPz(pmom);
   paramN->GetPxPyPz(nmom);
+  if (m1<0) { // q=2
+    for (int i=3;i--;) pmom[i] *= 2;
+  }
+  if (m2<0) { // q=2
+    for (int i=3;i--;) nmom[i] *= 2;
+  }  
   Double_t e12   = m1*m1+pmom[0]*pmom[0]+pmom[1]*pmom[1]+pmom[2]*pmom[2];
   Double_t e22   = m2*m2+nmom[0]*nmom[0]+nmom[1]*nmom[1]+nmom[2]*nmom[2];
   Double_t cmass = TMath::Sqrt(TMath::Max(m1*m1+m2*m2

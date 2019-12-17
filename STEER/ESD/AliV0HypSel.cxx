@@ -71,10 +71,10 @@ AliV0HypSel::AliV0HypSel(const char *name, float m0,float m1, float mass, float 
 void AliV0HypSel::Validate()
 {
   // consistency check
-  if (fM0<0.0005 || fM1<0.0005) {
+  if (TMath::Abs(fM0)<0.0005 || TMath::Abs(fM1)<0.0005) {
     AliFatal("V0 decay product mass cannot be lighter than electron");
   }
-  if (fMass<fM0+fM1) {
+  if (fMass<TMath::Abs(fM0)+TMath::Abs(fM1)) {
     AliFatal("V0 mass is less than sum of product masses");
   }
   if ( (fSigmaM<=0 || fNSigma<=0) && fMarginAdd<=1e-3) {

@@ -38,8 +38,8 @@ public:
   virtual void Print(const Option_t *) const;
   
 private:
-  Float_t fM0;         // mass of the 1st prong
-  Float_t fM1;         // mass of the 2nd prong
+  Float_t fM0;         // mass of the 1st prong, <0 means q=2
+  Float_t fM1;         // mass of the 2nd prong, <0 meand q=2
   Float_t fMass ;      // expected V0 mass
   Float_t fSigmaM;     // rough sigma estimate for sigmaMass = fSigmaM*(fCoef0Pt+fCoef1Pt*Pt) parameterization
   Float_t fCoef0Pt;    // offset of sigma_m pT dependence

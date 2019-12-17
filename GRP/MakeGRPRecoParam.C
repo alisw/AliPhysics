@@ -65,8 +65,10 @@ void MakeGRPRecoParam(Bool_t allowCleanup, AliRecoParam::EventSpecie_t default=A
       param->AddV0HypSel( AliV0HypSel("K0",139.570e-3, 139.570e-3, 497.7e-3, 0.003,20,0.07, 1.,0.5));
       param->AddV0HypSel( AliV0HypSel("Lambda",938.272e-3, 139.570e-3, 1115.683e-3, 0.001, 20, 0.07, 1.,0.5));
       param->AddV0HypSel( AliV0HypSel("antiLambda",139.570e-3, 938.272e-3, 1115.683e-3, 0.001, 20, 0.07, 1.,0.5));
-      param->AddV0HypSel( AliV0HypSel("HyperTriton",2.8092, 139.570e-3, 2.992, 0.0025, 14, 0.07, 1.,0.5));
-      param->AddV0HypSel( AliV0HypSel("antiHyperTriton",139.570e-3, 2.8092, 2.992, 0.0025, 14, 0.07, 1.,0.5));
+      // He3 with negative mass to signal q=2
+      param->AddV0HypSel( AliV0HypSel("HyperTriton",-2.8092, 139.570e-3, 2.992, 0.0025, 14, 0.07, 1.,0.5));
+      // He3 with negative mass to signal q=2
+      param->AddV0HypSel( AliV0HypSel("antiHyperTriton",139.570e-3, -2.8092, 2.992, 0.0025, 14, 0.07, 1.,0.5));
       
       param->SetFlagsNotToClean(AliESDtrack::kITSin | AliESDtrack::kTRDrefit |
 				AliESDtrack::kTOFout | AliESDtrack::kHMPIDout);
