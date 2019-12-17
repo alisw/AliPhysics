@@ -2929,6 +2929,11 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
   case 10: // distortions cut on A and C side
       fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
       break;
+  case 11:  // b
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
+    fMinPhiCut = 0.; // to calculate MBW for PHOS pi0 region
+    break;
+
   default:
     AliError(Form("MinPhiCut not defined %d",minPhiCut));
     return kFALSE;
@@ -2984,6 +2989,11 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
   case 10: // distortions cut on A and C side
       fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
       break;
+  case 11:  // b
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
+    fMaxPhiCut = 3.16; // to calculate MBW for PHOS pi0 region
+    break;
+
   default:
     AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
     return kFALSE;
