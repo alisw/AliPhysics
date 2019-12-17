@@ -217,8 +217,11 @@ public:
         fMaxCentrality = lMaxCent;
     }
     
-    void SetV0HypSel(const TObjArray* selArr);
+    //Modifications for V0 mass window selection (from Ruben) 
+    void SetV0HypSel(TObjArray* selArr);
     const TObjArray* GetV0HypSelArray() const {return fV0HypSelArray;}
+    void AddV0HypSel(const AliV0HypSel& sel);
+    void AddStandardV0HypSel();
     
     void SetMassWindowAroundCascade     ( Double_t lMassWin ) {
         fMassWindowAroundCascade = lMassWin;
@@ -373,7 +376,7 @@ private:
     Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
 
     //Mass window for V0s
-    const TObjArray* fV0HypSelArray; // array of V0 hypothesis to select
+    TObjArray* fV0HypSelArray; // array of V0 hypothesis to select
     
     //Mass Window around masses of interest (cascades)
     Double_t fMassWindowAroundCascade;

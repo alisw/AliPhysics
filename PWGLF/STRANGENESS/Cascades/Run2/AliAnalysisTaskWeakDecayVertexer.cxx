@@ -2877,11 +2877,33 @@ void AliAnalysisTaskWeakDecayVertexer::SelectiveResetV0s(AliESDEvent *event, Int
 }
 
 ///________________________________________________________________________
-void AliAnalysisTaskWeakDecayVertexer::SetV0HypSel(const TObjArray* selArr)
+void AliAnalysisTaskWeakDecayVertexer::SetV0HypSel(TObjArray* selArr)
 {
     if (!selArr || !selArr->GetEntriesFast()) {
         AliInfo("No V0 hypothesis selection will be performed");
         return;
     }
     fV0HypSelArray = selArr;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::AddV0HypSel(const AliV0HypSel& sel)
+{
+    //Direct add functionality
+    fV0HypSelArray->AddLast(new AliV0HypSel(sel));
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::AddStandardV0HypSel()
+{
+    //Add standard stuff
+    AddV0HypSel( AliV0HypSel("gamma",0.5486e-3, 0.5486e-3, 1.099e-3, 0.001, 20, 0.6, 0.,0.0));
+    AddV0HypSel( AliV0HypSel("K0",139.570e-3, 139.570e-3, 497.7e-3, 0.003,20,0.07, 1.,0.5));
+    AddV0HypSel( AliV0HypSel("Lambda",938.272e-3, 139.570e-3, 1115.683e-3, 0.001, 20, 0.07, 1.,0.5));
+    AddV0HypSel( AliV0HypSel("antiLambda",139.570e-3, 938.272e-3, 1115.683e-3, 0.001, 20, 0.07, 1.,0.5));
+    // He3 with negative mass to signal q=2
+    AddV0HypSel( AliV0HypSel("HyperTriton",-2.8092, 139.570e-3, 2.992, 0.0025, 14, 0.07, 1.,0.5));
+    // He3 with negative mass to signal q=2
+    AddV0HypSel( AliV0HypSel("antiHyperTriton",139.570e-3, -2.8092, 2.992, 0.0025, 14, 0.07, 1.,0.5));
+    
 }
