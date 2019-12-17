@@ -6798,6 +6798,16 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if (fClusterType == 1 || fClusterType == 3){
         energy *= FunctionNL_kTestBeamv3(energy);
         goto label_case_52;// goto previous case for shifting MC
+      } else if (fClusterType == 2) { // PHOS case: shift data and MC to pi0 mass (PCM-Calo)
+          if ( fCurrentMC == kPPb5T13P4DPMJet ){ // RUN1, MB MC
+            energy /= FunctionNL_SExp(energy, 1.00703, 16753.6, -23418.6, -1);
+          } else if ( fCurrentMC == k13pPb5023GeV ) { // RUN1, data
+            energy /= FunctionNL_SExp(energy, 1.0128, 11.7606, 1.10537, -1.);
+          } else if ( fCurrentMC == kPPb5T16DPMJet ) { // RUN2, MB MC
+            energy /= FunctionNL_SPOW(energy, 0.965941, 0.0458828, -0.5);
+          } else if ( fCurrentMC == k16pPb5023GeV ) { // RUN2, data
+            energy /= 1.0268;
+          }
       }
       break;
 

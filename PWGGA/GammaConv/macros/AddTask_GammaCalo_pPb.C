@@ -528,6 +528,16 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 316) { // kPHI7 with and without PHOS non-lin
     cuts.AddCutCalo("80062113","2444400041013200000","0163103100000010"); //standart cut, kPHI7 // PHOS clusters
     cuts.AddCutCalo("80062113","2444401041013200000","0163103100000010"); //standard cut, kPHI7, PHOS non-lin  // PHOS clusters
+  } else if (trainConfig == 317) {  // kINT7 with different non-lins
+    cuts.AddCutCalo("80010113","2444453041013200000","0163103100000010"); // non-lin: shifting to pi0 mass using PHOS-PHOS
+    cuts.AddCutCalo("80010113","2444454041013200000","0163103100000010"); // non-lin: shifting to pi0 mass using PCM-PHOS
+    cuts.AddCutCalo("80010113","2444401041013200000","0163103100000010"); // PHOS non-lin
+    cuts.AddCutCalo("80010113","2444400041013200000","0163103100000010"); // without non-lin
+  } else if (trainConfig == 318) {  // kPHI7 with different non-lins
+    cuts.AddCutCalo("80062113","2444453041013200000","0163103100000010"); // non-lin: shifting to pi0 mass using PHOS-PHOS
+    cuts.AddCutCalo("80062113","2444454041013200000","0163103100000010"); // non-lin: shifting to pi0 mass using PCM-PHOS
+    cuts.AddCutCalo("80062113","2444401041013200000","0163103100000010"); // PHOS non-lin
+    cuts.AddCutCalo("80062113","2444400041013200000","0163103100000010"); // without non-lin
 
   } else if(trainConfig == 320){ // reproducing Dmitri's results pi0, eta
     cuts.AddCutCalo("80010113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
@@ -702,6 +712,10 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 515) {  // PHOS  INT7
     cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // standard without non-lin
     cuts.AddCutCalo("80010113","244660005a012200000","0163103100000010"); // standard without non-lin
+  } else if (trainConfig == 516) {  // PHOS  INT7
+    cuts.AddCutCalo("80010113","24466530ha012200000","0163103100000010"); // non-lin: shifting to pi0 mass using PHOS-PHOS
+    cuts.AddCutCalo("80010113","24466540ha012200000","0163103100000010"); // non-lin: shifting to pi0 mass using PCM-PHOS
+    cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // without non-lin
 
   } else if (trainConfig == 520) {  // JJ MC
     cuts.AddCutCalo("80010123","24466420ha012200000","0163103100000010"); // standard
