@@ -112,12 +112,12 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
   DefineOutput(11, TList::Class());  //Output for the Results Sample
   DefineOutput(12, TList::Class());  //Output for the Results Sample QA
   if (fIsMC){
-    DefineOutput(11, TList::Class());  //Output for the MC Track Cuts
-    DefineOutput(12, TList::Class());  //Output for the MC V0 Cuts
-    DefineOutput(13, TList::Class());  //Output for the MC Anti Track Cuts
-    DefineOutput(14, TList::Class());  //Output for the MC Anti V0 Cuts
-    DefineOutput(15, TList::Class());  //Output for the Xi MC
-    DefineOutput(16, TList::Class());  //Output for the Anti Xi MC
+    DefineOutput(13, TList::Class());  //Output for the MC Track Cuts
+    DefineOutput(14, TList::Class());  //Output for the MC V0 Cuts
+    DefineOutput(15, TList::Class());  //Output for the MC Anti Track Cuts
+    DefineOutput(16, TList::Class());  //Output for the MC Anti V0 Cuts
+    DefineOutput(17, TList::Class());  //Output for the Xi MC
+    DefineOutput(18, TList::Class());  //Output for the Anti Xi MC
   }
 }
 
@@ -261,11 +261,27 @@ if (fv0Cuts) {
                                                 fConfig->GetMinimalBookingME());
     fResultList = fPartColl->GetHistList();
     fResultQAList = fPartColl->GetQAList();
+  } else  {
+    fResultList = new TList();
+    fResultList->SetOwner();
+    fResultList->SetName("Results");
+
+    fResultQAList = new TList();
+    fResultQAList->SetOwner();
+    fResultQAList->SetName("ResultsQA");
   }
   if (fConfig->GetUsePhiSpinning()) {
     fSample = new AliFemtoDreamControlSample(fConfig);
     fResultsSample = fSample->GetHistList();
     fResultsSampleQA = fSample->GetQAList();
+  } else {
+    fResultsSample = new TList();
+    fResultsSample->SetOwner();
+    fResultsSample->SetName("ResultsSample");
+
+    fResultsSampleQA = new TList();
+    fResultsSampleQA->SetOwner();
+    fResultsSampleQA->SetName("ResultsSampleQA");
   }
 
   PostData(1, fQA);
