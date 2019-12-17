@@ -1348,12 +1348,13 @@ Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
                     return kTRUE;
                 break;
             case 5: // Bkg type C: Xi(1530)- through Xi- 
+                    // Not sure that if it is needed since it will make normal Xi- peak. 
                 // Xi- check
                 MCXi = (TParticle*)fMCEvent->GetTrack(TMath::Abs(MCLam->GetMother(0)))->Particle();
                 if (TMath::Abs(MCXi->GetPdgCode()) != kXiCode)
                     return kFALSE;
-                // Xi-pion mother check
-                if (MCPi->GetMother(0) != MCXi->GetMother(0))
+                // Labmda-pion mother check to Xi-
+                if (MCLam->GetMother(0) != MCXi->GetMother(0))
                     return kFALSE;
                 // Xi(1530)0 check
                 MCXiStar = (TParticle*)fMCEvent->GetTrack(TMath::Abs(MCXi->GetMother(0)))->Particle();
@@ -1507,13 +1508,14 @@ Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
                 else
                     return kTRUE;
                 break;
-            case 5: // Bkg type C: Xi(1530)- through Xi- 
+            case 5: // Bkg type C: Xi(1530)- through Xi-
+                    // Not sure that if it is needed since it will make normal Xi- peak. 
                 // Xi- check
                 MCXi = (AliAODMCParticle*)fMCArray->At(TMath::Abs(MCLam->GetMother()));
                 if (TMath::Abs(MCXi->GetPdgCode()) != kXiCode)
                     return kFALSE;
-                // Xi-pion mother check
-                if (MCPi->GetMother() != MCXi->GetMother())
+                // Labmda-pion mother check to Xi-
+                if (MCLam->GetMother() != MCXi->GetMother())
                     return kFALSE;
                 // Xi(1530)0 check
                 MCXiStar = (AliAODMCParticle*)fMCArray->At(TMath::Abs(MCXi->GetMother()));
