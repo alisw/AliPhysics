@@ -430,6 +430,7 @@ void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,
     motherID = evt->GetTrack(motherID)->GetMother();
   }
   this->SetMotherID(lastMother);
+  this->SetMCPDGCode(static_cast<AliAODMCParticle*>(evt->GetTrack(lastMother))->GetPdgCode());
 }
 
 void AliFemtoDreamBasePart::ResetMCInfo() {
