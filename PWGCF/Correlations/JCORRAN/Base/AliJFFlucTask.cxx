@@ -62,6 +62,7 @@ AliJFFlucTask::AliJFFlucTask():
 	fPt_max(5.0),
 	fzvtxCut(10.0),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
+	binning(BINNING_CENT_PbPb),
 	flags(0),
 	inputIndex(1)
 {
@@ -91,6 +92,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fPt_max(5.0),
 	fzvtxCut(10.0),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
+	binning(BINNING_CENT_PbPb),
 	flags(0),
 	inputIndex(1)
 {
@@ -129,9 +131,8 @@ AliJFFlucTask::~AliJFFlucTask()
 void AliJFFlucTask::UserCreateOutputObjects()
 {
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
+	fFFlucAna->SetBinning((AliJFFlucAnalysis::BINNING)binning);
 	fFFlucAna->SelectSubevents(subeventMask);
-	if(flags & FLUC_MULT_BINS)
-		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_MULT_BINS);
 	if(flags & FLUC_SCPT)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_SCPT);
 	if(flags & FLUC_EBE_WEIGHTING)
@@ -242,7 +243,8 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 
 		fFFlucAna->SetPhiWeights(0);
 		if(flags & FLUC_PHI_CORRECTION){
-			int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+			//int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+			int cbin = AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
 			if(cbin != -1){
 				TH1 *pweightMap = GetCorrectionMap(fRunNum,cbin);
 				if(pweightMap)
@@ -603,7 +605,8 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 			
 			/*if(flags & FLUC_PHI_REJECTION){
 				int isub = (int)(track->Eta() > 0.0);
-				int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+				//int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+				int cbin = AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
 				if(cbin != -1){
 					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
 					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())

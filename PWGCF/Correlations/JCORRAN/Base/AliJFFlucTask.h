@@ -122,6 +122,14 @@ public:
 		subeventMask = nsubeventMask;
 		cout << "setting subevent mask = " << hex << subeventMask << endl;
 	}
+	enum BINNING{ //should match the enum in AliJFFlucAnalysis
+		BINNING_CENT_PbPb,
+		BINNING_MULT_PbPb_1,
+		BINNING_MULT_pp_1
+	};
+	void SetBinning(BINNING _binning){
+		binning = _binning;
+	}
 
 	enum{
 		FLUC_MC = 0x1,
@@ -169,6 +177,7 @@ private:
 	double fzvtxCut;
 
 	UInt_t subeventMask;
+	BINNING binning;
 
 	UInt_t flags;
 	UInt_t inputIndex;
