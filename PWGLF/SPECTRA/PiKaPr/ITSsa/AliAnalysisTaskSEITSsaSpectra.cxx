@@ -936,6 +936,27 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
     fHistDEDX->Fill(track->GetP(), dEdx);
     fHistDEDXdouble->Fill(track->GetP() * track->GetSign(), dEdx);
 
+    if(fIsMC){//correlation between momenta (measured and true ones) --> before pt cut!
+      int lMCtrk = TMath::Abs(track->GetLabel());
+      AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
+      float pMC   = trkMC->P();
+      int ptype = 0;
+      if (lMCevent->IsPhysicalPrimary(lMCtrk)){
+        ptype = 0;
+      }
+      else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)){
+        ptype = 1;
+      }
+      else if (lMCevent->IsSecondaryFromMaterial(lMCtrk)){
+        ptype = 2;
+      }
+      else {
+        ptype = 3;
+      }
+      double tmp_vect[4] = {fEvtMult, track->GetP(), pMC, static_cast<double>(ptype)};
+      fHistRecoChargedMC->Fill(tmp_vect);
+    }
+
     //"ptCut"
     if ((trkPt < fPtBins[0]) || (trkPt >= fPtBins[fPtBins.GetSize() - 1]))
       continue;
@@ -1106,11 +1127,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
                                (lMCevent->IsPhysicalPrimary(lMCtrk)) ? 0. : 1. };
         fHistRecoMC[lPidIndex]->Fill(tmp_vect);
       } // end y
-
-      if(fIsMC){//correlation between momenta (measured and true ones)
-        double tmp_vect[4] = {fEvtMult, track->GetP(), lMCp, static_cast<double>(ptype)};
-        fHistRecoChargedMC->Fill(tmp_vect);
-      }
 
       if (lIsGoodTrack && fFillIntDistHist) {
         //
