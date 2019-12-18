@@ -17,7 +17,7 @@ UShort_t   BCNumberBegin        = 0,
 UShort_t   BCNumberEnd          = 0,
 Int_t   isHeavyIon              = 2,//0:pp 1:PbPb 2:pPb
 TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
-							    ){  
+					   ){
   AliCutHandlerPCM cuts;
   TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
@@ -308,6 +308,14 @@ TString additionalTrainConfig   = "0"       // additional counter for trainconfi
       cuts.AddCutPCMMaterial("80010103", "0d0000d9266300008850404000");   // increased pT to 60 MeV for e+e-
       cuts.AddCutPCMMaterial("80010103", "00000009266300008750404000");
       cuts.AddCutPCMMaterial("80010103", "00000009266300008650404000");
+    } else if (trainConfig == 26) {   // new Cuts on Psi pair, chi2
+      cuts.AddCutPCMMaterial("00010103", "0d00000929730000dgd0404000");
+      cuts.AddCutPCMMaterial("00010103", "0d00000926630000dgd0404000");
+      cuts.AddCutPCMMaterial("00010103", "0d00000926630000dkd0404000");
+
+
+
+
     } else if (trainConfig == 101){
       cuts.AddCutPCMMaterial("80010113", "1d200009a27300008250404000");
       cuts.AddCutPCMMaterial("80010113", "1d200009a27300008250424000");
@@ -325,11 +333,15 @@ TString additionalTrainConfig   = "0"       // additional counter for trainconfi
       cuts.AddCutPCMMaterial("80010103", "1d0000d9266300008850404000");   // increased pT to 60 MeV for e+e-
       cuts.AddCutPCMMaterial("80010103", "10000009266300008750404000");
       cuts.AddCutPCMMaterial("80010103", "10000009266300008650404000");      
+    } else if (trainConfig == 126) {   // new Cuts on Psi pair, chi2
+      cuts.AddCutPCMMaterial("80010103", "1d00000929730000dgd0404000");
+      cuts.AddCutPCMMaterial("80010103", "1d00000926630000dgd0404000");
+      cuts.AddCutPCMMaterial("80010103", "1d00000926630000dkd0404000");
     }else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL;
     }
-  
+  }
     if(!cuts.AreValid()){
       cout << "\n\n****************************************************" << endl;
       cout << "ERROR: No valid cuts stored in CutHandlerConvMaterial! Returning..." << endl;
@@ -458,4 +470,4 @@ TString additionalTrainConfig   = "0"       // additional counter for trainconfi
     mgr->ConnectOutput(fMaterialHistos,  1, coutput);
     //connect containers
     return fMaterialHistos;
-  }
+}
