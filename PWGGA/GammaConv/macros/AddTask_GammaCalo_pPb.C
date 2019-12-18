@@ -738,6 +738,10 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("84610123","24466420ha012200000","0163103100000010"); // non lin 40-60%
     cuts.AddCutCalo("86810123","24466420ha012200000","0163103100000010"); // non lin 60-80%
     cuts.AddCutCalo("88010123","24466420ha012200000","0163103100000010"); // non lin 80-100%
+  } else if (trainConfig == 524) {  // JJ MC, non lin variations (shifting to pi0 position)
+    cuts.AddCutCalo("80010123","24466000ha012200000","0163103100000010"); // standard
+    cuts.AddCutCalo("80010123","24466530ha012200000","0163103100000010"); // standard
+    cuts.AddCutCalo("80010123","24466540ha012200000","0163103100000010"); // standard
 
   // Variations for systematics
   } else if (trainConfig == 530) { // NL variations (standard: 42 PHOS ML)
