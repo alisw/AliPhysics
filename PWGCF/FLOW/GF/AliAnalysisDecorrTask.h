@@ -35,7 +35,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
         void                    SetPVtxZMax(Double_t z) { fPVtxCutZ = z; }
         void                    SetCentBin(Int_t nbins, Double_t *bins) { fCentAxis->Set(nbins,bins); }
-        void                    SetCentLim(Double_t min, Double_t max) { fCentMin = min; fCentMax = max; }
+        void                    SetCentLim(Double_t min, Double_t max) { fCentMin = min; fCentMax = max; } //Not used yet
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
         AliEventCuts            fEventCuts;
         //track selection
@@ -62,7 +62,6 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    DoRFPs(Bool_t ref) { bRef = ref; }              //Calculate integrad flow
         void                    DoDiff(Bool_t diff) { bDiff = diff; }           //Calculate pt differential flow
         void                    DoPtB(Bool_t ptb) { bPtB = ptb; }               //Calculate flow with particles from different pt bins
-        TH2F*                   nuacentral;
 
     
     private:
@@ -215,8 +214,6 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fPOIsPtmin;
         Double_t                fRFPsPtMax;
         Double_t                fRFPsPtMin;
-
-
 
         ClassDef(AliAnalysisDecorrTask, 1);
 };
