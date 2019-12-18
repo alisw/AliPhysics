@@ -141,6 +141,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseTOFCorrection(Bool_t flag) {fUseTOFCorrection = flag;}
   void  SetUseIonTailCorrection(Int_t flag) {fUseIonTailCorrection = flag;}
   void  SetIonTailCorrection(Float_t factor) {fIonTailCorrection = factor;}
+  void  SetIonTailCorrectionTimeScale(Float_t timeScale) {fIonTailCorrectionTimeScale = timeScale;}
   void  SetCrosstalkCorrection(Float_t crosstalkCorrection) {fCrosstalkCorrection= crosstalkCorrection; }
   void  SetCrosstalkCorrectionMissingCharge(Float_t crosstalkCorrection) {fCrosstalkCorrectionMissingCharge= crosstalkCorrection; }
   void  SetCrosstalkIonTail(Bool_t crosstalkIonTail) {fCrosstalkIonTail= crosstalkIonTail; }
@@ -166,6 +167,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t GetUseTOFCorrection() {return fUseTOFCorrection;}
   Int_t GetUseIonTailCorrection() const {return fUseIonTailCorrection;}
   Float_t GetIonTailCorrection() const {return fIonTailCorrection;}
+   Float_t GetIonTailCorrectionTimeScale() const {return fIonTailCorrectionTimeScale;}
   Double_t GetCrosstalkCorrection() const {return fCrosstalkCorrection;}
  Double_t GetCrosstalkCorrectionMissingCharge() const {return fCrosstalkCorrectionMissingCharge;}
  Bool_t   GetCrosstalkIonTail() const {return fCrosstalkIonTail;}
@@ -217,6 +219,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void   SettUseClusterErrordEdxCorrection(Bool_t useClusterErrordEdxCorrection){ fUseClusterErrordEdxCorrection=useClusterErrordEdxCorrection;}
   Bool_t GetUseClusterErrordEdxMultCorrection() const {return fUseClusterErrordEdxMultCorrection;}
   void   SettUseClusterErrordEdxMultCorrection(Bool_t useClusterErrordEdxMultCorrection){ fUseClusterErrordEdxMultCorrection=useClusterErrordEdxMultCorrection;}
+  const TMatrixF& GetClusterErrorMatrix() const {return fClusterErrorMatrix;}
+  void  SetClusterErrorMatrix(TMatrixF* matrix) {fClusterErrorMatrix=*matrix;}
+  void  SetClusterErrorMatrixElement(Int_t row, Int_t column, Float_t value) {fClusterErrorMatrix(row,column)=value;}
+  void  SetClusterErrorParam();      // set default cluster error Param
   const TMatrixF& GetClusterNSigma2Cut() const {return fClusterNSigma2Cut;}
   void SetClusterNSigma2Cut(TMatrixF cuts){fClusterNSigma2Cut=cuts;}
   void SetClusterNSigma2Cut(Int_t row, Int_t column,Float_t cut){fClusterNSigma2Cut(row,column)=cut;}
@@ -296,6 +302,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t fUseAlignmentTime;              ///< use time dependent alignment correction
   Int_t fUseIonTailCorrection;   ///< use ion tail correction
   Float_t fIonTailCorrection;      ///< ion tail tail correction factor - NEW SINCE 2018- additonal scaling correcting for imperfect knowledge of the integral of ion tail - shoudl be ~ 1
+  Float_t fIonTailCorrectionTimeScale;      ///< ion tail tail correction factor time stretching - new Since 2019 - default value=1
   Double_t fCrosstalkCorrection;   ///< crosstalk correction factor (fro each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
   Double_t fCrosstalkCorrectionMissingCharge;   ///< crosstalk correction factor - missing charge factor (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing  capacitors in 2012
   Bool_t   fCrosstalkIonTail;            /// < flag calculate crosstalk for ion tail
@@ -338,6 +345,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   Bool_t fUseClusterErrordEdxCorrection;     ///< switch to use the dEdx correction
   Bool_t fUseClusterErrordEdxMultCorrection;     ///< switch to use the dEdx, multiplicity  correction
+  TMatrixF fClusterErrorMatrix;                  ///< cluster error matrix
   TMatrixF fClusterNSigma2Cut;                    /// < n sigma cluster/trac cut
   static TVectorD* fgSystErrClustCustom;  //< custom systematic errors for the TPC clusters overriding persistent data member
   static TVectorD* fgPrimaryDCACut;       //< only primaries passing DCAYZ cut are reconstructed
@@ -348,7 +356,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 36)
+  ClassDef(AliTPCRecoParam, 38)
   /// \endcond
 };
 

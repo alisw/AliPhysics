@@ -23,7 +23,7 @@ class AliESDEvent;
 class AliRawReader;
 class AliTOFcalib;
 class AliESDpid;
-
+class TTreeSRedirector;
 //class AliTOFT0maker;
 
 class AliTOFReconstructor: public AliReconstructor {
@@ -49,8 +49,18 @@ public:
 
   virtual void FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *esdPID);
   virtual void GetPidSettings(AliESDpid *esdPID);
+   static Int_t StreamLevel()               { return fgStreamLevel;}
+    static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
+    static TTreeSRedirector    *GetDebugStreamer(){return fgDebugStreamer;}
+  static void SetDebugStreamer(TTreeSRedirector    *debugStreamer){fgDebugStreamer=debugStreamer;}
 
+  static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
+ enum EStreamFlags { // flags to store addition data/code debugging information which is not stored in ESD but in specaial TPCdebug.root file
+   kStreamSingle = 0x00001,    // flag:stream - single hit stream
+   kStreamV0 = 0x00002,        // flag:stream - gamma candidate hit pair stream
+ };
 private:
+  static TTreeSRedirector    *fgDebugStreamer; // pointer to the streamer
   AliTOFReconstructor(const AliTOFReconstructor &); //Not implemented
   AliTOFReconstructor& operator=(const AliTOFReconstructor &); //Not implemented
 

@@ -49,6 +49,8 @@
 class TTree;
 
 ClassImp(AliTOFReconstructor)
+Int_t    AliTOFReconstructor::fgStreamLevel     = 0;             // stream (debug) level
+TTreeSRedirector    *  AliTOFReconstructor::fgDebugStreamer=0;   // NOTE -  AliTOFReconstructor is not an owner of the streamer - AliTOFtracker is an owner
 
 Double_t AliTOFReconstructor::fgExtraTolerance = 0;
 Int_t AliTOFReconstructor::fgCTPtriggerLatency = -1;
