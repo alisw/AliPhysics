@@ -80,7 +80,7 @@ AliAnalysisDataContainer* makeEmptyContainer(){
   return weights;
 }
 
-AliAnalysisTaskSE* AddTaskForwardSecondaries()
+AliAnalysisTaskSE* AddTaskForwardSecondaries(TString taskname)
 {
   std::cout << "AddTaskForwardSecondaries" << std::endl;
 

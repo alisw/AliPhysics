@@ -164,10 +164,7 @@ Double_t WrapPi(Double_t phi);
   TList* fDeltaList; //!
   TRandom fRandom;
   AliFMDMCTrackDensity* fTrackDensity; //!
-  THnD* delta_phi_eta;//!
-  THnD* delta_eta_phi;//!
-  THnD* delta_eta_eta;//!
-  THnD* delta_phi_phi;//!
+
   THnD* fnoPrim;//!
 
 
@@ -251,6 +248,12 @@ protected:
   ClassDef(AliForwardSecondariesTask, 1); // Analysis task for secondary analysis
 
   AliForwardFlowResultStorage* fStorage; //!
+
+
+  THnD* fdelta_phi_eta     ;//!  // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  THnD* fdelta_eta_phi     ;//!  // <w2*two>
+  THnD* fdelta_phi_phi     ;//! 
+  THnD* fdelta_eta_eta     ;//!   
 
 };
 

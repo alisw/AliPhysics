@@ -74,10 +74,6 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fDeltaList(0),
   fRandom(0),
   fTrackDensity(),
-  delta_phi_eta(),
-  delta_eta_phi(),
-  delta_eta_eta(),
-  delta_phi_phi(),
   fnoPrim(),
   fSettings(),
   fUtil(),
@@ -86,7 +82,11 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
-  fStorage(nullptr)
+  fStorage(nullptr),
+  fdelta_phi_eta(),
+  fdelta_eta_phi(),
+  fdelta_phi_phi(),
+  fdelta_eta_eta() 
   {
     //
     //  Default constructor
@@ -99,12 +99,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask(const char* name) : AliAnal
   fEventList(0),
   fDeltaList(0),
   fRandom(0),
-  fTrackDensity(),
-  delta_phi_eta(),
-  delta_eta_phi(),
-  delta_eta_eta(),
-  delta_phi_phi(),
-  fnoPrim(),
+  fTrackDensity(),  fnoPrim(),
   fSettings(),
   fUtil(),
   fStored(0),
@@ -112,7 +107,11 @@ AliForwardSecondariesTask::AliForwardSecondariesTask(const char* name) : AliAnal
   fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
-  fStorage(nullptr)
+  fStorage(nullptr),
+  fdelta_phi_eta(),
+  fdelta_eta_phi(),
+  fdelta_phi_phi(),
+  fdelta_eta_eta() 
   {
     //
     //  Constructor
@@ -150,74 +149,68 @@ void AliForwardSecondariesTask::UserCreateOutputObjects()
 
   Int_t phibins = fSettings.fNPhiBins;
   Int_t etabins = fSettings.fNDiffEtaBins;
-  Int_t dimensions = 4;
-  fSettings.fCentBins = 10;
+  Int_t dimensions = 3;
 
-  Int_t bins_phi_eta[4] = {fSettings.fNZvtxBins, phibins+1, etabins, 1} ;
-  Double_t xmin_phi_eta[4] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), -4, 0};
-  Double_t xmax_phi_eta[4] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 6, 100}; 
+  Int_t bins_phi_eta[3] = {fSettings.fNZvtxBins, phibins+1, etabins} ;
+  Double_t xmin_phi_eta[3] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), -4};
+  Double_t xmax_phi_eta[3] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 6}; 
 
-  Int_t bins_eta_phi[4] = {fSettings.fNZvtxBins, etabins+1, phibins, 1} ;
-  Double_t xmin_eta_phi[4] = {fSettings.fZVtxAcceptanceLowEdge, -6, 0, 0};
-  Double_t xmax_eta_phi[4] = {fSettings.fZVtxAcceptanceUpEdge, 6, 2*TMath::Pi(),100}; 
+  Int_t bins_eta_phi[3] = {fSettings.fNZvtxBins, etabins+1, phibins} ;
+  Double_t xmin_eta_phi[3] = {fSettings.fZVtxAcceptanceLowEdge, -6, 0};
+  Double_t xmax_eta_phi[3] = {fSettings.fZVtxAcceptanceUpEdge, 6, 2*TMath::Pi()}; 
 
-  Int_t bins_eta_eta[4] = {fSettings.fNZvtxBins, etabins + 1, etabins, 1} ;
-  Double_t xmin_eta_eta[4] = {fSettings.fZVtxAcceptanceLowEdge, -6, -4, 0};
-  Double_t xmax_eta_eta[4] = {fSettings.fZVtxAcceptanceUpEdge, 6, 6, 100}; 
-
-
-  Int_t bins_phi_phi[4] = {fSettings.fNZvtxBins, phibins + 1, phibins,1} ;
-  Double_t xmin_phi_phi[4] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, 0};
-  Double_t xmax_phi_phi[4] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 2*TMath::Pi(), 100}; 
+  Int_t bins_eta_eta[3] = {fSettings.fNZvtxBins, etabins + 1, etabins} ;
+  Double_t xmin_eta_eta[3] = {fSettings.fZVtxAcceptanceLowEdge, -6, -4};
+  Double_t xmax_eta_eta[3] = {fSettings.fZVtxAcceptanceUpEdge, 6, 6}; 
 
 
-  delta_phi_eta = new THnD("delta_phi_eta", "delta_phi_eta",dimensions,bins_phi_eta, xmin_phi_eta, xmax_phi_eta);
-  delta_eta_phi = new THnD("delta_eta_phi", "delta_eta_phi",dimensions,bins_eta_phi, xmin_eta_phi, xmax_eta_phi);
-  delta_eta_eta = new THnD("delta_eta_eta", "delta_eta_eta",dimensions,bins_eta_eta, xmin_eta_eta, xmax_eta_eta);
-  delta_phi_phi = new THnD("delta_phi_phi", "delta_phi_phi",dimensions,bins_phi_phi, xmin_phi_phi, xmax_phi_phi);
+  Int_t bins_phi_phi[3] = {fSettings.fNZvtxBins, phibins + 1, phibins} ;
+  Double_t xmin_phi_phi[3] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0};
+  Double_t xmax_phi_phi[3] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 2*TMath::Pi()}; 
 
 
-  delta_phi_eta->GetAxis(0)->SetName("vertex");
-  delta_phi_eta->GetAxis(1)->SetName("phi_mother - phi_tr");
-  delta_phi_eta->GetAxis(2)->SetName("eta");
-  delta_phi_eta->GetAxis(3)->SetName("centrality");
+  fdelta_phi_eta = new THnD("delta_phi_eta", "delta_phi_eta",dimensions,bins_phi_eta, xmin_phi_eta, xmax_phi_eta);
+  fdelta_eta_phi = new THnD("delta_eta_phi", "delta_eta_phi",dimensions,bins_eta_phi, xmin_eta_phi, xmax_eta_phi);
+  fdelta_eta_eta = new THnD("delta_eta_eta", "delta_eta_eta",dimensions,bins_eta_eta, xmin_eta_eta, xmax_eta_eta);
+  fdelta_phi_phi = new THnD("delta_phi_phi", "delta_phi_phi",dimensions,bins_phi_phi, xmin_phi_phi, xmax_phi_phi);
 
-  delta_eta_phi->GetAxis(0)->SetName("vertex");
-  delta_eta_phi->GetAxis(1)->SetName("eta_mother - eta_tr");
-  delta_eta_phi->GetAxis(2)->SetName("phi");
-  delta_eta_phi->GetAxis(3)->SetName("centrality");
 
-  delta_eta_eta->GetAxis(0)->SetName("vertex");
-  delta_eta_eta->GetAxis(1)->SetName("eta_mother - eta_tr");
-  delta_eta_eta->GetAxis(2)->SetName("eta");
-  delta_eta_eta->GetAxis(3)->SetName("centrality");
+  fdelta_phi_eta->GetAxis(0)->SetName("vertex");
+  fdelta_phi_eta->GetAxis(1)->SetName("phi_mother - phi_tr");
+  fdelta_phi_eta->GetAxis(2)->SetName("eta");
 
-  delta_phi_phi->GetAxis(0)->SetName("vertex");
-  delta_phi_phi->GetAxis(1)->SetName("phi_mother - phi_tr");
-  delta_phi_phi->GetAxis(2)->SetName("phi");
-  delta_phi_phi->GetAxis(3)->SetName("centrality");
+  fdelta_eta_phi->GetAxis(0)->SetName("vertex");
+  fdelta_eta_phi->GetAxis(1)->SetName("eta_mother - eta_tr");
+  fdelta_eta_phi->GetAxis(2)->SetName("phi");
 
-  fDeltaList->Add(delta_phi_eta); // (vertex, phi_mother - phi_tr, centrality, eta_mother, eta_tr, eta_p)
-  fDeltaList->Add(delta_eta_phi); // (vertex, phi_mother - phi_tr, centrality, eta_mother, eta_tr, eta_p)
-  fDeltaList->Add(delta_eta_eta); // (vertex, phi_mother - phi_tr, centrality, eta_mother, eta_tr, eta_p)
-  fDeltaList->Add(delta_phi_phi); // (vertex, phi_mother - phi_tr, centrality, eta_mother, eta_tr, eta_p)
+  fdelta_eta_eta->GetAxis(0)->SetName("vertex");
+  fdelta_eta_eta->GetAxis(1)->SetName("eta_mother - eta_tr");
+  fdelta_eta_eta->GetAxis(2)->SetName("eta");
 
+  fdelta_phi_phi->GetAxis(0)->SetName("vertex");
+  fdelta_phi_phi->GetAxis(1)->SetName("phi_mother - phi_tr");
+  fdelta_phi_phi->GetAxis(2)->SetName("phi");
+
+
+  TList* list_delta_phi_eta = new TList(); list_delta_phi_eta->SetName("delta_phi_eta"); list_delta_phi_eta->Add(fdelta_phi_eta); fDeltaList->Add(list_delta_phi_eta);
+  TList* list_delta_eta_phi = new TList(); list_delta_eta_phi->SetName("delta_eta_phi"); list_delta_eta_phi->Add(fdelta_eta_phi); fDeltaList->Add(list_delta_eta_phi);
+  TList* list_delta_eta_eta = new TList(); list_delta_eta_eta->SetName("delta_eta_eta"); list_delta_eta_eta->Add(fdelta_eta_eta); fDeltaList->Add(list_delta_eta_eta);
+  TList* list_delta_phi_phi = new TList(); list_delta_phi_phi->SetName("delta_phi_phi"); list_delta_phi_phi->Add(fdelta_phi_phi); fDeltaList->Add(list_delta_phi_phi);
 
 
   fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
 
-  Int_t bins_prim[3] = {fSettings.fNZvtxBins, etabins, 1} ;
-  Double_t xmin_prim[3] = {fSettings.fZVtxAcceptanceLowEdge, -4, 0};
-  Double_t xmax_prim[3] = {fSettings.fZVtxAcceptanceUpEdge, 6, 100}; //
-  Int_t dimensions_prim = 3;
+  Int_t bins_prim[2] = {fSettings.fNZvtxBins, etabins} ;
+  Double_t xmin_prim[2] = {fSettings.fZVtxAcceptanceLowEdge, -4};
+  Double_t xmax_prim[2] = {fSettings.fZVtxAcceptanceUpEdge, 6}; //
+  Int_t dimensions_prim = 2;
 
   fnoPrim = new THnD("fnoPrim", "fnoPrim", dimensions_prim, bins_prim, xmin_prim, xmax_prim);
 
-
-  fDeltaList->Add(fnoPrim); //(samples,vertex, phi, cent, eta)
   fnoPrim->GetAxis(0)->SetName("vertex");
   fnoPrim->GetAxis(1)->SetName("eta_mother");
-  fnoPrim->GetAxis(2)->SetName("centrality");
+
+  TList* list_prim = new TList(); list_prim->SetName("prim"); list_prim->Add(fnoPrim); fDeltaList->Add(list_prim);
 
 
 
@@ -310,8 +303,8 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
          Double_t phi[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), eta_tr,cent};//wrappi
          Double_t eta[4] = {event_vtx_z, eta_tr - eta_mother, phi_tr,cent};
 
-         delta_phi_eta->Fill(phi,weight);
-         delta_eta_phi->Fill(eta,weight);
+         fdelta_phi_eta->Fill(phi,weight);
+         fdelta_eta_phi->Fill(eta,weight);
 
          // Double_t phi1[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), phi_tr,cent};//wrappi
          // Double_t eta1[4] = {event_vtx_z, eta_tr - eta_mother, eta_tr,cent};
