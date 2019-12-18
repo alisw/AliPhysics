@@ -582,68 +582,66 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality, const Int_t iT
 
 
     if(iTracks < 1 ) { return; }
-            for(Int_t i(0); i < iTracks; i++) 
+    for(Int_t i(0); i < iTracks; i++) 
+    {
+        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
+        if(!track || !IsTrackSelected(track)) { continue; }
+        if(!WithinRFP(track)){continue;} // check if also within reference particle
+
+        double dEta = track->Eta();
+        double dPhi = track->Phi();
+        //double dPt = track->Pt();
+
+        Double_t dWeight = GetFlowWeight(track,dVz);
+        
+        // no eta gap
+        for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+        {
+            for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
             {
-                AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
-                if(!track || !IsTrackSelected(track)) { continue; }
-                if(!WithinRFP(track)){continue;} // check if also within reference particle
-
-                double dEta = track->Eta();
-                double dPhi = track->Phi();
-                //double dPt = track->Pt();
-
-                Double_t dWeight = GetFlowWeight(track,dVz);
-                
-                // no eta gap
-                for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+                Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                Qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+            }
+        }
+    
+        // eta gap
+        if(dEta > dGap)
+        {
+            for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+            {
+                for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
                 {
-                    for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
-                    {
-                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                        Qvector[iHarm][iPower] += TComplex(dCos,dSin);
-                    }
+                Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                Qvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                 }
-            
-                // eta gap
-                if(dEta > dGap)
+            }
+        } 
+        // RFP in negative eta acceptance
+        if(dEta < -dGap)
+        {
+            for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+            { 
+                for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
                 {
-                    for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
-                    {
-                        for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
-                        {
-                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                        Qvector10P[iHarm][iPower] += TComplex(dCos,dSin);
-                        }
-                    }
-                } 
-                // RFP in negative eta acceptance
-                if(dEta < -dGap)
-                {
-                    for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
-                    { 
-                        for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
-                        {
-                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                        Qvector10M[iHarm][iPower] += TComplex(dCos,dSin);
-                        }
-                    }
+                Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                Qvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                 }
-            
-            if(fnTwoCorr){
-            FillRFP(centrality,iTracks,2,2);  //with gap for 2-particle correlation nHarm=2
-            FillRFP(centrality,iTracks,3,2);  // nHarm=3
-            FillRFP(centrality,iTracks,4,2);  // nHarm=4
-            FillRFP(centrality,iTracks,5,2);
-            FillRFP(centrality,iTracks,6,2);
             }
-            if(fnFourCorr){
-            FillRFP(centrality,iTracks,2,4);  //with gap for 4-particle correlation nHarm=2
-            }
-            
-            }
+        }            
+    }
+    if(fnTwoCorr){
+    FillRFP(centrality,iTracks,2,2);  //with gap for 2-particle correlation nHarm=2
+    FillRFP(centrality,iTracks,3,2);  // nHarm=3
+    FillRFP(centrality,iTracks,4,2);  // nHarm=4
+    FillRFP(centrality,iTracks,5,2);
+    FillRFP(centrality,iTracks,6,2);
+    }
+    if(fnFourCorr){
+    FillRFP(centrality,iTracks,2,4);  //with gap for 4-particle correlation nHarm=2
+    }
     return;
 
 }
@@ -675,7 +673,7 @@ void AliAnalysisTaskESEFlow::FillPOI(const Double_t dPtL, const Double_t dPtLow,
                         {   
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                            qvector[iHarm][iPower] += TComplex(dCos,dSin);
+                            qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                         }
                     }
                 }
@@ -688,7 +686,7 @@ void AliAnalysisTaskESEFlow::FillPOI(const Double_t dPtL, const Double_t dPtLow,
                     {
                         Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                         Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                        pvector[iHarm][iPower] += TComplex(dCos,dSin);
+                        pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                     }
                 }
 
@@ -701,7 +699,7 @@ void AliAnalysisTaskESEFlow::FillPOI(const Double_t dPtL, const Double_t dPtLow,
                         {
                         Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                         Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                        pvector10P[iHarm][iPower] += TComplex(dCos,dSin);
+                        pvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                         }
                     }
                 } 
@@ -713,7 +711,7 @@ void AliAnalysisTaskESEFlow::FillPOI(const Double_t dPtL, const Double_t dPtLow,
                         {
                         Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                         Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                        pvector10M[iHarm][iPower] += TComplex(dCos,dSin);
+                        pvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                         }
                     }
                 }     
