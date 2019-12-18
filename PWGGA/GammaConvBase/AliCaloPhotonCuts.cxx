@@ -6783,10 +6783,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       } else if (fClusterType == 2) { // PHOS case: shift data and MC to pi0 mass (Calo-Calo)
           if ( fCurrentMC == kPPb5T13P4DPMJet ){ // RUN1, MB MC
             energy /= FunctionNL_SPOW(energy, 1.00132, -0.00598632, -2.167);
+          } else if ( fCurrentMC == kPPb5T13P4JJ ) { // RUN1, JJ MC
+            energy /= FunctionNL_SExp(energy, 1.00355, 756.545, -20.3831, -1.);
           } else if ( fCurrentMC == k13pPb5023GeV ) { // RUN1, data
             energy /= FunctionNL_SPOW(energy, 0.997167, -0.000759949, -5.04513);
           } else if ( fCurrentMC == kPPb5T16DPMJet ) { // RUN2, MB MC
             energy /= FunctionNL_SExp(energy, 0.991632, 1.22134, -2.97826, -1.);
+          } else if ( fCurrentMC == k17g8a ) { // RUN2, JJ MC
+            energy /= 1.0145754170;
           } else if ( fCurrentMC == k16pPb5023GeV ) { // RUN2, data
             energy /= FunctionNL_SExp(energy, 1.02521, 0.59747, -4.17083);
           }
@@ -6801,10 +6805,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       } else if (fClusterType == 2) { // PHOS case: shift data and MC to pi0 mass (PCM-Calo)
           if ( fCurrentMC == kPPb5T13P4DPMJet ){ // RUN1, MB MC
             energy /= FunctionNL_SExp(energy, 1.00703, 16753.6, -23418.6, -1);
+          } else if ( fCurrentMC == kPPb5T13P4JJ ) { // RUN1, JJ MC
+            energy /= FunctionNL_SExp(energy, 0.996626, 1.99301, -2.33312, -1.);
           } else if ( fCurrentMC == k13pPb5023GeV ) { // RUN1, data
             energy /= FunctionNL_SExp(energy, 1.0128, 11.7606, 1.10537, -1.);
           } else if ( fCurrentMC == kPPb5T16DPMJet ) { // RUN2, MB MC
             energy /= FunctionNL_SPOW(energy, 0.965941, 0.0458828, -0.5);
+          } else if ( fCurrentMC == k17g8a ) { // RUN2, JJ MC
+            energy /= FunctionNL_SExp(energy, 0.983876, 0.851007, -3.41359, -1);
           } else if ( fCurrentMC == k16pPb5023GeV ) { // RUN2, data
             energy /= 1.0268;
           }

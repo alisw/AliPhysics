@@ -683,8 +683,12 @@ void AddTask_GammaConvCalo_pPb(
   //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1000){ // PHOS  INT7 run1
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","244440004a013200000","0h63103100000010"); // 0-100% without NL
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","244445304a013200000","0h63103100000010"); // 0-100% with NL 1
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","244445404a013200000","0h63103100000010"); // 0-100% with NL 2
   } else if (trainConfig == 1001){ // PHOS  PHI7 run1
     cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","244440004a013200000","0h63103100000010"); // 0-100% without NL
+    cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","244445304a013200000","0h63103100000010"); // 0-100% with NL 1
+    cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","244445404a013200000","0h63103100000010"); // 0-100% with NL 2
   } else if (trainConfig == 1002) {  // PHOS  INT7 run2
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
 
