@@ -239,6 +239,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if( trainConfig == 51)  { // Test for PHOS (5 TeV)
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","302010708","0103603200000000","0153503000000000"); // PCM-PHOS nonLin
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","322010708","0103603200000000","0153503000000000"); // with ITS requirement
+
+  } else if( trainConfig == 60) { //pp 13 TeV EDC
+    cuts.AddCutHeavyMesonCalo("00010113","411791206f032230000","30a210708","01631031000000d0","0153503000000000"); // INT7 NL 12
+    cuts.AddCutHeavyMesonCalo("00010113","411791206f032230000","32a210708","01631031000000d0","0153503000000000"); // INT7 NL 12
+  } else if( trainConfig == 61) { //pp 13 TeV EDC Trigger
+    cuts.AddCutHeavyMesonCalo("0008e113","411791206f032230000","30a210708","01631031000000d0","0153503000000000"); // EG2 NL 12
+    cuts.AddCutHeavyMesonCalo("0008d113","411791206f032230000","30a210708","01631031000000d0","0153503000000000"); // EG1 NL 12
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //                                          OMEGA MESON
