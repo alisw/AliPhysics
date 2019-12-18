@@ -34,6 +34,8 @@
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2pPb+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb+;
+#pragma link C++ class AliRunningCascadeCandidate+;
+#pragma link C++ class AliRunningCascadeEvent+;
 #pragma link C++ class AliAnalysisTaskStrangeCascadesDiscrete+;
 #pragma link C++ class AliAnalysisTaskPPVsMultCrossCheckMC+;
 #pragma link C++ class AliAnalysisTaskpANormalizationCheckMC+;
@@ -62,6 +64,8 @@
 #pragma link C++ class Lifetimes::HyperTriton2Body+;
 #pragma link C++ class std::vector<Lifetimes::HyperTriton2Body>+;
 #pragma link C++ class Lifetimes::MiniEvent+;
+//#pragma link C++ class AliRunningCascadeEvent+;
+//#pragma link C++ class AliRunningCascadeTrack+;
 #endif
 
 #ifdef __CLING__
