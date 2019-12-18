@@ -1,39 +1,3 @@
-AliAnalysisDataContainer* makeWeightContainer(TString nua_file, TString containerName)
-{
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliAnalysisDataContainer* weights;
-  if (nua_file.Contains("alien:")) TGrid::Connect("alien:");
-  TFile* file;
-  file = TFile::Open(nua_file.Data(), "READ");
-
-  if(!file) { printf("E-MyAddTask: Input file with differential weights not found!\n"); return NULL; }
-
-  TList* weights_list = new TList();
-  weights_list->SetName("nuaWeights");
-  
-  TH2F* nuacentral = new TH2F();
-
-  file->GetObject("fHistPhiEta", nuacentral);
-  nuacentral->SetDirectory(0);
-  nuacentral->SetNameTitle("nuacentral","nuacentral");
-
-  file->Close();
-
-  weights_list->Add(nuacentral);
-
-  weights = mgr->CreateContainer(containerName,TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
-  weights->SetData(weights_list);
-  return weights;
-}
-
-
-void connectContainer(AliAnalysisDataContainer* container,AliAnalysisDecorrTask* task)
-{
-
-  task->nuacentral = static_cast<TH2F*>( static_cast<TList*>(container->GetData())->FindObject("nuacentral") );
-  task->nuacentral->SetDirectory(0);
-}
-
 AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = "", TString s2DWeightsFile = "", TString s3DWeightsFile = "")
 {
     // get the manager via the static access member. since it's static, you don't need
