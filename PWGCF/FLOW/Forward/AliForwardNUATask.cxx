@@ -228,11 +228,9 @@ void AliForwardNUATask::UserExec(Option_t *)
       for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
           Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
           Double_t phi = forwardDist->GetYaxis()->GetBinCenter(phiBin);
-        if (fSettings.mc & fSettings.esd){
-
-
-          if (!fUtil.FMDAcceptanceExistMC(eta,phi,zvertex)) continue;
-        }
+//        if (fSettings.mc & fSettings.esd){
+//          if (!fUtil.FMDAcceptanceExistMC(eta,phi,zvertex)) continue;
+//        }
         Double_t weight = forwardDist->GetBinContent(etaBin,phiBin);
 
         if (fSettings.nua_mode & fSettings.kInterpolate)
