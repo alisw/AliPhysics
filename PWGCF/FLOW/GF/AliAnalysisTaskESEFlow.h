@@ -43,6 +43,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    AddTwoCorr(Bool_t actTwoCorr) { fnTwoCorr = actTwoCorr; }
         void                    AddFourCorr(Bool_t actFourCorr) { fnFourCorr = actFourCorr; }
 
+        void                    SetTPCEse(Bool_t actTPCEse) { fTPCEse = actTPCEse; }
+        void                    SetV0CEse(Bool_t actV0CEse) { fV0CEse = actV0CEse; }
+
 
         void                    SetWeights(Bool_t kOwn) { bUseOwnWeights = kOwn; }
         
@@ -68,8 +71,10 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TList*                  fCorrDist;      //!
         TList*                  fpTDiff;        //!
         TList*                  fqnDist;        //!
-        TList*                  fpTDiffqselec;  //!
-        TList*                  fcnqselec;      //!
+        TList*                  fpTDiffESETPC;  //!
+        TList*                  fcnESETPC;      //!
+        TList*                  fpTDiffESEV0C;  //!
+        TList*                  fcnESEV0C;      //!
         TList*                  fQAEvents;      //!
 
         TList*                  fFlowWeightsList; //! 
@@ -94,15 +99,18 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2D*                   fh2Weights; //!
         TH1F*                   fHistPDG; //!
 
-        /////////////////////////////////////////////
+        ////////////////////// TPC ///////////////////////
         TProfile*               fcn2GapESETPC[fNumHarmHists][2][fESECuts]; //!        
         TProfile*               fdn2GapESETPC[fNumHarmHists][2][fNumCentHists][fESECuts]; //! 
         TProfile*               fcn4Gap; //!
         TProfile*               fdn4GapPt[fNumCentHists];    //! 
         TProfile*               fcn4GapESETPC[2][fESECuts]; //!        
         TProfile*               fdn4GapESETPC[2][fNumCentHists][fESECuts]; //! 
-
-        //////////////////////////////////////////// 
+        ////////////////////// V0C ////////////////////// 
+        TProfile*               fcn2GapESEV0C[fNumHarmHists][2][fESECuts]; //!        
+        TProfile*               fdn2GapESEV0C[fNumHarmHists][2][fNumCentHists][fESECuts]; //! 
+        TProfile*               fcn4GapESEV0C[2][fESECuts]; //!        
+        TProfile*               fdn4GapESEV0C[2][fNumCentHists][fESECuts]; //! 
         
 
         ///////////////////////////////////////////////////////////////
@@ -115,23 +123,23 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         TProfile2D*             fvnq2Scatter[fNumHarmHists];   //!
         TProfile*               fProfNPar; //!
-        TH1F*                   fV0CAmplitudeCorr;    //!
+        TH1F*                   fhV0AmpCorr;    //!
 
         // fill dphi/deta/dpt histograms for weights
         void CorrelationTask(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t fSpCent);
         void FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, const Float_t fcentV0C, const Float_t centrality);
         // Calculate flow vectors for reference and POIs
-        void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC);
-        void POIVectors(const Int_t CenterCode, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC);
+        void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
+        void POIVectors(const Int_t CenterCode, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
         void ReducedqVectorsTPC(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
         void ReducedqVectorsV0C(const Float_t centrality, const AliAODEvent* fAOD);
-        void FillRFP(const Float_t centrality,const Int_t iTracks, const int nHarm, const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC);
-        void Filldn(const Int_t CenterCode, const double dPt, const int nHarm, const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC);
+        void FillRFP(const Float_t centrality,const Int_t iTracks, const int nHarm, const int nCorr);
+        void Filldn(const Int_t CenterCode, const double dPt, const int nHarm, const int nCorr);
         void FillqnRedTPC(const Float_t centrality);
         void FillqnRedV0(const Float_t centrality, TString V0type);
         void FillPOI(const Double_t dPtL, const Double_t dPtLow, const Double_t dPtHigh, const float dVz, const Int_t iTracks);
-        void FillESEcn(const Float_t centrality, const int nHarm, const double c, const double c_weight,const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC);
-        void FillESEdnPt(const Int_t CenterCode, const int nHarm, const Double_t dPt, const double d, const double d_weight,const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC);
+        void FillESEcn(const Float_t centrality, const int nHarm, const double c, const double c_weight,const int nCorr);
+        void FillESEdnPt(const Int_t CenterCode, const int nHarm, const Double_t dPt, const double d, const double d_weight,const int nCorr);
         Int_t GetCentrCode(const Float_t centrality);
         Int_t GetPercCode(Double_t qPerc) const;
         Bool_t WithinRFP(const AliVParticle* track) const;
@@ -146,7 +154,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         double GetWeight(double phi, double eta, double vz,  double runNumber);
         double GetPtWeight(double pt, double eta, float vz,  double runNumber);
         void ResetFlowVector(TComplex (&array)[fNumHarms][fNumPowers]); // set values to TComplex(0,0,0) for given array
-        void ResetReducedFlowVector(Double_t (&array)[fNumHarms]);
+        void ResetReducedqVector(Double_t (&array)[fNumHarms]);
 
         Bool_t sortPt(const AliAODTrack* t1, const AliAODTrack* t2) { return (t1->Pt() < t2->Pt()); } // function for std::sort
         
@@ -163,16 +171,16 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TComplex Qvector10P[fNumHarms][fNumPowers];
 
         Double_t qnTPC[fNumHarms];
-        Double_t sumCosTPC[fNumHarms];
-        Double_t sumSinTPC[fNumHarms];
+        Double_t QxnTPC[fNumHarms];
+        Double_t QynTPC[fNumHarms];
 
         Double_t qnV0C[fNumHarms];
-        Double_t sumCosV0C[fNumHarms];
-        Double_t sumSinV0C[fNumHarms];
+        Double_t QxnV0C[fNumHarms];
+        Double_t QynV0C[fNumHarms];
 
         Double_t qnV0A[fNumHarms];
-        Double_t sumCosV0A[fNumHarms];
-        Double_t sumSinV0A[fNumHarms];
+        Double_t QxnV0A[fNumHarms];
+        Double_t QynV0A[fNumHarms];
         
 
         TComplex Q(int n, int p);
@@ -247,6 +255,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t                fFlowPOIsPtMax; // [10] (GeV/c) max pT treshold for POIs for differential flow
         Bool_t                  fnTwoCorr;
         Bool_t                  fnFourCorr;
+        Bool_t                  fTPCEse;
+        Bool_t                  fV0CEse;
+        Int_t                   q2ESECodeTPC;
+        Int_t                   q3ESECodeTPC;
+        Int_t                   q2ESECodeV0C;
+        Int_t                   q3ESECodeV0C;
 
 
         ClassDef(AliAnalysisTaskESEFlow, 1);
