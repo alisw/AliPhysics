@@ -7,7 +7,7 @@ R__LOAD_LIBRARY(libAliPythia6)
 #include "AliGenerator.h"
 #include "AliGenAmpt.h"
 
-AliGenerator *AddMCGenAmpt(
+AliGenerator *AddMCGenAmptPP(
                           Double_t Energy      = 13000.,   // CM energy
                           Double_t bmin        = 0.0,     // minimum impact parameter
                           Double_t bmax        = 8.31,    // maximum impact parameter
