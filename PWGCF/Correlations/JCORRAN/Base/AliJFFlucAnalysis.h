@@ -77,7 +77,7 @@ public:
 	enum BINNING{
 		BINNING_CENT_PbPb,
 		BINNING_MULT_PbPb_1,
-		BINNING_MULT_pp_1
+		BINNING_MULT_pPb_1
 	};
 	void SetBinning(BINNING _binning){
 		binning = _binning;
@@ -91,13 +91,12 @@ public:
 		flags |= nflags;
 	}
 
-#define CENTN_NAT 9
 	static Double_t CentBin_PbPb_default[][2];
 	static Double_t MultBin_PbPb_1[][2];
-	static Double_t MultBin_pp_1[][2];
+	static Double_t MultBin_pPb_1[][2];
 	static Double_t (*pBin[3])[2];
 	static Double_t pttJacek[74];
-	static UInt_t CentralityTranslationMap[CENTN_NAT];
+	//static UInt_t CentralityTranslationMap[CENTN_NAT];
 	//static UInt_t NCentBin;
 	static UInt_t NBin[3];
 	static UInt_t NpttJacek;
