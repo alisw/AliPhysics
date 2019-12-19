@@ -168,8 +168,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     closeRejection[0] = true;
     closeRejection[4] = true;
 
-    pairQA[2] = 13;     // p-K
-    pairQA[6] = 13;     // ap-ak
+    pairQA[2] = 11;     // p-K
+    pairQA[6] = 11;     // ap-ak
 
     // ZVtx bins
     std::vector<float> ZVtxBins;
