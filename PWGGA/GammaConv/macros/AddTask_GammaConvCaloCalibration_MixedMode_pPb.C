@@ -385,9 +385,9 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pPb(
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparse(enableTHnSparse);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(isRun2){ task->SetNumOfCaloModules(20); }
-  if(!isRun2){ task->SetNumOfCaloModules(8); }}
+  if(!isRun2){ task->SetNumOfCaloModules(10); }
 
   //connect containers
   AliAnalysisDataContainer *coutput =
