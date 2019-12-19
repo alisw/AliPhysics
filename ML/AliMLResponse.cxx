@@ -20,7 +20,6 @@
 
 #include "assert.h"
 
-
 using std::map;
 using std::pair;
 using std::string;
@@ -81,7 +80,7 @@ bool ModelHandler::CompileModel() {
 ClassImp(AliMLResponse);
 /// \endcond
 
-//________________________________________________________________
+//_______________________________________________________________________________
 AliMLResponse::AliMLResponse()
     : TNamed(), fConfigFilePath{}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{}, fNVariables{},
       fBinsBegin{}, fRaw{} {
@@ -90,7 +89,7 @@ AliMLResponse::AliMLResponse()
   //
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 AliMLResponse::AliMLResponse(const Char_t *name, const Char_t *title)
     : TNamed(name, title), fConfigFilePath{""}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{},
       fNVariables{}, fBinsBegin{}, fRaw{} {
@@ -99,14 +98,14 @@ AliMLResponse::AliMLResponse(const Char_t *name, const Char_t *title)
   //
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 AliMLResponse::~AliMLResponse() {
   //
   // Destructor
   //
 }
 
-//--------------------------------------------------------------------------
+//_______________________________________________________________________________
 AliMLResponse::AliMLResponse(const AliMLResponse &source)
     : TNamed(source.GetName(), source.GetTitle()), fConfigFilePath{source.fConfigFilePath}, fModels{source.fModels},
       fCentClasses{source.fCentClasses}, fBins{source.fBins}, fVariableNames{source.fVariableNames},
@@ -137,7 +136,7 @@ AliMLResponse &AliMLResponse::operator=(const AliMLResponse &source) {
   return *this;
 }
 
-//_________________________________________________________________________
+//_______________________________________________________________________________
 void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
   /// error for empty config file
   if (nodelist.IsNull()) {
@@ -155,7 +154,7 @@ void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
   return;
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 void AliMLResponse::MLResponseInit() {
   /// import config file from alien path
   string configPath = ImportFile(fConfigFilePath);
@@ -189,16 +188,16 @@ void AliMLResponse::MLResponseInit() {
   }
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 int AliMLResponse::FindBin(double binvar) {
   vector<float>::iterator low;
   low = std::lower_bound(fBins.begin(), fBins.end(), binvar);
   return low - fBinsBegin;
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
-  if ((int)varmap.size() <= fNVariables) {
+  if ((int)varmap.size() < fNVariables) {
     AliFatal("The variables map you provided to the predictor have a size different from the variable list size! Exit");
   }
 
