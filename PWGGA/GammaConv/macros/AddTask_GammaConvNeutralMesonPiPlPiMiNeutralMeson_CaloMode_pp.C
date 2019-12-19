@@ -303,6 +303,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036c3c00000000","0153503000000000"); // 8.0
     cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036e3c00000000","0153503000000000"); // new Energy cut 5 GeV
     cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036f3c00000000","0153503000000000"); // new Energy cut 7.5 GeV
+    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036g3c00000000","0153503000000000"); // new Energy cut 6.0 GeV
   } else if( trainConfig == 118){ // pt cut variation new SPD pileup cut
     cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036c3c00000000","0153503000000000"); // 8.0
     cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036e3c00000000","0153503000000000"); // new Energy cut 5 GeV
