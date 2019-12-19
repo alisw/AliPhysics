@@ -254,6 +254,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fAlphaCutMeson;                 ///< max value for meson alpha cut
     Double_t    fRapidityCutMeson;              ///< max value for meson rapidity
     Double_t    fMinV0Dist;                     ///
+    Double_t    fMesonQualityMin;               ///
     Double_t    fPBremSmearing;                 ///
     Double_t    fPSigSmearing;                  ///
     Double_t    fPSigSmearingCte;               ///
@@ -303,6 +304,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fEnableOneCellDistCut;          ///< flag to enable 1 cell dist cut
     Bool_t      fDoToCloseV0sCut;               ///<
     Bool_t      fDoSharedElecCut;               ///<
+    Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality. 
     Bool_t      fUseMCPSmearing;                ///< flag
     Bool_t      fAlphaPtDepCut;                 ///<
     Bool_t      fDCAGammaGammaCutOn;            ///< cut flag for the maximum distance between the two photons
@@ -326,7 +328,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,37)
+    ClassDef(AliConversionMesonCuts,38)
     /// \endcond
 };
 

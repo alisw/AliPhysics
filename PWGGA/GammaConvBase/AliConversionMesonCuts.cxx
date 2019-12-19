@@ -106,6 +106,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fAlphaCutMeson(1),
   fRapidityCutMeson(1),
   fMinV0Dist(200.),
+  fMesonQualityMin(0),
   fPBremSmearing(0),
   fPSigSmearing(0),
   fPSigSmearingCte(0),
@@ -152,6 +153,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fEnableOneCellDistCut(kFALSE),
   fDoToCloseV0sCut(kFALSE),
   fDoSharedElecCut(kFALSE),
+  fDoMesonQualitySelection(kFALSE),
   fUseMCPSmearing(kFALSE),
   fAlphaPtDepCut(kFALSE),
   fDCAGammaGammaCutOn(kFALSE),
@@ -214,6 +216,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fAlphaCutMeson(ref.fAlphaCutMeson),
   fRapidityCutMeson(ref.fRapidityCutMeson),
   fMinV0Dist(ref.fMinV0Dist),
+  fMesonQualityMin(ref.fMesonQualityMin),
   fPBremSmearing(ref.fPBremSmearing),
   fPSigSmearing(ref.fPSigSmearing),
   fPSigSmearingCte(ref.fPSigSmearingCte),
@@ -260,6 +263,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
   fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
   fDoSharedElecCut(ref.fDoSharedElecCut),
+  fDoMesonQualitySelection(ref.fDoMesonQualitySelection),
   fUseMCPSmearing(ref.fUseMCPSmearing),
   fAlphaPtDepCut(ref.fAlphaPtDepCut),
   fDCAGammaGammaCutOn(ref.fDCAGammaGammaCutOn),
@@ -378,7 +382,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(9,"out");
     fHistograms->Add(fHistoMesonBGCuts);
   } else {
-    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",11,-0.5,10.5, 250, 0, 50);
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",12,-0.5,11.5, 250, 0, 50);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -389,10 +393,11 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"dca R prim Vtx");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(9,"dca Z prim Vtx");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(10,"pT min");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(11,"out");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(11,"Meson Quality min");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(12,"out");
     fHistograms->Add(fHistoMesonCuts);
 
-    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",11,-0.5,10.5, 250, 0, 50);
+    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",12,-0.5,11.5, 250, 0, 50);
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -403,7 +408,8 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(8,"dca R prim Vtx");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(9,"dca Z prim Vtx");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(10,"pT min");
-    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(11,"out");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(11,"Meson Quality min");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(12,"out");
     fHistograms->Add(fHistoMesonBGCuts);
   }
 
@@ -1554,6 +1560,16 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
       }
   }
   cutIndex++;
+
+  //Meson Quality Selection
+  if(fDoMesonQualitySelection){
+    if( pi0->GetMesonQuality() < fMesonQualityMin){
+         if(hist)hist->Fill(cutIndex, pi0->Pt());
+          return kFALSE;
+      }
+  }
+  cutIndex++;
+
 
   if(hist)hist->Fill(cutIndex, pi0->Pt());
   return kTRUE;
@@ -3197,10 +3213,20 @@ Bool_t AliConversionMesonCuts::SetSharedElectronCut(Int_t sharedElec) {
   switch(sharedElec){
   case 0:
     fDoSharedElecCut = kFALSE;
+    fDoMesonQualitySelection= kFALSE;
+    fMesonQualityMin=0;
     break;
   case 1:
     fDoSharedElecCut = kTRUE;
+    fDoMesonQualitySelection= kFALSE;
+    fMesonQualityMin=0;
     break;
+  case 2:
+    fDoSharedElecCut = kFALSE;
+    fDoMesonQualitySelection= kTRUE;
+    fMesonQualityMin=2;
+    break;
+
   default:
     cout<<"Warning: Shared Electron Cut not defined "<<sharedElec<<endl;
     return kFALSE;
