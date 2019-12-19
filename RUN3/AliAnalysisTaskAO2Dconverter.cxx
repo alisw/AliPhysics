@@ -155,6 +155,14 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tEvents->Branch("fX", &vtx.fX, "fX/F");
     tEvents->Branch("fY", &vtx.fY, "fY/F");
     tEvents->Branch("fZ", &vtx.fZ, "fZ/F");
+    tEvents->Branch("fCovXX", &vtx.fCovXX, "fCovXX/F");
+    tEvents->Branch("fCovXY", &vtx.fCovXY, "fCovXY/F");
+    tEvents->Branch("fCovXZ", &vtx.fCovXZ, "fCovXZ/F");
+    tEvents->Branch("fCovYY", &vtx.fCovYY, "fCovYY/F");
+    tEvents->Branch("fCovYZ", &vtx.fCovYZ, "fCovYZ/F");
+    tEvents->Branch("fCovZZ", &vtx.fCovZZ, "fCovZZ/F");
+    tEvents->Branch("fChi2", &vtx.fChi2, "fChi2/F");
+    tEvents->Branch("fN", &vtx.fN, "fN/i");
     tEvents->Branch("fEventTime", &vtx.fEventTime, "fEventTime/F");
     tEvents->Branch("fEventTimeRes", &vtx.fEventTimeRes, "fEventTimeRes/F");
     tEvents->Branch("fEventTimeMask", &vtx.fEventTimeMask, "fEventTimeMask/b");
@@ -435,6 +443,19 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   vtx.fX = pvtx->GetX();
   vtx.fY = pvtx->GetY();
   vtx.fZ = pvtx->GetZ();
+
+  Double_t covmatrix[6];
+  pvtx->GetCovMatrix(covmatrix);
+
+  vtx.fCovXX = covmatrix[0];
+  vtx.fCovXY = covmatrix[1];
+  vtx.fCovXZ = covmatrix[2];
+  vtx.fCovYY = covmatrix[3];
+  vtx.fCovYZ = covmatrix[4];
+  vtx.fCovZZ = covmatrix[5];
+
+  vtx.fChi2 = pvtx->GetChi2();
+  vtx.fN = (pvtx->GetNDF()+3)/2;
 
   Float_t eventTime[10];
   Float_t eventTimeRes[10];
