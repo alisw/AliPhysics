@@ -14,12 +14,12 @@ AliGenerator *AddMCGenAmptPP(
                           Double_t parA        = 0.3,     // parameter a in Lund symmetric splitting function
                           Double_t parB        = 0.4,     // parameter b in Lund symmetric splitting function
                           Double_t ptHardMin   = 3.0,     // minimum pt hard (was 3.0 in previous AMPT productions)
-                          Double_t mu          = 2.2814;  // parton screening mass in fm^(-1)
-                          Double_t alpha_s     = 1./3.;   // alpa in parton cascade
-                          Int_t Flag_SM        = 4;       // flag for string melting
-                          Int_t NTmax          = 150;     // NTMAX: number of timesteps
+                          Double_t mu          = 2.2814,  // parton screening mass in fm^(-1)
+                          Double_t alpha_s     = 1./3.,   // alpa in parton cascade
+                          Int_t Flag_SM        = 4,       // flag for string melting
+                          Int_t NTmax          = 150,     // NTMAX: number of timesteps
                           Bool_t stringMelting = kTRUE,   // string melting option
-                          Bool_t useART        = kTRUE,   // use hadronic rescattering phase (ART)
+                          Bool_t useART        = kTRUE   // use hadronic rescattering phase (ART)
                            )
 {
   AliGenAmpt *genAMPT = new AliGenAmpt(-1);
