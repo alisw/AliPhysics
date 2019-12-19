@@ -781,7 +781,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
   fCutFolder                    = new TList*[fnCuts];
   fESDList                      = new TList*[fnCuts];
-  fHistoNEvents                 = new TH1I*[fnCuts];
+  fHistoNEvents                 = new TH1F*[fnCuts];
   if(fIsMC > 1){
     fHistoNEventsWOWeight       = new TH1F*[fnCuts];
   }
@@ -910,7 +910,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fESDList[iCut]->SetName(nameESDList.Data());
     fESDList[iCut]->SetOwner(kTRUE);
 
-    fHistoNEvents[iCut]           = new TH1I("NEvents","NEvents",14,-0.5,13.5);
+    fHistoNEvents[iCut]           = new TH1F("NEvents","NEvents",14,-0.5,13.5);
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -4583,7 +4583,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                   fHistoMCPosPionsFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), tempParticleWeight); // All pos from neutral heavy meson (omega, eta OR eta prime)
                   if(fDoMesonQA > 0){
                     fHistoMCPosPionsFromNeutralMesonEta[fiCut]->Fill(particle->Eta(), tempParticleWeight); // All pos from neutral heavy meson (omega, eta OR eta prime)
-                    fHistoMCPosPionsFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), fWeighttempParticleWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
+                    fHistoMCPosPionsFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), tempParticleWeight); // All pos from neutral heavy meson (omega, eta OR eta prime)
                   }
                 }
               }
