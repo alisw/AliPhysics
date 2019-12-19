@@ -6372,7 +6372,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // PCM-EDC based nonlinearity kSDM
     case 31:
       // apply testbeam nonlinearity (same as case 1) and further fine tuning
-      if(fClusterType==1 || fClusterType==4){
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
           // if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a || fCurrentMC==kPP8T12P2Pyt8 || fCurrentMC==kPP8T12P2Pho || fCurrentMC==kPP8T12P2JJ) {
@@ -6388,7 +6388,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // EDC based nonlinearity kSDM
     case 32:
       // apply testbeam nonlinearity (same as case 1) and further fine tuning
-      if(fClusterType==1 || fClusterType==4){
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
         } else {
@@ -6399,7 +6399,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // PCM-EDC based nonlinearity DExp or DPow
     case 33:
       // apply testbeam nonlinearity (same as case 1) and further fine tuning
-      if(fClusterType==1 || fClusterType==4){
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
           // energy /= (FunctionNL_DExp(energy, 1.0246042651, 0.6505466585, -3.8786840593, 1.0609702616, 0.1971682118, -2.8581050225));
@@ -6414,7 +6414,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // EDC based nonlinearity DExp or DPow
     case 34:
       // apply testbeam nonlinearity (same as case 1) and further fine tuning
-      if(fClusterType==1 || fClusterType==4){
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
           // energy /= (FunctionNL_DPOW(energy, 1.0433754550, -0.0429771943, -0.4999999999, 1.1947967487, -0.1995689867, -0.0998279631));
