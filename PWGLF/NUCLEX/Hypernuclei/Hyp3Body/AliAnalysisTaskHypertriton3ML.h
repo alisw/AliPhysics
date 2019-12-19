@@ -137,13 +137,16 @@ public:
 
   static AliAnalysisTaskHypertriton3ML *AddTask(bool isMC = false, TString suffix = "");
 
-  void SetApplyML(bool applyML) { fApplyML = applyML; }
-  void SetMLResponseConfigfilePath(std::string configfilepath) { fMLResponseConfigfilePath = configfilepath; }
-
   void SetDownscaling(bool down) { fDownscaling = down; }
 
   void SetDownscalingFactorByEvent(float fraction) { fDownscalingFactorByEvent = fraction; }
   void SetDownscalingFactorByCandidate(float fraction) { fDownscalingFactorByCandidate = fraction; }
+
+  void SetApplyML(bool applyML) { fApplyML = applyML; }
+  void SetMLResponseConfigfilePath(std::string configfilepath) { fMLResponseConfigfilePath = configfilepath; }
+
+  void SetEnableEventMixing(bool enableEM) { fEnableEventMixing = enableEM; }
+  void SetEventMixingPoolDepth(int maxDepth) { fEventMixingPoolDepth = maxDepth; }
 
   void SetOnlyTrueCandidates(bool trueCand) { fOnlyTrueCandidates = trueCand; }
 
@@ -187,6 +190,11 @@ public:
 private:
   std::map<std::string, double> FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv);
 
+  int FindEventMixingCentBin(const float centrality);
+  int FindEventMixingZBin(const float zVtx);
+  void FillEventMixingPool(const float centrality, const float xVtx, std::vector<AliESDtrack *> tracks);
+  std::vector<AliESDtrack *> GetEventMixingTracks(const float centrality, const float zvtx);
+
   TList *fListHist;    //! List of Cascade histograms
   TTree *fTreeHyp3;    //! Output Tree, V0s
 
@@ -197,6 +205,7 @@ private:
   bool fOnlyTrueCandidates;
   bool fDownscaling;
   bool fApplyML;
+  bool fEnableEventMixing;
 
   /// Control histograms to monitor the filtering
   TH2D *fHistNSigmaDeu;    //! # sigma TPC for the deuteron
@@ -243,6 +252,9 @@ private:
   std::vector<AliESDtrack *> fPiVector;
 
   std::string fMLResponseConfigfilePath;    /// path for the ML config file
+
+  std::vector<std::vector<AliESDtrack>> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
+  int fEventMixingPoolDepth;                                         /// max depth of the event mixing pool
 
   AliAnalysisTaskHypertriton3ML(const AliAnalysisTaskHypertriton3ML &);               // not implemented
   AliAnalysisTaskHypertriton3ML &operator=(const AliAnalysisTaskHypertriton3ML &);    // not implemented

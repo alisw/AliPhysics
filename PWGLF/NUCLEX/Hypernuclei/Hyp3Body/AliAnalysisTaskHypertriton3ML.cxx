@@ -20,15 +20,13 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TList.h>
-// #include <TMath.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
 #include <TVector3.h>
 
 #include <array>
-#include <map>
-// #include <stdio.h>
 #include <cmath>
+#include <map>
 #include <unordered_map>
 #include <vector>
 
@@ -118,30 +116,30 @@ template <typename F> double Hypot4(F a, F b, F c, F d) { return std::sqrt(a * a
 
 }    // namespace
 
-//________________________________________________________________
+//_______________________________________________________________________________
 AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::string name)
-    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fListHist{nullptr}, fTreeHyp3{nullptr},
+    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fMLResponse{}, fListHist{nullptr}, fTreeHyp3{nullptr},
       fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false},
-      fDownscaling{false}, fApplyML{false}, fHistNSigmaDeu{nullptr}, fHistNSigmaP{nullptr}, fHistNSigmaPi{nullptr},
-      fHistInvMass{nullptr}, fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.},
+      fDownscaling{false}, fApplyML{false}, fEnableEventMixing{false}, fHistNSigmaDeu{nullptr}, fHistNSigmaP{nullptr},
+      fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.},
       fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.}, fMinITSNcluster{0}, fMinTPCNcluster{70},
       fMaxNSigmaTPCDeu{5.}, fMaxNSigmaTPCP{5.}, fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.},
       fMaxNSigmaTOFPi{5.}, fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.}, fMinCosPA{0.993},
       fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05}, fMaxPtPion{1.},
-      fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{}, fDeuVector{}, fPVector{}, fPiVector{}, fMLResponse{},
-      fMLResponseConfigfilePath{} {
+      fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{}, fDeuVector{}, fPVector{}, fPiVector{},
+      fMLResponseConfigfilePath{}, fEventMixingPool{}, fEventMixingPoolDepth{0} {
 
-  // Settings for the custom vertexer
+  /// Settings for the custom vertexer
   fVertexer.SetToleranceGuessCompatibility(fVertexerToleranceGuessCompatibility);
   fVertexer.SetMaxDinstanceInit(fVertexerMaxDistanceInit);
 
-  // Standard output
+  /// Standard output
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());    // Basic Histograms
   DefineOutput(2, TTree::Class());    // Hypertriton Candidates Tree output
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 AliAnalysisTaskHypertriton3ML::~AliAnalysisTaskHypertriton3ML() {
   if (fListHist) {
     delete fListHist;
@@ -154,7 +152,7 @@ AliAnalysisTaskHypertriton3ML::~AliAnalysisTaskHypertriton3ML() {
   }
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fInputHandler           = (AliInputEventHandler *)(man->GetInputEventHandler());
@@ -198,9 +196,9 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   PostData(2, fTreeHyp3);
 
   AliPDG::AddParticlesToPdgDataBase();
-}    // end UserCreateOutputObjects
+}    /// end UserCreateOutputObjects
 
-//________________________________________________________________
+//_______________________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
   if (!esdEvent) {
@@ -360,9 +358,14 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     }
   }
 
-  // downscaling the output tree saving only a fDownscalingFactorByEvent fraction of the events
+  /// downscaling the output tree saving only a fDownscalingFactorByEvent fraction of the events
   if (!fMC && fDownscaling && ((int)fDeuVector.size() > 0)) {
     if (gRandom->Rndm() > fDownscalingFactorByEvent) return;
+  }
+
+  /// if event mixing is enabled takes deuteron from the event mixing pool
+  if (fEnableEventMixing && fApplyML) {
+    fDeuVector = GetEventMixingTracks(fREvent.fCent, fREvent.fZ);
   }
 
   for (const auto &deu : fDeuVector) {
@@ -520,6 +523,11 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     }
   }
 
+  /// if event mixing is enabled fill the event mixing pool with deuterons
+  if (fEnableEventMixing && fApplyML) {
+    FillEventMixingPool(fREvent.fCent, fREvent.fZ, fDeuVector);
+  }
+
   if (fMC) {
     fTreeHyp3->Fill();
 
@@ -534,10 +542,10 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   }
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::Terminate(Option_t *) {}
 
-//________________________________________________________________
+//_______________________________________________________________________________
 std::map<std::string, double> AliAnalysisTaskHypertriton3ML::FeaturesMap(const RHypertriton3 &hypCand,
                                                                          const REvent &rEv) {
   std::map<std::string, double> fMap;
@@ -626,16 +634,65 @@ std::map<std::string, double> AliAnalysisTaskHypertriton3ML::FeaturesMap(const R
   /// decay lenght vector
   const TVector3 decayLenghtVector = decayVtxPos - primaryVtxPos;
 
-  // hypertriton candidate ct
+  /// hypertriton candidate ct
   fMap["ct"] = kHyperTritonMass * decayLenghtVector.Mag() / hyper4Vector.P();
 
-  // compute the cos(theta pointing)
+  /// compute the cos(theta pointing)
   fMap["CosPA"] = std::cos(hyper4Vector.Angle(decayLenghtVector));
 
   return fMap;
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
+int AliAnalysisTaskHypertriton3ML::FindEventMixingCentBin(const float centrality) {
+  if (centrality > 90) return -999;
+  return static_cast<int>(centrality / 10);
+}
+
+//_______________________________________________________________________________
+int AliAnalysisTaskHypertriton3ML::FindEventMixingZBin(const float zvtx) {
+  if (zvtx > 10. || zvtx < -10.) return -999.;
+  return static_cast<int>((zvtx + 10.) / 2);
+}
+
+//_______________________________________________________________________________
+void AliAnalysisTaskHypertriton3ML::FillEventMixingPool(const float centrality, const float zvtx,
+                                                        std::vector<AliESDtrack *> tracks) {
+  int centBin = FindEventMixingCentBin(centrality);
+  int zBin    = FindEventMixingZBin(zvtx);
+
+  std::vector<std::vector<AliESDtrack>> *trackVector = &fEventMixingPool[centBin][zBin];
+  std::vector<AliESDtrack> tmpVector;
+
+  for (auto t : tracks) {
+    tmpVector.emplace_back(AliESDtrack{*t});
+  }
+
+  trackVector->insert(trackVector->begin(), tmpVector);
+  if (trackVector->size() > fEventMixingPoolDepth) trackVector->pop_back();
+
+  return;
+}
+
+//_______________________________________________________________________________
+std::vector<AliESDtrack *> AliAnalysisTaskHypertriton3ML::GetEventMixingTracks(const float centrality,
+                                                                               const float zvtx) {
+  int centBin = FindEventMixingCentBin(centrality);
+  int zBin    = FindEventMixingZBin(zvtx);
+
+  std::vector<AliESDtrack *> tmpVector;
+
+  for (auto v : fEventMixingPool[centBin][zBin]) {
+    tmpVector.reserve(tmpVector.size() + v.size());
+    for (auto esd : v) {
+      tmpVector.insert(tmpVector.end(), &esd);
+    }
+  }
+
+  return tmpVector;
+}
+
+//_______________________________________________________________________________
 AliAnalysisTaskHypertriton3ML *AliAnalysisTaskHypertriton3ML::AddTask(bool isMC, TString suffix) {
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
