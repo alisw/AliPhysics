@@ -195,8 +195,8 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
         "Type", {"kAll", "kINEL10", "kINEL_trig", "kINEL_trig_vtx",
                  "kINEL_trig_vtx10", "kINELg0", "kINELg010", "kINELg0_trig", 
                  "kINELg0_trig_vtx", "kINELg0_trig_vtx10", "kSelected"});
-        CreateTHnSparse("Sigma1385_mc", "Sigma1385_mc", 4,
-                        {binTypeMC, binCent, binPt, binMass}, "s");
+        CreateTHnSparse("Sigma1385_mc", "Sigma1385_mc", 5,
+                        {binAnti, binTypeMC, binCent, binPt, binMassMC}, "s");
         CreateTHnSparse("Normalisation", "", 2, {binTypeMCNorm, binCent},
                         "s");
     }
