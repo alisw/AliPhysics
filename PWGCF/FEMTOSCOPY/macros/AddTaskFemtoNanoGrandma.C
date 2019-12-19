@@ -14,11 +14,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
                    int nSpins = 1,				                          //5
 									 double corrRange = 0.1,		                      //6
 									 TString triggerData = "kInt7",	                  //7
-                   bool Systematic = false,		                      //8
-									 const char *sTcut = "8",		                      //9
-									 bool DoSpherocity = false,		                    //10
-									 const char *s0cut = "08",		                    //11
-                   const char *cutVariation = "0") {
+                   bool DodPhidEtaPlots = false,                    //8
+                   bool Systematic = false,		                      //9
+									 const char *sTcut = "8",		                      //10
+									 bool DoSpherocity = false,		                    //11
+									 const char *s0cut = "08",		                    //12
+                   const char *cutVariation = "0") {                //13
 
   TString suffix = TString::Format("%s", cutVariation);
   TString sTsuffix = TString::Format("%s", sTcut);
@@ -341,7 +342,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   config->SetmTBinning(true);
 
   config->SetdPhidEtaPlotsSmallK(false);
-  config->SetdPhidEtaPlots(false);
+  config->SetdPhidEtaPlots(DodPhidEtaPlots);
   config->SetPhiEtaBinnign(false);
 
   if (fullBlastQA) {
