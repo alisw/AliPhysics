@@ -747,8 +747,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   //Loading of ML models
   if (fApplyML)
   {
-    fMLResponse = new AliHFMLResponseDplustoKpipi(fConfigPath.Data());
-    fMLResponse->InitModels();
+    fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
+    fMLResponse->MLResponseInit();
   }
 
   PostData(1, fOutput);
@@ -1176,7 +1176,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
         if (fApplyML)
         {
           Pid_HF = fRDCutsAnalysis->GetPidHF();
-          isMLsel = fMLResponse->IsSelectedML(modelPred, d, aod->GetMagneticField(), Pid_HF);
+          isMLsel = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF);
         }
 
         //for all THnSparses except for FD
