@@ -63,7 +63,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
     fCentrEstimator=estim.Data();
   }
   void SetUsePileupCut(Bool_t opt=kTRUE){
-    fUsePileupCut=kTRUE;
+    fUsePileupCut=opt;
   }
   void SetTPCTrackCuts(AliESDtrackCuts* cuts){
     if(fTrCutsTPC) delete fTrCutsTPC;
