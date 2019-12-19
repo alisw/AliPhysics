@@ -2463,6 +2463,10 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
     fEnableVertexCut   = kTRUE;
     fMaxVertexZ     = 5.;
     break;
+  case 6: // vertex within +-2.5 cm
+    fEnableVertexCut   = kTRUE;
+    fMaxVertexZ     = 2.5;
+    break;
   default:
     AliError(Form("Vertex Cut not defined %d",vertexCut));
     return kFALSE;
