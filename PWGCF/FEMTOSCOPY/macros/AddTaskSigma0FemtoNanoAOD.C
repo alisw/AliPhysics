@@ -1,3 +1,4 @@
+#ifndef __CINT__
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -8,6 +9,7 @@
 #include "AliSigma0AODPhotonMotherCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskNanoAODSigma0Femto.h"
+#endif
 
 AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
                                              bool MomRes = false,
@@ -848,6 +850,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
 
   if (suffix == "0" && fullBlastQA) {
     task->SetCheckDaughterCF(true);
+    task->SetUseDumpster(true);
   }
 
   mgr->AddTask(task);
@@ -960,6 +963,15 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
       Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
   mgr->ConnectOutput(task, 13, coutputResultsSampleQA);
 
+  AliAnalysisDataContainer *coutputDumpster;
+  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
+  coutputDumpster = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      DumpsterName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), DumpsterName.Data()));
+  mgr->ConnectOutput(task, 14, coutputDumpster);
+
   if (isMC) {
     TString TrkCutsMCName =
         Form("%sTrackCutsMC%s", addon.Data(), suffix.Data());
@@ -967,7 +979,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
         mgr->CreateContainer(TrkCutsMCName.Data(), TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 14, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 15, coutputTrkCutsMC);
 
     TString AntiTrkCutsMCName =
         Form("%sAntiTrackCutsMC%s", addon.Data(), suffix.Data());
@@ -975,14 +987,14 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 15, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 16, coutputAntiTrkCutsMC);
 
     TString V0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
     AliAnalysisDataContainer *coutputV0CutsMC =
         mgr->CreateContainer(V0CutsMCName.Data(), TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), V0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 16, coutputV0CutsMC);
+    mgr->ConnectOutput(task, 17, coutputV0CutsMC);
 
     TString AntiV0CutsMCName =
         Form("%sAntiv0CutsMC%s", addon.Data(), suffix.Data());
@@ -990,7 +1002,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
         AntiV0CutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiV0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 17, coutputAntiV0CutsMC);
+    mgr->ConnectOutput(task, 18, coutputAntiV0CutsMC);
   }
 
   return task;

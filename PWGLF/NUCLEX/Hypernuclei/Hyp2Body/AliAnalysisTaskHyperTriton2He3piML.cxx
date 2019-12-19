@@ -101,6 +101,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxTPChe3Sigma{10.},
       fMinHe3pt{0.},
       fMinTPCclusters{50},
+      fMinPIDclusters{30},
       fMaxDeltaPhi{0.12},
       fMaxDeltaTheta{0.12},
       fMinTrackletCosP{0.8},
@@ -317,7 +318,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         v0part.fNegativeLabels = true;
         mcMap[ilab] = fSHyperTriton.size();
         fSHyperTriton.push_back(v0part);
-
       }
     }
   }
@@ -333,7 +333,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   };
 
   std::vector<AliESDv0> V0Vector;
-  if (!fUseOnTheFly) {
+  if (!fUseOnTheFly)
+  {
     esdEvent->ResetV0s();
     V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent);
   }
@@ -353,10 +354,13 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       continue;
 
     // Remove like-sign (will not affect offline V0 candidates!)
-    if (fEnableLikeSign) {
+    if (fEnableLikeSign)
+    {
       if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() < 0)
         continue;
-    } else {
+    }
+    else
+    {
       if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0)
         continue;
     }
@@ -390,6 +394,10 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     if ((pTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters) ||
         (nTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters))
+      continue;
+
+    if ((pTrack->GetTPCsignalN() < fMinPIDclusters) ||
+        (nTrack->GetTPCsignalN() < fMinPIDclusters))
       continue;
 
     // Official means of acquiring N-sigmas
@@ -570,8 +578,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   fRTracklets.clear();
   AliMultiplicity *tracklets = esdEvent->GetMultiplicity();
   int nTracklets = tracklets->GetNumberOfTracklets();
-  
-  
+
   for (size_t iHyper{0}; iHyper < fRHyperTriton.size(); ++iHyper)
   {
     const auto &v0 = fRHyperTriton[iHyper];
@@ -585,10 +592,10 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       fHistTrackletDThetaDPhi->Fill(deltaTheta, deltaPhi);
 
       int id1{-1}, id2{-1};
-      tracklets->GetTrackletTrackIDs (iTracklet, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
+      tracklets->GetTrackletTrackIDs(iTracklet, 0, id1, id2); // references for eventual Global/ITS_SA tracks
 
-      if (id1 >= 0 && id2 >= 0 && id1 != he3TrackIndices[iHyper] && id2 != he3TrackIndices[iHyper])  /// Both points are used in a track that is not the candidate He3
-       continue;
+      if (id1 >= 0 && id2 >= 0 && id1 != he3TrackIndices[iHyper] && id2 != he3TrackIndices[iHyper]) /// Both points are used in a track that is not the candidate He3
+        continue;
 
       if (std::abs(deltaPhi) > fMaxDeltaPhi)
         continue;
@@ -598,7 +605,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       double cx = std::cos(phi) * std::sin(theta);
       double cy = std::sin(phi) * std::sin(theta);
       double cz = std::cos(theta);
-
 
       const double cosp = (v0.fDecayX * cx + v0.fDecayY * cy + v0.fDecayZ * cz) / std::sqrt(v0.fDecayX * v0.fDecayX + v0.fDecayY * v0.fDecayY + v0.fDecayZ * v0.fDecayZ);
       fHistTrackletCosP->Fill(cosp);
@@ -613,11 +619,12 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         if (tracklets->GetLabel(iTracklet, 0) == tracklets->GetLabel(iTracklet, 1) && fMC && tracklets->GetLabel(iTracklet, 0) >= 0)
         {
           int ilab = tracklets->GetLabel(iTracklet, 0);
-          AliVParticle* part = mcEvent->GetTrack(ilab);
+          AliVParticle *part = mcEvent->GetTrack(ilab);
           if (std::abs(part->PdgCode()) == 1010010030)
             fSHyperTriton[mcMap[ilab]].fRecoTracklet = fRTracklets.size();
-          else {
-            AliVParticle* part = mcEvent->GetTrack(ilab);
+          else
+          {
+            AliVParticle *part = mcEvent->GetTrack(ilab);
             SGenericTracklet gen;
             gen.fPdgCode = part->PdgCode();
             gen.fPx = part->Px();

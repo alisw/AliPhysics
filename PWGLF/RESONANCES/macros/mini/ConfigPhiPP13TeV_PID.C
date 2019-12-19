@@ -213,7 +213,7 @@ Bool_t ConfigPhiPP13TeV_PID(
     // [3] = like --
 
     Bool_t use[10] = {!IsMcTrueOnly, !IsMcTrueOnly, !IsMcTrueOnly, !IsMcTrueOnly, !IsMcTrueOnly,
-                      isMC,          isMC,          isMC, !IsMcTrueOnly,  !IsMcTrueOnly};
+        isMC,          isMC,          isMC, !IsMcTrueOnly,  !IsMcTrueOnly};
     Int_t useIM[10] = {1, 1, 1, 1, 1, 1, 2, 0, 1, 1};
     Int_t usePt[10] = {0, 0, 0, 0, 0, 1, 1, 0, 0, 0};
     TString name[10] = {"Unlike", "Mixing", "Rotated",    "LikePP",  "LikeMM",
@@ -253,7 +253,7 @@ Bool_t ConfigPhiPP13TeV_PID(
 
         // axis X: invmass (or resolution)
         if (useIM[i] == 1)
-            out->AddAxis(imID, 215, 0.985, 1.2);
+            out->AddAxis(imID, 115, 0.985, 1.1);
         else if (useIM[i] == 2)
             out->AddAxis(mmID, 75, 0.985, 1.06);
         else
@@ -518,7 +518,7 @@ Bool_t ConfigPhiPP13TeV_PID(
     // record baryons: temporary modification for signal-loss corrections of
     // other particles
 
-    if (isMC) {
+    if (0 && isMC) {
         for (Int_t i = 0; i < 7; i++) {
             if (!i) {
                 mName.Form("K0S");

@@ -369,7 +369,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(isRun2){ task->SetNumOfCaloModules(20); }
-  if(!isRun2){ task->SetNumOfCaloModules(8); }
+  if(!isRun2){ task->SetNumOfCaloModules(10); }
   //connect containers
   AliAnalysisDataContainer *coutput =
   mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("ConvCaloCalibration_%i_%i_%i",mesonRecoMode, selectedMeson, trainConfig)

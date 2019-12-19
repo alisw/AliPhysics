@@ -115,7 +115,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
                    *effbinning[3] = {&jetPtBinningPart, &jetPtBinningDet, &statusbinningEff};
 
     fHistos->CreateTHnSparse("hPtDiff", "pt diff det/part", 3, diffbinning, "s");
-    fHistos->CreateTHnSparse("hPtCorr", "Correlation det pt / part pt", 5, corrbinning, "s");
+    fHistos->CreateTHnSparse("hPtCorr", "Correlation det pt / part pt", 6, corrbinning, "s");
     fHistos->CreateTHnSparse("hJetfindingEfficiency", "Jet finding efficiency", 3, effbinning, "s");
   }
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);

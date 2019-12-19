@@ -118,7 +118,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKnoUe) // classimp: necessary for root
 
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
-	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0),hPtLeadingGenPS(0), hPtLeadingGenPSV(0)  
+	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0),hPtLeadingGenPS(0), hPtLeadingGenPSV(0),hPtLeadingRecAll(0), hPtLeadingGenAll(0)   
 
 {
 	for(Int_t i=0;i<3;++i){ 
@@ -130,9 +130,24 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 		hSumPtMCMatch[i]=0;
 
 		hPtVsPtLeadingMeasured[i]=0;// only for data
+
 		pNumDenMeasured[i]=0;// only for data
 		pSumPtMeasured[i]=0;// only for data
 
+
+		pNumDenMeasuredAll[i]=0;
+		pSumPtMeasuredAll[i]=0;
+		pNumDenMeasuredPS[i]=0;
+		pSumPtMeasuredPS[i]=0;
+		pNumDenMeasuredPSV[i]=0;
+		pSumPtMeasuredPSV[i]=0;
+
+		pNumDenTrueAll[i]=0;
+		pSumPtTrueAll[i]=0;
+		pNumDenTruePS[i]=0;
+		pSumPtTruePS[i]=0;
+		pNumDenTruePSV[i]=0;
+		pSumPtTruePSV[i]=0;
 		pNumDenTrue[i]=0;
 		pSumPtTrue[i]=0;
 	}
@@ -146,7 +161,7 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTaskSE(name),
-	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0) 
+	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0) 
 {
 	for(Int_t i=0;i<3;++i){
 
@@ -161,6 +176,19 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		pNumDenMeasured[i]=0;// only for data
 		pSumPtMeasured[i]=0;// only for data
 
+		pNumDenMeasuredAll[i]=0;
+		pSumPtMeasuredAll[i]=0;
+		pNumDenMeasuredPS[i]=0;
+		pSumPtMeasuredPS[i]=0;
+		pNumDenMeasuredPSV[i]=0;
+		pSumPtMeasuredPSV[i]=0;
+
+		pNumDenTrueAll[i]=0;
+		pSumPtTrueAll[i]=0;
+		pNumDenTruePS[i]=0;
+		pSumPtTruePS[i]=0;
+		pNumDenTruePSV[i]=0;
+		pSumPtTruePSV[i]=0;
 		pNumDenTrue[i]=0;
 		pSumPtTrue[i]=0;
 
@@ -295,6 +323,46 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 		pSumPtMeasured[i] = new TProfile(Form("pSumPtMeasured_%s",nameReg[i]),"",ptNbins,ptbins1);
 		fOutputList->Add(pSumPtMeasured[i]);
 
+		// All no trigger sel
+		pNumDenMeasuredAll[i] = new TProfile(Form("pNumDenMeasuredAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pNumDenMeasuredAll[i]);
+
+		pSumPtMeasuredAll[i] = new TProfile(Form("pSumPtMeasuredAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pSumPtMeasuredAll[i]);
+		// trigger sel
+		pNumDenMeasuredPS[i] = new TProfile(Form("pNumDenMeasuredPS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pNumDenMeasuredPS[i]);
+
+		pSumPtMeasuredPS[i] = new TProfile(Form("pSumPtMeasuredPS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pSumPtMeasuredPS[i]);
+		// trigger sel + vtx rec
+		pNumDenMeasuredPSV[i] = new TProfile(Form("pNumDenMeasuredPSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pNumDenMeasuredPSV[i]);
+
+		pSumPtMeasuredPSV[i] = new TProfile(Form("pSumPtMeasuredPSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pSumPtMeasuredPSV[i]);
+
+		// MC true
+		// All no trigger sel
+		pNumDenTrueAll[i] = new TProfile(Form("pNumDenTrueAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pNumDenTrueAll[i]);
+
+		pSumPtTrueAll[i] = new TProfile(Form("pSumPtTrueAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pSumPtTrueAll[i]);
+		// trigger sel
+		pNumDenTruePS[i] = new TProfile(Form("pNumDenTruePS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pNumDenTruePS[i]);
+
+		pSumPtTruePS[i] = new TProfile(Form("pSumPtTruePS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pSumPtTruePS[i]);
+		// trigger sel + vtx rec
+		pNumDenTruePSV[i] = new TProfile(Form("pNumDenTruePSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pNumDenTruePSV[i]);
+
+		pSumPtTruePSV[i] = new TProfile(Form("pSumPtTruePSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		fOutputList->Add(pSumPtTruePSV[i]);
+
+
 		pNumDenTrue[i] = new TProfile(Form("pNumDenTrue_%s",nameReg[i]),"",ptNbins,ptbins1);
 		fOutputList->Add(pNumDenTrue[i]);
 
@@ -317,11 +385,18 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 		fOutputList->Add(hPtVsUERecTest[i]);
 	}
 
+
+	hPtLeadingRecAll = new TH1D("hPtLeadingRecAll","rec pTleading before any selection",ptNbins,ptbins1); 
+	fOutputList->Add(hPtLeadingRecAll);
+
 	hPtLeadingRecPS = new TH1D("hPtLeadingRecPS","rec pTleading after physics selection",ptNbins,ptbins1); 
 	fOutputList->Add(hPtLeadingRecPS);
 
 	hPtLeadingRecPSV = new TH1D("hPtLeadingRecPSV","rec pTleading after physics selection + vtx",ptNbins,ptbins1); 
 	fOutputList->Add(hPtLeadingRecPSV);
+
+	hPtLeadingGenAll = new TH1D("hPtLeadingGenAll","gen pTleading before any selection",ptNbins,ptbins1);
+	fOutputList->Add(hPtLeadingGenAll);
 
 	hPtLeadingGenPS = new TH1D("hPtLeadingGenPS","gen pTleading after physics selection",ptNbins,ptbins1); 
 	fOutputList->Add(hPtLeadingGenPS);
@@ -366,29 +441,85 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 
 	hCounter->Fill(0);
-	UInt_t fSelectMask= fInputHandler->IsEventSelected();
-	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
-	if(!isINT7selected)
-		return;
-	hCounter->Fill(1);
 
+
+	AliHeader* headerMC = fMC->Header();
+
+	AliGenEventHeader* genHeader = headerMC->GenEventHeader();
+	TArrayF vtxMC(3); // primary vertex  MC 
+	vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
+	if (genHeader) {
+		genHeader->PrimaryVertex(vtxMC);
+	}
+	Bool_t isGoodVtxPosMC = kFALSE;
+	if(TMath::Abs(vtxMC[2])<=10)
+		isGoodVtxPosMC = kTRUE;
+
+	// Before trigger selection
 	if (fUseMC){
 		GetLeadingObject(kTRUE);// leading particle at gen level
 	}
 
 	GetLeadingObject(kFALSE);// leading particle at rec level
 
-	hPtLeadingRecPS->Fill(fRecLeadPt);
-	hPtLeadingGenPS->Fill(fGenLeadPt);
+	hPtLeadingRecAll->Fill(fRecLeadPt);
+	if(isGoodVtxPosMC)
+		hPtLeadingGenAll->Fill(fGenLeadPt);
 
-	// Decide whether we have a good vertex
+
+	vector<Double_t> ue_gen;// 0: nch_near, 1: nch_away, 2: nch_trans, 3: sumpt_near, ... 
+	vector<Double_t> ue_rec;
+	GetMeanUEObservables(ue_gen,ue_rec);
+
+	for(Int_t i=0;i<3;++i){
+		pNumDenMeasuredAll[i]->Fill(fRecLeadPt,ue_rec[i]);
+		pSumPtMeasuredAll[i]->Fill(fRecLeadPt,ue_rec[i+3]);
+		if(isGoodVtxPosMC){
+			pNumDenTrueAll[i]->Fill(fGenLeadPt,ue_gen[i]);
+			pSumPtTrueAll[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		}
+	}
+
+	// Trigger selection
+	UInt_t fSelectMask= fInputHandler->IsEventSelected();
+	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
+	if(!isINT7selected)
+		return;
+	hCounter->Fill(1);
+
+
+	hPtLeadingRecPS->Fill(fRecLeadPt);
+	if(isGoodVtxPosMC)
+		hPtLeadingGenPS->Fill(fGenLeadPt);
+
+	for(Int_t i=0;i<3;++i){
+		pNumDenMeasuredPS[i]->Fill(fRecLeadPt,ue_rec[i]);
+		pSumPtMeasuredPS[i]->Fill(fRecLeadPt,ue_rec[i+3]);
+		if(isGoodVtxPosMC){
+			pNumDenTruePS[i]->Fill(fGenLeadPt,ue_gen[i]);
+			pSumPtTruePS[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		}
+	}
+
+	// Good vertex
 	Bool_t hasRecVertex = kFALSE;
 	hasRecVertex=HasRecVertex();
 	if(!hasRecVertex)return;
 
 	hPtLeadingRecPSV->Fill(fRecLeadPt);
-	hPtLeadingGenPSV->Fill(fGenLeadPt);
+	if(isGoodVtxPosMC)
+		hPtLeadingGenPSV->Fill(fGenLeadPt);
 
+	for(Int_t i=0;i<3;++i){
+		pNumDenMeasuredPSV[i]->Fill(fRecLeadPt,ue_rec[i]);
+		pSumPtMeasuredPSV[i]->Fill(fRecLeadPt,ue_rec[i+3]);
+		if(isGoodVtxPosMC){
+			pNumDenTruePSV[i]->Fill(fGenLeadPt,ue_gen[i]);
+			pSumPtTruePSV[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		}
+	}
+
+	// Good events
 	if (!fEventCuts.AcceptEvent(event)) {
 		PostData(1, fOutputList);
 		return;
@@ -397,16 +528,17 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 	Double_t randomUE = gRandom->Uniform(0.0,1.0);
 	if(randomUE<0.5){// corrections (50% stat.)
-		// KNO scaling
-		if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
-			GetDetectorResponse();
+		if(isGoodVtxPosMC){
+			// KNO scaling
+			if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
+				GetDetectorResponse();
 
-		// UE analysis
-		if(fGenLeadPt>=fPtMin){
-			GetBinByBinCorrections();
-			GetPtLeadingMisRecCorrection();
+			// UE analysis
+			if(fGenLeadPt>=fPtMin){
+				GetBinByBinCorrections();
+				GetPtLeadingMisRecCorrection();
+			}
 		}
-
 	}
 	else{// for testing the method
 		// KNO scaling
@@ -420,7 +552,8 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 	}
 
-
+	ue_gen.clear();
+	ue_rec.clear();
 
 	PostData(1, fOutputList); // stream the result of this event to the output manager which will write it to a file
 
@@ -668,6 +801,101 @@ void AliAnalysisTaskMcKnoUe::GetDetectorResponse() {
 
 }
 
+void AliAnalysisTaskMcKnoUe::GetMeanUEObservables(vector<Double_t> &genArray, vector<Double_t> &recArray){
+
+	genArray.clear();
+	recArray.clear();
+
+	Int_t nch_top[3];
+	Double_t sumpt_top[3];
+	for(Int_t i=0;i<3;++i){
+		nch_top[i]=0;
+		sumpt_top[i]=0;
+	}
+
+
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+
+		if(i==fGenLeadIn)
+			continue;
+
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
+
+		if (!fMC->IsPhysicalPrimary(i)) continue; 
+		if (particle->Charge() == 0) continue;
+		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
+		if( particle->Pt() < fPtMin)continue;
+
+		Double_t DPhi = DeltaPhi(particle->Phi(), fRecLeadPhi);
+
+		// definition of the topological regions
+		if(TMath::Abs(DPhi)<pi/3.0){// near side
+			nch_top[0]++; sumpt_top[0]+=particle->Pt();
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+			nch_top[1]++; sumpt_top[1]+=particle->Pt();
+		}
+		else{// transverse side
+			nch_top[2]++; sumpt_top[2]+=particle->Pt();
+		}
+
+
+
+	}
+
+	Int_t nchm_top[3];
+	Double_t sumptm_top[3];
+	for(Int_t i=0;i<3;++i){
+		nchm_top[i]=0;
+		sumptm_top[i]=0;
+	}
+
+
+	Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
+	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
+
+		if(i==fRecLeadIn)
+			continue;
+
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+
+		if(!track) continue;
+
+		if(!fLeadingTrackFilter->IsSelected(track))
+			continue;
+
+		if(TMath::Abs(track->Eta()) > fEtaCut)
+			continue;
+
+		if( track->Pt() < fPtMin)continue;
+
+		Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+
+		// definition of the topological regions
+		if(TMath::Abs(DPhi)<pi/3.0){// near side
+			nchm_top[0]++; sumptm_top[0]+=track->Pt();
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+			nchm_top[1]++; sumptm_top[1]+=track->Pt();
+		}
+		else{// transverse side
+			nchm_top[2]++; sumptm_top[2]+=track->Pt();
+		}
+	}
+
+	for(Int_t i=0;i<3;++i)
+		genArray.push_back(1.0*nch_top[i]);
+	for(Int_t i=0;i<3;++i)
+		genArray.push_back(sumpt_top[i]);
+	for(Int_t i=0;i<3;++i)
+		recArray.push_back(1.0*nchm_top[i]);
+	for(Int_t i=0;i<3;++i)
+		recArray.push_back(sumptm_top[i]);
+
+
+
+}
 
 void AliAnalysisTaskMcKnoUe::GetUEObservables(){
 
@@ -762,6 +990,8 @@ void AliAnalysisTaskMcKnoUe::GetUEObservables(){
 	}
 	hPtLeadingTrue->Fill(fGenLeadPt);
 	hPtLeadingMeasured->Fill(fRecLeadPt);
+
+
 
 }
 
@@ -926,7 +1156,6 @@ Bool_t AliAnalysisTaskMcKnoUe::HasRecVertex(){
 	Bool_t fRequireTrackVertex = true;
 	unsigned long fFlag;
 	fFlag =BIT(AliEventCuts::kNoCuts);
-	//cout<<"initial flag=="<<fFlag<<endl;
 
 	const AliVVertex* vtTrc = fESD->GetPrimaryVertex();
 	bool isTrackV = true;
@@ -935,18 +1164,14 @@ Bool_t AliAnalysisTaskMcKnoUe::HasRecVertex(){
 
 
 	if (vtSPD->GetNContributors() > 0) fFlag |= BIT(AliEventCuts::kVertexSPD);
-	//cout<<"flag1=="<<fFlag<<endl;
 
 	if (vtTrc->GetNContributors() > 1 && isTrackV ) fFlag |= BIT(AliEventCuts::kVertexTracks);
-	//cout<<"flag2=="<<fFlag<<endl;
 
 	if (((fFlag & BIT(AliEventCuts::kVertexTracks)) ||  !fRequireTrackVertex) && (fFlag & BIT(AliEventCuts::kVertexSPD))) fFlag |= BIT(AliEventCuts::kVertex);
-	//cout<<"flag3=="<<fFlag<<endl;
 
 	const AliVVertex* &vtx = bool(fFlag & BIT(AliEventCuts::kVertexTracks)) ? vtTrc : vtSPD;
 	AliVVertex   *fPrimaryVertex = const_cast<AliVVertex*>(vtx);
 	if(!fPrimaryVertex)return kFALSE;
-	//	else return kTRUE;
 
 	/// Vertex quality cuts
 	double covTrc[6],covSPD[6];
@@ -966,14 +1191,7 @@ Bool_t AliAnalysisTaskMcKnoUe::HasRecVertex(){
 	   ) // quality cut on vertexer SPD z
 		fFlag |= BIT(AliEventCuts::kVertexQuality);  
 
-	//cout<<"Flag4 = "<<fFlag<<endl;
-
-	//cout<<"vertexTrk ="<<(TESTBIT(fFlag,AliEventCuts::kVertexTracks))<<endl;
-	//cout<<"vertexSPD ="<<(TESTBIT(fFlag,AliEventCuts::kVertexSPD))<<endl;
-	//cout<<"vertexAny ="<<(TESTBIT(fFlag,AliEventCuts::kVertex))<<endl;
-	//cout<<"vertex quality="<<(TESTBIT(fFlag,AliEventCuts::kVertexQuality))<<endl;
 	Bool_t hasVtx = (TESTBIT(fFlag,AliEventCuts::kVertex))&&(TESTBIT(fFlag,AliEventCuts::kVertexQuality));
-	//	cout<<"hasVtx="<<hasVtx<<endl;
 
 	return hasVtx;
 

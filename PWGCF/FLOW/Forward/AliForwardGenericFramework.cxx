@@ -170,6 +170,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       fill(cumu_dW2B, n, ptn, sample, zvertex, eta, cent, dn2diff);
 
       // A side
+      
       twodiff = TwoDiff(n, -n, refEtaBinA, etaBin).Re();
       dn2diff = TwoDiff(0,0, refEtaBinA, etaBin).Re();
       fill(cumu_dW2TwoA, n, ptn, sample, zvertex, eta, cent, twodiff);
@@ -182,7 +183,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       fill(cumu_dW4, n, ptn, sample, zvertex, eta, cent, dn4diff);
 
 
-      if (eta > 0.0) {
+      if (eta < 0.0) {
         // R_{n,n; 2} numerator
         double over = (TwoDiff(-2,2,refEtaBinB, etaBin)*TwoDiff(2,-2,refEtaBinA, etaBinB)).Re();
         double under = (TwoDiff(-2,2,refEtaBinB, etaBinB)*TwoDiff(2,-2,refEtaBinA, etaBin)).Re();
@@ -191,17 +192,15 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       }
 
       if (n==2){
-        // four-particle cumulant SC(4,2)        
+        // four-particle cumulant SC(4,2)
         double fourtwodiff = FourDiff(2,4,-2,-4, refEtaBinA,refEtaBinB, etaBin, etaBin).Re();
         fill(cumu_dW4FourTwo, n, ptn, sample, zvertex, eta, cent, fourtwodiff);
 
         // four-particle cumulant SC(3,2)
         double threetwodiff = FourDiff(2,3,-2,-3, refEtaBinA,refEtaBinB, etaBin, etaBin).Re();
         fill(cumu_dW4ThreeTwo, n, ptn, sample, zvertex, eta, cent, threetwodiff);
-      }      
-
+      } 
     } //eta
-
   } // moment
   return;
 }

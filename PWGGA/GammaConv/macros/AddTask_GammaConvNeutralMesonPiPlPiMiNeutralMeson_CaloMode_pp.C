@@ -239,6 +239,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if( trainConfig == 51)  { // Test for PHOS (5 TeV)
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","302010708","0103603200000000","0153503000000000"); // PCM-PHOS nonLin
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","322010708","0103603200000000","0153503000000000"); // with ITS requirement
+
+  } else if( trainConfig == 60) { //pp 13 TeV EDC
+    cuts.AddCutHeavyMesonCalo("00010113","411791206f032230000","30a210708","01631031000000d0","0153503000000000"); // INT7 NL 12
+    cuts.AddCutHeavyMesonCalo("00010113","411791206f032230000","32a210708","01631031000000d0","0153503000000000"); // INT7 NL 12
+  } else if( trainConfig == 61) { //pp 13 TeV EDC Trigger
+    cuts.AddCutHeavyMesonCalo("0008e113","411791206f032230000","30a210708","01631031000000d0","0153503000000000"); // EG2 NL 12
+    cuts.AddCutHeavyMesonCalo("0008d113","411791206f032230000","30a210708","01631031000000d0","0153503000000000"); // EG1 NL 12
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //                                          OMEGA MESON
@@ -296,6 +303,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036c3c00000000","0153503000000000"); // 8.0
     cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036e3c00000000","0153503000000000"); // new Energy cut 5 GeV
     cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036f3c00000000","0153503000000000"); // new Energy cut 7.5 GeV
+    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036g3c00000000","0153503000000000"); // new Energy cut 6.0 GeV
   } else if( trainConfig == 118){ // pt cut variation new SPD pileup cut
     cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036c3c00000000","0153503000000000"); // 8.0
     cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036e3c00000000","0153503000000000"); // new Energy cut 5 GeV

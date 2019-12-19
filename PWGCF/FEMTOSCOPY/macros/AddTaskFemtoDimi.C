@@ -5,7 +5,7 @@ AliAnalysisTaskSE* AddTaskFemtoDimi(
     bool isMC = false,                //1
     TString CentEst = "kInt7",        //2
     bool MomReso = false,             //3 to set to true only when running on MC
-    bool etaPhiPlotsAtTPCRadii=true,  //4 to set to true only when running on MC but very Mem. Consuming
+    bool etaPhiPlotsAtTPCRadii=false,  //4 to set to true only when running on MC but very Mem. Consuming
     bool dPhidEtaPlots=true,          //5
     const char *mixmethod = "0") {    //6
 
@@ -52,10 +52,10 @@ AliAnalysisTaskSE* AddTaskFemtoDimi(
 
 //Track cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-      isMC, true, true, true);
+      isMC, true, false, true);
   TrackCuts->SetCutCharge(1);
   AliFemtoDreamTrackCuts *AntiTrackCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, true);
   AntiTrackCuts->SetCutCharge(-1);
 
   //V0 cuts
@@ -285,14 +285,7 @@ if (MomReso) {
         << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
   }
 }
-if (etaPhiPlotsAtTPCRadii) {
-  if (isMC) {
-    config->SetPhiEtaBinnign(true);
-  } else {
-    std::cout
-        << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
-  }
-}
+
 
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);

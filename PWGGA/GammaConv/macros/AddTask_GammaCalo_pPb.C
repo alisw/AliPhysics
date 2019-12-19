@@ -463,8 +463,8 @@ void AddTask_GammaCalo_pPb(
   // Run 1 data PHOS clusters pPb 5TeV
   // ===============================================================================================
   } else if (trainConfig == 301) {  // min energy = 0.3 GeV/c
-    cuts.AddCutCalo("80010113","2444400041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCutCalo("80062113","2444400041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+    cuts.AddCutCalo("80010113","2444453041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCutCalo("80062113","2444453041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
   } else if (trainConfig == 302){ // Validation PHOS
     cuts.AddCutCalo("80010113","2444400041013200000","0163103100000010");
   } else if (trainConfig == 303){ // Validation PHOS, only added signals
@@ -528,6 +528,16 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 316) { // kPHI7 with and without PHOS non-lin
     cuts.AddCutCalo("80062113","2444400041013200000","0163103100000010"); //standart cut, kPHI7 // PHOS clusters
     cuts.AddCutCalo("80062113","2444401041013200000","0163103100000010"); //standard cut, kPHI7, PHOS non-lin  // PHOS clusters
+  } else if (trainConfig == 317) {  // kINT7 with different non-lins
+    cuts.AddCutCalo("80010113","2444453041013200000","0163103100000010"); // non-lin: shifting to pi0 mass using PHOS-PHOS
+    cuts.AddCutCalo("80010113","2444454041013200000","0163103100000010"); // non-lin: shifting to pi0 mass using PCM-PHOS
+    cuts.AddCutCalo("80010113","2444401041013200000","0163103100000010"); // PHOS non-lin
+    cuts.AddCutCalo("80010113","2444400041013200000","0163103100000010"); // without non-lin
+  } else if (trainConfig == 318) {  // kPHI7 with different non-lins
+    cuts.AddCutCalo("80062113","2444453041013200000","0163103100000010"); // non-lin: shifting to pi0 mass using PHOS-PHOS
+    cuts.AddCutCalo("80062113","2444454041013200000","0163103100000010"); // non-lin: shifting to pi0 mass using PCM-PHOS
+    cuts.AddCutCalo("80062113","2444401041013200000","0163103100000010"); // PHOS non-lin
+    cuts.AddCutCalo("80062113","2444400041013200000","0163103100000010"); // without non-lin
 
   } else if(trainConfig == 320){ // reproducing Dmitri's results pi0, eta
     cuts.AddCutCalo("80010113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
@@ -699,6 +709,13 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 514){
     cuts.AddCutCalo("80010113","2446642151012200000","0163103100000010"); // standard
     cuts.AddCutCalo("80010113","2446642101012200000","0163103100000010"); // standard without timing cut
+  } else if (trainConfig == 515) {  // PHOS  INT7
+    cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // standard without non-lin
+    cuts.AddCutCalo("80010113","244660005a012200000","0163103100000010"); // standard without non-lin
+  } else if (trainConfig == 516) {  // PHOS  INT7
+    cuts.AddCutCalo("80010113","24466530ha012200000","0163103100000010"); // non-lin: shifting to pi0 mass using PHOS-PHOS
+    cuts.AddCutCalo("80010113","24466540ha012200000","0163103100000010"); // non-lin: shifting to pi0 mass using PCM-PHOS
+    cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // without non-lin
 
   } else if (trainConfig == 520) {  // JJ MC
     cuts.AddCutCalo("80010123","24466420ha012200000","0163103100000010"); // standard
@@ -721,6 +738,10 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("84610123","24466420ha012200000","0163103100000010"); // non lin 40-60%
     cuts.AddCutCalo("86810123","24466420ha012200000","0163103100000010"); // non lin 60-80%
     cuts.AddCutCalo("88010123","24466420ha012200000","0163103100000010"); // non lin 80-100%
+  } else if (trainConfig == 524) {  // JJ MC, non lin variations (shifting to pi0 position)
+    cuts.AddCutCalo("80010123","24466000ha012200000","0163103100000010"); // standard
+    cuts.AddCutCalo("80010123","24466530ha012200000","0163103100000010"); // standard
+    cuts.AddCutCalo("80010123","24466540ha012200000","0163103100000010"); // standard
 
   // Variations for systematics
   } else if (trainConfig == 530) { // NL variations (standard: 42 PHOS ML)
@@ -1327,9 +1348,9 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008d123","411796905f032230000","01631031000000d0"); // EG1
 
   } else if (trainConfig == 2080){ // no NCell cut
-    cuts.AddCutCalo("80010123","4117931050030230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117931050030230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008d123","4117931050030230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("80010103","4117931050030230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e103","4117931050030230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d103","4117931050030230000","01631031000000d0"); // EG1
 
   } else if (trainConfig == 2090){ // EMC only
     cuts.AddCutCalo("80010103","1111131050032230000","01631031000000d0"); // INT7

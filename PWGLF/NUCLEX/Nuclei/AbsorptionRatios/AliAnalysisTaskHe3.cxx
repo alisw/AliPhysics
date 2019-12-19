@@ -250,8 +250,8 @@ void AliAnalysisTaskHe3::UserCreateOutputObjects()
 	fOutputEvent->Add(fNchHeader);
 
 
-	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2");
-	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2");
+	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC");
+	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC");
 
 
     // track cuts config
@@ -535,7 +535,8 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
         Bool_t isDeuteronSelected = (TMath::Abs(nSigmaTPCdeut) < fMaxTPCnSigma) &&
                                     (!(trackP > fMomTOFDeut && !TOFpid_deut));
         
-		Bool_t isHelium3Selected = (TMath::Abs(nSigmaTPCHe3) < 5.0); //Helium 3 is triggered in TPC only with a relaxed condition of 5, EDIT: cut reduced to 3 sigma due to large includion of background in the 5 sigma cut. See 16qt set from 260919.
+		Bool_t isHelium3Selected = (nSigmaTPCHe3 > -10.0) and (nSigmaTPCHe3 < 7); //Helium 3 is triggered in TPC only with a relaxed condition of 5, EDIT: cut reduced to 3 sigma due to large includion of background in the 5 sigma cut. See 16qt set from 260919. Edit2: considered relaxing condition to -10<nSigma<5 in order to better fit the TPCnSigma plots, but it is not necesary is the TPC Signal is cut at 100.
+		//Edit 3: Condition relaxed to 10 in order to fit larger background in low statistics bins. 
 
         // ===================== fill track histos =====================
         if (isProtonSelected && kAnalyseAllParticles){
@@ -559,17 +560,37 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
         }
 
 		if (isHelium3Selected){
+				Float_t vars[18];
+			   	vars[0] = track->P();
+			    	vars[1] = track->Pt();
+			   	vars[2] = track->GetTPCsignal();
+				vars[3] = nSigmaTPCHe3;
+				vars[4] = track->Charge();
+				vars[5] = GetTOFBeta(track);
+				vars[6] = DCAxy;
+				vars[7] = DCAz;
+				vars[8] = GetMass2TOF(GetTOFBeta(track), track);
+				vars[9] = track->GetTPCNcls();
+				vars[10] = track->GetITSNcls();
+				vars[11] = track->GetTPCsignalN();
+				vars[12] = track->Eta();
+				vars[13] = fPIDResponse->NumberOfSigmasITS(track, AliPID::kHe3);
+				vars[14] = track->Chi2perNDF();
+				vars[15] = track->GetITSchi2();
+				vars[16] = track->GetTPCClusterInfo(2, 1);
+				vars[17] = track->GetTPCmomentum();
+				
 			if (track->Charge() > 0){
 				FillHistosTrack(fHistsHe3, track);
-				if (track->GetTPCsignal() >100) {fNtupleHe3->Fill(track->P(), track->Pt(), track->GetTPCsignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz, GetMass2TOF(GetTOFBeta(track), track));}
+				if (track->GetTPCsignal() >100) {fNtupleHe3->Fill(vars);}
 			} else if (track->Charge() < 0) {
 				FillHistosTrack(fHistsAHe3,track);
-				if (track->GetTPCsignal() > 100) {fNtupleAHe3->Fill(track->P(), track->Pt(), track->GetTPCsignal(), nSigmaTPCHe3, track->Charge(), GetTOFBeta(track), DCAxy, DCAz, GetMass2TOF(GetTOFBeta(track), track));} //The TPC Signal requirement is to exclude the large amount of well seperated background which would make the Ntuple too large to compile & analyse. The histograms do not have this requirement and the seperation of the two signals can be seen in them.
+				if (track->GetTPCsignal() > 100) {fNtupleAHe3->Fill(vars);} //The TPC Signal requirement is to exclude the large amount of well seperated background which would make the Ntuple too large to compile & analyse. The histograms do not have this requirement and the seperation of the two signals can be seen in them.
 			}
 		}
         
     } // track loop
-	fNch->Fill(Nch);
+	fNch->Fill(Nch);//Filled here to check how many events were completely excluded by the filterbit cut. Just cut off the zero bin for the correct number. Normalization can come from Vertex z distr.
 
 	if (Nch>0) { //filled here to exclude filterbit bias with normalization
 			// fill event histograms

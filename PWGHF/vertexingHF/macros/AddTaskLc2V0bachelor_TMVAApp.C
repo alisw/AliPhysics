@@ -18,7 +18,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
                   Int_t recoEstimator = AliAnalysisTaskSELc2V0bachelorTMVAApp::kNtrk10, // fMultiplicityEstimator
                   Bool_t useMultCut = kFALSE,
                   Float_t multMin = 0.,    // Minimum is included
-                  Float_t multMax = 99999. // Maximum is excluded
+                  Float_t multMax = 99999., // Maximum is excluded
+                  Bool_t useXmlFileFromCVMFS = kFALSE,
+                  TString xmlFileFromCVMFS = ""
                   ){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -106,6 +108,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
   task->SetUseWeightsLibrary(useWeightsLibrary);
   task->SetXmlWeightsFile(TString(gSystem->ExpandPathName(Form("%s", xmlWeightsFile.Data()))));
   
+  task->SetUseXmlFileFromCVMFS(useXmlFileFromCVMFS);
+  task->SetXmlFileFromCVMFS(xmlFileFromCVMFS);
+
   if(useMultCorrection){
 
     task->SetUseMultiplicityCorrection(useMultCorrection);

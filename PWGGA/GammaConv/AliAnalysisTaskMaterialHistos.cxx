@@ -76,6 +76,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fDoMultWeights(0),
   fWeightMultMC(1),
   hNEvents(NULL),
+  hBCNumber(NULL),
   hNGoodESDTracksEta08(NULL),
   hNGoodESDTracksWeightedEta08(NULL),
   hNGoodESDTracksEta08pt200(NULL),
@@ -150,7 +151,11 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hElectrondEdxMapsR2(NULL),
   hPositrondEdxMapsR3(NULL),
   hElectrondEdxMapsR3(NULL),
-  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
+  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  fDoSelectBCNumber(kFALSE),
+  fBCNumber(-1),
+  fBCNumberBegin(-1),
+  fBCNumberEnd(-1)
 {
 
 }
@@ -198,6 +203,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fDoMultWeights(0),
   fWeightMultMC(1),
   hNEvents(NULL),
+  hBCNumber(NULL),
   hNGoodESDTracksEta08(NULL),
   hNGoodESDTracksWeightedEta08(NULL),
   hNGoodESDTracksEta08pt200(NULL),
@@ -272,7 +278,11 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hElectrondEdxMapsR2(NULL),
   hPositrondEdxMapsR3(NULL),
   hElectrondEdxMapsR3(NULL),
-  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
+  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  fDoSelectBCNumber(kFALSE),
+  fBCNumber(-1),
+  fBCNumberBegin(-1),
+  fBCNumberEnd(-1)
 {
   // Default constructor
 
@@ -320,6 +330,9 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     fDeDxMapList            = new TList*[fnCuts];
   }
   hNEvents                  = new TH1F*[fnCuts];
+  if(fDoSelectBCNumber){
+  hBCNumber                 = new TH1F*[fnCuts];
+  }
   hNGoodESDTracksEta08      = new TH1F*[fnCuts];
   hNGoodESDTracksEta08pt200 = new TH1F*[fnCuts];
   hNGoodESDTracksEta08pt300 = new TH1F*[fnCuts];
@@ -457,8 +470,10 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
     fESDList[iCut]->Add(hNEvents[iCut]);
-
-
+    if(fDoSelectBCNumber){
+    hBCNumber[iCut]              = new TH1F("BCNumber","BCNumber",3564,-0.5,3563.5);
+    fESDList[iCut]->Add(hBCNumber[iCut]);
+    }
     hNGoodESDTracksEta08[iCut]      = new TH1F("GoodESDTracksEta08","GoodESDTracksEta08",nTracks, -0.5, nTracks-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta08[iCut]);
 
@@ -836,6 +851,8 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   fInputEvent = InputEvent();
   if (fInputEvent==NULL) return;
 
+  if(fDoSelectBCNumber) DoSelectBCNumbers();
+
   if(fIsMC>0) fMCEvent = MCEvent();
 
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
@@ -853,6 +870,7 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   // ------------------- BeginEvent ----------------------------
 
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
+    if(fDoSelectBCNumber) hBCNumber[iCut]->Fill(fBCNumber);
     fiCut = iCut;
     Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
     if(eventNotAccepted){
@@ -1775,7 +1793,15 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0814(){
   return fNumberOfESDTracks;
 }
 
-
+//________________________________________________________________________
+void AliAnalysisTaskMaterialHistos::DoSelectBCNumbers(){
+  if(fIsMC == 0 ){
+    fBCNumber = fInputEvent->GetBunchCrossNumber();
+    if(fBCNumberBegin > fBCNumber || fBCNumber > fBCNumberEnd){
+      return;
+    }
+  }
+}
 //________________________________________________________________________
 void AliAnalysisTaskMaterialHistos::SetLogBinningXTH2(TH2* histoRebin){
     TAxis *axisafter = histoRebin->GetXaxis();

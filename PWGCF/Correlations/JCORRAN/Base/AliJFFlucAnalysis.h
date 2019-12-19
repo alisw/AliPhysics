@@ -71,31 +71,39 @@ public:
 		SUBEVENT_A = 0x1,
 		SUBEVENT_B = 0x2
 	};
-	void SelectSubevents(UInt_t nsubeventMask){
-		subeventMask = nsubeventMask;
+	void SelectSubevents(UInt_t _subeventMask){
+		subeventMask = _subeventMask;
+	}
+	enum BINNING{
+		BINNING_CENT_PbPb,
+		BINNING_MULT_PbPb_1,
+		BINNING_MULT_pPb_1
+	};
+	void SetBinning(BINNING _binning){
+		binning = _binning;
 	}
 	enum{
 		FLUC_PHI_CORRECTION = 0x2,
 		FLUC_SCPT = 0x4,
-		FLUC_EBE_WEIGHTING = 0x8,
-		FLUC_MULT_BINS = 0x10
+		FLUC_EBE_WEIGHTING = 0x8
 	};
 	void AddFlags(UInt_t nflags){
 		flags |= nflags;
 	}
 
-#define CENTN_NAT 9
-#define MULTN 15
-	static Double_t CentBin[CENTN_NAT+1];
-	static Double_t MultBin[MULTN+1];
+	static Double_t CentBin_PbPb_default[][2];
+	static Double_t MultBin_PbPb_1[][2];
+	static Double_t MultBin_pPb_1[][2];
+	static Double_t (*pBin[3])[2];
 	static Double_t pttJacek[74];
-	static UInt_t CentralityTranslationMap[CENTN_NAT];
-	static UInt_t NCentBin;
-	static UInt_t NMultBin;
+	//static UInt_t CentralityTranslationMap[CENTN_NAT];
+	//static UInt_t NCentBin;
+	static UInt_t NBin[3];
 	static UInt_t NpttJacek;
 
-	static int GetCentralityClass(Double_t);
-	static int GetMultiplicityBin(Double_t);
+	//static int GetCentralityClass(Double_t);
+	//static int GetMultiplicityBin(Double_t, BINNING);
+	static int GetBin(Double_t, BINNING);
 
 	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kH10, kH11, kH12, kNH}; //harmonics
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
@@ -116,6 +124,7 @@ private:
 	float fFB32trks;
 	float fFB32TOFtrks;
 	UInt_t subeventMask;
+	BINNING binning;
 	UInt_t flags;
 	Double_t fSingleVn[kNH][3]; // 3 methods
 

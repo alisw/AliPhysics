@@ -94,7 +94,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void FillNtuples();
     void FillMCinput(AliMCEvent* fMCEvent, int Fillbin = 0);
     void FillTrackToEventPool();
-    Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion, Bool_t LambdaStarCheck = kFALSE);
+    Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion, UInt_t BkgCheck = 0);
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
     void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
     void SetCutOpen();
@@ -181,13 +181,14 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     std::vector<UInt_t> goodtrackindices;  //!
     std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
-    ClassDef(AliAnalysisTaskSigma1385PM, 7);
+    ClassDef(AliAnalysisTaskSigma1385PM, 8);
     // Add rapidity/radius/Lifetime/Y cut of lambda
     // Add NanoOption
     // 4: Add GetImpactParm function for nano
     // 5: Seprate MC Sparse, INEL study capability
     // 6: Update some of deafult vaules
     // 7: Add skipping option for QA histos
+    // 8: Rebuild MC part
 };
 
 #endif

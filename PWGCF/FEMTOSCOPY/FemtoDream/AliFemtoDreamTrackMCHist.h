@@ -162,6 +162,11 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fMCSecondaryDCAXYPtBins;  //!
   TH2F *fMCSecLambdaDCAXYPtBins;  //!
   TH2F *fMCSecSigmaDCAXYPtBins;   //!
+  TH2F *fMCSecXiDCAXYPtBins;  	  //!
+  TH2F *fMCSecOmegaDCAXYPtBins;   //!
+  TH2F *fMCSecKlongDCAXYPtBins;   //!
+  TH2F *fMCSecKshortDCAXYPtBins;  //!
+  TH2F *fMCSecKchDCAXYPtBins;     //!
 
   TH2F *fMCPrimDCAXYPtBinsMult[3];       //!
   TH2F *fMCMaterialDCAXYPtBinsMult[3];   //!

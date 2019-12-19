@@ -140,6 +140,9 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
                                    fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, 
                                    fSettings.fCentBins} ;
 
+
+                                   
+
   fCalculator.cumu_rW2     = new THnD("cumu_rW2",     "cumu_rW2",     dimensions,rbins,dmin,dmax);
   fCalculator.cumu_rW2Two  = new THnD("cumu_rW2Two" , "cumu_rW2Two" , dimensions,rbins,dmin,dmax); 
   fCalculator.cumu_rW4     = new THnD("cumu_rW4"    , "cumu_rW4"    , dimensions,rbins,dmin,dmax);;
@@ -170,6 +173,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
   fCalculator.cumu_dW4FourTwo  = new THnD("cumu_dW4FourTwo" , "cumu_dW4FourTwo" , dimensions, sc_dbins, sc_dmin, sc_dmax) ;
   fCalculator.cumu_dW4ThreeTwo = new THnD("cumu_dW4ThreeTwo", "cumu_dW4ThreeTwo", dimensions, sc_dbins, sc_dmin, sc_dmax) ;
+
   fCalculator.cumu_dWTwoTwoN   = new THnD("cumu_dWTwoTwoN"  , "cumu_dWTwoTwoN"  , dimensions, dbins, dmin, dmax) ; // Numerator of R_{n,n; 2}
   fCalculator.cumu_dWTwoTwoD   = new THnD("cumu_dWTwoTwoD"  , "cumu_dWTwoTwoD"  , dimensions, dbins, dmin, dmax) ; // Denominator of R_{n,n; 2}
 
@@ -203,8 +207,8 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist ->SetDirectory(0);
 
   fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
-  int i = 0;
-  fCentCounter = std::valarray<int>(i,int(fSettings.fCentBins));
+  //int i = 0;
+  //fCentCounter = std::valarray<int>(i,int(fSettings.fCentBins));
 
   PostData(1, fStorage);
 
@@ -247,45 +251,47 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
   if (cent > Double_t(fSettings.fCentUpEdge)) return;
-  Int_t centBin = fCalculator.cumu_rW2->GetAxis(5)->FindBin(cent);
+  //Int_t centBin = fCalculator.cumu_rW2->GetAxis(5)->FindBin(cent);
 
 
   fUtil.FillData(refDist,centralDist,forwardDist);
 
   Double_t zvertex = fUtil.GetZ();
 
-  //if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
-  
+  /*
   if (fSettings.a5){
     fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE, true,false);
     fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,true,false);
   }
   else{
-    if (fSettings.ref_mode & fSettings.kFMDref) fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kTRUE,true,false);
-    else fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
+  */
+  if (fSettings.ref_mode & fSettings.kFMDref) {
+    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,true);
   }
-  fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,false,true);
+  else {
+    fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
+  }
+  
   fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,false,true);  
 
-  //UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
+  UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
-  fCalculator.saveEvent(cent, zvertex,  fCentCounter[centBin-1], 0);
+  fCalculator.saveEvent(cent, zvertex,  randomInt, 0);
 
   fCalculator.reset();
-
   centralDist->Reset();
   
   if (!(fSettings.ref_mode & fSettings.kFMDref)) refDist->Reset();
   if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) {
     forwardDist->Reset();
-    refDist->Reset();
   }
+  /*
   fSettings.track_sample++;
   if (fSettings.track_sample == fSettings.fnoSamples) fSettings.track_sample = 0;
   fCentCounter[centBin-1]++;
   if (fCentCounter[centBin-1] == 10) fCentCounter[centBin-1] = 0;
-
+  */
   PostData(1, fStorage);
   return;
 }

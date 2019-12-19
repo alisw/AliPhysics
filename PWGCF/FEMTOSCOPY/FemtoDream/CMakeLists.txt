@@ -73,6 +73,7 @@ set(SRCS
   AliAnalysisTaskAODSigma0Femto.cxx
   AliAnalysisTaskNanoAODSigma0Femto.cxx
   AliAnalysisTaskNanoSigmaPlus.cxx
+  AliAnalysisTaskNanoLD.cxx
   AliAnalysisTaskGrandma.cxx
   AliAnalysisTaskOtonOmega.cxx
   AliOtonOmegaAnalysis.cxx
@@ -82,6 +83,7 @@ set(SRCS
   AliAnalysisTaskNanoLX.cxx
   AliAnalysisTaskOtonOmegaNanoAOD.cxx
   AliAnalysisTaskPOmegaPenne.cxx
+  AliFemtoDreamBaseDump.cxx
   
   )
 

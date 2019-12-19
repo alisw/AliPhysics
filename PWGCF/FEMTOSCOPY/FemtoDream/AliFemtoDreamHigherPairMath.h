@@ -37,6 +37,9 @@ class AliFemtoDreamHigherPairMath {
                       int PDGPart1, TVector3 Part2Momentum, int PDGPart2);
   void MassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1,
               AliFemtoDreamBasePart &part2);
+  void SEMomentumResolution(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
+                            AliFemtoDreamBasePart* part2, int PDGPart2,
+                            float RelativeK);
   void SEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart& part1, int PDGPart1,
                        AliFemtoDreamBasePart& part2, int PDGPart2,
                        float RelativeK, bool recalculate);
@@ -70,10 +73,18 @@ class AliFemtoDreamHigherPairMath {
     return "HighMaths";
   }
   ;
+
+  static float RelativePairMomentum(AliFemtoDreamBasePart *PartOne, const int pdg1,
+                                    AliFemtoDreamBasePart *PartTwo, const int pdg2);
+  static float RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float RelativePairkT(AliFemtoDreamBasePart *PartOne, const int pdg1,
+                              AliFemtoDreamBasePart *PartTwo, const int pdg2);
+  static float RelativePairkT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float RelativePairmT(AliFemtoDreamBasePart *PartOne, const int pdg1,
+                              AliFemtoDreamBasePart *PartTwo, const int pdg2);
+  static float RelativePairmT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+
  private:
-  float RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
-  float RelativePairkT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
-  float RelativePairmT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
   void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
                         AliFemtoDreamBasePart &part2, bool SEorME, float relk,
                         bool recalculate);

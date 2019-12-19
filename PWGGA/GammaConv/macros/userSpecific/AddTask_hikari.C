@@ -302,6 +302,11 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("00010113", "0d200009a27300008250404000", "0152103500000000"); // edEdx -3,3
       cuts.AddCutPCM("00010113", "0d200009b27300008250404000", "0152103500000000"); // edEdx -3,2,3.2
       cuts.AddCutPCM("00010113", "0d200009c27300008250404000", "0152103500000000"); // edEdx -2.8,2.8
+    } else if (trainConfig == 449){//R 5-33.5 cm 
+      cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // +-10
+      cuts.AddCutPCM("00010114", "0da00009227300008250404000", "0152103500000000"); // +-7.5
+      cuts.AddCutPCM("00010115", "0da00009227300008250404000", "0152103500000000"); // +-5.
+      cuts.AddCutPCM("00010116", "0da00009227300008250404000", "0152103500000000"); // +-2.5
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL;
@@ -420,6 +425,11 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("80010113", "0d200009227300008250404000", "0162103500000000"); // edEdx -3,4
       cuts.AddCutPCM("80010113", "0d200009b27300008250404000", "0162103500000000"); // edEdx -3,2,3.2
       cuts.AddCutPCM("80010113", "0d200009c27300008250404000", "0162103500000000"); // edEdx -2.8,2.8
+    } else if (trainConfig == 454){//R 5-33.5 cm 
+      cuts.AddCutPCM("80010113", "0da00009227300008250404000", "0162103500000000"); // +-10
+      cuts.AddCutPCM("80010114", "0da00009227300008250404000", "0162103500000000"); // +-7.5
+      cuts.AddCutPCM("80010115", "0da00009227300008250404000", "0162103500000000"); // +-5.
+      cuts.AddCutPCM("80010116", "0da00009227300008250404000", "0162103500000000"); // +-2.5     
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL; 
