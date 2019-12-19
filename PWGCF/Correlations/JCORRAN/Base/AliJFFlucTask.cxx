@@ -679,16 +679,16 @@ void AliJFFlucTask::EnableCentFlattening(const TString fname){
 	cout<<"Centrality flattening enabled: "<<fname.Data()<<" (index "<<centInputIndex<<")"<<endl;
 }
 
-TH1 * AliJFFlucTask::GetCorrectionMap(UInt_t run, UInt_t cent){
-	auto m = PhiWeightMap[cent].find(run);
-	if(m == PhiWeightMap[cent].end()){
+TH1 * AliJFFlucTask::GetCorrectionMap(UInt_t run, UInt_t bin){
+	auto m = PhiWeightMap[bin].find(run);
+	if(m == PhiWeightMap[bin].end()){
 		TList *plist = (TList*)GetInputData(phiInputIndex);
 		if(!plist)
 			return 0;
-		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,cent));
+		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,bin));
 		if(!pmap)
 			return 0;
-		PhiWeightMap[cent][run] = pmap;
+		PhiWeightMap[bin][run] = pmap;
 		return pmap;
 	}
 	return (*m).second;
