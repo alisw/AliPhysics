@@ -182,6 +182,12 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   void SetXmlWeightsFile(TString fileName) {fXmlWeightsFile = fileName;}
   TString GetXmlWeightsFile() const {return fXmlWeightsFile;}
 
+  void SetUseXmlFileFromCVMFS(Bool_t flag) {fUseXmlFileFromCVMFS = flag;}
+  Bool_t GetUseXmlFileFromCVMFS() const {return fUseXmlFileFromCVMFS;}
+
+  void SetXmlFileFromCVMFS(TString fileName) {fXmlFileFromCVMFS = fileName;}
+  TString GetXmlFileFromCVMFS() const {return fXmlFileFromCVMFS;}
+
   void SetUseMultiplicityCorrection(Bool_t flag){fUseMultCorrection=flag;}
 
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
@@ -597,6 +603,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TString fNamesTMVAVarSpectators;      // vector of the names of the spectators variables
   TString fXmlWeightsFile;              // file with TMVA weights
   TH2D *fBDTHistoTMVA;                  //!<! BDT histo file for the case in which the xml file is used
+  Bool_t fUseXmlFileFromCVMFS;          // Boolean to acces Xml from CVMFS path
+  TString fXmlFileFromCVMFS;            // Path in CVMFS directory
   
   // Multiplicity corrections
   TProfile* GetEstimatorHistogram(const AliVEvent *event);
@@ -616,7 +624,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2F* fHistoVzVsNtrCorr;           //!<! hist. Vz vs corrected tracklets
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 11); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 12); /// class for Lc->p K0
   /// \endcond    
 };
 
