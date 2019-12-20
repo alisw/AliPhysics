@@ -132,6 +132,6 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   TH2F  *fDeuteronBackgroundMC;             //!
   TH2F  *fAntiDeuteronBackgroundMC;         //!
 
-  ClassDef(AliAnalysisTaskNanoPt, 3)
+  ClassDef(AliAnalysisTaskNanoPt, 4)
 };
-#endif
+#endif 
