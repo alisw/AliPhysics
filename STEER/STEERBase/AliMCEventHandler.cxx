@@ -358,7 +358,7 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
     }
 
 
-    if (entry == -1) {
+    if (entry < 0) {
 	fEvent++;
 	entry = fEvent;
     } else {
