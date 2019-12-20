@@ -175,6 +175,12 @@ public:
   double GetDataGridDimensionRows() const;
 
   /**
+   * @brief Check whether smear model has already been provided
+   * @return True if mean and width parameterizations are set, false otherwise
+   */
+  bool HasSmearModel() const { return fSmearModelMean && fSmearModelSigma; }
+
+  /**
    * @brief Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
    */
