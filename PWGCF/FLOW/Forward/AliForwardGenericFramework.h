@@ -11,22 +11,23 @@
  *
  * @ingroup pwgcf_forward_flow
  */
-#include <TObject.h>
-#include <TH2D.h>
-#include <TH3D.h>
+#include "TObject.h"
+#include "TH2D.h"
+#include "TH3D.h"
 #include "TString.h"
 #include "TNtuple.h"
 #include "TList.h"
 #include "TMath.h"
 #include "TRandom.h"
-#include <THn.h>
+#include "THn.h"
 #include "TString.h"
-#include "AliForwardSettings.h"
 #include "TComplex.h"
+
+#include "AliForwardSettings.h"
 #include "AliForwardFlowUtil.h"
-#include <valarray>
-#include <iostream>
 #include "AliForwardNUATask.h"
+
+#include <iostream>
 
 /**
  * Class to handle cumulant calculations.

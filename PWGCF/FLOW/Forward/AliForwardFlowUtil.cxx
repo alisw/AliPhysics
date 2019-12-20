@@ -1,48 +1,38 @@
+#include <TROOT.h>
 #include "TString.h"
 #include "TMath.h"
-#include "AliForwardFlowUtil.h"
 #include "TFile.h"
-
-#include <iostream>
-#include <TROOT.h>
+#include <TList.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
-#include <TList.h>
 #include <THn.h>
 
-#include "AliLog.h"
-#include "AliForwardFlowRun2Task.h"
-#include "AliForwardQCumulantRun2.h"
-#include "AliForwardGenericFramework.h"
+#include <iostream>
 
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
-#include "AliMCEvent.h"
-
-#include "AliAODMCParticle.h"
-
-#include "AliForwardFlowUtil.h"
-
-#include "AliVVZERO.h"
 #include "AliAODVertex.h"
-#include "AliCentrality.h"
-
-#include "AliESDEvent.h"
-#include "AliVTrack.h"
-#include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliAODTracklets.h"
 
-#include "AliAnalysisFilter.h"
+#include "AliMCEvent.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliAODMCParticle.h"
+
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
+
+#include "AliForwardFlowUtil.h"
+
+#include "AliVTrack.h"
 #include "AliMultSelection.h"
 #include "AliMultiplicity.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 
-#include "AliStack.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
+
 //________________________________________________________________________
 AliForwardFlowUtil::AliForwardFlowUtil():
 fevent(),

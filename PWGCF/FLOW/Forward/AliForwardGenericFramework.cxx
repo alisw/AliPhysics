@@ -6,15 +6,31 @@
 #include "TH1D.h"
 #include <complex>
 #include <cmath>
-#include "TH2F.h"
 #include "TFile.h"
-#include "AliForwardNUATask.h"
-#include "AliForwardFlowUtil.h"
 
 using namespace std;
 
 //_____________________________________________________________________
-AliForwardGenericFramework::AliForwardGenericFramework()
+AliForwardGenericFramework::AliForwardGenericFramework():
+  fSettings(),
+  fQvector(),
+  fpvector(),
+  fqvector(),
+  cumu_dW2A(),  
+  cumu_dW2TwoA(),
+  cumu_dW2B(),
+  cumu_dW2TwoB(),
+  cumu_dW4(),
+  cumu_dW4Four(),
+  cumu_dW4FourTwo(),
+  cumu_dW4ThreeTwo(),
+  cumu_dWTwoTwoN(),
+  cumu_dWTwoTwoD(),
+  cumu_rW2(),
+  cumu_rW2Two(),
+  cumu_rW4(),
+  cumu_rW4Four(),
+  fUtil()
 {
   Int_t rbins[4] = {2, 6, 4, 2} ; // kind (real or imaginary), n, p, eta
   Int_t dimensions = 4;
