@@ -229,6 +229,9 @@ void AddTask_GammaConvCalo_pPb(
   } else if (trainConfig == 7){ // EMC EMC triggers
     cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG2
     cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG2
+  } else if (trainConfig == 8){ // EMC  INT7 run1 & run2
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); // 0-100% PCM NL
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC
 
   //************************************************ PCM- EDC analysis 5 TeV pPb INT7 sys *********************************
   } else if (trainConfig == 10) { // PCM variations
