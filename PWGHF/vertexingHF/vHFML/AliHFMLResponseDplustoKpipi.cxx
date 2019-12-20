@@ -35,14 +35,12 @@ AliHFMLResponseDplustoKpipi::AliHFMLResponseDplustoKpipi() : AliHFMLResponse()
 }
 
 //________________________________________________________________
-AliHFMLResponseDplustoKpipi::AliHFMLResponseDplustoKpipi(string configfilename) : AliHFMLResponse(configfilename)
+AliHFMLResponseDplustoKpipi::AliHFMLResponseDplustoKpipi(const Char_t *name, const Char_t *title, 
+                                                         const std::string configfilepath) : AliHFMLResponse(name, title, configfilepath)
 {
     //
     // Standard constructor
     //
-
-    if (configfilename != "")
-        SetConfigFile(configfilename);
 }
 
 //________________________________________________________________
