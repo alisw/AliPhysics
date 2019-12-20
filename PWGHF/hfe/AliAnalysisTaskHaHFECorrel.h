@@ -99,7 +99,7 @@ public:
     Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliVTrack *aetrack, Int_t nMother, Int_t listMother[], Double_t EventWeight);
     void   PhotULSLSElectronAcceptance(const AliVVertex *pVtx, Float_t mult,  Int_t nMother, Int_t listMother[], Double_t EventWeight);
     
-    void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner, Double_t EventWeight, Double_t mult); 
+    void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner, Double_t EventWeight, Double_t mult, Double_t recEffE); 
     Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliVTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t trueULSPartner, Float_t MCPartnerPt, Float_t RecPartnerPt, Bool_t isPhotonic, Bool_t isHadron);
 
     void BinLogX(TAxis *axis);
@@ -550,6 +550,16 @@ public:
     TH2F                  *fTagEffInclBGMult;       //!
     TH2F                  *fTagEffULSBGMult;        //!
     TH2F                  *fTagTruePairsMult;       //!
+    TH2F                  *fTagEffInclMultWoW;         //!
+    TH2F                  *fTagEffULSMultWoW;          //!
+    TH2F                  *fTagEffInclBGMultWoW;       //!
+    TH2F                  *fTagEffULSBGMultWoW;        //!
+    TH2F                  *fTagTruePairsMultWoW;       //!
+    TH2F                  *fTagEffInclMultWoWS;         //!
+    TH2F                  *fTagEffULSMultWoWS;          //!
+    TH2F                  *fTagEffInclBGMultWoWS;       //!
+    TH2F                  *fTagEffULSBGMultWoWS;        //!
+    TH2F                  *fTagTruePairsMultWoWS;       //!
     THnSparse             *fTagEffIncl;             //! 
     THnSparse             *fTagEffLS;               //!
     THnSparse             *fTagEffULS;              //!
