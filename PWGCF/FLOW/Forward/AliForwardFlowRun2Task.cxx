@@ -14,18 +14,13 @@
 #include <TList.h>
 #include <THn.h>
 
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-
 #include "AliAODEvent.h"
-#include "AliMCEvent.h"
 
 #include "AliForwardFlowRun2Task.h"
 #include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowUtil.h"
-#include "AliAODForwardMult.h"
-#include <valarray>
+
 using namespace std;
 ClassImp(AliForwardFlowRun2Task)
 #if 0
@@ -207,8 +202,6 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist ->SetDirectory(0);
 
   fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
-  //int i = 0;
-  //fCentCounter = std::valarray<int>(i,int(fSettings.fCentBins));
 
   PostData(1, fStorage);
 

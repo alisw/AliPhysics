@@ -1,5 +1,5 @@
-#ifndef AliForwardFlowUtil_cxx
-#define AliForwardFlowUtil_cxx
+#ifndef AliForwardFlowUtil_H
+#define AliForwardFlowUtil_H
 /**
  * @file AliForwardFlowUtil.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
@@ -22,7 +22,7 @@
 #include "AliFMDStripIndex.h"
 #include "AliFMDEncodedEdx.h"
 #include "AliFMDMCTrackDensity.h"
-#include <valarray>
+
 class AliForwardFlowUtil : public TObject {
   typedef std::vector< Double_t > edgeContainer;
 
