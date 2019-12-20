@@ -129,17 +129,17 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void CorrelationTask(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t fSpCent);
         void FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, const Float_t fcentV0C, const Float_t centrality);
         // Calculate flow vectors for reference and POIs
-        void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
-        void POIVectors(const Int_t CenterCode, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
+        void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
+        void POIVectors(const Int_t CenterCode, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
         void ReducedqVectorsTPC(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
         void ReducedqVectorsV0C(const Float_t centrality, const AliAODEvent* fAOD);
-        void FillRFP(const Float_t centrality,const Int_t iTracks, const int nHarm, const int nCorr);
-        void Filldn(const Int_t CenterCode, const double dPt, const int nHarm, const int nCorr);
+        void FillRFP(const Float_t centrality,const Int_t iTracks, const int nHarm, const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
+        void Filldn(const Int_t CenterCode, const double dPt, const int nHarm, const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
         void FillqnRedTPC(const Float_t centrality);
         void FillqnRedV0(const Float_t centrality, TString V0type);
-        void FillPOI(const Double_t dPtL, const Double_t dPtLow, const Double_t dPtHigh, const float dVz, const Int_t iTracks);
-        void FillESEcn(const Float_t centrality, const int nHarm, const double c, const double c_weight,const int nCorr);
-        void FillESEdnPt(const Int_t CenterCode, const int nHarm, const Double_t dPt, const double d, const double d_weight,const int nCorr);
+        void FillPOI(const Double_t dPtL, const Double_t dPtLow, const Double_t dPtHigh, const float dVz, Int_t iTracks);
+        void FillESEcn(const Float_t centrality, const int nHarm, const double c, const double c_weight,const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
+        void FillESEdnPt(const Int_t CenterCode, const int nHarm, const Double_t dPt, const double d, const double d_weight,const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
         Int_t GetCentrCode(const Float_t centrality);
         Int_t GetPercCode(Double_t qPerc) const;
         Bool_t WithinRFP(const AliVParticle* track) const;
@@ -257,10 +257,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fnFourCorr;
         Bool_t                  fTPCEse;
         Bool_t                  fV0CEse;
-        Int_t                   q2ESECodeTPC;
-        Int_t                   q3ESECodeTPC;
-        Int_t                   q2ESECodeV0C;
-        Int_t                   q3ESECodeV0C;
 
 
         ClassDef(AliAnalysisTaskESEFlow, 1);
