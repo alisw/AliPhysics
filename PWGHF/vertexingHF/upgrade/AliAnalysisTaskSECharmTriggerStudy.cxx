@@ -166,7 +166,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserCreateOutputObjects()
     fOutput->SetName("OutputHistos");
     fEventCuts.AddQAplotsToList(fOutput);
 
-    fHistNEvents = new TH1F("hNEvents", "number of events ", 13, 0.5, 12.5);
+    fHistNEvents = new TH1F("hNEvents", "number of events ", 10, 0.5, 10.5);
     fHistNEvents->GetXaxis()->SetBinLabel(1, "nEventsRead");
     fHistNEvents->GetXaxis()->SetBinLabel(2, "nEvents Matched dAOD");
     fHistNEvents->GetXaxis()->SetBinLabel(3, "nEvents Mismatched dAOD");
@@ -184,6 +184,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserCreateOutputObjects()
     fOutput->Add(fHistNEvents);
 
     fRecoTree = new TTree("fRecoTree", "Reconstructed charm hadron candidates");
+    fRecoTree->SetMaxVirtualSize(1.e+8);
     fRecoTree->Branch("zVtxReco", &fRecoZvtx);
     fRecoTree->Branch("Ntracklets", &fNtracklets);
     if (fEnable2Prongs)
@@ -200,6 +201,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserCreateOutputObjects()
         fRecoTree->Branch("Beauty4Prong", &fBeauty4Prong);
 
     fGenTree = new TTree("fGenTree", "Generate charm hadrons");
+    fGenTree->SetMaxVirtualSize(1.e+8);
     if(fReadMC && fFillGenTree)
     {
         fGenTree->Branch("zVtxGen", &fGenZvtx);
@@ -608,7 +610,10 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
                 isvtxrecalc = RecalcOwnPrimaryVertex(d);
                 if (!isvtxrecalc)
+                {
                     CleanOwnPrimaryVertex(d, origownvtx);
+                }
+                unsetvtx = true;                
             }
 
             //fill vector of 2prongs
@@ -644,53 +649,56 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         BplusdauTracks.Add(&DTrackParams); //then the D
                         double dispersion = 0;
                         AliAODVertex *vertexBplus = ReconstructDisplVertex(fAOD->GetPrimaryVertex(), &BplusdauTracks, fAOD->GetMagneticField(), dispersion);
-                        if (!vertexBplus)
-                            continue;
+                        if (vertexBplus)
+                        {
+                            //use the new vertex to create the Bplus candidate
+                            double xdummy = 0., ydummy = 0.;
+                            double d0z0[2], covd0z0[3], d0[2], d0err[2];
+                            piTrackParams.PropagateToDCA(vertexBplus, fAOD->GetMagneticField(), 100., d0z0, covd0z0);
+                            DTrackParams.PropagateToDCA(vertexBplus, fAOD->GetMagneticField(), 100., d0z0, covd0z0);
 
-                        //use the new vertex to create the Bplus candidate
-                        double xdummy = 0., ydummy = 0.;
-                        double d0z0[2], covd0z0[3], d0[2], d0err[2];
-                        piTrackParams.PropagateToDCA(vertexBplus, fAOD->GetMagneticField(), 100., d0z0, covd0z0);
-                        DTrackParams.PropagateToDCA(vertexBplus, fAOD->GetMagneticField(), 100., d0z0, covd0z0);
+                            //we reconstruct the mother decay prong
+                            double px[2], py[2], pz[2];
+                            px[0] = piTrackParams.Px();
+                            py[0] = piTrackParams.Py();
+                            pz[0] = piTrackParams.Pz();
+                            px[1] = DTrackParams.Px();
+                            py[1] = DTrackParams.Py();
+                            pz[1] = DTrackParams.Pz();
+                            unsigned short id[2];
+                            id[0] = piTrackParams.GetID();
+                            id[1] = DTrackParams.GetID();
+                            piTrackParams.PropagateToDCA((AliAODVertex *)fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., d0z0, covd0z0);
+                            d0[0] = d0z0[0];
+                            d0err[0] = TMath::Sqrt(covd0z0[0]);
+                            DTrackParams.PropagateToDCA((AliAODVertex *)fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., d0z0, covd0z0);
+                            d0[1] = d0z0[0];
+                            d0err[1] = TMath::Sqrt(covd0z0[0]);
 
-                        //we reconstruct the mother decay prong
-                        double px[2], py[2], pz[2];
-                        px[0] = piTrackParams.Px();
-                        py[0] = piTrackParams.Py();
-                        pz[0] = piTrackParams.Pz();
-                        px[1] = DTrackParams.Px();
-                        py[1] = DTrackParams.Py();
-                        pz[1] = DTrackParams.Pz();
-                        unsigned short id[2];
-                        id[0] = piTrackParams.GetID();
-                        id[1] = DTrackParams.GetID();
-                        piTrackParams.PropagateToDCA((AliAODVertex *)fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., d0z0, covd0z0);
-                        d0[0] = d0z0[0];
-                        d0err[0] = TMath::Sqrt(covd0z0[0]);
-                        DTrackParams.PropagateToDCA((AliAODVertex *)fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., d0z0, covd0z0);
-                        d0[1] = d0z0[0];
-                        d0err[1] = TMath::Sqrt(covd0z0[0]);
+                            double dca = DTrackParams.GetDCA(&piTrackParams, fAOD->GetMagneticField(), xdummy, ydummy);
+                            short chargeBplus = d->Charge() + track->Charge();
 
-                        double dca = DTrackParams.GetDCA(&piTrackParams, fAOD->GetMagneticField(), xdummy, ydummy);
-                        short chargeBplus = d->Charge() + track->Charge();
+                            AliAODRecoDecayHF2Prong Bplus(vertexBplus, px, py, pz, d0, d0err, dca);
+                            Bplus.SetCharge(chargeBplus);
+                            Bplus.GetSecondaryVtx()->AddDaughter(track); //first the pi
+                            Bplus.GetSecondaryVtx()->AddDaughter(d); //then the D
+                            Bplus.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
+                            Bplus.SetProngIDs(2, id);
 
-                        AliAODRecoDecayHF2Prong Bplus(vertexBplus, px, py, pz, d0, d0err, dca);
-                        Bplus.SetCharge(chargeBplus);
-                        Bplus.GetSecondaryVtx()->AddDaughter(track); //first the pi
-                        Bplus.GetSecondaryVtx()->AddDaughter(d); //then the D
-                        Bplus.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
-                        Bplus.SetProngIDs(2, id);
+                            FillBeauty3Prong(&Bplus, d, true);
 
-                        FillBeauty3Prong(&Bplus, d, true);
-
-                        delete vertexBplus;
-                        vertexBplus = nullptr;
+                            delete vertexBplus;
+                            vertexBplus = nullptr;
+                        }
                     }
                 }
             }
 
             if (isvtxrecalc)
+            {
                 CleanOwnPrimaryVertex(d, origownvtx);
+                unsetvtx = true;                
+            }
             if (unsetvtx)
                 d->UnsetOwnPrimaryVtx();
         }
@@ -755,7 +763,10 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
                 isvtxrecalc = RecalcOwnPrimaryVertex(d);
                 if (!isvtxrecalc)
+                {
                     CleanOwnPrimaryVertex(d, origownvtx);
+                }
+                unsetvtx = true;                
             }
 
             //fill vector of 3prongs
@@ -767,7 +778,16 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 if(((fEnableBeauty4Prongs >> 0 & 1) && !isselDplus) || 
                 ((fEnableBeauty4Prongs >> 1 & 1) && (!(isselDs & 4) && !(isselDs & 8))) || 
                 ((fEnableBeauty4Prongs >> 2 & 1) && !isselLc))
+                {
+                    if (isvtxrecalc)
+                    {
+                        CleanOwnPrimaryVertex(d, origownvtx);
+                        unsetvtx = true;                
+                    }
+                    if (unsetvtx)
+                        d->UnsetOwnPrimaryVtx();
                     continue;
+                }
 
                 for (int iTrack = 0; iTrack < fAOD->GetNumberOfTracks(); iTrack++)
                 {
@@ -803,53 +823,56 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         BdauTracks.Add(&piTrackParams); // then the pi
                         double dispersion = 0;
                         AliAODVertex *vertexB = ReconstructDisplVertex(fAOD->GetPrimaryVertex(), &BdauTracks, fAOD->GetMagneticField(), dispersion);
-                        if (!vertexB)
-                            continue;
+                        if (vertexB)
+                        {
+                            //use the new vertex to create the B candidate
+                            double xdummy = 0., ydummy = 0.;
+                            double d0z0[2], covd0z0[3], d0[2], d0err[2];
+                            piTrackParams.PropagateToDCA(vertexB, fAOD->GetMagneticField(), 100., d0z0, covd0z0);
+                            DTrackParams.PropagateToDCA(vertexB, fAOD->GetMagneticField(), 100., d0z0, covd0z0);
 
-                        //use the new vertex to create the B candidate
-                        double xdummy = 0., ydummy = 0.;
-                        double d0z0[2], covd0z0[3], d0[2], d0err[2];
-                        piTrackParams.PropagateToDCA(vertexB, fAOD->GetMagneticField(), 100., d0z0, covd0z0);
-                        DTrackParams.PropagateToDCA(vertexB, fAOD->GetMagneticField(), 100., d0z0, covd0z0);
+                            //we reconstruct the mother decay prong
+                            double px[2], py[2], pz[2];
+                            px[0] = piTrackParams.Px();
+                            py[0] = piTrackParams.Py();
+                            pz[0] = piTrackParams.Pz();
+                            px[1] = DTrackParams.Px();
+                            py[1] = DTrackParams.Py();
+                            pz[1] = DTrackParams.Pz();
+                            unsigned short id[2];
+                            id[0] = piTrackParams.GetID();
+                            id[1] = DTrackParams.GetID();
+                            piTrackParams.PropagateToDCA((AliAODVertex *)fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., d0z0, covd0z0);
+                            d0[0] = d0z0[0];
+                            d0err[0] = TMath::Sqrt(covd0z0[0]);
+                            DTrackParams.PropagateToDCA((AliAODVertex *)fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., d0z0, covd0z0);
+                            d0[1] = d0z0[0];
+                            d0err[1] = TMath::Sqrt(covd0z0[0]);
 
-                        //we reconstruct the mother decay prong
-                        double px[2], py[2], pz[2];
-                        px[0] = piTrackParams.Px();
-                        py[0] = piTrackParams.Py();
-                        pz[0] = piTrackParams.Pz();
-                        px[1] = DTrackParams.Px();
-                        py[1] = DTrackParams.Py();
-                        pz[1] = DTrackParams.Pz();
-                        unsigned short id[2];
-                        id[0] = piTrackParams.GetID();
-                        id[1] = DTrackParams.GetID();
-                        piTrackParams.PropagateToDCA((AliAODVertex *)fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., d0z0, covd0z0);
-                        d0[0] = d0z0[0];
-                        d0err[0] = TMath::Sqrt(covd0z0[0]);
-                        DTrackParams.PropagateToDCA((AliAODVertex *)fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., d0z0, covd0z0);
-                        d0[1] = d0z0[0];
-                        d0err[1] = TMath::Sqrt(covd0z0[0]);
+                            double dca = DTrackParams.GetDCA(&piTrackParams, fAOD->GetMagneticField(), xdummy, ydummy);
+                            short chargeB = d->Charge() + track->Charge();
 
-                        double dca = DTrackParams.GetDCA(&piTrackParams, fAOD->GetMagneticField(), xdummy, ydummy);
-                        short chargeB = d->Charge() + track->Charge();
+                            AliAODRecoDecayHF2Prong B(vertexB, px, py, pz, d0, d0err, dca);
+                            B.SetCharge(chargeB);
+                            B.GetSecondaryVtx()->AddDaughter(d); //first the D
+                            B.GetSecondaryVtx()->AddDaughter(track); //then the pi
+                            B.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
+                            B.SetProngIDs(2, id);
 
-                        AliAODRecoDecayHF2Prong B(vertexB, px, py, pz, d0, d0err, dca);
-                        B.SetCharge(chargeB);
-                        B.GetSecondaryVtx()->AddDaughter(d); //first the D
-                        B.GetSecondaryVtx()->AddDaughter(track); //then the pi
-                        B.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
-                        B.SetProngIDs(2, id);
+                            FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc);
 
-                        FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc);
-
-                        delete vertexB;
-                        vertexB = nullptr;
+                            delete vertexB;
+                            vertexB = nullptr;
+                        }
                     }
                 }
             }
 
             if (isvtxrecalc)
+            {
                 CleanOwnPrimaryVertex(d, origownvtx);
+                unsetvtx = true;                
+            }
             if (unsetvtx)
                 d->UnsetOwnPrimaryVtx();
         }
@@ -897,14 +920,20 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
                 isvtxrecalc = RecalcOwnPrimaryVertex(d);
                 if (!isvtxrecalc)
+                {
                     CleanOwnPrimaryVertex(d, origownvtx);
+                }
+                unsetvtx = true;                
             }
 
             //fill vector of dstars
             FillDstar(d, d0, issel);
 
             if (isvtxrecalc)
+            {
                 CleanOwnPrimaryVertex(d, origownvtx);
+                unsetvtx = true;                
+            }
             if (unsetvtx)
                 d->UnsetOwnPrimaryVtx();
         }
@@ -956,14 +985,20 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 origownvtx = new AliAODVertex(*lc->GetOwnPrimaryVtx());
                 isvtxrecalc = RecalcOwnPrimaryVertex(lc);
                 if (!isvtxrecalc)
+                {
                     CleanOwnPrimaryVertex(lc, origownvtx);
+                }
+                unsetvtx = true;                
             }
 
             //fill vector of cascades
             FillCharmCascade(lc, v0part, issel);
 
             if (isvtxrecalc)
+            {
                 CleanOwnPrimaryVertex(lc, origownvtx);
+                unsetvtx = true;                
+            }
             if (unsetvtx)
                 lc->UnsetOwnPrimaryVtx();
         }
