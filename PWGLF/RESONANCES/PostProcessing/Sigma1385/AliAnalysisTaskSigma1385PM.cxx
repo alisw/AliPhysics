@@ -104,16 +104,17 @@ enum {
     kSigmaStarNBkg_type5
 };
 enum {
-    kAll = 1,  // 1
+    kAll = 1,   // 1
     kINEL10,
-    kINEL10_vtx,
-    kINEL10_vtx_trig,
-    kINELg0,
+    kINEL_trig,
+    kINEL_trig_vtx,
+    kINEL_trig_vtx10,
+    kINELg0,    // 6
     kINELg010,
-    kINELg010_vtx, 
-    kINELg010_vtx_trig,
-    kTrig, 
-    kSelected
+    kINELg0_trig, 
+    kINELg0_trig_vtx, 
+    kINELg0_trig_vtx10,
+    kSelected   // 11
 };
 
 class AliAnalysisTaskSigma1385PM;
@@ -191,9 +192,9 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
                     {binAnti, binType, binCent, binPt, binMass}, "s");
     if (fIsMC) {
         auto binTypeMCNorm = AxisStr(
-        "Type", {"kAll", "kINEL10", "kINEL10_vtx", "kINEL10_vtx_trig", "kINELg0",
-                 "kINELg010", "kINELg010_vtx","kINELg010_vtx_trig", "kTrig"
-                 "kSelected"});
+        "Type", {"kAll", "kINEL10", "kINEL_trig", "kINEL_trig_vtx",
+                 "kINEL_trig_vtx10", "kINELg0", "kINELg010", "kINELg0_trig", 
+                 "kINELg0_trig_vtx", "kINELg0_trig_vtx10", "kSelected"});
         CreateTHnSparse("Sigma1385_mc", "Sigma1385_mc", 5,
                         {binAnti, binTypeMC, binCent, binPt, binMassMC}, "s");
         CreateTHnSparse("Normalisation", "", 2, {binTypeMCNorm, binCent},
@@ -318,36 +319,43 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
         if(IsSelectedTrig)
             FillMCinput(fMCEvent ,3);
         FillTHnSparse("Normalisation",
-                            {(int)kAll, (double)fCent});
+                      {(int)kAll, (double)fCent});
         if (IsINEL0True) {
             FillTHnSparse("Normalisation",
-                            {(int)kINELg0, (double)fCent});
+                          {(int)kINELg0, (double)fCent});
             if(IsVtxInZCut){
                 FillTHnSparse("Normalisation",
-                            {(int)kINELg010, (double)fCent});
+                             {(int)kINELg010, (double)fCent});
+            }
+            if(IsSelectedTrig) {
+                FillTHnSparse("Normalisation",
+                              {(int)kINELg0_trig, (double)fCent});
                 if(IsGoodVertex){
                     FillTHnSparse("Normalisation",
-                            {(int)kINELg010_vtx, (double)fCent});
-                    if(IsSelectedTrig) {
+                                  {(int)kINELg0_trig_vtx, (double)fCent});
+                    if(IsVtxInZCut){
                         FillTHnSparse("Normalisation",
-                                {(int)kINELg010_vtx_trig, (double)fCent});
+                                      {(int)kINELg0_trig_vtx10, (double)fCent});
                     }
                 }
             }
         }
         if(IsVtxInZCut){
             FillTHnSparse("Normalisation",
-                        {(int)kINEL10, (double)fCent});
+                          {(int)kINEL10, (double)fCent});
+        }
+        if(IsSelectedTrig) {
+            FillTHnSparse("Normalisation",
+                          {(int)kINEL_trig, (double)fCent});
             if(IsGoodVertex){
                 FillTHnSparse("Normalisation",
-                        {(int)kINEL10_vtx, (double)fCent});
-                if(IsSelectedTrig) {
+                              {(int)kINEL_trig_vtx, (double)fCent});
+                if(IsVtxInZCut){
                     FillTHnSparse("Normalisation",
-                            {(int)kINEL10_vtx_trig, (double)fCent});
+                                  {(int)kINEL_trig_vtx10, (double)fCent});
                 }
             }
         }
-
     }
 
     if (!IsEvtSelected) {
