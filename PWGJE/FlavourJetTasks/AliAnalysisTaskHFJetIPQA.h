@@ -115,7 +115,9 @@ public:
         DoArmenteros,
         DoMassWindow,
         InvarMassWindowK0,
-        InvarMassWindowLambda
+        InvarMassWindowLambda,
+        BDaughMinPt,
+        BDaughMaxIPoverPt
     };
 
     enum TCTagType{
@@ -305,6 +307,7 @@ public:
     AliAODMCParticle* GetMCTrack(int iLabel);
     int GetV0MCVeto(AliAODEvent* fAODIn, AliAODv0* v0, bool bIsCandidateK0s,bool bIsCandidateLambda, bool bIsCandidateALambda);
     void FillV0EfficiencyHists(int isV0, int & jetflavour, double jetpt, bool &isV0Jet);
+    void FillTrackIPvsPt(int isV0, double pt, double IP, int jetflavour);
 
     void FillCandidateJet(Int_t CutIndex, Int_t JetFlavor);
     bool IsFromElectron(AliAODTrack *track);
@@ -362,6 +365,7 @@ public:
     void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
     void setDoProbTagging(Int_t value) {fDoProbTagging=value;}
 
+    void setTrackIPvsPtValues(double fixedthresh, double ratio){fV0Cuts[BDaughMinPt]=fixedthresh;fV0Cuts[BDaughMaxIPoverPt]=ratio;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
     void setfNThresholds(Int_t value){fNThresholds=value;}
@@ -395,7 +399,7 @@ public:
     //________________________________
     //Probability Tagging
     double GetTrackProbability(double jetpt, bool* hasIPs, double* ipval);
-    void FillProbabilityHists(double jetpt,double  probval,int jetflavour);
+    void FillProbabilityHists(double jetpt,double probval,int jetflavour,bool **kTagDec);
     void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
     double IntegrateIP(int iJetPtBin, int iIPBin, int iN);
 
@@ -528,14 +532,17 @@ private:
     TH2D* h2DProbDistsudsg;//!
     TH2D* h2DProbDistsc;//!
     TH2D* h2DProbDistsb;//!
-    TH2D* h2DProbDistss;//!
+    TH2D* h2DProbDistsudsgV0;//!
+    TH2D* h2DProbDistscV0;//!
     TH2D* h2DProbDists;//!
+    TH2D* h2DProbDistsTag;//!
 
     TH2D* h2DLNProbDistsUnid;//!
     TH2D* h2DLNProbDistsudsg;//!
     TH2D* h2DLNProbDistsc;//!
     TH2D* h2DLNProbDistsb;//!
-    TH2D* h2DLNProbDistss;//!
+    TH2D* h2DLNProbDistsudsgV0;//!
+    TH2D* h2DLNProbDistscV0;//!
     TH2D* h2DLNProbDists;//!
 
     std::vector<TH1D*> h1DProbThresholds;//
@@ -595,7 +602,7 @@ private:
 
     TGraph fResolutionFunction[200];//[200]<-
     Double_t fAnalysisCuts[27]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
-    Double_t fV0Cuts[22];
+    Double_t fV0Cuts[24];
 
     AliPIDCombined *fCombined ;//!
 
@@ -663,7 +670,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 47)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 48)
 };
 
 #endif
