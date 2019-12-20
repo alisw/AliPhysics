@@ -164,7 +164,11 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fSigmaCDeltaMassWindow(0.230),
   fSigmaCfromLcOnTheFly(kTRUE),
   fCheckOnlyTrackEfficiency(kFALSE),
-  fIsCdeuteronAnalysis(kFALSE)
+  fIsCdeuteronAnalysis(kFALSE),
+  fNRotations(0),
+  fMinAngleForRot(5*TMath::Pi()/6),
+  fMaxAngleForRot(7*TMath::Pi()/6),
+  fPdgFiducialYreco(4122)
 {
   /// Default constructor
 
@@ -247,7 +251,11 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fSigmaCDeltaMassWindow(0.230),
   fSigmaCfromLcOnTheFly(kTRUE),
   fCheckOnlyTrackEfficiency(kFALSE),
-  fIsCdeuteronAnalysis(kFALSE)
+  fIsCdeuteronAnalysis(kFALSE),
+  fNRotations(0),
+  fMinAngleForRot(5*TMath::Pi()/6),
+  fMaxAngleForRot(7*TMath::Pi()/6),
+  fPdgFiducialYreco(4122)
 {
   /// Default constructor
 
@@ -574,10 +582,10 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   }
   if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase",8,nbinsSparse,lowEdges,upEdges);
   
-  Int_t nbinsSparseSigma[12]={16,400,10,12,10,10,1,11,22,20,16,2};
-  Double_t lowEdgesSigma[12]={0,0.130,0.,0,0.8,0,-0.5,-0.5,2.266,-1,0,3.5};
-  Double_t upEdgesSigma[12]={16,0.330,0.0500,6.,1.,5,0.5,10.5,2.306,1,16,5.5};
-  if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;softPiITSrefit;PIDcase;LcMass;CosThetaStarSoftPion;ptsigmac;checkorigin",12,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
+  Int_t nbinsSparseSigma[13]={16,400,10,12,10,10,1,11,22,20,16,2,1};
+  Double_t lowEdgesSigma[13]={0,0.130,0.,0,0.8,0,-0.5,-0.5,2.266,-1,0,3.5,0.5};
+  Double_t upEdgesSigma[13]={16,0.330,0.0500,6.,1.,5,0.5,10.5,2.306,1,16,5.5,1.5};
+  if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;softPiITSrefit;PIDcase;LcMass;CosThetaStarSoftPion;ptsigmac;checkorigin:isRotated",13,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
   fCosPointDistrAll=new TH1F("fCosPointDistrAll","fCosPointDistrAll",200,-1.1,1.1);
   fCosPointDistrSignal=new TH1F("fCosPointDistrSignal","fCosPointDistrSignal",200,-1.1,1.1);
@@ -1023,7 +1031,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 
 	fhistMonitoring->Fill(9);
 	Double_t candPt=io3Prong->Pt();
-	if(!fCutsXic->IsInFiducialAcceptance(candPt,io3Prong->Y(4122))){
+	if(!fCutsXic->IsInFiducialAcceptance(candPt,io3Prong->Y(fPdgFiducialYreco))){
 	  AliAODVertex *vtx3 = (AliAODVertex*)io3Prong->GetSecondaryVtx();
 	  if(vtx3){delete vtx3;vtx3=0;}
 	  if(unsetvtx)io3Prong->UnsetOwnPrimaryVtx();
@@ -1440,13 +1448,14 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
       }
     }
   }    
-
+  
   if(TMath::Abs(mass1-2.28646)>fLcMassWindowForSigmaC && TMath::Abs(mass2-2.28646)>fLcMassWindowForSigmaC)return; //Lc mass window selection  
   if(fDebug > 1){
     Printf("Good Lc candidate , will loop over %d pions",fnSelSoftPi);
   }
-  Double_t pointSigma[12];
+  Double_t pointSigma[13];
   pointSigma[11]=checkorigin;
+  pointSigma[12]=1;
   Bool_t arrayVariableIsFilled=kFALSE;
   if(pointS){    
     for(Int_t k=0;k<8;k++){
@@ -1454,9 +1463,9 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
     }
     arrayVariableIsFilled=kTRUE;
   }
-
+  
   // Loop over soft pions
-  Double_t p2=io3Prong->P2();
+  Double_t p2=io3Prong->P2();    
   for(Int_t isoft=0;isoft<fnSelSoftPi;isoft++){
     Int_t indsof=ftrackArraySelSoftPi->At(isoft);
     if(indsof==itrack1 || indsof==itrack2 || indsof==itrackThird)continue;
@@ -1464,7 +1473,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
     if(pSigmaC){
       if(TMath::Abs(tracksoft->GetLabel())!=labelSoftPi)continue;
     }
-
+    
     if(itrack1==-1){// Lc from filtered candidate --> need to check ID
       Bool_t skip=kFALSE;
       for(Int_t k=0;k<3;k++){
@@ -1479,7 +1488,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
     if(fDebug > 1){
       Printf("4plet ok, mass hypo is %d, mass1: %f, mass2: %f",massHypothesis,(massHypothesis==1||massHypothesis==3) ? mass1 : 0,(massHypothesis==2||massHypothesis==3) ? mass2:0);
     }
-
+    
     fhistMCSpectrumAccSc->Fill(ptsigmacMC,kReco,checkorigin);	      
     pointlcsc[0]=ptlambdacMC;
     pointlcsc[1]=kReco;
@@ -1488,171 +1497,188 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
     pointlcsc[4]=ptsigmacMC;
     pointlcsc[5]=ysigmacMC;
     fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
-
-
-    Double_t psoft[3];
-    tracksoft->PxPyPz(psoft);
+    Double_t psoft[3],psoftOrig[3];
+    tracksoft->PxPyPz(psoftOrig);
+    psoft[0]=psoftOrig[0];
+    psoft[1]=psoftOrig[1];
+    psoft[2]=psoftOrig[2];
     Double_t pcand[3];
     io3Prong->PxPyPz(pcand);
-
-    Double_t psigma[3]={pcand[0]+psoft[0],pcand[1]+psoft[1],pcand[2]+psoft[2]};
-    Double_t e1,e2;	      
-    Double_t cosThetaStarSoftPi=-1.1;
-    if((massHypothesis==1 || massHypothesis ==3)&&TMath::Abs(mass1-2.28646)<fLcMassWindowForSigmaC){// here we may be more restrictive and check also resp_only_pid, given that later is  done before filling the histogram
-        if(fDebug > 1){
+    Double_t rotStep=0.;
+    
+    
+    pointSigma[12]=1;
+    if(fNRotations>1) rotStep=(fMaxAngleForRot-fMinAngleForRot)/(fNRotations-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot     
+    for(Int_t irot=-1; irot<fNRotations; irot++){
+      // tracks are rotated to provide further background, if required
+      // ASSUMPTIONS: there is no need to repeat single track selection after rotation, because we just rotate in the transverse plane (-> pt and eta does not change; the aspects related to the detector are, like potential intersection of dead modules in the roated direction are not considered)
+      
+      if(irot>=0){
+	Double_t phirot=fMinAngleForRot+rotStep*irot;	
+	psoft[0]=psoftOrig[0]*TMath::Cos(phirot)-psoftOrig[1]*TMath::Sin(phirot);
+	psoft[1]=psoftOrig[0]*TMath::Sin(phirot)+psoftOrig[1]*TMath::Cos(phirot);
+	pointSigma[12]=0;
+      }
+      
+      Double_t psigma[3]={pcand[0]+psoft[0],pcand[1]+psoft[1],pcand[2]+psoft[2]};
+      Double_t e1,e2;	      
+      Double_t cosThetaStarSoftPi=-1.1;
+      if((massHypothesis==1 || massHypothesis ==3)&&TMath::Abs(mass1-2.28646)<fLcMassWindowForSigmaC){// here we may be more restrictive and check also resp_only_pid, given that later is  done before filling the histogram
+	if(fDebug > 1){
 	  Printf("Ok Lc mass1 Window");
 	}
-      e1=TMath::Sqrt(mass1*mass1+p2);
-      e2=TMath::Sqrt(0.019479785+tracksoft->Px()*tracksoft->Px()+tracksoft->Py()*tracksoft->Py()+tracksoft->Pz()*tracksoft->Pz());// 0.019479785 =  0.13957*0.13957
-      TLorentzVector lsum(tracksoft->Px()+io3Prong->Px(),tracksoft->Py()+io3Prong->Py(),tracksoft->Pz()+io3Prong->Pz(),e1+e2);
-      //pointSigma[7]=mass1;//;
-      pointSigma[8]=mass1;//;
-      Double_t deltaM=lsum.M()-mass1;
-
-      if(deltaM<fSigmaCDeltaMassWindow){// good candidate
-        if(fDebug > 1){
-	  Printf("Ok SigmaC mass Window");
-	}	
-	// Fill array with Lc related variables if not done already
-	if(!arrayVariableIsFilled){
-	  FillArrayVariableSparse(io3Prong,aod,pointSigma,massHypothesis & resp_onlyPID);// note that the last parameter here is irrelevant
-	  arrayVariableIsFilled=kTRUE;	 
-	}	
-	pointSigma[6]=-1;// n.b. overwrites seleFlag (not exploited even for Lc), defined below by ITSrefit for soft pion --> this makes irrelevant which pid status is passed in the FillArrayVariableSparse above
-                   // (mfaggin) now it overwrites the MC info on Lc/Xic
-	pointSigma[7]=0;
-	// now calculated remaining pair variables and fill sparse
-	if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit))pointSigma[6]=0;
-	cosThetaStarSoftPi=CosThetaStar(psigma,psoft,TDatabasePDG::Instance()->GetParticle(4222)->Mass(),TDatabasePDG::Instance()->GetParticle(211)->Mass());
-	pointSigma[9]=cosThetaStarSoftPi;
-	pointSigma[1]=deltaM;	       
-	pointSigma[10]=lsum.Pt();
-	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==1 || resp_onlyPID==3) )  {
-	  if(!pSigmaC) fhSparseAnalysisSigma->Fill(pointSigma);
-	  else {
-	    AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
-	    AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
-	    if(TMath::Abs(pProt->GetPdgCode())==2212){
-	      pointSigma[10]=ptsigmacMC;
-	      pointSigma[0]=ptlambdacMC;
-	      fhSparseAnalysisSigma->Fill(pointSigma);
-	      fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
-	      pointlcsc[0]=ptlambdacMC;
-	      pointlcsc[1]=kRecoPID;
-	      pointlcsc[2]=checkorigin;
-	      pointlcsc[3]=ylambdacMC;
-	      pointlcsc[4]=ptsigmacMC;
-	      pointlcsc[5]=ysigmacMC;
-	      fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
-	    }
-	  }
-	}
-	if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
-	  for(Int_t k=0;k<=10;k++){
-	    pointSigma[7]=k;
-	    if(arrayPIDselPkPi[k]){
-	      if(!pSigmaC){
-		fhSparseAnalysisSigma->Fill(pointSigma);	    
-	      }
-	      else {
-		AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
-		AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
-		if(TMath::Abs(pProt->GetPdgCode())==2212){
-		  pointSigma[10]=ptsigmacMC;
-		  pointSigma[0]=ptlambdacMC;		 
-		  fhSparseAnalysisSigma->Fill(pointSigma);
-		  //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
-		  pointlcsc[0]=ptlambdacMC;
-		  pointlcsc[1]=kRecoPID;
-		  pointlcsc[2]=checkorigin;
-		  pointlcsc[3]=ylambdacMC;
-		  pointlcsc[4]=ptsigmacMC;
-		  pointlcsc[5]=ysigmacMC;
-		  fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-    if((massHypothesis==2 || massHypothesis ==3)&&TMath::Abs(mass2-2.28646)<fLcMassWindowForSigmaC){// here we should be more restrictive and check also resp_only_pid, given that later is done before filling the histogram
-      if(fDebug > 1){
-	Printf("Ok Lc mass2 Window");
-      }
-      e1=TMath::Sqrt(mass2*mass2+p2);
-      e2=TMath::Sqrt(0.019479785+tracksoft->Px()*tracksoft->Px()+tracksoft->Py()*tracksoft->Py()+tracksoft->Pz()*tracksoft->Pz());// 0.019479785 =  0.13957*0.13957
-      TLorentzVector lsum(tracksoft->Px()+io3Prong->Px(),tracksoft->Py()+io3Prong->Py(),tracksoft->Pz()+io3Prong->Pz(),e1+e2);
-      pointSigma[8]=mass2;
-      Double_t deltaM=lsum.M()-mass2;
-
-      if(deltaM<fSigmaCDeltaMassWindow){// good candidate
-        if(fDebug > 1){
-	  Printf("Ok SigmaC mass Window");
-	}
-	// Fill array with Lc related variables if not done already
-	if(!arrayVariableIsFilled){
-	  FillArrayVariableSparse(io3Prong,aod,pointSigma,massHypothesis& resp_onlyPID);
-	}
-	pointSigma[6]=-1;// n.b. overwrites seleFlag (not exploited even for Lc), defined below by ITSrefit for soft pion --> this makes irrelevant which pid status is passed in the FillArrayVariableSparse above
-	pointSigma[7]=0;
+	e1=TMath::Sqrt(mass1*mass1+p2);
+	e2=TMath::Sqrt(0.019479785+psoft[0]*psoft[0]+psoft[1]*psoft[1]+psoft[2]*psoft[2]);// 0.019479785 =  0.13957*0.13957
+	TLorentzVector lsum(psoft[0]+io3Prong->Px(),psoft[1]+io3Prong->Py(),psoft[2]+io3Prong->Pz(),e1+e2);
+	//pointSigma[7]=mass1;//;
+	pointSigma[8]=mass1;//;
+	Double_t deltaM=lsum.M()-mass1;
 	
-	// now calculated remaining pair variables and fill sparse	
-	if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit))pointSigma[6]=0;
-	cosThetaStarSoftPi=CosThetaStar(psigma,psoft,TDatabasePDG::Instance()->GetParticle(4222)->Mass(),TDatabasePDG::Instance()->GetParticle(211)->Mass());
-	pointSigma[9]=cosThetaStarSoftPi;
-	pointSigma[1]=deltaM;
-	//	pointSigma[10]=lsum.Pt(); // not needed
-	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==2 || resp_onlyPID==3)) {
-	  if(!pSigmaC)fhSparseAnalysisSigma->Fill(pointSigma);	    
-	  else {
-	    AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
-	    AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
-	    if(TMath::Abs(pProt->GetPdgCode())==2212){
-	      pointSigma[10]=ptsigmacMC;
-	      pointSigma[0]=ptlambdacMC;
-	      fhSparseAnalysisSigma->Fill(pointSigma);
-	      fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
-	      pointlcsc[0]=ptlambdacMC;
-	      pointlcsc[1]=kRecoPID;
-	      pointlcsc[2]=checkorigin;
-	      pointlcsc[3]=ylambdacMC;
-	      pointlcsc[4]=ptsigmacMC;
-	      pointlcsc[5]=ysigmacMC;
-	      fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+	if(deltaM<fSigmaCDeltaMassWindow){// good candidate
+	  if(fDebug > 1){
+	    Printf("Ok SigmaC mass Window");
+	  }	
+	  // Fill array with Lc related variables if not done already
+	  if(!arrayVariableIsFilled){
+	    FillArrayVariableSparse(io3Prong,aod,pointSigma,massHypothesis & resp_onlyPID);// note that the last parameter here is irrelevant
+	    arrayVariableIsFilled=kTRUE;	 
+	  }	
+	  pointSigma[6]=-1;// n.b. overwrites seleFlag (not exploited even for Lc), defined below by ITSrefit for soft pion --> this makes irrelevant which pid status is passed in the FillArrayVariableSparse above
+	  // (mfaggin) now it overwrites the MC info on Lc/Xic
+	  pointSigma[7]=0;
+	  // now calculated remaining pair variables and fill sparse
+	  if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit))pointSigma[6]=0;
+	  cosThetaStarSoftPi=CosThetaStar(psigma,psoft,TDatabasePDG::Instance()->GetParticle(4222)->Mass(),TDatabasePDG::Instance()->GetParticle(211)->Mass());
+	  pointSigma[9]=cosThetaStarSoftPi;
+	  pointSigma[1]=deltaM;	       
+	  pointSigma[10]=lsum.Pt();
+	  if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==1 || resp_onlyPID==3) )  {
+	    if(!pSigmaC) fhSparseAnalysisSigma->Fill(pointSigma);
+	    else {
+	      AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
+	      AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
+	      if(TMath::Abs(pProt->GetPdgCode())==2212){
+		pointSigma[10]=ptsigmacMC;
+		pointSigma[0]=ptlambdacMC;
+		fhSparseAnalysisSigma->Fill(pointSigma);
+		fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		pointlcsc[0]=ptlambdacMC;
+		pointlcsc[1]=kRecoPID;
+		pointlcsc[2]=checkorigin;
+		pointlcsc[3]=ylambdacMC;
+		pointlcsc[4]=ptsigmacMC;
+		pointlcsc[5]=ysigmacMC;
+		fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+	      }
 	    }
 	  }
-	}
-	if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
-	  for(Int_t k=0;k<=10;k++){
-	    pointSigma[7]=k;
-	    if(arrayPIDselPikP[k]){
-	      if(!pSigmaC){
-		fhSparseAnalysisSigma->Fill(pointSigma);	    
-	      }
-	      else{
-		AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
-		AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
-		if(TMath::Abs(pProt->GetPdgCode())==2212){
-		  pointSigma[10]=ptsigmacMC;
-		  pointSigma[0]=ptlambdacMC;
-		  fhSparseAnalysisSigma->Fill(pointSigma);
-		  //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
-		  pointlcsc[0]=ptlambdacMC;
-		  pointlcsc[1]=kRecoPID;
-		  pointlcsc[2]=checkorigin;
-		  pointlcsc[3]=ylambdacMC;
-		  pointlcsc[4]=ptsigmacMC;
-		  pointlcsc[5]=ysigmacMC;
-		  fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+	  if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
+	    for(Int_t k=0;k<=10;k++){
+	      pointSigma[7]=k;
+	      if(arrayPIDselPkPi[k]){
+		if(!pSigmaC){
+		  fhSparseAnalysisSigma->Fill(pointSigma);	    
 		}
-	      }	      
+		else {
+		  AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
+		  AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
+		  if(TMath::Abs(pProt->GetPdgCode())==2212){
+		    pointSigma[10]=ptsigmacMC;
+		    pointSigma[0]=ptlambdacMC;		 
+		    fhSparseAnalysisSigma->Fill(pointSigma);
+		    //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		    pointlcsc[0]=ptlambdacMC;
+		    pointlcsc[1]=kRecoPID;
+		    pointlcsc[2]=checkorigin;
+		    pointlcsc[3]=ylambdacMC;
+		    pointlcsc[4]=ptsigmacMC;
+		    pointlcsc[5]=ysigmacMC;
+		    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		  }
+		}
+	      }
 	    }
 	  }
 	}
       }
-    }	      
-  }  
+      if((massHypothesis==2 || massHypothesis ==3)&&TMath::Abs(mass2-2.28646)<fLcMassWindowForSigmaC){// here we should be more restrictive and check also resp_only_pid, given that later is done before filling the histogram
+	if(fDebug > 1){
+	  Printf("Ok Lc mass2 Window");
+	}
+	e1=TMath::Sqrt(mass2*mass2+p2);
+	e2=TMath::Sqrt(0.019479785+psoft[0]*psoft[0]+psoft[1]*psoft[1]+psoft[2]*psoft[2]);// 0.019479785 =  0.13957*0.13957
+	TLorentzVector lsum(psoft[0]+io3Prong->Px(),psoft[1]+io3Prong->Py(),psoft[2]+io3Prong->Pz(),e1+e2);
+	pointSigma[8]=mass2;
+	Double_t deltaM=lsum.M()-mass2;
+	
+	if(deltaM<fSigmaCDeltaMassWindow){// good candidate
+	  if(fDebug > 1){
+	    Printf("Ok SigmaC mass Window");
+	  }
+	  // Fill array with Lc related variables if not done already
+	  if(!arrayVariableIsFilled){
+	    FillArrayVariableSparse(io3Prong,aod,pointSigma,massHypothesis& resp_onlyPID);
+	  }
+	  pointSigma[6]=-1;// n.b. overwrites seleFlag (not exploited even for Lc), defined below by ITSrefit for soft pion --> this makes irrelevant which pid status is passed in the FillArrayVariableSparse above
+	  pointSigma[7]=0;
+	  
+	  // now calculated remaining pair variables and fill sparse	
+	  if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit))pointSigma[6]=0;
+	  cosThetaStarSoftPi=CosThetaStar(psigma,psoft,TDatabasePDG::Instance()->GetParticle(4222)->Mass(),TDatabasePDG::Instance()->GetParticle(211)->Mass());
+	  pointSigma[9]=cosThetaStarSoftPi;
+	  pointSigma[1]=deltaM;
+	  //	pointSigma[10]=lsum.Pt(); // not needed
+	  if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==2 || resp_onlyPID==3)) {
+	    if(!pSigmaC)fhSparseAnalysisSigma->Fill(pointSigma);	    
+	    else {
+	      AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
+	      AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
+	      if(TMath::Abs(pProt->GetPdgCode())==2212){
+		pointSigma[10]=ptsigmacMC;
+		pointSigma[0]=ptlambdacMC;
+		fhSparseAnalysisSigma->Fill(pointSigma);
+		fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		pointlcsc[0]=ptlambdacMC;
+		pointlcsc[1]=kRecoPID;
+		pointlcsc[2]=checkorigin;
+		pointlcsc[3]=ylambdacMC;
+		pointlcsc[4]=ptsigmacMC;
+		pointlcsc[5]=ysigmacMC;
+		fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+	      }
+	    }
+	  }
+	  if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
+	    for(Int_t k=0;k<=10;k++){
+	      pointSigma[7]=k;
+	      if(arrayPIDselPikP[k]){
+		if(!pSigmaC){
+		  fhSparseAnalysisSigma->Fill(pointSigma);	    
+		}
+		else{
+		  AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
+		  AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
+		  if(TMath::Abs(pProt->GetPdgCode())==2212){
+		    pointSigma[10]=ptsigmacMC;
+		    pointSigma[0]=ptlambdacMC;
+		    fhSparseAnalysisSigma->Fill(pointSigma);
+		    //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		    pointlcsc[0]=ptlambdacMC;
+		    pointlcsc[1]=kRecoPID;
+		    pointlcsc[2]=checkorigin;
+		    pointlcsc[3]=ylambdacMC;
+		    pointlcsc[4]=ptsigmacMC;
+		    pointlcsc[5]=ysigmacMC;
+		    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		  }
+		}	      
+	      }
+	    }
+	  }
+	}
+      }	      
+    }  
+  }
 }
 
 
@@ -2766,7 +2792,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
       }
     }
     Int_t iSel=3,iSelTrackCuts=3,iSelCuts=3,iSelPID=0,massHypothesis=0;
-    if(!fCutsXic->IsInFiducialAcceptance(d->Pt(),d->Y(4122)))iSel=0;
+    if(!fCutsXic->IsInFiducialAcceptance(d->Pt(),d->Y(fPdgFiducialYreco)))iSel=0;
     if(!iSel){
 	 if(recPrimVtx)fCutsXic->CleanOwnPrimaryVtx(d,aod,origownvtx);
 	 if(unsetvtx)d->UnsetOwnPrimaryVtx();
