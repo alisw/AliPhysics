@@ -2003,9 +2003,14 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       if (fUseMinEnergy)
         if(cluster->E() < fMinEnergy)
           failed = kTRUE;
-      if (fUseNCells)
-        if(cluster->GetNCells() < fMinNCells)
-          failed = kTRUE;
+      if (fUseNCells == 1) {
+          if (cluster->GetNCells() < fMinNCells)
+            failed = kTRUE;
+      // special case for PHOS: only apply Ncell cut for clusters with a minimum energy of 1 GeV
+      } else if (fUseNCells == 2){
+          if (cluster->GetNCells() < fMinNCells && cluster->E() > 1)
+            failed = kTRUE;
+      }
       if (fUseNLM)
         if( nLM < fMinNLM || nLM > fMaxNLM )
           failed = kTRUE;
@@ -2020,6 +2025,10 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           if( cluster->GetM02()< CalculateMinM02(fMinM02CutNr, cluster->E()) ||
               cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()) )
             failedM02  = kTRUE;
+        // special case for PHOS: only apply M02 cut for clusters with a minimum energy of 1 GeV
+        } else if (fUseM02 == 3){
+            if( (cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02)  && cluster->E() > 1 )
+              failedM02  = kTRUE;
         }
         if (fUseM20)
           if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 )
@@ -5076,6 +5085,17 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=6;
     break;
 
+  // special cases for PHOS: only use the Ncell cut for clusters with a minimal energy
+  // if the first number is 1, the chosen cut will only be used if Ecluster > 1 GeV
+  case 12: // c
+    if (!fUseNCells) fUseNCells=2;
+    fMinNCells=2;
+    break;
+  case 13: // d
+    if (!fUseNCells) fUseNCells=2;
+    fMinNCells=3;
+    break;
+
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
     return kFALSE;
@@ -5421,6 +5441,20 @@ Bool_t AliCaloPhotonCuts::SetMinM02(Int_t minM02)
   case 3:
     if (!fUseM02) fUseM02=1;
     fMinM02=0.2;
+    break;
+
+  // special PHOS cases: apply cut only if the cluster energy is bigger than 1 GeV
+  case 11: // b
+    if (!fUseM02) fUseM02=3;
+    fMinM02 = 0.002;
+    break;
+  case 12: // c
+    if (!fUseM02) fUseM02=3;
+    fMinM02 = 0.1;
+    break;
+  case 13: // d
+    if (!fUseM02) fUseM02=3;
+    fMinM02 = 0.2;
     break;
 
   default:
@@ -7322,7 +7356,7 @@ Float_t AliCaloPhotonCuts::FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Fl
   else
     return 1.;
 }
-Float_t     FunctionNL_SExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3){
+Float_t AliCaloPhotonCuts::FunctionNL_SExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3){
   return ( p0 - p3 * TMath::Exp( - p1 * e + p2 ) );
 }
 
