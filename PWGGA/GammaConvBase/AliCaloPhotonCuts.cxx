@@ -2008,7 +2008,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
             failed = kTRUE;
       // special case for PHOS: only apply Ncell cut for clusters with a minimum energy of 1 GeV
       } else if (fUseNCells == 2){
-          if (cluster->GetNCells() < fMinNCells && cluster->E > 1)
+          if (cluster->GetNCells() < fMinNCells && cluster->E() > 1)
             failed = kTRUE;
       }
       if (fUseNLM)
