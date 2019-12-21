@@ -717,9 +717,13 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","24466540ha012200000","0163103100000010"); // non-lin: shifting to pi0 mass using PCM-PHOS
     cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // without non-lin
   } else if (trainConfig == 517) { // new PHOS default cut for RUN2: Use M02 and Ncell cut only for clusters with a minimum energy of 1 GeV
-    cuts.AddCutCalo("80010113","24466410ha01c200000","0163103100000010"); // use Ncell cut only for clusters with a minimum energy of 1 GeV
-    cuts.AddCutCalo("80010113","24466410ha012c00000","0163103100000010"); // use M02 cut only for clusters with a minimum energy of 1 GeV
-    cuts.AddCutCalo("80010113","24466410ha01cc00000","0163103100000010"); // use Ncell & M02 cut only for clusters with a minimum energy of 1 GeV
+    cuts.AddCutCalo("80010113","24466530ha01c200000","0163103100000010"); // use Ncell cut only for clusters with a minimum energy of 1 GeV
+    cuts.AddCutCalo("80010113","24466530ha012c00000","0163103100000010"); // use M02 cut only for clusters with a minimum energy of 1 GeV
+    cuts.AddCutCalo("80010113","24466530ha01cc00000","0163103100000010"); // use Ncell & M02 cut only for clusters with a minimum energy of 1 GeV
+  } else if (trainConfig == 518) { // new PHOS default cut for RUN2, different non-lins
+    cuts.AddCutCalo("80010113","24466000ha01cc00000","0163103100000010"); // without non-lin
+    cuts.AddCutCalo("80010113","24466530ha01cc00000","0163103100000010"); // non-lin 1
+    cuts.AddCutCalo("80010113","24466540ha01cc00000","0163103100000010"); // non-lin 2
 
   } else if (trainConfig == 520) {  // JJ MC
     cuts.AddCutCalo("80010123","24466420ha012200000","0163103100000010"); // standard
@@ -746,6 +750,10 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010123","24466000ha012200000","0163103100000010"); // 0-100% without non-lin
     cuts.AddCutCalo("80010123","24466530ha012200000","0163103100000010"); // 0-100% non-lin 1
     cuts.AddCutCalo("80010123","24466540ha012200000","0163103100000010"); // 0-100% non-lin 2
+  } else if (trainConfig == 525) {  // JJ MC new PHOS default cuts with different non lins (shiftig to pi0 mass)
+    cuts.AddCutCalo("80010123","24466000ha01cc00000","0163103100000010"); // 0-100% without non-lin
+    cuts.AddCutCalo("80010123","24466530ha01cc00000","0163103100000010"); // 0-100% non-lin 1
+    cuts.AddCutCalo("80010123","24466540ha01cc00000","0163103100000010"); // 0-100% non-lin 2
 
   // Variations for systematics
   } else if (trainConfig == 530) { // NL variations (standard: 42 PHOS ML)
