@@ -1,5 +1,5 @@
-#ifndef AliForwardTaskValidation_cxx
-#define AliForwardTaskValidation_cxx
+#ifndef AliForwardTaskValidation_H
+#define AliForwardTaskValidation_H
 
 #include <string>
 #include <vector>
@@ -101,7 +101,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // This function is `Fatal` if no MC tracks are found
   AliForwardTaskValidation::Tracks GetMCTruthTracks();
 
-  AliForwardSettings fSettings;
+  AliForwardSettings fSettings; 
 
  protected:
   /// The Holy Grail: Is this a valid event? To be read be following tasks

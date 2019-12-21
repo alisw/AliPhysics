@@ -117,6 +117,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetOnTheFlyLcCandidatesForSigmaC(Bool_t onthefly){fSigmaCfromLcOnTheFly=onthefly;}
   void SetFillOnlyTrackSparse(Bool_t fillonlysparse){fCheckOnlyTrackEfficiency=fillonlysparse;}
   void SetIsCdeuteronAnalysis(Bool_t iscd){fIsCdeuteronAnalysis=iscd;}
+  void SetNSoftPionRotations(Int_t nrot){nrot < 0 ? Printf("Cannot set negative number of rotations, setting 0"), fNRotations=0 : fNRotations=nrot;}
+  void SetMinAndMaxRotationAngles(Double_t minRot,Double_t maxRot){fMinAngleForRot=minRot;fMaxAngleForRot=maxRot;}
+  void SetPDGcodeForFiducialYreco(Int_t pdgcode){fPdgFiducialYreco=pdgcode;}
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -300,8 +303,13 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fSigmaCfromLcOnTheFly; /// switch to use on-the-fly Lc or filtered Lc from delta file
   Bool_t fCheckOnlyTrackEfficiency;// flag for filling only the single-track sparse and return
   Bool_t fIsCdeuteronAnalysis;// flag for doing the c deuteron analysis (inv mass)
+  Int_t fNRotations;    // number of rotations performed on soft pion, to study SigmaC background shape; 0 = no rotations, 1 -> single rotations by fMinAngleForRot, 2 -> fNRotations from fMinAngleForRot to fMaxAngleForRot
+  Double_t fMinAngleForRot;//
+  Double_t fMaxAngleForRot;//
+  Int_t   fPdgFiducialYreco;// pdg code of particle that will be used to compute fiducial acceptance at reco level
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,7); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,8); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

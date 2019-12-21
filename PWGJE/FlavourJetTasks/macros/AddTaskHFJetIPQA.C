@@ -80,6 +80,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         return 0x0;
     }
 
+
     TFile* fileMCoverDataWeights;
     if(isMC){
         if(PathToWeights.EqualTo("") ) {
@@ -153,7 +154,6 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     //==============================================================================
     Printf("%s :: Setting up input containers.",taskname);
     AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
-    AliParticleContainer *trackContMC  = jetTask->AddParticleContainer(ntracksMC);
     AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
     TString strType(type);
     AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,jetradius);
@@ -164,9 +164,9 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         jetCont->ConnectClusterContainer(clusterCont);
         DefineCutsTaskpp(jetCont, jetradius);
     }
-    
-    if(isMC)
-    {
+
+    if(isMC){
+        AliParticleContainer *trackContMC   = jetTask->AddParticleContainer(ntracksMC);
         AliJetContainer *jetContMC = jetTask->AddJetContainer(njetsMC,strType,jetradius);
         
         if(jetContMC) {

@@ -1,5 +1,5 @@
-#ifndef AliForwardSettings_cxx
-#define AliForwardSettings_cxx
+#ifndef AliForwardSettings_H
+#define AliForwardSettings_H
 /**
  * @file AliForwardSettings.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>

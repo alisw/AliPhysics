@@ -15,7 +15,6 @@
 #include <TH2D.h>
 #include <TH3D.h>
 #include "TString.h"
-#include "TNtuple.h"
 #include "TList.h"
 #include "TMath.h"
 #include "TRandom.h"

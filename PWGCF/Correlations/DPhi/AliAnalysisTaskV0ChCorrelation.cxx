@@ -619,8 +619,8 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
 
    //-----------------------------------------------------------
    // Settings for event mixing 
-   const Int_t nCentralityBins  = 3;
-   Double_t centBins[] = {0., 10.,50.,80.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
   //const Int_t nZvtxBins  = 8;
@@ -647,9 +647,9 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
   tQAEvent->SetOwner();
   tQAEvent->SetName("EventInput");
   
-  const Int_t nCentralityBins  = 3;
-   Double_t centBins[] = {0., 10.,50.,80.};
-  const Double_t* centralityBins = centBins;
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Double_t* centralityBins = centBins;
   //const Int_t nZvtxBins  = 8;
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   //const Double_t* zvtxBins = vertexBins;
@@ -687,8 +687,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQATrackCandidates()
    tQATrack->SetName("Track");
 
    // defining bins for centrality
-   const Int_t nCentralityBins  = 3;
-   Double_t centBins[] = {0., 10.,50.,80.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
 
@@ -911,8 +911,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
    tQAK0s->SetName("K0s");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 3;
-   Double_t centBins[] = {0., 10.,50.,80.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
    // defining bins for Z vertex
@@ -1059,8 +1059,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
    tQALambda->SetName("Lambda");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 3;
-   Double_t centBins[] = {0., 10.,50.,80.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
    // defining bins for Z vertex
@@ -1218,8 +1218,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
    tQAAntiLambda->SetName("AntiLambda");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 3;
-   Double_t centBins[] = {0., 10.,50.,80.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
    // defining bins for Z vertex
