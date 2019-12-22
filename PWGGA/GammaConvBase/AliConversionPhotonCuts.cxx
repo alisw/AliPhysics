@@ -2858,6 +2858,48 @@ Bool_t AliConversionPhotonCuts::SetRCut(Int_t RCut){
     fExcludeMinR = 55.;
     fExcludeMaxR = 72.;
     break;
+  case 23: //n
+    fMaxR = 180.;
+    fMinR = 10.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 24: //o
+    fMaxR = 180.;
+    fMinR = 15.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 26: //p
+    fMaxR = 180.;
+    fMinR = 20.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 27: //q
+    fMaxR = 95.;
+    fMinR = 5.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 28: //r
+    fMaxR = 95.;
+    fMinR = 10.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 29: //s
+    fMaxR = 95.;
+    fMinR = 15.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 30: //t
+    fMaxR = 95.;
+    fMinR = 20.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
 
   default:
     AliError("RCut not defined");
