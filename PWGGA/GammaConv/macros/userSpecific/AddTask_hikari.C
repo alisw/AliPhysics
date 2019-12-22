@@ -310,7 +310,17 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
     } else if (trainConfig == 450){//cat 1 Meson selection
       cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // default
       cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103510000000"); // shared electron
-      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103520000000"); // cat 1 Meson selection      
+      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103520000000"); // veto cat 1 Meson
+    } else if (trainConfig == 451){//R max 180
+      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // 5  < R
+      cuts.AddCutPCM("00010113", "0dn00009227300008250404000", "0152103500000000"); // 10 < R
+      cuts.AddCutPCM("00010113", "0do00009227300008250404000", "0152103500000000"); // 15 < R
+      cuts.AddCutPCM("00010113", "0dp00009227300008250404000", "0152103500000000"); // 20 < R
+    } else if (trainConfig == 452){//R max 95
+      cuts.AddCutPCM("00010113", "0dq00009227300008250404000", "0152103500000000"); // 5  < R
+      cuts.AddCutPCM("00010113", "0dr00009227300008250404000", "0152103500000000"); // 10 < R
+      cuts.AddCutPCM("00010113", "0ds00009227300008250404000", "0152103500000000"); // 15 < R
+      cuts.AddCutPCM("00010113", "0dt00009227300008250404000", "0152103500000000"); // 20 < R
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL;
@@ -429,15 +439,28 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("80010113", "0d200009227300008250404000", "0162103500000000"); // edEdx -3,4
       cuts.AddCutPCM("80010113", "0d200009b27300008250404000", "0162103500000000"); // edEdx -3,2,3.2
       cuts.AddCutPCM("80010113", "0d200009c27300008250404000", "0162103500000000"); // edEdx -2.8,2.8
-    } else if (trainConfig == 454){//R 5-33.5 cm 
+    } else if (trainConfig == 454){//R 5-33.5 cm
       cuts.AddCutPCM("80010113", "0da00009a27300008250404000", "0162103500000000"); // +-10
       cuts.AddCutPCM("80010114", "0da00009a27300008250404000", "0162103500000000"); // +-7.5
+    } else if (trainConfig == 455){//R 5-33.5 cm
       cuts.AddCutPCM("80010115", "0da00009a27300008250404000", "0162103500000000"); // +-5.
       cuts.AddCutPCM("80010116", "0da00009a27300008250404000", "0162103500000000"); // +-2.5     
-    } else if (trainConfig == 455){//cat 1 Meson selection
+    } else if (trainConfig == 456){//cat 1 Meson selection
       cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "01621035000000000"); // default
       cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "01621035100000000"); // shared electron
-      cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "01621035200000000"); // cat 1 Meson selection
+      cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "01621035200000000"); // veto cat 1 Meson
+    } else if (trainConfig == 457){//R max 180
+      cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "01621035000000000"); // 5  < R (default)
+      cuts.AddCutPCM("80010113", "0dn00009a27300008250404000", "01621035000000000"); // 10 < R
+    } else if (trainConfig == 458){//R max 180
+      cuts.AddCutPCM("80010113", "0do00009a27300008250404000", "01621035000000000"); // 15 < R
+      cuts.AddCutPCM("80010113", "0dp00009a27300008250404000", "01621035000000000"); // 20 < R
+    } else if (trainConfig == 459){//R max 95
+      cuts.AddCutPCM("80010113", "0dq00009a27300008250404000", "01621035000000000"); // 5  < R
+      cuts.AddCutPCM("80010113", "0dr00009a27300008250404000", "01621035000000000"); // 10 < R
+    } else if (trainConfig == 460){//R max 95
+      cuts.AddCutPCM("80010113", "0ds00009a27300008250404000", "01621035000000000"); // 15 < R
+      cuts.AddCutPCM("80010113", "0dt00009a27300008250404000", "01621035000000000"); // 20 < R
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL; 
