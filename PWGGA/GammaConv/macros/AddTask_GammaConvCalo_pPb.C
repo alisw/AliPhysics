@@ -694,6 +694,8 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","244445404a013200000","0h63103100000010"); // 0-100% with NL 2
   } else if (trainConfig == 1002) {  // PHOS  INT7 run2
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466530ha012200000","0h63103100000010"); // 0-100% without NL
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466540ha012200000","0h63103100000010"); // 0-100% without NL
 
   } else if (trainConfig == 1003){ // PHOS  INT7 run1
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","244445104a013200000","0h63103100000010"); // 0-100% PCM NL
@@ -701,6 +703,11 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","244445104a013200000","0h63103100000010"); // 0-100% PCM NL
   } else if (trainConfig == 1005) {  // PHOS  INT7 run2
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466410ha012200000","0h63103100000010"); // 0-100% PCM NL
+  
+  } else if (trainConfig == 1006) {  // PHOS  INT7 run2, new PHOS run2 default cuts (M02, cluster energy)
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466000ha01cc00000","0h63103100000010"); // 0-100% without NL
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466530ha01cc00000","0h63103100000010"); // 0-100% with NL 1
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466540ha01cc00000","0h63103100000010"); // 0-100% with NL 2
 
   //************************************************ PCM- PHOS analysis 5 TeV pPb cent dep ************************************
   } else if (trainConfig == 1100){ // centrality dependent and with latest TM run 1
