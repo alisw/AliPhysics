@@ -2870,31 +2870,31 @@ Bool_t AliConversionPhotonCuts::SetRCut(Int_t RCut){
     fExcludeMinR = 180.;
     fExcludeMaxR = 250.;
     break;
-  case 26: //p
+  case 25: //p
     fMaxR = 180.;
     fMinR = 20.;
     fExcludeMinR = 180.;
     fExcludeMaxR = 250.;
     break;
-  case 27: //q
+  case 26: //q
     fMaxR = 95.;
     fMinR = 5.;
     fExcludeMinR = 180.;
     fExcludeMaxR = 250.;
     break;
-  case 28: //r
+  case 27: //r
     fMaxR = 95.;
     fMinR = 10.;
     fExcludeMinR = 180.;
     fExcludeMaxR = 250.;
     break;
-  case 29: //s
+  case 28: //s
     fMaxR = 95.;
     fMinR = 15.;
     fExcludeMinR = 180.;
     fExcludeMaxR = 250.;
     break;
-  case 30: //t
+  case 29: //t
     fMaxR = 95.;
     fMinR = 20.;
     fExcludeMinR = 180.;
