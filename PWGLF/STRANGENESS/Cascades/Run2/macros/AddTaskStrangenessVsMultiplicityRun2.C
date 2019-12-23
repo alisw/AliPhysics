@@ -52,19 +52,19 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRu
                                                    outputFileName );
     }
     
-    coutputTree = mgr->CreateContainer(lC[8].Data(),
+    AliAnalysisDataContainer *coutputTree = mgr->CreateContainer(lC[8].Data(),
                                        TTree::Class(),
                                        AliAnalysisManager::kOutputContainer,
                                        outputFileName );
     coutputTree->SetSpecialOutput();
     
-    coutputTreeV0 = mgr->CreateContainer(lC[9].Data(),
+    AliAnalysisDataContainer *coutputTreeV0 = mgr->CreateContainer(lC[9].Data(),
                                          TTree::Class(),
                                          AliAnalysisManager::kOutputContainer,
                                          outputFileName );
     coutputTreeV0->SetSpecialOutput();
     
-    coutputTreeCascade = mgr->CreateContainer(lC[10].Data(),
+    AliAnalysisDataContainer *coutputTreeCascade = mgr->CreateContainer(lC[10].Data(),
                                               TTree::Class(),
                                               AliAnalysisManager::kOutputContainer,
                                               outputFileName );
