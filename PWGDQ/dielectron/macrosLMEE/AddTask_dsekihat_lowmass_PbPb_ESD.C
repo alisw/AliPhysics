@@ -52,7 +52,7 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb_ESD(
 
   //add dielectron analysis with different cuts to the task
   #if defined(__CLING__)
-    gROOT->LoadMacro("./Config_dsekihat_lowmass_PbPb_ESD.C");
+    gROOT->LoadMacro(configFilePath);
 
     const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
     //std::cout << "nDie:  " << nDie << std::endl;
