@@ -144,6 +144,7 @@ fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump(kFALSE),
 fkDebugOOBPileup(kFALSE),
+fkDebugOOBPileupEventTree(kFALSE),
 fkDoExtraEvSels(kTRUE),
 fkPileupRejectionMode(0),
 fkUseOldCentrality ( kFALSE ) ,
@@ -500,6 +501,7 @@ fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
+fkDebugOOBPileupEventTree(kFALSE),
 fkDoExtraEvSels(kTRUE),
 fkPileupRejectionMode(0),
 fkUseOldCentrality ( kFALSE ) ,
@@ -532,6 +534,7 @@ fkConfigToSave(""),
 
 //---> Variables for fTreeEvent
 fCentrality(0),
+fEvSel_TriggerMask(0), 
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
 fNTOFClusters(-1),
@@ -625,6 +628,7 @@ fTreeVariableAmplitudeV0C(-1.),
 fTreeVariableClosestNonEmptyBC(-1),
 
 fTreeVariableCentrality(0),
+fTreeVariable_TriggerMask(0),
 fTreeVariableMVPileupFlag(kFALSE),
 fTreeVariableOOBPileupFlag(kFALSE),
 
@@ -805,6 +809,7 @@ fTreeCascVarAmplitudeV0C(-1.),
 fTreeCascVarClosestNonEmptyBC(-1),
 
 fTreeCascVarCentrality(0),
+fTreeCascVar_TriggerMask(0), 
 fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarOOBPileupFlag(kFALSE),
 //Kink tagging
@@ -891,6 +896,7 @@ fHistCentrality(0)
     if ( lExtraOptions.Contains("A") ) fkDebugWrongPIDForTracking = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugBump                = kTRUE;
     if ( lExtraOptions.Contains("C") ) fkDebugOOBPileup           = kTRUE;
+    if ( lExtraOptions.Contains("D") ) fkDebugOOBPileupEventTree  = kTRUE;
     if ( lExtraOptions.Contains("S") ) fkSandboxMode              = kTRUE;
 }
 
@@ -967,8 +973,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         //Branch Definitions
         fTreeEvent->Branch("fCentrality",&fCentrality,"fCentrality/F");
         fTreeEvent->Branch("fMVPileupFlag",&fMVPileupFlag,"fMVPileupFlag/O");
+        fTreeEvent->Branch("fEvSel_TriggerMask", &fEvSel_TriggerMask, "fEvSel_TriggerMask/i");
         //
-        if ( fkDebugOOBPileup ){
+        if ( fkDebugOOBPileupEventTree ){
             fTreeEvent->Branch("fOOBPileupFlag",&fOOBPileupFlag,"fOOBPileupFlag/O");
             fTreeEvent->Branch("fNTOFClusters",&fNTOFClusters,"fNTOFClusters/I");
             fTreeEvent->Branch("fNTOFMatches",&fNTOFMatches,"fNTOFMatches/I");
@@ -1016,6 +1023,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
         //-----------MULTIPLICITY-INFO--------------------
         fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
+        fTreeV0->Branch("fTreeVariable_TriggerMask", &fTreeVariable_TriggerMask, "fTreeVariable_TriggerMask/i");
         fTreeV0->Branch("fTreeVariableMVPileupFlag",&fTreeVariableMVPileupFlag,"fTreeVariableMVPileupFlag/O");
         //------------------------------------------------
         fTreeV0->Branch("fTreeVariableIsCowboy",&fTreeVariableIsCowboy,"fTreeVariableIsCowboy/O");
@@ -1128,6 +1136,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         
         //-----------MULTIPLICITY-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
+        fTreeCascade->Branch("fTreeCascVar_TriggerMask", &fTreeCascVar_TriggerMask, "fTreeCascVar_TriggerMask/i");
         fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
         //-----------DECAY-LENGTH-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
@@ -1602,6 +1611,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         }
     }
     //===================================================================
+    
+    //Implementation to do trigger selection a posteriori
+    fEvSel_TriggerMask =
+        ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //for full checks later
+    fTreeVariable_TriggerMask = fEvSel_TriggerMask;
+    fTreeCascVar_TriggerMask = fEvSel_TriggerMask;
     
     if( lEvSelCode != 0 ) {
         //Regular Output: Slots 1-6
