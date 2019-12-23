@@ -1,7 +1,7 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskESEFlow;
 
-AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "")
+AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -102,6 +102,32 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
         // connect existing container
         mgr->ConnectInput(task,1,weightsVy);
       }
+    }
+
+    TObjArray* taskContainersV0 = mgr->GetContainers();
+    if(!taskContainersV0) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+
+    // check if the input weights are already loaded (e.g. in different subwagon)
+    AliAnalysisDataContainer* V0Cal = (AliAnalysisDataContainer*) taskContainersV0->FindObject("inputV0Cal");
+    if(!V0Cal) {  
+      // if it does not exists create it
+      // in case of non-local run, establish connection to ALiEn for loading the weights
+      if(V0Calib.Contains("alien://")) { gGrid->Connect("alien://"); }
+
+      TFile* V0Cal_file = TFile::Open(V0Calib.Data(),"READ");
+      if(!V0Cal_file) { printf("E-AddTaskESEFlow: Input file with V0 Calibration not found!\n"); return NULL; }
+
+      TList* V0Cal_list = static_cast<TList*>(V0Cal_file->Get("1"));
+      if(!V0Cal_list) { printf("E-AddTaskESEFlow: Input list with V0 Calibration not found!\n"); V0Cal_file->ls(); return NULL; }
+
+      AliAnalysisDataContainer* cInputV0Cal = mgr->CreateContainer("inputV0Cal",TList::Class(), AliAnalysisManager::kInputContainer);
+      cInputV0Cal->SetData(V0Cal_list);
+      mgr->ConnectInput(task,2,cInputV0Cal);
+    }
+    else
+    {
+      // connect existing container
+      mgr->ConnectInput(task,2,V0Cal);
     }
 
   return task;
