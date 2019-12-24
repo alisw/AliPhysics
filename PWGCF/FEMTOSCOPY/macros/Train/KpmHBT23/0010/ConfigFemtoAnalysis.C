@@ -130,7 +130,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     //Reader->SetFilterBit(7);//TPC onlt tracks
-    SetFilterMask(96);//Global track(Dec 2019), also comment track selection
+    Reader->SetFilterMask(96);//Global track(Dec 2019), also comment track selection
     Reader->SetCentralityPreSelection(0, 100);
     /*On 02/26/2014 06:09 PM, Maciej Szymański wrote:
 > Dear Konstantin,
@@ -199,8 +199,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  aniter = ichg*5+imult;
 
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(5);//may 2019
-	  //anetaphitpc[aniter]->SetNumEventsToMix(3);
+	  //anetaphitpc[aniter]->SetNumEventsToMix(5);//may 2019
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
