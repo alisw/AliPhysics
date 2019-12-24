@@ -186,7 +186,7 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     auto binPt = AxisFix("Pt", 200, 0, 20);
     auto binMass = AxisFix("Mass", 1800, 1.2, 3.0);
     auto binMassMC = AxisFix("Mass", 800, 1.2, 2.0);
-    binZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10});
+    binZ = AxisFix("Z",20,-10,10);
 
     CreateTHnSparse("Sigma1385_data", "Sigma1385_data", 5,
                     {binAnti, binType, binCent, binPt, binMass}, "s");
