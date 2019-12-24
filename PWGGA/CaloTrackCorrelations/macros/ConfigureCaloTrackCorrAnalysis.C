@@ -81,7 +81,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   if ( histoString != "" ) 
     ana->AddToHistogramsName(Form("%s_%s",  histoString.Data(), (ana->GetAddedHistogramsStringToName()).Data()) );
 
-  histoRanges->SetHistoPtRangeAndNBins(0, 200, 400) ; // Energy and pt histograms
+  histoRanges->SetHistoPtRangeAndNBins(0, 200, 200) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
   {
@@ -154,7 +154,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   histoRanges->SetHistodRRangeAndNBins(0.,0.06,60);//QA
   
   // QA, electron, charged
-  histoRanges->SetHistoEOverPRangeAndNBins(0,1.5,150);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,10,200);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -1009,7 +1009,8 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
       ic->SetPtThreshold(pth);
     }
     
-    if(thresType == AliIsolationCut::kSumPtIC)
+    if ( thresType == AliIsolationCut::kSumPtIC || 
+         thresType >= AliIsolationCut::kSumBkgSubIC )
     {
       printf("ConfigureIsolationAnalysis() *** Iso *** SumPtMin = %1.1f GeV/c *** R = %1.1f *** R min %1.2f\n",pth,cone,coneMin);
       ic->SetSumPtThreshold(pth);
