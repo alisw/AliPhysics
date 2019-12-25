@@ -2143,7 +2143,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     
     Long_t ncascades = 0;
     ncascades = lAODevent->GetNumberOfCascades();
-    
+    AliWarning(Form("Number of cascades received: %i", ncascades));
     Bool_t lValidXiMinus, lValidXiPlus, lValidOmegaMinus, lValidOmegaPlus;
     
     for (Int_t iXi = 0; iXi < ncascades; iXi++) {
