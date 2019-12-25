@@ -618,12 +618,12 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
 	// End of Eventplane variables from Qn Framework
 
-	{"NclsITS0",                   "N_{cls}^{ITS0}",                                 ""},
 	{"NclsITS1",                   "N_{cls}^{ITS1}",                                 ""},
 	{"NclsITS2",                   "N_{cls}^{ITS2}",                                 ""},
 	{"NclsITS3",                   "N_{cls}^{ITS3}",                                 ""},
 	{"NclsITS4",                   "N_{cls}^{ITS4}",                                 ""},
 	{"NclsITS5",                   "N_{cls}^{ITS5}",                                 ""},
+	{"NclsITS6",                   "N_{cls}^{ITS6}",                                 ""},
 
   {"NTrk",                   "N_{trk}",                                            ""},
   {"Tracks",                 "tracks/per event",                                             ""},
