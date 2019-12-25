@@ -652,12 +652,12 @@ public:
 
     // End of Eventplane variables from Qn Framework
 
-		kNclsITS0, //number of clusters on ITS0(SPD0) in an event
-		kNclsITS1, //number of clusters on ITS1(SPD1) in an event
-		kNclsITS2, //number of clusters on ITS2(SSD0) in an event
-		kNclsITS3, //number of clusters on ITS3(SSD1) in an event
-		kNclsITS4, //number of clusters on ITS4(SDD0) in an event
-		kNclsITS5, //number of clusters on ITS5(SDD1) in an event
+		kNclsITS1, //number of clusters on ITS1(SPD0) in an event
+		kNclsITS2, //number of clusters on ITS2(SPD1) in an event
+		kNclsITS3, //number of clusters on ITS3(SSD0) in an event
+		kNclsITS4, //number of clusters on ITS4(SSD1) in an event
+		kNclsITS5, //number of clusters on ITS5(SDD0) in an event
+		kNclsITS6, //number of clusters on ITS6(SDD1) in an event
 
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
     kTracks,                 // track after all cuts
@@ -2684,12 +2684,12 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNVtxContrib]  = 0;
 //   values[AliDielectronVarManager::kChi2NDF]      = 0; //This is the pair value!!!
 
-  values[AliDielectronVarManager::kNclsITS0] = 0;
   values[AliDielectronVarManager::kNclsITS1] = 0;
   values[AliDielectronVarManager::kNclsITS2] = 0;
   values[AliDielectronVarManager::kNclsITS3] = 0;
   values[AliDielectronVarManager::kNclsITS4] = 0;
   values[AliDielectronVarManager::kNclsITS5] = 0;
+  values[AliDielectronVarManager::kNclsITS6] = 0;
 
   values[AliDielectronVarManager::kNTrk]            = 0;
   values[AliDielectronVarManager::kNVtxContrib]     = 0;
@@ -2759,12 +2759,12 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kTriggerExclOFF]        = -1;
   for(Int_t i=0; i<30; i++) { if(maskOff==BIT(i)) values[AliDielectronVarManager::kTriggerExclOFF]=i; }
 
-  values[AliDielectronVarManager::kNclsITS0] = event->GetMultiplicity()->GetNumberOfITSClusters(0);
-  values[AliDielectronVarManager::kNclsITS1] = event->GetMultiplicity()->GetNumberOfITSClusters(1);
-  values[AliDielectronVarManager::kNclsITS2] = event->GetMultiplicity()->GetNumberOfITSClusters(2);
-  values[AliDielectronVarManager::kNclsITS3] = event->GetMultiplicity()->GetNumberOfITSClusters(3);
-  values[AliDielectronVarManager::kNclsITS4] = event->GetMultiplicity()->GetNumberOfITSClusters(4);
-  values[AliDielectronVarManager::kNclsITS5] = event->GetMultiplicity()->GetNumberOfITSClusters(5);
+  values[AliDielectronVarManager::kNclsITS1] = event->GetMultiplicity()->GetNumberOfITSClusters(0);
+  values[AliDielectronVarManager::kNclsITS2] = event->GetMultiplicity()->GetNumberOfITSClusters(1);
+  values[AliDielectronVarManager::kNclsITS3] = event->GetMultiplicity()->GetNumberOfITSClusters(2);
+  values[AliDielectronVarManager::kNclsITS4] = event->GetMultiplicity()->GetNumberOfITSClusters(3);
+  values[AliDielectronVarManager::kNclsITS5] = event->GetMultiplicity()->GetNumberOfITSClusters(4);
+  values[AliDielectronVarManager::kNclsITS6] = event->GetMultiplicity()->GetNumberOfITSClusters(5);
 
 
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();

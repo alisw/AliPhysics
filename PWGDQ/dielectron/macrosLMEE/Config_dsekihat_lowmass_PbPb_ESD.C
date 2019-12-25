@@ -197,12 +197,12 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0,1,AliDielectronVarManager::kNevents);
   histos->UserHistogram("Event","ZVertex","ZVertex;ZVertex/cm",100,-50,50,AliDielectronVarManager::kZvPrim);
   histos->UserHistogram("Event","hCentralityV0M","centrality;centrality V0M (%)",101,0,101,AliDielectronVarManager::kCentralityNew);
-  histos->UserHistogram("Event","hNclsITS0","Number of clusters on ITS0;N_{cls}^{ITS0}",1000,0,1e+4,AliDielectronVarManager::kNclsITS0);
   histos->UserHistogram("Event","hNclsITS1","Number of clusters on ITS1;N_{cls}^{ITS1}",1000,0,1e+4,AliDielectronVarManager::kNclsITS1);
   histos->UserHistogram("Event","hNclsITS2","Number of clusters on ITS2;N_{cls}^{ITS2}",1000,0,1e+4,AliDielectronVarManager::kNclsITS2);
   histos->UserHistogram("Event","hNclsITS3","Number of clusters on ITS3;N_{cls}^{ITS3}",1000,0,1e+4,AliDielectronVarManager::kNclsITS3);
   histos->UserHistogram("Event","hNclsITS4","Number of clusters on ITS4;N_{cls}^{ITS4}",1000,0,1e+4,AliDielectronVarManager::kNclsITS4);
   histos->UserHistogram("Event","hNclsITS5","Number of clusters on ITS5;N_{cls}^{ITS5}",1000,0,1e+4,AliDielectronVarManager::kNclsITS5);
+  histos->UserHistogram("Event","hNclsITS6","Number of clusters on ITS6;N_{cls}^{ITS6}",1000,0,1e+4,AliDielectronVarManager::kNclsITS6);
 
   //add histograms to track class
 	const Int_t Ndim = 3;
