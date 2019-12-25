@@ -7,6 +7,8 @@
 // ClusterSelection
 #pragma link C++ class AliPHOSTriggerUtils+;
 
+// CorrectionFW
+#pragma link C++ class AliPHOSCorrectionFW+;
 
 // PHOS_Run2
 #pragma link C++ class AliAnalysisTaskPHOSObjectCreator+;
