@@ -43,6 +43,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_LHC16_pp
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Resonances
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOSCorrectionFW
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
@@ -73,6 +74,7 @@ set(SRCS
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
     PHOSCalib/AliAnalysisTaskEmeanCalib.cxx
     PHOSCalib/AliAnalysisTaskPHOSTimeCalib.cxx
+    PHOSCorrectionFW/AliPHOSCorrectionFW.cxx
     PHOS_Correlation/AliPHOSCorrelations.cxx
     PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
     PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
