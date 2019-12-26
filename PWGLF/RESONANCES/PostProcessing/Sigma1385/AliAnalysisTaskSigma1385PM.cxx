@@ -79,6 +79,8 @@ enum {
     kSigmaStarN,
     kSigmaStarP_MIX,
     kSigmaStarN_MIX,
+    kSigmaStarP_NOT,
+    kSigmaStarN_NOT,
     kAllType
 };
 enum {
@@ -167,8 +169,9 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     fHistos = new THistManager("Sigma1385hists");
     auto binAnti = AxisStr(
         "AType", {"Normal", "Anti"});
-    auto binType = AxisStr(
-        "Type", {"SigmaStarP", "SigmaStarN", "SigmaStarP_mix", "SigmaStarN_mix"});
+    auto binType =
+        (!fIsMC) ? AxisStr("Type", {"SigmaStarP", "SigmaStarN", "SigmaStarP_mix", "SigmaStarN_mix"})
+                 : AxisStr("Type", {"SigmaStarP", "SigmaStarN", "SigmaStarP_mix", "SigmaStarN_mix", "SigmaStarP_no", "SigmaStarN_no"});
     auto binTypeMC = AxisStr(
         "Type", {"SigmaStarP_gen", "SigmaStarN_gen","SigmaStarP_gen_inel10", "SigmaStarN_gen_inel10",
                  "SigmaStarP_gen_inel10_igz","SigmaStarN_gen_inel10_igz","SigmaStarP_gen_trig", "SigmaStarN_gen_trig",
@@ -920,7 +923,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
                 }
                 else{
                     // MC not true bkg
-                    (isPionPlus) ? sign = kSigmaStarP_MIX : sign = kSigmaStarN_MIX;
+                    (isPionPlus) ? sign = kSigmaStarP_NOT : sign = kSigmaStarN_NOT;
                     FillTHnSparse("Sigma1385_data", {(double)binAnti, (double)sign, (double)fCent,
                                             vecsum.Pt(), vecsum.M()});
                 }
