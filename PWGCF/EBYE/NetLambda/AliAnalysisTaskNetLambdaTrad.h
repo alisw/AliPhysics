@@ -1,12 +1,10 @@
 
-
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//Update Nov 2019
+//update Nov 2019
 
-#ifndef AliAnalysisTaskNetLambdaMCTrad_h
-#define AliAnalysisTaskNetLambdaMCTrad_h
-
+#ifndef AliAnalysisTaskNetLambdaTrad_h
+#define AliAnalysisTaskNetLambdaTrad_h
 
 
 #include "AliAnalysisTaskSE.h"
@@ -22,20 +20,17 @@ class TH3;
 class TH3F;
 #include "AliEventCuts.h"
 
-class AliAnalysisTaskNetLambdaMCTrad : public AliAnalysisTaskSE {
+class AliAnalysisTaskNetLambdaTrad : public AliAnalysisTaskSE {
 public:
-    AliAnalysisTaskNetLambdaMCTrad(const char* name="AliAnalysisTaskNetLambdaMCTrad");
-    virtual ~AliAnalysisTaskNetLambdaMCTrad(){};
+    AliAnalysisTaskNetLambdaTrad(const char* name="AliAnalysisTaskNetLambdaTrad");
+    virtual ~AliAnalysisTaskNetLambdaTrad(){};
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
-    
-    void SetIsMC(Bool_t val){fIsMC = val;};
-    Bool_t GetIsMC(){return fIsMC;};
     void SetEventSelection(UInt_t val) {fEvSel = val;}
     
 protected:
-    AliAnalysisTaskNetLambdaMCTrad(const  AliAnalysisTaskNetLambdaMCTrad &task);
-    AliAnalysisTaskNetLambdaMCTrad& operator=(const  AliAnalysisTaskNetLambdaMCTrad &task);
+    AliAnalysisTaskNetLambdaTrad(const  AliAnalysisTaskNetLambdaTrad &task);
+    AliAnalysisTaskNetLambdaTrad& operator=(const  AliAnalysisTaskNetLambdaTrad &task);
     
     AliESDEvent* fESD;
     AliPIDResponse* fPIDResponse;
@@ -45,69 +40,39 @@ protected:
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
     
-    TH2F*  f2fHistGenCentVsPtLambda;
-    TH2F*  f2fHistGenCentVsPtAntiLambda;
-    TH2F*  f2fHistXiPlus;
-    TH2F*  f2fHistXiMinus;
+    TH3F*  f3fHistCentVsInvMassLambda1point0;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
     
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreetight;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreetight;
+    TH3F*  f3fHistCentVsInvMassLambda1point0tight;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Masscuttight;
     
-    TH2F*  f2fHistRecSecCentVsPtLambdaFourSigthree;
-    TH2F*  f2fHistRecSecCentVsPtAntiLambdaFourSigthree;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
     
-    TH2F*  f2fHistRecMatCentVsPtLambdaFourSigthree;
-    TH2F*  f2fHistRecMatCentVsPtAntiLambdaFourSigthree;
-    
-    TH3F*  f3fHistLambdafromXiFourSigthree;
-    TH3F*  f3fHistAntiLambdafromXiFourSigthree;
-    TH3F*  f3fHistLambdafromXiFourSigthreetight;
-    TH3F*  f3fHistAntiLambdafromXiFourSigthreetight;
-    
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag;
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut;
-    
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthree;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0tight;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscuttight;
     
     
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeVO;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVO;
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeVOCut;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVOCut;
-
     Float_t fCentrality;
-    Int_t fTreeVariablePID;
-    Int_t fTreeVariablePIDParent;
-    Int_t fTreeVariablePIDPositive;
-    Int_t fTreeVariablePIDNegative;
-    Int_t fTreeVariablePrimaryStatusMother;
-    
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
     
-    Bool_t fIsMC;
+    
     UInt_t fEvSel;
     Int_t  fNptBins;
     
-    THnSparse *fPtBinNplusNminusChTruth;
-    THnSparse *fPtBinNplusNminusChVO;
     
-    THnSparse *fPtBinNplusNminusChRec;
-    THnSparse *fPtBinNplusNminusChRecTag;
+    THnSparse *fPtBinNplusNminusCh;
+    THnSparse *fPtBinNplusNminusChtight;
+    
+    
+    
     
     Int_t    GetPtBin(Double_t pt);
-    Double_t MyRapidity(Double_t rE, Double_t rPz) const;
     
-    
-    ClassDef(AliAnalysisTaskNetLambdaMCTrad,4);
+    ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };
 
 
 #endif
-
 
