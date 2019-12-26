@@ -2232,7 +2232,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // II.ESD - Calculation Part dedicated to Xi vertices (ESD)
         
         const AliAODcascade *xi = lAODevent->GetCascade(iXi);
-        if (!xi) continue;
+        if (!xi){
+            AliWarning("ERROR: Problem retrieving cascade...");
+            continue;
+        }
         
         lEffMassXi  			= xi->MassXi();
         
