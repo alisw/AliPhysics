@@ -2816,7 +2816,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // memory usage! Be careful when loosening the
         // cut!
         
-        AliDebug(10, Form("This is a cascade candidate with Xi Mass %.4f or Omega Mass $.4f and pT = %.3f", fTreeCascVarMassAsXi, fTreeCascVarMassAsOmega, fTreeCascVarPt));
+        //WARNING: remove this line later / debug only 
+        AliWarning(Form("This is a cascade candidate with Xi Mass %.4f or Omega Mass $.4f and pT = %.3f", fTreeCascVarMassAsXi, fTreeCascVarMassAsOmega, fTreeCascVarPt));
         
         //Xi    Mass window: 150MeV wide
         //Omega mass window: 150MeV wide
@@ -3235,7 +3236,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
     }// end of the Cascade loop (ESD or AOD)
-    
+    AliWarning(Form("Number of cascades saved: %i", fTreeCascade->GetEntries()));
     
     // Post output data.
     //Regular Output: Slots 1-8
