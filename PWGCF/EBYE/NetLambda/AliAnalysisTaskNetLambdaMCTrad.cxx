@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Nov 12
+// Updated Dec 26
 
 
 #include "AliAnalysisManager.h"
@@ -79,6 +79,10 @@ f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut(0x0),
 f3fHistCentInvMassVsPtLambdaRecFourSigthree(0x0),
 f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree(0x0),
 
+f3fHistCentInvMassVsPtLambdaRecFourSigthreeVO(0x0),
+f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVO(0x0),
+f3fHistCentInvMassVsPtLambdaRecFourSigthreeVOCut(0x0),
+f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVOCut(0x0),
 
 fCentrality(-1),
 fTreeVariablePID(-1),
@@ -90,6 +94,7 @@ fEvSel(AliVEvent::kINT7),
 
 fPtBinNplusNminusChRec(NULL),
 fPtBinNplusNminusChRecTag(NULL),
+fPtBinNplusNminusChVO(NULL),
 fPtBinNplusNminusChTruth(NULL)
 
 {
@@ -117,12 +122,12 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     Double_t CentBins[101] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100};
     Long_t CentbinNum = sizeof(CentBins)/sizeof(Double_t) - 1;
-     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     Double_t LambdaPtBins[24] = {0.9,1.0,1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,4.2, 4.4};
-     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     Double_t xibinlimits[26] = {0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0};
     Long_t xibinnumb = sizeof(xibinlimits)/sizeof(Double_t) - 1;
-     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     Double_t MassBins[103]
     = {1.0788,1.0796,1.0804,1.0812,1.082,1.0828,1.0836,1.0844,1.0852,1.086,1.0868,1.0876,1.0884,1.0892,1.09,1.0908,1.0916,1.0924,1.0932,1.094,1.0948,1.0956,1.0964,1.0972,1.098,1.0988,1.0996,1.1004,1.1012,1.102,
         1.1028,1.1036,1.1044,1.1052,1.106,1.1068,1.1076,1.1084,1.1092,1.11,1.1108,1.1116,1.1124,1.1132,1.114,1.1148,1.1156,1.1164,1.1172,1.118,1.1188,1.1196,1.1204,1.1212,1.122,1.1228,1.1236,1.1244,
@@ -155,6 +160,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         fPtBinNplusNminusChRecTag = new THnSparseI("fPtBinNplusNminusChRecTag","fPtBinNplusNminusChRecTag", dim, bin, min, max);
         fListHist->Add(fPtBinNplusNminusChRecTag); //
         
+        fPtBinNplusNminusChVO = new THnSparseI("fPtBinNplusNminusChVO","fPtBinNplusNminusChVO", dim, bin, min, max);
+        fListHist->Add(fPtBinNplusNminusChVO); //
         
         //-------------------------------------------------------------------GEN-----------------------------------------------------------------------------------------------
         
@@ -241,6 +248,19 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree = new TH3F("f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree","f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
         fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree);
         
+        f3fHistCentInvMassVsPtLambdaRecFourSigthreeVO = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeVO","f3fHistCentInvMassVsPtLambdaRecFourSigthreeVO",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+        fListHist->Add(f3fHistCentInvMassVsPtLambdaRecFourSigthreeVO);
+        
+        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVO = new TH3F("f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVO","f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVO",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+        fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVO);
+        
+        f3fHistCentInvMassVsPtLambdaRecFourSigthreeVOCut = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeVOCut","f3fHistCentInvMassVsPtLambdaRecFourSigthreeVOCut",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+        fListHist->Add(f3fHistCentInvMassVsPtLambdaRecFourSigthreeVOCut);
+        
+        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVOCut = new TH3F("f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVOCut","f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVOCut",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+        fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVOCut);
+        
+        
     }
     
     PostData(1,fListHist);
@@ -256,16 +276,14 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     Int_t ptChMC[dim];
     Int_t ptChRec[dim];
     Int_t ptChRecTag[dim];
-    
-    
-    
-    
+    Int_t ptChVO[dim];
+
     for(Int_t idx = 0; idx < dim; idx++)
     {
         ptChMC[idx] = 0;
         ptChRec[idx] = 0;
         ptChRecTag[idx] = 0;
-        
+        ptChVO[idx] = 0;
     }
     
     
@@ -519,8 +537,33 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         
         if( ontheflystat == 0 )
         {
+
+            Int_t iptbinVO = GetPtBin(V0pt);
+            
+            if(dcaV0ToVertex < 0.2 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
+            {
+                f3fHistCentInvMassVsPtLambdaRecFourSigthreeVO->Fill(fCentrality,invMassLambda,V0pt);
+                if(invMassLambda > 1.11 && invMassLambda < 1.122)
+                {
+                    ptChVO[iptbinVO] += 1;
+                    f3fHistCentInvMassVsPtLambdaRecFourSigthreeVOCut->Fill(fCentrality,invMassLambda,V0pt);
+                }
+            }
+            
+            if(dcaV0ToVertex < 0.2 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3)
+            {
+                f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVO->Fill(fCentrality,invMassAntiLambda,V0pt);
+                
+                if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
+                {
+                    ptChVO[iptbinVO+fNptBins] += 1;
+                    f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeVOCut->Fill(fCentrality,invMassAntiLambda,V0pt);
+                }
+            }
+
             if(fIsMC)
             {
+                
                 fTreeVariablePID = -999, fTreeVariablePIDParent = -999;
                 Float_t mcpt = -999, mceta = -999, fTreeVariablePtParent = -999;
                 Bool_t isPrim = kFALSE, isSecFromMaterial = kFALSE, isSecFromWeakDecay = kFALSE, isPrimParent =kFALSE;
@@ -582,7 +625,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
                         if(invMassLambda > 1.11 && invMassLambda < 1.122)
                         {
-                            ptChRec[iptbinRec] += 1;
+//                            ptChRec[iptbinRec] += 1;
                             f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassLambda,mcpt);
                         }
                         if(invMassLambda > 1.126 && invMassLambda < 1.138)
@@ -592,7 +635,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                         if(fTreeVariablePID == 3122)
                         {
-                            if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);}
+                            if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRec[iptbinRec] += 1;}
                             if(isSecFromWeakDecay)
                             {
                                 f2fHistRecSecCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);
@@ -615,7 +658,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
                         if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
                         {
-                            ptChRec[iptbinRec+fNptBins] += 1;
+//                            ptChRec[iptbinRec+fNptBins] += 1;
                             f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassAntiLambda,mcpt);
                         }
                         if(invMassAntiLambda > 1.126 && invMassAntiLambda < 1.138)
@@ -625,7 +668,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                         if(fTreeVariablePID == -3122)
                         {
-                            if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);}
+                            if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRec[iptbinRec+fNptBins] += 1;}
                             if(isSecFromWeakDecay)
                             {
                                 f2fHistRecSecCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);
@@ -705,7 +748,13 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     }
     fPtBinNplusNminusChRecTag->Fill(ptContainerRecTag);
     
-    
+    Double_t ptContainerVO[dim+1];
+    ptContainerVO[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainerVO[i] =  ptChVO[i-1];
+    }
+    fPtBinNplusNminusChVO->Fill(ptContainerVO);
     
     
     PostData(1,fListHist);
