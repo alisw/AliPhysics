@@ -2760,8 +2760,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
             lValidOmegaMinus = kFALSE;
             lValidOmegaPlus = kFALSE;
             //Meant to provide extra level of cleanup
-            if( TMath::Abs(fTreeCascVarPosEta)>0.8 || TMath::Abs(fTreeCascVarNegEta)>0.8 || TMath::Abs(fTreeCascVarBachEta)>0.8 ) continue;
-            if( TMath::Abs(fTreeCascVarRapXi)>0.5 && TMath::Abs(fTreeCascVarRapOmega)>0.5 ) continue;
+            if( TMath::Abs(fTreeCascVarPosEta)>0.8 || TMath::Abs(fTreeCascVarNegEta)>0.8 || TMath::Abs(fTreeCascVarBachEta)>0.8 ){
+                AliDebug(1,"Outside eta range / cleanup!");
+                continue;
+            }
+            if( TMath::Abs(fTreeCascVarRapXi)>0.5 && TMath::Abs(fTreeCascVarRapOmega)>0.5 ){
+                AliDebug(1,"Outside rapidity range / cleanup!");
+                continue;
+            }
             if ( fkPreselectDedx ){
                 Bool_t lPassesPreFilterdEdx = kFALSE;
                 Double_t lWindow = 0.11;
@@ -2802,7 +2808,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
                     lPassesPreFilterdEdx = kTRUE;
                     lValidOmegaPlus = kTRUE;
                 }
-                if( !lPassesPreFilterdEdx ) continue;
+                if( !lPassesPreFilterdEdx ){
+                    AliDebug(1,"Doesn't pass dE/dx / cleanup");
+                    continue;
+                }
             }
         }
         
@@ -2816,7 +2825,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // memory usage! Be careful when loosening the
         // cut!
         
-        //WARNING: remove this line later / debug only 
+        //WARNING: remove this line later / debug only
         AliWarning(Form("This is a cascade candidate with Xi Mass %.4f or Omega Mass $.4f and pT = %.3f", fTreeCascVarMassAsXi, fTreeCascVarMassAsOmega, fTreeCascVarPt));
         
         //Xi    Mass window: 150MeV wide
