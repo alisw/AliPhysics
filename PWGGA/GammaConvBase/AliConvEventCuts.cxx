@@ -3907,7 +3907,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
       } else if ( fPeriodEnum == kLHC16c3a ){ //ALIROOT-5901
         Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
-        Double_t weightsBins[5]       = {  6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03}; //preliminary estimates
+        Double_t weightsBins[5]       = {  6.73298726e-03, 8.00549934e-03, 6.77989565e-03, 4.64169953e-03, 6.01322269e-03}; //preliminary estimates
         Int_t bin = 0;
         pthardbin++;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
