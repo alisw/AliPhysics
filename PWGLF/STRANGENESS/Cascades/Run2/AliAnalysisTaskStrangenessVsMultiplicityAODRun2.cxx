@@ -2627,7 +2627,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //lBachTransvMom  = TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
         //lBachTotMom  	= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY  +  lBachMomZ*lBachMomZ  );
         
-        lChargeXi = xi->Charge();
+        lChargeXi = xi->ChargeXi();
         
         //lV0toXiCosineOfPointingAngle = xi->GetV0CosineOfPointingAngle( lPosXi[0], lPosXi[1], lPosXi[2] );
         
@@ -2826,7 +2826,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // cut!
         
         //WARNING: remove this line later / debug only
-        AliWarning(Form("This is a cascade candidate with Xi Mass %.4f or Omega Mass $.4f and pT = %.3f", fTreeCascVarMassAsXi, fTreeCascVarMassAsOmega, fTreeCascVarPt));
+        //AliWarning(Form("This is a cascade candidate with Xi Mass %.4f or Omega Mass %.4f and pT = %.3f", fTreeCascVarMassAsXi, fTreeCascVarMassAsOmega, fTreeCascVarPt));
         
         //Xi    Mass window: 150MeV wide
         //Omega mass window: 150MeV wide
