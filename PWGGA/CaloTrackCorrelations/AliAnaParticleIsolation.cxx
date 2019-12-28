@@ -1600,6 +1600,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       TCustomBinning sumBinning;
       sumBinning.SetMinimum(0.0);
+      if ( method >= AliIsolationCut::kSumBkgSubIC )
+      {
+        sumBinning.SetMinimum(-50.0);
+        sumBinning.AddStep(-25, 2.50); // 10
+        sumBinning.AddStep(-10, 1.00); // 15
+        sumBinning.AddStep(-4 , 0.50); // 12
+      }
+      else
+      {
+        sumBinning.SetMinimum(0.0);
+      }
       sumBinning.AddStep(  4, 0.20); // 20
       sumBinning.AddStep( 10, 0.50); // 12
       sumBinning.AddStep( 25, 1.00); // 15
