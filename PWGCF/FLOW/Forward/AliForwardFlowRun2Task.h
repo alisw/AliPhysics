@@ -42,7 +42,7 @@ class THn;
  * @ingroup pwglf_forward_flow
  *
  */
-#include <valarray>
+
 
 class AliForwardFlowRun2Task : public AliAnalysisTaskSE
 {
@@ -119,7 +119,6 @@ public:
   // Class for flow calculations using the Generic Framework
   AliForwardGenericFramework fCalculator;
 
-  std::valarray<int> fCentCounter;
 
   ClassDef(AliForwardFlowRun2Task, 1); // Analysis task for flow analysis
 };
