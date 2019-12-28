@@ -41,8 +41,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fStorage(nullptr),
   fSettings(),
   fUtil(),
-  fCalculator(),
-  fCentCounter()
+  fCalculator()
   {
   //
   //  Default constructor
@@ -62,8 +61,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   fStorage(nullptr),
   fSettings(),
   fUtil(),
-  fCalculator(),
-  fCentCounter()
+  fCalculator()
   {
   //
   //  Constructor
@@ -279,12 +277,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) {
     forwardDist->Reset();
   }
-  /*
-  fSettings.track_sample++;
-  if (fSettings.track_sample == fSettings.fnoSamples) fSettings.track_sample = 0;
-  fCentCounter[centBin-1]++;
-  if (fCentCounter[centBin-1] == 10) fCentCounter[centBin-1] = 0;
-  */
+
   PostData(1, fStorage);
   return;
 }
