@@ -45,8 +45,8 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
     fConversionCutArray         = CutArray;}
   void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
   void SetDoSelectBCnumbers(Int_t flag )                        { fDoSelectBCNumber     = flag;}
-  void SetSelectBCnumbersBegin(UShort_t a)                      { fBCNumberBegin = a;}
-  void SetSelectBCnumbersEnd(UShort_t a)                        { fBCNumberEnd = a;}
+  //  void SetSelectBCnumbersBegin(UShort_t a)                      { fBCNumberBegin = a;}
+  //  void SetSelectBCnumbersEnd(UShort_t a)                        { fBCNumberEnd = a;}
 
 
   /* void SetDoTreesForMaterial(Bool_t flag)                              { fDoTreesForMaterial               = flag    ;} */
@@ -104,6 +104,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   Double_t          fWeightMultMC;                //
   TH1F**            hNEvents;                     //!
   TH1F**            hBCNumber;                    //!
+  TH1F**            hBCNumberSelected;            //!
   TH1F**            hNGoodESDTracksEta08;         //!
   TH1F**            hNGoodESDTracksWeightedEta08; //!
   TH1F**            hNGoodESDTracksEta08pt200;         //!
@@ -186,15 +187,16 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   //Bool_t            fDoHistosForMaterial;             // flag for using Trees for Material Budget evaluation
   Bool_t            fDoSelectBCNumber;
   UShort_t          fBCNumber;
-  UShort_t          fBCNumberBegin;
-  UShort_t          fBCNumberEnd;
+  //  UShort_t          fBCNumberBegin;
+  //  UShort_t          fBCNumberEnd;
+  Int_t             fRunNumber;
 
 
   AliAnalysisTaskMaterialHistos(const AliAnalysisTaskMaterialHistos&); // not implemented
   AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
   
   
-  ClassDef(AliAnalysisTaskMaterialHistos, 24);
+  ClassDef(AliAnalysisTaskMaterialHistos, 25);
 };
 
 #endif
