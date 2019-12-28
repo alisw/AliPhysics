@@ -2238,6 +2238,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         }
         
         lEffMassXi  			= xi->MassXi();
+        lChargeXi = xi->ChargeXi();
         
         //ChiSquare implementation
         fTreeCascVarChiSquareV0      = xi->Chi2V0();
@@ -2605,10 +2606,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // - II.Step 4 : around effective masses (ESD)
         // ~ change mass hypotheses to cover all the possibilities :  Xi-/+, Omega -/+
         
-        if ( lChargeXi < 0 )        lInvMassXiMinus     = xi->MassXi();
-        if ( lChargeXi > 0 )        lInvMassXiPlus         = xi->MassXi();
-        if ( lChargeXi < 0 )        lInvMassOmegaMinus     = xi->MassOmega();
-        if ( lChargeXi > 0 )        lInvMassOmegaPlus     = xi->MassOmega();
+        if ( bachTrackXi->Charge() < 0 )        lInvMassXiMinus     = xi->MassXi();
+        if ( bachTrackXi->Charge() > 0 )        lInvMassXiPlus         = xi->MassXi();
+        if ( bachTrackXi->Charge() < 0 )        lInvMassOmegaMinus     = xi->MassOmega();
+        if ( bachTrackXi->Charge() > 0 )        lInvMassOmegaPlus     = xi->MassOmega();
         
         // - II.Step 6 : extra info for QA (ESD)
         // miscellaneous pieces of info that may help regarding data quality assessment.
@@ -2627,7 +2628,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //lBachTransvMom  = TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
         //lBachTotMom  	= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY  +  lBachMomZ*lBachMomZ  );
         
-        lChargeXi = xi->ChargeXi();
+        lChargeXi = bachTrackXi->Charge();
         
         //lV0toXiCosineOfPointingAngle = xi->GetV0CosineOfPointingAngle( lPosXi[0], lPosXi[1], lPosXi[2] );
         
