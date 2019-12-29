@@ -335,6 +335,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   }
   hNEvents                  = new TH1F*[fnCuts];
   if(fDoSelectBCNumber){
+  hBCNumber                 = new TH1F*[fnCuts];
   hBCNumberSelected         = new TH1F*[fnCuts];
   }
   hNGoodESDTracksEta08      = new TH1F*[fnCuts];
