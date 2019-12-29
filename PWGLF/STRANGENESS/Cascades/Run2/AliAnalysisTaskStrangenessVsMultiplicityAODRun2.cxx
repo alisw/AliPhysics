@@ -2615,10 +2615,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // miscellaneous pieces of info that may help regarding data quality assessment.
         //-------------
         Double_t lXiMomVec[3];
-        xi->GetPxPyPz( lXiMomVec );
-        lXiMomX = lXiMomVec[0];
-        lXiMomY = lXiMomVec[1];
-        lXiMomZ = lXiMomVec[2];
+        //xi->GetPxPyPz( lXiMomVec ); WHY ARE GETTERS NOT THE SAME IN AODS? ARGH
+        lXiMomX = xi->MomXiX();
+        lXiMomY = xi->MomXiY();
+        lXiMomZ = xi->MomXiZ();
         lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
         lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY   + lXiMomZ*lXiMomZ );
         
