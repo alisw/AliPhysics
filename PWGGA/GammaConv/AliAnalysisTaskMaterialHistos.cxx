@@ -77,6 +77,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fWeightMultMC(1),
   hNEvents(NULL),
   hBCNumber(NULL),
+  hBCNumberSelected(NULL),
   hNGoodESDTracksEta08(NULL),
   hNGoodESDTracksWeightedEta08(NULL),
   hNGoodESDTracksEta08pt200(NULL),
@@ -153,9 +154,10 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hElectrondEdxMapsR3(NULL),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   fDoSelectBCNumber(kFALSE),
-  fBCNumber(-1),
-  fBCNumberBegin(-1),
-  fBCNumberEnd(-1)
+  fBCNumber(0),
+//  fBCNumberBegin(0),
+//  fBCNumberEnd(0),
+  fRunNumber(0)
 {
 
 }
@@ -204,6 +206,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fWeightMultMC(1),
   hNEvents(NULL),
   hBCNumber(NULL),
+  hBCNumberSelected(NULL),
   hNGoodESDTracksEta08(NULL),
   hNGoodESDTracksWeightedEta08(NULL),
   hNGoodESDTracksEta08pt200(NULL),
@@ -280,9 +283,10 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hElectrondEdxMapsR3(NULL),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   fDoSelectBCNumber(kFALSE),
-  fBCNumber(-1),
-  fBCNumberBegin(-1),
-  fBCNumberEnd(-1)
+  fBCNumber(0),
+//  fBCNumberBegin(0),
+//  fBCNumberEnd(0),
+  fRunNumber(0)
 {
   // Default constructor
 
@@ -332,6 +336,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   hNEvents                  = new TH1F*[fnCuts];
   if(fDoSelectBCNumber){
   hBCNumber                 = new TH1F*[fnCuts];
+  hBCNumberSelected         = new TH1F*[fnCuts];
   }
   hNGoodESDTracksEta08      = new TH1F*[fnCuts];
   hNGoodESDTracksEta08pt200 = new TH1F*[fnCuts];
@@ -470,9 +475,12 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
     fESDList[iCut]->Add(hNEvents[iCut]);
-    if(fDoSelectBCNumber){
-    hBCNumber[iCut]              = new TH1F("BCNumber","BCNumber",3564,-0.5,3563.5);
+
+    hBCNumber[iCut]                      = new TH1F("BCNumber","BCNumber",3564,-0.5,3563.5);
     fESDList[iCut]->Add(hBCNumber[iCut]);
+    if(fDoSelectBCNumber){
+    hBCNumberSelected[iCut]              = new TH1F("BCNumberSel","BCNumberSel",3564,-0.5,3563.5);
+    fESDList[iCut]->Add(hBCNumberSelected[iCut]);
     }
     hNGoodESDTracksEta08[iCut]      = new TH1F("GoodESDTracksEta08","GoodESDTracksEta08",nTracks, -0.5, nTracks-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta08[iCut]);
@@ -851,6 +859,11 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   fInputEvent = InputEvent();
   if (fInputEvent==NULL) return;
 
+
+  for(Int_t iCut = 0; iCut<fnCuts; iCut++){
+    hBCNumber[iCut]->Fill(fBCNumber);
+  }
+
   if(fDoSelectBCNumber) DoSelectBCNumbers();
 
   if(fIsMC>0) fMCEvent = MCEvent();
@@ -870,7 +883,7 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   // ------------------- BeginEvent ----------------------------
 
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
-    if(fDoSelectBCNumber) hBCNumber[iCut]->Fill(fBCNumber);
+    if(fDoSelectBCNumber) hBCNumberSelected[iCut]->Fill(fBCNumber);
     fiCut = iCut;
     Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
     if(eventNotAccepted){
@@ -1796,9 +1809,19 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0814(){
 //________________________________________________________________________
 void AliAnalysisTaskMaterialHistos::DoSelectBCNumbers(){
   if(fIsMC == 0 ){
+    fRunNumber  = fInputEvent->GetRunNumber();
     fBCNumber = fInputEvent->GetBunchCrossNumber();
-    if(fBCNumberBegin > fBCNumber || fBCNumber > fBCNumberEnd){
-      return;
+    // if(fBCNumberBegin > fBCNumber || fBCNumber > fBCNumberEnd){
+    //   return;
+    // }
+    if(fRunNumber >= 265332 && fRunNumber <= 265344){//Fill 5506
+      if(1390 > fBCNumber || fBCNumber > 1540){
+	return;
+      }
+    }else if(fRunNumber >= 265377 && fRunNumber <= 265388){//Fill 5507
+      if(3010 > fBCNumber || fBCNumber > 3140){
+	return;
+      }
     }
   }
 }
