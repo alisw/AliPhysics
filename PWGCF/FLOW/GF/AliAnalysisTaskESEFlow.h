@@ -81,6 +81,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TList*                  fFlowWeightsList; //! 
         AliGFWWeights*          fWeights;           //!
         TList*                  fV0CalibList;   //!
+        TList*                  fqSelList;   //!
         //output histograms
         TH3F*                   fHistPhiEtaVz;    //!
         TH1F*                   fHistPhi;       //!
@@ -125,7 +126,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TProfile*               fc22c32ESETPC[2][fNumCentHists][fESECuts]; //! THIS PROFILE NEEDS REFINEMENT
         
 
-        ///////////////////////////////////////////////////////////////
+        /////////////////////////// CALIBRATION HISTOGRAMS ////////////////////////////////////
         TH2D*                   fq2TPC;    //!
         TH2D*                   fq3TPC;    //!
         TH2D*                   fq2V0C;    //!
@@ -140,6 +141,22 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fQnxTPC[2];    //!
         TH2F*                   fQnyTPC[2];    //!
 
+        // work in progress
+        TH1F*                   fQnxV0Cm[2];    //!
+        TH1F*                   fQnyV0Cm[2];    //!
+        TH1F*                   fQnxV0Am[2];    //!
+        TH1F*                   fQnyV0Am[2];    //!
+        TH1F*                   fQnxTPCm[2];    //!
+        TH1F*                   fQnyTPCm[2];    //!
+
+        TH1F*                   fQnxV0CEse[2];    //!
+        TH1F*                   fQnyV0CEse[2];    //!
+        TH1F*                   fQnxV0AEse[2];    //!
+        TH1F*                   fQnyV0AEse[2];    //!
+        TH1F*                   fQnxTPCEse[2];    //!
+        TH1F*                   fQnyTPCEse[2];    //! 
+        ////
+
         TH3F*                   fCentq2TPCvsv22;   //!
         TH3F*                   fCentq2V0Cvsv22;   //!
         TProfile*               fProfNPar; //!
@@ -147,7 +164,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fhV0CorrMult;       //!
         TH2F*                   fhq2TPCvq2V0C;  //!
 
-        // fill dphi/deta/dpt histograms for weights
         void CorrelationTask(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t fSpCent);
         void FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, const Float_t centrality);
         // Calculate flow vectors for reference and POIs
@@ -166,6 +182,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Int_t GetPercCode(Double_t qPerc) const;
         Bool_t WithinRFP(const AliVParticle* track) const;
         Bool_t WithinPOI(const AliVParticle* track) const;
+        Bool_t LoadqSelection();
         Bool_t ProcessMCParticles();
 
         Bool_t InitializeTask();
@@ -204,6 +221,15 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t qnV0A[fNumHarms];
         Double_t QxnV0A[fNumHarms];
         Double_t QynV0A[fNumHarms];
+
+        Double_t QxnTPCEse[fNumHarms]; // after correction
+        Double_t QynTPCEse[fNumHarms];
+
+        Double_t QxnV0CEse[fNumHarms];
+        Double_t QynV0CEse[fNumHarms];
+
+        Double_t QxnV0AEse[fNumHarms];
+        Double_t QynV0AEse[fNumHarms];
         
 
         TComplex Q(int n, int p);
