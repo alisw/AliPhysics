@@ -1,7 +1,7 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskESEFlow;
 
-AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "")
+AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "", TString qSplines="")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -107,17 +107,14 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     TObjArray* taskContainersV0 = mgr->GetContainers();
     if(!taskContainersV0) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
 
-    // check if the input weights are already loaded (e.g. in different subwagon)
     AliAnalysisDataContainer* V0Cal = (AliAnalysisDataContainer*) taskContainersV0->FindObject("inputV0Cal");
     if(!V0Cal) {  
-      // if it does not exists create it
-      // in case of non-local run, establish connection to ALiEn for loading the weights
       if(V0Calib.Contains("alien://")) { gGrid->Connect("alien://"); }
 
       TFile* V0Cal_file = TFile::Open(V0Calib.Data(),"READ");
       if(!V0Cal_file) { printf("E-AddTaskESEFlow: Input file with V0 Calibration not found!\n"); return NULL; }
 
-      TList* V0Cal_list = static_cast<TList*>(V0Cal_file->Get("1"));
+      TList* V0Cal_list = static_cast<TList*>(V0Cal_file->Get("Calibration"));
       if(!V0Cal_list) { printf("E-AddTaskESEFlow: Input list with V0 Calibration not found!\n"); V0Cal_file->ls(); return NULL; }
 
       AliAnalysisDataContainer* cInputV0Cal = mgr->CreateContainer("inputV0Cal",TList::Class(), AliAnalysisManager::kInputContainer);
@@ -126,8 +123,29 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     }
     else
     {
-      // connect existing container
       mgr->ConnectInput(task,2,V0Cal);
+    }
+
+    TObjArray* taskContainersSp = mgr->GetContainers();
+    if(!taskContainersSp) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+
+    AliAnalysisDataContainer* qSelSp = (AliAnalysisDataContainer*) taskContainersSp->FindObject("inputqSp");
+    if(!qSelSp) {  
+      if(qSplines.Contains("alien://")) { gGrid->Connect("alien://"); }
+
+      TFile* qSp_file = TFile::Open(qSplines.Data(),"READ");
+      if(!qSp_file) { printf("E-AddTaskESEFlow: Input file with q-selection Splines not found!\n"); return NULL; }
+
+      TList* qSp_list = static_cast<TList*>(qSp_file->Get("qSplines"));
+      if(!qSp_list) { printf("E-AddTaskESEFlow: Input list with q Splines not found!\n"); qSp_file->ls(); return NULL; }
+
+      AliAnalysisDataContainer* cInputqSp = mgr->CreateContainer("inputqSp",TList::Class(), AliAnalysisManager::kInputContainer);
+      cInputqSp->SetData(qSp_list);
+      mgr->ConnectInput(task,3,cInputqSp);
+    }
+    else
+    {
+      mgr->ConnectInput(task,3,qSelSp);
     }
 
   return task;
