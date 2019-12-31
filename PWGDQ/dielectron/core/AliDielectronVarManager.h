@@ -3121,6 +3121,8 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kNaccItsPureEsd16Corr] =
     AliDielectronHelper::GetNaccTrckltsCorrected(event,Double_t(nTrITSSA16),values[AliDielectronVarManager::kZvPrim],8);
 
+  values[AliDielectronVarManager::kNTPCclsEvent] = event->GetNumberOfTPCClusters();
+
 	//pileup information for TPC based on displaced Z position of tracks
   Float_t pileupTrackArrayP[20000] = {};
   Float_t pileupTrackArrayM[20000] = {};
