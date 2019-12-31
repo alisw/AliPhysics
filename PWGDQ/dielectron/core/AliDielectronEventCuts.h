@@ -57,10 +57,11 @@ public:
   void SetCutOnV0MultipicityNTrks(TF1* parMean, TF1* parSigma, Double_t cutSigma=3.) { fparMean=parMean; fparSigma=parSigma; fcutSigma=cutSigma; }
   void SetCutOnNVtxContributorsGloablTPC(TF1* parMin, TF1* parMax) { fparMinVtxContributors=parMin; fparMaxVtxContributors=parMax; }
   void SetRequire2013vertexandevent(Bool_t req13 = kTRUE) {fRequire13sel = req13; }
-  void SetRequireAliEventCuts(Bool_t reqAliEventCuts = kTRUE, Bool_t reqAliEventCutsCorrelated = kFALSE, Bool_t reqTimingRangeCutForLHC18r = kFALSE) 
-                              {fRequireAliEventCuts = reqAliEventCuts; fAODeventCuts.fUseVariablesCorrelationCuts = reqAliEventCutsCorrelated; reqTimingRangeCutForLHC18r;}
+  void SetRequireAliEventCuts(Bool_t reqAliEventCuts = kTRUE, Bool_t reqAliEventCutsCorrelated = kFALSE, Bool_t reqTimingRangeCut = kFALSE) 
+                              {fRequireAliEventCuts = reqAliEventCuts; fAODeventCuts.fUseVariablesCorrelationCuts = reqAliEventCutsCorrelated; fRequireTimeRangeCut = reqTimingRangeCut;}
   void SetMinCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
   void SetMaxCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
+	void SetTimeRangeCut(Bool_t reqTimingRangeCut=kFALSE) {fRequireTimeRangeCut = reqTimingRangeCut;}
 
   //
   //Analysis cuts interface
@@ -109,8 +110,9 @@ private:
   const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
   Bool_t  fRequireAliEventCuts;     // use AliEventCuts to reject events
-  Bool_t  fRequireTimeRangeCutForLHC18r; // use time range cut for LHC18r to recover 7 runs
+  Bool_t  fRequireTimeRangeCut; // use time range cut//especially for LHC18r to recover 7 runs
   AliEventCuts fAODeventCuts;       // use AliEventCuts to reject events
+	AliTimeRangeCut fTimeRangeCut;    //time range cut for bad time in TPC
   
   TH1D* fCorrCutMin[5];       //parametrization of lower limit correlation cut
   TH1D* fCorrCutMax[5];       //parametrization of upper limit correlation cut
@@ -124,7 +126,7 @@ private:
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 
 
-  ClassDef(AliDielectronEventCuts,4)         // Dielectron EventCuts
+  ClassDef(AliDielectronEventCuts,5)         // Dielectron EventCuts
 };
 
 

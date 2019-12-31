@@ -68,8 +68,9 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fkVertex(0x0),
   fkVertexAOD(0x0),
   fRequireAliEventCuts(0),
-  fRequireTimeRangeCutForLHC18r(kFALSE),
+  fRequireTimeRangeCut(kFALSE),
   fAODeventCuts(),
+	fTimeRangeCut(),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -111,8 +112,9 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fkVertex(0x0),
   fkVertexAOD(0x0),
   fRequireAliEventCuts(0),
-  fRequireTimeRangeCutForLHC18r(kFALSE),
+  fRequireTimeRangeCut(kFALSE),
   fAODeventCuts(),
+	fTimeRangeCut(),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -298,6 +300,10 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
       }
   }
 
+	fTimeRangeCut.InitFromEvent(ev);
+	Bool_t IsBadTimeRangeTPC = fTimeRangeCut.CutEvent(ev);
+	if(fRequireTimeRangeCut && IsBadTimeRangeTPC) return kFALSE;
+
   return kTRUE;
 }
 //______________________________________________
@@ -471,13 +477,14 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   
   // cut on AliEventCuts (consistency to Run 1 Pb-Pb LMee analysis)
   if(fRequireAliEventCuts){
-    if (fRequireTimeRangeCutForLHC18r){
-      fAODeventCuts.UseTimeRangeCut();
-    }
     if (!fAODeventCuts.AcceptEvent(ev)){
       return kFALSE;
     }
   }
+
+	fTimeRangeCut.InitFromEvent(ev);
+	Bool_t IsBadTimeRangeTPC = fTimeRangeCut.CutEvent(ev);
+	if(fRequireTimeRangeCut && IsBadTimeRangeTPC) return kFALSE;
 
   return kTRUE;
 }
