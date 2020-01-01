@@ -58,6 +58,9 @@ TH1     *AliDielectronPID::fgFunWdthCorrITS=0x0;
 TH1     *AliDielectronPID::fgFunCntrdCorrTOF=0x0;
 TH1     *AliDielectronPID::fgFunWdthCorrTOF=0x0;
 TGraph  *AliDielectronPID::fgdEdxRunCorr=0x0;
+THnBase *AliDielectronPID::fgFunCntrdCorrPU[15][15] = {0x0};
+THnBase *AliDielectronPID::fgFunWdthCorrPU[15][15] = {0x0};
+Bool_t  AliDielectronPID::fgPIDCalibinPU=kFALSE;
 
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
@@ -348,6 +351,20 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetXaxis()->GetUniqueID(), kTRUE);
     fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetYaxis()->GetUniqueID(), kTRUE);
     fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetZaxis()->GetUniqueID(), kTRUE);
+  }
+  if(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron])  {
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(0)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(1)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(2)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(3)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(4)->GetUniqueID(), kTRUE);
+  }
+  if(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron])  {
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(0)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(1)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(2)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(3)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(4)->GetUniqueID(), kTRUE);
   }
 
   //Fill values
@@ -780,7 +797,6 @@ Double_t AliDielectronPID::GetEtaCorr(const AliVTrack *track)
   if (!fgFunEtaCorr) return 1;
   return fgFunEtaCorr->Eval(track->Eta());
 }
-
 //______________________________________________
 Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TH1 *hist)
 {
@@ -807,3 +823,26 @@ Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TH1 *hist)
   //  printf("%d-dim CORR value: %f (track %p) \n",dim,corr,track);
   return corr;
 }
+//______________________________________________
+Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, THnBase *hist)
+{
+  //
+  // return correction value
+  //
+  //TODO: think about taking an values array as argument to reduce # var fills
+
+  //Fill only event and vparticle values (otherwise we end up in a circle)
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::FillVarVParticle(track,values);
+  Int_t dim = hist->GetNdimensions();
+
+  Double_t var[5] = {0.,0.,0.,0.,0.};
+  if(dim>0) var[0] = values[hist->GetAxis(0)->GetUniqueID()];
+  if(dim>1) var[1] = values[hist->GetAxis(1)->GetUniqueID()];
+  if(dim>2) var[2] = values[hist->GetAxis(2)->GetUniqueID()];
+  if(dim>3) var[3] = values[hist->GetAxis(3)->GetUniqueID()];
+  if(dim>4) var[4] = values[hist->GetAxis(4)->GetUniqueID()];
+  Double_t corr = hist->GetBinContent( hist->GetBin(var) );
+  return corr;
+}
+//______________________________________________
