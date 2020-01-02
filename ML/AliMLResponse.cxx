@@ -10,15 +10,16 @@
 /// \file AliMLResponse.cxx
 /// \author pietro.fecchio@cern.ch, maximiliano.puccio@cern.ch
 
+#include "AliMLResponse.h"
+
+#include "assert.h"
+#include "yaml-cpp/yaml.h"
+
 #include <TDirectory.h>
 #include <TFile.h>
 #include <TGrid.h>
 #include <TSystem.h>
-
 #include "AliLog.h"
-#include "AliMLResponse.h"
-
-#include "assert.h"
 
 using std::map;
 using std::pair;
@@ -26,10 +27,6 @@ using std::string;
 using std::vector;
 
 namespace {
-
-enum kLibrary { kXGBoost, kLightGBM, kModelLibrary };
-
-map<string, int> kLibraryMap = {{"kXGBoost", kXGBoost}, {"kLightGBM", kLightGBM}, {"kModelLibrary", kModelLibrary}};
 
 string ImportFile(string path) {
   string modelname = path.substr(path.find_last_of("/") + 1);
@@ -52,29 +49,6 @@ string ImportFile(string path) {
   return newpath;
 }
 }    // namespace
-
-bool ModelHandler::CompileModel() {
-  string localpath = ImportFile(this->path);
-
-  switch (kLibraryMap[GetLibrary()]) {
-  case kXGBoost: {
-    return this->model.LoadXGBoostModel(localpath.data());
-    break;
-  }
-  case kLightGBM: {
-    return this->model.LoadLightGBMModel(localpath.data());
-    break;
-  }
-  case kModelLibrary: {
-    return this->model.LoadModelLibrary(localpath.data());
-    break;
-  }
-  default: {
-    return this->model.LoadXGBoostModel(localpath.data());
-    break;
-  }
-  }
-}
 
 /// \cond CLASSIMP
 ClassImp(AliMLResponse);
@@ -177,7 +151,7 @@ void AliMLResponse::MLResponseInit() {
   fBinsBegin = fBins.begin();
 
   for (const auto &model : nodeList["MODELS"]) {
-    fModels.push_back(ModelHandler{model});
+    fModels.push_back(AliMLModelHandler{model});
   }
 
   for (auto &model : fModels) {

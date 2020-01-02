@@ -15,46 +15,18 @@
 ///        configuration of ML application on grid
 /// \author pietro.fecchio@cern.ch, maximiliano.puccio@cern.ch
 
-#include <algorithm>
-#include <iostream>
 #include <map>
 #include <string>
-#include <utility>
 #include <vector>
-
-#include "yaml-cpp/yaml.h"
-
-#include "AliExternalBDT.h"
 
 #include "TNamed.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////
+#include "AliExternalBDT.h"
+#include "AliMLModelHandler.h"
 
-class ModelHandler {
-public:
-  ModelHandler() : model(), path(), library(), scorecut() {}
-  ModelHandler(const YAML::Node &node)
-      : model(), path(node["path"].as<std::string>()), library(node["library"].as<std::string>()),
-        scorecut(node["cut"].as<double>()) {}
-
-  std::string const &GetPath() const { return path; }
-  std::string const &GetLibrary() const { return library; }
-  double const &GetScoreCut() const { return scorecut; }
-
-  AliExternalBDT &GetModel() { return model; }
-
-  bool CompileModel();
-
-private:
-  AliExternalBDT model;    //!
-
-  std::string path;
-  std::string library;
-
-  double scorecut;
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////
+namespace YAML {
+  class Node;
+}
 
 class AliMLResponse : public TNamed {
 public:
@@ -86,7 +58,7 @@ public:
 protected:
   std::string fConfigFilePath;    /// path of the config file
 
-  std::vector<ModelHandler> fModels;
+  std::vector<AliMLModelHandler> fModels;
   std::vector<int> fCentClasses;         /// centrality classes ([cent_min, cent_max])
   std::vector<float> fBins;              /// bin edges for the binned variable (pt/ct)
   std::vector<std::string> fVariableNames;    /// bin edges for the binned variable (pt/ct)

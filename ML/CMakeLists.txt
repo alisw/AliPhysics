@@ -36,6 +36,7 @@ set(SRCS
 if(ROOT_VERSION_MAJOR EQUAL 6)
     set(SRCS
 	    ${SRCS}
+        AliMLModelHandler.cxx
         AliMLResponse.cxx
     )
 endif()

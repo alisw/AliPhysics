@@ -30,9 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
-                    ${TREELITE_ROOT}/include
-                    ${TREELITE_ROOT}/runtime/native/include
-                    ${YAML_CPP_SOURCE_DIR}/include         
+                    ${TREELITE_ROOT}/include 
 )
 
 # Sources - alphabetical order
@@ -61,7 +59,7 @@ add_library_tested(${MODULEHFML} SHARED  ${SRCS} G__${MODULEHFML}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ML yaml-cpp PWGHFvertexingHF)
+set(LIBDEPS ML PWGHFvertexingHF)
 generate_rootmap("${MODULEHFML}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULEHFML}LinkDef.h")
 
 # Generate a PARfile target for this library
