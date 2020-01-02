@@ -60,6 +60,8 @@ fDoDeltaPtWithSignal(kFALSE),
 fDiamond(0x0),
 fVertexer(0x0),
 fDoJetProbabilityAnalysis(kFALSE),
+fDoCharmFractions(kFALSE),
+fUsePartonDef(kTRUE),
 fDoJetMass(kFALSE),
 fDoSVEnergyFraction(kFALSE),
 fDoPtRelAnalysis(0),
@@ -371,21 +373,37 @@ fhistJetProbabilityLog(0x0),
 fhistJetProbability_UnidentifiedLog(0x0),
 fhistJetProbability_udsgLog(0x0),
 fhistJetProbability_cLog(0x0),
+fhistJetProbability_cLog_D0(0x0),
+fhistJetProbability_cLog_Dp(0x0),
+fhistJetProbability_cLog_Ds(0x0),
+fhistJetProbability_cLog_Lc(0x0),
 fhistJetProbability_bLog(0x0),
 fhistJetProbabilityLogFirst(0x0),
 fhistJetProbability_UnidentifiedLogFirst(0x0),
 fhistJetProbability_udsgLogFirst(0x0),
 fhistJetProbability_cLogFirst(0x0),
+fhistJetProbability_cLogFirst_D0(0x0),
+fhistJetProbability_cLogFirst_Dp(0x0),
+fhistJetProbability_cLogFirst_Ds(0x0),
+fhistJetProbability_cLogFirst_Lc(0x0),
 fhistJetProbability_bLogFirst(0x0),
 fhistJetProbabilityLogSecond(0x0),
 fhistJetProbability_UnidentifiedLogSecond(0x0),
 fhistJetProbability_udsgLogSecond(0x0),
 fhistJetProbability_cLogSecond(0x0),
+fhistJetProbability_cLogSecond_D0(0x0),
+fhistJetProbability_cLogSecond_Dp(0x0),
+fhistJetProbability_cLogSecond_Ds(0x0),
+fhistJetProbability_cLogSecond_Lc(0x0),
 fhistJetProbability_bLogSecond(0x0),
 fhistJetProbabilityLogThird(0x0),
 fhistJetProbability_UnidentifiedLogThird(0x0),
 fhistJetProbability_udsgLogThird(0x0),
 fhistJetProbability_cLogThird(0x0),
+fhistJetProbability_cLogThird_D0(0x0),
+fhistJetProbability_cLogThird_Dp(0x0),
+fhistJetProbability_cLogThird_Ds(0x0),
+fhistJetProbability_cLogThird_Lc(0x0),
 fhistJetProbability_bLogThird(0x0),
 fhistJetProbabilityLogSVHE(0x0),
 fhistJetProbability_UnidentifiedLogSVHE(0x0),
@@ -538,6 +556,8 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fhnV0InJetLambda(0x0),
 		fhnV0InJetALambda(0x0),
 		fDoJetProbabilityAnalysis(kFALSE),
+		fDoCharmFractions(kFALSE),
+		fUsePartonDef(kTRUE),
 		fDoJetMass(kFALSE),
 		fDoSVEnergyFraction(kFALSE),
 		fDoPtRelAnalysis(0),
@@ -814,21 +834,37 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fhistJetProbability_UnidentifiedLog(0x0),
 		fhistJetProbability_udsgLog(0x0),
 		fhistJetProbability_cLog(0x0),
+		fhistJetProbability_cLog_D0(0x0),
+		fhistJetProbability_cLog_Dp(0x0),
+		fhistJetProbability_cLog_Ds(0x0),
+		fhistJetProbability_cLog_Lc(0x0),
 		fhistJetProbability_bLog(0x0),
 		fhistJetProbabilityLogFirst(0x0),
 		fhistJetProbability_UnidentifiedLogFirst(0x0),
 		fhistJetProbability_udsgLogFirst(0x0),
 		fhistJetProbability_cLogFirst(0x0),
+		fhistJetProbability_cLogFirst_D0(0x0),
+		fhistJetProbability_cLogFirst_Dp(0x0),
+		fhistJetProbability_cLogFirst_Ds(0x0),
+		fhistJetProbability_cLogFirst_Lc(0x0),
 		fhistJetProbability_bLogFirst(0x0),
 		fhistJetProbabilityLogSecond(0x0),
 		fhistJetProbability_UnidentifiedLogSecond(0x0),
 		fhistJetProbability_udsgLogSecond(0x0),
 		fhistJetProbability_cLogSecond(0x0),
+		fhistJetProbability_cLogSecond_D0(0x0),
+		fhistJetProbability_cLogSecond_Dp(0x0),
+		fhistJetProbability_cLogSecond_Ds(0x0),
+		fhistJetProbability_cLogSecond_Lc(0x0),
 		fhistJetProbability_bLogSecond(0x0),
 		fhistJetProbabilityLogThird(0x0),
 		fhistJetProbability_UnidentifiedLogThird(0x0),
 		fhistJetProbability_udsgLogThird(0x0),
 		fhistJetProbability_cLogThird(0x0),
+		fhistJetProbability_cLogThird_D0(0x0),
+		fhistJetProbability_cLogThird_Dp(0x0),
+		fhistJetProbability_cLogThird_Ds(0x0),
+		fhistJetProbability_cLogThird_Lc(0x0),
 		fhistJetProbability_bLogThird(0x0),
 		fhistJetProbabilityLogSVHE(0x0),
 		fhistJetProbability_UnidentifiedLogSVHE(0x0),
@@ -1230,14 +1266,26 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			Int_t MCJetflavour =0;
 			Int_t partonpdg=0;
 			
-			partonAOD = fHFJetUtils->IsMCJetParton(fMCArray, jetgen, 0.4);
-			if(!(partonAOD)) MCJetflavour =0;
-			else
-			{
+			if(fUsePartonDef){
+			  partonAOD = fHFJetUtils->IsMCJetParton(fMCArray, jetgen, 0.4);
+			  if(!(partonAOD)) MCJetflavour =0;
+			  else
+			  {
 				partonpdg = abs(partonAOD->PdgCode());
 				if(partonpdg==1||partonpdg==2||partonpdg==3||partonpdg==21 )MCJetflavour=1;
 				else if(partonpdg==4)MCJetflavour=2;
 				else if(partonpdg==5)MCJetflavour=3;
+			  }
+			}else {
+			  partonAOD = fHFJetUtils->IsMCJetMeson(fMCArray, jetgen, 0.4);
+			  if(!(partonAOD)) MCJetflavour =0;
+			  else
+			  {
+				partonpdg = abs(partonAOD->PdgCode());
+				if(fHFJetUtils->IsBMeson(partonpdg)) MCJetflavour=3;
+				else if(fHFJetUtils->IsDMeson(partonpdg)) MCJetflavour=2;
+				else MCJetflavour=1;
+			  }
 			}
 
 			double genpt = jetgen->Pt();
@@ -1362,6 +1410,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			jetmatched =jetrec->MatchedJet();
 
 			if(jetmatched){
+			  if(fUsePartonDef){
 				partonAOD = fHFJetUtils->IsMCJetParton(fMCArray, jetmatched, 0.4);
 
 				if((!partonAOD)) fJetFlavor =0;
@@ -1371,6 +1420,17 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					else if(partonpdg==4)fJetFlavor=2;
 					else if(partonpdg==5)fJetFlavor=3;
 				}
+			  }else {
+				partonAOD = fHFJetUtils->IsMCJetMeson(fMCArray, jetmatched, 0.4);
+				if(!(partonAOD)) fJetFlavor =0;
+				else
+				{
+					partonpdg = abs(partonAOD->PdgCode());
+					if(fHFJetUtils->IsBMeson(partonpdg)) fJetFlavor=3;
+					else if(fHFJetUtils->IsDMeson(partonpdg)) fJetFlavor=2;
+					else fJetFlavor=1;
+				}
+			}
 			}
 		}
 		//	Printf("%s:%i",__FUNCTION__,__LINE__);
@@ -1465,6 +1525,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		        			case 2:
 		          				fhistJetProbability_c->Fill(fJetPt,fValJetProb,fPythiaEventWeight);
 		          				fhistJetProbability_cLog->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							if(fDoCharmFractions){
+							  switch(TMath::Abs(partonpdg)){
+							    case 421:
+							      fhistJetProbability_cLog_D0->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							      break;
+							    case 411:
+							      fhistJetProbability_cLog_Dp->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							      break;
+							    case 431:
+							      fhistJetProbability_cLog_Ds->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							      break;
+							    case 4122:
+							      fhistJetProbability_cLog_Lc->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							      break;
+							    default:
+							      break;
+							  }
+							}
 		          				break;
 		        			case 3:
 				  			fhistJetProbability_b->Fill(fJetPt,fValJetProb,fPythiaEventWeight);
@@ -1909,7 +1987,8 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 				TracksEnergy+=trackAOD->E();
 
-				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) FillResolutionFunctionHists(trackAOD,jetrec,fJetFlavor);
+				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) 
+					FillResolutionFunctionHists(trackAOD,jetrec,fJetFlavor);
 
 				if(fDoPtRelAnalysis && PtRelSample){
 					Double_t PtRel=0;
@@ -2134,6 +2213,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						}
 						else if(fJetFlavor ==2){
 							   fhistJetProbability_cLogFirst->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
+							   if(fDoCharmFractions){
+							     switch(TMath::Abs(partonpdg)){
+							       case 421:
+							         fhistJetProbability_cLogFirst_D0->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 411:
+							         fhistJetProbability_cLogFirst_Dp->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 431:
+							         fhistJetProbability_cLogFirst_Ds->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 4122:
+							         fhistJetProbability_cLogFirst_Lc->Fill(fJetPt,fLogJetProb);
+							         break;
+							       default:
+							         break;
+							     }
+							   }
 						}
 						else if(fJetFlavor ==3){
 							   fhistJetProbability_bLogFirst->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
@@ -2264,6 +2361,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						}
 						else if(fJetFlavor ==2){
 							   fhistJetProbability_cLogSecond->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
+							   if(fDoCharmFractions){
+							     switch(TMath::Abs(partonpdg)){
+							       case 421:
+							         fhistJetProbability_cLogSecond_D0->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 411:
+							         fhistJetProbability_cLogSecond_Dp->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 431:
+							         fhistJetProbability_cLogSecond_Ds->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 4122:
+							         fhistJetProbability_cLogSecond_Lc->Fill(fJetPt,fLogJetProb);
+							         break;
+							       default:
+							         break;
+							     }
+							   }
 						}
 						else if(fJetFlavor ==3){
 							   fhistJetProbability_bLogSecond->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
@@ -2393,6 +2508,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						}
 						else if(fJetFlavor ==2){
 							   fhistJetProbability_cLogThird->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
+							   if(fDoCharmFractions){
+							     switch(TMath::Abs(partonpdg)){
+							       case 421:
+							         fhistJetProbability_cLogThird_D0->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 411:
+							         fhistJetProbability_cLogThird_Dp->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 431:
+							         fhistJetProbability_cLogThird_Ds->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 4122:
+							         fhistJetProbability_cLogThird_Lc->Fill(fJetPt,fLogJetProb);
+							         break;
+							       default:
+							         break;
+							     }
+							   }
 						}
 						else if(fJetFlavor ==3){
 							   fhistJetProbability_bLogThird->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
@@ -3695,6 +3828,29 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 					fhistJetProbability_udsgLogThird = new TH2D("fhistJetProbability_udsgLogThird","JetProbability_udsg N=3 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
 					fhistJetProbability_cLogThird = new TH2D("fhistJetProbability_cLogThird","JetProbability_c N=3 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
 					fhistJetProbability_bLogThird = new TH2D("fhistJetProbability_bLogThird","JetProbability_b N=3 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+
+					if(fDoCharmFractions){
+
+					  fhistJetProbability_cLog_D0 = new TH2D("fhistJetProbability_cLog_D0","JetProbability_c D0;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLog_Dp = new TH2D("fhistJetProbability_cLog_Dp","JetProbability_c Dp;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLog_Ds = new TH2D("fhistJetProbability_cLog_Ds","JetProbability_c Ds;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLog_Lc = new TH2D("fhistJetProbability_cLog_Lc","JetProbability_c Lc;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+
+					  fhistJetProbability_cLogFirst_D0 = new TH2D("fhistJetProbability_cLogFirst_D0","JetProbability_c D0;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogFirst_Dp = new TH2D("fhistJetProbability_cLogFirst_Dp","JetProbability_c Dp;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogFirst_Ds = new TH2D("fhistJetProbability_cLogFirst_Ds","JetProbability_c Ds;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogFirst_Lc = new TH2D("fhistJetProbability_cLogFirst_Lc","JetProbability_c Lc;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+
+					  fhistJetProbability_cLogSecond_D0 = new TH2D("fhistJetProbability_cLogSecond_D0","JetProbability_c D0;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogSecond_Dp = new TH2D("fhistJetProbability_cLogSecond_Dp","JetProbability_c Dp;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogSecond_Ds = new TH2D("fhistJetProbability_cLogSecond_Ds","JetProbability_c Ds;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogSecond_Lc = new TH2D("fhistJetProbability_cLogSecond_Lc","JetProbability_c Lc;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+
+					  fhistJetProbability_cLogThird_D0 = new TH2D("fhistJetProbability_cLogThird_D0","JetProbability_c D0;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogThird_Dp = new TH2D("fhistJetProbability_cLogThird_Dp","JetProbability_c Dp;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogThird_Ds = new TH2D("fhistJetProbability_cLogThird_Ds","JetProbability_c Ds;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogThird_Lc = new TH2D("fhistJetProbability_cLogThird_Lc","JetProbability_c Lc;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					}
 				}
 				if(fDoSVAnalysis){
 					fhistJetProbability_UnidentifiedLogSVHE = new TH2D("fhistJetProbability_UnidentifiedLogSVHE","JetProbability_Unidentified SVHE Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
@@ -4266,22 +4422,46 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 				fOutput->Add(fhistJetProbability_UnidentifiedLog);
 				fOutput->Add(fhistJetProbability_udsgLog);
 				fOutput->Add(fhistJetProbability_cLog);
+				if(fDoCharmFractions){
+				  fOutput->Add(fhistJetProbability_cLog_D0);
+				  fOutput->Add(fhistJetProbability_cLog_Dp);
+				  fOutput->Add(fhistJetProbability_cLog_Ds);
+				  fOutput->Add(fhistJetProbability_cLog_Lc);
+				}
 				fOutput->Add(fhistJetProbability_bLog);
 
 				if(fDoTrackCountingAnalysis){
 					fOutput->Add(fhistJetProbability_UnidentifiedLogFirst);
 					fOutput->Add(fhistJetProbability_udsgLogFirst);
 					fOutput->Add(fhistJetProbability_cLogFirst);
+					if(fDoCharmFractions){
+					  fOutput->Add(fhistJetProbability_cLogFirst_D0);
+					  fOutput->Add(fhistJetProbability_cLogFirst_Dp);
+					  fOutput->Add(fhistJetProbability_cLogFirst_Ds);
+					  fOutput->Add(fhistJetProbability_cLogFirst_Lc);
+					}
 					fOutput->Add(fhistJetProbability_bLogFirst);
 
 					fOutput->Add(fhistJetProbability_UnidentifiedLogSecond);
 					fOutput->Add(fhistJetProbability_udsgLogSecond);
 					fOutput->Add(fhistJetProbability_cLogSecond);
+					if(fDoCharmFractions){
+					  fOutput->Add(fhistJetProbability_cLogSecond_D0);
+					  fOutput->Add(fhistJetProbability_cLogSecond_Dp);
+					  fOutput->Add(fhistJetProbability_cLogSecond_Ds);
+					  fOutput->Add(fhistJetProbability_cLogSecond_Lc);
+					}
 					fOutput->Add(fhistJetProbability_bLogSecond);
 
 					fOutput->Add(fhistJetProbability_UnidentifiedLogThird);
 					fOutput->Add(fhistJetProbability_udsgLogThird);
 					fOutput->Add(fhistJetProbability_cLogThird);
+					if(fDoCharmFractions){
+					  fOutput->Add(fhistJetProbability_cLogThird_D0);
+					  fOutput->Add(fhistJetProbability_cLogThird_Dp);
+					  fOutput->Add(fhistJetProbability_cLogThird_Ds);
+					  fOutput->Add(fhistJetProbability_cLogThird_Lc);
+					}
 					fOutput->Add(fhistJetProbability_bLogThird);
 				}
 				if(fDoSVAnalysis){
