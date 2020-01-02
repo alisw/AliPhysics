@@ -101,7 +101,7 @@ using std::endl;
 
 #include "AliAnalysisTaskMcKnoUe.h"
 
-
+TF1* f_Eff;// efficiency for charged particles (2015 AA cuts) 
 const Char_t * nameReg[3]={"NS","AS","TS"};
 const Int_t nchNbins = 100;
 Double_t nchbins[nchNbins+1]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5,35.5,36.5,37.5,38.5,39.5,40.5,41.5,42.5,43.5,44.5,45.5,46.5,47.5,48.5,49.5,50.5,51.5,52.5,53.5,54.5,55.5,56.5,57.5,58.5,59.5,60.5,61.5,62.5,63.5,64.5,65.5,66.5,67.5,68.5,69.5,70.5,71.5,72.5,73.5,74.5,75.5,76.5,77.5,78.5,79.5,80.5,81.5,82.5,83.5,84.5,85.5,86.5,87.5,88.5,89.5,90.5,91.5,92.5,93.5,94.5,95.5,96.5,97.5,98.5,99.5};
@@ -128,6 +128,11 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 		hSumPtMC[i]=0;
 		hNumDenMCMatch[i]=0;
 		hSumPtMCMatch[i]=0;
+		// Data driven
+		hNumDenMCDd[i]=0;
+		hSumPtMCDd[i]=0;
+		hNumDenMCMatchDd[i]=0;
+		hSumPtMCMatchDd[i]=0;
 
 		hPtVsPtLeadingMeasured[i]=0;// only for data
 
@@ -171,6 +176,11 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		hSumPtMC[i]=0;
 		hNumDenMCMatch[i]=0;
 		hSumPtMCMatch[i]=0;
+                // Data driven
+                hNumDenMCDd[i]=0;
+                hSumPtMCDd[i]=0;
+                hNumDenMCMatchDd[i]=0;
+                hSumPtMCMatchDd[i]=0;
 
 		hPtVsPtLeadingMeasured[i]=0;// only for data
 		pNumDenMeasured[i]=0;// only for data
@@ -217,6 +227,13 @@ AliAnalysisTaskMcKnoUe::~AliAnalysisTaskMcKnoUe()
 //_____________________________________________________________________________
 void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 {
+
+	// parametrization of efficiency
+	f_Eff = 0;
+	f_Eff = new TF1("ch_Eff",
+			"(x>=0.15&&x<[0])*([1]+x*[2])+(x>=[0]&&x<[3])*([4]+[5]*x*x+[6]*x*x*x+[7]*x)+(x>=[3])*([8])", 0.0, 1e2);
+	f_Eff->SetParameters(9.00000e-01,9.30176e-01,-4.29864e-01,4.90000e+00,3.89778e-01,-5.81233e-02,5.41373e-03,2.20377e-01,7.10559e-01);
+
 	// fCuts *** leading particle ***
 	if(!fLeadingTrackFilter){
 		fLeadingTrackFilter = new AliAnalysisFilter("trackFilter2015");
@@ -311,6 +328,20 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 		fOutputList->Add(hSumPtMCMatch[i]);
 
 	}
+	// Data driven
+	for(Int_t i=0;i<3;++i){
+		hNumDenMCDd[i]= new TH2D(Form("hNumDenMCDd_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		fOutputList->Add(hNumDenMCDd[i]);
+		hSumPtMCDd[i]= new TH2D(Form("hSumPtMCDd_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		fOutputList->Add(hSumPtMCDd[i]);
+		hNumDenMCMatchDd[i]= new TH2D(Form("hNumDenMCMatchDd_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		fOutputList->Add(hNumDenMCMatchDd[i]);
+		hSumPtMCMatchDd[i]= new TH2D(Form("hSumPtMCMatchDd_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		fOutputList->Add(hSumPtMCMatchDd[i]);
+
+	}
+
+
 
 	for(Int_t i=0;i<3;++i){
 
@@ -636,36 +667,47 @@ void AliAnalysisTaskMcKnoUe::GetPtLeadingMisRecCorrection(){
 		sumpt_top[i]=0;
 	}
 
-        Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
-        for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
+	vector<Float_t> ptArray;
+	vector<Float_t> phiArray;
+	vector<Int_t>   indexArray;
 
-                if(i==fRecLeadIn)
-                        continue;
 
-                AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+	Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
+	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
 
-                if(!track) continue;
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
 
-                if(!fLeadingTrackFilter->IsSelected(track))
-                        continue;
+		if(!track) continue;
 
-                if(TMath::Abs(track->Eta()) > fEtaCut)
-                        continue;
+		if(!fLeadingTrackFilter->IsSelected(track))
+			continue;
 
-                if( track->Pt() < fPtMin)continue;
+		if(TMath::Abs(track->Eta()) > fEtaCut)
+			continue;
 
-                Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+		if( track->Pt() < fPtMin)continue;
 
-		// definition of the topological regions
-		if(TMath::Abs(DPhi)<pi/3.0){// near side
-			nch_top[0]++; sumpt_top[0]+=track->Pt();	
+		if(i!=fRecLeadIn){// here we exclude the auto correlation
+			Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+
+			// definition of the topological regions
+			if(TMath::Abs(DPhi)<pi/3.0){// near side
+				nch_top[0]++; sumpt_top[0]+=track->Pt();	
+			}
+			else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+				nch_top[1]++; sumpt_top[1]+=track->Pt();
+			}
+			else{// transverse side
+				nch_top[2]++; sumpt_top[2]+=track->Pt();
+			}
 		}
-		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-			nch_top[1]++; sumpt_top[1]+=track->Pt();
-		}
-		else{// transverse side
-			nch_top[2]++; sumpt_top[2]+=track->Pt();
-		}
+		// second track selection following the efficiency 
+		if( f_Eff->Eval(track->Pt()) < gRandom->Uniform(0,1) )
+			continue;
+		ptArray.push_back(track->Pt());
+		phiArray.push_back(track->Phi());
+		indexArray.push_back(i);
+
 	}
 
 	AliESDtrack* ltrack = static_cast<AliESDtrack*>(fESD->GetTrack(fRecLeadIn));
@@ -680,6 +722,58 @@ void AliAnalysisTaskMcKnoUe::GetPtLeadingMisRecCorrection(){
 			hSumPtMCMatch[i]->Fill(ptlrec,sumpt_top[i]);
 		}
 	}
+
+	// Now the data driven approach
+	Float_t flPt = 0;// leading pT
+	Float_t flPhi = 0;
+	Int_t flIndex = 0;
+	Int_t ntrk = ptArray.size();
+
+	for(Int_t i=0;i<ntrk;++i){
+
+
+		if ( flPt < ptArray[i] ){
+			flPt  = ptArray[i];
+			flPhi = phiArray[i];
+			flIndex = indexArray[i];
+		}
+	}
+
+	Int_t nchm_top[3];
+	Double_t sumptm_top[3];
+	for(Int_t i=0;i<3;++i){
+		nchm_top[i]=0;
+		sumptm_top[i]=0;
+	}
+	for(Int_t i=0;i<ntrk;++i){
+
+		if(indexArray[i]==flIndex)
+			continue;
+
+		Double_t DPhi = DeltaPhi(phiArray[i], flPhi);
+		if(TMath::Abs(DPhi)<pi/3.0){// near side
+			nchm_top[0]++; sumptm_top[0]+=ptArray[i];
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+			nchm_top[1]++; sumptm_top[1]+=ptArray[i];
+		}
+		else{// transverse side
+			nchm_top[2]++; sumptm_top[2]+=ptArray[i];
+		}
+	}
+	// Here I fill the histograms for the data driven (Dd) aprroach
+	for(Int_t i=0;i<3;++i){
+		hNumDenMCDd[i]->Fill(flPt,nchm_top[i]);
+		hSumPtMCDd[i]->Fill(flPt,sumptm_top[i]);
+		if(flIndex==fRecLeadIn){
+			hNumDenMCMatchDd[i]->Fill(flPt,nchm_top[i]);
+			hSumPtMCMatchDd[i]->Fill(flPt,sumptm_top[i]);
+		}
+	}
+
+	ptArray.clear();
+	phiArray.clear();
+	indexArray.clear();
 
 }
 

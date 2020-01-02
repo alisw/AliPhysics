@@ -93,6 +93,10 @@ private:
 	TH2D * hSumPtMC[3];
 	TH2D * hNumDenMCMatch[3];
 	TH2D * hSumPtMCMatch[3];
+	TH2D * hNumDenMCDd[3];
+	TH2D * hSumPtMCDd[3];
+	TH2D * hNumDenMCMatchDd[3];
+	TH2D * hSumPtMCMatchDd[3];
 
 	TH1D * hPtLeadingTrue;
 	TH1D * hPtLeadingMeasured;
