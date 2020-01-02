@@ -2146,7 +2146,7 @@ void AliDielectron::SetCentroidCorrFunctionPU(UInt_t detID, UInt_t parID, THnBas
 
   AliDielectronHistos::StoreVariables(fun, valType);
   // clone temporare histogram, otherwise it will not be streamed to file!
-  TString key = Form("cntrd%d%d%d%d%d",var0,var1,var2,var3,var4);
+  TString key = Form("cntrd%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
 
   fPostPIDCntrdCorrPU[detID][parID] = (THnBase*)fun->Clone(key.Data());
   // check for corrections and add their variables to the fill map
@@ -2175,7 +2175,7 @@ void AliDielectron::SetWidthCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *
 
   AliDielectronHistos::StoreVariables(fun, valType);
   // clone temporare histogram, otherwise it will not be streamed to file!
-  TString key = Form("wdth%d%d%d%d%d",var0,var1,var2,var3,var4);
+  TString key = Form("wdth%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
 
   fPostPIDWdthCorrPU[detID][parID] = (THnBase*)fun->Clone(key.Data());
   // check for corrections and add their variables to the fill map

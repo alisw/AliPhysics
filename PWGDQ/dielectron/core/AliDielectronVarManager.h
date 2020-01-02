@@ -919,6 +919,9 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
 
   values[AliDielectronVarManager::kRndm]      = gRandom->Rndm();
 
+  AliVTrack *track = (AliVTrack*)particle;
+  values[AliDielectronVarManager::kPIn]= track->GetTPCmomentum();//used for PID calib
+
   if(Req(kPtMC)||Req(kPMC)||Req(kPhiMC)||Req(kEtaMC)){
     values[AliDielectronVarManager::kPtMC]      = -999.;
     values[AliDielectronVarManager::kPMC]       = -999.;
@@ -1222,25 +1225,26 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTPCnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
   values[AliDielectronVarManager::kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
 
-  values[AliDielectronVarManager::kTPCnSigmaPio]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
-  values[AliDielectronVarManager::kTPCnSigmaMuo]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
-  values[AliDielectronVarManager::kTPCnSigmaKao]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon);
-  values[AliDielectronVarManager::kTPCnSigmaPro]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kProton);
+  values[AliDielectronVarManager::kTPCnSigmaPio] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kPion  )) /  AliDielectronPID::GetWdthCorr(particle,AliPID::kPion  );
+  values[AliDielectronVarManager::kTPCnSigmaMuo] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kMuon  )) /  AliDielectronPID::GetWdthCorr(particle,AliPID::kMuon  );
+  values[AliDielectronVarManager::kTPCnSigmaKao] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kKaon  )) /  AliDielectronPID::GetWdthCorr(particle,AliPID::kKaon  );
+  values[AliDielectronVarManager::kTPCnSigmaPro] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kProton) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kProton)) /  AliDielectronPID::GetWdthCorr(particle,AliPID::kProton);
 
   values[AliDielectronVarManager::kITSnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron);
   values[AliDielectronVarManager::kITSnSigmaEle]   =(fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(particle)) / AliDielectronPID::GetWdthCorrITS(particle);
 
-  values[AliDielectronVarManager::kITSnSigmaPio]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion);
-  values[AliDielectronVarManager::kITSnSigmaMuo]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon);
-  values[AliDielectronVarManager::kITSnSigmaKao]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon);
-  values[AliDielectronVarManager::kITSnSigmaPro]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton);
+  values[AliDielectronVarManager::kITSnSigmaPio] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kPion  );
+  values[AliDielectronVarManager::kITSnSigmaMuo] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kMuon  );
+  values[AliDielectronVarManager::kITSnSigmaKao] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kKaon  );
+  values[AliDielectronVarManager::kITSnSigmaPro] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton) - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kProton);
 
-  values[AliDielectronVarManager::kTOFnSigmaEleRaw]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
+  values[AliDielectronVarManager::kTOFnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
   values[AliDielectronVarManager::kTOFnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(particle)) / AliDielectronPID::GetWdthCorrTOF(particle);
-  values[AliDielectronVarManager::kTOFnSigmaPio]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
-  values[AliDielectronVarManager::kTOFnSigmaMuo]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon);
-  values[AliDielectronVarManager::kTOFnSigmaKao]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
-  values[AliDielectronVarManager::kTOFnSigmaPro]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton);
+
+  values[AliDielectronVarManager::kTOFnSigmaPio] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kPion  );
+  values[AliDielectronVarManager::kTOFnSigmaMuo] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kMuon  );
+  values[AliDielectronVarManager::kTOFnSigmaKao] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kKaon  );
+  values[AliDielectronVarManager::kTOFnSigmaPro] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton) - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kProton);
 
   //EMCAL PID information
   Double_t eop=0;
@@ -1498,28 +1502,28 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
     // nsigma for various detectors
     if(Req(kTPCnSigmaEleRaw)) values[kTPCnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
-    if(Req(kTPCnSigmaEle))    values[kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)-AliDielectronPID::GetCorrVal()-AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
+    if(Req(kTPCnSigmaEle))    values[kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
 
-    if(Req(kTPCnSigmaPio)) values[kTPCnSigmaPio]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
-    if(Req(kTPCnSigmaMuo)) values[kTPCnSigmaMuo]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
-    if(Req(kTPCnSigmaKao)) values[kTPCnSigmaKao]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon);
-    if(Req(kTPCnSigmaPro)) values[kTPCnSigmaPro]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kProton);
+    if(Req(kTPCnSigmaPio)) values[kTPCnSigmaPio] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorr(particle,AliPID::kPion  );
+    if(Req(kTPCnSigmaMuo)) values[kTPCnSigmaMuo] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorr(particle,AliPID::kMuon  );
+    if(Req(kTPCnSigmaKao)) values[kTPCnSigmaKao] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorr(particle,AliPID::kKaon  );
+    if(Req(kTPCnSigmaPro)) values[kTPCnSigmaPro] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kProton) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorr(particle,AliPID::kProton);
 
     if(Req(kITSnSigmaEleRaw)) values[kITSnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron);
     if(Req(kITSnSigmaEle))    values[kITSnSigmaEle]   =(fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(particle)) / AliDielectronPID::GetWdthCorrITS(particle);
 
-    if(Req(kITSnSigmaPio)) values[kITSnSigmaPio]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion);
-    if(Req(kITSnSigmaMuo)) values[kITSnSigmaMuo]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon);
-    if(Req(kITSnSigmaKao)) values[kITSnSigmaKao]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon);
-    if(Req(kITSnSigmaPro)) values[kITSnSigmaPro]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton);
+    if(Req(kITSnSigmaPio)) values[kITSnSigmaPio] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kPion  );
+    if(Req(kITSnSigmaMuo)) values[kITSnSigmaMuo] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kMuon  );
+    if(Req(kITSnSigmaKao)) values[kITSnSigmaKao] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kKaon  );
+    if(Req(kITSnSigmaPro)) values[kITSnSigmaPro] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton) - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kProton);
 
     if(Req(kTOFnSigmaEleRaw)) values[kTOFnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
     if(Req(kTOFnSigmaEle))    values[kTOFnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(particle)) / AliDielectronPID::GetWdthCorrTOF(particle);
 
-    if(Req(kTOFnSigmaPio)) values[kTOFnSigmaPio]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
-    if(Req(kTOFnSigmaMuo)) values[kTOFnSigmaMuo]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon);
-    if(Req(kTOFnSigmaKao)) values[kTOFnSigmaKao]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
-    if(Req(kTOFnSigmaPro)) values[kTOFnSigmaPro]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton);
+    if(Req(kTOFnSigmaPio)) values[kTOFnSigmaPio] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kPion  );
+    if(Req(kTOFnSigmaMuo)) values[kTOFnSigmaMuo] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kMuon  );
+    if(Req(kTOFnSigmaKao)) values[kTOFnSigmaKao] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kKaon  );
+    if(Req(kTOFnSigmaPro)) values[kTOFnSigmaPro] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton) - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kProton);
 
     Double_t prob[AliPID::kSPECIES]={0.0};
     // switch computation off since it takes 70% of the CPU time for filling all AODtrack variables
