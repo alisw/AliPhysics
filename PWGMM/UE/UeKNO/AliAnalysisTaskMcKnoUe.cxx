@@ -636,30 +636,35 @@ void AliAnalysisTaskMcKnoUe::GetPtLeadingMisRecCorrection(){
 		sumpt_top[i]=0;
 	}
 
+        Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
+        for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
 
-	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+                if(i==fRecLeadIn)
+                        continue;
 
-		if(fGenLeadIn==i)continue;
+                AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
 
-		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
-		if (!particle) continue;
+                if(!track) continue;
 
-		if (!fMC->IsPhysicalPrimary(i)) continue; 
-		if (particle->Charge() == 0) continue;
-		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
-		if( particle->Pt() < fPtMin)continue;
+                if(!fLeadingTrackFilter->IsSelected(track))
+                        continue;
 
-		Double_t DPhi = DeltaPhi(particle->Phi(), fRecLeadPhi);
+                if(TMath::Abs(track->Eta()) > fEtaCut)
+                        continue;
+
+                if( track->Pt() < fPtMin)continue;
+
+                Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
 
 		// definition of the topological regions
 		if(TMath::Abs(DPhi)<pi/3.0){// near side
-			nch_top[0]++; sumpt_top[0]+=particle->Pt();	
+			nch_top[0]++; sumpt_top[0]+=track->Pt();	
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-			nch_top[1]++; sumpt_top[1]+=particle->Pt();
+			nch_top[1]++; sumpt_top[1]+=track->Pt();
 		}
 		else{// transverse side
-			nch_top[2]++; sumpt_top[2]+=particle->Pt();
+			nch_top[2]++; sumpt_top[2]+=track->Pt();
 		}
 	}
 
