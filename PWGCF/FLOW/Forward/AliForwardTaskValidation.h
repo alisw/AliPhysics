@@ -193,7 +193,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   TH2D* refDist;    //!
   TH2D* forwardDist;//!
 
-  AliForwardFlowUtil fUtil;//!
+  AliForwardFlowUtil fUtil;
 
   ClassDef(AliForwardTaskValidation, 1);
 };

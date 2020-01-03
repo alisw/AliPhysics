@@ -400,18 +400,18 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle* particle, AliMCParticle*
   AliFMDStripIndex::Unpack(packed,detector,ring,sector,strip);
   TString inner = "I";
   //const Char_t* outer = "O";
-  Double_t v0cent = 0.0;
-  if (detector == 1){
-    v0cent = 10;
-  }
-  if (detector == 2){
-    if (TString(ring) == inner) v0cent = 30;
-    else v0cent = 50;
-  }
-  if (detector == 3){
-    if (ring == inner) v0cent = 70;
-    else v0cent = 90;
-  }
+  // Double_t v0cent = 0.0;
+  // if (detector == 1){
+  //   v0cent = 10;
+  // }
+  // if (detector == 2){
+  //   if (TString(ring) == inner) v0cent = 30;
+  //   else v0cent = 50;
+  // }
+  // if (detector == 3){
+  //   if (ring == inner) v0cent = 70;
+  //   else v0cent = 90;
+  // }
 
   Double_t eta_mother = mother->Eta();
   Double_t phi_mother = (mother->Phi());//Wrap02pi

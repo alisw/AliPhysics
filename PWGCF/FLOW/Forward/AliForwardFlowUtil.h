@@ -140,6 +140,6 @@ class AliForwardFlowUtil : public TObject {
 
 
 private:
-  ClassDef(AliForwardFlowUtil, 2);
+  ClassDef(AliForwardFlowUtil, 1);
 };
 #endif
