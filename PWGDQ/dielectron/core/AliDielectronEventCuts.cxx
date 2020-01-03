@@ -71,7 +71,6 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fRequireTimeRangeCut(kFALSE),
   fAODeventCuts(),
 	fTimeRangeCut(),
-	fRequireV0TPCPUCut(kFALSE),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -116,7 +115,6 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fRequireTimeRangeCut(kFALSE),
   fAODeventCuts(),
 	fTimeRangeCut(),
-	fRequireV0TPCPUCut(kFALSE),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -306,18 +304,6 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
 	Bool_t IsBadTimeRangeTPC = fTimeRangeCut.CutEvent(ev);
 	if(fRequireTimeRangeCut && IsBadTimeRangeTPC) return kFALSE;
 
-	//V0-TPC pileup cut
-	if(fRequireV0TPCPUCut){
-		//https://indico.cern.ch/event/797644/contributions/3476294/attachments/1883915/3104948/DPG_AOT_APWJul2019.pdf
-		AliESDVZERO *V0info = (AliESDVZERO*)ev->GetVZEROData();
-		Float_t multV0A = V0info->GetMTotV0A();
-		Float_t multV0C = V0info->GetMTotV0C();
-		Float_t mtotV0  = multV0A + multV0C;
-    Int_t NclsTPC = ev->GetNumberOfTPCClusters();
-
-		if(mtotV0 < -3000. + 0.013*(Float_t)NclsTPC + 1.25e-9*(Float_t)NclsTPC*(Float_t)NclsTPC) return kFALSE;
-	}
-
   return kTRUE;
 }
 //______________________________________________
@@ -499,18 +485,6 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
 	fTimeRangeCut.InitFromEvent(ev);
 	Bool_t IsBadTimeRangeTPC = fTimeRangeCut.CutEvent(ev);
 	if(fRequireTimeRangeCut && IsBadTimeRangeTPC) return kFALSE;
-
-	//V0-TPC pileup cut
-	if(fRequireV0TPCPUCut){
-		//https://indico.cern.ch/event/797644/contributions/3476294/attachments/1883915/3104948/DPG_AOT_APWJul2019.pdf
-		AliAODVZERO *V0info = (AliAODVZERO*)ev->GetVZEROData();
-		Float_t multV0A = V0info->GetMTotV0A();
-		Float_t multV0C = V0info->GetMTotV0C();
-		Float_t mtotV0  = multV0A + multV0C;
-    Int_t NclsTPC = ev->GetNumberOfTPCClusters();
-
-		if(mtotV0 < -3000. + 0.013*(Float_t)NclsTPC + 1.25e-9*(Float_t)NclsTPC*(Float_t)NclsTPC) return kFALSE;
-	}
 
   return kTRUE;
 }
