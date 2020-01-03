@@ -62,7 +62,6 @@ public:
   void SetMinCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
   void SetMaxCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
 	void SetTimeRangeCut(Bool_t reqTimingRangeCut=kFALSE) {fRequireTimeRangeCut = reqTimingRangeCut;}
-	void SetRequireV0TPCPileupCut(Bool_t V0TPCpu=kFALSE){fRequireV0TPCPUCut=V0TPCpu;}
 
   //
   //Analysis cuts interface
@@ -113,7 +112,6 @@ private:
   Bool_t  fRequireTimeRangeCut; // use time range cut//especially for LHC18r to recover 7 runs
   AliEventCuts fAODeventCuts;       // use AliEventCuts to reject events
 	AliTimeRangeCut fTimeRangeCut;    //time range cut for bad time in TPC
-	Bool_t fRequireV0TPCPUCut;       //pileup cut based on V0 multiplicity vs. Number of clusters of TPC in 2018 PbPb data.//!pile up events can be used for analyses with careful PID calibration and 1st SPD hit!
  
   TH1D* fCorrCutMin[5];       //parametrization of lower limit correlation cut
   TH1D* fCorrCutMax[5];       //parametrization of upper limit correlation cut
@@ -127,7 +125,7 @@ private:
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 
 
-  ClassDef(AliDielectronEventCuts,5)         // Dielectron EventCuts
+  ClassDef(AliDielectronEventCuts,6)         // Dielectron EventCuts
 };
 
 
