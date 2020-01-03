@@ -86,7 +86,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TList*                  fWeightList;                //!
         TH2D*                   fh2Weights;                 //!
         TH3D*                   fh3Weights;                 //!
-        Bool_t                  FillWeights();
+        void                    FillWeights();
         
         //Flow methods
         bool                    IsWithinRP(const AliAODTrack* track) const;
