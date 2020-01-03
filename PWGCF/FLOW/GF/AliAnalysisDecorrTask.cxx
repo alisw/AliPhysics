@@ -69,7 +69,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fPtAxis(new TAxis()),
     fCentAxis(new TAxis()),
     fCentMin{0.0},
-    fCentMax{100.0},
+    fCentMax{50.0},
     fPVtxCutZ{10.0},
 
     fCutChargedTrackFilterBit{96},
@@ -123,7 +123,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fPtAxis(new TAxis()),
     fCentAxis(new TAxis()),
     fCentMin{0.0},
-    fCentMax{100.0},
+    fCentMax{50.0},
     fPVtxCutZ{10.0},
 
     fCutChargedTrackFilterBit{96},
@@ -220,95 +220,6 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
 
     if(iNumTasks < 1) { return; }
 
-    for(Int_t iTask(0); iTask < iNumTasks; ++iTask)
-    {
-        AliUniFlowCorrTask* task = fVecCorrTask.at(iTask);
-        if(!task) { fInitTask = kFALSE; AliError(Form("AliUniFlowCorrTask%d does not exist",iTask)); return; }
-
-        //Bool_t bHasGap = task->HasGap();
-        Int_t CorrOrder = task->fiNumHarm;
-        Bool_t bHarmSign = kFALSE;
-        if(task->fiHarm[0] == task->fiHarm[1]) { bHarmSign = kTRUE; }
-        const char* CorrName = task->fsName.Data();
-        const char* CorrLabel = task->fsLabel.Data();
-
-        for(Int_t iSample(0); iSample < fNumSamples; ++iSample)
-        {
-            if(iSample > 0 && !fSampling) { break; }
-            TH1* profile = nullptr;
-            TH1* profDiff = nullptr;
-            TH1* profPtA = nullptr;
-            TH1* profPtAPtB = nullptr;
-
-            if(bRef && CorrOrder < 4)
-            {
-                profile = new TProfile(Form("%s_sample%d",CorrName,iSample),Form("%s",CorrLabel),NcentBin,centEdges);
-
-                if(!profile) { fInitTask = kFALSE; AliError("Centrality profile not created"); task->PrintTask(); return; }
-                if(fFlowList->FindObject(profile->GetName())) {
-                    AliError(Form("Task %d: Profile '%s' already exists",iTask,profile->GetName()));
-                    fInitTask=kFALSE;
-                    task->PrintTask();
-                    delete profile;
-                    return;
-                }
-
-                profile->Sumw2();
-                fFlowList->Add(profile);
-            }
-
-            if(bDiff) 
-            {
-                if( (bHigherOrder && bHarmSign) || CorrOrder < 4)
-                {
-                    profDiff = new TProfile2D(Form("%s_diff_sample%d",CorrName,iSample),Form("%s_diff",CorrLabel),NcentBin,centEdges,NPtBin,PtEdges);
-                    if(!profDiff) { fInitTask = kFALSE; AliError("Differential profile not created"); task->PrintTask(); return; }
-                    if(fFlowList->FindObject(profDiff->GetName())) {
-                        AliError(Form("Task %d: Profile '%s' already exists",iTask,profDiff->GetName()));
-                        fInitTask=kFALSE;
-                        task->PrintTask();
-                        delete profDiff;
-                        return;
-                    }
-
-                profDiff->Sumw2();
-                fFlowList->Add(profDiff);
-                }
-
-                if(CorrOrder < 4)
-                {
-                    profPtA = new TProfile2D(Form("%s_PtA_sample%d",CorrName,iSample),Form("%s_PtA",CorrLabel),NcentBin,centEdges,NPtBin,PtEdges);
-                    if(!profPtA) { fInitTask = kFALSE; AliError("\n\n\nPtA profile not created\n\n\n"); task->PrintTask(); return; }
-                    if(fFlowList->FindObject(profPtA->GetName())) {
-                        AliError(Form("Task %d: Profile '%s' already exists",iTask,profPtA->GetName()));
-                        fInitTask=kFALSE;
-                        task->PrintTask();
-                        delete profPtA;
-                        return;
-                    }
-
-                    profPtA->Sumw2();
-                    fFlowList->Add(profPtA);
-                }
-            }
-            if(bPtB)
-            { 
-                profPtAPtB = new TProfile3D(Form("%s_PtAPtB_sample%d",CorrName,iSample),Form("%s_PtAPtB",CorrLabel),NcentBin,centEdges, NPtBin,PtEdges, NPtBin, PtEdges);
-                if(!profPtAPtB) { fInitTask = kFALSE; AliError("PtAPtB profile not created"); task->PrintTask(); return; }
-                if(fFlowList->FindObject(profPtAPtB->GetName())) {
-                    AliError(Form("Task %d: Profile '%s' already exists",iTask,profPtAPtB->GetName()));
-                    fInitTask=kFALSE;
-                    task->PrintTask();
-                    delete profPtAPtB;
-                    return;
-                }
-
-                profPtAPtB->Sumw2();
-                fFlowList->Add(profPtAPtB);
-            }
-
-        } //End for iSample
-    } //End for iTask
 
     if(fFillWeights)
     {
@@ -329,8 +240,98 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
             fFlowWeights->Add(fh2Weights);
         } 
     }
+    else
+    {
+        for(Int_t iTask(0); iTask < iNumTasks; ++iTask)
+        {
+            AliUniFlowCorrTask* task = fVecCorrTask.at(iTask);
+            if(!task) { fInitTask = kFALSE; AliError(Form("AliUniFlowCorrTask%d does not exist",iTask)); return; }
 
-    
+            //Bool_t bHasGap = task->HasGap();
+            Int_t CorrOrder = task->fiNumHarm;
+            Bool_t bHarmSign = kFALSE;
+            if(task->fiHarm[0] == task->fiHarm[1]) { bHarmSign = kTRUE; }
+            const char* CorrName = task->fsName.Data();
+            const char* CorrLabel = task->fsLabel.Data();
+
+            for(Int_t iSample(0); iSample < fNumSamples; ++iSample)
+            {
+                if(iSample > 0 && !fSampling) { break; }
+                TH1* profile = nullptr;
+                TH1* profDiff = nullptr;
+                TH1* profPtA = nullptr;
+                TH1* profPtAPtB = nullptr;
+
+                if(bRef && CorrOrder < 4)
+                {
+                    profile = new TProfile(Form("%s_sample%d",CorrName,iSample),Form("%s",CorrLabel),NcentBin,centEdges);
+
+                    if(!profile) { fInitTask = kFALSE; AliError("Centrality profile not created"); task->PrintTask(); return; }
+                    if(fFlowList->FindObject(profile->GetName())) {
+                        AliError(Form("Task %d: Profile '%s' already exists",iTask,profile->GetName()));
+                        fInitTask=kFALSE;
+                        task->PrintTask();
+                        delete profile;
+                        return;
+                    }
+
+                    profile->Sumw2();
+                    fFlowList->Add(profile);
+                }
+
+                if(bDiff) 
+                {
+                    if( (bHigherOrder && bHarmSign) || CorrOrder < 4)
+                    {
+                        profDiff = new TProfile2D(Form("%s_diff_sample%d",CorrName,iSample),Form("%s_diff",CorrLabel),NcentBin,centEdges,NPtBin,PtEdges);
+                        if(!profDiff) { fInitTask = kFALSE; AliError("Differential profile not created"); task->PrintTask(); return; }
+                        if(fFlowList->FindObject(profDiff->GetName())) {
+                            AliError(Form("Task %d: Profile '%s' already exists",iTask,profDiff->GetName()));
+                            fInitTask=kFALSE;
+                            task->PrintTask();
+                            delete profDiff;
+                            return;
+                        }
+
+                    profDiff->Sumw2();
+                    fFlowList->Add(profDiff);
+                    }
+
+                    if(CorrOrder < 4)
+                    {
+                        profPtA = new TProfile2D(Form("%s_PtA_sample%d",CorrName,iSample),Form("%s_PtA",CorrLabel),NcentBin,centEdges,NPtBin,PtEdges);
+                        if(!profPtA) { fInitTask = kFALSE; AliError("\n\n\nPtA profile not created\n\n\n"); task->PrintTask(); return; }
+                        if(fFlowList->FindObject(profPtA->GetName())) {
+                            AliError(Form("Task %d: Profile '%s' already exists",iTask,profPtA->GetName()));
+                            fInitTask=kFALSE;
+                            task->PrintTask();
+                            delete profPtA;
+                            return;
+                        }
+
+                        profPtA->Sumw2();
+                        fFlowList->Add(profPtA);
+                    }
+                }
+                if(bPtB)
+                { 
+                    profPtAPtB = new TProfile3D(Form("%s_PtAPtB_sample%d",CorrName,iSample),Form("%s_PtAPtB",CorrLabel),NcentBin,centEdges, NPtBin,PtEdges, NPtBin, PtEdges);
+                    if(!profPtAPtB) { fInitTask = kFALSE; AliError("PtAPtB profile not created"); task->PrintTask(); return; }
+                    if(fFlowList->FindObject(profPtAPtB->GetName())) {
+                        AliError(Form("Task %d: Profile '%s' already exists",iTask,profPtAPtB->GetName()));
+                        fInitTask=kFALSE;
+                        task->PrintTask();
+                        delete profPtAPtB;
+                        return;
+                    }
+
+                    profPtAPtB->Sumw2();
+                    fFlowList->Add(profPtAPtB);
+                }
+
+            } //End for iSample
+        } //End for iTask
+    } //End if fillweights    
 
     PostData(1, fFlowList);
     PostData(2, fFlowWeights);
@@ -369,10 +370,10 @@ Bool_t AliAnalysisDecorrTask::LoadWeights()
     }
 }
 
-Bool_t AliAnalysisDecorrTask::FillWeights()
+void AliAnalysisDecorrTask::FillWeights()
 {
     int iPart(fAOD->GetNumberOfTracks());
-    if(iPart < 1) { return kFALSE; }
+    if(iPart < 1) { return; }
     double dVz = fAOD->GetPrimaryVertex()->GetZ();
 
     for(int index(0); index < iPart; ++index)
@@ -380,7 +381,7 @@ Bool_t AliAnalysisDecorrTask::FillWeights()
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
         if(!track || !IsTrackSelected(track)) { continue; }
 
-        //double dPt = POItrack->Pt(); Keep for efficiency corrections one day
+        //double dPt = track->Pt(); Keep for efficiency corrections one day
         double dPhi = track->Phi();
         double dEta = track->Eta(); 
 
@@ -388,8 +389,7 @@ Bool_t AliAnalysisDecorrTask::FillWeights()
         else { fh2Weights->Fill(dPhi,dEta); }
     }
     
-
-    return kTRUE;
+    return;
 }
 
 //_____________________________________________________________________________
@@ -408,71 +408,71 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     if(fFillWeights) 
     { 
         FillWeights();
-        PostData(1, fFlowList);
-        PostData(2, fFlowWeights);
-        return; 
     }
-
-    if(!LoadWeights())
+    else
     {
-        AliFatal("\n\n\n\n\n\n\n\n Weights could not be loaded \n\n\n\n\n\n\n\n");
-        return;
-    }
-    //Get centrality of event
-    Float_t centrality(0);
-    AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
-    if(multSelect) centrality = multSelect->GetMultiplicityPercentile(fCentEstimator);
 
-    fIndexSampling = GetSamplingIndex();
-
-    Int_t iNumTask = fVecCorrTask.size();
-    for(Int_t iTask(0); iTask < iNumTask; ++iTask)
-    {
-        //Multiplicity
-        //Int_t iTracks(fAOD->GetNumberOfTracks());
-        //Fill RP vectors
-        FillRPvectors(dEtaGap);
-        Bool_t doRef = kFALSE;
-        Bool_t doDiff = kFALSE;
-        Bool_t doPtB = kFALSE;
-        if(bRef) { doRef = kTRUE; }
-        CalculateCorrelations(fVecCorrTask.at(iTask), centrality, -1.0, -1.0, doRef, doDiff, doPtB);
-        doRef = kFALSE;
-        //Fill POI vectors
-        int iNumPtBins = fPtAxis->GetNbins();
-
-
-        if (bDiff || bPtB) {
-        //Loop over Pt bins
-            for(int iPtA(1); iPtA < iNumPtBins+1; ++iPtA)
-            {
-                double dPt = fPtAxis->GetBinCenter(iPtA);
-                double dPtLow = fPtAxis->GetBinLowEdge(iPtA);
-                double dPtHigh = fPtAxis->GetBinUpEdge(iPtA);
-
-                FillPOIvectors(dEtaGap, dPtLow, dPtHigh);
-                if(bDiff) { doDiff = kTRUE; }
-                CalculateCorrelations(fVecCorrTask.at(iTask), centrality, dPt, -1.0, doRef, doDiff, doPtB);
-                doDiff = kFALSE;
-            
-                if(bPtB && dPt < 5.0)
-                {
-                    // Too slow  -- reimplement maybe
-                    for(int iPtB(1); iPtB < iNumPtBins+1; ++iPtB)
-                    { 
-                        double dPtB = fPtAxis->GetBinCenter(iPtB);
-                        double dPtBLow = fPtAxis->GetBinLowEdge(iPtB);
-                        double dPtBHigh = fPtAxis->GetBinUpEdge(iPtB);
-                        FillPtBvectors(dEtaGap, dPtBLow, dPtBHigh);
-                        if(bPtB) { doPtB = kTRUE;}
-                        CalculateCorrelations(fVecCorrTask.at(iTask), centrality, dPt, dPtB, doRef, doDiff, doPtB); 
-                        doPtB = kFALSE;   
-                    }
-                }
-            } 
+        if(!LoadWeights())
+        {
+            AliFatal("\n\n\n\n\n\n\n\n Weights could not be loaded \n\n\n\n\n\n\n\n");
+            return;
         }
-    }
+        //Get centrality of event
+        Float_t centrality(0);
+        AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
+        if(multSelect) centrality = multSelect->GetMultiplicityPercentile(fCentEstimator);
 
+        fIndexSampling = GetSamplingIndex();
+
+
+        Int_t iNumTask = fVecCorrTask.size();
+        for(Int_t iTask(0); iTask < iNumTask; ++iTask)
+        {
+            //Multiplicity
+            //Int_t iTracks(fAOD->GetNumberOfTracks());
+            //Fill RP vectors
+            FillRPvectors(dEtaGap);
+            Bool_t doRef = kFALSE;
+            Bool_t doDiff = kFALSE;
+            Bool_t doPtB = kFALSE;
+            if(bRef) { doRef = kTRUE; }
+            CalculateCorrelations(fVecCorrTask.at(iTask), centrality, -1.0, -1.0, doRef, doDiff, doPtB);
+            doRef = kFALSE;
+            //Fill POI vectors
+            int iNumPtBins = fPtAxis->GetNbins();
+
+
+            if (bDiff || bPtB) {
+            //Loop over Pt bins
+                for(int iPtA(1); iPtA < iNumPtBins+1; ++iPtA)
+                {
+                    double dPt = fPtAxis->GetBinCenter(iPtA);
+                    double dPtLow = fPtAxis->GetBinLowEdge(iPtA);
+                    double dPtHigh = fPtAxis->GetBinUpEdge(iPtA);
+
+                    FillPOIvectors(dEtaGap, dPtLow, dPtHigh);
+                    if(bDiff) { doDiff = kTRUE; }
+                    CalculateCorrelations(fVecCorrTask.at(iTask), centrality, dPt, -1.0, doRef, doDiff, doPtB);
+                    doDiff = kFALSE;
+                                   
+                    if(bPtB && dPt < 5.0 && centrality < fCentMax)   //Save cpu by restricting double pt loops to central and semicentral centralities and low pt
+                    {
+                        // Too slow  -- reimplement maybe
+                        for(int iPtB(1); iPtB < iNumPtBins+1; ++iPtB)
+                        { 
+                            double dPtB = fPtAxis->GetBinCenter(iPtB);
+                            double dPtBLow = fPtAxis->GetBinLowEdge(iPtB);
+                            double dPtBHigh = fPtAxis->GetBinUpEdge(iPtB);
+                            FillPtBvectors(dEtaGap, dPtBLow, dPtBHigh);
+                            if(bPtB) { doPtB = kTRUE;}
+                            CalculateCorrelations(fVecCorrTask.at(iTask), centrality, dPt, dPtB, doRef, doDiff, doPtB); 
+                            doPtB = kFALSE;   
+                        }
+                    }
+                } 
+            }
+        }
+    }//End fillweights if
     
     PostData(1, fFlowList);
     PostData(2, fFlowWeights);
@@ -580,8 +580,8 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliUniFlowCorrTask* cons
         if(dDn > 0.0) {bFillPos = kTRUE; dValue = dNum/dDn; }
         if(bFillPos && TMath::Abs(dValue > 1.0)) { bFillPos = kFALSE; }
         if(!bFillPos) { return; }
-        TProfile* prof = (TProfile*)fFlowList->FindObject(Form("%s_sample0",task->fsName.Data()));
-        if(!prof) { AliError(Form("Profile %s_sample0 not found",task->fsName.Data())); return; }
+        TProfile* prof = (TProfile*)fFlowList->FindObject(Form("%s_sample%d",task->fsName.Data(),fIndexSampling));
+        if(!prof) { AliError(Form("Profile %s_sample%d not found",task->fsName.Data(),fIndexSampling)); return; }
         prof->Fill(centrality, dValue, dDn);
 
     }
@@ -606,11 +606,11 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliUniFlowCorrTask* cons
         
         if(corrOrder < 4)
         {
-            TProfile2D* profDiff = (TProfile2D*)fFlowList->FindObject(Form("%s_diff_sample0",task->fsName.Data()));
-            TProfile2D* profPtA = (TProfile2D*)fFlowList->FindObject(Form("%s_PtA_sample0",task->fsName.Data()));
+            TProfile2D* profDiff = (TProfile2D*)fFlowList->FindObject(Form("%s_diff_sample%d",task->fsName.Data(),fIndexSampling));
+            TProfile2D* profPtA = (TProfile2D*)fFlowList->FindObject(Form("%s_PtA_sample%d",task->fsName.Data(),fIndexSampling));
 
-            if(!profDiff) { AliError(Form("Profile %s_diff_sample0 not found",task->fsName.Data())); return; }
-            if(!profPtA) { AliError(Form("Profile_%s_PtA_sample0 not found",task->fsName.Data())); return; }
+            if(!profDiff) { AliError(Form("Profile %s_diff_sample%d not found",task->fsName.Data(),fIndexSampling)); return; }
+            if(!profPtA) { AliError(Form("Profile_%s_PtA_sample%d not found",task->fsName.Data(),fIndexSampling)); return; }
             profDiff->Fill(centrality, dPtA, dValueDiff, dDnDiff);
             profPtA->Fill(centrality, dPtA, dValuePtA, dDnPtA);
         }
@@ -633,8 +633,8 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliUniFlowCorrTask* cons
         if(!bFillPtB) { return; }
         if(corrOrder < 4)
         {
-            TProfile3D* profPtAPtB = (TProfile3D*)fFlowList->FindObject(Form("%s_PtAPtB_sample0",task->fsName.Data()));
-            if(!profPtAPtB) { AliError(Form("Profile %s_PtAPtB_sample0 not found",task->fsName.Data())); }
+            TProfile3D* profPtAPtB = (TProfile3D*)fFlowList->FindObject(Form("%s_PtAPtB_sample%d",task->fsName.Data(),fIndexSampling));
+            if(!profPtAPtB) { AliError(Form("Profile %s_PtAPtB_sample%d not found",task->fsName.Data(),fIndexSampling)); }
             profPtAPtB->Fill(centrality,dPtA,dPtB, dValuePtB, dDnPtB);
         }
         else
