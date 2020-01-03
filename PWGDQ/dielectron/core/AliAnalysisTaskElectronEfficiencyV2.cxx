@@ -30,6 +30,11 @@
 #include "AliMCEvent.h"
 #include "AliAnalysisFilter.h"
 
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 
 #include "AliDielectronMC.h"
 #include "AliDielectronVarManager.h"
@@ -176,6 +181,8 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fOpAngleNBinsLegsFromPair(-99),
   fTHnSparseGenSmearedLegsFromPair(),
   fTHnSparseRecLegsFromPair(),
+  fIsLHC19f2MC(false),
+  fCocktailHeaderList(0x0),
   fDoPairing(false),
   fDoULSandLS(false),
   fDeactivateLS(false),
@@ -317,6 +324,8 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fOpAngleNBinsLegsFromPair(-99),
   fTHnSparseGenSmearedLegsFromPair(),
   fTHnSparseRecLegsFromPair(),
+  fIsLHC19f2MC(false),
+  fCocktailHeaderList(0x0),
   fDoPairing(false),
   fDoULSandLS(false),
   fDeactivateLS(false),
@@ -915,11 +924,45 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
   }
 
-
   if (isAOD) fEvent = static_cast<AliAODEvent*>(eventHandler->GetEvent());
   else       fEvent = static_cast<AliESDEvent*>(eventHandler->GetEvent());
 
   AliDielectronVarManager::SetEvent(fEvent);
+
+  //get MC cocktail headers in each event
+  fCocktailHeaderList = 0x0;
+  if(fIsLHC19f2MC){
+    if(!isAOD){//for ESD
+      AliGenEventHeader* genHeader = fMC->GenEventHeader();
+      AliGenHijingEventHeader* hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+      AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+      AliGenDPMjetEventHeader* dpmjetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
+
+      if(hijingGenHeader == NULL && pythiaGenHeader == NULL && dpmjetGenHeader == NULL){
+        AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
+        fCocktailHeaderList = (TList*)genCocktailHeader->GetHeaders();
+        const Int_t Ngen = fCocktailHeaderList->GetEntries();
+        AliInfo(Form("N generators = %d",Ngen));
+        for (Int_t igen=0; igen<Ngen; igen++) {
+          AliGenEventHeader *gh = (AliGenEventHeader*)fCocktailHeaderList->At(igen);
+          AliInfo(Form("Cocktail header is found : Generator name = %s , NProduced = %d.",gh->GetName(),gh->NProduced()));
+        }
+      }
+      else if(hijingGenHeader) AliInfo(Form("Hijing header is found : Generator name = %s , NProduced = %d.",hijingGenHeader->GetName(),hijingGenHeader->NProduced()));
+      else if(pythiaGenHeader) AliInfo(Form("Pythia header is found : Generator name = %s , NProduced = %d.",pythiaGenHeader->GetName(),pythiaGenHeader->NProduced()));
+      else if(dpmjetGenHeader) AliInfo(Form("DPMjet header is found : Generator name = %s , NProduced = %d.",dpmjetGenHeader->GetName(),dpmjetGenHeader->NProduced()));
+    }
+    else{//for AOD
+      AliAODMCHeader* mcHeader = (AliAODMCHeader*)fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      fCocktailHeaderList = (TList*)mcHeader->GetCocktailHeaders();
+      const Int_t Ngen = fCocktailHeaderList->GetEntries();
+      AliInfo(Form("N generators = %d",Ngen));
+      for(Int_t igen=0;igen<Ngen;igen++){
+        AliGenEventHeader *gh = (AliGenEventHeader*)fCocktailHeaderList->At(igen);
+        AliInfo(Form("Generator name = %s , NProduced = %d.",gh->GetName(),gh->NProduced()));
+      }//end of generator loop
+    }
+  }
 
   // ##########################################################
   // All events before all cuts
@@ -1970,19 +2013,43 @@ Double_t AliAnalysisTaskElectronEfficiencyV2::GetSmearing(TObjArray *arr, Double
 bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vector<unsigned int> vecHashes){
   if (vecHashes.size() == 0) return true;
 
+  AliMCParticle* p = (AliMCParticle*)fMC->GetTrack(TMath::Abs(trackID));
+  Int_t genID = p->GetGeneratorIndex();
+
   TString genname;
   Bool_t hasGenerator = fMC->GetCocktailGenerator(TMath::Abs(trackID), genname);
-  // std::cout << genname << std::endl;
+  //std::cout << genname << std::endl;
   if(!hasGenerator) {
     Printf("no cocktail header list was found for this track");
     return false;
   }
   else{
     for (unsigned int i = 0; i < vecHashes.size(); ++i){
-      // std::cout << genname.Hash() << " " << vecHashes[i] << std::endl;
+      //std::cout << genname.Hash() << " " << vecHashes[i] << std::endl;
       if (genname.Hash() == vecHashes[i]) return true;
 
-    }
+      //one more possibility to check generator name. temporary.
+      if(fIsLHC19f2MC){
+        if(fCocktailHeaderList == NULL) return true;//cocktail is NOT found. i.e., pythia/hijing/dpmjet which is not necessary to be separated.
+        else{//cocktail header is found. we can check
+          const Int_t Ngen = fCocktailHeaderList->GetEntries();
+          for(Int_t igen=0;igen<Ngen;igen++){
+            AliGenEventHeader *gh = (AliGenEventHeader*)fCocktailHeaderList->At(igen);
+            //AliInfo(Form("Cocktail header is found : Generator name = %s , NProduced = %d.",gh->GetName(),gh->NProduced()));
+            TString gn = gh->GetName();//generator name
+            Int_t len = gn.Length();
+            TString tmp = gn(0,len-1);//remove last digit which is generator index
+            TString str = Form("%s%d",tmp.Data(),genID);//add generateor index from particle
+
+            gn.ToLower();
+            if(gn == "hijing" || gn == "pythia" || gn == "dpmjet") str = gh->GetName();
+
+            //std::cout << "temporary : str = " << str << " , " << str.Hash() << " " << vecHashes[i] << std::endl;
+            if((str.Hash() == vecHashes[i])) return true;
+          }
+        }
+      }//end of if LHC19f2
+    }//end of vecHashes loop
     return false;
   }
   return false; // should not happen
