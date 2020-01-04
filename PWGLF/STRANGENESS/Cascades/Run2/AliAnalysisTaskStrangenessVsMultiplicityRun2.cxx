@@ -101,6 +101,7 @@ class AliAODv0;
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
+#include "AliMultSelectionTask.h"
 
 #include "AliTriggerIR.h"
 #include "AliCFContainer.h"
@@ -472,7 +473,9 @@ fTreeCascVarMagneticField(0),
 
 //Histos
 fHistEventCounter(0),
-fHistCentrality(0)
+fHistEventCounterDifferential(0),
+fHistCentrality(0),
+fHistEventMatrix(0)
 //------------------------------------------------
 // Tree Variables
 {
@@ -831,7 +834,8 @@ fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
 fHistEventCounterDifferential(0),
-fHistCentrality(0)
+fHistCentrality(0),
+fHistEventMatrix(0)
 {
     
     //Re-vertex: Will only apply for cascade candidates
@@ -1376,6 +1380,40 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fListHist->Add(fHistCentrality);
     }
     
+    //Adaptive binning
+    //Set Adaptive Percentile Boundaries, adjust if finer selection desired
+    Double_t lDesiredBoundaries[1000];
+    Long_t   lNDesiredBoundaries=0;
+    lDesiredBoundaries[0] = 0.0;
+    //From High To Low Multiplicity
+    for( Int_t ib = 1; ib < 101; ib++) { // 100 bins  ] 0.0 , 0.1 ]
+        lNDesiredBoundaries++;
+        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.001;
+    }
+    for( Int_t ib = 1; ib < 91; ib++) { // 90 bins  ] 0.1 , 1.0 ]
+        lNDesiredBoundaries++;
+        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.01;
+    }
+    for( Int_t ib = 1; ib < 91; ib++) { // 90 bins ] 1.0 , 10. ]
+        lNDesiredBoundaries++;
+        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.1;
+    }
+    for( Int_t ib = 1; ib < 96; ib++) { // 95 bins ] 10.0 , 105.0 ]
+        lNDesiredBoundaries++;
+        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 1.0;
+    }
+    
+    Double_t ltemp[] = {0,1,2,3,4};
+    if(! fHistEventMatrix ) {
+        //Histogram Output for relevant event counters
+        fHistEventMatrix = new TH2D( "fHistEventMatrix", "",lNDesiredBoundaries, lDesiredBoundaries, 4,ltemp);
+        fHistEventMatrix->GetYaxis()->SetBinLabel(1, "MB, tagged as not MV-pileup");
+        fHistEventMatrix->GetYaxis()->SetBinLabel(2, "MB, tagged as MV-pileup");
+        fHistEventMatrix->GetYaxis()->SetBinLabel(3, "High mult V0, tagged as not MV-pileup");
+        fHistEventMatrix->GetYaxis()->SetBinLabel(4, "High mult V0, tagged as MV-pileup");
+        fListHist->Add(fHistEventMatrix);
+    }
+    
     //Superlight mode output
     if ( !fListK0Short    ){ fListK0Short    = new TList();    fListK0Short->SetOwner();    }
     if ( !fListLambda     ){ fListLambda     = new TList();    fListLambda->SetOwner();     }
@@ -1753,6 +1791,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     
     //Fill centrality histogram
     fHistCentrality->Fill(fCentrality);
+    
+    //Parse events
+    Bool_t lIsMB = kFALSE, lIsHighMultV0 = kFALSE;
+    if( AliMultSelectionTask::IsSelectedTrigger( lESDevent, AliVEvent::kINT7 ) ) lIsMB = kTRUE;
+    if( AliMultSelectionTask::IsSelectedTrigger( lESDevent, AliVEvent::kHighMultV0 ) ) lIsHighMultV0 = kTRUE;
+
+    Float_t lYValue = 0.5;
+    if(fMVPileupFlag) lYValue += 1.0;
+    if( lIsMB )         fHistEventMatrix->Fill(fCentrality, lYValue    );
+    if( lIsHighMultV0 ) fHistEventMatrix->Fill(fCentrality, lYValue+2.0);
     
     //Random denial
     Bool_t lKeepEventEntry = kTRUE;
