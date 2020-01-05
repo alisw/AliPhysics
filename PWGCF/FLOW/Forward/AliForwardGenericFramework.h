@@ -24,7 +24,6 @@
 #include "TComplex.h"
 
 #include "AliForwardSettings.h"
-#include "AliForwardFlowUtil.h"
 #include "AliForwardNUATask.h"
 
 #include <iostream>
@@ -49,7 +48,6 @@ public:
   AliForwardSettings fSettings;
 
     // Utility class for filling histograms
-  //AliForwardFlowUtil fUtil;
   /**
    * Do cumulants calculations for current event with
    * centrality cent
@@ -116,12 +114,7 @@ public:
 
 
   Double_t applyNUAforward(TH2D*& dNdetadphi, Bool_t useFMD, Int_t etaBin, Int_t phiBin, Double_t eta, Double_t phi, Double_t zvertex, Double_t weight){
-    // for NUA closure
-    // if ((fSettings.nua_mode & fSettings.kInterpolate) && useFMD) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
-    // if (fSettings.makeFakeHoles && useFMD){
-    //   AliForwardFlowUtil util = AliForwardFlowUtil();
-    //   util.MakeFakeHoles(*dNdetadphi);
-    // }
+
     // holes in the FMD
     if (fSettings.nua_mode & fSettings.kFill){
       if (etaBin >= 125 && etaBin <=137){
@@ -133,7 +126,6 @@ public:
     }
 
     if (fSettings.nua_mode & fSettings.kInterpolate) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
-    if (fSettings.makeFakeHoles && useFMD) fUtil.MakeFakeHoles(*dNdetadphi);
     if (!fSettings.use_primaries_fwd) {
       Int_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
       Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
@@ -182,8 +174,6 @@ public:
   THnD* cumu_rW2Two      ;//!  // <w2*two>
   THnD* cumu_rW4         ;//! 
   THnD* cumu_rW4Four     ;//!   
-
-  AliForwardFlowUtil fUtil;
 
   ClassDef(AliForwardGenericFramework, 1); // object for eta dependent cumulant ananlysis
 };

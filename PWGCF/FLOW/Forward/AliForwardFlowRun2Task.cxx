@@ -217,7 +217,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
-  fCalculator.fUtil = fUtil;
   
 
   Bool_t isgoodrun = kTRUE;
@@ -247,6 +246,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
 
   fUtil.FillData(refDist,centralDist,forwardDist);
+  if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
   Double_t zvertex = fUtil.GetZ();
 
