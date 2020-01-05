@@ -114,6 +114,9 @@ public:
    void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
+   //only temporary solution for LHC19f2 MC productions related to GetCocktailGenerator
+   void   SetLHC19f2MC(Bool_t flag) {fIsLHC19f2MC = flag;}
+
    // Single leg from Pair related setter
    void   SetWriteLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
    void   SetPtMinLegsFromPair(const double ptMin){fPtMinLegsFromPair = ptMin;}
@@ -327,6 +330,9 @@ private:
   std::vector<THnSparseF*> fTHnSparseGenSmearedLegsFromPair;
   std::vector<THnSparseF*> fTHnSparseRecLegsFromPair;
 
+  Bool_t fIsLHC19f2MC;
+  TList *fCocktailHeaderList;
+
   Bool_t fDoPairing;
   Bool_t fDoULSandLS;
   Bool_t fDeactivateLS;
@@ -359,7 +365,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 1);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 2);
 };
 
 
