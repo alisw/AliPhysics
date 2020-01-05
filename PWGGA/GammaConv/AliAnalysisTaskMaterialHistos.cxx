@@ -155,8 +155,6 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   fDoSelectBCNumber(kFALSE),
   fBCNumber(0),
-//  fBCNumberBegin(0),
-//  fBCNumberEnd(0),
   fRunNumber(0)
 {
 
@@ -284,8 +282,6 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   fDoSelectBCNumber(kFALSE),
   fBCNumber(0),
-//  fBCNumberBegin(0),
-//  fBCNumberEnd(0),
   fRunNumber(0)
 {
   // Default constructor
@@ -334,8 +330,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     fDeDxMapList            = new TList*[fnCuts];
   }
   hNEvents                  = new TH1F*[fnCuts];
-  if(fDoSelectBCNumber){
   hBCNumber                 = new TH1F*[fnCuts];
+  if(fDoSelectBCNumber){
   hBCNumberSelected         = new TH1F*[fnCuts];
   }
   hNGoodESDTracksEta08      = new TH1F*[fnCuts];
@@ -1811,9 +1807,6 @@ void AliAnalysisTaskMaterialHistos::DoSelectBCNumbers(){
   if(fIsMC == 0 ){
     fRunNumber  = fInputEvent->GetRunNumber();
     fBCNumber = fInputEvent->GetBunchCrossNumber();
-    // if(fBCNumberBegin > fBCNumber || fBCNumber > fBCNumberEnd){
-    //   return;
-    // }
     if(fRunNumber >= 265332 && fRunNumber <= 265344){//Fill 5506
       if(1390 > fBCNumber || fBCNumber > 1540){
 	return;
