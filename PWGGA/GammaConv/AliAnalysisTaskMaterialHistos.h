@@ -45,9 +45,6 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
     fConversionCutArray         = CutArray;}
   void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
   void SetDoSelectBCnumbers(Int_t flag )                        { fDoSelectBCNumber     = flag;}
-  //  void SetSelectBCnumbersBegin(UShort_t a)                      { fBCNumberBegin = a;}
-  //  void SetSelectBCnumbersEnd(UShort_t a)                        { fBCNumberEnd = a;}
-
 
   /* void SetDoTreesForMaterial(Bool_t flag)                              { fDoTreesForMaterial               = flag    ;} */
   /* void SetDoHistosForMaterial(Bool_t flag)                             { fDoHistosForMaterial              = flag    ;} */
@@ -187,8 +184,6 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   //Bool_t            fDoHistosForMaterial;             // flag for using Trees for Material Budget evaluation
   Bool_t            fDoSelectBCNumber;
   UShort_t          fBCNumber;
-  //  UShort_t          fBCNumberBegin;
-  //  UShort_t          fBCNumberEnd;
   Int_t             fRunNumber;
 
 
