@@ -13,8 +13,6 @@ Int_t   doMultiplicityWeighting = 0,
 Int_t   doWeightingGamma        = 0,        // enable Weighting
 Int_t   enableMatBudWeightsPi0  = 0,        // 1 = three radial bins, 2 = 10 radial bins
 Int_t   doSelectBCNumber        = 0,
-//UShort_t   BCNumberBegin        = 0,
-//UShort_t   BCNumberEnd          = 0,
 Int_t   isHeavyIon              = 2,//0:pp 1:PbPb 2:pPb
 TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
 					   ){
@@ -92,8 +90,6 @@ TString additionalTrainConfig   = "0"       // additional counter for trainconfi
   fMaterialHistos->SetV0ReaderName(V0ReaderName);
   fMaterialHistos->SetDoDeDxMaps(doDeDxMaps);
   fMaterialHistos->SetDoSelectBCnumbers(doSelectBCNumber);
-  //  fMaterialHistos->SetSelectBCnumbersBegin(BCNumberBegin);
-  //  fMaterialHistos->SetSelectBCnumbersEnd(BCNumberEnd);
   if (doMultiplicityWeighting>0 && isMC==0){
     doMultiplicityWeighting = 0;
   }
