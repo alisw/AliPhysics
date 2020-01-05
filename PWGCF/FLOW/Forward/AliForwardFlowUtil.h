@@ -1,5 +1,5 @@
-#ifndef AliForwardFlowUtil_H
-#define AliForwardFlowUtil_H
+#ifndef AliForwardFlowUtil_cxx
+#define AliForwardFlowUtil_cxx
 /**
  * @file AliForwardFlowUtil.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
@@ -28,6 +28,10 @@ class AliForwardFlowUtil : public TObject {
 
  public:
   AliForwardFlowUtil();
+  ~AliForwardFlowUtil();                                       // destructor
+  AliForwardFlowUtil(const AliForwardFlowUtil &L);             // copy constructor
+  AliForwardFlowUtil & operator=(const AliForwardFlowUtil &L); // assignment
+  
   Int_t GetNUARunNumber(Int_t runnumber);
   Bool_t IsGoodRun(Int_t runnumber);
   Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc,TH2D* hOutliers);

@@ -1,5 +1,5 @@
-#ifndef AliForwardSettings_H
-#define AliForwardSettings_H
+#ifndef AliForwardSettings_cxx
+#define AliForwardSettings_cxx
 /**
  * @file AliForwardSettings.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
@@ -18,7 +18,9 @@ class AliForwardSettings : public TObject {
 
  public:
   AliForwardSettings();
-
+  //~AliForwardSettings();                                       // destructor
+  //AliForwardSettings(const AliForwardSettings &);             // copy constructor
+  //AliForwardSettings & operator=(const AliForwardSettings &); // assignment
   // Lower bound phi acceptance (should always be 0)
   Double_t fPhiAcceptanceLowEdge;
   // Upper bound phi acceptance (should always be 2pi)

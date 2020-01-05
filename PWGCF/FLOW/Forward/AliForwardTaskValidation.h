@@ -1,5 +1,5 @@
-#ifndef AliForwardTaskValidation_H
-#define AliForwardTaskValidation_H
+#ifndef AliForwardTaskValidation_cxx
+#define AliForwardTaskValidation_cxx
 
 #include <string>
 #include <vector>
