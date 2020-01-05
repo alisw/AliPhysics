@@ -926,7 +926,7 @@ void AliAnalysisTaskMcKnoUe::GetMeanUEObservables(vector<Double_t> &genArray, ve
 		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
 		if( particle->Pt() < fPtMin)continue;
 
-		Double_t DPhi = DeltaPhi(particle->Phi(), fRecLeadPhi);
+		Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
 
 		// definition of the topological regions
 		if(TMath::Abs(DPhi)<pi/3.0){// near side
