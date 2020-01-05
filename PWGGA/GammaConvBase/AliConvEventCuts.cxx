@@ -3488,7 +3488,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
         } else if ( fPeriodEnum == kLHC16c3a ){ // ALIROOT-5901
           Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
-          Double_t weightsBins[5]       = {  6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03}; //preliminary estimates
+          Double_t weightsBins[5]       = {  6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03}; 
           Int_t bin = 0;
           pthardbin++;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -3499,7 +3499,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
         } else if (fPeriodEnum == kLHC16c3b ){ // ALIROOT-5901
           Double_t ptHardBinRanges[7]   = {  14, 19, 26, 35, 48, 66, 1000};
-          Double_t weightsBins[6]       = {  6.071458e-03, 3.941701e-03, 2.001984e-03, 9.862765e-04, 3.893911e-04, 1.865924e-04}; //preliminary estimates
+          Double_t weightsBins[6]       = {  6.07559700e-03, 3.93844754e-03, 2.00223387e-03, 9.85233093e-04, 3.89161623e-04, 1.86561078e-04}; 
           Int_t bin = 0;
           pthardbin++;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -3531,7 +3531,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             }
         } else if (fPeriodEnum == kLHC17g6a2 ){ //ALIROOT-7271 - JJ low EMC trigg
           Double_t ptHardBinRanges[7]   = {  5, 7, 9, 12, 16, 21, 1000 };
-          Double_t weightsBins[6]       = {  0.0131443, 0.00980209, 0.00949466, 0.00712229, 0.00460761, 0.00557804}; 
+          Double_t weightsBins[6]       = {  1.31493822e-02, 9.76893424e-03, 9.52744251e-03, 7.12499226e-03, 4.53465002e-03, 5.66990089e-03}; 
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 6) weight = weightsBins[bin];
@@ -3541,7 +3541,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             }
         } else if (fPeriodEnum == kLHC17g6a3 ){ //ALIROOT-7271 - JJ high EMC trigg
           Double_t ptHardBinRanges[9]   = {  8, 10, 14, 19, 26, 35, 48, 66, 1000};
-          Double_t weightsBins[8]       = {  0.000222965, 0.000452651, 0.000518363, 0.000497039, 0.000364935, 0.000235708, 0.000129649, 8.45686e-05}; 
+          Double_t weightsBins[8]       = {  2.17156487e-04, 4.81510348e-04, 5.17290689e-04, 4.92575600e-04, 3.54346740e-04, 2.37913195e-04, 1.25136140e-04, 8.48443967e-05}; 
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 8) weight = weightsBins[bin];
@@ -3907,7 +3907,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
       } else if ( fPeriodEnum == kLHC16c3a ){ //ALIROOT-5901
         Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
-        Double_t weightsBins[5]       = {  6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03}; //preliminary estimates
+        Double_t weightsBins[5]       = {  6.73298726e-03, 8.00549934e-03, 6.77989565e-03, 4.64169953e-03, 6.01322269e-03}; 
         Int_t bin = 0;
         pthardbin++;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -3918,7 +3918,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
       } else if (fPeriodEnum == kLHC16c3b ){ //ALIROOT-5901
         Double_t ptHardBinRanges[7]   = {  14, 19, 26, 35, 48, 66, 1000};
-        Double_t weightsBins[6]       = {  6.071458e-03, 3.941701e-03, 2.001984e-03, 9.862765e-04, 3.893911e-04, 1.865924e-04}; //preliminary estimates
+        Double_t weightsBins[6]       = {  6.07559700e-03, 3.93844754e-03, 2.00223387e-03, 9.85233093e-04, 3.89161623e-04, 1.86561078e-04}; 
         Int_t bin = 0;
         pthardbin++;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -3950,7 +3950,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
       } else if (fPeriodEnum == kLHC17g6a2 ){ //ALIROOT-7271 - JJ low EMC trigg
         Double_t ptHardBinRanges[7]   = {  5, 7, 9, 12, 16, 21, 1000 };
-        Double_t weightsBins[6]       = {  0.0131443, 0.00980209, 0.00949466, 0.00712229, 0.00460761, 0.00557804}; 
+        Double_t weightsBins[6]       = {  1.31493822e-02, 9.76893424e-03, 9.52744251e-03, 7.12499226e-03, 4.53465002e-03, 5.66990089e-03}; 
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 6) weight = weightsBins[bin];
@@ -3960,7 +3960,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
       } else if (fPeriodEnum == kLHC17g6a3 ){ //ALIROOT-7271 - JJ high EMC trigg
         Double_t ptHardBinRanges[9]   = {  8, 10, 14, 19, 26, 35, 48, 66, 1000};
-        Double_t weightsBins[8]       = {  0.000222965, 0.000452651, 0.000518363, 0.000497039, 0.000364935, 0.000235708, 0.000129649, 8.45686e-05}; 
+        Double_t weightsBins[8]       = {  2.17156487e-04, 4.81510348e-04, 5.17290689e-04, 4.92575600e-04, 3.54346740e-04, 2.37913195e-04, 1.25136140e-04, 8.48443967e-05}; 
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 8) weight = weightsBins[bin];
