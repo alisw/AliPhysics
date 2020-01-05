@@ -28,9 +28,9 @@ class AliForwardFlowUtil : public TObject {
 
  public:
   AliForwardFlowUtil();
-  ~AliForwardFlowUtil();                                       // destructor
-  AliForwardFlowUtil(const AliForwardFlowUtil &L);             // copy constructor
-  AliForwardFlowUtil & operator=(const AliForwardFlowUtil &L); // assignment
+  // ~AliForwardFlowUtil();                                       // destructor
+  // AliForwardFlowUtil(const AliForwardFlowUtil &L);             // copy constructor
+  // AliForwardFlowUtil & operator=(const AliForwardFlowUtil &L); // assignment
   
   Int_t GetNUARunNumber(Int_t runnumber);
   Bool_t IsGoodRun(Int_t runnumber);
