@@ -114,7 +114,7 @@ public:
   AliForwardSettings fSettings;
 
   // Utility class for filling histograms
-  AliForwardFlowUtil fUtil;
+  AliForwardFlowUtil fUtil; 
   
   // Class for flow calculations using the Generic Framework
   AliForwardGenericFramework fCalculator;

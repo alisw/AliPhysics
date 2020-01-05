@@ -245,7 +245,6 @@ protected:
   AliMCParticle* GetMother(Int_t iTr, const AliMCEvent* event) const;
   AliMCParticle* GetMother(AliMCParticle* p);
 
-  ClassDef(AliForwardSecondariesTask, 1); // Analysis task for secondary analysis
 
   AliForwardFlowResultStorage* fStorage; //!
 
@@ -254,6 +253,7 @@ protected:
   THnD* fdelta_eta_phi     ;//!  // <w2*two>
   THnD* fdelta_phi_phi     ;//! 
   THnD* fdelta_eta_eta     ;//!   
+  ClassDef(AliForwardSecondariesTask, 1); // Analysis task for secondary analysis
 
 };
 

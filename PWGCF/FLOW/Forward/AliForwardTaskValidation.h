@@ -1,5 +1,5 @@
-#ifndef AliForwardTaskValidation_H
-#define AliForwardTaskValidation_H
+#ifndef AliForwardTaskValidation_cxx
+#define AliForwardTaskValidation_cxx
 
 #include <string>
 #include <vector>
@@ -193,7 +193,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   TH2D* refDist;    //!
   TH2D* forwardDist;//!
 
-  AliForwardFlowUtil fUtil;//!
+  AliForwardFlowUtil fUtil;
 
   ClassDef(AliForwardTaskValidation, 1);
 };

@@ -50,6 +50,7 @@ AliForwardGenericFramework::AliForwardGenericFramework():
   fqvector = new THnD("qvector", "qvector", dimensions, dbins, xmin, xmax);
   //fpvector->SetDirectory(0);
   //fqvector->SetDirectory(0);
+  fUtil.fSettings = fSettings;
 
   // fAutoRef = TH1F("fAutoRef","fAutoRef", 2, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
   // fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
