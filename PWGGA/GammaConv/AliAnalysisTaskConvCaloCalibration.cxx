@@ -1053,6 +1053,12 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
         else fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightJetJetMC);
       }
 
+      if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetDoElecDeDxPostCalibration()){
+        if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->LoadElecDeDxPostCalibration(fInputEvent->GetRunNumber())){
+          AliFatal(Form("ERROR: LoadElecDeDxPostCalibration returned kFALSE for %d despite being requested!",fInputEvent->GetRunNumber()));
+        }
+      }
+
       // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
       if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) // process calo clusters
         ProcessClusters();
