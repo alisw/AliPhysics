@@ -39,12 +39,17 @@ set(SRCS
     AliHFMLResponse.cxx
     AliHFMLResponseDplustoKpipi.cxx
     AliHFMLResponseDstoKKpi.cxx
+    AliHFMLResponseLctoV0bachelor.cxx
     AliHFMLVarHandler.cxx
     AliHFMLVarHandlerDplustoKpipi.cxx
     AliHFMLVarHandlerDstoKKpi.cxx
     AliAnalysisTaskSEDplus.cxx
     AliAnalysisTaskSEDs.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
+    AliAnalysisTaskSEHFTreeCreatorApply.cxx
+    AliHFTreeHandlerApply.cxx
+    AliHFTreeHandlerApplyDstoKKpi.cxx
+    AliHFTreeHandlerApplyLc2V0bachelor.cxx
 )
 
 # Headers from sources
