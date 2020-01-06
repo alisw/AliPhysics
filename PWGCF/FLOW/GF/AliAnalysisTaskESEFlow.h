@@ -149,12 +149,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fQnxTPCm[2];    //!
         TH1F*                   fQnyTPCm[2];    //!
 
-        TH1F*                   fQnxV0CEse[2];    //!
-        TH1F*                   fQnyV0CEse[2];    //!
-        TH1F*                   fQnxV0AEse[2];    //!
-        TH1F*                   fQnyV0AEse[2];    //!
-        TH1F*                   fQnxTPCEse[2];    //!
-        TH1F*                   fQnyTPCEse[2];    //! 
+        TH2F*                   fQnxV0CEse[2];    //!
+        TH2F*                   fQnyV0CEse[2];    //!
+        TH2F*                   fQnxV0AEse[2];    //!
+        TH2F*                   fQnyV0AEse[2];    //!
+        TH2F*                   fQnxTPCEse[2];    //!
+        TH2F*                   fQnyTPCEse[2];    //! 
         ////
 
         TH3F*                   fCentq2TPCvsv22;   //!
@@ -170,7 +170,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
         void POIVectors(const Int_t CenterCode, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
         void ReducedqVectorsTPC(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
-        void ReducedqVectorsV0(const Float_t centrality, const AliAODEvent* fAOD);
+        void ReducedqVectorsV0(const Float_t centrality, const AliAODEvent* fAOD, const Int_t SPCode);
         void FillRFP(const Float_t centrality,const Int_t iTracks, const int nHarm, const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
         void Filldn(const Int_t CenterCode, const double dPt, const int nHarm, const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
         void FillqnRedTPC(const Float_t centrality);
@@ -194,7 +194,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         double GetWeight(double phi, double eta, double vz,  double runNumber);
         double GetPtWeight(double pt, double eta, float vz,  double runNumber);
         void ResetFlowVector(TComplex (&array)[fNumHarms][fNumPowers]); // set values to TComplex(0,0,0) for given array
-        void ResetReducedqVector(Double_t (&array)[fNumHarms]);
+        void ResetReducedqVector(Double_t (&array)[2]);
 
         Bool_t sortPt(const AliAODTrack* t1, const AliAODTrack* t2) { return (t1->Pt() < t2->Pt()); } // function for std::sort
         
@@ -210,26 +210,26 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TComplex Qvector10M[fNumHarms][fNumPowers];
         TComplex Qvector10P[fNumHarms][fNumPowers];
 
-        Double_t qnTPC[fNumHarms];
-        Double_t QxnTPC[fNumHarms];
-        Double_t QynTPC[fNumHarms];
+        Double_t qnTPC[2];
+        Double_t QxnTPC[2];
+        Double_t QynTPC[2];
 
-        Double_t qnV0C[fNumHarms];
-        Double_t QxnV0C[fNumHarms];
-        Double_t QynV0C[fNumHarms];
+        Double_t qnV0C[2];
+        Double_t QxnV0C[2];
+        Double_t QynV0C[2];
 
-        Double_t qnV0A[fNumHarms];
-        Double_t QxnV0A[fNumHarms];
-        Double_t QynV0A[fNumHarms];
+        Double_t qnV0A[2];
+        Double_t QxnV0A[2];
+        Double_t QynV0A[2];
 
-        Double_t QxnTPCEse[fNumHarms]; // after correction
-        Double_t QynTPCEse[fNumHarms];
+        Double_t QxnTPCEse[2]; // after correction
+        Double_t QynTPCEse[2];
 
-        Double_t QxnV0CEse[fNumHarms];
-        Double_t QynV0CEse[fNumHarms];
+        Double_t QxnV0CEse[2];
+        Double_t QynV0CEse[2];
 
-        Double_t QxnV0AEse[fNumHarms];
-        Double_t QynV0AEse[fNumHarms];
+        Double_t QxnV0AEse[2];
+        Double_t QynV0AEse[2];
         
 
         TComplex Q(int n, int p);
