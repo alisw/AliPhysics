@@ -60,6 +60,7 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
     int trigger=EventCuts%10;
     unsigned int triggerMask=AliVEvent::kINT7;
     if(trigger==1) triggerMask=AliVEvent::kHighMultV0;
+    else if(trigger==2) triggerMask=AliVEvent::kMB;
     if(!isAOD) task->UseESDTriggerMask(triggerMask);
     else task->SelectCollisionCandidates(triggerMask);
     
