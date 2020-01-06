@@ -217,7 +217,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
-  fCalculator.fUtil = fUtil;
   
 
   Bool_t isgoodrun = kTRUE;
@@ -243,10 +242,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
   if (cent > Double_t(fSettings.fCentUpEdge)) return;
-  //Int_t centBin = fCalculator.cumu_rW2->GetAxis(5)->FindBin(cent);
-
 
   fUtil.FillData(refDist,centralDist,forwardDist);
+  if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
   Double_t zvertex = fUtil.GetZ();
 
@@ -266,6 +264,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   }
   
   fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,false,true);  
+  fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE, false,true);  
 
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 

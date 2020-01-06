@@ -29,8 +29,7 @@ AliForwardGenericFramework::AliForwardGenericFramework():
   cumu_rW2(),
   cumu_rW2Two(),
   cumu_rW4(),
-  cumu_rW4Four(),
-  fUtil()
+  cumu_rW4Four()
 {
   Int_t rbins[4] = {2, 6, 4, 2} ; // kind (real or imaginary), n, p, eta
   Int_t dimensions = 4;
@@ -50,7 +49,6 @@ AliForwardGenericFramework::AliForwardGenericFramework():
   fqvector = new THnD("qvector", "qvector", dimensions, dbins, xmin, xmax);
   //fpvector->SetDirectory(0);
   //fqvector->SetDirectory(0);
-  fUtil.fSettings = fSettings;
 
   // fAutoRef = TH1F("fAutoRef","fAutoRef", 2, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
   // fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
