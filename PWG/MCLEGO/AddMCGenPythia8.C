@@ -8,6 +8,7 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms,
 			       Bool_t kCR, 
 			       Int_t kF,
 			       Int_t kProcess,
+			       Int_t kSoftOrHard,
 			       Double_t ptHardMin,
 			       Double_t ptHardMax, 
 			       Int_t tune) 
@@ -29,6 +30,21 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms,
       gener->SetPtHard(ptHardMin,ptHardMax);
   } 
 
+  //Soft or hard QCD processes: 0==>soft, 1==>hard, anything else do nothing
+  switch(kSoftOrHard) {
+  case 0:
+    (AliPythia8::Instance())->ReadString("SoftQCD:all = on");
+    break;
+
+  case 1:
+    (AliPythia8::Instance())->ReadString("HardQCD:all = on");
+    break;
+
+  default:
+    AliInfo("Soft/hard QCD tune not selected");
+    break;
+  }
+    
   //Centre of mass energy 
   gener->SetEnergyCMS(e_cms); // in GeV
 
