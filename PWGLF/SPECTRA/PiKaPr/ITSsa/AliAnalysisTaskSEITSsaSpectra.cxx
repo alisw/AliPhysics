@@ -436,10 +436,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fOutput->Add(fHistDEDXdouble);
 
   if (fIsMC) { //for correlation between momenta (MC)
-    const UInt_t nDimsP = 4;                                         // cent, recP, genP, IsPrim/Sec
-    int nBinsP[nDimsP] = { nCentBins, hnbins, hnbins, 4 }; //
-    double minBinP[nDimsP] = { 0., 0.01, 0.01, -.5 };         // Dummy limits for cent, recP, genP
-    double maxBinP[nDimsP] = { 1., 10., 10., 3.5 };           // Dummy limits for cent, recP, genP
+    const UInt_t nDimsP = 5;                                         // cent, recP, genP, IsPrim/Sec
+    int nBinsP[nDimsP] = { nCentBins, hnbins, hnbins, 4, 900}; //
+    double minBinP[nDimsP] = { 0., 0.01, 0.01, -.5, 0.};         // Dummy limits for cent, recP, genP
+    double maxBinP[nDimsP] = { 1., 10., 10., 3.5, 1000.};           // Dummy limits for cent, recP, genP
     fHistRecoChargedMC =
       new THnSparseF("fHistRecoChargedMC", ";Centrality (%);#it{p} (GeV/#it{c});#it{p} (GeV/#it{c});", nDimsP,
                      nBinsP, minBinP, maxBinP);
@@ -953,7 +953,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       else {
         ptype = 3;
       }
-      double tmp_vect[4] = {fEvtMult, track->GetP(), pMC, static_cast<double>(ptype)};
+      double tmp_vect[5] = {fEvtMult, track->GetP(), pMC, static_cast<double>(ptype), dEdx};
       fHistRecoChargedMC->Fill(tmp_vect);
     }
 
