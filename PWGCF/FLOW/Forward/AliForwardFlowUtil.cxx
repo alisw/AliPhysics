@@ -163,7 +163,7 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
 
       // Fill refDist
       if (fSettings.ref_mode & fSettings.kFMDref) {
-        if (!fSettings.use_primaries_fwd) this->FillFromForwardClusters(refDist);
+        if (!fSettings.use_primaries_fwdref) this->FillFromForwardClusters(refDist);
         else this->FillFromPrimariesAODFMD(refDist);
       }
       else if (fSettings.ref_mode & fSettings.kITSref) {
