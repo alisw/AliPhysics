@@ -853,6 +853,76 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   return ana;
 }
 
+///
+/// Configure the isolation cuts 
+/// used in ConfigureIsolationAnalysis() and ConfigureHadronCorrelationAnalysis()
+///
+/// \param ic : Pointer to task doing the isolation
+/// \param partInCone : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
+/// \param thresType : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
+/// \param cone : A float setting the isolation cone size higher limit
+/// \param coneMin : A float setting the isolation cone size lower limit
+/// \param pth : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param col : A string with the colliding system
+/// \param debug : An int to define the debug level of all the tasks
+///
+void ConfigureIsolationCut(AliIsolationCut * ic,
+                           Int_t partInCone, Int_t thresType, 
+                           Float_t cone, Float_t coneMin,
+                           Float_t pth, TString col, Int_t debug)
+{
+  ic->SetDebug(debug);
+  ic->SetParticleTypeInCone(partInCone);
+  ic->SetICMethod(thresType);
+  ic->SetPtFraction(0.1);
+  ic->SetPtThreshold(0.5); // default, change in next lines
+  ic->SetSumPtThreshold(1.0); // default, change in next lines
+  
+  if ( cone > 0 && pth > 0 )
+  {
+    ic->SetConeSize(cone);
+    ic->SetMinDistToTrigger(coneMin);    
+    ic->SetPtThresholdMax(10000);
+    
+    if ( thresType == AliIsolationCut::kPtThresIC )
+    {
+      printf("ConfigureIsolationCuts() *** PtThresMin = %1.1f GeV/c *** R = %1.2f *** R min %1.2f\n",pth,cone,coneMin);
+      ic->SetPtThreshold(pth);
+    }
+    
+    if ( thresType == AliIsolationCut::kSumPtIC || 
+         thresType >= AliIsolationCut::kSumBkgSubIC )
+    {
+      printf("ConfigureIsolationCuts() *** SumPtMin = %1.1f GeV/c *** R = %1.1f *** R min %1.2f\n",pth,cone,coneMin);
+      ic->SetSumPtThreshold(pth);
+    }
+  }
+  else
+  {
+    printf("ConfigureIsolationCuts() *** Careful, use old hardcoded values\n");
+    if ( col == "pp" )
+    {
+      ic->SetPtThreshold(0.5);
+      ic->SetSumPtThreshold(1.0) ;
+      ic->SetConeSize(0.4);
+      ic->SetMinDistToTrigger(-1);    
+    }
+    if ( col == "PbPb" )
+    {
+      ic->SetPtThreshold(3.);
+      ic->SetSumPtThreshold(3.0) ;
+      ic->SetConeSize(0.3);
+      ic->SetMinDistToTrigger(-1);    
+    }
+  }
+  
+  //ic->SwitchOnFillEtaPhiHistograms();
+  
+  if ( kAnaCutsString.Contains("FixIsoConeExcess") ) 
+    ic->SwitchOnConeExcessCorrectionHistograms();
+  else                                         
+    ic->SwitchOffConeExcessCorrectionHistograms();
+}
 
 ///
 /// Configure the task doing the trigger particle isolation
@@ -990,57 +1060,8 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   // Do settings for main isolation cut class
   //
   AliIsolationCut * ic =  ana->GetIsolationCut();
-  ic->SetDebug(debug);
-  ic->SetParticleTypeInCone(partInCone);
-  ic->SetICMethod(thresType);
-  ic->SetPtFraction(0.1);
-  ic->SetPtThreshold(0.5); // default, change in next lines
-  ic->SetSumPtThreshold(1.0); // default, change in next lines
-  
-  if(cone > 0 && pth > 0)
-  {
-    ic->SetConeSize(cone);
-    ic->SetMinDistToTrigger(coneMin);    
-    ic->SetPtThresholdMax(10000);
-    
-    if(thresType == AliIsolationCut::kPtThresIC)
-    {
-      printf("ConfigureIsolationAnalysis() *** Iso *** PtThresMin = %1.1f GeV/c *** R = %1.2f *** R min %1.2f\n",pth,cone,coneMin);
-      ic->SetPtThreshold(pth);
-    }
-    
-    if ( thresType == AliIsolationCut::kSumPtIC || 
-         thresType >= AliIsolationCut::kSumBkgSubIC )
-    {
-      printf("ConfigureIsolationAnalysis() *** Iso *** SumPtMin = %1.1f GeV/c *** R = %1.1f *** R min %1.2f\n",pth,cone,coneMin);
-      ic->SetSumPtThreshold(pth);
-    }
-  }
-  else
-  {
-    if(col=="pp")
-    {
-      ic->SetPtThreshold(0.5);
-      ic->SetSumPtThreshold(1.0) ;
-      ic->SetConeSize(0.4);
-      ic->SetMinDistToTrigger(-1);    
-    }
-    if(col=="PbPb")
-    {
-      ic->SetPtThreshold(3.);
-      ic->SetSumPtThreshold(3.0) ;
-      ic->SetConeSize(0.3);
-      ic->SetMinDistToTrigger(-1);    
-    }
-  }
-  
-  //ic->SwitchOnFillEtaPhiHistograms();
-  
-  if( kAnaCutsString.Contains("FixIsoConeExcess") ) 
-    ic->SwitchOnConeExcessCorrectionHistograms();
-  else                                         
-    ic->SwitchOffConeExcessCorrectionHistograms();
-  
+  ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,col,debug);
+
   // Do or not do isolation with previously produced AODs.
   // No effect if use of SwitchOnSeveralIsolation()
   ana->SwitchOffReIsolation();
@@ -1255,36 +1276,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     {
       //Do settings for main isolation cut class
       AliIsolationCut * ic =  ana->GetIsolationCut();
-      ic->SetDebug(debug);
-      
-      if(cone >0 && pth > 0)
-      {
-        //printf("ConfigureHadronCorrelationAnalysis() *** PtThres = %1.1f GeV/c *** R = %1.1f *** R min = %1.2f\n",pth,cone,coneMin);
-        ic->SetPtThreshold(pth);
-        ic->SetConeSize(cone);
-        ic->SetMinDistToTrigger(coneMin);    
-      }
-      else
-      {
-        if(col=="pp")
-        {
-          ic->SetPtThreshold(0.5);
-          ic->SetConeSize(0.4);
-          ic->SetMinDistToTrigger(-1);    
-        }
-        if(col=="PbPb")
-        {
-          ic->SetPtThreshold(3.);
-          //ic->SetPtThreshold(1.);
-          ic->SetConeSize(0.3);
-          ic->SetMinDistToTrigger(-1);    
-        }
-      }
-      
-      ic->SetPtFraction(0.1);
-      ic->SetSumPtThreshold(1.0) ;
-      ic->SetParticleTypeInCone(partInCone);
-      ic->SetICMethod(thresType);
+      ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,col,debug);
     }
   }
   else
@@ -1611,6 +1603,7 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
 ///
 /// Configure the task filling generated particle kinematics histograms
 ///
+/// \param partInCone : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
 /// \param thresType : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
 /// \param pth : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
 /// \param cone : A float setting the isolation cone size higher limit
@@ -1623,12 +1616,14 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
 /// \param debug : An int to define the debug level of all the tasks
 /// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 ///
-AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth,    
-                                              Float_t cone,          Float_t coneMin,
-                                              TString col,           Bool_t  simulation,
-                                              TString calorimeter,   Int_t   year,
-                                              Bool_t  printSettings, Int_t   debug, 
-                                              TString histoString        )
+AliAnaGeneratorKine* ConfigureGenKineAnalysis
+(Int_t   partInCone,
+ Int_t   thresType,     Float_t pth,    
+ Float_t cone,          Float_t coneMin,
+ TString col,           Bool_t  simulation,
+ TString calorimeter,   Int_t   year,
+ Bool_t  printSettings, Int_t   debug, 
+ TString histoString        )
 {
   AliAnaGeneratorKine *ana = new AliAnaGeneratorKine();
   
@@ -1692,13 +1687,8 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth
   
   // Isolation paramters
   AliIsolationCut * ic = ana->GetIsolationCut();
-  ic->SetDebug(debug);
-  ic->SetPtThreshold(pth);
-  ic->SetConeSize(cone);
-  ic->SetMinDistToTrigger(coneMin);    
-  ic->SetSumPtThreshold(pth) ;
-  ic->SetICMethod(thresType);
-  
+  ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,col,debug);
+
   ana->AddToHistogramsName("AnaGenKine_");
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
@@ -1711,18 +1701,21 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth
 /// Configure the task doing the trigger particle jet correlation
 ///
 /// \param calorimeter : A string with the calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
 /// \param isolationMatters : A bool identifying whether isolation matters
 /// \param gammaConeSize : A float setting the isolation cone size of photon higher limit
 /// \param simulation : A bool identifying the data as simulation
+/// \param col : A string with the colliding system
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 ///
-AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis(TString calorimeter = "EMCAL",
-							      Bool_t  isolationMatters = kTRUE,
-							      Float_t gammaConeSize = 0.3,
-							      Bool_t simulation = kFALSE,
-							      Bool_t printSettings = kFALSE,
-							      Int_t debug = -1)
+AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
+(TString calorimeter = "EMCAL"   , Int_t   year = 2011,
+ Bool_t  isolationMatters = kTRUE, Float_t gammaConeSize = 0.3,
+ Bool_t  simulation = kFALSE     , TString col = "pp",
+ Bool_t  printSettings = kFALSE  , Int_t   debug = -1, 
+ TString histoString = "")
 {
   AliAnaParticleJetFinderCorrelation *ana = new AliAnaParticleJetFinderCorrelation();
   ana->SetDebug(debug);
@@ -1779,9 +1772,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis(TString calorimete
   
   ana->AddToHistogramsName(Form("Ana%sJetCorr_",particle.Data()));
 
-  //if(useKinematics) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  //if(printSettings) 
-  ana->Print("");
+  SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
 
   return ana;
 }
@@ -1931,9 +1922,9 @@ void ConfigureCaloTrackCorrAnalysis
     if ( analysisString.Contains("GammaJet") ) 
     {
       if( analysisString.Contains("Isolation") )
-	anaList->AddAt(ConfigureGammaJetAnalysis(calorimeter,kTRUE,isoCone,simulation,printSettings,debug), n++);
+        anaList->AddAt(ConfigureGammaJetAnalysis(calorimeter,year,kTRUE ,isoCone,simulation,col,printSettings,debug,histoString), n++);
       else
-	anaList->AddAt(ConfigureGammaJetAnalysis(calorimeter,kFALSE,isoCone,simulation,printSettings,debug), n++);
+        anaList->AddAt(ConfigureGammaJetAnalysis(calorimeter,year,kFALSE,isoCone,simulation,col,printSettings,debug,histoString), n++);
     }// end of gamma-jet correlation
   }
   
@@ -1975,7 +1966,7 @@ void ConfigureCaloTrackCorrAnalysis
   if(simulation && analysisString.Contains("Generator")) 
   {
     anaList->AddAt(ConfigureGenKineAnalysis
-                   (isoMethod,isoPtTh,isoCone,isoConeMin,
+                   (isoContent,isoMethod,isoPtTh,isoCone,isoConeMin,
                     col,simulation,calorimeter,year,printSettings,debug,histoString), n++);
   }
   
