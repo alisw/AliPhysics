@@ -38,6 +38,7 @@ AliForwardSettings::AliForwardSettings() :
   useITS(kFALSE),
   use_primaries_cen(kFALSE),
   use_primaries_fwd(kFALSE),
+  use_primaries_fwdref(kFALSE),
   useEventcuts(kTRUE),
   centrality_estimator("V0M"),//CL0, V0M
   etagap(kTRUE),

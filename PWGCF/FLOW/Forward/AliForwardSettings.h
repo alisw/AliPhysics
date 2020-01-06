@@ -70,6 +70,7 @@ class AliForwardSettings : public TObject {
   Bool_t useITS;
   Bool_t use_primaries_cen;
   Bool_t use_primaries_fwd;
+  Bool_t use_primaries_fwdref;
   Bool_t useEventcuts;
   TString centrality_estimator;
   Bool_t etagap;
