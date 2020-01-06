@@ -122,6 +122,12 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fQnyV0Am{0},
     fQnxTPCm{0},
     fQnyTPCm{0},
+    fQnxV0CEse{0},
+    fQnyV0CEse{0},
+    fQnxV0AEse{0},
+    fQnyV0AEse{0},
+    fQnxTPCEse{0},
+    fQnyTPCEse{0},
     fCentq2TPCvsv22(0),
     fCentq2V0Cvsv22(0),
     fProfNPar(0),
@@ -216,6 +222,12 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name) : AliAnalysisTa
     fQnyV0Am{0},
     fQnxTPCm{0},
     fQnyTPCm{0},
+    fQnxV0CEse{0},
+    fQnyV0CEse{0},
+    fQnxV0AEse{0},
+    fQnyV0AEse{0},
+    fQnxTPCEse{0},
+    fQnyTPCEse{0},
     fCentq2TPCvsv22(0),
     fCentq2V0Cvsv22(0),
     fProfNPar(0),
@@ -371,6 +383,19 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         fQnxTPC[qi]->Sumw2();
         fQnyTPC[qi] = new TH2F(Form("fQ%iyvCentTPC",qi+2),"",100,0,100,100,-1500,1500);
         fQnyTPC[qi]->Sumw2();
+
+        fQnxV0CEse[qi] = new TH2F(Form("fQ%ixvCentV0CEse",qi+2),"",100,0,100,100,-1500,1500);
+        fQnxV0CEse[qi]->Sumw2();
+        fQnyV0CEse[qi] = new TH2F(Form("fQ%iyvCentV0CEse",qi+2),"",100,0,100,100,-1500,1500);
+        fQnyV0CEse[qi]->Sumw2();
+        fQnxV0AEse[qi] = new TH2F(Form("fQ%ixvCentV0AEse",qi+2),"",100,0,100,100,-1500,1500);
+        fQnxV0AEse[qi]->Sumw2();
+        fQnyV0AEse[qi] = new TH2F(Form("fQ%iyvCentV0AEse",qi+2),"",100,0,100,100,-1500,1500);
+        fQnyV0AEse[qi]->Sumw2();
+        fQnxTPCEse[qi] = new TH2F(Form("fQ%ixvCentTPCEse",qi+2),"",100,0,100,100,-1500,1500);
+        fQnxTPCEse[qi]->Sumw2();
+        fQnyTPCEse[qi] = new TH2F(Form("fQ%iyvCentTPCEse",qi+2),"",100,0,100,100,-1500,1500);
+        fQnyTPCEse[qi]->Sumw2();        
     }
 
     const int nBins = 11;
@@ -559,6 +584,13 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         fqnDist->Add(fQnyV0A[qi]);
         fqnDist->Add(fQnxTPC[qi]);
         fqnDist->Add(fQnyTPC[qi]);
+
+        fqnDist->Add(fQnxV0CEse[qi]);
+        fqnDist->Add(fQnyV0CEse[qi]);
+        fqnDist->Add(fQnxV0AEse[qi]);
+        fqnDist->Add(fQnyV0AEse[qi]);
+        fqnDist->Add(fQnxTPCEse[qi]);
+        fqnDist->Add(fQnyTPCEse[qi]);
     }
     fqnDist->Add(fhq2TPCvq2V0C);
 
@@ -630,33 +662,33 @@ void AliAnalysisTaskESEFlow::Terminate(Option_t *)
 void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t fSpCent)
 {
     ReducedqVectorsTPC(centrality, iTracks, fAOD, dVz);
-    ReducedqVectorsV0(centrality,fAOD);
+    ReducedqVectorsV0(centrality,fAOD, fSpCent);
 
-    fhq2TPCvq2V0C->Fill(qnTPC[2],qnV0C[2]);
+    fhq2TPCvq2V0C->Fill(qnTPC[0],qnV0C[0]);
 
     if(!fqRun){
     Int_t CenterCode = GetCentrCode(centrality);
 
     if( (CenterCode < 0) || (CenterCode > 9)) { return; }
 
-    Double_t q2TPCInp = 100.*fSplq2TPC[fSpCent]->Eval(qnTPC[2]);
-    Double_t q3TPCInp = 100.*fSplq3TPC[fSpCent]->Eval(qnTPC[3]);
+    Double_t q2TPCInp = 100.*fSplq2TPC[fSpCent]->Eval(qnTPC[0]);
+    Double_t q3TPCInp = 100.*fSplq3TPC[fSpCent]->Eval(qnTPC[1]);
 
     Int_t q2ESECodeTPC = GetPercCode(q2TPCInp);
     if (q2ESECodeTPC<0) { printf("Problem with q_2 TPC percentile: negative percentile \n"); return; } 
     Int_t q3ESECodeTPC = GetPercCode(q3TPCInp);
     if (q2ESECodeTPC<0) { printf("Problem with q_3 TPC percentile: negative percentile \n"); return; } 
 
-    Double_t q2V0CInp = 100.*fSplq2V0C[fSpCent]->Eval(qnV0C[2]);
-    Double_t q3V0CInp = 100.*fSplq3V0C[fSpCent]->Eval(qnV0C[3]);
+    Double_t q2V0CInp = 100.*fSplq2V0C[fSpCent]->Eval(qnV0C[0]);
+    Double_t q3V0CInp = 100.*fSplq3V0C[fSpCent]->Eval(qnV0C[1]);
 
     Int_t q2ESECodeV0C = GetPercCode(q2V0CInp);
     if (q2ESECodeV0C<0) { printf("Problem with q_2 V0C percentile: negative percentile \n"); return; } 
     Int_t q3ESECodeV0C = GetPercCode(q3V0CInp);
     if (q3ESECodeV0C<0) { printf("Problem with q_3 V0C percentile: negative percentile \n"); return; } 
 
-    Double_t q2V0AInp = 2.;//100.*fSplq2V0A[fSpCent]->Eval(qnV0A[2]); do q-selection for V0A
-    Double_t q3V0AInp = 2.;//100.*fSplq3V0A[fSpCent]->Eval(qnV0A[3]);
+    Double_t q2V0AInp = 2.;//100.*fSplq2V0A[fSpCent]->Eval(qnV0A[0]); do q-selection for V0A
+    Double_t q3V0AInp = 2.;//100.*fSplq3V0A[fSpCent]->Eval(qnV0A[1]);
 
     Int_t q2ESECodeV0A = GetPercCode(q2V0AInp);
     if (q2ESECodeV0A<0) { printf("Problem with q_2 V0A percentile: negative percentile \n"); return; } 
@@ -917,7 +949,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
 
     Double_t M = 0;
     if(iTracks < 1 ) { return; }
-    for(Int_t i(0); i < iTracks; i++) 
+    for(Int_t i(0); i < iTracks; ++i) 
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track || !IsTrackSelected(track)) { continue; }
@@ -932,10 +964,10 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
         if(- (0.4) < dEta && dEta < (0.4))
         {
             M += 1;
-            for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+            for(Int_t iHarm(0); iHarm < 2; ++iHarm)
             {                
-                Double_t dCos = dWeight * TMath::Cos(iHarm * dPhi);
-                Double_t dSin = dWeight * TMath::Sin(iHarm * dPhi);
+                Double_t dCos = dWeight * TMath::Cos( (iHarm+2) * dPhi);
+                Double_t dSin = dWeight * TMath::Sin( (iHarm+2) * dPhi);
                 QxnTPC[iHarm] += dCos;
                 QynTPC[iHarm] += dSin;
             }
@@ -943,13 +975,13 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
     }
 
     for (Int_t nQ(0); nQ<2;++nQ){
-        fQnxTPC[nQ]->Fill(centrality,QxnTPC[nQ+2]);
-        fQnyTPC[nQ]->Fill(centrality,QynTPC[nQ+2]);
+        fQnxTPC[nQ]->Fill(centrality,QxnTPC[nQ]);
+        fQnyTPC[nQ]->Fill(centrality,QynTPC[nQ]);
     } //used for recentering of Qnx/Qny
 
     if(M>0)
     {
-        for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+        for(Int_t iHarm(0); iHarm < 2; ++iHarm)
         { 
             Double_t dqn = QxnTPC[iHarm]*QxnTPC[iHarm]+QynTPC[iHarm]*QynTPC[iHarm];
             qnTPC[iHarm] = TMath::Sqrt(dqn)/TMath::Sqrt(M);
@@ -959,7 +991,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
 
     return;
 }
-void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality, const AliAODEvent* fAOD)
+void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality, const AliAODEvent* fAOD,const Int_t SPCode)
 {
     ResetReducedqVector(qnV0C);
     ResetReducedqVector(QxnV0C);
@@ -967,6 +999,10 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality, const A
     ResetReducedqVector(qnV0A);
     ResetReducedqVector(QxnV0A);
     ResetReducedqVector(QynV0A);
+    ResetReducedqVector(QxnV0CEse);
+    ResetReducedqVector(QynV0CEse);
+    ResetReducedqVector(QxnV0AEse);
+    ResetReducedqVector(QynV0AEse);
 
     AliAODVZERO* aodV0 = fAOD->GetVZEROData();
 
@@ -1000,10 +1036,10 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality, const A
                 continue;
             }
 
-            for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+            for(Int_t iHarm(0); iHarm < 2; ++iHarm)
             {                
-                Double_t dCosC = multCorC * TMath::Cos(iHarm * PhiV0);
-                Double_t dSinC = multCorC * TMath::Sin(iHarm * PhiV0);
+                Double_t dCosC = multCorC * TMath::Cos( (iHarm+2) * PhiV0);
+                Double_t dSinC = multCorC * TMath::Sin( (iHarm+2) * PhiV0);
                 QxnV0C[iHarm] += dCosC;
                 QynV0C[iHarm] += dSinC;
             }
@@ -1027,10 +1063,10 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality, const A
                 continue;
             }
 
-            for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+            for(Int_t iHarm(0); iHarm < 2; ++iHarm)
             {                
-                Double_t dCosA = multCorA * TMath::Cos(iHarm * PhiV0);
-                Double_t dSinA = multCorA * TMath::Sin(iHarm * PhiV0);
+                Double_t dCosA = multCorA * TMath::Cos( (iHarm+2) * PhiV0);
+                Double_t dSinA = multCorA * TMath::Sin( (iHarm+2) * PhiV0);
                 QxnV0A[iHarm] += dCosA;
                 QynV0A[iHarm] += dSinA;
             }
@@ -1040,28 +1076,41 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality, const A
         }
     }
 
+    for (Int_t iQn(0); iQn < 2; ++iQn){
+        QxnV0CEse[iQn] = QxnV0C[iQn] - fQnxV0Cm[iQn]->GetBinContent(SPCode+1);
+        QynV0CEse[iQn] = QynV0C[iQn] - fQnyV0Cm[iQn]->GetBinContent(SPCode+1);
+
+        QxnV0AEse[iQn] = QxnV0A[iQn] - fQnxV0Am[iQn]->GetBinContent(SPCode+1);
+        QynV0AEse[iQn] = QynV0A[iQn] - fQnyV0Am[iQn]->GetBinContent(SPCode+1);
+    }
+
     for (Int_t nQ(0);nQ<2;++nQ){
-        fQnxV0C[nQ]->Fill(centrality,QxnV0C[nQ+2]);
-        fQnyV0C[nQ]->Fill(centrality,QynV0C[nQ+2]);
-        fQnxV0A[nQ]->Fill(centrality,QxnV0A[nQ+2]);
-        fQnyV0A[nQ]->Fill(centrality,QynV0A[nQ+2]);
-    } // fill for recentering
+        fQnxV0C[nQ]->Fill(centrality,QxnV0C[nQ]); // fill for recentering
+        fQnyV0C[nQ]->Fill(centrality,QynV0C[nQ]);
+        fQnxV0A[nQ]->Fill(centrality,QxnV0A[nQ]);
+        fQnyV0A[nQ]->Fill(centrality,QynV0A[nQ]); // End recenter fill
+
+        fQnxV0CEse[nQ]->Fill(centrality,QxnV0CEse[nQ]); // fill after recenter
+        fQnyV0CEse[nQ]->Fill(centrality,QynV0CEse[nQ]);
+        fQnxV0AEse[nQ]->Fill(centrality,QxnV0AEse[nQ]);
+        fQnyV0AEse[nQ]->Fill(centrality,QynV0AEse[nQ]); // end after rec
+    } 
 
     if(MC>0)
     {
-        for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+        for(Int_t iHarm(0); iHarm < 2; ++iHarm)
         {
-            Double_t dqnV0C = QxnV0C[iHarm]*QxnV0C[iHarm]+QynV0C[iHarm]*QynV0C[iHarm];
-            qnV0C[iHarm] = TMath::Sqrt(dqnV0C)/TMath::Sqrt(MC);
+            Double_t dqnV0CEse = QxnV0CEse[iHarm]*QxnV0CEse[iHarm]+QynV0CEse[iHarm]*QynV0CEse[iHarm];
+            qnV0C[iHarm] = TMath::Sqrt(dqnV0CEse)/TMath::Sqrt(MC);
         }
         FillqnRedV0(centrality,"V0C");
     }
     if(MA>0)
     {
-        for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
+        for(Int_t iHarm(0); iHarm < 2; ++iHarm)
         {
-            Double_t dqnV0A = QxnV0A[iHarm]*QxnV0A[iHarm]+QynV0A[iHarm]*QynV0A[iHarm];
-            qnV0A[iHarm] = TMath::Sqrt(dqnV0A)/TMath::Sqrt(MA);
+            Double_t dqnV0AEse = QxnV0AEse[iHarm]*QxnV0AEse[iHarm]+QynV0AEse[iHarm]*QynV0AEse[iHarm];
+            qnV0A[iHarm] = TMath::Sqrt(dqnV0AEse)/TMath::Sqrt(MA);
         }
         FillqnRedV0(centrality,"V0A");
     }
@@ -1098,8 +1147,8 @@ void AliAnalysisTaskESEFlow::FillRFP(const Float_t centrality,const Int_t iTrack
             FillESEcn(centrality, nHarm, cn_fill, cDenom, 2,q2ESECodeTPC,q3ESECodeTPC,q2ESECodeV0C,q3ESECodeV0C); //fill integrated cqncut here
 
             if(nHarm==2){
-                fCentq2TPCvsv22->Fill(centrality,qnTPC[2],cn_fill,cDenom);
-                fCentq2V0Cvsv22->Fill(centrality,qnV0C[2],cn_fill,cDenom);
+                fCentq2TPCvsv22->Fill(centrality,qnTPC[0],cn_fill,cDenom);
+                fCentq2V0Cvsv22->Fill(centrality,qnV0C[0],cn_fill,cDenom);
             }
         }// end 2 corr
         if(nCorr==4 && nHarm==2){
@@ -1242,20 +1291,20 @@ void AliAnalysisTaskESEFlow::Filldn(const Int_t CenterCode, const double dPt, co
 }
 void AliAnalysisTaskESEFlow::FillqnRedTPC(const Float_t centrality)
 {
-    fq2TPC->Fill(centrality,qnTPC[2]);
-    fq3TPC->Fill(centrality,qnTPC[3]);
+    fq2TPC->Fill(centrality,qnTPC[0]);
+    fq3TPC->Fill(centrality,qnTPC[1]);
 
     return;
 }
 void AliAnalysisTaskESEFlow::FillqnRedV0(const Float_t centrality, TString V0type)
 {
     if(V0type=="V0C"){
-    fq2V0C->Fill(centrality,qnV0C[2]);
-    fq3V0C->Fill(centrality,qnV0C[3]);
+    fq2V0C->Fill(centrality,qnV0C[0]);
+    fq3V0C->Fill(centrality,qnV0C[1]);
     }
     if(V0type=="V0A"){
-    fq2V0A->Fill(centrality,qnV0A[2]);
-    fq3V0A->Fill(centrality,qnV0A[3]);
+    fq2V0A->Fill(centrality,qnV0A[0]);
+    fq3V0A->Fill(centrality,qnV0A[1]);
     }
     else { return; } 
 
@@ -1328,7 +1377,7 @@ Bool_t AliAnalysisTaskESEFlow::LoadV0Calibration()
 
     for (Int_t i(0);i<2;++i){
         fQnxV0Cm[i] = (TH1F*) listV0CalibRbr->FindObject(Form("hQx%iV0Cm",i+2));
-        fQnyV0Cm[i] = (TH1F*) listV0CalibRbr->FindObject(Form("hQu%iV0Cm",i+2));
+        fQnyV0Cm[i] = (TH1F*) listV0CalibRbr->FindObject(Form("hQy%iV0Cm",i+2));
         fQnxV0Am[i] = (TH1F*) listV0CalibRbr->FindObject(Form("hQx%iV0Am",i+2));
         fQnyV0Am[i] = (TH1F*) listV0CalibRbr->FindObject(Form("hQy%iV0Am",i+2));
         //fQnxTPCm[i] = (TH1F*) listV0CalibRbr->FindObject(Form("hQx%iTPCm",i+2));
@@ -1467,11 +1516,11 @@ void AliAnalysisTaskESEFlow::ResetFlowVector(TComplex (&array)[fNumHarms][fNumPo
   }
   return;
 }
-void AliAnalysisTaskESEFlow::ResetReducedqVector(double (&array)[fNumHarms])
+void AliAnalysisTaskESEFlow::ResetReducedqVector(double (&array)[2])
 {
   // RESET Reduced q vector
   // *************************************************************
-  for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm) {
+  for(Int_t iHarm(0); iHarm < 2; ++iHarm) {
       array[iHarm]=(0.0);
   }
   return;
