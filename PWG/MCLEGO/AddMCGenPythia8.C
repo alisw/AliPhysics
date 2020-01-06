@@ -73,6 +73,7 @@ AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760.,
                               Bool_t kCR = kTRUE, 
                               Int_t kF = 1,
                               Int_t kProcess=0,
+			      Int_t kSoftOrHard = 2,
                               Double_t ptHardMin=0,
                               Double_t ptHardMax=1., 
                               Int_t tune=14) 
@@ -80,11 +81,12 @@ AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760.,
   // Add Pythia 8 generator: 
   //    -kProcess=0  MB generation
   //    -kProcess=1  Jet production, pthard generation
+  //    - kSoftOrHard: 0==>soft, 1==>hard, anything else do nothing
   //    - Color reconnection = ON/OFF
   //    - Set k factor, default = 1; range of possible values in xmldoc/CouplingsAndScales.xml
 
   AliGenerator *genP = NULL;
-  genP = CreatePythia8Gen(e_cms, kCR, kF,kProcess,ptHardMin,ptHardMax,tune);
+  genP = CreatePythia8Gen(e_cms, kCR, kF,kProcess,kSoftOrHard,ptHardMin,ptHardMax,tune);
   
   return genP;
 }
