@@ -236,7 +236,7 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
   fUtil.fevent = fInputEvent;
   
-  Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
+  //Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
   AliMCEvent* fAOD = this->MCEvent();
 
@@ -266,20 +266,17 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
   
   static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
 
+  if (fMaxConsequtiveStrips == 0){
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {
     AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
 
-   // Ignore things that do not make a signal in the FMD
-    //AliTrackReference* tr = fUtil.IsHitFMD(p);
 
-    //if (tr){
       for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
         AliTrackReference* tr = p->GetTrackReference(iTrRef);
+         // Ignore things that do not make a signal in the FMD
         if (!tr || AliTrackReference::kFMD != tr->DetectorId()) continue;    
 
-
-
-       //if (tr && p->Charge() != 0){
+       //if (tr && p->Charge() == 0) continue;
 
          AliMCParticle* mother = GetMother(p);
          if (!mother) mother = p;
@@ -300,21 +297,20 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
           // weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
           // if (weight == 0) continue;
          // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
-         Double_t phi[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), eta_tr,cent};//wrappi
-         Double_t eta[4] = {event_vtx_z, eta_tr - eta_mother, phi_tr,cent};
 
-         fdelta_phi_eta->Fill(phi,weight);
-         fdelta_eta_phi->Fill(eta,weight);
-
-         // Double_t phi1[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), phi_tr,cent};//wrappi
-         // Double_t eta1[4] = {event_vtx_z, eta_tr - eta_mother, eta_tr,cent};
+        Double_t dphi_phi[3] = {event_vtx_z, WrapPi(phi_mother - phi_tr), phi_tr};//Wrap02pi
+        Double_t dphi_eta[3] = {event_vtx_z, WrapPi(phi_mother - phi_tr), eta_tr};//Wrap02pi
+        Double_t deta_phi[3] = {event_vtx_z, eta_tr - eta_mother, phi_tr};//wrappi
+        Double_t deta_eta[3] = {event_vtx_z, eta_tr - eta_mother, eta_tr};
 
 
-         // delta_phi_phi->Fill(phi1,weight);
-         // delta_eta_eta->Fill(eta1,weight);
+         fdelta_phi_eta->Fill(dphi_eta,weight);
+         fdelta_eta_phi->Fill(deta_phi,weight);
+         fdelta_phi_phi->Fill(dphi_phi,weight);
+         fdelta_eta_eta->Fill(deta_eta,weight);
 
 
-         Double_t x_prim[3] =  {event_vtx_z,eta_tr, cent};
+         Double_t x_prim[3] =  {event_vtx_z,eta_tr};
          Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
          if (!isNewPrimary){
            listOfMothers.push_back(mother->GetLabel());
@@ -322,26 +318,25 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
          }
        }
      }
-   //}
+   }
+  else{
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* particle =
+        static_cast<AliMCParticle*>(fAOD->GetTrack(iTr));
 
-/*
-  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-    AliMCParticle* particle =
-      static_cast<AliMCParticle*>(fAOD->GetTrack(iTr));
+      // Check if this charged and a primary
+      if (particle->Charge() == 0) continue;
 
-    // Check if this charged and a primary
-    if (particle->Charge() == 0) continue;
+      Bool_t isPrimary = stack->IsPhysicalPrimary(iTr) && iTr < this->MCEvent()->GetNumberOfPrimaries();
 
-    Bool_t isPrimary = stack->IsPhysicalPrimary(iTr) && iTr < this->MCEvent()->GetNumberOfPrimaries();
+      AliMCParticle* mother = isPrimary ? particle : GetMother(iTr,fAOD);
+      if (!mother) mother = particle;
+      // IF the track corresponds to a primary, pass that as both
+      // arguments.
 
-    AliMCParticle* mother = isPrimary ? particle : GetMother(iTr,fAOD);
-    if (!mother) mother = particle;
-    // IF the track corresponds to a primary, pass that as both
-    // arguments.
-
-    ProcessTrack(particle, mother,listOfMothers, cent,event_vtx_z);
+      ProcessTrack(particle, mother,listOfMothers,event_vtx_z);
+    }
   }
-*/
     PostData(1, fOutputList);
   return;
 }
@@ -349,7 +344,7 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
 
 Bool_t
 AliForwardSecondariesTask::ProcessTrack(AliMCParticle* particle, AliMCParticle* mother, 
-                                        std::vector<Int_t> listOfMothers, Double_t cent, Float_t event_vtx_z)
+                                        std::vector<Int_t> listOfMothers, Float_t event_vtx_z)
 {
   // Check the returned particle
   //
@@ -373,13 +368,13 @@ AliForwardSecondariesTask::ProcessTrack(AliMCParticle* particle, AliMCParticle* 
 
     if (ref->DetectorId() != AliTrackReference::kFMD) continue;
 
-    AliTrackReference* test = ProcessRef(particle, mother, ref,listOfMothers,  cent,  event_vtx_z);
+    AliTrackReference* test = ProcessRef(particle, mother, ref,listOfMothers, event_vtx_z);
     if (test) store = test;
 
   } // Loop over track references
   if (!store) return true; // Nothing found
 
-  StoreParticle(particle, mother, store, listOfMothers, cent,  event_vtx_z);
+  StoreParticle(particle, mother, store, listOfMothers, event_vtx_z);
   EndTrackRefs();
 
   return true;
@@ -388,12 +383,8 @@ AliForwardSecondariesTask::ProcessTrack(AliMCParticle* particle, AliMCParticle* 
 //____________________________________________________________________
 void
 AliForwardSecondariesTask::StoreParticle(AliMCParticle* particle, AliMCParticle* mother, AliTrackReference* ref,
-                                         std::vector< Int_t > listOfMothers, Double_t cent, Float_t event_vtx_z)
+                                         std::vector< Int_t > listOfMothers, Float_t event_vtx_z)
 {
-  THnD* delta_phi_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-  THnD* delta_eta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-  THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
-
   UInt_t packed = ref->UserId();
   UShort_t detector, sector, strip;
   Char_t   ring;
@@ -421,17 +412,17 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle* particle, AliMCParticle*
 
   Double_t phi_tr = (etaPhi[1]); //Wrap02pi
   Double_t eta_tr = etaPhi[0];
-  Double_t phi[5] = {event_vtx_z, WrapPi(phi_mother - phi_tr), eta_tr, cent};//Wrap02pi
+  Double_t dphi_phi[3] = {event_vtx_z, WrapPi(phi_mother - phi_tr), phi_tr};//Wrap02pi
+  Double_t dphi_eta[3] = {event_vtx_z, WrapPi(phi_mother - phi_tr), eta_tr};//Wrap02pi
+  Double_t deta_phi[3] = {event_vtx_z, eta_tr - eta_mother, phi_tr};//wrappi
+  Double_t deta_eta[3] = {event_vtx_z, eta_tr - eta_mother, eta_tr};
 
-  delta_phi_eta->Fill(phi,1);
+  fdelta_phi_phi->Fill(dphi_phi,1);
+  fdelta_phi_eta->Fill(dphi_eta,1);
+  fdelta_eta_phi->Fill(deta_phi,1);
+  fdelta_eta_eta->Fill(deta_eta,1);
 
-
-  Double_t eta[5] = {event_vtx_z, eta_mother - eta_tr, phi_tr, cent};//Wrap02pi
-  delta_eta_phi->Fill(eta,1);
-
-  delta_phi_eta->Fill(phi,1);
-
-  Double_t x_prim[4] =  {event_vtx_z,eta_tr,cent};
+  Double_t x_prim[4] =  {event_vtx_z,eta_tr};
   Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
   if (!isNewPrimary){
     listOfMothers.push_back(mother->GetLabel());
@@ -526,7 +517,7 @@ Bool_t AliForwardSecondariesTask::AddMotherIfFirstTimeSeen(AliMCParticle* p, std
 
 AliTrackReference*
 AliForwardSecondariesTask::ProcessRef(AliMCParticle* particle, AliMCParticle* mother, AliTrackReference* ref,
-                                      std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z)
+                                      std::vector< Int_t > listOfMothers, Float_t event_vtx_z)
 {
   // Process track references of a track
   //
@@ -579,7 +570,7 @@ AliForwardSecondariesTask::ProcessRef(AliMCParticle* particle, AliMCParticle* mo
 	   s, fState.oldSector,
 	   t, fState.oldStrip,
 	   fState.nStrips, fMaxConsequtiveStrips);
-    StoreParticle(particle, mother, fState.longest,listOfMothers,  randomInt,  event_vtx_z);
+    StoreParticle(particle, mother, fState.longest,listOfMothers, event_vtx_z);
     fState.Clear(false);
   }
 
