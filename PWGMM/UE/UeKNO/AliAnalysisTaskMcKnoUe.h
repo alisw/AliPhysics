@@ -101,6 +101,7 @@ private:
 	TH1D * hPtLeadingTrue;
 	TH1D * hPtLeadingMeasured;
 	TH2D * hPtVsPtLeadingMeasured[3];
+        TH2D * hPtVsPtLeadingTrue[3];
 	TProfile * pNumDenMeasured[3];
 	TProfile * pNumDenTrue[3];
 	TProfile * pSumPtMeasured[3];
