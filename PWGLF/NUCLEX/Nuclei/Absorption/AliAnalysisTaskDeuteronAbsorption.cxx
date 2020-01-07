@@ -257,7 +257,9 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     //
     double sign = track->GetSign();
     // fill QA histograms
-    double tpcNsigmas[4]{999., 999., 999., 999.};
+    double tpcNsigmas[kNabsSpecies];
+    for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies) tpcNsigmas[iSpecies] = 999.;
+    //
     fHist3TPCpidAll->Fill(ptot * sign, track->GetTPCsignal(), track->Phi());
     if (hasTOF && track->GetTPCsignal() > fMindEdx)
     {
