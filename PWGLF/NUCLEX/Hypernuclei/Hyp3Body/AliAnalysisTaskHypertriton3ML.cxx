@@ -661,15 +661,13 @@ void AliAnalysisTaskHypertriton3ML::FillEventMixingPool(const float centrality, 
   int centBin = FindEventMixingCentBin(centrality);
   int zBin    = FindEventMixingZBin(zvtx);
 
-  std::vector<std::vector<AliESDtrack>> *trackVector = &fEventMixingPool[centBin][zBin];
-  std::vector<AliESDtrack> tmpVector;
+  auto &trackVector = fEventMixingPool[centBin][zBin];
 
-  for (auto t : tracks) {
-    tmpVector.emplace_back(AliESDtrack{*t});
+  for (auto &t : tracks) {
+    trackVector.emplace_back(AliESDtrack{*t});
   }
 
-  trackVector->insert(trackVector->begin(), tmpVector);
-  if (trackVector->size() > fEventMixingPoolDepth) trackVector->pop_back();
+  if (trackVector.size() - fEventMixingPoolDepth > 0) trackVector.pop_front();
 
   return;
 }
@@ -682,11 +680,8 @@ std::vector<AliESDtrack *> AliAnalysisTaskHypertriton3ML::GetEventMixingTracks(c
 
   std::vector<AliESDtrack *> tmpVector;
 
-  for (auto v : fEventMixingPool[centBin][zBin]) {
-    tmpVector.reserve(tmpVector.size() + v.size());
-    for (auto esd : v) {
-      tmpVector.insert(tmpVector.end(), &esd);
-    }
+  for (auto &v : fEventMixingPool[centBin][zBin]) {
+    tmpVector.emplace_back(&v);
   }
 
   return tmpVector;
