@@ -2204,7 +2204,7 @@ void AliCEPUtils::SetMCTruth (
   // for DIME, PYTHIA8-CD, and Starlight save the CEP particle
   // add primaries except for the incoming and outgoing protons
   lvprod = TLorentzVector(0,0,0,0);
-  if ( fMCGenerator.EqualTo("Dime") ||
+  if ( fMCGenerator.EqualTo("Dime") || fMCGenerator.EqualTo("DRgen") ||
        ( fMCGenerator.EqualTo("Pythia") && fMCProcess==106 )
      )
   {
