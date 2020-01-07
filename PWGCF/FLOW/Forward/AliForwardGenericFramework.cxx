@@ -43,7 +43,10 @@ AliForwardGenericFramework::AliForwardGenericFramework():
   fQvector = new THnD("Qvector", "Qvector", dimensions, rbins, xmin, xmax);
 
   Int_t dbins[4] = {2, 6, 4, fSettings.fNDiffEtaBins} ; // kind (real or imaginary), n, p, eta
-  xmin[3] = -4.0;
+
+  Double_t dxmin[4] = {-1.0, -0.5, 0.5, fSettings.fEtaLowEdge}; // kind (real or imaginary), n, p, eta
+  Double_t dxmax[4] = { 1,   5.5, 4.5,  fSettings.fEtaUpEdge}; // kind (real or imaginary), n, p, eta SKAL VAERE -6 - 6
+
 
   fpvector = new THnD("pvector", "pvector", dimensions, dbins, xmin, xmax);
   fqvector = new THnD("qvector", "qvector", dimensions, dbins, xmin, xmax);
