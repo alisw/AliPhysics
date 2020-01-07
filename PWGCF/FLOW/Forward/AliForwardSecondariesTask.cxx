@@ -153,13 +153,13 @@ void AliForwardSecondariesTask::UserCreateOutputObjects()
   Double_t xmin_phi_eta[3] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), fSettings.fEtaLowEdge};
   Double_t xmax_phi_eta[3] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), fSettings.fEtaUpEdge}; 
 
-  Int_t bins_eta_phi[3] = {fSettings.fNZvtxBins, 42, fSettings.fNPhiBins} ;
-  Double_t xmin_eta_phi[3] = {fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaUpEdge, 0};
-  Double_t xmax_eta_phi[3] = {fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 2*TMath::Pi()}; 
+  Int_t bins_eta_phi[3] = {fSettings.fNZvtxBins, 41, fSettings.fNPhiBins} ;
+  Double_t xmin_eta_phi[3] = {fSettings.fZVtxAcceptanceLowEdge, -4.92, 0};
+  Double_t xmax_eta_phi[3] = {fSettings.fZVtxAcceptanceUpEdge, 4.92, 2*TMath::Pi()}; 
 
-  Int_t bins_eta_eta[3] = {fSettings.fNZvtxBins, 43, fSettings.fNDiffEtaBins} ;
-  Double_t xmin_eta_eta[3] = {fSettings.fZVtxAcceptanceLowEdge, -5, fSettings.fEtaLowEdge};
-  Double_t xmax_eta_eta[3] = {fSettings.fZVtxAcceptanceUpEdge,   5, fSettings.fEtaUpEdge}; 
+  Int_t bins_eta_eta[3] = {fSettings.fNZvtxBins, 41, fSettings.fNDiffEtaBins} ;
+  Double_t xmin_eta_eta[3] = {fSettings.fZVtxAcceptanceLowEdge, -4.92, fSettings.fEtaLowEdge};
+  Double_t xmax_eta_eta[3] = {fSettings.fZVtxAcceptanceUpEdge,   4.92, fSettings.fEtaUpEdge}; 
 
 
   Int_t bins_phi_phi[3] = {fSettings.fNZvtxBins, fSettings.fNPhiBins + 1, fSettings.fNPhiBins} ;
