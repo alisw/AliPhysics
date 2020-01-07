@@ -1618,6 +1618,11 @@ void AliCEPUtils::DetermineMCprocessType (
 				fMCProcessType = AliCEPBase::kProctypeCD;
 			}
 
+      // DRgen
+			else if (fMCGenerator.EqualTo("DRgen")) {
+				fMCProcessType = AliCEPBase::kProctypeCD;
+			}
+
 		}
 
     // if (fMCProcessType == AliCEPBase::kProctypeCD)
