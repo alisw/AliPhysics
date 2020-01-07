@@ -222,7 +222,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   // Get the event validation object
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
-  if (!ev_val->IsValidEvent() || !isgoodrun){
+  if (!ev_val->IsValidEvent()){
     PostData(1, fStorage);
     return;
   }
