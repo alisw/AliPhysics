@@ -135,6 +135,7 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 		hSumPtMCMatchDd[i]=0;
 
 		hPtVsPtLeadingMeasured[i]=0;// only for data
+		hPtVsPtLeadingTrue[i]=0;
 
 		pNumDenMeasured[i]=0;// only for data
 		pSumPtMeasured[i]=0;// only for data
@@ -182,13 +183,14 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		hSumPtMC[i]=0;
 		hNumDenMCMatch[i]=0;
 		hSumPtMCMatch[i]=0;
-                // Data driven
-                hNumDenMCDd[i]=0;
-                hSumPtMCDd[i]=0;
-                hNumDenMCMatchDd[i]=0;
-                hSumPtMCMatchDd[i]=0;
+		// Data driven
+		hNumDenMCDd[i]=0;
+		hSumPtMCDd[i]=0;
+		hNumDenMCMatchDd[i]=0;
+		hSumPtMCMatchDd[i]=0;
 
 		hPtVsPtLeadingMeasured[i]=0;// only for data
+		hPtVsPtLeadingTrue[i]=0;		
 		pNumDenMeasured[i]=0;// only for data
 		pSumPtMeasured[i]=0;// only for data
 
@@ -358,6 +360,9 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 
 		hPtVsPtLeadingMeasured[i] = new TH2D(Form("hPtVsPtLeadingMeasured_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
 		fOutputList->Add(hPtVsPtLeadingMeasured[i]);
+
+		hPtVsPtLeadingTrue[i] = new TH2D(Form("hPtVsPtLeadingTrue_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		fOutputList->Add(hPtVsPtLeadingTrue[i]);
 
 		pNumDenMeasured[i] = new TProfile(Form("pNumDenMeasured_%s",nameReg[i]),"",ptNbins,ptbins1);
 		fOutputList->Add(pNumDenMeasured[i]);
@@ -1068,12 +1073,15 @@ void AliAnalysisTaskMcKnoUe::GetUEObservables(){
 		// definition of the topological regions
 		if(TMath::Abs(DPhi)<pi/3.0){// near side
 			nch_top[0]++; sumpt_top[0]+=particle->Pt();
+			hPtVsPtLeadingTrue[0]->Fill(fGenLeadPt,particle->Pt());
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
 			nch_top[1]++; sumpt_top[1]+=particle->Pt();
+			hPtVsPtLeadingTrue[1]->Fill(fGenLeadPt,particle->Pt());
 		}
 		else{// transverse side
 			nch_top[2]++; sumpt_top[2]+=particle->Pt();
+			hPtVsPtLeadingTrue[2]->Fill(fGenLeadPt,particle->Pt());
 		}
 
 
