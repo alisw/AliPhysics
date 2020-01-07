@@ -1106,9 +1106,9 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     fHistograms->Add(fHistogramsAfter);
 
     fHistSingleParticlePt[0] = new TH1F("fHistSingleParticlePt_pos",
-                                        ";#it{p}_{T}; Entries", 100, 0, 10);
+                                        ";#it{p}_{T}; Entries", 500, 0, 10);
     fHistSingleParticlePt[1] = new TH1F("fHistSingleParticlePt_neg",
-                                        ";#it{p}_{T}; Entries", 100, 0, 10);
+                                        ";#it{p}_{T}; Entries", 500, 0, 10);
     fHistSingleParticleEtaBefore[0] = new TH2F(
         "fHistSingleParticleEtaBefore_pos", "; #it{p}_{T} (GeV/#it{c}); #eta",
         50, 0, 10, 100, -2, 2);

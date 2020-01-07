@@ -35,6 +35,8 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
 
   void CastToVector(std::vector<AliFemtoDreamBasePart> &particlesOut,
                     std::vector<AliFemtoDreamBasePart> &particlesIn);
+  void CastToVector(std::vector<AliFemtoDreamBasePart> &particlesOut,
+                    std::vector<AliFemtoDreamBasePart> &particlesIn, int entry);
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
@@ -129,4 +131,11 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
 
   ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 6)
 };
+
+inline void AliAnalysisTaskNanoAODSigma0Femto::CastToVector(
+    std::vector<AliFemtoDreamBasePart> &particlesOut,
+    std::vector<AliFemtoDreamBasePart> &particlesIn) {
+  CastToVector(particlesOut, particlesIn, fRandom->Rndm() * particlesIn.size());
+}
+
 #endif
