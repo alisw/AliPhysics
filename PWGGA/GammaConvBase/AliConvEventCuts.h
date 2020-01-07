@@ -259,7 +259,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17c3b2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
         kLHC17c3a2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
         kLHC17i3a1,         //!< anchored LHC16i,j,k,l,o,p GammaJet - EMCal triggered
-        kLHC17i3c1,         //!< anchored LHC16i,j,k,l,o,p JetJet - EMCal triggered
+        kLHC17i3b1,         //!< anchored LHC16i,j,k,l,o,p JetJet - 3.5 GeV in EMCal acc.
+        kLHC17i3b2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 3.5 GeV in DCal/PHOS acc.
+        kLHC17i3c1,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in EMCal acc.
+        kLHC17i3c2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in DCal/PHOS acc.
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
@@ -315,11 +318,17 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17P1JJ,           //!LHC17k JJ
         kLHC17P1JJLowB,       //!LHC17k JJ
         kLHC18l6b1,           //!JJ MC anchored to LHC17 with decay photon > 3.5 GeV in EMCal acc.
+        kLHC18l6b2,           //!JJ MC anchored to LHC17 with decay photon > 3.5 GeV in DCal/PHOS acc.
         kLHC18l6c1,           //!JJ MC anchored to LHC17 with decay photon > 7 GeV in EMCal acc.
+        kLHC18l6c2,           //!JJ MC anchored to LHC17 with decay photon > 7 GeV in DCal/PHOS acc.
         // 2018
         kLHC18NomB,           //!< pp 13 TeV nominal B field
         kLHC18LowB,           //!< pp 13 TeV low B field
         kLHC18P1JJ,           //!< pp 13 TeV JJ MCs
+        kLHC19i3b1,           //!JJ MC anchored to LHC17 with decay photon > 3.5 GeV in EMCal acc.
+        kLHC19i3b2,           //!JJ MC anchored to LHC17 with decay photon > 3.5 GeV in DCal/PHOS acc.
+        kLHC19i3c1,           //!JJ MC anchored to LHC17 with decay photon > 7 GeV in EMCal acc.
+        kLHC19i3c2,           //!JJ MC anchored to LHC17 with decay photon > 7 GeV in DCal/PHOS acc.
 
         //13 TeV LHC2018
         kLHC18P1Pyt8NomB,     //!LHC18x Pythia8 MB productions nom B anchored to LHC18x
