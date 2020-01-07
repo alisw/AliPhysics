@@ -48,8 +48,8 @@ AliForwardGenericFramework::AliForwardGenericFramework():
   Double_t dxmax[4] = { 1,   5.5, 4.5,  fSettings.fEtaUpEdge}; // kind (real or imaginary), n, p, eta SKAL VAERE -6 - 6
 
 
-  fpvector = new THnD("pvector", "pvector", dimensions, dbins, xmin, xmax);
-  fqvector = new THnD("qvector", "qvector", dimensions, dbins, xmin, xmax);
+  fpvector = new THnD("pvector", "pvector", dimensions, dbins, dxmin, dxmax);
+  fqvector = new THnD("qvector", "qvector", dimensions, dbins, dxmin, dxmax);
   //fpvector->SetDirectory(0);
   //fqvector->SetDirectory(0);
 
