@@ -121,13 +121,20 @@ private:
 	TProfile * pSumPtMeasuredPSV[3];
 	TProfile * pSumPtTruePSV[3];
 
+	TProfile * pNumDenMeasuredGood[3];
+	TProfile * pNumDenTrueGood[3];
+	TProfile * pSumPtMeasuredGood[3];
+	TProfile * pSumPtTrueGood[3];
+
 	TH2D * hPtVsUEGenTest[3];
 	TH2D * hPtVsUERecTest[3];
 
 	TH1D * hPtLeadingRecPS;
 	TH1D * hPtLeadingRecPSV;
+        TH1D * hPtLeadingRecGood;
 	TH1D * hPtLeadingGenPS;
 	TH1D * hPtLeadingGenPSV;
+        TH1D * hPtLeadingGenGood;
 	TH1D * hPtLeadingRecAll;
 	TH1D * hPtLeadingGenAll;
 
