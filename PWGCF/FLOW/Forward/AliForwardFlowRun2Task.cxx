@@ -218,11 +218,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
   
-
-  Bool_t isgoodrun = kTRUE;
-  if (!fSettings.mc){
-    isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
-  }
   if (fSettings.doNUA) fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
 
   // Get the event validation object

@@ -57,6 +57,7 @@ AliForwardSettings::AliForwardSettings() :
   fmdhighcut(3.5),
   track_sample(0),
   nua_runnumber(0),
-  correct_nua_mc()
+  correct_nua_mc(),
+  run_list(0)
 {
 }

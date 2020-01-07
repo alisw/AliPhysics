@@ -185,7 +185,6 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       fill(cumu_dW2B, n, ptn, sample, zvertex, eta, cent, dn2diff);
 
       // A side
-      
       twodiff = TwoDiff(n, -n, refEtaBinA, etaBin).Re();
       dn2diff = TwoDiff(0,0, refEtaBinA, etaBin).Re();
       fill(cumu_dW2TwoA, n, ptn, sample, zvertex, eta, cent, twodiff);
