@@ -266,20 +266,22 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
       sigma0sidebandLow, antiSigma0particles, antiSigma0sidebandUp,
       antiSigma0sidebandLow, sigma0lambda, antiSigma0lambda, sigma0photon, antiSigma0photon;
 
-  CastToVector(sigma0particles, fSigmaCuts->GetSigma());
+  const int sigmaEntry = fRandom->Rndm() * fSigmaCuts->GetSigma().size();
+  CastToVector(sigma0particles, fSigmaCuts->GetSigma(), sigmaEntry);
   CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp());
   CastToVector(sigma0sidebandLow, fSigmaCuts->GetSidebandDown());
 
-  CastToVector(antiSigma0particles, fAntiSigmaCuts->GetSigma());
+  const int antisigmaEntry = fRandom->Rndm() * fAntiSigmaCuts->GetSigma().size();
+  CastToVector(antiSigma0particles, fAntiSigmaCuts->GetSigma(), antisigmaEntry);
   CastToVector(antiSigma0sidebandUp, fAntiSigmaCuts->GetSidebandUp());
   CastToVector(antiSigma0sidebandLow, fAntiSigmaCuts->GetSidebandDown());
 
   // Get the Sigma0 daughters
   if (fCheckDaughterCF) {
-    CastToVector(sigma0lambda, fSigmaCuts->GetLambda());
-    CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda());
-    CastToVector(sigma0photon, fSigmaCuts->GetPhoton());
-    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton());
+    CastToVector(sigma0lambda, fSigmaCuts->GetLambda(), sigmaEntry);
+    CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda(), antisigmaEntry);
+    CastToVector(sigma0photon, fSigmaCuts->GetPhoton(), sigmaEntry);
+    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton(), antisigmaEntry);
   }
 
   if (fFemtoJanitor) {
@@ -363,11 +365,12 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
 //____________________________________________________________________________________________________
 void AliAnalysisTaskNanoAODSigma0Femto::CastToVector(
     std::vector<AliFemtoDreamBasePart> &particlesOut,
-    std::vector<AliFemtoDreamBasePart> &particlesIn) {
+    std::vector<AliFemtoDreamBasePart> &particlesIn, int entry) {
   particlesOut.clear();
   // Randomly pick one of the particles in the container
   if (particlesIn.size() > 0) {
-    particlesOut.push_back(particlesIn[fRandom->Rndm() * particlesIn.size()]);
+    particlesOut.push_back(particlesIn[entry]);
+
   }
 }
 
