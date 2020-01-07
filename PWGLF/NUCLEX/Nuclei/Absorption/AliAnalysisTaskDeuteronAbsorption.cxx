@@ -34,8 +34,8 @@
 
 class AliAnalysisTaskDeuteronAbsorption;
 
-const AliPID::EParticleType AliAnalysisTaskDeuteronAbsorption::fgkSpecies[4] = {AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron, AliPID::kTriton};
-const std::string AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[4] = {"Kaon", "Proton", "Deuteron", "Triton"};
+const AliPID::EParticleType AliAnalysisTaskDeuteronAbsorption::fgkSpecies[kNabsSpecies] = {AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron, AliPID::kTriton, AliPID::kHe3};
+const std::string AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[kNabsSpecies] = {"Kaon", "Proton", "Deuteron", "Triton","3He"};
 const double AliAnalysisTaskDeuteronAbsorption::fgkPhiParamPos[4][4] = {
       {1.38984e+00, -2.10187e+01, 5.81724e-02, 1.91938e+01},
       {2.02372e+00, -2.44456e+00, 8.99000e-01, 9.22399e-01},
@@ -50,6 +50,7 @@ const double AliAnalysisTaskDeuteronAbsorption::fgkPhiParamNeg[4][4] = {
 ClassImp(AliAnalysisTaskDeuteronAbsorption); // classimp: necessary for root
 
 AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char *name) : AliAnalysisTaskSE(name),
+                                                                                         fUseTRDboundariesCut{true},
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
                                                                                          fPIDResponse{nullptr},
@@ -121,7 +122,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
   std::string wTOF[2] = {"woTOF", "wTOF"};
   std::string pos_neg[2] = {"neg", "pos"};
 
-  for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
+  for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
   {
     fHist3TPCpid[iSpecies] = new TH3F(Form("fHist3TPCpid%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); d#it{E}/d#it{x} (arb. units); #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 400, 0, 1000, 18, 0, TMath::TwoPi());
     fHist3TOFpid[iSpecies] = new TH3F(Form("fHist3TOFpid%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); #beta; #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 300, 0, 1.2, 18, 0, 2 * TMath::Pi());
@@ -147,7 +148,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
         fHist1AcceptanceAll[iCharge][iTRD][iTOF] = new TH1F(Form("fHist1AcceptanceAll%s_%s_%s", pos_neg[iCharge].data(), wTRD[iTRD].data(), wTOF[iTOF].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c});", pos_neg[iCharge].data(), wTRD[iTRD].data(), wTOF[iTOF].data()), 200, 0, 10);
         fOutputList->Add(fHist1AcceptanceAll[iCharge][iTRD][iTOF]);
       }
-      for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
+      for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
       {
         fHist2Matching[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2Matching%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), 200, 0, 10, 160, 0, 6.5);
         fOutputList->Add(fHist2Matching[iSpecies][iCharge][iTRD]);
@@ -263,7 +264,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       fHist3TOFpidAll->Fill(ptot * sign, beta, track->Phi());
       fHist3TOFmassAll->Fill(ptot * sign, mass2, track->Phi());
     }
-    for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
+    for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
     {
       tpcNsigmas[iSpecies] = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[iSpecies]);
       if (std::abs(tpcNsigmas[iSpecies]) < 3.)
@@ -287,15 +288,17 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     while (phi > TMath::TwoPi())
       phi -= TMath::TwoPi();
     bool withTRD[2]{
+        fUseTRDboundariesCut ? true :
         phi < fTRDboundariesNeg[0]->Eval(pt) ||
             (phi > fTRDboundariesNeg[1]->Eval(pt) && phi < fTRDboundariesNeg[2]->Eval(pt)) ||
             phi > fTRDboundariesNeg[3]->Eval(pt),
+        fUseTRDboundariesCut ? true :
         phi < fTRDboundariesPos[0]->Eval(pt) ||
             (phi > fTRDboundariesPos[1]->Eval(pt) && phi < fTRDboundariesPos[2]->Eval(pt)) ||
             phi > fTRDboundariesPos[3]->Eval(pt)};
     bool positive = sign > 0;
     fHist1AcceptanceAll[positive][withTRD[positive]][hasTOF]->Fill(ptot);
-    for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
+    for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
     {
       if (track->GetTPCsignal() > fMindEdx) {
         fHist2TPCnSigma[iSpecies][positive][withTRD[positive]]->Fill(ptot, tpcNsigmas[iSpecies]);
