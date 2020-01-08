@@ -33,13 +33,13 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     // same for the output
     mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s:MyOutputContainer",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("%s:Observables",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("%s:c_n{n}",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("%s:d_n{n}",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("%s:<<n>>{n}",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("%s:<<n'>>{n}",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("%s:q_n",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("%s:d_n{n}ESETPC",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("%s:c_n{n}ESETPC",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("%s:d_n{n}ESEV0C",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,9,mgr->CreateContainer(Form("%s:c_n{n}ESEV0C",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("%s:<<n'>>{n}ESETPC",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("%s:<<n>>{n}ESETPC",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("%s:<<n'>>{n}ESEV0C",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,9,mgr->CreateContainer(Form("%s:<<n>>{n}ESEV0C",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,10,mgr->CreateContainer(Form("%s:fQAEvents",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
