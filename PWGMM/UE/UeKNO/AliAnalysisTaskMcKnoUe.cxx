@@ -437,11 +437,13 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	fOutputList->Add(hPtLeadingMeasured);
 
 	for(Int_t i=0;i<3;++i){
-		hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",nameReg[i]),"gen pT vs nch_transverse",ptNbins,ptbins1,nchNbins,nchbins);
+
+		hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",nameReg[i]),"gen pT vs nch_transverse",nchNbins,nchbins,ptNbins,ptbins1);
 		fOutputList->Add(hPtVsUEGenTest[i]);
 
-		hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",nameReg[i]),"rec pT vs nch_transverse",ptNbins,ptbins1,nchNbins,nchbins);
+		hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",nameReg[i]),"rec pT vs nch_transverse",nchNbins,nchbins,ptNbins,ptbins1);
 		fOutputList->Add(hPtVsUERecTest[i]);
+
 	}
 
 
