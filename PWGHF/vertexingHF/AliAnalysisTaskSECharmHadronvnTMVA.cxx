@@ -1386,6 +1386,7 @@ int AliAnalysisTaskSECharmHadronvnTMVA::ProcessBDT(AliAODEvent *fAOD, AliAODReco
     Double_t cosThetaStarD0 = 99;
     Double_t cosThetaStarD0bar = 99;
     
+    Double_t diffIP[2], errdiffIP[2];
     dD0->Getd0MeasMinusExpProng(0,fAOD->GetMagneticField(),diffIP[0],errdiffIP[0]);
     dD0->Getd0MeasMinusExpProng(1,fAOD->GetMagneticField(),diffIP[1],errdiffIP[1]);
    if(!diffIP[0]||!errdiffIP[0])return 0;
