@@ -34,14 +34,17 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
 
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
     void SetIsHeavyIon(Int_t flag){
-      fIsHeavyIon = flag;    
+      fIsHeavyIon = flag;
     }
+    // Function to set correction task setting
+    void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
+
 
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
     void ProcessPhotonCandidates();
     void CalculateOmegaCandidates();
-    
+
     // MC functions
     void SetIsMC                        ( Int_t isMC)                                       { fIsMC = isMC                              ;}
     void ProcessMCParticles             ();
@@ -52,40 +55,40 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
     void RelabelAODPhotonCandidates     ( Bool_t mode);
     void ProcessTrueMesonCandidates     ( AliAODConversionMother *OmegaCandidate,
-                                          AliAODConversionPhoton *TrueGammaCandidate0, 
-                                          AliAODConversionPhoton *TrueGammaCandidate1, 
+                                          AliAODConversionPhoton *TrueGammaCandidate0,
+                                          AliAODConversionPhoton *TrueGammaCandidate1,
                                           AliAODConversionPhoton *TrueGammaCandidate2);
     void ProcessTrueMesonCandidatesAOD  ( AliAODConversionMother *OmegaCandidate,
                                           AliAODConversionPhoton *TrueGammaCandidate0,
                                           AliAODConversionPhoton *TrueGammaCandidate1,
                                           AliAODConversionPhoton *TrueGammaCandidate2);
-    
+
     // switches for additional analysis streams or outputs
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
     void SetDoPhotonQA                  ( Int_t flag )                                      { fDoPhotonQA = flag                          ;}
     void SetPlotHistsExtQA              ( Bool_t flag )                                     { fSetPlotHistsExtQA = flag                   ;}
 
     // Setting the cut lists for the conversion photons
-    void SetEventCutList                ( Int_t nCuts, 
+    void SetEventCutList                ( Int_t nCuts,
                                           TList *CutArray)                                  {
                                                                                               fnCuts = nCuts                              ;
                                                                                               fEventCutArray = CutArray                   ;
                                                                                             }
 
     // Setting the cut lists for the conversion photons
-    void SetConversionCutList           ( Int_t nCuts, 
+    void SetConversionCutList           ( Int_t nCuts,
                                           TList *CutArray)                                  {
                                                                                               fnCuts = nCuts                              ;
                                                                                               fCutArray = CutArray                        ;
                                                                                             }
 
       // Setting the cut lists for the calo photons
-    void SetCaloCutList                 ( Int_t nCuts, 
+    void SetCaloCutList                 ( Int_t nCuts,
                                           TList *CutArray)                                  {
                                                                                               fnCuts = nCuts                              ;
                                                                                               fClusterCutArray = CutArray                 ;
                                                                                             }
-    
+
     // Setting cut lists for the neutral pion
     void SetNeutralPionCutList          ( Int_t nCuts,
                                           TList *CutArray)                                  {
@@ -103,17 +106,17 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     // BG HandlerSettings
     void CalculateBackground            ();
     void SetMoveParticleAccordingToVertex       ( Bool_t flag )                             { fMoveParticleAccordingToVertex = flag       ;}
-    void MoveParticleAccordingToVertex          ( AliAODConversionPhoton* particle, 
+    void MoveParticleAccordingToVertex          ( AliAODConversionPhoton* particle,
                                                   const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     void MoveParticleAccordingToVertex          (AliAODConversionMother* particle,
                                                   const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     void UpdateEventByEventData         ();
-    
+
     // Additional functions for convenience
     void SetLogBinningXTH2              ( TH2* histoRebin );
-    Int_t GetSourceClassification       (Int_t daughter, 
+    Int_t GetSourceClassification       (Int_t daughter,
                                          Int_t pdgCode );
-    Bool_t CheckVectorOnly              ( vector<Int_t> &vec, 
+    Bool_t CheckVectorOnly              ( vector<Int_t> &vec,
                                           Int_t tobechecked );
     Bool_t CheckVectorForDoubleCount    ( vector<Int_t> &vec,
                                           Int_t tobechecked );
@@ -136,13 +139,16 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     // set scaling factors for pi0-gamma angle cut
     void SetlowerFactor                  (Double_t lowerFactor){ flowerFactor = lowerFactor;}
     void SetupperFactor                  (Double_t upperFactor){ fupperFactor = upperFactor;}
-    
+
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
+
     TString                             fV0ReaderName;
-    AliGammaConversionAODBGHandler**    fBGHandler;             // BG handler for Conversion 
+    TString                             fCorrTaskSetting;                       // Correction Task Special Name
+
+    AliGammaConversionAODBGHandler**    fBGHandler;             // BG handler for Conversion
     AliGammaConversionAODBGHandler**    fBGClusHandler;         // BG handler for Cluster
     AliGammaConversionAODBGHandler**    fBGPi0Handler;          // BG handler for pi0's
     AliVEvent*                          fInputEvent;            // current event
@@ -173,8 +179,8 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
                       // 0: garbage,
                       // 1: background
                       // 2: secondary photon not from eta or k0s,
-                      // 3: secondary photon from eta, 
-                      // 4: secondary photon from k0s, 
+                      // 3: secondary photon from eta,
+                      // 4: secondary photon from k0s,
                       // 5: dalitz
                       // 6: primary gamma
 
@@ -205,7 +211,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                  fHistoClusGammaPt;                  //! array of histos with cluster, pt
     TH1F**                  fHistoClusOverlapHeadersGammaPt;    //! array of histos with cluster, pt overlapping with other headers
-                    
+
     //histograms for pure MC quantities
     TH1F**                  fHistoMCAllGammaPt;                 //! array of histos with all gamma, pT
     TH1F**                  fHistoMCAllGammaEMCALAccPt;         //! array of histos with all gamma in EMCAL acceptance, pT
@@ -299,7 +305,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Int_t*                  fESDArrayPos;                                       //[fNGammaCandidates]
     Int_t*                  fESDArrayNeg;                                       //[fNGammaCandidates]
     Int_t                   fnCuts;                                             // number of cuts to be analysed in parallel
-    Int_t                   fiCut;                                              // current cut  
+    Int_t                   fiCut;                                              // current cut
     Bool_t                  fMoveParticleAccordingToVertex;                     // boolean for BG calculation
     Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
     Int_t                   fDoMesonQA;                                         // flag for meson QA
@@ -308,7 +314,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Bool_t                  fIsOverlappingWithOtherHeader;                      // flag for particles in MC overlapping between headers
     Int_t                   fIsMC;                                              // flag for MC information
     Bool_t                  fSetPlotHistsExtQA;                                 // flag for extended QA hists
-    Double_t                fWeightJetJetMC;                                    // weight for Jet-Jet MC 
+    Double_t                fWeightJetJetMC;                                    // weight for Jet-Jet MC
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
     Int_t                   fReconMethod;                                       // switch for combining photons: PCM-cal,cal = 0; PCM-cal,PCM = 1; cal-cal,cal = 2;
                                                                                 // cal-cal,PCM = 3; PCM-PCM,cal = 4; PCM-PCM,PCM = 5
@@ -324,7 +330,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 12);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 13);
 };
 
 #endif

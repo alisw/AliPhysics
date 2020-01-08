@@ -60,8 +60,10 @@ class CutHandlerPiZeroGamma{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1,                      // change different set of cuts
+void AddTask_OmegaToPiZeroGamma_pp(
+                                Int_t     trainConfig                   = 1,                      // change different set of cuts
                                 Int_t     isMC                          = 0,                      // run MC
+                                TString   photonCutNumberV0Reader       = "",                     // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
                                 Int_t     enableQAMesonTask             = 1,                      // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
                                 Int_t     DoPiZeroGammaAngleCut         = kFALSE,                 // flag for enabling cut on pi0-gamma angle
@@ -86,6 +88,22 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
                                 TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
               ) {
 
+
+  // CHANGED // TODO From AddTask_GammaHeavyMeson_CaloMode_pp
+  AliCutHandlerPCM cutsPCM(13);
+
+
+  TString addTaskName                 = "AddTask_OmegaToPiZeroGamma_pp";
+  TString sAdditionalTrainConfig      = cutsPCM.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: " << addTaskName.Data() << " running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
+
+  TString corrTaskSetting             = cutsPCM.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
+  if(corrTaskSetting.CompareTo(""))
+    cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
+
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
@@ -104,11 +122,11 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
       }
     }
   }
-  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
-  if (sAdditionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_OmegaToPiZeroGamma_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
-  }
+  // TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  // if (sAdditionalTrainConfig.Atoi() > 0){
+  //   trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+  //   cout << "INFO: AddTask_OmegaToPiZeroGamma_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  // }
 
   TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_OmegaToPiZeroGamma_pp during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
@@ -161,22 +179,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
 
   Bool_t isMCForOtherSettings = 0;
   if (isMC > 0) isMCForOtherSettings = 1;
-  //========= Add PID Reponse to ANALYSIS manager ====
-  if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse(isMCForOtherSettings);
-  }
-
-  Printf("here \n");
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000008400100001500000000";
-  if (  periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC18c")==0 ||
-        periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 ||
-        periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0 ||
-        periodNameV0Reader.CompareTo("LHC17f8b") == 0 ||
-        periodNameV0Reader.CompareTo("LHC16P1JJLowB") == 0 || periodNameV0Reader.CompareTo("LHC16P1Pyt8LowB") == 0 )
-    cutnumberPhoton         = "00000088400000000100000000";
+  TString cutnumberPhoton = photonCutNumberV0Reader.Data();
   TString cutnumberEvent = "00000003";
   Bool_t doEtaShift = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -243,6 +248,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   task= new AliAnalysisTaskOmegaToPiZeroGamma(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetV0ReaderName(V0ReaderName);
   task->SetReconMethod(ReconMethod);
   task->SetDoPiZeroGammaAngleCut(DoPiZeroGammaAngleCut);
@@ -376,15 +382,21 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 255){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010"); // same as standard but without non lin
+    cuts.AddCut("00052113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010");
+
   } else if( trainConfig == 260) {
-    //std MB 13TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    //std MB 13TeV EMcal + DCal
+    cuts.AddCut("00010113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
+    cuts.AddCut("00052113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
+    cuts.AddCut("00085113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
+    cuts.AddCut("00083113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
   } else if( trainConfig == 261) {
     //only MB 13TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00010113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
 
 
   // cuts for ReconMethod==3
@@ -419,6 +431,12 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 355){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010"); // same as standard but wo non lin
+    cuts.AddCut("00052113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010");
+
   } else if( trainConfig == 360) {
     //std MB 13TeV
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
@@ -636,16 +654,22 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetNeutralPionCutList(numberOfCuts,neutralPionCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetMoveParticleAccordingToVertex(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
+
+  // task->SetDoMesonAnalysis(kTRUE); // ADDED
+
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("OmegaToPiZeroGamma_%i_%i.root", trainConfig, isMC));
+    // mgr->CreateContainer(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), TList::Class(),
+    //           AliAnalysisManager::kOutputContainer,Form("OmegaToPiZeroGamma_%i_%i.root", trainConfig, isMC));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("OmegaToPiZeroGamma_%i",trainConfig) : Form("OmegaToPiZeroGamma_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer, Form("OmegaToPiZeroGamma_%i.root",trainConfig) );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
