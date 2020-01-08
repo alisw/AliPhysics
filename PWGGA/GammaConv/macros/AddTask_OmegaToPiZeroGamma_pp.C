@@ -63,6 +63,7 @@ class CutHandlerPiZeroGamma{
 void AddTask_OmegaToPiZeroGamma_pp(
                                 Int_t     trainConfig                   = 1,                      // change different set of cuts
                                 Int_t     isMC                          = 0,                      // run MC
+                                TString   photonCutNumberV0Reader       = "",                     // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
                                 Int_t     enableQAMesonTask             = 1,                      // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
                                 Int_t     DoPiZeroGammaAngleCut         = kFALSE,                 // flag for enabling cut on pi0-gamma angle
@@ -71,7 +72,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
                                 TString   cutnumberAODBranch            = "000000006008400001001500000",
                                 Int_t     enableExtMatchAndQA           = 0,                      // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                 Bool_t    enableV0findingEffi           = kFALSE,                 // enables V0finding efficiency histograms
-                                Bool_t    enableTriggerMimicking        = kFALSE,                 // enable trigger mimicking
+                                Int_t     enableTriggerMimicking        = 0,                      // enable trigger mimicking
                                 Bool_t    enableTriggerOverlapRej       = kFALSE,                 // enable trigger overlap rejection
                                 TString   settingMaxFacPtHard           = "3.",                   // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader            = "",                     // period Name for V0 Reader
@@ -165,9 +166,6 @@ void AddTask_OmegaToPiZeroGamma_pp(
 
   // fReconMethod = first digit of trainconfig
   Int_t ReconMethod = trainConfig/100;
-  std::cout << "############################################################################################################################# " << "\n";
-  std::cout << "ReconMethod = " <<  ReconMethod << "\n";
-  std::cout << "trainConfig = " <<  trainConfig << "\n";
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -181,31 +179,9 @@ void AddTask_OmegaToPiZeroGamma_pp(
 
   Bool_t isMCForOtherSettings = 0;
   if (isMC > 0) isMCForOtherSettings = 1;
-  //========= Add PID Reponse to ANALYSIS manager ====
-  if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-
-    #if !defined (__CINT__) || defined (__CLING__)
-      AliAnalysisTaskPIDResponse *pidRespTask=reinterpret_cast<AliAnalysisTaskPIDResponse*>(
-          gInterpreter->ExecuteMacro(Form("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C (%i)",isMCForOtherSettings)));
-    #else
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-      AddTaskPIDResponse(isMCForOtherSettings);
-    #endif
-
-    // gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    // AliAnalysisTaskPIDResponse* taskPIDResponse =  AddTaskPIDResponse(isMCForOtherSettings);
-  }
-
-  Printf("here \n");
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "10000008400100001500000000";// 00000008400100001500000000
-  if (  periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC18c")==0 ||
-        periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 ||
-        periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0 ||
-        periodNameV0Reader.CompareTo("LHC17f8b") == 0 ||
-        periodNameV0Reader.CompareTo("LHC16P1JJLowB") == 0 || periodNameV0Reader.CompareTo("LHC16P1Pyt8LowB") == 0 )
-    cutnumberPhoton         = "10000008400100001500000000"; // 00000088400000000100000000
+  TString cutnumberPhoton = photonCutNumberV0Reader.Data();
   TString cutnumberEvent = "00000003";
   Bool_t doEtaShift = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
