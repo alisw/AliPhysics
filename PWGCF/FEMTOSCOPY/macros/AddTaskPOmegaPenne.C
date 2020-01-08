@@ -32,25 +32,21 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     //
     AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts( isMC, true, false, false);
     TrackCutsProton->SetCutCharge(1);
-    // filterbit already set in method to 128
 
     // anti-Proton Cuts
     //
     AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts( isMC, true, false, false);
     TrackCutsAntiProton->SetCutCharge(-1);
-    TrackCutsAntiProton->SetFilterBit(128);
 
     // Kaon Cuts
     //
     AliFemtoDreamTrackCuts *TrackCutsKaon = AliFemtoDreamTrackCuts::PrimKaonCuts( isMC, true, false, false);
     TrackCutsKaon->SetCutCharge(1);
-    TrackCutsKaon->SetFilterBit(128);
 
     // AntiKaon Cuts
     //
     AliFemtoDreamTrackCuts *TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts( isMC, true, false, false);
     TrackCutsAntiKaon->SetCutCharge(-1);
-    TrackCutsAntiKaon->SetFilterBit(128);
 
     // //Cascade Cuts
     // AliFemtoDreamCascadeCuts *CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(isMC, false);
@@ -129,6 +125,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     kMin.push_back(0.);
     kMin.push_back(0.);
     kMin.push_back(0.);
+    kMin.push_back(0.);
     std::vector<float> kMax;
     kMax.push_back(3.);
     kMax.push_back(3.);
@@ -170,7 +167,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
 
     pairQA[2] = 11;     // p-K
     pairQA[6] = 11;     // ap-ak
-
+    
     // ZVtx bins
     std::vector<float> ZVtxBins;
     ZVtxBins.push_back(-10);
