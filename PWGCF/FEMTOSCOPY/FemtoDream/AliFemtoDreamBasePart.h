@@ -36,6 +36,7 @@ class AliFemtoDreamBasePart {
     kUnknown = 5
   };
   void SetMCParticle(AliAODMCParticle *mcPart, AliMCEvent *evt);
+  void SetMCParticleRePart(AliAODMCParticle *mcPart);
   void ResetMCInfo();
   void SetMomentum(TVector3 mom) { fP = mom; }
   void SetMomentum(float px, float py, float pz) {
