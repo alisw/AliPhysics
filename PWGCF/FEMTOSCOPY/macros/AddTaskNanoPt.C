@@ -42,12 +42,14 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
 
   TrackCuts->SetMinimalBooking(false);
   TrackCuts->SetCutCharge(1);
+
   //Antiproton track Cuts-------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCuts =
     AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
 
   AntiTrackCuts->SetMinimalBooking(false);
   AntiTrackCuts->SetCutCharge(-1);
+
   //deuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true,
       CombSigma, ContributionSplitting);
@@ -67,10 +69,15 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   //Proton track Cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsNoTOF =
     AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
-
   TrackCutsNoTOF->SetMinimalBooking(false);
   TrackCutsNoTOF->SetCutCharge(1);
   TrackCutsNoTOF->SetPID(AliPID::kProton, 999.);
+  TrackCutsNoTOF->SetRejLowPtPionsTOF(false);
+  TrackCutsNoTOF->SetCutSmallestSig(false);
+
+
+
+
   //Antiproton track Cuts-------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsNoTOF =
     AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
@@ -78,6 +85,8 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   AntiTrackCutsNoTOF->SetMinimalBooking(false);
   AntiTrackCutsNoTOF->SetCutCharge(-1);
   AntiTrackCutsNoTOF-> SetPID(AliPID::kProton, 999.);
+  AntiTrackCutsNoTOF->SetRejLowPtPionsTOF(false);
+  AntiTrackCutsNoTOF->SetCutSmallestSig(false);
   //deuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsDeuteronNoTOF = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true,
       CombSigma, ContributionSplitting);
@@ -85,6 +94,8 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   TrackCutsDeuteronNoTOF->SetMinimalBooking(false);
   TrackCutsDeuteronNoTOF->SetCutCharge(1);
   TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
+  TrackCutsDeuteronNoTOF->SetRejLowPtPionsTOF(false);
+  TrackCutsDeuteronNoTOF->SetCutSmallestSig(false);
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteronNoTOF = AliFemtoDreamTrackCuts::PrimDeuteronCuts( isMC, true,
       CombSigma, ContributionSplitting);
@@ -92,6 +103,8 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   AntiTrackCutsDeuteronNoTOF->SetMinimalBooking(false);
   AntiTrackCutsDeuteronNoTOF->SetCutCharge(-1);
   AntiTrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
+  AntiTrackCutsDeuteronNoTOF->SetRejLowPtPionsTOF(false);
+  AntiTrackCutsDeuteronNoTOF->SetCutSmallestSig(false);
 //====================================================================================================================================
 
 
