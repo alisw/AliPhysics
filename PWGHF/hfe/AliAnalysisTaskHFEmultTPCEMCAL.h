@@ -146,9 +146,10 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 			fCutEopEMax=EopEMax;
 	}
 
-	void SetShowerShapeEM20(Double_t M20Min,Double_t M20Max){
+	void SetShowerShapeEM20(Double_t M20Min,Double_t M20Max1,Double_t M20Max2){
 			fCutM20Min=M20Min;
-			fCutM20Max=M20Max;
+			fCutM20Max1=M20Max1;
+			fCutM20Max2=M20Max2;
 	}
 	//-----------------Setter For EMCal--------------------
 	void                  SetEMCalTriggerEG1(Bool_t flagTrEG1) { fEMCEG1=flagTrEG1;};
@@ -187,7 +188,8 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
   	Double_t fCutEopEMax;
   	Bool_t IsM20;
   	Double_t fCutM20Min;
-  	Double_t fCutM20Max;
+  	Double_t fCutM20Max1;
+	Double_t fCutM20Max2;
 	Double_t fInvmassCut;	//	  invariant mass cut value
 	Int_t fAssoTPCCluster;  
 	Bool_t fAssoITSRefit;  
