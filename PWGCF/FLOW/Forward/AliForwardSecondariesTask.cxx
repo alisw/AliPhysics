@@ -147,24 +147,22 @@ void AliForwardSecondariesTask::UserCreateOutputObjects()
   fOutputList->Add(fEventList);
   fOutputList->Add(fDeltaList);
 
-  Int_t phibins = fSettings.fNPhiBins;
-  Int_t etabins = fSettings.fNDiffEtaBins;
   Int_t dimensions = 3;
 
-  Int_t bins_phi_eta[3] = {fSettings.fNZvtxBins, phibins+1, etabins} ;
-  Double_t xmin_phi_eta[3] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), -4};
-  Double_t xmax_phi_eta[3] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 6}; 
+  Int_t bins_phi_eta[3] = {fSettings.fNZvtxBins, fSettings.fNPhiBins+1, fSettings.fNDiffEtaBins} ;
+  Double_t xmin_phi_eta[3] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), fSettings.fEtaLowEdge};
+  Double_t xmax_phi_eta[3] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), fSettings.fEtaUpEdge}; 
 
-  Int_t bins_eta_phi[3] = {fSettings.fNZvtxBins, etabins+1, phibins} ;
-  Double_t xmin_eta_phi[3] = {fSettings.fZVtxAcceptanceLowEdge, -6, 0};
-  Double_t xmax_eta_phi[3] = {fSettings.fZVtxAcceptanceUpEdge, 6, 2*TMath::Pi()}; 
+  Int_t bins_eta_phi[3] = {fSettings.fNZvtxBins, 41, fSettings.fNPhiBins} ;
+  Double_t xmin_eta_phi[3] = {fSettings.fZVtxAcceptanceLowEdge, -4.92, 0};
+  Double_t xmax_eta_phi[3] = {fSettings.fZVtxAcceptanceUpEdge, 4.92, 2*TMath::Pi()}; 
 
-  Int_t bins_eta_eta[3] = {fSettings.fNZvtxBins, etabins + 1, etabins} ;
-  Double_t xmin_eta_eta[3] = {fSettings.fZVtxAcceptanceLowEdge, -6, -4};
-  Double_t xmax_eta_eta[3] = {fSettings.fZVtxAcceptanceUpEdge, 6, 6}; 
+  Int_t bins_eta_eta[3] = {fSettings.fNZvtxBins, 41, fSettings.fNDiffEtaBins} ;
+  Double_t xmin_eta_eta[3] = {fSettings.fZVtxAcceptanceLowEdge, -4.92, fSettings.fEtaLowEdge};
+  Double_t xmax_eta_eta[3] = {fSettings.fZVtxAcceptanceUpEdge,   4.92, fSettings.fEtaUpEdge}; 
 
 
-  Int_t bins_phi_phi[3] = {fSettings.fNZvtxBins, phibins + 1, phibins} ;
+  Int_t bins_phi_phi[3] = {fSettings.fNZvtxBins, fSettings.fNPhiBins + 1, fSettings.fNPhiBins} ;
   Double_t xmin_phi_phi[3] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0};
   Double_t xmax_phi_phi[3] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 2*TMath::Pi()}; 
 
@@ -200,9 +198,9 @@ void AliForwardSecondariesTask::UserCreateOutputObjects()
 
   fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
 
-  Int_t bins_prim[2] = {fSettings.fNZvtxBins, etabins} ;
-  Double_t xmin_prim[2] = {fSettings.fZVtxAcceptanceLowEdge, -4};
-  Double_t xmax_prim[2] = {fSettings.fZVtxAcceptanceUpEdge, 6}; //
+  Int_t bins_prim[2] = {fSettings.fNZvtxBins, fSettings.fNDiffEtaBins} ;
+  Double_t xmin_prim[2] = {fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge};
+  Double_t xmax_prim[2] = {fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge}; //
   Int_t dimensions_prim = 2;
 
   fnoPrim = new THnD("fnoPrim", "fnoPrim", dimensions_prim, bins_prim, xmin_prim, xmax_prim);

@@ -97,7 +97,7 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries(TString taskname)
   //TString nua_file =  "/home/thoresen/Documents/PhD/plots/nua/Datasets/LHC17i2f/ESD/maxstrip0/fmdreco_tpcreco_runsz.root";
   TString nua_file = "/home/thoresen/Documents/PhD/plots/nua/Datasets/LHC17i2f/ESD/fmdreco_tpcreco_runsz.root";
 
-  Bool_t doNUA = kTRUE;
+  Bool_t doNUA = kFALSE;
 
   task->fSettings.fileName = resName;
   mgr->AddTask(task);

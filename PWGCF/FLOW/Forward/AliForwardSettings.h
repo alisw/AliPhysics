@@ -231,6 +231,7 @@ class AliForwardSettings : public TObject {
 
   Int_t nua_runnumber;
   TH3F* correct_nua_mc;
+  Int_t run_list;
 
 private:
   ClassDef(AliForwardSettings, 1);

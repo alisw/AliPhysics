@@ -8,14 +8,14 @@ AliForwardSettings::AliForwardSettings() :
   fPhiAcceptanceLowEdge(0),
   fPhiAcceptanceUpEdge(2*TMath::Pi()),
   fNPhiBins(20),
-  fEtaLowEdge(-4.0),
-  fEtaUpEdge(6.0),
+  fEtaLowEdge(-3.24),
+  fEtaUpEdge(4.68),
   fZVtxAcceptanceLowEdge(-10),
   fZVtxAcceptanceUpEdge(10),
   fNZvtxBins(10),
   fnoSamples(10),
   fNRefEtaBins(1),
-  fNDiffEtaBins(50),
+  fNDiffEtaBins(34),
   fCentBins(80),
   fCentUpEdge(80),
   nuacentral(),
@@ -57,6 +57,7 @@ AliForwardSettings::AliForwardSettings() :
   fmdhighcut(3.5),
   track_sample(0),
   nua_runnumber(0),
-  correct_nua_mc()
+  correct_nua_mc(),
+  run_list(0)
 {
 }
