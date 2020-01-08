@@ -621,8 +621,8 @@ void AliAnalysisTaskV0ChCorrelationpp::UserCreateOutputObjects()
   // const Double_t* zvtxBins = vertexBins;
 
 
-   const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+   const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -649,8 +649,8 @@ void AliAnalysisTaskV0ChCorrelationpp::UserCreateOutputObjects()
  // const Double_t* zvtxBins = vertexBins;
 
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -692,8 +692,8 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQATrackCandidates()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  //  const Double_t* zvtxBins = vertexBins;
 
-   const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+   const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -916,8 +916,8 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisK0s()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  //  const Double_t* zvtxBins = vertexBins;
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
    
@@ -1084,8 +1084,8 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisLambda()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
    
@@ -1276,8 +1276,8 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisAntiLambda()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  //  const Double_t* zvtxBins = vertexBins;
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
    
@@ -1519,7 +1519,7 @@ const AliAODVertex* primVertexSPD = fAOD->GetPrimaryVertexSPD();
   if ( TMath::Abs(lPVz) >= cutPrimVertex) return ;
   if( TMath::Abs( lPVzSPD-lPVz >0.8)) return ; 
   */
-    Short_t binVertex = Short_t((lPVz+7.)/2);
+    Short_t binVertex = Short_t((lPVz+10.)/2);
 
     //-----------------------------------Centrality definition------------------------------------
    /* AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
