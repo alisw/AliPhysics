@@ -58,3 +58,31 @@ void AliProfileSubset::OverrideBinContent(Double_t x, Double_t y, Double_t x2, D
   SetBinEntries(binIndex,h2dN->GetBinContent(binIndex2));
   if(fBinSumw2.fN) GetBinSumw2()->fArray[binIndex] = h2dN->GetSumw2()->fArray[binIndex2];
 }
+void AliProfileSubset::OverrideBinContent(Double_t x, Double_t y, Double_t x2, Double_t y2, TProfile2D *sourceProf) {
+  if (!fBinSumw2.fN) Sumw2();
+  if(!sourceProf->fN) sourceProf->Sumw2();
+  TH2D * h2dW = sourceProf->ProjectionXY("h2temp-W","W");
+  TH2D * h2dN = sourceProf->ProjectionXY("h2temp-N","B");
+  Int_t binIndex = FindBin(x,y);
+  Int_t binIndex2 = sourceProf->FindBin(x2,y2);
+  fArray[binIndex] = h2dW->GetBinContent(binIndex2);
+  GetSumw2()->fArray[binIndex] = h2dW->GetSumw2()->fArray[binIndex2];
+  SetBinEntries(binIndex,h2dN->GetBinContent(binIndex2));
+  if(fBinSumw2.fN) GetBinSumw2()->fArray[binIndex] = h2dN->GetSumw2()->fArray[binIndex2];
+}
+Bool_t AliProfileSubset::OverrideBinsWithZero(Int_t xb1, Int_t yb1, Int_t xb2, Int_t yb2) {
+  Bool_t lHaveToQuit=kFALSE;
+  if(GetNbinsX()<xb1 || GetNbinsX()<xb2) {lHaveToQuit=kTRUE; printf("xBins out of range! (%i-%i vs %i)\n",xb1,xb2,GetNbinsX()); };
+  if(GetNbinsY()<yb1 || GetNbinsY()<yb2) {lHaveToQuit=kTRUE; printf("yBins out of range! (%i-%i vs %i)\n",yb1,yb2,GetNbinsY()); };
+  if(lHaveToQuit) return kFALSE;
+  for(Int_t ix=xb1; ix<=xb2; ix++) {
+    for(Int_t iy=yb1; iy<=yb2; iy++) {
+      Int_t bind = FindBin(GetXaxis()->GetBinCenter(ix), GetYaxis()->GetBinCenter(iy));
+      fArray[bind] = 0;
+      GetSumw2()->fArray[bind] = 0;
+      SetBinEntries(bind,0);
+      if(fBinSumw2.fN) GetBinSumw2()->fArray[bind] = 0;
+    }
+  }
+  return kTRUE;
+}
