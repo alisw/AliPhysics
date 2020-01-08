@@ -33,7 +33,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
         void                    SetUseWeightsRunByRun(Bool_t bRunByRun) { fFlowRunByRunWeights = bRunByRun; }
 
-        void                    SetEtaGap(Double_t val) { dGap = val; }
+        void                    SetEtaGap(Double_t val) { dEtaGap = val; }
 
         void                    SetqSelectionRun(Bool_t actqRun) { fqRun = actqRun; }
 
@@ -55,16 +55,16 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         //runAnalysis inputs
         Bool_t                  fFlowRunByRunWeights;
         Bool_t                  bUseOwnWeights;
-        Double_t                dGap;
+        Double_t                dEtaGap;
 
         static const Int_t      fNumHarms = 13; // maximum harmonics length of flow vector array
         static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
         static const Int_t      fNumHarmHists = 5; // how many harmonics hists
         static const Int_t      fNumCentHists = 10; // how many cent hists should there be
-        static const Int_t      fESECuts = 10; // amount of ESE percentiles 
+        static const Int_t      fESECuts = 10; // amount of ese percentiles 
 
-        Bool_t                  fInit; // ini check
-        Bool_t                  fqRun;
+        Bool_t                  fInit; // initilization check
+        Bool_t                  fqRun; // make q-selections also used for V0 Calibration runs
 
         AliAODEvent*            fAOD;           //!
         TList*                  fOutputList;    //!
@@ -97,7 +97,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TSpline3*               fSplq3V0A[90];  // q3 V0A splines
 
         TProfile*               fcn2Gap[fNumHarmHists]; //!
-        TProfile*               fcn2GapInclusive[fNumHarmHists]; //!
         TProfile*               fdn2GapPt[fNumHarmHists][fNumCentHists];    //!
         TProfile*               fdn2GapPtB[fNumHarmHists][fNumCentHists];    //!
 
@@ -123,7 +122,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TProfile*               fdn2GapESEV0A[fNumHarmHists][2][fNumCentHists][fESECuts]; //! 
         /////////////////////////////////////////////////
 
-        TProfile*               fc22c32ESETPC[2][fNumCentHists][fESECuts]; //! THIS PROFILE NEEDS REFINEMENT
+        TProfile*               fc22c32Unb;                 //!
+        TProfile*               fc22c32ESETPC[2][fESECuts]; //! 
         
 
         /////////////////////////// CALIBRATION HISTOGRAMS ////////////////////////////////////
@@ -141,7 +141,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fQnxTPC[2];    //!
         TH2F*                   fQnyTPC[2];    //!
 
-        // work in progress
+        
         TH1F*                   fQnxV0Cm[2];    //!
         TH1F*                   fQnyV0Cm[2];    //!
         TH1F*                   fQnxV0Am[2];    //!
@@ -155,7 +155,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fQnyV0AEse[2];    //!
         TH2F*                   fQnxTPCEse[2];    //!
         TH2F*                   fQnyTPCEse[2];    //! 
-        ////
+        ////////////////////////// CALIBRATION HISTOGRAMS /////////////////////////////////////////
 
         TH3F*                   fCentq2TPCvsv22;   //!
         TH3F*                   fCentq2V0Cvsv22;   //!
