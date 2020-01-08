@@ -406,8 +406,9 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultV0Cuts(){
     fV0Cuts[InvarMassWindowK0]=0.01;
     fV0Cuts[InvarMassWindowLambda]=0.005;
 
-    fV0Cuts[BDaughMinPt]=-99;
-    fV0Cuts[BDaughMaxIPoverPt]=9999;
+    fV0Cuts[fAV0Cut]=0;
+    fV0Cuts[fBV0Cut]=0;
+    fV0Cuts[fCV0Cut]=9999;
 }
 
 void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
@@ -585,7 +586,7 @@ void AliAnalysisTaskHFJetIPQA::FillGenHistograms(int jetflavour, AliEmcalJet* je
 }
 
 
-void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks, bool isV0Jet){
+void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks){
     //Fill histograms for jets which have largest, second largest and third largest impact parameter
     //tracks passing the selection criterion
 
@@ -598,7 +599,7 @@ void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, b
     }
 }
 
-void AliAnalysisTaskHFJetIPQA::FillIPTemplateHists(double jetpt, int iN,int jetflavour, double* params,bool isV0Jet){
+void AliAnalysisTaskHFJetIPQA::FillIPTemplateHists(double jetpt, int iN,int jetflavour, double* params){
     const char * stype  [4] = {"fh2dJetSignedImpParXY","fh2dJetSignedImpParXYSignificance","fh2dJetSignedImpParXYZ","fh2dJetSignedImpParXYZSignificance"};
     const char * subord [3] = {"First","Second","Third"};
 
@@ -1784,21 +1785,23 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
               FillHist(Form("fh2dJetSignedImpParXY%s",subtype[jetflavour]),jetpt,cursImParXY,TrackWeight);     //*this->fXsectionWeightingFactor );
               FillHist(Form("fh2dJetSignedImpParXYSignificance%s",subtype[jetflavour]),jetpt,cursImParXYSig,TrackWeight);     //*this->fXsectionWeightingFactor );
             }
-            double fIPOverPt=cursImParXYSig/(trackV->Pt());
-            //printf("cursImParXy=%f, pt=%f, fIPOverPt=%f, minpt=%f, maxipoverpt=%f\n",cursImParXYSig,(trackV->Pt()),fIPOverPt,fV0Cuts[BDaughMinPt],fV0Cuts[BDaughMaxIPoverPt]);
-            if(((trackV->Pt())<fV0Cuts[BDaughMinPt])||(fIPOverPt>fV0Cuts[BDaughMaxIPoverPt])){
-                switch (isV0){
-                  case V0Rec:
-                    isV0=V0No;
-                    //printf("V0Rec set to V0No: cursImParXy=%f, pt=%f, fIPOverPt=%f\n",cursImParXY,(trackV->Pt()),fIPOverPt);
-                    break;
-
-                  case V0TrueRec:
-                    isV0=V0MC;
-                    //printf("V0TrueRec set to V0MC: cursImParXy=%f, pt=%f, fIPOverPt=%f\n",cursImParXY,(trackV->Pt()),fIPOverPt);
-                    break;
-                }
+            double fTrackPt=trackV->Pt();
+            double fIPValue=fV0Cuts[fAV0Cut]*TMath::Exp(fV0Cuts[fBV0Cut]*fTrackPt)+fV0Cuts[fCV0Cut];
+            //printf("trackpt=%f, IPValue=%f, TrueIP=%f, a=%f, b=%f, c=%f\n", fTrackPt, fIPValue,cursImParXYSig, fV0Cuts[fAV0Cut], fV0Cuts[fBV0Cut], fV0Cuts[fCV0Cut]);
+            if(cursImParXYSig>fIPValue){
+              //printf("Going into switch!\n");
+              switch (isV0){
+                case V0No:
+                  isV0=V0Rec;
+                  //printf("V0No set to V0Rec!\n");
+                  break;
+                case V0MC:
+                  isV0=V0TrueRec;
+                  //printf("V0MC set to V0TrueRec!\n");
+                  break;
+              }
             }
+
             SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,trackV->Pt()); sImpParXY.push_back(a);
             SJetIpPati b(cursImParXYZ, TrackWeight,isV0,kFALSE,corridx,trackV->Pt()); sImpParXYZ.push_back(b);
             SJetIpPati c(cursImParXYSig, TrackWeight,isV0,kFALSE,corridx,trackV->Pt());sImpParXYSig.push_back(c);
@@ -1874,13 +1877,13 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
                   //_______________________________
                   //IP Template Generation
-                  FillIPTypePtHists(jetflavour, jetpt, hasIPs, isV0Jet);
+                  FillIPTypePtHists(jetflavour, jetpt, hasIPs);
 
                   for(int iN=0;iN<3;iN++){
                     if(!hasIPs[iN]) continue;
                     //printf("iN=%i, jetflavour=%i xy=%f, xysig=%f\n",iN,jetflavour,sImpParXY.at(iN).first,sImpParXYSig.at(iN).first);
                     Double_t params [4] ={sImpParXY.at(iN).first,sImpParXYSig.at(iN).first,sImpParXYZ.at(iN).first,sImpParXYZSig.at(iN).first};
-                    FillIPTemplateHists(jetpt,iN,jetflavour, params, isV0Jet);
+                    FillIPTemplateHists(jetpt,iN,jetflavour, params);
                   }
                 }
 
@@ -1898,8 +1901,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 }
                 //MC Track Counting
                 if(fDoTCTagging!=TCNo){
-                  DoTCTagging(jetpt, hasIPs,ipval, kTagDec);
+                  if(fIsPythia||((!fIsPythia)&&(!isV0Jet))){
+                      //printf("isV0Jet=%i\n", isV0Jet);
+                      DoTCTagging(jetpt, hasIPs,ipval, kTagDec);
+                  }
                   FillEfficiencyHists(kTagDec, jetflavour, jetpt,hasIPs[0]);
+                  FillTaggedJetPtDistribution(kTagDec,jetpt);
                 }
                 //Probability Dists
                 double probval=0;
@@ -1909,10 +1916,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                   if(probval>0)FillProbabilityHists(jetpt,  probval, jetflavour, kTagDec);
                 }
                 //Probability Tagging
-                if(fDoProbTagging!=ProbNo){
-                    DoProbTagging(probval, jetpt,kTagDec);
-                    FillEfficiencyHists(kTagDec, jetflavour, jetpt,hasIPs[0]);
-                }
+                /*if(fDoProbTagging!=ProbNo){
+                  DoProbTagging(probval, jetpt,kTagDec);
+                  FillEfficiencyHists(kTagDec, jetflavour, jetpt,hasIPs[0]);
+                }*/
 
                 if(sImpParXY.size()!=0){
                   FillHist("fh2dNoAcceptedTracksvsJetArea",(int)sImpParXY.size(),jetrec->Area(),1);
@@ -2464,6 +2471,13 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       fOutput->Add(fh2dKshortPtVsJetPtMC);
       fOutput->Add(fh2dLamdaPtVsJetPtMC);
       fOutput->Add(fh2dAnLamdaPtVsJetPtMC);
+    }
+
+    //Final Tagged JetPt Spectra
+    for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+      for(int iType=0;iType<6;iType++){
+        fHistManager.CreateTH1(Form("h1DTaggedJetPt_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500, 0, 250);
+      }
     }
 
     //Impact Parameter Template Generation
@@ -4374,7 +4388,8 @@ void AliAnalysisTaskHFJetIPQA::ReadProbvsIPLookup(TObjArray*& oLookup){
   }
 }
 
-void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec){
+void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec){    
+  //printf("Start TCTagging!\n");
   //threshold values for tracks with largest, second and third largest IP
   int iJetPtBin=h1DThresholdsFirst[0]->FindBin(jetpt);
   double IPthresN1[fNThresholds];  //IP threshold values for individual separation power
@@ -4541,14 +4556,21 @@ void AliAnalysisTaskHFJetIPQA::FillEfficiencyHists(bool** kTagDec, int jetflavou
   }
 }
 
+void AliAnalysisTaskHFJetIPQA::FillTaggedJetPtDistribution(bool** kTagDec, double jetpt){
+    const char * tagtype[6] = {"Full","Single1st","Single2nd","Single3rd","Double","Triple"};
+
+    for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+      for(int iType=0;iType<6;iType++){
+        if(kTagDec[iThresh][iType]){
+          //printf("Filling fracs=%f, iType=%s\n",fFracs[iThresh],tagtype[iType]);
+          FillHist(Form("h1DTaggedJetPt_%s_%0.2f",tagtype[iType],fFracs[iThresh]),jetpt,1);
+        }
+      }
+    }
+}
+
 void AliAnalysisTaskHFJetIPQA::FillV0EfficiencyHists(int isV0, int &jetflavour, double jetpt, bool &isV0Jet){
   //printf("isV0=%i, jetflavour=%i, jetpt=%f\n",isV0, jetflavour, jetpt);
-
-  if((!fIsPythia)&&(isV0==V0Rec)){
-      FillHist(Form("h1DV0TrueRec"), jetpt, 1);
-      isV0Jet=kTRUE;
-  }
-  else{
     switch (isV0){
       case V0Rec:
           FillHist(Form("h1DV0FalseRec"), jetpt, 1);
@@ -4558,13 +4580,13 @@ void AliAnalysisTaskHFJetIPQA::FillV0EfficiencyHists(int isV0, int &jetflavour, 
       case V0MC:
         FillHist(Form("h1DV0TrueDataDef"), jetpt, 1);
         if((jetflavour!=B)){
+          isV0Jet=kTRUE;
           FillHist(Form("h1DV0TrueMCDef"), jetpt, 1);
           //printf("Found MC def true V0\n");
         }
         //printf("Found MC true V0 Jet: jetflavour=%i\n",jetflavour);
         if(jetflavour==UDSG) jetflavour=UDSGV0;
         if(jetflavour==C) jetflavour=CV0;
-        isV0Jet=kTRUE;
           break;
 
       case V0TrueRec:
@@ -4572,15 +4594,14 @@ void AliAnalysisTaskHFJetIPQA::FillV0EfficiencyHists(int isV0, int &jetflavour, 
         FillHist(Form("h1DV0TrueRec"), jetpt, 1);
         if(jetflavour==UDSG) jetflavour=UDSGV0;
         if(jetflavour==C) jetflavour=CV0;
-        isV0Jet=kTRUE;
         if(jetflavour!=B){
           FillHist(Form("h1DV0TrueMCDef"), jetpt, 1);
+          isV0Jet=kTRUE;
           //printf("Found MC def true V0\n");
         }
         //printf("Found Rec true V0 Jet: jetflavour=%i\n",jetflavour);
           break;
     }
-  }
 }
 
 double AliAnalysisTaskHFJetIPQA::IntegrateIP(int iJetPtBin, int iIPBin, int iN){
@@ -4642,11 +4663,12 @@ void AliAnalysisTaskHFJetIPQA::FillProbabilityHists(double jetpt,double probval,
     FillHist(Form("h2DProbDists%s",sTemplateFlavour[jetflavour].Data()),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
     FillHist(Form("h2DLNProbDists%s",sTemplateFlavour[jetflavour].Data()),lnprobval,jetpt,1);     //*this->fXsectionWeightingFactor );
   }
-
+  //untagged Probability hist
   FillHist(Form("h2DProbDists"),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
   FillHist(Form("h2DLNProbDists"),lnprobval,jetpt,1);     //*this->fXsectionWeightingFactor );
   const char * tagtype[6] = {"Full","Single1st","Single2nd","Single3rd","Double","Triple"};
 
+  //tagged Probability hists
   if(fDoTCTagging){
     for(int iThresh=0;iThresh<fNThresholds;iThresh++){
       for(int iType=0;iType<6;iType++){
