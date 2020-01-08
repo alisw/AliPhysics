@@ -115,8 +115,14 @@ AliAnalysisTaskV0ChCorrelation::AliAnalysisTaskV0ChCorrelation()
      fLambdaLifeTimeMax(0),
 
      fV0DaughterPtMinCut(0),
-     fDCANegtoPrimVertexMin(0),
-     fDCAPostoPrimVertexMin(0),
+
+     fDCANegtoPrimVertexMink0s(0),
+     fDCAPostoPrimVertexMink0s(0),
+     fDCANegtoPrimVertexMinLamb(0),
+     fDCAPostoPrimVertexMinLamb(0),
+     fDCANegtoPrimVertexMinALamb(0),
+     fDCAPostoPrimVertexMinALamb(0),
+
      fDCAV0DaughtersMax(0),
     // fCPA(0),
 
@@ -132,6 +138,7 @@ AliAnalysisTaskV0ChCorrelation::AliAnalysisTaskV0ChCorrelation()
      fK0sMassWindow(0),
      fLambdaMassWindow(0),
      fPtArmV0AlphaV0(0),
+     fk0sCPA(0),
      fLambdaCosPointingAngleMin(0),
      fAntiLambdaCosPointingAngleMin(0),
      fLambdaAlphaV0Min(0),
@@ -247,8 +254,12 @@ AliAnalysisTaskV0ChCorrelation::AliAnalysisTaskV0ChCorrelation(const char *name,
      fLambdaLifeTimeMax(0),
      
      fV0DaughterPtMinCut(0),
-     fDCANegtoPrimVertexMin(0),
-     fDCAPostoPrimVertexMin(0),
+     fDCANegtoPrimVertexMink0s(0),
+     fDCAPostoPrimVertexMink0s(0),
+     fDCANegtoPrimVertexMinLamb(0),
+     fDCAPostoPrimVertexMinLamb(0),
+     fDCANegtoPrimVertexMinALamb(0),
+     fDCAPostoPrimVertexMinALamb(0),
      fDCAV0DaughtersMax(0),
      //fCPA(0),
      fOStatus(1),
@@ -263,6 +274,7 @@ AliAnalysisTaskV0ChCorrelation::AliAnalysisTaskV0ChCorrelation(const char *name,
      fK0sMassWindow(0),
      fLambdaMassWindow(0),
      fPtArmV0AlphaV0(0),
+     fk0sCPA(0),
      fLambdaCosPointingAngleMin(0),
      fAntiLambdaCosPointingAngleMin(0),
      fLambdaAlphaV0Min(0),
@@ -619,8 +631,8 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
 
    //-----------------------------------------------------------
    // Settings for event mixing 
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 14;
+   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
   //const Int_t nZvtxBins  = 8;
@@ -647,8 +659,8 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
   tQAEvent->SetOwner();
   tQAEvent->SetName("EventInput");
   
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 14;
+   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
   //const Int_t nZvtxBins  = 8;
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
@@ -687,8 +699,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQATrackCandidates()
    tQATrack->SetName("Track");
 
    // defining bins for centrality
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 14;
+   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
 
@@ -911,8 +923,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
    tQAK0s->SetName("K0s");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 14;
+   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
    // defining bins for Z vertex
@@ -1059,8 +1071,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
    tQALambda->SetName("Lambda");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 14;
+   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
    // defining bins for Z vertex
@@ -1218,8 +1230,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
    tQAAntiLambda->SetName("AntiLambda");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 14;
+   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
    // defining bins for Z vertex
@@ -1948,7 +1960,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfAP"))->Fill(lPtArmV0, lAlphaV0);
       
       //--------------------check whether it is K0s/ Lambda/ AntiLambda candidates------------------------------
-      if(ctK &&lCPA > 0.98 && lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0) && xyn > 0.1 && xyp > 0.1 && isPosPionForTPC  && isNegPionForTPC && (massK0s > 0.40 )&& (massK0s < 0.58)){
+      if(ctK &&lCPA > fk0sCPA && lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0) && xyn > fDCANegtoPrimVertexMink0s && xyp > fDCAPostoPrimVertexMink0s && isPosPionForTPC  && isNegPionForTPC && (massK0s > 0.40 )&& (massK0s < 0.58)){
         selectedK0s->Add(v0);
         Double_t spK0s[4] = {massK0s, lPt, lCent, lPVz};
         if(fEffCorr){
@@ -1978,7 +1990,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
     
       // check whether it is Lambda candidates
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.25 && xyp > 0.1 && isPosProtonForTPC && isNegPionForTPC && (massLambda > 1.07) && (massLambda < 1.15)){
+      if(ctL && lCPA > fLambdaCPA && xyn > fDCANegtoPrimVertexMinLamb && xyp > fDCAPostoPrimVertexMinLamb && isPosProtonForTPC && isNegPionForTPC && (massLambda > 1.07) && (massLambda < 1.15)){
         selectedLambda->Add(v0);
         Double_t spLambda[4] = {massLambda, lPt, lCent, lPVz};
         if(fEffCorr){
@@ -2019,7 +2031,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
 
     // check whether it is AntiLambda candidates   
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.1 && xyp > 0.25 && isPosPionForTPC && isNegProtonForTPC && (massAntiLambda > 1.07) && (massAntiLambda < 1.15)){
+      if(ctL && lCPA > fLambdaCPA && xyn > fDCANegtoPrimVertexMinALamb && xyp > fDCAPostoPrimVertexMinALamb && isPosPionForTPC && isNegProtonForTPC && (massAntiLambda > 1.07) && (massAntiLambda < 1.15)){
         selectedAntiLambda->Add(v0);
         Double_t spAntiLambda[4] = {massAntiLambda, lPt, lCent, lPVz};
         if(fEffCorr){
