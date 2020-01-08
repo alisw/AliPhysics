@@ -433,6 +433,17 @@ void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,
   this->SetMCPDGCode(static_cast<AliAODMCParticle*>(evt->GetTrack(lastMother))->GetPdgCode());
 }
 
+void AliFemtoDreamBasePart::SetMCParticleRePart(AliAODMCParticle *mcPart) {
+  this->SetPt(mcPart->Pt());
+  this->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz());
+  this->SetTheta(mcPart->Theta());
+  this->SetEta(mcPart->Eta());
+  this->SetPhi(mcPart->Phi());
+  this->fIsSet = true;
+  this->SetUse(true);
+  this->fIsReset = false;
+}
+
 void AliFemtoDreamBasePart::ResetMCInfo() {
   this->SetPt(0);
   // a change

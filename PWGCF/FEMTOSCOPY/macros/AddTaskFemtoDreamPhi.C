@@ -113,9 +113,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   // First we need to tell him about the particles we mix, from the
   // PDG code the mass is obtained.
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212);
-  PDGParticles.push_back(2212);
-  PDGParticles.push_back(333);
+  PDGParticles.push_back(2212); //0
+  PDGParticles.push_back(2212); //1
+  PDGParticles.push_back(333);  //2
+  PDGParticles.push_back(2212); //4
+  PDGParticles.push_back(2212); //5
+  PDGParticles.push_back(333);  //6
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -156,36 +159,64 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
   // Number of bins
   std::vector<int> NBins;
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
   std::vector<float> kMin;
   // minimum k* value
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
   // maximum k* value
   std::vector<float> kMax;
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
 
   std::vector<int> pairQA;
-  pairQA.push_back(11);
-  pairQA.push_back(0);
-  pairQA.push_back(12);
-  pairQA.push_back(11);
-  pairQA.push_back(12);
-  pairQA.push_back(22);
+//  pairQA.push_back(11);
+//  pairQA.push_back(0);
+//  pairQA.push_back(12);
+//  pairQA.push_back(11);
+//  pairQA.push_back(12);
+//  pairQA.push_back(22);
+
+  for (int i=0; i<(1+2+3+4+5+6); i++)
+  {
+      NBins.push_back(750);
+      kMin.push_back(0.);
+      kMax.push_back(3.);
+      pairQA.push_back(0);
+
+  }
+
+  pairQA[0]=11; //pp
+  pairQA[1]=0;  //pap
+  pairQA[2]=12; //pphi
+  pairQA[6]=11; //apap
+  pairQA[7]=12; //apphi
+  pairQA[11]=22; //phiphi
+
+  if(isMC)
+  {
+      pairQA[15]=11;
+      pairQA[16]=11; //pap
+      pairQA[17]=11;
+      pairQA[18]=11;
+      pairQA[19]=11;
+      pairQA[20]=11;
+
+  }
+
 
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
