@@ -189,7 +189,7 @@ AliAnalysisTaskSECharmHadronvnTMVA *AddTaskCharmHadronvnTMVA(TString BDTfilename
     contname=Form("cutobj%s",suffix.Data());
     AliAnalysisDataContainer *cutobj = mgr->CreateContainer(contname.Data(),AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer,outputhistos.Data());
     
-    AliAnalysisDataContainer *coutBDT = mgr->CreateContainer("BDT",TList::Class(),AliAnalysisManager::kOutputContainer,outputhistos.Data());
+
         
     mgr->ConnectInput(vnTask,0,mgr->GetCommonInputContainer());
             
@@ -197,7 +197,7 @@ AliAnalysisTaskSECharmHadronvnTMVA *AddTaskCharmHadronvnTMVA(TString BDTfilename
         
     mgr->ConnectOutput(vnTask,2,cutobj);
     
-    mgr->ConnectOutput(vnTask,3,coutBDT);
+
         
     return vnTask;
 }

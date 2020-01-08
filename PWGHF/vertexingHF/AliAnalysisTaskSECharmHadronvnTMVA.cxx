@@ -91,8 +91,8 @@ AliAnalysisTaskSE(),
     fNMassBins(200),
     fEtaGapInTPCHalves(0),
     fRemoveDauFromqn(0),
-    fListBDTNtuple(0),
     fListRDHFBDT(0),
+    fListBDTNtuple(0),
     fRemoveSoftPion(false),
     fEnableDownsamplqn(false),
     fFracToKeepDownSamplqn(1.1)
@@ -148,8 +148,8 @@ AliAnalysisTaskSECharmHadronvnTMVA::AliAnalysisTaskSECharmHadronvnTMVA(const cha
     fRemoveDauFromqn(0),
     fRemoveSoftPion(false),
     fEnableDownsamplqn(false),
-    fListBDTNtuple(0),
     fListRDHFBDT(0),
+    fListBDTNtuple(0),
     fFracToKeepDownSamplqn(1.1)
 {
     // standard constructor
@@ -200,7 +200,7 @@ AliAnalysisTaskSECharmHadronvnTMVA::AliAnalysisTaskSECharmHadronvnTMVA(const cha
             DefineOutput(2,AliRDHFCutsDstoKKpi::Class());      //Cut object for Ds
         break;
     }
-    DefineOutput(3,TList::Class());
+
 }
 
 //________________________________________________________________________
@@ -229,13 +229,13 @@ AliAnalysisTaskSECharmHadronvnTMVA::~AliAnalysisTaskSECharmHadronvnTMVA()
     for(int iDet=0; iDet<6; iDet++) {
         if(fqnSplinesList[iDet] && fLoadedSplines) delete fqnSplinesList[iDet];
     }
-    if (fListBDTNtuple) {
-        delete fListBDTNtuple;
-        fListBDTNtuple = 0;
-    }
     if (fListRDHFBDT) {
         delete fListRDHFBDT;
         fListRDHFBDT = 0;
+    }
+    if (fListBDTNtuple) {
+        delete fListBDTNtuple;
+        fListBDTNtuple = 0;
     }
 }
 //_________________________________________________________________
@@ -477,12 +477,12 @@ void AliAnalysisTaskSECharmHadronvnTMVA::UserCreateOutputObjects()
 
     fOutput->Add(fHistMassPtPhiqnCentr);
 
-    fListBDTNtuple = new TList();fListBDTNtuple->SetOwner(); fListBDTNtuple->SetName("NtupleList");
+ //   fListBDTNtuple = new TList();fListBDTNtuple->SetOwner(); fListBDTNtuple->SetName("NtupleList");
  //   fListRDHFBDT->SetOwner(); fListBDTNtuple->SetName("BDTList");
     //ML model
 
     PostData(1,fOutput);
-    PostData(3,fListBDTNtuple);
+  //  PostData(3,fListBDTNtuple);
     return;
 }
 
@@ -981,7 +981,7 @@ void AliAnalysisTaskSECharmHadronvnTMVA::UserExec(Option_t */*option*/)
     }
 
     PostData(1,fOutput);
-    PostData(3,fListBDTNtuple);
+   // PostData(3,fListBDTNtuple);
     return;
 }
 
@@ -1371,7 +1371,8 @@ bool AliAnalysisTaskSECharmHadronvnTMVA::LoadSplinesForqnPercentile()
 
 //________________________________________________________________________
 int AliAnalysisTaskSECharmHadronvnTMVA::ProcessBDT(AliAODEvent *fAOD, AliAODRecoDecayHF2Prong *dD0, int isSelected, AliAnalysisVertexingHF *vHF){
-    if(!vHF) return 0;
+    if(!vHF||!dD0||!fAOD) return 0;
+    if(!isSelected) return 0;
      AliAODTrack *prong2 = vHF->GetProng(fAOD,dD0,0);
      AliAODTrack *prong3 = vHF->GetProng(fAOD,dD0,1);
     Double_t normIP[2];
@@ -1388,6 +1389,7 @@ int AliAnalysisTaskSECharmHadronvnTMVA::ProcessBDT(AliAODEvent *fAOD, AliAODReco
     Double_t diffIP[2], errdiffIP[2];
     dD0->Getd0MeasMinusExpProng(0,fAOD->GetMagneticField(),diffIP[0],errdiffIP[0]);
     dD0->Getd0MeasMinusExpProng(1,fAOD->GetMagneticField(),diffIP[1],errdiffIP[1]);
+   if(!diffIP[0]||!errdiffIP[0])return 0;
     normIP[0]=diffIP[0]/errdiffIP[0];
     normIP[1]=diffIP[1]/errdiffIP[1];
     
