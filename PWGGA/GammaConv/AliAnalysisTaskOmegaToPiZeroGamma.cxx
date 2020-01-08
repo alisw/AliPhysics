@@ -1427,7 +1427,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserExec(Option_t *)
   }
 
   fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
-  std::cout << "GetNReconstructedGammas = " << fV0Reader->GetNReconstructedGammas() << '\n';
 
   // ------------------- BeginEvent ----------------------------
   AliEventplane *EventPlane = fInputEvent->GetEventplane();
@@ -1463,15 +1462,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserExec(Option_t *)
       fWeightJetJetMC       = 1;
       Float_t pthard = -1;
   //     cout << fMCEvent << endl;
-<<<<<<< HEAD
-      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC,pthard );
-=======
       Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC, fInputEvent );
->>>>>>> Made OmegaToPiZeroGamma compatible with the current correction task
       if (fIsMC == 3){
         Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;
-        std::cout << "fWeightJetJetMC = " << fWeightJetJetMC << '\n';
       }
       if(fIsMC==1) fWeightJetJetMC = 1;
       if (!isMCJet){
@@ -1808,7 +1802,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessPhotonCandidates()
     if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
     if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
     !((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
-      std::cout << "1 Adding a PhotonCandidate!" << '\n';
       fGammaCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
 
       if(fIsFromMBHeader){
@@ -1846,7 +1839,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessPhotonCandidates()
       }
       if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->RejectSharedElectronV0s(PhotonCandidate,i,GammaCandidatesStepOne->GetEntries())) continue;
       if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){ // To Colse v0s cut diabled, step two not needed
-        std::cout << "2 Adding a PhotonCandidate!" << '\n';
         fGammaCandidates->Add(PhotonCandidate);
         if(fIsFromMBHeader){
           fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
@@ -1875,7 +1867,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessPhotonCandidates()
         if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromMBHeader = kFALSE;
       }
       if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->RejectToCloseV0s(PhotonCandidate,GammaCandidatesStepTwo,i)) continue;
-      std::cout << "3 Adding a PhotonCandidate!" << '\n';
       fGammaCandidates->Add(PhotonCandidate); // Add gamma to current cut TList
       if(fIsFromMBHeader){
         fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
