@@ -35,16 +35,18 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *){};
-  void SetEventCuts(AliFemtoDreamEventCuts              *evtCuts){fEventCuts            =   evtCuts;};
-  void SetTrackCutsProton(AliFemtoDreamTrackCuts        *trkCuts){fTrackCutsProton      =   trkCuts;};
-  void SetTrackCutsAntiProton(AliFemtoDreamTrackCuts    *trkCuts){fTrackCutsAntiProton  =   trkCuts;};
-  void SetTrackCutsKaon(AliFemtoDreamTrackCuts          *trkCuts){fTrackCutsKaon        =   trkCuts;};
-  void SetTrackCutsAntiKaon(AliFemtoDreamTrackCuts      *trkCuts){fTrackCutsAntiKaon    =   trkCuts;};
-  void SetCollectionConfig(AliFemtoDreamCollConfig      *config) {fConfig               =   config;};
+  void SetEventCuts(            AliFemtoDreamEventCuts   *evtCuts) { fEventCuts            =   evtCuts; };
+  void SetTrackCutsProton(      AliFemtoDreamTrackCuts   *trkCuts) { fTrackCutsProton      =   trkCuts; };
+  void SetTrackCutsAntiProton(  AliFemtoDreamTrackCuts   *trkCuts) { fTrackCutsAntiProton  =   trkCuts; };
+  void SetTrackCutsKaon(        AliFemtoDreamTrackCuts   *trkCuts) { fTrackCutsKaon        =   trkCuts; };
+  void SetTrackCutsAntiKaon(    AliFemtoDreamTrackCuts   *trkCuts) { fTrackCutsAntiKaon    =   trkCuts; };
+  void SetCollectionConfig(     AliFemtoDreamCollConfig  *config)  { fConfig               =   config;  };
  private:
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   bool fIsMC;                                               //
+  AliAODEvent                       *Event;                 //!      UserExec:Current Event
+  AliAODTrack                       *track;                 //!      UserExec:Current Track
   TList                             *fOutput;               //!
   AliFemtoDreamEvent                *fEvent;                //!
   AliFemtoDreamTrack                *fTrack;                //!
@@ -58,7 +60,7 @@ public:
   AliFemtoDreamPartCollection       *fPartColl;             //!
   AliAODTrack                       **fGTI;                 //!
   int                               fTrackBufferSize;       //
-  ClassDef(AliAnalysisTaskPOmegaPenne,1)
+  ClassDef(AliAnalysisTaskPOmegaPenne,2)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
