@@ -42,6 +42,7 @@ public:
   static const double fgkPhiParamNeg[4][4];
 
   bool fUseTRDboundariesCut;
+  float fNtpcSigmas;
 
 private:
   double fMindEdx; /// Cut on the minimum dE/dx in TPC

@@ -51,6 +51,7 @@ ClassImp(AliAnalysisTaskDeuteronAbsorption); // classimp: necessary for root
 
 AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char *name) : AliAnalysisTaskSE(name),
                                                                                          fUseTRDboundariesCut{true},
+                                                                                         fNtpcSigmas{5.},
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
                                                                                          fPIDResponse{nullptr},
@@ -269,7 +270,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
     {
       tpcNsigmas[iSpecies] = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[iSpecies]);
-      if (std::abs(tpcNsigmas[iSpecies]) < 3.)
+      if (std::abs(tpcNsigmas[iSpecies]) < fNtpcSigmas)
       {
         fHist3TPCpid[iSpecies]->Fill(ptot * sign, track->GetTPCsignal(), track->Phi());
         if (hasTOF && track->GetTPCsignal() > fMindEdx)
