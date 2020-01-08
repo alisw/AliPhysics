@@ -1995,57 +1995,57 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
       fSelectionHigh      = 0.155;
       fAcceptMesonMass    = kTRUE;
       break;
-    case 10:
+    case 10: //a
       fSelectionLow       = 0.08;
       fSelectionHigh      = 0.145;
       fAcceptMesonMass    = kTRUE;
       break;
-    case 11:
+    case 11: //b
       fSelectionLow       = 0.08;
       fSelectionHigh      = 0.145;
       fAcceptMesonMass    = kFALSE;
       break;
-    case 12:
+    case 12: //c
       fSelectionLow       = 0.1;
       fSelectionHigh      = 0.145;
       fAcceptMesonMass    = kFALSE;
       break;
-    case 13:
+    case 13: //d
       fSelectionLow       = 0.11;
       fSelectionHigh      = 0.145;
       fAcceptMesonMass    = kFALSE;
       break;
-    case 14:
+    case 14: //e
       fSelectionLow       = 0.12;
       fSelectionHigh      = 0.145;
       fAcceptMesonMass    = kFALSE;
       break;
-    case 15:
+    case 15: //f
       fSelectionLow       = 0.1;
       fSelectionHigh      = 0.15;
       fAcceptMesonMass    = kFALSE;
       break;
-    case 16:
+    case 16: //g
       fSelectionLow       = 0.11;
       fSelectionHigh      = 0.15;
       fAcceptMesonMass    = kFALSE;
       break;
-    case 17:
+    case 17: //h
       fSelectionLow       = 0.12;
       fSelectionHigh      = 0.15;
       fAcceptMesonMass    = kFALSE;
       break;
-    case 18:
+    case 18: //i
       fSelectionLow       = 0.1;
       fSelectionHigh      = 0.155;
       fAcceptMesonMass    = kFALSE;
       break;
-    case 19:
+    case 19: //j
       fSelectionLow       = 0.125;
       fSelectionHigh      = 0.145;
       fAcceptMesonMass    = kFALSE;
       break;
-    case 20:
+    case 20: //k
       fSelectionLow       = 0.11;
       fSelectionHigh      = 0.155;
       fAcceptMesonMass    = kFALSE;
