@@ -116,8 +116,10 @@ public:
         DoMassWindow,
         InvarMassWindowK0,
         InvarMassWindowLambda,
-        BDaughMinPt,
-        BDaughMaxIPoverPt
+
+        fAV0Cut,
+        fBV0Cut,
+        fCV0Cut
     };
 
     enum TCTagType{
@@ -337,8 +339,9 @@ public:
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
     void FillRecHistograms(int jetflavour, double jetpt, double eta, double phi);
     void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen);
-    void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks, bool isV0Jet);
-    void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params, bool isV0Jet);
+    void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks);
+    void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params);
+    void FillTaggedJetPtDistribution(bool** kTagDec, double jetpt);
     void FillTrackTypeResHists();
 
     //________________________________
@@ -365,7 +368,7 @@ public:
     void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
     void setDoProbTagging(Int_t value) {fDoProbTagging=value;}
 
-    void setTrackIPvsPtValues(double fixedthresh, double ratio){fV0Cuts[BDaughMinPt]=fixedthresh;fV0Cuts[BDaughMaxIPoverPt]=ratio;}
+    void setTrackIPvsPtValues(double fav0cut, double fbv0cut, double fcv0cut){fV0Cuts[fAV0Cut]=fav0cut;fV0Cuts[fBV0Cut]=fbv0cut;fV0Cuts[fCV0Cut]=fcv0cut;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
     void setfNThresholds(Int_t value){fNThresholds=value;}
@@ -535,7 +538,6 @@ private:
     TH2D* h2DProbDistsudsgV0;//!
     TH2D* h2DProbDistscV0;//!
     TH2D* h2DProbDists;//!
-    TH2D* h2DProbDistsTag;//!
 
     TH2D* h2DLNProbDistsUnid;//!
     TH2D* h2DLNProbDistsudsg;//!
@@ -602,7 +604,7 @@ private:
 
     TGraph fResolutionFunction[200];//[200]<-
     Double_t fAnalysisCuts[27]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
-    Double_t fV0Cuts[24];
+    Double_t fV0Cuts[25];
 
     AliPIDCombined *fCombined ;//!
 
@@ -670,7 +672,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 48)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 49)
 };
 
 #endif
