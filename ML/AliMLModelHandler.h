@@ -38,6 +38,7 @@ public:
   double const &GetScoreCut() const { return fScoreCut; }
 
   bool CompileModel();
+  static std::string ImportFile(std::string path);
 
 private:
   AliExternalBDT *fModel;
