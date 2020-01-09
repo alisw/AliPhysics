@@ -176,6 +176,7 @@ class AliSigma0PhotonCuts : public TObject {
   TH2F *fHistDCArBefore;              //!
   TH2F *fHistDCArAfter;               //!
   TH2F *fHistDCAzBefore;              //!
+  TH2F *fHistDCAzAfterOthersBefore;   //!
   TH2F *fHistDCAzAfter;               //!
   TH2F *fHistDCA;                     //!
   TH2F *fHistDecayLength;             //!
