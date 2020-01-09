@@ -46,13 +46,20 @@ public:
 
   /// return the bin index
   int FindBin(double binvar);
-  /// return the MLModel predicted score (raw or proba, depending on useraw)
+  /// return the ML model predicted score (raw or proba, depending on useraw)
   double Predict(double binvar, std::map<std::string, double> varmap);
+  /// overload to pass directly a vector of variables
+  double Predict(double binvar, std::vector<double> variables);
   /// return true if predicted score for map is above the threshold given in the config
   bool IsSelected(double binvar, std::map<std::string, double> varmap);
   /// overload for getting the model score too
   template<typename F>
   bool IsSelected(double binvar, std::map<std::string, double> varmap, F &score);
+  /// overload to pass directly a vector of variables
+  bool IsSelected(double binvar, std::vector<double> variables);
+  /// overload for getting the model score too
+  template<typename F>
+  bool IsSelected(double binvar, std::vector<double> variables, F &score);
 
 protected:
   std::string fConfigFilePath;    /// path of the config file
@@ -76,14 +83,16 @@ protected:
 
 template<typename F>
 bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap, F &score) {
-  int bin     = FindBin(binvar);
+  int bin = FindBin(binvar);
   score = Predict(binvar, varmap);
   return score >= fModels[bin - 1].GetScoreCut();
 }
 
-inline bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap) {
-  float score{0.f};
-  return IsSelected(binvar, varmap, score);
+template<typename F>
+bool AliMLResponse::IsSelected(double binvar, std::vector<double> variables, F &score) {
+  int bin = FindBin(binvar);
+  score = Predict(binvar, variables);
+  return score >= fModels[bin - 1].GetScoreCut();
 }
 
 #endif
