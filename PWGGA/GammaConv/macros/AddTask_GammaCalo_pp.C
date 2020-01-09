@@ -1349,6 +1349,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00052113","1111102067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NLtestbeam EMC7
     cuts.AddCutCalo("00085113","1111102067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NLtestbeam EG2
     cuts.AddCutCalo("00083113","1111102067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NLtestbeam EG1
+  } else if (trainConfig == 508){ // EMCAL  clusters standard cuts, INT7, NL , std TM
+    cuts.AddCutCalo("00010113","111111206f032230000","01631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 509){ // EMCAL  clusters standard cuts, EG2+EG1, NL , std TM
+    cuts.AddCutCalo("0008e113","111111206f032230000","01631031000000d0"); // EG2  NL 12 + TB
+    cuts.AddCutCalo("0008d113","111111206f032230000","01631031000000d0"); // EG1  NL 12 + TB
 
   // *********************************************************************************************************
   // 13 TeV  DMC configurations
@@ -1364,6 +1369,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00055113","3885500067032220000","01631031000000d0"); // -50ns, 30ns timing cut, no NL DMC7
     cuts.AddCutCalo("00089113","3885500067032220000","01631031000000d0"); // -50ns, 30ns timing cut, no NL DG2
     cuts.AddCutCalo("0008b113","3885500067032220000","01631031000000d0"); // -50ns, 30ns timing cut, no NL DG1
+  } else if (trainConfig == 513){ // DCal  clusters standard cuts, INT7, NL , std TM
+    cuts.AddCutCalo("00010113","388551206f032230000","01631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 514){ // DCal  clusters standard cuts, EG2+EG1, NL , std TM
+    cuts.AddCutCalo("0008e113","388551206f032230000","01631031000000d0"); // EG2  NL 12 + TB
+    cuts.AddCutCalo("0008d113","388551206f032230000","01631031000000d0"); // EG1  NL 12 + TB
 
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations HM trigg
