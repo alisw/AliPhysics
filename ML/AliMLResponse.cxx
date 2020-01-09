@@ -12,13 +12,8 @@
 
 #include "AliMLResponse.h"
 
-#include "assert.h"
 #include "yaml-cpp/yaml.h"
 
-#include <TDirectory.h>
-#include <TFile.h>
-#include <TGrid.h>
-#include <TSystem.h>
 #include "AliLog.h"
 #include "AliExternalBDT.h"
 
@@ -26,30 +21,6 @@ using std::map;
 using std::pair;
 using std::string;
 using std::vector;
-
-namespace {
-
-string ImportFile(string path) {
-  string modelname = path.substr(path.find_last_of("/") + 1);
-
-  if (path.find("alien:") != string::npos) {
-    if (gGrid == nullptr) {
-      TGrid::Connect("alien://");
-      assert(gGrid != nullptr && "Connection to GRID not established! Exit");
-    }
-  }
-
-  string newpath = gSystem->pwd() + string("/") + modelname.data();
-  string oldpath = gDirectory->GetPath();
-
-  bool cpStatus = TFile::Cp(path.data(), newpath.data());
-  assert(cpStatus && "Error in coping file in the working directory! Exit");
-
-  gDirectory->Cd(oldpath.data());
-
-  return newpath;
-}
-}    // namespace
 
 /// \cond CLASSIMP
 ClassImp(AliMLResponse);
@@ -132,7 +103,7 @@ void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
 //_______________________________________________________________________________
 void AliMLResponse::MLResponseInit() {
   /// import config file from alien path
-  string configPath = ImportFile(fConfigFilePath);
+  string configPath = AliMLModelHandler::ImportFile(fConfigFilePath);
   YAML::Node nodeList;
   /// manage wrong config file path
   try {

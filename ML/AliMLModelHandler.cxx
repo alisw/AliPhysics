@@ -15,41 +15,14 @@
 #include <map>
 #include "assert.h"
 #include "yaml-cpp/yaml.h"
-#include <TDirectory.h>
+
 #include <TFile.h>
 #include <TGrid.h>
 #include <TSystem.h>
 #include "AliExternalBDT.h"
 
-namespace {
-
-std::map<std::string, int> kLibraryMap = {{"kXGBoost", AliMLModelHandler::kXGBoost}, {"kLightGBM", AliMLModelHandler::kLightGBM}, 
-                                          {"kModelLibrary", AliMLModelHandler::kModelLibrary}};
-
-std::string ImportFile(std::string path) {
-  std::string modelname = path.substr(path.find_last_of("/") + 1);
-
-  if (path.find("alien:") != std::string::npos) {
-    if (gGrid == nullptr) {
-      TGrid::Connect("alien://");
-      assert(gGrid != nullptr && "Connection to GRID not established! Exit");
-    }
-  }
-
-  std::string newpath = gSystem->pwd() + std::string("/") + modelname.data();
-  std::string oldpath = gDirectory->GetPath();
-
-  bool cpStatus = TFile::Cp(path.data(), newpath.data());
-  assert(cpStatus && "Error in coping file in the working directory! Exit");
-
-  gDirectory->Cd(oldpath.data());
-
-  return newpath;
-}
-}    // namespace
-
 //_______________________________________________________________________________
-AliMLModelHandler::AliMLModelHandler() :  fModel{nullptr}, fPath{}, fLibrary{}, fScoreCut{} {
+AliMLModelHandler::AliMLModelHandler() : fModel{nullptr}, fPath{}, fLibrary{}, fScoreCut{} {
   //
   // Default constructor
   //
@@ -101,24 +74,56 @@ AliMLModelHandler &AliMLModelHandler::operator=(const AliMLModelHandler &source)
 
 //_______________________________________________________________________________
 bool AliMLModelHandler::CompileModel() {
-  std::string localpath = ImportFile(this->fPath);
 
-  switch (kLibraryMap[GetLibrary()]) {
+  std::map<std::string, int> libraryMap = {{"kXGBoost", AliMLModelHandler::kXGBoost}, 
+                                           {"kLightGBM", AliMLModelHandler::kLightGBM},
+                                           {"kModelLibrary", AliMLModelHandler::kModelLibrary}};
+
+  std::string localpath = ImportFile(fPath);
+
+  switch (libraryMap[GetLibrary()]) {
     case kXGBoost: {
-      return this->fModel->LoadXGBoostModel(localpath.data());
+      return fModel->LoadXGBoostModel(localpath.data());
       break;
     }
     case kLightGBM: {
-      return this->fModel->LoadLightGBMModel(localpath.data());
+      return fModel->LoadLightGBMModel(localpath.data());
       break;
     }
     case kModelLibrary: {
-      return this->fModel->LoadModelLibrary(localpath.data());
+      return fModel->LoadModelLibrary(localpath.data());
       break;
     }
     default: {
-      return this->fModel->LoadXGBoostModel(localpath.data());
+      return fModel->LoadXGBoostModel(localpath.data());
       break;
     }
   }
+}
+
+//_______________________________________________________________________________
+std::string AliMLModelHandler::ImportFile(std::string path) {
+  std::string modelname = path.substr(path.find_last_of("/") + 1);
+
+  // check if file is in current directory
+  if(path.find("/") == std::string::npos)
+    return path;
+
+  // check if file is on alien
+  if (path.find("alien:") != std::string::npos) {
+    if (gGrid == nullptr) {
+      TGrid::Connect("alien://");
+      assert(gGrid != nullptr && "Connection to GRID not established! Exit");
+    }
+  }
+
+  std::string newpath = gSystem->pwd() + std::string("/") + modelname.data();
+  std::string oldpath = gDirectory->GetPath();
+
+  bool cpStatus = TFile::Cp(path.data(), newpath.data());
+  assert(cpStatus && "Error in coping file in the working directory! Exit");
+
+  gDirectory->Cd(oldpath.data());
+
+  return newpath;
 }
