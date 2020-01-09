@@ -1428,7 +1428,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoMotherRisoPt[iCut]);
         fHistoMotherNtracksIsoPt[iCut]   = new TH2F("ESD_Mother_NTracksIso_Pt", "ESD_Mother_NTracksIso_Pt", 100, 0, 100, nBinsPt, arrPtBinning);
         fESDList[iCut]->Add(fHistoMotherNtracksIsoPt[iCut]);
-        if (fIsMC > 1 ){
+        if (fIsMC > 0 ){
           fHistoMotherInvMassPtMCRecIsoTrueNonIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_MCRecIsoTrueNonIso", "ESD_Mother_InvMass_Pt_MCRecIsoTrueNonIso", 800, 0, 0.8, nBinsPt, arrPtBinning);
           fESDList[iCut]->Add(fHistoMotherInvMassPtMCRecIsoTrueNonIso[iCut]);
           fHistoMotherInvMassPtMCRecNonIsoTrueIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_MCRecNonIsoTrueIso", "ESD_Mother_InvMass_Pt_MCRecNonIsoTrueIso", 800, 0, 0.8, nBinsPt, arrPtBinning);
