@@ -2336,6 +2336,32 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 9;
       break;
+  case 26: // q // PHOS-PHOS 1 sigma
+    fAcceptMesonMass     = kFALSE;
+    fUsePtDepSelectionWindow = kTRUE;
+    fSelectionNSigmaLow  = 1.;
+    fSelectionNSigmaHigh = 1.;
+    fMassParamFunction   = 2;
+    break;
+  case 27: // r // PCM-PHOS 1 sigma
+    fAcceptMesonMass     = kFALSE;
+    fUsePtDepSelectionWindow = kTRUE;
+    fSelectionNSigmaLow  = 1.;
+    fSelectionNSigmaHigh = 1.;
+    fMassParamFunction   = 3;
+  case 28: // s //PHOS-PHOS 3 sigma
+    fAcceptMesonMass     = kFALSE;
+    fUsePtDepSelectionWindow = kTRUE;
+    fSelectionNSigmaLow  = 3.;
+    fSelectionNSigmaHigh = 3.;
+    fMassParamFunction   = 2;
+    break;
+  case 29: // t // PCM-PHOS 3 sigma
+    fAcceptMesonMass     = kFALSE;
+    fUsePtDepSelectionWindow = kTRUE;
+    fSelectionNSigmaLow  = 3.;
+    fSelectionNSigmaHigh = 3.;
+    fMassParamFunction   = 3;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
       return kFALSE;
