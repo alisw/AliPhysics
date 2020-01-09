@@ -1372,8 +1372,8 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 513){ // DCal  clusters standard cuts, INT7, NL , std TM
     cuts.AddCutCalo("00010113","388551206f032230000","01631031000000d0"); // INT7 NL 12 + TB
   } else if (trainConfig == 514){ // DCal  clusters standard cuts, EG2+EG1, NL , std TM
-    cuts.AddCutCalo("00089113","388551206f032230000","01631031000000d0"); // EG2  NL 12 + TB
-    cuts.AddCutCalo("0008b113","388551206f032230000","01631031000000d0"); // EG1  NL 12 + TB
+    cuts.AddCutCalo("00089113","388551206f032230000","01631031000000d0"); // DG2  NL 12 + TB
+    cuts.AddCutCalo("0008b113","388551206f032230000","01631031000000d0"); // DG1  NL 12 + TB
 
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations HM trigg
