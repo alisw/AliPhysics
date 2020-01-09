@@ -261,6 +261,7 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
         fHist->FillMagneticField(i, evt->GetBField());
         fHist->FillEvtSpher(i, evt->GetSpher());
         fHist->FillEvtSphero(i, evt->GetSphero());
+        fHist->FillVZEROtiming(i, evt->GetV0ATime(), evt->GetV0CTime());
       }
     }
 

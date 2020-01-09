@@ -124,6 +124,9 @@ class AliFemtoDreamEvent {
     return (fV0AMult + fV0CMult) / 2.;
   }
   ;
+  float GetV0ATime() const { return fV0ATime; }
+  float GetV0CTime() const { return fV0CTime; }
+
   float GetV0MCentrality() const {
     return fV0MCentrality;
   }
@@ -225,6 +228,8 @@ class AliFemtoDreamEvent {
   int fRefMult08;             //!
   int fV0AMult;               //!
   int fV0CMult;               //!
+  float fV0ATime;             //!
+  float fV0CTime;             //!
   float fV0MCentrality;       //!
   int fnContrib;              //!
   bool fPassAliEvtSelection;  //!
@@ -236,7 +241,7 @@ class AliFemtoDreamEvent {
   double fspher;            //!
   double fsphero;            //!
   bool fcalcsphero;         //!
-ClassDef(AliFemtoDreamEvent,6)
+ClassDef(AliFemtoDreamEvent,7)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */
