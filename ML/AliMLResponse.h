@@ -21,7 +21,6 @@
 
 #include "TNamed.h"
 
-#include "AliExternalBDT.h"
 #include "AliMLModelHandler.h"
 
 namespace YAML {

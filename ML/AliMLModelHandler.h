@@ -11,17 +11,15 @@
 // or submit itself to any jurisdiction.
 
 /// \file AliMLModelHandler.h
-/// \brief Implementation of a C++ interface in AliPhysics for the
-///        configuration of ML application on grid
+/// \brief Utility class to store the compiled model and it's information
 /// \author pietro.fecchio@cern.ch, maximiliano.puccio@cern.ch, fabio.catalano@cern.ch
 
 #include <string>
 
-#include "AliExternalBDT.h"
-
 namespace YAML {
   class Node;
 }
+class AliExternalBDT;
 
 class AliMLModelHandler {
 public:
@@ -29,21 +27,25 @@ public:
 
   AliMLModelHandler();
   AliMLModelHandler(const YAML::Node &node);
+  virtual ~AliMLModelHandler();
 
-  std::string const &GetPath() const { return path; }
-  std::string const &GetLibrary() const { return library; }
-  double const &GetScoreCut() const { return scorecut; }
-  AliExternalBDT &GetModel() { return model; }
+  AliMLModelHandler(const AliMLModelHandler &source);
+  AliMLModelHandler &operator=(const AliMLModelHandler &source);
+
+  AliExternalBDT *GetModel() { return fModel; }
+  std::string const &GetPath() const { return fPath; }
+  std::string const &GetLibrary() const { return fLibrary; }
+  double const &GetScoreCut() const { return fScoreCut; }
 
   bool CompileModel();
 
 private:
-  AliExternalBDT model;
+  AliExternalBDT *fModel;
 
-  std::string path;
-  std::string library;
+  std::string fPath;
+  std::string fLibrary;
 
-  double scorecut;
+  double fScoreCut;
 };
 
 #endif
