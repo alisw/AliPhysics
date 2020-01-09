@@ -24,4 +24,5 @@
 #pragma link C++ class AliAnalysisTaskDJetCorrelationsQA+;
 #pragma link C++ class AliAnalysisTaskDmesonsFilterCJ+;
 #pragma link C++ class AliEmbeddingEventForHFTask+;
+#pragma link C++ class AliAnalysisTaskIPCalib+;
 #endif
