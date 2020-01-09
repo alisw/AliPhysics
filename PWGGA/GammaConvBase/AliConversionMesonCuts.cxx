@@ -2336,6 +2336,32 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 9;
       break;
+  case 26: // q // PHOS-PHOS 1 sigma
+    fAcceptMesonMass     = kFALSE;
+    fUsePtDepSelectionWindow = kTRUE;
+    fSelectionNSigmaLow  = 1.;
+    fSelectionNSigmaHigh = 1.;
+    fMassParamFunction   = 2;
+    break;
+  case 27: // r // PCM-PHOS 1 sigma
+    fAcceptMesonMass     = kFALSE;
+    fUsePtDepSelectionWindow = kTRUE;
+    fSelectionNSigmaLow  = 1.;
+    fSelectionNSigmaHigh = 1.;
+    fMassParamFunction   = 3;
+  case 28: // s //PHOS-PHOS 3 sigma
+    fAcceptMesonMass     = kFALSE;
+    fUsePtDepSelectionWindow = kTRUE;
+    fSelectionNSigmaLow  = 3.;
+    fSelectionNSigmaHigh = 3.;
+    fMassParamFunction   = 2;
+    break;
+  case 29: // t // PCM-PHOS 3 sigma
+    fAcceptMesonMass     = kFALSE;
+    fUsePtDepSelectionWindow = kTRUE;
+    fSelectionNSigmaLow  = 3.;
+    fSelectionNSigmaHigh = 3.;
+    fMassParamFunction   = 3;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
       return kFALSE;
@@ -4070,16 +4096,22 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 2: // PHOS-PHOS
-          mass = 0.134699 + ( 0.001210 * pt );
-          sigma =   0.00560726 + ( (-0.000177656) * pt ) + (1.15805e-05 * pt * pt);
+          mass = 0.132298 + ( 9.84713e-05 * pt );
+          sigma =   4.15716e-03 + ( 3.35025e-03 / pt );
+          if (pt>5.){
+              sigma+=1.59496e-04*(pt-5);
+          }
           if (sigma < 0.004 ) {sigma =0.004;}
           else if (sigma > 0.02) {sigma =0.02;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 3: // PCM-PHOS
-          mass = 0.134709 + (-0.000119899 * pt) + (3.6105e-06 *pt *pt);
-          sigma =   0.00389906 + ( (-5.38008e-05) * pt ) + (1.83739e-05 * pt * pt);
+          mass = 0.13344 - ( (-1.26101e-05) * pt );
+          sigma =   3.56197e-03 + ( 7.31591e-04 / pt );
+          if (pt>5.){
+              sigma+=4.77381e-04*(pt-5);
+          }
           if (sigma < 0.0025 ) {sigma =0.0025;}
           else if (sigma > 0.02) {sigma =0.02;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
