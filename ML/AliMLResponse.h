@@ -62,22 +62,22 @@ public:
   bool IsSelected(double binvar, std::vector<double> variables, F &score);
 
 protected:
-  std::string fConfigFilePath;    /// path of the config file
+  std::string fConfigFilePath;              /// path of the config file
 
-  std::vector<AliMLModelHandler> fModels;
-  std::vector<int> fCentClasses;         /// centrality classes ([cent_min, cent_max])
-  std::vector<float> fBins;              /// bin edges for the binned variable (pt/ct)
-  std::vector<std::string> fVariableNames;    /// bin edges for the binned variable (pt/ct)
+  std::vector<AliMLModelHandler> fModels;   //!<! vector of models
+  std::vector<int> fCentClasses;            /// centrality classes ([cent_min, cent_max])
+  std::vector<float> fBins;                 /// bin edges for the binned variable (pt/ct)
+  std::vector<std::string> fVariableNames;  /// bin edges for the binned variable (pt/ct)
 
-  int fNBins;         /// number of bins stored for consistency checks
-  int fNVariables;    /// number of variables (features) stored for checks
+  int fNBins;                               /// number of bins stored for consistency checks
+  int fNVariables;                          /// number of variables (features) stored for checks
 
-  std::vector<float>::iterator fBinsBegin;    /// evaluate just once is better
+  std::vector<float>::iterator fBinsBegin;  /// evaluate just once is better
 
-  bool fRaw;
+  bool fRaw;                                /// set to true to use raw score instead of probability
 
   /// \cond CLASSIMP
-  ClassDef(AliMLResponse, 1);    ///
+  ClassDef(AliMLResponse, 2);    ///
   /// \endcond
 };
 
