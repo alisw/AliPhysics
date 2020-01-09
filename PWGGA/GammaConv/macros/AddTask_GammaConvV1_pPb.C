@@ -1177,7 +1177,13 @@ void AddTask_GammaConvV1_pPb(
   } else if (trainConfig == 1527) {
     cuts.AddCutPCM("e8010113", "0d200009a27000008250a04120", "0162103500000000"); // 80-100
 
-
+  //--------------------------------------------------------------------------
+  // Configurations for Jet analysis for pPb 5.02 TeV
+  //--------------------------------------------------------------------------
+  } else if (trainConfig == 1600) {
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0162103500000000"); // new default for 5TeV
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "2162103500000000"); // Injet 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "3162103500000000"); // Injet with JetQA
 
 
   } else {
