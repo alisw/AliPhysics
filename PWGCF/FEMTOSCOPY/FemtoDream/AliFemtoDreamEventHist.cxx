@@ -32,6 +32,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist()
     fMultDistRef08[i] = nullptr;
     fEvtSpher[i] = nullptr;
     fEvtSphero[i] = nullptr;
+    fPileUpVZEROTime[i] = nullptr;
   }
 }
 AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
@@ -232,6 +233,12 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fEvtSphero[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fEvtSphero[i]);
 
+    TString PileupName = Form("VZEROtiming_%s", sName[i].Data());
+    fPileUpVZEROTime[i] = new TH2F(PileupName.Data(), PileupName.Data(), 500,
+                                   -20, 30, 500, -20, 30);
+    fPileUpVZEROTime[i]->GetXaxis()->SetTitle("#it{t}_{V0A} - #it{t}_{V0C}");
+    fPileUpVZEROTime[i]->GetYaxis()->SetTitle("#it{t}_{V0A} + #it{t}_{V0C}");
+    fEvtCutQA[i]->Add(fPileUpVZEROTime[i]);
   }
 }
 
@@ -260,6 +267,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(
     fBField[i] = hists.fBField[i];
     fEvtSpher[i] = hists.fEvtSpher[i];
     fEvtSphero[i] = hists.fEvtSphero[i];
+    fPileUpVZEROTime[i] = hists.fPileUpVZEROTime[i];
   }
 }
 AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
@@ -288,6 +296,7 @@ AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
       this->fBField[i] = hists.fBField[i];
       this->fEvtSpher[i] = hists.fEvtSpher[i];
       this->fEvtSphero[i] = hists.fEvtSphero[i];
+      this->fPileUpVZEROTime[i] = hists.fPileUpVZEROTime[i];
     }
   }
   return *this;
