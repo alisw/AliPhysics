@@ -19,6 +19,7 @@
 #include <TFile.h>
 #include <TGrid.h>
 #include <TSystem.h>
+#include "AliExternalBDT.h"
 
 namespace {
 
@@ -48,7 +49,7 @@ std::string ImportFile(std::string path) {
 }    // namespace
 
 //_______________________________________________________________________________
-AliMLModelHandler::AliMLModelHandler() :  model(), path(), library(), scorecut() {
+AliMLModelHandler::AliMLModelHandler() :  fModel{nullptr}, fPath{}, fLibrary{}, fScoreCut{} {
   //
   // Default constructor
   //
@@ -56,32 +57,67 @@ AliMLModelHandler::AliMLModelHandler() :  model(), path(), library(), scorecut()
 
 //_______________________________________________________________________________
 AliMLModelHandler::AliMLModelHandler(const YAML::Node &node)
-      : model(), path(node["path"].as<std::string>()), library(node["library"].as<std::string>()),
-        scorecut(node["cut"].as<double>()) {
+    : fModel{nullptr}, fPath{node["path"].as<std::string>()}, fLibrary{node["library"].as<std::string>()},
+      fScoreCut{node["cut"].as<double>()} {
   //
   // Standard constructor
   //
+  fModel = new AliExternalBDT();
+}
+
+AliMLModelHandler::~AliMLModelHandler() {
+  //
+  // Destructor
+  //
+  if(fModel)
+    delete fModel;
+}
+
+//_______________________________________________________________________________
+AliMLModelHandler::AliMLModelHandler(const AliMLModelHandler &source)
+    : fModel{nullptr}, fPath{source.fPath}, fLibrary{source.fLibrary}, fScoreCut{source.fScoreCut} {
+  //
+  // Copy constructor
+  //
+  fModel = new AliExternalBDT(*source.fModel);
+}
+
+AliMLModelHandler &AliMLModelHandler::operator=(const AliMLModelHandler &source) {
+  //
+  // Assignment operator
+  //
+  if (&source == this) return *this;
+
+  if(fModel)
+    delete fModel;
+  fModel = new AliExternalBDT(*source.fModel);
+
+  fPath      = source.fPath;
+  fLibrary   = source.fLibrary;
+  fScoreCut  = source.fScoreCut;
+
+  return *this;
 }
 
 //_______________________________________________________________________________
 bool AliMLModelHandler::CompileModel() {
-  std::string localpath = ImportFile(this->path);
+  std::string localpath = ImportFile(this->fPath);
 
   switch (kLibraryMap[GetLibrary()]) {
     case kXGBoost: {
-      return this->model.LoadXGBoostModel(localpath.data());
+      return this->fModel->LoadXGBoostModel(localpath.data());
       break;
     }
     case kLightGBM: {
-      return this->model.LoadLightGBMModel(localpath.data());
+      return this->fModel->LoadLightGBMModel(localpath.data());
       break;
     }
     case kModelLibrary: {
-      return this->model.LoadModelLibrary(localpath.data());
+      return this->fModel->LoadModelLibrary(localpath.data());
       break;
     }
     default: {
-      return this->model.LoadXGBoostModel(localpath.data());
+      return this->fModel->LoadXGBoostModel(localpath.data());
       break;
     }
   }

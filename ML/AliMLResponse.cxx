@@ -20,6 +20,7 @@
 #include <TGrid.h>
 #include <TSystem.h>
 #include "AliLog.h"
+#include "AliExternalBDT.h"
 
 using std::map;
 using std::pair;
@@ -189,5 +190,5 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
     return -999.;
   }
 
-  return fModels[bin - 1].GetModel().Predict(&features[0], fNVariables, fRaw);
+  return fModels[bin - 1].GetModel()->Predict(&features[0], fNVariables, fRaw);
 }
