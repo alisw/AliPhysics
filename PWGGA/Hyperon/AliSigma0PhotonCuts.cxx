@@ -71,6 +71,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistDCArBefore(nullptr),
       fHistDCArAfter(nullptr),
       fHistDCAzBefore(nullptr),
+      fHistDCAzAfterOthersBefore(nullptr),
       fHistDCAzAfter(nullptr),
       fHistDCA(nullptr),
       fHistDecayLength(nullptr),
@@ -169,6 +170,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fHistDCArBefore(nullptr),
       fHistDCArAfter(nullptr),
       fHistDCAzBefore(nullptr),
+      fHistDCAzAfterOthersBefore(nullptr),
       fHistDCAzAfter(nullptr),
       fHistDCA(nullptr),
       fHistDecayLength(nullptr),
@@ -531,11 +533,6 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
   }
   fHistCuts->Fill(7.f);
 
-  if (TMath::Abs(DCAz) > fDCAzMax) {
-    return false;
-  }
-  fHistCuts->Fill(8.f);
-
   if(DCAr > fDCArMax) {
     return false;
   }
@@ -574,6 +571,13 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
     return false;
   }
   fHistCuts->Fill(15.f);
+
+  fHistDCAzAfterOthersBefore->Fill(pt, DCAz);
+
+  if (TMath::Abs(DCAz) > fDCAzMax) {
+    return false;
+  }
+  fHistCuts->Fill(8.f);
 
   // AFTER THE CUTS
   fHistV0MassPt->Fill(pt, invMass);
@@ -1057,6 +1061,12 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
         "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0,
         10, 200, -5, 5);
     fHistogramsBefore->Add(fHistDCAzBefore);
+
+    fHistDCAzAfterOthersBefore = new TH2F(
+        "fHistDCAzAfterOthersBefore",
+        "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0,
+        10, 200, -5, 5);
+    fHistogramsAfter->Add(fHistDCAzAfterOthersBefore);
 
     fHistDCAzAfter = new TH2F(
         "fHistDCAzAfter",
