@@ -4056,98 +4056,86 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       Float_t pt   = meson->Pt();
       Float_t mass = 0;
       Float_t sigma = 999;
-      Float_t FWHM = 999;
       switch(fMassParamFunction){
         case 0: // EMC-EMC
           mass = 0.125306 + 0.001210 * pt;
-          FWHM =   0.0136138 + ( (-0.00104914) * pt ) + (7.61163e-05 * pt * pt);
-          sigma = FWHM/2.35;
+          sigma =   0.0136138 + ( (-0.00104914) * pt ) + (7.61163e-05 * pt * pt);
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 1: // PCM-EMC
           mass = 0.129756 + 0.000660514 * pt;
-          FWHM =   0.00990291 + ( ( -0.00114665) * pt ) + (0.000128015 * pt * pt);
-          sigma = FWHM/2.35;
+          sigma =   0.00990291 + ( ( -0.00114665) * pt ) + (0.000128015 * pt * pt);
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 2: // PHOS-PHOS
           mass = 0.134699 + ( 0.001210 * pt );
-          FWHM =   0.00560726 + ( (-0.000177656) * pt ) + (1.15805e-05 * pt * pt);
-          if (FWHM < 0.004 ) {FWHM =0.004;}
-          else if (FWHM > 0.02) {FWHM =0.02;}
-          sigma = FWHM/2.35;
+          sigma =   0.00560726 + ( (-0.000177656) * pt ) + (1.15805e-05 * pt * pt);
+          if (sigma < 0.004 ) {sigma =0.004;}
+          else if (sigma > 0.02) {sigma =0.02;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 3: // PCM-PHOS
           mass = 0.134709 + (-0.000119899 * pt) + (3.6105e-06 *pt *pt);
-          FWHM =   0.00389906 + ( (-5.38008e-05) * pt ) + (1.83739e-05 * pt * pt);
-          if (FWHM < 0.0025 ) {FWHM =0.0025;}
-          else if (FWHM > 0.02) {FWHM =0.02;}
-          sigma = FWHM/2.35;
+          sigma =   0.00389906 + ( (-5.38008e-05) * pt ) + (1.83739e-05 * pt * pt);
+          if (sigma < 0.0025 ) {sigma =0.0025;}
+          else if (sigma > 0.02) {sigma =0.02;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 4: // PCM-PCM
           mass = 0.134613 + (-0.000154418 * pt);
-          FWHM =   0.00223215 + ( (0.000349362) * pt ) + (-1.13689e-05 * pt * pt);
-          if (FWHM < 0.001 ) {FWHM =0.001;}
-          else if (FWHM > 0.007) {FWHM =0.007;}
-          sigma = FWHM/2.35;
+          sigma =   0.00223215 + ( (0.000349362) * pt ) + (-1.13689e-05 * pt * pt);
+          if (sigma < 0.001 ) {sigma =0.001;}
+          else if (sigma > 0.007) {sigma =0.007;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 5: // EMC-EMC (optimized for 5 TeV with 31 NonLin)
           mass = 1.22498e-01  + (4.97752e-03 * pt) + (-8.49570e-04 * pow(pt,2.)) + (6.05847e-05 * pow(pt,3)) + (-13e-07 * pow(pt,4));
-          FWHM =   1.33790e-02 + (-9.40866e-04 * pt) + ( 7.01518e-05 * pow(pt,2));
+          sigma =   1.33790e-02 + (-9.40866e-04 * pt) + ( 7.01518e-05 * pow(pt,2));
           if(mass < 0.12) mass = 0.12;
-          sigma = FWHM/2.35;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 6: // PCM-EMC (optimized for 5 TeV with 31 NonLin)
           mass = 1.31116e-01 + 4.20087e-04 * pt;
-          FWHM = 9.25937e-03 + ( ( -4.89863e-04) * pt ) + (4.57442e-05 * pt * pt);
-          if(FWHM>0.015) FWHM = 0.015;
-          sigma = FWHM/2.35;
+          sigma = 9.25937e-03 + ( ( -4.89863e-04) * pt ) + (4.57442e-05 * pt * pt);
+          if(sigma>0.015) sigma = 0.015;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 7: // PHOS-PHOS (optimized for 5 TeV with correct nonlin Run2)
           mass = 0.134392 + ( 3.26311e-05  * pt );
-          FWHM =   4.90919e-03 + (5.27357e-03 * exp(-8.65337e-01 * pt));
-          if (FWHM < 0.002 ) {FWHM =0.002;}
-          else if (FWHM > 0.02) {FWHM =0.02;}
-          sigma = FWHM/2.35;
+          sigma =   4.90919e-03 + (5.27357e-03 * exp(-8.65337e-01 * pt));
+          if (sigma < 0.002 ) {sigma =0.002;}
+          else if (sigma > 0.02) {sigma =0.02;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 8: // PCM-PHOS (optimized for 5 TeV with correct nonlin Run2)
           mass =  1.34073e-01  + (7.79463e-03 * exp(-2.77158 * pt));
-          FWHM =  3.75986e-03 + (6.41965e-03  * exp(-2.38570 * pt));
+          sigma =  3.75986e-03 + (6.41965e-03  * exp(-2.38570 * pt));
           if (mass>0.138) mass = 0.138;
-          if (FWHM < 0.002 ) {FWHM =0.002;}
-          else if (FWHM > 0.02) {FWHM =0.02;}
-          sigma = FWHM/2.35;
+          if (sigma < 0.002 ) {sigma =0.002;}
+          else if (sigma > 0.02) {sigma =0.02;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 9: // PCM-PCM (optimized for 5 TeV)
           mass = 1.33587e-01  + (2.59437e-03 * exp(-1.18999e+00 * pt)) + -3.45476e-05 * pt;
-          FWHM =   0.00223215 + ( (0.000349362) * pt ) + (-1.13689e-05 * pt * pt);
+          sigma =   0.00223215 + ( (0.000349362) * pt ) + (-1.13689e-05 * pt * pt);
           if (mass>0.137) mass = 0.137;
-          if (FWHM < 0.001 ) {FWHM =0.001;}
-          else if (FWHM > 0.007) {FWHM =0.007;}
-          sigma = FWHM/2.35;
+          if (sigma < 0.001 ) {sigma =0.001;}
+          else if (sigma > 0.007) {sigma =0.007;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         default:
           mass = 0.125306 + 0.001210 * pt;
-          FWHM =   0.0136138 + ( (-0.00104914) * pt ) + (7.61163e-05 * pt * pt);
-          sigma = FWHM/2.35;
+          sigma =   0.0136138 + ( (-0.00104914) * pt ) + (7.61163e-05 * pt * pt);
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
