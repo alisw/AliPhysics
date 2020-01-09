@@ -110,6 +110,15 @@ const Int_t ptNbins = 36;
 Double_t ptbins1[ptNbins+1] = {
 	0.0,  0.1,  0.15,  0.2,  0.25,  0.3,  0.35,  0.4,  0.45,  0.5,  0.6,  0.7,  0.8,  0.9,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, 5.0, 6.0,    7.0,  8.0,  9.0,  10.0,  12.0,  14.0,  16.0,  18.0,  20.0,  25.0,  30.0,  40.0,  50.0
 };
+
+const Int_t ptNbinsL = 24;
+Double_t ptbins1L[ptNbinsL+1] = {
+        0.15, 0.50, 1.00, 1.50, 2.00, 2.50, 3.00, 3.50, 4.00, 4.50,
+        5.00, 6.00, 7.00, 8.00, 9.00, 10.0, 12.0, 14.0, 16.0, 18.0,
+        20.0, 25.0, 30.0, 40.0, 50.0
+};
+
+
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 class AliAnalysisTaskMcKnoUe;    // your analysis class
 
@@ -331,25 +340,25 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	fOutputList->Add(hCounter);
 
 	for(Int_t i=0;i<3;++i){
-		hNumDenMC[i]= new TH2D(Form("hNumDenMC_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		hNumDenMC[i]= new TH2D(Form("hNumDenMC_%s",nameReg[i]),"",ptNbinsL,ptbins1L,nchNbins,nchbins);
 		fOutputList->Add(hNumDenMC[i]);
-		hSumPtMC[i]= new TH2D(Form("hSumPtMC_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		hSumPtMC[i]= new TH2D(Form("hSumPtMC_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
 		fOutputList->Add(hSumPtMC[i]);
-		hNumDenMCMatch[i]= new TH2D(Form("hNumDenMCMatch_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		hNumDenMCMatch[i]= new TH2D(Form("hNumDenMCMatch_%s",nameReg[i]),"",ptNbinsL,ptbins1L,nchNbins,nchbins);
 		fOutputList->Add(hNumDenMCMatch[i]);
-		hSumPtMCMatch[i]= new TH2D(Form("hSumPtMCMatch_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		hSumPtMCMatch[i]= new TH2D(Form("hSumPtMCMatch_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
 		fOutputList->Add(hSumPtMCMatch[i]);
 
 	}
 	// Data driven
 	for(Int_t i=0;i<3;++i){
-		hNumDenMCDd[i]= new TH2D(Form("hNumDenMCDd_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		hNumDenMCDd[i]= new TH2D(Form("hNumDenMCDd_%s",nameReg[i]),"",ptNbinsL,ptbins1L,nchNbins,nchbins);
 		fOutputList->Add(hNumDenMCDd[i]);
-		hSumPtMCDd[i]= new TH2D(Form("hSumPtMCDd_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		hSumPtMCDd[i]= new TH2D(Form("hSumPtMCDd_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
 		fOutputList->Add(hSumPtMCDd[i]);
-		hNumDenMCMatchDd[i]= new TH2D(Form("hNumDenMCMatchDd_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		hNumDenMCMatchDd[i]= new TH2D(Form("hNumDenMCMatchDd_%s",nameReg[i]),"",ptNbinsL,ptbins1L,nchNbins,nchbins);
 		fOutputList->Add(hNumDenMCMatchDd[i]);
-		hSumPtMCMatchDd[i]= new TH2D(Form("hSumPtMCMatchDd_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		hSumPtMCMatchDd[i]= new TH2D(Form("hSumPtMCMatchDd_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
 		fOutputList->Add(hSumPtMCMatchDd[i]);
 
 	}
@@ -358,82 +367,82 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 
 	for(Int_t i=0;i<3;++i){
 
-		hPtVsPtLeadingMeasured[i] = new TH2D(Form("hPtVsPtLeadingMeasured_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		hPtVsPtLeadingMeasured[i] = new TH2D(Form("hPtVsPtLeadingMeasured_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
 		fOutputList->Add(hPtVsPtLeadingMeasured[i]);
 
-		hPtVsPtLeadingTrue[i] = new TH2D(Form("hPtVsPtLeadingTrue_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		hPtVsPtLeadingTrue[i] = new TH2D(Form("hPtVsPtLeadingTrue_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
 		fOutputList->Add(hPtVsPtLeadingTrue[i]);
 
-		pNumDenMeasured[i] = new TProfile(Form("pNumDenMeasured_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenMeasured[i] = new TProfile(Form("pNumDenMeasured_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenMeasured[i]);
 
-		pSumPtMeasured[i] = new TProfile(Form("pSumPtMeasured_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtMeasured[i] = new TProfile(Form("pSumPtMeasured_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtMeasured[i]);
 
 		// All no trigger sel
-		pNumDenMeasuredAll[i] = new TProfile(Form("pNumDenMeasuredAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenMeasuredAll[i] = new TProfile(Form("pNumDenMeasuredAll_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenMeasuredAll[i]);
 
-		pSumPtMeasuredAll[i] = new TProfile(Form("pSumPtMeasuredAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtMeasuredAll[i] = new TProfile(Form("pSumPtMeasuredAll_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtMeasuredAll[i]);
 		// trigger sel
-		pNumDenMeasuredPS[i] = new TProfile(Form("pNumDenMeasuredPS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenMeasuredPS[i] = new TProfile(Form("pNumDenMeasuredPS_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenMeasuredPS[i]);
 
-		pSumPtMeasuredPS[i] = new TProfile(Form("pSumPtMeasuredPS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtMeasuredPS[i] = new TProfile(Form("pSumPtMeasuredPS_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtMeasuredPS[i]);
 		// trigger sel + vtx rec
-		pNumDenMeasuredPSV[i] = new TProfile(Form("pNumDenMeasuredPSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenMeasuredPSV[i] = new TProfile(Form("pNumDenMeasuredPSV_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenMeasuredPSV[i]);
 
-		pSumPtMeasuredPSV[i] = new TProfile(Form("pSumPtMeasuredPSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtMeasuredPSV[i] = new TProfile(Form("pSumPtMeasuredPSV_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtMeasuredPSV[i]);
 		// all sel criteria
-		pNumDenMeasuredGood[i] = new TProfile(Form("pNumDenMeasuredGood_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenMeasuredGood[i] = new TProfile(Form("pNumDenMeasuredGood_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenMeasuredGood[i]);
 
-		pSumPtMeasuredGood[i] = new TProfile(Form("pSumPtMeasuredGood_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtMeasuredGood[i] = new TProfile(Form("pSumPtMeasuredGood_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtMeasuredGood[i]);
 
 
 		// MC true
 		// All no trigger sel
-		pNumDenTrueAll[i] = new TProfile(Form("pNumDenTrueAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenTrueAll[i] = new TProfile(Form("pNumDenTrueAll_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenTrueAll[i]);
 
-		pSumPtTrueAll[i] = new TProfile(Form("pSumPtTrueAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtTrueAll[i] = new TProfile(Form("pSumPtTrueAll_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTrueAll[i]);
 		// trigger sel
-		pNumDenTruePS[i] = new TProfile(Form("pNumDenTruePS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenTruePS[i] = new TProfile(Form("pNumDenTruePS_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenTruePS[i]);
 
-		pSumPtTruePS[i] = new TProfile(Form("pSumPtTruePS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtTruePS[i] = new TProfile(Form("pSumPtTruePS_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTruePS[i]);
 		// trigger sel + vtx rec
-		pNumDenTruePSV[i] = new TProfile(Form("pNumDenTruePSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenTruePSV[i] = new TProfile(Form("pNumDenTruePSV_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenTruePSV[i]);
 
-		pSumPtTruePSV[i] = new TProfile(Form("pSumPtTruePSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtTruePSV[i] = new TProfile(Form("pSumPtTruePSV_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTruePSV[i]);
 		// all sel criteria
 		pNumDenTrueGood[i] = new TProfile(Form("pNumDenTrueGood_%s",nameReg[i]),"",ptNbins,ptbins1);
 		fOutputList->Add(pNumDenTrueGood[i]);
 
-		pSumPtTrueGood[i] = new TProfile(Form("pSumPtTrueGood_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtTrueGood[i] = new TProfile(Form("pSumPtTrueGood_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTrueGood[i]);
 
-		pNumDenTrue[i] = new TProfile(Form("pNumDenTrue_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenTrue[i] = new TProfile(Form("pNumDenTrue_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenTrue[i]);
 
-		pSumPtTrue[i] = new TProfile(Form("pSumPtTrue_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtTrue[i] = new TProfile(Form("pSumPtTrue_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTrue[i]);
 
 	}
 
-	hPtLeadingTrue = new TH1D("hPtLeadingTrue","",ptNbins,ptbins1);
+	hPtLeadingTrue = new TH1D("hPtLeadingTrue","",ptNbinsL,ptbins1L);
 	fOutputList->Add(hPtLeadingTrue);
 
-	hPtLeadingMeasured = new TH1D("hPtLeadingMeasured","",ptNbins,ptbins1);
+	hPtLeadingMeasured = new TH1D("hPtLeadingMeasured","",ptNbinsL,ptbins1L);
 	fOutputList->Add(hPtLeadingMeasured);
 
 	for(Int_t i=0;i<3;++i){
@@ -447,29 +456,29 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	}
 
 
-	hPtLeadingRecAll = new TH1D("hPtLeadingRecAll","rec pTleading before any selection",ptNbins,ptbins1); 
+	hPtLeadingRecAll = new TH1D("hPtLeadingRecAll","rec pTleading before any selection",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingRecAll);
 
-	hPtLeadingRecPS = new TH1D("hPtLeadingRecPS","rec pTleading after physics selection",ptNbins,ptbins1); 
+	hPtLeadingRecPS = new TH1D("hPtLeadingRecPS","rec pTleading after physics selection",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingRecPS);
 
-	hPtLeadingRecPSV = new TH1D("hPtLeadingRecPSV","rec pTleading after physics selection + vtx",ptNbins,ptbins1); 
+	hPtLeadingRecPSV = new TH1D("hPtLeadingRecPSV","rec pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingRecPSV);
 
-	hPtLeadingRecGood = new TH1D("hPtLeadingRecGood","rec pTleading after physics selection + vtx",ptNbins,ptbins1); 
+	hPtLeadingRecGood = new TH1D("hPtLeadingRecGood","rec pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingRecGood);
 
 
-	hPtLeadingGenAll = new TH1D("hPtLeadingGenAll","gen pTleading before any selection",ptNbins,ptbins1);
+	hPtLeadingGenAll = new TH1D("hPtLeadingGenAll","gen pTleading before any selection",ptNbinsL,ptbins1L);
 	fOutputList->Add(hPtLeadingGenAll);
 
-	hPtLeadingGenPS = new TH1D("hPtLeadingGenPS","gen pTleading after physics selection",ptNbins,ptbins1); 
+	hPtLeadingGenPS = new TH1D("hPtLeadingGenPS","gen pTleading after physics selection",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingGenPS);
 
-	hPtLeadingGenPSV = new TH1D("hPtLeadingGenPSV","gen pTleading after physics selection + vtx",ptNbins,ptbins1); 
+	hPtLeadingGenPSV = new TH1D("hPtLeadingGenPSV","gen pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingGenPSV);
 
-	hPtLeadingGenGood = new TH1D("hPtLeadingGenGood","gen pTleading after physics selection + vtx",ptNbins,ptbins1); 
+	hPtLeadingGenGood = new TH1D("hPtLeadingGenGood","gen pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingGenGood);
 
 
