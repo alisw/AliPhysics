@@ -990,6 +990,8 @@ TString AliMCEvent::GetGenerator(Int_t index)
     TString genname=gh->GetName();
     Int_t npart=gh->NProduced();
     if (i == 0) npart = nsumpart;
+    TString ttl = gh->GetTitle();
+    if (ttl.Contains("particles_suppressed")) continue;
     if(index < nsumpart && index >= (nsumpart-npart)) return genname;
     nsumpart-=npart;
   }
