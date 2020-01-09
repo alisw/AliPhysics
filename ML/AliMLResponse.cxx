@@ -95,7 +95,7 @@ void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
   }
   /// error for variables/numberofvariable inconsistency
   if (nodelist["NUM_VAR"].as<unsigned int>() != nodelist["VAR_NAMES"].size()) {
-    AliFatal("Inconsistency found in the number of varibles, please check it! Exit");
+    AliFatal("Inconsistency found in the number of variables, please check it! Exit");
   }
   return;
 }
