@@ -398,8 +398,56 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   if (suffix == "11") {
     TrackCutsPhi->SetCutWindow(1.9,2);
   }
-
-
+  if (suffix == "12") {
+    TrackCutsPhi->SetCutWindow(0.987,1.011);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "13") {
+    TrackCutsPhi->SetCutWindow(1.027,1.1);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "14") {
+    TrackCutsPhi->SetCutWindow(1.1,1.2);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "15") {
+    TrackCutsPhi->SetCutWindow(1.2,1.3);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "16") {
+    TrackCutsPhi->SetCutWindow(1.3,1.4);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "17") {
+    TrackCutsPhi->SetCutWindow(1.4,1.5);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "18") {
+    TrackCutsPhi->SetCutWindow(1.5,1.6);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "19") {
+    TrackCutsPhi->SetCutWindow(1.6,1.7);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "20") {
+    TrackCutsPhi->SetCutWindow(1.7,1.8);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "21") {
+    TrackCutsPhi->SetCutWindow(1.8,1.9);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "22") {
+    TrackCutsPhi->SetCutWindow(1.9,2);
+    evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "23") {
+    evtCuts->SetSphericityCuts(SpheriUp,1);
+  }
+  if (suffix == "24") {
+    evtCuts->SetSphericityCuts(SpheriLow,1);
+  }
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
@@ -407,6 +455,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   // First we need to tell him about the particles we mix, from the
   // PDG code the mass is obtained.
   std::vector<int> PDGParticles;
+  PDGParticles.push_back(2212);
+  PDGParticles.push_back(2212);
+  PDGParticles.push_back(333);
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
   PDGParticles.push_back(333);
@@ -450,38 +501,63 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
   // Number of bins
   std::vector<int> NBins;
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
+//  NBins.push_back(750);
   std::vector<float> kMin;
   // minimum k* value
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
   // maximum k* value
   std::vector<float> kMax;
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
   // pair QA extended
   std::vector<int> pairQA;
-  pairQA.push_back(11); //pp
-  pairQA.push_back(0); //pap
-  pairQA.push_back(12); //pphi
-  pairQA.push_back(11); //apap
-  pairQA.push_back(12); //apphi
-  pairQA.push_back(22); //phiphi
+//  pairQA.push_back(11); //pp
+//  pairQA.push_back(0); //pap
+//  pairQA.push_back(12); //pphi
+//  pairQA.push_back(11); //apap
+//  pairQA.push_back(12); //apphi
+//  pairQA.push_back(22); //phiphi
 
+  for (int i=0; i<(1+2+3+4+5+6); i++)
+  {
+      NBins.push_back(750);
+      kMin.push_back(0.);
+      kMax.push_back(3.);
+      pairQA.push_back(0);
 
+  }
+
+  pairQA[0]=11; //pp
+  pairQA[1]=0;  //pap
+  pairQA[2]=12; //pphi
+  pairQA[6]=11; //apap
+  pairQA[7]=12; //apphi
+  pairQA[11]=22; //phiphi
+
+  if(isMC)
+  {
+      pairQA[15]=11;
+      pairQA[16]=11; //pap
+      pairQA[17]=11;
+      pairQA[18]=11;
+      pairQA[19]=11;
+      pairQA[20]=11;
+
+  }
 
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
