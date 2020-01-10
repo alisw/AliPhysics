@@ -18,7 +18,7 @@ using std::unique_ptr;
 const int kCentBins[12][2] = {{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{8,8},{9,9},{10,10},{11,11},{1,11}};
 const int kNcentBins = 12;
 const int kColors[3]={kBlack,kBlue,kRed};
-const char* kLabels[3] = {"Standard material budget", "Decreased material budget (-4.5%)", "Increased material budget (+4.5%)"};
+const char* kLabels[3] = {"Standard material budget", "Increased material budget (+4.5%)", "Decreased material budget (-4.5%)"};
 
 TH1* DoEff(TH1* hRec, TH1* hTot, string name) {
   TH1* hEff = (TH1*)hRec->Clone(name.data());
@@ -75,7 +75,7 @@ void MaterialBudget(bool bRMS = false) {
   leg->AddEntry((TObject*)nullptr,"TPC + TOF","");
 
   for(int iFile=0; iFile<3; iFile++){
-    TTList* list = (TTList*)input_file[iFile]->Get("mpuccio_deuterons_");
+    TTList* list = (TTList*)input_file[iFile]->Get("nuclei_deuteronsMB_");
     if(!list){
       printf("iFile: %d\n",iFile);
       std::cout << "Check out the name of the list" << std::endl;

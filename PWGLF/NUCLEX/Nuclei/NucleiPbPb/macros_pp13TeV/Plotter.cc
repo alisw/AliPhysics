@@ -82,14 +82,14 @@ void Plotter(bool bTPC = false, bool short_mode = true){
             if(iS==0 && iC==0 && iPad==0){
               fCanvas->Print(Form(complete_output_pdf_open,kDetector));
             }
-            fCanvas->Divide(3,2);
+            fCanvas->Divide(2,2);
           }
-          fCanvas->cd(iPad%6+1);
+          fCanvas->cd(iPad%4+1);
           string path = string(list_key->GetName()) + "/" + kNames[iS] + input_dir.data();
-          RooPlot* fPlot = (bTPC) ? (RooPlot*)file_in.Get(Form("%s/TPC_d_%i_%i",path.data(),iC,iB)) : (RooPlot*)file_in.Get(Form("%s/C_%d/d%i_%i",path.data(),iC,iC,iB));
+          RooPlot* fPlot = (bTPC) ? (RooPlot*)file_in.Get(Form("%s/C_%d/TPC_d%i_%i",path.data(),iC,iC,iB)) : (RooPlot*)file_in.Get(Form("%s/C_%d/d%i_%i",path.data(),iC,iC,iB));
           (bTPC) ? Requires(fPlot,Form("%s/TPC_d_%i_%i",path.data(),iC,iB)) : Requires(Form("%s/C_%d/d%i_%i",path.data(),iC,iC,iB));
           fPlot->Draw();
-          if((iPad+1)%6 == 0){
+          if((iPad+1)%4 == 0){
             fCanvas->Print(Form("%splots/cent_%d_%c_%d.pdf",kBaseOutputDir.data(),iC,kLetter[iS],page_counter));
             fCanvas->Write();
             fCanvas->Print(Form(complete_output_pdf,kDetector));
@@ -99,7 +99,7 @@ void Plotter(bool bTPC = false, bool short_mode = true){
             }
           }
           iPad++;
-          if(iPad==nPads && (iPad)%6 != 0){
+          if(iPad==nPads && (iPad)%4 != 0){
             fCanvas->Print(Form("%splots/cent_%d_%c_%d.pdf",kBaseOutputDir.data(),iC,kLetter[iS],page_counter));
             fCanvas->Write();
             fCanvas->Print(Form(complete_output_pdf,kDetector));

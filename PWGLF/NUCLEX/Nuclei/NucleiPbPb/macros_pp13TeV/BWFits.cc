@@ -17,7 +17,7 @@ using namespace utils;
 #include <TMath.h>
 #include "src/Common.h"
 #include "src/YieldMean.C"
-//#include "src/YieldMeanNew.cc"
+#include "src/YieldMeanNew.cc"
 #include "AliPWGFunc.h"
 #include "AdditionalFunctions.h"
 
@@ -53,15 +53,15 @@ void Denormalize(TH1 * h) {
 }
 
 void BWFits(bool antimatter_analysys = false) {
-  const char* kind_of_particle = (antimatter_analysys) ? "anti" : "";
+  const char* kind_of_particle = (antimatter_analysys) ? "antideuterons" : "deuterons";
   gStyle->SetOptFit(1);
   gStyle->SetOptStat(0);
   gStyle->SetTitleXOffset(1.3);
   gStyle->SetTitleYOffset(1.);
   TFile *input_file = TFile::Open(kFinalOutput.data());
-  TH1D *stat[kCentLength],*syst[kCentLength],*syst_mult_corr[kCentLength],*syst_mult_uncorr[kCentLength];
+  TH1D *stat[kCentLength],*syst[kCentLength],*syst_pt_uncorr[kCentLength],*syst_pt_corr[kCentLength],*syst_mult_corr[kCentLength],*syst_mult_uncorr[kCentLength];
 
-  remove(Form("%s/%slog.root",kBaseOutputDir.data(),kind_of_particle));
+  remove(Form("%s/%s_log.root",kBaseOutputDir.data(),kind_of_particle));
   std::ofstream output_param(Form("%s/%s_fits_param.txt",kBaseOutputDir.data(),kind_of_particle));
 
   AliPWGFunc pwgfunc;
@@ -89,40 +89,53 @@ void BWFits(bool antimatter_analysys = false) {
   double ptexp_param_err[kCentLength][3];
   const char* ptexp_param_name[3] = {"$A (GeV^{-1}c$)","$T$ (GeV)","\\chi^2/ndf"};
   //
-  TFile bwfile(Form("%s/%sfits.root",kBaseOutputDir.data(),kind_of_particle),"recreate");
+  TFile bwfile(Form("%s/%s_fits.root",kBaseOutputDir.data(),kind_of_particle),"recreate");
   TDirectory* datadir = bwfile.mkdir("data");
   TDirectory* function_dir[4]{nullptr};
   for (int iF = 0; iF < kNfitFunctions; ++iF)
     function_dir[iF] = bwfile.mkdir(kFitFunctionNames[iF].data());
   for (int iC = 0; iC < kCentLength; ++iC) {
-    stat[iC] = (TH1D*)input_file->Get(Form("%sdeuterons/%i/stat",kind_of_particle,iC));
-    Requires(stat[iC],Form("%sdeuterons/%i/stat",kind_of_particle,iC));
-    syst[iC] = (TH1D*)input_file->Get(Form("%sdeuterons/%i/syst",kind_of_particle,iC));
-    Requires(syst[iC],Form("%sdeuterons/%i/syst",kind_of_particle,iC));
-    syst_mult_corr[iC] = (TH1D*)input_file->Get(Form("%sdeuterons/%i/syst_mult_corr",kind_of_particle,iC));
-    Requires(syst_mult_corr[iC],Form("%sdeuterons/%i/syst_mult_corr",kind_of_particle,iC));
-    syst_mult_uncorr[iC] = (TH1D*)input_file->Get(Form("%sdeuterons/%i/syst_mult_uncorr",kind_of_particle,iC));
-    Requires(syst_mult_uncorr[iC],Form("%sdeuterons/%i/syst_mult_uncorr",kind_of_particle,iC));
-    TH1D *m = new TH1D(Form("m%d",iC),";#it{p}_{T} (GeV / #it{c}); 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-1}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
-    TH1D *sm = new TH1D(Form("sm%d",iC),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
-    TH1D *sm_corr = new TH1D(Form("sm_corr%d",iC),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
-    TH1D *sm_uncorr = new TH1D(Form("sm_uncorr%d",iC),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
+    stat[iC] = (TH1D*)input_file->Get(Form("%s/%i/stat",kind_of_particle,iC));
+    Requires(stat[iC],Form("%s/%i/stat",kind_of_particle,iC));
+    syst[iC] = (TH1D*)input_file->Get(Form("%s/%i/syst",kind_of_particle,iC));
+    Requires(syst[iC],Form("%s/%i/syst",kind_of_particle,iC));
+    syst_pt_uncorr[iC] = (TH1D*)input_file->Get(Form("%s/%i/syst_pt_uncorr",kind_of_particle,iC));
+    Requires(syst_pt_uncorr[iC],Form("%s/%i/syst_pt_uncorr",kind_of_particle,iC));
+    syst_pt_corr[iC] = (TH1D*)input_file->Get(Form("%s/%i/syst_pt_corr",kind_of_particle,iC));
+    Requires(syst_pt_corr[iC],Form("%s/%i/syst_pt_corr",kind_of_particle,iC));
+    syst_mult_corr[iC] = (TH1D*)input_file->Get(Form("%s/%i/syst_mult_corr",kind_of_particle,iC));
+    Requires(syst_mult_corr[iC],Form("%s/%i/syst_mult_corr",kind_of_particle,iC));
+    syst_mult_uncorr[iC] = (TH1D*)input_file->Get(Form("%s/%i/syst_mult_uncorr",kind_of_particle,iC));
+    Requires(syst_mult_uncorr[iC],Form("%s/%i/syst_mult_uncorr",kind_of_particle,iC));
+    TH1D *mStat = new TH1D(Form("mStat%d",iC),";#it{p}_{T} (GeV / #it{c}); 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-1}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
+    TH1D *mSystTot = new TH1D(Form("mSystTot%d",iC),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
+    TH1D *mSystPtUncorr = new TH1D(Form("mSystPtUncorr%d",iC),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
+    TH1D *mSystPtCorr = new TH1D(Form("mSystPtCorr%d",iC),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
+    TH1D *mSystMultCorr = new TH1D(Form("mSystMultCorr%d",iC),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
+    TH1D *mSystMultUncorr = new TH1D(Form("mSystMultUncorr%d",iC),";#it{p}_{T} (GeV/#it{c});1/(2#pi#it{p}_{T}) 1/#it{N}_{ev} d^{2}#it{N}/d#it{p}_{T}d#it{y} (GeV/#it{c})^{-2}",stat[iC]->GetNbinsX(), stat[iC]->GetXaxis()->GetXbins()->GetArray());
 
     for (int j = 1; j <= stat[iC]->GetNbinsX(); ++j) {
       double x = stat[iC]->GetBinCenter(j);
       if (x < 0.6 || x > kCentPtLimits[iC]) continue;
-      float stat_val = stat[iC]->GetBinError(stat[iC]->FindBin(m->GetBinCenter(j)));
-      float syst_val = syst[iC]->GetBinError(stat[iC]->FindBin(m->GetBinCenter(j)));
-      float syst_mult_corr_val = syst_mult_corr[iC]->GetBinError(stat[iC]->FindBin(m->GetBinCenter(j)));
-      float syst_mult_uncorr_val = syst_mult_uncorr[iC]->GetBinError(stat[iC]->FindBin(m->GetBinCenter(j)));
-      m->SetBinContent(j,stat[iC]->GetBinContent(stat[iC]->FindBin(m->GetBinCenter(j))));
-      m->SetBinError(j,stat_val);
-      sm->SetBinContent(j,stat[iC]->GetBinContent(stat[iC]->FindBin(m->GetBinCenter(j))));
-      sm->SetBinError(j,syst_val);
-      sm_corr->SetBinContent(j,stat[iC]->GetBinContent(stat[iC]->FindBin(m->GetBinCenter(j))));
-      sm_corr->SetBinError(j,syst_mult_corr_val);
-      sm_uncorr->SetBinContent(j,stat[iC]->GetBinContent(stat[iC]->FindBin(m->GetBinCenter(j))));
-      sm_uncorr->SetBinError(j,syst_mult_uncorr_val);
+      float val = stat[iC]->GetBinContent(stat[iC]->FindBin(mStat->GetBinCenter(j)));
+      float stat_err = stat[iC]->GetBinError(stat[iC]->FindBin(mStat->GetBinCenter(j)));
+      float syst_err = syst[iC]->GetBinError(stat[iC]->FindBin(mStat->GetBinCenter(j)));
+      float syst_pt_corr_err = syst_pt_corr[iC]->GetBinError(stat[iC]->FindBin(mStat->GetBinCenter(j)));
+      float syst_pt_uncorr_err = syst_pt_uncorr[iC]->GetBinError(stat[iC]->FindBin(mStat->GetBinCenter(j)));
+      float syst_mult_corr_err = syst_mult_corr[iC]->GetBinError(stat[iC]->FindBin(mStat->GetBinCenter(j)));
+      float syst_mult_uncorr_err = syst_mult_uncorr[iC]->GetBinError(stat[iC]->FindBin(mStat->GetBinCenter(j)));
+      mStat->SetBinContent(j,val);
+      mStat->SetBinError(j,stat_err);
+      mSystTot->SetBinContent(j,val);
+      mSystTot->SetBinError(j,syst_err);
+      mSystPtUncorr->SetBinContent(j,val);
+      mSystPtUncorr->SetBinError(j,syst_pt_uncorr_err);
+      mSystPtCorr->SetBinContent(j,val);
+      mSystPtCorr->SetBinError(j,syst_pt_corr_err);
+      mSystMultCorr->SetBinContent(j,val);
+      mSystMultCorr->SetBinError(j,syst_mult_corr_err);
+      mSystMultUncorr->SetBinContent(j,val);
+      mSystMultUncorr->SetBinError(j,syst_mult_uncorr_err);
       
     }
     for (int iF = 0; iF < kNfitFunctions; ++iF) {
@@ -133,8 +146,8 @@ void BWFits(bool antimatter_analysys = false) {
         fit_functions[iF]->SetParLimits(3, normMin, normMax);
       }
       TF1* fout;
-      TH1* h = YieldMean(m,sm,fout,fit_functions[iF],0,10.,0.01,0.1,true,Form("%s/%slog.root",kBaseOutputDir.data(),kind_of_particle),Form("%s/%d", kFitFunctionNames[iF].data(),iC));
-      // TH1* h = YieldMeanNew(m,sm,sm_corr,sm_uncorr,fout,fit_functions[iF],0,10.,0.01,0.1,true,Form("%s/%slog.root",kBaseOutputDir.data(),kind_of_particle),Form("%s/%d", kFitFunctionNames[iF].data(),iC));
+      //TH1* h = yieldmean::YieldMean(mStat,mSystTot,fout,fit_functions[iF],0,10.,0.01,0.1,true,Form("%s/%slog.root",kBaseOutputDir.data(),kind_of_particle),Form("%s/%d", kFitFunctionNames[iF].data(),iC));
+      TH1* h = yieldmeannew::YieldMeanNew(mStat,mSystTot,mSystPtUncorr,mSystPtCorr,mSystMultCorr,fout,fit_functions[iF],0,10.,0.01,0.1,true,Form("%s%s_log.root",kBaseOutputDir.data(),kind_of_particle),Form("%s/%d", kFitFunctionNames[iF].data(),iC));
       cout << "\n*****************************" << endl;
       printf("Function: %s\n", kFitFunctionNames[iF].data());
       printf("iC: %d\n", iC);
@@ -182,10 +195,11 @@ void BWFits(bool antimatter_analysys = false) {
     }
     datadir->mkdir(Form("%d",iC));
     datadir->cd(Form("%d",iC));
-    m->Write(Form("stat%d",iC));
-    sm->Write(Form("syst%d",iC));
-    sm_corr->Write(Form("syst_mult_corr%d",iC));
-    sm_uncorr->Write(Form("syst_mult_uncorr%d",iC));
+    mStat->Write(Form("stat%d",iC));
+    mSystTot->Write(Form("syst%d",iC));
+    mSystPtUncorr->Write(Form("syst_mult_uncorr%d",iC));
+    mSystMultCorr->Write(Form("syst_mult_corr%d",iC));
+    mSystMultUncorr->Write(Form("syst_mult_uncorr%d",iC));
   }
   //Writign Tsallis parameters
   output_param << "****************************************\n";

@@ -1,4 +1,11 @@
 #include "src/Common.h"
+#include "TH2F.h"
+#include "TPad.h"
+#include "TCanvas.h"
+#include "TFile.h"
+#include "TLatex.h"
+#include "TLine.h"
+#include "TStyle.h"
 
 constexpr int nCol = 3;
 constexpr int nRow = 3;
@@ -9,8 +16,6 @@ constexpr double fy = sy[1];
 double global_y = 1.;
 double global_x = 0.;
 double xAxisEdges[9] = {3.9,3.6,2.4,3.9,3.6,2.4,3.9,3.6,2.4};
-
-const char* kRomanLabels[10] = {"I","II","III","IV + V","VI","VII","VIII","IX","X", "I - X"};
 
 std::array<TPad*,9> CreatePads(TCanvas* &cv)
 {
@@ -96,7 +101,7 @@ void MakeRatioPlot() {
   text.DrawLatex(0.6,2.20,"#bf{V0M Multiplicity Classes}");
 
   const string labels[9]{"0-1%","1-5%","5-10%","10-20%","20-30%","30-40%","40-50%","50-70%","70-100%"};
-  TFile input("../results/final.root");
+  TFile input(kFinalOutput.data());
   int place_holder[9] = {0,3,6,1,4,7,2,5,8};
   TH1* stat[9] = {nullptr};
   TH1* syst[9] = {nullptr};
