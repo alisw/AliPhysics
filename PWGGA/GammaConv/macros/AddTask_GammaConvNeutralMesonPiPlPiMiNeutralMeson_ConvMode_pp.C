@@ -218,8 +218,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
 
     // charged pion cuts
   } else if ( trainConfig == 120) {
+    cuts.AddCutHeavyMesonPCM("00000113","0dm0000922700000dge0404000","32c51070a","0103603a00000000","0153503000000000"); // use 4 vec
     cuts.AddCutHeavyMesonPCM("00000113","0dm0000922700000dge0404000","32c51070a","0103603o00000000","0153503000000000"); // use 4 vec
-    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32c51070a","0103603o00000000","0153503000000000"); // use 4 vec
   } else if ( trainConfig == 121) { // pTCut
     cuts.AddCutHeavyMesonPCM("00000113","0dm0000922700000dge0404000","32c50070a","0103603500000000","0153503000000000"); // pt>0.075
     cuts.AddCutHeavyMesonPCM("00000113","0dm0000922700000dge0404000","32c52070a","0103603500000000","0153503000000000"); // pt>0.125
