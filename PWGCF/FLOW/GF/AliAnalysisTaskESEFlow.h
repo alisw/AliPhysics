@@ -12,6 +12,7 @@
 #include "TH1.h"
 #include "TH2.h"
 
+#include "AliUniFlowCorrTask.h"
 
 class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 {
@@ -32,39 +33,46 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         AliEventCuts            fEventCuts;
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
         void                    SetUseWeightsRunByRun(Bool_t bRunByRun) { fFlowRunByRunWeights = bRunByRun; }
+        void                    SetUseV0RBRCalibration(Bool_t bV0RBR) { fV0RunByRunCalibration = bV0RBR; }
 
+        void                    SetVtxZCut(Double_t zCut) { fVtxZCuts = zCut; }
         void                    SetEtaGap(Double_t val) { dEtaGap = val; }
+        void                    SetHasEtaGap( Bool_t fEtaGap) { bHasGap = fEtaGap; }
 
-        void                    SetqSelectionRun(Bool_t actqRun) { fqRun = actqRun; }
+        void                    SetMakeqSelectionRun(Bool_t actqRun) { fMakeqSelectionRun = actqRun; }
 
         void                    SetReadMC(Bool_t activate) { fReadMC = activate;}
         void                    SetFlowRFPsPt(Double_t min, Double_t max) { fFlowRFPsPtMin = min; fFlowRFPsPtMax = max; }
         void                    SetFlowPOIsPt(Double_t min, Double_t max) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; } 
-        void                    AddTwoCorr(Bool_t actTwoCorr) { fnTwoCorr = actTwoCorr; }
-        void                    AddFourCorr(Bool_t actFourCorr) { fnFourCorr = actFourCorr; }
 
         void                    SetTPCEse(Bool_t actTPCEse) { fTPCEse = actTPCEse; }
         void                    SetV0CEse(Bool_t actV0CEse) { fV0CEse = actV0CEse; }
         void                    SetV0AEse(Bool_t actV0AEse) { fV0AEse = actV0AEse; }
 
+        void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
 
         void                    SetWeights(Bool_t kOwn) { bUseOwnWeights = kOwn; }
+
+        void                    SetCentBin(Int_t nbins, Double_t *bins) { fCentAxis->Set(nbins,bins); }
+        void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
         
 
     private:
         //runAnalysis inputs
         Bool_t                  fFlowRunByRunWeights;
+        Bool_t                  fV0RunByRunCalibration;
         Bool_t                  bUseOwnWeights;
         Double_t                dEtaGap;
+        Bool_t                  bHasGap;
 
         static const Int_t      fNumHarms = 13; // maximum harmonics length of flow vector array
         static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
-        static const Int_t      fNumHarmHists = 5; // how many harmonics hists
-        static const Int_t      fNumCentHists = 10; // how many cent hists should there be
-        static const Int_t      fESECuts = 10; // amount of ese percentiles 
+
+        static const Int_t      nCentBinMax = 11;           // maximum number of centrality bins
+        static const Int_t      nPtBinMax = 30;             // maximum number of pt bins
 
         Bool_t                  fInit; // initilization check
-        Bool_t                  fqRun; // make q-selections also used for V0 Calibration runs
+        Bool_t                  fMakeqSelectionRun; // make q-selections also used for V0 Calibration runs
 
         AliAODEvent*            fAOD;           //!
         TList*                  fOutputList;    //!
@@ -76,6 +84,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TList*                  fcnESETPC;      //!
         TList*                  fpTDiffESEV0C;  //!
         TList*                  fcnESEV0C;      //!
+        TList*                  fpTDiffESEV0A;  //!
+        TList*                  fcnESEV0A;      //!
         TList*                  fQAEvents;      //!
 
         TList*                  fFlowWeightsList; //! 
@@ -96,34 +106,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TSpline3*               fSplq2V0A[90];  // q2 V0A splines
         TSpline3*               fSplq3V0A[90];  // q3 V0A splines
 
-        TProfile*               fcn2Gap[fNumHarmHists]; //!
-        TProfile*               fdn2GapPt[fNumHarmHists][fNumCentHists];    //!
-        TProfile*               fdn2GapPtB[fNumHarmHists][fNumCentHists];    //!
-
         TH2D*                   fh2Weights; //!
         TH1F*                   fhV0Calib;  //!
         TH1F*                   fHistPDG; //!
-
-        ////////////////////// TPC ///////////////////////
-        TProfile*               fcn2GapESETPC[fNumHarmHists][2][fESECuts]; //!        
-        TProfile*               fdn2GapESETPC[fNumHarmHists][2][fNumCentHists][fESECuts]; //! 
-        TProfile*               fcn4Gap; //!
-        TProfile*               fdn4GapPt[fNumCentHists];    //! 
-        TProfile*               fcn4GapESETPC[2][fESECuts]; //!        
-        TProfile*               fdn4GapESETPC[2][fNumCentHists][fESECuts]; //! 
-        ////////////////////// V0C ////////////////////// 
-        TProfile*               fcn2GapESEV0C[fNumHarmHists][2][fESECuts]; //!        
-        TProfile*               fdn2GapESEV0C[fNumHarmHists][2][fNumCentHists][fESECuts]; //! 
-        TProfile*               fcn4GapESEV0C[2][fESECuts]; //!        
-        TProfile*               fdn4GapESEV0C[2][fNumCentHists][fESECuts]; //! 
-
-        ////////////////////// V0A ////////////////////// 
-        TProfile*               fcn2GapESEV0A[fNumHarmHists][2][fESECuts]; //!        
-        TProfile*               fdn2GapESEV0A[fNumHarmHists][2][fNumCentHists][fESECuts]; //! 
-        /////////////////////////////////////////////////
-
-        TProfile*               fc22c32Unb;                 //!
-        TProfile*               fc22c32ESETPC[2][fESECuts]; //! 
         
 
         /////////////////////////// CALIBRATION HISTOGRAMS ////////////////////////////////////
@@ -165,19 +150,19 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fhq2TPCvq2V0C;  //!
 
         void CorrelationTask(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t fSpCent);
+        void FillCorrelation(const AliUniFlowCorrTask* const task, const Float_t centrality, const Double_t dPt, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C, Int_t q2ESECodeV0A, Int_t q3ESECodeV0A, Bool_t doRef, Bool_t doDiff);
         void FillObsDistributions(const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, const Float_t centrality);
         // Calculate flow vectors for reference and POIs
-        void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
-        void POIVectors(const Int_t CenterCode, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
-        void ReducedqVectorsTPC(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
+        void RFPVectors(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz);
+        void POIVectors(const Int_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C,Int_t q2ESECodeV0A, Int_t q3ESECodeV0A);
+        void ReducedqVectorsTPC(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, const Int_t SPCode);
         void ReducedqVectorsV0(const Float_t centrality, const AliAODEvent* fAOD, const Int_t SPCode);
-        void FillRFP(const Float_t centrality,const Int_t iTracks, const int nHarm, const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
-        void Filldn(const Int_t CenterCode, const double dPt, const int nHarm, const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
+        void FillAlternativeRFP(const Float_t centrality, const int nHarm);
+        
         void FillqnRedTPC(const Float_t centrality);
         void FillqnRedV0(const Float_t centrality, TString V0type);
         void FillPOI(const Double_t dPtL, const Double_t dPtLow, const Double_t dPtHigh, const float dVz, Int_t iTracks);
-        void FillESEcn(const Float_t centrality, const int nHarm, const double c, const double c_weight,const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
-        void FillESEdnPt(const Int_t CenterCode, const int nHarm, const Double_t dPt, const double d, const double d_weight,const int nCorr, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C);
+        
         Int_t GetCentrCode(const Float_t centrality);
         Int_t GetPercCode(Double_t qPerc) const;
         Bool_t WithinRFP(const AliVParticle* track) const;
@@ -291,6 +276,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fEventRejectAddPileUp;
         UInt_t                  fFilterBit;
         Double_t                fAbsEtaMax;
+        Double_t                fVtxZCuts;
         TString                 fCentEstimator;
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
@@ -302,11 +288,20 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t                fFlowRFPsPtMax; // [5.0] (GeV/c) max pT treshold for RFPs particle for reference flow
         Double_t                fFlowPOIsPtMin; // [0] (GeV/c) min pT treshold for POIs for differential flow
         Double_t                fFlowPOIsPtMax; // [10] (GeV/c) max pT treshold for POIs for differential flow
-        Bool_t                  fnTwoCorr;
-        Bool_t                  fnFourCorr;
+
+        TAxis*                  fPtAxis;
+        TAxis*                  fCentAxis;
+        Int_t                   nCentBin;
+        Int_t                   nPtBin;
+        Double_t                CentEdges[nCentBinMax+1];
+        Double_t                PtEdges[nPtBinMax+1];
+
+    
         Bool_t                  fTPCEse;
         Bool_t                  fV0CEse;
         Bool_t                  fV0AEse;
+
+        std::vector<AliUniFlowCorrTask*>    fVecCorrTask;
 
 
         ClassDef(AliAnalysisTaskESEFlow, 1);

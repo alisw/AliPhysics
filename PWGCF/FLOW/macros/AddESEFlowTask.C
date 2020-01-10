@@ -1,7 +1,7 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskESEFlow;
 
-AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="MyTask", TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "", TString qSplines="")
+AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name", TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "", TString qSplines="", const char* suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -17,11 +17,12 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     }
 
     Bool_t bUseOwnWeights = kFALSE;
+    Bool_t fdoEse         = kTRUE;
 
 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += Form(":%s", dirname.Data());      // create a subfolder in the file
+    fileName += Form(":%s", suffix);      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisTaskESEFlow* task = new AliAnalysisTaskESEFlow(name.Data());   
     if(!task) return 0x0;
@@ -31,16 +32,18 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s:MyOutputContainer",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("%s:Observables",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("%s:<<n>>{n}",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("%s:<<n'>>{n}",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("%s:q_n",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("%s:<<n'>>{n}ESETPC",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("%s:<<n>>{n}ESETPC",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("%s:<<n'>>{n}ESEV0C",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,9,mgr->CreateContainer(Form("%s:<<n>>{n}ESEV0C",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,10,mgr->CreateContainer(Form("%s:fQAEvents",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s:MyOutputContainer",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("%s:Observables",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("%s:<<n>>",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("%s:<<n'>>",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("%s:q_n",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("%s:<<n'>>ESETPC",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("%s:<<n>>ESETPC",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("%s:<<n'>>ESEV0C",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,9,mgr->CreateContainer(Form("%s:<<n>>ESEV0C",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,10,mgr->CreateContainer(Form("%s:<<n'>>ESEV0A",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,11,mgr->CreateContainer(Form("%s:<<n>>ESEV0A",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,12,mgr->CreateContainer(Form("%s:fQAEvents",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
@@ -104,49 +107,53 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name",TString dirname ="M
       }
     }
 
-    TObjArray* taskContainersV0 = mgr->GetContainers();
-    if(!taskContainersV0) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+    if(fdoEse){
+      TObjArray* taskContainersV0 = mgr->GetContainers();
+      if(!taskContainersV0) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
 
-    AliAnalysisDataContainer* V0Cal = (AliAnalysisDataContainer*) taskContainersV0->FindObject("inputV0Cal");
-    if(!V0Cal) {  
-      if(V0Calib.Contains("alien://")) { gGrid->Connect("alien://"); }
+      AliAnalysisDataContainer* V0Cal = (AliAnalysisDataContainer*) taskContainersV0->FindObject("inputV0Cal");
+      if(!V0Cal) {  
+        if(V0Calib.Contains("alien://")) { gGrid->Connect("alien://"); }
 
-      TFile* V0Cal_file = TFile::Open(V0Calib.Data(),"READ");
-      if(!V0Cal_file) { printf("E-AddTaskESEFlow: Input file with V0 Calibration not found!\n"); return NULL; }
+        TFile* V0Cal_file = TFile::Open(V0Calib.Data(),"READ");
+        if(!V0Cal_file) { printf("E-AddTaskESEFlow: Input file with V0 Calibration not found!\n"); return NULL; }
 
-      TList* V0Cal_list = static_cast<TList*>(V0Cal_file->Get("Calibration"));
-      if(!V0Cal_list) { printf("E-AddTaskESEFlow: Input list with V0 Calibration not found!\n"); V0Cal_file->ls(); return NULL; }
+        TList* V0Cal_list = static_cast<TList*>(V0Cal_file->Get("Calibration"));
+        if(!V0Cal_list) { printf("E-AddTaskESEFlow: Input list with V0 Calibration not found!\n"); V0Cal_file->ls(); return NULL; }
 
-      AliAnalysisDataContainer* cInputV0Cal = mgr->CreateContainer("inputV0Cal",TList::Class(), AliAnalysisManager::kInputContainer);
-      cInputV0Cal->SetData(V0Cal_list);
-      mgr->ConnectInput(task,2,cInputV0Cal);
+        AliAnalysisDataContainer* cInputV0Cal = mgr->CreateContainer("inputV0Cal",TList::Class(), AliAnalysisManager::kInputContainer);
+        cInputV0Cal->SetData(V0Cal_list);
+        mgr->ConnectInput(task,2,cInputV0Cal);
+      }
+      else
+      {
+        mgr->ConnectInput(task,2,V0Cal);
+      }
+
+
+      TObjArray* taskContainersSp = mgr->GetContainers();
+      if(!taskContainersSp) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+
+      AliAnalysisDataContainer* qSelSp = (AliAnalysisDataContainer*) taskContainersSp->FindObject("inputqSp");
+      if(!qSelSp) {  
+        if(qSplines.Contains("alien://")) { gGrid->Connect("alien://"); }
+
+        TFile* qSp_file = TFile::Open(qSplines.Data(),"READ");
+        if(!qSp_file) { printf("E-AddTaskESEFlow: Input file with q-selection Splines not found!\n"); return NULL; }
+
+        TList* qSp_list = static_cast<TList*>(qSp_file->Get("qSplines"));
+        if(!qSp_list) { printf("E-AddTaskESEFlow: Input list with q Splines not found!\n"); qSp_file->ls(); return NULL; }
+
+        AliAnalysisDataContainer* cInputqSp = mgr->CreateContainer("inputqSp",TList::Class(), AliAnalysisManager::kInputContainer);
+        cInputqSp->SetData(qSp_list);
+        mgr->ConnectInput(task,3,cInputqSp);
+      }
+      else
+      {
+        mgr->ConnectInput(task,3,qSelSp);
+      }
     }
-    else
-    {
-      mgr->ConnectInput(task,2,V0Cal);
-    }
-
-    TObjArray* taskContainersSp = mgr->GetContainers();
-    if(!taskContainersSp) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
-
-    AliAnalysisDataContainer* qSelSp = (AliAnalysisDataContainer*) taskContainersSp->FindObject("inputqSp");
-    if(!qSelSp) {  
-      if(qSplines.Contains("alien://")) { gGrid->Connect("alien://"); }
-
-      TFile* qSp_file = TFile::Open(qSplines.Data(),"READ");
-      if(!qSp_file) { printf("E-AddTaskESEFlow: Input file with q-selection Splines not found!\n"); return NULL; }
-
-      TList* qSp_list = static_cast<TList*>(qSp_file->Get("qSplines"));
-      if(!qSp_list) { printf("E-AddTaskESEFlow: Input list with q Splines not found!\n"); qSp_file->ls(); return NULL; }
-
-      AliAnalysisDataContainer* cInputqSp = mgr->CreateContainer("inputqSp",TList::Class(), AliAnalysisManager::kInputContainer);
-      cInputqSp->SetData(qSp_list);
-      mgr->ConnectInput(task,3,cInputqSp);
-    }
-    else
-    {
-      mgr->ConnectInput(task,3,qSelSp);
-    }
+    
 
   return task;
 }
