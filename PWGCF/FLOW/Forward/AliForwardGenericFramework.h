@@ -84,6 +84,7 @@ public:
 
   TComplex Two(Int_t n1, Int_t n2, Int_t eta1, Int_t eta2);
   TComplex TwoDiff(Int_t n1, Int_t n2, Int_t refetabin, Int_t diffetabin);
+  TComplex TwoTwoDiff(Int_t n1, Int_t n2, Int_t diffetabin1, Int_t diffetabin2);
   TComplex Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4,Int_t eta1, Int_t eta2);
   TComplex FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t refetabinA, Int_t refetabinB, Int_t diffetabin,Int_t qetabin);
 
@@ -95,9 +96,18 @@ public:
                         Double_t value)
   { 
     if (TMath::IsNaN(value)) return; 
-    Double_t values[6] = {Double_t(n-2),Double_t(ptn),sample, zvertex, eta, cent};//kW4FourA
-    cumu->Fill(values,value);
-    return;
+    if (n < 0){
+      Double_t values[5] = {sample, zvertex, eta, cent};//kW4FourA
+      cumu->Fill(values,value);
+      return;
+    }
+    else{
+      Double_t values[6] = {Double_t(n-2),sample, zvertex, eta, cent};//kW4FourA
+      cumu->Fill(values,value);
+      return;
+    }
+
+
   }
 
   Double_t applyNUAcentral(Double_t eta, Double_t phi, Double_t zvertex, Double_t weight){
@@ -157,23 +167,31 @@ public:
     return weight;
   }
 
-  THnD* cumu_dW2A        ;//!  // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-  THnD* cumu_dW2TwoA     ;//!  // <w2*two>
-  THnD* cumu_dW2B        ;//!  // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
-  THnD* cumu_dW2TwoB     ;//!  // <w2*two>  Int_t kW4          = 3; // <w4>
-  THnD* cumu_dW4         ;//! 
-  THnD* cumu_dW4Four     ;//! 
+  // reference
+  THnD* cumu_rW2         ;//!
+  THnD* cumu_rW2Two      ;//!
+  THnD* cumu_rW4         ;//!
+  THnD* cumu_rW4Four     ;//!
 
-  THnD* cumu_dW4FourTwo  ;//! 
-  THnD* cumu_dW4ThreeTwo ;//! 
-  //THnD* cumu_dW4_mixed   ;//! 
-  THnD* cumu_dWTwoTwoN   ;//!  // Numerator of R_{n,n; 2}
-  THnD* cumu_dWTwoTwoD   ;//!  // Denominator of R_{n,n; 2}
+  // normal
+  THnD* cumu_dW2B        ;//!
+  THnD* cumu_dW2TwoB     ;//!
+  THnD* cumu_dW4         ;//!
+  THnD* cumu_dW4Four     ;//!
 
-  THnD* cumu_rW2         ;//!  // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-  THnD* cumu_rW2Two      ;//!  // <w2*two>
-  THnD* cumu_rW4         ;//! 
-  THnD* cumu_rW4Four     ;//!   
+  // SC 
+  THnD* cumu_dW2TwoTwoN  ;//!
+  THnD* cumu_dW2TwoTwoD  ;//!
+  THnD* cumu_dW4ThreeTwo ;//!
+  THnD* cumu_dW4FourTwo  ;//!
+
+  // decorrelation
+  THnD* cumu_dW2A        ;//!
+  THnD* cumu_dW2TwoA     ;//!
+  THnD* cumu_dW22TwoTwoN ;//! // Numerator of R_{n,n; 2}
+  THnD* cumu_dW22TwoTwoD ;//! // Denominator of R_{n,n; 2}
+
+
 
   ClassDef(AliForwardGenericFramework, 1); // object for eta dependent cumulant ananlysis
 };

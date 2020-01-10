@@ -232,6 +232,11 @@ class AliForwardSettings : public TObject {
   Int_t nua_runnumber;
   TH3F* correct_nua_mc;
   Int_t run_list;
+  
+  Bool_t second_analysis;
+  Bool_t SC_analysis;
+  Bool_t decorr_analysis;
+  Bool_t normal_analysis;
 
 private:
   ClassDef(AliForwardSettings, 1);

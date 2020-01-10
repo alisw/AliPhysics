@@ -8,8 +8,8 @@ AliForwardSettings::AliForwardSettings() :
   fPhiAcceptanceLowEdge(0),
   fPhiAcceptanceUpEdge(2*TMath::Pi()),
   fNPhiBins(20),
-  fEtaLowEdge(-3.24),
-  fEtaUpEdge(4.68),
+  fEtaLowEdge(-3.36),
+  fEtaUpEdge(4.8),
   fZVtxAcceptanceLowEdge(-10),
   fZVtxAcceptanceUpEdge(10),
   fNZvtxBins(10),
@@ -58,6 +58,10 @@ AliForwardSettings::AliForwardSettings() :
   track_sample(0),
   nua_runnumber(0),
   correct_nua_mc(),
-  run_list(0)
+  run_list(0),
+  second_analysis(kFALSE),
+  SC_analysis(kFALSE),
+  decorr_analysis(kFALSE),
+  normal_analysis(kTRUE)
 {
 }
