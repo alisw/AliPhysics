@@ -13,16 +13,20 @@
 #include "AliMLModelHandler.h"
 
 #include <map>
-#include "assert.h"
 #include "yaml-cpp/yaml.h"
 
 #include <TFile.h>
 #include <TGrid.h>
 #include <TSystem.h>
+#include "AliLog.h"
 #include "AliExternalBDT.h"
 
+/// \cond CLASSIMP
+ClassImp(AliMLModelHandler);
+/// \endcond
+
 //_______________________________________________________________________________
-AliMLModelHandler::AliMLModelHandler() : fModel{nullptr}, fPath{}, fLibrary{}, fScoreCut{} {
+AliMLModelHandler::AliMLModelHandler() : TNamed(), fModel{nullptr}, fPath{}, fLibrary{}, fScoreCut{} {
   //
   // Default constructor
   //
@@ -30,8 +34,8 @@ AliMLModelHandler::AliMLModelHandler() : fModel{nullptr}, fPath{}, fLibrary{}, f
 
 //_______________________________________________________________________________
 AliMLModelHandler::AliMLModelHandler(const YAML::Node &node)
-    : fModel{nullptr}, fPath{node["path"].as<std::string>()}, fLibrary{node["library"].as<std::string>()},
-      fScoreCut{node["cut"].as<double>()} {
+    : TNamed(), fModel{nullptr}, fPath{node["path"].as<std::string>()},
+      fLibrary{node["library"].as<std::string>()}, fScoreCut{node["cut"].as<double>()} {
   //
   // Standard constructor
   //
@@ -48,7 +52,8 @@ AliMLModelHandler::~AliMLModelHandler() {
 
 //_______________________________________________________________________________
 AliMLModelHandler::AliMLModelHandler(const AliMLModelHandler &source)
-    : fModel{nullptr}, fPath{source.fPath}, fLibrary{source.fLibrary}, fScoreCut{source.fScoreCut} {
+    : TNamed(source.GetName(), source.GetTitle()), fModel{nullptr}, fPath{source.fPath},
+      fLibrary{source.fLibrary}, fScoreCut{source.fScoreCut} {
   //
   // Copy constructor
   //
@@ -60,6 +65,8 @@ AliMLModelHandler &AliMLModelHandler::operator=(const AliMLModelHandler &source)
   // Assignment operator
   //
   if (&source == this) return *this;
+
+  TNamed::operator=(source);
 
   if(fModel)
     delete fModel;
@@ -106,14 +113,21 @@ std::string AliMLModelHandler::ImportFile(std::string path) {
   std::string modelname = path.substr(path.find_last_of("/") + 1);
 
   // check if file is in current directory
-  if(path.find("/") == std::string::npos)
+  if (path.find("/") == std::string::npos) {
+    bool checkFile = gSystem->AccessPathName(gSystem->ExpandPathName(path.c_str()));
+    if (checkFile) {
+      AliFatalClass(Form("Error file %s not found! Exit", path.data()));
+    }
     return path;
-
+  }
+    
   // check if file is on alien
   if (path.find("alien:") != std::string::npos) {
     if (gGrid == nullptr) {
       TGrid::Connect("alien://");
-      assert(gGrid != nullptr && "Connection to GRID not established! Exit");
+      if (gGrid == nullptr) {
+        AliFatalClass("Connection to GRID not established! Exit");
+      }
     }
   }
 
@@ -121,7 +135,9 @@ std::string AliMLModelHandler::ImportFile(std::string path) {
   std::string oldpath = gDirectory->GetPath();
 
   bool cpStatus = TFile::Cp(path.data(), newpath.data());
-  assert(cpStatus && "Error in coping file in the working directory! Exit");
+  if (!cpStatus) {
+    AliFatalClass(Form("Error in coping file %s in the working directory! Exit", path.data()));
+  }
 
   gDirectory->Cd(oldpath.data());
 

@@ -16,12 +16,14 @@
 
 #include <string>
 
+#include "TNamed.h"
+
 namespace YAML {
   class Node;
 }
 class AliExternalBDT;
 
-class AliMLModelHandler {
+class AliMLModelHandler : public TNamed {
 public:
   enum {kXGBoost, kLightGBM, kModelLibrary};
 
@@ -41,12 +43,16 @@ public:
   static std::string ImportFile(std::string path);
 
 private:
-  AliExternalBDT *fModel;
+  AliExternalBDT *fModel;  //!<!
 
-  std::string fPath;
-  std::string fLibrary;
+  std::string fPath;       ///
+  std::string fLibrary;    ///
 
-  double fScoreCut;
+  double fScoreCut;        ///
+
+/// \cond CLASSIMP
+ClassDef(AliMLModelHandler, 1);    ///
+/// \endcond
 };
 
 #endif
