@@ -199,7 +199,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			fFFlucAna->GetAliJEfficiency()->SetRunNumber (1234);
 			fFFlucAna->GetAliJEfficiency()->Load();
 		}
-		ReadKineTracks( mcEvent, fInputList, fCent ) ; // read tracklist
+		ReadKineTracks( mcEvent, fInputList ) ; // read tracklist
 		AliGenEventHeader *header = mcEvent->GenEventHeader();
 		if(!header)
 			return;
@@ -229,7 +229,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 
 		if(!IsGoodEvent( currentEvent ))
 			return;
-		ReadAODTracks( currentEvent, fInputList, fCent ) ; // read tracklist
+		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 		ReadVertexInfo( currentEvent, fvertex); // read vertex info
 		// Analysis Part
 		fFFlucAna->Init();
@@ -244,7 +244,10 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		fFFlucAna->SetPhiWeights(0);
 		if(flags & FLUC_PHI_CORRECTION){
 			//int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-			int cbin = AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
+			int cbin = (binning != BINNING_CENT_PbPb)?
+				AliJFFlucAnalysis::GetBin((double)fInputList->GetEntriesFast(),(AliJFFlucAnalysis::BINNING)binning):
+				AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
+			//int cbin = AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
 			if(cbin != -1){
 				TH1 *pweightMap = GetCorrectionMap(fRunNum,cbin);
 				if(pweightMap)
@@ -292,7 +295,7 @@ void AliJFFlucTask::Init()
 	AliInfo("Doing initialization") ;
 }
 //______________________________________________________________________________
-void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, float fCent)
+void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 {
 	//aod->Print();
 	if(flags & FLUC_MC){  // how to get a flag to check  MC or not !
@@ -577,7 +580,7 @@ void AliJFFlucTask::SetEffConfig( UInt_t effMode, UInt_t FilterBit)
 	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }
 //______________________________________________________________________________
-void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fCent)
+void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList)
 {
 	UInt_t nt = mcEvent->GetNumberOfPrimaries();
 	UInt_t ntrack = 0;
@@ -603,17 +606,6 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 				}
 			}
 			
-			/*if(flags & FLUC_PHI_REJECTION){
-				int isub = (int)(track->Eta() > 0.0);
-				//int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-				int cbin = AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
-				if(cbin != -1){
-					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
-					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
-						continue;
-				}
-			}*/
-
 			Int_t pdg = particle->GetPdgCode();
 			Char_t ch = (Char_t) track->Charge();
 			if(ch < 0){
