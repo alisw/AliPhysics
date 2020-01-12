@@ -1667,6 +1667,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             Double_t eop = -1.0;
             if(track->P()>0)eop = clustMatchE/track->P();
             //if(fmcData && iMCcorr)eop += 0.04; // mean shift correction between data and MC (pPb at 5 in 2016) 
+            if(fmcData && ippcoll)eop += 0.02; // mean shift correction between data and MC (pp at 5 in 2016) 
             if(idbHFEj)cout << "++++++++++ eop = " << eop << " ; " << pt  << endl;
             eopJet = eop;
             if(pt>2.0)fHistEopNsig->Fill(fTPCnSigma,eop);
