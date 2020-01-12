@@ -60,8 +60,8 @@ public:
 	virtual void UserExec(Option_t *option);
 	virtual void Terminate(Option_t* opt="");
 
-	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList, float fCent);
-	void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fCent);
+	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList);
+	void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList);
 	//float ReadAODCentrality( AliAODEvent* aod, TString Trig );
 	//float ReadMultSelectionCentrality( AliAODEvent* aod, TString Trig );
 	float ReadCentrality(AliAODEvent *aod, TString Trig);

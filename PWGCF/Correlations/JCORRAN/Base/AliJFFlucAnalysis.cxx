@@ -386,9 +386,9 @@ inline TComplex SixGap33(const TComplex (*pQq)[AliJFFlucAnalysis::kNH][AliJFFluc
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// find Centrality
 	int trk_number = fInputList->GetEntriesFast();
-	if(binning != BINNING_CENT_PbPb)
-		fCBin = GetBin((double)trk_number,binning);
-	else fCBin = GetBin(fCent,binning);
+	fCBin = (binning != BINNING_CENT_PbPb)?
+		GetBin((double)trk_number,binning):
+		GetBin(fCent,binning); //--- similarly in Task
 
 	if(fCBin == -1)
 		return;
