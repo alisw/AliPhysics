@@ -69,6 +69,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetThetaBinsLinear (0, TMath::TwoPi(), 60);
   task->SetMassBinsLinear  (0, 5, 500);
   task->SetPairPtBinsLinear(0, 20, 200);
+  task->SetPhiVBinsLinear  (0, TMath::Pi(), 72);
+  task->SetFillPhiV(kTRUE);
 
   task->SetSmearGenerated(kFALSE);
   task->SetResolutionDeltaPtBinsLinear( -10,  +10, 2000);
