@@ -17,8 +17,9 @@
 class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 {
     public:
+        enum    ColSystem {kPP = 0, kPPb, kPbPb}; // tag for collisional system
                                 AliAnalysisTaskESEFlow();
-                                AliAnalysisTaskESEFlow(const char *name);
+                                AliAnalysisTaskESEFlow(const char *name, ColSystem colSys, Bool_t bUseV0Calibration = kFALSE);
         virtual                 ~AliAnalysisTaskESEFlow();
 
         virtual void            UserCreateOutputObjects();
@@ -33,13 +34,15 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         AliEventCuts            fEventCuts;
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
         void                    SetUseWeightsRunByRun(Bool_t bRunByRun) { fFlowRunByRunWeights = bRunByRun; }
-        void                    SetUseV0RBRCalibration(Bool_t bV0RBR) { fV0RunByRunCalibration = bV0RBR; }
 
         void                    SetVtxZCut(Double_t zCut) { fVtxZCuts = zCut; }
         void                    SetEtaGap(Double_t val) { dEtaGap = val; }
         void                    SetHasEtaGap( Bool_t fEtaGap) { bHasGap = fEtaGap; }
+        void                    SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
 
         void                    SetMakeqSelectionRun(Bool_t actqRun) { fMakeqSelectionRun = actqRun; }
+        void                    SetMakeRBRweights(Bool_t actRBRrun) { fMakeRBRweightsRun = actRBRrun; }
+        void                    SetUseV0Calibration(Bool_t actV0run) { fV0RunByRunCalibration = actV0run; }
 
         void                    SetReadMC(Bool_t activate) { fReadMC = activate;}
         void                    SetFlowRFPsPt(Double_t min, Double_t max) { fFlowRFPsPtMin = min; fFlowRFPsPtMax = max; }
@@ -53,17 +56,19 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         void                    SetWeights(Bool_t kOwn) { bUseOwnWeights = kOwn; }
 
+        void                    SetSampling(Bool_t sample, Int_t iNum) { fSampling = sample; fNumSamples = iNum; }
+
         void                    SetCentBin(Int_t nbins, Double_t *bins) { fCentAxis->Set(nbins,bins); }
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
         
 
     private:
-        //runAnalysis inputs
         Bool_t                  fFlowRunByRunWeights;
         Bool_t                  fV0RunByRunCalibration;
         Bool_t                  bUseOwnWeights;
         Double_t                dEtaGap;
         Bool_t                  bHasGap;
+        Bool_t                  fSampling;      //Bootstrapping sampling
 
         static const Int_t      fNumHarms = 13; // maximum harmonics length of flow vector array
         static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
@@ -73,6 +78,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         Bool_t                  fInit; // initilization check
         Bool_t                  fMakeqSelectionRun; // make q-selections also used for V0 Calibration runs
+        Bool_t                  fMakeRBRweightsRun;
 
         AliAODEvent*            fAOD;           //!
         TList*                  fOutputList;    //!
@@ -111,7 +117,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistPDG; //!
         
 
-        /////////////////////////// CALIBRATION HISTOGRAMS ////////////////////////////////////
+        /////////////////////////// CALIBRATION QA HISTOGRAMS ////////////////////////////////////
         TH2D*                   fq2TPC;    //!
         TH2D*                   fq3TPC;    //!
         TH2D*                   fq2V0C;    //!
@@ -142,8 +148,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fQnyTPCEse[2];    //! 
         ////////////////////////// CALIBRATION HISTOGRAMS /////////////////////////////////////////
 
-        TH3F*                   fCentq2TPCvsv22;   //!
-        TH3F*                   fCentq2V0Cvsv22;   //!
         TProfile*               fProfNPar; //!
         TH2F*                   fhV0Multiplicity;    //!
         TH2F*                   fhV0CorrMult;       //!
@@ -157,14 +161,15 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void POIVectors(const Int_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C,Int_t q2ESECodeV0A, Int_t q3ESECodeV0A);
         void ReducedqVectorsTPC(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, const Int_t SPCode);
         void ReducedqVectorsV0(const Float_t centrality, const AliAODEvent* fAOD, const Int_t SPCode);
-        void FillAlternativeRFP(const Float_t centrality, const int nHarm);
         
         void FillqnRedTPC(const Float_t centrality);
         void FillqnRedV0(const Float_t centrality, TString V0type);
         void FillPOI(const Double_t dPtL, const Double_t dPtLow, const Double_t dPtHigh, const float dVz, Int_t iTracks);
+
+        Int_t GetSamplingIndex() const;
         
-        Int_t GetCentrCode(const Float_t centrality);
-        Int_t GetPercCode(Double_t qPerc) const;
+        Int_t GetCentralityCode(const Float_t centrality);
+        Int_t GetEsePercentileCode(Double_t qPerc) const;
         Bool_t WithinRFP(const AliVParticle* track) const;
         Bool_t WithinPOI(const AliVParticle* track) const;
         Bool_t LoadqSelection();
@@ -272,12 +277,14 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         AliAnalysisTaskESEFlow& operator=(const AliAnalysisTaskESEFlow&); // not implemented
 
         //event and track selection
+        ColSystem               fColSystem; // collisional system
         AliVEvent::EOfflineTriggerTypes    fTrigger;
         Bool_t                  fEventRejectAddPileUp;
         UInt_t                  fFilterBit;
         Double_t                fAbsEtaMax;
         Double_t                fVtxZCuts;
         TString                 fCentEstimator;
+        UShort_t                fCutChargedNumTPCclsMin;
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
@@ -300,6 +307,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fTPCEse;
         Bool_t                  fV0CEse;
         Bool_t                  fV0AEse;
+
+        Int_t                   fIndexSampling;
+        Int_t                   fNumSamples;
 
         std::vector<AliUniFlowCorrTask*>    fVecCorrTask;
 

@@ -1,7 +1,7 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskESEFlow;
 
-AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name", TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "", TString qSplines="", const char* suffix = "")
+AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys, TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "", TString qSplines="", const char* suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -15,16 +15,27 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name", TString sWeightsFi
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
+    TString name = Form("ESEFlow%s",suffix);
 
     Bool_t bUseOwnWeights = kFALSE;
-    Bool_t fdoEse         = kTRUE;
+    if(!sWeightsFile.IsNull()) { bUseOwnWeights = kTRUE; }
+
+    Bool_t bUseEseSp       = kFALSE;
+    if(!qSplines.IsNull()) { bUseEseSp = kTRUE; }
+
+    Bool_t bUseV0Calibration = kFALSE;
+    if(!V0Calib.IsNull()) { bUseV0Calibration = kTRUE; } 
+
+    Bool_t bUseRBRWeights = kFALSE;
+    if(!sVWeights.IsNull() || !sWeightsFile.IsNull()) { bUseRBRWeights = kTRUE; }
+         
 
 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += Form(":%s", suffix);      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskESEFlow* task = new AliAnalysisTaskESEFlow(name.Data());   
+    AliAnalysisTaskESEFlow* task = new AliAnalysisTaskESEFlow(name.Data(), colSys, bUseV0Calibration);   
     if(!task) return 0x0;
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     // add your task to the manager
@@ -32,82 +43,100 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name", TString sWeightsFi
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s:MyOutputContainer",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s:EseTestFlow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("%s:Observables",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("%s:<<n>>",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("%s:<<n'>>",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("%s:Flow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("%s:DiffFlow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("%s:q_n",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("%s:<<n'>>ESETPC",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("%s:<<n>>ESETPC",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("%s:<<n'>>ESEV0C",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,9,mgr->CreateContainer(Form("%s:<<n>>ESEV0C",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,10,mgr->CreateContainer(Form("%s:<<n'>>ESEV0A",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,11,mgr->CreateContainer(Form("%s:<<n>>ESEV0A",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("%s:DiffFlowESETPC",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("%s:FlowESETPC",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("%s:DiffFlowESEV0C",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,9,mgr->CreateContainer(Form("%s:FlowESEV0C",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,10,mgr->CreateContainer(Form("%s:DiffFlowESEV0A",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,11,mgr->CreateContainer(Form("%s:FlowESEV0A",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,12,mgr->CreateContainer(Form("%s:fQAEvents",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
+    if( colSys == AliAnalysisTaskESEFlow::ColSystem::kPbPb){
+      task->SetCentralityEst("V0M"); // V0M
+      task->SetChargedNumTPCclsMin(70);
+    }
+    else{
+      task->SetCentralityEst("V0A");
+      task->SetChargedNumTPCclsMin(70);
+    }
+
     // RUN BY RUN own
-    if(bUseOwnWeights) 
-    {
-      TObjArray* taskContainers = mgr->GetContainers();
-      if(!taskContainers) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
 
-      // check if the input weights are already loaded (e.g. in different subwagon)
-      AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
-      if(!weights) 
-      {  
-        // if it does not exists create it
-
-        // in case of non-local run, establish connection to ALiEn for loading the weights
-        if(sWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
-
-        TFile* weights_file = TFile::Open(sWeightsFile.Data(),"READ");
-        if(!weights_file) { printf("E-AddTaskESEFlow: Input file with weights not found!\n"); return NULL; }
-
-        TList* weights_list = static_cast<TList*>(weights_file->Get("weights"));
-        if(!weights_list) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
-
-        AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
-        cInputWeights->SetData(weights_list);
-        mgr->ConnectInput(task,1,cInputWeights);
-      }
-      else 
+    if(bUseRBRWeights){
+      if(bUseOwnWeights) 
       {
-        // connect existing container
-        mgr->ConnectInput(task,1,weights);
+        task->SetWeights(bUseOwnWeights);
+
+        TObjArray* taskContainers = mgr->GetContainers();
+        if(!taskContainers) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+
+        // check if the input weights are already loaded (e.g. in different subwagon)
+        AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
+        if(!weights) 
+        {  
+          // if it does not exists create it
+
+          // in case of non-local run, establish connection to ALiEn for loading the weights
+          if(sWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+
+          TFile* weights_file = TFile::Open(sWeightsFile.Data(),"READ");
+          if(!weights_file) { printf("E-AddTaskESEFlow: Input file with weights not found!\n"); return NULL; }
+
+          TList* weights_list = static_cast<TList*>(weights_file->Get("weights"));
+          if(!weights_list) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
+
+          AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
+          cInputWeights->SetData(weights_list);
+          mgr->ConnectInput(task,1,cInputWeights);
+        }
+        else 
+        {
+          // connect existing container
+          mgr->ConnectInput(task,1,weights);
+        }
+      }
+      if(!bUseOwnWeights)
+      {
+        TObjArray* taskContainersVy = mgr->GetContainers();
+        if(!taskContainersVy) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+
+        // check if the input weights are already loaded (e.g. in different subwagon)
+        AliAnalysisDataContainer* weightsVy = (AliAnalysisDataContainer*) taskContainersVy->FindObject("inputWeights");
+        if(!weightsVy) {  
+          // if it does not exists create it
+          // in case of non-local run, establish connection to ALiEn for loading the weights
+          if(sVWeights.Contains("alien://")) { gGrid->Connect("alien://"); }
+
+          TFile* weights_fileVy = TFile::Open(sVWeights.Data(),"READ");
+          if(!weights_fileVy) { printf("E-AddTaskESEFlow: Input file with weights not found!\n"); return NULL; }
+
+          TList* weights_listVy = static_cast<TList*>(weights_fileVy->Get("WeightList"));
+          if(!weights_listVy) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); weights_fileVy->ls(); return NULL; }
+
+          AliAnalysisDataContainer* cInputWeightsVy = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
+          cInputWeightsVy->SetData(weights_listVy);
+          mgr->ConnectInput(task,1,cInputWeightsVy);
+        }
+        else
+        {
+          // connect existing container
+          mgr->ConnectInput(task,1,weightsVy);
+        }
       }
     }
-    if(!bUseOwnWeights)
-    {
-      TObjArray* taskContainersVy = mgr->GetContainers();
-      if(!taskContainersVy) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
-
-      // check if the input weights are already loaded (e.g. in different subwagon)
-      AliAnalysisDataContainer* weightsVy = (AliAnalysisDataContainer*) taskContainersVy->FindObject("inputWeights");
-      if(!weightsVy) {  
-        // if it does not exists create it
-        // in case of non-local run, establish connection to ALiEn for loading the weights
-        if(sVWeights.Contains("alien://")) { gGrid->Connect("alien://"); }
-
-        TFile* weights_fileVy = TFile::Open(sVWeights.Data(),"READ");
-        if(!weights_fileVy) { printf("E-AddTaskESEFlow: Input file with weights not found!\n"); return NULL; }
-
-        TList* weights_listVy = static_cast<TList*>(weights_fileVy->Get("WeightList"));
-        if(!weights_listVy) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); weights_fileVy->ls(); return NULL; }
-
-        AliAnalysisDataContainer* cInputWeightsVy = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
-        cInputWeightsVy->SetData(weights_listVy);
-        mgr->ConnectInput(task,1,cInputWeightsVy);
-      }
-      else
-      {
-        // connect existing container
-        mgr->ConnectInput(task,1,weightsVy);
-      }
+    else{
+      task->SetMakeRBRweights(kTRUE);
     }
+    
 
-    if(fdoEse){
+    if(bUseV0Calibration){
       TObjArray* taskContainersV0 = mgr->GetContainers();
       if(!taskContainersV0) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
 
@@ -129,8 +158,9 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name", TString sWeightsFi
       {
         mgr->ConnectInput(task,2,V0Cal);
       }
+    }
 
-
+    if(bUseEseSp){
       TObjArray* taskContainersSp = mgr->GetContainers();
       if(!taskContainersSp) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
 
@@ -152,6 +182,9 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(TString name = "name", TString sWeightsFi
       {
         mgr->ConnectInput(task,3,qSelSp);
       }
+    }
+    else{ 
+      task->SetMakeqSelectionRun(kTRUE); 
     }
     
 
