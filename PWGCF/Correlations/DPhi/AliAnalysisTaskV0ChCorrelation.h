@@ -68,6 +68,7 @@ public:
    void SetTrackPtMin(Double_t value){fTrackPtMin = value;} 
    void SetTrackPtMax(Double_t value){fTrackPtMax = value;}
    void SetTrackEta(Double_t value){fTrackEta = value;}
+   void SetFilterBit(Double_t value){fFilterBit = value;}
    void SetAssocNcls(Double_t value){fAssocNcls = value;}
    //---------------------V0---------------------------------
    void SetV0MCPtMin(Double_t value){fV0MCPtMin = value;}
@@ -165,6 +166,7 @@ private:
    Double_t        fTrackPtMin;
    Double_t        fTrackPtMax;
    Double_t        fTrackEta;
+   Int_t          fFilterBit;
    Double_t        fAssocNcls;
    //---------------------------------V0----------------------------------------
    Double_t        fV0MCPtMin;

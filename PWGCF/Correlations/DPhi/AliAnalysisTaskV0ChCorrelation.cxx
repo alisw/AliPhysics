@@ -101,6 +101,7 @@ AliAnalysisTaskV0ChCorrelation::AliAnalysisTaskV0ChCorrelation()
      fTrackPtMin(0),
      fTrackPtMax(0),
      fTrackEta(0),
+     fFilterBit(768),
      fAssocNcls(0),
      //-----------------------------------V0---------------------------------
      fV0MCPtMin(0),
@@ -240,6 +241,7 @@ AliAnalysisTaskV0ChCorrelation::AliAnalysisTaskV0ChCorrelation(const char *name,
      fTrackPtMin(0),
      fTrackPtMax(0),
      fTrackEta(0),
+     fFilterBit(768),
      fAssocNcls(0),
      //-----------------------------------V0---------------------------------
      fV0MCPtMin(0),
@@ -639,8 +641,8 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  // const Double_t* zvtxBins = vertexBins;
 
-   const Int_t nZvtxBins  = 5;
-   Double_t vertexBins[] = {-7., -3., -1., 1., 3.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5., -3., -1., 1., 3., 5.,7.};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -659,16 +661,16 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
   tQAEvent->SetOwner();
   tQAEvent->SetName("EventInput");
   
-   const Int_t nCentralityBins  = 14;
-   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
   //const Int_t nZvtxBins  = 8;
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   //const Double_t* zvtxBins = vertexBins;
 
   
-   const Int_t nZvtxBins  = 5;
-   Double_t vertexBins[] = {-7., -3., -1., 1., 3.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5., -3., -1., 1., 3., 5.,7.};
    const Double_t* zvtxBins = vertexBins;
 
   TH1F *fhEventBf = new TH1F("fhEventBf", "Event Number; Counts; Number of Events",1, 0.,1); 
@@ -699,8 +701,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQATrackCandidates()
    tQATrack->SetName("Track");
 
    // defining bins for centrality
-   const Int_t nCentralityBins  = 14;
-   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
 
@@ -710,8 +712,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQATrackCandidates()
   // const Double_t* zvtxBins = vertexBins;
 
 
-   const Int_t nZvtxBins  = 5;
-   Double_t vertexBins[] = {-7., -3., -1., 1., 3.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5., -3., -1., 1., 3., 5.,7.};
    const Double_t* zvtxBins = vertexBins;
    
    // pt bins of associate particles for the analysis
@@ -923,8 +925,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
    tQAK0s->SetName("K0s");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 14;
-   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
    // defining bins for Z vertex
@@ -933,8 +935,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
   
-   const Int_t nZvtxBins  = 5;
-   Double_t vertexBins[] = {-7., -3., -1., 1., 3.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5., -3., -1., 1., 3., 5.,7.};
    const Double_t* zvtxBins = vertexBins;
    
    
@@ -943,8 +945,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
    const Double_t PtBinsV0Xi[4] = {3.0, 4.0, 8.0,15.0}; 
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 5;
-   const Double_t PtBins[6] = {1.0,2.0,3.0, 4.0,6.0, 8.0}; 
+   const Int_t nPtBins = 4;
+   const Double_t PtBins[5] = {1.0,2.0,3.0, 4.0,8.0}; 
   
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1071,8 +1073,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
    tQALambda->SetName("Lambda");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 14;
-   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
    // defining bins for Z vertex
@@ -1080,8 +1082,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
   
-   const Int_t nZvtxBins  = 5;
-   Double_t vertexBins[] = {-7., -3., -1., 1., 3.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5., -3., -1., 1., 3., 5.,7.};
    const Double_t* zvtxBins = vertexBins;
    
    
@@ -1090,8 +1092,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
    const Double_t PtBinsV0Xi[4] = {3.0, 4.0, 8.0,15.0}; 
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 5;
-   const Double_t PtBins[6] = {1.0,2.0,3.0, 4.0,6.0, 8.0}; 
+   const Int_t nPtBins = 4;
+   const Double_t PtBins[5] = {1.0,2.0,3.0, 4.0,8.0}; 
   
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1230,8 +1232,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
    tQAAntiLambda->SetName("AntiLambda");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 14;
-   Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 9;
+   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    
    // defining bins for Z vertex
@@ -1239,8 +1241,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
    
-   const Int_t nZvtxBins  = 5;
-   Double_t vertexBins[] = {-7., -3., -1., 1., 3.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5., -3., -1., 1., 3., 5.,7.};
    const Double_t* zvtxBins = vertexBins;
 
    
@@ -1249,8 +1251,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
    const Double_t PtBinsV0Xi[4] = {3.0, 4.0, 8.0,15.0}; 
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 5;
-   const Double_t PtBins[6] = {1.0,2.0,3.0, 4.0,6.0, 8.0}; 
+   const Int_t nPtBins = 4;
+   const Double_t PtBins[5] = {1.0,2.0,3.0, 4.0,8.0}; 
   
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -2738,7 +2740,7 @@ Bool_t AliAnalysisTaskV0ChCorrelation::IsGoodPrimaryTrack(const AliAODTrack *t)
   if (TMath::Abs(t->Eta())>fTrackEta) return kFALSE;//0.8
 
   //768-hybrid tracks
-  if (!t->TestFilterBit(768)) return kFALSE; 
+  if (!t->TestFilterBit(fFilterBit)) return kFALSE; 
   /*
   // Minimum number of clusters//i closed compare to another code 
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1);
