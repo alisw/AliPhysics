@@ -1,11 +1,3 @@
-//#ifdef __CLING__
-//#include <AliAnalysisManager.h>
-//#include <AliAODInputHandler.h>
-//
-//// Tell ROOT where to find AliPhysics headers
-//R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
-//#endif
-
 AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
     Bool_t getFromAlien=kFALSE,
     TString cFileName = "Config_dsekihat_lowmass_PbPb.C",
@@ -52,59 +44,45 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
   task->SetTriggerMask(trigger);
 
   //add dielectron analysis with different cuts to the task
-  #if defined(__CLING__)
-    printf("ROOT6\n");
-    gROOT->LoadMacro(libFilePath.Data());//library first
-    gROOT->LoadMacro(configFilePath.Data());
+  gROOT->LoadMacro(libFilePath.Data());//library first
+  gROOT->LoadMacro(configFilePath.Data());
 
-    //const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
-    const Int_t nTC  = Int_t(gROOT->ProcessLine("GetNTC()") );
-    const Int_t nPID = Int_t(gROOT->ProcessLine("GetNPID()"));
-    const Int_t nPF  = Int_t(gROOT->ProcessLine("GetNPF()") );
+  //const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
+  const Int_t nTC  = Int_t(gROOT->ProcessLine("GetNTC()") );
+  const Int_t nPID = Int_t(gROOT->ProcessLine("GetNPID()"));
+  const Int_t nPF  = Int_t(gROOT->ProcessLine("GetNPF()") );
 
-    for (Int_t itc=0; itc<nTC; ++itc){
-      for (Int_t ipid=0; ipid<nPID; ++ipid){
-        for (Int_t ipf=0; ipf<nPF; ++ipf){
-          AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_dsekihat_lowmass_PbPb(%d,%d,%d,%d,%f,%f,%f,%f)",itc,ipid,ipf,isAOD,PtMin,PtMax,EtaMin,EtaMax)));
-          if(!diel) continue;
+  for (Int_t itc=0; itc<nTC; ++itc){
+    for (Int_t ipid=0; ipid<nPID; ++ipid){
+      for (Int_t ipf=0; ipf<nPF; ++ipf){
+        AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_dsekihat_lowmass_PbPb(%d,%d,%d,%d,%f,%f,%f,%f)",itc,ipid,ipf,isAOD,PtMin,PtMax,EtaMin,EtaMax)));
+        if(!diel) continue;
 
-          //AliDielectronVarCuts*  centCuts = new AliDielectronVarCuts("centCuts",Form("kPbPb%02d%02d",CenMin,CenMax));
-          //centCuts->AddCut(AliDielectronVarManager::kCentralityNew, (Float_t)CenMin, (Float_t)CenMax);
-          //diel->GetEventFilter().AddCuts(centCuts);
+        //AliDielectronVarCuts*  centCuts = new AliDielectronVarCuts("centCuts",Form("kPbPb%02d%02d",CenMin,CenMax));
+        //centCuts->AddCut(AliDielectronVarManager::kCentralityNew, (Float_t)CenMin, (Float_t)CenMax);
+        //diel->GetEventFilter().AddCuts(centCuts);
 
-          TString name = diel->GetName();
-          if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
-            printf("No event mixing handler for post PID calibration/noPID\n");
-          }
-          else{
-            printf("Add event mixing handler\n");
-            AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
-            mix->SetMixType(AliDielectronMixingHandler::kAll);
-            mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
-            mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
-            mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
-            mix->SetDepth(Nmix);
-            diel->SetMixingHandler(mix);
-          }
-          task->AddDielectron(diel);
-        }//pre-filter loop
-      }//PID loop
-    }//track cut loop
+        TString name = diel->GetName();
+        if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
+          printf("No event mixing handler for post PID calibration/noPID\n");
+        }
+        else{
+          printf("Add event mixing handler\n");
+          AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
+          mix->SetMixType(AliDielectronMixingHandler::kAll);
+          mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+          mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+          mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
+          mix->SetDepth(Nmix);
+          diel->SetMixingHandler(mix);
+        }
+        task->AddDielectron(diel);
+      }//pre-filter loop
+    }//PID loop
+  }//track cut loop
 
-    task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
+  task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
 
-  #elif defined(__CINT__)
-    printf("ROOT5\n");
-    //gROOT->LoadMacro(libFilePath.Data());//library first
-    //gROOT->LoadMacro(configFilePath.Data()); //ROOT5 syntax
-    //const Int_t nDie = GetN();
-    //for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    //  AliDielectron *diel = Config_dsekihat_lowmass_PbPb(); // also ROOT5
-    //  if(!diel)continue;
-    //  task->AddDielectron(diel);
-    //}
-    //task->SetEventFilter(GetEventCuts());
-  #endif
 
   mgr->AddTask(task);
 
