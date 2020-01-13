@@ -54,6 +54,7 @@
 #pragma link C++ class AliAnalysisTaskGammaCalo+;
 #pragma link C++ class AliAnalysisTaskGammaCaloIso+;
 #pragma link C++ class AliAnalysisTaskGammaCaloMerged+;
+#pragma link C++ class AliAnalysisTaskGammaCaloMix+;
 #pragma link C++ class AliAnalysisTaskGammaConvFlow+;
 
 #pragma link C++ class AliCutHandlerPCM+;
