@@ -1,4 +1,4 @@
-AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = "", TString s2DWeightsFile = "", TString s3DWeightsFile = "")
+AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString s2DWeightsFile = "", TString s3DWeightsFile = "", const char* suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -14,7 +14,7 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = ""
     }
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += Form(":%s",dirname.Data());      // create a subfolder in the file
+    fileName += Form(":%s",suffix);      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisDecorrTask* task = new AliAnalysisDecorrTask(name.Data());   
     if(!task) return 0x0;
@@ -26,8 +26,9 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = ""
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("FlowList_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("FlowWeights_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("FlowList_%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("FlowWeights_%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("QAlist_%s",suffix),TList::Class(),AliAnalysisManager::kOutputContainer,fileName.Data()));
 
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
