@@ -499,8 +499,8 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	if(fFillRecoilTHnSparse) {
 		const Int_t dimSpec = 6;
 		const Int_t nBinsSpec[dimSpec]     = {100,100, 280, 50,200, fNRPBins};
-		const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0,-0.5*TMath::Pi(), 0};
-		const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,1.5*TMath::Pi(),  static_cast<Double_t>(fNRPBins)};
+		const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0,0, 0};
+		const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,2*TMath::Pi(),  static_cast<Double_t>(fNRPBins)};
 		fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
 	}
 
@@ -846,6 +846,14 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			if(dPhiShift<-2*TMath::Pi()) dPhiShift += 2*TMath::Pi();
 			if(dPhiShift<-0.5*TMath::Pi()) dPhiShift += 2*TMath::Pi();
 			if(dPhiShift>1.5*TMath::Pi()) dPhiShift -= 2*TMath::Pi();
+
+			// dPhi between 0 < dPhi < 2pi
+			Double_t dPhiShiftPi=phibig-partback->Phi();
+			if(dPhiShiftPi>2*TMath::Pi()) dPhiShiftPi -= 2*TMath::Pi();
+			if(dPhiShiftPi<-2*TMath::Pi()) dPhiShiftPi += 2*TMath::Pi();
+			if(dPhiShiftPi<0)              dPhiShiftPi += 2*TMath::Pi();
+
+
 			if(isSignal) fhDphiPtSig->Fill(dPhiShift,ptcorr);
 			else         fhDphiPtRef->Fill(dPhiShift,ptcorr);
 
@@ -858,7 +866,7 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 				if(phitt<0)phitt+=TMath::Pi()*2.; 
 				Int_t phiBintt = GetPhiBin(phitt-fEPV0);
 
-				Double_t fillspec[] = {fCent,areabig,ptcorr,partback->Pt(),dPhiShift, static_cast<Double_t>(phiBintt)};
+				Double_t fillspec[] = {fCent,areabig,ptcorr,partback->Pt(),dPhiShiftPi, static_cast<Double_t>(phiBintt)};
 				fHJetSpec->Fill(fillspec);
 			}
 
