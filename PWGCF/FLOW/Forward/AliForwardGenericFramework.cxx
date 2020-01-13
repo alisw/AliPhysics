@@ -170,16 +170,21 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
         // two-particle cumulant
         if (!fSettings.decorr_analysis){
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
-          double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
           fill(cumu_rW2Two, n, ptn, sample, zvertex, refEtaA, cent, two);
-          fill(cumu_rW2, -n, ptn, sample, zvertex, refEtaA, cent, dn2);
+          if (n==2){
+            double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
+            fill(cumu_rW2, -n, ptn, sample, zvertex, refEtaA, cent, dn2);
+          }
         }
         if (fSettings.normal_analysis){
           // four-particle cumulant
           double four = Four(n, n, -n, -n, refEtaBinA, refEtaBinB).Re();
-          double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();
+
           fill(cumu_rW4Four, n, ptn, sample, zvertex, refEtaA, cent, four);
-          fill(cumu_rW4, -n, ptn, sample, zvertex, refEtaA, cent, dn4);
+          if (n==2){
+            double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();         
+            fill(cumu_rW4, -n, ptn, sample, zvertex, refEtaA, cent, dn4);
+          }
         }
         prevRefEtaBin = kFALSE;
       }
