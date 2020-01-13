@@ -55,5 +55,6 @@
 #pragma link C++ class AliAnalysisTaskStudentsML+;
 #pragma link C++ class AliAnalysisTaskTwoMultiCorrelations+;
 #pragma link C++ class AliAnalysisTaskStudentsMW+;
+#pragma link C++ class AliAnalysisTaskCVE+;
 #endif
 
