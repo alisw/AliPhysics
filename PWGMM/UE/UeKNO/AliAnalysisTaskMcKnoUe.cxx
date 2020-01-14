@@ -425,7 +425,7 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 		pSumPtTruePSV[i] = new TProfile(Form("pSumPtTruePSV_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTruePSV[i]);
 		// all sel criteria
-		pNumDenTrueGood[i] = new TProfile(Form("pNumDenTrueGood_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenTrueGood[i] = new TProfile(Form("pNumDenTrueGood_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenTrueGood[i]);
 
 		pSumPtTrueGood[i] = new TProfile(Form("pSumPtTrueGood_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
