@@ -299,7 +299,8 @@ fEnableEventDownsampling(false),
 fFracToKeepEventDownsampling(1.1),
 fSeedEventDownsampling(0),
 fCdbEntry(nullptr),
-fITSUpgradeStudy(0)
+fITSUpgradeStudy(0),
+fPreSelectLctopKpi(false)
 {
   fParticleCollArray.SetOwner(kTRUE);
   fJetCollArray.SetOwner(kTRUE);
@@ -3205,6 +3206,17 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
 
     if(isLctopKpitagged && fWriteVariableTreeLb){
       nFilteredLctopKpi++;
+      if(fPreSelectLctopKpi){
+         TObjArray arrTracks(3);
+         for(Int_t ipr=0;ipr<3;ipr++){
+            AliAODTrack *tr=vHF->GetProng(aod,lctopkpi,ipr);
+            arrTracks.AddAt(tr,ipr);
+          }
+         Bool_t recoLc=kTRUE;
+         recoLc=fCutsLbtoLcpi->PreSelectMass(arrTracks);
+         if (!recoLc) continue;
+       }
+        
       if((vHF->FillRecoCand(aod,lctopkpi))) {////Fill the data members of the candidate only if they are empty.
 
         //To significantly speed up the task when only signal was requested
