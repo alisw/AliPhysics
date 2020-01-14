@@ -267,21 +267,25 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
       antiSigma0sidebandLow, sigma0lambda, antiSigma0lambda, sigma0photon, antiSigma0photon;
 
   const int sigmaEntry = fRandom->Rndm() * fSigmaCuts->GetSigma().size();
+  const int sigmaSBUpEntry = fRandom->Rndm() * fSigmaCuts->GetSidebandUp().size();
+  const int sigmaSBLowEntry = fRandom->Rndm() * fSigmaCuts->GetSidebandDown().size();
   CastToVector(sigma0particles, fSigmaCuts->GetSigma(), sigmaEntry);
-  CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp());
-  CastToVector(sigma0sidebandLow, fSigmaCuts->GetSidebandDown());
+  CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp(), sigmaSBUpEntry);
+  CastToVector(sigma0sidebandLow, fSigmaCuts->GetSidebandDown(), sigmaSBLowEntry);
 
   const int antisigmaEntry = fRandom->Rndm() * fAntiSigmaCuts->GetSigma().size();
+  const int antisigmaSBUpEntry = fRandom->Rndm() * fAntiSigmaCuts->GetSidebandUp().size();
+  const int antisigmaSBLowEntry = fRandom->Rndm() * fAntiSigmaCuts->GetSidebandDown().size();
   CastToVector(antiSigma0particles, fAntiSigmaCuts->GetSigma(), antisigmaEntry);
-  CastToVector(antiSigma0sidebandUp, fAntiSigmaCuts->GetSidebandUp());
-  CastToVector(antiSigma0sidebandLow, fAntiSigmaCuts->GetSidebandDown());
+  CastToVector(antiSigma0sidebandUp, fAntiSigmaCuts->GetSidebandUp(), antisigmaSBUpEntry);
+  CastToVector(antiSigma0sidebandLow, fAntiSigmaCuts->GetSidebandDown(), antisigmaSBLowEntry);
 
   // Get the Sigma0 daughters
   if (fCheckDaughterCF) {
-    CastToVector(sigma0lambda, fSigmaCuts->GetLambda(), sigmaEntry);
-    CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda(), antisigmaEntry);
-    CastToVector(sigma0photon, fSigmaCuts->GetPhoton(), sigmaEntry);
-    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton(), antisigmaEntry);
+    CastToVector(sigma0lambda, fSigmaCuts->GetLambda(), sigmaSBUpEntry);
+    CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda(), antisigmaSBUpEntry);
+    CastToVector(sigma0photon, fSigmaCuts->GetPhoton(), sigmaSBUpEntry);
+    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton(), antisigmaSBUpEntry);
   }
 
   if (fFemtoJanitor) {

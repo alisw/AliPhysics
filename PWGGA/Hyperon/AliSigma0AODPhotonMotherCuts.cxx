@@ -643,8 +643,8 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
         fHistNCandidates->Fill(4);
 
         fSigma.push_back(sigma);
-        fLambda.push_back(lambda);
-        fPhoton.push_back(photon);
+//        fLambda.push_back(lambda);
+//        fPhoton.push_back(photon);
         if (!fIsLightweight) {
           fHistInvMassSelected->Fill(pT, invMass);
           fHistMassCutPt->Fill(pT);
@@ -660,6 +660,8 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
           invMass > GetMassSigmaPt(pT) + fSidebandCutDown) {
         fHistNCandidates->Fill(5);
         fSidebandUp.push_back(sigma);
+        fLambda.push_back(lambda);
+        fPhoton.push_back(photon);
         if (!fIsLightweight) {
           fHistInvMassSelected->Fill(pT, invMass);
         }
