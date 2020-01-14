@@ -82,6 +82,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fHistMultBefEvtSel(NULL),
     fHistMultAftEvtSel(NULL),
     fHistVtxZ(NULL),
+    fHistDEDXGen(NULL),
     fHistDEDX(NULL),
     fHistDEDXdouble(NULL),
     fCentBins(),
@@ -428,6 +429,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   for (int i = 1; i <= hnbins; i++) {
     hxbins[i] = hxmin + TMath::Power(10, hlogxmin + i * hbinwidth);
   }
+
+  fHistDEDXGen = new TH2F("fHistDEDXGen", "", hnbins, hxbins, 900, 0, 1000);
+  fOutput->Add(fHistDEDXGen);
 
   fHistDEDX = new TH2F("fHistDEDX", "", hnbins, hxbins, 900, 0, 1000);
   fOutput->Add(fHistDEDX);
@@ -881,6 +885,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
     ETrkCut_Type trkSel = kHasNoSelection;
 
     //"no selection"
+    fHistDEDXGen->Fill(track->GetP(), dEdx);
     fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
     //"ITSsa"
