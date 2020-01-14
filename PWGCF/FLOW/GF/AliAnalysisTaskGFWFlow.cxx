@@ -329,6 +329,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   if(fCurrSystFlag==fTotTrackFlags+5) cent = lMultSel->GetMultiplicityPercentile("CL0"); //CL0 flag is EvFlag 5 = N_TrackFlags + 5
   if(cent<5) return; //Do not consider 0-5%
   if(cent>70) return; //Also, peripheral cutoff
+  if(!CheckTriggerVsCentrality(cent)) return;
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   Int_t vtxb = GetVtxBit(fAOD);
   if(!vtxb) return; //If no vertex pass, then do not consider further
@@ -463,7 +464,13 @@ Bool_t AliAnalysisTaskGFWFlow::AcceptEvent() {
   if(!(fSelMask&fTriggerType)) return 0;
   return kTRUE;
 };
+Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
+  UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if((fSelMask&AliVEvent::kCentral)==AliVEvent::kCentral) if(l_cent>10) return kFALSE;
+  if((fSelMask&AliVEvent::kSemiCentral)==AliVEvent::kSemiCentral) if(l_cent<30 || l_cent>50) return kFALSE;
+  return kTRUE;
 
+}
 Bool_t AliAnalysisTaskGFWFlow::AcceptAODVertex(AliAODEvent *inEv) {
   const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(inEv->GetPrimaryVertex());
   if(!vtx || vtx->GetNContributors() < 1)
