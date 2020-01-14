@@ -248,6 +248,7 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
         fHist->FillMultSPD(i, evt->GetSPDMult());
         fHist->FillMultV0A(i, evt->GetV0AMult());
         fHist->FillMultV0C(i, evt->GetV0CMult());
+        fHist->FillMultV0M(i, evt->GetV0MMult());
         fHist->FillMultRef08(i, evt->GetRefMult08());
         fHist->FillSPDTrackletsVsCluster(
             i, evt->GetSPDMult(),
