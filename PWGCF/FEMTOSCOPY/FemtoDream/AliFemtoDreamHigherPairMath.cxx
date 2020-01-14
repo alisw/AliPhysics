@@ -174,7 +174,7 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
   }
   if (fillHists && fHists->GetDokTandMultBinning()) {
     fHists->FillSameEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
-                                RelativeK, Mult + 1);
+                                       RelativeK, Mult + 1);
   }
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtQADist(iHC, RelativeK, Part1Momentum.Pt(),
@@ -239,7 +239,7 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
   }
   if (fillHists && fHists->GetDokTandMultBinning()) {
     fHists->FillMixedEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
-                                RelativeK, Mult + 1);
+                                        RelativeK, Mult + 1);
   }
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtMEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
@@ -320,19 +320,20 @@ void AliFemtoDreamHigherPairMath::SEMomentumResolution(
     //Now we only want to use the momentum of particles we are after, hence
     //we check the PDG Code!
     //This should not be used in the rotated sample, since the MC Truth is not rotated
+    TLorentzVector PartOne, PartTwo;
+    // Even if the Daughter tracks were switched up during PID doesn't play a role
+    // here cause we are
+    // only looking at the mother mass
+    PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
+                    part1->GetMCMomentum().Z(),
+                    TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+    PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
+                    part2->GetMCMomentum().Z(),
+                    TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+    float RelKTrue = RelativePairMomentum(PartOne, PartTwo);
+    fHists->FillMomentumResolutionSEAll(iHC, RelKTrue, RelativeK);
     if ((PDGPart1 == TMath::Abs(part1->GetMCPDGCode()))
         && ((PDGPart2 == TMath::Abs(part2->GetMCPDGCode())))) {
-      TLorentzVector PartOne, PartTwo;
-      // Even if the Daughter tracks were switched up during PID doesn't play a role
-      // here cause we are
-      // only looking at the mother mass
-      PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
-                      part1->GetMCMomentum().Z(),
-                      TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
-      PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
-                      part2->GetMCMomentum().Z(),
-                      TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
-      float RelKTrue = RelativePairMomentum(PartOne, PartTwo);
       fHists->FillMomentumResolutionSE(iHC, RelKTrue, RelativeK);
     }
   }
@@ -348,19 +349,20 @@ void AliFemtoDreamHigherPairMath::MEMomentumResolution(
     //Now we only want to use the momentum of particles we are after, hence
     //we check the PDG Code!
     //This should not be used in the rotated sample, since the MC Truth is not rotated
+    TLorentzVector PartOne, PartTwo;
+    // Even if the Daughter tracks were switched up during PID doesn't play a role
+    // here cause we are
+    // only looking at the mother mass
+    PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
+                    part1->GetMCMomentum().Z(),
+                    TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+    PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
+                    part2->GetMCMomentum().Z(),
+                    TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+    float RelKTrue = RelativePairMomentum(PartOne, PartTwo);
+    fHists->FillMomentumResolutionMEAll(iHC, RelKTrue, RelativeK);
     if ((PDGPart1 == TMath::Abs(part1->GetMCPDGCode()))
         && ((PDGPart2 == TMath::Abs(part2->GetMCPDGCode())))) {
-      TLorentzVector PartOne, PartTwo;
-      // Even if the Daughter tracks were switched up during PID doesn't play a role
-      // here cause we are
-      // only looking at the mother mass
-      PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
-                      part1->GetMCMomentum().Z(),
-                      TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
-      PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
-                      part2->GetMCMomentum().Z(),
-                      TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
-      float RelKTrue = RelativePairMomentum(PartOne, PartTwo);
       fHists->FillMomentumResolutionME(iHC, RelKTrue, RelativeK);
     }
   }
