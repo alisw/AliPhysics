@@ -477,8 +477,8 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 
   //Loading of ML models
   if(fApplyML) {
-    fMLResponse = new AliHFMLResponseDstoKKpi(fConfigPath.Data());
-    fMLResponse->InitModels();
+    fMLResponse = new AliHFMLResponseDstoKKpi("DstoKKpiMLResponse", "DstoKKpiMLResponse", fConfigPath.Data());
+    fMLResponse->MLResponseInit();
 
     if(fEnablePIDMLSparses)
       CreatePIDMLSparses();
@@ -988,7 +988,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
             if(fApplyML)
             {
-              isMLsel = fMLResponse->IsSelectedML(modelPred, d, aod->GetMagneticField(), Pid_HF, 0);
+              isMLsel = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF, 0);
 
               if(fEnablePIDMLSparses && (!fReadMC || (indexMCKKpi == GetSignalHistoIndex(iPtBin) && orig == 4)))
               {
@@ -1049,7 +1049,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
             if(fApplyML)
             {
-              isMLsel = fMLResponse->IsSelectedML(modelPred, d, aod->GetMagneticField(), Pid_HF, 1);
+              isMLsel = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF, 1);
               if(fEnablePIDMLSparses && (!fReadMC || (indexMCpiKK == GetSignalHistoIndex(iPtBin) && orig==4)))
               {
                 Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred,

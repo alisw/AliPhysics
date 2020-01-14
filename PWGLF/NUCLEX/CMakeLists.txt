@@ -21,7 +21,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/RecoDecay
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/NuclexFilter
-)
+  )
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -33,6 +33,16 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
 		                ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
   )
+
+if(ROOT_VERSION_MAJOR EQUAL 6)
+# Additional includes for ROOT 6 only dependencies - alphabetical order except ROOT
+  include_directories(${AliPhysics_SOURCE_DIR}/ML
+                    ${TREELITE_ROOT}/include
+                    ${TREELITE_ROOT}/runtime/native/include
+                    ${YAML_CPP_SOURCE_DIR}/include
+    )
+endif()
+
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
@@ -51,10 +61,10 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
-  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3ML.cxx
   Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
   Hypernuclei/KF2Body/AliAnalysisTaskHypertritonKFTree.cxx
+  Hypernuclei/DoubleHypNuc/AliAnalysisTaskDoubleHypNucTree.cxx
   Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskLightN.cxx
   Nuclei/AbsorptionRatios/AliLightNEventHist.cxx
@@ -96,11 +106,12 @@ set(SRCS
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
-	 set(SRCS
-		  ${SRCS}
-				  Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
-						  )
-	  endif()
+	set(SRCS
+	  ${SRCS}
+			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
+      Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3ML.cxx
+	  )
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -114,8 +125,12 @@ set(ROOT_DEPENDENCIES)
 set(ALIROOT_DEPENDENCIES ANALYSISalice OADB PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils PWGDevNanoAOD)
 
 # Generate the ROOT map
-# Dependecies
+# Dependencies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} KFParticle)
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  set(LIBDEPS ${LIBDEPS} ML yaml-cpp)
+endif()
+
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")

@@ -25,7 +25,7 @@ class AliHFMLResponseDplustoKpipi : public AliHFMLResponse
 {
 public:
     AliHFMLResponseDplustoKpipi();
-    AliHFMLResponseDplustoKpipi(string configfilename);
+    AliHFMLResponseDplustoKpipi(const Char_t *name, const Char_t *title, const std::string configfilepath);
     virtual ~AliHFMLResponseDplustoKpipi();
 
     AliHFMLResponseDplustoKpipi(const AliHFMLResponseDplustoKpipi &source);
