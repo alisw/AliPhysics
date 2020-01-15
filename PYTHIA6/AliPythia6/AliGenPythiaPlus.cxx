@@ -627,9 +627,44 @@ void AliGenPythiaPlus::Generate()
 	Int_t* pSelected = new Int_t[np];
 	Int_t* trackIt   = new Int_t[np];
 	for (i = 0; i < np; i++) {
-	    pParent[i]   = -1;
-	    pSelected[i] =  0;
-	    trackIt[i]   =  0;
+	  pParent[i]   = -1;
+	  pSelected[i] =  0;
+	  trackIt[i]   =  0;
+
+	  if(fPythia->Version() == 8){
+	    // order parent quarks by flavour
+	    TParticle* iparticle = (TParticle *) fParticles.At(i);
+	    Int_t pdgPart = TMath::Abs(iparticle->GetPdgCode());
+	    if(pdgPart>=100){ // hadrons
+	      Int_t kfl=pdgPart;
+	      if (kfl > 100000) kfl %= 100000; // resonance
+	      if (kfl > 10000)  kfl %= 10000;  // resonance
+	      if (kfl > 10) kfl/=100; // meson
+	      if (kfl > 10) kfl/=10; // baryon
+	      Int_t iMo1 = iparticle->GetFirstMother();
+	      Int_t iMo2 = iparticle->GetSecondMother();
+	      if(iMo1 >=0 && iMo2 >=0){ // particle with two mothers
+		TParticle* mother1 = (TParticle *) fParticles.At(iMo1);
+		TParticle* mother2 = (TParticle *) fParticles.At(iMo2);
+		Int_t absPdgMo1 = TMath::Abs(mother1->GetPdgCode());
+		Int_t absPdgMo2 = TMath::Abs(mother2->GetPdgCode());
+		if( (absPdgMo1<=6 || absPdgMo1==21) && (absPdgMo2<=6 || absPdgMo2==21) ){
+		  // parton parents
+		  if(absPdgMo1!=kfl && absPdgMo2==kfl){
+		    // assign as first mother the quark with same flavour as the hadron
+		    iparticle->SetFirstMother(iMo2);
+		    iparticle->SetLastMother(iMo1);
+		  }
+		  if(absPdgMo1!=kfl && absPdgMo2!=kfl && absPdgMo1<absPdgMo2){
+		    // in case no quark has the flavour of the hadron
+		    // assign as first mother the one with higher pdg code
+		    iparticle->SetFirstMother(iMo2);
+		    iparticle->SetLastMother(iMo1);
+		  }
+		}
+	      }
+	    }
+	  }
 	}
 
 	Int_t nc = 0;        // Total n. of selected particles
