@@ -8,6 +8,7 @@
 
 #include "TChain.h"
 #include "TH1F.h"
+#include "TH3F.h"
 #include "TList.h"
 #include "TCanvas.h"
 #include "THnSparse.h"
@@ -98,6 +99,10 @@ fCentCheck(0),
 fTrigCheck(0),
 fITSLayerCheck(0),
 fEMCTrkMatch(0),
+fElecDcaB4TrkMatch(0),
+fDcaB4TrkMatch(0),
+fElecDcaTrkMatch(0),
+fDcaTrkMatch(0),
 fInvmassLS(0),
 fInvmassULS(0),
 //fInvmassLSWeightEnhEta(0),
@@ -333,6 +338,10 @@ fCentCheck(0),
 fTrigCheck(0),
 fITSLayerCheck(0),
 fEMCTrkMatch(0),
+fElecDcaB4TrkMatch(0),
+fDcaB4TrkMatch(0),
+fElecDcaTrkMatch(0),
+fDcaTrkMatch(0),
 fInvmassLS(0),
 fInvmassULS(0),
 //fInvmassLSWeightEnhEta(0),
@@ -620,6 +629,18 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fEMCTrkMatch = new TH2F("fEMCTrkMatch","EMCal cluster distance from closest track", 100, -0.3, 0.3,100,-0.3,0.3);
     fOutputList->Add(fEMCTrkMatch);
+    
+    fElecDcaB4TrkMatch = new TH3F("fElecDcaB4TrkMatch","DCA of e- before trk match;p_{T}(GeV/c);DCA;#phi;", 60,0,30., nDCAbins,-0.2,0.2, 100,0,6.3);
+    fOutputList->Add(fElecDcaB4TrkMatch);
+    
+    fDcaB4TrkMatch = new TH3F("fDcaB4TrkMatch","DCA before trk match;p_{T}(GeV/c);DCA;#phi;", 60,0,30., nDCAbins,-0.2,0.2, 100,0,6.3);
+    fOutputList->Add(fDcaB4TrkMatch);
+    
+    fElecDcaTrkMatch = new TH3F("fElecDcaTrkMatch","DCA of e- after trk match;p_{T}(GeV/c);DCA;#phi;", 60,0,30., nDCAbins,-0.2,0.2, 100,0,6.3);
+    fOutputList->Add(fElecDcaTrkMatch);
+    
+    fDcaTrkMatch = new TH3F("fDcaTrkMatch","DCA after trk match;p_{T}(GeV/c);DCA;#phi;", 60,0,30., nDCAbins,-0.2,0.2, 100,0,6.3);
+    fOutputList->Add(fDcaTrkMatch);
     
     fInvmassLS = new TH1F("fInvmassLS", "Inv mass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 100,0,1.0);
     fOutputList->Add(fInvmassLS);
@@ -1945,6 +1966,12 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         nsigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
         
         fnSigma->Fill(track->Pt(),nsigma);
+        
+        fDcaB4TrkMatch->Fill(track->Pt(),DCA,track->Phi());
+        if (nsigma>-1.0 && nsigma<3.) {
+            fElecDcaB4TrkMatch->Fill(track->Pt(),DCA,track->Phi());
+        }
+        
         /*if(nsigma>-5.&&nsigma<-3.) {
             fHadronCamDCA->Fill(track->Pt(),d0z0[0]);
         }
@@ -2027,6 +2054,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             fTrkClsEta->Fill(fEtaDiff);
             fClsPhi->Fill(emcphi);
             fClsEta->Fill(emceta);
+            
+            fDcaTrkMatch->Fill(track->Pt(),DCA,track->Phi());
+            if (nsigma>-1.0 && nsigma<3.) {
+                fElecDcaTrkMatch->Fill(track->Pt(),DCA,track->Phi());
+            }
             
             /////////////////////////
             // Get Mother PID info //

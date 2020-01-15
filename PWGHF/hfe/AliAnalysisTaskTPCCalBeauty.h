@@ -172,6 +172,11 @@ private:
     TH1F                *fITSLayerCheck;  //! checking ITS layer requirement
     TH2F                *fEMCTrkMatch;   //! plots distance of cluster from closest track
     
+    TH3F                *fElecDcaB4TrkMatch;     //! DCA before trk match, elec nsig cut
+    TH3F                *fDcaB4TrkMatch;     //! DCA before trk match, no nsig cut
+    TH3F                *fElecDcaTrkMatch;     //! DCA after trk match, elec nsig cut
+    TH3F                *fDcaTrkMatch;     //! DCA after trk match, no nsig cut
+    
     TH1F                *fInvmassLS;     //! Plots LS mass dist
     TH1F                *fInvmassULS;    //! Plots ULS mass dist
     
