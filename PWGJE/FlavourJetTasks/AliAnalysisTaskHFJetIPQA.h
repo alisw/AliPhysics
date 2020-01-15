@@ -367,6 +367,7 @@ public:
     void setDoJetProb(Bool_t value){fDoJetProb = value;}
     void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
     void setDoProbTagging(Int_t value) {fDoProbTagging=value;}
+    void setDoMCEffs(Bool_t value){fDoMCEffs=value;}
 
     void setTrackIPvsPtValues(double fav0cut, double fbv0cut, double fcv0cut){fV0Cuts[fAV0Cut]=fav0cut;fV0Cuts[fBV0Cut]=fbv0cut;fV0Cuts[fCV0Cut]=fcv0cut;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
@@ -487,6 +488,7 @@ private:
     Bool_t fDoLundPlane;//
     Int_t fDoTCTagging;//  //0: no TC tagging, 1: IP Significance tagging, 2: IP tagging, fixed threshold
     Int_t fDoProbTagging;//  //0: no probability tagging, 1: use JP for tagging, 2: use lnJP for tagging
+    Bool_t fDoMCEffs;
     Bool_t fUseSignificance;//
 
     //_____________________
@@ -537,7 +539,7 @@ private:
     TH2D* h2DProbDistsb;//!
     TH2D* h2DProbDistsudsgV0;//!
     TH2D* h2DProbDistscV0;//!
-    TH2D* h2DProbDists;//!
+    //TH2D* h2DProbDists;//!
 
     TH2D* h2DLNProbDistsUnid;//!
     TH2D* h2DLNProbDistsudsg;//!
@@ -545,7 +547,7 @@ private:
     TH2D* h2DLNProbDistsb;//!
     TH2D* h2DLNProbDistsudsgV0;//!
     TH2D* h2DLNProbDistscV0;//!
-    TH2D* h2DLNProbDists;//!
+    //TH2D* h2DLNProbDists;//!
 
     std::vector<TH1D*> h1DProbThresholds;//
 
@@ -672,7 +674,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 49)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 50)
 };
 
 #endif
