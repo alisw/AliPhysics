@@ -56,6 +56,7 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   void  SetListForTrkCorr(TList *flist)      {this->fListTRKCorr = (TList *) flist->Clone(); }
   void  SetListForNUACorr(TList *flist)      {this->fListNUACorr = (TList *) flist->Clone(); }
   void  SetListForV0MCorr(TList *flist)      {this->fListV0MCorr = (TList *) flist->Clone(); }
+  void  SetParticle(Int_t part)              {this->fParticle    =  part;}
 
   
   /******* Event Cut Ranges ******/
@@ -102,13 +103,13 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   TList                 *fListTRKCorr;        //  Supplied from Task
   TList                 *fListNUACorr;        //  Supplied from Task
   TList                 *fListV0MCorr;        //  Supplied from Task
-    
-  
+
   //Set from the AddTask:
   Float_t         fCentralityMin;  //
   Float_t         fCentralityMax;  //
   
   //Track Variables to be used:
+  Int_t                 fParticle;  //
   Int_t                fFilterBit;  //
   Int_t              fTPCclustMin;  // 
   Bool_t           bUseKinkTracks;  //
@@ -137,8 +138,7 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   TH2F                  *fHistEtaPtBeforCut;   //! Eta-Pt before Any Cut
   TH2F                  *fHistEtaPhiBeforCut;  //! Eta-Phi before Any Cut
   TH2F                  *fHistEtaPhiAfterCut;  //! Eta-Phi after trk Cut    
-  TH1F                  *fHistPtDistMBwithCut; //! Pt after All Cuts
-
+ 
 
 
   
@@ -154,6 +154,10 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   TH1D          *fHCorrectMCnegPion;
   TH1D          *fHCorrectMCnegKaon;
   TH1D          *fHCorrectMCnegProt;
+
+
+
+
   
   //QA and Stepcount 
   TH2F            *fHistAChrgVsCent;  //!
@@ -182,7 +186,12 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   TH3F          *fHCorrectNUAnegProt[5];   //! 
 
 
+  TProfile      *fHistEPResolution[2];       //! EP resolution vs Cent
+  TProfile      *fHistEPResolutionAch[10];   //! EP resolution vs Ach 
+  TProfile      *fHistv2cumAchChrgAll[10];  //! Charge inclusive
 
+
+  
   
 
   ///Custom Functions:
