@@ -3,6 +3,7 @@
  //            Modified by Enrico Fragiacomo - 15/01/2014
  //            Modified by Kunal Garg - 13/05/2018 (kgarg@cern.ch)
  //            Small modification by Giuseppe Mandaglio and Daniele Pistone 31/07/2019
+ //            Modified by Giuseppe Mandaglio 19/12/2019 (check OOB)
  //            Based on AddAnalysisTaskRsnMini
  //            pPb specific settings from AddTaskKStarPPB.C
  //
@@ -74,6 +75,7 @@ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate =  AliRsnCutSetD
  Float_t     pLife = 20,
  Float_t     radiuslow = 0.5,
  Bool_t      Switch = kTRUE,
+ Bool_t      OOBCheck = kFALSE,
  Float_t     k0sDCA = 1000.0,
  Float_t     k0sCosPoinAn = 0.97,
  Float_t     k0sDaughDCA = 1.0,
@@ -274,7 +276,7 @@ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate =  AliRsnCutSetD
     } else
         Printf("========================== DATA analysis - PID cuts used");
 
-    if (!ConfigKStarPlusMinusMultiplicity(task, isPP, isMC, isHiMult,isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
+    if (!ConfigKStarPlusMinusMultiplicity(task, isPP, isMC, isHiMult,isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, OOBCheck, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
 
     //
     // -- CONTAINERS --------------------------------------------------------------------------------
