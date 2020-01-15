@@ -258,10 +258,13 @@ Int_t AliRDHFCutsDstoKKpi::PreSelect(TObjArray aodTracks){
   
   Double_t ptD=TMath::Sqrt(px*px+py*py);
   
-  Int_t pidoptmem = fPidOption;
-  fPidOption=kConservative;
-  retVal=IsSelectedPID(ptD,aodTracks);
-  fPidOption=pidoptmem;
+  if(fUsePID)
+  {  
+    Int_t pidoptmem = fPidOption;
+    fPidOption=kConservative;
+    retVal=IsSelectedPID(ptD,aodTracks);
+    fPidOption=pidoptmem;
+  }
   
   if(fUsePreselect==1) return retVal;
   
