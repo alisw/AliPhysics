@@ -96,7 +96,7 @@ void GPUTPCCompression::RegisterMemoryAllocation()
   mMemoryResMemory = mRec->RegisterMemoryAllocation(this, &GPUTPCCompression::SetPointersMemory, GPUMemoryResource::MEMORY_PERMANENT, "TPCCompressionMemory");
 }
 
-void GPUTPCCompression::SetMaxData()
+void GPUTPCCompression::SetMaxData(const GPUTrackingInOutPointers& io)
 {
   mMaxClusters = mMerger->NMaxClusters();
   mMaxTrackClusters = mMerger->NOutputTrackClusters();

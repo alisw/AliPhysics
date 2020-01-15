@@ -82,6 +82,19 @@ void HighResTimer::Stop()
   ElapsedTime += EndTime - StartTime;
 }
 
+void HighResTimer::StopAndStart(HighResTimer& startTimer)
+{
+  if (running == 0) {
+    return;
+  }
+  running = 0;
+  double EndTime = 0;
+  EndTime = GetTime();
+  ElapsedTime += EndTime - StartTime;
+  startTimer.StartTime = EndTime;
+  startTimer.running = 1;
+}
+
 void HighResTimer::Reset()
 {
   ElapsedTime = 0;
@@ -106,5 +119,7 @@ double HighResTimer::GetCurrentElapsedTime(bool reset)
   }
   return (retVal);
 }
+
+void HighResTimer::AddTime(double t) { ElapsedTime += t * Frequency; }
 
 double HighResTimer::Frequency = HighResTimer::GetFrequency();

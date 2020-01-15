@@ -120,6 +120,7 @@ void GPUParam::SetDefaults(float solenoidBz)
   continuousMaxTimeBin = 0;
   debugLevel = 0;
   resetTimers = false;
+  earlyTpcTransform = false;
 
   polynomialField.Reset(); // set very wrong initial value in order to see if the field was not properly initialised
   GPUTPCGMPolynomialFieldManager::GetPolynomialField(BzkG, polynomialField);
@@ -127,20 +128,23 @@ void GPUParam::SetDefaults(float solenoidBz)
 
 void GPUParam::UpdateEventSettings(const GPUSettingsEvent* e, const GPUSettingsDeviceProcessing* p)
 {
-  AssumeConstantBz = e->constBz;
-  ToyMCEventsFlag = e->homemadeEvents;
-  ContinuousTracking = e->continuousMaxTimeBin != 0;
-  continuousMaxTimeBin = e->continuousMaxTimeBin == -1 ? (0.023 * 5e6) : e->continuousMaxTimeBin;
+  if (e) {
+    AssumeConstantBz = e->constBz;
+    ToyMCEventsFlag = e->homemadeEvents;
+    ContinuousTracking = e->continuousMaxTimeBin != 0;
+    continuousMaxTimeBin = e->continuousMaxTimeBin == -1 ? (0.023 * 5e6) : e->continuousMaxTimeBin;
+    polynomialField.Reset();
+    if (AssumeConstantBz) {
+      GPUTPCGMPolynomialFieldManager::GetPolynomialField(GPUTPCGMPolynomialFieldManager::kUniform, BzkG, polynomialField);
+    } else {
+      GPUTPCGMPolynomialFieldManager::GetPolynomialField(BzkG, polynomialField);
+    }
+  }
   if (p) {
     debugLevel = p->debugLevel;
     resetTimers = p->resetTimers;
   }
-  polynomialField.Reset();
-  if (AssumeConstantBz) {
-    GPUTPCGMPolynomialFieldManager::GetPolynomialField(GPUTPCGMPolynomialFieldManager::kUniform, BzkG, polynomialField);
-  } else {
-    GPUTPCGMPolynomialFieldManager::GetPolynomialField(BzkG, polynomialField);
-  }
+  earlyTpcTransform = rec.ForceEarlyTPCTransform == -1 ? (!ContinuousTracking) : rec.ForceEarlyTPCTransform;
 }
 
 void GPUParam::SetDefaults(const GPUSettingsEvent* e, const GPUSettingsRec* r, const GPUSettingsDeviceProcessing* p, const GPURecoStepConfiguration* w)

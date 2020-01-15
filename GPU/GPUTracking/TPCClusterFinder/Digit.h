@@ -13,9 +13,33 @@
 //* about the suitability of this software for any purpose. It is          *\
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
+#if !defined(SHARED_DIGIT_H)
+#define SHARED_DIGIT_H
 
-/// \file GPUTPCTracklet.cxx
-/// \author Sergey Gorbunov, Ivan Kisel, David Rohr
+#include "clusterFinderDefs.h"
 
-#include "GPUTPCTracklet.h"
-using namespace GPUCA_NAMESPACE::gpu;
+namespace GPUCA_NAMESPACE
+{
+namespace gpu
+{
+namespace deprecated
+{
+
+struct PackedDigit {
+  float charge;
+  Timestamp time;
+  Pad pad;
+  Row row;
+};
+
+using Digit = PackedDigit;
+
+} // namespace deprecated
+} // namespace gpu
+} // namespace GPUCA_NAMESPACE
+
+#define PACKED_DIGIT_SIZE 8 // TODO: why not constexpr sizeof(..)?
+
+#endif //!defined(SHARED_DIGIT_H)
+
+// vim: set ts=4 sw=4 sts=4 expandtab:

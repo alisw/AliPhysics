@@ -172,7 +172,7 @@ GPUd() void GPUTPCTrackletConstructor::UpdateTracklet(int /*nBlocks*/, int /*nTh
         }
         CADEBUG(
           printf("%14s: FIT TRACK ROW %3d X %8.3f -", "", iRow, tParam.X()); for (int i = 0; i < 5; i++) { printf(" %8.3f", tParam.Par()[i]); } printf(" -"); for (int i = 0; i < 15; i++) { printf(" %8.3f", tParam.Cov()[i]); } printf("\n"));
-        if (!tParam.TransportToX(x, sinPhi, cosPhi, tracker.Param().ConstBz, CALINK_INVAL)) {
+        if (!tParam.TransportToX(x, sinPhi, cosPhi, tracker.Param().ConstBz, GPUCA_MAX_SIN_PHI)) {
           CA_SET_ROW_HIT(iRow, CALINK_INVAL);
           break;
         }
@@ -392,7 +392,7 @@ GPUd() void GPUTPCTrackletConstructor::DoTracklet(GPUconstantref() MEM_GLOBAL(GP
 }
 
 template <>
-GPUd() void GPUTPCTrackletConstructor::Thread<0>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & sMem, processorType& tracker)
+GPUd() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::singleSlice>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & sMem, processorType& tracker)
 {
   if (get_local_id(0) == 0) {
     sMem.mNTracklets = *tracker.NTracklets();
@@ -414,7 +414,7 @@ GPUd() void GPUTPCTrackletConstructor::Thread<0>(int nBlocks, int nThreads, int 
 }
 
 template <>
-GPUd() void GPUTPCTrackletConstructor::Thread<1>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & sMem, processorType& tracker0)
+GPUd() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::allSlices>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & sMem, processorType& tracker0)
 {
 #ifdef GPUCA_GPUCODE
   GPUconstantref() MEM_GLOBAL(GPUTPCTracker)* pTracker = &tracker0;

@@ -36,7 +36,7 @@ class GPUTPCTracker;
  * @class GPUTPCStartHitsSorter
  *
  */
-class GPUTPCStartHitsSorter
+class GPUTPCStartHitsSorter : public GPUKernelTemplate
 {
  public:
   MEM_CLASS_PRE()
@@ -61,7 +61,7 @@ class GPUTPCStartHitsSorter
   };
 
   typedef GPUconstantref() MEM_GLOBAL(GPUTPCTracker) processorType;
-  GPUhdi() static GPUDataTypes::RecoStep GetRecoStep() { return GPUCA_RECO_STEP::TPCSliceTracking; }
+  GPUhdi() CONSTEXPR static GPUDataTypes::RecoStep GetRecoStep() { return GPUCA_RECO_STEP::TPCSliceTracking; }
   MEM_TEMPLATE()
   GPUhdi() static processorType* Processor(MEM_TYPE(GPUConstantMem) & processors)
   {

@@ -14,8 +14,33 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file GPUTPCClusterData.cxx
-/// \author Matthias Kretz, Sergey Gorbunov, David Rohr
+/// \file PeakFinder.h
+/// \author Felix Weiglhofer
 
-#include "GPUTPCClusterData.h"
-using namespace GPUCA_NAMESPACE::gpu;
+#ifndef O2_GPU_PEAK_FINDER_H
+#define O2_GPU_PEAK_FINDER_H
+
+#include "clusterFinderDefs.h"
+#include "GPUTPCClusterFinderKernels.h"
+
+namespace GPUCA_NAMESPACE
+{
+namespace gpu
+{
+
+class PeakFinder
+{
+
+ public:
+  static GPUd() void findPeaksImpl(int, int, int, int, GPUTPCClusterFinderKernels::GPUTPCSharedMemory&, GPUglobalref() const PackedCharge*, GPUglobalref() const deprecated::Digit*, uint, GPUglobalref() uchar*, GPUglobalref() uchar*);
+
+ private:
+  static GPUd() bool isPeakScratchPad(GPUTPCClusterFinderKernels::GPUTPCSharedMemory&, const deprecated::Digit*, ushort, GPUglobalref() const PackedCharge*, GPUsharedref() ChargePos*, GPUsharedref() PackedCharge*);
+
+  static GPUd() bool isPeak(const deprecated::Digit*, GPUglobalref() const PackedCharge*);
+};
+
+} // namespace gpu
+} // namespace GPUCA_NAMESPACE
+
+#endif

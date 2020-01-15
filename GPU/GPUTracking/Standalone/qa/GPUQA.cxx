@@ -304,6 +304,9 @@ int GPUQA::GetMCTrackLabel(unsigned int trackId) const { return (trackId >= mTra
 
 int GPUQA::InitQA()
 {
+  if (mQAInitialized) {
+    return 1;
+  }
   char name[2048], fname[1024];
 
   mColorNums = new Color_t[COLORCOUNT];
@@ -927,7 +930,7 @@ void GPUQA::RunQA(bool matchOnly)
     const float kRadLen = 29.532; // 28.94;
     prop.SetMaxSinPhi(.999);
     prop.SetMaterial(kRadLen, kRho);
-    prop.SetPolynomialField(merger.pField());
+    prop.SetPolynomialField(&merger.Param().polynomialField);
     prop.SetToyMCEventsFlag(merger.Param().ToyMCEventsFlag);
 
     for (int i = 0; i < merger.NOutputTracks(); i++) {
@@ -1351,6 +1354,10 @@ void GPUQA::RunQA(bool matchOnly)
 
   // Create CSV DumpTrackHits
   if (mConfig.csvDump) {
+    if (!merger.Param().earlyTpcTransform) {
+      GPUError("Unsupported settings for csv dump\n");
+      return;
+    }
     int totalNCls = GetNMCLabels();
     if (totalNCls == 0) {
       for (unsigned int iSlice = 0; iSlice < GPUChainTracking::NSLICES; iSlice++) {
@@ -1385,9 +1392,10 @@ void GPUQA::RunQA(bool matchOnly)
     for (unsigned int iSlice = 0; iSlice < GPUChainTracking::NSLICES; iSlice++) {
       for (unsigned int i = 0; i < mTracking->mIOPtrs.nClusterData[iSlice]; i++) {
         const auto& cl = mTracking->mIOPtrs.clusterData[iSlice][i];
-        const int cid = cl.id;
         float x, y, z;
+        const int cid = cl.id;
         merger.Param().Slice2Global(iSlice, cl.x, cl.y, cl.z, &x, &y, &z);
+
         float totalWeight = 0.f;
         if (mcPresent()) {
           for (int j = 0; j < GetMCLabelNID(cid); j++) {

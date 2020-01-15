@@ -32,9 +32,12 @@ namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
+struct GPUTrackingInOutPointers;
 class GPUReconstruction;
 MEM_CLASS_PRE()
 struct GPUParam;
+MEM_CLASS_PRE()
+struct GPUConstantMem;
 
 class GPUProcessor
 {
@@ -54,10 +57,11 @@ class GPUProcessor
   GPUProcessor& operator=(const GPUProcessor&) CON_DELETE;
 #endif
 
-  GPUconstantref() const MEM_CONSTANT(GPUParam) & GetParam() const
+  GPUd() GPUconstantref() const MEM_CONSTANT(GPUConstantMem) * GetConstantMem() const
   {
-    return *mCAParam;
+    return mConstantMem;
   }
+  GPUd() GPUconstantref() const MEM_CONSTANT(GPUParam) & Param() const;
   const GPUReconstruction& GetRec() const { return *mRec; }
 
 #ifndef __OPENCL__
@@ -131,7 +135,7 @@ class GPUProcessor
   GPUReconstruction* mRec;
   ProcessorType mGPUProcessorType;
   GPUProcessor* mDeviceProcessor;
-  GPUconstantref() const MEM_CONSTANT(GPUParam) * mCAParam;
+  GPUconstantref() const MEM_CONSTANT(GPUConstantMem) * mConstantMem;
 
  private:
   bool mAllocateAndInitializeLate;

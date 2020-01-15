@@ -35,7 +35,7 @@
 
 using namespace GPUCA_NAMESPACE::gpu;
 
-class GPUTPCGMMerger;
+class GPUTPCGMPolynomialField;
 
 #ifndef GPUCA_GPUCODE
 
@@ -57,7 +57,7 @@ static const float piMass = 0.139f;
 
 #include "GPUChainTracking.h"
 
-void GPUTRDTracker::SetMaxData()
+void GPUTRDTracker::SetMaxData(const GPUTrackingInOutPointers& io)
 {
   mNMaxTracks = mChainTracking->mIOPtrs.nMergedTracks;
   mNMaxSpacePoints = mChainTracking->mIOPtrs.nTRDTracklets;
@@ -116,7 +116,7 @@ void* GPUTRDTracker::SetPointersTracks(void* base)
 }
 
 GPUTRDTracker::GPUTRDTracker()
-  : mR(nullptr), mIsInitialized(false), mMemoryPermanent(-1), mMemoryTracklets(-1), mMemoryTracks(-1), mNMaxTracks(0), mNMaxSpacePoints(0), mTracks(nullptr), mNCandidates(1), mNTracks(0), mNEvents(0), mTracklets(nullptr), mMaxThreads(100), mNTracklets(0), mNTrackletsInChamber(nullptr), mTrackletIndexArray(nullptr), mHypothesis(nullptr), mCandidates(nullptr), mSpacePoints(nullptr), mTrackletLabels(nullptr), mGeo(nullptr), mDebugOutput(false), mMinPt(0.6f), mMaxEta(0.84f), mMaxChi2(15.0f), mMaxMissingLy(6), mChi2Penalty(12.0f), mZCorrCoefNRC(1.4f), mMCEvent(nullptr), mMerger(nullptr), mDebug(new GPUTRDTrackerDebug()), mChainTracking(nullptr)
+  : mR(nullptr), mIsInitialized(false), mMemoryPermanent(-1), mMemoryTracklets(-1), mMemoryTracks(-1), mNMaxTracks(0), mNMaxSpacePoints(0), mTracks(nullptr), mNCandidates(1), mNTracks(0), mNEvents(0), mTracklets(nullptr), mMaxThreads(100), mNTracklets(0), mNTrackletsInChamber(nullptr), mTrackletIndexArray(nullptr), mHypothesis(nullptr), mCandidates(nullptr), mSpacePoints(nullptr), mTrackletLabels(nullptr), mGeo(nullptr), mDebugOutput(false), mMinPt(0.6f), mMaxEta(0.84f), mMaxChi2(15.0f), mMaxMissingLy(6), mChi2Penalty(12.0f), mZCorrCoefNRC(1.4f), mMCEvent(nullptr), mDebug(new GPUTRDTrackerDebug()), mChainTracking(nullptr)
 {
   //--------------------------------------------------------------------
   // Default constructor
@@ -178,7 +178,6 @@ bool GPUTRDTracker::Init(TRD_GEOMETRY_CONST GPUTRDGeometry* geo)
   }
 
   mDebug->ExpandVectors();
-
   mIsInitialized = true;
   return true;
 }
@@ -190,6 +189,10 @@ void GPUTRDTracker::Reset(bool fast)
   //--------------------------------------------------------------------
   mNTracklets = 0;
   mNTracks = 0;
+  for (int iDet = 0; iDet < kNChambers; ++iDet) {
+    mNTrackletsInChamber[iDet] = 0;
+    mTrackletIndexArray[iDet] = -1;
+  }
   if (fast) {
     return;
   }
@@ -207,10 +210,6 @@ void GPUTRDTracker::Reset(bool fast)
     mSpacePoints[i].mLabel[1] = -1;
     mSpacePoints[i].mLabel[2] = -1;
     mSpacePoints[i].mVolumeId = 0;
-  }
-  for (int iDet = 0; iDet < kNChambers; ++iDet) {
-    mNTrackletsInChamber[iDet] = 0;
-    mTrackletIndexArray[iDet] = -1;
   }
 }
 
@@ -248,11 +247,11 @@ void GPUTRDTracker::DoTracking()
         iTrk = mNTracks;
         continue;
       }
-      DoTrackingThread(iTrk, &mChainTracking->GetTPCMerger(), omp_get_thread_num());
+      DoTrackingThread(iTrk, omp_get_thread_num());
     }
 #else
     for (int iTrk = 0; iTrk < mNTracks; ++iTrk) {
-      DoTrackingThread(iTrk, &mChainTracking->GetTPCMerger());
+      DoTrackingThread(iTrk);
     }
 #endif
   }
@@ -283,8 +282,8 @@ void GPUTRDTracker::PrintSettings() const
   //--------------------------------------------------------------------
   GPUInfo("##############################################################");
   GPUInfo("Current settings for GPU TRD tracker:");
-  GPUInfo(" mMaxChi2(%.2f)\n mChi2Penalty(%.2f)\n nCandidates(%i)\n maxMissingLayers(%i)", mMaxChi2, mChi2Penalty, mNCandidates, mMaxMissingLy);
-  GPUInfo(" ptCut = %.2f GeV\n abs(eta) < %.2f", mMinPt, mMaxEta);
+  GPUInfo(" mMaxChi2(%.2f), mChi2Penalty(%.2f), nCandidates(%i), maxMissingLayers(%i)", mMaxChi2, mChi2Penalty, mNCandidates, mMaxMissingLy);
+  GPUInfo(" ptCut = %.2f GeV, abs(eta) < %.2f", mMinPt, mMaxEta);
   GPUInfo("##############################################################");
 }
 
@@ -361,8 +360,8 @@ GPUd() void GPUTRDTracker::CheckTrackRefs(const int trackID, bool* findableMC) c
     }
     nHitsTrd++;
     float xLoc = trackReference->LocalX();
-    // if (!((trackReference->TestBits(0x1 << 18)) || (trackReference->TestBits(0x1 << 17)))) {
-    if (!trackReference->TestBits(0x1 << 18)) {
+    if (!((trackReference->TestBits(0x1 << 18)) || (trackReference->TestBits(0x1 << 17)))) {
+      //if (!trackReference->TestBits(0x1 << 18)) {
       // bit 17 - entering; bit 18 - exiting
       continue;
     }
@@ -416,18 +415,19 @@ GPUd() void GPUTRDTracker::DumpTracks()
   //--------------------------------------------------------------------
   // helper function (only for debugging purposes)
   //--------------------------------------------------------------------
+  GPUInfo("There are %i tracks loaded. mNMaxTracks(%i)\n", mNTracks, mNMaxTracks);
   for (int i = 0; i < mNTracks; ++i) {
     GPUTRDTrack* trk = &(mTracks[i]);
     GPUInfo("track %i: x=%f, alpha=%f, nTracklets=%i, pt=%f", i, trk->getX(), trk->getAlpha(), trk->GetNtracklets(), trk->getPt());
   }
 }
 
-GPUd() void GPUTRDTracker::DoTrackingThread(int iTrk, const GPUTPCGMMerger* merger, int threadId)
+GPUd() void GPUTRDTracker::DoTrackingThread(int iTrk, int threadId)
 {
   //--------------------------------------------------------------------
   // perform the tracking for one track (must be threadsafe)
   //--------------------------------------------------------------------
-  GPUTRDPropagator prop(merger);
+  GPUTRDPropagator prop(&Param().polynomialField);
   prop.setTrack(&(mTracks[iTrk]));
   FollowProlongation(&prop, &(mTracks[iTrk]), threadId);
 }
@@ -663,7 +663,7 @@ GPUd() bool GPUTRDTracker::FollowProlongation(GPUTRDPropagator* prop, GPUTRDTrac
             RecalcTrkltCov(tilt, mCandidates[2 * iCandidate + currIdx].getSnp(), pad->GetRowSize(mTracklets[trkltIdx].GetZbin()), trkltCovTmp);
             float chi2 = prop->getPredictedChi2(trkltPosTmpYZ, trkltCovTmp);
             // GPUInfo("layer %i: chi2 = %f", iLayer, chi2);
-            if (chi2 < mMaxChi2) {
+            if (chi2 < mMaxChi2 && CAMath::Abs(GetAngularPull(mSpacePoints[trkltIdx].mDy, mCandidates[2 * iCandidate + currIdx].getSnp())) < 4) {
               Hypothesis hypo(mCandidates[2 * iCandidate + currIdx].GetNlayers(), iCandidate, trkltIdx, mCandidates[2 * iCandidate + currIdx].GetChi2() + chi2);
               InsertHypothesis(hypo, nCurrHypothesis, hypothesisIdxOffset);
             } // end tracklet chi2 < mMaxChi2
@@ -1047,6 +1047,16 @@ GPUd() void GPUTRDTracker::RecalcTrkltCov(const float tilt, const float snp, con
   cov[0] = c2 * (sy2 + t2 * sz2);
   cov[1] = c2 * tilt * (sz2 - sy2);
   cov[2] = c2 * (t2 * sy2 + sz2);
+}
+
+GPUd() float GPUTRDTracker::GetAngularPull(float dYtracklet, float snp) const
+{
+  float dYtrack = ConvertAngleToDy(snp);
+  float dYresolution = GetAngularResolution(snp);
+  if (dYresolution < 1e-6f) {
+    return 999.f;
+  }
+  return (dYtracklet - dYtrack) / sqrt(dYresolution);
 }
 
 GPUd() void GPUTRDTracker::FindChambersInRoad(const GPUTRDTrack* t, const float roadY, const float roadZ, const int iLayer, int* det, const float zMax, const float alpha) const

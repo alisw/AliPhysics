@@ -29,9 +29,8 @@
 using namespace GPUCA_NAMESPACE::gpu;
 using namespace o2::tpc;
 
-#if defined(GPUCA_BUILD_TPCCOMPRESSION) && !defined(GPUCA_ALIROOT_LIB)
 template <>
-GPUd() void GPUTPCCompressionKernels::Thread<0>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() GPUTPCSharedMemory& smem, processorType& processors)
+GPUd() void GPUTPCCompressionKernels::Thread<GPUTPCCompressionKernels::step0attached>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() GPUTPCSharedMemory& smem, processorType& processors)
 {
   GPUTPCGMMerger& merger = processors.tpcMerger;
   const o2::tpc::ClusterNativeAccess* clusters = processors.tpcConverter.getClustersNative();
@@ -123,7 +122,7 @@ GPUd() void GPUTPCCompressionKernels::Thread<0>(int nBlocks, int nThreads, int i
       unsigned short qtot = orgCl.qTot, qmax = orgCl.qMax;
       unsigned char sigmapad = orgCl.sigmaPadPacked, sigmatime = orgCl.sigmaTimePacked;
       if (param.rec.tpcCompressionModes & GPUSettings::CompressionTruncate) {
-        compressor.truncateSignificantBitsCharge(qmax, param);
+        compressor.truncateSignificantBitsChargeMax(qmax, param);
         compressor.truncateSignificantBitsCharge(qtot, param);
         compressor.truncateSignificantBitsWidth(sigmapad, param);
         compressor.truncateSignificantBitsWidth(sigmatime, param);
@@ -175,7 +174,7 @@ GPUd() bool GPUTPCCompressionKernels::GPUTPCCompressionKernels_Compare<3>::opera
 }
 
 template <>
-GPUd() void GPUTPCCompressionKernels::Thread<1>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() GPUTPCSharedMemory& smem, processorType& processors)
+GPUd() void GPUTPCCompressionKernels::Thread<GPUTPCCompressionKernels::step1unattached>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() GPUTPCSharedMemory& smem, processorType& processors)
 {
   GPUTPCGMMerger& merger = processors.tpcMerger;
   const o2::tpc::ClusterNativeAccess* clusters = processors.tpcConverter.getClustersNative();
@@ -249,7 +248,7 @@ GPUd() void GPUTPCCompressionKernels::Thread<1>(int nBlocks, int nThreads, int i
       unsigned short qtot = orgCl.qTot, qmax = orgCl.qMax;
       unsigned char sigmapad = orgCl.sigmaPadPacked, sigmatime = orgCl.sigmaTimePacked;
       if (param.rec.tpcCompressionModes & GPUSettings::CompressionTruncate) {
-        compressor.truncateSignificantBitsCharge(qmax, param);
+        compressor.truncateSignificantBitsChargeMax(qmax, param);
         compressor.truncateSignificantBitsCharge(qtot, param);
         compressor.truncateSignificantBitsWidth(sigmapad, param);
         compressor.truncateSignificantBitsWidth(sigmatime, param);
@@ -267,5 +266,3 @@ GPUd() void GPUTPCCompressionKernels::Thread<1>(int nBlocks, int nThreads, int i
     GPUbarrier();
   }
 }
-
-#endif
