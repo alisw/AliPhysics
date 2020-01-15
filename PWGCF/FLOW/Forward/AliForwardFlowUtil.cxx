@@ -133,8 +133,8 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
 
     if (fSettings.esd){
       // Fill forwardDist
-      if (fSettings.use_primaries_fwd) this->FillFromPrimariesFMD(forwardDist);
-      else this->FillFromTrackrefsFMD(forwardDist);
+      if (fSettings.use_primaries_fwd) this->FillFromPrimariesFMDperTR(forwardDist);
+      else this->FillFromTrackrefsFMDperTR(forwardDist);
       
       // Fill centralDist
       if (fSettings.useITS){
@@ -208,6 +208,49 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
 }
 
 
+AliMCParticle* AliForwardFlowUtil::GetMother(AliMCParticle* p) {
+  // Recurses until the mother IsPhysicalPrimary
+  // Return NULL if no mother was found
+  // GetLabel() is the index on the Stack!
+  // event->Stack()->IsPhysicalPrimary(p->GetLabel());
+  Bool_t isPP = this->IsRedefinedPhysicalPrimary(p);
+  // Return this particle if it is stable
+  if (isPP) {
+    return p;
+  }
+  else {
+    // No stable particle found and no mother left !?
+    if (p->GetMother() < 0) {
+      return 0x0;
+    }
+    AliMCParticle* ancestor = dynamic_cast< AliMCParticle* >(fMCevent->GetTrack(p->GetMother()));
+    return GetMother(ancestor);
+  }
+}
+
+
+
+Bool_t AliForwardFlowUtil::IsRedefinedPhysicalPrimary(AliMCParticle* p) {
+  // Is this a pi0 which was produced as a primary particle?
+  if (TMath::Abs(p->PdgCode()) == 111 /*pi0*/ &&
+      p->GetLabel() < fMCevent->Stack()->GetNprimary()) {
+      std::cout << "found a pi0" << std::endl;
+
+    return true;
+  }
+  // Is it a Physical Primary by the standard definition?
+  Bool_t isPPStandardDef = fMCevent->Stack()->IsPhysicalPrimary(p->GetLabel());
+  AliMCParticle *pi0Candidate = dynamic_cast< AliMCParticle* >(fMCevent->GetTrack(p->GetMother()));
+  // Check if this is a primary originating from a pi0
+  if (isPPStandardDef && pi0Candidate) {
+    if (TMath::Abs(pi0Candidate->PdgCode()) == 111/*pi0*/) {
+        std::cout << "found wrong pi0Candidate" << std::endl;
+
+      return false;//false; // Don't allow stable particles stemming from pi0!
+    }
+  }
+  return isPPStandardDef;
+}
 
 void AliForwardFlowUtil::FillDataCentral(TH2D*& centralDist)
 {
@@ -321,6 +364,64 @@ void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd)
 }
 
 
+void AliForwardFlowUtil::FillFromTrackrefsFMDperTR(TH2D*& fwd) 
+{
+  Int_t nTracks   = fMCevent->GetNumberOfTracks();// stack->GetNtrack();
+
+  if (this->fSettings.fMaxConsequtiveStrips == 0) {
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+
+      for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
+        AliTrackReference* tr = p->GetTrackReference(iTrRef);
+        // Ignore things that do not make a signal in the FMD
+        if (!tr || AliTrackReference::kFMD != tr->DetectorId()) continue;    
+
+        Double_t phi_tr = this->GetTrackRefPhi(tr);
+        Double_t eta_tr = this->GetTrackRefEta(tr);
+
+        fwd->Fill(eta_tr,phi_tr,1);
+      }
+    }
+  }
+  else {
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* particle =
+        static_cast<AliMCParticle*>(fMCevent->GetTrack(iTr));
+
+      // Check if this charged and a primary
+      if (particle->Charge() == 0) continue;
+
+      // IF the track corresponds to a primary, pass that as both
+      // arguments.
+      ProcessTrack(particle, fwd);
+    } // Loop over tracks
+  }
+}
+
+
+
+void AliForwardFlowUtil::FillFromPrimariesFMDperTR(TH2D*& fwd) 
+{
+  Int_t nTracks   = fMCevent->GetNumberOfTracks();// stack->GetNtrack();
+
+  if (this->fSettings.fMaxConsequtiveStrips == 0) {
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+
+      for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
+        AliTrackReference* tr = p->GetTrackReference(iTrRef);
+        // Ignore things that do not make a signal in the FMD
+        if (!tr || AliTrackReference::kFMD != tr->DetectorId()) continue;    
+        AliMCParticle* mother = GetMother(p);
+        if (!mother) mother = p;
+
+        fwd->Fill(mother->Eta(),mother->Phi(),1);
+        break;
+      }
+    }
+  }
+}
 
 Bool_t
 AliForwardFlowUtil::ProcessTrackITS(AliMCParticle* particle,TH2D*& cen)
@@ -740,6 +841,7 @@ void AliForwardFlowUtil::FillFromPrimariesFMD(TH2D*& fwd) const
     AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
     if (!p->IsPhysicalPrimary()) continue;
     if (p->Charge() == 0) continue;
+
 
     Double_t eta = p->Eta();
     if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {

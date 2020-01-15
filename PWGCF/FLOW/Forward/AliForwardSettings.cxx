@@ -6,7 +6,7 @@
 //________________________________________________________________________
 AliForwardSettings::AliForwardSettings() :
   fPhiAcceptanceLowEdge(0),
-  fPhiAcceptanceUpEdge(2*TMath::Pi()),
+  fPhiAcceptanceUpEdge(2*TMath::Pi()),  
   fNPhiBins(20),
   fEtaLowEdge(-3.36),
   fEtaUpEdge(4.8),
