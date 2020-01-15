@@ -1,10 +1,10 @@
 
 void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,
-		   Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,
-		   Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7",
-		   TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",
-		   TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",
-		   const char *suffix = "")
+		Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,
+		Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3,
+		TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",
+		TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",
+		const char *suffix = "")
 {
   // standard with task
   printf("===================================================================================\n");
@@ -39,6 +39,8 @@ void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.
   task_CVE->SetCentralityPercentileMax(fCentralityMax);
   task_CVE->SetVzRangeMin(fVzMin);
   task_CVE->SetVzRangeMax(fVzMax);
+  task_CVE->SetParticle(fparticle);
+  
   if(sCentEstimator=="V0" || sCentEstimator=="V0M"){ 
     task_CVE->SetCentralityEstimator("V0M");    
   }
@@ -59,7 +61,7 @@ void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.
   task_CVE->SetTrackCutChi2Min(0.1);     
   task_CVE->SetTrackCutdEdxMin(10.0);           
   task_CVE->SetFlagUseKinkTracks(kFALSE);
-  
+
 
 
 
@@ -74,7 +76,7 @@ void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.
     fListMC = dynamic_cast <TList*> (fMCFile->FindObjectAny("fMcEffiHij"));
 
     if(fListMC) {
-      task_CVE->SetListForTrkCorr(fListMC);
+      task_CVE->SetListForTrkCorr(fListMC); 
     }
     else{
       printf("\n\n *** ERROR: MC file Exist, But TList Not Found!!! \n please check name \n\n");
@@ -126,7 +128,7 @@ void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.
   mgr->ConnectOutput(task_CVE, 1, cOutPut1);
   
  
-  printf("\n ================> AddTaskCVE() Configured properly <==================\n");
+  printf("\n ================> AddTaskCVE() Configured properly <==================\n",);
 
   //return task_CVE;
 
