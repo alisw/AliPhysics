@@ -634,7 +634,7 @@ Bool_t AliTPCTrackHitsV2::FlushHitStack(Bool_t force)
 
     paraml.HitDistance(i)= Short_t(TMath::Nint(dl/fStep));
     //paraml.Charge(i)= Short_t(fTempInfo->GetQStack(i));
-    paraml.SetCharge(i,Short_t(fTempInfo->GetQStack(i)));
+    paraml.SetCharge(i,fTempInfo->GetQStack(i));
     paraml.Time(i)= Short_t(fTempInfo->GetTimeStack(i)/AliTPCTrackHitsV2::fgkTimePrecision);
   }    
   
