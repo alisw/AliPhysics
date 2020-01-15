@@ -269,15 +269,19 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
          if (mcPart->GetPdgCode()==333){
              int firstdaughter= mcPart->GetDaughterFirst();
              AliAODMCParticle *mcDaughter = (AliAODMCParticle *) fArrayMCAOD->At(firstdaughter);
-             int dpdg = mcDaughter->GetPdgCode();
-             double dpt=mcDaughter->Pt();
-             double deta=mcDaughter->Eta();
-             if (std::abs(dpdg)==321)
+
+             if (mcDaughter)
              {
-                 if ((dpt<999 && dpt>0.15) && (deta>-0.8 && deta<0.8))
+                int dpdg = mcDaughter->GetPdgCode();
+                double dpt=mcDaughter->Pt();
+                double deta=mcDaughter->Eta();
+                 if (std::abs(dpdg)==321)
                  {
-                     PhiTRUE.push_back(part);
-                     continue;
+                    if ((dpt<999 && dpt>0.15) && (deta>-0.8 && deta<0.8))
+                    {
+                      PhiTRUE.push_back(part);
+                      continue;
+                    }
                  }
              }
          }
