@@ -258,11 +258,14 @@ Int_t AliRDHFCutsDstoKKpi::PreSelect(TObjArray aodTracks){
   
   Double_t ptD=TMath::Sqrt(px*px+py*py);
   
-  Int_t pidoptmem = fPidOption;
-  fPidOption=kConservative;
-  retVal=IsSelectedPID(ptD,aodTracks);
-  fPidOption=pidoptmem;
-  
+  if(fUsePID)
+  {  
+    Int_t pidoptmem = fPidOption;
+    fPidOption=kConservative;
+    retVal=IsSelectedPID(ptD,aodTracks);
+    fPidOption=pidoptmem;
+  }
+
   if(fUsePreselect==1) return retVal;
   
   Int_t ptbin=PtBin(ptD);
@@ -298,16 +301,16 @@ Int_t AliRDHFCutsDstoKKpi::PreSelect(TObjArray aodTracks){
     
     Double_t mass01phi2=ComputeInvMass2(track[1],track[2],321,321);
     
-    if(mass01phi2<minmassphi2 || mass01phi2>maxmassphi2) okDsKKpi=kFALSE;
+    if(mass01phi2<minmassphi2 || mass01phi2>maxmassphi2) okDspiKK=kFALSE;
     
-    if(!okDsKKpi && fCheckK0star){
+    if(!okDspiKK && fCheckK0star){
       //compute min and max with 20% tolerance
       Double_t minmassK0s2=(mK0starPDG-fCutsRD[GetGlobalIndex(13,ptbin)]*1.2)*(mK0starPDG-fCutsRD[GetGlobalIndex(13,ptbin)]*1.2);
       Double_t maxmassK0s2=(mK0starPDG+fCutsRD[GetGlobalIndex(13,ptbin)]*1.2)*(mK0starPDG+fCutsRD[GetGlobalIndex(13,ptbin)]*1.2);
       
       Double_t mass12K0s=ComputeInvMass2(track[0],track[1],211,321);
       
-      if(mass12K0s<minmassK0s2 || mass12K0s>maxmassK0s2) okDsKKpi=kFALSE;
+      if(mass12K0s<minmassK0s2 || mass12K0s>maxmassK0s2) okDspiKK=kFALSE;
     }
   }
   
