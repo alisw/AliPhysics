@@ -17,8 +17,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
 
   // Configuring Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-  Bool_t isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
-  printf("isAOD = %d\n",isAOD);
 
   // Creating an instance of the task
   AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("TaskElectronEfficiencyV2_Cen%d_%d_kINT7",CenMin,CenMax));
@@ -41,7 +39,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   // Adding cutsettings
   Int_t nCut = gROOT->ProcessLine("GetN()");
   for (int iCut = 0; iCut < nCut; ++iCut){
-    AliAnalysisFilter *filter = reinterpret_cast<AliAnalysisFilter*>(gROOT->ProcessLine(Form("Config_dsekihat_ElectronEfficiencyV2_PbPb(%d,%d,%f,%f,%f,%f)",iCut,isAOD,PtMin,PtMax,EtaMin,EtaMax)));
+    AliAnalysisFilter *filter = reinterpret_cast<AliAnalysisFilter*>(gROOT->ProcessLine(Form("Config_dsekihat_ElectronEfficiencyV2_PbPb(%d,%f,%f,%f,%f)",iCut,PtMin,PtMax,EtaMin,EtaMax)));
     task->AddTrackCuts(filter);
   }
 
