@@ -1453,11 +1453,9 @@ Bool_t AliAnalysisTaskBFPsi::SetSelectPID(AliAODTrack* track, Int_t poi){
 	    else{
 		if (statusPID==kTRUE){
 		    fHistNSigmaTOFvsPtafterPID->Fill(track->Pt(),nSigmaTOF);
-		    fHistNSigmaTPCvsPtafterPID->Fill(track->Pt(),nSigmaTPC);
 		    fHistNSigmaTPCTOFvsPtafterPID->Fill(track->Pt(),nSigmaTPCTOF);
 		    fHistNSigmaTPCTOFPafterPID->Fill(nSigmaTPC,nSigmaTOF,track->P());
 		    fHistBetavsPTOFafterPID->Fill(track->P()*track->Charge(),beta);
-		    fHistdEdxVsPTPCafterPID->Fill(track->P()*track->Charge(),track->GetTPCsignal());
 		    fHistBetaVsdEdXafterPID->Fill(track->GetTPCsignal(),beta);
 		}
     	    }
@@ -1467,6 +1465,11 @@ Bool_t AliAnalysisTaskBFPsi::SetSelectPID(AliAODTrack* track, Int_t poi){
     else
         return kFALSE;
   
+    if (statusPID==kTRUE){
+    fHistNSigmaTPCvsPtafterPID->Fill(track->Pt(),nSigmaTPC);
+    fHistdEdxVsPTPCafterPID->Fill(track->GetTPCmomentum()*track->Charge(),track->GetTPCsignal());
+    }
+
     return statusPID;
     
 }
@@ -1619,7 +1622,7 @@ Bool_t AliAnalysisTaskBFPsi::SetSelectPIDKaons(AliAODTrack* track, Int_t poi){
             else{
                 if (statusPID==kTRUE){
                     fHistNSigmaTPCvsPtafterPID->Fill(track->Pt(),nSigmaTPC);
-                    fHistdEdxVsPTPCafterPID->Fill(track->P()*track->Charge(),track->GetTPCsignal());
+                    fHistdEdxVsPTPCafterPID->Fill(track->GetTPCmomentum()*track->Charge(),track->GetTPCsignal());
                 }
             }
             
