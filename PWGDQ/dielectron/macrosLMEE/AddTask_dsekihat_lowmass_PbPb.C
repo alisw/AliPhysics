@@ -1,6 +1,8 @@
 AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
     Bool_t getFromAlien=kFALSE,
     TString cFileName = "Config_dsekihat_lowmass_PbPb.C",
+    TString lFileName = "LMEECutLib_dsekihat.C",
+		TString period = "LHC18q",
     UInt_t trigger = AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral,
     const Int_t CenMin =  0,
     const Int_t CenMax = 10,
@@ -18,19 +20,20 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
     return 0;
   }
 
-  Bool_t isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
-  printf("isAOD = %d\n",isAOD);
-
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   //TString configBasePath= "./";
-  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data())))){
+  if(getFromAlien
+    && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data())))
+    && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",lFileName.Data())))
+    ){
     configBasePath=Form("%s/",gSystem->pwd());
   }
 
   TString configFilePath(configBasePath + cFileName);
-  TString libFilePath(configBasePath + "LMEECutLib_dsekihat.C");
+  TString libFilePath(configBasePath + lFileName);
   std::cout << "Configpath:  " << configFilePath << std::endl;
+  std::cout << "Libpath:  "    << libFilePath << std::endl;
 
   TString triggername = "NULL";
   if(trigger == (UInt_t)AliVEvent::kINT7)             triggername = "kINT7";
@@ -40,7 +43,7 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()));
-	task->UsePhysicsSelection(kTRUE);
+  task->UsePhysicsSelection(kTRUE);
   task->SetTriggerMask(trigger);
 
   //add dielectron analysis with different cuts to the task
@@ -55,7 +58,7 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
   for (Int_t itc=0; itc<nTC; ++itc){
     for (Int_t ipid=0; ipid<nPID; ++ipid){
       for (Int_t ipf=0; ipf<nPF; ++ipf){
-        AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_dsekihat_lowmass_PbPb(%d,%d,%d,%d,%f,%f,%f,%f)",itc,ipid,ipf,isAOD,PtMin,PtMax,EtaMin,EtaMax)));
+        AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_dsekihat_lowmass_PbPb(%d,%d,%d,\"%s\",%f,%f,%f,%f)",itc,ipid,ipf,period.Data(),PtMin,PtMax,EtaMin,EtaMax)));
         if(!diel) continue;
 
         //AliDielectronVarCuts*  centCuts = new AliDielectronVarCuts("centCuts",Form("kPbPb%02d%02d",CenMin,CenMax));
@@ -83,11 +86,10 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 
   task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
 
-
   mgr->AddTask(task);
 
   const TString outputFileName = AliAnalysisManager::GetCommonFileName();
-	const TString dirname = Form("PWGDQ_LMEE_Cen%d_%d_%s",CenMin,CenMax,triggername.Data());
+  const TString dirname = Form("PWGDQ_LMEE_Cen%d_%d_%s",CenMin,CenMax,triggername.Data());
 
   //create output container
   AliAnalysisDataContainer *coutput1 =

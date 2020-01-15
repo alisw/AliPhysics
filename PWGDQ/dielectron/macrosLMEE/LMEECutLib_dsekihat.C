@@ -2,23 +2,19 @@ class LMEECutLib {
 
   public:
     LMEECutLib():
-      fCutName(""),
-      fIsAOD(kTRUE)
+      fCutName("")
   { 
   }
 
-    LMEECutLib(TString cutname, Bool_t isAOD):
-      fCutName(""),
-      fIsAOD(kTRUE)
+    LMEECutLib(TString cutname):
+      fCutName("")
   {
     fCutName = cutname;
-    fIsAOD = isAOD;
     Print();
   }
     virtual ~LMEECutLib(){}
-    void Print(){ printf("cut name = %s , isAOD = %d\n",fCutName.Data(),fIsAOD); }
+    void Print(){ printf("cut name = %s\n",fCutName.Data()); }
     void SetCutName(TString cutname) {fCutName = cutname;}
-    void SetAOD(Bool_t isAOD) {fIsAOD = isAOD;}
 
     static TString GetGeneratorMCSignalName(){
       const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;";
@@ -56,51 +52,80 @@ class LMEECutLib {
 
     AliAnalysisCuts *SetupPhiVPreFilter(){
       AliDielectronVarCuts *phiVcut = new AliDielectronVarCuts("phiVcut","phiVcut");
-      phiVcut->AddCut(AliDielectronVarManager::kPhivPair, 2.5, 3.2);
-      phiVcut->AddCut(AliDielectronVarManager::kM       , 0.0,0.05);
+      phiVcut->AddCut(AliDielectronVarManager::kPhivPair, 2.0,3.2);
+      phiVcut->AddCut(AliDielectronVarManager::kM       , 0.0,0.1);
       return phiVcut;
     }
 
     AliAnalysisCuts *SetupTrackCuts(Float_t PtMin, Float_t PtMax, Float_t EtaMin, Float_t EtaMax){
       AliDielectronCutGroup *trCG = new AliDielectronCutGroup("TrackCutsGroup","TrackCutsGroup",AliDielectronCutGroup::kCompAND);
 
-      AliDielectronTrackCuts *trCuts = new AliDielectronTrackCuts("TrackCuts","TrackCuts");
-      trCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
-      //trCuts->SetRequireITSRefit(kTRUE);
-      //trCuts->SetRequireTPCRefit(kTRUE);
-      trCuts->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // 1<<4
+      if(fCutName.Contains("PIDCalib",TString::kIgnoreCase) || fCutName.Contains("noPID",TString::kIgnoreCase)){
+        AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
+        gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
+        // gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,  0.25, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,  0.05, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,  0.05, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,  0.05, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35, 0.35, kFALSE); // should increase purity...
+        gammaV0Cuts->SetExcludeTracks(kFALSE);
 
-      //if(!fCutName.Contains("PIDCalib",TString::kIgnoreCase)){
-      //  if(!fIsAOD){//for ESD
-      //    trCG->AddCut(SetupESDtrackCuts());
-      //  }
-      //  else{//for AOD
-      //    trCuts->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // 1<<4
-      //  }
-      //}
-      trCG->AddCut(trCuts);
+        /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+        AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
 
-      AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
+        varCuts->AddCut(AliDielectronVarManager::kPt,0.15,1e+10);
+        varCuts->AddCut(AliDielectronVarManager::kEta,-0.9,+0.9);
 
-      varCuts->AddCut(AliDielectronVarManager::kPt, PtMin ,PtMax );
-      varCuts->AddCut(AliDielectronVarManager::kEta,EtaMin,EtaMax);
+        varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,1.0);
+        varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,3.0);
 
-      varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,1.0);
-      varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,3.0);
+        varCuts->AddCut(AliDielectronVarManager::kNclsITS,  3.0,6.1);
+        //varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,0.0,5.0);
 
-      varCuts->AddCut(AliDielectronVarManager::kNclsITS,  3.0,6.1);
-      varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,0.0,5.0);
+        //varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,     80.0, 160.0);//crossed rows
+        varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,    2.);
+        varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0,   4.0);
 
-      //varCuts->AddCut(AliDielectronVarManager::kNclsTPC,        80.0, 160.0);//should not be used in 2018 PbPb analyses
-      varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,     80.0, 160.0);//crossed rows
-      varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,    2.);
-      varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0,   4.0);
+        //ITS shared cluster cut
+        varCuts->AddCut(AliDielectronVarManager::kNclsSFracITS,0.2,1.1);
 
-      //ITS shared cluster cut
-      varCuts->AddCut(AliDielectronVarManager::kNclsSITS,-0.1,+0.1);
-      trCG->AddCut(varCuts);
+        trCG->AddCut(gammaV0Cuts);
+        trCG->AddCut(varCuts);
+      }
+      else{
+        AliDielectronTrackCuts *trCuts = new AliDielectronTrackCuts("TrackCuts","TrackCuts");
+        trCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
+        //trCuts->SetRequireITSRefit(kTRUE);
+        //trCuts->SetRequireTPCRefit(kTRUE);
+        trCuts->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // 1<<4
+        trCG->AddCut(trCuts);
 
+        AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
+
+        varCuts->AddCut(AliDielectronVarManager::kPt, PtMin ,PtMax );
+        varCuts->AddCut(AliDielectronVarManager::kEta,EtaMin,EtaMax);
+
+        varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,1.0);
+        varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,3.0);
+
+        varCuts->AddCut(AliDielectronVarManager::kNclsITS,  3.0,6.1);
+        varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,0.0,5.0);
+
+        //varCuts->AddCut(AliDielectronVarManager::kNclsTPC,        80.0, 160.0);//should not be used in 2018 PbPb analyses
+        varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,     80.0, 160.0);//crossed rows
+        varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,    2.);
+        varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0,   4.0);
+
+        //ITS shared cluster cut
+        varCuts->AddCut(AliDielectronVarManager::kNclsSITS,-0.1,+0.1);
+        trCG->AddCut(varCuts);
+      }
       return trCG;
+
     }
 
     AliAnalysisCuts *SetupPIDCuts(){
@@ -187,7 +212,7 @@ class LMEECutLib {
         recoverTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         return recoverTOF;
       }
-      else if(fCutName.Contains("noPID",TString::kIgnoreCase)){
+      else if(fCutName.Contains("PIDCalib",TString::kIgnoreCase) || fCutName.Contains("noPID",TString::kIgnoreCase)){
         AliDielectronPID* cutsPID   = new AliDielectronPID("PID", "PID");
         return cutsPID;
       }
@@ -199,7 +224,6 @@ class LMEECutLib {
 
   protected:
     TString fCutName;
-    Bool_t fIsAOD;
 
     ClassDef(LMEECutLib,1);
 };

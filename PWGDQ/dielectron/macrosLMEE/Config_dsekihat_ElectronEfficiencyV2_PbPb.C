@@ -11,16 +11,17 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task);
 
 AliAnalysisFilter *Config_dsekihat_ElectronEfficiencyV2_PbPb(
     const Int_t cutID,
-    const Bool_t isAOD,
     const Float_t PtMin ,
     const Float_t PtMax ,
     const Float_t EtaMin,
     const Float_t EtaMax
     )
 {
+  Bool_t isAOD = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
+  printf("isAOD = %d\n",isAOD);
 
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter(Form("anaFilter_%s",names[cutID].Data()),Form("anaFilter_%d",cutID)); // named constructor seems mandatory!
-  LMEECutLib *lib = new LMEECutLib(names[cutID],isAOD); 
+  LMEECutLib *lib = new LMEECutLib(names[cutID]); 
   anaFilter->AddCuts(lib->SetupTrackCuts(PtMin,PtMax,EtaMin,EtaMax));
 
   if(names[cutID].Contains("Resolution",TString::kIgnoreCase) || names[cutID].Contains("noPID",TString::kIgnoreCase)){
