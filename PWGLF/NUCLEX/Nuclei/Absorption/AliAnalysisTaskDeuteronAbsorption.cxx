@@ -55,7 +55,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
                                                                                          fPIDResponse{nullptr},
-                                                                                         fESDtrackCuts{AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true)},
+                                                                                         fESDtrackCuts{nullptr},
                                                                                          fOutputList{nullptr},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
