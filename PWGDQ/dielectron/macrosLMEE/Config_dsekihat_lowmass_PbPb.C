@@ -1,21 +1,24 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 
 TString TrackCutnames[] = {
-  "DefaultTrackCut"
-// ,"LooseTrackCut"
-// ,"TightTrackCut"
-// "PIDCalibTrackCut"
+	"DefaultTrackCut_Nsc0"
+ ,"DefaultTrackCut_Nsc01"
+//,"LooseTrackCut"
+//,"TightTrackCut"
+//,"PIDCalibTrackCut"
 };
 const Int_t nTC = sizeof(TrackCutnames)/sizeof(TrackCutnames[0]);
 Int_t GetNTC(){return nTC;}
 
 TString PIDnames[] = {
   "DefaultPID"
-// ,"ITSTPChadrejORTOFrec"
-// ,"ITSTPChadrej"
-// ,"ITSTOFrecover"
+ ,"ITSTPChadrejORTOFrec"
+ ,"ITSTPChadrej"
+ ,"ITSTOFrecover"
+ ,"TPChadrejORTOFrec"
+ ,"TPChadrej"
+ ,"TOFrecover"
 // ,"noPID"
-// "noPID"
 };
 const Int_t nPID = sizeof(PIDnames)/sizeof(PIDnames[0]);
 Int_t GetNPID(){return nPID;}
@@ -34,7 +37,6 @@ AliDielectron* Config_dsekihat_lowmass_PbPb(
 		const Int_t cutDefinitionTC,
 		const Int_t cutDefinitionPID,
 		const Int_t cutDefinitionPF,
-    const TString period,
     const Float_t PtMin ,
     const Float_t PtMax ,
     const Float_t EtaMin,
@@ -64,46 +66,6 @@ AliDielectron* Config_dsekihat_lowmass_PbPb(
 
 	if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)) die->SetNoPairing(kTRUE);
 	else                                                                                              die->SetNoPairing(kFALSE);
-
-//	const Int_t Ndim    = 5;//pin,eta,NSPD0,puvZ,puzM
-//	Int_t Nbin[Ndim]    = {100,  20,   4,   8,   4};
-//	Double_t xmin[Ndim] = {  0,-1.0,   0,-250,   0};
-//	Double_t xmax[Ndim] = { 10,+1.0,2e+4,+250,1e+4};
-//	THnF *hs_mean  = new THnF("hs_mean" ,"hs_mean" ,Ndim,Nbin,xmin,xmax);//bin index for THn starts from 0!
-//	THnF *hs_width = new THnF("hs_width","hs_width",Ndim,Nbin,xmin,xmax);//bin index for THn starts from 0!
-//	const Int_t Ntot = 100 * 20 * 4 * 8 * 4;
-//  const Int_t Nall = hs_width->GetNbins();//include over/underflow bins (i.e. +2 for each axis)
-//  printf("Ntot = %d , Nall = %d\n",Ntot,Nall);
-//	for(Int_t i=0;i<Nall;i++){
-//		hs_mean ->SetBinContent((Long64_t)i,-2);
-//		hs_width->SetBinContent((Long64_t)i,1);
-//	}
-
-  const TString filename = Form("alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/calibLMEE/Calibration_%s_PU_THn.root",period.Data());
-  TFile *rootfile = TFile::Open(filename,"READ");
-  THnF *hs_mean_TPC_El  = (THnF*)rootfile->Get("hs_mean_TPC_El");
-  THnF *hs_width_TPC_El = (THnF*)rootfile->Get("hs_width_TPC_El");
-  THnF *hs_mean_ITS_El  = (THnF*)rootfile->Get("hs_mean_ITS_El");
-  THnF *hs_width_ITS_El = (THnF*)rootfile->Get("hs_width_ITS_El");
-  THnF *hs_mean_TOF_El  = (THnF*)rootfile->Get("hs_mean_TOF_El");
-  THnF *hs_width_TOF_El = (THnF*)rootfile->Get("hs_width_TOF_El");
-  THnF *hs_mean_TPC_Pi  = (THnF*)rootfile->Get("hs_mean_TPC_Pi");
-  THnF *hs_width_TPC_Pi = (THnF*)rootfile->Get("hs_width_TPC_Pi");
-
-	die->SetPIDCaibinPU(kTRUE);
-  //for electron
-	die->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_mean_TPC_El ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-	die->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_width_TPC_El,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-	die->SetCentroidCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_mean_ITS_El ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-	die->   SetWidthCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_width_ITS_El,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-	die->SetCentroidCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_mean_TOF_El ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-	die->   SetWidthCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_width_TOF_El,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-
-  //for pion
-	die->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_mean_TPC_Pi ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-	die->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_width_TPC_Pi ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-
-  rootfile->Close();
 
   InitHistograms(die,0);
 
@@ -194,6 +156,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     //histos->UserHistogram("Track","hAPplot","AP plot;#alpha;q_{T} (GeV/c)",100,-1.,+1,300,0.,0.3,AliDielectronVarManager::kArmAlpha,AliDielectronVarManager::kArmPt);
 //  }
 
+  const Int_t Nmee = 150;
+  Double_t mee[Nmee] = {};
+  for(Int_t i=0  ;i<110 ;i++) mee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 1.1 GeV/c2, every 0.01 GeV/c2
+  for(Int_t i=110;i<Nmee;i++) mee[i] = 0.1  * (i-110) +  1.1;//from 1.1 to 5 GeV/c2, evety 0.1 GeV/c2
+
   const Int_t NpTee = 111;
   Double_t pTee[NpTee] = {};
   for(Int_t i=0  ;i<10   ;i++) pTee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 0.09 GeV/c, every 0.01 GeV/c
@@ -207,7 +174,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //histos->UserHistogram("Pair","hEtaPhi" ,"pair #eta vs #varphi;#varphi (rad.);#eta",72,0.,TMath::TwoPi(), 200,-1.,1.,AliDielectronVarManager::kPhi, AliDielectronVarManager::kEta);
 
   const Int_t Ndim_pair = 5;//mee, pT,eta,phi,phiV
-  Int_t Nbin_pair[Ndim_pair]    = {500, 110, 20,          72,          72};
+  Int_t Nbin_pair[Ndim_pair]    = {149, 110, 20,          72,          72};
   Double_t xmin_pair[Ndim_pair] = {  0,   0, -1,           0,           0};
   Double_t xmax_pair[Ndim_pair] = {  5,  20, +1, TMath::Pi(), TMath::Pi()};
   UInt_t var_pair[Ndim_pair] = {AliDielectronVarManager::kM,AliDielectronVarManager::kPt,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi, AliDielectronVarManager::kPhivPair};
@@ -217,11 +184,12 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   for (Int_t i=0; i<8; ++i){
     THnSparseD *hs_pair = dynamic_cast<THnSparseD*>(histos->GetHist(Form("Pair_%s",AliDielectron::PairClassName(i)),"hsPair"));
     if(!hs_pair) continue;
+    hs_pair->SetBinEdges(0,mee);
     hs_pair->SetBinEdges(1,pTee);
     hs_pair->GetAxis(0)->SetTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
     hs_pair->GetAxis(1)->SetTitle("#it{p}_{T,ee} (GeV/#it{c})");
     hs_pair->GetAxis(2)->SetTitle("#it{#eta}_{ee}");
-    hs_pair->GetAxis(3)->SetTitle("#it{#varphi}_{ee}(rad.)");
+    hs_pair->GetAxis(3)->SetTitle("#it{#varphi}_{ee} (rad.)");
     hs_pair->GetAxis(4)->SetTitle("#it{#varphi}_{V} (rad.)");
   }
 
