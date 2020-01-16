@@ -28,6 +28,10 @@ class AliPHOSTriggerUtils ;
 class AliAnalysisTaskTaggedPhotons : public AliAnalysisTaskSE {
 
 public:
+  
+  enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta } ; 
+  enum cutType{kDefCut, kLowECut} ;
+    
   AliAnalysisTaskTaggedPhotons() ;
   AliAnalysisTaskTaggedPhotons(const char *name) ;
   AliAnalysisTaskTaggedPhotons(const AliAnalysisTaskTaggedPhotons& ap) ;   
@@ -43,9 +47,12 @@ public:
   void SetTrigger(Bool_t isPHOSTrig){fIsMB=isPHOSTrig;}   //Analyse MinBias of PHOS triggered events
   void UseCaloFast(Bool_t use=kTRUE){fUseCaloFastTr=use ;} //Use PHOS trigger in CaloFast cluster
   void SetMC(Bool_t isMC=kTRUE){fIsMC=isMC;}              //Is is MC or real data
+  void SetMCType(mcType a){ fIsMC = kTRUE; fMCType = a; } 
   void SetFastMC(void){fIsFastMC=kTRUE;fIsMC=kTRUE; }     //Only for MC, bypass event quality checks (e.g. for single pi0 MC)
+  void SetRunNumber(int run){fRunNumber=run;fForseRun=kTRUE; }  //Use given run number, don't read from data
   void SetPi0WeightParameters(TArrayD * ar) ;             //Introduce weight for primary pi0
   void SetDistanceToBad(Float_t cut=2.5){fMinBCDistance=cut;}     //Distance to bad module
+  void SetCluCutType(cutType cut = kDefCut){fCutType = cut ; }      //To use default or lowE (Daiki's) cut
   void SetTimeCut(Float_t cut=25.e-9){fTimeCut=cut;}              //Time selection, use only for data
   void SetCentralityEstimator(Int_t est=1){fCentEstimator=est;}   //Centrality estimator, pPb: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
   void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;  //for pp: 
@@ -70,6 +77,9 @@ protected:
   Double_t TOFCutEff(Double_t x );
   
   Bool_t   SelectCentrality(AliVEvent * event) ;
+  Double_t CalculateSphericity() ;
+  Double_t CalculateSpherocity() ;
+  
   Double_t TrigCentralityWeight(Double_t x); //Correction for PHOS trigger centrality bias
   Double_t MBCentralityWeight(Double_t x);   //Correction for Pileup cut centrality bias
   
@@ -101,6 +111,7 @@ private:
   TH1F * fCentralityWeights[6]; //!Weights to correct centrality non-flatness
   Int_t  fCentBin ;       //! current centrality bin
   Int_t  fRunNumber ;     //! current run number
+  Bool_t fForseRun ;      // use fixed run number, dont read from data
   Bool_t fIsMB ;          //which trigger to use
   Bool_t fUseCaloFastTr ; //use also 
   Bool_t fIsMC ;          //Is this is MC
@@ -116,6 +127,9 @@ private:
   Float_t fTimeCut ;            //Time cut
   Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights in MC
   Int_t   fNPID ;               // Number of PID cuts
+  mcType  fMCType ;             // Type of MC production: full, single g,pi0,eta,
+  cutType fCutType;             // Type of cluster cuts used in analysis
+  
   //
   TH2I * fPHOSBadMap[6] ;        //! 
   TH2F * fhReMod[5];             //! Real per module
@@ -141,6 +155,6 @@ private:
   TH2F * fhQAIsozpartnBg ;  //!
   TH2F * fhQAIsoxpartnBg ;  //!
       
-  ClassDef(AliAnalysisTaskTaggedPhotons, 5);   // a PHOS photon analysis task 
+  ClassDef(AliAnalysisTaskTaggedPhotons, 6);   // a PHOS photon analysis task 
 };
 #endif // ALIANALYSISTASKTAGGEDPHOTONSLOCAL_H
