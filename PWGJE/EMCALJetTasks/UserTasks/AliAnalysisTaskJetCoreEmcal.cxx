@@ -75,6 +75,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fFillRecoilTHnSparse(kTRUE),
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
+	fMoreTreeVars(kFALSE),
 	fPtHardBin(0.),
 	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
@@ -155,6 +156,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fFillRecoilTHnSparse(kTRUE),
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
+	fMoreTreeVars(kFALSE),
 	fPtHardBin(0.),
 	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
@@ -660,13 +662,21 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fhFractionSharedPtRecoil);
 
   TString varNamesInclusive[9]={"centrality","ptRawRec","areaRec","ptCorrRec","phiRec","ptPart","phiPart","ptLeadingTrackRec","ptLeadingTrackPart"};
+  TString varNamesInclusiveMoreVars[11]={"centrality","ptRawRec","areaRec","ptCorrRec","phiRec","ptPart","phiPart","ptLeadingTrackRec","ptLeadingTrackPart","matchedJetDistanceRec","matchedJetDistancePart"};
   TString varNamesRecoil[10]={"centrality","ptTT","ptRawRec","areaRec","ptCorrRec","phiRec","DPhiRec","ptPart","phiPart","DPhiPart"};
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) {
 		const char* nameEmbInclusive = GetOutputSlot(2)->GetContainer()->GetName();
 		fTreeEmbInclusive = new TTree(nameEmbInclusive, nameEmbInclusive);
-		for(Int_t ivar=0; ivar < 9; ivar++){
-			fTreeEmbInclusive->Branch(varNamesInclusive[ivar].Data(), &fTreeVarsInclusive[ivar], Form("%s/F", varNamesInclusive[ivar].Data()));
-		}
+    if(fMoreTreeVars) {
+      for(Int_t ivar=0; ivar < 11; ivar++){
+        fTreeEmbInclusive->Branch(varNamesInclusiveMoreVars[ivar].Data(), &fTreeVarsInclusiveMoreVars[ivar], Form("%s/F", varNamesInclusiveMoreVars[ivar].Data()));
+      }
+    }
+    else {
+      for(Int_t ivar=0; ivar < 9; ivar++){
+        fTreeEmbInclusive->Branch(varNamesInclusive[ivar].Data(), &fTreeVarsInclusive[ivar], Form("%s/F", varNamesInclusive[ivar].Data()));
+      }
+    }
 	}
 
 	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && fFillRecoilTree) {
@@ -1026,6 +1036,7 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		Double_t ptCorr = ptJet1-rho*area;
 		Double_t ptLeadingTrackJet1 = jet1->GetLeadingTrack()->Pt();
     // closest jet
+    Double_t distanceClosestJet1=-1, distanceClosestJet2=-1;
     Double_t ptJet2=0, phiJet2=0;
     Double_t ptJet3=0, phiJet3=0;
     Double_t ptLeadingTrackJet3=0;
@@ -1035,6 +1046,7 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
       if(!jet2) {
         //Printf("jet 2 cant be found");
         continue;}
+      distanceClosestJet1 = jet1->ClosestJetDistance();
       ptJet2 = jet2->Pt();
       fhPtDet->Fill(ptJet2);
 
@@ -1043,6 +1055,7 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
         //Printf("jet3 can't be found");
         continue;
       }
+      distanceClosestJet2 = jet2->ClosestJetDistance();
       fhPtDetMatchedToPart->Fill(ptJet2);
       ptJet3 = jet3->Pt();
       phiJet3 = jet3->Phi();
@@ -1061,6 +1074,7 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
         if(fDebug) Printf("jet3 can't be found");
         continue;
       }
+      distanceClosestJet1 = jet1->ClosestJetDistance();
       ptJet3 = jet3->Pt();
       phiJet3 = jet3->Phi();
       fhPtDetMatchedToPart->Fill(ptJet3);
@@ -1102,16 +1116,32 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		if(ptCorr<fMinEmbJetPt) continue;
 
 		if(fFillInclusiveTree && fRandom->Integer(fRejectionFactorInclusiveJets)==0 ) {
-			fTreeVarsInclusive[0] = fCent;
-			fTreeVarsInclusive[1] = ptJet1;
-			fTreeVarsInclusive[2] = area;
-			fTreeVarsInclusive[3] = ptCorr;
-			fTreeVarsInclusive[4] = phiJet1;
-			fTreeVarsInclusive[5] = ptJet3;
-			fTreeVarsInclusive[6] = phiJet3;
-			fTreeVarsInclusive[7] = ptLeadingTrackJet1;
-			fTreeVarsInclusive[8] = ptLeadingTrackJet3;
-			fTreeEmbInclusive->Fill();
+      if(fMoreTreeVars) {
+        fTreeVarsInclusiveMoreVars[0] = fCent;
+        fTreeVarsInclusiveMoreVars[1] = ptJet1;
+        fTreeVarsInclusiveMoreVars[2] = area;
+        fTreeVarsInclusiveMoreVars[3] = ptCorr;
+        fTreeVarsInclusiveMoreVars[4] = phiJet1;
+        fTreeVarsInclusiveMoreVars[5] = ptJet3;
+        fTreeVarsInclusiveMoreVars[6] = phiJet3;
+        fTreeVarsInclusiveMoreVars[7] = ptLeadingTrackJet1;
+        fTreeVarsInclusiveMoreVars[8] = ptLeadingTrackJet3;
+        fTreeVarsInclusiveMoreVars[9] = distanceClosestJet1;
+        fTreeVarsInclusiveMoreVars[10] = distanceClosestJet2;
+        fTreeEmbInclusive->Fill();
+      }
+      else {
+        fTreeVarsInclusive[0] = fCent;
+        fTreeVarsInclusive[1] = ptJet1;
+        fTreeVarsInclusive[2] = area;
+        fTreeVarsInclusive[3] = ptCorr;
+        fTreeVarsInclusive[4] = phiJet1;
+        fTreeVarsInclusive[5] = ptJet3;
+        fTreeVarsInclusive[6] = phiJet3;
+        fTreeVarsInclusive[7] = ptLeadingTrackJet1;
+        fTreeVarsInclusive[8] = ptLeadingTrackJet3;
+        fTreeEmbInclusive->Fill();
+      }
 		}
 	}
 //	for(auto jettrue : jetContPart->accepted()) {
