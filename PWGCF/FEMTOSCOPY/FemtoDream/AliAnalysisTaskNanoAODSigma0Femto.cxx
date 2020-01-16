@@ -282,10 +282,10 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
 
   // Get the Sigma0 daughters
   if (fCheckDaughterCF) {
-    CastToVector(sigma0lambda, fSigmaCuts->GetLambda(), sigmaSBUpEntry);
-    CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda(), antisigmaSBUpEntry);
-    CastToVector(sigma0photon, fSigmaCuts->GetPhoton(), sigmaSBUpEntry);
-    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton(), antisigmaSBUpEntry);
+    CastToVector(sigma0lambda, fSigmaCuts->GetLambda(), sigmaEntry);
+    CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda(), antisigmaEntry);
+    CastToVector(sigma0photon, fSigmaCuts->GetPhoton(), sigmaEntry);
+    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton(), antisigmaEntry);
   }
 
   if (fFemtoJanitor) {
