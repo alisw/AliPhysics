@@ -562,10 +562,9 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   // PHOS pp 13 TeV
   } else if(trainConfig == 400)  { // pp13 TeV AOD and ESD Comparison
     cuts.AddCutHeavyMesonPCMCalo("00010113","00200009227000008250400000","2444411044012300000","32c51070a","0103603400000000","0153503000000000"); // INT7
-  } else if(trainConfig == 401)  { // Standard PHOS
+  } else if(trainConfig == 401)  { // Standard PHOS MB
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190na012200000","32c51070a","0103603400000000","0153503000000000"); // INT7
-  } else if(trainConfig == 402)  { //Standard PHOS 13TeV + PHI7
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190na012200000","32c51070a","0103603400000000","0153503000000000"); // INT7
+  } else if(trainConfig == 402)  { //Standard PHOS Trigger PHI7
     cuts.AddCutHeavyMesonPCMCalo("00062113","0dm00009f9730000dge0404000","24466190na012200000","32c51070a","0103603400000000","0153503000000000"); // PHI7
   } else if(trainConfig == 405)  { //Standard EMCal 13TeV
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411791106f032220000","32c51070a","0103603200000000","0153503000000000"); // INT7
@@ -574,15 +573,15 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411791106f032220000","32c51070a","0103603200000000","0153503000000000"); // PHI7
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411791106f032220000","32c51070a","0103603200000000","0153503000000000"); // INT7
     cuts.AddCutHeavyMesonPCMCalo("0009b113","0dm00009f9730000dge0404000","411791106f032220000","32c51070a","0103603200000000","0153503000000000"); // PHI7
-  } else if(trainConfig == 407)  { //Standard EMCal 13TeV, testbeam nl
+  } else if(trainConfig == 407)  { //Standard EMCal 13TeV MB, testbeam nl
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790106f032220000","32c51070a","0103603200000000","0153503000000000"); // INT7
-  } else if(trainConfig == 408)  { //Standard EMCal 13TeV + Triggers, testbeam nl
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790106f032220000","32c51070a","0103603200000000","0453503000000000"); // PHI7
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790106f032220000","32c51070a","0103603200000000","0453503000000000"); // INT7
+  } else if(trainConfig == 408)  { //Standard EMCal 13TeV Triggers, testbeam nl
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790106f032220000","32c51070a","0103603200000000","0453503000000000"); // EG2
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790106f032220000","32c51070a","0103603200000000","0453503000000000"); // EG1
   } else if(trainConfig == 409)  { //Standard EMCal 13TeV, no testbeam nl
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790006f032220000","32c51070a","0103603200000000","0153503000000000"); // INT7
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790006f032220000","32c51070a","0103603200000000","0453503000000000"); // PHI7
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790006f032220000","32c51070a","0103603200000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790006f032220000","32c51070a","0103603200000000","0453503000000000"); // EG2
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790006f032220000","32c51070a","0103603200000000","0453503000000000"); // EG1
   // Variations on 5 TeV for 7 TeV systematics
   // PCM-EMC (without nonlin)
   } else if(trainConfig == 450)  { //Standard PCM-EMCal 13TeV, no testbeam nl

@@ -2108,9 +2108,11 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 904){ // NCells >= 3
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","2446619060012200000","0163103100000010"); // QA, -30,50ns timing INT7
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","2446619060012200000","0163103100000010"); // QA, -30,50ns timing PHI7
-  } else if ( trainConfig == 905){ // NCells >= 2
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","2446619060012200000","0163103100000010"); // QA, -30,50ns timing INT7
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","2446619060012200000","0163103100000010"); // QA, -30,50ns timing PHI7
+  } else if ( trainConfig == 905){ // NCell Cuts Variations
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190na012300000","0163103100000010"); // INT7 NCells 3
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190na012200000","0163103100000010"); // INT7 NCells 2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190na012c00000","0163103100000010"); // INT7 NCells 2, when E>1GeV
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190na012d00000","0163103100000010"); // INT7 NCells 3, when E>1GeV
   } else if ( trainConfig == 906){ // StdCut
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190na012200000","0163103100000010"); // QA
   } else if ( trainConfig == 907){ // NonLinStudies

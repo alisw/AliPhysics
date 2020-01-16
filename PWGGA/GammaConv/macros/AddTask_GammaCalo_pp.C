@@ -1669,11 +1669,11 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 804){ // QA
     cuts.AddCutCalo("00010113","24466190n0012300000","0163103100000010"); // INT7 NCells 3
     cuts.AddCutCalo("00010113","24466190na012300000","0163103100000010"); // INT7 w/ TM NCells 3
-  } else if (trainConfig == 805){
+  } else if (trainConfig == 805){ // NCell Cut Variations
     cuts.AddCutCalo("00010113","24466190n0012300000","0163103100000010"); // INT7 NCells 3
     cuts.AddCutCalo("00010113","24466190n0012200000","0163103100000010"); // INT7 NCells 2
-    cuts.AddCutCalo("00010113","24466190na012300000","0163103100000010"); // INT7 w/ TM NCells 3
-    cuts.AddCutCalo("00010113","24466190na012200000","0163103100000010"); // INT7 w/ TM NCells 2
+    cuts.AddCutCalo("00010113","24466190na012c00000","0163103100000010"); // INT7 NCells 2, when E>1GeV
+    cuts.AddCutCalo("00010113","24466190na012d00000","0163103100000010"); // INT7 NCells 3, when E>1GeV
   } else if (trainConfig ==806){//Comparing CellQA Config from GammaConv
     cuts.AddCutCalo("00010113","24466190na012200000","0163103100000010"); // INT7
   } else if (trainConfig ==807){//Non Lin Studies
