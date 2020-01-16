@@ -668,14 +668,14 @@ AliDielectronCutGroup* LMEECutLib::GetPairCuts(Int_t cutSet)  {
   AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
   AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut");
   AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
-  convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.1);
+  convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.14);
   convPhiVCut->AddCut(AliDielectronVarManager::kPhivPair, 0., 2.);
   convRejCut->AddCut(convMassCut);
   convRejCut->AddCut(convPhiVCut);
 
   // Mass cut to include any pairs with mass greater than 0.1 GeV
   AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
-  pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0);
+  pairMassCut->AddCut(AliDielectronVarManager::kM, 0.14, 5.0);
 
   allCuts->AddCut(convRejCut);
   allCuts->AddCut(pairMassCut);
