@@ -239,6 +239,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if( trainConfig == 51)  { // Test for PHOS (5 TeV)
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","302010708","0103603200000000","0153503000000000"); // PCM-PHOS nonLin
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","322010708","0103603200000000","0153503000000000"); // with ITS requirement
+
+  } else if( trainConfig == 60) { //pp 13 TeV EDC
+    cuts.AddCutHeavyMesonCalo("00010113","411791206f032230000","30a210708","01631031000000d0","0153503000000000"); // INT7 NL 12
+    cuts.AddCutHeavyMesonCalo("00010113","411791206f032230000","32a210708","01631031000000d0","0153503000000000"); // INT7 NL 12
+  } else if( trainConfig == 61) { //pp 13 TeV EDC Trigger
+    cuts.AddCutHeavyMesonCalo("0008e113","411791206f032230000","30a210708","01631031000000d0","0153503000000000"); // EG2 NL 12
+    cuts.AddCutHeavyMesonCalo("0008d113","411791206f032230000","30a210708","01631031000000d0","0153503000000000"); // EG1 NL 12
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //                                          OMEGA MESON
@@ -293,22 +300,24 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036d3c00000000","0153503000000000"); // 10.0
   // inv mass cut variation
   } else if( trainConfig == 117){ // pt cut variation old SPD pileup cut
-    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036c3c00000000","0153503000000000"); // 8.0
-    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036e3c00000000","0153503000000000"); // new Energy cut 5 GeV
-    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036f3c00000000","0153503000000000"); // new Energy cut 7.5 GeV
+    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036c3600000000","0153503000000000"); // 8.0
+    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036e3600000000","0153503000000000"); // new Energy cut 5 GeV
+    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036c3c00000000","0153503000000000"); // new Energy cut 7.5 GeV
+    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51070a","01036g3600000000","0153503000000000"); // new Energy cut 6.0 GeV
   } else if( trainConfig == 118){ // pt cut variation new SPD pileup cut
-    cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036c3c00000000","0153503000000000"); // 8.0
-    cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036e3c00000000","0153503000000000"); // new Energy cut 5 GeV
-    cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036f3c00000000","0153503000000000"); // new Energy cut 7.5 GeV
+    cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036c3600000000","0153503000000000"); // 8.0
+    cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036e3600000000","0153503000000000"); // new Energy cut 5 GeV
+    cuts.AddCutHeavyMesonCalo("00052c13","111113106f032230000","32c51070a","01036f3600000000","0153503000000000"); // new Energy cut 7.5 GeV
   } else if( trainConfig == 119){ // no PID cut
-    cuts.AddCutHeavyMesonCalo("00010113","111113106f032230000","32c51000a","0103603c00000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
-    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51000a","0103603c00000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
+    cuts.AddCutHeavyMesonCalo("00010113","111113106f032230000","32c51000a","0103603600000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
+    cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51000a","0103603600000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
     // ---------------------------------
     // systematic studies 7 TeV (EMCal)
     // ---------------------------------
 
     // charged pion cuts
   } else if( trainConfig == 120)   {
+    cuts.AddCutHeavyMesonCalo("00000113","1111a3104f032230000","32c51070a","0103603600000000","0153503000000000"); // with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonCalo("00000113","1111a3104f032230000","32c51070a","0103603c00000000","0153503000000000"); // with TPC refit + ITS requirement
   } else if (trainConfig == 121){ // remove pileup
     cuts.AddCutHeavyMesonCalo("00000013","1111a3104f032230000","32c51070a","0103603c00000000","0153503000000000"); // rmeove pileup
@@ -594,11 +603,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     // PHOS pp 13 TeV
   } else if(trainConfig == 400)  { // AOD and ESD Comparison
     cuts.AddCutHeavyMesonCalo("00010113","2444411044012300000","32c510708","0103603300000000","0153503000000000"); // INT7
-  } else if(trainConfig == 401)  { //Standard PHOS 13TeV
-    cuts.AddCutHeavyMesonCalo("00010113","24466510ga012200000","32c51070a","0103603300000000","0153503000000000"); // INT7
-  } else if(trainConfig == 402)  { //Standard PHOS 13TeV + PHI7
-    cuts.AddCutHeavyMesonCalo("00010113","24466510ga012200000","32c51070a","0103603300000000","0153503000000000"); // INT7
-    cuts.AddCutHeavyMesonCalo("00062113","24466510ga012200000","32c51070a","0103603300000000","0153503000000000"); // PHI7
+  } else if(trainConfig == 401)  { //Standard PHOS 13TeV MB
+    cuts.AddCutHeavyMesonCalo("00010113","24466190na012200000","32c51070a","0103603300000000","0153503000000000"); // INT7
+  } else if(trainConfig == 402)  { //Standard PHOS 13TeV PHI7
+    cuts.AddCutHeavyMesonCalo("00062113","24466190na012200000","32c51070a","0103603300000000","0153503000000000"); // PHI7
   } else if(trainConfig == 405)  { // EDC 13 TeV
     cuts.AddCutHeavyMesonCalo("00010113","411791106f032220000","32c51070a","0103603100000000","0153503000000000"); // INT7
   } else if(trainConfig == 406)  { // EDC 13 TeV + Triggers
@@ -609,8 +617,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 407)  { // EDC 13 TeV, testbeam nl
     cuts.AddCutHeavyMesonCalo("00010113","411790106f032220000","32c51070a","0103603100000000","0153503000000000"); // INT7
   } else if(trainConfig == 408)  { // EDC 13 TeV + Triggers, testbeam nl
-    cuts.AddCutHeavyMesonCalo("0008e113","411790106f032220000","32c51070a","0103603100000000","0453503000000000"); // EMC7
-    cuts.AddCutHeavyMesonCalo("0008d113","411790106f032220000","32c51070a","0103603100000000","0453503000000000"); // EMC7
+    cuts.AddCutHeavyMesonCalo("0008e113","411790106f032220000","32c51070a","0103603100000000","0453503000000000"); // EG2
+    cuts.AddCutHeavyMesonCalo("0008d113","411790106f032220000","32c51070a","0103603100000000","0453503000000000"); // EG1
   } else if(trainConfig == 409)  { // EDC 13 TeV + Triggers, no testbeam, no finetuning
     cuts.AddCutHeavyMesonCalo("00010113","411790006f032220000","32c51070a","0103603100000000","0153503000000000"); // INT7
     cuts.AddCutHeavyMesonCalo("0008e113","411790006f032220000","32c51070a","0103603100000000","0453503000000000"); // EMC7

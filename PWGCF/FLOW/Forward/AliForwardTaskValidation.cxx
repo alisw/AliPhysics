@@ -342,10 +342,15 @@ void AliForwardTaskValidation::UserExec(Option_t *)
   fUtil.dodNdeta = kFALSE;
 
   fUtil.fevent = InputEvent();
+  fUtil.fSettings = this->fSettings;
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
   if (!fSettings.esd) fUtil.fAODevent = dynamic_cast<AliAODEvent*>(this->InputEvent());
 
-  fUtil.fSettings = this->fSettings;
+  Bool_t isgoodrun = kTRUE;
+  if (!fSettings.mc){
+    isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
+  }
+  if (!isgoodrun) return;
 
   TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
   forwardTrRef.SetDirectory(0);

@@ -70,6 +70,7 @@
 #include "AliKFVertex.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDUtils.h"
+#include "AliDataFile.h"
 #include <TMVA/Tools.h>
 #include <TMVA/Reader.h>
 #include <TMVA/MethodCuts.h>
@@ -244,7 +245,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fDoVZER0ParamVertexCorr(1),
   fUseMultiplicityCut(kFALSE),
   fMultiplicityCutMin(0.),
-  fMultiplicityCutMax(99999.)
+  fMultiplicityCutMax(99999.),
+  fUseXmlFileFromCVMFS(kFALSE),
+  fXmlFileFromCVMFS("")
 {
   /// Default ctor
   //
@@ -411,7 +414,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fDoVZER0ParamVertexCorr(1),
   fUseMultiplicityCut(kFALSE),
   fMultiplicityCutMin(0.),
-  fMultiplicityCutMax(99999.)
+  fMultiplicityCutMax(99999.),
+  fUseXmlFileFromCVMFS(kFALSE),
+  fXmlFileFromCVMFS("")
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -1094,13 +1099,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
       TString variable = ((TObjString*)(tokens->At(i)))->String();
       std::string tmpvar = variable.Data();
       inputNamesVec.push_back(tmpvar);
-      if (fUseXmlWeightsFile) fReader->AddVariable(variable.Data(), &fVarsTMVA[i]);
+      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) fReader->AddVariable(variable.Data(), &fVarsTMVA[i]);
     }      
     delete tokens;
     TObjArray *tokensSpectators = fNamesTMVAVarSpectators.Tokenize(",");
     for(Int_t i = 0; i < tokensSpectators->GetEntries(); i++){
       TString variable = ((TObjString*)(tokensSpectators->At(i)))->String();
-      if (fUseXmlWeightsFile) fReader->AddSpectator(variable.Data(), &fVarsTMVASpectators[i]);
+      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) fReader->AddSpectator(variable.Data(), &fVarsTMVASpectators[i]);
     }
     delete tokensSpectators;
     if (fUseWeightsLibrary) {
@@ -1111,6 +1116,14 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     }
     
     if (fUseXmlWeightsFile) fReader->BookMVA("BDT method", fXmlWeightsFile);
+
+    if (fUseXmlFileFromCVMFS){
+       TString pathToFileCVMFS = AliDataFile::GetFileName(fXmlFileFromCVMFS.Data());
+       if (pathToFileCVMFS.IsNull()){
+          AliFatal("Cannot access data files from CVMFS");
+       }
+       fReader->BookMVA("BDT method", pathToFileCVMFS); 
+    }
   }
   
   return;
@@ -2232,14 +2245,14 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       
       Double_t BDTResponse = -1;
       Double_t tmva = -1;
-      if (fUseXmlWeightsFile) tmva = fReader->EvaluateMVA("BDT method");
+      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) tmva = fReader->EvaluateMVA("BDT method");
       if (fUseWeightsLibrary) BDTResponse = fBDTReader->GetMvaValue(inputVars);
       //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc);
       //Printf("tmva = %f", tmva); 
       fBDTHisto->Fill(BDTResponse, invmassLc); 
       fBDTHistoTMVA->Fill(tmva, invmassLc); 
       if (fDebugHistograms) {
-	if (fUseXmlWeightsFile) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
+	if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
 	fBDTHistoVstImpParBach->Fill(BDTResponse, part->Getd0Prong(0));
 	fBDTHistoVstImpParV0->Fill(BDTResponse, part->Getd0Prong(1));

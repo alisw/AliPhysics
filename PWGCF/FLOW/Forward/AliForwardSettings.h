@@ -18,7 +18,9 @@ class AliForwardSettings : public TObject {
 
  public:
   AliForwardSettings();
-
+  //~AliForwardSettings();                                       // destructor
+  //AliForwardSettings(const AliForwardSettings &);             // copy constructor
+  //AliForwardSettings & operator=(const AliForwardSettings &); // assignment
   // Lower bound phi acceptance (should always be 0)
   Double_t fPhiAcceptanceLowEdge;
   // Upper bound phi acceptance (should always be 2pi)
@@ -68,6 +70,7 @@ class AliForwardSettings : public TObject {
   Bool_t useITS;
   Bool_t use_primaries_cen;
   Bool_t use_primaries_fwd;
+  Bool_t use_primaries_fwdref;
   Bool_t useEventcuts;
   TString centrality_estimator;
   Bool_t etagap;
@@ -228,6 +231,12 @@ class AliForwardSettings : public TObject {
 
   Int_t nua_runnumber;
   TH3F* correct_nua_mc;
+  Int_t run_list;
+  
+  Bool_t second_analysis;
+  Bool_t SC_analysis;
+  Bool_t decorr_analysis;
+  Bool_t normal_analysis;
 
 private:
   ClassDef(AliForwardSettings, 1);

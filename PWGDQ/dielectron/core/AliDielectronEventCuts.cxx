@@ -55,6 +55,7 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fCentMin(1.),
   fCentMax(0.),
   fRun2(kFALSE),
+  fEstimator("V0M"),
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
@@ -68,8 +69,9 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fkVertex(0x0),
   fkVertexAOD(0x0),
   fRequireAliEventCuts(0),
-  fRequireTimeRangeCutForLHC18r(kFALSE),
+  fRequireTimeRangeCut(kFALSE),
   fAODeventCuts(),
+	fTimeRangeCut(),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -98,6 +100,7 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fCentMin(1.),
   fCentMax(0.),
   fRun2(kFALSE),
+  fEstimator("V0M"),
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
@@ -111,8 +114,9 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fkVertex(0x0),
   fkVertexAOD(0x0),
   fRequireAliEventCuts(0),
-  fRequireTimeRangeCutForLHC18r(kFALSE),
+  fRequireTimeRangeCut(kFALSE),
   fAODeventCuts(),
+	fTimeRangeCut(),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -164,7 +168,7 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
     if(fRun2==kFALSE){
       AliCentrality *centrality=ev->GetCentrality();
       Double_t centralityF=-1;
-      if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
+      if (centrality) centralityF = centrality->GetCentralityPercentile(fEstimator);
       if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
     }
     else if(fRun2==kTRUE){
@@ -172,7 +176,7 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
       //new centrality
       AliMultSelection *multSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
       if ( multSelection ){
-	centralityF = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+	centralityF = multSelection->GetMultiplicityPercentile(fEstimator,kFALSE);
 	if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
       } else{
 	AliDebug(10,"Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
@@ -298,6 +302,10 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
       }
   }
 
+	fTimeRangeCut.InitFromEvent(ev);
+	Bool_t IsBadTimeRangeTPC = fTimeRangeCut.CutEvent(ev);
+	if(fRequireTimeRangeCut && IsBadTimeRangeTPC) return kFALSE;
+
   return kTRUE;
 }
 //______________________________________________
@@ -353,13 +361,13 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
     Double_t centralityF=-1;
     if(fRun2==kFALSE){
 
-      if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
+      if (centrality) centralityF = centrality->GetCentralityPercentile(fEstimator);
     }else if(fRun2==kTRUE){
 
       //new centrality
       AliMultSelection *multSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
       if ( multSelection ){
-	centralityF = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+	centralityF = multSelection->GetMultiplicityPercentile(fEstimator,kFALSE);
       } else{
 	AliDebug(10,"Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
 	}
@@ -471,17 +479,17 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   
   // cut on AliEventCuts (consistency to Run 1 Pb-Pb LMee analysis)
   if(fRequireAliEventCuts){
-    if (fRequireTimeRangeCutForLHC18r){
-      fAODeventCuts.UseTimeRangeCut();
-    }
     if (!fAODeventCuts.AcceptEvent(ev)){
       return kFALSE;
     }
   }
 
+	fTimeRangeCut.InitFromEvent(ev);
+	Bool_t IsBadTimeRangeTPC = fTimeRangeCut.CutEvent(ev);
+	if(fRequireTimeRangeCut && IsBadTimeRangeTPC) return kFALSE;
+
   return kTRUE;
 }
-
 //______________________________________________
 void AliDielectronEventCuts::SetMinCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary)
 {

@@ -176,6 +176,7 @@ class AliSigma0PhotonCuts : public TObject {
   TH2F *fHistDCArBefore;              //!
   TH2F *fHistDCArAfter;               //!
   TH2F *fHistDCAzBefore;              //!
+  TH2F *fHistDCAzAfterOthersBefore;   //!
   TH2F *fHistDCAzAfter;               //!
   TH2F *fHistDCA;                     //!
   TH2F *fHistDecayLength;             //!
@@ -188,6 +189,10 @@ class AliSigma0PhotonCuts : public TObject {
   TH1F* fHistMCTruthPhotonSigmaPt;    //;
   TH1F* fHistMCPhotonPt;              //;
   TH1F* fHistMCPhotonSigmaPt;         //;
+  TH1F* fHistMCTruthPhotonP;          //;
+  TH1F* fHistMCTruthPhotonSigmaP;     //;
+  TH1F* fHistMCPhotonP;               //;
+  TH1F* fHistMCPhotonSigmaP;          //;
 
   TH1F *fHistSingleParticleCuts[2];                        //!
   TH1F *fHistSingleParticlePt[2];                          //!
@@ -211,7 +216,7 @@ class AliSigma0PhotonCuts : public TObject {
   AliPIDResponse *fPIDResponse;  //!  pid response
 
  private:
-ClassDef(AliSigma0PhotonCuts, 7)
+ClassDef(AliSigma0PhotonCuts, 8)
 };
 
 #endif

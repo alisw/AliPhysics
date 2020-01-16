@@ -22,12 +22,16 @@
 #include "AliFMDStripIndex.h"
 #include "AliFMDEncodedEdx.h"
 #include "AliFMDMCTrackDensity.h"
-#include <valarray>
+
 class AliForwardFlowUtil : public TObject {
   typedef std::vector< Double_t > edgeContainer;
 
  public:
   AliForwardFlowUtil();
+  // ~AliForwardFlowUtil();                                       // destructor
+  // AliForwardFlowUtil(const AliForwardFlowUtil &L);             // copy constructor
+  // AliForwardFlowUtil & operator=(const AliForwardFlowUtil &L); // assignment
+  
   Int_t GetNUARunNumber(Int_t runnumber);
   Bool_t IsGoodRun(Int_t runnumber);
   Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc,TH2D* hOutliers);
@@ -140,6 +144,6 @@ class AliForwardFlowUtil : public TObject {
 
 
 private:
-  ClassDef(AliForwardFlowUtil, 2);
+  ClassDef(AliForwardFlowUtil, 1);
 };
 #endif

@@ -628,6 +628,7 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
 
           if (partMotherV0 == partMotherPhoton && TMath::Abs(partMotherV0->GetPdgCode() == fPDG)) {
             sigma.SetMCParticle(partMotherV0, fMCEvent);
+            sigma.SetMCPDGCode(fPDG);
             fHistMCV0Mother->Fill(invMass, TMath::Abs(partMotherV0->GetPdgCode()));
 
             fHistMCV0Pt->Fill(pT);

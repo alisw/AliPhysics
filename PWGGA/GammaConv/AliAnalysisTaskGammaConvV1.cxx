@@ -113,6 +113,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherInvMassPtIso(NULL),
   fHistoMotherInvMassPtNonIso(NULL),
+  fHistoMotherInvMassPtMCRecIsoTrueNonIso(NULL),
+  fHistoMotherInvMassPtMCRecNonIsoTrueIso(NULL),
   fHistoMotherEisoPt(NULL),
   fHistoMotherRisoPt(NULL),
   fHistoMotherNtracksIsoPt(NULL),
@@ -409,6 +411,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoMotherInvMassPt(NULL),
   fHistoMotherInvMassPtIso(NULL),
   fHistoMotherInvMassPtNonIso(NULL),
+  fHistoMotherInvMassPtMCRecIsoTrueNonIso(NULL),
+  fHistoMotherInvMassPtMCRecNonIsoTrueIso(NULL),
   fHistoMotherEisoPt(NULL),
   fHistoMotherRisoPt(NULL),
   fHistoMotherNtracksIsoPt(NULL),
@@ -1102,6 +1106,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoMotherEisoPt              = new TH2F*[fnCuts];
     fHistoMotherRisoPt              = new TH2F*[fnCuts];
     fHistoMotherNtracksIsoPt        = new TH2F*[fnCuts];
+    if (fIsMC > 0){
+      fHistoMotherInvMassPtMCRecIsoTrueNonIso     = new TH2F*[fnCuts];
+      fHistoMotherInvMassPtMCRecNonIsoTrueIso     = new TH2F*[fnCuts];
+    }
   }
   if(fDoJetAnalysis){
     fJetHistograms            = new TList*[fnCuts];
@@ -1420,12 +1428,20 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoMotherRisoPt[iCut]);
         fHistoMotherNtracksIsoPt[iCut]   = new TH2F("ESD_Mother_NTracksIso_Pt", "ESD_Mother_NTracksIso_Pt", 100, 0, 100, nBinsPt, arrPtBinning);
         fESDList[iCut]->Add(fHistoMotherNtracksIsoPt[iCut]);
+        if (fIsMC > 0 ){
+          fHistoMotherInvMassPtMCRecIsoTrueNonIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_MCRecIsoTrueNonIso", "ESD_Mother_InvMass_Pt_MCRecIsoTrueNonIso", 800, 0, 0.8, nBinsPt, arrPtBinning);
+          fESDList[iCut]->Add(fHistoMotherInvMassPtMCRecIsoTrueNonIso[iCut]);
+          fHistoMotherInvMassPtMCRecNonIsoTrueIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_MCRecNonIsoTrueIso", "ESD_Mother_InvMass_Pt_MCRecNonIsoTrueIso", 800, 0, 0.8, nBinsPt, arrPtBinning);
+          fESDList[iCut]->Add(fHistoMotherInvMassPtMCRecNonIsoTrueIso[iCut]);
+        }
         if (fIsMC > 1 ){
           fHistoMotherInvMassPtIso[iCut]->Sumw2();
           fHistoMotherInvMassPtNonIso[iCut]->Sumw2();
           fHistoMotherEisoPt[iCut]->Sumw2();
           fHistoMotherRisoPt[iCut]->Sumw2();
           fHistoMotherNtracksIsoPt[iCut]->Sumw2();
+          fHistoMotherInvMassPtMCRecIsoTrueNonIso[iCut]->Sumw2();
+          fHistoMotherInvMassPtMCRecNonIsoTrueIso[iCut]->Sumw2();
         }
       }
 
@@ -4074,6 +4090,38 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
               }else{
                 //pi0 is not isolated
                 fHistoMotherInvMassPtNonIso[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+              }
+              if(fIsMC>0){
+                //Check for MC true if the pi0 should be isolated or not
+                Double_t Iso_E_Pi0_True = 0;
+                Iso_R_Pi0 = 0;
+                //loop over all charged tracks
+                TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+                if (AODMCTrackArray == NULL) continue;
+                for(Long_t iTracks = 0; iTracks < AODMCTrackArray->GetEntriesFast(); iTracks++) {
+                  AliAODMCParticle* curTrack = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(iTracks));
+                  if (!curTrack) continue;
+                  if (!curTrack->IsPhysicalPrimary()) continue;
+                  if (!curTrack->Pt()) continue;
+                  if(curTrack->Pt()<0.15) continue;
+                  if(TMath::Abs(curTrack->Eta())>0.8) continue;
+                  Double_t Iso_DeltaEta = curTrack->Eta()-pi0cand->Eta();
+                  Double_t Iso_DeltaPhi = abs(curTrack->Phi()-pi0cand->Phi());
+                  if(Iso_DeltaPhi > M_PI) {
+                    Iso_DeltaPhi = 2*M_PI - Iso_DeltaPhi;
+                  }
+                  Iso_R_Pi0 = TMath::Sqrt(pow((Iso_DeltaEta),2)+pow((Iso_DeltaPhi),2));
+                  if(Iso_R_Pi0 < 0.4){
+                    Iso_E_Pi0_True += curTrack->E();
+                  }
+                }
+                if(Iso_E_Pi0 < 2 && Iso_E_Pi0_True > 2){
+                  //pi0 rec is isolated, but using true particles not
+                  fHistoMotherInvMassPtMCRecIsoTrueNonIso[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                }else if(Iso_E_Pi0 > 2 && Iso_E_Pi0_True < 2){
+                  //pi0 rec is not isolated, but using true particles it is
+                  fHistoMotherInvMassPtMCRecNonIsoTrueIso[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                }
               }
             }
             if(fDoJetAnalysis){

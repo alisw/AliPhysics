@@ -2003,9 +2003,14 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       if (fUseMinEnergy)
         if(cluster->E() < fMinEnergy)
           failed = kTRUE;
-      if (fUseNCells)
-        if(cluster->GetNCells() < fMinNCells)
-          failed = kTRUE;
+      if (fUseNCells == 1) {
+          if (cluster->GetNCells() < fMinNCells)
+            failed = kTRUE;
+      // special case for PHOS: only apply Ncell cut for clusters with a minimum energy of 1 GeV
+      } else if (fUseNCells == 2){
+          if (cluster->GetNCells() < fMinNCells && cluster->E() > 1)
+            failed = kTRUE;
+      }
       if (fUseNLM)
         if( nLM < fMinNLM || nLM > fMaxNLM )
           failed = kTRUE;
@@ -2020,6 +2025,10 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           if( cluster->GetM02()< CalculateMinM02(fMinM02CutNr, cluster->E()) ||
               cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()) )
             failedM02  = kTRUE;
+        // special case for PHOS: only apply M02 cut for clusters with a minimum energy of 1 GeV
+        } else if (fUseM02 == 3){
+            if( (cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02)  && cluster->E() > 1 )
+              failedM02  = kTRUE;
         }
         if (fUseM20)
           if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 )
@@ -5076,6 +5085,17 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=6;
     break;
 
+  // special cases for PHOS: only use the Ncell cut for clusters with a minimal energy
+  // if the first number is 1, the chosen cut will only be used if Ecluster > 1 GeV
+  case 12: // c
+    if (!fUseNCells) fUseNCells=2;
+    fMinNCells=2;
+    break;
+  case 13: // d
+    if (!fUseNCells) fUseNCells=2;
+    fMinNCells=3;
+    break;
+
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
     return kFALSE;
@@ -5421,6 +5441,20 @@ Bool_t AliCaloPhotonCuts::SetMinM02(Int_t minM02)
   case 3:
     if (!fUseM02) fUseM02=1;
     fMinM02=0.2;
+    break;
+
+  // special PHOS cases: apply cut only if the cluster energy is bigger than 1 GeV
+  case 11: // b
+    if (!fUseM02) fUseM02=3;
+    fMinM02 = 0.002;
+    break;
+  case 12: // c
+    if (!fUseM02) fUseM02=3;
+    fMinM02 = 0.1;
+    break;
+  case 13: // d
+    if (!fUseM02) fUseM02=3;
+    fMinM02 = 0.2;
     break;
 
   default:
@@ -5850,31 +5884,21 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= 0.9930726691;
           }
         //pp 13 TeV LHC16 || LHC17 || LHC18
-        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
-          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ || fCurrentMC==kPP13T16P1JJTrigger || fCurrentMC==kPP13T17P1JJTrigger || fCurrentMC==kPP13T18P1JJTrigger){
           if(fClusterType==2) { //13 TeV PCM-PHOS Exponential function fitted
             // energy /= FunctionNL_kSDM(energy, 0.964058, -2.46552, -0.384301); //old
             energy /= FunctionNL_kSDM(energy, 0.966115, -2.7256, -1.02957, 1.0);
             energy /= 1.022224;
-        }
-        if(fClusterType==4){
+          }
+          if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
             energy /= FunctionNL_DExp(energy, 1.0159084018,1.2750123076,-5.3386138658,1.0298030020,0.1990324073,-3.2530714859,1.0000000000,1.0000000000);
-        }
-
-      } else if ( fCurrentMC==kPP13T17b1JJdecay || fCurrentMC==kPP13T17c1JJdecay){
-        if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
-        if(fClusterType==2) energy /= FunctionNL_kSDM(energy, 0.964058, -2.46552, -0.384301);
-        if(fClusterType==4){
-          energy /= FunctionNL_kSDM(energy, 0.962843, -3.61132, -0.345312);
-          energy /= FunctionNL_kSDM(energy, 0.983005, -5.93999, -0.403866);
-          energy /= 0.9960798321*1.0014768246;
-        }
+          }
 
         } else if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
           if(fClusterType==2) { //13 TeV Low-B PCM-PHOS Exponential function fitted
-              energy /= FunctionNL_kSDM(energy, 1.00571, -2.03882, -2.12252);
+              energy /= FunctionNL_kSDM(energy, 1.00892, -3.9119, -0.339742);
           }
           if(fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
@@ -5884,7 +5908,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 
       } else if (isMC == 0){  // Test Beam Non Lin applied on data
         if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow ){
-          if(fClusterType==4){
+          if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
           } else if(fClusterType==2) {
             energy /= 1.022224;
@@ -5969,32 +5993,23 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.608886);
           if(fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
-              energy /= FunctionNL_kSDM(energy, 1.00014,-4.23453,-0.295388);
+              energy /= FunctionNL_kSDM(energy, 1.00714,-3.65528,-0.199527);
           }
-        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
-          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.57881);
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ || fCurrentMC==kPP13T16P1JJTrigger || fCurrentMC==kPP13T17P1JJTrigger || fCurrentMC==kPP13T18P1JJTrigger){
           if(fClusterType==2) { //13 TeV PHOS-PHOS Exponential function fitted
               //energy /= FunctionNL_kSDM(energy, 0.967918, -2.81051, -1.04303, 1.0); //old
               energy /= FunctionNL_kSDM(energy, 0.972774, -2.77133, -1.39596, 1.0);
               energy /= 1.022224;
           }
-          if(fClusterType==4){
+          if(fClusterType==1 || fClusterType==3 || fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
               energy /= FunctionNL_kSDM(energy, 1.00014,-4.23453,-0.295388);
-          }
-
-        } else if ( fCurrentMC==kPP13T17b1JJdecay || fCurrentMC==kPP13T17c1JJdecay){
-          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.57881);
-          if(fClusterType==4){
-            energy /= FunctionNL_kSDM(energy, 0.955163, -3.4446, -0.696097);
-            energy /= (FunctionNL_DExp(energy, 1.0027291184, 1.1388145144, -1.8266079019, 1.0093458077, 0.7777909787, -2.1147219305));
-            energy /= 0.9992444015*0.9985780936;
           }
 
         } else fPeriodNameAvailable = kFALSE;
       } else if (isMC == 0){  // Test Beam Non Lin applied on data
         if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow ){
-          if(fClusterType==4){
+          if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
           } else if(fClusterType==2) {
             energy /= 1.022224;
@@ -6105,7 +6120,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     case 19:
       if(isMC>0){
          // pp 13 TeV PCM-PHOS NL with PHOS finetuning
-         if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
+         if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ || fCurrentMC==kPP13T16P1JJTrigger  || fCurrentMC==kPP13T17P1JJTrigger || fCurrentMC==kPP13T18P1JJTrigger){
            if(fClusterType==2) { //13 TeV PCM-PHOS Exponential function fitted, corrected by PHOS
                energy /= FunctionNL_kSDM(energy, 0.966115, -2.7256, -1.02957, 1.0);
                energy /= 1.022224;
@@ -6202,23 +6217,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= FunctionNL_DPOW(energy, 1.1105555600, -0.1266067088, -0.0800000497, 1.1047136553, -0.1141567995, -0.1573142879);
           }
         //pp 13 TeV LHC16 || LHC17 || LHC18
-        } else if ( fCurrentMC==kPP13T16P1Pyt8  || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ ){
-          if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0496452471, -0.1047424135, -0.2108759639, 1.1740021856, -0.2000000000, -0.1917378883));
+        } else if ( fCurrentMC==kPP13T16P1Pyt8  || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ  || fCurrentMC==kPP13T16P1JJTrigger  || fCurrentMC==kPP13T17P1JJTrigger || fCurrentMC==kPP13T18P1JJTrigger){
           if(fClusterType==2) energy /= (FunctionNL_DPOW(energy, 0.9893461252, 0.0541088219, -0.4999999904, 1.0204701327, 0.0010000000, 1.7769590236));
-          if(fClusterType==4){
+          if(fClusterType==1 || fClusterType==3 || fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
               energy /= (FunctionNL_DExp(energy, 1.0165527931, 1.1409808600, -5.0616465676, 1.0294887393, 0.2032383394, -3.2609652697));
             // energy /= (FunctionNL_DExp(energy, 0.9788415117, 0.4869371162, -2.9494665297, 1.0426379269, 0.3673023840, -2.3952835331));
             // energy /= 0.9980830099;
-          }
-
-        } else if (fCurrentMC==kPP13T17b1JJdecay || fCurrentMC==kPP13T17c1JJdecay){
-          if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0496452471, -0.1047424135, -0.2108759639, 1.1740021856, -0.2000000000, -0.1917378883));
-          if(fClusterType==2) energy /= (FunctionNL_DPOW(energy, 0.9893461252, 0.0541088219, -0.4999999904, 1.0204701327, 0.0010000000, 1.7769590236));
-          if(fClusterType==4){
-            energy /= (FunctionNL_DPOW(energy, 0.9985538025, -0.0199057504, -0.4999999932, 1.0850326305, -0.0883152796, -0.2000019784));
-            energy /= (FunctionNL_DPOW(energy, 1.1611070447, -0.1999999999, -0.1636619501, 1.1769157997, -0.2000000000, -0.1684456914));
-            energy /= 0.9962185073*1.0012448945;
           }
 
         } else if ( fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB  || fCurrentMC==kPP13T18P1Pyt8LowB){
@@ -6226,13 +6231,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==2) energy /= (FunctionNL_DPOW(energy, 1.0167588250, 0.0501002307, -0.8336787497, 0.9500009312, 0.0944118922, -0.1043983134));
           if(fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
-              energy /= (FunctionNL_DExp(energy, 1.0165527931, 1.1409808600, -5.0616465676, 1.0294887393, 0.2032383394, -3.2609652697));
+              energy /= (FunctionNL_DExp(energy, 1.0152044323, 1.1015035488, -3.5544630200, 1.0030278679, 0.6774469194, -3.2423591684));
           }
         } else fPeriodNameAvailable = kFALSE;
 
       } else if (isMC == 0){  // Test Beam Non Lin applied on data
         if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV  || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow){
-          if(fClusterType==4){
+          if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
           }
         }
@@ -6299,9 +6304,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==3) energy /= (FunctionNL_DPOW(energy, 0.9629798154, -0.0178058455, -0.4999999880, 1.1467423891, -0.1999980199, -0.1753999427));
 
         //pp 13 TeV LHC16 || LHC17 || LHC18
-        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
-          if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0187401756, -0.0857332791, -0.5000000000, 1.1585209386, -0.1999999989, -0.2646540338));
-          if(fClusterType==4){
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ || fCurrentMC==kPP13T16P1JJTrigger  || fCurrentMC==kPP13T17P1JJTrigger || fCurrentMC==kPP13T18P1JJTrigger){
+          if(fClusterType==1 || fClusterType==3 || fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
               energy /= (FunctionNL_DExp(energy, 1.0081025411, 1.6128870550, -2.2169593027, 1.0059639295, 1.0337987081, -2.4897316300));
           }
@@ -6310,22 +6314,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0187401756, -0.0857332791, -0.5000000000, 1.1585209386, -0.1999999989, -0.2646540338));
           if(fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
-              energy /= (FunctionNL_DExp(energy, 1.0081025411, 1.6128870550, -2.2169593027, 1.0059639295, 1.0337987081, -2.4897316300));
-          }
-
-        } else if ( fCurrentMC==kPP13T17b1JJdecay || fCurrentMC==kPP13T17c1JJdecay){
-          if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0187401756, -0.0857332791, -0.5000000000, 1.1585209386, -0.1999999989, -0.2646540338));
-          if(fClusterType==4){
-            energy /= (FunctionNL_DPOW(energy, 1.0145205998, -0.0860364686, -0.4999999971, 1.0894446295, -0.1383339489, -0.3858694211));
-            energy /= (FunctionNL_DPOW(energy, 1.0382621253, -0.0868683974, -0.5000000000, 1.0501787784, -0.0955612453, -0.4999999995));
-            energy /= (FunctionNL_DExp(energy, 1.0094852128, 0.7483975637, -2.0882313043, 1.0103053582, 0.6088833954, -2.3584735525));
-
+              energy /= (FunctionNL_DExp(energy, 1.0027689964, 1.4242237614, -2.3044616171, 0.9872275956, 0.8291951277, -2.5477399129));
           }
 
         } else fPeriodNameAvailable = kFALSE;
       } else if (isMC == 0){  // Test Beam Non Lin applied on data
         if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV  || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow){
-          if(fClusterType==4){
+          if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
           }
         }
@@ -6372,7 +6367,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // PCM-EDC based nonlinearity kSDM
     case 31:
       // apply testbeam nonlinearity (same as case 1) and further fine tuning
-      if(fClusterType==1 || fClusterType==4){
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
           // if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a || fCurrentMC==kPP8T12P2Pyt8 || fCurrentMC==kPP8T12P2Pho || fCurrentMC==kPP8T12P2JJ) {
@@ -6388,7 +6383,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // EDC based nonlinearity kSDM
     case 32:
       // apply testbeam nonlinearity (same as case 1) and further fine tuning
-      if(fClusterType==1 || fClusterType==4){
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
         } else {
@@ -6399,7 +6394,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // PCM-EDC based nonlinearity DExp or DPow
     case 33:
       // apply testbeam nonlinearity (same as case 1) and further fine tuning
-      if(fClusterType==1 || fClusterType==4){
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
           // energy /= (FunctionNL_DExp(energy, 1.0246042651, 0.6505466585, -3.8786840593, 1.0609702616, 0.1971682118, -2.8581050225));
@@ -6414,7 +6409,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // EDC based nonlinearity DExp or DPow
     case 34:
       // apply testbeam nonlinearity (same as case 1) and further fine tuning
-      if(fClusterType==1 || fClusterType==4){
+      if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
           // energy /= (FunctionNL_DPOW(energy, 1.0433754550, -0.0429771943, -0.4999999999, 1.1947967487, -0.1995689867, -0.0998279631));
@@ -6451,7 +6446,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       } else if (isMC == 0){
         //pp 13 TeV LHC16 || LHC17 || LHC18
         if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
-          if(fClusterType==4){
+          if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_ExpExp(energy, 1.0469170329, 0.2974710295, -2.4204052267, 7.2038176960);
           }
         }
@@ -6783,10 +6778,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       } else if (fClusterType == 2) { // PHOS case: shift data and MC to pi0 mass (Calo-Calo)
           if ( fCurrentMC == kPPb5T13P4DPMJet ){ // RUN1, MB MC
             energy /= FunctionNL_SPOW(energy, 1.00132, -0.00598632, -2.167);
+          } else if ( fCurrentMC == kPPb5T13P4JJ ) { // RUN1, JJ MC
+            energy /= FunctionNL_SExp(energy, 1.00355, 756.545, -20.3831, -1.);
           } else if ( fCurrentMC == k13pPb5023GeV ) { // RUN1, data
             energy /= FunctionNL_SPOW(energy, 0.997167, -0.000759949, -5.04513);
           } else if ( fCurrentMC == kPPb5T16DPMJet ) { // RUN2, MB MC
             energy /= FunctionNL_SExp(energy, 0.991632, 1.22134, -2.97826, -1.);
+          } else if ( fCurrentMC == k17g8a ) { // RUN2, JJ MC
+            energy /= 1.0145754170;
           } else if ( fCurrentMC == k16pPb5023GeV ) { // RUN2, data
             energy /= FunctionNL_SExp(energy, 1.02521, 0.59747, -4.17083);
           }
@@ -6801,10 +6800,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       } else if (fClusterType == 2) { // PHOS case: shift data and MC to pi0 mass (PCM-Calo)
           if ( fCurrentMC == kPPb5T13P4DPMJet ){ // RUN1, MB MC
             energy /= FunctionNL_SExp(energy, 1.00703, 16753.6, -23418.6, -1);
+          } else if ( fCurrentMC == kPPb5T13P4JJ ) { // RUN1, JJ MC
+            energy /= FunctionNL_SExp(energy, 0.996626, 1.99301, -2.33312, -1.);
           } else if ( fCurrentMC == k13pPb5023GeV ) { // RUN1, data
             energy /= FunctionNL_SExp(energy, 1.0128, 11.7606, 1.10537, -1.);
           } else if ( fCurrentMC == kPPb5T16DPMJet ) { // RUN2, MB MC
             energy /= FunctionNL_SPOW(energy, 0.965941, 0.0458828, -0.5);
+          } else if ( fCurrentMC == k17g8a ) { // RUN2, JJ MC
+            energy /= FunctionNL_SExp(energy, 0.983876, 0.851007, -3.41359, -1);
           } else if ( fCurrentMC == k16pPb5023GeV ) { // RUN2, data
             energy /= 1.0268;
           }
@@ -7314,7 +7317,7 @@ Float_t AliCaloPhotonCuts::FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Fl
   else
     return 1.;
 }
-Float_t     FunctionNL_SExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3){
+Float_t AliCaloPhotonCuts::FunctionNL_SExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3){
   return ( p0 - p3 * TMath::Exp( - p1 * e + p2 ) );
 }
 
@@ -7640,6 +7643,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17f8k") == 0 )     return kPP13T16P1JJ;
   else if ( namePeriod.CompareTo("LHC16P1JJLowB") == 0 ||
             namePeriod.CompareTo("LHC17f8b") == 0  )    return kPP13T16P1JJLowB;
+  //pp 13 TeV LHC16 JJ MC with high enrgy gamma in EMC, DMC, PHOS acc.
+  else if ( namePeriod.CompareTo("LHC17i3b1") == 0 ||
+            namePeriod.CompareTo("LHC17i3b2") == 0 ||
+            namePeriod.CompareTo("LHC17i3c1") == 0 ||
+            namePeriod.CompareTo("LHC17i3c2") == 0 ) return kPP13T16P1JJTrigger;
   // pp 13 TeV 2016 HF prods
   else if ( namePeriod.CompareTo("LHC17h8a") == 0 )     return k17h8a;
   else if ( namePeriod.CompareTo("LHC17h8b") == 0 )     return k17h8b;
@@ -7704,8 +7712,10 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17h3") == 0 )      return kPP13T17P1Pyt8LowB;
   else if ( namePeriod.CompareTo("LHC17P1JJ") == 0 ||
             namePeriod.CompareTo("LHC18f5") == 0 )      return kPP13T17P1JJ;
-  else if ( namePeriod.CompareTo("LHC18l6b1") == 0 )    return kPP13T17b1JJdecay;
-  else if ( namePeriod.CompareTo("LHC18l6c1") == 0 )    return kPP13T17c1JJdecay;
+  else if ( namePeriod.CompareTo("LHC18l6b1") == 0 ||
+            namePeriod.CompareTo("LHC18l6b2") == 0 ||
+            namePeriod.CompareTo("LHC18l6c1") == 0 ||
+            namePeriod.CompareTo("LHC18l6c2") == 0 )    return kPP13T17P1JJTrigger;
   // XeXe 5.44 TeV 2017 MB MC
   else if ( namePeriod.CompareTo("LHC17j7") == 0 ||
             namePeriod.CompareTo("LHC18d2") == 0 ||
@@ -7723,6 +7733,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   //pp 13 TeV LHC18 JJ MCs
   else if ( namePeriod.CompareTo("LHC18P1JJ") == 0 ||
             namePeriod.Contains("LHC19d3") )            return kPP13T18P1JJ;
+  //pp 13 TeV LHC18 JJ MC with high enrgy gamma in EMC, DMC, PHOS acc.
+  else if ( namePeriod.CompareTo("LHC19i3b1") == 0 ||
+            namePeriod.CompareTo("LHC19i3b2") == 0 ||
+            namePeriod.CompareTo("LHC19i3c1") == 0 ||
+            namePeriod.CompareTo("LHC19i3c2") == 0 ) return kPP13T18P1JJTrigger;
   // PbPb 5 TeV 2015 Gamma-Jet MC
   else if ( namePeriod.CompareTo("LHC18b11c") == 0 ) return  kLHC18b11c;
 

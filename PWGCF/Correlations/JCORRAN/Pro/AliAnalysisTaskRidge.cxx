@@ -203,7 +203,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D ltpttrackbin = {
 	0.2, 3.0, 4.0, 5.0, 6.0, 7.0, 9.0, 13.0, 20.0};
 	Double1D jetptbin = {
-	0, 20, 40, 60, 80, 100, 1e5 };
+	0, 10, 20, 30, 40, 50, 60, 80, 100, 1e5 };
 
 	binLtpt = AxisVar("LPPt",ltpttrackbin);
 	binJetpT = AxisVar("JetPt",jetptbin);
@@ -507,7 +507,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 	TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(1);
 	AliJJet *Ljet = dynamic_cast<AliJJet*>( fjets->At(0) );
-        AliJJet *subLjet = dynamic_cast<AliJJet*>( fjets->At(1) );
 	
 	fJetPt = 0.0;
 	double JetEta = -10.0;
@@ -517,6 +516,21 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		fJetPt = Ljet->Pt();
 		JetEta = Ljet->Eta();
 		JetPhi = Ljet->Phi();
+	}
+
+	AliJJet* Cjet;
+	for(int i=0;i<fjets->GetEntries();i++){
+		Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
+		if( ( fJetPt <  Cjet->Pt() ) ){
+			fJetPt = Cjet->Pt();
+			JetEta = Cjet->Eta();
+			JetPhi = Cjet->Phi();
+		}
+		if( fabs( JetEta ) > 0.4 ){
+			fJetPt = 0.0;
+			JetEta = -10.0;
+			JetPhi = -10.0;
+		}
 	}
 
         const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC() ;
@@ -646,7 +660,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	        fHistos->FillTH1("hZvtx",fZ,1);
 	}
 
-	if( fabs( JetEta ) > 0.5 ){
+	if( fabs( JetEta ) > 0.4 ){
 		fJetPt = 0.0;
 	}
 

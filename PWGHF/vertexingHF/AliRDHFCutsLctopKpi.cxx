@@ -1450,4 +1450,83 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPIDProb(AliAODRecoDecayHF* obj) {
   return returnvalue;
 
 }
+//--------------------------------
+Double_t AliRDHFCutsLctopKpi::ComputeInvMass3tracks(AliAODTrack* track1, AliAODTrack* track2, AliAODTrack* track3, Int_t pdg1, Int_t pdg2, Int_t pdg3) {
+
+  Double_t mass1 = TDatabasePDG::Instance()->GetParticle(pdg1)->Mass();
+  Double_t mass2 = TDatabasePDG::Instance()->GetParticle(pdg2)->Mass();
+  Double_t mass3 = TDatabasePDG::Instance()->GetParticle(pdg3)->Mass();
+
+  Double_t px1 = track1->Px();
+  Double_t py1 = track1->Py();
+  Double_t pz1 = track1->Pz();
+  Double_t px2 = track2->Px();
+  Double_t py2 = track2->Py();
+  Double_t pz2 = track2->Pz();
+  Double_t px12= px1+px2;
+  Double_t py12= py1+py2;
+  Double_t pz12= pz1+pz2;
+
+  Double_t px3 = track3->Px();
+  Double_t py3 = track3->Py();
+  Double_t pz3 = track3->Pz();
+
+  Double_t E123;
+  Double_t E12 = TMath::Sqrt(mass1*mass1+px1*px1+py1*py1+pz1*pz1)+TMath::Sqrt(mass2*mass2+px2*px2+py2*py2+pz2*pz2);
+  if(E12*E12-((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2))<0) return false;
+  Double_t mass12= TMath::Sqrt(E12*E12-((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2)));
+  if(mass3*mass3+px3*px3+py3*py3+pz3*pz3<0) return false;
+  E123= TMath::Sqrt(mass12*mass12+px12*px12+py12*py12+pz12*pz12)+TMath::Sqrt(mass3*mass3+px3*px3+py3*py3+pz3*pz3);
+  if(E123*E123-((px12+px3)*(px12+px3)+(py12+py3)*(py12+py3)+(pz12+pz3)*(pz12+pz3))<0) return false;
+  Double_t mass123=TMath::Sqrt(E123*E123-((px12+px3)*(px12+px3)+(py12+py3)*(py12+py3)+(pz12+pz3)*(pz12+pz3)));
+  return mass123;
+
+}
+//--------------------
+Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
+  if (!fCutsRD) {
+    AliFatal("Cut matrix not inizialized. Exit...");
+    return 0;
+  }
+  Bool_t recoLc=true;
+  Bool_t v=false;
+  Int_t chargeLc=0;
+  //compute pt and charge
+  Double_t px=0, py=0;
+  static Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  AliAODTrack *tracks[3];
+  for(Int_t iDaught=0; iDaught<3; iDaught++) {
+      tracks[iDaught]=(AliAODTrack*)aodTracks.At(iDaught);
+     if(!tracks[iDaught]) return 0;
+     else
+     {
+     px += tracks[iDaught]->Px();
+     py += tracks[iDaught]->Py();
+     chargeLc+=tracks[iDaught]->Charge();
+     }
+  }
+  Double_t ptLc=TMath::Sqrt(px*px+py*py);
+  Int_t ptbin=PtBin(ptLc);
+  Double_t diff=fCutsRD[GetGlobalIndex(0,ptbin)];
+  for(Int_t iDaught=0; iDaught<3; iDaught++) {
+    if(tracks[iDaught]->Charge()==-1*chargeLc){
+      for(Int_t i=0; i<3; i++) {
+         if(i!=iDaught){
+           for(Int_t j=0; j<3; j++) {
+              if(j!=i && j!=iDaught){
+                Double_t candmass1=ComputeInvMass3tracks(tracks[i], tracks[iDaught], tracks[j], 2212, 321, 211);//PKpi
+                if(TMath::Abs(candmass1-mLcPDG)<diff) v=true;
+                if(!v){
+                  Double_t candmass2=ComputeInvMass3tracks(tracks[i], tracks[iDaught], tracks[j], 211, 321, 2212);//piKP
+                  if(TMath::Abs(candmass2-mLcPDG)<diff) v=true;
+                  if(!v) recoLc=false;
+                }
+              }
+           }
+         }
+      }
+    }
+  }
+  return recoLc;
+}
 

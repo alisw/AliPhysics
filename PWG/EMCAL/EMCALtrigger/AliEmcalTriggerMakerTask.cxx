@@ -58,6 +58,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fUseL0Amplitudes(kFALSE),
   fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(0),
+  fRunSmearing(kTRUE),
   fDoQA(kFALSE),
   fQAHistos(NULL)
 {
@@ -75,6 +76,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fUseL0Amplitudes(kFALSE),
   fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(NULL),
+  fRunSmearing(kTRUE),
   fDoQA(doQA),
   fQAHistos(NULL)
 {
@@ -233,6 +235,8 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
     } else {
       AliErrorStream() << "No valid configuration found for the given dataset - trigger maker run loop disabled" << std::endl;
     }
+
+    if(fRunSmearing && !fTriggerMaker->HasSmearModel()) InitializeSmearModel(); // Initialize smear model if not yet set from outside
   }
 
   fTriggerMaker->SetGeometry(fGeom);
@@ -400,6 +404,19 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
       }
     }
   }
+}
+
+void AliEmcalTriggerMakerTask::InitializeSmearModel(){
+  std::cout << "Initializing trigger maker with default smearing parameterization" << std::endl;
+  TF1 *meanmodel = new TF1("meanmodel", "pol1", 0., 1000.);
+  meanmodel->SetParameter(0, -0.0206247);
+  meanmodel->SetParameter(1, 0.966160);
+  // Power law smearing
+  TF1 *widthmodel = new TF1("widthmodel", "[0] * TMath::Power(x, [1]) + [2]", 0., 1000.);
+  widthmodel->SetParameter(0, 0.0273139);
+  widthmodel->SetParameter(1, 1.36187);
+  widthmodel->SetParameter(2, 0.0736051);
+  fTriggerMaker->SetSmearModel(meanmodel, widthmodel);
 }
 
 void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){

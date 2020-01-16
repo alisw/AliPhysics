@@ -9,8 +9,7 @@
 /// classes working in  ROOT6 only
 #ifdef __CLING__
 #pragma link C++ class AliMLResponse+;
-#pragma link C++ class ModelHandler+;
-#pragma link C++ class std::vector<ModelHandler>+;
+#pragma link C++ class AliMLModelHandler+;
 #endif
 
 #endif

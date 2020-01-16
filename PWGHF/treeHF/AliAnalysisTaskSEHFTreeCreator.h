@@ -159,11 +159,20 @@ public:
     void SetGoodTrackEtaRange(Double_t d) { fGoodTrackEtaRange = d; }
     void SetGoodTrackMinPt(Double_t d) { fGoodTrackMinPt = d; }
     void SetITSUpgradeStudy(Bool_t b) { fITSUpgradeStudy = b; }
-  
+    void SetLctopKpiPreselection(Bool_t d){ fPreSelectLctopKpi = d; }
+    void SetFillInjCandHijingTrackCombi(Bool_t b){ fFillInjCandHijingTrackCombi = b; }
+    
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
     void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
     void SetLc2V0type(Int_t opt=1) {fV0typeForLc2V0bachelor=opt;}
-  
+    void SetOnFlySelectionValues(float invmass, float pt, float impparprod, float cosp, float cospxy){
+      fInvMassOnFlyCut = invmass;
+      fPtOnFlyCut = pt;
+      fImpParProdOnFlyCut = impparprod;
+      fCosPOnFlyCut = cosp;
+      fCosPXYOnFlyCut = cospxy;
+    }
+
     void SetTreeSingleTrackVarsOpt(Int_t opt) {fTreeSingleTrackVarsOpt=opt;}
   
     Int_t  GetSystem() const {return fSys;}
@@ -379,6 +388,11 @@ private:
     Int_t                   fDsMassKKOpt;                          /// option for Ds massKK (mass or delta mass)
     Int_t                   fLc2V0bachelorCalcSecoVtx;             /// option to calculate the secondary vertex for Lc2V0bachelor. False by default, has to be added to AddTask in case we want to start using it.
     Int_t                   fV0typeForLc2V0bachelor;               /// option to select Offline+OnTheFly (0), only Offline (1=default), only OnTheFly (2) V0's for the Lc->V0bachelor decay
+    Float_t fInvMassOnFlyCut;                                      ///Cut on invariant mass for on fly hadron selection
+    Float_t fPtOnFlyCut;                                           ///Cut on pT for on fly hadron  selection
+    Float_t fImpParProdOnFlyCut;                                   ///Cut on d0xd0 for on fly hadron  selection
+    Float_t fCosPOnFlyCut;                                         ///Cut on cos pointing angle for on fly hadron  selection
+    Float_t fCosPXYOnFlyCut;                                       ///Cut on cos pointing angle xy for on fly hadron selection
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
 
@@ -393,6 +407,8 @@ private:
     Double_t                fGoodTrackEtaRange;                    /// Setting eta-range for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackMinPt;                       /// Setting min pT for bachelor on-the-fly reconstruction candidate
     Bool_t                  fITSUpgradeStudy;                      /// Setting for analysing an ITS Upgrade production
+    Bool_t                  fPreSelectLctopKpi;                    /// Setting for reduce the filling of reconstucted candidates  in an ITS Upgrade production
+    Bool_t                  fFillInjCandHijingTrackCombi;          /// Setting to store injected candidate + HIJING track for background shape studies
 
     // Particles (tracks / MC particles)
     // Add a single AliTrackContainer and/or AliMCParticleContainer to select particles
@@ -468,7 +484,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,24);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,26);
     /// \endcond
 };
 

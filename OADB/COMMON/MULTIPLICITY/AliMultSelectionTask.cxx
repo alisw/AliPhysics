@@ -2441,7 +2441,7 @@ Int_t AliMultSelectionTask::SetupRunFromOADB(const AliVEvent* const esd)
 
 
 //______________________________________________________________________
-Bool_t AliMultSelectionTask::IsSelectedTrigger(AliVEvent* event, AliVEvent::EOfflineTriggerTypes lCheckedTrig)
+Bool_t AliMultSelectionTask::IsSelectedTrigger(AliVEvent* event, UInt_t lCheckedTrig)
 // Function to check for a specific trigger class available in AliVEvent (default AliVEvent::kMB)
 {
     //Code to reject events that aren't trigType

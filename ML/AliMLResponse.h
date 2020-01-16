@@ -15,46 +15,17 @@
 ///        configuration of ML application on grid
 /// \author pietro.fecchio@cern.ch, maximiliano.puccio@cern.ch
 
-#include <algorithm>
-#include <iostream>
 #include <map>
 #include <string>
-#include <utility>
 #include <vector>
-
-#include "yaml-cpp/yaml.h"
-
-#include "AliExternalBDT.h"
 
 #include "TNamed.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////
+#include "AliMLModelHandler.h"
 
-class ModelHandler {
-public:
-  ModelHandler() : model(), path(), library(), scorecut() {}
-  ModelHandler(const YAML::Node &node)
-      : model(), path(node["path"].as<std::string>()), library(node["library"].as<std::string>()),
-        scorecut(node["cut"].as<double>()) {}
-
-  std::string const &GetPath() const { return path; }
-  std::string const &GetLibrary() const { return library; }
-  double const &GetScoreCut() const { return scorecut; }
-
-  AliExternalBDT &GetModel() { return model; }
-
-  bool CompileModel();
-
-private:
-  AliExternalBDT model;    //!
-
-  std::string path;
-  std::string library;
-
-  double scorecut;
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////
+namespace YAML {
+  class Node;
+}
 
 class AliMLResponse : public TNamed {
 public:
@@ -75,44 +46,53 @@ public:
 
   /// return the bin index
   int FindBin(double binvar);
-  /// return the MLModel predicted score (raw or proba, depending on useraw)
+  /// return the ML model predicted score (raw or proba, depending on useraw)
   double Predict(double binvar, std::map<std::string, double> varmap);
+  /// overload to pass directly a vector of variables
+  double Predict(double binvar, std::vector<double> variables);
   /// return true if predicted score for map is above the threshold given in the config
   bool IsSelected(double binvar, std::map<std::string, double> varmap);
   /// overload for getting the model score too
   template<typename F>
   bool IsSelected(double binvar, std::map<std::string, double> varmap, F &score);
+  /// overload to pass directly a vector of variables
+  bool IsSelected(double binvar, std::vector<double> variables);
+  /// overload for getting the model score too
+  template<typename F>
+  bool IsSelected(double binvar, std::vector<double> variables, F &score);
 
 protected:
-  std::string fConfigFilePath;    /// path of the config file
+  std::string fConfigFilePath;              /// path of the config file
 
-  std::vector<ModelHandler> fModels;
-  std::vector<int> fCentClasses;         /// centrality classes ([cent_min, cent_max])
-  std::vector<float> fBins;              /// bin edges for the binned variable (pt/ct)
-  std::vector<std::string> fVariableNames;    /// bin edges for the binned variable (pt/ct)
+  std::vector<AliMLModelHandler> fModels;   //!<! vector of models
+  std::vector<int> fCentClasses;            /// centrality classes ([cent_min, cent_max])
+  std::vector<float> fBins;                 /// bin edges for the binned variable (pt/ct)
+  std::vector<std::string> fVariableNames;  /// bin edges for the binned variable (pt/ct)
 
-  int fNBins;         /// number of bins stored for consistency checks
-  int fNVariables;    /// number of variables (features) stored for checks
+  int fNBins;                               /// number of bins stored for consistency checks
+  int fNVariables;                          /// number of variables (features) stored for checks
 
-  std::vector<float>::iterator fBinsBegin;    /// evaluate just once is better
+  std::vector<float>::iterator fBinsBegin;  /// evaluate just once is better
 
-  bool fRaw;
+  bool fRaw;                                /// set to true to use raw score instead of probability
 
   /// \cond CLASSIMP
-  ClassDef(AliMLResponse, 1);    ///
+  ClassDef(AliMLResponse, 2);    ///
   /// \endcond
 };
 
 template<typename F>
 bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap, F &score) {
-  int bin     = FindBin(binvar);
+  int bin = FindBin(binvar);
   score = Predict(binvar, varmap);
   return score >= fModels[bin - 1].GetScoreCut();
 }
 
-inline bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap) {
-  float score{0.f};
-  return IsSelected(binvar, varmap, score);
+template<typename F>
+bool AliMLResponse::IsSelected(double binvar, std::vector<double> variables, F &score) {
+  int bin = FindBin(binvar);
+  score = Predict(binvar, variables);
+  return score >= fModels[bin - 1].GetScoreCut();
 }
 
 #endif

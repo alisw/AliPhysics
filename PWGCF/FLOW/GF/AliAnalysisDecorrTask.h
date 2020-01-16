@@ -28,6 +28,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //Analysis setters
         void                    SetSampling(Bool_t sample, Int_t iNum) { fSampling = sample; fNumSamples = iNum; }      //Use jack-knife resampling
         void                    SetFillQA(Bool_t fill = kTRUE) { fFillQA = fill; }
+        void                    SetSmallSystem(Bool_t small = kTRUE) { fSmallSystem = kTRUE; }
         //event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
@@ -35,7 +36,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
         void                    SetPVtxZMax(Double_t z) { fPVtxCutZ = z; }
         void                    SetCentBin(Int_t nbins, Double_t *bins) { fCentAxis->Set(nbins,bins); }
-        void                    SetCentLim(Double_t min, Double_t max) { fCentMin = min; fCentMax = max; }
+        void                    SetCentLim(Double_t min, Double_t max) { fCentMin = min; fCentMax = max; } //Not used yet
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
         AliEventCuts            fEventCuts;
         //track selection
@@ -62,7 +63,6 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    DoRFPs(Bool_t ref) { bRef = ref; }              //Calculate integrad flow
         void                    DoDiff(Bool_t diff) { bDiff = diff; }           //Calculate pt differential flow
         void                    DoPtB(Bool_t ptb) { bPtB = ptb; }               //Calculate flow with particles from different pt bins
-        TH2F*                   nuacentral;
 
     
     private:
@@ -73,6 +73,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
 
         TList*                  fFlowList;                //! output list
         TList*                  fFlowWeights;             //! 
+        TList*                  fQA;                      //!
 
 
         Bool_t                  InitTask();
@@ -87,7 +88,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TList*                  fWeightList;                //!
         TH2D*                   fh2Weights;                 //!
         TH3D*                   fh3Weights;                 //!
-        Bool_t                  FillWeights();
+        void                    FillWeights();
         
         //Flow methods
         bool                    IsWithinRP(const AliAODTrack* track) const;
@@ -95,7 +96,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    FillRPvectors(double dEtaLimit);
         void                    FillPOIvectors(const double dEtaLimit, const double dPtLow, const double dPtHigh); 
         void                    FillPtBvectors(const double dEtaLimit, const double dPtLow, const double dPtHigh); 
-        void                    CalculateCorrelations(const AliUniFlowCorrTask* task, double centrality, double dPtA, double dPtB, Bool_t doRef, Bool_t doDiff, Bool_t doPtB);
+        void                    CalculateCorrelations(double centrality, double dPtA, double dPtB, Bool_t doRef, Bool_t doDiff, Bool_t doPtB);
 
         //Flow vectors
         TComplex pvector[fNumHarms][fNumPowers];
@@ -167,7 +168,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         AliAnalysisDecorrTask(const AliAnalysisDecorrTask&); // not implemented
         AliAnalysisDecorrTask& operator=(const AliAnalysisDecorrTask&); // not implemented
 
-        //Array lenghts and constants
+        //Array lengths and constants
         Int_t                   fIndexSampling;
         AliAODEvent*            fAOD;                       //! input event
         Bool_t                  fInitTask;                  //Initialization
@@ -177,6 +178,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //cuts & selection: Analysis
         Bool_t                  fSampling;      //Bootstrapping sampling
         Bool_t                  fFillQA;        //Fill QA histograms
+        Bool_t                  fSmallSystem;   //Analyse small system
         //cuts & selection: events
         AliVEvent::EOfflineTriggerTypes    fTrigger;
         Bool_t                  fEventRejectAddPileUp;
@@ -215,8 +217,6 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fPOIsPtmin;
         Double_t                fRFPsPtMax;
         Double_t                fRFPsPtMin;
-
-
 
         ClassDef(AliAnalysisDecorrTask, 1);
 };

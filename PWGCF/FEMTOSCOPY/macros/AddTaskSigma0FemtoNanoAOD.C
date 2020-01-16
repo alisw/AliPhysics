@@ -1,3 +1,4 @@
+#ifndef __CINT__
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -8,6 +9,7 @@
 #include "AliSigma0AODPhotonMotherCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskNanoAODSigma0Femto.h"
+#endif
 
 AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
                                              bool MomRes = false,

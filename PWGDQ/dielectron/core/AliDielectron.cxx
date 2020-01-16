@@ -110,6 +110,7 @@ AliDielectron::AliDielectron() :
   fPostPIDWdthCorrITS(0x0),
   fPostPIDCntrdCorrTOF(0x0),
   fPostPIDWdthCorrTOF(0x0),
+	fPIDCalibinPU(kFALSE),
   fLegEffMap(0x0),
   fPairEffMap(0x0),
   fEventFilter("EventFilter"),
@@ -172,6 +173,15 @@ AliDielectron::AliDielectron() :
   // Default constructor
   //
 
+	for(Int_t i=0;i<15;i++){
+		for(Int_t j=0;j<15;j++){
+			fPostPIDCntrdCorrPU[i][j] = 0x0;
+			fPostPIDWdthCorrPU[i][j]  = 0x0;
+
+		}
+	}
+
+
 }
 
 //________________________________________________________________
@@ -187,6 +197,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPostPIDWdthCorrITS(0x0),
   fPostPIDCntrdCorrTOF(0x0),
   fPostPIDWdthCorrTOF(0x0),
+	fPIDCalibinPU(kFALSE),
   fLegEffMap(0x0),
   fPairEffMap(0x0),
   fEventFilter("EventFilter"),
@@ -248,6 +259,13 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   // Named constructor
   //
 
+	for(Int_t i=0;i<15;i++){
+		for(Int_t j=0;j<15;j++){
+			fPostPIDCntrdCorrPU[i][j] = 0x0;
+			fPostPIDWdthCorrPU[i][j]  = 0x0;
+		}
+	}
+
 }
 
 //________________________________________________________________
@@ -276,8 +294,15 @@ AliDielectron::~AliDielectron()
   if (fSignalsMC) delete fSignalsMC;
   if (fCfManagerPair) delete fCfManagerPair;
   if (fHistoArray) delete fHistoArray;
-}
 
+	for(Int_t i=0;i<15;i++){
+		for(Int_t j=0;j<15;j++){
+			if(fPostPIDCntrdCorrPU[i][j]) delete fPostPIDCntrdCorrPU[i][j];
+			if(fPostPIDWdthCorrPU[i][j] ) delete fPostPIDWdthCorrPU[i][j] ;
+		}
+	}
+
+}
 //________________________________________________________________
 void AliDielectron::Init()
 {
@@ -419,6 +444,15 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   if(fPostPIDWdthCorrITS)   AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDWdthCorrITS);
   if(fPostPIDCntrdCorrTOF)  AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorrTOF);
   if(fPostPIDWdthCorrTOF)   AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
+
+	for(Int_t id=0;id<15;id++){//detector loop TPC/ITS/TOF
+		for(Int_t ip=0;ip<15;ip++){//particle loop e/mu/pi/k/p
+			if(fPostPIDCntrdCorrPU[id][ip])   AliDielectronPID::SetCentroidCorrFunctionPU(id,ip,fPostPIDCntrdCorrPU[id][ip]);
+			if(fPostPIDWdthCorrPU[id][ip])    AliDielectronPID::SetWidthCorrFunctionPU(   id,ip,fPostPIDWdthCorrPU[id][ip] );
+		}
+	}
+
+	AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
 
   // set event
   AliDielectronVarManager::SetFillMap(fUsedVars);
@@ -2104,8 +2138,64 @@ void AliDielectron::SetWidthCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary, 
     fUsedVars->SetBitNumber(varz, kTRUE);
   }
 }
+//______________________________________________
+void AliDielectron::SetCentroidCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=var0;     valType[1]=var1;     valType[2]=var2;     valType[3]=var3;     valType[4]=var4;
 
+  AliDielectronHistos::StoreVariables(fun, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("cntrd%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
 
+  fPostPIDCntrdCorrPU[detID][parID] = (THnBase*)fun->Clone(key.Data());
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDCntrdCorrPU[detID][parID])  {
+    printf("detID = %u , parID = %u, POST PID CORRECTION in PU added for centroids:  ",detID,parID);
+    switch(fPostPIDCntrdCorrPU[detID][parID]->GetNdimensions()) {
+      case 5: printf(" %s, ",fPostPIDCntrdCorrPU[detID][parID]->GetAxis(4)->GetName());
+      case 4: printf(" %s, ",fPostPIDCntrdCorrPU[detID][parID]->GetAxis(3)->GetName());
+      case 3: printf(" %s, ",fPostPIDCntrdCorrPU[detID][parID]->GetAxis(2)->GetName());
+      case 2: printf(" %s, ",fPostPIDCntrdCorrPU[detID][parID]->GetAxis(1)->GetName());
+      case 1: printf(" %s " ,fPostPIDCntrdCorrPU[detID][parID]->GetAxis(0)->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(var0, kTRUE);
+    fUsedVars->SetBitNumber(var1, kTRUE);
+    fUsedVars->SetBitNumber(var2, kTRUE);
+    fUsedVars->SetBitNumber(var3, kTRUE);
+    fUsedVars->SetBitNumber(var4, kTRUE);
+  }
+}
+//______________________________________________
+void AliDielectron::SetWidthCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=var0;     valType[1]=var1;     valType[2]=var2;     valType[3]=var3;     valType[4]=var4;
+
+  AliDielectronHistos::StoreVariables(fun, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("wdth%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
+
+  fPostPIDWdthCorrPU[detID][parID] = (THnBase*)fun->Clone(key.Data());
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDWdthCorrPU[detID][parID])  {
+    printf("detID = %u , parID = %u, POST PID CORRECTION IN PU added for widths:  ",detID,parID);
+    switch(fPostPIDWdthCorrPU[detID][parID]->GetNdimensions()) {
+      case 5: printf(" %s, ",fPostPIDWdthCorrPU[detID][parID]->GetAxis(4)->GetName());
+      case 4: printf(" %s, ",fPostPIDWdthCorrPU[detID][parID]->GetAxis(3)->GetName());
+      case 3: printf(" %s, ",fPostPIDWdthCorrPU[detID][parID]->GetAxis(2)->GetName());
+      case 2: printf(" %s, ",fPostPIDWdthCorrPU[detID][parID]->GetAxis(1)->GetName());
+      case 1: printf(" %s " ,fPostPIDWdthCorrPU[detID][parID]->GetAxis(0)->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(var0, kTRUE);
+    fUsedVars->SetBitNumber(var1, kTRUE);
+    fUsedVars->SetBitNumber(var2, kTRUE);
+    fUsedVars->SetBitNumber(var3, kTRUE);
+    fUsedVars->SetBitNumber(var4, kTRUE);
+  }
+}
 //______________________________________________
 TObject* AliDielectron::InitEffMap(TString filename, TString generatedname, TString foundname)
 {

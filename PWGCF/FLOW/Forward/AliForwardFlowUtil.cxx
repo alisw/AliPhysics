@@ -1,48 +1,38 @@
+#include <TROOT.h>
 #include "TString.h"
 #include "TMath.h"
-#include "AliForwardFlowUtil.h"
 #include "TFile.h"
-
-#include <iostream>
-#include <TROOT.h>
+#include <TList.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
-#include <TList.h>
 #include <THn.h>
 
-#include "AliLog.h"
-#include "AliForwardFlowRun2Task.h"
-#include "AliForwardQCumulantRun2.h"
-#include "AliForwardGenericFramework.h"
+#include <iostream>
 
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
-#include "AliMCEvent.h"
-
-#include "AliAODMCParticle.h"
-
-#include "AliForwardFlowUtil.h"
-
-#include "AliVVZERO.h"
 #include "AliAODVertex.h"
-#include "AliCentrality.h"
-
-#include "AliESDEvent.h"
-#include "AliVTrack.h"
-#include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliAODTracklets.h"
 
-#include "AliAnalysisFilter.h"
+#include "AliMCEvent.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliAODMCParticle.h"
+
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
+
+#include "AliForwardFlowUtil.h"
+
+#include "AliVTrack.h"
 #include "AliMultSelection.h"
 #include "AliMultiplicity.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 
-#include "AliStack.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
+
 //________________________________________________________________________
 AliForwardFlowUtil::AliForwardFlowUtil():
 fevent(),
@@ -64,13 +54,33 @@ fStored(0)
 
 
 Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
-  if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
-  if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
+  
+  if (fSettings.run_list == 0){
+    if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
+    if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
 
-  Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246089, 246153, 246185, 246225, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
-  for (Int_t i = 0; i < 17; i++){
-    if (runnumber == HIR_goodruns[i]) return kTRUE;
+    Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246089, 246153, 246185, 246225, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+    for (Int_t i = 0; i < 17; i++){
+      if (runnumber == HIR_goodruns[i]) return kTRUE;
+    }
   }
+  if (fSettings.run_list == 1){
+    if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
+
+    Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+    for (Int_t i = 0; i < 13; i++){
+      if (runnumber == HIR_goodruns[i]) return kTRUE;
+    }   
+  }
+  if (fSettings.run_list == 2){
+    if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
+
+    Double_t HIR_goodruns[] = {246089, 246153, 246185, 246225};
+    for (Int_t i = 0; i < 4; i++){
+      if (runnumber == HIR_goodruns[i]) return kTRUE;
+    }   
+  }
+
   return kFALSE;
 }
 
@@ -173,7 +183,7 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
 
       // Fill refDist
       if (fSettings.ref_mode & fSettings.kFMDref) {
-        if (!fSettings.use_primaries_fwd) this->FillFromForwardClusters(refDist);
+        if (!fSettings.use_primaries_fwdref) this->FillFromForwardClusters(refDist);
         else this->FillFromPrimariesAODFMD(refDist);
       }
       else if (fSettings.ref_mode & fSettings.kITSref) {

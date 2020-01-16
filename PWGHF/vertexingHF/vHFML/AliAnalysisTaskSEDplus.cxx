@@ -747,8 +747,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   //Loading of ML models
   if (fApplyML)
   {
-    fMLResponse = new AliHFMLResponseDplustoKpipi(fConfigPath.Data());
-    fMLResponse->InitModels();
+    fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
+    fMLResponse->MLResponseInit();
   }
 
   PostData(1, fOutput);
@@ -1088,7 +1088,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
       Int_t orig = -1;
       Bool_t isPrimary = kFALSE;
       Bool_t isFeeddown = kFALSE;
-      Float_t pdgCode = -2;
       Float_t trueImpParXY = 0.;
       Double_t ptB = -1.5;
       Bool_t isCandInjected = kFALSE;
@@ -1099,7 +1098,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
         {
           AliAODMCParticle *partDp = (AliAODMCParticle *)arrayMC->At(labDp);
           orig = AliVertexingHFUtils::CheckOrigin(arrayMC, partDp, fUseQuarkTagInKine); //Prompt = 4, FeedDown = 5
-          pdgCode = TMath::Abs(partDp->GetPdgCode());
           if (orig == 4)
           {
             isPrimary = kTRUE;
@@ -1112,14 +1110,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
             trueImpParXY = GetTrueImpactParameter(mcHeader, arrayMC, partDp) * 10000.;
             ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, partDp);
           }
-          else
-          {
-            pdgCode = -3;
-          }
-        }
-        else
-        {
-          pdgCode = -1;
         }
       }
 
@@ -1176,201 +1166,204 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
         if (fApplyML)
         {
           Pid_HF = fRDCutsAnalysis->GetPidHF();
-          isMLsel = fMLResponse->IsSelectedML(modelPred, d, aod->GetMagneticField(), Pid_HF);
+          isMLsel = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF);
         }
 
-        //for all THnSparses except for FD
-        Double_t arrayForSparse[kVarForSparse] = {invMass, ptCand, TMath::Abs(impparXY), resSel, minPtDau, sigvert, cosp, cospxy, dlen, dlenxy, ndlenxy, dd0max, modelPred};
-        //for THnSparses for FD
-        Double_t arrayForSparseFD[kVarForSparseFD] = {invMass, ptCand, TMath::Abs(impparXY), resSel, minPtDau, sigvert, cosp, cospxy, dlen, dlenxy, ndlenxy, dd0max, ptB, modelPred};
-
-        //for imppar THnSparses
-        Double_t arrayForImpPar[kVarForImpPar] = {invMass, ptCand, impparXY};
-        //for imppar THnSparse with true FD imppar
-        Double_t arrayForImpParFDTrue[kVarForImpPar] = {invMass, ptCand, trueImpParXY};
-
-        AliAODTrack *track = nullptr;
-        if (fDoTrackVarHist)
+        if(isMLsel)
         {
-          for (int iProng = 0; iProng < 3; iProng++)
+          //for all THnSparses except for FD
+          Double_t arrayForSparse[kVarForSparse] = {invMass, ptCand, TMath::Abs(impparXY), resSel, minPtDau, sigvert, cosp, cospxy, dlen, dlenxy, ndlenxy, dd0max, modelPred};
+          //for THnSparses for FD
+          Double_t arrayForSparseFD[kVarForSparseFD] = {invMass, ptCand, TMath::Abs(impparXY), resSel, minPtDau, sigvert, cosp, cospxy, dlen, dlenxy, ndlenxy, dd0max, ptB, modelPred};
+
+          //for imppar THnSparses
+          Double_t arrayForImpPar[kVarForImpPar] = {invMass, ptCand, impparXY};
+          //for imppar THnSparse with true FD imppar
+          Double_t arrayForImpParFDTrue[kVarForImpPar] = {invMass, ptCand, trueImpParXY};
+
+          AliAODTrack *track = nullptr;
+          if (fDoTrackVarHist)
           {
-            Double_t ptTrack = 0, nCrossedRowsTPC = 0, nClustersTPC = 0, ratioCRowsFClu = 0, isSig = 0;
-            track = (AliAODTrack *)d->GetDaughter(iProng);
-            AliESDtrack esdTrack(track);
-            esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
-            esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
-            esdTrack.SetTPCPointsF(track->GetTPCNclsF());
-            ptTrack = track->Pt();
-            nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
-            nClustersTPC = esdTrack.GetTPCNcls();
-            if (esdTrack.GetTPCNclsF() > 0)
+            for (int iProng = 0; iProng < 3; iProng++)
             {
-              ratioCRowsFClu = nCrossedRowsTPC / esdTrack.GetTPCNclsF();
-              if (labDp >= 0)
+              Double_t ptTrack = 0, nCrossedRowsTPC = 0, nClustersTPC = 0, ratioCRowsFClu = 0, isSig = 0;
+              track = (AliAODTrack *)d->GetDaughter(iProng);
+              AliESDtrack esdTrack(track);
+              esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+              esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+              esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+              ptTrack = track->Pt();
+              nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+              nClustersTPC = esdTrack.GetTPCNcls();
+              if (esdTrack.GetTPCNclsF() > 0)
               {
-                if (isPrimary)
-                  isSig = 1.;
-                else if (isFeeddown)
-                  isSig = 2.;
+                ratioCRowsFClu = nCrossedRowsTPC / esdTrack.GetTPCNclsF();
+                if (labDp >= 0)
+                {
+                  if (isPrimary)
+                    isSig = 1.;
+                  else if (isFeeddown)
+                    isSig = 2.;
+                }
               }
-            }
-            Double_t arrayForTrackSparse[kVarForTrackSparse] = {ptCand, invMass, ptTrack, nClustersTPC, nCrossedRowsTPC, ratioCRowsFClu, isSig};
-            if (passTopolAndPIDCuts)
-            {
-              if (fDoTrackVarHist)
-                fHistTrackVar->Fill(arrayForTrackSparse);
-            }
-          }
-        }
-
-        //Fill histos
-        index = GetHistoIndex(iPtBin);
-        nSelectednopid++;
-        fPtVsMassNoPid->Fill(invMass, ptCand);
-        fMassHistNoPid[index]->Fill(invMass);
-        if (fDoImpPar && passTopolAndPIDCuts)
-        {
-          fHistMassPtImpPar[0]->Fill(arrayForImpPar);
-        }
-        if (fDoSparse && (!fReadMC || !fFillOnlySignalSparses))
-        { //fill in case of false fReadMC or false fFillOnlySignalSparses
-          fSparseCutVars[0]->Fill(arrayForSparse);
-        }
-        if (passTopolAndPIDCuts)
-        {
-          nSelected++;
-          fPtVsMass->Fill(invMass, ptCand);
-          fMassHist[index]->Fill(invMass);
-          if (d->GetCharge() > 0)
-          {
-            fPtVsMassPlus->Fill(invMass, ptCand);
-            fMassHistPlus[index]->Fill(invMass);
-          }
-          else if (d->GetCharge() < 0)
-          {
-            fPtVsMassMinus->Fill(invMass, ptCand);
-            fMassHistMinus[index]->Fill(invMass);
-          }
-          fPhiEtaCand->Fill(etaD, phiD);
-          if (TMath::Abs(invMass - 1.8696) < 0.05)
-            fPhiEtaCandSigReg->Fill(etaD, phiD);
-          if (fCutsDistr)
-          {
-            fCosPHist[index]->Fill(cosp);
-            fDLenHist[index]->Fill(dlen);
-            fSumd02Hist[index]->Fill(sumD02);
-            fSigVertHist[index]->Fill(sigvert);
-            fPtMaxHist[index]->Fill(ptmax);
-            fPtKHist[index]->Fill(d->PtProng(1));
-            fPtpi1Hist[index]->Fill(d->PtProng(0));
-            fPtpi2Hist[index]->Fill(d->PtProng(2));
-            fDCAHist[index]->Fill(maxdca);
-            fDLxy[index]->Fill(ndlenxy);
-            fCosxy[index]->Fill(cospxy);
-            fCorreld0Kd0pi[0]->Fill(d->Getd0Prong(0) * d->Getd0Prong(1), d->Getd0Prong(2) * d->Getd0Prong(1));
-          }
-        }
-
-        if (fReadMC)
-        {
-          if (labDp >= 0)
-          {
-            index = GetSignalHistoIndex(iPtBin);
-            if (fDoImpPar && passTopolAndPIDCuts)
-            {
-              if (isPrimary)
-                fHistMassPtImpPar[1]->Fill(arrayForImpPar);
-              else if (isFeeddown)
+              Double_t arrayForTrackSparse[kVarForTrackSparse] = {ptCand, invMass, ptTrack, nClustersTPC, nCrossedRowsTPC, ratioCRowsFClu, isSig};
+              if (passTopolAndPIDCuts)
               {
-                fHistMassPtImpPar[2]->Fill(arrayForImpPar);
-                fHistMassPtImpPar[3]->Fill(arrayForImpParFDTrue);
-              }
-            }
-            if (fDoSparse)
-            {
-              if (isPrimary)
-                fSparseCutVars[1]->Fill(arrayForSparse);
-              else if (isFeeddown)
-              {
-                fSparseCutVars[2]->Fill(arrayForSparseFD);
+                if (fDoTrackVarHist)
+                  fHistTrackVar->Fill(arrayForTrackSparse);
               }
             }
           }
-          else
-          {
-            index = GetBackgroundHistoIndex(iPtBin);
-            if(fKeepOnlyBkgFromHIJING) {
-                isCandInjected = AliVertexingHFUtils::IsCandidateInjected(d, mcHeader, arrayMC);
-            }
-            if(!isCandInjected)
-            {
-              if (fDoImpPar && passTopolAndPIDCuts)
-                fHistMassPtImpPar[4]->Fill(arrayForImpPar);
-            }
-          }
+
+          //Fill histos
+          index = GetHistoIndex(iPtBin);
+          nSelectednopid++;
+          fPtVsMassNoPid->Fill(invMass, ptCand);
           fMassHistNoPid[index]->Fill(invMass);
+          if (fDoImpPar && passTopolAndPIDCuts)
+          {
+            fHistMassPtImpPar[0]->Fill(arrayForImpPar);
+          }
+          if (fDoSparse && (!fReadMC || !fFillOnlySignalSparses))
+          { //fill in case of false fReadMC or false fFillOnlySignalSparses
+            fSparseCutVars[0]->Fill(arrayForSparse);
+          }
           if (passTopolAndPIDCuts)
           {
-            if (fCutsDistr)
-            {
-              Float_t fact = 1.;
-              Float_t factor[3] = {1., 1., 1.};
-              if (fUseStrangeness)
-                fact = GetStrangenessWeights(d, arrayMC, factor);
-              fCosPHist[index]->Fill(cosp, fact);
-              fDLenHist[index]->Fill(dlen, fact);
-              fDLxy[index]->Fill(ndlenxy);
-              fCosxy[index]->Fill(cospxy);
-              Float_t sumd02s = d->Getd0Prong(0) * d->Getd0Prong(0) * factor[0] * factor[0] + d->Getd0Prong(1) * d->Getd0Prong(1) * factor[1] * factor[1] + d->Getd0Prong(2) * d->Getd0Prong(2) * factor[2] * factor[2];
-              fSumd02Hist[index]->Fill(sumd02s);
-              fSigVertHist[index]->Fill(sigvert, fact);
-              fPtMaxHist[index]->Fill(ptmax, fact);
-              fPtKHist[index]->Fill(d->PtProng(1), fact);
-              fPtpi1Hist[index]->Fill(d->PtProng(0), fact);
-              fPtpi2Hist[index]->Fill(d->PtProng(2), fact);
-              fDCAHist[index]->Fill(maxdca, fact);
-              fCorreld0Kd0pi[1]->Fill(d->Getd0Prong(0) * d->Getd0Prong(1), d->Getd0Prong(2) * d->Getd0Prong(1));
-            }
+            nSelected++;
+            fPtVsMass->Fill(invMass, ptCand);
             fMassHist[index]->Fill(invMass);
             if (d->GetCharge() > 0)
+            {
+              fPtVsMassPlus->Fill(invMass, ptCand);
               fMassHistPlus[index]->Fill(invMass);
+            }
             else if (d->GetCharge() < 0)
+            {
+              fPtVsMassMinus->Fill(invMass, ptCand);
               fMassHistMinus[index]->Fill(invMass);
+            }
+            fPhiEtaCand->Fill(etaD, phiD);
+            if (TMath::Abs(invMass - 1.8696) < 0.05)
+              fPhiEtaCandSigReg->Fill(etaD, phiD);
+            if (fCutsDistr)
+            {
+              fCosPHist[index]->Fill(cosp);
+              fDLenHist[index]->Fill(dlen);
+              fSumd02Hist[index]->Fill(sumD02);
+              fSigVertHist[index]->Fill(sigvert);
+              fPtMaxHist[index]->Fill(ptmax);
+              fPtKHist[index]->Fill(d->PtProng(1));
+              fPtpi1Hist[index]->Fill(d->PtProng(0));
+              fPtpi2Hist[index]->Fill(d->PtProng(2));
+              fDCAHist[index]->Fill(maxdca);
+              fDLxy[index]->Fill(ndlenxy);
+              fCosxy[index]->Fill(cospxy);
+              fCorreld0Kd0pi[0]->Fill(d->Getd0Prong(0) * d->Getd0Prong(1), d->Getd0Prong(2) * d->Getd0Prong(1));
+            }
           }
-        }
-
-        // fill tree
-        if (fCreateMLtree && passTopolAndPIDCuts)
-        {
-          if(!Pid_HF)
-            Pid_HF = fRDCutsAnalysis->GetPidHF();
-          Bool_t issignal = kFALSE;
-          Bool_t isbkg = kFALSE;
-          Bool_t isprompt = kFALSE;
-          Bool_t isFD = kFALSE;
 
           if (fReadMC)
           {
             if (labDp >= 0)
             {
-              issignal = kTRUE;
-              if (orig == 4)
-                isprompt = kTRUE;
-              else if (orig == 5)
-                isFD = kTRUE;
+              index = GetSignalHistoIndex(iPtBin);
+              if (fDoImpPar && passTopolAndPIDCuts)
+              {
+                if (isPrimary)
+                  fHistMassPtImpPar[1]->Fill(arrayForImpPar);
+                else if (isFeeddown)
+                {
+                  fHistMassPtImpPar[2]->Fill(arrayForImpPar);
+                  fHistMassPtImpPar[3]->Fill(arrayForImpParFDTrue);
+                }
+              }
+              if (fDoSparse)
+              {
+                if (isPrimary)
+                  fSparseCutVars[1]->Fill(arrayForSparse);
+                else if (isFeeddown)
+                {
+                  fSparseCutVars[2]->Fill(arrayForSparseFD);
+                }
+              }
             }
             else
             {
-              if (!isCandInjected)
-                isbkg = kTRUE;
+              index = GetBackgroundHistoIndex(iPtBin);
+              if(fKeepOnlyBkgFromHIJING) {
+                  isCandInjected = AliVertexingHFUtils::IsCandidateInjected(d, mcHeader, arrayMC);
+              }
+              if(!isCandInjected)
+              {
+                if (fDoImpPar && passTopolAndPIDCuts)
+                  fHistMassPtImpPar[4]->Fill(arrayForImpPar);
+              }
+            }
+            fMassHistNoPid[index]->Fill(invMass);
+            if (passTopolAndPIDCuts)
+            {
+              if (fCutsDistr)
+              {
+                Float_t fact = 1.;
+                Float_t factor[3] = {1., 1., 1.};
+                if (fUseStrangeness)
+                  fact = GetStrangenessWeights(d, arrayMC, factor);
+                fCosPHist[index]->Fill(cosp, fact);
+                fDLenHist[index]->Fill(dlen, fact);
+                fDLxy[index]->Fill(ndlenxy);
+                fCosxy[index]->Fill(cospxy);
+                Float_t sumd02s = d->Getd0Prong(0) * d->Getd0Prong(0) * factor[0] * factor[0] + d->Getd0Prong(1) * d->Getd0Prong(1) * factor[1] * factor[1] + d->Getd0Prong(2) * d->Getd0Prong(2) * factor[2] * factor[2];
+                fSumd02Hist[index]->Fill(sumd02s);
+                fSigVertHist[index]->Fill(sigvert, fact);
+                fPtMaxHist[index]->Fill(ptmax, fact);
+                fPtKHist[index]->Fill(d->PtProng(1), fact);
+                fPtpi1Hist[index]->Fill(d->PtProng(0), fact);
+                fPtpi2Hist[index]->Fill(d->PtProng(2), fact);
+                fDCAHist[index]->Fill(maxdca, fact);
+                fCorreld0Kd0pi[1]->Fill(d->Getd0Prong(0) * d->Getd0Prong(1), d->Getd0Prong(2) * d->Getd0Prong(1));
+              }
+              fMassHist[index]->Fill(invMass);
+              if (d->GetCharge() > 0)
+                fMassHistPlus[index]->Fill(invMass);
+              else if (d->GetCharge() < 0)
+                fMassHistMinus[index]->Fill(invMass);
             }
           }
 
-          fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, kFALSE);
-          fMLhandler->SetVariables(d, aod->GetMagneticField(), 0, Pid_HF);
-          fMLhandler->FillTree();
+          // fill tree
+          if (fCreateMLtree && passTopolAndPIDCuts)
+          {
+            if(!Pid_HF)
+              Pid_HF = fRDCutsAnalysis->GetPidHF();
+            Bool_t issignal = kFALSE;
+            Bool_t isbkg = kFALSE;
+            Bool_t isprompt = kFALSE;
+            Bool_t isFD = kFALSE;
 
-          PostData(4, fMLtree);
+            if (fReadMC)
+            {
+              if (labDp >= 0)
+              {
+                issignal = kTRUE;
+                if (orig == 4)
+                  isprompt = kTRUE;
+                else if (orig == 5)
+                  isFD = kTRUE;
+              }
+              else
+              {
+                if (!isCandInjected)
+                  isbkg = kTRUE;
+              }
+            }
+
+            fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, kFALSE);
+            fMLhandler->SetVariables(d, aod->GetMagneticField(), 0, Pid_HF);
+            fMLhandler->FillTree();
+
+            PostData(4, fMLtree);
+          }
         }
       }
       if (recVtx)

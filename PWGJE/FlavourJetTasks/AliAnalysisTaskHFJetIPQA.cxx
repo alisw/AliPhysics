@@ -86,6 +86,7 @@ fFillCorrelations(kFALSE),
 fDoLundPlane(kFALSE),
 fDoTCTagging(kFALSE),
 fDoProbTagging(0),
+fDoMCEffs(0),
 fUseSignificance(kTRUE),
 kTagLevel(3),
 fFracs(0),
@@ -117,14 +118,14 @@ h2DProbDistsUnid(0),
 h2DProbDistsudsg(0),
 h2DProbDistsc(0),
 h2DProbDistsb(0),
-h2DProbDistss(0),
-h2DProbDists(0),
+h2DProbDistsudsgV0(0),
+h2DProbDistscV0(0),
 h2DLNProbDistsUnid(0),
 h2DLNProbDistsudsg(0),
 h2DLNProbDistsc(0),
 h2DLNProbDistsb(0),
-h2DLNProbDistss(0),
-h2DLNProbDists(0),
+h2DLNProbDistsudsgV0(0),
+h2DLNProbDistscV0(0),
 h1DProbThresholds(0),
 cCuts(0),
 fh1DCutInclusive(0),
@@ -217,6 +218,7 @@ fFillCorrelations(kFALSE),
 fDoLundPlane(kFALSE),
 fDoTCTagging(kFALSE),
 fDoProbTagging(0),
+fDoMCEffs(0),
 fUseSignificance(kTRUE),
 kTagLevel(3),
 fFracs(0),
@@ -248,14 +250,14 @@ h2DProbDistsUnid(0),
 h2DProbDistsudsg(0),
 h2DProbDistsc(0),
 h2DProbDistsb(0),
-h2DProbDistss(0),
-h2DProbDists(0),
+h2DProbDistsudsgV0(0),
+h2DProbDistscV0(0),
 h2DLNProbDistsUnid(0),
 h2DLNProbDistsudsg(0),
 h2DLNProbDistsc(0),
 h2DLNProbDistsb(0),
-h2DLNProbDistss(0),
-h2DLNProbDists(0),
+h2DLNProbDistsudsgV0(0),
+h2DLNProbDistscV0(0),
 h1DProbThresholds(0),
 cCuts(0),
 fh1DCutInclusive(0),
@@ -401,6 +403,10 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultV0Cuts(){
     fV0Cuts[DoMassWindow]=1;
     fV0Cuts[InvarMassWindowK0]=0.01;
     fV0Cuts[InvarMassWindowLambda]=0.005;
+
+    fV0Cuts[fAV0Cut]=0;
+    fV0Cuts[fBV0Cut]=0;
+    fV0Cuts[fCV0Cut]=9999;
 }
 
 void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
@@ -578,7 +584,7 @@ void AliAnalysisTaskHFJetIPQA::FillGenHistograms(int jetflavour, AliEmcalJet* je
 }
 
 
-void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks, bool isV0Jet){
+void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks){
     //Fill histograms for jets which have largest, second largest and third largest impact parameter
     //tracks passing the selection criterion
 
@@ -591,7 +597,7 @@ void AliAnalysisTaskHFJetIPQA::FillIPTypePtHists(int jetflavour, double jetpt, b
     }
 }
 
-void AliAnalysisTaskHFJetIPQA::FillIPTemplateHists(double jetpt, int iN,int jetflavour, double* params,bool isV0Jet){
+void AliAnalysisTaskHFJetIPQA::FillIPTemplateHists(double jetpt, int iN,int jetflavour, double* params){
     const char * stype  [4] = {"fh2dJetSignedImpParXY","fh2dJetSignedImpParXYSignificance","fh2dJetSignedImpParXYZ","fh2dJetSignedImpParXYZSignificance"};
     const char * subord [3] = {"First","Second","Third"};
 
@@ -603,6 +609,25 @@ void AliAnalysisTaskHFJetIPQA::FillIPTemplateHists(double jetpt, int iN,int jetf
           FillHist(hnameflav.Data(),jetpt,params[iType],1);
         }
     }
+}
+
+void AliAnalysisTaskHFJetIPQA::FillTrackIPvsPt(int isV0, double pt, double IP, int jetflavour){
+  if(jetflavour==CV0||jetflavour==UDSGV0){
+    FillHist("fh1dTracksIPvsPt_V0JetTracks", pt, IP,1);
+    //printf("Filling fh1dTracksIPvsPt_V0JetTracks: isV0=%i, pt=%f, IP=%f, jetflavour=%i",isV0, pt, IP, jetflavour);
+    if((isV0==V0MC)||(isV0==V0TrueRec)){
+      FillHist("fh1dTracksIPvsPt_V0inV0Jet", pt, IP,1);
+      //printf("Filling fh1dTracksIPvsPt_V0inV0Jet: isV0=%i, pt=%f, IP=%f, jetflavour=%i",isV0, pt, IP, jetflavour);
+    }
+  }
+  if(jetflavour==B){
+    FillHist("fh1dTracksIPvsPt_B", pt, IP,1);
+    //printf("Filling fh1dTracksIPvsPt_B: isV0=%i, pt=%f, IP=%f, jetflavour=%i",isV0, pt, IP, jetflavour);
+    if((isV0==V0MC)||(isV0==V0TrueRec)){
+      FillHist("fh1dTracksIPvsPt_V0inBJet", pt, IP,1);
+      //printf("Filling fh1dTracksIPvsPt_V0inBJet: isV0=%i, pt=%f, IP=%f, jetflavour=%i",isV0, pt, IP, jetflavour);
+    }
+  }
 }
 
 
@@ -1599,12 +1624,13 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 return kFALSE;
             }
         }
+      jetcongen = static_cast<AliJetContainer*>(fJetCollArray.At(1));
+      jetcongen->ResetCurrentID();
     }
 
     jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
     jetconrec->ResetCurrentID();
-    jetcongen = static_cast<AliJetContainer*>(fJetCollArray.At(1));
-    jetcongen->ResetCurrentID();
+
 
     if(fApplyV0Rej){
       SelectV0Candidates(ev);
@@ -1647,7 +1673,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             double ppt;
             //if(fDoMCCorrection) TrackWeight *= GetMonteCarloCorrectionFactor(trackV,corrpartidx,ppt);
         }*/
-        FillTrackHistograms(trackV,dca,cov,TrackWeight);
+       FillTrackHistograms(trackV,dca,cov,TrackWeight);
     }
     //**********************************
     //JetMatching between generated and reconstructed Jets
@@ -1757,6 +1783,23 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
               FillHist(Form("fh2dJetSignedImpParXY%s",subtype[jetflavour]),jetpt,cursImParXY,TrackWeight);     //*this->fXsectionWeightingFactor );
               FillHist(Form("fh2dJetSignedImpParXYSignificance%s",subtype[jetflavour]),jetpt,cursImParXYSig,TrackWeight);     //*this->fXsectionWeightingFactor );
             }
+            double fTrackPt=trackV->Pt();
+            double fIPValue=fV0Cuts[fAV0Cut]*TMath::Exp(fV0Cuts[fBV0Cut]*fTrackPt)+fV0Cuts[fCV0Cut];
+            //printf("trackpt=%f, IPValue=%f, TrueIP=%f, a=%f, b=%f, c=%f\n", fTrackPt, fIPValue,cursImParXYSig, fV0Cuts[fAV0Cut], fV0Cuts[fBV0Cut], fV0Cuts[fCV0Cut]);
+            if(cursImParXYSig>fIPValue){
+              //printf("Going into switch!\n");
+              switch (isV0){
+                case V0No:
+                  isV0=V0Rec;
+                  //printf("V0No set to V0Rec!\n");
+                  break;
+                case V0MC:
+                  isV0=V0TrueRec;
+                  //printf("V0MC set to V0TrueRec!\n");
+                  break;
+              }
+            }
+
             SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,trackV->Pt()); sImpParXY.push_back(a);
             SJetIpPati b(cursImParXYZ, TrackWeight,isV0,kFALSE,corridx,trackV->Pt()); sImpParXYZ.push_back(b);
             SJetIpPati c(cursImParXYSig, TrackWeight,isV0,kFALSE,corridx,trackV->Pt());sImpParXYSig.push_back(c);
@@ -1819,33 +1862,34 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
                 //_____________________________
                 //V0 tag decisions
-
                 //printf("isV0=%i, jetflaovur=%i, jetpt=%f", );
                 bool isV0Jet=kFALSE;
-                if(hasIPs[0]&&fIsPythia)FillV0EfficiencyHists(sImpParXYSig[0].is_V0, jetflavour, jetpt, isV0Jet);
                 if((hasIPs[0])&&(!fIsPythia)&&(sImpParXYSig[0].is_V0==V0Rec))isV0Jet=kTRUE;
                 //printf("New jetflavour=%i, isV0Jet=%i\n",jetflavour, isV0Jet);
 
-                FillIPTypePtHists(jetflavour, jetpt, hasIPs, isV0Jet);
+                if(fIsPythia){
+                  if(hasIPs[0])FillV0EfficiencyHists(sImpParXYSig[0].is_V0, jetflavour, jetpt, isV0Jet);
+                  for(long unsigned iTrack=0;iTrack<sImpParXYSig.size();iTrack++){
+                    FillTrackIPvsPt(sImpParXYSig[iTrack].is_V0,sImpParXYSig[iTrack].trackpt,sImpParXYSig[iTrack].first,jetflavour);
+                  }
 
-                for(int iN=0;iN<3;iN++){
-                  if(!hasIPs[iN]) continue;
-                  //printf("iN=%i, jetflavour=%i xy=%f, xysig=%f\n",iN,jetflavour,sImpParXY.at(iN).first,sImpParXYSig.at(iN).first);
-                  Double_t params [4] ={sImpParXY.at(iN).first,sImpParXYSig.at(iN).first,sImpParXYZ.at(iN).first,sImpParXYZSig.at(iN).first};
-                  FillIPTemplateHists(jetpt,iN,jetflavour, params, isV0Jet);
+                  //_______________________________
+                  //IP Template Generation
+                  FillIPTypePtHists(jetflavour, jetpt, hasIPs);
+
+                  for(int iN=0;iN<3;iN++){
+                    if(!hasIPs[iN]) continue;
+                    //printf("iN=%i, jetflavour=%i xy=%f, xysig=%f\n",iN,jetflavour,sImpParXY.at(iN).first,sImpParXYSig.at(iN).first);
+                    Double_t params [4] ={sImpParXY.at(iN).first,sImpParXYSig.at(iN).first,sImpParXYZ.at(iN).first,sImpParXYZSig.at(iN).first};
+                    FillIPTemplateHists(jetpt,iN,jetflavour, params);
+                  }
                 }
 
-                /*if(fFillCorrelations || fUseTreeForCorrelations){
-                    FillCorrelations(hasIPs,ipval,jetpt);
-                    if(fFillCorrelations && ! fUseTreeForCorrelations){
-                        if(!fIsMixSignalReady_n1 && hasIPs[0]) SetMixDCA(1,ipval[0] );
-                        if(!fIsMixSignalReady_n2 && hasIPs[1]) SetMixDCA(2,ipval[1] );
-                        if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
-                    }
-                }*/
 
                 //____________________________________________
                 //TAGGING
+                if(fDoTCTagging!=TCNo&&fDoProbTagging!=ProbNo) AliFatal("Don't do track counting and probability tagging simultaneously!");
+
                 bool ** kTagDec=new bool*[fNThresholds];
                 for(int iThresh=0;iThresh<fNThresholds;iThresh++){
                   kTagDec[iThresh]=new bool[6];
@@ -1853,31 +1897,33 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     kTagDec[iThresh][iType]=0;
                   }
                 }
-
-                if(fIsPythia){
-                  if(fDoTCTagging!=TCNo&&fDoProbTagging!=ProbNo) AliFatal("Don't do track counting and probability tagging simultaneously!");
-
-                  //MC Track Counting
-                  if(fDoTCTagging!=TCNo){
-                    DoTCTagging(jetpt, hasIPs,ipval, kTagDec);
+                //**************
+                //MC Track Counting
+                if(fDoTCTagging!=TCNo){
+                  if(fIsPythia||((!fIsPythia)&&(!isV0Jet))){
+                      //printf("isV0Jet=%i\n", isV0Jet);
+                      DoTCTagging(jetpt, hasIPs,ipval, kTagDec);
+                  }
+                  if(fDoMCEffs){
+                    //printf("Filling Efficiency hists\n");
                     FillEfficiencyHists(kTagDec, jetflavour, jetpt,hasIPs[0]);
                   }
-
-                  //Generation of Track Probability Hists
-                  if(fDoJetProb){
-                    double probval=0;
-                    probval=GetTrackProbability(jetpt,hasIPs, ipval);
-                    if(probval>0)FillProbabilityHists(jetpt,  probval, jetflavour);
-                  }
-
-                  //MC Prob Tagging
-                  if(fDoProbTagging!=ProbNo){
-                    double probval=0;
-                    probval=GetTrackProbability(jetpt,hasIPs, ipval);
-                    DoProbTagging(probval, jetpt,kTagDec);
-                    FillEfficiencyHists(kTagDec, jetflavour, jetpt,hasIPs[0]);
-                  }
+                  FillTaggedJetPtDistribution(kTagDec,jetpt);
                 }
+                //**************
+                //Probability Dists
+                double probval=0;
+                probval=GetTrackProbability(jetpt,hasIPs, ipval);
+                //Generation of Track Probability Hists
+                if(fDoJetProb){
+                  //printf("Doing Jet Probability!\n");
+                  if(probval>0)FillProbabilityHists(jetpt,  probval, jetflavour, kTagDec);
+                }
+                //Probability Tagging
+                /*if(fDoProbTagging!=ProbNo){
+                  DoProbTagging(probval, jetpt,kTagDec);
+                  FillEfficiencyHists(kTagDec, jetflavour, jetpt,hasIPs[0]);
+                }*/
 
                 if(sImpParXY.size()!=0){
                   FillHist("fh2dNoAcceptedTracksvsJetArea",(int)sImpParXY.size(),jetrec->Area(),1);
@@ -2304,36 +2350,47 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
   //****************************************
   //Histograms for Probability Tagging
+  const char * tagtype[6] = {"Full","Single1st","Single2nd","Single3rd","Double","Triple"};
+
+  for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+    for(int iType=0;iType<6;iType++){
+      if(fDoJetProb){
+          fHistManager.CreateTH2(Form("h2DProbDistsTag_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",200, 0, 1,500, 0, 250);
+          fHistManager.CreateTH2(Form("h2DLNProbDistsTag_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",400, 0, 20,500, 0, 250);
+      }
+      if(fDoTCTagging)fHistManager.CreateTH1(Form("h1DTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",500, 0, 250);
+    }
+  }
+  if(fDoJetProb){
+    fHistManager.CreateTH2("h2DProbDists","h2DProbDistsAll",200, 0, 1,500, 0, 250);
+    fHistManager.CreateTH2("h2DLNProbDists","h2DProbDistsAll",400, 0, 20,500, 0, 250);
+  }
   if (fIsPythia){
-    const char * tagtype[6] = {"Full","Single1st","Single2nd","Single3rd","Double","Triple"};
-    for(int iThresh=0;iThresh<fNThresholds;iThresh++){
-      for(int iType=0;iType<6;iType++){
-        fHistManager.CreateTH1(Form("h1DTrueBTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
-        fHistManager.CreateTH1(Form("h1DFalseCTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
-        fHistManager.CreateTH1(Form("h1DFalseUDSGTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
-        fHistManager.CreateTH1(Form("h1DFalseV0Tagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
+    if(fDoMCEffs){
+      for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+        for(int iType=0;iType<6;iType++){
+          fHistManager.CreateTH1(Form("h1DTrueBTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
+          fHistManager.CreateTH1(Form("h1DFalseCTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
+          fHistManager.CreateTH1(Form("h1DFalseUDSGTagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
+          fHistManager.CreateTH1(Form("h1DFalseV0Tagged_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500,0,250);
+        }
       }
     }
+    if(fDoJetProb){
+      for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+        for(int iType=0;iType<6;iType++){
+            fHistManager.CreateTH2(Form("h2DLNProbDistsTag_B_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",400, 0, 20,500, 0, 250);
+            fHistManager.CreateTH2(Form("h2DLNProbDistsTag_C_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",400, 0, 20,500, 0, 250);
+            fHistManager.CreateTH2(Form("h2DLNProbDistsTag_UDSG_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",400, 0, 20,500, 0, 250);
+            fHistManager.CreateTH2(Form("h2DLNProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",400, 0, 20,500, 0, 250);
 
-    h2DProbDistsUnid=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[0].Data()),"h2DProbDistsUnid",200, 0, 1,500, 0, 250);
-    h2DProbDistsudsg=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[1].Data()),"h2DProbDistsUDSG",200, 0, 1,500, 0, 250);
-    h2DProbDistsc=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[2].Data()),"h2DProbDistsC",200, 0, 1,500, 0, 250);
-    h2DProbDistsb=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[3].Data()),"h2DProbDistsB",200, 0, 1,500, 0, 250);
-    h2DProbDistss=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[4].Data()),"h2DProbDistsUDSGV0",200, 0, 1,500, 0, 250);
-    h2DProbDistss=(TH2D*)AddHistogramm(Form("h2DProbDists%s",sTemplateFlavour[5].Data()),"h2DProbDistsCV0",200, 0, 1,500, 0, 250);
-    h2DProbDists=(TH2D*)AddHistogramm("h2DProbDists","h2DProbDistsAll",200, 0, 1,500, 0, 250);
-  
-    h2DLNProbDistsUnid=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[0].Data()),"h2DProbDistsUnid",300, 0, 15,500, 0, 250);
-    h2DLNProbDistsudsg=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[1].Data()),"h2DProbDistsUDSG",300, 0, 15,500, 0, 250);
-    h2DLNProbDistsc=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[2].Data()),"h2DProbDistsC",300, 0, 15,500, 0, 250);
-    h2DLNProbDistsb=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[3].Data()),"h2DProbDistsB",300, 0, 15,500, 0, 250);
-    h2DLNProbDistss=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[4].Data()),"h2DProbDistsUDSGV0",300, 0, 15,500, 0, 250);
-    h2DLNProbDistss=(TH2D*)AddHistogramm(Form("h2DLNProbDists%s",sTemplateFlavour[5].Data()),"h2DProbDistsCV0",300, 0, 15,500, 0, 250);
-    h2DLNProbDists=(TH2D*)AddHistogramm("h2DLNProbDists","h2DProbDistsAll",300, 0, 15,500, 0, 250);
-
-  }
-  for(int iThresh=0;iThresh<fNThresholds;iThresh++){
-    fHistManager.CreateTH1(Form("h1DTagged_%0.2f",fFracs[iThresh]),";jet pt; #",500,0,250);
+            fHistManager.CreateTH2(Form("h2DProbDistsTag_B_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",200, 0, 1,500, 0, 250);
+            fHistManager.CreateTH2(Form("h2DProbDistsTag_C_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",200, 0, 1,500, 0, 250);
+            fHistManager.CreateTH2(Form("h2DProbDistsTag_UDSG_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",200, 0, 1,500, 0, 250);
+            fHistManager.CreateTH2(Form("h2DProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",200, 0, 1,500, 0, 250);
+        }
+      }
+    }
   }
 
     //****************************************
@@ -2349,13 +2406,20 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH1("fh1dTracksImpParXYSignificance","radial imp. parameter ;impact parameter xy significance;a.u.",200,-30,30,"s");
     //fHistManager.CreateTH1 ("fh1dTracksImpParXYZSignificance","3d imp. parameter ;impact parameter 3d significance;a.u.",2000,0.,100.,"s");
 
+    fHistManager.CreateTH2("fh1dTracksIPvsPt_B","Track IP vs Track Pt; p_{T,Track} (GeV/c); d_{0}",500,0,250,300,0,30);
+    fHistManager.CreateTH2("fh1dTracksIPvsPt_V0JetTracks","Track IP vs Track Pt; p_{T,Track} (GeV/c); d_{0}",500,0,250,300,0,30);
+    fHistManager.CreateTH2("fh1dTracksIPvsPt_V0inV0Jet","Track IP vs Track Pt; p_{T,Track} (GeV/c); d_{0}",500,0,250,300,0,30);
+    fHistManager.CreateTH2("fh1dTracksIPvsPt_V0inBJet","Track IP vs Track Pt; p_{T,Track} (GeV/c); d_{0}",500,0,250,300,0,30);
+
+
+
     //****************************************
     //Pt Distributions for N1,N2,N3 Tracks
     if(fIsPythia){
       for(int iN=1;iN<=3;iN++){
         fHistManager.CreateTH1(Form("fh1dJetRecPt_n_%i_all_Accepted",iN),"detector level jets;pt (GeV/c); count",500,0,250,"s");
         fHistManager.CreateTH1(Form("fh1dTrackPt_n_%i_all_Accepted",iN),"detector level jets;pt (GeV/c); count",500,0,200,"s");
-        for(int iFlav=0;iFlav<sTemplateFlavour.size();iFlav++){
+        for(long unsigned iFlav=0;iFlav<sTemplateFlavour.size();iFlav++){
           fHistManager.CreateTH1(Form("fh1dJetRecPt_n_%i_%s_Accepted",iN,sTemplateFlavour[iFlav].Data()),"detector level jets;pt (GeV/c); count",500,0,250,"s");
         }
       }
@@ -2420,6 +2484,13 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       fOutput->Add(fh2dAnLamdaPtVsJetPtMC);
     }
 
+    //Final Tagged JetPt Spectra
+    for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+      for(int iType=0;iType<6;iType++){
+        fHistManager.CreateTH1(Form("h1DTaggedJetPt_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";jet pt; #",500, 0, 250);
+      }
+    }
+
     //Impact Parameter Template Generation
     const char * base = "fh2dJetSignedImpPar";
     const char * dim[2]  = {"XY","XYZ"};
@@ -2482,11 +2553,11 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
 void AliAnalysisTaskHFJetIPQA::PrintV0Settings(){
     TString v0cuts="";
     Int_t version=1;
-    int sForm[22]={1,2,2,0,0,0,0,1,1,0,
-        0,1,0,1,0,3,3,0,0,0,3,3};
+    int sForm[24]={1,2,2,0,0,0,0,1,1,0,
+        0,1,0,1,0,3,3,0,0,0,3,3,2,2};
 
     v0cuts=version;
-    for(int iV0Cut=0;iV0Cut<22;iV0Cut++){
+    for(int iV0Cut=0;iV0Cut<24;iV0Cut++){
       v0cuts+="+";
       switch (sForm[iV0Cut]){
           case 0:
@@ -4264,7 +4335,7 @@ void AliAnalysisTaskHFJetIPQA::SetTCThresholds(TObjArray** &threshs){
       printf("iPoint=%i, xval=%f, yval=%f\n",iPoint, h1DThresholdsFirst[1]->GetBinCenter(iPoint),h1DThresholdsFirst[1]->GetBinContent(iPoint));
     }
     printf("2ndLargestIP: 3rd Histogram bins:\n");
-    for(int iPoint=0;iPoint<nPoints;iPoint++){
+    for(int iPoint=0;iPoint<nPoints;iPoint++)
       printf("iPoint=%i, xval=%f, yval=%f\n",iPoint, h1DThresholdsSecond[2]->GetBinCenter(iPoint),h1DThresholdsSecond[2]->GetBinContent(iPoint));
     }
     printf("3rdLargestIP: 1st Histogram bins:\n");
@@ -4328,7 +4399,8 @@ void AliAnalysisTaskHFJetIPQA::ReadProbvsIPLookup(TObjArray*& oLookup){
   }
 }
 
-void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec){
+void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec){    
+  //printf("Start TCTagging!\n");
   //threshold values for tracks with largest, second and third largest IP
   int iJetPtBin=h1DThresholdsFirst[0]->FindBin(jetpt);
   double IPthresN1[fNThresholds];  //IP threshold values for individual separation power
@@ -4431,61 +4503,85 @@ void AliAnalysisTaskHFJetIPQA::FillEfficiencyHists(bool** kTagDec, int jetflavou
   //printf("Receiving BTagged decision: %i\n", kTagDec[Full]);
   for(int iThresh=0;iThresh<fNThresholds;iThresh++){
     //printf("kTagDec=%i, jetflavour=%i, hasIPs=%i\n",kTagDec[iThresh][Full],jetflavour, hasIPs);
-    if(kTagDec[iThresh][Full]&&(jetflavour!=Unid))FillHist(Form("h1DTagged_%0.2f",fFracs[iThresh]),jetpt,1);
+    if(!fIsPythia&&kTagDec[iThresh][Full]){
+      FillHist(Form("h1DTagged_Full_%0.2f",fFracs[iThresh]),jetpt,1);
+      if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
+      if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
+      if(kTagDec[iThresh][Single3rd])FillHist(Form("h1DTagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
+      if(kTagDec[iThresh][Double])FillHist(Form("h1DTagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
+      if(kTagDec[iThresh][Triple])FillHist(Form("h1DTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
+    }
 
-    if(kTagDec[iThresh][Full]&&(jetflavour==B)&&hasIPs){
-      //printf("################################ Before: FoundJet with tagindex=%i!\n",kTagDec[iThresh][Full]);
+    if(fIsPythia){
+      if(kTagDec[iThresh][Full]&&(jetflavour!=Unid)){
+          FillHist(Form("h1DTagged_Full_%0.2f",fFracs[iThresh]),jetpt,1);
+          if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
+          if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
+          if(kTagDec[iThresh][Single3rd])FillHist(Form("h1DTagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
+          if(kTagDec[iThresh][Double])FillHist(Form("h1DTagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
+          if(kTagDec[iThresh][Triple])FillHist(Form("h1DTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
+      }
+      if(kTagDec[iThresh][Full]&&(jetflavour==B)&&hasIPs){
+        //printf("################################ Before: FoundJet with tagindex=%i!\n",kTagDec[iThresh][Full]);
 
-      FillHist(Form("h1DTrueBTagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DTrueBTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DTrueBTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single3rd])FillHist(Form("h1DTrueBTagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Double])FillHist(Form("h1DTrueBTagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Triple])FillHist(Form("h1DTrueBTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
+        FillHist(Form("h1DTrueBTagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DTrueBTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DTrueBTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single3rd])FillHist(Form("h1DTrueBTagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Double])FillHist(Form("h1DTrueBTagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Triple])FillHist(Form("h1DTrueBTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
 
-     //printf("################################ FoundJet with tagindex=%i!\n",kTagDec[iThresh][Full]);
-    }
-    if(kTagDec[iThresh][Full]&&(jetflavour==C)&&hasIPs){
-      FillHist(Form("h1DFalseCTagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DFalseCTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DFalseCTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single3rd]) FillHist(Form("h1DFalseCTagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Double])FillHist(Form("h1DFalseCTagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Triple])FillHist(Form("h1DFalseCTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
-      //printf("################################ CMistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[iThresh][Full]);
-    }
-    if(kTagDec[iThresh][Full]&&(jetflavour==UDSG)&&hasIPs){
-      FillHist(Form("h1DFalseUDSGTagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DFalseUDSGTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DFalseUDSGTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single3rd]) FillHist(Form("h1DFalseUDSGTagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Double])FillHist(Form("h1DFalseUDSGTagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Triple])FillHist(Form("h1DFalseUDSGTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
-      //printf("################################ LightMistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[iThresh][Full]);
-    }
-    if((kTagDec[iThresh][Full])&&((jetflavour==UDSGV0)||(jetflavour==CV0))&&hasIPs){
-      FillHist(Form("h1DFalseV0Tagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DFalseV0Tagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DFalseV0Tagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Single3rd]) FillHist(Form("h1DFalseV0Tagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Double])FillHist(Form("h1DFalseV0Tagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
-      if(kTagDec[iThresh][Triple])FillHist(Form("h1DFalseV0Tagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
-      //printf("################################ v0Mistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[iThresh][Full]);
-    }
-    if(!kTagDec[iThresh][Full]&&jetflavour==B&&hasIPs){
-      //printf("################################ Missed one: flavour is=%i\n", jetflavour);
+       //printf("################################ FoundJet with tagindex=%i!\n",kTagDec[iThresh][Full]);
+      }
+      if(kTagDec[iThresh][Full]&&(jetflavour==C)&&hasIPs){
+        FillHist(Form("h1DFalseCTagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DFalseCTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DFalseCTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single3rd]) FillHist(Form("h1DFalseCTagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Double])FillHist(Form("h1DFalseCTagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Triple])FillHist(Form("h1DFalseCTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
+        //printf("################################ CMistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[iThresh][Full]);
+      }
+      if(kTagDec[iThresh][Full]&&(jetflavour==UDSG)&&hasIPs){
+        FillHist(Form("h1DFalseUDSGTagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DFalseUDSGTagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DFalseUDSGTagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single3rd]) FillHist(Form("h1DFalseUDSGTagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Double])FillHist(Form("h1DFalseUDSGTagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Triple])FillHist(Form("h1DFalseUDSGTagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
+        //printf("################################ LightMistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[iThresh][Full]);
+      }
+      if((kTagDec[iThresh][Full])&&((jetflavour==UDSGV0)||(jetflavour==CV0))&&hasIPs){
+        FillHist(Form("h1DFalseV0Tagged_Full_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single1st]) FillHist(Form("h1DFalseV0Tagged_Single1st_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single2nd]) FillHist(Form("h1DFalseV0Tagged_Single2nd_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Single3rd]) FillHist(Form("h1DFalseV0Tagged_Single3rd_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Double])FillHist(Form("h1DFalseV0Tagged_Double_%0.2f",fFracs[iThresh]), jetpt, 1);
+        if(kTagDec[iThresh][Triple])FillHist(Form("h1DFalseV0Tagged_Triple_%0.2f",fFracs[iThresh]), jetpt, 1);
+        //printf("################################ v0Mistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[iThresh][Full]);
+      }
+      if(!kTagDec[iThresh][Full]&&jetflavour==B&&hasIPs){
+        //printf("################################ Missed one: flavour is=%i\n", jetflavour);
+      }
     }
   }
 }
 
+void AliAnalysisTaskHFJetIPQA::FillTaggedJetPtDistribution(bool** kTagDec, double jetpt){
+    const char * tagtype[6] = {"Full","Single1st","Single2nd","Single3rd","Double","Triple"};
+
+    for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+      for(int iType=0;iType<6;iType++){
+        if(kTagDec[iThresh][iType]){
+          //printf("Filling fracs=%f, iType=%s\n",fFracs[iThresh],tagtype[iType]);
+          FillHist(Form("h1DTaggedJetPt_%s_%0.2f",tagtype[iType],fFracs[iThresh]),jetpt,1);
+        }
+      }
+    }
+}
+
 void AliAnalysisTaskHFJetIPQA::FillV0EfficiencyHists(int isV0, int &jetflavour, double jetpt, bool &isV0Jet){
   //printf("isV0=%i, jetflavour=%i, jetpt=%f\n",isV0, jetflavour, jetpt);
-
-  if((!fIsPythia)&&(isV0==V0Rec)){
-      FillHist(Form("h1DV0TrueRec"), jetpt, 1);
-      isV0Jet=kTRUE;
-  }
-  else{
     switch (isV0){
       case V0Rec:
           FillHist(Form("h1DV0FalseRec"), jetpt, 1);
@@ -4495,13 +4591,13 @@ void AliAnalysisTaskHFJetIPQA::FillV0EfficiencyHists(int isV0, int &jetflavour, 
       case V0MC:
         FillHist(Form("h1DV0TrueDataDef"), jetpt, 1);
         if((jetflavour!=B)){
+          isV0Jet=kTRUE;
           FillHist(Form("h1DV0TrueMCDef"), jetpt, 1);
           //printf("Found MC def true V0\n");
         }
         //printf("Found MC true V0 Jet: jetflavour=%i\n",jetflavour);
         if(jetflavour==UDSG) jetflavour=UDSGV0;
         if(jetflavour==C) jetflavour=CV0;
-        isV0Jet=kTRUE;
           break;
 
       case V0TrueRec:
@@ -4509,15 +4605,14 @@ void AliAnalysisTaskHFJetIPQA::FillV0EfficiencyHists(int isV0, int &jetflavour, 
         FillHist(Form("h1DV0TrueRec"), jetpt, 1);
         if(jetflavour==UDSG) jetflavour=UDSGV0;
         if(jetflavour==C) jetflavour=CV0;
-        isV0Jet=kTRUE;
         if(jetflavour!=B){
           FillHist(Form("h1DV0TrueMCDef"), jetpt, 1);
+          isV0Jet=kTRUE;
           //printf("Found MC def true V0\n");
         }
         //printf("Found Rec true V0 Jet: jetflavour=%i\n",jetflavour);
           break;
     }
-  }
 }
 
 double AliAnalysisTaskHFJetIPQA::IntegrateIP(int iJetPtBin, int iIPBin, int iN){
@@ -4570,17 +4665,63 @@ double AliAnalysisTaskHFJetIPQA::GetTrackProbability(double jetpt, bool* hasIPs,
   return 0;
 }
 
-void AliAnalysisTaskHFJetIPQA::FillProbabilityHists(double jetpt,double probval,int jetflavour){
+void AliAnalysisTaskHFJetIPQA::FillProbabilityHists(double jetpt,double probval,int jetflavour,bool **kTagDec){
   //  printf("Filling iflavou=%i, jetpt=%f, probval=%f into histogram\n", jetflavour,jetpt,probval);
   double lnprobval=-TMath::Log(probval);
 
   //printf("logval=%f\n",lnprobval);
-
-  FillHist(Form("h2DProbDists%s",sTemplateFlavour[jetflavour].Data()),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
+  if(fIsPythia){
+    FillHist(Form("h2DProbDists%s",sTemplateFlavour[jetflavour].Data()),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
+    FillHist(Form("h2DLNProbDists%s",sTemplateFlavour[jetflavour].Data()),lnprobval,jetpt,1);     //*this->fXsectionWeightingFactor );
+  }
+  //untagged Probability hist
   FillHist(Form("h2DProbDists"),probval,jetpt,1);     //*this->fXsectionWeightingFactor );
-
-  FillHist(Form("h2DLNProbDists%s",sTemplateFlavour[jetflavour].Data()),lnprobval,jetpt,1);     //*this->fXsectionWeightingFactor );
   FillHist(Form("h2DLNProbDists"),lnprobval,jetpt,1);     //*this->fXsectionWeightingFactor );
+  const char * tagtype[6] = {"Full","Single1st","Single2nd","Single3rd","Double","Triple"};
+
+  //tagged Probability hists
+  if(fDoTCTagging){
+    for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+      for(int iType=0;iType<6;iType++){
+        if(kTagDec[iThresh][iType]){
+          FillHist(Form("h2DProbDistsTag_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+          FillHist(Form("h2DLNProbDistsTag_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+
+          switch(jetflavour){
+            case UDSG:
+              FillHist(Form("h2DProbDistsTag_UDSG_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+              FillHist(Form("h2DLNProbDistsTag_UDSG_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+              //printf("Filling UDSG %i %s %0.2f\n", jetflavour, tagtype[iType],fFracs[iThresh]);
+              break;
+
+            case B:
+              FillHist(Form("h2DProbDistsTag_B_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+              FillHist(Form("h2DLNProbDistsTag_B_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+              //printf("Filling B %i %s %0.2f\n,", jetflavour,tagtype[iType],fFracs[iThresh]);
+              break;
+
+            case C:
+              FillHist(Form("h2DProbDistsTag_C_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+              FillHist(Form("h2DLNProbDistsTag_C_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+              //printf("Filling C %i %s %0.2f\n",jetflavour, tagtype[iType],fFracs[iThresh]);
+              break;
+
+            case UDSGV0:
+              FillHist(Form("h2DProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+              FillHist(Form("h2DLNProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+              //printf("Filling V0 %i %s %0.2f\n",jetflavour, tagtype[iType],fFracs[iThresh]);
+              break;
+
+            case CV0:
+              FillHist(Form("h2DProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+              FillHist(Form("h2DLNProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+              //printf("Filling V0 %i %s %0.2f\n", jetflavour,tagtype[iType],fFracs[iThresh]);
+              break;
+          }
+        }
+      }
+    }
+  }
 }
 
 void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){

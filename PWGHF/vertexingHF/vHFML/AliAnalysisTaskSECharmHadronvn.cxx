@@ -478,8 +478,8 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
         switch(fDecChannel) {
             case kDplustoKpipi:
                 {
-                    fMLResponse = new AliHFMLResponseDplustoKpipi(fConfigPath.Data());
-                    fMLResponse->InitModels();
+                    fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
+                    fMLResponse->MLResponseInit();
                 }
             break;
             case kD0toKpi:
@@ -494,8 +494,8 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
             break;
             case kDstoKKpi:
                 {
-                    fMLResponse = new AliHFMLResponseDstoKKpi(fConfigPath.Data());
-                    fMLResponse->InitModels();
+                    fMLResponse = new AliHFMLResponseDstoKKpi("DstoKKpiMLResponse", "DstoKKpiMLResponse", fConfigPath.Data());
+                    fMLResponse->MLResponseInit();
                 }
             break;
         }
@@ -1355,7 +1355,7 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
         switch(fDecChannel) {
             case kDplustoKpipi:
             {
-                isMLsel = fMLResponse->IsSelectedML(modelPred[0], d, fAOD->GetMagneticField(), pidHF);
+                isMLsel = fMLResponse->IsSelected(modelPred[0], d, fAOD->GetMagneticField(), pidHF);
                 if(!isMLsel)
                     isSelected = 0;
                 break;
@@ -1373,12 +1373,12 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
             case kDstoKKpi:
             {
                 if(isSelected&4) {
-                    isMLsel = fMLResponse->IsSelectedML(modelPred[0], d, fAOD->GetMagneticField(), pidHF, 0);
+                    isMLsel = fMLResponse->IsSelected(modelPred[0], d, fAOD->GetMagneticField(), pidHF, 0);
                     if(!isMLsel)
                         isSelected &= ~4; //switch off bit ok KKpi hypo
                 }
                 if(isSelected&8) {
-                    isMLsel = fMLResponse->IsSelectedML(modelPred[1], d, fAOD->GetMagneticField(), pidHF, 1);
+                    isMLsel = fMLResponse->IsSelected(modelPred[1], d, fAOD->GetMagneticField(), pidHF, 1);
                     if(!isMLsel)
                         isSelected &= ~8; //switch off bit ok piKK hypo
                 }

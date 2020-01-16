@@ -567,6 +567,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  else if( fRunTable->IsAA() ) IsNotPileup = kTRUE;
  else if( !IsMC && !event->IsPileupFromSPDInMultBins() &&
 	(  fRunTable->IsPP() || fRunTable->IsPA() ) ) IsNotPileup = kTRUE;
+
+ if( fOption.Contains("NoPileupCut") ) IsNotPileup = kTRUE;
 //*****************************
 
 

@@ -258,6 +258,13 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
     fPairCleaner->CleanDecayAndDecay(&AntiDecays, &Gammas, 5);
   }
 
+  fPairCleaner->CleanTrackAndDecay(&Particles, &Gammas, 14);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &Gammas, 15);
+  fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 16);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &Decays, 17);
+  fPairCleaner->CleanTrackAndDecay(&Particles, &AntiDecays, 18);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 19);
+
   // Sigma0 selection
   fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, Decays);
   fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, AntiDecays);
@@ -266,20 +273,26 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
       sigma0sidebandLow, antiSigma0particles, antiSigma0sidebandUp,
       antiSigma0sidebandLow, sigma0lambda, antiSigma0lambda, sigma0photon, antiSigma0photon;
 
-  CastToVector(sigma0particles, fSigmaCuts->GetSigma());
-  CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp());
-  CastToVector(sigma0sidebandLow, fSigmaCuts->GetSidebandDown());
+  const int sigmaEntry = fRandom->Rndm() * fSigmaCuts->GetSigma().size();
+  const int sigmaSBUpEntry = fRandom->Rndm() * fSigmaCuts->GetSidebandUp().size();
+  const int sigmaSBLowEntry = fRandom->Rndm() * fSigmaCuts->GetSidebandDown().size();
+  CastToVector(sigma0particles, fSigmaCuts->GetSigma(), sigmaEntry);
+  CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp(), sigmaSBUpEntry);
+  CastToVector(sigma0sidebandLow, fSigmaCuts->GetSidebandDown(), sigmaSBLowEntry);
 
-  CastToVector(antiSigma0particles, fAntiSigmaCuts->GetSigma());
-  CastToVector(antiSigma0sidebandUp, fAntiSigmaCuts->GetSidebandUp());
-  CastToVector(antiSigma0sidebandLow, fAntiSigmaCuts->GetSidebandDown());
+  const int antisigmaEntry = fRandom->Rndm() * fAntiSigmaCuts->GetSigma().size();
+  const int antisigmaSBUpEntry = fRandom->Rndm() * fAntiSigmaCuts->GetSidebandUp().size();
+  const int antisigmaSBLowEntry = fRandom->Rndm() * fAntiSigmaCuts->GetSidebandDown().size();
+  CastToVector(antiSigma0particles, fAntiSigmaCuts->GetSigma(), antisigmaEntry);
+  CastToVector(antiSigma0sidebandUp, fAntiSigmaCuts->GetSidebandUp(), antisigmaSBUpEntry);
+  CastToVector(antiSigma0sidebandLow, fAntiSigmaCuts->GetSidebandDown(), antisigmaSBLowEntry);
 
   // Get the Sigma0 daughters
   if (fCheckDaughterCF) {
-    CastToVector(sigma0lambda, fSigmaCuts->GetLambda());
-    CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda());
-    CastToVector(sigma0photon, fSigmaCuts->GetPhoton());
-    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton());
+    CastToVector(sigma0lambda, fSigmaCuts->GetLambda(), sigmaEntry);
+    CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda(), antisigmaEntry);
+    CastToVector(sigma0photon, fSigmaCuts->GetPhoton(), sigmaEntry);
+    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton(), antisigmaEntry);
   }
 
   if (fFemtoJanitor) {
@@ -363,11 +376,12 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
 //____________________________________________________________________________________________________
 void AliAnalysisTaskNanoAODSigma0Femto::CastToVector(
     std::vector<AliFemtoDreamBasePart> &particlesOut,
-    std::vector<AliFemtoDreamBasePart> &particlesIn) {
+    std::vector<AliFemtoDreamBasePart> &particlesIn, int entry) {
   particlesOut.clear();
   // Randomly pick one of the particles in the container
   if (particlesIn.size() > 0) {
-    particlesOut.push_back(particlesIn[fRandom->Rndm() * particlesIn.size()]);
+    particlesOut.push_back(particlesIn[entry]);
+
   }
 }
 
@@ -428,7 +442,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   fLambda->SetPDGDaughterNeg(fV0Cuts->GetPDGNegDaug());
   fLambda->GetNegDaughter()->SetUseMCInfo(fIsMC);
 
-  const int nPairs = (fCheckDaughterCF) ? 14 : 6;
+  const int nPairs = (fCheckDaughterCF) ? 19 : 6;
   fPairCleaner = new AliFemtoDreamPairCleaner(nPairs, 6,
                                               fConfig->GetMinimalBookingME());
   fPartColl = new AliFemtoDreamPartCollection(fConfig,

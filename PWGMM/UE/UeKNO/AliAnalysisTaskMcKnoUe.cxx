@@ -101,7 +101,7 @@ using std::endl;
 
 #include "AliAnalysisTaskMcKnoUe.h"
 
-
+TF1* f_Eff;// efficiency for charged particles (2015 AA cuts) 
 const Char_t * nameReg[3]={"NS","AS","TS"};
 const Int_t nchNbins = 100;
 Double_t nchbins[nchNbins+1]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5,35.5,36.5,37.5,38.5,39.5,40.5,41.5,42.5,43.5,44.5,45.5,46.5,47.5,48.5,49.5,50.5,51.5,52.5,53.5,54.5,55.5,56.5,57.5,58.5,59.5,60.5,61.5,62.5,63.5,64.5,65.5,66.5,67.5,68.5,69.5,70.5,71.5,72.5,73.5,74.5,75.5,76.5,77.5,78.5,79.5,80.5,81.5,82.5,83.5,84.5,85.5,86.5,87.5,88.5,89.5,90.5,91.5,92.5,93.5,94.5,95.5,96.5,97.5,98.5,99.5};
@@ -110,6 +110,15 @@ const Int_t ptNbins = 36;
 Double_t ptbins1[ptNbins+1] = {
 	0.0,  0.1,  0.15,  0.2,  0.25,  0.3,  0.35,  0.4,  0.45,  0.5,  0.6,  0.7,  0.8,  0.9,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, 5.0, 6.0,    7.0,  8.0,  9.0,  10.0,  12.0,  14.0,  16.0,  18.0,  20.0,  25.0,  30.0,  40.0,  50.0
 };
+
+const Int_t ptNbinsL = 24;
+Double_t ptbins1L[ptNbinsL+1] = {
+        0.15, 0.50, 1.00, 1.50, 2.00, 2.50, 3.00, 3.50, 4.00, 4.50,
+        5.00, 6.00, 7.00, 8.00, 9.00, 10.0, 12.0, 14.0, 16.0, 18.0,
+        20.0, 25.0, 30.0, 40.0, 50.0
+};
+
+
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 class AliAnalysisTaskMcKnoUe;    // your analysis class
 
@@ -118,7 +127,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKnoUe) // classimp: necessary for root
 
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
-	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0),hPtLeadingGenPS(0), hPtLeadingGenPSV(0),hPtLeadingRecAll(0), hPtLeadingGenAll(0)   
+	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0)   
 
 {
 	for(Int_t i=0;i<3;++i){ 
@@ -128,8 +137,14 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 		hSumPtMC[i]=0;
 		hNumDenMCMatch[i]=0;
 		hSumPtMCMatch[i]=0;
+		// Data driven
+		hNumDenMCDd[i]=0;
+		hSumPtMCDd[i]=0;
+		hNumDenMCMatchDd[i]=0;
+		hSumPtMCMatchDd[i]=0;
 
 		hPtVsPtLeadingMeasured[i]=0;// only for data
+		hPtVsPtLeadingTrue[i]=0;
 
 		pNumDenMeasured[i]=0;// only for data
 		pSumPtMeasured[i]=0;// only for data
@@ -141,6 +156,9 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 		pSumPtMeasuredPS[i]=0;
 		pNumDenMeasuredPSV[i]=0;
 		pSumPtMeasuredPSV[i]=0;
+		pNumDenMeasuredGood[i]=0;
+		pSumPtMeasuredGood[i]=0;
+
 
 		pNumDenTrueAll[i]=0;
 		pSumPtTrueAll[i]=0;
@@ -148,6 +166,9 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 		pSumPtTruePS[i]=0;
 		pNumDenTruePSV[i]=0;
 		pSumPtTruePSV[i]=0;
+		pNumDenTrueGood[i]=0;
+		pSumPtTrueGood[i]=0;
+
 		pNumDenTrue[i]=0;
 		pSumPtTrue[i]=0;
 	}
@@ -161,7 +182,7 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTaskSE(name),
-	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0) 
+	fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0) 
 {
 	for(Int_t i=0;i<3;++i){
 
@@ -171,8 +192,14 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		hSumPtMC[i]=0;
 		hNumDenMCMatch[i]=0;
 		hSumPtMCMatch[i]=0;
+		// Data driven
+		hNumDenMCDd[i]=0;
+		hSumPtMCDd[i]=0;
+		hNumDenMCMatchDd[i]=0;
+		hSumPtMCMatchDd[i]=0;
 
 		hPtVsPtLeadingMeasured[i]=0;// only for data
+		hPtVsPtLeadingTrue[i]=0;		
 		pNumDenMeasured[i]=0;// only for data
 		pSumPtMeasured[i]=0;// only for data
 
@@ -182,6 +209,8 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		pSumPtMeasuredPS[i]=0;
 		pNumDenMeasuredPSV[i]=0;
 		pSumPtMeasuredPSV[i]=0;
+		pNumDenMeasuredGood[i]=0;
+		pSumPtMeasuredGood[i]=0;
 
 		pNumDenTrueAll[i]=0;
 		pSumPtTrueAll[i]=0;
@@ -189,6 +218,9 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		pSumPtTruePS[i]=0;
 		pNumDenTruePSV[i]=0;
 		pSumPtTruePSV[i]=0;
+		pNumDenTrueGood[i]=0;
+		pSumPtTrueGood[i]=0;
+
 		pNumDenTrue[i]=0;
 		pSumPtTrue[i]=0;
 
@@ -217,6 +249,13 @@ AliAnalysisTaskMcKnoUe::~AliAnalysisTaskMcKnoUe()
 //_____________________________________________________________________________
 void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 {
+
+	// parametrization of efficiency
+	f_Eff = 0;
+	f_Eff = new TF1("ch_Eff",
+			"(x>=0.15&&x<[0])*([1]+x*[2])+(x>=[0]&&x<[3])*([4]+[5]*x*x+[6]*x*x*x+[7]*x)+(x>=[3])*([8])", 0.0, 1e2);
+	f_Eff->SetParameters(9.00000e-01,9.30176e-01,-4.29864e-01,4.90000e+00,3.89778e-01,-5.81233e-02,5.41373e-03,2.20377e-01,7.10559e-01);
+
 	// fCuts *** leading particle ***
 	if(!fLeadingTrackFilter){
 		fLeadingTrackFilter = new AliAnalysisFilter("trackFilter2015");
@@ -301,108 +340,146 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	fOutputList->Add(hCounter);
 
 	for(Int_t i=0;i<3;++i){
-		hNumDenMC[i]= new TH2D(Form("hNumDenMC_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		hNumDenMC[i]= new TH2D(Form("hNumDenMC_%s",nameReg[i]),"",ptNbinsL,ptbins1L,nchNbins,nchbins);
 		fOutputList->Add(hNumDenMC[i]);
-		hSumPtMC[i]= new TH2D(Form("hSumPtMC_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		hSumPtMC[i]= new TH2D(Form("hSumPtMC_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
 		fOutputList->Add(hSumPtMC[i]);
-		hNumDenMCMatch[i]= new TH2D(Form("hNumDenMCMatch_%s",nameReg[i]),"",ptNbins,ptbins1,nchNbins,nchbins);
+		hNumDenMCMatch[i]= new TH2D(Form("hNumDenMCMatch_%s",nameReg[i]),"",ptNbinsL,ptbins1L,nchNbins,nchbins);
 		fOutputList->Add(hNumDenMCMatch[i]);
-		hSumPtMCMatch[i]= new TH2D(Form("hSumPtMCMatch_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		hSumPtMCMatch[i]= new TH2D(Form("hSumPtMCMatch_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
 		fOutputList->Add(hSumPtMCMatch[i]);
 
 	}
+	// Data driven
+	for(Int_t i=0;i<3;++i){
+		hNumDenMCDd[i]= new TH2D(Form("hNumDenMCDd_%s",nameReg[i]),"",ptNbinsL,ptbins1L,nchNbins,nchbins);
+		fOutputList->Add(hNumDenMCDd[i]);
+		hSumPtMCDd[i]= new TH2D(Form("hSumPtMCDd_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
+		fOutputList->Add(hSumPtMCDd[i]);
+		hNumDenMCMatchDd[i]= new TH2D(Form("hNumDenMCMatchDd_%s",nameReg[i]),"",ptNbinsL,ptbins1L,nchNbins,nchbins);
+		fOutputList->Add(hNumDenMCMatchDd[i]);
+		hSumPtMCMatchDd[i]= new TH2D(Form("hSumPtMCMatchDd_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
+		fOutputList->Add(hSumPtMCMatchDd[i]);
+
+	}
+
+
 
 	for(Int_t i=0;i<3;++i){
 
-		hPtVsPtLeadingMeasured[i] = new TH2D(Form("hPtVsPtLeadingMeasured_%s",nameReg[i]),"",ptNbins,ptbins1,ptNbins,ptbins1);
+		hPtVsPtLeadingMeasured[i] = new TH2D(Form("hPtVsPtLeadingMeasured_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
 		fOutputList->Add(hPtVsPtLeadingMeasured[i]);
 
-		pNumDenMeasured[i] = new TProfile(Form("pNumDenMeasured_%s",nameReg[i]),"",ptNbins,ptbins1);
+		hPtVsPtLeadingTrue[i] = new TH2D(Form("hPtVsPtLeadingTrue_%s",nameReg[i]),"",ptNbinsL,ptbins1L,ptNbins,ptbins1);
+		fOutputList->Add(hPtVsPtLeadingTrue[i]);
+
+		pNumDenMeasured[i] = new TProfile(Form("pNumDenMeasured_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenMeasured[i]);
 
-		pSumPtMeasured[i] = new TProfile(Form("pSumPtMeasured_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtMeasured[i] = new TProfile(Form("pSumPtMeasured_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtMeasured[i]);
 
 		// All no trigger sel
-		pNumDenMeasuredAll[i] = new TProfile(Form("pNumDenMeasuredAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenMeasuredAll[i] = new TProfile(Form("pNumDenMeasuredAll_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenMeasuredAll[i]);
 
-		pSumPtMeasuredAll[i] = new TProfile(Form("pSumPtMeasuredAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtMeasuredAll[i] = new TProfile(Form("pSumPtMeasuredAll_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtMeasuredAll[i]);
 		// trigger sel
-		pNumDenMeasuredPS[i] = new TProfile(Form("pNumDenMeasuredPS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenMeasuredPS[i] = new TProfile(Form("pNumDenMeasuredPS_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenMeasuredPS[i]);
 
-		pSumPtMeasuredPS[i] = new TProfile(Form("pSumPtMeasuredPS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtMeasuredPS[i] = new TProfile(Form("pSumPtMeasuredPS_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtMeasuredPS[i]);
 		// trigger sel + vtx rec
-		pNumDenMeasuredPSV[i] = new TProfile(Form("pNumDenMeasuredPSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenMeasuredPSV[i] = new TProfile(Form("pNumDenMeasuredPSV_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenMeasuredPSV[i]);
 
-		pSumPtMeasuredPSV[i] = new TProfile(Form("pSumPtMeasuredPSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtMeasuredPSV[i] = new TProfile(Form("pSumPtMeasuredPSV_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtMeasuredPSV[i]);
+		// all sel criteria
+		pNumDenMeasuredGood[i] = new TProfile(Form("pNumDenMeasuredGood_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
+		fOutputList->Add(pNumDenMeasuredGood[i]);
+
+		pSumPtMeasuredGood[i] = new TProfile(Form("pSumPtMeasuredGood_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
+		fOutputList->Add(pSumPtMeasuredGood[i]);
+
 
 		// MC true
 		// All no trigger sel
-		pNumDenTrueAll[i] = new TProfile(Form("pNumDenTrueAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenTrueAll[i] = new TProfile(Form("pNumDenTrueAll_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenTrueAll[i]);
 
-		pSumPtTrueAll[i] = new TProfile(Form("pSumPtTrueAll_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtTrueAll[i] = new TProfile(Form("pSumPtTrueAll_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTrueAll[i]);
 		// trigger sel
-		pNumDenTruePS[i] = new TProfile(Form("pNumDenTruePS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenTruePS[i] = new TProfile(Form("pNumDenTruePS_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenTruePS[i]);
 
-		pSumPtTruePS[i] = new TProfile(Form("pSumPtTruePS_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtTruePS[i] = new TProfile(Form("pSumPtTruePS_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTruePS[i]);
 		// trigger sel + vtx rec
-		pNumDenTruePSV[i] = new TProfile(Form("pNumDenTruePSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenTruePSV[i] = new TProfile(Form("pNumDenTruePSV_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenTruePSV[i]);
 
-		pSumPtTruePSV[i] = new TProfile(Form("pSumPtTruePSV_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtTruePSV[i] = new TProfile(Form("pSumPtTruePSV_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTruePSV[i]);
+		// all sel criteria
+		pNumDenTrueGood[i] = new TProfile(Form("pNumDenTrueGood_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
+		fOutputList->Add(pNumDenTrueGood[i]);
 
+		pSumPtTrueGood[i] = new TProfile(Form("pSumPtTrueGood_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
+		fOutputList->Add(pSumPtTrueGood[i]);
 
-		pNumDenTrue[i] = new TProfile(Form("pNumDenTrue_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pNumDenTrue[i] = new TProfile(Form("pNumDenTrue_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pNumDenTrue[i]);
 
-		pSumPtTrue[i] = new TProfile(Form("pSumPtTrue_%s",nameReg[i]),"",ptNbins,ptbins1);
+		pSumPtTrue[i] = new TProfile(Form("pSumPtTrue_%s",nameReg[i]),"",ptNbinsL,ptbins1L);
 		fOutputList->Add(pSumPtTrue[i]);
 
 	}
 
-	hPtLeadingTrue = new TH1D("hPtLeadingTrue","",ptNbins,ptbins1);
+	hPtLeadingTrue = new TH1D("hPtLeadingTrue","",ptNbinsL,ptbins1L);
 	fOutputList->Add(hPtLeadingTrue);
 
-	hPtLeadingMeasured = new TH1D("hPtLeadingMeasured","",ptNbins,ptbins1);
+	hPtLeadingMeasured = new TH1D("hPtLeadingMeasured","",ptNbinsL,ptbins1L);
 	fOutputList->Add(hPtLeadingMeasured);
 
 	for(Int_t i=0;i<3;++i){
-		hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",nameReg[i]),"gen pT vs nch_transverse",ptNbins,ptbins1,nchNbins,nchbins);
+
+		hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",nameReg[i]),"gen pT vs nch_transverse",nchNbins,nchbins,ptNbins,ptbins1);
 		fOutputList->Add(hPtVsUEGenTest[i]);
 
-		hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",nameReg[i]),"rec pT vs nch_transverse",ptNbins,ptbins1,nchNbins,nchbins);
+		hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",nameReg[i]),"rec pT vs nch_transverse",nchNbins,nchbins,ptNbins,ptbins1);
 		fOutputList->Add(hPtVsUERecTest[i]);
+
 	}
 
 
-	hPtLeadingRecAll = new TH1D("hPtLeadingRecAll","rec pTleading before any selection",ptNbins,ptbins1); 
+	hPtLeadingRecAll = new TH1D("hPtLeadingRecAll","rec pTleading before any selection",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingRecAll);
 
-	hPtLeadingRecPS = new TH1D("hPtLeadingRecPS","rec pTleading after physics selection",ptNbins,ptbins1); 
+	hPtLeadingRecPS = new TH1D("hPtLeadingRecPS","rec pTleading after physics selection",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingRecPS);
 
-	hPtLeadingRecPSV = new TH1D("hPtLeadingRecPSV","rec pTleading after physics selection + vtx",ptNbins,ptbins1); 
+	hPtLeadingRecPSV = new TH1D("hPtLeadingRecPSV","rec pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingRecPSV);
 
-	hPtLeadingGenAll = new TH1D("hPtLeadingGenAll","gen pTleading before any selection",ptNbins,ptbins1);
+	hPtLeadingRecGood = new TH1D("hPtLeadingRecGood","rec pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
+	fOutputList->Add(hPtLeadingRecGood);
+
+
+	hPtLeadingGenAll = new TH1D("hPtLeadingGenAll","gen pTleading before any selection",ptNbinsL,ptbins1L);
 	fOutputList->Add(hPtLeadingGenAll);
 
-	hPtLeadingGenPS = new TH1D("hPtLeadingGenPS","gen pTleading after physics selection",ptNbins,ptbins1); 
+	hPtLeadingGenPS = new TH1D("hPtLeadingGenPS","gen pTleading after physics selection",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingGenPS);
 
-	hPtLeadingGenPSV = new TH1D("hPtLeadingGenPSV","gen pTleading after physics selection + vtx",ptNbins,ptbins1); 
+	hPtLeadingGenPSV = new TH1D("hPtLeadingGenPSV","gen pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingGenPSV);
+
+	hPtLeadingGenGood = new TH1D("hPtLeadingGenGood","gen pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
+	fOutputList->Add(hPtLeadingGenGood);
 
 
 	fEventCuts.AddQAplotsToList(fOutputList);
@@ -525,6 +602,20 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 		return;
 	}
 
+	hPtLeadingRecGood->Fill(fRecLeadPt);
+	if(isGoodVtxPosMC)
+		hPtLeadingGenGood->Fill(fGenLeadPt);
+
+	for(Int_t i=0;i<3;++i){
+		pNumDenMeasuredGood[i]->Fill(fRecLeadPt,ue_rec[i]);
+		pSumPtMeasuredGood[i]->Fill(fRecLeadPt,ue_rec[i+3]);
+		if(isGoodVtxPosMC){
+			pNumDenTrueGood[i]->Fill(fGenLeadPt,ue_gen[i]);
+			pSumPtTrueGood[i]->Fill(fGenLeadPt,ue_gen[i+3]);
+		}
+	}
+
+
 
 	Double_t randomUE = gRandom->Uniform(0.0,1.0);
 	if(randomUE<0.5){// corrections (50% stat.)
@@ -636,31 +727,47 @@ void AliAnalysisTaskMcKnoUe::GetPtLeadingMisRecCorrection(){
 		sumpt_top[i]=0;
 	}
 
+	vector<Float_t> ptArray;
+	vector<Float_t> phiArray;
+	vector<Int_t>   indexArray;
 
-	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
-		if(fGenLeadIn==i)continue;
+	Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
+	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
 
-		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
-		if (!particle) continue;
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
 
-		if (!fMC->IsPhysicalPrimary(i)) continue; 
-		if (particle->Charge() == 0) continue;
-		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
-		if( particle->Pt() < fPtMin)continue;
+		if(!track) continue;
 
-		Double_t DPhi = DeltaPhi(particle->Phi(), fRecLeadPhi);
+		if(!fLeadingTrackFilter->IsSelected(track))
+			continue;
 
-		// definition of the topological regions
-		if(TMath::Abs(DPhi)<pi/3.0){// near side
-			nch_top[0]++; sumpt_top[0]+=particle->Pt();	
+		if(TMath::Abs(track->Eta()) > fEtaCut)
+			continue;
+
+		if( track->Pt() < fPtMin)continue;
+
+		if(i!=fRecLeadIn){// here we exclude the auto correlation
+			Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+
+			// definition of the topological regions
+			if(TMath::Abs(DPhi)<pi/3.0){// near side
+				nch_top[0]++; sumpt_top[0]+=track->Pt();	
+			}
+			else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+				nch_top[1]++; sumpt_top[1]+=track->Pt();
+			}
+			else{// transverse side
+				nch_top[2]++; sumpt_top[2]+=track->Pt();
+			}
 		}
-		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-			nch_top[1]++; sumpt_top[1]+=particle->Pt();
-		}
-		else{// transverse side
-			nch_top[2]++; sumpt_top[2]+=particle->Pt();
-		}
+		// second track selection following the efficiency 
+		if( f_Eff->Eval(track->Pt()) < gRandom->Uniform(0,1) )
+			continue;
+		ptArray.push_back(track->Pt());
+		phiArray.push_back(track->Phi());
+		indexArray.push_back(i);
+
 	}
 
 	AliESDtrack* ltrack = static_cast<AliESDtrack*>(fESD->GetTrack(fRecLeadIn));
@@ -675,6 +782,58 @@ void AliAnalysisTaskMcKnoUe::GetPtLeadingMisRecCorrection(){
 			hSumPtMCMatch[i]->Fill(ptlrec,sumpt_top[i]);
 		}
 	}
+
+	// Now the data driven approach
+	Float_t flPt = 0;// leading pT
+	Float_t flPhi = 0;
+	Int_t flIndex = 0;
+	Int_t ntrk = ptArray.size();
+
+	for(Int_t i=0;i<ntrk;++i){
+
+
+		if ( flPt < ptArray[i] ){
+			flPt  = ptArray[i];
+			flPhi = phiArray[i];
+			flIndex = indexArray[i];
+		}
+	}
+
+	Int_t nchm_top[3];
+	Double_t sumptm_top[3];
+	for(Int_t i=0;i<3;++i){
+		nchm_top[i]=0;
+		sumptm_top[i]=0;
+	}
+	for(Int_t i=0;i<ntrk;++i){
+
+		if(indexArray[i]==flIndex)
+			continue;
+
+		Double_t DPhi = DeltaPhi(phiArray[i], flPhi);
+		if(TMath::Abs(DPhi)<pi/3.0){// near side
+			nchm_top[0]++; sumptm_top[0]+=ptArray[i];
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+			nchm_top[1]++; sumptm_top[1]+=ptArray[i];
+		}
+		else{// transverse side
+			nchm_top[2]++; sumptm_top[2]+=ptArray[i];
+		}
+	}
+	// Here I fill the histograms for the data driven (Dd) aprroach
+	for(Int_t i=0;i<3;++i){
+		hNumDenMCDd[i]->Fill(flPt,nchm_top[i]);
+		hSumPtMCDd[i]->Fill(flPt,sumptm_top[i]);
+		if(flIndex==fRecLeadIn){
+			hNumDenMCMatchDd[i]->Fill(flPt,nchm_top[i]);
+			hSumPtMCMatchDd[i]->Fill(flPt,sumptm_top[i]);
+		}
+	}
+
+	ptArray.clear();
+	phiArray.clear();
+	indexArray.clear();
 
 }
 
@@ -827,7 +986,7 @@ void AliAnalysisTaskMcKnoUe::GetMeanUEObservables(vector<Double_t> &genArray, ve
 		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
 		if( particle->Pt() < fPtMin)continue;
 
-		Double_t DPhi = DeltaPhi(particle->Phi(), fRecLeadPhi);
+		Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
 
 		// definition of the topological regions
 		if(TMath::Abs(DPhi)<pi/3.0){// near side
@@ -920,17 +1079,20 @@ void AliAnalysisTaskMcKnoUe::GetUEObservables(){
 		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
 		if( particle->Pt() < fPtMin)continue;
 
-		Double_t DPhi = DeltaPhi(particle->Phi(), fRecLeadPhi);
+		Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
 
 		// definition of the topological regions
 		if(TMath::Abs(DPhi)<pi/3.0){// near side
 			nch_top[0]++; sumpt_top[0]+=particle->Pt();
+			hPtVsPtLeadingTrue[0]->Fill(fGenLeadPt,particle->Pt());
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
 			nch_top[1]++; sumpt_top[1]+=particle->Pt();
+			hPtVsPtLeadingTrue[1]->Fill(fGenLeadPt,particle->Pt());
 		}
 		else{// transverse side
 			nch_top[2]++; sumpt_top[2]+=particle->Pt();
+			hPtVsPtLeadingTrue[2]->Fill(fGenLeadPt,particle->Pt());
 		}
 
 

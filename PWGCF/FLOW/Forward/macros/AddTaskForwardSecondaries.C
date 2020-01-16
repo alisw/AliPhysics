@@ -80,7 +80,7 @@ AliAnalysisDataContainer* makeEmptyContainer(){
   return weights;
 }
 
-AliAnalysisTaskSE* AddTaskForwardSecondaries()
+AliAnalysisTaskSE* AddTaskForwardSecondaries(TString taskname)
 {
   std::cout << "AddTaskForwardSecondaries" << std::endl;
 
@@ -92,12 +92,12 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
 
   const char* name = Form("ForwardFlowQC");
   AliForwardSecondariesTask* task = new AliForwardSecondariesTask(name);
-  TString resName = "Secondaries";
+  TString resName = taskname;
 
   //TString nua_file =  "/home/thoresen/Documents/PhD/plots/nua/Datasets/LHC17i2f/ESD/maxstrip0/fmdreco_tpcreco_runsz.root";
   TString nua_file = "/home/thoresen/Documents/PhD/plots/nua/Datasets/LHC17i2f/ESD/fmdreco_tpcreco_runsz.root";
 
-  Bool_t doNUA = kTRUE;
+  Bool_t doNUA = kFALSE;
 
   task->fSettings.fileName = resName;
   mgr->AddTask(task);

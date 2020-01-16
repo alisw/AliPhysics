@@ -33,11 +33,11 @@ using std::array;
 #include <TPaveText.h>
 #include <TLatex.h>
 
-const char* kPrefix[2] = {"","anti"};
+const char* kPrefix[2] = {"deuterons","antideuterons"};
 
 const char* kParticleNames[2] = {"Deuterons", "Antideuterons"};
 
-void Final(const char* fitFunctionName = "LevyTsallis") {
+void Final(const char* fitFunctionName = "LevyTsallis", bool no_function = false) {
   TFile spectra_file(kSpectraOutput.data());
   TFile systematics_file(kJoinSystematicsOutput.data());
   TFile final_file(kFinalOutput.data(),"recreate");
@@ -45,6 +45,8 @@ void Final(const char* fitFunctionName = "LevyTsallis") {
   //histograms with corrected spectra
   TH1F* stat[2][kCentLength];
   TH1F* syst[2][kCentLength];
+  TH1F* syst_pt_uncorr[2][kCentLength];
+  TH1F* syst_pt_corr[2][kCentLength];
   TH1F* syst_mult_corr[2][kCentLength];
   TH1F* syst_mult_uncorr[2][kCentLength];
 
@@ -63,6 +65,16 @@ void Final(const char* fitFunctionName = "LevyTsallis") {
       Requires(syst_rel,systpath.data());
       syst[iS][iC]  = (TH1F*)stat[iS][iC]->Clone(("syst" + std::to_string(iC)).data());
       //
+      string pt_uncorr_sytpath = kNames[iS] + "/" + std::to_string(iC) + "/joined/pt_uncorr_" + kLetter[iS] + std::to_string(iC);
+      TH1F* pt_uncorr_syst_rel = (TH1F*)systematics_file.Get(pt_uncorr_sytpath.data());
+      Requires(pt_uncorr_syst_rel, pt_uncorr_sytpath.data());
+      syst_pt_uncorr[iS][iC]  = (TH1F*)stat[iS][iC]->Clone(("syst_pt_uncorr" + std::to_string(iC)).data());
+      //
+      string pt_corr_sytpath = kNames[iS] + "/" + std::to_string(iC) + "/joined/pt_corr_" + kLetter[iS] + std::to_string(iC);
+      TH1F* pt_corr_syst_rel = (TH1F*)systematics_file.Get(pt_corr_sytpath.data());
+      Requires(pt_corr_syst_rel, pt_corr_sytpath.data());
+      syst_pt_corr[iS][iC]  = (TH1F*)stat[iS][iC]->Clone(("syst_pt_corr" + std::to_string(iC)).data());
+      //
       string mult_corr_sytpath = kNames[iS] + "/" + std::to_string(iC) + "/joined/mult_corr_" + kLetter[iS] + std::to_string(iC);
       TH1F* mult_corr_syst_rel = (TH1F*)systematics_file.Get(mult_corr_sytpath.data());
       Requires(mult_corr_syst_rel,mult_corr_sytpath.data());
@@ -78,17 +90,25 @@ void Final(const char* fitFunctionName = "LevyTsallis") {
           continue;
         }
         syst[iS][iC]->SetBinError(iB,syst_rel->GetBinContent(iB) * stat[iS][iC]->GetBinContent(iB));
+        syst_pt_uncorr[iS][iC]->SetBinError(iB,pt_uncorr_syst_rel->GetBinContent(iB) * stat[iS][iC]->GetBinContent(iB));
+        syst_pt_corr[iS][iC]->SetBinError(iB,pt_corr_syst_rel->GetBinContent(iB) * stat[iS][iC]->GetBinContent(iB));
         syst_mult_corr[iS][iC]->SetBinError(iB,mult_corr_syst_rel->GetBinContent(iB) * stat[iS][iC]->GetBinContent(iB));
         syst_mult_uncorr[iS][iC]->SetBinError(iB,mult_uncorr_syst_rel->GetBinContent(iB) * stat[iS][iC]->GetBinContent(iB));
       }
       plotting::SetHistStyle(stat[iS][iC],plotting::kSpectraColors[iC]);
       plotting::SetHistStyle(syst[iS][iC],plotting::kSpectraColors[iC]);
+      plotting::SetHistStyle(syst_pt_uncorr[iS][iC],plotting::kSpectraColors[iC]);
+      plotting::SetHistStyle(syst_pt_corr[iS][iC],plotting::kSpectraColors[iC]);
       plotting::SetHistStyle(syst_mult_corr[iS][iC],plotting::kSpectraColors[iC]);
       plotting::SetHistStyle(syst_mult_uncorr[iS][iC],plotting::kSpectraColors[iC]);
       stat[iS][iC]->Write("stat");
       stat[iS][iC]->Scale(kScaleFactor[iC]);
       syst[iS][iC]->Write("syst");
       syst[iS][iC]->Scale(kScaleFactor[iC]);
+      syst_pt_uncorr[iS][iC]->Write("syst_pt_uncorr");
+      syst_pt_uncorr[iS][iC]->Scale(kScaleFactor[iC]);
+      syst_pt_corr[iS][iC]->Write("syst_pt_corr");
+      syst_pt_corr[iS][iC]->Scale(kScaleFactor[iC]);
       syst_mult_corr[iS][iC]->Write("syst_mult_corr");
       syst_mult_corr[iS][iC]->Scale(kScaleFactor[iC]);
       syst_mult_uncorr[iS][iC]->Write("syst_mult_uncorr");
@@ -111,22 +131,22 @@ void Final(const char* fitFunctionName = "LevyTsallis") {
     TLatex text;
     text.SetTextFont(63);
     text.SetTextSize(22);
-    //text.DrawText(0.5,0.75,"ALICE Preliminary");
+    //text.DrawText(0.5,7.5,"This work");
     float name_position = (iS==0) ? 3.3 : 3.0;
     text.DrawLatex(name_position,7.5,Form("#bf{%s, pp, #sqrt{#it{s}} = 13 TeV}",kNamePlot[iS].data()));
     text.DrawLatex(3.35461,0.41997,Form("#bf{#color[%d]{#LTd#it{N}_{ch} / d#it{#eta}#GT = 26.02}}",plotting::kSpectraColors[0]));
     text.DrawLatex(0.641832,1.02914e-06,Form("#bf{#color[%d]{#LTd#it{N}_{ch} / d#it{#eta}#GT = 2.55}}",plotting::kSpectraColors[8]));
-    TLegend final_leg(0.699248,0.233043,0.943609,0.558261);
+    TLegend final_leg(0.70,0.23,0.94,0.56);
     final_leg.SetBorderSize(0);
     final_leg.SetTextSize(0.027);
     final_leg.SetHeader("V0M Multiplicity Classes");
     TLegendEntry *header = (TLegendEntry*)final_leg.GetListOfPrimitives()->First();
     header->SetTextAlign(22);
     final_leg.SetNColumns(2);
-    TFile bwfile(Form("%s%sfits.root",kBaseOutputDir.data(),kPrefix[iS]),"read");
-    if (bwfile.IsOpen()) {
-      TF1* bw = nullptr;
-      TH1F* scaledbw = nullptr;
+    TFile bwfile(Form("%s%s_fits.root",kBaseOutputDir.data(),kPrefix[iS]),"read");
+    TF1* bw = nullptr;
+    TH1F* scaledbw = nullptr;
+    if(!no_function && bwfile.IsOpen()) {  
       for (int iC = 0; iC < kCentLength; ++iC) {
         bw = (TF1*)bwfile.Get(Form("%s/%i/%s%i",fitFunctionName,iC,fitFunctionName,iC));
         Requires(bw, Form("%s/%i/%s%i",fitFunctionName,iC,fitFunctionName,iC));
@@ -139,12 +159,14 @@ void Final(const char* fitFunctionName = "LevyTsallis") {
         spectra.cd();
         scaledbw->Draw("lsame");
       }
-      final_leg.AddEntry(scaledbw,"Individual fit","l");
     }
     for (int iC = 0; iC < kCentLength; ++iC) {
       stat[iS][iC]->Draw("esamex0");
       syst[iS][iC]->Draw("e2same");
       final_leg.AddEntry(syst[iS][iC],Form("%s (#times 2^{ %d})",kRomanLabels[iC],kExponent[iC]),"fp");
+    }
+    if(!no_function && bwfile.IsOpen()) {
+      final_leg.AddEntry(scaledbw,"Individual fit","l");
     }
     final_leg.Draw();
     spectra.SetLogy();

@@ -10,78 +10,23 @@
 /// \file AliMLResponse.cxx
 /// \author pietro.fecchio@cern.ch, maximiliano.puccio@cern.ch
 
-#include <TDirectory.h>
-#include <TFile.h>
-#include <TGrid.h>
-#include <TSystem.h>
-
-#include "AliLog.h"
 #include "AliMLResponse.h"
 
-#include "assert.h"
+#include "yaml-cpp/yaml.h"
 
+#include "AliLog.h"
+#include "AliExternalBDT.h"
 
 using std::map;
 using std::pair;
 using std::string;
 using std::vector;
 
-namespace {
-
-enum kLibrary { kXGBoost, kLightGBM, kModelLibrary };
-
-map<string, int> kLibraryMap = {{"kXGBoost", kXGBoost}, {"kLightGBM", kLightGBM}, {"kModelLibrary", kModelLibrary}};
-
-string ImportFile(string path) {
-  string modelname = path.substr(path.find_last_of("/") + 1);
-
-  if (path.find("alien:") != string::npos) {
-    if (gGrid == nullptr) {
-      TGrid::Connect("alien://");
-      assert(gGrid != nullptr && "Connection to GRID not established! Exit");
-    }
-  }
-
-  string newpath = gSystem->pwd() + string("/") + modelname.data();
-  string oldpath = gDirectory->GetPath();
-
-  bool cpStatus = TFile::Cp(path.data(), newpath.data());
-  assert(cpStatus && "Error in coping file in the working directory! Exit");
-
-  gDirectory->Cd(oldpath.data());
-
-  return newpath;
-}
-}    // namespace
-
-bool ModelHandler::CompileModel() {
-  string localpath = ImportFile(this->path);
-
-  switch (kLibraryMap[GetLibrary()]) {
-  case kXGBoost: {
-    return this->model.LoadXGBoostModel(localpath.data());
-    break;
-  }
-  case kLightGBM: {
-    return this->model.LoadLightGBMModel(localpath.data());
-    break;
-  }
-  case kModelLibrary: {
-    return this->model.LoadModelLibrary(localpath.data());
-    break;
-  }
-  default: {
-    return this->model.LoadXGBoostModel(localpath.data());
-    break;
-  }
-  }
-}
-
 /// \cond CLASSIMP
 ClassImp(AliMLResponse);
 /// \endcond
 
-//________________________________________________________________
+//_______________________________________________________________________________
 AliMLResponse::AliMLResponse()
     : TNamed(), fConfigFilePath{}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{}, fNVariables{},
       fBinsBegin{}, fRaw{} {
@@ -90,7 +35,7 @@ AliMLResponse::AliMLResponse()
   //
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 AliMLResponse::AliMLResponse(const Char_t *name, const Char_t *title)
     : TNamed(name, title), fConfigFilePath{""}, fModels{}, fCentClasses{}, fBins{}, fVariableNames{}, fNBins{},
       fNVariables{}, fBinsBegin{}, fRaw{} {
@@ -99,14 +44,14 @@ AliMLResponse::AliMLResponse(const Char_t *name, const Char_t *title)
   //
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 AliMLResponse::~AliMLResponse() {
   //
   // Destructor
   //
 }
 
-//--------------------------------------------------------------------------
+//_______________________________________________________________________________
 AliMLResponse::AliMLResponse(const AliMLResponse &source)
     : TNamed(source.GetName(), source.GetTitle()), fConfigFilePath{source.fConfigFilePath}, fModels{source.fModels},
       fCentClasses{source.fCentClasses}, fBins{source.fBins}, fVariableNames{source.fVariableNames},
@@ -137,7 +82,7 @@ AliMLResponse &AliMLResponse::operator=(const AliMLResponse &source) {
   return *this;
 }
 
-//_________________________________________________________________________
+//_______________________________________________________________________________
 void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
   /// error for empty config file
   if (nodelist.IsNull()) {
@@ -150,15 +95,15 @@ void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
   }
   /// error for variables/numberofvariable inconsistency
   if (nodelist["NUM_VAR"].as<unsigned int>() != nodelist["VAR_NAMES"].size()) {
-    AliFatal("Inconsistency found in the number of varibles, please check it! Exit");
+    AliFatal("Inconsistency found in the number of variables, please check it! Exit");
   }
   return;
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 void AliMLResponse::MLResponseInit() {
   /// import config file from alien path
-  string configPath = ImportFile(fConfigFilePath);
+  string configPath = AliMLModelHandler::ImportFile(fConfigFilePath);
   YAML::Node nodeList;
   /// manage wrong config file path
   try {
@@ -178,7 +123,7 @@ void AliMLResponse::MLResponseInit() {
   fBinsBegin = fBins.begin();
 
   for (const auto &model : nodeList["MODELS"]) {
-    fModels.push_back(ModelHandler{model});
+    fModels.push_back(AliMLModelHandler{model});
   }
 
   for (auto &model : fModels) {
@@ -189,17 +134,17 @@ void AliMLResponse::MLResponseInit() {
   }
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 int AliMLResponse::FindBin(double binvar) {
   vector<float>::iterator low;
   low = std::lower_bound(fBins.begin(), fBins.end(), binvar);
   return low - fBinsBegin;
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
-  if ((int)varmap.size() <= fNVariables) {
-    AliFatal("The variables map you provided to the predictor have a size different from the variable list size! Exit");
+  if ((int)varmap.size() < fNVariables) {
+    AliFatal("The variable map you provided to the predictor has a size smaller than the variable list size! Exit");
   }
 
   vector<double> features;
@@ -216,5 +161,32 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
     return -999.;
   }
 
-  return fModels[bin - 1].GetModel().Predict(&features[0], fNVariables, fRaw);
+  return fModels[bin - 1].GetModel()->Predict(&features[0], fNVariables, fRaw);
+}
+
+//________________________________________________________________
+double AliMLResponse::Predict(double binvar, vector<double> variables) {
+  if ((int)variables.size() != fNVariables) {
+    AliFatal(Form("Number of variables passed (%d) different from the one used in the model (%d)! Exit", (int)variables.size(), fNVariables));
+  }
+
+  int bin = FindBin(binvar);
+  if (bin == 0 || bin == fNBins) {
+    AliWarning("Binned variable outside range, no model available!");
+    return -999.;
+  }
+
+  return fModels[bin - 1].GetModel()->Predict(&variables[0], fNVariables, fRaw);
+}
+
+//________________________________________________________________
+bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap) {
+  double score{0.};
+  return IsSelected(binvar, varmap, score);
+}
+
+//________________________________________________________________
+bool AliMLResponse::IsSelected(double binvar, std::vector<double> variables) {
+  double score{0.};
+  return IsSelected(binvar, variables, score);
 }

@@ -82,6 +82,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fHistMultBefEvtSel(NULL),
     fHistMultAftEvtSel(NULL),
     fHistVtxZ(NULL),
+    fHistDEDXGen(NULL),
     fHistDEDX(NULL),
     fHistDEDXdouble(NULL),
     fCentBins(),
@@ -429,6 +430,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     hxbins[i] = hxmin + TMath::Power(10, hlogxmin + i * hbinwidth);
   }
 
+  fHistDEDXGen = new TH2F("fHistDEDXGen", "", hnbins, hxbins, 900, 0, 1000);
+  fOutput->Add(fHistDEDXGen);
+
   fHistDEDX = new TH2F("fHistDEDX", "", hnbins, hxbins, 900, 0, 1000);
   fOutput->Add(fHistDEDX);
 
@@ -436,10 +440,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fOutput->Add(fHistDEDXdouble);
 
   if (fIsMC) { //for correlation between momenta (MC)
-    const UInt_t nDimsP = 4;                                         // cent, recP, genP, IsPrim/Sec
-    int nBinsP[nDimsP] = { nCentBins, hnbins, hnbins, 4 }; //
-    double minBinP[nDimsP] = { 0., 0.01, 0.01, -.5 };         // Dummy limits for cent, recP, genP
-    double maxBinP[nDimsP] = { 1., 10., 10., 3.5 };           // Dummy limits for cent, recP, genP
+    const UInt_t nDimsP = 5;                                         // cent, recP, genP, IsPrim/Sec
+    int nBinsP[nDimsP] = { nCentBins, hnbins, hnbins, 4, 900}; //
+    double minBinP[nDimsP] = { 0., 0.01, 0.01, -.5, 0.};         // Dummy limits for cent, recP, genP
+    double maxBinP[nDimsP] = { 1., 10., 10., 3.5, 1000.};           // Dummy limits for cent, recP, genP
     fHistRecoChargedMC =
       new THnSparseF("fHistRecoChargedMC", ";Centrality (%);#it{p} (GeV/#it{c});#it{p} (GeV/#it{c});", nDimsP,
                      nBinsP, minBinP, maxBinP);
@@ -881,6 +885,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
     ETrkCut_Type trkSel = kHasNoSelection;
 
     //"no selection"
+    fHistDEDXGen->Fill(track->GetP(), dEdx);
     fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
     //"ITSsa"
@@ -935,6 +940,27 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
     // fill propaganda plot with dedx before pt cut
     fHistDEDX->Fill(track->GetP(), dEdx);
     fHistDEDXdouble->Fill(track->GetP() * track->GetSign(), dEdx);
+
+    if(fIsMC){//correlation between momenta (measured and true ones) --> before pt cut!
+      int lMCtrk = TMath::Abs(track->GetLabel());
+      AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
+      float pMC   = trkMC->P();
+      int ptype = 0;
+      if (lMCevent->IsPhysicalPrimary(lMCtrk)){
+        ptype = 0;
+      }
+      else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)){
+        ptype = 1;
+      }
+      else if (lMCevent->IsSecondaryFromMaterial(lMCtrk)){
+        ptype = 2;
+      }
+      else {
+        ptype = 3;
+      }
+      double tmp_vect[5] = {fEvtMult, track->GetP(), pMC, static_cast<double>(ptype), dEdx};
+      fHistRecoChargedMC->Fill(tmp_vect);
+    }
 
     //"ptCut"
     if ((trkPt < fPtBins[0]) || (trkPt >= fPtBins[fPtBins.GetSize() - 1]))
@@ -1106,11 +1132,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
                                (lMCevent->IsPhysicalPrimary(lMCtrk)) ? 0. : 1. };
         fHistRecoMC[lPidIndex]->Fill(tmp_vect);
       } // end y
-
-      if(fIsMC){//correlation between momenta (measured and true ones)
-        double tmp_vect[4] = {fEvtMult, track->GetP(), lMCp, static_cast<double>(ptype)};
-        fHistRecoChargedMC->Fill(tmp_vect);
-      }
 
       if (lIsGoodTrack && fFillIntDistHist) {
         //

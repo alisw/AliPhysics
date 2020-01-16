@@ -1598,13 +1598,6 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
         }
       }
     }
-
-
-    if (triggered==kFALSE) continue;
-
-    // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
-    ProcessClusters();                      // process calo clusters
-
     if(fIsMC>0){
       // ProcessNeutralOverlapsMC(fMCEvent);
       // create new vector that only contains those pi0s that would be lost due to overlap in the clusters
@@ -1620,6 +1613,13 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
       if(fInputEvent->IsA()==AliAODEvent::Class())
         ProcessAODMCParticles();
     }
+
+    if (triggered==kFALSE) continue;
+
+    // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
+    ProcessClusters();                      // process calo clusters
+
+
 
     fHistoNClusterCandidates[iCut]->Fill(  fNClusterCandidates,
                         fWeightJetJetMC);

@@ -23,6 +23,7 @@ AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete(
                                                                        Double_t lCascaderMinRadius = 0.4, //0.4 per def
                                                                        Double_t lCascaderMaxRadius =100., //100. per def
                                                                        Float_t sigmaRangeTPC = 3.,
+                                                                       Float_t lOmegaCleanMassWindow = 0.1,
                                                                        TString lExtraOutputName = ""
                                                                        )
 {
@@ -67,7 +68,7 @@ AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete(
                                                lCascaderMaxDCAV0andBach,
                                                lCascaderMinCosAngle,
                                                lCascaderMinRadius,
-                                               lCascaderMaxRadius, sigmaRangeTPC, "taskAuxiliary");  // const*charname =  Form("taskAuxiliary%s",lExtraOutputName.Data())
+                                               lCascaderMaxRadius, sigmaRangeTPC,lOmegaCleanMassWindow, "taskAuxiliary");  // const*charname =  Form("taskAuxiliary%s",lExtraOutputName.Data())
     
     mgr->AddTask(taskAuxiliary);
     

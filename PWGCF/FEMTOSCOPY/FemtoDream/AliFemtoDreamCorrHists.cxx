@@ -46,7 +46,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fMixedEventkTCentDist(nullptr),
       fPairCounterME(nullptr),
       fMomResolutionSE(nullptr),
+      fMomResolutionSEAll(nullptr),
       fMomResolutionME(nullptr),
+      fMomResolutionMEAll(nullptr),
       fMomResolutionDist(nullptr),
       fRadiiEtaPhiSE(nullptr),
       fRadiiEtaPhiME(nullptr),
@@ -113,7 +115,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fMixedEventkTCentDist(hists.fMixedEventkTCentDist),
       fPairCounterME(hists.fPairCounterME),
       fMomResolutionSE(hists.fMomResolutionSE),
+      fMomResolutionSEAll(hists.fMomResolutionSEAll),
       fMomResolutionME(hists.fMomResolutionME),
+      fMomResolutionMEAll(hists.fMomResolutionMEAll),
       fMomResolutionDist(hists.fMomResolutionDist),
       fRadiiEtaPhiSE(hists.fRadiiEtaPhiSE),
       fRadiiEtaPhiME(hists.fRadiiEtaPhiME),
@@ -180,7 +184,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fMixedEventkTCentDist(nullptr),
       fPairCounterME(nullptr),
       fMomResolutionSE(nullptr),
+      fMomResolutionSEAll(nullptr),
       fMomResolutionME(nullptr),
+      fMomResolutionMEAll(nullptr),
       fMomResolutionDist(nullptr),
       fRadiiEtaPhiSE(nullptr),
       fRadiiEtaPhiME(nullptr),
@@ -285,11 +291,15 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fEffMixingDepth = new TH1F*[nHists];
     if (fMomentumResolution) {
       fMomResolutionSE = new TH2F*[nHists];
+      fMomResolutionSEAll = new TH2F*[nHists];
       fMomResolutionME = new TH2F*[nHists];
+      fMomResolutionMEAll = new TH2F*[nHists];
       fMomResolutionDist = new TH2F*[nHists];
     } else {
       fMomResolutionSE = nullptr;
+      fMomResolutionSEAll = nullptr;
       fMomResolutionME = nullptr;
+      fMomResolutionMEAll = nullptr;
       fMomResolutionDist = nullptr;
     }
     if (fPhiEtaPlots) {
@@ -320,7 +330,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fPairCounterME = nullptr;
     fEffMixingDepth = nullptr;
     fMomResolutionSE = nullptr;
+    fMomResolutionSEAll = nullptr;
     fMomResolutionME = nullptr;
+    fMomResolutionMEAll = nullptr;
     fMomResolutionDist = nullptr;
     fRadiiEtaPhiSE = nullptr;
     fRadiiEtaPhiME = nullptr;
@@ -772,23 +784,41 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           //Take a 1 MeV binning, this should be rebinned to the users liking, the range is
           //hard coded. This assumed that the input is in GeV!
 
-          TString MomResoSEName = Form("MomentumResolutionSE_Particle%d_Particle%d",
-                                     iPar1, iPar2);
+          TString MomResoSEName = Form(
+              "MomentumResolutionSE_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionSE[Counter] = new TH2F(MomResoSEName.Data(),
                                                MomResoSEName.Data(), 1000, 0, 1,
-                                             1000, 0, 1);
+                                               1000, 0, 1);
           fMomResolutionSE[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionSE[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionSE[Counter]);
 
-          TString MomResoMEName = Form("MomentumResolutionME_Particle%d_Particle%d",
-                                     iPar1, iPar2);
+          TString MomResoSEAllName = Form(
+              "MomentumResolutionSEAll_Particle%d_Particle%d", iPar1, iPar2);
+          fMomResolutionSEAll[Counter] = new TH2F(MomResoSEAllName.Data(),
+                                                  MomResoSEAllName.Data(), 1000,
+                                                  0, 1, 1000, 0, 1);
+          fMomResolutionSEAll[Counter]->GetXaxis()->SetTitle("k_{Generated}");
+          fMomResolutionSEAll[Counter]->GetYaxis()->SetTitle("k_{Reco}");
+          fPairQA[Counter]->Add(fMomResolutionSEAll[Counter]);
+
+          TString MomResoMEName = Form(
+              "MomentumResolutionME_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionME[Counter] = new TH2F(MomResoMEName.Data(),
                                                MomResoMEName.Data(), 1000, 0, 1,
-                                             1000, 0, 1);
+                                               1000, 0, 1);
           fMomResolutionME[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionME[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionME[Counter]);
+
+          TString MomResoMEAllName = Form(
+              "MomentumResolutionMEAll_Particle%d_Particle%d", iPar1, iPar2);
+          fMomResolutionMEAll[Counter] = new TH2F(MomResoMEAllName.Data(),
+                                               MomResoMEAllName.Data(), 1000, 0, 1,
+                                               1000, 0, 1);
+          fMomResolutionMEAll[Counter]->GetXaxis()->SetTitle("k_{Generated}");
+          fMomResolutionMEAll[Counter]->GetYaxis()->SetTitle("k_{Reco}");
+          fPairQA[Counter]->Add(fMomResolutionMEAll[Counter]);
 
           TString MomResoDistName = Form(
               "MomentumResolutionDist_Particle%d_Particle%d", iPar1, iPar2);

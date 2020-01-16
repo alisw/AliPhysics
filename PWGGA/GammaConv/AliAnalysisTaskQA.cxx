@@ -577,7 +577,7 @@ void AliAnalysisTaskQA::UserCreateOutputObjects()
   fTree->Branch("ele_SDD1",           &fele_SDD1,      "fele_SDD1/O");
   fTree->Branch("ele_SDD2",           &fele_SDD2,      "fele_SDD2/O");
   fTree->Branch("ele_SSD1",           &fele_SSD1,      "fele_SSD1/O");
-  fTree->Branch("ele_SSD2",           &fele_SSD2,      "fele_SSD1/O");
+  fTree->Branch("ele_SSD2",           &fele_SSD2,      "fele_SSD2/O");
           
   fTree->Branch("pos_theta",          &fpos_theta,     "fpos_theta/F");
   fTree->Branch("pos_pt",             &fpos_pt,        "fpos_pt/F");

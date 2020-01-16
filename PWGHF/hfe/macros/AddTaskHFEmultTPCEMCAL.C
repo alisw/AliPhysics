@@ -22,8 +22,8 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 		Double_t EopEMin= 0.8 ,		
 		Double_t EopEMax=  1.2,		
 	    Double_t  M20Min= 0.02 ,		
-		Double_t M20Max= 0.9,
-	
+		Double_t M20Max1= 0.9,
+	    Double_t M20Max2= 0.7,
 		Double_t InvmassCut= 0.14,		
 		Int_t AssoTPCCluster= 60 ,
 		Bool_t AssoITSRefit= kTRUE ,
@@ -118,7 +118,7 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 	taskhfe->SetDCACut(DCAxyCut,DCAzCut);
 	taskhfe->SetTPCnsigma(TPCnsigmin,TPCnsigmax);
 	taskhfe->SetEopE(EopEMin,EopEMax);
-    taskhfe->SetShowerShapeEM20(M20Min,M20Max);
+    taskhfe->SetShowerShapeEM20(M20Min,M20Max1,M20Max2);
 
 
 	taskhfe->SetInvMassCut(InvmassCut);

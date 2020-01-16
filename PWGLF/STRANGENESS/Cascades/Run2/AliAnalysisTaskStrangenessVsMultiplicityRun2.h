@@ -269,6 +269,7 @@ private:
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
+    Bool_t fkDebugOOBPileupEventTree; 
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     Int_t fkPileupRejectionMode; //pileup rejection mode (0=none, 1=ionut, 2=anti-ionut)
     Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
@@ -309,6 +310,7 @@ private:
 //   Variables for Event Tree
 //===========================================================================================
     Float_t fCentrality; //!
+    UInt_t fEvSel_TriggerMask; //! save full info for checking later
     Bool_t fMVPileupFlag; //!
     Bool_t fOOBPileupFlag; //!
 
@@ -419,6 +421,7 @@ private:
 
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
+    UInt_t fTreeVariable_TriggerMask; //! save full info for checking later
     Bool_t fTreeVariableMVPileupFlag; //!
     Bool_t fTreeVariableOOBPileupFlag; //!
     
@@ -617,6 +620,7 @@ private:
 
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
+    UInt_t fTreeCascVar_TriggerMask; //! save full info for checking later
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
     
@@ -654,6 +658,7 @@ private:
     TH1D *fHistEventCounter; //!
     TH1D *fHistEventCounterDifferential; //!
     TH1D *fHistCentrality; //!
+    TH2D *fHistEventMatrix; //!
 
     AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2&); // not implemented

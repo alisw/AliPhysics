@@ -115,7 +115,11 @@ public:
         DoArmenteros,
         DoMassWindow,
         InvarMassWindowK0,
-        InvarMassWindowLambda
+        InvarMassWindowLambda,
+
+        fAV0Cut,
+        fBV0Cut,
+        fCV0Cut
     };
 
     enum TCTagType{
@@ -305,6 +309,7 @@ public:
     AliAODMCParticle* GetMCTrack(int iLabel);
     int GetV0MCVeto(AliAODEvent* fAODIn, AliAODv0* v0, bool bIsCandidateK0s,bool bIsCandidateLambda, bool bIsCandidateALambda);
     void FillV0EfficiencyHists(int isV0, int & jetflavour, double jetpt, bool &isV0Jet);
+    void FillTrackIPvsPt(int isV0, double pt, double IP, int jetflavour);
 
     void FillCandidateJet(Int_t CutIndex, Int_t JetFlavor);
     bool IsFromElectron(AliAODTrack *track);
@@ -334,8 +339,9 @@ public:
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
     void FillRecHistograms(int jetflavour, double jetpt, double eta, double phi);
     void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen);
-    void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks, bool isV0Jet);
-    void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params, bool isV0Jet);
+    void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks);
+    void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params);
+    void FillTaggedJetPtDistribution(bool** kTagDec, double jetpt);
     void FillTrackTypeResHists();
 
     //________________________________
@@ -361,7 +367,9 @@ public:
     void setDoJetProb(Bool_t value){fDoJetProb = value;}
     void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
     void setDoProbTagging(Int_t value) {fDoProbTagging=value;}
+    void setDoMCEffs(Bool_t value){fDoMCEffs=value;}
 
+    void setTrackIPvsPtValues(double fav0cut, double fbv0cut, double fcv0cut){fV0Cuts[fAV0Cut]=fav0cut;fV0Cuts[fBV0Cut]=fbv0cut;fV0Cuts[fCV0Cut]=fcv0cut;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
     void setfNThresholds(Int_t value){fNThresholds=value;}
@@ -395,7 +403,7 @@ public:
     //________________________________
     //Probability Tagging
     double GetTrackProbability(double jetpt, bool* hasIPs, double* ipval);
-    void FillProbabilityHists(double jetpt,double  probval,int jetflavour);
+    void FillProbabilityHists(double jetpt,double probval,int jetflavour,bool **kTagDec);
     void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
     double IntegrateIP(int iJetPtBin, int iIPBin, int iN);
 
@@ -480,6 +488,7 @@ private:
     Bool_t fDoLundPlane;//
     Int_t fDoTCTagging;//  //0: no TC tagging, 1: IP Significance tagging, 2: IP tagging, fixed threshold
     Int_t fDoProbTagging;//  //0: no probability tagging, 1: use JP for tagging, 2: use lnJP for tagging
+    Bool_t fDoMCEffs;
     Bool_t fUseSignificance;//
 
     //_____________________
@@ -528,15 +537,17 @@ private:
     TH2D* h2DProbDistsudsg;//!
     TH2D* h2DProbDistsc;//!
     TH2D* h2DProbDistsb;//!
-    TH2D* h2DProbDistss;//!
-    TH2D* h2DProbDists;//!
+    TH2D* h2DProbDistsudsgV0;//!
+    TH2D* h2DProbDistscV0;//!
+    //TH2D* h2DProbDists;//!
 
     TH2D* h2DLNProbDistsUnid;//!
     TH2D* h2DLNProbDistsudsg;//!
     TH2D* h2DLNProbDistsc;//!
     TH2D* h2DLNProbDistsb;//!
-    TH2D* h2DLNProbDistss;//!
-    TH2D* h2DLNProbDists;//!
+    TH2D* h2DLNProbDistsudsgV0;//!
+    TH2D* h2DLNProbDistscV0;//!
+    //TH2D* h2DLNProbDists;//!
 
     std::vector<TH1D*> h1DProbThresholds;//
 
@@ -595,7 +606,7 @@ private:
 
     TGraph fResolutionFunction[200];//[200]<-
     Double_t fAnalysisCuts[27]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
-    Double_t fV0Cuts[22];
+    Double_t fV0Cuts[25];
 
     AliPIDCombined *fCombined ;//!
 
@@ -663,7 +674,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 47)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 50)
 };
 
 #endif

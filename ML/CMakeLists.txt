@@ -26,6 +26,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/ML
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${ALIROOT_INCLUDE_DIRS}
                     ${TREELITE_ROOT}/include
+                    ${TREELITE_ROOT}/runtime/native/include
                     ${YAML_CPP_SOURCE_DIR}/include
 )
 set(SRCS
@@ -35,6 +36,7 @@ set(SRCS
 if(ROOT_VERSION_MAJOR EQUAL 6)
     set(SRCS
 	    ${SRCS}
+        AliMLModelHandler.cxx
         AliMLResponse.cxx
     )
 endif()

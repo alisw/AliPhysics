@@ -62,6 +62,7 @@ AliJFFlucTask::AliJFFlucTask():
 	fPt_max(5.0),
 	fzvtxCut(10.0),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
+	binning(BINNING_CENT_PbPb),
 	flags(0),
 	inputIndex(1)
 {
@@ -91,6 +92,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fPt_max(5.0),
 	fzvtxCut(10.0),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
+	binning(BINNING_CENT_PbPb),
 	flags(0),
 	inputIndex(1)
 {
@@ -129,9 +131,8 @@ AliJFFlucTask::~AliJFFlucTask()
 void AliJFFlucTask::UserCreateOutputObjects()
 {
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
+	fFFlucAna->SetBinning((AliJFFlucAnalysis::BINNING)binning);
 	fFFlucAna->SelectSubevents(subeventMask);
-	if(flags & FLUC_MULT_BINS)
-		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_MULT_BINS);
 	if(flags & FLUC_SCPT)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_SCPT);
 	if(flags & FLUC_EBE_WEIGHTING)
@@ -198,7 +199,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			fFFlucAna->GetAliJEfficiency()->SetRunNumber (1234);
 			fFFlucAna->GetAliJEfficiency()->Load();
 		}
-		ReadKineTracks( mcEvent, fInputList, fCent ) ; // read tracklist
+		ReadKineTracks( mcEvent, fInputList ) ; // read tracklist
 		AliGenEventHeader *header = mcEvent->GenEventHeader();
 		if(!header)
 			return;
@@ -228,7 +229,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 
 		if(!IsGoodEvent( currentEvent ))
 			return;
-		ReadAODTracks( currentEvent, fInputList, fCent ) ; // read tracklist
+		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 		ReadVertexInfo( currentEvent, fvertex); // read vertex info
 		// Analysis Part
 		fFFlucAna->Init();
@@ -242,7 +243,11 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 
 		fFFlucAna->SetPhiWeights(0);
 		if(flags & FLUC_PHI_CORRECTION){
-			int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+			//int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
+			int cbin = (binning != BINNING_CENT_PbPb)?
+				AliJFFlucAnalysis::GetBin((double)fInputList->GetEntriesFast(),(AliJFFlucAnalysis::BINNING)binning):
+				AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
+			//int cbin = AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
 			if(cbin != -1){
 				TH1 *pweightMap = GetCorrectionMap(fRunNum,cbin);
 				if(pweightMap)
@@ -290,7 +295,7 @@ void AliJFFlucTask::Init()
 	AliInfo("Doing initialization") ;
 }
 //______________________________________________________________________________
-void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, float fCent)
+void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 {
 	//aod->Print();
 	if(flags & FLUC_MC){  // how to get a flag to check  MC or not !
@@ -575,7 +580,7 @@ void AliJFFlucTask::SetEffConfig( UInt_t effMode, UInt_t FilterBit)
 	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }
 //______________________________________________________________________________
-void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fCent)
+void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList)
 {
 	UInt_t nt = mcEvent->GetNumberOfPrimaries();
 	UInt_t ntrack = 0;
@@ -601,16 +606,6 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 				}
 			}
 			
-			/*if(flags & FLUC_PHI_REJECTION){
-				int isub = (int)(track->Eta() > 0.0);
-				int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-				if(cbin != -1){
-					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
-					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
-						continue;
-				}
-			}*/
-
 			Int_t pdg = particle->GetPdgCode();
 			Char_t ch = (Char_t) track->Charge();
 			if(ch < 0){
@@ -676,16 +671,16 @@ void AliJFFlucTask::EnableCentFlattening(const TString fname){
 	cout<<"Centrality flattening enabled: "<<fname.Data()<<" (index "<<centInputIndex<<")"<<endl;
 }
 
-TH1 * AliJFFlucTask::GetCorrectionMap(UInt_t run, UInt_t cent){
-	auto m = PhiWeightMap[cent].find(run);
-	if(m == PhiWeightMap[cent].end()){
+TH1 * AliJFFlucTask::GetCorrectionMap(UInt_t run, UInt_t bin){
+	auto m = PhiWeightMap[bin].find(run);
+	if(m == PhiWeightMap[bin].end()){
 		TList *plist = (TList*)GetInputData(phiInputIndex);
 		if(!plist)
 			return 0;
-		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,cent));
+		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,bin));
 		if(!pmap)
 			return 0;
-		PhiWeightMap[cent][run] = pmap;
+		PhiWeightMap[bin][run] = pmap;
 		return pmap;
 	}
 	return (*m).second;

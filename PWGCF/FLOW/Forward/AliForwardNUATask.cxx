@@ -149,13 +149,8 @@ void AliForwardNUATask::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
-  Bool_t isgoodrun = kTRUE;
-  if (!fSettings.mc){
-    isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
-  }
-
   ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
-  if (!ev_val->IsValidEvent() || !isgoodrun){
+  if (!ev_val->IsValidEvent()){
      PostData(1, this->fOutputList);
     return;
   }
@@ -228,11 +223,9 @@ void AliForwardNUATask::UserExec(Option_t *)
       for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
           Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
           Double_t phi = forwardDist->GetYaxis()->GetBinCenter(phiBin);
-        if (fSettings.mc & fSettings.esd){
-
-
-          if (!fUtil.FMDAcceptanceExistMC(eta,phi,zvertex)) continue;
-        }
+//        if (fSettings.mc & fSettings.esd){
+//          if (!fUtil.FMDAcceptanceExistMC(eta,phi,zvertex)) continue;
+//        }
         Double_t weight = forwardDist->GetBinContent(etaBin,phiBin);
 
         if (fSettings.nua_mode & fSettings.kInterpolate)

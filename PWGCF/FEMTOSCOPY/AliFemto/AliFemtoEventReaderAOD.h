@@ -84,7 +84,7 @@ public:
   void SetAODheader(AliAODHeader *aAODheader);
   void SetMagneticFieldSign(int s);
   void SetEPVZERO(Bool_t);
-  void GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
+  void GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
 
   void SetUseMultiplicity(EstEventMult aType);
   EstEventMult GetUseMultiplicity() const {
@@ -176,9 +176,7 @@ public:
 
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
-  virtual AliFemtoTrack *CopyAODtoFemtoTrack(AliAODTrack *tAodTrack
-      //            AliPWG2AODTrack *tPWG2AODTrack
-                                            );
+  virtual AliFemtoTrack *CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack);
   virtual AliFemtoV0 *CopyAODtoFemtoV0(AliAODv0 *tAODv0);
   virtual AliFemtoXi *CopyAODtoFemtoXi(AliAODcascade *tAODxi);
   virtual void CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack);

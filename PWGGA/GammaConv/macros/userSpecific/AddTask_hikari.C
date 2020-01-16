@@ -302,6 +302,24 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("00010113", "0d200009a27300008250404000", "0152103500000000"); // edEdx -3,3
       cuts.AddCutPCM("00010113", "0d200009b27300008250404000", "0152103500000000"); // edEdx -3,2,3.2
       cuts.AddCutPCM("00010113", "0d200009c27300008250404000", "0152103500000000"); // edEdx -2.8,2.8
+    } else if (trainConfig == 449){//R 5-33.5 cm 
+      cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // vertex +-10
+      cuts.AddCutPCM("00010114", "0da00009227300008250404000", "0152103500000000"); // vertex +-7.5
+      cuts.AddCutPCM("00010115", "0da00009227300008250404000", "0152103500000000"); // vertex +-5.
+      cuts.AddCutPCM("00010116", "0da00009227300008250404000", "0152103500000000"); // vertex +-2.5
+    } else if (trainConfig == 450){//cat 1 Meson selection
+      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103510000000"); // shared electron
+      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103520000000"); // veto cat 1 Meson
+    } else if (trainConfig == 451){//R max 180
+      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // 5  < R < 180 (default)
+      cuts.AddCutPCM("00010113", "0dn00009227300008250404000", "0152103500000000"); // 10 < R < 180
+      cuts.AddCutPCM("00010113", "0do00009227300008250404000", "0152103500000000"); // 15 < R < 180
+      cuts.AddCutPCM("00010113", "0dp00009227300008250404000", "0152103500000000"); // 20 < R < 180
+    } else if (trainConfig == 452){//R max 95
+      cuts.AddCutPCM("00010113", "0dq00009227300008250404000", "0152103500000000"); // 5  < R < 95
+      cuts.AddCutPCM("00010113", "0dr00009227300008250404000", "0152103500000000"); // 10 < R < 95
+      cuts.AddCutPCM("00010113", "0ds00009227300008250404000", "0152103500000000"); // 15 < R < 95
+      cuts.AddCutPCM("00010113", "0dt00009227300008250404000", "0152103500000000"); // 20 < R < 95
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL;
@@ -420,6 +438,26 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("80010113", "0d200009227300008250404000", "0162103500000000"); // edEdx -3,4
       cuts.AddCutPCM("80010113", "0d200009b27300008250404000", "0162103500000000"); // edEdx -3,2,3.2
       cuts.AddCutPCM("80010113", "0d200009c27300008250404000", "0162103500000000"); // edEdx -2.8,2.8
+    } else if (trainConfig == 454){//R 5-33.5 cm
+      cuts.AddCutPCM("80010113", "0da00009a27300008250404000", "0162103500000000"); // +-10
+      cuts.AddCutPCM("80010114", "0da00009a27300008250404000", "0162103500000000"); // +-7.5
+    } else if (trainConfig == 455){//R 5-33.5 cm
+      cuts.AddCutPCM("80010115", "0da00009a27300008250404000", "0162103500000000"); // +-5.
+      cuts.AddCutPCM("80010116", "0da00009a27300008250404000", "0162103500000000"); // +-2.5     
+    } else if (trainConfig == 456){//cat 1 Meson selection
+      cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "0162103500000000"); // 5 < R < 180 (default)
+      cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "0162103510000000"); // shared electron
+      cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "0162103520000000"); // veto cat 1 Meson
+    } else if (trainConfig == 457){//R max 180
+      cuts.AddCutPCM("80010113", "0dn00009a27300008250404000", "0162103500000000"); // 10 < R < 180
+      cuts.AddCutPCM("80010113", "0do00009a27300008250404000", "0162103500000000"); // 15 < R < 180
+      cuts.AddCutPCM("80010113", "0dp00009a27300008250404000", "0162103500000000"); // 20 < R < 180
+    } else if (trainConfig == 458){//R max 95
+      cuts.AddCutPCM("80010113", "0dq00009a27300008250404000", "0162103500000000"); // 5  < R < 95
+      cuts.AddCutPCM("80010113", "0dr00009a27300008250404000", "0162103500000000"); // 10 < R < 95
+    } else if (trainConfig == 459){//R max 95
+      cuts.AddCutPCM("80010113", "0ds00009a27300008250404000", "0162103500000000"); // 15 < R < 95
+      cuts.AddCutPCM("80010113", "0dt00009a27300008250404000", "0162103500000000"); // 20 < R < 95
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL; 

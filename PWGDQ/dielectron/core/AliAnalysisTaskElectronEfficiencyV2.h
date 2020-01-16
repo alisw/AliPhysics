@@ -107,12 +107,18 @@ public:
    void   SetMassBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("mass", min, max, steps);}
    void   SetPairPtBins(std::vector<double> pairptBins){ fPairPtBins = pairptBins;}
    void   SetPairPtBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("pairpt", min, max, steps);}
+   void   SetPhiVBins(std::vector<double> phivBins){fPhiVBins=phivBins;}
+   void   SetPhiVBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("phiv", min, max, steps);}
 
    // Pair related setter
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
+   void   SetFillPhiV(Bool_t doPhiV) {fDoFillPhiV = doPhiV;}
+
+   //only temporary solution for LHC19f2 MC productions related to GetCocktailGenerator
+   void   SetLHC19f2MC(Bool_t flag) {fIsLHC19f2MC = flag;}
 
    // Single leg from Pair related setter
    void   SetWriteLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
@@ -199,6 +205,7 @@ private:
   Double_t GetSmearing(TObjArray *arr, Double_t x);
 
   double GetWeight(Particle part1, Particle part2, double motherpt);
+  double PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
 
   AliAnalysisCuts*  fEventFilter; // event filter
 
@@ -245,6 +252,7 @@ private:
   std::vector<double> fResolutionThetaBins;
   std::vector<double> fMassBins;
   std::vector<double> fPairPtBins;
+  std::vector<double> fPhiVBins;
   bool fDoGenSmearing;
 
   double  fPtMin; // Kinematic cut for pairing
@@ -306,7 +314,7 @@ private:
 
   std::vector<TH2D*> fHistGenPair;
   std::vector<TH2D*> fHistGenSmearedPair;
-  std::vector<TH2D*> fHistRecPair;
+  std::vector<TObject*> fHistRecPair;
   std::vector<TH2D*> fHistGenPair_ULSandLS;
   std::vector<TH2D*> fHistGenSmearedPair_ULSandLS;
   std::vector<TH2D*> fHistRecPair_ULSandLS;
@@ -326,6 +334,10 @@ private:
   int fOpAngleNBinsLegsFromPair;
   std::vector<THnSparseF*> fTHnSparseGenSmearedLegsFromPair;
   std::vector<THnSparseF*> fTHnSparseRecLegsFromPair;
+
+  Bool_t fIsLHC19f2MC;
+  TList *fCocktailHeaderList;
+  Bool_t fDoFillPhiV;
 
   Bool_t fDoPairing;
   Bool_t fDoULSandLS;
@@ -359,7 +371,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 1);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 3);
 };
 
 

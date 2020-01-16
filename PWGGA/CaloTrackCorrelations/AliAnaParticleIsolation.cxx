@@ -22,6 +22,7 @@
 #include <TClass.h>
 #include <TH2F.h>
 #include "TDatabasePDG.h"
+#include <TCustomBinning.h>
 
 // --- Analysis system ---
 #include "AliAnaParticleIsolation.h"
@@ -100,7 +101,7 @@ fhPtInConePileUp(),               fhPtInConeCent(0),
 fhPerpConeSumPtTOFBC0(0),         fhPtInPerpConeTOFBC0(0),
 fhEtaPhiInPerpConeTOFBC0(0),
 
-//fhPtLambda0Eiso(0),                       
+fhPtM02SumPtCone(0),                       
 
 fhConeSumPtExoTrigger(0),        fhConeSumPtClusterExoTrigger(0),            fhConeSumPtTrackExoTrigger(0),                      
 
@@ -502,7 +503,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
   // Cone energy and particle content, after corrections
   Float_t coneptsumTrack = pCandidate->GetChargedPtSumInCone(); 
   Float_t coneptsumClust = pCandidate->GetNeutralPtSumInCone();
-  Float_t coneptsum = coneptsumTrack + coneptsumClust; 
+  Float_t coneptsum  = coneptsumTrack + coneptsumClust; 
   Float_t coneleadpt = pCandidate->GetChargedLeadPtInCone();
   if (pCandidate->GetNeutralLeadPtInCone() > coneleadpt )
      coneleadpt = pCandidate->GetNeutralLeadPtInCone();
@@ -766,8 +767,6 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
   //
   if ( fFillSSHisto )
   {
-    //fhPtLambda0Eiso->Fill(pt, m02, coneptsum);
-    
     fhELambda0 [isolated]->Fill(energy, m02, GetEventWeight()*weightTrig);
     fhPtLambda0[isolated]->Fill(pt,     m02, GetEventWeight()*weightTrig);
     //fhELambda1 [isolated]->Fill(energy, m20);
@@ -1582,6 +1581,66 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhEtaPhiIso->SetYTitle("#varphi (rad)");
     outputContainer->Add(fhEtaPhiIso) ;
     
+    if ( !fFillBackgroundBinHistograms && 
+        (method == AliIsolationCut::kSumPtIC || 
+         method >= AliIsolationCut::kSumBkgSubIC) )
+    {
+      TCustomBinning ptBinning;
+      ptBinning.SetMinimum(ptmin);
+      ptBinning.AddStep(ptmax, (ptmax-ptmin)/nptbins); 
+//      ptBinning.SetMinimum(GetMinPt());
+//      ptBinning.AddStep(15,0.5);                          // 30
+//      if ( GetMaxPt() > 15 ) ptBinning.AddStep( 30, 1.0); // 15
+//      if ( GetMaxPt() > 30 ) ptBinning.AddStep( 60, 2.5); // 12
+//      if ( GetMaxPt() > 60 ) ptBinning.AddStep(100, 5.0); // 8 
+//      if ( GetMaxPt() > 100) ptBinning.AddStep(200,10.0); // 10
+//      if ( GetMaxPt() > 200) ptBinning.AddStep(300,20.0); // 5
+      TArrayD ptBinsArray;
+      ptBinning.CreateBinEdges(ptBinsArray);
+      
+      TCustomBinning sumBinning;
+      sumBinning.SetMinimum(0.0);
+      if ( method >= AliIsolationCut::kSumBkgSubIC )
+      {
+        sumBinning.SetMinimum(-50.0);
+        sumBinning.AddStep(-25, 2.50); // 10
+        sumBinning.AddStep(-10, 1.00); // 15
+        sumBinning.AddStep(-4 , 0.50); // 12
+      }
+      else
+      {
+        sumBinning.SetMinimum(0.0);
+      }
+      sumBinning.AddStep(  4, 0.20); // 20
+      sumBinning.AddStep( 10, 0.50); // 12
+      sumBinning.AddStep( 25, 1.00); // 15
+      sumBinning.AddStep( 50, 2.50); // 10
+      sumBinning.AddStep(100, 5.00); // 10
+      sumBinning.AddStep(200,10.00); // 10
+      TArrayD sumBinsArray;
+      sumBinning.CreateBinEdges(sumBinsArray);
+      
+      TCustomBinning ssBinning;
+      ssBinning.SetMinimum(-0.01);
+      ssBinning.AddStep(0.50,0.01);  // 51 
+      ssBinning.AddStep(1.00,0.05);  // 10
+      ssBinning.AddStep(3.00,0.1);   // 20
+      ssBinning.AddStep(5.00,0.25);  // 20
+      TArrayD ssBinsArray;
+      ssBinning.CreateBinEdges(ssBinsArray);
+      
+      fhPtM02SumPtCone = new TH3F
+      (Form("hPtM02SumPtCone"),
+       Form("ABCD 3D Matrix: #it{p}_{T} vs #sigma_{long}^{2} vs #it{p}_{T}^{iso}, #it{R} = %2.2f",r),
+        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+        ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+       sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+      fhPtM02SumPtCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPtM02SumPtCone->SetYTitle("#sigma_{long}^{2}");
+      fhPtM02SumPtCone->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+      outputContainer->Add(fhPtM02SumPtCone) ;
+    }
+    
     if(IsHighMultiplicityAnalysisOn())
     {
       fhPtCentralityIso  = new TH2F("hPtCentrality",
@@ -1655,14 +1714,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhConeSumPtExoTrigger->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtExoTrigger) ;
     }
-    
-//    fhPtLambda0Eiso = new TH3F
-//    (Form("hPtLambda0Eiso"),
-//     Form("ABCD 3D Matrix: #it{p}_{T} vs #lambda_{0}^{2} vs E_{T}^{iso}, %s",parTitle.Data()),70,0.,70.,200,0.,2.,110,-10.,100.);
-//    fhPtLambda0Eiso->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-//    fhPtLambda0Eiso->SetYTitle("#lambda_{0}^{2}");
-//    fhPtLambda0Eiso->SetZTitle("E_{T}^{iso} (GeV/#it{c})");
-//    outputContainer->Add(fhPtLambda0Eiso) ;
     
     if ( fFillPerSMHistograms )
     {
@@ -4745,9 +4796,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   
   //Loop on stored AOD
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
-  
+
   AliDebug(1,Form("Histo aod branch entries %d", naod));
   
+  Int_t method = GetIsolationCut()->GetICMethod() ;
+
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
     AliCaloTrackParticleCorrelation* aod =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
@@ -4821,7 +4874,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     AliDebug(1,Form("Particle %d Energy Sum in Isolation Cone %2.2f, Leading pT in cone %2.2f",
                     iaod, coneptsumTrack+coneptsumCluster, coneptLead));
-       
+     
+    if ( !fFillBackgroundBinHistograms &&
+        (method == AliIsolationCut::kSumPtIC || 
+         method >= AliIsolationCut::kSumBkgSubIC) )
+    fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+    
     //---------------------------------------------------------------
     // Recover original cluster if requested, needed for some studies
     //---------------------------------------------------------------

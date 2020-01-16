@@ -38,6 +38,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 # Additional includes for ROOT 6 only dependencies - alphabetical order except ROOT
   include_directories(${AliPhysics_SOURCE_DIR}/ML
                     ${TREELITE_ROOT}/include
+                    ${TREELITE_ROOT}/runtime/native/include
                     ${YAML_CPP_SOURCE_DIR}/include
     )
 endif()

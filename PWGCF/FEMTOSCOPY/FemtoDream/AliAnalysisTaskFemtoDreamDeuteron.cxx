@@ -174,7 +174,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
       fProtonBackgroundMC = new TH2F("fProtonBackgroungMC", "background", 36, 0.5, 4.05, 400, 0.0, 3);
       fProtonBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
       fProtonBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-
       fOutput->Add(fProtonRestMassMC);
       fOutput->Add(fKaonRestMassMC);
       fOutput->Add(fPionRestMassMC);
@@ -197,7 +196,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
       fAntiProtonBackgroundMC = new TH2F("fAntiProtonBackgroundMC", "AntiProtonBackgroundMC", 36, 0.5, 4.05, 400, 0.00, 3);
       fAntiProtonBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiProtonBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-
       fOutput->Add(fAntiProtonRestMassMC);
       fOutput->Add(fAntiKaonRestMassMC);
       fOutput->Add(fAntiPionRestMassMC);
@@ -223,7 +221,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
       fDeuteronBackgroundMC = new TH2F("fDeuteronBackgroundMC", "Pion", 36, 0.5, 4.05, 400, 0.00, 5);
       fDeuteronBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
       fDeuteronBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-
       fOutput->Add(fDeuteronRestMassMC);
       fOutput->Add(fDProtonRestMassMC);
       fOutput->Add(fDKaonRestMassMC);
@@ -250,7 +247,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
       fAntiDeuteronBackgroundMC = new TH2F("fAntiDeuteronBackgroundMC", "AntiDeuteronBackgroundMC", 36, 0.5, 4.05, 400, 0.00, 5);
       fAntiDeuteronBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
       fAntiDeuteronBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
-
       fOutput->Add(fAntiDeuteronRestMassMC);
       fOutput->Add(fAntiDProtonRestMassMC);
       fOutput->Add(fAntiDKaonRestMassMC);
@@ -283,18 +279,15 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   InitHistograms(fTrackCutsDeuteronMass, "MassDeuterons", "MCMassDeuterons");
   InitHistograms(fTrackCutsAntiDeuteronDCA, "DCAAntiDeuterons", "MCDCAAntiDeuterons");
   InitHistograms(fTrackCutsAntiDeuteronMass, "MassAntiDeuterons", "MCMassAntiDeuterons");
-
   InitHistograms(fTrackCutsProtonDCA, "DCAProtons", "MCDCAProtons");
   InitHistograms(fTrackCutsProtonMass, "MassProtons", "MCMassProtons");
   InitHistograms(fTrackCutsAntiProtonDCA, "DCAAntiProtons", "MCDCAAntiProtons");
   InitHistograms(fTrackCutsAntiProtonMass, "MassAntiProtons", "MCMassAntiProtons");
 
   fPairCleaner = new AliFemtoDreamPairCleaner(2, 4, false);
-  //The output histograms have to also be added to the output
   fOutput->Add(fPairCleaner->GetHistList());
-
   fPartColl = new AliFemtoDreamPartCollection(fConfig, false);
-  //The output also has to be added to the list
+
   fOutput->Add(fPartColl->GetHistList());
   fOutput->Add(fPartColl->GetQAList());
   PostData(1, fOutput);

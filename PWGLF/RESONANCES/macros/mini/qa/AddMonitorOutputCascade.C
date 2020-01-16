@@ -6,6 +6,10 @@
 Options ("opt" argument):
 - dim1 --> use TH1 only (no p or pt dependence)
 ***************************************************************************/
+
+#ifndef ALIRSNADDMONITOROUTPUTCASCADE_C
+#define ALIRSNADDMONITOROUTPUTCASCADE_C
+
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliRsnValueEvent.h"
 #include "AliRsnValueDaughter.h"
@@ -239,3 +243,5 @@ void AddMonitorOutputCascade(Bool_t useMCMon, TObjArray *mon=0, TString caname="
     
   return;
 }
+
+#endif

@@ -53,6 +53,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
   void SetTriggerType(AliVEvent::EOfflineTriggerTypes newval) { fTriggerType = newval; };
+  Bool_t CheckTriggerVsCentrality(Double_t l_cent); //Hard cuts on centrality for special triggers
  protected:
   AliEventCuts fEventCuts, fEventCutsForPU;
  private:
