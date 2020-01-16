@@ -80,7 +80,8 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4()
   fIsPromptLc(kFALSE),
   fApplyFixesITS3AnalysisBit(kFALSE),
   fApplyFixesITS3AnalysiskAll(kFALSE),
-  fApplyFixesITS3AnalysisHijing(kFALSE)
+  fApplyFixesITS3AnalysisHijing(kFALSE),
+  fPreSelectLctopKpi(kFALSE)
 {
   //
   // Default constructor.
@@ -123,7 +124,8 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4(const char *name,
   fIsPromptLc(kFALSE),
   fApplyFixesITS3AnalysisBit(kFALSE),
   fApplyFixesITS3AnalysiskAll(kFALSE),
-  fApplyFixesITS3AnalysisHijing(kFALSE)
+  fApplyFixesITS3AnalysisHijing(kFALSE),
+  fPreSelectLctopKpi(kFALSE)
 {
   //SetPtBinLimit(fRDCutsAnalysisLc->GetNPtBins()+1,fRDCutsAnalysisLc->GetPtBinLimits());
     for(Int_t icut=0; icut<2; icut++) fCutD0Daughter[icut]=0.;
@@ -231,6 +233,17 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
     if(!d->GetOwnPrimaryVtx()){
       d->SetOwnPrimaryVtx(fvtx1);
       unsetvtx=kTRUE;
+    }
+      
+    if(fPreSelectLctopKpi){
+       TObjArray arrTracks(3);
+       for(Int_t ipr=0;ipr<3;ipr++){
+           AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
+           arrTracks.AddAt(tr,ipr);
+       }
+       Bool_t recoLc=kTRUE;
+       recoLc=fRDCutsAnalysisLc->PreSelectMass(arrTracks);
+       if (!recoLc) continue;
     }
 
     if((vHF->FillRecoCand(aod,d))) {
