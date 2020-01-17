@@ -228,12 +228,6 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
     if(fApplyFixesITS3AnalysisBit){
       if(!(d->HasSelectionBit(AliRDHFCuts::kLcCuts))) continue;
     }
-
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()){
-      d->SetOwnPrimaryVtx(fvtx1);
-      unsetvtx=kTRUE;
-    }
       
     if(fPreSelectLctopKpi){
        TObjArray arrTracks(3);
@@ -244,6 +238,12 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
        Bool_t recoLc=kTRUE;
        recoLc=fRDCutsAnalysisLc->PreSelectMass(arrTracks);
        if (!recoLc) continue;
+    }
+
+    Bool_t unsetvtx=kFALSE;
+    if(!d->GetOwnPrimaryVtx()){
+      d->SetOwnPrimaryVtx(fvtx1);
+      unsetvtx=kTRUE;
     }
 
     if((vHF->FillRecoCand(aod,d))) {
