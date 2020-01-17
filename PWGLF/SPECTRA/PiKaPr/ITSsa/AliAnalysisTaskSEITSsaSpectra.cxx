@@ -1780,7 +1780,7 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
   Double_t fBBsaElectron[6];
 
   if(!fIsMC) {//DATA
-    if(fIsNominalBfield){//pions&elect want always the same parametrization
+    if(fIsNominalBfield){//nominal magnetic field (0.5T)
       fBBsaHybrid[0]=1.43505E7;  //PHOBOS+Polinomial parameterization
       fBBsaHybrid[1]=49.3402;
       fBBsaHybrid[2]=1.77741E-7;
@@ -1798,29 +1798,29 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
       fBBsaElectron[4]=4.40284E-7;
       fBBsaElectron[5]=-2.;
     }
-    else{//DATA: lowB field
-      fBBsaHybrid[0]=1.2281e7;//E0  //PHOBOS+Polinomial parameterization
-      fBBsaHybrid[1]=26.313261;//b
-      fBBsaHybrid[2]=1.8914e-4;//a
-      fBBsaHybrid[3]=-1.7118e-4;//c
-      fBBsaHybrid[4]=9.0570e-8;//d
-      fBBsaHybrid[5]=-1.74;
-      fBBsaHybrid[6]=-51.164329;//p0
-      fBBsaHybrid[7]=256.148748;//p1
-      fBBsaHybrid[8]=-90.215742;//p2
-      fBBsaHybrid[9]=16.700070;//p3 */
+    else{//DATA: lowB field (0.2T)
+      fBBsaHybrid[0]=1.9575e7;//E0  //PHOBOS+Polinomial parameterization
+      fBBsaHybrid[1]=24.595994;//b
+      fBBsaHybrid[2]=2.4831e-7;//a
+      fBBsaHybrid[3]=2.4831e-7;//c
+      fBBsaHybrid[4]=1.45e-7;//d
+      fBBsaHybrid[5]=-2.14;
+      fBBsaHybrid[6]=6.341347;//p0
+      fBBsaHybrid[7]=148.860604;//p1
+      fBBsaHybrid[8]=-49.310261;//p2
+      fBBsaHybrid[9]=36.995468;//p3 */
 
-      fBBsaElectron[0]=79.872250;//E0 //electrons in the ITS
-      fBBsaElectron[1]=64.779799;//b
-      fBBsaElectron[2]=1.1441e-1;//a
-      fBBsaElectron[3]=-8.6686e-3;//c
-      fBBsaElectron[4]=-5.5293e-4;//d
-      fBBsaElectron[5]=-2.;//exp
+      fBBsaElectron[0]=66.524096;//E0 //electrons in the ITS
+      fBBsaElectron[1]=106.793254;//b
+      fBBsaElectron[2]=1.0939e-1;//a
+      fBBsaElectron[3]=-3.8033e-3;//c
+      fBBsaElectron[4]=-1.6387e-3;//d
+      fBBsaElectron[5]=-1.60;//exp
     }
 
   } else {//MC
 
-    if(fIsNominalBfield){
+    if(fIsNominalBfield){//nominal magnetic field
       fBBsaHybrid[0]=1.05381E7; //PHOBOS+Polinomial parameterization
       fBBsaHybrid[1]=89.3933;
       fBBsaHybrid[2]=2.4831E-7;
@@ -1839,23 +1839,23 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
       fBBsaElectron[5]=-2.;
     }
     else{//MC low B field
-      fBBsaHybrid[0]=1.3946e7;//E0  //PHOBOS+Polinomial parameterization
-      fBBsaHybrid[1]=27.674452;//b
-      fBBsaHybrid[2]=1.5628e-4;//a
-      fBBsaHybrid[3]=-1.4786e-4;//c
-      fBBsaHybrid[4]=9.0375e-8;//d
-      fBBsaHybrid[5]=-1.86;//exp of beta
-      fBBsaHybrid[6]=-71.908360;//p0
-      fBBsaHybrid[7]=311.837370;//p1
-      fBBsaHybrid[8]=-134.097525;//p2
-      fBBsaHybrid[9]=28.997631;//p3
+      fBBsaHybrid[0]=1.9545e7;//E0  //PHOBOS+Polinomial parameterization
+      fBBsaHybrid[1]=24.676130;//b
+      fBBsaHybrid[2]=2.4831e-7;//a
+      fBBsaHybrid[3]=2.4831e-7;//c
+      fBBsaHybrid[4]=1.4478e-7;//d
+      fBBsaHybrid[5]=-2.14;//exp of beta
+      fBBsaHybrid[6]=6.120941;//p0
+      fBBsaHybrid[7]=149.265943;//p1
+      fBBsaHybrid[8]=-49.603396;//p2
+      fBBsaHybrid[9]=37.093019;//p3
 
-      fBBsaElectron[0]=80.977208;//E0 //electrons in the ITS
-      fBBsaElectron[1]=61.656376;//b
-      fBBsaElectron[2]=1.1459e-1;//a
-      fBBsaElectron[3]=-9.3440e-3;//c
-      fBBsaElectron[4]=-4.6991e-4;//d
-      fBBsaElectron[5]=-2.0;//exp of beta
+      fBBsaElectron[0]=67.425232;//E0 //electrons in the ITS
+      fBBsaElectron[1]=106.744327;//b
+      fBBsaElectron[2]=1.0971e-1;//a
+      fBBsaElectron[3]=-4.1163e-3;//c
+      fBBsaElectron[4]=-1.9255e-3;//d
+      fBBsaElectron[5]=-1.60;//exp of beta
     }
 
 }
@@ -1865,7 +1865,7 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
   Double_t gamma=bg/beta;
   Double_t bb=1.;
 
-  Double_t betagcut = (fIsNominalBfield) ? 0.76 : 1.06;
+  Double_t betagcut = (fIsNominalBfield) ? 0.76 : 1.20;
 
   Double_t par[10];
   //parameters for pi, K, p
