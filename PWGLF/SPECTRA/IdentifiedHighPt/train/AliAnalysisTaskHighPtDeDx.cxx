@@ -34,8 +34,7 @@
   * 23 jan 2019: add more filter bit flags for v0 daughters, and make sure TPCrefit, nCrossedRowsTPC, and findable cuts are always there 
   * 30 jan 2019: setting functions for: SetContributorsVtxCut, SetContributorsVtxSPDCut, SetPileupCut, SetVtxR2Cut, SetCrossedRowsCut, SetCrossedOverFindableCut, and removing the eta cut limit of 0.8 on V0s (but keeping it on tracks & daughter tracks)
   * 06 feb 2019: implement reject kink daughters option
-  * 09 dec 2019: a) renaming GetDaughter(int i) --> GetDaughterLabel(int i)
-                 b) removing esd part of the code since heavily outdated 
+  * 17 jan 2019: removing esd part of the code since heavily outdated 
 
   Remiders:
   * For pp: remove pile up thing
@@ -1106,11 +1105,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       continue;
     }
       
-    // AliAODTrack *pTrack = (AliAODTrack*)vertex->GetDaughter(0); 
-    // AliAODTrack *nTrack = (AliAODTrack*)vertex->GetDaughter(1);
-    //191129: according to instructions GetDaughter() -> GetDaughterLabel():
-    AliAODTrack *pTrack = (AliAODTrack*)vertex->GetDaughterLabel(0); 
-    AliAODTrack *nTrack = (AliAODTrack*)vertex->GetDaughterLabel(1);
+    AliAODTrack *pTrack = (AliAODTrack*)vertex->GetDaughter(0); 
+    AliAODTrack *nTrack = (AliAODTrack*)vertex->GetDaughter(1);
     
     if(!pTrack || !nTrack){
       Printf("ERROR: Could not retrieve one of the daughter track");
