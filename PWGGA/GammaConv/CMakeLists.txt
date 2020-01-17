@@ -91,6 +91,7 @@ set(SRCS
     AliPrimaryPionSelector.cxx
     AliConversionCutHandler.cxx
     AliCutHandlerPCM.cxx
+    AliConversionAodSkimTask.cxx
    )
 
 # Headers from sources

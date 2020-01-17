@@ -39,6 +39,7 @@
 #pragma link C++ class AliAnalysisTRDEfficiency+;
 #pragma link C++ class AliIdentifiedPrimarySelector+;
 #pragma link C++ class AliIdentifiedPrimaryCuts+;
+#pragma link C++ class AliConversionAodSkimTask+;
 
 
 
