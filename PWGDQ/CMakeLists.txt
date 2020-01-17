@@ -15,6 +15,7 @@
 
 add_subdirectory(base)
 add_subdirectory(dielectron)
+add_subdirectory(dielectronJet)
 add_subdirectory(reducedTree)
 add_subdirectory(dimuons)
 
