@@ -920,7 +920,8 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
   values[AliDielectronVarManager::kRndm]      = gRandom->Rndm();
 
   AliVTrack *track = (AliVTrack*)particle;
-  values[AliDielectronVarManager::kPIn]= track->GetTPCmomentum();//used for PID calib
+  if(track->IsA() != AliDielectronPair::Class()) // otherwise crashing with ROOT5
+    values[AliDielectronVarManager::kPIn]= track->GetTPCmomentum();//used for PID calib
 
   if(Req(kPtMC)||Req(kPMC)||Req(kPhiMC)||Req(kEtaMC)){
     values[AliDielectronVarManager::kPtMC]      = -999.;
