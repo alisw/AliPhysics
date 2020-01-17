@@ -2,8 +2,8 @@
 #define AliAnalysisTaskHypertriton3ML_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliEventCuts.h"
 #include "AliESDtrack.h"
+#include "AliEventCuts.h"
 #include "AliMLResponse.h"
 #include "AliVertexerHyperTriton3Body.h"
 #include "Math/Vector4D.h"
@@ -11,10 +11,10 @@
 #include <TObjString.h>
 #include <TString.h>
 
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
-#include <list>
 
 class TH1D;
 class TH2D;
@@ -176,7 +176,9 @@ public:
   void SetMinITSnCluster(unsigned char nClsMin) { fMinITSNcluster = nClsMin; }
   void SetMinTPCcluster(unsigned char minCls) { fMinTPCNcluster = minCls; }
 
-  void SetMaxPtPion(float piPtMax) { fMaxPtPion = piPtMax; }
+  void SetMaxPtDeu(float deuPtMax) { fMaxPtDeu = deuPtMax; }
+  void SetMaxPtP(float pPtMax) { fMaxPtP = pPtMax; }
+  void SetMaxPtPi(float piPtMax) { fMaxPtPi = piPtMax; }
 
   void SetVertexerToleranceGuessCompatibility(int nGuessCompatibility) {
     fVertexerToleranceGuessCompatibility = nGuessCompatibility;
@@ -241,7 +243,9 @@ private:
   float fMinDCA2PrimaryVtxP;
   float fMinDCA2PrimaryVtxPi;
 
-  float fMaxPtPion;
+  float fMaxPtDeu;
+  float fMaxPtP;
+  float fMaxPtPi;
 
   std::vector<SHypertriton3> fSHypertriton;    //!
   std::vector<RHypertriton3> fRHypertriton;    //!
@@ -256,7 +260,7 @@ private:
   std::string fMLResponseConfigfilePath;    /// path for the ML config file
 
   std::list<AliESDtrack> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
-  int fEventMixingPoolDepth;                                         /// max depth of the event mixing pool
+  int fEventMixingPoolDepth;                          /// max depth of the event mixing pool
 
   AliAnalysisTaskHypertriton3ML(const AliAnalysisTaskHypertriton3ML &);               // not implemented
   AliAnalysisTaskHypertriton3ML &operator=(const AliAnalysisTaskHypertriton3ML &);    // not implemented
