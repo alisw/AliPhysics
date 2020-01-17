@@ -111,6 +111,8 @@ public:
   void SetRequireDeadZoneWidth (float dzone) { fRequireDeadZoneWidth = dzone; }
   void SetRequireCutGeoNcrNclLength (float length) { fRequireCutGeoNcrNclLength = length; }
   void SetRequireCutGeoNcrNclGeom1Pt (float gcut) { fRequireCutGeoNcrNclGeom1Pt = gcut; }
+  void SetRequireCutGeoNcrNclFractionNcr (float gcut) { fCutGeoNcrNclFractionNcr = gcut; }
+  void SetRequireCutGeoNcrNclFractionNcl (float gcut) { fCutGeoNcrNclFractionNcl = gcut; }
   void SetRequireVetoSPD (bool veto) { fRequireVetoSPD = veto; }
   void SetRequireMaxMomentum (float p) { fRequireMaxMomentum = p; }
   void SetEnablePtCorrection (bool cut) { fEnablePtCorrection = cut; }
@@ -230,6 +232,8 @@ private:
   Float_t               fRequireDeadZoneWidth;  ///<  Cut on on TPC Geometrical Selection Deadzone width
   Float_t               fRequireCutGeoNcrNclLength; ///<  Cut on TPC Geometrical Selection Length
   Float_t               fRequireCutGeoNcrNclGeom1Pt; ///<  Cut on TPC Geometrical Selection 1 Pt
+  Float_t               fCutGeoNcrNclFractionNcr; ///<  Cut on TPC Geometrical Selection Fraction
+  Float_t               fCutGeoNcrNclFractionNcl; ///<  Cut on TPC Geometrical Selection NCluster
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
   Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution

@@ -153,6 +153,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireDeadZoneWidth{0.}
    ,fRequireCutGeoNcrNclLength{0.}
    ,fRequireCutGeoNcrNclGeom1Pt{0.}
+   ,fCutGeoNcrNclFractionNcr{0.}
+   ,fCutGeoNcrNclFractionNcl{0.}
    ,fRequireVetoSPD{false}
    ,fRequireMaxMomentum{-1.}
    ,fFixForLHC14a6{false}
@@ -864,10 +866,14 @@ Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliAODTrack *track) {
   esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
   esdTrack.SetTPCPointsF(track->GetTPCNclsF());
 
+  float nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
   float lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(0,fRequireDeadZoneWidth,220.,fMagField);
   double cutGeoNcrNclLength=fRequireCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fRequireCutGeoNcrNclGeom1Pt);
   
   if (lengthInActiveZoneTPC < cutGeoNcrNclLength) checkResult = kFALSE;
+  if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength) checkResult=kFALSE;
+  if (esdTrack.GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength) checkResult=kFALSE;
+  
   return checkResult;
 }
 Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {
