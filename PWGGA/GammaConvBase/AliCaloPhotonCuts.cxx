@@ -5898,11 +5898,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
           if(fClusterType==2) { //13 TeV Low-B PCM-PHOS Exponential function fitted
-              energy /= FunctionNL_kSDM(energy, 1.00892, -3.9119, -0.339742);
+              energy /= FunctionNL_kSDM(energy, 1.00571, -2.03882, -2.12252);
           }
           if(fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
-              energy /= FunctionNL_DExp(energy, 1.0159084018,1.2750123076,-5.3386138658,1.0298030020,0.1990324073,-3.2530714859,1.0000000000,1.0000000000);
+              energy /= FunctionNL_kSDM(energy, 1.00892, -3.9119, -0.339742);
           }
         } else fPeriodNameAvailable = kFALSE;
 
