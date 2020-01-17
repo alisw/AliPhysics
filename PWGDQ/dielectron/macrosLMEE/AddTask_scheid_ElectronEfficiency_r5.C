@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_rbailhac_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
+AliAnalysisTask *AddTask_scheid_ElectronEfficiency_r5(Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_scheid_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE.root",
                                                      Bool_t deactivateTree=kTRUE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
