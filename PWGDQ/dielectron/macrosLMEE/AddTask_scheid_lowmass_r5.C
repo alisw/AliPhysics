@@ -1,5 +1,5 @@
 AliAnalysisTask *AddTask_scheid_lowmass_r5(Bool_t getFromAlien=kFALSE,
-					  TString cFileName = "Config_rbailhac_lowmass.C",
+					  TString cFileName = "Config_scheid_lowmass.C",
 					  Char_t* outputFileName="LMEE.root",
 					  ULong64_t triggerMask = AliVEvent::kINT7,
 					  Bool_t pileupon = kFALSE,
@@ -79,7 +79,7 @@ AliAnalysisTask *AddTask_scheid_lowmass_r5(Bool_t getFromAlien=kFALSE,
                          outputFileName);
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("rbailhac_lowmass_EventStat_%s", appendix.Data()),
+    mgr->CreateContainer(Form("scheid_lowmass_EventStat_%s", appendix.Data()),
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName);
