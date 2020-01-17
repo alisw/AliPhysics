@@ -28,8 +28,6 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
     printf("This task requires an input event handler!\n");
     return nullptr;
   }
-
-
   //========= Init subtasks and start analyis ============================
   // Event Cuts
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
@@ -39,31 +37,23 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   //Proton track Cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCuts =
     AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
-
   TrackCuts->SetMinimalBooking(false);
   TrackCuts->SetCutCharge(1);
-
   //Antiproton track Cuts-------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCuts =
     AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
-
   AntiTrackCuts->SetMinimalBooking(false);
   AntiTrackCuts->SetCutCharge(-1);
-
   //deuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true,
       CombSigma, ContributionSplitting);
-
   TrackCutsDeuteron->SetMinimalBooking(false);
   TrackCutsDeuteron->SetCutCharge(1);
-
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts( isMC, true,
       CombSigma, ContributionSplitting);
-
   AntiTrackCutsDeuteron->SetMinimalBooking(false);
   AntiTrackCutsDeuteron->SetCutCharge(-1);
-
 /////////////////////For no NSigmaTOF information///
 // =====================================================================
   //Proton track Cuts----------------------------------------------------------------------------
@@ -72,44 +62,25 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   TrackCutsNoTOF->SetMinimalBooking(false);
   TrackCutsNoTOF->SetCutCharge(1);
   TrackCutsNoTOF->SetPID(AliPID::kProton, 999.);
-  TrackCutsNoTOF->SetRejLowPtPionsTOF(false);
-  TrackCutsNoTOF->SetCutSmallestSig(false);
-
-
-
-
   //Antiproton track Cuts-------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsNoTOF =
     AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, CombSigma, ContributionSplitting);
-
   AntiTrackCutsNoTOF->SetMinimalBooking(false);
   AntiTrackCutsNoTOF->SetCutCharge(-1);
   AntiTrackCutsNoTOF-> SetPID(AliPID::kProton, 999.);
-  AntiTrackCutsNoTOF->SetRejLowPtPionsTOF(false);
-  AntiTrackCutsNoTOF->SetCutSmallestSig(false);
   //deuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsDeuteronNoTOF = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true,
       CombSigma, ContributionSplitting);
-
   TrackCutsDeuteronNoTOF->SetMinimalBooking(false);
   TrackCutsDeuteronNoTOF->SetCutCharge(1);
   TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
-  TrackCutsDeuteronNoTOF->SetRejLowPtPionsTOF(false);
-  TrackCutsDeuteronNoTOF->SetCutSmallestSig(false);
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteronNoTOF = AliFemtoDreamTrackCuts::PrimDeuteronCuts( isMC, true,
       CombSigma, ContributionSplitting);
-
   AntiTrackCutsDeuteronNoTOF->SetMinimalBooking(false);
   AntiTrackCutsDeuteronNoTOF->SetCutCharge(-1);
   AntiTrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
-  AntiTrackCutsDeuteronNoTOF->SetRejLowPtPionsTOF(false);
-  AntiTrackCutsDeuteronNoTOF->SetCutSmallestSig(false);
 //====================================================================================================================================
-
-
-
-
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
@@ -128,7 +99,6 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   // d d            7
   // d bar d        8
   // bar d bar d    9
-
   const int nPairs = 10;
   for (int i = 0; i < nPairs; ++i) {
 
@@ -216,8 +186,6 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   kMax.push_back(3.);
   kMax.push_back(3.);
 
-
-
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
@@ -231,8 +199,6 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   config->SetDeltaPhiMax(0.012); // and here you set the actual values
   //Here we set the mixing depth.
   config->SetMixingDepth(10);
-
-
 
   AliAnalysisTaskNanoPt *task =
     new AliAnalysisTaskNanoPt("AliAnalysisTaskNanoPt", isMC);
@@ -404,6 +370,5 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   }
 
   return task;
-
 }
 
