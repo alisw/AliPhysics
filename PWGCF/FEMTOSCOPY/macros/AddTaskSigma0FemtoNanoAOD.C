@@ -701,7 +701,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   const int nPairs = (suffix == "0" && fullBlastQA) ? 120 : 36;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
-    closeRejection.push_back(false);
+    closeRejection.push_back(true);
     if (suffix == "0") {
       NBins.push_back(600);
       kMin.push_back(0.);
