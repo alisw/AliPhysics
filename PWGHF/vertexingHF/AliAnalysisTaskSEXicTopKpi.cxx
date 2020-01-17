@@ -169,6 +169,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
   fPdgFiducialYreco(4122)
+  ,flowMass_treeFill(2.)
+  ,fhighMass_tree_Fill(2.7)
 {
   /// Default constructor
 
@@ -256,6 +258,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
   fPdgFiducialYreco(4122)
+  ,flowMass_treeFill(2.)
+  ,fhighMass_tree_Fill(2.7)
 {
   /// Default constructor
 
@@ -2101,7 +2105,8 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
     mass_pKpi = cand->InvMassLcpKpi();
     mass_piKp = cand->InvMassLcpiKp(); 
 // to save memory, let's discard candidates with invariant mass too far from the expected one (2.467 GeV/c^2)
-   if((mass_pKpi<2.3 || mass_pKpi>2.7) && (mass_piKp<2.3 || mass_piKp>2.7)  )  return;
+   //if((mass_pKpi<2.3 || mass_pKpi>2.7) && (mass_piKp<2.3 || mass_piKp>2.7)  )  return;   
+   if((mass_pKpi<flowMass_treeFill || mass_pKpi>fhighMass_tree_Fill) && (mass_piKp<flowMass_treeFill || mass_piKp>fhighMass_tree_Fill)  )  return;
 
   }
 
@@ -2586,20 +2591,21 @@ AliAODMCParticle* AliAnalysisTaskSEXicTopKpi::MatchRecoCandtoMC(AliAODRecoDecayH
 
 //__________________________________________________________
 void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
+  if(fDebug>=0)Printf("AliAnalysisTaskSEXicTopKpi: LoopOverGenParticless");
   // check whether lc or xic are present
   for(Int_t kmc=0;kmc<fmcArray->GetEntries();kmc++){
     AliAODMCParticle *mcpart=(AliAODMCParticle*)fmcArray->At(kmc);
     
-    if(mcpart->IsPhysicalPrimary()){// fill single particle histos
+    if(mcpart->IsPhysicalPrimary() && !fFillTree){// fill single particle histos
       Int_t pdg=TMath::Abs(mcpart->GetPdgCode());
       Int_t partType=3;
 	if(pdg==211)partType=0;
 	if(pdg==321)partType=1;
 	if(pdg==2212)partType=2;
 	Double_t point[4]={mcpart->Pt(),mcpart->Eta(),mcpart->Phi(),(Double_t)partType};
-	fhSparsePartGen->Fill(point);		
-      }   
-	
+	fhSparsePartGen->Fill(point); 
+      }	
+
       Int_t pdg=mcpart->GetPdgCode();
       Int_t arrayDauLab[3];
       if(TMath::Abs(pdg)==4122){
@@ -2611,6 +2617,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	  Double_t ypart=mcpart->Y();
 	  
 	  // SIGMA C
+    if(fDebug>=0)Printf("   AliAnalysisTaskSEXicTopKpi: LoopOverGenParticless - SigmaC stuff");
 	  Bool_t isFromSigmaC=kFALSE;
 	  Int_t indSc=mcpart->GetMother();
 	  AliAODMCParticle *mcpartMum=0x0;
@@ -2761,6 +2768,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 //_______________________________________
 void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArray,AliAODEvent *aod){
 
+  if(fDebug>=0)Printf("AliAnalysisTaskSEXicTopKpi: LoopOverFilteredCandidates");
   for(Int_t iLcFilt=0;iLcFilt<lcArray->GetEntriesFast();iLcFilt++){
     Bool_t recPrimVtx=kFALSE;
     Int_t isTrueLambdaCorXic=-1;
