@@ -31,7 +31,7 @@ AliAnalysisTaskMcKnoUe* AddTaskMcKnoUe(const Char_t* taskname="McKnoUe", Bool_t 
 
 
     mgr->ConnectInput(taskUE,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskUE,1,mgr->CreateContainer(Form("cList%s",taskname), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname)));
+    mgr->ConnectOutput(taskUE,1,mgr->CreateContainer(Form("cList%s_%1.1f",taskname,minpT), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname)));
 
     return taskUE;
 }
