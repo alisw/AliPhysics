@@ -14,11 +14,11 @@
 # **************************************************************************
 
 # Module
-set(MODULE PWGDQdielectron)
+set(MODULE PWGDQdielectronJet)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/dielectronJet)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -46,72 +46,26 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe/
 		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/
 		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/macros
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                    )
 
 # Sources in alphabetical order
-set(SRCS
-      BtoJPSI/AliDielectronBtoJPSItoEleCDFfitFCN.cxx
-      BtoJPSI/AliDielectronBtoJPSItoEleCDFfitFCNfitter.cxx
-      BtoJPSI/AliDielectronBtoJPSItoEleCDFfitHandler.cxx
-      BtoJPSI/AliDielectronBtoJPSItoEle.cxx
-      core/AliDielectronCF.cxx
-      core/AliDielectronCFdraw.cxx
-      core/AliDielectronClusterCuts.cxx
-      core/AliDielectronCutGroup.cxx
-      core/AliDielectronCutQA.cxx
-      core/AliDielectron.cxx
-      core/AliDielectronDebugTree.cxx
-      core/AliDielectronEventCuts.cxx
-      core/AliDielectronEvent.cxx
-      core/AliDielectronHelper.cxx
-      core/AliDielectronHF.cxx
-      core/AliDielectronHFhelper.cxx
-      core/AliDielectronHistos.cxx
-      core/AliDielectronMC.cxx
-      core/AliDielectronMixingHandler.cxx
-      core/AliDielectronPair.cxx
-      core/AliDielectronPairLegCuts.cxx
-      core/AliDielectronPID.cxx
-      core/AliDielectronQnEPcorrection.cxx
-      core/AliDielectronSignalMC.cxx
-      core/AliDielectronTMVACuts.cxx
-      core/AliDielectronTrackCuts.cxx
-      core/AliDielectronTrackRotator.cxx
-      core/AliDielectronV0Cuts.cxx
-      core/AliDielectronVarCuts.cxx
-      core/AliDielectronVarManager.cxx
-      core/AliDielectronEvtVsTrkHist.cxx
-      core/AliAnalysisTaskDielectronFilter.cxx
-      core/AliAnalysisTaskDielectronReadAODBranch.cxx
-      core/AliAnalysisTaskMultiDielectron.cxx
-      core/AliAnalysisTaskRandomRejection.cxx
-      core/AliAnalysisTaskElectronEfficiency.cxx
-      core/AliAnalysisTaskElectronEfficiencyV2.cxx
-      core/AliAnalysisTask_JPsi_EMCal.cxx
-      core/AliAnalysisTaskEtaReconstruction.cxx
-      JPSI/AliDielectronSignalBase.cxx
-      JPSI/AliDielectronSignalExt.cxx
-      JPSI/AliDielectronSignalFunc.cxx
-      JPSI/AliDielectronSpectrum.cxx
-      LMEE/AliAnalysisTask_Syst_PtDistributionsData.cxx
-      LMEE/AliAnalysisTask_Syst_PtDistributionsMC.cxx
-      LMEE/AliAnalysisTaskDielectronsPbPb_Data.cxx
-      LMEE/AliAnalysisTaskDielectronsPbPb_Efficiency.cxx
-      LMEE/AliAnalysisTaskMLTreeMaker.cxx
-      LMEE/AliAnalysisTaskMLTreeMakerEff.cxx
-      LMEE/AliAnalysisTaskSimpleTreeMaker.cxx
-      LMEE/AliDielectronReducedTrack.cxx
-      LMEE/AliAnalysisTaskTGReducedTree.cxx
-      LMEE/AliAnalysisTaskReducedTreeDS.cxx
-      LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
-      LMEE/AliCocktailSmearing.cxx
-      LMEE/AliAnalysisTaskCharm.cxx
-      LMEE/AliAnalysisTaskBeauty.cxx
-      LMEE/AliAnalysisTaskJpsi.cxx
-      LMEE/AlimakeJPsiTree.cxx
-  )
+#set(SRCS
+#
+#  )
+# fastjet for Jpsi in jets analysis
+if(FASTJET_FOUND)
+  include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+  link_directories(${FASTJET_LIBS_DIR})
+  add_definitions(${FASTJET_DEFINITIONS})
+  set(SRCS ${SRCS}
+      ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectronJet/AliAnalysisTaskJpsiJet.cxx
+      ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectronJet/AliAnalysisTaskJpsiJetFilter.cxx
+      )
+endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -119,13 +73,12 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
-#generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 # Generate the ROOT map
 # Dependecies
 set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO TMVA Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase PWGDQdielectron PWGJEEMCALJetTasks PWGJETFW)
 set(ALIPHYSICS_DEPENCIES PWGPPevcharQnInterface)
 set(LIBDEPS ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
@@ -177,11 +130,9 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install the macros
 install(DIRECTORY macros
-                  macrosJPSI
-                  macrosLMEE
-        DESTINATION PWGDQ/dielectron)
+        DESTINATION PWGDQ/dielectronJet)
 
 # Install data
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/files)
-  install(DIRECTORY files DESTINATION PWGDQ/dielectron)
+  install(DIRECTORY files DESTINATION PWGDQ/dielectronJet)
 endif()
