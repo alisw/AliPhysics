@@ -67,6 +67,7 @@
 #include <AliPID.h>
 #include <AliPIDResponse.h>
 #include <AliESDtrackCuts.h>
+#include <AliESDUtils.h>
 
 #include "AliDielectronPair.h"
 #include "AliDielectronMC.h"
@@ -654,10 +655,10 @@ public:
 
 		kNclsITS1, //number of clusters on ITS1(SPD0) in an event
 		kNclsITS2, //number of clusters on ITS2(SPD1) in an event
-		kNclsITS3, //number of clusters on ITS3(SSD0) in an event
-		kNclsITS4, //number of clusters on ITS4(SSD1) in an event
-		kNclsITS5, //number of clusters on ITS5(SDD0) in an event
-		kNclsITS6, //number of clusters on ITS6(SDD1) in an event
+		kNclsITS3, //number of clusters on ITS3(SDD0) in an event
+		kNclsITS4, //number of clusters on ITS4(SDD1) in an event
+		kNclsITS5, //number of clusters on ITS5(SSD0) in an event
+		kNclsITS6, //number of clusters on ITS6(SSD1) in an event
 
 		kTPCpileupZA, //center of gravity (median) of displaced track Z in pileup event, estimated in A side.
 		kTPCpileupZC, //center of gravity (median) of displaced track Z in pileup event, estimated in C side.
@@ -3128,36 +3129,17 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
 
   values[AliDielectronVarManager::kNTPCclsEvent] = event->GetNumberOfTPCClusters();
 
-	//pileup information for TPC based on displaced Z position of tracks
-  Float_t pileupTrackArrayP[20000] = {};
-  Float_t pileupTrackArrayM[20000] = {};
-	for(Int_t i=0;i<20000;i++){
-		pileupTrackArrayP[i] = 0;
-		pileupTrackArrayM[i] = 0;
-	}
-  Int_t pileupCounterP = 0;
-	Int_t pileupCounterM = 0;
-
-  const Int_t ntracks = event->GetNumberOfTracks();
-	for(Int_t itrack=0; itrack<ntracks; itrack++){
-		AliESDtrack *esdtrack = (AliESDtrack*)event->GetTrack(itrack);
-		if(esdtrack->IsOn(AliVTrack::kITSin)) continue;//tracks from pileup event should not have ITS hit
-
-		Float_t dcaXY = 999; Float_t dcaZ  = 999;
-		esdtrack->GetImpactParameters(dcaXY, dcaZ); 
-		if(TMath::Abs(dcaXY) < 3.0 && TMath::Abs(dcaZ) > 4.0){
-			Double_t tgl = esdtrack->Pz() / esdtrack->Pt();
-			if(tgl > 0.1)  pileupTrackArrayP[pileupCounterP++] = esdtrack->GetZ();
-			if(tgl < -0.1) pileupTrackArrayM[pileupCounterM++] = esdtrack->GetZ();
-		}
-	}//end of esd track loop
-
-  values[AliDielectronVarManager::kTPCpileupZA] = (pileupCounterP > 0 ?        TMath::Median(pileupCounterP,pileupTrackArrayP) : 0.0);
-  values[AliDielectronVarManager::kTPCpileupZC] = (pileupCounterM > 0 ? -1.0 * TMath::Median(pileupCounterM,pileupTrackArrayM) : 0.0);//be careful! opposite sign!
-  values[AliDielectronVarManager::kTPCpileupZ]  = (values[AliDielectronVarManager::kTPCpileupZA] + values[AliDielectronVarManager::kTPCpileupZC])/2.;
-  values[AliDielectronVarManager::kTPCpileupMA] = pileupCounterP;
-  values[AliDielectronVarManager::kTPCpileupMC] = pileupCounterM;
-  values[AliDielectronVarManager::kTPCpileupM]  = pileupCounterP + pileupCounterM;
+	//fill TPC pileup event information
+	//see AliESDUtils::GetTPCPileupVertexInfo for more details
+	// ---| TPC pileup vertex info |----------------------------------------------
+	TVectorF tpcVertexInfo(10);
+	AliESDUtils::GetTPCPileupVertexInfo(event, tpcVertexInfo);
+  values[AliDielectronVarManager::kTPCpileupZA] = tpcVertexInfo[0];
+  values[AliDielectronVarManager::kTPCpileupZC] = tpcVertexInfo[1];
+  values[AliDielectronVarManager::kTPCpileupZ]  = tpcVertexInfo[2];
+  values[AliDielectronVarManager::kTPCpileupMA] = tpcVertexInfo[3];
+  values[AliDielectronVarManager::kTPCpileupMC] = tpcVertexInfo[4];
+  values[AliDielectronVarManager::kTPCpileupM]  = tpcVertexInfo[5];
 
 }
 
@@ -3295,6 +3277,18 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
 
   const AliAODVertex *vtxtpc = GetVertex(event, AliAODVertex::kMainTPC);
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxtpc ? vtxtpc->GetNContributors() : 0);
+
+	//fill TPC pileup event information
+	//see AliESDUtils::GetTPCPileupVertexInfo for more details
+	static TVectorF dummyVertexInfo(10); // to be used with old AODs w/o vertex info
+
+	const TVectorF &tpcVertexInfo = header->GetTPCPileUpInfo() ? *header->GetTPCPileUpInfo() : dummyVertexInfo;
+  values[AliDielectronVarManager::kTPCpileupZA] = tpcVertexInfo[0];
+  values[AliDielectronVarManager::kTPCpileupZC] = tpcVertexInfo[1];
+  values[AliDielectronVarManager::kTPCpileupZ]  = tpcVertexInfo[2];
+  values[AliDielectronVarManager::kTPCpileupMA] = tpcVertexInfo[3];
+  values[AliDielectronVarManager::kTPCpileupMC] = tpcVertexInfo[4];
+  values[AliDielectronVarManager::kTPCpileupM]  = tpcVertexInfo[5];
 
 }
 

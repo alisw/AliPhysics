@@ -60,7 +60,7 @@ class LMEECutLib {
     AliAnalysisCuts *SetupTrackCuts(Float_t PtMin, Float_t PtMax, Float_t EtaMin, Float_t EtaMax){
       AliDielectronCutGroup *trCG = new AliDielectronCutGroup("TrackCutsGroup","TrackCutsGroup",AliDielectronCutGroup::kCompAND);
 
-      if(fCutName.Contains("PIDCalib",TString::kIgnoreCase) || fCutName.Contains("noPID",TString::kIgnoreCase)){
+      if(fCutName.Contains("PIDCalib",TString::kIgnoreCase)){
         AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
         gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
         // gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
@@ -109,10 +109,10 @@ class LMEECutLib {
         varCuts->AddCut(AliDielectronVarManager::kPt, PtMin ,PtMax );
         varCuts->AddCut(AliDielectronVarManager::kEta,EtaMin,EtaMax);
 
-        varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,1.0);
-        varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,3.0);
+        varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,+1.0);
+        varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,+3.0);
 
-        varCuts->AddCut(AliDielectronVarManager::kNclsITS,  3.0,6.1);
+        varCuts->AddCut(AliDielectronVarManager::kNclsITS,  4.0,6.1);
         varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,0.0,5.0);
 
         //varCuts->AddCut(AliDielectronVarManager::kNclsTPC,        80.0, 160.0);//should not be used in 2018 PbPb analyses
@@ -121,7 +121,20 @@ class LMEECutLib {
         varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0,   4.0);
 
         //ITS shared cluster cut
-        varCuts->AddCut(AliDielectronVarManager::kNclsSITS,-0.1,+0.1);
+        //varCuts->AddCut(AliDielectronVarManager::kNclsSITS,-0.1,+0.1);//accept only Nsc = 0 on ITS
+
+				AliDielectronCutGroup *ITSscCG = new AliDielectronCutGroup("ITSscCutsGroup","ITSscCutsGroup",AliDielectronCutGroup::kCompOR);
+        AliDielectronVarCuts *varCuts_ITSsc0 = new AliDielectronVarCuts("VarCuts_ITSsc0","VarCuts_ITSsc0");
+        varCuts_ITSsc0->AddCut(AliDielectronVarManager::kNclsSITS,-0.1,+0.1);//accept only Nsc = 0 on ITS
+
+        AliDielectronVarCuts *varCuts_ITSsc1 = new AliDielectronVarCuts("VarCuts_ITSsc1","VarCuts_ITSsc1");
+        varCuts_ITSsc1->AddCut(AliDielectronVarManager::kNclsSITS,0.9,1.1);//accept Nsc = 1, but not exactly on first SPD
+        varCuts_ITSsc1->AddCut(AliDielectronVarManager::kClsS1ITS,-0.1,+0.1);//accept Nsc = 1, but not exactly on first SPD//be carefull! value is double
+
+				ITSscCG->AddCut(varCuts_ITSsc0);
+				if(fCutName.Contains("Nsc01",TString::kIgnoreCase)) ITSscCG->AddCut(varCuts_ITSsc1);
+				trCG->AddCut(ITSscCG);
+
         trCG->AddCut(varCuts);
       }
       return trCG;
