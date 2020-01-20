@@ -8,7 +8,7 @@
 #include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 
-AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
+AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
                                      bool isMC = false, bool isNano = true,
                                      int phiSpinning = 0, int nSpins = 1,
                                      double corrRange = 0.1, bool Systematic =
@@ -1281,7 +1281,11 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
     if (!fullBlastQA) {
       taskNano->SetRunTaskLightWeight(true);
     }
-    taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    if (trigger == 0) {
+      taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    } else if (trigger == 1){
+      taskNano->SelectCollisionCandidates(AliVEvent::kINT7);
+    }
     taskNano->SetEventCuts(evtCuts);
     taskNano->SetProtonCuts(TrackCuts);
     taskNano->SetAntiProtonCuts(AntiTrackCuts);
@@ -1311,7 +1315,11 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
     if (!fullBlastQA) {
       taskAOD->SetRunTaskLightWeight(true);
     }
-    taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    if (trigger == 0) {
+      taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    } else if (trigger == 1){
+      taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);
+    }
     taskAOD->SetEventCuts(evtCuts);
     taskAOD->SetProtonCuts(TrackCuts);
     taskAOD->SetAntiProtonCuts(AntiTrackCuts);
