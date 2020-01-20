@@ -29,6 +29,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <TH1.h>
+#include "AliEmcalTriggerAlias.h"
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerSelection.h"
@@ -321,7 +322,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2012() {
   eg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   eg1cuts->SetUseSimpleOfflinePatches(true);
   eg1cuts->SetThreshold(10.);
-  this->AddTriggerSelection(new AliEmcalTriggerSelection("EGA", eg1cuts));
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EGA", eg1cuts, new AliEmcalTriggerAlias("EGA;EG1")));
 
   AliEmcalTriggerSelectionCuts *ej1cuts = new AliEmcalTriggerSelectionCuts;
   ej1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
@@ -329,7 +330,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2012() {
   ej1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   ej1cuts->SetUseSimpleOfflinePatches(true);
   ej1cuts->SetThreshold(15.5);
-  this->AddTriggerSelection(new AliEmcalTriggerSelection("EJE", ej1cuts));
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EJE", ej1cuts, new AliEmcalTriggerAlias("EJE;EJ1")));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB5TeV2013(){
