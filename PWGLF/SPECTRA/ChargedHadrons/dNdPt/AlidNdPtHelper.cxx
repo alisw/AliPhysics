@@ -177,7 +177,7 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, const Ali
         vertex->Print();
     }
 
-    if(initVertex) delete initVertex; initVertex=NULL;
+  if(initVertex) {delete initVertex; initVertex=NULL;}
     return vertex;
 }
 
@@ -1691,13 +1691,13 @@ THnSparse* AlidNdPtHelper::RebinTHnSparse(const THnSparse* hist1, THnSparse* his
     hnew->Reset();
     hnew->Sumw2();
     Double_t content;
-    Double_t error;
+    //Double_t error;
     Int_t* c = new Int_t[ndim];
     Double_t* x = new Double_t[ndim];
     Long64_t n = hist->GetNbins();
     for (Long64_t j = 0; j < n; j++) {
         content = hist->GetBinContent(j,c);
-        error = hist->GetBinError(j);
+        //error = hist->GetBinError(j);
         for (Int_t i = 0; i < ndim; i++) {
             x[i] = hist->GetAxis(i)->GetBinCenter(c[i]);
         }
