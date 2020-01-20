@@ -117,6 +117,11 @@ class AliAnalysisTaskSECharmHadronvnTMVA : public AliAnalysisTaskSE
     TH3F* fHistPercqnVsqnVsCentr;           //!<! histo of qn percentile vs. qn vs. centrality
     TH3F* fHistNtrklVsqnVsCentr;            //!<! histo of Ntracklets vs. qn vs. centrality
     THnSparseF* fHistMassPtPhiqnCentr;      //!<! THnSparse for the analysis of vn
+    THnSparseF* fHistMassPtPhiqnCentr_1;      //!<! THnSparse for the analysis of vn
+    THnSparseF* fHistMassPtPhiqnCentr_2;      //!<! THnSparse for the analysis of vn
+    THnSparseF* fHistMassPtPhiqnCentr_3;      //!<! THnSparse for the analysis of vn
+    THnSparseF* fHistMassPtPhiqnCentr_4;      //!<! THnSparse for the analysis of vn
+    THnSparseF* fHistMassPtPhiqnCentr_5;      //!<! THnSparse for the analysis of vn
     AliRDHFCuts* fRDCuts;                   /// cut values (saved in slot 3)
 
 
@@ -154,10 +159,10 @@ class AliAnalysisTaskSECharmHadronvnTMVA : public AliAnalysisTaskSE
     bool fRemoveSoftPion;                   /// flag to enable removal of soft pion too (only D*)
     bool fEnableDownsamplqn;                /// flag to enable random downsampling for qn
     double fFracToKeepDownSamplqn;          /// fraction of tracks to keep in qn with random downsampling
-    TList            *fListRDHFBDT;
-    TList         *fListBDTNtuple;
-    Double_t         fBDT1Cut[13];
-    Double_t         fBDT2Cut[13];
+    TList            *fListRDHFBDT;         ///
+    TList            *fListBDTNtuple;       //!<!
+    Double_t         fBDT1Cut[13];          ///
+    Double_t         fBDT2Cut[13];            ///
 
 
     ClassDef(AliAnalysisTaskSECharmHadronvnTMVA,6); // AliAnalysisTaskSE for the HF vn analysis

@@ -155,19 +155,29 @@ AliAnalysisTaskSECharmHadronvnTMVA *AddTaskCharmHadronvnTMVA(TString BDTfilename
         TString BDTobjname = "BDT";
         BDTobjname += Form("1_%.0f_%.0f",ptbin[i],ptbin[i+1]);
         AliRDHFBDT *thisbdt = (AliRDHFBDT*)(fileBDT->Get(BDTobjname)->Clone(Form("_%s",BDTobjname.Data())));
-        if(!thisbdt) ::Fatal("AddTaskCharmHadronvnTMVA", "Failed to find BDT named BDT1");
-     //   std::cout<<thisbdt->GetDesc()<<endl;
+        if(!thisbdt) ::Fatal("AddTaskCharmHadronvnTMVAnew", "Failed to find BDT named BDT1");
+        //   std::cout<<thisbdt->GetDesc()<<endl;
         bdtlist->Add(thisbdt);
-       
-            TString BDT2objname1 = "BDT";
-            BDT2objname1 += Form("2_%.0f_%.0f_0",ptbin[i],ptbin[i+1]);
-
-            AliRDHFBDT *thisbdt2_0 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname1)->Clone(Form("_%s",BDT2objname1.Data())));
-          if(!thisbdt2_0) ::Fatal("AddTaskCharmHadronvnTMVA", "Failed to find BDT named BDT2");
-       //  std::cout<<thisbdt2_0->GetDesc()<<endl;
-            bdtlist->Add(thisbdt2_0);
-
-     
+        
+        TString BDT2objname1 = "BDT";
+        TString BDT2objname2 = "BDT";
+        TString BDT2objname3 = "BDT";
+        BDT2objname1 += Form("2_%.0f_%.0f_0",ptbin[i],ptbin[i+1]);
+        BDT2objname2 += Form("2_%.0f_%.0f_1",ptbin[i],ptbin[i+1]);
+        BDT2objname3 += Form("2_%.0f_%.0f_2",ptbin[i],ptbin[i+1]);
+        
+        AliRDHFBDT *thisbdt2_0 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname1)->Clone(Form("_%s",BDT2objname1.Data())));
+        AliRDHFBDT *thisbdt2_1 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname2)->Clone(Form("_%s",BDT2objname2.Data())));
+        AliRDHFBDT *thisbdt2_2 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname3)->Clone(Form("_%s",BDT2objname3.Data())));
+        if(!thisbdt2_0) ::Fatal("AddTaskCharmHadronvnTMVAnew", "Failed to find BDT named BDT2");
+        if(!thisbdt2_1) ::Fatal("AddTaskCharmHadronvnTMVAnew", "Failed to find BDT named BDT2");
+        if(!thisbdt2_2) ::Fatal("AddTaskCharmHadronvnTMVAnew", "Failed to find BDT named BDT2");
+        //  std::cout<<thisbdt2_0->GetDesc()<<endl;
+        bdtlist->Add(thisbdt2_0);
+        bdtlist->Add(thisbdt2_1);
+        bdtlist->Add(thisbdt2_2);
+        
+        
     }
     fileBDT->Close();
     vnTask->SetBDTList(bdtlist);
