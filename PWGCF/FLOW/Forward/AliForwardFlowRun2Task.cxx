@@ -173,8 +173,8 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   }
 
   if (fSettings.SC_analysis){
-    fCalculator.cumu_dW4FourTwo  = new THnD("cumu_dW4FourTwo" , "cumu_dW4FourTwo" , dimensions-1, non_dbins, non_min, w_max) ;
-    fCalculator.cumu_dW4ThreeTwo = new THnD("cumu_dW4ThreeTwo", "cumu_dW4ThreeTwo", dimensions-1, non_dbins, non_min, w_max) ;
+    fCalculator.cumu_dW4FourTwo  = new THnD("cumu_dW4FourTwo" , "cumu_dW4FourTwo" , dimensions-1, non_dbins, non_min, non_max) ;
+    fCalculator.cumu_dW4ThreeTwo = new THnD("cumu_dW4ThreeTwo", "cumu_dW4ThreeTwo", dimensions-1, non_dbins, non_min, non_max) ;
     TList* list_dW4FourTwo  = new TList(); list_dW4FourTwo ->SetName("dW4FourTwo" ); list_dW4FourTwo ->Add(fCalculator.cumu_dW4FourTwo ); fMixedList->Add(list_dW4FourTwo );
     TList* list_dW4ThreeTwo = new TList(); list_dW4ThreeTwo->SetName("dW4ThreeTwo"); list_dW4ThreeTwo->Add(fCalculator.cumu_dW4ThreeTwo); fMixedList->Add(list_dW4ThreeTwo);
 
