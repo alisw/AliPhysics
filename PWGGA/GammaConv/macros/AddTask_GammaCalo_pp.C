@@ -1779,13 +1779,13 @@ void AddTask_GammaCalo_pp(
  } else if (trainConfig == 917){ //MB - EMCal+JETS
     cuts.AddCutCalo("00010113","411790607l032230000","0l631031000000d0"); // MB - INT7 - TB NL
  } else if (trainConfig == 950){ // EMCal+JETS clusters standard cuts triggered analysis
-    cuts.AddCutCalo("00010113","411790607l032230000","0l631031000000d0"); // INT7 - TB NL
-    cuts.AddCutCalo("0008d113","411790607l032230000","0l631031000000d0"); // EG1  - TB NL
-    cuts.AddCutCalo("0008e113","411790607l032230000","0l631031000000d0"); // EG2  - TB NL
-    cuts.AddCutCalo("0009b113","411790607l032230000","0l631031000000d0"); // EJ1  - TB NL
-    cuts.AddCutCalo("0009c113","411790607l032230000","0l631031000000d0"); // EJ2  - TB NL
+    cuts.AddCutCalo("00010113","411790607l032230000","2l631031000000d0"); // INT7 - TB NL
+    cuts.AddCutCalo("0008d113","411790607l032230000","2l631031000000d0"); // EG1  - TB NL
+    cuts.AddCutCalo("0008e113","411790607l032230000","2l631031000000d0"); // EG2  - TB NL
+    cuts.AddCutCalo("0009b113","411790607l032230000","2l631031000000d0"); // EJ1  - TB NL
+    cuts.AddCutCalo("0009c113","411790607l032230000","2l631031000000d0"); // EJ2  - TB NL
  } else if (trainConfig == 951){ // EMCal+JETS cut var. min cluster energy & NCells 
-    cuts.AddCutCalo("00010113","411790607l022230000","0l631031000000d0"); // min energy cluster variation 1 0.6 GeV
+    cuts.AddCutCalo("00010113","411790607l022230000","2l631031000000d0"); // min energy cluster variation 1 0.6 GeV
     cuts.AddCutCalo("00010113","411790607l042230000","2l631031000000d0"); // min energy cluster variation 2 0.8 GeV
     cuts.AddCutCalo("00010113","411790607l052230000","2l631031000000d0"); // min energy cluster variation 2 0.9 GeV
     cuts.AddCutCalo("00010113","411790607l031230000","2l631031000000d0"); // std, NCell = 1 
