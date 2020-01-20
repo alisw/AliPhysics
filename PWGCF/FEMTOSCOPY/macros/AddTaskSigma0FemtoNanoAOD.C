@@ -713,16 +713,24 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     }
   }
 
-  NBins[0] = 250;  // pp
-  NBins[8] = 250;  // barp barp
+  if (suffix == "0") {
+    NBins[0] = 3000;  // pp
+    NBins[15] = 3000;  // barp barp
+  } else {
+    NBins[0] = 1000;  // pp
+    NBins[8] = 1000;  // barp barp
+  }
+
+  closeRejection[0] = true;  // pp
+  closeRejection[(suffix == "0") ? 15 : 8] = true;  // barp barp
+
   pairQA[0] = 11;   // pp
-  pairQA[8] = 11;   // pbarpbar
+  pairQA[(suffix == "0") ? 15 : 8] = 11;   // pbarpbar
   pairQA[2] = 14;  // pSigma
-  pairQA[10] = 14;  // barp bSigma
+  pairQA[(suffix == "0") ? 17 : 10] = 14;  // barp bSigma
 
   // do extended QA for the pairs in default mode
   if (suffix == "0" && fullBlastQA) {
-
     pairQA[0] = 11;   // pp
     pairQA[2] = 14;   // pSigma
     pairQA[8] = 12;   // pLambda(Sigma0)
@@ -735,12 +743,6 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     pairQA[25] = 12;   // barpbarLambda
     pairQA[27] = 12;   // barpPhoton(Sigma0)
     pairQA[28] = 12;   // barpPhoton
-
-    closeRejection[0] = true;  // pp
-    closeRejection[11] = true;  // barp barp
-  } else {
-    closeRejection[0] = true;  // pp
-    closeRejection[8] = true;  // barp barp
   }
 
   AliFemtoDreamCollConfig *config =
