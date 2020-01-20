@@ -51,7 +51,7 @@ AliForwardSettings::AliForwardSettings() :
   sec_corr(kFALSE),
   a5(kFALSE),
   fileName(""),
-  fMaxConsequtiveStrips(0),
+  fMaxConsequtiveStrips(2),
   standard_only(kTRUE),
   fmdlowcut(2.0),
   fmdhighcut(3.5),

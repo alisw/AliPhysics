@@ -133,8 +133,8 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
 
     if (fSettings.esd){
       // Fill forwardDist
-      if (fSettings.use_primaries_fwd) this->FillFromPrimariesFMDperTR(forwardDist);
-      else this->FillFromTrackrefsFMDperTR(forwardDist);
+      if (fSettings.use_primaries_fwd) this->FillFromPrimariesFMD(forwardDist);
+      else this->FillFromTrackrefsFMD(forwardDist);
       
       // Fill centralDist
       if (fSettings.useITS){
