@@ -1859,6 +1859,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetBinsLinear(const std::string var, c
   else if (var == "theta_reso")  fResolutionThetaBins.clear();
   else if (var == "mass")   fMassBins.clear();
   else if (var == "pairpt") fPairPtBins.clear();
+  else if (var == "phiv") fPhiVBins.clear();
 
   const double stepSize = (max - min) / steps;
   for (unsigned int i = 0; i < steps+1; ++i){
@@ -1873,6 +1874,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetBinsLinear(const std::string var, c
     else if (var == "theta_reso")  fResolutionThetaBins.push_back(i * stepSize + min);
     else if (var == "mass")   fMassBins.push_back(i * stepSize + min);
     else if (var == "pairpt") fPairPtBins.push_back(i * stepSize + min);
+    else if (var == "phiv") fPhiVBins.push_back(i * stepSize + min);
   }
 }
 
