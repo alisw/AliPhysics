@@ -168,7 +168,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       if (prevRefEtaBin){ // only used once
 
         // two-particle cumulant
-        if (!fSettings.decorr_analysis){
+        if ((fSettings.normal_analysis || fSettings.SC_analysis) || fSettings.second_analysis){
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
           fill(cumu_rW2Two, n, ptn, sample, zvertex, refEtaA, cent, two);
           if (n==2){
@@ -190,7 +190,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       }
 
       // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
-      if (!fSettings.SC_analysis){
+      if ((fSettings.normal_analysis || fSettings.decorr_analysis) || fSettings.second_analysis){
         if (n==2){
           double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
           fill(cumu_dW2B, -n, ptn, sample, zvertex, eta, cent, dn2diff);          
@@ -225,15 +225,14 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
           fill(cumu_dW2TwoTwoN, n, ptn, sample, zvertex, eta, cent, over);
           fill(cumu_dW2TwoTwoD, n, ptn, sample, zvertex, eta, cent, under);
         }
-        if (fSettings.SC_analysis & (n == 2)){
-          double twotwodiffN = TwoTwoDiff(2,-2, etaBin,etaBinB).Re();
-          fill(cumu_dW22TwoTwoN, -n, ptn, sample, zvertex, eta, cent, twotwodiffN);
-          double twotwodiffD = TwoTwoDiff(0,0, etaBin,etaBinB).Re();
-          fill(cumu_dW22TwoTwoD, -n, ptn, sample, zvertex, eta, cent, twotwodiffD);
-        }
       }
 
       if (fSettings.SC_analysis & (n==2)){
+        double twotwodiffN = TwoTwoDiff(2,-2, etaBin,etaBinB).Re();
+        fill(cumu_dW22TwoTwoN, -n, ptn, sample, zvertex, eta, cent, twotwodiffN);
+        double twotwodiffD = TwoTwoDiff(0,0, etaBin,etaBinB).Re();
+        fill(cumu_dW22TwoTwoD, -n, ptn, sample, zvertex, eta, cent, twotwodiffD);
+
         // four-particle cumulant SC(4,2)
         double fourtwodiff = FourDiff(2,4,-2,-4, refEtaBinA,refEtaBinB, etaBin, etaBin).Re();
         fill(cumu_dW4FourTwo, -n, ptn, sample, zvertex, eta, cent, fourtwodiff);

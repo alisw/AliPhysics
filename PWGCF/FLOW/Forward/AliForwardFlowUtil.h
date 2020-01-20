@@ -41,7 +41,9 @@ class AliForwardFlowUtil : public TObject {
   // ESD
   void FillFromTrackrefsITS(TH2D*& fwd) ;
   void FillFromTrackrefsFMD(TH2D*& fwd) ;
+  void FillFromTrackrefsFMDperTR(TH2D*& fwd) ;
   void FillFromPrimariesFMD(TH2D*& fwd) const;
+  void FillFromPrimariesFMDperTR(TH2D*& fwd) ;
   void FillFromPrimariesTPC(TH2D*& cen) const;
   void FillFromPrimariesSPD(TH2D*& cen) const;
   void FillFromPrimariesITS(TH2D*& cen) const;
@@ -64,6 +66,8 @@ class AliForwardFlowUtil : public TObject {
   void FillFromPrimaries(TH2D*& cen) const;
   void FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const;
   void FillFromPrimariesAOD(TH2D*& cen) const;
+  AliMCParticle* GetMother(AliMCParticle* p);
+  Bool_t IsRedefinedPhysicalPrimary(AliMCParticle* p);
 
   Bool_t ProcessTrackITS(AliMCParticle* particle,TH2D*& cen);
 

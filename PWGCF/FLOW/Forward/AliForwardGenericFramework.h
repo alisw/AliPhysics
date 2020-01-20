@@ -97,12 +97,12 @@ public:
   { 
     if (TMath::IsNaN(value)) return; 
     if (n < 0){
-      Double_t values[5] = {sample, zvertex, eta, cent};//kW4FourA
+      Double_t values[5] = {sample, zvertex, eta, cent};
       cumu->Fill(values,value);
       return;
     }
     else{
-      Double_t values[6] = {Double_t(n-2),sample, zvertex, eta, cent};//kW4FourA
+      Double_t values[6] = {Double_t(n-2),sample, zvertex, eta, cent};
       cumu->Fill(values,value);
       return;
     }

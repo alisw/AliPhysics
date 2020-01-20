@@ -6,7 +6,7 @@
 //________________________________________________________________________
 AliForwardSettings::AliForwardSettings() :
   fPhiAcceptanceLowEdge(0),
-  fPhiAcceptanceUpEdge(2*TMath::Pi()),
+  fPhiAcceptanceUpEdge(2*TMath::Pi()),  
   fNPhiBins(20),
   fEtaLowEdge(-3.36),
   fEtaUpEdge(4.8),
@@ -51,7 +51,7 @@ AliForwardSettings::AliForwardSettings() :
   sec_corr(kFALSE),
   a5(kFALSE),
   fileName(""),
-  fMaxConsequtiveStrips(0),
+  fMaxConsequtiveStrips(2),
   standard_only(kTRUE),
   fmdlowcut(2.0),
   fmdhighcut(3.5),
