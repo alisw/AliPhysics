@@ -96,6 +96,35 @@ class LMEECutLib {
         trCG->AddCut(gammaV0Cuts);
         trCG->AddCut(varCuts);
       }
+      else if(fCutName.Contains("Resolution",TString::kIgnoreCase)){
+        AliDielectronTrackCuts *trCuts = new AliDielectronTrackCuts("TrackCuts","TrackCuts");
+        trCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
+        //trCuts->SetRequireITSRefit(kTRUE);
+        //trCuts->SetRequireTPCRefit(kTRUE);
+        trCuts->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // 1<<4
+        trCG->AddCut(trCuts);
+
+        AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
+
+        //varCuts->AddCut(AliDielectronVarManager::kPt, PtMin ,PtMax );
+        //varCuts->AddCut(AliDielectronVarManager::kEta,EtaMin,EtaMax);
+
+        varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,+1.0);
+        varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,+3.0);
+
+        varCuts->AddCut(AliDielectronVarManager::kNclsITS,  3.0,6.1);
+        varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,0.0,15.0);
+
+        //varCuts->AddCut(AliDielectronVarManager::kNclsTPC,        80.0, 160.0);//should not be used in 2018 PbPb analyses
+        varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,     80.0, 160.0);//crossed rows
+        varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,    2.);
+        varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0,   4.0);
+
+        //ITS shared cluster cut
+        varCuts->AddCut(AliDielectronVarManager::kNclsSITS,-0.1,+4.1);//accept upto Nsc = 4 on ITS
+
+        trCG->AddCut(varCuts);
+      }
       else{
         AliDielectronTrackCuts *trCuts = new AliDielectronTrackCuts("TrackCuts","TrackCuts");
         trCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
