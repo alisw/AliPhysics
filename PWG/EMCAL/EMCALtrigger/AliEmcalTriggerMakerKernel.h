@@ -330,6 +330,15 @@ public:
   void SetApplyOnlineBadChannelMaskingToOffline(Bool_t doApply = kTRUE) { fApplyOnlineBadChannelsToOffline = doApply; }
 
   /**
+   * @brief Apply online bad channel masking to smeared channel energies.
+   * This means that cell energies in cells within FastOrs that are masked online are
+   * ignored. By applying this the online trigger acceptance can be applied to smeared
+   * patches as well.
+   * @param[in] doApply If true the online masking is applied to smeared patch energies
+   */
+  void SetApplyOnlineBadChannelMaskingToSmeared(Bool_t doApply = kTRUE) { fApplyOnlineBadChannelsToSmeared = doApply; }
+
+  /**
    * @brief Reset all data grids and VZERO-dependent L1 thresholds
    */
   void Reset();
@@ -516,6 +525,7 @@ protected:
   Double_t                                  fCellTimeLimits[2];           ///< Maximum allowed abs cell time (default [0] = - 10000, [1] = 10000)
   Double_t                                  fMinCellAmplitude;            ///< Minimum amplitude in cell required to be considered for filling the data grid
   Bool_t                                    fApplyOnlineBadChannelsToOffline;   ///< Apply online bad channels to offline ADC values
+  Bool_t                                    fApplyOnlineBadChannelsToSmeared;   ///< Apply online bad channels to smeared energies values
   Bool_t                                    fConfigured;                  ///< Switch specifying whether the trigger maker kernel has been configured for a given data set
   TF1                                       *fSmearModelMean;             ///< Smearing parameterization for the mean
   TF1                                       *fSmearModelSigma;            ///< Smearing parameterization for the width
