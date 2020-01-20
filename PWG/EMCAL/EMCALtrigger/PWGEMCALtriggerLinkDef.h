@@ -16,6 +16,7 @@
 
 #pragma link C++ namespace PWG;
 #pragma link C++ namespace PWG::EMCAL;
+#pragma link C++ class PWG::EMCAL::AliEmcalTriggerAlias+;
 #pragma link C++ class PWG::EMCAL::AliEmcalTriggerDecision+;
 #pragma link C++ class PWG::EMCAL::AliEmcalTriggerDecisionContainer+;
 #pragma link C++ class PWG::EMCAL::AliEmcalTriggerSelectionCuts++;

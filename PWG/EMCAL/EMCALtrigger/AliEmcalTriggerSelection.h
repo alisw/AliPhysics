@@ -43,6 +43,7 @@ namespace PWG {
 
 namespace EMCAL {
 
+class AliEmcalTriggerAlias;
 class AliEmcalTriggerDecision;
 class AliEmcalTriggerSelectionCuts;
 
@@ -72,15 +73,22 @@ public:
    *
    * Initialises the trigger selection
    *
-   * @param name: name of the trigger selection
-   * @param cuts(optional): selection cuts to be applied
+   * @param name name of the trigger selection
+   * @param cuts(optional) selection cuts to be applied
+   * @param alias(optional) trigger alias
    */
-  AliEmcalTriggerSelection(const char *name, const AliEmcalTriggerSelectionCuts * const cuts);
+  AliEmcalTriggerSelection(const char *name, const AliEmcalTriggerSelectionCuts * const cuts, const AliEmcalTriggerAlias *alias = nullptr);
 
   /**
    * @brief Destructor
    */
   virtual ~AliEmcalTriggerSelection() {}
+
+  /**
+   * @brief Get the trigger alias 
+   * @return Trigger alias (nullptr if not set)
+   */
+  const AliEmcalTriggerAlias *GetTriggerAlias() const { return fTriggerAlias; }
 
   /**
    * @brief Get the selection cuts used in the trigger selection
@@ -93,6 +101,8 @@ public:
    * @param[in] cuts Selection cuts used to fire the trigger
    */
   void SetSelectionCuts(const AliEmcalTriggerSelectionCuts * const cuts) { fSelectionCuts = cuts; }
+
+  void SetTriggerAlias(const AliEmcalTriggerAlias *const alias) { fTriggerAlias = alias; }
 
   /**
    * Perform event selection based on user-defined criteria and create an output trigger decision containing
@@ -117,6 +127,7 @@ public:
   friend std::ostream& ::operator<<(std::ostream &stream, const AliEmcalTriggerSelection &sel);
 protected:
   const AliEmcalTriggerSelectionCuts  *fSelectionCuts;    ///< Cuts used for the trigger patch selection
+  const AliEmcalTriggerAlias *fTriggerAlias;              ///< Trigger alias for the trigger selection
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerSelection, 1);    // EMCAL trigger selection component
@@ -138,6 +149,7 @@ private:
 
 }
 }
+
 
 
 #endif /* ALIEMCALTRIGGERSELECTION_H */
