@@ -130,7 +130,9 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fProfNPar(0),
     fhV0Multiplicity(0),
     fhV0CorrMult(0),
-    fhq2TPCvq2V0C(0),
+    fhqnTPCvqnV0C{0},
+    fhqnV0CvqnV0A{0},
+    fhqnTPCvqnV0A{0},
 
     fColSystem{kPbPb},
     fTrigger(AliVEvent::kINT7),
@@ -230,11 +232,12 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fQnxTPCEse{0},
     fQnyTPCEse{0},
 
-    
     fProfNPar(0),
     fhV0Multiplicity(0),
     fhV0CorrMult(0),
-    fhq2TPCvq2V0C(0),
+    fhqnTPCvqnV0C{0},
+    fhqnV0CvqnV0A{0},
+    fhqnTPCvqnV0A{0},
 
     fColSystem{colSys},
     fTrigger(AliVEvent::kINT7),
@@ -376,7 +379,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     }
 
 
-    fHistPhiEtaVz = new TH3F("fHistPhiEtaVz", "fHistPhiEtaVz; #phi; #eta; Vz", 120, 0.0, TMath::TwoPi(), 120, -1.0, 1.0,fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
+    fHistPhiEtaVz = new TH3F("fHistPhiEtaVz", "fHistPhiEtaVz; #phi; #eta; Vz", 120, 0.0, TMath::TwoPi(), 32, -1.0, 1.0,fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
     fHistPhiEtaVz->Sumw2();
     fHistPhi = new TH1F("fHistPhi", ";#phi", 120, 0.0, TMath::TwoPi());
     fHistEta = new TH1F("fHistEta", ";#eta", 120,-1.0, 1.0);
@@ -388,9 +391,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fhV0Multiplicity->Sumw2();
     fhV0CorrMult = new TH2F("fV0CalibratedMultiplicity","",64,0,64,100,0,1250);
     fhV0CorrMult->Sumw2();
-
-    fhq2TPCvq2V0C = new TH2F("fq2TPCvq2V0C","",100,0,16,100,0,16);
-    fhq2TPCvq2V0C->Sumw2();
+    
 
     fq2TPC = new TH2D("fq2vCentTPC","",100,0,100,100,0,8);
     fq2TPC->Sumw2();
@@ -432,6 +433,13 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         fQnxTPCEse[qi]->Sumw2();
         fQnyTPCEse[qi] = new TH2F(Form("fQ%iyvCentTPCEse",qi+2),"",100,0,100,100,-1500,1500);
         fQnyTPCEse[qi]->Sumw2();        
+
+        fhqnTPCvqnV0C[qi] = new TH2F(Form("fq%iTPCvq%iV0C",qi+2,qi+2),"",100,0,16,100,0,16);
+        fhqnTPCvqnV0C[qi]->Sumw2();
+        fhqnV0CvqnV0A[qi] = new TH2F(Form("fq%iV0Cvq%iV0A",qi+2,qi+2),"",100,0,16,100,0,16);
+        fhqnV0CvqnV0A[qi]->Sumw2();
+        fhqnTPCvqnV0A[qi] = new TH2F(Form("fq%iTPCvq%iV0A",qi+2,qi+2),"",100,0,16,100,0,16);
+        fhqnTPCvqnV0A[qi]->Sumw2();
     }
 
     Int_t iSizeTask = fVecCorrTask.size();
@@ -664,9 +672,12 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         fqnDist->Add(fQnyV0AEse[qi]);
         fqnDist->Add(fQnxTPCEse[qi]);
         fqnDist->Add(fQnyTPCEse[qi]);
+
+        fqnDist->Add(fhqnTPCvqnV0C[qi]);
+        fqnDist->Add(fhqnV0CvqnV0A[qi]);
+        fqnDist->Add(fhqnTPCvqnV0A[qi]);
     }
 
-    fqnDist->Add(fhq2TPCvq2V0C);
 
 
     PostData(1, fOutputList);
@@ -746,7 +757,12 @@ void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, const Int
     ReducedqVectorsTPC(centrality, iTracks, fAOD, dVz, fSpCent);
     if(fV0RunByRunCalibration){
     ReducedqVectorsV0(centrality,fAOD, fSpCent);
-    fhq2TPCvq2V0C->Fill(qnTPC[0],qnV0C[0]);
+    
+    for (Int_t i1(0);i1<2;++i1){
+        fhqnTPCvqnV0C[i1]->Fill(qnTPC[i1],qnV0C[i1]);
+        fhqnV0CvqnV0A[i1]->Fill(qnV0C[i1],qnV0A[i1]);
+        fhqnTPCvqnV0A[i1]->Fill(qnTPC[i1],qnV0A[i1]);
+    }
     }
 
     fIndexSampling = GetSamplingIndex();

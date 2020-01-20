@@ -151,7 +151,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TProfile*               fProfNPar; //!
         TH2F*                   fhV0Multiplicity;    //!
         TH2F*                   fhV0CorrMult;       //!
-        TH2F*                   fhq2TPCvq2V0C;  //!
+        TH2F*                   fhqnTPCvqnV0C[2];  //!
+        TH2F*                   fhqnV0CvqnV0A[2];  //!
+        TH2F*                   fhqnTPCvqnV0A[2];  //!
 
         void CorrelationTask(const Float_t centrality, const Int_t iTracks, const AliAODEvent* fAOD, const float dVz, Int_t fSpCent);
         void FillCorrelation(const AliUniFlowCorrTask* const task, const Float_t centrality, const Double_t dPt, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C, Int_t q2ESECodeV0A, Int_t q3ESECodeV0A, Bool_t doRef, Bool_t doDiff);
