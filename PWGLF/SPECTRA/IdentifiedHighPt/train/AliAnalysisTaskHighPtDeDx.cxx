@@ -59,13 +59,8 @@
 // AliRoot includes
 #include <AliAnalysisManager.h>
 #include <AliAnalysisFilter.h>
-#include <AliESDInputHandler.h>
-#include <AliESDEvent.h>
-#include <AliESDVertex.h>
 #include <AliLog.h>
 #include <AliExternalTrackParam.h> 
-#include <AliESDtrackCuts.h>
-#include <AliESDVZERO.h>
 #include <AliAODVZERO.h>
 #include "AliMultSelectionTask.h"
 #include "AliMultSelection.h"
@@ -77,7 +72,6 @@
 #include <AliGenPythiaEventHeader.h>
 #include <AliGenDPMjetEventHeader.h>
 #include "AliCentrality.h" 
-#include <AliESDv0.h>
 #include <AliKFVertex.h>
 #include <AliAODVertex.h>
 #include <AliAODTrack.h> 
@@ -98,9 +92,8 @@ const Double_t AliAnalysisTaskHighPtDeDx::fgkClight = 2.99792458e-2;
 //_____________________________________________________________________________
 AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   AliAnalysisTaskSE(),
-  fAOD(0x0),
+   fAOD(0x0),
   fMC(0x0),
-  fMCStack(0x0),
   fMCArray(0x0),
   fTrackFilter(0x0),
   fTrackFilterGolden(0x0),
@@ -165,9 +158,8 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
 //______________________________________________________________________________
 AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   AliAnalysisTaskSE(name),
-  fAOD(0x0),
+ fAOD(0x0),
   fMC(0x0),
-  fMCStack(0x0),
   fMCArray(0x0),
   fTrackFilter(0x0),
   fTrackFilterGolden(0x0),
@@ -332,7 +324,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     return;
   }
   
-  //changes 26jun2018
+    //changes 26jun2018
   // fAOD = dynamic_cast<AliAODEvent*>(event);
   // if(!fAOD){
   //   Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
@@ -350,6 +342,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       return;
     }  
   }
+
   
   
   if (fAnalysisMC) { 

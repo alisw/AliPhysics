@@ -11,7 +11,6 @@
 
 // AliRoot includes
 #include <AliAnalysisTaskSE.h>
-#include <AliESDEvent.h>
 #include <AliAODEvent.h>
 #include <AliMCEvent.h>
 #include <AliAnalysisFilter.h>
@@ -19,7 +18,6 @@
 #include <AliGenEventHeader.h>
 #include <AliVHeader.h>
 #include <AliAODMCParticle.h> 
-#include <AliESDtrackCuts.h>
 #include "DebugClassesMultESA2013.h"
 
 
@@ -91,15 +89,11 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
 
  private:
   virtual Float_t GetVertex(const AliVEvent* event) const;
-  virtual void AnalyzeESD(AliESDEvent* esd); 
   virtual void AnalyzeAOD(AliAODEvent* aod); 
-  virtual void ProduceArrayTrksESD(AliESDEvent* event, AnalysisMode anamode );
-  virtual void ProduceArrayV0ESD(AliESDEvent* event, AnalysisMode anamode );
   virtual void ProduceArrayTrksAOD(AliAODEvent* event, AnalysisMode anamode );
   virtual void ProduceArrayV0AOD(AliAODEvent* event, AnalysisMode anamode );
   Short_t   GetPidCode(Int_t pdgCode) const;
 
-  void      ProcessMCTruthESD();
   void      ProcessMCTruthAOD(); 
   void      Sort(TClonesArray* array, Bool_t isMC);
   Short_t   GetPythiaEventProcessType(Int_t pythiaType);
@@ -123,10 +117,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
 
   static const Double_t fgkClight;   // Speed of light (cm/ps)
 
-  AliESDEvent* fESD;                  //! ESD object
   AliAODEvent* fAOD;                  //! AOD object
   AliMCEvent*  fMC;                   //! MC object
-  AliStack*    fMCStack;              //! MC ESD stack
   TClonesArray* fMCArray;             //! MC array for AOD
   AliAnalysisFilter* fTrackFilter;    //  Track Filter, old cuts 2010
   AliAnalysisFilter* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
