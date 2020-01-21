@@ -115,6 +115,8 @@ private:
   std::vector<RooUnfoldResponse*> fRgResponseClosure;       //!<! RooUnfold response for r_g for the closure test
   std::vector<RooUnfoldResponse*> fNsdResponse;             //!<! RooUnfold response for n_sd
   std::vector<RooUnfoldResponse*> fNsdResponseClosure;      //!<! RooUnfold response for n_sd for the closure test
+  std::vector<RooUnfoldResponse*> fThetagResponse;          //!<! RooUnfold response for theta_g
+  std::vector<RooUnfoldResponse*> fThetagResponseClosure;   //!<! RooUnfold response for n_sd for the closure test
   THistManager                  fHistManager;               //!< Histogram manager                                       
 
   AliAnalysisTaskEmcalSoftDropResponse(const AliAnalysisTaskEmcalSoftDropResponse &);

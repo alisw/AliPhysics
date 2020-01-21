@@ -105,7 +105,8 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   if(!fPtBinning) fPtBinning = GetDefaultPtBinning(); 
   std::unique_ptr<TBinning> zgBinning(GetZgBinning()),
                             rgBinning(GetRgBinning(R)),
-                            nsdBinning(new TLinearBinning(21, -0.5, 20.5));
+                            nsdBinning(new TLinearBinning(21, -0.5, 20.5)),
+                            thetagBinning(new TLinearBinning(10, 0., 1.));
   TArrayD edgesPt;
   fPtBinning->CreateBinEdges(edgesPt);
   fJetPtMin = edgesPt[0];
@@ -117,10 +118,12 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning);
   fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning);
   fHistos->CreateTH2("hNsdVsPt", "nsd vs pt", *nsdBinning, *fPtBinning);
+  fHistos->CreateTH2("hThetagVsPt", "thetag vs pt", *thetagBinning,  *fPtBinning);
   if(fUseDownscaleWeight){
     fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt (weighted)", *zgBinning, *fPtBinning);
     fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning);
     fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning);
+    fHistos->CreateTH2("hThetagVsPtWeighted", "thetag vs pt (weighted)", *thetagBinning,  *fPtBinning);
     fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
     fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300.);
   }
@@ -166,6 +169,7 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
   }
 
   Double_t weight = fUseDownscaleWeight ? GetDownscaleWeight() : 1.;
+  Double_t Rjet = jets->GetJetRadius();
   fHistos->FillTH1("hEventCounter", 1., weight);
   if(fUseDownscaleWeight) fHistos->FillTH1("hEventCounterWeighted", 1., weight);
   AliDebugStream(1) << fTriggerString << ": Using pt ranges " << fJetPtMin << " to " << fJetPtMax << std::endl;
@@ -180,10 +184,12 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     fHistos->FillTH2("hZgVsPt", zgparams[0], jet->Pt());
     fHistos->FillTH2("hRgVsPt", zgparams[2], jet->Pt());
     fHistos->FillTH2("hNsdVsPt", zgparams[5], jet->Pt());
+    fHistos->FillTH2("hThetagVsPt", zgparams[2]/Rjet, jet->Pt());
     if(fUseDownscaleWeight) {
       fHistos->FillTH2("hZgVsPtWeighted", zgparams[0], jet->Pt(), weight);
       fHistos->FillTH2("hRgVsPtWeighted", zgparams[2], jet->Pt(), weight);
       fHistos->FillTH2("hNsdVsPtWeighted", zgparams[5], jet->Pt(), weight);
+      fHistos->FillTH2("hThetagVsPtWeighted", zgparams[2]/Rjet, jet->Pt(), weight);
     } 
 
     // Fill QA plots - trigger cluster independent
