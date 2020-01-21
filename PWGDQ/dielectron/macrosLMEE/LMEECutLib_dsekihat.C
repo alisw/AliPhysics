@@ -60,7 +60,7 @@ class LMEECutLib {
     AliAnalysisCuts *SetupTrackCuts(Float_t PtMin, Float_t PtMax, Float_t EtaMin, Float_t EtaMax){
       AliDielectronCutGroup *trCG = new AliDielectronCutGroup("TrackCutsGroup","TrackCutsGroup",AliDielectronCutGroup::kCompAND);
 
-      if(fCutName.Contains("PIDCalib",TString::kIgnoreCase)){
+      if(fCutName.Contains("PIDCalib",TString::kIgnoreCase) || fCutName.Contains("GammaConv",TString::kIgnoreCase)){
         AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
         gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
         // gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
