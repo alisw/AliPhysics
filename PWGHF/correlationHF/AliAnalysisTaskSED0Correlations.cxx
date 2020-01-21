@@ -55,6 +55,9 @@
 #include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
 #include "AliHFOfflineCorrelator.h"
+#include "AliMultSelection.h"
+#include "AliAODVZERO.h"
+#include "AliESDUtils.h"
 
 using std::cout;
 using std::endl;
@@ -103,6 +106,9 @@ AliAnalysisTaskSE(),
   fIsRejectSDDClusters(0),
   fFillGlobal(kFALSE),
   fMultEv(0.),
+  fMultEvV0M(0.),
+  fMultEvV0MEqual(0.),
+  fCentEvV0M(0.),
   fzVtx(0.),
   fSoftPiCut(kTRUE),
   fMEAxisThresh(kFALSE),
@@ -118,6 +124,9 @@ AliAnalysisTaskSE(),
   fUseTrackeff(kTRUE),
   fPtAssocLimit(1.),
   fMinDPt(2.),
+  fV0CentMin(0.),
+  fV0CentMax(0.),
+  fV2Analysis(kFALSE),
   fFillTrees(kNoTrees),
   fFractAccME(100),
   fAODProtection(1),
@@ -178,6 +187,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fIsRejectSDDClusters(0),
   fFillGlobal(kFALSE),
   fMultEv(0.),
+  fMultEvV0M(0.),
+  fMultEvV0MEqual(0.),
+  fCentEvV0M(0.),
   fzVtx(0.),
   fSoftPiCut(kTRUE),
   fMEAxisThresh(kFALSE),
@@ -193,6 +205,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fUseTrackeff(kTRUE),
   fPtAssocLimit(1.),
   fMinDPt(2.),
+  fV0CentMin(0.),
+  fV0CentMax(0.),
+  fV2Analysis(kFALSE),
   fFillTrees(kNoTrees),
   fFractAccME(100),
   fAODProtection(1),
@@ -275,6 +290,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fIsRejectSDDClusters(source.fIsRejectSDDClusters),
   fFillGlobal(source.fFillGlobal),
   fMultEv(source.fMultEv),
+  fMultEvV0M(source.fMultEvV0M),
+  fMultEvV0MEqual(source.fMultEvV0MEqual),
+  fCentEvV0M(source.fCentEvV0M),
   fzVtx(source.fzVtx),
   fSoftPiCut(source.fSoftPiCut),
   fMEAxisThresh(source.fMEAxisThresh),
@@ -290,6 +308,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fUseTrackeff(source.fUseTrackeff),
   fPtAssocLimit(source.fPtAssocLimit),
   fMinDPt(source.fMinDPt),
+  fV0CentMin(source.fV0CentMin),
+  fV0CentMax(source.fV0CentMax),
+  fV2Analysis(source.fV2Analysis),
   fFillTrees(source.fFillTrees),
   fFractAccME(source.fFractAccME),
   fAODProtection(source.fAODProtection),
@@ -394,6 +415,9 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fIsRejectSDDClusters = orig.fIsRejectSDDClusters;
   fFillGlobal = orig.fFillGlobal;
   fMultEv = orig.fMultEv;
+  fMultEvV0M = orig.fMultEvV0M;
+  fMultEvV0MEqual = orig.fMultEvV0MEqual;
+  fCentEvV0M = orig.fCentEvV0M;
   fzVtx = orig.fzVtx;
   fSoftPiCut = orig.fSoftPiCut;
   fMEAxisThresh = orig.fMEAxisThresh;
@@ -409,6 +433,9 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fUseTrackeff = orig.fUseTrackeff;
   fPtAssocLimit = orig.fPtAssocLimit;
   fMinDPt = orig.fMinDPt;
+  fV0CentMin = orig.fV0CentMin;
+  fV0CentMax = orig.fV0CentMax;
+  fV2Analysis = orig.fV2Analysis;
   fFillTrees = orig.fFillTrees;
   fFractAccME = orig.fFractAccME; 
   fAODProtection = orig.fAODProtection;
@@ -432,7 +459,7 @@ void AliAnalysisTaskSED0Correlations::Init()
 {
   // Initialization
 
-  if(fDebug > 1) printf("AnalysisTaskSED0Correlations::Init() \n");
+  if(fDebug > 1) printf("AliAnalysisTaskSED0Correlations::Init() \n");
   
   //Copy of cuts objects
   AliRDHFCutsD0toKpi* copyfCutsD0 = new AliRDHFCutsD0toKpi(*fCutsD0);
@@ -480,8 +507,11 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
 
   // Create the output container
   //
-  if(fDebug > 1) printf("AnalysisTaskSED0Correlations::UserCreateOutputObjects() \n");
-
+  if(fDebug > 1) {
+    printf("AliAnalysisTaskSED0Correlations::UserCreateOutputObjects() \n");
+    printf("Cut object D0 = %p\n",fCutsD0);
+    printf("Cut object AssTrk = %p\n",fCutsTracks);
+  }
   //HFCorrelator creation and definition
   fCorrelatorTr = new AliHFCorrelator("CorrelatorTr",fCutsTracks,fSys,fCutsD0);//fSys=0 use multiplicity, =1 use centrality
   fCorrelatorKc = new AliHFCorrelator("CorrelatorKc",fCutsTracks,fSys,fCutsD0);
@@ -716,6 +746,8 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   TClonesArray *inputArray=0;
 
   fMultEv = 0.; //reset event multiplicity
+  fMultEvV0M = 0.;
+  fCentEvV0M = 0.;
   fzVtx = 0.; //reset event multiplicity
   fPoolNum = 0; //reset event pool
 
@@ -849,6 +881,52 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     }
     if (skipEvent) return;
   }
+
+  // AOD primary vertex
+  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+
+  //Fill Event Multiplicity/Centrality
+  if(fV2Analysis) { //for v2 analysis (V0M estimator)
+    AliMultSelection *multSel = (AliMultSelection*)aod->FindListObject("MultSelection");
+    if(!multSel) AliWarning("AliMultSelection object not found!");
+    else fCentEvV0M = multSel->GetMultiplicityPercentile("V0M"); //this is the line for the V0M centrality as from DPG!!
+    Int_t vzeroMultA=0, vzeroMultC=0; //all the following part comes from D2H vs mult codes
+    Int_t vzeroMultAEq=0, vzeroMultCEq=0;
+    AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
+    if(vzeroAOD) {
+      vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+      vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
+      vzeroMultAEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(aod));
+      vzeroMultCEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(aod));
+      fMultEvV0M = vzeroMultA + vzeroMultC;
+      fMultEvV0MEqual = vzeroMultAEq + vzeroMultCEq;
+    }
+    fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //still the uncorrected value of tracklets
+  } else { //std behaviour
+    if(fSys==0) fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //pp (or pPb)
+    else fMultEv = fCutsD0->GetCentrality(aod); //PbPb
+  }
+
+  //Fill control plots for event centrality and zVtx
+  if(fCutsD0->GetUseCentrality()) ((TH1F*)fOutputStudy->FindObject("hCentralEvts"))->Fill(fCutsD0->GetCentrality(aod));
+  ((TH1F*)fOutputStudy->FindObject("hCentEvV0M"))->Fill(fCentEvV0M);
+  ((TH1F*)fOutputStudy->FindObject("hMultEvV0M"))->Fill(fMultEvV0M);
+  ((TH1F*)fOutputStudy->FindObject("hMultEvV0MEqual"))->Fill(fMultEvV0MEqual);
+  ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1"))->Fill(fMultEv);
+  ((TH1F*)fOutputStudy->FindObject("hZvtxEvts"))->Fill(vtx1->GetZ());
+  
+  //Select Centrality range for V2 in pp analysis
+  if(fV2Analysis && (fV0CentMin!=0 || fV0CentMax!=0)) {
+    if(fCentEvV0M < fV0CentMin || fCentEvV0M > fV0CentMax) { //rejected by centrality out of range
+    	fNentries->Fill(6); 
+    	return;
+    } else { //accepted events. Fill histograms and continue running
+      ((TH1F*)fOutputStudy->FindObject("hCentEvV0MSelEvents"))->Fill(fCentEvV0M);
+      ((TH1F*)fOutputStudy->FindObject("hMultEvV0MSelEvents"))->Fill(fMultEvV0M);
+      ((TH1F*)fOutputStudy->FindObject("hMultEvV0MEqualSelEvents"))->Fill(fMultEvV0MEqual);
+      ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1SelEvents"))->Fill(fMultEv);    
+    }
+  }
   
   //HFCorrelators initialization (for this event)
   fCorrelatorTr->SetAODEvent(aod); // set the AOD event from which you are processing
@@ -866,9 +944,6 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     fCorrelatorKc->SetMCArray(mcArray);
     fCorrelatorK0->SetMCArray(mcArray);
   }
-
-  // AOD primary vertex
-  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
 
   //Pool definition
   Double_t MultipOrCent = fCorrelatorTr->GetCentrality();
@@ -898,52 +973,12 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
   if(fDebug>2) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
 
-  if(fFillGlobal) { //loop on V0 and tracks for each event, to fill Pt distr. and InvMass distr.
-/*
-    TClonesArray *v0array = (TClonesArray*)aod->GetList()->FindObject("v0s");
-    Int_t pdgCodes[2] = {211,211};
-    Int_t idArrayV0[v0array->GetEntriesFast()][2];
-    for(int iV0=0; iV0<v0array->GetEntriesFast(); iV0++) {
-      for(int j=0; j<2; j++) {idArrayV0[iV0][j]=-2;}
-      AliAODv0 *v0 = (AliAODv0*)v0array->UncheckedAt(iV0);
-      if(SelectV0(v0,vtx1,2,idArrayV0)) { //option 2 = for mass inv plots only
-        if(fReadMC && fRecoTr && (v0->MatchToMC(310,mcArray,2,pdgCodes)<0)) continue; //310 = K0s, 311 = K0 generico!!
-        ((TH2F*)fOutputStudy->FindObject("hK0MassInv"))->Fill(v0->MassK0Short(),v0->Pt()); //invariant mass plot
-        ((TH1F*)fOutputStudy->FindObject("hist_Pt_K0_AllEv"))->Fill(v0->Pt()); //pT distribution (in all events), K0 case
-      }
-    }
-
-    for(Int_t itrack=0; itrack<aod->GetNTracks(); itrack++) { // loop on tacks
-      AliAODTrack * track = aod->GetTrack(itrack);
-      if(!track) {
-	AliWarning("Error in casting to AOD track. Not a standard AOD?");
-        continue;
-      }
-      //rejection of tracks
-      if(track->GetID() < 0) continue; //discard negative ID tracks
-      if(track->Pt() < fPtThreshLow.at(0) || track->Pt() > fPtThreshUp.at(0)) continue; //discard tracks outside pt range for hadrons/K
-      if(!fCutsTracks->IsHadronSelected(track) || !fCutsTracks->CheckHadronKinematic(track->Pt(),0.1)) continue; //0.1 = dummy (d0 value, no cut on it for me)
-      //pT distribution (in all events), charg and hadr cases
-      ((TH1F*)fOutputStudy->FindObject("hist_Pt_Charg_AllEv"))->Fill(track->Pt()); 
-      if(fCutsTracks->CheckKaonCompatibility(track,kFALSE,0,2)) ((TH1F*)fOutputStudy->FindObject("hist_Pt_Kcharg_AllEv"))->Fill(track->Pt());
-    }
-*/
-  } //end of loops for global plot fill
-
   Int_t nSelectedloose=0,nSelectedtight=0;  
 
   // vHF object is needed to call the method that refills the missing info of the candidates
   // if they have been deleted in dAOD reconstruction phase
   // in order to reduce the size of the file
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
-
-  //Fill Event Multiplicity (needed only in Reco)
-  if(fSys==0) fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //pp (or pPb)
-  else fMultEv = fCutsD0->GetCentrality(aod); //PbPb
-
-  //Fill control plots for event centrality and zVtx
-  if(fCutsD0->GetUseCentrality()) ((TH1F*)fOutputStudy->FindObject("hCentralEvts"))->Fill(fCutsD0->GetCentrality(aod));
-  ((TH1F*)fOutputStudy->FindObject("hZvtxEvts"))->Fill(vtx1->GetZ());
 
   //RecoD0 case ************************************************
   if(fRecoD0) {
@@ -1879,9 +1914,43 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   hZvtxEvts->SetMinimum(0);
   fOutputStudy->Add(hZvtxEvts);
   
-  TH1F *hCentralEvts = new TH1F("hCentralEvts","Centrality of events (for selected events); # Events",102,-1.,101.);
+  TH1F *hCentralEvts = new TH1F("hCentralEvts","Centrality of events (std approach); # Events",10002,-0.01,100.01);
   hCentralEvts->SetMinimum(0);
   fOutputStudy->Add(hCentralEvts);  
+
+  TH1F *hCentEvV0M = new TH1F("hCentEvV0M","Centrality of events (v2 pp analysis) in V0M percentiles; # Events",10002,-0.01,100.01);
+  hCentEvV0M->SetMinimum(0);
+  fOutputStudy->Add(hCentEvV0M);  
+
+  TH1F *hMultEvV0M = new TH1F("hMultEvV0M","Multiplicity of events (v2 pp analysis) in V0M amplitude; # Events",1000,0,1000);
+  hMultEvV0M->SetMinimum(0);
+  fOutputStudy->Add(hMultEvV0M);  
+
+  TH1F *hMultEvV0MEqual = new TH1F("hMultEvV0MEqual","Multiplicity of events (v2 pp analysis) in V0M equalized amplitude; # Events",1000,0,1000);
+  hMultEvV0MEqual->SetMinimum(0);
+  fOutputStudy->Add(hMultEvV0MEqual);  
+
+  TH1F *hMultEvTrkl1 = new TH1F("hMultEvTrkl1","Multiplicity of events (v2 pp analysis) in Tracklets <1; # Events",200,0,200);
+  hMultEvTrkl1->SetMinimum(0);
+  fOutputStudy->Add(hMultEvTrkl1);        
+
+  if(fV2Analysis && (fV0CentMin!=0 || fV0CentMax!=0)) {
+    TH1F *hCentEvV0MSelEvents = new TH1F("hCentEvV0MSelEvents","Centrality of events (for selected events, v2 pp analysis) in V0M percentiles; # Events",10002,-0.01,100.01);
+    hCentEvV0MSelEvents->SetMinimum(0);
+    fOutputStudy->Add(hCentEvV0MSelEvents);  
+    
+    TH1F *hMultEvV0MSelEvents = new TH1F("hMultEvV0MSelEvents","Multiplicity of events (for selected events, v2 pp analysis) in V0M amplitude; # Events",1000,0,1000);
+    hMultEvV0MSelEvents->SetMinimum(0);
+    fOutputStudy->Add(hMultEvV0MSelEvents);  
+
+    TH1F *hMultEvV0MEqualSelEvents = new TH1F("hMultEvV0MEqualSelEvents","Multiplicity of events (for selected events, v2 pp analysis) in V0M equalized amplitude; # Events",1000,0,1000);
+    hMultEvV0MEqualSelEvents->SetMinimum(0);
+    fOutputStudy->Add(hMultEvV0MEqualSelEvents);  
+
+    TH1F *hMultEvTrkl1SelEvents = new TH1F("hMultEvTrkl1SelEvents","Multiplicity of events (for selected events, v2 pp analysis) in Tracklets <1; # Events",200,0,200);
+    hMultEvTrkl1SelEvents->SetMinimum(0);
+    fOutputStudy->Add(hMultEvTrkl1SelEvents);       
+  }
 
   TH1F *hZeroEff = new TH1F("hZeroEff","Efficiency debug plot (0-eff cases); # Events",4,0.,4.);
   hZeroEff->GetXaxis()->SetBinLabel(1,"D0 ok eff");
