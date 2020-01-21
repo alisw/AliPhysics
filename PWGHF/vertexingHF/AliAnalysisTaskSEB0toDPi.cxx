@@ -3194,22 +3194,22 @@ void AliAnalysisTaskSEB0toDPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Prong 
   return;
 }
 //-------------------------------------------------------------------------------------
-Double_t AliAnalysisTaskSEB0toDPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const
+Double_t AliAnalysisTaskSEB0toDPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *Bzero) const
 {
   ///
   /// delta invariant mass
   ///
 
-  AliAODRecoDecayHF3Prong * DPlus = (AliAODRecoDecayHF3Prong*)B0->GetDaughter(0);
+  AliAODRecoDecayHF3Prong * DPlus = (AliAODRecoDecayHF3Prong*)Bzero->GetDaughter(0);
 
   Double_t e[4] = {0};
   e[0] = DPlus->EProng(0, 211); // to be done: Check effect of taking energies of DPlus daughters at B vertex by propagating D to B first ////////////////////////////////////////////////////////////////////////////////////////////////////////
   e[1] = DPlus->EProng(1, 321);
   e[2] = DPlus->EProng(2, 211);
-  e[3] = B0->EProng(1, 211);
+  e[3] = Bzero->EProng(1, 211);
 
   Double_t esum = e[0] + e[1] + e[2] + e[3];
-  Double_t invMassB0 = TMath::Sqrt(esum * esum - B0->P2());
+  Double_t invMassB0 = TMath::Sqrt(esum * esum - Bzero->P2());
 
   Double_t eD[3] = {0};
   eD[0] = DPlus->EProng(0, 211);
