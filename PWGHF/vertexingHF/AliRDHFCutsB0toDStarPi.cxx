@@ -3483,13 +3483,13 @@ Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong 
   return invMassDStar - invMassD0; 
 }
 //-------------------------------------------------------------------------------------
-Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const 
+Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *Bzero) const 
 {
   ///
   /// 4 prong invariant mass of the D0 daughters, the soft pion, and the B0 pion
   ///
 
-  AliAODRecoDecayHF2Prong * DStar = (AliAODRecoDecayHF2Prong*)B0->GetDaughter(1);
+  AliAODRecoDecayHF2Prong * DStar = (AliAODRecoDecayHF2Prong*)Bzero->GetDaughter(1);
   Int_t chargeDStar = DStar->Charge();
 
   Double_t e[4];
@@ -3513,10 +3513,10 @@ Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *
     return 0;
   }
   e[0]=DStar->EProng(0,211);
-  e[3]=B0->EProng(0,211);
+  e[3]=Bzero->EProng(0,211);
 
   Double_t esum = e[0]+e[1]+e[2]+e[3];
-  Double_t invMassB0 = TMath::Sqrt(esum*esum-B0->P2());
+  Double_t invMassB0 = TMath::Sqrt(esum*esum-Bzero->P2());
 
   Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 
