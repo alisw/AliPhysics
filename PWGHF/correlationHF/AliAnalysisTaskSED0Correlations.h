@@ -110,6 +110,8 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
   void SetMinDPt(Double_t minDPt) {fMinDPt=minDPt;}
   void SetFillTrees(TreeFill fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
+  void SetCentralityV0(Double_t V0min, Double_t V0max) {fV0CentMin=V0min; fV0CentMax=V0max;}
+  void SetV2inppAnalysis(Bool_t v2anal) {fV2Analysis=v2anal;}
  
   void SetUseNtrklWeight(Bool_t flag=kTRUE) {fUseNtrklWeight=flag;}
   void SetHistNtrklWeight(TH1D* h) {
@@ -181,6 +183,9 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t    fIsRejectSDDClusters; 	// flag to reject events with SDD clusters
   Bool_t    fFillGlobal;          	// flag to fill global plots (in loops on tracks and V0 for each event)
   Double_t  fMultEv;			// event multiplicity (for trigger eff)
+  Double_t  fMultEvV0M;     // event multiplicity (for trigger eff)
+  Double_t  fMultEvV0MEqual;     // event multiplicity (for trigger eff)
+  Double_t  fCentEvV0M;     // event multiplicity (for trigger eff)
   Double_t  fzVtx;				// event zVtx position (for track eff)
   Bool_t    fSoftPiCut;			// flag to activate soft pion cut on Data
   Bool_t    fMEAxisThresh;		// flag to fill threshold axis in ME plots
@@ -196,6 +201,9 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t    fUseTrackeff;   		// Use track efficiency as weight
   Double_t  fPtAssocLimit;   		// Maximum value for associated pT
   Double_t  fMinDPt;			// Minimum pT of the D0 to allow selection
+  Double_t  fV0CentMin;         // Minimum V0 centrality for internal event selection (not made by cut object)
+  Double_t  fV0CentMax;         // Maximum V0 centrality for internal event selection (not made by cut object)
+  Bool_t    fV2Analysis;        // Running v2 in pp analysis
 
   TreeFill  fFillTrees;			// Flag to fill ME offline trees
   Double_t  fFractAccME;		// Fraction of tracks to be accepted in the ME offline
@@ -215,7 +223,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TObjArray *fTrackArray;		// Array with selected tracks for association
   Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,16); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,17); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif
