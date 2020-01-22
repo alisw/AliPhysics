@@ -59,6 +59,12 @@ namespace EMCAL {
  */
 class AliEmcalTriggerAlias : public TObject {
 public:
+
+  /**
+   * @brief Default I/O constructor
+   */
+  AliEmcalTriggerAlias();
+
   /**
    * @brief Constructor, creates a new trigger alias from a list of trigger names
    * @param triggernames List of the trigger classes handled by the alias, separated by ";"
