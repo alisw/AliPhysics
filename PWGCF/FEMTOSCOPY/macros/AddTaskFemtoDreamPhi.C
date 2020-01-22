@@ -1,7 +1,6 @@
 AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
                                         TString CentEst = "kInt7",
                                         const char *cutVariation = "0") {
-
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,8 +16,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-  evtCuts->SetSphericityCuts(0.7,1);
-
+  evtCuts->SetSphericityCuts(0.7, 1);
 
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -28,20 +26,22 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   AntiTrackCuts->SetCutCharge(-1);
 
-//  if (suffix != "0") {
-//    TrackCuts->SetMinimalBooking(true);
-//    AntiTrackCuts->SetMinimalBooking(true);
-//  }
+  //  if (suffix != "0") {
+  //    TrackCuts->SetMinimalBooking(true);
+  //    AntiTrackCuts->SetMinimalBooking(true);
+  //  }
 
-  AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
+  AliFemtoDreamTrackCuts *TrackPosKaonCuts =
+      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
-//  TrackPosKaonCuts->SetPID(AliPID::kKaon, 999, 5);
-//  TrackPosKaonCuts->SetPlotTOFMass(true);
+  //  TrackPosKaonCuts->SetPID(AliPID::kKaon, 999, 5);
+  //  TrackPosKaonCuts->SetPlotTOFMass(true);
 
-  AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
+  AliFemtoDreamTrackCuts *TrackNegKaonCuts =
+      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackNegKaonCuts->SetCutCharge(-1);
-//  TrackNegKaonCuts->SetPID(AliPID::kKaon, 999, 5);
-//  TrackNegKaonCuts->SetPlotTOFMass(true);
+  //  TrackNegKaonCuts->SetPID(AliPID::kKaon, 999, 5);
+  //  TrackNegKaonCuts->SetPlotTOFMass(true);
 
   TrackPosKaonCuts->SetDCAVtxZ(0.4);
   TrackNegKaonCuts->SetDCAVtxZ(0.4);
@@ -50,10 +50,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   TrackPosKaonCuts->SetFilterBit(128);
   TrackNegKaonCuts->SetFilterBit(128);
 
-//  if (suffix != "0") {
-//    TrackPosKaonCuts->SetMinimalBooking(true);
-//    TrackNegKaonCuts->SetMinimalBooking(true);
-//  }
+  //  if (suffix != "0") {
+  //    TrackPosKaonCuts->SetMinimalBooking(true);
+  //    TrackNegKaonCuts->SetMinimalBooking(true);
+  //  }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);
@@ -69,43 +69,42 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
 
-  if (suffix != "0") {
-    TrackCutsPhi->SetMinimalBooking(true);
-  }
-  if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(0.987,1.011);
-  }
-  if (suffix == "2") {
-    TrackCutsPhi->SetCutWindow(1.027,1.1);
-  }
-  if (suffix == "3") {
-    TrackCutsPhi->SetCutWindow(1.1,1.2);
-  }
-  if (suffix == "4") {
-    TrackCutsPhi->SetCutWindow(1.2,1.3);
-  }
-  if (suffix == "5") {
-    TrackCutsPhi->SetCutWindow(1.3,1.4);
-  }
-  if (suffix == "6") {
-    TrackCutsPhi->SetCutWindow(1.4,1.5);
-  }
-  if (suffix == "7") {
-    TrackCutsPhi->SetCutWindow(1.5,1.6);
-  }
-  if (suffix == "8") {
-    TrackCutsPhi->SetCutWindow(1.6,1.7);
-  }
-  if (suffix == "9") {
-    TrackCutsPhi->SetCutWindow(1.7,1.8);
-  }
-  if (suffix == "10") {
-    TrackCutsPhi->SetCutWindow(1.8,1.9);
-  }
-  if (suffix == "11") {
-    TrackCutsPhi->SetCutWindow(1.9,2);
-  }
-
+//  if (suffix != "0") {
+//    TrackCutsPhi->SetMinimalBooking(true);
+//  }
+//  if (suffix == "1") {
+//    TrackCutsPhi->SetCutWindow(0.987, 1.011);
+//  }
+//  if (suffix == "2") {
+//    TrackCutsPhi->SetCutWindow(1.027, 1.1);
+//  }
+//  if (suffix == "3") {
+//    TrackCutsPhi->SetCutWindow(1.1, 1.2);
+//  }
+//  if (suffix == "4") {
+//    TrackCutsPhi->SetCutWindow(1.2, 1.3);
+//  }
+//  if (suffix == "5") {
+//    TrackCutsPhi->SetCutWindow(1.3, 1.4);
+//  }
+//  if (suffix == "6") {
+//    TrackCutsPhi->SetCutWindow(1.4, 1.5);
+//  }
+//  if (suffix == "7") {
+//    TrackCutsPhi->SetCutWindow(1.5, 1.6);
+//  }
+//  if (suffix == "8") {
+//    TrackCutsPhi->SetCutWindow(1.6, 1.7);
+//  }
+//  if (suffix == "9") {
+//    TrackCutsPhi->SetCutWindow(1.7, 1.8);
+//  }
+//  if (suffix == "10") {
+//    TrackCutsPhi->SetCutWindow(1.8, 1.9);
+//  }
+//  if (suffix == "11") {
+//    TrackCutsPhi->SetCutWindow(1.9, 2);
+//  }
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
@@ -113,12 +112,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   // First we need to tell him about the particles we mix, from the
   // PDG code the mass is obtained.
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212); //0
-  PDGParticles.push_back(2212); //1
-  PDGParticles.push_back(333);  //2
-  PDGParticles.push_back(2212); //4
-  PDGParticles.push_back(2212); //5
-  PDGParticles.push_back(333);  //6
+  PDGParticles.push_back(2212);  // 0
+  PDGParticles.push_back(2212);  // 1
+  PDGParticles.push_back(333);   // 2
+  PDGParticles.push_back(2212);  // 3
+  PDGParticles.push_back(2212);  // 4
+  PDGParticles.push_back(333);   // 5
+  PDGParticles.push_back(333);   // 6
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -159,64 +159,63 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
   // Number of bins
   std::vector<int> NBins;
-//  NBins.push_back(750);
-//  NBins.push_back(750);
-//  NBins.push_back(750);
-//  NBins.push_back(750);
-//  NBins.push_back(750);
-//  NBins.push_back(750);
+  //  NBins.push_back(750);
+  //  NBins.push_back(750);
+  //  NBins.push_back(750);
+  //  NBins.push_back(750);
+  //  NBins.push_back(750);
+  //  NBins.push_back(750);
   std::vector<float> kMin;
   // minimum k* value
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
+  //  kMin.push_back(0.);
+  //  kMin.push_back(0.);
+  //  kMin.push_back(0.);
+  //  kMin.push_back(0.);
+  //  kMin.push_back(0.);
+  //  kMin.push_back(0.);
   // maximum k* value
   std::vector<float> kMax;
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
+  //  kMax.push_back(3.);
+  //  kMax.push_back(3.);
+  //  kMax.push_back(3.);
+  //  kMax.push_back(3.);
+  //  kMax.push_back(3.);
+  //  kMax.push_back(3.);
 
   std::vector<int> pairQA;
-//  pairQA.push_back(11);
-//  pairQA.push_back(0);
-//  pairQA.push_back(12);
-//  pairQA.push_back(11);
-//  pairQA.push_back(12);
-//  pairQA.push_back(22);
+  //  pairQA.push_back(11);
+  //  pairQA.push_back(0);
+  //  pairQA.push_back(12);
+  //  pairQA.push_back(11);
+  //  pairQA.push_back(12);
+  //  pairQA.push_back(22);
 
-  for (int i=0; i<(1+2+3+4+5+6); i++)
-  {
-      NBins.push_back(750);
-      kMin.push_back(0.);
-      kMax.push_back(3.);
-      pairQA.push_back(0);
-
+  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7); i++) {
+    NBins.push_back(750);
+    kMin.push_back(0.);
+    kMax.push_back(3.);
+    pairQA.push_back(0);
   }
 
-  pairQA[0]=11; //pp
-  pairQA[1]=0;  //pap
-  pairQA[2]=12; //pphi
-  pairQA[6]=11; //apap
-  pairQA[7]=12; //apphi
-  pairQA[11]=22; //phiphi
+  pairQA[0] = 11;   // pp
+  pairQA[1] = 0;    // pap
+  pairQA[2] = 12;   // pphi
+  pairQA[7] = 11;   // apap
+  pairQA[8] = 12;   // apphi
+  pairQA[13] = 22;  // phiphi
 
-  if(isMC)
-  {
-      pairQA[15]=11;
-      pairQA[16]=11; //pap
-      pairQA[17]=11;
-      pairQA[18]=11;
-      pairQA[19]=11;
-      pairQA[20]=11;
+  if (isMC) {
+    pairQA[18] = 11;
+    pairQA[19] = 11;  // ptapt
+    pairQA[20] = 11;
+    pairQA[22] = 11;
+    pairQA[23] = 11;
+    pairQA[25] = 11;
 
+    pairQA[21] = 11;  // ptphiall
+    pairQA[24] = 11;  // aptphiall
+    pairQA[27] = 11;  // phiallphiall
   }
-
 
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
@@ -247,21 +246,22 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
     config->SetZBins(ZVtxBins);
 
     */
-    if (isMC) {
-      config->SetMomentumResolution(true);
-    } else {
-      std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
-    }
-
-    /*
-    if (isMC) {
-      config->SetPhiEtaBinnign(true);
-    } else {
-      std::cout << "You are trying to request the Eta Phi Plots without MC Info;
-  fix it wont work! \n";
-    }
+  if (isMC) {
+    config->SetMomentumResolution(true);
+  } else {
+    std::cout << "You are trying to request the Momentum Resolution without MC "
+                 "Info; fix it wont work! \n";
   }
-   */
+
+  /*
+  if (isMC) {
+    config->SetPhiEtaBinnign(true);
+  } else {
+    std::cout << "You are trying to request the Eta Phi Plots without MC Info;
+fix it wont work! \n";
+  }
+}
+ */
   // now we create the task
   AliAnalysisTaskFemtoDreamPhi *task =
       new AliAnalysisTaskFemtoDreamPhi("AliAnalysisTaskFemtoDreamPhi", isMC);
@@ -318,11 +318,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
     addon += "HM";
   }
   TString QAName = Form("%sResults%s", addon.Data(), suffix.Data());
-  coutputQA = mgr->CreateContainer(
-      QAName.Data(),
-      TList::Class(),
-      AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), QAName.Data()));
+  coutputQA = mgr->CreateContainer(QAName.Data(), TList::Class(),
+                                   AliAnalysisManager::kOutputContainer,
+                                   Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
 
   return task;
