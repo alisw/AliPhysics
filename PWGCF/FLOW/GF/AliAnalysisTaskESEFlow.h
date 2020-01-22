@@ -112,7 +112,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TSpline3*               fSplq2V0A[90];  // q2 V0A splines
         TSpline3*               fSplq3V0A[90];  // q3 V0A splines
 
-        TH2D*                   fh2Weights; //!
+        TH3F*                   fh3Weights; //!
         TH1F*                   fhV0Calib;  //!
         TH1F*                   fHistPDG; //!
         
@@ -272,6 +272,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TComplex SixDiff(int n1, int n2, int n3, int n4, int n5, int n6);
         TComplex Seven(int n1, int n2, int n3, int n4, int n5, int n6, int n7);
         TComplex Eight(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8);
+        TComplex SixGap10(int n1, int n2, int n3, int n4, int n5, int n6);
+        TComplex ThreePos(int n1, int n2, int n3);
+        TComplex ThreeNeg(int n1, int n2, int n3);
+        TComplex SixDiffGap10M(int n1, int n2, int n3, int n4, int n5, int n6);
+        TComplex ThreeDiffNeg(int n1, int n2, int n3);
+        TComplex ThreeDiffPos(int n1, int n2, int n3);
 
         //############# END #############//
 
