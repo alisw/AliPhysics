@@ -45,6 +45,7 @@
 #include "TString.h"
 #include "AliTimeRangeCut.h"
 #include "AliOADBContainer.h"
+#include "AliVVertex.h"
 
 #include "AliESDEvent.h" 
 #include "AliESDtrack.h" 
@@ -164,6 +165,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     hTriggerCounter(0),
     hADdecision(0),
     hV0decision(0),
+    hVertexZ(0),
+    hVertexContrib(0),
     fPt(0),
     fY(0),
     fM(0),
@@ -201,6 +204,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
   for(Int_t i = 0; i<2;  i++){ 
     fPtGenDaughter[i] = -1;
     fPtDaughter[i] = -1;
+    fSignDaughter[i] = 0;
     }
   DefineOutput(1, TList::Class());
 
@@ -250,7 +254,10 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
   fTreeJPsi ->Branch("fPt", &fPt, "fPt/F");
-  fTreeJPsi ->Branch("fPtDaughter", &fPtDaughter[0], "fPtDaughter[2]/F");
+  //fTreeJPsi ->Branch("fPtDaughter", &fPtDaughter[0], "fPtDaughter[2]/F");
+  fTreeJPsi ->Branch("fVectDaughter0", &fVectDaughter[0]);
+  fTreeJPsi ->Branch("fVectDaughter1", &fVectDaughter[1]);
+  fTreeJPsi ->Branch("fSignDaughter", &fSignDaughter[0], "fSignDaughter[2]/I");
   fTreeJPsi ->Branch("fY", &fY, "fY/F");
   fTreeJPsi ->Branch("fM", &fM, "fM/F");
   fTreeJPsi ->Branch("fPhi", &fPhi, "fPhi/F");
@@ -379,6 +386,11 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fOutputList->Add(hADdecision);
   hV0decision = new TH2I("hV0decision","hV0decision",7,-2,5,7,-2,5);
   fOutputList->Add(hV0decision);
+  
+  hVertexZ = new TH1D("hVertexZ"," ",600,-30,30);
+  fOutputList->Add(hVertexZ);
+  hVertexContrib = new TH1D("hVertexContrib"," ",103,-2,100);
+  fOutputList->Add(hVertexContrib);
       
   PostData(1, fOutputList);
 
@@ -468,7 +480,15 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   		fZNAtime[i] = fZDCdata->GetZNATDCm(i);
   		fZNCtime[i] = fZDCdata->GetZNCTDCm(i);
 		}
-  } 
+  }
+  
+  const AliVVertex *fVertex = fEvent->GetPrimaryVertex();
+  hVertexZ->Fill(fVertex->GetZ());
+  hVertexContrib->Fill(fVertex->GetNContributors());
+  
+  if(fVertex->GetNContributors()<2)return;
+  if(TMath::Abs(fVertex->GetZ())>15)return;
+ 
  
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
@@ -710,6 +730,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
           vMC += vLabelPart;
 	  }
 	fPtDaughter[iTrack] = trk->Pt();
+	fSignDaughter[iTrack] = trk->Charge();
 	
 	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
 	
@@ -755,6 +776,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  fPIDsigma = nSigmaDistProton;
 	  if(nTOFPID == 0) fPIDsigma = 666;
   	  vJPsiCandidate = vProton[0]+vProton[1];
+	  fVectDaughter[0] = vProton[0];
+	  fVectDaughter[1] = vProton[1];
   	  fChannel = 2;
   	  if(!isMC) FillTree(fTreeJPsi,vJPsiCandidate);
 	  else FillTree(fTreeJPsi,vJPsiCandidate,vMC);
@@ -762,6 +785,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(nSigmaDistMuon < nSigmaDistElectron){
   	  fPIDsigma = nSigmaDistMuon; 
   	  vJPsiCandidate = vMuon[0]+vMuon[1];
+	  fVectDaughter[0] = vMuon[0];
+	  fVectDaughter[1] = vMuon[1];
   	  fChannel = 1;
   	  if(!isMC) FillTree(fTreeJPsi,vJPsiCandidate);
 	  else FillTree(fTreeJPsi,vJPsiCandidate,vMC);
@@ -770,11 +795,15 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  fPIDsigma = nSigmaDistPion; 
 	  fChannel = 0;
   	  vRhoCandidate = vPion[0]+vPion[1];
+	  fVectDaughter[0] = vPion[0];
+	  fVectDaughter[1] = vPion[1];
   	  if(storeRho)FillTree(fTreeJPsi,vRhoCandidate);
   	  }  
   if(nSigmaDistMuon > nSigmaDistElectron){ 
   	  fPIDsigma = nSigmaDistElectron;
   	  vJPsiCandidate = vElectron[0]+vElectron[1];
+	  fVectDaughter[0] = vElectron[0];
+	  fVectDaughter[1] = vElectron[1];
   	  fChannel = -1;
 	  if(!isMC) FillTree(fTreeJPsi,vJPsiCandidate);
 	  else FillTree(fTreeJPsi,vJPsiCandidate,vMC);
