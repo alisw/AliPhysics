@@ -97,7 +97,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fSplq3V0C{0},
     fSplq2V0A{0},
     fSplq3V0A{0},
-    fh2Weights{nullptr},
+    fh3Weights{nullptr},
     fhV0Calib{nullptr},
     
     fHistPDG{0},
@@ -202,7 +202,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fSplq3V0C{0},
     fSplq2V0A{0},
     fSplq3V0A{0},
-    fh2Weights{nullptr},
+    fh3Weights{nullptr},
     fhV0Calib{nullptr},
 
     fHistPDG{0},
@@ -1288,6 +1288,27 @@ void AliAnalysisTaskESEFlow::FillCorrelation(const AliUniFlowCorrTask* const tas
             }
         }
         break;
+    case 6 :
+        if(!bHasGap){
+            if(doDiff){
+                cDnDiff = SixDiff(0,0,0,0,0,0);
+                cNumDiff = SixDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+            }
+            if(doRef){
+                cDn = Six(0,0,0,0,0,0);
+                cNum = Six(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+            }
+        }
+        else{
+            if(doDiff){
+                cDnDiff = SixDiffGap10M(0,0,0,0,0,0);
+                cNumDiff = SixDiffGap10M(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+            }
+            if(doRef){
+                cDn = SixGap10(0,0,0,0,0,0);
+                cNum = SixGap10(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+            }
+        }
     default:
         return;
     }
@@ -1428,23 +1449,17 @@ Bool_t AliAnalysisTaskESEFlow::LoadWeights()
     if(bUseOwnWeights)
     {
         TList* listFlowWeights = nullptr;
-        if(!fFlowRunByRunWeights)
-        {
-            listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
-        }
-        else
-        {
-            listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%d", fAOD->GetRunNumber()));
+        
+        Int_t runno = fAOD->GetRunNumber();
+        listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%i", runno));
 
-            if(!listFlowWeights) 
-            {
-                // run-specific weights not found for this run; loading run-averaged instead
-                AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
-                listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
-                if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
-            }
+        if(!listFlowWeights) 
+        {
+            // run-specific weights not found for this run; loading run-averaged instead
+            AliWarning(Form("TList with flow weights (run %i) not found. returning", runno));
+            return kFALSE;
         }
-        fh2Weights = (TH2D*) listFlowWeights->FindObject("Refs");
+        fh3Weights = (TH3F*) listFlowWeights->FindObject("3DRefs");
     }
     else
     {
@@ -1511,8 +1526,8 @@ Double_t AliAnalysisTaskESEFlow::GetFlowWeight(const AliAODTrack* track, const f
     if(fFlowRunByRunWeights){
         if(bUseOwnWeights)
         {
-        Int_t iBin = fh2Weights->FindFixBin(track->Phi(),track->Eta()); //fh2Weights
-        dWeight = fh2Weights->GetBinContent(iBin);
+        Int_t iBin = fh3Weights->FindFixBin(track->Phi(),track->Eta(),dVz); //fh3Weights
+        dWeight = fh3Weights->GetBinContent(iBin);
         }
         else
         {
@@ -2515,5 +2530,39 @@ TComplex AliAnalysisTaskESEFlow::Eight(int n1, int n2, int n3, int n4, int n5, i
     }// loop over k
     
     return Correlation;
+}
+TComplex AliAnalysisTaskESEFlow::SixGap10(int n1, int n2, int n3, int n4, int n5, int n6)
+{
+  TComplex formula = ThreePos(n1,n2,n3)*ThreeNeg(n4,n5,n6);
+	return formula;
+}
+TComplex AliAnalysisTaskESEFlow::ThreePos(int n1, int n2, int n3)
+{
+  TComplex formula = QGap10P(n1,1)*QGap10P(n2,1)*QGap10P(n3,1)-QGap10P(n1+n2,2)*QGap10P(n3,1)-QGap10P(n2,1)*QGap10P(n1+n3,2)
+ 		                 - QGap10P(n1,1)*QGap10P(n2+n3,2)+2.*QGap10P(n1+n2+n3,3);
+  return formula;
+}
+TComplex AliAnalysisTaskESEFlow::ThreeNeg(int n1, int n2, int n3)
+{
+  TComplex formula = QGap10M(n1,1)*QGap10M(n2,1)*QGap10M(n3,1)-QGap10M(n1+n2,2)*QGap10M(n3,1)-QGap10M(n2,1)*QGap10M(n1+n3,2)
+ 		                 - QGap10M(n1,1)*QGap10M(n2+n3,2)+2.*QGap10M(n1+n2+n3,3);
+  return formula;
+}
+TComplex AliAnalysisTaskESEFlow::SixDiffGap10M(int n1, int n2, int n3, int n4, int n5, int n6)
+{
+  TComplex formula = ThreeDiffNeg(n1,n2,n3)*ThreePos(n4,n5,n6);
+  return formula;
+}
+TComplex AliAnalysisTaskESEFlow::ThreeDiffNeg(int n1, int n2, int n3)
+{
+  TComplex formula = pGap10M(n1,1)*QGap10M(n2,1)*QGap10M(n3,1)-qGap10M(n1+n2,2)*QGap10M(n3,1)-qGap10M(n1+n3,2)*QGap10M(n2,1)
+ 		                 - pGap10M(n1,1)*QGap10M(n2+n3,2)+2.0*qGap10M(n1+n2+n3,3);
+  return formula;
+}
+TComplex AliAnalysisTaskESEFlow::ThreeDiffPos(int n1, int n2, int n3)
+{
+  TComplex formula = pGap10P(n1,1)*QGap10P(n2,1)*QGap10P(n3,1)-qGap10P(n1+n2,2)*QGap10P(n3,1)-qGap10P(n1+n3,2)*QGap10P(n2,1)
+ 		                 - pGap10P(n1,1)*QGap10P(n2+n3,2)+2.0*qGap10P(n1+n2+n3,3);
+  return formula;
 }
 //_____________________________________________________________________________
