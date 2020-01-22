@@ -46,8 +46,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   fTrackCutsPosPion->SetNClsTPC(80);
   // Not mention in AN oder Indico
   fTrackCutsPosPion->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
-  fTrackCutsPosPion->SetDCAVtxZ(0.3);
-  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  if ( !MCtemplatefit ) {
+    fTrackCutsPosPion->SetDCAVtxZ(0.3);
+    fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  } 
   // Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
   if ( doSharedCut ) { fTrackCutsPosPion->SetCutSharedCls(true);}
   fTrackCutsPosPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
@@ -78,8 +80,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetDCAReCalculation(true);
-  fTrackCutsNegPion->SetDCAVtxZ(0.3);
-  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  if ( !MCtemplatefit ) {
+    fTrackCutsNegPion->SetDCAVtxZ(0.3);
+    fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  } 
   if ( doSharedCut ) { fTrackCutsNegPion->SetCutSharedCls(true);}
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
