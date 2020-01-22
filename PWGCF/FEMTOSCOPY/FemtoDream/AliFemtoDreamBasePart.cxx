@@ -370,8 +370,8 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
           : -999.f;
   fCPA = cosinePointingAngle;
 
-  const int posLabel = gamma->GetTrackLabelPositive();
-  const int negLabel = gamma->GetTrackLabelNegative();
+  const int posLabel = posTrack->GetID();
+  const int negLabel = negTrack->GetID();
   fIDTracks.push_back(posLabel);
   fIDTracks.push_back(negLabel);
 
