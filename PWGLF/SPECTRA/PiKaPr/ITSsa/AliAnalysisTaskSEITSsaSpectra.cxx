@@ -168,6 +168,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
       fHistReco[index] = NULL;
       fHistRecoMC[index] = NULL;
       fHistRecoTrueMC[index] = NULL;
+      fHistMCDCA[index] = NULL;
 
       fHistTruePIDMCReco[index] = NULL;
       fHistTruePIDMCGen[index] = NULL;
@@ -521,6 +522,19 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
         fHistRecoTrueMC[index]->GetAxis(1)->Set(nPtBins, ptBins);     // Real limits for rec pt
         fHistRecoTrueMC[index]->GetAxis(2)->Set(nPtBins, ptBins);     // Real limits for gen pt
         fOutput->Add(fHistRecoTrueMC[index]);
+
+        //For DCAxy
+        hist_name = Form("fHistMCDCA%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
+        int nBinsDCA[nDims] = { nCentBins, nPtBins, nPtBins, 4, 4, nDCABins }; //
+        double minBinDCA[nDims] = { 0., 0., 0., -1.5, -0.5, -2. };         // Dummy limits for cent, recPt, genPt
+        double maxBinDCA[nDims] = { 1., 1., 1., 2.5, 3.5, 2. };           // Dummy limits for cent, recPt, genPt
+        fHistMCDCA[index] =
+          new THnSparseF(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{p}_{T} (GeV/#it{c});;;DCAxy", nDims,
+                         nBinsDCA, minBinDCA, maxBinDCA);
+        fHistMCDCA[index]->GetAxis(0)->Set(nCentBins, centBins); // Real limits for cent
+        fHistMCDCA[index]->GetAxis(1)->Set(nPtBins, ptBins);     // Real limits for rec pt
+        fHistMCDCA[index]->GetAxis(2)->Set(nPtBins, ptBins);     // Real limits for gen pt
+        fOutput->Add(fHistMCDCA[index]);
 
         //        // Histograms MC part Rec.
         const int nPhysBins = 4;
@@ -1062,12 +1076,32 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
         // DCA distributions, before the DCAxy cuts from the MC kinematics
         // Filling DCA distribution with MC truth Physics values
         if (fIsMC) {
-          if (lMCevent->IsPhysicalPrimary(lMCtrk))
+          int ptype = 0;
+          if (lMCevent->IsPhysicalPrimary(lMCtrk)){
             fHistDCARecoPID_prim[lPidIndex]->Fill(fEvtMult, trkPt, impactXY);
-          if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk))
+            ptype = 0;
+          }
+          else if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)){
             fHistDCARecoPID_sstr[lPidIndex]->Fill(fEvtMult, trkPt, impactXY);
-          if (lMCevent->IsSecondaryFromMaterial(lMCtrk))
+            ptype = 1;
+          }
+          else if (lMCevent->IsSecondaryFromMaterial(lMCtrk)){
             fHistDCARecoPID_smat[lPidIndex]->Fill(fEvtMult, trkPt, impactXY);
+            ptype = 2;
+          }
+          else {
+            ptype = 3;
+          }
+
+          int binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
+          double tmp_vect[6] = { fEvtMult,
+                                 trkPt,
+                                 lMCpt,
+                                 static_cast<double>(binPart),
+                                 static_cast<double>(ptype),
+                                 impactXY
+                               };
+          fHistMCDCA[lPidIndex]->Fill(tmp_vect);
         }
       } // end lIsGoodTrack
 
