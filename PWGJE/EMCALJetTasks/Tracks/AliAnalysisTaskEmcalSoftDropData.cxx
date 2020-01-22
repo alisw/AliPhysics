@@ -198,13 +198,15 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     fHistos->FillTH2("hQANEFPt", jet->Pt(), jet->NEF(), weight);
     if(clusters){
       auto leadcluster = jet->GetLeadingCluster(clusters->GetArray());
-      TLorentzVector ptvec;
-      leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-      fHistos->FillTH2("hQAZnePt", jet->Pt(), jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
+      if(leadcluster){
+        TLorentzVector ptvec;
+        leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+        fHistos->FillTH2("hQAZnePt", jet->Pt(), jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
+      }
     }
     if(tracks){
       auto leadingtrack = jet->GetLeadingTrack(tracks->GetArray());
-      fHistos->FillTH2("hQAZchPt", jet->Pt(), jet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
+      if(leadingtrack) fHistos->FillTH2("hQAZchPt", jet->Pt(), jet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
     }
     fHistos->FillTH2("hQANChPt", jet->Pt(), jet->GetNumberOfTracks(), weight);
     fHistos->FillTH2("hQANnePt", jet->Pt(), jet->GetNumberOfClusters(), weight);
