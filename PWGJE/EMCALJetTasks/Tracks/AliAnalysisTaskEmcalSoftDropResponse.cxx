@@ -92,6 +92,8 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
                                                                                fRgResponseClosure(),
                                                                                fNsdResponse(),
                                                                                fNsdResponseClosure(),
+                                                                               fThetagResponse(),
+                                                                               fThetagResponseClosure(),
                                                                                fHistManager("AliAnalysisTaskSoftDropResponse")
 {
 }
@@ -121,6 +123,8 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
                                                                                                fRgResponseClosure(),
                                                                                                fNsdResponse(),
                                                                                                fNsdResponseClosure(),
+                                                                                               fThetagResponse(),
+                                                                                               fThetagResponseClosure(),
                                                                                                fHistManager(name)
 {
   SetMakeGeneralHistograms(true);
@@ -285,7 +289,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
     r_zg_closure->Setup((TH1 *)fHistManager.FindObject("hZgDetLevel"), (TH1 *)fHistManager.FindObject("hZgPartLevel"));
     r_rg_closure->Setup((TH1 *)fHistManager.FindObject("hRgDetLevel"), (TH1 *)fHistManager.FindObject("hRgPartLevel"));
     r_nsd_closure->Setup((TH1 *)fHistManager.FindObject("hNsdDetLevel"), (TH1 *)fHistManager.FindObject("hNsdPartLevel"));
-    r_nsd_closure->Setup((TH1 *)fHistManager.FindObject("hThetagDetLevel"), (TH1 *)fHistManager.FindObject("hThetagPartLevel"));
+    r_thetag_closure->Setup((TH1 *)fHistManager.FindObject("hThetagDetLevel"), (TH1 *)fHistManager.FindObject("hThetagPartLevel"));
     fZgResponseClosure.push_back(r_zg_closure);
     fRgResponseClosure.push_back(r_rg_closure);
     fNsdResponseClosure.push_back(r_nsd_closure);
