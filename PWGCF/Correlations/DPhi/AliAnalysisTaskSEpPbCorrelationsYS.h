@@ -57,6 +57,8 @@ public:
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
   virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
+  virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
+  virtual void SetPtMax(Float_t mode){fPtMax=mode;}
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
@@ -140,6 +142,7 @@ private:
   Bool_t fQA;
   Bool_t fFMDcut;
   Int_t fFMDcutmode;
+  Bool_t fptdiff;
   Bool_t fmakehole;
   Bool_t fOnfly;
   TString fAnaMode;
@@ -162,6 +165,7 @@ private:
 
   Int_t ffilterbit;
   Double_t fPtMin;
+  Double_t fPtMax;
   Double_t fEtaMax;
   Double_t fEtaMaxExtra;
   Double_t fEtaMinExtra;
