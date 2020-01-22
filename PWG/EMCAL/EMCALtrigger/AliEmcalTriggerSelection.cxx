@@ -43,7 +43,8 @@ namespace EMCAL{
 
 AliEmcalTriggerSelection::AliEmcalTriggerSelection() :
   TNamed(),
-  fSelectionCuts(NULL)
+  fSelectionCuts(nullptr),
+  fTriggerAlias(nullptr)
 {
 }
 
