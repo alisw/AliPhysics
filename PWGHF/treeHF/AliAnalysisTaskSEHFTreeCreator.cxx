@@ -2752,8 +2752,11 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBplus(TClonesArray *array2prong, Ali
             AliAODTrack* pionTrack = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTrack));
             if (!pionTrack) AliFatal("Not a standard AOD");
 
-            Bool_t trackInjected = AliVertexingHFUtils::IsTrackInjected(pionTrack,mcHeader,arrMC);
-            if(preSelectedBplus==3 && trackInjected) continue;
+            Bool_t trackInjected = kFALSE;
+            if(fReadMC){
+              Bool_t trackInjected = AliVertexingHFUtils::IsTrackInjected(pionTrack,mcHeader,arrMC);
+              if(preSelectedBplus==3 && trackInjected) continue;
+            }
 
             nFilteredBplus++;
             if(fTreeHandlerBplus->IsBplusPionSelected(pionTrack, fFiltCutsBplustoD0pi, fPidHFD0, aod, vtx1)){
@@ -3021,8 +3024,11 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
             if (!pionTrack) AliFatal("Not a standard AOD");
             if (ds->Charge() != -1.*pionTrack->Charge()) continue;
 
-            Bool_t trackInjected = AliVertexingHFUtils::IsTrackInjected(pionTrack,mcHeader,arrMC);
-            if(preSelectedBs==3 && trackInjected) continue;
+            Bool_t trackInjected = kFALSE;
+            if(fReadMC){
+              trackInjected = AliVertexingHFUtils::IsTrackInjected(pionTrack,mcHeader,arrMC);
+              if(preSelectedBs==3 && trackInjected) continue;
+            }
 
             nFilteredBs++;
             if(fTreeHandlerBs->IsBsPionSelected(pionTrack, fFiltCutsBstoDspi, fPidHFDs, aod, vtx1)){
@@ -3324,8 +3330,11 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
             if (!pionTrack) AliFatal("Not a standard AOD");
             if (lctopkpi->Charge() != -1.*pionTrack->Charge()) continue;
 
-            Bool_t trackInjected = AliVertexingHFUtils::IsTrackInjected(pionTrack,mcHeader,arrMC);
-            if(preSelectedLb==3 && trackInjected) continue;
+            Bool_t trackInjected = kFALSE;
+            if(fReadMC){
+              trackInjected = AliVertexingHFUtils::IsTrackInjected(pionTrack,mcHeader,arrMC);
+              if(preSelectedLb==3 && trackInjected) continue;
+            }
 
             nFilteredLb++;
             if(fTreeHandlerLb->IsLbPionSelected(pionTrack, fFiltCutsLbtoLcpi, fPidHFLc, aod, vtx1)){
