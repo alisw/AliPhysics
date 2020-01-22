@@ -70,6 +70,8 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH1D *hITSPIDKaon;		//!
   TH2D *hITSPIDKaonCorr;	//!
   TH2D *hTPCdEdxCorr;		//!
+  TH2D *hTrackPIDCorr;		//!
+  TH2D *hChannelPIDCorr;	//! 
   TH2I *hTriggerCounter;	//!
   TH2I *hADdecision;		//!
   TH2I *hV0decision;		//!

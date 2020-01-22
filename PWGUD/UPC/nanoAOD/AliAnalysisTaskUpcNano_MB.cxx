@@ -162,6 +162,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     hITSPIDKaon(0),
     hITSPIDKaonCorr(0),
     hTPCdEdxCorr(0),
+    hTrackPIDCorr(0),	
+    hChannelPIDCorr(0),	
     hTriggerCounter(0),
     hADdecision(0),
     hV0decision(0),
@@ -391,6 +393,16 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fOutputList->Add(hVertexZ);
   hVertexContrib = new TH1D("hVertexContrib"," ",103,-2,100);
   fOutputList->Add(hVertexContrib);
+  
+  hTrackPIDCorr = new TH2D("hTrackPIDCorr"," ",100,-10.0,10.0,100,-10.0,10.0);
+  hTrackPIDCorr->GetXaxis()->SetTitle("TPC PID N #sigma (e)");
+  hTrackPIDCorr->GetYaxis()->SetTitle("TPC PID N #sigma (#mu)");
+  fOutputList->Add(hTrackPIDCorr);	
+  
+  hChannelPIDCorr = new TH2D("hChannelPIDCorr"," ",100,-10.0,10.0,100,-10.0,10.0);
+  hChannelPIDCorr->GetXaxis()->SetTitle("TPC PID N #sigma (e)");
+  hChannelPIDCorr->GetYaxis()->SetTitle("TPC PID N #sigma (#mu)");
+  fOutputList->Add(hChannelPIDCorr);	
       
   PostData(1, fOutputList);
 
@@ -768,6 +780,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Float_t nSigmaDistPion = TMath::Sqrt(TMath::Power(nSigmaPion[0],2) + TMath::Power(nSigmaPion[1],2));
   Float_t nSigmaDistElectron = TMath::Sqrt(TMath::Power(nSigmaElectron[0],2) + TMath::Power(nSigmaElectron[1],2));
   Float_t nSigmaDistProton = TMath::Sqrt(TMath::Power(nSigmaProton[0],2) + TMath::Power(nSigmaProton[1],2));
+  
+  hTrackPIDCorr->Fill(nSigmaDistElectron,nSigmaDistMuon);
   
   if(qTrack[0]*qTrack[1]<0)fSign = -1;
   if(qTrack[0]*qTrack[1]>0)fSign = 1;
