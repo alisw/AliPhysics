@@ -1758,6 +1758,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
           if (!trackV || !jetrec)            continue;
           if (fIsPythia&&!IsTrackAccepted((AliAODTrack*)trackV,jetflavour))   continue;
+
           isV0=IsV0Daughter(trackV);
           ++NJetParticles;
 
@@ -2377,6 +2378,16 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       }
     }
     if(fDoJetProb){
+      fHistManager.CreateTH2("h2DLNProbDists_B",";; #",400, 0, 20,500, 0, 250);
+      fHistManager.CreateTH2("h2DLNProbDists_C",";; #",400, 0, 20,500, 0, 250);
+      fHistManager.CreateTH2("h2DLNProbDists_UDSG",";; #",400, 0, 20,500, 0, 250);
+      fHistManager.CreateTH2("h2DLNProbDists_V0",";; #",400, 0, 20,500, 0, 250);
+
+      fHistManager.CreateTH2("h2DProbDists_B",";; #",200, 0, 1,500, 0, 250);
+      fHistManager.CreateTH2("h2DProbDists_C",";; #",200, 0, 1,500, 0, 250);
+      fHistManager.CreateTH2("h2DProbDists_UDSG",";; #",200, 0, 1,500, 0, 250);
+      fHistManager.CreateTH2("h2DProbDists_V0",";; #",200, 0, 1,500, 0, 250);
+
       for(int iThresh=0;iThresh<fNThresholds;iThresh++){
         for(int iType=0;iType<6;iType++){
             fHistManager.CreateTH2(Form("h2DLNProbDistsTag_B_%s_%0.2f",tagtype[iType],fFracs[iThresh]),";; #",400, 0, 20,500, 0, 250);
@@ -3868,6 +3879,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
                     return 0;
                 }       // if(!part->IsPrimary()) continue;
                 pdg = (abs(part->PdgCode()));
+
                 fJetCont.push_back(part->Label());
                 //printf("Daugther pdg=%i, Label=%i, Mother =%i, p=%f, MCStatusCode=%i\n",pdg, part->GetLabel(), part->GetMother(), p, part->MCStatusCode());
               }//end trackloop jet
@@ -4683,42 +4695,77 @@ void AliAnalysisTaskHFJetIPQA::FillProbabilityHists(double jetpt,double probval,
   if(fDoTCTagging){
     for(int iThresh=0;iThresh<fNThresholds;iThresh++){
       for(int iType=0;iType<6;iType++){
-        if(kTagDec[iThresh][iType]){
-          FillHist(Form("h2DProbDistsTag_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
-          FillHist(Form("h2DLNProbDistsTag_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
-
+          if(kTagDec[iThresh][iType]){
+            FillHist(Form("h2DProbDistsTag_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+            FillHist(Form("h2DLNProbDistsTag_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+          }
           switch(jetflavour){
             case UDSG:
-              FillHist(Form("h2DProbDistsTag_UDSG_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
-              FillHist(Form("h2DLNProbDistsTag_UDSG_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
-              //printf("Filling UDSG %i %s %0.2f\n", jetflavour, tagtype[iType],fFracs[iThresh]);
+              if(iThresh==0&&iType==0){
+                FillHist(Form("h2DProbDists_UDSG"),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDists_UDSG"),lnprobval,jetpt,1);
+                //printf("Filling total UDSG %i\n",jetflavour);
+              }
+              if(kTagDec[iThresh][iType]){
+                FillHist(Form("h2DProbDistsTag_UDSG_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDistsTag_UDSG_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+                //printf("Filling UDSG %i %s %0.2f\n", jetflavour, tagtype[iType],fFracs[iThresh]);
+              }
               break;
 
             case B:
-              FillHist(Form("h2DProbDistsTag_B_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
-              FillHist(Form("h2DLNProbDistsTag_B_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
-              //printf("Filling B %i %s %0.2f\n,", jetflavour,tagtype[iType],fFracs[iThresh]);
+              if(iThresh==0&&iType==0){
+                FillHist(Form("h2DProbDists_B"),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDists_B"),lnprobval,jetpt,1);
+                //printf("Filling total B %i\n",jetflavour);
+              }
+              if(kTagDec[iThresh][iType]){
+                FillHist(Form("h2DProbDistsTag_B_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDistsTag_B_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+                //printf("Filling B %i %s %0.2f\n,", jetflavour,tagtype[iType],fFracs[iThresh]);
+              }
               break;
 
             case C:
-              FillHist(Form("h2DProbDistsTag_C_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
-              FillHist(Form("h2DLNProbDistsTag_C_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
-              //printf("Filling C %i %s %0.2f\n",jetflavour, tagtype[iType],fFracs[iThresh]);
+              if(iThresh==0&&iType==0){
+                FillHist(Form("h2DProbDists_C"),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDists_C"),lnprobval,jetpt,1);
+                //printf("Filling total C %i\n",jetflavour);
+              }
+              if(kTagDec[iThresh][iType]){
+                FillHist(Form("h2DProbDistsTag_C_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDistsTag_C_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+                //printf("Filling C %i %s %0.2f\n",jetflavour, tagtype[iType],fFracs[iThresh]);
+              }
               break;
 
             case UDSGV0:
-              FillHist(Form("h2DProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
-              FillHist(Form("h2DLNProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
-              //printf("Filling V0 %i %s %0.2f\n",jetflavour, tagtype[iType],fFracs[iThresh]);
+              if(iThresh==0&&iType==0){
+                FillHist(Form("h2DProbDists_V0"),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDists_V0"),lnprobval,jetpt,1);
+                //printf("Filling total V0 %i\n",jetflavour);
+              }
+              if(kTagDec[iThresh][iType]){
+                FillHist(Form("h2DProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+                //printf("Filling V0 %i %s %0.2f\n",jetflavour, tagtype[iType],fFracs[iThresh]);
+              }
               break;
 
             case CV0:
-              FillHist(Form("h2DProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
-              FillHist(Form("h2DLNProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
-              //printf("Filling V0 %i %s %0.2f\n", jetflavour,tagtype[iType],fFracs[iThresh]);
+              if(iThresh==0&&iType==0){
+                FillHist(Form("h2DProbDists_V0"),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDists_V0"),lnprobval,jetpt,1);
+                //printf("Filling total V0 %i\n",jetflavour);
+              }
+              if(kTagDec[iThresh][iType]){
+                FillHist(Form("h2DProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),probval,jetpt,1);
+                FillHist(Form("h2DLNProbDistsTag_V0_%s_%0.2f",tagtype[iType],fFracs[iThresh]),lnprobval,jetpt,1);
+                //printf("Filling V0 %i %s %0.2f\n", jetflavour,tagtype[iType],fFracs[iThresh]);
+              }
               break;
           }
-        }
+
       }
     }
   }
