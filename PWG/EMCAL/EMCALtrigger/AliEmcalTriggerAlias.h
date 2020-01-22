@@ -102,12 +102,28 @@ public:
    */
   void SetTriggerClasses(const TList &triggernames);
 
+  /**
+   * @brief Print trigger alias on a stream
+   * @param stream Stream where the trigger alias is printed on
+   * 
+   * Helper function used in the streaming operator
+   * to print the trigger classes handled by the alias
+   */
   void PrintStream(std::ostream &stream) const;
 
 private:
+
+  /**
+   * @brief Decode trigger classes handled by the alias
+   * @param triggernames String representation of the trigger classes
+   * 
+   * Helper function used in the constructor or the setter
+   * decoding the trigger classes handled by the trigger alias from
+   * a string. Trigger classes are separated by ";"
+   */
   void DecodeTriggerClasses(const char *triggernames);
 
-  TList    fTriggerClasses;       // List of trigger classes handled by Alias
+  TList    fTriggerClasses;       ///< List of trigger classes handled by Alias
 
   ClassDef(AliEmcalTriggerAlias,1)
 };
