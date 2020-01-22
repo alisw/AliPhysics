@@ -185,6 +185,8 @@ class AliSigma0PhotonCuts : public TObject {
   TH2F *fHistQualityBefore;           //!
   TH2F *fHistQualityAfter;            //!
 
+  TH2F *fHistTomography;              //!
+
   TH1F* fHistMCTruthPhotonPt;         //;
   TH1F* fHistMCTruthPhotonSigmaPt;    //;
   TH1F* fHistMCPhotonPt;              //;

@@ -79,6 +79,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistArmenterosAfter(nullptr),
       fHistQualityBefore(nullptr),
       fHistQualityAfter(nullptr),
+      fHistTomography(nullptr),
       fHistMCTruthPhotonPt(nullptr),
       fHistMCTruthPhotonSigmaPt(nullptr),
       fHistMCPhotonPt(nullptr),
@@ -178,6 +179,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fHistArmenterosAfter(nullptr),
       fHistQualityBefore(nullptr),
       fHistQualityAfter(nullptr),
+      fHistTomography(nullptr),
       fHistMCTruthPhotonPt(nullptr),
       fHistMCTruthPhotonSigmaPt(nullptr),
       fHistMCPhotonPt(nullptr),
@@ -654,6 +656,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
     fHistSingleParticleNcrossedTPCAfter[1]->Fill(negPt, nCrossedRowsNeg);
     fHistSingleParticleDCAtoPVAfter[1]->Fill(negPt, dcaDaughterToPVNeg);
     fHistSingleParticlePID[1]->Fill(negPt, pidNeg);
+    fHistTomography->Fill(conv[0], conv[1]);
   }
   return true;
 }
@@ -1111,6 +1114,10 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
                                  "; #it{p}_{T} (GeV/#it{c}); Photon quality",
                                  50, 0, 10, 4, 0, 4);
     fHistogramsAfter->Add(fHistQualityAfter);
+
+    fHistTomography = new TH2F("fHistTomography", "; #it{x} (cm); #it{y} (cm)",
+                               2400, -120, 120, 2400, -120, 120);
+    fHistogramsAfter->Add(fHistTomography);
 
     fHistograms->Add(fHistogramsBefore);
     fHistograms->Add(fHistogramsAfter);
