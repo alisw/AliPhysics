@@ -37,6 +37,12 @@ namespace PWG{
 
 namespace EMCAL {
 
+AliEmcalTriggerAlias::AliEmcalTriggerAlias():
+  TObject(),
+  fTriggerClasses()
+{
+}
+
 AliEmcalTriggerAlias::AliEmcalTriggerAlias(const char *triggernames):
   TObject(),
   fTriggerClasses()
