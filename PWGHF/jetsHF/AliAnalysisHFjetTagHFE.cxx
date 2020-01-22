@@ -1681,7 +1681,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
             if(abs(MCpdg)==11)fHistTPCnSigma_eMC->Fill(pt,fTPCnSigma);
  
-            if(fTPCnSigma<-2.5 && eop>fmimEop && eop<1.3)GetFakeHadronJet(pt,epTarray,rho);
+            //if(fTPCnSigma<-2.5 && eop>fmimEop && eop<1.3)GetFakeHadronJet(pt,epTarray,rho);
+            if(fTPCnSigma<-3.5)GetFakeHadronJet(pt,epTarray,rho);
 
             if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  // Nsigma cut
             SelectPhotonicElectron(itrack, track, fFlagULS, fFlagLS); // to fo ULS, LS
