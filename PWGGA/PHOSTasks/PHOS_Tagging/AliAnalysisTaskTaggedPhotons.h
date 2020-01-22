@@ -57,6 +57,7 @@ public:
   void SetCentralityEstimator(Int_t est=1){fCentEstimator=est;}   //Centrality estimator, pPb: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
   void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;  //for pp: 
   void SetMultiplicityBins(TArrayI *ar){fNCenBin=ar->GetSize() ; fCenBinEdges.Set(ar->GetSize(),ar->GetArray());} //for pp: 
+  void SetNonLinearity(Double_t a=1., Double_t b=0., Double_t c=1){ fNonlinA=a; fNonlinB=b; fNonlinC=c;}
 protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
@@ -75,6 +76,7 @@ protected:
   Double_t PrimaryParticleWeight(AliAODMCParticle * particle) ;
   Int_t   FindPrimary(AliVCluster*, Bool_t&);
   Double_t TOFCutEff(Double_t x );
+  Double_t NonLinearity(Double_t e){ return e*fNonlinA*(1.- fNonlinB*TMath::Exp(-e*fNonlinC)); } 
   
   Bool_t   SelectCentrality(AliVEvent * event) ;
   Double_t CalculateSphericity() ;
@@ -126,6 +128,9 @@ private:
   Float_t fMinBCDistance;       //minimal distance to bad channel
   Float_t fTimeCut ;            //Time cut
   Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights in MC
+  Double_t fNonlinA;
+  Double_t fNonlinB;
+  Double_t fNonlinC;
   Int_t   fNPID ;               // Number of PID cuts
   mcType  fMCType ;             // Type of MC production: full, single g,pi0,eta,
   cutType fCutType;             // Type of cluster cuts used in analysis

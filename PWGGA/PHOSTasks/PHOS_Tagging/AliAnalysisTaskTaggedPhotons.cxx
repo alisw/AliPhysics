@@ -92,6 +92,9 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fPhimin(0.),
   fMinBCDistance(0.),
   fTimeCut(12.5e-9),
+  fNonlinA(1.),
+  fNonlinB(0.),
+  fNonlinC(1.),
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut)
@@ -148,6 +151,9 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fPhimin(320.),
   fMinBCDistance(0.),
   fTimeCut(12.5e-9),
+  fNonlinA(1.),
+  fNonlinB(0.),
+  fNonlinC(1.),
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut)
@@ -199,6 +205,9 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fPhimin(320.),
   fMinBCDistance(0.),
   fTimeCut(12.5e-9),
+  fNonlinA(1.),
+  fNonlinB(0.),
+  fNonlinC(1.),
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut)
@@ -862,8 +871,9 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
-    
-    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
+    Double_t cluE = NonLinearity(clu->E()); 
+    Double_t sc = cluE/clu->E(); 
+    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(sc*momentum.Px(),sc*momentum.Py(),sc*momentum.Pz(),sc*clu->E() );
     inList++;
     
     p->SetModule(mod) ;
@@ -891,20 +901,20 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     if(fIsMB || ((!fIsMB) && p->IsTrig()) ){
       FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
-      FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,clu->E());
+      FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,cluE);
     }
     
     if(fIsMC){    
        //Check trigger efficiency
-       FillHistogram(Form("hMCMinBiasPhot%d",mod),clu->E(),fCentWeight) ;
+       FillHistogram(Form("hMCMinBiasPhot%d",mod),cluE,fCentWeight) ;
        //CheckTrigBadMap
        if((!fIsMB) && fPHOSTrigUtils->TestBadMap(mod, cellX,cellZ))
-         FillHistogram(Form("hMCMinBiasPhotMap%d",mod),clu->E(),fCentWeight) ;
+         FillHistogram(Form("hMCMinBiasPhotMap%d",mod),cluE,fCentWeight) ;
        
        if(p->IsTrig())
-          FillHistogram(Form("hMCTrigPhot%d",mod),clu->E(),fCentWeight) ;
+          FillHistogram(Form("hMCTrigPhot%d",mod),cluE,fCentWeight) ;
        //Look for MC particle entered PHOS
-       FillHistogram(Form("LabelsNPrim_cent%d",fCentBin),clu->E(),float(clu->GetNLabels())) ;
+       FillHistogram(Form("LabelsNPrim_cent%d",fCentBin),cluE,float(clu->GetNLabels())) ;
        Int_t primLabel=clu->GetLabelAt(0) ; //FindPrimary(clu,sure) ;
        //Look what particle left vertex
        if(primLabel>-1){
@@ -939,13 +949,13 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetDispBit(clu->GetDispersion()<2.5*2.5) ;
     p->SetNsigmaFullDisp(TMath::Sqrt(clu->GetDispersion())) ;
 // printf("Disp=%e \n",p->GetNsigmaFullDisp()) ;    
-    p->SetTOFBit(TestTOF(clu->GetTOF(),clu->E())) ;
+    p->SetTOFBit(TestTOF(clu->GetTOF(),cluE)) ;
     p->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;  
     p->SetNsigmaCPV(clu->GetEmcCpvDistance()) ;
 
-    FillHistogram("hDispE", clu->E(),clu->GetM02(),clu->GetM20()) ;
+    FillHistogram("hDispE", cluE,clu->GetM02(),clu->GetM20()) ;
     if(p->IsCPVOK())
-      FillHistogram("hDispEneu", clu->E(),clu->GetM02(),clu->GetM20()) ;
+      FillHistogram("hDispEneu", cluE,clu->GetM02(),clu->GetM20()) ;
 
     
     if(fIsMB || (!fIsMB && p->IsTrig())){ 
@@ -1323,7 +1333,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
                     AliVCluster * clu = event->GetCaloCluster(iclu);
                     if(!clu->IsPHOS())
                       continue ; 
-		    if(clu->E()==p->E()) //same cluster as current
+		    if(NonLinearity(clu->E())==p->E()) //same cluster as current
 		      continue ;
 	      	    Int_t nCluPrimaries = clu->GetNLabels() ;
 		    for(Int_t iAODLabel=0; (iAODLabel<nCluPrimaries) && (!isPartnerLost); iAODLabel++){
@@ -2313,15 +2323,15 @@ Int_t AliAnalysisTaskTaggedPhotons::FindPrimary(AliVCluster*clu,  Bool_t&sure){
     }
   }
   if(hasGamma){
-    FillHistogram(Form("LabelsGamma_cent%d",fCentBin),clu->E()) ;
-    FillHistogram(Form("LabelsGammaE_cent%d",fCentBin),clu->E(),eMax/clu->E()) ;
+    FillHistogram(Form("LabelsGamma_cent%d",fCentBin),NonLinearity(clu->E())) ;
+    FillHistogram(Form("LabelsGammaE_cent%d",fCentBin),NonLinearity(clu->E()),eMax/NonLinearity(clu->E())) ;
   }  
   
   for(Int_t i=0;  i<n;  i++){
     AliAODMCParticle*  p= (AliAODMCParticle*) fStack->At(clu->GetLabelAt(i)) ;
     Int_t pdg = p->GetPdgCode() ;
     if(pdg==22  ||  pdg==11 || pdg == -11){
-      if(p->E()>emFraction*clu->E()){
+      if(p->E()>emFraction*NonLinearity(clu->E())){
 	sure=kTRUE ;
 	return clu->GetLabelAt(i);
       }
