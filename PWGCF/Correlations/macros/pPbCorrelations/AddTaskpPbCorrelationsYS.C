@@ -2,16 +2,20 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype ="HMPP",
+								       TString  fCollisiontype ="pPb",
 								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
 								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
-								       TString anacent         ="Manual",
+								       TString anacent         ="V0M",
 								       TString assomode        ="hadron",
-								       Int_t ffilterbit        =5,
-								       Int_t fFMDcutpar        =3,
-								       Bool_t fmakehole        =kFALSE
+								       Int_t ffilterbit        =0,
+								       Int_t fFMDcutpar        =1,
+								       Bool_t fmakehole        =kFALSE,
+								       Bool_t fptdiff          =kFALSE,
+								       Float_t fmaxpt          =3.0,
+								       Int_t fMinNTracksInPool =10000,
+								       Int_t fMinNEventsInPool =10								     
 								       )
 {
   // Get the current analysis manager.
@@ -62,8 +66,13 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   myTask->SetFMDcut(fFMDcut);
   myTask->SetFMDcutpar(fFMDcutpar);
   myTask->Setacceptancehole(fmakehole);
-  //  if(anamode=="FMDFMD" || anamode=="SECA")myTask-> SetMinNTracksInPool(5000);
-  myTask->SetMinNTracksInPool(5000);
+  myTask->SetPtdiff(fptdiff);
+  myTask->SetPtMax(fmaxpt);
+
+  //myTask->SetMinNTracksInPool(5000);
+  myTask->SetMinNTracksInPool(fMinNTracksInPool);
+  myTask->SetMinEventsToMix(fMinNEventsInPool);
+			    
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
 
