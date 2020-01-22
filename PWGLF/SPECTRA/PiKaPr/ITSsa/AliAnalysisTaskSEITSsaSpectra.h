@@ -261,6 +261,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   THnSparseF *fHistRecoMC[kNchg * kNspc]; //!<! transverse momentum correlation with nsigma PID for 6 species
   THnSparseF *fHistRecoTrueMC[kNchg * kNspc]; //!<! transverse momentum correlation with true PID for 6 species
   THnSparseF *fHistRecoChargedMC; //!<! momentum correlation with true PID for 6 species
+  THnSparseF *fHistMCDCA[kNchg * kNspc]; //!<! transverse momentum correlation for DCAxy unfolding
 
   // MC histograms using reco values
   TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt reco)
