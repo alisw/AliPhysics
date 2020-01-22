@@ -452,6 +452,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 
  if( sel ){ fCent = sel->GetMultiplicityPercentile("V0M"); }
  if( fRunTable->IsPA() ) { fCent = sel->GetMultiplicityPercentile("V0A"); }
+ if( fOption.Contains("UseZNA") ){ fCent = sel->GetMultiplicityPercentile("ZNA"); } 
+
  double v0amplitude=0;
  for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
  fMultiplicity = fEvt -> GetMultiplicity();
