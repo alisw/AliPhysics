@@ -1603,6 +1603,9 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 1037) {
     cuts.AddCutPCM("00000113", "0dm0000922700000dge0404000", "0152103500000000"); // new cuts consistent with omega analysis
 
+  } else if (trainConfig == 1039) { // T0-based MB trigger
+    cuts.AddCutPCM("00011113", "0dm00009f9730000dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
+
   //----------------------------- configuration for run 2 analysis 13 TeV ----------------------------------------------------
   } else if (trainConfig == 1040){
     cuts.AddCutPCM("00010113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, V0AND

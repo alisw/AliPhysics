@@ -991,6 +991,19 @@ void AddTask_GammaCaloMerged_pPb(
     cuts.AddCutMergedCalo("8008e123","4117931050032200000","4117931050022700001","0163300000000000"); // std
     cuts.AddCutMergedCalo("8008d123","4117931050032200000","4117931050022700001","0163300000000000"); // std
 
+  } else if (trainConfig == 4022){ // for JJ MC, T0-based
+    cuts.AddCutMergedCalo("80010123","4117939050032200000","4117939050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008e123","4117939050032200000","4117939050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008d123","4117939050032200000","4117939050022700001","0163300000000000"); // std
+  } else if (trainConfig == 4023){ // for JJ MC, T0-based
+    cuts.AddCutMergedCalo("80011123","4117939050032200000","4117939050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008g123","4117939050032200000","4117939050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008f123","4117939050032200000","4117939050022700001","0163300000000000"); // std
+  } else if (trainConfig == 4024){ // for JJ MC, T0-based
+    cuts.AddCutMergedCalo("80011123","4117931050032200000","4117931050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008g123","4117931050032200000","4117931050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008f123","4117931050032200000","4117931050022700001","0163300000000000"); // std
+
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

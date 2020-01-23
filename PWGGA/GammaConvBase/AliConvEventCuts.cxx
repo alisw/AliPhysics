@@ -629,7 +629,6 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
   }
   //   cout << "event number " << ((AliESDEvent*)event)->GetEventNumberInFile() << " entered"<< endl;
 
-
   // Number of Contributors Cut
   if (fEnableVertexCut){
     if(GetNumberOfContributorsVtx(event)<=0) {
@@ -987,15 +986,15 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
 
 ///________________________________________________________________________
 Bool_t AliConvEventCuts::SetCut(cutIds cutID, const Int_t value) {
-  ///Set individual cut ID
-//   "HeavyIon",                     //0
-//   "CentralityMin",                //1
-//   "CentralityMax",                //2
-//   "SelectSpecialTrigger",         //3
-//   "SelectSpecialSubTriggerClass", //4
-//   "RemovePileUp",                 //5
-//   "RejectExtraSignals",           //6
-//   "VertexCut",                    //7
+  // /Set individual cut ID
+  // "HeavyIon",                     //0
+  // "CentralityMin",                //1
+  // "CentralityMax",                //2
+  // "SelectSpecialTrigger",         //3
+  // "SelectSpecialSubTriggerClass", //4
+  // "RemovePileUp",                 //5
+  // "RejectExtraSignals",           //6
+  // "VertexCut",                    //7
 
   switch (cutID) {
   case kisHeavyIon:
@@ -1380,9 +1379,9 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
   case 1:
     fSpecialTrigger=1; // V0AND
     break;
-//   case 2:
-//     fSpecialTrigger=2; //
-//     break;
+  // case 2:
+  //   fSpecialTrigger=2; //
+  //   break;
   case 3:
     fSpecialTrigger=3; //specific centrality trigger selection
     fOfflineTriggerMask=AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
@@ -1924,7 +1923,23 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerName="7EG2";
       fSpecialSubTriggerNameAdditional="7DG2";
       fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      break;
+    case 15: //f) Gamma Low EMC and DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="8EG1";
+      fSpecialSubTriggerNameAdditional="8DG1";
+      fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
+      break;
+    case 16: //g) Gamma Low EMC and DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="8EG2";
+      fSpecialSubTriggerNameAdditional="8DG2";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
       break;
 
     default:
@@ -3199,18 +3214,18 @@ Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
   if(fESDEvent){
     if (fESDEvent->GetPrimaryVertex() != NULL){
       if(fESDEvent->GetPrimaryVertex()->GetNContributors()>0) {
-  //     cout << "accepted global" << fESDEvent->GetEventNumberInFile() << " with NCont: " << fESDEvent->GetPrimaryVertex()->GetNContributors() << endl;
+      // cout << "accepted global" << fESDEvent->GetEventNumberInFile() << " with NCont: " << fESDEvent->GetPrimaryVertex()->GetNContributors() << endl;
         return fESDEvent->GetPrimaryVertex()->GetNContributors();
       }
     }
 
     if(fESDEvent->GetPrimaryVertexSPD() !=NULL){
       if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors()>0) {
-  //     cout << "accepted SPD" << fESDEvent->GetEventNumberInFile() << " with NCont: " << fESDEvent->GetPrimaryVertexSPD()->GetNContributors() << endl;
+      // cout << "accepted SPD" << fESDEvent->GetEventNumberInFile() << " with NCont: " << fESDEvent->GetPrimaryVertexSPD()->GetNContributors() << endl;
         return fESDEvent->GetPrimaryVertexSPD()->GetNContributors();
       }else {
         AliWarning(Form("Number of contributors from bad vertex type:: %s",fESDEvent->GetPrimaryVertex()->GetName()));
-  //            cout << "rejected " << fESDEvent->GetEventNumberInFile() << endl;
+            //  cout << "rejected " << fESDEvent->GetEventNumberInFile() << endl;
         return 0;
       }
     }
@@ -5397,7 +5412,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 
   Bool_t mimickedTrigger = kTRUE;
   if (fMimicTrigger) mimickedTrigger = MimicTrigger(event, isMC);
-//   cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
+  //   cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
 
   // Fill Histogram
   if(hTriggerClass){
@@ -6368,7 +6383,7 @@ AliEMCALTriggerPatchInfo* AliConvEventCuts::GetMainTriggerPatch()
 //________________________________________________________________________
 void AliConvEventCuts::InitializeEMCALTrigger(AliVEvent *event)
 {
-//   cout << "entered EMCAL trigger initialization" << endl;
+  //   cout << "entered EMCAL trigger initialization" << endl;
 
   // Init the analysis.
   if (fCaloTriggersName.IsNull()){
@@ -6421,36 +6436,36 @@ ULong_t AliConvEventCuts::GetTriggerList(){
   Int_t nJ2 = 0;
   Int_t nL0 = 0;
   AliEMCALTriggerPatchInfo *patch;
-//   if (nPatch> 0) {cout << "NEW Triggers in this event*********************************" << endl;}
+  // if (nPatch> 0) {cout << "NEW Triggers in this event*********************************" << endl;}
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
     patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-//     cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
-//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<TMath::Abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
-//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<TMath::Abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
+    // cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
+    // cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<TMath::Abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
+    // cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<TMath::Abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
     if (patch->IsGammaHigh()){
-//       cout << "fired L1GA high" << endl;
+      // cout << "fired L1GA high" << endl;
       nG1++;
     }
     if (patch->IsGammaLow()){
-//       cout << "fired L1GA low" << endl;
+      // cout << "fired L1GA low" << endl;
       nG2++;
     }
     if (patch->IsJetHigh()){
-//       cout << "fired L1JE high" << endl;
+      // cout << "fired L1JE high" << endl;
       nJ1++;
     }
     if (patch->IsJetLow()){
-//       cout << "fired L1JE low" << endl;
+      // cout << "fired L1JE low" << endl;
       nJ2++;
     }
     if (patch->IsLevel0()){
-//       cout << "fired L0" << endl;
+      // cout << "fired L0" << endl;
       nL0++;
     }
-//     cout << patch->GetPatchE()   << "\t" << patch->GetADCAmp()  << "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()
-//          << "\t" << patch->IsJetHigh()  << "\t" << patch->IsJetLow()  << "\t" << patch->IsLevel0()
-//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << TMath::Abs(patch->GetPhiMin()-patch->GetPhiMax())
-//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << TMath::Abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
+    // cout << patch->GetPatchE()   << "\t" << patch->GetADCAmp()  << "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()
+        //  << "\t" << patch->IsJetHigh()  << "\t" << patch->IsJetLow()  << "\t" << patch->IsLevel0()
+      //  << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << TMath::Abs(patch->GetPhiMin()-patch->GetPhiMax())
+      //  << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << TMath::Abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
   }
 
   if (nPatch > 0){
@@ -6461,12 +6476,12 @@ ULong_t AliConvEventCuts::GetTriggerList(){
     AliDebug(2, Form("Gamma:  low[%d], high[%d]" ,nG2, nG1));
   }
 
-//   if (nPatch > 0){
-//     cout <<     Form("Number of patches: %d", nPatch) << endl;
-//     cout <<     Form("Level0: [%d]" ,nL0) << endl;
-//     cout <<     Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1) << endl;
-//     cout <<     Form("Gamma:  low[%d], high[%d]" ,nG2, nG1) << endl;
-//   }
+  // if (nPatch > 0){
+  //   cout <<     Form("Number of patches: %d", nPatch) << endl;
+  //   cout <<     Form("Level0: [%d]" ,nL0) << endl;
+  //   cout <<     Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1) << endl;
+  //   cout <<     Form("Gamma:  low[%d], high[%d]" ,nG2, nG1) << endl;
+  // }
 
   ULong_t triggers(0);
   if (nG1>0)
@@ -6555,7 +6570,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
     if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
     if ( intDecay && TMath::Abs(particle->GetPdgCode()) == 11 ){
       dalitzCand = kTRUE;
-//       cout << "dalitz candidate found" << endl;
+      // cout << "dalitz candidate found" << endl;
     }
 
     Long_t source = particle->GetMother(0);
@@ -6565,16 +6580,16 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
     Int_t pdgCodeMotherPPrevMother = 0;
     Int_t depth = 0;
     if (dalitzCand || realRadius3D < fSecProdBoundary ){
-//       if (particle->GetPdgCode() == 22){
-//         cout << endl << endl << "new particle: " << eventpos <<endl;
-//         cout << particle->GetPdgCode() << "\t" << particle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
-//       }
+      // if (particle->GetPdgCode() == 22){
+      //   cout << endl << endl << "new particle: " << eventpos <<endl;
+      //   cout << particle->GetPdgCode() << "\t" << particle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
+      // }
       while (depth < 20){
         TParticle* mother   = (TParticle *)mcEvent->Particle(source);
         source         = mother->GetMother(0);
-//         if (particle->GetPdgCode() == 22)cout << "eventposition: "<< source << endl;
+        // if (particle->GetPdgCode() == 22)cout << "eventposition: "<< source << endl;
         Int_t pdgCodeMother     = mother->GetPdgCode();
-//         if (particle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
+        // if (particle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
         if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
         if (TMath::Abs(pdgCodeMother) == 11 && TMath::Abs(pdgCodeMotherPrev) == 22 && TMath::Abs(pdgCodeMotherPPrevMother) == 11 ){
           foundShower = kTRUE;
@@ -6599,26 +6614,26 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
         ) {
           foundExcludedPart = kTRUE;
         }
-//         if (particle->GetPdgCode() == 22)cout << mother->GetPdgCode() << "\t" <<  source << "\t" << foundExcludedPart<< endl;
+        // if (particle->GetPdgCode() == 22)cout << mother->GetPdgCode() << "\t" <<  source << "\t" << foundExcludedPart<< endl;
         pdgCodeMotherPPrevMother = pdgCodeMotherPrev;
         pdgCodeMotherPrev = pdgCodeMother;
         if (source == -1) depth = 20;
 
-//         if (particle->GetPdgCode() == 22)cout << depth << endl;
+        // if (particle->GetPdgCode() == 22)cout << depth << endl;
         depth++;
       }
     }
     if (foundExcludedPart){
-//       if (particle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
+      // if (particle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
       return kFALSE;
     } else if (dalitzCand && realRadius3D < fSecProdBoundary ){
-//       if (particle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
+      // if (particle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
       return kTRUE;
     } else if (foundShower){
-//       if (particle->GetPdgCode() == 22)cout << "This is a shower" << endl;
+      // if (particle->GetPdgCode() == 22)cout << "This is a shower" << endl;
       return kFALSE;
     } else if (realRadius3D >= fSecProdBoundary){
-//       cout << "This is a secondary, to large production radius" << endl;
+      // cout << "This is a secondary, to large production radius" << endl;
       return kFALSE;
     }
   }
@@ -6658,7 +6673,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *event, AliAODMCPartic
     if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
     if ( intDecay && TMath::Abs(currentParticle->GetPdgCode()) == 11 ){
       dalitzCand = kTRUE;
-//       cout << "dalitz candidate found" << endl;
+      // cout << "dalitz candidate found" << endl;
     }
 
     Long_t source = currentParticle->GetMother();
@@ -6668,16 +6683,16 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *event, AliAODMCPartic
     Int_t pdgCodeMotherPPrevMother = 0;
     Int_t depth = 0;
     if (dalitzCand || realRadius3D < fSecProdBoundary ){
-//       if (currentParticle->GetPdgCode() == 22){
-//         cout << endl << endl << "new particle: " << eventpos <<endl;
-//         cout << currentParticle->GetPdgCode() << "\t" << currentParticle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
-//       }
+      // if (currentParticle->GetPdgCode() == 22){
+      //   cout << endl << endl << "new particle: " << eventpos <<endl;
+      //   cout << currentParticle->GetPdgCode() << "\t" << currentParticle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
+      // }
       while (depth < 20){
         AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(source));
         source = mother->GetMother();
-//         if (currentParticle->GetPdgCode() == 22)cout << "eventposition: "<< source << endl;
+        // if (currentParticle->GetPdgCode() == 22)cout << "eventposition: "<< source << endl;
         Int_t pdgCodeMother     = mother->GetPdgCode();
-//         if (currentParticle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
+        // if (currentParticle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
         if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
         if (TMath::Abs(pdgCodeMother) == 11 && TMath::Abs(pdgCodeMotherPrev) == 22 && TMath::Abs(pdgCodeMotherPPrevMother) == 11 ){
           foundShower = kTRUE;
@@ -6702,26 +6717,26 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *event, AliAODMCPartic
         {
           foundExcludedPart = kTRUE;
         }
-//      if (currentParticle->GetPdgCode() == 22)cout << mother->GetPdgCode() << "\t" <<  source << "\t" << foundExcludedPart<< endl;
+    //  if (currentParticle->GetPdgCode() == 22)cout << mother->GetPdgCode() << "\t" <<  source << "\t" << foundExcludedPart<< endl;
         pdgCodeMotherPPrevMother = pdgCodeMotherPrev;
         pdgCodeMotherPrev = pdgCodeMother;
         if (source == -1) depth = 20;
 
-//      if (currentParticle->GetPdgCode() == 22)cout << depth << endl;
+    //  if (currentParticle->GetPdgCode() == 22)cout << depth << endl;
         depth++;
       }
     }
     if (foundExcludedPart){
-//      if (currentParticle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
+    //  if (currentParticle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
       return kFALSE;
     } else if (dalitzCand && realRadius3D < fSecProdBoundary ){
-//      if (currentParticle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
+    //  if (currentParticle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
       return kTRUE;
     } else if (foundShower){
-//      if (currentParticle->GetPdgCode() == 22)cout << "This is a shower" << endl;
+    //  if (currentParticle->GetPdgCode() == 22)cout << "This is a shower" << endl;
       return kFALSE;
     } else if (realRadius3D >= fSecProdBoundary){
-//      cout << "This is a secondary, too large production radius" << endl;
+    //  cout << "This is a secondary, too large production radius" << endl;
       return kFALSE;
     }
   }

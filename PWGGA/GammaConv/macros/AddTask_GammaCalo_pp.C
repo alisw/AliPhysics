@@ -2207,6 +2207,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00052113","111113906f032230000","01631031000000d0"); // std
     cuts.AddCutCalo("00081113","111113906f032230000","01631031000000d0"); // std
 
+  } else if (trainConfig == 2235){ // T0-based triggers
+    cuts.AddCutCalo("00011113","111113106f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00053113","111113106f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00082113","111113106f032230000","01631031000000d0"); // std
+
+
   } else if (trainConfig == 2240){ // EMCAL clusters pp 8 TeV, TB+finetuning CCRF
     cuts.AddCutCalo("00010113","1111131060032230000","01631031000000d0"); // std
     cuts.AddCutCalo("00052113","1111131060032230000","01631031000000d0"); // std
@@ -2219,6 +2225,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","1111139060032230000","01631031000000d0"); // std
     cuts.AddCutCalo("00052113","1111139060032230000","01631031000000d0"); // std
     cuts.AddCutCalo("00081113","1111139060032230000","01631031000000d0"); // std
+
+  } else if (trainConfig == 2245){ // T0 based triggers
+    cuts.AddCutCalo("00011113","1111131060032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00053113","1111131060032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00082113","1111131060032230000","01631031000000d0"); // std
+
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
