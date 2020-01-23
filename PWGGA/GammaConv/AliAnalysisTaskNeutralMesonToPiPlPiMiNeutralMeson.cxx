@@ -657,8 +657,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   Double_t HistoMassRange[2]                          = {0.4,1.0};
   Double_t HistoNMassBinsSub                          = 600;
   Double_t HistoMassRangeSub[2]                       = {0.4,1.0};
-  Double_t HistoNPtBins                               = 500;
-  Double_t HistoPtRange[2]                            = {0.,50.};
+  Double_t HistoNPtBins                               = 800;
+  Double_t HistoPtRange[2]                            = {0.,80.};
   Double_t HistoNMassBinsDecayMeson                   = 450;
   Double_t HistoMassRangeNDM[2]                       = {0.0,0.45};
   Double_t HistoNMassBinsPiPlusPiMinus                = 250;
