@@ -196,6 +196,7 @@ class AliSigma0PhotonCuts : public TObject {
   TH1F* fHistMCTruthPhotonSigmaP;     //;
   TH1F* fHistMCPhotonP;               //;
   TH1F* fHistMCPhotonSigmaP;          //;
+  TH2F* fHistMCPhotonSource;          //;
 
   TH1F *fHistSingleParticleCuts[2];                        //!
   TH1F *fHistSingleParticlePt[2];                          //!

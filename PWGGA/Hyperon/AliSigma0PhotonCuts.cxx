@@ -89,6 +89,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistMCTruthPhotonSigmaP(nullptr),
       fHistMCPhotonP(nullptr),
       fHistMCPhotonSigmaP(nullptr),
+      fHistMCPhotonSource(nullptr),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -190,6 +191,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fHistMCTruthPhotonSigmaP(nullptr),
       fHistMCPhotonP(nullptr),
       fHistMCPhotonSigmaP(nullptr),
+      fHistMCPhotonSource(nullptr),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -272,6 +274,8 @@ void AliSigma0PhotonCuts::PhotonCuts(
         fHistMCTruthPhotonP->Fill(mcPart->P());
         const int pdgMother = ((AliAODMCParticle*) (AliAODMCParticle*) mcEvent
             ->GetTrack(mcPart->GetMother()))->GetPdgCode();
+        fHistMCPhotonSource->Fill(mcPart->P(), TMath::Abs(pdgMother));
+
         if (TMath::Abs(pdgMother) == 3212) {
           fHistMCTruthPhotonSigmaPt->Fill(mcPart->Pt());
           fHistMCTruthPhotonSigmaP->Fill(mcPart->P());
@@ -904,16 +908,16 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
       fHistograms->Add(fHistV0Mother);
 
       fHistMCTruthPhotonPt = new TH1F("fHistMCTruthPhotonPt",
-                                      "; #it{p}_{T} (GeV/#it{c}); Entries", 250,
+                                      "; #it{p}_{T} (GeV/#it{c}); Entries", 200,
                                       0, 10);
       fHistMCTruthPhotonSigmaPt = new TH1F("fHistMCTruthPhotonSigmaPt",
                                            "; #it{p}_{T} (GeV/#it{c}); Entries",
-                                           250, 0, 10);
+                                           200, 0, 10);
       fHistMCPhotonPt = new TH1F("fHistMCPhotonPt",
-                                 "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0,
+                                 "; #it{p}_{T} (GeV/#it{c}); Entries", 200, 0,
                                  10);
       fHistMCPhotonSigmaPt = new TH1F("fHistMCPhotonSigmaPt",
-                                      "; #it{p}_{T} (GeV/#it{c}); Entries", 250,
+                                      "; #it{p}_{T} (GeV/#it{c}); Entries", 200,
                                       0, 10);
       fHistograms->Add(fHistMCTruthPhotonPt);
       fHistograms->Add(fHistMCTruthPhotonSigmaPt);
@@ -921,21 +925,26 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
       fHistograms->Add(fHistMCPhotonSigmaPt);
 
       fHistMCTruthPhotonP = new TH1F("fHistMCTruthPhotonP",
-                                      "; #it{p} (GeV/#it{c}); Entries", 250,
+                                      "; #it{p} (GeV/#it{c}); Entries", 200,
                                       0, 10);
       fHistMCTruthPhotonSigmaP = new TH1F("fHistMCTruthPhotonSigmaP",
                                            "; #it{p} (GeV/#it{c}); Entries",
-                                           250, 0, 10);
+                                           200, 0, 10);
       fHistMCPhotonP = new TH1F("fHistMCPhotonP",
-                                 "; #it{p} (GeV/#it{c}); Entries", 250, 0,
+                                 "; #it{p} (GeV/#it{c}); Entries", 200, 0,
                                  10);
       fHistMCPhotonSigmaP = new TH1F("fHistMCPhotonSigmaP",
-                                      "; #it{p} (GeV/#it{c}); Entries", 250,
+                                      "; #it{p} (GeV/#it{c}); Entries", 200,
                                       0, 10);
       fHistograms->Add(fHistMCTruthPhotonP);
       fHistograms->Add(fHistMCTruthPhotonSigmaP);
       fHistograms->Add(fHistMCPhotonP);
       fHistograms->Add(fHistMCPhotonSigmaP);
+
+      fHistMCPhotonSource = new TH2F(
+          "fHistMCPhotonSource", "; #it{p} (GeV/#it{c}); PDG code mother", 200, 0,
+          10, 4000, 0, 4000);
+      fHistograms->Add(fHistMCPhotonSource);
     }
 
     fHistSingleParticleCuts[0] = new TH1F("fHistSingleParticleCuts_pos",
