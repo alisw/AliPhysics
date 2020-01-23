@@ -1,7 +1,12 @@
 # General task configuration
 mc_mode: false
 calculate_only_efficiency: false #ignore background, saves space in MC
-keep_all_candidates: true #ignores the requirement of having both D meson and electron in the same event
+
+process_electron: true
+process_dmeson: true
+save_event: true
+
+
 reduced_electron_info: false #saves only Pt, Eta and Phi
 
 d_meson_species: 'D0'
@@ -25,7 +30,7 @@ main_electron:
         pt_range: [0.5,10.0]
         eta_range: [-0.8,0.8] 
         filter_bit: kTrkGlobal #as defined in AliAODTrack
-        min_TPC_cls: 70
+        min_TPC_crossedrows: 0
         min_TPC_cls_dedx: 0
         min_ITS_hits: 2
         pixel_req: kAny #check possibilities in AliAnalysisTaskDHFeCorr::ITSPixel_t
@@ -38,10 +43,10 @@ main_electron:
 
 partner_electron:
     track:
-        pt_range: [0.2,100.0]
+      pt_range: [0.15,100.0]
         eta_range: [-0.8,0.8] 
         filter_bit: kTrkGlobalNoDCA #as defined in AliAODTrack
-        min_TPC_cls: 60
+      min_TPC_crossedrows: 0
         min_TPC_cls_dedx: 0
         min_ITS_hits: 2
         pixel_req: kAny #check possibilities in AliAnalysisTaskDHFeCorr::ITSPixel_t
