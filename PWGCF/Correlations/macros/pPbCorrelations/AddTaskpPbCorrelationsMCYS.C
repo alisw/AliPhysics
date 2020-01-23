@@ -2,18 +2,22 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype = "pPb",
+								       TString  fCollisiontype ="pPb",
 								       Bool_t  fDataType       =kFALSE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
-								       Bool_t fFMDcut          =kFALSE,
-								       TString anamode         ="FMDFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
-								       TString anacent         ="V0A",
+								       Bool_t fFMDcut          =kTRUE,
+								       TString anamode         ="TPCFMDC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
+								       TString anacent         ="V0M",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =5,
-								       Int_t fFMDcutpar        =2,
+								       Int_t fFMDcutpar        =1,
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fprim            =kTRUE,
-								       Bool_t fcentcalib       =kTRUE
+								       Bool_t fcentcalib       =kTRUE,
+								       Bool_t fptdiff          =kFALSE,
+								       Float_t fPtMin            =0.,
+								       Float_t fPtMax            =3.,
+								       Bool_t fextractsec      =kTRUE
 								       )
 {
   // Get the current analysis manager.
@@ -63,11 +67,14 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
   myTask->SetFMDcut(fFMDcut);
   myTask->SetFMDcutpar(fFMDcutpar);
   myTask->Setacceptancehole(fmakehole);
-  //  if(anamode=="FMDFMD" || anamode=="SECA")myTask-> SetMinNTracksInPool(5000);
+
   myTask->SetMinNTracksInPool(5000);
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
   myTask->Setmcprim(fprim);
+  myTask->SetPtdiff(fptdiff);
+  myTask->SetPtMax(fPtMax);
+  myTask->SetPtMin(fPtMin);
 
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   if(fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
