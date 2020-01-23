@@ -1652,6 +1652,15 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("00081113","1111138060032200000","1111138060022700001","0163300000000000"); // nl via lead cell
     cuts.AddCutMergedCalo("00081113","1111139060032200000","1111139060022700001","0163300000000000"); // nl via indiv. cells
 
+  } else if (trainConfig == 4000){ // INT7-based configs
+    cuts.AddCutMergedCalo("00010113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("00052113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4001){ // INT8-based configs
+    cuts.AddCutMergedCalo("00011113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("00053113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("00082113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

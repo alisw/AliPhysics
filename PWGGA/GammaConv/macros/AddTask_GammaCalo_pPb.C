@@ -1155,15 +1155,16 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // INT7
     cuts.AddCutCalo("8008e123","411793105f032230000","01631031000000d0"); // EG2
     cuts.AddCutCalo("8008d123","411793105f032230000","01631031000000d0"); // EG1
-  } else if (trainConfig == 2044){ // copy of 2020 for clusterizer cell timing studies
-    cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","411793105f032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008d123","411793105f032230000","01631031000000d0"); // EG1
 
-  } else if (trainConfig == 2045){ // copy of 2030 for clusterizer cell timing studies NO TRACK MATCHING
-    cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2044){ // T0 based triggers
+    cuts.AddCutCalo("80011103","411793105f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008g103","411793105f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008f103","411793105f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2045){ // T0 based triggers no TM
+    cuts.AddCutCalo("80011103","4117931050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008g103","4117931050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008f103","4117931050032230000","01631031000000d0"); // EG1
+
   } else if (trainConfig == 2046){ // copy of 2030 for clusterizer cell timing studies NO TRACK MATCHING
     cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
     cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
