@@ -127,10 +127,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   //The Multiplicity bins are set here
   std::vector<int> MultBins;
   MultBins.push_back(0);
-  MultBins.push_back(13);
-  MultBins.push_back(21);
+  MultBins.push_back(18);
   MultBins.push_back(30);
-  MultBins.push_back(54);
+  MultBins.push_back(99);
 
   //The next part is for the result histograms. The order of hist. is the following:
   //                Particle1     Particle2
