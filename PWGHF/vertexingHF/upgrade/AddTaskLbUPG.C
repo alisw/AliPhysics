@@ -81,7 +81,7 @@ AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",I
                            outputFileName.Data());
  
 
-
+  coutput2->SetSpecialOutput();
   mgr->ConnectInput (task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
