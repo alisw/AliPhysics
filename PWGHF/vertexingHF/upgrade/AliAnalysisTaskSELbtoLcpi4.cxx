@@ -479,6 +479,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
 
   OpenFile(2);
   fNtupleLambdabUPG = new TNtuple("fNtupleLambdabUPG"," Lb ","massCand:ptLb:pt_Prong0:pt_Prong1:d0_Prong1:d0_Prong0:cosThetaStar:Ct:Prodd0:cosp:cospXY:NormDL:ImpPar:dca:signal:rotated:ptLc:d0_Prong0Lc:d0_Prong1Lc:d0_Prong2Lc:pt_Prong0Lc:pt_Prong1Lc:pt_Prong2Lc:dist12Lc:sigmavertLc:distprimsecLc:costhetapointLc:dcaLc:signalLc:promptLc");
+  fNtupleLambdabUPG->SetMaxVirtualSize(1.e+8);
   PostData(2,fNtupleLambdabUPG);
 
  
