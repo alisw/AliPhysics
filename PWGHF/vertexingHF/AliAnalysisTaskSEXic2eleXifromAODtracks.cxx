@@ -317,6 +317,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	
 	fHistoResponseEleXiPt(0),
     fHistoResponseEleXiPtWeight(0),// check the weight
+    fHistoResponseEleXiPtWeight13(0),// check the weight
 	
 	fHistoResponseXiPtvsEleXiPt(0),
 	fHistoResponseXiPtXib(0),
@@ -369,6 +370,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   m_ReservoirVarsL1(),
   m_ReservoirVarsL2(),
   fWeightFit(0x0),
+  fWeightFit13(0x0),
   fAccWeight(0x0),
   fAccWeightPositron(0x0),
   fHistoElectronTotal(0),
@@ -381,7 +383,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoXicPromptMCS(0),
   fHistoXicInclusiveMCGen(0),
   fHistoXicMCGenWeight(0),
-  fHistoXicMCSWeight(0)
+  fHistoXicMCSWeight(0),
+  fHistoXicMCGenWeight13(0),
+  fHistoXicMCSWeight13(0)
 
 
 
@@ -639,6 +643,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	
 	fHistoResponseEleXiPt(0),
 	fHistoResponseEleXiPtWeight(0),
+	fHistoResponseEleXiPtWeight13(0),
 	
 	
 	fHistoResponseXiPtvsEleXiPt(0),
@@ -692,6 +697,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   m_ReservoirVarsL1(),
   m_ReservoirVarsL2(),
   fWeightFit(0x0),
+  fWeightFit13(0x0),
   fAccWeight(0x0),          
   fAccWeightPositron(0x0),
   fHistoElectronTotal(0),
@@ -704,7 +710,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoXicPromptMCS(0),
   fHistoXicInclusiveMCGen(0),
   fHistoXicMCGenWeight(0),
-  fHistoXicMCSWeight(0)
+  fHistoXicMCSWeight(0),
+  fHistoXicMCGenWeight13(0),
+  fHistoXicMCSWeight13(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -1945,6 +1953,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 						
 							fHistoXicMCS->Fill(cont_xic); // inclusive
 							fHistoXicMCSWeight -> Fill(cont_xic,fWeightFit->Eval(mcxic->Pt()));
+							fHistoXicMCSWeight13 -> Fill(cont_xic,fWeightFit13->Eval(mcxic->Pt()));
 							
 							if(trk->Charge()>0) fHistoXicMCS1->Fill(cont_xic);
 							else fHistoXicMCS2->Fill(cont_xic);
@@ -1973,6 +1982,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							fHistoResponseXiPt->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
 							fHistoResponseEleXiPt->Fill(mcxic->Pt(),exobj->Pt());
 							fHistoResponseEleXiPtWeight->Fill(mcxic->Pt(),exobj->Pt(),fWeightFit->Eval(mcxic->Pt()));
+							fHistoResponseEleXiPtWeight13->Fill(mcxic->Pt(),exobj->Pt(),fWeightFit13->Eval(mcxic->Pt()));
 							fHistoResponseXiPtvsEleXiPt->Fill(exobj->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
 
 							Double_t cont_eleptvsxiptvsxicpt[4];
@@ -3456,6 +3466,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 	if(decaytype==0){
 		fHistoXicMCGen->Fill(contmc);
 		fHistoXicMCGenWeight -> Fill(contmc,fWeightFit->Eval(mcpart->Pt()));
+		fHistoXicMCGenWeight13 -> Fill(contmc,fWeightFit13->Eval(mcpart->Pt()));
 
 		if(mcpart->GetPdgCode()>0) fHistoXicMCGen1->Fill(contmc);//4132 is particle
 		if(mcpart->GetPdgCode()<0) fHistoXicMCGen2->Fill(contmc);//-4132 is anti-particle
@@ -4044,11 +4055,16 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoXicMCS2);
   //=========== reweight for the efficiency ========
 
+  //============= for 5 TeV ===============
   fHistoXicMCGenWeight = new THnSparseF("fHistoXicMCGenWeight","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
   fOutputAll->Add(fHistoXicMCGenWeight);
   fHistoXicMCSWeight = new THnSparseF("fHistoXicMCSWeight","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
   fOutputAll->Add(fHistoXicMCSWeight);
-
+ //============ for 13 TeV ==================
+  fHistoXicMCGenWeight13 = new THnSparseF("fHistoXicMCGenWeight13","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+  fOutputAll->Add(fHistoXicMCGenWeight13);
+  fHistoXicMCSWeight13 = new THnSparseF("fHistoXicMCSWeight13","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+  fOutputAll->Add(fHistoXicMCSWeight13);
 
   Int_t bins_xibmcgen[3]=	{200 ,20	,10};
   Double_t xmin_xibmcgen[3]={0.,-1.0	,0.0};
@@ -4140,6 +4156,8 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   
   fHistoResponseEleXiPtWeight = new TH2D("fHistoResponseEleXiPtWeight","",200,0.,20.,200,0.,20.);
   fOutputAll->Add(fHistoResponseEleXiPtWeight);
+  fHistoResponseEleXiPtWeight13 = new TH2D("fHistoResponseEleXiPtWeight13","",200,0.,20.,200,0.,20.);
+  fOutputAll->Add(fHistoResponseEleXiPtWeight13);
   
   
   fHistoResponseXiPtvsEleXiPt = new TH2D("fHistoResponseXiPtvsEleXiPt","",100,0.,20.,100,0.,20.);
