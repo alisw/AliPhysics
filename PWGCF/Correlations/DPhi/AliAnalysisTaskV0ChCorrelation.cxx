@@ -941,12 +941,12 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
    
    
    // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 3;
-   const Double_t PtBinsV0Xi[4] = {3.0, 4.0, 8.0,15.0}; 
+   const Int_t nPtBinsV0Xi = 5;
+   const Double_t PtBinsV0Xi[6] = {3.0, 4.0, 8.0,11.0,13.0,15.0}; 
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 4;
-   const Double_t PtBins[5] = {1.0,2.0,3.0, 4.0,8.0}; 
+   const Int_t nPtBins = 5;
+   const Double_t PtBins[6] = {1.0,2.0,3.0,4.0,6.0,8.0}; 
   
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1088,12 +1088,12 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
    
    
    // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 3;
-   const Double_t PtBinsV0Xi[4] = {3.0, 4.0, 8.0,15.0}; 
+   const Int_t nPtBinsV0Xi = 5;
+   const Double_t PtBinsV0Xi[6] = {3.0, 4.0, 8.0,11.0,13.0,15.0}; 
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 4;
-   const Double_t PtBins[5] = {1.0,2.0,3.0, 4.0,8.0}; 
+   const Int_t nPtBins = 5;
+   const Double_t PtBins[6] = {1.0,2.0,3.0,4.0,6.0,8.0}; 
   
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1247,12 +1247,12 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
 
    
    // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 3;
-   const Double_t PtBinsV0Xi[4] = {3.0, 4.0, 8.0,15.0}; 
+   const Int_t nPtBinsV0Xi = 5;
+   const Double_t PtBinsV0Xi[6] = {3.0, 4.0, 8.0,11.0,13.0,15.0}; 
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 4;
-   const Double_t PtBins[5] = {1.0,2.0,3.0, 4.0,8.0}; 
+   const Int_t nPtBins = 5;
+   const Double_t PtBins[6] = {1.0,2.0,3.0,4.0,6.0,8.0}; 
   
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
