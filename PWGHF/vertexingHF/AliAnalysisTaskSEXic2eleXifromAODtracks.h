@@ -145,6 +145,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t chargexi);
   Int_t GetPoolIndex(Double_t zvert, Double_t mult, Double_t rp);
   void SetFunction(TF1* weightfit){fWeightFit=weightfit;}
+  void SetFunction13(TF1* weightfit13){fWeightFit13=weightfit13;}
   void SetFunctionElectron(TF1 * AccWeight){fAccWeight= AccWeight;}
   void SetFunctionPositron(TF1* AccWeightPositron){fAccWeightPositron = AccWeightPositron;}           
 
@@ -418,6 +419,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   
   TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
   TH2D *fHistoResponseEleXiPtWeight; // weight of  the response funtion 
+  TH2D *fHistoResponseEleXiPtWeight13; // weight of  the response funtion 
   
   TH2D *fHistoResponseXiPtvsEleXiPt; //!<! Response function Xi pT <- e-Xi pT
   TH2D *fHistoResponseXiPtXib; //!<! Response function Xi pT <- True ept
@@ -464,7 +466,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistodPhiSdEtaSElectronBachelorR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
 
-  TF1 * fWeightFit; // implement the fit  function of weight (pass to the task)
+  TF1 * fWeightFit; // for 5 TeV
+  TF1 * fWeightFit13; // for 13 TeV
   TF1 * fAccWeight;//
   TF1 * fAccWeightPositron;//
 
@@ -481,7 +484,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse *fHistoXicInclusiveMCGen;//!<!
 
   THnSparse *fHistoXicMCGenWeight;//!<!
+  THnSparse *fHistoXicMCGenWeight13;//!<!
   THnSparse *fHistoXicMCSWeight;//!<!
+  THnSparse *fHistoXicMCSWeight13;//!<!
 
 
   //Mixing
@@ -506,7 +511,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,39); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,40); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
