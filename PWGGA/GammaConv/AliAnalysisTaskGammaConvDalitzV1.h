@@ -222,12 +222,14 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH1F                              **hMCPi0WOWeightPt;
     TH1F                              **hMCPi0GGPt;
     TH1F                              **hMCEtaPt;
+    TH1F                              **hMCEtaWOWeightPt;
     TH1F                              **hMCEtaGGPt;
     TH1F                              **hMCPi0InAccPt;
     TH1F                              **hMCPi0WOWeightInAccPt;
     TH1F                              **hMCPi0InAccOpeningAngleGammaElectron;
     THnSparseF                        **sMCPi0DalitzPlot;
     TH1F                              **hMCEtaInAccPt;
+    TH1F                              **hMCEtaWOWeightInAccPt;
     TH1F                              **hMCChiCPt;
     TH1F                              **hMCChiCInAccPt;
     TH2F                              **hMCPi0EposEnegInvMassPt;
