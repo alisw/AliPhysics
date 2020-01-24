@@ -450,6 +450,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
 
         const char* CorrName = task->fsName.Data();
         const char* CorrLabel = task->fsLabel.Data();
+        Int_t CorrOrder = task->fiNumHarm;
 
         for (Int_t iSample(0); iSample < fNumSamples; ++iSample){
 
@@ -529,6 +530,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
 
 
             //pt differentials
+            if (CorrOrder < 6) {
             for(Int_t fCentNum(0) ; fCentNum<nCentBin-1; ++fCentNum){
                 dn = new TProfile(Form("%s_diff_%.0f_%.0f_sample%d",CorrName,CentEdges[fCentNum],CentEdges[fCentNum+1],iSample),Form("%s_diff_%.0f_%.0f",CorrLabel,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
 
@@ -592,6 +594,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
                         }            
                     }
                 }
+            }
             }
         }
     }
@@ -1309,6 +1312,7 @@ void AliAnalysisTaskESEFlow::FillCorrelation(const AliUniFlowCorrTask* const tas
                 cNum = SixGap10(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
             }
         }
+        break;
     default:
         return;
     }
@@ -1357,15 +1361,13 @@ void AliAnalysisTaskESEFlow::FillCorrelation(const AliUniFlowCorrTask* const tas
         }
     }
 
-    if(doDiff){
+    if(doDiff && corrOrder < 6){
         Double_t dDnDiff = cDnDiff.Re();
         Double_t dNumDiff = cNumDiff.Re();
         Double_t dValueDiff = 0.0;
         Bool_t bFillDiff = kFALSE;
-
         if(dDnDiff > 0.0) { bFillDiff = kTRUE; dValueDiff = dNumDiff/dDnDiff; }
         if(bFillDiff && TMath::Abs(dValueDiff > 1.0)) { bFillDiff = kFALSE; }
-        
 
         if(!bFillDiff) { return; }
 
