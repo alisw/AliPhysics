@@ -93,6 +93,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     bDiff(kFALSE),
     bRef(kTRUE),
     bPtB(kFALSE),
+    fSC(kFALSE),
     bHigherOrder(kFALSE),
 
     fPOIsPtmax(10.0),
@@ -149,6 +150,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     bDiff(kFALSE),
     bRef(kTRUE),
     bPtB(kFALSE),
+    fSC(kFALSE),
     bHigherOrder(kFALSE),
 
     fPOIsPtmax(10.0),
@@ -270,21 +272,24 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
                 TH1* profPtA = nullptr;
                 TH1* profPtAPtB = nullptr;
 
-                if(bRef && CorrOrder < 4)
+                if(bRef)
                 {
-                    profile = new TProfile(Form("%s_sample%d",CorrName,iSample),Form("%s",CorrLabel),NcentBin,centEdges);
+                    if(CorrOrder < 4 || fSC)
+                    {
+                        profile = new TProfile(Form("%s_sample%d",CorrName,iSample),Form("%s",CorrLabel),NcentBin,centEdges);
 
-                    if(!profile) { fInitTask = kFALSE; AliError("Centrality profile not created"); task->PrintTask(); return; }
-                    if(fFlowList->FindObject(profile->GetName())) {
-                        AliError(Form("Task %d: Profile '%s' already exists",iTask,profile->GetName()));
-                        fInitTask=kFALSE;
-                        task->PrintTask();
-                        delete profile;
-                        return;
+                        if(!profile) { fInitTask = kFALSE; AliError("Centrality profile not created"); task->PrintTask(); return; }
+                        if(fFlowList->FindObject(profile->GetName())) {
+                            AliError(Form("Task %d: Profile '%s' already exists",iTask,profile->GetName()));
+                            fInitTask=kFALSE;
+                            task->PrintTask();
+                            delete profile;
+                            return;
+                        }
+
+                        profile->Sumw2();
+                        fFlowList->Add(profile);
                     }
-
-                    profile->Sumw2();
-                    fFlowList->Add(profile);
                 }
 
                 if(bDiff) 
@@ -590,20 +595,22 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, double dPtA
             return;
         }
 
-        if(doRef && corrOrder < 4)
+        if(doRef)
         {
-            Double_t dDn = cDn.Re();
-            Double_t dNum = cNum.Re();
-            Double_t dValue = 0.0;
-            Bool_t bFillPos = kFALSE;
+            if(corrOrder < 4 || fSC)
+            {
+                Double_t dDn = cDn.Re();
+                Double_t dNum = cNum.Re();
+                Double_t dValue = 0.0;
+                Bool_t bFillPos = kFALSE;
 
-            if(dDn > 0.0) {bFillPos = kTRUE; dValue = dNum/dDn; }
-            if(bFillPos && TMath::Abs(dValue > 1.0)) { bFillPos = kFALSE; }
-            if(!bFillPos) { return; }
-            TProfile* prof = (TProfile*)fFlowList->FindObject(Form("%s_sample%d",task->fsName.Data(),fIndexSampling));
-            if(!prof) { AliError(Form("Profile %s_sample%d not found",task->fsName.Data(),fIndexSampling)); return; }
-            prof->Fill(centrality, dValue, dDn);
-
+                if(dDn > 0.0) {bFillPos = kTRUE; dValue = dNum/dDn; }
+                if(bFillPos && TMath::Abs(dValue > 1.0)) { bFillPos = kFALSE; }
+                if(!bFillPos) { return; }
+                TProfile* prof = (TProfile*)fFlowList->FindObject(Form("%s_sample%d",task->fsName.Data(),fIndexSampling));
+                if(!prof) { AliError(Form("Profile %s_sample%d not found",task->fsName.Data(),fIndexSampling)); return; }
+                prof->Fill(centrality, dValue, dDn);
+            }
         }
         if(doDiff)
         {
