@@ -809,7 +809,8 @@ private:
 
   static const char* fgkParticleNames[kNMaxValues][3];  //variable names
 
-  static Bool_t Req(ValueTypes var) { return (fgFillMap ? fgFillMap->TestBitNumber(var) : kTRUE); }
+  static Bool_t Req(ValueTypes var) { if(fgFillMap->GetNbits()>kNMaxValues) return kFALSE; // needed for unknown crashes (TBits with high number of bits after calling GetPrimaryVertex in FillVarESDEvent)
+    return (fgFillMap ? fgFillMap->TestBitNumber(var) : kTRUE); }
   static void FillVarESDtrack(const AliESDtrack *particle,           Double_t * const values);
   static void FillVarAODTrack(const AliAODTrack *particle,           Double_t * const values);
   static void FillVarVTrdTrack(const AliVParticle *particle,         Double_t * const values);
