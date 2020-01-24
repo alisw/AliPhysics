@@ -1,3 +1,8 @@
+//======================================================
+// Disclaimer: applicable currently only for one cut set
+//======================================================
+
+
 class LMEECutLib {
 
   public:
