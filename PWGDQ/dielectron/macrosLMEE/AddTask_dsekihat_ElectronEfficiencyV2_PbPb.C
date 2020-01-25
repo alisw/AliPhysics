@@ -125,8 +125,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetLHC19f2MC(isLHC19f2);
 
   // Resolution File, If resoFilename = "" no correction is applied
-  task->SetCentralityFile(centralityAlien);
+  task->SetResolutionFile(resolutionAlien);
   task->SetResolutionFileFromAlien(resolutionAlien);
+  task->SetCentralityFile(centralityAlien);
+  task->SetCocktailWeighting(cocktailAlien);
   task->SetCocktailWeightingFromAlien(cocktailAlien);
 
   // Add MCSignals. Can be set to see differences of:

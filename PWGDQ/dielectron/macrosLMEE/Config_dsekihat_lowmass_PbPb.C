@@ -1,3 +1,6 @@
+#include <AliAnalysisManager.h>
+#include <AliAODInputHandler.h>
+
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 
 TString TrackCutnames[] = {
