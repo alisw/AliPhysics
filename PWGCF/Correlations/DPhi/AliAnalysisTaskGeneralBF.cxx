@@ -1471,11 +1471,20 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
     }
     
     
-    if      ( fSystemType == "PbPb" )
-    { if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
-    else if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" || fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB_kTRUE" || fSystemType == "pp_V0A_kMB_kFALSE" || fSystemType == "pp_V0_kMB_kTRUE" || fSystemType == "pp_V0_kMB_kFALSE" || fSystemType == "pp_V0C_kMB_kTRUE" || fSystemType == "pp_V0C_kMB_kFALSE" || fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" )
-    { if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
-    else    return;
+//     if      ( fSystemType == "PbPb" )
+//     { if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
+//     else if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" || fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB_kTRUE" || fSystemType == "pp_V0A_kMB_kFALSE" || fSystemType == "pp_V0_kMB_kTRUE" || fSystemType == "pp_V0_kMB_kFALSE" || fSystemType == "pp_V0C_kMB_kTRUE" || fSystemType == "pp_V0C_kMB_kFALSE" || fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" )
+//     { if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
+//     else    return;
+    
+    
+    if( centrality<_centralityMin || centrality>_centralityMax )  return;
+    
+    if( fSystemType=="PbPb" && fAnalysisType=="RealData" )
+    {
+      if( fabs(v0Centr-trkCentr)>5.0 )  return;
+    }
+    
     
     _eventAccounting -> Fill( 2 ); // count all events with right centrality
     
