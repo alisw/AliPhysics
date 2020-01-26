@@ -11,9 +11,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
     const Float_t EtaMax = +0.8,
     const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;",
     const Bool_t isLHC19f2 = kTRUE,
-    const std::string resolutionAlien ="",
-    const std::string cocktailAlien   ="",
-    const std::string centralityAlien =""
+    const std::string resolutionFilename ="",
+    const std::string cocktailFilename   ="",
+    const std::string centralityFilename =""
     ){
 
   // Configuring Analysis Manager
@@ -125,11 +125,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetLHC19f2MC(isLHC19f2);
 
   // Resolution File, If resoFilename = "" no correction is applied
-  task->SetResolutionFile(resolutionAlien);
-  task->SetResolutionFileFromAlien(resolutionAlien);
-  task->SetCentralityFile(centralityAlien);
-  task->SetCocktailWeighting(cocktailAlien);
-  task->SetCocktailWeightingFromAlien(cocktailAlien);
+  task->SetResolutionFile(resolutionFilename);
+  task->SetResolutionFileFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/" + resolutionFilename);
+  task->SetCentralityFile(centralityFilename);
+  task->SetCocktailWeighting(cocktailFilename);
+  task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/" + cocktailFilename);
 
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
