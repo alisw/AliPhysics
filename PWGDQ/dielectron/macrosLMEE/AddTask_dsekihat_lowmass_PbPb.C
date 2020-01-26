@@ -40,6 +40,8 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
   else if(trigger == (UInt_t)AliVEvent::kCentral)     triggername = "kCentral";
   else if(trigger == (UInt_t)AliVEvent::kSemiCentral) triggername = "kSemiCentral";
   else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral)) triggername = "kCombinedCentralityTriggers";
+  else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral))                           triggername = "kCombinedCentral";
+  else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kSemiCentral))                       triggername = "kCombinedSemiCentral";
 
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()));
