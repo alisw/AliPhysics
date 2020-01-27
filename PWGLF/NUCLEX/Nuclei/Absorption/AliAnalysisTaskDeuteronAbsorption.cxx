@@ -322,7 +322,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
             if (tofLabel[iLabel] == label)
               trueMatch = true;
           }
-          double mcMass = trueMatch ? AliPID::ParticleMass(fgkSpecies[iSpecies]) : 0;
+          double mcMass = trueMatch ? AliPID::ParticleMassZ(fgkSpecies[iSpecies]) : 0;
           AliVParticle *mcpart = mcEvent->GetTrack(TMath::Abs(track->GetLabel()));
           if (mcpart)
           {
