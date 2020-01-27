@@ -2,20 +2,20 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype ="pPb",
+								       TString  fCollisiontype ="PbPb",
 								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
-								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
-								       TString anacent         ="V0M",
+								       TString anamode         ="TPCFMDC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
+								       TString anacent         ="V0M",//"SPDTracklets",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =0,
 								       Int_t fFMDcutpar        =1,
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fptdiff          =kFALSE,
 								       Float_t fmaxpt          =3.0,
-								       Int_t fMinNTracksInPool =10000,
-								       Int_t fMinNEventsInPool =10								     
+								       Int_t fMinNTracksInPool =50000,
+								       Int_t fMinNEventsInPool =5								     
 								       )
 {
   // Get the current analysis manager.
@@ -77,8 +77,8 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   myTask->SetAnalysisCollisionType(fCollisiontype);
 
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
-  if(fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);}
-  else if(fCollisiontype=="pPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);}    
+  //  if(fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);}
+  if(fCollisiontype=="pPb" ||fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);}    
   else{
     if(anacent=="Manual"){
       myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
