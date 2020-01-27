@@ -13,7 +13,6 @@
 #include "AliAODEvent.h"
 #include "Rtypes.h"
 #include "TVector3.h"
-#include "AliSigma0ParticlePhotonMother.h"
 #include "AliAODConversionPhoton.h"
 
 class AliFemtoDreamBasePart {
@@ -21,8 +20,6 @@ class AliFemtoDreamBasePart {
   AliFemtoDreamBasePart();
   AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part);
   AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
-  AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent);
-  AliFemtoDreamBasePart(const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent);
   AliFemtoDreamBasePart(const AliAODConversionPhoton *gamma,
                         const AliVTrack *pos, const AliVTrack *neg,
                         const AliVEvent *inputEvent);
