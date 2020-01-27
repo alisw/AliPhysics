@@ -557,6 +557,11 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false, bool MomRes =
     photon->SetElectronRatioFindable(PhotonFClsLow);
   }
 
+  /// TEST ///
+
+  photon->DoPiZeroRejection(true);
+
+
   // =====================================================================
   // Sigma Cuts
   const float sidebandDownLow = 0.0035;
