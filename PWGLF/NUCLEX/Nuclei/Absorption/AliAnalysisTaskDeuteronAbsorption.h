@@ -6,6 +6,7 @@
 #define AliAnalysisTaskDeuteronAbsorption_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 #include "AliPID.h"
 #include <string>
 
@@ -43,6 +44,7 @@ public:
 
   bool fUseTRDboundariesCut;
   float fNtpcSigmas;
+  AliEventCuts fEventCuts;
 
 private:
   double fMindEdx; /// Cut on the minimum dE/dx in TPC

@@ -52,6 +52,7 @@ ClassImp(AliAnalysisTaskDeuteronAbsorption); // classimp: necessary for root
 AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char *name) : AliAnalysisTaskSE(name),
                                                                                          fUseTRDboundariesCut{true},
                                                                                          fNtpcSigmas{5.},
+                                                                                         fEventCuts{},
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
                                                                                          fPIDResponse{nullptr},
@@ -166,6 +167,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true);
     fESDtrackCuts->SetEtaRange(-0.8, 0.8);
   }
+  fEventCuts.AddQAplotsToList(fOutputList);
+
   PostData(1, fOutputList); // postdata will notify the analysis manager of changes / updates to the
 
   for (int iFunction = 0; iFunction < 4; ++iFunction)
@@ -198,9 +201,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     isMC = (mcEvent != nullptr);
   }
 
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  if(!(handl->IsEventSelected() & AliVEvent::kINT7))
+  if (!fEventCuts.AcceptEvent(esdEvent))
     return;
 
   // check for a proper primary vertex and monitor
