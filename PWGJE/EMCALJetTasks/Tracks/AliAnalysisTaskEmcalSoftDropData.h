@@ -40,11 +40,6 @@ namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalSoftDropData : public AliAnalysisTaskEmcalJet {
 public:
-  enum EBinningMode_t {
-    kSDModeINT7,
-    kSDModeEJ1,
-    kSDModeEJ2,
-  };
   enum EReclusterizer_t {
     kCAAlgo = 0,
     kKTAlgo = 1,
@@ -55,7 +50,6 @@ public:
   AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalSoftDropData();
 
-  void SetBinningMode(EBinningMode_t binmode) { fBinningMode = binmode; }
   void SetCustomPtBinning(TBinning *binning) { fPtBinning = binning; }
   void SetBeta(double beta) { fBeta = beta; }
   void SetZcut(double zcut) { fZcut = zcut; }
@@ -81,7 +75,6 @@ protected:
   std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
 
 private:
-  EBinningMode_t                fBinningMode;               ///< Binning adapted to trigger
   UInt_t                        fTriggerBits;               ///< Trigger selection bits
   std::string                   fTriggerString;             ///< Trigger selection string
   Bool_t                        fUseDownscaleWeight;        ///< Usage of downscale weights
@@ -90,8 +83,6 @@ private:
   EReclusterizer_t              fReclusterizer;             ///< Reclusterizer
   Bool_t                        fUseChargedConstituents;    ///< Use also charged constituents
   Bool_t                        fUseNeutralConstituents;    ///< Use also neutral constituents
-  Double_t                      fJetPtMin;                  ///< Min. jet pt (truncation)
-  Double_t                      fJetPtMax;                  ///< Max. jet pt (truncation)
   THistManager                  *fHistos;                   //!<! Histogram handler
   TBinning                      *fPtBinning;                ///< Detector level pt binning
 
