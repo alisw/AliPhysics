@@ -160,7 +160,7 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     return false;
   }
 
-  Double_t weight = fUseDownscaleWeight ? GetDownscaleWeight() : 1.;
+  Double_t weight = fUseDownscaleWeight ? 1./GetDownscaleWeight() : 1.;
   Double_t Rjet = jets->GetJetRadius();
   fHistos->FillTH1("hEventCounter", 1., weight);
   if(fUseDownscaleWeight) fHistos->FillTH1("hEventCounterWeighted", 1., weight);
