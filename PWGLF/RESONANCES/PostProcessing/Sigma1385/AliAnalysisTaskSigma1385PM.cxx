@@ -815,6 +815,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
 }
 void AliAnalysisTaskSigma1385PM::FillTracks() {
     AliVTrack* track1;
+    AliVTrack* track_mix;
     AliESDv0* v0ESD;
     AliAODv0* v0AOD;
     Bool_t isAnti, isPionPlus;
@@ -957,10 +958,10 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
 
         if ((centbin >= 0) && (zbin >= 0) && fsetmixing && !SkipMixing) {
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
-                track1 = trackpool.at(jt);
-                if (track1->GetID() == pID || track1->GetID() == nID)
+                track_mix = trackpool.at(jt);
+                if (track_mix->GetID() == pID || track_mix->GetID() == nID)
                     continue;
-                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
+                temp2.SetXYZM(track_mix->Px(), track_mix->Py(), track_mix->Pz(),
                               pionMass);
                 vecsum = temp1 + temp2;
                 // Y cut
@@ -968,7 +969,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
                     (vecsum.Rapidity() < fSigmaStarYCutLow))
                     continue;
 
-                if (track1->Charge() > 0)
+                if (track_mix->Charge() > 0)
                     isPionPlus = true;
                 else
                     isPionPlus = false;
