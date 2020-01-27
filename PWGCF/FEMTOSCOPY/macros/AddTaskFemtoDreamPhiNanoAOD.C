@@ -399,56 +399,50 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   if (suffix == "12") {
     evtCuts->SetSphericityCuts(0, 1);
   }
-  if (suffix == "13") {
-    TrackCutsPhi->SetCutWindow(0.987, 1.011);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "14") {
-    TrackCutsPhi->SetCutWindow(1.027, 1.1);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "15") {
-    TrackCutsPhi->SetCutWindow(1.1, 1.2);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "16") {
-    TrackCutsPhi->SetCutWindow(1.2, 1.3);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "17") {
-    TrackCutsPhi->SetCutWindow(1.3, 1.4);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "18") {
-    TrackCutsPhi->SetCutWindow(1.4, 1.5);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "19") {
-    TrackCutsPhi->SetCutWindow(1.5, 1.6);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "20") {
-    TrackCutsPhi->SetCutWindow(1.6, 1.7);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "21") {
-    TrackCutsPhi->SetCutWindow(1.7, 1.8);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "22") {
-    TrackCutsPhi->SetCutWindow(1.8, 1.9);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "23") {
-    TrackCutsPhi->SetCutWindow(1.9, 2);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "24") {
-    evtCuts->SetSphericityCuts(SpheriUp, 1);
-  }
-  if (suffix == "25") {
-    evtCuts->SetSphericityCuts(SpheriLow, 1);
-  }
+//  if (suffix == "13") {
+//    TrackCutsPhi->SetCutWindow(0.987, 1.011);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "14") {
+//    TrackCutsPhi->SetCutWindow(1.027, 1.1);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "15") {
+//    TrackCutsPhi->SetCutWindow(1.1, 1.2);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "16") {
+//    TrackCutsPhi->SetCutWindow(1.2, 1.3);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "17") {
+//    TrackCutsPhi->SetCutWindow(1.3, 1.4);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "18") {
+//    TrackCutsPhi->SetCutWindow(1.4, 1.5);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "19") {
+//    TrackCutsPhi->SetCutWindow(1.5, 1.6);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "20") {
+//    TrackCutsPhi->SetCutWindow(1.6, 1.7);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "21") {
+//    TrackCutsPhi->SetCutWindow(1.7, 1.8);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "22") {
+//    TrackCutsPhi->SetCutWindow(1.8, 1.9);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
+//  if (suffix == "23") {
+//    TrackCutsPhi->SetCutWindow(1.9, 2);
+//    evtCuts->SetSphericityCuts(0, 1);
+//  }
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor

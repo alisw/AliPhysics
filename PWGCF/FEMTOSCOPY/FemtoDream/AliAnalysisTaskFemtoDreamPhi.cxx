@@ -252,6 +252,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
     TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
         Event->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
+    int mcpdg;
     AliFemtoDreamBasePart part;
     for (int iPart = 1; iPart < noPart; iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
@@ -259,18 +260,19 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
         std::cout << "NO MC particle" << std::endl;
         continue;
       }
-      part.SetMCParticleRePart(mcPart);
-
-      if (mcPart->GetPdgCode() == 333) {
+      mcpdg = mcPart->GetPdgCode();
+      if (mcpdg == 333) {
         int firstdaughter = mcPart->GetDaughterFirst();
         AliAODMCParticle *mcDaughter =
             (AliAODMCParticle *)fArrayMCAOD->At(firstdaughter);
+
         if (mcDaughter) {
           int dpdg = mcDaughter->GetPdgCode();
           double dpt = mcDaughter->Pt();
           double deta = mcDaughter->Eta();
           if (std::abs(dpdg) == 321) {
             if ((dpt < 999 && dpt > 0.15) && (deta > -0.8 && deta < 0.8)) {
+              part.SetMCParticleRePart(mcPart);
               PhiTRUE.push_back(part);
               continue;
             }
@@ -278,26 +280,37 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
         }
       }
 
-      if (mcPart->GetPdgCode() == 333) {
-          PhiALL.push_back(part);
-      }
-
-      if (mcPart->GetPdgCode() == 2212) {
-        double pt = part.GetPt();
+      if (mcpdg == 333) {
+        double pt = mcPart->Pt();
         double eta = mcPart->Eta();
-
-        if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
-          ProtonTRUE.push_back(part);
-          continue;
+        if ((pt < 999 && pt > 0.4) && (eta > -0.8 && eta < 0.8)) {
+          part.SetMCParticleRePart(mcPart);
+          PhiALL.push_back(part);
         }
       }
 
-      if (mcPart->GetPdgCode() == -2212) {
-        double pt = part.GetPt();
-        double eta = mcPart->Eta();
-        if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
-          AProtonTRUE.push_back(part);
-          continue;
+      if (mcpdg == 2212) {
+        if (mcPart->IsPhysicalPrimary()) {
+          double pt = mcPart->Pt();
+          double eta = mcPart->Eta();
+
+          if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+            part.SetMCParticleRePart(mcPart);
+            ProtonTRUE.push_back(part);
+            continue;
+          }
+        }
+      }
+
+      if (mcpdg == -2212) {
+        if (mcPart->IsPhysicalPrimary()) {
+          double pt = mcPart->Pt();
+          double eta = mcPart->Eta();
+          if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+            part.SetMCParticleRePart(mcPart);
+            AProtonTRUE.push_back(part);
+            continue;
+          }
         }
       }
     }
