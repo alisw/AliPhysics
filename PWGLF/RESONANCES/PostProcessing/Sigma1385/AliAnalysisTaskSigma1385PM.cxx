@@ -280,6 +280,8 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
     event->IsA() == AliESDEvent::Class()
         ? fEvt = dynamic_cast<AliESDEvent*>(event)
         : fEvt = dynamic_cast<AliAODEvent*>(event);
+    if (!IsAOD && (event->IsA() != AliESDEvent::Class()))
+        IsAOD = true;
     if (!fEvt) {
         PostData(1, fHistos->GetListOfHistograms());
         PostData(2, fNtupleSigma1385);
@@ -293,7 +295,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
     if (!nanoHeader) {
         IsEvtSelected = fEventCuts.AcceptEvent(event);
         if (fIsMC) {
-            if (fEvt->IsA() != AliESDEvent::Class())
+            if (IsAOD)
                 fMCArray = (TClonesArray*)fEvt->FindListObject(
                     "mcparticles");  // AOD Case
             fMCEvent = MCEvent();
@@ -420,7 +422,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
         GetImpactParam(track, b, bCov);
 
         // ---------- Track selection begin ----------
-        if (fEvt->IsA() == AliESDEvent::Class()) {
+        if (!IsAOD) {
             if (!fTrackCuts->AcceptTrack((AliESDtrack*)track))
                 continue;
         }  // ESD Case
@@ -484,7 +486,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
     UInt_t isAnti = 0;
 
     Bool_t AcceptedV0 = kTRUE;
-    if (fEvt->IsA() == AliESDEvent::Class()) {  // ESD case
+    if (!IsAOD) {  // ESD case
         for (UInt_t it = 0; it < nV0; it++) {
             lPIDLambda = kFALSE;
             lPIDAntiLambda = kFALSE;
@@ -842,7 +844,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
         }
     }
     for (UInt_t i = 0; i < nV0; i++) {
-        if (fEvt->IsA() == AliESDEvent::Class()) {
+        if (!IsAOD) {
             v0ESD = ((AliESDEvent*)fEvt)->GetV0(goodv0indices[i][0]);
             if (!v0ESD)
                 continue;
@@ -956,7 +958,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
             }
         }  // pion loop
 
-        if ((centbin >= 0) && (zbin >= 0) && fsetmixing && !SkipMixing) {
+        if (fsetmixing &&  !SkipMixing && (centbin >= 0) && (zbin >= 0)) {
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
                 track_mix = trackpool.at(jt);
                 if (track_mix->GetID() == pID || track_mix->GetID() == nID)
@@ -1007,7 +1009,7 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
     const UInt_t nV0 = goodv0indices.size();
     const UInt_t nTracks = goodtrackindices.size();
     for (UInt_t i = 0; i < nV0; i++) {
-        if (fEvt->IsA() == AliESDEvent::Class()) {
+        if (!IsAOD) {
             v0ESD = ((AliESDEvent*)fEvt)->GetV0(goodv0indices[i][0]);
             if (!v0ESD)
                 continue;
@@ -1156,7 +1158,7 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
 void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent, int Fillbin) {
     int sign = kAllType;
     int binAnti = 0;
-    if (fEvt->IsA() == AliESDEvent::Class()) {
+    if (!IsAOD) {
         for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++) {
             TParticle* mcInputTrack =
                 (TParticle*)fMCEvent->GetTrack(it)->Particle();
@@ -1226,7 +1228,7 @@ Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
 
     track1 = (AliVTrack*)fEvt->GetTrack(pionIndex);
 
-    if (fEvt->IsA() == AliESDEvent::Class()) {
+    if (!IsAOD) {
         v0ESD = ((AliESDEvent*)fEvt)->GetV0(v0Index);
         if (!v0ESD)
             return kFALSE;
