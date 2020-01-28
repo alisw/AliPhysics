@@ -474,12 +474,20 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut)
 
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasITS(part, fPartType[icut]);
 
-//  // post pid corrections ("eta corrections")
-//  if (fPartType[icut]==AliPID::kElectron){
-//    // via functions (1-3D)
-//    numberOfSigmas-=GetCntrdCorrITS(part);
-//    numberOfSigmas/=GetWdthCorrITS(part);
-//  }
+//	if(!fgPIDCalibinPU){
+//		// post pid corrections ("eta corrections")
+//		if (fPartType[icut]==AliPID::kElectron){
+//			// via functions (1-3D)
+//			//numberOfSigmas-=GetCntrdCorrITS(part);
+//			//numberOfSigmas/=GetWdthCorrITS(part);
+//			numberOfSigmas-=GetCntrdCorrITS(part,fPartType[icut]);
+//			numberOfSigmas/=GetWdthCorrITS(part ,fPartType[icut]);
+//		}
+//	}
+//	else{
+//		numberOfSigmas-=GetCntrdCorrITS(part,fPartType[icut]);
+//		numberOfSigmas/=GetWdthCorrITS(part ,fPartType[icut]);
+//	}
 	numberOfSigmas-=GetCntrdCorrITS(part,fPartType[icut]);
 	numberOfSigmas/=GetWdthCorrITS(part ,fPartType[icut]);
 
@@ -504,17 +512,31 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut, Doubl
 
 
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTPC(part, fPartType[icut]);
+	//printf("TPC::icut = %d , nsigma (before) = %f\n",icut,numberOfSigmas);
 
-//  // post pid corrections ("eta corrections")
-//  if (fPartType[icut]==AliPID::kElectron){
-//    // old way 1D
-//    numberOfSigmas-=fgCorr;
-//    // via functions (1-3D)
-//    numberOfSigmas-=GetCntrdCorr(part);
-//    numberOfSigmas/=GetWdthCorr(part);
-//  }
-  numberOfSigmas-=GetCntrdCorr(part,fPartType[icut]);
-  numberOfSigmas/=GetWdthCorr(part ,fPartType[icut]);
+//	if(!fgPIDCalibinPU){
+//		// post pid corrections ("eta corrections")
+//		if (fPartType[icut]==AliPID::kElectron){
+//			// old way 1D
+//			numberOfSigmas-=fgCorr;
+//			// via functions (1-3D)
+//			//numberOfSigmas-=GetCntrdCorr(part);
+//			//numberOfSigmas/=GetWdthCorr(part);
+//			numberOfSigmas-=GetCntrdCorr(part,fPartType[icut]);
+//			numberOfSigmas/=GetWdthCorr(part ,fPartType[icut]);
+//		}
+//		printf("TPC::icut = %d , nsigma (after) = %f\n",icut,numberOfSigmas);
+//	}
+//	else{
+//		numberOfSigmas-=fgCorr;
+//		numberOfSigmas-=GetCntrdCorr(part,fPartType[icut]);
+//		numberOfSigmas/=GetWdthCorr(part ,fPartType[icut]);
+//	}
+
+	if(fPartType[icut]==AliPID::kElectron) numberOfSigmas-=fgCorr;
+	numberOfSigmas-=GetCntrdCorr(part,fPartType[icut]);
+	numberOfSigmas/=GetWdthCorr(part ,fPartType[icut]);
+	//printf("TPC::icut = %d , nsigma (after) = %f\n",icut,numberOfSigmas);
 
   // matching of MC and data //
 
@@ -604,12 +626,21 @@ Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut)
 
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTOF(part, fPartType[icut]);
 
-//  // post pid corrections ("eta corrections")
-//  if (fPartType[icut]==AliPID::kElectron){
-//    // via functions (1-3D)
-//    numberOfSigmas-=GetCntrdCorrTOF(part);
-//    numberOfSigmas/=GetWdthCorrTOF(part);
-//  }
+//	if(!fgPIDCalibinPU){
+//		// post pid corrections ("eta corrections")
+//		if (fPartType[icut]==AliPID::kElectron){
+//			// via functions (1-3D)
+//			//numberOfSigmas-=GetCntrdCorrTOF(part);
+//			//numberOfSigmas/=GetWdthCorrTOF(part);
+//			numberOfSigmas-=GetCntrdCorrTOF(part,fPartType[icut]);
+//			numberOfSigmas/=GetWdthCorrTOF(part ,fPartType[icut]);
+//		}
+//	}
+//	else{
+//		numberOfSigmas-=GetCntrdCorrTOF(part,fPartType[icut]);
+//		numberOfSigmas/=GetWdthCorrTOF(part ,fPartType[icut]);
+//	}
+
 	numberOfSigmas-=GetCntrdCorrTOF(part,fPartType[icut]);
 	numberOfSigmas/=GetWdthCorrTOF(part ,fPartType[icut]);
 
