@@ -123,12 +123,12 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   AliESDtrackCuts* fTrackCuts;   //!
   AliPIDResponse* fPIDResponse;  //!
 
-  AliVEvent* fEvt;                   //!
-  AliMCEvent* fMCEvent;              //!
-  THistManager* fHistos;             //!
-  AliAODVertex* fVertex;             //!
-  TNtupleD* fNtupleSigma1385;        //!
-  TClonesArray* fMCArray = nullptr;  //!
+  AliVEvent* fEvt;             //!
+  AliMCEvent* fMCEvent;        //!
+  THistManager* fHistos;       //!
+  AliAODVertex* fVertex;       //!
+  TNtupleD* fNtupleSigma1385;  //!
+  TClonesArray* fMCArray;      //!
 
   Bool_t fIsAOD;        //!
   Bool_t fSetMixing;    //!
@@ -176,8 +176,8 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   Double_t fSigmaStarYCutLow;   //!
 
   // Good track/v0 vector array
-  std::vector<UInt_t> fGoodTrackArray;            //!
-  std::vector<std::vector<UInt_t>> fGoodV0Array;  //!
+  std::vector<UInt_t> fGoodTrackArray;
+  std::vector<std::vector<UInt_t>> fGoodV0Array;
 
   ClassDef(AliAnalysisTaskSigma1385PM, 9);
   // Add rapidity/radius/Lifetime/Y cut of lambda
