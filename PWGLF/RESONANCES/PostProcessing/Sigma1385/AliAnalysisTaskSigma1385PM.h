@@ -20,9 +20,9 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     virtual void UserExec(Option_t* option);
     virtual void Terminate(Option_t* option);
     void SetFillQAPlot(Bool_t input) { fFillQAPlot = input; }
-    void SetMixing(Bool_t setmixing) { fsetmixing = setmixing; }
+    void SetMixing(Bool_t setmixing) { fSetMixing = setmixing; }
     void SetnMix(Int_t nMix) { fnMix = nMix; }
-    void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
+    void SetIsPrimaryMC(Bool_t isprimarymc) { fIsPrimaryMC = isprimarymc; }
     void SetINEL(Bool_t input) { fIsINEL = input; }
     void SetHighMult(Bool_t input) { fIsHM = input; }
     void SetFillnTuple(Bool_t fillntuple) { fFillnTuple = fillntuple; }
@@ -132,12 +132,12 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     AliVEvent* fEvt = nullptr;        //!
     AliMCEvent* fMCEvent = nullptr;   //!
     THistManager* fHistos = nullptr;  //!
-    AliAODVertex* vertex = nullptr;   //!
-    Bool_t IsAOD = kFALSE;
-    Bool_t fsetmixing = kFALSE;
+    AliAODVertex* fVertex = nullptr;   //!
+    Bool_t fIsAOD = kFALSE;
+    Bool_t fSetMixing = kFALSE;
     Bool_t fFillQAPlot = kTRUE;
     Bool_t fIsMC = kFALSE;
-    Bool_t IsPrimaryMC = kFALSE;
+    Bool_t fIsPrimaryMC = kFALSE;
     Bool_t fFillnTuple = kFALSE;
     Bool_t fIsNano = kFALSE;
     Bool_t fIsINEL = kFALSE;
@@ -145,14 +145,14 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     TNtupleD* fNtupleSigma1385;        //! Ntuple for the analysis
     TClonesArray* fMCArray = nullptr;  //!
     mixingpool fEMpool;                //!
-    TAxis binCent;                     //!
-    TAxis binZ;                        //!
-    Double_t lPosPV[3];
+    TAxis fBinCent;                    //!
+    TAxis fBinZ;                        //!
+    Double_t fPosPV[3];
 
     Double_t fCent = -1;
     Int_t fnMix = 10;
-    Int_t centbin = -1;
-    Int_t zbin = -1;
+    Int_t fCentBin = -1;
+    Int_t fZbin = -1;
 
     // Pion cuts
     UInt_t fFilterBit = 32.0;
@@ -179,8 +179,8 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     Double_t fSigmaStarYCutHigh = 0.5;
     Double_t fSigmaStarYCutLow = -0.5;
 
-    std::vector<UInt_t> goodtrackindices;  //!
-    std::vector<std::vector<UInt_t>> goodv0indices;  //!
+    std::vector<UInt_t> fGoodTrackArray;  //!
+    std::vector<std::vector<UInt_t>> fGoodV0Array;  //!
 
     ClassDef(AliAnalysisTaskSigma1385PM, 8);
     // Add rapidity/radius/Lifetime/Y cut of lambda
