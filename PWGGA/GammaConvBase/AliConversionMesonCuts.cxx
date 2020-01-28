@@ -1974,7 +1974,7 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     break;
     //continue normal pT cuts on meson
   case 26: //q
-      fMinPt = 10.0;
+      fMinPt = 12.0;
       fDoMinPtCut = kTRUE;
       break;
   case 27: //r
