@@ -1405,7 +1405,6 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistMatchedTrackPClusEAfterEOverPVeto ->GetYaxis()->SetTitle("P_{track} (GeV/c)");
         fHistograms->Add(fHistMatchedTrackPClusEAfterEOverPVeto);
       }
-
       //----------------
       if(fIsMC > 1){
         fHistClusterRBeforeQA->Sumw2();
@@ -3746,7 +3745,6 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
           }
         }
       }
-
     }
   }
 }
