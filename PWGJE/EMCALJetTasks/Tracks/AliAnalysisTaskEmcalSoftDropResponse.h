@@ -57,6 +57,8 @@ public:
   AliAnalysisTaskEmcalSoftDropResponse(const char *name);
   virtual ~AliAnalysisTaskEmcalSoftDropResponse();
 
+  void SetHasResponseMatrixSparse(Bool_t doUse) { fHasResponseMatrixSparse = doUse; }
+  void SetHasResponseMatrixRooUnfold(Bool_t doUse) { fHasResponseMatrixRooUnfold = doUse; }
   void SetBinningMode(EBinningMode_t binmode) { fBinningMode = binmode; }
   void SetCustomPartLevelPtBinning(TBinning *binning) { fPartLevelPtBinning = binning; }
   void SetCustomDetLevelPtBinning(TBinning *binning) { fDetLevelPtBinning = binning; }
@@ -98,6 +100,8 @@ private:
   Double32_t                    fSampleFraction;            ///< Fraction of statistics used for the analysis
   Float_t                       fMinFractionShared;         ///< only fill histos for jets if shared fraction larger than X  
 
+  Bool_t                        fHasResponseMatrixSparse;   ///< Fill also THnSparse representation of response matrix  
+  Bool_t                        fHasResponseMatrixRooUnfold; /// < Fill RooUnfold response objects
   Bool_t                        fUseChargedConstituents;    ///< Use charged constituents for softdrop
   Bool_t                        fUseNeutralConstituents;    ///< Use neutral constituents for softdrop
   TString                       fNameMCParticles;           ///< Name of the MC particle container
@@ -122,7 +126,7 @@ private:
   AliAnalysisTaskEmcalSoftDropResponse(const AliAnalysisTaskEmcalSoftDropResponse &);
   AliAnalysisTaskEmcalSoftDropResponse &operator=(const AliAnalysisTaskEmcalSoftDropResponse &);
   
-  ClassDef(AliAnalysisTaskEmcalSoftDropResponse, 2);
+  ClassDef(AliAnalysisTaskEmcalSoftDropResponse, 3);
 
 };
 
