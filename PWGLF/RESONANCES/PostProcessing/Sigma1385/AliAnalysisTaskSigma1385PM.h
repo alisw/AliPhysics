@@ -140,10 +140,10 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   Bool_t fIsINEL;       //!
   Bool_t fIsHM;         //!
 
-  mixingpool fEMpool;            //!
-  TAxis fBinCent;                //!
-  TAxis fBinZ;                   //!
-  std::vector<Double_t> fPosPV;  //!
+  mixingpool fEMpool;  //!
+  TAxis fBinCent;      //!
+  TAxis fBinZ;         //!
+  Double_t fPosPV[3];  //!
 
   Double_t fCent;  //!
   Int_t fnMix;     //!
