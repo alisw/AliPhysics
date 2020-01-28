@@ -200,12 +200,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   const float SpheriUp = 0.72;
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts =
-      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
+      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
   TrackPosKaonCuts->SetCutCharge(1);
   TrackPosKaonCuts->SetFilterBit(128);
 
   AliFemtoDreamTrackCuts *TrackNegKaonCuts =
-      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
+      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
   TrackNegKaonCuts->SetCutCharge(-1);
   TrackNegKaonCuts->SetFilterBit(128);
 

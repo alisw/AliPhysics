@@ -289,11 +289,23 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
       }
 
       if (mcpdg == 333) {
-        double pt = mcPart->Pt();
-        double eta = mcPart->Eta();
-        if ((pt < 999 && pt > 0.4) && (eta > -0.8 && eta < 0.8)) {
-          part.SetMCParticleRePart(mcPart);
-          PhiALL.push_back(part);
+        int firstdaughter = mcPart->GetDaughterFirst();
+        AliAODMCParticle *mcDaughter =
+            (AliAODMCParticle *)fArrayMCAOD->At(firstdaughter);
+
+        if (mcDaughter) {
+          int dpdg = mcDaughter->GetPdgCode();
+          if (std::abs(dpdg) == 321) {
+            if (mcDaughter->IsPhysicalPrimary()) {
+              double dpt = mcDaughter->Pt();
+              double deta = mcDaughter->Eta();
+              if ((dpt < 999 && dpt > 0.15) && (deta > -0.8 && deta < 0.8)) {
+                part.SetMCParticleRePart(mcPart);
+                PhiTRUE.push_back(part);
+                continue;
+              }
+            }
+          }
         }
       }
 
