@@ -1934,6 +1934,53 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fNDaughterEnergyCut  = 1;
     fSingleDaughterMinE  = 6.;
     break;
+  case 17: // h
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 10.;
+    break;
+  case 18: // i
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 12.;
+    break;
+  case 19: //j
+    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
+    return kFALSE;
+    break;
+  case 20: //k
+    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
+    return kFALSE;
+    break;
+  case 21: //l
+    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
+    return kFALSE;
+    break;
+  case 22: //m
+    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
+    return kFALSE;
+    break;
+  case 23: //n
+    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
+    return kFALSE;
+    break;
+  case 24: //o
+    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
+    return kFALSE;
+    break;
+  case 25: //p
+    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
+    return kFALSE;
+    break;
+    //continue normal pT cuts on meson
+  case 26: //q
+      fMinPt = 12.0;
+      fDoMinPtCut = kTRUE;
+      break;
+  case 27: //r
+      fMinPt = 14.0;
+      fDoMinPtCut = kTRUE;
+      break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
