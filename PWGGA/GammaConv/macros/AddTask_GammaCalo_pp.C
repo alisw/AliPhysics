@@ -1722,6 +1722,9 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig ==814){ // PHI7 NCells 2 or 3, when E>1GeV
     cuts.AddCutCalo("00062113","24466190na012c00000","0163103100000010"); // INT7 NCells 2, when E>1GeV
     cuts.AddCutCalo("00062113","24466190na012d00000","0163103100000010"); // INT7 NCells 3, when E>1GeV
+  } else if (trainConfig == 815){ // NCell Cut Variations, without E>1GeV
+    cuts.AddCutCalo("00010113","24466190na012300000","0163103100000010"); // INT7 NCells 3
+    cuts.AddCutCalo("00010113","24466190na012200000","0163103100000010"); // INT7 NCells 2
   } else if( trainConfig == 870){ // PHOS HM trigger
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, MB trigger
     cuts.AddCutCalo("00010113","2446600004012300000","0163103100000010"); // no timing, MB trigger
