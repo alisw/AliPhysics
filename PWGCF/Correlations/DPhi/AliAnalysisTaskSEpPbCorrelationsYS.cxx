@@ -2074,10 +2074,10 @@ m	   auto fZ = spdVtx->GetZ();
 	 if (mostProbableN > 0) {
 	   if(eta>0){
 	     nFMD_fwd_hits+=mostProbableN;
-	     if(2.8<eta<5.03) nFMD_fwdV0acc_hits+=mostProbableN;
+	     if(2.8<eta && eta<5.03) nFMD_fwdV0acc_hits+=mostProbableN;
 	   }else{
 	     nFMD_bwd_hits+=mostProbableN;
-	     if(-3.4<eta<-2.01) nFMD_bwdV0acc_hits+=mostProbableN;
+	     if(-3.4<eta && eta<-2.01) nFMD_bwdV0acc_hits+=mostProbableN;
 	   }
 	 }
 	 
@@ -3875,7 +3875,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
         binscont[3]=centrality;
         binscont[4]=RangePhi_FMD(triggerPhi-associate->Phi());
         binscont[5]=fPrimaryZVtx;
-	//	cout<<"i am here"<<endl;
+
         Float_t dphivzero=triggerPhi-associate->Phi();
         if(triggerPhi==assophi && triggerEta==assoeta) continue;
         associateHist->Fill(binscont,0,(Double_t)mult);
