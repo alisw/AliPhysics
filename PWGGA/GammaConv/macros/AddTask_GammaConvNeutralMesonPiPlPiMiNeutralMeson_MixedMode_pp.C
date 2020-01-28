@@ -587,12 +587,13 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       cuts.AddCutHeavyMesonPCMCalo("00062113","0dm00009f9730000dge0404000","24466190na012200000","32c51070a","01036g3400000000","0153503000000000"); // PHI7, new Gamma Energy cut 6 GeV
       cuts.AddCutHeavyMesonPCMCalo("00062113","0dm00009f9730000dge0404000","24466190na012200000","32c51070a","01036e3400000000","0153503000000000"); // PHI7, new Gamma Energy cut 5. GeV
       cuts.AddCutHeavyMesonPCMCalo("00062113","0dm00009f9730000dge0404000","24466190na012200000","32c51070a","01036f3400000000","0153503000000000"); // PHI7, new Gamma Energy cut 7.5 GeV
-  } else if(trainConfig == 410)  { //EMCal Trig Pt Cut Variations
+  } else if(trainConfig == 411)  { //EMCal Trig Pt Cut Variations EG2
       //-EG2
       cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790106f032220000","32c51070a","01036c3200000000","0453503000000000"); // EG2, Pion 8 GeV
       cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790106f032220000","32c51070a","01036g3200000000","0453503000000000"); // EG2, new Gamma Energy cut 6 GeV
       cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790106f032220000","32c51070a","01036e3200000000","0453503000000000"); // EG2, new Gamma Energy cut 5 GeV
       cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790106f032220000","32c51070a","01036f3200000000","0453503000000000"); // EG2, new Gamma Energy cut 7.5 GeV
+  } else if(trainConfig == 412)  { //EMCal Trig Pt Cut Variations EG1
       //-EG1
       cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790006f032220000","32c51070a","01036q3200000000","0453503000000000"); // EG1, Pion 12 GeV
       cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790006f032220000","32c51070a","01036h3200000000","0453503000000000"); // EG1, new Gamma Energy cut 10 GeV
