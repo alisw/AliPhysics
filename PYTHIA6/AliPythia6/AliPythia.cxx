@@ -578,6 +578,39 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 
 	 AtlasTuning();
 	 break; 
+     case kPyHeavyFlavppMNRwmi:
+      // Tuning of Pythia parameters aimed to get a resonable agreement
+      // between with the NLO calculation by Mangano, Nason, Ridolfi for the
+      // b-bbar single inclusive and double differential distributions.
+      // This parameter settings are meant to work with pp collisions
+      // and with kCTEQ5L PDFs.
+      // Added multiple interactions according to ATLAS tune settings.
+      // To get a "reasonable" agreement with MNR results, events have to be 
+      // generated with the minimum ptHard (AliGenPythia::SetPtHard)
+      // set to 2.76 GeV.
+      // To get a "perfect" agreement with MNR results, events have to be 
+      // generated in four ptHard bins with the following relative 
+      // normalizations:
+      // 2.76-4 GeV:  5% 
+      //    4-6 GeV: 31%
+      //    6-8 GeV: 28%
+      //     >8 GeV: 36%
+	 ConfigHeavyFlavor();
+      // QCD scales
+	 SetPARP(67,1.0);
+	 SetPARP(71,1.0);
+	 
+	 // Intrinsic <kT>
+	 SetMSTP(91,1);
+	 SetPARP(91,1.);
+	 SetPARP(93,5.);
+
+      // Set c and b quark masses
+	 SetPMAS(4,1,1.2);
+	 SetPMAS(5,1,4.75);
+
+	 AtlasTuning();
+	 break; 
     case kPyW:
 
       //Inclusive production of W+/-
