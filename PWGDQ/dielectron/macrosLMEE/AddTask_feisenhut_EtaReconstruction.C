@@ -7,7 +7,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
                                                                 Int_t wagonnr = 0,
                                                                 Int_t centrality = 4) {
 
-bool debug = false;
+
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
@@ -147,6 +147,24 @@ bool debug = false;
   task->SetLowerMassCutPrimaries(lowerMassCutPrimaries);
   task->SetMassCutSecondaries(massCutSecondaries);
 
+  // Set secondary cuts applied on V0's
+  task->SetLowerCosPointingAngleCut(LowerCosPointingAngleCut);
+  task->SetUpperCosPointingAngleCut(UpperCosPointingAngleCut);
+  task->SetLowerChi2NDFCut(LowerChi2NDFCut);
+  task->SetUpperChi2NDFCut(UpperChi2NDFCut);
+  task->SetLowerLegDistCut(LowerLegDistCut);
+  task->SetUpperLegDistCut(UpperLegDistCut);
+  task->SetLowerRCut(LowerRCut);
+  task->SetUpperRCut(UpperRCut);
+  task->SetLowerPsiPairCut(LowerPsiPairCut);
+  task->SetUpperPsiPairCut(UpperPsiPairCut);
+  task->SetLowerPairMassCut(LowerPairMassCut);
+  task->SetUpperPairMassCut(UpperPairMassCut);
+  task->SetLowerPairArmPtCut(LowerPairArmPtCut);
+  task->SetUpperPairArmPtCut(UpperPairArmPtCut);
+  task->SetLowerPairArmAlphaCut(LowerPairArmAlphaCut);
+  task->SetUpperPairArmAlphaCut(UpperPairArmAlphaCut);
+
 
   // #########################################################
   // #########################################################
@@ -234,13 +252,13 @@ bool debug = false;
     task->AddTrackCuts_primary(filter);
     DoAdditionalWork(task);
   }
+
   // Adding secondary electron cutsettings
   TObjArray*  arrNames_sec=names_Sec_Cuts.Tokenize(";");
   const Int_t nDie=arrNames_sec->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_sec->At(iCut)->GetName());
-                                                                                // if(debug) std::cout << __LINE__ << " DEBUG_AddTask: arrNames_sec->At(iCut)->GetName(): " <<  arrNames_sec->At(iCut)->GetName()<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
     task->AddTrackCuts_secondary(filter);
     DoAdditionalWork(task);

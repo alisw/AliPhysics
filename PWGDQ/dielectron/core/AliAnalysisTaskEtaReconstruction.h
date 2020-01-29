@@ -158,6 +158,23 @@ public:
    void   SetMassCutSecondaries(double massCut) {fMassCutSecondaries = massCut;};
    void   SetMassCut(Bool_t DoMassCut) {fDoMassCut = DoMassCut;};
 
+   void   SetLowerCosPointingAngleCut(double LowerCosPointingAngleCut) {fLowerCosPointingAngleCut = LowerCosPointingAngleCut;};
+   void   SetUpperCosPointingAngleCut(double UpperCosPointingAngleCut) {fUpperCosPointingAngleCut = UpperCosPointingAngleCut;};
+   void   SetLowerChi2NDFCut(double LowerChi2NDFCut) {fLowerChi2NDFCut = LowerChi2NDFCut;};
+   void   SetUpperChi2NDFCut(double UpperChi2NDFCut) {fUpperChi2NDFCut = UpperChi2NDFCut;};
+   void   SetLowerLegDistCut(double LowerLegDistCut) {fLowerLegDistCut = LowerLegDistCut;};
+   void   SetUpperLegDistCut(double UpperLegDistCut) {fUpperLegDistCut = UpperLegDistCut;};
+   void   SetLowerRCut(double LowerRCut) {fLowerRCut = LowerRCut;};
+   void   SetUpperRCut(double UpperRCut) {fUpperRCut = UpperRCut;};
+   void   SetLowerPsiPairCut(double LowerPsiPairCut) {fLowerPsiPairCut = LowerPsiPairCut;};
+   void   SetUpperPsiPairCut(double UpperPsiPairCut) {fUpperPsiPairCut = UpperPsiPairCut;};
+   void   SetLowerPairMassCut(double LowerPairMassCut) {fLowerPairMassCut = LowerPairMassCut;};
+   void   SetUpperPairMassCut(double UpperPairMassCut) {fUpperPairMassCut = UpperPairMassCut;};
+   void   SetLowerPairArmPtCut(double LowerPairArmPtCut) {fLowerPairArmPtCut = LowerPairArmPtCut;};
+   void   SetUpperPairArmPtCut(double UpperPairArmPtCut) {fUpperPairArmPtCut = UpperPairArmPtCut;};
+   void   SetLowerPairArmAlphaCut(double LowerPairArmAlphaCut) {fLowerPairArmAlphaCut = LowerPairArmAlphaCut;};
+   void   SetUpperPairArmAlphaCut(double UpperPairArmAlphaCut) {fUpperPairArmAlphaCut = UpperPairArmAlphaCut;};
+
    // Track cuts setter
    void   AddTrackCuts_primary  (AliAnalysisFilter* filter) {fTrackCuts_primary.push_back(filter);}
    void   AddTrackCuts_secondary(AliAnalysisFilter* filter) {fTrackCuts_secondary.push_back(filter);}
@@ -209,31 +226,32 @@ public:
   class TwoPair{
   public:
     TwoPair() :
-      fPt(-99), fEta(-99), fPhi(-99), fMass(-99), fCharge(-99), fDaughterTrackID_1(0), fDaughterTrackID_2(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed() {}
+      fPt(-99), fEta(-99), fPhi(-99), fMass(-99), fCharge(-99), fDaughterTrackLabel_1(0), fDaughterTrackLabel_2(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_secondary() {}
     TwoPair(double pt, double eta, double phi, double mass, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fMass(mass), fCharge(charge), fDaughterTrackID_1(0), fDaughterTrackID_2(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(){}
+      fPt(pt), fEta(eta), fPhi(phi), fMass(mass), fCharge(charge), fDaughterTrackLabel_1(0), fDaughterTrackLabel_2(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_secondary(){}
 
     void SetMCTwoSignal_acc_prim (std::vector<Bool_t> vec) {fMCTwoSignal_acc_prim = vec;}
     void SetMCTwoSignal_acc_sec  (std::vector<Bool_t> vec) {fMCTwoSignal_acc_sec = vec;}
-    void SetDautherTrackID(int id1, int id2) {fDaughterTrackID_1 = id1; fDaughterTrackID_2 = id2;}
+    void SetDautherTrackLabel(int label1, int label2) {fDaughterTrackLabel_1 = label1; fDaughterTrackLabel_2 = label2;}
     void SetDauthersAreReconstructed(std::vector<Bool_t> vec1, std::vector<Bool_t> vec2) {fFirstPartIsReconstructed = vec1, fSecondPartIsReconstructed = vec2;}
 
     std::vector<Bool_t> GetMCTwoSignal_acc_prim () {return fMCTwoSignal_acc_prim;}
     std::vector<Bool_t> GetMCTwoSignal_acc_sec  () {return fMCTwoSignal_acc_sec;}
-    int GetFirstDaughter() {return fDaughterTrackID_1;}
-    int GetSecondDaughter() {return fDaughterTrackID_2;}
+    int GetFirstDaughter() {return fDaughterTrackLabel_1;}
+    int GetSecondDaughter() {return fDaughterTrackLabel_2;}
 
     double  fPt;
     double  fEta;
     double  fPhi;
     double  fMass;
     short   fCharge;
-    int fDaughterTrackID_1;
-    int fDaughterTrackID_2;
+    int fDaughterTrackLabel_1;
+    int fDaughterTrackLabel_2;
     std::vector<Bool_t> fMCTwoSignal_acc_prim;
     std::vector<Bool_t> fMCTwoSignal_acc_sec;
     std::vector<Bool_t> fFirstPartIsReconstructed;
     std::vector<Bool_t> fSecondPartIsReconstructed;
+    std::vector<Bool_t> isReconstructed_secondary;
 
   };
 
@@ -262,6 +280,7 @@ private:
 
   void    FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack, int iCutList);
   void    FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack, int iCutList);
+  void    FillPairHistograms_Secondary(AliDielectronPair* pair, int iCutList);
 
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
@@ -333,6 +352,24 @@ private:
   double fLowerMassCutPrimaries; // Mass cut for primary pair
   double fUpperMassCutPrimaries; // Mass cut for primary pair
   double fMassCutSecondaries; // Mass cut for secondary pair
+
+  //secondary cuts applied on V0's
+  double fLowerCosPointingAngleCut;
+  double fUpperCosPointingAngleCut;
+  double fLowerChi2NDFCut;
+  double fUpperChi2NDFCut;
+  double fLowerLegDistCut;
+  double fUpperLegDistCut;
+  double fLowerRCut;
+  double fUpperRCut;
+  double fLowerPsiPairCut;
+  double fUpperPsiPairCut;
+  double fLowerPairMassCut;
+  double fUpperPairMassCut;
+  double fLowerPairArmPtCut;
+  double fUpperPairArmPtCut;
+  double fLowerPairArmAlphaCut;
+  double fUpperPairArmAlphaCut;
 
   std::vector<AliDielectronSignalMC> fSinglePrimaryLegMCSignal;
   std::vector<AliDielectronSignalMC> fSingleSecondaryLegMCSignal;
@@ -462,6 +499,8 @@ private:
   std::vector<TwoPair>  fGenSmearedPairVec_secondary;
   std::vector<TwoPair>  fRecPairVec_primary;
   std::vector<TwoPair>  fRecPairVec_secondary;
+
+  std::vector<TwoPair>  fRecV0Pair;
 
   bool fDoCocktailWeighting;
   std::string fCocktailFilename;
