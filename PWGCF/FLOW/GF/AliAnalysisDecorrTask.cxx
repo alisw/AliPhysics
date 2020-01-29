@@ -93,7 +93,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     bDiff(kFALSE),
     bRef(kTRUE),
     bPtB(kFALSE),
-    fSC(kFALSE),
+    fInt(kFALSE),
+    fSingle(kFALSE),
     bHigherOrder(kFALSE),
 
     fPOIsPtmax(10.0),
@@ -150,7 +151,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     bDiff(kFALSE),
     bRef(kTRUE),
     bPtB(kFALSE),
-    fSC(kFALSE),
+    fInt(kFALSE),
+    fSingle(kFALSE),
     bHigherOrder(kFALSE),
 
     fPOIsPtmax(10.0),
@@ -259,8 +261,8 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
 
             //Bool_t bHasGap = task->HasGap();
             Int_t CorrOrder = task->fiNumHarm;
-            Bool_t bHarmSign = kFALSE;
-            if(task->fiHarm[0] == task->fiHarm[1]) { bHarmSign = kTRUE; }
+            //Bool_t bHarmSign = kFALSE;
+            //if(task->fiHarm[0] == task->fiHarm[1]) { bHarmSign = kTRUE; }
             const char* CorrName = task->fsName.Data();
             const char* CorrLabel = task->fsLabel.Data();
 
@@ -274,7 +276,7 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
 
                 if(bRef)
                 {
-                    if(CorrOrder < 4 || fSC)
+                    if(CorrOrder < 4 || fInt)
                     {
                         profile = new TProfile(Form("%s_sample%d",CorrName,iSample),Form("%s",CorrLabel),NcentBin,centEdges);
 
@@ -294,7 +296,7 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
 
                 if(bDiff) 
                 {
-                    if( (bHigherOrder && bHarmSign) || CorrOrder < 4)
+                    if( fSingle || CorrOrder < 4)
                     {
                         profDiff = new TProfile2D(Form("%s_diff_sample%d",CorrName,iSample),Form("%s_diff",CorrLabel),NcentBin,centEdges,NPtBin,PtEdges);
                         if(!profDiff) { fInitTask = kFALSE; AliError("Differential profile not created"); task->PrintTask(); return; }
@@ -504,8 +506,8 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, double dPtA
 
         //Bool_t bHasGap = task->HasGap();
         Int_t corrOrder= task->fiNumHarm;
-        Bool_t bHarmSign = kFALSE;
-        if(task->fiHarm[0] == task->fiHarm[1]) { bHarmSign = kTRUE; }
+        //Bool_t bHarmSign = kFALSE;
+        //if(task->fiHarm[0] == task->fiHarm[1]) { bHarmSign = kTRUE; }
 
         TComplex cNum = TComplex(0.0,0.0,kFALSE);
         TComplex cDn = TComplex(0.0,0.0,kFALSE);
@@ -556,8 +558,16 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, double dPtA
         case 4 :
             if(!bHasGap){
                 if(doDiff){
-                    cDnDiff = FourDiff(0,0,0,0);
-                    cNumDiff = FourDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                    if(fSingle)
+                    {
+                        cDnDiff = Four_2Diff_2Ref(0,0,0,0);
+                        cNumDiff = Four_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                    } 
+                    else
+                    {
+                        cDnDiff = FourDiff(0,0,0,0);
+                        cNumDiff = FourDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);   
+                    }
                 }
                 if(doPtB) {
                     cDnPtB = FourDiff_PtA_PtB(0,0,0,0);
@@ -597,7 +607,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, double dPtA
 
         if(doRef)
         {
-            if(corrOrder < 4 || fSC)
+            if(corrOrder < 4 || fInt)
             {
                 Double_t dDn = cDn.Re();
                 Double_t dNum = cNum.Re();
@@ -641,7 +651,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(double centrality, double dPtA
                 profDiff->Fill(centrality, dPtA, dValueDiff, dDnDiff);
                 profPtA->Fill(centrality, dPtA, dValuePtA, dDnPtA);
             }
-            if(bHigherOrder && bHarmSign)
+            if(fSingle)
             {
                 TProfile2D* profDiff = (TProfile2D*)fFlowList->FindObject(Form("%s_diff_sample%d",task->fsName.Data(),fIndexSampling));
                 if(!profDiff) { AliError(Form("Profile %s_diff_sample%d not found",task->fsName.Data(),fIndexSampling)); return; }
@@ -1385,6 +1395,19 @@ TComplex AliAnalysisDecorrTask::FourDiff(int n1, int n2, int n3, int n4)
                  		+ 2.*Q(n3,1)*q(n1+n2+n4,3)-p(n1,1)*Q(n2,1)*Q(n3+n4,2)+q(n1+n2,2)*Q(n3+n4,2)
                  		+ 2.*Q(n2,1)*q(n1+n3+n4,3)+2.*p(n1,1)*Q(n2+n3+n4,3)-6.*q(n1+n2+n3+n4,4);
   return formula;
+}
+//_____________________________________________________________________
+TComplex AliAnalysisDecorrTask::Four_2Diff_2Ref(int n1, int n2, int n3, int n4)
+{
+
+    TComplex formula = p(n1,1)*Q(n2,1)*p(n3,1)*Q(n4,1)-q(n1+n2,2)*p(n3,1)*Q(n4,1)-Q(n2,1)*q(n1+n3,2)*Q(n4,1)
+    - p(n1,1)*q(n2+n3,2)*Q(n4,1)+2.*q(n1+n2+n3,3)*Q(n4,1)-Q(n2,1)*p(n3,1)*q(n1+n4,2)
+    + q(n2+n3,2)*q(n1+n4,2)-p(n1,1)*p(n3,1)*Q(n2+n4,2)+q(n1+n3,2)*Q(n2+n4,2)
+    + 2.*p(n3,1)*q(n1+n2+n4,3)-p(n1,1)*Q(n2,1)*q(n3+n4,2)+q(n1+n2,2)*q(n3+n4,2)
+    + 2.*Q(n2,1)*q(n1+n3+n4,3)+2.*p(n1,1)*q(n2+n3+n4,3)-6.*q(n1+n2+n3+n4,4);
+    //TComplex *out = (TComplex*) &formula;
+    //return out;
+    return formula;
 }
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::FourDiff_PtA_PtA(int n1, int n2, int n3, int n4)  
