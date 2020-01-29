@@ -2184,26 +2184,28 @@ if(fAnaMode=="TPCTPC"){
      if(mcTrackEta>2.8 && mcTrackEta<5.1) ntrackv0aprimary++;
      if(mcTrackEta>-3.7 && mcTrackEta<-1.7) ntrackv0cprimary++;
 
-     if(mcTrackPt<fPtMin || mcTrackPt>fPtMax) continue;
 
      if(fAnaMode=="TPCTPC") {
        if(mcTrackEta<-0.8 || mcTrackEta>0.8) continue;
+       if(mcTrackPt<fPtMin || mcTrackPt>fPtMax) continue;
        selectedTracksMC1->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));         
        selectedTracksMC2->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));  			
      }else{
        if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC"){
+	 if(mcTrackPt<fPtMin || mcTrackPt>fPtMax) continue;
 	 if(mcTrackEta>-0.8 && mcTrackEta<0.8) selectedTracksMC1->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
        }else if(fAnaMode=="FMDFMD"){
 	 if(mcTrackEta>1.7 && mcTrackEta<4.9) selectedTracksMC1->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1)); 			}
-       
+
        if(fAnaMode=="TPCFMD"){
 	 if(mcTrackEta>1.7  && mcTrackEta<4.9)	    selectedTracksMC2->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));  
-       }	else if(fAnaMode=="TPCFMDC" ||fAnaMode=="FMDFMD"){
+       }else if(fAnaMode=="TPCFMDC" ||fAnaMode=="FMDFMD"){
 	 if(mcTrackEta>-3.4  && mcTrackEta<-1.7)	    selectedTracksMC2->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
        }
      }			
    }	  
  }
+
  fh2_V0A_all->Fill(ntrackv0aall,nV0A_hits);
  fh2_V0A->Fill(ntrackv0aprimary,nV0A_hits);
  fh2_V0C->Fill(ntrackv0cprimary,nV0A_hits);
