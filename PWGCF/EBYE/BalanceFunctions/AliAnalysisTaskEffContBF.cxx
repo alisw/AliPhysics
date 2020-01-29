@@ -108,6 +108,8 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fDCAzCut(-1),
     fTPCchi2Cut(-1),
     fNClustersTPCCut(-1),
+    fMinTPCCrossedRows(-1),
+    fMinTPCRowsOverFindableCls(-1),
     fAODTrackCutBit(128),
     fMinNumberOfTPCClusters(80),
     fMaxChi2PerTPCCluster(4.0),
@@ -214,6 +216,8 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fDCAzCut(-1),
     fTPCchi2Cut(-1),
     fNClustersTPCCut(-1),
+    fMinTPCCrossedRows(-1),
+    fMinTPCRowsOverFindableCls(-1),
     fAODTrackCutBit(128),
     fMinNumberOfTPCClusters(80),
     fMaxChi2PerTPCCluster(4.0),
@@ -663,7 +667,20 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		if( fNClustersTPCCut != -1 && track->GetTPCNcls() < fNClustersTPCCut){
 		  continue;
       		}
-	
+		
+		if(fMinTPCCrossedRows != -1){
+		  if ((Float_t)track->GetTPCNCrossedRows() < (120 - (5/(Float_t)track->Pt())) ){
+		    continue;
+		  }
+		}
+		
+		if (fMinTPCRowsOverFindableCls != -1){
+		  Float_t nTPCCrossedRowsOverFindCls = (((Float_t)track->GetTPCNCrossedRows())/((Float_t)track->GetTPCNclsF()));
+		  if (nTPCCrossedRowsOverFindCls < fMinTPCRowsOverFindableCls){
+		    continue;
+		  }
+		}
+		
 		Double_t pos[3];
       		Double_t v[3];
       		Float_t dcaXY = 0.;
@@ -671,15 +688,15 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 
         	if(fAODTrackCutBit == 128){
             	 dcaXY = track->DCA();
-                dcaZ  = track->ZAtDCA();
-       	}
+		 dcaZ  = track->ZAtDCA();
+		}
         	else{
-		 vertex->GetXYZ(v);
-		 track->GetXYZ(pos);
-		 dcaXY  = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
-		 dcaZ   = pos[2] - v[2];
+		  vertex->GetXYZ(v);
+		  track->GetXYZ(pos);
+		  dcaXY  = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+		  dcaZ   = pos[2] - v[2];
         	}
-              
+		
 		if( fDCAxyCut != -1 && fDCAzCut != -1){
 		  if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
 		    continue;  // 2D cut
@@ -1005,7 +1022,20 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                   continue;
                 }
 
-		 Double_t pos[3];
+		if(fMinTPCCrossedRows != -1){
+		  if ((Float_t)trackAOD->GetTPCNCrossedRows() < (120 - (5/(Float_t)trackAOD->Pt())) ){
+		    continue;
+		  }
+		}
+		
+		if (fMinTPCRowsOverFindableCls != -1){
+		  Float_t nTPCCrossedRowsOverFindCls = (((Float_t)trackAOD->GetTPCNCrossedRows())/((Float_t)trackAOD->GetTPCNclsF()));
+		  if (nTPCCrossedRowsOverFindCls < fMinTPCRowsOverFindableCls){
+		    continue;
+		  }
+		}
+		
+		Double_t pos[3];
                 Double_t v[3];
                 Float_t dcaXY = 0.;
                 Float_t dcaZ  = 0.;
