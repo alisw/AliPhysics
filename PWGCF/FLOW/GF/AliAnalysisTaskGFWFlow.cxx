@@ -316,6 +316,9 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   if(!fAOD) return;
   if(!fProduceWeights)
     if(!InitRun()) return;
+  AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  Double_t cent = lMultSel->GetMultiplicityPercentile("V0M");
+  if(!CheckTriggerVsCentrality(cent)) return;
   if(!AcceptEvent()) return;
   if(!AcceptAODVertex(fAOD)) return;
   if(fIsMC) {
@@ -323,13 +326,10 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     if(!fMCEvent)
       return;
   };
-  AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  Double_t cent = lMultSel->GetMultiplicityPercentile("V0M");
   if(fCurrSystFlag==fTotTrackFlags+4) cent = lMultSel->GetMultiplicityPercentile("CL1"); //CL1 flag is EvFlag 4 = N_TrackFlags + 4
   if(fCurrSystFlag==fTotTrackFlags+5) cent = lMultSel->GetMultiplicityPercentile("CL0"); //CL0 flag is EvFlag 5 = N_TrackFlags + 5
   if(cent<5) return; //Do not consider 0-5%
   if(cent>70) return; //Also, peripheral cutoff
-  if(!CheckTriggerVsCentrality(cent)) return;
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   Int_t vtxb = GetVtxBit(fAOD);
   if(!vtxb) return; //If no vertex pass, then do not consider further
