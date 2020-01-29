@@ -2168,12 +2168,12 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661900a01cc00000","0163103100000010"); //no Trigger
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661900a01cc00000","0163103100000010"); //PHI7
   } else if ( trainConfig == 913){  //PHOS Triggers Timing Cut Studies
-    //cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190ga01cc00000","0163103100000010"); //no Trigger, Mike's Timing
-    //cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190ga01cc00000","0163103100000010"); //PHI7, Mike's Timing
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190ga01cc00000","0163103100000010"); //no Trigger, Mike's Timing
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190ga01cc00000","0163103100000010"); //PHI7, Mike's Timing
     //cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190ma01cc00000","0163103100000010"); //no Trigger, MB Timing
     //cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190ma01cc00000","0163103100000010"); //PHI7, MB Timing
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190oa01cc00000","0163103100000010"); //no Trigger, MB Timing, Open Cuts HighPt
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190oa01cc00000","0163103100000010"); //PHI7, MB Timing, Open Cuts HighPt
+    //cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190oa01cc00000","0163103100000010"); //no Trigger, MB Timing, Open Cuts HighPt
+    //cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190oa01cc00000","0163103100000010"); //PHI7, MB Timing, Open Cuts HighPt
   } else if ( trainConfig == 914){  //PHOS Triggers Timing Cut Studies
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661907a01cc00000","0163103100000010"); //no Trigger, Mike's Timing
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661907a01cc00000","0163103100000010"); //PHI7, Mike's Timing
