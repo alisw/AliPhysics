@@ -84,16 +84,16 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   for(Int_t i=110;i<Nmee;i++) mee[i] = 0.1  * (i-110) +  1.1;//from 1.1 to 5 GeV/c2, evety 0.1 GeV/c2
 	std::vector<double> v_mee(mee,std::end(mee));
 
-  const Int_t NpTee = 111;
+  const Int_t NpTee = 121;
   Double_t pTee[NpTee] = {};
   for(Int_t i=0  ;i<10   ;i++) pTee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 0.09 GeV/c, every 0.01 GeV/c
-  for(Int_t i=10 ;i<100  ;i++) pTee[i] = 0.1  * (i- 10) +  0.1;//from 0.1 to 10 GeV/c, evety 0.1 GeV/c
-  for(Int_t i=100;i<NpTee;i++) pTee[i] = 1.0  * (i-100) + 10.0;//from 10 to 20 GeV/c, evety 1.0 GeV/c
+  for(Int_t i=10 ;i<110  ;i++) pTee[i] = 0.1  * (i- 10) +  0.1;//from 0.1 to 10 GeV/c, evety 0.1 GeV/c
+  for(Int_t i=110;i<NpTee;i++) pTee[i] = 1.0  * (i-110) + 10.0;//from 10 to 20 GeV/c, evety 1.0 GeV/c
 	std::vector<double> v_pTee(pTee,std::end(pTee));
 
   task->SetMassBins(v_mee);
   task->SetPairPtBins(v_pTee);
-  task->SetPhiVBinsLinear(0, TMath::Pi(), 72);
+  task->SetPhiVBinsLinear(0, TMath::Pi(), 100);
   task->SetFillPhiV(kTRUE);
 
   task->SetSmearGenerated(kFALSE);
