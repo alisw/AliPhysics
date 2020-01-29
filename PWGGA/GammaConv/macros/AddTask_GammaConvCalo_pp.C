@@ -2174,9 +2174,9 @@ void AddTask_GammaConvCalo_pp(
     //cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190ma01cc00000","0163103100000010"); //PHI7, MB Timing
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190oa01cc00000","0163103100000010"); //no Trigger, MB Timing, Open Cuts HighPt
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190oa01cc00000","0163103100000010"); //PHI7, MB Timing, Open Cuts HighPt
-  } else if ( trainConfig == 914){ // PHI7 NCells 2 or 3, when E>1GeV
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190na01cc00000","0163103100000010"); // PHI7 NCells 2, when E>1GeV
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190na01dc00000","0163103100000010"); // PHI7 NCells 3, when E>1GeV
+  } else if ( trainConfig == 914){  //PHOS Triggers Timing Cut Studies
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661907a01cc00000","0163103100000010"); //no Trigger, Mike's Timing
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661907a01cc00000","0163103100000010"); //PHI7, Mike's Timing
   } else if ( trainConfig == 917){ // Material Budget Checks
     cuts.AddCutPCMCalo("00010113","0d200009f9730000dge0404000","24466190na01cc00000","0163103100000010");
     cuts.AddCutPCMCalo("00010113","0da00009f9730000dge0404000","24466190na01cc00000","0163103100000010");
