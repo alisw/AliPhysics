@@ -25,7 +25,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   //
   // Add track filters, with Golden Cuts
   //
-
+ 
   AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
 
   AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,1);
@@ -95,6 +95,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetAnalysisType("AOD");
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
     taskHighPtDeDx->SetAnalysisPbPb(kTRUE); //for pbpb and ppb
+    taskHighPtDeDx->SetAnalysisRun2(kFALSE); 
     taskHighPtDeDx->SetTrigger1(kTriggerInt); 
     taskHighPtDeDx->SetTrigger2(kTriggerInt);
     taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
@@ -140,6 +141,7 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetAnalysisType("AOD");
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
     taskHighPtDeDx->SetAnalysisPbPb(kFALSE); //for pbpb and ppb
+    taskHighPtDeDx->SetAnalysisRun2(kTRUE);
     taskHighPtDeDx->SetTrigger1(kTriggerInt); 
     taskHighPtDeDx->SetTrigger2(kTriggerInt);
     taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
@@ -188,6 +190,7 @@ if(typerun==4){//ppb analysis
     taskHighPtDeDx->SetAnalysisType("AOD");
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
     taskHighPtDeDx->SetAnalysisPbPb(kTRUE); //for pbpb and ppb
+    taskHighPtDeDx->SetAnalysisRun2(kTRUE);
     taskHighPtDeDx->SetTrigger1(kTriggerInt); 
     taskHighPtDeDx->SetTrigger2(kTriggerInt);
     taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
