@@ -150,7 +150,11 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tEvents = CreateTree(kEvents);
   tEvents->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kEvents]) {
+    TString sstart = TString::Format("fStart[%d]/I", kTrees);
+    TString sentries = TString::Format("fNentries[%d]/I", kTrees);
     tEvents->Branch("fRunNumber", &vtx.fRunNumber, "fRunNumber/I");
+    tEvents->Branch("fStart", vtx.fStart, sstart.Data());
+    tEvents->Branch("fNentries", vtx.fNentries, sentries.Data());
     tEvents->Branch("fEventId", &vtx.fEventId, "fEventId/l");
     tEvents->Branch("fX", &vtx.fX, "fX/F");
     tEvents->Branch("fY", &vtx.fY, "fY/F");
@@ -183,6 +187,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   tTracks->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kTracks]) {
     tTracks->Branch("fCollisionsID", &tracks.fCollisionsID, "fCollisionsID/I");
+//    tTracks->Branch("fTOFclsIndex", &tracks.fTOFclsIndex, "fTOFclsIndex/I");
+//    tTracks->Branch("fNTOFcls", &tracks.fNTOFcls, "fNTOFcls/I");
     tTracks->Branch("fX", &tracks.fX, "fX/F");
     tTracks->Branch("fAlpha", &tracks.fAlpha, "fAlpha/F");
     tTracks->Branch("fY", &tracks.fY, "fY/F");
@@ -256,6 +262,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   tMuon->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kMuon]) {
     tMuon->Branch("fCollisionsID", &muons.fCollisionsID, "fCollisionsID/I");
+//    tMuon->Branch("fClusterIndex", &muons.fClusterIndex, "fClusterIndex/I");
+//    tMuon->Branch("fNclusters", &muons.fNclusters, "fNclusters/I");
     tMuon->Branch("fInverseBendingMomentum", &muons.fInverseBendingMomentum, "fInverseBendingMomentum/F");
     tMuon->Branch("fThetaX", &muons.fThetaX, "fThetaX/F");
     tMuon->Branch("fThetaY", &muons.fThetaY, "fThetaY/F");
@@ -742,7 +750,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     // In case we need connection to clusters, activate next lines
     // muons.fClusterIndex += muons.fNclusters;
-    // muons.muons.fNclusters = nmucl_filled;
+    // muons.fNclusters = nmucl_filled;
 
     FillTree(kMuon);
     if (fTreeStatus[kMuon]) nmu_filled++;
