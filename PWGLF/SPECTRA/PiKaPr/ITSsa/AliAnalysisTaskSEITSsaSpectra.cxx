@@ -1833,16 +1833,44 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
       fBBsaElectron[5]=-2.;
     }
     else{//DATA: lowB field (0.2T)
-      fBBsaHybrid[0]=1.9575e7;//E0  //PHOBOS+Polinomial parameterization
-      fBBsaHybrid[1]=24.595994;//b
-      fBBsaHybrid[2]=2.4831e-7;//a
-      fBBsaHybrid[3]=2.4831e-7;//c
-      fBBsaHybrid[4]=1.45e-7;//d
-      fBBsaHybrid[5]=-2.14;
-      fBBsaHybrid[6]=6.341347;//p0
-      fBBsaHybrid[7]=148.860604;//p1
-      fBBsaHybrid[8]=-49.310261;//p2
-      fBBsaHybrid[9]=36.995468;//p3 */
+      //PIONS
+      if(mass>0.13 && mass<0.14){
+        fBBsaHybrid[0]=2.0014e7;//E0  //PHOBOS+Polinomial parameterization
+        fBBsaHybrid[1]=23.446696;//b
+        fBBsaHybrid[2]=2.4831e-7;//a
+        fBBsaHybrid[3]=2.4831e-7;//c
+        fBBsaHybrid[4]=1.4825e-7;//d
+        fBBsaHybrid[5]=-2.16;
+        fBBsaHybrid[6]=4.913234;//p0
+        fBBsaHybrid[7]=242.095214;//p1
+        fBBsaHybrid[8]=-227.007773;//p2
+        fBBsaHybrid[9]=131.060250;//p3
+      }
+      //KAONS
+      else if(mass>0.4 && mass<0.5){
+        fBBsaHybrid[0]=1.1603e7;//E0  //PHOBOS+Polinomial parameterization
+        fBBsaHybrid[1]=26.908492;//b
+        fBBsaHybrid[2]=2.1257e-4;//a
+        fBBsaHybrid[3]=-1.6542e-4;//c
+        fBBsaHybrid[4]=8.3836e-8;//d
+        fBBsaHybrid[5]=-1.98;
+        fBBsaHybrid[6]=-85.739134;//p0
+        fBBsaHybrid[7]=379.078774;//p1
+        fBBsaHybrid[8]=-241.702618;//p2
+        fBBsaHybrid[9]=91.297155;//p3
+      }
+      else{//PROTONS and DEUTERONS
+        fBBsaHybrid[0]=1.1644e7;//E0  //PHOBOS+Polinomial parameterization
+        fBBsaHybrid[1]=42.148199;//b
+        fBBsaHybrid[2]=1.6044e-4;//a
+        fBBsaHybrid[3]=-9.9356e-5;//c
+        fBBsaHybrid[4]=8.3214e-8;//d
+        fBBsaHybrid[5]=-1.82;
+        fBBsaHybrid[6]=-37.982015;//p0
+        fBBsaHybrid[7]=245.348026;//p1
+        fBBsaHybrid[8]=-116.456305;//p2
+        fBBsaHybrid[9]=50.786350;//p3
+      }
 
       fBBsaElectron[0]=66.524096;//E0 //electrons in the ITS
       fBBsaElectron[1]=106.793254;//b
@@ -1873,16 +1901,47 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
       fBBsaElectron[5]=-2.;
     }
     else{//MC low B field
-      fBBsaHybrid[0]=1.9545e7;//E0  //PHOBOS+Polinomial parameterization
-      fBBsaHybrid[1]=24.676130;//b
-      fBBsaHybrid[2]=2.4831e-7;//a
-      fBBsaHybrid[3]=2.4831e-7;//c
-      fBBsaHybrid[4]=1.4478e-7;//d
-      fBBsaHybrid[5]=-2.14;//exp of beta
-      fBBsaHybrid[6]=6.120941;//p0
-      fBBsaHybrid[7]=149.265943;//p1
-      fBBsaHybrid[8]=-49.603396;//p2
-      fBBsaHybrid[9]=37.093019;//p3
+
+      //PIONS
+      if(mass>0.13 && mass<0.14){
+
+        fBBsaHybrid[0]=1.9993e7;//E0  //PHOBOS+Polinomial parameterization
+        fBBsaHybrid[1]=23.503097;//b
+        fBBsaHybrid[2]=2.4831e-7;//a
+        fBBsaHybrid[3]=2.4831e-7;//c
+        fBBsaHybrid[4]=1.4809e-7;//d
+        fBBsaHybrid[5]=-2.16;
+        fBBsaHybrid[6]=4.930021;//p0
+        fBBsaHybrid[7]=241.625126;//p1
+        fBBsaHybrid[8]=-225.955937;//p2
+        fBBsaHybrid[9]=130.683475;//p3
+      }
+      //KAONS
+      else if(mass>0.4 && mass<0.5){
+
+        fBBsaHybrid[0]=1.1916e7;//E0  //PHOBOS+Polinomial parameterization
+        fBBsaHybrid[1]=18.519683;//b
+        fBBsaHybrid[2]=2.5525e-4;//a
+        fBBsaHybrid[3]=-2.1776e-4;//c
+        fBBsaHybrid[4]=8.4678e-8;//d
+        fBBsaHybrid[5]=-2.12;
+        fBBsaHybrid[6]=-87.655919;//p0
+        fBBsaHybrid[7]=383.014648;//p1
+        fBBsaHybrid[8]=-244.355671;//p2
+        fBBsaHybrid[9]=92.010403;//p3
+      }
+      else{//PROTONS and DEUTERONS
+        fBBsaHybrid[0]=1.1729e7;//E0  //PHOBOS+Polinomial parameterization
+        fBBsaHybrid[1]=42.145678;//b
+        fBBsaHybrid[2]=1.5571e-4;//a
+        fBBsaHybrid[3]=-9.4656e-5;//c
+        fBBsaHybrid[4]=8.6941e-8;//d
+        fBBsaHybrid[5]=-1.82;
+        fBBsaHybrid[6]=-35.460903;//p0
+        fBBsaHybrid[7]=239.560138;//p1
+        fBBsaHybrid[8]=-112.309480;//p2
+        fBBsaHybrid[9]=49.977767;//p3
+      }
 
       fBBsaElectron[0]=67.425232;//E0 //electrons in the ITS
       fBBsaElectron[1]=106.744327;//b
@@ -1899,7 +1958,13 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
   Double_t gamma=bg/beta;
   Double_t bb=1.;
 
-  Double_t betagcut = (fIsNominalBfield) ? 0.76 : 1.20;
+  Double_t betagcut = 0.76;
+
+  if(!fIsNominalBfield){
+    if(mass>0.13 && mass<0.14) betagcut = 1.50;
+    else if(mass>0.4 && mass<0.5) betagcut = 1.04;
+    else betagcut = 1.0;
+  }
 
   Double_t par[10];
   //parameters for pi, K, p
