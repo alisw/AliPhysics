@@ -166,6 +166,9 @@ private:
   AliPIDResponse *fPIDResponse; // PID Response
 
   Int_t ffilterbit;
+  Float_t fnoClusters;
+  Float_t fCutChargedDCAzMax;
+  Float_t fCutChargedDCAxyMax;  
   Double_t fPtMin;
   Double_t fPtMax;
   Double_t fEtaMax;
