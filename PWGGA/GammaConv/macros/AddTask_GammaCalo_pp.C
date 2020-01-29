@@ -1715,15 +1715,15 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","244661900a01cc00000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","244661900a01cc00000","0163103100000010"); //PHI7
   } else if (trainConfig ==813){//PHOS Triggers Timing Cut Studies
-      //cuts.AddCutCalo("00010113","24466190ga01cc00000","0163103100000010"); //no Trigger, Mike's Timing
-      //cuts.AddCutCalo("00062113","24466190ga01cc00000","0163103100000010"); //PHI7, Mike's Timing
+      cuts.AddCutCalo("00010113","24466190ga01cc00000","0163103100000010"); //no Trigger, Mike's Timing
+      cuts.AddCutCalo("00062113","24466190ga01cc00000","0163103100000010"); //PHI7, Mike's Timing
       //cuts.AddCutCalo("00010113","24466190ma01cc00000","0163103100000010"); //no Trigger, MB Timing
       //cuts.AddCutCalo("00062113","24466190ma01cc00000","0163103100000010"); //PHI7, MB Timing
-      cuts.AddCutCalo("00010113","24466190oa01cc00000","0163103100000010"); //no Trigger, MB Timing, Open Cuts HighPt
-      cuts.AddCutCalo("00062113","24466190oa01cc00000","0163103100000010"); //PHI7, MB Timing, Open Cuts HighPt
-  } else if (trainConfig ==814){ // PHI7 NCells 2 or 3, when E>1GeV
-    cuts.AddCutCalo("00062113","24466190na012c00000","0163103100000010"); // INT7 NCells 2, when E>1GeV
-    cuts.AddCutCalo("00062113","24466190na012d00000","0163103100000010"); // INT7 NCells 3, when E>1GeV
+      //cuts.AddCutCalo("00010113","24466190oa01cc00000","0163103100000010"); //no Trigger, MB Timing, Open Cuts HighPt
+      //cuts.AddCutCalo("00062113","24466190oa01cc00000","0163103100000010"); //PHI7, MB Timing, Open Cuts HighPt
+  } else if (trainConfig ==814){ //PHOS Triggers Timing Cut Studies without throwing out clusters
+      cuts.AddCutCalo("00010113","244661907a01cc00000","0163103100000010"); //no Trigger, Mike's Timing
+      cuts.AddCutCalo("00062113","244661907a01cc00000","0163103100000010"); //PHI7, Mike's Timing
   } else if (trainConfig == 815){ // NCell Cut Variations, without E>1GeV
     cuts.AddCutCalo("00010113","24466190na012200000","0163103100000010"); // INT7 NCells 3
     cuts.AddCutCalo("00010113","24466190na01cc00000","0163103100000010"); // INT7 NCells 2
