@@ -910,7 +910,7 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
   // for electron selection
   if(fUseEletronMatchingCalibration == 1){
     fElecSelector=(AliDalitzElectronSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ElectronSelector");
-    if(!fElecSelector){printf("Error: No ElectronSelector");return;} // GetV0Reader
+    if(!fElecSelector){AliFatal("Error: No ElectronSelector");}
 
     if( fElecSelector ){
       if ( ((AliDalitzElectronCuts*)fElecSelector->GetDalitzElectronCuts())->GetCutHistograms() ){
