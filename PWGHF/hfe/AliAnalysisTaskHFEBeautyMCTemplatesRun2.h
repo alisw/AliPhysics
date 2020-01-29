@@ -126,6 +126,7 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   TH2D * fDCAHadronsCorrected;
   TH3D * fPionV0pTRNoCuts;  // pt, R, cent
   TH3D * fPionV0pTRWithCuts;
+  TH3D * fPionTPCSignal; // To check TPC signal shape in MC
   
   //AliHFEcuts * hfetrackCuts;           // Track cuts
   AliHFEsignalCuts * fSignalCuts;
@@ -134,7 +135,7 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   AliAODv0KineCuts * fAODV0Cuts;
   TRandom3 * fRd;
   
-  ClassDef(AliAnalysisTaskHFEBeautyMCTemplatesRun2, 1); // example of analysis
+  ClassDef(AliAnalysisTaskHFEBeautyMCTemplatesRun2, 2); // example of analysis
 };
 
 #endif
