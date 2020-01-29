@@ -140,9 +140,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fDCAzCut = DCAz;
   }
 
-   void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC){
+  void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC, Int_t minNTPCCrossedRows, Float_t minNTPCFindableCls){
     fTPCchi2Cut      = maxTPCchi2;
     fNClustersTPCCut = minNClustersTPC;
+    fMinTPCCrossedRows = minNTPCCrossedRows;
+    fMinTPCRowsOverFindableCls =  minNTPCFindableCls;
   }
 
    void SetExtraTPCCutsSharedAOD(Int_t minTPCsharedCut){
@@ -648,6 +650,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Double_t fTPCchi2Cut;//only used for AODs
   Int_t fNClustersTPCCut;//only used for AODs
+  Int_t fMinTPCCrossedRows; // only used for AODs
+  Float_t fMinTPCRowsOverFindableCls; //only used for AODs
   Int_t fTPCsharedCut;//only used for AODs
 
   Double_t fSphericityMin;//sphericity min cut (currently only for AODs)
