@@ -522,7 +522,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	AliJJet* Cjet;
 	for(int i=0;i<fjets->GetEntries();i++){
 		Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
-		if( fabs( JetEta ) > 0.4 ){ continue; }
+		if( fabs( Cjet->Eta() ) > 0.4 ){ continue; }
 		if( ( fJetPt <  Cjet->Pt() ) ){
 			fJetPt = Cjet->Pt();
 			JetEta = Cjet->Eta();
@@ -639,12 +639,27 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection ) fHistos->FillTH1("hEventNumbers","IsSelectedFromAliMultSelection",1);
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 	        fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
-
+/*
 		if( fJetPt>0.1 ){
 			fHistos->FillTH1("hJetPt",fJetPt,1.0);
 			fHistos->FillTH1("hJetEta",JetEta,1.0);
 			fHistos->FillTH1("hJetPhi",JetPhi,1.0);
 		}
+*/
+        	for(int i=0;i<fjets->GetEntries();i++){
+        	        Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
+        	        if( fabs( Cjet->Eta() ) > 0.4 ){ continue; }
+/*
+        	        if( ( fJetPt <  Cjet->Pt() ) ){
+        	                fJetPt = Cjet->Pt();
+        	                JetEta = Cjet->Eta();
+        	                JetPhi = Cjet->Phi();
+        	        }
+*/
+                        fHistos->FillTH1("hJetPt",Cjet->Pt(),1.0);
+                        fHistos->FillTH1("hJetEta",Cjet->Eta(),1.0);
+                        fHistos->FillTH1("hJetPhi",Cjet->Phi(),1.0);
+        	}
 
 	        if( !fOption.Contains("HighMult") ){
 	                fHistos->FillTH1("hMB",fCent,1);
@@ -661,7 +676,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		fJetPt = 0.0;
 	}
 
-	if( fOption.Contains("EvtSelStudy") && fOption.Contains("jtptstudy") ){
+	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && fOption.Contains("EvtSelStudy") && fOption.Contains("jtptstudy") ){
 		fsetmixing = kFALSE; this -> GoodTracksSelection( 2 );
 	}
 
