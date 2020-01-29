@@ -131,14 +131,14 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   TClonesArray* fMCArray;      //!
 
   Bool_t fIsAOD;        //!
-  Bool_t fSetMixing;    //!
-  Bool_t fFillQAPlot;   //!
-  Bool_t fIsMC;         //!
-  Bool_t fIsPrimaryMC;  //!
-  Bool_t fFillnTuple;   //!
   Bool_t fIsNano;       //!
-  Bool_t fIsINEL;       //!
-  Bool_t fIsHM;         //!
+  Bool_t fSetMixing;    //
+  Bool_t fFillQAPlot;   //
+  Bool_t fIsMC;         //
+  Bool_t fIsPrimaryMC;  //
+  Bool_t fFillnTuple;   //
+  Bool_t fIsINEL;       //
+  Bool_t fIsHM;         //
 
   mixingpool fEMpool;  //!
   TAxis fBinCent;      //!
@@ -151,35 +151,35 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   Int_t fZbin;     //!
 
   // Pion cuts
-  UInt_t fFilterBit;                        //!
-  Double_t fTPCNsigSigmaStarPionCut;        //!
-  Double_t fSigmaStarPionEtaCut;            //!
-  Double_t fSigmaStarPionZVertexCut;        //!
-  Double_t fSigmaStarPionXYVertexSigmaCut;  //!
+  UInt_t fFilterBit;                        //
+  Double_t fTPCNsigSigmaStarPionCut;        //
+  Double_t fSigmaStarPionEtaCut;            //
+  Double_t fSigmaStarPionZVertexCut;        //
+  Double_t fSigmaStarPionXYVertexSigmaCut;  //
 
   // Lambda cuts
-  Double_t fTPCNsigLambdaProtonCut;      //!
-  Double_t fTPCNsigLambdaPionCut;        //!
-  Double_t fDCADistLambdaDaughtersCut;   //!
-  Double_t fDCArDistLambdaPVCut;         //!
-  Double_t fDCAPositiveTrack;            //!
-  Double_t fDCANegativeTrack;            //!
-  Double_t fV0CosineOfPointingAngleCut;  //!
-  Double_t fMaxLambdaRapidity;           //!
-  Double_t fLambdaLowRadius;             //!
-  Double_t fLambdaHighRadius;            //!
-  Double_t fLambdaLifetime;              //!
-  Double_t fV0MassWindowCut;             //!
+  Double_t fTPCNsigLambdaProtonCut;      //
+  Double_t fTPCNsigLambdaPionCut;        //
+  Double_t fDCADistLambdaDaughtersCut;   //
+  Double_t fDCArDistLambdaPVCut;         //
+  Double_t fDCAPositiveTrack;            //
+  Double_t fDCANegativeTrack;            //
+  Double_t fV0CosineOfPointingAngleCut;  //
+  Double_t fMaxLambdaRapidity;           //
+  Double_t fLambdaLowRadius;             //
+  Double_t fLambdaHighRadius;            //
+  Double_t fLambdaLifetime;              //
+  Double_t fV0MassWindowCut;             //
 
   // Sigma Star cut
-  Double_t fSigmaStarYCutHigh;  //!
-  Double_t fSigmaStarYCutLow;   //!
+  Double_t fSigmaStarYCutHigh;  //
+  Double_t fSigmaStarYCutLow;   //
 
   // Good track/v0 vector array
   std::vector<UInt_t> fGoodTrackArray;
   std::vector<std::vector<UInt_t>> fGoodV0Array;
 
-  ClassDef(AliAnalysisTaskSigma1385PM, 9);
+  ClassDef(AliAnalysisTaskSigma1385PM, 10);
   // Add rapidity/radius/Lifetime/Y cut of lambda
   // Add NanoOption
   // 4: Add GetImpactParm function for nano
@@ -188,6 +188,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   // 7: Add skipping option for QA histos
   // 8: Rebuild MC part
   // 9: Update class format
+  // 10: Fix streamer issue
 };
 
 #endif
