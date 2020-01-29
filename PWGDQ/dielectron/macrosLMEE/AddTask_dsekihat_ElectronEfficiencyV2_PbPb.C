@@ -13,7 +13,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
     const Bool_t isLHC19f2 = kTRUE,
     const std::string resolutionFilename ="",
     const std::string cocktailFilename   ="",
-    const std::string centralityFilename =""
+    const std::string centralityFilename ="",
+		const TString outname = "LMEE.root"
     ){
 
   // Configuring Analysis Manager
@@ -136,11 +137,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   gROOT->ProcessLine(Form("AddSingleLegMCSignal(%s)",task->GetName()));//not task itself, task name
   gROOT->ProcessLine(Form("AddPairMCSignal(%s)"     ,task->GetName()));//not task itself, task name
 
-  const TString fileName = AliAnalysisManager::GetCommonFileName();
-	const TString dirname = Form("PWGDQ_LMEE_ElectronEfficiencyV2_Cen%d_%d_kINT7",CenMin,CenMax);
+  //const TString fileName = AliAnalysisManager::GetCommonFileName();
+  const TString fileName = outname;
+	//const TString dirname = Form("PWGDQ_LMEE_ElectronEfficiencyV2_Cen%d_%d_kINT7",CenMin,CenMax);
   mgr->AddTask(task);
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("Efficiency_Cen%d_%d_kINT7",CenMin,CenMax), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",fileName.Data(),dirname.Data())));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("Efficiency_dsekihat_Cen%d_%d_kINT7",CenMin,CenMax), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data())));
   return task;
 }
 
