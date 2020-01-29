@@ -77,6 +77,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       // analysis setters
       void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
       void                    Set2018Data(Bool_t use = kTRUE){Is2018Data = use;}
+      void                    SetAdditional2018DataEventCut(){IsAdditional2018DataEventCut = kTRUE;}
       void                    SetPIDCorrection(const char* file){IsPIDorrection = kTRUE; fPIDCorrectionPath = file;}
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
@@ -294,7 +295,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
 
 //-----------------------------------------------------------------------------------------
-
    
       void                    FilterCascades() const;
 
@@ -308,6 +308,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
        Bool_t  Is2018Data;//
        Bool_t  IsPIDorrection;//
+       Bool_t  IsAdditional2018DataEventCut;//
        Double_t fXiPseMin;//
        Double_t fXiPseMax;//
        Double_t fV0RadiusXiMin;//
@@ -670,6 +671,5 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*			  		        fhQAV0sArmenterosALambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
-};
-
+ };
 #endif

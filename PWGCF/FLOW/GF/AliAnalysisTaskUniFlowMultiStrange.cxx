@@ -12,58 +12,13 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
 // =================================================================================================
-// AliAnalysisTaskUniFlowMultiStrange - ALICE Unified Flow framework
-// Author: Vojtech Pacik (vojtech.pacik@cern.ch), NBI, 2016-2019
 // =================================================================================================
-//
-// ALICE analysis task for universal study of flow via 2-(or multi-)particle correlations
-// using Generic Framework notation for calculations including per-particle weights.
-//
-// Implemented flow calculation for both reference & pt-differential flow
-// of both inclusive charged (done anyway) & identified particles (pi,K,p,K0s,Lambda,phi).
-//
-// Note: So far implemented only for AOD analysis and tuned on Run2 pp & pPb analyses!
-//
-// PLEASE READ THE INSTRUCTION BELLOW BEFORE RUNNING !!!
-//
+// AliAnalysisTaskUniFlowMultiStrange - Used for Multi-Strange Flow analysis with Multi-particle
+// cumulant method and ESE analysis. Extension of AliAnalysisTaskUniFlowMultiStrange class (impl. by Vojtech Pacik, NBI).
+// Author: Ya Zhu (ya.zhu@cern.ch), CCNU, 2016-2019
 // =================================================================================================
-// Analysis can run in these modes setup via AliAnalysisTaskUniFlowMultiStrange::SetRunMode(RunMode)
-//  -- AnalysisTaskUniFlow::kFull : running mode
-//      - full scale analysis
-//
-//  -- AnalysisTaskUniFlow::kTest : development / testing / debugging mode
-//      - only limited number of events is processed (AliAnalysisTaskUniFlowMultiStrange::SetNumEventsAnalyse(Int_t))
-//
-//  -- AnalysisTaskUniFlow::kSkipFlow : usable for QA and(or) weights estimation before full scale running
-//      - events are processed whilst skipping correlation calculations, i.e. event loop ends after particles are filtered
-//
-//  NOTE: by default, all modes includes :
-//  - filling QA plots : can be turned-off by AliAnalysisTaskUniFlowMultiStrange::SetFillQAhistos(kFALSE)
-//    (might be heavy while running several tasks at once)
-//  - filling GF weights : can be turned-off by AliAnalysisTaskUniFlowMultiStrange::SetFlowFillWeights(kFALSE)
-//
-// =================================================================================================
-// Overview of analysis flow (see implementation of corresonding method for details)
-// 1) Event selection : EventSelection()
-//
-// 2) Particle selection & reconstruction : Filtering()
-//        - whether or not are particles processed is driven by 'fProcess?' flag setup by AliAnalysisTaskUniFlowMultiStrange::SetProcess?(kTRUE)
-//          (except for incl. charged, which are processed anyway)
-//        - filling QA plots
-//        - filling GF weights
-//
-//    !!! here the event loop ends in case of running in 'kSkipFlow' mode
-//
-// 3) Flow / correlation calculations : DoFlowPOIs(), DoFlowRefs()
-//        - to setup harmonics to be calculated, modify 'AliAnalysisTaskUniFlowMultiStrange::fHarmonics[]' (in .cxx) AND 'fNumHarmonics' (in .h)
-//        - to setup eta gaps (2part) to be calculated, modify 'AliAnalysisTaskUniFlowMultiStrange::fEtaGap[]' (in .cxx) AND 'fNumEtaGap' (in .h)
-//              - for NO gap case, fill in value '-1.0'
-//        - 2-particle cumulants are run by ©default (in 'kFull' mode)
-//        - 4-particle cumulants has to be setup by invoking AliAnalysisTaskUniFlowMultiStrange::SetFlowDoFourCorrelations(kTRUE)
-//
-// =================================================================================================
+//===============================================================================================
 #ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 #define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 
@@ -190,6 +145,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fPVz(),
   Is2018Data(0),
   IsPIDorrection(0),
+  IsAdditional2018DataEventCut(0),
   fPIDResponse(),
   fPIDCombined(),
   fFlowWeightsFile(),
@@ -500,6 +456,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fPVz(),
   Is2018Data(0),
   IsPIDorrection(0),
+  IsAdditional2018DataEventCut(0),
   fPIDResponse(),
   fPIDCombined(),
   fFlowWeightsFile(),
@@ -1381,7 +1338,7 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventSelected()
   // Additional pile-up rejection cuts for LHC15o dataset
   //if(fColSystem == kPbPb && fEventRejectAddPileUp && IsEventRejectedAddPileUp()) { return kFALSE; }
 
-  if(Is2018Data){
+  if(Is2018Data && IsAdditional2018DataEventCut){
 
     AliAODVZERO* AODV0 = fEventAOD->GetVZEROData();
     Float_t multV0a = AODV0->GetMTotV0A();
@@ -4217,11 +4174,11 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
         fQAPID->Add(fhQAPIDTOFstatus[iQA]);
         fhQAPIDTOFbeta[iQA] = new TH2D(Form("fhQAPIDTOFbeta_%s",sQAindex[iQA].Data()),"QA PID: TOF #beta information; #it{p} (GeV/#it{c}); TOF #beta", 100,0,10, 101,-0.1,1.5);
         fQAPID->Add(fhQAPIDTOFbeta[iQA]);
-        fh3QAPIDnSigmaTPCTOFPtPion[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtPion_%s",sQAindex[iQA].Data()), "QA PID: nSigma Pion vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 21,-11,10, 21,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
+        fh3QAPIDnSigmaTPCTOFPtPion[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtPion_%s",sQAindex[iQA].Data()), "QA PID: nSigma Pion vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 210,-11,10, 210,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
         fQAPID->Add(fh3QAPIDnSigmaTPCTOFPtPion[iQA]);
-        fh3QAPIDnSigmaTPCTOFPtKaon[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtKaon_%s",sQAindex[iQA].Data()), "QA PID: nSigma Kaon vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 21,-11,10, 21,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
+        fh3QAPIDnSigmaTPCTOFPtKaon[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtKaon_%s",sQAindex[iQA].Data()), "QA PID: nSigma Kaon vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 210,-11,10, 210,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
         fQAPID->Add(fh3QAPIDnSigmaTPCTOFPtKaon[iQA]);
-        fh3QAPIDnSigmaTPCTOFPtProton[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtProton_%s",sQAindex[iQA].Data()), "QA PID: nSigma Proton vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 21,-11,10, 21,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
+        fh3QAPIDnSigmaTPCTOFPtProton[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtProton_%s",sQAindex[iQA].Data()), "QA PID: nSigma Proton vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 210,-11,10, 210,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
         fQAPID->Add(fh3QAPIDnSigmaTPCTOFPtProton[iQA]);
 
         for(Int_t j = 0; j < iNBinsPIDstatus; ++j)
