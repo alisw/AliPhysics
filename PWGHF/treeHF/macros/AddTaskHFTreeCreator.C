@@ -134,7 +134,9 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     task->SetPIDoptLbTree(pidOpt);
     task->SetTreeSingleTrackVarsOpt(singletrackvarsopt);
     if(fillTreeBs || fillTreeLb || fillTreeBplus){
-      task->SetITSUpgradeStudy(kTRUE);
+      task->SetITSUpgradeProduction(kTRUE);
+      task->SetITSUpgradePreSelect(kTRUE);
+      task->SetStoreOnlyHIJINGBackground(kTRUE);
       task->SetGoodTrackFilterBit(4);
       task->SetGoodTrackEtaRange(0.8);
       task->SetGoodTrackMinPt(0.3);
