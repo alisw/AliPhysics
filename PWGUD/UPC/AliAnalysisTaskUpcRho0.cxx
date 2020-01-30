@@ -223,6 +223,12 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	EtaPhiP = new TH2F("EtaPhiP","EtaPhiP",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiP);
 	EtaPhiN = new TH2F("EtaPhiN","EtaPhiN",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiN);
 
+	for(Int_t i=0;i<9;i++){
+		TString fHistName="fHistdEdxVsP_";fHistName+=i;
+		fHistdEdxVsP[i] = new TH2F(fHistName,fHistName,500,0.1,1.5,100,0,200); 
+		fListHist->Add(fHistdEdxVsP[i]);
+	}
+
 	// load SPD effi
 	if (isUsingEffi) {
 		std::cout<<"Using efficiency file: "<<fEfficiencyFileName<<std::endl;
@@ -424,6 +430,13 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		// TPC PID n-sigma
 		PIDTPCElectron_T[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
 		PIDTPCPion_T[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+
+		// separated PID
+		const AliExternalTrackParam* ippar=trk->GetInnerParam();
+		Double_t ptrackTPC=ippar->P();
+		Double_t dedx=trk->GetTPCsignal();
+		Int_t  pidtr=trk->GetPIDForTracking();
+		if(pidtr>=0 && pidtr<9) fHistdEdxVsP[pidtr]->Fill(ptrackTPC,dedx);
 
 		charge[i] = trk->Charge();
 		TPCsignal_T[i] = trk->GetTPCsignal();
