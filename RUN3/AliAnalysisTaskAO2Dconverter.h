@@ -105,6 +105,10 @@ private:
   // Data structures
 
   struct {
+    // Start indices and numbers of elements for data in the other trees matching this vertex.
+    // Needed for random access of collision-related data, allowing skipping data discarded by the user
+    Int_t     fStart[kTrees]    = {0}; /// Start entry indices for data in the other trees matching this vertex
+    Int_t     fNentries[kTrees] = {0}; /// Numbers of entries for data in the other trees matching this vertex
     // Event data
     Int_t     fRunNumber;       /// Run Number (added in case of multirun skimming)
     ULong64_t fEventId = 0u;    /// Event (collision) unique id. Contains period, orbit and bunch crossing numbers
@@ -135,6 +139,9 @@ private:
     // Track data
 
     Int_t   fCollisionsID;    /// The index of the collision vertex in the TF, to which the track is attached
+    // In case we need connection to TOF clusters, activate next lines
+    // Int_t   fTOFclsIndex;     /// The index of the associated TOF cluster
+    // Int_t   fNTOFcls;         /// The number of TOF clusters
 
     // Coordinate system parameters
     Float_t fX = -999.f;     /// X coordinate for the point of parametrisation
@@ -268,7 +275,10 @@ private:
   struct {
     // MUON track data
 
-    Int_t   fCollisionsID;            /// The index of the collision vertex, to which the muon is attached
+    Int_t   fCollisionsID;           /// The index of the collision vertex, to which the muon is attached
+    // In case we need connection to muon clusters, activate next lines
+    // Int_t   fClusterIndex;        /// The index of the associated MUON clusters
+    // Int_t   fNclusters;           /// The number of MUON clusters
 
     /// Parameters at vertex
     Float_t fInverseBendingMomentum; ///< Inverse bending momentum (GeV/c ** -1) times the charge 
@@ -292,7 +302,7 @@ private:
   } muons;                        //! structure to keep muons information
 
   struct {
-    // Muon clister data
+    // Muon cluster data
     
     Int_t   fMuonsID; /// The index of the muon track to which the clusters are attached
     Float_t fX;         ///< cluster X position
