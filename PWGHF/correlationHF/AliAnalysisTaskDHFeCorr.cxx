@@ -232,7 +232,7 @@ std::vector<AliDHFeCorr::AliParticleMC> AliAnalysisTaskDHFeCorr::FindHFParticleI
         AliDHFeCorr::AliParticleMC particle_to_save;
         particle_to_save.fRunNumber = fRunNumber;
         particle_to_save.fEventNumber = fEventNumber;
-        particle_to_save.fLabel = particle->GetLabel();
+        particle_to_save.fLabel = i;
         particle_to_save.fMCParticle = particle;
         particle_to_save.fE = particle->E();
         particle_to_save.fPt = particle->Pt();
@@ -471,7 +471,7 @@ void AliAnalysisTaskDHFeCorr::FillAllElectronsMCInfo(std::vector<AliDHFeCorr::Al
         candidate.fPtMC = mc_part->Pt();
         candidate.fEtaMC = mc_part->Eta();
         candidate.fPhiMC = mc_part->Phi();
-        candidate.fPDG = mc_part->PdgCode();
+        candidate.fPDGCode = mc_part->PdgCode();
         candidate.fOrigin = AliVertexingHFUtils::CheckOrigin(mc_information, mc_part, true);
         candidate.fLabel = label;
 
@@ -557,7 +557,8 @@ void AliAnalysisTaskDHFeCorr::SetRunAndEventNumber() {
         delete path;
     }
 
-    Long64_t ev_number = Entry();
+    //Long64_t ev_number = Entry();
+    Long64_t ev_number = fInputHandler->GetReadEntry();
 
     fEventNumber = (unsigned int) ev_number + (unsigned int) (fDirNum << 17);
 }
@@ -582,8 +583,10 @@ void AliAnalysisTaskDHFeCorr::PostOutput() {
     }
 
     if (fIsMC) {
-        PostData(7, fElectronTreeMC.get());
-        PostData(8, fDmesonTreeMC.get());
+        if (fProcessElectron)
+            PostData(7, fElectronTreeMC.get());
+        if (fProcessDMeson)
+            PostData(8, fDmesonTreeMC.get());
     }
 }
 
@@ -1366,6 +1369,7 @@ float AliAnalysisTaskDHFeCorr::GetMaxd0MeasMinusExp(AliAODRecoDecayHF *candidate
 void AliAnalysisTaskDHFeCorr::AddEventVariables(std::unique_ptr<TTree> &tree) {
     tree->Branch("RunNumber", &fEventInfo.fRunNumber);
     tree->Branch("EventNumber", &fEventInfo.fEventNumber);
+    tree->Branch("VtxZ", &fEventInfo.fVtxZ);
     tree->Branch("MultV0M", &fEventInfo.fMultV0M);
     tree->Branch("MultiRefMult08", &fEventInfo.fMultiRefMult08);
     tree->Branch("MultiSPDTracklets", &fEventInfo.fMultiSPDTracklets);
@@ -1473,6 +1477,7 @@ void AliAnalysisTaskDHFeCorr::AddElectronMCVariables(std::unique_ptr<TTree> &tre
     tree->Branch("PtMC", &fElectron.fPtMC);
     tree->Branch("Label", &fElectron.fLabel);
     tree->Branch("Origin", &fElectron.fOrigin);
+    tree->Branch("PDGCode", &fElectron.fPDGCode);
     tree->Branch("FirstMotherPDG", &fElectron.fFirstMotherPDG);
     tree->Branch("FirstMotherPt", &fElectron.fFirstMotherPt);
     tree->Branch("SecondMotherPDG", &fElectron.fSecondMotherPDG);
@@ -1493,7 +1498,7 @@ void AliAnalysisTaskDHFeCorr::AddMCTreeVariables(std::unique_ptr<TTree> &tree) {
     tree->Branch("Tv", &fMCParticle.fTv);
     tree->Branch("Charge", &fMCParticle.fCharge);
     tree->Branch("PDGCode", &fMCParticle.fPDGCode);
-    tree->Branch("fOrigin", &fMCParticle.fOrigin);
+    tree->Branch("Origin", &fMCParticle.fOrigin);
 }
 
 void AliAnalysisTaskDHFeCorr::AddDMesonMCVariables(std::unique_ptr<TTree> &tree) {
