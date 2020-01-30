@@ -128,6 +128,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fUseDefaultPriors(__def_prior),
     fFillNtuple(__fill_ntuple),
     fIsMC(kFALSE),
+    fIsDCAUnfoldHistoEnabled(kFALSE),
     fIsNominalBfield(kTRUE),
     fFillIntDistHist(kFALSE),
     fRandGener(0x0),
@@ -1075,7 +1076,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
         // DCA distributions, before the DCAxy cuts from the MC kinematics
         // Filling DCA distribution with MC truth Physics values
-        if (fIsMC) {
+        if (fIsMC && fIsDCAUnfoldHistoEnabled) {
           int ptype = 0;
           if (lMCevent->IsPhysicalPrimary(lMCtrk)){
             fHistDCARecoPID_prim[lPidIndex]->Fill(fEvtMult, trkPt, impactXY);
@@ -1099,7 +1100,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
                                  lMCpt,
                                  static_cast<double>(binPart),
                                  static_cast<double>(ptype),
-                                 impactXY
+                                 static_cast<double>(impactXY)
                                };
           fHistMCDCA[lPidIndex]->Fill(tmp_vect);
         }
