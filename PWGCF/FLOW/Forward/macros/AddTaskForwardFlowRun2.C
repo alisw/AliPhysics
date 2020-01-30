@@ -286,9 +286,14 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,bool doNUE,
           TObjArray* taskContainers = mgr->GetContainers();
       AliAnalysisDataContainer* nue_weights;
       
-      nue_weights = (AliAnalysisDataContainer*) taskContainers->FindObject("nue");
+    TObjArray *tx = nue_file.Tokenize("/");
+    TObjArray *ty = ((TObjString *)(tx->At(tx->GetEntries()-1)))->String().Tokenize(".");
+    TString nueobject =  ((TObjString *)(ty->At(0)))->String();
+    std::cout << nueobject << std::endl;
 
-      if (!nue_weights) nue_weights = makeWeightContainerNUE(nue_file,"nue");   
+      nue_weights = (AliAnalysisDataContainer*) taskContainers->FindObject(nueobject);
+
+      if (!nue_weights) nue_weights = makeWeightContainerNUE(nue_file,nueobject);   
       connectNUEContainer(nue_weights, task);
     }
   }
