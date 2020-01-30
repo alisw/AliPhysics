@@ -3,6 +3,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
 #include "AliMLResponse.h"
 #include "AliVertexerHyperTriton3Body.h"
@@ -173,7 +174,6 @@ public:
     fMinDCA2PrimaryVtxPi  = dcaPi;
   }
 
-  void SetMinITSnCluster(unsigned char nClsMin) { fMinITSNcluster = nClsMin; }
   void SetMinTPCcluster(unsigned char minCls) { fMinTPCNcluster = minCls; }
 
   void SetMaxPtDeu(float deuPtMax) { fMaxPtDeu = deuPtMax; }
@@ -190,6 +190,7 @@ public:
   AliEventCuts fEventCuts;                  /// Event cuts class
   AliVertexerHyperTriton3Body fVertexer;    /// custom 3-body decay vertexer
   AliMLResponse *fMLResponse;               /// object for the ML application
+  AliESDtrackCuts fTrackCuts;               /// Track cuts Object
 
 private:
   std::map<std::string, double> FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv);
@@ -223,7 +224,6 @@ private:
   float fMinCanidatePtToSave;    // min candidate pt to save
   float fMaxCanidatePtToSave;    // max candidate pt to save
 
-  unsigned char fMinITSNcluster;
   unsigned char fMinTPCNcluster;
 
   float fMaxNSigmaTPCDeu;    // nSigma TPC limit for deuteron

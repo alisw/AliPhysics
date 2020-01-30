@@ -118,17 +118,17 @@ template <typename F> double Hypot4(F a, F b, F c, F d) { return std::sqrt(a * a
 
 //_______________________________________________________________________________
 AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::string name)
-    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fMLResponse{}, fListHist{nullptr}, fTreeHyp3{nullptr},
+    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fMLResponse{}, fTrackCuts{*AliESDtrackCuts::GetStandardV0DaughterCuts()}, fListHist{nullptr}, fTreeHyp3{nullptr},
       fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false},
       fDownscaling{false}, fApplyML{false}, fEnableEventMixing{false}, fHistNSigmaDeu{nullptr}, fHistNSigmaP{nullptr},
       fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.},
-      fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.}, fMinITSNcluster{0}, fMinTPCNcluster{70},
+      fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.}, fMinTPCNcluster{70},
       fMaxNSigmaTPCDeu{5.}, fMaxNSigmaTPCP{5.}, fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.},
       fMaxNSigmaTOFPi{5.}, fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.}, fMinCosPA{0.993},
       fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05}, fMaxPtDeu{10.},
       fMaxPtP{10.}, fMaxPtPi{1.}, fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{},
       fDeuVector{}, fPVector{}, fPiVector{}, fMLResponseConfigfilePath{}, fEventMixingPool{}, fEventMixingPoolDepth{0} {
-
+  fTrackCuts.SetMinNClustersTPC(0);
   /// Settings for the custom vertexer
   fVertexer.SetToleranceGuessCompatibility(fVertexerToleranceGuessCompatibility);
   fVertexer.SetMaxDinstanceInit(fVertexerMaxDistanceInit);
@@ -196,6 +196,7 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   PostData(2, fTreeHyp3);
 
   AliPDG::AddParticlesToPdgDataBase();
+
 }    /// end UserCreateOutputObjects
 
 //_______________________________________________________________________________
@@ -310,9 +311,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
     if (!track) continue;
 
-    if (((track->GetStatus() & AliVTrack::kTPCrefit) == 0 && (track->GetStatus() & AliVTrack::kITSrefit) == 0) ||
-        (track->GetKinkIndex(0) > 0) || (track->GetITSNcls() < fMinITSNcluster) ||
-        (track->GetTPCNcls() < fMinTPCNcluster))
+    if (!fTrackCuts.AcceptTrack(track) || track->GetTPCsignalN() < fMinTPCNcluster)
       continue;
 
     float dca[2];
