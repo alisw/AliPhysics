@@ -101,6 +101,10 @@ class AliSigma0PhotonCuts : public TObject {
     fDoPhotonQualityCut = true;
     fPhotonQuality = cut;
   }
+  void SetPhotonPileUpCut(int cut) {
+    fDoPhotonPileupCut = true;
+    fPhotonPileupCut = cut;
+  }
   void DoPiZeroRejection(bool doIt) {
     fDoExtraPiZeroRejection = doIt;
   }
@@ -148,6 +152,9 @@ class AliSigma0PhotonCuts : public TObject {
 
   bool fDoPhotonQualityCut; //
   int fPhotonQuality; //
+
+  bool fDoPhotonPileupCut; //
+  bool fPhotonPileupCut; //
 
   bool fDoExtraPiZeroRejection; //
 
