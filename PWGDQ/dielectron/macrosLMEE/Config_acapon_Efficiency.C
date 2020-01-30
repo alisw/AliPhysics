@@ -175,6 +175,12 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
+  else if(cutDefinition == "kCutSet4"){ // Hadron band rejection for wSDD data
+    std::cout << "Setting up kCutSet4" << std::endl;
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kScheidCuts));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
   else if(cutDefinition == "kTheoPID"){ // PID cut set from a Run 1 pPb analysis. Standard track cuts
     std::cout << "Setting up Theo PID. Standard track cuts." << std::endl;
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
