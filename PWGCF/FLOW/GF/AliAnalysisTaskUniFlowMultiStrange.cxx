@@ -35,6 +35,7 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TProfile3D.h"
+#include "AliDirList.h"
 #include "TList.h"
 #include "TClonesArray.h"
 #include "TComplex.h"
@@ -118,6 +119,7 @@ AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask(Bool_t refs, Bool_t pois,
   fsName = sName;
   fsLabel = sLabel;
 }
+
 
 // ============================================================================
 void AliAnalysisTaskUniFlowMultiStrange::CorrTask::Print() const
@@ -278,6 +280,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
 
 
   fQAEvents(),
+  fQAEventCut(),
   fQACharged(),
   fQAPID(),
   fQAV0s(),
@@ -584,6 +587,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fCutCascadesInvMassOmegaMin(1.63),
   fCutCascadesInvMassOmegaMax(1.72),
   fQAEvents(),
+  fQAEventCut(),
   fQACharged(),
   fQAPID(),
   fQAV0s(),
@@ -745,22 +749,22 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
 {
   // defining input/output
   DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-  DefineOutput(3, TList::Class());
-  DefineOutput(4, TList::Class());
-  DefineOutput(5, TList::Class());
-  DefineOutput(6, TList::Class());
-  DefineOutput(7, TList::Class());
-  DefineOutput(8, TList::Class());
-  DefineOutput(9, TList::Class());
-  DefineOutput(10, TList::Class());
-  DefineOutput(11, TList::Class());
-  DefineOutput(12, TList::Class());
-  DefineOutput(13, TList::Class());
-  DefineOutput(14, TList::Class());
-  DefineOutput(15, TList::Class());
-  DefineOutput(16, TList::Class());
+  DefineOutput(1, AliDirList::Class());
+  DefineOutput(2, AliDirList::Class());
+  DefineOutput(3, AliDirList::Class());
+  DefineOutput(4, AliDirList::Class());
+  DefineOutput(5, AliDirList::Class());
+  DefineOutput(6, AliDirList::Class());
+  DefineOutput(7, AliDirList::Class());
+  DefineOutput(8, AliDirList::Class());
+  DefineOutput(9, AliDirList::Class());
+  DefineOutput(10, AliDirList::Class());
+  DefineOutput(11, AliDirList::Class());
+  DefineOutput(12, AliDirList::Class());
+  DefineOutput(13, AliDirList::Class());
+  DefineOutput(14, AliDirList::Class());
+  DefineOutput(15, AliDirList::Class());
+  DefineOutput(16, AliDirList::Class());
 }
 // ============================================================================
 AliAnalysisTaskUniFlowMultiStrange::~AliAnalysisTaskUniFlowMultiStrange()
@@ -789,6 +793,7 @@ AliAnalysisTaskUniFlowMultiStrange::~AliAnalysisTaskUniFlowMultiStrange()
   // deleting output lists
   if(fFlowWeights) delete fFlowWeights;
   if(fQAEvents) delete fQAEvents;
+  if(fQAEventCut) delete fQAEventCut;
   if(fQACharged) delete fQACharged;
   if(fQAPID) delete fQAPID;
   if(fQAPhi) delete fQAPhi;
@@ -1209,7 +1214,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
 
   fhEventCounter->Fill("Event OK",1);
 
-  // checking the run number for aplying weights & loading TList with weights
+  // checking the run number for aplying weights & loading AliDirList with weights
   if(fFlowUseWeights && fFlowRunByRunWeights && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
 
   DumpTObjTable("UserExec: before filtering");
@@ -1457,18 +1462,18 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::LoadWeights()
   // ***************************************************************************
   if(!fFlowWeightsFile) { AliError("File with flow weights not found!"); return kFALSE; }
 
-  TList* listFlowWeights = 0x0;
+  AliDirList* listFlowWeights = 0x0;
   if(!fFlowRunByRunWeights) {
     // information about current run is unknown in Initialization(); load only "averaged" weights
     AliInfo("Loading initial GF weights (run-averaged)");
-    listFlowWeights = (TList*) fFlowWeightsFile->Get("weights");
-    if(!listFlowWeights) { AliError("TList with flow weights not found."); return kFALSE; }
+    listFlowWeights = (AliDirList*) fFlowWeightsFile->Get("weights");
+    if(!listFlowWeights) { AliError("AliDirList with flow weights not found."); return kFALSE; }
   } else {
-    listFlowWeights = (TList*) fFlowWeightsFile->Get(Form("%d",fEventAOD->GetRunNumber()));
+    listFlowWeights = (AliDirList*) fFlowWeightsFile->Get(Form("%d",fEventAOD->GetRunNumber()));
 
     if(!listFlowWeights) {
-      AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fEventAOD->GetRunNumber()));
-      listFlowWeights = (TList*) fFlowWeightsFile->Get("weights");
+      AliWarning(Form("AliDirList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fEventAOD->GetRunNumber()));
+      listFlowWeights = (AliDirList*) fFlowWeightsFile->Get("weights");
       if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); return kFALSE; }
     }
   }
@@ -3692,24 +3697,24 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
 
   // creating output lists
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
-    fListFlow[iSpec] = new TList();
+    fListFlow[iSpec] = new AliDirList();
     fListFlow[iSpec]->SetOwner(kTRUE);
     fListFlow[iSpec]->SetName(Form("fFlow%s",GetSpeciesName(PartSpecies(iSpec))));
   }
 
-  fFlowWeights = new TList();
+  fFlowWeights = new AliDirList();
   fFlowWeights->SetOwner(kTRUE);
   fFlowWeights->SetName("fFlowWeights");
 
-  fQAEvents = new TList();
+  fQAEvents = new AliDirList();
   fQAEvents->SetOwner(kTRUE);
-  fQACharged = new TList();
+  fQACharged = new AliDirList();
   fQACharged->SetOwner(kTRUE);
-  fQAPID = new TList();
+  fQAPID = new AliDirList();
   fQAPID->SetOwner(kTRUE);
-  fQAPhi = new TList();
+  fQAPhi = new AliDirList();
   fQAPhi->SetOwner(kTRUE);
-  fQAV0s = new TList();
+  fQAV0s = new AliDirList();
   fQAV0s->SetOwner(kTRUE);
 
   // setting number of bins based on set range with fixed width
@@ -4004,13 +4009,16 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
     TString sPIDstatus[iNBinsPIDstatus] = {"kDetNoSignal","kDetPidOk","kDetMismatch","kDetNoParams"};
 
     // event histogram
-    fEventCuts.AddQAplotsToList(fQAEvents);
+    fQAEventCut = new TList();
+    fQAEventCut->SetOwner(kTRUE);
+    fEventCuts.AddQAplotsToList(fQAEventCut);
 
     fhEventSampling = new TH2D("fhEventSampling",Form("Event sampling; %s; sample index", GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fNumSamples,0,fNumSamples);
     fQAEvents->Add(fhEventSampling);
     fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); %s", GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
     fQAEvents->Add(fhEventCentrality);
     fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, 150,0,150);
+    fQAEvents->Add(fQAEventCut); 
     fQAEvents->Add(fh2EventCentralityNumRefs);
 
     if(fEventRejectAddPileUp)
