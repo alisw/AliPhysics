@@ -141,7 +141,7 @@ class LMEECutLib {
 void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim){
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
-  TString localPath = "/home/aaron/Data/diElec_outputs/PIDcalibration/";
+  TString localPath = "~/Data/diElec_outputs/PIDcalibration/";
   TString fileName;
   if(wSDD == kTRUE){
     fileName = "outputTPC.root";
@@ -172,7 +172,7 @@ void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t c
     return;
   }
   std::cout << "starting LMEECutLib::SetEtaCorrectionITS()\n";
-  TString localPath = "/home/aaron/Data/diElec_outputs/PIDcalibration/";
+  TString localPath = "~/Data/diElec_outputs/PIDcalibration/";
   TString fileName = "outputITS";
   if(hasMC){
     fileName.Append("_MC.root");
@@ -201,7 +201,7 @@ void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t c
 void LMEECutLib::SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t hasMC){
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionTOF()\n";
-  TString localPath = "/home/aaron/Data/diElec_outputs/PIDcalibration/";
+  TString localPath = "~/Data/diElec_outputs/PIDcalibration/";
   TString fileName = "outputTOF";
   if(hasMC){
     if(wSDD == kTRUE){
@@ -243,7 +243,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionTPC() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
-  TString localPath = "/home/aaron/Data/diElec_outputs/PIDcalibration/";
+  TString localPath = "~/Data/diElec_outputs/PIDcalibration/";
   TString fileName;
   if(wSDD == kTRUE){
     fileName = "outputTPC.root";
@@ -358,7 +358,7 @@ TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionITSTTree() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionITSTTree()\n";
-  TString localPath = "/home/aaron/Data/diElec_outputs/PIDcalibration/";
+  TString localPath = "~/Data/diElec_outputs/PIDcalibration/";
   TString fileName = "outputITS";
   if(hasMC){
     fileName.Append("_MC.root");
@@ -470,7 +470,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionTOFTTree() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionTOFTTree()\n";
-  TString localPath = "/home/aaron/Data/diElec_outputs/PIDcalibration/";
+  TString localPath = "~/Data/diElec_outputs/PIDcalibration/";
   TString fileName = "outputTOF";
   if(hasMC){
     if(wSDD == kTRUE){
