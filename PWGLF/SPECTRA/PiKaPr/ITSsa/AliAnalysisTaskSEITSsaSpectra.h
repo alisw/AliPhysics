@@ -248,6 +248,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistDEDXGen;                  //!<! histo with dedx versus momentum (generated, before track selection)
   TH2F *fHistDEDX;                     //!<! histo with dedx versus momentum
   TH2F *fHistDEDXdouble;               //!<! histo with dedx versus signed momentum
+  TH2F *fHistDEDXposlabel;             //!<! histo with dedx versus momentum with positive label
+  TH2F *fHistDEDXneglabel;             //!<! histo with dedx versus momentum with negative label
   TH2F *fHistNSigmaSep[kNchg * kNspc]; //!<! histo nsigma separation vs momentum
   TH2F *fHistSepPowerReco[kNchg * kNspc];  //!<!
   TH2F *fHistSepPowerTrue[kNchg * kNspc];  //!<!
