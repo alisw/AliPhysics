@@ -85,6 +85,8 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fHistDEDXGen(NULL),
     fHistDEDX(NULL),
     fHistDEDXdouble(NULL),
+    fHistDEDXposlabel(NULL),
+    fHistDEDXneglabel(NULL),
     fCentBins(),
     fDCABins(),
     fPtBins(),
@@ -440,6 +442,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
   fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 900, 0, 1000);
   fOutput->Add(fHistDEDXdouble);
+
+  fHistDEDXposlabel = new TH2F("fHistDEDXposlabel", "", 500, -5, 5, 900, 0, 1000);
+  fOutput->Add(fHistDEDXposlabel);
+
+  fHistDEDXneglabel = new TH2F("fHistDEDXneglabel", "", 500, -5, 5, 900, 0, 1000);
+  fOutput->Add(fHistDEDXneglabel);
 
   if (fIsMC) { //for correlation between momenta (MC)
     const UInt_t nDimsP = 5;                                         // cent, recP, genP, IsPrim/Sec
@@ -961,6 +969,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
       float pMC   = trkMC->P();
       int ptype = 0;
+
+      //dedx plots cutting on the MC label
+      if(track->GetLabel()>0){
+        fHistDEDXposlabel->Fill(track->GetP(), dEdx);
+      }
+      else if(track->GetLabel()<0){
+        fHistDEDXneglabel->Fill(track->GetP(), dEdx);
+      }
+
       if (lMCevent->IsPhysicalPrimary(lMCtrk)){
         ptype = 0;
       }
