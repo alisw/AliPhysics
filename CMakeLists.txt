@@ -317,7 +317,9 @@ else()
   find_package(FASTJET)
 
   # ZEROMQ
-  find_package(ZeroMQ)
+  if(ROOT_VERSION_MAJOR GREATER 5)
+    find_package(ZeroMQ)
+  endif()
 
   # Generating the AliRoot-config.cmake file
   configure_file(${PROJECT_SOURCE_DIR}/cmake/AliRoot-config.cmake.in ${CMAKE_BINARY_DIR}/version/AliRoot-config.cmake @ONLY)
