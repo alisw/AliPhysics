@@ -43,6 +43,8 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fTransvRadRejectionUp(0.),
       fDoPhotonQualityCut(false),
       fPhotonQuality(-1),
+      fDoPhotonPileupCut(false),
+      fPhotonPileupCut(false),
       fDoExtraPiZeroRejection(false),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
@@ -147,6 +149,8 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fTransvRadRejectionUp(0.),
       fDoPhotonQualityCut(false),
       fPhotonQuality(-1),
+      fDoPhotonPileupCut(false),
+      fPhotonPileupCut(false),
       fDoExtraPiZeroRejection(false),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
@@ -476,6 +480,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
   } else {
     photonQuality = 1;
   }
+  bool pileUpPhoton = (photonQuality == 1) ? true : false;
 
   // BEFORE THE CUTS
   if (!fIsLightweight) {
@@ -586,6 +591,9 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
   fHistCuts->Fill(14.f);
 
   if (fDoPhotonQualityCut && photonQuality != fPhotonQuality) {
+    return false;
+  }
+  if (fDoPhotonPileupCut && pileUpPhoton != fPhotonPileupCut) {
     return false;
   }
   fHistCuts->Fill(15.f);

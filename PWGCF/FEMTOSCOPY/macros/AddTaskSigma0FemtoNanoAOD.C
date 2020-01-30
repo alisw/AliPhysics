@@ -559,7 +559,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false, bool MomRes =
 
   /// TEST ///
 
-  photon->DoPiZeroRejection(true);
+  photon->SetPhotonPileUpCut(false);
 
 
   // =====================================================================
