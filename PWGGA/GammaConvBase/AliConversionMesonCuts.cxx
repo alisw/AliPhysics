@@ -4174,17 +4174,18 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
-        case 5: // EMC-EMC (optimized for 5 TeV with 31 NonLin)
-          mass = 1.22498e-01  + (4.97752e-03 * pt) + (-8.49570e-04 * pow(pt,2.)) + (6.05847e-05 * pow(pt,3)) + (-13e-07 * pow(pt,4));
-          sigma =   1.33790e-02 + (-9.40866e-04 * pt) + ( 7.01518e-05 * pow(pt,2));
-          if(mass < 0.12) mass = 0.12;
+        case 5: // EMC-EMC (optimized for 7 TeV with 31 NonLin)
+          mass = 0.122498 + (0.004978 * pt) + (-0.000850 * pow(pt,2.)) + (0.000061 * pow(pt,3)) + (-13e-07 * pow(pt,4));
+          sigma =  0.006118 + 0.000373 * pt+ 0.010567 /pt;
+          if(mass < 0.123) mass = 0.123;
+          if(sigma > 0.017) sigma = 0.017;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
-        case 6: // PCM-EMC (optimized for 5 TeV with 31 NonLin)
-          mass = 1.31116e-01 + 4.20087e-04 * pt;
-          sigma = 9.25937e-03 + ( ( -4.89863e-04) * pt ) + (4.57442e-05 * pt * pt);
-          if(sigma>0.015) sigma = 0.015;
+        case 6: // PCM-EMC (optimized for 7 TeV with 31 NonLin)
+          mass = 0.131116 + 0.000420 * pt;
+          sigma =0.006128 + 0.003981 / pt;
+          if(sigma>0.012) sigma = 0.012;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
@@ -4205,8 +4206,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
-        case 9: // PCM-PCM (optimized for 5 TeV)
-          mass = 1.33587e-01  + (2.59437e-03 * exp(-1.18999e+00 * pt)) + -3.45476e-05 * pt;
+        case 9: // PCM-PCM (optimized for 7 TeV)
+          mass = 0.133587 + (0.002594 * exp(-1.189987 * pt)) + -0.000035 * pt;
           sigma =   0.00223215 + ( (0.000349362) * pt ) + (-1.13689e-05 * pt * pt);
           if (mass>0.137) mass = 0.137;
           if (sigma < 0.001 ) {sigma =0.001;}
