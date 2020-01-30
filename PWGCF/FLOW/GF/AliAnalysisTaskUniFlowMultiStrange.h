@@ -12,6 +12,7 @@
 class TString;
 class TComplex;
 class TFile;
+class AliDirList;
 class TList;
 class TClonesArray;
 class TProfile;
@@ -491,13 +492,14 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Double_t                fCutPhiInvMassMax; // [1.07] (GeV/c2) min inv. mass window for selected phi candidates
 
       // output lists
-      TList*                  fQAEvents; //! events list
-      TList*                  fQACharged; //! charged tracks list
-      TList*                  fQAPID; //! pi,K,p list
-      TList*                  fQAV0s; //! V0s candidates list
-      TList*                  fQAPhi; //! Phi candidates list
-      TList*                  fFlowWeights; //! list for flow weights
-      TList*                  fListFlow[kUnknown]; //! flow lists
+      AliDirList*                  fQAEvents; //! events list
+      TList*                       fQAEventCut; //! events list
+      AliDirList*                  fQACharged; //! charged tracks list
+      AliDirList*                  fQAPID; //! pi,K,p list
+      AliDirList*                  fQAV0s; //! V0s candidates list
+      AliDirList*                  fQAPhi; //! Phi candidates list
+      AliDirList*                  fFlowWeights; //! list for flow weights
+      AliDirList*                  fListFlow[kUnknown]; //! flow lists
       // histograms & profiles
 
       // Flow
@@ -671,5 +673,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*			  		        fhQAV0sArmenterosALambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
- };
+};
+
 #endif
