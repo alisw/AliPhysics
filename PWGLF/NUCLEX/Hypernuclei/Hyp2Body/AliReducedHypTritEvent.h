@@ -37,7 +37,7 @@ class AliReducedHypTritTrack : public TObject {
   Float_t DedxSigmaTriton() const {return fDedxSigmaTriton;}
   Float_t TpcNcls() const {return fTpcNClusters;}
 
-// private:
+private:
   TLorentzVector fP;               //< 4 momentum of track
   Float_t        fPtrack;          //< Total momentum of Track
   Float_t        fDca;             //< DCA to prim vertex
@@ -80,7 +80,7 @@ class AliReducedHypTritV0 : public TObject {
   Bool_t  OnFlyStatus() const {return fOnFlyStatus;}
 
 
-// private:
+private:
   TVector3                fPosition;         //< Lorentzvector of v0
   TVector3                fPvect;            //< Momentum vector of mother
   AliReducedHypTritTrack* fPiTrack;          //< positive daughter of v0
@@ -122,7 +122,7 @@ class AliReducedHypTritEvent : public TObject {
 
   void ClearEvent();
 
-// private:
+private:
   TVector3      fVertexPosition; //< position of primary vertex
   TClonesArray* fV0s;            //< array of v0s in event
   UShort_t      fNumberV0s;      //< number of v0s in event
