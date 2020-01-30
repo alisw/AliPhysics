@@ -443,11 +443,13 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 900, 0, 1000);
   fOutput->Add(fHistDEDXdouble);
 
-  fHistDEDXposlabel = new TH2F("fHistDEDXposlabel", "", 500, -5, 5, 900, 0, 1000);
-  fOutput->Add(fHistDEDXposlabel);
+  if(fIsMC){
+    fHistDEDXposlabel = new TH2F("fHistDEDXposlabel", "", hnbins, hxbins, 900, 0, 1000);
+    fOutput->Add(fHistDEDXposlabel);
 
-  fHistDEDXneglabel = new TH2F("fHistDEDXneglabel", "", 500, -5, 5, 900, 0, 1000);
-  fOutput->Add(fHistDEDXneglabel);
+    fHistDEDXneglabel = new TH2F("fHistDEDXneglabel", "", hnbins, hxbins, 900, 0, 1000);
+    fOutput->Add(fHistDEDXneglabel);
+  }
 
   if (fIsMC) { //for correlation between momenta (MC)
     const UInt_t nDimsP = 5;                                         // cent, recP, genP, IsPrim/Sec
@@ -543,7 +545,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
         fHistMCDCA[index]->GetAxis(0)->Set(nCentBins, centBins); // Real limits for cent
         fHistMCDCA[index]->GetAxis(1)->Set(nPtBins, ptBins);     // Real limits for rec pt
         fHistMCDCA[index]->GetAxis(2)->Set(nPtBins, ptBins);     // Real limits for gen pt
-        fOutput->Add(fHistMCDCA[index]);
+        if(fIsDCAUnfoldHistoEnabled) fOutput->Add(fHistMCDCA[index]);
 
         //        // Histograms MC part Rec.
         const int nPhysBins = 4;
