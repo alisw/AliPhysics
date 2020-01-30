@@ -56,7 +56,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
                                                                                          fPIDResponse{nullptr},
-                                                                                         fESDtrackCuts{nullptr},
+                                                                                         fESDtrackCuts{*AliESDtrackCuts::GetStandardITSTPCTrackCuts2011()},
                                                                                          fOutputList{nullptr},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
@@ -73,6 +73,8 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fTRDboundariesPos{nullptr},
                                                                                          fTRDboundariesNeg{nullptr}
 {
+  fESDtrackCuts.SetEtaRange(-0.8, 0.8);
+
   // constructor
   DefineInput(0, TChain::Class()); // define the input of the analysis: in this case we take a 'chain' of events
                                    // this chain is created by the analysis manager, so no need to worry about it,
@@ -92,9 +94,6 @@ AliAnalysisTaskDeuteronAbsorption::~AliAnalysisTaskDeuteronAbsorption()
     if (fTRDboundariesNeg[iFunction])
       delete fTRDboundariesNeg[iFunction];
   }
-
-  if (fESDtrackCuts)
-    delete fESDtrackCuts;
 
   if (fOutputList)
     delete fOutputList; // at the end of your task, it is deleted from memory by calling this function
@@ -162,11 +161,6 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     }
   }
 
-  // create track cuts object
-  if (fESDtrackCuts == nullptr) {
-    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true);
-    fESDtrackCuts->SetEtaRange(-0.8, 0.8);
-  }
   fEventCuts.AddQAplotsToList(fOutputList);
 
   PostData(1, fOutputList); // postdata will notify the analysis manager of changes / updates to the
@@ -230,7 +224,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     AliESDtrack *track = static_cast<AliESDtrack *>(esdEvent->GetTrack(i)); // get a track (type AliESDDTrack) from the event
     if (!track)
       continue;
-    if (!fESDtrackCuts->AcceptTrack(track))
+    if (!fESDtrackCuts.AcceptTrack(track))
       continue; // check if track passes the cuts
     if (!track->GetInnerParam())
       continue;                                     // check if track is a proper TPC track

@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPID.h"
 #include <string>
 
@@ -35,7 +36,7 @@ public:
   double GetMinTPCsignalN() const { return fMinTPCsignalN; }
   void SetMinTPCsignalN(double signalN = 50) { fMinTPCsignalN = signalN; }
 
-  void SetESDtrackCuts(AliESDtrackCuts * cuts) { fESDtrackCuts = cuts; }
+  void SetESDtrackCuts(const AliESDtrackCuts& cuts) { fESDtrackCuts = cuts; }
 
   static const AliPID::EParticleType fgkSpecies[kNabsSpecies];
   static const std::string fgkParticleNames[kNabsSpecies];
@@ -51,7 +52,7 @@ private:
   int    fMinTPCsignalN; /// Minimum number of PID clusters in the TPC
 
   AliPIDResponse *fPIDResponse;   //! pid response
-  AliESDtrackCuts *fESDtrackCuts; //-> input track cuts
+  AliESDtrackCuts fESDtrackCuts;  // input track cuts
                                   //
   TList *fOutputList;             //! output list
   //
