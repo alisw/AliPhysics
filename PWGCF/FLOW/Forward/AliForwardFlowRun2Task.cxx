@@ -136,14 +136,15 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     fCalculator.cumu_rW2Two  = new THnD("cumu_rW2Two" , "cumu_rW2Two" , dimensions,rbins,dmin,dmax); 
     TList* list_rW2     = new TList(); list_rW2    ->SetName("rW2"    ); list_rW2    ->Add(fCalculator.cumu_rW2);     fReferenceList->Add(list_rW2    );
     TList* list_rW2Two  = new TList(); list_rW2Two ->SetName("rW2Two" ); list_rW2Two ->Add(fCalculator.cumu_rW2Two);  fReferenceList->Add(list_rW2Two );  
-
-    if ((fSettings.normal_analysis || fSettings.second_analysis)){
-      fCalculator.cumu_dW2B    = new THnD("cumu_dW2B"   , "cumu_dW2B"   , dimensions-1, non_dbins, non_min, non_max);
-      fCalculator.cumu_dW2TwoB = new THnD("cumu_dW2TwoB", "cumu_dW2TwoB", dimensions, dbins, dmin, dmax);
-      TList* list_dW2B    = new TList(); list_dW2B   ->SetName("dW2B"   ); list_dW2B   ->Add(fCalculator.cumu_dW2B   ); fStandardList->Add(list_dW2B   );
-      TList* list_dW2TwoB = new TList(); list_dW2TwoB->SetName("dW2TwoB"); list_dW2TwoB->Add(fCalculator.cumu_dW2TwoB); fStandardList->Add(list_dW2TwoB);
-    }
   }
+
+  if ((fSettings.normal_analysis || fSettings.second_analysis) || fSettings.decorr_analysis){
+    fCalculator.cumu_dW2B    = new THnD("cumu_dW2B"   , "cumu_dW2B"   , dimensions-1, non_dbins, non_min, non_max);
+    fCalculator.cumu_dW2TwoB = new THnD("cumu_dW2TwoB", "cumu_dW2TwoB", dimensions, dbins, dmin, dmax);
+    TList* list_dW2B    = new TList(); list_dW2B   ->SetName("dW2B"   ); list_dW2B   ->Add(fCalculator.cumu_dW2B   ); fStandardList->Add(list_dW2B   );
+    TList* list_dW2TwoB = new TList(); list_dW2TwoB->SetName("dW2TwoB"); list_dW2TwoB->Add(fCalculator.cumu_dW2TwoB); fStandardList->Add(list_dW2TwoB);
+  }
+
   if (fSettings.SC_analysis || fSettings.normal_analysis){
     fCalculator.cumu_dW4     = new THnD("cumu_dW4"    , "cumu_dW4"    , dimensions-1, non_dbins, non_min, non_max);
     TList* list_dW4     = new TList(); list_dW4    ->SetName("dW4"    ); list_dW4    ->Add(fCalculator.cumu_dW4    ); fStandardList->Add(list_dW4    );
@@ -161,15 +162,17 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   }
 
   if (fSettings.decorr_analysis){
-    fCalculator.cumu_dW2A    = new THnD("cumu_dW2A"   , "cumu_dW2A"   , dimensions-1, non_dbins, dmin, dmax);
+    fCalculator.cumu_dW2A    = new THnD("cumu_dW2A"   , "cumu_dW2A"   , dimensions-1, non_dbins, non_min, non_max);
     fCalculator.cumu_dW2TwoA = new THnD("cumu_dW2TwoA", "cumu_dW2TwoA", dimensions, dbins, dmin, dmax);
     TList* list_dW2A    = new TList(); list_dW2A   ->SetName("dW2A"   ); list_dW2A   ->Add(fCalculator.cumu_dW2A   ); fStandardList->Add(list_dW2A   );
     TList* list_dW2TwoA = new TList(); list_dW2TwoA->SetName("dW2TwoA"); list_dW2TwoA->Add(fCalculator.cumu_dW2TwoA); fStandardList->Add(list_dW2TwoA);
 
-    fCalculator.cumu_dW22TwoTwoN   = new THnD("cumu_dW22TwoTwoN"  , "cumu_d22WTwoTwoN"  , dimensions-1, non_dbins, non_min, non_max) ;
-    fCalculator.cumu_dW22TwoTwoD   = new THnD("cumu_dW22TwoTwoD"  , "cumu_d22WTwoTwoD"  , dimensions-1, non_dbins, non_min, non_max) ;
-    TList* list_dW22TwoTwoN   = new TList(); list_dW22TwoTwoN  ->SetName("dW22TwoTwoN"  ); list_dW22TwoTwoN  ->Add(fCalculator.cumu_dW22TwoTwoN  ); fMixedList->Add(list_dW22TwoTwoN  );
-    TList* list_dW22TwoTwoD   = new TList(); list_dW22TwoTwoD  ->SetName("dW22TwoTwoD"  ); list_dW22TwoTwoD  ->Add(fCalculator.cumu_dW22TwoTwoD  ); fMixedList->Add(list_dW22TwoTwoD  );
+
+    fCalculator.cumu_dW2TwoTwoD = new THnD("cumu_dW2TwoTwoD", "cumu_dW2TwoTwoD", dimensions, negonly_bins, dmin, negonly_max) ;
+    TList* list_dW2TwoTwoD = new TList(); list_dW2TwoTwoD->SetName("dW2TwoTwoD"); list_dW2TwoTwoD->Add(fCalculator.cumu_dW2TwoTwoD); fMixedList->Add(list_dW2TwoTwoD);
+    fCalculator.cumu_dW2TwoTwoN = new THnD("cumu_dW2TwoTwoN", "cumu_dW2TwoTwoN", dimensions, negonly_bins, dmin, negonly_max) ;
+    TList* list_dW2TwoTwoN = new TList(); list_dW2TwoTwoN->SetName("dW2TwoTwoN"); list_dW2TwoTwoN->Add(fCalculator.cumu_dW2TwoTwoN); fMixedList->Add(list_dW2TwoTwoN);
+  
   }
 
   if (fSettings.SC_analysis){
@@ -178,10 +181,14 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     TList* list_dW4FourTwo  = new TList(); list_dW4FourTwo ->SetName("dW4FourTwo" ); list_dW4FourTwo ->Add(fCalculator.cumu_dW4FourTwo ); fMixedList->Add(list_dW4FourTwo );
     TList* list_dW4ThreeTwo = new TList(); list_dW4ThreeTwo->SetName("dW4ThreeTwo"); list_dW4ThreeTwo->Add(fCalculator.cumu_dW4ThreeTwo); fMixedList->Add(list_dW4ThreeTwo);
 
-    fCalculator.cumu_dW2TwoTwoD = new THnD("cumu_dW2TwoTwoD", "cumu_dW2TwoTwoD", dimensions, negonly_bins, dmin, negonly_max) ;
-    TList* list_dW2TwoTwoD = new TList(); list_dW2TwoTwoD->SetName("dW2TwoTwoD"); list_dW2TwoTwoD->Add(fCalculator.cumu_dW2TwoTwoD); fMixedList->Add(list_dW2TwoTwoD);
-    fCalculator.cumu_dW2TwoTwoN = new THnD("cumu_dW2TwoTwoN", "cumu_dW2TwoTwoN", dimensions, negonly_bins, dmin, negonly_max) ;
-    TList* list_dW2TwoTwoN = new TList(); list_dW2TwoTwoN->SetName("dW2TwoTwoN"); list_dW2TwoTwoN->Add(fCalculator.cumu_dW2TwoTwoN); fMixedList->Add(list_dW2TwoTwoN);
+    fCalculator.cumu_wSC = new THnD("cumu_wSC", "cumu_wSC", dimensions-1, non_dbins, non_min, non_max) ;
+    TList* list_wSC = new TList(); list_wSC->SetName("wSC"); list_wSC->Add(fCalculator.cumu_wSC); fMixedList->Add(list_wSC);
+
+
+    fCalculator.cumu_dW22TwoTwoN   = new THnD("cumu_dW22TwoTwoN"  , "cumu_d22WTwoTwoN"  , dimensions-1, non_dbins, non_min, non_max) ;
+    fCalculator.cumu_dW22TwoTwoD   = new THnD("cumu_dW22TwoTwoD"  , "cumu_d22WTwoTwoD"  , dimensions-1, non_dbins, non_min, non_max) ;
+    TList* list_dW22TwoTwoN   = new TList(); list_dW22TwoTwoN  ->SetName("dW22TwoTwoN"  ); list_dW22TwoTwoN  ->Add(fCalculator.cumu_dW22TwoTwoN  ); fMixedList->Add(list_dW22TwoTwoN  );
+    TList* list_dW22TwoTwoD   = new TList(); list_dW22TwoTwoD  ->SetName("dW22TwoTwoD"  ); list_dW22TwoTwoD  ->Add(fCalculator.cumu_dW22TwoTwoD  ); fMixedList->Add(list_dW22TwoTwoD  );
   }
 
   // Make centralDist
