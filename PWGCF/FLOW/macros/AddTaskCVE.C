@@ -1,7 +1,7 @@
 
 void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,
 		Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,
-		Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3,
+		Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3, Int_t vnHarmonic=2,
 		TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",
 		TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",
 		const char *suffix = "")
@@ -61,7 +61,8 @@ void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.
   task_CVE->SetTrackCutChi2Min(0.1);     
   task_CVE->SetTrackCutdEdxMin(10.0);           
   task_CVE->SetFlagUseKinkTracks(kFALSE);
-
+  task_CVE->SetCumulantHarmonic(vnHarmonic);
+  
 
 
 

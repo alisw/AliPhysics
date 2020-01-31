@@ -91,6 +91,7 @@ AliAnalysisTaskCVE::AliAnalysisTaskCVE(const char *name): AliAnalysisTaskSE(name
   fListV0MCorr(NULL),  
   fCentralityMin(0),
   fCentralityMax(90),
+  gHarmonic(2),
   fParticle(1),
   fFilterBit(1),
   fTPCclustMin(70),
@@ -179,6 +180,7 @@ AliAnalysisTaskCVE::AliAnalysisTaskCVE():
   fListV0MCorr(NULL),
   fCentralityMin(0),
   fCentralityMax(90),
+  gHarmonic(2),
   fParticle(1),
   fFilterBit(1),
   fTPCclustMin(70),
@@ -429,7 +431,7 @@ void AliAnalysisTaskCVE::UserCreateOutputObjects()
 
   //fParticle = 3;
   
-  std::cout<<"\n UserCreateOutputObject: Initialized for particle = "<<fParticle<<" FB = "<<fFilterBit<<"...\n"<<endl;
+  std::cout<<"\n UserCreateOutputObject; PID = "<<fParticle<<" FB = "<<fFilterBit<<" harmonic = "<<gHarmonic<<"...\n"<<endl;
   
   
   PostData(1,fListHist);
@@ -651,7 +653,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
   /// TO be passed as Argument:
   Double_t fEtaGapNeg = -0.100;
   Double_t fEtaGapPos =  0.100;
-  Double_t gPsiN = 2.0;
+  Double_t gPsiN = gHarmonic;
 
   
   //std::cout<<" Info:UserExec()  Starting track loop 1..!!!\n";
@@ -928,14 +930,14 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	if(trkPt<=0.6 && TMath::Abs(nSigTPCpion)<=3.0){
 	  isItPion = kTRUE;
 	}
-	else if(trkPt>0.6 && trkPt<=5.0 && TMath::Abs(nSigTPCpion)<=3.0 && TMath::Abs(nSigTOFpion)<=3.0 ){
+	else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigTPCpion)<=3.0 && TMath::Abs(nSigTOFpion)<=3.0 ){
 	  isItPion = kTRUE;
 	}
 	//----- Kaon
 	if(trkPt<=0.45 && TMath::Abs(nSigTPCkaon)<=3.0){
 	  isItKaon = kTRUE;
 	}
-	else if(trkPt>0.45 && trkPt<=5.0 && TMath::Abs(nSigTPCkaon)<=3.0 && TMath::Abs(nSigTOFkaon)<=2.5){
+	else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=3.0 && TMath::Abs(nSigTOFkaon)<=2.5){
 	  isItKaon = kTRUE;
 	}
 	//----- Proton 
@@ -943,7 +945,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	  isItProt = kTRUE;
 	  if(trkChrg>0 && trkPt<0.4) isItProt = kFALSE;  //Proton below 0.4 GeV has beam Pipe Contamination
 	}
-	else if(trkPt>0.8 && trkPt<=5.0 && TMath::Abs(nSigTPCprot)<=3.0 && TMath::Abs(nSigTOFprot)<=3.0){  
+	else if(trkPt>0.8 && trkPt<=10.0 && TMath::Abs(nSigTPCprot)<=3.0 && TMath::Abs(nSigTOFprot)<=3.0){  
 	  isItProt = kTRUE;
 	}
      
