@@ -717,8 +717,8 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false, bool MomRes =
 
   pairQA[0] = 11;   // pp
   pairQA[8] = 11;   // pbarpbar
-  pairQA[2] = 14;  // pSigma
-  pairQA[10] = 14;  // barp bSigma
+  pairQA[2] = 17;  // pSigma
+  pairQA[10] = 17;  // barp bSigma
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");

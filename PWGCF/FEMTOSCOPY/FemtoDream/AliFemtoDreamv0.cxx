@@ -11,8 +11,8 @@
 #include "TClonesArray.h"
 
 ClassImp(AliFemtoDreamv0)
-AliFemtoDreamv0::AliFemtoDreamv0()
-    : AliFemtoDreamBasePart(3),
+AliFemtoDreamv0::AliFemtoDreamv0(const int nDaugh)
+    : AliFemtoDreamBasePart(nDaugh),
       fOnlinev0(false),
       fHasDaughter(false),
       fpDaug(new AliFemtoDreamTrack()),
@@ -131,9 +131,21 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   trackNeg.SetXYZM(negP[0], negP[1], negP[2], negDaughter.GetInvMass());
   TLorentzVector trackSum = trackPos + trackNeg;
   this->SetPt(trackSum.Pt());
+
   this->SetMomentum(0,trackSum.Px(), trackSum.Py(), trackSum.Pz());
-  this->SetMomentum(1,negP[0], negP[1], negP[2]);
-  this->SetMomentum(2,posP[0], posP[1], posP[2]);
+
+  // now copy the momenta from the daughter vector
+  int nDaughtersTotal = 1;
+  size_t nNegDaughDaughters = negDaughter.GetNdaughters();
+  for(size_t i=0; i< nNegDaughDaughters; ++i) {
+     this->SetMomentum(nDaughtersTotal++, negDaughter.GetMomentum(i));
+  }
+
+  size_t nPosDaughDaughters = posDaughter.GetNdaughters();
+  for(size_t i=0; i< nPosDaughDaughters; ++i) {
+     this->SetMomentum(nDaughtersTotal++, posDaughter.GetMomentum(i));
+  }
+
   this->SetEta(trackSum.Eta());
   this->SetPhi(trackSum.Phi());
   this->SetTheta(trackSum.Theta());
@@ -142,71 +154,71 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   this->fUse = true;
 
   // track IDs
-  auto IDpos = posDaughter.GetIDTracks();
-  for (const auto &itID : IDpos) {
-    this->SetIDTracks(itID);
-  }
   auto IDneg = negDaughter.GetIDTracks();
   for (const auto &itID : IDneg) {
     this->SetIDTracks(itID);
   }
+  auto IDpos = posDaughter.GetIDTracks();
+  for (const auto &itID : IDpos) {
+    this->SetIDTracks(itID);
+  }
 
   // Phi
-  auto Phipos = posDaughter.GetPhi();
-  for (size_t i = 0; i < Phipos.size(); ++i) {
-    if (i == 0 && ignoreFirstPos) continue;
-    this->SetPhi(Phipos[i]);
-  }
   auto Phineg = negDaughter.GetPhi();
   for (size_t i = 0; i < Phineg.size(); ++i) {
     if (i == 0 && ignoreFirstNeg) continue;
     this->SetPhi(Phineg[i]);
   }
+  auto Phipos = posDaughter.GetPhi();
+  for (size_t i = 0; i < Phipos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetPhi(Phipos[i]);
+  }
 
   // Eta
-  auto Etapos = posDaughter.GetEta();
-  for (size_t i = 0; i < Etapos.size(); ++i) {
-    if (i == 0 && ignoreFirstPos) continue;
-    this->SetEta(Etapos[i]);
-  }
   auto Etaneg = negDaughter.GetEta();
   for (size_t i = 0; i < Etaneg.size(); ++i) {
     if (i == 0 && ignoreFirstNeg) continue;
     this->SetEta(Etaneg[i]);
   }
+  auto Etapos = posDaughter.GetEta();
+  for (size_t i = 0; i < Etapos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetEta(Etapos[i]);
+  }
 
   // Theta
-  auto Thetapos = posDaughter.GetTheta();
-  for (size_t i = 0; i < Thetapos.size(); ++i) {
-    if (i == 0 && ignoreFirstPos) continue;
-    this->SetTheta(Thetapos[i]);
-  }
   auto Thetaneg = negDaughter.GetTheta();
   for (size_t i = 0; i < Thetaneg.size(); ++i) {
     if (i == 0 && ignoreFirstNeg) continue;
     this->SetTheta(Thetaneg[i]);
+  }
+  auto Thetapos = posDaughter.GetTheta();
+  for (size_t i = 0; i < Thetapos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetTheta(Thetapos[i]);
   }
 
   // Charge
   auto Chargepos = posDaughter.GetCharge();
   auto Chargeneg = negDaughter.GetCharge();
   this->SetCharge(Chargepos.at(0) + Chargeneg.at(0));
-  for (size_t i = 0; i < Chargepos.size(); ++i) {
-    if (i == 0 && ignoreFirstPos) continue;
-    this->SetCharge(Chargepos[i]);
-  }
   for (size_t i = 0; i < Chargeneg.size(); ++i) {
     if (i == 0 && ignoreFirstNeg) continue;
     this->SetCharge(Chargeneg[i]);
   }
+  for (size_t i = 0; i < Chargepos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetCharge(Chargepos[i]);
+  }
 
   // Phi At Radii
-  auto PhiAtRadiipos = posDaughter.GetPhiAtRaidius();
-  for (const auto &itPhiAtRadius : PhiAtRadiipos) {
-    this->SetPhiAtRadius(itPhiAtRadius);
-  }
   auto PhiAtRadiineg = negDaughter.GetPhiAtRaidius();
   for (const auto &itPhiAtRadius : PhiAtRadiineg) {
+    this->SetPhiAtRadius(itPhiAtRadius);
+  }
+  auto PhiAtRadiipos = posDaughter.GetPhiAtRaidius();
+  for (const auto &itPhiAtRadius : PhiAtRadiipos) {
     this->SetPhiAtRadius(itPhiAtRadius);
   }
 }

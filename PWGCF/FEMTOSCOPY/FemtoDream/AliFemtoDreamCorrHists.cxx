@@ -836,12 +836,12 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           RadList->SetName("PhiAtRad");
           fPairQA[Counter]->Add(RadList);
           const unsigned int nDaug1 = (unsigned int) DoThisPair / 10;
-          if (nDaug1 > 3) {
+          if (nDaug1 > 9) {
             AliWarning(
                 "you are doing something wrong, maximum of 3 Daughters supported \n");
           }
           const unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
-          const int nDaugComb = 9;
+          const int nDaugComb = 81;
           fRadiiEtaPhiSE[Counter] = new TH2F**[nDaugComb];  //maximum of 9 combinations
           fRadiiEtaPhiME[Counter] = new TH2F**[nDaugComb];
 
@@ -859,7 +859,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           const int nRad = conf->GetNRadii();
           for (unsigned int iDaug1 = 0; iDaug1 < nDaug1; ++iDaug1) {
             for (unsigned int iDaug2 = 0; iDaug2 < nDaug2; ++iDaug2) {
-              int DaugIndex = iDaug1 * 3 + iDaug2;
+              int DaugIndex = iDaug1 * 9 + iDaug2;
               fRadiiEtaPhiSE[Counter][DaugIndex] = new TH2F*[nRad];
               fRadiiEtaPhiME[Counter][DaugIndex] = new TH2F*[nRad];
               if (fPhiEtaPlotsSmallK) {

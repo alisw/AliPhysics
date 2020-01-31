@@ -479,10 +479,10 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
         }
         if (fWhichPairs.at(Hist)) {
           if (SEorME) {
-            fHists->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad, dphi,
+            fHists->FillEtaPhiAtRadiiSE(Hist, 9 * iDaug1 + iDaug2, iRad, dphi,
                                         deta, relk);
           } else {
-            fHists->FillEtaPhiAtRadiiME(Hist, 3 * iDaug1 + iDaug2, iRad, dphi,
+            fHists->FillEtaPhiAtRadiiME(Hist, 9 * iDaug1 + iDaug2, iRad, dphi,
                                         deta, relk);
           }
         }
@@ -490,17 +490,17 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
       //fill dPhi avg
       if (fWhichPairs.at(Hist)) {
         if (SEorME) {
-          fHists->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2,
+          fHists->FillEtaPhiAverageSE(Hist, 9 * iDaug1 + iDaug2,
                                       dphiAvg / (float) size, deta, true);
           if (pass) {
-            fHists->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2,
+            fHists->FillEtaPhiAverageSE(Hist, 9 * iDaug1 + iDaug2,
                                         dphiAvg / (float) size, deta, false);
           }
         } else {
-          fHists->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2,
+          fHists->FillEtaPhiAverageME(Hist, 9 * iDaug1 + iDaug2,
                                       dphiAvg / (float) size, deta, true);
           if (pass) {
-            fHists->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2,
+            fHists->FillEtaPhiAverageME(Hist, 9 * iDaug1 + iDaug2,
                                         dphiAvg / (float) size, deta, false);
           }
         }

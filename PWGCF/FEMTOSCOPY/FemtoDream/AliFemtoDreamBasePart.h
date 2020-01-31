@@ -46,6 +46,9 @@ class AliFemtoDreamBasePart {
     }
   }
   ;
+  size_t GetNdaughters() const {
+    return fP.size();
+  }
   TVector3 GetMomentum(unsigned int iEntr = 0) const {
     if (iEntr > fP.size()) {
       std::cout << "Trying to get a momentum which is out of bounds. iEntr = "
