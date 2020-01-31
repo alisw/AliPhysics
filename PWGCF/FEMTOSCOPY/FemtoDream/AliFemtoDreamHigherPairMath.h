@@ -31,8 +31,9 @@ class AliFemtoDreamHigherPairMath {
     return 4;
   }
   ;
-  bool PassesPairSelection(AliFemtoDreamBasePart& part1,
-                           AliFemtoDreamBasePart& part2, bool Recalculate);
+  bool PassesPairSelection(int iHC, AliFemtoDreamBasePart& part1,
+                           AliFemtoDreamBasePart& part2, float RelativeK,
+                           bool SEorME, bool Recalculate);
   void RecalculatePhiStar(AliFemtoDreamBasePart &part);
   float FillSameEvent(int iHC, int Mult, float cent, TVector3 Part1Momentum,
                       int PDGPart1, TVector3 Part2Momentum, int PDGPart2);
@@ -89,9 +90,8 @@ class AliFemtoDreamHigherPairMath {
   static float RelativePairmT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
 
  private:
-  void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
-                        AliFemtoDreamBasePart &part2, bool SEorME, float relk,
-                        bool recalculate);
+  bool DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
+                        AliFemtoDreamBasePart &part2, bool SEorME, float relk);
   AliFemtoDreamCorrHists *fHists;
   std::vector<unsigned int> fWhichPairs;
   float fBField;

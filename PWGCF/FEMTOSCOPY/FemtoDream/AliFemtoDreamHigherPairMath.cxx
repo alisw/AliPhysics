@@ -56,8 +56,8 @@ AliFemtoDreamHigherPairMath& AliFemtoDreamHigherPairMath::operator=(
 }
 
 bool AliFemtoDreamHigherPairMath::PassesPairSelection(
-    AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2,
-    bool Recalculate) {
+    int iHC, AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2,
+    float RelativeK, bool SEorME, bool Recalculate) {
   bool outBool = true;
   //Method calculates the average separation between two tracks
   //at different radii within the TPC and rejects pairs which a
@@ -66,50 +66,14 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
     RecalculatePhiStar(part1);
     RecalculatePhiStar(part2);
   }
-  unsigned int nDaug1 = part1.GetPhiAtRaidius().size();
-  unsigned int nDaug2 = part2.GetPhiAtRaidius().size();
-//  std::cout << "nDaug1: " << nDaug1 << " nDaug2: " << nDaug2 << std::endl;
-  // if nDaug == 1 => Single Track, else decay
-  std::vector<float> eta1 = part1.GetEta();
-  std::vector<float> eta2 = part2.GetEta();
+  bool pass = true;
+  bool CPR = fRejPairs.at(iHC);
 
-  for (unsigned int iDaug1 = 0; iDaug1 < nDaug1 && outBool; ++iDaug1) {
-    std::vector<float> PhiAtRad1 = part1.GetPhiAtRaidius().at(iDaug1);
-    float etaPar1;
-    if (nDaug1 == 1) {
-      etaPar1 = eta1.at(0);
-    } else {
-      etaPar1 = eta1.at(iDaug1 + 1);
-    }
-    for (unsigned int iDaug2 = 0;
-        iDaug2 < part2.GetPhiAtRaidius().size() && outBool; ++iDaug2) {
-      std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
-      float etaPar2;
-      if (nDaug2 == 1) {
-        etaPar2 = eta2.at(0);
-      } else {
-        etaPar2 = eta2.at(iDaug2 + 1);
-      }
-      float deta = etaPar1 - etaPar2;
-      const int size =
-          (PhiAtRad1.size() > phiAtRad2.size()) ?
-              phiAtRad2.size() : PhiAtRad1.size();
-      for (int iRad = 0; iRad < size; ++iRad) {
-        float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
-        if (dphi > piHi) {
-          dphi += -piHi * 2;
-        } else if (dphi < -piHi) {
-          dphi += piHi * 2;
-        }
-        dphi = TVector2::Phi_mpi_pi(dphi);
-        if (dphi * dphi + deta * deta < fDeltaPhiEtaMax) {
-          outBool = false;
-          break;
-        }
-      }
-    }
+  //only need to do this, if we wanna fill the plots or wanna do the CPR ...
+  if ((CPR && fDoDeltaEtaDeltaPhiCut) || fHists->GetEtaPhiPlots()) {
+    pass = DeltaEtaDeltaPhi(iHC, part1, part2, SEorME, RelativeK);
   }
-  return outBool;
+  return pass;
 }
 
 void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
@@ -258,9 +222,6 @@ void AliFemtoDreamHigherPairMath::SEDetaDPhiPlots(int iHC,
                                                   AliFemtoDreamBasePart &part2,
                                                   int PDGPart2, float RelativeK,
                                                   bool recalculate) {
-  if (fWhichPairs.at(iHC) && fHists->GetEtaPhiPlots()) {
-    DeltaEtaDeltaPhi(iHC, part1, part2, true, RelativeK, recalculate);
-  }
   if (fWhichPairs.at(iHC) && fHists->GetDodPhidEtaPlots()) {
     float deta = part1.GetEta().at(0) - part2.GetEta().at(0);
     float dphi = part1.GetPhi().at(0) - part2.GetPhi().at(0);
@@ -289,9 +250,6 @@ void AliFemtoDreamHigherPairMath::MEDetaDPhiPlots(int iHC,
                                                   AliFemtoDreamBasePart &part2,
                                                   int PDGPart2, float RelativeK,
                                                   bool recalculate) {
-  if (fWhichPairs.at(iHC) && fHists->GetEtaPhiPlots()) {
-    DeltaEtaDeltaPhi(iHC, part1, part2, false, RelativeK, recalculate);
-  }
   if (fWhichPairs.at(iHC) && fHists->GetDodPhidEtaPlots()) {
     float deta = part1.GetEta().at(0) - part2.GetEta().at(0);
     float dphi = part1.GetPhi().at(0) - part2.GetPhi().at(0);
@@ -453,24 +411,34 @@ float AliFemtoDreamHigherPairMath::RelativePairmT(TLorentzVector &PartOne,
   return results;
 }
 
-void AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
+bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
                                                    AliFemtoDreamBasePart &part1,
                                                    AliFemtoDreamBasePart &part2,
-                                                   bool SEorME, float relk,
-                                                   bool recalculate) {
-  if (recalculate) {
-    RecalculatePhiStar(part1);
-    RecalculatePhiStar(part2);
-  }
-
+                                                   bool SEorME, float relk) {
+  bool pass = true;
+  // if nDaug == 1 => Single Track, else decay
   unsigned int DoThisPair = fWhichPairs.at(Hist);
   unsigned int nDaug1 = (unsigned int) DoThisPair / 10;
   if (nDaug1 > 9) {
     AliWarning("you are doing something wrong \n");
   }
+  if (nDaug1 != part1.GetPhiAtRaidius().size()) {
+    TString outMessage = TString::Format(
+        "Your number of Daughters 1 (%u) and Radii 1 (%u) do not correspond \n",
+        nDaug1, part1.GetPhiAtRaidius().size());
+    AliWarning(outMessage.Data());
+  }
   unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
+
+  if (nDaug2 != part2.GetPhiAtRaidius().size()) {
+    TString outMessage = TString::Format(
+        "Your number of Daughters 2 (%u) and Radii 2 (%u) do not correspond \n",
+        nDaug2, part2.GetPhiAtRaidius().size());
+    AliWarning(outMessage.Data());
+  }
   std::vector<float> eta1 = part1.GetEta();
   std::vector<float> eta2 = part2.GetEta();
+
   for (unsigned int iDaug1 = 0; iDaug1 < nDaug1; ++iDaug1) {
     std::vector<float> PhiAtRad1 = part1.GetPhiAtRaidius().at(iDaug1);
     float etaPar1;
@@ -501,23 +469,41 @@ void AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
         } else if (dphi < -piHi) {
           dphi += piHi * 2;
         }
-        if (SEorME) {
-          fHists->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad, dphi,
-                                      deta, relk);
-        } else {
-          fHists->FillEtaPhiAtRadiiME(Hist, 3 * iDaug1 + iDaug2, iRad, dphi,
-                                      deta, relk);
+        dphi = TVector2::Phi_mpi_pi(dphi);
+        if (pass) {
+          if (dphi * dphi + deta * deta < fDeltaPhiEtaMax) {
+            pass = false;
+          }
+        }
+        if (fWhichPairs.at(Hist)) {
+          if (SEorME) {
+            fHists->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad, dphi,
+                                        deta, relk);
+          } else {
+            fHists->FillEtaPhiAtRadiiME(Hist, 3 * iDaug1 + iDaug2, iRad, dphi,
+                                        deta, relk);
+          }
         }
       }
       //fill dPhi avg
-      if (SEorME) {
-        fHists->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2,
-                                    dphiAvg / (float) size, deta, false);
-      } else {
-        fHists->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2,
-                                    dphiAvg / (float) size, deta, false);
+      if (fWhichPairs.at(Hist)) {
+        if (SEorME) {
+          fHists->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2,
+                                      dphiAvg / (float) size, deta, true);
+          if (pass) {
+            fHists->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2,
+                                        dphiAvg / (float) size, deta, false);
+          }
+        } else {
+          fHists->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2,
+                                      dphiAvg / (float) size, deta, true);
+          if (pass) {
+            fHists->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2,
+                                        dphiAvg / (float) size, deta, false);
+          }
+        }
       }
     }
   }
-  return;
+  return pass;
 }
