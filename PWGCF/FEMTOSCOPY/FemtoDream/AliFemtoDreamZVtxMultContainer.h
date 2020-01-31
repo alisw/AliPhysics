@@ -44,11 +44,11 @@ class AliFemtoDreamZVtxMultContainer {
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
   std::vector<unsigned int> fWhichPairs;
-  std::vector<bool> fRejPairs;
-  float fDeltaEtaMax;
-  float fDeltaPhiMax;
-  float fDeltaPhiEtaMax;
-  bool fDoDeltaEtaDeltaPhiCut;
+//  std::vector<bool> fRejPairs;
+//  bool fDoDeltaEtaDeltaPhiCut;
+//  float fDeltaEtaMax;
+//  float fDeltaPhiMax;
+//  float fDeltaPhiEtaMax;
 
 ClassDef(AliFemtoDreamZVtxMultContainer, 4)
   ;

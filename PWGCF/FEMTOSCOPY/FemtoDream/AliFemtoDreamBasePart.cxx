@@ -9,12 +9,13 @@
 #include "AliMCParticle.h"
 
 #include <iostream>
-ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
+ClassImp(AliFemtoDreamBasePart)
+AliFemtoDreamBasePart::AliFemtoDreamBasePart(const int part)
     : fIsReset(false),
       fGTI(0),
       fVGTI(0),
       fTrackBufferSize(0),
-      fP(),
+      fP(part),
       fMCP(),
       fPt(0),
       fMCPt(0),
@@ -41,7 +42,8 @@ ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
       fIsMC(false),
       fUse(true),
       fIsSet(true),
-      fEvtMultiplicity(-1) {}
+      fEvtMultiplicity(-1) {
+}
 
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
     : fIsReset(part.fIsReset),
@@ -75,7 +77,8 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fIsMC(part.fIsMC),
       fUse(part.fUse),
       fIsSet(part.fIsSet),
-      fEvtMultiplicity(part.fEvtMultiplicity) {}
+      fEvtMultiplicity(part.fEvtMultiplicity) {
+}
 
 AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
     const AliFemtoDreamBasePart &obj) {
@@ -124,7 +127,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fGTI(0),
       fVGTI(0),
       fTrackBufferSize(0),
-      fP(TVector3(gamma->GetPx(), gamma->GetPy(), gamma->GetPz())),
+      fP(3),
       fMCP(),
       fPt(gamma->GetPhotonPt()),
       fMCPt(0),
@@ -152,26 +155,30 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fUse(true),
       fIsSet(true),
       fEvtMultiplicity(-1) {
-  double momV0[3] = {0, 0, 0};
+  double momV0[3] = { 0, 0, 0 };
   momV0[0] = gamma->Px();
   momV0[1] = gamma->Py();
   momV0[2] = gamma->Pz();
-
+  SetMomentum(0,{gamma->GetPx(), gamma->GetPy(), gamma->GetPz()});
+  SetMomentum(1,{posTrack->Px(), posTrack->Py(), posTrack->Pz()});
+  SetMomentum(2,{negTrack->Px(), negTrack->Py(), negTrack->Pz()});
   // Recalculated V0 Position vector
-  double PosV0[3] = {
-      gamma->GetConversionX() - inputEvent->GetPrimaryVertex()->GetX(),
-      gamma->GetConversionY() - inputEvent->GetPrimaryVertex()->GetY(),
-      gamma->GetConversionZ() - inputEvent->GetPrimaryVertex()->GetZ()};
+  double PosV0[3] = { gamma->GetConversionX()
+      - inputEvent->GetPrimaryVertex()->GetX(), gamma->GetConversionY()
+      - inputEvent->GetPrimaryVertex()->GetY(), gamma->GetConversionZ()
+      - inputEvent->GetPrimaryVertex()->GetZ() };
 
-  double momV02 = fP[0] * fP[0] + fP[1] * fP[1] + fP[2] * fP[2];
-  double PosV02 =
-      PosV0[0] * PosV0[0] + PosV0[1] * PosV0[1] + PosV0[2] * PosV0[2];
+  double momV02 = GetMomentum().X() * GetMomentum().X()
+      + GetMomentum().Y() * GetMomentum().Y()
+      + GetMomentum().Z() * GetMomentum().Z();
+  double PosV02 = PosV0[0] * PosV0[0] + PosV0[1] * PosV0[1]
+      + PosV0[2] * PosV0[2];
 
   double cosinePointingAngle =
-      (momV02 * PosV02 > 0.0)
-          ? (PosV0[0] * momV0[0] + PosV0[1] * momV0[1] + PosV0[2] * momV0[2]) /
-                TMath::Sqrt(momV02 * PosV02)
-          : -999.f;
+      (momV02 * PosV02 > 0.0) ?
+          (PosV0[0] * momV0[0] + PosV0[1] * momV0[1] + PosV0[2] * momV0[2])
+              / TMath::Sqrt(momV02 * PosV02) :
+          -999.f;
   fCPA = cosinePointingAngle;
 
   const int posLabel = posTrack->GetID();
@@ -204,8 +211,9 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
 }
 
 AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
-  fGTI= nullptr;
+  fGTI = nullptr;
   fVGTI = nullptr;
+  fP.clear();
   fEta.clear();
   fTheta.clear();
   fMCTheta.clear();
@@ -234,12 +242,13 @@ void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,
     motherID = evt->GetTrack(motherID)->GetMother();
   }
   this->SetMotherID(lastMother);
-  this->SetMCPDGCode(static_cast<AliAODMCParticle*>(evt->GetTrack(lastMother))->GetPdgCode());
+  this->SetMCPDGCode(
+      static_cast<AliAODMCParticle*>(evt->GetTrack(lastMother))->GetPdgCode());
 }
 
 void AliFemtoDreamBasePart::SetMCParticleRePart(AliAODMCParticle *mcPart) {
   this->SetPt(mcPart->Pt());
-  this->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz());
+  this->SetMomentum(0, mcPart->Px(), mcPart->Py(), mcPart->Pz());
   this->SetTheta(mcPart->Theta());
   this->SetEta(mcPart->Eta());
   this->SetPhi(mcPart->Phi());
@@ -250,6 +259,7 @@ void AliFemtoDreamBasePart::SetMCParticleRePart(AliAODMCParticle *mcPart) {
 
 void AliFemtoDreamBasePart::ResetMCInfo() {
   this->SetPt(0);
+  this->SetMomentum(0,0,0,0);
   // a change
   this->SetEta(0);
   this->SetTheta(0);
@@ -265,14 +275,17 @@ void AliFemtoDreamBasePart::ResetMCInfo() {
 void AliFemtoDreamBasePart::PhiAtRadii(const AliVTrack *track,
                                        const float bfield,
                                        std::vector<float> &tmpVec) {
-  float TPCradii[9] = {85., 105., 125., 145., 165., 185., 205., 225., 245.};
+  float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225., 245. };
   float phi0 = track->Phi();
   ;
   float pt = track->Pt();
   float chg = track->Charge();
   for (int radius = 0; radius < 9; radius++) {
-    tmpVec.push_back(phi0 - TMath::ASin(0.1 * chg * bfield * 0.3 *
-                                        TPCradii[radius] * 0.01 / (2. * pt)));
+    tmpVec.push_back(
+        phi0
+            - TMath::ASin(
+                0.1 * chg * bfield * 0.3 * TPCradii[radius] * 0.01
+                    / (2. * pt)));
   }
 }
 
@@ -293,8 +306,10 @@ void AliFemtoDreamBasePart::DumpParticleInformation() {
   };
 
   std::cout << "Dumping the particle information\n";
-  std::cout << "Momentum- x: " << fP.X() << " y: " <<  fP.Y() << " z: " << fP.Z() << "\n";
-  std::cout << "Momentum (MC)  - x: " << fMCP.X() << " y: " << fMCP.Y() << " z: " << fMCP.Z() << "\n";
+  std::cout << "Momentum- x: " << GetMomentum().X() << " y: "
+            << GetMomentum().Y() << " z: " << GetMomentum().Z() << "\n";
+  std::cout << "Momentum (MC)  - x: " << fMCP.X() << " y: " << fMCP.Y()
+            << " z: " << fMCP.Z() << "\n";
   std::cout << "pT: " << fPt << "\n";
   std::cout << "p TPC " << fP_TPC << "\n";
   std::cout << "pT (MC): " << fMCPt << "\n";

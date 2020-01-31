@@ -68,7 +68,6 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   void SetdPhidEtaPlots(bool doIt) {
     fdPhidEtaPlots = doIt;
-    fdPhidEtaPlotsSmallK = doIt;
   }
   void SetdPhidEtaPlotsSmallK(bool doIt) {
     fdPhidEtaPlotsSmallK = doIt;
@@ -94,6 +93,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMaxKRel(std::vector<float> maxKRel);
   void SetCentBins(std::vector<int> CentBins);
   void SetmTdEtadPhiBins(std::vector<float> mTBins);
+  //TODO: should be renamed since besides the QA it also specifies the
+  // number of tracks to compare when doing the CPR cut
   void SetExtendedQAPairs(std::vector<int> whichPairs);
   void SetClosePairRejection(std::vector<bool> whichPairs);
   void SetMixingDepth(int MixingDepth) {
@@ -256,7 +257,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   void DoDeltaEtaDeltaPhiCut(bool doIt) {
     fDoDeltaEtaDeltaPhiCut = doIt;
   }
-  float GetDoDeltaEtaDeltaPhiCut() const {
+  bool GetDoDeltaEtaDeltaPhiCut() const {
     return fDoDeltaEtaDeltaPhiCut;
   }
 

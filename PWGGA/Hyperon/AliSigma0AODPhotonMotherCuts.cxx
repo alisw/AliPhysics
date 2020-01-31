@@ -566,7 +566,7 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
   }
 
   // SAME EVENT
-  AliFemtoDreamv0 sigma;
+  AliFemtoDreamv0 sigma(7);
   for (const auto &photon : fPhotonCandidates) {
     if (photon.GetPt() > fPhotonPtMax || photon.GetPt() < fPhotonPtMin)
       continue;
