@@ -41,7 +41,11 @@ AliTrackerBase::AliTrackerBase():
   fZ(0),
   fSigmaX(0.005),
   fSigmaY(0.005),
-  fSigmaZ(0.010)
+  fSigmaZ(0.010),
+  fRun(0),
+  fOrbitNumber(0),
+  fPeriodNumber(0),
+  fBunchCrossNumber(0)
 {
   //--------------------------------------------------------------------
   // The default constructor.
@@ -58,7 +62,11 @@ AliTrackerBase::AliTrackerBase(const AliTrackerBase &atr):
   fZ(atr.fZ),
   fSigmaX(atr.fSigmaX),
   fSigmaY(atr.fSigmaY),
-  fSigmaZ(atr.fSigmaZ)
+  fSigmaZ(atr.fSigmaZ),
+  fRun(atr.fRun),
+  fOrbitNumber(atr.fOrbitNumber),
+  fPeriodNumber(atr.fPeriodNumber),
+  fBunchCrossNumber(atr.fBunchCrossNumber)
 {
   //--------------------------------------------------------------------
   // The default constructor.

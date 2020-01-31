@@ -40,7 +40,16 @@ public:
   Int_t    GetRunNumber() const {return fRun;}
   void     SetTimeStamp(UInt_t t) {fTimeStamp = t;}
   void     SetRunNumber(int run)  {fRun = run;}
+  
+  void      SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber=n;}
+  void      SetPeriodNumber(UInt_t n) {fPeriodNumber=n;}
+  void      SetOrbitNumber(UInt_t n) {fOrbitNumber=n;}
 
+  UShort_t  GetBunchCrossNumber() const {return fBunchCrossNumber;}
+  UInt_t    GetPeriodNumber() const {return fPeriodNumber;}
+  UInt_t    GetOrbitNumber() const {return fOrbitNumber;}
+
+  
   static Double_t GetTrackPredictedChi2(AliExternalTrackParam *track,
                                         Double_t mass, Double_t step, 
 			          const AliExternalTrackParam *backup);
@@ -101,7 +110,11 @@ private:
   UInt_t   fTimeStamp; // event time stamp
   Int_t    fRun;       //  run number
 
-  ClassDef(AliTrackerBase,2) //base tracker
+  UInt_t   fOrbitNumber;       // Orbit Number
+  UInt_t   fPeriodNumber;      // Period Number
+  UShort_t fBunchCrossNumber;  // Bunch Crossing Number
+
+  ClassDef(AliTrackerBase,3) //base tracker
 };
 
 //__________________________________________________________________________

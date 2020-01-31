@@ -381,7 +381,8 @@ void AliTPCcalibGainMult::Process(AliVEvent *event) {
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   transform->SetCurrentRun(fRun);
   transform->SetCurrentTimeStamp((UInt_t)fTime);
-
+  transform->AccountCurrentBC( fBunchCrossNumber );
+  
   const Int_t row0 = param->GetNRowLow();
   const Int_t row1 = row0+param->GetNRowUp1();
   const Int_t row2 = row1+param->GetNRowUp2();

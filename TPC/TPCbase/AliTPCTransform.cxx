@@ -102,6 +102,7 @@ AliTPCTransform::AliTPCTransform():
   fLumiGraphMap(0),
   fCurrentRun(0),             //! current run
   fCurrentTimeStamp(0),       //! current time stamp
+  fAltroLHCShift(0),
   fTimeDependentUpdated(kFALSE),
   fCorrMapMode(kTRUE),
   //
@@ -143,6 +144,7 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fLumiGraphMap(transform.fLumiGraphMap ? new TGraph(*transform.fLumiGraphMap) : 0),
   fCurrentRun(transform.fCurrentRun),             //! current run
   fCurrentTimeStamp(transform.fCurrentTimeStamp),       //! current time stamp
+  fAltroLHCShift(transform.fAltroLHCShift),
   fTimeDependentUpdated(transform.fTimeDependentUpdated),
   fCorrMapMode(transform.fCorrMapMode),
   fDebugStreamer(0),
@@ -193,6 +195,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   /// line approximation
 
   if (!fCurrentRecoParam) return;
+  x[2] -= fAltroLHCShift; // account for the (BC%4)*100ns/200ns BC-dependent shift
   Int_t row=TMath::Nint(x[0]);
   Int_t pad=TMath::Nint(x[1]);
   Int_t sector=i[0];

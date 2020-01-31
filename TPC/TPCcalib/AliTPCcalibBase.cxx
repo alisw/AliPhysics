@@ -68,6 +68,9 @@ AliTPCcalibBase::AliTPCcalibBase():
     fRun(0),                  //!  current Run number
     fEvent(0),                //!  current Event number
     fTime(0),                 //!  current Time
+    fOrbitNumber(0),
+    fPeriodNumber(0),
+    fBunchCrossNumber(0),
     fTrigger(0),              //! current trigger type
     fMagF(0),                 //! current magnetic field
     fTriggerMaskReject(-1),   //trigger mask - reject trigger
@@ -93,6 +96,9 @@ AliTPCcalibBase::AliTPCcalibBase(const char * name, const char * title):
   fRun(0),                  //!  current Run number
   fEvent(0),                //!  current Event number
   fTime(0),                 //!  current Time
+  fOrbitNumber(0),
+  fPeriodNumber(0),
+  fBunchCrossNumber(0),
   fTrigger(0),              //! current trigger type
   fMagF(0),                 //! current magnetic field
   fTriggerMaskReject(-1),   //trigger mask - reject trigger
@@ -118,6 +124,9 @@ AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
   fRun(0),                  //!  current Run number
   fEvent(0),                //!  current Event number
   fTime(0),                 //!  current Time
+  fOrbitNumber(0),
+  fPeriodNumber(0),
+  fBunchCrossNumber(0),
   fTrigger(0),              //! current trigger type
   fMagF(0),                 //! current magnetic field
   fTriggerMaskReject(calib.fTriggerMaskReject),   //trigger mask - reject trigger
@@ -192,6 +201,10 @@ void    AliTPCcalibBase::UpdateEventInfo(AliVEvent * event){
   fRun     = event->GetRunNumber();
   fEvent   = event->GetEventNumberInFile();
   fTime    = event->GetTimeStamp();
+  fOrbitNumber = event->GetOrbitNumber();
+  fPeriodNumber = event->GetPeriodNumber();
+  fBunchCrossNumber = event->GetBunchCrossNumber();
+  
   fTrigger = event->GetTriggerMask();
   fMagF    = event->GetMagneticField();
   fTriggerClass = event->GetFiredTriggerClasses().Data();

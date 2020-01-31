@@ -1484,6 +1484,7 @@ Int_t  AliTPCtracker::LoadClusters(const TObjArray *arr)
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   transform->SetCurrentTimeStamp( GetTimeStamp());
   transform->SetCurrentRun( GetRunNumber() );
+  transform->AccountCurrentBC( GetBunchCrossNumber() );
 
   AliWarning("Sector Change ins not checked in LoadClusters(const TObjArray *arr)");
 

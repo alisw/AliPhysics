@@ -2256,7 +2256,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       if (fTracker[iDet]) { // some trackers need details about the run/time
 	fTracker[iDet]->SetTimeStamp(fesd->GetTimeStamp());
-	fTracker[iDet]->SetRunNumber(fesd->GetRunNumber());
+	fTracker[iDet]->SetOrbitNumber(fesd->GetOrbitNumber());
+	fTracker[iDet]->SetPeriodNumber(fesd->GetPeriodNumber());
+	fTracker[iDet]->SetBunchCrossNumber(fesd->GetBunchCrossNumber());
+	fTracker[iDet]->SetRunNumber(fesd->GetRunNumber());	
       }
       //RS also some reconstructructors may need the time stamp
       if (fReconstructor[iDet]) fReconstructor[iDet]->SetTimeStamp(fesd->GetTimeStamp());

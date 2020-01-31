@@ -59,6 +59,7 @@ public:
   void SetCurrentRecoParam(AliTPCRecoParam* param){fCurrentRecoParam=param;}
   void SetCurrentRun(Int_t run){fCurrentRun=run;}
   void SetCurrentTimeStamp(time_t timeStamp);
+  void AccountCurrentBC(UShort_t bc);
   void ApplyTransformations(Double_t *xyz, Int_t volID);
   //
   // new correction maps
@@ -125,6 +126,7 @@ private:
   TGraph*  fLumiGraphMap;                    //!<! graph for current map luminosity (may be different from current run), owned by the class
   Int_t    fCurrentRun;                //!<! current run
   time_t   fCurrentTimeStamp;          //!<! current time stamp
+  Float_t  fAltroLHCShift;             //!<! current (BC%4)*25ns/100ns BC-dependent shift
   Bool_t   fTimeDependentUpdated;      //!<! flag successful update of time dependent stuff
   Bool_t   fCorrMapMode;               //!<! correction or distortion map mode
   //
@@ -150,7 +152,7 @@ private:
   
   AliHLTTPCReverseTransformInfoV1* fTmpReverseTransformInfo; //!
   //
-  ClassDef(AliTPCTransform,5)
+  ClassDef(AliTPCTransform,6)
   /// \endcond
 };
 
@@ -208,5 +210,10 @@ inline int AliTPCTransform::SectorDown(int idROC)
   return idROC + (((idROC%18)== 0) ?  17 : -1); // change to the lower sector
 }
 
+//_________________________________________________
+inline void AliTPCTransform::AccountCurrentBC(UShort_t bc)
+{
+  fAltroLHCShift = (bc%4)*0.25; // (bc%4)*25ns/100ns
+}
 
 #endif

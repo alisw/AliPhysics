@@ -468,7 +468,8 @@ void  AliTPCcalibAlignInterpolation::Process(AliVEvent *eventV) {
   transform->GetCurrentRecoParamNonConst()->SetAccountDistortions(kFALSE);
 
   transform->SetCurrentTimeStamp(esdEvent->GetTimeStamp()); // to be independent from the time set by other tasks
-
+  transform->AccountCurrentBC( esdEvent->GetBunchCrossNumber() );
+  
   for (Int_t iTrack=0;iTrack<nTracks;iTrack++){ // Track loop
     // 0.) For each track in each event, get the AliESDfriendTrack
     AliESDtrack *esdTrack = esdEvent->GetTrack(iTrack);

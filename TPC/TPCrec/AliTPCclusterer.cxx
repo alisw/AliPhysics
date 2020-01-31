@@ -639,6 +639,7 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * 
     if (transform->GetCurrentTimeStamp()!=fTimeStamp) {
       transform->SetCurrentTimeStamp(fTimeStamp);
     }
+    transform->AccountCurrentBC( fBunchCrossNumber );
     Double_t x[3]={static_cast<Double_t>(c.GetRow()),static_cast<Double_t>(c.GetPad()),static_cast<Double_t>(c.GetTimeBin())};
     Int_t i[1]={fSector};
     transform->Transform(x,i,0,1);

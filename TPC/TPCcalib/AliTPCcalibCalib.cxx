@@ -207,6 +207,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliVTrack * track, AliTPCseed *seed, Float_
   AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
   transform->SetCurrentRun(fRun);
   transform->SetCurrentTimeStamp((UInt_t)fTime);
+  transform->AccountCurrentBC( fBunchCrossNumber );
   if(!fApplyExBCorrection) { // disable ExB correction in transform
     if(transform->GetCurrentRecoParam())
       transform->GetCurrentRecoParamNonConst()->SetUseExBCorrection(0);

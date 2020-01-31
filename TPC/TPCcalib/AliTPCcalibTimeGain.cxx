@@ -332,7 +332,8 @@ void AliTPCcalibTimeGain::Process(AliVEvent *event) {
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   transform->SetCurrentRun(fRun);
   transform->SetCurrentTimeStamp((UInt_t)fTime);
-
+  transform->AccountCurrentBC( fBunchCrossNumber );
+  
   if (fIsCosmic) { // this should be removed at some point based on trigger mask !?
     ProcessCosmicEvent(event);
   } else {

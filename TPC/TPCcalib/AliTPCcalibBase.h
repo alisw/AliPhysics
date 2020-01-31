@@ -66,6 +66,11 @@ protected:
   Int_t  fRun;                          //!  current Run number
   Int_t  fEvent;                        //! current Event number
   Int_t  fTime;                         //!  current Time
+  UInt_t   fOrbitNumber;                //! Orbit Number
+  UInt_t   fPeriodNumber;               //! Period Number
+  UShort_t fBunchCrossNumber;           //! Bunch Crossing Number
+
+  
   ULong64_t  fTrigger;                  //! current trigger mask
   Float_t fMagF;                        // current magnetic field 
   Int_t   fTriggerMaskReject;           //trigger mask - non accept trigger
@@ -80,7 +85,7 @@ protected:
 private:
   Int_t  fDebugLevel;                   //  debug level
 
-  ClassDef(AliTPCcalibBase,3)
+  ClassDef(AliTPCcalibBase,4)
 };
 
 #endif
