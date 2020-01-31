@@ -68,7 +68,6 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   void SetdPhidEtaPlots(bool doIt) {
     fdPhidEtaPlots = doIt;
-    fdPhidEtaPlotsSmallK = doIt;
   }
   void SetdPhidEtaPlotsSmallK(bool doIt) {
     fdPhidEtaPlotsSmallK = doIt;
