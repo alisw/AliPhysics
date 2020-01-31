@@ -15,6 +15,8 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
     : fHists(new AliFemtoDreamCorrHists(conf, minBooking)),
       fWhichPairs(conf->GetWhichPairs()),
       fBField(-99.),
+      fRejPairs(conf->GetClosePairRej()),
+      fDoDeltaEtaDeltaPhiCut(false),
       fDeltaPhiEtaMax(conf->GetSqDeltaPhiEtaMax()),
       fRandom(),
       fPi(TMath::Pi()) {
@@ -32,6 +34,8 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
     : fHists(samp.fHists),
       fWhichPairs(samp.fWhichPairs),
       fBField(-99.),
+      fRejPairs(samp.fRejPairs),
+      fDoDeltaEtaDeltaPhiCut(samp.fRejPairs),
       fDeltaPhiEtaMax(samp.fDeltaPhiEtaMax),
       fRandom(),
       fPi(TMath::Pi()) {

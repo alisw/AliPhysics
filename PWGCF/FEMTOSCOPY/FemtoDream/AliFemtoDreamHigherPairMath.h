@@ -95,6 +95,8 @@ class AliFemtoDreamHigherPairMath {
   AliFemtoDreamCorrHists *fHists;
   std::vector<unsigned int> fWhichPairs;
   float fBField;
+  std::vector<bool> fRejPairs;
+  bool fDoDeltaEtaDeltaPhiCut;
   float fDeltaPhiEtaMax;
   TRandom3 fRandom;
   double fPi;

@@ -15,12 +15,7 @@ ClassImp(AliFemtoDreamPartContainer)
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
     : fPartContainer(0),
       fPDGParticleSpecies(0),
-      fWhichPairs(),
-      fRejPairs(),
-      fDeltaEtaMax(0.f),
-      fDeltaPhiMax(0.f),
-      fDeltaPhiEtaMax(0.f),
-      fDoDeltaEtaDeltaPhiCut(false) {
+      fWhichPairs(){
 }
 
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
@@ -28,13 +23,7 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
     : fPartContainer(conf->GetNParticles(),
                      AliFemtoDreamPartContainer(conf->GetMixingDepth())),
       fPDGParticleSpecies(conf->GetPDGCodes()),
-      fWhichPairs(conf->GetWhichPairs()),
-      fRejPairs(conf->GetClosePairRej()),
-      fDeltaEtaMax(conf->GetDeltaEtaMax()),
-      fDeltaPhiMax(conf->GetDeltaPhiMax()),
-      fDeltaPhiEtaMax(
-          fDeltaPhiMax * fDeltaPhiMax + fDeltaEtaMax * fDeltaEtaMax),
-      fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()) {
+      fWhichPairs(conf->GetWhichPairs()){
   TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
                                         kTRUE, 0.0, 1, "Nucleus", 1000010020);
   TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
@@ -82,7 +71,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
       HigherMath->FillPairCounterSE(HistCounter, itSpec1->size(),
                                     itSpec2->size());
       //Now loop over the actual Particles and correlate them
-      bool CPR = fRejPairs.at(HistCounter);
       for (auto itPart1 = itSpec1->begin(); itPart1 != itSpec1->end();
           ++itPart1) {
         AliFemtoDreamBasePart part1 = *itPart1;
@@ -140,7 +128,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
         HigherMath->FillEffectiveMixingDepth(HistCounter,
                                              (int) itSpec2->GetMixingDepth());
       }
-      bool CPR = fRejPairs.at(HistCounter);
       for (int iDepth = 0; iDepth < (int) itSpec2->GetMixingDepth(); ++iDepth) {
         std::vector<AliFemtoDreamBasePart> ParticlesOfEvent = itSpec2->GetEvent(
             iDepth);
