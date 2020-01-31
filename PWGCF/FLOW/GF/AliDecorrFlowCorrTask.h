@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef UNIFLOWCORRTASK_H
-#define UNIFLOWCORRTASK_H
+#ifndef DECORRFLOWCORRTASK_H
+#define DECORRFLOWCORRTASK_H
 
 class AliDecorrFlowCorrTask : public TObject
 {

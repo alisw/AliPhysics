@@ -18,8 +18,8 @@
 // Author: Vojtech Pacik (vojtech.pacik@cern.ch), NBI, 2019
 // =================================================================================================
 
-#ifndef UNIFLOWCORRTASK_CXX
-#define UNIFLOWCORRTASK_CXX
+#ifndef DECORRFLOWCORRTASK_CXX
+#define DECORRFLOWCORRTASK_CXX
 
 #include <vector>
 #include "TObject.h"
@@ -116,8 +116,8 @@ void AliDecorrFlowCorrTask::PrintTask() const
   printf("# fsLabel:\t %s\n", fsLabel.Data());
   printf("# fbDoRef:\t %d\n", fbDoRef);
   printf("# fbDoDiff:\t %d\n", fbDoDiff);
-  printf("# fbDoSSC:\t %d\n", fbDoSSC);
-  printf("# fbDoDSC:\t %d\n", fbDoDSC);
+  printf("# fbDoPtRef:\t %d\n", fbDoPtRef);
+  printf("# fbDoPtB:\t %d\n", fbDoPtB);
   printf("# fiNumHarm:\t %d\n", fiNumHarm);
   printf("# fiHarm:\t { "); for(Int_t i(0); i < fiNumHarm; ++i) { printf("%d ",fiHarm[i]); }  printf("}\n");
   printf("# fiNumGaps:\t %d\n", fiNumGaps);
