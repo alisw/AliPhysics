@@ -82,12 +82,20 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
         }
         while (itPart2 != itSpec2->end()) {
           AliFemtoDreamBasePart part2 = *itPart2;
-          // Delta eta - Delta phi* cut
-          if (fDoDeltaEtaDeltaPhiCut && CPR) {
-            if (!HigherMath->PassesPairSelection(*itPart1, *itPart2, false)) {
-              ++itPart2;
-              continue;
-            }
+          TLorentzVector PartOne, PartTwo;
+          PartOne.SetXYZM(
+              itPart1->GetMomentum().X(), itPart1->GetMomentum().Y(),
+              itPart1->GetMomentum().Z(),
+              TDatabasePDG::Instance()->GetParticle(*itPDGPar1)->Mass());
+          PartTwo.SetXYZM(
+              itPart2->GetMomentum().X(), itPart2->GetMomentum().Y(),
+              itPart2->GetMomentum().Z(),
+              TDatabasePDG::Instance()->GetParticle(*itPDGPar2)->Mass());
+          float RelativeK = HigherMath->RelativePairMomentum(PartOne, PartTwo);
+          if (!HigherMath->PassesPairSelection(HistCounter, *itPart1, *itPart2,
+                                               RelativeK, true, false)) {
+            ++itPart2;
+            continue;
           }
           RelativeK = HigherMath->FillSameEvent(HistCounter, iMult, cent,
                                                 itPart1->GetMomentum(),
@@ -137,10 +145,20 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             ++itPart1) {
           for (auto itPart2 = ParticlesOfEvent.begin();
               itPart2 != ParticlesOfEvent.end(); ++itPart2) {
-            if (fDoDeltaEtaDeltaPhiCut && CPR) {
-              if (!HigherMath->PassesPairSelection(*itPart1, *itPart2, false)) {
-                continue;
-              }
+
+            TLorentzVector PartOne, PartTwo;
+            PartOne.SetXYZM(
+                itPart1->GetMomentum().X(), itPart1->GetMomentum().Y(),
+                itPart1->GetMomentum().Z(),
+                TDatabasePDG::Instance()->GetParticle(*itPDGPar1)->Mass());
+            PartTwo.SetXYZM(
+                itPart2->GetMomentum().X(), itPart2->GetMomentum().Y(),
+                itPart2->GetMomentum().Z(),
+                TDatabasePDG::Instance()->GetParticle(*itPDGPar2)->Mass());
+            float RelativeK = HigherMath->RelativePairMomentum(PartOne, PartTwo);
+            if (!HigherMath->PassesPairSelection(HistCounter, *itPart1, *itPart2,
+                                                 RelativeK, false, false)) {
+              continue;
             }
             RelativeK = HigherMath->FillMixedEvent(
                 HistCounter, iMult, cent, itPart1->GetMomentum(), *itPDGPar1,
