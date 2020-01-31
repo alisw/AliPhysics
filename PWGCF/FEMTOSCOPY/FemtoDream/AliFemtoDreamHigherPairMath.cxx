@@ -472,7 +472,7 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
           dphi += piHi * 2;
         }
         dphi = TVector2::Phi_mpi_pi(dphi);
-        if (pass && fDoDeltaEtaDeltaPhiCut) {
+        if (pass && fRejPairs.at(Hist)) {
           if (dphi * dphi + deta * deta < fDeltaPhiEtaMax) {
             pass = false;
           }
