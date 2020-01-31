@@ -16,7 +16,7 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
       fWhichPairs(conf->GetWhichPairs()),
       fBField(-99.),
       fRejPairs(conf->GetClosePairRej()),
-      fDoDeltaEtaDeltaPhiCut(false),
+      fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()),
       fDeltaPhiEtaMax(conf->GetSqDeltaPhiEtaMax()),
       fRandom(),
       fPi(TMath::Pi()) {
@@ -470,7 +470,7 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
           dphi += piHi * 2;
         }
         dphi = TVector2::Phi_mpi_pi(dphi);
-        if (pass) {
+        if (pass && fDoDeltaEtaDeltaPhiCut) {
           if (dphi * dphi + deta * deta < fDeltaPhiEtaMax) {
             pass = false;
           }
