@@ -341,8 +341,8 @@ void AliFemtoDreamControlSample::Randomizer(
         Part1Mom.Phi()
             + fRandom.Uniform(-fCorrelationRange, fCorrelationRange));
     Part2Mom -= Part1Mom;
-    (*itPart1)->SetMomentum(Part1Mom);
-    (*itPart2)->SetMomentum(Part2Mom);
+    (*itPart1)->SetMomentum(0, Part1Mom);
+    (*itPart2)->SetMomentum(0, Part2Mom);
     itPart1 += 2;
   }
 }
