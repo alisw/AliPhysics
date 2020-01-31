@@ -79,13 +79,15 @@ AliGenHijing::AliGenHijing()
      fHeader(AliGenHijingEventHeader("Hijing")),
      fSigmaNN(-1),
      fNoElas(0),
-     fDataFragmentation(kFALSE),
+     fDataFragmentation(kTRUE),
      fFreeProjSpecn(0),
      fFreeProjSpecp(0),
      fFreeTargSpecn(0),
      fFreeTargSpecp(0),
      fFragmNeutrons(0x0),
      fFragmProtons(0x0),
+     fFragmNWidth(0x0),
+     fFragmPWidth(0x0),
      fEConv(1),
      fMissing(50)
 {
@@ -134,13 +136,15 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fHeader(AliGenHijingEventHeader("Hijing")),
      fSigmaNN(-1),
      fNoElas(0),
-     fDataFragmentation(kFALSE),
+     fDataFragmentation(kTRUE),
      fFreeProjSpecn(0),
      fFreeProjSpecp(0),
      fFreeTargSpecn(0),
      fFreeTargSpecp(0),
      fFragmNeutrons(0x0),
      fFragmProtons(0x0),
+     fFragmNWidth(0x0),
+     fFragmPWidth(0x0),
      fEConv(1),
      fMissing(50)
 {
@@ -236,12 +240,17 @@ void AliGenHijing::Init()
     }
     
     if(fDataFragmentation){
-      TFile *file = TFile::Open("$ALICE_ROOT/ZDC/fragmSpecDataDriven.root","READ");
+      //TFile *file = TFile::Open("$ALICE_ROOT/ZDC/fragmSpecDataDriven.root","READ"); //old 2.76 TeV data
+      TFile *file = TFile::Open("$ALICE_ROOT/ZDC/fragmentsDD5TeV","READ");
       if(!file->IsOpen()){
-        AliError("Could not open file $ALICE_ROOT/ZDC/fragmSpecDataDriven.root");
+        AliError("Could not open file $ALICE_ROOT/ZDC/fragmentsDD5TeV.root");
       }
-      fFragmNeutrons = dynamic_cast<TF1*> (file->Get("funcorrn"));
-      fFragmProtons = dynamic_cast<TF1*> (file->Get("funcorrp"));
+      //fFragmNeutrons = dynamic_cast<TF1*> (file->Get("funcorrn")); //old 2.76 TeV data
+      //fFragmProtons = dynamic_cast<TF1*> (file->Get("funcorrp")); //old 2.76 TeV data
+      fFragmNeutrons = dynamic_cast<TF1*> (file->Get("fneu"));
+      fFragmProtons = dynamic_cast<TF1*> (file->Get("fitfunp"));
+      fFragmNWidth = dynamic_cast<TF1*> (file->Get("ferrn"));
+      fFragmPWidth = dynamic_cast<TF1*> (file->Get("ferrp"));
     }
 
     // deal with energy/momentun conservation and counting of errors in hijhrd
@@ -409,12 +418,12 @@ void AliGenHijing::Generate()
       
       if(fDataFragmentation){
          Float_t impPar = fHijing->GetBB();
-         fFreeProjSpecn = FreeSpectatorsn(impPar, fProjectileSpecn);
-         fFreeProjSpecp = FreeSpectatorsp(impPar, fProjectileSpecp);
-         fFreeTargSpecn = FreeSpectatorsn(impPar, fTargetSpecn);
-         fFreeTargSpecp = FreeSpectatorsp(impPar, fTargetSpecp);
+         fFreeProjSpecn = FreeSpectatorsn(impPar);
+         fFreeProjSpecp = FreeSpectatorsp(impPar);
+         fFreeTargSpecn = FreeSpectatorsn(impPar);
+         fFreeTargSpecp = FreeSpectatorsp(impPar);
 	 //
-	 printf("\n b %f fm - SPECTATORS* HIJING:  %d  %d  %d  %d  ->  DATA:   %d  %d  %d  %d \n", impPar, fProjectileSpecn, fProjectileSpecp, fTargetSpecn, fTargetSpecp, fFreeProjSpecn, fFreeProjSpecp, fFreeTargSpecn, fFreeTargSpecp);
+	 printf("\n b %f fm - SPECTATORS: DATA DRIVEN:   %d  %d  %d  %d \n", impPar, fFreeProjSpecn, fFreeProjSpecp, fFreeTargSpecn, fFreeTargSpecp);
       }
 //
 // Write particles to stack
@@ -444,6 +453,7 @@ void AliGenHijing::Generate()
 		  imo = (mother->GetPdgCode() != 92) ? newPos[imo] : -1;
 	      } // if has mother   
 	      Bool_t tFlag = (fTrackIt && !hasDaughter);
+	      // Don't put in the stack a no. of spectators larger than the number of free spectators
 	      if(fDataFragmentation && (ksp==0 || ksp==1) && kf == kNeutron){ // Projectile neutrons
 	         countSpecPn++;
 		 if(countSpecPn>fFreeProjSpecn) continue;
@@ -762,24 +772,31 @@ Bool_t AliGenHijing::CheckTrigger()
     return triggered;
 }
 
-Int_t AliGenHijing::FreeSpectatorsn(Float_t b, Int_t nSpecn)
+Int_t AliGenHijing::FreeSpectatorsn(Float_t b)
 {
 // Select no. of spectator neutrons to put on the stack
-  Float_t corr = fFragmNeutrons->Eval(b);
+  /*Float_t corr = fFragmNeutrons->Eval(b);
+  Float_t nSpecInStack = corr*nSpecn;*/ //old approach 
   
-  Float_t nSpecInStack = corr*nSpecn;
-  //printf("  FreeSpectatorsn: b %f corr. %f  nspecn_corr %f \n",b, corr, nSpecInStack);
- 
+  float nave = fFragmNeutrons->Eval(b);
+  float sigma = fFragmNWidth->Eval(b);
+  float nSpecInStack = gRandom->Gaus(nave, 0.68*sigma*nave);
+  if(nave<0 || nSpecInStack<0) nSpecInStack=0;
+    
   return (int) nSpecInStack;
 }
 
-Int_t AliGenHijing::FreeSpectatorsp(Float_t b, Int_t nSpecp)
+Int_t AliGenHijing::FreeSpectatorsp(Float_t b)
 {
 // Select no. of spectator protons to put on the stack
-  Double_t corr = fFragmProtons->Eval(b);
+  /*Double_t corr = fFragmProtons->Eval(b);
+  Float_t nSpecInStack = corr*nSpecp;*/ //old approach
   
-  Float_t nSpecInStack = corr*nSpecp;
-  //printf("  FreeSpectatorsp: corr. %f  nspecn_corr %f \n",corr, nSpecInStack);
+  Float_t pave = fFragmProtons->Eval(b);
+  Float_t sigma = fFragmPWidth->Eval(b);
+  //take into account roughly a 70% acceptance for spectator protons
+  float nSpecInStack = gRandom->Gaus(pave, 0.68*sigma*pave)/0.7;
+  if(pave<0 || nSpecInStack<0) nSpecInStack=0;
  
   return (int) nSpecInStack;
 }
