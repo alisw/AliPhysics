@@ -93,6 +93,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMaxKRel(std::vector<float> maxKRel);
   void SetCentBins(std::vector<int> CentBins);
   void SetmTdEtadPhiBins(std::vector<float> mTBins);
+  //TODO: should be renamed since besides the QA it also specifies the
+  // number of tracks to compare when doing the CPR cut
   void SetExtendedQAPairs(std::vector<int> whichPairs);
   void SetClosePairRejection(std::vector<bool> whichPairs);
   void SetMixingDepth(int MixingDepth) {

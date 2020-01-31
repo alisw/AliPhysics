@@ -385,8 +385,6 @@ void AliFemtoDreamCollConfig::SetClosePairRejection(
 }
 
 std::vector<bool> AliFemtoDreamCollConfig::GetClosePairRej() {
-//  std::vector<bool> Pairs;
-//  float out = 0;
   if ((int) fClosePairRej.size() == 0) {
     AliWarning("=========================================================");
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -399,10 +397,22 @@ std::vector<bool> AliFemtoDreamCollConfig::GetClosePairRej() {
   } else if ((int) fClosePairRej.size() != this->GetNParticleCombinations()) {
     AliFatal("Not all Pairs have a specified QA Behaviour, terminating \n");
   } else {
+    int counter = 0;
+    std::cout << "=========================================================\n";
     for (auto it : fClosePairRej) {
       std::cout << "Stored CPR for your Analysis "
                 << (it ? "active" : "inactive") << std::endl;
+      if (it) {
+        std::cout
+            << "Using the number of pairs set from SetExtendedQAPairs() \n"
+            << "to determine the number of combinations for this pair: \n"
+            << "Checking " << (unsigned int) fWhichQAPairs.at(counter) / 10
+            << " Tracks against"
+            << (unsigned int) fWhichQAPairs.at(counter) % 10 << std::endl;
+      }
+      counter++;
     }
+    std::cout << "=========================================================\n";
   }
   return fClosePairRej;
 }

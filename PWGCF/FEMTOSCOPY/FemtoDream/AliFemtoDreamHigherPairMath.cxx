@@ -422,18 +422,20 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
   if (nDaug1 > 9) {
     AliWarning("you are doing something wrong \n");
   }
-  if (nDaug1 != part1.GetPhiAtRaidius().size()) {
-    TString outMessage = TString::Format(
-        "Your number of Daughters 1 (%u) and Radii 1 (%u) do not correspond \n",
-        nDaug1, part1.GetPhiAtRaidius().size());
+  if (nDaug1 > part1.GetPhiAtRaidius().size()) {
+    TString outMessage =
+        TString::Format(
+            "For pair number %u your number of Daughters 1 (%u) and Radii 1 (%u) do not correspond \n",
+            Hist, nDaug1, part1.GetPhiAtRaidius().size());
     AliWarning(outMessage.Data());
   }
   unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
 
-  if (nDaug2 != part2.GetPhiAtRaidius().size()) {
-    TString outMessage = TString::Format(
-        "Your number of Daughters 2 (%u) and Radii 2 (%u) do not correspond \n",
-        nDaug2, part2.GetPhiAtRaidius().size());
+  if (nDaug2 > part2.GetPhiAtRaidius().size()) {
+    TString outMessage =
+        TString::Format(
+            "For pair number %u your number of Daughters 2 (%u) and Radii 2 (%u) do not correspond \n",
+            Hist, nDaug2, part2.GetPhiAtRaidius().size());
     AliWarning(outMessage.Data());
   }
   std::vector<float> eta1 = part1.GetEta();
