@@ -71,6 +71,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
     fTrackCutsBit1(0),
     fTrackCutsBit4(0),
     fTrackCutsBit5(0),
+    fTrackCutsMatching(0),
     isMC(kFALSE),
     isESD(kFALSE),
     cutEta(0.9),
@@ -95,6 +96,21 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
     hTriggerCounter(0),
     hADdecision(0),
     hV0decision(0),
+    hVertexZ(0),
+    hVertexContrib(0),
+    hPtTrkTPC_CUP29(0),
+    hPtTrkITS_CUP29(0),
+    hPtTrkTPC_CUP30(0),
+    hPtTrkITS_CUP30(0),
+    hPtTrkTPC_CUP31(0),
+    hPtTrkITS_CUP31(0),
+    hPtTrkTOF_CUP29(0),
+    hPtTrkTOF_CUP30(0),
+    hPtTrkTOF_CUP31(0),
+    hTPCdEdxCorrMuon(0),
+    hTPCdEdxCorrElectron(0),
+    hChannelPIDCorr(0),
+    hChannelPIDCorrJpsi(0),
     fPt(0),
     fY(0),
     fM(0),
@@ -141,6 +157,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     fTrackCutsBit1(0),
     fTrackCutsBit4(0),
     fTrackCutsBit5(0),
+    fTrackCutsMatching(0),
     isMC(kFALSE),
     isESD(kFALSE),
     cutEta(0.9),
@@ -161,14 +178,25 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     hTOFPIDProtonCorr(0),
     hITSPIDKaon(0),
     hITSPIDKaonCorr(0),
-    hTPCdEdxCorr(0),
-    hTrackPIDCorr(0),	
-    hChannelPIDCorr(0),	
+    hTPCdEdxCorr(0),		
     hTriggerCounter(0),
     hADdecision(0),
     hV0decision(0),
     hVertexZ(0),
     hVertexContrib(0),
+    hPtTrkTPC_CUP29(0),
+    hPtTrkITS_CUP29(0),
+    hPtTrkTPC_CUP30(0),
+    hPtTrkITS_CUP30(0),
+    hPtTrkTPC_CUP31(0),
+    hPtTrkITS_CUP31(0),
+    hPtTrkTOF_CUP29(0),
+    hPtTrkTOF_CUP30(0),
+    hPtTrkTOF_CUP31(0),
+    hTPCdEdxCorrMuon(0),
+    hTPCdEdxCorrElectron(0),
+    hChannelPIDCorr(0),
+    hChannelPIDCorrJpsi(0),
     fPt(0),
     fY(0),
     fM(0),
@@ -241,6 +269,10 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   fTrackCutsBit1 = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kFALSE,kTRUE);
   
+  fTrackCutsMatching = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
+  fTrackCutsMatching->SetEtaRange(-0.8, 0.8);
+  fTrackCutsMatching->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  
   fOutputList = new TList();
   fOutputList ->SetOwner();
 
@@ -256,10 +288,10 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
   fTreeJPsi ->Branch("fPt", &fPt, "fPt/F");
-  //fTreeJPsi ->Branch("fPtDaughter", &fPtDaughter[0], "fPtDaughter[2]/F");
-  fTreeJPsi ->Branch("fVectDaughter0", &fVectDaughter[0]);
-  fTreeJPsi ->Branch("fVectDaughter1", &fVectDaughter[1]);
-  fTreeJPsi ->Branch("fSignDaughter", &fSignDaughter[0], "fSignDaughter[2]/I");
+  fTreeJPsi ->Branch("fPtDaughter", &fPtDaughter[0], "fPtDaughter[2]/F");
+  //fTreeJPsi ->Branch("fVectDaughter0", &fVectDaughter[0]);
+  //fTreeJPsi ->Branch("fVectDaughter1", &fVectDaughter[1]);
+  //fTreeJPsi ->Branch("fSignDaughter", &fSignDaughter[0], "fSignDaughter[2]/I");
   fTreeJPsi ->Branch("fY", &fY, "fY/F");
   fTreeJPsi ->Branch("fM", &fM, "fM/F");
   fTreeJPsi ->Branch("fPhi", &fPhi, "fPhi/F");
@@ -280,8 +312,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
   fTreeJPsi ->Branch("fNGoodTracksDCA", &fNGoodTracksDCA, "fNGoodTracksDCA/I");
   fTreeJPsi ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
-  fTreeJPsi ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[6]/F");
-  fTreeJPsi ->Branch("fTrackPhiPos", &fTrackPhiPos[0],"fTrackPhiPos[2]/F");
+  //fTreeJPsi ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[6]/F");
+  //fTreeJPsi ->Branch("fTrackPhiPos", &fTrackPhiPos[0],"fTrackPhiPos[2]/F");
   if(isMC){
 	fTreeJPsi ->Branch("fPtGen", &fPtGen, "fPtGen/F");
 	fTreeJPsi ->Branch("fPtGenDaughter", &fPtGenDaughter[0], "fPtGenDaughter[2]/F");
@@ -316,7 +348,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
   fTreePsi2s ->Branch("fNGoodTracksDCA", &fNGoodTracksDCA, "fNGoodTracksDCA/I");
   fTreePsi2s ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
-  fTreePsi2s ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[4]/F");
+  //fTreePsi2s ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[4]/F");
   if(isMC){ 
     fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O",NTRIGGERINPUTS));
     }
@@ -394,16 +426,48 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   hVertexContrib = new TH1D("hVertexContrib"," ",103,-2,100);
   fOutputList->Add(hVertexContrib);
   
-  hTrackPIDCorr = new TH2D("hTrackPIDCorr"," ",100,-10.0,10.0,100,-10.0,10.0);
-  hTrackPIDCorr->GetXaxis()->SetTitle("TPC PID N #sigma (e)");
-  hTrackPIDCorr->GetYaxis()->SetTitle("TPC PID N #sigma (#mu)");
-  fOutputList->Add(hTrackPIDCorr);	
+  hPtTrkTPC_CUP29 = new TH1D("hPtTrkTPC_CUP29"," ",100,0,2);
+  fOutputList->Add(hPtTrkTPC_CUP29);
+  hPtTrkITS_CUP29 = new TH1D("hPtTrkITS_CUP29"," ",100,0,2);
+  fOutputList->Add(hPtTrkITS_CUP29);
   
-  hChannelPIDCorr = new TH2D("hChannelPIDCorr"," ",100,-10.0,10.0,100,-10.0,10.0);
+  hPtTrkTPC_CUP30 = new TH1D("hPtTrkTPC_CUP30"," ",100,0,2);
+  fOutputList->Add(hPtTrkTPC_CUP30);
+  hPtTrkITS_CUP30 = new TH1D("hPtTrkITS_CUP30"," ",100,0,2);
+  fOutputList->Add(hPtTrkITS_CUP30);
+  
+  hPtTrkTPC_CUP31 = new TH1D("hPtTrkTPC_CUP31"," ",100,0,2);
+  fOutputList->Add(hPtTrkTPC_CUP31);
+  hPtTrkITS_CUP31 = new TH1D("hPtTrkITS_CUP31"," ",100,0,2);
+  fOutputList->Add(hPtTrkITS_CUP31);
+  
+  hPtTrkTOF_CUP29 = new TH1D("hPtTrkTOF_CUP29"," ",100,0,2);
+  fOutputList->Add(hPtTrkTOF_CUP29);
+  hPtTrkTOF_CUP30 = new TH1D("hPtTrkTOF_CUP30"," ",100,0,2);
+  fOutputList->Add(hPtTrkTOF_CUP30);
+  hPtTrkTOF_CUP31 = new TH1D("hPtTrkTOF_CUP31"," ",100,0,2);
+  fOutputList->Add(hPtTrkTOF_CUP31);
+  
+  hChannelPIDCorr = new TH2D("hChannelPIDCorr"," ",100,0.0,20.0,100,0.0,20.0);
   hChannelPIDCorr->GetXaxis()->SetTitle("TPC PID N #sigma (e)");
   hChannelPIDCorr->GetYaxis()->SetTitle("TPC PID N #sigma (#mu)");
-  fOutputList->Add(hChannelPIDCorr);	
-      
+  fOutputList->Add(hChannelPIDCorr);
+  
+  hChannelPIDCorrJpsi = new TH2D("hChannelPIDCorrJpsi"," ",100,0.0,20.0,100,0.0,20.0);
+  hChannelPIDCorrJpsi->GetXaxis()->SetTitle("TPC PID N #sigma (e)");
+  hChannelPIDCorrJpsi->GetYaxis()->SetTitle("TPC PID N #sigma (#mu)");
+  fOutputList->Add(hChannelPIDCorrJpsi);	
+  
+  hTPCdEdxCorrMuon = new TH2D("hTPCdEdxCorrMuon"," ",200,0,200,200,0,200);
+  hTPCdEdxCorrMuon->GetXaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
+  hTPCdEdxCorrMuon->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
+  fOutputList->Add(hTPCdEdxCorrMuon);
+  
+  hTPCdEdxCorrElectron = new TH2D("hTPCdEdxCorrElectron"," ",200,0,200,200,0,200);
+  hTPCdEdxCorrElectron->GetXaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
+  hTPCdEdxCorrElectron->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
+  fOutputList->Add(hTPCdEdxCorrElectron);	
+     
   PostData(1, fOutputList);
 
 }//UserCreateOutputObjects
@@ -781,7 +845,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Float_t nSigmaDistElectron = TMath::Sqrt(TMath::Power(nSigmaElectron[0],2) + TMath::Power(nSigmaElectron[1],2));
   Float_t nSigmaDistProton = TMath::Sqrt(TMath::Power(nSigmaProton[0],2) + TMath::Power(nSigmaProton[1],2));
   
-  hTrackPIDCorr->Fill(nSigmaDistElectron,nSigmaDistMuon);
+  hChannelPIDCorr->Fill(nSigmaDistElectron,nSigmaDistMuon);
   
   if(qTrack[0]*qTrack[1]<0)fSign = -1;
   if(qTrack[0]*qTrack[1]>0)fSign = 1;
@@ -826,7 +890,16 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   hTPCPIDPionCorr->Fill(nSigmaPion[0],nSigmaPion[1]);
   hTPCPIDPion->Fill(nSigmaPion[0]);hTPCPIDPion->Fill(nSigmaPion[1]);
 
-  if(vJPsiCandidate.M()>2.8 && vJPsiCandidate.M()<3.2){ 
+  if(vJPsiCandidate.M()>2.2 && vJPsiCandidate.M()<5.0 && fSign == -1){
+          hChannelPIDCorrJpsi->Fill(nSigmaDistElectron,nSigmaDistMuon); 
+	  if(nSigmaDistMuon < nSigmaDistElectron){
+	    hTPCdEdxCorrMuon->Fill(dEdx[0],dEdx[1]);
+	    hTPCdEdxCorrMuon->Fill(dEdx[1],dEdx[0]);
+	    }
+	  if(nSigmaDistMuon > nSigmaDistElectron){
+	    hTPCdEdxCorrElectron->Fill(dEdx[0],dEdx[1]);
+  	    hTPCdEdxCorrElectron->Fill(dEdx[1],dEdx[0]);
+	    } 
   	  hTPCdEdxCorr->Fill(dEdx[0],dEdx[1]);
   	  hTPCdEdxCorr->Fill(dEdx[1],dEdx[0]);
   	  hTPCPIDMuonCorr->Fill(nSigmaMuon[0],nSigmaMuon[1]);
@@ -839,8 +912,64 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  hTOFPIDProtonCorr->Fill(nSigmaProton[1],nSigmaProton[0]);
   	  hTOFPIDProton->Fill(nSigmaProton[0]);hTOFPIDProton->Fill(nSigmaProton[1]);
   	  }
-  } 
-    
+  }
+  
+  //
+  if(isESD){
+  Bool_t refit    = fTrackCutsMatching->GetRequireITSRefit();
+  Float_t chi2tpc = fTrackCutsMatching->GetMaxChi2TPCConstrainedGlobal();
+  Float_t chi2its = fTrackCutsMatching->GetMaxChi2PerClusterITS();
+  
+  Bool_t isCUP29, isCUP30, isCUP31;
+  if(isMC){
+    isCUP29 = !fTriggerInputsMC[0] && !fTriggerInputsMC[1] && !fTriggerInputsMC[2] && !fTriggerInputsMC[3] && fTriggerInputsMC[10];
+    isCUP30 = !fTriggerInputsMC[0] && !fTriggerInputsMC[1] && !fTriggerInputsMC[2] && !fTriggerInputsMC[3] && fTriggerInputsMC[10] && fTriggerInputsMC[5];
+    isCUP31 = !fTriggerInputsMC[0] && !fTriggerInputsMC[1] && !fTriggerInputsMC[2] && !fTriggerInputsMC[3] && fTriggerInputsMC[10] && fTriggerInputsMC[4];
+    }
+  else{
+    isCUP29 = fTriggers[0] || fTriggers[1] || fTriggers[2];
+    isCUP30 = fTriggers[3] || fTriggers[4];
+    isCUP31 = fTriggers[5] || fTriggers[6];
+    }
+  
+  for(Int_t iTrack=0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
+   
+    AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
+    if( !trk ) continue;
+    // remove all ITS requirements
+    fTrackCutsMatching->SetRequireITSRefit(kFALSE);
+    fTrackCutsMatching->SetMaxChi2TPCConstrainedGlobal(99999.);
+    fTrackCutsMatching->SetMaxChi2PerClusterITS(999999.);
+    fTrackCutsMatching->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+    //DCA
+    fTrackCutsMatching->SetMaxDCAToVertexXY(2.4);
+    fTrackCutsMatching->SetMaxDCAToVertexZ(3.2);
+
+    if(fTrackCutsMatching->AcceptTrack(trk)){ 
+      if(isCUP29) hPtTrkTPC_CUP29->Fill(trk->Pt());
+      if(isCUP30) hPtTrkTPC_CUP30->Fill(trk->Pt());
+      if(isCUP31) hPtTrkTPC_CUP31->Fill(trk->Pt());      
+      }
+    //set the ITS requirements
+    fTrackCutsMatching->SetRequireITSRefit(refit);
+    fTrackCutsMatching->SetMaxChi2TPCConstrainedGlobal(chi2tpc);
+    fTrackCutsMatching->SetMaxChi2PerClusterITS(chi2its);
+    //set the SPD cluster requirement
+    fTrackCutsMatching->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+  
+    if(fTrackCutsMatching->AcceptTrack(trk)){ 
+      if(isCUP29) hPtTrkITS_CUP29->Fill(trk->Pt());
+      if(isCUP30) hPtTrkITS_CUP30->Fill(trk->Pt());
+      if(isCUP31) hPtTrkITS_CUP31->Fill(trk->Pt());
+      if(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk){
+        if(isCUP29) hPtTrkTOF_CUP29->Fill(trk->Pt());
+        if(isCUP30) hPtTrkTOF_CUP30->Fill(trk->Pt());
+        if(isCUP31) hPtTrkTOF_CUP31->Fill(trk->Pt());
+	}
+      }
+    }
+  }
+  
   PostData(1, fOutputList);
 
 }//UserExec

@@ -46,6 +46,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliESDtrackCuts *fTrackCutsBit1;
   AliESDtrackCuts *fTrackCutsBit4;
   AliESDtrackCuts *fTrackCutsBit5;
+  AliESDtrackCuts *fTrackCutsMatching;
   Bool_t isMC; 
   Bool_t isESD;
   Float_t cutEta;
@@ -69,14 +70,27 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH2D *hTOFPIDProtonCorr;	//!
   TH1D *hITSPIDKaon;		//!
   TH2D *hITSPIDKaonCorr;	//!
-  TH2D *hTPCdEdxCorr;		//!
-  TH2D *hTrackPIDCorr;		//!
-  TH2D *hChannelPIDCorr;	//! 
+  TH2D *hTPCdEdxCorr;		//! 
   TH2I *hTriggerCounter;	//!
   TH2I *hADdecision;		//!
   TH2I *hV0decision;		//!
   TH1D *hVertexZ;		//!
-  TH1D *hVertexContrib;		//! 
+  TH1D *hVertexContrib;		//!
+  TH1D *hPtTrkTPC_CUP29;	//!
+  TH1D *hPtTrkITS_CUP29;	//!
+  TH1D *hPtTrkTPC_CUP30;	//!
+  TH1D *hPtTrkITS_CUP30;	//!
+  TH1D *hPtTrkTPC_CUP31;	//!
+  TH1D *hPtTrkITS_CUP31;	//!
+  TH1D *hPtTrkTOF_CUP29;	//!
+  TH1D *hPtTrkTOF_CUP30;	//!
+  TH1D *hPtTrkTOF_CUP31;	//!
+  TH2D *hTPCdEdxCorrMuon;	//!
+  TH2D *hTPCdEdxCorrElectron;	//!
+  TH2D *hChannelPIDCorr;	//!
+  TH2D *hChannelPIDCorrJpsi;	//! 
+
+  		 
   
   Float_t fPtDaughter[2], fPtGenDaughter[2];
   TLorentzVector fVectDaughter[2];
@@ -96,7 +110,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 32); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 33); 
 };
 
 #endif
