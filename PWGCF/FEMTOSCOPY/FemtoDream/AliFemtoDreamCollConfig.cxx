@@ -408,7 +408,7 @@ std::vector<bool> AliFemtoDreamCollConfig::GetClosePairRej() {
             << "Using the number of pairs set from SetExtendedQAPairs() \n"
             << "to determine the number of combinations for this pair: \n"
             << "Checking " << (unsigned int) fWhichQAPairs.at(counter) / 10
-            << " Tracks against"
+            << " Tracks against "
             << (unsigned int) fWhichQAPairs.at(counter) % 10 << std::endl;
       }
       counter++;
