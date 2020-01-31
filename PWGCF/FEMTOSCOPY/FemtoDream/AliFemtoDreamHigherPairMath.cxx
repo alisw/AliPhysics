@@ -35,7 +35,7 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
       fWhichPairs(samp.fWhichPairs),
       fBField(-99.),
       fRejPairs(samp.fRejPairs),
-      fDoDeltaEtaDeltaPhiCut(samp.fRejPairs),
+      fDoDeltaEtaDeltaPhiCut(samp.fDoDeltaEtaDeltaPhiCut),
       fDeltaPhiEtaMax(samp.fDeltaPhiEtaMax),
       fRandom(),
       fPi(TMath::Pi()) {

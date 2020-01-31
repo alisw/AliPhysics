@@ -255,7 +255,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   void DoDeltaEtaDeltaPhiCut(bool doIt) {
     fDoDeltaEtaDeltaPhiCut = doIt;
   }
-  float GetDoDeltaEtaDeltaPhiCut() const {
+  bool GetDoDeltaEtaDeltaPhiCut() const {
     return fDoDeltaEtaDeltaPhiCut;
   }
 

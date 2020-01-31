@@ -147,11 +147,20 @@ void AliFemtoDreamControlSample::CorrelatedSample(
   while (itPart1 != part1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : part2.begin();
     while (itPart2 != part2.end()) {
-      if (fDoDeltaEtaDeltaPhiCut && CPR) {
-        if (fHigherMath->PassesPairSelection(*itPart1, *itPart2, false)) {
-          ++itPart2;
-          continue;
-        }
+      TLorentzVector PartOne, PartTwo;
+      PartOne.SetXYZM(
+          itPart1->GetMomentum().X(), itPart1->GetMomentum().Y(),
+          itPart1->GetMomentum().Z(),
+          TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+      PartTwo.SetXYZM(
+          itPart2->GetMomentum().X(), itPart2->GetMomentum().Y(),
+          itPart2->GetMomentum().Z(),
+          TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+      float RelativeK = fHigherMath->RelativePairMomentum(PartOne, PartTwo);
+      if (!fHigherMath->PassesPairSelection(HistCounter, *itPart1, *itPart2,
+                                           RelativeK, true, false)) {
+        ++itPart2;
+        continue;
       }
       RelativeK = fHigherMath->FillSameEvent(HistCounter, fMult, fCent,
                                              itPart1->GetMomentum(), PDGPart1,
@@ -197,11 +206,20 @@ void AliFemtoDreamControlSample::PhiSpinning(
     while (itPart2 != part2.end()) {
       //in this case it does NOT work as intended since the new phi of the particle has to
       //be considered for this cut
-      if (fDoDeltaEtaDeltaPhiCut && CPR) {
-        if (fHigherMath->PassesPairSelection(*itPart1, *itPart2, true)) {
-          ++itPart2;
-          continue;
-        }
+      TLorentzVector PartOne, PartTwo;
+      PartOne.SetXYZM(
+          itPart1->GetMomentum().X(), itPart1->GetMomentum().Y(),
+          itPart1->GetMomentum().Z(),
+          TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+      PartTwo.SetXYZM(
+          itPart2->GetMomentum().X(), itPart2->GetMomentum().Y(),
+          itPart2->GetMomentum().Z(),
+          TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+      float RelativeK = fHigherMath->RelativePairMomentum(PartOne, PartTwo);
+      if (!fHigherMath->PassesPairSelection(HistCounter, *itPart1, *itPart2,
+                                            RelativeK, false, true)) {
+        ++itPart2;
+        continue;
       }
       for (int i = 0; i < fSpinningDepth; ++i) {
         // randomized sample - who is the father???
@@ -256,13 +274,20 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
     while (itPart2 != (SameParticle ? CopyPart1 : CopyPart2).end()) {
       //in this case it does NOT work as intended since the new phi of the particle has to
       //be considered for this cut
-      if (fDoDeltaEtaDeltaPhiCut && CPR) {
-        if (fDoDeltaEtaDeltaPhiCut && CPR) {
-          if (fHigherMath->PassesPairSelection(*(*itPart1), *(*itPart2), true)) {
-            ++itPart2;
-            continue;
-          }
-        }
+      TLorentzVector PartOne, PartTwo;
+      PartOne.SetXYZM(
+          (*itPart1)->GetMomentum().X(), (*itPart1)->GetMomentum().Y(),
+          (*itPart1)->GetMomentum().Z(),
+          TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+      PartTwo.SetXYZM(
+          (*itPart2)->GetMomentum().X(), (*itPart2)->GetMomentum().Y(),
+          (*itPart2)->GetMomentum().Z(),
+          TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+      float RelativeK = fHigherMath->RelativePairMomentum(PartOne, PartTwo);
+      if (!fHigherMath->PassesPairSelection(HistCounter, *(*itPart2), *(*itPart2),
+                                            RelativeK, false, true)) {
+        ++itPart2;
+        continue;
       }
       // randomized sample - who is the father???
       RelativeK = fHigherMath->FillMixedEvent(HistCounter, fMult, fCent,
