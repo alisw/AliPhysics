@@ -64,8 +64,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fdEtadPhiMEmT(nullptr),
       fEffMixingDepth(nullptr),
       fDoMultBinning(false),
-      fDokTandMultBinning(false),
       fDoCentBinning(false),
+      fDokTandMultBinning(false),
       fDokTBinning(false),
       fDomTBinning(false),
       fPtQA(false),
@@ -557,7 +557,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fMixedEventkTCentDist[Counter] = new TH2F*[nCentBins];
         for (int iCent = 0; iCent < nCentBins; ++iCent) {
           TString SamekTCentEventName = TString::Format(
-              "SEkTCentDist_Cent_%.0f_Particle%d_Particle%d", fCentBins[iCent],
+              "SEkTCentDist_Cent_%d_Particle%d_Particle%d", fCentBins[iCent],
               iPar1, iPar2);
           fSameEventkTCentDist[Counter][iCent] = new TH2F(
               SamekTCentEventName.Data(), SamekTCentEventName.Data(), *itNBins,
@@ -565,7 +565,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fPairs[Counter]->Add(fSameEventkTCentDist[Counter][iCent]);
 
           TString MixedkTCentEventName = TString::Format(
-              "MEkTCentDistCent%.0f_Particle%d_Particle%d", fCentBins[iCent],
+              "MEkTCentDistCent%d_Particle%d_Particle%d", fCentBins[iCent],
               iPar1, iPar2);
           fMixedEventkTCentDist[Counter][iCent] = new TH2F(
               MixedkTCentEventName.Data(), MixedkTCentEventName.Data(),
@@ -698,7 +698,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                  0, 7.5, multbins, 1,
                                                  multbins + 1);
           fPtQADistSEPartOne[Counter]->GetXaxis()->SetTitle(
-              TString::Format("#it{p}_{T} Particle One (GeV/#it{c})", iPar1));
+              TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
           fPtQADistSEPartOne[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistSEPartOne[Counter]);
 
@@ -709,7 +709,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                  0, 7.5, multbins, 1,
                                                  multbins + 1);
           fPtQADistSEPartTwo[Counter]->GetXaxis()->SetTitle(
-              TString::Format("#it{p}_{T} Particle Two (GeV/#it{c})", iPar1));
+              TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
           fPtQADistSEPartTwo[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistSEPartTwo[Counter]);
 
@@ -720,7 +720,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                  0, 7.5, multbins, 1,
                                                  multbins + 1);
           fPtQADistMEPartOne[Counter]->GetXaxis()->SetTitle(
-              TString::Format("#it{p}_{T} Particle One (GeV/#it{c})", iPar1));
+              TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
           fPtQADistMEPartOne[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistMEPartOne[Counter]);
 
@@ -731,7 +731,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                  0, 7.5, multbins, 1,
                                                  multbins + 1);
           fPtQADistMEPartTwo[Counter]->GetXaxis()->SetTitle(
-              TString::Format("#it{p}_{T} Particle Two (GeV/#it{c})", iPar1));
+              TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
           fPtQADistMEPartTwo[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistMEPartTwo[Counter]);
         }
@@ -831,6 +831,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fPairQA[Counter]->Add(fMomResolutionDist[Counter]);
         }
         if (fillHists && fPhiEtaPlots) {
+          TList* RadList = new TList();
+          RadList->SetOwner(true);
+          RadList->SetName("PhiAtRad");
+          fPairQA[Counter]->Add(RadList);
           const unsigned int nDaug1 = (unsigned int) DoThisPair / 10;
           if (nDaug1 > 3) {
             AliWarning(
@@ -876,7 +880,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                   ->SetTitle("#Delta#eta");
               fIntRadiiQAEtaPhiSEBefore[Counter][DaugIndex]->GetYaxis()
                   ->SetTitle("#Delta#phi");
-              fPairQA[Counter]->Add(
+              RadList->Add(
                   fIntRadiiQAEtaPhiSEBefore[Counter][DaugIndex]);
               fIntRadiiQAEtaPhiMEBefore[Counter][DaugIndex] = new TH2F(
                   RadIntNameME_Before.Data(), RadIntNameME_Before.Data(), 300,
@@ -885,7 +889,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                   ->SetTitle("#Delta#eta");
               fIntRadiiQAEtaPhiMEBefore[Counter][DaugIndex]->GetYaxis()
                   ->SetTitle("#Delta#phi");
-              fPairQA[Counter]->Add(
+              RadList->Add(
                   fIntRadiiQAEtaPhiMEBefore[Counter][DaugIndex]);
 
               TString RadIntNameSE_After = TString::Format(
@@ -901,7 +905,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                   "#Delta#eta");
               fIntRadiiQAEtaPhiSEAfter[Counter][DaugIndex]->GetYaxis()->SetTitle(
                   "#Delta#phi");
-              fPairQA[Counter]->Add(
+              RadList->Add(
                   fIntRadiiQAEtaPhiSEAfter[Counter][DaugIndex]);
               fIntRadiiQAEtaPhiMEAfter[Counter][DaugIndex] = new TH2F(
                   RadIntNameME_After.Data(), RadIntNameME_After.Data(), 300,
@@ -910,7 +914,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                   "#Delta#eta");
               fIntRadiiQAEtaPhiMEAfter[Counter][DaugIndex]->GetYaxis()->SetTitle(
                   "#Delta#phi");
-              fPairQA[Counter]->Add(
+              RadList->Add(
                   fIntRadiiQAEtaPhiMEAfter[Counter][DaugIndex]);
 
               for (int iRad = 0; iRad < nRad; ++iRad) {
@@ -927,7 +931,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                     "#Delta#eta");
                 fRadiiEtaPhiSE[Counter][DaugIndex][iRad]->GetYaxis()->SetTitle(
                     "#Delta#phi");
-                fPairQA[Counter]->Add(fRadiiEtaPhiSE[Counter][DaugIndex][iRad]);
+                RadList->Add(fRadiiEtaPhiSE[Counter][DaugIndex][iRad]);
                 fRadiiEtaPhiME[Counter][DaugIndex][iRad] = new TH2F(
                     RadNameME.Data(), RadNameME.Data(), 300, -0.15, 0.15, 400,
                     -0.2, 0.2);
@@ -935,7 +939,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                     "#Delta#eta");
                 fRadiiEtaPhiME[Counter][DaugIndex][iRad]->GetYaxis()->SetTitle(
                     "#Delta#phi");
-                fPairQA[Counter]->Add(fRadiiEtaPhiME[Counter][DaugIndex][iRad]);
+                RadList->Add(fRadiiEtaPhiME[Counter][DaugIndex][iRad]);
 
                 if (fPhiEtaPlotsSmallK) {
                   RadNameSE += "_smallK";
@@ -948,7 +952,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                       ->SetTitle("#Delta#eta");
                   fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
                       ->SetTitle("#Delta#phi");
-                  fPairQA[Counter]->Add(
+                  RadList->Add(
                       fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]);
                   fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad] = new TH2F(
                       RadNameME.Data(), RadNameME.Data(), 300, -0.15, 0.15, 400,
@@ -957,7 +961,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                       ->SetTitle("#Delta#eta");
                   fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
                       ->SetTitle("#Delta#phi");
-                  fPairQA[Counter]->Add(
+                  RadList->Add(
                       fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]);
                 }
               }
