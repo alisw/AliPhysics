@@ -57,6 +57,7 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   void  SetListForNUACorr(TList *flist)      {this->fListNUACorr = (TList *) flist->Clone(); }
   void  SetListForV0MCorr(TList *flist)      {this->fListV0MCorr = (TList *) flist->Clone(); }
   void  SetParticle(Int_t part)              {this->fParticle    =  part;}
+  void  SetCumulantHarmonic(Int_t harm)      {this->gHarmonic    =  harm;}
 
   
   /******* Event Cut Ranges ******/
@@ -109,6 +110,7 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   Float_t         fCentralityMax;  //
   
   //Track Variables to be used:
+  Int_t                 gHarmonic;  //
   Int_t                 fParticle;  //
   Int_t                fFilterBit;  //
   Int_t              fTPCclustMin;  // 
