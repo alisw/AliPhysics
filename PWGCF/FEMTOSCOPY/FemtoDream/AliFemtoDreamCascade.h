@@ -210,7 +210,7 @@ inline double AliFemtoDreamCascade::Ptot2V0() {
 }
 
 inline double AliFemtoDreamCascade::Ptot2Casc() {
-  return fP.Mag2();
+  return GetMomentum().Mag2();
 }
 
 inline double AliFemtoDreamCascade::MassCasc() {
@@ -247,19 +247,19 @@ inline double AliFemtoDreamCascade::CosPointingAngle(double *primVtx,
   TVector3 lVectPrimVtxToXi(secondVtx[0] - primVtx[0],
                             secondVtx[1] - primVtx[1],
                             secondVtx[2] - primVtx[2]);
-  return fP.Dot(lVectPrimVtxToXi)
-      / TMath::Sqrt(fP.Mag2() * lVectPrimVtxToXi.Mag2());
+  return GetMomentum().Dot(lVectPrimVtxToXi)
+      / TMath::Sqrt(GetMomentum().Mag2() * lVectPrimVtxToXi.Mag2());
 }
 
 inline float AliFemtoDreamCascade::DcaXiToPrimVertex(double *primVtx,
                                                      double *secondVtx) {
-  Double_t dx = (primVtx[1] - secondVtx[1]) * fP.Z()
-      - (primVtx[2] - secondVtx[2]) * fP.Y();
-  Double_t dy = (primVtx[2] - secondVtx[2]) * fP.X()
-      - (primVtx[0] - secondVtx[0]) * fP.Z();
-  Double_t dz = (primVtx[0] - secondVtx[0]) * fP.Y()
-      - (primVtx[1] - secondVtx[1]) * fP.X();
-  return TMath::Sqrt((dx * dx + dy * dy + dz * dz) / fP.Mag2());
+  Double_t dx = (primVtx[1] - secondVtx[1]) * GetMomentum().Z()
+      - (primVtx[2] - secondVtx[2]) * GetMomentum().Y();
+  Double_t dy = (primVtx[2] - secondVtx[2]) * GetMomentum().X()
+      - (primVtx[0] - secondVtx[0]) * GetMomentum().Z();
+  Double_t dz = (primVtx[0] - secondVtx[0]) * GetMomentum().Y()
+      - (primVtx[1] - secondVtx[1]) * GetMomentum().X();
+  return TMath::Sqrt((dx * dx + dy * dy + dz * dz) / GetMomentum().Mag2());
 }
 
 #endif /* ALIFEMTODREAMCASCADE_H_ */

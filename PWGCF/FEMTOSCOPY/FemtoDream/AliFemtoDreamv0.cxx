@@ -12,7 +12,7 @@
 
 ClassImp(AliFemtoDreamv0)
 AliFemtoDreamv0::AliFemtoDreamv0()
-    : AliFemtoDreamBasePart(),
+    : AliFemtoDreamBasePart(3),
       fOnlinev0(false),
       fHasDaughter(false),
       fpDaug(new AliFemtoDreamTrack()),
@@ -131,7 +131,9 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   trackNeg.SetXYZM(negP[0], negP[1], negP[2], negDaughter.GetInvMass());
   TLorentzVector trackSum = trackPos + trackNeg;
   this->SetPt(trackSum.Pt());
-  this->SetMomentum(trackSum.Px(), trackSum.Py(), trackSum.Pz());
+  this->SetMomentum(0,trackSum.Px(), trackSum.Py(), trackSum.Pz());
+  this->SetMomentum(1,negP[0], negP[1], negP[2]);
+  this->SetMomentum(2,posP[0], posP[1], posP[2]);
   this->SetEta(trackSum.Eta());
   this->SetPhi(trackSum.Phi());
   this->SetTheta(trackSum.Theta());
@@ -449,8 +451,11 @@ void AliFemtoDreamv0::SetDaughterInfo(AliAODv0 *v0) {
   //track is different to the one of the daughter track and is also
   //used in the official v0 class for the invarian mass
   //calculation.
-  fnDaug->SetMomentum(v0->PxProng(1), v0->PyProng(1), v0->PzProng(1));
-  fpDaug->SetMomentum(v0->PxProng(0), v0->PyProng(0), v0->PzProng(0));
+  fnDaug->SetMomentum(0, v0->PxProng(1), v0->PyProng(1), v0->PzProng(1));
+  fpDaug->SetMomentum(0, v0->PxProng(0), v0->PyProng(0), v0->PzProng(0));
+
+  this->SetMomentum(1, v0->PxProng(1), v0->PyProng(1), v0->PzProng(1));
+  this->SetMomentum(2, v0->PxProng(0), v0->PyProng(0), v0->PzProng(0));
 
   this->SetEta(fnDaug->GetMomentum().Eta());
   this->SetEta(fpDaug->GetMomentum().Eta());
@@ -497,8 +502,11 @@ void AliFemtoDreamv0::SetDaughterInfo(AliESDv0 *v0) {
   v0->GetPPxPyPz(momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
   v0->GetNPxPyPz(momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
 
-  fnDaug->SetMomentum(momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
-  fpDaug->SetMomentum(momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
+  fnDaug->SetMomentum(0, momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
+  fpDaug->SetMomentum(0, momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
+
+  this->SetMomentum(1, momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
+  this->SetMomentum(2, momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
 
   this->SetEta(fnDaug->GetMomentum().Eta());
   this->SetEta(fpDaug->GetMomentum().Eta());
@@ -537,7 +545,7 @@ void AliFemtoDreamv0::SetDaughterInfo(AliESDv0 *v0) {
 void AliFemtoDreamv0::SetMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
   this->SetCharge(v0->GetCharge());
   this->SetPt(v0->Pt());
-  this->SetMomentum(v0->Px(), v0->Py(), v0->Pz());
+  this->SetMomentum(0, v0->Px(), v0->Py(), v0->Pz());
   this->SetEta(v0->Eta());
   this->SetPhi(v0->Phi());
   this->SetTheta(v0->Theta());
@@ -557,7 +565,7 @@ void AliFemtoDreamv0::SetMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
 
 void AliFemtoDreamv0::SetMotherInfo(AliESDEvent *evt, AliESDv0 *v0) {
   this->SetPt(v0->Pt());
-  this->SetMomentum(v0->Px(), v0->Py(), v0->Pz());
+  this->SetMomentum(0, v0->Px(), v0->Py(), v0->Pz());
   float xvP = evt->GetPrimaryVertex()->GetX();
   float yvP = evt->GetPrimaryVertex()->GetY();
   float zvP = evt->GetPrimaryVertex()->GetZ();
@@ -665,7 +673,9 @@ void AliFemtoDreamv0::Reset() {
     fdcaPrimNeg = 0;
     flenDecay = 0;
     fTransRadius = 0;
-    fP.SetXYZ(0, 0, 0);
+    GetMomentum(0).SetXYZ(0, 0, 0);
+    GetMomentum(1).SetXYZ(0, 0, 0);
+    GetMomentum(2).SetXYZ(0, 0, 0);
     fMCP.SetXYZ(0, 0, 0);
     fPt = 0;
     fMCPt = 0;
