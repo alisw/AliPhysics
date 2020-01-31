@@ -16,7 +16,8 @@
 #include <vector>
 class AliFemtoDreamHigherPairMath {
  public:
-  AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf, bool minBooking = true);
+  AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf, bool minBooking =
+                                  true);
   virtual ~AliFemtoDreamHigherPairMath();
   AliFemtoDreamHigherPairMath(const AliFemtoDreamHigherPairMath& samp);
   AliFemtoDreamHigherPairMath& operator=(
@@ -74,9 +75,12 @@ class AliFemtoDreamHigherPairMath {
   }
   ;
 
-  static float RelativePairMomentum(AliFemtoDreamBasePart *PartOne, const int pdg1,
-                                    AliFemtoDreamBasePart *PartTwo, const int pdg2);
-  static float RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float RelativePairMomentum(AliFemtoDreamBasePart *PartOne,
+                                    const int pdg1,
+                                    AliFemtoDreamBasePart *PartTwo,
+                                    const int pdg2);
+  static float RelativePairMomentum(TLorentzVector &PartOne,
+                                    TLorentzVector &PartTwo);
   static float RelativePairkT(AliFemtoDreamBasePart *PartOne, const int pdg1,
                               AliFemtoDreamBasePart *PartTwo, const int pdg2);
   static float RelativePairkT(TLorentzVector &PartOne, TLorentzVector &PartTwo);

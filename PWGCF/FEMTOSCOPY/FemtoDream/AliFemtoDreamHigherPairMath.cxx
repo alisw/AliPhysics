@@ -110,13 +110,13 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
 
 void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
     AliFemtoDreamBasePart &part) {
-  //Only use this for Tracks, this was implemented for the case where particles
-  //were added a random phi to obtain an uncorrelated sample. This should be extended
-  //to the daughter tracks. For some reason the momentum is stored in a TVector3,
-  //and not a std::vector<TVector3>. Should be changed in time, conceptually the
-  //difficulty is to make this work in a proper way after the mother,
-  //e.g. the Lambda was phi shifted.
-  //
+//Only use this for Tracks, this was implemented for the case where particles
+//were added a random phi to obtain an uncorrelated sample. This should be extended
+//to the daughter tracks. For some reason the momentum is stored in a TVector3,
+//and not a std::vector<TVector3>. Should be changed in time, conceptually the
+//difficulty is to make this work in a proper way after the mother,
+//e.g. the Lambda was phi shifted.
+//
   if (fBField < -95) {
     AliWarning(
         "BField was most probably not set! PhiStar Calculation meaningless. \n");
@@ -148,9 +148,9 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
   }
   bool fillHists = fWhichPairs.at(iHC);
   TLorentzVector PartOne, PartTwo;
-  // Even if the Daughter tracks were switched up during PID doesn't play a role
-  // here cause we are
-  // only looking at the mother mass
+// Even if the Daughter tracks were switched up during PID doesn't play a role
+// here cause we are
+// only looking at the mother mass
   PartOne.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(), Part1Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
   PartTwo.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
@@ -203,14 +203,14 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
   }
   bool fillHists = fWhichPairs.at(iHC);
   TLorentzVector PartOne, PartTwo;
-  // Even if the Daughter tracks were switched up during PID doesn't play a role
-  // here cause we are
-  // only looking at the mother mass
+// Even if the Daughter tracks were switched up during PID doesn't play a role
+// here cause we are
+// only looking at the mother mass
   PartOne.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(), Part1Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
   PartTwo.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
-  // Do the randomization here
+// Do the randomization here
   if (mode == AliFemtoDreamCollConfig::kStravinsky) {
     if (fRandom.Uniform() < 0.5) {
       PartOne.SetPhi(PartOne.Phi() + fPi);
