@@ -423,6 +423,10 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
      ->IsEventSelected() & AliVEvent::kSemiCentral){
     fTriggerInt = 2; 
   }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kINT7){
+    fTriggerInt = 3; 
+  }
 
   
   //  //_____________ end nominal _______________________

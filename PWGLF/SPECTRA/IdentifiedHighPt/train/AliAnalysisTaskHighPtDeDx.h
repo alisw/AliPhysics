@@ -192,7 +192,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Int_t        fRun;                // run no
   ULong64_t    fEventId;            // unique event id
 
-  Int_t        fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent
+  Int_t        fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent, 3 = kINT7
   Int_t        fV0Finder;           // 0 = oldFinder, 1 = newFinder
   Int_t        fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
     
