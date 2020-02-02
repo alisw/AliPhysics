@@ -36,7 +36,9 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
                                      Double_t maxMass = 0.1,
                                      Double_t assoDCAxy = 0.25,
                                      Double_t assoDCAz = 1.,
-                                     Int_t assoTPCnCls = 80
+                                     Int_t assoTPCnCls = 80,
+                                     Double_t minEta = -0.6,
+                                     Double_t maxEta = 0.6
                                      )
 {
     // get the manager via the static access member
@@ -89,6 +91,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEemc->SetMassCut(minMass,maxMass);
     taskBFEemc->SetAssoDCACut(assoDCAxy,assoDCAz);
     taskBFEemc->SetAssoTPCClus(assoTPCnCls);
+    taskBFEemc->SetEtaCut(minEta,maxEta);
     
     // Get the filename and make subfolders
     TString fileNameemc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -135,6 +138,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEdc->SetMassCut(minMass,maxMass);
     taskBFEdc->SetAssoDCACut(assoDCAxy,assoDCAz);
     taskBFEdc->SetAssoTPCClus(assoTPCnCls);
+    taskBFEdc->SetEtaCut(minEta,maxEta);
     
     // Get the filename and make subfolders
     TString fileNamedc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -214,6 +218,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEeg01emc->SetMassCut(minMass,maxMass);
         taskBFEeg01emc->SetAssoDCACut(assoDCAxy,assoDCAz);
         taskBFEeg01emc->SetAssoTPCClus(assoTPCnCls);
+        taskBFEeg01emc->SetEtaCut(minEta,maxEta);
         
         // Get the filename and make subfolders
         TString fileNameEG01emc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -306,6 +311,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEdg01dc->SetMassCut(minMass,maxMass);
         taskBFEdg01dc->SetAssoDCACut(assoDCAxy,assoDCAz);
         taskBFEdg01dc->SetAssoTPCClus(assoTPCnCls);
+        taskBFEdg01dc->SetEtaCut(minEta,maxEta);
         
         // Get the filename and make subfolders
         TString fileNameDG01dc = mgr->AliAnalysisManager::GetCommonFileName();
