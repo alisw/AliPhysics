@@ -59,6 +59,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TTree *fTreeJPsi;		//!
   TTree *fTreePsi2s;		//!
   TTree *fTreeGen;		//!
+  TTree *fTreeMatch;		//!
 
   TH2D *hTPCPIDMuonCorr; 	//!
   TH1D *hTPCPIDMuon;		//!
@@ -76,15 +77,6 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH2I *hV0decision;		//!
   TH1D *hVertexZ;		//!
   TH1D *hVertexContrib;		//!
-  TH1D *hPtTrkTPC_CUP29;	//!
-  TH1D *hPtTrkITS_CUP29;	//!
-  TH1D *hPtTrkTPC_CUP30;	//!
-  TH1D *hPtTrkITS_CUP30;	//!
-  TH1D *hPtTrkTPC_CUP31;	//!
-  TH1D *hPtTrkITS_CUP31;	//!
-  TH1D *hPtTrkTOF_CUP29;	//!
-  TH1D *hPtTrkTOF_CUP30;	//!
-  TH1D *hPtTrkTOF_CUP31;	//!
   TH2D *hTPCdEdxCorrMuon;	//!
   TH2D *hTPCdEdxCorrElectron;	//!
   TH2D *hChannelPIDCorr;	//!
@@ -97,7 +89,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   Int_t fSignDaughter[2];
   Float_t fPt, fY, fM, fPhi, fPtGen, fYGen, fMGen, fPhiGen, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma, fTrackLenght[6], fTrackPhiPos[4];
   Int_t fChannel, fSign, fRunNumber, fADAdecision, fADCdecision,fV0Adecision, fV0Cdecision, fNGoodTracksITS, fNGoodTracksLoose, fNGoodTracksDCA;
-  Bool_t fTriggerInputsMC[NTRIGGERINPUTS], fTriggers[NTRIGGERS], fInEtaGen, fInEtaRec;
+  Bool_t fTriggerInputsMC[NTRIGGERINPUTS], fTriggers[NTRIGGERS], fInEtaGen, fInEtaRec, fMatchITS, fMatchTOF, fTriggerClass[3];
   
   TFile *fSPDfile;
   TFile *fTOFfile;
@@ -110,7 +102,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 33); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 34); 
 };
 
 #endif
