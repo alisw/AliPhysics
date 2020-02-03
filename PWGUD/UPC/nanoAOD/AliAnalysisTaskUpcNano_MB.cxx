@@ -98,15 +98,6 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
     hV0decision(0),
     hVertexZ(0),
     hVertexContrib(0),
-    hPtTrkTPC_CUP29(0),
-    hPtTrkITS_CUP29(0),
-    hPtTrkTPC_CUP30(0),
-    hPtTrkITS_CUP30(0),
-    hPtTrkTPC_CUP31(0),
-    hPtTrkITS_CUP31(0),
-    hPtTrkTOF_CUP29(0),
-    hPtTrkTOF_CUP30(0),
-    hPtTrkTOF_CUP31(0),
     hTPCdEdxCorrMuon(0),
     hTPCdEdxCorrElectron(0),
     hChannelPIDCorr(0),
@@ -135,6 +126,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
     fNGoodTracksDCA(0),
     fInEtaGen(0),
     fInEtaRec(0),
+    fMatchITS(0), 
+    fMatchTOF(0),
     fPIDsigma(0),
     fSPDfile(0),
     fTOFfile(0),
@@ -184,15 +177,6 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     hV0decision(0),
     hVertexZ(0),
     hVertexContrib(0),
-    hPtTrkTPC_CUP29(0),
-    hPtTrkITS_CUP29(0),
-    hPtTrkTPC_CUP30(0),
-    hPtTrkITS_CUP30(0),
-    hPtTrkTPC_CUP31(0),
-    hPtTrkITS_CUP31(0),
-    hPtTrkTOF_CUP29(0),
-    hPtTrkTOF_CUP30(0),
-    hPtTrkTOF_CUP31(0),
     hTPCdEdxCorrMuon(0),
     hTPCdEdxCorrElectron(0),
     hChannelPIDCorr(0),
@@ -221,6 +205,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     fNGoodTracksDCA(0),
     fInEtaGen(0),
     fInEtaRec(0),
+    fMatchITS(0), 
+    fMatchTOF(0), 
     fPIDsigma(0),
     fSPDfile(0),
     fTOFfile(0),
@@ -236,6 +222,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     fPtDaughter[i] = -1;
     fSignDaughter[i] = 0;
     }
+  for(Int_t i = 0; i<3;  i++)fTriggerClass[i] = kFALSE;
   DefineOutput(1, TList::Class());
 
 }//AliAnalysisTaskUpcNano_MB
@@ -362,6 +349,14 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeGen ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeGen ->Branch("fInEtaGen", &fInEtaGen, "fInEtaGen/O");
   if(isMC) fOutputList->Add(fTreeGen);
+  
+  fTreeMatch = new TTree("fTreeMatch", "fTreeMatch");
+  fTreeMatch ->Branch("fPtDaughter", &fPtDaughter, "fPtDaughter/F");
+  fTreeMatch ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
+  fTreeMatch ->Branch("fMatchITS", &fMatchITS, "fMatchITS/O");
+  fTreeMatch ->Branch("fMatchTOF", &fMatchTOF, "fMatchTOF/O");
+  fTreeMatch ->Branch("fTriggerClass", &fTriggerClass[0],"fTriggerClass[3]/O");
+  fOutputList->Add(fTreeMatch);
    
   hTPCPIDMuonCorr = new TH2D("hTPCPIDMuonCorr"," ",100,-10.0,10.0,100,-10.0,10.0);
   hTPCPIDMuonCorr->GetXaxis()->SetTitle("TPC PID N #sigma (#mu)");
@@ -425,29 +420,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fOutputList->Add(hVertexZ);
   hVertexContrib = new TH1D("hVertexContrib"," ",103,-2,100);
   fOutputList->Add(hVertexContrib);
-  
-  hPtTrkTPC_CUP29 = new TH1D("hPtTrkTPC_CUP29"," ",100,0,2);
-  fOutputList->Add(hPtTrkTPC_CUP29);
-  hPtTrkITS_CUP29 = new TH1D("hPtTrkITS_CUP29"," ",100,0,2);
-  fOutputList->Add(hPtTrkITS_CUP29);
-  
-  hPtTrkTPC_CUP30 = new TH1D("hPtTrkTPC_CUP30"," ",100,0,2);
-  fOutputList->Add(hPtTrkTPC_CUP30);
-  hPtTrkITS_CUP30 = new TH1D("hPtTrkITS_CUP30"," ",100,0,2);
-  fOutputList->Add(hPtTrkITS_CUP30);
-  
-  hPtTrkTPC_CUP31 = new TH1D("hPtTrkTPC_CUP31"," ",100,0,2);
-  fOutputList->Add(hPtTrkTPC_CUP31);
-  hPtTrkITS_CUP31 = new TH1D("hPtTrkITS_CUP31"," ",100,0,2);
-  fOutputList->Add(hPtTrkITS_CUP31);
-  
-  hPtTrkTOF_CUP29 = new TH1D("hPtTrkTOF_CUP29"," ",100,0,2);
-  fOutputList->Add(hPtTrkTOF_CUP29);
-  hPtTrkTOF_CUP30 = new TH1D("hPtTrkTOF_CUP30"," ",100,0,2);
-  fOutputList->Add(hPtTrkTOF_CUP30);
-  hPtTrkTOF_CUP31 = new TH1D("hPtTrkTOF_CUP31"," ",100,0,2);
-  fOutputList->Add(hPtTrkTOF_CUP31);
-  
+    
   hChannelPIDCorr = new TH2D("hChannelPIDCorr"," ",100,0.0,20.0,100,0.0,20.0);
   hChannelPIDCorr->GetXaxis()->SetTitle("TPC PID N #sigma (e)");
   hChannelPIDCorr->GetYaxis()->SetTitle("TPC PID N #sigma (#mu)");
@@ -916,6 +889,10 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   
   //
   if(isESD){
+  
+  Int_t TrackIndexSyst[5] = {-1,-1,-1,-1,-1};
+  fNGoodTracksLoose=0;
+  
   Bool_t refit    = fTrackCutsMatching->GetRequireITSRefit();
   Float_t chi2tpc = fTrackCutsMatching->GetMaxChi2TPCConstrainedGlobal();
   Float_t chi2its = fTrackCutsMatching->GetMaxChi2PerClusterITS();
@@ -931,41 +908,44 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     isCUP30 = fTriggers[3] || fTriggers[4];
     isCUP31 = fTriggers[5] || fTriggers[6];
     }
+  fTriggerClass[0] = isCUP29; fTriggerClass[1] = isCUP30; fTriggerClass[2] = isCUP31;
+  
+  // remove all ITS requirements
+  fTrackCutsMatching->SetRequireITSRefit(kFALSE);
+  fTrackCutsMatching->SetMaxChi2TPCConstrainedGlobal(99999.);
+  fTrackCutsMatching->SetMaxChi2PerClusterITS(999999.);
+  fTrackCutsMatching->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+  //DCA
+  fTrackCutsMatching->SetMaxDCAToVertexXY(2.4);
+  fTrackCutsMatching->SetMaxDCAToVertexZ(3.2);
   
   for(Int_t iTrack=0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
-   
     AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
     if( !trk ) continue;
-    // remove all ITS requirements
-    fTrackCutsMatching->SetRequireITSRefit(kFALSE);
-    fTrackCutsMatching->SetMaxChi2TPCConstrainedGlobal(99999.);
-    fTrackCutsMatching->SetMaxChi2PerClusterITS(999999.);
-    fTrackCutsMatching->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
-    //DCA
-    fTrackCutsMatching->SetMaxDCAToVertexXY(2.4);
-    fTrackCutsMatching->SetMaxDCAToVertexZ(3.2);
-
-    if(fTrackCutsMatching->AcceptTrack(trk)){ 
-      if(isCUP29) hPtTrkTPC_CUP29->Fill(trk->Pt());
-      if(isCUP30) hPtTrkTPC_CUP30->Fill(trk->Pt());
-      if(isCUP31) hPtTrkTPC_CUP31->Fill(trk->Pt());      
-      }
-    //set the ITS requirements
-    fTrackCutsMatching->SetRequireITSRefit(refit);
-    fTrackCutsMatching->SetMaxChi2TPCConstrainedGlobal(chi2tpc);
-    fTrackCutsMatching->SetMaxChi2PerClusterITS(chi2its);
-    //set the SPD cluster requirement
-    fTrackCutsMatching->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+    if(fTrackCutsMatching->AcceptTrack(trk)){
+      TrackIndexSyst[fNGoodTracksLoose] = iTrack; 
+      fNGoodTracksLoose++;
+      } 
+    }
+  //set the ITS requirements
+  fTrackCutsMatching->SetRequireITSRefit(refit);
+  fTrackCutsMatching->SetMaxChi2TPCConstrainedGlobal(chi2tpc);
+  fTrackCutsMatching->SetMaxChi2PerClusterITS(chi2its);
+  //set the SPD cluster requirement
+  fTrackCutsMatching->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
   
-    if(fTrackCutsMatching->AcceptTrack(trk)){ 
-      if(isCUP29) hPtTrkITS_CUP29->Fill(trk->Pt());
-      if(isCUP30) hPtTrkITS_CUP30->Fill(trk->Pt());
-      if(isCUP31) hPtTrkITS_CUP31->Fill(trk->Pt());
-      if(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk){
-        if(isCUP29) hPtTrkTOF_CUP29->Fill(trk->Pt());
-        if(isCUP30) hPtTrkTOF_CUP30->Fill(trk->Pt());
-        if(isCUP31) hPtTrkTOF_CUP31->Fill(trk->Pt());
-	}
+  if(fNGoodTracksLoose == 2 || fNGoodTracksLoose == 4){
+    for(Int_t iTrack=0; iTrack < fNGoodTracksLoose; iTrack++) {
+      AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexSyst[iTrack]));
+      if( !trk ) continue;
+      fMatchITS = kFALSE;
+      fMatchTOF = kFALSE;
+      fPtDaughter[iTrack] = trk->Pt();      
+      if(fTrackCutsMatching->AcceptTrack(trk)){
+        fMatchITS = kTRUE; 
+        if(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk)fMatchTOF = kTRUE;
+        }
+      fTreeMatch->Fill();
       }
     }
   }
