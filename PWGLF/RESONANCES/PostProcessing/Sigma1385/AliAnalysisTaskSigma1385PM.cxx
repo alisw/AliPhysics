@@ -161,7 +161,7 @@ ClassImp(AliAnalysisTaskSigma1385PM)
       fDCAPositiveTrack(0.05),
       fDCANegativeTrack(0.05),
       fV0CosineOfPointingAngleCut(0.99),
-      fMaxLambdaRapidity(0.5),
+      fMaxLambdaRapidity(0.8),
       fLambdaLowRadius(1.4),
       fLambdaHighRadius(100.0),
       fLambdaLifetime(30.0),
@@ -217,7 +217,7 @@ AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
       fDCAPositiveTrack(0.05),
       fDCANegativeTrack(0.05),
       fV0CosineOfPointingAngleCut(0.99),
-      fMaxLambdaRapidity(0.5),
+      fMaxLambdaRapidity(0.8),
       fLambdaLowRadius(1.4),
       fLambdaHighRadius(100.0),
       fLambdaLifetime(30.0),
@@ -306,7 +306,8 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
   auto binPt = AxisFix("Pt", 200, 0, 20);
   auto binMass = AxisFix("Mass", 1800, 1.2, 3.0);
   auto binMassMC = AxisFix("Mass", 800, 1.2, 2.0);
-  fBinZ = AxisFix("Z", 20, -10, 10);
+  // fBinZ = AxisFix("Z", 20, -10, 10); // 1cm diff
+  fBinZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10}); // moderate diff
 
   CreateTHnSparse("Sigma1385_data", "Sigma1385_data", 5,
                   {binAnti, binType, fBinCent, binPt, binMass}, "s");
@@ -325,51 +326,51 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
   else
     fHistos->CreateTH1("hMultiplicity", "", 100, 0, 100, "s");
   if (fFillQAPlot) {
-    fHistos->CreateTH2("QA/hTPCPIDPion", "", 200, 0, 20, 2000, 0, 200);
-    fHistos->CreateTH1("QA/hEtaPion", "", 30, -1.5, 1.5);
-    fHistos->CreateTH1("QA/hDCAPVPion", "", 100, 0, 1, "s");
-    fHistos->CreateTH1("QA/hDCArPVPion", "", 100, 0, 1, "s");
+    fHistos->CreateTH2("QA/hTPCPIDPion", "", 200, 0, 20, 200, 0, 200);
+    fHistos->CreateTH1("QA/hEtaPion", "", 20, -1.0, 1.0);
+    fHistos->CreateTH1("QA/hDCAPVPion", "", 30, 0, 3, "s");
+    fHistos->CreateTH1("QA/hDCArPVPion", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QA/hPtPion", "", 200, 0, 20);
-    fHistos->CreateTH2("QA/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
-    fHistos->CreateTH2("QA/hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
-    fHistos->CreateTH2("QA/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 2000, 0,
+    fHistos->CreateTH2("QA/hTPCPIDLambdaProton", "", 200, 0, 20, 200, 0, 200);
+    fHistos->CreateTH2("QA/hTPCPIDLambdaPion", "", 200, 0, 20, 200, 0, 200);
+    fHistos->CreateTH2("QA/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 200, 0,
                        200);
-    fHistos->CreateTH2("QA/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 2000, 0,
+    fHistos->CreateTH2("QA/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 200, 0,
                        200);
     fHistos->CreateTH1("QA/hDCA_lambdaDaughters", "", 300, 0, 3, "s");
-    fHistos->CreateTH1("QA/hDCAlambdaPV", "", 100, 0, 1, "s");
+    fHistos->CreateTH1("QA/hDCAlambdaPV", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QA/hDCALambdaPVProton", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QA/hDCALambdaPVPion", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QA/hCosPAlambda", "", 100, 0.9, 1.0, "s");
+    fHistos->CreateTH1("QA/hCosPAlambda", "", 50, 0.95, 1.0, "s");
     fHistos->CreateTH1("QA/hLifetimelambda", "", 50, 0, 50, "s");
-    fHistos->CreateTH1("QA/hYlambda", "", 200, -1, 1, "s");
-    fHistos->CreateTH1("QA/hMassLambda", "", 150, 1.05, 1.2, "s");
-    fHistos->CreateTH1("QA/hLambdaRxy", "", 250, 0, 250);
+    fHistos->CreateTH1("QA/hYlambda", "", 140, -0.7, 0.7, "s");
+    fHistos->CreateTH1("QA/hMassLambda", "", 80, 1.08, 1.16, "s");
+    fHistos->CreateTH1("QA/hLambdaRxy", "", 200, 0, 200);
     fHistos->CreateTH1("QA/hSigmaStarAssym", "", 100, 0, 1);
     if (fIsMC)
       fHistos->CreateTH1("QA/hSigmaStarAssym_true", "", 100, 0, 1);
 
-    fHistos->CreateTH2("QAcut/hTPCPIDPion", "", 200, 0, 20, 2000, 0, 200);
-    fHistos->CreateTH1("QAcut/hEtaPion", "", 30, -1.5, 1.5);
-    fHistos->CreateTH1("QAcut/hDCAPVPion", "", 100, 0, 1, "s");
-    fHistos->CreateTH1("QAcut/hDCArPVPion", "", 100, 0, 1, "s");
+    fHistos->CreateTH2("QAcut/hTPCPIDPion", "", 200, 0, 20, 200, 0, 200);
+    fHistos->CreateTH1("QAcut/hEtaPion", "", 20, -1.0, 1.0);
+    fHistos->CreateTH1("QAcut/hDCAPVPion", "", 30, 0, 3, "s");
+    fHistos->CreateTH1("QAcut/hDCArPVPion", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QAcut/hPtPion", "", 200, 0, 20);
-    fHistos->CreateTH2("QAcut/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0,
+    fHistos->CreateTH2("QAcut/hTPCPIDLambdaProton", "", 200, 0, 20, 200, 0,
                        200);
-    fHistos->CreateTH2("QAcut/hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
-    fHistos->CreateTH2("QAcut/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 2000, 0,
+    fHistos->CreateTH2("QAcut/hTPCPIDLambdaPion", "", 200, 0, 20, 200, 0, 200);
+    fHistos->CreateTH2("QAcut/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 200, 0,
                        200);
-    fHistos->CreateTH2("QAcut/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 2000, 0,
+    fHistos->CreateTH2("QAcut/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 200, 0,
                        200);
     fHistos->CreateTH1("QAcut/hDCA_lambdaDaughters", "", 300, 0, 3, "s");
-    fHistos->CreateTH1("QAcut/hDCAlambdaPV", "", 100, 0, 1, "s");
+    fHistos->CreateTH1("QAcut/hDCAlambdaPV", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QAcut/hDCALambdaPVProton", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QAcut/hDCALambdaPVPion", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QAcut/hCosPAlambda", "", 100, 0.9, 1.0, "s");
+    fHistos->CreateTH1("QAcut/hCosPAlambda", "", 50, 0.95, 1.0, "s");
     fHistos->CreateTH1("QAcut/hLifetimelambda", "", 50, 0, 50, "s");
-    fHistos->CreateTH1("QAcut/hYlambda", "", 200, -1, 1, "s");
-    fHistos->CreateTH1("QAcut/hMassLambda", "", 150, 1.05, 1.2, "s");
-    fHistos->CreateTH1("QAcut/hLambdaRxy", "", 250, 0, 250);
+    fHistos->CreateTH1("QAcut/hYlambda", "", 140, -0.7, 0.7, "s");
+    fHistos->CreateTH1("QAcut/hMassLambda", "", 80, 1.08, 1.16, "s");
+    fHistos->CreateTH1("QAcut/hLambdaRxy", "", 200, 0, 200);
     fHistos->CreateTH1("QAcut/hSigmaStarAssym", "", 100, 0, 1);
     if (fIsMC)
       fHistos->CreateTH1("QAcut/hSigmaStarAssym_true", "", 100, 0, 1);
@@ -491,7 +492,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
     FillMCinput(fMCEvent);
     FillTHnSparse("Normalisation", {(int)kSelected, (double)fCent});
   }
-  if (fEvt->IsA() == AliAODEvent::Class())
+  if (fIsAOD)
     fVertex = ((AliAODEvent*)fEvt)->GetPrimaryVertex();
   const AliVVertex* pVtx = fEvt->GetPrimaryVertex();
   fPosPV[0] = pVtx->GetX();
