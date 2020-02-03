@@ -147,23 +147,6 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetLowerMassCutPrimaries(lowerMassCutPrimaries);
   task->SetMassCutSecondaries(massCutSecondaries);
 
-  // Set secondary cuts applied on V0's
-  task->SetLowerCosPointingAngleCut(LowerCosPointingAngleCut);
-  task->SetUpperCosPointingAngleCut(UpperCosPointingAngleCut);
-  task->SetLowerChi2NDFCut(LowerChi2NDFCut);
-  task->SetUpperChi2NDFCut(UpperChi2NDFCut);
-  task->SetLowerLegDistCut(LowerLegDistCut);
-  task->SetUpperLegDistCut(UpperLegDistCut);
-  task->SetLowerRCut(LowerRCut);
-  task->SetUpperRCut(UpperRCut);
-  task->SetLowerPsiPairCut(LowerPsiPairCut);
-  task->SetUpperPsiPairCut(UpperPsiPairCut);
-  task->SetLowerPairMassCut(LowerPairMassCut);
-  task->SetUpperPairMassCut(UpperPairMassCut);
-  task->SetLowerPairArmPtCut(LowerPairArmPtCut);
-  task->SetUpperPairArmPtCut(UpperPairArmPtCut);
-  task->SetLowerPairArmAlphaCut(LowerPairArmAlphaCut);
-  task->SetUpperPairArmAlphaCut(UpperPairArmAlphaCut);
 
 
   // #########################################################
@@ -218,7 +201,6 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
   task->SetULSandLS(DoULSLS);
-  task->SetDeactivateLS(DeactivateLS);
 
   // #########################################################
   // #########################################################

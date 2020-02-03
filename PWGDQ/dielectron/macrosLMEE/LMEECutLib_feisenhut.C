@@ -78,6 +78,7 @@ public:
     kNoTrackCuts,
     kTRACKcut_1,
     kTRACKcut_1_secondary,
+    kDefaultNoTrackCuts,
     kV0
   };
   enum LMEETrackSelectionPre{
@@ -107,7 +108,10 @@ public:
     kV0_wCosChi2LegDistRPsiPair,
     kV0_wCosChi2LegDistRPsiPairM,
     kV0_wCosChi2LegDistRPsiPairMArmPt,
-    kV0_wCosChi2LegDistRPsiPairMArmPtAlpha
+    kV0_wCosChi2LegDistRPsiPairMArmPtAlpha,
+    kV0_wPairM,
+    kV0_wPairMArmPt,
+    kV0_wPairMArmPtAlpha
   };
   enum LMEEPairCutsPre{
     kInvM0to030MeV_OpAng0to060mrad,
@@ -177,7 +181,7 @@ public:
     cgPIDCutsAna->AddCut(etaRange);
     cgPIDCutsAna->AddCut(ptRange);
     cgPIDCutsAna->AddCut(PID);
-    // cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
+    cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
                                                                                 cgPIDCutsAna->AddCut(GetPairCutsAna(AnaCut));
     return cgPIDCutsAna;
   }
@@ -488,15 +492,15 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(AnalysisCut AnaCut, Int_t togglePC) 
       // gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
       // gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
       // gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0,  kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle,              0.99,  1.0,  kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
+      // gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle,              0.99,  1.0,  kFALSE);
+      // gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
+      // gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+      // gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
+      // gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.16, kFALSE);
       // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.02, kFALSE);
       gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.06, kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE); // should increase purity...
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.9,  0.9, kFALSE); // should increase purity...
       // gammaV0Cuts->SetExcludeTracks(kTRUE);
       // gammaV0Cuts->SetExcludeTracks(kFALSE); (standard?)
       AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
@@ -564,7 +568,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(AnalysisCut AnaCut, Int_t togglePC) 
         // primarily meant for inclusion, for quite pure sample...
         std::cout << "Using kV0_onlyM Cutsetting" << std::endl;
         AliDielectronVarCuts* gammaV0Cuts =new AliDielectronVarCuts("gammaV0Cuts","gammaV0Cuts");
-        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.16, kFALSE);
         cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
         cgTrackCutsV0select->AddCut(gammaV0Cuts);
         pairCuts = cgTrackCutsV0select;
@@ -585,7 +589,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(AnalysisCut AnaCut, Int_t togglePC) 
         // primarily meant for inclusion, for quite pure sample...
         std::cout << "Using kV0_onlyArmAlpha Cutsetting" << std::endl;
         AliDielectronVarCuts* gammaV0Cuts =new AliDielectronVarCuts("gammaV0Cuts","gammaV0Cuts");
-        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE); // should increase purity...
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.9,  0.9, kFALSE); // should increase purity...
         cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
         cgTrackCutsV0select->AddCut(gammaV0Cuts);
         pairCuts = cgTrackCutsV0select;
@@ -655,7 +659,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(AnalysisCut AnaCut, Int_t togglePC) 
         gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
         gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
         gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
-        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.16, kFALSE);
         cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
         cgTrackCutsV0select->AddCut(gammaV0Cuts);
         pairCuts = cgTrackCutsV0select;
@@ -671,7 +675,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(AnalysisCut AnaCut, Int_t togglePC) 
         gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
         gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
         gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
-        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.16, kFALSE);
         // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.02, kFALSE);
         gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.06, kFALSE);
         cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
@@ -689,10 +693,45 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(AnalysisCut AnaCut, Int_t togglePC) 
         gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
         gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
         gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
-        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.16, kFALSE);
         // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.02, kFALSE);
         gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.06, kFALSE);
-        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE); // should increase purity...
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.9,  0.9, kFALSE); // should increase purity...
+        cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
+        cgTrackCutsV0select->AddCut(gammaV0Cuts);
+        pairCuts = cgTrackCutsV0select;
+        break;
+
+      case kV0_wPairM:
+        // primarily meant for inclusion, for quite pure sample...
+        std::cout << "Using kV0_wM Cutsetting" << std::endl;
+        AliDielectronVarCuts* gammaV0Cuts =new AliDielectronVarCuts("gammaV0Cuts","gammaV0Cuts");
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.16, kFALSE);
+        cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
+        cgTrackCutsV0select->AddCut(gammaV0Cuts);
+        pairCuts = cgTrackCutsV0select;
+        break;
+
+      case kV0_wPairMArmPt:
+        // primarily meant for inclusion, for quite pure sample...
+        std::cout << "Using kV0_wMArmPt Cutsetting" << std::endl;
+        AliDielectronVarCuts* gammaV0Cuts =new AliDielectronVarCuts("gammaV0Cuts","gammaV0Cuts");
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.16, kFALSE);
+        // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.02, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.06, kFALSE);
+        cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
+        cgTrackCutsV0select->AddCut(gammaV0Cuts);
+        pairCuts = cgTrackCutsV0select;
+        break;
+
+      case kV0_wPairMArmPtAlpha:
+        // primarily meant for inclusion, for quite pure sample...
+        std::cout << "Using kV0_wMArmPtAlpha Cutsetting" << std::endl;
+        AliDielectronVarCuts* gammaV0Cuts =new AliDielectronVarCuts("gammaV0Cuts","gammaV0Cuts");
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.16, kFALSE);
+        // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.02, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.06, kFALSE);
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.9,  0.9, kFALSE); // should increase purity...
         cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
         cgTrackCutsV0select->AddCut(gammaV0Cuts);
         pairCuts = cgTrackCutsV0select;
@@ -1386,6 +1425,10 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
     // case kNone:
       // trackCuts = GetTrackCuts(kNoTrackCuts);
       // break;
+
+    case kDefaultNoTrackCuts:
+      cout << "No Track Cuts used - ok " << endl; // since 30.01.2020
+      break;
 
     default: cout << "No Analysis Track Selection defined " << endl;
   }
