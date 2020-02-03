@@ -83,7 +83,7 @@ bool AliNanoFilterPID::IsSelected(TObject *obj) {
         pt > fTPCpidTriggerPtRange[iSpecies][0] &&
         pt < fTPCpidTriggerPtRange[iSpecies][1]) ||
         (goodTOF &&
-        nTPCsigma < fTPCpidTriggerNsigma[iSpecies] &&
+        nTOFsigma < fTOFpidTriggerNsigma[iSpecies] &&
         pt > fTOFpidTriggerPtRange[iSpecies][0] &&
         pt < fTOFpidTriggerPtRange[iSpecies][1])) {
       SETBIT(fFilterMask,iSpecies);
