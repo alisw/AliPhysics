@@ -60,7 +60,7 @@ ClassImp(AliSigma0AODPhotonMotherCuts)
       fHistNLambdaGammaSplit(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
-      fHistInvMassK0Gamma(nullptr),
+      fHistInvMassOtherChilren(),
       fHistInvMassSelected(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
@@ -153,7 +153,7 @@ AliSigma0AODPhotonMotherCuts::AliSigma0AODPhotonMotherCuts(
       fHistNLambdaGammaSplit(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
-      fHistInvMassK0Gamma(nullptr),
+      fHistInvMassOtherChilren(),
       fHistInvMassSelected(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
@@ -546,7 +546,17 @@ void AliSigma0AODPhotonMotherCuts::SingleV0QA() {
 
 //____________________________________________________________________________________________________
 void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
-  static float massK0 = TDatabasePDG::Instance()->GetParticle(311)->Mass();
+  const float massProton   = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  const float massPion     = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  const float massElectron = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+
+  const float massK0 = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  const float massLambda = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+  const float massAntiLambda = TDatabasePDG::Instance()->GetParticle(-3122)->Mass();
+
+  std::vector<float> massHypD1 = {{ massProton, massPion, massPion, massElectron}};
+  std::vector<float> massHypD2 = {{ massPion, massProton, massPion, massElectron}};
+  std::vector<float> massHypTrack = {{massLambda, massAntiLambda, massK0, 0.f}};
 
   auto *dummy = static_cast<AliAODEvent*>(fInputEvent);
 
@@ -586,15 +596,8 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
 
       if (!fIsLightweight) {
         fHistArmenterosBefore->Fill(armAlpha, armQt);
-
-        TLorentzVector track1, track2;
-        track1.SetXYZM(lambda.GetMomentum().Px(), lambda.GetMomentum().Py(),
-                       lambda.GetMomentum().Pz(), massK0);
-        track2.SetXYZM(photon.GetMomentum().Px(), photon.GetMomentum().Py(),
-                       photon.GetMomentum().Pz(), 0.f);
-        TLorentzVector trackSum = track1 + track2;
-        fHistInvMassK0Gamma->Fill(trackSum.M());
       }
+
       // Armenteros cut
       if (fArmenterosCut) {
         if (armQt > fArmenterosQtUp || armQt < fArmenterosQtLow) continue;
@@ -653,6 +656,31 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
           fHistSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
           fHistSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
           fHistSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
+
+          TLorentzVector track1D1, track1D2, track2D1, track2D2, track1, track2,
+              trackSum;
+          int count = 0;
+          for (size_t i = 0; i < massHypTrack.size(); ++i) {
+            track1D1.SetXYZM(lambda.GetMomentum(1).Px(),
+                             lambda.GetMomentum(1).Py(),
+                             lambda.GetMomentum(1).Pz(), massHypD1[i]);
+            track1D2.SetXYZM(lambda.GetMomentum(2).Px(),
+                             lambda.GetMomentum(2).Py(),
+                             lambda.GetMomentum(2).Pz(), massHypD2[i]);
+            track1 = track1D1 + track1D2;
+
+            for (size_t j = 0; j < massHypTrack.size(); ++j) {
+              track2D1.SetXYZM(photon.GetMomentum(1).Px(),
+                               photon.GetMomentum(1).Py(),
+                               photon.GetMomentum(1).Pz(), massHypD1[j]);
+              track2D2.SetXYZM(photon.GetMomentum(2).Px(),
+                               photon.GetMomentum(2).Py(),
+                               photon.GetMomentum(2).Pz(), massHypD2[j]);
+              track2 = track2D1 + track2D2;
+              TLorentzVector trackSum = track1 + track2;
+              fHistInvMassOtherChilren[count++]->Fill(trackSum.M());
+            }
+          }
         }
         ++nSigma;
       }
@@ -780,7 +808,7 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
 
   fHistInvMass =
       new TH1F("fHistInvMass", "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries",
-               150, 1.15, 1.3);
+               600, 1.15, 1.75);
   fHistograms->Add(fHistInvMass);
 
   fHistInvMassPtRaw =
@@ -821,9 +849,19 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
         "fHistMassCutPt", "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
         100, 0, 10);
 
-    fHistInvMassK0Gamma = new TH1F("fHistInvMassK0Gamma",
-                                   "; M_{K^{0}#gamma} (GeV/#it{c}); Entries",
-                                   1000, 0.5, 3);
+    std::vector<TString> partNames = {{ "#Lambda", "#bar{#Lambda}", "K^{0}_{S}", "#gamma"}};
+    int count = 0;
+    for (size_t i = 0; i < partNames.size(); ++i) {
+      for (size_t j = 0; j < partNames.size(); ++j) {
+        fHistInvMassOtherChilren[count] = new TH1F(
+            Form("fHistInvMassOtherChilren_%i", count),
+            Form("; M_{%s%s} (GeV/#it{c}); Entries", partNames[i].Data(),
+                 partNames[j].Data()),
+            5000, 0., 10);
+        fHistograms->Add(fHistInvMassOtherChilren[count]);
+        count++;
+      }
+    }
 
     fHistInvMassSelected = new TH2F("fHistInvMassSelected",
                                     "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
@@ -850,7 +888,6 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 100, -1, 1, 100,
                            -TMath::Pi(), TMath::Pi());
 
-    fHistograms->Add(fHistInvMassK0Gamma);
     fHistograms->Add(fHistNPhotonBefore);
     fHistograms->Add(fHistNPhotonAfter);
     fHistograms->Add(fHistNLambdaBefore);
