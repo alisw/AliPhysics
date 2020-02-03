@@ -993,7 +993,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
         ptype = 3;
       }
       double tmp_vect[5] = {fEvtMult, track->GetP(), pMC, static_cast<double>(ptype), dEdx};
-      fHistRecoChargedMC->Fill(tmp_vect);
+      if(track->GetLabel()>0) fHistRecoChargedMC->Fill(tmp_vect);
+
     }
 
     //"ptCut"
