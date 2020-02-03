@@ -452,10 +452,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   }
 
   if (fIsMC) { //for correlation between momenta (MC)
-    const UInt_t nDimsP = 5;                                         // cent, recP, genP, IsPrim/Sec
-    int nBinsP[nDimsP] = { nCentBins, hnbins, hnbins, 4, 900}; //
-    double minBinP[nDimsP] = { 0., 0.01, 0.01, -.5, 0.};         // Dummy limits for cent, recP, genP
-    double maxBinP[nDimsP] = { 1., 10., 10., 3.5, 1000.};           // Dummy limits for cent, recP, genP
+    const UInt_t nDimsP = 6;                                         // cent, recP, genP, IsPrim/Sec
+    int nBinsP[nDimsP] = { nCentBins, hnbins, hnbins, 4, 900,2}; //
+    double minBinP[nDimsP] = { 0., 0.01, 0.01, -.5, 0.,-1.};         // Dummy limits for cent, recP, genP
+    double maxBinP[nDimsP] = { 1., 10., 10., 3.5, 1000.,1.};           // Dummy limits for cent, recP, genP
     fHistRecoChargedMC =
       new THnSparseF("fHistRecoChargedMC", ";Centrality (%);#it{p} (GeV/#it{c});#it{p} (GeV/#it{c});", nDimsP,
                      nBinsP, minBinP, maxBinP);
@@ -992,8 +992,13 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       else {
         ptype = 3;
       }
-      double tmp_vect[5] = {fEvtMult, track->GetP(), pMC, static_cast<double>(ptype), dEdx};
-      if(track->GetLabel()>0) fHistRecoChargedMC->Fill(tmp_vect);
+
+      double labelsign;
+      if(track->GetLabel()>0) labelsign=0.5;
+      else if(track->GetLabel()<0) labelsign=-0.5;
+
+      double tmp_vect[6] = {fEvtMult, track->GetP(), pMC, static_cast<double>(ptype), dEdx, labelsign};
+      fHistRecoChargedMC->Fill(tmp_vect);
 
     }
 
@@ -1096,7 +1101,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
         // DCA distributions, before the DCAxy cuts from the MC kinematics
         // Filling DCA distribution with MC truth Physics values
-        if (fIsMC && fIsDCAUnfoldHistoEnabled) {
+        if (fIsMC) {
           int ptype = 0;
           if (lMCevent->IsPhysicalPrimary(lMCtrk)){
             fHistDCARecoPID_prim[lPidIndex]->Fill(fEvtMult, trkPt, impactXY);
@@ -1114,15 +1119,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
             ptype = 3;
           }
 
-          int binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
-          double tmp_vect[6] = { fEvtMult,
-                                 trkPt,
-                                 lMCpt,
-                                 static_cast<double>(binPart),
-                                 static_cast<double>(ptype),
-                                 static_cast<double>(impactXY)
-                               };
-          fHistMCDCA[lPidIndex]->Fill(tmp_vect);
+          if(fIsDCAUnfoldHistoEnabled) {
+            int binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
+            double tmp_vect[6] = { fEvtMult,
+                                   trkPt,
+                                   lMCpt,
+                                   static_cast<double>(binPart),
+                                   static_cast<double>(ptype),
+                                   static_cast<double>(impactXY)
+                                 };
+            fHistMCDCA[lPidIndex]->Fill(tmp_vect);
+          }
         }
       } // end lIsGoodTrack
 
