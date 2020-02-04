@@ -925,7 +925,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     if(fTrackCutsMatching->AcceptTrack(trk)){
       TrackIndexSyst[fNGoodTracksLoose] = iTrack; 
       fNGoodTracksLoose++;
-      } 
+      }
+    if(fNGoodTracksLoose>4)break; 
     }
   //set the ITS requirements
   fTrackCutsMatching->SetRequireITSRefit(refit);
