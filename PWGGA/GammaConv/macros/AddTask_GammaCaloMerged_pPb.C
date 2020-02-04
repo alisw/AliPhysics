@@ -1082,7 +1082,7 @@ void AddTask_GammaCaloMerged_pPb(
   } else if (trainConfig == 4122){ // varied M02 part 1
     cuts.AddCutMergedCalo("80085103","1111131050032200000","1111131050022d00001","0163300000000000"); // min 0.33
     cuts.AddCutMergedCalo("80085103","1111131050032200000","1111131050022e00001","0163300000000000"); // min 0.36
-  } else if (trainConfig == 4103){ // varied M02 part 2
+  } else if (trainConfig == 4123){ // varied M02 part 2
     cuts.AddCutMergedCalo("80085103","1111131050032200000","1111131050022800001","0163300000000000"); // min 0.25
     cuts.AddCutMergedCalo("80085103","1111131050032200000","1111131050022a00001","0163300000000000"); // min 0.26
   } else if (trainConfig == 4124){ // NL vars

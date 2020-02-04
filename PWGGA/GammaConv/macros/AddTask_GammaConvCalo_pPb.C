@@ -1128,17 +1128,17 @@ void AddTask_GammaConvCalo_pPb(
 
   // pPb 8 TeV PHOS new default with timing effi
   } else if (trainConfig == 3000){ // PHOS  INT7
-    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
   } else if (trainConfig == 3001){ // PHOS  PHI7
-    cuts.AddCutPCMCalo("80062123","0dm00009f9730000dge0404000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
+    cuts.AddCutPCMCalo("80062103","0dm00009f9730000dge0404000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
   } else if (trainConfig == 3002){
-    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","24466590ha012200000","0h63103100000010"); // 59 NL
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","24466590ha012200000","0h63103100000010"); // 59 NL
   } else if (trainConfig == 3003){
-    cuts.AddCutPCMCalo("80062123","0dm00009f9730000dge0404000","24466590ha012200000","0h63103100000010"); // 59 NL
+    cuts.AddCutPCMCalo("80062103","0dm00009f9730000dge0404000","24466590ha012200000","0h63103100000010"); // 59 NL
   } else if (trainConfig == 3004){
-    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","24466690ha012200000","0h63103100000010"); // 69 NL
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","24466690ha012200000","0h63103100000010"); // 69 NL
   } else if (trainConfig == 3005){
-    cuts.AddCutPCMCalo("80062123","0dm00009f9730000dge0404000","24466690ha012200000","0h63103100000010"); // 69 NL
+    cuts.AddCutPCMCalo("80062103","0dm00009f9730000dge0404000","24466690ha012200000","0h63103100000010"); // 69 NL
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
