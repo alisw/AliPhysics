@@ -842,13 +842,13 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           }
           const unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
           const int nDaugComb = 81;
-          fRadiiEtaPhiSE[Counter] = new TH2F**[nDaugComb];  //maximum of 9 combinations
+          fRadiiEtaPhiSE[Counter] = new TH2F**[nDaugComb];  //maximum of 81 combinations
           fRadiiEtaPhiME[Counter] = new TH2F**[nDaugComb];
 
-          fIntRadiiQAEtaPhiSEBefore[Counter] = new TH2F*[nDaugComb];  //maximum of 9 combinations
+          fIntRadiiQAEtaPhiSEBefore[Counter] = new TH2F*[nDaugComb];  //maximum of 81 combinations
           fIntRadiiQAEtaPhiMEBefore[Counter] = new TH2F*[nDaugComb];
 
-          fIntRadiiQAEtaPhiSEAfter[Counter] = new TH2F*[nDaugComb];  //maximum of 9 combinations
+          fIntRadiiQAEtaPhiSEAfter[Counter] = new TH2F*[nDaugComb];  //maximum of 81 combinations
           fIntRadiiQAEtaPhiMEAfter[Counter] = new TH2F*[nDaugComb];
 
           if (fPhiEtaPlotsSmallK) {

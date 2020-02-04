@@ -94,8 +94,12 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
   std::vector<TVector3> momenta = part.GetMomenta();
   unsigned int nPart = momenta.size();
   unsigned int counter = 0;
-  part.ResizePhiAtRadii(nPart);
+  part.ResizePhiAtRadii(0);
   for (auto it : momenta) {
+    if (nPart != 1 && counter == 0) {
+      counter++; 
+      continue; 
+    }
     std::vector<float> tmpVec;
     auto phi0 = it.Phi();
     float pt = it.Pt();
@@ -455,8 +459,7 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
     } else {
       etaPar1 = eta1.at(iDaug1 + 1);
     }
-    for (unsigned int iDaug2 = 0; iDaug2 < part2.GetPhiAtRaidius().size();
-        ++iDaug2) {
+    for (unsigned int iDaug2 = 0; iDaug2 < nDaug2; ++iDaug2) {
       std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
       float etaPar2;
       if (nDaug2 == 1) {
