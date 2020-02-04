@@ -1697,7 +1697,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     eleinStack++;
                 }
                 
-                if(AODMCtrack->Eta() < fMinEta && AODMCtrack->Eta() > fMaxEta) continue;
+                if(AODMCtrack->Eta() < fMinEta || AODMCtrack->Eta() > fMaxEta) continue;
                 if (TrackPDG>500 && TrackPDG<599) {
                     fBMesonPt->Fill(AODMCtrack->Pt());
                 }
@@ -1869,7 +1869,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track) continue;
         
-        if(track->Eta() < fMinEta && track->Eta() > fMaxEta) continue;
+        if(track->Eta() < fMinEta || track->Eta() > fMaxEta) continue;
         
         fTrkPtB4TC->Fill(track->Pt());
         
@@ -1892,7 +1892,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
                 pdg = TMath::Abs(fMCparticle->GetPdgCode()); //get pid of track
             
-                if(fMCparticle->Eta() < fMinEta && fMCparticle->Eta() > fMaxEta) continue;
+                if(fMCparticle->Eta() < fMinEta || fMCparticle->Eta() > fMaxEta) continue;
                 //cout<<"TESTING1234"<<endl;
             
                 //if electron--------------------------------
