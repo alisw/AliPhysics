@@ -34,7 +34,7 @@
 #include <chrono>
 #include <tuple>
 #include <algorithm>
-#ifdef GPUCA_HAVE_OPENMP
+#ifdef WITH_OPENMP
 #include <omp.h>
 #endif
 
@@ -50,6 +50,7 @@
 #include <sys/stat.h>
 #endif
 #include "utils/timer.h"
+#include "utils/qmaths_helpers.h"
 
 #include "TPCFastTransform.h"
 #include "GPUTPCGMMergedTrack.h"
@@ -141,6 +142,9 @@ int ReadConfiguration(int argc, char** argv)
   if (configStandalone.fpe) {
     feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
   }
+  if (configStandalone.flushDenormals) {
+    disable_denormals();
+  }
 
 #else
   if (configStandalone.affinity != -1) {
@@ -204,7 +208,7 @@ int ReadConfiguration(int argc, char** argv)
     configStandalone.OMPThreads = 1;
   }
 
-#ifdef GPUCA_HAVE_OPENMP
+#ifdef WITH_OPENMP
   if (configStandalone.OMPThreads != -1) {
     omp_set_num_threads(configStandalone.OMPThreads);
   } else {
@@ -289,6 +293,7 @@ int SetupReconstruction()
   if (configStandalone.referenceX < 500.) {
     recSet.TrackReferenceX = configStandalone.referenceX;
   }
+  recSet.tpcZSthreshold = configStandalone.zsThreshold;
 
   if (configStandalone.OMPThreads != -1) {
     devProc.nThreads = configStandalone.OMPThreads;
@@ -303,20 +308,24 @@ int SetupReconstruction()
 #ifdef GPUCA_BUILD_EVENT_DISPLAY
 #ifdef _WIN32
     if (configStandalone.eventDisplay == 1) {
+      printf("Enabling event display (windows backend)\n");
       eventDisplay.reset(new GPUDisplayBackendWindows);
     }
 
 #else
     if (configStandalone.eventDisplay == 1) {
       eventDisplay.reset(new GPUDisplayBackendX11);
+      printf("Enabling event display (X11 backend)\n");
     }
     if (configStandalone.eventDisplay == 3) {
       eventDisplay.reset(new GPUDisplayBackendGlfw);
+      printf("Enabling event display (GLFW backend)\n");
     }
 
 #endif
     else if (configStandalone.eventDisplay == 2) {
       eventDisplay.reset(new GPUDisplayBackendGlut);
+      printf("Enabling event display (GLUT backend)\n");
     }
 
 #endif
@@ -512,6 +521,18 @@ int main(int argc, char** argv)
             break;
           }
         }
+        if (configStandalone.encodeZS || configStandalone.zsFilter) {
+          if (!chainTracking->mIOPtrs.tpcPackedDigits) {
+            printf("Need digit input to run ZS\n");
+            goto breakrun;
+          }
+          if (configStandalone.zsFilter) {
+            chainTracking->ConvertZSFilter(configStandalone.zs12bit);
+          }
+          if (configStandalone.encodeZS) {
+            chainTracking->ConvertZSEncoder(configStandalone.zs12bit);
+          }
+        }
         if (!configStandalone.configRec.runTransformation) {
           chainTracking->mIOPtrs.clustersNative = nullptr;
         } else {
@@ -526,9 +547,9 @@ int main(int argc, char** argv)
           }
         }
 
-        if (configStandalone.overrideMaxTimebin && chainTracking->mIOPtrs.clustersNative) {
+        if (configStandalone.overrideMaxTimebin && (chainTracking->mIOPtrs.clustersNative || chainTracking->mIOPtrs.tpcPackedDigits)) {
           GPUSettingsEvent ev = rec->GetEventSettings();
-          ev.continuousMaxTimeBin = GPUReconstructionConvert::GetMaxTimeBin(*chainTracking->mIOPtrs.clustersNative);
+          ev.continuousMaxTimeBin = chainTracking->mIOPtrs.tpcZS ? GPUReconstructionConvert::GetMaxTimeBin(*chainTracking->mIOPtrs.tpcZS) : chainTracking->mIOPtrs.tpcPackedDigits ? GPUReconstructionConvert::GetMaxTimeBin(*chainTracking->mIOPtrs.tpcPackedDigits) : GPUReconstructionConvert::GetMaxTimeBin(*chainTracking->mIOPtrs.clustersNative);
           rec->UpdateEventSettings(&ev);
         }
         if (!rec->GetParam().earlyTpcTransform && chainTracking->mIOPtrs.clustersNative == nullptr && chainTracking->mIOPtrs.tpcPackedDigits == nullptr) {

@@ -38,6 +38,7 @@ typedef unsigned long ulong;
 #define SCRATCH_PAD_WORK_GROUP_SIZE 1
 #endif
 #ifdef GPUCA_GPUCODE
+/* #define BUILD_CLUSTER_NAIVE */
 #define BUILD_CLUSTER_SCRATCH_PAD
 #else
 /* #define BUILD_CLUSTER_NAIVE */
@@ -63,8 +64,14 @@ typedef unsigned long ulong;
 
 #define SCRATCH_PAD_SEARCH_N 8
 #define SCRATCH_PAD_COUNT_N 16
+#if defined(GPUCA_GPUCODE)
 #define SCRATCH_PAD_BUILD_N 8
 #define SCRATCH_PAD_NOISE_N 8
+#else
+// Double shared memory on cpu as we can't reuse the memory from other threads
+#define SCRATCH_PAD_BUILD_N 16
+#define SCRATCH_PAD_NOISE_N 16
+#endif
 
 #define PADDING_PAD 2
 #define PADDING_TIME 3

@@ -159,16 +159,34 @@ struct GPURecoStepConfiguration {
 #endif
 
 #ifdef GPUCA_NOCOMPAT
-struct GPUCalibObjects {
-  TPCFastTransform* fastTransform = nullptr;
-  o2::base::MatLayerCylSet* matLUT = nullptr;
-  o2::trd::TRDGeometryFlat* trdGeometry = nullptr;
+
+template <class T>
+struct DefaultPtr {
+  typedef T type;
+};
+template <class T>
+struct ConstPtr {
+  typedef const T type;
 };
 
-struct GPUCalibObjectsConst { // TODO: Any chance to do this as template?
-  const TPCFastTransform* fastTransform = nullptr;
-  const o2::base::MatLayerCylSet* matLUT = nullptr;
-  const o2::trd::TRDGeometryFlat* trdGeometry = nullptr;
+template <template <typename T> class S>
+struct GPUCalibObjectsTemplate {
+  typename S<TPCFastTransform>::type* fastTransform = nullptr;
+  typename S<o2::base::MatLayerCylSet>::type* matLUT = nullptr;
+  typename S<o2::trd::TRDGeometryFlat>::type* trdGeometry = nullptr;
+};
+typedef GPUCalibObjectsTemplate<DefaultPtr> GPUCalibObjects;
+typedef GPUCalibObjectsTemplate<ConstPtr> GPUCalibObjectsConst;
+
+struct GPUTrackingInOutZS {
+  static constexpr unsigned int NSLICES = GPUDataTypes::NSLICES;
+  static constexpr unsigned int NENDPOINTS = 20;
+  struct GPUTrackingInOutZSSlice {
+    void** zsPtr[NENDPOINTS];
+    unsigned int* nZSPtr[NENDPOINTS];
+    unsigned int count[NENDPOINTS];
+  };
+  GPUTrackingInOutZSSlice slice[NSLICES];
 };
 
 struct GPUTrackingInOutDigits {
@@ -182,6 +200,7 @@ struct GPUTrackingInOutPointers {
   GPUTrackingInOutPointers(const GPUTrackingInOutPointers&) = default;
   static constexpr unsigned int NSLICES = GPUDataTypes::NSLICES;
 
+  GPUTrackingInOutZS* tpcZS = nullptr;
   GPUTrackingInOutDigits* tpcPackedDigits = nullptr;
   const GPUTPCClusterData* clusterData[NSLICES] = {nullptr};
   unsigned int nClusterData[NSLICES] = {0};

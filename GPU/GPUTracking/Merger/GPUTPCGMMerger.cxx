@@ -142,7 +142,7 @@ void GPUTPCGMMerger::CheckMergedTracks()
   }
 }
 
-int GPUTPCGMMerger::GetTrackLabel(GPUTPCGMBorderTrack& trk)
+int GPUTPCGMMerger::GetTrackLabel(const GPUTPCGMBorderTrack& trk)
 {
   GPUTPCGMSliceTrack* track = &mSliceTrackInfos[trk.TrackID()];
   const GPUTPCSliceOutCluster* clusters = track->OrigTrack()->Clusters();
@@ -609,34 +609,36 @@ void GPUTPCGMMerger::MergeSlicesStep(int border0, int border1, bool useOrigTrack
   ResolveMergeSlices(useOrigTrackParam, false);
 }
 
-void GPUTPCGMMerger::PrintMergeGraph(GPUTPCGMSliceTrack* trk)
+void GPUTPCGMMerger::PrintMergeGraph(const GPUTPCGMSliceTrack* trk, std::ostream& out)
 {
-  GPUTPCGMSliceTrack* orgTrack = trk;
+  const GPUTPCGMSliceTrack* orgTrack = trk;
   while (trk->PrevSegmentNeighbour() >= 0) {
     trk = &mSliceTrackInfos[trk->PrevSegmentNeighbour()];
   }
-  GPUTPCGMSliceTrack* orgTower = trk;
+  const GPUTPCGMSliceTrack* orgTower = trk;
   while (trk->PrevNeighbour() >= 0) {
     trk = &mSliceTrackInfos[trk->PrevNeighbour()];
   }
 
   int nextId = trk - mSliceTrackInfos;
-  GPUInfo("Graph of track %d", (int)(orgTrack - mSliceTrackInfos));
+  out << "Graph of track %d" << (orgTrack - mSliceTrackInfos) << "\n";
   while (nextId >= 0) {
     trk = &mSliceTrackInfos[nextId];
     if (trk->PrevSegmentNeighbour() >= 0) {
-      GPUError("TRACK TREE INVALID!!! %d --> %d", trk->PrevSegmentNeighbour(), nextId);
+      out << "TRACK TREE INVALID!!! " << trk->PrevSegmentNeighbour() << " --> " << nextId << "\n";
     }
-    printf(trk == orgTower ? "--" : "  ");
+    out << (trk == orgTower ? "--" : "  ");
     while (nextId >= 0) {
       GPUTPCGMSliceTrack* trk2 = &mSliceTrackInfos[nextId];
       if (trk != trk2 && (trk2->PrevNeighbour() >= 0 || trk2->NextNeighbour() >= 0)) {
-        printf("   (TRACK TREE INVALID!!! %d <-- %d --> %d)   ", trk2->PrevNeighbour(), nextId, trk2->NextNeighbour());
+        out << "   (TRACK TREE INVALID!!! " << trk2->PrevNeighbour() << " <-- " << nextId << " --> " << trk2->NextNeighbour() << ")   ";
       }
-      printf(" %s%5d(%5.2f)", trk2 == orgTrack ? "!" : " ", nextId, trk2->QPt());
+      char tmp[128];
+      snprintf(tmp, 128, " %s%5d(%5.2f)", trk2 == orgTrack ? "!" : " ", nextId, trk2->QPt());
+      out << tmp;
       nextId = trk2->NextSegmentNeighbour();
     }
-    printf("\n");
+    out << "\n";
     nextId = trk->NextNeighbour();
   }
 }
@@ -685,8 +687,8 @@ void GPUTPCGMMerger::ResolveMergeSlices(bool useOrigTrackParam, bool mergeAll)
 
     bool sameSegment = fabsf(track1->NClusters() > track2->NClusters() ? track1->QPt() : track2->QPt()) < 2 || track1->QPt() * track2->QPt() > 0;
     // GPUInfo("\nMerge %d with %d - same segment %d", itr, itr2, (int) sameSegment);
-    // PrintMergeGraph(track1);
-    // PrintMergeGraph(track2);
+    // PrintMergeGraph(track1, std::cout);
+    // PrintMergeGraph(track2, std::cout);
 
     while (track2->PrevSegmentNeighbour() >= 0) {
       track2 = &mSliceTrackInfos[track2->PrevSegmentNeighbour()];
@@ -771,7 +773,7 @@ void GPUTPCGMMerger::ResolveMergeSlices(bool useOrigTrackParam, bool mergeAll)
         track1->SetNeighbor(track2 - mSliceTrackInfos, goUp);
         track2->SetNeighbor(track1 - mSliceTrackInfos, !goUp);
         // GPUInfo("Result (simple neighbor)");
-        // PrintMergeGraph(track1);
+        // PrintMergeGraph(track1, std::cout);
         continue;
       } else if (track1->Neighbour(goUp) < 0) {
         track2 = &mSliceTrackInfos[track2->Neighbour(!goUp)];
@@ -818,7 +820,7 @@ void GPUTPCGMMerger::ResolveMergeSlices(bool useOrigTrackParam, bool mergeAll)
       }
     }
     // GPUInfo("Result");
-    // PrintMergeGraph(track1);
+    // PrintMergeGraph(track1, std::cout);
   NextTrack:;
   }
 }
@@ -1259,7 +1261,7 @@ void GPUTPCGMMerger::CollectMergedTracks()
         cl[i].num = nOutTrackClusters + i;
         clid[i] = trackClusters[i].GetId();
       }
-      cl[i].state = trackClusters[i].GetFlags() & GPUTPCGMMergedTrackHit::hwcmFlags; // Only allow edge and deconvoluted flags
+      cl[i].state = trackClusters[i].GetFlags() & GPUTPCGMMergedTrackHit::clustererAndSharedFlags; // Only allow edge, deconvoluted, and shared flags
       cl[i].slice = clA[i].x;
       cl[i].leg = clA[i].y;
     }
@@ -1291,6 +1293,10 @@ void GPUTPCGMMerger::CollectMergedTracks()
     p1.DzDs() = p2.DzDs();
     p1.QPt() = p2.QPt();
     mergedTrack.SetAlpha(p2.Alpha());
+    const double kCLight = 0.000299792458;
+    if (CAMath::Abs(Param().polynomialField.GetNominalBz()) < (0.01 * kCLight)) {
+      p1.QPt() = 0.01f * Param().rec.bz0Pt;
+    }
 
     // if (nParts > 1) printf("Merged %d: QPt %f %d parts %d hits\n", mNOutputTracks, p1.QPt(), nParts, nHits);
 

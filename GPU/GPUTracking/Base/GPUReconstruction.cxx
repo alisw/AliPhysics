@@ -34,7 +34,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef GPUCA_HAVE_OPENMP
+#ifdef WITH_OPENMP
 #include <omp.h>
 #endif
 
@@ -129,7 +129,7 @@ int GPUReconstruction::Init()
     mDeviceProcessingSettings.trackletSelectorInPipeline = false;
   }
 
-#ifdef GPUCA_HAVE_OPENMP
+#ifdef WITH_OPENMP
   if (mDeviceProcessingSettings.nThreads <= 0) {
     mDeviceProcessingSettings.nThreads = omp_get_max_threads();
   } else {

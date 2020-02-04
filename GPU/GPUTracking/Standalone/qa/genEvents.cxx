@@ -37,7 +37,7 @@
 #include "GPUTPCClusterData.h"
 #include "GPUTPCMCInfo.h"
 #include "AliHLTTPCClusterMCData.h"
-#include "GPUParam.h"
+#include "GPUParam.inc"
 #include "GPUTPCGMPhysicalTrackModel.h"
 #include "GPUTPCGMPropagator.h"
 #include "GPUTPCGMMerger.h"

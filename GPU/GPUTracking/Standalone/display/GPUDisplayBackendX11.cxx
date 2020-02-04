@@ -17,8 +17,8 @@
 /// \file GPUDisplayBackendX11.cxx
 /// \author David Rohr
 
-// GLEW must be the first header
-#include <GL/glew.h>
+// GL EXT must be the first header
+#include "GPUDisplayExt.h"
 
 // Now the other headers
 #include "GPUDisplayBackendX11.h"
@@ -26,6 +26,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
 using namespace GPUCA_NAMESPACE::gpu;
 
@@ -177,20 +179,22 @@ int GPUDisplayBackendX11::OpenGLMain()
   mDisplay = XOpenDisplay(nullptr);
 
   if (mDisplay == nullptr) {
-    GPUError("glxsimple: %s", "could not open display");
+    GPUError("could not open display");
     return (-1);
   }
 
   // Make sure OpenGL's GLX extension supported
   if (!glXQueryExtension(mDisplay, &errorBase, &eventBase)) {
-    GPUError("glxsimple: %s", "X server has no OpenGL GLX extension");
+    GPUError("X server has no OpenGL GLX extension");
     return (-1);
   }
 
   const char* glxExt = glXQueryExtensionsString(mDisplay, DefaultScreen(mDisplay));
   if (strstr(glxExt, "GLX_EXT_swap_control") == nullptr) {
     GPUError("No vsync support!");
-    return (-1);
+    vsync_supported = false;
+  } else {
+    vsync_supported = true;
   }
 
   // Require MSAA, double buffering, and Depth buffer
@@ -211,14 +215,24 @@ int GPUDisplayBackendX11::OpenGLMain()
   visualInfo = glXGetVisualFromFBConfig(mDisplay, fbconfig);
 
   if (visualInfo == nullptr) {
-    GPUError("glxsimple: %s", "no RGB visual with depth buffer");
+    GPUError("no RGB visual with depth buffer");
     return (-1);
   }
 
   // Create an OpenGL rendering context
-  glxContext = glXCreateContext(mDisplay, visualInfo, nullptr, GL_TRUE);
+  glXCreateContextAttribsARBProc glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)glXGetProcAddressARB((const GLubyte*)"glXCreateContextAttribsARB");
+  if (glXCreateContextAttribsARB) {
+    int context_attribs[] = {
+      GLX_CONTEXT_MAJOR_VERSION_ARB, GL_MIN_VERSION_MAJOR,
+      GLX_CONTEXT_MINOR_VERSION_ARB, GL_MIN_VERSION_MINOR,
+      GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+      None};
+    glxContext = glXCreateContextAttribsARB(mDisplay, fbconfig, nullptr, GL_TRUE, context_attribs);
+  } else {
+    glxContext = glXCreateContext(mDisplay, visualInfo, nullptr, GL_TRUE);
+  }
   if (glxContext == nullptr) {
-    GPUError("glxsimple: %s", "could not create rendering context");
+    GPUError("could not create rendering context");
     return (-1);
   }
 
@@ -241,7 +255,6 @@ int GPUDisplayBackendX11::OpenGLMain()
   // Receive signal when window closed
   Atom WM_DELETE_WINDOW = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(mDisplay, mWindow, &WM_DELETE_WINDOW, 1);
-
   // Prepare fonts
   mFontBase = glGenLists(256);
   if (!glIsList(mFontBase)) {
@@ -260,7 +273,8 @@ int GPUDisplayBackendX11::OpenGLMain()
   }
 
   // Init OpenGL...
-  if (glewInit()) {
+  if (GPUDisplayExtInit()) {
+    fprintf(stderr, "Error initializing GL extension wrapper\n");
     return (-1);
   }
 
@@ -269,12 +283,14 @@ int GPUDisplayBackendX11::OpenGLMain()
   int x11_fd = ConnectionNumber(mDisplay);
 
   // Enable vsync
-  mGlXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalEXT");
-  if (mGlXSwapIntervalEXT == nullptr) {
-    GPUError("Cannot enable vsync");
-    return (-1);
+  if (vsync_supported) {
+    mGlXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalEXT");
+    if (mGlXSwapIntervalEXT == nullptr) {
+      GPUError("Cannot enable vsync");
+      return (-1);
+    }
+    mGlXSwapIntervalEXT(mDisplay, glXGetCurrentDrawable(), 0);
   }
-  mGlXSwapIntervalEXT(mDisplay, glXGetCurrentDrawable(), 0);
 
   if (InitGL()) {
     return (1);
@@ -456,7 +472,12 @@ void GPUDisplayBackendX11::ToggleMaximized(bool set)
   XSendEvent(mDisplay, DefaultRootWindow(mDisplay), False, SubstructureNotifyMask, &xev);
 }
 
-void GPUDisplayBackendX11::SetVSync(bool enable) { mGlXSwapIntervalEXT(mDisplay, glXGetCurrentDrawable(), (int)enable); }
+void GPUDisplayBackendX11::SetVSync(bool enable)
+{
+  if (vsync_supported) {
+    mGlXSwapIntervalEXT(mDisplay, glXGetCurrentDrawable(), (int)enable);
+  }
+}
 
 int GPUDisplayBackendX11::StartDisplay()
 {

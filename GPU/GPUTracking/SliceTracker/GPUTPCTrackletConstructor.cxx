@@ -26,6 +26,7 @@
 #include "GPUTPCTracker.h"
 #include "GPUTPCTracklet.h"
 #include "GPUTPCTrackletConstructor.h"
+#include "GPUParam.inc"
 #include "GPUCommonMath.h"
 
 using namespace GPUCA_NAMESPACE::gpu;
@@ -157,7 +158,7 @@ GPUd() void GPUTPCTrackletConstructor::UpdateTracklet(int /*nBlocks*/, int /*nTh
           tParam.SetSignCosPhi(dx);
           tParam.SetDzDs(dz * ri);
           // std::cout << "Init. errors... " << r.mItr << std::endl;
-          tracker.GetErrors2(iRow, tParam, err2Y, err2Z);
+          tracker.GetErrors2Seeding(iRow, tParam, err2Y, err2Z);
           // std::cout << "Init. errors = " << err2Y << " " << err2Z << std::endl;
           tParam.SetCov(0, err2Y);
           tParam.SetCov(2, err2Z);
@@ -178,7 +179,7 @@ GPUd() void GPUTPCTrackletConstructor::UpdateTracklet(int /*nBlocks*/, int /*nTh
         }
         CADEBUG(
           printf("%15s hits %3d: FIT PROP  ROW %3d X %8.3f -", "", r.mNHits, iRow, tParam.X()); for (int i = 0; i < 5; i++) { printf(" %8.3f", tParam.Par()[i]); } printf(" -"); for (int i = 0; i < 15; i++) { printf(" %8.3f", tParam.Cov()[i]); } printf("\n"));
-        tracker.GetErrors2(iRow, tParam.GetZ(), sinPhi, tParam.GetDzDs(), err2Y, err2Z);
+        tracker.GetErrors2Seeding(iRow, tParam.GetZ(), sinPhi, tParam.GetDzDs(), err2Y, err2Z);
 
         if (r.mNHits >= 10) {
           const float kFactor = tracker.Param().rec.HitPickUpFactor * tracker.Param().rec.HitPickUpFactor * 3.5f * 3.5f;
@@ -265,7 +266,7 @@ GPUd() void GPUTPCTrackletConstructor::UpdateTracklet(int /*nBlocks*/, int /*nTh
       calink best = CALINK_INVAL;
 
       { // search for the closest hit
-        tracker.GetErrors2(iRow, *((MEM_LG2(GPUTPCTrackParam)*)&tParam), err2Y, err2Z);
+        tracker.GetErrors2Seeding(iRow, *((MEM_LG2(GPUTPCTrackParam)*)&tParam), err2Y, err2Z);
         const float kFactor = tracker.Param().rec.HitPickUpFactor * tracker.Param().rec.HitPickUpFactor * 3.5f * 3.5f;
         float sy2 = kFactor * (tParam.GetErr2Y() + err2Y);
         float sz2 = kFactor * (tParam.GetErr2Z() + err2Z);
@@ -373,7 +374,7 @@ GPUd() void GPUTPCTrackletConstructor::DoTracklet(GPUconstantref() MEM_GLOBAL(GP
         CADEBUG(
           printf("%14s: SEA BACK  ROW %3d X %8.3f -", "", iRow, tParam.X()); for (int i = 0; i < 5; i++) { printf(" %8.3f", tParam.Par()[i]); } printf(" -"); for (int i = 0; i < 15; i++) { printf(" %8.3f", tParam.Cov()[i]); } printf("\n"));
         float err2Y, err2Z;
-        tracker.GetErrors2(r.mEndRow, tParam, err2Y, err2Z);
+        tracker.GetErrors2Seeding(r.mEndRow, tParam, err2Y, err2Z);
         if (tParam.GetCov(0) < err2Y) {
           tParam.SetCov(0, err2Y);
         }
@@ -397,13 +398,7 @@ GPUd() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::singleS
   if (get_local_id(0) == 0) {
     sMem.mNTracklets = *tracker.NTracklets();
   }
-
-#ifdef GPUCA_GPUCODE
-  for (unsigned int i = get_local_id(0); i < GPUCA_ROW_COUNT * sizeof(MEM_PLAIN(GPUTPCRow)) / sizeof(int); i += get_local_size(0)) {
-    reinterpret_cast<GPUsharedref() int*>(&sMem.mRows)[i] = reinterpret_cast<GPUglobalref() int*>(tracker.SliceDataRows())[i];
-  }
-
-#endif
+  CA_SHARED_CACHE(&sMem.mRows[0], tracker.SliceDataRows(), GPUCA_ROW_COUNT * sizeof(MEM_PLAIN(GPUTPCRow)));
   GPUbarrier();
 
   GPUTPCThreadMemory rMem;
@@ -442,10 +437,7 @@ GPUd() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::allSlic
         if (get_local_id(0) == 0) {
           sMem.mNTracklets = *tracker.NTracklets();
         }
-
-        for (unsigned int i = get_local_id(0); i < GPUCA_ROW_COUNT * sizeof(MEM_PLAIN(GPUTPCRow)) / sizeof(int); i += get_local_size(0)) {
-          reinterpret_cast<GPUsharedref() int*>(&sMem.mRows)[i] = reinterpret_cast<GPUglobalref() int*>(tracker.SliceDataRows())[i];
-        }
+        CA_SHARED_CACHE(&sMem.mRows[0], tracker.SliceDataRows(), GPUCA_ROW_COUNT * sizeof(MEM_PLAIN(GPUTPCRow)));
         GPUbarrier();
         currentSlice = mySlice;
       }

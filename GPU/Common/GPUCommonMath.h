@@ -66,6 +66,7 @@ class GPUCommonMath
   GPUhdni() static int Nint(float x);
   GPUhdni() static bool Finite(float x);
   GPUhdni() static unsigned int Clz(unsigned int val);
+  GPUhdni() static unsigned int Popcount(unsigned int val);
 
   GPUhdni() static float Log(float x);
   GPUd() static unsigned int AtomicExch(GPUglobalref() GPUAtomic(unsigned int) * addr, unsigned int val);
@@ -83,11 +84,11 @@ class GPUCommonMath
 typedef GPUCommonMath CAMath;
 
 #if defined(GPUCA_GPUCODE_DEVICE) && (defined(__CUDACC__) || defined(__HIPCC__)) // clang-format off
-    #define CHOICE(c1, c2, c3) c2 // Select second option for CUDA and HIP
+    #define CHOICE(c1, c2, c3) (c2) // Select second option for CUDA and HIP
 #elif defined(GPUCA_GPUCODE_DEVICE) && defined (__OPENCL__)
-    #define CHOICE(c1, c2, c3) c3 // Select third option for OpenCL
+    #define CHOICE(c1, c2, c3) (c3) // Select third option for OpenCL
 #else
-    #define CHOICE(c1, c2, c3) c1 //Select first option for Host
+    #define CHOICE(c1, c2, c3) (c1) //Select first option for Host
 #endif // clang-format on
 
 GPUhdi() float2 GPUCommonMath::MakeFloat2(float x, float y)
@@ -130,13 +131,29 @@ GPUhdi() float GPUCommonMath::Tan(float x) { return CHOICE(tanf(x), tanf(x), tan
 GPUhdi() unsigned int GPUCommonMath::Clz(unsigned int x)
 {
 #if (defined(__GNUC__) || defined(__clang__) || defined(__CUDACC__) || defined(__HIPCC__)) && (!defined(__OPENCL__) || defined(__OPENCLCPP__))
-  return CHOICE(__builtin_clz(x), __clz(x), __builtin_clz(x)); // use builtin if available
+  return x == 0 ? 32 : CHOICE(__builtin_clz(x), __clz(x), __builtin_clz(x)); // use builtin if available
 #else
   for (int i = 31; i >= 0; i--) {
-    if (x & (1 << i))
+    if (x & (1 << i)) {
       return (31 - i);
+    }
   }
   return 32;
+#endif
+}
+
+GPUhdi() unsigned int GPUCommonMath::Popcount(unsigned int x)
+{
+#if (defined(__GNUC__) || defined(__clang__) || defined(__CUDACC__) || defined(__HIPCC__)) && (!defined(__OPENCL__) || defined(__OPENCLCPP__))
+  return CHOICE(__builtin_popcount(x), __popc(x), __builtin_popcount(x)); // use builtin if available
+#else
+  unsigned int retVal = 0;
+  for (int i = 0; i < 32; i++) {
+    if (x & (1 << i)) {
+      retVal++;
+    }
+  }
+  return retVal;
 #endif
 }
 
@@ -247,7 +264,7 @@ GPUdi() unsigned int GPUCommonMath::AtomicExch(GPUglobalref() GPUAtomic(unsigned
   return ::atomicExch(addr, val);
 #else
   unsigned int old;
-#ifdef GPUCA_HAVE_OPENMP
+#ifdef WITH_OPENMP
 #pragma omp atomic capture
 #endif
   {
@@ -268,7 +285,7 @@ GPUdi() unsigned int GPUCommonMath::AtomicAdd(GPUglobalref() GPUAtomic(unsigned 
   return ::atomicAdd(addr, val);
 #else
   unsigned int old;
-#ifdef GPUCA_HAVE_OPENMP
+#ifdef WITH_OPENMP
 #pragma omp atomic capture
 #endif
   {
@@ -288,7 +305,7 @@ GPUdi() void GPUCommonMath::AtomicMax(GPUglobalref() GPUAtomic(unsigned int) * a
 #elif defined(GPUCA_GPUCODE) && (defined(__CUDACC__) || defined(__HIPCC__))
   ::atomicMax(addr, val);
 #else
-#ifdef GPUCA_HAVE_OPENMP
+#ifdef WITH_OPENMP
   while (*addr < val)
     AtomicExch(addr, val);
 #else
@@ -307,7 +324,7 @@ GPUdi() void GPUCommonMath::AtomicMin(GPUglobalref() GPUAtomic(unsigned int) * a
 #elif defined(GPUCA_GPUCODE) && (defined(__CUDACC__) || defined(__HIPCC__))
   ::atomicMin(addr, val);
 #else
-#ifdef GPUCA_HAVE_OPENMP
+#ifdef WITH_OPENMP
   while (*addr > val)
     AtomicExch(addr, val);
 #else

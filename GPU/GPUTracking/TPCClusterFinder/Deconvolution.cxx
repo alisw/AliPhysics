@@ -45,6 +45,8 @@ GPUd() void Deconvolution::countPeaksImpl(int nBlocks, int nThreads, int iBlock,
   char peakCount = (iamPeak) ? 1 : 0;
 
 #if defined(BUILD_CLUSTER_SCRATCH_PAD)
+  /* #if defined(BUILD_CLUSTER_SCRATCH_PAD) && defined(GPUCA_GPUCODE) */
+  /* #if 0 */
   ushort ll = get_local_id(0);
   ushort partId = ll;
 
@@ -73,7 +75,7 @@ GPUd() void Deconvolution::countPeaksImpl(int nBlocks, int nThreads, int iBlock,
   }
 
   ushort in5x5 = 0;
-  partId = CfUtils::partition(smem, partId, peakCount > 0, in3x3, &in5x5);
+  partId = CfUtils::partition(smem, partId, peakCount > 0 && !iamPeak, in3x3, &in5x5);
 
   if (partId < in5x5) {
     smem.count.posBcast1[partId] = (ChargePos){gpad, myDigit.time};
@@ -98,23 +100,6 @@ GPUd() void Deconvolution::countPeaksImpl(int nBlocks, int nThreads, int iBlock,
     peakCount *= -1;
   }
 
-  /* fillScratchPadCondInv_uchar( */
-  /*         peakMap, */
-  /*         in5x5, */
-  /*         SCRATCH_PAD_WORK_GROUP_SIZE, */
-  /*         ll, */
-  /*         8, */
-  /*         N, */
-  /*         OUTER_NEIGHBORS, */
-  /*         smem.count.posBcast1, */
-  /*         smem.count.aboveThresholdBcast, */
-  /*         smem.count.buf); */
-  /* if (partId < in5x5) */
-  /* { */
-  /*     peakCount += countPeaksScratchpadOuter(partId, 8, aboveThreshold, smem.count.buf); */
-  /*     peakCount *= -1; */
-  /* } */
-
 #else
   peakCount = countPeaksAroundDigit(gpad, myDigit.time, peakMap);
   peakCount = iamPeak ? 1 : peakCount;
@@ -125,7 +110,7 @@ GPUd() void Deconvolution::countPeaksImpl(int nBlocks, int nThreads, int iBlock,
   }
 
   bool has3x3 = (peakCount > 0);
-  peakCount = abs(peakCount);
+  peakCount = CAMath::Abs(int(peakCount));
   bool split = (peakCount > 1);
 
   peakCount = (peakCount == 0) ? 1 : peakCount;
@@ -179,7 +164,7 @@ GPUd() char Deconvolution::countPeaksScratchpadInner(
   for (uchar i = 0; i < 8; i++) {
     uchar p = isPeak[ll * 8 + i];
     peaks += GET_IS_PEAK(p);
-    *aboveThreshold |= GET_IS_ABOVE_THRESHOLD(p) << i;
+    *aboveThreshold |= uchar(GET_IS_ABOVE_THRESHOLD(p)) << i;
   }
 
   return peaks;

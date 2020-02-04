@@ -72,9 +72,11 @@ set(SRCS_NO_CINT
     Base/GPUKernelDebugOutput.cxx
     Global/GPUChain.cxx
     Global/GPUChainTracking.cxx
+    Global/GPUTrackingInputProvider.cxx
     Standalone/utils/timer.cxx)
 
 set(SRCS_NO_H SliceTracker/GPUTPCTrackerDump.cxx
+              Merger/GPUTPCGMMergerDump.cxx
               Global/GPUChainTrackingDebugAndProfiling.cxx)
 
 set(HDRS_INSTALL
@@ -117,6 +119,7 @@ set(HDRS_INSTALL
     TPCConvert/GPUTPCConvertImpl.h
     Base/GPUReconstructionKernelMacros.h
     Base/GPUO2FakeClasses.h
+    Base/GPUParam.inc
 )
 
 # Sources only for O2
@@ -151,13 +154,24 @@ if(ALIGPU_BUILD_TYPE STREQUAL "O2" OR CONFIG_O2_EXTENSIONS)
         TPCClusterFinder/PeakFinder.cxx
         TPCClusterFinder/NoiseSuppression.cxx
         TPCClusterFinder/Clusterizer.cxx
-        TPCClusterFinder/Deconvolution.cxx)
+        TPCClusterFinder/Deconvolution.cxx
+        TPCClusterFinder/DecodeZS.cxx)
 
     set(SRCS_NO_H ${SRCS_NO_H}
         TPCClusterFinder/GPUTPCClusterFinderDump.cxx)
 
-    set(HDRS_INSTALL ${HDRS_INSTALL} Interface/GPUO2InterfaceConfiguration.h
-                     ITS/GPUITSTrack.h dEdx/GPUdEdxInfo.h)
+    set(HDRS_INSTALL ${HDRS_INSTALL}
+                     Interface/GPUO2InterfaceConfiguration.h
+                     ITS/GPUITSTrack.h
+                     dEdx/GPUdEdxInfo.h
+                     TPCClusterFinder/Array2D.h
+                     TPCClusterFinder/CfConsts.h
+                     TPCClusterFinder/CfUtils.h
+                     TPCClusterFinder/clusterFinderDefs.h
+                     TPCClusterFinder/ClusterNative.h
+                     TPCClusterFinder/Digit.h
+                     TPCClusterFinder/GPUTPCSharedMemoryData.h
+                     TPCClusterFinder/PackedCharge.h)
 endif()
 
 # Sources only for AliRoot
@@ -189,6 +203,7 @@ if(GPUCA_EVENT_DISPLAY)
   set(SRCS_NO_H ${SRCS_NO_H} Standalone/display/GPUDisplayQuaternion.cxx
                 Standalone/display/GPUDisplayInterpolation.cxx
                 Standalone/display/GPUDisplayKeys.cxx)
+  set(HDRS_INSTALL ${HDRS_INSTALL} Standalone/display/GPUDisplayExt.h)
 else()
   set(HDRS_INSTALL ${HDRS_INSTALL} Standalone/display/GPUDisplay.h)
 endif()
@@ -387,7 +402,7 @@ endif()
 
 if(OpenMP_CXX_FOUND)
   message(STATUS "GPU: Using OpenMP: ${OpenMP_CXX_SPEC_DATE}")
-  target_compile_definitions(${targetName} PRIVATE GPUCA_HAVE_OPENMP)
+  target_compile_definitions(${targetName} PRIVATE WITH_OPENMP)
   # Must be private, depending libraries might be compiled by compiler not understanding -fopenmp
   target_link_libraries(${targetName} PRIVATE OpenMP::OpenMP_CXX)
 endif()

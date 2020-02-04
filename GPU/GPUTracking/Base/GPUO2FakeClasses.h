@@ -79,8 +79,7 @@ namespace gpu
 {
 namespace deprecated
 {
-class PackedDigit
-{
+struct PackedDigit {
 };
 } // namespace deprecated
 class GPUFakeEmpty
