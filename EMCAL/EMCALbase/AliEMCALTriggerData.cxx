@@ -18,21 +18,16 @@
 #include "TIterator.h"
 #include "Riostream.h"
 
-/// \cond CLASSIMP
 ClassImp(AliEMCALTriggerData) ;
-/// \endcond
 
-///
-/// Default constructor
-//_____________
 AliEMCALTriggerData::AliEMCALTriggerData() : TObject(),
-fMode(0),
+fMode(kSimulation),
 fL1GammaThreshold(),
 fL1JetThreshold(),
 fL1V0(),
 fL1FrameMask(0),
 fL1TriggerType(),
-fL1DataDecoded(0),
+fL1DataDecoded(false),
 fL1RawData(0),
 fMedian(0)
 {  		
@@ -43,15 +38,9 @@ fMedian(0)
   for (Int_t i = 0; i < 19; i++) fL1TriggerType[i] = 0;	
 }
 
-///
-/// Destructor	
-//_____________
 AliEMCALTriggerData::~AliEMCALTriggerData()
 { }
 
-///
-/// Dump parameters value
-//_____________
 void AliEMCALTriggerData::Scan() const
 {
   for (int i = 0; i < 2; i++)
@@ -60,9 +49,6 @@ void AliEMCALTriggerData::Scan() const
   }
 }
 
-///
-/// Reset
-//_____________
 void AliEMCALTriggerData::Reset()
 {	
   fL1DataDecoded = 0;

@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <vector>
 #include "AliEMCALTriggerElectronics.h"
 #include "AliEMCALTriggerTRU.h"
 #include "AliEMCALTriggerSTU.h"
@@ -324,31 +325,30 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 
   Int_t iL0 = 0;
 
-  Int_t * timeL0 = (Int_t *) calloc(fNTRU,sizeof(Int_t));
-  if (!timeL0) AliFatal("Failed to allocate memory for timeL0 array.");
+  std::vector<int> timeL0(fNTRU);
   Int_t  timeL0min = 999;
   
-  for (Int_t i = 0; i < fNTRU; i++) 
+  for (Int_t truid = 0; truid < fNTRU; truid++) 
   {
-    AliEMCALTriggerTRU *iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
-    if (!iTRU) continue;
+    AliEMCALTriggerTRU *currenttru = static_cast<AliEMCALTriggerTRU*>(fTRU->At(truid));
+    if (!currenttru) continue;
     
-    AliDebug(999, Form("===========< TRU %2d >============", i));
+    AliDebug(999, Form("===========< TRU %2d >============", truid));
     
-  if (iTRU->L0()) // L0 recomputation: *ALWAYS* done from FALTRO
+    if (currenttru->L0()) // L0 recomputation: *ALWAYS* done from FALTRO
     {
-      iL0++;
+        iL0++;
       
-      timeL0[i] = iTRU->GetL0Time();
+        timeL0[truid] = currenttru->GetL0Time();
       
-      if (!timeL0[i]) AliWarning(Form("TRU# %d has 0 trigger time",i));
+        if (!timeL0[truid]) AliWarning(Form("TRU# %d has 0 trigger time",truid));
       
-      if (timeL0[i] < timeL0min) timeL0min = timeL0[i];
+        if (timeL0[truid] < timeL0min) timeL0min = timeL0[truid];
       
-      data->SetL0Trigger(0, i, 1); // TRU# i has issued a L0
+        data->SetL0Trigger(AliEMCALTriggerData::L0DecisionOrigin_t::kOriginRecalc, truid, AliEMCALTriggerData::L0TriggerStatus_t::kFired); // TRU# i has issued a L0
     }
     else
-      data->SetL0Trigger(0, i, 0);
+      data->SetL0Trigger(AliEMCALTriggerData::L0DecisionOrigin_t::kOriginRecalc, truid, AliEMCALTriggerData::L0TriggerStatus_t::kNotFired);
   }
 
 
@@ -356,7 +356,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
   AliEMCALTriggerRawDigit* dig = 0x0;
   
 
-  if (iL0 && (!data->GetMode() || !fSTU->GetDCSConfig()->GetRawData())) 
+  if (iL0 && (data->IsSimulationMode() || !fSTU->GetDCSConfig()->GetRawData())) 
   {
     // Update digits after L0 calculation
     for (Int_t i = 0; i < fNTRU; i++)
@@ -426,7 +426,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
     }
   }
 
-  if (iL0 && !data->GetMode()) //Simulation
+  if (iL0 && data->IsSimulationMode()) //Simulation
   {
     for (Int_t i = 0; i < fNTRU; i++)
     {
@@ -540,7 +540,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 	if (fSTUDCAL) fSTUDCAL->SetRegion(&region[64]); //DCAL's region is subset of region
 //	if (fSTUDCAL) fSTUDCAL->SetRegion(region); 
   
-  if (data->GetMode()) // Reconstruction
+  if (data->IsRawDataMode()) // Reconstruction
   {
     for (int ithr = 0; ithr < 2; ithr++) {
       AliDebug(999, Form(" THR %d / EGA %d / EJE %d", ithr, data->GetL1GammaThreshold(ithr), data->GetL1JetThreshold(ithr)));

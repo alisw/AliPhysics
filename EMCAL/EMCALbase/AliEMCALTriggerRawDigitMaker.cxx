@@ -344,7 +344,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 
     if (fSTURawStream && fSTURawStream->ReadPayLoad())
     {
-      trgData->SetL1DataDecoded(1);
+      trgData->SetL1DataDecoded(true);
       
       for (int i = 0; i < 2; i++) 
       {

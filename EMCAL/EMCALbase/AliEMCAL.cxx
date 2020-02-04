@@ -372,7 +372,7 @@ Bool_t AliEMCAL::Raw2SDigits(AliRawReader* rawReader)
   
   for (int i=0;i<fTriggerData->GetEntriesFast();i++)
   {
-    ((AliEMCALTriggerData*)fTriggerData->At(i))->SetMode(1);   
+    ((AliEMCALTriggerData*)fTriggerData->At(i))->SetMode(AliEMCALTriggerData::ETriggerDataMode_t::kRawData);   
   }
   
   const Int_t nTRU = GetGeometry()->GetNTotalTRU();
