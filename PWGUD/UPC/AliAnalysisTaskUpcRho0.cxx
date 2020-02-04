@@ -84,13 +84,13 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
 	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0)
 {
-  if(debugMode) std::cout<<"Initialization..."<<endl;
+  if(debugMode) std::cout<<"Initialization..."<<std::endl;
   Init();
-  if(debugMode) std::cout<<"Defining output..."<<endl;
+  if(debugMode) std::cout<<"Defining output..."<<std::endl;
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TList::Class());
   if (_isMC) DefineOutput(3, TTree::Class());
-  if(debugMode) std::cout<<"Initialization done."<<endl;
+  if(debugMode) std::cout<<"Initialization done."<<std::endl;
 }
 
 AliAnalysisTaskUpcRho0::~AliAnalysisTaskUpcRho0() 
@@ -139,7 +139,7 @@ void AliAnalysisTaskUpcRho0::Init()
 
 void AliAnalysisTaskUpcRho0::UserCreateOutputObjects() 
 {
-	if(debugMode) std::cout<<"Starting UserCreateOutputObjects..."<<endl;
+	if(debugMode) std::cout<<"Starting UserCreateOutputObjects..."<<std::endl;
   	//PID response
  	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   	AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
@@ -147,7 +147,7 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 
   	GenPart_T = new TClonesArray("TParticle", 1000);
 
-  	if(debugMode) std::cout<<"Defining ttree..."<<endl;
+  	if(debugMode) std::cout<<"Defining ttree..."<<std::endl;
 	fRhoTree = new TTree("Selected","Selected Rho0 events");
 	//define branches
 	fRhoTree->Branch("RunNum_T",&RunNum_T,"RunNum_T/I");
@@ -196,7 +196,7 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	// fRhoTree->Branch("ITSModule_T",&ITSModule_T,"ITSModule_T/I");
 	fRhoTree->Branch("ChipCut_T",&ChipCut_T,"ChipCut_T/O");
 
-	if(debugMode) std::cout<<"Defining MC ttree..."<<endl;
+	if(debugMode) std::cout<<"Defining MC ttree..."<<std::endl;
 	// MC tree
 	if (isMC){
 	fMCTree = new TTree("Generated","Generated Rho0 events");
@@ -208,7 +208,7 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fMCTree->Branch("Phi_MC_T",&Phi_MC_T,"Phi_MC_T/F");
 	}
 
-	if(debugMode) std::cout<<"Defining TList..."<<endl;
+	if(debugMode) std::cout<<"Defining TList..."<<std::endl;
 	fListHist = new TList();
   	fListHist ->SetOwner();
   
@@ -256,16 +256,16 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 		fSPDfile->Close();
 	}
 
-	if(debugMode) std::cout<<"Post data..."<<endl;
+	if(debugMode) std::cout<<"Post data..."<<std::endl;
 	PostData(1, fRhoTree);
 	PostData(2, fListHist);
 	if (isMC) PostData(3, fMCTree);
-	if(debugMode) std::cout<<"Post data done."<<endl;
+	if(debugMode) std::cout<<"Post data done."<<std::endl;
 }
 
 void AliAnalysisTaskUpcRho0::UserExec(Option_t *) 
 {
-  // if(debugMode) std::cout<<"Starting UserExec..."<<endl;
+  // if(debugMode) std::cout<<"Starting UserExec..."<<std::endl;
   //input event
   AliESDEvent *esd = (AliESDEvent*) InputEvent();
   if(!esd) return;
@@ -316,7 +316,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   // triggered in data for lumi scalling
   if(!isMC && trigger.Contains(fTriggerName.Data())) {
   	fHistTriggersPerRun->Fill(esd->GetRunNumber());
-  	if(debugMode)std::cout<<trigger<<endl;
+  	if(debugMode)std::cout<<trigger<<std::endl;
   }
 
   // CCUP9-B - *0VBA *0VBC *0UBA *0UBC 0STP
@@ -331,7 +331,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 
   Int_t nGoodTracks=0;
   Int_t TrackIndex[2] = {-1,-1};
-  if(debugMode)std::cout<<"starting track loop"<<endl;
+  if(debugMode)std::cout<<"starting track loop"<<std::endl;
   //Track loop - cuts
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
     AliESDtrack *trk = esd->GetTrack(itr);
@@ -361,7 +361,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   	fGoodTracks->Fill(nGoodTracks);
 
   if(nGoodTracks == 2){ // fill tree variables
-	if(debugMode)std::cout<<"two good tracks"<<endl;
+	if(debugMode)std::cout<<"two good tracks"<<std::endl;
   	TDatabasePDG *pdgdat = TDatabasePDG::Instance(); 
   	TParticlePDG *partPion = pdgdat->GetParticle( 211 );
   	Double_t pionMass = partPion->Mass();
@@ -539,7 +539,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   fRhoTree ->Fill();
 
   } // end 2 good tracks
-  if(debugMode) std::cout<<"saving data"<<endl;
+  if(debugMode) std::cout<<"saving data"<<std::endl;
   PostData(1, fRhoTree);
   PostData(2, fListHist);
   if (isMC) PostData(3, fMCTree);
