@@ -21,7 +21,7 @@
 
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum3_pt75_sec_OnlyChi2NDF;JPID_sum4_pt75_sec_OnlyLegDist;JPID_sum5_pt75_sec_OnlyR;JPID_sum6_pt75_sec_OnlyPsiPair;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_wCos;JPID_sum2_pt75_sec_wCosChi2;JPID_sum3_pt75_sec_wCosChi2LegDist;JPID_sum4_pt75_sec_wCosChi2LegDistR;JPID_sum5_pt75_sec_wCosChi2LegDistRPsiPair;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
-TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
+TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
 
 // +++++++++++++++++ Cuts for secondary electrons +++++++++++++++++
@@ -38,7 +38,7 @@ TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_
 
 // TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyChi2NDF;kV0OnlyLegDist;kV0OnlyR;kV0OnlyPsiPair;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
 // TString names_Sec_Cuts=("noPID;kV0wCosOpenAngle;kV0wChi2NDF;kV0wCosChi2LegDist;wCosChi2LegDistR;wCosChi2LegDistRPsiPair;kV0wCosChi2LegDistRPsiPairM;kV0wCosChi2LegDistRPsiPairMArmPt;kV0wCosChi2LegDistRPsiPairMArmPtAlpha");
-TString names_Sec_Cuts=("noPID;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
+TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
 // TString names_Sec_Cuts=("noPID;kV0wPairM;kV0wPairMArmPt;kV0wPairMArmPtAlpha");
 
 
@@ -70,7 +70,7 @@ Bool_t SetTOFCorrection = kFALSE;
 
 bool SetGeneratedSmearingHistos = false;
 
-bool debug = true;
+bool debug = false;
 
 bool DoPairing      = true;
 bool DoFourPairing  = true;
@@ -1120,13 +1120,13 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
       ULSFourElePair2_FromPion.SetGrandMotherPDGs(111, 111); //
 
 //________________________________________________________
-    // task->AddFourPairMCSignal(ULSFourElePair1_FromEta);
-    // task->AddFourPairMCSignal(ULSFourElePair2_FromEta);
+    task->AddFourPairMCSignal(ULSFourElePair1_FromEta);
+    task->AddFourPairMCSignal(ULSFourElePair2_FromEta);
 
     task->AddFourPairMCSignal(ULSFourElePair1_FinalState);
     task->AddFourPairMCSignal(ULSFourElePair2_Secondary_from_Photon);
 
-    // task->AddFourPairMCSignal(ULSFourElePair1_FromPion);
-    // task->AddFourPairMCSignal(ULSFourElePair2_FromPion);
+    task->AddFourPairMCSignal(ULSFourElePair1_FromPion);
+    task->AddFourPairMCSignal(ULSFourElePair2_FromPion);
 
 }

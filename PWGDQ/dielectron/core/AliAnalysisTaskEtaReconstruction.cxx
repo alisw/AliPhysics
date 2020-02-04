@@ -783,7 +783,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
 // ############################################################################
 void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   const double pi = TMath::Pi();
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
 
   // THIS MIGHT BE USED IN THE FUTURE TO SEPARATE DIFFERENT GENERATORS FROM EACH OTHER
   // AliMCEvent* mcEvent = MCEvent();
@@ -833,15 +833,15 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   isAOD = false;
   AliInputEventHandler *eventHandler = nullptr;
   AliInputEventHandler *eventHandlerMC = nullptr;
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
   if ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliAODInputHandler::Class()){
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
     isAOD = true;
     eventHandler = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     eventHandlerMC = eventHandler;
   }
   else if ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliESDInputHandler::Class()){
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
     isAOD = false;
     // eventHandler = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     eventHandlerMC = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -954,7 +954,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   // ######################################################
   // ######################################################
   // Start particle loop
-                                                                                if (fdebug) std::cout << "Generated and Generated Smeared Single Particle Loop ... " << std::endl;
+                                                                                // if (fdebug) std::cout << "Generated and Generated Smeared Single Particle Loop ... " << std::endl;
   for(int iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
     AliVParticle* mcPart1  = (AliVParticle*)fMC->GetTrack(iPart);
     AliVParticle* mcMPart1  = (AliVParticle*)fMC->GetTrack(TMath::Abs(mcPart1->GetMother()));
@@ -1098,7 +1098,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   // ##########################################################
   // ##########################################################
   // Start reconstructed track Loop
-                                                                                if (fdebug) std::cout << "Reconstructed Single Particle Loop ... " << std::endl;
+                                                                                // if (fdebug) std::cout << "Reconstructed Single Particle Loop ... " << std::endl;
   for (Int_t iTracks = 0; iTracks < fEvent->GetNumberOfTracks(); iTracks++){
 
     // ##########################################################
@@ -1383,7 +1383,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
 
   if (fDoPairing){
-    std::cout << "start two pairing" << std::endl;
+    if(fdebug) std::cout << "start two pairing" << std::endl;
                                                                                 // Debug code in order to check Pdg Codes of Particle, Mother and GrandMother
                                                                                 // if (fdebug) {
                                                                                 //   if (fdebug) std::cout << __LINE__ << " Primary Particles: " << std::endl;
@@ -1419,33 +1419,33 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     Bool_t SmearedPair  = kTRUE;
                                                                                 // if(fdebug) std::cout << __LINE__ <<  "DEBUG_AnalysisTask: fGenNegPart_primary:   "  << fGenNegPart_primary.size()   << " fGenPosPart_primary:   " <<  fGenPosPart_primary.size()   << std::endl;
                                                                                 // if(fdebug) std::cout << __LINE__ <<  "DEBUG_AnalysisTask: fGenNegPart_secondary: "  << fGenNegPart_secondary.size() << " fGenPosPart_secondary: " <<  fGenPosPart_secondary.size() << std::endl;
-                                                                                if (fdebug) std::cout << "Do primary two generated pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do primary two generated pairing" << std::endl;
     DoGenAndGenSmearTwoPairing(&fGenNegPart_primary, &fGenPosPart_primary, PrimaryPair, !SmearedPair, centralityWeight);
-                                                                                if (fdebug) std::cout << "Do secondary two generated pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do secondary two generated pairing" << std::endl;
     DoGenAndGenSmearTwoPairing(&fGenNegPart_secondary, &fGenPosPart_secondary, !PrimaryPair, !SmearedPair, centralityWeight);
 
     if(fArrResoPt){
-                                                                                if (fdebug) std::cout << "Do primary two generated smeared pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do primary two generated smeared pairing" << std::endl;
       DoGenAndGenSmearTwoPairing(&fGenSmearedNegPart_primary, &fGenSmearedPosPart_primary, PrimaryPair, SmearedPair, centralityWeight);
-                                                                                if (fdebug) std::cout << "Do secondary two generated smeared pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do secondary two generated smeared pairing" << std::endl;
       DoGenAndGenSmearTwoPairing(&fGenSmearedNegPart_secondary, &fGenSmearedPosPart_secondary, !PrimaryPair, SmearedPair, centralityWeight);
     }
-                                                                                if (fdebug) std::cout << "Do primary two reconstructed pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do primary two reconstructed pairing" << std::endl;
     DoRecTwoPairing(fRecNegPart_primary, fRecPosPart_primary, fPrimaryPairMCSignal,  PrimaryPair, centralityWeight);
-                                                                                if (fdebug) std::cout << "Do secondary two reconstructed pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do secondary two reconstructed pairing" << std::endl;
     // DoRecTwoPairing(fRecNegPart_secondary, fRecPosPart_secondary, fSecondaryPairMCSignal, !PrimaryPair, centralityWeight);
 
 
-                                                                                if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors, " << std::endl <<
-                                                                                " fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << " fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
-                                                                                " fGenPairVec_secondary = " << fGenPairVec_secondary.size() << " fGenSmearedPairVec_secondary = " << fGenSmearedPairVec_secondary.size() << " fRecPairVec_secondary = " << fRecPairVec_secondary.size() << std::endl;
+                                                                                // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors, " << std::endl <<
+                                                                                // " fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << " fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
+                                                                                // " fGenPairVec_secondary = " << fGenPairVec_secondary.size() << " fGenSmearedPairVec_secondary = " << fGenSmearedPairVec_secondary.size() << " fRecPairVec_secondary = " << fRecPairVec_secondary.size() << std::endl;
 
 
     // ######################### TEST for V0 Secondaries #####################################
     //
     for (Int_t iV0 = 0; iV0 < fEvent->GetNumberOfV0s(); iV0++){
     //
-                                                                                  if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: GetNumberOfV0s = " << fEvent->GetNumberOfV0s() << std::endl;
+                                                                                  // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: GetNumberOfV0s = " << fEvent->GetNumberOfV0s() << std::endl;
 
       // ##########################################################
       // Track handling
@@ -1473,7 +1473,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
         Short_t posTrackID = posAODTrack->GetID();
         Short_t negTrackID = negAODTrack->GetID();
 
-                                                                                if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fV0 Label: " << v0label << " PosID: " << posTrackID << " PosLabel: " << posTrackLabel << " NegID: " << negTrackID << " NegLabel: " << negTrackLabel << std::endl;
+                                                                                // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fV0 Label: " << v0label << " PosID: " << posTrackID << " PosLabel: " << posTrackLabel << " NegID: " << negTrackID << " NegLabel: " << negTrackLabel << std::endl;
 
          // end new part
                                                                                 // Check particles mother and grandmother
@@ -1671,7 +1671,8 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
         AliVParticle* mcNegPart = fMC->GetTrack(negTrackLabel);
         for (unsigned int j = 0; j < MotherParticle.isReconstructed_secondary.size(); j++) {
           if(MotherParticle.isReconstructed_secondary[j] == kTRUE){
-            if (AliDielectronMC::Instance()->IsMCTruth(pair, &(fSecondaryPairMCSignal[0])) == kTRUE) {  // Filling support histograms only with pairs that fulfill the i-th MCPairSignal
+            if (AliDielectronMC::Instance()->IsMCTruth(pair, &(fSecondaryPairMCSignal[0])) == kTRUE) {
+              // Filling support histograms only with pairs that fulfill the i-th MCPairSignal
               FillTrackHistograms_Secondary(posAODTrack, mcPosPart, j); // Fill secondary support histograms
               FillTrackHistograms_Secondary(negAODTrack, mcNegPart, j); // Fill secondary ssupport histograms
               FillPairHistograms_Secondary(pair,j);                     // Fill pair secondary histograms
@@ -1695,16 +1696,16 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
     // ######################### END TEST for V0 Secondaries #################################
 
-    std::cout << __LINE__ << " fRecV0Pair Vector size: " << fRecV0Pair.size() << std::endl;
+    // if(fdebug) std::cout << __LINE__ << " fRecV0Pair Vector size: " << fRecV0Pair.size() << std::endl;
 
   } // End of pairing
 
-  /*  ------ \/ ------ added by feisenhut ------ \/ ------  */
+  /*  ------ \/ ------ Four Pairing ------ \/ ------  */
   if (fDoFourPairing){
     //##########################################################
     //############### Unlike Signe Pairing #####################
     //##########################################################
-    std::cout << "Doing four pairing..." << std::endl;
+    if(fdebug) std::cout << "Doing four pairing..." << std::endl;
     Bool_t SmearedPair  = kTRUE;
     Bool_t ReconstructedPair = kTRUE;
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
@@ -1723,7 +1724,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
                                                                                 // if(fdebug) std::cout << __LINE__ <<  "DEBUG_AnalysisTask: fGenNegPart_secondary: "  << fGenNegPart_secondary.size() << " fGenPosPart_secondary: " <<  fGenPosPart_secondary.size() << std::endl;
 
   } // end of fDoFourPairing
-  /*  ------ /\ ------ added by feisenhut ------ /\ ------  */
+  /*  ------ /\ ------ Four Pairing ------ /\ ------  */
 
 
   PostData(1, fOutputList);
@@ -2132,10 +2133,10 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
     TH1D* hImpactParZ_sec = new TH1D("ImpactParZ","Impact parameter Z ;Impact parameter Z;#tracks",200, -5., 5.);//.,AliDielectronVarManager::kTPCsignalN); //kImpactParZ_sec
     TH1D* hM_single_sec = new TH1D("SingleMass","single Mass ;mass ;#tracks",200, 0., 1.); // kM
     // pair variables
-    TH1D* hCosPointingAngle_sec = new TH1D("CosPointingAngle","Cosine of the pointing angle;#tracks",200, 0., 1.); // kCosPointingAngle
-    TH1D* hChi2NDF_sec = new TH1D("Chi2NDF","Chi^2/NDF ;Chi^2/NDF;#tracks",2000, 0., 20.); // kChi2NDF (NDF = number degree of freedom)
+    TH1D* hCosPointingAngle_sec = new TH1D("CosPointingAngle","Cosine of the pointing angle;#tracks",200, 0.8, 1.); // kCosPointingAngle
+    TH1D* hChi2NDF_sec = new TH1D("Chi2NDF","Chi^2/NDF ;Chi^2/NDF;#tracks",2000, 0., 12.); // kChi2NDF (NDF = number degree of freedom)
     TH1D* hLegDist_sec = new TH1D("LegDist","Leg Distance ;Leg Distance;#tracks",1000, 0., 4.); // kLegDist
-    TH1D* hR_sec = new TH1D("R","Distance to the origin ;r;#tracks",4000, 0., 450.); // kR
+    TH1D* hR_sec = new TH1D("R","Distance to the origin ;r;#tracks",1500, 0., 150.); // kR
     TH1D* hPsiPair_sec = new TH1D("PsiPair","phi in mother's rest frame in Collins-Soper picture ;PsiPair;#tracks",200, 0., 2.); // kPsiPair
     TH1D* hM_pair_sec = new TH1D("PairMass","pair Mass ;mass ;#tracks",200, 0., 1.); // kM
     TH1D* hArmPt_sec = new TH1D("ArmPt","Armenteros-Podolanski pt ;Pt [GeV];#tracks",160,0.,1.); // kArmPt
@@ -2628,17 +2629,17 @@ void AliAnalysisTaskEtaReconstruction::SetWidthCorrFunction(Detector det, TObjec
 void AliAnalysisTaskEtaReconstruction::DoRecTwoPairing(std::vector<Particle> fRecNegPart, std::vector<Particle> fRecPosPart, std::vector<AliDielectronSignalMC> fPairMCSignal, Bool_t PartPrimary, double centralityWeight){
   for (unsigned int neg_i = 0; neg_i < fRecNegPart.size(); ++neg_i){
     for (unsigned int pos_i = 0; pos_i < fRecPosPart.size(); ++pos_i){
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart.size = " << fRecNegPart.size() << " fRecPosPart.size = " << fRecPosPart.size() << std::endl;
-                                                                                if(fdebug) {
-                                                                                  for (size_t neg_i = 0; neg_i < fRecNegPart.size(); neg_i++) {
-                                                                                    AliVParticle* track1  = fEvent->GetTrack(fRecNegPart[neg_i].GetTrackID());
-                                                                                    std::cout << __LINE__ << " DEBUG_AnalysisTask: Track1 Label = " << track1->GetLabel() << " and TrackID = " << fRecNegPart[neg_i].GetTrackID() << std::endl;
-                                                                                  }
-                                                                                  for (size_t pos_i = 0; pos_i < fRecPosPart.size(); pos_i++) {
-                                                                                    AliVParticle* track2  = fEvent->GetTrack(fRecPosPart[pos_i].GetTrackID());
-                                                                                    std::cout << __LINE__ << " DEBUG_AnalysisTask: Track2 Label = " << track2->GetLabel() << " and TrackID = " << fRecPosPart[pos_i].GetTrackID() << std::endl;
-                                                                                  }
-                                                                                }
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fRecNegPart.size = " << fRecNegPart.size() << " fRecPosPart.size = " << fRecPosPart.size() << std::endl;
+                                                                                // if(fdebug) {
+                                                                                //   for (size_t neg_i = 0; neg_i < fRecNegPart.size(); neg_i++) {
+                                                                                //     AliVParticle* track1  = fEvent->GetTrack(fRecNegPart[neg_i].GetTrackID());
+                                                                                //     std::cout << __LINE__ << " DEBUG_AnalysisTask: Track1 Label = " << track1->GetLabel() << " and TrackID = " << fRecNegPart[neg_i].GetTrackID() << std::endl;
+                                                                                //   }
+                                                                                //   for (size_t pos_i = 0; pos_i < fRecPosPart.size(); pos_i++) {
+                                                                                //     AliVParticle* track2  = fEvent->GetTrack(fRecPosPart[pos_i].GetTrackID());
+                                                                                //     std::cout << __LINE__ << " DEBUG_AnalysisTask: Track2 Label = " << track2->GetLabel() << " and TrackID = " << fRecPosPart[pos_i].GetTrackID() << std::endl;
+                                                                                //   }
+                                                                                // }
       AliVParticle* track1  = fEvent->GetTrack(fRecNegPart[neg_i].GetTrackID());
       AliVParticle* track2  = fEvent->GetTrack(fRecPosPart[pos_i].GetTrackID());
 
@@ -2870,14 +2871,12 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
         secondpair.SetKFUsage(false);
         firstpair.SetTracks(static_cast<AliVTrack*>(track1), 11, static_cast<AliVTrack*>(track2), -11);
         secondpair.SetTracks(static_cast<AliVTrack*>(track3), 11, static_cast<AliVTrack*>(track4), -11);
-        for (unsigned int i = 0; i < fFourPairMCSignal.size(); i+=2){
-          mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(&firstpair, &secondpair, &(fFourPairMCSignal[i]), &(fFourPairMCSignal[i+1]));
+        for (unsigned int i = 0, j = 0 ; i < fFourPairMCSignal.size() && j < fFourPairMCSignal.size(); ++i, j+=2){
+          mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(&firstpair, &secondpair, &(fFourPairMCSignal[j]), &(fFourPairMCSignal[j+1]));
         }
 
-                                                                                if(fdebug) Printf("%d AnalysisTask: Cout Line",__LINE__);
         // check if at least one mc signal is true
         if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
-                                                                                if(fdebug) Printf("%d AnalysisTask: Cout Line",__LINE__);
       }
       // Construct pair variables from LorentzVectors
       TLorentzVector Lvec1;
