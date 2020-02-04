@@ -78,6 +78,8 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
 
 void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
     AliFemtoDreamBasePart &part) {
+  static float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225.,
+      245. };
 //Only use this for Tracks, this was implemented for the case where particles
 //were added a random phi to obtain an uncorrelated sample. This should be extended
 //to the daughter tracks. For some reason the momentum is stored in a TVector3,
@@ -89,21 +91,25 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
     AliWarning(
         "BField was most probably not set! PhiStar Calculation meaningless. \n");
   }
-  part.ResizePhiAtRadii(0);
-  static float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225.,
-      245. };
-  std::vector<float> tmpVec;
-  auto phi0 = part.GetMomentum().Phi();
-  float pt = part.GetMomentum().Pt();
-  float chg = part.GetCharge().at(0);
-  for (int radius = 0; radius < 9; radius++) {
-    tmpVec.push_back(
-        phi0
-            - TMath::ASin(
-                0.1 * chg * fBField * 0.3 * TPCradii[radius] * 0.01
-                    / (2. * pt)));
+  std::vector<TVector3> momenta = part.GetMomenta();
+  unsigned int nPart = momenta.size();
+  unsigned int counter = 0;
+  part.ResizePhiAtRadii(nPart);
+  for (auto it : momenta) {
+    std::vector<float> tmpVec;
+    auto phi0 = it.Phi();
+    float pt = it.Pt();
+    float chg = part.GetCharge().at(counter);
+    for (int radius = 0; radius < 9; radius++) {
+      tmpVec.push_back(
+          phi0
+              - TMath::ASin(
+                  0.1 * chg * fBField * 0.3 * TPCradii[radius] * 0.01
+                      / (2. * pt)));
+      counter++;
+    }
+    part.SetPhiAtRadius(tmpVec);
   }
-  part.SetPhiAtRadius(tmpVec);
 }
 
 float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
