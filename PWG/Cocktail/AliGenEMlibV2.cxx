@@ -1231,11 +1231,11 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
   TF1* result = new TF1(name.Data(), Form("%.10f * (x/%s) * (%s)", norm, scaledPt.Data(), formulaBaseScaled.Data()), xmin, xmax);
   if (!isMeson && fPtParametrizationProton) {
     for (Int_t i=0; i<nPar; i++) {
-      result->SetParameter(i, fPtParametrizationProton->GetParameter(i));
+        result->SetParameter(fPtParametrizationProton->GetParName(i),fPtParametrizationProton->GetParameter(i));
     }
   } else {
     for (Int_t i=0; i<nPar; i++) {
-      result->SetParameter(i, fPtParametrization[0]->GetParameter(i));
+        result->SetParameter(fPtParametrization[0]->GetParName(i),fPtParametrization[0]->GetParameter(i));
     }
   }
   return result;
@@ -1339,7 +1339,10 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
   // function needs to be recreated for ROOT6 compatibility
   fPtParametrization[0] = new TF1("111_pt",fPtParametrizationTemp->GetExpFormula(),0,300);
   for (Int_t iparam = 0; iparam < fPtParametrizationTemp->GetNpar(); iparam++ ){
-    fPtParametrization[0]->SetParameter(iparam,fPtParametrizationTemp->GetParameter(iparam));
+      fPtParametrization[0]->SetParameter(fPtParametrizationTemp->GetParName(iparam),fPtParametrizationTemp->GetParameter(iparam));
+      //fPtParametrization[0]->SetParameter(iparam,fPtParametrizationTemp->GetParameter(iparam)); // The parameter numbers are not necessarily identical!
+      //cout << "fPtParametrization[0] " << fPtParametrization[0]->GetParName(iparam) << " " << fPtParametrization[0]->GetParameter(iparam) << endl;
+      //cout << "fPtParametrizationTemp " << fPtParametrizationTemp->GetParName(iparam) << " " << fPtParametrizationTemp->GetParameter(iparam) << endl;
   }
   fPtParametrization[0]->SetName("111_pt");
 
@@ -1352,7 +1355,7 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
     // function needs to be recreated for ROOT6 compatibility
     fPtParametrizationProton = new TF1("2212_pt",fPtParametrizationProtonTemp->GetExpFormula(),0,300);
     for (Int_t iparam = 0; iparam < fPtParametrizationProtonTemp->GetNpar(); iparam++ ){
-      fPtParametrizationProton->SetParameter(iparam,fPtParametrizationProtonTemp->GetParameter(iparam));
+      fPtParametrizationProton->SetParameter(fPtParametrizationProtonTemp->GetParName(iparam),fPtParametrizationProtonTemp->GetParameter(iparam));
     }
     fPtParametrizationProton->SetName("2212_pt");
   }
@@ -1368,7 +1371,7 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
       // function needs to be recreated for ROOT6 compatibility
       fPtParametrization[i] = new TF1(Form("%d_pt", ip),fPtParametrizationTemp->GetExpFormula(),0,300);
       for (Int_t iparam = 0; iparam < fPtParametrizationTemp->GetNpar(); iparam++ ){
-        fPtParametrization[i]->SetParameter(iparam,fPtParametrizationTemp->GetParameter(iparam));
+          fPtParametrization[i]->SetParameter(fPtParametrizationTemp->GetParName(iparam),fPtParametrizationTemp->GetParameter(iparam));
       }
       fPtParametrization[i]->SetName(Form("%d_pt", ip));
 
