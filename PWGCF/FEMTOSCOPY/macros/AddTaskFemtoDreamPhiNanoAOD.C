@@ -200,12 +200,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   const float SpheriUp = 0.72;
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts =
-      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
+      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
   TrackPosKaonCuts->SetCutCharge(1);
   TrackPosKaonCuts->SetFilterBit(128);
 
   AliFemtoDreamTrackCuts *TrackNegKaonCuts =
-      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
+      AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
   TrackNegKaonCuts->SetCutCharge(-1);
   TrackNegKaonCuts->SetFilterBit(128);
 
@@ -399,56 +399,50 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   if (suffix == "12") {
     evtCuts->SetSphericityCuts(0, 1);
   }
-  if (suffix == "13") {
-    TrackCutsPhi->SetCutWindow(0.987, 1.011);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "14") {
-    TrackCutsPhi->SetCutWindow(1.027, 1.1);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "15") {
-    TrackCutsPhi->SetCutWindow(1.1, 1.2);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "16") {
-    TrackCutsPhi->SetCutWindow(1.2, 1.3);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "17") {
-    TrackCutsPhi->SetCutWindow(1.3, 1.4);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "18") {
-    TrackCutsPhi->SetCutWindow(1.4, 1.5);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "19") {
-    TrackCutsPhi->SetCutWindow(1.5, 1.6);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "20") {
-    TrackCutsPhi->SetCutWindow(1.6, 1.7);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "21") {
-    TrackCutsPhi->SetCutWindow(1.7, 1.8);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "22") {
-    TrackCutsPhi->SetCutWindow(1.8, 1.9);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "23") {
-    TrackCutsPhi->SetCutWindow(1.9, 2);
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  if (suffix == "24") {
-    evtCuts->SetSphericityCuts(SpheriUp, 1);
-  }
-  if (suffix == "25") {
-    evtCuts->SetSphericityCuts(SpheriLow, 1);
-  }
+  //  if (suffix == "13") {
+  //    TrackCutsPhi->SetCutWindow(0.987, 1.011);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "14") {
+  //    TrackCutsPhi->SetCutWindow(1.027, 1.1);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "15") {
+  //    TrackCutsPhi->SetCutWindow(1.1, 1.2);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "16") {
+  //    TrackCutsPhi->SetCutWindow(1.2, 1.3);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "17") {
+  //    TrackCutsPhi->SetCutWindow(1.3, 1.4);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "18") {
+  //    TrackCutsPhi->SetCutWindow(1.4, 1.5);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "19") {
+  //    TrackCutsPhi->SetCutWindow(1.5, 1.6);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "20") {
+  //    TrackCutsPhi->SetCutWindow(1.6, 1.7);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "21") {
+  //    TrackCutsPhi->SetCutWindow(1.7, 1.8);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "22") {
+  //    TrackCutsPhi->SetCutWindow(1.8, 1.9);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
+  //  if (suffix == "23") {
+  //    TrackCutsPhi->SetCutWindow(1.9, 2);
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
@@ -463,6 +457,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   PDGParticles.push_back(2212);  // 4
   PDGParticles.push_back(333);   // 5
   PDGParticles.push_back(333);   // 6
+  PDGParticles.push_back(2212);  // 7
+  PDGParticles.push_back(2212);  // 8
+  PDGParticles.push_back(333);   // 9
+  PDGParticles.push_back(2212);  // 10
+  PDGParticles.push_back(2212);  // 11
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -534,7 +533,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //  pairQA.push_back(12); //apphi
   //  pairQA.push_back(22); //phiphi
 
-  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7); i++) {
+  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12); i++) {
     NBins.push_back(750);
     kMin.push_back(0.);
     kMax.push_back(3.);
@@ -544,21 +543,30 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   pairQA[0] = 11;   // pp
   pairQA[1] = 0;    // pap
   pairQA[2] = 12;   // pphi
-  pairQA[7] = 11;   // apap
-  pairQA[8] = 12;   // apphi
-  pairQA[13] = 22;  // phiphi
+  pairQA[12] = 11;  // apap
+  pairQA[13] = 12;  // apphi
+  pairQA[23] = 22;  // phiphi
 
   if (isMC) {
-    pairQA[18] = 11;
-    pairQA[19] = 11;  // ptapt
-    pairQA[20] = 11;
-    pairQA[22] = 11;
-    pairQA[23] = 11;
-    pairQA[25] = 11;
+    pairQA[33] = 11;  // TRUE
+    pairQA[34] = 11;
+    pairQA[35] = 11;
+    pairQA[42] = 11;
+    pairQA[43] = 11;
+    pairQA[50] = 11;
 
-    pairQA[21] = 11;  // ptphiall
-    pairQA[24] = 11;  // aptphiall
-    pairQA[27] = 11;  // phiallphiall
+    pairQA[33] = 11;  // COMMON
+    pairQA[34] = 11;
+    pairQA[35] = 11;
+    pairQA[42] = 11;
+    pairQA[43] = 11;
+    pairQA[50] = 11;
+
+    pairQA[36] = 11;  // phiPRIM pTRUE
+    pairQA[44] = 11;
+
+    pairQA[55] = 11;  // phiTURE pNOprim
+    pairQA[56] = 11;
   }
 
   AliFemtoDreamCollConfig *config =

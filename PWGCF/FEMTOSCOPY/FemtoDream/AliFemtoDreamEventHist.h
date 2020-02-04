@@ -67,6 +67,9 @@ class AliFemtoDreamEventHist {
     fMultDistV0M[i]->Fill(val);
   }
   ;
+  void FillMultPercentV0(int i, float val) {
+    fMultPercentV0[i]->Fill(val);
+  }
   void FillMultRef08(int i, float val) {
     fMultDistRef08[i]->Fill(val);
   }
@@ -125,6 +128,7 @@ class AliFemtoDreamEventHist {
   TH1F *fMultDistV0A[2];    //!
   TH1F *fMultDistV0C[2];    //!
   TH1F *fMultDistV0M[2];    //!
+  TH1F *fMultPercentV0[2];  //!
   TH1F *fMultDistRef08[2];  //!
   TH2F *fSPDTrklClsLy0[2];     //!
   TH2F *fSPDTrklClsLy1[2];     //!

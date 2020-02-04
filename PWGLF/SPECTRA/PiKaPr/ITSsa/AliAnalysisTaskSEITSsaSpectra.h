@@ -166,6 +166,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   void SetITSPidParams(AliITSPidParams *pidParams) { fITSPidParams = pidParams; }
   void SetIsNominalBfield(bool flag = kTRUE) {fIsNominalBfield = flag;}
   void SetIsMC(bool flag = kTRUE) { fIsMC = flag; }
+  void SetIsDCAUnfold(bool flag = kTRUE) { fIsDCAUnfoldHistoEnabled = flag; }
   void SetFillIntDistHist() { fFillIntDistHist = kTRUE; }
 
   AliEventCuts *GetAliEventCuts() { return &fEventCuts; }
@@ -247,6 +248,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistDEDXGen;                  //!<! histo with dedx versus momentum (generated, before track selection)
   TH2F *fHistDEDX;                     //!<! histo with dedx versus momentum
   TH2F *fHistDEDXdouble;               //!<! histo with dedx versus signed momentum
+  TH2F *fHistDEDXposlabel;             //!<! histo with dedx versus momentum with positive label
+  TH2F *fHistDEDXneglabel;             //!<! histo with dedx versus momentum with negative label
   TH2F *fHistNSigmaSep[kNchg * kNspc]; //!<! histo nsigma separation vs momentum
   TH2F *fHistSepPowerReco[kNchg * kNspc];  //!<!
   TH2F *fHistSepPowerTrue[kNchg * kNspc];  //!<!
@@ -380,6 +383,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   bool fUseDefaultPriors; // flag to use default(equal) priors
   bool fFillNtuple;       // flag to fill ntuples
   bool fIsMC;             // flag to switch on the MC analysis for the efficiency estimation
+  bool fIsDCAUnfoldHistoEnabled; //flag to enable the filling of DCA histos used for unfolding
   bool fIsNominalBfield;  // flag to select the magnetic field (nominal = 0.5 T)
   bool fFillIntDistHist;  // flag to fill histogram with information for statistic pid analysis
 

@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+//last edition:27.01.2020
 
 #include <stdio.h>
 #include <Riostream.h>
@@ -514,86 +515,15 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
     Cascade_Event -> setNumCascadeCandidates((UShort_t)ncascades);
     
     Short_t lChargeXi = 3.;
-    int iXi_passed(0);
-    UShort_t nCascadesPassed(0);
-    
+    UShort_t iXi_passed(0);
+
     //--------VARIABLES USED FOR CLEANUP--------------
     Bool_t goodPos = kFALSE; Bool_t goodNeg = kFALSE; Bool_t goodBach = kFALSE;
     Double_t rapidity_range(0.5), eta_range(0.8);
     Float_t lChargePos(0.), lChargeNeg(0.);
     Bool_t extracleanupOmega = kFALSE;
     Bool_t extracleanupTPCPID = kFALSE;
-    
-    //-----WORK THIS OUT (should be very slow): preliminary loop over the cascades ---------
-    for (Int_t iXi=0; iXi<ncascades; iXi++) {
-        
-        xi = lESDevent -> GetCascade(iXi);
-        if(!xi) continue;
-        lChargeXi = xi -> Charge();
-        
-        if (TMath::Abs(lChargeXi) != 1) continue;
-        
-        UInt_t lIdxPosXi     = (UInt_t) TMath::Abs( xi->GetPindex() );
-        UInt_t lIdxNegXi     = (UInt_t) TMath::Abs( xi->GetNindex() );
-        UInt_t lBachIdx     = (UInt_t) TMath::Abs( xi->GetBindex() );
-        
-        //cross check, should be fine.
-        if(lBachIdx == lIdxNegXi) {
-            AliWarning("Pb / Idx(Bach. track) = Idx(Neg. track) ... continue!");
-            continue;
-        }
-        if(lBachIdx == lIdxPosXi) {
-            AliWarning("Pb / Idx(Bach. track) = Idx(Pos. track) ... continue!");
-            continue;
-        }
-        
-        pTrackXi        = lESDevent->GetTrack( lIdxPosXi );
-        nTrackXi       = lESDevent->GetTrack( lIdxNegXi );
-        bachTrackXi    = lESDevent->GetTrack( lBachIdx );
-        
-        
-        //------------CLEANUP guards----------------------------------------------------------------------------------------
-        //check if tracks are good!
-        goodPos = kFALSE; goodNeg = kFALSE; goodBach = kFALSE;
-        rapidity_range = 0.5;
-        eta_range = 0.8;
-        goodPos = GoodESDTrack(pTrackXi,rapidity_range, eta_range);
-        goodNeg = GoodESDTrack(nTrackXi,rapidity_range, eta_range);
-        goodBach = GoodESDTrack(bachTrackXi,rapidity_range, eta_range);
-        if((goodPos != kTRUE) && fguard_CheckTrackQuality) continue;
-        if((goodNeg != kTRUE) && fguard_CheckTrackQuality) continue;
-        if((goodBach != kTRUE) && fguard_CheckTrackQuality) continue;
-        
-        //cross-check for the charge consistency
-        if(lChargeXi != bachTrackXi->Charge()) continue;
-        lChargePos = pTrackXi->Charge(); lChargeNeg = nTrackXi->Charge();
-        if((lChargePos*lChargeNeg) != -1) continue; //cross-check
-        if(lChargePos < lChargeNeg) continue; //cross-check
-        
-        //extra cleanup for the omega!
-        extracleanupOmega = kFALSE;
-        //  Double_t Omegamasswindow = 0.1;
-        extracleanupOmega = ExtraCleanupCascade(xi, pTrackXi, nTrackXi, bachTrackXi, fkOmegaCleanMassWindow);
-        if((extracleanupOmega == kFALSE) && fguard_CheckCascadeQuality) continue;
-        
-        //TPC PID (might be the strongest one)
-        extracleanupTPCPID = kFALSE;
-        extracleanupTPCPID = GoodCandidatesTPCPID(pTrackXi, nTrackXi, bachTrackXi, sigmamaxrunning);
-        if((extracleanupTPCPID == kFALSE) && fguard_CheckTPCPID) continue;
-        //----------cleanup guards over--------------------------------------------------------------------------------------
-        
-        
-        nCascadesPassed ++;
-    }
-    
-    
-    Cascade_Event -> setNumSelectedCascades(nCascadesPassed);
-    if(nCascadesPassed < 1) return; //so we do not need to loop again.
-    
-    pTrackXi = NULL;
-    nTrackXi = NULL;
-    bachTrackXi = NULL;
-    
+   
     
     //preliminary loop is over
     for (Int_t iXi=0; iXi<ncascades; iXi++) {
@@ -966,7 +896,11 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         Cascade_Track -> set_nSigma_TOF_bach(fTreeCascVarBachTOFNSigmaKaon, fTreeCascVarBachTOFNSigmaPion);
         
         iXi_passed++;
+
     }//end of the cascade loop.
+      
+    Cascade_Event -> setNumSelectedCascades(iXi_passed);
+    if(iXi_passed < 1) return; //so we do not need to loop again.
     fTreeCascadeAsEvent -> Fill();
     
     PostData(1, fTreeCascadeAsEvent);

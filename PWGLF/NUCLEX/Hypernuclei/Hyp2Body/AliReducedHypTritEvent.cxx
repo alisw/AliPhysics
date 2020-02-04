@@ -34,9 +34,9 @@ AliReducedHypTritV0::AliReducedHypTritV0() :
   fPt(-1),
   fM(-1),
   fDcaV0(-999),
-  fCosPointingAngle(0),
+  fCosPointingAngle(-999),
   fDecayLength(-1),
-  fMcTruth(0),
+  fMcTruth(-1),
   fRapidity(-999),
   fParticleSpecies(0),
   fCharge(-999),
@@ -64,6 +64,6 @@ AliReducedHypTritEvent::~AliReducedHypTritEvent() {
 }
 
 void AliReducedHypTritEvent::ClearEvent() {
-  if (fV0s) fV0s->Clear("C");
+  if (fV0s) fV0s->Delete();
   fNumberV0s = 0;
 }

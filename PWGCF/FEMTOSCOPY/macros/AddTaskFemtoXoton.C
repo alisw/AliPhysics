@@ -231,9 +231,9 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   config->SetMultBinning(true);
   config->SetmTBinning(true);
 
-  config->SetdPhidEtaPlotsSmallK(false);
-  config->SetdPhidEtaPlots(false);
-  config->SetPhiEtaBinnign(false);
+  config->SetdPhidEtaPlotsSmallK(true);
+  config->SetdPhidEtaPlots(true);
+  config->SetPhiEtaBinnign(true);
 
   if (fullBlastQA) {
     config->SetkTBinning(true);
@@ -1962,6 +1962,15 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
 
+  AliAnalysisDataContainer *coutputDumpster;
+  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
+  coutputDumpster = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      DumpsterName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), DumpsterName.Data()));
+
   AliAnalysisDataContainer *coutputTrkCutsMC;
   AliAnalysisDataContainer *coutputAntiTrkCutsMC;
   AliAnalysisDataContainer *coutputCascCutsMC;
@@ -2031,11 +2040,12 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
     mgr->ConnectOutput(taskNano, 5, coutputAntiCascadeCuts);
     mgr->ConnectOutput(taskNano, 6, coutputResults);
     mgr->ConnectOutput(taskNano, 7, coutputResultsQA);
+    mgr->ConnectOutput(taskNano, 8, coutputDumpster);
     if (isMC) {
-      mgr->ConnectOutput(taskNano, 8, coutputTrkCutsMC);
-      mgr->ConnectOutput(taskNano, 9, coutputAntiTrkCutsMC);
-      mgr->ConnectOutput(taskNano, 10, coutputCascCutsMC);
-      mgr->ConnectOutput(taskNano, 11, coutputAntiCascCutsMC);
+      mgr->ConnectOutput(taskNano, 9, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 10, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 11, coutputCascCutsMC);
+      mgr->ConnectOutput(taskNano, 12, coutputAntiCascCutsMC);
     }
   } else {
     taskAOD = new AliAnalysisTaskAODXioton("femtoAODXoton", isMC);

@@ -1,3 +1,6 @@
+#include <AliAnalysisManager.h>
+#include <AliAODInputHandler.h>
+
 TString TrackCutnames[] = {
  "ResolutionTrackCuts"
  //,"DefaultTrackCut_Nsc0"

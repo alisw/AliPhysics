@@ -2152,7 +2152,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
         if( 
             (TMath::Abs(fTreeVariableNegTOFExpTDiff+2500.) > 1e-6) || 
-            (TMath::Abs(fTreeVariablePosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
+            (TMath::Abs(fTreeVariablePosTOFExpTDiff+2500.) > 1e-6) ) lITSorTOFsatisfied = kTRUE;
         
         //------------------------------------------------
         // Fill Tree!

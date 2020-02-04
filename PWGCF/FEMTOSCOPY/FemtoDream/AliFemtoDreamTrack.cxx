@@ -19,7 +19,7 @@
 #include <iostream>
 ClassImp(AliFemtoDreamTrack)
 AliFemtoDreamTrack::AliFemtoDreamTrack()
-    : AliFemtoDreamBasePart(),
+    : AliFemtoDreamBasePart(1),
       fPIDResponse(0),
       fstatusITS(AliPIDResponse::kDetNoParams),
       fstatusTPC(AliPIDResponse::kDetNoParams),
@@ -250,7 +250,7 @@ void AliFemtoDreamTrack::SetESDTrackingInformation(const bool TPCOnlyTrack) {
   this->SetTheta(fESDTPCOnlyTrack->Theta());
   this->SetCharge(fESDTPCOnlyTrack->Charge());
   this->SetMomTPC(fESDTrack->GetTPCmomentum());
-  this->SetMomentum(p[0], p[1], p[2]);
+  this->SetMomentum(0, p[0], p[1], p[2]);
   this->SetPt(fESDTPCOnlyTrack->Pt());
 
   this->fdcaXY = dDCA[0];
@@ -335,7 +335,7 @@ void AliFemtoDreamTrack::SetESDTrackingInformationOmega() {
     //fill momentum. This will be overwritten later in the cascade setting.
     double p[3] = { 0. };
     fESDTrack->GetPxPyPz(p);
-    this->SetMomentum(p[0], p[1], p[2]);
+    this->SetMomentum(0, p[0], p[1], p[2]);
     this->SetPt(fESDTrack->Pt());
 
     //fill Eta etc:
@@ -476,7 +476,7 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
   this->SetPhi(fVTrack->Phi());
   this->SetTheta(fVTrack->Theta());
   this->SetCharge(fVTrack->Charge());
-  this->SetMomentum(fVTrack->Px(), fVTrack->Py(), fVTrack->Pz());
+  this->SetMomentum(0, fVTrack->Px(), fVTrack->Py(), fVTrack->Pz());
   this->SetPt(fVTrack->Pt());
 
   // loop over the 6 ITS Layrs and check for a hit!
@@ -575,7 +575,7 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   this->SetPhi(fAODTrack->Phi());
   this->SetTheta(fAODTrack->Theta());
   this->SetCharge(fAODTrack->Charge());
-  this->SetMomentum(fAODTrack->Px(), fAODTrack->Py(), fAODTrack->Pz());
+  this->SetMomentum(0, fAODTrack->Px(), fAODTrack->Py(), fAODTrack->Pz());
   this->SetMomTPC(fAODGlobalTrack->GetTPCmomentum());
   this->SetPt(fAODTrack->Pt());
   this->fdcaXY = fAODTrack->DCA();
@@ -940,7 +940,7 @@ void AliFemtoDreamTrack::Reset() {
     fESDStatus = 0;
     fESDnClusterITS = 0;
     fESDnClusterTPC = 0;
-    fP.SetXYZ(0, 0, 0);
+    GetMomentum(0).SetXYZ(0, 0, 0);
     fMCP.SetXYZ(0, 0, 0);
     fPt = 0;
     fMCPt = 0;

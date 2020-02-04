@@ -500,7 +500,9 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
   Double_t gWidthForLambda = 0.006;
   //Double_t gWidthForPhi = 0.031;
   Double_t gWidthForPhiPdg = 0.004266;
-  Double_t gWidthForPhiData = 0.0012;
+  //Double_t gWidthForPhiData = 0.0012;
+  Double_t gWidthForPhiData = 0.003333;
+  Double_t massForPhiData = 1.018;
   Double_t nSigmaRejection = 3.0;
 
   // 1st particle loop
@@ -643,7 +645,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	    //if(TMath::Abs(vectorMother.M() - pPhi.GetMass()) <= nSigmaRejection*gWidthForPhiPdg)
 	    //continue;          
 	    fHistResonancesPhiBeforeUS->Fill(vectorMother.Pt(),vectorMother.M());
-	    if (((vectorMother.M() - pPhi.GetMass()) < fNSigmaRejectionMin*gWidthForPhiData) || ((vectorMother.M() - pPhi.GetMass()) >= fNSigmaRejectionMax*gWidthForPhiData))
+	    //if (((vectorMother.M() - pPhi.GetMass()) < fNSigmaRejectionMin*gWidthForPhiData) || ((vectorMother.M() - pPhi.GetMass()) >= fNSigmaRejectionMax*gWidthForPhiData))
+	    if (((vectorMother.M() - massForPhiData) < fNSigmaRejectionMin*gWidthForPhiData) || ((vectorMother.M() - massForPhiData) >= fNSigmaRejectionMax*gWidthForPhiData))
 	    continue;
 	    fHistResonancesPhi->Fill(vectorMother.Pt(),vectorMother.M());
 	  }

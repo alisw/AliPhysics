@@ -39,6 +39,7 @@ set(SRCS
   AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskUniFlow.cxx
   AliAnalysisTaskUniFlowMultiStrange.cxx
+  AliDecorrFlowCorrTask.cxx
   AliGFW.cxx
   AliGFWCumulant.cxx
   AliGFWCuts.cxx

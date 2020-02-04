@@ -31,6 +31,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist()
     fMultDistV0C[i] = nullptr;
     fMultDistV0M[i] = nullptr;
     fMultDistRef08[i] = nullptr;
+    fMultPercentV0[i] = nullptr;
     fEvtSpher[i] = nullptr;
     fEvtSphero[i] = nullptr;
     fPileUpVZEROTime[i] = nullptr;
@@ -178,6 +179,13 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fMultDistRef08[i]->GetYaxis()->SetTitle("Entries");
     fEvtCutQA[i]->Add(fMultDistRef08[i]);
 
+    TString MultNameMultPercentV0 = Form("MultiplicityPercentileV0_%s", sName[i].Data());
+    fMultPercentV0[i] = new TH1F(MultNameMultPercentV0.Data(),
+                                 MultNameMultPercentV0.Data(), 10000, 0., 100.);
+    fMultPercentV0[i]->GetXaxis()->SetTitle("Multiplicity precentile V0");
+    fMultPercentV0[i]->GetYaxis()->SetTitle("Entries");
+    fEvtCutQA[i]->Add(fMultPercentV0[i]);
+
     TString SPDtrklClsLy0Name = Form("SPDTrackletsVsClusterL0_%s",
                                      sName[i].Data());
     fSPDTrklClsLy0[i] = new TH2F(SPDtrklClsLy0Name.Data(),
@@ -273,6 +281,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(
     fMultDistV0C[i] = hists.fMultDistV0C[i];
     fMultDistV0M[i] = hists.fMultDistV0M[i];
     fMultDistRef08[i] = hists.fMultDistRef08[i];
+    fMultPercentV0[i] = hists.fMultPercentV0[i];
     fBField[i] = hists.fBField[i];
     fEvtSpher[i] = hists.fEvtSpher[i];
     fEvtSphero[i] = hists.fEvtSphero[i];
@@ -303,6 +312,7 @@ AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
       this->fMultDistV0C[i] = hists.fMultDistV0C[i];
       this->fMultDistV0M[i] = hists.fMultDistV0M[i];
       this->fMultDistRef08[i] = hists.fMultDistRef08[i];
+      this->fMultPercentV0[i] = hists.fMultPercentV0[i];
       this->fBField[i] = hists.fBField[i];
       this->fEvtSpher[i] = hists.fEvtSpher[i];
       this->fEvtSphero[i] = hists.fEvtSphero[i];

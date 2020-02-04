@@ -2917,6 +2917,25 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("15910a13","0db00009f9730200dge0404000", "0652501500000000"); //  50-90%  b
     cuts.AddCutPCM("15910a13","0dc00009f9730200dge0404000", "0652501500000000"); //  50-90%  c
 
+    // To be used with MBW from 5TeV Nch
+
+  } else if (trainConfig == 851){ // central , a,b,c bins , V0-TPC pileup rejection
+    cuts.AddCutPCM("10130a13","0d200009f9730200dge0404000", "0652501500000000"); //  0-10%
+    cuts.AddCutPCM("10130a13","0da00009f9730200dge0404000", "0652501500000000"); //  0-10%  a
+    cuts.AddCutPCM("10130a13","0db00009f9730200dge0404000", "0652501500000000"); //  0-10%  b
+    cuts.AddCutPCM("10130a13","0dc00009f9730200dge0404000", "0652501500000000"); //  0-10%  c
+  } else if (trainConfig == 852){ // semicentral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("13530a13","0d200009f9730200dge0404000", "0652501500000000"); //  20-50%
+    cuts.AddCutPCM("13530a13","0da00009f9730200dge0404000", "0652501500000000"); //  20-50%  a
+    cuts.AddCutPCM("13530a13","0db00009f9730200dge0404000", "0652501500000000"); //  20-50%  b
+    cuts.AddCutPCM("13530a13","0dc00009f9730200dge0404000", "0652501500000000"); //  20-50%  c
+
+  } else if (trainConfig == 853){ // peripheral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("15910a13","0d200009f9730200dge0404000", "0652501500000000"); //  50-90%
+    cuts.AddCutPCM("15910a13","0da00009f9730200dge0404000", "0652501500000000"); //  50-90%  a
+    cuts.AddCutPCM("15910a13","0db00009f9730200dge0404000", "0652501500000000"); //  50-90%  b
+    cuts.AddCutPCM("15910a13","0dc00009f9730200dge0404000", "0652501500000000"); //  50-90%  c
+
 
 
 

@@ -771,6 +771,8 @@ void AliEventCuts::SetupPbPb2018() {
     fTriggerMask = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
   }
 
+  fUseTimeRangeCut = true;
+
 }
 
 void AliEventCuts::SetupRun2PbPb() {

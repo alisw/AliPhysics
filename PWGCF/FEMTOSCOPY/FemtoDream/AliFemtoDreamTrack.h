@@ -142,7 +142,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   }
   ;
   TString ClassName() {
-    return "TrackCuts";
+    return "AliFemtoDreamTrack";
   }
   ;
  private:

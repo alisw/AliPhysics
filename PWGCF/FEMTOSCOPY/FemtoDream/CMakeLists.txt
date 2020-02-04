@@ -71,8 +71,6 @@ set(SRCS
   AliAnalysisTaskNanoAODFemtoDreamPhi.cxx
   AliAnalysisTaskFemtoDreamPion.cxx
   AliAnalysisTaskNanoAODFemtoDreamPion.cxx
-  AliAnalysisTaskSigma0Femto.cxx
-  AliAnalysisTaskAODSigma0Femto.cxx
   AliAnalysisTaskNanoAODSigma0Femto.cxx
   AliAnalysisTaskNanoSigmaPlus.cxx
   AliAnalysisTaskNanoLD.cxx

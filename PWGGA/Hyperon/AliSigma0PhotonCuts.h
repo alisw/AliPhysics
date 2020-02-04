@@ -28,6 +28,9 @@ class AliSigma0PhotonCuts : public TObject {
                   std::vector<AliFemtoDreamBasePart> &container);
   bool ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent, AliAODConversionPhoton *PhotonCandidate,
                      AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg);
+  bool PiZeroRejection(AliAODConversionPhoton*photon,
+                       const TClonesArray *photons,
+                       int iPhoton);
   void RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate, AliVEvent* event);
   float ComputeInvMass(AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg, int pdgPos,
                        int pgdNeg) const;
@@ -98,6 +101,13 @@ class AliSigma0PhotonCuts : public TObject {
     fDoPhotonQualityCut = true;
     fPhotonQuality = cut;
   }
+  void SetPhotonPileUpCut(int cut) {
+    fDoPhotonPileupCut = true;
+    fPhotonPileupCut = cut;
+  }
+  void DoPiZeroRejection(bool doIt) {
+    fDoExtraPiZeroRejection = doIt;
+  }
 
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const {
@@ -143,6 +153,11 @@ class AliSigma0PhotonCuts : public TObject {
   bool fDoPhotonQualityCut; //
   int fPhotonQuality; //
 
+  bool fDoPhotonPileupCut; //
+  bool fPhotonPileupCut; //
+
+  bool fDoExtraPiZeroRejection; //
+
   // Histograms
   // =====================================================================
   TProfile *fHistCutBooking;  //!
@@ -150,6 +165,7 @@ class AliSigma0PhotonCuts : public TObject {
   TH1F *fHistCuts;  //!
   TH1F *fHistNV0;   //!
 
+  TH1F *fHistPiZeroMass;       //!
   TH1F *fHistLambdaMass;       //!
   TH1F *fHistAntiLambdaMass;   //!
   TH1F *fHistK0Mass;           //!
@@ -220,7 +236,7 @@ class AliSigma0PhotonCuts : public TObject {
   AliPIDResponse *fPIDResponse;  //!  pid response
 
  private:
-ClassDef(AliSigma0PhotonCuts, 8)
+ClassDef(AliSigma0PhotonCuts, 9)
 };
 
 #endif

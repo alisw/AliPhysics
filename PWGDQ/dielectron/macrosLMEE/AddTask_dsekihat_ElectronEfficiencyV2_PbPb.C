@@ -11,9 +11,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
     const Float_t EtaMax = +0.8,
     const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;",
     const Bool_t isLHC19f2 = kTRUE,
-    const std::string resolutionAlien ="",
-    const std::string cocktailAlien   ="",
-    const std::string centralityAlien =""
+    const std::string resolutionFilename ="",
+    const std::string cocktailFilename   ="",
+    const std::string centralityFilename ="",
+		const TString outname = "LMEE.root"
     ){
 
   // Configuring Analysis Manager
@@ -83,16 +84,16 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   for(Int_t i=110;i<Nmee;i++) mee[i] = 0.1  * (i-110) +  1.1;//from 1.1 to 5 GeV/c2, evety 0.1 GeV/c2
 	std::vector<double> v_mee(mee,std::end(mee));
 
-  const Int_t NpTee = 111;
+  const Int_t NpTee = 121;
   Double_t pTee[NpTee] = {};
   for(Int_t i=0  ;i<10   ;i++) pTee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 0.09 GeV/c, every 0.01 GeV/c
-  for(Int_t i=10 ;i<100  ;i++) pTee[i] = 0.1  * (i- 10) +  0.1;//from 0.1 to 10 GeV/c, evety 0.1 GeV/c
-  for(Int_t i=100;i<NpTee;i++) pTee[i] = 1.0  * (i-100) + 10.0;//from 10 to 20 GeV/c, evety 1.0 GeV/c
+  for(Int_t i=10 ;i<110  ;i++) pTee[i] = 0.1  * (i- 10) +  0.1;//from 0.1 to 10 GeV/c, evety 0.1 GeV/c
+  for(Int_t i=110;i<NpTee;i++) pTee[i] = 1.0  * (i-110) + 10.0;//from 10 to 20 GeV/c, evety 1.0 GeV/c
 	std::vector<double> v_pTee(pTee,std::end(pTee));
 
   task->SetMassBins(v_mee);
   task->SetPairPtBins(v_pTee);
-  task->SetPhiVBinsLinear(0, TMath::Pi(), 72);
+  task->SetPhiVBinsLinear(0, TMath::Pi(), 100);
   task->SetFillPhiV(kTRUE);
 
   task->SetSmearGenerated(kFALSE);
@@ -125,20 +126,23 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetLHC19f2MC(isLHC19f2);
 
   // Resolution File, If resoFilename = "" no correction is applied
-  task->SetCentralityFile(centralityAlien);
-  task->SetResolutionFileFromAlien(resolutionAlien);
-  task->SetCocktailWeightingFromAlien(cocktailAlien);
+  task->SetResolutionFile(resolutionFilename);
+  task->SetResolutionFileFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/" + resolutionFilename);
+  task->SetCentralityFile(centralityFilename);
+  task->SetCocktailWeighting(cocktailFilename);
+  task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/" + cocktailFilename);
 
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
   gROOT->ProcessLine(Form("AddSingleLegMCSignal(%s)",task->GetName()));//not task itself, task name
   gROOT->ProcessLine(Form("AddPairMCSignal(%s)"     ,task->GetName()));//not task itself, task name
 
-  const TString fileName = AliAnalysisManager::GetCommonFileName();
-	const TString dirname = Form("PWGDQ_LMEE_ElectronEfficiencyV2_Cen%d_%d_kINT7",CenMin,CenMax);
+  //const TString fileName = AliAnalysisManager::GetCommonFileName();
+  const TString fileName = outname;
+	//const TString dirname = Form("PWGDQ_LMEE_ElectronEfficiencyV2_Cen%d_%d_kINT7",CenMin,CenMax);
   mgr->AddTask(task);
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("Efficiency_Cen%d_%d_kINT7",CenMin,CenMax), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",fileName.Data(),dirname.Data())));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("Efficiency_dsekihat_Cen%d_%d_kINT7",CenMin,CenMax), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data())));
   return task;
 }
 

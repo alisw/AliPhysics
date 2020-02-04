@@ -10,7 +10,8 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
     const Float_t PtMin = 0.2,
     const Float_t PtMax = 10,
     const Float_t EtaMin = -0.8,
-    const Float_t EtaMax = +0.8
+    const Float_t EtaMax = +0.8,
+		const TString outname = "LMEE.root"
     )
 {
   //get the current analysis manager
@@ -40,6 +41,8 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
   else if(trigger == (UInt_t)AliVEvent::kCentral)     triggername = "kCentral";
   else if(trigger == (UInt_t)AliVEvent::kSemiCentral) triggername = "kSemiCentral";
   else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral)) triggername = "kCombinedCentralityTriggers";
+  else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral))                           triggername = "kCombinedCentral";
+  else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kSemiCentral))                       triggername = "kCombinedSemiCentral";
 
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()));
@@ -128,33 +131,34 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 
   mgr->AddTask(task);
 
-  const TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  const TString dirname = Form("PWGDQ_LMEE_Cen%d_%d_%s",CenMin,CenMax,triggername.Data());
+  //const TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  const TString outputFileName = outname;
+  //const TString dirname = Form("PWGDQ_LMEE_Cen%d_%d_%s",CenMin,CenMax,triggername.Data());
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("Tree_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("Tree_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         Form("%s:%s",outputFileName.Data(),dirname.Data()));
+                         Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("Histos_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("Histos_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         Form("%s:%s",outputFileName.Data(),dirname.Data()));
+                         Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("CF_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("CF_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         Form("%s:%s",outputFileName.Data(),dirname.Data()));
+                         Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("EventStat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("EventStat_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         Form("%s:%s",outputFileName.Data(),dirname.Data()));
+                         Form("%s",outputFileName.Data()));
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );

@@ -25,10 +25,10 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   //
   // Add track filters, with Golden Cuts
   //
-
+ 
   AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
-  AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,1);
 
+  AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,1);
   esdTrackCutsGolden->SetMinNCrossedRowsTPC(120);
   esdTrackCutsGolden->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   esdTrackCutsGolden->SetMaxChi2PerClusterITS(36);
@@ -89,31 +89,47 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
 
     // TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     // taskHighPtDeDx->SetAnalysisType(type);
-    // Run AOD even when filtered from LF_PbPb or LF_PbPb_MC. (Or change back to the lines above)
+    // Run AOD even when filtered from LF_PbPb or LF_PbPb_MC
+
+    //Set analysis details
     taskHighPtDeDx->SetAnalysisType("AOD");
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
-    taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen); //kTRUE: use AliCentrality, kFALSE: use AliMultSelection
-    taskHighPtDeDx->SetAnalysisPbPb(kTRUE);
-    taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
-    taskHighPtDeDx->SetDebugLevel(0);
-    taskHighPtDeDx->SetEtaCut(0.8);
-    taskHighPtDeDx->SetVtxCut(10.0);
-    taskHighPtDeDx->SetMinPt(0.0); 
-    taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
+    taskHighPtDeDx->SetAnalysisPbPb(kTRUE); //for pbpb and ppb
+    taskHighPtDeDx->SetAnalysisRun2(kFALSE); 
     taskHighPtDeDx->SetTrigger1(kTriggerInt); 
     taskHighPtDeDx->SetTrigger2(kTriggerInt);
-    // taskHighPtDeDx->SetTrigger1(AliVEvent::kMB); 
-    // taskHighPtDeDx->SetTrigger2(AliVEvent::kMB);
+    taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
+    taskHighPtDeDx->SetDebugLevel(0);
+    
+    //Set event details
+    taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen); //kTRUE:AliCentrality, kFALSE:AliMultSelection
+    taskHighPtDeDx->SetCentDetector("V0M");
     taskHighPtDeDx->SetMinCent(minc);
     taskHighPtDeDx->SetMaxCent(maxc);
+    taskHighPtDeDx->SetVtxCut(10.0);
+    taskHighPtDeDx->SetContributorsVtxCut(0);
+    taskHighPtDeDx->SetContributorsVtxSPDCut(0);
+    taskHighPtDeDx->SetPileupCut(999.); //Correlation between global Zvtx and SPD Zvtx: use 999. for no cut
+    taskHighPtDeDx->SetVtxR2Cut(10.); //use 10. for no cut
+    
+    //Set trigger particle tracks, v0s and daughter track details
+    taskHighPtDeDx->SetMinPt(5.0); //trigger tracks
+    taskHighPtDeDx->SetLowPtFraction(0.0); //keep x.x% of tracks below min pt
+    taskHighPtDeDx->SetEtaCut(0.8); 
+    taskHighPtDeDx->SetCrossedRowsCut(70.); //use 0. for no cut
+    taskHighPtDeDx->SetCrossedOverFindableCut(0.8); //use 0. for no cut
+    taskHighPtDeDx->SetCosPACut(0.97);
+    taskHighPtDeDx->SetDecayRCut(5.);
+    taskHighPtDeDx->SetMinPtV0(1.0);
+    taskHighPtDeDx->SetMassCut(0.1); 
+    taskHighPtDeDx->SetRejectKinks(kTRUE);
+    taskHighPtDeDx->SetSigmaDedxCut(kFALSE);
+    
     //Set Filters
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
     taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
-    
-    //V0's cuts
-    taskHighPtDeDx->SetMassCut(0.1);     
-    
+        
     mgr->AddTask(taskHighPtDeDx);
     
   }
@@ -121,31 +137,47 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
 if(typerun==3){//pp analysis
   
   AliAnalysisTaskHighPtDeDx* taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx("taskHighPtDeDx");
-  //    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  //    taskHighPtDeDx->SetAnalysisType(type);
-  // Run AOD even when filtered from LF_PbPb or LF_PbPb_MC. (Or change back to the lines above)
-  taskHighPtDeDx->SetAnalysisType("AOD");
-  taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
-  taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen);
-  taskHighPtDeDx->SetAnalysisPbPb(kFALSE);
-  taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
-  taskHighPtDeDx->SetDebugLevel(0);
-  taskHighPtDeDx->SetEtaCut(0.8);
-  taskHighPtDeDx->SetVtxCut(10.0);
-  taskHighPtDeDx->SetMinPt(0.0); // default 2.0
-  taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
-  taskHighPtDeDx->SetTrigger1(kTriggerInt);
-  taskHighPtDeDx->SetTrigger2(kTriggerInt);
-  // taskHighPtDeDx->SetTrigger1(AliVEvent::kMB);
-  // taskHighPtDeDx->SetTrigger2(AliVEvent::kMB);
-  //Set Filters
-  taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
-  taskHighPtDeDx->SetTrackFilter(trackFilter0);
-  taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
-  //V0's cuts
-  taskHighPtDeDx->SetMassCut(0.1);   
-  
-  mgr->AddTask(taskHighPtDeDx);
+
+    //Set analysis details
+    taskHighPtDeDx->SetAnalysisType("AOD");
+    taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
+    taskHighPtDeDx->SetAnalysisPbPb(kFALSE); //for pbpb and ppb
+    taskHighPtDeDx->SetAnalysisRun2(kTRUE);
+    taskHighPtDeDx->SetTrigger1(kTriggerInt); 
+    taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
+    taskHighPtDeDx->SetDebugLevel(0);
+    
+    //Set event details
+    taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen); //kTRUE:AliCentrality, kFALSE:AliMultSelection
+    taskHighPtDeDx->SetCentDetector("V0M");
+    taskHighPtDeDx->SetMinCent(minc);
+    taskHighPtDeDx->SetMaxCent(maxc);
+    taskHighPtDeDx->SetVtxCut(10.0);
+    taskHighPtDeDx->SetContributorsVtxCut(0);
+    taskHighPtDeDx->SetContributorsVtxSPDCut(0);
+    taskHighPtDeDx->SetPileupCut(999.); //Correlation between global Zvtx and SPD Zvtx: use 999. for no cut
+    taskHighPtDeDx->SetVtxR2Cut(10.); //use 10. for no cut
+    
+    //Set trigger particle tracks, v0s and daughter track details
+    taskHighPtDeDx->SetMinPt(5.0); //trigger tracks
+    taskHighPtDeDx->SetLowPtFraction(0.0); //keep x.x% of tracks below min pt
+    taskHighPtDeDx->SetEtaCut(0.8); 
+    taskHighPtDeDx->SetCrossedRowsCut(70.); //use 0. for no cut
+    taskHighPtDeDx->SetCrossedOverFindableCut(0.8); //use 0. for no cut
+    taskHighPtDeDx->SetCosPACut(0.97);
+    taskHighPtDeDx->SetDecayRCut(0.5);
+    taskHighPtDeDx->SetMinPtV0(1.0);
+    taskHighPtDeDx->SetMassCut(0.1); 
+    taskHighPtDeDx->SetRejectKinks(kTRUE);
+    taskHighPtDeDx->SetSigmaDedxCut(kFALSE);
+    
+    //Set Filters
+    taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
+    taskHighPtDeDx->SetTrackFilter(trackFilter0);
+    taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
+
+    mgr->AddTask(taskHighPtDeDx);
   
   
  }
@@ -155,51 +187,64 @@ if(typerun==4){//ppb analysis
   cout<<"<<<<<<<<<<<<<<<<<<<<<<<<<<    Runing pPb    <<<<<<<<<<<<<<"<<endl;
     
   AliAnalysisTaskHighPtDeDx* taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx("taskHighPtDeDx");
-  //    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  //    taskHighPtDeDx->SetAnalysisType(type);
-  // Run AOD even when filtered from LF_PbPb or LF_PbPb_MC. (Or change back to the lines above)
-  taskHighPtDeDx->SetAnalysisType("AOD");
-  taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
-  taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen);
-  taskHighPtDeDx->SetAnalysisPbPb(kTRUE);
-  taskHighPtDeDx->SetMinCent(minc);
-  taskHighPtDeDx->SetMaxCent(maxc);
-  taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
-  taskHighPtDeDx->SetDebugLevel(0);
-  taskHighPtDeDx->SetEtaCut(0.8);
-  taskHighPtDeDx->SetVtxCut(10.0);
-  taskHighPtDeDx->SetMinPt(0.0); // default 2.0
-  taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
-  taskHighPtDeDx->SetTrigger1(kTriggerInt);
-  taskHighPtDeDx->SetTrigger2(kTriggerInt);
-  // taskHighPtDeDx->SetTrigger1(AliVEvent::kMB);
-  // taskHighPtDeDx->SetTrigger2(AliVEvent::kMB);
-  //Set Filters
-  taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
-  taskHighPtDeDx->SetTrackFilter(trackFilter0);
-  taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
-  //V0's cuts
-  taskHighPtDeDx->SetMassCut(0.1);       
 
-  mgr->AddTask(taskHighPtDeDx);
+    //Set analysis details
+    taskHighPtDeDx->SetAnalysisType("AOD");
+    taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
+    taskHighPtDeDx->SetAnalysisPbPb(kTRUE); //for pbpb and ppb
+    taskHighPtDeDx->SetAnalysisRun2(kTRUE);
+    taskHighPtDeDx->SetTrigger1(kTriggerInt); 
+    taskHighPtDeDx->SetTrigger2(kTriggerInt);
+    taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
+    taskHighPtDeDx->SetDebugLevel(0);
+    
+    //Set event details
+    taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen); //kTRUE:AliCentrality, kFALSE:AliMultSelection
+    taskHighPtDeDx->SetCentDetector("V0A");
+    taskHighPtDeDx->SetMinCent(minc);
+    taskHighPtDeDx->SetMaxCent(maxc);
+    taskHighPtDeDx->SetVtxCut(10.0);
+    taskHighPtDeDx->SetContributorsVtxCut(0);
+    taskHighPtDeDx->SetContributorsVtxSPDCut(0);
+    taskHighPtDeDx->SetPileupCut(999.); //Correlation between global Zvtx and SPD Zvtx: use 999. for no cut
+    taskHighPtDeDx->SetVtxR2Cut(10.); //use 10. for no cut
+    
+    //Set trigger particle tracks, v0s and daughter track details
+    taskHighPtDeDx->SetMinPt(5.0); //trigger tracks
+    taskHighPtDeDx->SetLowPtFraction(0.0); //keep x.x% of tracks below min pt
+    taskHighPtDeDx->SetEtaCut(0.8); 
+    taskHighPtDeDx->SetCrossedRowsCut(70.); //use 0. for no cut
+    taskHighPtDeDx->SetCrossedOverFindableCut(0.8); //use 0. for no cut
+    taskHighPtDeDx->SetCosPACut(0.97);
+    taskHighPtDeDx->SetDecayRCut(0.5);
+    taskHighPtDeDx->SetMinPtV0(1.0);
+    taskHighPtDeDx->SetMassCut(0.1); 
+    taskHighPtDeDx->SetRejectKinks(kTRUE);
+    taskHighPtDeDx->SetSigmaDedxCut(kFALSE);
+
+    //Set Filters
+    taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
+    taskHighPtDeDx->SetTrackFilter(trackFilter0);
+    taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
+    
+    mgr->AddTask(taskHighPtDeDx);
     
  }
 
 
-
 // Create ONLY the output containers for the data produced by the
-  // task.  Get and connect other common input/output containers via
-  // the manager as below
-  //=======================================================================
-  
-  TString outputFileName = Form("%s", AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *cout_hist = mgr->CreateContainer("output", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+// task.  Get and connect other common input/output containers via
+// the manager as below
+//=======================================================================
  
-  mgr->ConnectInput(taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskHighPtDeDx, 1, cout_hist);
-
-
-  // Return task pointer at the end
-  return taskHighPtDeDx;
-
+ TString outputFileName = Form("%s", AliAnalysisManager::GetCommonFileName());
+ AliAnalysisDataContainer *cout_hist = mgr->CreateContainer("output", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+ 
+ mgr->ConnectInput(taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
+ mgr->ConnectOutput(taskHighPtDeDx, 1, cout_hist);
+ 
+ 
+ // Return task pointer at the end
+ return taskHighPtDeDx;
+ 
 }

@@ -43,9 +43,13 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fTransvRadRejectionUp(0.),
       fDoPhotonQualityCut(false),
       fPhotonQuality(-1),
+      fDoPhotonPileupCut(false),
+      fPhotonPileupCut(false),
+      fDoExtraPiZeroRejection(false),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
       fHistNV0(nullptr),
+      fHistPiZeroMass(nullptr),
       fHistLambdaMass(nullptr),
       fHistAntiLambdaMass(nullptr),
       fHistK0Mass(nullptr),
@@ -145,9 +149,13 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fTransvRadRejectionUp(0.),
       fDoPhotonQualityCut(false),
       fPhotonQuality(-1),
+      fDoPhotonPileupCut(false),
+      fPhotonPileupCut(false),
+      fDoExtraPiZeroRejection(false),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
       fHistNV0(nullptr),
+      fHistPiZeroMass(nullptr),
       fHistLambdaMass(nullptr),
       fHistAntiLambdaMass(nullptr),
       fHistK0Mass(nullptr),
@@ -305,6 +313,12 @@ void AliSigma0PhotonCuts::PhotonCuts(
 
     auto nanoPos = dynamic_cast<AliNanoAODTrack *>(pos);
     if(nanoPos) v0 = nullptr; // for NanoAODs we dont have a v0 matching!
+
+    if (fDoExtraPiZeroRejection) {
+      if (!PiZeroRejection(PhotonCandidate, photons, iGamma)) {
+        continue;
+      }
+    }
 
     if (ProcessPhoton(event, mcEvent, PhotonCandidate, v0, pos, neg)) {
       AliFemtoDreamBasePart photon(PhotonCandidate, pos, neg, inputEvent);
@@ -466,6 +480,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
   } else {
     photonQuality = 1;
   }
+  bool pileUpPhoton = (photonQuality == 1) ? true : false;
 
   // BEFORE THE CUTS
   if (!fIsLightweight) {
@@ -578,6 +593,9 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
   if (fDoPhotonQualityCut && photonQuality != fPhotonQuality) {
     return false;
   }
+  if (fDoPhotonPileupCut && pileUpPhoton != fPhotonPileupCut) {
+    return false;
+  }
   fHistCuts->Fill(15.f);
 
   fHistDCAzAfterOthersBefore->Fill(pt, DCAz);
@@ -664,6 +682,33 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
     fHistSingleParticleDCAtoPVAfter[1]->Fill(negPt, dcaDaughterToPVNeg);
     fHistSingleParticlePID[1]->Fill(negPt, pidNeg);
     fHistTomography->Fill(conv[0], conv[1]);
+  }
+  return true;
+}
+
+
+bool AliSigma0PhotonCuts::PiZeroRejection(AliAODConversionPhoton* photon,
+                                          const TClonesArray *photons,
+                                          int iPhoton) {
+  TLorentzVector track1, track2;
+  track1.SetXYZM(photon->Px(), photon->Py(), photon->Pz(),
+                 photon->GetPhotonMass());
+
+  for (int iGamma = 0; iGamma < photons->GetEntriesFast(); ++iGamma) {
+    if (iGamma == iPhoton) {
+      continue;
+    }
+    auto *PhotonCandidate = dynamic_cast<AliAODConversionPhoton *>(photons->At(
+        iGamma));
+    track2.SetXYZM(PhotonCandidate->Px(), PhotonCandidate->Py(),
+                   PhotonCandidate->Pz(), PhotonCandidate->GetPhotonMass());
+    TLorentzVector trackSum = track1 + track2;
+    const double mass = trackSum.M();
+    fHistPiZeroMass->Fill(mass);
+
+    if (mass > 0.125 && mass < 0.15) {
+      return false;
+    }
   }
   return true;
 }
@@ -897,6 +942,11 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 100, -1, 1, 100, 0,
                            2 * pi);
     fHistograms->Add(fHistEtaPhi);
+
+    if(fDoExtraPiZeroRejection) {
+      fHistPiZeroMass = new TH1F("fHistPiZeroMass", "; #it{M}_{#gamma#gamma} (GeV/#it{c}; Entries", 1000, 0, 0.25);
+      fHistograms->Add(fHistPiZeroMass);
+    }
 
     if (fIsMC) {
       fHistMCV0Pt = new TH1F("fHistMCV0Pt",

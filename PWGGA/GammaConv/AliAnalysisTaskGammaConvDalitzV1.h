@@ -61,7 +61,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
       fIsHeavyIon = flag;
     }
 
-    void SetIsMC(Bool_t isMC){fIsMC=isMC;}
+    void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void SetEventCutList(Int_t nCuts, TList *CutArray){
       fnCuts= nCuts;
       fCutEventArray = CutArray;
@@ -222,12 +222,14 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH1F                              **hMCPi0WOWeightPt;
     TH1F                              **hMCPi0GGPt;
     TH1F                              **hMCEtaPt;
+    TH1F                              **hMCEtaWOWeightPt;
     TH1F                              **hMCEtaGGPt;
     TH1F                              **hMCPi0InAccPt;
     TH1F                              **hMCPi0WOWeightInAccPt;
     TH1F                              **hMCPi0InAccOpeningAngleGammaElectron;
     THnSparseF                        **sMCPi0DalitzPlot;
     TH1F                              **hMCEtaInAccPt;
+    TH1F                              **hMCEtaWOWeightInAccPt;
     TH1F                              **hMCChiCPt;
     TH1F                              **hMCChiCInAccPt;
     TH2F                              **hMCPi0EposEnegInvMassPt;
@@ -288,6 +290,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH1F                              **hESDTruePi0DalitzSecPositronPt;
     TH1F                              **hESDTruePi0DalitzSecElectronPt;
     TH1F                              **hNEvents;
+    TH1F                              **hNEventsWOWeight;
     TH1I                              **hNGoodESDTracks;
     TH2F                              **hNGoodESDTracksVsNGoodGammas;
     TH2F                              **hNGoodESDTracksVsNGoodVGammas;
@@ -298,6 +301,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH2F                              **fHistoDoubleCountTruePi0InvMassPt;      //! array of histos with double counted pi0s, invMass, pT
     TH2F                              **fHistoDoubleCountTrueEtaInvMassPt;      //! array of histos with double counted etas, invMass, pT
     TH2F                              **fHistoDoubleCountTrueConvGammaRPt;        //! array of histos with double counted photons, R, pT
+    TProfile**                        fProfileJetJetXSection;                     //! array of profiles with xsection for jetjet
+    TH1F**                            fhJetJetNTrials;                            //! array of histos with ntrials for jetjet
     vector<Int_t>                     fVectorDoubleCountTruePi0s;            //! vector containing labels of validated pi0
     vector<Int_t>                     fVectorDoubleCountTrueEtas;            //! vector containing labels of validated eta
     vector<Int_t>                     fVectorDoubleCountTrueConvGammas;          //! vector containing labels of validated photons
@@ -325,8 +330,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     Int_t                             fDoMesonQA;
     Bool_t                            fSetProductionVertextoVGamma;
     Bool_t                            fIsFromMBHeader;
-    Bool_t                            fIsMC;
+    Int_t                             fIsMC;
     Bool_t                            fDoTHnSparse;
+    Double_t                          fWeightJetJetMC;
     Bool_t                            fDoHistoDalitzMassLog;
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
 

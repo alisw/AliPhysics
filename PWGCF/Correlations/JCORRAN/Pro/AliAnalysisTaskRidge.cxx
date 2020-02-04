@@ -276,6 +276,14 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
         fHistos->CreateTH1("hJetEta","",100,-1.0,1.0);
         fHistos->CreateTH1("hJetPhi","",100,-4,4);
 
+        fHistos->CreateTH1("hLJetPt","",240,0,120);
+        fHistos->CreateTH1("hLJetEta","",100,-1.0,1.0);
+        fHistos->CreateTH1("hLJetPhi","",100,-4,4);
+
+	fHistos->CreateTH1("hLHPt","",240,0,120);
+
+	fHistos->CreateTH2("hLHPt_JetpT","",240,0,120,240,0,120);
+
 	fHistos->CreateTH1("hHMT","",1000,0,1,"s");
 	fHistos->CreateTH1("hMB","",100,0,100,"s");
 
@@ -480,8 +488,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		IsFirstEvent = kFALSE;
         }
 
-
-	
 	fCent = 200;
 	fZ = 0.0;
 
@@ -496,7 +502,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 //	fJetTask = (AliJJetTask*) fEvt -> FindListObject("AliJJetTask");
 	if( !fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTask" ));
 	else if( fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskHighMult" ));
-
 
 	sel = (AliMultSelection*) fEvt -> FindListObject("MultSelection");
 	if( sel ){ 
@@ -521,15 +526,11 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	AliJJet* Cjet;
 	for(int i=0;i<fjets->GetEntries();i++){
 		Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
+		if( fabs( Cjet->Eta() ) > 0.4 ){ continue; }
 		if( ( fJetPt <  Cjet->Pt() ) ){
 			fJetPt = Cjet->Pt();
 			JetEta = Cjet->Eta();
 			JetPhi = Cjet->Phi();
-		}
-		if( fabs( JetEta ) > 0.4 ){
-			fJetPt = 0.0;
-			JetEta = -10.0;
-			JetPhi = -10.0;
 		}
 	}
 
@@ -643,11 +644,26 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 	        fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
 
-		if( Ljet ){
-			fHistos->FillTH1("hJetPt",fJetPt,1.0);
-			fHistos->FillTH1("hJetEta",JetEta,1.0);
-			fHistos->FillTH1("hJetPhi",JetPhi,1.0);
+		if( fJetPt>0.1 ){
+			fHistos->FillTH1("hLJetPt",fJetPt,1.0);
+			fHistos->FillTH1("hLJetEta",JetEta,1.0);
+			fHistos->FillTH1("hLJetPhi",JetPhi,1.0);
 		}
+
+        	for(int i=0;i<fjets->GetEntries();i++){
+        	        Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
+        	        if( fabs( Cjet->Eta() ) > 0.4 ){ continue; }
+/*
+        	        if( ( fJetPt <  Cjet->Pt() ) ){
+        	                fJetPt = Cjet->Pt();
+        	                JetEta = Cjet->Eta();
+        	                JetPhi = Cjet->Phi();
+        	        }
+*/
+                        fHistos->FillTH1("hJetPt",Cjet->Pt(),1.0);
+                        fHistos->FillTH1("hJetEta",Cjet->Eta(),1.0);
+                        fHistos->FillTH1("hJetPhi",Cjet->Phi(),1.0);
+        	}
 
 	        if( !fOption.Contains("HighMult") ){
 	                fHistos->FillTH1("hMB",fCent,1);
@@ -662,6 +678,10 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 	if( fabs( JetEta ) > 0.4 ){
 		fJetPt = 0.0;
+	}
+
+	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && fOption.Contains("EvtSelStudy") && fOption.Contains("jtptstudy") ){
+		fsetmixing = kFALSE; this -> GoodTracksSelection( 2 );
 	}
 
 //	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
@@ -786,6 +806,7 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 	}
 
 	fNTracks = 0;
+	double LHPt = 0;
 	for (UInt_t it = 0; it<ntracks; it++){
 		if (fEvt->IsA()==AliESDEvent::Class()){
 			track = (AliESDtrack*) fEvt ->GetTrack(it);
@@ -811,6 +832,8 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 			if( !fOption.Contains("ITS") && fabs(track->Eta())>fetacut ) continue;
 			else if( fOption.Contains("ITS") && fabs(track->Eta())>1.3 ) continue;			
 			FillTHnSparse("hTrackData",{track->Pt(),track->Phi(),track->Eta(),fZ,(double)trk,fCent},1.0);
+
+			if( LHPt < track->Pt() ){ LHPt = track->Pt(); }
 
 			fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta(),1.0);
 			if( !fOption.Contains("ITS") ){
@@ -871,7 +894,10 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 		if (fsetmixing){
 			etl->push_back( (AliVTrack*) track -> Clone() );
 		}
-	}
+	}//track
+
+	fHistos->FillTH1("hLHPt",LHPt,1.0);
+	fHistos->FillTH2("hLHPt_JetpT",LHPt,fJetPt,1.0);
 	if (fsetmixing){
 		if (!goodtrackindices.size()) ep->pop_back();
 		if ( ep->size() > bookingsize ){

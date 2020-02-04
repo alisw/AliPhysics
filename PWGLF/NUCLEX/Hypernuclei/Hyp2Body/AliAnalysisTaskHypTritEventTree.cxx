@@ -568,7 +568,8 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
       fMCGenRecArray->AddAtAndExpand(reducedV0, fMcGenRecCounter);
       fMCGenRec[fMcGenRecCounter] = labelMotherP;
       fMcGenRecCounter++;
-      if (McCuts(*reducedV0, *reducedHe, *reducedPi)) fHistMcRec->Fill(reducedV0->fDecayLength);
+      //if (McCuts(*reducedV0, *reducedHe, *reducedPi)) 
+		fHistMcRec->Fill(reducedV0->fDecayLength);
     }
   }
 }
@@ -609,35 +610,13 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
         reducedV0->fM = tparticleMother->GetCalcMass();
         reducedV0->fP = tparticleMother->P();
         reducedV0->fPt = tparticleMother->Pt();
+		reducedV0->fRapidity = (momentumDaughter1 + momentumDaughter2).Rapidity();
         reducedV0->fDecayLength = distance * tparticleMother->GetCalcMass() / tparticleMother->P();
         reducedV0->fMcTruth = 0;
+		reducedV0->fCharge = -1;
+		if (pdgCodeMother == 1010010030) 
+			reducedV0->fCharge = 1;
         fHistMcGen->Fill(reducedV0->fDecayLength);
-        for(Int_t ii = 0; ii < 40; ii++) {
-          if (fMCGenRec[ii] == istack) {
-            AliReducedHypTritV0 *mcReducedV0 = (AliReducedHypTritV0*) fMCGenRecArray->At(ii);
-            AliReducedHypTritTrack *mcReducedPi = mcReducedV0->Pi();
-            AliReducedHypTritTrack *mcReducedHe = mcReducedV0->He();
-            reducedV0->fDecayLength = mcReducedV0->fDecayLength;
-            reducedV0->fDcaV0 = mcReducedV0->fDcaV0;
-            reducedV0->fCosPointingAngle = mcReducedV0->fCosPointingAngle;
-            reducedPi->fP = mcReducedPi->fP;
-            reducedHe->fP = mcReducedHe->fP;
-            reducedPi->fEta = mcReducedPi->fEta;
-            reducedHe->fEta = mcReducedHe->fEta;
-            reducedPi->fTpcNClusters = mcReducedPi->fTpcNClusters;
-            reducedHe->fTpcNClusters = mcReducedHe->fTpcNClusters;
-            reducedV0->fRapidity = mcReducedV0->fRapidity;
-            reducedV0->fM = mcReducedV0->fM;
-            reducedV0->fMcTruth = mcReducedV0->fMcTruth;
-            reducedV0->fParticleSpecies = mcReducedV0->fParticleSpecies;
-            reducedV0->fCharge = mcReducedV0->fCharge;
-            reducedHe->fDedxSigmaTriton = mcReducedHe->fDedxSigmaTriton;
-            reducedHe->fDedxSigma = mcReducedHe->fDedxSigma;
-            reducedHe->fPtrack = mcReducedHe->fPtrack;
-            reducedPi->fPtrack = mcReducedHe->fPtrack;
-            reducedV0->fOnFlyStatus = mcReducedV0->fOnFlyStatus;
-          }
-        }
         nV0Gen = nV0Gen +1;
       }
 		}

@@ -194,7 +194,7 @@ namespace AliDHFeCorr {
         Float_t fPhiMC{-999.};
         Float_t fEtaMC{-999.};
         UShort_t fOrigin{0}; // track origin from AliVertexingHFUtils::CheckOrigin
-        Int_t fPDG{0};
+        Int_t fPDGCode{0};
 
         Int_t fFirstMotherPDG{0};
         Float_t fFirstMotherPt{-999.};

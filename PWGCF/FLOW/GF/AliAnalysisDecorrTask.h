@@ -63,7 +63,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    DoRFPs(Bool_t ref) { bRef = ref; }              //Calculate integrad flow
         void                    DoDiff(Bool_t diff) { bDiff = diff; }           //Calculate pt differential flow
         void                    DoPtB(Bool_t ptb) { bPtB = ptb; }               //Calculate flow with particles from different pt bins
-        void                    DoSC(Bool_t sc) { fSC = sc; }
+        void                    DoSC(Bool_t integrated, Bool_t singlediff) { fInt = integrated, fSingle = singlediff; }
 
     
     private:
@@ -152,6 +152,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TComplex Four(int n1, int n2, int n3, int n4);
         TComplex FourGap10(int n1, int n2, int n3, int n4);
         TComplex FourDiff(int n1, int n2, int n3, int n4);
+        TComplex Four_2Diff_2Ref(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10P(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10M(int n1, int n2, int n3, int n4);
         TComplex FourDiff_PtA_PtA(int n1, int n2, int n3, int n4);
@@ -213,7 +214,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Bool_t                  bDiff;
         Bool_t                  bRef;
         Bool_t                  bPtB;
-        Bool_t                  fSC;
+        Bool_t                  fInt;
+        Bool_t                  fSingle;
         Bool_t                  bHigherOrder;
         Double_t                fPOIsPtmax;
         Double_t                fPOIsPtmin;

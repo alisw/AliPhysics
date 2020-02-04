@@ -123,7 +123,6 @@ public:
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
    void   SetDoFourPairing(Bool_t doFourPairing) {fDoFourPairing = doFourPairing;}
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
-   void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
    // Single leg from Pair related setter
@@ -157,6 +156,7 @@ public:
    void   SetUpperMassCutPrimaries(double massCut) {fUpperMassCutPrimaries = massCut;};
    void   SetMassCutSecondaries(double massCut) {fMassCutSecondaries = massCut;};
    void   SetMassCut(Bool_t DoMassCut) {fDoMassCut = DoMassCut;};
+
 
    // Track cuts setter
    void   AddTrackCuts_primary  (AliAnalysisFilter* filter) {fTrackCuts_primary.push_back(filter);}
@@ -209,19 +209,21 @@ public:
   class TwoPair{
   public:
     TwoPair() :
-      fPt(-99), fEta(-99), fPhi(-99), fMass(-99), fCharge(-99), fDaughterTrackID_1(0), fDaughterTrackID_2(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed() {}
+      fPt(-99), fEta(-99), fPhi(-99), fMass(-99), fCharge(-99), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_secondary() {}
     TwoPair(double pt, double eta, double phi, double mass, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fMass(mass), fCharge(charge), fDaughterTrackID_1(0), fDaughterTrackID_2(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(){}
+      fPt(pt), fEta(eta), fPhi(phi), fMass(mass), fCharge(charge), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_secondary(){}
 
     void SetMCTwoSignal_acc_prim (std::vector<Bool_t> vec) {fMCTwoSignal_acc_prim = vec;}
     void SetMCTwoSignal_acc_sec  (std::vector<Bool_t> vec) {fMCTwoSignal_acc_sec = vec;}
-    void SetDautherTrackID(int id1, int id2) {fDaughterTrackID_1 = id1; fDaughterTrackID_2 = id2;}
+    void SetDautherTrackID(int label1, int label2) {fDaughterTrackID_1 = label1; fDaughterTrackID_2 = label2;}
+    void SetV0ID(int iV0) {fV0ID=iV0;}
     void SetDauthersAreReconstructed(std::vector<Bool_t> vec1, std::vector<Bool_t> vec2) {fFirstPartIsReconstructed = vec1, fSecondPartIsReconstructed = vec2;}
 
     std::vector<Bool_t> GetMCTwoSignal_acc_prim () {return fMCTwoSignal_acc_prim;}
     std::vector<Bool_t> GetMCTwoSignal_acc_sec  () {return fMCTwoSignal_acc_sec;}
     int GetFirstDaughter() {return fDaughterTrackID_1;}
     int GetSecondDaughter() {return fDaughterTrackID_2;}
+    int GetV0ID() {return fV0ID;}
 
     double  fPt;
     double  fEta;
@@ -230,10 +232,12 @@ public:
     short   fCharge;
     int fDaughterTrackID_1;
     int fDaughterTrackID_2;
+    int fV0ID;
     std::vector<Bool_t> fMCTwoSignal_acc_prim;
     std::vector<Bool_t> fMCTwoSignal_acc_sec;
     std::vector<Bool_t> fFirstPartIsReconstructed;
     std::vector<Bool_t> fSecondPartIsReconstructed;
+    std::vector<Bool_t> isReconstructed_secondary;
 
   };
 
@@ -262,6 +266,7 @@ private:
 
   void    FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack, int iCutList);
   void    FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack, int iCutList);
+  void    FillPairHistograms_Secondary(AliDielectronPair* pair, int iCutList);
 
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
@@ -333,6 +338,7 @@ private:
   double fLowerMassCutPrimaries; // Mass cut for primary pair
   double fUpperMassCutPrimaries; // Mass cut for primary pair
   double fMassCutSecondaries; // Mass cut for secondary pair
+
 
   std::vector<AliDielectronSignalMC> fSinglePrimaryLegMCSignal;
   std::vector<AliDielectronSignalMC> fSingleSecondaryLegMCSignal;
@@ -434,7 +440,6 @@ private:
   Bool_t fDoPairing;
   Bool_t fDoFourPairing;
   Bool_t fDoULSandLS;
-  Bool_t fDeactivateLS;
   Bool_t fDoMassCut;
 
   std::vector<Particle> fGenNegPart;
@@ -462,6 +467,8 @@ private:
   std::vector<TwoPair>  fGenSmearedPairVec_secondary;
   std::vector<TwoPair>  fRecPairVec_primary;
   std::vector<TwoPair>  fRecPairVec_secondary;
+
+  std::vector<TwoPair>  fRecV0Pair;
 
   bool fDoCocktailWeighting;
   std::string fCocktailFilename;

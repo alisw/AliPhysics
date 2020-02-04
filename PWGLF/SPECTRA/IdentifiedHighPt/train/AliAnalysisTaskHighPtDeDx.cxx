@@ -34,7 +34,8 @@
   * 23 jan 2019: add more filter bit flags for v0 daughters, and make sure TPCrefit, nCrossedRowsTPC, and findable cuts are always there 
   * 30 jan 2019: setting functions for: SetContributorsVtxCut, SetContributorsVtxSPDCut, SetPileupCut, SetVtxR2Cut, SetCrossedRowsCut, SetCrossedOverFindableCut, and removing the eta cut limit of 0.8 on V0s (but keeping it on tracks & daughter tracks)
   * 06 feb 2019: implement reject kink daughters option
-  * 17 jan 2019: removing esd part of the code since heavily outdated 
+  * 17 jan 2020: removing esd part of the code since heavily outdated 
+  * 29 jan 2020: oob pileup cut and AliEventCuts for run-2 analyses
 
   Remiders:
   * For pp: remove pile up thing
@@ -78,6 +79,7 @@
 #include <AliAODPid.h> 
 #include <AliAODMCHeader.h> 
 #include <iostream>
+#include "AliEventCuts.h"
 
 // STL includes
 #include <iostream>
@@ -92,16 +94,19 @@ const Double_t AliAnalysisTaskHighPtDeDx::fgkClight = 2.99792458e-2;
 //_____________________________________________________________________________
 AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   AliAnalysisTaskSE(),
-   fAOD(0x0),
+  fEventCuts(0),
+  fAOD(0x0),
   fMC(0x0),
   fMCArray(0x0),
   fTrackFilter(0x0),
   fTrackFilterGolden(0x0),
   fTrackFilterTPC(0x0),
   fAnalysisType("AOD"),
+  fCentDetector("V0M"),
   fAnalysisMC(kFALSE),
   fCentFrameworkAliCen(kFALSE),
   fAnalysisPbPb(kFALSE),
+  fAnalysisRun2(kFALSE),
   fVZEROBranch(kFALSE),
   fRandom(0x0),
   fEvent(0x0),
@@ -127,6 +132,10 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fVtxR2Cut(10.0),           
   fCrossedRowsCut(70.0),     
   fCrossedOverFindableCut(0.8),
+  fNegTrackStatus(0),
+  fPosTrackStatus(0),
+  fNegTOFExpTDiff(99999), 
+  fPosTOFExpTDiff(99999),
   fRejectKinks(kTRUE),
   fSigmaDedxCut(kFALSE),       
   fLowPtFraction(0.01),
@@ -158,16 +167,19 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
 //______________________________________________________________________________
 AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   AliAnalysisTaskSE(name),
- fAOD(0x0),
+  fEventCuts(0),
+  fAOD(0x0),
   fMC(0x0),
   fMCArray(0x0),
   fTrackFilter(0x0),
   fTrackFilterGolden(0x0),
   fTrackFilterTPC(0x0),
   fAnalysisType("AOD"),
+  fCentDetector("V0M"),
   fAnalysisMC(kFALSE),
   fCentFrameworkAliCen(kFALSE),
   fAnalysisPbPb(kFALSE),
+  fAnalysisRun2(kFALSE),
   fVZEROBranch(kFALSE),
   fRandom(0x0),
   fEvent(0x0),
@@ -193,6 +205,10 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fVtxR2Cut(10.0),           
   fCrossedRowsCut(70.0),     
   fCrossedOverFindableCut(0.8),
+  fNegTrackStatus(0),
+  fPosTrackStatus(0),
+  fNegTOFExpTDiff(99999), 
+  fPosTOFExpTDiff(99999),
   fRejectKinks(kTRUE),
   fSigmaDedxCut(kFALSE),       
   fLowPtFraction(0.01),
@@ -324,7 +340,9 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     return;
   }
   
-    //changes 26jun2018
+  if(fAnalysisRun2 && !fEventCuts.AcceptEvent(event)) return;
+  
+  //changes 26jun2018
   // fAOD = dynamic_cast<AliAODEvent*>(event);
   // if(!fAOD){
   //   Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
@@ -405,6 +423,10 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
      ->IsEventSelected() & AliVEvent::kSemiCentral){
     fTriggerInt = 2; 
   }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kINT7){
+    fTriggerInt = 3; 
+  }
 
   
   //  //_____________ end nominal _______________________
@@ -441,7 +463,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // real data that are not triggered we skip
   if(!fAnalysisMC && !fTriggeredEventMB)
     return; 
-
+  
 
   if (fAnalysisMC) {
     
@@ -515,7 +537,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     }
   }
   
-  Float_t centralityV0M = -10;
+  Float_t centrality = -10;
  
   // only analyze triggered events
   if(fTriggeredEventMB){
@@ -525,7 +547,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	fCentFramework = 0; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
 	
 	AliCentrality *centObject =  fAOD->GetCentrality();
-	if(centObject) centralityV0M = centObject->GetCentralityPercentile("V0M"); 
+	if(centObject) centrality = centObject->GetCentralityPercentile(fCentDetector); 
 	
       }else{ // CentFramework in AliMultSelection
 	fCentFramework = 1; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
@@ -533,16 +555,16 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	AliMultSelection* centObject = 0x0; 
 	centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
 	if(centObject){
-	  centralityV0M = centObject->GetMultiplicityPercentile("V0M");
+	  centrality = centObject->GetMultiplicityPercentile(fCentDetector);
 	}
 	if(!centObject) cout<<"no centObject: please check that the AliMultSelectionTask actually ran (before your task) "<<endl; 
       }
       
-      if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return;	
+      if((centrality>fMaxCent)||(centrality<fMinCent))return;	
       
     }//pbpb
     
-    fcent->Fill(centralityV0M);
+    fcent->Fill(centrality);
     AnalyzeAOD(fAOD);
     
   }//if triggered
@@ -555,7 +577,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   fEvent->trig          = fTriggeredEventMB;
   fEvent->triggerInt    = fTriggerInt;
   fEvent->zvtxMC        = fZvtxMC;
-  fEvent->cent          = centralityV0M;
+  fEvent->cent          = centrality;
   fEvent->centFramework = fCentFramework;
 
   //fEvent->centV0A      = centralityV0A;
@@ -1208,7 +1230,24 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     //   }
     // }
 
+    
+    Short_t oobPileupFlag = 0; // 1 = oob pileup rejection cut applied
+    
+    fPosTrackStatus = pTrack->GetStatus();
+    fNegTrackStatus = nTrack->GetStatus();
+    fNegTOFExpTDiff = nTrack->GetTOFExpTDiff(AODevent->GetMagneticField());
+    fPosTOFExpTDiff = pTrack->GetTOFExpTDiff(AODevent->GetMagneticField());
 
+    //ITS||TOF requirement
+    Bool_t lITSorTOFsatisfied = kFALSE; 
+    if( (fNegTrackStatus & nTrack->IsOn(AliAODTrack::kITSrefit) ||
+	 (fPosTrackStatus & pTrack->IsOn(AliAODTrack::kITSrefit)) ) )
+      lITSorTOFsatisfied = kTRUE; 
+    if( (TMath::Abs(fNegTOFExpTDiff+2500.) > 1e-6) || (TMath::Abs(fPosTOFExpTDiff+2500.) > 1e-6) )
+      lITSorTOFsatisfied = kTRUE;
+    
+    if(lITSorTOFsatisfied) oobPileupFlag = 1;
+    
     
     Double_t lV0Radius         = aodV0->RadiusV0();
     Float_t alpha              = aodV0->AlphaV0();
@@ -1271,10 +1310,12 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
     Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
     Int_t   pdgmotherV0   = 0; 
+
     Float_t p_ptMC        = 0;
     Short_t p_pidCode     = 0; // 0 = real data / no mc track!
     Short_t p_primaryFlag = 0; // 0 = real data / not primary mc track  
     Int_t   p_pdgMother   = 0;
+
     Float_t n_ptMC        = 0;
     Short_t n_pidCode     = 0; // 0 = real data / no mc track!
     Short_t n_primaryFlag = 0; // 0 = real data / not primary mc track  
@@ -1378,6 +1419,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     v0data->primary      = primaryV0;
     v0data->pdg          = pdgV0;
     v0data->pdgmother    = pdgmotherV0;
+    v0data->oobPileupFlag = oobPileupFlag;
+	 
 	
     // positive track
     v0data->ptrack.p       = pp;

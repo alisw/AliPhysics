@@ -84,6 +84,7 @@ public:
 
   
 private:
+
   AliAnalysisTaskSEpPbCorrelationsYS(
       const AliAnalysisTaskSEpPbCorrelationsYS &det);
   AliAnalysisTaskSEpPbCorrelationsYS &
@@ -115,6 +116,7 @@ private:
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
  Int_t      ConvertRunNumber(Int_t run);
+  Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
 /*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
@@ -164,6 +166,9 @@ private:
   AliPIDResponse *fPIDResponse; // PID Response
 
   Int_t ffilterbit;
+  Float_t fnoClusters;
+  Float_t fCutChargedDCAzMax;
+  Float_t fCutChargedDCAxyMax;  
   Double_t fPtMin;
   Double_t fPtMax;
   Double_t fEtaMax;
@@ -213,7 +218,7 @@ private:
   //	Double_t fPtMinDaughter
 
   AliEventCuts fEventCuts; 
-  AliAnalysisUtils* fUtils;
+  AliAnalysisUtils fUtils;
   AliAODEvent *fEvent; //  AOD Event
   AliMCEvent* mcEvent;
   AliAODVertex *lPrimaryBestVtx;
@@ -242,6 +247,8 @@ private:
   TH1F *fHistCentrality;
   TH1F *fHistCentrality_beforecut;
   TH2F* fHistCentzvertex;
+  TH2F* fHistCentV0vsTracklets;
+  TH2F* fHistCentV0vsTrackletsbefore;
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
@@ -291,6 +298,13 @@ private:
   TH2F*fFMDV0A_post;
   TH2F*fFMDV0C;
   TH2F*fFMDV0C_post;
+
+  TH2F*fFMDV0same;
+  TH2F*fFMDV0same_post;
+  TH2F*fFMDV0Asame;
+  TH2F*fFMDV0Asame_post;
+  TH2F*fFMDV0Csame;
+  TH2F*fFMDV0Csame_post;
 
   TH2F *fHist_vzeromult;
   TH2F *fHist_vzeromultEqweighted;
@@ -470,6 +484,8 @@ public:
   virtual Double_t Multiplicity() const { return fMultiplicity; }
 
 private:
+  // 
+  
   Short_t fCharge;    // Charge
   Float_t fEta;       // Eta
   Float_t fPhi;       // Phi

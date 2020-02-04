@@ -12,6 +12,7 @@
 class TString;
 class TComplex;
 class TFile;
+class AliDirList;
 class TList;
 class TClonesArray;
 class TProfile;
@@ -77,6 +78,8 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       // analysis setters
       void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
       void                    Set2018Data(Bool_t use = kTRUE){Is2018Data = use;}
+      void                    SetAdditional2018DataEventCut(){IsAdditional2018DataEventCut = kTRUE;}
+      void                    SetPIDCorrection(const char* file){IsPIDorrection = kTRUE; fPIDCorrectionPath = file;}
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
       void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
@@ -293,7 +296,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
 
 //-----------------------------------------------------------------------------------------
-
    
       void                    FilterCascades() const;
 
@@ -306,6 +308,8 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Double_t                PIDCorrectionHF(const AliAODTrack *track, const Int_t ispecies) const;
 
        Bool_t  Is2018Data;//
+       Bool_t  IsPIDorrection;//
+       Bool_t  IsAdditional2018DataEventCut;//
        Double_t fXiPseMin;//
        Double_t fXiPseMax;//
        Double_t fV0RadiusXiMin;//
@@ -372,6 +376,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
       AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
       TFile*                  fFlowWeightsFile; //! source file containing weights
+      TFile*                  fPIDCorrectionFile; //! source file containing weights
       TClonesArray*           fArrayMC; //! input list of MC particles
       Bool_t                  fMC; // is running on mc?
       Bool_t                  fInit; // initialization check
@@ -414,7 +419,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Bool_t                  fFlowUse3Dweights; // [kFALSE] flag for using 3D GF weights, if kFALSE, 2D weights are expected
       Bool_t                  fFlowRunByRunWeights; // [kTRUE] flag for using rub-by-run weigths from weigths file; if false, only one set of histrograms is provided
       TString                 fFlowWeightsPath; //[] path to source root file with weigthts (if empty unit weights are applied) e.g. "alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2016/PhiWeight_LHC16kl.root"
-
+      TString                 fPIDCorrectionPath;//
       //cuts & selection: events
       ColSystem               fColSystem; // collisional system
       AliVEvent::EOfflineTriggerTypes    fTrigger; // physics selection trigger
@@ -487,15 +492,14 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Double_t                fCutPhiInvMassMax; // [1.07] (GeV/c2) min inv. mass window for selected phi candidates
 
       // output lists
-      TList*                  fQAEvents; //! events list
-      TList*                  fQACharged; //! charged tracks list
-      TList*                  fQAPID; //! pi,K,p list
-      TList*                  fQAV0s; //! V0s candidates list
-      TList*                  fQAPhi; //! Phi candidates list
-      TList*                  fFlowWeights; //! list for flow weights
-      TList*                  fListFlow[kUnknown]; //! flow lists
-
-
+      AliDirList*                  fQAEvents; //! events list
+      TList*                       fQAEventCut; //! events list
+      AliDirList*                  fQACharged; //! charged tracks list
+      AliDirList*                  fQAPID; //! pi,K,p list
+      AliDirList*                  fQAV0s; //! V0s candidates list
+      AliDirList*                  fQAPhi; //! Phi candidates list
+      AliDirList*                  fFlowWeights; //! list for flow weights
+      AliDirList*                  fListFlow[kUnknown]; //! flow lists
       // histograms & profiles
 
       // Flow
@@ -583,7 +587,19 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*                   fhV0sInvMassLambda; //! 2D inv. mass distiburion (K0s mass vs. Lambda/AntiLambda mass)
       TH2D*                   fhV0sCompetingInvMassK0s; //! dist of InvMass of rejected K0s candidates in (Anti-)Lambda peak
       TH2D*                   fhV0sCompetingInvMassLambda; //! dist of InvMass of rejected (Anti-)Lambda candidates in K0s peak
-
+      // PID correction
+      TH3D*                   histMeanPionq;//!
+      TH3D*                   histMeanKaonq;//!
+      TH3D*                   histMeanProtonq;//!
+      TH3D*                   histSigmaPionq;//!
+      TH3D*                   histSigmaKaonq;//!
+      TH3D*                   histSigmaProtonq;//!
+      TH3D*                   histMeanPionr;//!
+      TH3D*                   histMeanKaonr;//!
+      TH3D*                   histMeanProtonr;//!
+      TH3D*                   histSigmaPionr;//!
+      TH3D*                   histSigmaKaonr;//!
+      TH3D*                   histSigmaProtonr;//!
 
       // QA: events
       TH1D*                   fhQAEventsPVz[fiNumIndexQA]; //!
@@ -658,4 +674,5 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
 };
+
 #endif

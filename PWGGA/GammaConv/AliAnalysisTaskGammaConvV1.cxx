@@ -4103,6 +4103,7 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
                   if (!curTrack) continue;
                   if (!curTrack->IsPhysicalPrimary()) continue;
                   if (!curTrack->Pt()) continue;
+                  if(curTrack->Charge()==0) continue;
                   if(curTrack->Pt()<0.15) continue;
                   if(TMath::Abs(curTrack->Eta())>0.8) continue;
                   Double_t Iso_DeltaEta = curTrack->Eta()-pi0cand->Eta();

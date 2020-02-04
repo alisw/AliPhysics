@@ -236,7 +236,10 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       AliErrorStream() << "No valid configuration found for the given dataset - trigger maker run loop disabled" << std::endl;
     }
 
-    if(fRunSmearing && !fTriggerMaker->HasSmearModel()) InitializeSmearModel(); // Initialize smear model if not yet set from outside
+    if(fRunSmearing && !fTriggerMaker->HasSmearModel()){
+      InitializeSmearModel(); // Initialize smear model if not yet set from outside
+      fTriggerMaker->SetApplyOnlineBadChannelMaskingToSmeared();
+    } 
   }
 
   fTriggerMaker->SetGeometry(fGeom);

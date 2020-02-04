@@ -156,6 +156,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
     fFileNameTree->Branch("Filename", &fCurrentFileName);
   }
 
+  OpenFile(2);
   fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
   fTreeV0->Branch("RCollision", &fRCollision);
   fTreeV0->Branch("RHyperTriton", &fRHyperTriton);

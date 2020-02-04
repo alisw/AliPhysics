@@ -193,8 +193,18 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
   ProtonTRUE.clear();
   static std::vector<AliFemtoDreamBasePart> AProtonTRUE;
   AProtonTRUE.clear();
-  static std::vector<AliFemtoDreamBasePart> PhiALL;
-  PhiALL.clear();
+  static std::vector<AliFemtoDreamBasePart> PhiPRIM;
+  PhiPRIM.clear();
+  static std::vector<AliFemtoDreamBasePart> ProtonNOprim;
+  ProtonNOprim.clear();
+  static std::vector<AliFemtoDreamBasePart> AProtonNOprim;
+  AProtonNOprim.clear();
+  static std::vector<AliFemtoDreamBasePart> ProtonCOMMON;
+  ProtonNOprim.clear();
+  static std::vector<AliFemtoDreamBasePart> AProtonCOMMON;
+  AProtonNOprim.clear();
+  static std::vector<AliFemtoDreamBasePart> PhiCOMMON;
+  PhiCOMMON.clear();
 
   static float massKaon =
       TDatabasePDG::Instance()->GetParticle(fPosKaonCuts->GetPDGCode())->Mass();
@@ -260,16 +270,17 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
     TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
         fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
+    int mcpdg;
     AliFemtoDreamBasePart part;
+    AliFemtoDreamBasePart part2;
     for (int iPart = 1; iPart < noPart; iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
       if (!(mcPart)) {
         std::cout << "NO MC particle" << std::endl;
         continue;
       }
-      part.SetMCParticleRePart(mcPart);
-
-      if (mcPart->GetPdgCode() == 333) {
+      mcpdg = mcPart->GetPdgCode();
+      if (mcpdg == 333) {
         int firstdaughter = mcPart->GetDaughterFirst();
         AliAODMCParticle *mcDaughter =
             (AliAODMCParticle *)fArrayMCAOD->At(firstdaughter);
@@ -280,6 +291,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
           double deta = mcDaughter->Eta();
           if (std::abs(dpdg) == 321) {
             if ((dpt < 999 && dpt > 0.15) && (deta > -0.8 && deta < 0.8)) {
+              part.SetMCParticleRePart(mcPart);
               PhiTRUE.push_back(part);
               continue;
             }
@@ -287,26 +299,137 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
         }
       }
 
-      if (mcPart->GetPdgCode() == 333) {
-          PhiALL.push_back(part);
+      if (mcpdg == 333) {
+        int firstdaughter = mcPart->GetDaughterFirst();
+        AliAODMCParticle *mcDaughter =
+            (AliAODMCParticle *)fArrayMCAOD->At(firstdaughter);
+
+        if (mcDaughter) {
+          int dpdg = mcDaughter->GetPdgCode();
+          if (std::abs(dpdg) == 321) {
+            if (mcDaughter->IsPhysicalPrimary()) {
+              double dpt = mcDaughter->Pt();
+              double deta = mcDaughter->Eta();
+              if ((dpt < 999 && dpt > 0.15) && (deta > -0.8 && deta < 0.8)) {
+                part.SetMCParticleRePart(mcPart);
+                PhiPRIM.push_back(part);
+                continue;
+              }
+            }
+          }
+        }
       }
 
-      if (mcPart->GetPdgCode() == 2212) {
-        double pt = part.GetPt();
+      if (mcpdg == 2212) {
+        if (!(mcPart->IsPhysicalPrimary())) {
+          double pt = mcPart->Pt();
+          double eta = mcPart->Eta();
+
+          if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+            part.SetMCParticleRePart(mcPart);
+            ProtonNOprim.push_back(part);
+            continue;
+          }
+        }
+      }
+
+      if (mcpdg == -2212) {
+        if (!(mcPart->IsPhysicalPrimary())) {
+          double pt = mcPart->Pt();
+          double eta = mcPart->Eta();
+          if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+            part.SetMCParticleRePart(mcPart);
+            AProtonNOprim.push_back(part);
+            continue;
+          }
+        }
+      }
+
+      if (mcpdg == 2212) {
+        double pt = mcPart->Pt();
         double eta = mcPart->Eta();
 
         if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+          part.SetMCParticleRePart(mcPart);
           ProtonTRUE.push_back(part);
           continue;
         }
       }
 
-      if (mcPart->GetPdgCode() == -2212) {
-        double pt = part.GetPt();
+      if (mcpdg == -2212) {
+        double pt = mcPart->Pt();
         double eta = mcPart->Eta();
         if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+          part.SetMCParticleRePart(mcPart);
           AProtonTRUE.push_back(part);
           continue;
+        }
+      }
+
+      if (mcpdg == 333) {
+        int motherID = mcPart->GetMother();
+        AliAODMCParticle *mcMother =
+            (AliAODMCParticle *)fArrayMCAOD->At(motherID);
+        if (mcMother) {
+          int DaughterID = mcMother->GetDaughterFirst();
+          if (DaughterID == motherID) {
+            DaughterID = mcMother->GetDaughterLast();
+            AliAODMCParticle *mcDaughter2 =
+                (AliAODMCParticle *)fArrayMCAOD->At(DaughterID);
+            if (mcDaughter2) {
+              int d2pdg = mcDaughter2->GetPdgCode();
+              if (d2pdg == 2212) {
+                double pt = mcDaughter2->Pt();
+                double eta = mcDaughter2->Eta();
+                if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+                  part.SetMCParticleRePart(mcDaughter2);
+                  part2.SetMCParticleRePart(mcPart);
+                  ProtonCOMMON.push_back(part);
+                  PhiCOMMON.push_back(part2);
+                  continue;
+                }
+              }
+              if (d2pdg == -2212) {
+                double pt = mcDaughter2->Pt();
+                double eta = mcDaughter2->Eta();
+                if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+                  part.SetMCParticleRePart(mcDaughter2);
+                  part2.SetMCParticleRePart(mcPart);
+                  AProtonCOMMON.push_back(part);
+                  PhiCOMMON.push_back(part2);
+                  continue;
+                }
+              }
+            }
+          } else {
+            AliAODMCParticle *mcDaughter1 =
+                (AliAODMCParticle *)fArrayMCAOD->At(DaughterID);
+            if (mcDaughter1) {
+              int d2pdg = mcDaughter1->GetPdgCode();
+              if (d2pdg == 2212) {
+                double pt = mcDaughter1->Pt();
+                double eta = mcDaughter1->Eta();
+                if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+                  part.SetMCParticleRePart(mcDaughter1);
+                  part2.SetMCParticleRePart(mcPart);
+                  ProtonCOMMON.push_back(part);
+                  PhiCOMMON.push_back(part2);
+                  continue;
+                }
+              }
+              if (d2pdg == -2212) {
+                double pt = mcDaughter1->Pt();
+                double eta = mcDaughter1->Eta();
+                if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+                  part.SetMCParticleRePart(mcDaughter1);
+                  part2.SetMCParticleRePart(mcPart);
+                  AProtonCOMMON.push_back(part);
+                  PhiCOMMON.push_back(part2);
+                  continue;
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -326,7 +449,8 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
         fPhiParticle->SetCPA(
             gRandom->Uniform());  // cpacode needed for CleanDecay v0;
         V0Particles.push_back(*fPhiParticle);
-        //      std::cout<<"PDG phi cut: "<<fPhiParticle->GetMCPDGCode()<<endl;
+        //      std::cout<<"PDG phi cut:
+        //      "<<fPhiParticle->GetMCPDGCode()<<endl;
       }
     }
   }
@@ -343,7 +467,12 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->StoreParticle(ProtonTRUE);
   fPairCleaner->StoreParticle(AProtonTRUE);
   fPairCleaner->StoreParticle(PhiTRUE);
-  fPairCleaner->StoreParticle(PhiALL);
+  fPairCleaner->StoreParticle(PhiPRIM);
+  fPairCleaner->StoreParticle(ProtonCOMMON);
+  fPairCleaner->StoreParticle(AProtonCOMMON);
+  fPairCleaner->StoreParticle(PhiCOMMON);
+  fPairCleaner->StoreParticle(ProtonNOprim);
+  fPairCleaner->StoreParticle(AProtonNOprim);
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetRefMult08(), fEvent->GetV0MCentrality());

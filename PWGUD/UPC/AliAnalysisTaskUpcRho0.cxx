@@ -126,6 +126,9 @@ void AliAnalysisTaskUpcRho0::Init()
 		ZDCAtime_T[i] = -666;
 		ZDCCtime_T[i] = -666;
 	}
+	for(Int_t i=0; i<9; i++){
+    	fHistdEdxVsP[i]=0x0;
+  	}
 }
 
 void AliAnalysisTaskUpcRho0::UserCreateOutputObjects() 
@@ -222,6 +225,12 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	// eta-phi
 	EtaPhiP = new TH2F("EtaPhiP","EtaPhiP",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiP);
 	EtaPhiN = new TH2F("EtaPhiN","EtaPhiN",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiN);
+
+	TString pNames[9]={"Elec","Muon","Pion","Kaon","Proton","Deuteron","Triton","He3","Alpha"};
+	for(Int_t jsp=0; jsp<9; jsp++){
+    	fHistdEdxVsP[jsp] = new TH2F(Form("hdEdxVsP%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+    	fListHist->Add(fHistdEdxVsP[jsp]);
+ 	}
 
 	// load SPD effi
 	if (isUsingEffi) {
@@ -424,6 +433,14 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		// TPC PID n-sigma
 		PIDTPCElectron_T[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
 		PIDTPCPion_T[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+
+		// separated PID
+		Double_t ptrackTPC=-999.;
+		const AliExternalTrackParam* ippar=trk->GetInnerParam();
+		if(ippar) ptrackTPC=ippar->P();
+		Double_t dedx=trk->GetTPCsignal();
+		Int_t  pidtr=trk->GetPIDForTracking();
+		if(pidtr>=0 && pidtr<9) fHistdEdxVsP[pidtr]->Fill(ptrackTPC,dedx);
 
 		charge[i] = trk->Charge();
 		TPCsignal_T[i] = trk->GetTPCsignal();
