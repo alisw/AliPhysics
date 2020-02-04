@@ -348,8 +348,7 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(Xis);
   fPairCleaner->StoreParticle(AntiXis);
 
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
-                      fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
+  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
 
   if(fProtonProtonDump) {
     fProtonProtonDump->SetEvent(Protons, fEvent, 2212);

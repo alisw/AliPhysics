@@ -347,8 +347,7 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
   if (fPairCleaner->GetCounter() > 0) {
     if (fConfig->GetUseEventMixing()) {
       fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
-                          fEvent->GetZVertex(), fEvent->GetMultiplicity(),
-                          fEvent->GetV0MCentrality());
+                          fEvent);
     }
     if (fConfig->GetUsePhiSpinning()) {
       fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
