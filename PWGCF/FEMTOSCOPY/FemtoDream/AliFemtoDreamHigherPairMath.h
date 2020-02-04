@@ -97,6 +97,8 @@ class AliFemtoDreamHigherPairMath {
   float fBField;
   std::vector<bool> fRejPairs;
   bool fDoDeltaEtaDeltaPhiCut;
+  float fDeltaPhiSqMax; // used for a elliptic cut
+  float fDeltaEtaSqMax; // used for a elliptic cut 
   float fDeltaPhiEtaMax;
   TRandom3 fRandom;
   double fPi;
