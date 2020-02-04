@@ -17,6 +17,8 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
       fBField(-99.),
       fRejPairs(conf->GetClosePairRej()),
       fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()),
+      fDeltaPhiSqMax(conf->GetDeltaPhiMax() * conf->GetDeltaPhiMax()),
+      fDeltaEtaSqMax(conf->GetDeltaEtaMax() * conf->GetDeltaEtaMax()),
       fDeltaPhiEtaMax(conf->GetSqDeltaPhiEtaMax()),
       fRandom(),
       fPi(TMath::Pi()) {
@@ -97,8 +99,8 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
   part.ResizePhiAtRadii(0);
   for (auto it : momenta) {
     if (nPart != 1 && counter == 0) {
-      counter++; 
-      continue; 
+      counter++;
+      continue;
     }
     std::vector<float> tmpVec;
     auto phi0 = it.Phi();
@@ -474,18 +476,14 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
       float dphiAvg = 0;
       for (int iRad = 0; iRad < size; ++iRad) {
         float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
-        dphiAvg += dphi;
         if (dphi > piHi) {
           dphi += -piHi * 2;
         } else if (dphi < -piHi) {
           dphi += piHi * 2;
         }
         dphi = TVector2::Phi_mpi_pi(dphi);
-        if (pass && fRejPairs.at(Hist)) {
-          if (dphi * dphi + deta * deta < fDeltaPhiEtaMax) {
-            pass = false;
-          }
-        }
+
+        dphiAvg += dphi;
         if (fWhichPairs.at(Hist)) {
           if (SEorME) {
             fHists->FillEtaPhiAtRadiiSE(Hist, 9 * iDaug1 + iDaug2, iRad, dphi,
@@ -494,6 +492,12 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
             fHists->FillEtaPhiAtRadiiME(Hist, 9 * iDaug1 + iDaug2, iRad, dphi,
                                         deta, relk);
           }
+        }
+      }
+      if (pass && fRejPairs.at(Hist)) {
+        if ((dphiAvg / (float) size) * (dphiAvg / (float) size) / fDeltaPhiSqMax
+            + deta * deta / fDeltaEtaSqMax < 1.) {
+          pass = false;
         }
       }
       //fill dPhi avg
