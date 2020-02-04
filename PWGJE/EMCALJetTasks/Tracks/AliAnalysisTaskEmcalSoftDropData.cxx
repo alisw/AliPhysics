@@ -219,7 +219,7 @@ Double_t AliAnalysisTaskEmcalSoftDropData::GetDownscaleWeight() const {
   TString triggerclass;
   if(fTriggerString == "INT7") triggerclass = "CINT7-B-NOPF-CENT";
   else if(fTriggerString == "EJ1") triggerclass = "CEMC7EJ1-B-NOPF-CENTNOTRD";
-  else if(fTriggerString == "EJ2") triggerclass = "CEMC7EJ1-B-NOPF-CENT";
+  else if(fTriggerString == "EJ2") triggerclass = "CEMC7EJ2-B-NOPF-CENT";
   if(triggerclass.Length()) weight = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerclass);
   return weight;
 }
