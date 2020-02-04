@@ -119,9 +119,15 @@ AliAnalysisTaskNanoXioton::~AliAnalysisTaskNanoXioton() {
     delete fPartColl;
   }
 
-  delete fProtonProtonDump;
-  delete fAntiProtonAntiProtonDump;
-  delete fDumpster;
+  if (fProtonProtonDump) {
+    delete fProtonProtonDump;
+  }
+  if (fAntiProtonAntiProtonDump) {
+    delete fAntiProtonAntiProtonDump;
+  }
+  if (fDumpster) {
+    delete fDumpster;
+  }
 
 }
 
@@ -201,11 +207,23 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
 
+  fDumpster = new TList();
+  fDumpster->SetName("Dumpster");
+  fDumpster->SetOwner(kTRUE);
+
   if (fConfig->GetUseEventMixing()) {
     fResults = fPartColl->GetHistList();
     if (!fConfig->GetMinimalBookingME()) {
       fResultsQA->Add(fPartColl->GetQAList());
       fResultsQA->Add(fPairCleaner->GetHistList());
+
+      fProtonProtonDump = new AliFemtoDreamDump("pp");
+      fProtonProtonDump->SetkstarThreshold(0.1);
+      fDumpster->Add(fProtonProtonDump->GetOutput());
+
+      fAntiProtonAntiProtonDump = new AliFemtoDreamDump("apap");
+      fAntiProtonAntiProtonDump->SetkstarThreshold(0.1);
+      fDumpster->Add(fAntiProtonAntiProtonDump->GetOutput());
     }
   } else {
     fResults = new TList();
@@ -213,17 +231,6 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
     fResults->SetName("Results");
   }
 
-  fDumpster = new TList();
-  fDumpster->SetName("Dumpster");
-  fDumpster->SetOwner(kTRUE);
-
-  fProtonProtonDump = new AliFemtoDreamDump("pp");
-  fProtonProtonDump->SetkstarThreshold(0.1);
-  fDumpster->Add(fProtonProtonDump->GetOutput());
-
-  fAntiProtonAntiProtonDump = new AliFemtoDreamDump("apap");
-  fAntiProtonAntiProtonDump->SetkstarThreshold(0.1);
-  fDumpster->Add(fAntiProtonAntiProtonDump->GetOutput());
 
   PostData(1, fEvtList);
   PostData(2, fProtonList);
@@ -344,8 +351,12 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
 
-  fProtonProtonDump->SetEvent(Protons, fEvent, 2212);
-  fAntiProtonAntiProtonDump->SetEvent(AntiProtons, fEvent, 2212);
+  if(fProtonProtonDump) {
+    fProtonProtonDump->SetEvent(Protons, fEvent, 2212);
+  }
+  if (fAntiProtonAntiProtonDump) {
+    fAntiProtonAntiProtonDump->SetEvent(AntiProtons, fEvent, 2212);
+  }
 
   PostData(1, fEvtList);
   PostData(2, fProtonList);
