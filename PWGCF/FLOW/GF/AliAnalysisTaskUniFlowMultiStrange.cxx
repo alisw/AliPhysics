@@ -40,7 +40,6 @@
 #include "TClonesArray.h"
 #include "TComplex.h"
 #include "TRandom3.h"
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODInputHandler.h"
@@ -66,7 +65,7 @@ ClassImp(AliAnalysisTaskUniFlowMultiStrange);
 // AliAnalysisTaskUniFlowMultiStrange::CorrTask
 // ############################################################################
 // ============================================================================
-AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
+ AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
   fbDoRefs(0),
   fbDoPOIs(0),
   fiNumHarm(0),
@@ -119,8 +118,6 @@ AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask(Bool_t refs, Bool_t pois,
   fsName = sName;
   fsLabel = sLabel;
 }
-
-
 // ============================================================================
 void AliAnalysisTaskUniFlowMultiStrange::CorrTask::Print() const
 {
@@ -144,6 +141,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fPDGMassK0s(TDatabasePDG::Instance()->GetParticle(310)->Mass()),
   fPDGMassLambda(TDatabasePDG::Instance()->GetParticle(3122)->Mass()),
   fEventAOD(),
+  fhEvent(),
   fPVz(),
   Is2018Data(0),
   IsPIDorrection(0),
@@ -456,6 +454,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fPDGMassK0s(TDatabasePDG::Instance()->GetParticle(310)->Mass()),
   fPDGMassLambda(TDatabasePDG::Instance()->GetParticle(3122)->Mass()),
   fEventAOD(),
+  fhEvent(),
   fPVz(),
   Is2018Data(0),
   IsPIDorrection(0),
@@ -1190,7 +1189,6 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
   if(!fPIDResponse) { AliFatal("AliPIDResponse not attached!"); return; }
-
   // loading array with MC particles
   if(fMC)
   {
@@ -1204,16 +1202,29 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   // Fill event QA BEFORE cuts
   if(fFillQA) { FillEventsQA(0); }
 
-
- Bool_t bEventSelected = IsEventSelected();
-
+  Bool_t bEventSelected = IsEventSelected();
   // if(!IsEventSelected()) { return; }
-
   DumpTObjTable("UserExec: after event selection");
   if(!bEventSelected) { return; }
 
   fhEventCounter->Fill("Event OK",1);
 
+  fIndexCentrality = GetCentralityIndex();
+
+   UInt_t fSelectMask = inputHandler->IsEventSelected();
+  if(!Is2018Data){if(!(fSelectMask & (AliVEvent::kINT7))) { return;}}
+  if(Is2018Data){
+   if((fIndexCentrality<10) || (fIndexCentrality>30 && fIndexCentrality<50)){
+    if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT7))) {
+    return; }
+   }
+  else{
+    {if(!(fSelectMask & (AliVEvent::kINT7))) { return;}}
+   }
+  }
+  fhEvent->Fill(fIndexCentrality);
+  // events passing physics && trigger selection
+  fhEventCounter->Fill("Physics selection OK",1);
   // checking the run number for aplying weights & loading AliDirList with weights
   if(fFlowUseWeights && fFlowRunByRunWeights && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
 
@@ -1224,35 +1235,19 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   fVector[kRefs]->clear();
   fVector[kCharged]->clear();
   FilterCharged();
-
   // checking if there is at least 5 particles: needed to "properly" calculate correlations
   if(fVector[kRefs]->size() < 5) { return; }
   fhEventCounter->Fill("#RPFs OK",1);
-
+   
   // estimate centrality & assign indexes (centrality/percentile, sampling, ...)
-  fIndexCentrality = GetCentralityIndex();
   if(fIndexCentrality < 0) { return; }
   if(fCentMin > 0 && fIndexCentrality < fCentMin) { return; }
   if(fCentMax > 0 && fIndexCentrality > fCentMax) { return; }
 
   fhEventCounter->Fill("Cent/Mult OK",1);
 
-  UInt_t fSelectMask = inputHandler->IsEventSelected();
-  if(!Is2018Data){if(!(fSelectMask & (AliVEvent::kINT7))) { return;}}
- if(Is2018Data){
-   if((fIndexCentrality<10) || (fIndexCentrality>30 && fIndexCentrality<50)){
-    if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT7))) {
-  return; }
-   }
-  else{
-    {if(!(fSelectMask & (AliVEvent::kINT7))) { return;}}
-   }
-  }
- 
- 
 // here events are selected
   fhEventCounter->Fill("Selected",1);
-
   // event sampling
   fIndexSampling = GetSamplingIndex();
 
@@ -1283,12 +1278,10 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
       if(!track) { continue; }
       FillQACharged(0,track);
     }
-
     fhQAChargedMult[0]->Fill(fEventAOD->GetNumberOfTracks());
     fhQAChargedMult[1]->Fill(fVector[kCharged]->size());
     fhRefsMult->Fill(fVector[kRefs]->size());
   }
-
   // Filtering other species
   if(fProcessSpec[kPion] || fProcessSpec[kKaon] || fProcessSpec[kProton]) { FilterPID(); }
   if(fProcessSpec[kK0s] || fProcessSpec[kLambda]) { FilterV0s(); }
@@ -1329,8 +1322,6 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
 // ============================================================================
 Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventSelected()
 {
-  // events passing physics && trigger selection
-  fhEventCounter->Fill("Physics selection OK",1);
   if(Is2018Data){
   fEventCuts.SetManualMode(1);
   fEventCuts.SetupPbPb2018();
@@ -4020,6 +4011,8 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
     fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, 150,0,150);
     fQAEvents->Add(fQAEventCut); 
     fQAEvents->Add(fh2EventCentralityNumRefs);
+    fhEvent = new TH1D("fhEventCentAfterPhySel","Event distibution after triger selection",100,0,100);
+    fQAEvents->Add(fhEvent);
 
     if(fEventRejectAddPileUp)
     {
@@ -4032,6 +4025,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
       fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
       fQAEvents->Add(fhQAEventsfMultTPCvsESD);
     }
+
 
     // charged (tracks) histograms
     fhRefsMult = new TH1D("fhRefsMult","RFPs: Multiplicity; multiplicity", 200,0,1000);

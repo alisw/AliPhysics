@@ -501,6 +501,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       AliDirList*                  fFlowWeights; //! list for flow weights
       AliDirList*                  fListFlow[kUnknown]; //! flow lists
       // histograms & profiles
+      //Event
+      TH1D* fhEvent;//!
+
 
       // Flow
       THnSparseD*             fhsCandK0s; //! distribution of K0s candidates
@@ -516,6 +519,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH3D*                   fh3Weights[kUnknown]; //! container for GF weights (phi,eta,pt)
       TH2D*                   fh2AfterWeights[kUnknown]; //! distribution after applying GF weights - lightweight QA (phi)
       TH3D*                   fh3AfterWeights[kUnknown]; //! distribution after applying GF weights - full QA (phi,eta,pt)
+      
 
       // Events
       TH2D*                   fhEventSampling; //! distribution of sampled events (based on randomly generated numbers)
@@ -674,5 +678,4 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
 };
-
 #endif
