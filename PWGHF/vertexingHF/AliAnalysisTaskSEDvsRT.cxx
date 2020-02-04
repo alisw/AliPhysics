@@ -100,23 +100,23 @@ void AliAnalysisTaskSEDvsRT::Init(){
    fListCuts->SetOwner();
    fListCuts->SetName("CutsList");
    
-   if(fPdgMeson==411){
+   if(fPdgSpecies==411){
     AliRDHFCutsDplustoKpipi* copycut=new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDCutsAnalysis)));
     copycut->SetName("AnalysisCutsDplus");
     fListCuts->Add(copycut);
-  }else if(fPdgMeson==421){
+  }else if(fPdgSpecies==421){
     AliRDHFCutsD0toKpi* copycut=new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fRDCutsAnalysis)));
     copycut->SetName("AnalysisCutsDzero");
     fListCuts->Add(copycut);
-  }else if(fPdgMeson==413){
+  }else if(fPdgSpecies==413){
     AliRDHFCutsDStartoKpipi* copycut=new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fRDCutsAnalysis)));
     copycut->SetName("AnalysisCutsDStar");
     fListCuts->Add(copycut);
-  }else if(fPdgMeson==431){
+  }else if(fPdgSpecies==431){
     AliRDHFCutsDstoKKpi* copycut=new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fRDCutsAnalysis)));
     copycut->SetName("AnalysisCutsDs");
     fListCuts->Add(copycut);
-  }else if(fPdgMeson==4122){
+  }else if(fPdgSpecies==4122){
     if(fLctoV0){
       AliRDHFCutsLctoV0* copycut=new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0*>(fRDCutsAnalysis)));
       copycut->SetName("AnalysisCutsLc2pK0S");
@@ -133,7 +133,7 @@ void AliAnalysisTaskSEDvsRT::Init(){
 //________________________________________________________________________
 void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 {
-   /// Create output container
+   /// Create output containers
    
    if (fDebug > 1) printf("AliAnalysisTaskSEDvsRT::UserCreateOutputObjects() \n");
    
@@ -146,6 +146,12 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    fOutputCounters->SetOwner();
    fOutputCounters->SetName("OutputCounters");
    fOutputCounters->Add(fCounter);
+   
+   
+   fPtvsMassvsRTToward = new TH3F("hPtvsMassvsRTToward", "D candidates in toward region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c]",nRTBins,firstRTbin,lastRTbin, fNMassBins,fLowmasslimit,fUpmasslimit,42,0.,24.);
+fPtvsMassvsRTAway = new TH3F("hPtvsMassvsRTAway", "D candidates in away region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c]",nRTBins,firstRTbin,lastRTbin, fNMassBins,fLowmasslimit,fUpmasslimit,42,0.,24.);
+   
+   
    
    
    PostData(1,fOutput);
@@ -180,27 +186,27 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   UInt_t pdgDau[3];
   Int_t nDau=0;
   Int_t selbit=0;
-  if(fPdgMeson==411){
+  if(fPdgSpecies==411){
     arrayName="Charm3Prong";
     pdgDau[0]=211; pdgDau[1]=321; pdgDau[2]=211; 
     nDau=3;
     selbit=AliRDHFCuts::kDplusCuts;
-  }else if(fPdgMeson==421){
+  }else if(fPdgSpecies==421){
     arrayName="D0toKpi";
     pdgDau[0]=211; pdgDau[1]=321; pdgDau[2]=0;
     nDau=2;
     selbit=AliRDHFCuts::kD0toKpiCuts;
-  }else if(fPdgMeson==413){
+  }else if(fPdgSpecies==413){
     arrayName="Dstar";
     pdgDau[0]=321; pdgDau[1]=211; pdgDau[2]=0; // Quoting here D0 daughters (D* ones on another variable later)
     nDau=2;
     selbit=AliRDHFCuts::kDstarCuts;
-  }else if(fPdgMeson==431){
+  }else if(fPdgSpecies==431){
     arrayName="Charm3Prong";
     pdgDau[0]=321; pdgDau[1]=321; pdgDau[2]=211;
     nDau=3;
     selbit=AliRDHFCuts::kDsCuts;
-  }else if(fPdgMeson==4122){
+  }else if(fPdgSpecies==4122){
     if(fLctoV0){
     arrayName="CascadesHF";
     pdgDau[0]=211; pdgDau[1]=211; pdgDau[2]=0; // Quoting here K0S daughters (Lc ones on another variable later)
@@ -214,6 +220,14 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
     }
   }
 
+//Arrays of daughters for inv mass calculation
+    UInt_t pdgdaughtersD0[2] = {211,321}; //pi, K
+    UInt_t pdgdaughtersD0bar[2] = {321,211}; //K, pi
+    UInt_t pdgDsKKpi[3] = {321,321,211};
+    UInt_t pdgDspiKK[3] = {311, 321,321};  
+  
+  
+  
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD 
     // event in memory rather than the input (ESD) event.    
@@ -321,6 +335,123 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   UInt_t pdgDgLctopK0S[2] = {2212, 310};
   
    // omitting "aveMult" l.1110
+  
+  //TODO:  Loop on candidates, perform selection, determine phi of candidate wrt leading particle, fill corresponding histo (toward/away)
+  
+  for (Int_t iCand = 0; iCand < nCand; iCand++) {  //Loop over candidates
+     
+     AliAODRecoDecayHF *d =(AliAODRecoDecayHF*)arrayCand->UncheckedAt(iCand);
+     AliAODRecoCascadeHF *dCascade = NULL;
+     if (fPdgSpecies == 413 || (fPdgSpecies==4122 && fLctoV0)) dCascade = (AliAODRecoCascadeHF*)d;
+     
+     fHistNEvents->Fill(7);
+     
+     if(fPdgSpecies == 4122) { //V0 selection for LctopK0
+        if(fLctoV0) {
+           AliAODv0 *v0part = (AliAODv0*)dCascade->Getv0();
+           Bool_t onFlyV0 = v0part->GetOnFlyStatus();
+           if (onFlyV0)  {fHistNEvents->Fill(8); continue;}
+        } else if (!fLctoV0 && fUseBit && !d->HasSelectionBit(selbit)) { // check selection bit for LcpKpi
+           fHistNEvents->Fill(8); continue;
+        }
+     }
+    
+     if (fPdgSpecies != 4122 && fUseBit && !d->HasSelectionBit(selbit)) { //check selection bit for all others
+         fHistNEvents->Fill(8); continue;
+     }
+
+     Double_t ptCant = d->Pt();
+     Double_t rapid = d->Y(fPdgSpecies);
+     Bool_t isInFidAcc = fDRCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
+     if (!isInFidAcc) continue;
+     
+     Int_t labD = -1;
+     if(fReadMC) {
+      if(fPdgMeson==413){
+         labD = dCascade->MatchToMC(fPdgMeson,421,(Int_t*)pdgDgDStartoD0pi,(Int_t*)pdgDau,arrayMC);
+      } else if(fPdgMeson==4122 && fLctoV0){
+         labD = dCascade->MatchToMC(fPdgMeson,pdgDgLctopK0S[1],(Int_t*)pdgDgLctopK0S,(Int_t*)pdgDau,arrayMC,kTRUE);
+      } else {
+         labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+      }
+      FillMCMassHistos(arrayMC,labD, countMult,nchWeight);
+     }
+     
+     Int_t passAllCuts = 0, passTopolCuts = 0;
+     
+     if (fPdgSpecies == 4122) {  //special cuts cases for Lc
+        if (fLctoV0) { //LctopK0
+           passAllCuts = (((fRDCutsAnalysis->IsSelected(d, AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLctoK0Spr)) == (AliRDHFCutsLctoV0::kLctoK0Spr));
+           passTopolCuts = (((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
+        }
+        else { //LctopKpi
+           passAllCuts = fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
+           passTopolCuts= fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
+        }
+     }
+     else { //everything that isn't Lc
+         passAllCuts = fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
+         passTopolCuts = fRDCutsAnalysis->GetIsSelectedCuts();
+     }
+     
+     if (fPdgSpecies != 431 && passTopolCuts == 0) continue;
+     nSelectedNoPID++;
+     fHistNEvents->Fill(9);
+     if (fPdgSpecies == 431 && passAllCuts == 0) continue;
+     if (passAllCuts) {
+        nSelectedPID++;
+        fHistNEvents->Fill(10);
+     }
+     //daughter subtraction from multiplicity, l.1169-1192
+     
+     Bool_t isPrimary = kTRUE;
+     Double_t trueImpParXY = 9999.;
+     Double_t impparXY = d->ImpParXY()*10000.;
+     Double_t dlen = 0.1;
+     Double_t RTforCand = -1;
+     Double_t candDeltaPhi = -1; //delta-phi wrt leading particle
+     Double_t mass[2];  //Calculate inv mass and check if in peak region
+     if (fPdgSpecies == 411) {   //D+
+         mass[0] = d->InvMass(nDau,pdgDau);
+         mass[1] = -1.;
+         if (TMath::Abs(mass[0]-mDplusPDG) < 0.02) nSelectedInMassPeak++;
+     } else if (fPdgSpecies == 421) { //D0
+
+         mass[0] = d->InvMass(2,pdgdaughtersD0);
+         mass[1] = d->InvMass(2,pdgdaughtersD0bar);
+         if (TMath::Abs(mass[0]-mD0PDG)<0.02 || TMath::Abs((mass[1]-mD0PDG) < 0.02) nSelectedInMassPeak++;
+     } else if (fPdgSpecies == 413) { //D*
+         mass[0] = dCascade->DeltaInvMass();
+         mass[1] = -1.;
+         if (TMath::Abs(mass[0] - (mDstarPDG-mD0PDG)) < 0.0015 ) nSelectedInMassPeak++;
+     } else if (fPdgSpecies == 431) { //Ds
+         mass[0] = d->InvMass(nDau,pdgDsKKpi);
+         mass[1] = d->InvMass(nDau,pdgDspiKK);
+         if (TMath::Abs(mass[0]-mDsPDG) < 0.02 || TMath::Abs(mass[1]-mDsPDG) < 0.02) nSelectedInMassPeak++;
+     } else if (fPdgSpecies == 4122) { //Lc
+         if (fLctoV0) { //pK0 inv mass
+            mass[0] = d->InvMass(2,pdgDgLctopK0S);
+            mass[1] = -1.;
+            if (TMath::Abs(mass[0]-mLcPDG)< 0.02) nSelectedInMassPeak++;
+         } else { //pKpi inv mass
+            UInt_t pdgpKpi[3] = {2212,321,211};
+            UInt_t pdgpiKp[3] = {211, 321,2212};
+            if (passTopolCuts == 3 || passTopolCuts == 1) mass[0] = d->InvMass(3,pdgpKpi);
+            if (passTopolCuts >= 2 ) mass[1] = d->InvMass(3,pdgpiKp);
+            if (TMath::Abs(mass[0] - mLcPDG) < 0.02 ) nSelectedInMassPeak++;
+         }
+     }
+            
+     for (Int_t iHyp = 0; iHyp < 2; iHyp++) {
+        if (mass[iHyp] < 0.) continue; //for D+ , D*, Lc2pK0, only one mass hypothesis
+        Double_t invMass = mass[iHyp];
+        Double_t arrayForSparse[5] = {invMass, ptCand, impparXY, dlen, RTForCand, candDeltaPhi};  //! RT value to be refined here
+     
+     
+     
+     }
+     
+     
   
   
   
