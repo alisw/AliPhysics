@@ -2,13 +2,15 @@ PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming* AddTaskJetDynamicalGr
  const char* njetsBase, const char* njetsUS, const char* njetsTrue, const char* njetsPartLevel, const Double_t R,
  const char* nrhoBase, const char* ntracks, const char* ntracksUS, const char* ntracksPartLevel, const char* nclusters,
  const char* ntracksTrue, const char* type, const char* CentEst, Int_t pSel,
- AliAnalysisTaskJetDynamicalGrooming::JetShapeType_t jetShapeType = AliAnalysisTaskJetDynamicalGrooming::kMCTrue,
- AliAnalysisTaskJetDynamicalGrooming::JetShapeSub_t jetShapeSub = AliAnalysisTaskJetDynamicalGrooming::kNoSub,
- AliAnalysisTaskJetDynamicalGrooming::JetSelectionType_t jetSelection =
-  AliAnalysisTaskJetDynamicalGrooming::kInclusive,
+ PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming::JetShapeType_t jetShapeType =
+  PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming::kMCTrue,
+ PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming::JetShapeSub_t jetShapeSub =
+  PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming::kNoSub,
+ PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming::JetSelectionType_t jetSelection =
+  PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming::kInclusive,
  Float_t minpTHTrigger = 0., Float_t maxpTHTrigger = 0., Float_t acut = 0.6,
- AliAnalysisTaskJetDynamicalGrooming::DerivSubtrOrder_t derivSubtrOrder =
-  AliAnalysisTaskJetDynamicalGrooming::kSecondOrder,
+ PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming::DerivSubtrOrder_t derivSubtrOrder =
+  PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming::kSecondOrder,
  const std::string& suffix = "")
 {
   PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming* task =

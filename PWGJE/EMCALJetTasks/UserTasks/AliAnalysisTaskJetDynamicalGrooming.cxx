@@ -173,6 +173,38 @@ AliAnalysisTaskJetDynamicalGrooming& AliAnalysisTaskJetDynamicalGrooming::operat
 }
 
 /**
+ * Initialize task.
+ */
+bool AliAnalysisTaskJetDynamicalGrooming::Initialize()
+{
+  fConfigurationInitialized = false;
+
+  // Ensure that we have at least one configuration in the YAML config.
+  /*if (fYAMLConfig.DoesConfigurationExist(0) == false) {
+    // No configurations exist. Return immediately.
+    return fConfigurationInitialized;
+  }*/
+
+  // Always initialize for streaming purposes
+  fYAMLConfig.Initialize();
+
+  // Setup task based on the properties defined in the YAML config
+  /*AliDebugStream(2) << "Configuring task from the YAML configuration.\n";
+  RetrieveAndSetTaskPropertiesFromYAMLConfig();
+  SetupJetContainersFromYAMLConfig();
+  SetupParticleContainersFromYAMLConfig();
+  SetupClusterContainersFromYAMLConfig();
+  AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";*/
+
+  // Print the results of the initialization
+  // Print outside of the ALICE Log system to ensure that it is always available!
+  std::cout << *this;
+
+  fConfigurationInitialized = true;
+  return fConfigurationInitialized;
+}
+
+/**
  *
  */
 void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
