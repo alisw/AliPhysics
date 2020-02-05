@@ -398,6 +398,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoITSSigafter;                    ///< ITS Sigma after cuts
     TH2F*             fHistoPsiPairDeltaPhiafter;           ///< TOF Sigma after cuts
     TH1F*             fHistoTrackCuts;                      ///< bookkeeping for track cuts
+    TH2F*             fHistoTrackPID;                      ///< bookkeeping for track pid
     TH2F*             fHistoPhotonCuts;                     ///< bookkeeping for photon specific cuts
     TH1F*             fHistoInvMassbefore;                  ///< e+e- inv mass distribution before cuts
     TH2F*             fHistoArmenterosbefore;               ///< armenteros podolanski plot before cuts
@@ -432,7 +433,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,32)
+    ClassDef(AliConversionPhotonCuts,33)
     /// \endcond
 };
 
