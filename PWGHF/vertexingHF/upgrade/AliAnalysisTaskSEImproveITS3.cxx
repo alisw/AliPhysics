@@ -50,21 +50,27 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3()
    fD0ZResPCur  (0),
    fD0ZResKCur  (0),
    fD0ZResPiCur (0),
+   fD0ZResDCur (0),
    fD0RPResPCur (0),
    fD0RPResKCur (0),
    fD0RPResPiCur(0),
+   fD0RPResDCur(0),
    fPt1ResPCur  (0),
    fPt1ResKCur  (0),
    fPt1ResPiCur (0),
+   fPt1ResDCur (0),
    fD0ZResPUpg  (0),
    fD0ZResKUpg  (0),
    fD0ZResPiUpg (0),
+   fD0ZResDUpg (0),
    fD0RPResPUpg (0),
    fD0RPResKUpg (0),
    fD0RPResPiUpg(0),
+   fD0RPResDUpg(0),
    fPt1ResPUpg  (0),
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
+   fPt1ResDUpg (0),
 /*   fD0ZResPCurSA  (0),
    fD0ZResKCurSA  (0),
    fD0ZResPiCurSA (0),
@@ -107,21 +113,27 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
    fD0ZResPCur  (0),
    fD0ZResKCur  (0),
    fD0ZResPiCur (0),
+   fD0ZResDCur (0),
    fD0RPResPCur (0),
    fD0RPResKCur (0),
    fD0RPResPiCur(0),
+   fD0RPResDCur(0),
    fPt1ResPCur  (0),
    fPt1ResKCur  (0),
    fPt1ResPiCur (0),
+   fPt1ResDCur (0),
    fD0ZResPUpg  (0),
    fD0ZResKUpg  (0),
    fD0ZResPiUpg (0),
+   fD0ZResDUpg (0),
    fD0RPResPUpg (0),
    fD0RPResKUpg (0),
    fD0RPResPiUpg(0),
+   fD0RPResDUpg(0),
    fPt1ResPUpg  (0),
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
+   fPt1ResDUpg (0),
 /*   fD0ZResPCurSA  (0),
    fD0ZResKCurSA  (0),
    fD0ZResPiCurSA (0),
@@ -162,12 +174,17 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
   fD0RPResPCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResP" )))->Clone("fD0RPResPCur"));
   fD0RPResKCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResK" )))->Clone("fD0RPResKCur"));
   fD0RPResPiCur = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResPi" )))->Clone("fD0RPResPiCur"));
+  fD0RPResDCur = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResD" )))->Clone("fD0RPResDCur"));
   fD0ZResPCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0ZResP" )))->Clone("fD0ZResPCur"));
   fD0ZResKCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0ZResK" )))->Clone("fD0ZResKCur"));
   fD0ZResPiCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0ZResPi" )))->Clone("fD0ZResPiCur"));
+  fD0ZResDCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0ZResD" )))->Clone("fD0ZResDCur"));
   fPt1ResPCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResP" )))->Clone("fPt1ResPCur"));
   fPt1ResKCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResK" )))->Clone("fPt1ResKCur"));
   fPt1ResPiCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResPi" )))->Clone("fPt1ResPiCur"));
+  fPt1ResDCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResD" )))->Clone("fPt1ResDCur"));
+
+
 /*  fD0RPResPCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPSA" )));
   fD0RPResKCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResKSA" )));
   fD0RPResPiCurSA=new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPiSA")));
@@ -193,12 +210,15 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
   fD0RPResPUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0RPResP" )))->Clone("D0RPResPUpg"));
   fD0RPResKUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0RPResK" )))->Clone("fD0RPResKUpg"));
   fD0RPResPiUpg = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0RPResPi" )))->Clone("fD0RPResPiUpg"));
+  fD0RPResDUpg = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0RPResD" )))->Clone("fD0RPResDUpg"));
   fD0ZResPUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0ZResP" )))->Clone("fD0ZResPUpg"));
   fD0ZResKUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0ZResK" )))->Clone("fD0ZResKUpg"));
   fD0ZResPiUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0ZResPi" )))->Clone("fD0ZResPiUpg"));
+  fD0ZResDUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0ZResD" )))->Clone("fD0ZResDUpg"));
   fPt1ResPUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResP" )))->Clone("fPt1ResPUpg"));
   fPt1ResKUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResK" )))->Clone("fPt1ResKUpg"));
   fPt1ResPiUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResPi" )))->Clone("fPt1ResPiUpg"));
+  fPt1ResDUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResD" )))->Clone("fPt1ResDUpg"));
   
   /*fD0RPResPUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPSA" )));
   fD0RPResKUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResKSA" )));
@@ -245,21 +265,27 @@ void AliAnalysisTaskSEImproveITS3::UserCreateOutputObjects() {
   fDebugOutput->Add(fD0RPResPCur );
   fDebugOutput->Add(fD0RPResKCur );
   fDebugOutput->Add(fD0RPResPiCur);
+  fDebugOutput->Add(fD0RPResDCur);
   fDebugOutput->Add(fD0ZResPCur  ); 
   fDebugOutput->Add(fD0ZResKCur  );
   fDebugOutput->Add(fD0ZResPiCur );
+  fDebugOutput->Add(fD0ZResDCur );
   fDebugOutput->Add(fPt1ResPCur  );
   fDebugOutput->Add(fPt1ResKCur  );
   fDebugOutput->Add(fPt1ResPiCur );
+  fDebugOutput->Add(fPt1ResDCur );
   fDebugOutput->Add(fD0RPResPUpg );
   fDebugOutput->Add(fD0RPResKUpg );
   fDebugOutput->Add(fD0RPResPiUpg);
+  fDebugOutput->Add(fD0RPResDUpg);
   fDebugOutput->Add(fD0ZResPUpg  );
   fDebugOutput->Add(fD0ZResKUpg  );
   fDebugOutput->Add(fD0ZResPiUpg );
+  fDebugOutput->Add(fD0ZResDUpg );
   fDebugOutput->Add(fPt1ResPUpg  );
   fDebugOutput->Add(fPt1ResKUpg  );
   fDebugOutput->Add(fPt1ResPiUpg );
+  fDebugOutput->Add(fPt1ResDUpg );
 
   PostData(1,fDebugOutput);
 }
@@ -599,6 +625,14 @@ void AliAnalysisTaskSEImproveITS3::SmearTrack(AliAODTrack *track,const TClonesAr
     sd0rpn=EvalGraph(ptmc,fD0RPResPiUpg/*,fD0RPResPiUpgSA*/);
     sd0zn =EvalGraph(ptmc,fD0ZResPiUpg/*,fD0ZResPiUpgSA*/);
     spt1n =EvalGraph(ptmc,fPt1ResPiUpg/*,fPt1ResPiUpgSA*/);
+    break;
+  case 1000010020: case -1000010020:
+    sd0rpo=EvalGraph(ptmc,fD0RPResDCur/*,fD0RPResDCurSA*/);
+    sd0zo =EvalGraph(ptmc,fD0ZResDCur/*,fD0ZResDCurSA*/);
+    spt1o =EvalGraph(ptmc,fPt1ResDCur/*,fPt1ResDCurSA*/);
+    sd0rpn=EvalGraph(ptmc,fD0RPResDUpg/*,fD0RPResDUpgSA*/);
+    sd0zn =EvalGraph(ptmc,fD0ZResDUpg/*,fD0ZResDUpgSA*/);
+    spt1n =EvalGraph(ptmc,fPt1ResDUpg/*,fPt1ResDUpgSA*/);
     break;
   default:
     return;
