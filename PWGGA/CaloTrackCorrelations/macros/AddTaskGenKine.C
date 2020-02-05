@@ -41,7 +41,7 @@ Float_t  kConeSize    =  0.4;    /// A float setting the isolation cone size hig
 Float_t  kConeSizeMin =  -1;     /// A float setting the isolation cone size lower limit
 Float_t  kIsoCut      =  1.5;    /// A float setting the isolation pT threshold (sum of particles in cone or leading particle)
 Int_t    kPartInCone  = AliIsolationCut::kNeutralAndCharged; ///  Type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, kOnlyNeutral, kOnlyCharged
-Int_t    kIsoMethod   = AliIsolationCut::kPtThresIC;         ///  An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
+Int_t    kIsoMethod   = AliIsolationCut::kSumPtIC;           ///  An int setting the isolation method: AliIsolationCut::kPtThresIC, kSumPtIC, ...
 
 ///
 /// Configure the class handling the events and cluster/tracks filtering.
@@ -322,24 +322,35 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis ( Bool_t makePartonAna = kTRUE )
 /// Main method calling all the configuration.
 /// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
 ///
+/// \param scaleFactor : double with pT hard bin scale factor
 /// \param makePartonAna : Bool to de/activate parton/jet related analysis
-/// \param partInCone : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
-/// \param isoMethod : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
+/// \param partInCone : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged, although not needed
+/// \param isoMethod : An int setting the isolation method: AliIsolationCut::kPtThresIC, kSumPtIC, ...
 /// \param cone : A float setting the isolation cone size higher limit
 /// \param coneMin : A float setting the isolation cone size lower limit
 /// \param isoCut: A float setting the isolation pT threshold (sum of particles in cone or leading particle)
 /// \param calorimeter : A string with the detector: EMCAL, DCAL, PHOS, CTS, FullCalo
 /// \param year : An int with the data year
 /// \param col : A string with the colliding system
-/// \param scaloeFactor : double with pT hard bin scale factor
 /// \param debug : An int to define the debug level of all the tasks
 /// \param printConf : A bool to print configuration settings
 /// \param outputfile: string with output file name
 ///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskGenKine
- ( Bool_t makePartonAna, Int_t partInCone, Int_t isoMethod, Float_t cone, Float_t coneMin, Float_t isoCut, 
-   TString calorimeter, Int_t year, TString col,  Double_t scaleFactor   = -1,
-   Int_t debug = -1, Bool_t printConf = kFALSE, TString outputfile = "")
+ (    
+   Double_t scaleFactor   = -1,
+   Bool_t   makePartonAna = kFALSE, 
+   Int_t    partInCone    = AliIsolationCut::kNeutralAndCharged, 
+   Int_t    isoMethod     = AliIsolationCut::kSumPtIC, 
+   Float_t  cone          = 0.4, 
+   Float_t  coneMin       = -1, 
+   Float_t  isoCut        = 2, 
+   TString  calorimeter   = "EMCAL", 
+   Int_t    year          = 2017, 
+   TString  col           = "pp",  
+   Int_t    debug         = -1, 
+   Bool_t   printConf     = kFALSE, 
+   TString  outputfile    = "")
 {
   // Change global variables
   kCalorimeter = calorimeter; 
@@ -379,7 +390,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGenKine
   maker->SetAnaDebug(kDebug)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOffAODsMaker() ;
- 
+  maker->SwitchOffDataControlHistograms();
+
   // Calculate the cross section weights, apply them to all histograms 
   // and fill xsec and trial histo. Sumw2 must be activated.
   //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
