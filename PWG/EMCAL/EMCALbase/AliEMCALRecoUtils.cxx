@@ -52,7 +52,7 @@ ClassImp(AliEMCALRecoUtils) ;
 AliEMCALRecoUtils::AliEMCALRecoUtils():
   fParticleType(0),                       fPosAlgo(0),                            
   fW0(0),                                 fShowerShapeCellLocationType(0),
-  fNonLinearityFunction(0),               fNonLinearThreshold(0),
+  fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
   fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
@@ -107,6 +107,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fParticleType(reco.fParticleType),                         fPosAlgo(reco.fPosAlgo),     
   fW0(reco.fW0),                                             fShowerShapeCellLocationType(reco.fShowerShapeCellLocationType),
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
+  fUseShaperNonlin(reco.fUseShaperNonlin),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fCellsRecalibrated(reco.fCellsRecalibrated),
   fRecalibration(reco.fRecalibration),                       fUse1Drecalib(reco.fUse1Drecalib),                   
@@ -199,6 +200,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   
   fNonLinearityFunction      = reco.fNonLinearityFunction;
   fNonLinearThreshold        = reco.fNonLinearThreshold;
+  fUseShaperNonlin           = reco.fUseShaperNonlin;
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
   
   fCellsRecalibrated         = reco.fCellsRecalibrated;
@@ -460,6 +462,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
     
     if ( bad ) return kFALSE;
   }
+  Bool_t isLowGain = !(cells->GetCellHighGain(absID));//HG = false -> LG = true
   
   //Recalibrate energy
   amp  = cells->GetCellAmplitude(absID);
@@ -468,11 +471,14 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
       amp *= GetEMCALChannelRecalibrationFactor1D(absID);
     else
       amp *= GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
+
+    if(fUseShaperNonlin && isLowGain){
+      amp = CorrectShaperNonLin(amp,fUse1Drecalib ? GetEMCALChannelRecalibrationFactor1D(absID) : GetEMCALChannelRecalibrationFactor(imod,ieta,iphi));
+    }
   }
   // Recalibrate time
   time = cells->GetCellTime(absID);
   time-=fConstantTimeShift*1e-9; // only in case of old Run1 simulation
-  Bool_t isLowGain = !(cells->GetCellHighGain(absID));//HG = false -> LG = true
 
   RecalibrateCellTime(absID,bc,time,isLowGain);
   
@@ -2156,6 +2162,35 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells, Int_t bc)
   }
 
   fCellsRecalibrated = kTRUE;
+}
+
+///
+/// Recalibrate all the cells with energy>40 GeV for the shaper nonlinearity
+///
+/// \param Emeas: energy of cell
+/// \param EcalibHG: HG energy calibration coefficient
+///
+//_______________________________________________________________________
+Float_t AliEMCALRecoUtils::CorrectShaperNonLin(Float_t Emeas, Float_t EcalibHG)
+{
+  // The following conversion factor needs to be applied to go from energy to ADC
+  // AliEMCALCalibData::fADCchannelRef = 0.0162;
+
+  if(Emeas<40){
+    return Emeas*16.3/16;
+  }
+  Float_t par[]={1, 29.8279, 0.607704, 0.00164896, -2.28595e-06, -8.54664e-10, 5.50191e-12, -3.28098e-15};
+  Float_t x = par[0]*Emeas/EcalibHG/16/0.0162;
+
+  Float_t res=par[1];
+  res+=par[2]*x;
+  res+=par[3]*x*x;
+  res+=par[4]*x*x*x;
+  res+=par[5]*x*x*x*x;
+  res+=par[6]*x*x*x*x*x;
+  res+=par[7]*x*x*x*x*x*x;
+
+  return  EcalibHG*16.3*res*0.0162;
 }
 
 ///
