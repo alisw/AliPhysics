@@ -259,31 +259,31 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
   Float_t ptsummax   = GetHistogramRanges()->GetHistoPtSumMax();
   Float_t ptsummin   = GetHistogramRanges()->GetHistoPtSumMin();
   
-  if (fMakePartonAnalysis )
+  if ( fMakePartonAnalysis )
   {
-    fhPtHard  = new TH1F("hPtHard"," pt hard for selected triggers",nptbins,ptmin,ptmax); 
+    fhPtHard  = new TH1F("hPtHard","#it{p}_{T}^{hard} for selected triggers",nptbins,ptmin,ptmax); 
     fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
     outputContainer->Add(fhPtHard);
     
-    fhPtParton  = new TH1F("hPtParton"," pt parton for selected triggers",nptbins,ptmin,ptmax); 
+    fhPtParton  = new TH1F("hPtParton","#it{p}_{T}^{parton} for selected triggers",nptbins,ptmin,ptmax); 
     fhPtParton->SetXTitle("#it{p}_{T}^{parton} (GeV/#it{c})");
     outputContainer->Add(fhPtParton);
     
-    fhPtJet  = new TH1F("hPtJet"," pt jet for selected triggers",nptbins,ptmin,ptmax); 
+    fhPtJet  = new TH1F("hPtJet","#it{p}_{T}^{jet} for selected triggers",nptbins,ptmin,ptmax); 
     fhPtJet->SetXTitle("#it{p}_{T}^{jet} (GeV/#it{c})");
     outputContainer->Add(fhPtJet);
     
-    fhPtPartonPtHard  = new TH2F("hPtPartonPtHard","parton pt / pt hard for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
+    fhPtPartonPtHard  = new TH2F("hPtPartonPtHard","#it{p}_{T}^{parton} / #it{p}_{T}^{hard} for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
     fhPtPartonPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
     fhPtPartonPtHard->SetYTitle("#it{p}_{T}^{parton}/#it{p}_{T}^{hard}");
     outputContainer->Add(fhPtPartonPtHard);
     
-    fhPtJetPtHard  = new TH2F("hPtJetPtHard","jet pt / pt hard for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
+    fhPtJetPtHard  = new TH2F("hPtJetPtHard","#it{p}_{T}^{jet} / #it{p}_{T}^{hard} for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
     fhPtJetPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
     fhPtJetPtHard->SetYTitle("#it{p}_{T}^{jet}/#it{p}_{T}^{hard}");
     outputContainer->Add(fhPtJetPtHard);
     
-    fhPtJetPtParton  = new TH2F("hPtJetPtParton","parton pt / pt hard for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
+    fhPtJetPtParton  = new TH2F("hPtJetPtParton","#it{p}_{T}^{jet} / #it{p}_{T}^{parton} for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
     fhPtJetPtParton->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
     fhPtJetPtParton->SetYTitle("#it{p}_{T}^{jet}/#it{p}_{T}^{parton}");
     outputContainer->Add(fhPtJetPtParton);
@@ -342,8 +342,8 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
   fhPtOtherDecayMesonId->GetYaxis()->SetBinLabel(7 ,"#eta prime");
   outputContainer->Add(fhPtOtherDecayMesonId) ;
   
-  TString name   [] = {"","_EMC","_Photon","_EMC_Photon"};
-  TString title  [] = {"",", neutral in EMCal",", neutral only #gamma-like",", neutral in EMCal and only #gamma-like"};
+  TString name   [] = {"","_EMC","_Photon","_EMC_Photon","_ChargedOnly"};
+  TString title  [] = {"",", neutral in EMCal",", neutral only #gamma-like",", neutral in EMCal and only #gamma-like","Charged only"};
   TString leading[] = {"NotLeading","Leading"};
   
   TString partTitl[] = {"#gamma_{direct}","#gamma_{decay}^{#pi}","#gamma_{decay}^{#eta}","#gamma_{decay}^{other}","#pi^{0}","#eta"};
@@ -351,7 +351,7 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
 
   for(Int_t p = 0; p < fgkNmcPrimTypes; p++)
   {
-    fhPt[p]  = new TH1F(Form("h%sPt",particle[p].Data()),Form("Input %s p_{T}",partTitl[p].Data()),nptbins,ptmin,ptmax);
+    fhPt[p]  = new TH1F(Form("h%sPt",particle[p].Data()),Form("Input %s #it{p}_{T}",partTitl[p].Data()),nptbins,ptmin,ptmax);
     fhPt[p]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPt[p]);
 
@@ -385,7 +385,7 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
     outputContainer->Add(fhEtaStatus[p]);
 
     
-    fhPtOrigin[p]     = new TH2F(Form("h%sPtOrigin",particle[p].Data()),Form("Input %s p_{T} vs origin",partTitl[p].Data()),nptbins,ptmin,ptmax,11,0,11) ;
+    fhPtOrigin[p]     = new TH2F(Form("h%sPtOrigin",particle[p].Data()),Form("Input %s #it{p}_{T} vs origin",partTitl[p].Data()),nptbins,ptmin,ptmax,11,0,11) ;
     fhPtOrigin[p]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPtOrigin[p]->SetYTitle("Origin");
     fhPtOrigin[p]->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -400,7 +400,7 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
     fhPtOrigin[p]->GetYaxis()->SetBinLabel(10 ,"#eta prime");
     outputContainer->Add(fhPtOrigin[p]) ;
 
-    fhPtOriginNotFinal[p]     = new TH2F(Form("h%sPtOriginNotFinal",particle[p].Data()),Form("Input %s p_{T} vs origin, status 0",partTitl[p].Data()),nptbins,ptmin,ptmax,11,0,11) ;
+    fhPtOriginNotFinal[p]     = new TH2F(Form("h%sPtOriginNotFinal",particle[p].Data()),Form("Input %s #it{p}_{T}^{hard} vs origin, status 0",partTitl[p].Data()),nptbins,ptmin,ptmax,11,0,11) ;
     fhPtOriginNotFinal[p]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPtOriginNotFinal[p]->SetYTitle("Origin");
     fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -823,7 +823,7 @@ void AliAnaGeneratorKine::InitParameters()
 //_____________________________________________________________________
 void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
                                                 Int_t partType,
-                                                Bool_t leading[fgkNIso],
+                                                Bool_t leading [fgkNIso],
                                                 Bool_t isolated[fgkNIso]) 
 {
   AliDebug(1,"Start");
@@ -838,11 +838,13 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
   leading[1] = 0;
   leading[2] = 0;
   leading[3] = 0;
+  leading[4] = 0;
   
   isolated[0] = 0;
   isolated[1] = 0;
   isolated[2] = 0;
   isolated[3] = 0;
+  isolated[4] = 0;
   
   Float_t ptTrig  = fTrigger.Pt();
   Float_t etaTrig = fTrigger.Eta();
@@ -985,6 +987,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
     if(ptTrig > ptMaxNeutEMCAL    ) leading[1] = kTRUE ;
     if(ptTrig > ptMaxNeutPhot     ) leading[2] = kTRUE ;
     if(ptTrig > ptMaxNeutEMCALPhot) leading[3] = kTRUE ;
+                                    leading[4] = kTRUE ;
   }
   
 //  printf("N in cone over threshold: tracks  %d, neutral %d, neutral emcal %d, photon %d, photon emcal %d\n",
@@ -1000,6 +1003,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
       if(nICNeutEMCAL     == 0 ) isolated[1] = kTRUE ;
       if(nICNeutPhot      == 0 ) isolated[2] = kTRUE ;
       if(nICNeutEMCALPhot == 0 ) isolated[3] = kTRUE ;
+      isolated[4] = kTRUE ;
     }
   }
   else if( isoMethod == AliIsolationCut::kSumPtIC )
@@ -1008,13 +1012,15 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
     if(sumChPt + sumNePtEMC     < sumThresIC ) isolated[1] = kTRUE ;
     if(sumChPt + sumNePtPhot    < sumThresIC ) isolated[2] = kTRUE ;
     if(sumChPt + sumNePtEMCPhot < sumThresIC ) isolated[3] = kTRUE ;
+    if(sumChPt                  < sumThresIC ) isolated[4] = kTRUE ;
+
   }
   
   //----------------------------------------------------
   // Fill histograms if conditions apply for all 4 cases
   for( Int_t i = 0; i < fgkNIso; i++ )
   {
-    if(leading[i])
+    if ( leading[i] )
     {
       fhPtLeading[partType][i]->Fill(ptTrig, GetEventWeight());
       
@@ -1022,8 +1028,9 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
       else if(i == 1) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtEMC    , GetEventWeight());
       else if(i == 2) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtPhot   , GetEventWeight());
       else if(i == 3) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtEMCPhot, GetEventWeight());
+      else if(i == 4) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt                 , GetEventWeight());
       
-      if(isolated[i]) fhPtLeadingIsolated[partType][i]->Fill(ptTrig, GetEventWeight());
+      if ( isolated[i] ) fhPtLeadingIsolated[partType][i]->Fill(ptTrig, GetEventWeight());
     }
   } // conditions loop
  

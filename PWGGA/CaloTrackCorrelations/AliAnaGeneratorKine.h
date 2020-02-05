@@ -47,7 +47,7 @@ public:
   static const Int_t fgkNLead = 2;
 
   /// Number of isolation cases.
-  static const Int_t fgkNIso  = 4;
+  static const Int_t fgkNIso  = 5;
 
   Bool_t CorrelateWithPartonOrJet(Int_t   indexTrig,
                                   Int_t   pdgTrig,
