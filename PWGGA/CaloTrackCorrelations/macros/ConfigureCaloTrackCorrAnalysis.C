@@ -126,8 +126,8 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   }
   else if(calorimeter=="CTS")
   {
-    ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
-    ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
+    histoRanges->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
   
   if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
@@ -1689,6 +1689,10 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis
   AliIsolationCut * ic = ana->GetIsolationCut();
   ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,col,debug);
 
+  ana->SwitchOnPartonAnalysis();
+  if ( kAnaCutsString.Contains("Generator_NoParton") ) 
+    ana->SwitchOffPartonAnalysis();
+  
   ana->AddToHistogramsName("AnaGenKine_");
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
