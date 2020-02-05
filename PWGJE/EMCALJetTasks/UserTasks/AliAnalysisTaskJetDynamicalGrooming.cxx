@@ -216,14 +216,18 @@ void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
     "ptJet",
     "ktg",
     "kTLeading",
+    "kTLeadingNSplittings",
     "kTDynamical",
+    "kTDynamicalNSplittings",
     "ng",
     "zg",
     "rg",
     "ptJetMatch",
     "ktgMatch",
     "kTLeadingMatch",
+    "kTLeadingMatchNSplittings",
     "kTDynamicalMatch",
+    "kTDynamicalMatchNSplittings",
     "ngMatch",
     "zgMatch",
     "rgMatch",
@@ -232,8 +236,16 @@ void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
   };
   if (fStoreDetLevelJets) {
     std::vector<std::string> detectorLevelBranchNames = {
-      "ptJetDet", "ktgDet", "kTLeadingDet", "kTDynamicalDet", "ngDet",
-      "zgDet", "rgDet", "LeadingTrackPtDet"
+      "ptJetDet",
+      "ktgDet",
+      "kTLeadingDet",
+      "kTLeadingDetNSplittings"
+      "kTDynamicalDet",
+      "kTDynamicalDetNSplittings"
+      "ngDet",
+      "zgDet",
+      "rgDet",
+      "LeadingTrackPtDet"
     };
     for (auto name : detectorLevelBranchNames) {
       branchNames.emplace_back(name);
@@ -591,7 +603,7 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
         continue;
 
       fShapesVar[0] = ptSubtracted;
-      fShapesVar[14] = jet1->MaxTrackPt();
+      fShapesVar[18] = jet1->MaxTrackPt();
 
       if (fCutDoubleCounts == kTRUE && fJetShapeType == kDetEmbPartPythia)
         if (jet1->MaxTrackPt() > jet3->MaxTrackPt())
@@ -603,7 +615,9 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
       Float_t leadTrackMatch = 0.;
       Double_t ktgMatch = 0;
       Double_t kTLeadingMatch = 0;
+      Double_t kTLeadingMatchNSplittings = 0;
       Double_t kTDynamicalMatch = 0;
+      Double_t kTDynamicalMatchNSplittings = 0;
 
       Double_t nsdMatch = 0;
       Double_t zgMatch = 0;
@@ -612,7 +626,9 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
       Float_t leadTrackDet = 0.;
       Double_t ktgDet = 0;
       Double_t kTLeadingDet = 0;
+      Double_t kTLeadingDetNSplittings = 0;
       Double_t kTDynamicalDet = 0;
+      Double_t kTDynamicalDetNSplittings = 0;
 
       Double_t nsdDet = 0;
       Double_t zgDet = 0;
@@ -623,6 +639,8 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
       Double_t aver4 = 0;
       Double_t aver5 = 0;
       Double_t aver6 = 0;
+      Double_t aver7 = 0;
+      Double_t aver8 = 0;
       Int_t kMatched = 0;
       if (fJetShapeType == kPythiaDef) {
         kMatched = 1;
@@ -631,13 +649,15 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
 
         ptMatch = jet3->Pt();
         leadTrackMatch = jet3->MaxTrackPt();
-        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, aver5, aver6);
+        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, aver5, aver6, aver7, aver8);
         ktgMatch = aver1;
         kTLeadingMatch = aver2;
-        kTDynamicalMatch = aver3;
-        nsdMatch = aver4;
-        zgMatch = aver5;
-        rgMatch = aver6;
+        kTLeadingMatchNSplittings = aver3;
+        kTDynamicalMatch = aver4;
+        kTDynamicalMatchNSplittings = aver5;
+        nsdMatch = aver6;
+        zgMatch = aver7;
+        rgMatch = aver8;
       }
 
       if (fJetShapeType == kDetEmbPartPythia) {
@@ -647,17 +667,19 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
           kMatched = 2;
         ptMatch = jet3->Pt();
         leadTrackMatch = jet3->MaxTrackPt();
-        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, aver5, aver6);
+        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, aver5, aver6, aver7, aver8);
         ktgMatch = aver1;
         kTLeadingMatch = aver2;
-        kTDynamicalMatch = aver3;
-        nsdMatch = aver4;
-        zgMatch = aver5;
-        rgMatch = aver6;
+        kTLeadingMatchNSplittings = aver3;
+        kTDynamicalMatch = aver4;
+        kTDynamicalMatchNSplittings = aver5;
+        nsdMatch = aver6;
+        zgMatch = aver7;
+        rgMatch = aver8;
         if (fStoreDetLevelJets) {
           ptDet = jet2->Pt();
           leadTrackDet = jet2->MaxTrackPt();
-          IterativeParentsMCAverage(jet2, 1, ktgDet, kTLeadingDet, kTDynamicalDet, nsdDet, zgDet, rgDet);
+          IterativeParentsMCAverage(jet2, 1, ktgDet, kTLeadingDet, kTLeadingDetNSplittings, kTDynamicalDet, kTDynamicalDetNSplittings, nsdDet, zgDet, rgDet);
         }
       }
 
@@ -666,7 +688,9 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
         leadTrackMatch = 0.;
         ktgMatch = 0.;
         kTLeadingMatch = 0;
+        kTLeadingMatchNSplittings = 0;
         kTDynamicalMatch = 0;
+        kTDynamicalMatchNSplittings = 0;
         nsdMatch = 0.;
         zgMatch = 0;
         rgMatch = 0;
@@ -675,46 +699,56 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
       /*{ 0: "ptJet",
        1: "ktg",
        2: "kTLeading",
-       3: "kTDynamical",
-       4: "ng",
-       5: "zg",
-       6: "rg",
-       7: "ptJetMatch",
-       8: "ktgMatch",
-       9: "kTLeadingMatch",
-       10: "kTDynamicalMatch",
-       11: "ngMatch",
-       12: "zgMatch",
-       13: "rgMatch",
-       14: "LeadingTrackPt",
-       15: "LeadingTrackPtMatch",
-       16: "ptJetDet",
-       17: "ktgDet",
-       18: "kTLeadingDet",
-       19: "kTDynamicalDet",
-       20: "ngDet",
-       21: "zgDet",
-       22: "rgDet",
-       23: "LeadingTrackPtDet"
+       3: "kTLeadingNSplittings"
+       4: "kTDynamical",
+       5: "kTDynamicalNSplittings"
+       6: "ng",
+       7: "zg",
+       8: "rg",
+       9: "ptJetMatch",
+       10: "ktgMatch",
+       11: "kTLeadingMatch",
+       12: "kTLeadingMatchNSplittings",
+       13: "kTDynamicalMatch",
+       14: "kTDynamicalMatchNSplittings",
+       15: "ngMatch",
+       16: "zgMatch",
+       17: "rgMatch",
+       18: "LeadingTrackPt",
+       19: "LeadingTrackPtMatch",
+       20: "ptJetDet",
+       21: "ktgDet",
+       22: "kTLeadingDet",
+       23: "kTLeadingDetNSplittings",
+       24: "kTDynamicalDet",
+       25: "kTDynamicalDetNSplittings",
+       26: "ngDet",
+       27: "zgDet",
+       28: "rgDet",
+       29: "LeadingTrackPtDet"
       };*/
 
-      fShapesVar[7] = ptMatch;
-      fShapesVar[8] = ktgMatch;
-      fShapesVar[9] = kTLeadingMatch;
-      fShapesVar[10] = kTDynamicalMatch;
-      fShapesVar[11] = nsdMatch;
-      fShapesVar[12] = zgMatch;
-      fShapesVar[13] = rgMatch;
-      fShapesVar[15] = leadTrackMatch;
+      fShapesVar[9] = ptMatch;
+      fShapesVar[10] = ktgMatch;
+      fShapesVar[11] = kTLeadingMatch;
+      fShapesVar[12] = kTLeadingMatchNSplittings;
+      fShapesVar[13] = kTDynamicalMatch;
+      fShapesVar[14] = kTDynamicalMatchNSplittings;
+      fShapesVar[15] = nsdMatch;
+      fShapesVar[16] = zgMatch;
+      fShapesVar[17] = rgMatch;
+      fShapesVar[19] = leadTrackMatch;
       if (fStoreDetLevelJets) {
-        fShapesVar[16] = ptDet;
-        fShapesVar[17] = ktgDet;
-        fShapesVar[18] = kTLeadingDet;
-        fShapesVar[19] = kTDynamicalDet;
-        fShapesVar[20] = nsdDet;
-        fShapesVar[21] = zgDet;
-        fShapesVar[22] = rgDet;
-        fShapesVar[23] = leadTrackDet;
+        fShapesVar[20] = ptDet;
+        fShapesVar[21] = ktgDet;
+        fShapesVar[22] = kTLeadingDet;
+        fShapesVar[23] = kTLeadingDetNSplittings;
+        fShapesVar[24] = kTDynamicalDet;
+        fShapesVar[25] = kTDynamicalDetNSplittings;
+        fShapesVar[26] = nsdDet;
+        fShapesVar[27] = zgDet;
+        fShapesVar[28] = rgDet;
+        fShapesVar[29] = leadTrackDet;
       }
 
       fTreeSubstructure->Fill();
@@ -951,7 +985,11 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* fJet, Al
     double kTLeading = 0;
     double kTDynamical = 0;
     double cumtf = 0;
+
+    int kTLeadingNSplittings = 0;
+    int kTDynamicalNSplittings = 0;
     while (jj.has_parents(j1, j2)) {
+      // Keep track of how many splits we have checked.
       nall = nall + 1;
 
       if (j1.perp() < j2.perp())
@@ -969,13 +1007,18 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* fJet, Al
       if (constitj1[0].perp() > fMinPtConst)
         flagConst = 1;
 
+      // Don't apply the fHardCutoff to dynamical grooming. It takes care of this itself.
+      if (dynamicalKtGrooming > kTDynamical) {
+        kTDynamical = dynamicalKtGrooming;
+        kTDynamicalNSplittings = nall;
+      }
       if (z > fHardCutoff) {
         nsd = nsd + 1;
-        if (dynamicalKtGrooming > kTDynamical) {
-          kTDynamical = dynamicalKtGrooming;
-        }
         if (xkt > kTLeading) {
           kTLeading = xkt;
+          // Used nsd instead of the splitting index because we want to know how mnay
+          // passed the hard cutoff cnodition.
+          kTLeadingNSplittings = nsd;
         }
       }
       if (z > fHardCutoff && flagSubjet == 0) {
@@ -1000,10 +1043,12 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* fJet, Al
 
     fShapesVar[1] = xktg;
     fShapesVar[2] = kTLeading;
-    fShapesVar[3] = kTDynamical;
-    fShapesVar[4] = nsd;
-    fShapesVar[5] = zg;
-    fShapesVar[6] = Rg;
+    fShapesVar[3] = static_cast<double>(kTLeadingNSplittings);
+    fShapesVar[4] = kTDynamical;
+    fShapesVar[5] = static_cast<double>(kTDynamicalNSplittings);
+    fShapesVar[6] = nsd;
+    fShapesVar[7] = zg;
+    fShapesVar[8] = Rg;
 
   } catch (const fastjet::Error&) {
     AliError(" [w] FJ Exception caught.");
@@ -1016,7 +1061,8 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* fJet, Al
 void AliAnalysisTaskJetDynamicalGrooming::IterativeParentsMCAverage(AliEmcalJet* fJet, Int_t km, Double_t& average1,
                                   Double_t& average2, Double_t& average3,
                                   Double_t& average4, Double_t& average5,
-                                  Double_t& average6)
+                                  Double_t& average6, Double_t& average7,
+                                  Double_t& average8)
 {
   AliJetContainer* jetCont = GetJetContainer(km);
   std::vector<fastjet::PseudoJet> fInputVectors;
@@ -1060,8 +1106,12 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParentsMCAverage(AliEmcalJet*
     double kTDynamical = 0;
     double Rg = 0;
 
+    int kTLeadingNSplittings = 0;
+    int kTDynamicalNSplittings = 0;
+
     double cumtf = 0;
     while (jj.has_parents(j1, j2)) {
+      // Keep track of how many splits we have checked.
       nall = nall + 1;
 
       if (j1.perp() < j2.perp())
@@ -1074,13 +1124,19 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParentsMCAverage(AliEmcalJet*
       double form = 2 * 0.197 * j2.e() / (xkt * xkt);
       double rad = j1.e() + j2.e();
       double z = j2.perp() / (j2.perp() + j1.perp());
+
+      // Don't apply the fHardCutoff to dynamical grooming. It takes care of this itself.
+      if (dynamicalKtGrooming > kTDynamical) {
+        kTDynamical = dynamicalKtGrooming;
+        kTDynamicalNSplittings = nall;
+      }
       if (z > fHardCutoff) {
         nsd = nsd + 1;
-        if (dynamicalKtGrooming > kTDynamical) {
-          kTDynamical = dynamicalKtGrooming;
-        }
         if (xkt > kTLeading) {
           kTLeading = xkt;
+          // Used nsd instead of the splitting index because we want to know how mnay
+          // passed the hard cutoff cnodition.
+          kTLeadingNSplittings = nsd;
         }
       }
       if (z > fHardCutoff && flagSubjet == 0) {
@@ -1109,10 +1165,12 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParentsMCAverage(AliEmcalJet*
 
     average1 = xktg;
     average2 = kTLeading;
-    average3 = kTDynamical;
-    average4 = nsd;
-    average5 = zg;
-    average6 = Rg;
+    average3 = static_cast<double>(kTLeadingNSplittings);
+    average4 = kTDynamical;
+    average5 = static_cast<double>(kTDynamicalNSplittings);
+    average6 = nsd;
+    average7 = zg;
+    average8 = Rg;
 
   } catch (const fastjet::Error&) {
     AliError(" [w] FJ Exception caught.");
