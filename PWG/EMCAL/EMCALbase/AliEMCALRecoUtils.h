@@ -625,7 +625,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 32) ;
+  ClassDef(AliEMCALRecoUtils, 33) ;
   /// \endcond
 
 };
