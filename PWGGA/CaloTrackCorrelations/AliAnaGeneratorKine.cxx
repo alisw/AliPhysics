@@ -32,6 +32,7 @@ ClassImp(AliAnaGeneratorKine) ;
 //__________________________________________
 AliAnaGeneratorKine::AliAnaGeneratorKine() :
 AliAnaCaloTrackCorrBaseClass(), 
+fMakePartonAnalysis(0),
 fTriggerDetector(),    fTriggerDetectorString(),
 fFidCutTrigger(0),
 fMinChargedPt(0),      fMinNeutralPt(0),
@@ -258,33 +259,36 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
   Float_t ptsummax   = GetHistogramRanges()->GetHistoPtSumMax();
   Float_t ptsummin   = GetHistogramRanges()->GetHistoPtSumMin();
   
-  fhPtHard  = new TH1F("hPtHard"," pt hard for selected triggers",nptbins,ptmin,ptmax); 
-  fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
-  outputContainer->Add(fhPtHard);
+  if (fMakePartonAnalysis )
+  {
+    fhPtHard  = new TH1F("hPtHard"," pt hard for selected triggers",nptbins,ptmin,ptmax); 
+    fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+    outputContainer->Add(fhPtHard);
+    
+    fhPtParton  = new TH1F("hPtParton"," pt parton for selected triggers",nptbins,ptmin,ptmax); 
+    fhPtParton->SetXTitle("#it{p}_{T}^{parton} (GeV/#it{c})");
+    outputContainer->Add(fhPtParton);
+    
+    fhPtJet  = new TH1F("hPtJet"," pt jet for selected triggers",nptbins,ptmin,ptmax); 
+    fhPtJet->SetXTitle("#it{p}_{T}^{jet} (GeV/#it{c})");
+    outputContainer->Add(fhPtJet);
+    
+    fhPtPartonPtHard  = new TH2F("hPtPartonPtHard","parton pt / pt hard for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
+    fhPtPartonPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+    fhPtPartonPtHard->SetYTitle("#it{p}_{T}^{parton}/#it{p}_{T}^{hard}");
+    outputContainer->Add(fhPtPartonPtHard);
+    
+    fhPtJetPtHard  = new TH2F("hPtJetPtHard","jet pt / pt hard for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
+    fhPtJetPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+    fhPtJetPtHard->SetYTitle("#it{p}_{T}^{jet}/#it{p}_{T}^{hard}");
+    outputContainer->Add(fhPtJetPtHard);
+    
+    fhPtJetPtParton  = new TH2F("hPtJetPtParton","parton pt / pt hard for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
+    fhPtJetPtParton->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+    fhPtJetPtParton->SetYTitle("#it{p}_{T}^{jet}/#it{p}_{T}^{parton}");
+    outputContainer->Add(fhPtJetPtParton);
+  }
   
-  fhPtParton  = new TH1F("hPtParton"," pt parton for selected triggers",nptbins,ptmin,ptmax); 
-  fhPtParton->SetXTitle("#it{p}_{T}^{parton} (GeV/#it{c})");
-  outputContainer->Add(fhPtParton);
-  
-  fhPtJet  = new TH1F("hPtJet"," pt jet for selected triggers",nptbins,ptmin,ptmax); 
-  fhPtJet->SetXTitle("#it{p}_{T}^{jet} (GeV/#it{c})");
-  outputContainer->Add(fhPtJet);
-  
-  fhPtPartonPtHard  = new TH2F("hPtPartonPtHard","parton pt / pt hard for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
-  fhPtPartonPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
-  fhPtPartonPtHard->SetYTitle("#it{p}_{T}^{parton}/#it{p}_{T}^{hard}");
-  outputContainer->Add(fhPtPartonPtHard);
-  
-  fhPtJetPtHard  = new TH2F("hPtJetPtHard","jet pt / pt hard for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
-  fhPtJetPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
-  fhPtJetPtHard->SetYTitle("#it{p}_{T}^{jet}/#it{p}_{T}^{hard}");
-  outputContainer->Add(fhPtJetPtHard);
-  
-  fhPtJetPtParton  = new TH2F("hPtJetPtParton","parton pt / pt hard for selected triggers",nptbins,ptmin,ptmax,200,0,2); 
-  fhPtJetPtParton->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
-  fhPtJetPtParton->SetYTitle("#it{p}_{T}^{jet}/#it{p}_{T}^{parton}");
-  outputContainer->Add(fhPtJetPtParton);
-
   fhPtPi0Not2Gamma  = new TH1F("hPtPi0Not2Gamma","#pi^{0} decay other than 2 #gamma",nptbins,ptmin,ptmax);
   fhPtPi0Not2Gamma->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtPi0Not2Gamma);
@@ -434,6 +438,7 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
       fhPtLeadingSumPt[p][i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtLeadingSumPt[p][i]);
       
+      if ( !fMakePartonAnalysis ) continue;
       
       // Leading or not loop
       for(Int_t j = 0; j < fgkNLead; j++)
@@ -804,6 +809,8 @@ void AliAnaGeneratorKine::InitParameters()
 {
   AddToHistogramsName("AnaGenKine_");
   
+  fMakePartonAnalysis = kTRUE;
+  
   fTriggerDetector = kEMCAL;
   
   fMinChargedPt    = 0.2;
@@ -1045,35 +1052,39 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
   
   fNPrimaries = GetMC()->GetNumberOfPrimaries(); // GetNtrack();
 
-  //
-  // Get the MC particles container
-  // Get the partons that likely are the origin of direct photon, 
-  // 6 and 7 for Pythia6; 4 and 5 for Pythia8 (check)
-  Int_t parton7 = GetMCAnalysisUtils()->GetPythiaMaxPartParent()-1;
-  Int_t parton6 = GetMCAnalysisUtils()->GetPythiaMinPartParent()+1;
-  //printf("Parton min %d, max %d\n",parton6,parton7);
-  
-  if ( fNPrimaries > parton6 )
+  if ( fMakePartonAnalysis )
   {
-    primary = GetMC()->GetTrack(parton6);
-    primary->Momentum(fParton6) ;
+    //
+    // Get the MC particles container
+    // Get the partons that likely are the origin of direct photon, 
+    // 6 and 7 for Pythia6; 4 and 5 for Pythia8 (check)
+    Int_t parton7 = GetMCAnalysisUtils()->GetPythiaMaxPartParent()-1;
+    Int_t parton6 = GetMCAnalysisUtils()->GetPythiaMinPartParent()+1;
+    //printf("Parton min %d, max %d\n",parton6,parton7);
     
-    fParton6PDG =  primary->PdgCode();
-    //primary->Print();
-  }
-  
-  if ( fNPrimaries > parton7 )
-  {
-    primary = GetMC()->GetTrack(parton7);
-    primary->Momentum(fParton7) ;
+    if ( fNPrimaries > parton6 )
+    {
+      primary = GetMC()->GetTrack(parton6);
+      primary->Momentum(fParton6) ;
+      
+      fParton6PDG =  primary->PdgCode();
+      //primary->Print();
+    }
     
-    fParton7PDG =  primary->PdgCode();
-    //primary->Print();
+    if ( fNPrimaries > parton7 )
+    {
+      primary = GetMC()->GetTrack(parton7);
+      primary->Momentum(fParton7) ;
+      
+      fParton7PDG =  primary->PdgCode();
+      //primary->Print();
+    }
+    
+    GetPartonsAndJets();
   }
-  
-  GetPartonsAndJets();
   
   // Main particle loop
+  //
   Int_t   pdgTrig    = 0;
   Int_t   statusTrig = 0;
   Int_t   imother    = 0;
@@ -1098,6 +1109,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     nDaughters = particle->GetNDaughters();
     id0        = particle->GetDaughterLabel(0);
     id1        = particle->GetDaughterLabel(1);
+    
     // Recover the kinematics:
     particle->Momentum(fTrigger);
     
@@ -1129,53 +1141,53 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     
     if     (pdgTrig==22 )
     {
-      if(imother > 0 )
+      if ( imother > 0 )
       {
         momStatus = (GetMC()->GetTrack(imother))->MCStatusCode();
         momPdg    = (GetMC()->GetTrack(imother))->PdgCode();
         momNDaugh = (GetMC()->GetTrack(imother))->GetNDaughters();
         momImom   = (GetMC()->GetTrack(imother))->GetMother();
         
-        if     (imother < 8 && statusTrig == 1)
+        if     ( imother < 8 && statusTrig == 1 )
         {
           partType = kmcPrimPhoton ;
         }
-        else if(momPdg == 111 )
+        else if ( momPdg == 111 )
         {
           partType = kmcPrimPi0Decay;
         }
-        else if(momPdg == 221 )
+        else if ( momPdg == 221 )
         {
           partType = kmcPrimEtaDecay;
         }
-        else if(TMath::Abs(momStatus) > 0 )
+        else if ( TMath::Abs(momStatus) > 0 )
         {
           partType = kmcPrimOtherDecay ;
         }
       }
     }
-    else if( (pdgTrig==111 || pdgTrig==221) && nDaughters == 2 )
+    else if ( (pdgTrig==111 || pdgTrig==221) && nDaughters == 2 )
     {
       pdg0 = (GetMC()->GetTrack(id0))->PdgCode();
       pdg1 = (GetMC()->GetTrack(id1))->PdgCode();
       
-      if( pdg0 == 22 && pdg1== 22 )
+      if ( pdg0 == 22 && pdg1== 22 )
       {
         if     ( pdgTrig==111 ) partType = kmcPrimPi0;
         else if( pdgTrig==221 ) partType = kmcPrimEta;
       }
     }
-    else if( (pdgTrig==111 || pdgTrig==221) )
+    else if ( (pdgTrig==111 || pdgTrig==221) )
     {
       // Fill histogram to see how many pi0/eta decay other than 2 photons in trigger detector acceptance
       Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),fTriggerDetector) ;
-      if(! in )  continue ;
+      if ( !in )  continue ;
       
-      if(pdgTrig==111) fhPtPi0Not2Gamma->Fill(ptTrig, GetEventWeight());
-      if(pdgTrig==221) fhPtEtaNot2Gamma->Fill(ptTrig, GetEventWeight());
+      if ( pdgTrig == 111 ) fhPtPi0Not2Gamma->Fill(ptTrig, GetEventWeight());
+      if ( pdgTrig == 221 ) fhPtEtaNot2Gamma->Fill(ptTrig, GetEventWeight());
     }
     
-    if(partType < 0 ) continue ;
+    if ( partType < 0 ) continue ;
     
     //
     // Fill particle acceptance histograms
@@ -1188,7 +1200,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     fhEta   [partType]->Fill(eta,      GetEventWeight());
     fhEtaPhi[partType]->Fill(eta, phi, GetEventWeight());
     
-    if(partType < 4 &&  partType!=0)
+    if ( partType < 4 &&  partType!=0)
     {
       fhPhiStatus[partType]->Fill(phi, momStatus, GetEventWeight());
       fhEtaStatus[partType]->Fill(eta, momStatus, GetEventWeight());
@@ -1313,18 +1325,20 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     
     IsLeadingAndIsolated(ipr, partType, leading, isolated);
     
-    //
-    // Correlate trigger particle with partons or jets
-    //
-    Int_t iparton = -1;
-    Int_t ok = CorrelateWithPartonOrJet(ipr, partType, leading, isolated, iparton);
-    if(!ok) continue;
-    
-    //
-    // Correlate trigger particle with hadrons
-    //
-    GetXE(ipr,partType,leading,isolated,iparton) ;
-    
+    if ( fMakePartonAnalysis )
+    {
+      //
+      // Correlate trigger particle with partons or jets
+      //
+      Int_t iparton = -1;
+      Int_t ok = CorrelateWithPartonOrJet(ipr, partType, leading, isolated, iparton);
+      if(!ok) continue;
+      
+      //
+      // Correlate trigger particle with hadrons
+      //
+      GetXE(ipr,partType,leading,isolated,iparton) ;
+    }
   }
   
   AliDebug(1,"End fill histograms");
