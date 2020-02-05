@@ -1549,6 +1549,7 @@ Int_t  AliTPCtracker::LoadClusters(const TClonesArray *arr)
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   transform->SetCurrentTimeStamp( GetTimeStamp());
   transform->SetCurrentRun( GetRunNumber() );
+  transform->AccountCurrentBC( GetBunchCrossNumber() );
   //
   AliTPCclusterMI *clust=0;
   Int_t count[72][96] = { {0} , {0} }; 
@@ -1613,6 +1614,7 @@ Int_t  AliTPCtracker::LoadClusters()
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   transform->SetCurrentTimeStamp( GetTimeStamp());
   transform->SetCurrentRun( GetRunNumber() );
+  transform->AccountCurrentBC( GetBunchCrossNumber() );
 
   //  TTree * tree = fClustersArray.GetTree();
   AliInfo("LoadClusters()\n");
@@ -8484,6 +8486,7 @@ Int_t AliTPCtracker::Clusters2TracksHLT (AliESDEvent *const esd, const AliESDEve
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   transform->SetCurrentTimeStamp( GetTimeStamp());
   transform->SetCurrentRun( GetRunNumber());
+  transform->AccountCurrentBC( GetBunchCrossNumber() );
 
   //transform->SetCurrentTimeStamp( esd->GetTimeStamp());
   //transform->SetCurrentRun(esd->GetRunNumber());

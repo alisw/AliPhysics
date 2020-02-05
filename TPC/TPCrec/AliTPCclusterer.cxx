@@ -917,6 +917,7 @@ void AliTPCclusterer::ProcessSectorData(){
             Double_t x[]={static_cast<Double_t>(iRow),static_cast<Double_t>(iPad-3),static_cast<Double_t>(iTimeBin-3)};
             Int_t i[]={fSector};
             AliTPCTransform trafo;
+	    trafo.AccountCurrentBC( fBunchCrossNumber );
             trafo.Transform(x,i,0,1);
             Double_t gx[3]={x[0],x[1],x[2]};
             trafo.RotatedGlobal2Global(fSector,gx);
