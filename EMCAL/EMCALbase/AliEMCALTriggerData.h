@@ -9,10 +9,7 @@
 #include <TVector2.h>
 #include <TClonesArray.h>
 
-class AliEMCALTriggerData : public TObject 
-{
-
-/// \class AliEMCALTriggerTRUDCSConfig
+/// \class AliEMCALTriggerData
 /// \brief  Trigger data container
 /// \ingroup EMCALbase
 /// \author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
@@ -20,6 +17,8 @@ class AliEMCALTriggerData : public TObject
 /// EMCal trigger data container: can be used independently 
 /// of the data stream (simulation or raw data)
 /// for transient storage of trigger data
+class AliEMCALTriggerData : public TObject 
+{
 public:
   /// \enum ETriggerDataMode_t
   /// \brief Type of the data
@@ -28,13 +27,20 @@ public:
     kRawData                ///< Raw Data
   };
 
-  /// \enum L0DecisionOrigin
+  /// \enum L0DecisionOrigin_t
+  /// \brief Origin of the L0 trigger decision
+  ///
+  /// The L0 decision stored in the triggered data
+  /// can have two sources of origin: Either it is
+  /// obtained directly from raw data or it is recalculated
+  /// from the raw trigger digits using the standard L0
+  /// trigger algorithm
   enum L0DecisionOrigin_t {
     kOriginRawData,         ///< Decision from raw stream
     kOriginRecalc           ///< Decision from recalculation based on the L0 amplitudes
   };
 
-  /// \enum L0TriggerStatus
+  /// \enum L0TriggerStatus_t
   /// \brief L0 trigger decision (fired or not fired)
   enum L0TriggerStatus_t {
     kNotFired,              ///< L0 trigger has been fired
@@ -156,9 +162,9 @@ public:
 private:
 
   enum {
-    kMaxTRU = 52,
-    kMaxL0Modes = 2,
-    kNL1Thresholds = 2
+    kMaxTRU = 52,             ///< Max. number of TRUs
+    kMaxL0Modes = 2,          ///< Max. number of L0 modes
+    kNL1Thresholds = 2        ///< Number of L1 thresholds
   };
   
   AliEMCALTriggerData(           const AliEMCALTriggerData& rhs); // NOT implemented

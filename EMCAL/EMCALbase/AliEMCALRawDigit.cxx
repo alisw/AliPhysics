@@ -14,20 +14,16 @@
  **************************************************************************/
 
 // --- ROOT system ---
-#include <Riostream.h>
+#include <iomanip>
+#include <iostream>
 #include <TMath.h>
 
 // --- AliRoot header files ---
 #include "AliEMCALRawDigit.h"
 #include "AliLog.h"
 
-/// \cond CLASSIMP
 ClassImp(AliEMCALRawDigit) ;
-/// \endcond
 
-///
-/// Default constructor 
-//____________________________________________________________________________
 AliEMCALRawDigit::AliEMCALRawDigit() : TObject(),
 fId(-1),
 fNSamples(0),
@@ -36,9 +32,6 @@ fAmplitude(0),
 fTime(0)
 { }
 
-///
-/// Constructor 
-//____________________________________________________________________________
 AliEMCALRawDigit::AliEMCALRawDigit(Int_t id, Int_t timeSamples[], Int_t nSamples) : TObject(),
 fId(id),
 fNSamples(nSamples),
@@ -50,28 +43,28 @@ fTime(0)
   for (Int_t i = 0; i < fNSamples; i++) fSamples[i] = timeSamples[i];
 }
 
-///
-/// Destructor, delete array of time samples
-//____________________________________________________________________________
 AliEMCALRawDigit::~AliEMCALRawDigit() 
 {
   if(fSamples) delete [] fSamples;
   fSamples = NULL;
 }
 
-///
-/// Clear, delete array of time samples
-//____________________________________________________________________________
 void AliEMCALRawDigit::Clear(Option_t *) 
 {
   if(fSamples) delete [] fSamples;
   fSamples = NULL;
 }
 
-//____________________________________________________________________________
+Bool_t AliEMCALRawDigit::operator==(const AliEMCALRawDigit &rhs) const {
+  return Compare(&rhs) == 0;
+}
+
+Bool_t AliEMCALRawDigit::operator<(const AliEMCALRawDigit &rhs) const {
+  return Compare(&rhs) < 0;
+}
+
 Bool_t AliEMCALRawDigit::GetSamples(Int_t samples[], Int_t ns) const
 {
-  //
   if (ns <= 0) return kFALSE;
   
   int smax=TMath::Min(ns,fNSamples);
@@ -79,10 +72,8 @@ Bool_t AliEMCALRawDigit::GetSamples(Int_t samples[], Int_t ns) const
   return kTRUE;
 }
 
-//____________________________________________________________________________
 Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& sample) const
 {
-  // returns the time and amplitude of a given time sample and if the sample was ok
   if (iSample > fNSamples || iSample < 0) return kFALSE;
 
   sample = fSamples[iSample];
@@ -90,9 +81,6 @@ Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& sample) const
   return kTRUE;
 }
 
-///
-/// \return the time and amplitude of a given time sample and if the sample was ok
-//____________________________________________________________________________
 Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& timeBin, Int_t& amp) const
 {  
   if (iSample > fNSamples || iSample < 0) return kFALSE;
@@ -103,9 +91,6 @@ Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& timeBin, Int_
   return kTRUE;
 }
 
-///
-/// Sets the time samples
-//____________________________________________________________________________
 void AliEMCALRawDigit::SetTimeSamples(const Int_t timeSamples[], const Int_t nSamples) 
 {  
   if (fSamples) 
@@ -120,9 +105,6 @@ void AliEMCALRawDigit::SetTimeSamples(const Int_t timeSamples[], const Int_t nSa
   for (Int_t i = 0; i < fNSamples; i++) fSamples[i] = timeSamples[i];
 }
 
-///
-/// Checks the maximum amplitude in the time sample
-//____________________________________________________________________________
 Bool_t AliEMCALRawDigit::GetMaximum(Int_t& amplitude, Int_t& time) const
 {  
   if (!fNSamples)
@@ -148,10 +130,6 @@ Bool_t AliEMCALRawDigit::GetMaximum(Int_t& amplitude, Int_t& time) const
   return kTRUE;
 }
 
-///
-/// Compares two digits with respect to its Id
-/// to sort according increasing Id
-//____________________________________________________________________________
 Int_t AliEMCALRawDigit::Compare(const TObject * obj) const
 {	
   Int_t rv=0;
@@ -170,19 +148,25 @@ Int_t AliEMCALRawDigit::Compare(const TObject * obj) const
   return rv; 
 }
 
-///
-/// Print digit stored info
-//____________________________________________________________________________
 void AliEMCALRawDigit::Print(const Option_t* /*opt*/) const
 {  
-  printf("===\n| Digit id: %4d / %d Time Samples: \n",fId,fNSamples);
+  std::cout << *this;
+}
+
+void AliEMCALRawDigit::PrintStream(std::ostream &stream) const {
+  stream << "===\n| Digit id: " << std::setw(4) << fId << " / " << fNSamples << " Time Samples: \n";
   
   for (Int_t i=0; i < fNSamples; i++) 
   {
     Int_t timeBin=-1, amp=0;
     GetTimeSample(i, timeBin, amp);
-    printf("| (%d,%d) ",timeBin,amp);
+    stream << "| (" << timeBin << "," << amp << ") ";
   }
   
-  printf("\n");
+  stream << "\n";
+} 
+
+std::ostream &operator<<(std::ostream &stream, const AliEMCALRawDigit &dig) {
+  stream << dig;
+  return stream;
 }

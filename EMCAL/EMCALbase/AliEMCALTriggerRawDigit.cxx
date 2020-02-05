@@ -14,17 +14,14 @@
  **************************************************************************/
 
 // --- ROOT system ---
-#include <Riostream.h>
+#include <iomanip>
+#include <iostream>
 #include <TMath.h>
 
 #include "AliEMCALTriggerRawDigit.h"
 
-/// \cond CLASSIMP
 ClassImp(AliEMCALTriggerRawDigit) ;
-/// \endcond
 
-
-//____________________________________________________________________________
 AliEMCALTriggerRawDigit::AliEMCALTriggerRawDigit() : AliEMCALRawDigit(),
 fTriggerBits(0),
 fNL0Times(0),
@@ -35,9 +32,6 @@ fL1SubRegion(-1)
   for (Int_t i = 0; i < 10; i++) fL0Times[i] = -1;
 }
 
-///
-/// Constructor 
-//____________________________________________________________________________
 AliEMCALTriggerRawDigit::AliEMCALTriggerRawDigit(Int_t id, Int_t timeSamples[], Int_t nSamples) 
 : AliEMCALRawDigit(id, timeSamples, nSamples),
 fTriggerBits(0),
@@ -49,17 +43,11 @@ fL1SubRegion(-1)
   for (Int_t i = 0; i < 10; i++) fL0Times[i] = -1;
 }
 
-///
-/// Dstructor 
-//____________________________________________________________________________
 AliEMCALTriggerRawDigit::~AliEMCALTriggerRawDigit() 
 {	
   //delete [] fL0Times;
 }
 
-///
-/// Set L0 times
-//____________________________________________________________________________
 Bool_t AliEMCALTriggerRawDigit::SetL0Time(const Int_t i)
 {  
   if (fNL0Times > 9)
@@ -84,10 +72,8 @@ Bool_t AliEMCALTriggerRawDigit::SetL0Time(const Int_t i)
   return kTRUE;
 }
 
-//____________________________________________________________________________
 Bool_t AliEMCALTriggerRawDigit::GetL0Time(const Int_t i, Int_t& time) const
 {
-	// Get L0 times
 	
 	if (i < 0 || i > fNL0Times)
 	{
@@ -100,9 +86,6 @@ Bool_t AliEMCALTriggerRawDigit::GetL0Time(const Int_t i, Int_t& time) const
 	return kTRUE;
 }
 
-///
-/// Get L0 times
-//____________________________________________________________________________
 Bool_t AliEMCALTriggerRawDigit::GetL0Times(Int_t times[]) const
 {	
   for (Int_t i = 0; i < fNL0Times; i++) times[i] = fL0Times[i];
@@ -110,9 +93,6 @@ Bool_t AliEMCALTriggerRawDigit::GetL0Times(Int_t times[]) const
   return kTRUE;
 }
 
-///
-/// Get L0 time sum
-//____________________________________________________________________________
 Int_t AliEMCALTriggerRawDigit::GetL0TimeSum(const Int_t time) const
 {	
   Int_t value = 0;
@@ -128,9 +108,6 @@ Int_t AliEMCALTriggerRawDigit::GetL0TimeSum(const Int_t time) const
   return value;
 }
 
-///
-/// Get trigger bit
-//____________________________________________________________________________
 Int_t AliEMCALTriggerRawDigit::GetTriggerBit(const TriggerType_t type, const Int_t mode) const
 {	
   Int_t shift = kTriggerTypeEnd * mode;
@@ -139,32 +116,30 @@ Int_t AliEMCALTriggerRawDigit::GetTriggerBit(const TriggerType_t type, const Int
   return ((fTriggerBits >> shift) & mask);
 }	
 
-///
-/// Dump raw digit info
-//____________________________________________________________________________
 void AliEMCALTriggerRawDigit::Print(const Option_t* /*opt*/) const
 {	
-  printf("===\n| Digit id: %4d / %d Time Samples: \n",fId,fNSamples);
+  std::cout << *this;
+}
+
+void AliEMCALTriggerRawDigit::PrintStream(std::ostream &output) const {
+  AliEMCALRawDigit::PrintStream(output);
   
-  for (Int_t i=0; i < fNSamples; i++) 
-  {
-    Int_t timeBin, amp;
-    GetTimeSample(i, timeBin, amp);
-    printf("| (%d,%d) ",timeBin,amp);
-  }	
-  printf("\n");
-  
-  printf("| L0: (%d,%d) / %d Time(s): \n",GetTriggerBit(kL0,1),GetTriggerBit(kL0,0),fNL0Times);
+  output << "| L0: (" << GetTriggerBit(kL0,1) << "," << GetTriggerBit(kL0,0) << ") / " << fNL0Times << " Time(s): \n";
   for (Int_t i = 0; i < fNL0Times; i++) 
   {
     Int_t time;
-    if (GetL0Time(i, time)) printf("| %d ",time);
+    if (GetL0Time(i, time)) output << "| "<< time << " ";
   }
-  printf("\n");
+  output << "\n";
   
-  printf("| L1: g high (%d,%d) g low (%d,%d) j high (%d,%d) j low (%d,%d) / Time sum: %d\n",
-         GetTriggerBit(kL1GammaHigh,1),GetTriggerBit(kL1GammaHigh,0),GetTriggerBit(kL1GammaLow,1),GetTriggerBit(kL1GammaLow,0),
-         GetTriggerBit(kL1JetHigh,1),  GetTriggerBit(kL1JetHigh,0),  GetTriggerBit(kL1JetLow,1),  GetTriggerBit(kL1JetLow,0),
-         fL1TimeSum);
+  output << "| L1: g high (" << GetTriggerBit(kL1GammaHigh,1) << "," << GetTriggerBit(kL1GammaHigh,0) 
+         << ") g low (" << GetTriggerBit(kL1GammaLow,1) << "," << GetTriggerBit(kL1GammaLow,0) 
+         << ") j high (" << GetTriggerBit(kL1JetHigh,1) << "," << GetTriggerBit(kL1JetHigh,0) 
+         << ") j low (" << GetTriggerBit(kL1JetLow,1) << "," << GetTriggerBit(kL1JetLow,0) 
+         << ") / Time sum: " << fL1TimeSum << "\n";
 }
 
+std::ostream &operator<<(std::ostream &in, const AliEMCALTriggerRawDigit &dig) {
+  in << dig;
+  return in;
+}
