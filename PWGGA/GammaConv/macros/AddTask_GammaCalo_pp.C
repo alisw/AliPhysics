@@ -1712,8 +1712,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("m1510113","24466190pa01cc00000","0163103100000010"); // INT7
     cuts.AddCutCalo("m5a10113","24466190pa01cc00000","0163103100000010"); // INT7
   } else if (trainConfig ==812){//PHOS Triggers Timing Cut 0
-    cuts.AddCutCalo("00010113","244661900a01cc00000","0163103100000010"); //no Trigger
-    cuts.AddCutCalo("00062113","244661900a01cc00000","0163103100000010"); //PHI7
+    cuts.AddCutCalo("00010113","244661900a00cc00000","0163103100000010"); //no Trigger
+    cuts.AddCutCalo("00062113","244661900a00cc00000","0163103100000010"); //PHI7
   } else if (trainConfig ==813){//PHOS Triggers Timing Cut Studies
     cuts.AddCutCalo("00010113","24466190ga01cc00000","0163103100000010"); //no Trigger, Mike's Timing
     cuts.AddCutCalo("00062113","24466190ga01cc00000","0163103100000010"); //PHI7, Mike's Timing
