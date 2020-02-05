@@ -22,6 +22,7 @@ public:
                               const char *resfileCurURI,
                               const char *resfileUpgURI,
                               Bool_t isRunInVertexing,
+                              Bool_t isImproveDeuteron,
                               Int_t ndebug);
 
   virtual ~AliAnalysisTaskSEImproveITS3();
@@ -90,6 +91,7 @@ private:
   TGraph *fPt1ResPiUpgSA ; // new standalone pt dep. 1/pt res. for pions
 */
   Bool_t fRunInVertexing; // flag to run hybrid task before the vertexingHF task or in standard mode
+  Bool_t fImproveDeuteron; // flag to switch deuteron smearing on/off
   Bool_t fImproveTracks; // this is always kTRUE. kFALSE only if re-running on already improved AODs
   Bool_t fUpdateSTCovMatrix; /// flag to switch on/off the update of the single track covariance matrix
   Bool_t fUpdateSecVertCovMat; /// flag to swicth on/off the modification of the sec vert cov matrix

@@ -1,5 +1,6 @@
 AliAnalysisTaskSEImproveITS3 *AddTaskImproverUpgrade(Bool_t isRunInVertexing=kFALSE, // set to kTRUE to run during AODvertexingHF creation
-					       const char *resfileCurURI="ITSgraphs_NewAll-X0.3-Res4um.root",
+					       Bool_t isImproveDeuteron=kFALSE,
+                                               const char *resfileCurURI="ITSgraphs_NewAll-X0.3-Res4um.root",
                                                const char *resfileUpgURI="cylIB_bp17_B05Tnew.root",
 					       Int_t ndebug=0) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -13,6 +14,7 @@ AliAnalysisTaskSEImproveITS3 *AddTaskImproverUpgrade(Bool_t isRunInVertexing=kFA
                                      resfileCurURI,
                                      resfileUpgURI,
                                      isRunInVertexing,
+                                     isImproveDeuteron,
                                      ndebug);
 
   mgr->AddTask(task);
