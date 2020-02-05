@@ -4509,6 +4509,16 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(1.01021e+00,1.00143e+00,1.36545e+01,1.49372e-01,-1.09826e-01,5.56485e+02,1.25420e+01);
     break;
+  case 25: //p PHOS timing cut, 13TeV Trigger 30ns, applying timing cut efficiency in MC
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-30e-9;
+    fMaxTimeDiff=30e-9;//30ns
+    fUseTimingEfficiencyMCSimCluster = 1;
+    fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
+    fFuncTimingEfficiencyMCSimCluster->SetParameters(-8.44603e+01,5.31853e+01,1.77562e+01,1.07382e+02,9.87056e+02);
+    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
+    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(6.00000e+00, 3.50809e-01, 6.96152e-01, 1.54686e+01, 2.55793e-03);
+    break;
   default:
     AliError(Form("Timing Cut not defined %d",timing));
     return kFALSE;
