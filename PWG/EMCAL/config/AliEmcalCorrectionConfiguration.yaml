@@ -60,6 +60,7 @@ CellEnergy:                                         # Cell Energy correction com
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
+    enableShaperCorrection: false                   # Correct all cells >50 GeV for the shaper detector effect (to be used with special testbeam nonlinearity)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction

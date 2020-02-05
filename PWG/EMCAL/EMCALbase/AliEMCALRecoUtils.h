@@ -147,6 +147,7 @@ public:
   void     SetNonLinearityFunction(Int_t fun)            { fNonLinearityFunction = fun     ; InitNonLinearityParam() ; }
   void     SetNonLinearityThreshold(Int_t threshold)     { fNonLinearThreshold = threshold ; } //only for Alexie's non linearity correction
   Int_t    GetNonLinearityThreshold()              const { return fNonLinearThreshold      ; }
+  void     SetUseTowerShaperNonlinarityCorrection(Bool_t doCorr)     { fUseShaperNonlin = doCorr ; }
 
   //-----------------------------------------------------
   // MC clusters energy smearing
@@ -168,6 +169,7 @@ public:
 
   // Energy recalibration
   Bool_t   IsRecalibrationOn()                     const { return fRecalibration ; }
+  Float_t  CorrectShaperNonLin(Float_t Emeas, Float_t EcalibHG) ; // shaper energy nonlinearity
   void     SwitchOffRecalibration()                      { fRecalibration = kFALSE ; }
   void     SwitchOnRecalibration()                       { fRecalibration = kTRUE  ; 
                                                            if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors() ; }
@@ -522,6 +524,7 @@ private:
   Int_t      fNonLinearityFunction;      ///< Non linearity function choice, see enum NonlinearityFunctions
   Float_t    fNonLinearityParams[10];    ///< Parameters for the non linearity function
   Int_t	     fNonLinearThreshold;        ///< Non linearity threshold value for kBeamTest non linearity function 
+  Bool_t     fUseShaperNonlin;        ///< Shaper non linearity correction for towers
   
   // Energy smearing for MC
   Bool_t     fSmearClusterEnergy;        ///< Smear cluster energy, to be done only for simulated data to match real data
