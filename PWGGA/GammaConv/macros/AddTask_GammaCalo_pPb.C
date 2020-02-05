@@ -213,7 +213,26 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 4){
     cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // 0-100
     cuts.AddCutCalo("80010123","111113105f032230000","01631031000000d0"); // 0-100
-
+  } else if (trainConfig == 5){
+    cuts.AddCutCalo("80010113","411793105f032230000","01631031000000d0"); // 0-100
+    cuts.AddCutCalo("80010113","411793105f032230000","01631031000000i0"); // 0-100 only pair in same calo
+    cuts.AddCutCalo("80010113","411793105f032230300","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutCalo("80010113","411793105f032230200","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutCalo("80010113","411793105f032230400","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.045
+  } else if (trainConfig == 6){
+    cuts.AddCutCalo("80010113","111113105f032230000","01631031000000d0"); // 0-100
+    cuts.AddCutCalo("80010113","111113105f032230000","01631031000000i0"); // 0-100 only pair in same calo
+    cuts.AddCutCalo("80010113","111113105f032230300","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutCalo("80010113","111113105f032230200","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutCalo("80010113","111113105f032230400","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 7){
+    cuts.AddCutCalo("80010123","111113105f032230000","01631031000000d0"); // 0-100
+    cuts.AddCutCalo("80010123","111113105f032230000","01631031000000i0"); // 0-100 only pair in same calo
+    cuts.AddCutCalo("80010123","111113105f032230300","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutCalo("80010123","111113105f032230200","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutCalo("80010123","111113105f032230400","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.035
+    
+    
   // CONFIGS for sys MB MCs & JJs
   } else if (trainConfig == 10) { // CALO variations
     cuts.AddCutCalo("80010113","411793105f032230000","01631031000000d0"); // std
@@ -394,6 +413,31 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("86852113","111113105f032230000","01631031000000d0"); // 60-80
     cuts.AddCutCalo("88052113","111113105f032230000","01631031000000d0"); // 80-100
 
+  } else if (trainConfig == 204){
+    cuts.AddCutCalo("80085113","111113105f032230000","01631031000000d0"); // 0-100
+    cuts.AddCutCalo("80085113","111113105f032230000","01631031000000i0"); // 0-100 only pair in same calo
+    cuts.AddCutCalo("80085113","111113105f032230300","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutCalo("80085113","111113105f032230200","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutCalo("80085113","111113105f032230400","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 205){
+    cuts.AddCutCalo("80085123","111113105f032230000","01631031000000d0"); // 0-100
+    cuts.AddCutCalo("80085123","111113105f032230000","01631031000000i0"); // 0-100 only pair in same calo
+    cuts.AddCutCalo("80085123","111113105f032230300","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutCalo("80085123","111113105f032230200","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutCalo("80085123","111113105f032230400","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 206){
+    cuts.AddCutCalo("80083113","111113105f032230000","01631031000000d0"); // 0-100
+    cuts.AddCutCalo("80083113","111113105f032230000","01631031000000i0"); // 0-100 only pair in same calo
+    cuts.AddCutCalo("80083113","111113105f032230300","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutCalo("80083113","111113105f032230200","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutCalo("80083113","111113105f032230400","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 207){
+    cuts.AddCutCalo("80083123","111113105f032230000","01631031000000d0"); // 0-100
+    cuts.AddCutCalo("80083123","111113105f032230000","01631031000000i0"); // 0-100 only pair in same calo
+    cuts.AddCutCalo("80083123","111113105f032230300","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutCalo("80083123","111113105f032230200","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutCalo("80083123","111113105f032230400","01631031000000i0"); // 0-100 remove 1 leg of conv cand Mgg < 0.035
+    
   } else if (trainConfig == 220){ // EMCAL clusters standard cuts
     cuts.AddCutCalo("80085113","111113105f032230000","01631031000000d0"); // 0-100
   } else if (trainConfig == 221){ // no time cut

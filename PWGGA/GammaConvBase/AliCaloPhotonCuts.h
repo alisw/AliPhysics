@@ -371,7 +371,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
     Bool_t      GetHighestPtMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
     Bool_t      IsClusterPi0(AliVEvent *event, AliMCEvent *mcEvent, AliVCluster *cluster);
-
+    Bool_t      CheckForReconstructedConversionPairs(vector<AliAODConversionPhoton*> &vecPhotons, vector<Int_t> &vecReject);
+    Bool_t      CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t tobechecked, Bool_t addIndex );
+    
     AliCaloTrackMatcher* GetCaloTrackMatcherInstance()          {return fCaloTrackMatcher;}
     AliPhotonIsolation* GetPhotonIsolationInstance()        { return fCaloIsolation; }
 
@@ -652,9 +654,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistMatchedTrackPClusEAfterEOverPVeto; // track P vs cluster E for matched tracks surviving the E/P veto
     TH2F*     fHistMatchedTrackPClusETruePi0Clus;     // track P vs cluster E in case of matching with a true pi0 cluster
 
-    Int_t      fNMaxDCalModules;                        // max number of DCal Modules
-    Int_t      fgkDCALCols;                             // Number of columns in DCal
-    Bool_t     fIsAcceptedForBasic;                     // basic counting
+    // histogram for conv candidate rejection 
+    TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
+    TH2F*     fHistInvMassConvFlagging;                 // histogram for monitoring rejected di-cluster mass
+    Int_t     fNMaxDCalModules;                         // max number of DCal Modules
+    Int_t     fgkDCALCols;                              // Number of columns in DCal
+    Bool_t    fIsAcceptedForBasic;                      // basic counting
 
   private:
 

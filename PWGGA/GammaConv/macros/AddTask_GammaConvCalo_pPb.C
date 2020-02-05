@@ -300,6 +300,42 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411793104f032230000","0h63103100000010"); // 100ns
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411793107f032230000","0h63103100000010"); // 30ns
 
+  } else if (trainConfig == 24) {    
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411793105f032230300","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411793105f032230200","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411793105f032230400","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 25) {    
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230300","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230200","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230400","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 26) {    
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","111113105f032230300","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","111113105f032230200","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","111113105f032230400","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 27) {    
+    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230300","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230200","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230400","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 28) {    
+    cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+    cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111113105f032230300","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111113105f032230200","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111113105f032230400","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 29) {    
+    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111113105f032230300","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111113105f032230200","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111113105f032230400","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.035
+  } else if (trainConfig == 30) {    
+    cuts.AddCutPCMCalo("80083123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+    cuts.AddCutPCMCalo("80083123","00200009f9730000dge0400000","111113105f032230300","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.03
+    cuts.AddCutPCMCalo("80083123","00200009f9730000dge0400000","111113105f032230200","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.025
+    cuts.AddCutPCMCalo("80083123","00200009f9730000dge0400000","111113105f032230400","0h63103100000010"); // remove 1 leg of conv cand Mgg < 0.035
+    
   //************************************************ PCM- EDC analysis 5 TeV pPb EG2 sys *********************************
   } else if (trainConfig == 40) { // PCM variations
     cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA

@@ -57,8 +57,17 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Float_t GetDCAzToPrimVtx()const {return fDCAzPrimVtx;}
     Float_t GetDCArToPrimVtx()const {return fDCArPrimVtx;}
 
-    void SetIsCaloPhoton(){fCaloPhoton =1;}
-    Bool_t GetIsCaloPhoton(){return fCaloPhoton;}
+    void SetIsCaloPhoton(Int_t clustertype){
+        if (clustertype != 4){
+            fCaloPhoton = (Char_t)clustertype;
+        } else {
+            if (GetPhotonPhi() > 1.39 && GetPhotonPhi() < 3.285 )
+                fCaloPhoton = 1;
+            else 
+                fCaloPhoton = 3;
+        }
+    }
+    Char_t GetIsCaloPhoton(){return fCaloPhoton;}
     void SetCaloPhotonMCLabel(Int_t i, Int_t labelCaloPhoton){fCaloPhotonMCLabels[i] = labelCaloPhoton;}
     Int_t GetCaloPhotonMCLabel(Int_t i){return fCaloPhotonMCLabels[i];}
     void SetNCaloPhotonMCLabels(Int_t nLabels){fNCaloPhotonMCLabels = nLabels;}
@@ -95,7 +104,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 
     Bool_t IsElectronFromFragPhoton(){return fCaloPhotonMCFlags&kIsElectronFromFragPhoton;}      // largest contribution to cluster is from electron, but the converted photon is or stems from fragmentation photon ( q -> q gamma)
     Bool_t IsTrueConvertedPhoton() {
-      if (!fCaloPhoton && fCaloPhotonMCFlags == 1) return kTRUE;
+      if (fCaloPhoton == 0 && fCaloPhotonMCFlags == 1) return kTRUE;
         else return kFALSE;
     }
     Bool_t GetUseForMesonPair() {return fUseForMesonPair;}
@@ -115,10 +124,10 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Int_t fNNeutralPionLabels;       //!
     Int_t fCaloPhotonMCFlags;               //!
     Int_t fPairedId;                        //!
-    Bool_t fCaloPhoton;                     //!
+    Char_t fCaloPhoton;                     //!
     Bool_t fUseForMesonPair;                //!
 
-    ClassDef(AliAODConversionPhoton,9)
+    ClassDef(AliAODConversionPhoton,10)
 };
 
 

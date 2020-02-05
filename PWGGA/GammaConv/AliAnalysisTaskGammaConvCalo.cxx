@@ -3428,6 +3428,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
   }
 
 //   cout << nclus << endl;
+  vector<AliAODConversionPhoton*>         vectorCurrentClusters;
+  vector<Int_t>                           vectorRejectCluster;
+  vector<Double_t>                        vectorPhotonWeight;
+  vector<Double_t>                        vectorClusterM02;
 
   if(nclus == 0)  return;
 
@@ -3477,7 +3481,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     if(fDoInvMassShowerShapeTree ) tESDmapIsClusterAcceptedWithoutTrackMatch[i] = 1;
 
     // Flag Photon as CaloPhoton
-    PhotonCandidate->SetIsCaloPhoton();
+    PhotonCandidate->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType());
     PhotonCandidate->SetCaloClusterRef((Long_t)i);
     // get MC label
     if(fIsMC>0){
@@ -3517,16 +3521,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
       fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
 
     if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders)){
-      fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-      fHistoClusGammaE[fiCut]->Fill(PhotonCandidate->E(),fWeightJetJetMC);
-      if(fIsMC>0){
-        if(fInputEvent->IsA()==AliESDEvent::Class()){
-          ProcessTrueClusterCandidates(PhotonCandidate,clus->GetM02());
-        }else {
-          ProcessTrueClusterCandidatesAOD(PhotonCandidate,clus->GetM02());
-        }
-      }
-      fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
+      vectorCurrentClusters.push_back(PhotonCandidate);
+      vectorPhotonWeight.push_back(fWeightJetJetMC);
+      vectorClusterM02.push_back(clus->GetM02());      
     }else{
       delete PhotonCandidate;
     }
@@ -3535,6 +3532,32 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     delete tmpvec;
   }
 
+  Bool_t rejected = kFALSE;
+  // run conversion recovery in addition
+  if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery()){
+    rejected = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckForReconstructedConversionPairs(vectorCurrentClusters,vectorRejectCluster);
+  }
+  
+  for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){
+    
+    if (!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckVectorForIndexAndAdd(vectorRejectCluster, iter,kFALSE)){
+      fHistoClusGammaPt[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
+      fHistoClusGammaE[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+      if(fIsMC> 0){
+        if(fInputEvent->IsA()==AliESDEvent::Class()){
+          ProcessTrueClusterCandidates(vectorCurrentClusters.at(iter),vectorClusterM02.at(iter));
+        } else {
+          ProcessTrueClusterCandidatesAOD(vectorCurrentClusters.at(iter),vectorClusterM02.at(iter));
+        }
+      }
+      fClusterCandidates->Add(vectorCurrentClusters.at(iter));
+    } 
+  }  
+  vectorClusterM02.clear();
+  vectorPhotonWeight.clear();
+  vectorRejectCluster.clear();
+
+  
 }
 
 //________________________________________________________________________
@@ -3542,7 +3565,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
 {
 
   TParticle *Photon = NULL;
-  if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
+  if (TruePhotonCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
   if (TruePhotonCandidate->GetCaloPhotonMCLabel(0) < 0) return;
   if(!fDoLightOutput) fHistoTrueNLabelsInClusPt[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels(),TruePhotonCandidate->Pt(),fWeightJetJetMC);
 
@@ -3692,7 +3715,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
   AliAODMCParticle *Photon = NULL;
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (AODMCTrackArray){
-    if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
+    if (TruePhotonCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
     if (TruePhotonCandidate->GetNCaloPhotonMCLabels()>0) Photon = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetCaloPhotonMCLabel(0));
       else return;
   }else {
@@ -5114,7 +5137,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
         if (gamma1==NULL) continue;
 
-        if (gamma1->GetIsCaloPhoton()){
+        if (gamma1->GetIsCaloPhoton() > 0){
           AliVCluster* cluster = NULL;
           if(fInputEvent->IsA()==AliESDEvent::Class()){
             if(arrClustersMesonCand)
@@ -5474,7 +5497,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
       }
 
     }
-    if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
+    if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
 
     Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
     Int_t gamma1MotherLabel = -1;
@@ -6012,7 +6035,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
     gamma0MotherLabel=gammaMC0->GetMother();
   }
 
-  if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
+  if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
   Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
   Int_t gamma1MotherLabel = -1;
     // check if
@@ -6613,7 +6636,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
                   AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
                   AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
                   backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-                  if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID()))){
+                  if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
                     if(!fDoLightOutput) fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
                     else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
                   }
@@ -6840,7 +6863,7 @@ void AliAnalysisTaskGammaConvCalo::MoveParticleAccordingToVertex(AliAODConversio
 void AliAnalysisTaskGammaConvCalo::UpdateEventByEventData(){
   //see header file for documentation
   if(fDoJetAnalysis && fConvJetReader->GetNJets() == 0) return;
-  if(fGammaCandidates->GetEntries() >0 ){
+  if(fGammaCandidates->GetEntries() >0 && fClusterCandidates->GetEntries() >0 ){
     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
       fBGHandler[fiCut]->AddEvent(fGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
       fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
@@ -6862,10 +6885,10 @@ void AliAnalysisTaskGammaConvCalo::UpdateEventByEventData(){
     }
   }
   if(fIsMC>0 && fDoHBTHistoOutput){
-    if(fTrueGammaCandidatesConv->GetEntries()>0){
+    if(fTrueGammaCandidatesConv->GetEntries()>0 && fTrueGammaCandidatesCalo->GetEntries() > 0){
         fBGHBTTrueGammaHandler[fiCut]->AddMCParticleEvent(fTrueGammaCandidatesConv,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fTrueGammaCandidatesConv->GetEntries(),fEventPlaneAngle);
     }
-    if(fMCGammaCandidates->GetEntries()>0){
+    if(fMCGammaCandidates->GetEntries()>1){
         fBGHBTGenGammaHandler[fiCut]->AddMCParticleEvent(fMCGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fMCGammaCandidates->GetEntries(),fEventPlaneAngle);
     }
   }
@@ -7240,7 +7263,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticlesForHBT()
     for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
           AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
           if (gamma1==NULL) continue;
-          if (!gamma1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
+          if (gamma1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
           Int_t gamma1MCLabel = gamma1->GetCaloPhotonMCLabel(0); // get most probable MC label
           AliAODMCParticle * gammaMC1 = 0x0;
           if(gamma1MCLabel != -1){
