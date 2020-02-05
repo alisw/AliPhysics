@@ -86,8 +86,13 @@ public:
   virtual void     SetFiducialCut(AliFiducialCut * fc)
   { delete fFidCutTrigger;  fFidCutTrigger  = fc      ; }
   
+  void SwitchOnPartonAnalysis()  { fMakePartonAnalysis = kTRUE ; }
+  void SwitchOffPartonAnalysis() { fMakePartonAnalysis = kFALSE; }
+  
 private:
 
+  Bool_t           fMakePartonAnalysis;     ///< Activate parton analysis 
+  
   Int_t            fTriggerDetector ;       ///<  Detector : EMCAL, PHOS, CTS
   TString          fTriggerDetectorString ; ///<  Detector : EMCAL, PHOS, CTS
 
@@ -193,7 +198,7 @@ private:
   AliAnaGeneratorKine & operator = (const AliAnaGeneratorKine & gk) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaGeneratorKine,7) ;
+  ClassDef(AliAnaGeneratorKine,8) ;
   /// \endcond
 
 } ;
