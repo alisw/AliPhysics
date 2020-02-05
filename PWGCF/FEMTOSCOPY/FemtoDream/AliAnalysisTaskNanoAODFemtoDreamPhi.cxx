@@ -200,9 +200,9 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
   static std::vector<AliFemtoDreamBasePart> AProtonNOprim;
   AProtonNOprim.clear();
   static std::vector<AliFemtoDreamBasePart> ProtonCOMMON;
-  ProtonNOprim.clear();
+  ProtonCOMMON.clear();
   static std::vector<AliFemtoDreamBasePart> AProtonCOMMON;
-  AProtonNOprim.clear();
+  AProtonCOMMON.clear();
   static std::vector<AliFemtoDreamBasePart> PhiCOMMON;
   PhiCOMMON.clear();
 
