@@ -109,6 +109,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPropagateTracks{false}
    ,fPtCorrectionA{3}
    ,fPtCorrectionM{3}
+   ,fOptionalTOFcleanup{-1.}
    ,fCurrentFileName{""}
    ,fTOFfunction{nullptr}
    ,fList{nullptr}
