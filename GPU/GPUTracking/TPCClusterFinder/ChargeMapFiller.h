@@ -22,6 +22,7 @@
 
 #include "clusterFinderDefs.h"
 #include "GPUTPCClusterFinderKernels.h"
+#include "Array2D.h"
 
 namespace GPUCA_NAMESPACE
 {
@@ -32,9 +33,9 @@ class ChargeMapFiller
 {
 
  public:
-  static GPUd() void fillChargeMapImpl(int, int, int, int, GPUTPCClusterFinderKernels::GPUTPCSharedMemory&, GPUglobalref() const deprecated::Digit*, GPUglobalref() PackedCharge* chargeMap, size_t);
+  static GPUd() void fillChargeMapImpl(int, int, int, int, GPUTPCClusterFinderKernels::GPUTPCSharedMemory&, const deprecated::Digit*, Array2D<PackedCharge>&, size_t);
 
-  static GPUd() void resetMapsImpl(int, int, int, int, GPUTPCClusterFinderKernels::GPUTPCSharedMemory&, GPUglobalref() const deprecated::Digit*, GPUglobalref() PackedCharge*, GPUglobalref() uchar*);
+  static GPUd() void resetMapsImpl(int, int, int, int, GPUTPCClusterFinderKernels::GPUTPCSharedMemory&, const deprecated::Digit*, Array2D<PackedCharge>&, Array2D<uchar>&);
 };
 
 } // namespace gpu

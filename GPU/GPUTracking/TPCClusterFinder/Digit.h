@@ -13,6 +13,10 @@
 //* about the suitability of this software for any purpose. It is          *\
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
+
+/// \file digit.h
+/// \author Felix Weiglhofer
+//
 #if !defined(SHARED_DIGIT_H)
 #define SHARED_DIGIT_H
 
@@ -37,8 +41,6 @@ using Digit = PackedDigit;
 } // namespace deprecated
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE
-
-#define PACKED_DIGIT_SIZE 8 // TODO: why not constexpr sizeof(..)?
 
 #endif //!defined(SHARED_DIGIT_H)
 

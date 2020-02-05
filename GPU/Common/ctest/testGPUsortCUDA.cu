@@ -15,7 +15,7 @@
 //**************************************************************************
 
 /// \file testGPUsortCUDA.cu
-/// \author ...
+/// \author Michael Lettrich
 
 #define GPUCA_GPUTYPE_PASCAL
 
@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <cuda.h>
 #include <boost/test/unit_test.hpp>
 #include "GPUCommonAlgorithm.h"
 
@@ -50,7 +51,7 @@ struct TestEnvironment {
 
     // create an array of unordered floats with negative and positive values
     for (size_t i = 0; i < size; i++) {
-      data[i] = size / 2 - i;
+      data[i] = size / 2.0 - i;
     }
     // create copy
     std::memcpy(sorted.data(), data, size * sizeof(float));
@@ -75,7 +76,7 @@ void testAlmostEqualArray(T* correct, T* testing, size_t size)
     if (std::fabs(correct[i]) < TOLERANCE) {
       BOOST_CHECK_SMALL(testing[i], TOLERANCE);
     } else {
-      BOOST_CHECK_CLOSE(correct[i], testing[i], 1.0 / TOLERANCE);
+      BOOST_CHECK_CLOSE(correct[i], testing[i], TOLERANCE);
     }
   }
 }
