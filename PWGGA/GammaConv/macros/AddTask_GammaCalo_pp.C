@@ -696,6 +696,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00052113","111113106f030230000","01631031000000d0"); // std
     cuts.AddCutCalo("00081113","111113106f030230000","01631031000000d0"); // std
 
+  } else if (trainConfig == 186){ // EMCAL clusters pp 8 TeV, TB+finetuning CRF
+    cuts.AddCutCalo("00010113","1111132060032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00052113","1111132060032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00081113","1111132060032230000","01631031000000d0"); // std
+
   //multiple std dirGAMMA cuts for different studies
   } else if (trainConfig == 190){ // EMCAL clusters pp 8 TeV
     cuts.AddCutCalo("00010113","11111110670322l0000","01631031000000d0"); // std
@@ -1308,7 +1313,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00052113","11111110a0032230000","01631031000000d0"); // std EMC7
     cuts.AddCutCalo("00085113","11111110a0032230000","01631031000000d0"); // std EG2
     cuts.AddCutCalo("00083113","11111110a0032230000","01631031000000d0"); // std EG1
-
+  } else if (trainConfig == 482){ // INT7 EMCAL standard cut with triggers - NO TM - CALO+CALOFAST readout triggers
+    cuts.AddCutCalo("000a0113","4117932090032230000","01631031000000d0"); // std INT7
+    cuts.AddCutCalo("000a1113","4117932090032230000","01631031000000d0"); // std EMC7
+    cuts.AddCutCalo("000a2113","4117932090032230000","01631031000000d0"); // std EG2
 
     // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations

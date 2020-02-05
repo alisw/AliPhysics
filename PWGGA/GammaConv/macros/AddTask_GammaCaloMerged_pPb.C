@@ -473,6 +473,11 @@ void AddTask_GammaCaloMerged_pPb(
   } else if (trainConfig == 1412){
     cuts.AddCutMergedCalo("80083103","111113105f032200000","111113105f022700001","0163300000000000"); // EG1
     cuts.AddCutMergedCalo("80085103","111113105f032200000","111113105f022700001","0163300000000000"); // EG2
+  } else if (trainConfig == 1413){
+    cuts.AddCutMergedCalo("80010103","111113205f032200000","111113205f022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 1414){
+    cuts.AddCutMergedCalo("80083103","111113205f032200000","111113205f022700001","0163300000000000"); // EG1
+    cuts.AddCutMergedCalo("80085103","111113205f032200000","111113205f022700001","0163300000000000"); // EG2
   // 31 NL w/o TM
   } else if (trainConfig == 1420){
     cuts.AddCutMergedCalo("80010103","1111131050032200000","1111131050022700001","0163300000000000"); // INT7
@@ -481,6 +486,11 @@ void AddTask_GammaCaloMerged_pPb(
   } else if (trainConfig == 1422){
     cuts.AddCutMergedCalo("80083103","1111131050032200000","1111131050022700001","0163300000000000"); // EG1
     cuts.AddCutMergedCalo("80085103","1111131050032200000","1111131050022700001","0163300000000000"); // EG2
+  } else if (trainConfig == 1423){
+    cuts.AddCutMergedCalo("80010103","1111132050032200000","1111132050022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 1424){
+    cuts.AddCutMergedCalo("80083103","1111132050032200000","1111132050022700001","0163300000000000"); // EG1
+    cuts.AddCutMergedCalo("80085103","1111132050032200000","1111132050022700001","0163300000000000"); // EG2
 
   // 31 NL with TM for special MC header
   } else if (trainConfig == 1430){
