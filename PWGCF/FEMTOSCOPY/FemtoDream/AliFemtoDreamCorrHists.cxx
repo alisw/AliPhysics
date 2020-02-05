@@ -74,6 +74,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fdPhidEtaPlots(false),
       fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
+      fAncestors(false),
       fPDGCode(),
       fmTdEtadPhiBins(),
       fWhichPairs(),
@@ -143,6 +144,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fdPhidEtaPlots(hists.fdPhidEtaPlots),
       fPhiEtaPlotsSmallK(hists.fPhiEtaPlotsSmallK),
       fmTDetaDPhi(hists.fmTDetaDPhi),
+      fAncestors(hists.fAncestors),
       fPDGCode(hists.fPDGCode),
       fmTdEtadPhiBins(hists.fmTdEtadPhiBins),
       fWhichPairs(hists.fWhichPairs),
@@ -212,6 +214,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fdPhidEtaPlots(false),
       fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
+      fAncestors(false),
       fPDGCode(),
       fmTdEtadPhiBins(),
       fWhichPairs(),
@@ -231,6 +234,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fdPhidEtaPlots = conf->GetdPhidEtaPlots();
   fPhiEtaPlotsSmallK = conf->GetdPhidEtaPlotsSmallK();
   fmTDetaDPhi = conf->GetdPhidEtamTPlots();
+  fAncestors = conf-> GetDoAncestorsPlots();
   if (fDokTCentralityBins && !fDokTBinning) {
     AliWarning(
         "Doing the Centrality binning without the kT Binning wont work!\n");
@@ -430,6 +434,18 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fdEtadPhiSEmT = nullptr;
     fdEtadPhiMEmT = nullptr;
   }
+    if (fAncestors) {
+      fSameEventDistCommon = new TH1F*[nHists];
+      fSameEventDistNonCommon = new TH1F*[nHists];
+      fdEtadPhiSECommon = new TH2F*[nHists];
+      fdEtadPhiSENonCommon = new TH2F*[nHists];
+  } else {
+    fSameEventDistCommon = nullptr;
+    fSameEventDistNonCommon = nullptr;
+    fdEtadPhiSECommon = nullptr;
+    fdEtadPhiSENonCommon = nullptr;
+  }
+
   int Counter = 0;
   for (int iPar1 = 0; iPar1 < nParticles; ++iPar1) {
     for (int iPar2 = iPar1; iPar2 < nParticles; ++iPar2) {
@@ -641,6 +657,11 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           }
         }
       }
+      // //For Common/Non Common Ancestors
+      // if (fillHists && fAncestors) {
+      //   bool
+
+      // }
 
       if (!fMinimalBooking) {
         fPairQA[Counter] = new TList();
@@ -1096,6 +1117,22 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   if (fMixedEventkTCentDist) {
     delete[] fMixedEventkTCentDist;
     delete fMixedEventkTCentDist;
+  }
+  if (fSameEventDistCommon) {
+    delete[] fSameEventDistCommon;
+    delete fSameEventDistCommon;
+  }
+  if (fSameEventDistNonCommon) {
+    delete[] fSameEventDistNonCommon;
+    delete fSameEventDistNonCommon;
+  }
+  if (fdEtadPhiSECommon) {
+    delete[] fdEtadPhiSECommon;
+    delete fdEtadPhiSECommon;
+  }
+  if (fdEtadPhiSENonCommon) {
+    delete[] fdEtadPhiSENonCommon;
+    delete fdEtadPhiSENonCommon;
   }
 }
 
