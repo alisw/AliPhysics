@@ -2058,11 +2058,16 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//3, next cut
 
   // minimum number of cells
-  if (fUseNCells){
+  if (fUseNCells == 1){
     if(cluster->GetNCells() < fMinNCells) {
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
       return kFALSE;
     }
+  } else if (fUseNCells == 2){ // special case for PHOS: only apply Ncell cut for clusters with a minimum energy of 1 GeV
+      if (cluster->GetNCells() < fMinNCells && cluster->E() > 1){
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+        return kFALSE;
+      }
   }
   cutIndex++;//4, next cut
 
@@ -2090,6 +2095,11 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//6
       return kFALSE;
     }
+  } else if (fUseM02 == 3 && cluster->GetNCells() > 1){ // special case for PHOS: only apply M02 cut for clusters with a minimum energy of 1 GeV
+      if( (cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02)  && cluster->E() > 1 ){
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//6
+        return kFALSE;
+      }
   }
   cutIndex++;//6, next cut
 
