@@ -1906,48 +1906,48 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   hCountK->SetMinimum(0);
   fOutputStudy->Add(hCountK);
 
-  TH1F *hZvtx = new TH1F("hZvtx", "z of Primary vtx (for events with selected D); # Events",48,-12.,12.);
+  TH1F *hZvtx = new TH1F("hZvtx", "z of Primary vtx (for events with selected D); z (cm); # Events",48,-12.,12.);
   hZvtx->SetMinimum(0);
   fOutputStudy->Add(hZvtx);
   
-  TH1F *hZvtxEvts = new TH1F("hZvtxEvts", "z of Primary vtx (for selected events); # Events",120,-30.,30.);
+  TH1F *hZvtxEvts = new TH1F("hZvtxEvts", "z of Primary vtx (for selected events); z (cm); # Events",120,-30.,30.);
   hZvtxEvts->SetMinimum(0);
   fOutputStudy->Add(hZvtxEvts);
   
-  TH1F *hCentralEvts = new TH1F("hCentralEvts","Centrality of events (std approach); # Events",10002,-0.01,100.01);
+  TH1F *hCentralEvts = new TH1F("hCentralEvts","Centrality of events (std approach); centrality; # Events",10002,-0.01,100.01);
   hCentralEvts->SetMinimum(0);
   fOutputStudy->Add(hCentralEvts);  
 
-  TH1F *hCentEvV0M = new TH1F("hCentEvV0M","Centrality of events (v2 pp analysis) in V0M percentiles; # Events",10002,-0.01,100.01);
+  TH1F *hCentEvV0M = new TH1F("hCentEvV0M","Centrality of events (v2 pp analysis) in V0M percentiles; V0M perc.; # Events",10002,-0.01,100.01);
   hCentEvV0M->SetMinimum(0);
   fOutputStudy->Add(hCentEvV0M);  
 
-  TH1F *hMultEvV0M = new TH1F("hMultEvV0M","Multiplicity of events (v2 pp analysis) in V0M amplitude; # Events",1000,0,1000);
+  TH1F *hMultEvV0M = new TH1F("hMultEvV0M","Multiplicity of events (v2 pp analysis) in V0M amplitude; V0M amplitude; # Events",1000,0,1000);
   hMultEvV0M->SetMinimum(0);
   fOutputStudy->Add(hMultEvV0M);  
 
-  TH1F *hMultEvV0MEqual = new TH1F("hMultEvV0MEqual","Multiplicity of events (v2 pp analysis) in V0M equalized amplitude; # Events",1000,0,1000);
+  TH1F *hMultEvV0MEqual = new TH1F("hMultEvV0MEqual","Multiplicity of events (v2 pp analysis) in V0M equalized amplitude; V0M amplitude (eq.); # Events",1000,0,1000);
   hMultEvV0MEqual->SetMinimum(0);
   fOutputStudy->Add(hMultEvV0MEqual);  
 
-  TH1F *hMultEvTrkl1 = new TH1F("hMultEvTrkl1","Multiplicity of events (v2 pp analysis) in Tracklets <1; # Events",200,0,200);
+  TH1F *hMultEvTrkl1 = new TH1F("hMultEvTrkl1","Multiplicity of events (v2 pp analysis) in Tracklets <1; SPD tracklets in |eta|<1; # Events",200,0,200);
   hMultEvTrkl1->SetMinimum(0);
   fOutputStudy->Add(hMultEvTrkl1);        
 
   if(fV2Analysis && (fV0CentMin!=0 || fV0CentMax!=0)) {
-    TH1F *hCentEvV0MSelEvents = new TH1F("hCentEvV0MSelEvents","Centrality of events (for selected events, v2 pp analysis) in V0M percentiles; # Events",10002,-0.01,100.01);
+    TH1F *hCentEvV0MSelEvents = new TH1F("hCentEvV0MSelEvents","Centrality of events (for selected events, v2 pp analysis) in V0M percentiles; V0M perc.; # Events",10002,-0.01,100.01);
     hCentEvV0MSelEvents->SetMinimum(0);
     fOutputStudy->Add(hCentEvV0MSelEvents);  
     
-    TH1F *hMultEvV0MSelEvents = new TH1F("hMultEvV0MSelEvents","Multiplicity of events (for selected events, v2 pp analysis) in V0M amplitude; # Events",1000,0,1000);
+    TH1F *hMultEvV0MSelEvents = new TH1F("hMultEvV0MSelEvents","Multiplicity of events (for selected events, v2 pp analysis) in V0M amplitude; V0M amplitude; # Events",1000,0,1000);
     hMultEvV0MSelEvents->SetMinimum(0);
     fOutputStudy->Add(hMultEvV0MSelEvents);  
 
-    TH1F *hMultEvV0MEqualSelEvents = new TH1F("hMultEvV0MEqualSelEvents","Multiplicity of events (for selected events, v2 pp analysis) in V0M equalized amplitude; # Events",1000,0,1000);
+    TH1F *hMultEvV0MEqualSelEvents = new TH1F("hMultEvV0MEqualSelEvents","Multiplicity of events (for selected events, v2 pp analysis) in V0M equalized amplitude; V0M amplitude (eq.); # Events",1000,0,1000);
     hMultEvV0MEqualSelEvents->SetMinimum(0);
     fOutputStudy->Add(hMultEvV0MEqualSelEvents);  
 
-    TH1F *hMultEvTrkl1SelEvents = new TH1F("hMultEvTrkl1SelEvents","Multiplicity of events (for selected events, v2 pp analysis) in Tracklets <1; # Events",200,0,200);
+    TH1F *hMultEvTrkl1SelEvents = new TH1F("hMultEvTrkl1SelEvents","Multiplicity of events (for selected events, v2 pp analysis) in Tracklets <1; SPD tracklets in |eta|<1; # Events",200,0,200);
     hMultEvTrkl1SelEvents->SetMinimum(0);
     fOutputStudy->Add(hMultEvTrkl1SelEvents);       
   }
@@ -1987,36 +1987,36 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
 
   if(!fMixing) {
     //phi distributions
-    TH1F *hPhiDistCAll = new TH1F("hist_PhiDistr_Charg", "Charged track phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    TH1F *hPhiDistCAll = new TH1F("hist_PhiDistr_Charg", "Charged track phi distr. (All); #varphi (rad)",64,0,6.283);
     hPhiDistCAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistCAll);
 
-    TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Kaons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Kaons phi distr. (All); #varphi (rad)",64,0,6.283);
     hPhiDistHAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistHAll);
 
-    TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "K0 phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "K0 phi distr. (All); #varphi (rad)",64,0,6.283);
     hPhiDistKAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistKAll);
 
-    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); #varphi (rad)",64,0,6.283);
     hPhiDistDAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistDAll);
 
-    //phi distributions
-    TH1F *hEtaDistCAll = new TH1F("hist_EtaDistr_Charg", "Charged track eta distr. (All); p_{T} (GeV/c)",40,-1,1);
+    //eta distributions
+    TH1F *hEtaDistCAll = new TH1F("hist_EtaDistr_Charg", "Charged track eta distr. (All); #eta (rad)",40,-1,1);
     hEtaDistCAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistCAll);
 
-    TH1F *hEtaDistHAll = new TH1F("hist_EtaDistr_Kcharg", "Kaons eta distr. (All); p_{T} (GeV/c)",40,-1,1);
+    TH1F *hEtaDistHAll = new TH1F("hist_EtaDistr_Kcharg", "Kaons eta distr. (All); #eta (rad)",40,-1,1);
     hEtaDistHAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistHAll);
 
-    TH1F *hEtaDistKAll = new TH1F("hist_EtaDistr_K0", "K0 eta distr. (All); p_{T} (GeV/c)",40,-1,1);
+    TH1F *hEtaDistKAll = new TH1F("hist_EtaDistr_K0", "K0 eta distr. (All); #eta (rad)",40,-1,1);
     hEtaDistKAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistKAll);
 
-    TH1F *hEtaDistDAll = new TH1F("hist_EtaDistr_D0", "D^{0} eta distr. (All); p_{T} (GeV/c)",40,-1,1);
+    TH1F *hEtaDistDAll = new TH1F("hist_EtaDistr_D0", "D^{0} eta distr. (All); #eta (rad)",40,-1,1);
     hEtaDistDAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistDAll);
     

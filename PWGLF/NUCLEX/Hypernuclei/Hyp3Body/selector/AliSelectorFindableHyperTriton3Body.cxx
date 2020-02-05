@@ -16,9 +16,6 @@
 
 #include "AliSelectorFindableHyperTriton3Body.h"
 
-const unsigned char g = 0x1; // on if is a good candidate
-const unsigned char r = 0x2; // on if is reflection candidate
-
 /// usefull functions
 
 namespace {
@@ -42,12 +39,11 @@ template <typename T> double Norm(T x, T y) { return std::sqrt(Pot2(x) + Pot2(y)
 template <typename T> double Norm(T x, T y, T z) { return std::sqrt(Pot2(x) + Pot2(y) + Pot2(z)); }
 } // namespace
 
-AliSelectorFindableHyperTriton3Body::AliSelectorFindableHyperTriton3Body(TString outputName, TString outputPath,
-                                                                         TTree *)
-    : fOutputFileName{outputName}, //
-      fOutputFilePath{outputPath}, //
-      fHypertritonVertexer(),      //
-      fHypertritonVertexerHard() {
+AliSelectorFindableHyperTriton3Body::AliSelectorFindableHyperTriton3Body(TString outputName, TString outputPath,TTree *):
+fOutputFileName{outputName}, //
+fOutputFilePath{outputPath}, //
+fHypertritonVertexer(),      //
+fHypertritonVertexerHard() {
   fHypertritonVertexerHard.SetToleranceGuessCompatibility(2);
   fHypertritonVertexerHard.SetMaxDinstanceInit(1.5);
 }
@@ -73,19 +69,13 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
   const char *lSpecies[3]{"d", "p", "pi"};
   const char *lSpeciesPair[3]{"dp", "ppi", "pid"};
   const char *lCuts[3]{"findable", "cuts", "hard"};
-  const char *lStat[3]{"", "_reflection", "_fake"};
-  const char *lFake[2]{"", "_fake"};
   const char lCoords[4]{"xyz"};
 
   /// invariant mass distributions
   for (int iMatter = 0; iMatter < 2; iMatter++) {
     for (int iCuts = 0; iCuts < 3; iCuts++) {
-      for (int iStat = 0; iStat < 3; iStat++) {
-        fHistInvMass[iMatter][iCuts][iStat] =
-            new TH2D(Form("fHistInvMass_%c_%s%s", lAM[iMatter], lCuts[iCuts], lStat[iStat]),
-                     ";m (dp#pi) [GeV/#it{c}^{2}];Counts", 200, 2.95, 3.35, 20, 0, 10);
-        GetOutputList()->Add(fHistInvMass[iMatter][iCuts][iStat]);
-      }
+      fHistInvMass[iMatter][iCuts] = new TH2D(Form("fHistInvMass_%c_%s", lAM[iMatter], lCuts[iCuts]), ";m (dp#pi) [GeV/#it{c}^{2}];#it{p}_{T} [GeV/#it{c}]", 200, 2.95, 3.35, 20, 0, 10);
+      GetOutputList()->Add(fHistInvMass[iMatter][iCuts]);
     }
   }
 
@@ -184,10 +174,8 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
   }
 
   /// ct distribution
-  for (int iFake = 0; iFake < 2; iFake++) {
-    fHistCT[iFake] = new TH1D(Form("fHistCT%s", lFake[iFake]), "", 50, 0, 100);
-    GetOutputList()->Add(fHistCT[iFake]);
-  }
+    fHistCT = new TH1D("fHistCT", "", 50, 0, 100);
+    GetOutputList()->Add(fHistCT);
 }
 
 //______________________________________________________________________________
@@ -242,31 +230,17 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   // Get stuff from tree
   //------------------------------------------------------------
   float lMagField = *fTreeHyp3BodyVarMagneticField;
-  unsigned char s = *fTreeHyp3BodyVarCandStat;
-
-  bool lIsGood       = (s & g);
-  bool lIsReflection = (s & r);
-
-  int cStatus = 0;
-  if (lIsReflection) cStatus = 1;
-  if (!lIsGood && !lIsReflection) cStatus = 2;
-
+  
   AliExternalTrackParam *lTrackDeu = new AliExternalTrackParam(*fTreeHyp3BodyVarTracks[0]);
   AliExternalTrackParam *lTrackP   = new AliExternalTrackParam(*fTreeHyp3BodyVarTracks[1]);
   AliExternalTrackParam *lTrackPi  = new AliExternalTrackParam(*fTreeHyp3BodyVarTracks[2]);
 
   AliExternalTrackParam *lTrack[3]{lTrackDeu, lTrackP, lTrackPi};
 
-  int lNclsITS[3]{*fTreeHyp3BodyVarNclsITS[0], *fTreeHyp3BodyVarNclsITS[1], *fTreeHyp3BodyVarNclsITS[2]};
-  int lNclsTPC[3]{*fTreeHyp3BodyVarNclsTPC[0], *fTreeHyp3BodyVarNclsTPC[1], *fTreeHyp3BodyVarNclsTPC[2]};
+  int lNclsITS[3]{fTreeHyp3BodyVarTracks[0]->GetITSNcls(), fTreeHyp3BodyVarTracks[1]->GetITSNcls(), fTreeHyp3BodyVarTracks[2]->GetITSNcls()};
+  int lNclsTPC[3]{fTreeHyp3BodyVarTracks[0]->GetTPCNcls(), fTreeHyp3BodyVarTracks[1]->GetTPCNcls(), fTreeHyp3BodyVarTracks[2]->GetTPCNcls()};
 
-  double lTrackGlobalChi2[3]{*fTreeHyp3BodyVarGlobalChi2[0] * 1., *fTreeHyp3BodyVarGlobalChi2[1] * 1.,
-                             *fTreeHyp3BodyVarGlobalChi2[2] * 1.};
-
-  double lNsigmaTPC[3]{*fTreeHyp3BodyVarNsigmaTPC[0] * 1., *fTreeHyp3BodyVarNsigmaTPC[1] * 1.,
-                       *fTreeHyp3BodyVarNsigmaTPC[2] * 1.};
-  double lNsigmaTOF[3]{*fTreeHyp3BodyVarNsigmaTOF[0] * 1., *fTreeHyp3BodyVarNsigmaTOF[1] * 1.,
-                       *fTreeHyp3BodyVarNsigmaTOF[2] * 1.};
+  double lTrackGlobalChi2[3]{fTreeHyp3BodyVarTracks[0]->GetGlobalChi2(), fTreeHyp3BodyVarTracks[1]->GetGlobalChi2(), fTreeHyp3BodyVarTracks[2]->GetGlobalChi2()};
 
   // unsigned long lTrackFlag[3]{*fTreeHyp3BodyVarFlags[0], *fTreeHyp3BodyVarFlags[1], *fTreeHyp3BodyVarFlags[2]};
 
@@ -288,136 +262,128 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   hypPt   = lHypertriton.Pt();
   // hypP    = lHypertriton.P();
 
-  if (lIsGood) {
-    //------------------------------------------------------------
-    // N cluster in ITS, TPC and Track Chi2 distributions
-    // and ITS cluster and PID selectios
-    //------------------------------------------------------------
-    int its_sum = 0;
-    int pid_sum = 0;
+  //------------------------------------------------------------
+  // N cluster in ITS, TPC and Track Chi2 distributions
+  // and ITS cluster and PID selectios
+  //------------------------------------------------------------
+  int its_sum = 0;
+  int pid_sum = 0;
 
-    for (int iTrack = 0; iTrack < 3; iTrack++) {
-      fHistNclsITS[iTrack]->Fill(lNclsITS[iTrack] - 0.5);
-      fHistNclsTPC[iTrack]->Fill(lNclsTPC[iTrack] - 0.5);
+  for (int iTrack = 0; iTrack < 3; iTrack++) {
+    fHistNclsITS[iTrack]->Fill(lNclsITS[iTrack] - 0.5);
+    fHistNclsTPC[iTrack]->Fill(lNclsTPC[iTrack] - 0.5);
 
-      fHistGlobalTrackChi2[iTrack]->Fill(lTrackGlobalChi2[iTrack]);
+    fHistGlobalTrackChi2[iTrack]->Fill(lTrackGlobalChi2[iTrack]);
 
-      fHistNSigmaTPC[iTrack]->Fill(lNsigmaTPC[iTrack]);
-      fHistNSigmaTOF[iTrack]->Fill(lNsigmaTOF[iTrack]);
+    lIsGoodITS[iTrack] = lNclsITS[iTrack] > 0;
+    its_sum += lIsGoodITS[iTrack];
 
-      lIsGoodITS[iTrack] = lNclsITS[iTrack] > 0;
-      its_sum += lIsGoodITS[iTrack];
+  }
 
-      lIsGoodPID[iTrack] = lNsigmaTPC[iTrack] < 3.;
-      fHistCheckPID[iTrack]->Fill(lIsGoodPID[iTrack] - 0.5);
-      pid_sum += lIsGoodPID[iTrack];
+  lIsGoodITS[3] = (its_sum == 3);
+  fHistNclsITSCheck->Fill(lIsGoodITS[3] - 0.5);
+
+  lIsGoodPID[3] = (pid_sum == 3);
+  fHistCheckPID[3]->Fill(lIsGoodPID[3] - 0.5);
+
+  //------------------------------------------------------------
+  // Secondary vertex reconstruction
+  //------------------------------------------------------------
+  if (lIsGoodITS[3] && lIsGoodPID[3]) {
+    // reconstruct the decay vertex with the dedicated vertexer
+    bool lIsGoodVertex     = fHypertritonVertexer.FindDecayVertex(lTrack[0], lTrack[1], lTrack[2], lMagField);
+    bool lIsGoodVertexHard = fHypertritonVertexerHard.FindDecayVertex(lTrack[0], lTrack[1], lTrack[2], lMagField);
+
+    AliESDVertex *lDecayVertex     = static_cast<AliESDVertex *>(fHypertritonVertexer.GetCurrentVertex());
+    AliESDVertex *lDecayVertexHard = static_cast<AliESDVertex *>(fHypertritonVertexerHard.GetCurrentVertex());
+
+    if (lIsGoodVertex) {
+      double vertexChi2NDF = lDecayVertex->GetChi2perNDF() * 1.;
+      fHistVertexChi2->Fill(vertexChi2NDF);
+    }
+    /// possibility to constraint the goodness of the reconstructed decay vertex
+    /// lIsGoodVertex = recoVertex && (fDecayVertex->GetChi2perNDF() < 20.);
+
+    /// compute decay vertex position and compute cos(pointingangle)
+    if (lIsGoodVertex) {
+      lDecayVertex->GetXYZ(lDecayVertexPos);
+
+      for (int iTrack = 0; iTrack < 3; iTrack++) {
+        fHistResDecayVtx[iTrack]->Fill((lDecayVertexPos[iTrack] - lTrueDecayVtx[iTrack]) * 10.);
+        lDecayLenght[iTrack] = lDecayVertexPos[iTrack] - lTruePrimaryVtx[iTrack];
+      }
+
+      TVector3 v(lDecayLenght[0], lDecayLenght[1], lDecayLenght[2]);
+      fHistCT->Fill(v.Mag());
+
+      float pointAngle = lHypertriton.Angle(v);
+      float cospa      = std::cos(pointAngle);
+
+      fHistCosPAngle->Fill(cospa);
+      lIsGoodPAngle = (cospa > 0.98);
+
+      /// compute the DCA of the 3 tracks from the primary and decay vertex
+      AliESDVertex lPV(lTruePrimaryVtx, lPrimaryVertexCov, 1., 1000);
+
+      int dca_sum = 0;
+      for (int iTrack = 0; iTrack < 3; iTrack++) {
+        double dca2dv[2]    = {0.};
+        double dca2pv[2]    = {0.};
+        double dca2dvcov[3] = {0.};
+        double dca2pvcov[3] = {0.};
+
+        lTrack[iTrack]->PropagateToDCA(lDecayVertex, lMagField, 1000., dca2dv, dca2dvcov);
+        lTrack[iTrack]->PropagateToDCA(&lPV, lMagField, 1000., dca2pv, dca2pvcov);
+
+        float dcaXYdv = std::sqrt(Pot2(dca2dv[0])) * 10.; // in mm
+        float dcaZdv  = std::sqrt(Pot2(dca2dv[1])) * 10.; // in mm
+        float dcadv   = Norm(dcaXYdv, dcaZdv) * 10.;      // in mm
+
+        fHistDCA2dvXY[iTrack]->Fill(dcaXYdv);
+        fHistDCA2dvZ[iTrack]->Fill(dcaZdv);
+        fHistDCA2dv[iTrack]->Fill(dcadv);
+
+        float dcaXYpv = std::sqrt(Pot2(dca2pv[0])) * 10.; // in mm
+        float dcaZpv  = std::sqrt(Pot2(dca2pv[1])) * 10.; // in mm
+        float dcapv   = Norm(dcaXYpv, dcaZpv) * 10.;      // in mm
+
+        lIsGoodDCA[iTrack] = (dcapv > lDCAmax[iTrack]);
+        dca_sum += lIsGoodDCA[iTrack];
+
+        fHistDCA2pvXY[iTrack]->Fill(dcaXYpv);
+        fHistDCA2pvZ[iTrack]->Fill(dcaZpv);
+        fHistDCA2pv[iTrack]->Fill(dcapv);
+      }
+
+      lIsGoodDCA[3] = (dca_sum == 3);
+
+      /// compute the track2track distance used in the vertexer
+      float pPM[3][3];
+
+      for (int iPerm = 0; iPerm < 3; iPerm++) {
+        fHypertritonVertexer.Find2ProngClosestPoint(lTrack[iPerm], lTrack[(iPerm + 1) % 3], lMagField, pPM[iPerm]);
+      }
+
+      for (int iPerm = 0; iPerm < 3; iPerm++) {
+        float distance = Point2PointDistance(pPM[iPerm], pPM[(iPerm + 1) % 3]);
+        fHistTrackDistance[iPerm]->Fill(distance * 10.);
+      }
     }
 
-    lIsGoodITS[3] = (its_sum == 3);
-    fHistNclsITSCheck->Fill(lIsGoodITS[3] - 0.5);
+    /// again with harder selections
+    if (lIsGoodVertexHard) {
+      lDecayVertexHard->GetXYZ(lDecayVertexPosHard);
 
-    lIsGoodPID[3] = (pid_sum == 3);
-    fHistCheckPID[3]->Fill(lIsGoodPID[3] - 0.5);
-
-    //------------------------------------------------------------
-    // Secondary vertex reconstruction
-    //------------------------------------------------------------
-    if (lIsGoodITS[3] && lIsGoodPID[3]) {
-      // reconstruct the decay vertex with the dedicated vertexer
-      bool lIsGoodVertex     = fHypertritonVertexer.FindDecayVertex(lTrack[0], lTrack[1], lTrack[2], lMagField);
-      bool lIsGoodVertexHard = fHypertritonVertexerHard.FindDecayVertex(lTrack[0], lTrack[1], lTrack[2], lMagField);
-
-      AliESDVertex *lDecayVertex     = static_cast<AliESDVertex *>(fHypertritonVertexer.GetCurrentVertex());
-      AliESDVertex *lDecayVertexHard = static_cast<AliESDVertex *>(fHypertritonVertexerHard.GetCurrentVertex());
-
-      if (lIsGoodVertex) {
-        double vertexChi2NDF = lDecayVertex->GetChi2perNDF() * 1.;
-        fHistVertexChi2->Fill(vertexChi2NDF);
-      }
-      /// possibility to constraint the goodness of the reconstructed decay vertex
-      /// lIsGoodVertex = recoVertex && (fDecayVertex->GetChi2perNDF() < 20.);
-
-      /// compute decay vertex position and compute cos(pointingangle)
-      if (lIsGoodVertex) {
-        lDecayVertex->GetXYZ(lDecayVertexPos);
-
-        for (int iTrack = 0; iTrack < 3; iTrack++) {
-          fHistResDecayVtx[iTrack]->Fill((lDecayVertexPos[iTrack] - lTrueDecayVtx[iTrack]) * 10.);
-          lDecayLenght[iTrack] = lDecayVertexPos[iTrack] - lTruePrimaryVtx[iTrack];
-        }
-
-        TVector3 v(lDecayLenght[0], lDecayLenght[1], lDecayLenght[2]);
-        fHistCT[lIsGood]->Fill(v.Mag());
-
-        float pointAngle = lHypertriton.Angle(v);
-        float cospa      = std::cos(pointAngle);
-
-        fHistCosPAngle->Fill(cospa);
-        lIsGoodPAngle = (cospa > 0.98);
-
-        /// compute the DCA of the 3 tracks from the primary and decay vertex
-        AliESDVertex lPV(lTruePrimaryVtx, lPrimaryVertexCov, 1., 1000);
-
-        int dca_sum = 0;
-        for (int iTrack = 0; iTrack < 3; iTrack++) {
-          double dca2dv[2]    = {0.};
-          double dca2pv[2]    = {0.};
-          double dca2dvcov[3] = {0.};
-          double dca2pvcov[3] = {0.};
-
-          lTrack[iTrack]->PropagateToDCA(lDecayVertex, lMagField, 1000., dca2dv, dca2dvcov);
-          lTrack[iTrack]->PropagateToDCA(&lPV, lMagField, 1000., dca2pv, dca2pvcov);
-
-          float dcaXYdv = std::sqrt(Pot2(dca2dv[0])) * 10.; // in mm
-          float dcaZdv  = std::sqrt(Pot2(dca2dv[1])) * 10.; // in mm
-          float dcadv   = Norm(dcaXYdv, dcaZdv) * 10.;      // in mm
-
-          fHistDCA2dvXY[iTrack]->Fill(dcaXYdv);
-          fHistDCA2dvZ[iTrack]->Fill(dcaZdv);
-          fHistDCA2dv[iTrack]->Fill(dcadv);
-
-          float dcaXYpv = std::sqrt(Pot2(dca2pv[0])) * 10.; // in mm
-          float dcaZpv  = std::sqrt(Pot2(dca2pv[1])) * 10.; // in mm
-          float dcapv   = Norm(dcaXYpv, dcaZpv) * 10.;      // in mm
-
-          lIsGoodDCA[iTrack] = (dcapv > lDCAmax[iTrack]);
-          dca_sum += lIsGoodDCA[iTrack];
-
-          fHistDCA2pvXY[iTrack]->Fill(dcaXYpv);
-          fHistDCA2pvZ[iTrack]->Fill(dcaZpv);
-          fHistDCA2pv[iTrack]->Fill(dcapv);
-        }
-
-        lIsGoodDCA[3] = (dca_sum == 3);
-
-        /// compute the track2track distance used in the vertexer
-        float pPM[3][3];
-
-        for (int iPerm = 0; iPerm < 3; iPerm++) {
-          fHypertritonVertexer.Find2ProngClosestPoint(lTrack[iPerm], lTrack[(iPerm + 1) % 3], lMagField, pPM[iPerm]);
-        }
-
-        for (int iPerm = 0; iPerm < 3; iPerm++) {
-          float distance = Point2PointDistance(pPM[iPerm], pPM[(iPerm + 1) % 3]);
-          fHistTrackDistance[iPerm]->Fill(distance * 10.);
-        }
+      for (int iTrack = 0; iTrack < 3; iTrack++) {
+        lDecayLenghtHard[iTrack] = lDecayVertexPosHard[iTrack] - lTruePrimaryVtx[iTrack];
       }
 
-      /// again with harder selections
-      if (lIsGoodVertexHard) {
-        lDecayVertexHard->GetXYZ(lDecayVertexPosHard);
+      TVector3 v(lDecayLenghtHard[0], lDecayLenghtHard[1], lDecayLenghtHard[2]);
 
-        for (int iTrack = 0; iTrack < 3; iTrack++) {
-          lDecayLenghtHard[iTrack] = lDecayVertexPosHard[iTrack] - lTruePrimaryVtx[iTrack];
-        }
+      float pointAngle = lHypertriton.Angle(v);
+      float cospa      = std::cos(pointAngle);
 
-        TVector3 v(lDecayLenghtHard[0], lDecayLenghtHard[1], lDecayLenghtHard[2]);
-
-        float pointAngle = lHypertriton.Angle(v);
-        float cospa      = std::cos(pointAngle);
-
-        lIsGoodPAngleHard = (cospa > 0.998);
-      }
+      lIsGoodPAngleHard = (cospa > 0.998);
     }
   }
 
@@ -425,9 +391,9 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   bool lIsGoodHardCuts = lIsGoodDCA[3] && lIsGoodVertexHard && lIsGoodPAngleHard;
 
   /// invariant mass distribution for efficiency
-  fHistInvMass[lCharge][0][cStatus]->Fill(hypMass, hypPt);
-  if (lIsGoodCuts) fHistInvMass[lCharge][1][cStatus]->Fill(hypMass, hypPt);
-  if (lIsGoodHardCuts) fHistInvMass[lCharge][2][cStatus]->Fill(hypMass, hypPt);
+  fHistInvMass[lCharge][0]->Fill(hypMass, hypPt);
+  if (lIsGoodCuts) fHistInvMass[lCharge][1]->Fill(hypMass, hypPt);
+  if (lIsGoodHardCuts) fHistInvMass[lCharge][2]->Fill(hypMass, hypPt);
 
   /// transverse momentum distribution
   fHistPt[lCharge][0]->Fill(hypPt);

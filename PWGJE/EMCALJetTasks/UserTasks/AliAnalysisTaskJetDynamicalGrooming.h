@@ -39,7 +39,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming & first, PWG
 namespace PWGJE {
 namespace EMCALJetTasks {
 
-static const int nSubstructureVariables = 24;
+static const int nSubstructureVariables = 30;
 
 class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
 {
@@ -157,7 +157,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   void IterativeParents(AliEmcalJet* fJet, AliJetContainer* fJetCont);
   //void IterativeParentsAreaBased(AliEmcalJet* fJet, AliJetContainer* fJetCont);
   void IterativeParentsMCAverage(AliEmcalJet* fJet, Int_t km, Double_t& aver1, Double_t& aver2, Double_t& aver3,
-                  Double_t& aver4, Double_t& aver5, Double_t& aver6);
+                  Double_t& aver4, Double_t& aver5, Double_t& aver6, Double_t& aver7, Double_t& aver8);
   void CheckSubjetResolution(AliEmcalJet* fJet, AliJetContainer* fJetCont, AliEmcalJet* fJetM,
                 AliJetContainer* fJetContM);
   Bool_t CheckClosePartner(Int_t index, AliEmcalJet* fJet, AliVParticle* fTrack, AliParticleContainer* fTrackCont);
