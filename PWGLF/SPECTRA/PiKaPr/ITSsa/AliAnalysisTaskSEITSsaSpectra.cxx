@@ -1863,48 +1863,48 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
     else{//DATA: lowB field (0.2T)
       //PIONS
       if(mass>0.13 && mass<0.14){
-        fBBsaHybrid[0]=2.0014e7;//E0  //PHOBOS+Polinomial parameterization
-        fBBsaHybrid[1]=23.446696;//b
-        fBBsaHybrid[2]=2.4831e-7;//a
-        fBBsaHybrid[3]=2.4831e-7;//c
-        fBBsaHybrid[4]=1.4825e-7;//d
-        fBBsaHybrid[5]=-2.16;
-        fBBsaHybrid[6]=4.913234;//p0
-        fBBsaHybrid[7]=242.095214;//p1
-        fBBsaHybrid[8]=-227.007773;//p2
-        fBBsaHybrid[9]=131.060250;//p3
+        fBBsaHybrid[0]=1.1898e7;//E0  //PHOBOS+Polinomial parameterization
+        fBBsaHybrid[1]=20.576061;//b
+        fBBsaHybrid[2]=2.3389e-4;//a
+        fBBsaHybrid[3]=-2.1184e-4;//c
+        fBBsaHybrid[4]=8.2805e-8;//d
+        fBBsaHybrid[5]=-1.98;
+        fBBsaHybrid[6]=60.537150;//p0
+        fBBsaHybrid[7]=60.164280;//p1
+        fBBsaHybrid[8]=-42.724485;//p2
+        fBBsaHybrid[9]=70.441560;//p3
       }
       //KAONS
       else if(mass>0.4 && mass<0.5){
-        fBBsaHybrid[0]=1.1603e7;//E0  //PHOBOS+Polinomial parameterization
-        fBBsaHybrid[1]=26.908492;//b
-        fBBsaHybrid[2]=2.1257e-4;//a
-        fBBsaHybrid[3]=-1.6542e-4;//c
-        fBBsaHybrid[4]=8.3836e-8;//d
-        fBBsaHybrid[5]=-1.98;
-        fBBsaHybrid[6]=-85.739134;//p0
-        fBBsaHybrid[7]=379.078774;//p1
-        fBBsaHybrid[8]=-241.702618;//p2
-        fBBsaHybrid[9]=91.297155;//p3
+        fBBsaHybrid[0]=1.0809e7;//E0  //PHOBOS+Polinomial parameterization
+        fBBsaHybrid[1]=33.612804;//b
+        fBBsaHybrid[2]=1.9999e-4;//a
+        fBBsaHybrid[3]=-1.5789e-4;//c
+        fBBsaHybrid[4]=7.3408e-8;//d
+        fBBsaHybrid[5]=-1.22;
+        fBBsaHybrid[6]=-49.595472;//p0
+        fBBsaHybrid[7]=302.773517;//p1
+        fBBsaHybrid[8]=-192.377373;//p2
+        fBBsaHybrid[9]=80.776287;//p3
       }
       else{//PROTONS and DEUTERONS
-        fBBsaHybrid[0]=1.1644e7;//E0  //PHOBOS+Polinomial parameterization
-        fBBsaHybrid[1]=42.148199;//b
-        fBBsaHybrid[2]=1.6044e-4;//a
-        fBBsaHybrid[3]=-9.9356e-5;//c
-        fBBsaHybrid[4]=8.3214e-8;//d
-        fBBsaHybrid[5]=-1.82;
-        fBBsaHybrid[6]=-37.982015;//p0
-        fBBsaHybrid[7]=245.348026;//p1
-        fBBsaHybrid[8]=-116.456305;//p2
-        fBBsaHybrid[9]=50.786350;//p3
+        fBBsaHybrid[0]=1.1480e7;//E0  //PHOBOS+Polinomial parameterization
+        fBBsaHybrid[1]=49.281174;//b
+        fBBsaHybrid[2]=1.3158e-4;//a
+        fBBsaHybrid[3]=-8.6715e-5;//c
+        fBBsaHybrid[4]=8.5395e-8;//d
+        fBBsaHybrid[5]=-1.76;
+        fBBsaHybrid[6]=-31.440167;//p0
+        fBBsaHybrid[7]=225.146146;//p1
+        fBBsaHybrid[8]=-102.246020;//p2
+        fBBsaHybrid[9]=47.429906;//p3
       }
 
-      fBBsaElectron[0]=66.524096;//E0 //electrons in the ITS
-      fBBsaElectron[1]=106.793254;//b
-      fBBsaElectron[2]=1.0939e-1;//a
-      fBBsaElectron[3]=-3.8033e-3;//c
-      fBBsaElectron[4]=-1.6387e-3;//d
+      fBBsaElectron[0]=76.733989;//E0 //electrons in the ITS
+      fBBsaElectron[1]=74.667773;//b
+      fBBsaElectron[2]=1.1204e-1;//a
+      fBBsaElectron[3]=-6.9103e-3;//c
+      fBBsaElectron[4]=-8.8927e-4;//d
       fBBsaElectron[5]=-1.60;//exp
     }
 
@@ -1989,9 +1989,9 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
   Double_t betagcut = 0.76;
 
   if(!fIsNominalBfield){
-    if(mass>0.13 && mass<0.14) betagcut = 1.50;
-    else if(mass>0.4 && mass<0.5) betagcut = 1.04;
-    else betagcut = 1.0;
+    if(mass>0.13 && mass<0.14) betagcut = fIsMC ? 1.50 : 1.68;
+    else if(mass>0.4 && mass<0.5) betagcut = fIsMC ? 1.04 : 1.44;
+    else betagcut = fIsMC ? 1.0 : 1.02;
   }
 
   Double_t par[10];
