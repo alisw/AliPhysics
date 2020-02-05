@@ -176,7 +176,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fMaxM20(1000),
   fMinM20(0),
   fUseM20(0),
-  fMaxMGGRecConv(0.01),
+  fMaxMGGRecConv(0),
   fUseRecConv(0),
   fMaxDispersion(1000),
   fUseDispersion(0),
@@ -286,6 +286,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistMatchedTrackPClusE(NULL),
   fHistMatchedTrackPClusEAfterEOverPVeto(NULL),
   fHistMatchedTrackPClusETruePi0Clus(NULL),
+  fHistInvMassDiCluster(NULL),
+  fHistInvMassConvFlagging(NULL),
   fNMaxDCalModules(8),
   fgkDCALCols(32),
   fIsAcceptedForBasic(kFALSE)
@@ -382,7 +384,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fMinM20(ref.fMinM20),
   fUseM20(ref.fUseM20),
   fMaxMGGRecConv(ref.fMaxMGGRecConv),
-  fUseRecConv(ref.fMaxMGGRecConv),
+  fUseRecConv(ref.fUseRecConv),
   fMaxDispersion(ref.fMaxDispersion),
   fUseDispersion(ref.fUseDispersion),
   fMinNLM(ref.fMinNLM),
@@ -491,6 +493,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistMatchedTrackPClusE(NULL),
   fHistMatchedTrackPClusEAfterEOverPVeto(NULL),
   fHistMatchedTrackPClusETruePi0Clus(NULL),
+  fHistInvMassDiCluster(NULL),
+  fHistInvMassConvFlagging(NULL),
   fNMaxDCalModules(ref.fNMaxDCalModules),
   fgkDCALCols(ref.fgkDCALCols),
   fIsAcceptedForBasic(ref.fIsAcceptedForBasic)
@@ -617,7 +621,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   fHistograms->Add(fHistAcceptanceCuts);
 
   // Cluster Cuts
-  fHistClusterIdentificationCuts  = new TH2F(Form("ClusterQualityCuts vs E %s",GetCutNumber().Data()),"ClusterQualityCuts",11,-0.5,10.5,nBinsClusterE, arrClusEBinning);
+  if (GetIsConversionRecovery() == 0)
+    fHistClusterIdentificationCuts  = new TH2F(Form("ClusterQualityCuts vs E %s",GetCutNumber().Data()),"ClusterQualityCuts",11,-0.5,10.5,nBinsClusterE, arrClusEBinning);
+  else 
+    fHistClusterIdentificationCuts  = new TH2F(Form("ClusterQualityCuts vs E %s",GetCutNumber().Data()),"ClusterQualityCuts",12,-0.5,11.5,nBinsClusterE, arrClusEBinning);
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(2,"timing");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(3,"Exotics");
@@ -629,6 +636,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(9,"track matching");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(10,"minimum energy");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(11,"out");
+  if (GetIsConversionRecovery() > 0)
+    fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(12,"rejected by conv Cl. flag");
   fHistograms->Add(fHistClusterIdentificationCuts);
 
   // Acceptance related histogramms
@@ -806,6 +815,18 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistNLMVsEAfterQA->GetXaxis()->SetTitle("N_{LM} in cluster");
     fHistNLMVsEAfterQA->GetYaxis()->SetTitle("E_{cl} (GeV)");
     fHistograms->Add(fHistNLMVsEAfterQA);
+    
+    if (GetIsConversionRecovery() > 0){
+      fHistInvMassDiCluster      = new TH2F(Form("InvMass_ClusterPair %s",GetCutNumber().Data()),"InvMass_ClusterPair",100,0,0.1,100,0,20);
+      fHistInvMassDiCluster->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");      
+      fHistInvMassDiCluster->GetYaxis()->SetTitle("p_{T} (GeV/c)");      
+      fHistograms->Add(fHistInvMassDiCluster);
+      fHistInvMassConvFlagging      = new TH2F(Form("InvMass_Rejected_ClusterPair %s",GetCutNumber().Data()),"InvMass_Rejected_ClusterPair",100,0,0.1,100,0,20);
+      fHistInvMassConvFlagging->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");      
+      fHistInvMassConvFlagging->GetYaxis()->SetTitle("p_{T} (GeV/c)");      
+      fHistograms->Add(fHistInvMassConvFlagging);
+    }  
+      
     if(fExtendedMatchAndQA > 0 || fIsPureCalo > 0){
       fHistClusterEM02AfterQA       = new TH2F(Form("EVsM02_afterClusterQA %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",nBinsClusterE, arrClusEBinning,400,0,5);
       fHistClusterEM02AfterQA->GetYaxis()->SetTitle("#sigma_{long}^2");
@@ -8285,3 +8306,78 @@ Bool_t AliCaloPhotonCuts::IsClusterPi0(AliVEvent *event,  AliMCEvent* mcEvent, A
 
   return kFALSE;
 }
+
+//_________________________________________________________________________________
+// function to find possible conversion candidates and clean up cluster array 
+// fMaxMGGRecConv  determines cut off for inv Mass
+// lower energetic photon is rejected to to likely worse energy resolution
+//_________________________________________________________________________________
+Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODConversionPhoton*> &vecPhotons, 
+                                                                vector<Int_t> &vecReject
+                                                              ){
+  
+  Bool_t rejected   = kFALSE;
+  if(vecPhotons.size()>0){
+    for(Int_t firstGammaIndex=0;firstGammaIndex<(Int_t)vecPhotons.size();firstGammaIndex++){
+      AliAODConversionPhoton *gamma1=vecPhotons.at(firstGammaIndex);
+      if (gamma1==NULL){
+        CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
+        continue;
+      }
+      TLorentzVector photon1;
+      photon1.SetPxPyPzE (gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E() );
+      
+      for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<(Int_t)vecPhotons.size();secondGammaIndex++){
+        AliAODConversionPhoton *gamma2=vecPhotons.at(secondGammaIndex);
+        if (gamma2==NULL){
+          CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+          continue;
+        }
+        TLorentzVector photon2;
+        photon2.SetPxPyPzE (gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E() );
+        
+        TLorentzVector mesonCand;
+        mesonCand = photon1+photon2;
+        fHistInvMassDiCluster->Fill(mesonCand.M(), mesonCand.Pt());
+        if (mesonCand.M() < fMaxMGGRecConv){
+          fHistInvMassConvFlagging->Fill(mesonCand.M(), mesonCand.Pt());
+          if (CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kFALSE)) AliDebug(2,"1st gamma already rejected"); 
+          if (CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kFALSE)) AliDebug(2,"2nd gamma already rejected"); 
+          rejected = kTRUE;
+          if (gamma1->E() < gamma2->E())
+            CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
+          else
+            CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+        }
+      }
+    }
+  }
+  if (rejected){
+    AliDebug(2,"================================================================================");
+    AliDebug(2,"================================================================================");
+    AliDebug(2,Form("array of rejected gamma from initial: %i/%i ", (int)vecReject.size(), (int)vecPhotons.size()));
+    for (Int_t index=0;index<(Int_t)vecReject.size();index++)
+       AliDebug(2,Form("index: %i", (int)vecReject.at(index)));
+    AliDebug(2,"================================================================================");
+  }
+  return rejected;
+}
+
+//_________________________________________________________________________________
+// function to check if integer is contained in current vector 
+// if not already contained will be aded if addIndex == kTRUE
+//_________________________________________________________________________________
+Bool_t AliCaloPhotonCuts::CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t tobechecked, Bool_t addIndex )
+{
+  if(tobechecked > -1){
+    vector<Int_t>::iterator it;
+    it = find (vec.begin(), vec.end(), tobechecked);
+    if (it != vec.end()) return true;
+    else if (addIndex){
+      vec.push_back(tobechecked);
+      return kFALSE;
+    }
+  }
+  return false;
+}
+
