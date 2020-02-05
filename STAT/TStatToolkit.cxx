@@ -2992,6 +2992,379 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 }
 
 
+/// TStatToolkit::MakePDFMap function to calculate statistics form the N dimensnal PDF map
+/// Original implementation - a copy of the MakeDistortionMapFast
+/// \param histo              -  input n dimsnional histogram
+/// \param pcstream           -  output stream to store tree with PDF statistic maps
+/// \param projectionInfo     -
+/// \param options            - option - parameterize statistic to extract
+/// \param verbose            - verbosity of extraction
+void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, std::map<std::string, std::string> pdfOptions, Int_t verbose)
+{
+  //
+  if (histo->GetNdimensions()<=1) {
+    ::Error("TStatToolkit::MakeDistortionMapFast","Invalid dimension of input histogram");
+    return;
+  }
+  // Parse options
+  Float_t fractionCut=0;
+  string estimators="";
+  Float_t kDumpHistoFraction=0;
+  Bool_t exportGraph=kFALSE;
+  Bool_t exportGraphCumulative=kFALSE;
+  TGraphErrors *graphHisto=0;
+  TGraphErrors *graphCumulative=0;
+
+  if ( pdfOptions[string("fractionCut")] != "" ) fractionCut = atof(pdfOptions[string("fractionCut")].data());
+  if ( pdfOptions[string("LTMestimators")] != "" ) estimators = pdfOptions[string("LTMestimators")];
+  if ( pdfOptions[string("DumpHistFraction")] != "" ) kDumpHistoFraction = atof(pdfOptions[string("DumpHistFraction")].data());
+  if ( pdfOptions[string("exportGraph")] == "1" )      exportGraph=kTRUE;
+  if ( pdfOptions[string("exportGraphCumulative")] == "1" ) exportGraphCumulative=kTRUE;
+
+  // Check options
+  if (fractionCut<0 || fractionCut>0.4){
+    ::Error("TStatToolkit::MakeDistortionMapFast","Invalid input fraction cut %f\r. Should be in range <0,0.4>", fractionCut);
+    return;
+  }
+  const Double_t kMinEntries=30, kUseLLFrom=20;
+  char tname[100];
+  char aname[100];
+  char bname[100];
+  char cname[100];
+  Float_t fractionLTM[100]={0.8};
+  TVectorF *vecLTM[100]={0};
+  Int_t nestimators=1;
+  if (estimators!=""){
+    TObjArray * array=TString(estimators).Tokenize(":");
+    nestimators=array->GetEntries();
+    for (Int_t iest=0; iest<nestimators; iest++){
+      fractionLTM[iest]=TString(array->At(iest)->GetName()).Atof();
+    }
+  }
+  for (Int_t iest=0; iest<nestimators; iest++) {
+    vecLTM[iest]=new TVectorF(10);
+    (*(vecLTM[iest]))[9]= fractionLTM[iest];
+  }
+
+  //
+  int ndim = histo->GetNdimensions();
+  int nbins[ndim],idx[ndim],idxmin[ndim],idxmax[ndim],idxSav[ndim];
+  for (int id=0;id<ndim;id++) nbins[id] = histo->GetAxis(id)->GetNbins();
+  //
+  int axOrd[ndim],binSt[ndim],binGr[ndim];
+  for (int i=0;i<ndim;i++) {
+    axOrd[i] = TMath::Nint(projectionInfo(i,0));
+    binGr[i] = TMath::Nint(projectionInfo(i,1));
+    binSt[i] = TMath::Max(1,TMath::Nint(projectionInfo(i,2)));
+  }
+  int tgtDim = axOrd[0],tgtStep=binSt[0],tgtNb=nbins[tgtDim],tgtNb1=tgtNb+1;
+  double binY[tgtNb],binX[tgtNb],meanVector[ndim],centerVector[ndim], meanVectorMI[ndim+2];
+  Int_t binVector[ndim];
+  // prepare X axis
+  TAxis* xax = histo->GetAxis(tgtDim);
+  for (int i=tgtNb;i--;) binX[i] = xax->GetBinCenter(i+1);
+  for (int i=ndim;i--;) idx[i]=1;
+  Bool_t grpOn = kFALSE;
+  for (int i=1;i<ndim;i++) if (binGr[i]) grpOn = kTRUE;
+  //
+  // estimate number of output fits
+  histo->GetListOfAxes()->Print();
+  ULong64_t nfits = 1, fitCount=0;
+  printf("index\tdim\t|\tnbins\tgrouping\tstep\tnfits\n");
+  for (int i=1;i<ndim;i++) {
+    int idim = axOrd[i];
+    nfits *= TMath::Max(1,nbins[idim]/binSt[idim]);
+    printf("%d %d | %d %d %d %lld\n",i,idim,nbins[idim],binGr[idim], binSt[idim],nfits);
+  }
+  printf("Expect %lld nfits\n",nfits);
+  ULong64_t fitProgress = nfits/100;
+  //
+  // setup fit function, at the moment full root fit
+  static TF1 fgaus("fgaus","gaus",-10,10);
+  fgaus.SetRange(xax->GetXmin(),xax->GetXmax());
+  //  TGraph grafFit(tgtNb);
+  TH1F* hfit = new TH1F("hfit","hfit",tgtNb,xax->GetXmin(),xax->GetXmax());
+  //
+  snprintf(tname, 100, "%sDist",histo->GetName());
+  TStopwatch sw;
+  sw.Start();
+  int dimVar=1, dimVarID = axOrd[dimVar];
+  //
+  //  TVectorF  vecLTM(9);
+  while(1) {
+    //
+    //double dimVarCen = histo->GetAxis(dimVarID)->GetBinCenter(idx[dimVarID]); // center of currently varied bin
+    //
+    if (grpOn) { //>> grouping requested?
+      memset(binY,0,tgtNb*sizeof(double)); // need to accumulate
+      //
+      for (int idim=1;idim<ndim;idim++) {
+        int grp = binGr[idim];
+        int idimR = axOrd[idim]; // real axis id
+        idxSav[idimR]=idx[idimR]; // save central bins
+        idxmax[idimR] = TMath::Min(idx[idimR]+grp,nbins[idimR]);
+        idx[idimR] = idxmin[idimR] = TMath::Max(1,idx[idimR]-grp);
+        //
+        // effective bin center
+        meanVector[idimR] = 0;
+        TAxis* ax = histo->GetAxis(idimR);
+        if (grp>0) {
+          for (int k=idxmin[idimR];k<=idxmax[idimR];k++) meanVector[idimR] += ax->GetBinCenter(k);
+          meanVector[idimR] /= (1+(grp<<1));
+        }
+        else meanVector[idimR] = ax->GetBinCenter(idxSav[idimR]);
+      } // set limits for grouping
+      if (verbose>0) {
+        printf("output bin: ");
+        for (int i=0;i<ndim;i++) if (i!=tgtDim) printf("[D:%d]:%d ",i,idxSav[i]);
+        printf("\n");
+        printf("integrates: ");
+        for (int i=0;i<ndim;i++) if (i!=tgtDim) printf("[D:%d]:%d-%d ",i,idxmin[i],idxmax[i]);
+        printf("\n");
+      }
+      //
+      for (Int_t jDim=0; jDim<ndim+2; jDim++) meanVectorMI[jDim]=0;
+      while(1) {
+        // loop over target dimension: accumulation
+        int &it = idx[tgtDim];
+        for (it=1;it<tgtNb1;it+=tgtStep) {
+          Double_t content=histo->GetBinContent(idx);
+          binY[it-1] += content;
+          for (Int_t jDim=0; jDim<ndim; jDim++) meanVectorMI[jDim]+=content*histo->GetAxis(jDim)->GetBinCenter(idx[jDim]);
+          meanVectorMI[ndim]+=content;
+          meanVectorMI[ndim+1]+=1.;
+          if (verbose>1) {for (int i=0;i<ndim;i++) printf("%d ",idx[i]); printf(" | accumulation\n");}
+        }
+        //
+        int idim;
+        for (idim=1;idim<ndim;idim++) { // dimension being groupped
+          int idimR = axOrd[idim]; // real axis id in the histo
+          if ( (++idx[idimR]) > idxmax[idimR] ) idx[idimR]=idxmin[idimR];
+          else break;
+        }
+        if (idim==ndim) break;
+      }
+    } // <<grouping requested
+    else {
+      int &it = idx[tgtDim];
+      for (it=1;it<tgtNb1;it+=tgtStep) {
+        binY[it-1] = histo->GetBinContent(idx);
+        //
+        //for (int i=0;i<ndim;i++) printf("%d ",idx[i]); printf(" | \n");
+      }
+      for (int idim=1;idim<ndim;idim++) {
+        int idimR = axOrd[idim]; // real axis id
+        meanVector[idimR] = histo->GetAxis(idimR)->GetBinCenter(idx[idimR]);
+      }
+    }
+    if (grpOn) for (int i=ndim;i--;) idx[i]=idxSav[i]; // restore central bins
+    idx[tgtDim] = 0;
+    if (verbose>0) {for (int i=0;i<ndim;i++) printf("%d ",idx[i]); printf(" | central bin fit\n");}
+    if (meanVectorMI[ndim]>1) { //TODO check valgrind
+      for (Int_t jDim=0; jDim<ndim; jDim++) meanVectorMI[jDim]/= meanVectorMI[ndim];
+    }else{
+      for (Int_t jDim=0; jDim<ndim; jDim++) meanVectorMI[jDim]= meanVector[ndim];
+    }
+    //
+    // >> ------------- do fit
+    float mean=0,mom2=0,rms=0,m3=0, m4=0, nrm=0,meanG=0,rmsG=0,chi2G=0,maxVal=0,entriesG=0,mean0=0, rms0=0;
+    hfit->Reset();
+    for (int ip=tgtNb;ip--;) {
+      //grafFit.SetPoint(ip,binX[ip],binY[ip]);
+      hfit->SetBinContent(ip+1,binY[ip]);
+      nrm  += binY[ip];
+      mean += binX[ip]*binY[ip];
+      mom2 += binX[ip]*binX[ip]*binY[ip];
+      if (maxVal<binY[ip]) maxVal = binY[ip];
+    }
+    if (nrm>0) {
+      mean /= nrm;
+      mom2 /= nrm;
+      rms = mom2 - mean*mean;
+      rms = rms>0 ? TMath::Sqrt(rms):0;
+    }
+    mean0=mean;
+    rms0=rms;
+
+
+    Int_t nbins1D=hfit->GetNbinsX();
+    Float_t binMedian=0;
+    Double_t limits[2]={hfit->GetBinCenter(1), hfit->GetBinCenter(nbins1D)};
+    if (nrm>5) {
+      for (Int_t iest=0; iest<nestimators; iest++){
+        TStatToolkit::LTMHisto(hfit, *(vecLTM[iest]), fractionLTM[iest]);
+      }
+      Double_t* integral=hfit->GetIntegral();
+      for (Int_t i=1; i<nbins1D-1; i++){
+        if (integral[i-1]<0.5 && integral[i]>=0.5){
+          if (hfit->GetBinContent(i-1)+hfit->GetBinContent(i)>0){
+            binMedian=hfit->GetBinCenter(i);
+            Double_t dIdx=-(integral[i-1]-integral[i]);
+            Double_t dx=(0.5+(0.5-integral[i])/dIdx)*hfit->GetBinWidth(i);
+            binMedian+=dx;
+          }
+        }
+        if (integral[i-1]<fractionCut && integral[i]>=fractionCut){
+          limits[0]=hfit->GetBinCenter(i-1)-hfit->GetBinWidth(i);
+        }
+        if (integral[i]<1-fractionCut && integral[i+1]>=1-fractionCut){
+          limits[1]=hfit->GetBinCenter(i+1)+hfit->GetBinWidth(i);
+        }
+      }
+    }
+    if (nrm>5&&fractionCut>0 &&rms>0) {
+      hfit->GetXaxis()->SetRangeUser(limits[0], limits[1]);
+      mean=hfit->GetMean();
+      rms=hfit->GetRMS();
+      if (nrm>0 && rms>0) {
+        m3=hfit->GetSkewness();
+        m4=hfit->GetKurtosis();
+      }
+      // fgaus.SetRange(limits[0]-rms, limits[1]+rms);   //TODO - to fix bug in range limits
+    }else{
+      fgaus.SetRange(xax->GetXmin(),xax->GetXmax());
+    }
+
+
+    Bool_t isFitValid=kFALSE;
+    if (nrm>=kMinEntries && rms>hfit->GetBinWidth(nbins1D)/TMath::Sqrt(12.)) {
+      fgaus.SetParameters(nrm/(rms/hfit->GetBinWidth(nbins1D)),mean,rms);
+      fgaus.SetParError(0,nrm/(rms/hfit->GetBinWidth(nbins1D)));
+      fgaus.SetParError(1,rms);
+      fgaus.SetParError(2,rms);
+      //grafFit.Fit(&fgaus,/*maxVal<kUseLLFrom ? "qnrl":*/"qnr");
+      TFitResultPtr fitPtr= hfit->Fit(&fgaus,maxVal<kUseLLFrom ? "qnrlS+":"qnrS+");
+      //TFitResultPtr fitPtr= hfit->Fit(&fgaus,"qnrlS");
+      entriesG = fgaus.GetParameter(0);
+      meanG = fgaus.GetParameter(1);
+      rmsG  = fgaus.GetParameter(2);
+      chi2G = fgaus.GetChisquare()/fgaus.GetNumberFreeParameters();
+      TFitResult * result = fitPtr.Get();
+      if (result!=NULL){
+        isFitValid = result->IsValid();
+      }
+      //
+    }
+    TH1 * hDump=0;
+    if (nrm>=kMinEntries&& kDumpHistoFraction>0 && (gRandom->Rndm()<kDumpHistoFraction ||  isFitValid!=kTRUE)){
+      hDump=hfit;
+    }
+    if (kDumpHistoFraction>=1.){ /// dump all histograms fraction>=1 independent of the status
+      hDump=hfit;
+    }
+    if (hDump){
+      hfit->GetListOfFunctions()->AddLast(&fgaus);
+      (*pcstream)<<TString::Format("%sDump", tname).Data()<<
+                 "entries="<<nrm<<     // number of entries
+                 "isFitValid="<<isFitValid<< // true if the gaus fit converged
+                 "hDump.="<<hDump<<    // histogram  - by default not filled
+                 "mean0="<<mean0<<       // mean value of the last dimension - without fraction cut
+                 "rms0="<<rms0<<         // rms value of the last dimension - without fraction cut
+                 "mean="<<mean<<       // mean value of the last dimension
+                 "rms="<<rms<<         // rms value of the last dimension
+                 "m3="<<m3<<            // m3 (skewnes) of the last dimension
+                 "m4="<<m4<<            // m4 (kurtosis) of the last dimension
+                 "binMedian="<<binMedian<< //binned median value of 1D histogram
+                 "entriesG="<<entriesG<<
+                 "meanG="<<meanG<<     // mean of the gaus fit
+                 "rmsG="<<rmsG<<       // rms of the gaus fit
+                 "vecLTM.="<<vecLTM[0]<<   // LTM  frac% statistic
+                 "chi2G="<<chi2G;      // chi2 of the gaus fit
+      for (Int_t iest=1; iest<nestimators; iest++)
+        (*pcstream)<<TString::Format("%sDump", tname).Data()<<TString::Format("vecLTM%d.=",iest)<<vecLTM[iest];   // LTM  frac% statistic
+
+    }
+      (*pcstream)<<tname<<
+               "entries="<<nrm<<     // number of entries
+               "isFitValid="<<isFitValid<< // true if the gaus fit converged
+               "mean0="<<mean0<<       // mean value of the last dimension - without fraction cut
+               "rms0="<<rms0<<         // rms value of the last dimension - without fraction cut
+               "mean="<<mean<<       // mean value of the last dimension
+               "rms="<<rms<<         // rms value of the last dimension
+               "m3="<<m3<<            // m3 (skewnes) of the last dimension
+               "m4="<<m4<<            // m4 (kurtosis) of the last dimension
+               "binMedian="<<binMedian<< //binned median value of 1D histogram
+               "entriesG="<<entriesG<<   //
+               "meanG="<<meanG<<     // mean of the gaus fit
+               "rmsG="<<rmsG<<       // rms of the gaus fit
+               "vecLTM.="<<vecLTM[0]<<   // LTM  frac% statistic
+               "chi2G="<<chi2G;      // chi2 of the gaus fit
+
+    if (exportGraph){
+      /// TODO - make function to adapt the content without new
+      graphHisto=new TGraphErrors(hfit);
+      (*pcstream)<<tname<<"gr.="<<graphHisto;
+    }
+    if (exportGraphCumulative){
+      /// TODO - make function to adapt the content without new
+      TH1* hisCumulative=hfit->GetCumulative();
+      graphCumulative = new TGraphErrors(hisCumulative);
+      delete hisCumulative;
+      (*pcstream)<<tname<<"grCumul.="<<graphCumulative;
+    }
+
+    for (Int_t iest=1; iest<nestimators; iest++)
+      (*pcstream)<<tname<<TString::Format("vecLTM%d.=",iest)<<vecLTM[iest];   // LTM  frac% statistic
+
+
+    //
+    meanVector[tgtDim] = mean; // what's a point of this?
+    for (Int_t idim=0; idim<ndim; idim++){
+      snprintf(aname, 100, "%sMean=",histo->GetAxis(idim)->GetName());
+      (*pcstream)<<tname<<
+                 aname<<meanVectorMI[idim];      // current bin means
+    }
+    //
+    for (Int_t iIter=0; iIter<ndim; iIter++){
+      Int_t idim = axOrd[iIter];
+      binVector[idim] = idx[idim];
+      centerVector[idim] = histo->GetAxis(idim)->GetBinCenter(idx[idim]);
+      snprintf(bname, 100, "%sBin=",histo->GetAxis(idim)->GetName());
+      snprintf(cname, 100, "%sCenter=",histo->GetAxis(idim)->GetName());
+      (*pcstream)<<tname<<
+                 bname<<binVector[idim]<<      // current bin values
+                 cname<<centerVector[idim];    // current bin centers
+      if (hDump){
+        (*pcstream)<<TString::Format("%sDump", tname).Data()<<
+                   bname<<binVector[idim]<<      // current bin values
+                   cname<<centerVector[idim];    // current bin centers
+      }
+    }
+    (*pcstream)<<tname<<"\n";
+    if (hDump)	{
+      (*pcstream)<<TString::Format("%sDump", tname).Data()<<"\n";
+      hfit->GetListOfFunctions()->RemoveLast();
+    }
+    // << ------------- do fit
+    //
+    if ( fitProgress>0 && nfits>0) {
+      if   (((++fitCount)%fitProgress)==0) {
+        printf("fit %lld %4.1f%% done\n",fitCount,100*double(fitCount)/nfits);
+      }
+    }
+    //
+    //next global bin in which target dimention will be looped
+    for (dimVar=1;dimVar<ndim;dimVar++) { // varying dimension
+      dimVarID = axOrd[dimVar]; // real axis id in the histo
+      if ( (idx[dimVarID]+=binSt[dimVar]) > nbins[dimVarID] ) idx[dimVarID]=1;
+      else break;
+    }
+    if (dimVar==ndim) break;
+  }
+  delete hfit;
+  sw.Stop();
+  sw.Print();
+  /*
+  int nb = histo->GetNbins();
+  int prc = nb/100;
+  for (int i=0;i<nb;i++) {
+    histo->GetBinContent(i);
+    if (i && (i%prc)==0) printf("Done %d%%\n",int(float(100*i)/prc));
+  }
+  */
+}
+
+
 /// Remap bin labels for sparse graphs
 /// \param graph0   - sparse graph to  be rebinned
 /// \param graph1   - graph with "template x axis"   (default)

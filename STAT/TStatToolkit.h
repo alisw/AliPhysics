@@ -46,6 +46,7 @@
 #include "TMatrixF.h"
 #include "TList.h"
 #include <float.h>
+#include <string>
 //#include "TGraph2D.h"
 //#include "TGraph.h"
 class THashList;
@@ -131,7 +132,7 @@ namespace TStatToolkit {
   //
   void MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t dumpHisto=100,Int_t verbose=kFALSE);
   void MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t verbose=0,  Double_t fractionCut=0.1, const char * estimators=0);
-
+  void MakePDFMap(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, std::map<std::string,std::string> options, Int_t verbose=0);
   //
   // norm (distance) functions
   //
