@@ -67,6 +67,9 @@ class AliFemtoDreamCorrHists {
     return fmTDetaDPhi;
   }
   ;
+    bool GetDoAncestorsPlots() {
+    return fAncestors;
+  }
   void FillSameEventDist(int i, float RelK) {
     fSameEventDist[i]->Fill(RelK);
   }
@@ -247,6 +250,19 @@ class AliFemtoDreamCorrHists {
     if (!fMinimalBooking)
       fEffMixingDepth[iHist]->Fill(iDepth);
   }
+
+  void FillSameEventDistCommon(int i, float RelK) {
+    fSameEventDistCommon[i]->Fill(RelK);
+  }
+  ;
+    void FillSameEventDistNonCommon(int i, float RelK) {
+    fSameEventDistNonCommon[i]->Fill(RelK);
+  }
+  ;
+  void FilldPhidEtaSECommon(int iHist, float dPhi, float dEta, float mT);
+  void FilldPhidEtaSENonCommon(int iHist, float dPhi, float dEta, float mT);
+
+
   TList* GetHistList() {
     return fResults;
   }
@@ -309,6 +325,11 @@ class AliFemtoDreamCorrHists {
   TH2F ***fdEtadPhiSEmT;
   TH2F ***fdEtadPhiMEmT;
   TH1F **fEffMixingDepth;
+  TH1F **fSameEventDistCommon;
+  TH1F **fSameEventDistNonCommon;
+  TH2F **fdEtadPhiSECommon;
+  TH2F **fdEtadPhiSENonCommon;
+
   bool fDoMultBinning;
   bool fDoCentBinning;
   bool fDokTandMultBinning;
@@ -320,6 +341,7 @@ class AliFemtoDreamCorrHists {
   bool fdPhidEtaPlots;
   bool fPhiEtaPlotsSmallK;
   bool fmTDetaDPhi;
+  bool fAncestors;
   std::vector<int> fPDGCode;
   std::vector<float> fmTdEtadPhiBins;
   std::vector<unsigned int> fWhichPairs;
