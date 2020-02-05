@@ -56,7 +56,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellEnergy> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellEnergy, 5); // EMCal cell energy correction component
+  ClassDef(AliEmcalCorrectionCellEnergy, 6); // EMCal cell energy correction component
   /// \endcond
 };
 
