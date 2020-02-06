@@ -266,7 +266,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
   // ************************************* EMCAL cuts ****************************************************
 
   // 7 TeV
-  // cuts for ReconMethod==0
+  // cuts for ReconMethod==0 PCM-Cal-Cal
   if(trainConfig == 1){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111017032230000","0163103a00000010","0163103000000010"); // pion mass (0.08,0.145), last string is not used as of now
 
@@ -308,7 +308,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
     //only MB 13TeV
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
-  // cuts for ReconMethod==1
+  // cuts for ReconMethod==1 PCM-Cal-PCM
   } else if(trainConfig == 101){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111017032230000","0163103a00000010","0163103000000010"); // pion mass (0.08,0.145)
 
@@ -350,7 +350,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
     //only MB 13TeV
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
-  // cuts for ReconMethod==2
+  // cuts for ReconMethod==2 Cal-Cal-Cal
   } else if(trainConfig == 201){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111017032230000","0163103a00000010","0163103000000010"); // pion mass (0.08,0.145)
 
@@ -395,11 +395,14 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("00085113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
     cuts.AddCut("00083113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
   } else if( trainConfig == 261) {
-    //only MB 13TeV
-    cuts.AddCut("00010113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
+    //only MB 13TeV only DCal
+    cuts.AddCut("00010113","00200009327000008250400000","1111100067032230000","0163103000000010","0163103000000010");
+  } else if( trainConfig == 262) {
+    //only MB 13TeV EMCal + DCal
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631031000000d0","0163103000000010");
 
 
-  // cuts for ReconMethod==3
+  // cuts for ReconMethod==3 Cal-Cal-PCM
   } else if(trainConfig == 301){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111017032230000","0163103a00000010","0163103000000010"); // pion mass (0.08,0.145)
 
@@ -446,8 +449,11 @@ void AddTask_OmegaToPiZeroGamma_pp(
   } else if( trainConfig == 361) {
     //only MB 13TeV
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 362) {
+    //only MB 13TeV EMcal + DCal
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631031000000d0","0163103000000010");
 
-  // cuts for ReconMethod==4
+  // cuts for ReconMethod==4 PCM-PCM-Cal
   } else if(trainConfig == 401){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111017032230000","0163103a00000010","0163103000000010"); // pion mass (0.08,0.145)
 
@@ -493,9 +499,11 @@ void AddTask_OmegaToPiZeroGamma_pp(
   } else if( trainConfig == 461) {
     //only MB 13TeV
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 462) {
+    //only MB 13TeV EMcal + DCal
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631031000000d0","0163103000000010");
 
-
-  // cuts for ReconMethod==5
+  // cuts for ReconMethod==5 PCM-PCM-PCM
   } else if(trainConfig == 501){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111017032230000","0163103a00000010","0163103000000010"); // pion mass (0.08,0.145)
 
