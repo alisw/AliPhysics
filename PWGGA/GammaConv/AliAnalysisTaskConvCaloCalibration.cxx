@@ -163,7 +163,9 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fDoInvMassShowerShapeTree(kFALSE),
   fAllowOverlapHeaders(kTRUE),
   fEnableClusterCutsForTrigger(kFALSE),
-  fTrackMatcherRunningMode(0)
+  fTrackMatcherRunningMode(0),
+  fUseEletronMatchingCalibration(kFALSE),
+  fElecSelector(NULL)
 {
 
 }
@@ -271,7 +273,9 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fDoInvMassShowerShapeTree(kFALSE),
   fAllowOverlapHeaders(kTRUE),
   fEnableClusterCutsForTrigger(kFALSE),
-  fTrackMatcherRunningMode(0)
+  fTrackMatcherRunningMode(0),
+  fUseEletronMatchingCalibration(kFALSE),
+  fElecSelector(NULL)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -903,6 +907,18 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 
+  // for electron selection
+  if(fUseEletronMatchingCalibration == 1){
+    fElecSelector=(AliDalitzElectronSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ElectronSelector");
+    if(!fElecSelector){AliFatal("Error: No ElectronSelector");}
+
+    if( fElecSelector ){
+      if ( ((AliDalitzElectronCuts*)fElecSelector->GetDalitzElectronCuts())->GetCutHistograms() ){
+        fOutputContainer->Add( ((AliDalitzElectronCuts*)fElecSelector->GetDalitzElectronCuts())->GetCutHistograms() );
+      }
+    }
+  }
+
 
     //********************************************************************************************************//
     //*****************************  NOT NEEDED FOR CALIBRATION???    ****************************************//
@@ -995,6 +1011,13 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
 //     }
     fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 
+    if(fUseEletronMatchingCalibration == 1){
+      fSelectorElectronIndex = fElecSelector->GetReconstructedElectronsIndex(); // Electrons from default Cut
+      fSelectorPositronIndex = fElecSelector->GetReconstructedPositronsIndex(); // Positrons from default Cut
+    } else if(fUseEletronMatchingCalibration == 2){
+      GetV0Electrons();
+    }
+
     // ------------------- BeginEvent ----------------------------
     AliEventplane *EventPlane = fInputEvent->GetEventplane();
     if(fIsHeavyIon ==1)fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
@@ -1007,7 +1030,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
       if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
       }
-
 
       if (fIsMC > 0){
         fWeightJetJetMC       = 1;
@@ -1061,6 +1083,7 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
         }
       }
 
+
       // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
       if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) // process calo clusters
         ProcessClusters();
@@ -1085,7 +1108,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
           fBGClusHandlerRP[iCut]->AddEvent(fClusterCandidates,fInputEvent); // Store Event for mixed Events
         }
       }
-
       fGammaCandidates->Clear(); // delete this cuts good gammas
       fClusterCandidates->Clear(); // delete cluster candidates
     }
@@ -1094,7 +1116,9 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
     //   RelabelAODPhotonCandidates(kFALSE); // Back to ESDMC Label
     //   fV0Reader->RelabelAODs(kFALSE);
     // }
-
+    fSelectorElectronIndex.clear();
+    fSelectorPositronIndex.clear();
+    fV0Electrons.clear();
     PostData(1, fOutputContainer);
 }
 
@@ -1123,7 +1147,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
-  if(fDoPrimaryTrackMatching) ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
+  if(fDoPrimaryTrackMatching && fUseEletronMatchingCalibration == 0) ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
   // vertex
   Double_t vertex[3] = {0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -1148,6 +1172,14 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
       delete clus;
       continue;
     }
+    if(fUseEletronMatchingCalibration == 1){
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fSelectorElectronIndex, fWeightJetJetMC);
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fSelectorPositronIndex, fWeightJetJetMC);
+    } else if(fUseEletronMatchingCalibration == 2){
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fV0Electrons, fWeightJetJetMC);
+    }
+
+
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
     clus->GetMomentum(clusterVector,vertex);
@@ -1285,6 +1317,42 @@ void AliAnalysisTaskConvCaloCalibration::ProcessPhotonCandidates(){
 
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskConvCaloCalibration::GetV0Electrons(){
+
+  for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
+    AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
+    if(!PhotonCandidate) continue;
+
+    //apply cuts to maximize electron purity
+    if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate,fInputEvent))continue;
+
+    for (Int_t iElec = 0;iElec < 2;iElec++){
+      Int_t tracklabel = PhotonCandidate->GetLabel(iElec);
+      AliVTrack *inTrack = 0x0;
+      if( fInputEvent->IsA()==AliESDEvent::Class() ) {
+        if( tracklabel > fInputEvent->GetNumberOfTracks() ) continue;
+        inTrack = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(tracklabel));
+      } else {
+        if( ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled() ){
+          inTrack = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(tracklabel));
+        } else {
+          for( Int_t ii=0;ii<fInputEvent->GetNumberOfTracks();ii++ ) {
+            inTrack = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(ii));
+            if(inTrack){
+              if(inTrack->GetID() == tracklabel) {
+                break;
+              }
+            }
+          }
+        }
+      }
+      fV0Electrons.push_back(tracklabel);
+    }
+
+  }
+
+}
 
 //________________________________________________________________________
 // function to reject photons in specific invariant mass window
@@ -1396,7 +1464,6 @@ void AliAnalysisTaskConvCaloCalibration::SetPhotonVeto(){
     }
   }
 }
-
 
 //________________________________________________________________________
 void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){

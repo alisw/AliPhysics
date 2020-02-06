@@ -355,6 +355,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event, Double_t weight=1.);
     void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1., Bool_t isEMCalOnly = kTRUE, AliMCEvent *mcEvent = 0x0);
+    void        MatchElectronTracksToClusters(AliVEvent* event, AliMCEvent* MCevent, AliVCluster* cluster, Int_t isMC, vector<Int_t> vElectronTracks = {}, Double_t weight = 1.);
     Bool_t      CheckClusterForTrackMatch(AliVCluster* cluster);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
@@ -388,6 +389,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     // Set basic merging cuts
     void        SetSeedEnergy(Double_t seed)                    {fSeedEnergy      = seed; return;}
     void        SetLocMaxCutEDiff(Double_t diffCut)             {fLocMaxCutEDiff  = diffCut; return;}
+
+    //Set Electron Cluster calibration
+    void        SetElectronClusterCalibration(Bool_t calib)     {fUseElectronClusterCalibration = calib; return;};
+    Bool_t      GetElectronClusterCalibration()                 {return fUseElectronClusterCalibration;};
 
     // Set Individual Cuts
     Bool_t      SetClusterTypeCut(Int_t);
@@ -504,6 +509,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseEOverPVetoTM;                         // flag for switching on E/P veto (forbidding tracks to match clusters if clusterE/trackP > someValue
     Double_t  fEOverPMax;                               // maximum value for E/P of a track to be considered for TM
     Bool_t    fUseTMMIPsubtraction;                     // flag for switching on MIP subtraction
+    Bool_t    fUseElectronClusterCalibration;           // flag for switching on electron cluster calibration
     Int_t     fExtendedMatchAndQA;                      // switching on ext matching histograms (1) / ext QA_noCell (2) / ext matching + ext QA_noCell (3) / extQA + cell (4) / ext match + extQA + cell (5) or all off (0)
     Double_t  fExoticEnergyFracCluster;                 // exotic energy compared to E_cross cluster cut
     Double_t  fExoticMinEnergyCell;                     // minimum energy of cell to test for exotics
@@ -650,9 +656,16 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistClusETruePi0_Matched;                //
 
     // histograms for studying track matching veto with track momentum vs. cluster energy
-    TH2F*     fHistMatchedTrackPClusE;                // track P vs cluster E in case of matching with a cluster
-    TH2F*     fHistMatchedTrackPClusEAfterEOverPVeto; // track P vs cluster E for matched tracks surviving the E/P veto
-    TH2F*     fHistMatchedTrackPClusETruePi0Clus;     // track P vs cluster E in case of matching with a true pi0 cluster
+    TH2F*     fHistMatchedTrackPClusE;                  // track P vs cluster E in case of matching with a cluster
+    TH2F*     fHistMatchedTrackPClusEAfterEOverPVeto;   // track P vs cluster E for matched tracks surviving the E/P veto
+    TH2F*     fHistMatchedTrackPClusETruePi0Clus;       // track P vs cluster E in case of matching with a true pi0 cluster
+
+    TH2F*     fHistElectronPositronClusterMatch;        // Electron/Positron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistElectronClusterMatch;                // Electron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistPositronClusterMatch;                // Positron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistTrueElectronPositronClusterMatch;    // True Electron/Positron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistTrueNoElectronPositronClusterMatch;  // True No Electron/Positron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistElectronClusterMatchTruePID;         // MC true histogram for purity studies of selected electrons
 
     // histogram for conv candidate rejection 
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
