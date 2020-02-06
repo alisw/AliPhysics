@@ -174,7 +174,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
   config->SetDeltaEtaMax(0.02);
-  config->SetDeltaPhiMax(0.016);
+  config->SetDeltaPhiMax(0.025);
   config->SetExtendedQAPairs(pairQA);
 
   config->SetMixingDepth(iDepth);
