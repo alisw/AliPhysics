@@ -156,6 +156,11 @@ public:
   void SetMinCandidatePt(float lPtMin) { fMinCanidatePtToSave = lPtMin; }
   void SetMaxCandidatePt(float lPtMax) { fMaxCanidatePtToSave = lPtMax; }
 
+  void SetMinCandidateCt(float lCtMin) { fMinCanidateCtToSave = lCtMin; }
+  void SetMaxCandidateCt(float lCtMax) { fMaxCanidateCtToSave = lCtMax; }
+
+  void SetMaxEventCentrality(float lCentMax) { fMaxEventCentrality = lCentMax; }
+
   void SetMaxTPCsigmas(float nSigmaDeu, float nSigmaP, float nSigmaPi) {
     fMaxNSigmaTPCDeu = nSigmaDeu;
     fMaxNSigmaTPCP   = nSigmaP;
@@ -223,6 +228,11 @@ private:
 
   float fMinCanidatePtToSave;    // min candidate pt to save
   float fMaxCanidatePtToSave;    // max candidate pt to save
+
+  float fMinCanidateCtToSave;    // min candidate ct to save
+  float fMaxCanidateCtToSave;    // max candidate ct to save
+
+  float fMaxEventCentrality;    // max event centrality to save
 
   unsigned char fMinTPCNcluster;
 
