@@ -1727,7 +1727,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessClusters(){
     if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
 
     // Flag Photon as CaloPhoton
-    PhotonCandidate->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType());
+    PhotonCandidate->SetIsCaloPhoton();
     PhotonCandidate->SetCaloClusterRef((Long_t)i);
 
     // CHANGED // TODO // From AliAnalysisTaskHeavyNeutralMesonToGG
@@ -1794,7 +1794,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueClusterCandidates(AliAODConve
 {
 
   TParticle *Photon = NULL;
-  if (TruePhotonCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
+  if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
   if (TruePhotonCandidate->GetCaloPhotonMCLabel(0) < 0) return;
 
   if (TruePhotonCandidate->GetNCaloPhotonMCLabels()>0) Photon = fMCEvent->Particle(TruePhotonCandidate->GetCaloPhotonMCLabel(0));
@@ -1816,7 +1816,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueClusterCandidatesAOD(AliAODCo
   AliAODMCParticle *Photon = NULL;
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (AODMCTrackArray){
-    if (TruePhotonCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
+    if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
     if (TruePhotonCandidate->GetNCaloPhotonMCLabels()>0) Photon = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetCaloPhotonMCLabel(0));
       else return;
   }else {
@@ -2455,7 +2455,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
 
         for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
           AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
-          if (gamma1==NULL || gamma1->GetIsCaloPhoton() == 0) continue;
+          if (gamma1==NULL || !(gamma1->GetIsCaloPhoton())) continue;
           Bool_t matched = kFALSE;
           AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
           matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster,fInputEvent,fWeightJetJetMC);
@@ -2485,7 +2485,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                   if (thirdGammaIndex==secondGammaIndex) continue;
                   Bool_t matchedgamma2wconvgamma = kFALSE;
                   AliAODConversionPhoton *gamma2=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(thirdGammaIndex));
-                  if (gamma2==NULL || gamma2->GetIsCaloPhoton() == 0) continue;
+                  if (gamma2==NULL || !(gamma2->GetIsCaloPhoton())) continue;
                   AliVCluster* cluster2 = fInputEvent->GetCaloCluster(gamma2->GetCaloClusterRef());
                   matchedgamma2wconvgamma = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster2, fInputEvent, fWeightJetJetMC);
                   AliAODConversionMother *omegacand = new AliAODConversionMother(pi0cand,gamma2);
@@ -2504,22 +2504,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                         ProcessTrueMesonCandidatesAOD(omegacand,gamma0,gamma1,gamma2);
                     }
                     if(fDoMesonQA>0 && (omegacand->M()>0.4) && (omegacand->M()<1.2) ){
-                      TVector3 Boost = omegacand->BoostVector();
-                      TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-                      Pi0InRestFrame.SetPxPyPzE(pi0cand->Px(), pi0cand->Py(), pi0cand->Pz(), pi0cand->E());
-                      Pi0InRestFrame.Boost(-Boost);
-                      TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-                      GammaInRestFrame.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                      GammaInRestFrame.Boost(-Boost);
-                      TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-                      gamma0LV.SetPxPyPzE(gamma0->Px(), gamma0->Py(), gamma0->Pz(), gamma0->E());
-                      TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-                      gamma1LV.SetPxPyPzE(gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E());
-                      TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-                      gamma2LV.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                      fHistoMotherRestGammaCosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-                      fHistoMotherRestPi0CosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-                      fHistoMotherDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+                      // FillQAPlots(omegacand, pi0cand, gamma0, gamma1, gamma2, fHistoMotherRestGammaCosAnglePt[fiCut], fHistoMotherRestPi0CosAnglePt[fiCut], fHistoMotherDalitzPlot[fiCut]);
                     }
                     if(omegacand->M()>0.7 && omegacand->M()<0.85){
                       fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
@@ -2559,7 +2544,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
         for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
           Bool_t matched = kFALSE;
           AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
-          if (gamma1==NULL || gamma1->GetIsCaloPhoton() == 0) continue;
+          if (gamma1==NULL || !(gamma1->GetIsCaloPhoton())) continue;
 
           AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
           matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent, fWeightJetJetMC);
@@ -2607,22 +2592,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                         ProcessTrueMesonCandidatesAOD(omegacand,gamma0,gamma1,gamma2);
                     }
                     if(fDoMesonQA>0 && (omegacand->M()>0.4) && (omegacand->M()<1.2) ){
-                      TVector3 Boost = omegacand->BoostVector();
-                      TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-                      Pi0InRestFrame.SetPxPyPzE(pi0cand->Px(), pi0cand->Py(), pi0cand->Pz(), pi0cand->E());
-                      Pi0InRestFrame.Boost(-Boost);
-                      TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-                      GammaInRestFrame.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                      GammaInRestFrame.Boost(-Boost);
-                      TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-                      gamma0LV.SetPxPyPzE(gamma0->Px(), gamma0->Py(), gamma0->Pz(), gamma0->E());
-                      TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-                      gamma1LV.SetPxPyPzE(gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E());
-                      TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-                      gamma2LV.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                      fHistoMotherRestGammaCosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-                      fHistoMotherRestPi0CosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-                      fHistoMotherDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+                      // FillQAPlots(omegacand, pi0cand, gamma0, gamma1, gamma2, fHistoMotherRestGammaCosAnglePt[fiCut], fHistoMotherRestPi0CosAnglePt[fiCut], fHistoMotherDalitzPlot[fiCut]);
                     }
                     if(omegacand->M()>0.7 && omegacand->M()<0.85){
                       fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
@@ -2658,10 +2628,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
     if(fClusterCandidates->GetEntries()>2){
       for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
-        if (gamma0==NULL || gamma0->GetIsCaloPhoton() == 0) continue;
+        if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
         for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
           AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
-          if (gamma1==NULL || gamma1->GetIsCaloPhoton() == 0) continue;
+          if (gamma1==NULL || !(gamma1->GetIsCaloPhoton())) continue;
           AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0, gamma1);
           if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
                ->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
@@ -2681,7 +2651,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
               for(Int_t thirdGammaIndex=0;thirdGammaIndex<fClusterCandidates->GetEntries();thirdGammaIndex++){
                 if (thirdGammaIndex==secondGammaIndex || thirdGammaIndex==firstGammaIndex) continue;
                 AliAODConversionPhoton *gamma2=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(thirdGammaIndex));
-                if (gamma2==NULL || gamma2->GetIsCaloPhoton() == 0) continue;
+                if (gamma2==NULL || !(gamma2->GetIsCaloPhoton())) continue;
                 AliAODConversionMother *omegacand = new AliAODConversionMother(pi0cand,gamma2);
                 if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(omegacand, pi0cand, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
                   fHistoMotherInvMassPt[fiCut]->Fill(omegacand->M(),omegacand->Pt(),fWeightJetJetMC);
@@ -2692,22 +2662,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                       ProcessTrueMesonCandidatesAOD(omegacand,gamma0,gamma1,gamma2);
                   }
                   if(fDoMesonQA>0 && (omegacand->M()>0.4) && (omegacand->M()<1.2) ){
-                    TVector3 Boost = omegacand->BoostVector();
-                    TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-                    Pi0InRestFrame.SetPxPyPzE(pi0cand->Px(), pi0cand->Py(), pi0cand->Pz(), pi0cand->E());
-                    Pi0InRestFrame.Boost(-Boost);
-                    TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-                    GammaInRestFrame.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                    GammaInRestFrame.Boost(-Boost);
-                    TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-                    gamma0LV.SetPxPyPzE(gamma0->Px(), gamma0->Py(), gamma0->Pz(), gamma0->E());
-                    TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-                    gamma1LV.SetPxPyPzE(gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E());
-                    TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-                    gamma2LV.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                    fHistoMotherRestGammaCosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-                    fHistoMotherRestPi0CosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-                    fHistoMotherDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+                    // FillQAPlots(omegacand, pi0cand, gamma0, gamma1, gamma2, fHistoMotherRestGammaCosAnglePt[fiCut], fHistoMotherRestPi0CosAnglePt[fiCut], fHistoMotherDalitzPlot[fiCut]);
                   }
                   if(omegacand->M()>0.7 && omegacand->M()<0.85){
                     fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
@@ -2740,11 +2695,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
     if(fClusterCandidates->GetEntries()>1 && fGammaCandidates->GetEntries()>0){
       for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
-        if (gamma0==NULL || gamma0->GetIsCaloPhoton() == 0) continue;
+        if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
         AliVCluster* cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
         for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
           AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
-          if (gamma1==NULL || gamma1->GetIsCaloPhoton() == 0) continue;
+          if (gamma1==NULL || !(gamma1->GetIsCaloPhoton())) continue;
           AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0, gamma1);
           if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
                ->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
@@ -2782,22 +2737,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                       ProcessTrueMesonCandidatesAOD(omegacand,gamma0,gamma1,gamma2);
                   }
                   if(fDoMesonQA>0 && (omegacand->M()>0.4) && (omegacand->M()<1.2) ){
-                    TVector3 Boost = omegacand->BoostVector();
-                    TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-                    Pi0InRestFrame.SetPxPyPzE(pi0cand->Px(), pi0cand->Py(), pi0cand->Pz(), pi0cand->E());
-                    Pi0InRestFrame.Boost(-Boost);
-                    TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-                    GammaInRestFrame.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                    GammaInRestFrame.Boost(-Boost);
-                    TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-                    gamma0LV.SetPxPyPzE(gamma0->Px(), gamma0->Py(), gamma0->Pz(), gamma0->E());
-                    TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-                    gamma1LV.SetPxPyPzE(gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E());
-                    TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-                    gamma2LV.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                    fHistoMotherRestGammaCosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-                    fHistoMotherRestPi0CosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-                    fHistoMotherDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+                    // FillQAPlots(omegacand, pi0cand, gamma0, gamma1, gamma2, fHistoMotherRestGammaCosAnglePt[fiCut], fHistoMotherRestPi0CosAnglePt[fiCut], fHistoMotherDalitzPlot[fiCut]);
                   }
                   if(omegacand->M()>0.7 && omegacand->M()<0.85){
                     fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
@@ -2853,7 +2793,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
               }
               for(Int_t thirdGammaIndex=0;thirdGammaIndex<fClusterCandidates->GetEntries();thirdGammaIndex++){
                 AliAODConversionPhoton *gamma2=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(thirdGammaIndex));
-                if(gamma2==NULL || gamma2->GetIsCaloPhoton() == 0) continue;
+                if(gamma2==NULL || !(gamma2->GetIsCaloPhoton())) continue;
                 AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma2->GetCaloClusterRef());
                 Bool_t matched = (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent, fWeightJetJetMC))
                     || (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma1,cluster, fInputEvent, fWeightJetJetMC));
@@ -2873,22 +2813,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                       ProcessTrueMesonCandidatesAOD(omegacand,gamma0,gamma1,gamma2);
                   }
                   if(fDoMesonQA>0 && (omegacand->M()>0.4) && (omegacand->M()<1.2) ){
-                    TVector3 Boost = omegacand->BoostVector();
-                    TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-                    Pi0InRestFrame.SetPxPyPzE(pi0cand->Px(), pi0cand->Py(), pi0cand->Pz(), pi0cand->E());
-                    Pi0InRestFrame.Boost(-Boost);
-                    TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-                    GammaInRestFrame.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                    GammaInRestFrame.Boost(-Boost);
-                    TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-                    gamma0LV.SetPxPyPzE(gamma0->Px(), gamma0->Py(), gamma0->Pz(), gamma0->E());
-                    TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-                    gamma1LV.SetPxPyPzE(gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E());
-                    TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-                    gamma2LV.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                    fHistoMotherRestGammaCosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-                    fHistoMotherRestPi0CosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-                    fHistoMotherDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+                    // FillQAPlots(omegacand, pi0cand, gamma0, gamma1, gamma2, fHistoMotherRestGammaCosAnglePt[fiCut], fHistoMotherRestPi0CosAnglePt[fiCut], fHistoMotherDalitzPlot[fiCut]);
                   }
                   if(omegacand->M()>0.7 && omegacand->M()<0.85){
                     fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
@@ -2957,22 +2882,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                   }
                   fHistoMotherInvMassPt[fiCut]->Fill(omegacand->M(),omegacand->Pt(),fWeightJetJetMC);
                   if(fDoMesonQA>0 && (omegacand->M()>0.4) && (omegacand->M()<1.2) ){
-                    TVector3 Boost = omegacand->BoostVector();
-                    TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-                    Pi0InRestFrame.SetPxPyPzE(pi0cand->Px(), pi0cand->Py(), pi0cand->Pz(), pi0cand->E());
-                    Pi0InRestFrame.Boost(-Boost);
-                    TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-                    GammaInRestFrame.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                    GammaInRestFrame.Boost(-Boost);
-                    TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-                    gamma0LV.SetPxPyPzE(gamma0->Px(), gamma0->Py(), gamma0->Pz(), gamma0->E());
-                    TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-                    gamma1LV.SetPxPyPzE(gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E());
-                    TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-                    gamma2LV.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
-                    fHistoMotherRestGammaCosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-                    fHistoMotherRestPi0CosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-                    fHistoMotherDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+                    // FillQAPlots(omegacand, pi0cand, gamma0, gamma1, gamma2, fHistoMotherRestGammaCosAnglePt[fiCut], fHistoMotherRestPi0CosAnglePt[fiCut], fHistoMotherDalitzPlot[fiCut]);
                   }
                   if(omegacand->M()>0.7 && omegacand->M()<0.85){
                     fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
@@ -3020,7 +2930,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
         }
       }
 
-      if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma1MotherLabel = -1;
       TParticle * gammaMC1 = 0x0;
@@ -3040,7 +2950,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
 
         // fill pi0 histograms here if necessary
 
-        if (TrueGammaCandidate2->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+        if (!TrueGammaCandidate2->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
         Int_t gamma2MCLabel = TrueGammaCandidate2->GetCaloPhotonMCLabel(0); // get most probable MC label
         Int_t gamma2MotherLabel = -1;
         TParticle * gammaMC2 = 0x0;
@@ -3077,23 +2987,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -3115,7 +3009,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
         }
       }
 
-      if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma1MotherLabel = -1;
       TParticle * gammaMC1 = 0x0;
@@ -3168,23 +3062,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -3196,7 +3074,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
     case 2:
     {
       // get gamma0MotherLabel
-      if (TrueGammaCandidate0->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate0->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma0MotherLabel = -1;
       TParticle * gammaMC0 = 0x0;
@@ -3212,7 +3090,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
       }
 
       // get gamma1MotherLabel
-      if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma1MotherLabel = -1;
       TParticle * gammaMC1 = 0x0;
@@ -3232,7 +3110,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
 
         // fill pi0 histograms here if necessary
 
-        if (TrueGammaCandidate2->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+        if (!TrueGammaCandidate2->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
         Int_t gamma2MCLabel = TrueGammaCandidate2->GetCaloPhotonMCLabel(0); // get most probable MC label
         Int_t gamma2MotherLabel = -1;
         TParticle * gammaMC2 = 0x0;
@@ -3269,23 +3147,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -3297,7 +3159,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
     case 3:
     {
       // get gamma0MotherLabel
-      if (TrueGammaCandidate0->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate0->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma0MotherLabel = -1;
       TParticle * gammaMC0 = 0x0;
@@ -3313,7 +3175,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
       }
 
       // get gamma1MotherLabel
-      if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma1MotherLabel = -1;
       TParticle * gammaMC1 = 0x0;
@@ -3366,23 +3228,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -3421,7 +3267,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
 
         // fill pi0 histograms here if necessary
 
-        if (TrueGammaCandidate2->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+        if (!TrueGammaCandidate2->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
         Int_t gamma2MCLabel = TrueGammaCandidate2->GetCaloPhotonMCLabel(0); // get most probable MC label
         Int_t gamma2MotherLabel = -1;
         TParticle * gammaMC2 = 0x0;
@@ -3458,23 +3304,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -3545,23 +3375,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -3597,7 +3411,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
         gamma0MotherLabel=gammaMC0->GetMother();
       }
 
-      if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma1MotherLabel = -1;
 
@@ -3623,7 +3437,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
         Int_t pi0MotherLabel = TruePi0ForMother->GetMother();
         // Int_t pi0MotherLabel = fMCEvent->Particle(gamma0MotherLabel)->GetMother(0);
 
-        if (TrueGammaCandidate2->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+        if (!TrueGammaCandidate2->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
         Int_t gamma2MCLabel = TrueGammaCandidate2->GetCaloPhotonMCLabel(0); // get most probable MC label
         Int_t gamma2MotherLabel = -1;
 
@@ -3662,23 +3476,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -3703,7 +3501,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
         gamma0MotherLabel=gammaMC0->GetMother();
       }
 
-      if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma1MotherLabel = -1;
 
@@ -3765,23 +3563,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -3792,7 +3574,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
     // cal-cal,cal
     case 2:
     {
-      if (TrueGammaCandidate0->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate0->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma0MotherLabel = -1;
 
@@ -3811,7 +3593,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
         }
       }
 
-      if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma1MotherLabel = -1;
 
@@ -3836,7 +3618,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
         Int_t pi0MotherLabel = TruePi0ForMother->GetMother();
         // Int_t pi0MotherLabel = fMCEvent->Particle(gamma0MotherLabel)->GetMother(0);
 
-        if (TrueGammaCandidate2->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+        if (!TrueGammaCandidate2->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
         Int_t gamma2MCLabel = TrueGammaCandidate2->GetCaloPhotonMCLabel(0); // get most probable MC label
         Int_t gamma2MotherLabel = -1;
         AliAODMCParticle * gammaMC2 = 0x0;
@@ -3874,23 +3656,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -3901,7 +3667,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
     // cal-cal,pcm
     case 3:
     {
-      if (TrueGammaCandidate0->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate0->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma0MotherLabel = -1;
 
@@ -3919,7 +3685,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
         }
       }
 
-      if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+      if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
       Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
       Int_t gamma1MotherLabel = -1;
 
@@ -3981,23 +3747,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -4044,7 +3794,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
         Int_t pi0MotherLabel = TruePi0ForMother->GetMother();
         // Int_t pi0MotherLabel = fMCEvent->Particle(gamma0MotherLabel)->GetMother(0);
 
-        if (TrueGammaCandidate2->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
+        if (!TrueGammaCandidate2->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
         Int_t gamma2MCLabel = TrueGammaCandidate2->GetCaloPhotonMCLabel(0); // get most probable MC label
         Int_t gamma2MotherLabel = -1;
 
@@ -4083,23 +3833,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -4181,23 +3915,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
             fHistoTrueOmegaPi0AnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TMath::Pi() - OmegaCandidate->Angle(TruePi0->Vect()),fWeightJetJetMC);
             fHistoTruePi0GammaAnglePt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Angle(TrueGammaCandidate2->Vect()),fWeightJetJetMC);
             fHistoTrueOmegaPtPi0Pt[fiCut]->Fill(OmegaCandidate->Pt(),TruePi0->Pt(),fWeightJetJetMC);
-
-            TVector3 Boost = OmegaCandidate->BoostVector();
-            TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
-            Pi0InRestFrame.SetPxPyPzE(TruePi0->Px(), TruePi0->Py(), TruePi0->Pz(), TruePi0->E());
-            Pi0InRestFrame.Boost(-Boost);
-            TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
-            GammaInRestFrame.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            GammaInRestFrame.Boost(-Boost);
-            fHistoTrueOmegaRestGammaCosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
-            fHistoTrueOmegaRestPi0CosAnglePt[fiCut]->Fill(OmegaCandidate->Pt(), cos(OmegaCandidate->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
-            TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
-            gamma0LV.SetPxPyPzE(TrueGammaCandidate0->Px(), TrueGammaCandidate0->Py(), TrueGammaCandidate0->Pz(), TrueGammaCandidate0->E());
-            TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
-            gamma1LV.SetPxPyPzE(TrueGammaCandidate1->Px(), TrueGammaCandidate1->Py(), TrueGammaCandidate1->Pz(), TrueGammaCandidate1->E());
-            TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
-            gamma2LV.SetPxPyPzE(TrueGammaCandidate2->Px(), TrueGammaCandidate2->Py(), TrueGammaCandidate2->Pz(), TrueGammaCandidate2->E());
-            fHistoTrueDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+            // FillQAPlots(omegacandidate, TruePi0, TrueGammaCandidate0, TrueGammaCandidate1, TrueGammaCandidate2);
           }
           delete TruePi0;
           TruePi0=0x0;
@@ -4238,7 +3956,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
       if(fReconMethod % 2 == 0){ //EMCAL gamma
         for(Int_t iCurrent3=0;iCurrent3<fClusterCandidates->GetEntries();iCurrent3++){
           AliAODConversionPhoton *gamma2 = dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(iCurrent3));
-          if(gamma2 == NULL || gamma2->GetIsCaloPhoton() == 0) continue;
+          if(gamma2 == NULL || !(gamma2->GetIsCaloPhoton())) continue;
           AliAODConversionMother *BGOmegacand = new AliAODConversionMother(&BGpi0cand,gamma2);
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(BGOmegacand, &BGpi0cand, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
             fHistoDiffPi0SameGammaBackInvMassPt[fiCut]->Fill(BGOmegacand->M(),BGOmegacand->Pt(),fWeightJetJetMC);
@@ -4532,5 +4250,28 @@ void AliAnalysisTaskOmegaToPiZeroGamma::FillMultipleCountHistoAndClear(map<Int_t
     hist->Fill(it->second, fWeightJetJetMC);
   }
   ma.clear();
+  return;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskOmegaToPiZeroGamma::FillQAPlots(AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
+  AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2,
+  TH2F* fHistoMotherRestGammaCosAnglePt, TH2F* fHistoMotherRestPi0CosAnglePt, TH2F* fHistoMotherDalitzPlot){
+    TVector3 Boost = omegacand->BoostVector();
+    TLorentzVector Pi0InRestFrame = TLorentzVector(0,0,0,0);
+    Pi0InRestFrame.SetPxPyPzE(pi0cand->Px(), pi0cand->Py(), pi0cand->Pz(), pi0cand->E());
+    Pi0InRestFrame.Boost(-Boost);
+    TLorentzVector GammaInRestFrame = TLorentzVector(0,0,0,0);
+    GammaInRestFrame.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
+    GammaInRestFrame.Boost(-Boost);
+    TLorentzVector gamma0LV = TLorentzVector(0,0,0,0);
+    gamma0LV.SetPxPyPzE(gamma0->Px(), gamma0->Py(), gamma0->Pz(), gamma0->E());
+    TLorentzVector gamma1LV = TLorentzVector(0,0,0,0);
+    gamma1LV.SetPxPyPzE(gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E());
+    TLorentzVector gamma2LV = TLorentzVector(0,0,0,0);
+    gamma2LV.SetPxPyPzE(gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E());
+    fHistoMotherRestGammaCosAnglePt->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
+    fHistoMotherRestPi0CosAnglePt->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
+    fHistoMotherDalitzPlot->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
   return;
 }
