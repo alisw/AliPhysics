@@ -25,6 +25,7 @@ ClassImp(AliAnalysisTaskNanoAODFemtoDreamPhi)
       fConfig(),
       fPairCleaner(),
       fPartColl(),
+      fSample(nullptr),
       fGTI(),
       fTrackBufferSize() {}
 
@@ -47,6 +48,7 @@ AliAnalysisTaskNanoAODFemtoDreamPhi::AliAnalysisTaskNanoAODFemtoDreamPhi(
       fConfig(),
       fPairCleaner(),
       fPartColl(),
+      fSample(nullptr),
       fGTI(),
       fTrackBufferSize(2000) {
   DefineOutput(1, TList::Class());
@@ -147,8 +149,16 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserCreateOutputObjects() {
   fPartColl =
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 
-  fOutput->Add(fPartColl->GetHistList());
-  fOutput->Add(fPartColl->GetQAList());
+  if (fConfig->GetUsePhiSpinning()) {
+    fSample = new AliFemtoDreamControlSample(fConfig);
+    fOutput->Add(fSample->GetHistList());
+    fOutput->Add(fSample->GetQAList());
+  }
+
+  if (fConfig->GetUseEventMixing()) {
+    fOutput->Add(fPartColl->GetHistList());
+    fOutput->Add(fPartColl->GetQAList());
+  }
 
   PostData(1, fOutput);
 }
@@ -474,8 +484,17 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->StoreParticle(ProtonNOprim);
   fPairCleaner->StoreParticle(AProtonNOprim);
 
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
-                      fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+  if (fPairCleaner->GetCounter() > 0) {
+    if (fConfig->GetUseEventMixing()) {
+      fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
+                          fEvent->GetZVertex(), fEvent->GetRefMult08(),
+                          fEvent->GetV0MCentrality());
+    }
+
+    if (fConfig->GetUsePhiSpinning()) {
+      fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
+    }
+  }
 
   PostData(1, fOutput);
 }

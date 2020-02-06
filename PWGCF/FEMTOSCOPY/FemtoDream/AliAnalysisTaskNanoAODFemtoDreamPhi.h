@@ -12,6 +12,7 @@
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamv0.h"
 #include "AliFemtoDreamv0Cuts.h"
+#include "AliFemtoDreamControlSample.h"
 
 
 class AliVParticle;
@@ -67,9 +68,10 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
   AliFemtoDreamCollConfig *fConfig;        //
   AliFemtoDreamPairCleaner *fPairCleaner;  //!
   AliFemtoDreamPartCollection *fPartColl;  //!
+  AliFemtoDreamControlSample *fSample;   //!
   AliVTrack **fGTI;                        //!
   int fTrackBufferSize;                    //
-  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 2)
+  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 3)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskNanoAODFemtoDreamPhi_H_ */
