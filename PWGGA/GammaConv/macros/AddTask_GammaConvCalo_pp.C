@@ -208,6 +208,7 @@ void AddTask_GammaConvCalo_pp(
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
+  if (enableLightOutput == 0) task->SetPlotTrackPID(kTRUE);
   if (enableLightOutput == 5) task->SetECalibOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
