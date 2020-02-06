@@ -108,6 +108,9 @@ void AddTask_GammaCaloMix_pp(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
+  Bool_t fUsePtHardFromFile      = kFALSE;
+  Bool_t fUseAddOutlierRej      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -126,6 +129,24 @@ void AddTask_GammaCaloMix_pp(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+      strTempSetting.Replace(0,12,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fUsePtHardFromFile        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")){
+      strTempSetting.Replace(0,14,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using path based outlier removal" << endl;
+        fUseAddOutlierRej        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -183,10 +204,12 @@ void AddTask_GammaCaloMix_pp(
   // ******************** pp 13 TeV cuts  *****************************************************
   // *****************************************************************************************************
   if (trainConfig == 1){
-    cuts.AddCutCaloCalo("00010113","24466110n0012200000","4117900007032220000","0163103100000010");
-    cuts.AddCutCaloCalo("00010113","24466110n0012200000","4117911067032220000","0163103100000010");
-    cuts.AddCutCaloCalo("00010113","24466110n0012200000","3885511067032220000","0163103100000010");
-    cuts.AddCutCaloCalo("00010113","24466110n0012200000","1111111067032220000","0163103100000010");
+    cuts.AddCutCaloCalo("00010113","24466190pa01cc00000","4117900007032230000","0163103100000050");
+    cuts.AddCutCaloCalo("00010113","24466190pa01cc00000","3885501067032220000","0163103100000050");
+    cuts.AddCutCaloCalo("00010113","24466190pa09cc00000","3885501067032220000","0163103100000050");
+    cuts.AddCutCaloCalo("00010113","24466190pa09cc00000","3885501067012220000","0163103100000050");
+    cuts.AddCutCaloCalo("00010113","244661900a09cc00000","3885501067032220000","0163103100000050");
+    cuts.AddCutCaloCalo("00010113","24466190pa09cc00000","3885501067032220000","0163103100000010");
   } else {
     Error(Form("GammaCaloMix_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -224,6 +247,34 @@ void AddTask_GammaCaloMix_pp(
     mcNameAdd = "_WOSDD";
   } else if (generatorName.Contains("WSDD")){
     mcNameAdd = "_WSDD";
+  }
+  if (generatorName.Contains("LHC12i3")){
+    energy = "2760GeV";
+    mcName = "Pythia8_LHC12i3";
+  } else if (generatorName.Contains("LHC12f1a")){
+    energy = "2760GeV";
+    mcName = "Pythia8_LHC12f1a";
+  } else if (generatorName.Contains("LHC12f1b")){
+    energy = "2760GeV";
+    mcName = "Phojet_LHC12f1b";
+  } else if (generatorName.Contains("LHC14e2a")){
+    energy = "8TeV";
+    mcName = "Pythia8_LHC14e2a";
+  } else if (generatorName.Contains("LHC14e2b")){
+    energy = "8TeV";
+    mcName = "Pythia8_LHC14e2b";
+  } else if (generatorName.Contains("LHC14e2c")){
+    energy = "8TeV";
+    mcName = "Phojet_LHC14e2c";
+  } else if (generatorName.Contains("LHC16c2")){
+    energy            = "8TeV";
+    mcName            = "LHC16c2";
+  } else if (generatorName.Contains("LHC16h3")){
+    energy            = "5TeV";
+    mcName            = "PythiaJets_LHC16h3";
+  } else if (generatorName.Contains("LHC18b8")){
+    energy            = "5TeV";
+    mcName            = "PythiaJets_LHC18b8";
   }
 
 
@@ -276,11 +327,16 @@ void AddTask_GammaCaloMix_pp(
     TString mcInputMultHisto    = "";
     TString triggerString   = cuts.GetEventCut(i);
     triggerString           = triggerString(3,2);
+    if (triggerString.CompareTo("03")==0)
+      triggerString         = "00";
+    if (periodNameAnchor.CompareTo("LHC13g") == 0 && triggerString.CompareTo("10")== 0 )
+      triggerString         = "00";
 
     dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
     mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
 
     if (enableMultiplicityWeighting) analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
+
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     if(fileNameCustomTriggerMimicOADB.CompareTo("") != 0)
@@ -292,10 +348,16 @@ void AddTask_GammaCaloMix_pp(
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
+    if(fUsePtHardFromFile)
+      analysisEventCuts[i]->SetUsePtHardBinFromFile(kTRUE);
+    if(fUseAddOutlierRej)
+      analysisEventCuts[i]->SetUseAdditionalOutlierRejection(kTRUE);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);
-    if(trainConfig == 447) analysisEventCuts[i]->SetUseSphericityTrue(kTRUE);
+    // analysisEventCuts[i]->SetUseSphericityTrue(kTRUE);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
@@ -342,7 +404,7 @@ void AddTask_GammaCaloMix_pp(
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   task->SetLocalDebugFlag(localDebugFlag);
 
   //connect containers
