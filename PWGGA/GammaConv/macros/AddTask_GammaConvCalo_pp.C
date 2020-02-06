@@ -208,7 +208,6 @@ void AddTask_GammaConvCalo_pp(
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
-  if (enableLightOutput == 0) task->SetPlotTrackPID(kTRUE);
   if (enableLightOutput == 5) task->SetECalibOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
@@ -2967,6 +2966,7 @@ void AddTask_GammaConvCalo_pp(
       }
     }
     if ((enableLightOutput > 0 && enableLightOutput < 3) || (enableLightOutput ==5 )) analysisCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput == 0) analysisCuts[i]->SetPlotTrackPID(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
