@@ -44,9 +44,6 @@
 #include "AliParticleContainer.h"
 #include "AliRhoParameter.h"
 
-using std::cout;
-using std::endl;
-
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming);
 
 namespace PWGJE
@@ -239,9 +236,9 @@ void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
       "ptJetDet",
       "ktgDet",
       "kTLeadingDet",
-      "kTLeadingDetNSplittings"
+      "kTLeadingDetNSplittings",
       "kTDynamicalDet",
-      "kTDynamicalDetNSplittings"
+      "kTDynamicalDetNSplittings",
       "ngDet",
       "zgDet",
       "rgDet",
@@ -280,7 +277,7 @@ void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
 
   // for (Int_t ivar = 0; ivar < nVar; ivar++) {
   for (std::size_t i = 0; i < branchNames.size(); i++) {
-    cout << "looping over variables" << endl;
+    AliWarningStream() << "Adding \"" << branchNames[i] << "\" to the tree.\n";
     fTreeSubstructure->Branch(branchNames[i].c_str(), &fShapesVar[i],
                  TString::Format("%s/F", branchNames[i].c_str()));
   }
@@ -409,7 +406,6 @@ double AliAnalysisTaskJetDynamicalGrooming::CalculateTimeDrop(const fastjet::Pse
 
 Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
 {
-  AliEmcalJet* jet1 = NULL;
   AliJetContainer* jetCont = GetJetContainer(0);
   // container zero is always the base container: the data container, the
   // embedded subtracted in the case of embedding or the detector level in case
@@ -419,38 +415,14 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
     if ((fCent > fCentMax) || (fCent < fCentMin))
       return 0;
 
-  Float_t rhoVal = 0, rhoMassVal = 0.;
   if (jetCont) {
-    jetCont->ResetCurrentID();
-    if ((fJetShapeSub == kConstSub) || (fJetShapeSub == kDerivSub)) {
-      // rho
-      AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoSparseR020"));
-      if (!rhoParam) {
-        Printf(
-         "%s: Could not retrieve rho %s (some histograms will be filled "
-         "with zero)!",
-         GetName(), jetCont->GetRhoName().Data());
-      } else
-        rhoVal = rhoParam->GetVal();
-      // rhom
-      AliRhoParameter* rhomParam =
-       dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoMassSparseR020"));
-      if (!rhomParam) {
-        Printf(
-         "%s: Could not retrieve rho_m %s (some histograms will be "
-         "filled with zero)!",
-         GetName(), jetCont->GetRhoMassName().Data());
-      } else
-        rhoMassVal = rhomParam->GetVal();
-    }
-
-    while ((jet1 = jetCont->GetNextAcceptJet())) {
+    for (auto jet1 : jetCont->accepted()) {
       if (!jet1)
         continue;
       AliEmcalJet* jet2 = nullptr;
       AliEmcalJet* jet3 = nullptr;
       fPtJet->Fill(jet1->Pt());
-      AliEmcalJet* jetUS = NULL;
+      AliEmcalJet* jetUS = nullptr;
       Int_t ifound = 0, jfound = 0;
       Int_t ilab = -1, jlab = -1;
 
@@ -496,7 +468,7 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
           jet2 = jet1->ClosestJet();
 
         if (!jet2) {
-          Printf("jet2 does not exist, returning");
+          AliDebugStream(3) << "jet2 does not exist, returning\n";
           continue;
         }
 
@@ -504,10 +476,10 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
         jet3 = jet2->ClosestJet();
 
         if (!jet3) {
-          Printf("jet3 does not exist, returning");
+          AliDebugStream(3) << "jet3 does not exist, returning\n";
           continue;
         }
-        cout << "jet 3 exists" << jet3->Pt() << endl;
+        AliDebugStream(3) << "jet 3 exists" << jet3->Pt() << "\n";
 
         AliJetContainer* jetContTrue = GetJetContainer(1);
         AliJetContainer* jetContPart = GetJetContainer(3);
@@ -548,7 +520,7 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
           jet2 = jetUS->ClosestJet();
 
           if (!jet2) {
-            Printf("jet2 does not exist, returning");
+            AliDebugStream(3) << "jet2 does not exist, returning\n";
             continue;
           }
 
@@ -566,14 +538,14 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
             continue;
           jet3 = jetContPart->GetJet(jlab);
           if (!jet3) {
-            Printf("jet3 does not exist, returning");
+            AliDebugStream(3) << "jet3 does not exist, returning\n";
             continue;
           }
         }
         if (!(fJetShapeSub == kConstSub))
           jet3 = jet1->ClosestJet();
         if (!jet3) {
-          Printf("jet3 does not exist, returning");
+          AliDebugStream(3) << "jet3 does not exist, returning\n";
           continue;
         }
 
@@ -782,7 +754,7 @@ Float_t AliAnalysisTaskJetDynamicalGrooming::Angularity(AliEmcalJet* jet, Int_t 
     vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
 
     if (!vp1) {
-      Printf("AliVParticle associated to constituent not found");
+      AliWarningStream() << "AliVParticle associated to constituent not found";
       continue;
     }
 
@@ -942,7 +914,7 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* fJet, Al
   fastjet::PseudoJet PseudoTracks;
 
   AliParticleContainer* fTrackCont = fJetCont->GetParticleContainer();
-  cout << "is it really here?" << endl;
+  AliDebugStream(1) << "Beginning iteration through the splittings.\n";
   if (fTrackCont)
     for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
       AliVParticle* fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
