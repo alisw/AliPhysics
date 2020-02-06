@@ -52,8 +52,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
       fMultRangeHigh(55) {
   TString sName[2] = { "before", "after" };
   float ptmin = 0;
-  float ptmax = 5;
-  int ptBins = 100;
+  float ptmax = 6.0;
+  int ptBins = 120;
   int twoDBins = 400;
   fHistList = new TList();
   fHistList->SetName("TrackCuts");

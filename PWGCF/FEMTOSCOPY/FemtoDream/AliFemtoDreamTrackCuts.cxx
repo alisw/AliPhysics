@@ -1015,9 +1015,9 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetPlotCombSigma(CombSigma);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
-
+  trackCuts->SetCheckPileUpTOF(true);
   trackCuts->SetFilterBit(128);
-  trackCuts->SetPtRange(0.4, 4.);
+  trackCuts->SetPtRange(0.4, 6.0);
   trackCuts->SetEtaRange(-0.8, 0.8);
   trackCuts->SetNClsTPC(80);
   trackCuts->SetDCAReCalculation(true);  //Get the dca from the PropagateToVetex
