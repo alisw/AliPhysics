@@ -108,9 +108,6 @@ AliAnalysisTaskUpcRho0::~AliAnalysisTaskUpcRho0()
 	delete fListHist;
 	fListHist = 0x0;
   }
-  for(Int_t i=0; i<9; i++){
-	delete fHistdEdxVsP[i];
-	}
 
 }
 
