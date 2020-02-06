@@ -275,7 +275,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueOmegaPtPi0Pt;                             //! array of histos with pT of validated omegas against pT of pi0s from validated omegas
     TH2F**                  fHistoTrueOmegaRestGammaCosAnglePt;                 //! array of histos with pT, cos angle between reconstruced true omegas in lab frame and gamma daughter in omega restframe
     TH2F**                  fHistoTrueOmegaRestPi0CosAnglePt;                   //! array of histos with pT, cos angle between reconstruced true omegas in lab frame and pi0 daughter in omega restframe
-    TH2F**                  fHistoTrueDalitzPlot;                               //! array of histos with mass squared of two pi0 gammas (gamma0 and gamma1) and mass squared of gamma1 and gamma2 (gamma2 directly from omega) 
+    TH2F**                  fHistoTrueDalitzPlot;                               //! array of histos with mass squared of two pi0 gammas (gamma0 and gamma1) and mass squared of gamma1 and gamma2 (gamma2 directly from omega)
     TH2F**                  fHistoTrueOmegaPtGammaPt;                           //! array of histos with pT of validated omegas against pT of gammas from validated omegas
     TH1F**                  fHistoTrueGammaFromOmegaPt;                         //! array of histos with pT of photons from validated omegas
 
