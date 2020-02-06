@@ -12,7 +12,7 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisTaskConvJet.h"
-// #include "AliAnalysisTaskJetOutlierRemoval.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
 #include "TH3.h"
@@ -163,6 +163,7 @@ class AliAnalysisTaskGammaCaloMix : public AliAnalysisTaskSE {
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
     AliConversionPhotonCuts*  fConversionCuts;                                  // ConversionPhotonCutObject
+    AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
     Bool_t                fDoTrueSphericity;                                    // Bool to produce Sphericity correlations
@@ -560,7 +561,7 @@ class AliAnalysisTaskGammaCaloMix : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMix(const AliAnalysisTaskGammaCaloMix&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCaloMix &operator=(const AliAnalysisTaskGammaCaloMix&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMix, 3);
+    ClassDef(AliAnalysisTaskGammaCaloMix, 5);
 };
 
 #endif
