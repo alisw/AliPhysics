@@ -153,7 +153,6 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistGenMultiplicity(0),
     fHistTPCTracksVsClusters(0),
     fHistVZeroPercentileTPCMult(0),
-    fHistTPCTracksVsClusters(0),
     fESDTrackCuts(0)
 {
     // default constructor, don't allocate memory here!
