@@ -1195,7 +1195,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
-        fMLhandler->FillTree();
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
+          fMLhandler->FillTree();
       }
 
       if (isPhipiKK)
@@ -1229,7 +1230,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
-        fMLhandler->FillTree();
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
+          fMLhandler->FillTree();
       }
     }
 
