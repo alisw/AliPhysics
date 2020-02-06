@@ -129,6 +129,9 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
     fMatchITS(0), 
     fMatchTOF(0),
     fPIDsigma(0),
+    fTrackPt(0), 
+    fDCAxy(0), 
+    fDCAz(0),
     fSPDfile(0),
     fTOFfile(0),
     fLoadedRun(-1),
@@ -208,6 +211,9 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     fMatchITS(0), 
     fMatchTOF(0), 
     fPIDsigma(0),
+    fTrackPt(0), 
+    fDCAxy(0), 
+    fDCAz(0),
     fSPDfile(0),
     fTOFfile(0),
     fLoadedRun(-1),
@@ -256,7 +262,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   fTrackCutsBit1 = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kFALSE,kTRUE);
   
-  fTrackCutsMatching = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
+  fTrackCutsMatching = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
   fTrackCutsMatching->SetEtaRange(-0.8, 0.8);
   fTrackCutsMatching->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   
@@ -351,7 +357,11 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   if(isMC) fOutputList->Add(fTreeGen);
   
   fTreeMatch = new TTree("fTreeMatch", "fTreeMatch");
-  fTreeMatch ->Branch("fPtDaughter", &fPtDaughter, "fPtDaughter/F");
+  fTreeMatch ->Branch("fTrackPt", &fTrackPt, "fTrackPt/F");
+  //fTreeMatch ->Branch("fDCAxy", &fDCAxy, "fDCAxy/F");
+  //fTreeMatch ->Branch("fDCAz", &fDCAz, "fDCAz/F");
+  fTreeMatch ->Branch("fPt", &fPt, "fPt/F");
+  fTreeMatch ->Branch("fM", &fM, "fM/F");
   fTreeMatch ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
   fTreeMatch ->Branch("fMatchITS", &fMatchITS, "fMatchITS/O");
   fTreeMatch ->Branch("fMatchTOF", &fMatchTOF, "fMatchTOF/O");
@@ -915,16 +925,21 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   fTrackCutsMatching->SetMaxChi2TPCConstrainedGlobal(99999.);
   fTrackCutsMatching->SetMaxChi2PerClusterITS(999999.);
   fTrackCutsMatching->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
-  //DCA
-  fTrackCutsMatching->SetMaxDCAToVertexXY(2.4);
-  fTrackCutsMatching->SetMaxDCAToVertexZ(3.2);
   
+  Int_t totalSign = 0;
+  Float_t dca[2], cov[3];
   for(Int_t iTrack=0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
     AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
     if( !trk ) continue;
+    
+    if(!trk->RelateToVertex((AliESDVertex*)fVertex,fEvent->GetMagneticField(),100)) continue;
+    trk->GetImpactParameters(dca, cov);
+    
     if(fTrackCutsMatching->AcceptTrack(trk)){
-      TrackIndexSyst[fNGoodTracksLoose] = iTrack; 
+      TrackIndexSyst[fNGoodTracksLoose] = iTrack;
+      TrackPtALL[fNGoodTracksLoose] = trk->Pt(); 
       fNGoodTracksLoose++;
+      totalSign += trk->Charge();
       }
     if(fNGoodTracksLoose>4)break; 
     }
@@ -935,13 +950,38 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //set the SPD cluster requirement
   fTrackCutsMatching->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
   
-  if(fNGoodTracksLoose == 2 || fNGoodTracksLoose == 4){
+  
+  if(fNGoodTracksLoose == 2){
+    for(Int_t iTrack=0; iTrack < fNGoodTracksLoose; iTrack++) {
+      AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexSyst[iTrack]));
+      if( !trk ) continue;
+      
+      MeanPt = GetMedian(TrackPtALL);
+      vMuon[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+      }
+   vJPsiCandidate = vMuon[0]+vMuon[1];
+   }
+   
+   if(fNGoodTracksLoose == 4){
+   MeanPt = GetMedian(TrackPtALL);
+    for(Int_t iTrack=0; iTrack < fNGoodTracksLoose; iTrack++) {
+      AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexSyst[iTrack]));
+      if( !trk ) continue;
+      if(trk->Pt()>MeanPt)vMuon[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+      if(trk->Pt()<MeanPt)vPion[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
+      }
+    vJPsiCandidate = vMuon[0]+vMuon[1]+vPion[0]+vPion[1];
+    }
+  fM = vJPsiCandidate.M();
+  fPt = vJPsiCandidate.Pt();
+  
+  if((fNGoodTracksLoose == 2 || fNGoodTracksLoose == 4) && totalSign == 0){
     for(Int_t iTrack=0; iTrack < fNGoodTracksLoose; iTrack++) {
       AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexSyst[iTrack]));
       if( !trk ) continue;
       fMatchITS = kFALSE;
       fMatchTOF = kFALSE;
-      fPtDaughter[iTrack] = trk->Pt();      
+      fTrackPt = trk->Pt();      
       if(fTrackCutsMatching->AcceptTrack(trk)){
         fMatchITS = kTRUE; 
         if(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk)fMatchTOF = kTRUE;
