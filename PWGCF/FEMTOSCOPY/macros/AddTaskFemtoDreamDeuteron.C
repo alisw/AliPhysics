@@ -23,94 +23,38 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   AliFemtoDreamEventCuts *evtCuts =
     AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-  
+
   AliFemtoDreamTrackCuts *TrackCutsDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsDeuteronDCA->SetCutCharge(1);
-  AliFemtoDreamTrackCuts *TrackCutsDeuteronMass = new AliFemtoDreamTrackCuts();
-  TrackCutsDeuteronMass->SetPlotDCADist(DCAPlots);
-  TrackCutsDeuteronMass->SetPlotCombSigma(CombSigma);
-  TrackCutsDeuteronMass->SetPlotContrib(ContributionSplitting);
-  TrackCutsDeuteronMass->SetIsMonteCarlo(isMC);
+  AliFemtoDreamTrackCuts *TrackCutsDeuteronMass =  AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+        isMC, true, CombSigma, ContributionSplitting);
   TrackCutsDeuteronMass->SetCutCharge(1);
-  TrackCutsDeuteronMass->SetFilterBit(128);
-  TrackCutsDeuteronMass->SetPtRange(0.4, 4.0);
-  TrackCutsDeuteronMass->SetEtaRange(-0.8, 0.8);
-  TrackCutsDeuteronMass->SetNClsTPC(80);
-  TrackCutsDeuteronMass->SetDCAReCalculation(true);
-  TrackCutsDeuteronMass->SetDCAVtxZ(0.2);
-  TrackCutsDeuteronMass->SetDCAVtxXY(0.1);
-  TrackCutsDeuteronMass->SetCutSharedCls(true);
-  TrackCutsDeuteronMass->SetCutTPCCrossedRows(true, 70, 0.83);
   TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
-  TrackCutsDeuteronMass->SetRejLowPtPionsTOF(false);
-  TrackCutsDeuteronMass->SetCutSmallestSig(false);
-  //The same things for anti deuterons
+  //anti deuterons
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiDeuteronDCA->SetCutCharge(-1);
-  AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronMass = new AliFemtoDreamTrackCuts();
-  TrackCutsAntiDeuteronMass->SetPlotDCADist(DCAPlots);
-  TrackCutsAntiDeuteronMass->SetPlotCombSigma(CombSigma);
-  TrackCutsAntiDeuteronMass->SetPlotContrib(ContributionSplitting);
-  TrackCutsAntiDeuteronMass->SetIsMonteCarlo(isMC);
+  AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronMass =  AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+        isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiDeuteronMass->SetCutCharge(-1);
-  TrackCutsAntiDeuteronMass->SetFilterBit(128);
-  TrackCutsAntiDeuteronMass->SetPtRange(0.4, 4.0);
-  TrackCutsAntiDeuteronMass->SetEtaRange(-0.8, 0.8);
-  TrackCutsAntiDeuteronMass->SetNClsTPC(80);
-  TrackCutsAntiDeuteronMass->SetDCAReCalculation(true);
-  TrackCutsAntiDeuteronMass->SetDCAVtxZ(0.2);
-  TrackCutsAntiDeuteronMass->SetDCAVtxXY(0.1);
-  TrackCutsAntiDeuteronMass->SetCutSharedCls(true);
-  TrackCutsAntiDeuteronMass->SetCutTPCCrossedRows(true, 70, 0.83);
   TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
-  TrackCutsAntiDeuteronMass->SetRejLowPtPionsTOF(false);
-  TrackCutsAntiDeuteronMass->SetCutSmallestSig(false);
-//Track Cuts are defined here for deuterons
+//proton
   AliFemtoDreamTrackCuts *TrackCutsProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsProtonDCA->SetCutCharge(1);
-  AliFemtoDreamTrackCuts *TrackCutsProtonMass = new AliFemtoDreamTrackCuts();
-  TrackCutsProtonMass->SetPlotDCADist(DCAPlots);
-  TrackCutsProtonMass->SetPlotCombSigma(CombSigma);
-  TrackCutsProtonMass->SetPlotContrib(ContributionSplitting);
-  TrackCutsProtonMass->SetIsMonteCarlo(isMC);
+  AliFemtoDreamTrackCuts *TrackCutsProtonMass =  AliFemtoDreamTrackCuts::PrimProtonCuts(
+        isMC, true, CombSigma, ContributionSplitting);
   TrackCutsProtonMass->SetCutCharge(1);
-  TrackCutsProtonMass->SetFilterBit(128);
-  TrackCutsProtonMass->SetPtRange(0.5, 4.05);
-  TrackCutsProtonMass->SetEtaRange(-0.8, 0.8);
-  TrackCutsProtonMass->SetNClsTPC(80);
-  TrackCutsProtonMass->SetDCAReCalculation(true);
-  TrackCutsProtonMass->SetDCAVtxZ(0.2);
-  TrackCutsProtonMass->SetDCAVtxXY(0.1);
-  TrackCutsProtonMass->SetCutSharedCls(true);
-  TrackCutsProtonMass->SetCutTPCCrossedRows(true, 70, 0.83);
   TrackCutsProtonMass->SetPID(AliPID::kProton, 999.);
-  TrackCutsProtonMass->SetRejLowPtPionsTOF(false);
-  TrackCutsProtonMass->SetCutSmallestSig(false);
-  //The same things for anti deuterons
+  //antiproton
   AliFemtoDreamTrackCuts *TrackCutsAntiProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiProtonDCA->SetCutCharge(-1);
-  AliFemtoDreamTrackCuts *TrackCutsAntiProtonMass = new AliFemtoDreamTrackCuts();
-  TrackCutsAntiProtonMass->SetPlotDCADist(DCAPlots);
-  TrackCutsAntiProtonMass->SetPlotCombSigma(CombSigma);
-  TrackCutsAntiProtonMass->SetPlotContrib(ContributionSplitting);
-  TrackCutsAntiProtonMass->SetIsMonteCarlo(isMC);
+  AliFemtoDreamTrackCuts *TrackCutsAntiProtonMass =  AliFemtoDreamTrackCuts::PrimProtonCuts(
+        isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiProtonMass->SetCutCharge(-1);
-  TrackCutsAntiProtonMass->SetFilterBit(128);
-  TrackCutsAntiProtonMass->SetPtRange(0.5, 4.05);
-  TrackCutsAntiProtonMass->SetEtaRange(-0.8, 0.8);
-  TrackCutsAntiProtonMass->SetNClsTPC(80);
-  TrackCutsAntiProtonMass->SetDCAReCalculation(true);
-  TrackCutsAntiProtonMass->SetDCAVtxZ(0.2);
-  TrackCutsAntiProtonMass->SetDCAVtxXY(0.1);
-  TrackCutsAntiProtonMass->SetCutSharedCls(true);
-  TrackCutsAntiProtonMass->SetCutTPCCrossedRows(true, 70, 0.83);
   TrackCutsAntiProtonMass->SetPID(AliPID::kProton, 999.);
-  TrackCutsAntiProtonMass->SetRejLowPtPionsTOF(false);
-  TrackCutsAntiProtonMass->SetCutSmallestSig(false);
 
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
@@ -119,6 +63,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   PDGParticles.push_back(1000010020);
 
   std::vector<bool> closeRejection;
+  std::vector<int> pairQA;
   //pairs:
   // pp             0
   // p bar p        1
@@ -132,17 +77,22 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   // bar d bar d    9
   const int nPairs = 10;
   for (int i = 0; i < nPairs; ++i) {
-
     closeRejection.push_back(false);
+    pairQA.push_back(0);
   }
-
+  
   closeRejection[0] = true;  // pp
   closeRejection[2] = true;  // pd
   closeRejection[4] = true;  // barp barp
   closeRejection[6] = true;  // barp bard
   closeRejection[7] = true;  // dd
   closeRejection[9] = true;  // bard bard
-
+  pairQA[0] = 11;    // pp
+  pairQA[2] = 11;    // pd
+  pairQA[4] = 11;    // barp barp
+  pairQA[6] = 11;    // barp bard
+  pairQA[7] = 11;    // dd
+  pairQA[9] = 11;    // bard bard
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -225,6 +175,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
+  config->SetPtQA(true);
+  config->SetExtendedQAPairs(pairQA);
   config->SetDeltaEtaMax(0.012); // and here you set the actual values
   config->SetDeltaPhiMax(0.012); // and here you set the actual values
   config->SetMixingDepth(10);
