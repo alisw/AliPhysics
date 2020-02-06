@@ -2265,6 +2265,8 @@ void AddTask_GammaConvCalo_pp(
   //*************************************************************************************************
   // 13 TeV EDC (EMCal + DCal)
   //*************************************************************************************************
+  } else if ( trainConfig == 2001){ // EMCAL clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117911007032230000","0163103100b00010"); // no timing cut, no NL INT7
   } else if ( trainConfig == 2002){ // EMCAL clusters
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117900007032230000","0163103100000010"); // no timing cut, no NL INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117911067032230000","0163103100b00010"); // -30ns, 35ns timing cut, NL 11, INT7
