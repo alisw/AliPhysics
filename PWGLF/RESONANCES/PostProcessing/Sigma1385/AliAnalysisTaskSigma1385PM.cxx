@@ -140,7 +140,7 @@ ClassImp(AliAnalysisTaskSigma1385PM)
       fFillnTuple(kFALSE),
       fIsINEL(kFALSE),
       fIsHM(kFALSE),
-      fUseAssymCut(kFALSE),
+      fUseAsymmCut(kFALSE),
       fEMpool(0),
       fBinCent(),
       fBinZ(),
@@ -168,8 +168,8 @@ ClassImp(AliAnalysisTaskSigma1385PM)
       fV0MassWindowCut(0.01),
       fSigmaStarYCutHigh(0.5),
       fSigmaStarYCutLow(-0.5),
-      fSigmaStarAssymCutHigh(0.0),
-      fSigmaStarAssymCutLow(1.0),
+      fSigmaStarAsymmCutHigh(0.0),
+      fSigmaStarAsymmCutLow(1.0),
       fGoodTrackArray(),
       fGoodV0Array() {
   /// Default constructor
@@ -196,7 +196,7 @@ AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
       fFillnTuple(kFALSE),
       fIsINEL(kFALSE),
       fIsHM(kFALSE),
-      fUseAssymCut(kFALSE),
+      fUseAsymmCut(kFALSE),
       fEMpool(0),
       fBinCent(),
       fBinZ(),
@@ -224,8 +224,8 @@ AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
       fV0MassWindowCut(0.01),
       fSigmaStarYCutHigh(0.5),
       fSigmaStarYCutLow(-0.5),
-      fSigmaStarAssymCutHigh(0.0),
-      fSigmaStarAssymCutLow(1.0),
+      fSigmaStarAsymmCutHigh(0.0),
+      fSigmaStarAsymmCutLow(1.0),
       fGoodTrackArray(),
       fGoodV0Array() {
   DefineInput(0, TChain::Class());
@@ -345,9 +345,11 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     fHistos->CreateTH1("QA/hYlambda", "", 140, -0.7, 0.7, "s");
     fHistos->CreateTH1("QA/hMassLambda", "", 80, 1.08, 1.16, "s");
     fHistos->CreateTH1("QA/hLambdaRxy", "", 200, 0, 200);
-    fHistos->CreateTH1("QA/hSigmaStarAssym", "", 100, 0, 1);
-    if (fIsMC)
-      fHistos->CreateTH1("QA/hSigmaStarAssym_true", "", 100, 0, 1);
+    fHistos->CreateTH2("QA/hSigmaStarAsymm", "", 100, 0, 1, 100, 0, 100);
+    if (fIsMC){
+      fHistos->CreateTH2("QA/hSigmaStarAsymm_true", "", 100, 0, 1, 100, 0, 100);
+      fHistos->CreateTH2("QA/hSigmaStarAsymm_true_selected", "", 100, 0, 1, 100, 0, 100);
+    }
     fHistos->CreateTH1("QA/hLambdaAntiCheck", "", 4, -0.5, 3.5);
 
     fHistos->CreateTH2("QAcut/hTPCPIDPion", "", 200, 0, 20, 200, 0, 200);
@@ -371,9 +373,11 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     fHistos->CreateTH1("QAcut/hYlambda", "", 140, -0.7, 0.7, "s");
     fHistos->CreateTH1("QAcut/hMassLambda", "", 80, 1.08, 1.16, "s");
     fHistos->CreateTH1("QAcut/hLambdaRxy", "", 200, 0, 200);
-    fHistos->CreateTH1("QAcut/hSigmaStarAssym", "", 100, 0, 1);
-    if (fIsMC)
-      fHistos->CreateTH1("QAcut/hSigmaStarAssym_true", "", 100, 0, 1);
+    fHistos->CreateTH2("QAcut/hSigmaStarAsymm", "", 100, 0, 1, 100, 0, 100);
+    if (fIsMC){
+      fHistos->CreateTH2("QAcut/hSigmaStarAsymm_true", "", 100, 0, 1, 100, 0, 100);
+      fHistos->CreateTH2("QAcut/hSigmaStarAsymm_true_selected", "", 100, 0, 1, 100, 0, 100);
+    }
     fHistos->CreateTH1("QAcut/hLambdaAntiCheck", "", 4, -0.5, 3.5);
   }
   fEMpool.resize(fBinCent.GetNbins() + 1,
@@ -972,6 +976,7 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
   Int_t pID, nID;
   int sign = kAllType;
   int binAnti = 0;
+  double asym = 0.;
 
   TLorentzVector vecLambda, vecPion, vecPionMix;
   TLorentzVector vecSigmaStar;
@@ -1054,17 +1059,17 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
           (vecSigmaStar.Rapidity() < fSigmaStarYCutLow))
         continue;
 
-      // AssymCut
-      if (fUseAssymCut) {
+      // AsymmCut
+      if (fUseAsymmCut) {
         auto P1 = (TVector3)vecLambda.Vect();
         auto P2 = (TVector3)vecPion.Vect();
-        auto asym = TMath::Abs(P1.Mag() - P2.Mag()) / (P1.Mag() + P2.Mag());
+        asym = TMath::Abs(P1.Mag() - P2.Mag()) / (P1.Mag() + P2.Mag());
         if (fFillQAPlot)
-          fHistos->FillTH1("QA/hSigmaStarAssym", asym);
-        if ((asym < fSigmaStarAssymCutLow) || (asym > fSigmaStarAssymCutHigh))
+          fHistos->FillTH2("QA/hSigmaStarAsymm", asym, fCent);
+        if ((asym < fSigmaStarAsymmCutLow) || (asym > fSigmaStarAsymmCutHigh))
           continue;
         if (fFillQAPlot)
-          fHistos->FillTH1("QAcut/hSigmaStarAssym", asym);
+          fHistos->FillTH2("QAcut/hSigmaStarAsymm", asym, fCent);
       }
 
       if (track1->Charge() > 0)
@@ -1085,6 +1090,8 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
           FillTHnSparse("Sigma1385_mc",
                         {(double)binAnti, (double)sign, (double)fCent,
                          vecSigmaStar.Pt(), vecSigmaStar.M()});
+          if (fUseAsymmCut && fFillQAPlot)
+            fHistos->FillTH2("QAcut/hSigmaStarAsymm_true_selected", asym, fCent);
         } else {
           // MC not true bkg
           (isPionPlus) ? sign = kSigmaStarP_NOT : sign = kSigmaStarN_NOT;
@@ -1142,12 +1149,12 @@ void AliAnalysisTaskSigma1385PM::FillTracks() {
         if ((vecSigmaStar.Rapidity() > fSigmaStarYCutHigh) ||
             (vecSigmaStar.Rapidity() < fSigmaStarYCutLow))
           continue;
-        // AssymCut
-        if (fUseAssymCut) {
+        // AsymmCut
+        if (fUseAsymmCut) {
           auto P1 = (TVector3)vecLambda.Vect();
           auto P2 = (TVector3)vecPionMix.Vect();
           auto asym = TMath::Abs(P1.Mag() - P2.Mag()) / (P1.Mag() + P2.Mag());
-          if ((asym < fSigmaStarAssymCutLow) || (asym > fSigmaStarAssymCutHigh))
+          if ((asym < fSigmaStarAsymmCutLow) || (asym > fSigmaStarAsymmCutHigh))
             continue;
         }
 
@@ -1291,12 +1298,12 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
       if ((vecSigmaStar.Rapidity() > fSigmaStarYCutHigh) ||
           (vecSigmaStar.Rapidity() < fSigmaStarYCutLow))
         continue;
-      // AssymCut
-      if (fUseAssymCut) {
+      // AsymmCut
+      if (fUseAsymmCut) {
         auto P1 = (TVector3)vecLambda.Vect();
         auto P2 = (TVector3)vecPion.Vect();
         auto asym = TMath::Abs(P1.Mag() - P2.Mag()) / (P1.Mag() + P2.Mag());
-        if ((asym < fSigmaStarAssymCutLow) || (asym > fSigmaStarAssymCutHigh))
+        if ((asym < fSigmaStarAsymmCutLow) || (asym > fSigmaStarAsymmCutHigh))
           continue;
       }
 
@@ -1367,8 +1374,8 @@ void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent,
       if ((mcInputTrack->Y() > fSigmaStarYCutHigh) ||
           (mcInputTrack->Y() < fSigmaStarYCutLow))
         continue;
-      // AssymCut
-      if (fUseAssymCut) {
+      // AsymmCut
+      if (fUseAsymmCut) {
         auto mcPart1 =
             (TParticle*)fMCEvent->GetTrack(abs(mcInputTrack->GetDaughter(0)))
                 ->Particle();
@@ -1382,11 +1389,11 @@ void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent,
         auto P2 = (TVector3)vecPart2.Vect();
         auto asym = TMath::Abs(P1.Mag() - P2.Mag()) / (P1.Mag() + P2.Mag());
         if (fFillQAPlot)
-          fHistos->FillTH1("QA/hSigmaStarAssym_true", asym);
-        if ((asym < fSigmaStarAssymCutLow) || (asym > fSigmaStarAssymCutHigh))
+          fHistos->FillTH2("QA/hSigmaStarAsymm_true", asym, fCent);
+        if ((asym < fSigmaStarAsymmCutLow) || (asym > fSigmaStarAsymmCutHigh))
           continue;
         if (fFillQAPlot)
-          fHistos->FillTH1("QAcut/hSigmaStarAssym_true", asym);
+          fHistos->FillTH2("QAcut/hSigmaStarAsymm_true", asym, fCent);
       }
       (v0PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
       if (TMath::Abs(v0PdgCode) == kSigmaStarPCode)
@@ -1418,8 +1425,8 @@ void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent,
       if ((mcInputTrack->Y() > fSigmaStarYCutHigh) ||
           (mcInputTrack->Y() < fSigmaStarYCutLow))
         continue;
-      // AssymCut
-      if (fUseAssymCut) {
+      // AsymmCut
+      if (fUseAsymmCut) {
         auto mcPart1 = (AliAODMCParticle*)fMCArray->At(
             abs(mcInputTrack->GetDaughterFirst()));
         auto mcPart2 = (AliAODMCParticle*)fMCArray->At(
@@ -1431,11 +1438,11 @@ void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent,
         auto P2 = (TVector3)vecPart2.Vect();
         auto asym = TMath::Abs(P1.Mag() - P2.Mag()) / (P1.Mag() + P2.Mag());
         if (fFillQAPlot)
-          fHistos->FillTH1("QA/hSigmaStarAssym_true", asym);
-        if ((asym < fSigmaStarAssymCutLow) || (asym > fSigmaStarAssymCutHigh))
+          fHistos->FillTH2("QA/hSigmaStarAsymm_true", asym, fCent);
+        if ((asym < fSigmaStarAsymmCutLow) || (asym > fSigmaStarAsymmCutHigh))
           continue;
         if (fFillQAPlot)
-          fHistos->FillTH1("QAcut/hSigmaStarAssym_true", asym);
+          fHistos->FillTH2("QAcut/hSigmaStarAsymm_true", asym, fCent);
       }
 
       (v0PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
