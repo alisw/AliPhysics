@@ -63,6 +63,10 @@ Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
     for (Int_t i = 0; i < 17; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
     }
+
+    // Xe-Xe
+    if ((runnumber == 280234) || (runnumber == 280235)) return kTRUE;
+    
   }
   if (fSettings.run_list == 1){
     if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
@@ -914,9 +918,12 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
 
     if (track->TestFilterBit(tracktype) && track->GetTPCNcls() > fSettings.fnoClusters){
-      if (track->Pt() < this->minpt || track->Pt() > this->maxpt) continue;
+      Double_t weight = 1;
+
+      if (track->Pt() < this->minpt || track->Pt() > this->maxpt) weight = 0;
 
       if( fSettings.fCutChargedDCAzMax > 0. || fSettings.fCutChargedDCAxyMax > 0.){
+
         Double_t dTrackXYZ[3]  = {0.,0.,0.};
         Double_t dVertexXYZ[3] = {0.,0.,0.};
         Double_t dDCAXYZ[3]    = {0.,0.,0.};
@@ -927,12 +934,12 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
 
         for(Short_t i(0); i < 3; i++) { dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i]; }
 
-        if(fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax) continue;
-        if(fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax) continue;
+        if(weight > 0. && (fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax)) weight = 0;
+        if(weight > 0. && (fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax)) weight = 0.;
+        
       }
 
-      Double_t weight = 1;
-      if (fSettings.doNUE){
+      if (fSettings.doNUE & weight > 0){
           Int_t nueeta = fSettings.nuehist->GetXaxis()->FindBin(track->Eta());
           Double_t vtz = 0;
 
@@ -944,10 +951,10 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
           Int_t nuevtz = fSettings.nuehist->GetZaxis()->FindBin(vtz);
           Double_t factor = fSettings.nuehist->GetBinContent(nueeta,nuept,nuevtz);
           if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*(1./factor);
-          else weight = 0;
+          else weight = 0.;
       }
 
-      if (weight != 0 ) cen->Fill(track->Eta(),track->Phi(), weight);
+      if (weight > 0. ) cen->Fill(track->Eta(),track->Phi(), weight);
     }
   }
 }

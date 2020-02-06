@@ -28,6 +28,7 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
   ,fUseNewRunDepTempCalib(0)
+  ,fUseShaperCorrection(0)
   ,fCustomRecalibFilePath("")
   ,fLoad1DRecalibFactors(0)
 {
@@ -55,6 +56,9 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   // check the YAML configuration if the Run2 calibration is requested (default is false)
   GetProperty("enableNewTempCalib",fUseNewRunDepTempCalib);
 
+  // check the YAML configuration if the shaper nonlinearity correction is requested (default is false)
+  GetProperty("enableShaperCorrection",fUseShaperCorrection);
+
   // check the YAML configuration if a custom energy calibration is requested (default is empty string "")
   GetProperty("customRecalibFilePath",fCustomRecalibFilePath);
 
@@ -79,9 +83,9 @@ void AliEmcalCorrectionCellEnergy::UserCreateOutputObjects()
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
-    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_{cell} (GeV)",1000,0,10);
+    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_{cell} (GeV)",7000,0,70);
     fOutput->Add(fCellEnergyDistBefore);
-    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_{cell} (GeV)",1000,0,10);
+    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_{cell} (GeV)",7000,0,70);
     fOutput->Add(fCellEnergyDistAfter);
   }
 }
@@ -488,6 +492,10 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
         AliWarning(Form("No Temperature recalibration available: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
       }
     }
+  }
+  if(fUseShaperCorrection)
+  {
+    fRecoUtils->SetUseTowerShaperNonlinarityCorrection(kTRUE);
   }
   return runChanged;
 }

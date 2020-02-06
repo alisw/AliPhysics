@@ -17,6 +17,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
+#include "AliFemtoDreamBaseDump.h"
 
 class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
  public:
@@ -76,10 +77,13 @@ class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;   //!
   TList *fResults;//!
   TList *fResultsQA;//!
+  AliFemtoDreamDump *fProtonProtonDump; //!
+  AliFemtoDreamDump *fAntiProtonAntiProtonDump; //!
+  TList* fDumpster; //!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
 
-  ClassDef(AliAnalysisTaskNanoXioton,1)
+  ClassDef(AliAnalysisTaskNanoXioton,2)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOXIOTON_H_ */

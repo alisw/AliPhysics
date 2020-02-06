@@ -64,6 +64,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
   virtual void  SetProduceVZEROBranch(Bool_t prodvzerob) {fVZEROBranch = prodvzerob;}
   virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
+  virtual void  SetCentDetector(const char* centDetector) {fCentDetector = centDetector;}
   virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
   virtual void  SetCentFrameworkAliCen(Bool_t isAliCen) {fCentFrameworkAliCen = isAliCen;}
   virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
@@ -135,6 +136,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   AliAnalysisFilter* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
   AliAnalysisFilter* fTrackFilterTPC; // track filter for TPC only tracks
   TString       fAnalysisType;        //  "ESD" or "AOD"
+  TString       fCentDetector;        //  e.g. "V0M" or "V0A"
   Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
   Bool_t        fCentFrameworkAliCen; //   kTRUE: use AliCentrality, kFALSE: use AliMultSelection
   Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
@@ -190,7 +192,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Int_t        fRun;                // run no
   ULong64_t    fEventId;            // unique event id
 
-  Int_t        fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent
+  Int_t        fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent, 3 = kINT7
   Int_t        fV0Finder;           // 0 = oldFinder, 1 = newFinder
   Int_t        fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
     

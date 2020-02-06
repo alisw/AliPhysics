@@ -14,7 +14,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 // Option to use AliEventCuts class for additional event cuts
                                 Int_t whichAliEvtCuts  = 0,      // 0=None, 1=Use, 2=Also use correlation cuts
                                 Bool_t plots3D         = kFALSE,
-                                Bool_t v0plots         = kTRUE,  // Plots for PID calibration
+                                Bool_t v0plots         = kFALSE,  // Plots for PID calibration
                                 Bool_t getFromAlien    = kFALSE) // Pull config+CutLib from alien directory
 {
 

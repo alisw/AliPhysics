@@ -70,6 +70,10 @@ public:
                         fMinMass = minM;
                         fMaxMass = maxM;
                     };
+    void            SetEtaCut(Double_t etaMin, Double_t etaMax) {
+                        fMinEta = etaMin;
+                        fMaxEta = etaMax;
+                    }
     void            SetAssoDCACut(Double_t assoXYdca, Double_t assoZdca) {
         fAssoDCAxy = assoXYdca;
         fAssoDCAz = assoZdca;
@@ -131,6 +135,9 @@ private:
     Double_t            fDCAzCut;        // set DCA z cut
     Double_t            fMinMass;        // set min inv mass
     Double_t            fMaxMass;        // set max inv mass
+    Double_t            fMinEta;        // set min inv mass
+    Double_t            fMaxEta;        // set max inv mass
+    
     Double_t            fAssoDCAxy;     //asso track dcaXY cut
     Double_t            fAssoDCAz;      //asso track dcaZ cut
     Int_t               fAssoTPCnCls;   //TPC nCls cut for asso track
@@ -172,10 +179,8 @@ private:
     TH1F                *fITSLayerCheck;  //! checking ITS layer requirement
     TH2F                *fEMCTrkMatch;   //! plots distance of cluster from closest track
     
-    TH3F                *fElecDcaB4TrkMatch;     //! DCA before trk match, elec nsig cut
-    TH3F                *fDcaB4TrkMatch;     //! DCA before trk match, no nsig cut
-    TH3F                *fElecDcaTrkMatch;     //! DCA after trk match, elec nsig cut
-    TH3F                *fDcaTrkMatch;     //! DCA after trk match, no nsig cut
+    THnSparse           *fBasicSprs;    //! Sparse with pT, DCA, phi, eta, charge, electron bool, trk match bool
+    Double_t            *fvalueBasic;   //!Electron info
     
     TH1F                *fInvmassLS;     //! Plots LS mass dist
     TH1F                *fInvmassULS;    //! Plots ULS mass dist
@@ -209,20 +214,20 @@ private:
     TH1F                *fLSEnhPhoton;     //! LS for all photon e
     TH1F                *fULSEnhPhoton;    //! ULS for all photon e
     
-    TH2F                *fPhotonicDCA;   //! Photonic DCA using MC PID
+    //TH2F                *fPhotonicDCA;   //! Photonic DCA using MC PID
     TH2F                *fInclElecDCA;   //! Inclusive electron DCA vs. pT
     TH2F                *fnSigaftEoPCut;   //! DCA after eID E/p cut
-    TH2F                *fnSigaftSysEoPCut;   //! DCA after eID systematic E/p cut
+    //TH2F                *fnSigaftSysEoPCut;   //! DCA after eID systematic E/p cut
     TH2F                *fnSigaftM20EoPCut;   //! DCA after eID M20+E/p cut
-    TH2F                *fnSigaftSysM20EoPCut;   //! DCA after Sys eID M20 + E/p cut
-    TH2F                *fInclElecDCAnoSign;   //! Inclusive electron DCA vs. pT, no sign
-    TH2F                *fElecEoPnoSig;  //! Elec EoP w/o sigma cut
+    //TH2F                *fnSigaftSysM20EoPCut;   //! DCA after Sys eID M20 + E/p cut
+    //TH2F                *fInclElecDCAnoSign;   //! Inclusive electron DCA vs. pT, no sign
+    //TH2F                *fElecEoPnoSig;  //! Elec EoP w/o sigma cut
     
-    TH2F                *fInclElecEoPnoShift;   //! Inclusive electron EoP vs. pT w/o E/p shift
-    TH2F                *fHadronEoPnoShift;     //! Hadron EoP vs. pT w/o E/p shift
+    //TH2F                *fInclElecEoPnoShift;   //! Inclusive electron EoP vs. pT w/o E/p shift
+    //TH2F                *fHadronEoPnoShift;     //! Hadron EoP vs. pT w/o E/p shift
     TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
     TH2F                *fInclElecEoPNoM20;   //! Inclusive electron EoP vs. pT
-    TH2F                *fTPCElecEoP;   //! EoP vs. pT, -0.1<nsig<3 cut
+    //TH2F                *fTPCElecEoP;   //! EoP vs. pT, -0.1<nsig<3 cut
     TH2F                *fHadronEoP;     //! Hadron EoP vs. pT
     TH2F                *fHadronEoPNoM20;     //! Hadron EoP vs. pT
     TH2F                *fHadronDCA;     //! Hadron DCA vs. pT
@@ -232,7 +237,7 @@ private:
     TF1                 *fPi0Weight;    //! Function to weight enhanced pi0
     TF1                 *fEtaWeight;    //! Function to weight enhanced eta
     //TF1                 *fPi0EtaWeight; //! Function to weight enhanced eta+pi0
-    TH1F                *fDWeight; //!
+    //TH1F                *fDWeight; //!
     TH1F                *fDWeightNew; //!
     TH1F                *fDWeightVar1; //!
     TH1F                *fDWeightVar2; //!
@@ -240,7 +245,7 @@ private:
     TH1F                *fDsWeightVar1; //!
     TH1F                *fLcWeightVar1; //!
     TH1F                *fLcWeightVar2; //!
-    TH1F                *fBWeight; //!
+    //TH1F                *fBWeight; //!
     TH1F                *fBWeightNew; //!
     TH1F                *fBWeightVar1; //!
     TH1F                *fBWeightVar2; //!
@@ -248,8 +253,8 @@ private:
     
     Double_t            fWeight;        //!
     
-    TH2F                *fPi0DCA;           //! Pi0 DCA vs. pT
-    TH2F                *fEtaDCA;           //! Eta DCA vs. pT
+    //TH2F                *fPi0DCA;           //! Pi0 DCA vs. pT
+    //TH2F                *fEtaDCA;           //! Eta DCA vs. pT
     
     TH2F                *fEnhEtaDCA;           //!
     TH1F                *fEnhEtaWeightedPt;    //!
@@ -269,7 +274,7 @@ private:
     TH1F                *fComboDenomWeight;     //!
     TH1F                *fComboDenomNoWeight;   //!
     
-    TH1F                *fDMesonPDG; //! plots abs(pdg) of D mesons in the stack
+    //TH1F                *fDMesonPDG; //! plots abs(pdg) of D mesons in the stack
     TH1F                *fD0MesonPt;  //!
     TH1F                *fD0MesonFromDStarPt; //!
     TH1F                *fDPlusMesonPt; //!
@@ -297,10 +302,10 @@ private:
     TH1F                *fBMesonElecPt; //!
     TH1F                *fBBaryonElecPt; //!
     
-    TH2F    *fPromptD0DCAWeight; //!
-    TH2F    *fD0FromDStarDCAWeight; //!
-    TH2F    *fPromptD0DCANoWeight; //!
-    TH2F    *fD0FromDStarDCANoWeight; //!
+    //TH2F    *fPromptD0DCAWeight; //!
+    //TH2F    *fD0FromDStarDCAWeight; //!
+    //TH2F    *fPromptD0DCANoWeight; //!
+    //TH2F    *fD0FromDStarDCANoWeight; //!
     
     Int_t               fNtotMCpart;     //! N of total MC particles produced by generator
     Int_t               fNpureMC;        //! N of particles from main generator (Hijing/Pythia)
@@ -345,9 +350,9 @@ private:
     TH1F                *fHFElecAftLooseTrkCuts; //!
     TH1F                *fBElecAftLooseTrkCuts; //!
     
-    TH1F                *fElecAftLooseTrkCutsDiffPID; //!
+    /*TH1F                *fElecAftLooseTrkCutsDiffPID; //!
     TH1F                *fDElecAftLooseTrkCutsDiffPID; //!
-    TH1F                *fBElecAftLooseTrkCutsDiffPID; //!
+    TH1F                *fBElecAftLooseTrkCutsDiffPID; //!*/
     
     TH1F                *fElecAftTrkMatch; //!
     TH1F                *fHFElecAftTrkMatch; //!
@@ -366,6 +371,7 @@ private:
     TH1F                *fBElecAftEoP; //!
     
     THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
+    //Double_t            *fvalueElectron;//!Electron info
     
     //Double_t            *fvalueElectron; //! Electron info
     

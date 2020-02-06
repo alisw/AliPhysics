@@ -317,10 +317,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kPi0MCMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
     Float_t     FunctionNL_OfficialTB_50MeV_Data(Float_t e);
     Float_t     FunctionNL_OfficialTB_100MeV_Data(Float_t e);
+    Float_t     FunctionNL_OfficialTB_100MeV_Data_V2(Float_t e);
     Float_t     FunctionNL_OfficialTB_150MeV_Data(Float_t e);
     Float_t     FunctionNL_OfficialTB_300MeV_Data(Float_t e);
     Float_t     FunctionNL_OfficialTB_50MeV_MC(Float_t e);
     Float_t     FunctionNL_OfficialTB_100MeV_MC(Float_t e);
+    Float_t     FunctionNL_OfficialTB_100MeV_MC_V2(Float_t e);
     Float_t     FunctionNL_OfficialTB_150MeV_MC(Float_t e);
     Float_t     FunctionNL_OfficialTB_300MeV_MC(Float_t e);
     Float_t     FunctionNL_kSDMv5(Float_t e);
@@ -370,7 +372,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
     Bool_t      GetHighestPtMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
     Bool_t      IsClusterPi0(AliVEvent *event, AliMCEvent *mcEvent, AliVCluster *cluster);
-
+    Bool_t      CheckForReconstructedConversionPairs(vector<AliAODConversionPhoton*> &vecPhotons, vector<Int_t> &vecReject);
+    Bool_t      CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t tobechecked, Bool_t addIndex );
+    
     AliCaloTrackMatcher* GetCaloTrackMatcherInstance()          {return fCaloTrackMatcher;}
     AliPhotonIsolation* GetPhotonIsolationInstance()        { return fCaloIsolation; }
 
@@ -663,13 +667,16 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistTrueNoElectronPositronClusterMatch;  // True No Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronClusterMatchTruePID;         // MC true histogram for purity studies of selected electrons
 
-    Int_t      fNMaxDCalModules;                        // max number of DCal Modules
-    Int_t      fgkDCALCols;                             // Number of columns in DCal
-    Bool_t     fIsAcceptedForBasic;                     // basic counting
+    // histogram for conv candidate rejection 
+    TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
+    TH2F*     fHistInvMassConvFlagging;                 // histogram for monitoring rejected di-cluster mass
+    Int_t     fNMaxDCalModules;                         // max number of DCal Modules
+    Int_t     fgkDCALCols;                              // Number of columns in DCal
+    Bool_t    fIsAcceptedForBasic;                      // basic counting
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,100)
+    ClassDef(AliCaloPhotonCuts,101)
 };
 
 #endif

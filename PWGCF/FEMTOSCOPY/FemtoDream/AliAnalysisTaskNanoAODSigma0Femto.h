@@ -19,6 +19,7 @@
 #include "AliStack.h"
 #include "AliV0ReaderV1.h"
 #include "TChain.h"
+#include "AliFemtoDreamBaseDump.h"
 
 class AliVParticle;
 class AliVTrack;
@@ -41,8 +42,8 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   void SetLightweight(bool isLightweight) {
     fIsLightweight = isLightweight;
   }
-  void SetGoDoThisFemtoJanitor(bool godothis) {
-    fFemtoJanitor = godothis;
+  void SetUseDumpster(bool use) {
+    fUseDumpster = use;
   }
   void SetV0Percentile(float v0perc) {
     fV0PercentileMax = v0perc;
@@ -106,9 +107,13 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   AliFemtoDreamPairCleaner *fPairCleaner;            //!
   AliFemtoDreamPartCollection *fPartColl;            //!
 
+  AliFemtoDreamDump *fProtonSigmaDump;               //!
+  AliFemtoDreamDump *fAntiProtonAntiSigmaDump;       //!
+  AliFemtoDreamDump *fProtonSBDump;                  //!
+  AliFemtoDreamDump *fAntiProtonAntiSBDump;          //!
+
   bool fIsMC;              //
   bool fIsLightweight;     //
-  bool fFemtoJanitor;      //
   bool fUseDumpster;       //
   float fV0PercentileMax;  //
   UInt_t fTrigger;         //
@@ -132,8 +137,9 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   TList *fAntiSigmaHistList;       //!
   TList *fResultList;              //!
   TList *fResultQAList;            //!
+  TList *fDumpster;                //!
 
-ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 7)
+ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 8)
 };
 
 #endif

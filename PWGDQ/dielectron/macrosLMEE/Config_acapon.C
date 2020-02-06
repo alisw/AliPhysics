@@ -123,7 +123,13 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-
+  // kCutSet1 with hadron band rejection
+  else if(cutDefinition == "kCutSet4"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kScheidCuts));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
   // ######## PID Cut variation settings #################
   // These variations use the kCutSet1 track cuts and only vary PID
   else if(cutDefinition == "kPIDcut1"){

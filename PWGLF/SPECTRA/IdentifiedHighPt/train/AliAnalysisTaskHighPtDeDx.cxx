@@ -102,6 +102,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fTrackFilterGolden(0x0),
   fTrackFilterTPC(0x0),
   fAnalysisType("AOD"),
+  fCentDetector("V0M"),
   fAnalysisMC(kFALSE),
   fCentFrameworkAliCen(kFALSE),
   fAnalysisPbPb(kFALSE),
@@ -174,6 +175,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fTrackFilterGolden(0x0),
   fTrackFilterTPC(0x0),
   fAnalysisType("AOD"),
+  fCentDetector("V0M"),
   fAnalysisMC(kFALSE),
   fCentFrameworkAliCen(kFALSE),
   fAnalysisPbPb(kFALSE),
@@ -421,6 +423,10 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
      ->IsEventSelected() & AliVEvent::kSemiCentral){
     fTriggerInt = 2; 
   }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kINT7){
+    fTriggerInt = 3; 
+  }
 
   
   //  //_____________ end nominal _______________________
@@ -531,7 +537,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     }
   }
   
-  Float_t centralityV0M = -10;
+  Float_t centrality = -10;
  
   // only analyze triggered events
   if(fTriggeredEventMB){
@@ -541,7 +547,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	fCentFramework = 0; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
 	
 	AliCentrality *centObject =  fAOD->GetCentrality();
-	if(centObject) centralityV0M = centObject->GetCentralityPercentile("V0M"); 
+	if(centObject) centrality = centObject->GetCentralityPercentile(fCentDetector); 
 	
       }else{ // CentFramework in AliMultSelection
 	fCentFramework = 1; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
@@ -549,16 +555,16 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	AliMultSelection* centObject = 0x0; 
 	centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
 	if(centObject){
-	  centralityV0M = centObject->GetMultiplicityPercentile("V0M");
+	  centrality = centObject->GetMultiplicityPercentile(fCentDetector);
 	}
 	if(!centObject) cout<<"no centObject: please check that the AliMultSelectionTask actually ran (before your task) "<<endl; 
       }
       
-      if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return;	
+      if((centrality>fMaxCent)||(centrality<fMinCent))return;	
       
     }//pbpb
     
-    fcent->Fill(centralityV0M);
+    fcent->Fill(centrality);
     AnalyzeAOD(fAOD);
     
   }//if triggered
@@ -571,7 +577,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   fEvent->trig          = fTriggeredEventMB;
   fEvent->triggerInt    = fTriggerInt;
   fEvent->zvtxMC        = fZvtxMC;
-  fEvent->cent          = centralityV0M;
+  fEvent->cent          = centrality;
   fEvent->centFramework = fCentFramework;
 
   //fEvent->centV0A      = centralityV0A;

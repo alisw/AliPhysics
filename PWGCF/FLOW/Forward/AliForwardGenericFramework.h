@@ -87,6 +87,7 @@ public:
   TComplex TwoTwoDiff(Int_t n1, Int_t n2, Int_t diffetabin1, Int_t diffetabin2);
   TComplex Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4,Int_t eta1, Int_t eta2);
   TComplex FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t refetabinA, Int_t refetabinB, Int_t diffetabin,Int_t qetabin);
+  TComplex FourDiff_SC(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t diffetabinA, Int_t refetabinA, Int_t diffetabinB,Int_t refetabinB);
 
 
   void fill(THnD*& cumu, Int_t n, Int_t ptn, Double_t sample,
@@ -184,6 +185,7 @@ public:
   THnD* cumu_dW2TwoTwoD  ;//!
   THnD* cumu_dW4ThreeTwo ;//!
   THnD* cumu_dW4FourTwo  ;//!
+  THnD* cumu_wSC  ;//!
 
   // decorrelation
   THnD* cumu_dW2A        ;//!

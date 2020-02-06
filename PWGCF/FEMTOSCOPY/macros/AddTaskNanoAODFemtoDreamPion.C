@@ -162,23 +162,6 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
     closeRejection.push_back(false); // pi- pi-
   }
 
-  //Variations for fdPhidEta
-  if (suffix == "1") {
-    fdPhidEta=0.035;
-  }
-
-  if (suffix == "2") {
-    fdPhidEta=0.03;
-  }
-
-  if (suffix == "3") {
-    fdPhidEta=0.025;
-  }
-
-  if (suffix == "4") {
-    fdPhidEta=0.02;
-  }
-
   //QA plots for tracks
   std::vector<int> pairQA;
   pairQA.push_back(11); // pi+ pi+

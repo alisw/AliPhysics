@@ -276,6 +276,10 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
         fHistos->CreateTH1("hJetEta","",100,-1.0,1.0);
         fHistos->CreateTH1("hJetPhi","",100,-4,4);
 
+        fHistos->CreateTH1("hLJetPt","",240,0,120);
+        fHistos->CreateTH1("hLJetEta","",100,-1.0,1.0);
+        fHistos->CreateTH1("hLJetPhi","",100,-4,4);
+
 	fHistos->CreateTH1("hLHPt","",240,0,120);
 
 	fHistos->CreateTH2("hLHPt_JetpT","",240,0,120,240,0,120);
@@ -639,13 +643,13 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection ) fHistos->FillTH1("hEventNumbers","IsSelectedFromAliMultSelection",1);
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 	        fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
-/*
+
 		if( fJetPt>0.1 ){
-			fHistos->FillTH1("hJetPt",fJetPt,1.0);
-			fHistos->FillTH1("hJetEta",JetEta,1.0);
-			fHistos->FillTH1("hJetPhi",JetPhi,1.0);
+			fHistos->FillTH1("hLJetPt",fJetPt,1.0);
+			fHistos->FillTH1("hLJetEta",JetEta,1.0);
+			fHistos->FillTH1("hLJetPhi",JetPhi,1.0);
 		}
-*/
+
         	for(int i=0;i<fjets->GetEntries();i++){
         	        Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
         	        if( fabs( Cjet->Eta() ) > 0.4 ){ continue; }

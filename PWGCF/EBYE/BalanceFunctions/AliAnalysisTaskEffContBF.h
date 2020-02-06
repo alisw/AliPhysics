@@ -123,17 +123,18 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   void SetMaxChi2PerTPCCluster(Double_t max) {
     fMaxChi2PerTPCCluster = max;}  
 
-
   void SetExtra2DDCACutsAOD(Double_t DCAxy, Double_t DCAz){
     fDCAxyCut  = DCAxy;
     fDCAzCut = DCAz;
   }
 
-  void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC){
+  void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC, Int_t minNTPCCrossedRows, Float_t minNTPCFindableCls){
     fTPCchi2Cut      = maxTPCchi2;
     fNClustersTPCCut = minNClustersTPC;
+    fMinTPCCrossedRows = minNTPCCrossedRows;
+    fMinTPCRowsOverFindableCls =  minNTPCFindableCls;
   }
- 
+  
   void SetMaxDCAxy(Double_t max) {
     fMaxDCAxy = max;}
   void SetMaxDCAz(Double_t max) {
@@ -290,6 +291,8 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Double_t fDCAzCut;//2D DCA cut
   Double_t fTPCchi2Cut;//Chi2 Per Cluster TPC cut
   Int_t fNClustersTPCCut;//Minimum number of TPC clusters cut
+  Int_t fMinTPCCrossedRows; //Minimum number of TPC crossed rows cut
+  Float_t fMinTPCRowsOverFindableCls;  //Minimum number of TPC findable cls
 
   Int_t fEtaBin;  // acceptance cuts
   Int_t fdEtaBin;  // acceptance cuts

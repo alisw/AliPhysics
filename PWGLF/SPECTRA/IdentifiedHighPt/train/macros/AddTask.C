@@ -103,6 +103,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     
     //Set event details
     taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen); //kTRUE:AliCentrality, kFALSE:AliMultSelection
+    taskHighPtDeDx->SetCentDetector("V0M");
     taskHighPtDeDx->SetMinCent(minc);
     taskHighPtDeDx->SetMaxCent(maxc);
     taskHighPtDeDx->SetVtxCut(10.0);
@@ -149,6 +150,7 @@ if(typerun==3){//pp analysis
     
     //Set event details
     taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen); //kTRUE:AliCentrality, kFALSE:AliMultSelection
+    taskHighPtDeDx->SetCentDetector("V0M");
     taskHighPtDeDx->SetMinCent(minc);
     taskHighPtDeDx->SetMaxCent(maxc);
     taskHighPtDeDx->SetVtxCut(10.0);
@@ -198,6 +200,7 @@ if(typerun==4){//ppb analysis
     
     //Set event details
     taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen); //kTRUE:AliCentrality, kFALSE:AliMultSelection
+    taskHighPtDeDx->SetCentDetector("V0A");
     taskHighPtDeDx->SetMinCent(minc);
     taskHighPtDeDx->SetMaxCent(maxc);
     taskHighPtDeDx->SetVtxCut(10.0);

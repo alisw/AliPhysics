@@ -56,9 +56,9 @@ private:
   AliAnalysisTaskFindableHypertriton3(const AliAnalysisTaskFindableHypertriton3 &);            // not implemented
   AliAnalysisTaskFindableHypertriton3 &operator=(const AliAnalysisTaskFindableHypertriton3 &); // not implemented
 
-  AliPIDResponse *fPIDResponse;   // PID response object
-  AliESDtrackCuts *fESDtrackCuts; // ESD track cuts
-  AliESDVertex *fPrimaryVertex;   // Primary vertex of the current event
+  AliPIDResponse *fPIDResponse;   //! PID response object
+  AliESDtrackCuts *fESDtrackCuts; //! ESD track cuts
+  AliESDVertex *fPrimaryVertex;   //! Primary vertex of the current event
 
   // Settings
   float fCosPoiningAngleLimit;
@@ -68,7 +68,7 @@ private:
   TTree *fFindableTree; //!
 
   // Findable Tree
-  AliESDtrack *fTreeHyp3BodyVarTracks[3];
+  AliESDtrack *fTreeHyp3BodyVarTracks[3]; //!
   Int_t fTreeHyp3BodyVarPDGcodes[3];
 
   ULong64_t fTreeHyp3BodyVarEventId;
@@ -90,6 +90,7 @@ private:
   Float_t fTreeHyp3BodyVarPVt;
 
   Float_t fTreeHyp3BodyVarMagneticField;
+  Float_t fTreeHyp3BodyVarCentrality;
 
   TH1D *fHistEventCounter; //!
   TH1D *fHistCentrality;   //!

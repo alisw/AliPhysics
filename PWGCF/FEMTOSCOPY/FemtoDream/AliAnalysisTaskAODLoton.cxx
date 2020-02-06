@@ -345,9 +345,7 @@ void AliAnalysisTaskAODLoton::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(AntiLambdas);
   if (fPairCleaner->GetCounter() > 0) {
     if (fConfig->GetUseEventMixing()) {
-      fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
-                          fEvent->GetZVertex(), fEvent->GetMultiplicity(),
-                          fEvent->GetV0MCentrality());
+      fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent);
     }
     if (fConfig->GetUsePhiSpinning()) {
       fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);

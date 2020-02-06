@@ -27,6 +27,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   void SetIsPrimaryMC(Bool_t isprimarymc) { fIsPrimaryMC = isprimarymc; }
   void SetINEL(Bool_t input) { fIsINEL = input; }
   void SetHighMult(Bool_t input) { fIsHM = input; }
+  void SetAssymCut(Bool_t input) { fUseAssymCut = input; }
   void SetFillnTuple(Bool_t fillntuple) { fFillnTuple = fillntuple; }
 
   // Setter for cut variables
@@ -80,6 +81,12 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   }
   void SetSigmaStarRapidityCutLow(Double_t lParameter) {
     fSigmaStarYCutLow = lParameter;
+  }
+  void SetSigmaStarAssymCutHigh(Double_t lParameter) {
+    fSigmaStarAssymCutHigh = lParameter;
+  }
+  void SetSigmaStarAssymCutLow(Double_t lParameter) {
+    fSigmaStarAssymCutLow = lParameter;
   }
 
   Bool_t GoodTracksSelection();
@@ -139,6 +146,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   Bool_t fFillnTuple;   //
   Bool_t fIsINEL;       //
   Bool_t fIsHM;         //
+  Bool_t fUseAssymCut;  //
 
   mixingpool fEMpool;  //!
   TAxis fBinCent;      //!
@@ -172,14 +180,16 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   Double_t fV0MassWindowCut;             //
 
   // Sigma Star cut
-  Double_t fSigmaStarYCutHigh;  //
-  Double_t fSigmaStarYCutLow;   //
+  Double_t fSigmaStarYCutHigh;      //
+  Double_t fSigmaStarYCutLow;       //
+  Double_t fSigmaStarAssymCutHigh;  //
+  Double_t fSigmaStarAssymCutLow;   //
 
   // Good track/v0 vector array
   std::vector<UInt_t> fGoodTrackArray;
   std::vector<std::vector<UInt_t>> fGoodV0Array;
 
-  ClassDef(AliAnalysisTaskSigma1385PM, 10);
+  ClassDef(AliAnalysisTaskSigma1385PM, 11);
   // Add rapidity/radius/Lifetime/Y cut of lambda
   // Add NanoOption
   // 4: Add GetImpactParm function for nano
@@ -189,6 +199,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   // 8: Rebuild MC part
   // 9: Update class format
   // 10: Fix streamer issue
+  // 11: Add Assym cut option
 };
 
 #endif

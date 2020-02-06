@@ -7,7 +7,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
                                                                 Int_t wagonnr = 0,
                                                                 Int_t centrality = 4) {
 
-bool debug = false;
+
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
@@ -148,6 +148,7 @@ bool debug = false;
   task->SetMassCutSecondaries(massCutSecondaries);
 
 
+
   // #########################################################
   // #########################################################
   // Set Binning
@@ -200,7 +201,6 @@ bool debug = false;
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
   task->SetULSandLS(DoULSLS);
-  task->SetDeactivateLS(DeactivateLS);
 
   // #########################################################
   // #########################################################
@@ -234,13 +234,13 @@ bool debug = false;
     task->AddTrackCuts_primary(filter);
     DoAdditionalWork(task);
   }
+
   // Adding secondary electron cutsettings
   TObjArray*  arrNames_sec=names_Sec_Cuts.Tokenize(";");
   const Int_t nDie=arrNames_sec->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_sec->At(iCut)->GetName());
-                                                                                // if(debug) std::cout << __LINE__ << " DEBUG_AddTask: arrNames_sec->At(iCut)->GetName(): " <<  arrNames_sec->At(iCut)->GetName()<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
     task->AddTrackCuts_secondary(filter);
     DoAdditionalWork(task);

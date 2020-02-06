@@ -274,6 +274,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fDCAzCut(-1),
   fTPCchi2Cut(-1),
   fNClustersTPCCut(-1),
+  fMinTPCCrossedRows(-1),
+  fMinTPCRowsOverFindableCls(-1),
   fTPCsharedCut(-1),
   fSphericityMin(-999.),
   fSphericityMax(999.),
@@ -2905,6 +2907,19 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	continue;
       }
 
+      if(fMinTPCCrossedRows != -1){
+	if ((Float_t)aodTrack->GetTPCNCrossedRows() < (120 - (5/(Float_t)aodTrack->Pt())) ){
+	  continue;
+	}
+      }
+      
+      if (fMinTPCRowsOverFindableCls != -1){
+	Float_t nTPCCrossedRowsOverFindCls = (((Float_t)aodTrack->GetTPCNCrossedRows())/((Float_t)aodTrack->GetTPCNclsF()));
+	if (nTPCCrossedRowsOverFindCls < fMinTPCRowsOverFindableCls){
+	  continue;
+	}
+      }
+      
       // Extra cut on shared clusters
       if( fTPCsharedCut != -1 && aodTrack->GetTPCnclsS() > fTPCsharedCut){
 	continue;
@@ -3619,7 +3634,20 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	continue;
       }
 
-     // Extra cut on shared clusters
+      if(fMinTPCCrossedRows != -1){
+	if ((Float_t)aodTrack->GetTPCNCrossedRows() < (120 - (5/(Float_t)aodTrack->Pt())) ){
+	  continue;
+	}
+      }
+      
+      if (fMinTPCRowsOverFindableCls != -1){
+	Float_t nTPCCrossedRowsOverFindCls = (((Float_t)aodTrack->GetTPCNCrossedRows())/((Float_t)aodTrack->GetTPCNclsF()));
+	if (nTPCCrossedRowsOverFindCls < fMinTPCRowsOverFindableCls){
+	  continue;
+	}
+      }
+      
+      // Extra cut on shared clusters
       if( fTPCsharedCut != -1 && aodTrack->GetTPCnclsS() > fTPCsharedCut){
 	continue;
       }

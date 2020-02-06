@@ -664,7 +664,7 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
     return -9;
   }
   // Flag Photon as CaloPhoton
-  PhotonCandidate->SetIsCaloPhoton();
+  PhotonCandidate->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutsEMC)->GetClusterType());
   PhotonCandidate->SetCaloClusterRef(indexCluster);
 
   // get MC label
@@ -712,7 +712,7 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
     return -9;
   }
   // Flag Photon as CaloPhoton
-  PhotonCandidate1->SetIsCaloPhoton();
+  PhotonCandidate1->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutsEMC)->GetClusterType());
   // TLorentzvector with sub cluster 2
   TLorentzVector clusterVector2;
   clusSub2->GetMomentum(clusterVector2,vertex);
@@ -726,7 +726,7 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
     return -9;
   }
   // Flag Photon as CaloPhoton
-  PhotonCandidate2->SetIsCaloPhoton();
+  PhotonCandidate2->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutsEMC)->GetClusterType());
   Int_t mclabel = -3;
   if(fIsMC> 0 && PhotonCandidate && PhotonCandidate1 && PhotonCandidate2 && fSaveMCInformation){
       if(fInputEvent->IsA()==AliESDEvent::Class())
@@ -900,7 +900,7 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
 
   TParticle *Photon = NULL;
   TParticle *Pi0Dummy = NULL;
-  if (!TrueClusterCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
+  if (TrueClusterCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
   if (TrueClusterCandidate->GetCaloPhotonMCLabel(0) < 0){
       mcLabelCluster = -10;
       return mcLabelCluster;
@@ -1118,7 +1118,7 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidatesAOD(AliAODConversion
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
   if (AODMCTrackArray){
-    if (!TrueClusterCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
+    if (TrueClusterCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
     if (TrueClusterCandidate->GetCaloPhotonMCLabel(0) < 0) {
       mcLabelCluster = -10;
       return mcLabelCluster;

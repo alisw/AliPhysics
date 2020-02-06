@@ -114,7 +114,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarpPbRunII_ROOT6(
    // #ifdef __CINT__
 //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarpPbRunII.C");
 // gROOT->LoadMacro("ConfigKStarPbPbRunII.C");
-//if (!ConfigKStarpPbRunII(task, isMC, isPP, cutsPair,Strcut,customQualityCutsID,cutKaCandidate,nsigmaPi,nsigmaK,nsigmaTOF,enableMonitor)) return 0x0;
+   if (!ConfigKStarpPbRunII(task, isMC, isPP, cutsPair,Strcut,customQualityCutsID,cutKaCandidate,nsigmaPi,nsigmaK,nsigmaTOF,enableMonitor)) return 0x0;
 //#endif
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

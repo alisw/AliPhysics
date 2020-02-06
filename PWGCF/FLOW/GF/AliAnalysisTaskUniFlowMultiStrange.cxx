@@ -12,58 +12,13 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
 // =================================================================================================
-// AliAnalysisTaskUniFlowMultiStrange - ALICE Unified Flow framework
-// Author: Vojtech Pacik (vojtech.pacik@cern.ch), NBI, 2016-2019
 // =================================================================================================
-//
-// ALICE analysis task for universal study of flow via 2-(or multi-)particle correlations
-// using Generic Framework notation for calculations including per-particle weights.
-//
-// Implemented flow calculation for both reference & pt-differential flow
-// of both inclusive charged (done anyway) & identified particles (pi,K,p,K0s,Lambda,phi).
-//
-// Note: So far implemented only for AOD analysis and tuned on Run2 pp & pPb analyses!
-//
-// PLEASE READ THE INSTRUCTION BELLOW BEFORE RUNNING !!!
-//
+// AliAnalysisTaskUniFlowMultiStrange - Used for Multi-Strange Flow analysis with Multi-particle
+// cumulant method and ESE analysis. Extension of AliAnalysisTaskUniFlowMultiStrange class (impl. by Vojtech Pacik, NBI).
+// Author: Ya Zhu (ya.zhu@cern.ch), CCNU, 2016-2019
 // =================================================================================================
-// Analysis can run in these modes setup via AliAnalysisTaskUniFlowMultiStrange::SetRunMode(RunMode)
-//  -- AnalysisTaskUniFlow::kFull : running mode
-//      - full scale analysis
-//
-//  -- AnalysisTaskUniFlow::kTest : development / testing / debugging mode
-//      - only limited number of events is processed (AliAnalysisTaskUniFlowMultiStrange::SetNumEventsAnalyse(Int_t))
-//
-//  -- AnalysisTaskUniFlow::kSkipFlow : usable for QA and(or) weights estimation before full scale running
-//      - events are processed whilst skipping correlation calculations, i.e. event loop ends after particles are filtered
-//
-//  NOTE: by default, all modes includes :
-//  - filling QA plots : can be turned-off by AliAnalysisTaskUniFlowMultiStrange::SetFillQAhistos(kFALSE)
-//    (might be heavy while running several tasks at once)
-//  - filling GF weights : can be turned-off by AliAnalysisTaskUniFlowMultiStrange::SetFlowFillWeights(kFALSE)
-//
-// =================================================================================================
-// Overview of analysis flow (see implementation of corresonding method for details)
-// 1) Event selection : EventSelection()
-//
-// 2) Particle selection & reconstruction : Filtering()
-//        - whether or not are particles processed is driven by 'fProcess?' flag setup by AliAnalysisTaskUniFlowMultiStrange::SetProcess?(kTRUE)
-//          (except for incl. charged, which are processed anyway)
-//        - filling QA plots
-//        - filling GF weights
-//
-//    !!! here the event loop ends in case of running in 'kSkipFlow' mode
-//
-// 3) Flow / correlation calculations : DoFlowPOIs(), DoFlowRefs()
-//        - to setup harmonics to be calculated, modify 'AliAnalysisTaskUniFlowMultiStrange::fHarmonics[]' (in .cxx) AND 'fNumHarmonics' (in .h)
-//        - to setup eta gaps (2part) to be calculated, modify 'AliAnalysisTaskUniFlowMultiStrange::fEtaGap[]' (in .cxx) AND 'fNumEtaGap' (in .h)
-//              - for NO gap case, fill in value '-1.0'
-//        - 2-particle cumulants are run by ©default (in 'kFull' mode)
-//        - 4-particle cumulants has to be setup by invoking AliAnalysisTaskUniFlowMultiStrange::SetFlowDoFourCorrelations(kTRUE)
-//
-// =================================================================================================
+//===============================================================================================
 #ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 #define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 
@@ -80,11 +35,11 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TProfile3D.h"
+#include "AliDirList.h"
 #include "TList.h"
 #include "TClonesArray.h"
 #include "TComplex.h"
 #include "TRandom3.h"
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODInputHandler.h"
@@ -110,7 +65,7 @@ ClassImp(AliAnalysisTaskUniFlowMultiStrange);
 // AliAnalysisTaskUniFlowMultiStrange::CorrTask
 // ############################################################################
 // ============================================================================
-AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
+ AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
   fbDoRefs(0),
   fbDoPOIs(0),
   fiNumHarm(0),
@@ -163,7 +118,6 @@ AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask(Bool_t refs, Bool_t pois,
   fsName = sName;
   fsLabel = sLabel;
 }
-
 // ============================================================================
 void AliAnalysisTaskUniFlowMultiStrange::CorrTask::Print() const
 {
@@ -187,9 +141,11 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fPDGMassK0s(TDatabasePDG::Instance()->GetParticle(310)->Mass()),
   fPDGMassLambda(TDatabasePDG::Instance()->GetParticle(3122)->Mass()),
   fEventAOD(),
+  fhEvent(),
   fPVz(),
   Is2018Data(0),
   IsPIDorrection(0),
+  IsAdditional2018DataEventCut(0),
   fPIDResponse(),
   fPIDCombined(),
   fFlowWeightsFile(),
@@ -322,6 +278,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
 
 
   fQAEvents(),
+  fQAEventCut(),
   fQACharged(),
   fQAPID(),
   fQAV0s(),
@@ -497,9 +454,11 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fPDGMassK0s(TDatabasePDG::Instance()->GetParticle(310)->Mass()),
   fPDGMassLambda(TDatabasePDG::Instance()->GetParticle(3122)->Mass()),
   fEventAOD(),
+  fhEvent(),
   fPVz(),
   Is2018Data(0),
   IsPIDorrection(0),
+  IsAdditional2018DataEventCut(0),
   fPIDResponse(),
   fPIDCombined(),
   fFlowWeightsFile(),
@@ -627,6 +586,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fCutCascadesInvMassOmegaMin(1.63),
   fCutCascadesInvMassOmegaMax(1.72),
   fQAEvents(),
+  fQAEventCut(),
   fQACharged(),
   fQAPID(),
   fQAV0s(),
@@ -788,22 +748,22 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
 {
   // defining input/output
   DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-  DefineOutput(3, TList::Class());
-  DefineOutput(4, TList::Class());
-  DefineOutput(5, TList::Class());
-  DefineOutput(6, TList::Class());
-  DefineOutput(7, TList::Class());
-  DefineOutput(8, TList::Class());
-  DefineOutput(9, TList::Class());
-  DefineOutput(10, TList::Class());
-  DefineOutput(11, TList::Class());
-  DefineOutput(12, TList::Class());
-  DefineOutput(13, TList::Class());
-  DefineOutput(14, TList::Class());
-  DefineOutput(15, TList::Class());
-  DefineOutput(16, TList::Class());
+  DefineOutput(1, AliDirList::Class());
+  DefineOutput(2, AliDirList::Class());
+  DefineOutput(3, AliDirList::Class());
+  DefineOutput(4, AliDirList::Class());
+  DefineOutput(5, AliDirList::Class());
+  DefineOutput(6, AliDirList::Class());
+  DefineOutput(7, AliDirList::Class());
+  DefineOutput(8, AliDirList::Class());
+  DefineOutput(9, AliDirList::Class());
+  DefineOutput(10, AliDirList::Class());
+  DefineOutput(11, AliDirList::Class());
+  DefineOutput(12, AliDirList::Class());
+  DefineOutput(13, AliDirList::Class());
+  DefineOutput(14, AliDirList::Class());
+  DefineOutput(15, AliDirList::Class());
+  DefineOutput(16, AliDirList::Class());
 }
 // ============================================================================
 AliAnalysisTaskUniFlowMultiStrange::~AliAnalysisTaskUniFlowMultiStrange()
@@ -832,6 +792,7 @@ AliAnalysisTaskUniFlowMultiStrange::~AliAnalysisTaskUniFlowMultiStrange()
   // deleting output lists
   if(fFlowWeights) delete fFlowWeights;
   if(fQAEvents) delete fQAEvents;
+  if(fQAEventCut) delete fQAEventCut;
   if(fQACharged) delete fQACharged;
   if(fQAPID) delete fQAPID;
   if(fQAPhi) delete fQAPhi;
@@ -1228,7 +1189,6 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
   if(!fPIDResponse) { AliFatal("AliPIDResponse not attached!"); return; }
-
   // loading array with MC particles
   if(fMC)
   {
@@ -1242,17 +1202,30 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   // Fill event QA BEFORE cuts
   if(fFillQA) { FillEventsQA(0); }
 
-
- Bool_t bEventSelected = IsEventSelected();
-
+  Bool_t bEventSelected = IsEventSelected();
   // if(!IsEventSelected()) { return; }
-
   DumpTObjTable("UserExec: after event selection");
   if(!bEventSelected) { return; }
 
   fhEventCounter->Fill("Event OK",1);
 
-  // checking the run number for aplying weights & loading TList with weights
+  fIndexCentrality = GetCentralityIndex();
+
+   UInt_t fSelectMask = inputHandler->IsEventSelected();
+  if(!Is2018Data){if(!(fSelectMask & (AliVEvent::kINT7))) { return;}}
+  if(Is2018Data){
+   if((fIndexCentrality<10) || (fIndexCentrality>30 && fIndexCentrality<50)){
+    if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT7))) {
+    return; }
+   }
+  else{
+    {if(!(fSelectMask & (AliVEvent::kINT7))) { return;}}
+   }
+  }
+  fhEvent->Fill(fIndexCentrality);
+  // events passing physics && trigger selection
+  fhEventCounter->Fill("Physics selection OK",1);
+  // checking the run number for aplying weights & loading AliDirList with weights
   if(fFlowUseWeights && fFlowRunByRunWeights && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
 
   DumpTObjTable("UserExec: before filtering");
@@ -1262,35 +1235,19 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   fVector[kRefs]->clear();
   fVector[kCharged]->clear();
   FilterCharged();
-
   // checking if there is at least 5 particles: needed to "properly" calculate correlations
   if(fVector[kRefs]->size() < 5) { return; }
   fhEventCounter->Fill("#RPFs OK",1);
-
+   
   // estimate centrality & assign indexes (centrality/percentile, sampling, ...)
-  fIndexCentrality = GetCentralityIndex();
   if(fIndexCentrality < 0) { return; }
   if(fCentMin > 0 && fIndexCentrality < fCentMin) { return; }
   if(fCentMax > 0 && fIndexCentrality > fCentMax) { return; }
 
   fhEventCounter->Fill("Cent/Mult OK",1);
 
-  UInt_t fSelectMask = inputHandler->IsEventSelected();
-  if(!Is2018Data){if(!(fSelectMask & (AliVEvent::kINT7))) { return;}}
- if(Is2018Data){
-   if((fIndexCentrality<10) || (fIndexCentrality>30 && fIndexCentrality<50)){
-    if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT7))) {
-  return; }
-   }
-  else{
-    {if(!(fSelectMask & (AliVEvent::kINT7))) { return;}}
-   }
-  }
- 
- 
 // here events are selected
   fhEventCounter->Fill("Selected",1);
-
   // event sampling
   fIndexSampling = GetSamplingIndex();
 
@@ -1321,12 +1278,10 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
       if(!track) { continue; }
       FillQACharged(0,track);
     }
-
     fhQAChargedMult[0]->Fill(fEventAOD->GetNumberOfTracks());
     fhQAChargedMult[1]->Fill(fVector[kCharged]->size());
     fhRefsMult->Fill(fVector[kRefs]->size());
   }
-
   // Filtering other species
   if(fProcessSpec[kPion] || fProcessSpec[kKaon] || fProcessSpec[kProton]) { FilterPID(); }
   if(fProcessSpec[kK0s] || fProcessSpec[kLambda]) { FilterV0s(); }
@@ -1367,8 +1322,6 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
 // ============================================================================
 Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventSelected()
 {
-  // events passing physics && trigger selection
-  fhEventCounter->Fill("Physics selection OK",1);
   if(Is2018Data){
   fEventCuts.SetManualMode(1);
   fEventCuts.SetupPbPb2018();
@@ -1381,7 +1334,7 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventSelected()
   // Additional pile-up rejection cuts for LHC15o dataset
   //if(fColSystem == kPbPb && fEventRejectAddPileUp && IsEventRejectedAddPileUp()) { return kFALSE; }
 
-  if(Is2018Data){
+  if(Is2018Data && IsAdditional2018DataEventCut){
 
     AliAODVZERO* AODV0 = fEventAOD->GetVZEROData();
     Float_t multV0a = AODV0->GetMTotV0A();
@@ -1500,18 +1453,18 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::LoadWeights()
   // ***************************************************************************
   if(!fFlowWeightsFile) { AliError("File with flow weights not found!"); return kFALSE; }
 
-  TList* listFlowWeights = 0x0;
+  AliDirList* listFlowWeights = 0x0;
   if(!fFlowRunByRunWeights) {
     // information about current run is unknown in Initialization(); load only "averaged" weights
     AliInfo("Loading initial GF weights (run-averaged)");
-    listFlowWeights = (TList*) fFlowWeightsFile->Get("weights");
-    if(!listFlowWeights) { AliError("TList with flow weights not found."); return kFALSE; }
+    listFlowWeights = (AliDirList*) fFlowWeightsFile->Get("weights");
+    if(!listFlowWeights) { AliError("AliDirList with flow weights not found."); return kFALSE; }
   } else {
-    listFlowWeights = (TList*) fFlowWeightsFile->Get(Form("%d",fEventAOD->GetRunNumber()));
+    listFlowWeights = (AliDirList*) fFlowWeightsFile->Get(Form("%d",fEventAOD->GetRunNumber()));
 
     if(!listFlowWeights) {
-      AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fEventAOD->GetRunNumber()));
-      listFlowWeights = (TList*) fFlowWeightsFile->Get("weights");
+      AliWarning(Form("AliDirList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fEventAOD->GetRunNumber()));
+      listFlowWeights = (AliDirList*) fFlowWeightsFile->Get("weights");
       if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); return kFALSE; }
     }
   }
@@ -3735,24 +3688,24 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
 
   // creating output lists
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
-    fListFlow[iSpec] = new TList();
+    fListFlow[iSpec] = new AliDirList();
     fListFlow[iSpec]->SetOwner(kTRUE);
     fListFlow[iSpec]->SetName(Form("fFlow%s",GetSpeciesName(PartSpecies(iSpec))));
   }
 
-  fFlowWeights = new TList();
+  fFlowWeights = new AliDirList();
   fFlowWeights->SetOwner(kTRUE);
   fFlowWeights->SetName("fFlowWeights");
 
-  fQAEvents = new TList();
+  fQAEvents = new AliDirList();
   fQAEvents->SetOwner(kTRUE);
-  fQACharged = new TList();
+  fQACharged = new AliDirList();
   fQACharged->SetOwner(kTRUE);
-  fQAPID = new TList();
+  fQAPID = new AliDirList();
   fQAPID->SetOwner(kTRUE);
-  fQAPhi = new TList();
+  fQAPhi = new AliDirList();
   fQAPhi->SetOwner(kTRUE);
-  fQAV0s = new TList();
+  fQAV0s = new AliDirList();
   fQAV0s->SetOwner(kTRUE);
 
   // setting number of bins based on set range with fixed width
@@ -4047,14 +4000,19 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
     TString sPIDstatus[iNBinsPIDstatus] = {"kDetNoSignal","kDetPidOk","kDetMismatch","kDetNoParams"};
 
     // event histogram
-    fEventCuts.AddQAplotsToList(fQAEvents);
+    fQAEventCut = new TList();
+    fQAEventCut->SetOwner(kTRUE);
+    fEventCuts.AddQAplotsToList(fQAEventCut);
 
     fhEventSampling = new TH2D("fhEventSampling",Form("Event sampling; %s; sample index", GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fNumSamples,0,fNumSamples);
     fQAEvents->Add(fhEventSampling);
     fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); %s", GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
     fQAEvents->Add(fhEventCentrality);
     fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, 150,0,150);
+    fQAEvents->Add(fQAEventCut); 
     fQAEvents->Add(fh2EventCentralityNumRefs);
+    fhEvent = new TH1D("fhEventCentAfterPhySel","Event distibution after triger selection",100,0,100);
+    fQAEvents->Add(fhEvent);
 
     if(fEventRejectAddPileUp)
     {
@@ -4067,6 +4025,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
       fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
       fQAEvents->Add(fhQAEventsfMultTPCvsESD);
     }
+
 
     // charged (tracks) histograms
     fhRefsMult = new TH1D("fhRefsMult","RFPs: Multiplicity; multiplicity", 200,0,1000);
@@ -4217,11 +4176,11 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
         fQAPID->Add(fhQAPIDTOFstatus[iQA]);
         fhQAPIDTOFbeta[iQA] = new TH2D(Form("fhQAPIDTOFbeta_%s",sQAindex[iQA].Data()),"QA PID: TOF #beta information; #it{p} (GeV/#it{c}); TOF #beta", 100,0,10, 101,-0.1,1.5);
         fQAPID->Add(fhQAPIDTOFbeta[iQA]);
-        fh3QAPIDnSigmaTPCTOFPtPion[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtPion_%s",sQAindex[iQA].Data()), "QA PID: nSigma Pion vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 21,-11,10, 21,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
+        fh3QAPIDnSigmaTPCTOFPtPion[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtPion_%s",sQAindex[iQA].Data()), "QA PID: nSigma Pion vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 210,-11,10, 210,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
         fQAPID->Add(fh3QAPIDnSigmaTPCTOFPtPion[iQA]);
-        fh3QAPIDnSigmaTPCTOFPtKaon[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtKaon_%s",sQAindex[iQA].Data()), "QA PID: nSigma Kaon vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 21,-11,10, 21,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
+        fh3QAPIDnSigmaTPCTOFPtKaon[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtKaon_%s",sQAindex[iQA].Data()), "QA PID: nSigma Kaon vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 210,-11,10, 210,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
         fQAPID->Add(fh3QAPIDnSigmaTPCTOFPtKaon[iQA]);
-        fh3QAPIDnSigmaTPCTOFPtProton[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtProton_%s",sQAindex[iQA].Data()), "QA PID: nSigma Proton vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 21,-11,10, 21,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
+        fh3QAPIDnSigmaTPCTOFPtProton[iQA] = new TH3D(Form("fh3QAPIDnSigmaTPCTOFPtProton_%s",sQAindex[iQA].Data()), "QA PID: nSigma Proton vs. p_{T}; n#sigma TPC; n#sigma TOF; p_{T} (GeV/c)", 210,-11,10, 210,-11,10, fFlowPOIsPtBinNum, fFlowPOIsPtMin, fFlowPOIsPtMax);
         fQAPID->Add(fh3QAPIDnSigmaTPCTOFPtProton[iQA]);
 
         for(Int_t j = 0; j < iNBinsPIDstatus; ++j)

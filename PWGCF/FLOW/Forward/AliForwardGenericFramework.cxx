@@ -28,6 +28,7 @@ AliForwardGenericFramework::AliForwardGenericFramework():
   cumu_dW2TwoTwoD(),
   cumu_dW4ThreeTwo(),
   cumu_dW4FourTwo(),
+  cumu_wSC(),
   cumu_dW2A(),
   cumu_dW2TwoA(),
   cumu_dW22TwoTwoN(),
@@ -92,15 +93,16 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
       
 
       if (!weight || weight == 0) continue;
+      Double_t weight_new = weight;
       for (Int_t n = 0; n <= 4; n++) {
 
-        if ((useFMD && fSettings.sec_corr) && n >=2) weight = applySecondaryCorr(n, eta, zvertex, cent, weight);
+        if ((useFMD && fSettings.sec_corr) && n >=2) weight_new = applySecondaryCorr(n, eta, zvertex, cent, weight);
 
-      if (!weight || weight == 0) continue;
+      if (!weight_new || weight_new == 0) continue;
 
         for (Int_t p = 1; p <= 4; p++) {
-          Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
-          Double_t imPart =   TMath::Power(weight, p)*TMath::Sin(n*phi);
+          Double_t realPart = TMath::Power(weight_new, p)*TMath::Cos(n*phi);
+          Double_t imPart =   TMath::Power(weight_new, p)*TMath::Sin(n*phi);
 
           Double_t re[4] = {0.5, Double_t(n), Double_t(p), difEta};
           Double_t im[4] = {-0.5, Double_t(n), Double_t(p), difEta};
@@ -233,12 +235,17 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
         double twotwodiffD = TwoTwoDiff(0,0, etaBin,etaBinB).Re();
         fill(cumu_dW22TwoTwoD, -n, ptn, sample, zvertex, eta, cent, twotwodiffD);
 
+
         // four-particle cumulant SC(4,2)
-        double fourtwodiff = FourDiff(2,4,-2,-4, refEtaBinA,refEtaBinB, etaBin, etaBin).Re();
+        double wSC = FourDiff_SC(0,0,0,0, etaBin, refEtaBinA,etaBinB,refEtaBinB).Re();
+        fill(cumu_wSC, -n, ptn, sample, zvertex, eta, cent, wSC);
+
+        // four-particle cumulant SC(4,2)
+        double fourtwodiff = FourDiff_SC(2,4,-2,-4, etaBin, refEtaBinA,etaBinB,refEtaBinB).Re();
         fill(cumu_dW4FourTwo, -n, ptn, sample, zvertex, eta, cent, fourtwodiff);
 
         // four-particle cumulant SC(3,2)
-        double threetwodiff = FourDiff(2,3,-2,-3, refEtaBinA,refEtaBinB, etaBin, etaBin).Re();
+        double threetwodiff = FourDiff_SC(2,3,-2,-3,  etaBin, refEtaBinA,etaBinB,refEtaBinB).Re();
         fill(cumu_dW4ThreeTwo, -n, ptn, sample, zvertex, eta, cent, threetwodiff);
       } 
     } //eta
@@ -297,6 +304,8 @@ TComplex AliForwardGenericFramework::TwoDiff(Int_t n1, Int_t n2, Int_t refetabin
   return p(n1,1, diffetabin)*Q(n2,1, refetabin);// - q(n1+n2,1, diffetabin);
 }
 
+
+
 TComplex AliForwardGenericFramework::TwoTwoDiff(Int_t n1, Int_t n2, Int_t diffetabin1, Int_t diffetabin2)
 {
   return p(n1,1, diffetabin1)*p(n2,1, diffetabin2);// - q(n1+n2,1, diffetabin);
@@ -350,6 +359,20 @@ TComplex AliForwardGenericFramework::FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_
             - p(n1,1,diffetabin)*Q(n2,1,refetabinA)*Q(n3+n4,2,refetabinB)
             + q(n1+n2,2,qetabin)*Q(n3+n4,2,refetabinB);
   // }
+  return formula;
+}
+
+
+// n, n, -n, -n, refEtaBinA, refEtaBinB, etaBin,etaBin
+TComplex AliForwardGenericFramework::FourDiff_SC(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t diffetabinA, Int_t refetabinA, Int_t diffetabinB,Int_t refetabinB)
+{
+  TComplex formula = 0;
+
+
+    formula = p(n1,1,diffetabinA)*Q(n2,1,refetabinA)*p(n3,1,diffetabinB)*Q(n4,1,refetabinB)
+            - p(n1+n2,2,diffetabinA)*p(n3,1,diffetabinB)*Q(n4,1,refetabinB)
+            - p(n1,1,diffetabinA)*Q(n2,1,refetabinA)*p(n3+n4,2,diffetabinB)
+            + p(n1+n2,2,diffetabinA)*p(n3+n4,2,diffetabinB);
   return formula;
 }
 

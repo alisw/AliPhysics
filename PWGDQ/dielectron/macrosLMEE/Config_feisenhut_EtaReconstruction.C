@@ -6,28 +6,42 @@
 // TString names=("cut5_pt75;cut5_pt75_noPID_wSharedCluster;cut5_pt75_noPID_noSharedCluster");
 // TString names=("cut1_pt75;cut2_pt75;cut3_pt75;cut4_pt75;cut5_pt75;cut6_pt75;cut7_pt75;cut8_pt75;cut9_pt75;cut10_pt75");
 
-// Cuts for primary electrons
+// +++++++++++++++++ Cuts for primary electrons +++++++++++++++++
 // TString names_Prim_Cuts=("noPID");     // still has kin cuts (pt 75 MeV/c)
 // TString names_Prim_Cuts=("noPID_pt200");  // still has kin cuts (pt 200 MeV/c)
 // TString names_Prim_Cuts=("onlyJPID_sum_noTrackCuts");
 // TString names_Prim_Cuts=("JPID_sum_pt75");
 // TString names_Prim_Cuts=("JPID_sum_pt200");
 // TString names_Prim_Cuts=("JPID_sum_pt75_secondary");
-TString names_Prim_Cuts=("noPID;JPID_sum1_pt75;JPID_sum2_pt75;JPID_sum3_pt75;JPID_sum4_pt75;JPID_sum5_pt75;JPID_sum_pt75");
-                                                                                // TString names_Prim_Cuts=("onlyPIDcut1_noTrackCuts");
-                                                                                // TString names_Prim_Cuts=("cut1_pt75");
-                                                                                // TString names_Prim_Cuts=("noPID;cut1_pt75");
-                                                                                // TString names_Prim_Cuts=("cut1_pt200"); // Cuts for CaKlein LMEECutLib_caklein
-                                                                                // TString names_Prim_Cuts=("cut1_pt75_secondary");
+// TString names_Prim_Cuts=("JPID_sum1_pt75_sec_kV0");
+// TString names_Prim_Cuts=("TESTCutskV0");
 
-// Cuts for secondary electrons
+// TString names_Prim_Cuts=("noPID;JPID_sum1_pt75_sec_OnlyImpParXY;JPID_sum2_pt75_sec_OnlyImpParZ;JPID_sum3_pt75_sec_OnlyNclsTPC;JPID_sum4_pt75_sec_OnlyTPCchi2Cl;JPID_sum5_pt75_sec_OnlySharedCls;JPID_sum1_pt75_sec_kV0;JPID_sum_pt75");
+// TString names_Prim_Cuts=("noPID;JPID_sum1_pt75_sec_wImpParXY;JPID_sum2_pt75_sec_wImpParXYZ;JPID_sum3_pt75_sec_wImpParXYZ_NclsTPC;JPID_sum4_pt75_sec_wImpParXYZ_NclsTPC_TPCchi2Cl;JPID_sum5_pt75_sec_wImpParXYZ_NclsTPC_TPCchi2Cl_SharedCls;JPID_sum_pt75");
+
+// TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum3_pt75_sec_OnlyChi2NDF;JPID_sum4_pt75_sec_OnlyLegDist;JPID_sum5_pt75_sec_OnlyR;JPID_sum6_pt75_sec_OnlyPsiPair;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
+// TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_wCos;JPID_sum2_pt75_sec_wCosChi2;JPID_sum3_pt75_sec_wCosChi2LegDist;JPID_sum4_pt75_sec_wCosChi2LegDistR;JPID_sum5_pt75_sec_wCosChi2LegDistRPsiPair;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
+TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
+// TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
+
+// +++++++++++++++++ Cuts for secondary electrons +++++++++++++++++
 // TString names_Sec_Cuts=("noPID");      // still has kin cuts (pt 75 MeV/c)
 // TString names_Sec_Cuts=("noPID_pt200");   // still has kin cuts (pt 200 MeV/c)
 // TString names_Sec_Cuts=("onlyJPID_sum_noTrackCuts");
 // TString names_Sec_Cuts=("JPID_sum_pt75");
 // TString names_Sec_Cuts=("JPID_sum_pt75_secondary");
 // TString names_Sec_Cuts=("JPID_sum_pt200_secondary");
-TString names_Sec_Cuts=("noPID;TESTCutsOnlyImpParXY;TESTCutsOnlyImpParZ;TESTCutsOnlyNclsTPC;TESTCutsOnlyTPCchi2Cl;TESTCutsOnlySharedCls;JPID_sum_pt75_secondary");
+// TString names_Sec_Cuts=("kV0");
+
+// TString names_Sec_Cuts=("noPID;TESTCutsOnlyImpParXY;TESTCutsOnlyImpParZ;TESTCutsOnlyNclsTPC;TESTCutsOnlyTPCchi2Cl;TESTCutsOnlySharedCls;TESTCutskV0;JPID_sum_pt75_secondary");
+// TString names_Sec_Cuts=("noPID;TESTCuts_wImpParXY;TESTCuts_wImpParXYZ;TESTCuts_wImpParXYZ_NclsTPC;TESTCuts_wImpParXYZ_NclsTPC_TPCchi2Cl;TESTCuts_wImpParXYZ_NclsTPC_TPCchi2Cl_SharedCls;JPID_sum_pt75_secondary");
+
+// TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyChi2NDF;kV0OnlyLegDist;kV0OnlyR;kV0OnlyPsiPair;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
+// TString names_Sec_Cuts=("noPID;kV0wCosOpenAngle;kV0wChi2NDF;kV0wCosChi2LegDist;wCosChi2LegDistR;wCosChi2LegDistRPsiPair;kV0wCosChi2LegDistRPsiPairM;kV0wCosChi2LegDistRPsiPairMArmPt;kV0wCosChi2LegDistRPsiPairMArmPtAlpha");
+TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
+// TString names_Sec_Cuts=("noPID;kV0wPairM;kV0wPairMArmPt;kV0wPairMArmPtAlpha");
+
+
                                                                                 // TString names_Sec_Cuts=("onlyPIDcut1_noTrackCuts");
                                                                                 // TString names_Sec_Cuts=("cut1_pt75_secondary");
                                                                                 // TString names_Sec_Cuts=("cut1_pt75");
@@ -56,11 +70,12 @@ Bool_t SetTOFCorrection = kFALSE;
 
 bool SetGeneratedSmearingHistos = false;
 
+bool debug = false;
+
 bool DoPairing      = true;
 bool DoFourPairing  = true;
 bool DoULSLS        = false;
-bool DeactivateLS   = true;
-bool DoMassCut      = true;
+bool DoMassCut      = false;
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -88,7 +103,7 @@ const int nMCSignal = 0;
 const int nCutsetting = 0;
 
 
-const double minGenPt = 0.02;
+const double minGenPt = 0.01;
 const double maxGenPt = 100;
 const double minGenEta = -1.5;
 const double maxGenEta =  1.5;
@@ -110,8 +125,10 @@ const double upperMassCutPrimaries = 0.547862;
 const double lowerMassCutPrimaries = 0.1349766;
 const double massCutSecondaries = 0.01;
 
+
+
 // binning of single leg histograms
-bool usePtVector = true;
+bool usePtVector = false;
 double ptBins[] = {0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,8.0
@@ -126,7 +143,8 @@ const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
 const double minPtBin = 0;
 const double maxPtBin = 8;
-const int    stepsPtBin = 320;
+//const int    stepsPtBin = 320;
+const int    stepsPtBin = 80;
 // const int    stepsPtBin = 800;
 
 const double minEtaBin = -1.0;
@@ -145,9 +163,10 @@ const double minMassBin = 0;
 const double maxMassBin =  1;
 const int    stepsMassBin = 1000;
 const double minPairPtBin = 0;
-const double maxPairPtBin =  8;
-const int    stepsPairPtBin = 80;
-// const int    stepsPairPtBin = 320;
+const double maxPairPtBin =  4;
+// const double maxPairPtBin =  8;
+ const int    stepsPairPtBin = 80;
+// const int    stepsPairPtBin = 400;
 
 // Binning of resolution histograms
 const int    NbinsDeltaMom    = 1000;
@@ -282,7 +301,6 @@ void DoAdditionalWork(AliAnalysisTaskEtaReconstruction* task){
 
 AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD)
 {
-  std::cout << "TEST" << std::endl;
   std::cout << "SetupTrackCutsAndSettings( cutInstance = " << cutDefinition << " )" <<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
 
@@ -292,8 +310,11 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   LMEECutLib* LMcutlib = new LMEECutLib();
 
   if (cutDefinition == "noPID"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -302,6 +323,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   else if (cutDefinition == "noPID_pt200"){
     AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt200_noPID);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -309,6 +331,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   else if (cutDefinition == "onlyJPID_sum_noTrackCuts"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -318,6 +341,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   else if (cutDefinition == "JPID_sum_pt75"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -325,9 +349,29 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   else if (cutDefinition == "JPID_sum_pt200"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_pt200);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
+
+    // TEST Cut settings
+  else if (cutDefinition == "JPID_sum1_pt75_sec_kV0"                   || cutDefinition == "JPID_sum1_pt75_sec_wCos"                               ||
+           cutDefinition == "JPID_sum2_pt75_sec_OnlyCosOpenAngle"      || cutDefinition == "JPID_sum2_pt75_sec_wCosChi2"                           ||
+           cutDefinition == "JPID_sum3_pt75_sec_OnlyChi2NDF"           || cutDefinition == "JPID_sum3_pt75_sec_wCosChi2LegDist"                    ||
+           cutDefinition == "JPID_sum4_pt75_sec_OnlyLegDist"           || cutDefinition == "JPID_sum4_pt75_sec_wCosChi2LegDistR"                   ||
+           cutDefinition == "JPID_sum5_pt75_sec_OnlyR"                 || cutDefinition == "JPID_sum5_pt75_sec_wCosChi2LegDistRPsiPair"            ||
+           cutDefinition == "JPID_sum6_pt75_sec_OnlyPsiPair"           || cutDefinition == "JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM"           ||
+           cutDefinition == "JPID_sum7_pt75_sec_OnlyM"                 || cutDefinition == "JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt"      ||
+           cutDefinition == "JPID_sum8_pt75_sec_OnlyArmPt"             || cutDefinition == "JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha" ||
+           cutDefinition == "JPID_sum9_pt75_sec_OnlyArmAlpha"
+          ){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
 
   // Secondary Cut settings
   /////////////////////////////////////////////////////
@@ -335,6 +379,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -342,101 +387,181 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_pt200);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
 
-  //  one TEST Cut setting
-  else if (cutDefinition == "JPID_sum1_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "JPID_sum2_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "JPID_sum3_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "JPID_sum4_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "JPID_sum5_pt75"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-    else if (cutDefinition == "TESTCutsOnlyImpParXY"){
-      // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
-      AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
-      // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
-      // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyImpParXY);
-      // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
-      // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
-      AnaCut.SetCentrality(centrality);
-      AnaCut.SetStandardCut();
-    }
 
-  else if (cutDefinition == "TESTCutsOnlyImpParZ"){
+  else if (cutDefinition == "kV0"){
     // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
-    // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyImpParZ);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0);
+
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "TESTCutsOnlyNclsTPC"){
-    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
-    // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
-    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyNclsTPC);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+  else if (cutDefinition == "kV0OnlyCosOpenAngle"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyCos);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "TESTCutsOnlyTPCchi2Cl"){
-    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
-    // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
-    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyTPCchi2Cl);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+  else if (cutDefinition == "kV0OnlyChi2NDF"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyChi2NDF);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "TESTCutsOnlySharedCls"){
-    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
-    // AnaCut.SetPIDAna(LMEECutLib::noKinCuts_noPID);
-    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_TESTOnlyShCls);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kNoTrackCuts);
+  else if (cutDefinition == "kV0OnlyLegDist"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyLegDist);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
+
+  else if (cutDefinition == "kV0OnlyR"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyR);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0OnlyPsiPair"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyPsiPair);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0OnlyM"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyM);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0OnlyArmPt"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyArmPt);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0OnlyArmAlpha"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyArmAlpha);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+
+  else if (cutDefinition == "kV0wCosOpenAngle"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyCos);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0wChi2NDF"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0wCosChi2LegDist"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDist);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "wCosChi2LegDistR"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistR);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "wCosChi2LegDistRPsiPair"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPair);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0wCosChi2LegDistRPsiPairM"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPairM);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0wCosChi2LegDistRPsiPairMArmPt"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPairMArmPt);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0wCosChi2LegDistRPsiPairMArmPtAlpha"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPairMArmPtAlpha);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0wPairM"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wPairM);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0wPairMArmPt"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wPairMArmPt);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0wPairMArmPtAlpha"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wPairMArmPtAlpha);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
 
   // Old Cut settings from CaKlein
   else if (cutDefinition == "cut1_pt75"){
@@ -461,7 +586,25 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   }
 
   if (!isAOD) anaFilter->AddCuts( LMcutlib->GetESDTrackCutsAna(AnaCut) );
+
+                                                                                // AliDielectronVarCuts *massCuts = new AliDielectronVarCuts("massCuts","massCuts");
+                                                                                // massCuts->AddCut(AliDielectronVarManager::kM, 0.0,   0.250, kTRUE);
+  // AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
+  // gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
+  // gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOffline);  // kAll(default), kOffline or kOnTheFly
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0,  kFALSE);
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.02, kFALSE);
+  // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE); // should increase purity...
+  // gammaV0Cuts->SetExcludeTracks(kTRUE);
+
   anaFilter->AddCuts( LMcutlib->GetPIDCutsAna(AnaCut) );
+  // anaFilter->AddCuts(gammaV0Cuts);
+  // anaFilter->AddCuts(massCuts);
   anaFilter->SetName(cutDefinition);
   return anaFilter;
 }
@@ -775,14 +918,34 @@ void AddPrimaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     task->AddPrimaryPairMCSignal(pair_sameMother_eta_finalstate);
     task->AddPrimaryPairMCSignal(pair_DifferentMother_eta_finalstate);
     task->AddPrimaryPairMCSignal(pair_UndefinedMother_eta_finalstate);
-    task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
-    task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
-    task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
+    // task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
     // task->AddPrimaryPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
     // task->AddPrimaryPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
 }
 
 void AddSecondaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
+    AliDielectronSignalMC pair_sameMother_secondary("pair_sameMother_secondary","pair_sameMother_secondary");
+    pair_sameMother_secondary.SetLegPDGs(11,-11);
+    pair_sameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_sameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    //mother
+    pair_sameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
+
+    AliDielectronSignalMC pair_UndefinedMother_secondary("pair_UndefinedMother_secondary","pair_UndefinedMother_secondary");
+    pair_UndefinedMother_secondary.SetLegPDGs(11,-11);
+    pair_UndefinedMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_UndefinedMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    //mother
+    pair_UndefinedMother_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+    AliDielectronSignalMC pair_DifferentMother_secondary("pair_DifferentMother_secondary","pair_DifferentMother_secondary");
+    pair_DifferentMother_secondary.SetLegPDGs(11,-11);
+    pair_DifferentMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_DifferentMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    //mother
+    pair_DifferentMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
 
     AliDielectronSignalMC pair_sameMother_photon_secondary("pair_sameMother_photon_secondary","pair_sameMother_photon_secondary");
     pair_sameMother_photon_secondary.SetLegPDGs(11,-11);
@@ -824,6 +987,17 @@ void AddSecondaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     pair_DifferentMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
     pair_DifferentMother_photon_secondary.SetMotherPDGs(22,22);
 
+    AliDielectronSignalMC pair_sameMother_photon_secondary_pion("pair_sameMother_photon_secondary_pion","pair_sameMother_photon_secondary_pion");
+    pair_sameMother_photon_secondary_pion.SetLegPDGs(11,-11);
+    pair_sameMother_photon_secondary_pion.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_sameMother_photon_secondary_pion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    //mother
+    pair_sameMother_photon_secondary_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
+    pair_sameMother_photon_secondary_pion.SetMotherPDGs(22,22);
+    //grand-mother
+    pair_sameMother_photon_secondary_pion.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+    pair_sameMother_photon_secondary_pion.SetGrandMotherPDGs(111,111);
+
     AliDielectronSignalMC pair_sameMother_photon_secondary_eta("pair_sameMother_photon_secondary_eta","pair_sameMother_photon_secondary_eta");
     pair_sameMother_photon_secondary_eta.SetLegPDGs(11,-11);
     pair_sameMother_photon_secondary_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -832,8 +1006,10 @@ void AddSecondaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     pair_sameMother_photon_secondary_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother_photon_secondary_eta.SetMotherPDGs(22,22);
     //grand-mother
-    pair_sameMother_photon_secondary_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
+    pair_sameMother_photon_secondary_eta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother_photon_secondary_eta.SetGrandMotherPDGs(221,221);
+
+
 
     AliDielectronSignalMC pair_conversion_secondary("pair_conversion_secondary","pair_conversion_secondary");
     pair_conversion_secondary.SetLegPDGs(11,-11);
@@ -847,14 +1023,27 @@ void AddSecondaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     pair_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
     pair_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
 
-    task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary);
+
+    AliDielectronSignalMC pair_NotSameMother_secondary("pair_NotSameMother_secondary","pair_NotSameMother_secondary");
+    pair_NotSameMother_secondary.SetLegPDGs(11,-11);
+    pair_NotSameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_NotSameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    //mother
+    pair_NotSameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+
+    // task->AddSecondaryPairMCSignal(pair_sameMother_secondary);
+    // task->AddSecondaryPairMCSignal(pair_UndefinedMother_secondary);
+    // task->AddSecondaryPairMCSignal(pair_DifferentMother_secondary);
+task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary);
     // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromMaterial);
     // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromWD);
-    task->AddSecondaryPairMCSignal(pair_DifferentMother_photon_secondary);
-    task->AddSecondaryPairMCSignal(pair_UndefinedMother_photon_secondary);
-    task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_eta);
-    task->AddSecondaryPairMCSignal(pair_conversion_secondary);
-    // task->AddSecondaryPairMCSignal(pair_random_secondary);
+    // task->AddSecondaryPairMCSignal(pair_DifferentMother_photon_secondary);
+    // task->AddSecondaryPairMCSignal(pair_UndefinedMother_photon_secondary);
+    task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_pion);
+task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_eta);
+task->AddSecondaryPairMCSignal(pair_conversion_secondary);
+task->AddSecondaryPairMCSignal(pair_random_secondary);
+task->AddSecondaryPairMCSignal(pair_NotSameMother_secondary);
 }
 
 void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
@@ -931,13 +1120,13 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
       ULSFourElePair2_FromPion.SetGrandMotherPDGs(111, 111); //
 
 //________________________________________________________
-    // task->AddFourPairMCSignal(ULSFourElePair1_FromEta);
-    // task->AddFourPairMCSignal(ULSFourElePair2_FromEta);
+    task->AddFourPairMCSignal(ULSFourElePair1_FromEta);
+    task->AddFourPairMCSignal(ULSFourElePair2_FromEta);
 
     task->AddFourPairMCSignal(ULSFourElePair1_FinalState);
     task->AddFourPairMCSignal(ULSFourElePair2_Secondary_from_Photon);
 
-    // task->AddFourPairMCSignal(ULSFourElePair1_FromPion);
-    // task->AddFourPairMCSignal(ULSFourElePair2_FromPion);
+    task->AddFourPairMCSignal(ULSFourElePair1_FromPion);
+    task->AddFourPairMCSignal(ULSFourElePair2_FromPion);
 
 }
