@@ -1,6 +1,6 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamSigPi(
     bool isMC=true,
-    TString CentEst="kHM", const char *cutVar = "0") {
+    TString CentEst="kInt7", TString isRun2=true, const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
 
@@ -18,6 +18,14 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSigPi(
 
   AliFemtoDreamEventCuts *evtCuts=
       AliFemtoDreamEventCuts::StandardCutsRun2();
+    std::cout << "Use standard RUN2 evt. cuts \n";
+
+  if (!isRun2) {
+    evtCuts=
+      AliFemtoDreamEventCuts::StandardCutsRun1();
+    std::cout << "Use standard RUN1 evt. cuts \n";
+  }
+
   //This sets the method we want to use to clean up events with negative or too
   //low multiplicity. Usually you use the matching multiplicity estiamtor in your
   //event collection
