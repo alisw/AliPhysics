@@ -27,7 +27,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   void SetIsPrimaryMC(Bool_t isprimarymc) { fIsPrimaryMC = isprimarymc; }
   void SetINEL(Bool_t input) { fIsINEL = input; }
   void SetHighMult(Bool_t input) { fIsHM = input; }
-  void SetAssymCut(Bool_t input) { fUseAssymCut = input; }
+  void SetAsymmCut(Bool_t input) { fUseAsymmCut = input; }
   void SetFillnTuple(Bool_t fillntuple) { fFillnTuple = fillntuple; }
 
   // Setter for cut variables
@@ -82,11 +82,11 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   void SetSigmaStarRapidityCutLow(Double_t lParameter) {
     fSigmaStarYCutLow = lParameter;
   }
-  void SetSigmaStarAssymCutHigh(Double_t lParameter) {
-    fSigmaStarAssymCutHigh = lParameter;
+  void SetSigmaStarAsymmCutHigh(Double_t lParameter) {
+    fSigmaStarAsymmCutHigh = lParameter;
   }
-  void SetSigmaStarAssymCutLow(Double_t lParameter) {
-    fSigmaStarAssymCutLow = lParameter;
+  void SetSigmaStarAsymmCutLow(Double_t lParameter) {
+    fSigmaStarAsymmCutLow = lParameter;
   }
 
   Bool_t GoodTracksSelection();
@@ -146,7 +146,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   Bool_t fFillnTuple;   //
   Bool_t fIsINEL;       //
   Bool_t fIsHM;         //
-  Bool_t fUseAssymCut;  //
+  Bool_t fUseAsymmCut;  //
 
   mixingpool fEMpool;  //!
   TAxis fBinCent;      //!
@@ -182,8 +182,8 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   // Sigma Star cut
   Double_t fSigmaStarYCutHigh;      //
   Double_t fSigmaStarYCutLow;       //
-  Double_t fSigmaStarAssymCutHigh;  //
-  Double_t fSigmaStarAssymCutLow;   //
+  Double_t fSigmaStarAsymmCutHigh;  //
+  Double_t fSigmaStarAsymmCutLow;   //
 
   // Good track/v0 vector array
   std::vector<UInt_t> fGoodTrackArray;
@@ -199,7 +199,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   // 8: Rebuild MC part
   // 9: Update class format
   // 10: Fix streamer issue
-  // 11: Add Assym cut option
+  // 11: Add Asymm cut option
 };
 
 #endif
