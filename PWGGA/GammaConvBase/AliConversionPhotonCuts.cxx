@@ -102,6 +102,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistograms(NULL),
   fPIDResponse(NULL),
   fDoLightOutput(kFALSE),
+  fDoPlotTrackPID(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fMaxR(200),
   fMinR(0),
@@ -226,6 +227,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoITSSigafter(NULL),
   fHistoPsiPairDeltaPhiafter(NULL),
   fHistoTrackCuts(NULL),
+  fHistoTrackPID(NULL),
   fHistoPhotonCuts(NULL),
   fHistoInvMassbefore(NULL),
   fHistoArmenterosbefore(NULL),
@@ -279,6 +281,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistograms(NULL),
   fPIDResponse(NULL),
   fDoLightOutput(ref.fDoLightOutput),
+  fDoPlotTrackPID(ref.fDoPlotTrackPID),
   fV0ReaderName("V0ReaderV1"),
   fMaxR(ref.fMaxR),
   fMinR(ref.fMinR),
@@ -403,6 +406,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoITSSigafter(NULL),
   fHistoPsiPairDeltaPhiafter(NULL),
   fHistoTrackCuts(NULL),
+  fHistoTrackPID(NULL),
   fHistoPhotonCuts(NULL),
   fHistoInvMassbefore(NULL),
   fHistoArmenterosbefore(NULL),
@@ -595,6 +599,26 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       //    }
   }
 
+  if (fDoPlotTrackPID) {
+      fHistoTrackPID=new TH2F(Form("TrackPID %s",GetCutNumber().Data()),"TrackPID",15,-0.5,14.5,250,0,25);
+      fHistoTrackPID->GetXaxis()->SetBinLabel(1,"Electron");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(2,"Muon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(3,"Pion");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(4,"Kaon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(5,"Proton");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(6,"Deuteron");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(7,"Triton");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(8,"He3");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(9,"Alpha");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(10,"Photon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(11,"Pi0");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(12,"Neutron");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(13,"Kaon0");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(14,"EleCon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(15,"Unknown");
+      fHistograms->Add(fHistoTrackPID);
+  }
+
   fHistoAcceptanceCuts=new TH2F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts vs p_{T,#gamma}",12,-0.5,11.5,250,0,50);
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(2,"maxR");
@@ -756,7 +780,7 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
    }else{
     fHistoEleMapRecalib[i]  = (TH2S*)file->Get(Form("Ele_R%d_recalib",i));
     fHistoPosMapRecalib[i]  = (TH2S*)file->Get(Form("Pos_R%d_recalib",i));
-   } 
+   }
   }
 
   if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
@@ -984,6 +1008,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEven
   }
   return kFALSE;
 }
+
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma){
   // MonteCarlo Photon Selection
@@ -1425,6 +1450,14 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
   if(!PhotonCuts(photon,event)){
     FillPhotonCutIndex(kPhotonCuts);
     return kFALSE;
+  }
+
+  if(fDoPlotTrackPID && fHistoTrackPID){
+    Int_t negpidForTracking = (Int_t)negTrack->GetPIDForTracking();
+    Int_t pospidForTracking = (Int_t)posTrack->GetPIDForTracking();
+    // cout << "PID:  " <<  negpidForTracking << ",     "<< pospidForTracking << endl;
+    fHistoTrackPID->Fill((Float_t)negpidForTracking,negTrack->Pt());
+    fHistoTrackPID->Fill((Float_t)pospidForTracking,posTrack->Pt());
   }
 
   // Photon passed cuts
