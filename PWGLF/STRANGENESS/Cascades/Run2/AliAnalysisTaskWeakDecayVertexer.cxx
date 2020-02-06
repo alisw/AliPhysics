@@ -118,7 +118,7 @@ fkDoExtraEvSels(kTRUE),
 fkForceResetV0s(kFALSE),
 fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(199.5),
+fMaxCentrality(200.5),
 fkRevertexAllEvents(kFALSE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
@@ -180,7 +180,7 @@ fkDoExtraEvSels(kTRUE),
 fkForceResetV0s(kFALSE),
 fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(199.5),
+fMaxCentrality(200.5),
 fkRevertexAllEvents(kFALSE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
