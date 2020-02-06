@@ -252,10 +252,15 @@ class AliFemtoDreamCorrHists {
   }
 
   void FillSameEventDistCommon(int i, float RelK) {
+  if (!fMinimalBooking) {
+   if (fAncestors)
     fSameEventDistCommon[i]->Fill(RelK);
+  }
+
   }
   ;
     void FillSameEventDistNonCommon(int i, float RelK) {
+     if (fAncestors)
     fSameEventDistNonCommon[i]->Fill(RelK);
   }
   ;

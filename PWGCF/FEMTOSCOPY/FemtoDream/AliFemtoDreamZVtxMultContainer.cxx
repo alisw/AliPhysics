@@ -98,9 +98,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
             continue;
           }
           RelativeK = HigherMath->FillSameEvent(HistCounter, iMult, cent,
-                                                itPart1->GetMomentum(),
+                                                part1,
                                                 *itPDGPar1,
-                                                itPart2->GetMomentum(),
+                                                part2,
                                                 *itPDGPar2);
           HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
           HigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
@@ -161,8 +161,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
               continue;
             }
             RelativeK = HigherMath->FillMixedEvent(
-                HistCounter, iMult, cent, itPart1->GetMomentum(), *itPDGPar1,
-                itPart2->GetMomentum(), *itPDGPar2,
+                HistCounter, iMult, cent, *itPart1, *itPDGPar1,
+                *itPart2, *itPDGPar2,
                 AliFemtoDreamCollConfig::kNone);
 
             HigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
