@@ -170,6 +170,7 @@ AliAnalysisTaskFindableHypertriton3::AliAnalysisTaskFindableHypertriton3(TString
       fTreeHyp3BodyVarTracks{nullptr},
       fTreeHyp3BodyVarPDGcodes{0},
       fTreeHyp3BodyVarNsigmaTPC{0},
+      fTreeHyp3BodyVarNsigmaTOF{0},
       fTreeHyp3BodyVarEventId{0},
       fTreeHyp3BodyVarMotherId{0},
       fTreeHyp3BodyVarIsFakeCand{0},
@@ -265,6 +266,10 @@ void AliAnalysisTaskFindableHypertriton3::UserCreateOutputObjects() {
   fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTPC0", &fTreeHyp3BodyVarNsigmaTPC[0], "fTreeHyp3BodyVarNsigmaTPC0/F");
   fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTPC1", &fTreeHyp3BodyVarNsigmaTPC[1], "fTreeHyp3BodyVarNsigmaTPC1/F");
   fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTPC2", &fTreeHyp3BodyVarNsigmaTPC[2], "fTreeHyp3BodyVarNsigmaTPC2/F");
+
+  fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTOF0", &fTreeHyp3BodyVarNsigmaTOF[0], "fTreeHyp3BodyVarNsigmaTOF0/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTOF1", &fTreeHyp3BodyVarNsigmaTOF[1], "fTreeHyp3BodyVarNsigmaTOF1/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTOF2", &fTreeHyp3BodyVarNsigmaTOF[2], "fTreeHyp3BodyVarNsigmaTOF2/F");
 
   fFindableTree->Branch("fTreeHyp3BodyVarEventId", &fTreeHyp3BodyVarEventId, "fTreeHyp3BodyVarEventId/l");
   fFindableTree->Branch("fTreeHyp3BodyVarMotherId", &fTreeHyp3BodyVarMotherId, "fTreeHyp3BodyVarMotherId/I");
@@ -419,6 +424,7 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
             fTreeHyp3BodyVarTracks[sTrack] = lTrackOfInterest[index[sTrack].second].track;
             fTreeHyp3BodyVarPDGcodes[sTrack] = index[sTrack].first;
             fTreeHyp3BodyVarNsigmaTPC[sTrack] = fPIDResponse->NumberOfSigmasTPC(lTrackOfInterest[index[sTrack].second].track,kSpecies[sTrack]);
+            fTreeHyp3BodyVarNsigmaTOF[sTrack] = (HasTOF(lTrackOfInterest[index[sTrack].second].track)) ? fPIDResponse->NumberOfSigmasTOF(lTrackOfInterest[index[sTrack].second].track,kSpecies[sTrack]): -999.;
           }
 
           AliVParticle *vHyperTriton = lTrackOfInterest[index[0].second].mother;
@@ -463,3 +469,11 @@ void AliAnalysisTaskFindableHypertriton3::Terminate(Option_t *) {
   return;
 
 } // end of Terminate
+
+
+bool AliAnalysisTaskFindableHypertriton3::HasTOF(AliESDtrack *track) {
+  bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+  const float len = track->GetIntegratedLength();
+  return hasTOFout && hasTOFtime && (len > 350.);
+}
