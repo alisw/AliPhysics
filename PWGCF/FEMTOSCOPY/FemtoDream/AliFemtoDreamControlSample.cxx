@@ -163,8 +163,8 @@ void AliFemtoDreamControlSample::CorrelatedSample(
         continue;
       }
       RelativeK = fHigherMath->FillSameEvent(HistCounter, fMult, fCent,
-                                             itPart1->GetMomentum(), PDGPart1,
-                                             itPart2->GetMomentum(), PDGPart2);
+                                             *itPart1, PDGPart1,
+                                             *itPart2, PDGPart2);
       fHigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
       fHigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, PDGPart1, *itPart2,
                                    PDGPart2, RelativeK, true);
@@ -224,9 +224,9 @@ void AliFemtoDreamControlSample::PhiSpinning(
       for (int i = 0; i < fSpinningDepth; ++i) {
         // randomized sample - who is the father???
         RelativeK = fHigherMath->FillMixedEvent(HistCounter, fMult, fCent,
-                                                itPart1->GetMomentum(),
+                                                *itPart1,
                                                 PDGPart1,
-                                                itPart2->GetMomentum(),
+                                                *itPart2,
                                                 PDGPart2, fmode);
         fHigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, PDGPart1, *itPart2,
                                      PDGPart2, RelativeK, true);
@@ -291,9 +291,9 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
       }
       // randomized sample - who is the father???
       RelativeK = fHigherMath->FillMixedEvent(HistCounter, fMult, fCent,
-                                              (*itPart1)->GetMomentum(),
+                                              *(*itPart1),
                                               PDGPart1,
-                                              (*itPart2)->GetMomentum(),
+                                              *(*itPart2),
                                               PDGPart2,
                                               AliFemtoDreamCollConfig::kNone);
       fHigherMath->MEDetaDPhiPlots(HistCounter, *(*itPart1), PDGPart1, *(*itPart2),

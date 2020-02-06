@@ -170,8 +170,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   }
   ;
   bool GetDoAncestorsPlots() {
-    return
-    fAncestors;
+    return fAncestors;
   }
   ;
   AliFemtoDreamCollConfig::UncorrelatedMode GetControlMode() {
@@ -307,8 +306,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaEtaMax;           //
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
-  bool fCoutVariables;ClassDef(AliFemtoDreamCollConfig,15)
-  ;
+  bool fCoutVariables;
+  ClassDef(AliFemtoDreamCollConfig,16);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */

@@ -7,6 +7,8 @@
 #include <iostream>
 #include <vector>
 #include "AliFemtoDreamCorrHists.h"
+#include "AliFemtoDreamHigherPairMath.h"
+#include "AliFemtoDreamBasePart.h"
 #include "TMath.h"
 #include "AliLog.h"
 #include "TDatabasePDG.h"
@@ -63,6 +65,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fdEtadPhiSEmT(nullptr),
       fdEtadPhiMEmT(nullptr),
       fEffMixingDepth(nullptr),
+      fSameEventDistCommon(nullptr),
+      fSameEventDistNonCommon(nullptr),
+      fdEtadPhiSECommon(nullptr),
+      fdEtadPhiSENonCommon(nullptr),
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTandMultBinning(false),
@@ -133,6 +139,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fdEtadPhiSEmT(hists.fdEtadPhiSEmT),
       fdEtadPhiMEmT(hists.fdEtadPhiMEmT),
       fEffMixingDepth(hists.fEffMixingDepth),
+      fSameEventDistCommon(hists.fSameEventDistCommon),
+      fSameEventDistNonCommon(hists.fSameEventDistCommon),
+      fdEtadPhiSECommon(hists.fdEtadPhiSECommon),
+      fdEtadPhiSENonCommon(hists.fdEtadPhiSENonCommon),
       fDoMultBinning(hists.fDoMultBinning),
       fDoCentBinning(hists.fDoCentBinning),
       fDokTandMultBinning(hists.fDokTandMultBinning),
@@ -203,6 +213,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fdEtadPhiSEmT(nullptr),
       fdEtadPhiMEmT(nullptr),
       fEffMixingDepth(nullptr),
+      fSameEventDistCommon(nullptr),
+      fSameEventDistNonCommon(nullptr),
+      fdEtadPhiSECommon(nullptr),
+      fdEtadPhiSENonCommon(nullptr),
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTBinning(false),
@@ -658,10 +672,41 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         }
       }
       // //For Common/Non Common Ancestors
-      // if (fillHists && fAncestors) {
-      //   bool
+       if (fillHists && fAncestors) {
+           TString SameEventNameCommon = TString::Format("SEDistCommon_Particle%d_Particle%d", iPar1,
+                                   iPar2);
+           fSameEventDistCommon[Counter] = new TH1F(SameEventNameCommon.Data(),
+                                         SameEventNameCommon.Data(), *itNBins,
+                                         *itKMin, *itKMax);
+           fPairs[Counter]->Add(fSameEventDistCommon[Counter]);
 
-      // }
+           TString SameEventNameNonCommon = TString::Format("SEDistNonCommon_Particle%d_Particle%d", iPar1,
+                                   iPar2);
+           fSameEventDistNonCommon[Counter] = new TH1F(SameEventNameNonCommon.Data(),
+                                         SameEventNameNonCommon.Data(), *itNBins,
+                                         *itKMin, *itKMax);
+           fPairs[Counter]->Add(fSameEventDistNonCommon[Counter]);
+
+           TString SameEventdPhidEtaNameCommon = TString::Format(
+              "SEdPhidEtaDistCommon_Particle%d_Particle%d", iPar1, iPar2);
+           fdEtadPhiSECommon[Counter] = new TH2F(SameEventdPhidEtaNameCommon.Data(),
+                                          SameEventdPhidEtaNameCommon.Data(), 80, -2.,
+                                          2., 84, -2 * TMath::Pi() / 3,
+                                          2 * TMath::Pi());
+           fdEtadPhiSECommon[Counter]->GetXaxis()->SetTitle("#Delta#eta");
+           fdEtadPhiSECommon[Counter]->GetYaxis()->SetTitle("#Delta#phi");
+           fPairs[Counter]->Add(fdEtadPhiSECommon[Counter]);
+
+            TString SameEventdPhidEtaNameNonCommon = TString::Format(
+              "SEdPhidEtaDistNonCommon_Particle%d_Particle%d", iPar1, iPar2);
+           fdEtadPhiSENonCommon[Counter] = new TH2F(SameEventdPhidEtaNameNonCommon.Data(),
+                                          SameEventdPhidEtaNameNonCommon.Data(), 80, -2.,
+                                          2., 84, -2 * TMath::Pi() / 3,
+                                          2 * TMath::Pi());
+           fdEtadPhiSENonCommon[Counter]->GetXaxis()->SetTitle("#Delta#eta");
+           fdEtadPhiSENonCommon[Counter]->GetYaxis()->SetTitle("#Delta#phi");
+           fPairs[Counter]->Add(fdEtadPhiSENonCommon[Counter]);
+       }
 
       if (!fMinimalBooking) {
         fPairQA[Counter] = new TList();
@@ -1041,6 +1086,10 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fdEtadPhiSEmT = hists.fdEtadPhiSEmT;
     this->fdEtadPhiMEmT = hists.fdEtadPhiMEmT;
     this->fEffMixingDepth = hists.fEffMixingDepth;
+    this->fSameEventDistCommon = hists.fSameEventDistCommon;
+    this->fSameEventDistNonCommon = hists.fSameEventDistNonCommon;
+    this->fdEtadPhiSECommon = hists.fdEtadPhiSECommon;
+    this->fdEtadPhiSENonCommon = hists.fdEtadPhiSENonCommon;
     this->fDoMultBinning = hists.fDoMultBinning;
     this->fDoCentBinning = hists.fDoCentBinning;
     this->fDokTBinning = hists.fDokTBinning;
@@ -1049,6 +1098,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fDokTCentralityBins = hists.fDokTCentralityBins;
     this->fdPhidEtaPlots = hists.fdPhidEtaPlots;
     this->fCentBins = hists.fCentBins;
+    this->fAncestors = hists.fAncestors;
   }
   return *this;
 }
@@ -1208,5 +1258,19 @@ void AliFemtoDreamCorrHists::FilldPhidEtaME(int iHist, float dPhi, float dEta,
     }
   } else if (fdPhidEtaPlots) {
     fdEtadPhiME[iHist]->Fill(dEta, dPhi);
+  }
+}
+
+void AliFemtoDreamCorrHists::FilldPhidEtaSECommon(int iHist, float dPhi, float dEta,
+                                            float mT) {
+  if (fdPhidEtaPlots) {
+    fdEtadPhiSECommon[iHist]->Fill(dEta, dPhi);
+  }
+}
+
+void AliFemtoDreamCorrHists::FilldPhidEtaSENonCommon(int iHist, float dPhi, float dEta,
+                                            float mT) {
+  if (fdPhidEtaPlots) {
+    fdEtadPhiSENonCommon[iHist]->Fill(dEta, dPhi);
   }
 }
