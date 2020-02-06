@@ -41,6 +41,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
+      fAncestors(false),
       fEst(AliFemtoDreamEvent::kSPD),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
@@ -84,6 +85,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fCorrelationRange(config.fCorrelationRange),
       fkTCentrality(config.fkTCentrality),
       fmTdEtadPhi(config.fmTdEtadPhi),
+      fAncestors(config.fAncestors),
       fEst(config.fEst),
       fDeltaEtaMax(config.fDeltaEtaMax),
       fDeltaPhiMax(config.fDeltaPhiMax),
@@ -127,6 +129,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
+      fAncestors(false),
       fEst(AliFemtoDreamEvent::kSPD),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
@@ -169,6 +172,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fCorrelationRange = config.fCorrelationRange;
     this->fkTCentrality = config.fkTCentrality;
     this->fmTdEtadPhi = config.fmTdEtadPhi;
+    this->fAncestors = config.fAncestors;
     this->fEst = config.fEst;
     this->fDeltaEtaMax = config.fDeltaEtaMax;
     this->fDeltaPhiMax = config.fDeltaPhiMax;

@@ -85,6 +85,9 @@ class AliFemtoDreamCollConfig : public TNamed {
     fMode = mode;
   }
   ;
+    void SetAncestors(bool doIt) {
+    fAncestors = doIt;
+  }
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
@@ -164,6 +167,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   bool GetUsePhiSpinning() {
     return fGetTheControlSampel;
+  }
+  ;
+  bool GetDoAncestorsPlots() {
+    return fAncestors;
   }
   ;
   AliFemtoDreamCollConfig::UncorrelatedMode GetControlMode() {
@@ -275,6 +282,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fdPhidEtaPlotsSmallK;    //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
+  bool fAncestors;              //
   AliFemtoDreamCollConfig::UncorrelatedMode fMode;  //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
@@ -298,8 +306,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaEtaMax;           //
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
-  bool fCoutVariables;ClassDef(AliFemtoDreamCollConfig,15)
-  ;
+  bool fCoutVariables;
+  ClassDef(AliFemtoDreamCollConfig,16);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */

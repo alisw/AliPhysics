@@ -78,6 +78,16 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
   return pass;
 }
 
+bool AliFemtoDreamHigherPairMath::CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+    bool IsCommon = false;
+    if(part1.GetMotherID() == part2.GetMotherID()){
+      IsCommon = true;
+    }else if(part1.GetMotherID() != part2.GetMotherID()){
+      IsCommon = false;
+    }
+    return IsCommon;
+  }
+
 void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
     AliFemtoDreamBasePart &part) {
   static float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225.,
@@ -119,15 +129,17 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
 }
 
 float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
-                                                 TVector3 Part1Momentum,
+                                                 AliFemtoDreamBasePart &part1,
                                                  int PDGPart1,
-                                                 TVector3 Part2Momentum,
+                                                 AliFemtoDreamBasePart &part2,
                                                  int PDGPart2) {
   if (PDGPart1 == 0 || PDGPart2 == 0) {
     AliError("Invalid PDG Code");
   }
   bool fillHists = fWhichPairs.at(iHC);
   TLorentzVector PartOne, PartTwo;
+  TVector3 Part1Momentum = part1.GetMomentum();
+  TVector3 Part2Momentum = part2.GetMomentum();
 // Even if the Daughter tracks were switched up during PID doesn't play a role
 // here cause we are
 // only looking at the mother mass
@@ -162,6 +174,14 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     fHists->FillPtSEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
     fHists->FillPtSETwoQADist(iHC, Part2Momentum.Pt(), Mult + 1);
   }
+  if (fillHists && fHists->GetDoAncestorsPlots()) {
+    bool isAlabama = CommonAncestors(part1,part2);
+    if (isAlabama) {
+      fHists->FillSameEventDistCommon(iHC, RelativeK);
+    } else {
+      fHists->FillSameEventDistNonCommon(iHC, RelativeK);
+    }
+  }
   return RelativeK;
 }
 
@@ -175,14 +195,16 @@ void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK,
 }
 
 float AliFemtoDreamHigherPairMath::FillMixedEvent(
-    int iHC, int Mult, float cent, TVector3 Part1Momentum, int PDGPart1,
-    TVector3 Part2Momentum, int PDGPart2,
+    int iHC, int Mult, float cent, AliFemtoDreamBasePart &part1, int PDGPart1,
+    AliFemtoDreamBasePart &part2, int PDGPart2,
     AliFemtoDreamCollConfig::UncorrelatedMode mode) {
   if (PDGPart1 == 0 || PDGPart2 == 0) {
     AliError("Invalid PDG Code");
   }
   bool fillHists = fWhichPairs.at(iHC);
   TLorentzVector PartOne, PartTwo;
+  TVector3 Part1Momentum = part1.GetMomentum();
+  TVector3 Part2Momentum = part2.GetMomentum();
 // Even if the Daughter tracks were switched up during PID doesn't play a role
 // here cause we are
 // only looking at the mother mass
@@ -250,8 +272,25 @@ void AliFemtoDreamHigherPairMath::SEDetaDPhiPlots(int iHC,
     }
     if (dphi < 0) {
       fHists->FilldPhidEtaSE(iHC, dphi + 2 * TMath::Pi(), deta, mT);
+        if (fHists->GetDoAncestorsPlots()) {
+          bool isAlabama = CommonAncestors(part1,part2);
+          if (isAlabama) {
+            fHists->FilldPhidEtaSECommon(iHC, dphi + 2 * TMath::Pi(), deta, mT);
+            } else {
+            fHists->FilldPhidEtaSENonCommon(iHC, dphi + 2 * TMath::Pi(), deta, mT);
+            }
+      }
+
     } else {
       fHists->FilldPhidEtaSE(iHC, dphi, deta, mT);
+         if (fHists->GetDoAncestorsPlots()) {
+          bool isAlabama = CommonAncestors(part1,part2);
+          if (isAlabama) {
+            fHists->FilldPhidEtaSECommon(iHC, dphi, deta, mT);
+            } else {
+            fHists->FilldPhidEtaSENonCommon(iHC, dphi, deta, mT);
+            }
+      }
     }
   }
 }

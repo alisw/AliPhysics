@@ -21,7 +21,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 									 const char *sTcut = "8",		                      //10
 									 bool DoSpherocity = false,		                    //11
 									 const char *s0cut = "08",		                    //12
-                   const char *cutVariation = "0") {                //13
+                   bool DoAncestors = false,                        //13
+                   const char *cutVariation = "0") {                //14
 
   TString suffix = TString::Format("%s", cutVariation);
   TString sTsuffix = TString::Format("%s", sTcut);
@@ -273,6 +274,11 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
+  //Common/Non Common Ancestors
+  if (isMC && DoAncestors){
+  config->SetAncestors(true);
+  config->GetDoAncestorsPlots();
+  }
   if (phiSpinning == 0) {
     config->SetMixingDepth(10);
     config->SetUseEventMixing(true);
