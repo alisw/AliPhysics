@@ -155,6 +155,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalHighEClusterTree.cxx
     Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
+    Tracks/AliAnalysisTaskEmcalQoverPtShift.cxx
     Tracks/AliAnalysisTaskEmcalJetIterativeDeclustering.cxx
     Tracks/AliAnalysisTaskEmcalFastorMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
