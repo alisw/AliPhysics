@@ -479,7 +479,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   Float_t lastMultBin = 199.5;
   Int_t nMultBinsNtrk = nMultBins;
   Float_t lastMultBinNtrk = lastMultBin;
-  Int_t nMultBinsV0 = 400;
+  Int_t nMultBinsV0 = 200;
   Float_t lastMultBinV0 = 799.5;
   const char *estimatorName="tracklets";
   if(fisPPbData) {
@@ -718,7 +718,6 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     }
   }
 
-  
   TClonesArray *arrayCand = 0;
   TString arrayName="";
   UInt_t pdgDau[3];
