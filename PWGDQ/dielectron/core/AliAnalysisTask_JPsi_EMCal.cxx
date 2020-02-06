@@ -199,7 +199,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,gRandom(new TRandom3(1607260721))
 //,gRandom(new TRandom3(0))
 
-,fRefMult_V0(103.5)
+,fRefMult_V0(139.0)
 ,gRandom_V0(new TRandom3(1607260721))
 //,gRandom_V0(new TRandom3(0))
 
@@ -497,7 +497,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,gRandom(new TRandom3(1607260721))
 //,gRandom(new TRandom3(0))
 
-,fRefMult_V0(103.5)
+,fRefMult_V0(139.0)
 ,gRandom_V0(new TRandom3(1607260721))
 //,gRandom_V0(new TRandom3(0))
 
@@ -948,7 +948,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	fOutputList->Add(fHist_InvMass_pt_ULS);
 	fHist_InvMass_pt_LS = new TH2F("fHist_InvMass_pt_LS","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LS);
-     */
+    */
     
 	
 		//KFParticle
@@ -1188,7 +1188,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	fNevent->Fill(10);
 	if(fIsAOD)
 	{
-		const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
+		    const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
 		    Float_t zvtx = trkVtx->GetZ();
 			fZvtx = zvtx;
 			const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
@@ -1218,7 +1218,6 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 //Look for kink mother for AOD
 	if(fIsAOD)
 	{
-
         //fNumberOfVertices = 0;
         //fNumberOfMotherkink = 0;
         
@@ -1241,7 +1240,6 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	}
 	
     fNevent->Fill(7);
-    
     
 //----------V0M Multiplicity------------------
     AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(fAOD)->GetVZEROData());
