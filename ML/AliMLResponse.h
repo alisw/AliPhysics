@@ -72,7 +72,7 @@ protected:
   int fNBins;                               /// number of bins stored for consistency checks
   int fNVariables;                          /// number of variables (features) stored for checks
 
-  std::vector<float>::iterator fBinsBegin;  /// evaluate just once is better
+  std::vector<float>::iterator fBinsBegin;  //!<!  evaluate just once is better
 
   bool fRaw;                                /// set to true to use raw score instead of probability
 

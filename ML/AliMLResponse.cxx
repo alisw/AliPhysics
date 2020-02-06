@@ -164,7 +164,7 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
   return fModels[bin - 1].GetModel()->Predict(&features[0], fNVariables, fRaw);
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 double AliMLResponse::Predict(double binvar, vector<double> variables) {
   if ((int)variables.size() != fNVariables) {
     AliFatal(Form("Number of variables passed (%d) different from the one used in the model (%d)! Exit", (int)variables.size(), fNVariables));
@@ -179,13 +179,13 @@ double AliMLResponse::Predict(double binvar, vector<double> variables) {
   return fModels[bin - 1].GetModel()->Predict(&variables[0], fNVariables, fRaw);
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap) {
   double score{0.};
   return IsSelected(binvar, varmap, score);
 }
 
-//________________________________________________________________
+//_______________________________________________________________________________
 bool AliMLResponse::IsSelected(double binvar, std::vector<double> variables) {
   double score{0.};
   return IsSelected(binvar, variables, score);
