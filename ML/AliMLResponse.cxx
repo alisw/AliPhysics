@@ -14,8 +14,8 @@
 
 #include "yaml-cpp/yaml.h"
 
-#include "AliLog.h"
 #include "AliExternalBDT.h"
+#include "AliLog.h"
 
 using std::map;
 using std::pair;
@@ -101,13 +101,11 @@ void AliMLResponse::CheckConfigFile(YAML::Node nodelist) {
 }
 
 //_______________________________________________________________________________
-void AliMLResponse::MLResponseInit() {
-  /// import config file from alien path
-  string configPath = AliMLModelHandler::ImportFile(fConfigFilePath);
+void AliMLResponse::CompileModels(std::string configLocalPath) {
   YAML::Node nodeList;
   /// manage wrong config file path
   try {
-    nodeList = YAML::LoadFile(configPath);
+    nodeList = YAML::LoadFile(configLocalPath);
   } catch (std::exception &e) {
     AliFatal(Form("Yaml-ccp error: %s! Exit", e.what()));
   }
@@ -132,6 +130,13 @@ void AliMLResponse::MLResponseInit() {
       AliFatal("Error in model compilation! Exit");
     }
   }
+}
+
+//_______________________________________________________________________________
+void AliMLResponse::MLResponseInit() {
+  /// import config file from alien path
+  string configLocalPath = ImportConfigFile();
+  CompileModels(configLocalPath);
 }
 
 //_______________________________________________________________________________
@@ -167,7 +172,8 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
 //_______________________________________________________________________________
 double AliMLResponse::Predict(double binvar, vector<double> variables) {
   if ((int)variables.size() != fNVariables) {
-    AliFatal(Form("Number of variables passed (%d) different from the one used in the model (%d)! Exit", (int)variables.size(), fNVariables));
+    AliFatal(Form("Number of variables passed (%d) different from the one used in the model (%d)! Exit",
+                  (int)variables.size(), fNVariables));
   }
 
   int bin = FindBin(binvar);
