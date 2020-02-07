@@ -374,7 +374,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      IsClusterPi0(AliVEvent *event, AliMCEvent *mcEvent, AliVCluster *cluster);
     Bool_t      CheckForReconstructedConversionPairs(vector<AliAODConversionPhoton*> &vecPhotons, vector<Int_t> &vecReject);
     Bool_t      CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t tobechecked, Bool_t addIndex );
-    
+
     AliCaloTrackMatcher* GetCaloTrackMatcherInstance()          {return fCaloTrackMatcher;}
     AliPhotonIsolation* GetPhotonIsolationInstance()        { return fCaloIsolation; }
 
@@ -430,6 +430,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      IsExoticCluster ( AliVCluster *cluster, AliVEvent *event, Float_t& energyStar );
     Float_t     GetECross ( Int_t absID, AliVCaloCells* cells );
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
+    Bool_t      IsAbsIDsFromTCard(Int_t absId1, Int_t absId2) const;
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
     void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
 
@@ -512,8 +513,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseElectronClusterCalibration;           // flag for switching on electron cluster calibration
     Int_t     fExtendedMatchAndQA;                      // switching on ext matching histograms (1) / ext QA_noCell (2) / ext matching + ext QA_noCell (3) / extQA + cell (4) / ext match + extQA + cell (5) or all off (0)
     Double_t  fExoticEnergyFracCluster;                 // exotic energy compared to E_cross cluster cut
+    Double_t  fExoticMinEnergyTCard;                    // min exotic energy to check for all cells in the same Tcard
     Double_t  fExoticMinEnergyCell;                     // minimum energy of cell to test for exotics
-    Bool_t    fUseExoticCluster;                        // flag for switching on exotic cluster cut
+    Int_t     fUseExoticCluster;                        // flag for switching on exotic cluster cut
     Bool_t    fDoExoticsQA;                             // flag for switching on exotic cluster cut
     Double_t  fMinEnergy;                               // minium energy per cluster
     Bool_t    fDoFlatEnergySubtraction;                 // enable flat energy subtraction
@@ -667,7 +669,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistTrueNoElectronPositronClusterMatch;  // True No Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronClusterMatchTruePID;         // MC true histogram for purity studies of selected electrons
 
-    // histogram for conv candidate rejection 
+    // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
     TH2F*     fHistInvMassConvFlagging;                 // histogram for monitoring rejected di-cluster mass
     Int_t     fNMaxDCalModules;                         // max number of DCal Modules
@@ -676,7 +678,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,101)
+    ClassDef(AliCaloPhotonCuts,102)
 };
 
 #endif

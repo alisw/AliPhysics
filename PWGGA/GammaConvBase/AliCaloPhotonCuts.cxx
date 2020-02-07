@@ -159,6 +159,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fUseElectronClusterCalibration(0),
   fExtendedMatchAndQA(0),
   fExoticEnergyFracCluster(0),
+  fExoticMinEnergyTCard(0),
   fExoticMinEnergyCell(1),
   fUseExoticCluster(0),
   fDoExoticsQA(kFALSE),
@@ -373,6 +374,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fUseElectronClusterCalibration(ref.fUseElectronClusterCalibration),
   fExtendedMatchAndQA(ref.fExtendedMatchAndQA),
   fExoticEnergyFracCluster(ref.fExoticEnergyFracCluster),
+  fExoticMinEnergyTCard(ref.fExoticMinEnergyTCard),
   fExoticMinEnergyCell(ref.fExoticMinEnergyCell),
   fUseExoticCluster(ref.fUseExoticCluster),
   fDoExoticsQA(ref.fDoExoticsQA),
@@ -637,7 +639,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   // Cluster Cuts
   if (GetIsConversionRecovery() == 0)
     fHistClusterIdentificationCuts  = new TH2F(Form("ClusterQualityCuts vs E %s",GetCutNumber().Data()),"ClusterQualityCuts",11,-0.5,10.5,nBinsClusterE, arrClusEBinning);
-  else 
+  else
     fHistClusterIdentificationCuts  = new TH2F(Form("ClusterQualityCuts vs E %s",GetCutNumber().Data()),"ClusterQualityCuts",12,-0.5,11.5,nBinsClusterE, arrClusEBinning);
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(2,"timing");
@@ -829,18 +831,18 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistNLMVsEAfterQA->GetXaxis()->SetTitle("N_{LM} in cluster");
     fHistNLMVsEAfterQA->GetYaxis()->SetTitle("E_{cl} (GeV)");
     fHistograms->Add(fHistNLMVsEAfterQA);
-    
+
     if (GetIsConversionRecovery() > 0){
       fHistInvMassDiCluster      = new TH2F(Form("InvMass_ClusterPair %s",GetCutNumber().Data()),"InvMass_ClusterPair",100,0,0.1,100,0,20);
-      fHistInvMassDiCluster->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");      
-      fHistInvMassDiCluster->GetYaxis()->SetTitle("p_{T} (GeV/c)");      
+      fHistInvMassDiCluster->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");
+      fHistInvMassDiCluster->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fHistograms->Add(fHistInvMassDiCluster);
       fHistInvMassConvFlagging      = new TH2F(Form("InvMass_Rejected_ClusterPair %s",GetCutNumber().Data()),"InvMass_Rejected_ClusterPair",100,0,0.1,100,0,20);
-      fHistInvMassConvFlagging->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");      
-      fHistInvMassConvFlagging->GetYaxis()->SetTitle("p_{T} (GeV/c)");      
+      fHistInvMassConvFlagging->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");
+      fHistInvMassConvFlagging->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fHistograms->Add(fHistInvMassConvFlagging);
-    }  
-      
+    }
+
     if(fExtendedMatchAndQA > 0 || fIsPureCalo > 0){
       fHistClusterEM02AfterQA       = new TH2F(Form("EVsM02_afterClusterQA %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",nBinsClusterE, arrClusEBinning,400,0,5);
       fHistClusterEM02AfterQA->GetYaxis()->SetTitle("#sigma_{long}^2");
@@ -3741,11 +3743,11 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
 
     if(match_dEta && match_dPhi){
       if(inTrack->Charge() < 0){
-        fHistElectronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal());
+        fHistElectronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
       } else {
-        fHistPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal());
+        fHistPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
       }
-      fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal());
+      fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
 
       if(isMC){
         TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -3759,20 +3761,20 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
           if(!trackPart) continue;
 
           if(TMath::Abs(trackPart->GetPdgCode()) == 11){
-            fHistElectronClusterMatchTruePID->Fill(0.5, trackPart->P());
-            fHistTrueElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal());
+            fHistElectronClusterMatchTruePID->Fill(0.5, trackPart->P(), weight);
+            fHistTrueElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
           } else if(TMath::Abs(trackPart->GetPdgCode()) == 211){
-            fHistElectronClusterMatchTruePID->Fill(1.5, trackPart->P());
-            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal());
+            fHistElectronClusterMatchTruePID->Fill(1.5, trackPart->P(), weight);
+            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
           } else if(TMath::Abs(trackPart->GetPdgCode()) == 2212){
-            fHistElectronClusterMatchTruePID->Fill(2.5, trackPart->P());
-            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal());
+            fHistElectronClusterMatchTruePID->Fill(2.5, trackPart->P(), weight);
+            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
           } else if(TMath::Abs(trackPart->GetPdgCode()) == 321){
-            fHistElectronClusterMatchTruePID->Fill(3.5, trackPart->P());
-            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal());
+            fHistElectronClusterMatchTruePID->Fill(3.5, trackPart->P(), weight);
+            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
           } else {
-            fHistElectronClusterMatchTruePID->Fill(4.5, trackPart->P());
-            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal());
+            fHistElectronClusterMatchTruePID->Fill(4.5, trackPart->P(), weight);
+            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
           }
         }
       }
@@ -4238,6 +4240,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
   if ((fUseTimeDiff)&&(fUseTimingEfficiencyMCSimCluster==2)) printf("\t %6.2f ns < time difference HighPt < %6.2f ns\n", fMinTimeDiffHighPt*1e9, fMaxTimeDiffHighPt*1e9 );
   if (fUseDistTrackToCluster) printf("\tmin distance to track in eta > %3.2f, min phi < %3.2f and max phi > %3.2f\n", fMaxDistTrackToClusterEta, fMinDistTrackToClusterPhi, fMaxDistTrackToClusterPhi );
   if (fUseExoticCluster)printf("\t exotic cluster: %3.2f\n", fExoticEnergyFracCluster );
+  if (fUseExoticCluster == 2)printf("\t exotic cluster above: %3.2f in same T-Card\n", fExoticMinEnergyTCard );
   if (fUseMinEnergy)printf("\t E_{cluster} > %3.2f\n", fMinEnergy );
   if (fUseNCells) printf("\t number of cells per cluster >= %d\n", fMinNCells );
   if (fUseM02 == 1) printf("\t %3.2f < M02 < %3.2f\n", fMinM02, fMaxM02 );
@@ -5050,49 +5053,87 @@ Bool_t AliCaloPhotonCuts::SetExoticClusterCut(Int_t exoticCell)
     fExoticEnergyFracCluster  = 0;
     break;
   case 1:
-    if (!fUseExoticCluster)
+    if (fUseExoticCluster != 1)
       fUseExoticCluster       = 1;
     fExoticEnergyFracCluster  = 0.995;
     break;
   case 2:
-    if (!fUseExoticCluster)
+    if (fUseExoticCluster != 1)
       fUseExoticCluster       = 1;
     fExoticEnergyFracCluster  = 0.99;
     break;
   case 3:
-    if (!fUseExoticCluster)
+    if (fUseExoticCluster != 1)
       fUseExoticCluster       = 1;
     fExoticEnergyFracCluster  = 0.98;
     break;
   case 4:
-    if (!fUseExoticCluster)
+    if (fUseExoticCluster != 1)
       fUseExoticCluster       = 1;
     fExoticEnergyFracCluster  = 0.975;
     break;
   case 5:
-    if (!fUseExoticCluster)
+    if (fUseExoticCluster != 1)
       fUseExoticCluster       = 1;
     fExoticEnergyFracCluster  = 0.97;
     break;
   case 6:
-    if (!fUseExoticCluster)
+    if (fUseExoticCluster != 1)
       fUseExoticCluster       = 1;
     fExoticEnergyFracCluster  = 0.965;
     break;
   case 7:
-    if (!fUseExoticCluster)
+    if (fUseExoticCluster != 1)
       fUseExoticCluster       = 1;
     fExoticEnergyFracCluster  = 0.96;
     break;
   case 8:
-    if (!fUseExoticCluster)
+    if (fUseExoticCluster != 1)
       fUseExoticCluster       = 1;
     fExoticEnergyFracCluster  = 0.95;
     break;
   case 9:
-    if (!fUseExoticCluster)
+    if (fUseExoticCluster != 1)
       fUseExoticCluster       = 1;
     fExoticEnergyFracCluster  = 0.94;
+    break;
+
+    // exotics rejection with cluster only in one TCard above threshold
+  case 10: //a
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.95;
+    fExoticMinEnergyTCard     = 40;
+    break;
+  case 11: //b
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.95;
+    fExoticMinEnergyTCard     = 50;
+    break;
+  case 12: //c
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.95;
+    fExoticMinEnergyTCard     = 60;
+    break;
+  case 13: //d
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.97;
+    fExoticMinEnergyTCard     = 40;
+    break;
+  case 14: //e
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.97;
+    fExoticMinEnergyTCard     = 50;
+    break;
+  case 15: //f
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.97;
+    fExoticMinEnergyTCard     = 60;
     break;
   default:
     AliError(Form("Exotic cell Cut not defined %d",exoticCell));
@@ -8173,7 +8214,7 @@ Bool_t AliCaloPhotonCuts::IsExoticCluster( AliVCluster *cluster, AliVEvent *even
   energyStar              = 0;
 
   AliVCaloCells* cells    = NULL;
-  if (fClusterType == 1 || fClusterType == 3)
+  if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4)
     cells                 = event->GetEMCALCells();
   else if (fClusterType ==2 )
     return kFALSE;
@@ -8190,7 +8231,14 @@ Bool_t AliCaloPhotonCuts::IsExoticCluster( AliVCluster *cluster, AliVEvent *even
 
   if (1-eCross/ecell1 > fExoticEnergyFracCluster) {
     return kTRUE;
-  }  else {
+  } else if ( fUseExoticCluster == 2 && (cluster->E() > fExoticMinEnergyTCard) ){
+    for(Int_t i = 1; i < cluster->GetNCells(); i++){  // check if cells of cluster are all in the same T-Card
+      if( !IsAbsIDsFromTCard( cluster->GetCellAbsId(0), cluster->GetCellAbsId(i)) ){
+        return kFALSE;
+      }
+    }
+    return kTRUE;
+  } else {
     return kFALSE;
   }
   return kFALSE;
@@ -8265,6 +8313,44 @@ Bool_t AliCaloPhotonCuts::AcceptCellByBadChannelMap(Int_t absID ){
       return kFALSE;
   }
   return kTRUE;
+}
+
+//________________________________________________________________________________________
+/// Check if two cells are in the same T-Card.
+/// Exotic cluster rejection for very high energy.
+/// derived from AliAnalysisTaskEMCALPhotonIsolation
+//________________________________________________________________________________________
+Bool_t  AliCaloPhotonCuts::IsAbsIDsFromTCard(Int_t absId1, Int_t absId2) const {
+
+  if(absId1 == absId2) return kFALSE;
+
+    // Check if in same SM, if not for sure not same TCard
+  Int_t sm1 = fGeomEMCAL->GetSuperModuleNumber(absId1);
+  Int_t sm2 = fGeomEMCAL->GetSuperModuleNumber(absId2);
+  if ( sm1 != sm2 ) return kFALSE ;
+
+    // Get the column and row of each absId
+  Int_t iTower = -1, iIphi = -1, iIeta = -1;
+
+  Int_t col1, row1;
+  fGeomEMCAL->GetCellIndex(absId1,sm1,iTower,iIphi,iIeta);
+  fGeomEMCAL->GetCellPhiEtaIndexInSModule(sm1,iTower,iIphi, iIeta,row1,col1);
+
+  Int_t col2, row2;
+  fGeomEMCAL->GetCellIndex(absId2,sm2,iTower,iIphi,iIeta);
+  fGeomEMCAL->GetCellPhiEtaIndexInSModule(sm2,iTower,iIphi, iIeta,row2,col2);
+
+  Int_t row0 = Int_t(row1-row1%8);
+  Int_t col0 = Int_t(col1-col1%2);
+
+  Int_t rowDiff0 = row2-row0;
+  Int_t colDiff0 = col2-col0;
+
+    // TCard is of 2x8 towers
+  if ( colDiff0 >=0 && colDiff0 < 2 && rowDiff0 >=0 && rowDiff0 < 8 )
+    return kTRUE;
+  else
+    return kFALSE;
 }
 
 //_______________________________________________________________________________
@@ -8504,14 +8590,14 @@ Bool_t AliCaloPhotonCuts::IsClusterPi0(AliVEvent *event,  AliMCEvent* mcEvent, A
 }
 
 //_________________________________________________________________________________
-// function to find possible conversion candidates and clean up cluster array 
+// function to find possible conversion candidates and clean up cluster array
 // fMaxMGGRecConv  determines cut off for inv Mass
 // lower energetic photon is rejected to to likely worse energy resolution
 //_________________________________________________________________________________
-Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODConversionPhoton*> &vecPhotons, 
+Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODConversionPhoton*> &vecPhotons,
                                                                 vector<Int_t> &vecReject
                                                               ){
-  
+
   Bool_t rejected   = kFALSE;
   if(vecPhotons.size()>0){
     for(Int_t firstGammaIndex=0;firstGammaIndex<(Int_t)vecPhotons.size();firstGammaIndex++){
@@ -8522,7 +8608,7 @@ Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODCon
       }
       TLorentzVector photon1;
       photon1.SetPxPyPzE (gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E() );
-      
+
       for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<(Int_t)vecPhotons.size();secondGammaIndex++){
         AliAODConversionPhoton *gamma2=vecPhotons.at(secondGammaIndex);
         if (gamma2==NULL){
@@ -8531,14 +8617,14 @@ Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODCon
         }
         TLorentzVector photon2;
         photon2.SetPxPyPzE (gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E() );
-        
+
         TLorentzVector mesonCand;
         mesonCand = photon1+photon2;
         fHistInvMassDiCluster->Fill(mesonCand.M(), mesonCand.Pt());
         if (mesonCand.M() < fMaxMGGRecConv){
           fHistInvMassConvFlagging->Fill(mesonCand.M(), mesonCand.Pt());
-          if (CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kFALSE)) AliDebug(2,"1st gamma already rejected"); 
-          if (CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kFALSE)) AliDebug(2,"2nd gamma already rejected"); 
+          if (CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kFALSE)) AliDebug(2,"1st gamma already rejected");
+          if (CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kFALSE)) AliDebug(2,"2nd gamma already rejected");
           rejected = kTRUE;
           if (gamma1->E() < gamma2->E())
             CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
@@ -8560,7 +8646,7 @@ Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODCon
 }
 
 //_________________________________________________________________________________
-// function to check if integer is contained in current vector 
+// function to check if integer is contained in current vector
 // if not already contained will be aded if addIndex == kTRUE
 //_________________________________________________________________________________
 Bool_t AliCaloPhotonCuts::CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t tobechecked, Bool_t addIndex )
@@ -8576,4 +8662,3 @@ Bool_t AliCaloPhotonCuts::CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t to
   }
   return false;
 }
-
