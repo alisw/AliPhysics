@@ -233,7 +233,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	Double_t fEleXiMassMax; /// e-xi mass max
   
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,9);
+  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,10);
   /// \endcond
 };
 
