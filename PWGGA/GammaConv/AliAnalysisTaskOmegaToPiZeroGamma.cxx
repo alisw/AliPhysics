@@ -1349,6 +1349,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
           fHistoTrueOmegaPtPi0Pt[iCut]->Sumw2();
           fHistoTrueOmegaRestGammaCosAnglePt[iCut]->Sumw2();
           fHistoTrueOmegaRestPi0CosAnglePt[iCut]->Sumw2();
+          fHistoTrueDalitzPlot[iCut]->Sumw2();
           fHistoTrueOmegaPtGammaPt[iCut]->Sumw2();
           fHistoTrueOmegaYPt[iCut]->Sumw2();
         }
