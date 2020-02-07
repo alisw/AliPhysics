@@ -1189,7 +1189,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             if(!isCandInjected)
               isbkg = kTRUE;
             if(labDplus >= 0)
+            {
               fMLhandler->SetIsDplustoKKpi(kTRUE);
+              if(orig == 4)
+                isprompt = kTRUE;
+              else if(orig == 5)
+                isFD = kTRUE;
+            }
           }
         }
 
@@ -1224,7 +1230,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             if(!isCandInjected)
               isbkg = kTRUE;
             if(labDplus >= 0)
+            {
               fMLhandler->SetIsDplustoKKpi(kTRUE);
+              if(orig == 4)
+                isprompt = kTRUE;
+              else if(orig == 5)
+                isFD = kTRUE;
+            }
           }
         }
 
