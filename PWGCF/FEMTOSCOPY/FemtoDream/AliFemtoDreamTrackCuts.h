@@ -196,13 +196,14 @@ class AliFemtoDreamTrackCuts {
     fRatioCrossedRows = ratio;
   }
   ;
-  void SetPID(AliPID::EParticleType pid, float pTPChresh, float sigVal = 3.,
-              bool AllowITSonly = false, float sigValITS = 3.) {
+  void SetPID(AliPID::EParticleType pid, float pTPCThresh, float sigVal = 3.,
+              bool AllowITSonly = false, float sigValITS = 3., bool CombITSTPC = false) {
     fParticleID = pid;
-    fPIDPTPCThreshold = pTPChresh;
+    fPIDPTPCThreshold = pTPCThresh;
     fNSigValue = sigVal;
     fAllowITSonly = AllowITSonly;
     fNSigValueITS = sigValITS;
+    fCombITSTPC = CombITSTPC;
     fCutPID = kTRUE;
   }
   ;
@@ -312,9 +313,10 @@ class AliFemtoDreamTrackCuts {
   AliPID::EParticleType fParticleID;  //
   float fNSigValue;                  // defaults to 3
   float fNSigValueITS;                  // defaults to 3
+  bool  fCombITSTPC;                    // defaults is false 
   float fPIDPTPCThreshold;           // defaults to 0
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
-ClassDef(AliFemtoDreamTrackCuts,8)
+ClassDef(AliFemtoDreamTrackCuts,9)
   ;
 };
 
