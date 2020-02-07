@@ -217,32 +217,32 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   } else if (trainConfig == 11){ // pp 13 TeV EMCal + DCal electron calib test different elec. criteria
     cuts.AddCutCalo("00010113","411790106f032120000","01631031000000d0"); // INT7 TBNL std. cuts
   } else if (trainConfig == 12){ // pp 13 TeV EMCal + DCal electron calib test different elec. criteria
-    cuts.AddCutCalo("00010113","411790106f032120000","01631031000000d0"); // EG2 TBNL std. cuts
-    cuts.AddCutCalo("00010113","411790106f032120000","01631031000000d0"); // EG1 TBNL std. cuts
+    cuts.AddCutCalo("0008e113","411790106f032120000","01631031000000d0"); // EG2 TBNL std. cuts
+    cuts.AddCutCalo("0008d113","411790106f032120000","01631031000000d0"); // EG1 TBNL std. cuts
   } else if (trainConfig == 13){ // pp 13 TeV EMCal + DCal electron calib test different elec. criteria
     cuts.AddCutCalo("00010113","411790106f032130000","01631031000000d0"); // INT7 TBNL M02 var.
     cuts.AddCutCalo("00010113","411790106f032140000","01631031000000d0"); // INT7 TBNL M02 var.
   } else if (trainConfig == 14){ // pp 13 TeV EMCal + DCal electron calib test different elec. criteria
-    cuts.AddCutCalo("00010113","411790106f032130000","01631031000000d0"); // EG2 TBNL M02 var.
-    cuts.AddCutCalo("00010113","411790106f032140000","01631031000000d0"); // EG2 TBNL M02 var.
-    cuts.AddCutCalo("00010113","411790106f032130000","01631031000000d0"); // EG1 TBNL M02 var.
-    cuts.AddCutCalo("00010113","411790106f032140000","01631031000000d0"); // EG1 TBNL M02 var.
+    cuts.AddCutCalo("0008e113","411790106f032130000","01631031000000d0"); // EG2 TBNL M02 var.
+    cuts.AddCutCalo("0008e113","411790106f032140000","01631031000000d0"); // EG2 TBNL M02 var.
+    cuts.AddCutCalo("0008d113","411790106f032130000","01631031000000d0"); // EG1 TBNL M02 var.
+    cuts.AddCutCalo("0008d113","411790106f032140000","01631031000000d0"); // EG1 TBNL M02 var.
 
 
   // cuts to study electrons on EMCal for calibration    electron calibration with secondary V0 electrons
   } else if (trainConfig == 15){ // pp 13 TeV EMCal + DCal electron calib test different elec. criteria
     cuts.AddCutCalo("00010113","411790106f032120000","01631031000000d0"); // INT7 TBNL std. cuts
   } else if (trainConfig == 16){ // pp 13 TeV EMCal + DCal electron calib test different elec. criteria
-    cuts.AddCutCalo("00010113","411790106f032120000","01631031000000d0"); // EG2 TBNL std. cuts
-    cuts.AddCutCalo("00010113","411790106f032120000","01631031000000d0"); // EG1 TBNL std. cuts
+    cuts.AddCutCalo("0008e113","411790106f032120000","01631031000000d0"); // EG2 TBNL std. cuts
+    cuts.AddCutCalo("0008d113","411790106f032120000","01631031000000d0"); // EG1 TBNL std. cuts
   } else if (trainConfig == 17){ // pp 13 TeV EMCal + DCal electron calib test different elec. criteria
     cuts.AddCutCalo("00010113","411790106f032130000","01631031000000d0"); // INT7 TBNL M02 var.
     cuts.AddCutCalo("00010113","411790106f032140000","01631031000000d0"); // INT7 TBNL M02 var.
   } else if (trainConfig == 18){ // pp 13 TeV EMCal + DCal electron calib test different elec. criteria
-    cuts.AddCutCalo("00010113","411790106f032130000","01631031000000d0"); // EG2 TBNL M02 var.
-    cuts.AddCutCalo("00010113","411790106f032140000","01631031000000d0"); // EG2 TBNL M02 var.
-    cuts.AddCutCalo("00010113","411790106f032130000","01631031000000d0"); // EG1 TBNL M02 var.
-    cuts.AddCutCalo("00010113","411790106f032140000","01631031000000d0"); // EG1 TBNL M02 var.
+    cuts.AddCutCalo("0008e113","411790106f032130000","01631031000000d0"); // EG2 TBNL M02 var.
+    cuts.AddCutCalo("0008e113","411790106f032140000","01631031000000d0"); // EG2 TBNL M02 var.
+    cuts.AddCutCalo("0008d113","411790106f032130000","01631031000000d0"); // EG1 TBNL M02 var.
+    cuts.AddCutCalo("0008d113","411790106f032140000","01631031000000d0"); // EG1 TBNL M02 var.
 
 
   // NonLin variation
