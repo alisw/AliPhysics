@@ -96,7 +96,8 @@ AliAnalysisTaskCVE::AliAnalysisTaskCVE(const char *name): AliAnalysisTaskSE(name
   fFilterBit(1),
   fTPCclustMin(70),
   bUseKinkTracks(kFALSE),
-  fNSigmaCut(2.0),
+  fNSigmaTPCCut(2.0),
+  fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
   fMinEtaCut(-0.8),
@@ -146,7 +147,12 @@ AliAnalysisTaskCVE::AliAnalysisTaskCVE(const char *name): AliAnalysisTaskSE(name
     fHCorrectNUAposKaon[i] = NULL;  
     fHCorrectNUAnegKaon[i] = NULL;  
     fHCorrectNUAposProt[i] = NULL;  
-    fHCorrectNUAnegProt[i] = NULL;  
+    fHCorrectNUAnegProt[i] = NULL;    
+  }
+
+  for(int i=0; i<5; i++){
+    fHFillNUAPosPID[i]  = NULL;
+    fHFillNUANegPID[i]  = NULL; 
   }
 
   for(int i=0; i<2; i++){
@@ -185,7 +191,8 @@ AliAnalysisTaskCVE::AliAnalysisTaskCVE():
   fFilterBit(1),
   fTPCclustMin(70),
   bUseKinkTracks(kFALSE),
-  fNSigmaCut(2.0),
+  fNSigmaTPCCut(2.0),
+  fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
   fMinEtaCut(-0.8),
@@ -235,6 +242,11 @@ AliAnalysisTaskCVE::AliAnalysisTaskCVE():
     fHCorrectNUAnegKaon[i] = NULL;  
     fHCorrectNUAposProt[i] = NULL;  
     fHCorrectNUAnegProt[i] = NULL;  
+  }
+
+  for(int i=0; i<5; i++){
+    fHFillNUAPosPID[i]  = NULL;
+    fHFillNUANegPID[i]  = NULL; 
   }
 
   for(int i=0; i<2; i++){
@@ -381,6 +393,32 @@ void AliAnalysisTaskCVE::UserCreateOutputObjects()
     }
   }
 
+
+
+  Int_t gCentForNUA[6] = {0,5,10,20,40,90};
+  Char_t cpid[10];
+
+  if(fParticle==1)      sprintf(cpid,"Pion,Id %d",fParticle);
+  else if(fParticle==2) sprintf(cpid,"Kaon,Id %d",fParticle);
+  else if(fParticle==3) sprintf(cpid,"Prot,Id %d",fParticle);
+  else  sprintf(cpid,"Charge,Id %d",fParticle);
+  
+  for(int i=0; i<5; i++){
+    sprintf(name,"fHistEtaPhiVz_%d_Pos_Cent%d_Run%d",fParticle,i,1); 
+    sprintf(title,"%s Pos, Cent%d-%d, FB %d",cpid,gCentForNUA[i],gCentForNUA[i+1],fFilterBit);
+    fHFillNUAPosPID[i] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
+    fListHist->Add(fHFillNUAPosPID[i]);
+
+    sprintf(name,"fHistEtaPhiVz_%d_Neg_Cent%d_Run%d",fParticle,i,1); 
+    sprintf(title,"%s Neg, Cent%d-%d, FB %d",cpid,gCentForNUA[i],gCentForNUA[i+1],fFilterBit);
+    fHFillNUANegPID[i] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
+    fListHist->Add(fHFillNUANegPID[i]);    
+  }
+      
+
+
+
+  
   for(int i=0; i<10; i++){
     ////Charge:
     sprintf(name,"fHistResolutionvsAch_Cent%d",i);
@@ -633,9 +671,9 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
   Float_t trkChi2=0,trkdEdx=0,trkWgt=1.0;
   Int_t   trkChrg=0, trkTpcNC=0;
   ////PID variables:
-  Double_t nSigTOFpion, nSigTPCpion;
-  Double_t nSigTOFkaon, nSigTPCkaon;
-  Double_t nSigTOFprot, nSigTPCprot;  
+  Double_t nSigTOFpion=-99, nSigTPCpion=-99;
+  Double_t nSigTOFkaon=-99, nSigTPCkaon=-99;
+  Double_t nSigTOFprot=-99, nSigTPCprot=-99;  
   //Bool_t   bTOFmatch= kFALSE;
   Bool_t   isItPion = kFALSE, isItKaon= kFALSE, isItProt= kFALSE;
 	  
@@ -918,40 +956,50 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	isItProt = kFALSE;
      
 	///=========> Get TPC/TOF nSigma for PID
-	nSigTPCpion = fPIDResponse->NumberOfSigmasTPC(AODtrack, AliPID::kPion);
-	nSigTPCkaon = fPIDResponse->NumberOfSigmasTPC(AODtrack, AliPID::kKaon);
-	nSigTPCprot = fPIDResponse->NumberOfSigmasTPC(AODtrack, AliPID::kProton);
-    
-	nSigTOFpion = fPIDResponse->NumberOfSigmasTOF(AODtrack, AliPID::kPion);
-	nSigTOFkaon = fPIDResponse->NumberOfSigmasTOF(AODtrack, AliPID::kKaon);
-	nSigTOFprot = fPIDResponse->NumberOfSigmasTOF(AODtrack, AliPID::kProton);
-      
+
+
 	//----- Pion
-	if(trkPt<=0.6 && TMath::Abs(nSigTPCpion)<=3.0){
-	  isItPion = kTRUE;
-	}
-	else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigTPCpion)<=3.0 && TMath::Abs(nSigTOFpion)<=3.0 ){
-	  isItPion = kTRUE;
+	if(fParticle==1){
+	  nSigTPCpion = fPIDResponse->NumberOfSigmasTPC(AODtrack, AliPID::kPion);
+	  nSigTOFpion = fPIDResponse->NumberOfSigmasTOF(AODtrack, AliPID::kPion);
+	
+	  if(trkPt<=0.6 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut){
+	    isItPion = kTRUE;
+	  }
+	  else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut && TMath::Abs(nSigTOFpion)<=fNSigmaTOFCut){
+	    isItPion = kTRUE;
+	  }
 	}
 	//----- Kaon
-	if(trkPt<=0.45 && TMath::Abs(nSigTPCkaon)<=3.0){
-	  isItKaon = kTRUE;
+	else if(fParticle==2){
+	  nSigTPCkaon = fPIDResponse->NumberOfSigmasTPC(AODtrack, AliPID::kKaon);	
+	  nSigTOFkaon = fPIDResponse->NumberOfSigmasTOF(AODtrack, AliPID::kKaon);
+
+	  if(trkPt<=0.45 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut){
+	    isItKaon = kTRUE;
+	  }
+	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
+	    isItKaon = kTRUE;
+	  }
 	}
-	else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=3.0 && TMath::Abs(nSigTOFkaon)<=2.5){
-	  isItKaon = kTRUE;
+	else if(fParticle==3){
+	  nSigTPCprot = fPIDResponse->NumberOfSigmasTPC(AODtrack, AliPID::kProton);    
+	  nSigTOFprot = fPIDResponse->NumberOfSigmasTOF(AODtrack, AliPID::kProton);
+      
+	  //----- Proton 
+	  if(trkPt<=0.8 && TMath::Abs(nSigTPCprot)<=fNSigmaTPCCut){
+	    isItProt = kTRUE;
+	    if(trkChrg>0 && trkPt<0.4) isItProt = kFALSE;  //Proton below 0.4 GeV has beam Pipe Contamination
+	  }
+	  else if(trkPt>0.8 && trkPt<=10.0 && TMath::Abs(nSigTPCprot)<=fNSigmaTPCCut && TMath::Abs(nSigTOFprot)<=fNSigmaTOFCut){  
+	    isItProt = kTRUE;
+	  }
 	}
-	//----- Proton 
-	if(trkPt<=0.8 && TMath::Abs(nSigTPCprot)<=3.0){
-	  isItProt = kTRUE;
-	  if(trkChrg>0 && trkPt<0.4) isItProt = kFALSE;  //Proton below 0.4 GeV has beam Pipe Contamination
-	}
-	else if(trkPt>0.8 && trkPt<=10.0 && TMath::Abs(nSigTPCprot)<=3.0 && TMath::Abs(nSigTOFprot)<=3.0){  
-	  isItProt = kTRUE;
-	}
-     
     	//-------- PID selection is done ---------
 
-	ptWgtMC = 1.0; WgtNUA = 1.0;
+	ptWgtMC = 1.0;
+	WgtNUA  = 1.0;
+	
 	trkWgtPion = 1.0;  trkWgtKaon = 1.0;  trkWgtProt = 1.0;
 	WgtNUAPion = 1.0;  WgtNUAKaon = 1.0;  WgtNUAProt = 1.0; 
 	ptWgtMCPion = 1.0; ptWgtMCKaon = 1.0; ptWgtMCProt = 1.0;
@@ -1048,7 +1096,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	if(WgtNUAKaon>1e3) WgtNUAPion = 1.0;
 	if(WgtNUAProt>1e3) WgtNUAPion = 1.0;
 
-
+	
 	
 	trkWgt     = WgtNUA*ptWgtMC;
 	trkWgtPion = WgtNUAPion*ptWgtMCPion;
@@ -1100,7 +1148,10 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 
 	///---------- pT cut for v2 vs Ach -------------
 	
-	if(trkPt > 2.0) continue; 
+	if(trkPt > 2.0) continue;
+
+
+	
 	
 	if(trkChrg > 0){
 	
@@ -1161,8 +1212,10 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	      NumOfProtPosEtaNeg  += trkWgtProt;
 	    }	
 	  }
+
+	  fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  
-	}
+	}///+ve Ch done	
 	else{  //-Ve charge
 	  
 	  fHistv2AchChrgNeg[0][iCent]->Fill(fAchrgNet,   (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgt);
@@ -1220,9 +1273,14 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	      sumQ2yProtNegEtaNeg += trkWgtProt*uqIm;
 	      NumOfProtNegEtaNeg  += trkWgtProt;
 	    }	  
-	  }	  
+	  }
+
+
+	  fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	  
 	}/// if -ve Particle
 	//----------- v2 vs Ach filled ---------
+
 
 	
        
