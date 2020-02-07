@@ -917,32 +917,30 @@ void AliPIPEv3::CreateGeometry()
   ///      
   //
   // Bellow mother volume
-  TGeoPcon* shRB24B1BellowM = new TGeoPcon(0., 360., 14);
+  TGeoPcon* shRB24B1BellowM = new TGeoPcon(0., 360., 12);
   // Connection Tube and Flange
   z = 0.;
   shRB24B1BellowM->DefineSection( 0, z, 0.,               kRB24B1RFlangeRou);
   z += kRB24B1RFlangeLO;
   shRB24B1BellowM->DefineSection( 1, z, 0.,               kRB24B1RFlangeRou);
+    z = kRB24B1RFlangeL;
   shRB24B1BellowM->DefineSection( 2, z, 0.,               kRB24B1RFlangeRou);    
-  z = kRB24B1RFlangeL;
-  shRB24B1BellowM->DefineSection( 3, z, 0.,               kRB24B1RFlangeRou);    
-  shRB24B1BellowM->DefineSection( 4, z, 0.,               kRB24B1ConTubeRou);
+  shRB24B1BellowM->DefineSection( 3, z, 0.,               kRB24B1ConTubeRou);
   z = kRB24B1ConTubeL +  kRB24B1RFlangeL - kRB24B1RFlangeRecess;
-  shRB24B1BellowM->DefineSection( 5, z, 0.,               kRB24B1ConTubeRou);
+  shRB24B1BellowM->DefineSection( 4, z, 0.,               kRB24B1ConTubeRou);
   // Plie
-  shRB24B1BellowM->DefineSection( 6, z, 0.,               kRB24B1BellowRo + kRB24B1ProtTubeThickness);
+  shRB24B1BellowM->DefineSection( 5, z, 0.,               kRB24B1BellowRo + kRB24B1ProtTubeThickness);
   z += kRB24B1BellowUndL;
-  shRB24B1BellowM->DefineSection( 7, z, 0.,               kRB24B1BellowRo + kRB24B1ProtTubeThickness);
-  shRB24B1BellowM->DefineSection( 8, z, 0.,               kRB24B1ConTubeRou);
+  shRB24B1BellowM->DefineSection( 6, z, 0.,               kRB24B1BellowRo + kRB24B1ProtTubeThickness);
+  shRB24B1BellowM->DefineSection( 7, z, 0.,               kRB24B1ConTubeRou);
   // Connection Tube and Flange
-  z = kRB24B1L - shRB24B1BellowM->GetZ(3);
-  shRB24B1BellowM->DefineSection( 9, z, 0.,               kRB24B1ConTubeRou);
-  shRB24B1BellowM->DefineSection(10, z, 0.,               kRB24B1RFlangeRou);
+  z = kRB24B1L - shRB24B1BellowM->GetZ(2);
+  shRB24B1BellowM->DefineSection( 8, z, 0.,               kRB24B1ConTubeRou);
+  shRB24B1BellowM->DefineSection( 9, z, 0.,               kRB24B1RFlangeRou);
   z = kRB24B1L - shRB24B1BellowM->GetZ(1);
+  shRB24B1BellowM->DefineSection(10, z, 0.,               kRB24B1RFlangeRou);
+    z = kRB24B1L - shRB24B1BellowM->GetZ(0);
   shRB24B1BellowM->DefineSection(11, z, 0.,               kRB24B1RFlangeRou);
-  shRB24B1BellowM->DefineSection(12, z, 0.,               kRB24B1RFlangeRou);
-  z = kRB24B1L - shRB24B1BellowM->GetZ(0);
-  shRB24B1BellowM->DefineSection(13, z, 0.,               kRB24B1RFlangeRou);
 
   TGeoVolume* voRB24B1BellowM = new TGeoVolume("RB24B1BellowM", shRB24B1BellowM, kMedVacH);
   voRB24B1BellowM->SetVisibility(0);
@@ -2918,27 +2916,33 @@ TGeoPcon* AliPIPEv3::MakeMotherFromTemplate(const TGeoPcon* shape, Int_t imin, I
   //
   //  Create a mother shape from a template setting some min radii to 0
   //
-  Int_t nz0 = shape->GetNz();
-  // if nz > -1 the number of planes is given by nz
-  if (nz != -1) nz0 = nz;
-  TGeoPcon* mother = new TGeoPcon(0., 360., nz0);
 
   if (imin == -1 || imax == -1) {
     imin = 0;
     imax = shape->GetNz();
-  } else if (imax >= nz0) {
-    imax = nz0 - 1;
-    printf("Warning: imax reset to nz-1 %5d %5d %5d %5d\n", imin, imax, nz, nz0);
   }
 
-
-
+  Float_t rminA[100];
+  Float_t rmaxA[100];
+  Float_t zA[100];
+  Int_t nz0 = 0;
+  
   for (Int_t i = 0;  i < shape->GetNz(); i++) {
     Double_t rmin = shape->GetRmin(i);
     if ((i >= imin) && (i <= imax) ) rmin = r0;
     Double_t rmax = shape->GetRmax(i);
     Double_t    z = shape->GetZ(i);
-    mother->DefineSection(i, z, rmin, rmax);
+    if ((nz0>0) && (rmin == rminA[nz0-1]) && (rmax == rmaxA[nz0-1]) && (z == zA[nz0-1])) continue;
+    rminA[nz0] = rmin;
+    rmaxA[nz0] = rmax;
+    zA[nz0] = z;
+    nz0++;
+      }
+  Int_t nzext = nz0;
+  if (nz != -1) nzext = 2 * nz0  - 1;
+  TGeoPcon* mother = new TGeoPcon(0., 360., nzext);
+  for (Int_t i = 0;  i < nz0; i++) {
+    mother->DefineSection(i, zA[i], rminA[i], rmaxA[i]);
   }
   return mother;
 
