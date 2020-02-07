@@ -7,6 +7,7 @@
 #include "AliKFConversionPhoton.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "AliConversionAODBGHandlerRP.h"
+#include "AliAODConversionPhoton.h"
 #include "AliCaloPhotonCuts.h"
 #include "AliConvEventCuts.h"
 #include "AliConversionPhotonCuts.h"
@@ -126,6 +127,11 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void FillMultipleCountHistoAndClear ( map<Int_t,
                                           Int_t> &ma,
                                           TH1F* hist );
+
+    // Function to Fill QA plots to reduce redudant code
+    void FillQAPlots ( AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
+      AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2,
+      TH2F* fHistoMotherRestGammaCosAnglePt, TH2F* fHistoMotherRestPi0CosAnglePt, TH2F* fHistoMotherDalitzPlot );
 
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
