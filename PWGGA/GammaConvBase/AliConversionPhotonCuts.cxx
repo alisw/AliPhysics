@@ -2685,25 +2685,25 @@ Bool_t AliConversionPhotonCuts::SetEtaCut(Int_t etaCut){   // Set Cut
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
     break;
-  case 10: // 0.2-0.9
+  case 10: // a - 0.2-0.9
     fEtaCut     = 0.9;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = 0.2;
     fLineCutZRSlopeMin = 0.;
     break;
-  case 11: // 0.2-0.9
+  case 11: // b - 0.2-0.9
     fEtaCut     = 0.9;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = 0.2;
     fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin)));
     break;
-  case 12: // 0.85
+  case 12: // c - 0.85
     fEtaCut     = 0.85;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
     break;
-  case 13: // 0.8
+  case 13: // d - 0.8
     fEtaCut     = 0.8;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = -0.1;
