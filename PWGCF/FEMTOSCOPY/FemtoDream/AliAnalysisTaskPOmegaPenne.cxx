@@ -12,57 +12,88 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
 
     AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne() :  AliAnalysisTaskSE(),
                                                                 fIsMC(false),
-                                                                Event(0),
-                                                                track(0),
-                                                                fOutput(0),
+                                                                aaEvent(0),
+                                                                aaTrack(0),
                                                                 fEvent(0),
                                                                 fTrack(0),
-                                                                fCascade(0),
                                                                 fEventCuts(0),
                                                                 fTrackCutsProton(0),
                                                                 fTrackCutsAntiProton(0),
-                                                                fCascadeCutsXion(0),
-                                                                fCascadeCutsAntiXion(0),
+                                                                fv0(0),
+                                                                fLambdaV0Cuts(0),
+                                                                fAntiLambdaV0Cuts(0),
+                                                                // fCascade(0),
+                                                                // fCascadeCutsXion(0),
+                                                                // fCascadeCutsAntiXion(0),
                                                                 fConfig(0),
                                                                 fPairCleaner(0),
                                                                 fPartColl(0),
                                                                 fGTI(0),
-                                                                fTrackBufferSize(10000)
+                                                                fTrackBufferSize(10000),
+                                                                tlEventCuts(0),
+                                                                tlTrackCutsProton(0),
+                                                                tlAntiTrackCutsProton(0),
+                                                                tlLambdaList(0),
+                                                                tlAntiLambdaList(0),
+                                                                // tlCascadeCutsXi(0),
+                                                                // tlAntiCascadeCutsXi(0),
+                                                                tlPairCleaner(0),
+                                                                tlResults(0),
+                                                                tlResultsQA(0)
 {
 }
-AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool isMC) :   AliAnalysisTaskSE(name),
-                                                                                        fIsMC(isMC),
-                                                                                        Event(0),
-                                                                                        track(0),
-                                                                                        fOutput(0),
-                                                                                        fEvent(0),
-                                                                                        fTrack(0),
-                                                                                        fCascade(0),
-                                                                                        fEventCuts(0),
-                                                                                        fTrackCutsProton(0),
-                                                                                        fTrackCutsAntiProton(0),
-                                                                                        fCascadeCutsXion(0),
-                                                                                        fCascadeCutsAntiXion(0),
-                                                                                        fConfig(0),
-                                                                                        fPairCleaner(0),
-                                                                                        fPartColl(0),
-                                                                                        fGTI(0),
-                                                                                        fTrackBufferSize(10000)
+AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool isMC) : AliAnalysisTaskSE(name),
+                                                                                      fIsMC(isMC),
+                                                                                      aaEvent(0),
+                                                                                      aaTrack(0),
+                                                                                      fEvent(0),
+                                                                                      fTrack(0),
+                                                                                      fEventCuts(0),
+                                                                                      fTrackCutsProton(0),
+                                                                                      fTrackCutsAntiProton(0),
+                                                                                      fv0(0),
+                                                                                      fLambdaV0Cuts(0),
+                                                                                      fAntiLambdaV0Cuts(0),
+                                                                                      // fCascade(0),
+                                                                                      // fCascadeCutsXion(0),
+                                                                                      // fCascadeCutsAntiXion(0),
+                                                                                      fConfig(0),
+                                                                                      fPairCleaner(0),
+                                                                                      fPartColl(0),
+                                                                                      fGTI(0),
+                                                                                      fTrackBufferSize(10000),
+                                                                                      tlEventCuts(0),
+                                                                                      tlTrackCutsProton(0),
+                                                                                      tlAntiTrackCutsProton(0),
+                                                                                      tlLambdaList(0),
+                                                                                      tlAntiLambdaList(0),
+                                                                                      // tlCascadeCutsXi(0),
+                                                                                      // tlAntiCascadeCutsXi(0),
+                                                                                      tlPairCleaner(0),
+                                                                                      tlResults(0),
+                                                                                      tlResultsQA(0)
 {
-    DefineOutput(1, TList::Class());
+    DefineOutput(1, TList::Class());    // Event Cuts
+    DefineOutput(2, TList::Class());    // Proton Track Cuts
+    DefineOutput(3, TList::Class());    // Anti Proton Track Cuts
+    DefineOutput(4, TList::Class());    // Lambda Track Cuts
+    DefineOutput(5, TList::Class());    // Anti Lambda Track Cuts
+    DefineOutput(6, TList::Class());    // Pair Cleaner
+    DefineOutput(7, TList::Class());    // Results
+    DefineOutput(8, TList::Class());    // QA Results
 }
 AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()
 {
     // TODO Auto-generated destructor stub
-    // |-> HÄ, ne gar nicht!... wenn der run zu ende ist hört das Objekt einfach auf zu evXionstieren. Scheiß auf den Destruktor!
+    // |-> HÄ, ne gar nicht!... wenn der run zu ende ist hört das Objekt einfach auf zu eXistieren. Scheiß auf den Destruktor!
     // pass lieber in der UserExec Methode auf!!!
 }
 
 // // Copy Constructor
 // AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOmegaPenne& obj) : AliAnalysisTaskSE(obj),
 //                                                                                                 fIsMC(obj.fIsMC),
-//                                                                                                 Event(obj.Event),
-//                                                                                                 track(obj.track),
+//                                                                                                 aaEvent(obj.aaEvent),
+//                                                                                                 aaTrack(obj.aaTrack),
 //                                                                                                 fOutput(obj.fOutput),
 //                                                                                                 fEvent(obj.fEvent),
 //                                                                                                 fTrack(obj.fTrack),
@@ -97,10 +128,10 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()
 
 // AliAnalysisTaskPOmegaPenne& AliAnalysisTaskPOmegaPenne::operator=(const AliAnalysisTaskPOmegaPenne& other)
 // {
-//     AliAnalysisTaskSE::operator=(other);
+//     AliAnalysisTaskSE::operator=(other); // hier ist doof glaub ich und in der header datei muss das auch noch hinzu
 //     this.fIsMC = other.fIsMC;
-//     this.Event = other.Event;
-//     this.track = other.track;
+//     this.aaEvent = other.aaEvent;
+//     this.aaTrack = other.aaTrack;
 //     this.fOutput = other.fOutput;
 //     this.fEvent = other.fEvent;
 //     this.fTrack = other.fTrack;
@@ -116,22 +147,48 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()
 
 //     return *this;
 // }
-
 void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 {
-    fOutput = new TList();
-    fOutput->SetName("Output");
-    fOutput->SetOwner();
+    // tlEventCuts = new TList();
+    // tlEventCuts->SetName("EventCuts");
+    // tlEventCuts->SetOwner();
+
+    // tlTrackCutsProton = new TList();
+    // tlTrackCutsProton->SetName("TrackCuts");
+    // tlTrackCutsProton->SetOwner();
+
+    // tlAntiTrackCutsProton = new TList();
+    // tlAntiTrackCutsProton->SetName("AntiTrackCuts");
+    // tlAntiTrackCutsProton->SetOwner();
+
+    // tlCascadeCutsXi = new TList();
+    // tlCascadeCutsXi->SetName("CascadeCuts");
+    // tlCascadeCutsXi->SetOwner();
+
+    // tlAntiCascadeCutsXi = new TList();
+    // tlAntiCascadeCutsXi->SetName("AntiCascadeCuts");
+    // tlAntiCascadeCutsXi->SetOwner();
+                                                                                      
+    tlPairCleaner = new TList();
+    tlPairCleaner->SetName("PairCleaner");
+    tlPairCleaner->SetOwner();
+
+    // tlResults = new TList();
+    // tlResults->SetName("Results");
+    // tlResults->SetOwner();
+
+    tlResultsQA = new TList();
+    tlResultsQA->SetName("ResultsQA");
+    tlResultsQA->SetOwner();
+
 
     fEvent = new AliFemtoDreamEvent(false, true, GetCollisionCandidates());
-    fOutput->Add(fEvent->GetEvtCutList());
     fTrack = new AliFemtoDreamTrack();
     fTrack->SetUseMCInfo(fIsMC);
     fGTI = new AliAODTrack *[fTrackBufferSize];
     
     fEventCuts->InitQA();
-    fOutput->Add(fEventCuts->GetHistList());
-
+    
     // Proton Cuts      ###########
     if (!fTrackCutsProton)
     {
@@ -139,12 +196,11 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     }
     fTrackCutsProton->Init();
     fTrackCutsProton->SetName("Protons");
-    fOutput->Add(fTrackCutsProton->GetQAHists());
-    if (fTrackCutsProton->GetIsMonteCarlo())
-    {
-        fTrackCutsProton->SetMCName("MCProtonen");
-        fOutput->Add(fTrackCutsProton->GetMCQAHists());
-    }
+    // if (fTrackCutsProton->GetIsMonteCarlo())             // is bei mir eh kein monte carlo im moment
+    // {
+    //     fTrackCutsProton->SetMCName("MCProtonen");
+    //     tlTrackCutsProton->Add(fTrackCutsProton->GetMCQAHists());
+    // }
     // ##
 
     // AntiProton Cuts  ###########
@@ -153,113 +209,149 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
         AliFatal("Track Cuts for Particle AntiProton not set!");
     }
     fTrackCutsAntiProton->Init();
-    fTrackCutsAntiProton->SetName("AntiProtons");
-    fOutput->Add(fTrackCutsAntiProton->GetQAHists());
-    if (fTrackCutsAntiProton->GetIsMonteCarlo())
-    {
-        fTrackCutsAntiProton->SetMCName("MCAntiProtonen");
-        fOutput->Add(fTrackCutsAntiProton->GetMCQAHists());
-    }
+    // fTrackCutsAntiProton->SetName("AntiProtons");
+    // if (fTrackCutsAntiProton->GetIsMonteCarlo())         // is bei mir eh kein monte carlo im moment
+    // {
+    //     fTrackCutsAntiProton->SetMCName("MCAntiProtonen");
+    //     tlAntiTrackCutsProton->Add(fTrackCutsAntiProton->GetMCQAHists());
+    // }
     // ##
 
-    // Xion Cuts    ###########
-    if (!fCascadeCutsXion)
-    {
-        AliFatal("Track Cuts for Particle Xion not set!");
-    }
-    fCascadeCutsXion->Init();
-    fCascadeCutsXion->SetName("Xions");
-    fOutput->Add(fCascadeCutsXion->GetQAHists());
-    if (fCascadeCutsXion->GetIsMonteCarlo())
-    {
-        fCascadeCutsXion->SetMCName("MCXion");
-        fOutput->Add(fCascadeCutsXion->GetMCQAHists());
-    }
+    // Lambda Cutys    ###########
+    fLambdaV0Cuts->Init();
     // ##
+
+    // AntiLambda Cutys    ###########
+    fAntiLambdaV0Cuts->Init();
+    // ##
+
+    // V0 Candidates
+    fv0 = new AliFemtoDreamv0();
+    fv0->SetPDGCode(3122);
+    fv0->SetPDGDaughterPos(2212);
+    fv0->SetPDGDaughterNeg(211);
+  
+    // // Xion Cuts    ###########
+    // if (!fCascadeCutsXion)
+    // {
+    //     AliFatal("Track Cuts for Particle Xion not set!");
+    // }
+    // fCascadeCutsXion->Init();
+    // fCascadeCutsXion->SetName("Xis");
+    // tlCascadeCutsXi->Add(fCascadeCutsXion->GetQAHists());
+    // if (fCascadeCutsXion->GetIsMonteCarlo())
+    // {
+    //     fCascadeCutsXion->SetMCName("MCXion");
+    //     tlCascadeCutsXi->Add(fCascadeCutsXion->GetMCQAHists());
+    // }
+    // // ##
     
-    // AntiXion Cuts    ###########
-    if (!fCascadeCutsAntiXion)
-    {
-        AliFatal("Track Cuts for Particle AntiXion not set!");
-    }
-    fCascadeCutsAntiXion->Init();
-    fCascadeCutsAntiXion->SetName("AntiXions");
-    fOutput->Add(fCascadeCutsAntiXion->GetQAHists());
-    if (fCascadeCutsAntiXion->GetIsMonteCarlo())
-    {
-        fCascadeCutsAntiXion->SetMCName("MCAntiXions");
-        fOutput->Add(fCascadeCutsAntiXion->GetMCQAHists());
-    }
-    // ##
+    // // AntiXion Cuts    ###########
+    // if (!fCascadeCutsAntiXion)
+    // {
+    //     AliFatal("Track Cuts for Particle AntiXion not set!");
+    // }
+    // fCascadeCutsAntiXion->Init();
+    // fCascadeCutsAntiXion->SetName("AntiXis");
+    // tlAntiCascadeCutsXi->Add(fCascadeCutsAntiXion->GetQAHists());
+    // if (fCascadeCutsAntiXion->GetIsMonteCarlo())
+    // {
+    //     fCascadeCutsAntiXion->SetMCName("MCAntiXions");
+    //     tlAntiCascadeCutsXi->Add(fCascadeCutsAntiXion->GetMCQAHists());
+    // }
+    // // ##
 
-    // Cascade Cuts     #########
-    fCascade = new AliFemtoDreamCascade();          // Initial Cascade Object
-    fCascade->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
-    //PDG Codes should be set assuming Xi- to also work for Xi+
-    fCascade->SetPDGCode(3312);
-    fCascade->SetPDGDaugPos(2212);
-    fCascade->GetPosDaug()->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
-    fCascade->SetPDGDaugNeg(211);
-    fCascade->GetNegDaug()->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
-    fCascade->SetPDGDaugBach(211);
-    fCascade->GetBach()->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
-    fCascade->Setv0PDGCode(3122);
-    // ##
+    // // Cascade Cuts     #########
+    // fCascade = new AliFemtoDreamCascade();          // Initial Cascade Object
+    // fCascade->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
+    // //PDG Codes should be set assuming Xi- to also work for Xi+
+    // fCascade->SetPDGCode(3312);
+    // fCascade->SetPDGDaugPos(2212);
+    // fCascade->GetPosDaug()->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
+    // fCascade->SetPDGDaugNeg(211);
+    // fCascade->GetNegDaug()->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
+    // fCascade->SetPDGDaugBach(211);
+    // fCascade->GetBach()->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
+    // fCascade->Setv0PDGCode(3122);
+    // // ##
 
     fPairCleaner = new AliFemtoDreamPairCleaner(2, 2, false);
-    fOutput->Add(fPairCleaner->GetHistList());
     fPartColl = new AliFemtoDreamPartCollection(fConfig, false);
-    fOutput->Add(fPartColl->GetHistList());
-    fOutput->Add(fPartColl->GetQAList());
-    PostData(1, fOutput);
+
+    tlEventCuts             = fEventCuts->GetHistList();
+    tlTrackCutsProton       = fTrackCutsProton->GetQAHists();
+    tlAntiTrackCutsProton   = fTrackCutsAntiProton->GetQAHists();
+    tlLambdaList            = fLambdaV0Cuts->GetQAHists();
+    tlAntiLambdaList        = fAntiLambdaV0Cuts->GetQAHists();
+    tlPairCleaner->Add(fPairCleaner->GetHistList());
+    tlResults               = fPartColl->GetHistList();
+    tlResultsQA->Add(fPartColl->GetQAList());
+    tlResultsQA->Add(fPairCleaner->GetHistList());
+
+    PostData(1, tlEventCuts);
+    PostData(2, tlTrackCutsProton);
+    PostData(3, tlAntiTrackCutsProton);
+    PostData(4, tlLambdaList);
+    PostData(5, tlAntiLambdaList);
+    // PostData(4, tlCascadeCutsXi);
+    // PostData(5, tlAntiCascadeCutsXi);
+    PostData(6, tlPairCleaner);
+    PostData(7, tlResults);
+    PostData(8, tlResultsQA);
 }
 
 static std::vector<AliFemtoDreamBasePart> vProtons;         // Particle Vectors  
 static std::vector<AliFemtoDreamBasePart> vAntiProtons;     
-static std::vector<AliFemtoDreamBasePart> vXions;           
-static std::vector<AliFemtoDreamBasePart> vAntiXions;       
+static std::vector<AliFemtoDreamBasePart> vLambdas;           
+static std::vector<AliFemtoDreamBasePart> vAntiLambdas;       
+// static std::vector<AliFemtoDreamBasePart> vXions;           
+// static std::vector<AliFemtoDreamBasePart> vAntiXions;       
 
 void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 {
-    Event = dynamic_cast<AliAODEvent *>(fInputEvent);
+    aaEvent = dynamic_cast<AliAODEvent *>(fInputEvent);
     
-    if (!Event)
+    if (!aaEvent)
     {
         AliWarning("No Input Event");
     }
     else
     {
-        fEvent->SetEvent(Event);
+
+        fEvent->SetEvent(aaEvent);
         if (fEventCuts->isSelected(fEvent))
         {
             ResetGlobalTrackReference();
-            for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack)
+            for (int iTrack = 0; iTrack < aaEvent->GetNumberOfTracks(); ++iTrack)
             {
-                track = dynamic_cast<AliAODTrack *>(Event->GetTrack(iTrack));
-                if (!track)
+                aaTrack = dynamic_cast<AliAODTrack *>(aaEvent->GetTrack(iTrack));
+                if (!aaTrack)
                 {
                     AliFatal("No Standard AOD");
                     return;
                 }
-                StoreGlobalTrackReference(track);
+                StoreGlobalTrackReference(aaTrack);
             }
            
             fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
             vProtons.clear();
             vAntiProtons.clear();
-            vXions.clear();
-            vAntiXions.clear();
+            vLambdas.clear();
+            vAntiLambdas.clear();            
+            // vXions.clear();
+            // vAntiXions.clear();
             
-            for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack)
+
+            for (int iTrack = 0; iTrack < aaEvent->GetNumberOfTracks(); ++iTrack)
             {
-                track = dynamic_cast<AliAODTrack *>(Event->GetTrack(iTrack));
-                if (!track)
+                aaTrack = dynamic_cast<AliAODTrack *>(aaEvent->GetTrack(iTrack));
+                if (!aaTrack)
                 {
                     AliFatal("No Standard AOD");
                     return;
                 }
-                fTrack->SetTrack(track);
+                fTrack->SetTrack(aaTrack);
 
                 // mark track (anti-)proton and/or (anti-)xion
                 if (fTrackCutsProton->isSelected(fTrack))
@@ -271,36 +363,74 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     vAntiProtons.push_back(*fTrack);
                 }
             }
-            for (int iCasc = 0; iCasc < static_cast<TClonesArray *>(Event->GetCascades())->GetEntriesFast(); ++iCasc)
+            fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+            for (int iv0 = 0; iv0 < static_cast<TClonesArray *>(aaEvent->GetV0s())->GetEntriesFast(); ++iv0)
             {
-                AliAODcascade *casc = Event->GetCascade(iCasc);
-                fCascade->SetCascade(Event, casc);
-                if (fCascadeCutsXion->isSelected(fCascade))
+                AliAODv0 *v0 = aaEvent->GetV0(iv0);
+                fv0->Setv0(aaEvent, v0, fEvent->GetMultiplicity());
+                if (fLambdaV0Cuts->isSelected(fv0))
                 {
-                    vXions.push_back(*fCascade);
+                    vLambdas.push_back(*fv0);
                 }
-                if (fCascadeCutsAntiXion->isSelected(fCascade))
+                if (fAntiLambdaV0Cuts->isSelected(fv0))
                 {
-                    vAntiXions.push_back(*fCascade);
+                    vAntiLambdas.push_back(*fv0);
                 }
-            }                                                                         
+            }
+            // @@ Xi Cascade ##
+            // for (int iCasc = 0; iCasc < static_cast<TClonesArray *>(aaEvent->GetCascades())->GetEntriesFast(); ++iCasc)
+            // {
+            //     AliAODcascade *casc = aaEvent->GetCascade(iCasc);
+            //     fCascade->SetCascade(aaEvent, casc);
+            //     if (fCascadeCutsXion->isSelected(fCascade))
+            //     {
+            //         vXions.push_back(*fCascade);
+            //     }
+            //     if (fCascadeCutsAntiXion->isSelected(fCascade))
+            //     {
+            //         vAntiXions.push_back(*fCascade);
+            //     }
+            // }                    
+                                                                 
             // remove double-matched tracks
             fPairCleaner->ResetArray();
-            fPairCleaner->CleanTrackAndDecay(&vProtons, &vXions, 0);
-            fPairCleaner->CleanTrackAndDecay(&vAntiProtons, &vAntiXions, 1);
+            fPairCleaner->CleanTrackAndDecay(&vProtons, &vLambdas, 0);
+            fPairCleaner->CleanTrackAndDecay(&vAntiProtons, &vAntiLambdas, 1);
+            // fPairCleaner->CleanTrackAndDecay(&vProtons, &vXions, 0);
+            // fPairCleaner->CleanTrackAndDecay(&vAntiProtons, &vAntiXions, 1);
 
-            fPairCleaner->CleanDecay(&vXions, 0);
-            fPairCleaner->CleanDecay(&vAntiXions, 1);
+            fPairCleaner->CleanDecay(&vLambdas, 0);
+            fPairCleaner->CleanDecay(&vAntiLambdas, 1);
+
+            // fPairCleaner->CleanDecay(&vXions, 0);
+            // fPairCleaner->CleanDecay(&vAntiXions, 1);
             
             fPairCleaner->StoreParticle(vProtons);
             fPairCleaner->StoreParticle(vAntiProtons);
-            fPairCleaner->StoreParticle(vXions);
-            fPairCleaner->StoreParticle(vAntiXions);
+            fPairCleaner->StoreParticle(vLambdas);
+            fPairCleaner->StoreParticle(vAntiLambdas);
+            if (fPairCleaner->GetCounter() > 0)
+            {
+                if (fConfig->GetUseEventMixing())
+                {
+                    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
+                }
+            }
+            // fPairCleaner->StoreParticle(vXions);
+            // fPairCleaner->StoreParticle(vAntiXions);
 
+            // fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality());        // xi's mit getRefMult08() anstelle von GetMultiplicity()
 
-            fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
-
-            PostData(1, fOutput);
+            PostData(1, tlEventCuts);
+            PostData(2, tlTrackCutsProton);
+            PostData(3, tlAntiTrackCutsProton);
+            PostData(4, tlLambdaList);
+            PostData(5, tlAntiLambdaList);
+            // PostData(4, tlCascadeCutsXi);
+            // PostData(5, tlAntiCascadeCutsXi);
+            PostData(6, tlPairCleaner);
+            PostData(7, tlResults);
+            PostData(8, tlResultsQA);
         }
     }
 }
