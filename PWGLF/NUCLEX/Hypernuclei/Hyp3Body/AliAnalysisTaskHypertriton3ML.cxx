@@ -125,10 +125,11 @@ AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::strin
       fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.},
       fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.}, fMinCanidateCtToSave{0.}, fMaxCanidateCtToSave{100.},
       fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{5.}, fMaxNSigmaTPCP{5.}, fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.},
-      fMaxNSigmaTOFP{5.}, fMaxNSigmaTOFPi{5.}, fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.},
-      fMinCosPA{0.993}, fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05},
-      fMaxPtDeu{10.}, fMaxPtP{10.}, fMaxPtPi{1.}, fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{},
-      fDeuVector{}, fPVector{}, fPiVector{}, fMLResponseConfigfilePath{}, fEventMixingPool{}, fEventMixingPoolDepth{0} {
+      fMaxNSigmaTOFP{5.}, fMaxNSigmaTOFPi{5.}, fVertexerToleranceGuessCompatibility{0},
+      fVertexerMaxDistanceInit{100.}, fMinCosPA{0.993}, fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025},
+      fMinDCA2PrimaryVtxPi{0.05}, fMaxPtDeu{10.}, fMaxPtP{10.}, fMaxPtPi{1.}, fSHypertriton{}, fRHypertriton{},
+      fREvent{}, fMLSelected{}, fDeuVector{}, fPVector{}, fPiVector{}, fMLResponseConfigfileRemotePath{},
+      fMLResponseConfigfileLocalPath{}, fEventMixingPool{}, fEventMixingPoolDepth{0} {
   fTrackCuts.SetMinNClustersTPC(0);
   /// Settings for the custom vertexer
   fVertexer.SetToleranceGuessCompatibility(fVertexerToleranceGuessCompatibility);
@@ -138,6 +139,12 @@ AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::strin
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());    // Basic Histograms
   DefineOutput(2, TTree::Class());    // Hypertriton Candidates Tree output
+
+  if (fApplyML) {
+    fMLResponse = new AliMLResponse("Hypertriton3MLResponse", "Hypertriton3MLResponse");
+    fMLResponse->SetConfigFilePath(fMLResponseConfigfileRemotePath);
+    fMLResponseConfigfileLocalPath = fMLResponse->ImportConfigFile();
+  }
 }
 
 //_______________________________________________________________________________
@@ -162,9 +169,7 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   fInputHandler->SetNeedField();
 
   if (fApplyML) {
-    fMLResponse = new AliMLResponse("Hypertriton3MLResponse", "Hypertriton3MLResponse");
-    fMLResponse->SetConfigFilePath(fMLResponseConfigfilePath);
-    fMLResponse->MLResponseInit();
+    fMLResponse->CompileModels(fMLResponseConfigfileLocalPath);
   }
 
   fTreeHyp3 = new TTree("fHypertritonTree", "Hypertriton3 Candidates");
