@@ -10,7 +10,7 @@
 / experimental Pb-Pb data.                                                    /
 /                                                                             /
 / Author: Cindy Mordasini (cindy.mordasini@cern.ch)                           /
-/ Version 16 from the 23.01.2020 (post vAN 20191211).                         /
+/ Version 17 from the 07.02.2020.                                             /
 / -------------------------------------------------------------------------- */
 
 #ifndef ALIANALYSISTASKTWOMULTICORRELATIONS_H
@@ -169,7 +169,8 @@ public:
 
 // 7. Configuration of the use of the weights.
   void SetParticleWeights(Bool_t useTable, Bool_t useNonUnitWeights,
-    Bool_t usePt, Bool_t usePhi, Bool_t useEta, Bool_t useLocal, TString period)
+    Bool_t usePt, Bool_t usePhi, Bool_t useEta, Bool_t useLocal,
+    TString path, TString period)
   {
     this->fUseKineRecoTable           = useTable;
     this->fUseNonUnitParticleWeights  = useNonUnitWeights;
@@ -177,6 +178,7 @@ public:
     this->fUsePhiWeights              = usePhi;
     this->fUseEtaWeights              = useEta;
     this->fUseLocalFiles              = useLocal;
+    this->fPathToWeights              = path;
     this->fPeriodUsedForWeight        = period;
   } // End: void SetParticleWeights(Bool_t, Bool_t, Bool_t, Bool_t, Bool_t, Bool_t, TString).
 
@@ -336,6 +338,9 @@ private:
   Bool_t    fUsePhiWeights;         // kTRUE: use phi weights for NUA.
   Bool_t    fUseEtaWeights;         // kTRUE: use eta weights for NUA.
   Bool_t    fUseLocalFiles;         // kTRUE: use local files, kFALSE: use GRID files.
+  TString   fPathToWeights;         // Path to the "Weights" directory.
+    // (To use on AliEn: "alien:///alice/cern.ch/user/c/cimordas/Weights")
+    // (To use locally: "/home/cindy/TestAliAnalysisTask/Test_UseWeights")
   TString   fPeriodUsedForWeight;   // Name of the period to use for the weights.
   TH1F      *fHistoWeights[3];      //! Histograms with the weights for phi, pT, eta.
 
@@ -362,7 +367,7 @@ private:
 
 /* ----------------------------------------------------------------------------------------- */
 /* Version number to handle the objects through the iterations of the code.                  */
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 16);
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 17);
 };  // End of the class.
 
 #endif
