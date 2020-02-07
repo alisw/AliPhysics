@@ -83,6 +83,8 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   void SetProdXiCosineOfPoiningAngleMin(Double_t a){fProdXiCosineOfPoiningAngleMin=a;}
   void SetProdV0CosineOfPoiningAngleXiMin(Double_t a){fProdV0CosineOfPoiningAngleXiMin=a;}
   void SetProdCascNTPCClustersMin(Double_t a){fProdCascNTPCClustersMin=a;}
+  void SetProdCascCutMinNCrossedRowsTPC(Double_t a){fProdCascCutMinNCrossedRowsTPC=a;}
+  void SetProdCascratioCrossedRowsOverFindableClusterTPC(Double_t a){fProdCascratioCrossedRowsOverFindableClusterTPC=a;}
   void SetProdCascEtaRange(Double_t a, Double_t b){fProdCascEtaMin=a;fProdCascEtaMax=b;}
   void SetProdCascRapRange(Double_t a, Double_t b){fProdCascRapMin=a;fProdCascRapMax=b;}
   void SetProdCascPtRange(Double_t a, Double_t b){fProdCascPtMin=a;fProdCascPtMax=b;}
@@ -114,6 +116,8 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   Double_t GetProdRoughMassTol(){return fProdRoughMassTol;}
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
   Double_t GetProdCascNTPCClustersMin(){return fProdCascNTPCClustersMin;}
+  Double_t GetProdCascCutMinNCrossedRowsTPC(){return fProdCascCutMinNCrossedRowsTPC;}
+  Double_t GetProdCascratioCrossedRowsOverFindableClusterTPC(){return fProdCascratioCrossedRowsOverFindableClusterTPC;}
   void GetProdCascEtaRange(Double_t &a, Double_t &b){a=fProdCascEtaMin;b=fProdCascEtaMax;}
   void GetProdCascRapRange(Double_t &a, Double_t &b){a=fProdCascRapMin;b=fProdCascRapMax;}
   void GetProdCascPtRange(Double_t &a, Double_t &b){a=fProdCascPtMin;b=fProdCascPtMax;}
@@ -200,6 +204,8 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   Double_t fProdXiCosineOfPoiningAngleMin;  /// Min Xi cos pointing angle  to PV
   Double_t fProdV0CosineOfPoiningAngleXiMin;  /// Min V0 cos pointing angle  to Xi vertex
   Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters
+  Double_t fProdCascCutMinNCrossedRowsTPC;  // Minimum number of Crossed Rows TPC
+  Double_t fProdCascratioCrossedRowsOverFindableClusterTPC; // Minmum ratio of CrossedRows Over Findable Cluster
   Double_t fProdCascEtaMin; /// Minimum eta of cascade
   Double_t fProdCascEtaMax; /// Maximum eta of cascade
   Double_t fProdCascRapMin; /// Minimum rapidity of cascade
