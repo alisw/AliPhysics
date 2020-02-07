@@ -8231,7 +8231,7 @@ Bool_t AliCaloPhotonCuts::IsExoticCluster( AliVCluster *cluster, AliVEvent *even
 
   if (1-eCross/ecell1 > fExoticEnergyFracCluster) {
     return kTRUE;
-  } else if ( fUseExoticCluster == 2 && cluster->E() > fExoticMinEnergyTCard ){
+  } else if ( fUseExoticCluster == 2 && (cluster->E() > fExoticMinEnergyTCard) ){
     for(Int_t i = 1; i < cluster->GetNCells(); i++){  // check if cells of cluster are all in the same T-Card
       if( !IsAbsIDsFromTCard( cluster->GetCellAbsId(0), cluster->GetCellAbsId(i)) ){
         return kFALSE;
