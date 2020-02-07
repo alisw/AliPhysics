@@ -4,7 +4,6 @@
 # * Author: The ALICE Off-line Project.                                    *
 # * Contributors are mentioned in the code where appropriate.              *
 ############################################################################
-
 ############################################################################
 #AliRoot build and install documentation                                   #
 ############################################################################
