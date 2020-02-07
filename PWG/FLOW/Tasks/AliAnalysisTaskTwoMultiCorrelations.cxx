@@ -92,7 +92,7 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   fUseNonUnitParticleWeights(kFALSE),
   fUsePtWeights(kFALSE), fUsePhiWeights(kFALSE), fUseEtaWeights(kFALSE),
   fUseLocalFiles(kFALSE),
-  fPeriodUsedForWeight(""),
+  fPathToWeights(""), fPeriodUsedForWeight(""),
   fEfficiency(NULL),
   fFirstEvent(kTRUE),
   fUseJEfficiency(kFALSE),
@@ -162,7 +162,7 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fUseNonUnitParticleWeights(kFALSE),
   fUsePtWeights(kFALSE), fUsePhiWeights(kFALSE), fUseEtaWeights(kFALSE),
   fUseLocalFiles(kFALSE),
-  fPeriodUsedForWeight(""),
+  fPathToWeights(""), fPeriodUsedForWeight(""),
   fEfficiency(NULL),
   fFirstEvent(kTRUE),
   fUseJEfficiency(kFALSE),
@@ -980,8 +980,8 @@ TH1F* AliAnalysisTaskTwoMultiCorrelations::GetHistogramWithWeights(Int_t RunNumb
 
 // 2. Access the external ROOT file to fetch the desired histogram with weights.
   TFile *weightsFile =  NULL;
-  if (fUseLocalFiles) { weightsFile = TFile::Open(Form("/home/cindy/TestAliAnalysisTask/Test_UseWeights/%s/%d/Weights.root", fPeriodUsedForWeight.Data(), RunNumber), "READ"); }
-  else { weightsFile = TFile::Open(Form("/alice/cern.ch/user/c/cimordas/Weights/%s/%d/Weights.root", fPeriodUsedForWeight.Data(), RunNumber), "READ"); }
+  if (fUseLocalFiles) { weightsFile = TFile::Open(Form("%s/%s/%d/Weights.root", fPathToWeights.Data(), fPeriodUsedForWeight.Data(), RunNumber), "READ"); }
+  else { weightsFile = TFile::Open(Form("%s/%s/000%d/Weights.root", fPathToWeights.Data(), fPeriodUsedForWeight.Data(), RunNumber), "READ"); }
 
   if (!weightsFile) { Fatal(sMethod.Data(), "ERROR 404: File not found"); } 
  
