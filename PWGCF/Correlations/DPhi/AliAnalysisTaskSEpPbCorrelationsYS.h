@@ -28,6 +28,7 @@ class AliAODv0;
 class THnSparse;
 class AliAODcascade;
 class AliAODVertex;
+//class AliForwardFlowResultStorage;
 
 
 #ifndef ALIANALYSISTASKSEH
@@ -163,6 +164,7 @@ private:
   TList *fOutputList1; // Output list
   TList *fOutputList2; // Output list
 
+  
   AliPIDResponse *fPIDResponse; // PID Response
 
   Int_t ffilterbit;
@@ -277,6 +279,7 @@ private:
   TH2F*  fh2_SPDtrack_multcorr;
   TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
+  TH2D*  fh2_FMD_eta_phi_aftercut;
   TH1F* fHist_NeventRun;
   TH1F* fHist_V0AMultRun;
   TH1F* fHist_V0CMultRun;
