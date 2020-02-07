@@ -7,6 +7,7 @@
 #include "AliKFConversionPhoton.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "AliConversionAODBGHandlerRP.h"
+#include "AliAODConversionPhoton.h"
 #include "AliCaloPhotonCuts.h"
 #include "AliConvEventCuts.h"
 #include "AliConversionPhotonCuts.h"
@@ -127,6 +128,11 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
                                           Int_t> &ma,
                                           TH1F* hist );
 
+    // Function to Fill QA plots to reduce redudant code
+    void FillQAPlots ( AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
+      AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2,
+      TH2F* fHistoMotherRestGammaCosAnglePt, TH2F* fHistoMotherRestPi0CosAnglePt, TH2F* fHistoMotherDalitzPlot );
+
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
 
@@ -202,6 +208,9 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH2F**                  fHistoMotherPi0AnglePt;             //! array of histograms with angle between omega candidates and pi0 candidates
     TH2F**                  fHistoMotherGammaAnglePt;           //! array of histograms with angle between omega candidates and combined gammas
     TH2F**                  fHistoPi0GammaAnglePt;              //! array of histograms with angle between pi0 candidates and combined gammas
+    TH2F**                  fHistoMotherRestGammaCosAnglePt;    //! array of histograms with cos angle between omega in lab frame candidates and gamma candidates in the omega rest frame
+    TH2F**                  fHistoMotherRestPi0CosAnglePt;      //! array of histograms with cos angle between omega in lab frame candidates and pi0 candidates in the omega rest frame
+    TH2F**                  fHistoMotherDalitzPlot;             //! array of histograms with mass squared of two pi0 gammas (gamma0 and gamma1) and mass squared of gamma1 and gamma2 (gamma2 directly from omega)
     TH1F**                  fHistoGammaFromMotherPt;            //! array of histograms with pT of gammas from omega candidates
 
     // BG histograms
@@ -270,6 +279,9 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH2F**                  fHistoTruePi0GammaAnglePt;                          //! array of histos with pT, angle between pi0 and gamma from reconstructed true omegas
     TH2F**                  fHistoTrueOmegaEtaPhi;                              //! array of histos with eta, phi of reconstructed true omegas
     TH2F**                  fHistoTrueOmegaPtPi0Pt;                             //! array of histos with pT of validated omegas against pT of pi0s from validated omegas
+    TH2F**                  fHistoTrueOmegaRestGammaCosAnglePt;                 //! array of histos with pT, cos angle between reconstruced true omegas in lab frame and gamma daughter in omega restframe
+    TH2F**                  fHistoTrueOmegaRestPi0CosAnglePt;                   //! array of histos with pT, cos angle between reconstruced true omegas in lab frame and pi0 daughter in omega restframe
+    TH2F**                  fHistoTrueDalitzPlot;                               //! array of histos with mass squared of two pi0 gammas (gamma0 and gamma1) and mass squared of gamma1 and gamma2 (gamma2 directly from omega)
     TH2F**                  fHistoTrueOmegaPtGammaPt;                           //! array of histos with pT of validated omegas against pT of gammas from validated omegas
     TH1F**                  fHistoTrueGammaFromOmegaPt;                         //! array of histos with pT of photons from validated omegas
 
@@ -330,7 +342,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 13);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 14);
 };
 
 #endif
