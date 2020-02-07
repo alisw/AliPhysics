@@ -46,6 +46,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetUseMCtruthForPID(Bool_t opt=kTRUE){
     fUseMCId=opt;
   }
+  void SetUseGenPtInPlots(Bool_t opt=kTRUE){
+    fUseGenPt=opt;
+  }
   void SetUsePhysicsSelection(Bool_t opt=kTRUE){
     fUsePhysSel=opt;
   }
@@ -235,8 +238,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Double_t fMaxPt;             // maximum pt for histos
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
+  Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,18);
+  ClassDef(AliAnalysisTaskCheckESDTracks,19);
 };
 
 
