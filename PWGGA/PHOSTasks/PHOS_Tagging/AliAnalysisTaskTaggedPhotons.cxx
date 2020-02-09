@@ -718,7 +718,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   vtx5[2] = event->GetPrimaryVertex()->GetZ();
 
   FillHistogram("hNvertexTracks",event->GetPrimaryVertex()->GetNContributors());
-  FillHistogram("hZvertex"      ,vtx5[2]);
   if(fIsFastMC){ //vertex from header
     AliAODMCHeader *cHeaderAOD = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
     if(!cHeaderAOD){
@@ -727,6 +726,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     }
     cHeaderAOD->GetVertex(vtx5);
   }
+  FillHistogram("hZvertex"      ,vtx5[2]);
   if (TMath::Abs(vtx5[2]) > 10. ){
     PostData(1, fOutputContainer);
     return ;
@@ -1007,8 +1007,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
   for(Int_t i=0;i<nPrim;i++){
     AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(i) ;
     Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
-    if(r2>rcut*rcut)
-      continue ;
+    if(r2>rcut*rcut){
+      continue ;      
+    }
 
     Int_t pdg=prim->GetPdgCode() ;    
     char partName[30] ;
