@@ -460,15 +460,17 @@ void AliAnalysisTaskGFWFlow::SetPtBins(Int_t nBins, Double_t *bins, Double_t RFp
 
 Bool_t AliAnalysisTaskGFWFlow::AcceptEvent() {
   if(!fEventCuts.AcceptEvent(fInputEvent)) return 0;
-  UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(!(fSelMask&fTriggerType)) return 0;
+  if(fCurrSystFlag==15) if(!fEventCutsForPU.AcceptEvent(fInputEvent)) return 0; //For a tight PU cut, an additional selection
   return kTRUE;
 };
 Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if((fSelMask&AliVEvent::kCentral)==AliVEvent::kCentral) if(l_cent>10) return kFALSE;
-  if((fSelMask&AliVEvent::kSemiCentral)==AliVEvent::kSemiCentral) if(l_cent<30 || l_cent>50) return kFALSE;
-  return kTRUE;
+  if(!(fSelMask&fTriggerType)) return kFALSE;
+  Bool_t centTrigger = (fSelMask&(fTriggerType&AliVEvent::kCentral)) && l_cent>0 && l_cent<10;
+  Bool_t semiCentTri = (fSelMask&(fTriggerType&AliVEvent::kSemiCentral)) && l_cent>30 && l_cent<50;
+  Bool_t MBTrigger   = (fSelMask&(AliVEvent::kMB+AliVEvent::kINT7));
+  if(centTrigger || semiCentTri || MBTrigger) return kTRUE;
+  return kFALSE;
 
 }
 Bool_t AliAnalysisTaskGFWFlow::AcceptAODVertex(AliAODEvent *inEv) {
@@ -597,7 +599,8 @@ Bool_t AliAnalysisTaskGFWFlow::InitRun() {
     else
       fRunNo = runno;
     //Run has changed; need to re-override the PU cut in AliEventCuts:
-    Bool_t dump1 = AcceptEvent(); //To setup all the event cuts (automatically)
+    Bool_t dump1 = fEventCuts.AcceptEvent(fInputEvent);//To setup all the event cuts (automatically)
+    dump1 = fEventCutsForPU.AcceptEvent(fInputEvent);//To setup all the event cuts (automatically)
     fEventCuts.fUseVariablesCorrelationCuts = kTRUE; //By default this is not used (for some reason?)
     //Also for the PU systematics:
     fEventCutsForPU.fUseVariablesCorrelationCuts = kTRUE;
