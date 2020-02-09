@@ -152,6 +152,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fUseTimingEfficiencyMCSimCluster(0),
   fFuncTimingEfficiencyMCSimCluster(0),
   fFuncTimingEfficiencyMCSimClusterHighPt(0),
+  fFuncNCellCutEfficiencyEMCal(0),
   fMinTMDistSigma(10),
   fUseEOverPVetoTM(0),
   fEOverPMax(0.),
@@ -367,6 +368,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fUseTimingEfficiencyMCSimCluster(ref.fUseTimingEfficiencyMCSimCluster),
   fFuncTimingEfficiencyMCSimCluster(ref.fFuncTimingEfficiencyMCSimCluster),
   fFuncTimingEfficiencyMCSimClusterHighPt(ref.fFuncTimingEfficiencyMCSimClusterHighPt),
+  fFuncNCellCutEfficiencyEMCal(ref.fFuncNCellCutEfficiencyEMCal),
   fMinTMDistSigma(ref.fMinTMDistSigma),
   fUseEOverPVetoTM(ref.fUseEOverPVetoTM),
   fEOverPMax(ref.fEOverPMax),
@@ -539,6 +541,7 @@ AliCaloPhotonCuts::~AliCaloPhotonCuts() {
   if(fFuncPtDepPhi) delete fFuncPtDepPhi;
   if(fFuncTimingEfficiencyMCSimCluster) delete fFuncTimingEfficiencyMCSimCluster;
   if(fFuncTimingEfficiencyMCSimClusterHighPt) delete fFuncTimingEfficiencyMCSimClusterHighPt;
+  if(fFuncNCellCutEfficiencyEMCal) delete fFuncNCellCutEfficiencyEMCal;
 }
 
 //________________________________________________________________________
@@ -2097,6 +2100,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       // replay cuts
       Bool_t failed     = kFALSE;
       Bool_t failedM02  = kFALSE;
+      Bool_t passedNCellSpecial  = kFALSE;
       if (fUseMinEnergy)
         if(cluster->E() < fMinEnergy)
           failed = kTRUE;
@@ -2107,6 +2111,22 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       } else if (fUseNCells == 2){
           if (cluster->GetNCells() < fMinNCells && cluster->E() > 1)
             failed = kTRUE;
+      // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency)
+      } else if (fUseNCells == 3){
+        if(isMC){
+          fRandom.SetSeed(0);
+          // evaluate effi function and compare to random number between 1 and 2
+          // if function value greater than random number, reject cluster. otherwise let it pass
+          // function is 1 for E>4 GeV -> will apply standard NCell cut then
+          if( (cluster->GetNCells() < fMinNCells) && (fRandom.Uniform(1,2) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) ){
+            failed = kTRUE;
+          } else {
+            passedNCellSpecial = kTRUE;
+          }
+        } else {
+          if (cluster->GetNCells() < fMinNCells)
+            failed = kTRUE;
+        }
       }
       if (fUseNLM)
         if( nLM < fMinNLM || nLM > fMaxNLM )
@@ -2115,10 +2135,10 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         // no cut to be applied in this case on M20
         // as cluster needs at least 2 cells for M20 calculation
       } else {
-        if (fUseM02 == 1){
+        if (fUseM02 == 1 && !passedNCellSpecial){
           if( cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02 )
             failedM02  = kTRUE;
-        } else if (fUseM02 ==2 ) {
+        } else if (fUseM02 ==2  && !passedNCellSpecial) {
           if( cluster->GetM02()< CalculateMinM02(fMinM02CutNr, cluster->E()) ||
               cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()) )
             failedM02  = kTRUE;
@@ -2127,10 +2147,10 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
             if( (cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02)  && cluster->E() > 1 )
               failedM02  = kTRUE;
         }
-        if (fUseM20)
+        if (fUseM20 && !passedNCellSpecial)
           if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 )
             failed = kTRUE;
-        if (fUseDispersion)
+        if (fUseDispersion && !passedNCellSpecial)
           if( cluster->GetDispersion()> fMaxDispersion)
             failed = kTRUE;
       }
@@ -2155,6 +2175,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//3, next cut
 
   // minimum number of cells
+  Bool_t passedSpecialNCell = kFALSE;
   if (fUseNCells == 1){
     if(cluster->GetNCells() < fMinNCells) {
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
@@ -2165,6 +2186,25 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
         return kFALSE;
       }
+  // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency)
+  } else if (fUseNCells == 3){
+    if(isMC>0){
+      fRandom.SetSeed(0);
+      // evaluate effi function and compare to random number between 1 and 2
+      // if function value greater than random number, reject cluster. otherwise let it pass
+      // function is 1 for E>4 GeV -> will apply standard NCell cut then
+      if( (cluster->GetNCells() < fMinNCells) && (fRandom.Uniform(1,2) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) ){
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+        return kFALSE;
+      } else {
+        passedSpecialNCell = kTRUE;
+      }
+    } else {
+      if (cluster->GetNCells() < fMinNCells){
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+        return kFALSE;
+      }
+    }
   }
   cutIndex++;//4, next cut
 
@@ -2178,7 +2218,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//5, next cut
 
   // M02 cut
-  if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
+  if(passedSpecialNCell || (!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4)){
     // no cut to be applied in this case on M02
     // as cluster needs at least 2 cells for M02 calculation
   } else if (fUseM02 == 1){
@@ -2201,7 +2241,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//6, next cut
 
   // M20 cut
-  if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
+  if(passedSpecialNCell || (!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4)){
     // no cut to be applied in this case on M20
     // as cluster needs at least 2 cells for M20 calculation
   } else if (fUseM20){
@@ -2213,7 +2253,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//7, next cut
 
   // dispersion cut
-  if (fUseDispersion){
+  if (fUseDispersion && !passedSpecialNCell){
     if( cluster->GetDispersion()> fMaxDispersion) {
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//8
       return kFALSE;
@@ -5374,6 +5414,21 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
   case 13: // d
     if (!fUseNCells) fUseNCells=2;
     fMinNCells=3;
+    break;
+
+  // special cases for EMCal: this will randomly evaluate the NCell cut efficiency for MC
+  // and let clusters with NCell<2 pass if sucessful, for data the normal NCell cut is applied
+  case 17: // i
+    if (!fUseNCells) fUseNCells=3;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(1.51165e+00,6.41558e-02,1.24776e+01,1.32035e-01,-1.15887e+00,3.89796e+02,2.02598e+03);
+    break;
+  case 18: // j
+    if (!fUseNCells) fUseNCells=3;
+    fMinNCells=3;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(1.51165e+00,6.41558e-02,1.24776e+01,1.32035e-01,-1.15887e+00,3.89796e+02,2.02598e+03);
     break;
 
   default:
