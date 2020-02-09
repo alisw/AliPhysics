@@ -2926,7 +2926,12 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, AliVParticle* tra
       fhQAPIDTPCdEdx[iQAindex]->Fill(tr->P(), dTPCdEdx);
 
       for(Int_t iSpec(0); iSpec < fPIDNumSpecies; ++iSpec) {
-        dNumSigmaTPC[iSpec] = fPIDResponse->NumberOfSigmasTPC(tr, AliPID::EParticleType(iSpec));
+        if(!fNeedPIDCorrection){
+          dNumSigmaTPC[iSpec] = fPIDResponse->NumberOfSigmasTPC(tr, AliPID::EParticleType(iSpec));
+        }
+        else{
+          dNumSigmaTPC[iSpec] = TMath::Abs(PIDCorrection(tr, PartSpecies(iSpec)));
+        }
         dTPCdEdxDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, tr, AliPID::EParticleType(iSpec));
       }
   }
