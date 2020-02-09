@@ -108,6 +108,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
   protected:
     AliV0ReaderV1*              fV0Reader;                  //
     TString                     fV0ReaderName;
+    AliPIDResponse*   fPIDResponse;                         ///< PID response
     TString                     fCorrTaskSetting;
     AliConversionPhotonCuts*    fConversionCuts;            // Cuts used by the V0Reader
     AliConvEventCuts*           fEventCuts;                 // Cuts used by the V0Reader
@@ -182,6 +183,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t*        fBuffer_Surrounding_Tracks_R;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_Pt;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_P;              //!<! array buffer
+    Float_t*        fBuffer_Surrounding_Tracks_nSigdEdxE;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_RelativeEta;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_RelativePhi;              //!<! array buffer
     
@@ -193,7 +195,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_Cluster_MC_LeadingPi0_E;              //!<! array buffer
 
     
-    ClassDef(AliAnalysisTaskClusterQA, 13);
+    ClassDef(AliAnalysisTaskClusterQA, 14);
 };
 
 const Int_t kMaxActiveCells = 18000;
