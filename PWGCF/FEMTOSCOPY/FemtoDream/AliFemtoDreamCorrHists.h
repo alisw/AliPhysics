@@ -264,6 +264,14 @@ class AliFemtoDreamCorrHists {
     fSameEventDistNonCommon[i]->Fill(RelK);
   }
   ;
+    void FillSameEventMultDistCommon(int i, int iMult, float RelK) {
+    if (fSameEventMultDistCommon[i])
+      fSameEventMultDistCommon[i]->Fill(RelK, iMult);
+  }
+    void FillSameEventMultDistNonCommon(int i, int iMult, float RelK) {
+    if (fSameEventMultDistNonCommon[i])
+      fSameEventMultDistNonCommon[i]->Fill(RelK, iMult);
+  }
   void FilldPhidEtaSECommon(int iHist, float dPhi, float dEta, float mT);
   void FilldPhidEtaSENonCommon(int iHist, float dPhi, float dEta, float mT);
 
@@ -334,6 +342,9 @@ class AliFemtoDreamCorrHists {
   TH1F **fSameEventDistNonCommon;
   TH2F **fdEtadPhiSECommon;
   TH2F **fdEtadPhiSENonCommon;
+  TH2F **fSameEventMultDistCommon;
+  TH2F **fSameEventMultDistNonCommon;
+
 
   bool fDoMultBinning;
   bool fDoCentBinning;

@@ -67,6 +67,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fSameEventDistNonCommon(nullptr),
       fdEtadPhiSECommon(nullptr),
       fdEtadPhiSENonCommon(nullptr),
+      fSameEventMultDistCommon(nullptr),
+      fSameEventMultDistNonCommon(nullptr),
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTandMultBinning(false),
@@ -141,6 +143,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fSameEventDistNonCommon(hists.fSameEventDistCommon),
       fdEtadPhiSECommon(hists.fdEtadPhiSECommon),
       fdEtadPhiSENonCommon(hists.fdEtadPhiSENonCommon),
+      fSameEventMultDistCommon(hists.fSameEventMultDistCommon),
+      fSameEventMultDistNonCommon(hists.fSameEventMultDistNonCommon),
       fDoMultBinning(hists.fDoMultBinning),
       fDoCentBinning(hists.fDoCentBinning),
       fDokTandMultBinning(hists.fDokTandMultBinning),
@@ -215,6 +219,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fSameEventDistNonCommon(nullptr),
       fdEtadPhiSECommon(nullptr),
       fdEtadPhiSENonCommon(nullptr),
+      fSameEventMultDistCommon(nullptr),
+      fSameEventMultDistNonCommon(nullptr),
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTBinning(false),
@@ -453,11 +459,17 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fdEtadPhiSECommon = new TH2F*[nHists];
       fdEtadPhiSENonCommon = new TH2F*[nHists];
       }
+      if (fDoMultBinning){
+       fSameEventMultDistCommon = new TH2F*[nHists];
+       fSameEventMultDistNonCommon = new TH2F*[nHists];
+      }
   } else {
     fSameEventDistCommon = nullptr;
     fSameEventDistNonCommon = nullptr;
     fdEtadPhiSECommon = nullptr;
     fdEtadPhiSENonCommon = nullptr;
+    fSameEventMultDistCommon = nullptr;
+    fSameEventMultDistNonCommon = nullptr;
   }
 
   int Counter = 0;
@@ -686,6 +698,23 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                          SameEventNameNonCommon.Data(), *itNBins,
                                          *itKMin, *itKMax);
            fPairs[Counter]->Add(fSameEventDistNonCommon[Counter]);
+
+           if (fDoMultBinning) {
+            TString SameMultEventNameCommon = TString::Format("SEMultDistCommon_Particle%d_Particle%d",
+                                            iPar1, iPar2);
+            fSameEventMultDistCommon[Counter] = new TH2F(SameMultEventNameCommon.Data(),
+                                                  SameMultEventNameCommon.Data(),
+                                                  *itNBins, *itKMin, *itKMax,
+                                                  multbins, 1, multbins + 1);
+            fPairs[Counter]->Add(fSameEventMultDistCommon[Counter]);
+            TString SameMultEventNameNonCommon = TString::Format("SEMultDistNonCommon_Particle%d_Particle%d",
+                                            iPar1, iPar2);
+            fSameEventMultDistNonCommon[Counter] = new TH2F(SameMultEventNameNonCommon.Data(),
+                                                  SameMultEventNameNonCommon.Data(),
+                                                  *itNBins, *itKMin, *itKMax,
+                                                  multbins, 1, multbins + 1);
+            fPairs[Counter]->Add(fSameEventMultDistNonCommon[Counter]);
+           }
 
            if (fdPhidEtaPlots){
            TString SameEventdPhidEtaNameCommon = TString::Format(
@@ -1092,6 +1121,8 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fSameEventDistNonCommon = hists.fSameEventDistNonCommon;
     this->fdEtadPhiSECommon = hists.fdEtadPhiSECommon;
     this->fdEtadPhiSENonCommon = hists.fdEtadPhiSENonCommon;
+    this->fSameEventMultDistCommon = hists.fSameEventMultDistCommon;
+    this->fSameEventMultDistNonCommon = hists.fSameEventMultDistNonCommon;
     this->fDoMultBinning = hists.fDoMultBinning;
     this->fDoCentBinning = hists.fDoCentBinning;
     this->fDokTBinning = hists.fDokTBinning;
@@ -1185,6 +1216,14 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   if (fdEtadPhiSENonCommon) {
     delete[] fdEtadPhiSENonCommon;
     delete fdEtadPhiSENonCommon;
+  }
+  if (fSameEventMultDistCommon) {
+    delete[] fSameEventMultDistCommon;
+    delete fSameEventMultDistCommon;
+  }
+  if (fSameEventMultDistNonCommon) {
+    delete[] fSameEventMultDistNonCommon;
+    delete fSameEventMultDistNonCommon;
   }
 }
 

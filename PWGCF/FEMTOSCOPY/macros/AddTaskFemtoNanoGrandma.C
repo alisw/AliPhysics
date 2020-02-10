@@ -274,11 +274,6 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
-  //Common/Non Common Ancestors
-  if (isMC && DoAncestors){
-  config->SetAncestors(true);
-  config->GetDoAncestorsPlots();
-  }
   if (phiSpinning == 0) {
     config->SetMixingDepth(10);
     config->SetUseEventMixing(true);
@@ -370,6 +365,11 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
         << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
   }
 
+  //Common/Non Common Ancestors
+  if (isMC && DoAncestors){
+  config->SetAncestors(true);
+  config->GetDoAncestorsPlots();
+  }
 
   if (Systematic) {
     if (suffix == "1") {
