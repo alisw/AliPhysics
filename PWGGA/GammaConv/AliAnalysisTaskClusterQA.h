@@ -68,6 +68,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     void SetMinMaxNLMCut                    ( Int_t valmin, Int_t valmax  )               { fMinNLMCut            = valmin      ;
                                                                                             fMaxNLMCut            = valmax      ; }
     void SetSaveMCInformation               ( Bool_t val  )                               { fSaveMCInformation    = val         ; }
+    void SetEventwiseClusterOutput          ( Bool_t val )                                { fSaveEventsInVector   = val         ; }
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
     Int_t       FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
@@ -79,7 +80,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     //  Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
     // Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
   private:
-        
+
     AliAnalysisTaskClusterQA     ( const AliAnalysisTaskClusterQA& ); // Prevent copy-construction
     AliAnalysisTaskClusterQA &operator=( const AliAnalysisTaskClusterQA& ); // Prevent assignment
 
@@ -104,7 +105,8 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     void CountTracks                ();
     void SetLogBinningXTH2          ( TH2* histoRebin );
     void ResetBuffer();
-        
+    void ResetBufferVectors();
+
   protected:
     AliV0ReaderV1*              fV0Reader;                  //
     TString                     fV0ReaderName;
@@ -127,7 +129,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     TList*                      fOutputList;                //
     Int_t                       fIsMC;                      //
     Bool_t                      fCorrectForNonlinearity;                      //
-    
+
     // Save flags
     Bool_t          fSaveEventProperties;                 ///< save general event properties (centrality etc.)
     Bool_t          fSaveCells;                           ///< save arrays of cluster cells
@@ -138,11 +140,12 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t          fMinClusterEnergy;                        ///< save arrays of all cells in event
     Bool_t          fSaveMCInformation;                   ///< save MC information
     Bool_t          fSaveAdditionalHistos;                   ///< save MC information
+    Bool_t          fSaveEventsInVector;                    ///< save cluster information in event vectors information
 
     // Option flags
     std::vector<Float_t> fExtractionPercentages;          ///< Percentages which will be extracted for a given pT bin
     std::vector<Float_t> fExtractionPercentagePtBins;     ///< pT-bins associated with fExtractionPercentages
-    
+
     // Buffers that will be added to the tree
     Float_t         fBuffer_EventWeight;                     //!<! array buffer
     Float_t         fBuffer_ClusterE;                     //!<! array buffer
@@ -160,9 +163,9 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_ClusterM02;              //!<! array buffer
     Float_t         fBuffer_ClusterM20;              //!<! array buffer
 
-    // Float_t         fBuffer_Event_Vertex_X;               //!<! array buffer
-    // Float_t         fBuffer_Event_Vertex_Y;               //!<! array buffer
-    // Float_t         fBuffer_Event_Vertex_Z;               //!<! array buffer
+    Float_t         fBuffer_Event_Vertex_X;               //!<! array buffer
+    Float_t         fBuffer_Event_Vertex_Y;               //!<! array buffer
+    Float_t         fBuffer_Event_Vertex_Z;               //!<! array buffer
     Float_t         fBuffer_Event_Multiplicity;             //!<! array buffer
     Int_t           fBuffer_Event_NumActiveCells;          //!<! array buffer
 
@@ -186,7 +189,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t*        fBuffer_Surrounding_Tracks_nSigdEdxE;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_RelativeEta;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_RelativePhi;              //!<! array buffer
-    
+
     Int_t           fBuffer_Cluster_MC_Label;              //!<! array buffer
     Int_t           fBuffer_Mother_MC_Label;              //!<! array buffer
     Float_t         fBuffer_Cluster_MC_EFracFirstLabel;              //!<! array buffer
@@ -194,12 +197,21 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_Cluster_MC_LeadingPi0_Pt;              //!<! array buffer
     Float_t         fBuffer_Cluster_MC_LeadingPi0_E;              //!<! array buffer
 
-    
-    ClassDef(AliAnalysisTaskClusterQA, 14);
+
+
+    // vector buffers for storing eventwise information
+
+    std::vector<Float_t>    fVBuffer_Cluster_E;                         //!<! vector buffer
+    std::vector<Float_t>    fVBuffer_Cluster_Eta;                         //!<! vector buffer
+    std::vector<Float_t>    fVBuffer_Cluster_Phi;                         //!<! vector buffer
+    std::vector<Bool_t>     fVBuffer_Cluster_isEMCal;                        //!<! vector buffer
+    std::vector<Int_t>      fVTrueNeutralPionDaughterIndex;                    //!<! vector buffer   store the MC stack ID of mother pi0 for true information
+
+
+    ClassDef(AliAnalysisTaskClusterQA, 15);
 };
 
 const Int_t kMaxActiveCells = 18000;
 const Int_t kMaxNTracks = 4000;
 
 #endif
-
