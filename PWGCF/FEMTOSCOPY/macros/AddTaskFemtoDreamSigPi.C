@@ -278,7 +278,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSigPi(
   } else if (CentEst == "kHM") {
   addon += "HM";
   }
-  TString QAName = Form("%sResults%s", addon.Data(), suffix.Data());
+  TString QAName = Form("%sResultsSigPi%s", addon.Data(), suffix.Data());
   coutputQA = mgr->CreateContainer(
     QAName.Data(),
     TList::Class(),
