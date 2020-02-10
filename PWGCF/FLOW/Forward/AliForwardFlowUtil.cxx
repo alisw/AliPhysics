@@ -59,7 +59,8 @@ Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
     if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
     if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
 
-    Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246089, 246153, 246185, 246225, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+    //Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246089, 246153, 246185, 246225, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+    Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
     for (Int_t i = 0; i < 17; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
     }
@@ -92,10 +93,10 @@ Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
 Int_t AliForwardFlowUtil::GetNUARunNumber(Int_t runnumber){
   // HIR
   Double_t HIR_goodruns1[] = {245683,  245705,  245833,  245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
-  Double_t HIR_goodruns2[] = {246089, 246153, 246185, 246225};
+  //Double_t HIR_goodruns2[] = {246089, 246153, 246185, 246225};
 
   for (Int_t i = 0; i < 13; i++) if (runnumber == HIR_goodruns1[i]) return 0;
-  for (Int_t i = 0; i < 4; i++)  if (runnumber == HIR_goodruns2[i]) return 1;
+  //for (Int_t i = 0; i < 4; i++)  if (runnumber == HIR_goodruns2[i]) return 1;
 
   // lowIR
   if (runnumber >= 244918 && runnumber <= 245068) return 0;
@@ -920,7 +921,7 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
     if (track->TestFilterBit(tracktype) && track->GetTPCNcls() > fSettings.fnoClusters){
       Double_t weight = 1;
 
-      if (track->Pt() < this->minpt || track->Pt() > this->maxpt) weight = 0;
+      if (track->Pt() < this->minpt || track->Pt() > this->maxpt) continue;
 
       if( fSettings.fCutChargedDCAzMax > 0. || fSettings.fCutChargedDCAxyMax > 0.){
 
@@ -934,12 +935,12 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
 
         for(Short_t i(0); i < 3; i++) { dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i]; }
 
-        if(weight > 0. && (fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax)) weight = 0;
-        if(weight > 0. && (fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax)) weight = 0.;
+        if((fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax)) continue;
+        if((fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax)) continue;
         
       }
 
-      if (fSettings.doNUE & weight > 0){
+      if (fSettings.doNUE){
           Int_t nueeta = fSettings.nuehist->GetXaxis()->FindBin(track->Eta());
           Double_t vtz = 0;
 
