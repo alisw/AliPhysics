@@ -2238,6 +2238,15 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	inputVars[8] = nSigmaTPCpi;
 	inputVars[9] = nSigmaTPCka;
       }
+      else if (fNVars == 7) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = cts;
+	inputVars[6] = signd0;
+      }
 
       for (Int_t i = 0; i < fNVars; i++) {
 	fVarsTMVA[i] = inputVars[i];
