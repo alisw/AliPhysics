@@ -1277,53 +1277,35 @@ std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
 {
   std::stringstream tempSS;
   tempSS << std::boolalpha;
-  /*tempSS << "Particle collections:\n";
-  TIter nextParticleCont(&fParticleCollArray);
-  AliParticleContainer * particleCont;
-  while ((particleCont = static_cast<AliParticleContainer *>(nextParticleCont()))) {
-    tempSS << "\t" << particleCont->GetName() << ": " << particleCont->GetArrayName() << "\n";
+  tempSS << "Dynmical grooming analysis task:\n";
+  tempSS << "Jet properties:\n";
+  tempSS << "\tShared momentum fraction: " << fMinFractionShared << "\n";
+  tempSS << "\tJet shape type: " << GetKeyFromMapValue(fJetShapeType, fgkJetShapeTypeMap) << "\n";
+  tempSS << "\tJet shape sub: " << GetKeyFromMapValue(fJetShapeSub, fgkJetShapeSubMap) << "\n";
+  tempSS << "\tJet selection: " << GetKeyFromMapValue(fJetSelection, fgkJetSelectionMap) << "\n";
+  tempSS << "\tPt threshold: " << fPtThreshold << " GeV/c\n";
+  tempSS << "\tMax matching distance: " << fRMatching << "\n";
+  tempSS << "General:\n";
+  tempSS << "\tCentrality selection: ";
+  if (fCentSelectOn) {
+    tempSS << "(" << fCentMin << ", " << fCentMax << ")\n";
   }
-  tempSS << "Cluster collections:\n";
-  TIter nextClusterCont(&fClusterCollArray);
-  AliClusterContainer * clusterCont;
-  while ((clusterCont = static_cast<AliClusterContainer *>(nextClusterCont()))) {
-    tempSS << "\t" << clusterCont->GetName() << ": " << clusterCont->GetArrayName() << "\n";
+  else {
+    tempSS << "disabled.\n";
   }
-  tempSS << "Jet collections:\n";
-  TIter nextJetCont(&fJetCollArray);
-  AliJetContainer * jetCont;
-  while ((jetCont = static_cast<AliJetContainer *>(nextJetCont()))) {
-    tempSS << "\t" << jetCont->GetName() << ": " << jetCont->GetArrayName() << "\n";
-  }
-  // AliEventCuts
-  tempSS << "AliEventCuts\n";
-  tempSS << "\tEnabled: " << !fUseBuiltinEventSelection << "\n";
-  // Efficiency
-  tempSS << "Efficiency\n";
-  tempSS << "\tSingle track efficiency identifier: " << fEfficiencyPeriodIdentifier << "\n";
-  // QA
-  tempSS << "QA Hists:\n";
-  tempSS << "\tEnabled: " << fCreateQAHists << "\n";
-  tempSS << "\tCreate cell QA hists: " << fCreateCellQAHists << "\n";
-  // Use whether the pointer as null as a proxy. It's not ideal because it's not fully initialized
-  // until after UserCreateOutputObjects(). But it's good enough for these purposes.
-  tempSS << "\tCalculate event plane resolution (proxy of whether it's enabled - it may not be accurate): " <<
-  (fFlowQnVectorManager != nullptr) << "\n";
-  // Jet matching
-  tempSS << "Jet matching:\n";
-  tempSS << "\tEnabled: " << fPerformJetMatching << "\n";
-  tempSS << "\tMax matching distance: " << fMaxJetMatchingDistance << "\n";
-  // Response matrix
-  tempSS << "Response matrix:\n";
-  tempSS << "\tEnabled: " << fCreateResponseMatrix << "\n";
-  tempSS << "\tConstruct response from 3 jet collections: " << fResponseFromThreeJetCollections << "\n";
-  tempSS << "\tMin fraction shared pt: " << fMinFractionShared << "\n";
-  tempSS << "\tJet leading hadron bias type: " << fLeadingHadronBiasType << "\n";
-  tempSS << "\tResponse matrix fill map: \n";
-  for (auto el : fResponseMatrixFillMap) {
-    tempSS << "\t\tProperty " << el.first << " applied to jet " << el.second.first << "\n";
-  }*/
-
+  tempSS << "\tCheck subjet resolution: " << fCheckResolution << "\n";
+  tempSS << "\tSubjet cutoff: " << fSubjetCutoff << "\n";
+  tempSS << "\tConstituent pt cutoff: " << fMinPtConst << " GeV/c\n";
+  tempSS << "\tHard cutoff: " << fHardCutoff << "\n";
+  tempSS << "\tConsider two track effects: " << fDoTwoTrack << "\n";
+  tempSS << "\tCut double counting: " << fCutDoubleCounts << "\n";
+  tempSS << "Two track effects settings:\n";
+  tempSS << "\tPhi cut value: " << fPhiCutValue << "\n";
+  tempSS << "\tEta cut value: " << fEtaCutValue << "\n";
+  tempSS << "\tMagnetic field polarity: " << fMagFieldPolarity << "\n";
+  tempSS << "Miscellaneous:\n";
+  tempSS << "\tDerivative subtracter order: " << fDerivSubtrOrder << "\n";
+  tempSS << "\tStore detector level jets: " << fStoreDetLevelJets << "\n";
   return tempSS.str();
 }
 

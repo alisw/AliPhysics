@@ -191,6 +191,9 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   void RetrieveAndSetTaskPropertiesFromYAMLConfig();
   void SetupTree();
 
+  template<typename T>
+  std::string GetKeyFromMapValue(const T & value, const std::map<std::string, T> & valuesMap) const;
+
   /**
    * Calculate the dynamical grooming measure of the hardness.
    *
@@ -259,6 +262,21 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   ClassDef(AliAnalysisTaskJetDynamicalGrooming, 2)  // Jet dynamical grooming
   /// \endcond
 };
+
+template<typename T>
+std::string AliAnalysisTaskJetDynamicalGrooming::GetKeyFromMapValue(const T & value, const std::map<std::string, T> & valuesMap) const
+{
+  auto findResult = std::find_if(std::begin(valuesMap), std::end(valuesMap), [&](const std::pair<std::string, T> &pair)
+  {
+    return pair.second == value;
+  });
+  std::string returnValue = "Invalid value: " + std::to_string(static_cast<int>(value));
+  if (findResult != std::end(valuesMap))
+  {
+    returnValue = findResult->first;
+  }
+  return returnValue;
+}
 
 } /* namespace EMCALJetTasks */
 } /* namespace PWGJE */
