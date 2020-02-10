@@ -2635,7 +2635,8 @@ Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodPrimaryTrack(const AliAODTrack *t
   if (TMath::Abs(t->Eta())>fTrackEta) return kFALSE;
 
   //768-hybrid tracks
-  if (!t->TestFilterBit(fFilterBit)) return kFALSE; 
+ // if (!t->TestFilterBit(fFilterBit)) return kFALSE; 
+  if (!t->TestFilterBit(1)) return kFALSE; 
   /*
   // Minimum number of clusters
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1);
