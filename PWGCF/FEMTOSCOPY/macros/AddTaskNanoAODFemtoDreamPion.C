@@ -25,7 +25,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   evtCuts->CleanUpMult(false,false,false,true);
   evtCuts->SetZVtxPosition(-10., 10.);
   // Only use those events where more than two primary tracks with |eta|<0.8 and pT>0.5 GeV/c see AN
-  if (suffix == "5") {
+  if (suffix == "5" || suffix == "6") {
     evtCuts->SetSphericityCuts(0., 1.0);
   } else {
         evtCuts->SetSphericityCuts(fSpherDown, 1.0);
@@ -97,6 +97,11 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
     fTrackCutsPosPion->SetFillQALater(true);
   }
 
+
+  //Check proton-pi(-)
+  AliFemtoDreamTrackCuts* fTrackCutsProton = 
+	AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, false, true, false);
+
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
   //std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -106,6 +111,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   std::vector<int> PDGParticles;
   PDGParticles.push_back(211); // pi+
   PDGParticles.push_back(-211); // pi-
+  PDGParticles.push_back(2212); // p
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -137,8 +143,14 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   NBins.push_back(750);
   NBins.push_back(750);
   NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
   std::vector<float> kMin;
   //minimum k* value
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
@@ -147,11 +159,17 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
   //pair rejection
   std::vector<bool> closeRejection;
   closeRejection.push_back(true); // pi+ pi+
   closeRejection.push_back(false); // pi+ pi- 
   closeRejection.push_back(true); // pi- pi-
+  closeRejection.push_back(true); // pi+ p
+  closeRejection.push_back(false); // pi- p 
+  closeRejection.push_back(true); // p p
 
   if (suffix == "5") {
     //Deactivate the ClosePairRejection
@@ -160,6 +178,9 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
     closeRejection.push_back(false); // pi+ pi+
     closeRejection.push_back(false); // pi+ pi-
     closeRejection.push_back(false); // pi- pi-
+    closeRejection.push_back(false); // pi+ p
+    closeRejection.push_back(false); // pi- p
+    closeRejection.push_back(false); // p p
   }
 
   //QA plots for tracks
@@ -167,6 +188,9 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   pairQA.push_back(11); // pi+ pi+
   pairQA.push_back(11); // pi+ pi-
   pairQA.push_back(11); // pi- pi-
+  pairQA.push_back(11); // pi+ p
+  pairQA.push_back(11); // pi- p
+  pairQA.push_back(11); // p p
 
   //To put all this into the task we add it to our collection config object in
   //the following way:
@@ -230,6 +254,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   task->SetEventCuts(evtCuts);
   task->SetTrackCutsPosPion(fTrackCutsPosPion);
   task->SetTrackCutsNegPion(fTrackCutsNegPion);
+  task->SetTrackCutsProton(fTrackCutsProton);
   task->SetCollectionConfig(config);
 
   mgr->AddTask(task);
