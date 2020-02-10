@@ -30,7 +30,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   AliFemtoDreamTrackCuts *TrackCutsDeuteronMass =  AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsDeuteronMass->SetCutCharge(1);
-  TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
+  TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.,3.,false,3.,true);
   //anti deuterons
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
@@ -38,7 +38,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronMass =  AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiDeuteronMass->SetCutCharge(-1);
-  TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
+  TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.,3.,false,3.,true);
 //proton
   AliFemtoDreamTrackCuts *TrackCutsProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, CombSigma, ContributionSplitting);

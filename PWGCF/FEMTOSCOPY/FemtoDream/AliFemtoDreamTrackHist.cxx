@@ -95,7 +95,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
 
   fHistList->Add(fConfig);
 
-  fCutCounter = new TH1F("CutCounter", "Cut Counter", 30, 0, 30);
+  fCutCounter = new TH1F("CutCounter", "Cut Counter", 35, 0, 35);
   fCutCounter->GetXaxis()->SetBinLabel(1, "Input");
   fCutCounter->GetXaxis()->SetBinLabel(2, "Filter Bit");
   fCutCounter->GetXaxis()->SetBinLabel(3, "p_{T} Cut");
@@ -120,11 +120,12 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
   fCutCounter->GetXaxis()->SetBinLabel(22, "ITS PID");
   fCutCounter->GetXaxis()->SetBinLabel(23, "TPC PID");
   fCutCounter->GetXaxis()->SetBinLabel(24, "TPC TOF PID");
-  fCutCounter->GetXaxis()->SetBinLabel(25, "Reject Pions");
-  fCutCounter->GetXaxis()->SetBinLabel(26, "Smallest Sig");
-  fCutCounter->GetXaxis()->SetBinLabel(27, "Passes PID");
-  fCutCounter->GetXaxis()->SetBinLabel(28, "DCA_{Z}");
-  fCutCounter->GetXaxis()->SetBinLabel(29, "DCA_{XY}");
+  fCutCounter->GetXaxis()->SetBinLabel(25, "ITS TPC PID");
+  fCutCounter->GetXaxis()->SetBinLabel(26, "Reject Pions");
+  fCutCounter->GetXaxis()->SetBinLabel(27, "Smallest Sig");
+  fCutCounter->GetXaxis()->SetBinLabel(28, "Passes PID");
+  fCutCounter->GetXaxis()->SetBinLabel(29, "DCA_{Z}");
+  fCutCounter->GetXaxis()->SetBinLabel(30, "DCA_{XY}");
   fCutCounter->GetYaxis()->SetTitle("Entries");
 
   fHistList->Add(fCutCounter);
