@@ -22,14 +22,15 @@ void AddTask_ClusterQA(
   Float_t   minTrackMomentum              = 0.3,
   Bool_t    doSaveClusterCells            = 1,
   Bool_t    doSaveEventProp               = 1,
+  Bool_t    doSaveEventwiseClusters       = 0,
   Bool_t    enableTriggerOverlapRej       = kTRUE,
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Bool_t    makeAdditionalHistos          = kFALSE
   ){
-  
 
 
-  
+
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -127,7 +128,7 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   //   mgr->AddTask(fTrackMatcherDMC);
   //   mgr->ConnectInput(fTrackMatcherDMC,0,cinput);
   // }
-  
+
   AliCaloPhotonCuts *analysisClusterCutsEMC = new AliCaloPhotonCuts();
   analysisClusterCutsEMC->SetV0ReaderName(V0ReaderName);
   analysisClusterCutsEMC->SetCorrectionTaskSetting(corrTaskSetting);
@@ -135,7 +136,7 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   analysisClusterCutsEMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
   analysisClusterCutsEMC->InitializeCutsFromCutString(TaskClusterCutnumber.Data());
   analysisClusterCutsEMC->SetFillCutHistograms("");
-  
+
   // AliCaloPhotonCuts *analysisClusterCutsDMC = new AliCaloPhotonCuts();
   // analysisClusterCutsDMC->SetV0ReaderName(V0ReaderName);
   // //analysisClusterCutsDMC->SetCorrectionTaskSetting(corrTaskSetting);
@@ -171,6 +172,7 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   fQA->SetSaveEventProperties(doSaveEventProp);
   fQA->SetV0ReaderName(V0ReaderName);
   fQA->SetDoAdditionalHistos(makeAdditionalHistos);
+  fQA->SetEventwiseClusterOutput(doSaveEventProp);
   mgr->AddTask(fQA);
 
   mgr->ConnectInput  (fQA, 0,  cinput );
