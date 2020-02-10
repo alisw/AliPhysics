@@ -106,6 +106,7 @@ AliAnalysisTaskSE(),
   fIsRejectSDDClusters(0),
   fFillGlobal(kFALSE),
   fMultEv(0.),
+  fMultEvOrig(0.),
   fMultEvV0M(0.),
   fMultEvV0MEqual(0.),
   fCentEvV0M(0.),
@@ -126,7 +127,9 @@ AliAnalysisTaskSE(),
   fMinDPt(2.),
   fV0CentMin(0.),
   fV0CentMax(0.),
-  fV2Analysis(kFALSE),
+  fTrkMultMin(0.),  
+  fTrkMultMax(0.),  
+  fVsMultAnalysis(kFALSE),
   fFillTrees(kNoTrees),
   fFractAccME(100),
   fAODProtection(1),
@@ -134,6 +137,8 @@ AliAnalysisTaskSE(),
   fUseNtrklWeight(kFALSE),
   fHistNtrklWeight(0x0),
   fWeight(1.),
+  fEqualizeTracklets(kFALSE),
+  fRefMult(0.),
   fBranchD(),
   fBranchTr(),
   fBranchDCutVars(),
@@ -143,7 +148,7 @@ AliAnalysisTaskSE(),
   fTrackArrayFilled(kFALSE)     
 {
   // Default constructor
-
+  for(Int_t i=0; i<32; i++) fTrackletProfiles[i]=0;
 }
 
 //________________________________________________________________________
@@ -187,6 +192,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fIsRejectSDDClusters(0),
   fFillGlobal(kFALSE),
   fMultEv(0.),
+  fMultEvOrig(0.),
   fMultEvV0M(0.),
   fMultEvV0MEqual(0.),
   fCentEvV0M(0.),
@@ -207,7 +213,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fMinDPt(2.),
   fV0CentMin(0.),
   fV0CentMax(0.),
-  fV2Analysis(kFALSE),
+  fTrkMultMin(0.),  
+  fTrkMultMax(0.),  
+  fVsMultAnalysis(kFALSE),
   fFillTrees(kNoTrees),
   fFractAccME(100),
   fAODProtection(1),
@@ -215,6 +223,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fUseNtrklWeight(kFALSE),
   fHistNtrklWeight(0x0),
   fWeight(1.),
+  fEqualizeTracklets(kFALSE),
+  fRefMult(0.),
   fBranchD(),
   fBranchTr(),
   fBranchDCutVars(),
@@ -228,6 +238,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fNPtBins=cutsD0->GetNPtBins();
     
   fCutsD0=cutsD0;
+
+  for(Int_t i=0; i<32; i++) fTrackletProfiles[i]=0;
 
   // Output slot #1 writes into a TList container (mass with cuts)
   DefineOutput(1,TList::Class());  //My private output
@@ -290,6 +302,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fIsRejectSDDClusters(source.fIsRejectSDDClusters),
   fFillGlobal(source.fFillGlobal),
   fMultEv(source.fMultEv),
+  fMultEvOrig(source.fMultEvOrig),
   fMultEvV0M(source.fMultEvV0M),
   fMultEvV0MEqual(source.fMultEvV0MEqual),
   fCentEvV0M(source.fCentEvV0M),
@@ -310,7 +323,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fMinDPt(source.fMinDPt),
   fV0CentMin(source.fV0CentMin),
   fV0CentMax(source.fV0CentMax),
-  fV2Analysis(source.fV2Analysis),
+  fTrkMultMin(source.fTrkMultMin),
+  fTrkMultMax(source.fTrkMultMax),
+  fVsMultAnalysis(source.fVsMultAnalysis),
   fFillTrees(source.fFillTrees),
   fFractAccME(source.fFractAccME),
   fAODProtection(source.fAODProtection),
@@ -318,6 +333,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fUseNtrklWeight(source.fUseNtrklWeight),
   fHistNtrklWeight(source.fHistNtrklWeight),
   fWeight(source.fWeight),
+  fEqualizeTracklets(source.fEqualizeTracklets),
+  fRefMult(source.fRefMult),
   fBranchD(source.fBranchD),
   fBranchTr(source.fBranchTr),
   fBranchDCutVars(source.fBranchDCutVars), 
@@ -327,6 +344,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fTrackArrayFilled(source.fTrackArrayFilled)   
 {
   // Copy constructor
+  for(Int_t i=0; i<32; i++) fTrackletProfiles[i]=source.fTrackletProfiles[i];
 }
 
 //________________________________________________________________________
@@ -367,6 +385,9 @@ AliAnalysisTaskSED0Correlations::~AliAnalysisTaskSED0Correlations()
   if (fCounter){
     delete fCounter;
     fCounter=0;
+  }
+  for(Int_t i=0; i<32; i++) {
+    if (fTrackletProfiles[i]) delete fTrackletProfiles[i];
   }
 }  
 
@@ -415,6 +436,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fIsRejectSDDClusters = orig.fIsRejectSDDClusters;
   fFillGlobal = orig.fFillGlobal;
   fMultEv = orig.fMultEv;
+  fMultEvOrig = orig.fMultEvOrig;
   fMultEvV0M = orig.fMultEvV0M;
   fMultEvV0MEqual = orig.fMultEvV0MEqual;
   fCentEvV0M = orig.fCentEvV0M;
@@ -435,7 +457,9 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fMinDPt = orig.fMinDPt;
   fV0CentMin = orig.fV0CentMin;
   fV0CentMax = orig.fV0CentMax;
-  fV2Analysis = orig.fV2Analysis;
+  fTrkMultMin = orig.fTrkMultMin;
+  fTrkMultMax = orig.fTrkMultMax;
+  fVsMultAnalysis = orig.fVsMultAnalysis;
   fFillTrees = orig.fFillTrees;
   fFractAccME = orig.fFractAccME; 
   fAODProtection = orig.fAODProtection;
@@ -443,6 +467,8 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fUseNtrklWeight = orig.fUseNtrklWeight;
   fHistNtrklWeight = orig.fHistNtrklWeight;
   fWeight = orig.fWeight;
+  fEqualizeTracklets = orig.fEqualizeTracklets;
+  fRefMult = orig.fRefMult;
   fBranchD = orig.fBranchD;
   fBranchTr = orig.fBranchTr;
   fBranchDCutVars = orig.fBranchDCutVars;
@@ -451,6 +477,10 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fTrackArray = orig.fTrackArray;      
   fTrackArrayFilled = orig.fTrackArrayFilled;
   
+  for(Int_t i=0; i<32; i++) {
+    fTrackletProfiles[i] = orig.fTrackletProfiles[i];
+  }
+
   return *this; //returns pointer of the class
 }
 
@@ -461,6 +491,8 @@ void AliAnalysisTaskSED0Correlations::Init()
 
   if(fDebug > 1) printf("AliAnalysisTaskSED0Correlations::Init() \n");
   
+  if(fUseNtrklWeight && !fReadMC){ AliFatal("Nch weights can only be used in MC mode"); return; }
+
   //Copy of cuts objects
   AliRDHFCutsD0toKpi* copyfCutsD0 = new AliRDHFCutsD0toKpi(*fCutsD0);
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
@@ -746,6 +778,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   TClonesArray *inputArray=0;
 
   fMultEv = 0.; //reset event multiplicity
+  fMultEvOrig = 0.; //reset event multiplicity
   fMultEvV0M = 0.;
   fCentEvV0M = 0.;
   fzVtx = 0.; //reset event multiplicity
@@ -886,7 +919,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
 
   //Fill Event Multiplicity/Centrality
-  if(fV2Analysis) { //for v2 analysis (V0M estimator)
+  if(fVsMultAnalysis) { //for v2 analysis (V0M estimator)
     AliMultSelection *multSel = (AliMultSelection*)aod->FindListObject("MultSelection");
     if(!multSel) AliWarning("AliMultSelection object not found!");
     else fCentEvV0M = multSel->GetMultiplicityPercentile("V0M"); //this is the line for the V0M centrality as from DPG!!
@@ -901,33 +934,56 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       fMultEvV0M = vzeroMultA + vzeroMultC;
       fMultEvV0MEqual = vzeroMultAEq + vzeroMultCEq;
     }
-    fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //still the uncorrected value of tracklets
+    fMultEvOrig = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //still the uncorrected value of tracklets
   } else { //std behaviour
-    if(fSys==0) fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //pp (or pPb)
-    else fMultEv = fCutsD0->GetCentrality(aod); //PbPb
+    if(fSys==0) fMultEvOrig = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //pp (or pPb)
+    else fMultEvOrig = fCutsD0->GetCentrality(aod); //PbPb
   }
+
+  //tracklet equalisation, if requested
+  if(fEqualizeTracklets) {
+    TProfile* estimatorAvg = GetEstimatorHistogram(aod);
+    if(!estimatorAvg) {
+      printf("Exiting due to issues in tracklet mult correction\n");
+      return;
+    }
+    fMultEv = AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,fMultEvOrig,vtx1->GetZ(),fRefMult);
+    if(fDebug > 1) printf("Original tracklet multiplicity is %.2f --> corrected to %.2f\n",fMultEvOrig,fMultEv);
+  } else { //don't equalize tracklets
+    fMultEv = fMultEvOrig;
+  }
+  if (fSys!=0) fMultEv = fMultEvOrig; //this variable is the centrality, for PbPb!
 
   //Fill control plots for event centrality and zVtx
   if(fCutsD0->GetUseCentrality()) ((TH1F*)fOutputStudy->FindObject("hCentralEvts"))->Fill(fCutsD0->GetCentrality(aod));
   ((TH1F*)fOutputStudy->FindObject("hCentEvV0M"))->Fill(fCentEvV0M);
   ((TH1F*)fOutputStudy->FindObject("hMultEvV0M"))->Fill(fMultEvV0M);
   ((TH1F*)fOutputStudy->FindObject("hMultEvV0MEqual"))->Fill(fMultEvV0MEqual);
-  ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1"))->Fill(fMultEv);
+  ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1"))->Fill(fMultEvOrig);
+  ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1Equal"))->Fill(fMultEv);
   ((TH1F*)fOutputStudy->FindObject("hZvtxEvts"))->Fill(vtx1->GetZ());
+  ((TH2F*)fOutputStudy->FindObject("hNtrVsZvtx"))->Fill(vtx1->GetZ(),fMultEvOrig);   
+  if(fEqualizeTracklets) ((TH2F*)fOutputStudy->FindObject("hNtrCorrVsZvtx"))->Fill(vtx1->GetZ(),fMultEv); 
   
   //Select Centrality range for V2 in pp analysis
-  if(fV2Analysis && (fV0CentMin!=0 || fV0CentMax!=0)) {
-    if(fCentEvV0M < fV0CentMin || fCentEvV0M > fV0CentMax) { //rejected by centrality out of range
+  if(fVsMultAnalysis) {
+    if((fV0CentMin!=0 || fV0CentMax!=0) && (fCentEvV0M < fV0CentMin || fCentEvV0M >= fV0CentMax)) { //rejected by V0M centrality out of range
     	fNentries->Fill(6); 
     	return;
+    } else if((fTrkMultMin!=0 || fTrkMultMax!=0) && (fMultEv < fTrkMultMin || fMultEv >= fTrkMultMax)) { //rejected by SPD tracklet centrality out of range
+      fNentries->Fill(6); 
+      return;
     } else { //accepted events. Fill histograms and continue running
       ((TH1F*)fOutputStudy->FindObject("hCentEvV0MSelEvents"))->Fill(fCentEvV0M);
       ((TH1F*)fOutputStudy->FindObject("hMultEvV0MSelEvents"))->Fill(fMultEvV0M);
       ((TH1F*)fOutputStudy->FindObject("hMultEvV0MEqualSelEvents"))->Fill(fMultEvV0MEqual);
-      ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1SelEvents"))->Fill(fMultEv);    
+      ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1SelEvents"))->Fill(fMultEvOrig);
+      ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1EqualSelEvents"))->Fill(fMultEv);    
+      ((TH2F*)fOutputStudy->FindObject("hNtrVsZvtxSelEvents"))->Fill(vtx1->GetZ(),fMultEvOrig);   
+      if(fEqualizeTracklets) ((TH2F*)fOutputStudy->FindObject("hNtrCorrVsZvtxSelEvents"))->Fill(vtx1->GetZ(),fMultEv);   
     }
   }
-  
+ 
   //HFCorrelators initialization (for this event)
   fCorrelatorTr->SetAODEvent(aod); // set the AOD event from which you are processing
   fCorrelatorKc->SetAODEvent(aod);
@@ -1934,7 +1990,21 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   hMultEvTrkl1->SetMinimum(0);
   fOutputStudy->Add(hMultEvTrkl1);        
 
-  if(fV2Analysis && (fV0CentMin!=0 || fV0CentMax!=0)) {
+  if(fEqualizeTracklets) {
+    TH1F *hMultEvTrkl1Equal = new TH1F("hMultEvTrkl1Equal","Multiplicity of events (v2 pp analysis) in Tracklets <1, EQUALIZED; SPD tracklets in |eta|<1; # Events",200,0,200);
+    hMultEvTrkl1Equal->SetMinimum(0);
+    fOutputStudy->Add(hMultEvTrkl1Equal);  
+
+    TH2F *hNtrVsZvtx = new TH2F("hNtrVsZvtx","Ntracklets vs VtxZ; VtxZ;N_{trkl};",300,-15,15,150,-0.5,149.5); //
+    hNtrVsZvtx->SetMinimum(0);
+    fOutputStudy->Add(hNtrVsZvtx);       
+
+    TH2F *hNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntracklets (corrected) vs VtxZ; VtxZ;N_{trkl};",300,-15,15,150,-0.5,149.5); //
+    hNtrCorrVsZvtx->SetMinimum(0);
+    fOutputStudy->Add(hNtrCorrVsZvtx); 
+  }
+
+  if(fVsMultAnalysis) {
     TH1F *hCentEvV0MSelEvents = new TH1F("hCentEvV0MSelEvents","Centrality of events (for selected events, v2 pp analysis) in V0M percentiles; V0M perc.; # Events",10002,-0.01,100.01);
     hCentEvV0MSelEvents->SetMinimum(0);
     fOutputStudy->Add(hCentEvV0MSelEvents);  
@@ -1950,6 +2020,20 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     TH1F *hMultEvTrkl1SelEvents = new TH1F("hMultEvTrkl1SelEvents","Multiplicity of events (for selected events, v2 pp analysis) in Tracklets <1; SPD tracklets in |eta|<1; # Events",200,0,200);
     hMultEvTrkl1SelEvents->SetMinimum(0);
     fOutputStudy->Add(hMultEvTrkl1SelEvents);       
+
+    if(fEqualizeTracklets) {
+      TH1F *hMultEvTrkl1EqualSelEvents = new TH1F("hMultEvTrkl1EqualSelEvents","Multiplicity of events (for selected events, v2 pp analysis) in Tracklets <1, EQUALIZED; SPD tracklets in |eta|<1; # Events",200,0,200);
+      hMultEvTrkl1EqualSelEvents->SetMinimum(0);
+      fOutputStudy->Add(hMultEvTrkl1EqualSelEvents);       
+
+      TH2F *hNtrVsZvtxSelEvents = new TH2F("hNtrVsZvtxSelEvents","Ntracklets vs VtxZ; VtxZ;N_{trkl};",300,-15,15,150,-0.5,149.5); //
+      hNtrVsZvtxSelEvents->SetMinimum(0);
+      fOutputStudy->Add(hNtrVsZvtxSelEvents);       
+
+      TH2F *hNtrCorrVsZvtxSelEvents = new TH2F("hNtrCorrVsZvtxSelEvents","Ntracklets (corrected) vs VtxZ; VtxZ;N_{trkl};",300,-15,15,150,-0.5,149.5); //
+      hNtrCorrVsZvtxSelEvents->SetMinimum(0);
+      fOutputStudy->Add(hNtrCorrVsZvtxSelEvents);       
+    }
   }
 
   TH1F *hZeroEff = new TH1F("hZeroEff","Efficiency debug plot (0-eff cases); # Events",4,0.,4.);
@@ -3169,6 +3253,60 @@ Bool_t AliAnalysisTaskSED0Correlations::IsSoftPion_MCKine(AliAODMCParticle* d, A
   return isSoftPi;
 }
 
+//____________________________________________________________________________
+TProfile* AliAnalysisTaskSED0Correlations::GetEstimatorHistogram(const AliVEvent* event){
+  /// Get Estimator Histogram from period event->GetRunNumber();
+  ///
+  /// If you select SPD tracklets in |eta|<1 you should use type == 1
+  ///
+    
+  Int_t runNo  = event->GetRunNumber();
+  Int_t period = -1;
+  
+  //2016
+    if(runNo>=252235 && runNo<=252375)period = 0;//16d
+    if(runNo>=252603 && runNo<=253591)period = 1;//16e
+    if(runNo>=254124 && runNo<=254332)period = 2;//16g
+    if(runNo>=254378 && runNo<=255469)period = 3;//16h
+    if(runNo>=256146 && runNo<=256420)period = 4;//16j
+    if(runNo>=256504 && runNo<=258537)period = 5;//16k
+    if(runNo>=258883 && runNo<=260187)period = 6;//16l
+    if(runNo>=262395 && runNo<=264035)period = 7;//16o
+    if(runNo>=264076 && runNo<=264347)period = 8;//16p
+  //2017
+    if(runNo>=270531 && runNo<=270667)period = 9;//17c
+    if(runNo>=270822 && runNo<=270830)period = 10;//17e
+    if(runNo>=270854 && runNo<=270865)period = 11;//17f
+    if(runNo>=271868 && runNo<=273103)period = 12;//17h
+    if(runNo>=273591 && runNo<=274442)period = 13;//17i
+    if(runNo>=274593 && runNo<=274671)period = 14;//17j 
+    if(runNo>=274690 && runNo<=276508)period = 15;//17k
+    if(runNo>=276551 && runNo<=278216)period = 16;//17l
+    if(runNo>=278914 && runNo<=280140)period = 17;//17m
+    if(runNo>=280282 && runNo<=281961)period = 18;//17o
+    if(runNo>=282504 && runNo<=282704)period = 19;//17r
+  //2018
+    if(runNo>=285978 && runNo<=286350)period = 20;//18d
+    if(runNo>=286380 && runNo<=286937)period = 21;//18e
+    if(runNo>=287000 && runNo<=287977)period = 22;//18f
+    if(runNo>=288619 && runNo<=288750)period = 23;//18g
+    if(runNo>=288804 && runNo<=288806)period = 24;//18h
+    if(runNo>=288861 && runNo<=288909)period = 25;//18i
+    if(runNo>=289165 && runNo<=289201)period = 26;//18k
+    if(runNo>=289240 && runNo<=289971)period = 27;//18l
+    if(runNo>=290222 && runNo<=292839)period = 28;//18m
+    if(runNo>=293357 && runNo<=293359)period = 29;//18n
+    if(runNo>=293368 && runNo<=293898)period = 30;//18o
+    if(runNo>=294009 && runNo<=294925)period = 31;//18p  
+  
+  if(period==-1) {
+     printf("Error! No corresponding profile for tracklets for this run (%d)! Skipping the correction...\n",runNo);
+     return 0x0;
+  }
+
+  return fTrackletProfiles[period];
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, AliAODEvent* aod) {
 
@@ -3639,6 +3777,10 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "--------------------------\n";  
   cout << "Ntrkl reweighting (for MC) = "<<fUseNtrklWeight<<"\n";
   cout << "--------------------------\n";  
+  cout << "Analysis vs Mult = "<<fVsMultAnalysis<<"\n";
+  cout << "--------------------------\n";  
+  if(fVsMultAnalysis) cout << "V0M lims = "<<fV0CentMin<<"-"<<fV0CentMax<<"  -  SPD trkl lims = "<<fTrkMultMin<<"-"<<fTrkMultMax<<"\n";
+  if(fVsMultAnalysis) cout << "--------------------------\n";  
 
   if(fPurityStudies) {
   cout << "---------------------------------------------------------------------------------------------------------------------------------------------------\n";  
