@@ -157,3 +157,5 @@ install(CODE "
     ${CMAKE_INSTALL_PREFIX}/PYTHIA8/pythia8
   )
 ")
+install(DIRECTORY include/Pythia8 DESTINATION include)
+install(DIRECTORY include/Pythia8Plugins DESTINATION include)
