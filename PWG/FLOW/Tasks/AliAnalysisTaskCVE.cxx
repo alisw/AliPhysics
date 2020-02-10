@@ -1182,7 +1182,8 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	      sumQ2xPionPosEtaNeg += trkWgtPion*uqRe;
 	      sumQ2yPionPosEtaNeg += trkWgtPion*uqIm;
 	      NumOfPionPosEtaNeg  += trkWgtPion;
-	    }	      
+	    }
+	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 	  if(fParticle==2 && isItKaon){
 	    fHistv2AchKaonPos[0][iCent]->Fill(fAchrgNet, (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgtKaon);
@@ -1196,7 +1197,8 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	      sumQ2xKaonPosEtaNeg += trkWgtKaon*uqRe;
 	      sumQ2yKaonPosEtaNeg += trkWgtKaon*uqIm;
 	      NumOfKaonPosEtaNeg  += trkWgtKaon;
-	    }	
+	    }
+	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 	  if(fParticle==3 && isItProt){
 	    fHistv2AchProtPos[0][iCent]->Fill(fAchrgNet, (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgtProt);
@@ -1210,10 +1212,11 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	      sumQ2xProtPosEtaNeg += trkWgtProt*uqRe;
 	      sumQ2yProtPosEtaNeg += trkWgtProt*uqIm;
 	      NumOfProtPosEtaNeg  += trkWgtProt;
-	    }	
+	    }
+	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 
-	  fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	  
 	  
 	}///+ve Ch done	
 	else{  //-Ve charge
@@ -1244,7 +1247,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	      sumQ2yPionNegEtaNeg += trkWgtPion*uqIm;
 	      NumOfPionNegEtaNeg  += trkWgtPion;
 	    }	   
-
+	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
 	  }
 	  if(fParticle==2 && isItKaon){
 	    fHistv2AchKaonNeg[0][iCent]->Fill(fAchrgNet, (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgtKaon);
@@ -1259,6 +1262,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	      sumQ2yKaonNegEtaNeg += trkWgtKaon*uqIm;
 	      NumOfKaonNegEtaNeg  += trkWgtKaon;
 	    }	  
+	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
 	  }
 	  if(fParticle==3 && isItProt){
 	    fHistv2AchProtNeg[0][iCent]->Fill(fAchrgNet, (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgtProt);
@@ -1272,12 +1276,12 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	      sumQ2xProtNegEtaNeg += trkWgtProt*uqRe;
 	      sumQ2yProtNegEtaNeg += trkWgtProt*uqIm;
 	      NumOfProtNegEtaNeg  += trkWgtProt;
-	    }	  
+	    }
+	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  	    
 	  }
 
 
-	  fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
-	  
+
 	}/// if -ve Particle
 	//----------- v2 vs Ach filled ---------
 
