@@ -15,54 +15,12 @@
 
 // =================================================================================================
 // AliAnalysisTaskUniFlowMultiStrange - ALICE Unified Flow framework
-// Author: Vojtech Pacik (vojtech.pacik@cern.ch), NBI, 2016-2019
+// Author: Ya Zhu (ya.zhu@cern.ch), CCNU, 2017-2020
 // =================================================================================================
 //
 // ALICE analysis task for universal study of flow via 2-(or multi-)particle correlations
 // using Generic Framework notation for calculations including per-particle weights.
-//
-// Implemented flow calculation for both reference & pt-differential flow
-// of both inclusive charged (done anyway) & identified particles (pi,K,p,K0s,Lambda,phi).
-//
-// Note: So far implemented only for AOD analysis and tuned on Run2 pp & pPb analyses!
-//
-// PLEASE READ THE INSTRUCTION BELLOW BEFORE RUNNING !!!
-//
 // =================================================================================================
-// Analysis can run in these modes setup via AliAnalysisTaskUniFlowMultiStrange::SetRunMode(RunMode)
-//  -- AnalysisTaskUniFlow::kFull : running mode
-//      - full scale analysis
-//
-//  -- AnalysisTaskUniFlow::kTest : development / testing / debugging mode
-//      - only limited number of events is processed (AliAnalysisTaskUniFlowMultiStrange::SetNumEventsAnalyse(Int_t))
-//
-//  -- AnalysisTaskUniFlow::kSkipFlow : usable for QA and(or) weights estimation before full scale running
-//      - events are processed whilst skipping correlation calculations, i.e. event loop ends after particles are filtered
-//
-//  NOTE: by default, all modes includes :
-//  - filling QA plots : can be turned-off by AliAnalysisTaskUniFlowMultiStrange::SetFillQAhistos(kFALSE)
-//    (might be heavy while running several tasks at once)
-//  - filling GF weights : can be turned-off by AliAnalysisTaskUniFlowMultiStrange::SetFlowFillWeights(kFALSE)
-//
-// =================================================================================================
-// Overview of analysis flow (see implementation of corresonding method for details)
-// 1) Event selection : EventSelection()
-//
-// 2) Particle selection & reconstruction : Filtering()
-//        - whether or not are particles processed is driven by 'fProcess?' flag setup by AliAnalysisTaskUniFlowMultiStrange::SetProcess?(kTRUE)
-//          (except for incl. charged, which are processed anyway)
-//        - filling QA plots
-//        - filling GF weights
-//
-//    !!! here the event loop ends in case of running in 'kSkipFlow' mode
-//
-// 3) Flow / correlation calculations : DoFlowPOIs(), DoFlowRefs()
-//        - to setup harmonics to be calculated, modify 'AliAnalysisTaskUniFlowMultiStrange::fHarmonics[]' (in .cxx) AND 'fNumHarmonics' (in .h)
-//        - to setup eta gaps (2part) to be calculated, modify 'AliAnalysisTaskUniFlowMultiStrange::fEtaGap[]' (in .cxx) AND 'fNumEtaGap' (in .h)
-//              - for NO gap case, fill in value '-1.0'
-//        - 2-particle cumulants are run by ©default (in 'kFull' mode)
-//        - 4-particle cumulants has to be setup by invoking AliAnalysisTaskUniFlowMultiStrange::SetFlowDoFourCorrelations(kTRUE)
-//
 // =================================================================================================
 #ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 #define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX

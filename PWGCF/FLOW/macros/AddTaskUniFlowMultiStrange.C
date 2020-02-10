@@ -7,7 +7,7 @@
 class AliAnalysisDataContainer;
 class AliDirList;
 class AliAnalysisTaskUniFlowMultiStrange;
-AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(Bool_t IsGrid, TString name = "name")
+AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(Bool_t IsGrid, TString name = "UniFlow")
 {
   if (IsGrid){
   gGrid->Connect("alien://");
