@@ -283,10 +283,10 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlAntiTrackCutsProton   = fTrackCutsAntiProton->GetQAHists();
     tlLambdaList            = fLambdaV0Cuts->GetQAHists();
     tlAntiLambdaList        = fAntiLambdaV0Cuts->GetQAHists();
-    tlPairCleaner->Add(fPairCleaner->GetHistList());
     tlResults               = fPartColl->GetHistList();
     tlResultsQA->Add(fPartColl->GetQAList());
     tlResultsQA->Add(fPairCleaner->GetHistList());
+    tlResultsQA->Add(fEvent->GetEvtCutList());
 
     PostData(1, tlEventCuts);
     PostData(2, tlTrackCutsProton);
