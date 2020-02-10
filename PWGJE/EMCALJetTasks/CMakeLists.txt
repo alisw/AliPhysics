@@ -159,6 +159,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalJetIterativeDeclustering.cxx
     Tracks/AliAnalysisTaskEmcalFastorMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
+    Tracks/AliEmcalTRDTrackingTask.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
