@@ -146,7 +146,7 @@ public:
   void SetDownscalingFactorByCandidate(float fraction) { fDownscalingFactorByCandidate = fraction; }
 
   void SetApplyML(bool applyML) { fApplyML = applyML; }
-  void SetMLResponseConfigfilePath(std::string configfilepath) { fMLResponseConfigfileRemotePath = configfilepath; }
+  void SetMLResponseConfigfilePath(std::string configfilepath) { fMLResponseConfigfilePath = configfilepath; }
 
   void SetEnableEventMixing(bool enableEM) { fEnableEventMixing = enableEM; }
   void SetEventMixingPoolDepth(int maxDepth) { fEventMixingPoolDepth = maxDepth; }
@@ -267,8 +267,7 @@ private:
   std::vector<AliESDtrack *> fPVector;
   std::vector<AliESDtrack *> fPiVector;
 
-  std::string fMLResponseConfigfileRemotePath;    /// path for the remote ML config file
-  std::string fMLResponseConfigfileLocalPath;     /// path for the local ML config file
+  std::string fMLResponseConfigfilePath;    /// path for the remote ML config file
 
   std::list<AliESDtrack> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
   int fEventMixingPoolDepth;                          /// max depth of the event mixing pool
