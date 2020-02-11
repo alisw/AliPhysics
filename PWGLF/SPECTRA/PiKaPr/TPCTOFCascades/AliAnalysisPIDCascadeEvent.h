@@ -126,6 +126,7 @@ public TObject
   static Int_t fgFlagToCheck; //! check flag
 
   ClassDef(AliAnalysisPIDCascadeEvent, 2);
+
 };
 
 #endif /* ALIANALYSISPIDCASCADEEVENT_H */

@@ -1,6 +1,7 @@
 #ifndef ALIANALYSISPIDCASCADEPARTICLE_H
 #define ALIANALYSISPIDCASCADEPARTICLE_H
 
+
 #include "TObject.h"
 #include "TLorentzVector.h"
 
@@ -44,6 +45,7 @@ public TObject
   static TLorentzVector fgLorentzVector;
 
   ClassDef(AliAnalysisPIDCascadeParticle, 2);
+
 };
 
 #endif /* ALIANALYSISPIDCASCADEPARTICLE_H */
