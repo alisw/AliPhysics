@@ -264,9 +264,9 @@ private:
   void   DoRecTwoPairing(std::vector<Particle> fRecNegPart, std::vector<Particle> fRecPosPart, std::vector<AliDielectronSignalMC> fPairMCSignal, Bool_t PartPrimary, double centralityWeight);
   void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, double centralityWeight);
 
-  void    FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack, int iCutList);
-  void    FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack, int iCutList);
-  void    FillPairHistograms_Secondary(AliDielectronPair* pair, int iCutList);
+  void    FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack, int iMCSignal, int iCutList);
+  void    FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack, int iMCSignal, int iCutList);
+  void    FillPairHistograms_Secondary(AliDielectronPair* pair, int iCutList, int iMCSignal);
 
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
