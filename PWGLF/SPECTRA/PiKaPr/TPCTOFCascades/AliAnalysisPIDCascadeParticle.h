@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISPIDPARTICLE_H
-#define ALIANALYSISPIDPARTICLE_H
+#ifndef ALIANALYSISPIDCASCADEPARTICLE_H
+#define ALIANALYSISPIDCASCADEPARTICLE_H
 
 #include "TObject.h"
 #include "TLorentzVector.h"
@@ -43,7 +43,7 @@ public TObject
   /*** tools ***/
   static TLorentzVector fgLorentzVector;
 
-  ClassDef(AliAnalysisPIDCascadeParticle, 1);
+  ClassDef(AliAnalysisPIDCascadeParticle, 2);
 };
 
 #endif /* ALIANALYSISPIDCASCADEPARTICLE_H */

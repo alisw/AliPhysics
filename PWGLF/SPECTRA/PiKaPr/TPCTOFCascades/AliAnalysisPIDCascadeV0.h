@@ -36,6 +36,6 @@ public TObject
   //Int_t fMCPdgCode;
   Double_t fEta;
   Double_t fDCAPV;
-  ClassDef(AliAnalysisPIDCascadeV0, 1);
+  ClassDef(AliAnalysisPIDCascadeV0, 2);
 };
 #endif
