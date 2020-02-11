@@ -135,7 +135,7 @@ AliAnalysisTaskEmcalQoverPtShift *AliAnalysisTaskEmcalQoverPtShift::AddTaskQOver
   }
 
   std::stringstream taskname;
-  std::string qoverptstring(Form("%c%05d", shift > 0 ? 'p' : 'm', int(shift * 1e5)));
+  std::string qoverptstring(Form("%c%05d", shift > 0 ? 'p' : 'm', std::abs(int(shift * 1e5))));
   taskname << "QOverPtTask_" <<  qoverptstring << "_" << trigger;
   auto task = new AliAnalysisTaskEmcalQoverPtShift(taskname.str().data());
   task->AddParticleContainer(track_name.data(), "detector");
