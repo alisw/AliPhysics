@@ -93,7 +93,7 @@ public TObject
   static AliTPCPIDResponse *GetTPCResponse() {return fgTPCResponse;}; // getter
   static void SetTOFResponse(AliTOFPIDResponse *value) {fgTOFResponse = value;}; // setter
   static void SetTPCResponse(AliTPCPIDResponse *value) {fgTPCResponse = value;}; // setter
-  static void UpdateTOFResponse(AliAnalysisPIDCascadeEvent *analysisEvent); // update TOF response
+  /* static void UpdateTOFResponse(AliAnalysisPIDCascadeEvent *analysisEvent); // update TOF response */
 
   //Bool_t AcceptTrack(Bool_t selPrimaries = kTRUE); // accept track
 
