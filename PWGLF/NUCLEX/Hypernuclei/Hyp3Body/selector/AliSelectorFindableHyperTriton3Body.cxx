@@ -20,23 +20,20 @@
 
 namespace {
 
-float Point2PointDistance(float *p0, float *p1) {
-  float d2 = 0.0;
+
+template <typename T> double Sq(T a) { return a * a; }
+
+template <typename T> double Point2PointDistance(T *p0, T *p1) {
+  double d2 = 0.;
   for (int iDim = 0; iDim < 3; ++iDim) {
-    d2 += (p0[iDim] - p1[iDim]) * (p0[iDim] - p1[iDim]);
+    d2 += Sq(p0[iDim] - p1[iDim]);
   }
   return std::sqrt(d2);
 }
 
-template <typename T> double Pot2(T a) { return a * a; }
+template <typename T> double Norm(T x, T y) { return std::sqrt(Sq(x) + Sq(y)); }
 
-template <typename T> double Distance(T pX, T pY, T pZ, T dX, T dY, T dZ) {
-  return std::sqrt(Pot2(pX - dX) + Pot2(pY - dY) + Pot2(pZ - dZ));
-}
-
-template <typename T> double Norm(T x, T y) { return std::sqrt(Pot2(x) + Pot2(y)); }
-
-template <typename T> double Norm(T x, T y, T z) { return std::sqrt(Pot2(x) + Pot2(y) + Pot2(z)); }
+template <typename T> double Norm(T x, T y, T z) { return std::sqrt(Sq(x) + Sq(y) + Sq(z)); }
 } // namespace
 
 AliSelectorFindableHyperTriton3Body::AliSelectorFindableHyperTriton3Body(TString outputName, TString outputPath,TTree *):
@@ -69,12 +66,12 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
   const char *lSpecies[3]{"d", "p", "pi"};
   const char *lSpeciesPair[3]{"dp", "ppi", "pid"};
   const char *lCuts[3]{"findable", "cuts", "hard"};
-  const char lCoords[4]{"xyz"};
+  const char lCoords[3]{'x','y','z'};
 
   /// invariant mass distributions
   for (int iMatter = 0; iMatter < 2; iMatter++) {
     for (int iCuts = 0; iCuts < 3; iCuts++) {
-      fHistInvMass[iMatter][iCuts] = new TH2D(Form("fHistInvMass_%c_%s", lAM[iMatter], lCuts[iCuts]), ";m (dp#pi) [GeV/#it{c}^{2}];#it{p}_{T} [GeV/#it{c}]", 200, 2.95, 3.35, 20, 0, 10);
+      fHistInvMass[iMatter][iCuts] = new TH2D(Form("fHistInvMass_%c_%s", lAM[iMatter], lCuts[iCuts]), ";#it{m} (dp#pi) (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c})", 200, 2.95, 3.35, 20, 0, 10);
       GetOutputList()->Add(fHistInvMass[iMatter][iCuts]);
     }
   }
@@ -82,8 +79,7 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
   /// transverse momentum distributions
   for (int iMatter = 0; iMatter < 2; iMatter++) {
     for (int iCuts = 0; iCuts < 3; iCuts++) {
-      fHistPt[iMatter][iCuts] =
-          new TH1D(Form("fHistPt_%c_%s", lAM[iMatter], lCuts[iCuts]), ";#it{p}_{T} [GeV/#it{c}];Counts", 100, 0, 10);
+      fHistPt[iMatter][iCuts] = new TH1D(Form("fHistPt_%c_%s", lAM[iMatter], lCuts[iCuts]), ";#it{p}_{T} (GeV/#it{c});Counts", 100, 0, 10);
       GetOutputList()->Add(fHistPt[iMatter][iCuts]);
     }
   }
@@ -91,15 +87,14 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
   /// daughters transverse momentum distributions
   for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
     for (int iCuts = 0; iCuts < 3; iCuts++) {
-      fHistDaughterPt[iSpecies][iCuts] = new TH1D(Form("fHistPt_%s_%s", lSpecies[iSpecies], lCuts[iCuts]),
-                                                  ";#it{p}_{T} [GeV/#it{c}];Counts", 100, 0, 10);
+      fHistDaughterPt[iSpecies][iCuts] = new TH1D(Form("fHistPt_%s_%s", lSpecies[iSpecies], lCuts[iCuts]), ";#it{p}_{T} (GeV/#it{c});Counts", 100, 0, 10);
       GetOutputList()->Add(fHistDaughterPt[iSpecies][iCuts]);
     }
   }
 
   /// daughter N Cluster ITS distribution
   for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
-    fHistNclsITS[iSpecies] = new TH1D(Form("fHistNclsITS_%s", lSpecies[iSpecies]), ":N_{cluster ITS}", 9, -1, 8);
+    fHistNclsITS[iSpecies] = new TH1D(Form("fHistNclsITS_%s", lSpecies[iSpecies]), ";N_{cluster ITS};Counts", 9, -1, 8);
     GetOutputList()->Add(fHistNclsITS[iSpecies]);
   }
 
@@ -109,47 +104,40 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
 
   /// daughter N Cluster TPC distribution
   for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
-    fHistNclsTPC[iSpecies] = new TH1D(Form("fHistNclsTPC_%s", lSpecies[iSpecies]), ":N_{cluster TPC}", 100, 0, 200);
+    fHistNclsTPC[iSpecies] = new TH1D(Form("fHistNclsTPC_%s", lSpecies[iSpecies]), ";N_{cluster TPC};Counts", 100, 0, 200);
     GetOutputList()->Add(fHistNclsTPC[iSpecies]);
-  }
-
-  /// tracks global Chi2 distributions
-  for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
-    fHistGlobalTrackChi2[iSpecies] =
-        new TH1D(Form("fHistGlobalTrackChi2_%s", lSpecies[iSpecies]), ":N_{cluster TPC}", 1000, 0, 1);
-    GetOutputList()->Add(fHistGlobalTrackChi2[iSpecies]);
   }
 
   /// PID check histograms
   for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
-    fHistNSigmaTPC[iSpecies] = new TH1D(Form("fHistNSigmaTPC_%s", lSpecies[iSpecies]), "n#sigma", 10, 0, 10);
-    fHistNSigmaTOF[iSpecies] = new TH1D(Form("fHistNSigmaTOF_%s", lSpecies[iSpecies]), "n#sigma", 10, 0, 10);
-    fHistCheckPID[iSpecies]  = new TH1D(Form("fHistCheckPID_%s", lSpecies[iSpecies]), "", 2, -1, 1);
+    fHistNSigmaTPC[iSpecies] = new TH1D(Form("fHistNSigmaTPC_%s", lSpecies[iSpecies]), "n#sigma_{TPC}", 10, 0, 10);
+    fHistNSigmaTOF[iSpecies] = new TH1D(Form("fHistNSigmaTOF_%s", lSpecies[iSpecies]), "n#sigma_{TOF}", 10, 0, 10);
+    fHistCheckPID = new TH1D(Form("fHistCheckPID_%s", lSpecies[iSpecies]), "", 2, -1, 1);
     GetOutputList()->Add(fHistNSigmaTPC[iSpecies]);
     GetOutputList()->Add(fHistNSigmaTOF[iSpecies]);
-    GetOutputList()->Add(fHistCheckPID[iSpecies]);
+    GetOutputList()->Add(fHistCheckPID);
   }
-  fHistCheckPID[3] = new TH1D("fHistNSigmaCheckAll", "", 2, -1, 1);
-  GetOutputList()->Add(fHistCheckPID[3]);
+  fHistCheckPID = new TH1D("fHistNSigmaCheckAll", "", 2, -1, 1);
+  GetOutputList()->Add(fHistCheckPID);
 
   /// Chi2 vertex and cos(theta_pointing) distributions
   fHistVertexChi2 = new TH1D("fHistVertexChi2", "", 100, 0, 200);
-  fHistCosPAngle  = new TH1D("fCosPointingAngle", ";#it{cos#theta_{pointing}} ;Counts", 5000, 0.5, 1.);
+  fHistCosPAngle  = new TH1D("fCosPointingAngle", ";#it{cos#theta_{pointing}};Counts", 5000, 0.5, 1.);
   GetOutputList()->Add(fHistVertexChi2);
   GetOutputList()->Add(fHistCosPAngle);
 
   /// decay vertex resolution histo
   for (int iCoord = 0; iCoord < 3; iCoord++) {
     fHistResDecayVtx[iCoord] =
-        new TH1D(Form("fHistResDecayVtx%c", lCoords[iCoord]), Form(";#Delta%c [mm]", lCoords[iCoord]), 500, -10, 10);
+        new TH1D(Form("fHistResDecayVtx%c", lCoords[iCoord]), Form(";#Delta%c (mm)", lCoords[iCoord]), 500, -10, 10);
     GetOutputList()->Add(fHistResDecayVtx[iCoord]);
   }
 
   /// DCA to primary vertex
   for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
-    fHistDCA2pvXY[iSpecies] = new TH1D(Form("fDCA2PrimaryvtxXY_%s", lSpecies[iSpecies]), ";mm ", 600, 0, 30);
-    fHistDCA2pvZ[iSpecies]  = new TH1D(Form("fDCA2PrimaryvtxZ_%s", lSpecies[iSpecies]), ";mm ", 600, 0, 30);
-    fHistDCA2pv[iSpecies]   = new TH1D(Form("fDCA2Primaryvtx_%s", lSpecies[iSpecies]), ";mm ", 600, 0, 30);
+    fHistDCA2pvXY[iSpecies] = new TH1D(Form("fDCA2PrimaryvtxXY_%s", lSpecies[iSpecies]), ";DCA_{xy} (mm);Counts", 600, 0, 30);
+    fHistDCA2pvZ[iSpecies]  = new TH1D(Form("fDCA2PrimaryvtxZ_%s", lSpecies[iSpecies]), ";DCA_{z} (mm);Counts", 600, 0, 30);
+    fHistDCA2pv[iSpecies]   = new TH1D(Form("fDCA2Primaryvtx_%s", lSpecies[iSpecies]), ";DCA (mm);Counts", 600, 0, 30);
     GetOutputList()->Add(fHistDCA2pvXY[iSpecies]);
     GetOutputList()->Add(fHistDCA2pvZ[iSpecies]);
     GetOutputList()->Add(fHistDCA2pv[iSpecies]);
@@ -157,9 +145,9 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
 
   /// DCA to secondary vertex
   for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
-    fHistDCA2dvXY[iSpecies] = new TH1D(Form("fDCA2DecayvtxXY_%s", lSpecies[iSpecies]), ";mm ", 600, 0, 30);
-    fHistDCA2dvZ[iSpecies]  = new TH1D(Form("fDCA2DecayvtxZ_%s", lSpecies[iSpecies]), ";mm ", 600, 0, 30);
-    fHistDCA2dv[iSpecies]   = new TH1D(Form("fDCA2Decayvtx_%s", lSpecies[iSpecies]), ";mm ", 600, 0, 30);
+    fHistDCA2dvXY[iSpecies] = new TH1D(Form("fDCA2DecayvtxXY_%s", lSpecies[iSpecies]), ";DCA_{xy} (mm);Counts", 600, 0, 30);
+    fHistDCA2dvZ[iSpecies]  = new TH1D(Form("fDCA2DecayvtxZ_%s", lSpecies[iSpecies]), ";DCA_{z} (mm);Counts", 600, 0, 30);
+    fHistDCA2dv[iSpecies]   = new TH1D(Form("fDCA2Decayvtx_%s", lSpecies[iSpecies]), ";DCA (mm);Counts", 600, 0, 30);
     GetOutputList()->Add(fHistDCA2dvXY[iSpecies]);
     GetOutputList()->Add(fHistDCA2dvZ[iSpecies]);
     GetOutputList()->Add(fHistDCA2dv[iSpecies]);
@@ -199,9 +187,10 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   fReader.SetEntry(entry);
 
   // define support stuff
-  bool lIsGoodITS[4] = {false};
-  bool lIsGoodPID[4] = {false};
-  bool lIsGoodDCA[4] = {false};
+  bool lIsGoodITS = true;
+  bool lIsGoodTPCpid = true;
+  bool lIsGoodTOFpid = true;
+  bool lIsGoodDCA = true;
 
   bool lIsGoodVertex     = false;
   bool lIsGoodPAngle     = false;
@@ -230,24 +219,18 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   // Get stuff from tree
   //------------------------------------------------------------
   float lMagField = *fTreeHyp3BodyVarMagneticField;
-  
-  AliExternalTrackParam *lTrackDeu = new AliExternalTrackParam(*fTreeHyp3BodyVarTracks[0]);
-  AliExternalTrackParam *lTrackP   = new AliExternalTrackParam(*fTreeHyp3BodyVarTracks[1]);
-  AliExternalTrackParam *lTrackPi  = new AliExternalTrackParam(*fTreeHyp3BodyVarTracks[2]);
 
-  AliExternalTrackParam *lTrack[3]{lTrackDeu, lTrackP, lTrackPi};
+  AliESDtrack *lTrack[3]{&*fTreeHyp3BodyVarTracks[0],&*fTreeHyp3BodyVarTracks[1],&*fTreeHyp3BodyVarTracks[2]};
 
-  int lNclsITS[3]{fTreeHyp3BodyVarTracks[0]->GetITSNcls(), fTreeHyp3BodyVarTracks[1]->GetITSNcls(), fTreeHyp3BodyVarTracks[2]->GetITSNcls()};
-  int lNclsTPC[3]{fTreeHyp3BodyVarTracks[0]->GetTPCNcls(), fTreeHyp3BodyVarTracks[1]->GetTPCNcls(), fTreeHyp3BodyVarTracks[2]->GetTPCNcls()};
+  int lNclsITS[3]{lTrack[0]->GetITSNcls(), lTrack[1]->GetITSNcls(), lTrack[2]->GetITSNcls()};
+  int lNclsTPC[3]{lTrack[0]->GetTPCNcls(), lTrack[1]->GetTPCNcls(), lTrack[2]->GetTPCNcls()};
 
-  double lTrackGlobalChi2[3]{fTreeHyp3BodyVarTracks[0]->GetGlobalChi2(), fTreeHyp3BodyVarTracks[1]->GetGlobalChi2(), fTreeHyp3BodyVarTracks[2]->GetGlobalChi2()};
+  float lNsigmaTPC[3] = {*fTreeHyp3BodyVarNsigmaTPC[0],*fTreeHyp3BodyVarNsigmaTPC[1],*fTreeHyp3BodyVarNsigmaTPC[2]};
+  float lNsigmaTOF[3] = {*fTreeHyp3BodyVarNsigmaTOF[0],*fTreeHyp3BodyVarNsigmaTOF[1],*fTreeHyp3BodyVarNsigmaTOF[2]};
 
-  // unsigned long lTrackFlag[3]{*fTreeHyp3BodyVarFlags[0], *fTreeHyp3BodyVarFlags[1], *fTreeHyp3BodyVarFlags[2]};
+  double lTrueDecayVtx[3]{*fTreeHyp3BodyVarDecayVtx[0],*fTreeHyp3BodyVarDecayVtx[1],*fTreeHyp3BodyVarDecayVtx[2]};
 
-  double lTrueDecayVtx[3]{*fTreeHyp3BodyVarDecayVtx[0] * 1., *fTreeHyp3BodyVarDecayVtx[1] * 1.,
-                          *fTreeHyp3BodyVarDecayVtx[2] * 1.};
-  double lTruePrimaryVtx[3]{*fTreeHyp3BodyVarPVtx[0] * 1., *fTreeHyp3BodyVarPVtx[1] * 1.,
-                            *fTreeHyp3BodyVarPVtx[2] * 1.};
+  double lTruePrimaryVtx[3]{*fTreeHyp3BodyVarPVtx[0],*fTreeHyp3BodyVarPVtx[1],*fTreeHyp3BodyVarPVtx[2]};
 
   /// charge of the candidate
   bool lCharge = lTrack[0]->GetSign() < 0;
@@ -266,39 +249,35 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   // N cluster in ITS, TPC and Track Chi2 distributions
   // and ITS cluster and PID selectios
   //------------------------------------------------------------
-  int its_sum = 0;
-  int pid_sum = 0;
 
   for (int iTrack = 0; iTrack < 3; iTrack++) {
     fHistNclsITS[iTrack]->Fill(lNclsITS[iTrack] - 0.5);
     fHistNclsTPC[iTrack]->Fill(lNclsTPC[iTrack] - 0.5);
+    lIsGoodITS &= lNclsITS[iTrack] > 0;
 
-    fHistGlobalTrackChi2[iTrack]->Fill(lTrackGlobalChi2[iTrack]);
-
-    lIsGoodITS[iTrack] = lNclsITS[iTrack] > 0;
-    its_sum += lIsGoodITS[iTrack];
-
+    fHistNSigmaTPC[iTrack]->Fill(lNsigmaTPC[iTrack]);
+    fHistNSigmaTOF[iTrack]->Fill(lNsigmaTOF[iTrack]);
+    lIsGoodTPCpid &= std::abs(lNsigmaTPC[iTrack]) < 3;
+    lIsGoodTOFpid &= std::abs(lNsigmaTOF[iTrack]) < 3;
   }
 
-  lIsGoodITS[3] = (its_sum == 3);
-  fHistNclsITSCheck->Fill(lIsGoodITS[3] - 0.5);
+  fHistNclsITSCheck->Fill((int)lIsGoodITS - 0.5);
 
-  lIsGoodPID[3] = (pid_sum == 3);
-  fHistCheckPID[3]->Fill(lIsGoodPID[3] - 0.5);
+  fHistCheckPID->Fill((int)lIsGoodTPCpid - 0.5);
 
   //------------------------------------------------------------
   // Secondary vertex reconstruction
   //------------------------------------------------------------
-  if (lIsGoodITS[3] && lIsGoodPID[3]) {
+  //if (lIsGoodITS && lIsGoodTPCpid) {
     // reconstruct the decay vertex with the dedicated vertexer
-    bool lIsGoodVertex     = fHypertritonVertexer.FindDecayVertex(lTrack[0], lTrack[1], lTrack[2], lMagField);
-    bool lIsGoodVertexHard = fHypertritonVertexerHard.FindDecayVertex(lTrack[0], lTrack[1], lTrack[2], lMagField);
+    lIsGoodVertex     = fHypertritonVertexer.FindDecayVertex(lTrack[0], lTrack[1], lTrack[2], lMagField);
+    lIsGoodVertexHard = fHypertritonVertexerHard.FindDecayVertex(lTrack[0], lTrack[1], lTrack[2], lMagField);
 
     AliESDVertex *lDecayVertex     = static_cast<AliESDVertex *>(fHypertritonVertexer.GetCurrentVertex());
     AliESDVertex *lDecayVertexHard = static_cast<AliESDVertex *>(fHypertritonVertexerHard.GetCurrentVertex());
 
     if (lIsGoodVertex) {
-      double vertexChi2NDF = lDecayVertex->GetChi2perNDF() * 1.;
+      double vertexChi2NDF = lDecayVertex->GetChi2perNDF();
       fHistVertexChi2->Fill(vertexChi2NDF);
     }
     /// possibility to constraint the goodness of the reconstructed decay vertex
@@ -308,9 +287,9 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
     if (lIsGoodVertex) {
       lDecayVertex->GetXYZ(lDecayVertexPos);
 
-      for (int iTrack = 0; iTrack < 3; iTrack++) {
-        fHistResDecayVtx[iTrack]->Fill((lDecayVertexPos[iTrack] - lTrueDecayVtx[iTrack]) * 10.);
-        lDecayLenght[iTrack] = lDecayVertexPos[iTrack] - lTruePrimaryVtx[iTrack];
+      for (int iCoord = 0; iCoord < 3; iCoord++) {
+        fHistResDecayVtx[iCoord]->Fill((lDecayVertexPos[iCoord] - lTrueDecayVtx[iCoord]) * 10.);
+        lDecayLenght[iCoord] = lDecayVertexPos[iCoord] - lTruePrimaryVtx[iCoord];
       }
 
       TVector3 v(lDecayLenght[0], lDecayLenght[1], lDecayLenght[2]);
@@ -325,7 +304,6 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
       /// compute the DCA of the 3 tracks from the primary and decay vertex
       AliESDVertex lPV(lTruePrimaryVtx, lPrimaryVertexCov, 1., 1000);
 
-      int dca_sum = 0;
       for (int iTrack = 0; iTrack < 3; iTrack++) {
         double dca2dv[2]    = {0.};
         double dca2pv[2]    = {0.};
@@ -335,27 +313,24 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
         lTrack[iTrack]->PropagateToDCA(lDecayVertex, lMagField, 1000., dca2dv, dca2dvcov);
         lTrack[iTrack]->PropagateToDCA(&lPV, lMagField, 1000., dca2pv, dca2pvcov);
 
-        float dcaXYdv = std::sqrt(Pot2(dca2dv[0])) * 10.; // in mm
-        float dcaZdv  = std::sqrt(Pot2(dca2dv[1])) * 10.; // in mm
-        float dcadv   = Norm(dcaXYdv, dcaZdv) * 10.;      // in mm
+        float dcaXYdv = std::abs(dca2dv[0]) * 10.;    // in mm
+        float dcaZdv  = std::abs(dca2dv[1]) * 10.;    // in mm
+        float dcadv   = Norm(dcaXYdv, dcaZdv) * 10.;  // in mm
 
         fHistDCA2dvXY[iTrack]->Fill(dcaXYdv);
         fHistDCA2dvZ[iTrack]->Fill(dcaZdv);
         fHistDCA2dv[iTrack]->Fill(dcadv);
 
-        float dcaXYpv = std::sqrt(Pot2(dca2pv[0])) * 10.; // in mm
-        float dcaZpv  = std::sqrt(Pot2(dca2pv[1])) * 10.; // in mm
-        float dcapv   = Norm(dcaXYpv, dcaZpv) * 10.;      // in mm
+        float dcaXYpv = std::abs(dca2pv[0]) * 10.;    // in mm
+        float dcaZpv  = std::abs(dca2pv[1]) * 10.;    // in mm
+        float dcapv   = Norm(dcaXYpv, dcaZpv) * 10.;  // in mm
 
-        lIsGoodDCA[iTrack] = (dcapv > lDCAmax[iTrack]);
-        dca_sum += lIsGoodDCA[iTrack];
+        lIsGoodDCA &= dcapv > lDCAmax[iTrack];
 
         fHistDCA2pvXY[iTrack]->Fill(dcaXYpv);
         fHistDCA2pvZ[iTrack]->Fill(dcaZpv);
         fHistDCA2pv[iTrack]->Fill(dcapv);
       }
-
-      lIsGoodDCA[3] = (dca_sum == 3);
 
       /// compute the track2track distance used in the vertexer
       float pPM[3][3];
@@ -385,10 +360,10 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
 
       lIsGoodPAngleHard = (cospa > 0.998);
     }
-  }
+  //}
 
-  bool lIsGoodCuts     = lIsGoodDCA[3] && lIsGoodVertex && lIsGoodPAngle;
-  bool lIsGoodHardCuts = lIsGoodDCA[3] && lIsGoodVertexHard && lIsGoodPAngleHard;
+  bool lIsGoodCuts     = lIsGoodDCA && lIsGoodVertex && lIsGoodPAngle;
+  bool lIsGoodHardCuts = lIsGoodDCA && lIsGoodVertexHard && lIsGoodPAngleHard;
 
   /// invariant mass distribution for efficiency
   fHistInvMass[lCharge][0]->Fill(hypMass, hypPt);

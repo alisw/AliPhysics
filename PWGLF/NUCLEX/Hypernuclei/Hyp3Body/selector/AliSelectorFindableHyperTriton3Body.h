@@ -27,12 +27,13 @@ public:
   TTree *fChain = 0;   //! pointer to the analyzed TTree or TChain
 
   // Readers to access the data (delete the ones you do not need).
-  TTreeReaderValue<AliESDtrack> fTreeHyp3BodyVarTracks[3] = {
-      {fReader, "fTreeHyp3BodyVarTrack0"}, {fReader, "fTreeHyp3BodyVarTrack1"}, {fReader, "fTreeHyp3BodyVarTrack2"}};
+  TTreeReaderValue<AliESDtrack> fTreeHyp3BodyVarTracks[3] = {{fReader, "fTreeHyp3BodyVarTrack0"}, {fReader, "fTreeHyp3BodyVarTrack1"}, {fReader, "fTreeHyp3BodyVarTrack2"}};
 
-  TTreeReaderValue<Int_t> fTreeHyp3BodyVarPDGcodes[3] = {{fReader, "fTreeHyp3BodyVarPDGcode0"},
-                                                         {fReader, "fTreeHyp3BodyVarPDGcode1"},
-                                                         {fReader, "fTreeHyp3BodyVarPDGcode2"}};
+  TTreeReaderValue<Int_t> fTreeHyp3BodyVarPDGcodes[3] = {{fReader, "fTreeHyp3BodyVarPDGcode0"},{fReader, "fTreeHyp3BodyVarPDGcode1"},{fReader, "fTreeHyp3BodyVarPDGcode2"}};
+
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarNsigmaTPC[3] = {{fReader, "fTreeHyp3BodyVarNsigmaTPC0"},{fReader, "fTreeHyp3BodyVarNsigmaTPC1"},{fReader, "fTreeHyp3BodyVarNsigmaTPC2"}};
+
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarNsigmaTOF[3] = {{fReader, "fTreeHyp3BodyVarNsigmaTOF0"},{fReader, "fTreeHyp3BodyVarNsigmaTOF1"},{fReader, "fTreeHyp3BodyVarNsigmaTOF2"}};
 
   TTreeReaderValue<ULong64_t> fTreeHyp3BodyVarEventId = {fReader, "fTreeHyp3BodyVarEventId"};
 
@@ -41,18 +42,11 @@ public:
 
   TTreeReaderValue<Bool_t> fTreeHyp3BodyVarIsFakeCand = {fReader, "fTreeHyp3BodyVarIsFakeCand"};
 
-  TTreeReaderValue<Float_t> fTreeHyp3BodyVarTrueP[3] = {{fReader, "fTreeHyp3BodyVarTruePx"},
-                                                        {fReader, "fTreeHyp3BodyVarTruePy"}, {fReader, "fTreeHyp3BodyVarTruePz"}};
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarTrueP[3] = {{fReader, "fTreeHyp3BodyVarTruePx"},{fReader, "fTreeHyp3BodyVarTruePy"},{fReader, "fTreeHyp3BodyVarTruePz"}};
 
-  TTreeReaderValue<Float_t> fTreeHyp3BodyVarDecayVtx[4] = {{fReader, "fTreeHyp3BodyVarDecayVx"},
-                                                           {fReader, "fTreeHyp3BodyVarDecayVy"},
-                                                           {fReader, "fTreeHyp3BodyVarDecayVz"},
-                                                           {fReader, "fTreeHyp3BodyVarDecayT"}};
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarDecayVtx[4] = {{fReader, "fTreeHyp3BodyVarDecayVx"},{fReader, "fTreeHyp3BodyVarDecayVy"},{fReader, "fTreeHyp3BodyVarDecayVz"},{fReader, "fTreeHyp3BodyVarDecayT"}};
   
-  TTreeReaderValue<Float_t> fTreeHyp3BodyVarPVtx[4] = {{fReader, "fTreeHyp3BodyVarPVx"},
-                                                       {fReader, "fTreeHyp3BodyVarPVy"},
-                                                       {fReader, "fTreeHyp3BodyVarPVz"},
-                                                       {fReader, "fTreeHyp3BodyVarPVt"}};
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarPVtx[4] = {{fReader, "fTreeHyp3BodyVarPVx"},{fReader, "fTreeHyp3BodyVarPVy"},{fReader, "fTreeHyp3BodyVarPVz"},{fReader, "fTreeHyp3BodyVarPVt"}};
 
   TTreeReaderValue<Float_t> fTreeHyp3BodyVarMagneticField = {fReader, "fTreeHyp3BodyVarMagneticField"};
 
@@ -97,8 +91,7 @@ public:
   TH1D *fHistNclsTPC[3]         = {nullptr};
   TH1D *fHistNSigmaTPC[3]       = {nullptr};
   TH1D *fHistNSigmaTOF[3]       = {nullptr};
-  TH1D *fHistCheckPID[4]        = {nullptr};
-  TH1D *fHistGlobalTrackChi2[3] = {nullptr};
+  TH1D *fHistCheckPID           = nullptr;
   TH1D *fHistResDecayVtx[3]     = {nullptr};
   TH1D *fHistVertexChi2         = nullptr;
   TH1D *fHistCosPAngle          = nullptr;
