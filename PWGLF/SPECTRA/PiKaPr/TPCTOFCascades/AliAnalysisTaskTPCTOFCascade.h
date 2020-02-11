@@ -13,7 +13,7 @@ class AliESDpid;
 class AliESDtrack;
 class AliESDv0;
 class AliESDVertex;
-class AliAnalysisPIDV0;
+class AliAnalysisPIDCascadeV0;
 class AliAnalysisPIDCascade;
 class AliAODVertex;
 class AliTOFcalib;
@@ -23,9 +23,9 @@ class TH1F;
 class TH2F;
 class TH1D;
 class TObjArray;
-class AliAnalysisPIDEvent;
-class AliAnalysisPIDTrack;
-class AliAnalysisPIDParticle;
+class AliAnalysisPIDCascadeEvent;
+class AliAnalysisPIDCascadeTrack;
+class AliAnalysisPIDCascadeParticle;
 class TClonesArray;
 class AliCentrality;
 class AliPIDResponse;
@@ -121,13 +121,13 @@ public AliAnalysisTaskSE
   Float_t fMCTimeZero; // MC time-zero
   AliCentrality *fCentrality; // centrality
   
-  AliAnalysisPIDEvent *fAnalysisEvent; // analysis event
+  AliAnalysisPIDCascadeEvent *fAnalysisEvent; // analysis event
   TClonesArray *fAnalysisTrackArray; // analysis track array
-  AliAnalysisPIDTrack *fAnalysisTrack; // analysis track
+  AliAnalysisPIDCascadeTrack *fAnalysisTrack; // analysis track
   TClonesArray *fAnalysisParticleArray; // analysis particle array
-  AliAnalysisPIDParticle *fAnalysisParticle; // analysis particle
+  AliAnalysisPIDCascadeParticle *fAnalysisParticle; // analysis particle
   TClonesArray *fAnalysisV0TrackArray; //V0 track array
-  AliAnalysisPIDV0 *fAnalysisV0Track; //V0 track object
+  AliAnalysisPIDCascadeV0 *fAnalysisV0Track; //V0 track object
   TClonesArray *fAnalysisCascadeTrackArray; //Cascade track array
   AliAnalysisPIDCascade *fAnalysisCascadeTrack; //Cascade track object
 
