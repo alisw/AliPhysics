@@ -96,8 +96,7 @@ AliAnalysisTaskSEDvsMultiplicity_BDT *AddTaskDvsMultiplicity_BDT(Int_t system=0,
     Name="Lc2pK0S";
   }
     
-  AliAnalysisTaskSEDvsMultiplicity_BDT *dMultTask = new AliAnalysisTaskSEDvsMultiplicity_BDT("dMultAnalysis",pdgMeson,analysiscuts,isPPbData);
-  dMultTask->SetReadMC(readMC);
+  AliAnalysisTaskSEDvsMultiplicity_BDT *dMultTask = new AliAnalysisTaskSEDvsMultiplicity_BDT("dMultAnalysis",pdgMeson,analysiscuts,isPPbData,readMC,applyBDT);
   dMultTask->SetDebugLevel(0);
   dMultTask->SetUseBit(kTRUE);
   dMultTask->SetDoImpactParameterHistos(kFALSE); //kFALSE
@@ -157,7 +156,6 @@ AliAnalysisTaskSEDvsMultiplicity_BDT *AddTaskDvsMultiplicity_BDT(Int_t system=0,
   dMultTask->SetBDTSampleSideband(DoSidebndSample);
   dMultTask->SetBDTSidebandSamplingFraction(SBndSampleFrac);
   }
-  dMultTask->SetBDTApply(applyBDT);   
   if(pdgMeson==421) dMultTask->SetBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi:nsigmaTPCPi_0:nsigmaTPCK_0:nsigmaTOFPi_0:nsigmaTOFK_0:nsigmaTPCPi_1:nsigmaTPCK_1:nsigmaTOFPi_1:nsigmaTOFK_1:nsigmaCombPi_0:nsigmaCombK_0:nsigmaCombPi_1:nsigmaCombK_1:coutMulti");
   if(pdgMeson==431) dMultTask->SetBDTFullVarString("invMass:ptCand:imp_par_XY:d_len:multForCand:d_len_XY:norm_dl_XY:Cos_P:Cos_P_XY:dca:max_norm_d0d0exp:Sig_Vert:delta_mass_KK:cos_PiDs:cos_PiKPhi_3:imp_par_prong0:imp_par_prong1:imp_par_prong2:PtProng0:PtProng1:PtProng2:nsigTPC_Pi_0:nsigTPC_K_0:nsigTOF_Pi_0:nsigTOF_K_0:nsigTPC_Pi_1:nsigTPC_K_1:nsigTOF_Pi_1:nsigTOF_K_1:nsigTPC_Pi_2:nsigTPC_K_2:nsigTOF_Pi_2:nsigTOF_K_2:type");
    
@@ -384,7 +382,7 @@ const Char_t* periodNames[14]={"LHC18b","LHC18d","LHC18e","LHC18f", "LHC18g","LH
 
   mgr->ConnectOutput(dMultTask,4,coutputProf);
   mgr->ConnectOutput(dMultTask,5,coutputD0Tree);
-  if(!readMC)
+  if(!readMC && applyBDT)
   {
      mgr->ConnectOutput(dMultTask,6,coutputD0BDTResponse);
   }

@@ -176,7 +176,7 @@ AliAnalysisTaskSEDvsMultiplicity_BDT::AliAnalysisTaskSEDvsMultiplicity_BDT():
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDvsMultiplicity_BDT::AliAnalysisTaskSEDvsMultiplicity_BDT(const char *name, Int_t pdgMeson,AliRDHFCuts *cuts, Bool_t switchPPb):
+AliAnalysisTaskSEDvsMultiplicity_BDT::AliAnalysisTaskSEDvsMultiplicity_BDT(const char *name, Int_t pdgMeson,AliRDHFCuts *cuts, Bool_t switchPPb, Bool_t readMC, Bool_t applyBDT):
   AliAnalysisTaskSE(name),
   fOutput(0),
   fListCuts(0),
@@ -252,7 +252,7 @@ AliAnalysisTaskSEDvsMultiplicity_BDT::AliAnalysisTaskSEDvsMultiplicity_BDT(const
   fNImpParBins(400),
   fLowerImpPar(-2000.),
   fHigherImpPar(2000.),
-  fReadMC(kFALSE),
+  fReadMC(readMC),
   fMCOption(0),
   fisPPbData(switchPPb),
   fUseBit(kTRUE),
@@ -281,7 +281,7 @@ AliAnalysisTaskSEDvsMultiplicity_BDT::AliAnalysisTaskSEDvsMultiplicity_BDT(const
   fGetRespTree(kTRUE),
   fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"),
   fBDTClassifierVarString(""),
-  fApplyBDT(0),
+  fApplyBDT(applyBDT),
   fFillTree(0)
 {
   // 

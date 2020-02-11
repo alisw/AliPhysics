@@ -37,7 +37,7 @@ class AliAnalysisTaskSEDvsMultiplicity_BDT : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSEDvsMultiplicity_BDT();
-  AliAnalysisTaskSEDvsMultiplicity_BDT(const char *name, Int_t pdgMeson, AliRDHFCuts* cuts, Bool_t switchPPb);
+  AliAnalysisTaskSEDvsMultiplicity_BDT(const char *name, Int_t pdgMeson, AliRDHFCuts* cuts, Bool_t switchPPb, Bool_t readMC, Bool_t applyBDT);
   virtual ~AliAnalysisTaskSEDvsMultiplicity_BDT();
 
 
@@ -55,7 +55,6 @@ class AliAnalysisTaskSEDvsMultiplicity_BDT : public AliAnalysisTaskSE
     fHigherImpPar=dmax;
   }
 
-  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMCOption(Int_t option=0){ fMCOption = option; }
   void SetIsPPbData(Bool_t flag=kTRUE){ 
     fisPPbData=flag;
@@ -328,7 +327,6 @@ class AliAnalysisTaskSEDvsMultiplicity_BDT : public AliAnalysisTaskSE
   void SetBDTGetRespTree(Bool_t rt) {fGetRespTree = rt;}
   void SetBDTFullVarString(TString str) {fBDTFullVarString = str;}
   void SetBDTClassifierVarString(TString str) {fBDTClassifierVarString = str;}
-  void SetBDTApply(Bool_t applyBDT) {fApplyBDT = applyBDT;}
   void SetFillTree(Bool_t fillTree) {fFillTree = fillTree;}
  
   void SetBDTList(TList *bdtlist) {fListRDHFBDT=bdtlist;} 
