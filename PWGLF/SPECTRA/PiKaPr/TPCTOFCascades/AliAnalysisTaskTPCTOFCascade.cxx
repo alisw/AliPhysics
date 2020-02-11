@@ -20,9 +20,9 @@
 #include "TParticle.h"
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
-#include "AliAnalysisPIDTrack.h"
-#include "AliAnalysisPIDParticle.h"
-#include "AliAnalysisPIDEvent.h"
+#include "AliAnalysisPIDCascadeTrack.h"
+#include "AliAnalysisPIDCascadeParticle.h"
+#include "AliAnalysisPIDCascadeEvent.h"
 #include "TClonesArray.h"
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
@@ -37,7 +37,7 @@
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
 #include "AliESDcascade.h"
-#include "AliAnalysisPIDV0.h"
+#include "AliAnalysisPIDCascadeV0.h"
 #include "AliAnalysisPIDCascade.h"
 #include "AliAODVertex.h"
 #include "AliKFParticle.h"
@@ -82,13 +82,13 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade() :
   fVertexZ(0.),
   fMCTimeZero(0.),
   fCentrality(NULL),
-  fAnalysisEvent(new AliAnalysisPIDEvent()),
-  fAnalysisTrackArray(new TClonesArray("AliAnalysisPIDTrack")),
-  fAnalysisTrack(new AliAnalysisPIDTrack()),
-  fAnalysisParticleArray(new TClonesArray("AliAnalysisPIDParticle")),
-  fAnalysisParticle(new AliAnalysisPIDParticle()),
-  fAnalysisV0TrackArray(new TClonesArray("AliAnalysisPIDV0")),
-  fAnalysisV0Track(new AliAnalysisPIDV0()),
+  fAnalysisEvent(new AliAnalysisPIDCascadeEvent()),
+  fAnalysisTrackArray(new TClonesArray("AliAnalysisPIDCascadeTrack")),
+  fAnalysisTrack(new AliAnalysisPIDCascadeTrack()),
+  fAnalysisParticleArray(new TClonesArray("AliAnalysisPIDCascadeParticle")),
+  fAnalysisParticle(new AliAnalysisPIDCascadeParticle()),
+  fAnalysisV0TrackArray(new TClonesArray("AliAnalysisPIDCascadeV0")),
+  fAnalysisV0Track(new AliAnalysisPIDCascadeV0()),
   fAnalysisCascadeTrackArray(new TClonesArray("AliAnalysisPIDCascade")),
   fAnalysisCascadeTrack(new AliAnalysisPIDCascade()),
   fTOFcalib(new AliTOFcalib()),
@@ -160,13 +160,13 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade(Bool_t isMC) :
   fVertexZ(0.),
   fMCTimeZero(0.),
   fCentrality(NULL),
-  fAnalysisEvent(new AliAnalysisPIDEvent()),
-  fAnalysisTrackArray(new TClonesArray("AliAnalysisPIDTrack")),
-  fAnalysisTrack(new AliAnalysisPIDTrack()),
-  fAnalysisParticleArray(new TClonesArray("AliAnalysisPIDParticle")),
-  fAnalysisParticle(new AliAnalysisPIDParticle()),
-  fAnalysisV0TrackArray(new TClonesArray("AliAnalysisPIDV0")),
-  fAnalysisV0Track(new AliAnalysisPIDV0()),
+  fAnalysisEvent(new AliAnalysisPIDCascadeEvent()),
+  fAnalysisTrackArray(new TClonesArray("AliAnalysisPIDCascadeTrack")),
+  fAnalysisTrack(new AliAnalysisPIDCascadeTrack()),
+  fAnalysisParticleArray(new TClonesArray("AliAnalysisPIDCascadeParticle")),
+  fAnalysisParticle(new AliAnalysisPIDCascadeParticle()),
+  fAnalysisV0TrackArray(new TClonesArray("AliAnalysisPIDCascadeV0")),
+  fAnalysisV0Track(new AliAnalysisPIDCascadeV0()),
   fAnalysisCascadeTrackArray(new TClonesArray("AliAnalysisPIDCascade")),
   fAnalysisCascadeTrack(new AliAnalysisPIDCascade()),
   fTOFcalib(new AliTOFcalib()),
@@ -251,7 +251,7 @@ AliAnalysisTaskTPCTOFCascade::UserCreateOutputObjects()
   OpenFile(2);
   /* output tree */
   fPIDTree = new TTree("PIDTree","PIDTree");
-  fPIDTree->Branch("AnalysisEvent", "AliAnalysisPIDEvent", &fAnalysisEvent);  
+  fPIDTree->Branch("AnalysisEvent", "AliAnalysisPIDCascadeEvent", &fAnalysisEvent);  
   fPIDTree->Branch("AnalysisTrack", "TClonesArray", &fAnalysisTrackArray); 
   fPIDTree->Branch("AnalysisV0Track","TClonesArray",&fAnalysisV0TrackArray);
   fPIDTree->Branch("AnalysisCascadeTrack","TClonesArray",&fAnalysisCascadeTrackArray);
@@ -610,10 +610,10 @@ void AliAnalysisTaskTPCTOFCascade::ProcessV0s() {
       BestPrimaryVert*/
 
     /*Done w/ calculation*/
-    AliAnalysisPIDV0* v0Tree = new ((*fAnalysisV0TrackArray)[fAnalysisV0TrackArray->GetEntries()]) AliAnalysisPIDV0();
+    AliAnalysisPIDCascadeV0* v0Tree = new ((*fAnalysisV0TrackArray)[fAnalysisV0TrackArray->GetEntries()]) AliAnalysisPIDCascadeV0();
     
-    AliAnalysisPIDTrack *pTrack = new AliAnalysisPIDTrack();
-    AliAnalysisPIDTrack *nTrack = new AliAnalysisPIDTrack();
+    AliAnalysisPIDCascadeTrack *pTrack = new AliAnalysisPIDCascadeTrack();
+    AliAnalysisPIDCascadeTrack *nTrack = new AliAnalysisPIDCascadeTrack();
     pTrack->Update(pEsdTrack, fMCEvent, fPIDResponse, GetTrackCutsFlag(pEsdTrack));
     nTrack->Update(nEsdTrack, fMCEvent, fPIDResponse, GetTrackCutsFlag(nEsdTrack));
 
@@ -699,16 +699,6 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
     if (temp_p->Pt()<0.15||temp_n->Pt()<0.15||temp_b->Pt()<0.15)
       continue;
 /////////////////////////////////////////////////////////////////////////////
-    //PID cuts & Mass Estimations
-    // Bachelor
-    // Double_t nSigmaBachK = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(temp_b, AliPID::kKaon));
-    // Double_t nSigmaBachPi = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(temp_b, AliPID::kPion));
-    // // Negative V0 daughter
-    // Double_t nSigmaPiNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(temp_n, AliPID::kPion));
-    // Double_t nSigmaPNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(temp_n,AliPID::kProton));
-    // // Positive V0 daughter
-    // Double_t nSigmaPiPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(temp_p,AliPID::kPion));
-    // Double_t nSigmaPPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(temp_p,AliPID::kProton));
 /////////////////////////////////////////////////////////////////////////////
     if(temp_b->GetSign()<0){
       casc->ChangeMassHypothesis(lV0quality, 3312); //Xi-
@@ -764,11 +754,11 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
      AliAnalysisPIDCascade* Cascade = new ((*fAnalysisCascadeTrackArray)[ArrayCounter]) AliAnalysisPIDCascade();
      ArrayCounter++;
         
-     AliAnalysisPIDTrack* bTrack = (AliAnalysisPIDTrack*)Cascade->GetBachAnalysisTrack();
-     AliAnalysisPIDV0* V0 = (AliAnalysisPIDV0*)Cascade->GetV0();
+     AliAnalysisPIDCascadeTrack* bTrack = (AliAnalysisPIDCascadeTrack*)Cascade->GetBachAnalysisTrack();
+     AliAnalysisPIDCascadeV0* V0 = (AliAnalysisPIDCascadeV0*)Cascade->GetV0();
      
-     AliAnalysisPIDTrack* pTrack = new AliAnalysisPIDTrack();
-     AliAnalysisPIDTrack* nTrack = new AliAnalysisPIDTrack();
+     AliAnalysisPIDCascadeTrack* pTrack = new AliAnalysisPIDCascadeTrack();
+     AliAnalysisPIDCascadeTrack* nTrack = new AliAnalysisPIDCascadeTrack();
 
      bTrack->Update(temp_b,fMCEvent,fPIDResponse, GetTrackCutsFlag(temp_b));
      pTrack->Update(temp_p,fMCEvent,fPIDResponse, GetTrackCutsFlag(temp_p));
@@ -841,38 +831,37 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
     V0MPercentile = -999;
   else {
     V0MPercentile = ams->GetMultiplicityPercentile("V0M");
-    if(ams->GetThisEventIsNotPileup()) EventSelectionFlag += AliAnalysisPIDEvent::kNotPileupInSPD;
-    if(ams->GetThisEventIsNotPileupMV()) EventSelectionFlag += AliAnalysisPIDEvent::kNotPileupInMV;
-    if(ams->GetThisEventIsNotPileupInMultBins()) EventSelectionFlag += AliAnalysisPIDEvent::kNotPileupInMB;
-    if(ams->GetThisEventINELgtZERO()) EventSelectionFlag+=AliAnalysisPIDEvent::kINELgtZERO;
-    if(ams->GetThisEventHasNoInconsistentVertices()) EventSelectionFlag+=AliAnalysisPIDEvent::kNoInconsistentVtx;
-    if(ams->GetThisEventIsNotAsymmetricInVZERO()) EventSelectionFlag+=AliAnalysisPIDEvent::kNoV0Asym;
+    if(ams->GetThisEventIsNotPileup()) EventSelectionFlag += AliAnalysisPIDCascadeEvent::kNotPileupInSPD;
+    if(ams->GetThisEventIsNotPileupMV()) EventSelectionFlag += AliAnalysisPIDCascadeEvent::kNotPileupInMV;
+    if(ams->GetThisEventIsNotPileupInMultBins()) EventSelectionFlag += AliAnalysisPIDCascadeEvent::kNotPileupInMB;
+    if(ams->GetThisEventINELgtZERO()) EventSelectionFlag+=AliAnalysisPIDCascadeEvent::kINELgtZERO;
+    if(ams->GetThisEventHasNoInconsistentVertices()) EventSelectionFlag+=AliAnalysisPIDCascadeEvent::kNoInconsistentVtx;
+    if(ams->GetThisEventIsNotAsymmetricInVZERO()) EventSelectionFlag+=AliAnalysisPIDCascadeEvent::kNoV0Asym;
   };
   Bool_t lSPDandTrkVtxExists=kFALSE;
   Bool_t lPassProximityCut=kTRUE;
-  if(SelectVertex2015pp(fESDEvent,kTRUE,&lSPDandTrkVtxExists,&lPassProximityCut)) EventSelectionFlag+=AliAnalysisPIDEvent::kVertexSelected2015pp;
-  if(lSPDandTrkVtxExists) EventSelectionFlag+=AliAnalysisPIDEvent::kSPDandTrkVtxExists;
-  if(lPassProximityCut) EventSelectionFlag+=AliAnalysisPIDEvent::kPassProximityCut;
+  if(SelectVertex2015pp(fESDEvent,kTRUE,&lSPDandTrkVtxExists,&lPassProximityCut)) EventSelectionFlag+=AliAnalysisPIDCascadeEvent::kVertexSelected2015pp;
+  if(lSPDandTrkVtxExists) EventSelectionFlag+=AliAnalysisPIDCascadeEvent::kSPDandTrkVtxExists;
+  if(lPassProximityCut) EventSelectionFlag+=AliAnalysisPIDCascadeEvent::kPassProximityCut;
   fAnalysisEvent->SetV0Mmultiplicity(V0MPercentile);
   fAnalysisEvent->SetEventFlags(EventSelectionFlag);
-  AliVVZERO *v0 = fESDEvent->GetVZEROData();
-  for(Int_t i=0;i<32;i++) fAnalysisEvent->SetV0CellAmplitude(i,v0->GetMultiplicityV0A(i));
-  for(Int_t i=32;i<64;i++) fAnalysisEvent->SetV0CellAmplitude(i,v0->GetMultiplicityV0C(i-32));
+  //  AliVVZERO *v0 = fESDEvent->GetVZEROData();
+  // for(Int_t i=0;i<32;i++) fAnalysisEvent->SetV0CellAmplitude(i,v0->GetMultiplicityV0A(i));
+  // for(Int_t i=32;i<64;i++) fAnalysisEvent->SetV0CellAmplitude(i,v0->GetMultiplicityV0C(i-32));
   
   Float_t RefMult08 = -1000;
   Float_t RefMult05 = -1000;
   Float_t SPDTracklets = -1000;
-
+  if(!ams){ 
+   RefMult08 = -999;
+   RefMult05 = -999;
+   SPDTracklets = -999;
+  }
   if(ams){
     RefMult08 = ams->GetMultiplicityPercentile("RefMult08");
     RefMult05 = ams->GetMultiplicityPercentile("RefMult05");
     SPDTracklets = ams->GetMultiplicityPercentile("SPDTracklets");
   }
-
-  fAnalysisEvent->SetV0CellAmplitude(0, RefMult08);
-  fAnalysisEvent->SetV0CellAmplitude(1, RefMult05);
-  fAnalysisEvent->SetV0CellAmplitude(2, SPDTracklets);
-
 
   /*** MC PRIMARY PARTICLES ***/
 
@@ -922,7 +911,7 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
 
       /* update and add analysis particle */
       fAnalysisParticle->Update(particle, ipart, lMotherPDG);
-      new ((*fAnalysisParticleArray)[fAnalysisParticleArray->GetEntries()]) AliAnalysisPIDParticle(*fAnalysisParticle);
+      new ((*fAnalysisParticleArray)[fAnalysisParticleArray->GetEntries()]) AliAnalysisPIDCascadeParticle(*fAnalysisParticle);
     } /* end of loop over primary particles */
 
     
@@ -937,19 +926,9 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
   fAnalysisEvent->SetIsPileupFromSPD(fIsPileupFromSPD);
   fAnalysisEvent->SetHasVertex(fHasVertex);
   fAnalysisEvent->SetVertexZ(fVertexZ);
-  fAnalysisEvent->SetMCTimeZero(fMCTimeZero);
+  // fAnalysisEvent->SetMCTimeZero(fMCTimeZero);
   fAnalysisEvent->SetRunNumber(fRunNumber);
   fAnalysisEvent->SetMagneticField(fESDEvent->GetMagneticField());
-				
-  /* update TOF event info */
-  for (Int_t i = 0; i < 10; i++) {
-    fAnalysisEvent->SetTimeZeroTOF(i, fESDpid->GetTOFResponse().GetT0bin(i));
-    fAnalysisEvent->SetTimeZeroTOFSigma(i, fESDpid->GetTOFResponse().GetT0binRes(i));
-  }
-  /* update T0 event info */
-  for (Int_t i = 0; i < 3; i++)
-    fAnalysisEvent->SetTimeZeroT0(i, fESDEvent->GetT0TOF(i));
-
 
   Int_t refmulti;
   refmulti = AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.8);  
@@ -976,22 +955,20 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
     const AliESDVertex *vtx = fESDEvent->GetPrimaryVertexTracks();
     if(!vtx || !vtx->GetStatus())
       vtx = fESDEvent->GetPrimaryVertexSPD();
-    if(vtx) {
-      if(vtx->GetStatus()) {
-	Double_t ChiConstrained = track->GetChi2TPCConstrainedVsGlobal(vtx);
-	fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(ChiConstrained);
-      } else
-	fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(-8);
-    };
-    if(track->IsEMCAL()) {
-      AliVCluster *lvcl = fESDEvent->GetCaloCluster(track->GetEMCALcluster());
-      if(lvcl)
-	fAnalysisTrack->SetEMCalPars(lvcl->E(),track->GetTrackPOnEMCal());
-    };
-    new ((*fAnalysisTrackArray)[fAnalysisTrackArray->GetEntries()]) AliAnalysisPIDTrack(*fAnalysisTrack);
-    //fAnalysisV0Track = (V0Track*)fAnalysisTrack;
-    /*fAnalysisV0Track->SetExtraParam(3);
-      new ((*fAnalysisV0TrackArray)[fAnalysisV0TrackArray->GetEntries()]) V0Track(*fAnalysisV0Track);*/
+    // if(vtx) {
+    //   if(vtx->GetStatus()) {
+    // 	Double_t ChiConstrained = track->GetChi2TPCConstrainedVsGlobal(vtx);
+    // 	fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(ChiConstrained);
+    //   } else
+    // 	fAnalysisTrack->SetChi2TPCConstrainedVsGlobal(-8);
+    // };
+    // if(track->IsEMCAL()) {
+    //   AliVCluster *lvcl = fESDEvent->GetCaloCluster(track->GetEMCALcluster());
+    //   if(lvcl)
+    // 	fAnalysisTrack->SetEMCalPars(lvcl->E(),track->GetTrackPOnEMCal());
+    // };
+    new ((*fAnalysisTrackArray)[fAnalysisTrackArray->GetEntries()]) AliAnalysisPIDCascadeTrack(*fAnalysisTrack);
+
     
 
   } /* end of loop over ESD tracks */

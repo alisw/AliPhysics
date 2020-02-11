@@ -90,9 +90,13 @@
 #pragma link C++ class AliMultiplictyLoaderTask+;
 
 #pragma link C++ class AliAnalysisPIDEvent+;
+#pragma link C++ class AliAnalysisPIDCascadeEvent+;
 #pragma link C++ class AliAnalysisPIDParticle+;
+#pragma link C++ class AliAnalysisPIDCascadeParticle+;
 #pragma link C++ class AliAnalysisPIDTrack+;
+#pragma link C++ class AliAnalysisPIDCascadeTrack+;
 #pragma link C++ class AliAnalysisPIDV0+;
+#pragma link C++ class AliAnalysisPIDCascadeV0+;
 #pragma link C++ class AliAnalysisPIDCascade+;
 #pragma link C++ class AliAnalysisTaskTPCTOFPID+;
 #pragma link C++ class AliAnalysisTaskTPCTOFCascade+;
