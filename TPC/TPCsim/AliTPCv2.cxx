@@ -566,9 +566,9 @@ void AliTPCv2::CreateGeometry()
   v9->AddNode(tv100,1);
   //
   // guard rings for IFC - outer placed in inner insulator, inner placed in the drift gas (3 different radii)
-  // AL, 1.2 cm wide, 0.015 cm thick, volumes TPC_IGR1 - outer, TPC_IGR2-4 - outer
+  // AL, 1.2 cm wide, 0.015 cm thick, volumes TPC_IGR1 - outer, TPC_IGR2-4 - inner
   //
-  TGeoTube *igro = new TGeoTube(76.6774,76.6624,0.6); 
+  TGeoTube *igro = new TGeoTube(76.6624,76.6774,0.6);
   TGeoTube *igrio = new TGeoTube(78.845,78.86,0.6); //outer part
   TGeoTube *igrim = new TGeoTube(78.795,78.81,0.6);
   TGeoTube *igric = new TGeoTube(78.785,78.8,0.6);
