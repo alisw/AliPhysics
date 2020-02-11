@@ -178,8 +178,10 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     bool isAlabama = CommonAncestors(part1,part2);
     if (isAlabama) {
       fHists->FillSameEventDistCommon(iHC, RelativeK);
+      if (fHists->GetDoMultBinning()) fHists->FillSameEventMultDistCommon(iHC, Mult + 1, RelativeK);
     } else {
       fHists->FillSameEventDistNonCommon(iHC, RelativeK);
+      if (fHists->GetDoMultBinning()) fHists->FillSameEventMultDistNonCommon(iHC, Mult + 1, RelativeK);
     }
   }
   return RelativeK;
