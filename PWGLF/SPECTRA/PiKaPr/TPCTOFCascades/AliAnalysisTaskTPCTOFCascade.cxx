@@ -863,6 +863,9 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
     SPDTracklets = ams->GetMultiplicityPercentile("SPDTracklets");
   }
 
+  fAnalysisEvent->SetRefMult08(RefMult08);
+  fAnalysisEvent->SetRefMult05(RefMult05);
+  fAnalysisEvent->SetSPDTracklets(SPDTracklets);
   /*** MC PRIMARY PARTICLES ***/
 
   Int_t mcmulti = 0;
