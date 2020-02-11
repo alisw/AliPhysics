@@ -151,6 +151,11 @@ AliAnalysisTaskHypertriton3ML::~AliAnalysisTaskHypertriton3ML() {
     delete fTreeHyp3;
     fTreeHyp3 = nullptr;
   }
+
+  if (fMLResponse) {
+    delete fMLResponse;
+    fMLResponse = nullptr;
+  }
 }
 
 //_______________________________________________________________________________
