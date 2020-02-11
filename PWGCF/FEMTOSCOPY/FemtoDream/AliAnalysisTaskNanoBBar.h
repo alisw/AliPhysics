@@ -20,6 +20,8 @@
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
 #include "AliFemtoDreamControlSample.h"
+#include "AliFemtoDreamBaseDump.h"
+
 
 class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
  public:
@@ -95,6 +97,16 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   AliFemtoDreamControlSample *fSample;   //!
   TList *fResultsSample;//!
   TList *fResultsSampleQA;//!
+  AliFemtoDreamDump *fProtonAntiProtonDump; //!
+  AliFemtoDreamDump *fProtonAntiLambdaDump; //!
+  AliFemtoDreamDump *fAntiProtonLambdaDump; //!
+  AliFemtoDreamDump *fLambdaAntiLambdaDump; //!
+  AliFemtoDreamDump *fProtonAntiXiDump; //!
+  AliFemtoDreamDump *fAntiProtonXiDump; //!
+  AliFemtoDreamDump *fLambdaAntiXiDump; //!
+  AliFemtoDreamDump *fAntiLambdaXiDump; //!
+  AliFemtoDreamDump *fXiAntiXiDump; //!
+  TList* fDumpster; //!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
   ClassDef(AliAnalysisTaskNanoBBar,3)
