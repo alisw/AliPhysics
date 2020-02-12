@@ -80,8 +80,8 @@ protected:
     TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree;
     
     
-
-
+    
+    
     Float_t fCentrality;
     Int_t fTreeVariablePID;
     Int_t fTreeVariablePIDParent;
@@ -97,8 +97,6 @@ protected:
     Int_t  fNptBins;
     
     THnSparse *fPtBinNplusNminusChTruth;
-    THnSparse *fPtBinNplusNminusChVO;
-    
     THnSparse *fPtBinNplusNminusChRec;
     THnSparse *fPtBinNplusNminusChRecTag;
     
@@ -111,5 +109,6 @@ protected:
 
 
 #endif
+
 
 

@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Feb 8
+// Updated Feb 11
 
 
 #include "AliAnalysisManager.h"
@@ -160,7 +160,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         fPtBinNplusNminusChRecTag = new THnSparseI("fPtBinNplusNminusChRecTag","fPtBinNplusNminusChRecTag", dim, bin, min, max);
         fListHist->Add(fPtBinNplusNminusChRecTag); //
         
-   
+        
         
         //-------------------------------------------------------------------GEN-----------------------------------------------------------------------------------------------
         
@@ -177,10 +177,10 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         fListHist->Add(f2fHistXiMinus);
         
         
-        f2fHistGenCentVsPtLambdacopy = new TH2F( "f2fHistGenCentVsPtLambdacopy", "Centrality Vs #Lambda Gen Pt",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        f2fHistGenCentVsPtLambdacopy = new TH2F( "f2fHistGenCentVsPtLambdacopy", "f2fHistGenCentVsPtLambdacopy",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistGenCentVsPtLambdacopy);
         
-        f2fHistGenCentVsPtAntiLambdacopy = new TH2F( "f2fHistGenCentVsPtAntiLambdacopy", "Centrality Vs #bar{#Lambda} Gen Pt",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        f2fHistGenCentVsPtAntiLambdacopy = new TH2F( "f2fHistGenCentVsPtAntiLambdacopy", "f2fHistGenCentVsPtAntiLambdacopy",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistGenCentVsPtAntiLambdacopy);
         
         f2fHistXiPluscopy = new TH2F("f2fHistXiPluscopy","f2fHistXiPluscopy",CentbinNum, CentBins, xibinnumb, xibinlimits);
@@ -249,7 +249,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag","f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
         fListHist->Add(f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag);
         
-          f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut","f3fHistCentInvMassVsPtLambdaRecFourUntagCuttight",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut","f3fHistCentInvMassVsPtLambdaRecFourUntagCuttight",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
         fListHist->Add(f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut);
         
         /////
@@ -611,69 +611,69 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 Int_t iptbinRec = GetPtBin(mcpt);
                 if( iptbinRec < 0 || iptbinRec > fNptBins-1 ) continue;
                 if( iptbinRecTag < 0 || iptbinRecTag > fNptBins-1 ) continue;
-               
+                
                 
                 //L
                 if(TMath::Abs(eta) < 0.8)
                 {
-                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
-                {
-                    f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
-                    if(invMassLambda > 1.11 && invMassLambda < 1.122)
+                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
                     {
-                        ptChRec[iptbinRec] += 1;
-                        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassLambda,mcpt);
-                    }
-                    
-                    if(fTreeVariablePID == 3122)
-                    {
-                        f3fHistCentInvMassVsPtLambdaRecFourSigthree->Fill(fCentrality,invMassLambda,mcpt);
-                        if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag] += 1;}
-                        if(isSecFromWeakDecay)
+                        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
+                        if(invMassLambda > 1.11 && invMassLambda < 1.122)
                         {
-                            f2fHistRecSecCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);
-                            if(isPrimParent)
-                            {
-                                if ((fTreeVariablePIDParent == 3312) || (fTreeVariablePIDParent == 3322))
-                                {
-                                    f3fHistLambdafromXiFourSigthree->Fill(mcpt,fCentrality,fTreeVariablePtParent);
-                                }
-                            }
+                            ptChRec[iptbinRec] += 1;
+                            f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassLambda,mcpt);
                         }
-                        else if(isSecFromMaterial) {f2fHistRecMatCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);}
                         
-                    }
-                }
-                
-                //L-BAR
-                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3)
-                {
-                    f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
-                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
-                    {
-                        ptChRec[iptbinRec+fNptBins] += 1;
-                        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassAntiLambda,mcpt);
-                    }
-                    
-                    if(fTreeVariablePID == -3122)
-                    {
-                        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree->Fill(fCentrality,invMassAntiLambda,mcpt);
-                        if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag+fNptBins] += 1;}
-                        if(isSecFromWeakDecay)
+                        if(fTreeVariablePID == 3122)
                         {
-                            f2fHistRecSecCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);
-                            if(isPrimParent)
+                            f3fHistCentInvMassVsPtLambdaRecFourSigthree->Fill(fCentrality,invMassLambda,mcpt);
+                            if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag] += 1;}
+                            if(isSecFromWeakDecay)
                             {
-                                if ((fTreeVariablePIDParent == -3312) || (fTreeVariablePIDParent == -3322))
-                                    
+                                f2fHistRecSecCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);
+                                if(isPrimParent)
                                 {
-                                    f3fHistAntiLambdafromXiFourSigthree->Fill(mcpt,fCentrality,fTreeVariablePtParent);
+                                    if ((fTreeVariablePIDParent == 3312) || (fTreeVariablePIDParent == 3322))
+                                    {
+                                        f3fHistLambdafromXiFourSigthree->Fill(mcpt,fCentrality,fTreeVariablePtParent);
+                                    }
                                 }
                             }
+                            else if(isSecFromMaterial) {f2fHistRecMatCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);}
+                            
                         }
-                        else if(isSecFromMaterial) {f2fHistRecMatCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);}
                     }
-                }
+                    
+                    //L-BAR
+                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3)
+                    {
+                        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
+                        if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
+                        {
+                            ptChRec[iptbinRec+fNptBins] += 1;
+                            f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassAntiLambda,mcpt);
+                        }
+                        
+                        if(fTreeVariablePID == -3122)
+                        {
+                            f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree->Fill(fCentrality,invMassAntiLambda,mcpt);
+                            if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag+fNptBins] += 1;}
+                            if(isSecFromWeakDecay)
+                            {
+                                f2fHistRecSecCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);
+                                if(isPrimParent)
+                                {
+                                    if ((fTreeVariablePIDParent == -3312) || (fTreeVariablePIDParent == -3322))
+                                        
+                                    {
+                                        f3fHistAntiLambdafromXiFourSigthree->Fill(mcpt,fCentrality,fTreeVariablePtParent);
+                                    }
+                                }
+                            }
+                            else if(isSecFromMaterial) {f2fHistRecMatCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);}
+                        }
+                    }
                 }// |eta| < 0.8
                 
                 if(TMath::Abs(eta) < 0.3)
