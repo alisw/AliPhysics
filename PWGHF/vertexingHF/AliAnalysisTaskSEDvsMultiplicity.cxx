@@ -270,8 +270,8 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   }else if(fPdgMeson == 4122) {
     Double_t massLc  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
     Int_t nInvMassBins = 500;
-    Double_t minMass = massLc-0.250;
-    Double_t maxMass = massLc+0.250;
+    Double_t minMass = massLc-0.180;
+    Double_t maxMass = massLc+0.180;
     SetMassLimits(minMass,maxMass);
     SetNMassBins(nInvMassBins);
   }
