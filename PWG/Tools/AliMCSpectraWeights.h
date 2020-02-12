@@ -13,7 +13,6 @@ class AliMCEvent;
 class TH3F;
 class TH1D;
 class TF1;
-class TObjArray;
 #include <string>
 #include <vector>
 
@@ -168,8 +167,6 @@ public:
     TH3F* GetHistDataFraction() const { return fHistDataFractions; }
     TH3F* GetHistMCFraction() const { return fHistMCFractions; }
     TH3F* GetHistMCWeights() const { return fHistMCWeights; }
-    //FIXME: DEBUG HIST
-    TObjArray* GetHistMCFractionsArr() const {return fHistMCFractionsArr;}
     SysFlag GetSysFlag() const { return fFlag; }
     float GetMultOrCent() const { return fMultOrCent; }
     
