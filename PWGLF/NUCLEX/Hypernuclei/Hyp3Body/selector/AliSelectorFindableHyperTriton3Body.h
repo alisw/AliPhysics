@@ -20,6 +20,7 @@
 
 class TH1D;
 class TH2D;
+class TH3D;
 
 class AliSelectorFindableHyperTriton3Body : public TSelector {
 public:
@@ -79,8 +80,13 @@ public:
 
   TVector3 fPrimaryVertexXYZ;
 
-  ULong_t fCurrentEventId = 0ull;
-  int fLastMother         = -1;
+  ULong_t fCurrentEventId       = 0ull;
+  int fLastMother               = -1;
+  int fLastEvent                = -1;
+  TH3D *fHistRec[2]             = {nullptr};
+  TH3D *fHistTrueRecNoMult[2]   = {nullptr};
+  TH3D *fHistFake[2]            = {nullptr};
+  TH3D *fHistMultiple[2]        = {nullptr};
 
   TH2D *fHistInvMass[2][3]      = {{nullptr}};
   TH1D *fHistPt[2][3]           = {{nullptr}};
