@@ -465,12 +465,11 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
       }
     }
     if (pass && fcutXiMass) {
-       if(
-         (fXiMassWidthExcl<0.&&fabs(casc->GetMass()-fXiMass)>fXiMassWidth)
-         ||(fXiMassWidthExcl>-1.&&
-           (fabs(casc->GetMass()-fXiMass)>fXiMassWidth
-           ||fabs(casc->GetMass()-fXiMass)<fXiMassWidthExcl))
-      ){
+      if ((fXiMassWidthExcl < 0.
+          && fabs(casc->GetMass() - fXiMass) > fXiMassWidth)
+          || (fXiMassWidthExcl > -1.
+              && (fabs(casc->GetMass() - fXiMass) > fXiMassWidth
+                  || fabs(casc->GetMass() - fXiMass) < fXiMassWidthExcl))) {
         pass = false;
       } else {
         if (!fMinimalBooking)
@@ -557,6 +556,8 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
         fHist->FillInvMass(i, casc->GetMass());
         fHist->FillInvMassLambda(i, casc->Getv0Mass());
         fHist->FillXiPt(i, casc->GetMomentum().Pt());
+        fHist->FillXiEta(i, casc->GetMomentum().Eta());
+        fHist->FillXiPhi(i, TVector2::Phi_0_2pi(casc->GetMomentum().Phi()));
         fHist->FillMomRapXi(i, casc->GetXiRapidity(),
                             casc->GetMomentum().Mag());
         fHist->FillMomRapOmega(i, casc->GetOmegaRapidity(),
@@ -572,6 +573,8 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
         fHist->FillCPAv0(i, casc->Getv0CPA());
         fHist->FillCPAv0Xi(i, casc->Getv0XiPointingAngle());
         fHist->Fillv0Pt(i, casc->Getv0Pt());
+        fHist->Fillv0Eta(i, casc->Getv0P().Eta());
+        fHist->Fillv0Phi(i, TVector2::Phi_0_2pi(casc->Getv0P().Phi()));
         fHist->FillTransverseRadiusv0(i, casc->Getv0TransverseRadius());
         fHist->FillMinDistPrimVtxv0(i, casc->Getv0DCAPrimVtx());
         fHist->FillMinDistPrimVtxv0DaugPos(i, casc->Getv0PosToPrimVtx());
