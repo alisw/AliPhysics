@@ -125,12 +125,16 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetGeneratorULSSignalName(generators);
   task->SetLHC19f2MC(isLHC19f2);
 
+	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/%s .",resolutionFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
+	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/%s ."    ,cocktailFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
+	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/centrality/%s .",centralityFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
+
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resolutionFilename);
-  task->SetResolutionFileFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/" + resolutionFilename);
+  //task->SetResolutionFileFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/" + resolutionFilename);
   task->SetCentralityFile(centralityFilename);
   task->SetCocktailWeighting(cocktailFilename);
-  task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/" + cocktailFilename);
+  //task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/" + cocktailFilename);
 
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
