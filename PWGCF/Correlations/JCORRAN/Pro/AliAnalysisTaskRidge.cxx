@@ -636,7 +636,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 //IsMultiplicityInsideBin Flag Configuration********
 	centbin = binCent.FindBin(fCent) -1;
 	if( centbin >= 0 && centbin < binCent.GetNbins() ) IsMultiplicityInsideBin = kTRUE;
-	if( fOption.Contains("HighMult") && fOption.Contains("V0MCUT") ){
+	if( fOption.Contains("HighMult") && fOption.Contains("CUTwithV0M") ){
 		if( v0amplitude < 5.0 * V0M_mean || v0amplitude > 9.0 * V0M_mean ){
 			IsMultiplicityInsideBin = kFALSE;
 		}
