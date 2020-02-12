@@ -359,6 +359,600 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
         //_______________________________
 
 
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. This plot should
+                                 * show the relative components of the 0 neutron
+                                 * peak, the 1 neutron peak and possibly the
+                                 * 2 neutrons peak. Anything higher than that,
+                                 * requires help from the user and is more like
+                                 * a guess...
+                                 */
+        TH1F*                   fZNCEnergyAgainstEntriesH;                 //!
+        TH1F*                   fZNCEnergyAgainstEntriesExtendedH;         //!
+        TH1F*                   fZNCEnergyAgainstEntriesExtendedHv2;       //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. This plot should
+                                 * show the relative components of the 0 neutron
+                                 * peak, the 1 neutron peak and possibly the
+                                 * 2 neutrons peak. Anything higher than that,
+                                 * requires help from the user and is more like
+                                 * a guess...
+                                 */
+        TH1F*                   fZNAEnergyAgainstEntriesH;                 //!
+        TH1F*                   fZNAEnergyAgainstEntriesExtendedH;         //!
+        TH1F*                   fZNAEnergyAgainstEntriesExtendedHv2;       //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNCEnergyBeforeTimingSelectionH;                 //!
+        TH1F*                   fZNCEnergyBeforeTimingSelectionExtendedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNAEnergyBeforeTimingSelectionH;                 //!
+        TH1F*                   fZNAEnergyBeforeTimingSelectionExtendedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 */
+        TH1F*                   fZNCEnergyCalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 */
+        TH1F*                   fZNAEnergyCalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. UNCALIBRATED.
+                                 */
+        TH1F*                   fZNCEnergyUncalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. UNCALIBRATED.
+                                 */
+        TH1F*                   fZNAEnergyUncalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 * This is only a trial version for a possible
+                                 * future unified plot with the supposedly
+                                 * not calibrated runs. What happens here is
+                                 * that this plots are filled with the value
+                                 * obtained from the LOW RESOLUTION (HIGH GAIN)
+                                 * getter. This multiplies for 8 times the
+                                 * value obtained fro mnormal getters, and it
+                                 * should provide a better description of the
+                                 * lower part of the ZDC energy spectrum.
+                                 */
+        TH1F*                   fZNCEnergyCalibratedHigherGainH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 * This is only a trial version for a possible
+                                 * future unified plot with the supposedly
+                                 * not calibrated runs. What happens here is
+                                 * that this plots are filled with the value
+                                 * obtained from the LOW RESOLUTION (HIGH GAIN)
+                                 * getter. This multiplies for 8 times the
+                                 * value obtained fro mnormal getters, and it
+                                 * should provide a better description of the
+                                 * lower part of the ZDC energy spectrum.
+                                 */
+        TH1F*                   fZNAEnergyCalibratedHigherGainH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC.
+                                 */
+        TH1F*                   fZNCTimeAgainstEntriesH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC.
+                                 */
+        TH1F*                   fZNATimeAgainstEntriesH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. The timing window here is
+                                 * a bit stricter at -1.<t<1.
+                                 */
+        TH1F*                   fZNCTimeStrictTimeWindowH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC.The timing window here is
+                                 * a bit stricter at -1.<t<1.
+                                 */
+        TH1F*                   fZNATimeStrictTimeWindowH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. No timing selection to check
+                                 * if bunch crossings influence the output.
+                                 */
+        TH1F*                   fZNCTimeWithoutTimingH[4];         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. No timing selection to check
+                                 * if bunch crossings influence the output.
+                                 */
+        TH1F*                   fZNATimeWithoutTimingH[4];         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. I am filling it with all the
+                                 * possible TDC info. Basically it is the sum
+                                 * of the all the 4 histograms.
+                                 */
+        TH1F*                   fZNCTime4FillingH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. I am filling it with all the
+                                 * possible TDC info. Basically it is the sum
+                                 * of the all the 4 histograms.
+                                 */
+        TH1F*                   fZNATime4FillingH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. What we are
+                                 * plotting here is the distribution of:
+                                 * (ZNC-ZNA time) vs (ZNC+ZNA time).
+                                 * Such a plot should show up all the different
+                                 * collision possibilities (main-main,
+                                 * main-satellite/satellite-main and
+                                 * satellite-satellite).
+                                 */
+        TH2F*                   fZNCminusZNAtimeVsZNCplusZNAtimeH[4];  //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. I am filling it with all the
+                                 * possible TDC info. Basically it is the sum
+                                 * of the all the 4 histograms. What we are
+                                 * plotting here is the distribution of:
+                                 * (ZNC-ZNA time) vs (ZNC+ZNA time).
+                                 * Such a plot should show up all the different
+                                 * collision possibilities (main-main,
+                                 * main-satellite/satellite-main and
+                                 * satellite-satellite).
+                                 */
+        TH2F*                   fZNCminusZNAtimeVsZNCplusZNAtime4FillingH;  //!
+
+                                /**
+                                 * This histogram records which information
+                                 * I am looking at when I fill the time
+                                 * histogram, and this effect should
+                                 * reflect itself into the energy plots
+                                 * because it shoudl give an indication of
+                                 * what could possibly go wrong in the ZDC
+                                 * analysis. ZNA case.
+                                 */
+        TH1F*                   fCounterZNAH;         //!
+
+                                /**
+                                 * This histogram records which information
+                                 * I am looking at when I fill the time
+                                 * histogram, and this effect should
+                                 * reflect itself into the energy plots
+                                 * because it shoudl give an indication of
+                                 * what could possibly go wrong in the ZDC
+                                 * analysis. ZNC case.
+                                 */
+        TH1F*                   fCounterZNCH;         //!
+
+
+
+        //_______________________________
+        // DIFFERENTIAL NEUTRON EMISSION PLOTS
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt < 0.25 GeV/c for pt of the dimuon pair.
+                                 * The ZNC has 0 neutrons.
+                                 * The ZNA has 0 neutrons.
+                                 *
+                                 * Shift -2 => pt < 0.200 GeV/c
+                                 * Shift -1 => pt < 0.225 GeV/c
+                                 * Shift +1 => pt < 0.275 GeV/c
+                                 * Shift +2 => pt < 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 */
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroH;                   //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[3];      //!
+
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt < 0.25 GeV/c for pt of the dimuon pair.
+                                 * The ZNC has 0 neutrons.
+                                 * The ZNA has ANY neutrons.
+                                 *
+                                 * Shift -2 => pt < 0.200 GeV/c
+                                 * Shift -1 => pt < 0.225 GeV/c
+                                 * Shift +1 => pt < 0.275 GeV/c
+                                 * Shift +2 => pt < 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 */
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyH;                   //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[3];      //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt < 0.25 GeV/c for pt of the dimuon pair.
+                                 * The ZNC has ANY neutrons.
+                                 * The ZNA has 0 neutrons.
+                                 *
+                                 * Shift -2 => pt < 0.200 GeV/c
+                                 * Shift -1 => pt < 0.225 GeV/c
+                                 * Shift +1 => pt < 0.275 GeV/c
+                                 * Shift +2 => pt < 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 */
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroH;                   //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[3];      //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt < 0.25 GeV/c for pt of the dimuon pair.
+                                 * The ZNC has ANY neutrons.
+                                 * The ZNA has ANY neutrons.
+                                 *
+                                 * Shift -2 => pt < 0.200 GeV/c
+                                 * Shift -1 => pt < 0.225 GeV/c
+                                 * Shift +1 => pt < 0.275 GeV/c
+                                 * Shift +2 => pt < 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 */
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyH;                   //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[3];      //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt > 0.25 GeV/c for pt of the dimuon pair.
+                                 * The ZNC has 0 neutrons.
+                                 * The ZNA has 0 neutrons.
+                                 *
+                                 * Shift -2 => pt > 0.200 GeV/c
+                                 * Shift -1 => pt > 0.225 GeV/c
+                                 * Shift +1 => pt > 0.275 GeV/c
+                                 * Shift +2 => pt > 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 */
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroH;                   //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2[3];      //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt > 0.25 GeV/c for pt of the dimuon pair.
+                                 * The ZNC has 0 neutrons.
+                                 * The ZNA has ANY neutrons.
+                                 *
+                                 * Shift -2 => pt > 0.200 GeV/c
+                                 * Shift -1 => pt > 0.225 GeV/c
+                                 * Shift +1 => pt > 0.275 GeV/c
+                                 * Shift +2 => pt > 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 */
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyH;                   //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2[3];      //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt > 0.25 GeV/c for pt of the dimuon pair.
+                                 * The ZNC has ANY neutrons.
+                                 * The ZNA has 0 neutrons.
+                                 *
+                                 * Shift -2 => pt > 0.200 GeV/c
+                                 * Shift -1 => pt > 0.225 GeV/c
+                                 * Shift +1 => pt > 0.275 GeV/c
+                                 * Shift +2 => pt > 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 */
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroH;                   //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2[3];      //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt > 0.25 GeV/c for pt of the dimuon pair.
+                                 * The ZNC has ANY neutrons.
+                                 * The ZNA has ANY neutrons.
+                                 *
+                                 * Shift -2 => pt > 0.200 GeV/c
+                                 * Shift -1 => pt > 0.225 GeV/c
+                                 * Shift +1 => pt > 0.275 GeV/c
+                                 * Shift +2 => pt > 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 */
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyH;                   //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2[3];      //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes.
+                                 * ZNC=0n, ZNA=0n.
+                                 *
+                                 * Shift +1 => 20 MeV/c shift
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 *
+                                 * NEW: v3 uses a variable binning...
+                                 */
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroH;                     //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH;         //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv3;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[3];        //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes.
+                                 * ZNC=0n, ZNA=Xn.
+                                 *
+                                 * Shift +1 => 20 MeV/c shift
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 *
+                                 * NEW: v3 uses a variable binning...
+                                 */
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyH;                     //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH;         //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv3;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[3];        //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes.
+                                 * ZNC=Xn, ZNA=0n.
+                                 *
+                                 * Shift +1 => 20 MeV/c shift
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 *
+                                 * NEW: v3 uses a variable binning...
+                                 */
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroH;                     //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH;         //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv3;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[3];        //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * ZNC=Xn, ZNA=Xn.
+                                 *
+                                 * Shift +1 => 20 MeV/c shift
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
+                                 *
+                                 * NEW: v3 uses a variable binning...
+                                 */
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyH;                     //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH;         //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv2[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv3;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv3[3];        //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * COHERENT, ZNC=0n, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionCoherentZNCzeroZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * COHERENT, ZNC=0n, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionCoherentZNCzeroZNAanyH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * COHERENT, ZNC=Xn, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionCoherentZNCanyZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * COHERENT, ZNC=Xn, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionCoherentZNCanyZNAanyH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * INCOHERENT, ZNC=0n, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionIncoherentZNCzeroZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * INCOHERENT, ZNC=0n, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionIncoherentZNCzeroZNAanyH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * INCOHERENT, ZNC=Xn, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionIncoherentZNCanyZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * INCOHERENT, ZNC=Xn, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionIncoherentZNCanyZNAanyH;         //!
+
+
+        //_______________________________
+        // - AD charge / multiplicity
+        /* -
+         * - Checks needed to make sure
+         * - that the bkg is under control.
+         */
+                                /**
+                                 * Collected multiplicity in the AD
+                                 * per channel and neutron emission
+                                 * class, plus total.
+                                 */
+        TH1F*                   fADmultiplicityH[16];                  //!
+        TH1F*                   fADmultiplicity0N0NclassH[16];         //!
+        TH1F*                   fADmultiplicity0NXNclassH[16];         //!
+        TH1F*                   fADmultiplicityXN0NclassH[16];         //!
+        TH1F*                   fADmultiplicityXNXNclassH[16];         //!
+        TH1F*                   fADmultiplicity0N0NclassRapidityH[48]; //!
+        TH1F*                   fADmultiplicity0NXNclassRapidityH[48]; //!
+        TH1F*                   fADmultiplicityXN0NclassRapidityH[48]; //!
+        TH1F*                   fADmultiplicityXNXNclassRapidityH[48]; //!
+        TH1F*                   fADmultiplicityTotalH;                 //!
+        TH1F*                   fADmultiplicity0N0NclassTotalH;        //!
+        TH1F*                   fADmultiplicity0NXNclassTotalH;        //!
+        TH1F*                   fADmultiplicityXN0NclassTotalH;        //!
+        TH1F*                   fADmultiplicityXNXNclassTotalH;        //!
+
+
 
         //_______________________________
         // CUTS
@@ -420,7 +1014,7 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskADin2018, 2);
+        ClassDef(AliAnalysisTaskADin2018, 6);
 };
 
 #endif

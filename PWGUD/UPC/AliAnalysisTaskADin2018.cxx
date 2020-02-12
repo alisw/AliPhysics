@@ -116,6 +116,148 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018()
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
       fInvariantMassDistributionIncoherentExtendedH(0),
+
+
+      fZNCEnergyAgainstEntriesH(0),
+      fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
+      fZNCEnergyAgainstEntriesExtendedH(0),
+      fZNAEnergyAgainstEntriesExtendedH(0),
+      fZNCEnergyAgainstEntriesExtendedHv2(0),
+      fZNAEnergyAgainstEntriesExtendedHv2(0),
+      fZNCEnergyBeforeTimingSelectionExtendedH(0),
+      fZNAEnergyBeforeTimingSelectionExtendedH(0),
+      fZNCEnergyCalibratedH(0),
+      fZNAEnergyCalibratedH(0),
+      fZNCEnergyUncalibratedH(0),
+      fZNAEnergyUncalibratedH(0),
+      fZNCEnergyCalibratedHigherGainH(0),
+      fZNAEnergyCalibratedHigherGainH(0),
+      fZNCTimeAgainstEntriesH(0),
+      fZNATimeAgainstEntriesH(0),
+      fZNCTimeStrictTimeWindowH(0),
+      fZNATimeStrictTimeWindowH(0),
+      fZNCTimeWithoutTimingH{0, 0, 0, 0},
+      fZNATimeWithoutTimingH{0, 0, 0, 0},
+      fZNCTime4FillingH(0),
+      fZNATime4FillingH(0),
+      fZNCminusZNAtimeVsZNCplusZNAtimeH{0, 0, 0, 0},
+      fZNCminusZNAtimeVsZNCplusZNAtime4FillingH(0),
+      fCounterZNCH(0),
+      fCounterZNAH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyHv2(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroHv2(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionCoherentZNCanyZNAanyH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyHv2(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyHv2(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionZNCzeroZNAanyH(0),
+      fDimuonPtDistributionZNCanyZNAzeroH(0),
+      fDimuonPtDistributionZNCanyZNAanyH(0),
+      fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH(0),
+      fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH(0),
+      fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH(0),
+      fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH(0),
+      fDimuonPtDistributionZNCzeroZNAzeroHv2(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv2(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv2(0),
+      fDimuonPtDistributionZNCanyZNAanyHv2(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAzeroHv3(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv3(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv3(0),
+      fDimuonPtDistributionZNCanyZNAanyHv3(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv3{0, 0, 0},
+      fDimuonPtDistributionCoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAanyH(0),
+      fADmultiplicityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicity0N0NclassH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicity0NXNclassH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityXN0NclassH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityXNXNclassH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicity0N0NclassRapidityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicity0NXNclassRapidityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityXN0NclassRapidityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityXNXNclassRapidityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityTotalH(0),
+      fADmultiplicity0N0NclassTotalH(0),
+      fADmultiplicity0NXNclassTotalH(0),
+      fADmultiplicityXN0NclassTotalH(0),
+      fADmultiplicityXNXNclassTotalH(0),
+
+
       fMuonTrackCuts(0x0),
       fRunNum(0),
       fTracklets(0),
@@ -188,6 +330,151 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018(const char* name)
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
       fInvariantMassDistributionIncoherentExtendedH(0),
+
+
+
+      fZNCEnergyAgainstEntriesH(0),
+      fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
+      fZNCEnergyAgainstEntriesExtendedH(0),
+      fZNAEnergyAgainstEntriesExtendedH(0),
+      fZNCEnergyAgainstEntriesExtendedHv2(0),
+      fZNAEnergyAgainstEntriesExtendedHv2(0),
+      fZNCEnergyBeforeTimingSelectionExtendedH(0),
+      fZNAEnergyBeforeTimingSelectionExtendedH(0),
+      fZNCEnergyCalibratedH(0),
+      fZNAEnergyCalibratedH(0),
+      fZNCEnergyUncalibratedH(0),
+      fZNAEnergyUncalibratedH(0),
+      fZNCEnergyCalibratedHigherGainH(0),
+      fZNAEnergyCalibratedHigherGainH(0),
+      fZNCTimeAgainstEntriesH(0),
+      fZNATimeAgainstEntriesH(0),
+      fZNCTimeStrictTimeWindowH(0),
+      fZNATimeStrictTimeWindowH(0),
+      fZNCTimeWithoutTimingH{0, 0, 0, 0},
+      fZNATimeWithoutTimingH{0, 0, 0, 0},
+      fZNCTime4FillingH(0),
+      fZNATime4FillingH(0),
+      fZNCminusZNAtimeVsZNCplusZNAtimeH{0, 0, 0, 0},
+      fZNCminusZNAtimeVsZNCplusZNAtime4FillingH(0),
+      fCounterZNCH(0),
+      fCounterZNAH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyHv2(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroHv2(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionCoherentZNCanyZNAanyH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyHv2(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2{0, 0, 0},
+      fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyHv2(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionZNCzeroZNAanyH(0),
+      fDimuonPtDistributionZNCanyZNAzeroH(0),
+      fDimuonPtDistributionZNCanyZNAanyH(0),
+      fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH(0),
+      fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH(0),
+      fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH(0),
+      fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH(0),
+      fDimuonPtDistributionZNCzeroZNAzeroHv2(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv2(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv2(0),
+      fDimuonPtDistributionZNCanyZNAanyHv2(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv2{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAzeroHv3(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv3(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv3(0),
+      fDimuonPtDistributionZNCanyZNAanyHv3(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv3{0, 0, 0},
+      fDimuonPtDistributionCoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAanyH(0),
+      fADmultiplicityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicity0N0NclassH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicity0NXNclassH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityXN0NclassH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityXNXNclassH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicity0N0NclassRapidityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicity0NXNclassRapidityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityXN0NclassRapidityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityXNXNclassRapidityH{ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                                         0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+      fADmultiplicityTotalH(0),
+      fADmultiplicity0N0NclassTotalH(0),
+      fADmultiplicity0NXNclassTotalH(0),
+      fADmultiplicityXN0NclassTotalH(0),
+      fADmultiplicityXNXNclassTotalH(0),
+
+
+
+
       fMuonTrackCuts(0x0),
       fRunNum(0),
       fTracklets(0),
@@ -411,6 +698,569 @@ void AliAnalysisTaskADin2018::UserCreateOutputObjects()
   fOutputList->Add(fInvariantMassDistributionIncoherentExtendedH);
 
 
+
+
+  fZNCEnergyAgainstEntriesH = new TH1F("fZNCEnergyAgainstEntriesH", "fZNCEnergyAgainstEntriesH", 20000, -10000, 40000);
+  fOutputList->Add(fZNCEnergyAgainstEntriesH);
+
+  fZNAEnergyAgainstEntriesH = new TH1F("fZNAEnergyAgainstEntriesH", "fZNAEnergyAgainstEntriesH", 20000, -10000, 40000);
+  fOutputList->Add(fZNAEnergyAgainstEntriesH);
+
+  fZNCEnergyBeforeTimingSelectionH = new TH1F("fZNCEnergyBeforeTimingSelectionH", "fZNCEnergyBeforeTimingSelectionH", 20000, -10000, 40000);
+  fOutputList->Add(fZNCEnergyBeforeTimingSelectionH);
+
+  fZNAEnergyBeforeTimingSelectionH = new TH1F("fZNAEnergyBeforeTimingSelectionH", "fZNAEnergyBeforeTimingSelectionH", 20000, -10000, 40000);
+  fOutputList->Add(fZNAEnergyBeforeTimingSelectionH);
+
+  fZNCEnergyAgainstEntriesExtendedH = new TH1F("fZNCEnergyAgainstEntriesExtendedH", "fZNCEnergyAgainstEntriesExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyAgainstEntriesExtendedH);
+
+  fZNAEnergyAgainstEntriesExtendedH = new TH1F("fZNAEnergyAgainstEntriesExtendedH", "fZNAEnergyAgainstEntriesExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyAgainstEntriesExtendedH);
+
+  fZNCEnergyAgainstEntriesExtendedHv2 = new TH1F("fZNCEnergyAgainstEntriesExtendedHv2", "fZNCEnergyAgainstEntriesExtendedHv2", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyAgainstEntriesExtendedHv2);
+
+  fZNAEnergyAgainstEntriesExtendedHv2 = new TH1F("fZNAEnergyAgainstEntriesExtendedHv2", "fZNAEnergyAgainstEntriesExtendedHv2", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyAgainstEntriesExtendedHv2);
+
+  fZNCEnergyBeforeTimingSelectionExtendedH = new TH1F("fZNCEnergyBeforeTimingSelectionExtendedH", "fZNCEnergyBeforeTimingSelectionExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyBeforeTimingSelectionExtendedH);
+
+  fZNAEnergyBeforeTimingSelectionExtendedH = new TH1F("fZNAEnergyBeforeTimingSelectionExtendedH", "fZNAEnergyBeforeTimingSelectionExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyBeforeTimingSelectionExtendedH);
+
+  fZNCEnergyCalibratedH = new TH1F("fZNCEnergyCalibratedH", "fZNCEnergyCalibratedH", 20000, -10000, 40000);
+  fOutputList->Add(fZNCEnergyCalibratedH);
+
+  fZNAEnergyCalibratedH = new TH1F("fZNAEnergyCalibratedH", "fZNAEnergyCalibratedH", 20000, -10000, 40000);
+  fOutputList->Add(fZNAEnergyCalibratedH);
+
+  fZNCEnergyUncalibratedH = new TH1F("fZNCEnergyUncalibratedH", "fZNCEnergyUncalibratedH", 20000, -10000, 40000);
+  fOutputList->Add(fZNCEnergyUncalibratedH);
+
+  fZNAEnergyUncalibratedH = new TH1F("fZNAEnergyUncalibratedH", "fZNAEnergyUncalibratedH", 20000, -10000, 40000);
+  fOutputList->Add(fZNAEnergyUncalibratedH);
+
+  fZNCEnergyCalibratedHigherGainH = new TH1F("fZNCEnergyCalibratedHigherGainH", "fZNCEnergyCalibratedHigherGainH", 20000, -80000, 320000);
+  fOutputList->Add(fZNCEnergyCalibratedHigherGainH);
+
+  fZNAEnergyCalibratedHigherGainH = new TH1F("fZNAEnergyCalibratedHigherGainH", "fZNAEnergyCalibratedHigherGainH", 20000, -80000, 320000);
+  fOutputList->Add(fZNAEnergyCalibratedHigherGainH);
+
+  fZNCTimeAgainstEntriesH = new TH1F("fZNCTimeAgainstEntriesH", "fZNCTimeAgainstEntriesH", 6000, -1500, 1500);
+  fOutputList->Add(fZNCTimeAgainstEntriesH);
+
+  fZNATimeAgainstEntriesH = new TH1F("fZNATimeAgainstEntriesH", "fZNATimeAgainstEntriesH", 6000, -1500, 1500);
+  fOutputList->Add(fZNATimeAgainstEntriesH);
+
+  fZNCTimeStrictTimeWindowH = new TH1F("fZNCTimeStrictTimeWindowH", "fZNCTimeStrictTimeWindowH", 6000, -1500, 1500);
+  fOutputList->Add(fZNCTimeStrictTimeWindowH);
+
+  fZNATimeStrictTimeWindowH = new TH1F("fZNATimeStrictTimeWindowH", "fZNATimeStrictTimeWindowH", 6000, -1500, 1500);
+  fOutputList->Add(fZNATimeStrictTimeWindowH);
+
+  for(int iTiming = 0; iTiming < 4; iTiming++) {
+    fZNCTimeWithoutTimingH[iTiming] = new TH1F( Form("fZNCTimeWithoutTimingH_%d", iTiming),
+                                                Form("fZNCTimeWithoutTimingH_%d", iTiming),
+                                                6000, -1500, 1500
+                                               );
+    fOutputList->Add(fZNCTimeWithoutTimingH[iTiming]);
+  }
+
+  for(int iTiming = 0; iTiming < 4; iTiming++) {
+    fZNATimeWithoutTimingH[iTiming] = new TH1F( Form("fZNATimeWithoutTimingH_%d", iTiming),
+                                                Form("fZNATimeWithoutTimingH_%d", iTiming),
+                                                6000, -1500, 1500
+                                               );
+    fOutputList->Add(fZNATimeWithoutTimingH[iTiming]);
+  }
+
+  fZNCTime4FillingH = new TH1F("fZNCTime4FillingH", "fZNCTime4FillingH", 6000, -1500, 1500);
+  fOutputList->Add(fZNCTime4FillingH);
+
+  fZNATime4FillingH = new TH1F("fZNATime4FillingH", "fZNATime4FillingH", 6000, -1500, 1500);
+  fOutputList->Add(fZNATime4FillingH);
+
+  for(int iTiming = 0; iTiming < 4; iTiming++) {
+    fZNCminusZNAtimeVsZNCplusZNAtimeH[iTiming] = new TH2F( Form("fZNCminusZNAtimeVsZNCplusZNAtimeH_%d", iTiming),
+                                                           Form("fZNCminusZNAtimeVsZNCplusZNAtimeH_%d", iTiming),
+                                                           1200, -300, 300, 1200, -300, 300
+                                                           );
+    fOutputList->Add(fZNCminusZNAtimeVsZNCplusZNAtimeH[iTiming]);
+  }
+
+  fZNCminusZNAtimeVsZNCplusZNAtime4FillingH = new TH2F("fZNCminusZNAtimeVsZNCplusZNAtime4FillingH", "fZNCminusZNAtimeVsZNCplusZNAtime4FillingH", 1200, -300, 300, 1200, -300, 300);
+  fOutputList->Add(fZNCminusZNAtimeVsZNCplusZNAtime4FillingH);
+
+  fCounterZNCH = new TH1F("fCounterZNCH", "fCounterZNCH", 6, -0.5, 5.5);
+  fOutputList->Add(fCounterZNCH);
+
+  fCounterZNAH = new TH1F("fCounterZNAH", "fCounterZNAH", 6, -0.5, 5.5);
+  fOutputList->Add(fCounterZNAH);
+
+  /* - These histograms pertain the differential neutron emission analysis.
+     -
+   */
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2 = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2", "fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[iRapidity] = new TH1F(
+              Form("fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2_%d", iRapidity),
+              Form("fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2_%d", iRapidity),
+              2000, 0, 20
+              );
+    fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[iRapidity]);
+  }
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyH", "fInvariantMassDistributionCoherentZNCzeroZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH", "fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH", "fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH", "fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH", "fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyHv2 = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyHv2", "fInvariantMassDistributionCoherentZNCzeroZNAanyHv2", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyHv2);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[iRapidity] = new TH1F(
+              Form("fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2_%d", iRapidity),
+              Form("fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2_%d", iRapidity),
+              2000, 0, 20
+              );
+    fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[iRapidity]);
+  }
+
+  fInvariantMassDistributionCoherentZNCanyZNAzeroH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroH", "fInvariantMassDistributionCoherentZNCanyZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH", "fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH", "fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH", "fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH", "fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAzeroHv2 = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroHv2", "fInvariantMassDistributionCoherentZNCanyZNAzeroHv2", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroHv2);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[iRapidity] = new TH1F(
+              Form("fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2_%d", iRapidity),
+              Form("fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2_%d", iRapidity),
+              2000, 0, 20
+              );
+    fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[iRapidity]);
+  }
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyH", "fInvariantMassDistributionCoherentZNCanyZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH", "fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH", "fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH", "fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH", "fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyHv2 = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyHv2", "fInvariantMassDistributionCoherentZNCanyZNAanyHv2", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyHv2);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[iRapidity] = new TH1F(
+              Form("fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2_%d", iRapidity),
+              Form("fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2_%d", iRapidity),
+              2000, 0, 20
+              );
+    fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[iRapidity]);
+  }
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2 = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2[iRapidity] = new TH1F(
+              Form("fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2_%d", iRapidity),
+              Form("fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2_%d", iRapidity),
+              2000, 0, 20
+              );
+    fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2[iRapidity]);
+  }
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2 = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2", "fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2[iRapidity] = new TH1F(
+              Form("fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2_%d", iRapidity),
+              Form("fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2_%d", iRapidity),
+              2000, 0, 20
+              );
+    fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2[iRapidity]);
+  }
+
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2 = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2", "fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2[iRapidity] = new TH1F(
+              Form("fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2_%d", iRapidity),
+              Form("fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2_%d", iRapidity),
+              2000, 0, 20
+              );
+    fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2[iRapidity]);
+  }
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyH", "fInvariantMassDistributionIncoherentZNCanyZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH", "fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH", "fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH", "fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH", "fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyHv2 = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyHv2", "fInvariantMassDistributionIncoherentZNCanyZNAanyHv2", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyHv2);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2[iRapidity] = new TH1F(
+              Form("fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2_%d", iRapidity),
+              Form("fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2_%d", iRapidity),
+              2000, 0, 20
+              );
+    fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2[iRapidity]);
+  }
+
+  fDimuonPtDistributionZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroH", "fDimuonPtDistributionZNCzeroZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroH);
+
+  fDimuonPtDistributionZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionZNCzeroZNAanyH", "fDimuonPtDistributionZNCzeroZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyH);
+
+  fDimuonPtDistributionZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionZNCanyZNAzeroH", "fDimuonPtDistributionZNCanyZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroH);
+
+  fDimuonPtDistributionZNCanyZNAanyH = new TH1F("fDimuonPtDistributionZNCanyZNAanyH", "fDimuonPtDistributionZNCanyZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyH);
+
+  fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH", "fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH", 4000, 0.02, 20.02);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH);
+
+  fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH = new TH1F("fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH", "fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH", 4000, 0.02, 20.02);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH);
+
+  fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH = new TH1F("fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH", "fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH", 4000, 0.02, 20.02);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH);
+
+  fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH = new TH1F("fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH", "fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH", 4000, 0.02, 20.02);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH);
+
+  fDimuonPtDistributionZNCzeroZNAzeroHv2 = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroHv2", "fDimuonPtDistributionZNCzeroZNAzeroHv2", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroHv2);
+
+  fDimuonPtDistributionZNCzeroZNAanyHv2 = new TH1F("fDimuonPtDistributionZNCzeroZNAanyHv2", "fDimuonPtDistributionZNCzeroZNAanyHv2", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyHv2);
+
+  fDimuonPtDistributionZNCanyZNAzeroHv2 = new TH1F("fDimuonPtDistributionZNCanyZNAzeroHv2", "fDimuonPtDistributionZNCanyZNAzeroHv2", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroHv2);
+
+  fDimuonPtDistributionZNCanyZNAanyHv2 = new TH1F("fDimuonPtDistributionZNCanyZNAanyHv2", "fDimuonPtDistributionZNCanyZNAanyHv2", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyHv2);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv2_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv2_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv2_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv2_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAanyRapidityHv2[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv2_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv2_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyRapidityHv2[iRapidity]);
+  }
+
+  fADmultiplicityTotalH = new TH1F("fADmultiplicityTotalH","fADmultiplicityTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADmultiplicityTotalH);
+
+  fADmultiplicity0N0NclassTotalH = new TH1F("fADmultiplicity0N0NclassTotalH","fADmultiplicity0N0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADmultiplicity0N0NclassTotalH);
+
+  fADmultiplicity0NXNclassTotalH = new TH1F("fADmultiplicity0NXNclassTotalH","fADmultiplicity0NXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADmultiplicity0NXNclassTotalH);
+
+  fADmultiplicityXN0NclassTotalH = new TH1F("fADmultiplicityXN0NclassTotalH","fADmultiplicityXN0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADmultiplicityXN0NclassTotalH);
+
+  fADmultiplicityXNXNclassTotalH = new TH1F("fADmultiplicityXNXNclassTotalH","fADmultiplicityXNXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADmultiplicityXNXNclassTotalH);
+
+  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+    fADmultiplicityH[iChannel] = new TH1F(
+              Form("fADmultiplicityH_%d", iChannel),
+              Form("fADmultiplicityH_%d", iChannel),
+              100000, 0, 10000
+              );
+    fOutputList->Add(fADmultiplicityH[iChannel]);
+
+    fADmultiplicity0N0NclassH[iChannel] = new TH1F(
+              Form("fADmultiplicity0N0NclassH_%d", iChannel),
+              Form("fADmultiplicity0N0NclassH_%d", iChannel),
+              100000, 0, 10000
+              );
+    fOutputList->Add(fADmultiplicity0N0NclassH[iChannel]);
+
+    fADmultiplicity0NXNclassH[iChannel] = new TH1F(
+              Form("fADmultiplicity0NXNclassH_%d", iChannel),
+              Form("fADmultiplicity0NXNclassH_%d", iChannel),
+              100000, 0, 10000
+              );
+    fOutputList->Add(fADmultiplicity0NXNclassH[iChannel]);
+
+    fADmultiplicityXN0NclassH[iChannel] = new TH1F(
+              Form("fADmultiplicityXN0NclassH_%d", iChannel),
+              Form("fADmultiplicityXN0NclassH_%d", iChannel),
+              100000, 0, 10000
+              );
+    fOutputList->Add(fADmultiplicityXN0NclassH[iChannel]);
+
+    fADmultiplicityXNXNclassH[iChannel] = new TH1F(
+              Form("fADmultiplicityXNXNclassH_%d", iChannel),
+              Form("fADmultiplicityXNXNclassH_%d", iChannel),
+              100000, 0, 10000
+              );
+    fOutputList->Add(fADmultiplicityXNXNclassH[iChannel]);
+
+    for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ )
+    {
+      fADmultiplicity0N0NclassRapidityH[iChannel + 16*iRapidity] = new TH1F(
+                Form("fADmultiplicity0N0NclassRapidityH_%d", iChannel + 16*iRapidity),
+                Form("fADmultiplicity0N0NclassRapidityH_%d", iChannel + 16*iRapidity),
+                100000, 0, 10000
+                );
+      fOutputList->Add(fADmultiplicity0N0NclassRapidityH[iChannel + 16*iRapidity]);
+
+      fADmultiplicity0NXNclassRapidityH[iChannel + 16*iRapidity] = new TH1F(
+                Form("fADmultiplicity0NXNclassRapidityH_%d", iChannel + 16*iRapidity),
+                Form("fADmultiplicity0NXNclassRapidityH_%d", iChannel + 16*iRapidity),
+                100000, 0, 10000
+                );
+      fOutputList->Add(fADmultiplicity0NXNclassRapidityH[iChannel + 16*iRapidity]);
+
+      fADmultiplicityXN0NclassRapidityH[iChannel + 16*iRapidity] = new TH1F(
+                Form("fADmultiplicityXN0NclassRapidityH_%d", iChannel + 16*iRapidity),
+                Form("fADmultiplicityXN0NclassRapidityH_%d", iChannel + 16*iRapidity),
+                100000, 0, 10000
+                );
+      fOutputList->Add(fADmultiplicityXN0NclassRapidityH[iChannel + 16*iRapidity]);
+
+      fADmultiplicityXNXNclassRapidityH[iChannel + 16*iRapidity] = new TH1F(
+                Form("fADmultiplicityXNXNclassRapidityH_%d", iChannel + 16*iRapidity),
+                Form("fADmultiplicityXNXNclassRapidityH_%d", iChannel + 16*iRapidity),
+                100000, 0, 10000
+                );
+      fOutputList->Add(fADmultiplicityXNXNclassRapidityH[iChannel + 16*iRapidity]);
+    }
+  }
+
+
+  // Float_t PtBins[]    = { 0.000, 0.025, 0.050, 0.075, 0.100, 0.125, 0.150, 0.175,
+  //                         0.200, 0.225, 0.250, 0.275, 0.300, 0.325, 0.350, 0.375,
+  //                         0.400, 0.425, 0.450, 0.475, 0.500, 0.525, 0.550, 0.575,
+  //                         0.600, 0.625, 0.650, 0.675, 0.700, 0.725, 0.750, 0.775,
+  //                         0.800, 0.825, 0.850, 0.875, 0.900, 0.925, 0.950, 0.975,
+  //                         1.000,
+  //                       };
+  Float_t PtBins[]    = { 0.000, 0.025, 0.050, 0.075, 0.100, 0.125, 0.150, 0.175,
+                          0.200, 0.225, 0.250, 0.275, 0.300, 0.325, 0.350, 0.375,
+                          0.400, 0.425, 0.450, 0.475, 0.500, 0.575, 0.650, 0.725,
+                          0.800, 0.875, 0.950, 1.100, 1.250, 1.400, 1.600, 1.800,
+                          2.000, 2.500, 3.000, 3.500, 4.000, 5.000
+                        };
+  Int_t   PtBinNumber = sizeof(PtBins)/sizeof(Float_t) - 1; // or just = 9
+
+  fDimuonPtDistributionZNCzeroZNAzeroHv3 = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroHv3", "fDimuonPtDistributionZNCzeroZNAzeroHv3", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroHv3);
+
+  fDimuonPtDistributionZNCzeroZNAanyHv3 = new TH1F("fDimuonPtDistributionZNCzeroZNAanyHv3", "fDimuonPtDistributionZNCzeroZNAanyHv3", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyHv3);
+
+  fDimuonPtDistributionZNCanyZNAzeroHv3 = new TH1F("fDimuonPtDistributionZNCanyZNAzeroHv3", "fDimuonPtDistributionZNCanyZNAzeroHv3", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroHv3);
+
+  fDimuonPtDistributionZNCanyZNAanyHv3 = new TH1F("fDimuonPtDistributionZNCanyZNAanyHv3", "fDimuonPtDistributionZNCanyZNAanyHv3", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyHv3);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv3_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv3_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv3_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv3_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAanyRapidityHv3[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv3_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv3_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyRapidityHv3[iRapidity]);
+  }
+
+
+  fDimuonPtDistributionCoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAzeroH", "fDimuonPtDistributionCoherentZNCzeroZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCzeroZNAzeroH);
+
+  fDimuonPtDistributionCoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAanyH", "fDimuonPtDistributionCoherentZNCzeroZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCzeroZNAanyH);
+
+  fDimuonPtDistributionCoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAzeroH", "fDimuonPtDistributionCoherentZNCanyZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCanyZNAzeroH);
+
+  fDimuonPtDistributionCoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAanyH", "fDimuonPtDistributionCoherentZNCanyZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCanyZNAanyH);
+
+  fDimuonPtDistributionIncoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", "fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCzeroZNAzeroH);
+
+  fDimuonPtDistributionIncoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAanyH", "fDimuonPtDistributionIncoherentZNCzeroZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCzeroZNAanyH);
+
+  fDimuonPtDistributionIncoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAzeroH", "fDimuonPtDistributionIncoherentZNCanyZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCanyZNAzeroH);
+
+  fDimuonPtDistributionIncoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAanyH", "fDimuonPtDistributionIncoherentZNCanyZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCanyZNAanyH);
 
 
 
@@ -764,6 +1614,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   fCounterH->Fill(19);
   Int_t is_ADA_set = -9;
   Int_t is_ADC_set = -9;
+  Double_t ADmultiplicities[16]  = { -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 };
+  Double_t ADmultiplicitiesTotal = 0;
   if(dataAD) {
         fCounterH->Fill(iSelectionCounter);
         iSelectionCounter++;
@@ -779,7 +1631,10 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
         // cout << "is_ADC_set = " << is_ADC_set << endl;
         // cout << "is_ADA_set = " << IntBits( dataAD->GetTriggerBits() ) << endl;
         // cout << "is_ADC_set = " << dataAD->GetTriggerBits() << endl;
-
+        for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+          ADmultiplicities[iChannel] = dataAD->GetMultiplicity(iChannel);
+          ADmultiplicitiesTotal     += dataAD->GetMultiplicity(iChannel);
+        }
   }
   fCounterH->Fill(22);
 
@@ -813,10 +1668,29 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   /**
    * Check with no AD veto at all...
    */
-  if(fADADecision != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
+  // if(fADADecision != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+  // if(fADCDecision != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+
+  //
+  // Int_t fADactivity = -9;
+  // if ( fADADecision == 1) fADactivity = 1;
+  // if ( fADCDecision == 1) fADactivity = 1;
+  // if ( fADactivity != 1) {
+  //     /* -
+  //      * - Remember that this is akin
+  //      * - to asking Beam-Beam
+  //      * - activities.
+  //      */
+  //     PostData(1, fOutputList);
+  //     return;
+  // }
+
 
   /**
    * - This is the AD check.
@@ -827,13 +1701,13 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
    * - p-Pb analysis!!
    * -
    */
-  if( fADcheck != 0){
-      if(fADCDecision != 0) {
-          // fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
-          PostData(1, fOutputList);
-          return;
-      }
-  }
+  // if( fADcheck != 0){
+      // if(fADCDecision != 0) {
+      //     // fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
+      //     PostData(1, fOutputList);
+      //     return;
+      // }
+  // }
   /* - Empty V0C decision
    * - or at least in beam timing.
    */
@@ -860,6 +1734,10 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
        PostData(1, fOutputList);
        return;
   }
+  // if( fV0TotalNCells < 3 ) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
 
 
 
@@ -1158,6 +2036,936 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   } else {
     fInvariantMassDistributionIncoherentShiftPlusTwoH ->Fill(possibleJPsi.Mag());
   }
+
+
+
+
+
+
+
+
+
+
+  /* - Now this is a critical part of  the analysis. What happens next is a
+     - differential analysis in terms of the energy perceived by the neutron ZDC.
+     - What it means is that now we may cut on those sensible values to select
+     - only those J/Psi candidates falling under a certain peak of the neutron
+     - ZNC energy distribution. It will be seen that the fZNCEnergyAgainstEntriesH
+     - plot will present many gaussian-like peaks. Each peak represent an
+     - increasingly large number of neutrons seen by the ZNC.
+     -
+     - Starting from the first peak, 0n, then 1n, hopefully 2n, but anything
+     - else is more like a guess. If my understanding is good enough, even the
+     - 2n peak requires user input to facilitate the minimizer's job.
+     -
+     - So, first thing first, Guillermo Contreras has suggested the preliminary
+     - cut on the ZDC time, quoting:
+     - "The energy value makes sense only when the time information is not
+     - -999... You can choose times |t|<5 ns to plot the energy distributions
+     - in the neutron ZDC".
+     -
+     - This happens with the request |fZNCTime|<5 if I have understood correctly.
+     - After this we can fill whatever histogram we want to.
+     -
+     -
+     -
+     - NEW: after UPC meeting 5/3/2019
+     - On ZDC timing. Usually we use time information from TDCs corresponding to
+     - the common PMT (reads all four ZN sectors) on both sides. Each AOD event
+     - contains information on up to four consecutive timing hits from these
+     - TDCs within +/-12 bcs around the trigger bunch crossing. These hits are
+     - stored in fZNATDCm and fZNCTDCm arrays:
+     - https://github.com/alisw/AliRoot/blob/master/STEER/AOD/AliAODZDC.h#L153
+     - and can be accessed as in:
+     -
+     - AliAODZDC* aodZDC = aod->GetZDCData();
+     - for (Int_t i=0;i<4;i++) fZNATDC[i] = aodZDC->GetZNATDCm(i);
+     - for (Int_t i=0;i<4;i++) fZNCTDC[i] = aodZDC->GetZNCTDCm(i);
+     -
+     - These hits may come from hadronic or EMD processes in neighbouring bcs.
+     - In Pb-Pb we usually have 0-2 hits within +/-12 bcs mainly due to EMD.
+     - Unused timing slots in these arrays are filled with large negative value
+     - (-999). In order to check if there was a timing hit in the trigger bc,
+     - you have to check if at least one timing hit out of four is within +/-2
+     - ns around 0.
+     -
+     - Regarding these getters GetZNATime() and GetZNCTime(), defined here:
+     - https://github.com/alisw/AliRoot/blob/master/STEER/AOD/AliAODZDC.h#L51
+     - They are outdated because, as mentioned here, they return timing
+     - information from the first slot in those arrays (fZNATDCm[0], fZNCTDCm[0]):
+     - https://github.com/alisw/AliRoot/blob/master/STEER/AOD/AliAODZDC.h#L145
+     - The first hit often corresponds to previous bunch crossings (e.g. EMD),
+     - while interesting hit around 0 may be stored in the next slots.
+     -
+     -
+   */
+  Bool_t isZNAfired = kFALSE;
+  Bool_t isZNCfired = kFALSE;
+  Bool_t isZNAfiredStrict = kFALSE;
+  Bool_t isZNCfiredStrict = kFALSE;
+  Int_t  counterZNA = 0;
+  Int_t  counterZNC = 0;
+  /* - Note that in C++ the && and || operators "short-circuit". That means that
+     - they only evaluate a parameter if required. If the first parameter to &&
+     - is false, or the first to || is true, the rest will not be evaluated.
+     - That means that writing:
+     - if ( (isZNAfired == 0) && (...) )
+     - should mean effectively
+     - if ( isZNAfired != 0 ) continue;
+     - hence it should be *at least* one hit!!!
+     -
+   */
+  for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
+    if ( (isZNAfired == 0) && (fZNATDC[iZDC] > -2.) && (fZNATDC[iZDC] < 2.) ) {
+      isZNAfired = kTRUE;
+      /* - After mail with Chiara Oppedisano, it seems like the best way
+         - to proceed is to firstly call the IsZNAfired() and then filling...
+         -
+         - If this doesn't appear in later pulls it is because this
+         - doesn't seem to suit my case...
+         -
+       */
+      if( dataZDC->IsZNAfired() ) {
+        if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+          fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+        }
+      }
+      fCounterZNAH->Fill(counterZNA);
+    }
+    if ( (isZNCfired == 0) && (fZNCTDC[iZDC] > -2.) && (fZNCTDC[iZDC] < 2.) ) {
+      isZNCfired = kTRUE;
+      if( dataZDC->IsZNCfired() ) {
+        if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+          fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+        }
+      }
+      fCounterZNCH->Fill(counterZNC);
+    }
+    counterZNA++;
+    counterZNC++;
+  }
+
+  if ( isZNCfired != 0 ) {
+    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) && (possibleJPsi.Pt() < 0.25)){
+      fZNCEnergyAgainstEntriesH        ->Fill(fZNCEnergy);
+    }
+    fZNCEnergyAgainstEntriesExtendedH->Fill(fZNCEnergy);
+    if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
+    if ( calibrated == 1 ) {
+      fZNCEnergyCalibratedH          ->Fill( fZNCEnergy );
+      fZNCEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNCTowerEnergyLR()[0] );
+    }
+  }
+  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) && (possibleJPsi.Pt() < 0.25)){
+    fZNCEnergyBeforeTimingSelectionH        ->Fill(fZNCEnergy);
+  }
+  fZNCEnergyBeforeTimingSelectionExtendedH->Fill(fZNCEnergy);
+  if ( dataZDC->IsZNCfired() && ( isZNCfired != 0 ) ) {
+    fZNCEnergyAgainstEntriesExtendedHv2->Fill(fZNCEnergy);
+  }
+  if ( dataZDC->IsZNAfired() && ( isZNAfired != 0 ) ) {
+    fZNAEnergyAgainstEntriesExtendedHv2->Fill(fZNAEnergy);
+  }
+  if ( isZNAfired != 0 ) {
+    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) && (possibleJPsi.Pt() < 0.25)){
+      fZNAEnergyAgainstEntriesH        ->Fill(fZNAEnergy);
+    }
+    fZNAEnergyAgainstEntriesExtendedH->Fill(fZNAEnergy);
+    if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
+    if ( calibrated == 1 ) {
+      fZNAEnergyCalibratedH          ->Fill( fZNAEnergy );
+      fZNAEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNATowerEnergyLR()[0] );
+    }
+  }
+  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) && (possibleJPsi.Pt() < 0.25)){
+    fZNAEnergyBeforeTimingSelectionH        ->Fill(fZNAEnergy);
+  }
+  fZNAEnergyBeforeTimingSelectionExtendedH->Fill(fZNAEnergy);
+
+  /* - CHECKS for the timing:
+     - Stricter timing window AND without timing window at all!
+     -
+   */
+  for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
+    if ( (isZNAfiredStrict == 0) && (fZNATDC[iZDC] > -1.) && (fZNATDC[iZDC] < 1.) ) {
+      isZNAfiredStrict = kTRUE;
+      if( dataZDC->IsZNAfired() ) fZNATimeStrictTimeWindowH->Fill(fZNATDC[iZDC]);
+    }
+    if ( (isZNCfiredStrict == 0) && (fZNCTDC[iZDC] > -1.) && (fZNCTDC[iZDC] < 1.) ) {
+      isZNCfiredStrict = kTRUE;
+      if( dataZDC->IsZNCfired() ) fZNCTimeStrictTimeWindowH->Fill(fZNCTDC[iZDC]);
+    }
+    fZNATimeWithoutTimingH[iZDC]             ->Fill(fZNATDC[iZDC]);
+    fZNCTimeWithoutTimingH[iZDC]             ->Fill(fZNCTDC[iZDC]);
+    fZNCTime4FillingH                        ->Fill(fZNCTDC[iZDC]);
+    fZNATime4FillingH                        ->Fill(fZNATDC[iZDC]);
+    fZNCminusZNAtimeVsZNCplusZNAtimeH[iZDC]  ->Fill(fZNCTDC[iZDC]-fZNATDC[iZDC], fZNCTDC[iZDC]+fZNATDC[iZDC]);
+    fZNCminusZNAtimeVsZNCplusZNAtime4FillingH->Fill(fZNCTDC[iZDC]-fZNATDC[iZDC], fZNCTDC[iZDC]+fZNATDC[iZDC]);
+  }
+  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+    fADmultiplicityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+  }
+  fADmultiplicityTotalH->Fill(ADmultiplicitiesTotal);
+
+  /* - Filling the v2 histogram only if the
+   * - ZNC or the ZNA have detected any activity at all...
+   */
+  if( isZNCfired == 0 ) {
+        if( isZNAfired == 0 ) {
+              if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+                  fDimuonPtDistributionZNCzeroZNAzeroHv2             ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  if (        ptOfTheDimuonPair < 0.500 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  }
+              }
+              if( ptOfTheDimuonPair < 0.25 ) {
+              // if( ptOfTheDimuonPair < 0.10 ) {
+                  fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2->Fill(possibleJPsi.Mag());
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[0]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicity0N0NclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[1]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicity0N0NclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[2]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicity0N0NclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  }
+                  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                    fADmultiplicity0N0NclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                  }
+                  fADmultiplicity0N0NclassTotalH->Fill(ADmultiplicitiesTotal);
+              } else {
+                  fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2->Fill(possibleJPsi.Mag());
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2[0]->Fill(possibleJPsi.Mag());
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2[1]->Fill(possibleJPsi.Mag());
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2[2]->Fill(possibleJPsi.Mag());
+                  }
+              }
+              // if( ptOfTheDimuonPair < 0.200 ) {
+              //     fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.225 ) {
+              //     fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.275 ) {
+              //     fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.300 ) {
+              //     fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
+              // }
+        } else {
+              if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+                  fDimuonPtDistributionZNCzeroZNAanyHv2            ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  if (        ptOfTheDimuonPair < 0.500 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  }
+              }
+              if( ptOfTheDimuonPair < 0.25 ) {
+              // if( ptOfTheDimuonPair < 0.10 ) {
+                  fInvariantMassDistributionCoherentZNCzeroZNAanyHv2->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionCoherentZNCzeroZNAanyHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[0]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicity0NXNclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[1]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicity0NXNclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[2]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicity0NXNclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  }
+                  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                    fADmultiplicity0NXNclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                  }
+                  fADmultiplicity0NXNclassTotalH->Fill(ADmultiplicitiesTotal);
+              } else {
+                  fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionIncoherentZNCzeroZNAanyHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2[0]->Fill(possibleJPsi.Mag());
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2[1]->Fill(possibleJPsi.Mag());
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2[2]->Fill(possibleJPsi.Mag());
+                  }
+              }
+              // if( ptOfTheDimuonPair < 0.200 ) {
+              //     fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.225 ) {
+              //     fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.275 ) {
+              //     fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.300 ) {
+              //     fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
+              // }
+        }
+  } else {
+        if( isZNAfired == 0 ) {
+              if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+                  fDimuonPtDistributionZNCanyZNAzeroHv2            ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  if (        ptOfTheDimuonPair < 0.500 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  }
+              }
+              if( ptOfTheDimuonPair < 0.25 ) {
+              // if( ptOfTheDimuonPair < 0.10 ) {
+                  fInvariantMassDistributionCoherentZNCanyZNAzeroHv2->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionCoherentZNCanyZNAzeroHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[0]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicityXN0NclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[1]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicityXN0NclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[2]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicityXN0NclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  }
+                  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                    fADmultiplicityXN0NclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                  }
+                  fADmultiplicityXN0NclassTotalH->Fill(ADmultiplicitiesTotal);
+              } else {
+                  fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionIncoherentZNCanyZNAzeroHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2[0]->Fill(possibleJPsi.Mag());
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2[1]->Fill(possibleJPsi.Mag());
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2[2]->Fill(possibleJPsi.Mag());
+                  }
+              }
+              // if( ptOfTheDimuonPair < 0.200 ) {
+              //     fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.225 ) {
+              //     fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.275 ) {
+              //     fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.300 ) {
+              //     fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
+              // }
+        } else {
+              if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+                  fDimuonPtDistributionZNCanyZNAanyHv2            ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  if (        ptOfTheDimuonPair < 0.500 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCanyZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.125 );
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.050 );
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.025 );
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.125 );
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.050 );
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.025 );
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    if (        ptOfTheDimuonPair < 0.500 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.125 );
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.050 );
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.025 );
+                    }
+                  }
+              }
+              if( ptOfTheDimuonPair < 0.25 ) {
+              // if( ptOfTheDimuonPair < 0.10 ) {
+                  fInvariantMassDistributionCoherentZNCanyZNAanyHv2->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionCoherentZNCanyZNAanyHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[0]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicityXNXNclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[1]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicityXNXNclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[2]->Fill(possibleJPsi.Mag());
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicityXNXNclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                    }
+                  }
+                  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                    fADmultiplicityXNXNclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                  }
+                  fADmultiplicityXNXNclassTotalH->Fill(ADmultiplicitiesTotal);
+              } else {
+                  fInvariantMassDistributionIncoherentZNCanyZNAanyHv2->Fill(possibleJPsi.Mag());
+                  // fDimuonPtDistributionIncoherentZNCanyZNAanyHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2[0]->Fill(possibleJPsi.Mag());
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2[1]->Fill(possibleJPsi.Mag());
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2[2]->Fill(possibleJPsi.Mag());
+                  }
+              }
+              // if( ptOfTheDimuonPair < 0.200 ) {
+              //     fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.225 ) {
+              //     fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.275 ) {
+              //     fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneHv2->Fill(possibleJPsi.Mag());
+              // }
+              // if( ptOfTheDimuonPair < 0.300 ) {
+              //     fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
+              // } else {
+              //     fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
+              // }
+        }
+  }
+
+
+  /*
+  fZNCTimeAgainstEntriesH->Fill(fZNCTime);
+  if( fZNCTime > -5.0 ) {
+    if( fZNCTime < 5.0 ) {
+          At any levels, this means |fZNCTime| < 5.
+          fZNCEnergyAgainstEntriesH->Fill(fZNCEnergy);
+          fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
+          if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
+          if ( calibrated == 1 ) fZNAEnergyCalibratedH  ->Fill(fZNAEnergy);
+          if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
+          if ( calibrated == 1 ) fZNCEnergyCalibratedH  ->Fill(fZNCEnergy);
+
+             - Now this offers the oppurtunity to do differential mass studies.
+             - This can be seen here. When we try to do everything while cutting
+             - on the ZNC energy.
+             -
+             - I don't if by the time you will be reading these lines of mine
+             - the ZDC calibration will be done or not. For now I am Implementing
+             - the cut based on Evgeny Kryshen's plot. Then we will see in the
+             - future.
+             -
+             - NB: this is wrong and outdated. See next cycle for new code!
+
+          if( fZNCEnergy > -300 ) {
+                    if( fZNCEnergy < 125 ) {
+                            fInvariantMassDistributionNoNeutronsH->Fill(possibleJPsi.Mag());
+                            if( ptOfTheDimuonPair < 0.25) {
+                                  fInvariantMassDistributionCoherentNoNeutronsH->Fill(possibleJPsi.Mag());
+                            } else {
+                                  fInvariantMassDistributionIncoherentNoNeutronsH->Fill(possibleJPsi.Mag());
+                            }
+                    } else if( fZNCEnergy < 375 ) {
+                            fInvariantMassDistributionOneNeutronH->Fill(possibleJPsi.Mag());
+                            fInvariantMassDistributionAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
+                            if( ptOfTheDimuonPair < 0.25) {
+                                  fInvariantMassDistributionCoherentOneNeutronH->Fill(possibleJPsi.Mag());
+                                  fInvariantMassDistributionCoherentAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
+                            } else {
+                                  fInvariantMassDistributionIncoherentOneNeutronH->Fill(possibleJPsi.Mag());
+                                  fInvariantMassDistributionIncoherentAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
+                            }
+                    } else  {
+                            fInvariantMassDistributionAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
+                            if( ptOfTheDimuonPair < 0.25) {
+                                  fInvariantMassDistributionCoherentAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
+                            } else {
+                                  fInvariantMassDistributionIncoherentAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
+                            }
+                    }
+          }
+    }
+  }
+  */
+
+  //_____________________________________
+  // DIFFERENTIAL ANALYSIS NEUTRON EMISSION
+  /* - This if should be really wrong...
+     - But now I think I can do the same implementing th ZNA timing information
+     - too by simply requesting:
+     -  (1)   isZNAfired == kTRUE;
+     -  (2)   isZNCfired == kTRUE;
+     -
+   */
+  // if( fZNCTime > -5.0 ) {
+  //   if( fZNCTime < 5.0 ) {
+  // if ( isZNAfired != 0 ) {
+  //   if ( isZNCfired != 0 ) {
+          /* At any levels, this means |fZNCTime| < 2. */
+          if( fZNCEnergy > -5000 ) {
+                      if( fZNCEnergy < 1250 ) {
+                                  if( fZNAEnergy > -5000 ) {
+                                              if( fZNAEnergy < 1250 ) {
+                                                          fDimuonPtDistributionZNCzeroZNAzeroH            ->Fill(ptOfTheDimuonPair);
+                                                          fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH->Fill(ptOfTheDimuonPair);
+                                                          if( ptOfTheDimuonPair < 0.25 ) {
+                                                                    fInvariantMassDistributionCoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
+                                                          } else {
+                                                                    fInvariantMassDistributionIncoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.200 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.225 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.275 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.300 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                              } else {
+                                                          fDimuonPtDistributionZNCzeroZNAanyH            ->Fill(ptOfTheDimuonPair);
+                                                          fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH->Fill(ptOfTheDimuonPair);
+                                                          if( ptOfTheDimuonPair < 0.25 ) {
+                                                                    fInvariantMassDistributionCoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
+                                                          } else {
+                                                                    fInvariantMassDistributionIncoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.200 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.225 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.275 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.300 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                              }
+                                  }
+                      } else {
+                                  if( fZNAEnergy > -5000 ) {
+                                              if( fZNAEnergy < 1250 ) {
+                                                          fDimuonPtDistributionZNCanyZNAzeroH            ->Fill(ptOfTheDimuonPair);
+                                                          fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH->Fill(ptOfTheDimuonPair);
+                                                          if( ptOfTheDimuonPair < 0.25 ) {
+                                                                    fInvariantMassDistributionCoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
+                                                          } else {
+                                                                    fInvariantMassDistributionIncoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.200 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.225 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.275 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.300 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                              } else {
+                                                          fDimuonPtDistributionZNCanyZNAanyH            ->Fill(ptOfTheDimuonPair);
+                                                          fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH->Fill(ptOfTheDimuonPair);
+                                                          if( ptOfTheDimuonPair < 0.25 ) {
+                                                                    fInvariantMassDistributionCoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
+                                                          } else {
+                                                                    fInvariantMassDistributionIncoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.200 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.225 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.275 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.300 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                              }
+                                  }
+
+                      }
+          }
+  //   }
+  // }
+
+
+
+
+
+
+
+
+
 
 
 
