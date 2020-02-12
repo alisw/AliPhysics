@@ -36,9 +36,9 @@ class AliFemtoDreamTrackHist {
       fpTDist[i]->Fill(pT);
   }
   ;
-  void FillpITSCut(int i, float pITS) {
+  void FillpCut(int i, float p) {
     if (!fMinimalBooking)
-      fpITSDist[i]->Fill(pITS);
+      fpDist[i]->Fill(p);
   }
   ;
   void FillpTPCCut(int i, float pTPC) {
@@ -221,7 +221,7 @@ class AliFemtoDreamTrackHist {
   TProfile *fConfig;        //!
   TH1F *fCutCounter;        //!
   TH1F *fpTDist[2];         //!
-  TH1F *fpITSDist[2];       //!
+  TH1F *fpDist[2];          //!
   TH1F *fpTPCDist[2];       //!
   TH1F *fetaDist[2];        //!
   TH1F *fphiDist[2];        //!

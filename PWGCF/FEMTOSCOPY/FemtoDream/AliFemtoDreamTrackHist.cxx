@@ -21,7 +21,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;
     fpTDist[i] = nullptr;
-    fpITSDist[i] = nullptr;
+    fpDist[i] = nullptr;
     fpTPCDist[i] = nullptr;
     fetaDist[i] = nullptr;
     fphiDist[i] = nullptr;
@@ -149,11 +149,11 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fTrackCutQA[i]->Add(fpTDist[i]);
 
     TString pITSName = Form("pDist_%s", sName[i].Data());
-    fpITSDist[i] = new TH1F(pITSName.Data(), pITSName.Data(), ptBins, ptmin,
+    fpDist[i] = new TH1F(pITSName.Data(), pITSName.Data(), ptBins, ptmin,
                             ptmax);
-    fpITSDist[i]->GetXaxis()->SetTitle("#it{p}_{} (GeV/#it{c})");
-    fpITSDist[i]->GetYaxis()->SetTitle("Entries");
-    fTrackCutQA[i]->Add(fpITSDist[i]);
+    fpDist[i]->GetXaxis()->SetTitle("#it{p}_{} (GeV/#it{c})");
+    fpDist[i]->GetYaxis()->SetTitle("Entries");
+    fTrackCutQA[i]->Add(fpDist[i]);
 
     TString pTPCName = Form("pTPCDist_%s", sName[i].Data());
     fpTPCDist[i] = new TH1F(pTPCName.Data(), pTPCName.Data(), ptBins, ptmin,
@@ -249,7 +249,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     TString ITSdedxName = Form("ITSdedx_%s", sName[i].Data());
     fITSdedx[i] = new TH2F(ITSdedxName.Data(), ITSdedxName.Data(), ptBins,
                            ptmin, ptmax, 2 * twoDBins, 0., 400);
-    fITSdedx[i]->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
+    fITSdedx[i]->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
     fITSdedx[i]->GetYaxis()->SetTitle("d#it{E}/d#it{x} (arb. Units)");
 
     fTrackCutQA[i]->Add(fITSdedx[i]);
@@ -273,7 +273,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     TString NSigITSName = Form("NSigITS_%s", sName[i].Data());
     fNSigITS[i] = new TH2F(NSigITSName.Data(), NSigITSName.Data(), ptBins,
                            ptmin, ptmax, 3. * twoDBins, -60., 60.);
-    fNSigITS[i]->GetXaxis()->SetTitle("#it{p}_{ITS} (GeV/#it{c})");
+    fNSigITS[i]->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
     fNSigITS[i]->GetYaxis()->SetTitle("n#sigma_{ITS}");
 
     fTrackCutQA[i]->Add(fNSigITS[i]);
@@ -281,7 +281,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     TString NSigITSModName = Form("NSigITSMod_%s", sName[i].Data());
     fNSigITSMod[i] = new TH2F(NSigITSModName.Data(), NSigITSModName.Data(),
                               ptBins, ptmin, 1., 3. * twoDBins, -1., 5.);
-    fNSigITSMod[i]->GetXaxis()->SetTitle("#it{p}_{ITS} (GeV/#it{c})");
+    fNSigITSMod[i]->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
     fNSigITSMod[i]->GetYaxis()->SetTitle("|n#sigma_{ITS}|");
 
     fTrackCutQA[i]->Add(fNSigITSMod[i]);
@@ -348,7 +348,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fNSigComITSTPC[i] = new TH2F(NSigComITSTPCName.Data(),
                                  NSigComITSTPCName.Data(), ptBins, ptmin, 7,
                                  3. * twoDBins, -1., 7.);
-    fNSigComITSTPC[i]->GetXaxis()->SetTitle("#it{p}_{ITS} (GeV/#it{c})");
+    fNSigComITSTPC[i]->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
     fNSigComITSTPC[i]->GetYaxis()->SetTitle(
         "n#sigma_{comb}=#sqrt{n#sigma_{ITS}^{2}+n#sigma_{TPC}^{2}}");
 
@@ -484,7 +484,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
       fNSigCom(0) {
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;
-    fpITSDist[i] = nullptr;
+    fpDist[i] = nullptr;
     fpTPCDist[i] = nullptr;
     fetaDist[i] = nullptr;
     fphiDist[i] = nullptr;
@@ -529,11 +529,6 @@ AliFemtoDreamTrackHist::~AliFemtoDreamTrackHist() {
   delete fHistList;
 }
 
-/*void AliFemtoDreamTrackHist::FillNSigComb(float pT, float nSigITS,
-                                          float nSigTPC) {
-  if (!fMinimalBooking)
-    fNSigCom->Fill(pT, nSigITS, nSigTPC);
-}*/
 void AliFemtoDreamTrackHist::FillNSigComb(float pT, float nSigTPC,
                                           float nSigTOF) {
   if (!fMinimalBooking)

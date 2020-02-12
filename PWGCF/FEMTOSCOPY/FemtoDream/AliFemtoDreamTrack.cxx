@@ -41,6 +41,7 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
       fChi2ITS(0),
       fSharedClsITSLayer(0),
       fHasSharedClsITSLayer(false),
+      fdEdxITS(0),
       fdEdxTPC(0),
       fbetaTOF(0),
       fHasITSHit(false),
@@ -315,10 +316,8 @@ void AliFemtoDreamTrack::SetESDTrackingInformationOmega() {
     //Get primary vertex
     Double_t PrimVtx[3];
     fESDTrack->GetESDEvent()->GetPrimaryVertex()->GetXYZ(PrimVtx);
-
     //get tpc mom
     this->SetMomTPC(fESDTrack->GetTPCmomentum());
-
     //REQUIRE EVERYTHING TO HAVE TPCMOM > 50MeV
     if(fESDTrack->GetTPCmomentum()<.050){
       this->fIsSet = false;
@@ -440,6 +439,7 @@ void AliFemtoDreamTrack::SetESDPIDInformation() {
   this->fstatusITS = statusITS;
   this->fstatusTPC = statusTPC;
   this->fstatusTOF = statusTOF;
+  this->fdEdxITS = fESDTrack->GetITSsignal();
   this->fdEdxTPC = fESDTrack->GetTPCsignal();
   this->fbetaTOF = GetBeta(fESDTrack);
   for (int i = 0; i < 6; ++i) {
@@ -716,6 +716,7 @@ void AliFemtoDreamTrack::SetAODPIDInformation() {
   this->fstatusITS = statusITS;
   this->fstatusTPC = statusTPC;
   this->fstatusTOF = statusTOF;
+  this->fdEdxITS= fAODGlobalTrack->GetITSsignal();
   this->fdEdxTPC = fAODGlobalTrack->GetTPCsignal();
   this->fbetaTOF = GetBeta(fAODGlobalTrack);
   for (int i = 0; i < 6; ++i) {
@@ -926,6 +927,7 @@ void AliFemtoDreamTrack::Reset() {
     fChi2ITS = 0;
     fSharedClsITSLayer.clear();
     fHasSharedClsITSLayer = false;
+    fdEdxITS = -999;
     fdEdxTPC = -999;
     fbetaTOF = 1.1;
     fHasITSHit = false;
