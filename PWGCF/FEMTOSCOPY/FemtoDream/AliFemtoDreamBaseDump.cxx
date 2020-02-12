@@ -1,5 +1,7 @@
 #include "AliFemtoDreamBaseDump.h"
 #include "AliFemtoDreamHigherPairMath.h"
+#include "AliAnalysisManager.h"
+#include "TFile.h"
 
 // ------------------------------------------------------------------------------------------------
 ClassImp(AliFemtoDreamPairDump)
@@ -43,18 +45,22 @@ AliFemtoDreamPairDump &AliFemtoDreamPairDump::operator=(
 ClassImp(AliFemtoDreamEventDump)
 
 AliFemtoDreamEventDump::AliFemtoDreamEventDump()
-    : fMultiplicity(0),
+    : fFilePath(),
+      fMultiplicity(0),
       fVertexZ(0),
       fPairDump() {
 }
 
 void AliFemtoDreamEventDump::Reset() {
+  fFilePath = "";
   fMultiplicity = 0;
   fVertexZ = 0;
   fPairDump.resize(0);
 }
 
-void AliFemtoDreamEventDump::SetEventProperties(float mult, float zvertex) {
+void AliFemtoDreamEventDump::SetEventProperties(float mult, float zvertex,
+                                                TString filePath) {
+  fFilePath = filePath;
   fMultiplicity = mult;
   fVertexZ = zvertex;
 }
@@ -87,9 +93,24 @@ void AliFemtoDreamDump::SetEvent(std::vector<AliFemtoDreamBasePart> &vec1,
                                  std::vector<AliFemtoDreamBasePart> &vec2,
                                  AliFemtoDreamEvent *evt, const int pdg1,
                                  const int pdg2) {
+  if (vec1.size() == 0 && vec2.size() == 0) {
+    return;
+  }
+
+  TString filePath;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  if (man) {
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man
+        ->GetInputEventHandler());
+    if (inputHandler) {
+      filePath = inputHandler->GetTree()->GetCurrentFile()->GetName();
+    }
+  }
+
   // Reset the event and set global event properties
   fEventDump->Reset();
-  fEventDump->SetEventProperties(evt->GetMultiplicity(), evt->GetZVertex());
+  fEventDump->SetEventProperties(evt->GetMultiplicity(), evt->GetZVertex(),
+                                 filePath);
 
   for (auto part1 : vec1) {
     if (!part1.UseParticle()) {
@@ -108,16 +129,31 @@ void AliFemtoDreamDump::SetEvent(std::vector<AliFemtoDreamBasePart> &vec1,
   }
 
   // Fill the tree when we found some particles
-  if(fEventDump->GetNPairs() > 0) {
+  if (fEventDump->GetNPairs() > 0) {
     fOutputTree->Fill();
   }
 }
 
 void AliFemtoDreamDump::SetEvent(std::vector<AliFemtoDreamBasePart> &vec,
                                  AliFemtoDreamEvent *evt, const int pdg) {
+  if (vec.size() == 0) {
+    return;
+  }
+
+  TString filePath;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  if (man) {
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man
+        ->GetInputEventHandler());
+    if (inputHandler) {
+      filePath = inputHandler->GetTree()->GetCurrentFile()->GetName();
+    }
+  }
+
   // Reset the event and set global event properties
   fEventDump->Reset();
-  fEventDump->SetEventProperties(evt->GetMultiplicity(), evt->GetZVertex());
+  fEventDump->SetEventProperties(evt->GetMultiplicity(), evt->GetZVertex(),
+                                 filePath);
 
   for (auto iterPart1 = vec.begin(); iterPart1 < vec.end(); ++iterPart1) {
     auto part1 = *iterPart1;
@@ -138,7 +174,7 @@ void AliFemtoDreamDump::SetEvent(std::vector<AliFemtoDreamBasePart> &vec,
   }
 
   // Fill the tree
-  if(fEventDump->GetNPairs() > 0) {
+  if (fEventDump->GetNPairs() > 0) {
     fOutputTree->Fill();
   }
 }
