@@ -290,8 +290,10 @@ void AliAnalysisTaskFindableHypertriton3::UserCreateOutputObjects() {
   fFindableTree->Branch("fTreeHyp3BodyVarPVz", &fTreeHyp3BodyVarPVz, "fTreeHyp3BodyVarPVz/F");
   fFindableTree->Branch("fTreeHyp3BodyVarPVt", &fTreeHyp3BodyVarPVt, "fTreeHyp3BodyVarPVt/F");
 
-  fFindableTree->Branch("fTreeHyp3BodyVarMagneticField", &fTreeHyp3BodyVarMagneticField,
-                        "fTreeHyp3BodyVarMagneticField/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarMagneticField", &fTreeHyp3BodyVarMagneticField,"fTreeHyp3BodyVarMagneticField/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarCentrality", &fTreeHyp3BodyVarCentrality, "fTreeHyp3BodyVarCentrality/F");
+
+
 
   PostData(1, fOutputList);
   PostData(2, fFindableTree);
