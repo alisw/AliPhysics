@@ -188,9 +188,7 @@ Float_t AliAnalysisTaskNanoPt::GetMass2sq(AliFemtoDreamTrack *track) const {
   }
   return mass2sq;
 }
-
 //-------------------------------------------------------UserCreateOutPut----------------------------------------------------------------------------------
-
 void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
 
   fGTI = new AliVTrack *[fTrackBufferSize];
@@ -299,7 +297,6 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
     fAntiDeuteronRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
     fAntiDeuteronNoTOFList = fAntiDeuteronTrackNoTOF->GetQAHists();
     fAntiDeuteronNoTOFList->Add(fAntiDeuteronRestMassNoTOF);
-
   }
 //===================================================================== MC HistogramsfProtonRestMassMCfKaonRestMassMC
   if (fIsMC) {
@@ -394,7 +391,6 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
       fAntiDeuteronMCList->Add(fAntiDPionRestMassMC);
       fAntiDeuteronMCList->Add(fAntiDeuteronBackgroundMC);
     }
-
   }
 
   if (!fConfig) {
@@ -460,7 +456,6 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
   if (fAntiDeuteronTrack->GetIsMonteCarlo()) {
     PostData(15, fAntiDeuteronMCList);
   }
-
 }
 
 //------------------------------------------UserExec()----------------------------------------------------------------------------
@@ -600,7 +595,6 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
 
         } else {
           fAntiProtonBackgroundMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
-
         }
       }
 
@@ -662,9 +656,7 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
           fAntiDeuteronBackgroundMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
       }
-
     }
-
   }
 
   fPairCleaner->CleanTrackAndDecay(&Proton, &Deuteron, 0);
