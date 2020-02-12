@@ -125,9 +125,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetGeneratorULSSignalName(generators);
   task->SetLHC19f2MC(isLHC19f2);
 
-	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/%s .",resolutionFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/%s ."    ,cocktailFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/centrality/%s .",centralityFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
+	if(resolutionFilename != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/%s .",resolutionFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
+	if(cocktailFilename   != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/%s ."    ,cocktailFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
+	if(centralityFilename != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/centrality/%s .",centralityFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
 
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resolutionFilename);
