@@ -391,10 +391,14 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  if( fOption.Contains("2018") ){
 	fEventCuts.SetupPbPb2018();
  }
+ else if( fOption.Contains("PbPb") ){
+	fEventCuts.SetupRun2PbPb();
+ }
+
  if( fOption.Contains("PbPb") ){
-	fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) ); 
 	fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
  }
+
 
  PostData(1, fHistos->GetListOfHistograms());
 
@@ -421,7 +425,6 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if(!fEvt) return;
 
  bool IsEventSelectedPbPb = kFALSE;
- if( fOption.Contains("PbPb") ) IsEventSelectedPbPb = fEventCuts.AcceptEvent( event );
 
  IsMC = kFALSE;
 // if( IsFirstEvent ){
@@ -453,6 +456,13 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( sel ){ fCent = sel->GetMultiplicityPercentile("V0M"); }
  if( fRunTable->IsPA() ) { fCent = sel->GetMultiplicityPercentile("V0A"); }
  if( fOption.Contains("UseZNA") ){ fCent = sel->GetMultiplicityPercentile("ZNA"); } 
+ 
+ fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) );
+ if( fOption.Contains("PbPb") && (
+	( fCent > 10  && fCent < 30 ) || ( fCent > 50 ) ) ){
+	fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7) );
+ }
+ if( fOption.Contains("PbPb") ) IsEventSelectedPbPb = fEventCuts.AcceptEvent( event );
 
  double v0amplitude=0;
  for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
