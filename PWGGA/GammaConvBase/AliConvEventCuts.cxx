@@ -5916,7 +5916,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       }
     }
     Bool_t fRejectEMCalLEDevents = kTRUE;
-    if (fRejectEMCalLEDevents && (fPeriodEnum == kLHC12)) {
+    if (fRejectEMCalLEDevents && (fPeriodEnum == kLHC12 || fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC17NomB || fPeriodEnum == kLHC18NomB)) {
       AliVCaloCells *cells   = event->GetEMCALCells();
       const Short_t nCells   = cells->GetNumberOfCells();
 
