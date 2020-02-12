@@ -269,7 +269,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
     SetNMassBins(nInvMassBins); 
   }else if(fPdgMeson == 4122) {
     Double_t massLc  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
-    Int_t nInvMassBins = 1000;
+    Int_t nInvMassBins = 500;
     Double_t minMass = massLc-0.250;
     Double_t maxMass = massLc+0.250;
     SetMassLimits(minMass,maxMass);
@@ -1420,7 +1420,7 @@ void AliAnalysisTaskSEDvsMultiplicity::Terminate(Option_t */*option*/)
   return;
 }
 //_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSEDvsMultiplicity::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
+Int_t AliAnalysisTaskSEDvsMultiplicity::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {
   //
   /// checking whether the mother of the particles come from a charm or a bottom quark
   //
