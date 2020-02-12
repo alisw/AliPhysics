@@ -653,14 +653,16 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
     std::vector<float> eta = Track->GetEta();
     std::vector<float> phi = Track->GetPhi();
     float pT = Track->GetPt();
-    float p = Track->GetMomTPC();
+    float p = Track->GetP();
+    float pTPC = Track->GetMomTPC();
     float Pprim = Track->GetP();
     for (int i = 0; i < 2; ++i) {
       if (i == 0 || (i == 1 && Track->UseParticle())) {
         fHists->FilletaCut(i, eta.at(0));
         fHists->FillphiCut(i, phi.at(0));
         fHists->FillpTCut(i, pT);
-        fHists->FillpTPCCut(i, p);
+        fHists->FillpCut(i, pTPC);
+        fHists->FillpTPCCut(i, pTPC);
         fHists->FillTPCclsCut(i, Track->GetNClsTPC());
         fHists->FillTrackChiSquare(i, pT, Track->GetChiSquare());
         fHists->FillDCAxyCut(i, pT, Track->GetDCAXY());
@@ -728,15 +730,21 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
             }
           }
         }
-        fHists->FillTPCdedx(i, p, Track->GetdEdxTPC());
-        fHists->FillTOFbeta(i, p, Track->GetbetaTOF());
+        fHists->FillITSdedx(i, p, Track->GetdEdxITS());
+        fHists->FillTPCdedx(i, pTPC, Track->GetdEdxTPC());
+        fHists->FillTOFbeta(i, pTPC, Track->GetbetaTOF());
 
-        fHists->FillNSigTPC(i, p, (Track->GetnSigmaTPC(fParticleID)));
-        fHists->FillNSigTPCMod(i, p, (Track->GetnSigmaTPC(fParticleID)));
-        fHists->FillNSigTOF(i, p, (Track->GetnSigmaTOF(fParticleID)));
+        fHists->FillNSigITS(i, p, (Track->GetnSigmaITS(fParticleID)));
+        fHists->FillNSigTPC(i, pTPC, (Track->GetnSigmaTPC(fParticleID)));
+        fHists->FillNSigITSMod(i, p, (Track->GetnSigmaITS(fParticleID)));
+        fHists->FillNSigTPCMod(i, pTPC, (Track->GetnSigmaTPC(fParticleID)));
+        fHists->FillNSigTOF(i, pTPC, (Track->GetnSigmaTOF(fParticleID)));
+        fHists->FillITSStatus(i, Track->GetstatusITS());
         fHists->FillTPCStatus(i, Track->GetstatusTPC());
         fHists->FillTOFStatus(i, Track->GetstatusTOF());
-        fHists->FillNSigComTPCTOF(i, p, Track->GetnSigmaTPC(fParticleID),
+        fHists->FillNSigComITSTPC(i, p, Track->GetnSigmaITS(fParticleID),
+                                  Track->GetnSigmaTPC(fParticleID));
+        fHists->FillNSigComTPCTOF(i, pTPC, Track->GetnSigmaTPC(fParticleID),
                                   Track->GetnSigmaTOF(fParticleID));
         //Fill These Before
         if (i == 0 && fCombSigma) {
@@ -746,7 +754,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         //Fill These After
         if (i == 1 && fTOFM) {
             fHists->FillTOFMass(Pprim, Track->GetbetaTOF());
-        }
+        }    
       }
     }
   } else {
@@ -1059,7 +1067,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetDCAVtxXY(0.1);
   trackCuts->SetCutSharedCls(true);
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
-  trackCuts->SetPID(AliPID::kDeuteron, 1.4,3.,false,3.,true);
+  trackCuts->SetPID(AliPID::kDeuteron, 1.4, 3.,false, 3.,true);
   trackCuts->SetRejLowPtPionsTOF(false);
   trackCuts->SetCutSmallestSig(true);
 
