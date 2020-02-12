@@ -101,7 +101,7 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     // Signal to Background
     TCanvas* cSigBkg = new TCanvas("cSigBkg", "cSigBkg", w, h);
     cSigBkg->Draw();
-    cSigBkg->Divide(4, 2, 0.0001, 0.0001);
+    cSigBkg->Divide(3, 3, 0.0001, 0.0001);
     cSigBkg->SetTickx();
     cSigBkg->SetLogy(false);
     cSigBkg->cd();
@@ -131,7 +131,7 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
         hBkgNorm->Draw("BAR same");
 
         // Legend
-        auto legend = new TLegend(0.13, 0.74, 0.5, 0.89);
+        auto legend = new TLegend(0.65, 0.7, 0.9, 0.9);
         legend->SetFillStyle(0);
         legend->AddEntry(hSig, "data", "LE");
         legend->AddEntry(hBkg, "Mixed Bkg", "LE");
@@ -152,7 +152,7 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     // Fitted result
     TCanvas* cFit = new TCanvas("cFit", "cFit", w, h);
     cFit->Draw();
-    cFit->Divide(4, 2, 0.00001, 0.00001);
+    cFit->Divide(3, 3, 0.00001, 0.00001);
     cFit->SetTickx();
     cFit->SetLogy(false);
     cFit->cd();
@@ -241,7 +241,7 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     // Fitted MC
     TCanvas* cMCFit = new TCanvas("cMCFit", "cMCFit", w, h);
     cMCFit->Draw();
-    cMCFit->Divide(4, 2, 0.0001, 0.0001);
+    cMCFit->Divide(3, 3, 0.0001, 0.0001);
     cMCFit->SetTickx();
     cMCFit->SetLogy(false);
     cMCFit->cd();
