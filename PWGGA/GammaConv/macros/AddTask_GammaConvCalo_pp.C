@@ -2451,7 +2451,7 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113", "0dl00009f9730000dge0404000","1111112067032230000", "0163103100b00010"); // RBins    min = 72,     max = 95
     cuts.AddCutPCMCalo("00010113", "0dg00009f9730000dge0404000","1111112067032230000", "0163103100b00010"); // RBins    min = 95,     max = 180
   } else if ( trainConfig == 2043){ // EMCAL only //   R Bins // with weights
-    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","1111112067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180
+    cuts.AddCutPCMCalo("00010113", "0d200009f9730000dge0404000","1111112067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180
     cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","1111112067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180 without 55 -72
     cuts.AddCutPCMCalo("00010113", "0dh00009f9730000dge0404000","1111112067032230000", "0163103100b00010"); // RBins    min = 5,      max = 13
     cuts.AddCutPCMCalo("00010113", "0di00009f9730000dge0404000","1111112067032230000", "0163103100b00010"); // RBins    min = 13,     max = 33.5
@@ -2477,6 +2477,28 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113", "0dk00009f9730000dge0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 55,     max = 72
     cuts.AddCutPCMCalo("00010113", "0dl00009f9730000dge0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 72,     max = 95
     cuts.AddCutPCMCalo("00010113", "0dg00009f9730000dge0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 95,     max = 180
+  } else if (trainConfig == 2046){ // exotic cluster in triggered data
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067232230000","0163103100b00010"); // ExC 99
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067532230000","0163103100b00010"); // ExC 97
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067832230000","0163103100b00010"); // ExC 95
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067b32230000","0163103100b00010"); // ExC 95 + TCard > 50
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067e32230000","0163103100b00010"); // ExC 97 + TCard > 50
+  } else if (trainConfig == 2047){ // exotic cluster in triggered data
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067232230000","0163103100b00010"); // ExC 99
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067532230000","0163103100b00010"); // ExC 97
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067832230000","0163103100b00010"); // ExC 95
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067b32230000","0163103100b00010"); // ExC 95 + TCard > 50
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067e32230000","0163103100b00010"); // ExC 97 + TCard > 50
+    //// low B-field          0d200089f9730000iih0404000
+  } else if ( trainConfig == 2046){ // DCAL only //   R Bins // with weights
+    cuts.AddCutPCMCalo("00010113", "0d200089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180
+    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180 without 55 -72
+    cuts.AddCutPCMCalo("00010113", "0dh00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 5,      max = 13
+    cuts.AddCutPCMCalo("00010113", "0di00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 13,     max = 33.5
+    cuts.AddCutPCMCalo("00010113", "0dj00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 33.5,   max = 55
+    cuts.AddCutPCMCalo("00010113", "0dk00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 55,     max = 72
+    cuts.AddCutPCMCalo("00010113", "0dl00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 72,     max = 95
+    cuts.AddCutPCMCalo("00010113", "0dg00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 95,     max = 180
 
 
   } else if (trainConfig == 2070){  // EMCal+DCAL TB NL tests
