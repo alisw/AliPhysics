@@ -61,7 +61,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fRunNo(-1),
   fCurrSystFlag(0),
   fAddQA(kFALSE),
-  fQAList(0)
+  fQAList(0),
+  fBypassCalculations(kFALSE)
 {
 };
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights, Bool_t IsMC, Bool_t AddQA):
@@ -88,7 +89,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fRunNo(-1),
   fCurrSystFlag(0),
   fAddQA(AddQA),
-  fQAList(0)
+  fQAList(0),
+  fBypassCalculations(kFALSE)
 {
   if(!fProduceWeights) DefineInput(1,TList::Class());
   DefineOutput(1,(fProduceWeights?TList::Class():AliGFWFlowContainer::Class()));
@@ -307,6 +309,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   Int_t vtxb = GetVtxBit(fAOD);
   if(!vtxb) return; //If no vertex pass, then do not consider further
+  if(fBypassCalculations) return;
   //fFlowEvent->SetRunNumber(fAOD->GetRunNumber());
   const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(fAOD->GetPrimaryVertex());
   Double_t POSvtx[] = {0.,0.,0.};
