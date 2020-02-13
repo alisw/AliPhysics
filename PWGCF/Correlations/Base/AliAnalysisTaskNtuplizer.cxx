@@ -70,6 +70,23 @@ float dcan   [NN];    // negative track: DCA to primary vertex
 float nrown  [NN];    // negative track: number of TPC hits
 float nsgmn  [NN];    // negative track: nsigmas energy loss in TPC
 
+// maximum number of candidates to keep per event
+//#define NN 15000
+
+Int_t nt_c;
+float   pt_c    [NN];
+float   eta_c   [NN];
+float   phi_c   [NN];
+Short_t ch_c    [NN];
+Int_t   nrows_c [NN];
+Int_t   nfclus_c [NN];
+//float   chindf_c[NN];
+float   dcaxy_c [NN];
+float   dcaz_c  [NN];
+
+
+
+
 AliPIDResponse* PIDResponse = NULL;
 
 
@@ -94,13 +111,31 @@ Int_t    run;            // run number
 float    magfld;         // magnetic field
 UInt_t   orbit;          // linear (non-wrapped) orbit number
 UShort_t bx;             // bunch crossing number
-Int_t    numSPDClus1;    // number of fired SPD clusters, layer 1
-Int_t    numSPDClus2;    // number of fired SPD clusters, layer 2
-Int_t    numSPDTrklets;  // number of reconstructed SPD-only tracks
+//Int_t    numSPDClus1;    // number of fired SPD clusters, layer 1
+//Int_t    numSPDClus2;    // number of fired SPD clusters, layer 2
+//Int_t    numSPDTrklets;  // number of reconstructed SPD-only tracks
+Short_t   trig_mask;      // token for trigger mask (event selection)
+
 
 float centV0;      // centrality from V0 multiplicity
 float centCL0;     // centrality from SPD first layer
 float centCL1;     // centrality from SPD second layer
+
+//required for pile up cuts (for 2018)
+Int_t    nITSCls;    
+Int_t    nITSTrkls;    
+Int_t multTrk;
+Int_t multV0Tot;
+Int_t multV0On;
+Int_t tpcClsTot;
+
+
+//for 2015 (multTrk is common for both years)
+Int_t multEsd;
+//Int_t multTrk;
+Int_t multTPC;
+Int_t multTrkTOFBefC;
+Int_t multTrkBefC;
 
 // best and SPD primary vertices
 struct vtx_t {
@@ -119,6 +154,14 @@ AliAnalysisTaskNtuplizer::AliAnalysisTaskNtuplizer() :
    AliAnalysisTaskSE(),
    fhStats(NULL),
    fHistos(NULL),
+   fFilterBit(32),
+   fminPt(0.15),
+   fmaxPt(50.0),
+   feta(0.8),
+   fFillchtracks(kFALSE),
+   fFilllambdas(kFALSE),
+   year(2018),
+   fFillSPD(kTRUE),
    fTree(NULL)
 {
    // ROOT I/O constructor.
@@ -129,6 +172,14 @@ AliAnalysisTaskNtuplizer::AliAnalysisTaskNtuplizer(const char* name) :
    AliAnalysisTaskSE(name),
    fhStats(NULL),
    fHistos(NULL),
+   fFilterBit(32),
+   fminPt(0.15),
+   fmaxPt(50.0),
+   feta(0.8),
+   fFillchtracks(kFALSE),
+   fFilllambdas(kFALSE),
+   year(2018),
+   fFillSPD(kTRUE),
    fTree(NULL)
 {
    DefineOutput(1, TObjArray::Class());
@@ -148,13 +199,14 @@ void init_event(TTree* fTree)
    fTree->Branch("magfld", &magfld);
    fTree->Branch("orbit",  &orbit);
    fTree->Branch("bx",     &bx);
-   fTree->Branch("numSPDClus1", &numSPDClus1);
-   fTree->Branch("numSPDClus2", &numSPDClus2);
-   fTree->Branch("numSPDTrklets", &numSPDTrklets);
+   //fTree->Branch("numSPDClus1", &numSPDClus1);
+   //fTree->Branch("numSPDClus2", &numSPDClus2);
+   //fTree->Branch("numSPDTrklets", &numSPDTrklets);
+   fTree->Branch("trig_mask", &trig_mask);
 }
 //_________________________________________________________________________________________
 void fill_event(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
-{
+{  
    UInt_t period = vEvent->GetPeriodNumber();
    UInt_t orbit24 = vEvent->GetOrbitNumber(); // wrapped down to 24 bits
 
@@ -174,20 +226,43 @@ void fill_event(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
    orbit  = period * (1<<24) + orbit24;
    bx     = vEvent->GetBunchCrossNumber();
 
+   /*  
    numSPDClus1 = vEvent->GetNumberOfITSClusters(0);
    numSPDClus2 = vEvent->GetNumberOfITSClusters(1);
    numSPDTrklets = vEvent->GetMultiplicity()->GetNumberOfTracklets();
+   */
+  
 }
 //_____________________________________________________________________________________________
-void init_cent(TTree* fTree)
+void init_cent(TTree* fTree, Int_t ds)
 {
    fTree->Branch("centV0",  &centV0);
    fTree->Branch("centCL0", &centCL0);
    fTree->Branch("centCL1", &centCL1);
+   
+if(ds==2018){
+   fTree->Branch("nITSCls", &nITSCls);
+   fTree->Branch("nITSTrkls", &nITSTrkls);
+   fTree->Branch("multTrk", &multTrk);
+   fTree->Branch("multV0Tot", &multV0Tot);
+   fTree->Branch("multV0On", &multV0On);
+   fTree->Branch("tpcClsTot", &tpcClsTot);
+ }
+
+
+if(ds==2015){
+  fTree->Branch("multEsd", &multEsd);
+  fTree->Branch("multTrk", &multTrk);
+  fTree->Branch("multTPC", &multTPC);
+  fTree->Branch("multTrkTOFBefC", &multTrkTOFBefC);
+  fTree->Branch("multTrkBefC", &multTrkBefC);
+ }
+
+ 
 }
 
 //_____________________________________________________________________________________________
-bool fill_cent(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
+bool fill_cent(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task, Int_t ds)
 {
    AliMultSelection* cent = dynamic_cast<AliMultSelection*>(vEvent->FindListObject("MultSelection"));
    if (!cent) {
@@ -195,9 +270,97 @@ bool fill_cent(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
       return true;
    }
 
+    //get the aod event to use the same functions used in Alex's code (may be not necessary as AliVEvent functions are same)
+   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(vEvent);
+   if (!aod) {
+      task->WarnIncErr("aod can not be converted from AliVEvent");
+      return true;
+   }
+
+   AliAODVZERO* aodV0 = aod->GetVZEROData();
+    if (!aodV0) {
+      task->WarnIncErr("no aodV0 found, no V0 detector info available");
+      return true;
+   }
+     
+   //extra cut from Alex's code
+   if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0)
+        return true;
+
    centV0  = cent->GetMultiplicityPercentile("V0M");
    centCL0 = cent->GetMultiplicityPercentile("CL0");
    centCL1 = cent->GetMultiplicityPercentile("CL1");
+
+   
+    Int_t nITSClsLy0 = aod->GetNumberOfITSClusters(0);
+    Int_t nITSClsLy1 = aod->GetNumberOfITSClusters(1);
+    nITSCls = nITSClsLy0 + nITSClsLy1;//***************************store the value
+    
+    
+    AliAODTracklets* aodTrkl = (AliAODTracklets*)aod->GetTracklets();
+    nITSTrkls = aodTrkl->GetNumberOfTracklets();//****************************store the value
+    
+    //cout<<nITSClsLy0<<"    "<<nITSClsLy1<<"    "<<nITSCls<<"   "<<nITSTrkls<<endl;
+    
+
+    const Int_t nTracks = aod->GetNumberOfTracks();
+    
+    multTrk = 0;//**********************************store the value
+    multTrkBefC=0;
+    multTrkTOFBefC=0;
+    multTPC=0;
+
+    
+    for (Int_t it = 0; it < nTracks; it++) {//track loop starts here for the counting
+        
+        AliAODTrack* aodTrk = (AliAODTrack*)aod->GetTrack(it);
+        
+        if (!aodTrk){
+            delete aodTrk;
+            continue;
+        }
+
+	if(ds==2018){
+        if (aodTrk->TestFilterBit(32)){
+            if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
+                multTrk++;
+            
+        }
+	}
+
+
+	if(ds==2015){
+
+	      multEsd = ((AliAODHeader*)aod->GetHeader())->GetNumberOfESDTracks();
+
+   if (aodTrk->TestFilterBit(32)){
+
+            multTrkBefC++;
+
+            if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10. && aodTrk->GetTOFsignal() >= 12000. && aodTrk->GetTOFsignal() <= 25000.)
+                multTrkTOFBefC++;
+
+            if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
+                multTrk++;
+
+        }
+
+        if (aodTrk->TestFilterBit(128))
+            multTPC++;
+	}
+	
+    }//track loop ends here
+
+   
+    Int_t multV0a = aodV0->GetMTotV0A();
+    Int_t multV0c = aodV0->GetMTotV0C();
+    multV0Tot = multV0a + multV0c;//**********************************store the value
+    Int_t multV0aOn = aodV0->GetTriggerChargeA();
+    Int_t multV0cOn = aodV0->GetTriggerChargeC();
+    multV0On = multV0aOn + multV0cOn;//**********************************store the value
+    
+    tpcClsTot = aod->GetNumberOfTPCClusters();//**********************************store the value
+    // Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
 
    return false;
 }
@@ -206,8 +369,9 @@ void init_vtx(TTree* fTree, bool fillSPD)
 {
    fTree->Branch("vtx", &vtx, "vx/F:vy/F:vz/F:vncontr/I:vchindf/F:vcovzz/F:vtype/I");
 
+
    if (fillSPD)
-      fTree->Branch("vtxSPD", &vtxSPD, "vx2/F:vy2/F:vz2/F:vncontr2/I:vchindf2/F:vcovzz2/F:vtype2/I");
+     fTree->Branch("vtxSPD", &vtxSPD, "vx2/F:vy2/F:vz2/F:vncontr2/I:vchindf2/F:vcovzz2/F:vtype2/I");
 }
 
 //_____________________________________________________________________________________________
@@ -242,7 +406,7 @@ void FillPrimaryVertex(vtx_t& vtx, const AliVVertex* pv, AliAnalysisTaskNtuplize
 }
 
 //_____________________________________________________________________________________________
-bool fill_vtx(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
+bool fill_vtx(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task, bool fillSPD)
 {
    const AliVVertex* pv    = vEvent->GetPrimaryVertex();
    const AliVVertex* pvSPD = vEvent->GetPrimaryVertexSPD();
@@ -251,7 +415,7 @@ bool fill_vtx(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
       return true;
 
    FillPrimaryVertex(vtx,    pv,    task);
-   FillPrimaryVertex(vtxSPD, pvSPD, task);
+   if (fillSPD) FillPrimaryVertex(vtxSPD, pvSPD, task);
 
    return false;
 }
@@ -279,15 +443,123 @@ void fill_zdc(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
    rawZDC.nA[4] = (float) zdc->GetZNATowerEnergy()[0];
    rawZDC.nC[4] = (float) zdc->GetZNCTowerEnergy()[0];
 }
+
+//_____________________________________________________________________________________________
+void init_chtracks(TTree* fTree)
+{
+   fTree->Branch("nt_c",     &nt_c);
+   fTree->Branch("pt_c",     pt_c,     "pt_c[nt_c]/F");
+   fTree->Branch("eta_c",    eta_c,    "eta_c[nt_c]/F");
+   fTree->Branch("phi_c",    phi_c,    "phi_c[nt_c]/F");
+   fTree->Branch("ch_c",     ch_c,     "ch_c[nt_c]/S");
+   fTree->Branch("nrows_c",  nrows_c,  "nrows_c[nt_c]/I");
+   fTree->Branch("nfclus_c",  nfclus_c,  "nfclus_c[nt_c]/I");
+   //fTree->Branch("chindf_c", chindf_c, "chindf_c[nt_c]/F");
+   fTree->Branch("dcaxy_c",  dcaxy_c,  "dcaxy_c[nt_c]/F");
+   fTree->Branch("dcaz_c",   dcaz_c,   "dcaz_c[nt_c]/F");
+}
+//_____________________________________________________________________________________________
+void fill_chtracks(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task, Int_t filterbit, float minPt, float maxPt, float eta_cut, TH2D *eta_phi_accpt)
+{
+   // Fills tree branches.
+
+   // cleanup from previous event
+   nt_c = 0;
+
+   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(vEvent);
+   if (!aodEvent) {
+      task->WarnIncErr("aodEvent is NULL, no charged tracks saved");
+      return;
+   }
+
+     Double_t dVertexXYZ[3] = {0.,0.,0.};
+
+    const AliAODVertex* vertex = aodEvent->GetPrimaryVertex();
+    if(!vertex) {
+      task->WarnIncErr("AliAODVertex is NULL, no primary vertwx has been found");
+      return;
+   }
+
+     vertex->GetXYZ(dVertexXYZ);
+
+
+     for (Int_t i = 0; i < aodEvent->GetNumberOfTracks(); i++) {//track loop starts
+      if (nt_c >= NN) {
+         task->WarnIncErr("too many tracks, some skipped");
+         break;
+      }
+
+      AliAODTrack* trk = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(i));
+      if (!trk) {
+         task->WarnIncErr("trk is NULL, skipped");
+         continue;
+      }
+
+      if (abs(trk->Charge()) != 1) {
+         task->WarnIncErr("invalid trk->Charge(), track skipped");
+         continue;
+      }
+
+      // TPC-only primary vertex constrained tracks
+      if (!trk->TestFilterBit(filterbit)) continue;
+
+      //if (trk->GetKinkIndex(0) > 0) continue;//included in filterbit 32 and 128!!
+
+      Int_t TPCCrossedRows = trk->GetTPCClusterInfo(2, 1);
+      Int_t TPCFindableCls = trk->GetTPCNclsF();
+
+      //  if (TPCFindableCls < 1) continue;
+      //  if (TPCCrossedRows < 0.8 * TPCFindableCls) continue;
+      //  if (!(trk->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+      //  if (TPCCrossedRows < 70 || TPCFindableCls < 1) continue;
+
+      
+       if (trk->Pt() < minPt || trk->Pt() > maxPt) continue;
+       if (fabs(trk->Eta()) > eta_cut) continue;
+
+
+       //check whether the Pt cut properly applied
+       // if (trk->Pt() < 0.15) cout<<"Got pt < 0.15"<<endl;
+       
+      pt_c [nt_c] = trk->Pt();
+      eta_c[nt_c] = trk->Eta();
+      phi_c[nt_c] = trk->Phi();
+      ch_c [nt_c] = trk->Charge();
+
+      nrows_c [nt_c] = TPCCrossedRows;
+      nfclus_c [nt_c] = TPCFindableCls;
+      //chindf_c[nt_c] = trk->Chi2perNDF();
+
+   // track DCA coordinates
+   // note AliAODTrack::XYZAtDCA() works only for constrained tracks
+      //dcaxy_c [nt_c] = trk->DCA();
+      //dcaz_c  [nt_c] = trk->ZAtDCA();
+
+          
+    Double_t dTrackXYZ[3] = {0.,0.,0.};
+    Double_t dDCAXYZ[3] = {0.,0.,0.};
+
+    trk->GetXYZ(dTrackXYZ);
+
+    for(Short_t i(0); i < 3; i++) { dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i]; }
+
+      dcaxy_c [nt_c] = TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
+      dcaz_c  [nt_c] = TMath::Abs(dDCAXYZ[2]);
+
+				  
+      eta_phi_accpt->Fill(trk->Eta(),trk->Phi());
+
+      nt_c++;
+     }//track loop ends
+}
 //_____________________________________________________________________________________________
 void init_tpcflow(TTree* fTree)
 {
    fTree->Branch("flowTPC", &flowTPC,
                  "txpl[7]:typl[7]:txpr[7]:typr[7]:txnl[7]:tynl[7]:txnr[7]:tynr[7]");
 }
-
 //_____________________________________________________________________________________________
-void fill_tpcflow(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
+void fill_tpcflow(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task, Int_t filterbit)
 {
    // Fills flow info from TPC-only tracks.
 
@@ -327,7 +599,17 @@ void fill_tpcflow(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
 //             continue;
 
          // TPC-only primary vertex constrained tracks
-         if (!trk->TestFilterBit(128)) continue;
+         if (!trk->TestFilterBit(filterbit)) continue;
+
+	 //if (trk->GetKinkIndex(0) > 0) continue;//included in filterbit 32 and 128!!
+
+	 double TPCCrossedRows = trk->GetTPCClusterInfo(2, 1);
+         UShort_t TPCFindableCls = trk->GetTPCNclsF();
+
+	 if(filterbit==128){//extra cuts, be careful
+	 if (TPCCrossedRows < 70 || TPCFindableCls < 1) continue;
+         if (TPCCrossedRows < 0.8 * TPCFindableCls) continue;
+	 }
 
          if (trk->Pt() < 0.2 || trk->Pt() > 3) continue;
          if (fabs(trk->Eta()) > 0.8) continue;
@@ -641,28 +923,33 @@ void AliAnalysisTaskNtuplizer::UserCreateOutputObjects()
    fHistos = new TObjArray;
    fHistos->SetOwner(true);
 
-   fhStats = new TH1D("hStats", "Event statistics", 10, 1, 11);
+   fhStats = new TH1D("hStats", "Event statistics", 3, 1, 4);
    fhStats->GetXaxis()->SetBinLabel(ANALYZED,  "Analyzed");
-   fhStats->GetXaxis()->SetBinLabel(ERRORS,    "Errors");
+   /* fhStats->GetXaxis()->SetBinLabel(ERRORS,    "Errors");
    fhStats->GetXaxis()->SetBinLabel(BADCENT,   "Bad centrality");
-   fhStats->GetXaxis()->SetBinLabel(INCOMPDAQ, "Incomplete DAQ");
+   fhStats->GetXaxis()->SetBinLabel(INCOMPDAQ, "Incomplete DAQ");*/
    fhStats->GetXaxis()->SetBinLabel(WRITTEN,   "Written");
    fHistos->Add(fhStats);
 
+
+   eta_phi_accpt = new TH2D("eta_phi_accpt", "eta_phi_accpt", 4000,-1.0,1.0,12800,0, 6.4);
+   fHistos->Add(eta_phi_accpt);
+
+   
    if (!OpenFile(2)) AliFatal("OpenFile(2) failed");
    fTree = new TTree("events", "TTree with filtered event data");
 
    // associate tree branches with variables, initialize other
    init_event(fTree);
-   init_cent(fTree);
-   init_vtx(fTree, true);  // false=do not fill SPD vertex
+   init_cent(fTree, year);
+   init_vtx(fTree, fFillSPD);  // false=do not fill SPD vertex
    init_zdc(fTree);
    init_v0(fTree);
    // init_fmd(fTree, fHistos);
 //    init_ad0(fTree);
-//   init_chtracks(fTree);
+  if (fFillchtracks) init_chtracks(fTree);
    init_tpcflow(fTree);
-   init_lambdas(fTree);
+  if (fFilllambdas) init_lambdas(fTree);
 //    init_chkaons(fTree);
 
    PostData(1, fHistos);
@@ -702,7 +989,7 @@ void AliAnalysisTaskNtuplizer::UserExec(Option_t*)
 
 
  if (vEvent->IsIncompleteDAQ()) {
-      fhStats->Fill(INCOMPDAQ);
+   //fhStats->Fill(INCOMPDAQ);
       PostData(1, fHistos);
       PostData(2, fTree);
       return;
@@ -710,28 +997,64 @@ void AliAnalysisTaskNtuplizer::UserExec(Option_t*)
 
 
  
-   if (fill_cent(vEvent, this)) {
-      fhStats->Fill(BADCENT);
+ if (fill_cent(vEvent, this, year)) {
+     //fhStats->Fill(BADCENT);
       PostData(1, fHistos);
       PostData(2, fTree);
       return;
    }
 
-   if (fill_vtx(vEvent, this)) {
+ if (fill_vtx(vEvent, this, fFillSPD)) {
       WarnIncErr("PV not filled, event skipped");
       PostData(1, fHistos);
       PostData(2, fTree);
       return;
    }
 
+
+// Physics selection (trigger)
+
+
+    Bool_t isCentral = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral);
+    Bool_t isSemiCentral = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral);
+    Bool_t isMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kINT7);
+
+ Short_t cent_trig_mask=0;
+ Short_t semicent_trig_mask=0;
+ Short_t minbias_trig_mask=0;
+
+
+  if(isCentral) cent_trig_mask = 10;
+  if(isSemiCentral) semicent_trig_mask = 30;
+  if(isMB) minbias_trig_mask = 60;
+
+
+  /*
+  if (isMB) cout<<"Got Min bias"<<" "<<cent_trig_mask<<" "<<semicent_trig_mask<<" "<<minbias_trig_mask<<endl;
+  if (isSemiCentral) cout<<"Got SemiCentral"<<" "<<cent_trig_mask<<" "<<semicent_trig_mask<<" "<<minbias_trig_mask<<endl;
+  if (isCentral) cout<<"Got Central"<<" "<<cent_trig_mask<<" "<<semicent_trig_mask<<" "<<minbias_trig_mask<<endl;
+  */
+    /*
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
+  UInt_t fSelectMask = inputHandler->IsEventSelected();
+
+  if(fSelectMask & (AliVEvent::kCentral)) cent_trig_mask = 10;
+  if(fSelectMask & (AliVEvent::kSemiCentral)) semicent_trig_mask = 30;
+  if(fSelectMask & (AliVEvent::kINT7)) minbias_trig_mask = 60;
+    */
+ 
+  trig_mask = cent_trig_mask + semicent_trig_mask + minbias_trig_mask;
+
+
    fill_event(vEvent, this);
    fill_zdc(vEvent, this);
    fill_v0(vEvent, this);
    // fill_fmd(vEvent, this, 1);  // 1 = harmonics number
    // fill_ad0(vEvent, this);
-//    fill_chtracks(vEvent, this);
-    fill_tpcflow(vEvent, this);
-    fill_lambdas(vEvent, this);
+   if (fFillchtracks)    fill_chtracks(vEvent, this, fFilterBit, fminPt, fmaxPt, feta, eta_phi_accpt);
+   fill_tpcflow(vEvent, this, fFilterBit);
+    if (fFilllambdas)  fill_lambdas(vEvent, this);
 //    fill_chkaons(vEvent, this);
 
    fhStats->Fill(WRITTEN);
