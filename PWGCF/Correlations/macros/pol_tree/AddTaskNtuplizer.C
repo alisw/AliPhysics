@@ -1,4 +1,4 @@
-AliAnalysisTaskNtuplizer* AddTaskNtuplizer()
+AliAnalysisTaskNtuplizer* AddTaskNtuplizer(Int_t ds= 2018, Int_t FilterBit=32, Bool_t Filllambdas=kFALSE, Bool_t Fillchtracks=kTRUE, Float_t minPt=2.0, Float_t maxPt=100.0, Float_t eta=0.8, Bool_t fillSPD=kTRUE)
 {
    // Creates and configures AliAnalysisTaskNtuplizer class instance.
 
@@ -18,6 +18,13 @@ AliAnalysisTaskNtuplizer* AddTaskNtuplizer()
 
    AliAnalysisTaskNtuplizer* task = new AliAnalysisTaskNtuplizer("TaskCheckData");
    // task->SelectCollisionCandidates(trg);
+   task->SetFilterBit(FilterBit);
+   task->SetKinematicCuts_chtracks( minPt,  maxPt, eta);
+   task->SetFillchtracks(Fillchtracks);
+   task->SetFilllambdas(Filllambdas);
+   task->SetRunPeriod(ds);
+   task->SetFillSPD(fillSPD);
+
    mgr->AddTask(task);
 
    TString outpath = AliAnalysisManager::GetCommonFileName();
