@@ -485,7 +485,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                     double dPtHigh = fPtAxis->GetBinUpEdge(iPtA);
 
                     FillPOIvectors(dEtaGap, dPtLow, dPtHigh);       //Fill POI vectors
-                    CalculateCorrelations(task, centrality, dPt, -1.0, kFALSE, bDiff, bPtA, kFALSE, kFALSE);
+                    CalculateCorrelations(task, centrality, dPt, -1.0, kFALSE, bDiff, bPtA, bPtRef, kFALSE);
                                     
                     if(dPt < 5.0 && centrality < fCentMax)   //Save cpu by restricting double pt loops to central and semicentral centralities and low pt
                     {
@@ -496,7 +496,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                             double dPtBLow = fPtAxis->GetBinLowEdge(iPtB);
                             double dPtBHigh = fPtAxis->GetBinUpEdge(iPtB);
                             FillPtBvectors(dEtaGap, dPtBLow, dPtBHigh);                 //Fill PtB POI vectors
-                            CalculateCorrelations(task, centrality, dPt, dPtB, kFALSE, kFALSE, kFALSE, bPtRef, bPtB); 
+                            CalculateCorrelations(task, centrality, dPt, dPtB, kFALSE, kFALSE, kFALSE, kFALSE, bPtB); 
                         } //End PtB loop
                     } 
                 } //End PtA loop
