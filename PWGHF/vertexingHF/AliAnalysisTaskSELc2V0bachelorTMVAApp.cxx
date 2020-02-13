@@ -1526,6 +1526,20 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
       continue;
     }
 
+    // use Preselect to filter out the tracks according to the pT
+    if (cutsAnal->GetUsePreselect()){
+      TObjArray arrTracks(2);
+      for(Int_t ipr = 0; ipr < 2; ipr++){
+	AliAODTrack *tr;
+	if (ipr == 0) tr = vHF->GetProng(aodEvent, lcK0spr, ipr);
+	else tr = (AliAODTrack*)(aodEvent->GetV0(lcK0spr->GetProngID(1)));
+	arrTracks.AddAt(tr, ipr);
+      }
+      Int_t preSelectLc = cutsAnal->PreSelect(arrTracks);
+      if (preSelectLc == 0) continue;
+    }
+
+    // fill the cascade candidate
     if(!vHF->FillRecoCasc(aodEvent, lcK0spr, kFALSE)){ //Fill the data members of the candidate only if they are empty.
       continue;
     }
@@ -1622,7 +1636,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 	pdgCode = -1;
       }
     }
-    AliDebug(2, Form("\n\n\n Analysing candidate %d\n", iLctopK0s));
+    AliDebug(2, Form("Analysing candidate %d\n", iLctopK0s));
     AliDebug(2, Form(">>>>>>>>>> Candidate is background, fFillOnlySgn = %d --> SKIPPING", fFillOnlySgn));
     if (!isLc) {
       if (fFillOnlySgn) { // if it is background, and we want only signal, we do not fill the tree
@@ -2258,7 +2272,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       if (fUseWeightsLibrary) BDTResponse = fBDTReader->GetMvaValue(inputVars);
       //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc);
       //Printf("tmva = %f", tmva); 
-      fBDTHisto->Fill(BDTResponse, invmassLc); 
+      fBDTHisto->Fill(BDTResponse, invmassLc);
       fBDTHistoTMVA->Fill(tmva, invmassLc); 
       if (fDebugHistograms) {
 	if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
