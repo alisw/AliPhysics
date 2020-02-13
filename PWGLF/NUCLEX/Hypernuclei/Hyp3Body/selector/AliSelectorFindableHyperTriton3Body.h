@@ -11,6 +11,7 @@
 
 // Headers needed by this particular selector
 #include "AliESDtrack.h"
+#include "AliESDVertex.h"
 #include "AliPIDResponse.h"
 #include "AliVertexerHyperTriton3Body.h"
 #include "AliVertexerTracks.h"
@@ -39,8 +40,9 @@ public:
 
   TTreeReaderValue<Int_t> fTreeHyp3BodyVarMotherId= { fReader, "fTreeHyp3BodyVarMotherId"};
 
-
   TTreeReaderValue<Bool_t> fTreeHyp3BodyVarIsFakeCand = {fReader, "fTreeHyp3BodyVarIsFakeCand"};
+
+  TTreeReaderValue<AliESDVertex> fPrimaryVertex = {fReader, "fPrimaryVertex"};
 
   TTreeReaderValue<Float_t> fTreeHyp3BodyVarTrueP[3] = {{fReader, "fTreeHyp3BodyVarTruePx"},{fReader, "fTreeHyp3BodyVarTruePy"},{fReader, "fTreeHyp3BodyVarTruePz"}};
 
@@ -79,12 +81,21 @@ public:
 
   TVector3 fPrimaryVertexXYZ;
 
-  ULong_t fCurrentEventId = 0ull;
-  int fLastMother         = -1;
+  unsigned long fCurrentEventId = 0ull;
+  unsigned long fLastEventId    = 0ull;
+  int fCurrentMotherId          = -1;
+  int fLastMotherId             = -1;
+  int fNclones                  = -1;
+  bool fFakeCand                = false;
 
   TH2D *fHistInvMass[2][3]      = {{nullptr}};
   TH1D *fHistPt[2][3]           = {{nullptr}};
   TH1D *fHistDaughterPt[3][3]   = {{nullptr}};
+
+  TH2D *fHistGen[2]             = {nullptr};
+  TH2D *fHistRecSingle[2]       = {nullptr};
+  TH2D *fHistRecFake[2]         = {nullptr};
+  TH2D *fHistRecClones[2]       = {nullptr};
 
   TH1D *fHistNclsITS[3]         = {nullptr};
   TH1D *fHistNclsITSCheck       = nullptr;
@@ -102,7 +113,6 @@ public:
   TH1D *fHistDCA2dvZ[3]         = {nullptr};
   TH1D *fHistDCA2dv[3]          = {nullptr};
   TH1D *fHistTrackDistance[3]   = {nullptr};
-  TH1D *fHistCT                 = nullptr;
 
   ClassDef(AliSelectorFindableHyperTriton3Body, 0);
 };
