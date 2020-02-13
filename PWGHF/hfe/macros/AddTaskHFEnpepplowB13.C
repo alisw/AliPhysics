@@ -52,8 +52,8 @@ AliAnalysisTask *AddTaskHFEnpepplowB13(Bool_t MCthere,
     const int	kDefTPCcl	= 100;
     const int	kDefTPCclPID	=  80;
     const int	kDefITScl	=   3;
-    const double	kDefDCAr	=   1.;
-    const double	kDefDCAz	=   2.;
+    const double	kDefDCAr	=   2.4; //1.;
+    const double	kDefDCAz	=   3.2; //2.;
     const double	kDefTOFs	=   3.;
     
     // TPC PID Cuts Inclusive leg:
