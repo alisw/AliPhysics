@@ -666,6 +666,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistElectronPositronClusterMatch;        // Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronClusterMatch;                // Electron P vs cluster E in case of matching with a cluster
     TH2F*     fHistPositronClusterMatch;                // Positron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistElectronPositronClusterMatchSub;     // Electron/Positron P vs E - P in case of matching with a cluster
     TH2F*     fHistTrueElectronPositronClusterMatch;    // True Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistTrueNoElectronPositronClusterMatch;  // True No Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronClusterMatchTruePID;         // MC true histogram for purity studies of selected electrons
@@ -679,7 +680,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,102)
+    ClassDef(AliCaloPhotonCuts,103)
 };
 
 #endif
