@@ -460,7 +460,7 @@ bool AliMCSpectraWeights::CalcMCFractions() {
                     continue;
                 // fHistMCFractions : pt-mult-ipart
                 std::array<float, 3> binEntry{
-                    pt, AliMCSpectraWeights::GetMultFromCent(icent),
+                    pt, static_cast<float>(AliMCSpectraWeights::GetMultFromCent(icent)),
                     static_cast<float>(AliMCSpectraWeights::GetPartTypeNumber(
                         fstPartTypes[ipart]))};
                 auto const _FractionValue =
