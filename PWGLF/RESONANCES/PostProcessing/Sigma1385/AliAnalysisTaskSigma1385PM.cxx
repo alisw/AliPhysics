@@ -1342,9 +1342,19 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
 
       if (fIsMC) {
         if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]))
-          tmp[15] = (double)sign;  // MCflag
+          tmp[15] = (double)sign;  // MCflag Sigma1385+-
+        else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 1)
+          tmp[15] = (double)sign + 2;  // MCflag Bkg from LambdaStar
+        else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 2)
+          tmp[15] = (double)sign + 4;  // MCflag Bkg from Sigma1385 -> Sigma0
+        else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 3)
+          tmp[15] = (double)sign + 6;  // MCflag Bkg from Xi(1530)0 -> Xi-
+        else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 4)
+          tmp[15] = (double)sign + 8;  // MCflag Bkg from Xi(1530)0 -> Xi0
+        else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 5)
+          tmp[15] = (double)sign + 10;  // MCflag Bkg from Xi(1530)- -> Xi-
         else
-          tmp[15] = 3;  // MCflag -> not true
+          tmp[15] = 13;  // MCflag -> not true
       } else
         tmp[15] = 0;  // MCflag -> data
       tmp[16] = binAnti;
