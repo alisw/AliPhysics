@@ -48,6 +48,35 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming & first, PWG
 namespace PWGJE {
 namespace EMCALJetTasks {
 
+/*
+
+// Another possible option...
+// TODO: Remove the "Constituent" from the variable names if this works...
+class JetConstituents {
+  JetConstituents(): fConstituentPt(), fConstituentEta(), fConstituentPhi(), fConstituentGlobalIndex() {}
+  virtual ~JetConstituents() {}
+
+  bool Clear();
+
+ private:
+  std::vector<float> fConstituentPt;                      ///<  Jet constituent pt
+  std::vector<float> fConstituentEta;                     ///<  Jet constituent eta
+  std::vector<float> fConstituentPhi;                     ///<  Jet constituent phi
+  std::vector<unsigned int> fConstituentGlobalIndex;      ///<  Jet constituent global index
+};
+
+// TODO: Remove "Split" from constituent indices if this works.
+class JetSplittings {
+
+ private:
+  std::vector<float> fKt;                                 ///<  kT between the subjets.
+  std::vector<float> fDeltaR;                             ///<  Delta R between the subjets.
+  std::vector<float> fZ;                                  ///<  Momentum sharing of the splitting.
+  std::vector<std::vector<unsigned int>> fSplitConstituentIndices;  ///<  Constituent indices
+};
+
+*/
+
 /**
  * @class JetSubstructureSplittings
  * @brief Jet substructure splittings.
@@ -73,12 +102,16 @@ class JetSubstructureSplittings {
 
   // Getters
   #if !(defined(__CINT__) || defined(__MAKECINT__))
-  std::tuple<float, float, float> GetSplitting(int n) const;
+  std::tuple<float, float, float, const std::vector<unsigned int> &> GetSplitting(int n) const;
+  std::tuple<float, float, float, unsigned int> GetJetConstituent(int i) const;
   #endif
   float GetJetPt() { return fJetPt; }
   float GetLeadingTrackPt() { return fLeadingTrackPt; }
+  // TODO: Fully update getters
+  unsigned int GetNumberOfSplittings() { return fKt.size(); }
   // Setters
-  void AddSplitting(float kt, float deltaR, float z);
+  void AddSplitting(int parentLabel, bool followingIterativeSplitting, float kt, float deltaR, float z, std::vector<unsigned int> indices);
+  void AddJetConstituent(float pt, float eta, float phi, unsigned int globalIndex);
   void SetJetPt(float pt) { fJetPt = pt; }
   void SetLeadingTrackPt(float pt) { fLeadingTrackPt = pt; }
 
@@ -90,14 +123,21 @@ class JetSubstructureSplittings {
 
  private:
   // Jet properties
-  float fJetPt;                        ///<  Jet pt
-  float fLeadingTrackPt;               ///<  Leading track pt.
-  std::vector<float> fKt;              ///<  kT as determined by the measure.
-  std::vector<float> fDeltaR;          ///<  Delta R between the subjets.
-  std::vector<float> fZ;               ///<  Momentum sharing of the splitting.
+  float fJetPt;                                           ///<  Jet pt.
+  float fLeadingTrackPt;                                  ///<  Leading track pt.
+  std::vector<float> fConstituentPt;                      ///<  Jet constituent pt.
+  std::vector<float> fConstituentEta;                     ///<  Jet constituent eta.
+  std::vector<float> fConstituentPhi;                     ///<  Jet constituent phi.
+  std::vector<unsigned int> fConstituentGlobalIndex;      ///<  Jet constituent global index.
+  std::vector<int> fSplitParentLabel;                     ///<  Index of the parent of the splitting.
+  std::vector<bool> fFollowingIterativeSplitting;         ///<  True if the splitting is follow an iterative splitting.
+  std::vector<float> fKt;                                 ///<  kT between the subjets.
+  std::vector<float> fDeltaR;                             ///<  Delta R between the subjets.
+  std::vector<float> fZ;                                  ///<  Momentum sharing of the splitting.
+  std::vector<std::vector<unsigned int>> fSplitConstituentIndices;  ///<  Constituent indices
 
   /// \cond CLASSIMP
-  ClassDef(JetSubstructureSplittings, 1) // Jet splitting properties.
+  ClassDef(JetSubstructureSplittings, 2) // Jet splitting properties.
   /// \endcond
 };
 
@@ -153,6 +193,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   void SetMaxCentrality(Float_t t) { fCentMax = t; }
   void SetDerivativeSubtractionOrder(Int_t c) { fDerivSubtrOrder = c; }
   void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
+  void SetStoreRecursiveJetSplittings(bool t = true) { fStoreRecursiveSplittings = t; }
 
   // Initialize the task
   // Configuration is handled via the YAML configuration file
@@ -212,11 +253,8 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   /// Calculate TimeDrop (a = 2) for the earliest splitting.
   double CalculateTimeDrop(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
 
-  Float_t GetJetMass(AliEmcalJet* jet, Int_t jetContNb);
-  Float_t Angularity(AliEmcalJet* jet, Int_t jetContNb);
-  Float_t GetJetAngularity(AliEmcalJet* jet, Int_t jetContNb);
-  Double_t RelativePhi(Double_t mphi, Double_t vphi);
   void IterativeParents(AliEmcalJet* jet, JetSubstructureSplittings& jetSplittings, bool isData);
+  void ExtractJetSplittings(JetSubstructureSplittings & jetSplittings, fastjet::PseudoJet & inputJet, int parentLabel, bool followingIterativeSplitting);
   void CheckSubjetResolution(AliEmcalJet* fJet, AliEmcalJet* fJetM);
   bool CheckClosePartner(AliEmcalJet* jet, PWG::JETFW::AliEmcalParticleJetConstituent & part1);
 
@@ -245,6 +283,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   Float_t fMagFieldPolarity; ///<  polarity, to calculate phimin
   Int_t fDerivSubtrOrder;    ///<  Order of the derivative subtraction.
   Bool_t fStoreDetLevelJets; ///<  If True, store the detector level jet quantities
+  bool fStoreRecursiveSplittings; ///<  If true, recursive splittings will be stored.
 
   // Tree variables
   JetSubstructureSplittings fDataJetSplittings;       ///<  Data jet splittings.

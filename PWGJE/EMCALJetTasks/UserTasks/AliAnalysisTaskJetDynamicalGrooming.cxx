@@ -63,9 +63,14 @@ namespace EMCALJetTasks
 JetSubstructureSplittings::JetSubstructureSplittings():
   fJetPt{0},
   fLeadingTrackPt{0},
+  fConstituentPt{},
+  fConstituentEta{},
+  fConstituentPhi{},
+  fConstituentGlobalIndex{},
   fKt{},
   fDeltaR{},
-  fZ{}
+  fZ{},
+  fSplitConstituentIndices{}
 {
   // Nothing more to be done.
 }
@@ -77,9 +82,14 @@ JetSubstructureSplittings::JetSubstructureSplittings(
  const JetSubstructureSplittings& other)
  : fJetPt{other.fJetPt},
   fLeadingTrackPt{other.fLeadingTrackPt},
+  fConstituentPt{other.fConstituentPt},
+  fConstituentEta{other.fConstituentEta},
+  fConstituentPhi{other.fConstituentPhi},
+  fConstituentGlobalIndex{other.fConstituentGlobalIndex},
   fKt{other.fKt},
   fDeltaR{other.fDeltaR},
-  fZ{other.fZ}
+  fZ{other.fZ},
+  fSplitConstituentIndices{other.fSplitConstituentIndices}
 {
 }
 
@@ -98,16 +108,27 @@ bool JetSubstructureSplittings::Clear()
 {
   fJetPt = 0;
   fLeadingTrackPt = 0;
+  fConstituentPt.clear();
+  fConstituentEta.clear();
+  fConstituentPhi.clear();
+  fConstituentGlobalIndex.clear();
   fKt.clear();
   fDeltaR.clear();
   fZ.clear();
+  fSplitConstituentIndices.clear();
   return true;
 }
 
-std::tuple<float, float, float> JetSubstructureSplittings::GetSplitting(int n) const
+std::tuple<float, float, float, const std::vector<unsigned int> &> JetSubstructureSplittings::GetSplitting(int n) const
 {
   // Splitting number starts at 1, so we subtract one from the given number
-  return std::make_tuple(fKt.at(n - 1), fDeltaR.at(n - 1), fZ.at(n - 1));
+  return std::make_tuple(fKt.at(n - 1), fDeltaR.at(n - 1), fZ.at(n - 1), fSplitConstituentIndices.at(n - 1));
+}
+
+std::tuple<float, float, float, unsigned int> JetSubstructureSplittings::GetJetConstituent(int i) const
+{
+  // Splitting number starts at 1, so we subtract one from the given number
+  return std::make_tuple(fConstituentPt.at(i), fConstituentEta.at(i), fConstituentPhi.at(i), fConstituentGlobalIndex.at(i));
 }
 
 /**
@@ -117,11 +138,22 @@ std::tuple<float, float, float> JetSubstructureSplittings::GetSplitting(int n) c
  * @param[in] deltaR Delta R between the subjets.
  * @param[in] z Momentum sharing between the subjets.
  */
-void JetSubstructureSplittings::AddSplitting(float kt, float deltaR, float z)
+void JetSubstructureSplittings::AddSplitting(int parentLabel, bool followingIterativeSplitting, float kt, float deltaR, float z, std::vector<unsigned int> indices)
 {
+  fSplitParentLabel.emplace_back(parentLabel);
+  fFollowingIterativeSplitting.emplace_back(followingIterativeSplitting);
   fKt.emplace_back(kt);
   fDeltaR.emplace_back(deltaR);
   fZ.emplace_back(z);
+  fSplitConstituentIndices.emplace_back(indices);
+}
+
+void JetSubstructureSplittings::AddJetConstituent(float pt, float eta, float phi, unsigned int globalIndex)
+{
+  fConstituentPt.emplace_back(pt);
+  fConstituentEta.emplace_back(eta);
+  fConstituentPhi.emplace_back(phi);
+  fConstituentGlobalIndex.emplace_back(globalIndex);
 }
 
 /**
@@ -135,10 +167,21 @@ std::string JetSubstructureSplittings::toString() const
   tempSS << std::boolalpha;
   tempSS << "Splitting information: ";
   tempSS << "Jet pt = " << fJetPt << ", leading track pt = " << fLeadingTrackPt << "\n";
+  tempSS << "Jet constituents:\n";
+  // Jet constituents
+  for (std::size_t i = 0; i < fConstituentPt.size(); i++)
+  {
+    tempSS << "#" << (i + 1) << ": pt = " << fConstituentPt.at(i)
+        << ", eta = " << fConstituentEta.at(i) << ", phi = " << fConstituentPhi.at(i)
+        << ", global index = " << fConstituentGlobalIndex.at(i) << "\n";
+  }
+  // Jet splittings
+  tempSS << "Jet splittings:\n";
   for (std::size_t i = 0; i < fKt.size(); i++)
   {
     tempSS << "#" << (i + 1) << ": kT = " << fKt.at(i)
-        << ", deltaR = " << fDeltaR.at(i) << ", z = " << fZ.at(i) << "\n";
+        << ", deltaR = " << fDeltaR.at(i) << ", z = " << fZ.at(i)
+        << ", number of consitutnets: " << fSplitConstituentIndices.at(i).size() << "\n";
   }
   return tempSS.str();
 }
@@ -218,6 +261,7 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming()
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
+  fStoreRecursiveSplittings(false),
   fDataJetSplittings(),
   fMatchedJetSplittings(),
   fDetLevelJetSplittings(),
@@ -257,6 +301,7 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(const c
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
+  fStoreRecursiveSplittings(false),
   fDataJetSplittings(),
   fMatchedJetSplittings(),
   fDetLevelJetSplittings(),
@@ -300,6 +345,7 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(
   fMagFieldPolarity(other.fMagFieldPolarity),
   fDerivSubtrOrder(other.fDerivSubtrOrder),
   fStoreDetLevelJets(other.fStoreDetLevelJets),
+  fStoreRecursiveSplittings(other.fStoreRecursiveSplittings),
   fDataJetSplittings(),
   fMatchedJetSplittings(),
   fDetLevelJetSplittings(),
@@ -379,6 +425,7 @@ void AliAnalysisTaskJetDynamicalGrooming::RetrieveAndSetTaskPropertiesFromYAMLCo
     fDerivSubtrOrder = fgkDerivSubtrOrderMap.at(tempStr);
   }
   fYAMLConfig.GetProperty({baseName, "storeDetLevelJets"}, fStoreDetLevelJets, false);
+  fYAMLConfig.GetProperty({baseName, "storeRecursiveSplittings"}, fStoreRecursiveSplittings, false);
 }
 
 /**
@@ -766,72 +813,6 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
   return kTRUE;
 }
 
-Float_t AliAnalysisTaskJetDynamicalGrooming::GetJetMass(AliEmcalJet* jet, Int_t jetContNb = 0)
-{
-  // calc subtracted jet mass
-  if ((fJetShapeSub == kDerivSub) && (jetContNb == 0))
-    if (fDerivSubtrOrder == 1)
-      return jet->GetShapeProperties()->GetFirstOrderSubtracted();
-    else
-      return jet->GetShapeProperties()->GetSecondOrderSubtracted();
-  else
-    return jet->M();
-}
-
-Float_t AliAnalysisTaskJetDynamicalGrooming::Angularity(AliEmcalJet* jet, Int_t jetContNb = 0)
-{
-  AliJetContainer* jetCont = GetJetContainer(jetContNb);
-  if (!jet->GetNumberOfTracks())
-    return 0;
-  Double_t den = 0.;
-  Double_t num = 0.;
-  AliVParticle* vp1 = nullptr;
-  for (UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {
-    vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
-
-    if (!vp1) {
-      AliWarningStream() << "AliVParticle associated to constituent not found";
-      continue;
-    }
-
-    Double_t dphi = RelativePhi(vp1->Phi(), jet->Phi());
-    Double_t dr2 = (vp1->Eta() - jet->Eta()) * (vp1->Eta() - jet->Eta()) + dphi * dphi;
-    Double_t dr = TMath::Sqrt(dr2);
-    num = num + vp1->Pt() * dr;
-    den = den + vp1->Pt();
-  }
-  return num / den;
-}
-
-Float_t AliAnalysisTaskJetDynamicalGrooming::GetJetAngularity(AliEmcalJet* jet, Int_t jetContNb = 0)
-{
-  if ((fJetShapeSub == kDerivSub) && (jetContNb == 0))
-    if (fDerivSubtrOrder == 1)
-      return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
-    else
-      return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
-  else
-    return Angularity(jet, jetContNb);
-}
-
-Double_t AliAnalysisTaskJetDynamicalGrooming::RelativePhi(Double_t mphi, Double_t vphi)
-{
-  if (vphi < -1 * TMath::Pi())
-    vphi += (2 * TMath::Pi());
-  else if (vphi > TMath::Pi())
-    vphi -= (2 * TMath::Pi());
-  if (mphi < -1 * TMath::Pi())
-    mphi += (2 * TMath::Pi());
-  else if (mphi > TMath::Pi())
-    mphi -= (2 * TMath::Pi());
-  double dphi = mphi - vphi;
-  if (dphi < -1 * TMath::Pi())
-    dphi += (2 * TMath::Pi());
-  else if (dphi > TMath::Pi())
-    dphi -= (2 * TMath::Pi());
-  return dphi; // dphi in [-Pi, Pi]
-}
-
 /**
  * Determine and iterate through jet splittings for a given jet. The output is stored in the given
  * jet substructure output container.
@@ -850,8 +831,11 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
     if (isData == true && fDoTwoTrack == kTRUE && CheckClosePartner(jet, part))
       continue;
     pseudoTrack.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    pseudoTrack.set_user_index(part.GetGlobalIndex() + 100);
+    pseudoTrack.set_user_index(part.GetGlobalIndex());
     inputVectors.push_back(pseudoTrack);
+
+    // Also store the jet constituents in the output
+    jetSplittings.AddJetConstituent(part.Pt(), part.Eta(), part.Phi(), part.GetGlobalIndex());
   }
 
   try {
@@ -876,7 +860,10 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
     jj = outputJets[0];
 
     // Store the jet splittings.
-    while (jj.has_parents(j1, j2)) {
+    int parentLabel = -1;
+    ExtractJetSplittings(jetSplittings, jj, parentLabel, true);
+    /*while (jj.has_parents(j1, j2)) {
+      splittingLabel++;
       // j1 should always be the harder of the two subjets.
       if (j1.perp() < j2.perp()) {
         swap(j1, j2);
@@ -885,10 +872,14 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
       double z = j2.perp() / (j2.perp() + j1.perp());
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
-      jetSplittings.AddSplitting(xkt, delta_R, z);
+      std::vector<unsigned int> constituentIndices;
+      for (auto constituent: j1.constituents()) {
+        constituentIndices.emplace_back(constituent.user_index());
+      }
+      jetSplittings.AddSplitting(xkt, delta_R, z, constituentIndices);
 
       jj = j1;
-    }
+    }*/
 
     // Cleanup the allocated cluster sequence.
     delete cs;
@@ -897,6 +888,40 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
   }
 
   return;
+}
+
+void AliAnalysisTaskJetDynamicalGrooming::ExtractJetSplittings(JetSubstructureSplittings & jetSplittings, fastjet::PseudoJet & inputJet, int parentLabel, bool followingIterativeSplitting)
+{
+  fastjet::PseudoJet j1;
+  fastjet::PseudoJet j2;
+  if (inputJet.has_parents(j1, j2) == false) {
+    // No parents, so we're done - just return.
+    return;
+  }
+
+  // j1 should always be the harder of the two subjets.
+  if (j1.perp() < j2.perp()) {
+    swap(j1, j2);
+  }
+
+  // We have a splitting. Record the properties.
+  double z = j2.perp() / (j2.perp() + j1.perp());
+  double delta_R = j1.delta_R(j2);
+  double xkt = j2.perp() * sin(delta_R);
+  std::vector<unsigned int> constituentIndices;
+  for (auto constituent: j1.constituents()) {
+    constituentIndices.emplace_back(constituent.user_index());
+  }
+  jetSplittings.AddSplitting(parentLabel, followingIterativeSplitting, xkt, delta_R, z, constituentIndices);
+  // Increment after storing splitting because the parent is the new one.
+  //parentLabel++;
+  // -1 because we want to index the parent splitting that was just stored.
+  parentLabel = jetSplittings.GetNumberOfSplittings() - 1;
+
+  ExtractJetSplittings(jetSplittings, j1, parentLabel, followingIterativeSplitting);
+  if (fStoreRecursiveSplittings == true) {
+    ExtractJetSplittings(jetSplittings, j2, parentLabel, false);
+  }
 }
 
 void AliAnalysisTaskJetDynamicalGrooming::CheckSubjetResolution(AliEmcalJet* jet, AliEmcalJet* jetM)
@@ -1306,6 +1331,7 @@ std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
   tempSS << "Miscellaneous:\n";
   tempSS << "\tDerivative subtracter order: " << fDerivSubtrOrder << "\n";
   tempSS << "\tStore detector level jets: " << fStoreDetLevelJets << "\n";
+  tempSS << "\tStore recursive jet splittings (instead of just iterative): " << fStoreRecursiveSplittings << "\n";
   return tempSS.str();
 }
 
@@ -1415,6 +1441,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming& first,
   swap(first.fMagFieldPolarity, second.fMagFieldPolarity);
   swap(first.fDerivSubtrOrder, second.fDerivSubtrOrder);
   swap(first.fStoreDetLevelJets, second.fStoreDetLevelJets);
+  swap(first.fStoreRecursiveSplittings, second.fStoreRecursiveSplittings);
   swap(first.fDataJetSplittings, second.fDataJetSplittings);
   swap(first.fMatchedJetSplittings, second.fMatchedJetSplittings);
   swap(first.fDetLevelJetSplittings, second.fDetLevelJetSplittings);
