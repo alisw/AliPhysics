@@ -11,7 +11,7 @@
 
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
-#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
 #include "AliVertexerHyperTriton3Body.h"
 #include "AliVertexerTracks.h"
