@@ -141,7 +141,8 @@ std::tuple<float, float, float, unsigned int> JetSubstructureSplittings::GetJetC
 void JetSubstructureSplittings::AddSplitting(int parentLabel, bool followingIterativeSplitting, float kt, float deltaR, float z, std::vector<unsigned int> indices)
 {
   fSplitParentLabel.emplace_back(parentLabel);
-  fFollowingIterativeSplitting.emplace_back(followingIterativeSplitting);
+  // NOTE: emplace_back isn't supported for std::vector<bool> until c++14.
+  fFollowingIterativeSplitting.push_back(followingIterativeSplitting);
   fKt.emplace_back(kt);
   fDeltaR.emplace_back(deltaR);
   fZ.emplace_back(z);
