@@ -951,6 +951,16 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
         TH1F*                   fADmultiplicity0NXNclassTotalH;        //!
         TH1F*                   fADmultiplicityXN0NclassTotalH;        //!
         TH1F*                   fADmultiplicityXNXNclassTotalH;        //!
+        TH1F*                   fADAmultiplicityTotalH;                //!
+        TH1F*                   fADAmultiplicity0N0NclassTotalH;       //!
+        TH1F*                   fADAmultiplicity0NXNclassTotalH;       //!
+        TH1F*                   fADAmultiplicityXN0NclassTotalH;       //!
+        TH1F*                   fADAmultiplicityXNXNclassTotalH;       //!
+        TH1F*                   fADCmultiplicityTotalH;                //!
+        TH1F*                   fADCmultiplicity0N0NclassTotalH;       //!
+        TH1F*                   fADCmultiplicity0NXNclassTotalH;       //!
+        TH1F*                   fADCmultiplicityXN0NclassTotalH;       //!
+        TH1F*                   fADCmultiplicityXNXNclassTotalH;       //!
 
 
 
@@ -1014,7 +1024,7 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskADin2018, 6);
+        ClassDef(AliAnalysisTaskADin2018, 7);
 };
 
 #endif
