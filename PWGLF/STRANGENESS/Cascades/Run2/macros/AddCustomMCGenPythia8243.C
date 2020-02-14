@@ -1,3 +1,5 @@
+#include "AliPythia8.h"
+
 AliGenerator* CreatePythia8Gen( TString lTune          = "pp",
                                Float_t e_cms       = 13000.
                                );
@@ -15,19 +17,13 @@ AliGenerator* AddCustomMCGenPythia8243(   TString lTune          = "pp",
     gSystem->Load("liblhapdf");
     
     AliGenerator *genP  = NULL;
-    genP                = CreatePythia8Gen(e_cms, tune, kCR, kF, kProcess, ptHardMin, ptHardMax,longlived);
+    genP                = CreatePythia8Gen(lTune.Data(), e_cms;
     
     return genP;
 }
 
-AliGenerator* CreatePythia8Gen( Float_t e_cms, 
-                               Int_t tune,
-                               Bool_t kCR,
-                               Int_t kF,
-                               Int_t kProcess,
-                               Double_t ptHardMin,
-                               Double_t ptHardMax,
-                               Bool_t longlived
+AliGenerator* CreatePythia8Gen( TString lTune,
+                               Float_t e_cms
                                ) {
     
     gSystem->Load("libpythia6");
