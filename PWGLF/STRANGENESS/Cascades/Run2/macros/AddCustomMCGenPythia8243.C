@@ -1,4 +1,5 @@
 #include "AliPythia8.h"
+#include "AliGenPythiaPlus.h"
 
 AliGenerator* CreatePythia8Gen( TString lTune          = "pp",
                                Float_t e_cms       = 13000.
@@ -17,7 +18,7 @@ AliGenerator* AddCustomMCGenPythia8243(   TString lTune          = "pp",
     gSystem->Load("liblhapdf");
     
     AliGenerator *genP  = NULL;
-    genP                = CreatePythia8Gen(lTune.Data(), e_cms;
+    genP                = CreatePythia8Gen(lTune.Data(), e_cms);
     
     return genP;
 }
