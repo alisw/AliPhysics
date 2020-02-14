@@ -6723,23 +6723,23 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       break;
     //
     case 33:
-      // apply testbeam nonlinearity (same as case 1) and further fine tuning
+      // apply testbeam nonlinearity - systematic variation 1 (const shift down)
       if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
-          energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
-          energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
+          energy /= FunctionNL_OfficialTB_100MeV_Data_Sys1(energy);
         }
       }
       break;
     //
     case 34:
-      // apply testbeam nonlinearity (same as case 1) and further fine tuning
+      // apply testbeam nonlinearity - systematic variation 2 (tilt low->high)
       if(fClusterType==1 || fClusterType==3 || fClusterType==4){
         if(isMC){
-          energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
-          energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
+          energy /= FunctionNL_OfficialTB_100MeV_Data_Sys2(energy);
         }
       }
       break;
@@ -6787,35 +6787,23 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       }
       break;
     case 38:
-      // Testbeam nonlinearity based on leading cell energy
+      // apply testbeam nonlinearity - systematic variation 0 (const shift up)
       if(fClusterType==1 || fClusterType==3 || fClusterType==4){
-          AliVCaloCells* cells = event->GetEMCALCells();
         if(isMC){
-          energy /= FunctionNL_OfficialTB_100MeV_MC(cells->GetCellAmplitude(FindLargestCellInCluster(cluster,event)));
-          energy /= FunctionNL_kSDM(energy, 0.987534, -3.87469, -0.128085) ;
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
-          energy /= FunctionNL_OfficialTB_100MeV_Data(cells->GetCellAmplitude(FindLargestCellInCluster(cluster,event)));
+          energy /= FunctionNL_OfficialTB_100MeV_Data_Sys0(energy);
         }
       }
       break;
+    //
     case 39:
-      // Testbeam nonlinearity based on individual cell energy
+      // apply testbeam nonlinearity - systematic variation 3 (tilt high->low)
       if(fClusterType==1 || fClusterType==3 || fClusterType==4){
-        AliVCaloCells* cells = event->GetEMCALCells();
-        const Int_t nCells   = cluster->GetNCells();
         if(isMC){
-          Float_t tempClsE = 0;
-          for (Int_t iCell = 0;iCell < nCells;iCell++){
-            tempClsE+= cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell])/FunctionNL_OfficialTB_100MeV_MC(cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell]));
-          }
-          energy = tempClsE;
-          energy /= FunctionNL_kSDM(energy, 0.987534, -3.87469, -0.128085) ;
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
-          Float_t tempClsE = 0;
-          for (Int_t iCell = 0;iCell < nCells;iCell++){
-            tempClsE+= cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell])/FunctionNL_OfficialTB_100MeV_Data(cells->GetCellAmplitude( cluster->GetCellsAbsId()[iCell]));
-          }
-          energy = tempClsE;
+          energy /= FunctionNL_OfficialTB_100MeV_Data_Sys3(energy);
         }
       }
       break;
@@ -7698,6 +7686,22 @@ Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data(Float_t e){
 }
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data_V2(Float_t e){
   Double_t funcParams[5] = {1.91897, 0.0264988, 0.965663, -187.501, 2762.51};
+  return ( 1.0505 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
+}
+Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data_Sys0(Float_t e){ // refit on systematic 1sigma shift upwards of all TB points
+  Double_t funcParams[5] = {2.864, 0.031267, 1.89089, -425.59, 8525.01};
+  return ( 1.0505 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
+}
+Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data_Sys1(Float_t e){ // refit on systematic 1sigma shift downwards of all TB points
+  Double_t funcParams[5] = {0.98992, 0.015482, 0.0993751, 126.234, 293.826};
+  return ( 1.0505 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
+}
+Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data_Sys2(Float_t e){ // refit on systematic 1sigma tilt shift (-1sigma to +1sigma) of TB points
+  Double_t funcParams[5] = {3.3084, 0.0561285, 2.16752, -822.236, 5185.83};
+  return ( 1.0505 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
+}
+Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data_Sys3(Float_t e){ // refit on systematic 1sigma tilt shift (+1sigma to -1sigma) of TB points
+  Double_t funcParams[5] = {0.96096, 0.00786329, 0.0299616, 151.315, 94.2094};
   return ( 1.0505 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_150MeV_Data(Float_t e){
