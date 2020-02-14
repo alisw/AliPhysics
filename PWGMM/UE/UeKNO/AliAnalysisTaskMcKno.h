@@ -66,6 +66,7 @@ private:
 	AliAnalysisFilter*  fLeadingTrackFilter;
 	AliAnalysisFilter*  fTrackFilter;
 	TList*                  fOutputList;                                      //! output list in the root file
+	AliMultSelection *fMultSelection;
 
 	Double_t fEtaCut;
 	Double_t fPtMin;
@@ -77,6 +78,8 @@ private:
 	Double_t fRecLeadPhi; 
 	Double_t fRecLeadPt;
 	Int_t    fRecLeadIn;
+	Double_t ftrackmult08;
+	Double_t fv0mpercentile;
 
 	// KNO
 	TH1D * hPhiGen[3];
@@ -97,6 +100,12 @@ private:
 	TH1D * hPtOutPrim; 
 	TH1D * hPtOutSec; 
 	TH1D * hCounter;
+	TH1D * hRefMult08;
+	TH1D * hV0Mmult;
+
+	TH2D * hRefMultvsV0Mmult;
+	TH2D * hV0MmultvsUE;
+	TH2D * hRefmultvsUE;
 
 	TH2D * hPtVsUEGenTest[3];//UE->NchTS
 	TH2D * hPtVsUERecTest[3];//UE->NchTS
@@ -113,6 +122,16 @@ private:
 	TH2D * hDphiVsNchGenTest;
 	TH2D * hDphiVsNchRecTest;
 	TH2D * hDphiVsNchData;
+
+	//multiplicity percentile
+
+	TH3D * hPtVsUEvsNchData_V0M[3];//UE->NchTS
+
+	TH3D * hPtVsUEvsNchData_Ref[3];//UE->NchTS
+
+	TH3D * hDphiVsUEvsNchData_V0M;//UE->NchTS
+
+	TH3D * hDphiVsUEvsNchData_Ref;//UE->NchTS
 
 	AliAnalysisTaskMcKno(const AliAnalysisTaskMcKno&);                  // not implemented
 	AliAnalysisTaskMcKno& operator=(const AliAnalysisTaskMcKno&);       // not implemented
