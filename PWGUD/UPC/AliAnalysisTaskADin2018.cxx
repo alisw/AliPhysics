@@ -256,6 +256,16 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018()
       fADmultiplicity0NXNclassTotalH(0),
       fADmultiplicityXN0NclassTotalH(0),
       fADmultiplicityXNXNclassTotalH(0),
+      fADAmultiplicityTotalH(0),
+      fADAmultiplicity0N0NclassTotalH(0),
+      fADAmultiplicity0NXNclassTotalH(0),
+      fADAmultiplicityXN0NclassTotalH(0),
+      fADAmultiplicityXNXNclassTotalH(0),
+      fADCmultiplicityTotalH(0),
+      fADCmultiplicity0N0NclassTotalH(0),
+      fADCmultiplicity0NXNclassTotalH(0),
+      fADCmultiplicityXN0NclassTotalH(0),
+      fADCmultiplicityXNXNclassTotalH(0),
 
 
       fMuonTrackCuts(0x0),
@@ -471,6 +481,16 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018(const char* name)
       fADmultiplicity0NXNclassTotalH(0),
       fADmultiplicityXN0NclassTotalH(0),
       fADmultiplicityXNXNclassTotalH(0),
+      fADAmultiplicityTotalH(0),
+      fADAmultiplicity0N0NclassTotalH(0),
+      fADAmultiplicity0NXNclassTotalH(0),
+      fADAmultiplicityXN0NclassTotalH(0),
+      fADAmultiplicityXNXNclassTotalH(0),
+      fADCmultiplicityTotalH(0),
+      fADCmultiplicity0N0NclassTotalH(0),
+      fADCmultiplicity0NXNclassTotalH(0),
+      fADCmultiplicityXN0NclassTotalH(0),
+      fADCmultiplicityXNXNclassTotalH(0),
 
 
 
@@ -1105,6 +1125,36 @@ void AliAnalysisTaskADin2018::UserCreateOutputObjects()
   fADmultiplicityXNXNclassTotalH = new TH1F("fADmultiplicityXNXNclassTotalH","fADmultiplicityXNXNclassTotalH",1000000, 0, 100000);
   fOutputList->Add(fADmultiplicityXNXNclassTotalH);
 
+  fADAmultiplicityTotalH = new TH1F("fADAmultiplicityTotalH","fADAmultiplicityTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADAmultiplicityTotalH);
+
+  fADAmultiplicity0N0NclassTotalH = new TH1F("fADAmultiplicity0N0NclassTotalH","fADAmultiplicity0N0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADAmultiplicity0N0NclassTotalH);
+
+  fADAmultiplicity0NXNclassTotalH = new TH1F("fADAmultiplicity0NXNclassTotalH","fADAmultiplicity0NXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADAmultiplicity0NXNclassTotalH);
+
+  fADAmultiplicityXN0NclassTotalH = new TH1F("fADAmultiplicityXN0NclassTotalH","fADAmultiplicityXN0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADAmultiplicityXN0NclassTotalH);
+
+  fADAmultiplicityXNXNclassTotalH = new TH1F("fADAmultiplicityXNXNclassTotalH","fADAmultiplicityXNXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADAmultiplicityXNXNclassTotalH);
+
+  fADCmultiplicityTotalH = new TH1F("fADCmultiplicityTotalH","fADCmultiplicityTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADCmultiplicityTotalH);
+
+  fADCmultiplicity0N0NclassTotalH = new TH1F("fADCmultiplicity0N0NclassTotalH","fADCmultiplicity0N0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADCmultiplicity0N0NclassTotalH);
+
+  fADCmultiplicity0NXNclassTotalH = new TH1F("fADCmultiplicity0NXNclassTotalH","fADCmultiplicity0NXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADCmultiplicity0NXNclassTotalH);
+
+  fADCmultiplicityXN0NclassTotalH = new TH1F("fADCmultiplicityXN0NclassTotalH","fADCmultiplicityXN0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADCmultiplicityXN0NclassTotalH);
+
+  fADCmultiplicityXNXNclassTotalH = new TH1F("fADCmultiplicityXNXNclassTotalH","fADCmultiplicityXNXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fADCmultiplicityXNXNclassTotalH);
+
   for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
     fADmultiplicityH[iChannel] = new TH1F(
               Form("fADmultiplicityH_%d", iChannel),
@@ -1614,8 +1664,10 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   fCounterH->Fill(19);
   Int_t is_ADA_set = -9;
   Int_t is_ADC_set = -9;
-  Double_t ADmultiplicities[16]  = { -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 };
-  Double_t ADmultiplicitiesTotal = 0;
+  Double_t ADmultiplicities[16]   = { -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 };
+  Double_t ADmultiplicitiesTotal  = 0;
+  Double_t ADAmultiplicitiesTotal = 0;
+  Double_t ADCmultiplicitiesTotal = 0;
   if(dataAD) {
         fCounterH->Fill(iSelectionCounter);
         iSelectionCounter++;
@@ -1634,6 +1686,11 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
         for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
           ADmultiplicities[iChannel] = dataAD->GetMultiplicity(iChannel);
           ADmultiplicitiesTotal     += dataAD->GetMultiplicity(iChannel);
+          if ( iChannel < 8 ) {
+            ADCmultiplicitiesTotal  += dataAD->GetMultiplicity(iChannel);
+          } else {
+            ADAmultiplicitiesTotal  += dataAD->GetMultiplicity(iChannel);
+          }
         }
   }
   fCounterH->Fill(22);
@@ -2205,7 +2262,9 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
     fADmultiplicityH[iChannel]->Fill(ADmultiplicities[iChannel]);
   }
-  fADmultiplicityTotalH->Fill(ADmultiplicitiesTotal);
+  fADmultiplicityTotalH ->Fill(ADmultiplicitiesTotal);
+  fADAmultiplicityTotalH->Fill(ADAmultiplicitiesTotal);
+  fADCmultiplicityTotalH->Fill(ADCmultiplicitiesTotal);
 
   /* - Filling the v2 histogram only if the
    * - ZNC or the ZNA have detected any activity at all...
@@ -2296,24 +2355,34 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                   fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2->Fill(possibleJPsi.Mag());
                   if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
                     fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[0]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicity0N0NclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicity0N0NclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
                     fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[1]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicity0N0NclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicity0N0NclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
                     fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[2]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicity0N0NclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicity0N0NclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   }
-                  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                    fADmultiplicity0N0NclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicity0N0NclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    }
+                    fADmultiplicity0N0NclassTotalH ->Fill(ADmultiplicitiesTotal);
+                    fADAmultiplicity0N0NclassTotalH->Fill(ADAmultiplicitiesTotal);
+                    fADCmultiplicity0N0NclassTotalH->Fill(ADCmultiplicitiesTotal);
                   }
-                  fADmultiplicity0N0NclassTotalH->Fill(ADmultiplicitiesTotal);
               } else {
                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2->Fill(possibleJPsi.Mag());
                   if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
@@ -2430,24 +2499,34 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                   // fDimuonPtDistributionCoherentZNCzeroZNAanyHv2->Fill(ptOfTheDimuonPair);
                   if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
                     fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[0]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicity0NXNclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicity0NXNclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
                     fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[1]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicity0NXNclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicity0NXNclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
                     fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[2]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicity0NXNclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicity0NXNclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   }
-                  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                    fADmultiplicity0NXNclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicity0NXNclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    }
+                    fADmultiplicity0NXNclassTotalH ->Fill(ADmultiplicitiesTotal);
+                    fADAmultiplicity0NXNclassTotalH->Fill(ADAmultiplicitiesTotal);
+                    fADCmultiplicity0NXNclassTotalH->Fill(ADCmultiplicitiesTotal);
                   }
-                  fADmultiplicity0NXNclassTotalH->Fill(ADmultiplicitiesTotal);
               } else {
                   fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2->Fill(possibleJPsi.Mag());
                   // fDimuonPtDistributionIncoherentZNCzeroZNAanyHv2->Fill(ptOfTheDimuonPair);
@@ -2567,24 +2646,34 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                   // fDimuonPtDistributionCoherentZNCanyZNAzeroHv2->Fill(ptOfTheDimuonPair);
                   if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
                     fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[0]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicityXN0NclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicityXN0NclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
                     fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[1]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicityXN0NclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicityXN0NclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
                     fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[2]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicityXN0NclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicityXN0NclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   }
-                  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                    fADmultiplicityXN0NclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicityXN0NclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    }
+                    fADmultiplicityXN0NclassTotalH ->Fill(ADmultiplicitiesTotal);
+                    fADAmultiplicityXN0NclassTotalH->Fill(ADAmultiplicitiesTotal);
+                    fADCmultiplicityXN0NclassTotalH->Fill(ADCmultiplicitiesTotal);
                   }
-                  fADmultiplicityXN0NclassTotalH->Fill(ADmultiplicitiesTotal);
               } else {
                   fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2->Fill(possibleJPsi.Mag());
                   // fDimuonPtDistributionIncoherentZNCanyZNAzeroHv2->Fill(ptOfTheDimuonPair);
@@ -2702,24 +2791,34 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                   // fDimuonPtDistributionCoherentZNCanyZNAanyHv2->Fill(ptOfTheDimuonPair);
                   if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
                     fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[0]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicityXNXNclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicityXNXNclassRapidityH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
                     fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[1]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicityXNXNclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicityXNXNclassRapidityH[iChannel + 16]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
                     fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[2]->Fill(possibleJPsi.Mag());
-                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                      fADmultiplicityXNXNclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                    if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                      for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                        fADmultiplicityXNXNclassRapidityH[iChannel + 32]->Fill(ADmultiplicities[iChannel]);
+                      }
                     }
                   }
-                  for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
-                    fADmultiplicityXNXNclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                    for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+                      fADmultiplicityXNXNclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
+                    }
+                    fADmultiplicityXNXNclassTotalH ->Fill(ADmultiplicitiesTotal);
+                    fADAmultiplicityXNXNclassTotalH->Fill(ADAmultiplicitiesTotal);
+                    fADCmultiplicityXNXNclassTotalH->Fill(ADCmultiplicitiesTotal);
                   }
-                  fADmultiplicityXNXNclassTotalH->Fill(ADmultiplicitiesTotal);
               } else {
                   fInvariantMassDistributionIncoherentZNCanyZNAanyHv2->Fill(possibleJPsi.Mag());
                   // fDimuonPtDistributionIncoherentZNCanyZNAanyHv2->Fill(ptOfTheDimuonPair);
