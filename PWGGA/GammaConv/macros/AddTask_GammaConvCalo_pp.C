@@ -2231,6 +2231,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dh00089327000008250404000","24466190pa01cc00000","0163103100000010"); // INT7   RBins
     cuts.AddCutPCMCalo("00010113","0di00089327000008250404000","24466190pa01cc00000","0163103100000010"); // INT7
 
+  } else if ( trainConfig == 940){ // INT7, 100MeV, with Timing Efficiency
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466000pa09cc00000","0163103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 941){ // INT7, 100MeV, noTimingEff
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244660000a09cc00000","0163103100000010"); // INT7 no Trigger
   //*************************************************************************************************
   // 13 TeV PHOS low B - setup
   //*************************************************************************************************
