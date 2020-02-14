@@ -1877,13 +1877,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                   //_______________________________
                   //IP Template Generation
                   FillIPTypePtHists(jetflavour, jetpt, hasIPs);
-
-                  for(int iN=0;iN<3;iN++){
-                    if(!hasIPs[iN]) continue;
-                    //printf("iN=%i, jetflavour=%i xy=%f, xysig=%f\n",iN,jetflavour,sImpParXY.at(iN).first,sImpParXYSig.at(iN).first);
-                    Double_t params [4] ={sImpParXY.at(iN).first,sImpParXYSig.at(iN).first,sImpParXYZ.at(iN).first,sImpParXYZSig.at(iN).first};
-                    FillIPTemplateHists(jetpt,iN,jetflavour, params);
-                  }
+                }
+                for(int iN=0;iN<3;iN++){
+                  if(!hasIPs[iN]) continue;
+                  //printf("iN=%i, jetflavour=%i xy=%f, xysig=%f\n",iN,jetflavour,sImpParXY.at(iN).first,sImpParXYSig.at(iN).first);
+                  Double_t params [4] ={sImpParXY.at(iN).first,sImpParXYSig.at(iN).first,sImpParXYZ.at(iN).first,sImpParXYZSig.at(iN).first};
+                  FillIPTemplateHists(jetpt,iN,jetflavour, params);
                 }
 
 
@@ -2531,7 +2530,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
                 ipbins =1000;//;2000;
               }
               if(id==0)  ipbins =1000;//2000;
-                if((fIsPythia||(!fIsPythia && ifl==5))){
+                if((fIsPythia||(!fIsPythia && ifl==6))){
                   fHistManager.CreateTH2(Form("%s%s%s%s%s%s",base,dim[id],typ[it],sTemplateFlavour[ifl].Data(),ordpar[io],special[is]),
                                 Form("%s%s%s%s%s%s;;",base,dim[id],typ[it],sTemplateFlavour[ifl].Data(),ordpar[io],special[is]),
                                 ptbins,ptlow,pthigh,ipbins,iplow,iphigh,"s");
