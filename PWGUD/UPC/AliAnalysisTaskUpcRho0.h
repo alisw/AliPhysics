@@ -107,7 +107,16 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	TH2F *dEdx;
 	TH2F *EtaPhiP;
 	TH2F *EtaPhiN;
-	TH2F *fHistdEdxVsP[9];
+	// dEdx histograms
+	TH2F *fHistdEdxVsP1;
+	TH2F *fHistdEdxVsP2;
+	TH2F *fHistdEdxVsP3;
+	TH2F *fHistdEdxVsP4;
+	TH2F *fHistdEdxVsP5;
+	TH2F *fHistdEdxVsP6;
+	TH2F *fHistdEdxVsP7;
+	TH2F *fHistdEdxVsP8;
+	TH2F *fHistdEdxVsP9;
 
 	TH2F *fFOcorr;
 	TH1F *fGoodTracks;

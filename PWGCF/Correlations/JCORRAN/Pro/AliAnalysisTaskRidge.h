@@ -256,7 +256,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 
 
 	Double_t AbsZmax = 8.0;
-
+	Double_t V0M_mean;
 
     ClassDef(AliAnalysisTaskRidge, 1);
 };

@@ -1116,6 +1116,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
     } else if ( fModCentralityClass == 2){
       printf("\t %d - %d \n", fCentralityMin, fCentralityMax);
+    } else if ( fModCentralityClass == 20){
+      printf("\t %d - %d \n", fCentralityMin*0.1, fCentralityMax*0.1);
     } else if (fModCentralityClass == 3){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 4){
@@ -1335,6 +1337,11 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=0;
     fDetectorCentrality=3;
     fModCentralityClass=0;
+    break;
+  case 26: // q: pp -> Multiplicity V0M in 0.1% bins
+    fIsHeavyIon=0;
+    fDetectorCentrality=0;
+    fModCentralityClass=20;
     break;
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
@@ -2806,6 +2813,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   }
   else if (fModCentralityClass == 2){
     centralityC= Int_t(centrality);
+    if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
+      return kTRUE;
+    } else return kFALSE;
+  }
+  else if (fModCentralityClass == 20){  // pp 13 TeV 0.1% mult classes
+    centralityC= Int_t(centrality*10);
     if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
       return kTRUE;
     } else return kFALSE;
@@ -5916,7 +5929,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       }
     }
     Bool_t fRejectEMCalLEDevents = kTRUE;
-    if (fRejectEMCalLEDevents && (fPeriodEnum == kLHC12)) {
+    if (fRejectEMCalLEDevents && (fPeriodEnum == kLHC12 || fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC17NomB || fPeriodEnum == kLHC18NomB)) {
       AliVCaloCells *cells   = event->GetEMCALCells();
       const Short_t nCells   = cells->GetNumberOfCells();
 

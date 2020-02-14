@@ -317,6 +317,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kPi0MCMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
     Float_t     FunctionNL_OfficialTB_50MeV_Data(Float_t e);
     Float_t     FunctionNL_OfficialTB_100MeV_Data(Float_t e);
+    Float_t     FunctionNL_OfficialTB_100MeV_Data_Sys0(Float_t e);
+    Float_t     FunctionNL_OfficialTB_100MeV_Data_Sys1(Float_t e);
+    Float_t     FunctionNL_OfficialTB_100MeV_Data_Sys2(Float_t e);
+    Float_t     FunctionNL_OfficialTB_100MeV_Data_Sys3(Float_t e);
     Float_t     FunctionNL_OfficialTB_100MeV_Data_V2(Float_t e);
     Float_t     FunctionNL_OfficialTB_150MeV_Data(Float_t e);
     Float_t     FunctionNL_OfficialTB_300MeV_Data(Float_t e);
@@ -679,7 +683,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,102)
+    ClassDef(AliCaloPhotonCuts,103)
 };
 
 #endif

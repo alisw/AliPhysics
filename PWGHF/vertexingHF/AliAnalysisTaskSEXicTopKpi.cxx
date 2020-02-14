@@ -544,16 +544,28 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   if(fIsCdeuteronAnalysis) fhistInvMassCheck=new TH2F("fhistInvMassCheck","InvDistrCheck",1000,2.600,3.800,1010,-0.5,1010);
   else fhistInvMassCheck=new TH2F("fhistInvMassCheck","InvDistrCheck",1000,1.600,2.800,5,-0.5,15.5);
   //  fhistCheckPIDTOFTPC=new TH3F("fhistCheckPIDTOFTPC","fhistCheckPIDTOFTPC",
-  fhistMCSpectrumAccLc=new TH3F("fhistMCSpectrumAccLc","fhistMCSpectrumAccLc",250,0,50,20,-0.5,19.5,2,3.5,5.5); // 
 
-  const Int_t nbinsAccLcFromSc=6;
-  Int_t binsAccLcFromSc[nbinsAccLcFromSc]={250,20,2,20,250,40};
-  Double_t lowedgesAccLcFromSc[nbinsAccLcFromSc]={0,-0.5,3.5,-1,0,-2};
-  Double_t upedgesAccLcFromSc[nbinsAccLcFromSc]={50,19.5,5.5,1,50,2};
-  fhistMCSpectrumAccLcFromSc=new THnSparseF("fhistMCSpectrumAccLcFromSc","fhistMCSpectrumAccLcFromSc;ptLc:codeLc:Qorigin:yLc:ptSc:ySc",nbinsAccLcFromSc,binsAccLcFromSc,lowedgesAccLcFromSc,upedgesAccLcFromSc); // 
+  //fhistMCSpectrumAccLc=new TH3F("fhistMCSpectrumAccLc","fhistMCSpectrumAccLc",250,0,50,20,-0.5,19.5,2,3.5,5.5); // 
 
-  fhistMCSpectrumAccXic=new TH3F("fhistMCSpectrumAccXic","fhistMCSpectrumAccXic",250,0,50,20,-0.5,19.5,2,3.5,5.5); // 
-  fhistMCSpectrumAccSc=new TH3F("fhistMCSpectrumAccSc","fhistMCSpectrumAccSc",250,0,50,20,-0.5,19.5,2,3.5,5.5); // 
+  const Int_t nAxes_THnMC = 4;
+  Int_t nBins_THnMC[nAxes_THnMC]  = {250,   20,   2,    6};
+  Double_t min_THnMC[nAxes_THnMC] = {0  , -0.5, 3.5, -1.5};
+  Double_t max_THnMC[nAxes_THnMC] = {50 , 19.5, 5.5,  4.5};
+  fhistMCSpectrumAccLc=new THnF("fhistMCSpectrumAccLc","fhistMCSpectrumAccLc;pt;step;origin;decay_channel;",nAxes_THnMC,nBins_THnMC,min_THnMC,max_THnMC); // 
+
+  // adding axis for Lc decay channel (MC)
+  const Int_t nbinsAccLcFromSc=7;
+  Int_t binsAccLcFromSc[nbinsAccLcFromSc]        = {250,  20,   2, 20, 250, 40,    6};
+  Double_t lowedgesAccLcFromSc[nbinsAccLcFromSc] = {0  ,-0.5, 3.5, -1,   0, -2, -1.5};
+  Double_t upedgesAccLcFromSc[nbinsAccLcFromSc]  = {50 ,19.5, 5.5,  1,  50,  2,  4.5};
+  fhistMCSpectrumAccLcFromSc=new THnSparseF("fhistMCSpectrumAccLcFromSc","fhistMCSpectrumAccLcFromSc;ptLc;codeLc;Qorigin;yLc;ptSc;ySc;decay_channel;",nbinsAccLcFromSc,binsAccLcFromSc,lowedgesAccLcFromSc,upedgesAccLcFromSc); // 
+
+  //fhistMCSpectrumAccXic=new TH3F("fhistMCSpectrumAccXic","fhistMCSpectrumAccXic",250,0,50,20,-0.5,19.5,2,3.5,5.5); // 
+  fhistMCSpectrumAccXic=new THnF("fhistMCSpectrumAccXic","fhistMCSpectrumAccXic;pt;step;origin;decay_channel;",nAxes_THnMC,nBins_THnMC,min_THnMC,max_THnMC); // 
+  
+  //fhistMCSpectrumAccSc=new TH3F("fhistMCSpectrumAccSc","fhistMCSpectrumAccSc",250,0,50,20,-0.5,19.5,2,3.5,5.5); // 
+  fhistMCSpectrumAccSc=new THnF("fhistMCSpectrumAccSc","fhistMCSpectrumAccSc;pt;step;origin;decay_channel;",nAxes_THnMC,nBins_THnMC,min_THnMC,max_THnMC); // 
+  
   fhistMCSpectrumAccCdeuteron=new TH2F("fhistMCSpectrumAccCdeuteron","fhistMCSpectrumAccCdeuteron",250,0,50,20,-0.5,19.5); //
 
   // Sparse histos to study track reco & PID efficiency
@@ -576,20 +588,21 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   //Double_t upEdgesSigma[9]={16,0.330,0.0500,6.,1.,5,9,2.306,1};
   //if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;seleFlag;LcMass;CosThetaStarSoftPion",9,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
-  // adding PID cases study
-  Int_t nbinsSparse[8]={16,125,10,16,20,10,23,11};
-  Double_t lowEdges[8]={0,2.15,0.,0,0.8,0,-0.5,-0.5};
-  Double_t upEdges[8]={16,2.65,0.0500,8,1.,5,22.5,10.5};
+  // adding PID cases study and axis for decay channel (MC)
+  Int_t nbinsSparse[9]={16,125,10,16,20,10,23,11,6};
+  Double_t lowEdges[9]={0,2.15,0.,0,0.8,0,-0.5,-0.5,-1.5};
+  Double_t upEdges[9]={16,2.65,0.0500,8,1.,5,22.5,10.5,4.5};
   if(fIsCdeuteronAnalysis){
     lowEdges[1] = 2.95;
     upEdges[1] = 3.45;
   }
-  if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase",8,nbinsSparse,lowEdges,upEdges);
+  if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase;channel",9,nbinsSparse,lowEdges,upEdges);
   
-  Int_t nbinsSparseSigma[13]={16,400,10,12,10,10,1,11,22,20,16,2,1};
-  Double_t lowEdgesSigma[13]={0,0.130,0.,0,0.8,0,-0.5,-0.5,2.266,-1,0,3.5,0.5};
-  Double_t upEdgesSigma[13]={16,0.330,0.0500,6.,1.,5,0.5,10.5,2.306,1,16,5.5,1.5};
-  if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;softPiITSrefit;PIDcase;LcMass;CosThetaStarSoftPion;ptsigmac;checkorigin:isRotated",13,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
+  // add also here the axis for Lc decay channel (MC)
+  Int_t nbinsSparseSigma[14]={16,400,10,12,10,10,1,11,22,20,16,2,1,6};
+  Double_t lowEdgesSigma[14]={0,0.130,0.,0,0.8,0,-0.5,-0.5,2.266,-1,0,3.5,0.5,-1.5};
+  Double_t upEdgesSigma[14]={16,0.330,0.0500,6.,1.,5,0.5,10.5,2.306,1,16,5.5,1.5,4.5};
+  if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;softPiITSrefit;PIDcase;LcMass;CosThetaStarSoftPion;ptsigmac;checkorigin;isRotated;channel",14,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
   fCosPointDistrAll=new TH1F("fCosPointDistrAll","fCosPointDistrAll",200,-1.1,1.1);
   fCosPointDistrSignal=new TH1F("fCosPointDistrSignal","fCosPointDistrSignal",200,-1.1,1.1);
@@ -1051,11 +1064,13 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	}
 
 
-	Int_t isTrueLambdaCorXic=0,checkOrigin=-1;
+	Int_t isTrueLambdaCorXic=0,checkOrigin=-1, decay_channel=0;   // decay channel info is 0 in data
+  Int_t arrayDauLabReco[3];
 	AliAODMCParticle *part=0x0;
-	Double_t pointlcsc[6];
+	//Double_t pointlcsc[6];
+	Double_t pointlcsc[7];  // adding axis for Lc decay channel (MC)
 	if(fReadMC){
-	  part=MatchRecoCandtoMCAcc(io3Prong,isTrueLambdaCorXic,checkOrigin);	  
+	  part=MatchRecoCandtoMCAcc(io3Prong,isTrueLambdaCorXic,checkOrigin);
 
 	  //  static Int_t CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 	  //  AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray,)
@@ -1078,6 +1093,12 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	      }
 	    }
 	  }
+    // if the candidate is matched, retrieve info about decay channel
+    else{
+      Int_t pdgcode = part->GetPdgCode();
+      if(TMath::Abs(pdgcode)==4122)       decay_channel = AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray, part, arrayDauLabReco);
+      else if(TMath::Abs(pdgcode)==4232)  decay_channel = CheckXicpKpiDecay(fmcArray, part, arrayDauLabReco);
+    }
 	}
       
 	//if(fReadMC && isTrueLambdaCorXic==1){
@@ -1085,7 +1106,9 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	Bool_t isFromSigmaC=kFALSE;
 	AliAODMCParticle *mcpartMum=0x0;
 	if(fReadMC && (isTrueLambdaCorXic==10 || isTrueLambdaCorXic==20 || isTrueLambdaCorXic==40 || isTrueLambdaCorXic==50 || isTrueLambdaCorXic==80 || isTrueLambdaCorXic==100)){
-	  fhistMCSpectrumAccLc->Fill(part->Pt(),kReco,checkOrigin);	  
+	  //fhistMCSpectrumAccLc->Fill(part->Pt(),kReco,checkOrigin);
+    const Double_t arr_FillkReco_Lc[4] = {part->Pt(),kReco,(Double_t)checkOrigin,(Double_t)decay_channel};
+	  fhistMCSpectrumAccLc->Fill(arr_FillkReco_Lc);	  
 	  // SIGMA C
 	  Int_t indSc=part->GetMother();
 	  if(indSc>=0){
@@ -1093,20 +1116,25 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    Int_t pdgLcMum=TMath::Abs(mcpartMum->GetPdgCode());
 	    if(pdgLcMum==4112 || pdgLcMum==4222){
 	      isFromSigmaC=kTRUE;
-	      fhistMCSpectrumAccSc->Fill(mcpartMum->Pt(),kRecoLc,checkOrigin);	      
+	      //fhistMCSpectrumAccSc->Fill(mcpartMum->Pt(),kRecoLc,checkOrigin);
+        const Double_t arr_FillkRecoLc_Sc[4] = {mcpartMum->Pt(), kRecoLc, (Double_t)checkOrigin,(Double_t)decay_channel};	      
+	      fhistMCSpectrumAccSc->Fill(arr_FillkRecoLc_Sc);	      
 	      pointlcsc[0]=part->Pt();
 	      pointlcsc[1]=kReco;
 	      pointlcsc[2]=checkOrigin;
 	      pointlcsc[3]=part->Y();
 	      pointlcsc[4]=mcpartMum->Pt();
 	      pointlcsc[5]=mcpartMum->Y();
+        pointlcsc[6]=decay_channel;
 	      fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 	    }
 	  }
 	}
 	
 	if(fReadMC && (isTrueLambdaCorXic==30 || isTrueLambdaCorXic==60 || isTrueLambdaCorXic==120 || isTrueLambdaCorXic==240 || isTrueLambdaCorXic==150 || isTrueLambdaCorXic==300)){
-	  fhistMCSpectrumAccXic->Fill(part->Pt(),kReco,checkOrigin);
+    //fhistMCSpectrumAccXic->Fill(part->Pt(),kReco,checkOrigin);
+    const Double_t arr_FillkReco_Xic[4] = {part->Pt(),kReco,(Double_t)checkOrigin,(Double_t)decay_channel};
+	  fhistMCSpectrumAccXic->Fill(arr_FillkReco_Xic);
 	}
 	if(fReadMC && (isTrueLambdaCorXic==1001 || isTrueLambdaCorXic==1002)) { //c deuteron
  	  fhistMCSpectrumAccCdeuteron->Fill(part->Pt(),kReco);
@@ -1127,13 +1155,15 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  trPr=(AliAODTrack*)trackArray.At(0);
 	  Double_t pprot[3];
 	  trPr->PxPyPz(pprot);
-	  cosThetaStarP1=CosThetaStar(pcand,pprot,TDatabasePDG::Instance()->GetParticle(4122)->Mass(),TDatabasePDG::Instance()->GetParticle(2212)->Mass());	  
+	  //cosThetaStarP1=CosThetaStar(pcand,pprot,TDatabasePDG::Instance()->GetParticle(4122)->Mass(),TDatabasePDG::Instance()->GetParticle(2212)->Mass());	  
+	  cosThetaStarP1=CosThetaStar(pcand,pprot,TDatabasePDG::Instance()->GetParticle(fPdgFiducialYreco)->Mass(),TDatabasePDG::Instance()->GetParticle(2212)->Mass());	  
 	}
 	if(massHypothesis==2 || massHypothesis==3){
 	  trPr=(AliAODTrack*)trackArray.At(2);
 	  Double_t pprot[3];
 	  trPr->PxPyPz(pprot);
-	  cosThetaStarP2=CosThetaStar(pcand,pprot,TDatabasePDG::Instance()->GetParticle(4122)->Mass(),TDatabasePDG::Instance()->GetParticle(2212)->Mass());
+	  //cosThetaStarP2=CosThetaStar(pcand,pprot,TDatabasePDG::Instance()->GetParticle(4122)->Mass(),TDatabasePDG::Instance()->GetParticle(2212)->Mass());
+	  cosThetaStarP2=CosThetaStar(pcand,pprot,TDatabasePDG::Instance()->GetParticle(fPdgFiducialYreco)->Mass(),TDatabasePDG::Instance()->GetParticle(2212)->Mass());
 	}
 	var[17]=cosThetaStarP1;
 	var[18]=cosThetaStarP2;
@@ -1272,16 +1302,24 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    fDist23Signal->Fill(io3Prong->GetDist23toPrim()*10000.);	    
 	    //if(isTrueLambdaCorXic==1)fhistMCSpectrumAccLc->Fill(part->Pt(),kRecoCuts);
 	    if(isTrueLambdaCorXic==40 || isTrueLambdaCorXic==50 || isTrueLambdaCorXic==80 || isTrueLambdaCorXic==100){
-	      fhistMCSpectrumAccLc->Fill(part->Pt(),kRecoCuts,checkOrigin);
+	      //fhistMCSpectrumAccLc->Fill(part->Pt(),kRecoCuts,checkOrigin);
+        const Double_t arr_FillkRecoCuts_Lc[4] = {part->Pt(),kRecoCuts,(Double_t)checkOrigin,(Double_t)decay_channel};
+	      fhistMCSpectrumAccLc->Fill(arr_FillkRecoCuts_Lc);
 	      if(isFromSigmaC){
-		fhistMCSpectrumAccSc->Fill(mcpartMum->Pt(),kRecoLcCuts,checkOrigin);
+		//fhistMCSpectrumAccSc->Fill(mcpartMum->Pt(),kRecoLcCuts,checkOrigin);
+    const Double_t arr_FillkRecoLcCuts_Sc[4] = {mcpartMum->Pt(),kRecoLcCuts,(Double_t)checkOrigin,(Double_t)decay_channel};
+		fhistMCSpectrumAccSc->Fill(arr_FillkRecoLcCuts_Sc);
 		pointlcsc[1]=kRecoCuts;
 		fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 	      }
 	    }
 	    //if(isTrueLambdaCorXic==3)fhistMCSpectrumAccXic->Fill(part->Pt(),kRecoCuts);
-	    if(isTrueLambdaCorXic==120 || isTrueLambdaCorXic==150 || isTrueLambdaCorXic==240 || isTrueLambdaCorXic==300)fhistMCSpectrumAccXic->Fill(part->Pt(),kRecoCuts,checkOrigin);
-	    if(isTrueLambdaCorXic==1001 || isTrueLambdaCorXic==1002) fhistMCSpectrumAccCdeuteron->Fill(part->Pt(),kRecoCuts);
+	    if(isTrueLambdaCorXic==120 || isTrueLambdaCorXic==150 || isTrueLambdaCorXic==240 || isTrueLambdaCorXic==300){
+        //fhistMCSpectrumAccXic->Fill(part->Pt(),kRecoCuts,checkOrigin);
+        const Double_t arr_FillkRecoCuts_Xic[4] = {part->Pt(),kRecoCuts,(Double_t)checkOrigin,(Double_t)decay_channel};
+        fhistMCSpectrumAccXic->Fill(arr_FillkRecoCuts_Xic);
+      }
+      if(isTrueLambdaCorXic==1001 || isTrueLambdaCorXic==1002) fhistMCSpectrumAccCdeuteron->Fill(part->Pt(),kRecoCuts);
 	  }
 	}
       
@@ -1298,7 +1336,9 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	if(TMath::Abs(  normIP[2])>maxIP)maxIP=TMath::Abs(  normIP[2]);
 
 	Int_t converted_isTrueLcXic = ConvertXicMCinfo(isTrueLambdaCorXic);
-	Double_t point[8]={candPt,0,io3Prong->DecayLengthXY(),io3Prong->NormalizedDecayLengthXY(),io3Prong->CosPointingAngle(),maxIP,(Double_t)converted_isTrueLcXic,0};  
+	//Double_t point[8]={candPt,0,io3Prong->DecayLengthXY(),io3Prong->NormalizedDecayLengthXY(),io3Prong->CosPointingAngle(),maxIP,(Double_t)converted_isTrueLcXic,0};  
+	Double_t point[9]={candPt,0,io3Prong->DecayLengthXY(),io3Prong->NormalizedDecayLengthXY(),io3Prong->CosPointingAngle(),maxIP,(Double_t)converted_isTrueLcXic,0,(Double_t) decay_channel};
+  
 	Double_t mass1=0,mass2=0;
 	Bool_t arrayPIDpkpi[11],arrayPIDpikp[11];
 	if(massHypothesis>0 && fExplore_PIDstdCuts){
@@ -1378,8 +1418,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    else SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,0x0,0x0,itrack1,itrack2,itrackThird);
 	  }
 	  else if(isFromSigmaC){
-	    if(fExplore_PIDstdCuts)SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,arrayPIDpkpi,arrayPIDpikp,itrack1,itrack2,itrackThird,mcpartMum,checkOrigin);
-	    else SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,0x0,0x0,itrack1,itrack2,itrackThird,mcpartMum,checkOrigin);
+	    if(fExplore_PIDstdCuts)SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,arrayPIDpkpi,arrayPIDpikp,itrack1,itrack2,itrackThird,mcpartMum,(Double_t)checkOrigin,(Double_t)decay_channel);
+	    else SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,0x0,0x0,itrack1,itrack2,itrackThird,mcpartMum,(Double_t)checkOrigin,(Double_t)decay_channel);
 	  }
 	}
 	
@@ -1427,13 +1467,14 @@ void AliAnalysisTaskSEXicTopKpi::FillArrayVariableSparse(AliAODRecoDecayHF3Prong
 }
 
 //________________________________________________________
-void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselPkPi,Bool_t *arrayPIDselPikP,Int_t itrack1,Int_t itrack2,Int_t itrackThird,AliAODMCParticle *pSigmaC,Int_t checkorigin){
+void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselPkPi,Bool_t *arrayPIDselPikP,Int_t itrack1,Int_t itrack2,Int_t itrackThird,AliAODMCParticle *pSigmaC,Int_t checkorigin,Int_t decay_channel){
   Int_t labelSoftPi=-1;
   Double_t ptsigmacMC=-1;
   Double_t ptlambdacMC=-1;
   Double_t ysigmacMC=-9;
   Double_t ylambdacMC=-9;
-  Double_t pointlcsc[6];
+  //Double_t pointlcsc[6];
+  Double_t pointlcsc[7];  // adding axis for Lc decay channel (MC)
   AliAODMCParticle *mcpartLc=0x0;
   if(pSigmaC){
     ptsigmacMC=pSigmaC->Pt();
@@ -1457,7 +1498,9 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
   if(fDebug > 1){
     Printf("Good Lc candidate , will loop over %d pions",fnSelSoftPi);
   }
-  Double_t pointSigma[13];
+  //Double_t pointSigma[13];
+  Double_t pointSigma[14];
+  pointSigma[13] = (Double_t) decay_channel;
   pointSigma[11]=checkorigin;
   pointSigma[12]=1;
   Bool_t arrayVariableIsFilled=kFALSE;
@@ -1493,13 +1536,16 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
       Printf("4plet ok, mass hypo is %d, mass1: %f, mass2: %f",massHypothesis,(massHypothesis==1||massHypothesis==3) ? mass1 : 0,(massHypothesis==2||massHypothesis==3) ? mass2:0);
     }
     
-    fhistMCSpectrumAccSc->Fill(ptsigmacMC,kReco,checkorigin);	      
+    //fhistMCSpectrumAccSc->Fill(ptsigmacMC,kReco,checkorigin);
+    const Double_t arr_FillkReco_Sc[4] = {ptsigmacMC,kReco,(Double_t)checkorigin,(Double_t)decay_channel};
+    fhistMCSpectrumAccSc->Fill(arr_FillkReco_Sc);
     pointlcsc[0]=ptlambdacMC;
     pointlcsc[1]=kReco;
     pointlcsc[2]=checkorigin;
     pointlcsc[3]=ylambdacMC;
     pointlcsc[4]=ptsigmacMC;
     pointlcsc[5]=ysigmacMC;
+    pointlcsc[6]=decay_channel;
     fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
     Double_t psoft[3],psoftOrig[3];
     tracksoft->PxPyPz(psoftOrig);
@@ -1565,13 +1611,16 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		pointSigma[10]=ptsigmacMC;
 		pointSigma[0]=ptlambdacMC;
 		fhSparseAnalysisSigma->Fill(pointSigma);
-		fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		//fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
+    const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};	
+    fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);      
 		pointlcsc[0]=ptlambdacMC;
 		pointlcsc[1]=kRecoPID;
 		pointlcsc[2]=checkorigin;
 		pointlcsc[3]=ylambdacMC;
 		pointlcsc[4]=ptsigmacMC;
 		pointlcsc[5]=ysigmacMC;
+    pointlcsc[6]=decay_channel;
 		fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 	      }
 	    }
@@ -1597,6 +1646,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		    pointlcsc[3]=ylambdacMC;
 		    pointlcsc[4]=ptsigmacMC;
 		    pointlcsc[5]=ysigmacMC;
+        pointlcsc[6]=decay_channel;
 		    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 		  }
 		}
@@ -1641,13 +1691,16 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		pointSigma[10]=ptsigmacMC;
 		pointSigma[0]=ptlambdacMC;
 		fhSparseAnalysisSigma->Fill(pointSigma);
-		fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
+		//fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
+    const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};
+    fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);
 		pointlcsc[0]=ptlambdacMC;
 		pointlcsc[1]=kRecoPID;
 		pointlcsc[2]=checkorigin;
 		pointlcsc[3]=ylambdacMC;
 		pointlcsc[4]=ptsigmacMC;
 		pointlcsc[5]=ysigmacMC;
+    pointlcsc[6]=decay_channel;
 		fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 	      }
 	    }
@@ -1673,6 +1726,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		    pointlcsc[3]=ylambdacMC;
 		    pointlcsc[4]=ptsigmacMC;
 		    pointlcsc[5]=ysigmacMC;
+        pointlcsc[6]=decay_channel;
 		    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 		  }
 		}	      
@@ -2609,7 +2663,8 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
       Int_t pdg=mcpart->GetPdgCode();
       Int_t arrayDauLab[3];
       if(TMath::Abs(pdg)==4122){
-	if(AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray, mcpart, arrayDauLab)>=1){
+        Int_t decay_channel = AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray, mcpart, arrayDauLab);
+	if(decay_channel>=1){
 	  Int_t checkOrigin=AliVertexingHFUtils::CheckOrigin(fmcArray,mcpart,kTRUE);
 	  if(checkOrigin==0)continue;
 	  
@@ -2626,7 +2681,8 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	    Int_t pdgLcMum=TMath::Abs(mcpartMum->GetPdgCode());
 	    if(pdgLcMum==4112 || pdgLcMum==4222)isFromSigmaC=kTRUE;
 	  }
-	  Double_t pointLcSc[6];
+	  //Double_t pointLcSc[6];
+	  Double_t pointLcSc[7];  // adding axis for Lc decay channel (MC)
 	  Double_t ptpartSc;
 	  Double_t ypartSc;
 	  if(isFromSigmaC){
@@ -2638,9 +2694,12 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	    pointLcSc[3]=ypart;
 	    pointLcSc[4]=ptpartSc;
 	    pointLcSc[5]=ypartSc;
+      pointLcSc[6]=decay_channel;
 	  }
 	  if(TMath::Abs(ypart)<0.5){
-	    fhistMCSpectrumAccLc->Fill(ptpart,kGenLimAcc,checkOrigin);// Gen Level
+	    //fhistMCSpectrumAccLc->Fill(ptpart,kGenLimAcc,checkOrigin);// Gen Level
+      const Double_t arr_FillkGenLimAcc_Lc[4] = {ptpart,kGenLimAcc,(Double_t)checkOrigin,(Double_t)decay_channel};
+	    fhistMCSpectrumAccLc->Fill(arr_FillkGenLimAcc_Lc);// Gen Level
 
 	    if(isFromSigmaC){
 	      pointLcSc[1]=kGenLimAcc;
@@ -2661,7 +2720,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	    }
 	  }
 	  if(isInAcc){
-	    fhistMCSpectrumAccLc->Fill(ptpart,kGenAccMother,checkOrigin);// Gen Acc Mother
+	    //fhistMCSpectrumAccLc->Fill(ptpart,kGenAccMother,checkOrigin);// Gen Acc Mother
+      const Double_t arr_FillkGenAccMother_Lc[4] = {ptpart,kGenAccMother,(Double_t)checkOrigin,(Double_t)decay_channel};
+      fhistMCSpectrumAccLc->Fill(arr_FillkGenAccMother_Lc);// Gen Acc Mother
 	    if(isFromSigmaC){
 	      pointLcSc[1]=kGenAccMother;
 	      fhistMCSpectrumAccLcFromSc->Fill(pointLcSc);
@@ -2674,7 +2735,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	      }	    
 	    }
 	    if(isInAcc){
-	      fhistMCSpectrumAccLc->Fill(mcpart->Pt(),kGenAcc,checkOrigin);// Gen Acc
+	      //fhistMCSpectrumAccLc->Fill(mcpart->Pt(),kGenAcc,checkOrigin);// Gen Acc
+        const Double_t arr_FillkGenAcc_Lc[4] = {mcpart->Pt(),kGenAcc,(Double_t)checkOrigin,(Double_t)decay_channel};
+	      fhistMCSpectrumAccLc->Fill(arr_FillkGenAcc_Lc);// Gen Acc
 	      if(isFromSigmaC){
 		pointLcSc[1]=kGenAcc;
 		fhistMCSpectrumAccLcFromSc->Fill(pointLcSc);
@@ -2685,7 +2748,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	  if(isFromSigmaC){
 	    // LimAcc level
 	    if(TMath::Abs(ypartSc)<0.5){
-	      fhistMCSpectrumAccSc->Fill(ptpartSc,kGenLimAcc,checkOrigin);// Gen Level
+	      //fhistMCSpectrumAccSc->Fill(ptpartSc,kGenLimAcc,checkOrigin);// Gen Level
+        const Double_t arr_FillkGenLimAcc_Sc[4] = {ptpartSc,kGenLimAcc,(Double_t)checkOrigin,(Double_t)decay_channel};
+	      fhistMCSpectrumAccSc->Fill(arr_FillkGenLimAcc_Sc);// Gen Level
 	    }
 	    // check GenAcc level
 	    Bool_t isInAccSc=kTRUE;
@@ -2700,7 +2765,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	      }
 	    }
 	    if(isInAccSc){
-	      fhistMCSpectrumAccSc->Fill(ptpartSc,kGenAccMother,checkOrigin);// Gen Acc Mother
+	      //fhistMCSpectrumAccSc->Fill(ptpartSc,kGenAccMother,checkOrigin);// Gen Acc Mother
+        const Double_t arr_FillkGenAccMother_Sc[4] = {ptpartSc,kGenAccMother,(Double_t)checkOrigin,(Double_t)decay_channel};
+	      fhistMCSpectrumAccSc->Fill(arr_FillkGenAccMother_Sc);// Gen Acc Mother
 	      
 	      if(isInAcc){// both Sc and Lc in fiducial acceptance + Lc daughter in Acc
 		for(Int_t k=mcpartMum->GetDaughterLabel(0);k<mcpartMum->GetDaughterLabel(1);k++){
@@ -2711,7 +2778,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 		  }
 		}
 		if(isInAccSc){
-		  fhistMCSpectrumAccSc->Fill(ptpartSc,kGenAcc,checkOrigin);// Gen Acc
+		  //fhistMCSpectrumAccSc->Fill(ptpartSc,kGenAcc,checkOrigin);// Gen Acc
+      const Double_t arr_FillkGenAcc_Sc[4] = {ptpartSc,kGenAcc,(Double_t)checkOrigin,(Double_t)decay_channel};
+		  fhistMCSpectrumAccSc->Fill(arr_FillkGenAcc_Sc);// Gen Acc
 		}		
 	      }
 	    }	    
@@ -2719,7 +2788,8 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	}
       }
       else if(TMath::Abs(pdg)==4232){
-	if(CheckXicpKpiDecay(fmcArray, mcpart, arrayDauLab)>=1){
+        Int_t decay_channel = CheckXicpKpiDecay(fmcArray, mcpart, arrayDauLab); 
+	if(decay_channel>=1){
 	  Int_t checkOrigin=AliVertexingHFUtils::CheckOrigin(fmcArray,mcpart,kTRUE);
 	  if(checkOrigin==0)continue;
 
@@ -2727,7 +2797,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	  Double_t ypart=mcpart->Y();
 
 	  if(TMath::Abs(ypart)<0.5){
-	    fhistMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);// Gen Level
+	    //fhistMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);// Gen Level
+      const Double_t arr_FillkGenLimAcc_Xic[4] = {ptpart,kGenLimAcc,(Double_t)checkOrigin,(Double_t)decay_channel};
+	    fhistMCSpectrumAccXic->Fill(arr_FillkGenLimAcc_Xic);// Gen Level
 	  }	  
 	  Bool_t isInAcc=kTRUE;
 	  // check GenAcc level
@@ -2742,7 +2814,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	    }
 	  }
 	  if(isInAcc){
-	    fhistMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);// Gen Acc Mother
+	    //fhistMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);// Gen Acc Mother
+      const Double_t arr_FillkGenAccMother_Xic[4] = {ptpart,kGenAccMother,(Double_t)checkOrigin,(Double_t)decay_channel};
+	    fhistMCSpectrumAccXic->Fill(arr_FillkGenAccMother_Xic);// Gen Acc Mother
 	    for(Int_t k=0;k<3;k++){
 	      AliAODMCParticle *mcpartdau=(AliAODMCParticle*)fmcArray->At(arrayDauLab[k]);
 	      if(TMath::Abs(mcpartdau->Eta())>0.9){
@@ -2750,7 +2824,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	      }	    
 	    }
 	    if(isInAcc){
-	      fhistMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);// Gen Acc
+	      //fhistMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);// Gen Acc
+        const Double_t arr_FillkGenAcc_Xic[4] = {ptpart,kGenAcc,(Double_t)checkOrigin,(Double_t)decay_channel};
+	      fhistMCSpectrumAccXic->Fill(arr_FillkGenAcc_Xic);// Gen Acc
 	    }
 	  }	  
 	}
@@ -2773,6 +2849,8 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
     Bool_t recPrimVtx=kFALSE;
     Int_t isTrueLambdaCorXic=-1;
     Int_t checkOrigin=-1;
+    Int_t decay_channel=0;  // decay channel info is 0 in data
+    Int_t arrayDauLabReco[3];
     
     AliAODVertex *origownvtx=0x0;
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)lcArray->UncheckedAt(iLcFilt);      
@@ -2781,7 +2859,13 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
     }       
     AliAODMCParticle* part=0x0;
     if( fDebug>=0 && fReadMC){
-      part=MatchRecoCandtoMCAcc(d,isTrueLambdaCorXic,checkOrigin);	  
+      part=MatchRecoCandtoMCAcc(d,isTrueLambdaCorXic,checkOrigin);
+      // if the candidate is matched, retrieve info about decay channel
+      if(part){
+        Int_t pdgcode = part->GetPdgCode();
+        if(TMath::Abs(pdgcode)==4122)       decay_channel =   AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray, part,   arrayDauLabReco);
+        else if(TMath::Abs(pdgcode)==4232)  decay_channel =   CheckXicpKpiDecay(fmcArray, part, arrayDauLabReco);
+      }	  
     }
     if(!(fvHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.
       continue;
@@ -2864,13 +2948,29 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
        if(fDebug>=0 && part){
 	 
 	 Double_t partpt=part->Pt(),party=part->Y();
-	 fhistMCSpectrumAccLc->Fill(partpt,kReco,checkOrigin);
-	 if(iSelTrackCuts)fhistMCSpectrumAccLc->Fill(partpt,kRecoCuts+2,checkOrigin);// NOT FINISHED: SHOULD CHECK REFLECTIONS + GenAcc with MC variables!!
-	 if(iSelCuts)fhistMCSpectrumAccLc->Fill(partpt,kRecoCuts+3,checkOrigin);
-	 if(iSelPID && (massHypothesis==3 || (massHypothesis ==1 && (isTrueLambdaCorXic==40 || isTrueLambdaCorXic==50)) || (massHypothesis ==2 && (isTrueLambdaCorXic==80 || isTrueLambdaCorXic==100)) ))fhistMCSpectrumAccLc->Fill(partpt,kRecoCuts+4,checkOrigin);
+	 //fhistMCSpectrumAccLc->Fill(partpt,kReco,checkOrigin);
+   const Double_t arr_FillkReco_Lc[4] = {partpt,kReco,(Double_t)checkOrigin,(Double_t)decay_channel};
+	 fhistMCSpectrumAccLc->Fill(arr_FillkReco_Lc);
+	 if(iSelTrackCuts){
+     //fhistMCSpectrumAccLc->Fill(partpt,kRecoCuts+2,checkOrigin);// NOT FINISHED: SHOULD CHECK REFLECTIONS + GenAcc with MC variables!!
+     const Double_t arr_FillkRecoCutsPlus2_Lc[4] = {partpt,kRecoCuts+2,(Double_t)checkOrigin,(Double_t)decay_channel};
+     fhistMCSpectrumAccLc->Fill(arr_FillkRecoCutsPlus2_Lc);// NOT FINISHED: SHOULD CHECK REFLECTIONS + GenAcc with MC variables!!
+   }
+	 if(iSelCuts){
+     //fhistMCSpectrumAccLc->Fill(partpt,kRecoCuts+3,checkOrigin);
+     const Double_t arr_FillkRecoCutsPlus3_Lc[4] = {partpt,kRecoCuts+3,(Double_t)checkOrigin,(Double_t)decay_channel};
+     fhistMCSpectrumAccLc->Fill(arr_FillkRecoCutsPlus3_Lc);
+   }
+   if(iSelPID && (massHypothesis==3 || (massHypothesis ==1 && (isTrueLambdaCorXic==40 || isTrueLambdaCorXic==50)) || (massHypothesis ==2 && (isTrueLambdaCorXic==80 || isTrueLambdaCorXic==100)) )){
+     //fhistMCSpectrumAccLc->Fill(partpt,kRecoCuts+4,checkOrigin);
+     const Double_t arr_FillkRecoCutsPlus4_Lc[4] = {partpt,kRecoCuts+4,(Double_t)checkOrigin,(Double_t)decay_channel};
+     fhistMCSpectrumAccLc->Fill(arr_FillkRecoCutsPlus4_Lc);
+   }
 	 if(iSelTrackCuts>0&&massHypothesis>0){
 	   if(massHypothesis==3 || (massHypothesis ==1 && (isTrueLambdaCorXic==40 || isTrueLambdaCorXic==50)) || (massHypothesis ==2 && (isTrueLambdaCorXic==80 || isTrueLambdaCorXic==100)) ){
-	     fhistMCSpectrumAccLc->Fill(partpt,kRecoPID,checkOrigin);
+	     //fhistMCSpectrumAccLc->Fill(partpt,kRecoPID,checkOrigin);
+       const Double_t arr_FillkRecoPID_Lc[4] = {partpt,kRecoPID,(Double_t)checkOrigin,(Double_t)decay_channel};
+	     fhistMCSpectrumAccLc->Fill(arr_FillkRecoPID_Lc);
 	   }
 	 }
 	 // SIGMA C
@@ -2880,7 +2980,8 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	   Int_t pdgLcMum=TMath::Abs(mcpartMum->GetPdgCode());
 	   if(pdgLcMum==4112 || pdgLcMum==4222)isFromSigmaC=kTRUE;
 	 }
-	 Double_t pointLcSc[6];
+	 //Double_t pointLcSc[6];
+	 Double_t pointLcSc[7]; // adding axis for Lc decay channel (MC)
 	 Double_t ptpartSc;
 	 Double_t ypartSc;
 	 if(isFromSigmaC){
@@ -2892,6 +2993,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	   pointLcSc[3]=party;
 	   pointLcSc[4]=ptpartSc;
 	   pointLcSc[5]=ypartSc;
+     pointLcSc[6]=decay_channel;
 	   
 	   fhistMCSpectrumAccLcFromSc->Fill(pointLcSc);
 	   
@@ -2949,7 +3051,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
        
 	 if(!fExplore_PIDstdCuts && massHypothesis>0){
 	   if(isFromSigmaC){
-	     SigmaCloop(d,aod,massHypothesis,d->InvMassLcpKpi(),d->InvMassLcpiKp(),0x0,resp_onlyPID,0x0,0x0,-1,-1,-1,mcpartMum,checkOrigin);
+	     SigmaCloop(d,aod,massHypothesis,d->InvMassLcpKpi(),d->InvMassLcpiKp(),0x0,resp_onlyPID,0x0,0x0,-1,-1,-1,mcpartMum,(Double_t)checkOrigin,(Double_t)decay_channel);
 	   }
 	   else if(!fReadMC){
 	     SigmaCloop(d,aod,massHypothesis,d->InvMassLcpKpi(),d->InvMassLcpiKp(),0x0,resp_onlyPID);
@@ -2966,7 +3068,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	     fCutsXic->ExplorePID(fPidResponse,d,i,arrayPIDpkpi[i],arrayPIDpikp[i]);
 	   }
 	   if(isFromSigmaC){
-	     SigmaCloop(d,aod,massHypothesis,d->InvMassLcpKpi(),d->InvMassLcpiKp(),0x0,resp_onlyPID,arrayPIDpkpi,arrayPIDpikp,-1,-1,-1,mcpartMum,checkOrigin);
+	     SigmaCloop(d,aod,massHypothesis,d->InvMassLcpKpi(),d->InvMassLcpiKp(),0x0,resp_onlyPID,arrayPIDpkpi,arrayPIDpikp,-1,-1,-1,mcpartMum,(Double_t)checkOrigin,(Double_t)decay_channel);
 	   }
 	   else if(!fReadMC){
 	     SigmaCloop(d,aod,massHypothesis,d->InvMassLcpKpi(),d->InvMassLcpiKp(),0x0,resp_onlyPID,arrayPIDpkpi,arrayPIDpikp);	   

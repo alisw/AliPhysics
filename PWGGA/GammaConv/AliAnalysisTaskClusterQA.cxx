@@ -43,6 +43,7 @@ ClassImp(AliAnalysisTaskClusterQA)
 AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fReaderGammas(NULL),
   fPIDResponse(NULL),
   fCorrTaskSetting(""),
   fConversionCuts(NULL),
@@ -113,6 +114,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Surrounding_Tracks_nSigdEdxE(0),
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
+  fBuffer_Surrounding_Tracks_V0Flag(0),
   fBuffer_Cluster_MC_Label(-10),
   fBuffer_Mother_MC_Label(-10),
   fBuffer_Cluster_MC_EFracFirstLabel(-10),
@@ -142,11 +144,13 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Surrounding_Tracks_nSigdEdxE       = new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativeEta= new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativePhi= new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_V0Flag= new Bool_t[kMaxNTracks];
 }
 
 AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalysisTaskSE(name),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fReaderGammas(NULL),
   fPIDResponse(NULL),
   fCorrTaskSetting(""),
   fConversionCuts(NULL),
@@ -217,6 +221,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Surrounding_Tracks_nSigdEdxE(0),
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
+  fBuffer_Surrounding_Tracks_V0Flag(0),
   fBuffer_Cluster_MC_Label(-10),
   fBuffer_Mother_MC_Label(-10),
   fBuffer_Cluster_MC_EFracFirstLabel(-10),
@@ -246,6 +251,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Surrounding_Tracks_nSigdEdxE       = new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativeEta= new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativePhi= new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_V0Flag= new Bool_t[kMaxNTracks];
   // Default constructor
 
   DefineInput(0, TChain::Class());
@@ -263,6 +269,9 @@ AliAnalysisTaskClusterQA::~AliAnalysisTaskClusterQA()
 void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
 {
   // Create User Output Objects
+
+  fV0Reader = (AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
+  if(!fV0Reader){printf("Error: No V0 Reader");return;}// GetV0Reader
 
   if(fOutputList != NULL){
     delete fOutputList;
@@ -356,6 +365,7 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
     fClusterTree->Branch("Surrounding_Tracks_nSigdEdxE",    fBuffer_Surrounding_Tracks_nSigdEdxE,     "Surrounding_Tracks_nSigdEdxE[Surrounding_NTracks]/F");
     fClusterTree->Branch("Surrounding_Tracks_RelativeEta",  fBuffer_Surrounding_Tracks_RelativeEta,   "Surrounding_Tracks_RelativeEta[Surrounding_NTracks]/F");
     fClusterTree->Branch("Surrounding_Tracks_RelativePhi",  fBuffer_Surrounding_Tracks_RelativePhi,   "Surrounding_Tracks_RelativePhi[Surrounding_NTracks]/F");
+    fClusterTree->Branch("Surrounding_Tracks_V0Flag",       fBuffer_Surrounding_Tracks_V0Flag,        "Surrounding_Tracks_V0Flag[Surrounding_NTracks]/O");
   }
 
   if(fSaveMCInformation && !fSaveEventsInVector)
@@ -421,6 +431,8 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
   if(nclus == 0)  return;
 
   ((AliCaloPhotonCuts*)fClusterCutsEMC)->FillHistogramsExtendedQA(fInputEvent,fIsMC);
+
+  fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 
   // if(fIsMC==2){
   //   Float_t xsection = -1.; Float_t ntrials = -1.;
@@ -905,6 +917,25 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
       continue;
     }
 
+    Bool_t trackIsFromV0 = kFALSE;
+    for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
+      AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
+      if(!PhotonCandidate) continue;
+      //apply cuts to maximize electron purity
+      // if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate,fInputEvent))continue;
+
+      for (Int_t iElec = 0;iElec < 2;iElec++){
+        Int_t tracklabel = PhotonCandidate->GetLabel(iElec);
+        if(tracklabel==itr){
+          trackIsFromV0 = kTRUE;
+        } else {
+          trackIsFromV0 = kFALSE;
+        }
+      }
+
+    }
+
+
     AliExternalTrackParam trackParamTmp(emcParam);//Retrieve the starting point every time before the extrapolation
     if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, clus, 0.139, 5., dEta, dPhi)) continue;
 
@@ -916,6 +947,7 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
       fBuffer_Surrounding_Tracks_nSigdEdxE[nTracksInR]= fPIDResponse ? fPIDResponse->NumberOfSigmasTPC(inTrack,AliPID::kElectron) : -100;
       fBuffer_Surrounding_Tracks_RelativeEta[nTracksInR]=dEta;
       fBuffer_Surrounding_Tracks_RelativePhi[nTracksInR]=dPhi;
+      fBuffer_Surrounding_Tracks_V0Flag[nTracksInR]=trackIsFromV0;
       nTracksInR+=1;
     }
   }
@@ -927,6 +959,7 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
     fBuffer_Surrounding_Tracks_nSigdEdxE[nTracksInR]=-100;
     fBuffer_Surrounding_Tracks_RelativeEta[nTracksInR]=-100;
     fBuffer_Surrounding_Tracks_RelativePhi[nTracksInR]=-100;
+    fBuffer_Surrounding_Tracks_V0Flag[nTracksInR]=kFALSE;
   }
 
   if(EsdTrackCuts){
@@ -934,6 +967,8 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
     EsdTrackCuts=0x0;
   }
 }
+
+
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPhoton *TrueClusterCandidate, AliVCluster* cluster,
@@ -1562,6 +1597,7 @@ void AliAnalysisTaskClusterQA::ResetBuffer(){
     fBuffer_Surrounding_Tracks_nSigdEdxE[track]          = -100;
     fBuffer_Surrounding_Tracks_RelativeEta[track] = 100;
     fBuffer_Surrounding_Tracks_RelativePhi[track] = 100;
+    fBuffer_Surrounding_Tracks_V0Flag[track] = kFALSE;
   }
 }
 

@@ -112,6 +112,14 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 		if(trigger_index==8){
 			task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
 		}
+        
+        //Trigger number to run EMCal+DCal as a single detector
+        if(trigger_index==10){
+            task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+        }
+        if(trigger_index==11){
+            task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+        }
 	
 		
     }

@@ -428,23 +428,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistMCMixingGen->Sumw2();
     fHistMCMixingGen->GetAxis(4)->Set(NofZVrtxBins,ZBins);
     fHistMCMixingGen->GetAxis(8)->Set(602,binsMass);
-
-    fHistMCKorelacie = new THnSparseF ("fHistMCKorelacie","fHistMCKorelacie", 10, bins, min, max);
-    fHistMCKorelacie->GetAxis(0)->SetTitle("p_{T}^{trig}");
-    fHistMCKorelacie->GetAxis(1)->SetTitle("p_{T}^{assoc}");
-    fHistMCKorelacie->GetAxis(2)->SetTitle("#Delta#phi");
-    fHistMCKorelacie->GetAxis(3)->SetTitle("#Delta#eta");
-    fHistMCKorelacie->GetAxis(4)->SetTitle("p_{vz}");
-    fHistMCKorelacie->GetAxis(5)->SetTitle("trigger");
-    fHistMCKorelacie->GetAxis(6)->SetTitle("#eta_{trig}");
-    fHistMCKorelacie->GetAxis(7)->SetTitle("#eta_{assoc}");
-    fHistMCKorelacie->GetAxis(8)->SetTitle("mass");
-    fHistMCKorelacie->GetAxis(9)->SetTitle("multiplicity percentile");
-    fHistMCKorelacie->Sumw2();
-    fOutputList->Add(fHistMCKorelacie);
-    
-    fHistMCKorelacie->GetAxis(8)->Set(602,binsMass);
-    fHistMCKorelacie->GetAxis(4)->Set(NofZVrtxBins,ZBins);
     
     fHistKorelacieMCrec = new THnSparseF ("fHistKorelacieMCrec","fHistKorelacieMCrec", 10, bins, min, max);
     fHistKorelacieMCrec->GetAxis(0)->SetTitle("p_{T}^{trig}");
@@ -461,6 +444,26 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fOutputList->Add(fHistKorelacieMCrec);
     fHistKorelacieMCrec->GetAxis(8)->Set(602,binsMass);
     fHistKorelacieMCrec->GetAxis(4)->Set(NofZVrtxBins,ZBins);
+
+    bins[9] = 500;
+    max[9] = 500;
+
+    fHistMCKorelacie = new THnSparseF ("fHistMCKorelacie","fHistMCKorelacie", 10, bins, min, max);
+    fHistMCKorelacie->GetAxis(0)->SetTitle("p_{T}^{trig}");
+    fHistMCKorelacie->GetAxis(1)->SetTitle("p_{T}^{assoc}");
+    fHistMCKorelacie->GetAxis(2)->SetTitle("#Delta#phi");
+    fHistMCKorelacie->GetAxis(3)->SetTitle("#Delta#eta");
+    fHistMCKorelacie->GetAxis(4)->SetTitle("p_{vz}");
+    fHistMCKorelacie->GetAxis(5)->SetTitle("trigger");
+    fHistMCKorelacie->GetAxis(6)->SetTitle("#eta_{trig}");
+    fHistMCKorelacie->GetAxis(7)->SetTitle("#eta_{assoc}");
+    fHistMCKorelacie->GetAxis(8)->SetTitle("mass");
+    fHistMCKorelacie->GetAxis(9)->SetTitle("multiplicity");
+    fHistMCKorelacie->Sumw2();
+    fOutputList->Add(fHistMCKorelacie);
+    
+    fHistMCKorelacie->GetAxis(8)->Set(602,binsMass);
+    fHistMCKorelacie->GetAxis(4)->Set(NofZVrtxBins,ZBins);
 
     fHistGenMultiplicity = new TH1D ("fHistGenMultiplicity","fHistGenMultiplicity",500,0,500);
     fOutputList->Add(fHistGenMultiplicity);
@@ -530,18 +533,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggers->Sumw2();
     fHistNumberOfTriggers->GetAxis(4)->Set(602,binsMass);
     fHistNumberOfTriggers->GetAxis(1)->Set(NofZVrtxBins,ZBins);
-    fHistNumberOfTriggersGen = new THnSparseF("fHistNumberOfTriggersGen","fHistNumberOfTriggersGen",6,bins2d,mis2d, maxs2d);
-    fHistNumberOfTriggersGen->GetAxis(0)->SetTitle("p_{T}");
-    fHistNumberOfTriggersGen->GetAxis(1)->SetTitle("p_{vz}");
-    fHistNumberOfTriggersGen->GetAxis(2)->SetTitle("#eta");
-    fHistNumberOfTriggersGen->GetAxis(3)->SetTitle("trigger");
-    fHistNumberOfTriggersGen->GetAxis(4)->SetTitle("mass");
-    fHistNumberOfTriggersGen->GetAxis(5)->SetTitle("multiplicity percentile");
-    fOutputList->Add(fHistNumberOfTriggersGen);
-    fHistNumberOfTriggersGen->Sumw2();
-    fHistNumberOfTriggersGen->GetAxis(4)->Set(602,binsMass);
-    fHistNumberOfTriggersGen->GetAxis(1)->Set(NofZVrtxBins,ZBins);
-    
+
     fHistNumberOfTriggersRec = new THnSparseF("fHistNumberOfTriggersRec","fHistNumberOfTriggersRec",6,bins2d,mis2d,maxs2d);
     fHistNumberOfTriggersRec->GetAxis(0)->SetTitle("p_{T}");
     fHistNumberOfTriggersRec->GetAxis(1)->SetTitle("p_{vz}");
@@ -553,6 +545,22 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggersRec->Sumw2();
     fHistNumberOfTriggersRec->GetAxis(4)->Set(602,binsMass);
     fHistNumberOfTriggersRec->GetAxis(1)->Set(NofZVrtxBins,ZBins);
+
+    bins2d[5] = 500;
+    maxs2d[5] = 500;
+
+    fHistNumberOfTriggersGen = new THnSparseF("fHistNumberOfTriggersGen","fHistNumberOfTriggersGen",6,bins2d,mis2d, maxs2d);
+    fHistNumberOfTriggersGen->GetAxis(0)->SetTitle("p_{T}");
+    fHistNumberOfTriggersGen->GetAxis(1)->SetTitle("p_{vz}");
+    fHistNumberOfTriggersGen->GetAxis(2)->SetTitle("#eta");
+    fHistNumberOfTriggersGen->GetAxis(3)->SetTitle("trigger");
+    fHistNumberOfTriggersGen->GetAxis(4)->SetTitle("mass");
+    fHistNumberOfTriggersGen->GetAxis(5)->SetTitle("multiplicity");
+    fOutputList->Add(fHistNumberOfTriggersGen);
+    fHistNumberOfTriggersGen->Sumw2();
+    fHistNumberOfTriggersGen->GetAxis(4)->Set(602,binsMass);
+    fHistNumberOfTriggersGen->GetAxis(1)->Set(NofZVrtxBins,ZBins);
+    
 
     fHistSelection = new TH1D("fHistSelection","fHistSelection",4,0,4);
     fOutputList->Add(fHistSelection);
@@ -664,7 +672,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
     Int_t iTracks = 0;
     Int_t nV0 =0;
-
+    
     AliAODVertex *myPrimVertex = 0x0;
     AliESDVertex *myPrimVertexESD = 0x0;
 
@@ -790,7 +798,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     AliMCParticle *mcTrack = 0x0;
     
 	if(fAnalysisMC){
-        
         fmcEvent  = dynamic_cast<AliMCEvent*> (MCEvent());
         if(!fmcEvent){
             Printf("No MC particle branch found");
@@ -938,12 +945,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         // MC closure test corellations
         if(fCorrelationsGen){
             //V0-h
-            if(fV0hCorr) Corelations(mcTracksV0Sel,mcTracksSel,fHistMCKorelacie, lPVz, fHistNumberOfTriggersGen,kFALSE,kTRUE,lPercentile,fHistPtHard,ptHard,kFALSE,kTRUE);
+            if(fV0hCorr) Corelations(mcTracksV0Sel,mcTracksSel,fHistMCKorelacie, lPVz, fHistNumberOfTriggersGen,kFALSE,kTRUE,nAcceptedParticles,fHistPtHard,ptHard,kFALSE,kTRUE);
 
             //h-h
-            if(fhhCorr) Corelations(mcTracksTrigSel,mcTracksSel,fHistMCKorelacie, lPVz,fHistNumberOfTriggersGen, kFALSE, kFALSE,lPercentile,fHistPtHard,ptHard,kFALSE,kFALSE);
+            if(fhhCorr) Corelations(mcTracksTrigSel,mcTracksSel,fHistMCKorelacie, lPVz,fHistNumberOfTriggersGen, kFALSE, kFALSE,nAcceptedParticles,fHistPtHard,ptHard,kFALSE,kFALSE);
             //h-V0
-            if(fhV0Corr) Corelations(mcTracksTrigSel,mcV0AssocSel,fHistMCKorelacie, lPVz,fHistNumberOfTriggersGen, kFALSE, kTRUE,lPercentile,fHistPtHard,ptHard,kTRUE,kFALSE);
+            if(fhV0Corr) Corelations(mcTracksTrigSel,mcV0AssocSel,fHistMCKorelacie, lPVz,fHistNumberOfTriggersGen, kFALSE, kTRUE,nAcceptedParticles,fHistPtHard,ptHard,kTRUE,kFALSE);
             
             fHistGenMultiplicity->Fill(nAcceptedParticles);
         }

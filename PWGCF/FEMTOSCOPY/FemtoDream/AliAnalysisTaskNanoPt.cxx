@@ -705,7 +705,6 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
   }
 }
 
-
 ///------------------------------------------------------------------------
 void AliAnalysisTaskNanoPt::ResetGlobalTrackReference() {
   // see AliFemtoDreamAnalysis for details
@@ -715,7 +714,6 @@ void AliAnalysisTaskNanoPt::ResetGlobalTrackReference() {
 }
 
 //-------------------------------------------------------------------------
-
 void AliAnalysisTaskNanoPt::StoreGlobalTrackReference(AliVTrack * track) {
   // see AliFemtoDreamAnalysis for details
   AliNanoAODTrack *nanoTrack = dynamic_cast<AliNanoAODTrack *>(track);

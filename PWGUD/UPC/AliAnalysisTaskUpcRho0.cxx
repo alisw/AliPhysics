@@ -63,7 +63,9 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
   	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0), 
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
-	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0) 
+	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
+	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
+	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0) 
 {
 //Dummy constructor
 }
@@ -82,7 +84,9 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
   	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0), 
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
-	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0)
+	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
+	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
+	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0)
 {
   if(debugMode) std::cout<<"Initialization..."<<std::endl;
   Init();
@@ -129,9 +133,6 @@ void AliAnalysisTaskUpcRho0::Init()
 		ZDCAtime_T[i] = -666;
 		ZDCCtime_T[i] = -666;
 	}
-	for(Int_t i=0; i<9; i++){
-    	fHistdEdxVsP[i]=0x0;
-  	}
 }
 
 void AliAnalysisTaskUpcRho0::UserCreateOutputObjects() 
@@ -233,11 +234,25 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	EtaPhiP = new TH2F("EtaPhiP","EtaPhiP",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiP);
 	EtaPhiN = new TH2F("EtaPhiN","EtaPhiN",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiN);
 
-	TString pNames[9]={"Elec","Muon","Pion","Kaon","Proton","Deuteron","Triton","He3","Alpha"};
-	for(Int_t jsp=0; jsp<9; jsp++){
-    	fHistdEdxVsP[jsp] = new TH2F(Form("hdEdxVsP%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
-    	fListHist->Add(fHistdEdxVsP[jsp]);
- 	}
+	fHistdEdxVsP1 = new TH2F("fHistdEdxVsP_Electron","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP1);
+	fHistdEdxVsP2 = new TH2F("fHistdEdxVsP_Muon","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP2);
+	fHistdEdxVsP3 = new TH2F("fHistdEdxVsP_Pion","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP3);
+	fHistdEdxVsP4 = new TH2F("fHistdEdxVsP_Kaon","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP4);
+	fHistdEdxVsP5 = new TH2F("fHistdEdxVsP_Proton","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP5);
+	fHistdEdxVsP6 = new TH2F("fHistdEdxVsP_Deuteron","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP6);
+	fHistdEdxVsP7 = new TH2F("fHistdEdxVsP_Triton","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP7);
+	fHistdEdxVsP8 = new TH2F("fHistdEdxVsP_He3","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP8);
+	fHistdEdxVsP9 = new TH2F("fHistdEdxVsP_Alpha","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP9);
+
 
 	// load SPD effi
 	if (isUsingEffi) {
@@ -449,7 +464,15 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		if(ippar) ptrackTPC=ippar->P();
 		Double_t dedx=trk->GetTPCsignal();
 		Int_t  pidtr=trk->GetPIDForTracking();
-		if(pidtr>=0 && pidtr<9) fHistdEdxVsP[pidtr]->Fill(ptrackTPC,dedx);
+		if(pidtr==0) fHistdEdxVsP1->Fill(ptrackTPC,dedx);
+		if(pidtr==1) fHistdEdxVsP2->Fill(ptrackTPC,dedx);
+		if(pidtr==2) fHistdEdxVsP3->Fill(ptrackTPC,dedx);
+		if(pidtr==3) fHistdEdxVsP4->Fill(ptrackTPC,dedx);
+		if(pidtr==4) fHistdEdxVsP5->Fill(ptrackTPC,dedx);
+		if(pidtr==5) fHistdEdxVsP6->Fill(ptrackTPC,dedx);
+		if(pidtr==6) fHistdEdxVsP7->Fill(ptrackTPC,dedx);
+		if(pidtr==7) fHistdEdxVsP8->Fill(ptrackTPC,dedx);
+		if(pidtr==8) fHistdEdxVsP9->Fill(ptrackTPC,dedx);
 
 		charge[i] = trk->Charge();
 		TPCsignal_T[i] = trk->GetTPCsignal();

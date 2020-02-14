@@ -42,12 +42,15 @@ class AliFemtoDreamEventDump {
   }
 
   void Reset();
-  void SetEventProperties(float mult, float zvertex);
+  void SetEventProperties(float mult, float zvertex, TString filePath);
   void AddPair(AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2,
                float kstar) {
     fPairDump.push_back( { part1, part2, kstar });
   }
 
+  TString GetFilePath() const {
+    return fFilePath;
+  }
   float GetMultiplicity() const {
     return fMultiplicity;
   }
@@ -62,6 +65,7 @@ class AliFemtoDreamEventDump {
   }
 
  private:
+  TString fFilePath;
   float fMultiplicity;
   float fVertexZ;
   std::vector<AliFemtoDreamPairDump> fPairDump;

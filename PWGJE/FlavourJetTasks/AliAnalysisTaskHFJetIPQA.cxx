@@ -2197,8 +2197,8 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     "c"/*17*/,
   };
 
-  TString sTemp[6]={"Unidentified","udsg","c","b","udsgV0","cV0"};
-  for(int iS=0;iS<6;iS++){
+  TString sTemp[7]={"Unidentified","udsg","c","b","udsgV0","cV0",""};
+  for(int iS=0;iS<7;iS++){
       sTemplateFlavour.push_back(sTemp[iS]);
   }
 
@@ -2524,7 +2524,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
                 iplow=-30;
                 iphigh=30; //from 30
                 if(io==0 && ifl==4) ipbins = 1000;//2000;
-                  else  ipbins =1000;//2000;
+                  else  ipbins =1000;//2000;\
               }else {
                 iplow=-0.5;
                 iphigh=0.5;
@@ -4392,14 +4392,14 @@ void AliAnalysisTaskHFJetIPQA::ReadThresholdHists(TString PathToThresholds, TStr
         TObjArray* oLookup;
         fileThresholds->GetObject("ProbLookup",oLookup);
 
-        TObjArray** oaProbThresh=new TObjArray*[nTCThresh];
+       /* TObjArray** oaProbThresh=new TObjArray*[nTCThresh];
         for(int iThresh=0;iThresh<nTCThresh;iThresh++){
           fileThresholds->GetObject(Form("ProbThres_%i",iThresh),oaProbThresh[iThresh]);
-        }
+        }*/
 
         this->setfNThresholds(nTCThresh);
         this->SetTCThresholds(oaTCThresh);
-        this->SetProbThresholds(oaProbThresh);
+        //this->SetProbThresholds(oaProbThresh);
         this->ReadProbvsIPLookup(oLookup);
     }
 }

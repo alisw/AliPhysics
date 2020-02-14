@@ -172,7 +172,7 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   fQA->SetSaveEventProperties(doSaveEventProp);
   fQA->SetV0ReaderName(V0ReaderName);
   fQA->SetDoAdditionalHistos(makeAdditionalHistos);
-  fQA->SetEventwiseClusterOutput(doSaveEventProp);
+  fQA->SetEventwiseClusterOutput(doSaveEventwiseClusters);
   mgr->AddTask(fQA);
 
   mgr->ConnectInput  (fQA, 0,  cinput );
