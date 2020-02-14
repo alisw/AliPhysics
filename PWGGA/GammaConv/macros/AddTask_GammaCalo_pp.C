@@ -1734,7 +1734,7 @@ void AddTask_GammaCalo_pp(
   }  else if (trainConfig == 840){ // PHOS INT7, 100MeV, with Timing Efficiency
     cuts.AddCutCalo("00010113","24466000pa09cc00000","0163103100000010"); //Int7 no Trigger
   }  else if (trainConfig == 841){ // PHOS INT7, 100MeV, no Timing Efficiency
-    cuts.AddCutCalo("00010113","24466000pa09cc00000","0163103100000010"); //Int7 no Trigger
+    cuts.AddCutCalo("00010113","244660000a09cc00000","0163103100000010"); //Int7 no Trigger
   } else if( trainConfig == 870){ // PHOS HM trigger
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, MB trigger
     cuts.AddCutCalo("00010113","2446600004012300000","0163103100000010"); // no timing, MB trigger
