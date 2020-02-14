@@ -1523,7 +1523,7 @@ void AliRDHFCuts::PrintAll() const {
 
   if(fCutRatioClsOverCrossRowsTPC) printf("N TPC Clusters > %f N TPC Crossed Rows\n", fCutRatioClsOverCrossRowsTPC);
   if(fCutRatioSignalNOverCrossRowsTPC) printf("N TPC Points for dE/dx > %f N TPC Crossed Rows\n", fCutRatioSignalNOverCrossRowsTPC);
-  if(fCutTPCSignalN) printf("N TPC Clustersd for PID > %d\n", fCutTPCSignalN);
+  if(fCutTPCSignalN>0) printf("N TPC Clusters for PID for track sel > %d\n", fCutTPCSignalN);
   if(f1CutMinNCrossedRowsTPCPtDep) printf("N TPC Crossed Rows pT-dependent cut: %s\n", fCutMinCrossedRowsTPCPtDep.Data());
 
   if(fVarNames){
