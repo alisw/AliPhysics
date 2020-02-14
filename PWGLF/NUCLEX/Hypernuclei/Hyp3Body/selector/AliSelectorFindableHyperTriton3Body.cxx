@@ -63,16 +63,7 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/){
   const char *lCuts[3]{"tree", "selection", "vertexer"};
   const char lCoords[3]{'x','y','z'};
 
-  /// invariant mass and transverse momentum distributions
-
-  for (int iMatter = 0; iMatter < 2; iMatter++) {
-    for (int iCuts = 0; iCuts < 3; iCuts++) {
-      
-    }
-  }
-
   /// histograms for efficiencies
-
   for(int iMatter=0; iMatter<2; iMatter++){
     fHistGen[iMatter] = new TH2D(Form("fHistGen_%c",lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",100,0.,10.,100,0.,100.);
     fHistRecSingle[iMatter] = new TH2D(Form("fHistRecSingle_%c",lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",100,0.,10.,100,0.,100.);
