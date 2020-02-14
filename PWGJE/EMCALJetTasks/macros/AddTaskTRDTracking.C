@@ -1,4 +1,4 @@
-AliEmcalTRDTracking* AddTaskTRDTracking(const char *suffix = "")
+AliEmcalTRDTrackingTask* AddTaskTRDTracking(const char *suffix = "")
 {
-  return AliEmcalTRDTracking::AddTaskTRDTracking(suffix);
+  return AliEmcalTRDTrackingTask::AddTaskTRDTracking(suffix);
 }
