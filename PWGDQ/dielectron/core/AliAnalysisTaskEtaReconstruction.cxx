@@ -78,7 +78,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
-                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries()
+                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries(), fUpperPreFilterMass(), fLowerPreFilterMass()
                                                                               , fSinglePrimaryLegMCSignal(), fSingleSecondaryLegMCSignal(), fPrimaryPairMCSignal(), fSecondaryPairMCSignal(), fFourPairMCSignal(), fPrimaryDielectronPairNotFromSameMother(), fSecondaryDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
                                                                               , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0)
@@ -112,7 +112,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
-                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries()
+                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries(), fUpperPreFilterMass(), fLowerPreFilterMass()
                                                                               , fSinglePrimaryLegMCSignal(), fSingleSecondaryLegMCSignal(), fPrimaryPairMCSignal(), fSecondaryPairMCSignal(), fFourPairMCSignal(), fPrimaryDielectronPairNotFromSameMother(), fSecondaryDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
                                                                               , fTrackCuts_primary(), fTrackCuts_secondary(), fUsedVars(0x0)
@@ -2883,7 +2883,7 @@ void AliAnalysisTaskEtaReconstruction::DoFourPreFilter(std::vector<TwoPair>* fPa
                                                                                 if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE " << std::endl;
       TLorentzVector LvecM = Lvec1 + Lvec2;
       double mass = LvecM.M();
-      if(mass > 0.15 || mass < 0.13) continue;
+      if(mass > fUpperPreFilterMass || fLowerPreFilterMass < 0.13) continue;
       else {
                                                                                 if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE " << std::endl;
         fPairVec_primary->erase(fPairVec_primary->begin()+prim_i);
@@ -2923,10 +2923,11 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
               // if (!fGenPosPart[sec_i].GetMCSignalPair() || !fGenNegPart[prim_i].GetMCSignalPair() || !fGenNegPart[neg_j].GetMCSignalPair() || !fGenPosPart[pos_j].GetMCSignalPair()) continue;
 
         // Apply MC signals
-        // Check if it is according to mcsignals
-        for (unsigned int i = 0; i < fFourPairMCSignal.size(); i+=2){
-          mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(track1, track2, track3, track4, &(fFourPairMCSignal[i]), &(fFourPairMCSignal[i+1]));
+        // Check MCSignal based on particles (not fully implemented! Check AliDielectronMC & AliDielectronSignalMC)
+        for (unsigned int i = 0, j = 0 ; i < fFourPairMCSignal.size()/2 && j < fFourPairMCSignal.size(); ++i, j+=2){
+          mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(track1, track2, track3, track4, &(fFourPairMCSignal[j]), &(fFourPairMCSignal[j+1]));
         }
+
         // check if at least one mc signal is true
         if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
       }
@@ -2952,7 +2953,7 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
         secondpair.SetKFUsage(false);
         firstpair.SetTracks(static_cast<AliVTrack*>(track1), 11, static_cast<AliVTrack*>(track2), -11);
         secondpair.SetTracks(static_cast<AliVTrack*>(track3), 11, static_cast<AliVTrack*>(track4), -11);
-        for (unsigned int i = 0, j = 0 ; i < fFourPairMCSignal.size() && j < fFourPairMCSignal.size(); ++i, j+=2){
+        for (unsigned int i = 0, j = 0 ; i < fFourPairMCSignal.size()/2 && j < fFourPairMCSignal.size(); ++i, j+=2){
                                                                                 // if(fdebug) std::cout << __LINE__ << " loop parameters i & j; i = " << i << ", j = " << j << std::endl;
           mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(&firstpair, &secondpair, &(fFourPairMCSignal[j]), &(fFourPairMCSignal[j+1]));
         }

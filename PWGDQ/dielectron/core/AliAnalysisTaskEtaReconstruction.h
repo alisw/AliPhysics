@@ -156,6 +156,8 @@ public:
    void   SetLowerMassCutPrimaries(double massCut) {fLowerMassCutPrimaries = massCut;};
    void   SetUpperMassCutPrimaries(double massCut) {fUpperMassCutPrimaries = massCut;};
    void   SetMassCutSecondaries(double massCut) {fMassCutSecondaries = massCut;};
+   void   SetUpperPreFilterMass(double prefilterMassCut) {fUpperPreFilterMass = prefilterMassCut;};
+   void   SetLowerPreFilterMass(double prefilterMassCut) {fLowerPreFilterMass = prefilterMassCut;};
    void   SetMassCut(Bool_t DoMassCut) {fDoMassCut = DoMassCut;};
 
 
@@ -340,6 +342,8 @@ private:
   double fLowerMassCutPrimaries; // Mass cut for primary pair
   double fUpperMassCutPrimaries; // Mass cut for primary pair
   double fMassCutSecondaries; // Mass cut for secondary pair
+  double fUpperPreFilterMass; // Mass cut for primary pair
+  double fLowerPreFilterMass; // Mass cut for primary pair
 
 
   std::vector<AliDielectronSignalMC> fSinglePrimaryLegMCSignal;

@@ -70,7 +70,7 @@ Bool_t SetTOFCorrection = kFALSE;
 
 bool SetGeneratedSmearingHistos = false;
 
-bool debug = false;
+bool debug = true;
 
 bool DoPairing      = true;
 bool DoFourPairing  = true;
@@ -124,6 +124,8 @@ const double maxEtaCut = 0.8;
 
 const double upperMassCutPrimaries = 0.547862;
 const double lowerMassCutPrimaries = 0.1349766;
+const double upperPreFilterMass = 0.1;
+const double lowerPreFilterMass = 0.2;
 const double massCutSecondaries = 0.01;
 
 
