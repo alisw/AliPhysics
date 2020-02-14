@@ -9,9 +9,9 @@
 #include <TTreeReaderArray.h>
 #include <TTreeReaderValue.h>
 
-// Headers needed by this particular selector
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
+#include "AliESDtrack.h"
 #include "AliPIDResponse.h"
 #include "AliVertexerHyperTriton3Body.h"
 #include "AliVertexerTracks.h"
@@ -76,43 +76,46 @@ public:
   TString fOutputFileName;
   TString fOutputFilePath;
 
-  AliVertexerHyperTriton3Body fHypertritonVertexer;
-  AliVertexerHyperTriton3Body fHypertritonVertexerHard;
 
-  TVector3 fPrimaryVertexXYZ;
+  AliVertexerHyperTriton3Body fHypertritonVertexer;
+  AliESDtrackCuts *fESDtrackCuts = nullptr;
 
   unsigned long fCurrentEventId = 0ull;
-  unsigned long fLastEventId    = 0ull;
-  int fCurrentMotherId          = -1;
-  int fLastMotherId             = -1;
-  int fNclones                  = -1;
-  bool fFakeCand                = false;
+  unsigned long fLastEventId = 0ull;
+  int fCurrentMotherId = -1;
+  int fLastMotherId = -1;
+  int fNclones = -1;
+  bool fFakeCand = false;
 
-  TH2D *fHistInvMass[2][3]      = {{nullptr}};
-  TH1D *fHistPt[2][3]           = {{nullptr}};
-  TH1D *fHistDaughterPt[3][3]   = {{nullptr}};
+  // Histogram for efficiencies
+  TH2D *fHistGen[2] = {nullptr};
+  TH2D *fHistRecSingle[2] = {nullptr};
+  TH2D *fHistRecFake[2] = {nullptr};
+  TH2D *fHistRecClones[2] = {nullptr};
 
-  TH2D *fHistGen[2]             = {nullptr};
-  TH2D *fHistRecSingle[2]       = {nullptr};
-  TH2D *fHistRecFake[2]         = {nullptr};
-  TH2D *fHistRecClones[2]       = {nullptr};
+  // Histograms for selection
+  TH2D *fHistInvMassPt[2][3] = {{nullptr}};
+  TH1D *fHistDaughterPt[3][3] = {{nullptr}};
+  TH1D *fHistDaughterTPCchi2[3][3] = {{nullptr}};
+  TH1D *fHistDaughterITSchi2[3][3] = {{nullptr}};
+  TH1D *fHistNclsITS[3][3] = {{nullptr}};
+  TH1D *fHistNclsTPC[3][3] = {{nullptr}};
+  TH1D *fHistNSigmaTPC[3][3] = {{nullptr}};
+  TH1D *fHistNSigmaTOF[3][3] = {{nullptr}};
 
-  TH1D *fHistNclsITS[3]         = {nullptr};
-  TH1D *fHistNclsITSCheck       = nullptr;
-  TH1D *fHistNclsTPC[3]         = {nullptr};
-  TH1D *fHistNSigmaTPC[3]       = {nullptr};
-  TH1D *fHistNSigmaTOF[3]       = {nullptr};
-  TH1D *fHistCheckPID           = nullptr;
-  TH1D *fHistResDecayVtx[3]     = {nullptr};
-  TH1D *fHistVertexChi2         = nullptr;
-  TH1D *fHistCosPAngle          = nullptr;
-  TH1D *fHistDCA2pvXY[3]        = {nullptr};
-  TH1D *fHistDCA2pvZ[3]         = {nullptr};
-  TH1D *fHistDCA2pv[3]          = {nullptr};
-  TH1D *fHistDCA2dvXY[3]        = {nullptr};
-  TH1D *fHistDCA2dvZ[3]         = {nullptr};
-  TH1D *fHistDCA2dv[3]          = {nullptr};
-  TH1D *fHistTrackDistance[3]   = {nullptr};
+  // Histograms after vertexer
+  TH1D *fHistVertexChi2 = nullptr;
+  TH1D *fHistResDecayVtx[3] = {nullptr};
+  TH1D *fHistCosPAngle = nullptr;
+  TH1D *fHistDCA2pvXY[3] = {nullptr};
+  TH1D *fHistDCA2pvZ[3] = {nullptr};
+  TH1D *fHistDCA2pv[3] = {nullptr};
+  TH1D *fHistDCA2dvXY[3] = {nullptr};
+  TH1D *fHistDCA2dvZ[3] = {nullptr};
+  TH1D *fHistDCA2dv[3] = {nullptr};
+  TH1D *fHistTrackDistance[3] = {nullptr};
+
+  bool AcceptCandidate();
 
   ClassDef(AliSelectorFindableHyperTriton3Body, 0);
 };
