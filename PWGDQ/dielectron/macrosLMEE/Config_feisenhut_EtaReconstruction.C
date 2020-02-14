@@ -74,6 +74,7 @@ bool debug = false;
 
 bool DoPairing      = true;
 bool DoFourPairing  = true;
+bool UsePreFilter   = false;
 bool DoULSLS        = false;
 bool DoMassCut      = false;
 

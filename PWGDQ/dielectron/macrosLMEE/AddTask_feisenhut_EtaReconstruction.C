@@ -200,6 +200,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
+  task->SetUsePreFilter(UsePreFilter);
   task->SetULSandLS(DoULSLS);
 
   // #########################################################

@@ -122,6 +122,7 @@ public:
    // Pair related setter
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
    void   SetDoFourPairing(Bool_t doFourPairing) {fDoFourPairing = doFourPairing;}
+   void   SetUsePreFilter(Bool_t usePreFilter) {fUsePreFilter = usePreFilter;}
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
@@ -263,6 +264,7 @@ private:
   void   DoGenAndGenSmearTwoPairing(std::vector<Particle>* vec_negParticle, std::vector<Particle>* vec_posParticle, Bool_t PartPrimary, Bool_t SmearedPair, double centralityWeight);
   void   DoRecTwoPairing(std::vector<Particle> fRecNegPart, std::vector<Particle> fRecPosPart, std::vector<AliDielectronSignalMC> fPairMCSignal, Bool_t PartPrimary, double centralityWeight);
   void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, double centralityWeight);
+  void   DoFourPreFilter(std::vector<TwoPair>* fPairVec_primary, std::vector<TwoPair>* fPairVec_secondary);
 
   void    FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack, int iMCSignal, int iCutList);
   void    FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack, int iMCSignal, int iCutList);
@@ -439,6 +441,7 @@ private:
 
   Bool_t fDoPairing;
   Bool_t fDoFourPairing;
+  Bool_t fUsePreFilter;
   Bool_t fDoULSandLS;
   Bool_t fDoMassCut;
 
