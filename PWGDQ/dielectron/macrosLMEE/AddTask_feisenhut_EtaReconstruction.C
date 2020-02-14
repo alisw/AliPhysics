@@ -145,6 +145,8 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetMassCut(DoMassCut);
   task->SetUpperMassCutPrimaries(upperMassCutPrimaries);
   task->SetLowerMassCutPrimaries(lowerMassCutPrimaries);
+  task->SetUpperPreFilterMass(upperPreFilterMass);
+  task->SetLowerPreFilterMass(lowerPreFilterMass);
   task->SetMassCutSecondaries(massCutSecondaries);
 
 
@@ -200,6 +202,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
+  task->SetUsePreFilter(UsePreFilter);
   task->SetULSandLS(DoULSLS);
 
   // #########################################################
