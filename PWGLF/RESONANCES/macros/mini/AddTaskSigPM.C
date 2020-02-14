@@ -32,7 +32,8 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
  Double_t    dcaProton=0.1,           // proton dca
  Double_t    dcaPion=0.1,             //pion dca
  Double_t    minAsym = 0.3,           //pair lower abs(asym)
- Double_t    maxAsym=0.95)            //pair maximum abs(asym)  
+ Double_t    maxAsym=0.95,            //pair maximum abs(asym)
+ Int_t     pidCUT=1)
 {  
 
   //-------------------------------------------
@@ -189,9 +190,9 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
-//  gROOT->LoadMacro("ConfigSigPM.C");
+  //gROOT->LoadMacro("ConfigSigPM.C");
  if (!ConfigSigPM(task, isMC, collSys, cutsPair, cutsPairY, enaMultSel, masslow, massup, nbins, nsigma, 
-enableMonitor, pi_Ls_PIDCut, LsDCA, LsCosPoinAn, LsDaughDCA, massTol, massTolVeto, Switch, pLife, v0rapidity, radiuslow, doCustomDCAcuts, dcaProton, dcaPion)) 
+		  enableMonitor, pi_Ls_PIDCut, LsDCA, LsCosPoinAn, LsDaughDCA, massTol, massTolVeto, Switch, pLife, v0rapidity, radiuslow, doCustomDCAcuts, dcaProton, dcaPion, pidCUT)) 
 return 0x0;
   
   //-----------------------------------------------------------------------------------------------
