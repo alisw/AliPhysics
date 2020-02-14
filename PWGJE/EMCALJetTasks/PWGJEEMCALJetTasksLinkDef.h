@@ -262,7 +262,11 @@
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
 #pragma link C++ class AliAnalysisTaskNewJetSubstructure+;
-#pragma link C++ class PWGJE::EMCALJetTasks::JetSubstructureSplittings+;
+#pragma link C++ namespace PWGJE::EMCALJetTasks::SubstructureTree;
+#pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::Subjets+;
+#pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetSplittings+;
+#pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetConstituents+;
+#pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetSubstructureSplittings+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming+;
 #pragma link C++ class AliAnalysisTaskHardestBranch+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
