@@ -442,10 +442,10 @@ Bool_t AliAnalysisTaskGFWFlow::AcceptEvent() {
 };
 Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(!(fSelMask&fTriggerType)) return kFALSE;
-  Bool_t centTrigger = (fSelMask&(fTriggerType&AliVEvent::kCentral)) && l_cent>0 && l_cent<10;
-  Bool_t semiCentTri = (fSelMask&(fTriggerType&AliVEvent::kSemiCentral)) && l_cent>30 && l_cent<50;
-  Bool_t MBTrigger   = (fSelMask&fTriggerType&(AliVEvent::kMB+AliVEvent::kINT7));
+  //if(!(fSelMask&fTriggerType)) return kFALSE;
+  Bool_t centTrigger = (fSelMask&(AliVEvent::kCentral)) && l_cent>0 && l_cent<10; //fTriggerType& removed
+  Bool_t semiCentTri = (fSelMask&(AliVEvent::kSemiCentral)) && l_cent>30 && l_cent<50; //fTriggerType& removed
+  Bool_t MBTrigger   = (fSelMask&(AliVEvent::kMB+AliVEvent::kINT7)); //fTriggerType& removed
   if(centTrigger || semiCentTri || MBTrigger) return kTRUE;
   return kFALSE;
 
