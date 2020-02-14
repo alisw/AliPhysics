@@ -454,6 +454,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
       std::cout << "Copy cocktail weighting from Alien" << std::endl;
       fCocktailFile = TFile::Open(fCocktailFilename.c_str());
     }
+    if (!fCocktailFile->IsOpen()) {
+      AliError(Form("Could not open file %s", fCocktailFilename.c_str()));
+    }
 
     if (fCocktailFile){
       fPtPion     = dynamic_cast<TH1F*>(fCocktailFile->Get("Pion"));
