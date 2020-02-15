@@ -238,15 +238,22 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
       if(gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) result=1 ;
     }
     else{
-      if(fRun>=282008 && fRun<=282441){ //LHC17pq
+      if(fRun>=265015 && fRun<=267166){ //LHC16qrst
         Int_t ddl = WhichDDL(mod, ix) ;  
         Double_t rdm =gRandom->Uniform() ; 
-        if(rdm<TriggerProbabilityLHC17pq(clu->E(),ddl)) result=1 ;         
+        if(rdm<TriggerProbabilityLHC16qrst(clu->E(),ddl)) result=1 ;         
       }
-      else{
-        for(Int_t bit=0; bit<4; bit++){
-          if(gRandom->Uniform()<TriggerProbability(clu->E(),mod,bit))
-             result|=1<<bit ;
+      else{  
+        if(fRun>=282008 && fRun<=282441){ //LHC17pq
+          Int_t ddl = WhichDDL(mod, ix) ;  
+          Double_t rdm =gRandom->Uniform() ; 
+          if(rdm<TriggerProbabilityLHC17pq(clu->E(),ddl)) result=1 ;         
+        }
+        else{
+          for(Int_t bit=0; bit<4; bit++){
+            if(gRandom->Uniform()<TriggerProbability(clu->E(),mod,bit))
+               result|=1<<bit ;
+          }
         }
       }
     }
@@ -352,11 +359,9 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t 
   return 0 ;  
   
 }
-
-
 //-----------------------------------------------------------------------  
-Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17pq(Double_t x, Int_t ddl){
-  //Parameterization of turn-on curve for period LHC17pq
+Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC16qrst(Double_t x, Int_t ddl){
+  //Parameterization of turn-on curve for period LHC16qrst
   // Note that it is done for DDLs, not modules
 
   if(ddl<8 || ddl>19) return 0.;
@@ -378,9 +383,16 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17pq(Double_t x, Int_t ddl){
     default : return 0;
     }
   }
-  
-  
-  
+  return 0.;
+}
+
+//-----------------------------------------------------------------------  
+Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17pq(Double_t x, Int_t ddl){
+  //Parameterization of turn-on curve for period LHC17pq
+  // Note that it is done for DDLs, not modules
+
+  if(ddl<8 || ddl>19) return 0.;
+    
   if(fRun>=282008 && fRun<=282343){ //LHC17p
     switch(ddl){  
     case 8 : return 7.944762e-01/(TMath::Exp((3.641718e+00-x)/2.650322e-01)+1.)+(1.-7.944762e-01)/(TMath::Exp((4.694861e+00-x)/2.650322e-01)+1.) ;
