@@ -43,6 +43,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       enum    CentEst {kRFP = 0, kV0A, kV0C, kV0M, kCL0, kCL1, kZNA, kZNC}; // multiplicity/centrality estimator as AliMultSelection
       enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
       enum    SparseCand {kInvMass = 0, kCent, kPt, kEta, kSample, kDim}; // reconstructed candidates dist. dimensions
+      enum    SparseWeights {wPhi = 0, wCent, wPt, wEta, wVz, wSpec, wDim}; // multidimensional weights sparse.. w as weights (to avoid redefinition from the previous one)
       enum    QAindex { kBefore = 0, kAfter, kNumQA}; // index for filling QA status
 
                               AliAnalysisTaskUniFlow(); // constructor
@@ -65,6 +66,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
       void                    SetEtaCheckRFP(Bool_t check = kFALSE) { fEtaCheckRFP = check; }
       void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
+      void                    SetFillMultiDimensionalWeights(Bool_t fill = kTRUE) { fFlowFillWeightsMultiD = fill; }
       void                    SetProcessPID(Bool_t use = kTRUE) { fProcessSpec[kPion] = use; fProcessSpec[kKaon] = use; fProcessSpec[kProton] = use; }
       void                    SetProcessV0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; fProcessSpec[kLambda] = use; }
       void                    SetProcessK0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; }
@@ -349,6 +351,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   fNumSamples; // [1] overall number of samples (from random sampling) used
       Bool_t                  fEtaCheckRFP; // [kFALSE] flag for doing analysis of FMPs for positive and negative eta separately
       Bool_t                  fFlowFillWeights; //[kFALSE] flag for filling weights
+      Bool_t                  fFlowFillWeightsMultiD; //[kFALSE] flag for filling weights - multidimensional (phi, centrality, pT, eta, vz)
       Bool_t                  fFlowFillAfterWeights; //[kTRUE] flag for filling weights after NUA (only if fUseWeights is on)
       Bool_t                  fFlowUseWeights; //[kFALSE] flag for using the previously filled weights
       Bool_t                  fFlowUse3Dweights; // [kFALSE] flag for using 3D GF weights, if kFALSE, 2D weights are expected
@@ -446,6 +449,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH3D*                   fh3Weights[kUnknown]; //! container for GF weights (phi,eta,pt)
       TH2D*                   fh2AfterWeights[kUnknown]; //! distribution after applying GF weights - lightweight QA (phi)
       TH3D*                   fh3AfterWeights[kUnknown]; //! distribution after applying GF weights - full QA (phi,eta,pt)
+      THnSparseD*             fhWeightsMultiD; //!  distribution of Phi background
 
       // Events
       TH2D*                   fhEventSampling; //! distribution of sampled events (based on randomly generated numbers)
@@ -582,7 +586,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 14);
+      ClassDef(AliAnalysisTaskUniFlow, 15);
 };
 
 #endif
