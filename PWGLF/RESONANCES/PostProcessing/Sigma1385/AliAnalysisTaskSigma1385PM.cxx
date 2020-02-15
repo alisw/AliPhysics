@@ -176,7 +176,7 @@ ClassImp(AliAnalysisTaskSigma1385PM)
 }
 //_____________________________________________________________________________
 AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
-                                                       Bool_t MCcase)
+                                                           Bool_t MCcase)
     : AliAnalysisTaskSE(name),
       fTrackCuts(nullptr),
       fEventCuts(),
@@ -394,7 +394,8 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
       "PIDV0pTrackPion:"
       "DCAV0Daughters:DCAV0ToPrimVertex:DCAV0PrToPrimVertex:"
       "DCAV0PiToPrimVertex:CosPointingAngleV0:V0Mass:RapidityV0:"
-      "RadiusV0:LifeTimeV0:MCflag:Antiflag");
+      "RadiusV0:LifeTimeV0:SigmaStartPt:InvMass:Centrality:zVertex:MCflag:"
+      "Antiflag");
 
   PostData(1, fHistos->GetListOfHistograms());
   PostData(2, fNtupleSigma1385);
@@ -1198,11 +1199,11 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
   Double_t radius, lV0TotalMomentum, lLength, lLifetime;
   Bool_t isAnti, isPionPlus;
   Int_t pID, nID;
-  Double_t tmp[21];
+  Double_t tmp[25];
   int sign = kAllType;
   int binAnti = 0;
 
-  for (UInt_t i = 0; i < 21; i++)
+  for (UInt_t i = 0; i < 25; i++)
     tmp[i] = -999;  // initial value
 
   TLorentzVector vecLambda, vecPion;
@@ -1381,43 +1382,36 @@ void AliAnalysisTaskSigma1385PM::FillNtuples() {
       tmp[3] = track1->Eta();  // EtaSigmaStarPion
       tmp[4] = track1->Phi();  // PhiSigmaStarPion
       tmp[5] = track1->Pt();   // PtSigmaStarPion
-      // nTuple -> See above
-      // tmp[6] = nTPCNSigProton;//PIDV0pTrackProton
-      // tmp[7] = nTPCNSigAntiProton;//PIDV0pTrackPion
-      // tmp[8] = nTPCNSigPion;//PIDV0nTrackProton
-      // tmp[9] = nTPCNSigAntiPion;//PIDV0nTrackPion
-      // tmp[10] = TMath::Abs(v0ESD->GetDcaV0Daughters()); //DCAV0Daughters
-      // tmp[11] = TMath::Abs(v0ESD->GetD(fPosPV[0], fPosPV[1], fPosPV[2]));
-      // //DCAV0ToPrimVertex tmp[11] =
-      // v0ESD->GetV0CosineOfPointingAngle(fPosPV[0], fPosPV[1],
-      // fPosPV[2]);//CosPointingAngleV0 tmp[12] = v0ESD->GetEffMass(); //V0Mass
-      // tmp[12] = v0ESD->Eta(); //EtaV0
-      // tmp[13] = v0ESD->Phi(); //PhiV0
+
+      tmp[19] = vecSigmaStar.Pt();  // SigmaStartPt
+      tmp[20] = vecSigmaStar.M();   // InvMass
+      tmp[21] = fCent;              // Centrality/Multiplicity
+      tmp[22] = fPosPV[2];          // zVertex
 
       if (fIsMC) {
         if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]))
-          tmp[19] = (double)sign;  // MCflag Sigma1385+-
+          tmp[23] = (double)sign;  // MCflag Sigma1385+-
         else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 1)
-          tmp[19] = (double)sign + 2;  // MCflag Bkg from LambdaStar
+          tmp[23] = (double)sign + 2;  // MCflag Bkg from LambdaStar
         else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 2)
-          tmp[19] = (double)sign + 4;  // MCflag Bkg from Sigma1385 -> Sigma0
+          tmp[23] = (double)sign + 4;  // MCflag Bkg from Sigma1385 -> Sigma0
         else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 3)
-          tmp[19] = (double)sign + 6;  // MCflag Bkg from Xi(1530)0 -> Xi-
+          tmp[23] = (double)sign + 6;  // MCflag Bkg from Xi(1530)0 -> Xi-
         else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 4)
-          tmp[19] = (double)sign + 8;  // MCflag Bkg from Xi(1530)0 -> Xi0
+          tmp[23] = (double)sign + 8;  // MCflag Bkg from Xi(1530)0 -> Xi0
         else if (IsTrueSigmaStar(fGoodV0Array[i][0], fGoodTrackArray[j]), 5)
-          tmp[19] = (double)sign + 10;  // MCflag Bkg from Xi(1530)- -> Xi-
+          tmp[23] = (double)sign + 10;  // MCflag Bkg from Xi(1530)- -> Xi-
         else
-          tmp[19] = 13;  // MCflag -> not true
+          tmp[23] = 13;  // MCflag -> not true
       } else
-        tmp[19] = 0;  // MCflag -> data
-      tmp[20] = binAnti;
+        tmp[23] = 0;  // MCflag -> data
+      tmp[24] = binAnti;
       fNtupleSigma1385->Fill(tmp);
     }  // pion loop
   }
 }
 void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent,
-                                             int Fillbin) {
+                                               int Fillbin) {
   int sign = kAllType;
   int binAnti = 0;
   TLorentzVector vecPart1, vecPart2;
@@ -1522,8 +1516,8 @@ void AliAnalysisTaskSigma1385PM::FillMCinput(AliMCEvent* fMCEvent,
   }
 }
 Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
-                                                   UInt_t pionIndex,
-                                                   UInt_t BkgCheck) {
+                                                     UInt_t pionIndex,
+                                                     UInt_t BkgCheck) {
   AliVTrack* track1;
   AliESDv0* v0ESD;
   AliAODv0* v0AOD;
@@ -1873,11 +1867,12 @@ Bool_t AliAnalysisTaskSigma1385PM::IsTrueSigmaStar(UInt_t v0Index,
   }
 }
 
-THnSparse* AliAnalysisTaskSigma1385PM::CreateTHnSparse(TString name,
-                                                       TString title,
-                                                       Int_t ndim,
-                                                       std::vector<TAxis> bins,
-                                                       Option_t* opt) {
+THnSparse* AliAnalysisTaskSigma1385PM::CreateTHnSparse(
+    TString name,
+    TString title,
+    Int_t ndim,
+    std::vector<TAxis> bins,
+    Option_t* opt) {
   // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
   // Original author: Beomkyu Kim
   const TAxis* axises[bins.size()];
@@ -1887,8 +1882,8 @@ THnSparse* AliAnalysisTaskSigma1385PM::CreateTHnSparse(TString name,
   return h;
 }
 Long64_t AliAnalysisTaskSigma1385PM::FillTHnSparse(TString name,
-                                                   std::vector<Double_t> x,
-                                                   Double_t w) {
+                                                     std::vector<Double_t> x,
+                                                     Double_t w) {
   // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
   // Original author: Beomkyu Kim
   auto hsparse = dynamic_cast<THnSparse*>(fHistos->FindObject(name));
@@ -1900,8 +1895,8 @@ Long64_t AliAnalysisTaskSigma1385PM::FillTHnSparse(TString name,
 }
 
 Long64_t AliAnalysisTaskSigma1385PM::FillTHnSparse(THnSparse* h,
-                                                   std::vector<Double_t> x,
-                                                   Double_t w) {
+                                                     std::vector<Double_t> x,
+                                                     Double_t w) {
   // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
   // Original author: Beomkyu Kim
   if (int(x.size()) != h->GetNdimensions()) {
@@ -1912,9 +1907,9 @@ Long64_t AliAnalysisTaskSigma1385PM::FillTHnSparse(THnSparse* h,
   return h->Fill(&x.front(), w);
 }
 TAxis AliAnalysisTaskSigma1385PM::AxisFix(TString name,
-                                          int nbin,
-                                          Double_t xmin,
-                                          Double_t xmax) {
+                                            int nbin,
+                                            Double_t xmin,
+                                            Double_t xmax) {
   // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
   // Original author: Beomkyu Kim
   TAxis axis(nbin, xmin, xmax);
@@ -1922,7 +1917,7 @@ TAxis AliAnalysisTaskSigma1385PM::AxisFix(TString name,
   return axis;
 }
 TAxis AliAnalysisTaskSigma1385PM::AxisStr(TString name,
-                                          std::vector<TString> bin) {
+                                            std::vector<TString> bin) {
   // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
   // Original author: Beomkyu Kim
   TAxis ax = AxisFix(name, bin.size(), 0.5, bin.size() + 0.5);
@@ -1933,7 +1928,7 @@ TAxis AliAnalysisTaskSigma1385PM::AxisStr(TString name,
 }
 
 TAxis AliAnalysisTaskSigma1385PM::AxisVar(TString name,
-                                          std::vector<Double_t> bin) {
+                                            std::vector<Double_t> bin) {
   // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
   // Original author: Beomkyu Kim
   TAxis axis(bin.size() - 1, &bin.front());
@@ -1941,7 +1936,7 @@ TAxis AliAnalysisTaskSigma1385PM::AxisVar(TString name,
   return axis;
 }
 double AliAnalysisTaskSigma1385PM::GetTPCnSigma(AliVTrack* track,
-                                                AliPID::EParticleType type) {
+                                                  AliPID::EParticleType type) {
   AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(track);
   if (nanoT) {
     static bool used = false;
@@ -1983,8 +1978,8 @@ void AliAnalysisTaskSigma1385PM::FillTrackToEventPool() {
   }
 }
 void AliAnalysisTaskSigma1385PM::GetImpactParam(AliVTrack* track,
-                                                Float_t p[2],
-                                                Float_t cov[3]) {
+                                                  Float_t p[2],
+                                                  Float_t cov[3]) {
   AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(track);
   if (nanoT)
     nanoT->AliNanoAODTrack::GetImpactParameters(p[0], p[1]);
