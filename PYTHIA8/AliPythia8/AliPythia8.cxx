@@ -137,6 +137,10 @@ void AliPythia8::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfu
 //
 // Pythia initialisation for selected processes//
 //
+//
+// remove default from decayer initialisation
+    ReadString("SoftQCD:elastic = off");
+    
     switch (process) 
     {
     case kPyOldUEQ2ordered:  //Old underlying events with Q2 ordered QCD processes
