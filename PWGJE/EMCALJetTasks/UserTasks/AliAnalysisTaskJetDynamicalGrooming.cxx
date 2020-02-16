@@ -1244,9 +1244,10 @@ void AliAnalysisTaskJetDynamicalGrooming::ExtractJetSplittings(SubstructureTree:
     j2ConstituentIndices.emplace_back(constituent.user_index());
   }
   jetSplittings.AddSubjet(splittingNodeIndex, followingIterativeSplitting, j1ConstituentIndices);
-  ExtractJetSplittings(jetSplittings, j1, splittingNodeIndex, followingIterativeSplitting);
-
   jetSplittings.AddSubjet(splittingNodeIndex, false, j2ConstituentIndices);
+
+  // Recurse as necessary to get the rest of the splittings.
+  ExtractJetSplittings(jetSplittings, j1, splittingNodeIndex, followingIterativeSplitting);
   if (fStoreRecursiveSplittings == true) {
     ExtractJetSplittings(jetSplittings, j2, splittingNodeIndex, false);
   }
