@@ -1221,6 +1221,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isprompt = kFALSE;
         bool isFD = kFALSE;
         bool isrefl = kFALSE;
+        bool isSignalWoQuark = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
