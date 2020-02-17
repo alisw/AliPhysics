@@ -226,7 +226,6 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   }
 
   fREvent.fCent = fEventCuts.GetCentrality();
-  if (fREvent.fCent > fMaxEventCentrality) return;
 
   double primaryVtxPos[3];
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVtxPos);
