@@ -833,6 +833,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
     AliAODMCParticle *partDs = nullptr;
     Int_t orig = 0;
+    Int_t orig_HijingCheck = 0;
     Bool_t isCandInjected = kFALSE;
     Float_t trueImpParDsFromB = 99999.;
 
@@ -896,7 +897,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           pdgCode0 = TMath::Abs(p->GetPdgCode());
         }
       }
-      if(partDs) orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
+      if(partDs){
+        orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
+        orig_HijingCheck = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kFALSE);
+      }
+       
     }
 
     if (isKKpi)
@@ -1171,20 +1176,23 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isprompt = kFALSE;
         bool isFD = kFALSE;
         bool isrefl = kFALSE;
+        bool isSignalWoQuark = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
-            if(orig == 4)
+            if(orig == 4 || orig_HijingCheck==4)
               isprompt = kTRUE;
-            else if(orig == 5)
+            else if(orig == 5|| orig_HijingCheck==5)
               isFD = kTRUE;
 
-            if(orig == 4 || orig == 5) {
+            if(orig >= 4 && orig_HijingCheck >= 4) {
               if(pdgCode0 == 321)
                 issignal = kTRUE;
               else if(pdgCode0 == 211)
                 isrefl = kTRUE;
             }
+            if(orig < 4 && orig_HijingCheck >=4)
+              isSignalWoQuark = kTRUE;
           } else {
             if(!isCandInjected)
               isbkg = kTRUE;
@@ -1200,6 +1208,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
+        fMLhandler->SetlsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
         if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
           fMLhandler->FillTree();
@@ -1212,20 +1221,23 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isprompt = kFALSE;
         bool isFD = kFALSE;
         bool isrefl = kFALSE;
+        bool isSignalWoQuark = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
-            if(orig == 4)
+            if(orig == 4 || orig_HijingCheck==4)
               isprompt = kTRUE;
-            else if(orig == 5)
+            else if(orig == 5 || orig_HijingCheck==5)
               isFD = kTRUE;
 
-            if(orig == 4 || orig == 5) {
+            if(orig >= 4 && orig_HijingCheck >=4) {
               if(pdgCode0 == 211)
                 issignal = kTRUE;
               else if(pdgCode0 == 321)
                 isrefl = kTRUE;
             }
+            if(orig < 4 && orig_HijingCheck >= 4)
+              isSignalWoQuark = kTRUE;
           } else {
             if(!isCandInjected)
               isbkg = kTRUE;
@@ -1241,6 +1253,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
+        fMLhandler->SetlsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
         if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
           fMLhandler->FillTree();
