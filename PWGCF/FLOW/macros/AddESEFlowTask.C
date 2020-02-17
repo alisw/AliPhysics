@@ -68,7 +68,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     Double_t PtEdges[nPtBins+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,3.75,4.0,4.5,5.0,5.5,6.0,7.0,8.0,9.0,10.0};
     task->SetPtBins(nPtBins,PtEdges);
     const Int_t nCentBins = 10;
-    Double_t CentEdges[nCentBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80.,90.};
+    Double_t CentEdges[nCentBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
     task->SetCentBin(nCentBins,CentEdges);
     task->SetReadMC(kFALSE); //activate monte carlo analysis
     task->SetAbsEta(0.8);
@@ -79,6 +79,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetV0CEse(kTRUE);
     task->SetV0AEse(kTRUE);
     task->SetSampling(kFALSE,1); //(kFALSE,1) for no sampling and only 1 sample size
+    task->SetHasEtaGap(kTRUE);
 
     if( colSys == AliAnalysisTaskESEFlow::ColSystem::kPbPb){
       task->SetCentralityEst("V0M"); // V0M
