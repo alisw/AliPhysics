@@ -7,12 +7,12 @@
 #include "AliAODTrack.h"
 #include "TComplex.h"
 #include "TAxis.h"
-#include "AliUniFlowCorrTask.h"
+#include "AliDecorrFlowCorrTask.h"
 
 class Taxis;
 class AliVEvent;
 class TProfile;
-class AliUniFlowCorrTask;
+class AliDecorrFlowCorrTask;
 
 class AliAnalysisDecorrTask : public AliAnalysisTaskSE
 {
@@ -32,6 +32,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
+        void                    SetPileupCut(Int_t cut) { fPileupCut = cut; }
         void                    SetCentralityEst(TString est){ fCentEstimator = est; }
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
         void                    SetPVtxZMax(Double_t z) { fPVtxCutZ = z; }
@@ -46,7 +47,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetUseLikeSign(Bool_t use, Int_t sign) { bUseLikeSign = use; iSign = sign; }
         void                    SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; } //Not implemented
         //Flow selection
-        void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
+        void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRef = kTRUE, Bool_t doDiff = kTRUE, Bool_t doPtA = kFALSE, Bool_t doPtRef = kFALSE, Bool_t doPtB = kFALSE) { fVecCorrTask.push_back(new AliDecorrFlowCorrTask(doRef, doDiff, doPtA, doPtRef, doPtB, harms, gaps)); }
         void                    SetPOIsPt(Double_t min, Double_t max) { fPOIsPtmin = min; fPOIsPtmax = max; }
         void                    SetRFPsPt(Double_t min, Double_t max) { fRFPsPtMin = min; fRFPsPtMax = max; }
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
@@ -57,14 +58,15 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Only fill histograms for weights calculations
         Bool_t                  GetUseWeights3D() { return fUseWeights3D; }             //Check if 3D weights are used for macro path to weights
         void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; } 
-        void                    CalculateHigherOrderVn(Bool_t calc) { bHigherOrder = calc; }   //Calculate higher order particle correlation differential vn with jack-knife resampling
+        //void                    CalculateHigherOrderVn(Bool_t calc) { bHigherOrder = calc; }   //Calculate higher order particle correlation differential vn with jack-knife resampling
 
+        /*
         //Observable selection
         void                    DoRFPs(Bool_t ref) { bRef = ref; }              //Calculate integrad flow
         void                    DoDiff(Bool_t diff) { bDiff = diff; }           //Calculate pt differential flow
         void                    DoPtB(Bool_t ptb) { bPtB = ptb; }               //Calculate flow with particles from different pt bins
         void                    DoSC(Bool_t integrated, Bool_t singlediff) { fInt = integrated, fSingle = singlediff; }
-
+        */
     
     private:
         static const Int_t      fNumHarms = 13;             // maximum harmonics length of flow vector array
@@ -97,7 +99,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    FillRPvectors(double dEtaLimit);
         void                    FillPOIvectors(const double dEtaLimit, const double dPtLow, const double dPtHigh); 
         void                    FillPtBvectors(const double dEtaLimit, const double dPtLow, const double dPtHigh); 
-        void                    CalculateCorrelations(double centrality, double dPtA, double dPtB, Bool_t doRef, Bool_t doDiff, Bool_t doPtB);
+        void                    CalculateCorrelations(const AliDecorrFlowCorrTask* const task, double centrality, double dPtA, double dPtB, Bool_t bRef, Bool_t bDiff, Bool_t bPtA, Bool_t bPtRef, Bool_t bPtB);
 
         //Flow vectors
         TComplex pvector[fNumHarms][fNumPowers];
@@ -175,7 +177,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         AliAODEvent*            fAOD;                       //! input event
         Bool_t                  fInitTask;                  //Initialization
         
-        std::vector<AliUniFlowCorrTask*>    fVecCorrTask;   //
+        std::vector<AliDecorrFlowCorrTask*>    fVecCorrTask;   //
         
         //cuts & selection: Analysis
         Bool_t                  fSampling;      //Bootstrapping sampling
@@ -184,6 +186,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //cuts & selection: events
         AliVEvent::EOfflineTriggerTypes    fTrigger;
         Bool_t                  fEventRejectAddPileUp;
+        Int_t                   fPileupCut;
         TString                 fCentEstimator;
         UInt_t                  fFilterBit;
         TAxis*                  fPtAxis;                    //
@@ -213,10 +216,9 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Bool_t                  bHasGap;
         Bool_t                  bDiff;
         Bool_t                  bRef;
+        Bool_t                  bPtA;
+        Bool_t                  bPtRef;
         Bool_t                  bPtB;
-        Bool_t                  fInt;
-        Bool_t                  fSingle;
-        Bool_t                  bHigherOrder;
         Double_t                fPOIsPtmax;
         Double_t                fPOIsPtmin;
         Double_t                fRFPsPtMax;
