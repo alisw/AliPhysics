@@ -57,7 +57,8 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Bool_t SingleCascadeCuts(AliAODcascade *casc, Double_t *vert);
   Bool_t SingleCascadeCutsRef(AliAODcascade *casc, Double_t *vert);
   Bool_t SelectWithRoughCuts(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2);
-
+  virtual Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y) const;
+  
   void SetProdTrackPtMin(Double_t a){fProdTrackPtMin=a;}
   void SetProdTrackEtaRange(Double_t a){fProdTrackEtaRange=a;}
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
@@ -105,7 +106,6 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
   Double_t GetProdLikeSignDcaMax(){return fProdLikeSignDcaMax;}
   Double_t GetProdCascNTPCClustersMin(){return fProdCascNTPCClustersMin;}
-
 
  protected:
 	
