@@ -791,3 +791,20 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SelectWithRoughCuts(AliAODcascad
   return kTRUE;
 }
 
+//________________________________________________________________________
+Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::IsInFiducialAcceptance(Double_t pt, Double_t y) const
+{
+  if(pt > 5.) {
+    // applying cut for pt > 5 GeV
+    AliDebug(2,Form("pt of Xic = %f (> 5), cutting at |y| < 0.8",pt));
+    if (TMath::Abs(y) > 0.8) return kFALSE;
+  } else {
+    // appliying smooth cut for pt < 5 GeV
+    Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5;
+    Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;
+    AliDebug(2,Form("pt of Xic = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY));
+    if (y < minFiducialY || y > maxFiducialY) return kFALSE;
+  }
+  //
+  return kTRUE;
+}
