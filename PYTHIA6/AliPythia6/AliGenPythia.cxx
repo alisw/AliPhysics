@@ -156,6 +156,7 @@ AliGenPythia::AliGenPythia():
     fEleInCalo(kFALSE),
     fEleInEMCAL(kFALSE), // not in use
     fCheckBarrel(kFALSE),
+    fCheckBarrelCalos(kFALSE),
     fCheckEMCAL(kFALSE),
     fCheckPHOS(kFALSE),
     fCheckPHOSeta(kFALSE),
@@ -163,12 +164,19 @@ AliGenPythia::AliGenPythia():
     fTriggerParticleMinPt(0), 
     fPhotonMinPt(0), // not in use
     fElectronMinPt(0), // not in use
-    fPHOSMinPhi(219.),
-    fPHOSMaxPhi(321.),
+    fPHOSMinPhi(250.),
+    fPHOSMaxPhi(320.),
     fPHOSEta(0.13),
-    fEMCALMinPhi(79.),
-    fEMCALMaxPhi(191.),
-    fEMCALEta(0.71),
+    fEMCALMinPhi(80.),
+    fEMCALMaxPhi(187.),
+    fEMCALEta(0.7),
+    fDCALMinPhi(260.),
+    fDCALMaxPhi(320.),
+    fDCALMinEta(0.22),
+    fDCALMaxEta(0.7),
+    fDCALMinPhiThird(320.),
+    fDCALMaxPhiThird(327.),
+    fDCALEtaThird(0.7),
     fkTuneForDiff(0),
     fProcDiff(0)
 {
@@ -282,6 +290,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
      fEleInCalo(kFALSE),
      fEleInEMCAL(kFALSE), // not in use
      fCheckBarrel(kFALSE),
+     fCheckBarrelCalos(kFALSE),
      fCheckEMCAL(kFALSE),
      fCheckPHOS(kFALSE),
      fCheckPHOSeta(kFALSE),
@@ -289,12 +298,19 @@ AliGenPythia::AliGenPythia(Int_t npart)
      fTriggerParticleMinPt(0),
      fPhotonMinPt(0), // not in use
      fElectronMinPt(0), // not in use
-     fPHOSMinPhi(219.),
-     fPHOSMaxPhi(321.),
+     fPHOSMinPhi(250.),
+     fPHOSMaxPhi(320.),
      fPHOSEta(0.13),
-     fEMCALMinPhi(79.),
-     fEMCALMaxPhi(191.),
-     fEMCALEta(0.71),
+     fEMCALMinPhi(80.),
+     fEMCALMaxPhi(187.),
+     fEMCALEta(0.7),
+     fDCALMinPhi(260.),
+     fDCALMaxPhi(320.),
+     fDCALMinEta(0.22),
+     fDCALMaxEta(0.7),
+     fDCALMinPhiThird(320.),
+     fDCALMaxPhiThird(327.),
+     fDCALEtaThird(0.7),
      fkTuneForDiff(0),
      fProcDiff(0)
 {
@@ -1059,7 +1075,7 @@ Int_t  AliGenPythia::GenerateMB()
   // Select events with fragmentation photon, decay photon, pi0, eta or other hadrons going to PHOS or EMCAL or central barrel,
   // implemented primaryly for kPyJets, but extended to any kind of process.
   if ((fFragPhotonInCalo || fPi0InCalo || fEtaInCalo || fEleInCalo || fHadronInCalo || fDecayPhotonInCalo) && 
-      (fCheckPHOS || fCheckEMCAL || fCheckBarrel) ) {
+      (fCheckPHOS || fCheckEMCAL || fCheckBarrel || fCheckBarrelCalos) ) {
     Bool_t ok = TriggerOnSelectedParticles(np);
     
     if(!ok) {
@@ -1491,10 +1507,15 @@ Bool_t AliGenPythia::CheckTrigger(const TParticle* jet1, const TParticle* jet2)
 	{
 	    //Eta is okay, now check phi range
 	    if ((phi[ij] < fPhiMaxJet   && phi[ij] > fPhiMinJet) &&
-		(phi[ig] < fPhiMaxGamma && phi[ig] > fPhiMinGamma))
+               (phi[ig] < fPhiMaxGamma && phi[ig] > fPhiMinGamma))
 	    {
-		triggered = kTRUE;
-	    }
+               triggered = kTRUE;
+               if ( fCheckBarrelCalos )
+               {
+                 Float_t phiGJ = phi[ig]*180./TMath::Pi(); //Convert to degrees
+                 if ( !IsInBarrelCalorimeters(phiGJ,TMath::Abs(eta[ig])) ) triggered = kFALSE;
+               }
+            }
 	}
     }
     return triggered;
@@ -1749,6 +1770,14 @@ Bool_t AliGenPythia::IsInBarrel(Float_t eta) const
     return kFALSE;
 }
 
+Bool_t AliGenPythia::IsInBarrelCalorimeters(Float_t phi, Float_t eta) 
+{
+  if      ( IsInEMCAL(phi,eta   ) ) return kTRUE ;
+  else if ( IsInDCAL (phi,eta   ) ) return kTRUE ;
+  else if ( IsInPHOS (phi,eta,-1) ) return kTRUE ;
+  else                              return kFALSE;
+}
+
 Bool_t AliGenPythia::IsInEMCAL(Float_t phi, Float_t eta) const
 {
   // Is particle in EMCAL acceptance? 
@@ -1759,6 +1788,26 @@ Bool_t AliGenPythia::IsInEMCAL(Float_t phi, Float_t eta) const
   else 
     return kFALSE;
 }
+
+
+Bool_t AliGenPythia::IsInDCAL(Float_t phi, Float_t eta) const
+{
+  Bool_t fullSM  = kFALSE;
+  Bool_t thirdSM = kFALSE;
+  
+  if(phi > fDCALMinPhi  && phi < fDCALMaxPhi && 
+     eta > fDCALMinEta  && eta < fDCALMaxEta   ) fullSM = kTRUE;
+  
+  if(phi > fDCALMinPhiThird  && phi < fDCALMaxPhiThird && 
+     eta < fDCALEtaThird  ) thirdSM = kTRUE;
+  
+  if ( fullSM || thirdSM )
+    return kTRUE;
+  else 
+    return kFALSE;
+}
+
+///
 
 Bool_t AliGenPythia::IsInPHOS(Float_t phi, Float_t eta, Int_t iparticle)
 {
@@ -2511,6 +2560,7 @@ Bool_t AliGenPythia::CheckDetectorAcceptance(Float_t phi, Float_t eta, Int_t ipa
   if     (fCheckPHOS   && IsInPHOS  (phi,eta,iparticle)) return kTRUE;
   else if(fCheckEMCAL  && IsInEMCAL (phi,eta)) return kTRUE;
   else if(fCheckBarrel && IsInBarrel(    eta)) return kTRUE;
+  else if(fCheckBarrelCalos && IsInBarrelCalorimeters(phi,eta)) return kTRUE;
   else                                         return kFALSE;
 }
 
@@ -2519,8 +2569,8 @@ Bool_t AliGenPythia::TriggerOnSelectedParticles(Int_t np)
   // Select events with fragmentation photon, decay photon, pi0, eta or other hadrons going to PHOS or EMCAL or central barrel,
   // implemented primaryly for kPyJets, but extended to any kind of process.
   
-  //printf("Check: frag photon %d, pi0 %d, eta %d, electron %d, hadron %d, decay %d, PHOS %d, EMCAL %d, Barrel %d \n",
-  //       fFragPhotonInCalo,fPi0InCalo, fEtaInCalo,fEleInCalo,fHadronInCalo,fDecayPhotonInCalo,fCheckPHOS,fCheckEMCAL, fCheckBarrel); 
+  //printf("Check: frag photon %d, pi0 %d, eta %d, electron %d, hadron %d, decay %d, PHOS %d, EMCAL %d, Barrel %d Barrel calos %d\n",
+  //       fFragPhotonInCalo,fPi0InCalo, fEtaInCalo,fEleInCalo,fHadronInCalo,fDecayPhotonInCalo,fCheckPHOS,fCheckEMCAL, fCheckBarrel, fCheckBarrelCalos); 
   
   Bool_t ok = kFALSE;
   for (Int_t i=0; i< np; i++) {

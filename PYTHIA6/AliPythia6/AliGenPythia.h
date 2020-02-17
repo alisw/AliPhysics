@@ -108,7 +108,8 @@ class AliGenPythia : public AliGenMC
     virtual void  SetCheckPHOS         (Bool_t b) {fCheckPHOS    = b;}
     virtual void  SetCheckEMCAL        (Bool_t b) {fCheckEMCAL   = b;}
     virtual void  SetCheckBarrel       (Bool_t b) {fCheckBarrel  = b;}
-  
+    virtual void  SetCheckBarrelCalos  (Bool_t b) {fCheckBarrelCalos = b;}
+
     //virtual void  SetElectronInEMCAL   (Bool_t b) {fEleInEMCAL   = b;}
     //virtual void  SetPhotonInPHOS      (Bool_t b) {fCheckPHOS    = b; fPhotonInCalo     = b;} // Not in use
 
@@ -116,39 +117,47 @@ class AliGenPythia : public AliGenMC
     virtual void  SetFragPhotonInBarrel(Bool_t b) {fCheckBarrel  = b; fFragPhotonInCalo = b;}
     virtual void  SetFragPhotonInEMCAL (Bool_t b) {fCheckEMCAL   = b; fFragPhotonInCalo = b;}
     virtual void  SetFragPhotonInPHOS  (Bool_t b) {fCheckPHOS    = b; fFragPhotonInCalo = b;}
-  
+    virtual void  SetFragPhotonInBarrelCalos(Bool_t b) {fCheckBarrelCalos = b; fFragPhotonInCalo = b;}
+
     virtual void  SetHadronInCalo      (Bool_t b) {                   fHadronInCalo     = b;}
     virtual void  SetHadronInBarrel    (Bool_t b) {fCheckBarrel  = b; fHadronInCalo     = b;}
     virtual void  SetHadronInEMCAL     (Bool_t b) {fCheckEMCAL   = b; fHadronInCalo     = b;}
     virtual void  SetHadronInPHOS      (Bool_t b) {fCheckPHOS    = b; fHadronInCalo     = b;}
-  
+    virtual void  SetHadronInBarrelCalos(Bool_t b) {fCheckBarrelCalos = b; fHadronInCalo = b;}
+
     virtual void  SetElectronInCalo    (Bool_t b) {                   fEleInCalo        = b;}
     virtual void  SetElectronInBarrel  (Bool_t b) {fCheckBarrel  = b; fEleInCalo        = b;}
     virtual void  SetElectronInEMCAL   (Bool_t b) {fCheckEMCAL   = b; fEleInCalo        = b;}
     virtual void  SetElectronInPHOS    (Bool_t b) {fCheckPHOS    = b; fEleInCalo        = b;}
-  
+    virtual void  SetElectronInBarrelCalos(Bool_t b) {fCheckBarrelCalos = b; fEleInCalo  = b;}
+
     virtual void  SetDecayPhotonInCalo (Bool_t d)  {fDecayPhotonInCalo = d;}
     virtual void  SetDecayPhotonInBarrel(Bool_t d) {fDecayPhotonInCalo = d; fCheckBarrel  = d;}
     virtual void  SetDecayPhotonInEMCAL(Bool_t d)  {fDecayPhotonInCalo = d; fCheckEMCAL   = d;}
     virtual void  SetDecayPhotonInPHOS (Bool_t d)  {fDecayPhotonInCalo = d; fCheckPHOS    = d;}
-  
+    virtual void  SetDecayPhotonInBarrelCalos(Bool_t d){fDecayPhotonInCalo = d; fCheckBarrelCalos = d;}
+
     virtual void  SetPi0InCalo         (Bool_t b, Bool_t f = kFALSE) {fPi0InCalo = b; fForceNeutralMeson2PhotonDecay = f;}
     virtual void  SetPi0InBarrel       (Bool_t b, Bool_t f = kFALSE) {fPi0InCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckBarrel= b; }
     virtual void  SetPi0InEMCAL        (Bool_t b, Bool_t f = kFALSE) {fPi0InCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckEMCAL = b; }
     virtual void  SetPi0InPHOS         (Bool_t b, Bool_t f = kFALSE) {fPi0InCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckPHOS  = b; }
- 
+    virtual void  SetPi0InBarrelCalos  (Bool_t b, Bool_t f = kFALSE) {fPi0InCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckBarrelCalos = b; }
+
     virtual void  SetEtaInCalo         (Bool_t b, Bool_t f = kFALSE) {fEtaInCalo = b; fForceNeutralMeson2PhotonDecay = f;}
     virtual void  SetEtaInBarrel       (Bool_t b, Bool_t f = kFALSE) {fEtaInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckBarrel= b; }
     virtual void  SetEtaInEMCAL        (Bool_t b, Bool_t f = kFALSE) {fEtaInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckEMCAL = b; }
     virtual void  SetEtaInPHOS         (Bool_t b, Bool_t f = kFALSE) {fEtaInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckPHOS  = b; }
+    virtual void  SetEtaInBarrelCalos  (Bool_t b, Bool_t f = kFALSE) {fEtaInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckBarrelCalos = b; }
 
     virtual void  SetPi0PhotonDecayInBarrel(Bool_t b, Bool_t f = kFALSE) {fPi0InCalo = b; fDecayPhotonInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckBarrel  = b; }
     virtual void  SetPi0PhotonDecayInEMCAL (Bool_t b, Bool_t f = kFALSE) {fPi0InCalo = b; fDecayPhotonInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckEMCAL   = b; }
     virtual void  SetPi0PhotonDecayInPHOS  (Bool_t b, Bool_t f = kFALSE) {fPi0InCalo = b; fDecayPhotonInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckPHOS    = b; }
+    virtual void  SetPi0PhotonDecayInBarrelCalos(Bool_t b,Bool_t f = kFALSE) {fPi0InCalo = b; fDecayPhotonInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckBarrelCalos = b; }
 
     virtual void  SetEtaPhotonDecayInBarrel(Bool_t b, Bool_t f = kFALSE) {fEtaInCalo = b; fDecayPhotonInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckBarrel  = b; }
     virtual void  SetEtaPhotonDecayInEMCAL (Bool_t b, Bool_t f = kFALSE) {fEtaInCalo = b; fDecayPhotonInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckEMCAL   = b; }
     virtual void  SetEtaPhotonDecayInPHOS  (Bool_t b, Bool_t f = kFALSE) {fEtaInCalo = b; fDecayPhotonInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckPHOS    = b; }
+    virtual void  SetEtaPhotonDecayInBarrelCalos(Bool_t b,Bool_t f = kFALSE) {fEtaInCalo = b; fDecayPhotonInCalo = b; fForceNeutralMeson2PhotonDecay = f; fCheckBarrelCalos = b; }
 
   
     // Trigger on a minimum multiplicity
@@ -166,6 +175,10 @@ class AliGenPythia : public AliGenMC
     virtual void  SetBarrelAcceptance(Float_t deta) {fTriggerEta = deta ;}
     virtual void  SetTriggerY(Float_t dy) {fTriggerY = dy;}
     virtual void  SetEMCALAcceptance (Float_t phimin, Float_t phimax, Float_t deta) {fEMCALMinPhi = phimin ; fEMCALMaxPhi = phimax ; fEMCALEta = deta ; }
+    virtual void  SetDCALAcceptance  (Float_t phimin , Float_t phimax , Float_t etamin , Float_t etamax, // Full SM
+                                      Float_t phimin3, Float_t phimax3, Float_t deta3)                   // 1/3 SM
+     {fDCALMinPhi      = phimin  ; fDCALMaxPhi      = phimax  ; fDCALMinEta  = etamin ; fDCALMaxEta  = etamax ;  
+      fDCALMinPhiThird = phimin3 ; fDCALMaxPhiThird = phimax3 ; fDCALEtaThird = deta3 ; }
     virtual void  SetPHOSAcceptance  (Float_t phimin, Float_t phimax, Float_t deta) {fPHOSMinPhi  = phimin ; fPHOSMaxPhi  = phimax ; fPHOSEta  = deta ; }
     virtual void  SetRotateParticleInPHOSeta(Bool_t b) {fCheckPHOSeta = b;}
   
@@ -254,8 +267,10 @@ class AliGenPythia : public AliGenMC
     //
     Bool_t CheckDetectorAcceptance(Float_t phi, Float_t eta, Int_t iparticle);
     Bool_t IsInEMCAL (Float_t phi, Float_t eta) const;
+    Bool_t IsInDCAL  (Float_t phi, Float_t eta) const;
     Bool_t IsInPHOS  (Float_t phi, Float_t eta, Int_t iparticle) ;
     Bool_t IsInBarrel(Float_t eta) const;
+    Bool_t IsInBarrelCalorimeters(Float_t phi,Float_t eta) ;
     Bool_t IsFromHeavyFlavor(Int_t ipart);
     //
     virtual void FinishRun();
@@ -387,6 +402,7 @@ class AliGenPythia : public AliGenMC
     Bool_t fEleInCalo;        // Option to ask for Electron in EMCAL acceptance
     Bool_t fEleInEMCAL;       // Option to ask for Electron in EMCAL acceptance (not in use)
     Bool_t fCheckBarrel;      // Option to ask for FragPhoton or Pi0 or Eta or gamma decays in central barrel acceptance
+    Bool_t fCheckBarrelCalos; // Option to ask for FragPhoton or Pi0 or Eta or gamma decays in PHOS+DCAL+EMCAL acceptance
     Bool_t fCheckEMCAL;       // Option to ask for FragPhoton or Pi0 or Eta or gamma decays in calorimeters EMCAL acceptance
     Bool_t fCheckPHOS;        // Option to ask for FragPhoton or Pi0 or Eta or gamma decays in calorimeters PHOS acceptance
     Bool_t fCheckPHOSeta;     // Option to ask for rotate event particles in phi to have in PHOS acceptance a requested particle that previously had the good eta
@@ -401,7 +417,14 @@ class AliGenPythia : public AliGenMC
     Float_t fEMCALMinPhi;          // Minimum phi EMCAL, degrees
     Float_t fEMCALMaxPhi;          // Maximum phi EMCAL, degrees
     Float_t fEMCALEta;             // Maximum eta EMCAL, coverage delta eta
-
+    Float_t fDCALMinPhi;           // Minimum phi full SM DCAL, degrees
+    Float_t fDCALMaxPhi;           // Maximum phi full SM DCAL, degrees
+    Float_t fDCALMinEta;           // Minimum eta full SM DCAL
+    Float_t fDCALMaxEta;           // Maximum eta full SM DCAL
+    Float_t fDCALMinPhiThird;      // Minimum phi 1/3 SM DCAL, degrees
+    Float_t fDCALMaxPhiThird;      // Maximum phi 1/3 SM DCAL, degrees
+    Float_t fDCALEtaThird;         // Maximum eta 1/3 SM DCAL, coverage delta eta  
+  
     Bool_t fkTuneForDiff;    // Pythia tune 
     Int_t  fProcDiff;
  private:
@@ -413,7 +436,7 @@ class AliGenPythia : public AliGenMC
     Bool_t GetWeightsDiffraction(Double_t M, Double_t &Mmin, Double_t &Mmax, 
 					       Double_t &wSD, Double_t &wDD, Double_t &wND);
 
-    ClassDef(AliGenPythia, 15) // AliGenerator interface to Pythia
+    ClassDef(AliGenPythia, 16) // AliGenerator interface to Pythia
 };
 #endif
 
