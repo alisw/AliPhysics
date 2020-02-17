@@ -90,4 +90,4 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # install macros
-	install(DIRECTORY VdmStability DESTINATION PWGMM/Lumi/vdM)
+	install(DIRECTORY vdM/VdmStability DESTINATION PWGMM/Lumi/vdM)
