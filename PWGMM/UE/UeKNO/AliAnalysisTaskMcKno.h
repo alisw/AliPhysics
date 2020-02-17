@@ -40,10 +40,6 @@ public:
 	void       GetLeadingObject(Bool_t isMC);
 	void       GetDetectorResponse();
 	void       GetBinByBinCorrections();
-	void       GetUEObservables();
-        void       GetUEObservablesData();
-	void       GetPtLeadingMisRecCorrection();
-	void       GetMeanUEObservables(std::vector<Double_t> &gen, std::vector<Double_t> &rec);
 	void       GetMultiplicityDistributions();
 	void       GetMultiplicityDistributionsData();
 	void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
@@ -66,7 +62,7 @@ private:
 	AliAnalysisFilter*  fLeadingTrackFilter;
 	AliAnalysisFilter*  fTrackFilter;
 	TList*                  fOutputList;                                      //! output list in the root file
-	AliMultSelection *fMultSelection;
+	
 
 	Double_t fEtaCut;
 	Double_t fPtMin;
@@ -80,21 +76,20 @@ private:
 	Int_t    fRecLeadIn;
 	Double_t ftrackmult08;
 	Double_t fv0mpercentile;
+	AliMultSelection *fMultSelection;
 
 	// KNO
-	TH1D * hPhiGen[3];
 	TH1D * hNchTSGen;
 	TH1D * hNchTSGenTest;
 	TH1D * hNchGen;
 	TH1D * hNchGenTest;
-	TH1D * hPhiRec[3];
 	TH1D * hNchTSRec;
-	TH1D * hNchTSRecTest;
+	TH1D * hNchTSRecTest;	
+        TH1D * hNchData;
         TH1D * hNchTSData;
 	TH2D * hNchResponse;
 	TH1D * hNchRec;
 	TH1D * hNchRecTest;
-        TH1D * hNchData;
 	TH1D * hPtInPrim;
 	TH1D * hPtOut;
 	TH1D * hPtOutPrim; 
@@ -114,6 +109,8 @@ private:
 	TH2D * hPtVsNchGenTest[3];
 	TH2D * hPtVsNchRecTest[3];
 	TH2D * hPtVsNchData[3];
+	TH1D * hPhiGen[3];
+	TH1D * hPhiRec[3];
 
 	TH2D * hDphiVsUEGenTest; //UE->NchTS
 	TH2D * hDphiVsUERecTest;//UE->NchTS
