@@ -119,6 +119,7 @@ AliGenPythiaPlus::AliGenPythiaPlus():
     fEleInCalo(kFALSE),
     fEleInEMCAL(kFALSE), // not in use
     fCheckBarrel(kFALSE),
+    fCheckBarrelCalos(kFALSE),
     fCheckEMCAL(kFALSE),
     fCheckPHOS(kFALSE),
     fCheckPHOSeta(kFALSE),
@@ -126,12 +127,19 @@ AliGenPythiaPlus::AliGenPythiaPlus():
     fTriggerParticleMinPt(0), 
     fPhotonMinPt(0), // not in use
     fElectronMinPt(0), // not in use
-    fPHOSMinPhi(219.),
-    fPHOSMaxPhi(321.),
+    fPHOSMinPhi(250.),
+    fPHOSMaxPhi(320.),
     fPHOSEta(0.13),
-    fEMCALMinPhi(79.),
-    fEMCALMaxPhi(191.),
-    fEMCALEta(0.71),
+    fEMCALMinPhi(80.),
+    fEMCALMaxPhi(187.),
+    fEMCALEta(0.7),
+    fDCALMinPhi(260.),
+    fDCALMaxPhi(320.),
+    fDCALMinEta(0.22),
+    fDCALMaxEta(0.7),
+    fDCALMinPhiThird(320.),
+    fDCALMaxPhiThird(327.),
+    fDCALEtaThird(0.7),
     fItune(-1), 
     fInfo(1) 
 {
@@ -224,6 +232,7 @@ AliGenPythiaPlus::AliGenPythiaPlus(AliPythiaBase* pythia)
      fEleInCalo(kFALSE),
      fEleInEMCAL(kFALSE), // not in use
      fCheckBarrel(kFALSE),
+     fCheckBarrelCalos(kFALSE),
      fCheckEMCAL(kFALSE),
      fCheckPHOS(kFALSE),
      fCheckPHOSeta(kFALSE),
@@ -231,12 +240,19 @@ AliGenPythiaPlus::AliGenPythiaPlus(AliPythiaBase* pythia)
      fTriggerParticleMinPt(0), 
      fPhotonMinPt(0), // not in use
      fElectronMinPt(0), // not in use
-     fPHOSMinPhi(219.),
-     fPHOSMaxPhi(321.),
+     fPHOSMinPhi(250.),
+     fPHOSMaxPhi(320.),
      fPHOSEta(0.13),
-     fEMCALMinPhi(79.),
-     fEMCALMaxPhi(191.),
-     fEMCALEta(0.71),
+     fEMCALMinPhi(80.),
+     fEMCALMaxPhi(187.),
+     fEMCALEta(0.7),
+     fDCALMinPhi(260.),
+     fDCALMaxPhi(320.),
+     fDCALMinEta(0.22),
+     fDCALMaxEta(0.7),
+     fDCALMinPhiThird(320.),
+     fDCALMaxPhiThird(327.),
+     fDCALEtaThird(0.7),
      fItune(-1),
      fInfo(1) 
 {
@@ -917,15 +933,17 @@ Int_t  AliGenPythiaPlus::GenerateMB()
     const Float_t kconv = 0.001 / 2.999792458e8;
     
     Int_t np = (fHadronisation) ? fParticles.GetEntriesFast() : fNpartons;
-    
     Int_t* pParent = new Int_t[np];
     for (i=0; i< np; i++) pParent[i] = -1;
+  
     if (fProcess == kPyJets || fProcess == kPyDirectGamma || fProcess == kPyJetsPWHG || 
         fProcess == kPyCharmPWHG || fProcess == kPyBeautyPWHG ) {
        // 6,7 particles in PYTHIA6
+
        TParticle* jet1 = (TParticle *) fParticles.At(4);
        TParticle* jet2 = (TParticle *) fParticles.At(5);
-	if (!CheckTrigger(jet1, jet2)) {
+
+       if (!CheckTrigger(jet1, jet2)) {
 	  delete [] pParent;
 	  return 0;
 	}
@@ -937,7 +955,7 @@ Int_t  AliGenPythiaPlus::GenerateMB()
     if ( ( fFragPhotonInCalo || fPi0InCalo || 
            fEtaInCalo        || fEleInCalo || 
            fHadronInCalo     || fDecayPhotonInCalo   ) && 
-         ( fCheckPHOS || fCheckEMCAL || fCheckBarrel )    ) 
+         ( fCheckPHOS || fCheckEMCAL || fCheckBarrel || fCheckBarrelCalos)    ) 
     {
       Bool_t ok = TriggerOnSelectedParticles(np);
       
@@ -1354,6 +1372,11 @@ Bool_t AliGenPythiaPlus::CheckTrigger(const TParticle* jet1, const TParticle* je
 		(phi[ig] < fPhiMaxGamma && phi[ig] > fPhiMinGamma))
 	    {
 		triggered = kTRUE;
+                if ( fCheckBarrelCalos )
+                {
+                  Float_t phiGJ = phi[ig]*180./TMath::Pi(); //Convert to degrees
+                  if ( !IsInBarrelCalorimeters(phiGJ,TMath::Abs(eta[ig])) ) triggered = kFALSE;
+                }
 	    }
 	}
     }
@@ -1489,6 +1512,21 @@ Bool_t AliGenPythiaPlus::IsInBarrel(Float_t eta) const
 }
 
 ///
+/// \return true if particle in EMCAL or DCAL or PHOS acceptance
+/// Acceptance slightly larger to be considered.
+///
+/// \param phi        particle azimuthal angle in degrees
+/// \param eta        particle pseudorapidity,  etamin=-etamax
+///
+Bool_t AliGenPythiaPlus::IsInBarrelCalorimeters(Float_t phi, Float_t eta) 
+{
+  if      ( IsInEMCAL(phi,eta   ) ) return kTRUE ;
+  else if ( IsInDCAL (phi,eta   ) ) return kTRUE ;
+  else if ( IsInPHOS (phi,eta,-1) ) return kTRUE ;
+  else                              return kFALSE;
+}
+
+///
 /// \return true if particle in EMCAL acceptance
 /// Acceptance slightly larger to be considered.
 ///
@@ -1499,6 +1537,30 @@ Bool_t AliGenPythiaPlus::IsInEMCAL(Float_t phi, Float_t eta) const
 {
   if(phi > fEMCALMinPhi  && phi < fEMCALMaxPhi && 
      eta < fEMCALEta  ) 
+    return kTRUE;
+  else 
+    return kFALSE;
+}
+
+///
+/// \return true if particle in DCAL acceptance
+/// Acceptance slightly larger to be considered.
+///
+/// \param phi        particle azimuthal angle in degrees
+/// \param eta        particle pseudorapidity,  etamin=-etamax
+///
+Bool_t AliGenPythiaPlus::IsInDCAL(Float_t phi, Float_t eta) const
+{
+  Bool_t fullSM  = kFALSE;
+  Bool_t thirdSM = kFALSE;
+  
+  if(phi > fDCALMinPhi  && phi < fDCALMaxPhi && 
+     eta > fDCALMinEta  && eta < fDCALMaxEta   ) fullSM = kTRUE;
+  
+  if(phi > fDCALMinPhiThird  && phi < fDCALMaxPhiThird && 
+     eta < fDCALEtaThird  ) thirdSM = kTRUE;
+  
+  if ( fullSM || thirdSM )
     return kTRUE;
   else 
     return kFALSE;
@@ -1617,6 +1679,7 @@ Bool_t AliGenPythiaPlus::CheckDetectorAcceptance(Float_t phi, Float_t eta, Int_t
   if     (fCheckPHOS   && IsInPHOS  (phi,eta,iparticle)) return kTRUE;
   else if(fCheckEMCAL  && IsInEMCAL (phi,eta)) return kTRUE;
   else if(fCheckBarrel && IsInBarrel(    eta)) return kTRUE;
+  else if(fCheckBarrelCalos && IsInBarrelCalorimeters(phi,eta)) return kTRUE;
   else                                         return kFALSE;
 }
 
@@ -1631,9 +1694,9 @@ Bool_t AliGenPythiaPlus::CheckDetectorAcceptance(Float_t phi, Float_t eta, Int_t
 Bool_t AliGenPythiaPlus::TriggerOnSelectedParticles(Int_t np)
 {
   AliDebug(1,Form("** Check: frag photon %d, pi0 %d, eta %d, electron %d, hadron %d, decay %d; "
-                  " in PHOS %d, EMCAL %d, Barrel %d; with pT > %2.2f GeV/c**",
+                  " in PHOS %d, EMCAL %d, Barrel %d; Barrel calos %d, with pT > %2.2f GeV/c**",
                   fFragPhotonInCalo,fPi0InCalo, fEtaInCalo,fEleInCalo,fHadronInCalo,fDecayPhotonInCalo,
-                  fCheckPHOS,fCheckEMCAL, fCheckBarrel,fTriggerParticleMinPt)); 
+                  fCheckPHOS,fCheckEMCAL, fCheckBarrel,fCheckBarrelCalos,fTriggerParticleMinPt)); 
     
   Bool_t ok = kFALSE;
   for (Int_t i=0; i< np; i++) 
