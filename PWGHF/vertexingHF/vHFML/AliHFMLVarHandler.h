@@ -28,7 +28,8 @@ class AliHFMLVarHandler : public TObject
             kBkg    = BIT(1),
             kPrompt = BIT(2),
             kFD     = BIT(3),
-            kRefl   = BIT(4) //up to BIT(8) included for general flags, following BITS particle-specific
+            kRefl   = BIT(4),
+            kSignalWoQuark = BIT(5) //up to BIT(8) included for general flags, following BITS particle-specific
         };
     
         enum optpid {
@@ -58,6 +59,7 @@ class AliHFMLVarHandler : public TObject
         virtual bool SetVariables(AliAODRecoDecayHF* /*cand*/, float /*bfield*/, int /*masshypo*/, AliAODPidHF* /*pidrespo*/) {return false;} //to be called for each candidate
         //to be called for each candidate
         void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
+        void SetlsSignalWoQuark(bool isSignalWoQuark);
         void FillTree();
         
         //common methods
