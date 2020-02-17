@@ -1185,7 +1185,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             else if(orig == 5|| orig_HijingCheck==5)
               isFD = kTRUE;
 
-            if(orig >= 4 || orig_HijingCheck >= 4) {
+            if(orig >= 4 && orig_HijingCheck >= 4) {
               if(pdgCode0 == 321)
                 issignal = kTRUE;
               else if(pdgCode0 == 211)
@@ -1229,7 +1229,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             else if(orig == 5 || orig_HijingCheck==5)
               isFD = kTRUE;
 
-            if(orig >= 4 || orig_HijingCheck >=4) {
+            if(orig >= 4 && orig_HijingCheck >=4) {
               if(pdgCode0 == 211)
                 issignal = kTRUE;
               else if(pdgCode0 == 321)
