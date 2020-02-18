@@ -175,8 +175,8 @@ void AliEmcalTRDTrackingTask::AllocateDetectorLevelTHnSparse()
 
 
   axis.push_back(std::make_tuple("#it{p}_{T} (GeV/#it{c})", fPtHistBins.begin(), fPtHistBins.end()));
-  axis.push_back(std::make_tuple("track type", fIntegerHistBins.begin(), fIntegerHistBins.begin() + 4));
-  axis.push_back(std::make_tuple("number of tracklets", fIntegerHistBins.begin(), fIntegerHistBins.begin()+7));
+  axis.push_back(std::make_tuple("track type", fIntegerHistBins.begin(), fIntegerHistBins.begin() + 5));
+  axis.push_back(std::make_tuple("number of tracklets", fIntegerHistBins.begin(), fIntegerHistBins.begin()+8));
   axis.push_back(std::make_tuple("#sigma(#it{p}_{T}) / #it{p}_{T}", fPtResHistBins.begin(), fPtResHistBins.end()));
   axis.push_back(std::make_tuple("charge", fChargeHistBins.begin(), fChargeHistBins.end()));
 
