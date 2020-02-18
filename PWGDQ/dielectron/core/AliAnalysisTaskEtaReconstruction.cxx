@@ -2869,23 +2869,23 @@ void AliAnalysisTaskEtaReconstruction::DoFourPreFilter(std::vector<TwoPair>* fPa
   // } // end of loop prim_i
 
   for (unsigned int prim_i = 0; prim_i < fPairVec_primary->size(); ++prim_i){
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT Loop parameter prim_i = " << prim_i << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT Loop parameter prim_i = " << prim_i << std::endl;
     for (unsigned int sec_i = 0; sec_i < fPairVec_secondary->size(); ++sec_i){
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT Loop parameter sec_i = " << sec_i << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT Loop parameter sec_i = " << sec_i << std::endl;
 
       // Get LorentzVectors from reconstructed first pair (primary) and reconstructed V0 (secondary V0)
       TLorentzVector Lvec1;
       TLorentzVector Lvec2;
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE "  << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE "  << std::endl;
 
       Lvec1.SetPtEtaPhiM(fPairVec_primary->at(prim_i).fPt , fPairVec_primary->at(prim_i).fEta , fPairVec_primary->at(prim_i).fPhi , fPairVec_primary->at(prim_i).fMass);
       Lvec2.SetPtEtaPhiM(fPairVec_secondary->at(sec_i).fPt, fPairVec_secondary->at(sec_i).fEta, fPairVec_secondary->at(sec_i).fPhi, fPairVec_secondary->at(sec_i).fMass);
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE " << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE " << std::endl;
       TLorentzVector LvecM = Lvec1 + Lvec2;
       double mass = LvecM.M();
-      if(mass > fUpperPreFilterMass || fLowerPreFilterMass < 0.13) continue;
+      if(mass > fUpperPreFilterMass || mass < fLowerPreFilterMass ) continue;
       else {
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE " << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE " << std::endl;
         fPairVec_primary->erase(fPairVec_primary->begin()+prim_i);
         fPairVec_secondary->erase(fPairVec_secondary->begin()+sec_i);
         prim_i--;
