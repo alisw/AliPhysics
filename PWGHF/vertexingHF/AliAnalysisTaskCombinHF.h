@@ -69,6 +69,7 @@ public:
     if(fTrackCutsKaon) delete fTrackCutsKaon;
     fTrackCutsKaon=new AliESDtrackCuts(*cuts);
   }
+  void SetMinNumTPCClsForPID(Int_t cut=0.) {fCutTPCSignalN = cut;}
   void SetCutOnCosThetaStar(Double_t cut){
     if(cut>0 && cut<1) fApplyCutCosThetaStar=kTRUE;
     else fApplyCutCosThetaStar=kFALSE;
@@ -160,7 +161,8 @@ private:
   TH2F *fHistEventMultZvEvSel;          //!<!hist. of evnt Mult vs. Zv for selected ev
   TH1F *fHistXsecVsPtHard;              //!<!hist. of xsec vs pthard (MC)
   TH1F *fHistTrackStatus;               //!<!hist. of status of tracks
-  TH3F* fHistTrackEtaMultZv;            // track distribution vs. era z vertex and mult
+  TH3F *fHistTrackEtaMultZv;            // track distribution vs. eta z vertex and mult
+  TH2F *fHistSelTrackPhiPt;                // track distribution vs. phi and pt
   TH2F *fHistCheckOrigin;               //!<!hist. of origin (c/b) of D meson (gen)
   TH2F *fHistCheckOriginRecoD;          //!<!hist. of origin (c/b) of D meson (reco)
   TH2F *fHistCheckOriginRecoVsGen;      //!<!hist. of origin (c/b) of D meson
@@ -223,6 +225,7 @@ private:
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
   AliESDtrackCuts* fTrackCutsKaon; /// kaon track selection
+  Int_t fCutTPCSignalN;   /// min. value of number of TPC clusters for PID, cut if !=0 
   Bool_t fFillHistosVsCosThetaStar; /// flag to control cos(theta*) cut
   Bool_t fApplyCutCosThetaStar; /// flag to control cos(theta*) cut
   Double_t fCutCosThetaStar;    /// cos(theta*) cut
@@ -289,7 +292,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,29); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,31); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
