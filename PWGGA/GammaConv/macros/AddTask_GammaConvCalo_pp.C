@@ -2235,6 +2235,24 @@ void AddTask_GammaConvCalo_pp(
       cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466000pa09cc00000","0163103100000010"); // INT7 no Trigger
   } else if ( trainConfig == 941){ // INT7, 100MeV, noTimingEff
       cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244660000a09cc00000","0163103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 942){ // INT7, 100MeV, with Timing Efficiency, NCells 2
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466000pa092200000","0163103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 943){ // INT7, 100MeV, noTimingEff, NCells 2
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244660000a092200000","0163103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 944){ // INT7, 100MeV, with Timing Efficiency, NCells 3
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466000pa093200000","0163103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 945){ // INT7, 100MeV, noTimingEff, NCells 3
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244660000a093200000","0163103100000010"); // INT7 no Trigger
+
+  } else if ( trainConfig == 946){ // INT7, 300MeV, with Timing Efficiency, NCells 2
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190pa092200000","0163103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 947){ // INT7, 300MeV, noTimingEff, NCells 2
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661900a092200000","0163103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 948){ // INT7, 300MeV, with Timing Efficiency, NCells 3
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190pa093200000","0163103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 949){ // INT7, 300MeV, noTimingEff, NCells 3
+      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661900a093200000","0163103100000010"); // INT7 no Trigger
+
   //*************************************************************************************************
   // 13 TeV PHOS low B - setup
   //*************************************************************************************************
