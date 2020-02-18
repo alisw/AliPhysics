@@ -290,6 +290,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistMatchedTrackPClusEAfterEOverPVeto(NULL),
   fHistMatchedTrackPClusETruePi0Clus(NULL),
   fHistElectronPositronClusterMatch(NULL),
+  fHistElectronPositronClusterMatchSub(NULL),
   fHistElectronClusterMatch(NULL),
   fHistPositronClusterMatch(NULL),
   fHistTrueElectronPositronClusterMatch(NULL),
@@ -506,6 +507,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistMatchedTrackPClusEAfterEOverPVeto(NULL),
   fHistMatchedTrackPClusETruePi0Clus(NULL),
   fHistElectronPositronClusterMatch(NULL),
+  fHistElectronPositronClusterMatchSub(NULL),
   fHistElectronClusterMatch(NULL),
   fHistPositronClusterMatch(NULL),
   fHistTrueElectronPositronClusterMatch(NULL),
@@ -1622,17 +1624,25 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistElectronPositronClusterMatch->GetYaxis()->SetTitle("P_{track, EMC}  (GeV/c)");
     fHistograms->Add(fHistElectronPositronClusterMatch);
 
-    fHistElectronClusterMatch = new TH2F(Form("MatchedElectronTrackPClusE %s",GetCutNumber().Data()), "Matched Electron tracks with P on EMC",
-                                              nBinsClusterE, arrClusEBinning, nBinsClusterE, arrClusEBinning);
-    fHistElectronClusterMatch->GetXaxis()->SetTitle("E_{cl} (GeV)");
-    fHistElectronClusterMatch->GetYaxis()->SetTitle("P_{track, EMC} (GeV/c)");
-    fHistograms->Add(fHistElectronClusterMatch);
+    fHistElectronPositronClusterMatchSub = new TH2F(Form("MatchedElectronPositronESubP %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on EMC E Sub P",
+                                                      nBinsClusterE, arrClusEBinning, 1000, -5, 5);
+    fHistElectronPositronClusterMatchSub->GetXaxis()->SetTitle("E_{cl} (GeV)");
+    fHistElectronPositronClusterMatchSub->GetYaxis()->SetTitle("E_{cl} - P_{track, EMC}");
+    fHistograms->Add(fHistElectronPositronClusterMatchSub);
 
-    fHistPositronClusterMatch = new TH2F(Form("MatchedPositronTrackPClusE %s",GetCutNumber().Data()), "Matched Positron tracks with P on EMC",
-                                              nBinsClusterE, arrClusEBinning, nBinsClusterE, arrClusEBinning);
-    fHistPositronClusterMatch->GetXaxis()->SetTitle("E_{cl} (GeV)");
-    fHistPositronClusterMatch->GetYaxis()->SetTitle("P_{track, EMC} (GeV/c)");
-    fHistograms->Add(fHistPositronClusterMatch);
+    if(fExtendedMatchAndQA > 1 ){
+      fHistElectronClusterMatch = new TH2F(Form("MatchedElectronTrackPClusE %s",GetCutNumber().Data()), "Matched Electron tracks with P on EMC",
+                                                nBinsClusterE, arrClusEBinning, nBinsClusterE, arrClusEBinning);
+      fHistElectronClusterMatch->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistElectronClusterMatch->GetYaxis()->SetTitle("P_{track, EMC} (GeV/c)");
+      fHistograms->Add(fHistElectronClusterMatch);
+
+      fHistPositronClusterMatch = new TH2F(Form("MatchedPositronTrackPClusE %s",GetCutNumber().Data()), "Matched Positron tracks with P on EMC",
+                                                nBinsClusterE, arrClusEBinning, nBinsClusterE, arrClusEBinning);
+      fHistPositronClusterMatch->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistPositronClusterMatch->GetYaxis()->SetTitle("P_{track, EMC} (GeV/c)");
+      fHistograms->Add(fHistPositronClusterMatch);
+    }
 
 
     if(fIsMC > 0){
@@ -1663,11 +1673,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
     if(fIsMC > 1){
       fHistElectronPositronClusterMatch->Sumw2();
-      fHistElectronClusterMatch->Sumw2();
-      fHistPositronClusterMatch->Sumw2();
+      fHistElectronPositronClusterMatchSub->Sumw2();
       fHistTrueElectronPositronClusterMatch->Sumw2();
       fHistTrueNoElectronPositronClusterMatch->Sumw2();
       fHistElectronClusterMatchTruePID->Sumw2();
+      if(fExtendedMatchAndQA > 1 ){
+        fHistElectronClusterMatch->Sumw2();
+        fHistPositronClusterMatch->Sumw2();
+      }
     }
 
   }
@@ -3782,12 +3795,15 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
     }
 
     if(match_dEta && match_dPhi){
-      if(inTrack->Charge() < 0){
-        fHistElectronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
-      } else {
-        fHistPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+      if(fExtendedMatchAndQA > 1){
+        if(inTrack->Charge() < 0){
+          fHistElectronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+        } else {
+          fHistPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+        }
       }
       fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+      fHistElectronPositronClusterMatchSub->Fill(cluster->E(), cluster->E() - inTrack->GetTrackPOnEMCal(), weight);
 
       if(isMC){
         TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
