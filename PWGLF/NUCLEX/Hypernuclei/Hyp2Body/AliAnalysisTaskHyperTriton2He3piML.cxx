@@ -24,6 +24,9 @@
 #include "AliVVertex.h"
 #include "AliVertexerHyperTriton2Body.h"
 #include "AliAnalysisDataContainer.h"
+#include <TFile.h>
+#include <TSystem.h>
+#include <assert.h>
 
 using std::cout;
 using std::endl;
@@ -58,6 +61,21 @@ bool ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrac
   }
 }
 
+
+std::string ImportSplinePath(std::string path)
+{
+  std::string modelname = path.substr(path.find_last_of("/") + 1);
+
+  std::string newpath = gSystem->pwd() + std::string("/") + modelname.data();
+  std::string oldpath = gDirectory->GetPath();
+
+  bool cpStatus = TFile::Cp(path.data(), newpath.data());
+  assert(cpStatus==true);
+
+  gDirectory->Cd(oldpath.data());
+  return newpath;
+}
+
 bool HasTOF(AliVTrack *track)
 {
   const bool hasTOFout = track->GetStatus() & AliVTrack::kTOFout;
@@ -83,6 +101,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fTreeV0{nullptr},
       fInputHandler{nullptr},
       fPIDResponse{nullptr},
+      fCVMFSPath{""},
       fMC{mc},
       fUseOnTheFly{false},
       fUseCustomBethe{false},
@@ -170,6 +189,12 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
       fTreeV0->Branch("SGenericV0", &fSGenericV0);
     if (fFillGenericTracklets)
       fTreeV0->Branch("SGenericTracklets", &fSGenericTracklets);
+  }
+
+  if (fCVMFSPath != "")
+  {
+    std::string LocalPath = ImportSplinePath(fCVMFSPath);
+    fV0Vertexer.SetSpline(LocalPath);
   }
 
   fListHist = new TList();

@@ -2,8 +2,9 @@
 #define AliVertexerHyperTriton2Body_H
 
 #include <TNamed.h>
-
+#include <TFile.h>
 #include <vector>
+#include <TSpline.h>
 #include <AliESDtrackCuts.h>
 #include <AliESDv0.h>
 
@@ -102,6 +103,13 @@ class AliVertexerHyperTriton2Body : public TNamed
         fkXYCase1 = kFALSE;
         fkXYCase2 = kFALSE;
     }
+
+    //---------------------------------------------------------------------------------------
+
+    void SetSpline(std::string path){
+        TFile splFile(path.data());
+        fSpline = (TSpline3 *)splFile.Get("spl_0.9");
+    }
     //---------------------------------------------------------------------------------------
     AliESDtrackCuts *SetPionTPCTrackCuts()
     {
@@ -177,7 +185,6 @@ class AliVertexerHyperTriton2Body : public TNamed
 
     bool fLikeSign;
     bool fRotation;
-
   private:
     bool fMC;
     Bool_t fkDoV0Refit;
@@ -200,11 +207,11 @@ class AliVertexerHyperTriton2Body : public TNamed
     double fPrimaryVertexY;
     double fPrimaryVertexZ;
     AliPIDResponse *fPID;
-
+    TSpline3* fSpline; 
     AliVertexerHyperTriton2Body(const AliVertexerHyperTriton2Body &);            // not implemented
     AliVertexerHyperTriton2Body &operator=(const AliVertexerHyperTriton2Body &); // not implemented
 
-    ClassDef(AliVertexerHyperTriton2Body, 2);
+    ClassDef(AliVertexerHyperTriton2Body, 3);
     //1: first implementation
 };
 
