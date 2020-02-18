@@ -1551,14 +1551,14 @@ Bool_t AliAnalysisTaskCombinHF::SelectAODTrack(AliAODTrack *track, AliESDtrackCu
   /// AOD track selection
   
   if(!cuts) return kTRUE;
-  
-  AliESDtrack esdTrack(track);
-  // set the TPC cluster info
-  esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
-  esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
-  esdTrack.SetTPCPointsF(track->GetTPCNclsF());
-  if(!cuts->IsSelected(&esdTrack)) return kFALSE;
-  
+  // conversion to ESD track no longer needed after updates in AliESDtrackCuts to deal with AOD tracks
+  // AliESDtrack esdTrack(track);
+  // // set the TPC cluster info
+  // esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+  // esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+  // esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+  // if(!cuts->IsSelected(&esdTrack)) return kFALSE;
+  if(!cuts->IsSelected(track)) return kFALSE;
   return kTRUE;
 }
 
