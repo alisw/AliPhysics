@@ -109,6 +109,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetPVCut(Int_t cut) { fPrimaryVertexCut = cut; }
         void                    SetESDtrackCuts(AliESDtrackCuts *const trcuts) { fESDTrackCuts = trcuts; }
         void                    SetAnalysisAOD(Bool_t aodAnalysis) { fAnalysisAOD = aodAnalysis; }
+        void                    SetTestPions(Bool_t pions) { fTestPions = pions; }
 
         AliEventCuts            fAliEventCuts;
     
@@ -216,11 +217,12 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH2D *                  fHistVZeroPercentileTPCMult;//!
 
         AliESDtrackCuts *       fESDTrackCuts; //
+        Bool_t                  fTestPions; // for testing MC trains
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 18);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 19);
 };
 
 class AliV0ChParticle : public AliVParticle

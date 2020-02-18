@@ -153,7 +153,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistGenMultiplicity(0),
     fHistTPCTracksVsClusters(0),
     fHistVZeroPercentileTPCMult(0),
-    fESDTrackCuts(0)
+    fESDTrackCuts(0),
+    fTestPions(kFALSE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -255,7 +256,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fHistGenMultiplicity(0),
     fHistTPCTracksVsClusters(0),
     fHistVZeroPercentileTPCMult(0),
-    fESDTrackCuts(0)
+    fESDTrackCuts(0),
+    fTestPions(kFALSE)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -796,7 +798,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     Float_t vzMC = 0;
     Int_t nAcceptedParticles =0;
     AliMCParticle *mcTrack = 0x0;
-    
+
 	if(fAnalysisMC){
         fmcEvent  = dynamic_cast<AliMCEvent*> (MCEvent());
         if(!fmcEvent){
@@ -862,54 +864,63 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             //--- MC closure test - selection of V0 ----
 
             Int_t mcPartPdg = mcTrack->PdgCode();
-            
-            if ((mcPartPdg != 310) && (mcPartPdg != 3122) && (mcPartPdg != (-3122))) continue; // keep only Lambdas and K0S
-            Bool_t IsFromCascade = kFALSE;
-            
-            Int_t mother  = mcTrack->GetMother();
-            mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
-            Int_t motherPDG = 0;
-            if (mother<0) motherPDG =0;
-            else motherPDG = TMath::Abs(mcMotherParticle->PdgCode());
-            
-           if(fAacceptLambdasFromCasscade) IsFromCascade = (((motherPDG == 3222)|| (motherPDG==3212)|| (motherPDG==3112) || (motherPDG==3224) || (motherPDG==3214) || (motherPDG==3114) || (motherPDG==3322) || (motherPDG==3312)|| (motherPDG==3324) || (motherPDG==3314) || (motherPDG==3334)) && (mcMotherParticle->IsPhysicalPrimary()));
-
-            Bool_t IsK0 = mcPartPdg==310;
-            Bool_t IsLambda = mcPartPdg==3122;
-            Bool_t IsAntiLambda = mcPartPdg==-3122;
-            
             Bool_t isPhysPrim = mcTrack->IsPhysicalPrimary();
+            Double_t V0genrapidity = mcTrack->Y();
 
-            IsK0 = IsK0 && (isPhysPrim);
-            IsLambda = IsLambda && (isPhysPrim||IsFromCascade);
-            IsAntiLambda = IsAntiLambda && (isPhysPrim||IsFromCascade);
-        
-            Int_t dau0 = mcTrack->GetDaughterLabel(0);
-            if (dau0>0) daughter0 = (AliMCParticle*) fmcEvent->GetTrack(dau0);
-            Int_t dau1 = mcTrack->GetDaughterLabel(1);
-            if (dau1>0) daughter1 = (AliMCParticle*) fmcEvent->GetTrack(dau1);
-            
-            if(!daughter0||!daughter1) continue;
-            
+            Bool_t IsK0, IsLambda, IsAntiLambda;
+            Double_t etaDau0 =0.;
+            Double_t etaDau1 = 0.;
+
             Int_t labelPos = -1;
             Int_t labelNeg = -1;
-        
-            if(daughter0->Charge()<0){
-                labelPos = daughter1->GetLabel();
-                labelNeg = daughter0->GetLabel();
-            }
-            if(daughter0->Charge()>0) {
-                labelPos = daughter0->GetLabel();
-                labelNeg = daughter1->GetLabel();
-            }else{
-                labelPos = daughter0->GetLabel();
-                labelNeg = daughter1->GetLabel();
-            }
 
-            Double_t etaDau0 = daughter0->Eta();
-            Double_t etaDau1 = daughter1->Eta();
-            //MC V0 cuts
-            Double_t V0genrapidity = mcTrack->Y();
+            if(fTestPions){
+            	
+            	if ((mcPartPdg != 111) && (mcPartPdg != 211) && (mcPartPdg != (-211))) continue; // keep only pions 
+
+            	IsK0 = mcPartPdg==111&& (isPhysPrim);
+            	IsLambda = mcPartPdg==211&& (isPhysPrim);
+            	IsAntiLambda = mcPartPdg==-211&& (isPhysPrim);
+
+            }else {
+            	if ((mcPartPdg != 310) && (mcPartPdg != 3122) && (mcPartPdg != (-3122))) continue; // keep only Lambdas and K0S
+            	Bool_t IsFromCascade = kFALSE;
+            
+            	Int_t mother  = mcTrack->GetMother();
+            	mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
+            	Int_t motherPDG = 0;
+            	if (mother<0) motherPDG =0;
+            	else motherPDG = TMath::Abs(mcMotherParticle->PdgCode());
+            
+           		if(fAacceptLambdasFromCasscade) IsFromCascade = (((motherPDG == 3222)|| (motherPDG==3212)|| (motherPDG==3112) || (motherPDG==3224) || (motherPDG==3214) || (motherPDG==3114) || (motherPDG==3322) || (motherPDG==3312)|| (motherPDG==3324) || (motherPDG==3314) || (motherPDG==3334)) && (mcMotherParticle->IsPhysicalPrimary()));
+
+           		IsK0 = mcPartPdg==310&& (isPhysPrim);
+           		IsLambda = mcPartPdg==3122&& (isPhysPrim||IsFromCascade);
+           		IsAntiLambda = mcPartPdg==-3122&& (isPhysPrim||IsFromCascade);
+
+            	Int_t dau0 = mcTrack->GetDaughterLabel(0);
+            	if (dau0>0) daughter0 = (AliMCParticle*) fmcEvent->GetTrack(dau0);
+            	Int_t dau1 = mcTrack->GetDaughterLabel(1);
+            	if (dau1>0) daughter1 = (AliMCParticle*) fmcEvent->GetTrack(dau1);
+            
+            	if(!daughter0||!daughter1) continue;
+        
+            	if(daughter0->Charge()<0){
+                	labelPos = daughter1->GetLabel();
+                	labelNeg = daughter0->GetLabel();
+            	}
+            	if(daughter0->Charge()>0) {
+                	labelPos = daughter0->GetLabel();
+                	labelNeg = daughter1->GetLabel();
+            	}else{
+                	labelPos = daughter0->GetLabel();
+                	labelNeg = daughter1->GetLabel();
+            	}
+
+            	etaDau0 = daughter0->Eta();
+            	etaDau1 = daughter1->Eta();
+            	
+            }
 
             if (mcTrack->Pt()>fPtAsocMin&&TMath::Abs(V0genrapidity)<0.5&&TMath::Abs(etaDau0)<0.8&&TMath::Abs(etaDau1)<0.8){
                 if(IsK0) {
