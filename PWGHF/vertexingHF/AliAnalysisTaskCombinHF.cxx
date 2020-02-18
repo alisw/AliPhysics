@@ -124,6 +124,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fCutTPCSignalN(0),
   fFillHistosVsCosThetaStar(kFALSE),
   fApplyCutCosThetaStar(kFALSE),
   fCutCosThetaStar(999.),
@@ -260,6 +261,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fCutTPCSignalN(0),
   fFillHistosVsCosThetaStar(kFALSE),
   fApplyCutCosThetaStar(kFALSE),
   fCutCosThetaStar(999.),
@@ -704,21 +706,23 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     AliAODPidHF* pidtosave=new AliAODPidHF(*(fAnalysisCuts->GetPidHF()));
     fListCuts->Add(pidtosave);
   }
-  TH1F* hCutValues = new TH1F("hCutValues","",7,0.5,7.5);
+  TH1F* hCutValues = new TH1F("hCutValues","",8,0.5,8.5);
   hCutValues->SetBinContent(1,fFilterMask);
   hCutValues->GetXaxis()->SetBinLabel(1,"Filter bit");
-  hCutValues->SetBinContent(2,(Float_t)fApplyCutCosThetaStar);
-  hCutValues->GetXaxis()->SetBinLabel(2,"Use costhetastar (D0)");
-  hCutValues->SetBinContent(3,fCutCosThetaStar);
-  hCutValues->GetXaxis()->SetBinLabel(3,"costhetastar (D0)");
-  hCutValues->SetBinContent(4,fPhiMassCut);
-  hCutValues->GetXaxis()->SetBinLabel(4,"phi mass (Ds)");
-  hCutValues->SetBinContent(5,fCutCos3PiKPhiRFrame);
-  hCutValues->GetXaxis()->SetBinLabel(5,"cos3piK (Ds)");
-  hCutValues->SetBinContent(6,fCutCosPiDsLabFrame);
-  hCutValues->GetXaxis()->SetBinLabel(6,"cospiDs (Ds)");
-  hCutValues->SetBinContent(7,fAnalysisCuts->GetUseTimeRangeCutForPbPb2018());
-  hCutValues->GetXaxis()->SetBinLabel(7,"TimeRangeCut");
+  hCutValues->SetBinContent(2,fCutTPCSignalN);
+  hCutValues->GetXaxis()->SetBinLabel(2,"n TPC clu for PID");
+  hCutValues->SetBinContent(3,(Float_t)fApplyCutCosThetaStar);
+  hCutValues->GetXaxis()->SetBinLabel(3,"Use costhetastar (D0)");
+  hCutValues->SetBinContent(4,fCutCosThetaStar);
+  hCutValues->GetXaxis()->SetBinLabel(4,"costhetastar (D0)");
+  hCutValues->SetBinContent(5,fPhiMassCut);
+  hCutValues->GetXaxis()->SetBinLabel(5,"phi mass (Ds)");
+  hCutValues->SetBinContent(6,fCutCos3PiKPhiRFrame);
+  hCutValues->GetXaxis()->SetBinLabel(6,"cos3piK (Ds)");
+  hCutValues->SetBinContent(7,fCutCosPiDsLabFrame);
+  hCutValues->GetXaxis()->SetBinLabel(7,"cospiDs (Ds)");
+  hCutValues->SetBinContent(8,fAnalysisCuts->GetUseTimeRangeCutForPbPb2018());
+  hCutValues->GetXaxis()->SetBinLabel(8,"TimeRangeCut");
   fListCuts->Add(hCutValues);
   PostData(3, fListCuts);
 
@@ -1443,10 +1447,11 @@ Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
   /// track selection cuts
   
   if(track->Charge()==0) return kFALSE;
-  if(track->GetID()<0&&!fKeepNegID)return kFALSE;
+  if(track->GetID()<0&&!fKeepNegID) return kFALSE;
   if(fFilterMask>=0){
     if(!(track->TestFilterMask(fFilterMask))) return kFALSE;
   }
+  if(fCutTPCSignalN>0 && track->GetTPCsignalN()<fCutTPCSignalN) return kFALSE;
   if(!SelectAODTrack(track,fTrackCutsAll)) return kFALSE;
   return kTRUE;
 }

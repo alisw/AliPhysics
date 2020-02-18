@@ -69,6 +69,7 @@ public:
     if(fTrackCutsKaon) delete fTrackCutsKaon;
     fTrackCutsKaon=new AliESDtrackCuts(*cuts);
   }
+  void SetMinNumTPCClsForPID(Int_t cut=0.) {fCutTPCSignalN = cut;}
   void SetCutOnCosThetaStar(Double_t cut){
     if(cut>0 && cut<1) fApplyCutCosThetaStar=kTRUE;
     else fApplyCutCosThetaStar=kFALSE;
@@ -223,6 +224,7 @@ private:
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
   AliESDtrackCuts* fTrackCutsKaon; /// kaon track selection
+  Int_t fCutTPCSignalN;   /// min. value of number of TPC clusters for PID, cut if !=0 
   Bool_t fFillHistosVsCosThetaStar; /// flag to control cos(theta*) cut
   Bool_t fApplyCutCosThetaStar; /// flag to control cos(theta*) cut
   Double_t fCutCosThetaStar;    /// cos(theta*) cut
@@ -289,7 +291,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,29); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,30); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
