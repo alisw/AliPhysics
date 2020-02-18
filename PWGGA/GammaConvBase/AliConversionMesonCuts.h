@@ -220,6 +220,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoGammaMinEnergyCut() const {return fDoGammaMinEnergyCut;}
     Int_t    GetNDaughterEnergyCut() const {return fNDaughterEnergyCut;}
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
+    Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
 
   protected:
     TRandom3    fRandom;                        ///<
@@ -276,6 +277,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fMesonKind;                     ///<
     Int_t       fIsMergedClusterCut;            ///< flag for merged cluster and di cluster analysis
     Int_t       fUsePtDepSelectionWindow;       ///< flag for usage of pT dependent selection window cut
+    Int_t       fUseGammaSelection              ///< flag for usage of gamma candidate selection e.g. gamma pairs which are in Pi0 mass region are not used as direct gammas for omega reco
     Int_t       fSelectionWindowCut;            ///< selection window for merged ana in mass
     Int_t       fNDegreeRotationPMForBG;        ///<
     Int_t       fNumberOfBGEvents;              ///<
@@ -305,7 +307,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fAllowCombOnlyInSameRecMethod;  ///< flag to disable inv mass pairing among different calo's
     Bool_t      fDoToCloseV0sCut;               ///<
     Bool_t      fDoSharedElecCut;               ///<
-    Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality. 
+    Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality.
     Bool_t      fUseMCPSmearing;                ///< flag
     Bool_t      fAlphaPtDepCut;                 ///<
     Bool_t      fDCAGammaGammaCutOn;            ///< cut flag for the maximum distance between the two photons
