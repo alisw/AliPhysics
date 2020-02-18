@@ -62,6 +62,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistXsecVsPtHard(0x0),
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
+  fHistSelTrackPhiPt(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginRecoD(0x0),
   fHistCheckOriginRecoVsGen(0x0),
@@ -199,6 +200,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistXsecVsPtHard(0x0),
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
+  fHistSelTrackPhiPt(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginRecoD(0x0),
   fHistCheckOriginRecoVsGen(0x0),
@@ -341,6 +343,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistXsecVsPtHard;
     delete fHistTrackStatus;
     delete fHistTrackEtaMultZv;
+    delete fHistSelTrackPhiPt;
     delete fHistCheckOrigin;
     delete fHistCheckOriginRecoD;
     delete fHistCheckOriginRecoVsGen;
@@ -499,7 +502,9 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   
   fHistTrackEtaMultZv = new TH3F("hTrackEtaMultZv","",40,-1.,1.,30,-15.,15.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistTrackEtaMultZv);
-
+  fHistSelTrackPhiPt = new TH2F("hSelTrackPhiPt"," ; #varphi ; p_{T} (GeV/c)",180,0.,2.*TMath::Pi(),20,0.,10.);
+  fOutput->Add(fHistSelTrackPhiPt);
+  
   Int_t nPtBins = (Int_t)(fMaxPt/fPtBinWidth+0.001);
   Double_t maxPt=fPtBinWidth*nPtBins;
 
@@ -944,6 +949,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     
     fHistTrackStatus->Fill(status[iTr]);
     fHistTrackEtaMultZv->Fill(track->Eta(),fVtxZ,fMultiplicity);
+    if(status[iTr]>0) fHistSelTrackPhiPt->Fill(track->Phi(),track->Pt());
   }
   
   // build the combinatorics
