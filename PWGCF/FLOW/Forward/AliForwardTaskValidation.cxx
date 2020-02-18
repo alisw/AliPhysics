@@ -407,6 +407,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       }
     }
   }
+  std::cout << "ok valid" << std::endl;
 if (this->fIsValidEvent){
 
   if (fSettings.mc){

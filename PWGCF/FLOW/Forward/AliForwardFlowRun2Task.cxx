@@ -241,6 +241,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     PostData(1, fStorage);
     return;
   }
+  std::cout << "ok" << std::endl;
 
   if (!fSettings.esd){
     AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
