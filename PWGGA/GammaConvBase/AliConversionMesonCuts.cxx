@@ -126,6 +126,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMesonKind(0),
   fIsMergedClusterCut(0),
   fUsePtDepSelectionWindow(kFALSE),
+  fUseGammaSelection(kFALSE),
   fSelectionWindowCut(-1),
   fNDegreeRotationPMForBG(0),
   fNumberOfBGEvents(0),
@@ -237,6 +238,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMesonKind(ref.fMesonKind),
   fIsMergedClusterCut(ref.fIsMergedClusterCut),
   fUsePtDepSelectionWindow(ref.fUsePtDepSelectionWindow),
+  fUseGammaSelection(ref.fUseGammaSelection),
   fSelectionWindowCut(ref.fSelectionWindowCut),
   fNDegreeRotationPMForBG(ref.fNDegreeRotationPMForBG),
   fNumberOfBGEvents(ref. fNumberOfBGEvents),
@@ -1478,14 +1480,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
   // Opening Angle Cut
   //fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
-  
+
   if (fAllowCombOnlyInSameRecMethod) {
     if (recoMeth1 != recoMeth2){
       if(hist)hist->Fill(cutIndex, pi0->Pt());
-      return kFALSE;          
+      return kFALSE;
     }
   }
-  
+
   if( fEnableMinOpeningAngleCut && pi0->GetOpeningAngle() < fOpeningAngle){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
@@ -1506,7 +1508,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
-  
+
   cutIndex++;
 
   // Alpha Max Cut
@@ -2421,6 +2423,14 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaLow  = 3.;
       fSelectionNSigmaHigh = 3.;
       fMassParamFunction   = 3;
+      break;
+    case 30: // u // EMC-EMC - 2 sigma - gamma selection
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = 2.;
+      fMassParamFunction   = 0;
       break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
