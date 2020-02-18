@@ -13,6 +13,7 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "TChain.h"
+#include "AliFemtoDreamBaseDump.h"
 class AliVParticle;
 class AliVTrack;
 
@@ -131,7 +132,12 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   TH2F  *fAntiProtonBackgroundMC;           //!
   TH2F  *fDeuteronBackgroundMC;             //!
   TH2F  *fAntiDeuteronBackgroundMC;         //!
-
+  AliFemtoDreamDump *fProtonAntiProtonDump; //!
+  AliFemtoDreamDump *fProtonAntiDeuteronDump; //!
+  AliFemtoDreamDump *fAntiProtonDeuteronDump; //!
+  AliFemtoDreamDump *fAntiProtonAntiDeuteronDump; //!
+  AliFemtoDreamDump *fDeuteronAntiDeuteronDump; //!
+  TList* fDumpster; //!
   ClassDef(AliAnalysisTaskNanoPt, 4)
 };
-#endif 
+#endif
