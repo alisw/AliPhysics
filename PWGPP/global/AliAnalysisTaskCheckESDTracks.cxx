@@ -7,6 +7,7 @@
 #include "AliMCEvent.h"
 #include "AliMultiplicity.h"
 #include "AliAnalysisUtils.h"
+#include "AliMultSelection.h"
 #include <TParticle.h>
 #include <TSystem.h>
 #include <TTree.h>
@@ -163,6 +164,10 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fUsePhysSel(kTRUE),
   fUsePileupCut(kTRUE),
   fTriggerMask(AliVEvent::kAnyINT),
+  fSelectOnCentrality(kFALSE),
+  fMinCentrality(-1.),
+  fMaxCentrality(110.),
+  fCentrEstimator("V0M"),
   fNEtaBins(10),
   fNPhiBins(144),
   fNPtBins(100),
@@ -415,11 +420,12 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   //fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"Good vertex"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Pass zSPD-zTrk vert sel"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"Pileup cut"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"InCentralityClass");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Good vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Pass zSPD-zTrk vert sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"|zvert|<10");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"Pileup cut");
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in ESD events ; N_{tracks}",2000,-0.5,19999.5);
@@ -749,6 +755,14 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   }
   fHistNEvents->Fill(1);
 
+  if(fSelectOnCentrality){
+    AliMultSelection* mulSel = (AliMultSelection*)esd->FindListObject("MultSelection");
+    if(mulSel){
+      Double_t centr=mulSel->GetMultiplicityPercentile(fCentrEstimator.Data());
+      if(centr<fMinCentrality || centr>fMaxCentrality) return;
+    }
+  }
+  fHistNEvents->Fill(2);
 
 
   Int_t ntracks = esd->GetNumberOfTracks();
@@ -785,7 +799,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   TString titTrc=vtTrc->GetTitle();
   if(titTrc.IsNull() || titTrc=="vertexer: 3D" || titTrc=="vertexer: Z") return;
   if (vtSPD->GetNContributors()<1) return;
-  fHistNEvents->Fill(2);
+  fHistNEvents->Fill(3);
 
   double covTrc[6],covSPD[6];
   vtTrc->GetCovarianceMatrix(covTrc);
@@ -795,14 +809,14 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   double errTrc = TMath::Sqrt(covTrc[5]);
   double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
-  fHistNEvents->Fill(3);
+  fHistNEvents->Fill(4);
 
   Float_t xvert=vtTrc->GetX();
   Float_t yvert=vtTrc->GetY();
   Float_t zvert=vtTrc->GetZ();
 
   if(TMath::Abs(zvert)>10) return;
-  fHistNEvents->Fill(4);
+  fHistNEvents->Fill(5);
 
   if(fUsePileupCut){
     AliAnalysisUtils utils;
@@ -812,7 +826,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     utils.SetCheckPlpFromDifferentBCMV(kTRUE);
     Bool_t isPUMV = utils.IsPileUpMV(esd);
     if(isPUMV) return;
-    fHistNEvents->Fill(5);
+    fHistNEvents->Fill(6);
   }
 
   fHistNtracksTPCselVsV0aftEvSel->Fill(vZEROampl,ntracksTPCsel);
