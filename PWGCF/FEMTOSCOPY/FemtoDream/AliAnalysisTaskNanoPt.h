@@ -82,30 +82,35 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts *fAntiProtonTrackNoTOF;          //
   AliFemtoDreamTrackCuts *fDeuteronTrackNoTOF;              //
   AliFemtoDreamTrackCuts *fAntiDeuteronTrackNoTOF;          //
+
   int fTrackBufferSize; //
   AliVTrack **fGTI;  //!
+
   TList *fEvtList;//!
   TList *fProtonList;//!
-  TList* fProtonMCList;//!
+  TList *fProtonMCList;//!
   TList *fAntiProtonList;//!
-  TList* fAntiProtonMCList;//!
+  TList *fAntiProtonMCList;//!
   TList *fDeuteronList;//!
-  TList* fDeuteronMCList;//!
+  TList *fDeuteronMCList;//!
   TList *fAntiDeuteronList;//!
-  TList* fAntiDeuteronMCList;//!
+  TList *fAntiDeuteronMCList;//!
   TList *fProtonNoTOFList;//!
-  TList* fProtonMCNoTOFList;//!
+  TList *fProtonMCNoTOFList;//!
   TList *fAntiProtonNoTOFList;//!
-  TList* fAntiProtonMCNoTOFList;//!
+  TList *fAntiProtonMCNoTOFList;//!
   TList *fDeuteronNoTOFList;//!
-  TList* fDeuteronMCNoTOFList;//!
+  TList *fDeuteronMCNoTOFList;//!
   TList *fAntiDeuteronNoTOFList;//!
-  TList* fAntiDeuteronMCNoTOFList;//!
+  TList *fAntiDeuteronMCNoTOFList;//!
+
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
+
   TList *fResults;                          //!
   TList *fResultsQA;                        //!
+
   TH2F  *fProtonRestMass;                   //!
   TH2F  *fAntiProtonRestMass;               //!
   TH2F  *fDeuteronRestMass;                 //!
@@ -132,8 +137,12 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   TH2F  *fAntiProtonBackgroundMC;           //!
   TH2F  *fDeuteronBackgroundMC;             //!
   TH2F  *fAntiDeuteronBackgroundMC;         //!
+
+  AliFemtoDreamDump *fProtonProtonDump; //!
   AliFemtoDreamDump *fProtonAntiProtonDump; //!
+  AliFemtoDreamDump *fProtonDeuteronDump;   //!
   AliFemtoDreamDump *fProtonAntiDeuteronDump; //!
+  AliFemtoDreamDump *fAntiProtonAntiProtonDump; //!
   AliFemtoDreamDump *fAntiProtonDeuteronDump; //!
   AliFemtoDreamDump *fAntiProtonAntiDeuteronDump; //!
   AliFemtoDreamDump *fDeuteronAntiDeuteronDump; //!

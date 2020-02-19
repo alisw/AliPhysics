@@ -107,8 +107,12 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   TH2F  *fAntiProtonBackgroundMC;           //!
   TH2F  *fDeuteronBackgroundMC;             //!
   TH2F  *fAntiDeuteronBackgroundMC;         //!
+
+  AliFemtoDreamDump *fProtonProtonDump; //!
   AliFemtoDreamDump *fProtonAntiProtonDump; //!
+  AliFemtoDreamDump *fProtonDeuteronDump;   //!
   AliFemtoDreamDump *fProtonAntiDeuteronDump; //!
+  AliFemtoDreamDump *fAntiProtonAntiProtonDump; //!
   AliFemtoDreamDump *fAntiProtonDeuteronDump; //!
   AliFemtoDreamDump *fAntiProtonAntiDeuteronDump; //!
   AliFemtoDreamDump *fDeuteronAntiDeuteronDump; //!

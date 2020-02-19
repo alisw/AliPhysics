@@ -73,8 +73,11 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt()
     fPartColl(nullptr),
     fResults(nullptr),
     fResultsQA(nullptr),
+    fProtonProtonDump(nullptr),
     fProtonAntiProtonDump(nullptr),
+    fProtonDeuteronDump(nullptr),
     fProtonAntiDeuteronDump(nullptr),
+    fAntiProtonAntiProtonDump(nullptr),
     fAntiProtonDeuteronDump(nullptr),
     fAntiProtonAntiDeuteronDump(nullptr),
     fDeuteronAntiDeuteronDump(nullptr),
@@ -147,7 +150,10 @@ AliAnalysisTaskNanoPt::AliAnalysisTaskNanoPt(
     fPartColl(nullptr),
     fResults(nullptr),
     fResultsQA(nullptr),
+    fProtonProtonDump(nullptr),
     fProtonAntiProtonDump(nullptr),
+    fProtonDeuteronDump(nullptr),
+    fAntiProtonAntiProtonDump(nullptr),
     fProtonAntiDeuteronDump(nullptr),
     fAntiProtonDeuteronDump(nullptr),
     fAntiProtonAntiDeuteronDump(nullptr),
@@ -189,11 +195,21 @@ AliAnalysisTaskNanoPt::~AliAnalysisTaskNanoPt() {
   delete fAntiDeuteronTrackNoTOF;
   delete fPairCleaner;
   delete fPartColl;
+
+  if (fProtonProtonDump) {
+    delete fProtonProtonDump;
+  }
   if (fProtonAntiProtonDump) {
     delete fProtonAntiProtonDump;
   }
+  if (fProtonDeuteronDump) {
+    delete fProtonDeuteronDump;
+  }
   if (fProtonAntiDeuteronDump) {
     delete fProtonAntiDeuteronDump;
+  }
+  if (fAntiProtonAntiProtonDump) {
+    delete fAntiProtonAntiProtonDump;
   }
   if (fAntiProtonDeuteronDump) {
     delete fAntiProtonDeuteronDump;
@@ -440,11 +456,20 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
   fDumpster->SetName("Dumpster");
   fDumpster->SetOwner(kTRUE);
 
+  fProtonProtonDump = new AliFemtoDreamDump("pp");
+  fDumpster->Add(fProtonProtonDump->GetOutput());
+
   fProtonAntiProtonDump = new AliFemtoDreamDump("pAp");
   fDumpster->Add(fProtonAntiProtonDump->GetOutput());
 
+  fProtonDeuteronDump = new AliFemtoDreamDump("pd");
+  fDumpster->Add(fProtonDeuteronDump->GetOutput());
+
   fProtonAntiDeuteronDump = new AliFemtoDreamDump("pAd");
   fDumpster->Add(fProtonAntiDeuteronDump->GetOutput());
+
+  fAntiProtonAntiProtonDump = new AliFemtoDreamDump("ApAp");
+  fDumpster->Add(fAntiProtonAntiProtonDump->GetOutput());
 
   fAntiProtonDeuteronDump = new AliFemtoDreamDump("Apd");
   fDumpster->Add(fAntiProtonDeuteronDump->GetOutput());
@@ -453,7 +478,6 @@ void AliAnalysisTaskNanoPt::UserCreateOutputObjects() {
   fDumpster->Add(fAntiProtonAntiDeuteronDump->GetOutput());
 
   fDeuteronAntiDeuteronDump = new AliFemtoDreamDump("dAd");
-  fDeuteronAntiDeuteronDump->SetkstarThreshold(0.3);
   fDumpster->Add(fDeuteronAntiDeuteronDump->GetOutput());
 
   if (!fEvtCuts->GetMinimalBooking()) {
@@ -721,11 +745,21 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t  *option ) {
   void SetEvent(std::vector<AliFemtoDreamBasePart> &vec1,
                 std::vector<AliFemtoDreamBasePart> &vec2,
                 AliFemtoDreamEvent * evt, const int pdg1, const int pdg2);
+
+  if (fProtonProtonDump) {
+    fProtonProtonDump->SetEvent(Proton, AntiProton, fEvent, 2212, 2212);
+  }
   if (fProtonAntiProtonDump) {
     fProtonAntiProtonDump->SetEvent(Proton, AntiProton, fEvent, 2212, -2212);
   }
+  if (fProtonDeuteronDump) {
+    fProtonDeuteronDump->SetEvent(Proton, Deuteron, fEvent, 2212, 1000010020);
+  }
   if (fProtonAntiDeuteronDump) {
     fProtonAntiDeuteronDump->SetEvent(Proton, AntiDeuteron, fEvent, 2212, -1000010020);
+  }
+  if (fAntiProtonAntiProtonDump) {
+    fAntiProtonAntiProtonDump->SetEvent(AntiProton, AntiProton, fEvent, -2212, -2212);
   }
   if (fAntiProtonDeuteronDump) {
     fAntiProtonDeuteronDump->SetEvent(AntiProton, Deuteron, fEvent, -2212, 1000010020);

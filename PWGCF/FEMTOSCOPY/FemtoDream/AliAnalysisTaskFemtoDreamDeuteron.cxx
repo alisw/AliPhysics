@@ -72,8 +72,11 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fAntiDeuteronBackgroundMC(nullptr),
     fResults(nullptr),
     fResultsQA(nullptr),
+    fProtonProtonDump(nullptr),
     fProtonAntiProtonDump(nullptr),
+    fProtonDeuteronDump(nullptr),
     fProtonAntiDeuteronDump(nullptr),
+    fAntiProtonAntiProtonDump(nullptr),
     fAntiProtonDeuteronDump(nullptr),
     fAntiProtonAntiDeuteronDump(nullptr),
     fDeuteronAntiDeuteronDump(nullptr),
@@ -143,8 +146,11 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char 
     fAntiDeuteronBackgroundMC(nullptr),
     fResults(nullptr),
     fResultsQA(nullptr),
+    fProtonProtonDump(nullptr),
     fProtonAntiProtonDump(nullptr),
+    fProtonDeuteronDump(nullptr),
     fProtonAntiDeuteronDump(nullptr),
+    fAntiProtonAntiProtonDump(nullptr),
     fAntiProtonDeuteronDump(nullptr),
     fAntiProtonAntiDeuteronDump(nullptr),
     fDeuteronAntiDeuteronDump(nullptr),
@@ -183,11 +189,21 @@ AliAnalysisTaskFemtoDreamDeuteron::~AliAnalysisTaskFemtoDreamDeuteron() {
   delete fTrackCutsAntiProtonMass;
   delete fPairCleaner;
   delete fPartColl;
+  
+  if (fProtonProtonDump) {
+    delete fProtonProtonDump;
+  }
   if (fProtonAntiProtonDump) {
     delete fProtonAntiProtonDump;
   }
+  if (fProtonDeuteronDump) {
+    delete fProtonDeuteronDump;
+  }
   if (fProtonAntiDeuteronDump) {
     delete fProtonAntiDeuteronDump;
+  }
+  if (fAntiProtonAntiProtonDump) {
+    delete fAntiProtonAntiProtonDump;
   }
   if (fAntiProtonDeuteronDump) {
     delete fAntiProtonDeuteronDump;
@@ -433,11 +449,21 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   fDumpster->SetName("Dumpster");
   fDumpster->SetOwner(kTRUE);
 
+
+  fProtonProtonDump = new AliFemtoDreamDump("pp");
+  fDumpster->Add(fProtonProtonDump->GetOutput());
+
   fProtonAntiProtonDump = new AliFemtoDreamDump("pAp");
   fDumpster->Add(fProtonAntiProtonDump->GetOutput());
 
+  fProtonDeuteronDump = new AliFemtoDreamDump("pd");
+  fDumpster->Add(fProtonDeuteronDump->GetOutput());
+
   fProtonAntiDeuteronDump = new AliFemtoDreamDump("pAd");
   fDumpster->Add(fProtonAntiDeuteronDump->GetOutput());
+
+  fAntiProtonAntiProtonDump = new AliFemtoDreamDump("ApAp");
+  fDumpster->Add(fAntiProtonAntiProtonDump->GetOutput());
 
   fAntiProtonDeuteronDump = new AliFemtoDreamDump("Apd");
   fDumpster->Add(fAntiProtonDeuteronDump->GetOutput());
@@ -676,11 +702,20 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
                     std::vector<AliFemtoDreamBasePart> &vec2,
                     AliFemtoDreamEvent * evt, const int pdg1, const int pdg2);
 
+      if (fProtonProtonDump) {
+        fProtonProtonDump->SetEvent(DCAProtons, DCAProtons, fEvent, 2212, 2212);
+      }
       if (fProtonAntiProtonDump) {
         fProtonAntiProtonDump->SetEvent(DCAProtons, DCAAntiProtons, fEvent, 2212, -2212);
       }
+      if (fProtonDeuteronDump) {
+        fProtonDeuteronDump->SetEvent(DCAProtons, DCADeuterons, fEvent, 2212, 1000010020);
+      }
       if (fProtonAntiDeuteronDump) {
         fProtonAntiDeuteronDump->SetEvent(DCAProtons, DCAAntiDeuterons, fEvent, 2212, -1000010020);
+      }
+      if (fAntiProtonAntiProtonDump) {
+        fAntiProtonAntiProtonDump->SetEvent(DCAAntiProtons, DCAAntiProtons, fEvent, -2212, -2212);
       }
       if (fAntiProtonDeuteronDump) {
         fAntiProtonDeuteronDump->SetEvent(DCAAntiProtons, DCADeuterons, fEvent, -2212, 1000010020);
@@ -693,7 +728,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
       }
     }
   }
-  
+
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
