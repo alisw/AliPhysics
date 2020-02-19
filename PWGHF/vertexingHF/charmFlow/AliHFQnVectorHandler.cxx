@@ -1170,7 +1170,10 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
             AliWarning(Form("OADB object fqyc%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQy2sV0C[iZvtx] = ((TH1D*) contQy2cs->GetObject(fRun));   
+        fQy2sV0C[iZvtx] = ((TH1D*) contQy2cs->GetObject(fRun));
+
+        if(!fV0CalibZvtxDiff) //assign only first element of array if it is not Zvtx differential
+            break;
     }
 
     //load TPC calibrations (not mandatory)
