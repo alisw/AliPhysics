@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskMcKno* AddTaskMcKno(const Char_t* taskname="McKno", Bool_t  useMC  = kTRUE, Bool_t performMCclosuretest = kFALSE, Double_t minpT=0.5)
+AliAnalysisTaskMcKno* AddTaskMcKno(const Char_t* taskname="McKno", Bool_t  useMC  = kTRUE, Bool_t performMCclosuretest = kFALSE, Bool_t IspPb = kFALSE, Double_t minpT=0.5)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -28,6 +28,7 @@ AliAnalysisTaskMcKno* AddTaskMcKno(const Char_t* taskname="McKno", Bool_t  useMC
     taskKno->SetMCclosureTest(performMCclosuretest);
     // add your task to the manager
     taskKno->SetPtMin(minpT);
+    taskKno->SetIspPb(IspPb);
     mgr->AddTask(taskKno);
 
 

@@ -115,6 +115,10 @@ Double_t nchbins_2[nchNbins+1]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,1
 				75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,
 				93,94,95,96,97,98,99,100};
 
+const Int_t nchNbins_3=10;
+Double_t nchbins_3[nchNbins_3+1]={0,10,20,30,40,50,60,70,80,90,100};
+
+
 const Int_t nDeltabins = 64;
 Double_t Deltabins[nDeltabins+1]={-1.0472, -0.957204, -0.867211, -0.777217, -0.687223, -0.59723, -0.507236, -0.417243, -0.327249, -0.237256, -0.147262, -0.0572686, 0.0327249, 0.122718, 0.212712, 0.302706, 0.392699, 0.482693, 0.572686, 0.66268, 0.752673, 0.842667, 0.93266, 1.02265, 1.11265, 1.20264, 1.29263, 1.38263, 1.47262, 1.56262, 1.65261, 1.7426, 1.8326, 1.92259, 2.01258, 2.10258, 2.19257, 2.28256, 2.37256, 2.46255, 2.55254, 2.64254, 2.73253, 2.82252, 2.91252, 3.00251, 3.09251, 3.1825, 3.27249, 3.36249, 3.45248, 3.54247, 3.63247, 3.72246, 3.81245, 3.90245, 3.99244, 4.08243, 4.17243, 4.26242, 4.35241, 4.44241, 4.5324, 4.6224, 4.71239};
 
@@ -122,6 +126,8 @@ const Int_t ptNbins = 36;
 Double_t ptbins1_1[ptNbins+1] = {
 	0.0,  0.1,  0.15,  0.2,  0.25,  0.3,  0.35,  0.4,  0.45,  0.5,  0.6,  0.7,  0.8,  0.9,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, 5.0, 6.0,7.0,  8.0,  9.0,  10.0,  12.0,  14.0,  16.0,  18.0,  20.0,  25.0,  30.0,  40.0,  50.0
 };
+
+const Int_t nTSBins_1 =3000;
 
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 Float_t MultV0M, MultRef;
@@ -132,7 +138,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKno) // classimp: necessary for root
 
 AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
-  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0),fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0),hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0),hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0),hDphiVsUEvsNchData_V0M(0),hDphiVsUEvsNchData_Ref(0)
+  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0),fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0),hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0),hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0),hDphiVsUEvsNchData_V0M(0),hV0MVsUEvsRef(0)
 
 {
 	 for(Int_t i=0;i<3;++i){
@@ -146,7 +152,6 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
 		hPhiRec[i]=0;
 		
 		hPtVsUEvsNchData_V0M[i]=0;
-		hPtVsUEvsNchData_Ref[i]=0;
 	 }
 
 
@@ -154,7 +159,7 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKno::AliAnalysisTaskMcKno(const char* name) : AliAnalysisTaskSE(name),
-							       fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0),fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0),hPtInPrim(0),hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0), hDphiVsUEvsNchData_V0M(0),hDphiVsUEvsNchData_Ref(0)
+							       fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0),fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0),hPtInPrim(0),hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0), hDphiVsUEvsNchData_V0M(0), hV0MVsUEvsRef(0)
 {
 
 	for(Int_t i=0;i<3;++i){
@@ -168,7 +173,6 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno(const char* name) : AliAnalysisTaskSE
 		hPhiRec[i]=0;
 		
 		hPtVsUEvsNchData_V0M[i]=0;
-		hPtVsUEvsNchData_Ref[i]=0;
 	}
 
 	// constructor
@@ -237,25 +241,31 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
 	// at the end of the analysis, the contents of this list are written  to the output file
 	fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects and will delete them if requested
 
+	Double_t TSBins_1[nTSBins_1+1]={0x0};
+	for(Int_t i=0;i<nTSBins_1;++i){
+		TSBins_1[i]=i*1.0-0.5;
+	}
+	TSBins_1[nTSBins_1]=2999.5;
+
 
 	if(fUseMC)
 	{
-		hNchTSGen = new TH1D("hNchTSGen","",100,-0.5,99.5);
+		hNchTSGen = new TH1D("hNchTSGen","",3000,-0.5,2999.5);
 		fOutputList->Add(hNchTSGen);
 
-		hNchTSGenTest = new TH1D("hNchTSGenTest","",100,-0.5,99.5); 
+		hNchTSGenTest = new TH1D("hNchTSGenTest","",3000,-0.5,2999.5); 
 		fOutputList->Add(hNchTSGenTest);
 
-		hNchTSRecTest = new TH1D("hNchTSRecTest","",100,-0.5,99.5); 
+		hNchTSRecTest = new TH1D("hNchTSRecTest","",3000,-0.5,2999.5); 
 		fOutputList->Add(hNchTSRecTest);
 
-		hNchGen = new TH1D("hNchGen","",100,-0.5,99.5);
+		hNchGen = new TH1D("hNchGen","",3000,-0.5,2999.5);
 		fOutputList->Add(hNchGen);
 
-		hNchGenTest = new TH1D("hNchGenTest","",100,-0.5,99.5); 
+		hNchGenTest = new TH1D("hNchGenTest","",3000,-0.5,2999.5); 
 		fOutputList->Add(hNchGenTest);
 
-		hNchRecTest = new TH1D("hNchRecTest","",100,-0.5,99.5); 
+		hNchRecTest = new TH1D("hNchRecTest","",3000,-0.5,2999.5); 
 		fOutputList->Add(hNchRecTest);
 
 		for(Int_t i=0;i<3;++i){
@@ -263,43 +273,45 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
 			fOutputList->Add(hPhiGen[i]);
 		}
 
-		hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",100,-0.5,99.5,100,-0.5,99.5);
+		hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",3000,-0.5,2999.5,3000,-0.5,2999.5);
 		fOutputList->Add(hNchResponse);
 
 		
 	}
 
-	hNchTSRec = new TH1D("hNchTSRec","",100,-0.5,99.5);
+	hNchTSRec = new TH1D("hNchTSRec","",3000,-0.5,2999.5);
 	fOutputList->Add(hNchTSRec);
 
-	hNchTSData = new TH1D("hNchTSData","",100,-0.5,99.5); 
+	hNchTSData = new TH1D("hNchTSData","",3000,-0.5,2999.5); 
 	fOutputList->Add(hNchTSData);
 
-	hNchRec = new TH1D("hNchRec","",100,-0.5,99.5);
+	hNchRec = new TH1D("hNchRec","",3000,-0.5,2999.5);
 	fOutputList->Add(hNchTSRec);
 
-	hNchData = new TH1D("hNchData","",100,-0.5,99.5); 
+	hNchData = new TH1D("hNchData","",3000,-0.5,2999.5); 
 	fOutputList->Add(hNchData);
 
 	hRefMult08 = 0;
-	hRefMult08 = new TH1D("hRefMult08","Multiplicity (-0.8 < #eta < 0.8);N_{ch};count",nchNbins,nchbins_1);   
+	hRefMult08 = new TH1D("hRefMult08","Multiplicity (-0.8 < #eta < 0.8);N_{ch};count",3000,-0.5,2999.5);   
 	fOutputList->Add(hRefMult08);
 
 	hV0Mmult = 0;
-	hV0Mmult = new TH1D("hV0Mmult","V0M ;V0M percentile;count",nchNbins,nchbins_1);   
+	hV0Mmult = new TH1D("hV0Mmult","V0M ;V0M percentile;count",10,0,100);   
 	fOutputList->Add(hV0Mmult);
 
 	hRefMultvsV0Mmult = 0;
-	hRefMultvsV0Mmult = new TH2D("hRefMultvsV0Mmult","N_{ch} vs V0M percentile;N_{ch}; v0M percentile",100,0,100,100,0,100);
+	hRefMultvsV0Mmult = new TH2D("hRefMultvsV0Mmult","N_{ch} vs V0M percentile;N_{ch}; v0M percentile",3000,-0.5,2999.5,10,0,100);
 	fOutputList->Add(hRefMultvsV0Mmult);
 
 	hV0MmultvsUE = 0;
-	hV0MmultvsUE = new TH2D("hV0MmultvsUE","V0M percentile vs NchTS; v0M percentile;N_{ch}^{TS}",100,0,100,nchNbins,nchbins_1);
+	hV0MmultvsUE = new TH2D("hV0MmultvsUE","V0M percentile vs NchTS; v0M percentile;N_{ch}^{TS}",10,0,100,3000,-0.5,2999.5);
 	fOutputList->Add(hV0MmultvsUE);
 
 	hRefmultvsUE = 0;
-	hRefmultvsUE = new TH2D("hRefmultvsUE","Ref Mult vs NchTS; Ref. mult.;N_{ch}^{TS}",100,0,100,nchNbins,nchbins_1);
+	hRefmultvsUE = new TH2D("hRefmultvsUE","Ref Mult vs NchTS; Ref. mult.;N_{ch}^{TS}",3000,-0.5,2999.5,3000,-0.5,2999.5);
 	fOutputList->Add(hRefmultvsUE);
+
+
 
 	for(Int_t i=0;i<3;++i){
 	  hPhiRec[i]= new TH1D(Form("hPhiRec_%s",NameReg_1[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
@@ -308,60 +320,57 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
 
 	for(Int_t i=0;i<3;++i){
 
-	  hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_1[i]),"gen pT vs nch_transverse",nchNbins,nchbins_1,ptNbins,ptbins1_1);
+	  hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_1[i]),"gen pT vs nch_transverse",3000,-0.5,2999.5,ptNbins,ptbins1_1);
 	  fOutputList->Add(hPtVsUEGenTest[i]);
 
-	  hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",NameReg_1[i]),"rec pT vs nch_transverse",nchNbins,nchbins_1,ptNbins,ptbins1_1);
+	  hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",NameReg_1[i]),"rec pT vs nch_transverse",3000,-0.5,2999.5,ptNbins,ptbins1_1);
 	  fOutputList->Add(hPtVsUERecTest[i]);	  
 
-	  hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_1[i]),"gen pT vs nch_transverse",nchNbins,nchbins_1,ptNbins,ptbins1_1);
+	  hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_1[i]),"gen pT vs nch_transverse",3000,-0.5,2999.5,ptNbins,ptbins1_1);
 	  fOutputList->Add(hPtVsNchGenTest[i]);
 
-	  hPtVsNchRecTest[i] = new TH2D(Form("hPtVsNchRecTest_%s",NameReg_1[i]),"rec pT vs nch_transverse",nchNbins,nchbins_1,ptNbins,ptbins1_1);
+	  hPtVsNchRecTest[i] = new TH2D(Form("hPtVsNchRecTest_%s",NameReg_1[i]),"rec pT vs nch_transverse",3000,-0.5,2999.5,ptNbins,ptbins1_1);
 	  fOutputList->Add(hPtVsNchRecTest[i]);
 	  
 	}
 	
-	hDphiVsUEGenTest = new TH2D("hDphiVsUEGenTest","Delta phi vs nch_transverse",nchNbins,nchbins_1,nDeltabins,Deltabins);
+	hDphiVsUEGenTest = new TH2D("hDphiVsUEGenTest","Delta phi vs nch_transverse",3000,-0.5,2999.5,nDeltabins,Deltabins);
 	fOutputList->Add(hDphiVsUEGenTest);
 
-	hDphiVsUERecTest = new TH2D("hDphiVsUERecTest","Delta phi vs nch_transverse",nchNbins,nchbins_1,nDeltabins,Deltabins);
+	hDphiVsUERecTest = new TH2D("hDphiVsUERecTest","Delta phi vs nch_transverse",3000,-0.5,2999.5,nDeltabins,Deltabins);
 	fOutputList->Add(hDphiVsUERecTest);
 
-	hDphiVsNchGenTest = new TH2D("hDphiVsNchGenTest","Delta phi vs nch_transverse",nchNbins,nchbins_1,nDeltabins,Deltabins);
+	hDphiVsNchGenTest = new TH2D("hDphiVsNchGenTest","Delta phi vs nch_transverse",3000,-0.5,2999.5,nDeltabins,Deltabins);
 	fOutputList->Add(hDphiVsNchGenTest);
 
-	hDphiVsNchRecTest = new TH2D("hDphiVsNchRecTest","Delta phi vs nch_transverse",nchNbins,nchbins_1,nDeltabins,Deltabins);
+	hDphiVsNchRecTest = new TH2D("hDphiVsNchRecTest","Delta phi vs nch_transverse",3000,-0.5,2999.5,nDeltabins,Deltabins);
 	fOutputList->Add(hDphiVsNchRecTest);
      
 	for(Int_t i=0;i<3;++i){
 
-	  hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_1[i]),"data pT vs nch_transverse",nchNbins,nchbins_1,ptNbins,ptbins1_1);
+	  hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_1[i]),"data pT vs nch_transverse",3000,-0.5,2999.5,ptNbins,ptbins1_1);
 	  fOutputList->Add(hPtVsUEData[i]);
 
-	  hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_1[i]),"data pT vs nch_transverse",nchNbins,nchbins_1,ptNbins,ptbins1_1);
+	  hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_1[i]),"data pT vs nch_transverse",3000,-0.5,2999.5,ptNbins,ptbins1_1);
 	  fOutputList->Add(hPtVsNchData[i]);
 
-	  hPtVsUEvsNchData_V0M[i] = new TH3D(Form("hPtVsUEvsNchData_V0M_%s",NameReg_1[i]),"data pT vs nch_transverse vs mult",nchNbins,nchbins_1,ptNbins,ptbins1_1,nchNbins,nchbins_2);
+	  hPtVsUEvsNchData_V0M[i] = new TH3D(Form("hPtVsUEvsNchData_V0M_%s",NameReg_1[i]),"data pT vs nch_transverse vs mult",nTSBins_1,TSBins_1,ptNbins,ptbins1_1,nchNbins_3,nchbins_3);
 	  fOutputList->Add(hPtVsUEvsNchData_V0M[i]);
-
-	  hPtVsUEvsNchData_Ref[i] = new TH3D(Form("hPtVsUEvsNchData_Ref_%s",NameReg_1[i]),"data pT vs nch_transverse vs mult",nchNbins,nchbins_1,ptNbins,ptbins1_1,nchNbins,nchbins_2);
-	  fOutputList->Add(hPtVsUEvsNchData_Ref[i]);
 
 	}
 
-	 hDphiVsUEData = new TH2D("hDphiVsUEData","Delta phi vs nch_transverse",nchNbins,nchbins_1,nDeltabins,Deltabins);
+	 hDphiVsUEData = new TH2D("hDphiVsUEData","Delta phi vs nch_transverse",3000,-0.5,2999.5,nDeltabins,Deltabins);
 	 fOutputList->Add(hDphiVsUEData);
 
-	 hDphiVsNchData = new TH2D("hDphiVsNchData","Delta phi vs nch_transverse",nchNbins,nchbins_1,nDeltabins,Deltabins);
+	 hDphiVsNchData = new TH2D("hDphiVsNchData","Delta phi vs nch_transverse",3000,-0.5,2999.5,nDeltabins,Deltabins);
 	 fOutputList->Add(hDphiVsNchData);
 
-	 hDphiVsUEvsNchData_Ref = new TH3D("hDphiVsUEvsNchData_Ref","Delta phi vs nch_transverse vs mult",nchNbins,nchbins_1,nDeltabins,Deltabins,nchNbins,nchbins_2);
-	 fOutputList->Add(hDphiVsUEvsNchData_Ref);
-
-	 hDphiVsUEvsNchData_V0M = new TH3D("hDphiVsUEvsNchData_V0M","Delta phi vs nch_transverse vs mult",nchNbins,nchbins_1,nDeltabins,Deltabins,nchNbins,nchbins_2);
+	 hDphiVsUEvsNchData_V0M = new TH3D("hDphiVsUEvsNchData_V0M","Delta phi vs nch_transverse vs mult",nTSBins_1,TSBins_1,nDeltabins,Deltabins,nchNbins_3,nchbins_3);
 	 fOutputList->Add(hDphiVsUEvsNchData_V0M);
 
+	 hV0MVsUEvsRef = 0;
+	 hV0MVsUEvsRef = new TH3D("hV0MVsUEvsRef","nch_transverse vs ref multiplicity vs V0M",nTSBins_1,TSBins_1,nchNbins_3,nchbins_3,nchNbins_3,nchbins_3);
+	 fOutputList->Add(hV0MVsUEvsRef);
 
 	fEventCuts.AddQAplotsToList(fOutputList);
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
@@ -448,10 +457,11 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
 	hRefMult08->Fill(ftrackmult08);
 
 	fMultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
-	if (!fMultSelection)
-	  cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
-	else
-	  fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+	//if (!fMultSelection)
+	//cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
+	if (fIspPb) {fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0A");}
+	else {fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");}
+	  
 	hV0Mmult->Fill(fv0mpercentile);
 
 	//cout<<"------- V0M mult ==  "<<fv0mpercentile<<"--------"<<endl;
@@ -755,25 +765,22 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributionsData(){
 			hPtVsUEData[0]->Fill(multTSrec,track->Pt());
 			hPtVsNchData[0]->Fill(multrec,track->Pt());
 			hPtVsUEvsNchData_V0M[0]->Fill(multTSrec,track->Pt(),fv0mpercentile);
-			hPtVsUEvsNchData_Ref[0]->Fill(multTSrec,track->Pt(),ftrackmult08);
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
 			hPtVsUEData[1]->Fill(multTSrec,track->Pt());
 			hPtVsNchData[1]->Fill(multrec,track->Pt());
-			hPtVsUEvsNchData_V0M[1]->Fill(multTSrec,track->Pt(),fv0mpercentile);
-			hPtVsUEvsNchData_Ref[1]->Fill(multTSrec,track->Pt(),ftrackmult08);			
+			hPtVsUEvsNchData_V0M[1]->Fill(multTSrec,track->Pt(),fv0mpercentile);			
 		}
 		else{// transverse side
 			hPtVsUEData[2]->Fill(multTSrec,track->Pt());
 			hPtVsNchData[2]->Fill(multrec,track->Pt());
 			hPtVsUEvsNchData_V0M[2]->Fill(multTSrec,track->Pt(),fv0mpercentile);
-			hPtVsUEvsNchData_Ref[2]->Fill(multTSrec,track->Pt(),ftrackmult08);
 		}
 
 		hDphiVsUEData->Fill(multTSrec,DPhi);
 		hDphiVsNchData->Fill(multrec,DPhi);
 		hDphiVsUEvsNchData_V0M->Fill(multTSrec,DPhi,fv0mpercentile);
-		hDphiVsUEvsNchData_Ref->Fill(multTSrec,DPhi,ftrackmult08);
+		hV0MVsUEvsRef->Fill(multTSrec,ftrackmult08,fv0mpercentile);
 	}
 
 }

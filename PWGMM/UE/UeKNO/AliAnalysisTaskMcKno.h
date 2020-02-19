@@ -45,6 +45,7 @@ public:
 	void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
 	void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}   // use to analyse MC data
 	void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
+	void       SetIspPb(Bool_t pPb = kFALSE)    {fIspPb = pPb;}
 	bool       HasRecVertex();
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 			Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
@@ -58,7 +59,8 @@ private:
 	AliStack*    fMCStack;                                                 //! MC stack
 	AliMCEvent*  fMC;                                               //! MC Event
 	Bool_t       fUseMC;                // analyze MC events
-	Bool_t       fIsMCclosure;          
+	Bool_t       fIsMCclosure;
+	Bool_t       fIspPb;
 	AliAnalysisFilter*  fLeadingTrackFilter;
 	AliAnalysisFilter*  fTrackFilter;
 	TList*                  fOutputList;                                      //! output list in the root file
@@ -124,11 +126,9 @@ private:
 
 	TH3D * hPtVsUEvsNchData_V0M[3];//UE->NchTS
 
-	TH3D * hPtVsUEvsNchData_Ref[3];//UE->NchTS
-
 	TH3D * hDphiVsUEvsNchData_V0M;//UE->NchTS
 
-	TH3D * hDphiVsUEvsNchData_Ref;//UE->NchTS
+	TH3D * hV0MVsUEvsRef;//UE->NchTS
 
 	AliAnalysisTaskMcKno(const AliAnalysisTaskMcKno&);                  // not implemented
 	AliAnalysisTaskMcKno& operator=(const AliAnalysisTaskMcKno&);       // not implemented
