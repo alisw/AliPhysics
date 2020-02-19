@@ -11,14 +11,6 @@ AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name") {
 
     // add your task to the manager
     mgr->AddTask(task);
-    
-    
-    //Add event filter
-    //define evnt cuts ...
-    //task->SetEventFilter(eventCuts);
-    
-    //Pileup rejection
-    //task->SetRejectPileup(kFALSE);
 
     // connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());

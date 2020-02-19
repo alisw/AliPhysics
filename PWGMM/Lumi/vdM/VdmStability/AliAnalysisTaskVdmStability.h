@@ -50,7 +50,6 @@ private:
     TList          fOutputList;         //! output list
     
     UInt_t fRunNumber;                  ///< Run number
-    UInt_t fEventNumber;                ///< Unique number for each event
     Double_t fVtxZ;                      ///< Vertex Z
     Bool_t  fIsGoodZ;                   ///< event with good z-vertex
     Bool_t fSelectPhysics;              ///< Physics selected event
@@ -61,20 +60,14 @@ private:
     Float_t fTV0C;                      ///< V0 C time info
     Bool_t fGoodTime;                   ///< event within V0 time window
     ULong64_t fEventTag;                ///< Event tags
-
-    
-    //AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis class
     
     AliESDEvent* fEvent;                 //! ESD event
     TH1D *fEventStatV0;                  //! Histogram with event statistics
     TH1D *fEventStatT0;                  //! Histogram with event statistics
     TTree* fEventTree;                   //! Event tree
 
-    //std::string fCurrentFile;
-    //Int_t fDirNum;
     
     void AddEventTreeVariables(TTree* &tree);
-    //void SetEventNumber();
     void SetEventVariables();
     
     

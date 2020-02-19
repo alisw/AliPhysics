@@ -40,7 +40,6 @@ AliAnalysisTaskVdmStability::AliAnalysisTaskVdmStability():
 AliAnalysisTaskSE(),
 fOutputList(),
 fRunNumber(0),
-fEventNumber(0),
 fVtxZ(-999.),
 fIsGoodZ(kFALSE),
 fSelectPhysics(kFALSE),
@@ -55,8 +54,6 @@ fEvent(0x0),
 fEventStatV0(0x0),
 fEventStatT0(0x0),
 fEventTree(0x0)
-//fCurrentFile(),
-//fDirNum()
 {
     // ROOT IO constructor, don't allocate memory here!
 }
@@ -66,7 +63,6 @@ AliAnalysisTaskVdmStability::AliAnalysisTaskVdmStability(const char* taskname):
 AliAnalysisTaskSE(taskname),
 fOutputList(),
 fRunNumber(0),
-fEventNumber(0),
 fVtxZ(-999.),
 fIsGoodZ(kFALSE),
 fSelectPhysics(kFALSE),
@@ -81,8 +77,6 @@ fEvent(0x0),
 fEventStatV0(0x0),
 fEventStatT0(0x0),
 fEventTree(0x0)
-//fCurrentFile(),
-//fDirNum()
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());    //TList of event statistics
@@ -237,15 +231,11 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
         if (fIsT0fired) fEventStatT0->Fill(kV0andPUandZEvents);
     }
     
-
+    //Fill tree with event information
     fEventTree->Fill();
     
     PostData(1,&fOutputList);
-     PostData(2,fEventTree);
-
-    
-    //increase the number of the event used for the Trees
-    fEventNumber++;
+    PostData(2,fEventTree);
     
 }
 
@@ -254,8 +244,6 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
 void AliAnalysisTaskVdmStability::AddEventTreeVariables(TTree* &tree)
 {
     tree->Branch("RunNumber", &fRunNumber);
-    //tree->Branch("EventNumber", &fEventNumber);
-    
     tree->Branch("VtxZ", &fVtxZ);
     tree->Branch("goodZvertex",&fIsGoodZ);
     tree->Branch("PhysSelected",&fSelectPhysics);
@@ -268,36 +256,12 @@ void AliAnalysisTaskVdmStability::AddEventTreeVariables(TTree* &tree)
 }
 
 
-/*
-//Determine unique id for each event
-//_________________________________________________________________________________
-void AliAnalysisTaskVdmStability::SetEventNumber() {
-    //Set unique event number
-    std::string current_file_name = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
-    
-    if (fCurrentFile != current_file_name) {
-        fEventNumber = 0;
-        TObjArray *path = TString(current_file_name).Tokenize("/");
-        TString s = (dynamic_cast<TObjString *>(path->At(((path->GetLast()) - 1))))->GetString();
-        fDirNum = (unsigned int) s.Atoi();
-        delete path;
-    }
-    
-    Long64_t ev_number = Entry();
-    
-    fEventNumber = (unsigned int) ev_number + (unsigned int) (fDirNum << 17);
-}
-*/
-
 // Set the event variables
 //_________________________________________________________________________________
 void AliAnalysisTaskVdmStability::SetEventVariables() {
     
     //set run number
     fRunNumber = static_cast<UInt_t >(InputEvent()->GetRunNumber());
-    
-    //set event number
-    //SetEventNumber();
     
     //Set z-vertex information
     const AliESDVertex* trackVtx    = fEvent->GetPrimaryVertexTracks();
