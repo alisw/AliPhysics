@@ -2459,6 +2459,7 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2303) {
     cuts.AddCutCalo("00010113","411793206f032230000","01631031000000d0"); // NL 32
     cuts.AddCutCalo("00010113","411793306f032230000","01631031000000d0"); // NL 33
+    cuts.AddCutCalo("00010113","411793406f032230000","01631031000000d0"); // NL 33
     cuts.AddCutCalo("00010113","411793806f032230000","01631031000000d0"); // NL 38
     cuts.AddCutCalo("00010113","411793906f032230000","01631031000000d0"); // NL 39
   } else if (trainConfig == 2304) {
@@ -2496,6 +2497,7 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2313) {
     cuts.AddCutCalo("00010113","4117932060032230000","01631031000000d0"); // NL 32
     cuts.AddCutCalo("00010113","4117933060032230000","01631031000000d0"); // NL 33
+    cuts.AddCutCalo("00010113","4117934060032230000","01631031000000d0"); // NL 33
     cuts.AddCutCalo("00010113","4117938060032230000","01631031000000d0"); // NL 34
     cuts.AddCutCalo("00010113","4117939060032230000","01631031000000d0"); // NL 34
   } else if (trainConfig == 2314) {
@@ -2533,6 +2535,7 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2323) {
     cuts.AddCutCalo("000a1113","4117932060032230000","01631031000000d0"); // NL 32
     cuts.AddCutCalo("000a1113","4117933060032230000","01631031000000d0"); // NL 33
+    cuts.AddCutCalo("000a1113","4117934060032230000","01631031000000d0"); // NL 33
     cuts.AddCutCalo("000a1113","4117938060032230000","01631031000000d0"); // NL 34
     cuts.AddCutCalo("000a1113","4117939060032230000","01631031000000d0"); // NL 34
   } else if (trainConfig == 2324) {
@@ -2570,6 +2573,7 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2333) {
     cuts.AddCutCalo("000a2113","4117932060032230000","01631031000000d0"); // NL 32
     cuts.AddCutCalo("000a2113","4117933060032230000","01631031000000d0"); // NL 33
+    cuts.AddCutCalo("000a2113","4117934060032230000","01631031000000d0"); // NL 33
     cuts.AddCutCalo("000a2113","4117938060032230000","01631031000000d0"); // NL 34
     cuts.AddCutCalo("000a2113","4117939060032230000","01631031000000d0"); // NL 34
   } else if (trainConfig == 2334) {
