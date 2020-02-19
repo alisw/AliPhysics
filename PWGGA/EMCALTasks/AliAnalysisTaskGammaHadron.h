@@ -52,6 +52,7 @@ public:
   //..setters for the analysis
   void                        SetDebug(Int_t input)                                 { fDebug           = input  ; }
   void                        SetCorrectEff(Bool_t input)                           { fCorrectEff      = input  ; }
+  void                        SetEventWeightChoice(Int_t input)                     { fEventWeightChoice = input; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
   void                        SetSaveTriggerPool(Bool_t input)                      { fSaveTriggerPool = input  ; }
   void                        SetDownScaleMixTrigger(Float_t input)                 { fDownScaleMT     = input  ; }
@@ -162,6 +163,7 @@ public:
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
   Bool_t                      fCorrectEff;               ///< Correct efficiency of associated tracks
+  Bool_t                      fEventWeightChoice;        ///< 0 = no event reweighting, 1 = reweight by GA function
 
   static const Int_t kNMainCentBins = 4;                 ///< Centrality bins that the analysis is done in (and mass windows are defined in)
 
@@ -183,12 +185,14 @@ public:
   static const Int_t          kNoGammaBins=9;            ///< Bins in gamma pT
   static const Int_t          kNoZtBins=7;               ///< Bins in Zt
   static const Int_t          kNoXiBins=8;               ///< Bins in Xi
-  //static const Int_t          kNoHPtBins=8;               ///< Bins in hadron pT
+  static const Int_t          kNoHPtBins=8;               ///< Bins in hadron pT
   Double_t                    fArray_G_Bins[10];         ///< 10=kNoGammaBins+1
   Double_t                    fArray_ZT_Bins[8];         ///< 8=kNoZtBins+1
   Double_t                    fArray_XI_Bins[9];         ///< 9=kNoXiBins+1
-  //Double_t                    fArray_HPT_Bins[9];        ///< 9=kNoHPtBins+1
+  Double_t                    fArray_HPT_Bins[9];        ///< 9=kNoHPtBins+1
   Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
+
+  static const Bool_t         bEnableTrackPtAxis = 1;    ///< Whether to swap the xi axis with a track pT axis. Currently must be set here
 
   //..cuts
 	Int_t                       fSubDetector;              ///< Whether to use all clusters, ECal only, or DCal only
