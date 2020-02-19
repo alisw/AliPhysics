@@ -840,7 +840,7 @@ TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetZgBinning() const
 
 TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetRgBinning(double R) const {
   auto binning = new TCustomBinning;
-  binning->SetMinimum(0.05);    // Negative bins are for untagged jets
+  binning->SetMinimum(-0.05);    // Negative bins are for untagged jets
   binning->AddStep(R, 0.05);
   return binning;
 }
