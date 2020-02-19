@@ -1860,13 +1860,13 @@ void AddTask_GammaCalo_pp(
       cuts.AddCutCalo("00010113","244660000a093200000","0163103100000010"); // INT7 no Trigger
 
   } else if ( trainConfig == 846){ // INT7, 300MeV, with Timing Efficiency, NCells 2
-      cuts.AddCutPCMCalo("00010113","24466190pa092200000","0163103100000010"); // INT7 no Trigger
+      cuts.AddCutCalo("00010113","24466190pa092200000","0163103100000010"); // INT7 no Trigger
   } else if ( trainConfig == 847){ // INT7, 300MeV, noTimingEff, NCells 2
-      cuts.AddCutPCMCalo("00010113","244661900a092200000","0163103100000010"); // INT7 no Trigger
+      cuts.AddCutCalo("00010113","244661900a092200000","0163103100000010"); // INT7 no Trigger
   } else if ( trainConfig == 848){ // INT7, 300MeV, with Timing Efficiency, NCells 3
-      cuts.AddCutPCMCalo("00010113","24466190pa093200000","0163103100000010"); // INT7 no Trigger
+      cuts.AddCutCalo("00010113","24466190pa093200000","0163103100000010"); // INT7 no Trigger
   } else if ( trainConfig == 849){ // INT7, 300MeV, noTimingEff, NCells 3
-      cuts.AddCutPCMCalo("00010113","244661900a093200000","0163103100000010"); // INT7 no Trigger
+      cuts.AddCutCalo("00010113","244661900a093200000","0163103100000010"); // INT7 no Trigger
 
   } else if( trainConfig == 870){ // PHOS HM trigger
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, MB trigger
