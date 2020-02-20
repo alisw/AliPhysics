@@ -2515,7 +2515,7 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067b32230000","0163103100b00010"); // ExC 95 + TCard > 50
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067e32230000","0163103100b00010"); // ExC 97 + TCard > 50
     //// low B-field          0d200089f9730000iih0404000
-  } else if ( trainConfig == 2046){ // DCAL only //   R Bins // with weights
+  } else if ( trainConfig == 2048){ // DCAL only //   R Bins // with weights
     cuts.AddCutPCMCalo("00010113", "0d200089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180
     cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180 without 55 -72
     cuts.AddCutPCMCalo("00010113", "0dh00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 5,      max = 13
