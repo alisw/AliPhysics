@@ -57,17 +57,17 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AlidNdPtTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtTools.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskMKBase.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskBaseWeights.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskMKTest.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskTPCMatchEff.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskDCArStudy.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskPtResStudy.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskEffContStudy.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskUEStudy.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskSpectra.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskSpectraV0M.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskFilterEventTPCdEdx.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKBase.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskBaseWeights.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKTest.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskTPCMatchEff.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskDCArStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskPtResStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskEffContStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskUEStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectra.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraV0M.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskFilterEventTPCdEdx.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
@@ -96,7 +96,7 @@ set(SRCS
   PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeTrack.cxx
   PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeV0.cxx
   PiKaPr/TPCTOFCascades/AliAnalysisPIDCascade.cxx
-  PiKaPr/TPCTOFCascades/AliAnalysisTaskTPCTOFCascade.cxx  
+  PiKaPr/TPCTOFCascades/AliAnalysisTaskTPCTOFCascade.cxx
   PiKaPr/TOF/pp13/AliAnalysisTaskTOFppSpectra.cxx
   PiKaPr/TOF/pp13/AliAnalysisTaskTOFMC.cxx
   PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx
