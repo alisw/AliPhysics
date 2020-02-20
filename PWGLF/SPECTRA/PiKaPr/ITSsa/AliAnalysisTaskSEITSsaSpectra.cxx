@@ -83,6 +83,8 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fHistMultAftEvtSel(NULL),
     fHistVtxZ(NULL),
     fHistDEDXGen(NULL),
+    fHistDEDXGenposlabel(NULL),
+    fHistDEDXGenneglabel(NULL),
     fHistDEDX(NULL),
     fHistDEDXdouble(NULL),
     fHistDEDXposlabel(NULL),
@@ -434,8 +436,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     hxbins[i] = hxmin + TMath::Power(10, hlogxmin + i * hbinwidth);
   }
 
-  fHistDEDXGen = new TH2F("fHistDEDXGen", "", hnbins, hxbins, 900, 0, 1000);
-  fOutput->Add(fHistDEDXGen);
+  fHistDEDXGen = new TH2F("fHistDEDXGen", ";ptrue;", hnbins, hxbins, 900, 0, 1000);
+  if(fIsMC)
+    fOutput->Add(fHistDEDXGen);
+
+  fHistDEDXGenposlabel = new TH2F("fHistDEDXGenposlabel", ";ptrue;", hnbins, hxbins, 900, 0, 1000);
+  if(fIsMC)
+    fOutput->Add(fHistDEDXGenposlabel);
+
+  fHistDEDXGenneglabel = new TH2F("fHistDEDXGenneglabel", ";ptrue;", hnbins, hxbins, 900, 0, 1000);
+  if(fIsMC)
+    fOutput->Add(fHistDEDXGenneglabel);
 
   fHistDEDX = new TH2F("fHistDEDX", "", hnbins, hxbins, 900, 0, 1000);
   fOutput->Add(fHistDEDX);
@@ -879,7 +890,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
     if (fIsMC) {
       int trkLabel = TMath::Abs(track->GetLabel());
-
       AliMCParticle *mcTrk = ((AliMCParticle *)lMCevent->GetTrack(trkLabel));
       int pdg = mcTrk->PdgCode();
       if (TMath::Abs(pdg) > 1E10) // protection to remove High ionization part
@@ -910,7 +920,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
     ETrkCut_Type trkSel = kHasNoSelection;
 
     //"no selection"
-    fHistDEDXGen->Fill(track->GetP(), dEdx);
+    if(fIsMC){
+      int lMCtrk = TMath::Abs(track->GetLabel());
+      AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
+      float pMC   = trkMC->P();
+      fHistDEDXGen->Fill(pMC, dEdx);//vs ptrue
+      if(track->GetLabel()>0) fHistDEDXGenposlabel->Fill(pMC, dEdx);
+      else if(track->GetLabel()<0) fHistDEDXGenneglabel->Fill(pMC, dEdx);
+    }
+
     fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
     //"ITSsa"
