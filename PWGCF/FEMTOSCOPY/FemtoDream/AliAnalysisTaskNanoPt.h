@@ -32,34 +32,35 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   void SetProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fProtonTrack = cuts;
   }
-
   void SetAntiProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fAntiProtonTrack = cuts;
   }
   void SetDeuteronCuts(AliFemtoDreamTrackCuts *cuts) {
     fDeuteronTrack = cuts;
   }
-
   void SetAntiDeuteronCuts(AliFemtoDreamTrackCuts *cuts) {
     fAntiDeuteronTrack = cuts;
   }
   void SetProtonCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
     fProtonTrackNoTOF = cuts;
   }
-
   void SetAntiProtonCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
     fAntiProtonTrackNoTOF = cuts;
   }
   void SetDeuteronCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
     fDeuteronTrackNoTOF = cuts;
   }
-
   void SetAntiDeuteronCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
     fAntiDeuteronTrackNoTOF = cuts;
   }
-
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
     fConfig = config;
+  }
+  void SetUseDumpster(bool use) {
+    fUseDumpster = use;
+  }
+  void SetUseDumpsterRestPairs(bool use) {
+    fUseDumpsterRestPairs = use;
   }
 
  private:
@@ -70,6 +71,8 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
   bool fIsMC;                                         //
+  bool fUseDumpster;  //
+  bool fUseDumpsterRestPairs;  //
   AliVEvent *fInputEvent;                            //! current event
   AliFemtoDreamEvent *fEvent;                        //!
   AliFemtoDreamEventCuts *fEvtCuts;                  //
@@ -147,6 +150,6 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   AliFemtoDreamDump *fAntiProtonAntiDeuteronDump; //!
   AliFemtoDreamDump *fDeuteronAntiDeuteronDump; //!
   TList* fDumpster; //!
-  ClassDef(AliAnalysisTaskNanoPt, 4)
+  ClassDef(AliAnalysisTaskNanoPt, 5)
 };
 #endif
