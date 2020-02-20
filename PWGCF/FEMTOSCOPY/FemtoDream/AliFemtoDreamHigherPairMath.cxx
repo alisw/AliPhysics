@@ -179,9 +179,12 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     if (isAlabama) {
       fHists->FillSameEventDistCommon(iHC, RelativeK);
       if (fHists->GetDoMultBinning()) fHists->FillSameEventMultDistCommon(iHC, Mult + 1, RelativeK);
+      if (fHists->GetDomTBinning()) fHists->FillSameEventmTDistCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
     } else {
       fHists->FillSameEventDistNonCommon(iHC, RelativeK);
       if (fHists->GetDoMultBinning()) fHists->FillSameEventMultDistNonCommon(iHC, Mult + 1, RelativeK);
+      if (fHists->GetDomTBinning()) fHists->FillSameEventmTDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
+
     }
   }
   return RelativeK;
