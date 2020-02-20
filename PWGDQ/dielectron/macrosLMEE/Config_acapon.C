@@ -220,26 +220,38 @@ AliDielectron* Config_acapon(TString cutDefinition,
     LMcutlib->SetSignalsMC(die);
   }
   // Cut sets to to vary fITSshared cut
-  else if(cutDefinition == "kITSshared1"){ // One shared hit in ITS
+  else if(cutDefinition == "kITSshared1"){ // One shared hits in ITS
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared1, LMEECutLib::kScheidCuts));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  else if(cutDefinition == "kITSshared2"){ // Two shared hit in ITS
+  else if(cutDefinition == "kITSshared2"){ // Two shared hits in ITS
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared2, LMEECutLib::kScheidCuts));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  else if(cutDefinition == "kITSshared3"){ // Three shared hit in ITS
+  else if(cutDefinition == "kITSshared3"){ // Three shared hits in ITS
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared3, LMEECutLib::kScheidCuts));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  else if(cutDefinition == "kITSshared4"){ // Four shared hit in ITS
+  else if(cutDefinition == "kITSshared4"){ // Four shared hits in ITS
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared4, LMEECutLib::kScheidCuts));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared5"){ // Five shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared5, LMEECutLib::kScheidCuts));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared6"){ // Six shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared6, LMEECutLib::kScheidCuts));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }

@@ -213,6 +213,16 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
+  else if(cutDefinition == "kITSshared5"){
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared5, LMEECutLib::kScheidCuts));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kITSshared6"){
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared6, LMEECutLib::kScheidCuts));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
   else{
     std::cout << "Undefined cut definition...." << std::endl;
     return 0x0;
