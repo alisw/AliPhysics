@@ -124,7 +124,7 @@ public:
   }
 
 
-  Double_t applyNUAforward(TH2D*& dNdetadphi, Bool_t useFMD, Int_t etaBin, Int_t phiBin, Double_t eta, Double_t phi, Double_t zvertex, Double_t weight){
+  Double_t applyNUAforward(TH2D*& dNdetadphi, Int_t etaBin, Int_t phiBin, Double_t eta, Double_t phi, Double_t zvertex, Double_t weight){
 
     // holes in the FMD
     if (fSettings.nua_mode & fSettings.kFill){
@@ -136,7 +136,10 @@ public:
       }
     }
 
-    if (fSettings.nua_mode & fSettings.kInterpolate) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
+    if (fSettings.nua_mode & fSettings.kInterpolate) {
+      //std::cout << "interpolating" << std::endl;
+      weight = AliForwardNUATask::InterpolateWeight(*dNdetadphi,phiBin,etaBin,weight);
+    }
     if (!fSettings.use_primaries_fwd) {
       Int_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
       Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);

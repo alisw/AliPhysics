@@ -87,7 +87,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
       if (!weight || weight == 0) continue;
 
       if (fSettings.doNUA){
-        if (useFMD) weight = applyNUAforward(dNdetadphi, useFMD, etaBin, phiBin, eta, phi, zvertex, weight);
+        if (useFMD) weight = applyNUAforward(dNdetadphi, etaBin, phiBin, eta, phi, zvertex, weight);
         else weight = applyNUAcentral(eta, phi, zvertex, weight);
       }
       
