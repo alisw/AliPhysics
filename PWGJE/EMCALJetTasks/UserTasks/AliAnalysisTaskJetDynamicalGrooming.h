@@ -93,15 +93,12 @@ class Subjets {
   std::ostream & Print(std::ostream &in) const;
 
  protected:
-  std::vector<unsigned short> GetConstituentIndices(int i) const;
-
   std::vector<unsigned short> fSplittingNodeIndex;        ///<  Index of the parent splitting node.
   std::vector<bool> fPartOfIterativeSplitting;            ///<  True if the splitting is follow an iterative splitting.
-  std::vector<unsigned short> fConstituentIndices;        ///<  Constituent jet indices (ie. index by the stored jet constituents, not the global index).
-  std::vector<unsigned int> fConstituentJaggedIndices;    ///<  Mapping indices of the constituent indices to subjets.
+  std::vector<std::vector<unsigned short>> fConstituentIndices;        ///<  Constituent jet indices (ie. index by the stored jet constituents, not the global index).
 
   /// \cond CLASSIMP
-  ClassDef(Subjets, 1) // Subjets from splittings.
+  ClassDef(Subjets, 2) // Subjets from splittings.
   /// \endcond
 };
 
