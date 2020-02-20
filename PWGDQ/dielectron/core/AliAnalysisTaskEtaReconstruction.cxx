@@ -1646,6 +1646,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
         Lvec1.SetPtEtaPhiM(posAODTrack->Pt(), posAODTrack->Eta(), posAODTrack->Phi(), AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(negAODTrack->Pt(), negAODTrack->Eta(), negAODTrack->Phi(), AliPID::ParticleMass(AliPID::kElectron));
         TLorentzVector LvecM = Lvec1 + Lvec2;
+        LvecM.SetE(sqrt(LvecM.P()*LvecM.P() /* - mass*mass */)); // Set Mass to photon mass = 0
         double mass = LvecM.M();
         if (fDoMassCut == kTRUE && mass >= fMassCutSecondaries   ) continue; // mass cut for primaries
         double pairpt = LvecM.Pt();
