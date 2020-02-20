@@ -3406,6 +3406,9 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut){   /
   case 10: //a
     fPIDnSigmaAbovePionLine=-3; // We need a bit less tight cut on dE/dx
     fPIDnSigmaAbovePionLineHighPt=-14;
+  case 11: //b
+    fPIDnSigmaAbovePionLine=3;
+    fPIDnSigmaAbovePionLineHighPt=2;
     break;
   default:
     AliError(Form("Warning: pidedxSigmaCut not defined %d",pidedxSigmaCut));
@@ -3474,6 +3477,9 @@ Bool_t AliConversionPhotonCuts::SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut)
     break;
   case 6:  // 2. GeV
     fPIDMaxPnSigmaAbovePionLine=2.;
+    break;
+  case 7:  // 8. GeV
+    fPIDMaxPnSigmaAbovePionLine=8.;
     break;
   default:
     AliError(Form("piMaxMomdedxSigmaCut not defined %d",piMaxMomdedxSigmaCut));
