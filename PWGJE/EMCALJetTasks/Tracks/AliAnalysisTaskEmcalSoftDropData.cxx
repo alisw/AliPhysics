@@ -115,7 +115,7 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
     fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt (weighted)", *zgBinning, *fPtBinning, "s");
     fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning, "s");
     fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning, "s");
-    fHistos->CreateTH2("hThetagVsPtWeighted", "thetag vs pt (weighted)", *thetagBinning,  *fPtBinning), "s";
+    fHistos->CreateTH2("hThetagVsPtWeighted", "thetag vs pt (weighted)", *thetagBinning,  *fPtBinning, "s");
     fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
     fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300., "s");
   }
@@ -126,6 +126,8 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQANChPt", "Number of charged constituents; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
   fHistos->CreateTH2("hQANnePt", "Number of neutral constituents; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
+  fHistos->CreateTH2("hSDUsedChargedPtjvPtc", "p_{t,j} vs. p_{t,const} for tracks used in SD", 350., 0., 350., 350, 0., 350.);
+  fHistos->CreateTH2("hSDUsedNeutralPtjvPtc", "p_{t,j} vs. p_{t,const} for clusters used in SD", 350., 0., 350., 350, 0., 350.);
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -230,7 +232,7 @@ TBinning *AliAnalysisTaskEmcalSoftDropData::GetRgBinning(double R) const {
   return binning;
 }
 
-std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const {
+std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
   bool isMC = dynamic_cast<const AliMCParticleContainer *>(tracks);
@@ -244,6 +246,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
       fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
+      fHistos->FillTH2("hSDUsedChargedPtjvPtc", jet.Pt(), constituentTrack.pt());
     }
   }
 
@@ -256,6 +259,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
       fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
       constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
       constituents.push_back(constituentCluster);
+      fHistos->FillTH2("hSDUsedNeutralPtjvPtc", jet.Pt(), constituentCluster.pt());
     }
   }
 
@@ -265,7 +269,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
     throw 1;
   }
   // Redo jet finding on constituents with a
-  fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, jetradius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );
+  fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, jetradius*2, fastjet::E_scheme, fastjet::BestFJ30 );
   fastjet::ClusterSequence jetfinder(constituents, jetdef);
   std::vector<fastjet::PseudoJet> outputjets = jetfinder.inclusive_jets(0);
   auto sdjet = outputjets[0];
