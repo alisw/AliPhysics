@@ -81,8 +81,7 @@ namespace SubstructureTree
 Subjets::Subjets():
   fSplittingNodeIndex{},
   fPartOfIterativeSplitting{},
-  fConstituentIndices{},
-  fConstituentJaggedIndices{}
+  fConstituentIndices{}
 {
   // Nothing more to be done.
 }
@@ -93,8 +92,7 @@ Subjets::Subjets():
 Subjets::Subjets(const Subjets& other)
  : fSplittingNodeIndex{other.fSplittingNodeIndex},
   fPartOfIterativeSplitting{other.fPartOfIterativeSplitting},
-  fConstituentIndices{other.fConstituentIndices},
-  fConstituentJaggedIndices{other.fConstituentJaggedIndices}
+  fConstituentIndices{other.fConstituentIndices}
 {
   // Nothing more to be done.
 }
@@ -114,22 +112,12 @@ bool Subjets::Clear()
   fSplittingNodeIndex.clear();
   fPartOfIterativeSplitting.clear();
   fConstituentIndices.clear();
-  fConstituentJaggedIndices.clear();
   return true;
-}
-
-std::vector<unsigned short> Subjets::GetConstituentIndices(int i) const
-{
-  std::vector<unsigned short> constituentIndices;
-  for (std::size_t index = fConstituentJaggedIndices.at(i); index < fConstituentJaggedIndices.at(i + 1); index++) {
-    constituentIndices.emplace_back(fConstituentIndices.at(index));
-  }
-  return constituentIndices;
 }
 
 std::tuple<unsigned short, bool, const std::vector<unsigned short>> Subjets::GetSubjet(int i) const
 {
-  return std::make_tuple(fSplittingNodeIndex.at(i), fPartOfIterativeSplitting.at(i), GetConstituentIndices(i));
+  return std::make_tuple(fSplittingNodeIndex.at(i), fPartOfIterativeSplitting.at(i), fConstituentIndices.at(i));
 }
 
 void Subjets::AddSubjet(const unsigned short splittingNodeIndex, const bool partOfIterativeSplitting, const std::vector<unsigned short> & constituentIndices)
@@ -137,21 +125,11 @@ void Subjets::AddSubjet(const unsigned short splittingNodeIndex, const bool part
   fSplittingNodeIndex.emplace_back(splittingNodeIndex);
   // NOTE: emplace_back isn't supported for std::vector<bool> until c++14.
   fPartOfIterativeSplitting.push_back(partOfIterativeSplitting);
-  // We have to handle the constituent indices more carefully. Ideally, we would like to store them in a nested
-  // vector. However, if we do so, ROOT won't store the data in a columnar format. So instead, we create our own
-  // jagged format similar to uproot. We store all the constituents of all of the subjets in one array, and then
-  // we also store the offsets for accessing the constituents for each subjet.
-  for (auto constituent : constituentIndices) {
-    fConstituentIndices.emplace_back(constituent);
-  }
-  // First, we ensure that we have the requisite 0 at the beginning.
-  if (fConstituentJaggedIndices.size() == 0) {
-    fConstituentJaggedIndices.emplace_back(0);
-  }
-  // Next, we store the size. If the size somehow doesn't change for a particular subjet (ie no constituents),
-  // then we would still want to append the same size. (NOTE: This shouldn't happen for subjets because a subjet
-  // must necessarily contain at least one subjet. But it's best to be consistent, so we don it anyway.
-  fConstituentJaggedIndices.emplace_back(fConstituentIndices.size());
+  // Originally, we stored the constituent indices and their jagged indices separately to try to coax ROOT
+  // into storing the nested vectors in a columnar format. However, even with that design, uproot can't
+  // recreate the nested jagged array without a slow python loop. So we just store the indices directly
+  // and wait for uproot 4. See: https://stackoverflow.com/q/60250877/12907985
+  fConstituentIndices.emplace_back(constituentIndices);
 }
 
 /**
@@ -168,7 +146,7 @@ std::string Subjets::toString() const
   {
     tempSS << "#" << (i + 1) << ": Splitting Node: " << fSplittingNodeIndex.at(i)
         << ", part of iterative splitting = " << fPartOfIterativeSplitting.at(i)
-        << ", number of jet constituents = " << GetConstituentIndices(i).size() << "\n";
+        << ", number of jet constituents = " << fConstituentIndices.at(i).size() << "\n";
   }
   return tempSS.str();
 }
@@ -1427,6 +1405,8 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
 
   // Setup task name
   std::string taskName = "AliAnalysisTaskJetDynamicalGrooming";
+  taskName += "_";
+  taskName += njetsBase;
   std::string suffixName(suffix);
   if (suffixName != "") {
     taskName += "_";
@@ -1442,11 +1422,7 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
   task->SetJetSelection(jetSelection);
   task->SetDerivativeSubtractionOrder(derivSubtrOrder);
 
-  TString thename(njetsBase);
-  // if(thename.Contains("Sub")) task->SetIsConstSub(kTRUE);
-  // task->SetVzRange(-10.,10.);
-
-  AliParticleContainer* trackCont; // = task->AddTrackContainer(ntracks);
+  AliParticleContainer* trackCont = nullptr; // = task->AddTrackContainer(ntracks);
 
   if ((jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kConstSub ||
      jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kEventSub) &&
@@ -1716,7 +1692,6 @@ void swap(PWGJE::EMCALJetTasks::SubstructureTree::Subjets& first,
   swap(first.fSplittingNodeIndex, second.fSplittingNodeIndex);
   swap(first.fPartOfIterativeSplitting, second.fPartOfIterativeSplitting);
   swap(first.fConstituentIndices, second.fConstituentIndices);
-  swap(first.fConstituentJaggedIndices, second.fConstituentJaggedIndices);
 }
 
 /**
