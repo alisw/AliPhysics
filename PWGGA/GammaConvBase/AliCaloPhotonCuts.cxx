@@ -6047,11 +6047,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     case 1:
       label_case_01:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // TB parametrization from Nico on Martin 100MeV points
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning)
         if(isMC){
-          energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          // fine tuning based on gaussian fits on PCMEMC in pPb5TeV
+          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
         } else {
-          energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
         }
       } else if ( fClusterType == 2 ){
           // Nonlin from PHOS group only MC part
