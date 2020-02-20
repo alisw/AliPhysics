@@ -2614,7 +2614,7 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     TString jetcuts="";
     TString trackcuts="";
     TString vertexcuts="";
-    Int_t version=2;
+    Int_t version=3;
 
 
     jetcuts+=version;
@@ -2703,6 +2703,8 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     vertexcuts+=fDoProbTagging;
     vertexcuts+="+";
     vertexcuts+=fUseSignificance;
+    vertexcuts+="+";
+    vertexcuts+=fDoJetProb;
     vertexcuts+="+";
     vertexcuts+=Form("%0.3f",fTCThresholdPtFixed);
 
@@ -4472,7 +4474,7 @@ void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* i
       if(kTagLevel<2){
         //printf("Single catch\n");
         if(ipval[2]>IPthresN3[iThresh]) {
-        //printf("Single3rd %f!\n",fFracs[iThresh]);
+        //  printf("Single3rd %f!\n",fFracs[iThresh]);
           kTagDec[iThresh][Full]=kTRUE; kTagDec[iThresh][Single3rd]=kTRUE;
         }
       }
@@ -4509,7 +4511,7 @@ void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* i
         }
       }
     }
-    /*printf("Testing kTagLevel::\n ");
+    /*printf("Testing kTagLevel:: Line %i\n ",__LINE__);
     for(int iThresh=0;iThresh<fNThresholds;iThresh++){
       for(int iType=0;iType<6;iType++){
         printf("iThresh=%f, %i, kTagDec=%i\n",fFracs[iThresh],iType,kTagDec[iThresh][iType]);
@@ -4699,7 +4701,7 @@ double AliAnalysisTaskHFJetIPQA::GetTrackProbability(double jetpt, bool* hasIPs,
 }
 
 void AliAnalysisTaskHFJetIPQA::FillProbabilityHists(double jetpt,double probval,int jetflavour,bool **kTagDec){
-  //  printf("Filling iflavou=%i, jetpt=%f, probval=%f into histogram\n", jetflavour,jetpt,probval);
+    //  printf("Filling iflavou=%i, jetpt=%f, probval=%f into histogram\n", jetflavour,jetpt,probval);
   double lnprobval=-TMath::Log(probval);
 
   //printf("logval=%f\n",lnprobval);
@@ -4786,7 +4788,6 @@ void AliAnalysisTaskHFJetIPQA::FillProbabilityHists(double jetpt,double probval,
               }
               break;
           }
-
       }
     }
   }
@@ -4808,14 +4809,14 @@ void AliAnalysisTaskHFJetIPQA::FillProbThreshHists(double probval, double* ipval
     if((ipval[0]>0)&&(ipval[1]>0)&&(ipval[2]>0))  {FillHist(Form("h2DProb3Above0_%s",sFlavour[jetflavour].Data()),lnprobval,jetpt,1);}
   }
   //Single1st
-  if(kTagDec[0][Single1st]) FillHist("h2DProb1AboveThresh",lnprobval,jetpt,1);
-  if(kTagDec[0][Single1st]&&(ipval[1]>0)) FillHist("h2DProb1AbThresh1Ab0",lnprobval,jetpt,1);
-  if(kTagDec[0][Single1st]&&(ipval[1]>0)&&(ipval[2]>0)) FillHist("h2DProb1AbThresh2Ab0",lnprobval,jetpt,1);
+  if(kTagDec[0][Single1st]){FillHist("h2DProb1AboveThresh",lnprobval,jetpt,1);}
+  if(kTagDec[0][Single1st]&&(ipval[1]>0)) {FillHist("h2DProb1AbThresh1Ab0",lnprobval,jetpt,1);}
+  if(kTagDec[0][Single1st]&&(ipval[1]>0)&&(ipval[2]>0)) {FillHist("h2DProb1AbThresh2Ab0",lnprobval,jetpt,1);}
 
   //Single2nd
-  if(kTagDec[0][Double]) FillHist("h2DProb2AboveThresh",lnprobval,jetpt,1);
-  if(kTagDec[0][Double]&&(ipval[2]>0)) FillHist("h2DProb2AbThresh1Ab0",lnprobval,jetpt,1);
-  if(kTagDec[0][Double]&&(ipval[2]>0)&&(ipval[3]>0)) FillHist("h2DProb2AbThresh2Ab0",lnprobval,jetpt,1);
+  if(kTagDec[0][Double]) {FillHist("h2DProb2AboveThresh",lnprobval,jetpt,1);}
+  if(kTagDec[0][Double]&&(ipval[2]>0)) { FillHist("h2DProb2AbThresh1Ab0",lnprobval,jetpt,1);}
+  if(kTagDec[0][Double]&&(ipval[2]>0)&&(ipval[3]>0)) { FillHist("h2DProb2AbThresh2Ab0",lnprobval,jetpt,1);}
 }
 
 void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){
