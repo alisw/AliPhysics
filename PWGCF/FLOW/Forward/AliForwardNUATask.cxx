@@ -245,9 +245,12 @@ void AliForwardNUATask::UserExec(Option_t *)
 
 Double_t AliForwardNUATask::InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight)
 {
+
   if ((phiBin == 17) && (etaBin >= 125 && etaBin <= 137)){
 
-    if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 18) > 0) return weight;
+    //std::cout << "interpolating 1 " << std::endl;
+
+    if (!(weight == 0 || forwarddNdedp.GetBinContent(etaBin, 18) == 0)) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) return weight;
@@ -262,7 +265,10 @@ Double_t AliForwardNUATask::InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, 
 
    }
   if ((phiBin == 18) && (etaBin >= 125 && etaBin <= 137)){
-    if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 17) > 0 ) return weight;
+  //std::cout << "weight = " << weight << std::endl;
+    //std::cout << "interpolating 2 " << std::endl;
+
+    if (!(weight == 0 || forwarddNdedp.GetBinContent(etaBin, 17) == 0 ) )return weight;
     //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) return weight;
@@ -274,7 +280,10 @@ Double_t AliForwardNUATask::InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, 
     //std::cout << weight << std::endl;
   }
   if ((phiBin == 14) && (etaBin >= 168 && etaBin <= 185)){
-    if (weight > 0) return weight;
+    //std::cout << "interpolating 3 " << std::endl;
+
+    if (!(weight == 0)) return weight;
+
     //if (forwarddNdedp.GetBinContent(etaBin + 1, phiBin) > 0 ) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin + 2, phiBin) > 0 ) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin + 3, phiBin) > 0 ) return weight;

@@ -127,14 +127,14 @@ public:
   Double_t applyNUAforward(TH2D*& dNdetadphi, Int_t etaBin, Int_t phiBin, Double_t eta, Double_t phi, Double_t zvertex, Double_t weight){
 
     // holes in the FMD
-    if (fSettings.nua_mode & fSettings.kFill){
-      if (etaBin >= 125 && etaBin <=137){
-        if (phiBin == 17 || phiBin == 18) weight = 1.;
-      }
-      if (etaBin >= 168 && etaBin <=185){
-        if (phiBin == 14) weight = 1.;
-      }
-    }
+    // if (fSettings.nua_mode & fSettings.kFill){
+    //   if (etaBin >= 125 && etaBin <=137){
+    //     if (phiBin == 17 || phiBin == 18) weight = 1.;
+    //   }
+    //   if (etaBin >= 168 && etaBin <=185){
+    //     if (phiBin == 14) weight = 1.;
+    //   }
+    // }
 
     if (fSettings.nua_mode & fSettings.kInterpolate) {
       //std::cout << "interpolating" << std::endl;
