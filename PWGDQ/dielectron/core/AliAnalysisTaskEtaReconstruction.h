@@ -159,6 +159,7 @@ public:
    void   SetUpperPreFilterMass(double prefilterMassCut) {fUpperPreFilterMass = prefilterMassCut;};
    void   SetLowerPreFilterMass(double prefilterMassCut) {fLowerPreFilterMass = prefilterMassCut;};
    void   SetMassCut(Bool_t DoMassCut) {fDoMassCut = DoMassCut;};
+   void   SetPhotonMass(Double_t photonMass) {fPhotonMass = photonMass;};
 
 
    // Track cuts setter
@@ -448,6 +449,7 @@ private:
   Bool_t fUsePreFilter;
   Bool_t fDoULSandLS;
   Bool_t fDoMassCut;
+  Bool_t fPhotonMass;
 
   std::vector<Particle> fGenNegPart;
   std::vector<Particle> fGenPosPart;
