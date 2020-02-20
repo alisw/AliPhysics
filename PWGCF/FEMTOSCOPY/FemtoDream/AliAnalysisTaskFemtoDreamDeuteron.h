@@ -39,6 +39,12 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   void SetTrackCutsAntiProtonDCA(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsAntiProtonDCA = trkCuts;};
   void SetTrackCutsAntiProtonMass(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsAntiProtonMass = trkCuts;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {fConfig = config;};
+  void SetUseDumpster(bool use) {
+    fUseDumpster = use;
+  }
+  void SetUseDumpsterRestPairs(bool use) {
+    fUseDumpsterRestPairs = use;
+  }
  private:
   AliAnalysisTaskFemtoDreamDeuteron(
     const AliAnalysisTaskFemtoDreamDeuteron &task);
@@ -47,6 +53,8 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   bool fIsMC;                               //
+  bool fUseDumpster;  //
+  bool fUseDumpsterRestPairs;  //
   AliFemtoDreamEvent *fEvent;               //!  on Runtime
   AliFemtoDreamTrack *fTrack;               //!
   AliFemtoDreamEventCuts *fEventCuts;       //   Stream these bad boys
@@ -118,7 +126,7 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   AliFemtoDreamDump *fDeuteronAntiDeuteronDump; //!
   TList* fDumpster; //!
   int fTrackBufferSize;                     //
-  ClassDef(AliAnalysisTaskFemtoDreamDeuteron, 4)
+  ClassDef(AliAnalysisTaskFemtoDreamDeuteron, 5)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOTUTORIAL_H_ */

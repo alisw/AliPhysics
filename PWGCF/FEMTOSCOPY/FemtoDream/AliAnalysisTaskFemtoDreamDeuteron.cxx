@@ -81,6 +81,8 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fAntiProtonAntiDeuteronDump(nullptr),
     fDeuteronAntiDeuteronDump(nullptr),
     fDumpster(nullptr),
+    fUseDumpster(nullptr),
+    fUseDumpsterRestPairs(nullptr),
     fTrackBufferSize() {
 }
 
@@ -155,6 +157,8 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char 
     fAntiProtonAntiDeuteronDump(nullptr),
     fDeuteronAntiDeuteronDump(nullptr),
     fDumpster(nullptr),
+    fUseDumpster(nullptr),
+    fUseDumpsterRestPairs(nullptr),
     fTrackBufferSize(2000) {
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
@@ -189,7 +193,7 @@ AliAnalysisTaskFemtoDreamDeuteron::~AliAnalysisTaskFemtoDreamDeuteron() {
   delete fTrackCutsAntiProtonMass;
   delete fPairCleaner;
   delete fPartColl;
-  
+
   if (fProtonProtonDump) {
     delete fProtonProtonDump;
   }
@@ -449,31 +453,34 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   fDumpster->SetName("Dumpster");
   fDumpster->SetOwner(kTRUE);
 
+  if (fUseDumpster) {
+    fProtonDeuteronDump = new AliFemtoDreamDump("pd");
+    fDumpster->Add(fProtonDeuteronDump->GetOutput());
 
-  fProtonProtonDump = new AliFemtoDreamDump("pp");
-  fDumpster->Add(fProtonProtonDump->GetOutput());
+    fAntiProtonAntiDeuteronDump = new AliFemtoDreamDump("ApAd");
+    fDumpster->Add(fAntiProtonAntiDeuteronDump->GetOutput());
+  }
 
-  fProtonAntiProtonDump = new AliFemtoDreamDump("pAp");
-  fDumpster->Add(fProtonAntiProtonDump->GetOutput());
+  if (fUseDumpsterRestPairs) {
 
-  fProtonDeuteronDump = new AliFemtoDreamDump("pd");
-  fDumpster->Add(fProtonDeuteronDump->GetOutput());
+    fProtonProtonDump = new AliFemtoDreamDump("pp");
+    fDumpster->Add(fProtonProtonDump->GetOutput());
 
-  fProtonAntiDeuteronDump = new AliFemtoDreamDump("pAd");
-  fDumpster->Add(fProtonAntiDeuteronDump->GetOutput());
+    fProtonAntiProtonDump = new AliFemtoDreamDump("pAp");
+    fDumpster->Add(fProtonAntiProtonDump->GetOutput());
 
-  fAntiProtonAntiProtonDump = new AliFemtoDreamDump("ApAp");
-  fDumpster->Add(fAntiProtonAntiProtonDump->GetOutput());
+    fProtonAntiDeuteronDump = new AliFemtoDreamDump("pAd");
+    fDumpster->Add(fProtonAntiDeuteronDump->GetOutput());
 
-  fAntiProtonDeuteronDump = new AliFemtoDreamDump("Apd");
-  fDumpster->Add(fAntiProtonDeuteronDump->GetOutput());
+    fAntiProtonAntiProtonDump = new AliFemtoDreamDump("ApAp");
+    fDumpster->Add(fAntiProtonAntiProtonDump->GetOutput());
 
-  fAntiProtonAntiDeuteronDump = new AliFemtoDreamDump("ApAd");
-  fDumpster->Add(fAntiProtonAntiDeuteronDump->GetOutput());
+    fAntiProtonDeuteronDump = new AliFemtoDreamDump("Apd");
+    fDumpster->Add(fAntiProtonDeuteronDump->GetOutput());
 
-  fDeuteronAntiDeuteronDump = new AliFemtoDreamDump("dAd");
-  fDeuteronAntiDeuteronDump->SetkstarThreshold(0.3);
-  fDumpster->Add(fDeuteronAntiDeuteronDump->GetOutput());
+    fDeuteronAntiDeuteronDump = new AliFemtoDreamDump("dAd");
+    fDumpster->Add(fDeuteronAntiDeuteronDump->GetOutput());
+  }
 
   if (!fEventCuts->GetMinimalBooking()) {
     fEvtList = fEventCuts->GetHistList();
@@ -702,29 +709,35 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
                     std::vector<AliFemtoDreamBasePart> &vec2,
                     AliFemtoDreamEvent * evt, const int pdg1, const int pdg2);
 
-      if (fProtonProtonDump) {
-        fProtonProtonDump->SetEvent(DCAProtons, DCAProtons, fEvent, 2212, 2212);
+
+      if (fUseDumpster) {
+        if (fProtonDeuteronDump) {
+          fProtonDeuteronDump->SetEvent(DCAProtons, DCADeuterons, fEvent, 2212, 1000010020);
+        }
+
+        if (fAntiProtonAntiDeuteronDump) {
+          fAntiProtonAntiDeuteronDump->SetEvent(DCAAntiProtons, DCAAntiDeuterons, fEvent, -2212, -1000010020);
+        }
       }
-      if (fProtonAntiProtonDump) {
-        fProtonAntiProtonDump->SetEvent(DCAProtons, DCAAntiProtons, fEvent, 2212, -2212);
-      }
-      if (fProtonDeuteronDump) {
-        fProtonDeuteronDump->SetEvent(DCAProtons, DCADeuterons, fEvent, 2212, 1000010020);
-      }
-      if (fProtonAntiDeuteronDump) {
-        fProtonAntiDeuteronDump->SetEvent(DCAProtons, DCAAntiDeuterons, fEvent, 2212, -1000010020);
-      }
-      if (fAntiProtonAntiProtonDump) {
-        fAntiProtonAntiProtonDump->SetEvent(DCAAntiProtons, DCAAntiProtons, fEvent, -2212, -2212);
-      }
-      if (fAntiProtonDeuteronDump) {
-        fAntiProtonDeuteronDump->SetEvent(DCAAntiProtons, DCADeuterons, fEvent, -2212, 1000010020);
-      }
-      if (fAntiProtonAntiDeuteronDump) {
-        fAntiProtonAntiDeuteronDump->SetEvent(DCAAntiProtons, DCAAntiDeuterons, fEvent, -2212, -1000010020);
-      }
-      if (fDeuteronAntiDeuteronDump) {
-        fDeuteronAntiDeuteronDump->SetEvent(DCADeuterons, DCAAntiDeuterons, fEvent, 1000010020, -1000010020);
+      if (fUseDumpsterRestPairs) {
+        if (fProtonProtonDump) {
+          fProtonProtonDump->SetEvent(DCAProtons, DCAProtons, fEvent, 2212, 2212);
+        }
+        if (fProtonAntiProtonDump) {
+          fProtonAntiProtonDump->SetEvent(DCAProtons, DCAAntiProtons, fEvent, 2212, -2212);
+        }
+        if (fProtonAntiDeuteronDump) {
+          fProtonAntiDeuteronDump->SetEvent(DCAProtons, DCAAntiDeuterons, fEvent, 2212, -1000010020);
+        }
+        if (fAntiProtonAntiProtonDump) {
+          fAntiProtonAntiProtonDump->SetEvent(DCAAntiProtons, DCAAntiProtons, fEvent, -2212, -2212);
+        }
+        if (fAntiProtonDeuteronDump) {
+          fAntiProtonDeuteronDump->SetEvent(DCAAntiProtons, DCADeuterons, fEvent, -2212, 1000010020);
+        }
+        if (fDeuteronAntiDeuteronDump) {
+          fDeuteronAntiDeuteronDump->SetEvent(DCADeuterons, DCAAntiDeuterons, fEvent, 1000010020, -1000010020);
+        }
       }
     }
   }
@@ -764,7 +777,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::ResetGlobalTrackReference() {
 }
 
 void AliAnalysisTaskFemtoDreamDeuteron::StoreGlobalTrackReference(AliAODTrack *track) {
-  
+
   const int trackID = track->GetID();
   if (trackID < 0) {
     return;
