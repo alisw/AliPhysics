@@ -223,6 +223,16 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
+  else if(cutDefinition == "kITSmin"){
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSmin, LMEECutLib::kScheidCuts));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kITSmax"){
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSmax, LMEECutLib::kScheidCuts));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
   else{
     std::cout << "Undefined cut definition...." << std::endl;
     return 0x0;
