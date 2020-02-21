@@ -15,6 +15,8 @@
 #include "TString.h"
 #include "AliEventCuts.h"
 
+
+
 class TList;
 class AliCFContainer;
 // class AliTHn;
@@ -116,7 +118,9 @@ private:
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
- Int_t      ConvertRunNumber(Int_t run);
+  Int_t      ConvertRunNumber(Int_t run);
+  Bool_t HasValidFMDYS(TH2D h);
+  
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
 /*
@@ -295,6 +299,7 @@ private:
   THnSparseF* fhistits;
   AliTHn* fhSecFMD;
   //  const TH2D& d2Ndetadphi;
+  TH2D*fOutliers;
   TH2F*fFMDV0;
   TH2F*fFMDV0_post;
   TH2F*fFMDV0A;
