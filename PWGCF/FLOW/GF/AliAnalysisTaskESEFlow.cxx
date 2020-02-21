@@ -163,6 +163,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fFlowRFPsPtMax(5.0),
     fFlowPOIsPtMin(0.0),
     fFlowPOIsPtMax(10.0),
+    fRedFlowPtMin(0.0),
+    fRedFlowPtMax(20.0),
 
     fPtAxis(new TAxis()),
     fCentAxis(new TAxis()),
@@ -285,6 +287,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fFlowRFPsPtMax(5.0),
     fFlowPOIsPtMin(0.0),
     fFlowPOIsPtMax(10.0),
+    fRedFlowPtMin(0.0),
+    fRedFlowPtMax(20.0),
 
     fPtAxis(new TAxis()),
     fCentAxis(new TAxis()),
@@ -503,10 +507,6 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fhEvPlPsi_2V0A->Sumw2();
     fqnDist->Add(fhEvPlPsi_2V0A);
 
-    TH1* tempdn = nullptr;
-    tempdn = new TProfile("<<2,-2>>_10_20_diff_temp","10_20",nPtBin,PtEdges);
-    tempdn->Sumw2();
-    fOutputList->Add(tempdn);
 
     for (Int_t iQnR(0);iQnR<2;++iQnR){
         TH1* tempAvgQn_TPC = nullptr;
@@ -1292,19 +1292,6 @@ void AliAnalysisTaskESEFlow::POIVectors(const Float_t centrality, Int_t q2ESECod
 
         FillCorrelation(centrality, dPtL, q2ESECodeTPC, q3ESECodeTPC, q2ESECodeV0C, q3ESECodeV0C, q2ESECodeV0A, q3ESECodeV0A, 0, 1);
 
-        double dNum2=0.0;
-        double dDenom2=0.0;
-        dNum2 = TwoDiffGap10M(2,-2).Re();
-        dDenom2 = TwoDiffGap10M(0,0).Re();
-        double tempValueDiff = 0.0;
-        if (dDenom2>0.0) { tempValueDiff = dNum2/dDenom2;}
-        if(TMath::Abs(tempValueDiff)<1){
-            if (centrality>10 && centrality <=20){
-                TProfile* tempdn = (TProfile*)fOutputList->FindObject("<<2,-2>>_10_20_diff_temp");
-                tempdn->Fill(dPtL,tempValueDiff,dDenom2);
-            }
-
-        }
     }
 
     return;
@@ -1328,12 +1315,13 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
 
     Double_t M = 0;
     Double_t M_SP = 0;
+
     if(iTracks < 1 ) { return; }
     for(Int_t i(0); i < iTracks; ++i) 
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track || !IsTrackSelected(track)) { continue; }
-        if(!WithinRFP(track)){continue;} // check if also within reference particle
+        if(!WithinRedRP(track)){continue;} // 
 
         double dEta = track->Eta();
         double dPhi = track->Phi();
@@ -1341,10 +1329,9 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
 
         Double_t dWeight = GetFlowWeight(track,dVz);
 
-        //if(- (0.5*dEtaGap-0.1) < dEta && dEta < (0.5*dEtaGap-0.1))
         if(- (0.4) < dEta && dEta < (0.4))
         {
-            M += 1;
+            M += dWeight;
             for(Int_t iHarm(0); iHarm < 2; ++iHarm)
             {                
                 Double_t dCos = dWeight * TMath::Cos( (iHarm+2) * dPhi);
@@ -1358,8 +1345,8 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
             M_SP += 1;
             for(Int_t iHarm(0); iHarm < 2; ++iHarm)
             {                
-                Double_t dCos = dWeight * TMath::Cos( (iHarm+2) * dPhi);
-                Double_t dSin = dWeight * TMath::Sin( (iHarm+2) * dPhi);
+                Double_t dCos = TMath::Cos( (iHarm+2) * dPhi);
+                Double_t dSin = TMath::Sin( (iHarm+2) * dPhi);
                 QxnTPCSP[iHarm] += dCos;
                 QynTPCSP[iHarm] += dSin;
             }
@@ -1676,6 +1663,28 @@ void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, I
                 }
             }
             break;
+        case 3 :
+            if(!bHasGap){
+                if(doDiff){
+                    cDnDiff = ThreeDiff(0,0,0);
+                    cNumDiff = ThreeDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
+                }
+                if(doRef){
+                    cDn = Three(0,0,0);
+                    cNum = Three(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
+                }
+            }
+            else{
+                if(doDiff){
+                    cDnDiff = ThreeDiffGapM(0,0,0);
+                    cNumDiff = ThreeDiffGapM(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
+                }
+                if(doRef){
+                    cDn = ThreeGapM(0,0,0);
+                    cNum = ThreeGapM(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
+                }
+            }
+            break;
         case 4 :
             if(!bHasGap){
                 if(doDiff){
@@ -1853,6 +1862,14 @@ Bool_t AliAnalysisTaskESEFlow::WithinPOI(const AliVParticle* track) const
     if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
     if(fFlowPOIsPtMin > 0.0 && track->Pt() < fFlowPOIsPtMin) { return kFALSE; }
     if(fFlowPOIsPtMax > 0.0 && track->Pt() > fFlowPOIsPtMax) { return kFALSE; }
+    
+    return kTRUE;
+}
+Bool_t AliAnalysisTaskESEFlow::WithinRedRP(const AliVParticle* track) const
+{
+    if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
+    if(fRedFlowPtMin > 0.0 && track->Pt() < 0.0) { return kFALSE; }
+    if(fRedFlowPtMax > 0.0 && track->Pt() > 20.0) { return kFALSE; }
     
     return kTRUE;
 }
