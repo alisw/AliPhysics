@@ -349,6 +349,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiInPerpConeTOFBC0 ;                  //!<! Eta vs. phi of tracks in perpendicular cone, with TOF BC=0.
   
   TH3F *   fhPtM02SumPtCone;                           //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone
+  TH3F *   fhPtM02SumPtConeMC[fgkNmcTypes];            //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle
   
   TH2F *   fhConeSumPtExoTrigger ;                     //!<! Cluster and tracks Sum Pt in the cone. Trigger is exotic
   TH2F *   fhConeSumPtClusterExoTrigger ;              //!<! Clusters Sum Pt  in the cone. Trigger is exotic
