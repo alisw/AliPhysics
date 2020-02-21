@@ -267,6 +267,17 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTH2(Form("hThetagPartLevelClosureNoRespFine_%d", cent), Form("Thetag response at particle level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
         fHistManager.CreateTH2(Form("hThetagDetLevelClosureNoRespFine_%d", cent), Form("Thetag response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       }
+      // a bit of QA stuff
+      fHistManager.CreateTH2(Form("hQANEFPtPart_%d", cent), Form("Neutral energy fraction at part. level, %d centrality bin; p_{t} (GeV/c); NEF", cent), 350, 0., 350., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQANEFPtDet_%d", cent), Form("Neutral energy fraction at det. level, %d centrality bin; p_{t} (GeV/c); NEF", cent), 350, 0., 350., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAZchPtPart_%d", cent), "z_{ch,max} at part. level; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAZchPtDet_%d", cent), Form("z_{ch,max} at det. level, %d centrality bin; p_{t} (GeV/c); z_{ch,max}", cent), 350, 0., 350., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAZnePtPart_%d", cent), Form("z_{ne,max} at part. level, %d centrality bin; p_{t} (GeV/c); z_{ne,max}", cent), 350, 0., 350., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAZnePtDet_%d", cent), Form("z_{ne,max} at det. level, %d centrality bin; p_{t} (GeV/c); z_{ne,max}", cent), 350, 0., 350., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQANChPtPart_%d", cent), Form("Number of charged constituents at part. level, %d centrality bin; p_{t} (GeV/c); N_{ch}", cent), 350, 0., 350., 100, 0., 100.);
+      fHistManager.CreateTH2(Form("hQANChPtDet_%d", cent), Form("Number of charged constituents at det. level, %d centrality bin; p_{t} (GeV/c); N_{ch}", cent), 350, 0., 350., 100, 0., 100.);
+      fHistManager.CreateTH2(Form("hQANnePtPart_%d", cent), Form("Number of neutral constituents at part. level, %d centrality bin; p_{t} (GeV/c); N_{ne}", cent), 350, 0., 350., 100, 0., 100.);
+      fHistManager.CreateTH2(Form("hQANnePtDet_%d", cent), Form("Number of neutral constituents at det. level, %d centrality bin; p_{t} (GeV/c); N_{ne}", cent), 350, 0., 350., 100, 0., 100.);
     }
   }
   else
@@ -349,7 +360,25 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTH2("hThetagPartLevelClosureNoRespFine", "Thetag response at particle level (closure test, jets not used for the response matrix)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       fHistManager.CreateTH2("hThetagDetLevelClosureNoRespFine", "Thetag response at detector level (closure test, jets not used for the response matrix)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
     }
+
+    // a bit of QA stuff
+    fHistManager.CreateTH2("hQANEFPtPart", "Neutral energy fraction at part. level; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
+    fHistManager.CreateTH2("hQANEFPtDet", "Neutral energy fraction at det. level; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
+    fHistManager.CreateTH2("hQAZchPtPart", "z_{ch,max} at part. level; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
+    fHistManager.CreateTH2("hQAZchPtDet", "z_{ch,max} at det. level; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
+    fHistManager.CreateTH2("hQAZnePtPart", "z_{ne,max} at part. level; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
+    fHistManager.CreateTH2("hQAZnePtDet", "z_{ne,max} at det. level; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
+    fHistManager.CreateTH2("hQANChPtPart", "Number of charged constituents at part. level; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
+    fHistManager.CreateTH2("hQANChPtDet", "Number of charged constituents at det. level; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
+    fHistManager.CreateTH2("hQANnePtPart", "Number of neutral constituents at part. level; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
+    fHistManager.CreateTH2("hQANnePtDet", "Number of neutral constituents at det. level; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
   }
+
+  // a bit of QA stuff
+  fHistManager.CreateTH2("hSDUsedChargedPtjvPtcPart", "p_{t,j} vs. p_{t,const} for tracks used in SD", 350., 0., 350., 350, 0., 350.);
+  fHistManager.CreateTH2("hSDUsedChargedPtjvPtcDet", "p_{t,j} vs. p_{t,const} for tracks used in SD", 350., 0., 350., 350, 0., 350.);
+  fHistManager.CreateTH2("hSDUsedNeutralPtjvPtcPart", "p_{t,j} vs. p_{t,const} for clusters used in SD", 350., 0., 350., 350, 0., 350.);
+  fHistManager.CreateTH2("hSDUsedNeutralPtjvPtcDet", "p_{t,j} vs. p_{t,const} for clusters used in SD", 350., 0., 350., 350, 0., 350.);
 
   for (auto h : *fHistManager.GetListOfHistograms())
     fOutput->Add(h);
@@ -493,6 +522,23 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     // Get the softdrop response
     std::vector<double> softdropDet, softdropPart;
 
+    // For QA histograms
+    double znepart = 0., znedet = 0., zchpart = 0., zchdet = 0., nchpart = 0., nchdet = 0., nnepart = 0., nnedet = 0.; 
+    if(clusters){
+      auto leadcluster = detjet->GetLeadingCluster(clusters->GetArray());
+      nnedet = detjet->GetNumberOfClusters();
+      if(leadcluster){
+        TLorentzVector ptvec;
+        leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+        znedet = detjet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz());
+      }
+    }
+      if(tracks){
+        nchdet = detjet->GetNumberOfTracks();
+        auto leadingtrack = detjet->GetLeadingTrack(tracks->GetArray());
+        if(leadingtrack) zchdet = detjet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz());
+      }
+
     try
     {
       softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(), tracks, clusters);
@@ -505,6 +551,23 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
                pointThetag[4] = {untaggedDet ? -0.05 : softdropDet[2]/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart[2]/Rjet, partjet->Pt()};
       if (fForceBeamType != kpp)
       {
+        // fill QA histograms
+        fHistManager.FillTH2(Form("hQANEFPtDet_%d", fCentBin), detjet->Pt(), detjet->NEF());
+        fHistManager.FillTH2(Form("hQANEFPtPart_%d", fCentBin), partjet->Pt(), partjet->NEF());
+        if(fUseChargedConstituents) {
+          fHistManager.FillTH2(Form("hQAZchPtDet_%d", fCentBin), detjet->Pt(), zchdet);
+          fHistManager.FillTH2(Form("hQAZchPtPart_%d", fCentBin), detjet->Pt(), zchpart);
+          fHistManager.FillTH2(Form("hQANChPtDet_%d", fCentBin), detjet->Pt(), nchdet);
+          fHistManager.FillTH2(Form("hQANChPtPart_%d", fCentBin), partjet->Pt(), nchpart);
+
+        }
+        if(fUseNeutralConstituents) {
+          fHistManager.FillTH2(Form("hQAZnePtDet_%d", fCentBin), detjet->Pt(), znedet);
+          fHistManager.FillTH2(Form("hQAZnePtPart_%d", fCentBin), partjet->Pt(), znepart);
+          fHistManager.FillTH2(Form("hQANnePtDet_%d", fCentBin), detjet->Pt(), nnedet);
+          fHistManager.FillTH2(Form("hQANnePtPart_%d", fCentBin), partjet->Pt(), nnepart);
+        }
+
         if(fHasResponseMatrixRooUnfold){
           fHistManager.FillTH1(Form("hZgPartLevel_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
           fHistManager.FillTH1(Form("hRgPartLevel_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
@@ -514,6 +577,28 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       }
       else
       {
+        // fill QA histograms
+        auto stat = GetStatisticsConstituentsPart(*partjet, particles);
+        nchpart = stat[0];
+        zchpart = stat[1];
+        nnepart = stat[2];
+        znepart = stat[3];
+        fHistManager.FillTH2("hQANEFPtDet", detjet->Pt(), detjet->NEF());
+        fHistManager.FillTH2("hQANEFPtPart", partjet->Pt(), partjet->NEF());
+        if(fUseChargedConstituents) {
+          fHistManager.FillTH2("hQAZchPtDet", detjet->Pt(), zchdet);
+          fHistManager.FillTH2("hQAZchPtPart", detjet->Pt(), zchpart);
+          fHistManager.FillTH2("hQANChPtDet", detjet->Pt(), nchdet);
+          fHistManager.FillTH2("hQANChPtPart", partjet->Pt(), nchpart);
+
+        }
+        if(fUseNeutralConstituents) {
+          fHistManager.FillTH2("hQAZnePtDet", detjet->Pt(), znedet);
+          fHistManager.FillTH2("hQAZnePtPart", partjet->Pt(), znepart);
+          fHistManager.FillTH2("hQANnePtDet", detjet->Pt(), nnedet);
+          fHistManager.FillTH2("hQANnePtPart", partjet->Pt(), nnepart);
+        }
+
         if(fHasResponseMatrixRooUnfold){
           fHistManager.FillTH1("hZgPartLevel", pointZg[kIndSDPart], pointZg[kIndPtPart]);
           fHistManager.FillTH1("hRgPartLevel", pointRg[kIndSDPart], pointRg[kIndPtPart]);
@@ -678,7 +763,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
   return kTRUE;
 }
 
-std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const
+std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) 
 {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
@@ -697,6 +782,12 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
       fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
+      if(isMC) {
+        if(track->Charge()) fHistManager.FillTH2("hSDUsedChargedPtjvPtcPart", jet.Pt(), constituentTrack.pt());
+        else fHistManager.FillTH2("hSDUsedNeutralPtjvPtcPart", jet.Pt(), constituentTrack.pt());
+      } else {
+        fHistManager.FillTH2("hSDUsedChargedPtjvPtcDet", jet.Pt(), constituentTrack.pt());
+      }
     }
   }
 
@@ -711,6 +802,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
       fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
       constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
       constituents.push_back(constituentCluster);
+      fHistManager.FillTH2("hSDUsedNeutralPtjvPtcDet", jet.Pt(), constituentCluster.pt());
     }
   }
 
@@ -757,6 +849,29 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
                                 softdropstruct.mu(),
                                 static_cast<double>(softdropstruct.dropped_count())};
   return result;
+}
+
+std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::GetStatisticsConstituentsPart(const AliEmcalJet &jet, const AliParticleContainer *particles) const {
+  AliVParticle *leadingcharged = nullptr, *leadingneutral = nullptr;
+  int ncharged = 0, nneutral = 0;
+  for(auto ipart = 0; ipart < jet.GetNumberOfTracks(); ipart++){
+    auto part = jet.TrackAt(ipart, particles->GetArray());
+    if(part->Charge()) {
+      ncharged++;
+      if(!leadingcharged) leadingcharged = part;
+      else if(part->E() > leadingcharged->E()) leadingcharged = part;
+    } else {
+      nneutral++;
+      if(!leadingneutral) leadingneutral = part;
+      else if(part->E() > leadingneutral->E()) leadingneutral = part;
+    }
+  }
+
+  // Calculate z
+  Double_t zch = 0, zne = 0;
+  if(leadingcharged) zch = jet.GetZ(leadingcharged);
+  if(leadingneutral) zne = jet.GetZ(leadingneutral);
+  return {static_cast<double>(ncharged), zch, static_cast<double>(nneutral), zne};
 }
 
 TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetDefaultPartLevelPtBinning() const

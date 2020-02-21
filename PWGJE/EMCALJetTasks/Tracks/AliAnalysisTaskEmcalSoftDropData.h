@@ -72,7 +72,7 @@ protected:
   TBinning *GetRgBinning(double R) const;
 
   Double_t GetDownscaleWeight() const;
-  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
+  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
 private:
   UInt_t                        fTriggerBits;               ///< Trigger selection bits
