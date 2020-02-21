@@ -179,6 +179,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
 
     Int_t           fBuffer_Surrounding_NCells;                //!<! array buffer
     Int_t*          fBuffer_Surrounding_Cells_ID;                //!<! array buffer
+    Float_t*          fBuffer_Surrounding_Cells_Time;                //!<! array buffer
     Float_t*        fBuffer_Surrounding_Cells_R;                //!<! array buffer
     Float_t*        fBuffer_Surrounding_Cells_E;                //!<! array buffer
     Float_t*        fBuffer_Surrounding_Cells_RelativeEta;              //!<! array buffer
