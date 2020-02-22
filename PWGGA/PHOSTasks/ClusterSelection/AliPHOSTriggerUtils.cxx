@@ -241,7 +241,6 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
       if(fRun>=265015 && fRun<=267166){ //LHC16qrst
         Int_t ddl = WhichDDL(mod, ix) ;  
         Double_t rdm =gRandom->Uniform() ; 
-printf("E=%f, ddl=%d, Prob=%e \n",clu->E(), ddl, TriggerProbabilityLHC16qrst(clu->E(),ddl)) ;       
         if(rdm<TriggerProbabilityLHC16qrst(clu->E(),ddl)) result=1 ;         
       }
       else{  
@@ -369,8 +368,8 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC16qrst(Double_t x, Int_t ddl)
   
   if(fRun>=265015 && fRun<=267166){ //LHC16qrst
     switch(ddl){  
-    case 8 : return 9.573766e-01/(TMath::Exp((3.871535e+00-x)/2.876473e-01)+1.)+(1.-9.573766e-01)/(TMath::Exp((7.153766e+00-x)/2.876473e-01)+1.) ;
-    case 9 : return 9.228485e-01/(TMath::Exp((3.798753e+00-x)/2.889749e-01)+1.)+(1.-9.228485e-01)/(TMath::Exp((8.212820e+00-x)/2.889749e-01)+1.) ;
+    case 8 : return  9.573766e-01/(TMath::Exp((3.871535e+00-x)/2.876473e-01)+1.)+(1.-9.573766e-01)/(TMath::Exp((7.153766e+00-x)/2.876473e-01)+1.) ;
+    case 9 : return  9.228485e-01/(TMath::Exp((3.798753e+00-x)/2.889749e-01)+1.)+(1.-9.228485e-01)/(TMath::Exp((8.212820e+00-x)/2.889749e-01)+1.) ;
     case 10 : return 9.737340e-01/(TMath::Exp((3.684112e+00-x)/2.749400e-01)+1.)+(1.-9.737340e-01)/(TMath::Exp((6.193852e+00-x)/2.749400e-01)+1.) ;
     case 11 : return 9.141516e-01/(TMath::Exp((3.775433e+00-x)/2.522816e-01)+1.)+(1.-9.141516e-01)/(TMath::Exp((5.245370e+00-x)/2.522816e-01)+1.) ;
     case 12 : return 8.921613e-01/(TMath::Exp((3.881223e+00-x)/2.823943e-01)+1.)+(1.-8.921613e-01)/(TMath::Exp((5.141498e+00-x)/2.823943e-01)+1.) ;
