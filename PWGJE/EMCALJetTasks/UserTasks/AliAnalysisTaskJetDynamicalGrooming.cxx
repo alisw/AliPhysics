@@ -786,6 +786,12 @@ void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
       fTreeSubstructure->Branch("detLevel.", &fDetLevelJetSplittings, bufferSize, splitLevel);
     }
   }
+
+  if (fIsPythia) {
+    // Will be automatically filled by AliAnalysisTaskEmcal.
+    fTreeSubstructure->Branch("ptHardBin", fPtHardInitialized ? &fPtHardBinGlobal : &fPtHardBin);
+    fTreeSubstructure->Branch("ptHard", &fPtHard);
+  }
 }
 
 /**
@@ -1497,6 +1503,7 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
 
     jetContTrue = task->AddJetContainer(njetsTrue, strType, R);
     if (jetContTrue) {
+      // This probably doesn't matter, but leaving just in case.
       jetContTrue->SetRhoName(nrhoBase);
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(acut);
@@ -1530,6 +1537,7 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
 
     jetContTrue = task->AddJetContainer(njetsTrue, strType, R);
     if (jetContTrue) {
+      // This probably doesn't matter, but leaving just in case.
       jetContTrue->SetRhoName(nrhoBase);
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(acut);
@@ -1637,6 +1645,12 @@ std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
   tempSS << "\tDerivative subtracter order: " << fDerivSubtrOrder << "\n";
   tempSS << "\tStore detector level jets: " << fStoreDetLevelJets << "\n";
   tempSS << "\tStore recursive jet splittings (instead of just iterative): " << fStoreRecursiveSplittings << "\n";
+  // Jet containers
+  tempSS << "Attached jet containers:\n";
+  for (unsigned int i = 0; i < fJetCollArray.GetEntries(); i++)
+  {
+    tempSS << "\t" << GetJetContainer(i)->GetName() << "\n";
+  }
   return tempSS.str();
 }
 
