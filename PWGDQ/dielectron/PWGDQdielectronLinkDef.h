@@ -25,6 +25,7 @@
 #pragma link C++ class AliAnalysisTaskElectronEfficiency+;
 #pragma link C++ class AliAnalysisTaskElectronEfficiencyV2+;
 #pragma link C++ class AliAnalysisTaskEtaReconstruction+;
+#pragma link C++ class AliAnalysisTaskTagAndProbe+;
 #pragma link C++ class AliDielectronVarCuts+;
 #pragma link C++ class AliDielectronV0Cuts+;
 #pragma link C++ class AliDielectronTMVACuts+;
