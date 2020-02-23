@@ -14,25 +14,37 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file DecodeZS.h
+/// \file GPUHostDataTypes.h
 /// \author David Rohr
 
-#ifndef O2_GPU_DECODE_ZS_H
-#define O2_GPU_DECODE_ZS_H
+#ifndef GPUHOSTDATATYPES_H
+#define GPUHOSTDATATYPES_H
 
-#include "clusterFinderDefs.h"
-#include "GPUTPCClusterFinderKernels.h"
+#include "GPUCommonDef.h"
+
+// These are complex data types wrapped in simple structs, which can be forward declared.
+// Structures used on the GPU can have pointers to these wrappers, when the wrappers are forward declared.
+// These wrapped complex types are not meant for usage on GPU
+
+#include <vector>
+#include <array>
+#include <memory>
+#include "DataFormatsTPC/Constants.h"
 
 namespace GPUCA_NAMESPACE
 {
+class MCCompLabel;
+namespace dataformats
+{
+template <typename TruthElement>
+class MCTruthContainer;
+} // namespace dataformats
+
 namespace gpu
 {
 
-class GPUTPCClusterFinder;
-class DecodeZS
-{
- public:
-  static GPUd() void decode(GPUTPCClusterFinder& clusterer, GPUTPCClusterFinderKernels::GPUTPCSharedMemory& s, int nBlocks, int nThreads, int iBlock, int iThread);
+struct GPUTPCDigitsMCInput {
+  std::array<const o2::dataformats::MCTruthContainer<o2::MCCompLabel>*, o2::tpc::Constants::MAXSECTOR> v;
 };
 
 } // namespace gpu
