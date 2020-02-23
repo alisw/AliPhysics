@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Feb 11
+// Updated Feb 22
 
 
 #include "AliAnalysisManager.h"
@@ -358,7 +358,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             
             Int_t iptbinMC = GetPtBin(gpt);
             
-            if(abseta < 0.8)
+            if(abseta < 0.5)
             {
                 if(genpid == 3122)
                 {
@@ -384,7 +384,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             }
             
             ////
-            if(abseta < 0.3)
+            if(abseta < 0.1)
             {
                 if(genpid == 3122)
                 {
@@ -614,7 +614,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 
                 
                 //L
-                if(TMath::Abs(eta) < 0.8)
+                if(TMath::Abs(eta) < 0.5)
                 {
                     if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
                     {
@@ -676,7 +676,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                 }// |eta| < 0.8
                 
-                if(TMath::Abs(eta) < 0.3)
+                if(TMath::Abs(eta) < 0.1)
                 {
                     if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
                     {

@@ -2,7 +2,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Feb 8
+// Updated Feb 22
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -363,7 +363,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         if( ontheflystat == 0 )
         {
-        if(TMath::Abs(eta) < 0.8)
+        if(TMath::Abs(eta) < 0.5)
         {
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 3 && TMath::Abs(negpion) <= 3)
                 {
@@ -383,9 +383,9 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     f3fHistCentVsInvMassAntiLambda1point0Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                 }
                 }
-            } // |eta| < 0.8
+            } // |eta| < 0.5
             
-            if(TMath::Abs(eta) < 0.3)
+            if(TMath::Abs(eta) < 0.1)
             {
                 if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 3 && TMath::Abs(negpion) <= 3)
                 {
@@ -405,7 +405,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         f3fHistCentVsInvMassAntiLambda1point0Masscuttight->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
                 }
-            } // |eta| < 0.3
+            } // |eta| < 0.1
         }// zero onfly V0
     }// end of V0 loop
     ///////////////////
