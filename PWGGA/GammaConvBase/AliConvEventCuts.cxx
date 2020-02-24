@@ -2212,6 +2212,20 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerName="CPHI7-";
       fSpecialTriggerName="AliVEvent::kCaloOnly/CPHI7";
       break;
+    case 26: // V0AND and EMCAL OR DCAL fired - q
+      fSpecialSubTrigger=1;
+      fSpecialTriggerName="AliVEvent::kCaloOnly/AliVEvent::kEMC7";
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="CEMC7";
+      fSpecialSubTriggerNameAdditional="CDMC7";
+      break;
+    case 27: // T0OR and EMCAL OR DCAL fired - r
+      fSpecialSubTrigger=1;
+      fSpecialTriggerName="AliVEvent::kCaloOnly/AliVEvent::kEMC8";
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="CEMC8";
+      fSpecialSubTriggerNameAdditional="CDMC8";
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
