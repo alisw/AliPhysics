@@ -444,7 +444,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
       //DOUBT: isEventSelected before or after LoopOverGenParticles?
       
       LoopOverGenParticles(mcArray);
-      cout<<"Loop over gen particles done!!!"<<endl;
       fCEvents->Fill(17); // in case of MC events
     }
   }
@@ -742,7 +741,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		      if(!Xidau) break;
 		      Int_t pdgXidau=Xidau->GetPdgCode();
 		      if(TMath::Abs(pdgXidau)==3122){
-			cout<< "-- I am a lambda" <<endl;
 			Int_t nLambdaDau=Xidau->GetNDaughters();
 			if (nLambdaDau!=2) break;
 			Int_t indFirstLambdaDau=Xidau->GetDaughterLabel(0);
@@ -752,18 +750,15 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 			  if(!Lambdadau) break;
 			  Int_t pdgLambdadau=Lambdadau->GetPdgCode();
 			  if(TMath::Abs(pdgLambdadau)==2212){
-			    cout<< "-- I am a proton from Lambda" <<endl;
 			    mcdaughterProtonFromLambda=Lambdadau;
 			    nFound++;
 			  } else if(TMath::Abs(pdgLambdadau)==211){
-			    cout<< "-- I am a pion from Lambda" <<endl;
 			    mcdaughterPionFromLambda=Lambdadau;
 			    nFound++;
 			  }
 			  mcdaughterLambda=Xidau;
 			}
 		      }	else if(TMath::Abs(pdgXidau)==211) {
-			cout<< "-- I am a pion from Xi" <<endl;
 			mcdaughterPionFromXi=Xidau;
 			nFound++;
 		      }
@@ -797,9 +792,10 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	  }
 	} //if useMCinfo
        
-	if(!fAnalCuts->IsInFiducialAcceptance(xicobj->Pt(),xicobj->Y())) continue;
-	  
-	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,mcdaughterxi,nmclabxic,isXic); //AliAODRecoCascadeHF3Prong, 
+	//if(!fAnalCuts->IsInFiducialAcceptance(xicobj->Pt(),xicobj->Y(4232))) continue;
+	//cout<<"================== > xicobj->Y() = " << xicobj->Y(4232) << endl;
+	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,mcdaughterxi,nmclabxic,isXic); //AliAODRecoCascadeHF3Prong,
+	
 	xicobj->GetSecondaryVtx()->RemoveDaughters();
 	xicobj->UnsetOwnPrimaryVtx();
 	delete xicobj;xicobj=NULL;
@@ -997,8 +993,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fHistonSigmaTOFpi->Fill(nSigmaTOFpi2);
       fHistoProbPion->Fill(probPion1);
       fHistoProbPion->Fill(probPion2);
+    }
   }
- }
  return;
 }
 
@@ -1729,7 +1725,6 @@ AliAODRecoCascadeHF3Prong* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeCas
 
 //________________________________________________________________________
 void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesArray *mcArray){
-  cout<< "Executing Loop over Gen Particles\n";
   for(Int_t kmc=0; kmc<mcArray->GetEntries(); kmc++){
     AliAODMCParticle *mcpart=(AliAODMCParticle*)mcArray->At(kmc);
     if(!mcpart) continue;
@@ -1770,7 +1765,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CheckXic2XiPiPi(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
-  cout<< "Executing Xic2XiPiPi\n";
   if(!mcPart) return -1;
   
   Int_t pdgD=mcPart->GetPdgCode();
@@ -1792,14 +1786,12 @@ Int_t AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CheckXic2XiPiPi(TClonesArray
    Int_t codeRes=-1;
    if(nDau==3){
      for(Int_t iDau=0; iDau<nDau; iDau++){
-       cout << "XiC daughter " << iDau << endl;
        Int_t indDau = labelFirstDau+iDau;
        if(indDau<0) return -1;
        AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
        if(!dau) return -1;
        Int_t pdgdau=dau->GetPdgCode();
        if(TMath::Abs(pdgdau)==3312){ //Xi
-	 cout << "I am a Xi" << endl;
 	 nXi++;
 	 sumPxDau+=dau->Px();
 	 sumPyDau+=dau->Py();
@@ -1814,7 +1806,6 @@ Int_t AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CheckXic2XiPiPi(TClonesArray
 	   if(!Xidau) return -1;
 	   Int_t pdgXidau=Xidau->GetPdgCode();
 	   if(TMath::Abs(pdgXidau)==3122){
-	     cout<< "-- I am a lambda" <<endl;
 	     nLambda++;
 	     Int_t nLambdaDau=Xidau->GetNDaughters();
 	     if (nLambdaDau!=2) return -1;
@@ -1825,34 +1816,26 @@ Int_t AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CheckXic2XiPiPi(TClonesArray
 	       if(!Lambdadau) return -1;
 	       Int_t pdgLambdadau=Lambdadau->GetPdgCode();
 	       if(TMath::Abs(pdgLambdadau)==2212){
-		 cout<< "-- I am a proton from Lambda" <<endl;
 		 nProtons++;
-		 cout << nFound << endl;
 		 arrayDauLab[nFound++]=indLambdaDau;
 		 if (nFound>5) return -1;
 	       } else if(TMath::Abs(pdgLambdadau)==211){
-		 cout<< "-- I am a pion from Lambda" <<endl;
 		 nPions++;
-		 cout << nFound << endl;
 		 arrayDauLab[nFound++]=indLambdaDau;
 		 if (nFound>5) return -1;
 	       }
 	     }
 	   }else if(TMath::Abs(pdgXidau)==211) {
-	     cout<< "-- I am a pion from Xi" <<endl;
 	     nPions++;
-	     cout << nFound << endl;
 	     arrayDauLab[nFound++]=indXiDau;
 	     if (nFound>5) return -1;
 	   }
 	 }
        }else if(TMath::Abs(pdgdau)==211){
-	 cout << "I am a pion from Xic " << endl;
 	 nPions++;
 	 sumPxDau+=dau->Px();
 	 sumPyDau+=dau->Py();
 	 sumPzDau+=dau->Pz();
-	 cout << nFound << endl;
 	 arrayDauLab[nFound++]=indDau;
 	 if (nFound>5) return -1;
        }
