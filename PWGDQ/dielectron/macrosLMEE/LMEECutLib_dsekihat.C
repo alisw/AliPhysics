@@ -264,6 +264,75 @@ class LMEECutLib {
       }
     }
 
+		AliAnalysisCuts *SetupPIDCutsForTag(){
+			//AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts", "cuts", AliDielectronCutGroup::kCompAND);
+			AliDielectronPID* cutsPIDtag   = new AliDielectronPID("PIDtag", "PIDtag");
+			cutsPIDtag->AddCut(AliDielectronPID::kTPC,AliPID::kPion,      -100,4. ,0.0, 1e+10, kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+			cutsPIDtag->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. ,3. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+			cutsPIDtag->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+			return cutsPIDtag;
+		}
+
+		AliAnalysisCuts *SetupTrackCutsForTag(){
+			AliDielectronCutGroup *trCG = new AliDielectronCutGroup("TrackCutsGroup","TrackCutsGroup",AliDielectronCutGroup::kCompAND);
+			AliDielectronTrackCuts *trCuts = new AliDielectronTrackCuts("TrackCuts","TrackCuts");
+			trCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
+			trCuts->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // 1<<4
+			trCG->AddCut(trCuts);
+
+			AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
+
+			varCuts->AddCut(AliDielectronVarManager::kPt, 0.2,10.0);
+			varCuts->AddCut(AliDielectronVarManager::kEta,-0.8,+0.8);
+
+			varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,+1.0);
+			varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,+3.0);
+
+			varCuts->AddCut(AliDielectronVarManager::kNclsITS,  4.0,6.1);
+			varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,0.0,5.0);
+
+			varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,     80.0, 160.0);//crossed rows
+			varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,    2.);
+			varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0,   4.0);
+			trCG->AddCut(varCuts);
+
+			AliDielectronCutGroup *ITSscCG = new AliDielectronCutGroup("ITSscCutsGroup","ITSscCutsGroup",AliDielectronCutGroup::kCompOR);
+
+			AliDielectronVarCuts *varCuts_ITSsc0 = new AliDielectronVarCuts("VarCuts_ITSsc0","VarCuts_ITSsc0");
+			varCuts_ITSsc0->AddCut(AliDielectronVarManager::kNclsSITS,-0.1,+0.1);//accept only Nsc = 0 on ITS
+
+			AliDielectronVarCuts *varCuts_ITSsc1 = new AliDielectronVarCuts("VarCuts_ITSsc1","VarCuts_ITSsc1");
+			varCuts_ITSsc1->AddCut(AliDielectronVarManager::kNclsSITS, 0.9, 1.1);//accept Nsc = 1, but not exactly on first SPD
+			varCuts_ITSsc1->AddCut(AliDielectronVarManager::kClsS1ITS,-0.1,+0.1);//accept Nsc = 1, but not exactly on first SPD//be carefull! value is double
+
+			ITSscCG->AddCut(varCuts_ITSsc0);
+			ITSscCG->AddCut(varCuts_ITSsc1);
+			trCG->AddCut(ITSscCG);
+			return trCG;
+		}
+
+		AliAnalysisCuts *SetupPrePIDCutsForProbe(){
+			AliDielectronPID* precutsPID = new AliDielectronPID("prePID", "prePID");
+			precutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. ,3. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+			return precutsPID;
+		}
+		AliAnalysisCuts *SetupPreTrackCutsForProbe(){
+			AliDielectronCutGroup *trCG = new AliDielectronCutGroup("TrackCutsGroup","TrackCutsGroup",AliDielectronCutGroup::kCompAND);
+			AliDielectronTrackCuts *trCuts = new AliDielectronTrackCuts("TrackCuts","TrackCuts");
+			trCuts->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // 1<<4
+			trCG->AddCut(trCuts);
+			trCG->AddCut(SetupESDtrackCuts());
+			return trCG;
+		}
+
+    AliAnalysisCuts *SetupPIDCutsForPassingProbe(){
+			return SetupPIDCuts();
+		}
+
+    AliAnalysisCuts *SetupTrackCutsForPassingProbe(){
+			return SetupTrackCuts(0.2,10.0,-0.8,+0.8);
+		}
+
   protected:
     TString fCutName;
 
