@@ -119,7 +119,8 @@ template <typename F> double Hypot4(F a, F b, F c, F d) { return std::sqrt(a * a
 //_______________________________________________________________________________
 AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fMLResponse{},
-      fTrackCuts{*AliESDtrackCuts::GetStandardV0DaughterCuts()}, fListHist{nullptr}, fTreeHyp3{nullptr},
+      fTrackCuts{*AliESDtrackCuts::GetStandardV0DaughterCuts()}, fRequireDeuteronTOFpid{false},
+      fRequireProtonTOFpid{false},fRequirePionTOFpid{false}, fListHist{nullptr}, fTreeHyp3{nullptr},
       fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false},
       fDownscaling{false}, fApplyML{false}, fEnableEventMixing{false}, fHistNSigmaDeu{nullptr}, fHistNSigmaP{nullptr},
       fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.},
@@ -130,6 +131,7 @@ AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::strin
       fMaxPtDeu{10.}, fMaxPtP{10.}, fMaxPtPi{1.}, fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{},
       fDeuVector{}, fPVector{}, fPiVector{}, fMLResponseConfigfilePath{}, fEventMixingPool{}, fEventMixingPoolDepth{0} {
   fTrackCuts.SetMinNClustersTPC(0);
+  fTrackCuts.SetEtaRange(-0.9,0.9);
   /// Settings for the custom vertexer
   fVertexer.SetToleranceGuessCompatibility(fVertexerToleranceGuessCompatibility);
   fVertexer.SetMaxDinstanceInit(fVertexerMaxDistanceInit);
@@ -333,8 +335,12 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 
     float nSigmaTPCDeu = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
     if (std::abs(nSigmaTPCDeu) < fMaxNSigmaTPCDeu && dcaNorm > fMinDCA2PrimaryVtxDeu && track->Pt() < fMaxPtDeu) {
-      if (HasTOF(track)) {
-        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron)) < fMaxNSigmaTOFDeu)
+      bool TOFpid = std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron)) < fMaxNSigmaTOFDeu;
+      if (fRequireDeuteronTOFpid) {
+        if (TOFpid)
+          fDeuVector.push_back(track);
+      } else if (HasTOF(track)) {
+        if (TOFpid)
           fDeuVector.push_back(track);
       } else {
         fDeuVector.push_back(track);
@@ -343,8 +349,12 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 
     float nSigmaTPCP = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
     if (std::abs(nSigmaTPCP) < fMaxNSigmaTPCP && dcaNorm > fMinDCA2PrimaryVtxP && track->Pt() < fMaxPtP) {
-      if (HasTOF(track)) {
-        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)) < fMaxNSigmaTOFP)
+      bool TOFpid = std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)) < fMaxNSigmaTOFP;
+      if (fRequireProtonTOFpid) {
+        if (TOFpid)
+          fPVector.push_back(track);
+      } else if (HasTOF(track)) {
+        if (TOFpid)
           fPVector.push_back(track);
       } else {
         fPVector.push_back(track);
@@ -353,8 +363,12 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 
     float nSigmaTPCPi = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
     if (std::abs(nSigmaTPCPi) < fMaxNSigmaTPCPi && dcaNorm > fMinDCA2PrimaryVtxPi && track->Pt() < fMaxPtPi) {
-      if (HasTOF(track)) {
-        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion)) < fMaxNSigmaTOFPi)
+      bool TOFpid = std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion)) < fMaxNSigmaTOFPi;
+      if (fRequirePionTOFpid) {
+        if (TOFpid)
+          fPiVector.push_back(track);
+      } else if (HasTOF(track)) {
+        if (TOFpid)
           fPiVector.push_back(track);
       } else {
         fPiVector.push_back(track);
