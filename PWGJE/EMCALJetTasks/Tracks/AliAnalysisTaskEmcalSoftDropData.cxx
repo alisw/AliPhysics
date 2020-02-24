@@ -111,6 +111,7 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning, "s");
   fHistos->CreateTH2("hNsdVsPt", "nsd vs pt", *nsdBinning, *fPtBinning, "s");
   fHistos->CreateTH2("hThetagVsPt", "thetag vs pt", *thetagBinning,  *fPtBinning, "s");
+  fHistos->CreateTH1("hSkippedJets", "Number of skipped jets", *fPtBinning);
   if(fUseDownscaleWeight){
     fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt (weighted)", *zgBinning, *fPtBinning, "s");
     fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning, "s");
@@ -118,6 +119,7 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
     fHistos->CreateTH2("hThetagVsPtWeighted", "thetag vs pt (weighted)", *thetagBinning,  *fPtBinning, "s");
     fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
     fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300., "s");
+    fHistos->CreateTH1("hSkippedJetsWeighted", "Number of skipped jets (weighted)", *fPtBinning);
   }
 
   // A bit of QA stuff
@@ -171,19 +173,26 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     AliDebugStream(2) << "Next accepted jet with pt " << jet->Pt() << std::endl;
     fHistos->FillTH1("hJetPtRaw", jet->Pt());
     if(fUseDownscaleWeight) fHistos->FillTH1("hJetPtRawWeighted", jet->Pt(), weight);
-    auto zgparams = MakeSoftdrop(*jet, jets->GetJetRadius(), tracks, clusters);
-    bool untagged = zgparams[0] < fZcut;
-    AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << zgparams[0] << std::endl;
-    fHistos->FillTH2("hZgVsPt", zgparams[0], jet->Pt());
-    fHistos->FillTH2("hRgVsPt", untagged ? -0.01 : zgparams[2], jet->Pt());
-    fHistos->FillTH2("hNsdVsPt", untagged ? -1. : zgparams[5], jet->Pt());
-    fHistos->FillTH2("hThetagVsPt", untagged ? -0.05 : zgparams[2]/Rjet, jet->Pt());
-    if(fUseDownscaleWeight) {
-      fHistos->FillTH2("hZgVsPtWeighted", zgparams[0], jet->Pt(), weight);
-      fHistos->FillTH2("hRgVsPtWeighted", untagged ? -0.01 : zgparams[2], jet->Pt(), weight);
-      fHistos->FillTH2("hNsdVsPtWeighted", untagged ? -1. : zgparams[5], jet->Pt(), weight);
-      fHistos->FillTH2("hThetagVsPtWeighted", untagged ? -0.05 : zgparams[2]/Rjet, jet->Pt(), weight);
-    } 
+    try {
+      auto zgparams = MakeSoftdrop(*jet, jets->GetJetRadius(), tracks, clusters);
+      bool untagged = zgparams[0] < fZcut;
+      AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << zgparams[0] << std::endl;
+      fHistos->FillTH2("hZgVsPt", zgparams[0], jet->Pt());
+      fHistos->FillTH2("hRgVsPt", untagged ? -0.01 : zgparams[2], jet->Pt());
+      fHistos->FillTH2("hNsdVsPt", untagged ? -1. : zgparams[5], jet->Pt());
+      fHistos->FillTH2("hThetagVsPt", untagged ? -0.05 : zgparams[2]/Rjet, jet->Pt());
+      if(fUseDownscaleWeight) {
+        fHistos->FillTH2("hZgVsPtWeighted", zgparams[0], jet->Pt(), weight);
+        fHistos->FillTH2("hRgVsPtWeighted", untagged ? -0.01 : zgparams[2], jet->Pt(), weight);
+        fHistos->FillTH2("hNsdVsPtWeighted", untagged ? -1. : zgparams[5], jet->Pt(), weight);
+        fHistos->FillTH2("hThetagVsPtWeighted", untagged ? -0.05 : zgparams[2]/Rjet, jet->Pt(), weight);
+      } 
+    } catch (int e) {
+      if(fUseChargedConstituents && fUseNeutralConstituents) AliErrorStream() << "Softdrop error " << e << ": Having 0 constituents for reclustering" << std::endl;
+      fHistos->FillTH1("hSkippedJets", jet->Pt());
+      if(fUseDownscaleWeight) 
+        fHistos->FillTH1("hSkippedJetsWeighted", jet->Pt(), weight);
+    }
 
     // Fill QA plots - trigger cluster independent
     // Those plots have been in before (as part of the Tree) but were 
@@ -265,7 +274,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
 
   AliDebugStream(3) << "Found " << constituents.size() << " constituents for jet with pt=" << jet.Pt() << " GeV/c" << std::endl;
   if(!constituents.size()){
-    AliErrorStream() << "Jet has 0 constituents." << std::endl;
+    if(fUseChargedConstituents && fUseNeutralConstituents) AliErrorStream() << "Jet has 0 constituents." << std::endl;
     throw 1;
   }
   // Redo jet finding on constituents with a
