@@ -85,6 +85,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
                                 Double_t  bremSmear                     = 1.,
                                 Double_t  smearPar                      = 0.,                     // conv photon smearing params
                                 Double_t  smearParConst                 = 0.,                     // conv photon smearing params
+                                Bool_t    usePtDepSelectionWindowCut    = kFALSE,                 // use pt dependent meson selection window cut
                                 TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
               ) {
 
@@ -409,12 +410,15 @@ void AddTask_OmegaToPiZeroGamma_pp(
   } else if( trainConfig == 262) {
     //only MB 13TeV EMCal + DCal
     cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","0163103u00000010","0163103000000010"); // NL 12, Pi0 selection plus Gamma dropout
   } else if( trainConfig == 263) {
     //EG2 13TeV EMcal + Dcal
     cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12
+    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","0163103u00000010","0163103000000010"); // NL 12, Pi0 selection plus Gamma dropout
   } else if( trainConfig == 264) {
     //EG1 13TeV EMcal + Dcal
     cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12
+    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","0163103u00000010","0163103000000010"); // NL 12, Pi0 selection plus Gamma dropout
 
 
   // cuts for ReconMethod==3 Cal-Cal-PCM
@@ -463,16 +467,21 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
   } else if( trainConfig == 361) {
     //only MB 13TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010"); // only Pi0 selection
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010"); // Pi0 selection plus Gamma dropout
   } else if( trainConfig == 362) {
     //only MB 13TeV EMCal + DCal
-    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12 only Pi0 selection
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","0163103u000000d0","01631031000000d0"); // NL 12, Pi0 selection plus Gamma dropout
   } else if( trainConfig == 363) {
     //EG2 13TeV EMcal + Dcal
-    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12
+    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12 only Pi0 selection
+    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","0163103u000000d0","01631031000000d0"); // NL 12, Pi0 selection plus Gamma dropout
   } else if( trainConfig == 364) {
     //EG1 13TeV EMcal + Dcal
-    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12
+    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12 only Pi0 selection
+    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","0163103u000000d0","01631031000000d0"); // NL 12, Pi0 selection plus Gamma dropout
+
 
   // cuts for ReconMethod==4 PCM-PCM-Cal
   } else if(trainConfig == 401){ // EMCAL clusters pp 7 TeV
@@ -682,6 +691,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
     analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNeutralPionCut(i)).Data());
     neutralPionCutList->Add(analysisNeutralPionCuts[i]);
     analysisNeutralPionCuts[i]->SetFillCutHistograms("NeutralPionCuts");
+    analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
     if(doSmear) analysisNeutralPionCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();

@@ -7,7 +7,6 @@
 #include "AliKFConversionPhoton.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "AliConversionAODBGHandlerRP.h"
-#include "AliAODConversionPhoton.h"
 #include "AliCaloPhotonCuts.h"
 #include "AliConvEventCuts.h"
 #include "AliConversionPhotonCuts.h"
