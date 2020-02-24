@@ -30,20 +30,19 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // fEventValidators by the user when configuring their task
   enum EventValidation {
       kNoEventCut,
-      kIsAODEvent,
+      // kIsAODEvent,
       kTrigger,
+      kPassesAliEventCuts,
+      // kNotOutOfBunchPU,
+      // kHasValidVertex,
+      // kNotMultiVertexPU,
+      // kNotSPDPU,
+      //kNotSPDClusterVsTrackletBG,
       kHasFMD,
       kHasEntriesFMD,
       kHasValidFMD,
-      kHasEntriesV0,
-      kPassesAliEventCuts,
-      kPassesFMD_V0CorrelatioCut,
-      kHasValidVertex,
-      kHasMultSelection,
-      kNotOutOfBunchPU,
-      kNotMultiVertexPU,
-      kNotSPDPU,
-      kNotSPDClusterVsTrackletBG
+      // kHasEntriesV0,
+      kPassesFMD_V0CorrelatioCut
   };
 
   enum EventValidationMC {
@@ -188,6 +187,8 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   TH2 *fFMDV0C_post; //!
   TH2 *fOutliers;    //!
 
+  TH1D* fCentrality;//!
+  TH1D* fVertex;//!
 
   TH2D* centralDist;//!
   TH2D* refDist;    //!

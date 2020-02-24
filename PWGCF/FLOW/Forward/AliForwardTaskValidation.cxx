@@ -41,6 +41,8 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fQA_event_discard_flow(0),
     fQA_event_discard_flow_MC(0),
     fQA_track_discard_flow(0),
+    fVertex(0),
+    fCentrality(0),
     fEventCuts(0),
     fUtils(),
     fFMDV0(0),
@@ -74,6 +76,8 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
     fQA_event_discard_flow(0),
     fQA_event_discard_flow_MC(0),
     fQA_track_discard_flow(0),
+    fVertex(0),
+    fCentrality(0),    
     fEventCuts(0),
     fUtils(),
     fFMDV0(0),
@@ -91,20 +95,19 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
   // Apply all cuts by default
   //if (!fSettings.esd) {
     fEventValidators.push_back(EventValidation::kNoEventCut);
-    fEventValidators.push_back(EventValidation::kIsAODEvent);
+    // fEventValidators.push_back(EventValidation::kIsAODEvent);
     fEventValidators.push_back(EventValidation::kTrigger);
     fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
     fEventValidators.push_back(EventValidation::kHasFMD);
     fEventValidators.push_back(EventValidation::kHasEntriesFMD);
     fEventValidators.push_back(EventValidation::kHasValidFMD);
-    fEventValidators.push_back(EventValidation::kHasEntriesV0);
-    fEventValidators.push_back(EventValidation::kHasValidVertex);
-    fEventValidators.push_back(EventValidation::kHasMultSelection);
+    // fEventValidators.push_back(EventValidation::kHasEntriesV0);
+    // fEventValidators.push_back(EventValidation::kHasValidVertex);
     // This one kills another 60% of the events in LHC15o HIR :/
     // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
-    fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
-    fEventValidators.push_back(EventValidation::kNotSPDPU);
-    fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
+    // fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
+    // fEventValidators.push_back(EventValidation::kNotSPDPU);
+    // fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
     fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
   //}
 
@@ -131,6 +134,8 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
   // fEventCuts.SetCentralityEstimators("V0A","CL0");
   fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
   fEventCuts.fPileUpCutMV = true;
+
+
 }
 
 Bool_t AliForwardTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType) {
@@ -203,34 +208,34 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
     switch (this->fEventValidators[idx]) {
     case EventValidation::kNoEventCut:
       discardedEvtsAx->SetBinLabel(idx + 1, "No cuts"); break;
-    case EventValidation::kIsAODEvent:
-      discardedEvtsAx->SetBinLabel(idx + 1, "AOD event"); break;
+    // case EventValidation::kIsAODEvent:
+    //   discardedEvtsAx->SetBinLabel(idx + 1, "AOD event"); break;
     case EventValidation::kTrigger:
       discardedEvtsAx->SetBinLabel(idx + 1, "Trigger"); break;   
+    case EventValidation::kPassesAliEventCuts:
+      discardedEvtsAx->SetBinLabel(idx + 1, "AliEventCuts"); break;
     case EventValidation::kHasFMD:
       discardedEvtsAx->SetBinLabel(idx + 1, "Has FMD"); break;
     case EventValidation::kHasEntriesFMD:
       discardedEvtsAx->SetBinLabel(idx + 1, "Has entries FMD"); break;
     case EventValidation::kHasValidFMD:
         discardedEvtsAx->SetBinLabel(idx + 1, "Has valid FMD"); break;
-    case EventValidation::kHasEntriesV0:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Has entries V0"); break;
-    case EventValidation::kPassesAliEventCuts:
-      discardedEvtsAx->SetBinLabel(idx + 1, "AliEventCuts"); break;
+    // case EventValidation::kHasEntriesV0:
+    //   discardedEvtsAx->SetBinLabel(idx + 1, "Has entries V0"); break;
     case EventValidation::kPassesFMD_V0CorrelatioCut:
       discardedEvtsAx->SetBinLabel(idx + 1, "FMD V0 correlation"); break;
-    case EventValidation::kHasValidVertex:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Valid vertex"); break;
-    case EventValidation::kHasMultSelection:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Has MultSelection"); break;
-    case EventValidation::kNotOutOfBunchPU:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Not out-of-bunch PU"); break;
-    case EventValidation::kNotMultiVertexPU:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Not multi-vertex PU"); break;
-    case EventValidation::kNotSPDPU:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Not SPD PU"); break;
-    case EventValidation::kNotSPDClusterVsTrackletBG:
-      discardedEvtsAx->SetBinLabel(idx + 1, "SPD clstrs vs BG cut"); break;
+    // case EventValidation::kHasValidVertex:
+    //   discardedEvtsAx->SetBinLabel(idx + 1, "Valid vertex"); break;
+    // case EventValidation::kHasMultSelection:
+    //   discardedEvtsAx->SetBinLabel(idx + 1, "Has MultSelection"); break;
+    // case EventValidation::kNotOutOfBunchPU:
+    //   discardedEvtsAx->SetBinLabel(idx + 1, "Not out-of-bunch PU"); break;
+    // case EventValidation::kNotMultiVertexPU:
+    //   discardedEvtsAx->SetBinLabel(idx + 1, "Not multi-vertex PU"); break;
+    // case EventValidation::kNotSPDPU:
+    //   discardedEvtsAx->SetBinLabel(idx + 1, "Not SPD PU"); break;
+    // case EventValidation::kNotSPDClusterVsTrackletBG:
+    //   discardedEvtsAx->SetBinLabel(idx + 1, "SPD clstrs vs BG cut"); break;
     }
   }
 }
@@ -325,6 +330,10 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
   				1000, 0, 1000, 1000, 0, 1000);
     this->fOutputList->Add(this->fFMDV0C_post);
   //}
+      fCentrality = new TH1D("centrality","centrality",100,0,100);;
+  fVertex = new TH1D("vertex","vertex",100,-20,20);
+  this->fOutputList->Add(this->fCentrality);
+  this->fOutputList->Add(this->fVertex);
 
   // Slot 0 is reserved; 1 needs to be called here to get at least empty histograms
   PostData(1, fOutputList);
@@ -366,9 +375,12 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       switch (this->fEventValidators[idx]) {
       case EventValidation::kNoEventCut:
         this->fIsValidEvent = this->NoCut(); break;
-      case EventValidation::kIsAODEvent:
-        if (!fSettings.esd) this->IsAODEvent(); 
-        break;
+      case EventValidation::kPassesAliEventCuts:
+        if (!fSettings.esd) this->fIsValidEvent = this->PassesAliEventCuts(); 
+        break;        
+      // case EventValidation::kIsAODEvent:
+      //   if (!fSettings.esd) this->IsAODEvent(); 
+      //   break;
       case EventValidation::kTrigger:
         if (!fSettings.esd) this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); 
         break;
@@ -379,25 +391,22 @@ void AliForwardTaskValidation::UserExec(Option_t *)
         this->fIsValidEvent = this->HasEntriesFMD(); break;
       case EventValidation::kHasValidFMD:
         this->fIsValidEvent = this->HasValidFMD(); break;
-      case EventValidation::kHasEntriesV0:
-        this->fIsValidEvent = this->HasEntriesV0(); break;
-      case EventValidation::kPassesAliEventCuts:
-        if (!fSettings.esd) this->fIsValidEvent = this->PassesAliEventCuts(); 
-        break;
+      // case EventValidation::kHasEntriesV0:
+      //   this->fIsValidEvent = this->HasEntriesV0(); break;
       case EventValidation::kPassesFMD_V0CorrelatioCut:
         this->fIsValidEvent = this->PassesFMDV0CorrelatioCut(true); break;
-      case EventValidation::kHasValidVertex:
-        this->fIsValidEvent = this->HasValidVertex(); break;
-      case EventValidation::kHasMultSelection:
-        this->fIsValidEvent = this->HasMultSelection(); break;
-      case EventValidation::kNotOutOfBunchPU:
-        this->fIsValidEvent = this->NotOutOfBunchPU(); break;
-      case EventValidation::kNotMultiVertexPU:
-        this->fIsValidEvent = this->NotMultiVertexPU(); break;
-      case EventValidation::kNotSPDPU:
-        this->fIsValidEvent = this->NotSPDPU(); break;
-      case EventValidation::kNotSPDClusterVsTrackletBG:
-        this->fIsValidEvent = this->NotSPDClusterVsTrackletBG(); break;
+      // case EventValidation::kHasValidVertex:
+      //   this->fIsValidEvent = this->HasValidVertex(); break;
+      // case EventValidation::kHasMultSelection:
+      //   this->fIsValidEvent = this->HasMultSelection(); break;
+      // case EventValidation::kNotOutOfBunchPU:
+      //   this->fIsValidEvent = this->NotOutOfBunchPU(); break;
+      // case EventValidation::kNotMultiVertexPU:
+      //   this->fIsValidEvent = this->NotMultiVertexPU(); break;
+      // case EventValidation::kNotSPDPU:
+      //   this->fIsValidEvent = this->NotSPDPU(); break;
+      // case EventValidation::kNotSPDClusterVsTrackletBG:
+      //   this->fIsValidEvent = this->NotSPDClusterVsTrackletBG(); break;
       }
       if (this->fIsValidEvent) {
         this->fQA_event_discard_flow->Fill(idx);
@@ -405,6 +414,10 @@ void AliForwardTaskValidation::UserExec(Option_t *)
         // Stop checking once this event has been flaged as invalid
         break;
       }
+    }
+    if(this->fIsValidEvent){
+      fCentrality->Fill(fUtil.GetCentrality("V0M"));
+      fVertex->Fill(fUtil.GetZ());
     }
   }
 
@@ -527,7 +540,8 @@ Bool_t AliForwardTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
 
   // Cut on V0 - FMD outliers outliers
   //  if (nV0A_hits + nV0C_hits < (nFMD_fwd_hits + nFMD_bwd_hits - 40)) {
-  if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
+  //if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits)-40) {// - 20
+  if (nV0A_hits + nV0C_hits < 1.75*(nFMD_fwd_hits + nFMD_bwd_hits)-240) {// - 20
     return false;
   }
   if (fill_qa) {
