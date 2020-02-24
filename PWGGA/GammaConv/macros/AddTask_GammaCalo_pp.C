@@ -1671,7 +1671,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466531ga01cc00000","0163103100000010"); // dist. to bad channel = 1
     cuts.AddCutCalo("00010113","24466532ga01cc00000","0163103100000010"); // dist. to bad channel = 2
     cuts.AddCutCalo("00010113","24466533ga01cc00000","0163103100000010"); // dist. to bad channel = 3
-  } else if ( trainConfig == 732) {  // timing variations - bunch spacing: 100ns (standard: 50ns) 
+  } else if ( trainConfig == 732) {  // timing variations - bunch spacing: 100ns (standard: 50ns)
                                     // min. number of cells per cluster variations (standard: 2)
     cuts.AddCutCalo("00010113","24466533ha01cc00000","0163103100000010"); // 30ns
     cuts.AddCutCalo("00010113","24466533ia01cc00000","0163103100000010"); // -20ns/25ns
@@ -1685,7 +1685,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466530ga09cc00000","0163103100000010"); // 0.1 MeV
     cuts.AddCutCalo("00010113","24466530ga08cc00000","0163103100000010"); // 0.4 MeV
     cuts.AddCutCalo("00010113","24466530ga02cc00000","0163103100000010"); // 0.5 MeV
-  } else if ( trainConfig == 735) { 
+  } else if ( trainConfig == 735) {
     cuts.AddCutCalo("00010113","24466530ga01cb00000","0163103100000010"); // M02 min 0.002, E > 1 GeV
     cuts.AddCutCalo("00010113","24466530ga01cd00000","0163103100000010"); // M02 min 0.2, E > 1 GeV
     cuts.AddCutCalo("00010113","24466530ga01cc00010","0163103100000010"); // dispersion < 2
@@ -1711,7 +1711,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466531g001cc00000","0163103100000010"); // dist. to bad channel = 1
     cuts.AddCutCalo("00010113","24466532g001cc00000","0163103100000010"); // dist. to bad channel = 2
     cuts.AddCutCalo("00010113","24466533g001cc00000","0163103100000010"); // dist. to bad channel = 3
-  } else if ( trainConfig == 742) {  // timing variations - bunch spacing: 100ns (standard: 50ns) 
+  } else if ( trainConfig == 742) {  // timing variations - bunch spacing: 100ns (standard: 50ns)
                                     // min. number of cells per cluster variations (standard: 2)
     cuts.AddCutCalo("00010113","24466533h001cc00000","0163103100000010"); // 30ns
     cuts.AddCutCalo("00010113","24466533i001cc00000","0163103100000010"); // -20ns/25ns
@@ -1721,7 +1721,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466530g009cc00000","0163103100000010"); // 0.1 MeV
     cuts.AddCutCalo("00010113","24466530g008cc00000","0163103100000010"); // 0.4 MeV
     cuts.AddCutCalo("00010113","24466530g002cc00000","0163103100000010"); // 0.5 MeV
-  } else if ( trainConfig == 745) { 
+  } else if ( trainConfig == 745) {
     cuts.AddCutCalo("00010113","24466530g001cb00000","0163103100000010"); // M02 min 0.002, E > 1 GeV
     cuts.AddCutCalo("00010113","24466530g001cd00000","0163103100000010"); // M02 min 0.2, E > 1 GeV
     cuts.AddCutCalo("00010113","24466530g001cc00010","0163103100000010"); // dispersion < 2
@@ -1747,7 +1747,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","24466531g001cc00000","0163103100000010"); // dist. to bad channel = 1
     cuts.AddCutCalo("00062113","24466532g001cc00000","0163103100000010"); // dist. to bad channel = 2
     cuts.AddCutCalo("00062113","24466533g001cc00000","0163103100000010"); // dist. to bad channel = 3
-  } else if ( trainConfig == 752) {  // timing variations - bunch spacing: 100ns (standard: 50ns) 
+  } else if ( trainConfig == 752) {  // timing variations - bunch spacing: 100ns (standard: 50ns)
                                     // min. number of cells per cluster variations (standard: 2)
     cuts.AddCutCalo("00062113","244665330001cc00000","0163103100000010"); // 30ns
     cuts.AddCutCalo("00062113","24466533i001cc00000","0163103100000010"); // 30ns
@@ -1758,7 +1758,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","24466530g009cc00000","0163103100000010"); // 0.1 MeV
     cuts.AddCutCalo("00062113","24466530g008cc00000","0163103100000010"); // 0.4 MeV
     cuts.AddCutCalo("00062113","24466530g002cc00000","0163103100000010"); // 0.5 MeV
-  } else if ( trainConfig == 755) { 
+  } else if ( trainConfig == 755) {
     cuts.AddCutCalo("00062113","24466530g001cb00000","0163103100000010"); // M02 min 0.002, E > 1 GeV
     cuts.AddCutCalo("00062113","24466530g001cd00000","0163103100000010"); // M02 min 0.2, E > 1 GeV
     cuts.AddCutCalo("00062113","24466530g001cc00010","0163103100000010"); // dispersion < 2
@@ -1773,7 +1773,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","24466530g001cc00200","0163103100000030"); // conv rec 0.025
     cuts.AddCutCalo("00062113","24466530g001cc00400","0163103100000010"); // conv rec 0.035
     cuts.AddCutCalo("00062113","24466530g001cc00000","0263303100000010"); // BG
-    
+
   // *********************************************************************************************************
   // 13 TeV 2015 pp Run2 - PHOS configurations
   // *********************************************************************************************************
