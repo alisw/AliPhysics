@@ -511,7 +511,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00052113","111113107f032230000","32c51070a","01036c3c00000000","0153503000000000"); // -30 / 30ns
     cuts.AddCutHeavyMesonCalo("00052113","111113108f032230000","32c51070a","01036c3c00000000","0153503000000000"); // -20 / 30ns
     cuts.AddCutHeavyMesonCalo("00052113","111113105f032230000","32c51070a","01036c3c00000000","0153503000000000"); // -50 / 50ns
- } else if( trainConfig == 194){ // PID 
+ } else if( trainConfig == 194){ // PID
     cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51050a","01036c3c00000000","0153503000000000"); // standard
     cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51080a","01036c3c00000000","0153503000000000"); // standard
     cuts.AddCutHeavyMesonCalo("00052113","111113106f032230000","32c51020a","01036c3c00000000","0153503000000000"); // standard

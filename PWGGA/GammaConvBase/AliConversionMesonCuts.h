@@ -277,7 +277,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fMesonKind;                     ///<
     Int_t       fIsMergedClusterCut;            ///< flag for merged cluster and di cluster analysis
     Int_t       fUsePtDepSelectionWindow;       ///< flag for usage of pT dependent selection window cut
-    Int_t       fUseGammaSelection              ///< flag for usage of gamma candidate selection e.g. gamma pairs which are in Pi0 mass region are not used as direct gammas for omega reco
+    Int_t       fUseGammaSelection;             ///< flag for usage of gamma candidate selection e.g. gamma pairs which are in Pi0 mass region are not used as direct gammas for omega reco
     Int_t       fSelectionWindowCut;            ///< selection window for merged ana in mass
     Int_t       fNDegreeRotationPMForBG;        ///<
     Int_t       fNumberOfBGEvents;              ///<
