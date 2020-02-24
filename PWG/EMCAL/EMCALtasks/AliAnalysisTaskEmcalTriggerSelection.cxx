@@ -235,7 +235,7 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2012MCPP(const char *dataset) con
 }
 
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2013MCPPB(const char *dataset) const {
-  std::vector<TString> supportedProductions = {"lhc18j5", "lhc19a4"};
+  std::vector<TString> supportedProductions = {"lhc17g6a", "lhc16c3a", "lhc16c3b", "lhc18j5", "lhc19a4"};
   return IsSupportedMCSample(dataset, supportedProductions);
 }
 
@@ -390,7 +390,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB5TeV2013() {
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
   eg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   eg1cuts->SetUseSimpleOfflinePatches(true);
-  eg1cuts->SetThreshold(11.);
+  eg1cuts->SetThreshold(10.5);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG1", eg1cuts));
 
   AliEmcalTriggerSelectionCuts *eg2cuts = new AliEmcalTriggerSelectionCuts;
@@ -398,7 +398,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB5TeV2013() {
   eg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   eg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   eg2cuts->SetUseSimpleOfflinePatches(true);
-  eg2cuts->SetThreshold(7.0);
+  eg2cuts->SetThreshold(6.7);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG2", eg2cuts));
 
   AliEmcalTriggerSelectionCuts *ej1cuts = new AliEmcalTriggerSelectionCuts;

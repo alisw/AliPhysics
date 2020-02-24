@@ -1327,6 +1327,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   task->SetXiCuts(CascadeCuts);
   task->SetAntiXiCuts(AntiCascadeCuts);
   task->SetCorrelationConfig(config);
+  task->SetUseDumpster(false);
   mgr->AddTask(task);
 
   TString addon = "";

@@ -14,6 +14,7 @@ AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar()
     : AliAnalysisTaskSE(),
       fisLightWeight(false),
       fIsMC(false),
+      fUseDumpster(false),
       fQA(nullptr),
       fEvent(nullptr),
       fEventCuts(nullptr),
@@ -65,6 +66,7 @@ AliAnalysisTaskNanoBBar::AliAnalysisTaskNanoBBar(const char* name, bool isMC)
     : AliAnalysisTaskSE(name),
       fisLightWeight(false),
       fIsMC(false),
+      fUseDumpster(false),
       fQA(nullptr),
       fEvent(nullptr),
       fEventCuts(nullptr),
@@ -303,6 +305,7 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
   fDumpster->SetName("Dumpster");
   fDumpster->SetOwner(kTRUE);
 
+  if (fUseDumpster) {
   fProtonAntiProtonDump = new AliFemtoDreamDump("pAp");
   fProtonAntiProtonDump->SetkstarThreshold(0.3);
   fDumpster->Add(fProtonAntiProtonDump->GetOutput());
@@ -338,7 +341,7 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
   fXiAntiXiDump = new AliFemtoDreamDump("XiAXi");
   fXiAntiXiDump->SetkstarThreshold(0.3);
   fDumpster->Add(fXiAntiXiDump->GetOutput());
-
+  }
 
   if (!fEventCuts->GetMinimalBooking()) {
     fEvtList = fEventCuts->GetHistList();
@@ -603,6 +606,7 @@ void AliAnalysisTaskNanoBBar::UserExec(Option_t *option) {
     void SetEvent(std::vector<AliFemtoDreamBasePart> &vec1,
                 std::vector<AliFemtoDreamBasePart> &vec2,
                 AliFemtoDreamEvent *evt, const int pdg1, const int pdg2);
+    if (fUseDumpster) {
     if(fProtonAntiProtonDump) {
     fProtonAntiProtonDump->SetEvent(Protons, AntiProtons, fEvent, 2212, -2212);
   }
@@ -630,6 +634,7 @@ void AliAnalysisTaskNanoBBar::UserExec(Option_t *option) {
     if(fXiAntiXiDump) {
     fXiAntiXiDump->SetEvent(Xis, AntiXis, fEvent, 3312, -3312);
   }
+    }
 
 
   PostData(1, fQA);

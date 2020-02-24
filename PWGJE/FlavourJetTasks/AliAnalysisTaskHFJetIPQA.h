@@ -484,7 +484,7 @@ private:
     Double_t fParam_Smear_Mean;//
     Bool_t   fGlobalVertex;//
     Bool_t fDoNotCheckIsPhysicalPrimary;//
-    Bool_t fDoJetProb;
+    Bool_t fDoJetProb;//
     Bool_t   fFillCorrelations;//
     Bool_t fDoLundPlane;//
     Int_t fDoTCTagging;//
@@ -675,7 +675,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 51)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 52)
 };
 
 #endif

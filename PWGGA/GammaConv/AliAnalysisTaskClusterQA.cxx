@@ -103,6 +103,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Cells_RelativePhi(0),
   fBuffer_Surrounding_NCells(0),
   fBuffer_Surrounding_Cells_ID(0),
+  fBuffer_Surrounding_Cells_Time(0),
   fBuffer_Surrounding_Cells_R(0),
   fBuffer_Surrounding_Cells_E(0),
   fBuffer_Surrounding_Cells_RelativeEta(0),
@@ -134,6 +135,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Cells_RelativeEta             = new Float_t[kMaxActiveCells];
   fBuffer_Cells_RelativePhi             = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_ID          = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_Time        = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_R           = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_E           = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_RelativeEta = new Float_t[kMaxActiveCells];
@@ -210,6 +212,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Cells_RelativePhi(0),
   fBuffer_Surrounding_NCells(0),
   fBuffer_Surrounding_Cells_ID(0),
+  fBuffer_Surrounding_Cells_Time(0),
   fBuffer_Surrounding_Cells_R(0),
   fBuffer_Surrounding_Cells_E(0),
   fBuffer_Surrounding_Cells_RelativeEta(0),
@@ -241,6 +244,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Cells_RelativeEta             = new Float_t[kMaxActiveCells];
   fBuffer_Cells_RelativePhi             = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_ID          = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_Time        = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_R           = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_E           = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_RelativeEta = new Float_t[kMaxActiveCells];
@@ -351,6 +355,7 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
   {
     fClusterTree->Branch("Surrounding_NCells",             &fBuffer_Surrounding_NCells,               "Surrounding_NCells/I");
     fClusterTree->Branch("Surrounding_Cells_ID",            fBuffer_Surrounding_Cells_ID,             "Surrounding_Cells_ID[Surrounding_NCells]/I");
+    fClusterTree->Branch("Surrounding_Cells_Time",          fBuffer_Surrounding_Cells_Time,           "Surrounding_Cells_Time[Surrounding_NCells]/F");
     fClusterTree->Branch("Surrounding_Cells_R",             fBuffer_Surrounding_Cells_R,              "Surrounding_Cells_R[Surrounding_NCells]/F");
     fClusterTree->Branch("Surrounding_Cells_E",             fBuffer_Surrounding_Cells_E,              "Surrounding_Cells_E[Surrounding_NCells]/F");
     fClusterTree->Branch("Surrounding_Cells_RelativeEta",   fBuffer_Surrounding_Cells_RelativeEta,    "Surrounding_Cells_RelativeEta[Surrounding_NCells]/F");
@@ -615,6 +620,7 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
       if( dR2 < fConeRadius){
         fBuffer_Surrounding_Cells_E[nActiveCellsSurroundingInR]                = cells->GetCellAmplitude(cellNumber);
         fBuffer_Surrounding_Cells_ID[nActiveCellsSurroundingInR]               = cellNumber;
+        fBuffer_Surrounding_Cells_Time[nActiveCellsSurroundingInR]             = cellTime;
         fBuffer_Surrounding_Cells_R[nActiveCellsSurroundingInR]                = dR2;
         fBuffer_Surrounding_Cells_RelativeEta[nActiveCellsSurroundingInR]      = leadcelleta-surrcelleta;
         fBuffer_Surrounding_Cells_RelativePhi[nActiveCellsSurroundingInR]      = leadcellphi-surrcellphi;
@@ -1585,6 +1591,7 @@ void AliAnalysisTaskClusterQA::ResetBuffer(){
     fBuffer_Cells_RelativeEta[cell]             = 0;
     fBuffer_Cells_RelativePhi[cell]             = 0;
     fBuffer_Surrounding_Cells_ID[cell]          = 0;
+    fBuffer_Surrounding_Cells_Time[cell]        = 0;
     fBuffer_Surrounding_Cells_R[cell]           = 0;
     fBuffer_Surrounding_Cells_E[cell]           = 0;
     fBuffer_Surrounding_Cells_RelativeEta[cell] = 0;

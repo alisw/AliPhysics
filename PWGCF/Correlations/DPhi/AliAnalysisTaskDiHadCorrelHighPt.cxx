@@ -634,7 +634,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistPhiEta= new THnSparseF("fHistPhiEta","fHistPhiEta",4,binsPhiEta,minsPhiEta,maxsphiEta);
     fOutputList->Add(fHistPhiEta);
 
-    fHistTPCTracksVsClusters =  new TH2D("fHistTPCTracksVsClusters","fHistTPCTracksVsClusters",800,0,800,800,0,800); 
+    fHistTPCTracksVsClusters =  new TH2D("fHistTPCTracksVsClusters","fHistTPCTracksVsClusters",400,0,400,50000,0,50000); 
     fOutputList->Add(fHistTPCTracksVsClusters);
     fHistTPCTracksVsClusters->Sumw2();
     fHistTPCTracksVsClusters->GetXaxis()->SetTitle("TPC tacks");
@@ -883,9 +883,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             	IsAntiLambda = mcPartPdg==-211&& (isPhysPrim);
 
             }else {
+
+            	cout << " V0 part" << endl;
             	if ((mcPartPdg != 310) && (mcPartPdg != 3122) && (mcPartPdg != (-3122))) continue; // keep only Lambdas and K0S
             	Bool_t IsFromCascade = kFALSE;
-            
+            	
+            	cout << " V0 passed" << endl;
             	Int_t mother  = mcTrack->GetMother();
             	mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
             	Int_t motherPDG = 0;
@@ -904,7 +907,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             	if (dau1>0) daughter1 = (AliMCParticle*) fmcEvent->GetTrack(dau1);
             
             	if(!daughter0||!daughter1) continue;
-        
+        		
+        		cout << " V0 daughters passed" << endl;
+
             	if(daughter0->Charge()<0){
                 	labelPos = daughter1->GetLabel();
                 	labelNeg = daughter0->GetLabel();
@@ -923,7 +928,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             }
 
             if (mcTrack->Pt()>fPtAsocMin&&TMath::Abs(V0genrapidity)<0.5&&TMath::Abs(etaDau0)<0.8&&TMath::Abs(etaDau1)<0.8){
+            	cout << " V0 assoc" << endl;
                 if(IsK0) {
+                	cout << " K0 assoc" << endl;
                     if(fMixingGen||fCorrelationsGen) mcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),5,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[4]={mcTrack->Pt(),lPVz,0.5,mcTrack->Eta()};
@@ -947,7 +954,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 
             }
             if (mcTrack->Pt()>fPtTrigMin&&(fMixingGen||fCorrelationsGen)&&TMath::Abs(V0genrapidity)<0.5&&TMath::Abs(etaDau0)<0.8&&TMath::Abs(etaDau1)<0.8){
-                if(IsK0) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),1,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
+            	cout << " V0 trigg" << endl;
+                if(IsK0) {
+                	mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),1,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
+                	cout << " K0 trigg" << endl;
+                }
                 if(IsLambda) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),2,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                 if(IsAntiLambda) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
             }
@@ -1257,12 +1268,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 posProp[4] = idPos;
                 posProp[5] = labelPos;
                 
-                posProp[0] = myTrackNegAOD->Phi();
-                posProp[1] = myTrackNegAOD->Pt();
-                posProp[2] = myTrackNegAOD->Eta();
-                posProp[3] = myTrackNegAOD->Charge();
-                posProp[4] = idNeg;
-                posProp[5] = labelNeg;
+                negProp[0] = myTrackNegAOD->Phi();
+                negProp[1] = myTrackNegAOD->Pt();
+                negProp[2] = myTrackNegAOD->Eta();
+                negProp[3] = myTrackNegAOD->Charge();
+                negProp[4] = idNeg;
+                negProp[5] = labelNeg;
 
                 if (pPid){
                     Double_t pdMom = pPid->GetTPCmomentum();
@@ -1319,12 +1330,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 posProp[4] = idPos;
                 posProp[5] = labelPos;
                 
-                posProp[0] = myTrackNegESD->Phi();
-                posProp[1] = myTrackNegESD->Pt();
-                posProp[2] = myTrackNegESD->Eta();
-                posProp[3] = myTrackNegESD->Charge();
-                posProp[4] = idNeg;
-                posProp[5] = labelNeg;
+                negProp[0] = myTrackNegESD->Phi();
+                negProp[1] = myTrackNegESD->Pt();
+                negProp[2] = myTrackNegESD->Eta();
+                negProp[3] = myTrackNegESD->Charge();
+                negProp[4] = idNeg;
+                negProp[5] = labelNeg;
 
                 if (fPIDResponse){
                     Double_t pdMom = myTrackPosESD->GetTPCmomentum();

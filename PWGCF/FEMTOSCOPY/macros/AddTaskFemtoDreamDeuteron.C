@@ -1,10 +1,12 @@
 #include "TROOT.h"
 #include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
-    TString CentEst = "kInt7",//
+    TString CentEst = "kInt7",//2
     bool DCAPlots = false,//3
     bool CombSigma = false,//4
     bool ContributionSplitting = false,//5,
+    bool DumpPdApAd = true,//6
+    bool DumpRest = false,//7
     const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -217,12 +219,14 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   task->SetTrackCutsAntiProtonDCA(TrackCutsAntiProtonDCA);
   task->SetTrackCutsAntiProtonMass(TrackCutsAntiProtonMass);
   task->SetCollectionConfig(config);
+  task->SetUseDumpster(DumpPdApAd);
+  task->SetUseDumpsterRestPairs(DumpRest);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
-  
+
   TString addon = "";
   if (CentEst == "kInt7") {
     addon += "MB";

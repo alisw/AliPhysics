@@ -103,6 +103,12 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18():
   hQyVzAvsCentrality(0),
   hQxVzCvsCentrality(0),
   hQyVzCvsCentrality(0),
+  hCos2DeltaTPCVzAvsCentrality(0),
+  hCos2DeltaTPCVzCvsCentrality(0),
+  hCos2DeltaVzAVzCvsCentrality(0),
+  hCos2DeltaVzATPCvsCentrality(0),
+  hCos2DeltaVzCTPCvsCentrality(0),
+  hCos2DeltaVzCVzAvsCentrality(0),
   eventtype(-999),
   ftree(0),           
   iEvent(0),
@@ -188,6 +194,12 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18(const char *name):
     hQyVzAvsCentrality(0),
     hQxVzCvsCentrality(0),
     hQyVzCvsCentrality(0),
+    hCos2DeltaTPCVzAvsCentrality(0),
+    hCos2DeltaTPCVzCvsCentrality(0),
+    hCos2DeltaVzAVzCvsCentrality(0),
+    hCos2DeltaVzATPCvsCentrality(0),
+    hCos2DeltaVzCTPCvsCentrality(0),
+    hCos2DeltaVzCVzAvsCentrality(0),			     
     eventtype(-999),
     ftree(0),           
     iEvent(0),
@@ -553,6 +565,21 @@ void AliAnalysisTaskHypv2PbPb18::UserCreateOutputObjects()
   fListHist->Add(hQxVzCvsCentrality);
   fListHist->Add(hQyVzCvsCentrality);
  
+   hCos2DeltaTPCVzAvsCentrality   = new TH2F("hCos2DeltaTPCVzAvsCentrality"  ,"hCos2DeltaTPCVzAvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaTPCVzCvsCentrality   = new TH2F("hCos2DeltaTPCVzCvsCentrality"  ,"hCos2DeltaTPCVzCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzAVzCvsCentrality   = new TH2F("hCos2DeltaVzAVzCvsCentrality"  ,"hCos2DeltaVzAVzCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzATPCvsCentrality   = new TH2F("hCos2DeltaVzATPCvsCentrality"  ,"hCos2DeltaVzATPCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzCTPCvsCentrality   = new TH2F("hCos2DeltaVzCTPCvsCentrality"  ,"hCos2DeltaVzCTPCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzCVzAvsCentrality   = new TH2F("hCos2DeltaVzCVzAvsCentrality"  ,"hCos2DeltaVzCVzAvsCentrality"  ,100,-1.1,1.1,105,0,105);
+
+  fListHist->Add(hCos2DeltaTPCVzAvsCentrality);
+  fListHist->Add(hCos2DeltaTPCVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzAVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzATPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCTPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCVzAvsCentrality);
+
+
   if(!ftree){
 
     //Reduced Tree HyperTriton
@@ -997,6 +1024,15 @@ void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd, Double_t vz, Int_t evtt
   }
   
   //  cout<<"Qxtn: "<<Qxtn<<endl;
+  // TBC
+  Double_t evPlAngTPC = TMath::ATan2(Qytn, Qxtn)/fNHarm;
+  
+  hCos2DeltaTPCVzAvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngTPC - evPlAngV0A)) , iCen);
+  hCos2DeltaTPCVzCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngTPC - evPlAngV0C)) , iCen);
+  hCos2DeltaVzAVzCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0A - evPlAngV0C)) , iCen);
+  hCos2DeltaVzATPCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0A - evPlAngTPC)) , iCen);
+  hCos2DeltaVzCTPCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0C - evPlAngTPC)) , iCen);
+  hCos2DeltaVzCVzAvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0C - evPlAngV0A)) , iCen);
 
   //Scalar Product -- Resolutions
   
@@ -1097,8 +1133,8 @@ void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd, Double_t vz, Int_t evtt
     decayLength      = GetDecayLengthV0 (V0);
 
     //flow variables
-    deltaphiV0A=TMath::Cos(fNHarm*GetPhi0Pi(V0->Phi()-evPlAngV0A));
-    deltaphiV0C=TMath::Cos(fNHarm*GetPhi0Pi(V0->Phi()-evPlAngV0C));
+    deltaphiV0A=GetPhi0Pi(V0->Phi()-evPlAngV0A);
+    deltaphiV0C=GetPhi0Pi(V0->Phi()-evPlAngV0C);
     
     // Scalar Product
     uqV0A = TMath::Cos(fNHarm*V0->Phi())*QxanCor+TMath::Sin(fNHarm*V0->Phi())*QyanCor;

@@ -282,7 +282,8 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     fhPtIsoMC    [imc]    = 0;
     fhPhiIsoMC   [imc]    = 0;
     fhEtaIsoMC   [imc]    = 0;
-    
+    fhPtM02SumPtConeMC[imc] = 0;
+
     for(Int_t i = 0; i < 2 ; i++)
     {
       fhPtLambda0MC                [imc][i] = 0;
@@ -1631,7 +1632,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       fhPtM02SumPtCone = new TH3F
       (Form("hPtM02SumPtCone"),
-       Form("ABCD 3D Matrix: #it{p}_{T} vs #sigma_{long}^{2} vs #it{p}_{T}^{iso}, #it{R} = %2.2f",r),
+       Form("#it{p}_{T} vs #sigma_{long}^{2} vs #it{p}_{T}^{iso}, #it{R} = %2.2f",r),
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
        sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
@@ -1639,7 +1640,25 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtM02SumPtCone->SetYTitle("#sigma_{long}^{2}");
       fhPtM02SumPtCone->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
       outputContainer->Add(fhPtM02SumPtCone) ;
-    }
+      
+      if ( IsDataMC() )
+      {
+        for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
+        {
+          fhPtM02SumPtConeMC[imc] = new TH3F
+          (Form("hPtM02SumPtCone_MC%s",mcPartName[imc].Data()),
+           Form("#it{p}_{T} vs #sigma_{long}^{2} vs #it{p}_{T}^{iso}, #it{R} = %2.2f, MC %s"
+                , r, mcPartType[imc].Data()),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+          fhPtM02SumPtConeMC[imc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhPtM02SumPtConeMC[imc]->SetYTitle("#sigma_{long}^{2}");
+          fhPtM02SumPtConeMC[imc]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+          outputContainer->Add(fhPtM02SumPtConeMC[imc]) ;
+        } // MC particle loop
+      } // MC
+    } // Fill TH3
     
     if(IsHighMultiplicityAnalysisOn())
     {
@@ -4878,7 +4897,16 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if ( !fFillBackgroundBinHistograms &&
         (method == AliIsolationCut::kSumPtIC || 
          method >= AliIsolationCut::kSumBkgSubIC) )
-    fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+    {
+      fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+      if ( IsDataMC())
+      {
+        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
+          fhPtM02SumPtConeMC[kmcPhoton]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+
+        fhPtM02SumPtConeMC[mcIndex]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+      }
+    }
     
     //---------------------------------------------------------------
     // Recover original cluster if requested, needed for some studies

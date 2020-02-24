@@ -143,6 +143,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // #########################################################
   // Set mass cuts for primary and secondary pairs
   task->SetMassCut(DoMassCut);
+  task->SetPhotonMass(photonMass);
   task->SetUpperMassCutPrimaries(upperMassCutPrimaries);
   task->SetLowerMassCutPrimaries(lowerMassCutPrimaries);
   task->SetUpperPreFilterMass(upperPreFilterMass);
