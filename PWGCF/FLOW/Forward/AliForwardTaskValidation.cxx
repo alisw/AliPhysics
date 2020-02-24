@@ -541,7 +541,7 @@ Bool_t AliForwardTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
   // Cut on V0 - FMD outliers outliers
   //  if (nV0A_hits + nV0C_hits < (nFMD_fwd_hits + nFMD_bwd_hits - 40)) {
   //if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits)-40) {// - 20
-  if (nV0A_hits + nV0C_hits < 1.75*(nFMD_fwd_hits + nFMD_bwd_hits)-240) {// - 20
+  if (nV0A_hits + nV0C_hits < 1.75*(nFMD_fwd_hits + nFMD_bwd_hits)-290) {// - 20
     return false;
   }
   if (fill_qa) {
