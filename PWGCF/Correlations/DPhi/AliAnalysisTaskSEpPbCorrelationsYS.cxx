@@ -1166,7 +1166,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      Double_t binning_cent_trig[8] = {0., 5.,  10., 20.
 				      , 40., 60.,70.,100.1};
      Double_t binning_cent_trig_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
-     
+     Double_t binning_cent_MBPP[8]={0.,0.1,1.,10.,20.,40.,60.,100.1};
      Double_t binning_mult_trig[10]={0,20,40,60,80,100,120,140,160,200};
      Int_t ncentbin;
      if(fCentType=="Manual") {
@@ -1187,6 +1187,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        fHistTriggerTrack->SetBinLimits(0,binning_mult_trig);
      }else{
        if(fcollisiontype=="HMPP")  fHistTriggerTrack->SetBinLimits(0,binning_cent_HMPP);
+       else if(fcollisiontype=="MBPP")  fHistTriggerTrack->SetBinLimits(0,binning_cent_MBPP);
        else if(fcollisiontype=="PbPb") fHistTriggerTrack->SetBinLimits(0,binning_cent_trig_PbPb);
        else fHistTriggerTrack->SetBinLimits(0,binning_cent_trig);
      }
@@ -1210,6 +1211,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      Double_t binning_pt_lead_trig[5] = {0.2, 0.5, 1.0, 3.0, 8.0};
      Double_t binning_cent_trig[8] = {0., 5.,  10., 20.
 				      , 40., 60.,70.,100.1};
+     Double_t binning_cent_MBPP[8]={0.,0.1,1.,10.,20.,40.,60.,100.1};
      Double_t binning_cent_trig_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
      Double_t binning_mult_trig[10]={0,20,40,60,80,100,120,140,160,200};
 
@@ -1240,6 +1242,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        fHistTriggerTrack->SetBinLimits(1,binning_mult_trig);
      }else{
        if(fcollisiontype=="HMPP")  fHistTriggerTrack->SetBinLimits(1,binning_cent_HMPP);
+       else if(fcollisiontype=="MBPP")  fHistTriggerTrack->SetBinLimits(1,binning_cent_MBPP);
        else if(fcollisiontype=="PbPb") fHistTriggerTrack->SetBinLimits(1,binning_cent_trig_PbPb);
        else fHistTriggerTrack->SetBinLimits(1,binning_cent_trig);
      }
@@ -1497,7 +1500,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        fHistReconstTrackMix->SetBinLimits(3,binning_mult);
      }else{
        if(fcollisiontype=="HMPP") fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd_HMPP);
-       else if(fcollisiontype=="MBPP")fHistReconstTrack->SetBinLimits(3,binning_cent_MBPP);
+       else if(fcollisiontype=="MBPP")fHistReconstTrackMix->SetBinLimits(3,binning_cent_MBPP);
        else if(fcollisiontype=="PbPb" )fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd_PbPb);
        else fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd);
      }
@@ -1582,7 +1585,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        fHistReconstTrackMix->SetBinLimits(3,binning_mult);
      }else{
        if(fcollisiontype=="HMPP")fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd_HMPP);
-       else if(fcollisiontype=="MBPP")fHistReconstTrack->SetBinLimits(3,binning_cent_MBPP);
+       else if(fcollisiontype=="MBPP")fHistReconstTrackMix->SetBinLimits(3,binning_cent_MBPP);
        else if(fcollisiontype=="PbPb")fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd_PbPb);
        else fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd);
      }
@@ -2413,8 +2416,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      
      DumpTObjTable("End of TPC/ITS track fill");
      
-     //     FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
-     //     FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
+     FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
+     FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
      DumpTObjTable("End of fill  Correlation");
      
      selectedTracksLeading->Clear();
