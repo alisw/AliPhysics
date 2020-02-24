@@ -48,6 +48,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetFlowRFPsPt(Double_t min, Double_t max) { fFlowRFPsPtMin = min; fFlowRFPsPtMax = max; }
         void                    SetFlowPOIsPt(Double_t min, Double_t max) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; } 
 
+        void                    SetRedFlowPt(Double_t min, Double_t max) {fRedFlowPtMin = min; fRedFlowPtMax = max; }
+
         void                    SetTPCEse(Bool_t actTPCEse) { fTPCEse = actTPCEse; }
         void                    SetV0CEse(Bool_t actV0CEse) { fV0CEse = actV0CEse; }
         void                    SetV0AEse(Bool_t actV0AEse) { fV0AEse = actV0AEse; }
@@ -199,6 +201,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Int_t GetEsePercentileCode(Double_t qPerc) const;
         Bool_t WithinRFP(const AliVParticle* track) const;
         Bool_t WithinPOI(const AliVParticle* track) const;
+        Bool_t WithinRedRP(const AliVParticle* track) const;
         Bool_t LoadqSelection();
         Bool_t ProcessMCParticles();
 
@@ -341,6 +344,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t                fFlowRFPsPtMax; // [5.0] (GeV/c) max pT treshold for RFPs particle for reference flow
         Double_t                fFlowPOIsPtMin; // [0] (GeV/c) min pT treshold for POIs for differential flow
         Double_t                fFlowPOIsPtMax; // [10] (GeV/c) max pT treshold for POIs for differential flow
+        Double_t                fRedFlowPtMin;
+        Double_t                fRedFlowPtMax;
 
         TAxis*                  fPtAxis;
         TAxis*                  fCentAxis;
