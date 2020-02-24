@@ -146,7 +146,6 @@ public:
   void SetMinPtHe3(float min) { fMinHe3pt = min; }
 
   void SetCustomBetheBloch(float resolution, const float bethe[5]);
-  void LoadSpline(std::string path);
 
   void SetMaxTPCsigmas(float pi, float he3)
   {
