@@ -22,7 +22,7 @@ fEvent(0x0),
 fGeom(0x0),
 fNtrg4x4(0)
 {
-    
+     
    for(Int_t mod=0;mod<5;mod++)fPHOSBadMap[mod]=0x0 ;
     
 }
