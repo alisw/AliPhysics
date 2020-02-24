@@ -407,6 +407,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       }
     }
   }
+
 if (this->fIsValidEvent){
 
   if (fSettings.mc){
@@ -470,8 +471,8 @@ Bool_t AliForwardTaskValidation::HasTracklets() {
 Bool_t AliForwardTaskValidation::HasEntriesFMD() {
   Double_t fmdsum = 0;
   for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-      fmdsum += forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin);
+    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
+      fmdsum += forwardDist->GetBinContent(etaBin, phiBin);//forwardDist->GetXaxis()->GetBinCenter(etaBin),
     }
   }
 
@@ -773,7 +774,7 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
 
 
 Bool_t AliForwardTaskValidation::HasValidFMD(){
-  return kTRUE;
+  // return kTRUE;
   AliMultSelection *MultSelection = dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
 
   //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
@@ -830,7 +831,7 @@ Bool_t AliForwardTaskValidation::HasValidFMD(){
      //if (nBadBins > 3) std::cout << "NUMBER OF BAD BINS > 3" << std::endl;
     }
   } // End of eta bin
-  if (totalFMDpar < 10) return kFALSE;
+  // if (totalFMDpar < 10) return kFALSE;
   return kTRUE;
 }
 /*

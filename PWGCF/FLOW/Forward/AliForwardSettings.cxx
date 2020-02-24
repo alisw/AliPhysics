@@ -24,7 +24,7 @@ AliForwardSettings::AliForwardSettings() :
   seccorr_cent(),
   nuehist(),
   doNUA(true),
-  doNUE(false),
+  doNUE(true),
   gap(0.0),
   minpt(0.2),
   maxpt(5),
