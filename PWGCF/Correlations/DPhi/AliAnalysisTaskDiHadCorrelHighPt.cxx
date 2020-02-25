@@ -888,53 +888,49 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
             }else {
 
-            	cout << " V0 part" << endl;
             	if ((mcPartPdg != 310) && (mcPartPdg != 3122) && (mcPartPdg != (-3122))) continue; // keep only Lambdas and K0S
             	Bool_t IsFromCascade = kFALSE;
             	
-            	cout << " V0 passed" << endl;
-            	Int_t mother  = mcTrack->GetMother();
-            	mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
-            	Int_t motherPDG = 0;
-            	if (mother<0) motherPDG =0;
-            	else motherPDG = TMath::Abs(mcMotherParticle->PdgCode());
-            
-           		if(fAacceptLambdasFromCasscade) IsFromCascade = (((motherPDG == 3222)|| (motherPDG==3212)|| (motherPDG==3112) || (motherPDG==3224) || (motherPDG==3214) || (motherPDG==3114) || (motherPDG==3322) || (motherPDG==3312)|| (motherPDG==3324) || (motherPDG==3314) || (motherPDG==3334)) && (mcMotherParticle->IsPhysicalPrimary()));
+                if(fAnalysisAOD){
+                	Int_t mother  = mcTrack->GetMother();
+                	mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
+                	Int_t motherPDG = 0;
+                	if (mother<0) motherPDG =0;
+                	else motherPDG = TMath::Abs(mcMotherParticle->PdgCode());
+                
+               		if(fAacceptLambdasFromCasscade) IsFromCascade = (((motherPDG == 3222)|| (motherPDG==3212)|| (motherPDG==3112) || (motherPDG==3224) || (motherPDG==3214) || (motherPDG==3114) || (motherPDG==3322) || (motherPDG==3312)|| (motherPDG==3324) || (motherPDG==3314) || (motherPDG==3334)) && (mcMotherParticle->IsPhysicalPrimary()));
 
-           		IsK0 = mcPartPdg==310&& (isPhysPrim);
-           		IsLambda = mcPartPdg==3122&& (isPhysPrim||IsFromCascade);
-           		IsAntiLambda = mcPartPdg==-3122&& (isPhysPrim||IsFromCascade);
+                	Int_t dau0 = mcTrack->GetDaughterLabel(0);
+                	if (dau0>0) daughter0 = (AliMCParticle*) fmcEvent->GetTrack(dau0);
+                	Int_t dau1 = mcTrack->GetDaughterLabel(1);
+                	if (dau1>0) daughter1 = (AliMCParticle*) fmcEvent->GetTrack(dau1);
+                
+                	if(!daughter0||!daughter1) continue;
 
-            	Int_t dau0 = mcTrack->GetDaughterLabel(0);
-            	if (dau0>0) daughter0 = (AliMCParticle*) fmcEvent->GetTrack(dau0);
-            	Int_t dau1 = mcTrack->GetDaughterLabel(1);
-            	if (dau1>0) daughter1 = (AliMCParticle*) fmcEvent->GetTrack(dau1);
-            
-            	if(!daughter0||!daughter1) continue;
-        		
-        		cout << " V0 daughters passed" << endl;
+                	if(daughter0->Charge()<0){
+                    	labelPos = daughter1->GetLabel();
+                    	labelNeg = daughter0->GetLabel();
+                	}
+                	if(daughter0->Charge()>0) {
+                    	labelPos = daughter0->GetLabel();
+                    	labelNeg = daughter1->GetLabel();
+                	}else{
+                    	labelPos = daughter0->GetLabel();
+                    	labelNeg = daughter1->GetLabel();
+                	}
 
-            	if(daughter0->Charge()<0){
-                	labelPos = daughter1->GetLabel();
-                	labelNeg = daughter0->GetLabel();
-            	}
-            	if(daughter0->Charge()>0) {
-                	labelPos = daughter0->GetLabel();
-                	labelNeg = daughter1->GetLabel();
-            	}else{
-                	labelPos = daughter0->GetLabel();
-                	labelNeg = daughter1->GetLabel();
-            	}
+                	etaDau0 = daughter0->Eta();
+                	etaDau1 = daughter1->Eta();
+                }
+                
+                IsK0 = mcPartPdg==310&& (isPhysPrim);
+                IsLambda = mcPartPdg==3122&& (isPhysPrim||IsFromCascade);
+                IsAntiLambda = mcPartPdg==-3122&& (isPhysPrim||IsFromCascade);
 
-            	etaDau0 = daughter0->Eta();
-            	etaDau1 = daughter1->Eta();
-            	
             }
 
             if (mcTrack->Pt()>fPtAsocMin&&TMath::Abs(V0genrapidity)<0.5&&TMath::Abs(etaDau0)<0.8&&TMath::Abs(etaDau1)<0.8){
-            	cout << " V0 assoc" << endl;
                 if(IsK0) {
-                	cout << " K0 assoc" << endl;
                     if(fMixingGen||fCorrelationsGen) mcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),5,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[4]={mcTrack->Pt(),lPVz,0.5,mcTrack->Eta()};
@@ -958,11 +954,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 
             }
             if (mcTrack->Pt()>fPtTrigMin&&(fMixingGen||fCorrelationsGen)&&TMath::Abs(V0genrapidity)<0.5&&TMath::Abs(etaDau0)<0.8&&TMath::Abs(etaDau1)<0.8){
-            	cout << " V0 trigg" << endl;
-                if(IsK0) {
-                	mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),1,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
-                	cout << " K0 trigg" << endl;
-                }
+                if(IsK0) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),1,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                 if(IsLambda) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),2,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                 if(IsAntiLambda) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
             }
