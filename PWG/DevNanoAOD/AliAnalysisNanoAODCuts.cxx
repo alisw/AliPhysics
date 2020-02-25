@@ -81,7 +81,6 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
 
   if (fv0EtaMax > 0 && TMath::Abs(v0->Eta()) > fv0EtaMax)
     return false;
-
   if (fTransverseRadiusMin > 0 || fCPAMin > 0) {
     const AliAODEvent* evt = static_cast<const AliAODEvent*>(static_cast<AliAODTrack *>(v0->GetDaughter(0))->GetEvent());
     if (!evt)
@@ -92,7 +91,7 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
     Float_t zvP = evt->GetPrimaryVertex()->GetZ();
     Double_t vecTarget[3] = { xvP, yvP, zvP };
     Float_t TransverseRadius = v0->DecayLengthXY(vecTarget);
-    if (TransverseRadius > fTransverseRadiusMax || TransverseRadius < fTransverseRadiusMin)
+    if ((fTransverseRadiusMin > 0 || fTransverseRadiusMax > 0) && (TransverseRadius > fTransverseRadiusMax || TransverseRadius < fTransverseRadiusMin))
       return false;
     if (fCPAMin > 0 && v0->CosPointingAngle(vecTarget) < fCPAMin)
       return false;
