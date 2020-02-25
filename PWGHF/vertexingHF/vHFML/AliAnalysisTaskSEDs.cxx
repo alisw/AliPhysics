@@ -1723,7 +1723,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       for (Int_t iHist = nSparseReco + 2; iHist < nSparseReco + 4; iHist++)
       {
         TString titleSparse = Form("MC nSparse w/o quark (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
-        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist - (2 + nSparseReco)].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
         fOutput->Add(fnSparseMC[iHist]);
