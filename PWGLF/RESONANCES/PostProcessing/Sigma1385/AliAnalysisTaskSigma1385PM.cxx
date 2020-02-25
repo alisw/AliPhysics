@@ -237,7 +237,7 @@ AliAnalysisTaskSigma1385PM::~AliAnalysisTaskSigma1385PM() {}
 //___________________________________________________________________
 void AliAnalysisTaskSigma1385PM::SetCutOpen() {
   // Pion cuts
-  SetFilterbitSigmaStarPion(1);
+  SetFilterbitSigmaStarPion(32);
   SetMaxNsigSigmaStarPion(5);
   SetMaxEtaSigmaStarPion(0.8);
   SetMaxVertexZSigmaStarPion(99);
@@ -246,8 +246,8 @@ void AliAnalysisTaskSigma1385PM::SetCutOpen() {
   // Lambda cuts
   SetMaxNsigV0Proton(5);
   SetMaxNsigV0Pion(5);
-  SetMaxDCAPVV0PosDaughter(99);
-  SetMaxDCAPVV0NegDaughter(99);
+  SetMaxDCAPVV0PosDaughter(0);
+  SetMaxDCAPVV0NegDaughter(0);
   SetMaxDCAV0daughters(999);
   SetMaxDCAPVV0(999);
   SetMinCPAV0(0.9);
