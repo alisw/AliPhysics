@@ -2263,7 +2263,9 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
 
       if(fPreSelectLctopKpi){
          Bool_t preSelectedLcMass=kTRUE;
-         preSelectedLcMass = fCutsLbtoLcpi->PreSelectMass(arrTracks);
+          
+          preSelectedLcMass = fCutsLctopKpi->PreSelectMass(arrTracks);
+
          if (!preSelectedLcMass) continue;
        }
 

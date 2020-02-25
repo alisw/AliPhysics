@@ -1488,6 +1488,8 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
     AliFatal("Cut matrix not inizialized. Exit...");
     return 0;
   }
+    
+    
   Bool_t recoLc=true;
   Bool_t v=false;
   Int_t chargeLc=0;
@@ -1503,11 +1505,16 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
      px += tracks[iDaught]->Px();
      py += tracks[iDaught]->Py();
      chargeLc+=tracks[iDaught]->Charge();
+     
      }
   }
   Double_t ptLc=TMath::Sqrt(px*px+py*py);
+    if (ptLc < 1.5) recoLc=false;
+       // printf("Pt Lc: %f\n", ptLc);
+    
   Int_t ptbin=PtBin(ptLc);
   Double_t diff=fCutsRD[GetGlobalIndex(0,ptbin)];
+    printf("Inv Mass Window: %f in %d\n", diff, ptbin);
   for(Int_t iDaught=0; iDaught<3; iDaught++) {
     if(tracks[iDaught]->Charge()==-1*chargeLc){
       for(Int_t i=0; i<3; i++) {
@@ -1527,6 +1534,9 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
       }
     }
   }
+    
+
+    
   return recoLc;
 }
 
