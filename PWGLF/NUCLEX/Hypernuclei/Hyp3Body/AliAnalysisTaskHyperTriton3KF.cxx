@@ -107,15 +107,6 @@ bool HasTOF(AliVTrack *track) {
   return hasTOFout && hasTOFtime && (len > 350.);
 }
 
-/// get nClsITS from cluster map
-int GetNClsITS(unsigned char clsMap) {
-  int ncls = 0;
-  for (int i = 0; i < 6; i++) {
-    ncls += (int)(clsMap >> i) & 1;
-  }
-  return ncls;
-}
-
 /// helper functions
 template <typename T> double Sq(T a) { return a * a; }
 template <typename F> double Hypot(F a, F b, F c) { return std::sqrt(Sq(a) + Sq(b) + Sq(c)); }
@@ -124,7 +115,7 @@ template <typename F> double Hypot(F a, F b, F c, F d) { return std::sqrt(Sq(a) 
 }    // namespace
 
 AliAnalysisTaskHyperTriton3KF::AliAnalysisTaskHyperTriton3KF(bool mc, std::string name)
-    : AliAnalysisTaskSE(name.data()), fEventCuts{} {
+    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fMC{mc}, fREvent{}, fGenHyp{}, fRecHyp{} {
   fTrackCuts.SetMinNClustersTPC(0);
   fTrackCuts.SetEtaRange(-0.9,0.9);
   /// Settings for the custom vertexer
@@ -175,6 +166,14 @@ void AliAnalysisTaskHyperTriton3KF::UserCreateOutputObjects() {
 
   fListHist->Add(fHistInvMass);
 
+  OpenFile(2);
+  fTreeHyp3 = new TTree("Hyp3KF","Hypetriton 3 Body with the KFParticle");
+  fTreeHyp3->Branch("RCollision", &fREvent);
+  fTreeHyp3->Branch("RHyperTriton", &fRecHyp);
+
+  if (man->GetMCtruthEventHandler())
+    fTreeHyp3->Branch("SHyperTriton", &fGenHyp);
+
   PostData(1, fListHist);
   PostData(2, fTreeHyp3);
 
@@ -208,7 +207,10 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
 
   double pvPos[3], pvCov[6];
   fEventCuts.GetPrimaryVertex()->GetXYZ(pvPos);
-  fEventCuts.GetPrimaryVertex()->GetCovarianceMatrix(pvPos);
+  fEventCuts.GetPrimaryVertex()->GetCovarianceMatrix(pvCov);
+  fREvent.fX = pvPos[0];
+  fREvent.fY = pvPos[1];
+  fREvent.fZ = pvPos[2];
 
   KFPVertex kfPVertex;
   kfPVertex.SetXYZ(pvPos[0],pvPos[1],pvPos[2]);
@@ -219,12 +221,11 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
 
   KFParticle prodVertex{kfPVertex};
 
-  unsigned char tgr = 0u;
-  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) tgr |= kINT7;
-  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) tgr |= kCentral;
-  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr |= kSemiCentral;
-  double b = esdEvent->GetMagneticField();
-  tgr |= b > 0 ? kPositiveB : 0;
+  fREvent.fTrigger = 0u;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) fREvent.fTrigger |= kINT7;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) fREvent.fTrigger |= kCentral;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) fREvent.fTrigger |= kSemiCentral;
+  fREvent.fTrigger |= esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
   std::unordered_map<int, int> mcMap;
   if (fMC) {
@@ -254,10 +255,13 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
           break;
         }
       }
-      double l{Hypot(mcVtx[0] - decayVtx[0], mcVtx[1] - decayVtx[1], mcVtx[2] - decayVtx[2])};
+      SHyperTriton3KF genHyp;
+      genHyp.l = Hypot(mcVtx[0] - decayVtx[0], mcVtx[1] - decayVtx[1], mcVtx[2] - decayVtx[2]);
+      genHyp.px = part->Px();
+      genHyp.py = part->Py();
+      genHyp.pz = part->Pz();
       mcMap[iTrack] = fGenHyp.size();
-      fGenHyp.emplace_back(part->Px(), part->Py(), part->Pz(), l, -1);
-
+      fGenHyp.emplace_back(genHyp);
     }
   }
 
@@ -335,7 +339,7 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       twoCandidate.AddDaughter(p.particle);
 
       recHyp.chi2_deuprot = twoCandidate.GetChi2() / twoCandidate.GetNDF();
-      if (recHyp.chi2_deuprot > 4)
+      if (recHyp.chi2_deuprot > fMaxKFchi2[0])
         continue;
 
       for (const auto &pi : helpers[kPion]) {
@@ -344,14 +348,14 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         KFParticle hyperTriton{twoCandidate};
         hyperTriton.AddDaughter(pi.particle);
         recHyp.chi2_3prongs = hyperTriton.GetChi2() / hyperTriton.GetNDF();
-        if (recHyp.chi2_3prongs > 4)
+        if (recHyp.chi2_3prongs > fMaxKFchi2[1])
           continue;
-        ROOT::Math::XYZVectorF decayVtx{hyperTriton.X(), hyperTriton.Y(), hyperTriton.Z()};
+        ROOT::Math::XYZVectorF decayVtx{hyperTriton.X() - prodVertex.X(), hyperTriton.Y() - prodVertex.Y(), hyperTriton.Z() - prodVertex.Z()};
         ROOT::Math::XYZVectorF mom{hyperTriton.Px(), hyperTriton.Py(), hyperTriton.Pz()};
         recHyp.cosPA = mom.Dot(decayVtx) / std::sqrt(decayVtx.Mag2() * mom.Mag2());
         hyperTriton.SetProductionVertex(prodVertex);
         recHyp.chi2_topology = hyperTriton.GetChi2() / hyperTriton.GetNDF();
-        if (recHyp.chi2_topology > 4)
+        if (recHyp.chi2_topology > fMaxKFchi2[2])
           continue;
         recHyp.l = hyperTriton.GetDecayLength();
         recHyp.r = hyperTriton.GetDecayLengthXY();
@@ -359,13 +363,16 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         recHyp.py = hyperTriton.GetPy();
         recHyp.pz = hyperTriton.GetPz();
         recHyp.m = hyperTriton.GetMass();
+        bool record{!fMC || !fOnlyTrueCandidates};
         if (fMC) {
           int momId = IsTrueHyperTriton3Candidate(deu.track, p.track, pi.track, mcEvent);
           if (momId >= 0) {
             fGenHyp[mcMap[momId]].reco = fRecHyp.size();
+            record = true;
           }
         }
-        fRecHyp.emplace_back(recHyp);
+        if (record)
+          fRecHyp.emplace_back(recHyp);
       }
     }
   }
@@ -375,12 +382,10 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
   //   FillEventMixingPool(fREvent.fCent, fREvent.fZ, fDeuVector);
   // }
 
-  if (fMC) {
-    fTreeHyp3->Fill();
+  fTreeHyp3->Fill();
 
-    PostData(1, fListHist);
-    PostData(2, fTreeHyp3);
-  }
+  PostData(1, fListHist);
+  PostData(2, fTreeHyp3);
 }
 
 void AliAnalysisTaskHyperTriton3KF::Terminate(Option_t *) {}

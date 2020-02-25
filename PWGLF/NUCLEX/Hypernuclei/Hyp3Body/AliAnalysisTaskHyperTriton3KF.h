@@ -24,6 +24,15 @@ class AliESDtrack;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
+struct REvent3KF
+{
+  float fX;
+  float fY;
+  float fZ;
+  float fCent;
+  unsigned char fTrigger;
+};
+
 struct SHyperTriton3KF {
   float px = -999.f;
   float py = -999.f;
@@ -72,7 +81,7 @@ public:
   AliESDtrackCuts fTrackCuts = *AliESDtrackCuts::GetStandardV0DaughterCuts(); /// Track cuts Object
 
   enum kProng { kDeuteron = 0, kProton = 1, kPion = 2 };
-  bool  fRequireTOFpid[3] = {true,true,false};
+  bool  fRequireTOFpid[3] = {false,false,false};
   int   fMinTPCpidClusters[3] = {100, 100, 70};
   float fMinTrackDCA[3] = {0., 0., 0.};
   float fTPCsigmas[3] = {3.5f, 3.5f, 3.5f};
@@ -81,6 +90,9 @@ public:
   float fCandidatePtRange[2] = {0.f, 10.f};
   float fTrackPtRange[3][2] = {{0.f, 7.f},{0.f, 4.f},{0.f, 1.f}};
   float fMinCosPA = 0.99;
+  float fMaxKFchi2[3] = {400.,400.,400.};
+  bool  fOnlyTrueCandidates = false;
+
 
 private:
 
@@ -96,7 +108,6 @@ private:
   TTree *fTreeHyp3 = nullptr;    //! Output Tree, V0s
 
   bool fMC = false;
-  bool fOnlyTrueCandidates = false;
   bool fDownscaling = false;
   bool fEnableEventMixing = false;
 
@@ -112,6 +123,7 @@ private:
   std::list<AliESDtrack> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
   int fEventMixingPoolDepth = 0;                      /// max depth of the event mixing pool
 
+  REvent3KF                    fREvent;
   std::vector<SHyperTriton3KF> fGenHyp;
   std::vector<RHyperTriton3KF> fRecHyp;
 
