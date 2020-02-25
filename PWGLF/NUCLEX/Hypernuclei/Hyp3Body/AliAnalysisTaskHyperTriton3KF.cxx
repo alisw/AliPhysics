@@ -21,21 +21,26 @@
 #include <array>
 #include <cmath>
 #include <vector>
+#include <unordered_map>
 
-// includes added to play with KFParticle
+#include "Math/Vector3Dfwd.h"
+#include "Math/Vector3D.h"
+
 #define HomogeneousField
 #include "KFParticle.h"
 #include "KFVertex.h"
+#include "KFPVertex.h"
+#include "KFPTrack.h"
 
 ClassImp(AliAnalysisTaskHyperTriton3KF);
 
 namespace {
 
 struct HelperParticle {
-  AliESDtrack* track;
-  float        nSigmaTPC;
-  float        nSigmaTOF;
-  KFParticle   particle;
+  AliESDtrack* track = nullptr;
+  float        nSigmaTPC = -1.f;
+  float        nSigmaTOF = -1.f;
+  KFParticle   particle = KFParticle();
 };
 
 constexpr float kHyperTritonMass{2.99131};
@@ -45,6 +50,7 @@ constexpr float kPMass{0.938272};
 constexpr float kPiMass{0.13957};
 constexpr float kMasses[3]{kDeuMass,kPMass,kPiMass};
 constexpr AliPID::EParticleType kAliPID[3]{AliPID::kDeuteron,AliPID::kProton,AliPID::kPion};
+const int kPDGs[3]{AliPID::ParticleCode(kAliPID[0]),AliPID::ParticleCode(kAliPID[1]),AliPID::ParticleCode(kAliPID[2])};
 
 bool IsHyperTriton3(const AliVParticle *vPart, AliMCEvent *mcEvent) {
   int nDaughters = 0;
@@ -112,12 +118,13 @@ int GetNClsITS(unsigned char clsMap) {
 
 /// helper functions
 template <typename T> double Sq(T a) { return a * a; }
+template <typename F> double Hypot(F a, F b, F c) { return std::sqrt(Sq(a) + Sq(b) + Sq(c)); }
 template <typename F> double Hypot(F a, F b, F c, F d) { return std::sqrt(Sq(a) + Sq(b) + Sq(c) + Sq(d)); }
 
 }    // namespace
 
 AliAnalysisTaskHyperTriton3KF::AliAnalysisTaskHyperTriton3KF(bool mc, std::string name)
-    : AliAnalysisTaskSE(name.data()) {
+    : AliAnalysisTaskSE(name.data()), fEventCuts{} {
   fTrackCuts.SetMinNClustersTPC(0);
   fTrackCuts.SetEtaRange(-0.9,0.9);
   /// Settings for the custom vertexer
@@ -176,6 +183,8 @@ void AliAnalysisTaskHyperTriton3KF::UserCreateOutputObjects() {
 }    /// end UserCreateOutputObjects
 
 void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
+    // set Magnetic field for KF
+  KFParticle::SetField(fInputEvent->GetMagneticField());
   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
   if (!esdEvent) {
     ::Fatal("AliAnalysisTaskHyperTriton3KF::UserExec", "AliESDEvent not found.");
@@ -194,21 +203,33 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
     return;
   }
 
+  fGenHyp.clear();
+  fRecHyp.clear();
 
-  double primaryVtxPos[3];
-  fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVtxPos);
+  double pvPos[3], pvCov[6];
+  fEventCuts.GetPrimaryVertex()->GetXYZ(pvPos);
+  fEventCuts.GetPrimaryVertex()->GetCovarianceMatrix(pvPos);
 
-  unsigned char tgr = 0x0;
+  KFPVertex kfPVertex;
+  kfPVertex.SetXYZ(pvPos[0],pvPos[1],pvPos[2]);
+  kfPVertex.SetCovarianceMatrix(pvCov[0],pvCov[1],pvCov[2],pvCov[3],pvCov[4],pvCov[5]);
+  kfPVertex.SetChi2(fEventCuts.GetPrimaryVertex()->GetChi2());
+  kfPVertex.SetNDF(fEventCuts.GetPrimaryVertex()->GetNDF());
+  kfPVertex.SetNContributors(fEventCuts.GetPrimaryVertex()->GetNContributors());
 
+  KFParticle prodVertex{kfPVertex};
+
+  unsigned char tgr = 0u;
   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) tgr |= kINT7;
   if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) tgr |= kCentral;
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr |= kSemiCentral;
+  double b = esdEvent->GetMagneticField();
+  tgr |= b > 0 ? kPositiveB : 0;
 
-  double b     = esdEvent->GetMagneticField();
-  int magField = b > 0 ? kPositiveB : 0;
-
+  std::unordered_map<int, int> mcMap;
   if (fMC) {
-
+    double mcVtx[3];
+    mcEvent->GetPrimaryVertex()->GetXYZ(mcVtx);
     for (int iTrack = 0; iTrack < mcEvent->GetNumberOfTracks(); iTrack++) {
       AliVParticle *part = mcEvent->GetTrack(iTrack);
 
@@ -223,22 +244,19 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
 
       double decayVtx[3]{0.0, 0.0, 0.0};
 
-      AliVParticle *deu{nullptr}, *p{nullptr}, *pi{nullptr};
-
       for (int iD = part->GetDaughterFirst(); iD <= part->GetDaughterLast(); ++iD) {
         AliVParticle *daughter = mcEvent->GetTrack(iD);
 
-        if (mcEvent->IsSecondaryFromWeakDecay(iD) && daughter) {
+        if (mcEvent->IsSecondaryFromWeakDecay(iD) && daughter && std::abs(daughter->PdgCode()) != 11) {
           decayVtx[0] = daughter->Xv();
           decayVtx[1] = daughter->Yv();
           decayVtx[2] = daughter->Zv();
-
-          if (std::abs(daughter->PdgCode()) == AliPID::ParticleCode(AliPID::kDeuteron)) deu = daughter;
-          if (std::abs(daughter->PdgCode()) == AliPID::ParticleCode(AliPID::kProton)) p = daughter;
-          if (std::abs(daughter->PdgCode()) == AliPID::ParticleCode(AliPID::kPion)) pi = daughter;
+          break;
         }
       }
-      if (deu == nullptr) continue;
+      double l{Hypot(mcVtx[0] - decayVtx[0], mcVtx[1] - decayVtx[1], mcVtx[2] - decayVtx[2])};
+      mcMap[iTrack] = fGenHyp.size();
+      fGenHyp.emplace_back(part->Px(), part->Py(), part->Pz(), l, -1);
 
     }
   }
@@ -284,6 +302,8 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       for (int iT{0}; iT < 3; ++iT) {
         if (candidate[iT]) {
           helper.particle.Create(posmom,cov,track->Charge(),kMasses[iT]);
+          helper.particle.Chi2() = track->GetTPCchi2();
+          helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
           helper.nSigmaTPC = nSigmasTPC[iT];
           helper.nSigmaTOF = nSigmasTOF[iT];
           helpers[iT].push_back(helper);
@@ -302,15 +322,50 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
   //   deuterons = GetEventMixingTracks(fREvent.fCent, fREvent.fZ);
   // }
 
+  RHyperTriton3KF recHyp;
   for (const auto &deu : helpers[kDeuteron]) {
+    KFParticle oneCandidate;
+    oneCandidate.Q() = deu.particle.GetQ();
+    oneCandidate.AddDaughter(deu.particle);
 
     for (const auto &p : helpers[kProton]) {
       if (deu.track == p.track || p.particle.GetQ() * deu.particle.GetQ() < 0)
+        continue;
+      KFParticle twoCandidate{oneCandidate};
+      twoCandidate.AddDaughter(p.particle);
+
+      recHyp.chi2_deuprot = twoCandidate.GetChi2() / twoCandidate.GetNDF();
+      if (recHyp.chi2_deuprot > 4)
         continue;
 
       for (const auto &pi : helpers[kPion]) {
         if (p.track == pi.track || deu.track == pi.track || pi.particle.GetQ() * p.particle.GetQ() > 0) 
           continue;
+        KFParticle hyperTriton{twoCandidate};
+        hyperTriton.AddDaughter(pi.particle);
+        recHyp.chi2_3prongs = hyperTriton.GetChi2() / hyperTriton.GetNDF();
+        if (recHyp.chi2_3prongs > 4)
+          continue;
+        ROOT::Math::XYZVectorF decayVtx{hyperTriton.X(), hyperTriton.Y(), hyperTriton.Z()};
+        ROOT::Math::XYZVectorF mom{hyperTriton.Px(), hyperTriton.Py(), hyperTriton.Pz()};
+        recHyp.cosPA = mom.Dot(decayVtx) / std::sqrt(decayVtx.Mag2() * mom.Mag2());
+        hyperTriton.SetProductionVertex(prodVertex);
+        recHyp.chi2_topology = hyperTriton.GetChi2() / hyperTriton.GetNDF();
+        if (recHyp.chi2_topology > 4)
+          continue;
+        recHyp.l = hyperTriton.GetDecayLength();
+        recHyp.r = hyperTriton.GetDecayLengthXY();
+        recHyp.px = hyperTriton.GetPx();
+        recHyp.py = hyperTriton.GetPy();
+        recHyp.pz = hyperTriton.GetPz();
+        recHyp.m = hyperTriton.GetMass();
+        if (fMC) {
+          int momId = IsTrueHyperTriton3Candidate(deu.track, p.track, pi.track, mcEvent);
+          if (momId >= 0) {
+            fGenHyp[mcMap[momId]].reco = fRecHyp.size();
+          }
+        }
+        fRecHyp.emplace_back(recHyp);
       }
     }
   }

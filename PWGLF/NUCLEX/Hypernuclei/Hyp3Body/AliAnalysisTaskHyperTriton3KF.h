@@ -24,6 +24,28 @@ class AliESDtrack;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
+struct SHyperTriton3KF {
+  float px = -999.f;
+  float py = -999.f;
+  float pz = -999.f;
+  float l = -1.f;
+  int reco = -1;
+};
+
+
+struct RHyperTriton3KF {
+  float px = -999.f;
+  float py = -999.f;
+  float pz = -999.f;
+  float l = -1.f;
+  float r = -1.f;
+  float chi2_deuprot = -1.f;
+  float chi2_3prongs = -1.f;
+  float chi2_topology = -1.f;
+  float cosPA = -1.f;
+  float m = -1;
+};
+
 class AliAnalysisTaskHyperTriton3KF : public AliAnalysisTaskSE {
 
 public:
@@ -89,6 +111,9 @@ private:
 
   std::list<AliESDtrack> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
   int fEventMixingPoolDepth = 0;                      /// max depth of the event mixing pool
+
+  std::vector<SHyperTriton3KF> fGenHyp;
+  std::vector<RHyperTriton3KF> fRecHyp;
 
   AliAnalysisTaskHyperTriton3KF(const AliAnalysisTaskHyperTriton3KF &);               // not implemented
   AliAnalysisTaskHyperTriton3KF &operator=(const AliAnalysisTaskHyperTriton3KF &);    // not implemented
