@@ -81,6 +81,7 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
 
   if (fv0EtaMax > 0 && TMath::Abs(v0->Eta()) > fv0EtaMax)
     return false;
+  
   if (fTransverseRadiusMin > 0 || fCPAMin > 0) {
     const AliAODEvent* evt = static_cast<const AliAODEvent*>(static_cast<AliAODTrack *>(v0->GetDaughter(0))->GetEvent());
     if (!evt)
