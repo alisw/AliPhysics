@@ -322,9 +322,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtCentrality[2] ;                         //!<! Number of non/isolated particles centrality vs pT.
   TH2F *   fhPtEventPlane[2] ;                         //!<! Number of non/isolated particles event plane angle vs pT.
   TH2F *   fhPtNLocMax[2] ;                            //!<! Number of non/isolated particles vs NLM in cluster.
-  TH2F *   fhPhi[2] ;                                  //!<! phi of non/isolated particles.
-  TH2F *   fhEta[2] ;                                  //!<! eta of non/isolated particles.
-  TH2F *   fhEtaPhi[2] ;                               //!<! eta vs phi of non/isolated particles.
+  TH3F *   fhPtEtaPhi[2] ;                             //!<! cluster pt vs eta vs phi of non/isolated particles.
   TH1F *   fhEExoTrigger[2];                           //!<! Number of non/isolated exotic cluster vs E.
   TH1F *   fhPtExoTrigger[2];                          //!<! Number of non/isolated exotic cluster vs pT.
   
@@ -404,8 +402,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCEtaIsoOverlap;                    //!<! Eta isolated with overlapped decay photons.
 
   TH1F *   fhPtMC  [fgkNmcTypes][2];                   //!<! Number of not/isolated mcTypes particle.
-  TH2F *   fhPhiMC [fgkNmcTypes][2];                   //!<! phi of not/isolated mcTypes particle.
-  TH2F *   fhEtaMC [fgkNmcTypes][2];                   //!<! eta of not/isolated mcTypes particle.
+  TH3F *   fhPtEtaPhiMC[fgkNmcTypes][2];               //!<! pT vs eta vs phi of not/isolated mcTypes particle.
   
   TH1F *   fhPtDecayMC  [2][AliNeutralMesonSelection::fgkMaxNDecayBits][fgkNmcTypes] ; //!<! Number of (not) isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle.
   

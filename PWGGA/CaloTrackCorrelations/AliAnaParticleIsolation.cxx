@@ -87,7 +87,7 @@ fIsExoticTrigger(0),              fClusterExoticity(1),
 // Histograms
 fhE(),                            fhPt(),
 fhPtCentrality(),                 fhPtEventPlane(),                         fhPtNLocMax(),
-fhPhi(),                          fhEta(),                                  fhEtaPhi(),
+fhPtEtaPhi(),
 fhEExoTrigger(),                  fhPtExoTrigger(),
 fhPtInConeExoTrigger(0),          fhPtClusterInConeExoTrigger(0),           fhPtTrackInConeExoTrigger(0),
 fhPtTrackInConeOtherBCPileUpSPD(0), fhPtTrackInConeVtxBC0(0),
@@ -276,8 +276,7 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     for(Int_t i = 0; i < 2 ; i++)
     {
       fhPtMC                       [imc][i] = 0;
-      fhPhiMC                      [imc][i] = 0;
-      fhEtaMC                      [imc][i] = 0;
+      fhPtEtaPhiMC                 [imc][i] = 0;
       fhPtLambda0MC                [imc][i] = 0;
       fhPtLambda0MCConv            [imc][i] = 0;      
       fhPtLambda0MCWith1Overlap    [imc][i] = 0;
@@ -304,7 +303,7 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   {
     fhE[i] = 0 ;                            fhPt[i] = 0 ;
     fhPtCentrality[i] = 0 ;                 fhPtEventPlane[i] = 0 ;      fhPtNLocMax[i] = 0 ;
-    fhPhi[i] = 0 ;                          fhEta[i] = 0 ;               fhEtaPhi[i] = 0 ;
+    fhPtEtaPhi[i] = 0 ;
     fhEExoTrigger[i] = 0 ;                  fhPtExoTrigger[i] = 0 ;
     
     fhTrackMatchedDEta[i] = 0 ;             fhTrackMatchedDPhi[i] = 0 ;   fhTrackMatchedDEtaDPhi  [i] = 0 ;
@@ -1497,32 +1496,16 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       outputContainer->Add(fhPtExoTrigger[iso]) ;
     }
     
-    fhPhi[iso]  = new TH2F(Form("hPhi%s",isoName[iso].Data()),
-                                Form("#varphi vs #it{p}_{T} of %s, %s",
+    fhPtEtaPhi[iso]  = new TH3F(Form("hPtEtaPhi%s",isoName[iso].Data()),
+                                Form("Number %s particles #it{p}_{T} vs #eta vs #varphi, %s",
                                      isoTitle[iso].Data(),parTitle[iso].Data()),
-                                nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-    fhPhi[iso]->SetYTitle("#varphi (rad)");
-    fhPhi[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPhi[iso]->SetZTitle("#it{counts}");
-    outputContainer->Add(fhPhi[iso]) ;
-    
-    fhEta[iso]  = new TH2F(Form("hEta%s",isoName[iso].Data()),
-                                Form("#eta vs #it{p}_{T} of %s, %s",
-                                     isoTitle[iso].Data(),parTitle[iso].Data()),
-                                nptbins,ptmin,ptmax,netabins,etamin,etamax);
-    fhEta[iso]->SetYTitle("#eta");
-    fhEta[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhEta[iso]->SetZTitle("#it{counts}");
-    outputContainer->Add(fhEta[iso]) ;
-    
-    fhEtaPhi[iso]  = new TH2F(Form("hEtaPhi%s",isoName[iso].Data()),
-                         Form("Number %s particles #eta vs #varphi, %s",
-                              isoTitle[iso].Data(),parTitle[iso].Data()),
-                         netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhi[iso]->SetXTitle("#eta");
-    fhEtaPhi[iso]->SetYTitle("#varphi (rad)");
-    fhEtaPhi[iso]->SetZTitle("#it{counts}");
-    outputContainer->Add(fhEtaPhi[iso]) ;
+                                nptbins/20,ptmin,ptmax,
+                                netabins,etamin,etamax,
+                                nphibins,phimin,phimax);
+    fhPtEtaPhi[iso]->SetYTitle("#eta");
+    fhPtEtaPhi[iso]->SetZTitle("#varphi (rad)");
+    fhPtEtaPhi[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtEtaPhi[iso]) ;
     
     if ( IsDataMC() )
     {
@@ -1538,21 +1521,14 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtMC[imc][iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtMC[imc][iso]) ;
         
-        fhPhiMC[imc][iso]  = new TH2F(Form("hPhi%sMC%s",isoName[iso].Data(),mcPartName[imc].Data()),
-                                    Form("#varphi vs #it{p}_{T} of %s %s, %s",
-                                         isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
-                                    nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-        fhPhiMC[imc][iso]->SetYTitle("#varphi (rad)");
-        fhPhiMC[imc][iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhPhiMC[imc][iso]) ;
-        
-        fhEtaMC[imc][iso]  = new TH2F(Form("hEta%sMC%s",isoName[iso].Data(),mcPartName[imc].Data()),
-                                    Form("#eta vs #it{p}_{T} of %s %s, %s",
-                                         isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
-                                    nptbins,ptmin,ptmax,netabins,etamin,etamax);
-        fhEtaMC[imc][iso]->SetYTitle("#eta");
-        fhEtaMC[imc][iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhEtaMC[imc][iso]) ;
+        fhPtEtaPhiMC[imc][iso]  = new TH3F(Form("hPtEtaPhi%sMC%s",isoName[iso].Data(),mcPartName[imc].Data()),
+                                           Form("#it{p}_{T} vs #varphi vs #it{p}_{T} of %s %s, %s",
+                                                isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
+                                           nptbins/20,ptmin,ptmax,netabins,etamin,etamax,nphibins,phimin,phimax);
+        fhPtEtaPhiMC[imc][iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPtEtaPhiMC[imc][iso]->SetYTitle("#eta");
+        fhPtEtaPhiMC[imc][iso]->SetZTitle("#varphi (rad)");
+        outputContainer->Add(fhPtEtaPhiMC[imc][iso]) ;
       }
     }
     
@@ -5102,9 +5078,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     fhE     [isolated] ->Fill(energy,      GetEventWeight()*weightTrig);
     fhPt    [isolated] ->Fill(pt    ,      GetEventWeight()*weightTrig);
-    fhPhi   [isolated] ->Fill(pt    , phi, GetEventWeight()*weightTrig);
-    fhEta   [isolated] ->Fill(pt    , eta, GetEventWeight()*weightTrig);
-    fhEtaPhi[isolated] ->Fill(eta   , phi, GetEventWeight()*weightTrig);
+    
+    fhPtEtaPhi[isolated] ->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
     
     if ( fStudyExoticTrigger && fIsExoticTrigger )
     {
@@ -5118,8 +5093,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
       {
         fhPtMC [kmcPhoton][isolated]->Fill(pt,      GetEventWeight()*weightTrig);
-        fhPhiMC[kmcPhoton][isolated]->Fill(pt, phi, GetEventWeight()*weightTrig);
-        fhEtaMC[kmcPhoton][isolated]->Fill(pt, eta, GetEventWeight()*weightTrig);
+        fhPtEtaPhiMC[kmcPhoton][isolated]->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
       }
       
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
@@ -5127,20 +5101,17 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         if     ( mcIndex == kmcPi0Decay )
         {
           fhPtMC [kmcPi0DecayLostPair][isolated]->Fill(pt,      GetEventWeight()*weightTrig);
-          fhPhiMC[kmcPi0DecayLostPair][isolated]->Fill(pt, phi, GetEventWeight()*weightTrig);
-          fhEtaMC[kmcPi0DecayLostPair][isolated]->Fill(pt, eta, GetEventWeight()*weightTrig);
+          fhPtEtaPhiMC[kmcPi0DecayLostPair][isolated]->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
         }
         else if( mcIndex == kmcEtaDecay )
         {
           fhPtMC [kmcEtaDecayLostPair][isolated]->Fill(pt,      GetEventWeight()*weightTrig);
-          fhPhiMC[kmcEtaDecayLostPair][isolated]->Fill(pt, phi, GetEventWeight()*weightTrig);
-          fhEtaMC[kmcEtaDecayLostPair][isolated]->Fill(pt, eta, GetEventWeight()*weightTrig);
+          fhPtEtaPhiMC[kmcEtaDecayLostPair][isolated]->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
         }
       }
       
       fhPtMC [mcIndex][isolated]->Fill(pt,      GetEventWeight()*weightTrig);
-      fhPhiMC[mcIndex][isolated]->Fill(pt, phi, GetEventWeight()*weightTrig);
-      fhEtaMC[mcIndex][isolated]->Fill(pt, eta, GetEventWeight()*weightTrig);
+      fhPtEtaPhiMC[mcIndex][isolated]->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
     }//Histograms with MC
     
     if ( fFillNLMHistograms )
@@ -5759,7 +5730,8 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
   // Fill hist with all particles before isolation criteria
   fhE[0]     ->Fill(ph->E(),   GetEventWeight()*weightTrig);
   fhPt[0]    ->Fill(ptC,       GetEventWeight()*weightTrig);
-  fhEtaPhi[0]->Fill(etaC,phiC, GetEventWeight()*weightTrig);
+  
+  fhPtEtaPhi[0]->Fill(ptC, etaC, phiC, GetEventWeight()*weightTrig);
   
   if ( IsDataMC() )
   {
