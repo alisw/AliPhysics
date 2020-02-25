@@ -307,23 +307,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   // Histograms  
   
-  TH1F *   fhEIso ;                                    //!<! Number of isolated particles vs energy.
-  TH1F *   fhPtIso ;                                   //!<! Number of isolated particles vs pT.
-  TH2F *   fhPtCentralityIso ;                         //!<! Centrality vs pT.
-  TH2F *   fhPtEventPlaneIso ;                         //!<! Event plane angle vs pT.
-  TH2F *   fhPtNLocMaxIso ;                            //!<! Number of isolated particles vs NLM in cluster.
-  TH2F *   fhPhiIso ;                                  //!<! phi of isolated particles.
-  TH2F *   fhEtaIso ;                                  //!<! eta of isolated particles.
-  TH2F *   fhEtaPhiIso ;                               //!<! eta vs phi of isolated particles.
-  TH2F *   fhEtaPhiNoIso ;                             //!<! eta vs phi of not isolated leading particles.
-  TH1F *   fhENoIso ;                                  //!<! Number of not isolated leading particles vs Energy.
-  TH1F *   fhPtNoIso ;                                 //!<! Number of not isolated leading particles vs pT.
-  TH2F *   fhPtNLocMaxNoIso ;                          //!<! Number of not isolated particles vs NLM in cluster.
-  TH1F *   fhEIsoExoTrigger;                           //!<! Number of isolated exotic cluster vs E.
-  TH1F *   fhENoIsoExoTrigger;                         //!<! Number of not isolated exotic cluster vs E.
-  TH1F *   fhPtIsoExoTrigger;                          //!<! Number of isolated exotic cluster vs pT.
-  TH1F *   fhPtNoIsoExoTrigger;                        //!<! Number of not isolated exotic cluster vs pT.
-
+  TH1F *   fhE[2] ;                                    //!<! Number of non/isolated particles vs energy.
+  TH1F *   fhPt[2] ;                                   //!<! Number of non/isolated particles vs pT.
+  TH2F *   fhPtCentrality[2] ;                         //!<! Number of non/isolated particles centrality vs pT.
+  TH2F *   fhPtEventPlane[2] ;                         //!<! Number of non/isolated particles event plane angle vs pT.
+  TH2F *   fhPtNLocMax[2] ;                            //!<! Number of non/isolated particles vs NLM in cluster.
+  TH2F *   fhPhi[2] ;                                  //!<! phi of non/isolated particles.
+  TH2F *   fhEta[2] ;                                  //!<! eta of non/isolated particles.
+  TH2F *   fhEtaPhi[2] ;                               //!<! eta vs phi of non/isolated particles.
+  TH1F *   fhEExoTrigger[2];                           //!<! Number of non/isolated exotic cluster vs E.
+  TH1F *   fhPtExoTrigger[2];                          //!<! Number of non/isolated exotic cluster vs pT.
   
   TH1F *   fhPtDecay       [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Number of (non) isolated Pi0 decay particles (invariant mass tag).
   TH2F *   fhEtaPhiDecay   [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! eta vs phi of (not) isolated leading Pi0 decay particles.
@@ -334,7 +327,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtTrackInConeMCPrimaryGener  [4] ;        //!<! Track Pt in the cone for tracks originating from primary charged pions, kaons, protons and else, generated pT.
   TH2F *   fhPtTrackInConeMCSecondaryGener[4] ;        //!<! Track Pt in the cone for tracks originating from secondary charged pions, kaons, protons and else, generated pT.
 
-  
   TH2F *   fhPtInConeExoTrigger ;                      //!<! Cluster and tracks  Pt in the cone. Trigger is exotic
   TH2F *   fhPtClusterInConeExoTrigger ;               //!<! Clusters Pt in the cone. Trigger is exotic
   TH2F *   fhPtTrackInConeExoTrigger ;                 //!<! Tracks Pt in the cone. Trigger considered exotic
@@ -382,7 +374,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCPi0Overlap;                       //!<! Pi0 with overlapped decay photons.
   TH1F *   fhPtPrimMCPi0IsoOverlap;                    //!<! Pi0 isolated with overlapped decay photons.
 
-  
   TH1F *   fhPtPrimMCEtaDecayPairOutOfCone;            //!<! Eta decay photons, with decay pair out of isolation cone.
   TH1F *   fhPtPrimMCEtaDecayPairOutOfAcceptance;      //!<! Eta decay photons, with decay pair out of detector acceptance.
   TH1F *   fhPtPrimMCEtaDecayPairOutOfAcceptanceNoOverlap;   //!<! Eta decay photons, with decay pair out of detector acceptance.
@@ -402,10 +393,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCEtaOverlap;                       //!<! Eta with overlapped decay photons.
   TH1F *   fhPtPrimMCEtaIsoOverlap;                    //!<! Eta isolated with overlapped decay photons.
 
-  TH1F *   fhPtNoIsoMC  [fgkNmcTypes];                 //!<! Number of not isolated mcTypes particle.
-  TH1F *   fhPtIsoMC    [fgkNmcTypes];                 //!<! Number of isolated mcTypes particle.
-  TH2F *   fhPhiIsoMC   [fgkNmcTypes];                 //!<! phi of isolated mcTypes particle.
-  TH2F *   fhEtaIsoMC   [fgkNmcTypes];                 //!<! eta of isolated mcTypes particle.
+  TH1F *   fhPtMC  [fgkNmcTypes][2];                   //!<! Number of not/isolated mcTypes particle.
+  TH2F *   fhPhiMC [fgkNmcTypes][2];                   //!<! phi of not/isolated mcTypes particle.
+  TH2F *   fhEtaMC [fgkNmcTypes][2];                   //!<! eta of not/isolated mcTypes particle.
   
   TH1F *   fhPtDecayMC  [2][AliNeutralMesonSelection::fgkMaxNDecayBits][fgkNmcTypes] ; //!<! Number of (not) isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle.
   
@@ -612,10 +602,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda1LocMaxN[2] ;                      //!<! E vs lambda1 of selected cluster, N>2 local maxima in cluster.
   
   // Pile-up
-  TH1F *   fhEIsoPileUp[7] ;                           //!<! Number of isolated particles.
-  TH1F *   fhPtIsoPileUp[7] ;                          //!<! Number of isolated particles.
-  TH1F *   fhENoIsoPileUp[7] ;                         //!<! Number of not isolated particles.
-  TH1F *   fhPtNoIsoPileUp[7] ;                        //!<! Number of not isolated particles.
+  TH1F *   fhPtPileUp[7][2] ;                          //!<! Number of isolated particles.
+  
   TH2F *   fhTimeENoCut;                               //!<! Time of cluster vs E, no cut.
   TH2F *   fhTimeESPD;                                 //!<! Time of cluster vs E, IsSPDPileUp.
   TH2F *   fhTimeESPDMulti;                            //!<! Time of cluster vs E, IsSPDPileUpMulti.
@@ -759,7 +747,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,44) ;
+  ClassDef(AliAnaParticleIsolation,45) ;
   /// \endcond
 
 } ;
