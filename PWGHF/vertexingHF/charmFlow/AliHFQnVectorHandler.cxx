@@ -65,6 +65,7 @@ AliHFQnVectorHandler::AliHFQnVectorHandler():
     fIsOADBFileOpen(false),
     fCalibObjRun(-9999),
     fHistMultV0(nullptr),
+    fV0CalibZvtxDiff(true),
     fEnablePhiDistrHistos(false),
     fQnVectorTask(nullptr),
     fQnVectorMgr(nullptr)
@@ -138,6 +139,7 @@ AliHFQnVectorHandler::AliHFQnVectorHandler(int calibType, int normMeth, int harm
     fIsOADBFileOpen(false),
     fCalibObjRun(-9999),
     fHistMultV0(nullptr),
+    fV0CalibZvtxDiff(true),
     fEnablePhiDistrHistos(false),
     fQnVectorTask(nullptr),
     fQnVectorMgr(nullptr)
@@ -758,7 +760,7 @@ void AliHFQnVectorHandler::ComputeQvecQnFrameworkTPC()
     fUsedTrackNegIDs.ResetAllBits();
     
     int nTracks=fAODEvent->GetNumberOfTracks();
-    for(int iTrack=0; iTrack<nTracks; iTrack++){
+    for(int iTrack=0; iTrack<nTracks; iTrack++) {
         AliAODTrack* track=dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTrack));
         if(!track || !IsTrackSelected(track)) continue;
         if(track->GetID()>=0) fUsedTrackPosIDs.SetBitNumber(track->GetID());
@@ -884,7 +886,7 @@ void AliHFQnVectorHandler::ComputeQvecTPC()
     }
 
     int nTracks=fAODEvent->GetNumberOfTracks();
-    for(int iTrack=0; iTrack<nTracks; iTrack++){
+    for(int iTrack=0; iTrack<nTracks; iTrack++) {
         AliAODTrack* track=dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTrack));
         double pt=track->Pt();
         double eta=track->Eta();
@@ -951,7 +953,7 @@ void AliHFQnVectorHandler::ComputeQvecV0()
         double phiCh = TMath::PiOver4()*(0.5 + iCh % 8);
         double multv0 = fV0->GetMultiplicity(iCh);
         
-        if (iCh < 32){ // V0C side
+        if (iCh < 32) { // V0C side
             double multCorC = -10;
             
             if (iCh < 8)
@@ -963,7 +965,7 @@ void AliHFQnVectorHandler::ComputeQvecV0()
             else if (iCh >= 24 && iCh < 32)
                 multCorC = multv0/fHistMultV0->GetBinContent(iCh+1)*fHistMultV0->GetBinContent(25);
             
-            if (multCorC < 0){
+            if (multCorC < 0) {
                 AliWarning("Problem with multiplicity in V0C");
                 continue;
             }
@@ -988,7 +990,7 @@ void AliHFQnVectorHandler::ComputeQvecV0()
             else if (iCh >= 56 && iCh < 64)
                 multCorA = multv0/fHistMultV0->GetBinContent(iCh+1)*fHistMultV0->GetBinContent(57);
             
-            if (multCorA < 0){
+            if (multCorA < 0) {
                 AliWarning("Problem with multiplicity in V0A");
                 continue;
             }
@@ -1030,18 +1032,18 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
     }
     fOADBFile = TFile::Open(fOADBFileName.Data());
 
-    if(!fOADBFile){
+    if(!fOADBFile) {
         AliWarning("OADB V0-TPC calibration file cannot be opened\n");
         return false;
     }
     
     //load V0 calibrations (mandatory)
     AliOADBContainer* cont = (AliOADBContainer*) fOADBFile->Get("hMultV0BefCorPfpx");
-    if(!cont){
+    if(!cont) {
         AliWarning("OADB object hMultV0BefCorPfpx is not available in the file\n");
         return false;
     }
-    if(!(cont->GetObject(fRun))){
+    if(!(cont->GetObject(fRun))) {
         AliWarning(Form("OADB object hMultV0BefCorPfpx is not available for run %i\n", fRun));
         return false;
     }
@@ -1049,103 +1051,140 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
             
     for(int iZvtx = 0; iZvtx < 14; iZvtx++) {
         AliOADBContainer* contQx2am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%dm_%d", fHarmonic, iZvtx));
-        if(!contQx2am){
+        if(!contQx2am) { //check if it is not Zvtx differential
+            contQx2am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%dm", fHarmonic));
+        }
+        if(!contQx2am) {
             AliWarning(Form("OADB object fqxa%dm is not available in the file\n", fHarmonic));
             return false;
         }
-        if(!(contQx2am->GetObject(fRun))){
+        else
+            fV0CalibZvtxDiff = false;
+
+        if(!(contQx2am->GetObject(fRun))) {
             AliWarning(Form("OADB object fqxa%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQx2mV0A[iZvtx] = ((TH1D*) contQx2am->GetObject(fRun));
         
-        AliOADBContainer* contQy2am = (AliOADBContainer*) fOADBFile->Get(Form("fqya%dm_%d", fHarmonic, iZvtx));
-        if(!contQy2am){
+        AliOADBContainer* contQy2am = nullptr;
+        if(fV0CalibZvtxDiff)
+            contQy2am = (AliOADBContainer*) fOADBFile->Get(Form("fqya%dm_%d", fHarmonic, iZvtx));
+        else
+            contQy2am = (AliOADBContainer*) fOADBFile->Get(Form("fqya%dm", fHarmonic));
+        if(!contQy2am) {
             AliWarning(Form("OADB object fqya%dm is not available in the file\n", fHarmonic));
             return false;
         }
-        if(!(contQy2am->GetObject(fRun))){
+        if(!(contQy2am->GetObject(fRun))) {
             AliWarning(Form("OADB object fqya%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQy2mV0A[iZvtx] = ((TH1D*) contQy2am->GetObject(fRun));
         
-        AliOADBContainer* contQx2as = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%ds_%d", fHarmonic, iZvtx));
-        if(!contQx2as){
+        AliOADBContainer* contQx2as = nullptr;
+        if(fV0CalibZvtxDiff)
+            contQx2as = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%ds_%d", fHarmonic, iZvtx));
+        else
+            contQx2as = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%ds", fHarmonic));
+        if(!contQx2as) {
             AliWarning(Form("OADB object fqxa%ds is not available in the file\n", fHarmonic));
             return false;
         }
-        if(!(contQx2as->GetObject(fRun))){
+        if(!(contQx2as->GetObject(fRun))) {
             AliWarning(Form("OADB object fqxa%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQx2sV0A[iZvtx] = ((TH1D*) contQx2as->GetObject(fRun));
         
-        AliOADBContainer* contQy2as = (AliOADBContainer*) fOADBFile->Get(Form("fqya%ds_%d", fHarmonic, iZvtx));
-        if(!contQy2as){
+        AliOADBContainer* contQy2as = nullptr;
+        if(fV0CalibZvtxDiff)
+            contQy2as = (AliOADBContainer*) fOADBFile->Get(Form("fqya%ds_%d", fHarmonic, iZvtx));
+        else
+            contQy2as = (AliOADBContainer*) fOADBFile->Get(Form("fqya%ds", fHarmonic));
+        if(!contQy2as) {
             AliWarning(Form("OADB object fqya%ds is not available in the file\n", fHarmonic));
             return false;
         }
-        if(!(contQy2as->GetObject(fRun))){
+        if(!(contQy2as->GetObject(fRun))) {
             AliWarning(Form("OADB object fqya%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQy2sV0A[iZvtx] = ((TH1D*) contQy2as->GetObject(fRun));
         
-        AliOADBContainer* contQx2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%dm_%d", fHarmonic, iZvtx));
-        if(!contQx2cm){
+        AliOADBContainer* contQx2cm = nullptr;
+        if(fV0CalibZvtxDiff)
+            contQx2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%dm_%d", fHarmonic, iZvtx));
+        else
+            contQx2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%dm", fHarmonic));
+        if(!contQx2cm) {
             AliWarning(Form("OADB object fqxc%dm is not available in the file\n", fHarmonic));
             return false;
         }
-        if(!(contQx2cm->GetObject(fRun))){
+        if(!(contQx2cm->GetObject(fRun))) {
             AliWarning(Form("OADB object fqxc%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQx2mV0C[iZvtx] = ((TH1D*) contQx2cm->GetObject(fRun));
         
-        AliOADBContainer* contQy2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%dm_%d", fHarmonic, iZvtx));
-        if(!contQy2cm){
+        AliOADBContainer* contQy2cm = nullptr;
+        if(fV0CalibZvtxDiff)
+            contQy2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%dm_%d", fHarmonic, iZvtx));
+        else
+            contQy2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%dm", fHarmonic));
+        if(!contQy2cm) {
             AliWarning(Form("OADB object fqyc%dm is not available in the file\n", fHarmonic));
             return false;
         }
-        if(!(contQy2cm->GetObject(fRun))){
+        if(!(contQy2cm->GetObject(fRun))) {
             AliWarning(Form("OADB object fqyc%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQy2mV0C[iZvtx] = ((TH1D*) contQy2cm->GetObject(fRun));
 
-        AliOADBContainer* contQx2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%ds_%d", fHarmonic, iZvtx));
-        if(!contQx2cs){
+        AliOADBContainer* contQx2cs = nullptr;
+        if(fV0CalibZvtxDiff)
+            contQx2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%ds_%d", fHarmonic, iZvtx));
+        else
+            contQx2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%ds", fHarmonic));
+        if(!contQx2cs) {
             AliWarning(Form("OADB object fqxc%ds is not available in the file\n", fHarmonic));
             return false;
         }
-        if(!(contQx2cs->GetObject(fRun))){
+        if(!(contQx2cs->GetObject(fRun))) {
             AliWarning(Form("OADB object fqxc%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQx2sV0C[iZvtx] = ((TH1D*) contQx2cs->GetObject(fRun));
         
-        AliOADBContainer* contQy2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%ds_%d", fHarmonic, iZvtx));
-        if(!contQy2cs){
+        AliOADBContainer* contQy2cs = nullptr;
+        if(fV0CalibZvtxDiff)
+            contQy2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%ds_%d", fHarmonic, iZvtx));
+        else
+            contQy2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%ds", fHarmonic));
+        if(!contQy2cs) {
             AliWarning(Form("OADB object fqyc%ds is not available in the file\n", fHarmonic));
             return false;
         }
-        if(!(contQy2cs->GetObject(fRun))){
+        if(!(contQy2cs->GetObject(fRun))) {
             AliWarning(Form("OADB object fqyc%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQy2sV0C[iZvtx] = ((TH1D*) contQy2cs->GetObject(fRun));   
+        fQy2sV0C[iZvtx] = ((TH1D*) contQy2cs->GetObject(fRun));
+
+        if(!fV0CalibZvtxDiff) //assign only first element of array if it is not Zvtx differential
+            break;
     }
 
     //load TPC calibrations (not mandatory)
     for(int iCent = 0; iCent < 9; iCent++) {
         AliOADBContainer* contTPCposEta = (AliOADBContainer*) fOADBFile->Get(Form("fphidistr_poseta_%d_%d", iCent*10, (iCent+1)*10));
-        if(!contTPCposEta){
+        if(!contTPCposEta) {
             AliWarning("OADB object fphidistr_poseta is not available in the file\n");
             fWeightsTPCPosEta[iCent] = nullptr;
         }
         else {
-            if(!(contTPCposEta->GetObject(fRun))){
+            if(!(contTPCposEta->GetObject(fRun))) {
                 AliWarning(Form("OADB object fphidistr_poseta is not available for run %i\n", fRun));
                 fWeightsTPCPosEta[iCent] = nullptr;
             }
@@ -1155,13 +1194,13 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
         }
 
         AliOADBContainer* contTPCnegEta = (AliOADBContainer*) fOADBFile->Get(Form("fphidistr_negeta_%d_%d", iCent*10, (iCent+1)*10));
-        if(!contTPCnegEta){
+        if(!contTPCnegEta) {
             AliWarning("OADB object fphidistr_negeta is not available in the file\n");
             fWeightsTPCNegEta[iCent] = nullptr;
             return true;
         }
         else {        
-            if(!(contTPCnegEta->GetObject(fRun))){
+            if(!(contTPCnegEta->GetObject(fRun))) {
                 AliWarning(Form("OADB object fphidistr_negeta is not available for run %i\n", fRun));
                 fWeightsTPCNegEta[iCent] = nullptr;
             }
@@ -1177,6 +1216,9 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
 //__________________________________________________________
 short AliHFQnVectorHandler::GetVertexZbin() const
 {
+    if(!fV0CalibZvtxDiff)
+        return 0; //if it is not Zvtx differential, always first bin
+
     short zvtxbin = -10;
     
     if (fZvtx >= -10. && fZvtx < -8.)

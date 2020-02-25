@@ -21,7 +21,7 @@ AliConversionPhotonBase(),
   fNNeutralPionLabels(0),
   fCaloPhotonMCFlags(0),
   fPairedId(-1),
-  fCaloPhoton(kFALSE),
+  fCaloPhoton(0),
   fUseForMesonPair(kTRUE)
 {
   // initialize calo photon MC labels
@@ -50,7 +50,7 @@ AliConversionPhotonBase(*((AliConversionPhotonBase*)kfphoton)),
   fNNeutralPionLabels(0),
   fCaloPhotonMCFlags(0),
   fPairedId(-1),
-  fCaloPhoton(kFALSE),
+  fCaloPhoton(0),
   fUseForMesonPair(kTRUE)
 {
   //Constructor from kfphoton

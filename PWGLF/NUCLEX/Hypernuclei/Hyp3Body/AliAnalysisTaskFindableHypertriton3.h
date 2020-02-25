@@ -50,6 +50,8 @@ public:
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
 
+  static  bool  HasTOF(AliESDtrack *t);
+
   AliEventCuts fEventCuts; /// event cuts class
 
 private:
@@ -70,6 +72,8 @@ private:
   // Findable Tree
   AliESDtrack *fTreeHyp3BodyVarTracks[3]; //!
   Int_t fTreeHyp3BodyVarPDGcodes[3];
+  Float_t fTreeHyp3BodyVarNsigmaTPC[3];
+  Float_t fTreeHyp3BodyVarNsigmaTOF[3];
 
   ULong64_t fTreeHyp3BodyVarEventId;
   Int_t fTreeHyp3BodyVarMotherId;

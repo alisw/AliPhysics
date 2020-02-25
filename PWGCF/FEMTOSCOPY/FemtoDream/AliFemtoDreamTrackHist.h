@@ -36,6 +36,11 @@ class AliFemtoDreamTrackHist {
       fpTDist[i]->Fill(pT);
   }
   ;
+  void FillpCut(int i, float p) {
+    if (!fMinimalBooking)
+      fpDist[i]->Fill(p);
+  }
+  ;
   void FillpTPCCut(int i, float pTPC) {
     if (!fMinimalBooking)
       fpTPCDist[i]->Fill(pTPC);
@@ -96,6 +101,11 @@ class AliFemtoDreamTrackHist {
       fShrdClsITS[i]->Fill(layer, yesno);
   }
   ;
+  void FillITSdedx(int i, float mom, float dedx) {
+    if (!fMinimalBooking)
+      fITSdedx[i]->Fill(mom, dedx);
+  }
+  ;
   void FillTPCdedx(int i, float mom, float dedx) {
     if (!fMinimalBooking)
       fTPCdedx[i]->Fill(mom, dedx);
@@ -104,6 +114,16 @@ class AliFemtoDreamTrackHist {
   void FillTOFbeta(int i, float mom, float beta) {
     if (!fMinimalBooking)
       fTOFbeta[i]->Fill(mom, beta);
+  }
+  ;
+  void FillNSigITS(int i, float mom, float nSigITS) {
+    if (!fMinimalBooking)
+      fNSigITS[i]->Fill(mom, nSigITS);
+  }
+  ;
+  void FillNSigITSMod(int i, float mom,float nSigITS){
+    if (!fMinimalBooking)
+      fNSigITSMod[i]->Fill(mom, TMath::Abs(nSigITS));
   }
   ;
   void FillNSigTPC(int i, float mom, float nSigTPC) {
@@ -121,6 +141,11 @@ class AliFemtoDreamTrackHist {
       fNSigTOF[i]->Fill(mom, nSigTOF);
   }
   ;
+  void FillITSStatus(int i, AliPIDResponse::EDetPidStatus statusITS) {
+    if (!fMinimalBooking)
+      fITSStatus[i]->Fill(statusITS);
+  }
+  ;
   void FillTPCStatus(int i, AliPIDResponse::EDetPidStatus statusTPC) {
     if (!fMinimalBooking)
       fTPCStatus[i]->Fill(statusTPC);
@@ -133,6 +158,11 @@ class AliFemtoDreamTrackHist {
   ;
   void FillNSigComb(float pT, float nSigTPC, float nSigTOF);
 
+  void FillNSigComITSTPC(int i, float mom,float nSigITS, float nSigTPC){
+    if (!fMinimalBooking)
+      fNSigComITSTPC[i]->Fill(mom, TMath::Sqrt(nSigITS*nSigITS+nSigTPC*nSigTPC));
+  }
+  ;
   void FillNSigComTPCTOF(int i, float mom,float nSigTPC, float nSigTOF){
     if (!fMinimalBooking)
       fNSigComTPCTOF[i]->Fill(mom, TMath::Sqrt(nSigTPC*nSigTPC+nSigTOF*nSigTOF));
@@ -191,6 +221,7 @@ class AliFemtoDreamTrackHist {
   TProfile *fConfig;        //!
   TH1F *fCutCounter;        //!
   TH1F *fpTDist[2];         //!
+  TH1F *fpDist[2];          //!
   TH1F *fpTPCDist[2];       //!
   TH1F *fetaDist[2];        //!
   TH1F *fphiDist[2];        //!
@@ -207,14 +238,19 @@ class AliFemtoDreamTrackHist {
   TH1F *fTPCRatio[2];       //!
   TH1F *fTPCClsS[2];        //!
   TH2F *fTrackChi2[2];      //!
+  TH2F *fITSdedx[2];        //!
   TH2F *fTPCdedx[2];        //!
   TH2F *fTOFbeta[2];        //!
+  TH2F *fNSigITS[2];        //!
+  TH2F *fNSigITSMod[2];     //!
   TH2F *fNSigTPC[2];        //!
   TH2F *fNSigTPCMod[2];     //!
   TH2F *fNSigTOF[2];        //!
+  TH1F *fITSStatus[2];      //!
   TH1F *fTPCStatus[2];      //!
   TH1F *fTOFStatus[2];      //!
   TH3F *fNSigCom;           //!
+  TH2F  *fNSigComITSTPC[2];   //!
   TH2F  *fNSigComTPCTOF[2];   //!
   TH2F *fTPCClsCPiluUp[2];  //!
   TH2F *fITShrdClsPileUp[2];  //!

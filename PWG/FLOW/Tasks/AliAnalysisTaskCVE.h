@@ -68,7 +68,8 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   void SetVzRangeMax(Double_t vzMax)                {this->fMaxVzCut       =  vzMax;}
 
   /******* Track Cut Ranges ******/
-  void SetNSigmaCutTPC(Double_t     nSigTPC)     {this->fNSigmaCut  =  nSigTPC;}
+  void SetNSigmaCutTPC(Double_t     nSigTPC)     {this->fNSigmaTPCCut  =  nSigTPC;}
+  void SetNSigmaCutTOF(Double_t     nSigTOF)     {this->fNSigmaTOFCut  =  nSigTOF;}
   void SetTrackCutdEdxMin(Float_t  ndEdxMin)     {this->fdEdxMin    = ndEdxMin;}
   void SetTrackCutChi2Min(Double_t  chi2Min)     {this->fTrkChi2Min =  chi2Min;}
   void SetFlagUseKinkTracks(Bool_t    bKink)     {this->bUseKinkTracks = bKink;}
@@ -113,16 +114,17 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   Int_t                 gHarmonic;  //
   Int_t                 fParticle;  //
   Int_t                fFilterBit;  //
-  Int_t              fTPCclustMin;  // 
+  Int_t              fTPCclustMin;  //
   Bool_t           bUseKinkTracks;  //
   
-  Float_t              fNSigmaCut;  //
+  Float_t           fNSigmaTPCCut;  //
+  Float_t           fNSigmaTOFCut;  //
   Float_t               fMinPtCut;  //
   Float_t               fMaxPtCut;  //
   Float_t              fMinEtaCut;  //
   Float_t              fMaxEtaCut;  //
   Float_t             fTrkChi2Min;  //
-  Float_t                fdEdxMin;  //  
+  Float_t                fdEdxMin;  // 
   //Event Variables to be used:
   Float_t               fMinVzCut;  //
   Float_t               fMaxVzCut;  //
@@ -187,7 +189,12 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   TH3F          *fHCorrectNUAposProt[5];   //! 
   TH3F          *fHCorrectNUAnegProt[5];   //! 
 
+  /// TO fill NUA for new Cut:
+  TH3F          *fHFillNUAPosPID[5];    //! 
+  TH3F          *fHFillNUANegPID[5];    //! 
 
+ 
+  
   TProfile      *fHistEPResolution[2];       //! EP resolution vs Cent
   TProfile      *fHistEPResolutionAch[10];   //! EP resolution vs Ach 
   TProfile      *fHistv2cumAchChrgAll[10];  //! Charge inclusive

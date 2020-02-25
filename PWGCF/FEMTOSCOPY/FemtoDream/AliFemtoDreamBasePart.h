@@ -59,6 +59,9 @@ class AliFemtoDreamBasePart {
     return TVector3(-999,-999,-999);
   }
   ;
+  std::vector<TVector3> GetMomenta() const {
+    return fP;
+  }
   float GetP() const {
     return GetMomentum().Mag();
   }

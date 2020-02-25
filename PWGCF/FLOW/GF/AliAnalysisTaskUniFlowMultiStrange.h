@@ -8,7 +8,6 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "THnSparse.h"
-
 class TString;
 class TComplex;
 class TFile;
@@ -30,7 +29,7 @@ class AliPicoTrack;
 class AliAODv0;
 class AliAODcascade;
 class AliAODMCParticle;
-
+//class AliAnalysisTaskUniFlowMultiStrange;
 //_____________________________________________________________________________
 
 class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
@@ -78,7 +77,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       // analysis setters
       void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
       void                    Set2018Data(Bool_t use = kTRUE){Is2018Data = use;}
-      void                    SetAdditional2018DataEventCut(){IsAdditional2018DataEventCut = kTRUE;}
+       void                   SetAdditional2018DataEventCut(){IsAdditional2018DataEventCut = kTRUE;}
       void                    SetPIDCorrection(const char* file){IsPIDorrection = kTRUE; fPIDCorrectionPath = file;}
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
@@ -91,18 +90,29 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
 
 
-      void       SetProcessCascades(Bool_t use = kTRUE) { fProcessSpec[kXi] = use; fProcessSpec[kOmega] = use; }
+      void                    SetProcessCascades(Bool_t use = kTRUE) { fProcessSpec[kXi] = use; fProcessSpec[kOmega] = use; }
+ 
+      void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddTwoN1.push_back(n1); fAddTwoN2.push_back(n2); fAddTwoIsRefs.push_back(refs);
+                              fAddTwoIsPOIs.push_back(pois);}
+      void                    AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddTwoGapN1.push_back(n1); fAddTwoGapN2.push_back(n2);fAddTwoGapGap.push_back(gap); 
+                              fAddTwoGapIsRefs.push_back(refs); fAddTwoGapIsPOIs.push_back(pois);}
 
-
-
-
-      // flow related setters
-      void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2})); }
-      void                    AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2}, {gap})); }
-      void                    AddThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3})); }
-      void                    AddThreeGap(Int_t n1, Int_t n2, Int_t n3, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3} ,{gap})); }
-      void                    AddFour(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3,n4})); }
-      void                    AddFourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3,n4}, {gap})); }
+      void                    AddThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddThreeN1.push_back(n1); fAddThreeN2.push_back(n2); fAddThreeN3.push_back(n3);
+                              fAddThreeIsRefs.push_back(refs);fAddThreeIsPOIs.push_back(pois);}
+      void                    AddThreeGap(Int_t n1, Int_t n2, Int_t n3, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddThreeGapN1.push_back(n1); fAddThreeGapN2.push_back(n2); fAddThreeGapN3.push_back(n3);
+                              fAddThreeGapGap.push_back(gap); fAddThreeGapIsRefs.push_back(refs);fAddThreeGapIsPOIs.push_back(pois);}
+           
+      void                    AddFour(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddFourN1.push_back(n1); fAddFourN2.push_back(n2); fAddFourN3.push_back(n3);
+                              fAddFourN4.push_back(n4); fAddFourIsRefs.push_back(refs);fAddFourIsPOIs.push_back(pois);}
+      void                    AddFourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddFourGapN1.push_back(n1); fAddFourGapN2.push_back(n2); fAddFourGapN3.push_back(n3);
+                              fAddFourGapN4.push_back(n4); fAddFourGapGap.push_back(gap);
+                              fAddFourGapIsRefs.push_back(refs);fAddFourGapIsPOIs.push_back(pois);}
 
       void                    SetFlowRFPsPt(Double_t min, Double_t max) { fFlowRFPsPtMin = min; fFlowRFPsPtMax = max; }
       void                    SetFlowPOIsPt(Double_t min, Double_t max, Int_t bins = 0) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; fFlowPOIsPtBinNum = bins; }
@@ -208,25 +218,22 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void  SetCascadesRejectKinks(Bool_t reject) { fCutCascadesrejectKinks = reject; }
       void  SetXiPIDSigma(Double_t value){fXiPIDsigma = value;}
       void  SetXiMasswindow(Double_t value){fXiMasswindow = value;}
-
-
-
-
       void  SetRPTrackFromTPC(Bool_t value){fRPFromTPC = value;}
       void  SetTrackEta(Double_t value){fTrackEta = value;}
       void  SetTrackPtMin(Double_t value){fTrackPtMin = value;}
       void  SetTPCNcls(Double_t ncls = 70){fTPCNcls = ncls;}
 
- 
-
-
-
-
-
-
       AliEventCuts            fEventCuts; //
 
     private:
+
+      void                    AddFlowTaskTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskThreeGap(Int_t n1, Int_t n2, Int_t n3, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskFour(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskFourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
       static const Int_t      fFlowNumHarmonicsMax = 7; // maximum harmonics length of flow vector array
       static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
@@ -296,6 +303,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
 
 //-----------------------------------------------------------------------------------------
+
    
       void                    FilterCascades() const;
 
@@ -396,6 +404,46 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       std::vector<CorrTask*>  fVecCorrTask; //
       std::vector<AliVTrack*>* fVector[kUnknown]; //! container for selected Refs charged particles
+//two
+      std::vector<Int_t>  fAddTwoN1; //
+      std::vector<Int_t>  fAddTwoN2; //
+      std::vector<Bool_t>  fAddTwoIsRefs; // 
+      std::vector<Bool_t>  fAddTwoIsPOIs; // 
+//twogap
+      std::vector<Int_t>  fAddTwoGapN1; //
+      std::vector<Int_t>  fAddTwoGapN2; //
+      std::vector<Double_t>  fAddTwoGapGap; //
+      std::vector<Bool_t>  fAddTwoGapIsRefs; // 
+      std::vector<Bool_t>  fAddTwoGapIsPOIs; //       
+//three
+      std::vector<Int_t>  fAddThreeN1; //
+      std::vector<Int_t>  fAddThreeN2; //
+      std::vector<Int_t>  fAddThreeN3; //
+      std::vector<Bool_t>  fAddThreeIsRefs; // 
+      std::vector<Bool_t>  fAddThreeIsPOIs; //
+//threegap
+      std::vector<Int_t>  fAddThreeGapN1; //
+      std::vector<Int_t>  fAddThreeGapN2; //
+      std::vector<Int_t>  fAddThreeGapN3; //
+      std::vector<Double_t>  fAddThreeGapGap; //
+      std::vector<Bool_t>  fAddThreeGapIsRefs; // 
+      std::vector<Bool_t>  fAddThreeGapIsPOIs; //
+//four
+      std::vector<Int_t>  fAddFourN1; //
+      std::vector<Int_t>  fAddFourN2; //
+      std::vector<Int_t>  fAddFourN3; //
+      std::vector<Int_t>  fAddFourN4; //
+      std::vector<Bool_t>  fAddFourIsRefs; // 
+      std::vector<Bool_t>  fAddFourIsPOIs; //
+//fourgap
+      std::vector<Int_t>  fAddFourGapN1; //
+      std::vector<Int_t>  fAddFourGapN2; //
+      std::vector<Int_t>  fAddFourGapN3; //
+      std::vector<Int_t>  fAddFourGapN4; //
+      std::vector<Double_t>  fAddFourGapGap; //
+      std::vector<Bool_t>  fAddFourGapIsRefs; // 
+      std::vector<Bool_t>  fAddFourGapIsPOIs; //
+
 
       //cuts & selection: analysis
       RunMode                 fRunMode; // running mode (not grid related)
@@ -522,6 +570,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH1D*                   fhEventCentrality; //! distribution of event centrality
       TH2D*                   fh2EventCentralityNumRefs; //! distribution of event centrality vs number of selected charged tracks
       TH1D*                   fhEventCounter; //! counter following event selection
+      TH1D* fhEvent;//!
       // Charged
       TH1D*                   fhRefsMult; //!multiplicity distribution of selected RFPs
       TH1D*                   fhRefsPt; //! pt distribution of selected RFPs
@@ -674,5 +723,4 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
 };
-
 #endif

@@ -84,6 +84,8 @@ set(SRCS
   AliAnalysisTaskTwoMultiCorrelations.cxx
   AliAnalysisTaskStudentsMW.cxx
   AliAnalysisTaskCVE.cxx
+  AliAnalysisTaskNBodyFemtoscopy.cxx
+  AliAnalysisTaskCMW.cxx
   )
 
 # Headers from sources

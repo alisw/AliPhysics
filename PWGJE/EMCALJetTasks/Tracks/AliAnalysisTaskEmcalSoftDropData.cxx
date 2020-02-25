@@ -99,25 +99,25 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   if(!fPtBinning) fPtBinning = new TLinearBinning(300, 0., 300.);  // Use fine binning for data, rebin offline
   std::unique_ptr<TBinning> zgBinning(GetZgBinning()),
                             rgBinning(GetRgBinning(R)),
-                            nsdBinning(new TLinearBinning(21, -0.5, 20.5)),
-                            thetagBinning(new TLinearBinning(10, 0., 1.));
+                            nsdBinning(new TLinearBinning(22, -1.5, 20.5)),     // Negative bins for untagged jets
+                            thetagBinning(new TLinearBinning(11, -0.1, 1.)); 
   TArrayD edgesPt;
   fPtBinning->CreateBinEdges(edgesPt);
 
   fHistos = new THistManager("histosSoftdrop");
   fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0.5, 1.5);
   fHistos->CreateTH1("hJetPtRaw", "raw jet pt", 300, 0., 300.);
-  fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning);
-  fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning);
-  fHistos->CreateTH2("hNsdVsPt", "nsd vs pt", *nsdBinning, *fPtBinning);
-  fHistos->CreateTH2("hThetagVsPt", "thetag vs pt", *thetagBinning,  *fPtBinning);
+  fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning, "s");
+  fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning, "s");
+  fHistos->CreateTH2("hNsdVsPt", "nsd vs pt", *nsdBinning, *fPtBinning, "s");
+  fHistos->CreateTH2("hThetagVsPt", "thetag vs pt", *thetagBinning,  *fPtBinning, "s");
   if(fUseDownscaleWeight){
-    fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt (weighted)", *zgBinning, *fPtBinning);
-    fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning);
-    fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning);
-    fHistos->CreateTH2("hThetagVsPtWeighted", "thetag vs pt (weighted)", *thetagBinning,  *fPtBinning);
+    fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt (weighted)", *zgBinning, *fPtBinning, "s");
+    fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning, "s");
+    fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning, "s");
+    fHistos->CreateTH2("hThetagVsPtWeighted", "thetag vs pt (weighted)", *thetagBinning,  *fPtBinning), "s";
     fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
-    fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300.);
+    fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300., "s");
   }
 
   // A bit of QA stuff
@@ -170,16 +170,17 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     fHistos->FillTH1("hJetPtRaw", jet->Pt());
     if(fUseDownscaleWeight) fHistos->FillTH1("hJetPtRawWeighted", jet->Pt(), weight);
     auto zgparams = MakeSoftdrop(*jet, jets->GetJetRadius(), tracks, clusters);
+    bool untagged = zgparams[0] < fZcut;
     AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << zgparams[0] << std::endl;
     fHistos->FillTH2("hZgVsPt", zgparams[0], jet->Pt());
-    fHistos->FillTH2("hRgVsPt", zgparams[2], jet->Pt());
-    fHistos->FillTH2("hNsdVsPt", zgparams[5], jet->Pt());
-    fHistos->FillTH2("hThetagVsPt", zgparams[2]/Rjet, jet->Pt());
+    fHistos->FillTH2("hRgVsPt", untagged ? -0.01 : zgparams[2], jet->Pt());
+    fHistos->FillTH2("hNsdVsPt", untagged ? -1. : zgparams[5], jet->Pt());
+    fHistos->FillTH2("hThetagVsPt", untagged ? -0.05 : zgparams[2]/Rjet, jet->Pt());
     if(fUseDownscaleWeight) {
       fHistos->FillTH2("hZgVsPtWeighted", zgparams[0], jet->Pt(), weight);
-      fHistos->FillTH2("hRgVsPtWeighted", zgparams[2], jet->Pt(), weight);
-      fHistos->FillTH2("hNsdVsPtWeighted", zgparams[5], jet->Pt(), weight);
-      fHistos->FillTH2("hThetagVsPtWeighted", zgparams[2]/Rjet, jet->Pt(), weight);
+      fHistos->FillTH2("hRgVsPtWeighted", untagged ? -0.01 : zgparams[2], jet->Pt(), weight);
+      fHistos->FillTH2("hNsdVsPtWeighted", untagged ? -1. : zgparams[5], jet->Pt(), weight);
+      fHistos->FillTH2("hThetagVsPtWeighted", untagged ? -0.05 : zgparams[2]/Rjet, jet->Pt(), weight);
     } 
 
     // Fill QA plots - trigger cluster independent
@@ -209,7 +210,7 @@ Double_t AliAnalysisTaskEmcalSoftDropData::GetDownscaleWeight() const {
   TString triggerclass;
   if(fTriggerString == "INT7") triggerclass = "CINT7-B-NOPF-CENT";
   else if(fTriggerString == "EJ1") triggerclass = "CEMC7EJ1-B-NOPF-CENTNOTRD";
-  else if(fTriggerString == "EJ2") triggerclass = "CEMC7EJ1-B-NOPF-CENT";
+  else if(fTriggerString == "EJ2") triggerclass = "CEMC7EJ2-B-NOPF-CENT";
   if(triggerclass.Length()) weight = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerclass);
   return weight;
 }
@@ -224,7 +225,7 @@ TBinning *AliAnalysisTaskEmcalSoftDropData::GetZgBinning() const {
 
 TBinning *AliAnalysisTaskEmcalSoftDropData::GetRgBinning(double R) const {
   auto binning = new TCustomBinning;
-  binning->SetMinimum(0.);
+  binning->SetMinimum(-0.05); // Negative bin for untagged jets
   binning->AddStep(R, 0.05);
   return binning;
 }

@@ -59,7 +59,7 @@ public:
   AliFemtoDreamPartCollection        *fPartColl;             //!
   AliAODTrack                       **fGTI;                  //!
   int                                 fTrackBufferSize;      //
-  ClassDef(AliAnalysisTaskPOmegaPenne,3)
+  ClassDef(AliAnalysisTaskPOmegaPenne,5)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */

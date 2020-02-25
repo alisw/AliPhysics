@@ -734,7 +734,7 @@ void AliAnalysisTaskGammaTriggerQA::ProcessClusters()
     if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
 
     // Flag Photon as CaloPhoton
-    PhotonCandidate->SetIsCaloPhoton();
+    PhotonCandidate->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType());
     PhotonCandidate->SetCaloClusterRef(i);
     PhotonCandidate->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent));
     fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);

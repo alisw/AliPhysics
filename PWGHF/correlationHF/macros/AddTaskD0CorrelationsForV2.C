@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, TString finDirname="Output", Int_t speed=AliAnalysisTaskSED0Correlations::kOneBinSB, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Double_t ptAssocLim=4., Double_t minDPt=2., Float_t V0centmin=0., Float_t V0centmax=0., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Bool_t puritystudies=kFALSE, Bool_t reweighMC=kFALSE, TString filenameWeights="")
+AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, TString finDirname="Output", Int_t speed=AliAnalysisTaskSED0Correlations::kOneBinSB, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Double_t ptAssocLim=4., Double_t minDPt=2., TString multSelEstimator="V0M", Float_t multmin=0., Float_t multmax=0., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Bool_t puritystudies=kFALSE, Bool_t equalizeTracklets = kFALSE, Double_t refmult = 12.524, TString sample = "pp13TeV", TString fileprofiles2016="", TString fileprofiles2017="", TString fileprofiles2018="", Bool_t reweighMC=kFALSE, TString filenameWeights="")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -133,7 +133,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
   corrCuts->PrintAll();
 
   TString centr="";
-  if(V0centmin!=0 || V0centmax!=0) centr = Form("_%.0f%.0f",V0centmin,V0centmax);
+  if(multmin!=0 || multmax!=0) centr = Form("_%.0f%.0f",multmin,multmax);
   else centr = Form("_%.0f%.0f",RDHFD0Corrs->GetMinCentrality(),RDHFD0Corrs->GetMaxCentrality());
   out1name+=centr;
   out2name+=centr;
@@ -165,9 +165,10 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
   massD0Task->SetFillTrees(fillTrees,fractAccME);
   massD0Task->SetAODMismatchProtection(kTRUE);
   massD0Task->SetPurityStudies(puritystudies);
-  massD0Task->SetCentralityV0(V0centmin,V0centmax);
+  if(multSelEstimator=="SPD") massD0Task->SetTrackletRange(multmin,multmax);
+  if(multSelEstimator=="V0M") massD0Task->SetCentralityV0(multmin,multmax);
 
-  massD0Task->SetV2inppAnalysis(kTRUE);
+  massD0Task->SetAnalysisVsMult(kTRUE);
   
   // multiplicity weights
   if(reweighMC) {
@@ -178,10 +179,57 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
           printf("Error! Weights for Ntracklets not correctly loaded!");
           return;
       }
-      massD0Task->SetUseNtrklWeight(kTRUE);
+      ->SetUseNtrklWeight(kTRUE);
       massD0Task->SetHistNtrklWeight(hWeight);
   }
 
+  //tracklet equalisation, load profiles
+  if(equalizeTracklets) {
+    massD0Task->SetEqualizeTracklets(kTRUE);
+    massD0Task->SetReferenceMultiplicity(refmult);
+    TFile* fprof1 = TFile::Open(fileprofiles2016);
+    TFile* fprof2 = TFile::Open(fileprofiles2017);
+    TFile* fprof3 = TFile::Open(fileprofiles2018);
+    if(!fileprofiles2016 || !fileprofiles2017 || !fileprofiles2018) {
+      printf("Error! Tracklet profile file not correctly loaded!");
+      return;
+    }
+
+    if(sample=="pp13TeV") {
+      const Char_t* periodNames[32]={"LHC16d","LHC16e","LHC16g","LHC16h","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p",
+                                     "LHC17c","LHC17e","LHC17f","LHC17h","LHC17i","LHC17j","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r",
+                                     "LHC18d","LHC18e","LHC18f","LHC18g","LHC18h","LHC18i","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"};
+      TProfile *multEstimatorAvg[32];
+      for(Int_t ip=0;ip<9; ip++){
+        multEstimatorAvg[ip] = (TProfile*)(fprof1->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+        if (!multEstimatorAvg[ip]) {
+          printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+          return;
+        }
+        massD0Task->SetMultiplVsZProfile(multEstimatorAvg[ip],ip);
+      }
+      for(Int_t ip=9;ip<20; ip++){
+        multEstimatorAvg[ip] = (TProfile*)(fprof2->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+        if (!multEstimatorAvg[ip]) {
+          printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+          return;
+        }
+        massD0Task->SetMultiplVsZProfile(multEstimatorAvg[ip],ip);        
+      }
+      for(Int_t ip=20;ip<32; ip++){
+        multEstimatorAvg[ip] = (TProfile*)(fprof3->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+        if (!multEstimatorAvg[ip]) {
+          printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+          return;
+        }
+        massD0Task->SetMultiplVsZProfile(multEstimatorAvg[ip],ip);     
+      }        
+      for(Int_t ip=0;ip<32;ip++) printf("Estimator for %d = %s\n",ip,multEstimatorAvg[ip]->GetName());//just a cross-check
+    } else { //not pp@13 TeV
+      printf("Year not configured! Exiting...\n");
+      return;
+    }
+  } //end equalize tracklets
 
 //*********************
 //correlation settings

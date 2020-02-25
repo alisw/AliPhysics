@@ -4,9 +4,10 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
                                      Int_t pdgSpecies = 421,
                                      TString finDirname = "",
                                      TString filename="",
-                                     TString finAnObjname = "D0toKpiCuts"                                
-                                     
-   )
+                                     TString finAnObjname = "D0toKpiCuts",
+                                     Bool_t useNsparse = kFALSE,
+                                     Bool_t isLcV0 = kFALSE
+                                    )
 { 
        //=========================================================
        // Macro for RT-dependence measurement of charmed hadrons
@@ -15,7 +16,7 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-     ::Error("AddTaskDvsMultiplicity", "No analysis manager to connect to");
+     ::Error("AddTaskDvsRT", "No analysis manager to connect to");
   }
   
   Bool_t stdcuts = kFALSE;
@@ -25,7 +26,7 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
     } else { 
     filecuts = TFile::Open(filename.Data());
     if(!filecuts || (filecuts && !filecuts->IsOpen())){
-       Print("FATAL: Input file not found, check your cut object!");
+       Printf("FATAL: Input file not found, check your cut object!");
        return 0x0;
        }
     }
@@ -37,43 +38,43 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
   
   if(pdgSpecies == 411) { //Dplus
      if (stdcuts) {
-        analysiscuts = new AliRDHFCutsDplustoKpipi();
-        if (system == 0) analysiscuts->SetStandardCutsPP2010();
-        else analysiscuts->SetStandardCutsPbPb2011();
+        analysisCuts = new AliRDHFCutsDplustoKpipi();
+        if (system == 0) analysisCuts->SetStandardCutsPP2010();
+        else analysisCuts->SetStandardCutsPbPb2011();
      }
-     else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finAnObjname);
+     else analysisCuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finAnObjname);
      channel = "Dplus";
   } else if(pdgSpecies == 421) { //D0
      if (stdcuts) {
-        analysiscuts = new AliRDHFCutsD0toKpi();
-        if (system == 0) analysiscuts->SetStandardCutsPP2010();
-        else analysiscuts->SetStandardCutsPbPb2011();
+        analysisCuts = new AliRDHFCutsD0toKpi();
+        if (system == 0) analysisCuts->SetStandardCutsPP2010();
+        else analysisCuts->SetStandardCutsPbPb2011();
      }
-     else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(finAnObjname);
+     else analysisCuts = (AliRDHFCutsD0toKpi*)filecuts->Get(finAnObjname);
      channel = "D0";
   } else if (pdgSpecies == 413) { //DStar
      if (stdcuts) {
-        analysiscuts = new AliRDHFCutsDStartoKpipi();
-        if (system == 0) analysiscuts->SetStandardCutsPP2010();
-        else analysiscuts->SetStandardCutsPbPb2011();
+        analysisCuts = new AliRDHFCutsDStartoKpipi();
+        if (system == 0) analysisCuts->SetStandardCutsPP2010();
+        else analysisCuts->SetStandardCutsPbPb2011();
      }
-     else analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(finAnObjname);
+     else analysisCuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(finAnObjname);
      channel = "DStar";
   } else if (pdgSpecies == 431) { //Ds
      if (stdcuts) {
-        analysiscuts = new AliRDHFCutsDstoKKpi();
-        if (system == 0) analysiscuts->SetStandardCutsPP2010();
-        else analysiscuts->SetStandardCutsPbPb2011();
+        analysisCuts = new AliRDHFCutsDstoKKpi();
+        if (system == 0) analysisCuts->SetStandardCutsPP2010();
+        else analysisCuts->SetStandardCutsPbPb2011();
      }
-     else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(finAnObjname);
+     else analysisCuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(finAnObjname);
      channel = "Ds";
   } else if (pdgSpecies == 4122) { //Lc
      if (stdcuts) {
-        analysiscuts = new AliRDHHFCutsLctoV0();
-        if (system == 0) analysiscuts->SetStandardCutsPP2010();
-        else analysiscuts->SetStandardCutsPbPb2011();
+        analysisCuts = new AliRDHFCutsLctoV0();
+        if (system == 0) analysisCuts->SetStandardCutsPP2010();
+        else analysisCuts->SetStandardCutsPbPb2011();
      }
-     else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(finAnObjname);
+     else analysisCuts = (AliRDHFCutsLctoV0*)filecuts->Get(finAnObjname);
      channel="Lc2pK0S";
   } else {
      Printf("No valid analysis species selected, please check macro parameters");
@@ -81,13 +82,19 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
      }
   
   //Initialise analysis task
-  AliAnalysisTaskSEDvsRT *dRTTask = new AliAnalysisTaskSEDvsRT("dRTAnalysis",pdgSpecies,analysiscuts);
+  AliAnalysisTaskSEDvsRT *dRTTask = new AliAnalysisTaskSEDvsRT("dRTAnalysis",pdgSpecies,analysisCuts);
   dRTTask->SetReadMC(readMC);
   dRTTask->SetDebugLevel(0);
   dRTTask->SetUseBit(kTRUE);
-  dRTTask->SetDoImpactParameterHistos(kFALSE);
+//  dRTTask->SetDoImpactParameterHistos(kFALSE);
   dRTTask->SetMCOption(MCOption);
-  dRTTask->SetLctoV0decay(isLcV0);
+  dRTTask->SetLctoV0(isLcV0);
+  dRTTask->SetUseNsparse(useNsparse);
+  
+  //RT-specific settings
+  dRTTask->SetEtaCut(0.8);
+  dRTTask->SetPtLeadMin(5.0);
+  dRTTask->SetAveMultiInTrans(4.939);
   
   //channel-specific inv mass settings
   if (pdgSpecies == 421) { 
@@ -128,14 +135,12 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
   AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(cutsname, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *coutputProf = mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
   
   mgr->ConnectInput(dRTTask,0,mgr->GetCommonInputContainer());
   
   mgr->ConnectOutput(dRTTask,1,coutput);
   mgr->ConnectOutput(dRTTask,2,coutputCuts);
   mgr->ConnectOutput(dRTTask,3,coutputNorm);
-  mgr->ConnectOutput(dRTTask,4,coutputProf);
   
   return dRTTask;
   

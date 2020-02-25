@@ -22,6 +22,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THn.h>
 #include <THnSparse.h>
 #include <TArrayI.h>
 #include <TClonesArray.h>
@@ -173,7 +174,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // calculate weight to treat reco true Lc as Xic (mfaggin)
   
-  void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselpKpi=0x0,Bool_t *arrayPIDselpiKpi=0x0,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1,AliAODMCParticle *pSigmaC=0x0,Int_t checkorigin=-1);
+  void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselpKpi=0x0,Bool_t *arrayPIDselpiKpi=0x0,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1,AliAODMCParticle *pSigmaC=0x0,Int_t checkorigin=-1,Int_t decay_channel=0);
   void FillArrayVariableSparse(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Double_t *point,Int_t massHypothesis);  
   Double_t Weight_fromLc_toXic(AliAODMCParticle* p, AliAODMCParticle* prong);
   void PrepareTracks(AliAODEvent *aod,TClonesArray *mcArray=0x0);
@@ -211,10 +212,18 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   AliESDtrackCuts *fESDtrackCutsSoftPion;//
   AliAODVertex *fprimVtx;//! pointer to prim. vertex
   TH2F *fhistInvMassCheck;//! hist with generic inv. mass distr (for checks)
-  TH3F *fhistMCSpectrumAccLc;//! hist with MC spectrum of cand in acceptance
+
+  //TH3F *fhistMCSpectrumAccLc;//! hist with MC spectrum of cand in acceptance
+  THnF *fhistMCSpectrumAccLc;//! hist with MC spectrum of cand in acceptance
+
   THnSparseF *fhistMCSpectrumAccLcFromSc;//! hist with MC spectrum of cand in acceptance
-  TH3F *fhistMCSpectrumAccSc;//! hist with MC spectrum of cand in acceptance
-  TH3F *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
+
+  //TH3F *fhistMCSpectrumAccSc;//! hist with MC spectrum of cand in acceptance
+  THnF *fhistMCSpectrumAccSc;//! hist with MC spectrum of cand in acceptance
+
+  //TH3F *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
+  THnF *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
+
   TH2F *fhistMCSpectrumAccCdeuteron;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
   THnSparseF* fhSparseAnalysisSigma;//! sparse for analysis of SigmaC (with deltaM)

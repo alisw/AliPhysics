@@ -118,15 +118,16 @@ template <typename F> double Hypot4(F a, F b, F c, F d) { return std::sqrt(a * a
 
 //_______________________________________________________________________________
 AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::string name)
-    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fMLResponse{}, fTrackCuts{*AliESDtrackCuts::GetStandardV0DaughterCuts()}, fListHist{nullptr}, fTreeHyp3{nullptr},
+    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fMLResponse{},
+      fTrackCuts{*AliESDtrackCuts::GetStandardV0DaughterCuts()}, fListHist{nullptr}, fTreeHyp3{nullptr},
       fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false},
       fDownscaling{false}, fApplyML{false}, fEnableEventMixing{false}, fHistNSigmaDeu{nullptr}, fHistNSigmaP{nullptr},
       fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.},
-      fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.}, fMinTPCNcluster{70},
-      fMaxNSigmaTPCDeu{5.}, fMaxNSigmaTPCP{5.}, fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.},
-      fMaxNSigmaTOFPi{5.}, fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.}, fMinCosPA{0.993},
-      fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05}, fMaxPtDeu{10.},
-      fMaxPtP{10.}, fMaxPtPi{1.}, fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{},
+      fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.}, fMinCanidateCtToSave{0.}, fMaxCanidateCtToSave{100.},
+      fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{5.}, fMaxNSigmaTPCP{5.}, fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.},
+      fMaxNSigmaTOFP{5.}, fMaxNSigmaTOFPi{5.}, fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.},
+      fMinCosPA{0.993}, fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05},
+      fMaxPtDeu{10.}, fMaxPtP{10.}, fMaxPtPi{1.}, fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{},
       fDeuVector{}, fPVector{}, fPiVector{}, fMLResponseConfigfilePath{}, fEventMixingPool{}, fEventMixingPoolDepth{0} {
   fTrackCuts.SetMinNClustersTPC(0);
   /// Settings for the custom vertexer
@@ -149,6 +150,11 @@ AliAnalysisTaskHypertriton3ML::~AliAnalysisTaskHypertriton3ML() {
   if (fTreeHyp3) {
     delete fTreeHyp3;
     fTreeHyp3 = nullptr;
+  }
+
+  if (fMLResponse) {
+    delete fMLResponse;
+    fMLResponse = nullptr;
   }
 }
 
@@ -173,7 +179,7 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   if (man->GetMCtruthEventHandler()) fTreeHyp3->Branch("SHypertriton", &fSHypertriton);
 
   fListHist = new TList();
-  fListHist->SetOwner();
+  fListHist->SetOwner(true);
   fEventCuts.AddQAplotsToList(fListHist);
 
   fHistNSigmaDeu = new TH2D("fHistNSigmaDeu", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Deuteron; Counts", 100, 0., 10.,
@@ -311,8 +317,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
     if (!track) continue;
 
-    if (!fTrackCuts.AcceptTrack(track) || track->GetTPCsignalN() < fMinTPCNcluster)
-      continue;
+    if (!fTrackCuts.AcceptTrack(track) || track->GetTPCsignalN() < fMinTPCNcluster) continue;
 
     float dca[2];
     track->GetImpactParameters(dca[0], dca[1]);
@@ -420,6 +425,9 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         double dTotHyper = std::sqrt(decayLenght[0] * decayLenght[0] + decayLenght[1] * decayLenght[1] +
                                      decayLenght[2] * decayLenght[2]);
 
+        float ct = kHyperTritonMass * dTotHyper / hyp4Vector.P();
+        if (ct < fMinCanidateCtToSave || ct > fMaxCanidateCtToSave) continue;
+
         double cosPA =
             hyp4Vector.Px() * decayLenght[0] + hyp4Vector.Py() * decayLenght[1] + hyp4Vector.Pz() * decayLenght[2];
 
@@ -501,13 +509,12 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
           float ct      = fMap["ct"];
           float invmass = fMap["InvMass"];
           float hyppt   = fMap["HypCandPt"];
+          float score{0.f};
 
-          if (ct > 1. && ct < 35. && fREvent.fCent < 90.) {
-            float score{0.f};
-            if (fMLResponse->IsSelected(ct, fMap, score)) {
-              fMLSelected.emplace_back(MLSelected{score, invmass, ct, fREvent.fCent, hyppt});
-            }
+          if (fMLResponse->IsSelected(ct, fMap, score)) {
+            fMLSelected.emplace_back(MLSelected{score, invmass, ct, fREvent.fCent, hyppt});
           }
+
           continue;
         }
 

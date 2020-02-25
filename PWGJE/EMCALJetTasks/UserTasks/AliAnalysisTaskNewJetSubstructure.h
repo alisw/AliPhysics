@@ -66,6 +66,7 @@ public:
   void SetMaxCentrality(Float_t t) { fCentMax = t; }
   void SetDerivativeSubtractionOrder(Int_t c) { fDerivSubtrOrder = c; }
   void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
+  void SetDoSubJetStudy(Bool_t t) { fDoSubJet = t; }
 
 protected:
   Bool_t RetrieveEventObjects();
@@ -76,15 +77,16 @@ protected:
   Float_t Angularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
   Double_t RelativePhi(Double_t mphi, Double_t vphi);
-  void IterativeParents(AliEmcalJet *fJet, AliJetContainer *fJetCont);
+  void IterativeParents(AliEmcalJet *fJet, AliJetContainer *fJetCont,  fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2,std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void IterativeParentsAreaBased(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   void IterativeParentsMCAverage(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
                                  Double_t &aver2, Double_t &aver3,
-                                 Double_t &aver4);
+                                 Double_t &aver4, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void CheckSubjetResolution(AliEmcalJet *fJet, AliJetContainer *fJetCont,
                              AliEmcalJet *fJetM, AliJetContainer *fJetContM);
   Bool_t CheckClosePartner(Int_t index, AliEmcalJet *fJet, AliVParticle *fTrack,
                            AliParticleContainer *fTrackCont);
+  Bool_t CompareSubjets(fastjet::PseudoJet *subDet, fastjet::PseudoJet *subHyb, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb);
   Int_t fContainer; // jets to be analyzed 0 for Base, 1 for subtracted.
   Float_t fMinFractionShared; // only fill histos for jets if shared fraction
                               // larger than X
@@ -114,6 +116,8 @@ protected:
   Float_t fMagFieldPolarity; // polarity, to calculate phimin
   Int_t fDerivSubtrOrder;
   Bool_t fStoreDetLevelJets; // store the detector level jet quantities
+  Bool_t fDoSubJet; // store the detector level jet quantities
+
 
   TH1F *fPtJet;
 
@@ -133,6 +137,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 7)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 8)
 };
 #endif

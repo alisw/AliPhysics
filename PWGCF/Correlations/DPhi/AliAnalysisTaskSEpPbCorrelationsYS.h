@@ -15,6 +15,8 @@
 #include "TString.h"
 #include "AliEventCuts.h"
 
+
+
 class TList;
 class AliCFContainer;
 // class AliTHn;
@@ -28,6 +30,7 @@ class AliAODv0;
 class THnSparse;
 class AliAODcascade;
 class AliAODVertex;
+//class AliForwardFlowResultStorage;
 
 
 #ifndef ALIANALYSISTASKSEH
@@ -115,7 +118,9 @@ private:
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
- Int_t      ConvertRunNumber(Int_t run);
+  Int_t      ConvertRunNumber(Int_t run);
+  Bool_t HasValidFMDYS(TH2D h);
+  
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
 /*
@@ -163,6 +168,7 @@ private:
   TList *fOutputList1; // Output list
   TList *fOutputList2; // Output list
 
+  
   AliPIDResponse *fPIDResponse; // PID Response
 
   Int_t ffilterbit;
@@ -277,6 +283,7 @@ private:
   TH2F*  fh2_SPDtrack_multcorr;
   TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
+  TH2D*  fh2_FMD_eta_phi_aftercut;
   TH1F* fHist_NeventRun;
   TH1F* fHist_V0AMultRun;
   TH1F* fHist_V0CMultRun;
@@ -292,6 +299,7 @@ private:
   THnSparseF* fhistits;
   AliTHn* fhSecFMD;
   //  const TH2D& d2Ndetadphi;
+  TH2D*fOutliers;
   TH2F*fFMDV0;
   TH2F*fFMDV0_post;
   TH2F*fFMDV0A;

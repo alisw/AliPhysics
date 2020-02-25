@@ -1,12 +1,17 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-// AddTaskUniFlowMultiStrange                                                     //
+// AddUniFlow                                                     //
+// Author: Ya Zhu (ya.zhu@cern.ch),CCNU & NBI, 2016       //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
-
-AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(TString name = "name")
+class AliDirList;
+class AliAnalysisTaskUniFlowMultiStrange;
+AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(Bool_t IsGrid, TString name = "UniFlow")
 {
+  if (IsGrid){
+  gGrid->Connect("alien://");
+  }
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;

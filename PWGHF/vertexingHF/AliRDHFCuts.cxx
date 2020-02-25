@@ -124,6 +124,7 @@ fUseCentrFlatteningInMC(kFALSE),
 fHistCentrDistr(0x0),
 fCutRatioClsOverCrossRowsTPC(0),
 fCutRatioSignalNOverCrossRowsTPC(0),
+fCutTPCSignalN(0),
 fCutMinCrossedRowsTPCPtDep(""),
 f1CutMinNCrossedRowsTPCPtDep(0x0),
 fUseCutGeoNcrNcl(kFALSE),
@@ -216,6 +217,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fHistCentrDistr(0x0),
   fCutRatioClsOverCrossRowsTPC(source.fCutRatioClsOverCrossRowsTPC),
   fCutRatioSignalNOverCrossRowsTPC(source.fCutRatioSignalNOverCrossRowsTPC),
+  fCutTPCSignalN(source.fCutTPCSignalN),
   fCutMinCrossedRowsTPCPtDep(""),
   f1CutMinNCrossedRowsTPCPtDep(0x0),
   fUseCutGeoNcrNcl(source.fUseCutGeoNcrNcl),
@@ -333,7 +335,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   if(source.f1CutMinNCrossedRowsTPCPtDep) f1CutMinNCrossedRowsTPCPtDep=new TFormula(*(source.f1CutMinNCrossedRowsTPCPtDep));
   fCutRatioClsOverCrossRowsTPC=source.fCutRatioClsOverCrossRowsTPC;
   fCutRatioSignalNOverCrossRowsTPC=source.fCutRatioSignalNOverCrossRowsTPC;
-
+  fCutTPCSignalN=source.fCutTPCSignalN;
   fUseCutGeoNcrNcl=source.fUseCutGeoNcrNcl;
   fDeadZoneWidth=source.fDeadZoneWidth;
   fCutGeoNcrNclLength=source.fCutGeoNcrNclLength;
@@ -1214,6 +1216,12 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
     else return kFALSE;
   }
 
+  // cut on the number of TPC clusters for PID
+  if(fCutTPCSignalN && fUseTPCtrackCutsOnThisDaughter){
+    Float_t nTPCsignal = esdTrack.GetTPCsignalN();
+    if(nTPCsignal<fCutTPCSignalN) return kFALSE;
+  }
+  
   // geometrical cut (note uses track at vertex instead of at TPC inner wall)
   if(fUseCutGeoNcrNcl && aod && fUseTPCtrackCutsOnThisDaughter){
     Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
@@ -1515,6 +1523,7 @@ void AliRDHFCuts::PrintAll() const {
 
   if(fCutRatioClsOverCrossRowsTPC) printf("N TPC Clusters > %f N TPC Crossed Rows\n", fCutRatioClsOverCrossRowsTPC);
   if(fCutRatioSignalNOverCrossRowsTPC) printf("N TPC Points for dE/dx > %f N TPC Crossed Rows\n", fCutRatioSignalNOverCrossRowsTPC);
+  if(fCutTPCSignalN>0) printf("N TPC Clusters for PID for track sel > %d\n", fCutTPCSignalN);
   if(f1CutMinNCrossedRowsTPCPtDep) printf("N TPC Crossed Rows pT-dependent cut: %s\n", fCutMinCrossedRowsTPCPtDep.Data());
 
   if(fVarNames){

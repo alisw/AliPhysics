@@ -155,9 +155,11 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalHighEClusterTree.cxx
     Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
+    Tracks/AliAnalysisTaskEmcalQoverPtShift.cxx
     Tracks/AliAnalysisTaskEmcalJetIterativeDeclustering.cxx
     Tracks/AliAnalysisTaskEmcalFastorMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
+    Tracks/AliEmcalTRDTrackingTask.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
@@ -260,6 +262,7 @@ if(FASTJET_FOUND)
         AliLundPlaneHelper.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
+	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
 	    UserTasks/AliAnalysisTaskHardestBranch.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx

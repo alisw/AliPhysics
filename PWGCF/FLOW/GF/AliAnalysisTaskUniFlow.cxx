@@ -161,6 +161,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fNumSamples{1},
   fEtaCheckRFP{kFALSE},
   fFlowFillWeights{kTRUE},
+  fFlowFillWeightsMultiD{kFALSE},
   fFlowFillAfterWeights{kTRUE},
   fFlowUseWeights{kFALSE},
   fFlowUse3Dweights{kFALSE},
@@ -247,6 +248,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fh3Weights{nullptr},
   fh2AfterWeights{nullptr},
   fh3AfterWeights{nullptr},
+  fhWeightsMultiD{nullptr},
   fhEventSampling{nullptr},
   fhEventCentrality{nullptr},
   fh2EventCentralityNumRefs{nullptr},
@@ -423,6 +425,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fNumSamples{1},
   fEtaCheckRFP{kFALSE},
   fFlowFillWeights{kTRUE},
+  fFlowFillWeightsMultiD{kFALSE},
   fFlowFillAfterWeights{kTRUE},
   fFlowUseWeights{bUseWeights},
   fFlowUse3Dweights{kFALSE},
@@ -509,6 +512,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fh3Weights{nullptr},
   fh2AfterWeights{nullptr},
   fh3AfterWeights{nullptr},
+  fhWeightsMultiD{nullptr},
   fhEventSampling{nullptr},
   fhEventCentrality{nullptr},
   fh2EventCentralityNumRefs{nullptr},
@@ -751,6 +755,7 @@ void AliAnalysisTaskUniFlow::ListParameters() const
   printf("      fV0sNumBinsMass: (Int_t) %d\n",    fV0sNumBinsMass);
   printf("      fPhiNumBinsMass: (Int_t) %d\n",    fPhiNumBinsMass);
   printf("      fFlowFillWeights: (Bool_t) %s\n",    fFlowFillWeights ? "kTRUE" : "kFALSE");
+  printf("      fFlowFillWeightsMultiD: (Bool_t) %s\n",    fFlowFillWeightsMultiD ? "kTRUE" : "kFALSE");
   printf("      fFlowFillAfterWeights: (Bool_t) %s\n",    fFlowFillAfterWeights ? "kTRUE" : "kFALSE");
   printf("      fFlowUseWeights: (Bool_t) %s\n",    fFlowUseWeights ? "kTRUE" : "kFALSE");
   printf("      fFlowWeightsTag: (TString) '%s'\n",    fFlowWeightsTag.Data());
@@ -1460,6 +1465,18 @@ Bool_t AliAnalysisTaskUniFlow::FillFlowWeight(const AliVParticle* track, const P
       fh3Weights[species]->Fill(track->Phi(),track->Eta(),fPVz);
     } else {
       fh2Weights[species]->Fill(track->Phi(),track->Eta());
+    }
+
+    if(fFlowFillWeightsMultiD){
+      if(!fhWeightsMultiD) { Error("THnSparse not valid!","FillFlowWeight"); return kFALSE; }
+      Double_t dWeightsValues[SparseWeights::wDim] = {0};
+      dWeightsValues[SparseWeights::wPhi] = track->Phi();
+      dWeightsValues[SparseWeights::wCent] = fIndexCentrality;
+      dWeightsValues[SparseWeights::wPt] = track->Pt();
+      dWeightsValues[SparseWeights::wEta] = track->Eta();
+      dWeightsValues[SparseWeights::wVz] = fPVz;
+      dWeightsValues[SparseWeights::wSpec] = species;
+      fhWeightsMultiD->Fill(dWeightsValues);
     }
   }
 
@@ -2926,7 +2943,12 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, AliVParticle* tra
       fhQAPIDTPCdEdx[iQAindex]->Fill(tr->P(), dTPCdEdx);
 
       for(Int_t iSpec(0); iSpec < fPIDNumSpecies; ++iSpec) {
-        dNumSigmaTPC[iSpec] = fPIDResponse->NumberOfSigmasTPC(tr, AliPID::EParticleType(iSpec));
+        if(!fNeedPIDCorrection){
+          dNumSigmaTPC[iSpec] = fPIDResponse->NumberOfSigmasTPC(tr, AliPID::EParticleType(iSpec));
+        }
+        else{
+          dNumSigmaTPC[iSpec] = TMath::Abs(PIDCorrection(tr, PartSpecies(iSpec)));
+        }
         dTPCdEdxDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, tr, AliPID::EParticleType(iSpec));
       }
   }
@@ -5896,6 +5918,44 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
         }
       }
     } // end-for {iSpec}
+    
+    if(fFlowFillWeightsMultiD){
+      TString wLabelCand[SparseWeights::wDim];
+      wLabelCand[SparseWeights::wPhi] = "#phi";
+      wLabelCand[SparseWeights::wCent] = GetCentEstimatorLabel(fCentEstimator);
+      wLabelCand[SparseWeights::wPt] = "#it{p}_{T} (GeV/c)";
+      wLabelCand[SparseWeights::wEta] = "#eta";
+      wLabelCand[SparseWeights::wVz] = "v_{z}";
+      wLabelCand[SparseWeights::wSpec] = "Species";
+      TString sAxesWeights = TString(); for(Int_t i(0); i < SparseWeights::wDim; ++i) { sAxesWeights += Form("%s; ",wLabelCand[i].Data()); }
+
+      Int_t iNumBinsWeights[SparseWeights::wDim];
+      Double_t dMinWeights[SparseWeights::wDim];
+      Double_t dMaxWeights[SparseWeights::wDim];
+      iNumBinsWeights[SparseWeights::wCent] = fCentBinNum;
+      dMinWeights[SparseWeights::wCent] = fCentMin;
+      dMaxWeights[SparseWeights::wCent] = fCentMax;
+      iNumBinsWeights[SparseWeights::wPhi] = fFlowPhiBinNum;
+      dMinWeights[SparseWeights::wPhi] = 0.0;
+      dMaxWeights[SparseWeights::wPhi] = TMath::TwoPi();
+      iNumBinsWeights[SparseWeights::wEta] = fFlowEtaBinNum;
+      dMinWeights[SparseWeights::wEta] = -fFlowEtaMax;
+      dMaxWeights[SparseWeights::wEta] = fFlowEtaMax;
+      iNumBinsWeights[SparseWeights::wPt] = fFlowPOIsPtBinNum;
+      dMinWeights[SparseWeights::wPt] = fFlowPOIsPtMin;
+      dMaxWeights[SparseWeights::wPt] = fFlowPOIsPtMax;
+      iNumBinsWeights[SparseWeights::wVz] = 2*fPVtxCutZ;
+      dMinWeights[SparseWeights::wVz] = -fPVtxCutZ;
+      dMaxWeights[SparseWeights::wVz] = fPVtxCutZ;
+      iNumBinsWeights[SparseWeights::wSpec] = kUnknown;
+      dMinWeights[SparseWeights::wSpec] = 0;
+      dMaxWeights[SparseWeights::wSpec] = kUnknown;
+
+      fhWeightsMultiD =
+      new THnSparseD("fhWeightsMultiD",Form("Weights distribution; %s;", sAxesWeights.Data()), SparseWeights::wDim, iNumBinsWeights, dMinWeights, dMaxWeights);
+      fhWeightsMultiD->Sumw2();
+      fFlowWeights->Add(fhWeightsMultiD);
+    }
   }
 
   // Selection / reconstruction counters : omni-present

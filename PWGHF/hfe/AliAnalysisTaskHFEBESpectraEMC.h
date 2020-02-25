@@ -339,6 +339,8 @@ private:
     TH1F                *fDHadpT;//!
     TH1F                *fDMesonpT;//!
     TH1F                *fD0pT;//!
+    TH1F                *fDPluspT;//!
+    TH1F                *fDspT;//!
     TH1F                *fLambdaCpT;//!
     
     TH2F                *fDElecDCA;//!

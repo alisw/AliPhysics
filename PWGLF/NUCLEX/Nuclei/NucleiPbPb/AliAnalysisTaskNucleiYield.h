@@ -158,6 +158,7 @@ public:
   bool                fPropagateTracks; /// Workaround for troublesome productions
   TArrayF             fPtCorrectionA;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for anti-matter
   TArrayF             fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
+  double              fOptionalTOFcleanup;   ///<
 
   std::vector<float>  fINT7intervals;        ///< Array containing the centrality interval where we select only kINT7 triggers  
 private:
@@ -405,7 +406,8 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       }
     }
     if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return;
-    if ((fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
+    bool tofCleanUp = fOptionalTOFcleanup < 0 ? true : std::abs(tof_n_sigma) < fOptionalTOFcleanup || beta < 0;
+    if ((fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) && tofCleanUp &&
         (pid_mask & 8))
       fTPCcounts[iC]->Fill(fCentrality, pT, tpc_n_sigma);
 

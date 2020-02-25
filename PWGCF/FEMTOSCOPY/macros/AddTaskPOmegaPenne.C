@@ -62,15 +62,12 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
 
     AliFemtoDreamTrackCuts *AntiXiNegCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
     AntiXiNegCuts->SetCutCharge(-1);
-    AntiXiNegCuts->SetCheckTPCRefit(false); //for nanos this is already done while prefiltering
     
     AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
     AntiXiPosCuts->SetCutCharge(1);
-    AntiXiPosCuts->SetCheckTPCRefit(false); //for nanos this is already done while prefiltering
     
     AliFemtoDreamTrackCuts *AntiXiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
     AntiXiBachCuts->SetCutCharge(1);
-    AntiXiBachCuts->SetCheckTPCRefit(false); //for nanos this is already done while prefiltering
 
     AntiCascadeCutsXion->Setv0Negcuts(AntiXiNegCuts);
     AntiCascadeCutsXion->Setv0PosCuts(AntiXiPosCuts);

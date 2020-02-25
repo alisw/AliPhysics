@@ -1587,7 +1587,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessCaloPhotonCandidates()
     if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
 
     // Flag Photon as CaloPhoton
-    PhotonCandidate->SetIsCaloPhoton();
+    PhotonCandidate->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType());
     PhotonCandidate->SetCaloClusterRef(i);
     // get MC label
     if(fIsMC){
@@ -1631,7 +1631,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessCaloPhotonCandidates()
 void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueCaloPhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
 {
   TParticle *Photon = NULL;
-  if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
+  if (TruePhotonCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
     if (TruePhotonCandidate->GetCaloPhotonMCLabel(0)<0) return;
 // 	fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());
 
@@ -1986,7 +1986,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
     }
   }
 
-  if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
+  if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
 
   Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
   Int_t gamma1MotherLabel = -1;
@@ -2236,7 +2236,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesMi
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
         if (gamma1==NULL) continue;
 
-        if (gamma1->GetIsCaloPhoton()){
+        if (gamma1->GetIsCaloPhoton() > 0){
           AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
           matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent );
         }
@@ -2324,7 +2324,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
       }
     }
 
-    if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
+    if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
 
     Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
     Int_t gamma1MotherLabel = -1;

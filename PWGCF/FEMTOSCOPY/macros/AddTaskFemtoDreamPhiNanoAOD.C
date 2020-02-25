@@ -360,45 +360,50 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodev0(333);
   double Phimass = TDatabasePDG::Instance()->GetParticle(333)->Mass();
 
-  if (suffix != "0") {
-    TrackCutsPhi->SetMinimalBooking(true);
-  }
+  //  if (suffix != "0") {
+  //    TrackCutsPhi->SetMinimalBooking(true);
+  //  }
+
   if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(0.987, 1.011);
-  }
-  if (suffix == "2") {
-    TrackCutsPhi->SetCutWindow(1.027, 1.1);
-  }
-  if (suffix == "3") {
-    TrackCutsPhi->SetCutWindow(1.1, 1.2);
-  }
-  if (suffix == "4") {
-    TrackCutsPhi->SetCutWindow(1.2, 1.3);
-  }
-  if (suffix == "5") {
-    TrackCutsPhi->SetCutWindow(1.3, 1.4);
-  }
-  if (suffix == "6") {
-    TrackCutsPhi->SetCutWindow(1.4, 1.5);
-  }
-  if (suffix == "7") {
-    TrackCutsPhi->SetCutWindow(1.5, 1.6);
-  }
-  if (suffix == "8") {
-    TrackCutsPhi->SetCutWindow(1.6, 1.7);
-  }
-  if (suffix == "9") {
-    TrackCutsPhi->SetCutWindow(1.7, 1.8);
-  }
-  if (suffix == "10") {
-    TrackCutsPhi->SetCutWindow(1.8, 1.9);
-  }
-  if (suffix == "11") {
-    TrackCutsPhi->SetCutWindow(1.9, 2);
-  }
-  if (suffix == "12") {
     evtCuts->SetSphericityCuts(0, 1);
   }
+
+  //  if (suffix == "1") {
+  //    TrackCutsPhi->SetCutWindow(0.987, 1.011);
+  //  }
+  //  if (suffix == "2") {
+  //    TrackCutsPhi->SetCutWindow(1.027, 1.1);
+  //  }
+  //  if (suffix == "3") {
+  //    TrackCutsPhi->SetCutWindow(1.1, 1.2);
+  //  }
+  //  if (suffix == "4") {
+  //    TrackCutsPhi->SetCutWindow(1.2, 1.3);
+  //  }
+  //  if (suffix == "5") {
+  //    TrackCutsPhi->SetCutWindow(1.3, 1.4);
+  //  }
+  //  if (suffix == "6") {
+  //    TrackCutsPhi->SetCutWindow(1.4, 1.5);
+  //  }
+  //  if (suffix == "7") {
+  //    TrackCutsPhi->SetCutWindow(1.5, 1.6);
+  //  }
+  //  if (suffix == "8") {
+  //    TrackCutsPhi->SetCutWindow(1.6, 1.7);
+  //  }
+  //  if (suffix == "9") {
+  //    TrackCutsPhi->SetCutWindow(1.7, 1.8);
+  //  }
+  //  if (suffix == "10") {
+  //    TrackCutsPhi->SetCutWindow(1.8, 1.9);
+  //  }
+  //  if (suffix == "11") {
+  //    TrackCutsPhi->SetCutWindow(1.9, 2);
+  //  }
+  //  if (suffix == "12") {
+  //    evtCuts->SetSphericityCuts(0, 1);
+  //  }
   //  if (suffix == "13") {
   //    TrackCutsPhi->SetCutWindow(0.987, 1.011);
   //    evtCuts->SetSphericityCuts(0, 1);
@@ -555,12 +560,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     pairQA[43] = 11;
     pairQA[50] = 11;
 
-    pairQA[33] = 11;  // COMMON
-    pairQA[34] = 11;
-    pairQA[35] = 11;
-    pairQA[42] = 11;
-    pairQA[43] = 11;
-    pairQA[50] = 11;
+    pairQA[63] = 11;  // COMMON
+    pairQA[64] = 11;
+    pairQA[65] = 11;
+    pairQA[68] = 11;
+    pairQA[69] = 11;
+    pairQA[72] = 11;
 
     pairQA[36] = 11;  // phiPRIM pTRUE
     pairQA[44] = 11;
@@ -581,7 +586,32 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  config->SetMixingDepth(10);
+
+  if (suffix == "0") {
+    config->SetUseEventMixing(true);
+    config->SetMixingDepth(10);
+  }
+  if (suffix == "1") {
+    config->SetUseEventMixing(true);
+    config->SetMixingDepth(10);
+  }
+  if (suffix == "2") {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+    config->SetSpinningDepth(1);
+  }
+
+  //-------MIXED EVENTS---------------------------
+  // config->SetUseEventMixing(true);
+  // config->SetMixingDepth(10);
+
+  //-------ROTATED SAMPLE-------------------------
+  //  config->SetUseEventMixing(false);
+  //  config->SetUsePhiSpinning(true);
+  //  config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+  //  config->SetSpinningDepth(1);
+
   /*
   //This is just to show off what would be possible in case you are interested,
   don't be confused by this at the beginning

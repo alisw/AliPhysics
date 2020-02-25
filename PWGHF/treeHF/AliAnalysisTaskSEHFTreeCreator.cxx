@@ -2245,18 +2245,27 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
     }
     if(isLctopKpitagged && fWriteVariableTreeLctopKpi){
 
-      Int_t preSelectedLc = -1;
-      if(fITSUpgradePreSelect){
-        TObjArray arrTracks(3);
+      TObjArray arrTracks(3);
+      if(fITSUpgradePreSelect || fPreSelectLctopKpi){
         for(Int_t ipr=0;ipr<3;ipr++){
           AliAODTrack *tr=vHF->GetProng(aod,lctopkpi,ipr);
           arrTracks.AddAt(tr,ipr);
         }
+      }
+
+      Int_t preSelectedLc = -1;
+      if(fITSUpgradePreSelect){
         preSelectedLc = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 4122, pdgLctopKpi);
         if(preSelectedLc == 0) continue; //Mixture hijing + injected
         if(preSelectedLc == 2) continue; //Only MatchedToMC injected signal
         if(fWriteOnlySignal == 1 && preSelectedLc != 1) continue; //Only matched signal when only signal is requested
       }
+
+      if(fPreSelectLctopKpi){
+         Bool_t preSelectedLcMass=kTRUE;
+         preSelectedLcMass = fCutsLbtoLcpi->PreSelectMass(arrTracks);
+         if (!preSelectedLcMass) continue;
+       }
 
       nFilteredLctopKpi++;
       fNentries->Fill(22);
@@ -3357,32 +3366,31 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
       isLctopKpitagged=kFALSE;
     }
 
-    Int_t preSelectedLb = -1;
-    if(fITSUpgradePreSelect){
-      TObjArray arrTracks(3);
+    TObjArray arrTracks(3);
+    if(fITSUpgradePreSelect || fPreSelectLctopKpi){
       for(Int_t ipr=0;ipr<3;ipr++){
         AliAODTrack *tr=vHF->GetProng(aod,lctopkpi,ipr);
         arrTracks.AddAt(tr,ipr);
       }
+    }
+
+    Int_t preSelectedLb = -1;
+    if(fITSUpgradePreSelect){
       Int_t preSelectedLb = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 4122, pdgLctopKpi);
       if(preSelectedLb == 0) continue; //Mixture hijing + injected
       if(preSelectedLb == 2) continue; //Only MatchedToMC injected signal
       if(fWriteOnlySignal == 1 && preSelectedLb != 1) continue; //Only matched signal when only signal is requested
     }
 
+    if(fPreSelectLctopKpi){
+      Bool_t preSelectedLbMass=kTRUE;
+      preSelectedLbMass=fCutsLbtoLcpi->PreSelectMass(arrTracks);
+      if (!preSelectedLbMass) continue;
+    }
+
     if(isLctopKpitagged && fWriteVariableTreeLb){
       nFilteredLctopKpi++;
-      if(fPreSelectLctopKpi){
-         TObjArray arrTracks(3);
-         for(Int_t ipr=0;ipr<3;ipr++){
-            AliAODTrack *tr=vHF->GetProng(aod,lctopkpi,ipr);
-            arrTracks.AddAt(tr,ipr);
-          }
-         Bool_t recoLc=kTRUE;
-         recoLc=fCutsLbtoLcpi->PreSelectMass(arrTracks);
-         if (!recoLc) continue;
-       }
-        
+
       if((vHF->FillRecoCand(aod,lctopkpi))) {////Fill the data members of the candidate only if they are empty.
 
         //To significantly speed up the task when only signal was requested

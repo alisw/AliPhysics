@@ -63,6 +63,14 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fdEtadPhiSEmT(nullptr),
       fdEtadPhiMEmT(nullptr),
       fEffMixingDepth(nullptr),
+      fSameEventDistCommon(nullptr),
+      fSameEventDistNonCommon(nullptr),
+      fdEtadPhiSECommon(nullptr),
+      fdEtadPhiSENonCommon(nullptr),
+      fSameEventMultDistCommon(nullptr),
+      fSameEventMultDistNonCommon(nullptr),
+      fSameEventmTDistCommon(nullptr),
+      fSameEventmTDistNonCommon(nullptr),
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTandMultBinning(false),
@@ -74,6 +82,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fdPhidEtaPlots(false),
       fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
+      fAncestors(false),
       fPDGCode(),
       fmTdEtadPhiBins(),
       fWhichPairs(),
@@ -132,6 +141,14 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fdEtadPhiSEmT(hists.fdEtadPhiSEmT),
       fdEtadPhiMEmT(hists.fdEtadPhiMEmT),
       fEffMixingDepth(hists.fEffMixingDepth),
+      fSameEventDistCommon(hists.fSameEventDistCommon),
+      fSameEventDistNonCommon(hists.fSameEventDistCommon),
+      fdEtadPhiSECommon(hists.fdEtadPhiSECommon),
+      fdEtadPhiSENonCommon(hists.fdEtadPhiSENonCommon),
+      fSameEventMultDistCommon(hists.fSameEventMultDistCommon),
+      fSameEventMultDistNonCommon(hists.fSameEventMultDistNonCommon),
+      fSameEventmTDistCommon(hists.fSameEventmTDistCommon),
+      fSameEventmTDistNonCommon(hists.fSameEventmTDistNonCommon),
       fDoMultBinning(hists.fDoMultBinning),
       fDoCentBinning(hists.fDoCentBinning),
       fDokTandMultBinning(hists.fDokTandMultBinning),
@@ -143,6 +160,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fdPhidEtaPlots(hists.fdPhidEtaPlots),
       fPhiEtaPlotsSmallK(hists.fPhiEtaPlotsSmallK),
       fmTDetaDPhi(hists.fmTDetaDPhi),
+      fAncestors(hists.fAncestors),
       fPDGCode(hists.fPDGCode),
       fmTdEtadPhiBins(hists.fmTdEtadPhiBins),
       fWhichPairs(hists.fWhichPairs),
@@ -201,6 +219,14 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fdEtadPhiSEmT(nullptr),
       fdEtadPhiMEmT(nullptr),
       fEffMixingDepth(nullptr),
+      fSameEventDistCommon(nullptr),
+      fSameEventDistNonCommon(nullptr),
+      fdEtadPhiSECommon(nullptr),
+      fdEtadPhiSENonCommon(nullptr),
+      fSameEventMultDistCommon(nullptr),
+      fSameEventMultDistNonCommon(nullptr),
+      fSameEventmTDistCommon(nullptr),
+      fSameEventmTDistNonCommon(nullptr),
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTBinning(false),
@@ -212,6 +238,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fdPhidEtaPlots(false),
       fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
+      fAncestors(false),
       fPDGCode(),
       fmTdEtadPhiBins(),
       fWhichPairs(),
@@ -231,6 +258,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fdPhidEtaPlots = conf->GetdPhidEtaPlots();
   fPhiEtaPlotsSmallK = conf->GetdPhidEtaPlotsSmallK();
   fmTDetaDPhi = conf->GetdPhidEtamTPlots();
+  fAncestors = conf-> GetDoAncestorsPlots();
   if (fDokTCentralityBins && !fDokTBinning) {
     AliWarning(
         "Doing the Centrality binning without the kT Binning wont work!\n");
@@ -430,6 +458,32 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fdEtadPhiSEmT = nullptr;
     fdEtadPhiMEmT = nullptr;
   }
+    if (fAncestors) {
+      fSameEventDistCommon = new TH1F*[nHists];
+      fSameEventDistNonCommon = new TH1F*[nHists];
+      if (fdPhidEtaPlots) {
+      fdEtadPhiSECommon = new TH2F*[nHists];
+      fdEtadPhiSENonCommon = new TH2F*[nHists];
+      }
+      if (fDoMultBinning) {
+       fSameEventMultDistCommon = new TH2F*[nHists];
+       fSameEventMultDistNonCommon = new TH2F*[nHists];
+      }
+      if (fDomTBinning) {
+       fSameEventmTDistCommon = new TH2F*[nHists];
+       fSameEventmTDistNonCommon = new TH2F*[nHists];
+      }
+  } else {
+    fSameEventDistCommon = nullptr;
+    fSameEventDistNonCommon = nullptr;
+    fdEtadPhiSECommon = nullptr;
+    fdEtadPhiSENonCommon = nullptr;
+    fSameEventMultDistCommon = nullptr;
+    fSameEventMultDistNonCommon = nullptr;
+    fSameEventmTDistCommon = nullptr;
+    fSameEventmTDistNonCommon = nullptr;
+  }
+
   int Counter = 0;
   for (int iPar1 = 0; iPar1 < nParticles; ++iPar1) {
     for (int iPar2 = iPar1; iPar2 < nParticles; ++iPar2) {
@@ -641,6 +695,76 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           }
         }
       }
+      // //For Common/Non Common Ancestors
+       if (fillHists && fAncestors) {
+           TString SameEventNameCommon = TString::Format("SEDistCommon_Particle%d_Particle%d", iPar1,
+                                   iPar2);
+           fSameEventDistCommon[Counter] = new TH1F(SameEventNameCommon.Data(),
+                                         SameEventNameCommon.Data(), *itNBins,
+                                         *itKMin, *itKMax);
+           fPairs[Counter]->Add(fSameEventDistCommon[Counter]);
+
+           TString SameEventNameNonCommon = TString::Format("SEDistNonCommon_Particle%d_Particle%d", iPar1,
+                                   iPar2);
+           fSameEventDistNonCommon[Counter] = new TH1F(SameEventNameNonCommon.Data(),
+                                         SameEventNameNonCommon.Data(), *itNBins,
+                                         *itKMin, *itKMax);
+           fPairs[Counter]->Add(fSameEventDistNonCommon[Counter]);
+
+           if (fDoMultBinning) {
+            TString SameMultEventNameCommon = TString::Format("SEMultDistCommon_Particle%d_Particle%d",
+                                            iPar1, iPar2);
+            fSameEventMultDistCommon[Counter] = new TH2F(SameMultEventNameCommon.Data(),
+                                                  SameMultEventNameCommon.Data(),
+                                                  *itNBins, *itKMin, *itKMax,
+                                                  multbins, 1, multbins + 1);
+            fPairs[Counter]->Add(fSameEventMultDistCommon[Counter]);
+            TString SameMultEventNameNonCommon = TString::Format("SEMultDistNonCommon_Particle%d_Particle%d",
+                                            iPar1, iPar2);
+            fSameEventMultDistNonCommon[Counter] = new TH2F(SameMultEventNameNonCommon.Data(),
+                                                  SameMultEventNameNonCommon.Data(),
+                                                  *itNBins, *itKMin, *itKMax,
+                                                  multbins, 1, multbins + 1);
+            fPairs[Counter]->Add(fSameEventMultDistNonCommon[Counter]);
+           }
+           if (fDomTBinning) {
+            TString SamemTEventNameCommon = TString::Format("SEmTDistCommon_Particle%d_Particle%d", iPar1,
+                                       iPar2);
+            fSameEventmTDistCommon[Counter] = new TH2F(SamemTEventNameCommon.Data(),
+                                             SamemTEventNameCommon.Data(), *itNBins,
+                                             *itKMin, *itKMax, 225, 0, 7.5);
+            fPairs[Counter]->Add(fSameEventmTDistCommon[Counter]);
+
+            TString SamemTEventNameNonCommon = TString::Format("SEmTDistNonCommon_Particle%d_Particle%d", iPar1,
+                                       iPar2);
+            fSameEventmTDistNonCommon[Counter] = new TH2F(SamemTEventNameNonCommon.Data(),
+                                             SamemTEventNameNonCommon.Data(), *itNBins,
+                                             *itKMin, *itKMax, 225, 0, 7.5);
+            fPairs[Counter]->Add(fSameEventmTDistNonCommon[Counter]);
+           }
+
+           if (fdPhidEtaPlots){
+           TString SameEventdPhidEtaNameCommon = TString::Format(
+              "SEdPhidEtaDistCommon_Particle%d_Particle%d", iPar1, iPar2);
+           fdEtadPhiSECommon[Counter] = new TH2F(SameEventdPhidEtaNameCommon.Data(),
+                                          SameEventdPhidEtaNameCommon.Data(), 80, -2.,
+                                          2., 84, -2 * TMath::Pi() / 3,
+                                          2 * TMath::Pi());
+           fdEtadPhiSECommon[Counter]->GetXaxis()->SetTitle("#Delta#eta");
+           fdEtadPhiSECommon[Counter]->GetYaxis()->SetTitle("#Delta#phi");
+           fPairs[Counter]->Add(fdEtadPhiSECommon[Counter]);
+
+            TString SameEventdPhidEtaNameNonCommon = TString::Format(
+              "SEdPhidEtaDistNonCommon_Particle%d_Particle%d", iPar1, iPar2);
+           fdEtadPhiSENonCommon[Counter] = new TH2F(SameEventdPhidEtaNameNonCommon.Data(),
+                                          SameEventdPhidEtaNameNonCommon.Data(), 80, -2.,
+                                          2., 84, -2 * TMath::Pi() / 3,
+                                          2 * TMath::Pi());
+           fdEtadPhiSENonCommon[Counter]->GetXaxis()->SetTitle("#Delta#eta");
+           fdEtadPhiSENonCommon[Counter]->GetYaxis()->SetTitle("#Delta#phi");
+           fPairs[Counter]->Add(fdEtadPhiSENonCommon[Counter]);
+           }
+       }
 
       if (!fMinimalBooking) {
         fPairQA[Counter] = new TList();
@@ -842,13 +966,13 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           }
           const unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
           const int nDaugComb = 81;
-          fRadiiEtaPhiSE[Counter] = new TH2F**[nDaugComb];  //maximum of 9 combinations
+          fRadiiEtaPhiSE[Counter] = new TH2F**[nDaugComb];  //maximum of 81 combinations
           fRadiiEtaPhiME[Counter] = new TH2F**[nDaugComb];
 
-          fIntRadiiQAEtaPhiSEBefore[Counter] = new TH2F*[nDaugComb];  //maximum of 9 combinations
+          fIntRadiiQAEtaPhiSEBefore[Counter] = new TH2F*[nDaugComb];  //maximum of 81 combinations
           fIntRadiiQAEtaPhiMEBefore[Counter] = new TH2F*[nDaugComb];
 
-          fIntRadiiQAEtaPhiSEAfter[Counter] = new TH2F*[nDaugComb];  //maximum of 9 combinations
+          fIntRadiiQAEtaPhiSEAfter[Counter] = new TH2F*[nDaugComb];  //maximum of 81 combinations
           fIntRadiiQAEtaPhiMEAfter[Counter] = new TH2F*[nDaugComb];
 
           if (fPhiEtaPlotsSmallK) {
@@ -1020,6 +1144,12 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fdEtadPhiSEmT = hists.fdEtadPhiSEmT;
     this->fdEtadPhiMEmT = hists.fdEtadPhiMEmT;
     this->fEffMixingDepth = hists.fEffMixingDepth;
+    this->fSameEventDistCommon = hists.fSameEventDistCommon;
+    this->fSameEventDistNonCommon = hists.fSameEventDistNonCommon;
+    this->fdEtadPhiSECommon = hists.fdEtadPhiSECommon;
+    this->fdEtadPhiSENonCommon = hists.fdEtadPhiSENonCommon;
+    this->fSameEventMultDistCommon = hists.fSameEventMultDistCommon;
+    this->fSameEventMultDistNonCommon = hists.fSameEventMultDistNonCommon;
     this->fDoMultBinning = hists.fDoMultBinning;
     this->fDoCentBinning = hists.fDoCentBinning;
     this->fDokTBinning = hists.fDokTBinning;
@@ -1028,6 +1158,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fDokTCentralityBins = hists.fDokTCentralityBins;
     this->fdPhidEtaPlots = hists.fdPhidEtaPlots;
     this->fCentBins = hists.fCentBins;
+    this->fAncestors = hists.fAncestors;
   }
   return *this;
 }
@@ -1096,6 +1227,30 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   if (fMixedEventkTCentDist) {
     delete[] fMixedEventkTCentDist;
     delete fMixedEventkTCentDist;
+  }
+  if (fSameEventDistCommon) {
+    delete[] fSameEventDistCommon;
+    delete fSameEventDistCommon;
+  }
+  if (fSameEventDistNonCommon) {
+    delete[] fSameEventDistNonCommon;
+    delete fSameEventDistNonCommon;
+  }
+  if (fdEtadPhiSECommon) {
+    delete[] fdEtadPhiSECommon;
+    delete fdEtadPhiSECommon;
+  }
+  if (fdEtadPhiSENonCommon) {
+    delete[] fdEtadPhiSENonCommon;
+    delete fdEtadPhiSENonCommon;
+  }
+  if (fSameEventMultDistCommon) {
+    delete[] fSameEventMultDistCommon;
+    delete fSameEventMultDistCommon;
+  }
+  if (fSameEventMultDistNonCommon) {
+    delete[] fSameEventMultDistNonCommon;
+    delete fSameEventMultDistNonCommon;
   }
 }
 
@@ -1171,5 +1326,19 @@ void AliFemtoDreamCorrHists::FilldPhidEtaME(int iHist, float dPhi, float dEta,
     }
   } else if (fdPhidEtaPlots) {
     fdEtadPhiME[iHist]->Fill(dEta, dPhi);
+  }
+}
+
+void AliFemtoDreamCorrHists::FilldPhidEtaSECommon(int iHist, float dPhi, float dEta,
+                                            float mT) {
+  if (fdPhidEtaPlots) {
+    fdEtadPhiSECommon[iHist]->Fill(dEta, dPhi);
+  }
+}
+
+void AliFemtoDreamCorrHists::FilldPhidEtaSENonCommon(int iHist, float dPhi, float dEta,
+                                            float mT) {
+  if (fdPhidEtaPlots) {
+    fdEtadPhiSENonCommon[iHist]->Fill(dEta, dPhi);
   }
 }

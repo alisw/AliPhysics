@@ -57,6 +57,7 @@
 #include "AliOADBMultSelection.h"
 #include "AliPDG.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliPhysicsSelection.h"
 #include "TLorentzVector.h"
 
@@ -74,6 +75,8 @@ struct TrackMC {
   AliVParticle *particle;
   int motherId;
 };
+
+const AliPID::EParticleType kSpecies[3] = {AliPID::kDeuteron, AliPID::kProton, AliPID::kPion};
 
 bool IsHyperTriton3Daughter(AliMCEvent *mcEvent, const AliVParticle *vPart) {
 
@@ -155,36 +158,38 @@ bool IsFakeCandidate(AliMCEvent *mcEvent, int mId, AliVParticle *p1, AliVParticl
 AliAnalysisTaskFindableHypertriton3::AliAnalysisTaskFindableHypertriton3(TString taskname)
     : AliAnalysisTaskSE(taskname.Data()),
       // support objects
-      fEventCuts{},            //
-      fPIDResponse{nullptr},   //
-      fESDtrackCuts{nullptr},  //
-      fPrimaryVertex{nullptr}, //
+      fEventCuts{},
+      fPIDResponse{nullptr},
+      fESDtrackCuts{nullptr},
+      fPrimaryVertex{nullptr},
       // setting parameters
-      fCosPoiningAngleLimit{0}, //
+      fCosPoiningAngleLimit{0},
       // output objects
-      fOutputList{nullptr},                            //
-      fFindableTree{nullptr},                          //
-      fTreeHyp3BodyVarTracks{nullptr},                 //
-      fTreeHyp3BodyVarPDGcodes{0},                     //
-      fTreeHyp3BodyVarEventId{0},                      //
-      fTreeHyp3BodyVarMotherId{0},                     //
-      fTreeHyp3BodyVarIsFakeCand{0},                   //
-      fTreeHyp3BodyVarTruePx{0},                       //
-      fTreeHyp3BodyVarTruePy{0},                       //
-      fTreeHyp3BodyVarTruePz{0},                       //
-      fTreeHyp3BodyVarDecayVx{0},                      //
-      fTreeHyp3BodyVarDecayVy{0},                      //
-      fTreeHyp3BodyVarDecayVz{0},                      //
-      fTreeHyp3BodyVarDecayT{0},                       //
-      fTreeHyp3BodyVarPVx{0},                          //
-      fTreeHyp3BodyVarPVy{0},                          //
-      fTreeHyp3BodyVarPVz{0},                          //
-      fTreeHyp3BodyVarPVt{0},                          //
-      fTreeHyp3BodyVarMagneticField{0},                //
-      fTreeHyp3BodyVarCentrality{0},                   //
-      fHistEventCounter{nullptr},                      //
-      fHistCentrality{nullptr},                        //
-      fHistGeneratedPtVsYVsCentralityHypTrit{nullptr}, //
+      fOutputList{nullptr},
+      fFindableTree{nullptr},
+      fTreeHyp3BodyVarTracks{nullptr},
+      fTreeHyp3BodyVarPDGcodes{0},
+      fTreeHyp3BodyVarNsigmaTPC{0},
+      fTreeHyp3BodyVarNsigmaTOF{0},
+      fTreeHyp3BodyVarEventId{0},
+      fTreeHyp3BodyVarMotherId{0},
+      fTreeHyp3BodyVarIsFakeCand{0},
+      fTreeHyp3BodyVarTruePx{0},
+      fTreeHyp3BodyVarTruePy{0},
+      fTreeHyp3BodyVarTruePz{0},
+      fTreeHyp3BodyVarDecayVx{0},
+      fTreeHyp3BodyVarDecayVy{0},
+      fTreeHyp3BodyVarDecayVz{0},
+      fTreeHyp3BodyVarDecayT{0},
+      fTreeHyp3BodyVarPVx{0},
+      fTreeHyp3BodyVarPVy{0},
+      fTreeHyp3BodyVarPVz{0},
+      fTreeHyp3BodyVarPVt{0},
+      fTreeHyp3BodyVarMagneticField{0},
+      fTreeHyp3BodyVarCentrality{0},
+      fHistEventCounter{nullptr},
+      fHistCentrality{nullptr},
+      fHistGeneratedPtVsYVsCentralityHypTrit{nullptr},
       fHistGeneratedPtVsYVsCentralityAntiHypTrit{nullptr} {
 
   // Standard Output
@@ -234,11 +239,9 @@ void AliAnalysisTaskFindableHypertriton3::UserCreateOutputObjects() {
   fOutputList->Add(fHistCentrality);
 
   // Histogram Output: Efficiency Denominator
-  fHistGeneratedPtVsYVsCentralityHypTrit =
-      new TH3D("fHistGeneratedPtVsYVsCentralityHypTrit", ";pT;y;centrality", 500, 0, 25, 40, -1.0, 1.0, 100, 0, 100);
+  fHistGeneratedPtVsYVsCentralityHypTrit = new TH3D("fHistGeneratedPtVsYVsCentralityHypTrit", ";#it{p}_{T} (GeV/#it{c});y;centrality", 500, 0, 25, 40, -1.0, 1.0, 100, 0, 100);
   fOutputList->Add(fHistGeneratedPtVsYVsCentralityHypTrit);
-  fHistGeneratedPtVsYVsCentralityAntiHypTrit = new TH3D("fHistGeneratedPtVsYVsCentralityAntiHypTrit",
-                                                        ";pT;y;centrality", 500, 0, 25, 40, -1.0, 1.0, 100, 0, 100);
+  fHistGeneratedPtVsYVsCentralityAntiHypTrit = new TH3D("fHistGeneratedPtVsYVsCentralityAntiHypTrit", ";#it{p}_{T} (GeV/#it{c});y;centrality", 500, 0, 25, 40, -1.0, 1.0, 100, 0, 100);
   fOutputList->Add(fHistGeneratedPtVsYVsCentralityAntiHypTrit);
 
   // Histogram Output: Event-by-Event
@@ -260,6 +263,14 @@ void AliAnalysisTaskFindableHypertriton3::UserCreateOutputObjects() {
   fFindableTree->Branch("fTreeHyp3BodyVarPDGcode1", &fTreeHyp3BodyVarPDGcodes[1], "fTreeHyp3BodyVarPDGcode1/I");
   fFindableTree->Branch("fTreeHyp3BodyVarPDGcode2", &fTreeHyp3BodyVarPDGcodes[2], "fTreeHyp3BodyVarPDGcode2/I");
 
+  fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTPC0", &fTreeHyp3BodyVarNsigmaTPC[0], "fTreeHyp3BodyVarNsigmaTPC0/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTPC1", &fTreeHyp3BodyVarNsigmaTPC[1], "fTreeHyp3BodyVarNsigmaTPC1/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTPC2", &fTreeHyp3BodyVarNsigmaTPC[2], "fTreeHyp3BodyVarNsigmaTPC2/F");
+
+  fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTOF0", &fTreeHyp3BodyVarNsigmaTOF[0], "fTreeHyp3BodyVarNsigmaTOF0/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTOF1", &fTreeHyp3BodyVarNsigmaTOF[1], "fTreeHyp3BodyVarNsigmaTOF1/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarNsigmaTOF2", &fTreeHyp3BodyVarNsigmaTOF[2], "fTreeHyp3BodyVarNsigmaTOF2/F");
+
   fFindableTree->Branch("fTreeHyp3BodyVarEventId", &fTreeHyp3BodyVarEventId, "fTreeHyp3BodyVarEventId/l");
   fFindableTree->Branch("fTreeHyp3BodyVarMotherId", &fTreeHyp3BodyVarMotherId, "fTreeHyp3BodyVarMotherId/I");
 
@@ -279,8 +290,10 @@ void AliAnalysisTaskFindableHypertriton3::UserCreateOutputObjects() {
   fFindableTree->Branch("fTreeHyp3BodyVarPVz", &fTreeHyp3BodyVarPVz, "fTreeHyp3BodyVarPVz/F");
   fFindableTree->Branch("fTreeHyp3BodyVarPVt", &fTreeHyp3BodyVarPVt, "fTreeHyp3BodyVarPVt/F");
 
-  fFindableTree->Branch("fTreeHyp3BodyVarMagneticField", &fTreeHyp3BodyVarMagneticField,
-                        "fTreeHyp3BodyVarMagneticField/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarMagneticField", &fTreeHyp3BodyVarMagneticField,"fTreeHyp3BodyVarMagneticField/F");
+  fFindableTree->Branch("fTreeHyp3BodyVarCentrality", &fTreeHyp3BodyVarCentrality, "fTreeHyp3BodyVarCentrality/F");
+
+
 
   PostData(1, fOutputList);
   PostData(2, fFindableTree);
@@ -412,6 +425,8 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
           for (int sTrack{0}; sTrack < 3; ++sTrack) {
             fTreeHyp3BodyVarTracks[sTrack] = lTrackOfInterest[index[sTrack].second].track;
             fTreeHyp3BodyVarPDGcodes[sTrack] = index[sTrack].first;
+            fTreeHyp3BodyVarNsigmaTPC[sTrack] = fPIDResponse->NumberOfSigmasTPC(lTrackOfInterest[index[sTrack].second].track,kSpecies[sTrack]);
+            fTreeHyp3BodyVarNsigmaTOF[sTrack] = (HasTOF(lTrackOfInterest[index[sTrack].second].track)) ? fPIDResponse->NumberOfSigmasTOF(lTrackOfInterest[index[sTrack].second].track,kSpecies[sTrack]): -999.;
           }
 
           AliVParticle *vHyperTriton = lTrackOfInterest[index[0].second].mother;
@@ -456,3 +471,11 @@ void AliAnalysisTaskFindableHypertriton3::Terminate(Option_t *) {
   return;
 
 } // end of Terminate
+
+
+bool AliAnalysisTaskFindableHypertriton3::HasTOF(AliESDtrack *track) {
+  bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+  const float len = track->GetIntegratedLength();
+  return hasTOFout && hasTOFtime && (len > 350.);
+}

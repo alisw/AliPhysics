@@ -284,6 +284,8 @@ fBDHadpT(0),
 fDHadpT(0),
 fDMesonpT(0),
 fD0pT(0),
+fDPluspT(0),
+fDspT(0),
 fLambdaCpT(0),
 fDElecDCA(0),
 fBElecDCA(0),
@@ -527,6 +529,8 @@ fBDHadpT(0),
 fDHadpT(0),
 fDMesonpT(0),
 fD0pT(0),
+fDPluspT(0),
+fDspT(0),
 fLambdaCpT(0),
 fDElecDCA(0),
 fBElecDCA(0),
@@ -858,9 +862,9 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     fOutputList->Add(fLSElecDCA);
     
     if(fFlagSparse){
-        Int_t bins[7]=      {280, 160, 40, 200, 200, 20, 40}; //pT;nSigma;eop;m20;m02;iSM;eopNL
+        Int_t bins[7]=      {232, 160, 40, 200, 200, 20, 40}; //pT;nSigma;eop;m20;m02;iSM;eopNL
         Double_t xmin[7]={2,  -8,   0,   0,   0, 0, 0};
-        Double_t xmax[7]={30,   8,   2,   2,   2, 20, 2};
+        Double_t xmax[7]={60,   8,   2,   2,   2, 20, 2};
         fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;m02;iSM;eop_NL;",7,bins,xmin,xmax);
         fOutputList->Add(fSparseElectron);
     }
@@ -1140,6 +1144,14 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
         fD0pT = new TH1F("fD0pT","Prompt D0 meson pT;p_{T} (GeV/c);counts",500,0,50);
         fD0pT->Sumw2();
         fOutputList->Add(fD0pT);
+        
+        fDPluspT = new TH1F("fDPluspT","Prompt D+ meson pT;p_{T} (GeV/c);counts",500,0,50);
+        fDPluspT->Sumw2();
+        fOutputList->Add(fDPluspT);
+        
+        fDspT = new TH1F("fDspT","Prompt D+s meson pT;p_{T} (GeV/c);counts",500,0,50);
+        fDspT->Sumw2();
+        fOutputList->Add(fDspT);
         
         fLambdaCpT = new TH1F("fLambdaCpT","Prompt Lammda_c pT;p_{T} (GeV/c);counts",500,0,50);
         fLambdaCpT->Sumw2();
@@ -2519,7 +2531,9 @@ void AliAnalysisTaskHFEBESpectraEMC::GetMCTemplateWeight()
             if(!IsMCB) {
                 if((PDGcode>400 && PDGcode<500) || (PDGcode>4000 && PDGcode<5000)) fDHadpT->Fill(PartPt);
                 if(PDGcode > 400 && PDGcode < 500) fDMesonpT->Fill(PartPt);
+                if(PDGcode == 411) fDPluspT->Fill(PartPt);
                 if(PDGcode == 421) fD0pT->Fill(PartPt);
+                if(PDGcode == 431) fDspT->Fill(PartPt);
                 if(PDGcode == 4122) fLambdaCpT->Fill(PartPt);
             }
         }
@@ -2529,6 +2543,127 @@ void AliAnalysisTaskHFEBESpectraEMC::GetMCTemplateWeight()
 Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA)
 {
     //Fill MC template histograms
+    
+    Int_t iTrklabel = TMath::Abs(track->GetLabel());
+    Double_t  TrkPt = track->Pt();
+    
+    AliAODMCParticle *MCPart, *MCPartMom, *MCPartMomDummy;
+    Int_t iMCmom = -999;
+    Int_t MomPDG = -999, MomPDGDummy = -999;
+    Double_t fvalue[3] = {-999,-999,-999};
+    Int_t fpidSort = -99;
+    
+    Bool_t IsEle = kFALSE, IsHFEle=kFALSE, IsBEle=kFALSE, IsDEle=kFALSE;
+    fWeightB=1.0, fWeightBMin=1.0, fWeightBMax=1.0;
+    fWeightD=1.0, fWeightDUp=1.0, fWeightDDown=1.0;
+    
+    if(iTrklabel < 0) return kFALSE;
+    MCPart = (AliAODMCParticle*)fMCArray->At(iTrklabel);
+    
+    if(!(MCPart->IsPhysicalPrimary())) return kFALSE;
+    
+    if(TMath::Abs(MCPart->GetPdgCode())!=11) return kFALSE;
+    IsEle = kTRUE;
+    
+    iMCmom = MCPart->GetMother();
+    if(iMCmom < 0) return kFALSE;
+    
+    MCPartMom = (AliAODMCParticle*)fMCArray->At(iMCmom);
+    MomPDG = TMath::Abs(MCPartMom->GetPdgCode());
+    
+    if((MomPDG>400 && MomPDG<600) || (MomPDG>4000 && MomPDG<6000)) //D,B ->e
+        IsHFEle = kTRUE;
+    
+    if(!IsHFEle)return kFALSE;
+    
+    //--------- Check if e<-B going back to first mother--------------
+    Int_t jMCmomDummy = iMCmom;
+    while(jMCmomDummy > 0){
+        MCPartMomDummy = (AliAODMCParticle*)fMCArray->At(jMCmomDummy);
+        MomPDGDummy = TMath::Abs(MCPartMomDummy->GetPdgCode());
+        
+        if((MomPDGDummy>500 && MomPDGDummy<600) || (MomPDGDummy>5000 && MomPDGDummy<6000)){ //B->e or B->X->e, loop stops when B is found or when there is no mother
+            IsBEle = kTRUE;
+            fBHadElecDCA->Fill(TrkPt,TrkDCA);
+            
+            if(MomPDGDummy>500 && MomPDGDummy<600){
+                fBMesonElecDCA->Fill(TrkPt,TrkDCA);
+                fpidSort = 1; //Mom is B
+                if(fIsAnapp) GetBWeight(MCPartMomDummy, fWeightB, fWeightBMin, fWeightBMax);
+                if(!fIsAnapp) GetBWeightPbPb(MCPartMomDummy, fWeightB);
+            }
+            if(MomPDGDummy>5000 && MomPDGDummy<6000){
+                fBBaryonElecDCA->Fill(TrkPt,TrkDCA);
+                fpidSort = 10; //Mom is b Baryon
+            }
+            
+            jMCmomDummy = -1;  //break the loop
+        }
+        else {
+            jMCmomDummy = MCPartMomDummy->GetMother();
+        }
+    }
+    
+    //--------- if not B->e then it should be D->e -------------
+    if(!IsBEle){
+        IsDEle = kTRUE;
+        fDHadElecDCA->Fill(TrkPt,TrkDCA);
+        
+        if(MomPDG>400 && MomPDG<500) {
+            fDMesonElecDCA->Fill(TrkPt,TrkDCA);
+            fpidSort = 2; //Mom is D
+            if(fIsAnapp) GetDWeight(MCPartMom, fWeightD, fWeightDUp, fWeightDDown);
+            if(!fIsAnapp) GetDWeightPbPb(MCPartMom, MomPDG, fWeightD);
+        }
+        
+        if(MomPDG>4000 && MomPDG<5000) {
+            fDBaryonElecDCA->Fill(TrkPt,TrkDCA);
+            fpidSort = 9; //Mom is c Baryon
+            if(!fIsAnapp)
+            {
+                if(MomPDG == 4122) GetDWeightPbPb(MCPartMom, MomPDG, fWeightD); //For Lc
+            }
+        }
+        if(MomPDG == 411) fpidSort = 11; //Mom is D+
+        if(MomPDG == 421) fpidSort = 12; //Mom is D0
+        if(MomPDG == 413) fpidSort = 14; //Mom is D*+
+        if(MomPDG == 431) fpidSort = 15; //Mom is Ds
+        if(MomPDG > 431 && MomPDG < 436) fpidSort = 16; //Mom is other Ds
+        if(MomPDG == 4122) fpidSort = 17; //Mom is Lambda c
+        if(MomPDG == 443) fpidSort = 6; //Mom is J/Psi
+        
+        if(MomPDG == 4122) fLambdaCElecDCA->Fill(TrkPt,TrkDCA);
+        if(MomPDG == 421) fD0ElecDCA->Fill(TrkPt,TrkDCA);
+    }
+    
+    //--------Filling Thnsparse---------------
+    fvalue[0] = TrkPt;
+    fvalue[1] = TrkDCA;
+    fvalue[2] = fpidSort;
+    fSprsTemplatesNoWeight->Fill(fvalue);
+    
+    if(IsBEle) {
+        fSprsTemplatesWeight->Fill(fvalue, fWeightB);
+        if(fIsAnapp){
+            fSprsTemplatesWeightVar1->Fill(fvalue, fWeightBMin);
+            fSprsTemplatesWeightVar2->Fill(fvalue, fWeightBMax);
+        }
+    }
+    if(IsDEle) {
+        fSprsTemplatesWeight->Fill(fvalue, fWeightD);
+        if(fIsAnapp){
+            fSprsTemplatesWeightVar1->Fill(fvalue, fWeightDUp);
+            fSprsTemplatesWeightVar2->Fill(fvalue, fWeightDDown);
+        }
+    }
+    
+    return kTRUE;
+}
+//________________________________________________________________________
+/*Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA)
+{
+    //Fill MC template histograms
+    //Change this with beauty loop
     
     Int_t iTrklabel = TMath::Abs(track->GetLabel());
     Double_t  TrkPt = track->Pt();
@@ -2679,6 +2814,7 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
     }
     return kTRUE;
 }
+ */
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::SetDmesonWeightHist(TH1 *D1, TH1 *D2, TH1 *D3)
 {

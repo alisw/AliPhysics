@@ -46,11 +46,20 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetUseMCtruthForPID(Bool_t opt=kTRUE){
     fUseMCId=opt;
   }
+  void SetUseGenPtInPlots(Bool_t opt=kTRUE){
+    fUseGenPt=opt;
+  }
   void SetUsePhysicsSelection(Bool_t opt=kTRUE){
     fUsePhysSel=opt;
   }
   void SetTriggerMask(Int_t mask){
     fTriggerMask=mask;
+  }
+  void SetCentralityInterval(Double_t minc, Double_t maxc, TString estim="V0M"){
+    fSelectOnCentrality=kTRUE;
+    fMinCentrality=minc;
+    fMaxCentrality=maxc;
+    fCentrEstimator=estim.Data();
   }
   void SetUsePileupCut(Bool_t opt=kTRUE){
     fUsePileupCut=kTRUE;
@@ -228,6 +237,10 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
   Int_t   fTriggerMask;        // mask used in physics selection
+  Bool_t fSelectOnCentrality;  // flag to activate cut on centrality
+  Double_t fMinCentrality;     // centrality: lower limit
+  Double_t fMaxCentrality;     // centrality: upper limit
+  TString fCentrEstimator;     // centrality: estimator
   Int_t fNEtaBins;             // number of eta intervals in histos
   Int_t fNPhiBins;             // number of phi intervals in histos
   Int_t fNPtBins;              // number of pt intervals in histos
@@ -235,8 +248,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Double_t fMaxPt;             // maximum pt for histos
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
+  Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,18);
+  ClassDef(AliAnalysisTaskCheckESDTracks,20);
 };
 
 

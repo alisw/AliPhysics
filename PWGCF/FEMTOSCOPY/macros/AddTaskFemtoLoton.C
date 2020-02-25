@@ -127,8 +127,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDeltaEtaMax(0.012);
-  config->SetDeltaPhiMax(0.012);
+  config->SetDeltaEtaMax(0.017);
+  config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
 
   if (phiSpinning == 0) {
@@ -245,8 +245,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
@@ -290,8 +290,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -331,8 +331,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -358,8 +358,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetEtaRange(-0.83, 0.83);
       Negv0Daug->SetEtaRange(-0.83, 0.83);
@@ -430,8 +430,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
@@ -471,8 +471,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
@@ -521,8 +521,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
@@ -547,8 +547,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -591,8 +591,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -612,8 +612,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
@@ -636,8 +636,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
@@ -659,8 +659,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -700,8 +700,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -725,8 +725,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
@@ -748,8 +748,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetEtaRange(-0.77, 0.77);
       Negv0Daug->SetEtaRange(-0.77, 0.77);
@@ -799,8 +799,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
@@ -813,8 +813,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetEtaRange(-0.85, 0.85);
       AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -846,8 +846,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -884,8 +884,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -906,8 +906,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
@@ -929,8 +929,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -952,8 +952,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
@@ -982,8 +982,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -1003,8 +1003,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -1028,8 +1028,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
@@ -1072,8 +1072,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -1117,8 +1117,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       Posv0Daug->SetEtaRange(-0.83, 0.83);
       Negv0Daug->SetEtaRange(-0.83, 0.83);
@@ -1131,8 +1131,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.019);
+      config->SetDeltaPhiMax(0.019);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);

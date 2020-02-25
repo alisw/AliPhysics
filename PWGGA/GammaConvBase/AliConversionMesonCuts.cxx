@@ -151,6 +151,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fUseTrackMultiplicityForBG(kFALSE),
   fEnableMinOpeningAngleCut(kTRUE),
   fEnableOneCellDistCut(kFALSE),
+  fAllowCombOnlyInSameRecMethod(kFALSE),
   fDoToCloseV0sCut(kFALSE),
   fDoSharedElecCut(kFALSE),
   fDoMesonQualitySelection(kFALSE),
@@ -261,6 +262,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
   fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
+  fAllowCombOnlyInSameRecMethod(ref.fAllowCombOnlyInSameRecMethod),
   fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
   fDoSharedElecCut(ref.fDoSharedElecCut),
   fDoMesonQualitySelection(ref.fDoMesonQualitySelection),
@@ -1420,7 +1422,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC* fM
     return kFALSE;
 }
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift, Int_t leadingCellID1, Int_t leadingCellID2)
+Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift, Int_t leadingCellID1, Int_t leadingCellID2, Char_t recoMeth1, Char_t recoMeth2)
 {
 
   // Selection of reconstructed Meson candidates
@@ -1476,6 +1478,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
   // Opening Angle Cut
   //fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
+  
+  if (fAllowCombOnlyInSameRecMethod) {
+    if (recoMeth1 != recoMeth2){
+      if(hist)hist->Fill(cutIndex, pi0->Pt());
+      return kFALSE;          
+    }
+  }
+  
   if( fEnableMinOpeningAngleCut && pi0->GetOpeningAngle() < fOpeningAngle){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
@@ -1496,6 +1506,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
+  
   cutIndex++;
 
   // Alpha Max Cut
@@ -3853,6 +3864,13 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
       fFMinOpanCut->SetParameter(3,20);
       fMinOpanCutMeson  = 0;
       fMinOpanPtDepCut  = kTRUE;
+      break;
+    case 18:      //i
+      fMinOpanCutMeson  = 0.017;
+      fEnableMinOpeningAngleCut = kFALSE;
+      fMinOpanPtDepCut  = kFALSE;
+      fEnableOneCellDistCut = kTRUE;
+      fAllowCombOnlyInSameRecMethod = kTRUE;
       break;
     // opening angle cut variations for EMCal related analyses up to 17. May 2017
 //    case 5:      //

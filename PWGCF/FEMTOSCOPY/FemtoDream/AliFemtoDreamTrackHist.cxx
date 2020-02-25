@@ -21,6 +21,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;
     fpTDist[i] = nullptr;
+    fpDist[i] = nullptr;
     fpTPCDist[i] = nullptr;
     fetaDist[i] = nullptr;
     fphiDist[i] = nullptr;
@@ -34,13 +35,18 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fDCAzProp[i] = nullptr;
     fTPCCrossedRows[i] = nullptr;
     fTPCRatio[i] = nullptr;
+    fITSdedx[i] = nullptr;
     fTPCdedx[i] = nullptr;
     fTOFbeta[i] = nullptr;
+    fNSigITS[i] = nullptr;
+    fNSigITSMod[i] = nullptr;
     fNSigTPC[i] = nullptr;
     fNSigTPCMod[i] = nullptr;
     fNSigTOF[i] = nullptr;
+    fITSStatus[i] = nullptr;
     fTPCStatus[i] = nullptr;
     fTOFStatus[i] = nullptr;
+    fNSigComITSTPC[i] = nullptr;
     fNSigComTPCTOF[i] = nullptr;
     fTPCClsCPiluUp[i] = nullptr;
     fITShrdClsPileUp[i] = nullptr;
@@ -52,8 +58,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
       fMultRangeHigh(55) {
   TString sName[2] = { "before", "after" };
   float ptmin = 0;
-  float ptmax = 5;
-  int ptBins = 100;
+  float ptmax = 6.0;
+  int ptBins = 120;
   int twoDBins = 400;
   fHistList = new TList();
   fHistList->SetName("TrackCuts");
@@ -95,7 +101,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
 
   fHistList->Add(fConfig);
 
-  fCutCounter = new TH1F("CutCounter", "Cut Counter", 30, 0, 30);
+  fCutCounter = new TH1F("CutCounter", "Cut Counter", 35, 0, 35);
   fCutCounter->GetXaxis()->SetBinLabel(1, "Input");
   fCutCounter->GetXaxis()->SetBinLabel(2, "Filter Bit");
   fCutCounter->GetXaxis()->SetBinLabel(3, "p_{T} Cut");
@@ -120,11 +126,12 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
   fCutCounter->GetXaxis()->SetBinLabel(22, "ITS PID");
   fCutCounter->GetXaxis()->SetBinLabel(23, "TPC PID");
   fCutCounter->GetXaxis()->SetBinLabel(24, "TPC TOF PID");
-  fCutCounter->GetXaxis()->SetBinLabel(25, "Reject Pions");
-  fCutCounter->GetXaxis()->SetBinLabel(26, "Smallest Sig");
-  fCutCounter->GetXaxis()->SetBinLabel(27, "Passes PID");
-  fCutCounter->GetXaxis()->SetBinLabel(28, "DCA_{Z}");
-  fCutCounter->GetXaxis()->SetBinLabel(29, "DCA_{XY}");
+  fCutCounter->GetXaxis()->SetBinLabel(25, "ITS TPC PID");
+  fCutCounter->GetXaxis()->SetBinLabel(26, "Reject Pions");
+  fCutCounter->GetXaxis()->SetBinLabel(27, "Smallest Sig");
+  fCutCounter->GetXaxis()->SetBinLabel(28, "Passes PID");
+  fCutCounter->GetXaxis()->SetBinLabel(29, "DCA_{Z}");
+  fCutCounter->GetXaxis()->SetBinLabel(30, "DCA_{XY}");
   fCutCounter->GetYaxis()->SetTitle("Entries");
 
   fHistList->Add(fCutCounter);
@@ -140,6 +147,13 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fpTDist[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fpTDist[i]->GetYaxis()->SetTitle("Entries");
     fTrackCutQA[i]->Add(fpTDist[i]);
+
+    TString pITSName = Form("pDist_%s", sName[i].Data());
+    fpDist[i] = new TH1F(pITSName.Data(), pITSName.Data(), ptBins, ptmin,
+                            ptmax);
+    fpDist[i]->GetXaxis()->SetTitle("#it{p}_{} (GeV/#it{c})");
+    fpDist[i]->GetYaxis()->SetTitle("Entries");
+    fTrackCutQA[i]->Add(fpDist[i]);
 
     TString pTPCName = Form("pTPCDist_%s", sName[i].Data());
     fpTPCDist[i] = new TH1F(pTPCName.Data(), pTPCName.Data(), ptBins, ptmin,
@@ -232,6 +246,14 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fShrdClsITS[i]->GetYaxis()->SetBinLabel(2, "Has no Shard Cls");
     fTrackCutQA[i]->Add(fShrdClsITS[i]);
 
+    TString ITSdedxName = Form("ITSdedx_%s", sName[i].Data());
+    fITSdedx[i] = new TH2F(ITSdedxName.Data(), ITSdedxName.Data(), ptBins,
+                           ptmin, ptmax, 2 * twoDBins, 0., 400);
+    fITSdedx[i]->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+    fITSdedx[i]->GetYaxis()->SetTitle("d#it{E}/d#it{x} (arb. Units)");
+
+    fTrackCutQA[i]->Add(fITSdedx[i]);
+
     TString TPCdedxName = Form("TPCdedx_%s", sName[i].Data());
     fTPCdedx[i] = new TH2F(TPCdedxName.Data(), TPCdedxName.Data(), ptBins,
                            ptmin, ptmax, 2 * twoDBins, 0., 400);
@@ -247,6 +269,23 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fTOFbeta[i]->GetYaxis()->SetTitle("#beta_{TOF}");
 
     fTrackCutQA[i]->Add(fTOFbeta[i]);
+
+    TString NSigITSName = Form("NSigITS_%s", sName[i].Data());
+    fNSigITS[i] = new TH2F(NSigITSName.Data(), NSigITSName.Data(), ptBins,
+                           ptmin, ptmax, 3. * twoDBins, -60., 60.);
+    fNSigITS[i]->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+    fNSigITS[i]->GetYaxis()->SetTitle("n#sigma_{ITS}");
+
+    fTrackCutQA[i]->Add(fNSigITS[i]);
+
+    TString NSigITSModName = Form("NSigITSMod_%s", sName[i].Data());
+    fNSigITSMod[i] = new TH2F(NSigITSModName.Data(), NSigITSModName.Data(),
+                              ptBins, ptmin, 1., 3. * twoDBins, -1., 5.);
+    fNSigITSMod[i]->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+    fNSigITSMod[i]->GetYaxis()->SetTitle("|n#sigma_{ITS}|");
+
+    fTrackCutQA[i]->Add(fNSigITSMod[i]);
+
 
     TString NSigTPCName = Form("NSigTPC_%s", sName[i].Data());
     fNSigTPC[i] = new TH2F(NSigTPCName.Data(), NSigTPCName.Data(), ptBins,
@@ -272,6 +311,17 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
 
     fTrackCutQA[i]->Add(fNSigTOF[i]);
 
+    TString ITSstatusname = Form("ITSStatus_%s", sName[i].Data());
+    fITSStatus[i] = new TH1F(ITSstatusname.Data(), ITSstatusname.Data(), 4, 0,
+                             4);
+    fITSStatus[i]->GetXaxis()->SetBinLabel(1, "kDetNoSignal");
+    fITSStatus[i]->GetXaxis()->SetBinLabel(2, "kDetPidOk");
+    fITSStatus[i]->GetXaxis()->SetBinLabel(3, "kDetMismatch");
+    fITSStatus[i]->GetXaxis()->SetBinLabel(4, "kDetNoParams");
+    fITSStatus[i]->GetYaxis()->SetTitle("Entries");
+
+    fTrackCutQA[i]->Add(fITSStatus[i]);
+
     TString TPCstatusname = Form("TPCStatus_%s", sName[i].Data());
     fTPCStatus[i] = new TH1F(TPCstatusname.Data(), TPCstatusname.Data(), 4, 0,
                              4);
@@ -293,6 +343,16 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fTOFStatus[i]->GetYaxis()->SetTitle("Entries");
 
     fTrackCutQA[i]->Add(fTOFStatus[i]);
+
+    TString NSigComITSTPCName = Form("NSigComITSTPC_%s", sName[i].Data());
+    fNSigComITSTPC[i] = new TH2F(NSigComITSTPCName.Data(),
+                                 NSigComITSTPCName.Data(), ptBins, ptmin, 7,
+                                 3. * twoDBins, -1., 7.);
+    fNSigComITSTPC[i]->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+    fNSigComITSTPC[i]->GetYaxis()->SetTitle(
+        "n#sigma_{comb}=#sqrt{n#sigma_{ITS}^{2}+n#sigma_{TPC}^{2}}");
+
+    fTrackCutQA[i]->Add(fNSigComITSTPC[i]);
 
     TString NSigComTPCTOFName = Form("NSigComTPCTOF_%s", sName[i].Data());
     fNSigComTPCTOF[i] = new TH2F(NSigComTPCTOFName.Data(),
@@ -424,6 +484,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
       fNSigCom(0) {
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;
+    fpDist[i] = nullptr;
     fpTPCDist[i] = nullptr;
     fetaDist[i] = nullptr;
     fphiDist[i] = nullptr;
@@ -436,13 +497,18 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
     fDCAzProp[i] = nullptr;
     fTPCCrossedRows[i] = nullptr;
     fTPCRatio[i] = nullptr;
+    fITSdedx[i] = nullptr;
     fTPCdedx[i] = nullptr;
     fTOFbeta[i] = nullptr;
+    fNSigITS[i] = nullptr;
+    fNSigITSMod[i] = nullptr;
     fNSigTPC[i] = nullptr;
     fNSigTPCMod[i] = nullptr;
     fNSigTOF[i] = nullptr;
+    fITSStatus[i] = nullptr;
     fTPCStatus[i] = nullptr;
     fTOFStatus[i] = nullptr;
+    fNSigComITSTPC[i] = nullptr;
     fNSigComTPCTOF[i] = nullptr;
     fTPCClsCPiluUp[i] = nullptr;
     fITShrdClsPileUp[i] = nullptr;

@@ -59,7 +59,7 @@ ClassImp(AliAnalysisTaskNewJetSubstructure)
       fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
       fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
       fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-      fStoreDetLevelJets(0), fTreeSubstructure(0)
+  fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0)
 
 {
   for (Int_t i = 0; i < 10; i++) {
@@ -84,7 +84,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
       fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
       fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
       fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-      fStoreDetLevelJets(0), fTreeSubstructure(0)
+      fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0)
 
 {
   // Standard constructor.
@@ -170,7 +170,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   }
 
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 18;
+  const Int_t nVar = 20;
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeSubstructure = new TTree(nameoutput, nameoutput);
   TString *fShapesVarNames = new TString[nVar];
@@ -187,6 +187,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   fShapesVarNames[9] = "rgMatch";
   fShapesVarNames[10] = "LeadingTrackPt";
   fShapesVarNames[11] = "LeadingTrackPtMatch";
+  if (fDoSubJet) fStoreDetLevelJets = true;
   if (fStoreDetLevelJets) {
     fShapesVarNames[12] = "ptJetDet";
     fShapesVarNames[13] = "ktgDet";
@@ -195,9 +196,12 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
     fShapesVarNames[16] = "rgDet";
     fShapesVarNames[17] = "LeadingTrackPtDet";
   }
+  if (fDoSubJet){
+    fShapesVarNames[18] = "subjet1";
+    fShapesVarNames[19] = "subjet2";
+  }
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
-    cout << "looping over variables" << endl;
     fTreeSubstructure->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar],
                               Form("%s/F", fShapesVarNames[ivar].Data()));
   }
@@ -236,7 +240,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
     if ((fJetShapeSub == kConstSub) || (fJetShapeSub == kDerivSub)) {
       // rho
       AliRhoParameter *rhoParam = dynamic_cast<AliRhoParameter *>(
-          InputEvent()->FindListObject("RhoSparseR020"));
+								  InputEvent()->FindListObject("RhoSparseR020"));
       if (!rhoParam) {
         Printf("%s: Could not retrieve rho %s (some histograms will be filled "
                "with zero)!",
@@ -245,7 +249,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         rhoVal = rhoParam->GetVal();
       // rhom
       AliRhoParameter *rhomParam = dynamic_cast<AliRhoParameter *>(
-          InputEvent()->FindListObject("RhoMassSparseR020"));
+								   InputEvent()->FindListObject("RhoMassSparseR020"));
       if (!rhomParam) {
         Printf("%s: Could not retrieve rho_m %s (some histograms will be "
                "filled with zero)!",
@@ -298,17 +302,17 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         }
 
 	if(fJetShapeSub==kEventSub){
-	
+	  
 	  jetUS = jet1->ClosestJet();
 	  if (!jetUS) continue;
 	  jet2 = jetUS->ClosestJet();
 	}
-	  
+	
         if (!(fJetShapeSub == kConstSub) && !(fJetShapeSub == kEventSub)) jet2 = jet1->ClosestJet();
         
 	
         if (!jet2) {
-          Printf("jet2 does not exist, returning");
+	  Printf("jet2 does not exist, returning");
           continue;
         }
 
@@ -316,10 +320,9 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         jet3 = jet2->ClosestJet();
 
         if (!jet3) {
-          Printf("jet3 does not exist, returning");
+	  Printf("jet3 does not exist, returning");
           continue;
         }
-        cout << "jet 3 exists" << jet3->Pt() << endl;
 
 	AliJetContainer *jetContTrue = GetJetContainer(1);
 	AliJetContainer *jetContPart = GetJetContainer(3);
@@ -345,9 +348,9 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         AliJetContainer *jetContTrue = GetJetContainer(1);
         AliJetContainer *jetContUS = GetJetContainer(2);
         AliJetContainer *jetContPart = GetJetContainer(3);
-
+	
         if (fJetShapeSub == kConstSub) {
-
+	  
           for (Int_t i = 0; i < jetContUS->GetNJets(); i++) {
             jetUS = jetContUS->GetJet(i);
             if (jetUS->GetLabel() == jet1->GetLabel()) {
@@ -367,7 +370,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
           }
 
           for (Int_t j = 0; j < jetContPart->GetNJets(); j++) {
-
+	    
             jet3 = jetContPart->GetJet(j);
             if (!jet3)
               continue;
@@ -422,9 +425,12 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       fShapesVar[10] = jet1->MaxTrackPt();
       
       if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet3->MaxTrackPt()) continue;
-      
-      IterativeParents(jet1, jetCont);
-
+      fastjet::PseudoJet *sub1Hyb=new fastjet::PseudoJet();
+      fastjet::PseudoJet *sub2Hyb=new fastjet::PseudoJet();
+      std::vector<fastjet::PseudoJet>* const1Hyb = new std::vector<fastjet::PseudoJet>();
+      std::vector<fastjet::PseudoJet>* const2Hyb = new std::vector<fastjet::PseudoJet>();
+      IterativeParents(jet1, jetCont, sub1Hyb, sub2Hyb, const1Hyb, const2Hyb);
+    
       Float_t ptMatch = 0.;
       Float_t leadTrackMatch = 0.;
       Double_t ktgMatch = 0;
@@ -444,6 +450,15 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       Double_t aver3 = 0;
       Double_t aver4 = 0;
       Int_t kMatched = 0;
+      fastjet::PseudoJet *sub1Part = new fastjet::PseudoJet();
+      fastjet::PseudoJet *sub2Part =new fastjet::PseudoJet();
+      std::vector<fastjet::PseudoJet>* const1Part = new std::vector<fastjet::PseudoJet>();
+      std::vector<fastjet::PseudoJet>* const2Part = new std::vector<fastjet::PseudoJet>();
+      fastjet::PseudoJet *sub1Det = new fastjet::PseudoJet();
+      fastjet::PseudoJet *sub2Det = new fastjet::PseudoJet();
+      std::vector<fastjet::PseudoJet>* const1Det = new std::vector<fastjet::PseudoJet>();
+      std::vector<fastjet::PseudoJet>* const2Det = new std::vector<fastjet::PseudoJet>();
+
       if (fJetShapeType == kPythiaDef) {
         kMatched = 1;
         if (fJetShapeSub == kConstSub)
@@ -451,7 +466,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
         ptMatch = jet3->Pt();
         leadTrackMatch = jet3->MaxTrackPt();
-        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4);
+        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, sub1Det, sub2Det, const1Hyb, const2Hyb);
         ktgMatch = aver1;
         nsdMatch = aver2;
         zgMatch = aver3;
@@ -465,7 +480,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
           kMatched = 2;
         ptMatch = jet3->Pt();
         leadTrackMatch = jet3->MaxTrackPt();
-        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4);
+        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, sub1Part, sub2Part, const1Part, const2Part);
         ktgMatch = aver1;
         nsdMatch = aver2;
         zgMatch = aver3;
@@ -473,8 +488,8 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         if (fStoreDetLevelJets) {
           ptDet = jet2->Pt();
           leadTrackDet = jet2->MaxTrackPt();
-          IterativeParentsMCAverage(jet2, 1, ktgDet, nsdDet, zgDet, rgDet);
-        }
+          IterativeParentsMCAverage(jet2, 1, ktgDet, nsdDet, zgDet, rgDet, sub1Det, sub2Det, const1Det, const2Det);
+	}
       }
 
       if (fJetShapeType == kMCTrue || fJetShapeType == kData ||
@@ -502,8 +517,34 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         fShapesVar[16] = rgDet;
         fShapesVar[17] = leadTrackDet;
       }
+      if (fDoSubJet)
+	{
+	  int sub1 = -1;
+	  int sub2 = -1;
+	  if ((nsdDet != 0) && (fShapesVar[2] != 0))
+	    {
+	      if (CompareSubjets(sub1Det, sub1Hyb, const1Det, const1Hyb)) sub1 = 1;
+	      else if (CompareSubjets(sub1Det, sub2Hyb, const1Det, const2Hyb)) sub1 = 2;
+	      else sub1 = 3;
+	      if (CompareSubjets(sub2Det, sub1Hyb, const2Det, const1Hyb)) sub2 = 1;
+	      else if (CompareSubjets(sub2Det, sub2Hyb, const2Det, const2Hyb)) sub2 = 2;
+	      else sub2 = 3;
+	    }
+	  else if (nsdDet  != 0) {sub1 = 0; sub2 = 0;}	      
+	  fShapesVar[18] = sub1;
+	  fShapesVar[19] = sub2;
+	}
+	  
 
       fTreeSubstructure->Fill();
+      delete sub1Det;
+      delete sub2Det;
+      delete sub1Hyb;
+      delete sub2Hyb;
+      delete const1Det;
+      delete const2Det;
+      delete const1Hyb;
+      delete const2Hyb;
     }
   }
 
@@ -584,6 +625,35 @@ Double_t AliAnalysisTaskNewJetSubstructure::RelativePhi(Double_t mphi,
   else if (dphi > TMath::Pi())
     dphi -= (2 * TMath::Pi());
   return dphi; // dphi in [-Pi, Pi]
+}
+
+//_________________________________________________________________________                                                                               
+Bool_t AliAnalysisTaskNewJetSubstructure::CompareSubjets(fastjet::PseudoJet *subDet,  fastjet::PseudoJet *subHyb, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb)
+{
+  float pT_det = subDet->pt();
+  float sumpT = 0;
+  float delta =  0.001;
+
+  for (int i = 0; i < constDet->size(); i++)
+      {
+	float eta_det = constDet->at(i).eta();
+	float phi_det = constDet->at(i).phi();
+	for (int j  = 0; j < constHyb->size(); j++)
+	  {
+	    float eta_hyb = constHyb->at(j).eta();
+	    float phi_hyb = constHyb->at(j).phi();
+	    float deta = eta_hyb - eta_det;
+	    deta = std::sqrt(deta*deta);
+	    if (deta > delta) continue;
+	    float dphi = phi_hyb - phi_det;
+	    dphi = std::sqrt(dphi*dphi);
+	    if (dphi > delta) continue;
+	    sumpT+=constDet->at(i).pt();
+	  }
+      }
+
+  if (sumpT/pT_det > 0.5) return true;
+  else return false;
 }
 
 //_________________________________________________________________________
@@ -699,14 +769,13 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(
 }
 //_________________________________________________________________________
 void AliAnalysisTaskNewJetSubstructure::IterativeParents(
-    AliEmcalJet *fJet, AliJetContainer *fJetCont) {
+							 AliEmcalJet *fJet, AliJetContainer *fJetCont,fastjet::PseudoJet *sub1,  fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
 
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet PseudoTracks;
 
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
-  cout<<"is it really here?"<<endl;
   if (fTrackCont)
     for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
@@ -739,6 +808,8 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
     fastjet::PseudoJet jj;
     fastjet::PseudoJet j1;
     fastjet::PseudoJet j2;
+    fastjet::PseudoJet j1first;
+    fastjet::PseudoJet j2first;
     jj = fOutputJets[0];
 
     double nall = 0;
@@ -773,6 +844,10 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
         zg = z;
         xktg = xkt;
         Rg = delta_R;
+	j1first =j1;
+	*sub1 = j1first;
+	j2first =j2;
+	*sub2 = j2first;
         flagSubjet = 1;
       }
       if (lnpt_rel > 0) {
@@ -789,6 +864,8 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
 
       jj = j1;
     }
+    if (sub1->has_constituents()) *const1 = sub1->constituents();
+    if (sub2->has_constituents()) *const2 = sub2->constituents();
 
     fShapesVar[1] = xktg;
     fShapesVar[2] = nsd;
@@ -805,14 +882,14 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
 //_________________________________________________________________________
 void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
     AliEmcalJet *fJet, Int_t km, Double_t &average1, Double_t &average2,
-    Double_t &average3, Double_t &average4) {
+    Double_t &average3, Double_t &average4, fastjet::PseudoJet *sub1,  fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
   AliJetContainer *jetCont = GetJetContainer(km);
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet PseudoTracks;
 
   AliParticleContainer *fTrackCont = jetCont->GetParticleContainer();
-
+  
   if (fTrackCont)
     for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
@@ -829,15 +906,19 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
                                  static_cast<fastjet::RecombinationScheme>(0),
                                  fastjet::BestFJ30);
 
+
   try {
     fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
     std::vector<fastjet::PseudoJet> fOutputJets;
     fOutputJets.clear();
     fOutputJets = fClustSeqSA.inclusive_jets(0);
 
+
     fastjet::PseudoJet jj;
     fastjet::PseudoJet j1;
     fastjet::PseudoJet j2;
+    fastjet::PseudoJet j1first;
+    fastjet::PseudoJet j2first;
     jj = fOutputJets[0];
     int flagSubjet = 0;
     int flagSubjetkT = 0;
@@ -851,9 +932,9 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
     double cumtf = 0;
     while (jj.has_parents(j1, j2)) {
       nall = nall + 1;
-
       if (j1.perp() < j2.perp())
         swap(j1, j2);
+      std::vector<fastjet::PseudoJet> v1 = j1.constituents();
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
       double lnpt_rel = log(xkt);
@@ -864,9 +945,13 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
       if (z > fHardCutoff)
         nsd = nsd + 1;
       if (z > fHardCutoff && flagSubjet == 0) {
-        zg = z;
+	zg = z;
         xktg = xkt;
         Rg = delta_R;
+	j1first = j1;
+	*sub1 = j1first;
+	j2first = j2;
+	*sub2 = j2first;
         flagSubjet = 1;
       }
       if (lnpt_rel > 0) {
@@ -892,6 +977,8 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
     average2 = nsd;
     average3 = zg;
     average4 = Rg;
+    if (sub1->has_constituents()) *const1 = sub1->constituents();
+    if (sub2->has_constituents()) *const2 = sub2->constituents();
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");

@@ -50,6 +50,9 @@ public:
     kCascades,
     kTOF,
     kKinematics,
+    kMCvtx,
+    kRange,
+    kLabels,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -195,21 +198,32 @@ private:
     Float_t fLength = -999.f;    /// Int.Lenght @ TOF
   } tracks;                      //! structure to keep track information
 
-#ifdef USE_MC
   struct {
-    Int_t     fRunNumber;       /// Run Number (added in case of multirun skimming)
     // MC information on the event
     Short_t fGeneratorsID = 0u; /// Generator ID used for the MC
     Float_t fX = -999.f;  /// Primary vertex x coordinate from MC
     Float_t fY = -999.f;  /// Primary vertex y coordinate from MC
     Float_t fZ = -999.f;  /// Primary vertex z coordinate from MC
     Float_t fT = -999.f;  /// Time of the collision from MC
+    Float_t fWeight = -999.f;  /// Weight from MC
+    Int_t fNProduced = 0;  /// Number of stable or undecayed particles from MC
   } mcvtx;  //! MC vertices
 
-  // Track labels
   struct {
-    // Int_t fLabel = -1;           /// Track label
+    // Range of labels:
+    // for track i the labels are located between fRange[i] and fRange[i+1]
+    // so we have Ntracks+1 entries in the table (tree) and fRange[0]=0
+    UInt_t fRange = 0; // Current upper limit of the range
+  } range; //! Range of labels for each track
+
+  struct {
+    // Track labels
+    Int_t fLabel = -1;           /// Track label
     // Int_t fTOFLabel[3] = { -1 }; /// Label of the track matched to TOF
+  } labels; //! Track labels
+  
+  struct {
+    // MC particle
 
     Int_t   fCollisionsID;    /// The index of the MC collision vertex
 
@@ -231,7 +245,6 @@ private:
     Float_t fVt = -999.f; /// t of production vertex
     // We do not use the polarisation so far
   } mcparticle;  //! MC particles from the kinematics tree
-#endif
 
   // To test the compilation uncoment the line below
   // #define USE_TOF_CLUST 1
@@ -367,8 +380,9 @@ private:
   Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track IDs (used in the clusters)
   Int_t fOffsetTrackID = 0;   ///! Offset of track IDs (used in V0s)
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
+  Int_t fOffsetLabel = 0;      ///! Offset of track IDs (used in cascades)
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 4);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 5);
 };
 
 #endif

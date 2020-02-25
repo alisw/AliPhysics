@@ -1,11 +1,11 @@
 #ifndef ALIANALYSISPIDCascade__H
 #define ALIANALYSISPIDCascade__H
 #include "TObject.h"
-#include "AliAnalysisPIDTrack.h"
-#include "AliAnalysisPIDV0.h"
+#include "AliAnalysisPIDCascadeTrack.h"
+#include "AliAnalysisPIDCascadeV0.h"
 
-class AliAnalysisPIDTrack;
-class AliAnalysisPIDV0;
+class AliAnalysisPIDCascadeTrack;
+class AliAnalysisPIDCascadeV0;
 class AliAnalysisPIDCascade:
 public TObject
 {
@@ -14,10 +14,10 @@ public TObject
   AliAnalysisPIDCascade(const AliAnalysisPIDCascade &source); //copy const
   AliAnalysisPIDCascade &operator=(const AliAnalysisPIDCascade &source); // operator =
   virtual ~AliAnalysisPIDCascade();
-  void Update(AliAnalysisPIDV0* V0, AliAnalysisPIDTrack* BachTrack, Double_t *InvMasses, Double_t CascRadius, Double_t CascDCA,  Double_t CascCosinePA, Double_t PtCasc, Double_t EtaCasc, Double_t CascDCAPV, Int_t Charge, Double_t V0DCA, Int_t CascPdg, Bool_t CascPrimary);
+  void Update(AliAnalysisPIDCascadeV0* V0, AliAnalysisPIDCascadeTrack* BachTrack, Double_t *InvMasses, Double_t CascRadius, Double_t CascDCA,  Double_t CascCosinePA, Double_t PtCasc, Double_t EtaCasc, Double_t CascDCAPV, Int_t Charge, Double_t V0DCA, Int_t CascPdg, Bool_t CascPrimary);
 
-  AliAnalysisPIDV0    *GetV0()  { return fV0AnalysisPIDV0;};
-  AliAnalysisPIDTrack *GetBachAnalysisTrack() { return fBachAnalysisPIDTrack; };
+  AliAnalysisPIDCascadeV0    *GetV0()  { return fV0AnalysisPIDCascadeV0;};
+  AliAnalysisPIDCascadeTrack *GetBachAnalysisTrack() { return fBachAnalysisPIDCascadeTrack; };
   Double_t GetIMXi()         { return fInvMXi; }; //M Xi
   Double_t GetIMO()          { return fInvMO; }; //M Omega
   Double_t GetCascRadius()   { return fCascRadius; };
@@ -33,8 +33,8 @@ public TObject
   Bool_t GetCascPrimary() {return fCascPrimary;};
 
  protected:  
-  AliAnalysisPIDV0 * fV0AnalysisPIDV0;
-  AliAnalysisPIDTrack *fBachAnalysisPIDTrack;
+  AliAnalysisPIDCascadeV0 * fV0AnalysisPIDCascadeV0;
+  AliAnalysisPIDCascadeTrack *fBachAnalysisPIDCascadeTrack;
   Double_t fInvMXi,fInvMO;
   Double_t fCascRadius;
   Double_t fCascDCA, fCascCosinePA;

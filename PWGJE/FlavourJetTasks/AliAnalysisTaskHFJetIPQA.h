@@ -365,7 +365,7 @@ public:
     void setGlobalVertex(Bool_t value){fGlobalVertex = value;}
     void setDoNotCheckIsPhysicalPrimary(Bool_t value){fDoNotCheckIsPhysicalPrimary = value;}
     void setDoJetProb(Bool_t value){fDoJetProb = value;}
-    void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
+    void setDoTCTagging(Int_t value) {fDoTCTagging=value;}
     void setDoProbTagging(Int_t value) {fDoProbTagging=value;}
     void setDoMCEffs(Bool_t value){fDoMCEffs=value;}
 
@@ -404,6 +404,7 @@ public:
     //Probability Tagging
     double GetTrackProbability(double jetpt, bool* hasIPs, double* ipval);
     void FillProbabilityHists(double jetpt,double probval,int jetflavour,bool **kTagDec);
+    void FillProbThreshHists(double proval, double* ipval, double jetpt, int jetflavour,bool* hasIPs, bool** kTagDec);
     void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
     double IntegrateIP(int iJetPtBin, int iIPBin, int iN);
 
@@ -483,11 +484,11 @@ private:
     Double_t fParam_Smear_Mean;//
     Bool_t   fGlobalVertex;//
     Bool_t fDoNotCheckIsPhysicalPrimary;//
-    Bool_t fDoJetProb;
+    Bool_t fDoJetProb;//
     Bool_t   fFillCorrelations;//
     Bool_t fDoLundPlane;//
-    Int_t fDoTCTagging;//  //0: no TC tagging, 1: IP Significance tagging, 2: IP tagging, fixed threshold
-    Int_t fDoProbTagging;//  //0: no probability tagging, 1: use JP for tagging, 2: use lnJP for tagging
+    Int_t fDoTCTagging;//
+    Int_t fDoProbTagging;//  //0: no probability tagging, 1: use JP for tagging, 2: use lnJP for tagging  //0: no TC tagging, 1: IP Significance tagging, 2: IP tagging, fixed threshold
     Bool_t fDoMCEffs;
     Bool_t fUseSignificance;//
 
@@ -505,7 +506,7 @@ private:
     Double_t fJetRadius;//
     Double_t fDaughtersRadius;//
     Int_t fNoJetConstituents;//
-    Double_t fTCThresholdPtFixed;
+    Double_t fTCThresholdPtFixed; //
     //_____________________
     //TGraphs
     TGraph * fGraphMean;//!
@@ -674,7 +675,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 50)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 52)
 };
 
 #endif

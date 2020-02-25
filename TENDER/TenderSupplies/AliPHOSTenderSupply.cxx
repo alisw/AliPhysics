@@ -505,11 +505,10 @@ void AliPHOSTenderSupply::ProcessEvent()
             clu->AddTracksMatched(arrayTrackMatched);
 	}
       }  
-      
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data      
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -648,11 +647,10 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
         }
       }  
 
-
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;

@@ -161,8 +161,8 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
     fDetLevelPtBinning = GetDefaultDetLevelPtBinning();
   std::unique_ptr<TBinning> zgbinning(GetZgBinning()),
                             rgbinning(GetRgBinning(R)),
-                            nsdbinning(new TLinearBinning(21, -0.5, 20.5)),
-                            thetagbinning(new TLinearBinning(10, 0., 1.)),
+                            nsdbinning(new TLinearBinning(22, -1.5, 20.5)),       // Negative bins are for untagged jets
+                            thetagbinning(new TLinearBinning(11, -0.1, 1.)),
                             ptbinningFine(new TLinearBinning(500, 0., 500.));
   TArrayD binEdgesZg, binEdgesRg, binEdgesNsd, binEdgesThetag, binEdgesPtPart, binEdgesPtDet, binEdgesPtFine;
   zgbinning->CreateBinEdges(binEdgesZg);
@@ -399,6 +399,12 @@ Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers()
 
 bool AliAnalysisTaskEmcalSoftDropResponse::Run()
 {
+  enum EPointSD_t {
+    kIndSDDet = 0,
+    kIndPtDet = 1,
+    kIndSDPart = 2,
+    kIndPtPart = 3
+  };
   AliJetContainer *partLevelJets = this->GetJetContainer(fNamePartLevelJetContainer),
                   *detLevelJets = GetJetContainer(fNameDetLevelJetContainer);
   AliClusterContainer *clusters = GetClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
@@ -491,26 +497,28 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     {
       softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(), tracks, clusters);
       softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), particles, nullptr);
+      bool untaggedDet = softdropDet[0] < fZcut,
+           untaggedPart = softdropPart[0] < fZcut;
       Double_t pointZg[4] = {softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt()},
-               pointRg[4] = {softdropDet[2], detjet->Pt(), softdropPart[2], partjet->Pt()},
-               pointNsd[4] = {softdropDet[5], detjet->Pt(), softdropPart[5], partjet->Pt()},
-               pointThetag[4] = {softdropDet[2]/Rjet, detjet->Pt(), softdropPart[2]/Rjet, partjet->Pt()};
+               pointRg[4] = {untaggedDet ? -0.01 : softdropDet[2], detjet->Pt(), untaggedPart ? -0.01 : softdropPart[2], partjet->Pt()},
+               pointNsd[4] = {untaggedDet ? -1. : softdropDet[5], detjet->Pt(), untaggedPart ? -1. : softdropPart[5], partjet->Pt()},
+               pointThetag[4] = {untaggedDet ? -0.05 : softdropDet[2]/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart[2]/Rjet, partjet->Pt()};
       if (fForceBeamType != kpp)
       {
         if(fHasResponseMatrixRooUnfold){
-          fHistManager.FillTH1(Form("hZgPartLevel_%d", fCentBin), softdropPart[0], partjet->Pt());
-          fHistManager.FillTH1(Form("hRgPartLevel_%d", fCentBin), softdropPart[2], partjet->Pt());
-          fHistManager.FillTH1(Form("hNsdPartLevel_%d", fCentBin), softdropPart[5], partjet->Pt());
-          fHistManager.FillTH1(Form("hThetagPartLevel_%d", fCentBin), softdropPart[2]/Rjet, partjet->Pt());
+          fHistManager.FillTH1(Form("hZgPartLevel_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+          fHistManager.FillTH1(Form("hRgPartLevel_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+          fHistManager.FillTH1(Form("hNsdPartLevel_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+          fHistManager.FillTH1(Form("hThetagPartLevel_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
         }
       }
       else
       {
         if(fHasResponseMatrixRooUnfold){
-          fHistManager.FillTH1("hZgPartLevel", softdropPart[0], partjet->Pt());
-          fHistManager.FillTH1("hRgPartLevel", softdropPart[2], partjet->Pt());
-          fHistManager.FillTH1("hNsdPartLevel", softdropPart[5], partjet->Pt());
-          fHistManager.FillTH1("hThetagPartLevel", softdropPart[2]/Rjet, partjet->Pt());
+          fHistManager.FillTH1("hZgPartLevel", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+          fHistManager.FillTH1("hRgPartLevel", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+          fHistManager.FillTH1("hNsdPartLevel", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+          fHistManager.FillTH1("hThetagPartLevel", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
         }
       }
       if (detjet->Pt() >= ptmindet && detjet->Pt() <= ptmaxdet)
@@ -518,18 +526,18 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         if (fForceBeamType != kpp)
         {
           if(fHasResponseMatrixRooUnfold){
-            fHistManager.FillTH2(Form("hZgPartLevelTruncated_%d", fCentBin), softdropPart[0], partjet->Pt());
-            fHistManager.FillTH2(Form("hZgDetLevel_%d", fCentBin), softdropDet[0], detjet->Pt());
-            fHistManager.FillTH2(Form("hRgPartLevelTruncated_%d", fCentBin), softdropPart[2], partjet->Pt());
-            fHistManager.FillTH2(Form("hRgDetLevel_%d", fCentBin), softdropDet[2], detjet->Pt());
-            fHistManager.FillTH2(Form("hNsdPartLevelTruncated_%d", fCentBin), softdropPart[5], partjet->Pt());
-            fHistManager.FillTH2(Form("hNsdDetLevel_%d", fCentBin), softdropDet[5], detjet->Pt());
-            fHistManager.FillTH2(Form("hThetagPartLevelTruncated_%d", fCentBin), softdropPart[2]/Rjet, partjet->Pt());
-            fHistManager.FillTH2(Form("hThetagDetLevel_%d", fCentBin), softdropDet[2]/Rjet, detjet->Pt());
-            fZgResponse[fCentBin]->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
-            fRgResponse[fCentBin]->Fill(softdropDet[2], detjet->Pt(), softdropPart[2], partjet->Pt());
-            fNsdResponse[fCentBin]->Fill(softdropDet[5], detjet->Pt(), softdropPart[5], partjet->Pt());
-            fThetagResponse[fCentBin]->Fill(softdropDet[2]/Rjet, detjet->Pt(), softdropPart[2]/Rjet, partjet->Pt());
+            fHistManager.FillTH2(Form("hZgPartLevelTruncated_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fHistManager.FillTH2(Form("hZgDetLevel_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
+            fHistManager.FillTH2(Form("hRgPartLevelTruncated_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fHistManager.FillTH2(Form("hRgDetLevel_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
+            fHistManager.FillTH2(Form("hNsdPartLevelTruncated_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fHistManager.FillTH2(Form("hNsdDetLevel_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+            fHistManager.FillTH2(Form("hThetagPartLevelTruncated_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+            fHistManager.FillTH2(Form("hThetagDetLevel_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+            fZgResponse[fCentBin]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fRgResponse[fCentBin]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fNsdResponse[fCentBin]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fThetagResponse[fCentBin]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
           }
           if(fHasResponseMatrixSparse){
             fHistManager.FillTHnSparse(Form("hZgResponseSparse_%d", fCentBin), pointZg);
@@ -541,18 +549,18 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         else
         {
           if(fHasResponseMatrixRooUnfold){
-            fHistManager.FillTH2("hZgPartLevelTruncated", softdropPart[0], partjet->Pt());
-            fHistManager.FillTH2("hZgDetLevel", softdropDet[0], detjet->Pt());
-            fHistManager.FillTH2("hRgPartLevelTruncated", softdropPart[2], partjet->Pt());
-            fHistManager.FillTH2("hRgDetLevel", softdropDet[2], detjet->Pt());
-            fHistManager.FillTH2("hNsdPartLevelTruncated", softdropPart[5], partjet->Pt());
-            fHistManager.FillTH2("hNsdDetLevel", softdropDet[5], detjet->Pt());
-            fHistManager.FillTH2("hThetagPartLevelTruncated", softdropPart[2]/Rjet, partjet->Pt());
-            fHistManager.FillTH2("hThetagDetLevel", softdropDet[2]/Rjet, detjet->Pt());
-            fZgResponse[0]->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
-            fRgResponse[0]->Fill(softdropDet[2], detjet->Pt(), softdropPart[2], partjet->Pt());
-            fNsdResponse[0]->Fill(softdropDet[5], detjet->Pt(), softdropPart[5], partjet->Pt());
-            fThetagResponse[0]->Fill(softdropDet[2]/Rjet, detjet->Pt(), softdropPart[2]/Rjet, partjet->Pt());
+            fHistManager.FillTH2("hZgPartLevelTruncated", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fHistManager.FillTH2("hZgDetLevel", pointZg[kIndSDDet], pointZg[kIndPtDet]);
+            fHistManager.FillTH2("hRgPartLevelTruncated", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fHistManager.FillTH2("hRgDetLevel", pointRg[kIndSDDet], pointRg[kIndPtDet]);
+            fHistManager.FillTH2("hNsdPartLevelTruncated", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fHistManager.FillTH2("hNsdDetLevel", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+            fHistManager.FillTH2("hThetagPartLevelTruncated", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+            fHistManager.FillTH2("hThetagDetLevel", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+            fZgResponse[0]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fRgResponse[0]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fNsdResponse[0]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fThetagResponse[0]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
           }
           if(fHasResponseMatrixSparse){
             fHistManager.FillTHnSparse("hZgResponseSparse", pointZg);
@@ -566,18 +574,18 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           if (fForceBeamType != kpp)
           {
             if(fHasResponseMatrixRooUnfold){
-              fZgResponseClosure[fCentBin]->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
-              fRgResponseClosure[fCentBin]->Fill(softdropDet[2], detjet->Pt(), softdropPart[2], partjet->Pt());
-              fNsdResponseClosure[fCentBin]->Fill(softdropDet[5], detjet->Pt(), softdropPart[5], partjet->Pt());
-              fThetagResponseClosure[fCentBin]->Fill(softdropDet[2]/Rjet, detjet->Pt(), softdropPart[2]/Rjet, partjet->Pt());
-              fHistManager.FillTH2(Form("hZgDetLevelClosureResp_%d", fCentBin), softdropDet[0], detjet->Pt());
-              fHistManager.FillTH2(Form("hZgPartLevelClosureResp_%d", fCentBin), softdropPart[0], partjet->Pt());
-              fHistManager.FillTH2(Form("hRgDetLevelClosureResp_%d", fCentBin), softdropDet[2], detjet->Pt());
-              fHistManager.FillTH2(Form("hRgPartLevelClosureResp_%d", fCentBin), softdropPart[2], partjet->Pt());
-              fHistManager.FillTH2(Form("hNsdDetLevelClosureResp_%d", fCentBin), softdropDet[5], detjet->Pt());
-              fHistManager.FillTH2(Form("hNsdPartLevelClosureResp_%d", fCentBin), softdropPart[5], partjet->Pt());
-              fHistManager.FillTH2(Form("hThetagDetLevelClosureResp_%d", fCentBin), softdropDet[2]/Rjet, detjet->Pt());
-              fHistManager.FillTH2(Form("hThetagPartLevelClosureResp_%d", fCentBin), softdropPart[2]/Rjet, partjet->Pt());
+              fZgResponseClosure[fCentBin]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
+              fRgResponseClosure[fCentBin]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
+              fNsdResponseClosure[fCentBin]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+              fThetagResponseClosure[fCentBin]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+              fHistManager.FillTH2(Form("hZgDetLevelClosureResp_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
+              fHistManager.FillTH2(Form("hZgPartLevelClosureResp_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+              fHistManager.FillTH2(Form("hRgDetLevelClosureResp_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
+              fHistManager.FillTH2(Form("hRgPartLevelClosureResp_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+              fHistManager.FillTH2(Form("hNsdDetLevelClosureResp_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+              fHistManager.FillTH2(Form("hNsdPartLevelClosureResp_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+              fHistManager.FillTH2(Form("hThetagDetLevelClosureResp_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+              fHistManager.FillTH2(Form("hThetagPartLevelClosureResp_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
             }
             if(fHasResponseMatrixSparse){
               fHistManager.FillTHnSparse(Form("hZgResponseClosureSparse_%d", fCentBin), pointZg);
@@ -589,18 +597,18 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           else
           {
             if(fHasResponseMatrixRooUnfold){
-              fZgResponseClosure[0]->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
-              fRgResponseClosure[0]->Fill(softdropDet[2], detjet->Pt(), softdropPart[2], partjet->Pt());
-              fNsdResponseClosure[0]->Fill(softdropDet[5], detjet->Pt(), softdropPart[5], partjet->Pt());
-              fThetagResponseClosure[0]->Fill(softdropDet[2]/Rjet, detjet->Pt(), softdropPart[2]/Rjet, partjet->Pt());
-              fHistManager.FillTH2("hZgDetLevelClosureResp", softdropDet[0], detjet->Pt());
-              fHistManager.FillTH2("hZgPartLevelClosureResp", softdropPart[0], partjet->Pt());
-              fHistManager.FillTH2("hRgDetLevelClosureResp", softdropDet[2], detjet->Pt());
-              fHistManager.FillTH2("hRgPartLevelClosureResp", softdropPart[2], partjet->Pt());
-              fHistManager.FillTH2("hNsdDetLevelClosureResp", softdropDet[5], detjet->Pt());
-              fHistManager.FillTH2("hNsdPartLevelClosureResp", softdropPart[5], partjet->Pt());
-              fHistManager.FillTH2("hThetagDetLevelClosureResp", softdropDet[2]/Rjet, detjet->Pt());
-              fHistManager.FillTH2("hThetagPartLevelClosureResp", softdropPart[2]/Rjet, partjet->Pt());
+              fZgResponseClosure[0]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
+              fRgResponseClosure[0]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
+              fNsdResponseClosure[0]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+              fThetagResponseClosure[0]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+              fHistManager.FillTH2("hZgDetLevelClosureResp", pointZg[kIndSDDet], pointZg[kIndPtDet]);
+              fHistManager.FillTH2("hZgPartLevelClosureResp", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+              fHistManager.FillTH2("hRgDetLevelClosureResp", pointRg[kIndSDDet], pointRg[kIndPtDet]);
+              fHistManager.FillTH2("hRgPartLevelClosureResp", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+              fHistManager.FillTH2("hNsdDetLevelClosureResp", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+              fHistManager.FillTH2("hNsdPartLevelClosureResp", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+              fHistManager.FillTH2("hThetagDetLevelClosureResp", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+              fHistManager.FillTH2("hThetagPartLevelClosureResp", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
             }
           if(fHasResponseMatrixSparse){
             fHistManager.FillTHnSparse("hZgResponseClosureSparse", pointZg);
@@ -615,47 +623,47 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           if (fForceBeamType != kpp)
           {
             if(fHasResponseMatrixSparse){
-              fHistManager.FillTH2(Form("hZgPartLevelClosureNoResp_%d", fCentBin), softdropPart[0], partjet->Pt());
-              fHistManager.FillTH2(Form("hZgDetLevelClosureNoResp_%d", fCentBin), softdropDet[0], detjet->Pt());
-              fHistManager.FillTH2(Form("hRgPartLevelClosureNoResp_%d", fCentBin), softdropPart[2], partjet->Pt());
-              fHistManager.FillTH2(Form("hRgDetLevelClosureNoResp_%d", fCentBin), softdropDet[2], detjet->Pt());
-              fHistManager.FillTH2(Form("hNsdPartLevelClosureNoResp_%d", fCentBin), softdropPart[5], partjet->Pt());
-              fHistManager.FillTH2(Form("hNsdDetLevelClosureNoResp_%d", fCentBin), softdropDet[5], detjet->Pt());
-              fHistManager.FillTH2(Form("hThetagPartLevelClosureNoResp_%d", fCentBin), softdropPart[2]/Rjet, partjet->Pt());
-              fHistManager.FillTH2(Form("hThetagDetLevelClosureNoResp_%d", fCentBin), softdropDet[2]/Rjet, detjet->Pt());
+              fHistManager.FillTH2(Form("hZgPartLevelClosureNoResp_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+              fHistManager.FillTH2(Form("hZgDetLevelClosureNoResp_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
+              fHistManager.FillTH2(Form("hRgPartLevelClosureNoResp_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+              fHistManager.FillTH2(Form("hRgDetLevelClosureNoResp_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
+              fHistManager.FillTH2(Form("hNsdPartLevelClosureNoResp_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+              fHistManager.FillTH2(Form("hNsdDetLevelClosureNoResp_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+              fHistManager.FillTH2(Form("hThetagPartLevelClosureNoResp_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+              fHistManager.FillTH2(Form("hThetagDetLevelClosureNoResp_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
             }
             if(fHasResponseMatrixSparse){
-              fHistManager.FillTH2(Form("hZgPartLevelClosureNoRespFine_%d", fCentBin), softdropPart[0], partjet->Pt());
-              fHistManager.FillTH2(Form("hZgDetLevelClosureNoRespFine_%d", fCentBin), softdropDet[0], detjet->Pt());
-              fHistManager.FillTH2(Form("hRgPartLevelClosureNoRespFine_%d", fCentBin), softdropPart[2], partjet->Pt());
-              fHistManager.FillTH2(Form("hRgDetLevelClosureNoRespFine_%d", fCentBin), softdropDet[2], detjet->Pt());
-              fHistManager.FillTH2(Form("hNsdPartLevelClosureNoRespFine_%d", fCentBin), softdropPart[5], partjet->Pt());
-              fHistManager.FillTH2(Form("hNsdDetLevelClosureNoRespFine_%d", fCentBin), softdropDet[5], detjet->Pt());
-              fHistManager.FillTH2(Form("hThetagPartLevelClosureNoRespFine_%d", fCentBin), softdropPart[2]/Rjet, partjet->Pt());
-              fHistManager.FillTH2(Form("hThetagDetLevelClosureNoRespFine_%d", fCentBin), softdropDet[2]/Rjet, detjet->Pt());
+              fHistManager.FillTH2(Form("hZgPartLevelClosureNoRespFine_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+              fHistManager.FillTH2(Form("hZgDetLevelClosureNoRespFine_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
+              fHistManager.FillTH2(Form("hRgPartLevelClosureNoRespFine_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+              fHistManager.FillTH2(Form("hRgDetLevelClosureNoRespFine_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
+              fHistManager.FillTH2(Form("hNsdPartLevelClosureNoRespFine_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+              fHistManager.FillTH2(Form("hNsdDetLevelClosureNoRespFine_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+              fHistManager.FillTH2(Form("hThetagPartLevelClosureNoRespFine_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+              fHistManager.FillTH2(Form("hThetagDetLevelClosureNoRespFine_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
             }
           }
           else
           {
             if(fHasResponseMatrixRooUnfold){
-              fHistManager.FillTH2("hZgDetLevelClosureNoResp", softdropDet[0], detjet->Pt());
-              fHistManager.FillTH2("hZgPartLevelClosureNoResp", softdropPart[0], partjet->Pt());
-              fHistManager.FillTH2("hRgDetLevelClosureNoResp", softdropDet[2], detjet->Pt());
-              fHistManager.FillTH2("hRgPartLevelClosureNoResp", softdropPart[2], partjet->Pt());
-              fHistManager.FillTH2("hNsdDetLevelClosureNoResp", softdropDet[5], detjet->Pt());
-              fHistManager.FillTH2("hNsdPartLevelClosureNoResp", softdropPart[5], partjet->Pt());
-              fHistManager.FillTH2("hThetagDetLevelClosureNoResp", softdropDet[2]/Rjet, detjet->Pt());
-              fHistManager.FillTH2("hThetagPartLevelClosureNoResp", softdropPart[2]/Rjet, partjet->Pt());
+              fHistManager.FillTH2("hZgDetLevelClosureNoResp", pointZg[kIndSDDet], pointZg[kIndPtDet]);
+              fHistManager.FillTH2("hZgPartLevelClosureNoResp", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+              fHistManager.FillTH2("hRgDetLevelClosureNoResp", pointRg[kIndSDDet], pointRg[kIndPtDet]);
+              fHistManager.FillTH2("hRgPartLevelClosureNoResp", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+              fHistManager.FillTH2("hNsdDetLevelClosureNoResp", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+              fHistManager.FillTH2("hNsdPartLevelClosureNoResp", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+              fHistManager.FillTH2("hThetagDetLevelClosureNoResp", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+              fHistManager.FillTH2("hThetagPartLevelClosureNoResp", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
             } 
             if(fHasResponseMatrixSparse) {
-              fHistManager.FillTH2("hZgDetLevelClosureNoRespFine", softdropDet[0], detjet->Pt());
-              fHistManager.FillTH2("hZgPartLevelClosureNoRespFine", softdropPart[0], partjet->Pt());
-              fHistManager.FillTH2("hRgDetLevelClosureNoRespFine", softdropDet[2], detjet->Pt());
-              fHistManager.FillTH2("hRgPartLevelClosureNoRespFine", softdropPart[2], partjet->Pt());
-              fHistManager.FillTH2("hNsdDetLevelClosureNoRespFine", softdropDet[5], detjet->Pt());
-              fHistManager.FillTH2("hNsdPartLevelClosureNoRespFine", softdropPart[5], partjet->Pt());
-              fHistManager.FillTH2("hThetagDetLevelClosureNoRespFine", softdropDet[2]/Rjet, detjet->Pt());
-              fHistManager.FillTH2("hThetagPartLevelClosureNoRespFine", softdropPart[2]/Rjet, partjet->Pt());
+              fHistManager.FillTH2("hZgDetLevelClosureNoRespFine", pointZg[kIndSDDet], pointZg[kIndPtDet]);
+              fHistManager.FillTH2("hZgPartLevelClosureNoRespFine", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+              fHistManager.FillTH2("hRgDetLevelClosureNoRespFine", pointRg[kIndSDDet], pointRg[kIndPtDet]);
+              fHistManager.FillTH2("hRgPartLevelClosureNoRespFine", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+              fHistManager.FillTH2("hNsdDetLevelClosureNoRespFine", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+              fHistManager.FillTH2("hNsdPartLevelClosureNoRespFine", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+              fHistManager.FillTH2("hThetagDetLevelClosureNoRespFine", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+              fHistManager.FillTH2("hThetagPartLevelClosureNoRespFine", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
             }
           }
         }
@@ -832,7 +840,7 @@ TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetZgBinning() const
 
 TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetRgBinning(double R) const {
   auto binning = new TCustomBinning;
-  binning->SetMinimum(0.);
+  binning->SetMinimum(-0.05);    // Negative bins are for untagged jets
   binning->AddStep(R, 0.05);
   return binning;
 }

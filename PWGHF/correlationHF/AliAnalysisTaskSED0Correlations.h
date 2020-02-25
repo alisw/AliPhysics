@@ -20,6 +20,7 @@
 #include <TTree.h>
 #include <TH1F.h>
 #include <THnSparse.h>
+#include <TProfile.h>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
@@ -110,13 +111,21 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
   void SetMinDPt(Double_t minDPt) {fMinDPt=minDPt;}
   void SetFillTrees(TreeFill fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
-  void SetCentralityV0(Double_t V0min, Double_t V0max) {fV0CentMin=V0min; fV0CentMax=V0max;}
-  void SetV2inppAnalysis(Bool_t v2anal) {fV2Analysis=v2anal;}
+  void SetCentralityV0(Double_t V0min, Double_t V0max) {fV0CentMin=V0min; fV0CentMax=V0max;}  
+  void SetTrackletRange(Double_t trkmin, Double_t trkmax) {fTrkMultMin=trkmin; fTrkMultMax=trkmax;}
+  void SetAnalysisVsMult(Bool_t v2anal) {fVsMultAnalysis=v2anal;}
  
   void SetUseNtrklWeight(Bool_t flag=kTRUE) {fUseNtrklWeight=flag;}
   void SetHistNtrklWeight(TH1D* h) {
     if(fHistNtrklWeight) delete fHistNtrklWeight;
     fHistNtrklWeight = new TH1D(*h);
+  }
+
+  void SetEqualizeTracklets(Bool_t flag) {fEqualizeTracklets=flag;}  
+  void SetReferenceMultiplicity(Double_t refmult) {fRefMult=refmult;}
+  void SetMultiplVsZProfile(TProfile* hprof, Int_t index){
+    if(fTrackletProfiles[index]) delete fTrackletProfiles[index];
+    fTrackletProfiles[index]=new TProfile(*hprof);
   }
 
  private:
@@ -143,8 +152,9 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t AcceptTrackForMEOffline(Double_t pt);
   void FillPurityPlots(TClonesArray* mcArray, AliReducedParticle* track, Int_t ptbin, Double_t deltaphi);
   Double_t GetNtrklWeight(Int_t ntrkl); 
+  TProfile* GetEstimatorHistogram(const AliVEvent* event);
   
-  Int_t             	 fNPtBinsCorr;        // number of pt bins per correlations
+  Int_t             	   fNPtBinsCorr;        // number of pt bins per correlations
   std::vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
   std::vector<Double_t>  fPtThreshLow;        // pT threshold of hadrons - low
   std::vector<Double_t>  fPtThreshUp;         // pT threshold of hadrons - up
@@ -182,7 +192,8 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Double_t  fEtaForCorrel;		// cut for D0 eta to enable correlation with associated particles
   Bool_t    fIsRejectSDDClusters; 	// flag to reject events with SDD clusters
   Bool_t    fFillGlobal;          	// flag to fill global plots (in loops on tracks and V0 for each event)
-  Double_t  fMultEv;			// event multiplicity (for trigger eff)
+  Double_t  fMultEv;			// event multiplicity (for trigger eff), if in terms of tracklets, is equalized (if asked!)!
+  Double_t  fMultEvOrig;      // event multiplicity (for trigger eff), not equalized!
   Double_t  fMultEvV0M;     // event multiplicity (for trigger eff)
   Double_t  fMultEvV0MEqual;     // event multiplicity (for trigger eff)
   Double_t  fCentEvV0M;     // event multiplicity (for trigger eff)
@@ -203,7 +214,9 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Double_t  fMinDPt;			// Minimum pT of the D0 to allow selection
   Double_t  fV0CentMin;         // Minimum V0 centrality for internal event selection (not made by cut object)
   Double_t  fV0CentMax;         // Maximum V0 centrality for internal event selection (not made by cut object)
-  Bool_t    fV2Analysis;        // Running v2 in pp analysis
+  Double_t  fTrkMultMin;        // Minimum SPD tracklets in |eta|<1 for internal event selection (not made by cut object)
+  Double_t  fTrkMultMax;        // Minimum SPD tracklets in |eta|<1 for internal event selection (not made by cut object)
+  Bool_t    fVsMultAnalysis;        // Running v2 in pp analysis
 
   TreeFill  fFillTrees;			// Flag to fill ME offline trees
   Double_t  fFractAccME;		// Fraction of tracks to be accepted in the ME offline
@@ -214,6 +227,10 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TH1D      *fHistNtrklWeight;          // histo with Ntracklets weights
   Double_t  fWeight;                    // Ntrkl weight to apply to events when filling the MC THnSparse (for closure test) and MC purity plots
 
+  Bool_t     fEqualizeTracklets;     //activates the tracklet correction using the TProfiles (data)
+  Double_t   fRefMult;               //refrence multiplcity (max of maxes of profiles in dataset)
+  TProfile*  fTrackletProfiles[32];  //TProfile with mult vs. Z per period
+
   AliHFCorrelationBranchD   *fBranchD;
   AliHFCorrelationBranchTr  *fBranchTr;
   AliD0hCutOptim	    *fBranchDCutVars; //for cut optimization!
@@ -223,7 +240,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TObjArray *fTrackArray;		// Array with selected tracks for association
   Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,17); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,18); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif

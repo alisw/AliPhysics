@@ -255,6 +255,7 @@ void AliFemtoDreamBasePart::SetMCParticleRePart(AliAODMCParticle *mcPart) {
   this->fIsSet = true;
   this->SetUse(true);
   this->fIsReset = false;
+  this->SetCharge(mcPart->Charge());
 }
 
 void AliFemtoDreamBasePart::ResetMCInfo() {
