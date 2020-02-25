@@ -151,7 +151,7 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
       for (Int_t iHist = 0; iHist < 4; iHist++)
         delete fImpParSparseMC[iHist];
     }
-    for (Int_t iHist = 0; iHist < 5; iHist++)
+    for (Int_t iHist = 0; iHist < 7; iHist++)
     {
       delete fnSparseMC[iHist];
     }
@@ -833,7 +833,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
     AliAODMCParticle *partDs = nullptr;
     Int_t orig = 0;
-    Int_t orig_HijingCheck = 0;
+    Int_t origWoQuark = 0;
     Bool_t isCandInjected = kFALSE;
     Float_t trueImpParDsFromB = 99999.;
 
@@ -899,7 +899,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       }
       if(partDs){
         orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
-        orig_HijingCheck = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kFALSE);
+        origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kFALSE);
       }
        
     }
@@ -1180,20 +1180,19 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         if(fReadMC) {
           if(labDs >= 0) {
-            if(orig == 4 || orig_HijingCheck==4)
+            if(pdgCode0 == 211)
+              isrefl = kTRUE;
+            if(orig == 4 || origWoQuark==4)
               isprompt = kTRUE;
-            else if(orig == 5|| orig_HijingCheck==5)
+            else if(orig == 5 || origWoQuark==5)
               isFD = kTRUE;
 
-            if(orig >= 4 && orig_HijingCheck >= 4) {
-              if(pdgCode0 == 321)
-                issignal = kTRUE;
-              else if(pdgCode0 == 211)
-                isrefl = kTRUE;
-            }
-            if(orig < 4 && orig_HijingCheck >=4)
+            if(orig >= 4)
+              issignal = kTRUE;
+            else if(orig < 4 && origWoQuark >=4)
               isSignalWoQuark = kTRUE;
-          } else {
+          }
+          else {
             if(!isCandInjected)
               isbkg = kTRUE;
             if(labDplus >= 0)
@@ -1225,20 +1224,19 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         if(fReadMC) {
           if(labDs >= 0) {
-            if(orig == 4 || orig_HijingCheck==4)
+            if(pdgCode0 == 321)
+              isrefl = kTRUE;
+            if(orig == 4 || origWoQuark==4)
               isprompt = kTRUE;
-            else if(orig == 5 || orig_HijingCheck==5)
+            else if(orig == 5 || origWoQuark==5)
               isFD = kTRUE;
-
-            if(orig >= 4 && orig_HijingCheck >=4) {
-              if(pdgCode0 == 211)
-                issignal = kTRUE;
-              else if(pdgCode0 == 321)
-                isrefl = kTRUE;
-            }
-            if(orig < 4 && orig_HijingCheck >= 4)
+            
+            if(orig >= 4)
+              issignal = kTRUE;
+            else if(orig < 4 && origWoQuark >= 4)
               isSignalWoQuark = kTRUE;
-          } else {
+          } 
+          else {
             if(!isCandInjected)
               isbkg = kTRUE;
             if(labDplus >= 0)
@@ -1464,6 +1462,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       if (TMath::Abs(mcPart->GetPdgCode()) == 431)
       {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
+        Int_t origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kFALSE); //Prompt = 4, FeedDown = 5 --> w/o requiring the quark
 
         Int_t deca = 0;
         Bool_t isGoodDecay = kFALSE;
@@ -1490,8 +1489,14 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
             Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
             if (orig == 4)
               fnSparseMC[0]->Fill(var4nSparseAcc);
-            if (orig == 5)
+            else if (orig == 5)
               fnSparseMC[1]->Fill(var4nSparseAcc);
+            else { //no quark found
+              if (origWoQuark == 4)
+                fnSparseMC[5]->Fill(var4nSparseAcc);
+              else if (origWoQuark == 5)
+                fnSparseMC[6]->Fill(var4nSparseAcc);
+            }
           }
         }
       }
@@ -1711,6 +1716,17 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
           fnSparseMCDplus[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
         }
         fOutput->Add(fnSparseMCDplus[iHist]);
+      }
+    }
+    if(fFillSparseAccWoQuark)
+    {
+      for (Int_t iHist = nSparseReco + 2; iHist < nSparseReco + 4; iHist++)
+      {
+        TString titleSparse = Form("MC nSparse w/o quark (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist - (2 + nSparseReco)].Data());
+        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist - (2 + nSparseReco)].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+        fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
+        fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
+        fOutput->Add(fnSparseMC[iHist]);
       }
     }
   } //end MC
