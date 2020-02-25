@@ -45,8 +45,8 @@ AliIsolationCut::AliIsolationCut() :
 TObject(),
 fFillHistograms(0),  fFillEtaPhiHistograms(0),      fMakeConeExcessCorr(0),
 fConeSize(0.),       fPtThreshold(0.),              fPtThresholdMax(10000.),
-fSumPtThreshold(0.), fSumPtThresholdMax(10000.),    fPtFraction(0.),     
-fICMethod(0),        fPartInCone(0),
+fSumPtThreshold(0.), fSumPtThresholdMax(10000.),    fSumPtThresholdGap(0.),
+fPtFraction(0.),     fICMethod(0),                  fPartInCone(0),
 fFracIsThresh(1),    fIsTMClusterInConeRejected(1), fDistMinToTrigger(-1.),
 fNeutralOverChargedRatio(0),
 fDebug(0),           fMomentum(),                   fTrackVector(),
@@ -1763,7 +1763,7 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fPtThreshold>%2.2f;<%2.2f;",fPtThreshold,fPtThresholdMax) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fSumPtThreshold>%2.2f;<%2.2f;",fSumPtThreshold,fSumPtThresholdMax) ;
+  snprintf(onePar,buffersize,"fSumPtThreshold<%2.2f, gap = %2.2f;<%2.2f;",fSumPtThreshold, fSumPtThresholdGap, fSumPtThresholdMax) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fPtFraction=%2.2f;",fPtFraction) ;
   parList+=onePar ;
@@ -1794,6 +1794,7 @@ void AliIsolationCut::InitParameters()
   fPtThreshold          = 0.5  ;
   fPtThresholdMax       = 10000.  ;
   fSumPtThreshold       = 2.0 ;
+  fSumPtThresholdGap    = 0.5 ;
   fSumPtThresholdMax    = 10000. ;
   fPtFraction           = 0.1 ;
   fPartInCone           = kNeutralAndCharged;
@@ -2157,10 +2158,6 @@ void  AliIsolationCut::MakeIsolationCut
                                                                      coneptsumUESubTrack   * excessAreaTrkEta;
     else if ( fPartInCone == kOnlyCharged       )  coneptsumUESub  = coneptsumUESubTrack   * excessAreaTrkEta;
     else if ( fPartInCone == kOnlyNeutral       )  coneptsumUESub  = coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta;
-    
-    // Put final subtracted and corrected (if requested, if not it will be without the correction)
-    pCandidate->SetNeutralPtSumInCone (coneptsumUESubCluster *excessAreaClsEta * excessAreaClsPhi);
-    pCandidate->SetChargedPtSumInCone (coneptsumUESubTrack   *excessAreaTrkEta);
 
     if ( coneptsumUESub > fSumPtThreshold && coneptsumUESub < fSumPtThresholdMax )
       isolated  =  kFALSE ;
@@ -2169,6 +2166,10 @@ void  AliIsolationCut::MakeIsolationCut
     //printf("isolated %d\n",isolated);
 
   } // UE subtraction, different options
+  
+  // Put final subtracted and corrected (if requested, if not it will be without the correction)
+  pCandidate->SetNeutralPtSumInCone (coneptsumUESubCluster *excessAreaClsEta * excessAreaClsPhi);
+  pCandidate->SetChargedPtSumInCone (coneptsumUESubTrack   *excessAreaTrkEta);
   
   //-------------------------------------------------------------------
   // Fill histograms
@@ -2246,8 +2247,8 @@ void AliIsolationCut::Print(const Option_t * opt) const
 
   printf("IC method          =     %d\n",    fICMethod   ) ;
   printf("Cone Size          =     %1.2f\n", fConeSize   ) ;
-  printf("pT threshold       =     >%2.1f;<%2.1f\n", fPtThreshold   ,   fPtThresholdMax) ;
-  printf("Sum pT threshold   =     >%2.1f;<%2.1f\n", fSumPtThreshold,fSumPtThresholdMax) ;
+  printf("pT threshold       =     >%2.1f;<%2.1f\n", fPtThreshold, fPtThresholdMax) ;
+  printf("Sum pT threshold   =     >%2.1f;<%2.1f, gap = %2.1f\n", fSumPtThreshold, fSumPtThresholdMax, fSumPtThresholdGap) ;
   printf("pT fraction        =     %3.1f\n", fPtFraction ) ;
   printf("particle type in cone =  %d\n",    fPartInCone ) ;
   printf("using fraction for high pt leading instead of frac ? %i\n",fFracIsThresh);
