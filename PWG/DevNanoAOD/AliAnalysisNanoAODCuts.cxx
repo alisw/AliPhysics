@@ -92,7 +92,8 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
     Float_t zvP = evt->GetPrimaryVertex()->GetZ();
     Double_t vecTarget[3] = { xvP, yvP, zvP };
     Float_t TransverseRadius = v0->DecayLengthXY(vecTarget);
-    if ((fTransverseRadiusMin > 0 || fTransverseRadiusMax > 0) && (TransverseRadius > fTransverseRadiusMax || TransverseRadius < fTransverseRadiusMin))
+    if ((fTransverseRadiusMin > 0 && TransverseRadius < fTransverseRadiusMin) 
+    || (fTransverseRadiusMax > 0 && TransverseRadius > fTransverseRadiusMax))
       return false;
     if (fCPAMin > 0 && v0->CosPointingAngle(vecTarget) < fCPAMin)
       return false;
