@@ -135,6 +135,7 @@ class AliIsolationCut : public TObject {
   Float_t    GetPtThresholdMax()      const { return fPtThresholdMax ; }
   Float_t    GetSumPtThreshold()      const { return fSumPtThreshold ; }
   Float_t    GetSumPtThresholdMax()   const { return fSumPtThresholdMax ; }
+  Float_t    GetSumPtThresholdGap()   const { return fSumPtThresholdGap ; }
   Float_t    GetPtFraction()          const { return fPtFraction     ; }
   Int_t      GetICMethod()            const { return fICMethod       ; }
   Int_t      GetParticleTypeInCone()  const { return fPartInCone     ; }
@@ -148,6 +149,7 @@ class AliIsolationCut : public TObject {
   void       SetPtThresholdMax(Float_t pt)                     { fPtThresholdMax    = pt   ; }
   void       SetSumPtThreshold(Float_t s)                      { fSumPtThreshold    = s    ; }
   void       SetSumPtThresholdMax(Float_t s)                   { fSumPtThresholdMax = s    ; }
+  void       SetSumPtThresholGap(Float_t s)                    { fSumPtThresholdGap = s    ; }
   void       SetPtFraction(Float_t pt)                         { fPtFraction        = pt   ; }
   void       SetICMethod(Int_t i )                             { fICMethod          = i    ; }
   void       SetParticleTypeInCone(Int_t i)                    { fPartInCone        = i    ; }
@@ -180,6 +182,8 @@ class AliIsolationCut : public TObject {
   Float_t    fSumPtThreshold ;   ///< Minimum of sum pt of the particles in the cone (UE sum in the forward region cone)
 
   Float_t    fSumPtThresholdMax ;///< Maximum of sum pt of the particles in the cone (UE sum in the forward region cone)
+  
+  Float_t    fSumPtThresholdGap ; ///< Gap between the pT sum cut on isolated to non isolated candidates, used on ParticleIsolation task not here
 
   Float_t    fPtFraction ;       ///< Fraction of the momentum of particles in cone or sum in cone.
 
@@ -302,7 +306,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,12) ;
+  ClassDef(AliIsolationCut,13) ;
   /// \endcond
 
 } ;
