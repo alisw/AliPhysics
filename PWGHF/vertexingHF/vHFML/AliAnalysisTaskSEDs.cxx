@@ -1492,10 +1492,13 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
             else if (orig == 5)
               fnSparseMC[1]->Fill(var4nSparseAcc);
             else { //no quark found
-              if (origWoQuark == 4)
-                fnSparseMC[5]->Fill(var4nSparseAcc);
-              else if (origWoQuark == 5)
-                fnSparseMC[6]->Fill(var4nSparseAcc);
+              if(fFillSparseAccWoQuark)
+              {
+                if (origWoQuark == 4)
+                  fnSparseMC[5]->Fill(var4nSparseAcc);
+                else if (origWoQuark == 5)
+                  fnSparseMC[6]->Fill(var4nSparseAcc);
+              }
             }
           }
         }
