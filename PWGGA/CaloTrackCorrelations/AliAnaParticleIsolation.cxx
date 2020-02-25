@@ -489,12 +489,12 @@ void AliAnaParticleIsolation::FillPileUpHistograms(Float_t energy, Float_t time)
 }
 
 //_____________________________________________________________________________________________________________________
-/// Fill Track matching and Shower Shape control histograms.
+/// Fill shower Shape control histograms.
 //_____________________________________________________________________________________________________________________
-void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
-(AliCaloTrackParticleCorrelation  *pCandidate, Int_t mcIndex)
+void AliAnaParticleIsolation::FillSignalBackgroundControlHistograms
+(AliCaloTrackParticleCorrelation  *pCandidate, Int_t mcIndex, Int_t noverlaps)
 {
-  if(!fFillTMHisto && !fFillSSHisto && !fFillBackgroundBinHistograms && !fFillTaggedDecayHistograms) return;
+  if( !fFillBackgroundBinHistograms && !fFillTaggedDecayHistograms ) return;
   
   // Cone energy and particle content, after corrections
   Float_t coneptsumTrack = pCandidate->GetChargedPtSumInCone(); 
@@ -506,27 +506,10 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
      coneleadpt = pCandidate->GetNeutralLeadPtInCone();
   
   // Trigger candidate info
-  Int_t  nMaxima   = pCandidate->GetNLM();
-  Int_t  mcTag     = pCandidate->GetTag() ;
-  
+  Int_t   mcTag  = pCandidate->GetTag() ;
   Float_t m02    = pCandidate->GetM02() ;
-  Float_t energy = pCandidate->E();
   Float_t pt     = pCandidate->Pt();
-  Float_t eta    = pCandidate->Eta();
-  Float_t phi    = GetPhi(pCandidate->Phi());
-  Int_t   iSM    = pCandidate->GetSModNumber();
   Float_t weightTrig = pCandidate->GetWeight();
-
-  Int_t noverlaps = -1;
-  if ( fFillOverlapHistograms && fCluster )
-  {
-    const UInt_t nlabels = fCluster->GetNLabels();
-    Int_t overpdg[nlabels];
-    Int_t overlab[nlabels];
-    noverlaps = GetMCAnalysisUtils()->GetNOverlaps(fCluster->GetLabels(), nlabels, mcTag, -1,
-                                                   GetMC(), overpdg, overlab);
-    
-  }
   
   // Get the max pt leading in cone or the sum of pt in cone
   // assign a bin to the candidate, depending on both quantities
@@ -553,7 +536,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
       
       fhPtLeadConeBin[leadptBin]->Fill(pt, GetEventWeight()*weightTrig);
       
-      if(fFillSSHisto)
+      if ( fFillSSHisto )
         fhPtLeadConeBinLambda0[leadptBin]->Fill(pt, m02, GetEventWeight()*weightTrig);
       
       if ( leadptBin == 0 )
@@ -567,7 +550,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
       
       fhSumPtConeBin[ptsumBin]->Fill(pt, GetEventWeight()*weightTrig);
       
-      if(fFillSSHisto) fhSumPtConeBinLambda0[ptsumBin]->Fill(pt, m02, GetEventWeight()*weightTrig);
+      if ( fFillSSHisto ) 
+        fhSumPtConeBinLambda0[ptsumBin]->Fill(pt, m02, GetEventWeight()*weightTrig);
     }
     
     // Check if it was a decay
@@ -596,13 +580,15 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
       if( leadptBin >=0 )
       {
         fhPtLeadConeBinMC[leadptBinMC]->Fill(pt, GetEventWeight()*weightTrig);
-        if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
+        if ( fFillSSHisto ) 
+          fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
       }
       
       if( ptsumBin  >=0 )
       {
         fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt, GetEventWeight()*weightTrig);
-        if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
+        if ( fFillSSHisto )
+          fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
       }
       
       if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
@@ -612,13 +598,15 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
         if( leadptBin >=0 )
         {
           fhPtLeadConeBinMC[leadptBinMC]->Fill(pt, GetEventWeight()*weightTrig);
-          if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
+          if ( fFillSSHisto )
+            fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
         
         if( ptsumBin  >=0 )
         {
           fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt, GetEventWeight()*weightTrig);
-          if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
+          if ( fFillSSHisto )  
+            fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
       }
       
@@ -641,13 +629,15 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
         if( leadptBin >=0 )
         {
           fhPtLeadConeBinMC[leadptBinMC]->Fill(pt, GetEventWeight()*weightTrig);
-          if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
+          if ( fFillSSHisto )
+            fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
         
         if( ptsumBin  >=0 )
         {
           fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt);
-          if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
+          if ( fFillSSHisto )
+            fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
         
       } // check decays with lost pairs
@@ -886,19 +876,28 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     
   } //  fFillPtTrigBinHistograms MC
   
-  //-------------------------------------------------------
-  // Fill histograms isolated and non isolated
-  //-------------------------------------------------------
+}
 
-  Bool_t  isolated = pCandidate->IsIsolated();
-  Int_t   method   = GetIsolationCut()->GetICMethod() ;
-  Float_t sumThr   = GetIsolationCut()->GetSumPtThreshold() ;
-  Float_t sumGap   = GetIsolationCut()->GetSumPtThresholdGap() ;
+//______________________________________________________________
+/// Fill shower Shape control histograms and other like decay tagged clusters
+///  and NLM dependent histograms
+//_____________________________________________________________
+void AliAnaParticleIsolation::FillShowerShapeControlHistograms
+(AliCaloTrackParticleCorrelation  *pCandidate, Int_t mcIndex, Int_t noverlaps)
+{
+  if( !fFillSSHisto && !fFillTaggedDecayHistograms) return;
   
-  // Do not fill in non isolated histogram, clusters in isolation gap
-  if ( !isolated && method >= AliIsolationCut::kSumPtIC && coneptsum < sumThr+sumGap ) 
-    return;
-  
+  Bool_t  isolated   = pCandidate->IsIsolated();
+  Float_t m02        = pCandidate->GetM02() ;
+  Float_t energy     = pCandidate->E();
+  Float_t pt         = pCandidate->Pt();
+  Float_t eta        = pCandidate->Eta();
+  Float_t phi        = GetPhi(pCandidate->Phi());
+  Int_t   iSM        = pCandidate->GetSModNumber();
+  Int_t   nMaxima    = pCandidate->GetNLM();
+  Int_t   mcTag      = pCandidate->GetTag() ;
+  Float_t weightTrig = pCandidate->GetWeight();
+
   // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
   //
   if ( fFillTaggedDecayHistograms )
@@ -910,11 +909,11 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     {
       if(!GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit])) continue;
       
-      if(fFillSSHisto) fhPtLambda0Decay[isolated][ibit]->Fill(pt, m02, GetEventWeight()*weightTrig);
+      if ( fFillSSHisto ) fhPtLambda0Decay[isolated][ibit]->Fill(pt, m02, GetEventWeight()*weightTrig);
       
       // In case it was not done on the trigger selection task
       // apply here a shower shape cut to select photons
-      if( m02 > fDecayTagsM02Cut ) continue;
+      if ( m02 > fDecayTagsM02Cut ) continue;
       
       fhPtDecay    [isolated][ibit]->Fill(pt,       GetEventWeight()*weightTrig);
       fhEtaPhiDecay[isolated][ibit]->Fill(eta, phi, GetEventWeight()*weightTrig);
@@ -1038,7 +1037,6 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
           fhPtNOverlapConv[mcIndex][isolated]->Fill(pt, noverlaps, GetEventWeight()*weightTrig);
         } // Conversion
         
-        
         if ( noverlaps == 1 )
         {
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
@@ -1125,72 +1123,94 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     }
   } // SS histo fill
   
+}
+
+//_____________________________________________________________________________________________________________________
+/// Fill Track matching and Shower Shape control histograms.
+//_____________________________________________________________________________________________________________________
+void AliAnaParticleIsolation::FillTrackMatchingControlHistograms
+ (AliCaloTrackParticleCorrelation  *pCandidate, Int_t mcIndex)
+{
   // Track matching dependent histograms
-  if ( fFillTMHisto && fCluster )
+  if ( !fFillTMHisto || !fCluster ) return;
+  
+  Bool_t  isolated   = pCandidate->IsIsolated();
+  Float_t energy     = pCandidate->E();
+  Int_t   mcTag      = pCandidate->GetTag() ;
+  Float_t weightTrig = pCandidate->GetWeight();
+
+  Float_t dZ  = fCluster->GetTrackDz();
+  Float_t dR  = fCluster->GetTrackDx();
+  
+  //    if(fCluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+  //    {
+  //      dR = 2000., dZ = 2000.;
+  //      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(fCluster->GetID(),dZ,dR);
+  //    }
+  
+  //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
+  if(fhTrackMatchedDEta[isolated] && TMath::Abs(dR) < 999)
   {
-    Float_t dZ  = fCluster->GetTrackDz();
-    Float_t dR  = fCluster->GetTrackDx();
-    
-//    if(fCluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
-//    {
-//      dR = 2000., dZ = 2000.;
-//      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(fCluster->GetID(),dZ,dR);
-//    }
-    
-    //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
-    if(fhTrackMatchedDEta[isolated] && TMath::Abs(dR) < 999)
+    fhTrackMatchedDEta[isolated]->Fill(energy, dZ, GetEventWeight()*weightTrig);
+    fhTrackMatchedDPhi[isolated]->Fill(energy, dR, GetEventWeight()*weightTrig);
+    if ( energy > 0.5 ) 
+      fhTrackMatchedDEtaDPhi[isolated]->Fill(dZ, dR, GetEventWeight()*weightTrig);
+   
+    if(IsDataMC())
     {
-      fhTrackMatchedDEta[isolated]->Fill(energy, dZ, GetEventWeight()*weightTrig);
-      fhTrackMatchedDPhi[isolated]->Fill(energy, dR, GetEventWeight()*weightTrig);
-      if(energy > 0.5) fhTrackMatchedDEtaDPhi[isolated]->Fill(dZ, dR, GetEventWeight()*weightTrig);
-      if(IsDataMC())
-      {
-        fhTrackMatchedDEtaMC[mcIndex][isolated]->Fill(energy, dZ, GetEventWeight()*weightTrig);
-        fhTrackMatchedDPhiMC[mcIndex][isolated]->Fill(energy, dR, GetEventWeight()*weightTrig);
-        if(energy > 0.5) fhTrackMatchedDEtaDPhiMC[mcIndex][isolated]->Fill(dZ, dR, GetEventWeight()*weightTrig);
-      }
+      fhTrackMatchedDEtaMC[mcIndex][isolated]->Fill(energy, dZ, GetEventWeight()*weightTrig);
+      fhTrackMatchedDPhiMC[mcIndex][isolated]->Fill(energy, dR, GetEventWeight()*weightTrig);
+      if ( energy > 0.5 ) 
+        fhTrackMatchedDEtaDPhiMC[mcIndex][isolated]->Fill(dZ, dR, GetEventWeight()*weightTrig);
     }
+  }
+  
+  // Check dEdx and E/p of matched clusters
+  
+  if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
+  {
+    AliVTrack *track = GetCaloUtils()->GetMatchedTrack(fCluster, GetReader()->GetInputEvent());
     
-    // Check dEdx and E/p of matched clusters
-    
-    if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
+    if(track)
     {
-      AliVTrack *track = GetCaloUtils()->GetMatchedTrack(fCluster, GetReader()->GetInputEvent());
+      Float_t dEdx = track->GetTPCsignal();
+      fhdEdx[isolated]->Fill(energy, dEdx, GetEventWeight()*weightTrig);
       
-      if(track)
+      Float_t eOverp = energy/track->P();
+      fhEOverP[isolated]->Fill(energy,  eOverp, GetEventWeight()*weightTrig);
+    }
+    //else
+    //  printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
+    
+    if(IsDataMC())
+    {
+      if ( !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion)  )
       {
-        Float_t dEdx = track->GetTPCsignal();
-        fhdEdx[isolated]->Fill(fCluster->E(), dEdx, GetEventWeight()*weightTrig);
+        if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
+                  GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) 
+          fhTrackMatchedMCParticle[isolated]->Fill(energy, 2.5, GetEventWeight()*weightTrig);
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) 
+          fhTrackMatchedMCParticle[isolated]->Fill(energy, 0.5, GetEventWeight()*weightTrig);
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) 
+          fhTrackMatchedMCParticle[isolated]->Fill(energy, 1.5, GetEventWeight()*weightTrig);
+        else                                                                                   
+          fhTrackMatchedMCParticle[isolated]->Fill(energy, 3.5, GetEventWeight()*weightTrig);
         
-        Float_t eOverp = fCluster->E()/track->P();
-        fhEOverP[isolated]->Fill(fCluster->E(),  eOverp, GetEventWeight()*weightTrig);
       }
-      //else
-      //  printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
-      
-      
-      if(IsDataMC())
+      else
       {
-        if ( !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion)  )
-        {
-          if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
-                     GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 2.5, GetEventWeight()*weightTrig);
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 0.5, GetEventWeight()*weightTrig);
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 1.5, GetEventWeight()*weightTrig);
-          else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 3.5, GetEventWeight()*weightTrig);
-          
-        }
-        else
-        {
-          if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
-                     GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 6.5, GetEventWeight()*weightTrig);
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 4.5, GetEventWeight()*weightTrig);
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 5.5, GetEventWeight()*weightTrig);
-          else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 7.5, GetEventWeight()*weightTrig);
-        }
-      }  // MC
-    } // match window
-  }// TM histos fill
+        if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
+                  GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) 
+          fhTrackMatchedMCParticle[isolated]->Fill(energy, 6.5, GetEventWeight()*weightTrig);
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) 
+          fhTrackMatchedMCParticle[isolated]->Fill(energy, 4.5, GetEventWeight()*weightTrig);
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) 
+          fhTrackMatchedMCParticle[isolated]->Fill(energy, 5.5, GetEventWeight()*weightTrig);
+        else                                                                                   
+          fhTrackMatchedMCParticle[isolated]->Fill(energy, 7.5, GetEventWeight()*weightTrig);
+      }
+    }  // MC
+  } // match window
 }
 
 //______________________________________________________
@@ -4971,6 +4991,17 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       } // cluster array found
     } // recover cluster
       
+    // Check number of overlaps in cluster
+    //
+    Int_t noverlaps = -1;
+    if ( fFillOverlapHistograms && fCluster )
+    {
+      const UInt_t nlabels = fCluster->GetNLabels();
+      Int_t overpdg[nlabels];
+      Int_t overlab[nlabels];
+      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(fCluster->GetLabels(), nlabels, mcTag, -1,
+                                                     GetMC(), overpdg, overlab);
+    }
     //---------------------------------------------------------------
     // Fill pt/sum pT distribution of particles in cone 
     // for different selection cases: per SM, exotics, TCard, ...
@@ -5002,18 +5033,35 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       StudyTracksInPerpCone(aod);
 
     //---------------------------------------------------------------
-    // Fill Shower shape and track matching histograms
+    // Fill Shower shape  histograms
     //---------------------------------------------------------------
     
-    FillTrackMatchingShowerShapeControlHistograms(aod, mcIndex);
-    
-    // Do not fill in non isolated histogram, clusters in isolation gap
+    FillSignalBackgroundControlHistograms(aod, mcIndex, noverlaps);
+
+    //---------------------------------------------------------------    
+    //---------------------------------------------------------------
+    // Do not fill in non isolated histogram clusters in isolation gap
+    //---------------------------------------------------------------
+    //---------------------------------------------------------------
+
     if ( !isolated && method >= AliIsolationCut::kSumPtIC && coneptsum < sumThr+sumGap ) 
     {
       AliDebug(1,Form("Candidate not isolated but in gap: pt %1.1f, eta %1.1f, phi %1.1f, cone sum pT %2.2f",
                       pt, eta, phi, coneptsum));
       continue;
     }
+    
+    //---------------------------------------------------------------
+     // Fill Shower shape  histograms
+     //---------------------------------------------------------------
+     
+     FillShowerShapeControlHistograms(aod, mcIndex, noverlaps);
+    
+    //---------------------------------------------------------------
+    // Fill track matching histograms
+    //---------------------------------------------------------------
+    
+    FillTrackMatchingControlHistograms(aod, mcIndex);
     
     //---------------------------------------------------------------
     // EMCAL SM regions
@@ -6634,7 +6682,7 @@ void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation 
       fhPtTrackInConePerTCardIndex[fTCardIndex]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
     }
     
-    if( IsDataMC() && GetMC() )
+    if ( IsDataMC() && GetMC() )
     {
       Int_t trackLabel = TMath::Abs(track->GetLabel());
       
@@ -6651,14 +6699,15 @@ void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation 
         if      ( TMath::Abs(partInConePDG) == 211  )  mcChTag = 0;
         else if ( TMath::Abs(partInConePDG) == 321  )  mcChTag = 1; 
         else if ( TMath::Abs(partInConePDG) == 2212 )  mcChTag = 2; 
-        if(physPrimary)
+        
+        if ( physPrimary )
           fhPtTrackInConeMCPrimary  [mcChTag]->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
         else
           fhPtTrackInConeMCSecondary[mcChTag]->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
       }
     }
     
-    if(fStudyExoticTrigger && fIsExoticTrigger)
+    if ( fStudyExoticTrigger && fIsExoticTrigger )
     {
       fhPtInConeExoTrigger      ->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
       fhPtTrackInConeExoTrigger ->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);

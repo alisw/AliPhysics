@@ -66,9 +66,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillPileUpHistograms(Float_t energy, Float_t time) ; //Int_t clusterID) ;
   
   void         FillAcceptanceHistograms();
- 
-  void         FillTrackMatchingShowerShapeControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
-                                                            Int_t mcIndex) ;
+  
+  void         FillSignalBackgroundControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
+                                                     Int_t mcIndex, Int_t noverlaps) ;
+  
+  void         FillShowerShapeControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
+                                                Int_t mcIndex, Int_t noverlaps) ;
+  
+  void         FillTrackMatchingControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
+                                                  Int_t mcIndex) ;
   
   Bool_t       IsTriggerTheNearSideEventLeadingParticle(Int_t & idLeading);
   
