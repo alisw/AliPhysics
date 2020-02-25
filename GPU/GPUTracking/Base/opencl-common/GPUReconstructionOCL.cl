@@ -19,7 +19,7 @@
 
 // clang-format off
 #define __OPENCL__
-#define GPUCA_GPUTYPE_RADEON
+#define GPUCA_GPUTYPE_OPENCL
 
 #ifdef __OPENCLCPP__
   #pragma OPENCL EXTENSION cl_khr_fp64 : enable
@@ -66,6 +66,7 @@
 #define assert(param)
 #ifndef __OPENCLCPP__
 #define static_assert(...)
+#define GPUCA_OPENCL1
 #endif
 
 #include "GPUReconstructionIncludesDevice.h"
@@ -73,9 +74,6 @@
 
 // if (gpu_mem != pTracker.GPUParametersConst()->gpumem) return; //TODO!
 
-#ifndef __OPENCLCPP__
-#define GPUCA_OPENCL1
-#endif
 #define GPUCA_KRNL(x_class, x_attributes, x_arguments, x_forward) GPUCA_KRNL_WRAP(GPUCA_KRNL_LOAD_, x_class, x_attributes, x_arguments, x_forward)
 #define GPUCA_KRNL_LOAD_single(x_class, x_attributes, x_arguments, x_forward) GPUCA_KRNLGPU_SINGLE(x_class, x_attributes, x_arguments, x_forward)
 #define GPUCA_KRNL_LOAD_multi(x_class, x_attributes, x_arguments, x_forward) GPUCA_KRNLGPU_MULTI(x_class, x_attributes, x_arguments, x_forward)
@@ -83,7 +81,6 @@
 #define GPUCA_CONSMEM *pConstant
 #include "GPUReconstructionKernels.h"
 #undef GPUCA_KRNL
-#undef GPUCA_OPENCL1
 #undef GPUCA_KRNL_LOAD_single
 #undef GPUCA_KRNL_LOAD_multi
 

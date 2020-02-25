@@ -27,7 +27,7 @@
 using namespace GPUCA_NAMESPACE::gpu;
 
 template <>
-GPUd() void GPUTPCTrackletSelector::Thread<0>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & s, processorType& tracker)
+GPUdii() void GPUTPCTrackletSelector::Thread<0>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & s, processorType& tracker)
 {
   // select best tracklets and kill clones
 
@@ -79,7 +79,7 @@ GPUd() void GPUTPCTrackletSelector::Thread<0>(int nBlocks, int nThreads, int iBl
           gap = 0;
 #if GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE != 0
           if (nHits < GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE) {
-            s.mHits[iThread][nHits].Set(irow, ih);
+            s.mHits[nHits][iThread].Set(irow, ih);
           } else
 #endif // GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE != 0
           {
@@ -115,7 +115,7 @@ GPUd() void GPUTPCTrackletSelector::Thread<0>(int nBlocks, int nThreads, int iBl
           for (int jh = 0; jh < nHits; jh++) {
 #if GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE != 0
             if (jh < GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE) {
-              tracker.TrackHits()[nFirstTrackHit + jh] = s.mHits[iThread][jh];
+              tracker.TrackHits()[nFirstTrackHit + jh] = s.mHits[jh][iThread];
             } else
 #endif // GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE != 0
             {

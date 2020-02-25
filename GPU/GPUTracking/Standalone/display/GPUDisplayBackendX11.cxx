@@ -149,6 +149,7 @@ void GPUDisplayBackendX11::GetKey(XEvent& event, int& keyOut, int& keyPressOut)
 
 void GPUDisplayBackendX11::OpenGLPrint(const char* s, float x, float y, float r, float g, float b, float a, bool fromBotton)
 {
+#ifndef GPUCA_DISPLAY_OPENGL_CORE
   if (!fromBotton) {
     y = mDisplayHeight - y;
   }
@@ -163,6 +164,7 @@ void GPUDisplayBackendX11::OpenGLPrint(const char* s, float x, float y, float r,
     glCallLists(strlen(s), GL_UNSIGNED_BYTE, (GLubyte*)s);
     glPopAttrib();
   }
+#endif
 }
 
 int GPUDisplayBackendX11::OpenGLMain()
@@ -225,7 +227,7 @@ int GPUDisplayBackendX11::OpenGLMain()
     int context_attribs[] = {
       GLX_CONTEXT_MAJOR_VERSION_ARB, GL_MIN_VERSION_MAJOR,
       GLX_CONTEXT_MINOR_VERSION_ARB, GL_MIN_VERSION_MINOR,
-      GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+      GLX_CONTEXT_PROFILE_MASK_ARB, GPUCA_DISPLAY_OPENGL_CORE_FLAGS ? GLX_CONTEXT_CORE_PROFILE_BIT_ARB : GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
       None};
     glxContext = glXCreateContextAttribsARB(mDisplay, fbconfig, nullptr, GL_TRUE, context_attribs);
   } else {
@@ -255,6 +257,7 @@ int GPUDisplayBackendX11::OpenGLMain()
   // Receive signal when window closed
   Atom WM_DELETE_WINDOW = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(mDisplay, mWindow, &WM_DELETE_WINDOW, 1);
+#ifndef GPUCA_DISPLAY_OPENGL_CORE
   // Prepare fonts
   mFontBase = glGenLists(256);
   if (!glIsList(mFontBase)) {
@@ -271,6 +274,7 @@ int GPUDisplayBackendX11::OpenGLMain()
     int last = font_info->max_char_or_byte2;
     glXUseXFont(font_info->fid, first, last - first + 1, mFontBase + first);
   }
+#endif
 
   // Init OpenGL...
   if (GPUDisplayExtInit()) {
@@ -417,10 +421,12 @@ int GPUDisplayBackendX11::OpenGLMain()
     glXSwapBuffers(mDisplay, mWindow); // Buffer swap does implicit glFlush
   }
 
+#ifndef GPUCA_DISPLAY_OPENGL_CORE
   glDeleteLists(mFontBase, 256);
+  XUnloadFont(mDisplay, font_info->fid);
+#endif
   ExitGL();
   glXDestroyContext(mDisplay, glxContext);
-  XUnloadFont(mDisplay, font_info->fid);
   XFree(visualInfo);
   XDestroyWindow(mDisplay, mWindow);
   XCloseDisplay(mDisplay);

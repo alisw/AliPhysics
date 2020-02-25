@@ -32,7 +32,7 @@
 using namespace GPUCA_NAMESPACE::gpu;
 
 MEM_CLASS_PRE2()
-GPUd() void GPUTPCTrackletConstructor::InitTracklet(MEM_LG2(GPUTPCTrackParam) & tParam)
+GPUdii() void GPUTPCTrackletConstructor::InitTracklet(MEM_LG2(GPUTPCTrackParam) & tParam)
 {
   // Initialize Tracklet Parameters using default values
   tParam.InitParam();
@@ -57,7 +57,7 @@ GPUd() bool GPUTPCTrackletConstructor::CheckCov(MEM_LG2(GPUTPCTrackParam) & tPar
 }
 
 MEM_CLASS_PRE23()
-GPUd() void GPUTPCTrackletConstructor::StoreTracklet(int /*nBlocks*/, int /*nThreads*/, int /*iBlock*/, int /*iThread*/, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & s, GPUTPCThreadMemory& r, GPUconstantref() MEM_LG2(GPUTPCTracker) & tracker, MEM_LG3(GPUTPCTrackParam) & tParam)
+GPUd() void GPUTPCTrackletConstructor::StoreTracklet(int /*nBlocks*/, int /*nThreads*/, int /*iBlock*/, int /*iThread*/, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & s, GPUTPCThreadMemory& r, GPUconstantref() MEM_LG2(GPUTPCTracker) & tracker, MEM_LG3(GPUTPCTrackParam) & tParam)
 {
   // reconstruction of tracklets, tracklet store step
   if (r.mNHits && (r.mNHits < GPUCA_TRACKLET_SELECTOR_MIN_HITS(tParam.QPt()) || !CheckCov(tParam) || CAMath::Abs(tParam.GetQPt()) > tracker.Param().rec.MaxTrackQPt)) {
@@ -90,7 +90,7 @@ GPUd() void GPUTPCTrackletConstructor::StoreTracklet(int /*nBlocks*/, int /*nThr
 }
 
 MEM_CLASS_PRE2()
-GPUd() void GPUTPCTrackletConstructor::UpdateTracklet(int /*nBlocks*/, int /*nThreads*/, int /*iBlock*/, int /*iThread*/, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & s, GPUTPCThreadMemory& r, GPUconstantref() MEM_GLOBAL(GPUTPCTracker) & tracker, MEM_LG2(GPUTPCTrackParam) & tParam, int iRow)
+GPUd() void GPUTPCTrackletConstructor::UpdateTracklet(int /*nBlocks*/, int /*nThreads*/, int /*iBlock*/, int /*iThread*/, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & s, GPUTPCThreadMemory& r, GPUconstantref() MEM_GLOBAL(GPUTPCTracker) & tracker, MEM_LG2(GPUTPCTrackParam) & tParam, int iRow)
 {
 // reconstruction of tracklets, tracklets update step
 #ifndef GPUCA_EXTERN_ROW_HITS
@@ -333,7 +333,7 @@ GPUd() void GPUTPCTrackletConstructor::UpdateTracklet(int /*nBlocks*/, int /*nTh
   }
 }
 
-GPUd() void GPUTPCTrackletConstructor::DoTracklet(GPUconstantref() MEM_GLOBAL(GPUTPCTracker) & tracker, GPUsharedref() GPUTPCTrackletConstructor::MEM_LOCAL(GPUTPCSharedMemory) & s, GPUTPCThreadMemory& r)
+GPUd() void GPUTPCTrackletConstructor::DoTracklet(GPUconstantref() MEM_GLOBAL(GPUTPCTracker) & tracker, GPUsharedref() GPUTPCTrackletConstructor::MEM_LOCAL(GPUSharedMemory) & s, GPUTPCThreadMemory& r)
 {
   int iRow = 0, iRowEnd = GPUCA_ROW_COUNT;
   MEM_PLAIN(GPUTPCTrackParam)
@@ -393,7 +393,7 @@ GPUd() void GPUTPCTrackletConstructor::DoTracklet(GPUconstantref() MEM_GLOBAL(GP
 }
 
 template <>
-GPUd() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::singleSlice>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & sMem, processorType& tracker)
+GPUdii() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::singleSlice>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & sMem, processorType& tracker)
 {
   if (get_local_id(0) == 0) {
     sMem.mNTracklets = *tracker.NTracklets();
@@ -409,7 +409,7 @@ GPUd() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::singleS
 }
 
 template <>
-GPUd() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::allSlices>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & sMem, processorType& tracker0)
+GPUdii() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::allSlices>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & sMem, processorType& tracker0)
 {
 #ifdef GPUCA_GPUCODE
   GPUconstantref() MEM_GLOBAL(GPUTPCTracker)* pTracker = &tracker0;
@@ -458,7 +458,7 @@ GPUd() void GPUTPCTrackletConstructor::Thread<GPUTPCTrackletConstructor::allSlic
 
 #ifdef GPUCA_GPUCODE
 
-GPUdi() int GPUTPCTrackletConstructor::FetchTracklet(GPUconstantref() MEM_GLOBAL(GPUTPCTracker) & tracker, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & sMem)
+GPUdi() int GPUTPCTrackletConstructor::FetchTracklet(GPUconstantref() MEM_GLOBAL(GPUTPCTracker) & tracker, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & sMem)
 {
   const int nativeslice = get_group_id(0) % GPUCA_NSLICES;
   const unsigned int nTracklets = *tracker.NTracklets();
@@ -489,7 +489,7 @@ GPUdi() int GPUTPCTrackletConstructor::FetchTracklet(GPUconstantref() MEM_GLOBAL
 int GPUTPCTrackletConstructor::GPUTPCTrackletConstructorGlobalTracking(GPUTPCTracker& tracker, GPUTPCTrackParam& tParam, int row, int increment, int iTracklet)
 {
   GPUTPCThreadMemory rMem;
-  GPUshared() GPUTPCSharedMemory sMem;
+  GPUshared() GPUSharedMemory sMem;
   sMem.mNTracklets = *tracker.NTracklets();
   rMem.mItr = iTracklet;
   rMem.mStage = 3;

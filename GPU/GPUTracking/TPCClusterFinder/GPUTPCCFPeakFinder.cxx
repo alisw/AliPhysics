@@ -17,7 +17,7 @@
 /// \file PeakFinder.cxx
 /// \author Felix Weiglhofer
 
-#include "PeakFinder.h"
+#include "GPUTPCCFPeakFinder.h"
 
 #include "Array2D.h"
 #include "CfUtils.h"
@@ -27,8 +27,16 @@
 using namespace GPUCA_NAMESPACE::gpu;
 using namespace GPUCA_NAMESPACE::gpu::deprecated;
 
-GPUd() bool PeakFinder::isPeakScratchPad(
-  GPUTPCClusterFinderKernels::GPUTPCSharedMemory& smem,
+template <>
+GPUdii() void GPUTPCCFPeakFinder::Thread<GPUTPCCFPeakFinder::findPeaks>(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem, processorType& clusterer)
+{
+  Array2D<PackedCharge> chargeMap(reinterpret_cast<PackedCharge*>(clusterer.mPchargeMap));
+  Array2D<uchar> isPeakMap(clusterer.mPpeakMap);
+  findPeaksImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, chargeMap, clusterer.mPdigits, clusterer.mPmemory->counters.nDigits, clusterer.mPisPeak, isPeakMap);
+}
+
+GPUd() bool GPUTPCCFPeakFinder::isPeakScratchPad(
+  GPUSharedMemory& smem,
   Charge q,
   const ChargePos& pos,
   ushort N,
@@ -86,7 +94,7 @@ GPUd() bool PeakFinder::isPeakScratchPad(
   return peak;
 }
 
-GPUd() bool PeakFinder::isPeak(
+GPUd() bool GPUTPCCFPeakFinder::isPeak(
   Charge myCharge,
   const ChargePos& pos,
   const Array2D<PackedCharge>& chargeMap)
@@ -97,11 +105,11 @@ GPUd() bool PeakFinder::isPeak(
 
   bool peak = true;
 
-#define CMP_NEIGHBOR(dp, dt, cmpOp)                  \
-  do {                                               \
-    PackedCharge p = chargeMap[pos.delta({dp, dt})]; \
-    const Charge otherCharge = p.unpack();           \
-    peak &= (otherCharge cmpOp myCharge);            \
+#define CMP_NEIGHBOR(dp, dt, cmpOp)                        \
+  do {                                                     \
+    PackedCharge p = chargeMap[pos.delta(Delta2{dp, dt})]; \
+    const Charge otherCharge = p.unpack();                 \
+    peak &= (otherCharge cmpOp myCharge);                  \
   } while (false)
 
 #define CMP_LT CMP_NEIGHBOR(-1, -1, <=)
@@ -148,12 +156,12 @@ GPUd() bool PeakFinder::isPeak(
   return peak;
 }
 
-GPUd() void PeakFinder::findPeaksImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUTPCClusterFinderKernels::GPUTPCSharedMemory& smem,
-                                      const Array2D<PackedCharge>& chargeMap,
-                                      const Digit* digits,
-                                      uint digitnum,
-                                      uchar* isPeakPredicate,
-                                      Array2D<uchar>& peakMap)
+GPUd() void GPUTPCCFPeakFinder::findPeaksImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
+                                              const Array2D<PackedCharge>& chargeMap,
+                                              const Digit* digits,
+                                              uint digitnum,
+                                              uchar* isPeakPredicate,
+                                              Array2D<uchar>& peakMap)
 {
   size_t idx = get_global_id(0);
 
@@ -166,7 +174,7 @@ GPUd() void PeakFinder::findPeaksImpl(int nBlocks, int nThreads, int iBlock, int
 
   uchar peak;
 #if defined(BUILD_CLUSTER_SCRATCH_PAD)
-  peak = isPeakScratchPad(smem, myDigit.charge, pos, SCRATCH_PAD_SEARCH_N, chargeMap, smem.search.posBcast, smem.search.buf);
+  peak = isPeakScratchPad(smem, myDigit.charge, pos, SCRATCH_PAD_SEARCH_N, chargeMap, smem.posBcast, smem.buf);
 #else
   peak = isPeak(myDigit.charge, pos, chargeMap);
 #endif
