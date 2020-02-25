@@ -1545,10 +1545,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {
           fhPtLambda0Decay[iso][ibit]  = new TH2F
           (Form("hPtLambda0Decay%s_bit%d",isoName[iso].Data(),fDecayBits[ibit]),
-           Form("%s cluster : #it{p}_{T} vs #lambda_{0}, decay bit %d, %s",
+           Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}, decay bit %d, %s",
                 isoTitle[iso].Data(), fDecayBits[ibit], parTitle[iso].Data()),
            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhPtLambda0Decay[iso][ibit]->SetYTitle("#lambda_{0}^{2}");
+          fhPtLambda0Decay[iso][ibit]->SetYTitle("#sigma_{long}^{2}");
           fhPtLambda0Decay[iso][ibit]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhPtLambda0Decay[iso][ibit]) ;
         }
@@ -1862,17 +1862,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {
           fhPtLeadConeBinLambda0[ibin]  = new TH2F
           (Form("hPtLeadConeLambda0_Bin%d",ibin),
-           Form("#lambda_{0}, in cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, %s",
+           Form("#sigma_{long}^{2}, in cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, %s",
                 fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitleR.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhPtLeadConeBinLambda0[ibin]->SetYTitle("#lambda_{0}^{2}");
+          fhPtLeadConeBinLambda0[ibin]->SetYTitle("#sigma_{long}^{2}");
           fhPtLeadConeBinLambda0[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhPtLeadConeBinLambda0[ibin]) ;
           
           fhSumPtConeBinLambda0[ibin]  = new TH2F
           (Form("hSumPtConeLambda0_Bin%d",ibin),
-           Form("#lambda_{0}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, %s",
+           Form("#sigma_{long}^{2}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, %s",
                 fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitleR.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhSumPtConeBinLambda0[ibin]->SetYTitle("#lambda_{0}^{2}");
+          fhSumPtConeBinLambda0[ibin]->SetYTitle("#sigma_{long}^{2}");
           fhSumPtConeBinLambda0[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhSumPtConeBinLambda0[ibin]) ;
           
@@ -1883,17 +1883,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               Int_t binmc = ibin+imc*fNBkgBin;
               fhPtLeadConeBinLambda0MC[binmc]  = new TH2F
               (Form("hPtLeadConeLambda0_Bin%d_MC%s",ibin, mcPartName[imc].Data()),
-               Form("#lambda_{0}, in cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, MC %s, %s",
+               Form("#sigma_{long}^{2}, in cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, MC %s, %s",
                     fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitleR.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLeadConeBinLambda0MC[binmc]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLeadConeBinLambda0MC[binmc]->SetYTitle("#sigma_{long}^{2}");
               fhPtLeadConeBinLambda0MC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
               outputContainer->Add(fhPtLeadConeBinLambda0MC[binmc]) ;
               
               fhSumPtConeBinLambda0MC[binmc]  = new TH2F
               (Form("hSumPtConeLambda0_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
-               Form("#lambda_{0}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, MC %s, %s",
+               Form("#sigma_{long}^{2}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, MC %s, %s",
                     fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitleR.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhSumPtConeBinLambda0MC[binmc]->SetYTitle("#lambda_{0}^{2}");
+              fhSumPtConeBinLambda0MC[binmc]->SetYTitle("#sigma_{long}^{2}");
               fhSumPtConeBinLambda0MC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
               outputContainer->Add(fhSumPtConeBinLambda0MC[binmc]) ;
             
@@ -2093,17 +2093,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {
           fhPtTrigBinLambda0vsPtLeadCone[ibin]  = new TH2F
           (Form("hPtTrigBin_PtLeadConeVSLambda0_Bin%d",ibin),
-           Form("#lambda_{0} vs #it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, %s",
+           Form("#sigma_{long}^{2} vs #it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, %s",
                 fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitleR.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhPtTrigBinLambda0vsPtLeadCone[ibin]->SetYTitle("#lambda_{0}^{2}");
+          fhPtTrigBinLambda0vsPtLeadCone[ibin]->SetYTitle("#sigma_{long}^{2}");
           fhPtTrigBinLambda0vsPtLeadCone[ibin]->SetXTitle("#it{p}_{T}^{lead in cone} (GeV/#it{c})");
           outputContainer->Add(fhPtTrigBinLambda0vsPtLeadCone[ibin]) ;
           
           fhPtTrigBinLambda0vsSumPtCone[ibin]  = new TH2F
           (Form("hPtTrigBin_SumPtConeVSLambda0_Bin%d",ibin),
-           Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone} %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, %s",
+           Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone} %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, %s",
                 fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitleR.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-          fhPtTrigBinLambda0vsSumPtCone[ibin]->SetYTitle("#lambda_{0}^{2}");
+          fhPtTrigBinLambda0vsSumPtCone[ibin]->SetYTitle("#sigma_{long}^{2}");
           fhPtTrigBinLambda0vsSumPtCone[ibin]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
           outputContainer->Add(fhPtTrigBinLambda0vsSumPtCone[ibin]) ;
           
@@ -2111,17 +2111,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           {
             fhPtTrigBinLambda0vsSumPtTrackCone[ibin]  = new TH2F
             (Form("hPtTrigBin_SumPtTrackConeVSLambda0_Bin%d",ibin),
-             Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{track} %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, %s",
+             Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}_{track} %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, %s",
                   fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitleRCh.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-            fhPtTrigBinLambda0vsSumPtTrackCone[ibin]->SetYTitle("#lambda_{0}^{2}");
+            fhPtTrigBinLambda0vsSumPtTrackCone[ibin]->SetYTitle("#sigma_{long}^{2}");
             fhPtTrigBinLambda0vsSumPtTrackCone[ibin]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{track} (GeV/#it{c})");
             outputContainer->Add(fhPtTrigBinLambda0vsSumPtTrackCone[ibin]) ;         
             
             fhPtTrigBinLambda0vsSumPtClusterCone[ibin]  = new TH2F
             (Form("hPtTrigBin_SumPtClusterConeVSLambda0_Bin%d",ibin),
-             Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{cluster} %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, %s",
+             Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}_{cluster} %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, %s",
                   fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitleRNe.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-            fhPtTrigBinLambda0vsSumPtClusterCone[ibin]->SetYTitle("#lambda_{0}^{2}");
+            fhPtTrigBinLambda0vsSumPtClusterCone[ibin]->SetYTitle("#sigma_{long}^{2}");
             fhPtTrigBinLambda0vsSumPtClusterCone[ibin]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{cluster} (GeV/#it{c})");
             outputContainer->Add(fhPtTrigBinLambda0vsSumPtClusterCone[ibin]) ;
           }
@@ -2133,19 +2133,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               Int_t binmc = ibin+imc*fNPtTrigBin;
               fhPtTrigBinLambda0vsPtLeadConeMC[binmc]  = new TH2F
               (Form("hPtTrigBin_PtLeadConeVSLambda0_Bin%d_MC%s",ibin, mcPartName[imc].Data()),
-               Form("#lambda_{0} vs #it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, MC %s, %s",
+               Form("#sigma_{long}^{2} vs #it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, MC %s, %s",
                     fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleR.Data()),
                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtTrigBinLambda0vsPtLeadConeMC[binmc]->SetYTitle("#lambda_{0}^{2}");
+              fhPtTrigBinLambda0vsPtLeadConeMC[binmc]->SetYTitle("#sigma_{long}^{2}");
               fhPtTrigBinLambda0vsPtLeadConeMC[binmc]->SetXTitle("#it{p}_{T}^{lead in cone} (GeV/#it{c})");
               outputContainer->Add(fhPtTrigBinLambda0vsPtLeadConeMC[binmc]) ;
               
               fhPtTrigBinLambda0vsSumPtConeMC[binmc]  = new TH2F
               (Form("hPtTrigBin_SumPtConeVSLambda0_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
-               Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC %s, %s",
+               Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC %s, %s",
                     fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleR.Data()),
                nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-              fhPtTrigBinLambda0vsSumPtConeMC[binmc]->SetYTitle("#lambda_{0}^{2}");
+              fhPtTrigBinLambda0vsSumPtConeMC[binmc]->SetYTitle("#sigma_{long}^{2}");
               fhPtTrigBinLambda0vsSumPtConeMC[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
               outputContainer->Add(fhPtTrigBinLambda0vsSumPtConeMC[binmc]) ;
               
@@ -2153,19 +2153,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               {
                 fhPtTrigBinLambda0vsSumPtTrackConeMC[binmc]  = new TH2F
                 (Form("hPtTrigBin_SumPtTrackConeVSLambda0_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
-                 Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{track}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC %s, %s",
+                 Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}_{track}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC %s, %s",
                       fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleRCh.Data()),
                  nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-                fhPtTrigBinLambda0vsSumPtTrackConeMC[binmc]->SetYTitle("#lambda_{0}^{2}");
+                fhPtTrigBinLambda0vsSumPtTrackConeMC[binmc]->SetYTitle("#sigma_{long}^{2}");
                 fhPtTrigBinLambda0vsSumPtTrackConeMC[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{track} (GeV/#it{c})");
                 outputContainer->Add(fhPtTrigBinLambda0vsSumPtTrackConeMC[binmc]) ;
                 
                 fhPtTrigBinLambda0vsSumPtClusterConeMC[binmc]  = new TH2F
                 (Form("hPtTrigBin_SumPtClusterConeVSLambda0_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
-                 Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{cluster}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC %s, %s",
+                 Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}_{cluster}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC %s, %s",
                       fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleRNe.Data()),
                  nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-                fhPtTrigBinLambda0vsSumPtClusterConeMC[binmc]->SetYTitle("#lambda_{0}^{2}");
+                fhPtTrigBinLambda0vsSumPtClusterConeMC[binmc]->SetYTitle("#sigma_{long}^{2}");
                 fhPtTrigBinLambda0vsSumPtClusterConeMC[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{cluster} (GeV/#it{c})");
                 outputContainer->Add(fhPtTrigBinLambda0vsSumPtClusterConeMC[binmc]) ;
               }
@@ -2174,19 +2174,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               {  
                 fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]  = new TH2F
                 (Form("hPtTrigBin_SumPtConeVSLambda0_Bin%d_MC_NoOverlap%s",ibin,mcPartName[imc].Data()),
-                 Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, No Overlaps %s, %s",
+                 Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, No Overlaps %s, %s",
                       fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleR.Data()),
                  nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]->SetYTitle("#sigma_{long}^{2}");
                 fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
                 outputContainer->Add(fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]) ;
 
                 fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]  = new TH2F
                 (Form("hPtTrigBin_SumPtConeVSLambda0_Bin%d_MC_1Overlap%s",ibin,mcPartName[imc].Data()),
-                 Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, 1 Overlap %s, %s",
+                 Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, 1 Overlap %s, %s",
                       fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleR.Data()),
                  nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-                fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]->SetYTitle("#sigma_{long}^{2}");
                 fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
                 outputContainer->Add(fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]) ;
 
@@ -2194,37 +2194,37 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                 {
                   fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]  = new TH2F
                   (Form("hPtTrigBin_SumPtTrackConeVSLambda0_Bin%d_MC_NoOverlap%s",ibin,mcPartName[imc].Data()),
-                   Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{track}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, No Overlaps %s, %s",
+                   Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}_{track}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, No Overlaps %s, %s",
                         fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleRCh.Data()),
                    nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]->SetYTitle("#sigma_{long}^{2}");
                   fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{track} (GeV/#it{c})");
                   outputContainer->Add(fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]) ;
                   
                   fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[binmc]  = new TH2F
                   (Form("hPtTrigBin_SumPtClusterConeVSLambda0_Bin%d_MC_NoOverlap%s",ibin,mcPartName[imc].Data()),
-                   Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{cluster}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, No Overlaps %s, %s",
+                   Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}_{cluster}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, No Overlaps %s, %s",
                         fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleRNe.Data()),
                    nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[binmc]->SetYTitle("#sigma_{long}^{2}");
                   fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{cluster} (GeV/#it{c})");
                   outputContainer->Add(fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[binmc]) ;                
                   
                   fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap[binmc]  = new TH2F
                   (Form("hPtTrigBin_SumPtTrackConeVSLambda0_Bin%d_MC_1Overlap%s",ibin,mcPartName[imc].Data()),
-                   Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{track}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, 1 Overlap %s, %s",
+                   Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}_{track}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, 1 Overlap %s, %s",
                         fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleRCh.Data()),
                    nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-                  fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                  fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap[binmc]->SetYTitle("#sigma_{long}^{2}");
                   fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{track} (GeV/#it{c})");
                   outputContainer->Add(fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap[binmc]) ;
                   
                   fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[binmc]  = new TH2F
                   (Form("hPtTrigBin_SumPtClusterConeVSLambda0_Bin%d_MC_1Overlap%s",ibin,mcPartName[imc].Data()),
-                   Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}_{cluster}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, 1 Overlap %s, %s",
+                   Form("#sigma_{long}^{2} vs #Sigma #it{p}_{T}^{in cone}_{cluster}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC, 1 Overlap %s, %s",
                         fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitleRNe.Data()),
                    nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
-                  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[binmc]->SetYTitle("#lambda_{0}^{2}");
+                  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[binmc]->SetYTitle("#sigma_{long}^{2}");
                   fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone}_{cluster} (GeV/#it{c})");
                   outputContainer->Add(fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[binmc]) ;
 
@@ -3438,22 +3438,22 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       {
         fhELambda0[iso]  = new TH2F
         (Form("hELambda0%s",isoName[iso].Data()),
-         Form("%s cluster : #it{E} vs #lambda_{0}, %s",isoTitle[iso].Data(),parTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhELambda0[iso]->SetYTitle("#lambda_{0}^{2}");
+         Form("%s cluster : #it{E} vs #sigma_{long}^{2}, %s",isoTitle[iso].Data(),parTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhELambda0[iso]->SetYTitle("#sigma_{long}^{2}");
         fhELambda0[iso]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhELambda0[iso]) ;
         
 //        fhELambda1[iso]  = new TH2F
 //        (Form("hELambda1%s",isoName[iso].Data()),
-//         Form("%s cluster: #it{E} vs #lambda_{1}, %s",isoTitle[iso].Data(),parTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-//        fhELambda1[iso]->SetYTitle("#lambda_{1}^{2}");
+//         Form("%s cluster: #it{E} vs #sigma_{short}^{2}, %s",isoTitle[iso].Data(),parTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//        fhELambda1[iso]->SetYTitle("#sigma_{short}^{2}");
 //        fhELambda1[iso]->SetXTitle("#it{E} (GeV)");
 //        outputContainer->Add(fhELambda1[iso]) ;
         
         fhPtLambda0[iso]  = new TH2F
         (Form("hPtLambda0%s",isoName[iso].Data()),
-         Form("%s cluster : #it{p}_{T} vs #lambda_{0}, %s",isoTitle[iso].Data(), parTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhPtLambda0[iso]->SetYTitle("#lambda_{0}^{2}");
+         Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}, %s",isoTitle[iso].Data(), parTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhPtLambda0[iso]->SetYTitle("#sigma_{long}^{2}");
         fhPtLambda0[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtLambda0[iso]) ;
         
@@ -3475,9 +3475,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             
             fhPtLambda0PerSM[iso][ism]  = new TH2F
             (Form("hPtLambda0_SM%d_%s",ism,isoName[iso].Data()),
-             Form("%s cluster : #it{p}_{T} vs #lambda_{0}^{2}, SM %d, %s",isoTitle[iso].Data(), ism, parTitle[iso].Data()),
+             Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}, SM %d, %s",isoTitle[iso].Data(), ism, parTitle[iso].Data()),
              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhPtLambda0PerSM[iso][ism]->SetYTitle("#lambda_{0}^{2}");
+            fhPtLambda0PerSM[iso][ism]->SetYTitle("#sigma_{long}^{2}");
             fhPtLambda0PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             outputContainer->Add(fhPtLambda0PerSM[iso][ism]) ;
             
@@ -3485,9 +3485,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             {
               fhPtLambda0PerSMNCellCut[iso][ism]  = new TH2F
               (Form("hPtLambda0_NCellCut_SM%d_%s",ism,isoName[iso].Data()),
-               Form("%s cluster : #it{p}_{T} vs #lambda_{0}^{2}, n_{cell}^{w>0} > 4, SM %d, %s",isoTitle[iso].Data(), ism, parTitle[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}, n_{cell}^{w>0} > 4, SM %d, %s",isoTitle[iso].Data(), ism, parTitle[iso].Data()),
                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0PerSMNCellCut[iso][ism]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0PerSMNCellCut[iso][ism]->SetYTitle("#sigma_{long}^{2}");
               fhPtLambda0PerSMNCellCut[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
               outputContainer->Add(fhPtLambda0PerSMNCellCut[iso][ism]) ;
               
@@ -3501,7 +3501,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               
               fhPtNCellLowM02PerSM[iso][ism]  = new TH2F
               (Form("hPtNCell_LowM02_SM%d_%s",ism,isoName[iso].Data()),
-               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.1<#lambda_{0}^{2}<0.3, SM %d, %s",isoTitle[iso].Data(), ism, parTitle[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.1<#sigma_{long}^{2}<0.3, SM %d, %s",isoTitle[iso].Data(), ism, parTitle[iso].Data()),
                nptbins,ptmin,ptmax,30,-0.5,29.5);
               fhPtNCellLowM02PerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
               fhPtNCellLowM02PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -3509,7 +3509,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               
               fhPtNCellHighM02PerSM[iso][ism]  = new TH2F
               (Form("hPtNCell_HighM02_SM%d_%s",ism,isoName[iso].Data()),
-               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.5<#lambda_{0}^{2}<2, SM %d, %s",isoTitle[iso].Data(), ism, parTitle[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.5<#sigma_{long}^{2}<2, SM %d, %s",isoTitle[iso].Data(), ism, parTitle[iso].Data()),
                nptbins,ptmin,ptmax,30,-0.5,29.5);
               fhPtNCellHighM02PerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
               fhPtNCellHighM02PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -3532,9 +3532,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           {            
             fhPtLambda0PerTCardIndex[iso][itc]  = new TH2F
             (Form("hPtLambda0_TC%d_%s",itc,isoName[iso].Data()),
-             Form("%s cluster : #it{p}_{T} vs #lambda_{0}, TC index %d, %s",isoTitle[iso].Data(), itc, parTitle[iso].Data()),
+             Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}, TC index %d, %s",isoTitle[iso].Data(), itc, parTitle[iso].Data()),
              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhPtLambda0PerTCardIndex[iso][itc]->SetYTitle("#lambda_{0}^{2}");
+            fhPtLambda0PerTCardIndex[iso][itc]->SetYTitle("#sigma_{long}^{2}");
             fhPtLambda0PerTCardIndex[iso][itc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             outputContainer->Add(fhPtLambda0PerTCardIndex[iso][itc]) ;
           }
@@ -3546,17 +3546,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           {
             fhPtLambda0MC[imc][iso]  = new TH2F
             (Form("hPtLambda0%s_MC%s",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
+                                                Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhPtLambda0MC[imc][iso]->SetYTitle("#lambda_{0}^{2}");
+            fhPtLambda0MC[imc][iso]->SetYTitle("#sigma_{long}^{2}");
             fhPtLambda0MC[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtLambda0MC[imc][iso]) ;
           
             fhPtLambda0MCConv[imc][iso]  = new TH2F
             (Form("hPtLambda0%s_MC%sConv",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
+                                                Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, from conversion",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhPtLambda0MCConv[imc][iso]->SetYTitle("#lambda_{0}^{2}");
+            fhPtLambda0MCConv[imc][iso]->SetYTitle("#sigma_{long}^{2}");
             fhPtLambda0MCConv[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtLambda0MCConv[imc][iso]) ;
             
@@ -3564,9 +3564,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             {
               fhPtLambda0MCNCellCut[imc][iso]  = new TH2F
               (Form("hPtLambda0%s_MC%sNCellCut",isoName[iso].Data(),mcPartName[imc].Data()),
-               Form("%s cluster : #it{p}_{T} vs #lambda_{0}, n_{cell}^{w>0.1} > 4: %s %s",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}, n_{cell}^{w>0.1} > 4: %s %s",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0MCNCellCut[imc][iso]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0MCNCellCut[imc][iso]->SetYTitle("#sigma_{long}^{2}");
               fhPtLambda0MCNCellCut[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
               outputContainer->Add( fhPtLambda0MCNCellCut[imc][iso]) ;
             }
@@ -3575,43 +3575,43 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             {
               fhPtLambda0MCWith1Overlap[imc][iso]  = new TH2F
               (Form("hPtLambda0%s_MC%s_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
-               Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, 1 overlap",
+               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, 1 overlap",
                     isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0MCWith1Overlap[imc][iso]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0MCWith1Overlap[imc][iso]->SetYTitle("#sigma_{long}^{2}");
               fhPtLambda0MCWith1Overlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
               outputContainer->Add( fhPtLambda0MCWith1Overlap[imc][iso]) ;
               
               fhPtLambda0MCConvWith1Overlap[imc][iso]  = new TH2F
               (Form("hPtLambda0%s_MC%sConv_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
-               Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion, 1 overlap",
+               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, from conversion, 1 overlap",
                     isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0MCConvWith1Overlap[imc][iso]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0MCConvWith1Overlap[imc][iso]->SetYTitle("#sigma_{long}^{2}");
               fhPtLambda0MCConvWith1Overlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
               outputContainer->Add( fhPtLambda0MCConvWith1Overlap[imc][iso]) ;
               
               fhPtLambda0MCWithNoOverlap[imc][iso]  = new TH2F
               (Form("hPtLambda0%s_MC%s_NoOverlap",isoName[iso].Data(),mcPartName[imc].Data()),
-               Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, no overlap",
+               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, no overlap",
                     isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0MCWithNoOverlap[imc][iso]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0MCWithNoOverlap[imc][iso]->SetYTitle("#sigma_{long}^{2}");
               fhPtLambda0MCWithNoOverlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
               outputContainer->Add( fhPtLambda0MCWithNoOverlap[imc][iso]) ;
               
               fhPtLambda0MCConvWithNoOverlap[imc][iso]  = new TH2F
               (Form("hPtLambda0%s_MC%sConv_NoOverlap",isoName[iso].Data(),mcPartName[imc].Data()),
-               Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion, no overlap",
+               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, from conversion, no overlap",
                     isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0MCConvWithNoOverlap[imc][iso]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0MCConvWithNoOverlap[imc][iso]->SetYTitle("#sigma_{long}^{2}");
               fhPtLambda0MCConvWithNoOverlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
               outputContainer->Add( fhPtLambda0MCConvWithNoOverlap[imc][iso]) ;
               
               fhPtNOverlap[imc][iso]  = new TH2F
               (Form("hPtNOverlaps%s_MC%s_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
-               Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, 1 overlap",
+               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, 1 overlap",
                     isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                nptbins,ptmin,ptmax,10,0,10);
               fhPtNOverlap[imc][iso]->SetYTitle("#it{N} overlaps");
@@ -3620,7 +3620,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               
               fhPtNOverlapConv[imc][iso]  = new TH2F
               (Form("hPtNOverlaps%s_MC%sConv_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
-               Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion, 1 overlap",
+               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, from conversion, 1 overlap",
                     isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                nptbins,ptmin,ptmax,10,0,10);
               fhPtNOverlapConv[imc][iso]->SetYTitle("#it{N} overlaps");
@@ -3635,24 +3635,24 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {
           fhPtLambda0TRD[iso]  = new TH2F
           (Form("hPtLambda0TRD%s",isoName[iso].Data()),
-           Form("%s cluster: #it{p}_{T} vs #lambda_{0}, SM behind TRD, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
+           Form("%s cluster: #it{p}_{T} vs #sigma_{long}^{2}, SM behind TRD, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhPtLambda0TRD[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhPtLambda0TRD[iso]->SetYTitle("#sigma_{long}^{2}");
           fhPtLambda0TRD[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhPtLambda0TRD[iso]) ;
           
           fhELambda0TRD[iso]  = new TH2F
           (Form("hELambda0TRD%s",isoName[iso].Data()),
-           Form("%s cluster: #it{E} vs #lambda_{0}, SM behind TRD, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
+           Form("%s cluster: #it{E} vs #sigma_{long}^{2}, SM behind TRD, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhELambda0TRD[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0TRD[iso]->SetYTitle("#sigma_{long}^{2}");
           fhELambda0TRD[iso]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhELambda0TRD[iso]) ;
           
 //          fhELambda1TRD[iso]  = new TH2F
 //          (Form("hELambda1TRD%s",isoName[iso].Data()),
-//           Form("%s cluster: #it{E} vs #lambda_{1}, SM behind TRD, %s",isoTitle[iso].Data(),parTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-//          fhELambda1TRD[iso]->SetYTitle("#lambda_{1}^{2}");
+//           Form("%s cluster: #it{E} vs #sigma_{short}^{2}, SM behind TRD, %s",isoTitle[iso].Data(),parTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//          fhELambda1TRD[iso]->SetYTitle("#sigma_{short}^{2}");
 //          fhELambda1TRD[iso]->SetXTitle("#it{E} (GeV)");
 //          outputContainer->Add(fhELambda1TRD[iso]) ;
         }
@@ -3663,55 +3663,55 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           (Form("hNLocMax%s",isoName[iso].Data()),
            Form("%s - Number of local maxima in cluster, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
            nptbins,ptmin,ptmax,10,0,10);
-          fhNLocMax[iso]->SetYTitle("#it{NLM}");
+          fhNLocMax[iso]->SetYTitle("#it{n}_{LM}");
           fhNLocMax[iso]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhNLocMax[iso]) ;
           
           fhELambda0LocMax1[iso]  = new TH2F
           (Form("hELambda0LocMax1%s",isoName[iso].Data()),
-           Form("%s cluster (#eta) pairs: #it{E} vs #lambda_{0}, #it{NLM}=1, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
+           Form("%s cluster (#eta) pairs: #it{E} vs #sigma_{long}^{2}, #it{n}_{LM}=1, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhELambda0LocMax1[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0LocMax1[iso]->SetYTitle("#sigma_{long}^{2}");
           fhELambda0LocMax1[iso]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhELambda0LocMax1[iso]) ;
           
           fhELambda1LocMax1[iso]  = new TH2F
           (Form("hELambda1LocMax1%s",isoName[iso].Data()),
-           Form("%s cluster (#eta) pairs: #it{E} vs #lambda_{1}, #it{NLM}=1, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
+           Form("%s cluster (#eta) pairs: #it{E} vs #sigma_{short}^{2}, #it{n}_{LM}=1, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhELambda1LocMax1[iso]->SetYTitle("#lambda_{1}^{2}");
+          fhELambda1LocMax1[iso]->SetYTitle("#sigma_{short}^{2}");
           fhELambda1LocMax1[iso]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhELambda1LocMax1[iso]) ;
           
           fhELambda0LocMax2[iso]  = new TH2F
           (Form("hELambda0LocMax2%s",isoName[iso].Data()),
-           Form("%s cluster (#eta) pairs: #it{E} vs #lambda_{0}, #it{NLM}=2, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
+           Form("%s cluster (#eta) pairs: #it{E} vs #sigma_{long}^{2}, #it{n}_{LM}=2, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhELambda0LocMax2[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0LocMax2[iso]->SetYTitle("#sigma_{long}^{2}");
           fhELambda0LocMax2[iso]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhELambda0LocMax2[iso]) ;
           
           fhELambda1LocMax2[iso]  = new TH2F
           (Form("hELambda1LocMax2%s",isoName[iso].Data()),
-           Form("%s cluster (#eta) pairs: #it{E} vs #lambda_{1}, #it{NLM}=2, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
+           Form("%s cluster (#eta) pairs: #it{E} vs #sigma_{short}^{2}, #it{n}_{LM}=2, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhELambda1LocMax2[iso]->SetYTitle("#lambda_{1}^{2}");
+          fhELambda1LocMax2[iso]->SetYTitle("#sigma_{short}^{2}");
           fhELambda1LocMax2[iso]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhELambda1LocMax2[iso]) ;
           
           fhELambda0LocMaxN[iso]  = new TH2F
           ( Form("hELambda0LocMaxN%s",isoName[iso].Data()),
-           Form("%s cluster (#eta) pairs: #it{E} vs #lambda_{0}, #it{NLM}>2, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
+           Form("%s cluster (#eta) pairs: #it{E} vs #sigma_{long}^{2}, #it{n}_{LM}>2, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhELambda0LocMaxN[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0LocMaxN[iso]->SetYTitle("#sigma_{long}^{2}");
           fhELambda0LocMaxN[iso]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhELambda0LocMaxN[iso]) ;
           
           fhELambda1LocMaxN[iso]  = new TH2F
           (Form("hELambda1LocMaxN%s",isoName[iso].Data()),
-           Form("%s cluster (#eta) pairs: #it{E} vs #lambda_{1}, #it{NLM}>2, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
+           Form("%s cluster (#eta) pairs: #it{E} vs #sigma_{short}^{2}, #it{n}_{LM}>2, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhELambda1LocMaxN[iso]->SetYTitle("#lambda_{1}^{2}");
+          fhELambda1LocMaxN[iso]->SetYTitle("#sigma_{short}^{2}");
           fhELambda1LocMaxN[iso]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhELambda1LocMaxN[iso]) ;
         } // NLM
@@ -3729,10 +3729,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
               fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism] = 
               new TH2F(Form("hLam0_%s_eta%d_phi%d_sm%d",isoName[iso].Data(),ieta,iphi,ism),
-                       Form("%s, #it{p}_{T} vs #lambda_{0}^{2}, sm %d, region #eta %d, #varphi %d",
+                       Form("%s, #it{p}_{T} vs #sigma_{long}^{2}, sm %d, region #eta %d, #varphi %d",
                             isoTitle[iso].Data(),ism,ieta,iphi),
                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism]->SetYTitle("#lambda_{0}^{2}");
+              fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism]->SetYTitle("#sigma_{long}^{2}");
               fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism]->SetXTitle("#it{p}_{T} (GeV)");
               outputContainer->Add(fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism]) ;
               
@@ -3796,20 +3796,20 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         for(Int_t iR = 0; iR < 6; iR++)
         {
           fhMCConversionLambda0Rcut[iR][iso] = new TH2F(Form("hMCPhotonConversionLambda0%s_R%d",isoName[iso].Data(),iR),
-                                                        Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s",
+                                                        Form("%s, cluster from converted photon, #it{p}_{T} vs #sigma_{long}^{2}, conversion in %s",
                                                              isoTitle[iso].Data(),region[iR].Data()),
                                                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhMCConversionLambda0Rcut[iR][iso]->SetYTitle("#lambda_{0}^{2}");
+          fhMCConversionLambda0Rcut[iR][iso]->SetYTitle("#sigma_{long}^{2}");
           fhMCConversionLambda0Rcut[iR][iso]->SetXTitle("#it{p}_{T} (GeV)");
           outputContainer->Add(fhMCConversionLambda0Rcut[iR][iso]) ;
           
           if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0)
           {
             fhMCConversionLambda0RcutTRD[iR][iso] = new TH2F(Form("hMCPhotonConversionLambda0TRD%s_R%d",isoName[iso].Data(),iR),
-                                                             Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, SM covered by TRD",
+                                                             Form("%s, cluster from converted photon, #it{p}_{T} vs #sigma_{long}^{2}, conversion in %s, SM covered by TRD",
                                                                   isoTitle[iso].Data(),region[iR].Data()),
                                                              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhMCConversionLambda0RcutTRD[iR][iso]->SetYTitle("#lambda_{0}^{2}");
+            fhMCConversionLambda0RcutTRD[iR][iso]->SetYTitle("#sigma_{long}^{2}");
             fhMCConversionLambda0RcutTRD[iR][iso]->SetXTitle("#it{p}_{T} (GeV)");
             outputContainer->Add(fhMCConversionLambda0RcutTRD[iR][iso]) ;
           }
