@@ -419,9 +419,27 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
 
 //_____________________________________________________________________________
 /// Fill some histograms to understand pile-up.
+/// Remember to relax time cuts in the reader for time related histograms, filled only for isolated clusters
 //_____________________________________________________________________________
-void AliAnaParticleIsolation::FillPileUpHistograms(Float_t energy, Float_t time)
-{  
+void AliAnaParticleIsolation::FillPileUpHistograms(AliCaloTrackParticleCorrelation* pCandidate)
+{ 
+  Bool_t  isolated   = pCandidate->IsIsolated();
+  Float_t energy     = pCandidate->E();
+  Float_t pt         = pCandidate->Pt();
+  Float_t weightTrig = pCandidate->GetWeight();
+  Float_t time       = pCandidate->GetTime();
+
+  if(GetReader()->IsPileUpFromSPD())               fhPtPileUp[0][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
+  if(GetReader()->IsPileUpFromEMCal())             fhPtPileUp[1][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
+  if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtPileUp[2][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
+  if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtPileUp[3][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
+  if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtPileUp[4][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
+  if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtPileUp[5][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
+  if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtPileUp[6][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
+  
+  // Fill histo now only for isolated clusters
+  if ( !isolated ) return;
+
   AliVEvent * event = GetReader()->GetInputEvent();
   
   fhTimeENoCut->Fill(energy, time, GetEventWeight());
@@ -5134,20 +5152,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhPtEventPlane[isolated] ->Fill(pt, GetEventPlaneAngle(), GetEventWeight()*weightTrig) ;
     }
     
+    // Fill histograms to undertand pile-up before other cuts applied
+    // Remember to relax time cuts in the reader for time related histograms
     if ( IsPileUpAnalysisOn() )
-    {
-      if(GetReader()->IsPileUpFromSPD())                fhPtPileUp[0][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
-      if(GetReader()->IsPileUpFromEMCal())             fhPtPileUp[1][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
-      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtPileUp[2][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
-      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtPileUp[3][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtPileUp[4][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtPileUp[5][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtPileUp[6][isolated]->Fill(pt, GetEventWeight()*weightTrig) ; 
-      
-      // Fill histograms to undertand pile-up before other cuts applied
-      // Remember to relax time cuts in the reader
-      if ( isolated ) FillPileUpHistograms(energy, aod->GetTime());//aod->GetCaloLabel(0));
-    }
+      FillPileUpHistograms(aod);//aod->GetCaloLabel(0));
     
   }// aod loop
 }

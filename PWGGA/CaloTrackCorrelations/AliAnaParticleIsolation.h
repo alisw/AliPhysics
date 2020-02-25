@@ -63,7 +63,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
  
   // Analysis specific methods
   
-  void         FillPileUpHistograms(Float_t energy, Float_t time) ; //Int_t clusterID) ;
+  void         FillPileUpHistograms(AliCaloTrackParticleCorrelation* pCandidate) ; //Int_t clusterID) ;
   
   void         FillAcceptanceHistograms();
   
