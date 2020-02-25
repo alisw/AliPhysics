@@ -188,6 +188,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyNCellsCut()              { fStudyNCellsCut     = kTRUE  ; }
   void         SwitchOffStudyNCellsCut()             { fStudyNCellsCut     = kFALSE ; }
   
+  void         SwitchOnFillTrackOriginHistograms()   { fFillTrackOriginHistograms = kTRUE  ; }
+  void         SwitchOffFillTrackOriginHistograms()  { fFillTrackOriginHistograms = kFALSE ; }
+  
   // Study of pT cut in cone
   void         SwitchOnStudyPtCutInCone()            { fStudyPtCutInCone = kTRUE ; }
   void         SwitchOffStudyPtCutInCone()           { fStudyPtCutInCone = kFALSE; }
@@ -244,6 +247,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
   Bool_t   fStudyTracksInCone;                        ///<  Study tracks depending on different track info
   Bool_t   fStudyMCConversionRadius;                  ///<  Study shower shape depending the conversion radius
+  Bool_t   fFillTrackOriginHistograms;                ///< Fill histograms checking the MC origin of the tracks in cone
   
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.

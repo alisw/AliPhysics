@@ -59,7 +59,7 @@ fFillTMHisto(0),                  fFillSSHisto(1),
 fFillPerSMHistograms(0),          fFillPerTCardIndexHistograms(0),         fTCardIndex(-1),                
 fFillEMCALRegionHistograms(0),   
 fFillOverlapHistograms(0),                        
-fStudyTracksInCone(0),            fStudyMCConversionRadius(0),
+fStudyTracksInCone(0),            fStudyMCConversionRadius(0),             fFillTrackOriginHistograms(0),
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
 fDecayBits(),                     fDecayTagsM02Cut(0),
 fFillNLMHistograms(0),
@@ -2587,7 +2587,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         }
       }
       
-      if ( IsDataMC() )
+      if ( IsDataMC() && fFillTrackOriginHistograms )
       {
         TString mcChPartName[] = {"Pion","Kaon","Proton","Other"};
         for(Int_t imc = 0; imc < 4; imc++)
@@ -5437,14 +5437,15 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       if(dR > GetIsolationCut()->GetConeSize())
         continue;
             
-      if ( partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
+      if (  fFillTrackOriginHistograms && 
+            partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
       {
         Int_t mcChTag = 3;
         if      ( TMath::Abs(partInConePDG) == 211  )  mcChTag = 0;
         else if ( TMath::Abs(partInConePDG) == 321  )  mcChTag = 1; 
         else if ( TMath::Abs(partInConePDG) == 2212 )  mcChTag = 2; 
         
-        if(physPrimary)
+        if ( physPrimary )
           fhPtTrackInConeMCPrimaryGener  [mcChTag]->Fill(photonPt, partInConePt, GetEventWeight()*weightPt);
         else
           fhPtTrackInConeMCSecondaryGener[mcChTag]->Fill(photonPt, partInConePt, GetEventWeight()*weightPt);
@@ -6693,7 +6694,8 @@ void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation 
       Int_t  partInConePDG    = mcpart->PdgCode();
       Bool_t physPrimary      = mcpart->IsPhysicalPrimary();
       
-      if ( partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
+      if (  fFillTrackOriginHistograms && 
+            partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
       {
         Int_t mcChTag = 3;
         if      ( TMath::Abs(partInConePDG) == 211  )  mcChTag = 0;
