@@ -124,7 +124,7 @@ public:
 
     enum TCTagType{
         TCNo,
-        TCIPSig,
+        TCIPSigPtDep,
         TCIPFixedPt
     };
 
@@ -372,8 +372,9 @@ public:
     void setTrackIPvsPtValues(double fav0cut, double fbv0cut, double fcv0cut){fV0Cuts[fAV0Cut]=fav0cut;fV0Cuts[fBV0Cut]=fbv0cut;fV0Cuts[fCV0Cut]=fcv0cut;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
-    void setfNThresholds(Int_t value){fNThresholds=value;}
+    void setfNThresholds(Int_t value){fNThresholds=value; printf("Setting threshold value=%i\n",fNThresholds);}
     void setfUserSignificance(Bool_t value){fUseSignificance=value;}
+    void SetTagSettings(int iTagSetting);
 
     //_____________________________
     //Lund Plane
@@ -396,7 +397,7 @@ public:
     void SetTCThresholds(TObjArray** &threshs);
     void SetProbThresholds(TObjArray** &threshs);
     void ReadProbvsIPLookup(TObjArray *&oLookup);
-    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh);
+    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh, int iTagSetting);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
     void setTCThresholdPtFixed(double value){fTCThresholdPtFixed=value;};
 
@@ -499,6 +500,7 @@ private:
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
     Int_t fNThresholds;//
+    Int_t fNTrackTypes;//
     vector<TString> sTemplateFlavour;
 
     //______________________
@@ -675,7 +677,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 52)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 53)
 };
 
 #endif
