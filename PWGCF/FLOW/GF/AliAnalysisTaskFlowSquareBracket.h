@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
-#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
+#ifndef ALIANALYSISTASKFLOWSQUAREBRACKET_H
+#define ALIANALYSISTASKFLOWSQUAREBRACKET_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -28,9 +28,10 @@ class AliPicoTrack;
 class AliAODv0;
 class AliAODcascade;
 class AliAODMCParticle;
+//class AliAnalysisTaskFlowSquareBracket;
 //_____________________________________________________________________________
 
-class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
+class AliAnalysisTaskFlowSquareBracket : public AliAnalysisTaskSE
 {
     public:
       enum    RunMode {kFull = 0, kTest, kSkipFlow}; // task running mode (NOT GRID MODE)
@@ -62,11 +63,11 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
         private:
       };
 
-                              AliAnalysisTaskUniFlowMultiStrange(); // constructor
-                              AliAnalysisTaskUniFlowMultiStrange(const char *name); // named (primary) constructor
-                              AliAnalysisTaskUniFlowMultiStrange(const AliAnalysisTaskUniFlowMultiStrange&); // not implemented
-                              AliAnalysisTaskUniFlowMultiStrange& operator=(const AliAnalysisTaskUniFlowMultiStrange&); // not implemented
-      virtual                 ~AliAnalysisTaskUniFlowMultiStrange(); // destructor
+                              AliAnalysisTaskFlowSquareBracket(); // constructor
+                              AliAnalysisTaskFlowSquareBracket(const char *name); // named (primary) constructor
+                              AliAnalysisTaskFlowSquareBracket(const AliAnalysisTaskFlowSquareBracket&); // not implemented
+                              AliAnalysisTaskFlowSquareBracket& operator=(const AliAnalysisTaskFlowSquareBracket&); // not implemented
+      virtual                 ~AliAnalysisTaskFlowSquareBracket(); // destructor
 
 
       virtual void            UserCreateOutputObjects(); //
@@ -726,7 +727,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*			  		        fhQAV0sArmenterosLambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		        fhQAV0sArmenterosALambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
+      ClassDef(AliAnalysisTaskFlowSquareBracket, 13);
 };
 #endif
 

@@ -49,6 +49,7 @@ set(SRCS
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx
+  AliAnalysisTaskFlowSquareBracket.cxx
   )
 
 # Headers from sources
