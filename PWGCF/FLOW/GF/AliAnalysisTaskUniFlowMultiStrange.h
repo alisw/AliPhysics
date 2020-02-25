@@ -11,7 +11,6 @@
 class TString;
 class TComplex;
 class TFile;
-class AliDirList;
 class TList;
 class TClonesArray;
 class TProfile;
@@ -91,7 +90,8 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
 
       void                    SetProcessCascades(Bool_t use = kTRUE) { fProcessSpec[kXi] = use; fProcessSpec[kOmega] = use; }
- 
+      void                    SetPosAndNegRF(Bool_t use = kTRUE){IsPosAndNegRF = use;} 
+      void                    SetPIDRFFlow(Bool_t use = kTRUE){IsPIDRFFlow= use;}
       void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
                               fAddTwoN1.push_back(n1); fAddTwoN2.push_back(n2); fAddTwoIsRefs.push_back(refs);
                               fAddTwoIsPOIs.push_back(pois);}
@@ -296,7 +296,8 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    FillQAPhi(Int_t iQAindex, const AliPicoTrack* part = 0x0) const; // filling QA plots for V0s candidates
 
       // Flow related methods
-      void                    FillRefsVectors(Double_t dGap); // fill flow vector Q with RFPs for reference flow
+      void                    FillRefsVectors(Double_t dGap, PartSpecies species); // fill flow vector Q with RFPs for reference flow
+      Int_t                    FillPIDRefsVectors(const Double_t dEtaGap, const PartSpecies species, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh);
       Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
@@ -318,6 +319,8 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
        Bool_t  Is2018Data;//
        Bool_t  IsPIDorrection;//
        Bool_t  IsAdditional2018DataEventCut;//
+       Bool_t  IsPosAndNegRF;//
+       Bool_t  IsPIDRFFlow;//
        Double_t fXiPseMin;//
        Double_t fXiPseMax;//
        Double_t fV0RadiusXiMin;//
@@ -356,6 +359,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       TComplex                Two(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (no eta gap)
       TComplex                TwoGap(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (with eta gap)
+       TComplex               TwoPos(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the positive eta)
+      TComplex                TwoNeg(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the negative eta)
+
       TComplex                Three(Int_t n1, Int_t n2, Int_t n3) const; // Three particle reference correlation calculations (no eta gap)
       TComplex                Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
       TComplex                FourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
@@ -540,14 +546,14 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Double_t                fCutPhiInvMassMax; // [1.07] (GeV/c2) min inv. mass window for selected phi candidates
 
       // output lists
-      AliDirList*                  fQAEvents; //! events list
-      TList*                       fQAEventCut; //! events list
-      AliDirList*                  fQACharged; //! charged tracks list
-      AliDirList*                  fQAPID; //! pi,K,p list
-      AliDirList*                  fQAV0s; //! V0s candidates list
-      AliDirList*                  fQAPhi; //! Phi candidates list
-      AliDirList*                  fFlowWeights; //! list for flow weights
-      AliDirList*                  fListFlow[kUnknown]; //! flow lists
+      TList*                  fQAEvents; //! events list
+      TList*                  fQAEventCut; //! events list
+      TList*                  fQACharged; //! charged tracks list
+      TList*                  fQAPID; //! pi,K,p list
+      TList*                  fQAV0s; //! V0s candidates list
+      TList*                  fQAPhi; //! Phi candidates list
+      TList*                  fFlowWeights; //! list for flow weights
+      TList*                  fListFlow[kUnknown]; //! flow lists
       // histograms & profiles
 
       // Flow
@@ -724,3 +730,4 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
 };
 #endif
+
