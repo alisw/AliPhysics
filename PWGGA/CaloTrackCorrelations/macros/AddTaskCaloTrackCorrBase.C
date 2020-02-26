@@ -182,6 +182,16 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
   reader->SetEMCALEMin(0.3);
   reader->SetEMCALEMax(1000);
   
+  reader->SetEMCALNCellsCut(1);
+  
+  if ( cutsString.Contains("NCellCutEnDep") )
+  {
+    // from 40 GeV, ncell > 4.5 + 0.05 * En
+    reader->SetEMCALEnDepNCellsCut(40,4.5,0.05);
+  }
+  
+  reader->SetEMCALBadChannelMinDist(2);
+  
   if      ( calorimeter == "EMCAL" )
   {
      if     ( year > 2014 ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 185.8) ; //12 SM
@@ -275,7 +285,11 @@ void ConfigurePHOSClusterCuts ( AliCaloTrackReader* reader,
 {
   reader->SetPHOSEMin(0.3);
   reader->SetPHOSEMax(1000);
-  
+
+  reader->SetPHOSNCellsCut(2);
+
+  reader->SetPHOSBadChannelMinDist(2);
+
   if ( year > 2014 ) reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
   else               reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ; 
   
