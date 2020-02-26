@@ -52,47 +52,70 @@ fStored(0)
 }
 
 
+Bool_t AliForwardFlowUtil::XeXe_Run(Int_t runnumber){
+    // Xe-Xe
+    if ((runnumber == 280234) || (runnumber == 280235)) return kTRUE;
+    return kFALSE;
+}
 
-Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
-  
+Bool_t AliForwardFlowUtil::PbPb_lowIR_Run(Int_t runnumber){
+
   if (fSettings.run_list == 0){
     if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
     if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
+  }
+  if (fSettings.run_list == 1){
+    if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
+  }
+  if (fSettings.run_list == 2){
+    if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
+  }
+  return kFALSE;
+}
 
-    //Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246089, 246153, 246185, 246225, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+
+Bool_t AliForwardFlowUtil::PbPb_highIR_Run(Int_t runnumber){
+
+  if (fSettings.run_list == 0){
     Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
     for (Int_t i = 0; i < 17; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
     }
-
-    // Xe-Xe
-    if ((runnumber == 280234) || (runnumber == 280235)) return kTRUE;
-    
-    Double_t pPb_goodruns[] = {265309, 265335, 265339, 265377, 265383, 265387, 265421, 265425, 
-                               265435, 265521, 265332, 265336, 265342, 265378, 265384, 265388, 
-                               265422, 265426, 265499, 265525, 265334, 265338, 265344, 265381,
-                               265385, 265420, 265424, 265427, 265501};
-    for (Int_t i = 0; i < 29; i++){
-      if (runnumber == pPb_goodruns[i]) return kTRUE;
-    }
-
   }
   if (fSettings.run_list == 1){
-    if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
-
     Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
     for (Int_t i = 0; i < 13; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
-    }   
+    }  
   }
   if (fSettings.run_list == 2){
-    if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
-
     Double_t HIR_goodruns[] = {246089, 246153, 246185, 246225};
     for (Int_t i = 0; i < 4; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
     }   
   }
+  return kFALSE;
+}
+
+
+Bool_t AliForwardFlowUtil::pPb_Run(Int_t runnumber){
+
+  Double_t pPb_goodruns[] = {265309, 265335, 265339, 265377, 265383, 265387, 265421, 265425, 
+                             265435, 265521, 265332, 265336, 265342, 265378, 265384, 265388, 
+                             265422, 265426, 265499, 265525, 265334, 265338, 265344, 265381,
+                             265385, 265420, 265424, 265427, 265501};
+  for (Int_t i = 0; i < 29; i++){
+    if (runnumber == pPb_goodruns[i]) return kTRUE;
+  }
+
+  return kFALSE;
+}
+
+Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
+  if (XeXe_Run(runnumber))        return kTRUE;
+  if (PbPb_lowIR_Run(runnumber))  return kTRUE;
+  if (PbPb_highIR_Run(runnumber)) return kTRUE;
+  if (pPb_Run(runnumber))         return kTRUE;
 
   return kFALSE;
 }

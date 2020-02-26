@@ -230,8 +230,8 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       if (eta < 0.0) {
         if (fSettings.decorr_analysis){
           // R_{n,n; 2} numerator
-          double over =  (TwoDiff(-n,n,refEtaBinB, etaBin)*TwoDiff(n,-n,refEtaBinA, etaBinB)).Re();
-          double under = (TwoDiff(-n,n,refEtaBinB, etaBinB)*TwoDiff(n,-n,refEtaBinA, etaBin)).Re();
+          double over =  (TwoDiff(-n,n,refEtaBinA, etaBinB)*TwoDiff(n,-n,refEtaBinB, etaBin)).Re();
+          double under = (TwoDiff(-n,n,refEtaBinA, etaBin)*TwoDiff(n,-n,refEtaBinB, etaBinB)).Re();
           fill(cumu_dW2TwoTwoN, n, ptn, sample, zvertex, eta, cent, over);
           fill(cumu_dW2TwoTwoD, n, ptn, sample, zvertex, eta, cent, under);
         }

@@ -238,6 +238,8 @@ class AliForwardSettings : public TObject {
   Bool_t decorr_analysis;
   Bool_t normal_analysis;
 
+  Int_t runnumber;
+
 private:
   ClassDef(AliForwardSettings, 1);
 };
