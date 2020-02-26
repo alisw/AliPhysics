@@ -260,13 +260,15 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
   {
     fhPtM02SumPtConeMC[imc] = 0;
-
+   
     for(Int_t i = 0; i < 2 ; i++)
     {
       for(Int_t ishsh = 0; ishsh < 2 ; ishsh++)
       {
         fhPtMC[imc][i][ishsh] = 0;
       }
+      
+      fhConeSumPtM02CutMC          [imc][i] = 0;
       fhPtEtaPhiMC                 [imc][i] = 0;
       fhPtLambda0MC                [imc][i] = 0;
       fhPtLambda0MCConv            [imc][i] = 0;      
@@ -281,7 +283,7 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
       fhTrackMatchedDEtaDPhiMC     [imc][i] = 0 ;
     }
   }
-  
+
   for(Int_t imc = 0; imc < 4; imc++)
   {
     fhPtTrackInConeMCPrimary       [imc] = 0;
@@ -292,6 +294,7 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   
   for(Int_t i = 0; i < 2 ; i++)
   {
+    fhConeSumPtM02Cut[i] = 0;
     for(Int_t ishsh = 0; ishsh < 2 ; ishsh++)
     {
       fhPt          [i][ishsh] = 0 ; 
@@ -1476,8 +1479,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TString isoTitle[] = {"Not isolated"  ,"Isolated"};
 
   TString m02Name [] = {"Wide","Narrow"};
-  TString m02Title[] = { Form(", %2.2f < #sigma^{long}^{2} < %2.2f",fM02Wide  [0],fM02Wide  [1]), 
-                         Form(", %2.2f < #sigma^{long}^{2} < %2.2f",fM02Narrow[0],fM02Narrow[1]) };
+  TString m02Title[] = { Form(", %2.2f < #sigma_{long}^{2} < %2.2f",fM02Wide  [0],fM02Wide  [1]), 
+                         Form(", %2.2f < #sigma_{long}^{2} < %2.2f",fM02Narrow[0],fM02Narrow[1]) };
   
   Int_t nShSh = 2;
   if( !fFillSSHisto ) 
@@ -1667,7 +1670,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       fhPtM02SumPtCone = new TH3F
       (Form("hPtM02SumPtCone"),
-       Form("#it{p}_{T} vs #sigma_{long}^{2} vs #it{p}_{T}^{iso}, #it{R} = %2.2f",r),
+       Form("#it{R} = %2.2f",r),
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
        sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
@@ -1682,7 +1685,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {
           fhPtM02SumPtConeMC[imc] = new TH3F
           (Form("hPtM02SumPtCone_MC%s",mcPartName[imc].Data()),
-           Form("#it{p}_{T} vs #sigma_{long}^{2} vs #it{p}_{T}^{iso}, #it{R} = %2.2f, MC %s"
+           Form("#it{R} = %2.2f, MC %s"
                 , r, mcPartType[imc].Data()),
             ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
@@ -1693,7 +1696,32 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           outputContainer->Add(fhPtM02SumPtConeMC[imc]) ;
         } // MC particle loop
       } // MC
-    } // Fill TH3
+      
+      for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
+      {
+        fhConeSumPtM02Cut[ishsh] = new TH2F
+        (Form("hConeSumPtM02%s",m02Name[ishsh].Data()),
+         Form("#it{R} = %2.2f%s",r,m02Title[ishsh].Data()),
+         nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax); 
+        fhConeSumPtM02Cut[ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtM02Cut[ishsh]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtM02Cut[ishsh]) ;
+        
+        if ( IsDataMC() )
+        {
+          for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
+          {
+            fhConeSumPtM02CutMC[imc][ishsh] = new TH2F
+            (Form("hConeSumPtM02%s_MC%s",m02Name[ishsh].Data(),mcPartName[imc].Data()),
+             Form("#it{R} = %2.2f%s, MC %s",r, m02Title[ishsh].Data(), mcPartType[imc].Data()),
+             nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax); 
+            fhConeSumPtM02CutMC[imc][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhConeSumPtM02CutMC[imc][ishsh]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhConeSumPtM02CutMC[imc][ishsh]) ;
+          }
+        } // MC
+      } // shower shape cut
+    } // Fill TH3 and pT iso shower shape cut
     
     for(Int_t iso = 0; iso < 2; iso++)
     {
@@ -4814,20 +4842,56 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     AliDebug(1,Form("Particle %d Energy Sum in Isolation Cone %2.2f, Leading pT in cone %2.2f",
                     iaod, coneptsumTrack+coneptsumCluster, coneptLead));
      
+    Bool_t narrow       = kFALSE;
+    Bool_t inM02Windows = kTRUE;
+    if ( fFillSSHisto )
+    {
+      if      ( m02 > fM02Narrow[0] && m02 < fM02Narrow[1] ) narrow = kTRUE;
+      else if ( m02 > fM02Wide  [0] && m02 < fM02Wide  [1] ) narrow = kFALSE; 
+      else inM02Windows = kFALSE; // skip clusters out of both ranges
+    }
+    
     if ( !fFillBackgroundBinHistograms && fFillSSHisto &&
         (method == AliIsolationCut::kSumPtIC || 
          method >= AliIsolationCut::kSumBkgSubIC) )
     {
       fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-     
+
+      if ( inM02Windows )
+          fhConeSumPtM02Cut[narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+      
       if ( IsDataMC() )
       {
+        fhPtM02SumPtConeMC[mcIndex]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+
         if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
           fhPtM02SumPtConeMC[kmcPhoton]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
 
-        fhPtM02SumPtConeMC[mcIndex]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-      }
-    }
+        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+         {
+           if      ( mcIndex == kmcPi0Decay )
+             fhPtM02SumPtConeMC[kmcPi0DecayLostPair]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+           else if ( mcIndex == kmcEtaDecay )
+             fhPtM02SumPtConeMC[kmcEtaDecayLostPair]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+         }
+         
+        if ( inM02Windows )
+        {
+          fhConeSumPtM02CutMC[mcIndex][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+
+          if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
+              fhConeSumPtM02CutMC[kmcPhoton][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+          
+          if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+          {
+            if      ( mcIndex == kmcPi0Decay )
+              fhConeSumPtM02CutMC[kmcPi0DecayLostPair][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+            else if ( mcIndex == kmcEtaDecay )
+              fhConeSumPtM02CutMC[kmcEtaDecayLostPair][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+          }
+        } // in m02 window
+      } // MC
+    } // TH3 histo and TH2 pT iso
     
     //---------------------------------------------------------------
     // Recover original cluster if requested, needed for some studies
@@ -5021,13 +5085,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhPtExoTrigger[isolated]->Fill(pt, GetEventWeight()*weightTrig);        
     }
     
-    Bool_t narrow = kFALSE;
-    if ( fFillSSHisto )
-    {
-      if      ( m02 > fM02Narrow[0] && m02 < fM02Narrow[1] ) narrow = kTRUE;
-      else if ( m02 > fM02Wide  [0] && m02 < fM02Wide  [1] ) narrow = kFALSE; 
-      else continue; // skip clusters out of both ranges
-    }
+    // Fill depending shower shape narrow or wide or iso or not iso
+    // On non photon analysis, iso or non iso filled
+    //
+    if ( !inM02Windows ) continue; // it is on the wide or narrow window if those are selected, see above
     
     fhPt[isolated][narrow]->Fill(pt    , GetEventWeight()*weightTrig);
     
