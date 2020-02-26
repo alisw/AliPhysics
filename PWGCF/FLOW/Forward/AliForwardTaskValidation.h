@@ -30,18 +30,11 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // fEventValidators by the user when configuring their task
   enum EventValidation {
       kNoEventCut,
-      // kIsAODEvent,
       kTrigger,
       kPassesAliEventCuts,
-      // kNotOutOfBunchPU,
-      // kHasValidVertex,
-      // kNotMultiVertexPU,
-      // kNotSPDPU,
-      //kNotSPDClusterVsTrackletBG,
       kHasFMD,
       kHasEntriesFMD,
       kHasValidFMD,
-      // kHasEntriesV0,
       kPassesFMD_V0CorrelatioCut
   };
 
@@ -89,16 +82,9 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // Get SPD tracklets. Note that tracklets have no pt resolution; pt is set to 0!
   AliForwardTaskValidation::Tracks GetTracklets() const;
 
-  // Get SPD clusters. Note that closters have no pt resolution; pt is set to 0!
-  AliForwardTaskValidation::Tracks GetSPDclusters() const;
-
   // Get central barrel tracks
   AliForwardTaskValidation::Tracks GetTracks();
 
-  // Get all MC truth track associated with this event. The filtering
-  // of these tracks is done in this function.
-  // This function is `Fatal` if no MC tracks are found
-  AliForwardTaskValidation::Tracks GetMCTruthTracks();
 
   AliForwardSettings fSettings; 
 
@@ -136,10 +122,6 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   /// No checks are done on these tracks - thus this is a private helper function.
   TClonesArray* GetAllCentralBarrelTracks();
 
-  /// Get __ALL MC TRUTH TRACKS__.
-  /// No checks are done on these tracks and they could be anywhere in the detector!
-  TClonesArray* GetAllMCTruthTracksAsTClonesArray();
-
   /// Extra cut on the FMD, rejects events with hot spots in FMD
   Bool_t HasValidFMD();
 
@@ -161,14 +143,11 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   Bool_t HasEntriesFMD();
   /// Check if there is a least one channel with a signal in the V0
   Bool_t HasEntriesV0();
-  /// A primary vertex exists
-  Bool_t HasValidVertex();
   /// Passes the default cuts in AliEventCuts class
   Bool_t PassesAliEventCuts();
   /// Event is not an outlier in the FMD-V0 correlation
   Bool_t PassesFMDV0CorrelatioCut(Bool_t fill_qa=false);
   /// Event is not an outlier in the FMD-V0C correlation
-  Bool_t HasMultSelection();
   /// Is not out of bunch pileup
   Bool_t NotOutOfBunchPU() {return !fUtils.IsOutOfBunchPileUp(this->InputEvent());};
   /// Is not multi-vertex pileup

@@ -62,6 +62,7 @@ AliForwardSettings::AliForwardSettings() :
   second_analysis(kFALSE),
   SC_analysis(kFALSE),
   decorr_analysis(kFALSE),
-  normal_analysis(kTRUE)
+  normal_analysis(kTRUE),
+  runnumber(0)
 {
 }
