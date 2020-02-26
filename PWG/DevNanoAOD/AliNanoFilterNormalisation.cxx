@@ -18,7 +18,7 @@ AliNanoFilterNormalisation::AliNanoFilterNormalisation(TString name, TString tit
 }
 
 AliNanoFilterNormalisation::AliNanoFilterNormalisation(TString name, TString title, int nMultBins, float* mBins) : TNamed(name, title) {
-  float selBins[5]{-0.5,0.5,1.5,2.5,3.5,4.5};
+  float selBins[6]{-0.5,0.5,1.5,2.5,3.5,4.5};
   fCandidateEvents = new TH2D("fCandidateEvents", ";Multiplicity estimator;", nMultBins, mBins, 5, selBins);
   fSelectedEvents  = (TH2D*) fCandidateEvents->Clone("fSelectedEvents");
 
