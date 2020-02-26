@@ -167,6 +167,12 @@ public:
   void             SetEMCALNCellsCut(Int_t nc)             { fEMCALNCellsCut = nc         ; }
   void             SetPHOSNCellsCut (Int_t nc)             { fPHOSNCellsCut  = nc         ; }
   
+  Float_t          GetEMCALEnDepNCellsCutEnMin()  const { return fEMCALNCellsCutEnDepEnMin; }
+  Float_t          GetEMCALEnDepNCellsCutConst()  const { return fEMCALNCellsCutEnDepConstant; }
+  Float_t          GetEMCALEnDepNCellsCutSlope()  const { return fEMCALNCellsCutEnDepSlope; }
+  void             SetEMCALEnDepNCellsCut(Float_t emin, Float_t constant, Float_t slope)             
+  { fEMCALNCellsCutEnDepEnMin = emin ;  fEMCALNCellsCutEnDepConstant = constant; fEMCALNCellsCutEnDepSlope = slope ;}
+  
   // Track DCA cut
   
   Bool_t           AcceptDCA(Float_t pt, Float_t dca);
@@ -824,6 +830,9 @@ public:
   Float_t          fPHOSBadChMinDist ;             ///<  Minimal distance to bad channel to accept cluster in PHOS, cm
 
   Int_t            fEMCALNCellsCut ;               ///<  Accept for the analysis EMCAL clusters with more than fNCellsCut cells
+  Float_t          fEMCALNCellsCutEnDepEnMin ;     ///<  Minimum cluster energy to apply energy dependent N cell cut in EMCal
+  Float_t          fEMCALNCellsCutEnDepConstant ;  ///<  Constant value of energy dependent N cell cut in EMCal
+  Float_t          fEMCALNCellsCutEnDepSlope ;     ///<  Slope value of energy depedent N cell cut in EMCal
   Int_t            fPHOSNCellsCut ;                ///<  Accept for the analysis PHOS clusters with more than fNCellsCut cells
   
   Float_t          fEMCALHighEnergyNdiffCut;       ///<  Minimum energy for which the cut on n diff T-Card = 0 is applied
@@ -1084,7 +1093,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,85) ;
+  ClassDef(AliCaloTrackReader,86) ;
   /// \endcond
 
 } ;
