@@ -91,7 +91,7 @@ fhPtTrackInConeBC0PileUpSPD(0),
 fhPtInConeCent(0),
 fhPerpConeSumPtTOFBC0(0),         fhPtInPerpConeTOFBC0(0),
 fhEtaPhiInPerpConeTOFBC0(0),
-fhPtM02SumPtCone(0),                       
+fhPtM02SumPtCone(0),             fhPtM02SumPtConeCent(0x0),          
 fhConeSumPtExoTrigger(0),        fhConeSumPtClusterExoTrigger(0),            fhConeSumPtTrackExoTrigger(0),                      
 
 fhPtPrimMCPi0DecayPairOutOfCone(0),
@@ -295,6 +295,7 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   for(Int_t i = 0; i < 2 ; i++)
   {
     fhConeSumPtM02Cut[i] = 0;
+    fhConeSumPtCentM02Cut[i] = 0;
     for(Int_t ishsh = 0; ishsh < 2 ; ishsh++)
     {
       fhPt          [i][ishsh] = 0 ; 
@@ -308,8 +309,7 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     
     fhTrackMatchedDEta[i] = 0 ;             fhTrackMatchedDPhi[i] = 0 ;   fhTrackMatchedDEtaDPhi  [i] = 0 ;
     fhdEdx            [i] = 0 ;             fhEOverP          [i] = 0 ;   fhTrackMatchedMCParticle[i] = 0 ;
-    fhPtLambda0       [i] = 0 ;   
-    fhPtLambda0TRD    [i] = 0 ;   
+    fhPtLambda0       [i] = 0 ;             fhPtLambda0TRD    [i] = 0 ;   fhPtLambda0Cent         [i] = 0 ;   
     
     // Number of local maxima in cluster
     fhPtLambda0LocMax1[i] = 0 ;              fhPtLambda1LocMax1[i] = 0 ;
@@ -954,7 +954,10 @@ void AliAnaParticleIsolation::FillShowerShapeControlHistograms
   if ( fFillSSHisto )
   {
     fhPtLambda0[isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
-    
+
+    if ( IsHighMultiplicityAnalysisOn() )
+      fhPtLambda0Cent[isolated]->Fill(pt, m02, GetEventCentrality(), GetEventWeight()*weightTrig);
+
     if ( fFillPerSMHistograms )
     {
       fhPtPerSM       [isolated]     ->Fill(pt,iSM, GetEventWeight()*weightTrig);
@@ -1669,8 +1672,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       ssBinning.CreateBinEdges(ssBinsArray);
       
       fhPtM02SumPtCone = new TH3F
-      (Form("hPtM02SumPtCone"),
-       Form("#it{R} = %2.2f",r),
+      ("hPtM02SumPtCone",Form("#it{R} = %2.2f",r),
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
        sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
@@ -1678,6 +1680,25 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtM02SumPtCone->SetYTitle("#sigma_{long}^{2}");
       fhPtM02SumPtCone->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
       outputContainer->Add(fhPtM02SumPtCone) ;
+      
+      if ( IsHighMultiplicityAnalysisOn() )
+      {
+        printf("*** N centrality bins %d\n",GetNCentrBin());
+        fhPtM02SumPtConeCent = new TH3F*[GetNCentrBin()] ;
+        for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
+        {
+          fhPtM02SumPtConeCent[icent] = new TH3F
+          (Form("hPtM02SumPtCone_Cent%d",icent),
+           Form("#it{R} = %2.2f, centrality bin %d",r, icent),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+          fhPtM02SumPtConeCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhPtM02SumPtConeCent[icent]->SetYTitle("#sigma_{long}^{2}");
+          fhPtM02SumPtConeCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+          outputContainer->Add(fhPtM02SumPtConeCent[icent]) ;
+        }
+      }
       
       if ( IsDataMC() )
       {
@@ -1704,8 +1725,20 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("#it{R} = %2.2f%s",r,m02Title[ishsh].Data()),
          nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax); 
         fhConeSumPtM02Cut[ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fhConeSumPtM02Cut[ishsh]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        fhConeSumPtM02Cut[ishsh]->SetYTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
         outputContainer->Add(fhConeSumPtM02Cut[ishsh]) ;
+        
+        if ( IsHighMultiplicityAnalysisOn() )
+        {
+          fhConeSumPtCentM02Cut[ishsh] = new TH3F
+          (Form("hConeSumPtCentM02%s",m02Name[ishsh].Data()),
+           Form("#it{R} = %2.2f%s",r,m02Title[ishsh].Data()),
+           nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, GetNCentrBin(),0,100); 
+          fhConeSumPtCentM02Cut[ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtCentM02Cut[ishsh]->SetYTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+          fhConeSumPtCentM02Cut[ishsh]->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhConeSumPtCentM02Cut[ishsh]) ;
+        }
         
         if ( IsDataMC() )
         {
@@ -1716,7 +1749,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
              Form("#it{R} = %2.2f%s, MC %s",r, m02Title[ishsh].Data(), mcPartType[imc].Data()),
              nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax); 
             fhConeSumPtM02CutMC[imc][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            fhConeSumPtM02CutMC[imc][ishsh]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            fhConeSumPtM02CutMC[imc][ishsh]->SetYTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
             outputContainer->Add(fhConeSumPtM02CutMC[imc][ishsh]) ;
           }
         } // MC
@@ -3451,10 +3484,25 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       {
         fhPtLambda0[iso]  = new TH2F
         (Form("hPtLambda0%s",isoName[iso].Data()),
-         Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}, %s",isoTitle[iso].Data(), parTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+         Form("%s, %s",
+              isoTitle[iso].Data(), parTitle[iso].Data()),
+         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhPtLambda0[iso]->SetYTitle("#sigma_{long}^{2}");
         fhPtLambda0[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtLambda0[iso]) ;
+        
+        if ( IsHighMultiplicityAnalysisOn() )
+        {
+          fhPtLambda0Cent[iso]  = new TH3F
+          (Form("hPtLambda0Cent%s",isoName[iso].Data()),
+           Form("%s, %s",
+                isoTitle[iso].Data(), parTitle[iso].Data()),
+           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax,GetNCentrBin(),0,100);
+          fhPtLambda0Cent[iso]->SetYTitle("#sigma_{long}^{2}");
+          fhPtLambda0Cent[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhPtLambda0Cent[iso]->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhPtLambda0Cent[iso]) ;
+        }
         
         if ( fFillPerSMHistograms )
         {
@@ -4857,8 +4905,16 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {
       fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
 
+      if ( IsHighMultiplicityAnalysisOn() && GetEventCentralityBin() >=0 && GetNCentrBin() > 0)
+        fhPtM02SumPtConeCent[GetEventCentralityBin()]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+
       if ( inM02Windows )
+      {
           fhConeSumPtM02Cut[narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+
+        if ( IsHighMultiplicityAnalysisOn() )
+          fhConeSumPtCentM02Cut[narrow]->Fill(pt, coneptsum, GetEventCentrality(), GetEventWeight()*weightTrig);
+      }
       
       if ( IsDataMC() )
       {

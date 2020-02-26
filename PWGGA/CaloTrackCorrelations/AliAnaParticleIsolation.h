@@ -353,8 +353,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhPtM02SumPtCone;                           //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone
   TH3F *   fhPtM02SumPtConeMC[fgkNmcTypes];            //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle
   
+  /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality
+  TH3F **  fhPtM02SumPtConeCent;                       //![GetNCentrBin()] 
+
   TH2F *   fhConeSumPtM02Cut[2] ;                      //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters
   TH2F *   fhConeSumPtM02CutMC[fgkNmcTypes][2] ;       //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters, per MC particle
+  TH3F *   fhConeSumPtCentM02Cut[2] ;                  //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters vs centrality
 
   TH2F *   fhConeSumPtExoTrigger ;                     //!<! Cluster and tracks Sum Pt in the cone. Trigger is exotic
   TH2F *   fhConeSumPtClusterExoTrigger ;              //!<! Clusters Sum Pt  in the cone. Trigger is exotic
@@ -475,7 +479,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Shower Shape histograms
   TH2F *   fhPtLambda0[2];                             //!<! Shower shape of (non) isolated photons (do not apply SS cut previously).
   TH2F *   fhPtLambda0TRD[2];                          //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
-  
+  TH3F *   fhPtLambda0Cent[2];                         //!<! Shower shape of (non) isolated photons (do not apply SS cut previously) vs centrality.
+
   // Selection parameters per supermodule number
   TH2F *   fhPtPerSM[2];                               //!<! Input particle pT distribution per SM
   TH2F *   fhPtLambda0PerSM[2][20];                    //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously).
