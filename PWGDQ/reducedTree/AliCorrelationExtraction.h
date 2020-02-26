@@ -257,12 +257,10 @@ class AliCorrelationExtraction : public TObject {
     TH1D*             GetInclusiveCF1D() const {return (fProcessDone ? fInclusiveCF1D : 0x0);}
     TH1D*             GetInclusiveCF1D(Int_t massWindow) const {return (fProcessDone ? fInclusiveCF1DBackgroundMassWindow[massWindow] : 0x0);}
     TH1D*             GetInclusiveCF1D(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fInclusiveCF1DInvMass[phiBin][etaBin] : 0x0);}
-    TH1D*             GetInclusiveCF1DBackground(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fInclusiveCF1DInvMassBackground[phiBin][etaBin] : 0x0);}
     TH2D*             GetInclusiveCF2D() const {return (fProcessDone ? fInclusiveCF2D : 0x0);}
     TH2D*             GetInclusiveCF2D(Int_t massWindow) const {return (fProcessDone ? fInclusiveCF2DBackgroundMassWindow[massWindow] : 0x0);}
     TH3D*             GetInclusiveCF3D() const {return (fProcessDone ? fInclusiveCF3D : 0x0);}
     TH1D*             GetBackgroundCF1D() const {return (fProcessDone ? fBackgroundCF1D : 0x0);}
-    TH1D*             GetBackgroundCF1D(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fBackgroundCF1DInvMass[phiBin][etaBin] : 0x0);}
     TH2D*             GetBackgroundCF2D() const {return (fProcessDone ? fBackgroundCF2D : 0x0);}
     TH1D*             GetCombinatorialBackgroundCF1D(Int_t massWindow) const {return (fProcessDone ? fCombinatorialBackgroundCF1D[massWindow] : 0x0);}
     TH2D*             GetCombinatorialBackgroundCF2D(Int_t massWindow) const {return (fProcessDone ? fCombinatorialBackgroundCF2D[massWindow] : 0x0);}
@@ -275,6 +273,8 @@ class AliCorrelationExtraction : public TObject {
     Int_t             GetBackgroundMethod() const {return (fProcessDone ? fOptionBkgMethod : 0x0);}
     TF1*              GetBackgroundFitFunction() const {return (fProcessDone ? fBkgFitFunction : 0x0);}
     TF1*              GetBackgroundFitFunction(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fBackgroundCF1DInvMassFit[phiBin][etaBin] : 0x0);}
+    TF1*              GetGlobalFitFunction(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fInclusiveCF1DInvMassFit[phiBin][etaBin] : 0x0);}
+    TH1*              GetSignalShapeMC(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fSignalMCshape[phiBin][etaBin] : 0x0);}
     TH1D*             GetPairInvMassSEPP() const {return (fProcessDone ? fSEPPPairInvMass : 0x0);}
     TH1D*             GetPairInvMassSEMM() const {return (fProcessDone ? fSEMMPairInvMass : 0x0);}
     TH1D*             GetPairInvMassMEOS() const {return (fProcessDone ? fMEOSPairInvMass : 0x0);}
@@ -322,6 +322,8 @@ class AliCorrelationExtraction : public TObject {
   
     TH1D*       fHadronEff;
 
+    static TH1* fSignalMCshape[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
+
     // output histograms
     TH2D* fSEOSNorm;
     TH2D* fSEOSNormBackgroundMassWindow[kNMaxBackgroundMassRanges];
@@ -339,14 +341,13 @@ class AliCorrelationExtraction : public TObject {
     TH2D* fMEMMNormBackgroundMassWindow[kNMaxBackgroundMassRanges];
     TH1D* fInclusiveCF1D;
     TH1D* fInclusiveCF1DInvMass[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
-    TH1D* fInclusiveCF1DInvMassBackground[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
     TH1D* fInclusiveCF1DBackgroundMassWindow[kNMaxBackgroundMassRanges];
     TH2D* fInclusiveCF2D;
     TH2D* fInclusiveCF2DBackgroundMassWindow[kNMaxBackgroundMassRanges];
     TH3D* fInclusiveCF3D;
     TH1D* fBackgroundCF1D;
-    TF1*  fBackgroundCF1DInvMassFit[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
-    TH1D* fBackgroundCF1DInvMass[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
+    TF1*  fInclusiveCF1DInvMassFit[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
+    static TF1* fBackgroundCF1DInvMassFit[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
     TH2D* fBackgroundCF2D;
     TH1D* fCombinatorialBackgroundCF1D[kNMaxBackgroundMassRanges];
     TH2D* fCombinatorialBackgroundCF2D[kNMaxBackgroundMassRanges];
@@ -405,11 +406,12 @@ class AliCorrelationExtraction : public TObject {
     void    ApplyUserRanges(THnBase* h);
     Bool_t  Initialize();
     Bool_t  NormalizeToNearSidePeak(TH2D* h);
-    Bool_t  InBackgroundRange(Double_t min, Double_t max, Int_t& index);
+    Bool_t  IsBackgroundRange(Double_t min, Double_t max, Int_t& index);
     TH1D*   ProjectToDeltaPhi(TH2D* hIn, TString name);
+    static Double_t GlobalFitFunction(Double_t* x, Double_t* par);
     Bool_t  CalculateInclusiveCorrelationInMixingBins(Int_t currentVar, Int_t& nCalls,
                                                       THnBase* seos, THnBase* meos, TH2D* (&inclCF));
-    Bool_t  CalculateInclusiveCorrelation(Double_t minMass, Double_t maxMass,
+    Bool_t  CalculateInclusiveCorrelation(Double_t minMass, Double_t maxMass, Bool_t isSignalRange,
                                           TH2D* (&seos), TH2D* (&meos),
                                           TH2D* (&incl2D), TH1D* (&incl1D));
     Bool_t  CalculateBackgroundCorrelationFitting();
@@ -421,7 +423,7 @@ class AliCorrelationExtraction : public TObject {
     Bool_t  CalculateSignalCorrelation();
     Bool_t  HadronEfficiencyCorrection();
   
-  ClassDef(AliCorrelationExtraction, 3);
+  ClassDef(AliCorrelationExtraction, 4);
 };
 
 #endif

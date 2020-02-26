@@ -38,6 +38,10 @@ ClassImp(AliCorrelationExtraction)
 
 Double_t EPSILON = 1.0e-6;
 
+// initialization of static members needed by the Minuit fitter
+TH1* AliCorrelationExtraction::fSignalMCshape[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins] = {0x0};
+TF1* AliCorrelationExtraction::fBackgroundCF1DInvMassFit[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins] = {0x0};
+
 //_______________________________________________________________________________
 AliCorrelationExtraction::AliCorrelationExtraction() :
   fSEOS(0x0),
@@ -76,14 +80,12 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   fMEMMNormBackgroundMassWindow(),
   fInclusiveCF1D(0x0),
   fInclusiveCF1DInvMass(),
-  fInclusiveCF1DInvMassBackground(),
   fInclusiveCF1DBackgroundMassWindow(),
   fInclusiveCF2D(0x0),
   fInclusiveCF2DBackgroundMassWindow(),
   fInclusiveCF3D(0x0),
   fBackgroundCF1D(0x0),
-  fBackgroundCF1DInvMassFit(),
-  fBackgroundCF1DInvMass(),
+  fInclusiveCF1DInvMassFit(),
   fBackgroundCF2D(0x0),
   fCombinatorialBackgroundCF1D(),
   fCombinatorialBackgroundCF2D(),
@@ -168,9 +170,7 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   for (Int_t i=0; i<kNMaxDeltaPhiBins; ++i) {
     for (Int_t j=0; j<kNMaxDeltaEtaBins; ++j) {
       fInclusiveCF1DInvMass[i][j]           = 0x0;
-      fInclusiveCF1DInvMassBackground[i][j] = 0x0;
-      fBackgroundCF1DInvMassFit[i][j]       = 0x0;
-      fBackgroundCF1DInvMass[i][j]          = 0x0;
+      fInclusiveCF1DInvMassFit[i][j]        = 0x0;
       fSignalCF1DInvMass[i][j]              = 0x0;
     }
   }
@@ -464,12 +464,17 @@ Bool_t AliCorrelationExtraction::Initialize() {
   for (Int_t i=0; i<kNMaxDeltaPhiBins; ++i) {
     for (Int_t j=0; j<kNMaxDeltaEtaBins; ++j) {
       if (fInclusiveCF1DInvMass[i][j])            {delete fInclusiveCF1DInvMass[i][j];            fInclusiveCF1DInvMass[i][j]           = 0x0;}
-      if (fInclusiveCF1DInvMassBackground[i][j])  {delete fInclusiveCF1DInvMassBackground[i][j];  fInclusiveCF1DInvMassBackground[i][j] = 0x0;}
       if (fBackgroundCF1DInvMassFit[i][j])        {delete fBackgroundCF1DInvMassFit[i][j];        fBackgroundCF1DInvMassFit[i][j]       = 0x0;}
-      if (fBackgroundCF1DInvMass[i][j])           {delete fBackgroundCF1DInvMass[i][j];           fBackgroundCF1DInvMass[i][j]          = 0x0;}
+      if (fInclusiveCF1DInvMassFit[i][j])         {delete fInclusiveCF1DInvMassFit[i][j];         fInclusiveCF1DInvMassFit[i][j]        = 0x0;}
+      if (fSignalMCshape[i][j])                   {delete fSignalMCshape[i][j];                   fSignalMCshape[i][j]                  = 0x0;}
       if (fSignalCF1DInvMass[i][j])               {delete fSignalCF1DInvMass[i][j];               fSignalCF1DInvMass[i][j]              = 0x0;}
     }
   }
+  for (Int_t i=0; i<kNMaxBackgroundMassRanges; ++i) {
+    for (Int_t j=0; j<kNTriggerValues; ++j) fTrigValBkg[i][j] = -9999.;
+  }
+  for (Int_t i=0; i<kNTriggerValues; ++i)   fTrigValSig[i]    = -9999.;
+
 
   // check for required user provided histograms
   if (!fSEOS && !fSEOSSparse) {
@@ -503,12 +508,18 @@ Bool_t AliCorrelationExtraction::Initialize() {
     return kFALSE;
   }
   if (fOptionBkgMethod==kBkgFitting) {
-    if (fNBackgroundMassRanges<2) {
-      cout << "AliCorrelationExtraction::Initialize() Fatal: Less than 2 background mass ranges provided for fitting method!" << endl;
+    if (fNBackgroundMassRanges!=1) {
+      cout << "AliCorrelationExtraction::Initialize() Fatal: More/less than 1 background mass range provided for fitting method!" << endl;
       return kFALSE;
     }
     if (!fBkgFitFunction) {
       cout << "AliCorrelationExtraction::Initialize() Fatal: Fit function missing! This is required for fitting method!" << endl;
+      return kFALSE;
+    }
+    if (fResonanceFits->GetBkgMethod()!=AliResonanceFits::kBkgMixedEventAndResidualFit &&
+        fResonanceFits->GetBkgMethod()!=AliResonanceFits::kBkgFitFunction) {
+      cout << "AliCorrelationExtraction::Initialize() Fatal: Background method selected for AliResonanceFits object will not provide signal shape from MC!" << endl;
+      cout << "                                              This is required for fitting method!" << endl;
       return kFALSE;
     }
   }
@@ -657,12 +668,12 @@ Bool_t AliCorrelationExtraction::NormalizeToNearSidePeak(TH2D* h) {
 }
 
 //_______________________________________________________________________________
-Bool_t  AliCorrelationExtraction::InBackgroundRange(Double_t min, Double_t max, Int_t& index) {
+Bool_t  AliCorrelationExtraction::IsBackgroundRange(Double_t min, Double_t max, Int_t& index) {
   //
-  // test if [min, max] is within a given background mass range
+  // test if [min, max] corresponds to a given background mass range
   //
   for (Int_t i=0; i<fNBackgroundMassRanges; ++i) {
-    if (fBackgroundMassRanges[i][0]<=min && max<=fBackgroundMassRanges[i][1]) {
+    if (fBackgroundMassRanges[i][0]==min && fBackgroundMassRanges[i][1]==max) {
       index = i;
       return kTRUE;
     }
@@ -690,6 +701,27 @@ TH1D* AliCorrelationExtraction::ProjectToDeltaPhi(TH2D* hIn, TString name) {
   TH1D* hOut = (TH1D*)hTmp->ProjectionY(name, 1, hTmp->GetNbinsX(), "e");
   hOut->Scale(1./deltaEtaRange);
   return hOut;
+}
+
+//_______________________________________________________________________________
+Double_t AliCorrelationExtraction::GlobalFitFunction(Double_t* x, Double_t* par) {
+  //
+  // m = x[0]
+  // par[0] - phi bin
+  // par[1] - eta bin
+  // par[2] - scale of the MC signal shape
+  // par[3-n] - parameters of the bkg function
+  //
+  Int_t phiBin = (Int_t)par[0];
+  Int_t etaBin = (Int_t)par[1];
+
+  Double_t val = fSignalMCshape[phiBin][etaBin]->GetBinContent(fSignalMCshape[phiBin][etaBin]->FindBin(x[0]));
+  val *= par[2];
+  for(Int_t i=0;i<fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetNpar();++i) {
+     fBackgroundCF1DInvMassFit[phiBin][etaBin]->SetParameter(i, par[i+3]);
+  }
+  val += fBackgroundCF1DInvMassFit[phiBin][etaBin]->Eval(x[0]);
+  return val;
 }
 
 //_______________________________________________________________________________
@@ -752,7 +784,7 @@ Bool_t  AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins(Int_
 }
 
 //_______________________________________________________________________________
-Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass, Double_t maxMass,
+Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass, Double_t maxMass, Bool_t isSignalRange,
                                                                TH2D* (&seos), TH2D* (&meos),
                                                                TH2D* (&inclCF2D), TH1D* (&inclCF1D)) {
   //
@@ -827,20 +859,7 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
 
   // fill trigger values
   Int_t massWindow = -1;
-  if (InBackgroundRange(minMass, maxMass, massWindow)) {
-    fTrigValBkg[massWindow][kSig]         = vals[AliResonanceFits::kSig];
-    fTrigValBkg[massWindow][kSigErr]      = vals[AliResonanceFits::kSigErr];
-    fTrigValBkg[massWindow][kBkg]         = vals[AliResonanceFits::kBkg];
-    fTrigValBkg[massWindow][kBkgErr]      = vals[AliResonanceFits::kBkgErr];
-    fTrigValBkg[massWindow][kSplusB]      = vals[AliResonanceFits::kSplusB];
-    fTrigValBkg[massWindow][kSplusBErr]   = vals[AliResonanceFits::kSplusBerr];
-    fTrigValBkg[massWindow][kSigFrac]     = fTrigValBkg[massWindow][kSig]/fTrigValBkg[massWindow][kSplusB];
-    fTrigValBkg[massWindow][kSigFracErr]  = TMath::Sqrt((TMath::Power(fTrigValBkg[massWindow][kBkg]*fTrigValBkg[massWindow][kSigErr], 2) +
-                                                         TMath::Power(fTrigValBkg[massWindow][kSig]*fTrigValBkg[massWindow][kBkgErr], 2)) /
-                                                        TMath::Power(fTrigValBkg[massWindow][kSplusB], 4));
-    fTrigValBkg[massWindow][kBkgFrac]     = fTrigValBkg[massWindow][kBkg]/fTrigValBkg[massWindow][kSplusB];
-    fTrigValBkg[massWindow][kBkgFracErr]  = fTrigValBkg[massWindow][kSigFracErr];
-  } else if (minMass==fMassSignalRange[0] && maxMass==fMassSignalRange[1]) {
+  if (isSignalRange) {
     fTrigValSig[kSig]                     = vals[AliResonanceFits::kSig];
     fTrigValSig[kSigErr]                  = vals[AliResonanceFits::kSigErr];
     fTrigValSig[kBkg]                     = vals[AliResonanceFits::kBkg];
@@ -853,6 +872,22 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
                                                         TMath::Power(fTrigValSig[kSplusB], 4));
     fTrigValSig[kBkgFrac]                 = fTrigValSig[kBkg]/fTrigValSig[kSplusB];
     fTrigValSig[kBkgFracErr]              = fTrigValSig[kSigFracErr];
+  } else if (IsBackgroundRange(minMass, maxMass, massWindow)) {
+    fTrigValBkg[massWindow][kSig]         = vals[AliResonanceFits::kSig];
+    fTrigValBkg[massWindow][kSigErr]      = vals[AliResonanceFits::kSigErr];
+    fTrigValBkg[massWindow][kBkg]         = vals[AliResonanceFits::kBkg];
+    fTrigValBkg[massWindow][kBkgErr]      = vals[AliResonanceFits::kBkgErr];
+    fTrigValBkg[massWindow][kSplusB]      = vals[AliResonanceFits::kSplusB];
+    fTrigValBkg[massWindow][kSplusBErr]   = vals[AliResonanceFits::kSplusBerr];
+    fTrigValBkg[massWindow][kSigFrac]     = fTrigValBkg[massWindow][kSig]/fTrigValBkg[massWindow][kSplusB];
+    fTrigValBkg[massWindow][kSigFracErr]  = TMath::Sqrt((TMath::Power(fTrigValBkg[massWindow][kBkg]*fTrigValBkg[massWindow][kSigErr], 2) +
+                                                         TMath::Power(fTrigValBkg[massWindow][kSig]*fTrigValBkg[massWindow][kBkgErr], 2)) /
+                                                        TMath::Power(fTrigValBkg[massWindow][kSplusB], 4));
+    fTrigValBkg[massWindow][kBkgFrac]     = fTrigValBkg[massWindow][kBkg]/fTrigValBkg[massWindow][kSplusB];
+    fTrigValBkg[massWindow][kBkgFracErr]  = fTrigValBkg[massWindow][kSigFracErr];
+  } else {
+    cout << "AliCorrelationExtraction::CalculateInclusiveCorrelation() Fatal: Mass range [" << minMass << ", " << maxMass<< "] not recognized!" << endl;
+    return kFALSE;
   }
 
   return kTRUE;
@@ -862,7 +897,6 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
 Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
   //
   // calculate background and signal correlation from fitting method
-  // TODO: add fit range for inv. mass
   //
   
   // calculate inclusive correlation in inv. mass slices
@@ -883,8 +917,6 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
     // mass range
     Double_t minMass = fInclusiveCF3D->GetXaxis()->GetBinLowEdge( massBin);
     Double_t maxMass = fInclusiveCF3D->GetXaxis()->GetBinUpEdge(  massBin);
-    
-    if (fVerboseFlag) cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() Inclusive correlation slice in mass [" << minMass << ", " << maxMass << "]" << endl;
     
     // set range
     if (fSEOS)        seosthnftmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fSEOS->Clone(       Form("seosthnftmp_%d", massBin))));
@@ -921,7 +953,6 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
       inclCF2Dtmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(seostmp->Clone(Form("inclCF2D_%d", massBin))));
       inclCF2Dtmp->Divide(meostmp.get());
     } else {
-      if (fVerboseFlag) cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() calculating inclusive correlation in mixing variable bins!" << endl;
       Int_t startVar  = 0;
       Int_t nCalls    = 0;
 
@@ -970,60 +1001,96 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
   fBackgroundCF2D = (TH2D*)fInclusiveCF3D->Project3D("yzoe");
   fBackgroundCF2D->SetName("backgroundCF_2D");
   fBackgroundCF2D->Reset("ICESM");
+
   fSignalCF2D = (TH2D*)fInclusiveCF3D->Project3D("yzoe");
   fSignalCF2D->SetName("signalCF_2D");
   fSignalCF2D->Reset("ICESM");
 
+  // define fit function
+  for (Int_t phiBin=0; phiBin<nPhiBins; ++phiBin) {
+    for (Int_t etaBin=0; etaBin<nEtaBins; ++etaBin) {
+
+      fSignalMCshape[phiBin][etaBin]            = (TH1*)(fResonanceFits->GetSignalMC())->Clone(Form("MCsignalShape_%d_%d", phiBin, etaBin));
+      fBackgroundCF1DInvMassFit[phiBin][etaBin] = (TF1*)fBkgFitFunction->Clone(Form("backgroundCF_1D_fit_eta%d_phi%d", etaBin, phiBin));
+
+      Double_t xMin, xMax;
+      fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetRange(xMin, xMax);
+
+      fInclusiveCF1DInvMassFit[phiBin][etaBin]  = new TF1(Form("inclusiveCF_1D_fit_eta%d_phi%d", etaBin, phiBin),
+                                                          GlobalFitFunction, xMin, xMax, 3+fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetNpar());
+      fInclusiveCF1DInvMassFit[phiBin][etaBin]->SetNpx(10000.);
+      fInclusiveCF1DInvMassFit[phiBin][etaBin]->SetParameter(0, phiBin);
+      fInclusiveCF1DInvMassFit[phiBin][etaBin]->FixParameter(0, phiBin);
+      fInclusiveCF1DInvMassFit[phiBin][etaBin]->SetParameter(1, etaBin);
+      fInclusiveCF1DInvMassFit[phiBin][etaBin]->FixParameter(1, etaBin);
+      fInclusiveCF1DInvMassFit[phiBin][etaBin]->SetParameter(2, 1.);
+      for(Int_t i=0;i<fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetNpar();++i) {
+        fInclusiveCF1DInvMassFit[phiBin][etaBin]->SetParameter(i+3, fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetParameter(i));
+
+        Double_t parLow=0.; Double_t parHigh=0.;
+        fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetParLimits(i, parLow, parHigh);
+        if ((TMath::Abs(parLow)+TMath::Abs(parHigh))>1.0e-10) fInclusiveCF1DInvMassFit[phiBin][etaBin]->SetParLimits(i+3, parLow, parHigh);
+      }
+    }
+  }
+
   // fit inv. mass using specified background ranges
   for (Int_t phiBin=0; phiBin<nPhiBins; ++phiBin) {
     for (Int_t etaBin=0; etaBin<nEtaBins; ++etaBin) {
-      
-      // exclude bins outside specified background range from fit
-      fInclusiveCF1DInvMassBackground[phiBin][etaBin] = (TH1D*)fInclusiveCF1DInvMass[phiBin][etaBin]->Clone("inclusiveCF_3D_projection_bkgRegion_phi%d_eta%d");
-      for (Int_t i=1; i<fInclusiveCF1DInvMassBackground[phiBin][etaBin]->GetNbinsX()+1; ++i) {
-        Int_t     index   = 0;
-        Double_t  binMin  = fInclusiveCF1DInvMassBackground[phiBin][etaBin]->GetXaxis()->GetBinLowEdge(i);
-        Double_t  binMax  = fInclusiveCF1DInvMassBackground[phiBin][etaBin]->GetXaxis()->GetBinUpEdge(i);
-        if (!InBackgroundRange(binMin, binMax, index)) {
-          fInclusiveCF1DInvMassBackground[phiBin][etaBin]->SetBinContent( i, 0);
-          fInclusiveCF1DInvMassBackground[phiBin][etaBin]->SetBinError(   i, 0);
-        }
-      }
-      
+
+      // normalize to bin width prior to fitting
+      fInclusiveCF1DInvMass[phiBin][etaBin]->Scale(1., "width");
+
       // fit distribution
-      fInclusiveCF1DInvMassBackground[phiBin][etaBin]->Scale(1., "width"); // normalize by bin width (mass) prior to fitting
-      fBackgroundCF1DInvMassFit[phiBin][etaBin] = (TF1*)fBkgFitFunction->Clone(Form("backgroundCF_1D_fit_eta%d_phi%d", etaBin, phiBin));
-      fBackgroundCF1DInvMassFit[phiBin][etaBin]->SetNpx(10000.);
       TFitResultPtr fitResult = 0;
-      if (fInclusiveCF1DInvMassBackground[phiBin][etaBin]->GetEntries()) {
-        fitResult = fInclusiveCF1DInvMassBackground[phiBin][etaBin]->Fit(fBackgroundCF1DInvMassFit[phiBin][etaBin], "ISQMRNEF", "",
-                                                                         fInclusiveCF1DInvMassBackground[phiBin][etaBin]->GetXaxis()->GetXmin(),
-                                                                         fInclusiveCF1DInvMassBackground[phiBin][etaBin]->GetXaxis()->GetXmax());
+      if (fInclusiveCF1DInvMass[phiBin][etaBin]->GetEntries()) {
+        fitResult = fInclusiveCF1DInvMass[phiBin][etaBin]->Fit(fInclusiveCF1DInvMassFit[phiBin][etaBin], "ISQMNEF", "",
+                                                               fBackgroundMassRanges[0][0],
+                                                               fBackgroundMassRanges[0][1]);
+      } else {
+        fInclusiveCF1DInvMassFit[phiBin][etaBin]  = NULL;
+      }
+
+      // assign  parameters to background fit function
+      if (fInclusiveCF1DInvMassFit[phiBin][etaBin]) {
+        for (Int_t i=0; i<fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetNpar(); ++i)
+          fBackgroundCF1DInvMassFit[phiBin][etaBin]->SetParameter(i, fInclusiveCF1DInvMassFit[phiBin][etaBin]->GetParameter(i+3));
       } else {
         fBackgroundCF1DInvMassFit[phiBin][etaBin] = NULL;
       }
-      
-      // write background correlation to histogram (inv. mass dist.)
-      fBackgroundCF1DInvMass[phiBin][etaBin] = (TH1D*)fInclusiveCF1DInvMassBackground[phiBin][etaBin]->Clone(Form("backgroundCF_1D_eta%d_phi%d", etaBin, phiBin));
-      for (Int_t i=1; i<fBackgroundCF1DInvMass[phiBin][etaBin]->GetNbinsX()+1; ++i) {
-        Double_t minMass    = fBackgroundCF1DInvMass[phiBin][etaBin]->GetXaxis()->GetBinLowEdge(i);
-        Double_t maxMass    = fBackgroundCF1DInvMass[phiBin][etaBin]->GetXaxis()->GetBinUpEdge(i);
-        Double_t binContent = 0.;
-        Double_t binError   = 0.;
-        if (fBackgroundCF1DInvMassFit[phiBin][etaBin]) {
-          binContent = fBackgroundCF1DInvMassFit[phiBin][etaBin]->Integral(minMass, maxMass);
-          binError   = fBackgroundCF1DInvMassFit[phiBin][etaBin]->IntegralError(minMass, maxMass,
-                                                                                fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetParameters(),
-                                                                                fitResult->GetCovarianceMatrix().GetMatrixArray());
-        }
-        fBackgroundCF1DInvMass[phiBin][etaBin]->SetBinContent( i, binContent);
-        fBackgroundCF1DInvMass[phiBin][etaBin]->SetBinError(   i, binError);
-      }
-      
+
       // write signal correlation to histogram (inv. mass dist.)
       fSignalCF1DInvMass[phiBin][etaBin] = (TH1D*)fInclusiveCF1DInvMass[phiBin][etaBin]->Clone(Form("signalCF_1D_eta%d_phi%d", etaBin, phiBin));
-      fSignalCF1DInvMass[phiBin][etaBin]->Add(fBackgroundCF1DInvMass[phiBin][etaBin], -1);
-      
+      for (Int_t i=1; i<fInclusiveCF1DInvMass[phiBin][etaBin]->GetNbinsX()+1; ++i) {
+        Double_t minMass    = fInclusiveCF1DInvMass[phiBin][etaBin]->GetXaxis()->GetBinLowEdge(i);
+        Double_t maxMass    = fInclusiveCF1DInvMass[phiBin][etaBin]->GetXaxis()->GetBinUpEdge(i);
+
+        Double_t binContent = fInclusiveCF1DInvMass[phiBin][etaBin]->GetBinContent( i);
+        Double_t binError   = fInclusiveCF1DInvMass[phiBin][etaBin]->GetBinError(   i);
+
+        if (fBackgroundCF1DInvMassFit[phiBin][etaBin]) {
+          // get background integral in bin
+          Double_t bkg    = fBackgroundCF1DInvMassFit[phiBin][etaBin]->Integral(minMass, maxMass);
+          Double_t bkgErr = fBackgroundCF1DInvMassFit[phiBin][etaBin]->IntegralError(minMass, maxMass,
+                                                                                     fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetParameters(),
+                                                                                     fitResult->GetCovarianceMatrix().GetMatrixArray());
+
+          // normalize to bin width before subtraction
+          bkg     = bkg/(maxMass-minMass);
+          bkgErr  = bkgErr/(maxMass-minMass);
+
+          // calculate signal
+          binContent  = binContent - bkg;
+          binError    = TMath::Sqrt(binError*binError + bkgErr*bkgErr);
+        } else {
+          binContent  = 0.;
+          binError    = 0.;
+        }
+
+        fSignalCF1DInvMass[phiBin][etaBin]->SetBinContent( i, binContent);
+        fSignalCF1DInvMass[phiBin][etaBin]->SetBinError(   i, binError);
+      }
+
       // calculate background correlation
       Double_t bkg    = 0.;
       Double_t bkgErr = 0.;
@@ -1040,21 +1107,18 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
       Double_t sigPlusBkgErr  = 0.;
       Double_t sigPlusBkg     = fInclusiveCF1DInvMass[phiBin][etaBin]->IntegralAndError(fInclusiveCF1DInvMass[phiBin][etaBin]->FindBin(fMassSignalRange[0]+EPSILON),
                                                                                         fInclusiveCF1DInvMass[phiBin][etaBin]->FindBin(fMassSignalRange[1]-EPSILON),
-                                                                                        sigPlusBkgErr);
+                                                                                        sigPlusBkgErr, "width");
+
       Double_t sig            = sigPlusBkg - bkg;
       Double_t sigErr         = TMath::Sqrt(sigPlusBkgErr*sigPlusBkgErr + bkgErr*bkgErr);
-      // NOTE: signal correlation could also be taken directly from inv. mass dist. after bkg. sub
-      //Double_t sigErr = 0.;
-      //Double_t sig    = fSignalCF1DInvMass[phiBin][etaBin]->IntegralAndError(fSignalCF1DInvMass[phiBin][etaBin]->FindBin(fMassSignalRange[0]+EPSILON),
-      //                                                                       fSignalCF1DInvMass[phiBin][etaBin]->FindBin(fMassSignalRange[1]-EPSILON),
-      //                                                                       sigErr);
+
       fSignalCF2D->SetBinContent( etaBin+1, phiBin+1, sig);
       fSignalCF2D->SetBinError(   etaBin+1, phiBin+1, sigErr);
     }
   }
-  
+
   // normalize background and signal correlation to number of triggers
-  if (!fTrigValSig[kSig] || !fTrigValSig[kBkg]) {
+  if (fTrigValSig[kSig]==-9999. || fTrigValSig[kBkg]==-9999.) {
     cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() Fatal: There was an issue with the J/psi signal extraction!" << endl;
     return kFALSE;
   }
@@ -1107,7 +1171,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSideband() {
   //
   // calculate background correlation from inv. mass sideband
   //
-  if (!CalculateInclusiveCorrelation(fBackgroundMassRanges[0][0], fBackgroundMassRanges[0][1],
+  if (!CalculateInclusiveCorrelation(fBackgroundMassRanges[0][0], fBackgroundMassRanges[0][1], kFALSE,
                                      fSEOSNormBackgroundMassWindow[0], fMEOSNormBackgroundMassWindow[0],
                                      fInclusiveCF2DBackgroundMassWindow[0], fInclusiveCF1DBackgroundMassWindow[0])) return kFALSE;
   fSEOSNormBackgroundMassWindow[0]->SetName("SE-OS_backgroundRegion0_2D");
@@ -1265,7 +1329,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationInterpolation() {
   
   // calculate inclusive correlation in background mass windows
   for (Int_t i=0; i<fNBackgroundMassRanges; ++i) {
-    if (!CalculateInclusiveCorrelation(fBackgroundMassRanges[i][0], fBackgroundMassRanges[i][1],
+    if (!CalculateInclusiveCorrelation(fBackgroundMassRanges[i][0], fBackgroundMassRanges[i][1], kFALSE,
                                        fSEOSNormBackgroundMassWindow[i], fMEOSNormBackgroundMassWindow[i],
                                        fInclusiveCF2DBackgroundMassWindow[i], fInclusiveCF1DBackgroundMassWindow[i])) return kFALSE;
   }
@@ -1327,7 +1391,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperposition() {
 
   // calculate inclusive correlation in (background) mass windows
   for (Int_t i=0; i<fNBackgroundMassRanges; ++i) {
-    if (!CalculateInclusiveCorrelation(fBackgroundMassRanges[i][0], fBackgroundMassRanges[i][1],
+    if (!CalculateInclusiveCorrelation(fBackgroundMassRanges[i][0], fBackgroundMassRanges[i][1], kFALSE,
                                        fSEOSNormBackgroundMassWindow[i], fMEOSNormBackgroundMassWindow[i],
                                        fInclusiveCF2DBackgroundMassWindow[i], fInclusiveCF1DBackgroundMassWindow[i])) return kFALSE;
   }
@@ -1427,7 +1491,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoC
   
   // calculate inclusive correlation in (background) mass windows
   for (Int_t i=0; i<fNBackgroundMassRanges; ++i) {
-    if (!CalculateInclusiveCorrelation(fBackgroundMassRanges[i][0], fBackgroundMassRanges[i][1],
+    if (!CalculateInclusiveCorrelation(fBackgroundMassRanges[i][0], fBackgroundMassRanges[i][1], kFALSE,
                                        fSEOSNormBackgroundMassWindow[i], fMEOSNormBackgroundMassWindow[i],
                                        fInclusiveCF2DBackgroundMassWindow[i], fInclusiveCF1DBackgroundMassWindow[i])) return kFALSE;
     
@@ -1767,7 +1831,7 @@ Bool_t AliCorrelationExtraction::CalculateSignalCorrelation() {
     cout << "AliCorrelationExtraction::CalculateSignalCorrelation() Fatal: Background correlation missing!" << endl;
     return kFALSE;
   }
-  if (!fTrigValSig[kSig]) {
+  if (fTrigValSig[kSig]==-9999.) {
     cout << "AliCorrelationExtraction::CalculateSignalCorrelation() Fatal: There was an issue with the J/psi signal extraction!" << endl;
     return kFALSE;
   }
@@ -1935,7 +1999,7 @@ Bool_t AliCorrelationExtraction::Process() {
   if (fVerboseFlag) PrintUserOptions();
 
   // calculate inclusive correlation function in J/psi signal region
-  if (!CalculateInclusiveCorrelation(fMassSignalRange[0], fMassSignalRange[1],
+  if (!CalculateInclusiveCorrelation(fMassSignalRange[0], fMassSignalRange[1], kTRUE,
                                      fSEOSNorm, fMEOSNorm,
                                      fInclusiveCF2D, fInclusiveCF1D)) return kFALSE;
   fSEOSNorm->SetName("SE-OS_2D");
