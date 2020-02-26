@@ -1496,12 +1496,39 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       outputContainer->Add(fhPtExoTrigger[iso]) ;
     }
     
+    // Define coarse binning for TH3 acceptance histogram pT axis
+    //
+    TCustomBinning ptBinningAcc;
+    ptBinningAcc.SetMinimum(GetMinPt());
+    ptBinningAcc.AddStep(25,5);                             // 2-4
+    if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
+    if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
+    if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
+
+    TArrayD ptBinsAccArray;
+    ptBinningAcc.CreateBinEdges(ptBinsAccArray);
+    //printf("pt: min %f max %f n %d\n",GetMinPt(),GetMaxPt(),ptBinsAccArray.GetSize() - 1);
+    //
+    TCustomBinning etaBinning;
+    etaBinning.SetMinimum(etamin);
+    etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
+    TArrayD etaBinsArray;
+    etaBinning.CreateBinEdges(etaBinsArray);
+    //printf("eta: min %f max %f n %d -%d\n",etamin,etamax,netabins,etaBinsArray.GetSize() - 1);
+    //
+    TCustomBinning phiBinning;
+    phiBinning.SetMinimum(phimin);
+    phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
+    TArrayD phiBinsArray;
+    phiBinning.CreateBinEdges(phiBinsArray);
+    //printf("phi: min %f max %f n %d-%d\n",phimin,phimax,nphibins,phiBinsArray.GetSize() - 1);
+    //
     fhPtEtaPhi[iso]  = new TH3F(Form("hPtEtaPhi%s",isoName[iso].Data()),
                                 Form("Number %s particles #it{p}_{T} vs #eta vs #varphi, %s",
                                      isoTitle[iso].Data(),parTitle[iso].Data()),
-                                nptbins/20,ptmin,ptmax,
-                                netabins,etamin,etamax,
-                                nphibins,phimin,phimax);
+                                ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
+                                etaBinsArray  .GetSize() - 1,  etaBinsArray  .GetArray(),      
+                                phiBinsArray  .GetSize() - 1,  phiBinsArray  .GetArray());
     fhPtEtaPhi[iso]->SetYTitle("#eta");
     fhPtEtaPhi[iso]->SetZTitle("#varphi (rad)");
     fhPtEtaPhi[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1524,7 +1551,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtEtaPhiMC[imc][iso]  = new TH3F(Form("hPtEtaPhi%sMC%s",isoName[iso].Data(),mcPartName[imc].Data()),
                                            Form("#it{p}_{T} vs #varphi vs #it{p}_{T} of %s %s, %s",
                                                 isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
-                                           nptbins/20,ptmin,ptmax,netabins,etamin,etamax,nphibins,phimin,phimax);
+                                           ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
+                                           etaBinsArray  .GetSize() - 1,  etaBinsArray  .GetArray(),      
+                                           phiBinsArray  .GetSize() - 1,  phiBinsArray  .GetArray());
         fhPtEtaPhiMC[imc][iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtEtaPhiMC[imc][iso]->SetYTitle("#eta");
         fhPtEtaPhiMC[imc][iso]->SetZTitle("#varphi (rad)");
