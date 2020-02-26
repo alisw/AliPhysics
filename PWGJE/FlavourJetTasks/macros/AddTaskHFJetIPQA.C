@@ -29,7 +29,6 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *ntracksMC            = "tracksMC",
                                            const char *nrhoMC               = "RhoMC",
                                            int nTCThresh                      =1,
-                                           int iTagSetting              =0,
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/k/kgarner/Weights_18_07_18.root",
                                            TString PathToThresholds = "alien:///alice/cern.ch/user/k/kgarner/ThresholdHists_LHC16JJ_new.root",
                                           // TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
@@ -148,7 +147,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         if(fileFlukaCorrection) fileFlukaCorrection->Close();
     }
 
-    jetTask->ReadThresholdHists(PathToThresholds, taskname, nTCThresh, iTagSetting);
+    jetTask->ReadThresholdHists(PathToThresholds, taskname, nTCThresh);
 
 
     // Setup input containers
@@ -237,8 +236,13 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                               AliEmcalList::Class(),AliAnalysisManager::kOutputContainer,
                                                               Form("%s", AliAnalysisManager::GetCommonFileName()));
+    /*AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
+                                                              TList::Class(),AliAnalysisManager::kOutputContainer,
+                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));*/
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
     mgr->ConnectOutput (jetTask, 1, coutput1 );
+   // mgr->ConnectOutput (jetTask, 2, coutput2 );
+    
 
     
 
