@@ -792,14 +792,14 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
       // criteria
       AliDielectronCutGroup* hadBandRej = new AliDielectronCutGroup("hadBandRej", "hadBandRej", AliDielectronCutGroup::kCompOR);
       AliDielectronPID* cutsTPC   = new AliDielectronPID("cutsTCP", "cutsTCP");
-      cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -3.0,  30., 0.0, 100., kFALSE, AliDielectronPID::kRequire);
-      cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion,     -100., 4.0, 0.0, 100., kTRUE, AliDielectronPID::kRequire);
+      cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -3.0,  3.0, 0.0, 100., kFALSE, AliDielectronPID::kRequire);
+      cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion,     -100., 3.5, 0.0, 100., kTRUE, AliDielectronPID::kRequire);
       cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kKaon,     -3.0,  3.0, 0.0, 100., kTRUE, AliDielectronPID::kRequire);
       cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kMuon,     -3.0,  3.0, 0.0, 100., kTRUE, AliDielectronPID::kRequire);
       cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kProton,   -3.0,  3.0, 0.0, 100., kTRUE, AliDielectronPID::kRequire);
       AliDielectronPID* recoverTOF = new AliDielectronPID("recoverTOF", "recoverTOF");
       recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -3.0,  3.0, 0.0, 100., kFALSE, AliDielectronPID::kRequire);
-      recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion,     -100., 4.0, 0.0, 100., kTRUE, AliDielectronPID::kRequire);
+      recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion,     -100., 3.5, 0.0, 100., kTRUE, AliDielectronPID::kRequire);
       recoverTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -3.0,  3.0, 0.0, 100., kFALSE, AliDielectronPID::kRequire);
       hadBandRej->AddCut(cutsTPC);
       hadBandRej->AddCut(recoverTOF);
@@ -1041,7 +1041,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1);
       varCutsFilter->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 4.0);
       varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,        3. , 10.);
-      varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 4.5);
+      varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 5.5);
       varCutsFilter->AddCut(AliDielectronVarManager::kNclsSITS,       1.0, 6.0, kTRUE);
       trackCuts->AddCut(trackCutsFilter);
       trackCuts->AddCut(varCutsFilter);
