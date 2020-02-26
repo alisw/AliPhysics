@@ -109,7 +109,7 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
   //!---
   
   //---!
-  
+  mgr->AddTask(dRTTask);
   
   // Create container for input/output
   TString inname = "cinput";
