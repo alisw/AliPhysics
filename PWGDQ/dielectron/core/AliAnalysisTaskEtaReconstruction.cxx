@@ -1834,6 +1834,7 @@ void    AliAnalysisTaskEtaReconstruction::FillPairHistograms_Secondary(AliDielec
     (dynamic_cast<TH1D *>(((TList*)((TList*)fCutListVecSec.at(iCutList))->At(iMCSignal))->At(33)))->Fill(values[AliDielectronVarManager::kArmPt]);
     (dynamic_cast<TH1D *>(((TList*)((TList*)fCutListVecSec.at(iCutList))->At(iMCSignal))->At(34)))->Fill(values[AliDielectronVarManager::kArmAlpha]);
     (dynamic_cast<TH1D *>(((TList*)((TList*)fCutListVecSec.at(iCutList))->At(iMCSignal))->At(35)))->Fill(values[AliDielectronVarManager::kPt]);
+    (dynamic_cast<TH2D *>(((TList*)((TList*)fCutListVecSec.at(iCutList))->At(iMCSignal))->At(36)))->Fill(values[AliDielectronVarManager::kArmAlpha], values[AliDielectronVarManager::kArmPt]);
 }
 
 
@@ -2168,6 +2169,7 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
     TH1D* hArmPt_sec = new TH1D("ArmPt","Armenteros-Podolanski pt ;Pt [GeV];#tracks",160,0.,1.); // kArmPt
     TH1D* hArmAlpha_sec = new TH1D("ArmAlpha","Armenteros-Podolanski alpha ;alpha;#tracks",200, -3., 3.); // kArmAlpha
     TH1D* hPairPt_sec = new TH1D("PairPt","Pt of pair ; Pt [GeV];#tracks",640, 0., 8.); // kArmAlpha
+    TH2D* hArmAlpha_ArmPt_sec = new TH2D("Armenteros Podolanski Plot","Armenteros Podolanski Plot, secondary electrons ; ArmAlpha; ArmPt", 100, -1, 1, 320, 0, 0.1);//,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
 
     list_temp->AddAt(hPt_sec,     0);
@@ -2208,6 +2210,7 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
     list_temp->AddAt(hArmPt_sec,33);
     list_temp->AddAt(hArmAlpha_sec,34);
     list_temp->AddAt(hPairPt_sec,35);
+    list_temp->AddAt(hArmAlpha_ArmPt_sec,36);
     list2->Add(list_temp);
     }
   fCutListVecSec.push_back(list2);

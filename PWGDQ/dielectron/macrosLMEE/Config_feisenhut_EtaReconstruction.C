@@ -127,6 +127,8 @@ const double lowerMassCutPrimaries = 0.1349766;
 const double upperPreFilterMass = 0.2;
 const double lowerPreFilterMass = 0.1;
 const double massCutSecondaries = 0.01;
+const double photonMass  = 0.0;
+
 
 
 
@@ -343,7 +345,8 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////
   else if (cutDefinition == "JPID_sum_pt75"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
@@ -369,7 +372,8 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
            cutDefinition == "JPID_sum9_pt75_sec_OnlyArmAlpha"
           ){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
