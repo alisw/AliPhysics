@@ -19,6 +19,7 @@ class AliNanoFilterNormalisation;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisCuts.h"
 #include "AliNanoAODReplicator.h"
+#include "AliEventCuts.h"
 #include "AliNanoAODTrack.h"
 #include "AliPID.h"
 #include <list>
@@ -60,6 +61,10 @@ public:
 
   void SetInputArrayName(TString name) {fInputArrayName=name;}
   void SetOutputArrayName(TString name) {fOutputArrayName=name;}
+
+  bool         fUseAliEventCuts;
+  AliEventCuts fEventCuts;
+
 
 protected:
   Int_t fMCMode; // true if processing monte carlo. if > 1 not all MC particles are filtered

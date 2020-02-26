@@ -17,7 +17,8 @@ class AliNanoFilterNormalisation : public TNamed {
     kAnalysisEvent
   };
 
-  AliNanoFilterNormalisation(TString name = "NanoFilterNormalisation", TString title = "NanoFilterNormalisation", int nMultBins = 100, float multBegin = 0, float multEnd = 100);
+  AliNanoFilterNormalisation(TString name = "NanoFilterNormalisation", TString title = "NanoFilterNormalisation", int nMultBins = 101, float multBegin = -1, float multEnd = 100);
+  AliNanoFilterNormalisation(TString name, TString title, int nMultBins, float* mBins);
   ~AliNanoFilterNormalisation();
 
   void FillCandidate(bool triggered, bool nonVertexRelatedSel, bool recoVertex, bool allCuts, float mult = -.5);
