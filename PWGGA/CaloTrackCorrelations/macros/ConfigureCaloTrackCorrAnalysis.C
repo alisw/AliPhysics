@@ -89,13 +89,13 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     
     if ( year == 2010 )
     {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
+      histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 120*TMath::DegToRad(), 2*24) ;
       histoRanges->SetHistoXRangeAndNBins(-230,90,120); // QA
       histoRanges->SetHistoYRangeAndNBins(370,450,40);  // QA
     }
     else if ( year < 2014 )
     {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 104) ;
+      histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 180*TMath::DegToRad(), 5*24) ;
       histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
       histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA  
       
@@ -105,17 +105,17 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     }
     else // Run2
     {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 189*TMath::DegToRad(), 111) ;
+      histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 187*TMath::DegToRad(), 5*24+8) ;
       histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA, revise
       histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA, revise
     }
     
-    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-0.70, 0.70, 2*48) ;
   }
   else if(calorimeter=="DCAL")
   {
-    histoRanges->SetHistoPhiRangeAndNBins(260*TMath::DegToRad(), 327*TMath::DegToRad(), 67) ;
-    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+    histoRanges->SetHistoPhiRangeAndNBins(260*TMath::DegToRad(), 327*TMath::DegToRad(), 3*24+8) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-0.70, 0.70, 2*48) ;
     histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA, revise
     histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA, revise
   } 
