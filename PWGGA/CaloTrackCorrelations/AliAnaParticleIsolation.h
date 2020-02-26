@@ -155,7 +155,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
   void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < AliNeutralMesonSelection::fgkMaxNDecayBits)
                                                        fDecayBits[i] = bit           ; }
-  void         SetM02CutForTaggedDecays(Float_t m02) { fDecayTagsM02Cut        = m02 ; }
   
   void         SwitchOnBackgroundBinHistoFill()      { fFillBackgroundBinHistograms = kTRUE ; }
   void         SwitchOffBackgroundBinHistoFill()     { fFillBackgroundBinHistograms = kFALSE; }
@@ -217,6 +216,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetNExoCutInCandidate(Int_t n)        { if(n < 19) fNExoCutInCandidate= n ; }
   void         SetExoCutInCandidateAt(Int_t i,Float_t l) { if(i <= fNExoCutInCandidate) fExoCutInCandidate[i] = l; }
   
+  void         SetM02CutForSignal    (Float_t min, Float_t max ) { fM02Narrow[0] = min ; fM02Narrow[1] = max; }
+  void         SetM02CutForBackground(Float_t min, Float_t max ) { fM02Wide  [0] = min ; fM02Wide  [1] = max; }
+
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
                      kmcPrimPrompt = 4, kmcPrimFrag     = 5, kmcPrimISR       = 6,
@@ -239,7 +241,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fReMakeIC ;                                ///<  Do isolation analysis.
   Bool_t   fMakeSeveralIC ;                           ///<  Do analysis for different IC.
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
-  Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
+  Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots. Activate it only on photon analysis, enables filling of wide/narrow shape histograms.
   Bool_t   fFillPerSMHistograms ;                     ///<  Fill histograms per SM
   Bool_t   fFillPerTCardIndexHistograms ;             ///<  Fill histograms per T-Card index.
   Int_t    fTCardIndex;                               ///<  Store here the T-Card index per trigger cluster.
@@ -252,7 +254,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
   UInt_t   fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ; ///< In case of study of decay triggers, select the decay. bit
-  Float_t  fDecayTagsM02Cut ;                         ///<  Apply a m02 cut to clusters tagged as decay.
   
   Bool_t   fFillNLMHistograms;                        ///<  Fill NLM histograms.
   Bool_t   fLeadingOnly;                              ///<  Do isolation with leading particle.
@@ -269,6 +270,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fPtTrigBinLimit[20];                       ///<  Pt bin limits on pt trigger.
   
   Float_t  fMinCellsAngleOverlap;                     ///<  Number of cells that define the cluster overlap.
+  
+  Float_t  fM02Narrow[2];                             ///<  Long axis signal region
+  Float_t  fM02Wide  [2];                             ///<  Long axis background region
   
   //  Analysis data members for multiple cones and pt thresholds
   Int_t    fNCones ;                                  ///<  Number of cone sizes to test. Multiple cones and pt thresholds analysis.
@@ -317,13 +321,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   // Histograms  
   
-  TH1F *   fhE[2] ;                                    //!<! Number of non/isolated particles vs energy.
-  TH1F *   fhPt[2] ;                                   //!<! Number of non/isolated particles vs pT.
-  TH2F *   fhPtCentrality[2] ;                         //!<! Number of non/isolated particles centrality vs pT.
-  TH2F *   fhPtEventPlane[2] ;                         //!<! Number of non/isolated particles event plane angle vs pT.
-  TH2F *   fhPtNLocMax[2] ;                            //!<! Number of non/isolated particles vs NLM in cluster.
-  TH3F *   fhPtEtaPhi[2] ;                             //!<! cluster pt vs eta vs phi of non/isolated particles.
-  TH1F *   fhEExoTrigger[2];                           //!<! Number of non/isolated exotic cluster vs E.
+  TH1F *   fhPt[2][2] ;                                //!<! Number of non/isolated narrow/wide particles vs pT.
+  TH2F *   fhPtCentrality[2][2] ;                      //!<! Number of non/isolated narrow/wide particles centrality vs pT.
+  TH2F *   fhPtEventPlane[2][2] ;                      //!<! Number of non/isolated narrow/wide particles event plane angle vs pT.
+  TH2F *   fhPtNLocMax[2][2] ;                         //!<! Number of non/isolated narrow/wide particles vs NLM in cluster.
+  TH3F *   fhPtEtaPhi[2][2] ;                          //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles.
   TH1F *   fhPtExoTrigger[2];                          //!<! Number of non/isolated exotic cluster vs pT.
   
   TH1F *   fhPtDecay       [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Number of (non) isolated Pi0 decay particles (invariant mass tag).
@@ -359,7 +361,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhEtaPrimMC  [fgkNmcPrimTypes];             //!<! Pt vs Eta of generated photon.
   TH2F *   fhPhiPrimMC  [fgkNmcPrimTypes];             //!<! Pt vs Phi of generated photon.
-  TH1F *   fhEPrimMC    [fgkNmcPrimTypes];             //!<! Number of generated photon vs E.
   TH1F *   fhPtPrimMC   [fgkNmcPrimTypes];             //!<! Number of generated photon vs pT.
   TH1F *   fhPtPrimMCiso[fgkNmcPrimTypes];             //!<! Number of generated isolated photon vs pT.
   
@@ -401,7 +402,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCEtaOverlap;                       //!<! Eta with overlapped decay photons.
   TH1F *   fhPtPrimMCEtaIsoOverlap;                    //!<! Eta isolated with overlapped decay photons.
 
-  TH1F *   fhPtMC  [fgkNmcTypes][2];                   //!<! Number of not/isolated mcTypes particle.
+  TH1F *   fhPtMC      [fgkNmcTypes][2][2];            //!<! Number of not/isolated narrow/wide mcTypes particle.
   TH3F *   fhPtEtaPhiMC[fgkNmcTypes][2];               //!<! pT vs eta vs phi of not/isolated mcTypes particle.
   
   TH1F *   fhPtDecayMC  [2][AliNeutralMesonSelection::fgkMaxNDecayBits][fgkNmcTypes] ; //!<! Number of (not) isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle.
@@ -469,12 +470,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTrackMatchedMCParticle[2];                //!<! Trace origin of matched particle.
 
   // Shower Shape histograms
-  TH2F *   fhELambda0[2];                              //!<! Shower shape of (non) isolated photons (do not apply SS cut previously).
   TH2F *   fhPtLambda0[2];                             //!<! Shower shape of (non) isolated photons (do not apply SS cut previously).
-//TH2F *   fhELambda1[2];                              //!<! Shower shape of (non) isolated photons (do not apply SS cut previously).
-  TH2F *   fhELambda0TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
   TH2F *   fhPtLambda0TRD[2];                          //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
-//TH2F *   fhELambda1TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
   
   // Selection parameters per supermodule number
   TH2F *   fhPtPerSM[2];                               //!<! Input particle pT distribution per SM
@@ -600,13 +597,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F **  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap  ;   //![fNPtTrigBin*fgkNmcTypes]
   
   // Local maxima
-  TH2F *   fhNLocMax[2];                               //!<! Number of maxima in selected clusters.
-  TH2F *   fhELambda0LocMax1[2] ;                      //!<! E vs lambda0 of selected cluster, 1 local maxima in cluster.
-  TH2F *   fhELambda1LocMax1[2] ;                      //!<! E vs lambda1 of selected cluster, 1 local maxima in cluster.
-  TH2F *   fhELambda0LocMax2[2] ;                      //!<! E vs lambda0 of selected cluster, 2 local maxima in cluster.
-  TH2F *   fhELambda1LocMax2[2] ;                      //!<! E vs lambda1 of selected cluster, 2 local maxima in cluster.
-  TH2F *   fhELambda0LocMaxN[2] ;                      //!<! E vs lambda0 of selected cluster, N>2 local maxima in cluster.
-  TH2F *   fhELambda1LocMaxN[2] ;                      //!<! E vs lambda1 of selected cluster, N>2 local maxima in cluster.
+  TH2F *   fhPtLambda0LocMax1[2] ;                     //!<! Pt vs lambda0 of selected cluster, 1 local maxima in cluster.
+  TH2F *   fhPtLambda1LocMax1[2] ;                     //!<! Pt vs lambda1 of selected cluster, 1 local maxima in cluster.
+  TH2F *   fhPtLambda0LocMax2[2] ;                     //!<! Pt vs lambda0 of selected cluster, 2 local maxima in cluster.
+  TH2F *   fhPtLambda1LocMax2[2] ;                     //!<! Pt vs lambda1 of selected cluster, 2 local maxima in cluster.
+  TH2F *   fhPtLambda0LocMaxN[2] ;                     //!<! Pt vs lambda0 of selected cluster, N>2 local maxima in cluster.
+  TH2F *   fhPtLambda1LocMaxN[2] ;                     //!<! Pt vs lambda1 of selected cluster, N>2 local maxima in cluster.
   
   // Pile-up
   TH1F *   fhPtPileUp[7][2] ;                          //!<! Number of isolated particles.
