@@ -81,8 +81,38 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
     DefineOutput(8, TList::Class());    // Results
     DefineOutput(9, TList::Class());    // QA Results
 }
-AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()
+AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
 {
+    // if (&vAntiProtons)  delete &vAntiProtons;
+    // if (&vProtons)      delete &vProtons;
+    // if (&vXions)        delete &vXions;
+    // if (&vAntiXions)    delete &vAntiXions;
+    delete aaEvent;
+    delete aaTrack;
+    delete fEvent;
+    delete fTrack;
+    delete fCascade;
+    delete fEventCuts;
+    delete fTrackCutsProton;
+    delete fTrackCutsAntiProton;
+    delete fv0;
+    delete fLambdaV0Cuts;
+    delete fAntiLambdaV0Cuts;
+    delete fCascadeCutsXion;
+    delete fCascadeCutsAntiXion;
+    delete fConfig;
+    delete fPairCleaner;
+    delete fPartColl;
+    delete *fGTI;
+    delete tlEventCuts;
+    delete tlTrackCutsProton;
+    delete tlAntiTrackCutsProton;
+    delete tlLambdaList;
+    delete tlAntiLambdaList;
+    delete tlCascadeCutsXi;
+    delete tlAntiCascadeCutsXi;
+    delete tlResults;
+    delete tlResultsQA;
 }
 
 // // Copy Constructor
@@ -340,6 +370,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
             // lambdas nicht in storeparticle weil sonst mit setevent pairQA betrieben wird was wir nicht brauchen
             fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+            // soweit ich das richtig verstanden habe wird pairQA mit den teilchen gemacht die im pairCleaner 
+            // sind und pdgCodes in der richtigen Reihenfolge vorhanden sind.
 
             PostData(1, tlEventCuts);
             PostData(2, tlTrackCutsProton);
