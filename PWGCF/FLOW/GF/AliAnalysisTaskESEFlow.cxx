@@ -93,6 +93,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fHistEta(0),
     fHistPt(0),
     fHistZVertex(0),
+    fHistPhiCor(0),
     fSplq2TPC{0},
     fSplq3TPC{0},
     fSplq2V0C{0},
@@ -155,6 +156,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fFilterBit(96),
     fAbsEtaMax(0.8),
     fVtxZCuts(10.0),
+    fNPhiBins(120),
+    fNEtaBins(32),
     fCentEstimator("V0M"),
     fCutChargedNumTPCclsMin(70),
     fReadMC(kFALSE),
@@ -217,6 +220,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fHistEta(0),
     fHistPt(0),
     fHistZVertex(0),
+    fHistPhiCor(0),
     fSplq2TPC{0},
     fSplq3TPC{0},
     fSplq2V0C{0},
@@ -279,6 +283,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fFilterBit(96),
     fAbsEtaMax(0.8),
     fVtxZCuts(10.0),
+    fNPhiBins(120),
+    fNEtaBins(32),
     fCentEstimator("V0M"),
     fCutChargedNumTPCclsMin(70),
     fReadMC(kFALSE),
@@ -424,13 +430,13 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         CentEdges[Centbin] = fCentAxis->GetBinLowEdge(Centbin+1);
     }
 
-
-    fHistPhiEtaVz = new TH3F("fHistPhiEtaVz", "fHistPhiEtaVz; #phi; #eta; Vz", 120, 0.0, TMath::TwoPi(), 32, -1.0, 1.0,fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
+    fHistPhiEtaVz = new TH3F("fHistPhiEtaVz", "fHistPhiEtaVz; #phi; #eta; Vz", fNPhiBins, 0.0, TMath::TwoPi(), fNEtaBins, -1.0, 1.0,fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
     fHistPhiEtaVz->Sumw2();
-    fHistPhi = new TH1F("fHistPhi", ";#phi", 120, 0.0, TMath::TwoPi());
-    fHistEta = new TH1F("fHistEta", ";#eta", 120,-1.0, 1.0);
+    fHistPhi = new TH1F("fHistPhi", ";#phi", fNPhiBins, 0.0, TMath::TwoPi());
+    fHistEta = new TH1F("fHistEta", ";#eta", fNEtaBins,-1.0, 1.0);
     fHistPt = new TH1F("fHistPt", ";p_{T}", nPtBin,PtEdges);
-    fHistZVertex = new TH1F("fHistZVertex", ";Vtx_{Z}", 20,-10,10);
+    fHistZVertex = new TH1F("fHistZVertex", ";Vtx_{Z}", fVtxZCuts,-10,10);
+    fHistPhiCor = new TH1F("fHistPhiCor",";#phiCor", fNPhiBins, 0.0, TMath::TwoPi());
     fProfNPar = new TProfile("fProfNparvsCent",";Centrality;N_{Particles}",100,0,100);
 
     fhV0Multiplicity = new TH2F("fV0Multiplicity","",64,0,64,100,0,1250);
@@ -866,6 +872,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fObservables->Add(fHistEta);
     fObservables->Add(fHistPt);
     fObservables->Add(fHistZVertex);
+    fObservables->Add(fHistPhiCor);
     fObservables->Add(fProfNPar);
     fObservables->Add(fhV0Multiplicity);
 
@@ -1080,6 +1087,11 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
         fHistPhi->Fill(dPhi);
         fHistEta->Fill(dEta);
         fHistPt->Fill(dPt);
+
+        Double_t dWeight = GetFlowWeight(track, dVz);
+        Double_t dPhiCor = dWeight*track->Phi();
+        fHistPhiCor->Fill(dPhiCor);
+
     } // ending track loop
 
     AliAODVZERO* aodV0 = fAOD->GetVZEROData();
@@ -1345,8 +1357,8 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
             M_SP += 1;
             for(Int_t iHarm(0); iHarm < 2; ++iHarm)
             {                
-                Double_t dCos = TMath::Cos( (iHarm+2) * dPhi);
-                Double_t dSin = TMath::Sin( (iHarm+2) * dPhi);
+                Double_t dCos = 1 * TMath::Cos( (iHarm+2) * dPhi);
+                Double_t dSin = 1 * TMath::Sin( (iHarm+2) * dPhi);
                 QxnTPCSP[iHarm] += dCos;
                 QynTPCSP[iHarm] += dSin;
             }
@@ -1567,8 +1579,8 @@ void AliAnalysisTaskESEFlow::SPVienna(const Float_t centrality, Int_t q2ESECodeV
 
         for (Int_t iVienna(0); iVienna<2; ++iVienna){
             Int_t nHarmv = iVienna+2;
-            vnSPV0A[iVienna] = dWeight * (TMath::Cos(nHarmv * track->Phi())*QxnV0ACorr[iVienna] + TMath::Sin(nHarmv * track->Phi())*QynV0ACorr[iVienna]); 
-            vnSPV0C[iVienna] = dWeight * (TMath::Cos(nHarmv * track->Phi())*QxnV0CCorr[iVienna] + TMath::Sin(nHarmv * track->Phi())*QynV0CCorr[iVienna]);
+            vnSPV0A[iVienna] =  (TMath::Cos(nHarmv * track->Phi())*QxnV0ACorr[iVienna] + TMath::Sin(nHarmv * track->Phi())*QynV0ACorr[iVienna]); 
+            vnSPV0C[iVienna] =  (TMath::Cos(nHarmv * track->Phi())*QxnV0CCorr[iVienna] + TMath::Sin(nHarmv * track->Phi())*QynV0CCorr[iVienna]);
 
             TProfile* SPvProfV0A = (TProfile*)SPFlowList->FindObject(Form("v_{%i}{SP V0A}_%.0f_%.0f",iVienna+2,CentEdges[CenterCode],CentEdges[CenterCode+1]));
             if(!SPvProfV0A) { AliError(Form("Profile '%s' not found","<v>_2{SP_V0A}")); return; }
@@ -1727,6 +1739,20 @@ void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, I
                     cDn = SixGap10(0,0,0,0,0,0);
                     cNum = SixGap10(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
                 }
+            }
+            break;
+        case 8 :
+            if(!bHasGap){
+                if(doDiff){
+                    return;
+                }
+                if(doRef){
+                    cDn = Eight(0,0,0,0,0,0,0,0);
+                    cNum = Eight(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+                }
+            }
+            else{
+                return;
             }
             break;
         default:

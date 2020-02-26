@@ -64,6 +64,8 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetFilterBit(96);
     task->SetEtaGap(1.0);
     task->SetVtxZCut(10.0);
+    task->SetPhiBins(120);
+    task->SetEtaBins(32);
     const int nPtBins = 28;
     Double_t PtEdges[nPtBins+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,3.75,4.0,4.5,5.0,5.5,6.0,7.0,8.0,9.0,10.0};
     task->SetPtBins(nPtBins,PtEdges);
@@ -75,6 +77,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetRejectAddPileUp(kTRUE);
     task->SetFlowRFPsPt(0.2,5.0);
     task->SetFlowPOIsPt(0.0,10.0);
+    task->SetRedFlowPt(0.2,5.0);
     task->SetTPCEse(kTRUE);
     task->SetV0CEse(kTRUE);
     task->SetV0AEse(kTRUE);
