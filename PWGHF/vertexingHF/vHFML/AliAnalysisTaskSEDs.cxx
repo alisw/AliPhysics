@@ -593,7 +593,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
   
   // no physics selection can be applied for upgrade studies
   if(fSystem == kUpgr && fAnalysisCuts->IsEventRejectedDuePhysicsSelection())
-    isEvSel = kTRUE;
+   isEvSel = kTRUE;
   
   Int_t runNumber = aod->GetRunNumber();
 
