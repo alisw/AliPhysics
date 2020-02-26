@@ -17,6 +17,18 @@ AliNanoFilterNormalisation::AliNanoFilterNormalisation(TString name, TString tit
   }
 }
 
+AliNanoFilterNormalisation::AliNanoFilterNormalisation(TString name, TString title, int nMultBins, float* mBins) : TNamed(name, title) {
+  float selBins[5]{-0.5,0.5,1.5,2.5,3.5,4.5};
+  fCandidateEvents = new TH2D("fCandidateEvents", ";Multiplicity estimator;", nMultBins, mBins, 5, selBins);
+  fSelectedEvents  = (TH2D*) fCandidateEvents->Clone("fSelectedEvents");
+
+  std::string labels[5]{"Input events", "Triggered events", "Triggered + Quality cuts", "Triggered + QC + Reco vertex", "Analysis events"};
+  for (int iType{0}; iType < 5; ++iType) {
+    fCandidateEvents->GetYaxis()->SetBinLabel(iType + 1, labels[iType].data());
+    fSelectedEvents->GetYaxis()->SetBinLabel(iType + 1, labels[iType].data());
+  }
+}
+
 AliNanoFilterNormalisation::~AliNanoFilterNormalisation() {
   delete fCandidateEvents;
   delete fSelectedEvents;
