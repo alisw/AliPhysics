@@ -54,6 +54,43 @@ TString kAnaCaloTrackCorr = "";
 TString kAnaCutsString = ""; 
 
 ///
+/// Set common mixing/centrality analysis binning
+///
+/// \param ana : Analysis task where histograms are created and common settings are needed
+///
+void SetAnalysisMixingCentralityBins(AliAnaCaloTrackCorrBaseClass* ana, TString col)
+{
+  ana->SwitchOffTrackMultBins();
+  //ana->SetNTrackMultBin(10);
+  
+  ana->SetNZvertBin(10);
+  
+  if     (col == "pp"  )
+  {
+    ana->SetNCentrBin(1);
+    ana->SetNRPBin(1);
+    ana->SetNMaxEvMix(100);
+  }
+  else if(col == "PbPb")
+  {
+    ana->SetNCentrBin(10);
+    ana->SetNRPBin(4);
+    ana->SetNMaxEvMix(10);
+    //    if(kAnaCaloTrackCorr.Contains("60_90"))
+    //    {
+    //      ana->SetNMaxEvMix(50);
+    //      ana->SetNCentrBin(2);
+    //    }
+  }
+  else if(col =="pPb")
+  {
+    ana->SetNCentrBin(1);
+    ana->SetNRPBin(4);
+    ana->SetNMaxEvMix(100);
+  }
+}
+
+///
 /// Set common histograms binning
 /// plus other analysis common settings like TRD covered super modules
 /// the activation of the MC dedicated histograms and the activation of
@@ -73,6 +110,8 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
                                  TString col,           Bool_t simulation,
                                  Bool_t  printSettings, Int_t  debug)
 {
+  SetAnalysisMixingCentralityBins(ana, col);
+  
   //
   // Histograms ranges
   //
@@ -801,35 +840,13 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   ana->SetNPIDBits(1);
   ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
                         // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.
-
+  
   if     (col == "pp"  )
-  {
-    printf("ConfigureInvariantMassAnalysis() - Set pp configuration\n");
-    ana->SetNCentrBin(1);
-    ana->SwitchOffTrackMultBins();
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(1);
-    ana->SetNMaxEvMix(100);
     ana->SetMinPt(0.7);
-  }
   else if(col == "PbPb")
-  {
-    printf("ConfigureInvariantMassAnalysis() - Set PbPb configuration\n");
-    ana->SetNCentrBin(10);
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(4);
-    ana->SetNMaxEvMix(10);
     ana->SetMinPt(1.5);
-  }
   else if(col =="pPb")
-  {
-    printf("ConfigureInvariantMassAnalysis() - Set pPb configuration\n");
-    ana->SetNCentrBin(1);
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(4);
-    ana->SetNMaxEvMix(100);
     ana->SetMinPt(0.7);
-  }
   
   // Angle cut, avoid pairs with too large angle
   ana->SwitchOnAngleSelection(); 
@@ -1284,27 +1301,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   ana->SetNZvertBin(20);
   
-  if(col=="pp")
-  {
-    ana->SetNMaxEvMix(100);
-    ana->SwitchOnTrackMultBins();
-    ana->SetNTrackMultBin(10);
-    ana->SetNRPBin(1);
-  }
-  else
-  {
-    ana->SetNMaxEvMix(10);
-    ana->SwitchOffTrackMultBins(); // centrality bins
-    ana->SetNCentrBin(12);
-    ana->SetNRPBin(3);
-    if(kAnaCaloTrackCorr.Contains("60_90"))
-    {
-      //printf("ConfigureHadronCorrelationAnalysis() *** Set mixing for peripheral ***\n");
-      ana->SetNMaxEvMix(50);
-      ana->SetNCentrBin(2);
-    }
-  }
-    
   // Avoid borders of calorimeter, same as for isolation
   //
   ana->SwitchOnFiducialCut();
