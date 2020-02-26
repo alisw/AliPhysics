@@ -138,7 +138,8 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fRandGener(0x0),
     fSmearMC(kFALSE),
     fSmearP(0.),
-    fSmeardEdx(0.)
+    fSmeardEdx(0.),
+    fUseUnfolding(kFALSE)
 {
   // Constructor
   fRandGener = new TRandom3(0);
@@ -179,6 +180,10 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
       fHistTruePIDMCGen[index] = NULL;
     }
   }
+
+  /*for(int i=0; i<900; i++){
+    fUnfProb[i] = NULL;
+  }*/
   for (int iL = 0; iL < 4; ++iL)
     fHistCharge[iL] = NULL;
 
@@ -225,6 +230,9 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   fHistMCNegPrHypPion = NULL;
   fHistMCNegPrHypKaon = NULL;
   fHistMCNegPrHypProt = NULL;
+
+  for(int i=0; i<900; i++)
+    fUnfProb[i] = NULL;
 
   //Define input
   DefineInput(0, TChain::Class());
@@ -2057,7 +2065,7 @@ int AliAnalysisTaskSEITSsaSpectra::GetTrackPid(AliESDtrack *track, double *logdi
   for (int i = 0; i < 4; i++) {
     float mass = AliPID::ParticleMass(iType[i]);
     //bbtheo[i] = fITSPIDResponse->BetheITSsaHybrid(p, mass);
-    bbtheo[i] = BetheITSsaHybrid(p, mass);
+    bbtheo[i] = BetheITSsaHybrid(fUseUnfolding ? GetUnfoldedP(dedx, p) : p, mass);
     logdiff[i] = TMath::Log(dedx) - TMath::Log(bbtheo[i]);
   }
 
@@ -2259,3 +2267,36 @@ void AliAnalysisTaskSEITSsaSpectra::SetDCABins(int nbins, double *bins) { fDCABi
 //
 //________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectra::SetPtBins(int nbins, double *bins) { fPtBins.Set(nbins + 1, bins); }
+
+//
+//
+//________________________________________________________________________
+void AliAnalysisTaskSEITSsaSpectra::SetUnfoldingProb(const char* fpath)
+{
+
+  TFile *file = TFile::Open(fpath);
+
+  for(int i=1; i<=900; i++){
+    fUnfProb[i-1] = (TH2F*)file->Get(Form("unf_hCorrelation_dedxbin_%d_red",i));
+  }
+}
+
+//
+//
+//________________________________________________________________________
+float AliAnalysisTaskSEITSsaSpectra::GetUnfoldedP(double dedx, float p) const
+{
+
+  TAxis dedxaxis(900,0,1000);
+  int dedxbin;
+  if(dedx>1000) dedxbin=900; //last bin in case dedx is in overflow bin
+  else dedxbin = dedxaxis.FindBin(dedx);
+
+  if(isnan(fUnfProb[dedxbin-1]->GetMean())) return p; // do not do anything if matrix ha no sense
+  if(p>1.50624) return p; // do not do anything if p is out of x-axis range
+
+  TH1F *hProj = (TH1F*)fUnfProb[dedxbin-1]->ProjectionY("hProj", fUnfProb[dedxbin-1]->GetXaxis()->FindBin(p), fUnfProb[dedxbin-1]->GetXaxis()->FindBin(p));
+  if(!hProj->GetEntries()) return p; // do not do anything if probability is not available
+
+  return hProj->GetBinCenter(hProj->GetMaximumBin()); //return bin with maximum probability
+}

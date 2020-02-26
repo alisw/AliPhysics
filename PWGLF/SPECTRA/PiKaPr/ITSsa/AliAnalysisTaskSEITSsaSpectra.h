@@ -34,6 +34,9 @@ class AliMCEvent;
 class AliVTrack;
 
 #include <THnSparse.h>
+#include <TFile.h>
+#include <TAxis.h>
+#include <math.h>
 
 #include "AliEventCuts.h"
 #include "AliAnalysisTaskSE.h"
@@ -100,6 +103,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   void SetCentBins(int nbins, double *bins);
   void SetDCABins(int nbins, double *bins);
   void SetPtBins(int nbins, double *bins);
+
+  //Setter for unfolded probability matrices
+  void SetUnfoldingProb(const char *filepath);
 
   // Setters for event selection settings
   void SetTriggerSel(UInt_t tg = AliVEvent::kMB) { fTriggerSel = tg; }
@@ -168,6 +174,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   void SetIsMC(bool flag = kTRUE) { fIsMC = flag; }
   void SetIsDCAUnfold(bool flag = kTRUE) { fIsDCAUnfoldHistoEnabled = flag; }
   void SetFillIntDistHist() { fFillIntDistHist = kTRUE; }
+  void SetUseUnfolding(bool useUnfolding) {fUseUnfolding = useUnfolding; }
 
   AliEventCuts *GetAliEventCuts() { return &fEventCuts; }
 
@@ -208,6 +215,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   int GetTrackPid(AliESDtrack *track, double *logdiff) const;
   int GetMostProbable(const double *pDens, const double *priors) const;
   void GetPriors(const AliVTrack *track, double *priors) const;
+  float GetUnfoldedP(double dedx, float p) const;
   void ComputeBayesProbabilities(double *probs, const double *pDens, const double *prior);
 
  private:
@@ -345,6 +353,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   bool fChkVtxZSep;            // enable check on proximity of the z coordinate between both vertexer
   bool fReqBothVtx;            // ask for both trk and SPD vertex
   bool fExtEventCuts;          // enable use of AliEventCuts for event selection
+  bool fUseUnfolding;          // enable if you want to use unfolding for PID
   // mult sel.
   unsigned int fMultMethod; // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework,
                             // 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD
@@ -394,6 +403,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   bool fSmearMC;        // flag to apply extra smearing on MC
   double fSmearP;       // extra relative smearing on simulated momentum
   double fSmeardEdx;    // extra relative smearing on simulated dE/dx
+
+  //unfolding
+  TH2F* fUnfProb[900]; //-> histogram with unfolded matrices (probability)
 
   ClassDef(AliAnalysisTaskSEITSsaSpectra, 12);
 };

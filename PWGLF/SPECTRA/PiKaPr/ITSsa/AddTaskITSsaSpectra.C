@@ -11,10 +11,12 @@
 #endif
 
 AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSigCut, 1:kMeanCut, 2:kLanGaus
-                                                   Bool_t   isMC       = kFALSE, //
-                                                   Bool_t   defPriors  = kTRUE,
-                                                   Bool_t   optNtuple  = kFALSE,
-                                                   const char* suffix  = "")
+                                                   Bool_t   isMC         = kFALSE, //
+                                                   Bool_t   defPriors    = kTRUE,
+                                                   Bool_t   optNtuple    = kFALSE,
+                                                   Bool_t   useUnfolding = kFALSE,
+                                                   const char* unfpath   = "",
+                                                   const char* suffix    = "")
 {
   // Creates, configures and attaches to the train the task for pi, K , p spectra
   // with ITS standalone tracks
@@ -63,6 +65,12 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
    0.80f,0.85f,0.90f,0.95f,1.00f
   };
   taskits->SetPtBins(nPtBins, ptBins);
+
+  //set unfolded probability matrices (if enabled)
+  if(useUnfolding){
+    taskits->SetUseUnfolding(useUnfolding);
+    taskits->SetUnfoldingProb(unfpath);
+  }
 
   taskits->Initialization();
 
