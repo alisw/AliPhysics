@@ -124,7 +124,7 @@ public:
 
     enum TCTagType{
         TCNo,
-        TCIPSigPtDep,
+        TCIPSig,
         TCIPFixedPt
     };
 
@@ -365,16 +365,15 @@ public:
     void setGlobalVertex(Bool_t value){fGlobalVertex = value;}
     void setDoNotCheckIsPhysicalPrimary(Bool_t value){fDoNotCheckIsPhysicalPrimary = value;}
     void setDoJetProb(Bool_t value){fDoJetProb = value;}
-    void setDoTCTagging(Int_t value) {fDoTCTagging=value;}
+    void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
     void setDoProbTagging(Int_t value) {fDoProbTagging=value;}
     void setDoMCEffs(Bool_t value){fDoMCEffs=value;}
 
     void setTrackIPvsPtValues(double fav0cut, double fbv0cut, double fcv0cut){fV0Cuts[fAV0Cut]=fav0cut;fV0Cuts[fBV0Cut]=fbv0cut;fV0Cuts[fCV0Cut]=fcv0cut;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
-    void setfNThresholds(Int_t value){fNThresholds=value; printf("Setting threshold value=%i\n",fNThresholds);}
+    void setfNThresholds(Int_t value){fNThresholds=value;}
     void setfUserSignificance(Bool_t value){fUseSignificance=value;}
-    void SetTagSettings(int iTagSetting);
 
     //_____________________________
     //Lund Plane
@@ -397,7 +396,7 @@ public:
     void SetTCThresholds(TObjArray** &threshs);
     void SetProbThresholds(TObjArray** &threshs);
     void ReadProbvsIPLookup(TObjArray *&oLookup);
-    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh, int iTagSetting);
+    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
     void setTCThresholdPtFixed(double value){fTCThresholdPtFixed=value;};
 
@@ -485,12 +484,12 @@ private:
     Double_t fParam_Smear_Mean;//
     Bool_t   fGlobalVertex;//
     Bool_t fDoNotCheckIsPhysicalPrimary;//
-    Bool_t fDoJetProb;//
+    Bool_t fDoJetProb; //
     Bool_t   fFillCorrelations;//
     Bool_t fDoLundPlane;//
-    Int_t fDoTCTagging;//
-    Int_t fDoProbTagging;//  //0: no probability tagging, 1: use JP for tagging, 2: use lnJP for tagging  //0: no TC tagging, 1: IP Significance tagging, 2: IP tagging, fixed threshold
-    Bool_t fDoMCEffs;
+    Int_t fDoTCTagging;//  //0: no TC tagging, 1: IP Significance tagging, 2: IP tagging, fixed threshold
+    Int_t fDoProbTagging;//  //0: no probability tagging, 1: use JP for tagging, 2: use lnJP for tagging
+    Bool_t fDoMCEffs;//
     Bool_t fUseSignificance;//
 
     //_____________________
@@ -500,7 +499,6 @@ private:
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
     Int_t fNThresholds;//
-    Int_t fNTrackTypes;//
     vector<TString> sTemplateFlavour;
 
     //______________________
@@ -508,7 +506,7 @@ private:
     Double_t fJetRadius;//
     Double_t fDaughtersRadius;//
     Int_t fNoJetConstituents;//
-    Double_t fTCThresholdPtFixed; //
+    Double_t fTCThresholdPtFixed;
     //_____________________
     //TGraphs
     TGraph * fGraphMean;//!
@@ -677,7 +675,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 53)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 54)
 };
 
 #endif
