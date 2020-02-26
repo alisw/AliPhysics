@@ -66,7 +66,9 @@ fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0),
 fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0),
 fEMCALBadChMinDist(0),       fPHOSBadChMinDist (0),           
-fEMCALNCellsCut(0),          fPHOSNCellsCut(0),
+fEMCALNCellsCut(0),          fEMCALNCellsCutEnDepEnMin(0),
+fEMCALNCellsCutEnDepConstant(0), fEMCALNCellsCutEnDepSlope(0),      
+fPHOSNCellsCut(0),
 fEMCALHighEnergyNdiffCut(0), fEMCALMinCellEnNdiffCut(0),
 fUseEMCALTimeCut(1),         fUseParamTimeCut(0),
 fUseTrackTimeCut(0),         fAccessTrackTOF(0),
@@ -907,6 +909,12 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   parList+=onePar ;
   snprintf(onePar,buffersize,"N cells: EMC > %d, PHOS > %d; ",fEMCALNCellsCut,fPHOSNCellsCut) ;
   parList+=onePar ;
+  if ( fEMCALNCellsCutEnDepEnMin < 200 )
+  {
+    snprintf(onePar,buffersize,"For Emin>%2.1f, ncell>%2.2f+ %2.2fE; ",
+             fEMCALNCellsCutEnDepEnMin,fEMCALNCellsCutEnDepConstant,fEMCALNCellsCutEnDepSlope) ;
+    parList+=onePar ;
+  }
   snprintf(onePar,buffersize,"N cells diff TCard: E > %2.2f, Ecell > %1.2f; ",fEMCALHighEnergyNdiffCut,fEMCALMinCellEnNdiffCut) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"EMC time cut single window (%2.2f,%2.2f); ",fEMCALTimeCutMin,fEMCALTimeCutMax) ;
@@ -1138,6 +1146,10 @@ void AliCaloTrackReader::InitParameters()
   
   fEMCALNCellsCut    = 0; // open, 1; // standard          
   fPHOSNCellsCut     = 0; // open, 2; // standard
+  
+  fEMCALNCellsCutEnDepEnMin    = 10000 ;  
+  fEMCALNCellsCutEnDepConstant = 4.5;    // for emin=40 GeV
+  fEMCALNCellsCutEnDepSlope    = 0.05;   // for emin=40 GeV
   
   // For clusters with energy above fEMCALHighEnergyNdiffCut, count cells
   // with E > fEMCALMinCellEnNdiffCut in different T-Card than highest energy cell.
@@ -2251,10 +2263,26 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   //----------------------------------------------------
   // Apply N cells cut
   //
-  if(clus->GetNCells() <= fEMCALNCellsCut && fDataType != AliCaloTrackReader::kMC) 
+  if ( fDataType != AliCaloTrackReader::kMC )
   {
-    AliDebug(2,Form("Cluster with n cells %d < %d",clus->GetNCells(), fEMCALNCellsCut));
-    return ;
+    Int_t nCells =  clus->GetNCells();
+    if (  nCells <= fEMCALNCellsCut ) 
+    {
+      AliDebug(2,Form("Reject cluster with n cells %d < %d",nCells, fEMCALNCellsCut));
+      return ;
+    }
+    
+    // Energy dependent n cell cut
+    if ( clus->E() > fEMCALNCellsCutEnDepEnMin )
+    {
+      Float_t nCellsCut = fEMCALNCellsCutEnDepConstant + fEMCALNCellsCutEnDepSlope*clus->E();
+      if ( nCells <= nCellsCut )
+      {
+        AliDebug(2,Form("Reject cluster with n cells %d < %2.1f for E %2.1f > %2.1f",
+                        nCells, nCellsCut, clus->E(), fEMCALNCellsCutEnDepEnMin));
+        return ;
+      }
+    }
   }
   
   // Check effect of n cells cut
@@ -3273,6 +3301,11 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("EMCAL Bad Dist > %2.1f \n"     , fEMCALBadChMinDist) ;
   printf("PHOS  Bad Dist > %2.1f \n"     , fPHOSBadChMinDist) ;
   printf("EMCAL N cells  > %d \n"        , fEMCALNCellsCut) ;
+  if ( fEMCALNCellsCutEnDepEnMin < 200 )
+   {
+     printf("\t For Emin>%2.1f, ncell>%2.2f+ %2.2fE; \n",
+              fEMCALNCellsCutEnDepEnMin,fEMCALNCellsCutEnDepConstant,fEMCALNCellsCutEnDepSlope) ;
+   }
   printf("PHOS  N cells  > %d \n"        , fPHOSNCellsCut) ;
   printf("EMCAL Reject cluster N cells in diff = 0, for E>%2.2f and E cell > %1.2f \n", fEMCALHighEnergyNdiffCut,fEMCALMinCellEnNdiffCut) ;
   printf("EMCAL Time Cut: %3.1f < TOF  < %3.1f\n", fEMCALTimeCutMin, fEMCALTimeCutMax);

@@ -89,13 +89,13 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     
     if ( year == 2010 )
     {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
+      histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 120*TMath::DegToRad(), 2*24) ;
       histoRanges->SetHistoXRangeAndNBins(-230,90,120); // QA
       histoRanges->SetHistoYRangeAndNBins(370,450,40);  // QA
     }
     else if ( year < 2014 )
     {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 104) ;
+      histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 180*TMath::DegToRad(), 5*24) ;
       histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
       histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA  
       
@@ -105,17 +105,17 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     }
     else // Run2
     {
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 189*TMath::DegToRad(), 111) ;
+      histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 187*TMath::DegToRad(), 5*24+8) ;
       histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA, revise
       histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA, revise
     }
     
-    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-0.70, 0.70, 2*48) ;
   }
   else if(calorimeter=="DCAL")
   {
-    histoRanges->SetHistoPhiRangeAndNBins(260*TMath::DegToRad(), 327*TMath::DegToRad(), 67) ;
-    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+    histoRanges->SetHistoPhiRangeAndNBins(260*TMath::DegToRad(), 327*TMath::DegToRad(), 3*24+8) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-0.70, 0.70, 2*48) ;
     histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA, revise
     histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA, revise
   } 
@@ -300,20 +300,20 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   
   if(calorimeter == "PHOS")
   {
-    ana->SetNCellCut(2);// At least 3 cells
+    ana->SetNCellCut(2);// At least 3 cells, check if already set at reader level
     ana->SetMinEnergy(0.3);
     ana->SetMaxEnergy(200);
-    ana->SetMinDistanceToBadChannel(2, 4, 5);
+    ana->SetMinDistanceToBadChannel(2, 4, 5); // could have been already applied at reader level
     ana->SetTimeCut(-1e10,1e10); // open cut
   }
   else
   {//EMCAL
-    ana->SetNCellCut(1);// At least 2 cells
+    ana->SetNCellCut(1);// At least 2 cells, check if already set at reader level
     ana->SetMinEnergy(0.7); 
     ana->SetMaxEnergy(300);
     ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off
                                  // restrict to less than 100 ns when time calibration is on
-    ana->SetMinDistanceToBadChannel(2, 4, 6);
+    ana->SetMinDistanceToBadChannel(2, 4, 6); // could have been already applied at reader level
     
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     // Not needed if M02 cut is already strong or clusterizer V2
