@@ -1334,17 +1334,20 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 
 
   Double_t c2WeightChrg     = fSumWgtEtaPos*fSumWgtEtaNeg;
+  if (c2WeightChrg!=0.0)
+    {
   Double_t c2cumulantChrg   = (fSumTPCQn2xPos*fSumTPCQn2xNeg + fSumTPCQn2yPos*fSumTPCQn2yNeg)/c2WeightChrg;
   fHistv2cumAchChrgAll[iCent]->Fill(fAchrgNet, c2cumulantChrg, c2WeightChrg);   /// for denominator
+    }
   
-  if(NumOfChrgPosEtaPos>0){
+  if((NumOfChrgPosEtaPos*fSumWgtEtaNeg)!=0.0){
     ///Chrg+:  
     Double_t c2WeightChrgPos   =  NumOfChrgPosEtaPos*fSumWgtEtaNeg;
     Double_t c2cumulantChrgPos =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNeg + sumQ2yChrgPosEtaPos*fSumTPCQn2yNeg)/c2WeightChrgPos;
     fHistv2AchChrgPos[1][iCent]->Fill(fAchrgNet, c2cumulantChrgPos, c2WeightChrgPos);   /// for denominator
   }
   
-  if(NumOfChrgNegEtaPos>0){  
+  if((NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){  
     ///Chrg-:  
     Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg;
     Double_t c2cumulantChrgNeg =  (sumQ2xChrgNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yChrgNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightChrgNeg;
@@ -1359,13 +1362,13 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 
   
   if(fParticle==1){
-    if(NumOfPionPosEtaPos>0){
+    if((NumOfPionPosEtaPos*fSumWgtEtaNeg)!=0.0){
       ///Pion+:  
       Double_t c2WeightPionPos   =  NumOfPionPosEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantPionPos =  (sumQ2xPionPosEtaPos*fSumTPCQn2xNeg + sumQ2yPionPosEtaPos*fSumTPCQn2yNeg)/c2WeightPionPos;
       fHistv2AchPionPos[1][iCent]->Fill(fAchrgNet, c2cumulantPionPos, c2WeightPionPos);   /// for denominator
     }
-    if(NumOfPionNegEtaPos>0){  
+    if((NumOfPionNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){  
       ///Pion-:  
       Double_t c2WeightPionNeg   =  NumOfPionNegEtaPos*fSumWgtEtaNegChNeg;
       Double_t c2cumulantPionNeg =  (sumQ2xPionNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yPionNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightPionNeg;
@@ -1374,13 +1377,13 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
   }
 
   if(fParticle==2){
-    if(NumOfKaonPosEtaPos>0){
+    if((NumOfKaonPosEtaPos*fSumWgtEtaNeg)!=0.0){
       ///Kaon+:  
       Double_t c2WeightKaonPos   =  NumOfKaonPosEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantKaonPos =  (sumQ2xKaonPosEtaPos*fSumTPCQn2xNeg + sumQ2yKaonPosEtaPos*fSumTPCQn2yNeg)/c2WeightKaonPos;
       fHistv2AchKaonPos[1][iCent]->Fill(fAchrgNet, c2cumulantKaonPos, c2WeightKaonPos);   /// for denominator
     }
-    if(NumOfKaonNegEtaPos>0){
+    if((NumOfKaonNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){
       ///Kaon-:  
       Double_t c2WeightKaonNeg   =  NumOfKaonNegEtaPos*fSumWgtEtaNegChNeg;
       Double_t c2cumulantKaonNeg =  (sumQ2xKaonNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yKaonNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightKaonNeg;
@@ -1389,14 +1392,14 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
   }
 
   if(fParticle==3){
-    if(NumOfProtPosEtaPos>0){
+    if((NumOfProtPosEtaPos*fSumWgtEtaNeg)!=0.0){
       ///Prot+:  
       Double_t c2WeightProtPos   =  NumOfProtPosEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantProtPos =  (sumQ2xProtPosEtaPos*fSumTPCQn2xNeg + sumQ2yProtPosEtaPos*fSumTPCQn2yNeg)/c2WeightProtPos;
       fHistv2AchProtPos[1][iCent]->Fill(fAchrgNet, c2cumulantProtPos, c2WeightProtPos);   /// for denominator
     }
 
-    if(NumOfProtNegEtaPos>0){
+    if((NumOfProtNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){
       ///Prot-:  
       Double_t c2WeightProtNeg   =  NumOfProtNegEtaPos*fSumWgtEtaNegChNeg;
       Double_t c2cumulantProtNeg =  (sumQ2xProtNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yProtNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightProtNeg;

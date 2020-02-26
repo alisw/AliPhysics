@@ -66,11 +66,18 @@ AliForwardGenericFramework::AliForwardGenericFramework():
 //_____________________________________________________________________
 void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double cent, double zvertex, Bool_t useFMD, Bool_t doRefFlow, Bool_t doDiffFlow)
 {
-
+  // if (useFMD){
+  //   for (Int_t etaBin = 125; etaBin <= 185; etaBin++) {
+  //     for (Int_t phiBin = 14; phiBin <= 18; phiBin++) {
+  //       if (dNdetadphi->GetBinContent(etaBin,phiBin) == 0){
+  //         std::cout << "empty at phibin = " << phiBin << ", etaBin = " <<etaBin <<std::endl;
+  //       }
+  //     }
+  //   }
+  // } 
   for (Int_t etaBin = 1; etaBin <= dNdetadphi->GetNbinsX(); etaBin++) {
     if ((!fSettings.use_primaries_fwd && !fSettings.esd) && useFMD){
-      if (dNdetadphi->GetBinContent(etaBin, 0) == 0) continue;
-      //if (!valid) continue; // No data expected for this eta 
+      if (dNdetadphi->GetBinContent(etaBin, 0) == 0) continue; // No data expected for this eta 
     }
 
     Double_t eta = dNdetadphi->GetXaxis()->GetBinCenter(etaBin);
@@ -84,10 +91,10 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
       Double_t phi = dNdetadphi->GetYaxis()->GetBinCenter(phiBin);
       Double_t weight = dNdetadphi->GetBinContent(etaBin, phiBin);
-      if (!weight || weight == 0) continue;
 
       if (fSettings.doNUA){
-        if (useFMD) weight = applyNUAforward(dNdetadphi, useFMD, etaBin, phiBin, eta, phi, zvertex, weight);
+
+        if (useFMD) weight = applyNUAforward(dNdetadphi, etaBin, phiBin, eta, phi, zvertex, weight);
         else weight = applyNUAcentral(eta, phi, zvertex, weight);
       }
       
@@ -119,7 +126,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
           if (doRefFlow){
             if ((fSettings.etagap) && TMath::Abs(eta)<=fSettings.gap) continue;
-            if (((fSettings.etagap) && TMath::Abs(eta)>0.8) && (fSettings.ref_mode && fSettings.kTPCref)) continue;
+            //if ((fSettings.etagap)  && (fSettings.ref_mode && fSettings.kTPCref)) continue;//&& TMath::Abs(eta)>0.8)
             //if (fSettings.etagap && TMath::Abs(eta)>3.0) continue;
             if (fSettings.ref_mode & fSettings.kFMDref) {
               if (TMath::Abs(eta) < fSettings.fmdlowcut) continue;

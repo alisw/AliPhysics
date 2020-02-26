@@ -53,6 +53,7 @@
 #pragma link C++ class AliAnalysisTaskSED0MassNonPromptFraction+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelor+;
 #pragma link C++ class AliAnalysisTaskSEDvsMultiplicity+;
+#pragma link C++ class AliAnalysisTaskSEDvsRT+;
 #pragma link C++ class AliAnalysisTaskSEDvsMultiplicity_BDT+;
 #pragma link C++ class AliAnalysisTaskCheckHFMCProd+;
 #pragma link C++ class AliAnalysisTaskCheckEvSel;

@@ -57,17 +57,21 @@ float anglepn[NN];    // angle between the daughters
 float dcapn  [NN];    // DCA between the daughters
 Short_t v    [NN];    // particle type: -1/anti-Lambda0, 0/kaon, 1/Lambda0
 float m      [NN];    // invariant mass of two daughters
+
 float ptp    [NN];    // positive track: transverse momentum
 float etap   [NN];    // positive track: direction in pseudorapidity
 float phip   [NN];    // positive track: direction in the phi angle
 float dcap   [NN];    // positive track: DCA to primary vertex
 float nrowp  [NN];    // positive track: number of TPC hits
+float nclusp [NN];   // positive track: number of findable TPC clusters
 float nsgmp  [NN];    // positive track: nsigmas energy loss in TPC
+
 float ptn    [NN];    // negative track: transverse momentum
 float etan   [NN];    // negative track: direction in pseudorapidity
 float phin   [NN];    // negative track: direction in the phi angle
 float dcan   [NN];    // negative track: DCA to primary vertex
 float nrown  [NN];    // negative track: number of TPC hits
+float nclusn [NN];   // negative track: number of findable TPC clusters
 float nsgmn  [NN];    // negative track: nsigmas energy loss in TPC
 
 // maximum number of candidates to keep per event
@@ -675,14 +679,16 @@ void init_lambdas(TTree* fTree)
    fTree->Branch("etap",    etap,    "etap[nv]/F");
    fTree->Branch("phip",    phip,    "phip[nv]/F");
    fTree->Branch("dcap",    dcap,    "dcap[nv]/F");
-   //fTree->Branch("nrowp",   nrowp,   "nrowp[nv]/F");
+   fTree->Branch("nrowp",   nrowp,   "nrowp[nv]/F");
+   fTree->Branch("nclusp",   nclusp,   "nclusp[nv]/F");
    fTree->Branch("nsgmp",   nsgmp,   "nsgmp[nv]/F");
 
    fTree->Branch("ptn",     ptn,     "ptn[nv]/F");
    fTree->Branch("etan",    etan,    "etan[nv]/F");
    fTree->Branch("phin",    phin,    "phin[nv]/F");
    fTree->Branch("dcan",    dcan,    "dcan[nv]/F");
-   //fTree->Branch("nrown",   nrown,   "nrown[nv]/F");
+   fTree->Branch("nrown",   nrown,   "nrown[nv]/F");
+   fTree->Branch("nclusn",   nclusn,   "nclusn[nv]/F");
    fTree->Branch("nsgmn",   nsgmn,   "nsgmn[nv]/F");
 }
 
@@ -783,9 +789,9 @@ void fill_lambdas(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
      
 
           // cuts to reduce output file size
-      if (dca_ > 2) continue; // in cm //****************************************check the cut value
-      if (dcap_ < 0.05 || dcan_ < 0.05) continue; // in cm //****************************************check the cut value
-      if (fabs(trkN->Eta()) > 0.8 || fabs(trkP->Eta()) > 0.8) continue;//****************************************check the cut value
+      if (dca_ > 2) continue; // in cm //***check the cut value
+      if (dcap_ < 0.03 || dcan_ < 0.03) continue; // in cm //***check the cut value (default 0.05)
+      if (fabs(trkN->Eta()) > 0.8 || fabs(trkP->Eta()) > 0.8) continue;//***check the cut value
 
       float pTPCCrossedRows = trkP->GetTPCClusterInfo(2, 1);
       float nTPCCrossedRows = trkN->GetTPCClusterInfo(2, 1);
@@ -793,10 +799,10 @@ void fill_lambdas(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
       UShort_t nTPCFindableCls = trkN->GetTPCNclsF();
 
       // standard track quality cuts
-      if (pTPCCrossedRows < 70 || nTPCCrossedRows < 70) continue;
+      if (pTPCCrossedRows < 60 || nTPCCrossedRows < 60) continue;//(default 70)
       if (pTPCFindableCls < 1 || nTPCFindableCls < 1) continue;
-      if (pTPCCrossedRows < 0.8 * pTPCFindableCls) continue;
-      if (nTPCCrossedRows < 0.8 * nTPCFindableCls) continue;
+      if (pTPCCrossedRows < 0.7 * pTPCFindableCls) continue;//default (0.8)
+      if (nTPCCrossedRows < 0.7 * nTPCFindableCls) continue;//default (0.8)
 
       // bonus cut
       if (vectP.Pt() > 20 || vectN.Pt() > 20) continue;
@@ -843,12 +849,12 @@ void fill_lambdas(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
 	 anglepn[nv] = vectP.Angle(vectN);
 
          // more cuts
-         if (angle[nv] > 0.07) continue;//****************************************check the cut value
+         if (angle[nv] > 0.09) continue;//*******default 0.07
          if (path[nv] > 180) continue;//******************************************check the cut value
 
          dca[nv] = dca_;
          dcapn[nv] = dcapn_;
-	 if (dcapn[nv]>0.5) continue;//****************************************check the cut value
+	 if (dcapn[nv]>0.7) continue;//*******default 0.5
 
          v[nv] = k - 1;
          m[nv] = mass[k];
@@ -858,12 +864,14 @@ void fill_lambdas(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
          phip[nv] = (float) vectP.Phi();
          dcap[nv] = dcap_;
 	 nrowp[nv] = pTPCCrossedRows;
+	 nclusp[nv] = pTPCFindableCls;
 
          ptn[nv]  = (float) vectN.Pt();
          etan[nv] = (float) vectN.Eta();
          phin[nv] = (float) vectN.Phi();
          dcan[nv] = dcan_;
          nrown[nv] = nTPCCrossedRows;
+	 nclusn[nv] = nTPCFindableCls;
 
          nsgmp[nv] = 0;
          nsgmn[nv] = 0;
@@ -888,7 +896,7 @@ void fill_lambdas(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
             continue;
 
          // dE/dx cuts to reduce output file size
-         if (fabs(nsgmp[nv]) > 3 || fabs(nsgmn[nv]) > 3)
+         if (fabs(nsgmp[nv]) > 3.5 || fabs(nsgmn[nv]) > 3.5)//default 3
             continue;
 
          nv++;

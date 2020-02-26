@@ -1217,13 +1217,40 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   // Event selection for pp & p-Pb collision recorded in Run 2 using AliEventCuts
   // return kTRUE if event passes all criteria, kFALSE otherwise
   // *************************************************************
-
   if(fAnalType == kMC) { AliFatal("Simulated event cannot pass 'IsEventSelected'! \n"); return kFALSE; }
 
   // Physics selection (trigger)
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
   UInt_t fSelectMask = inputHandler->IsEventSelected();
+  fhEventCounter->Fill("Loaded OK",1);
+
+  if(fIs2018data){
+    fEventCuts.SetupPbPb2018();
+    fhEventCounter->Fill("2018 OK",1);
+  }
+  // events passing AliEventCuts selection
+  if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
+  fhEventCounter->Fill("EventCuts OK",1);
+
+  // estimate centrality & assign indexes (only if AliMultEstimator is requested)
+  if(fCentEstimator != kRFP) {
+      fIndexCentrality = GetCentralityIndex(fCentEstimator);
+
+      if(fIndexCentrality < 0) { return kFALSE; }
+      if(fCentMin > 0 && fIndexCentrality < fCentMin) { return kFALSE; }
+      if(fCentMax > 0 && fIndexCentrality > fCentMax) { return kFALSE; }
+  }
+  fhEventCounter->Fill("Centrality OK",1);
+
+  // additional centrality cut for "double differential" cut
+  if(fCentEstimatorAdd != kRFP && fCentMaxAdd > 0) {
+    Int_t addCentIndex = GetCentralityIndex(fCentEstimatorAdd);
+    if(addCentIndex < fCentMinAdd) { return kFALSE; }
+    if(addCentIndex > fCentMaxAdd) { return kFALSE; }
+  }
+  fhEventCounter->Fill("Centrality cuts OK",1);
+
   if(!fIs2018data){
     if(!(fSelectMask & fTrigger)) { return kFALSE; }
   }
@@ -1236,60 +1263,13 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
     }
   }
 
-
   // events passing physics && trigger selection
-  fhEventCounter->Fill("Physics selection OK",1);
-
-  // events passing AliEventCuts selection
-  if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
-
-  if(fIs2018data){
-    //additional cut on correlation
-    AliAODVZERO* AODV0 = fEventAOD->GetVZEROData();
-    Float_t multV0a = AODV0->GetMTotV0A();
-    Float_t multV0c = AODV0->GetMTotV0C();
-    Float_t multV0Tot = multV0a + multV0c;
-    UShort_t multV0aOn = AODV0->GetTriggerChargeA();
-    UShort_t multV0cOn = AODV0->GetTriggerChargeC();
-    UShort_t multV0On = multV0aOn + multV0cOn;
-    AliAODTracklets* AODTrkl = (AliAODTracklets*)fEventAOD->GetTracklets();
-    Int_t nITSTrkls = AODTrkl->GetNumberOfTracklets();
-    Int_t nITSClsLy0 = fEventAOD->GetNumberOfITSClusters(0);
-    Int_t nITSClsLy1 = fEventAOD->GetNumberOfITSClusters(1);
-    Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
-    Int_t tpcClsTot = fEventAOD->GetNumberOfTPCClusters();
-
-    Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
-    TF1*fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
-    fV0CutPU->SetParameters(parV0);
-    if (multV0On < fV0CutPU->Eval(multV0Tot)){return kFALSE;}
-    TF1*fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
-    if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)){return kFALSE;}
-    Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
-    if (nclsDif >200000){return kFALSE;}
-  }
-
-  fhEventCounter->Fill("EventCuts OK",1);
+  fhEventCounter->Fill("Triggers OK",1);
 
   // Additional pile-up rejection cuts for LHC15o dataset
-  if(fColSystem == kPbPb && fEventRejectAddPileUp && IsEventRejectedAddPileUp()) { return kFALSE; }
+  if(fColSystem == kPbPb && fEventRejectAddPileUp && fCentEstimatorAdd != kRFP && fIndexCentrality < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
 
-  // estimate centrality & assign indexes (only if AliMultEstimator is requested)
-  if(fCentEstimator != kRFP) {
-      fIndexCentrality = GetCentralityIndex(fCentEstimator);
-
-      if(fIndexCentrality < 0) { return kFALSE; }
-      if(fCentMin > 0 && fIndexCentrality < fCentMin) { return kFALSE; }
-      if(fCentMax > 0 && fIndexCentrality > fCentMax) { return kFALSE; }
-  }
-
-  // additional centrality cut for "double differential" cut
-  if(fCentEstimatorAdd != kRFP && fCentMaxAdd > 0) {
-    Int_t addCentIndex = GetCentralityIndex(fCentEstimatorAdd);
-    if(addCentIndex < fCentMinAdd) { return kFALSE; }
-    if(addCentIndex > fCentMaxAdd) { return kFALSE; }
-  }
-  fhEventCounter->Fill("Cent/Mult OK",1);
+  fhEventCounter->Fill("PileUp cut OK",1);
 
   return kTRUE;
 }
@@ -5918,7 +5898,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
         }
       }
     } // end-for {iSpec}
-    
+
     if(fFlowFillWeightsMultiD){
       TString wLabelCand[SparseWeights::wDim];
       wLabelCand[SparseWeights::wPhi] = "#phi";
@@ -5960,7 +5940,8 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
   // Selection / reconstruction counters : omni-present
   {
-    TString sEventCounterLabel[] = {"Input","Physics selection OK","EventCuts OK","Event OK","#RPFs OK","Multiplicity OK","Selected"};
+    // TString sEventCounterLabel[] = {"Input","Physics selection OK","EventCuts OK","Event OK","#RPFs OK","Multiplicity OK","Selected"};
+    TString sEventCounterLabel[] = {"Input"};
     const Int_t iEventCounterBins = sizeof(sEventCounterLabel)/sizeof(sEventCounterLabel[0]);
     fhEventCounter = new TH1D("fhEventCounter","Event Counter",iEventCounterBins,0,iEventCounterBins);
     for(Int_t i(0); i < iEventCounterBins; ++i) { fhEventCounter->GetXaxis()->SetBinLabel(i+1, sEventCounterLabel[i].Data() ); }

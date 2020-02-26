@@ -60,6 +60,8 @@ public:
         void DoPtRelAnalysis(Bool_t val=true){fDoPtRelAnalysis=val;}
         void DoPtRelEventSelection(Bool_t val=true){fDoSelectionPtRel=val;}
 
+	void SetUseImpactParameterSignificance(bool val=true){fUseIPs=val;}
+
 	void UseCorrectedRhoPt(bool val = true){fUseCorrPt =val;};
 	void UseGammaV0Rejection(bool val = true){fEnableV0GammaRejection =val;};
   	Bool_t IsV0InJet(TVector3 vV0, Double_t dJetPtMin);
@@ -606,6 +608,7 @@ private:
   	Bool_t fDoJetProbabilityAnalysis;//
 	Bool_t fDoCharmFractions;// Flag for using different template for D0 Dp Ds Lc for reweighting
 	Bool_t fUsePartonDef;// Flag for using the parton definition to set the jet flavor
+	Bool_t fUseIPs;// Flag for using the IPs instead of IP for tagging (IP by default)
 	Bool_t fDoJetMass;//
 	Bool_t fDoSVEnergyFraction;//
 	Bool_t fDoPtRelAnalysis;//
@@ -706,6 +709,8 @@ private:
   TH2D* fhistPtRelVsJetPtTaggedbThird;//!
   TH2D* fhistLepIPVsJetPtTaggedbThird;//!
 
+  
+
   Bool_t fApplyV0Rec;//
   Bool_t fApplyV0RejectionAll;//
 
@@ -778,7 +783,7 @@ private:
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-  ClassDef(AliAnalysisTaskBJetTC, 61)
+	ClassDef(AliAnalysisTaskBJetTC, 62)
 };
 #endif
  //

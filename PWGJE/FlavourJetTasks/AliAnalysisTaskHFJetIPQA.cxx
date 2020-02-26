@@ -93,6 +93,7 @@ fFracs(0),
 fXsectionWeightingFactor(1),
 fProductionNumberPtHard(-1),
 fNThresholds(1),
+fNTrackTypes(3),
 sTemplateFlavour(0),
 fJetRadius(0.4),
 fDaughtersRadius(1),
@@ -225,6 +226,7 @@ fFracs(0),
 fXsectionWeightingFactor(1.),
 fProductionNumberPtHard(-1),
 fNThresholds(1),
+fNTrackTypes(3),
 sTemplateFlavour(0),
 fJetRadius(0.4),
 fDaughtersRadius(1),
@@ -1870,7 +1872,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                   //IP Template Generation
                   FillIPTypePtHists(jetflavour, jetpt, hasIPs);
                 }
-                for(int iN=0;iN<3;iN++){
+                for(int iN=0;iN<fNTrackTypes;iN++){
                   if(!hasIPs[iN]) continue;
                   //printf("iN=%i, jetflavour=%i xy=%f, xysig=%f\n",iN,jetflavour,sImpParXY.at(iN).first,sImpParXYSig.at(iN).first);
                   Double_t params [4] ={sImpParXY.at(iN).first,sImpParXYSig.at(iN).first,sImpParXYZ.at(iN).first,sImpParXYZSig.at(iN).first};
@@ -2576,7 +2578,7 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
     fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
 
     PrintSettings();
-    PrintV0Settings();
+    if(fApplyV0Rej) PrintV0Settings();
 }
 
 void AliAnalysisTaskHFJetIPQA::PrintV0Settings(){
@@ -2705,6 +2707,10 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     vertexcuts+=fUseSignificance;
     vertexcuts+="+";
     vertexcuts+=fDoJetProb;
+    vertexcuts+="+";
+    vertexcuts+=fNThresholds;
+    vertexcuts+="+";
+    vertexcuts+=fNTrackTypes;
     vertexcuts+="+";
     vertexcuts+=Form("%0.3f",fTCThresholdPtFixed);
 
@@ -4343,9 +4349,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *t
 
 
 void AliAnalysisTaskHFJetIPQA::SetTCThresholds(TObjArray** &threshs){
-  if(fDoTCTagging==TCIPFixedPt){
-      fNThresholds=1;
-  }
+
   for(int iProbSet=0;iProbSet<fNThresholds;iProbSet++){
     TObjArray* oa=(TObjArray*)threshs[iProbSet];
 
@@ -4393,13 +4397,31 @@ void AliAnalysisTaskHFJetIPQA::SetProbThresholds(TObjArray** &threshs){
   }*/
 }
 
+void AliAnalysisTaskHFJetIPQA::SetTagSettings(int iTagSetting){
+  this->setDoTCTagging(iTagSetting);
+
+  switch(fDoTCTagging){
+    case TCIPSigPtDep:
+      fNTrackTypes=3;
+      fUseSignificance=kTRUE;
+      break;
+
+    case TCIPFixedPt:
+      fNTrackTypes=1;
+      fUseSignificance=kFALSE;
+      break;
+  }
+}
+
 // Read Threshold Histograms
 //==============================================================================
-void AliAnalysisTaskHFJetIPQA::ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh){
+void AliAnalysisTaskHFJetIPQA::ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh, int iTagSetting){
     TFile* fileThresholds=TFile::Open(PathToThresholds.Data());
     if(!fileThresholds ||(fileThresholds&& !fileThresholds->IsOpen())){AliError(Form("%s :: File with threshold values not found",taskname.Data()));}
 
-    Printf("%s :: File %s successfully loaded, setting up threshold functions.",taskname.Data(),PathToThresholds.Data());
+    Printf("%s :: File %s successfully loaded, setting up threshold functions for %i q-values.",taskname.Data(),PathToThresholds.Data(),nTCThresh);
+
+    SetTagSettings(iTagSetting);
 
     if(fileThresholds){
         printf("Reading threshold histograms for track counting...\n");
@@ -4427,8 +4449,7 @@ void AliAnalysisTaskHFJetIPQA::ReadThresholdHists(TString PathToThresholds, TStr
 }
 
 void AliAnalysisTaskHFJetIPQA::ReadProbvsIPLookup(TObjArray*& oLookup){
-
-  for(int iN=0;iN<3;iN++){
+  for(int iN=0;iN<fNTrackTypes;iN++){
     h2DProbLookup.push_back((TH2D*)oLookup->At(iN));
   }
 }
@@ -4441,18 +4462,18 @@ void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* i
   double IPthresN2[fNThresholds];
   double IPthresN3[fNThresholds];
 
-  if(fDoTCTagging==TCIPSig){
-    for(int iN=0;iN<fNThresholds;iN++){
-      IPthresN1[iN]=h1DThresholdsFirst[iN]->GetBinContent(iJetPtBin);
-      IPthresN2[iN]=h1DThresholdsSecond[iN]->GetBinContent(iJetPtBin);
-      IPthresN3[iN]=h1DThresholdsThird[iN]->GetBinContent(iJetPtBin);
+  if(fDoTCTagging==TCIPSigPtDep){
+    for(int iFrac=0;iFrac<fNThresholds;iFrac++){
+      IPthresN1[iFrac]=h1DThresholdsFirst[iFrac]->GetBinContent(iJetPtBin);
+      IPthresN2[iFrac]=h1DThresholdsSecond[iFrac]->GetBinContent(iJetPtBin);
+      IPthresN3[iFrac]=h1DThresholdsThird[iFrac]->GetBinContent(iJetPtBin);
     }
   }
   if(fDoTCTagging==TCIPFixedPt){
-    for(int iN=0;iN<fNThresholds;iN++){
-      IPthresN1[iN]=fTCThresholdPtFixed;
-      IPthresN2[iN]=fTCThresholdPtFixed;
-      IPthresN3[iN]=fTCThresholdPtFixed;
+    for(int iFrac=0;iFrac<fNThresholds;iFrac++){
+      IPthresN1[iFrac]=fTCThresholdPtFixed;
+      IPthresN2[iFrac]=fTCThresholdPtFixed;
+      IPthresN3[iFrac]=fTCThresholdPtFixed;
     }
   }
 
@@ -4669,7 +4690,7 @@ double AliAnalysisTaskHFJetIPQA::GetTrackProbability(double jetpt, bool* hasIPs,
   int iIPBin[3]={0};
   //printf("ipval1=%f, ipval2=%f, ipval3=%f\n",ipval[0],ipval[1],ipval[2]);
 
-  for(int iN=0;iN<3;iN++){
+  for(int iN=0;iN<fNTrackTypes;iN++){
     if(!hasIPs[iN])continue;
     if(ipval[iN]<0) continue;
     iIPBin[iN]=h2DProbLookup[iN]->GetXaxis()->FindBin(-ipval[iN]);

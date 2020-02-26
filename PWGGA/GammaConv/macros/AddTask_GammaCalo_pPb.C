@@ -1474,6 +1474,9 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010103","411793205f032230000","01634031000000d0"); // rapidity variation  y<0.5
     cuts.AddCutCalo("80010103","411793205f032230000","01631061000000d0"); // alpha meson variation 1   0<alpha<0.8
     cuts.AddCutCalo("80010103","411793205f032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75
+  } else if (trainConfig == 2207) { // CALO variations
+    cuts.AddCutCalo("80010103","411793205f03h230000","01631031000000d0"); // NCell cut effi MC (param 1)
+    cuts.AddCutCalo("80010103","411793205f03i230000","01631031000000d0"); // NCell cut effi MC (param 2)
 
 
   } else if (trainConfig == 2210) { // CALO variations

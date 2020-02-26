@@ -110,6 +110,8 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetESDtrackCuts(AliESDtrackCuts *const trcuts) { fESDTrackCuts = trcuts; }
         void                    SetAnalysisAOD(Bool_t aodAnalysis) { fAnalysisAOD = aodAnalysis; }
         void                    SetTestPions(Bool_t pions) { fTestPions = pions; }
+        void                    SetMergingCutV0(Bool_t cut) { fMergingCutV0 = cut; }
+        void                    SetMergingCutDaughters(Bool_t cut) { fMergingCutDaughters = cut; }
 
         AliEventCuts            fAliEventCuts;
     
@@ -218,11 +220,13 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 
         AliESDtrackCuts *       fESDTrackCuts; //
         Bool_t                  fTestPions; // for testing MC trains
+        Bool_t                  fMergingCutV0; // enable merrging cut based on V0 
+        Bool_t                  fMergingCutDaughters; // enable merrging cut based on V0 daughters
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 19);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 20);
 };
 
 class AliV0ChParticle : public AliVParticle

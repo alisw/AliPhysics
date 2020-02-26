@@ -154,7 +154,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistTPCTracksVsClusters(0),
     fHistVZeroPercentileTPCMult(0),
     fESDTrackCuts(0),
-    fTestPions(kFALSE)
+    fTestPions(kFALSE),
+    fMergingCutV0(kFALSE),
+    fMergingCutDaughters(kFALSE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -257,7 +259,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fHistTPCTracksVsClusters(0),
     fHistVZeroPercentileTPCMult(0),
     fESDTrackCuts(0),
-    fTestPions(kFALSE)
+    fTestPions(kFALSE),
+    fMergingCutV0(kFALSE),
+    fMergingCutDaughters(kFALSE)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -678,7 +682,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     AliAODVertex *myPrimVertex = 0x0;
     AliESDVertex *myPrimVertexESD = 0x0;
 
-    if(fCorrelations||fEfficiency){
+    if(fCorrelations||fEfficiency||fMixing){
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
         AliAODInputHandler *inEvMain = (AliAODInputHandler *) mgr->GetInputEventHandler();
 
@@ -884,53 +888,49 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
             }else {
 
-            	cout << " V0 part" << endl;
             	if ((mcPartPdg != 310) && (mcPartPdg != 3122) && (mcPartPdg != (-3122))) continue; // keep only Lambdas and K0S
             	Bool_t IsFromCascade = kFALSE;
             	
-            	cout << " V0 passed" << endl;
-            	Int_t mother  = mcTrack->GetMother();
-            	mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
-            	Int_t motherPDG = 0;
-            	if (mother<0) motherPDG =0;
-            	else motherPDG = TMath::Abs(mcMotherParticle->PdgCode());
-            
-           		if(fAacceptLambdasFromCasscade) IsFromCascade = (((motherPDG == 3222)|| (motherPDG==3212)|| (motherPDG==3112) || (motherPDG==3224) || (motherPDG==3214) || (motherPDG==3114) || (motherPDG==3322) || (motherPDG==3312)|| (motherPDG==3324) || (motherPDG==3314) || (motherPDG==3334)) && (mcMotherParticle->IsPhysicalPrimary()));
+                if(fAnalysisAOD){
+                	Int_t mother  = mcTrack->GetMother();
+                	mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
+                	Int_t motherPDG = 0;
+                	if (mother<0) motherPDG =0;
+                	else motherPDG = TMath::Abs(mcMotherParticle->PdgCode());
+                
+               		if(fAacceptLambdasFromCasscade) IsFromCascade = (((motherPDG == 3222)|| (motherPDG==3212)|| (motherPDG==3112) || (motherPDG==3224) || (motherPDG==3214) || (motherPDG==3114) || (motherPDG==3322) || (motherPDG==3312)|| (motherPDG==3324) || (motherPDG==3314) || (motherPDG==3334)) && (mcMotherParticle->IsPhysicalPrimary()));
 
-           		IsK0 = mcPartPdg==310&& (isPhysPrim);
-           		IsLambda = mcPartPdg==3122&& (isPhysPrim||IsFromCascade);
-           		IsAntiLambda = mcPartPdg==-3122&& (isPhysPrim||IsFromCascade);
+                	Int_t dau0 = mcTrack->GetDaughterLabel(0);
+                	if (dau0>0) daughter0 = (AliMCParticle*) fmcEvent->GetTrack(dau0);
+                	Int_t dau1 = mcTrack->GetDaughterLabel(1);
+                	if (dau1>0) daughter1 = (AliMCParticle*) fmcEvent->GetTrack(dau1);
+                
+                	if(!daughter0||!daughter1) continue;
 
-            	Int_t dau0 = mcTrack->GetDaughterLabel(0);
-            	if (dau0>0) daughter0 = (AliMCParticle*) fmcEvent->GetTrack(dau0);
-            	Int_t dau1 = mcTrack->GetDaughterLabel(1);
-            	if (dau1>0) daughter1 = (AliMCParticle*) fmcEvent->GetTrack(dau1);
-            
-            	if(!daughter0||!daughter1) continue;
-        		
-        		cout << " V0 daughters passed" << endl;
+                	if(daughter0->Charge()<0){
+                    	labelPos = daughter1->GetLabel();
+                    	labelNeg = daughter0->GetLabel();
+                	}
+                	if(daughter0->Charge()>0) {
+                    	labelPos = daughter0->GetLabel();
+                    	labelNeg = daughter1->GetLabel();
+                	}else{
+                    	labelPos = daughter0->GetLabel();
+                    	labelNeg = daughter1->GetLabel();
+                	}
 
-            	if(daughter0->Charge()<0){
-                	labelPos = daughter1->GetLabel();
-                	labelNeg = daughter0->GetLabel();
-            	}
-            	if(daughter0->Charge()>0) {
-                	labelPos = daughter0->GetLabel();
-                	labelNeg = daughter1->GetLabel();
-            	}else{
-                	labelPos = daughter0->GetLabel();
-                	labelNeg = daughter1->GetLabel();
-            	}
+                	etaDau0 = daughter0->Eta();
+                	etaDau1 = daughter1->Eta();
+                }
+                
+                IsK0 = mcPartPdg==310&& (isPhysPrim);
+                IsLambda = mcPartPdg==3122&& (isPhysPrim||IsFromCascade);
+                IsAntiLambda = mcPartPdg==-3122&& (isPhysPrim||IsFromCascade);
 
-            	etaDau0 = daughter0->Eta();
-            	etaDau1 = daughter1->Eta();
-            	
             }
 
             if (mcTrack->Pt()>fPtAsocMin&&TMath::Abs(V0genrapidity)<0.5&&TMath::Abs(etaDau0)<0.8&&TMath::Abs(etaDau1)<0.8){
-            	cout << " V0 assoc" << endl;
                 if(IsK0) {
-                	cout << " K0 assoc" << endl;
                     if(fMixingGen||fCorrelationsGen) mcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),5,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[4]={mcTrack->Pt(),lPVz,0.5,mcTrack->Eta()};
@@ -954,11 +954,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 
             }
             if (mcTrack->Pt()>fPtTrigMin&&(fMixingGen||fCorrelationsGen)&&TMath::Abs(V0genrapidity)<0.5&&TMath::Abs(etaDau0)<0.8&&TMath::Abs(etaDau1)<0.8){
-            	cout << " V0 trigg" << endl;
-                if(IsK0) {
-                	mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),1,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
-                	cout << " K0 trigg" << endl;
-                }
+                if(IsK0) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),1,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                 if(IsLambda) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),2,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                 if(IsAntiLambda) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
             }
@@ -1000,7 +996,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     Double_t EtaTrack =0.;
     Double_t phiTrack =0.;
 
-    if(fCorrelations||fEfficiency){
+    if(fCorrelations||fEfficiency||fMixing){
         for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
             if(fAOD){
                 AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
@@ -1017,6 +1013,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 if(fRejectTrackPileUp&&fRejectTOF&&(!(track->HasPointOnITSLayer(1) || track->HasPointOnITSLayer(0) || track->GetTOFBunchCrossing()==0 ))) continue; // track by track pile-up rejection using TOF
                 if(fRejectTrackPileUp&&!fRejectTOF&&(!(track->HasPointOnITSLayer(1) ||track->HasPointOnITSLayer(0)))) continue; // track by track pile-up rejection without TOF information
                 nTrak+=1;
+
+                if(ptTrack>fPtAsocMin) selectedTracks->Add(track);
 
                 if(fAnalysisMC){
                     Int_t AssocLabel = track->GetLabel();
@@ -1056,8 +1054,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     }
 
                 }else{
-        
-                    if(ptTrack>fPtAsocMin) selectedTracks->Add(track);
                         if(ptTrack>fPtAsocMin) {
                             selectedAssociatedTracks-> Add(new AliV0ChParticle(EtaTrack, phiTrack, ptTrack, 4, 0,track->GetID(),track->Charge(),track->Pz(),track->E()));
                             Double_t phiEtaData[4] = {ptTrack,phiTrack,EtaTrack,3.5};
@@ -1677,12 +1673,10 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         Int_t nMix = fPool->GetCurrentNEvents();
         if (fPool->IsReady() || fPool->NTracksInPool() > fMixingTracks / 5 || nMix >= fMixedEvents)
         {
-            
             for (Int_t jMix=0; jMix<nMix; jMix++)
             {// loop through mixing events
                 TObjArray* bgTracks = fPool->GetEvent(jMix);
                 if(fAnalysisMC) {
-                    
                     if(fV0hCorr) CorelationsMixing(selectedMCV0Triggersrec,bgTracks,fHistMCMixingRec,lPVz,lPercentile);
                     if(fhhCorr) CorelationsMixing(selectedMCtrig,bgTracks,fHistMCMixingRec,lPVz,lPercentile);
                     if(fhV0Corr) CorelationsMixinghV0(bgTracks,selectedMCV0assoc,fHistMCMixingRec,lPVz,lPercentile);
@@ -2167,13 +2161,35 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
             
             if(!hV0) {
                 // track merging cut (hadron with V0 daughter tracks)
-                if(trig->WhichCandidate()<4){
-                    if(assocCharge*trig->GetCharge1()>0) {
+                if(trig->WhichCandidate()<4&&trig->WhichCandidate()>1){
+                	if(fMergingCutV0){
+	                    detaDau = triggEta-asocEta;
+	                    if(TMath::Abs(detaDau)<fMergingCut*2.5*3){ 
+	                        Float_t dphistarLow = GetDPhiStar(trig->Phi(), triggPt, 0, assocPhi, assocPt, assocCharge, 0.8);
+	                        Float_t dphistarHigh = GetDPhiStar(trig->Phi(), triggPt, 0, assocPhi, assocPt, assocCharge, 2.5);
+	                        if (TMath::Abs(dphistarLow) < kLimit || TMath::Abs(dphistarHigh) < kLimit || dphistarLow * dphistarHigh < 0 ) { //searching for dphistar minimum
+                                dphistarminabs = 1e5;
+                                for (Double_t rad=0.8; rad<2.51; rad+=0.01) {
+                                    Float_t dphistar = GetDPhiStar(trig->Phi(), triggPt, 0, assocPhi, assocPt, assocCharge, rad);
+                
+                                    Float_t dphistarabs = TMath::Abs(dphistar);
+        
+                                    if (dphistarabs < dphistarminabs) {
+                                        dphistarminabs = dphistarabs;
+                                    }
+                                }
+          
+                                if (dphistarminabs < fMergingCut && TMath::Abs(detaDau) < fMergingCut) continue;
+                            } 
+                        }
+                    }
+
+                   if(fMergingCutDaughters){
                         phiDaug = trig->GetPhi1();
                         ptDaug = trig->GetPt1();
                         charDaug = trig->GetCharge1();
                         detaDau = trig->GetEta1()-asocEta;
-                        if(TMath::Abs(detaDau)<fMergingCut*2.5*3){ //default fMergingCut=0.02
+                        if(TMath::Abs(detaDau)<fMergingCut*2.5*3){ //default fMergingCut=0.03
                             Float_t dphistarLow = GetDPhiStar(phiDaug, ptDaug, charDaug, assocPhi, assocPt, assocCharge, 0.8);
                             Float_t dphistarHigh = GetDPhiStar(phiDaug, ptDaug, charDaug, assocPhi, assocPt, assocCharge, 2.5);
                             if (TMath::Abs(dphistarLow) < kLimit || TMath::Abs(dphistarHigh) < kLimit || dphistarLow * dphistarHigh < 0 ) { //searching for dphistar minimum
@@ -2191,8 +2207,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
                                 if (dphistarminabs < fMergingCut && TMath::Abs(detaDau) < fMergingCut) continue;
                             } 
                         }
-                    }
-                    if(assocCharge*trig->GetCharge2()>0){
+                    
                         phiDaug = trig->GetPhi2();
                         ptDaug = trig->GetPt2();
                         charDaug = trig->GetCharge2();
@@ -2285,13 +2300,35 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
             if (deltaPhi < (-0.5*kPi)) deltaPhi += 2.0*kPi;
 
             // track merging cut (hadron with V0 daughter tracks)
-                if(trig->WhichCandidate()<4){
-                    if(assocCharge*trig->GetCharge1()>0) {
+                if(trig->WhichCandidate()<4&&trig->WhichCandidate()>1){
+                	if(fMergingCutV0){
+	                    detaDau = trig->Eta()-asocEta;
+	                    if(TMath::Abs(detaDau)<fMergingCut*2.5*3){ 
+	                        Float_t dphistarLow = GetDPhiStar(trig->Phi(), trig->Pt(), 0, assocPhi, assocPt, assocCharge, 0.8);
+	                        Float_t dphistarHigh = GetDPhiStar(trig->Phi(), trig->Pt(), 0, assocPhi, assocPt, assocCharge, 2.5);
+	                        if (TMath::Abs(dphistarLow) < kLimit || TMath::Abs(dphistarHigh) < kLimit || dphistarLow * dphistarHigh < 0 ) { //searching for dphistar minimum
+                                dphistarminabs = 1e5;
+                                for (Double_t rad=0.8; rad<2.51; rad+=0.01) {
+                                    Float_t dphistar = GetDPhiStar(trig->Phi(), trig->Pt(), 0, assocPhi, assocPt, assocCharge, rad);
+                
+                                    Float_t dphistarabs = TMath::Abs(dphistar);
+        
+                                    if (dphistarabs < dphistarminabs) {
+                                        dphistarminabs = dphistarabs;
+                                    }
+                                }
+          
+                                if (dphistarminabs < fMergingCut && TMath::Abs(detaDau) < fMergingCut) continue;
+                            } 
+                        }
+                    }
+
+                   if(fMergingCutDaughters){
                         phiDaug = trig->GetPhi1();
                         ptDaug = trig->GetPt1();
                         charDaug = trig->GetCharge1();
                         detaDau = trig->GetEta1()-asocEta;
-                        if(TMath::Abs(detaDau)<fMergingCut*2.5*3){ //default fMergingCut=0.02
+                        if(TMath::Abs(detaDau)<fMergingCut*2.5*3){ //default fMergingCut=0.03
                             Float_t dphistarLow = GetDPhiStar(phiDaug, ptDaug, charDaug, assocPhi, assocPt, assocCharge, 0.8);
                             Float_t dphistarHigh = GetDPhiStar(phiDaug, ptDaug, charDaug, assocPhi, assocPt, assocCharge, 2.5);
                             if (TMath::Abs(dphistarLow) < kLimit || TMath::Abs(dphistarHigh) < kLimit || dphistarLow * dphistarHigh < 0 ) { //searching for dphistar minimum
@@ -2309,8 +2346,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
                                 if (dphistarminabs < fMergingCut && TMath::Abs(detaDau) < fMergingCut) continue;
                             } 
                         }
-                    }
-                    if(assocCharge*trig->GetCharge2()>0){
+                    
                         phiDaug = trig->GetPhi2();
                         ptDaug = trig->GetPt2();
                         charDaug = trig->GetCharge2();

@@ -266,6 +266,40 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018()
       fADCmultiplicity0NXNclassTotalH(0),
       fADCmultiplicityXN0NclassTotalH(0),
       fADCmultiplicityXNXNclassTotalH(0),
+      fADAmultiplicityTotalVsZNAenergyH(0),
+      fADCmultiplicityTotalVsZNCenergyH(0),
+
+      fVZEROmultiplicityTotalH(0),
+      fVZEROmultiplicity0N0NclassTotalH(0),
+      fVZEROmultiplicity0NXNclassTotalH(0),
+      fVZEROmultiplicityXN0NclassTotalH(0),
+      fVZEROmultiplicityXNXNclassTotalH(0),
+      fVZEROAmultiplicityTotalH(0),
+      fVZEROAmultiplicity0N0NclassTotalH(0),
+      fVZEROAmultiplicity0NXNclassTotalH(0),
+      fVZEROAmultiplicityXN0NclassTotalH(0),
+      fVZEROAmultiplicityXNXNclassTotalH(0),
+      fVZEROCmultiplicityTotalH(0),
+      fVZEROCmultiplicity0N0NclassTotalH(0),
+      fVZEROCmultiplicity0NXNclassTotalH(0),
+      fVZEROCmultiplicityXN0NclassTotalH(0),
+      fVZEROCmultiplicityXNXNclassTotalH(0),
+      fVZEROAmultiplicityTotalVsZNAenergyH(0),
+      fVZEROCmultiplicityTotalVsZNCenergyH(0),
+
+      fADAmultiplicityVsVZEROAmultiplicityH(0),
+      fADCmultiplicityVsVZEROCmultiplicityH(0),
+
+
+      fADAmultiplicityTotalVsZNAenergyH_ADAno(0),
+      fADCmultiplicityTotalVsZNCenergyH_ADCno(0),
+      fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno(0),
+      fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno(0),
+
+      fADAmultiplicityVsVZEROAmultiplicityH_VZEROAno(0),
+      fADAmultiplicityVsVZEROAmultiplicityH_ADAno_VZEROAno(0),
+      fADCmultiplicityVsVZEROCmultiplicityH_VZEROCno(0),
+      fADCmultiplicityVsVZEROCmultiplicityH_ADCno_VZEROCno(0),
 
 
       fMuonTrackCuts(0x0),
@@ -491,9 +525,39 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018(const char* name)
       fADCmultiplicity0NXNclassTotalH(0),
       fADCmultiplicityXN0NclassTotalH(0),
       fADCmultiplicityXNXNclassTotalH(0),
+      fADAmultiplicityTotalVsZNAenergyH(0),
+      fADCmultiplicityTotalVsZNCenergyH(0),
 
+      fVZEROmultiplicityTotalH(0),
+      fVZEROmultiplicity0N0NclassTotalH(0),
+      fVZEROmultiplicity0NXNclassTotalH(0),
+      fVZEROmultiplicityXN0NclassTotalH(0),
+      fVZEROmultiplicityXNXNclassTotalH(0),
+      fVZEROAmultiplicityTotalH(0),
+      fVZEROAmultiplicity0N0NclassTotalH(0),
+      fVZEROAmultiplicity0NXNclassTotalH(0),
+      fVZEROAmultiplicityXN0NclassTotalH(0),
+      fVZEROAmultiplicityXNXNclassTotalH(0),
+      fVZEROCmultiplicityTotalH(0),
+      fVZEROCmultiplicity0N0NclassTotalH(0),
+      fVZEROCmultiplicity0NXNclassTotalH(0),
+      fVZEROCmultiplicityXN0NclassTotalH(0),
+      fVZEROCmultiplicityXNXNclassTotalH(0),
+      fVZEROAmultiplicityTotalVsZNAenergyH(0),
+      fVZEROCmultiplicityTotalVsZNCenergyH(0),
 
+      fADAmultiplicityVsVZEROAmultiplicityH(0),
+      fADCmultiplicityVsVZEROCmultiplicityH(0),
 
+      fADAmultiplicityTotalVsZNAenergyH_ADAno(0),
+      fADCmultiplicityTotalVsZNCenergyH_ADCno(0),
+      fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno(0),
+      fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno(0),
+
+      fADAmultiplicityVsVZEROAmultiplicityH_VZEROAno(0),
+      fADAmultiplicityVsVZEROAmultiplicityH_ADAno_VZEROAno(0),
+      fADCmultiplicityVsVZEROCmultiplicityH_VZEROCno(0),
+      fADCmultiplicityVsVZEROCmultiplicityH_ADCno_VZEROCno(0),
 
       fMuonTrackCuts(0x0),
       fRunNum(0),
@@ -1155,6 +1219,104 @@ void AliAnalysisTaskADin2018::UserCreateOutputObjects()
   fADCmultiplicityXNXNclassTotalH = new TH1F("fADCmultiplicityXNXNclassTotalH","fADCmultiplicityXNXNclassTotalH",1000000, 0, 100000);
   fOutputList->Add(fADCmultiplicityXNXNclassTotalH);
 
+  fADCmultiplicityTotalVsZNCenergyH = new TH2F("fADCmultiplicityTotalVsZNCenergyH","", 500, 0, 50, 20000, -10000, 40000);
+  fOutputList->Add(fADCmultiplicityTotalVsZNCenergyH);
+
+  fADAmultiplicityTotalVsZNAenergyH = new TH2F("fADAmultiplicityTotalVsZNAenergyH","", 500, 0, 50, 20000, -10000, 40000);
+  fOutputList->Add(fADAmultiplicityTotalVsZNAenergyH);
+
+  //_______________________________
+  /*
+   * VZERO plots.
+   */
+  fVZEROmultiplicityTotalH = new TH1F("fVZEROmultiplicityTotalH","fVZEROmultiplicityTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROmultiplicityTotalH);
+
+  fVZEROmultiplicity0N0NclassTotalH = new TH1F("fVZEROmultiplicity0N0NclassTotalH","fVZEROmultiplicity0N0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROmultiplicity0N0NclassTotalH);
+
+  fVZEROmultiplicity0NXNclassTotalH = new TH1F("fVZEROmultiplicity0NXNclassTotalH","fVZEROmultiplicity0NXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROmultiplicity0NXNclassTotalH);
+
+  fVZEROmultiplicityXN0NclassTotalH = new TH1F("fVZEROmultiplicityXN0NclassTotalH","fVZEROmultiplicityXN0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROmultiplicityXN0NclassTotalH);
+
+  fVZEROmultiplicityXNXNclassTotalH = new TH1F("fVZEROmultiplicityXNXNclassTotalH","fVZEROmultiplicityXNXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROmultiplicityXNXNclassTotalH);
+
+  fVZEROAmultiplicityTotalH = new TH1F("fVZEROAmultiplicityTotalH","fVZEROAmultiplicityTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROAmultiplicityTotalH);
+
+  fVZEROAmultiplicity0N0NclassTotalH = new TH1F("fVZEROAmultiplicity0N0NclassTotalH","fVZEROAmultiplicity0N0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROAmultiplicity0N0NclassTotalH);
+
+  fVZEROAmultiplicity0NXNclassTotalH = new TH1F("fVZEROAmultiplicity0NXNclassTotalH","fVZEROAmultiplicity0NXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROAmultiplicity0NXNclassTotalH);
+
+  fVZEROAmultiplicityXN0NclassTotalH = new TH1F("fVZEROAmultiplicityXN0NclassTotalH","fVZEROAmultiplicityXN0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROAmultiplicityXN0NclassTotalH);
+
+  fVZEROAmultiplicityXNXNclassTotalH = new TH1F("fVZEROAmultiplicityXNXNclassTotalH","fVZEROAmultiplicityXNXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROAmultiplicityXNXNclassTotalH);
+
+  fVZEROCmultiplicityTotalH = new TH1F("fVZEROCmultiplicityTotalH","fVZEROCmultiplicityTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROCmultiplicityTotalH);
+
+  fVZEROCmultiplicity0N0NclassTotalH = new TH1F("fVZEROCmultiplicity0N0NclassTotalH","fVZEROCmultiplicity0N0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROCmultiplicity0N0NclassTotalH);
+
+  fVZEROCmultiplicity0NXNclassTotalH = new TH1F("fVZEROCmultiplicity0NXNclassTotalH","fVZEROCmultiplicity0NXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROCmultiplicity0NXNclassTotalH);
+
+  fVZEROCmultiplicityXN0NclassTotalH = new TH1F("fVZEROCmultiplicityXN0NclassTotalH","fVZEROCmultiplicityXN0NclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROCmultiplicityXN0NclassTotalH);
+
+  fVZEROCmultiplicityXNXNclassTotalH = new TH1F("fVZEROCmultiplicityXNXNclassTotalH","fVZEROCmultiplicityXNXNclassTotalH",1000000, 0, 100000);
+  fOutputList->Add(fVZEROCmultiplicityXNXNclassTotalH);
+
+  fVZEROCmultiplicityTotalVsZNCenergyH = new TH2F("fVZEROCmultiplicityTotalVsZNCenergyH","fVZEROCmultiplicityTotalVsZNCenergyH", 500, 0, 50, 1000, -10000, 40000);
+  fOutputList->Add(fVZEROCmultiplicityTotalVsZNCenergyH);
+
+  fVZEROAmultiplicityTotalVsZNAenergyH = new TH2F("fVZEROAmultiplicityTotalVsZNAenergyH","fVZEROAmultiplicityTotalVsZNAenergyH", 500, 0, 50, 1000, -10000, 40000);
+  fOutputList->Add(fVZEROAmultiplicityTotalVsZNAenergyH);
+
+  fADCmultiplicityVsVZEROCmultiplicityH = new TH2F("fADCmultiplicityVsVZEROCmultiplicityH","fADCmultiplicityVsVZEROCmultiplicityH", 500, 0, 50, 500, 0, 50);
+  fOutputList->Add(fADCmultiplicityVsVZEROCmultiplicityH);
+
+  fADAmultiplicityVsVZEROAmultiplicityH = new TH2F("fADAmultiplicityVsVZEROAmultiplicityH","fADAmultiplicityVsVZEROAmultiplicityH", 500, 0, 50, 500, 0, 50);
+  fOutputList->Add(fADAmultiplicityVsVZEROAmultiplicityH);
+
+  //_______________________________
+  /* -
+   * - TRIGGER BITS check
+   * -
+   */
+  fADCmultiplicityTotalVsZNCenergyH_ADCno = new TH2F("fADCmultiplicityTotalVsZNCenergyH_ADCno","", 500, 0, 50, 20000, -10000, 40000);
+  fOutputList->Add(fADCmultiplicityTotalVsZNCenergyH_ADCno);
+
+  fADAmultiplicityTotalVsZNAenergyH_ADAno = new TH2F("fADAmultiplicityTotalVsZNAenergyH_ADAno","", 500, 0, 50, 20000, -10000, 40000);
+  fOutputList->Add(fADAmultiplicityTotalVsZNAenergyH_ADAno);
+
+  fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno = new TH2F("fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno","fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno", 500, 0, 50, 1000, -10000, 40000);
+  fOutputList->Add(fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno);
+
+  fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno = new TH2F("fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno","fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno", 500, 0, 50, 1000, -10000, 40000);
+  fOutputList->Add(fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno);
+
+  fADCmultiplicityVsVZEROCmultiplicityH_VZEROCno = new TH2F("fADCmultiplicityVsVZEROCmultiplicityH_VZEROCno","fADCmultiplicityVsVZEROCmultiplicityH_VZEROCno", 500, 0, 50, 500, 0, 50);
+  fOutputList->Add(fADCmultiplicityVsVZEROCmultiplicityH_VZEROCno);
+
+  fADCmultiplicityVsVZEROCmultiplicityH_ADCno_VZEROCno = new TH2F("fADCmultiplicityVsVZEROCmultiplicityH_ADCno_VZEROCno","fADCmultiplicityVsVZEROCmultiplicityH_ADCno_VZEROCno", 500, 0, 50, 500, 0, 50);
+  fOutputList->Add(fADCmultiplicityVsVZEROCmultiplicityH_ADCno_VZEROCno);
+
+  fADAmultiplicityVsVZEROAmultiplicityH_VZEROAno = new TH2F("fADAmultiplicityVsVZEROAmultiplicityH_VZEROAno","fADAmultiplicityVsVZEROAmultiplicityH_VZEROAno", 500, 0, 50, 500, 0, 50);
+  fOutputList->Add(fADAmultiplicityVsVZEROAmultiplicityH_VZEROAno);
+
+  fADAmultiplicityVsVZEROAmultiplicityH_ADAno_VZEROAno = new TH2F("fADAmultiplicityVsVZEROAmultiplicityH_ADAno_VZEROAno","fADAmultiplicityVsVZEROAmultiplicityH_ADAno_VZEROAno", 500, 0, 50, 500, 0, 50);
+  fOutputList->Add(fADAmultiplicityVsVZEROAmultiplicityH_ADAno_VZEROAno);
+  //_______________________________
+
+
   for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
     fADmultiplicityH[iChannel] = new TH1F(
               Form("fADmultiplicityH_%d", iChannel),
@@ -1358,6 +1520,19 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
           PostData(1, fOutputList);
           return;
   }
+  //_______________________________
+  /* -
+   * - Requiring both triggers to do all
+   * - sort of checks.
+   * -
+   * - NB: CMUP11 = *VZEROA *ADA *ADC DIMUON_U
+   * -
+   */
+  if ( !( trigger.Contains("CMUP11-B-NOPF-MUFAST") )  )  {
+          PostData(1, fOutputList);
+          return;
+  }
+  //_______________________________
   fCounterH->Fill(iSelectionCounter); // right trigger found
   iSelectionCounter++;
 
@@ -1530,6 +1705,31 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   fCounterH->Fill(13);
   fV0CDecision = dataVZERO->GetV0CDecision();
   fCounterH->Fill(14);
+
+  Int_t is_VZEROA_set = -9;
+  Int_t is_VZEROC_set = -9;
+  is_VZEROA_set = IntBits( dataVZERO->GetTriggerBits() ).test(12);
+  is_VZEROC_set = IntBits( dataVZERO->GetTriggerBits() ).test(13);
+
+
+
+  Double_t VZEROmultiplicities[64]   = { -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+                                         -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+                                         -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+                                         -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 };
+  Double_t VZEROmultiplicitiesTotal  = 0;
+  Double_t VZEROAmultiplicitiesTotal = 0;
+  Double_t VZEROCmultiplicitiesTotal = 0;
+
+  for( Int_t iChannel = 0; iChannel < 64; iChannel++ ){
+    VZEROmultiplicities[iChannel] = dataVZERO->GetMultiplicity(iChannel);
+    VZEROmultiplicitiesTotal     += dataVZERO->GetMultiplicity(iChannel);
+    if ( iChannel < 32 ) {
+      VZEROCmultiplicitiesTotal  += dataVZERO->GetMultiplicity(iChannel);
+    } else {
+      VZEROAmultiplicitiesTotal  += dataVZERO->GetMultiplicity(iChannel);
+    }
+  }
 
 
   //_____________________________________
@@ -1725,14 +1925,14 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   /**
    * Check with no AD veto at all...
    */
-  // if(fADADecision != 0) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
-  // if(fADCDecision != 0) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
+  if(fADADecision != 0) {
+       PostData(1, fOutputList);
+       return;
+  }
+  if(fADCDecision != 0) {
+       PostData(1, fOutputList);
+       return;
+  }
 
   //
   // Int_t fADactivity = -9;
@@ -2214,7 +2414,16 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
     }
   }
   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) && (possibleJPsi.Pt() < 0.25)){
-    fZNCEnergyBeforeTimingSelectionH        ->Fill(fZNCEnergy);
+    fZNCEnergyBeforeTimingSelectionH               ->Fill(fZNCEnergy);
+    fADCmultiplicityTotalVsZNCenergyH              ->Fill(ADCmultiplicitiesTotal,    fZNCEnergy);
+    fVZEROCmultiplicityTotalVsZNCenergyH           ->Fill(VZEROCmultiplicitiesTotal, fZNCEnergy);
+    if ( is_ADC_set == 0 )    {
+      fADCmultiplicityTotalVsZNCenergyH_ADCno      ->Fill(ADCmultiplicitiesTotal,    fZNCEnergy);
+    }
+    if ( is_VZEROC_set == 0 ) {
+      fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno->Fill(VZEROCmultiplicitiesTotal, fZNCEnergy);
+    }
+
   }
   fZNCEnergyBeforeTimingSelectionExtendedH->Fill(fZNCEnergy);
   if ( dataZDC->IsZNCfired() && ( isZNCfired != 0 ) ) {
@@ -2235,7 +2444,15 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
     }
   }
   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) && (possibleJPsi.Pt() < 0.25)){
-    fZNAEnergyBeforeTimingSelectionH        ->Fill(fZNAEnergy);
+    fZNAEnergyBeforeTimingSelectionH               ->Fill(fZNAEnergy);
+    fADAmultiplicityTotalVsZNAenergyH              ->Fill(ADAmultiplicitiesTotal,    fZNAEnergy);
+    fVZEROAmultiplicityTotalVsZNAenergyH           ->Fill(VZEROAmultiplicitiesTotal, fZNAEnergy);
+    if ( is_ADA_set == 0 )    {
+      fADAmultiplicityTotalVsZNAenergyH_ADAno      ->Fill(ADAmultiplicitiesTotal,    fZNAEnergy);
+    }
+    if ( is_VZEROA_set == 0 ) {
+      fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno->Fill(VZEROAmultiplicitiesTotal, fZNAEnergy);
+    }
   }
   fZNAEnergyBeforeTimingSelectionExtendedH->Fill(fZNAEnergy);
 
@@ -2265,6 +2482,26 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   fADmultiplicityTotalH ->Fill(ADmultiplicitiesTotal);
   fADAmultiplicityTotalH->Fill(ADAmultiplicitiesTotal);
   fADCmultiplicityTotalH->Fill(ADCmultiplicitiesTotal);
+
+  fVZEROmultiplicityTotalH ->Fill(VZEROmultiplicitiesTotal);
+  fVZEROAmultiplicityTotalH->Fill(VZEROAmultiplicitiesTotal);
+  fVZEROCmultiplicityTotalH->Fill(VZEROCmultiplicitiesTotal);
+
+  fADAmultiplicityVsVZEROAmultiplicityH->Fill(ADAmultiplicitiesTotal, VZEROAmultiplicitiesTotal);
+  fADCmultiplicityVsVZEROCmultiplicityH->Fill(ADCmultiplicitiesTotal, VZEROCmultiplicitiesTotal);
+
+  if ( is_VZEROA_set == 0 ) {
+    fADAmultiplicityVsVZEROAmultiplicityH_VZEROAno        ->Fill(ADAmultiplicitiesTotal, VZEROAmultiplicitiesTotal);
+    if ( is_ADA_set == 0 )  {
+      fADAmultiplicityVsVZEROAmultiplicityH_ADAno_VZEROAno->Fill(ADAmultiplicitiesTotal, VZEROAmultiplicitiesTotal);
+    }
+  }
+  if ( is_VZEROC_set == 0 ) {
+    fADCmultiplicityVsVZEROCmultiplicityH_VZEROCno        ->Fill(ADCmultiplicitiesTotal, VZEROCmultiplicitiesTotal);
+    if ( is_ADC_set == 0 )  {
+      fADCmultiplicityVsVZEROCmultiplicityH_ADCno_VZEROCno->Fill(ADCmultiplicitiesTotal, VZEROCmultiplicitiesTotal);
+    }
+  }
 
   /* - Filling the v2 histogram only if the
    * - ZNC or the ZNA have detected any activity at all...
@@ -2382,6 +2619,10 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     fADmultiplicity0N0NclassTotalH ->Fill(ADmultiplicitiesTotal);
                     fADAmultiplicity0N0NclassTotalH->Fill(ADAmultiplicitiesTotal);
                     fADCmultiplicity0N0NclassTotalH->Fill(ADCmultiplicitiesTotal);
+
+                    fVZEROmultiplicity0N0NclassTotalH ->Fill(VZEROmultiplicitiesTotal);
+                    fVZEROAmultiplicity0N0NclassTotalH->Fill(VZEROAmultiplicitiesTotal);
+                    fVZEROCmultiplicity0N0NclassTotalH->Fill(VZEROCmultiplicitiesTotal);
                   }
               } else {
                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2->Fill(possibleJPsi.Mag());
@@ -2526,6 +2767,11 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     fADmultiplicity0NXNclassTotalH ->Fill(ADmultiplicitiesTotal);
                     fADAmultiplicity0NXNclassTotalH->Fill(ADAmultiplicitiesTotal);
                     fADCmultiplicity0NXNclassTotalH->Fill(ADCmultiplicitiesTotal);
+
+                    fVZEROmultiplicity0NXNclassTotalH ->Fill(VZEROmultiplicitiesTotal);
+                    fVZEROAmultiplicity0NXNclassTotalH->Fill(VZEROAmultiplicitiesTotal);
+                    fVZEROCmultiplicity0NXNclassTotalH->Fill(VZEROCmultiplicitiesTotal);
+
                   }
               } else {
                   fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2->Fill(possibleJPsi.Mag());
@@ -2673,6 +2919,10 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     fADmultiplicityXN0NclassTotalH ->Fill(ADmultiplicitiesTotal);
                     fADAmultiplicityXN0NclassTotalH->Fill(ADAmultiplicitiesTotal);
                     fADCmultiplicityXN0NclassTotalH->Fill(ADCmultiplicitiesTotal);
+
+                    fVZEROmultiplicityXN0NclassTotalH ->Fill(VZEROmultiplicitiesTotal);
+                    fVZEROAmultiplicityXN0NclassTotalH->Fill(VZEROAmultiplicitiesTotal);
+                    fVZEROCmultiplicityXN0NclassTotalH->Fill(VZEROCmultiplicitiesTotal);
                   }
               } else {
                   fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2->Fill(possibleJPsi.Mag());
@@ -2818,6 +3068,10 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     fADmultiplicityXNXNclassTotalH ->Fill(ADmultiplicitiesTotal);
                     fADAmultiplicityXNXNclassTotalH->Fill(ADAmultiplicitiesTotal);
                     fADCmultiplicityXNXNclassTotalH->Fill(ADCmultiplicitiesTotal);
+
+                    fVZEROmultiplicityXNXNclassTotalH ->Fill(VZEROmultiplicitiesTotal);
+                    fVZEROAmultiplicityXNXNclassTotalH->Fill(VZEROAmultiplicitiesTotal);
+                    fVZEROCmultiplicityXNXNclassTotalH->Fill(VZEROCmultiplicitiesTotal);
                   }
               } else {
                   fInvariantMassDistributionIncoherentZNCanyZNAanyHv2->Fill(possibleJPsi.Mag());

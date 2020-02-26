@@ -197,6 +197,10 @@ public:
   AliMLResponse *fMLResponse;               /// object for the ML application
   AliESDtrackCuts fTrackCuts;               /// Track cuts Object
 
+  bool fRequireDeuteronTOFpid;
+  bool fRequireProtonTOFpid;
+  bool fRequirePionTOFpid;
+
 private:
   std::map<std::string, double> FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv);
 

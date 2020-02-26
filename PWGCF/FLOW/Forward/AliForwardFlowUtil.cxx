@@ -68,6 +68,14 @@ Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
     // Xe-Xe
     if ((runnumber == 280234) || (runnumber == 280235)) return kTRUE;
     
+    Double_t pPb_goodruns[] = {265309, 265335, 265339, 265377, 265383, 265387, 265421, 265425, 
+                               265435, 265521, 265332, 265336, 265342, 265378, 265384, 265388, 
+                               265422, 265426, 265499, 265525, 265334, 265338, 265344, 265381,
+                               265385, 265420, 265424, 265427, 265501};
+    for (Int_t i = 0; i < 29; i++){
+      if (runnumber == pPb_goodruns[i]) return kTRUE;
+    }
+
   }
   if (fSettings.run_list == 1){
     if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;

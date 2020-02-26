@@ -59,6 +59,7 @@ public:
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
   virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
+  virtual void SetadditionalFMDcut(Bool_t mode) {fFMDaddcut=mode;}
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
   virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
@@ -148,6 +149,7 @@ private:
   Bool_t frun2;
   Bool_t fQA;
   Bool_t fFMDcut;
+  Bool_t fFMDaddcut;
   Int_t fFMDcutmode;
   Bool_t fptdiff;
   Bool_t fmakehole;

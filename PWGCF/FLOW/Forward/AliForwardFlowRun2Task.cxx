@@ -266,6 +266,8 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   }
   else{
   */
+
+
   if (fSettings.ref_mode & fSettings.kFMDref) {
     fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,true);
   }

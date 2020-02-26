@@ -961,7 +961,52 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
         TH1F*                   fADCmultiplicity0NXNclassTotalH;       //!
         TH1F*                   fADCmultiplicityXN0NclassTotalH;       //!
         TH1F*                   fADCmultiplicityXNXNclassTotalH;       //!
+        TH2F*                   fADCmultiplicityTotalVsZNCenergyH;     //!
+        TH2F*                   fADAmultiplicityTotalVsZNAenergyH;     //!
 
+        TH2F*                   fADCmultiplicityTotalVsZNCenergyH_ADCno;     //!
+        TH2F*                   fADAmultiplicityTotalVsZNAenergyH_ADAno;     //!
+
+
+        //_______________________________
+        // - VZERO charge / multiplicity
+        /* -
+         * - Checks needed to make sure
+         * - that the bkg is under control.
+         */
+                                /**
+                                 * Collected multiplicity in the AD
+                                 * per channel and neutron emission
+                                 * class, plus total.
+                                 */
+        TH1F*                   fVZEROmultiplicityTotalH;                 //!
+        TH1F*                   fVZEROmultiplicity0N0NclassTotalH;        //!
+        TH1F*                   fVZEROmultiplicity0NXNclassTotalH;        //!
+        TH1F*                   fVZEROmultiplicityXN0NclassTotalH;        //!
+        TH1F*                   fVZEROmultiplicityXNXNclassTotalH;        //!
+        TH1F*                   fVZEROAmultiplicityTotalH;                //!
+        TH1F*                   fVZEROAmultiplicity0N0NclassTotalH;       //!
+        TH1F*                   fVZEROAmultiplicity0NXNclassTotalH;       //!
+        TH1F*                   fVZEROAmultiplicityXN0NclassTotalH;       //!
+        TH1F*                   fVZEROAmultiplicityXNXNclassTotalH;       //!
+        TH1F*                   fVZEROCmultiplicityTotalH;                //!
+        TH1F*                   fVZEROCmultiplicity0N0NclassTotalH;       //!
+        TH1F*                   fVZEROCmultiplicity0NXNclassTotalH;       //!
+        TH1F*                   fVZEROCmultiplicityXN0NclassTotalH;       //!
+        TH1F*                   fVZEROCmultiplicityXNXNclassTotalH;       //!
+        TH2F*                   fVZEROCmultiplicityTotalVsZNCenergyH;     //!
+        TH2F*                   fVZEROAmultiplicityTotalVsZNAenergyH;     //!
+
+        TH2F*                   fADCmultiplicityVsVZEROCmultiplicityH;    //!
+        TH2F*                   fADAmultiplicityVsVZEROAmultiplicityH;    //!
+
+        TH2F*                   fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno;     //!
+        TH2F*                   fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno;     //!
+
+        TH2F*                   fADCmultiplicityVsVZEROCmultiplicityH_VZEROCno;    //!
+        TH2F*                   fADCmultiplicityVsVZEROCmultiplicityH_ADCno_VZEROCno;    //!
+        TH2F*                   fADAmultiplicityVsVZEROAmultiplicityH_VZEROAno;    //!
+        TH2F*                   fADAmultiplicityVsVZEROAmultiplicityH_ADAno_VZEROAno;    //!
 
 
         //_______________________________
@@ -1024,7 +1069,7 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskADin2018, 7);
+        ClassDef(AliAnalysisTaskADin2018, 11);
 };
 
 #endif
