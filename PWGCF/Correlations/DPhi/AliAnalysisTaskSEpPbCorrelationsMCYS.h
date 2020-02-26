@@ -259,6 +259,7 @@ private:
 
   AliTHn* fhistmcprim;
   AliTHn* fhistmcprimfinal;
+  TH2D* fNTrackCorrMC;
   TH2D*fhmcprimvzeta;
 
   TH1F*frefvz;
