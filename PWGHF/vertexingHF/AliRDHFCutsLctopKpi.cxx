@@ -1514,7 +1514,6 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
     
   Int_t ptbin=PtBin(ptLc);
   Double_t diff=fCutsRD[GetGlobalIndex(0,ptbin)];
-    printf("Inv Mass Window: %f in %d\n", diff, ptbin);
   for(Int_t iDaught=0; iDaught<3; iDaught++) {
     if(tracks[iDaught]->Charge()==-1*chargeLc){
       for(Int_t i=0; i<3; i++) {
