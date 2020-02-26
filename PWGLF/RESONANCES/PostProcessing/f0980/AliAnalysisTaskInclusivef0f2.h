@@ -107,6 +107,7 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
 	bool				IsMC=kFALSE;
 	AliStack*			fmcstack=nullptr;
         TAxis                           binCent; //! 
+	TAxis				binCentForMC;
         TAxis                           binZ; //!
         TAxis                           binPt; //!
 	TAxis                           binType; //!
