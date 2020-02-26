@@ -36,6 +36,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetUseWeightsRunByRun(Bool_t bRunByRun) { fFlowRunByRunWeights = bRunByRun; }
 
         void                    SetVtxZCut(Double_t zCut) { fVtxZCuts = zCut; }
+        void                    SetPhiBins(Int_t PhiBin) { fNPhiBins = PhiBin; }
+        void                    SetEtaBins(Int_t EtaBin) { fNEtaBins = EtaBin; }
+
         void                    SetEtaGap(Double_t val) { dEtaGap = val; }
         void                    SetHasEtaGap( Bool_t fEtaGap) { bHasGap = fEtaGap; }
         void                    SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
@@ -111,6 +114,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistEta;       //!
         TH1F*                   fHistPt;        //!
         TH1F*                   fHistZVertex;   //!
+        TH1F*                   fHistPhiCor;    //!
 
         TSpline3*               fSplq2TPC[90];  // q2 TPC splines
         TSpline3*               fSplq3TPC[90];  // q3 TPC splines
@@ -332,6 +336,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         UInt_t                  fFilterBit;
         Double_t                fAbsEtaMax;
         Double_t                fVtxZCuts;
+        Int_t                   fNPhiBins;
+        Int_t                   fNEtaBins;
         TString                 fCentEstimator;
         UShort_t                fCutChargedNumTPCclsMin;
         Bool_t                  IsEventSelected();
