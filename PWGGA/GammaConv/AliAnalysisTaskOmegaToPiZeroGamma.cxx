@@ -2911,6 +2911,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
               //change energy of pi0 candidate s.t. its mass is the pdg mass
               pi0cand->SetPxPyPzE(pi0cand->Px(),pi0cand->Py(),pi0cand->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand->P()*pi0cand->P()));
               fPi0Candidates->Add(pi0cand);
+              if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) {
+                dropOutGammas_CALO.insert(firstGammaIndex);
+                dropOutGammas_CALO.insert(secondGammaIndex);
+              }
               if(fDoMesonQA>0){
                 fHistoPhotonPairYPt[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),fWeightJetJetMC);
                 fHistoPhotonPairAlphaPt[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetAlpha(),fWeightJetJetMC);
