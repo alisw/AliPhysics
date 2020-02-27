@@ -347,6 +347,7 @@ TGeoTranslation *AliFITv8::createAndRegisterTrans(const std::string &name,
 
 void AliFITv8::initializeSectorTransformations() {
 
+  // NB: This version of the code makes transformations for all 8 sectors; places left and right half at once
   std::cout << " The reference to \"a\" and \"b\" can be understood with the "
                "CAD drawings of the detector."
             << std::endl;
@@ -1106,7 +1107,7 @@ void AliFITv8::assembleScrews(TGeoVolume *vFV0) const {
     }
   }
 
-  vFV0->AddNode(screws, 1, mLeftTransformation);
+  // vFV0->AddNode(screws, 1, mLeftTransformation);  // This causes overlaps; all 8 sectors are placed at once
   vFV0->AddNode(screws, 2, mRightTransformation);
 }
 
@@ -1284,7 +1285,7 @@ void AliFITv8::assembleRods(TGeoVolume *vFV0) const {
                                         mRodPos[i][1], mRodPos[i][2]));
     }
   }
-  vFV0->AddNode(rods, 1, mLeftTransformation);
+  // vFV0->AddNode(rods, 1, mLeftTransformation);  // This causes overlaps; all 8 sectors are placed at once
   vFV0->AddNode(rods, 2, mRightTransformation);
 }
 
@@ -1724,163 +1725,9 @@ void AliFITv8::CreateGeometry() {
   // begin Html
   //
 
-  Int_t *idtmed = fIdtmed->GetArray();
-  Float_t zdetC = 85; // center of mother volume
-  Float_t zdetA = 334.5;
-
-  Int_t idrotm[999];
-  Double_t x, y, z;
-  //  Float_t pstartC[3] = {6., 20 ,5};
-  //  Float_t pstartA[3] = {2.55, 20 ,5};
-  Float_t pstartC[3] = {20, 20, 5};
-  Float_t pstartA[3] = {20, 20, 6.3};
-  Float_t pinstart[3] = {2.95, 2.95, 2.5};
-  Float_t pmcp[3] = {2.949, 2.949, 1.}; // MCP
-
-  AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
-
-  //-------------------------------------------------------------------
-  //-------------------------------------------------------------------
-  // C side Concave Geometry
-  Double_t crad = 82.; // define concave c-side radius here
-
-  Double_t dP = 3.31735114408; // Work in Progress side length
-
-  // uniform angle between detector faces==
-  Double_t btta = 2 * TMath::ATan(dP / crad);
-
-  // get noncompensated translation data
-  Double_t grdin[6] = {-3, -2, -1, 1, 2, 3};
-  Double_t gridpoints[6];
-  for (Int_t i = 0; i < 6; i++) {
-    gridpoints[i] = crad * TMath::Sin((1 - 1 / (2 * TMath::Abs(grdin[i]))) *
-                                      grdin[i] * btta);
-  }
-
-  std::vector<Double_t> xi, yi;
-
-  for (Int_t j = 5; j >= 0; j--) {
-    for (Int_t i = 0; i < 6; i++) {
-      if (!(((j == 5 || j == 0) && (i == 5 || i == 0)) ||
-            ((j == 3 || j == 2) && (i == 3 || i == 2)))) {
-        xi.push_back(gridpoints[i]);
-        yi.push_back(gridpoints[j]);
-      }
-    }
-  }
-
-  Double_t zi[28];
-  for (Int_t i = 0; i < 28; i++) {
-    zi[i] = TMath::Sqrt(TMath::Power(crad, 2) - TMath::Power(xi[i], 2) -
-                        TMath::Power(yi[i], 2));
-  }
-
-  // get rotation data
-  Double_t ac[28], bc[28], gc[28];
-  for (Int_t i = 0; i < 28; i++) {
-    ac[i] = TMath::ATan(yi[i] / xi[i]) - TMath::Pi() / 2 + 2 * TMath::Pi();
-    if (xi[i] < 0) {
-      bc[i] = TMath::ACos(zi[i] / crad);
-    } else {
-      bc[i] = -1 * TMath::ACos(zi[i] / crad);
-    }
-  }
-  Double_t xc2[28], yc2[28], zc2[28];
-
-  // compensation based on node position within individual detector geometries
-  // determine compensated radius
-  Double_t rcomp = crad + pstartC[2] / 2.0; //
-  for (Int_t i = 0; i < 28; i++) {
-    // Get compensated translation data
-    xc2[i] =
-        rcomp * TMath::Cos(ac[i] + TMath::Pi() / 2) * TMath::Sin(-1 * bc[i]);
-    yc2[i] =
-        rcomp * TMath::Sin(ac[i] + TMath::Pi() / 2) * TMath::Sin(-1 * bc[i]);
-    zc2[i] = rcomp * TMath::Cos(bc[i]);
-
-    // Convert angles to degrees
-    ac[i] *= 180 / TMath::Pi();
-    bc[i] *= 180 / TMath::Pi();
-    gc[i] = -1 * ac[i];
-  }
-
-  // A Side
-  Float_t xa[24] = {-11.8, -5.9, 0,     5.9,   11.8, -11.8, -5.9,  0,
-                    5.9,   11.8, -12.8, -6.9,  6.9,  12.8,  -11.8, -5.9,
-                    0,     5.9,  11.8,  -11.8, -5.9, 0,     5.9,   11.8};
-
-  Float_t ya[24] = {11.9, 11.9, 12.9, 11.9,  11.9,  6.0,   6.0,   7.0,
-                    6.0,  6.0,  -0.1, -0.1,  0.1,   0.1,   -6.0,  -6.0,
-                    -7.0, -6.0, -6.0, -11.9, -11.9, -12.9, -11.9, -11.9};
-
-  TGeoVolumeAssembly *stlinA = new TGeoVolumeAssembly("0STL"); // A side mother
-  TGeoVolumeAssembly *stlinC = new TGeoVolumeAssembly("0STR"); // C side mother
-  // FIT interior
-
-  // tube inside T0A
-  Float_t pinnertube[3] = {3.95, 4.0, 6.22};
-  TVirtualMC::GetMC()->Gsvolu("0TIN", "TUBE", idtmed[kAl], pinnertube,
-                              3); // This creates new volume in MC.
-  TGeoVolume *innertube = gGeoManager->GetVolume("0TIN");
-  stlinA->AddNode(innertube, 1, new TGeoTranslation(0, 0, 0));
-
-  // tube around T0A
-  Float_t poutertube[3] = {41, 41.1, 6.54};
-  TVirtualMC::GetMC()->Gsvolu("0OUT", "TUBE", idtmed[kAl], poutertube, 3);
-  TGeoVolume *outertube = gGeoManager->GetVolume("0OUT");
-  stlinA->AddNode(outertube, 1, new TGeoTranslation(0, 0, 0));
-
-  TVirtualMC::GetMC()->Gsvolu("0INS", "BOX", idtmed[kOpAir], pinstart, 3);
-  TGeoVolume *ins = gGeoManager->GetVolume("0INS");
-  TGeoTranslation *tr[52];
-  TString nameTr;
-
-  // A side Translations
-  for (Int_t itr = 0; itr < 24; itr++) {
-    nameTr = Form("0TR%i", itr + 1);
-    z = -pstartA[2] + pinstart[2];
-    tr[itr] = new TGeoTranslation(nameTr.Data(), xa[itr], ya[itr], z);
-    printf(" itr %i A %f %f %f \n", itr, xa[itr], ya[itr], z + zdetA);
-    tr[itr]->RegisterYourself();
-    stlinA->AddNode(ins, itr, tr[itr]);
-  }
-
-  TGeoRotation *rot[28];
-  TString nameRot;
-
-  TGeoCombiTrans *com[28];
-  TString nameCom;
-
-  // C Side Transformations
-  for (Int_t itr = 24; itr < 52; itr++) {
-    nameTr = Form("0TR%i", itr + 1);
-    nameRot = Form("0Rot%i", itr + 1);
-    // nameCom = Form("0Com%i",itr+1);
-    rot[itr - 24] = new TGeoRotation(nameRot.Data(), ac[itr - 24], bc[itr - 24],
-                                     gc[itr - 24]);
-    rot[itr - 24]->RegisterYourself();
-
-    tr[itr] = new TGeoTranslation(nameTr.Data(), xc2[itr - 24], yc2[itr - 24],
-                                  (zc2[itr - 24] - 80.));
-    tr[itr]->Print();
-    tr[itr]->RegisterYourself();
-
-    // com[itr-24] = new TGeoCombiTrans(tr[itr],rot[itr-24]);
-    com[itr - 24] = new TGeoCombiTrans(xc2[itr - 24], yc2[itr - 24],
-                                       (zc2[itr - 24] - 80), rot[itr - 24]);
-    TGeoHMatrix hm = *com[itr - 24];
-    TGeoHMatrix *ph = new TGeoHMatrix(hm);
-    stlinC->AddNode(ins, itr, ph);
-  }
+  // All old mother volumes removed
 
   TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
-  alice->AddNode(stlinA, 1, new TGeoTranslation(0, 0, zdetA));
-
-  // alice->AddNode(stlinC,1,new TGeoTranslation(0,0, -zdetC ) );
-  TGeoRotation *rotC = new TGeoRotation("rotC", 90., 0., 90., 90., 180., 0.);
-  alice->AddNode(stlinC, 1, new TGeoCombiTrans(0., 0., -zdetC, rotC));
-
-  SetOneMCP(ins);
 
   /// T0 implementation done in the aforeshown section....
 
@@ -2616,31 +2463,7 @@ void AliFITv8::AddAlignableVolumes() const {
   // name with the corresponding volume path. Needs to be synchronized with
   // eventual changes in the geometry.
 
-  TString volPath;
-  TString symName, sn;
-  TString vpAalign = "/ALIC_1/0STL_1";
-  TString vpCalign = "/ALIC_1/0STR_1";
-
-  for (Int_t imod = 0; imod < 2; imod++) {
-
-    if (imod == 0) {
-      volPath = vpCalign;
-      symName = "/ALIC_1/0STL";
-    }
-    if (imod == 1) {
-      volPath = vpAalign;
-      symName = "/ALIC_1/0STR";
-    }
-
-    AliDebug(2, "--------------------------------------------");
-    AliDebug(2, Form("volPath=%s\n", volPath.Data()));
-    AliDebug(2, Form("symName=%s\n", symName.Data()));
-    AliDebug(2, "--------------------------------------------");
-    if (!gGeoManager->SetAlignableEntry(symName.Data(), volPath.Data())) {
-      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",
-                    symName.Data(), volPath.Data()));
-    }
-  }
+  // Dummy because the volume names changed; anyways no need for alignment for pure simulation
 }
 //------------------------------------------------------------------------
 
