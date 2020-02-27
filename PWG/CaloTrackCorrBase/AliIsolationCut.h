@@ -21,14 +21,15 @@
 // --- ROOT system ---
 #include <TObject.h>
 class TObjArray ;
-class TList   ;
+class TList ;
+class TH3F ;
 #include <TLorentzVector.h>
 
 // --- ANALYSIS system ---
 class AliCaloTrackParticleCorrelation ;
 class AliCaloTrackReader ;
-class AliCaloPID;
-class AliHistogramRanges;
+class AliCaloPID ;
+class AliHistogramRanges ;
 
 class AliIsolationCut : public TObject {
 
@@ -74,7 +75,7 @@ class AliIsolationCut : public TObject {
                               TObjArray * bgTrk, TObjArray * bgCls,
                               Int_t calorimeter, AliCaloPID * pid,
                               Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated, 
-                              Double_t histoWeight = 1) ;
+                              Double_t histoWeight = 1, Float_t centrality = -1) ;
 
   void       Print(const Option_t * opt) const ;
 
@@ -89,7 +90,7 @@ class AliIsolationCut : public TObject {
                                         Int_t   & nPart       , Int_t   & nfrac,
                                         Float_t & coneptsum   , Float_t & coneptLead,
                                         Float_t & etaBandPtSum, Float_t & phiBandPtSum,  
-                                        Double_t histoWeight = 1) ;
+                                        Double_t histoWeight=1, Float_t centrality = -1) ;
   
   void       CalculateTrackSignalInCone(AliCaloTrackParticleCorrelation * aodParticle, AliCaloTrackReader * reader,
                                         Bool_t    bFillAOD    , Bool_t    useRefs, 
@@ -97,7 +98,8 @@ class AliIsolationCut : public TObject {
                                         Int_t   & nPart       , Int_t   & nfrac,
                                         Float_t & coneptsum   , Float_t & coneptLead,  
                                         Float_t & etaBandPtSum, Float_t & phiBandPtSum, 
-                                        Float_t & perpBandPtSum,Double_t  histoWeight = 1) ;
+                                        Float_t & perpBandPtSum,
+                                        Double_t  histoWeight=1,Float_t centrality = -1) ;
   
   // Cone background studies medthods
 
@@ -143,6 +145,7 @@ class AliIsolationCut : public TObject {
   Bool_t     GetFracIsThresh()        const { return fFracIsThresh   ; }
   Float_t    GetMinDistToTrigger()    const { return fDistMinToTrigger ; }
   Float_t    GetNeutralOverChargedRatio() const { return fNeutralOverChargedRatio ; }
+  Int_t      GetNCentrBins()          const { return fNCentBins      ; }
 
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
   void       SetPtThreshold(Float_t pt)                        { fPtThreshold       = pt   ; }
@@ -159,62 +162,70 @@ class AliIsolationCut : public TObject {
   void       SetMinDistToTrigger(Float_t md)                   { fDistMinToTrigger  = md   ; }
   void       SetHistogramRanges(AliHistogramRanges * range)    { fHistoRanges       = range; } 
   void       SetNeutralOverChargedRatio(Float_t r)             { fNeutralOverChargedRatio = r ; }
+  void       SetNCentrBins(Int_t nbins)                        { fNCentBins         = nbins; }
   
   void       SwitchOnFillEtaPhiHistograms ()                   { fFillEtaPhiHistograms = kTRUE  ; }
   void       SwitchOffFillEtaPhiHistograms()                   { fFillEtaPhiHistograms = kFALSE ; }
  
+  void       SwitchOnFillHighMultHistograms ()                 { fFillHighMultHistograms = kTRUE  ; }
+  void       SwitchOffFillHighMultHistograms()                 { fFillHighMultHistograms = kFALSE ; }
+  
   void       SwitchOnConeExcessCorrectionHistograms ()         { fMakeConeExcessCorr = kTRUE  ; }
   void       SwitchOffConeExcessCorrectionHistograms()         { fMakeConeExcessCorr = kFALSE ; }
   
  private:
 
-  Bool_t     fFillHistograms;    ///< Fill histograms if GetCreateOuputObjects() was called. 
-  Bool_t     fFillEtaPhiHistograms; ///< Fill histograms if GetCreateOuputObjects() was called with eta/phi or band related histograms 
-
-  Bool_t     fMakeConeExcessCorr; /// Make cone excess from detector correction. 
+  Bool_t     fFillHistograms;                          ///< Fill histograms if GetCreateOuputObjects() was called. 
   
-  Float_t    fConeSize ;         ///< Size of the isolation cone
-
-  Float_t    fPtThreshold ;      ///< Minimum pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
-
-  Float_t    fPtThresholdMax ;   ///< Maximum pt of the particles outside the cone (needed to fit shower distribution isolated/non-isolated particles)
-
-  Float_t    fSumPtThreshold ;   ///< Minimum of sum pt of the particles in the cone (UE sum in the forward region cone)
-
-  Float_t    fSumPtThresholdMax ;///< Maximum of sum pt of the particles in the cone (UE sum in the forward region cone)
+  Bool_t     fFillEtaPhiHistograms;                    ///< Fill histograms if GetCreateOuputObjects() was called with eta/phi or band related histograms 
   
-  Float_t    fSumPtThresholdGap ; ///< Gap between the pT sum cut on isolated to non isolated candidates, used on ParticleIsolation task not here
-
-  Float_t    fPtFraction ;       ///< Fraction of the momentum of particles in cone or sum in cone.
-
-  Int_t      fICMethod ;         ///< Isolation cut method to be used: kPtIC, kSumPtIC, kPtFracIC, kSumPtFracIC.
-
-  Int_t      fPartInCone;        ///< Type of particles inside cone: kNeutralAndCharged, kOnlyNeutral, kOnlyCharged.
-
-  Bool_t     fFracIsThresh;      ///< Use threshold instead of fraction when pt leading is small.
-
-  Bool_t     fIsTMClusterInConeRejected; ///< Enable to remove the Track matching removal of clusters in cone sum pt calculation in case of kNeutralAndCharged analysis
+  Bool_t     fFillHighMultHistograms;                  ///< Fill histograms if GetCreateOuputObjects() was called with centrality dependent histograms 
   
-  Float_t    fDistMinToTrigger;  ///<  Minimal distance between isolation candidate particle and particles in cone to count them for this isolation. Do not count in cone particles close to the trigger.
+  Bool_t     fMakeConeExcessCorr;                      ///< Make cone excess from detector correction. 
   
-  Float_t    fNeutralOverChargedRatio; ///< Fix ratio of sum pT of neutrals over charged. For perpendicular cones UE subtraction.
-  
-  Int_t      fDebug;             ///< Debug level.
+  Float_t    fConeSize ;                               ///< Size of the isolation cone
 
-  TLorentzVector fMomentum;      //!<! Momentum of cluster, temporal object.
+  Float_t    fPtThreshold ;                            ///< Minimum pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
 
-  TVector3   fTrackVector;       //!<! Track moment, temporal object.
+  Float_t    fPtThresholdMax ;                         ///< Maximum pt of the particles outside the cone (needed to fit shower distribution isolated/non-isolated particles)
+
+  Float_t    fSumPtThreshold ;                         ///< Minimum of sum pt of the particles in the cone (UE sum in the forward region cone)
+
+  Float_t    fSumPtThresholdMax ;                      ///< Maximum of sum pt of the particles in the cone (UE sum in the forward region cone)
   
-  Float_t    fEMCEtaSize;        ///< Eta size of Calo
-  Float_t    fEMCPhiMin;         ///< Minimim Phi limit of Calo
-  Float_t    fEMCPhiMax;         ///< Maximum Phi limit of Calo
-  Float_t    fTPCEtaSize;        ///< Eta size of TPC
-  Float_t    fTPCPhiSize;        ///< Phi size of TPC, it is 360 degrees, but here set to half.
+  Float_t    fSumPtThresholdGap ;                      ///< Gap between the pT sum cut on isolated to non isolated candidates, used on ParticleIsolation task not here
+
+  Float_t    fPtFraction ;                             ///< Fraction of the momentum of particles in cone or sum in cone.
+
+  Int_t      fICMethod ;                               ///< Isolation cut method to be used: kPtIC, kSumPtIC, kPtFracIC, kSumPtFracIC.
+
+  Int_t      fPartInCone;                              ///< Type of particles inside cone: kNeutralAndCharged, kOnlyNeutral, kOnlyCharged. 
+
+  Bool_t     fFracIsThresh;                            ///< Use threshold instead of fraction when pt leading is small.
+
+  Bool_t     fIsTMClusterInConeRejected;               ///< Enable to remove the Track matching removal of clusters in cone sum pt calculation in case of kNeutralAndCharged analysis
+  
+  Float_t    fDistMinToTrigger;                        ///<  Minimal distance between isolation candidate particle and particles in cone to count them for this isolation. Do not count in cone particles close to the trigger.
+  
+  Float_t    fNeutralOverChargedRatio;                 ///< Fix ratio of sum pT of neutrals over charged. For perpendicular cones UE subtraction.
+  
+  Int_t      fDebug;                                   ///< Debug level.
+
+  TLorentzVector fMomentum;                            //!<! Momentum of cluster, temporal object.
+
+  TVector3   fTrackVector;                             //!<! Track moment, temporal object.
+  
+  Float_t    fEMCEtaSize;                              ///< Eta size of Calo
+  Float_t    fEMCPhiMin;                               ///< Minimim Phi limit of Calo
+  Float_t    fEMCPhiMax;                               ///< Maximum Phi limit of Calo
+  Float_t    fTPCEtaSize;                              ///< Eta size of TPC
+  Float_t    fTPCPhiSize;                              ///< Phi size of TPC, it is 360 degrees, but here set to half.
   
   // Histograms
   
   AliHistogramRanges * fHistoRanges;                   ///!  Histogram bins and ranges  data-base
-  
+  Int_t    fNCentBins;                                 ///< Centrality histograms number of bins
+
   TH2F *   fhPtInCone ;                                //!<! Cluster/track Pt in the cone.
   TH2F *   fhPtClusterInCone ;                         //!<! Cluster Pt in the cone.
   TH2F *   fhPtTrackInCone ;                           //!<! Track Pt in the cone.
@@ -293,11 +304,38 @@ class AliIsolationCut : public TObject {
   
   TH2F *   fhConeSumPtUEBandSubClustervsTrack ;        //!<! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta or phi band.
   
-  TH2F *   fhBandClustervsTrack ;                     //!<! Accumulated pT in eta or phi band to estimate UE in cone, clusters vs tracks.
-  TH2F *   fhBandNormClustervsTrack ;                 //!<! Accumulated pT in eta or phi band to estimate UE in cone, normalized to cone size, clusters vs tracks.
+  TH2F *   fhBandClustervsTrack ;                      //!<! Accumulated pT in eta or phi band to estimate UE in cone, clusters vs tracks.
+  TH2F *   fhBandNormClustervsTrack ;                  //!<! Accumulated pT in eta or phi band to estimate UE in cone, normalized to cone size, clusters vs tracks.
   
-  TH2F *   fhConeSumPtTrackSubVsNoSub;                //!<! Tracks, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtClusterSubVsNoSub;              //!<! Clusters, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtTrackSubVsNoSub;                 //!<! Tracks, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtClusterSubVsNoSub;               //!<! Clusters, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  
+  // Add centrality axis for fFillHighMultHistograms
+  //
+  TH3F *   fhConeSumPtCent ;                           //!<! Cluster and tracks Sum Pt in the cone vs centrality.
+  TH3F *   fhConeSumPtClusterCent ;                    //!<! Clusters Sum Pt in the cone vs centrality.
+  TH3F *   fhConeSumPtTrackCent ;                      //!<! Tracks Sum Pt in the cone vs centrality.
+  
+  TH3F *   fhConeSumPtUESubCent ;                      //!<! Cluster and tracks Sum Pt in the cone minus UE and excess corrected vs centrality.
+  TH3F *   fhConeSumPtUESubClusterCent ;               //!<! Clusters Sum Pt in the cone minus UE and excess corrected vs centrality.
+  TH3F *   fhConeSumPtUESubTrackCent ;                 //!<! Tracks Sum Pt in the cone minus UE and excess corrected vs centrality.
+  
+  // Perpendicular cones
+  TH3F *   fhPerpConeSumPtCent ;                       //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
+  
+  // UE bands
+  TH3F *   fhConeSumPtUEBandNormClusterCent;           //!<! Cluster Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
+  TH3F *   fhConeSumPtUEBandNormTrackCent;             //!<! Track Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
+  
+  TH3F *   fhConeSumPtEtaBandUEClusterCent;            //!<! Cluster Sum Pt in the eta band  vs centralityfor clusters, before normalization.
+  TH3F *   fhConeSumPtPhiBandUEClusterCent;            //!<! Cluster Sum Pt in the phi band vs centrality for clusters, before normalization.
+  TH3F *   fhConeSumPtEtaBandUETrackCent;              //!<! Track Sum Pt in the eta band vs centrality for tracks, before normalization.
+  TH3F *   fhConeSumPtPhiBandUETrackCent;              //!<! Track Sum Pt in the phi band vs centrality for tracks, before normalization.
+  
+  TH3F *   fhEtaBandClusterPtCent ;                    //!<! pT in Eta band to estimate UE in cone vs centrality, only clusters.
+  TH3F *   fhPhiBandClusterPtCent ;                    //!<! pT in Phi band to estimate UE in cone vs centrality, only clusters.
+  TH3F *   fhEtaBandTrackPtCent   ;                    //!<! pT in Eta band to estimate UE in cone vs centrality, only tracks.
+  TH3F *   fhPhiBandTrackPtCent   ;                    //!<! pT in Phi band to estimate UE in cone vs centrality, only tracks.
   
   /// Copy constructor not implemented.
   AliIsolationCut(              const AliIsolationCut & g) ;
@@ -306,7 +344,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,13) ;
+  ClassDef(AliIsolationCut,14) ;
   /// \endcond
 
 } ;

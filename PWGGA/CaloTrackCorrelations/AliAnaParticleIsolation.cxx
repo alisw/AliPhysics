@@ -4426,6 +4426,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   // Get histograms created and filled in AliIsolationCut and put them in the output list
   //
   GetIsolationCut()->SetHistogramRanges(GetHistogramRanges()); // important, not initialized inside AliIsolationCut
+  GetIsolationCut()->SetNCentrBins(GetNCentrBin()); 
   TList * isoHistos = GetIsolationCut()->GetCreateOutputObjects() ;
   
   for(Int_t iIso = 0; iIso < isoHistos->GetEntries(); iIso++) 
@@ -4789,7 +4790,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
                                         0x0, 0x0,
                                         GetCalorimeter(), GetCaloPID(),
                                         n, nfrac, coneptsum, coneptlead, isolated,
-                                        GetEventWeight()*aodinput->GetWeight());
+                                        GetEventWeight()*aodinput->GetWeight(),GetEventCentrality());
 
     if ( !fMakeSeveralIC ) 
       aodinput->SetIsolated(isolated);
@@ -4862,7 +4863,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
                                           0x0, 0x0,
                                           GetCalorimeter(), GetCaloPID(),
                                           n, nfrac, coneptsum, coneptlead, isolated,
-                                          GetEventWeight()*weightTrig);
+                                          GetEventWeight()*weightTrig,GetEventCentrality());
     }
     
     // Get isolation candidate kine and decision parameters
@@ -5958,7 +5959,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
                                           GetCalorimeter(), GetCaloPID(),
                                           n[icone][ipt], nfrac[icone][ipt],
                                           coneptsum, coneptlead, isolated,
-                                          GetEventWeight()*weightTrig);
+                                          GetEventWeight()*weightTrig, GetEventCentrality());
       
       // Normal pT threshold cut
       
