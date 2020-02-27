@@ -198,7 +198,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    FilterPhi() const; // reconstruction and filtering of Phi meson candidates
 
       void                    CalculateCorrelations(const AliUniFlowCorrTask* task, PartSpecies species, Double_t dPt = -1.0, Double_t dMass = -1.0) const; // wrapper for correlations methods
-      Bool_t                  ProcessCorrTask(const AliUniFlowCorrTask* task); // procesisng of AliUniFlowCorrTask
+      Bool_t                  ProcessCorrTask(const AliUniFlowCorrTask* task, const Int_t iTask, Bool_t doLowerOrder); // procesisng of AliUniFlowCorrTask
       Bool_t                  CalculateFlow(); // main (envelope) method for flow calculations in selected events
 
       AliAODMCParticle*       GetMCParticle(Int_t label) const; // find corresponding MC particle from fArrayMC depending of AOD track label
