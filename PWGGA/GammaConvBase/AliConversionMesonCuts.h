@@ -331,7 +331,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,39)
+    ClassDef(AliConversionMesonCuts,40)
     /// \endcond
 };
 

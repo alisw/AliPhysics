@@ -398,8 +398,9 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("00052113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010");
 
+    //  13TeV EMcal + DCal
   } else if( trainConfig == 260) {
-    //std MB 13TeV EMcal + DCal
+    // MB 13TeV EMcal + DCal
     cuts.AddCut("00010113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
     cuts.AddCut("00052113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
     cuts.AddCut("00085113","00200009327000008250400000","411791106f032230000","01631031000000d0","01631030000000d0");
@@ -408,17 +409,22 @@ void AddTask_OmegaToPiZeroGamma_pp(
     //only MB 13TeV only EMCal
     cuts.AddCut("00010113","00200009327000008250400000","1111100067032230000","01631031000000d0","01631031000000d0");
   } else if( trainConfig == 262) {
-    //only MB 13TeV EMCal + DCal
-    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12
-    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","0163103u00000010","0163103000000010"); // NL 12, Pi0 selection plus Gamma dropout
+    //std NL 12
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0");
   } else if( trainConfig == 263) {
     //EG2 13TeV EMcal + Dcal
-    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12
-    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","0163103u00000010","0163103000000010"); // NL 12, Pi0 selection plus Gamma dropout
+    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0");
+    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","01631036000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
   } else if( trainConfig == 264) {
     //EG1 13TeV EMcal + Dcal
-    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12
-    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","0163103u00000010","0163103000000010"); // NL 12, Pi0 selection plus Gamma dropout
+    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0");
+    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","01631036000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
+  } else if( trainConfig == 265) {
+    //only MB 13TeV EMCal + DCal Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631036000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","0163103b000000d0","01631031000000d0"); // 1 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","0163103c000000d0","01631031000000d0"); // 3 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","0163103d000000d0","01631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
 
 
   // cuts for ReconMethod==3 Cal-Cal-PCM
@@ -459,28 +465,33 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("00052113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111100067032230000","0163103100000010","0163103000000010");
 
+    // 13 TeV
   } else if( trainConfig == 360) {
-    //std MB 13TeV
+    // MB
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
   } else if( trainConfig == 361) {
-    //only MB 13TeV
+    //only MB
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010"); // only Pi0 selection
-    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010"); // Pi0 selection plus Gamma dropout
   } else if( trainConfig == 362) {
-    //only MB 13TeV EMCal + DCal
-    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12 only Pi0 selection
-    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","0163103u000000d0","01631031000000d0"); // NL 12, Pi0 selection plus Gamma dropout
+    //std NL 12 EMCal + Dcal
+    cuts.AddCut("00010113","00200009327000008250400000","411791206f032230000","0163103100000010","01631031000000d0"); // only Pi0 selection
   } else if( trainConfig == 363) {
-    //EG2 13TeV EMcal + Dcal
-    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12 only Pi0 selection
-    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","0163103u000000d0","01631031000000d0"); // NL 12, Pi0 selection plus Gamma dropout
+    //EG2 trigger 13TeV EMcal + Dcal
+    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","0163103100000010","01631031000000d0"); // only Pi0 selection
+    cuts.AddCut("0008e113","00200009327000008250400000","411791206f032230000","0163103a00000010","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
   } else if( trainConfig == 364) {
-    //EG1 13TeV EMcal + Dcal
-    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","01631031000000d0","01631031000000d0"); // NL 12 only Pi0 selection
-    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","0163103u000000d0","01631031000000d0"); // NL 12, Pi0 selection plus Gamma dropout
+    //EG1 trigger 13TeV EMcal + Dcal
+    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","0163103100000010","01631031000000d0"); // only Pi0 selection
+    cuts.AddCut("0008d113","00200009327000008250400000","411791206f032230000","0163103a00000010","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
+  } else if( trainConfig == 365) {
+    // EMCal + Dcal mass window cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103a00000010","01631030000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103n00000010","01631030000000d0"); // 1 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103o00000010","01631030000000d0"); // 3 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103p00000010","01631030000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
 
 
   // cuts for ReconMethod==4 PCM-PCM-Cal
@@ -688,11 +699,11 @@ void AddTask_OmegaToPiZeroGamma_pp(
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetLightOutput(runLightOutput);
     analysisNeutralPionCuts[i]->SetRunningMode(2);
+    if(usePtDepSelectionWindowCut) analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
+    if(doSmear) analysisNeutralPionCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
     analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNeutralPionCut(i)).Data());
     neutralPionCutList->Add(analysisNeutralPionCuts[i]);
     analysisNeutralPionCuts[i]->SetFillCutHistograms("NeutralPionCuts");
-    analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
-    if(doSmear) analysisNeutralPionCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
