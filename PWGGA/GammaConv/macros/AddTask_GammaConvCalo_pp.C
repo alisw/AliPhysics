@@ -1538,15 +1538,15 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200089327000001ih0400000","411790006f032230000","0163103100000010"); // -30ns, 35ns timing cut, no NL INT7, partially optimized PCM cuts
   } else if ( trainConfig == 545){ // EMCAL+DCal clusters
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790106f032230000","0163103100000010"); // -30ns, 35ns timing cut TBNL
-  } else if ( trainConfig == 546){ // DCAL only //   R Bins // with weights
-    cuts.AddCutPCMCalo("00010113", "0d200089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180
-    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180 without 55 -72
-    cuts.AddCutPCMCalo("00010113", "0dh00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 5,      max = 13
-    cuts.AddCutPCMCalo("00010113", "0di00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 13,     max = 33.5
-    cuts.AddCutPCMCalo("00010113", "0dj00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 33.5,   max = 55
-    cuts.AddCutPCMCalo("00010113", "0dk00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 55,     max = 72
-    cuts.AddCutPCMCalo("00010113", "0dl00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 72,     max = 95
-    cuts.AddCutPCMCalo("00010113", "0dg00089f9730000iih0404000","3885512067032230000", "0163103100b00010"); // RBins    min = 95,     max = 180
+  } else if ( trainConfig == 546){  //   R Bins // with weights
+    cuts.AddCutPCMCalo("00010113", "0d200089f9730000iih0404000","4117912067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180
+    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","4117912067032230000", "0163103100b00010"); // RBins    min = 5,      max = 180 without 55 -72
+    cuts.AddCutPCMCalo("00010113", "0dh00089f9730000iih0404000","4117912067032230000", "0163103100b00010"); // RBins    min = 5,      max = 13
+    cuts.AddCutPCMCalo("00010113", "0di00089f9730000iih0404000","4117912067032230000", "0163103100b00010"); // RBins    min = 13,     max = 33.5
+    cuts.AddCutPCMCalo("00010113", "0dj00089f9730000iih0404000","4117912067032230000", "0163103100b00010"); // RBins    min = 33.5,   max = 55
+    cuts.AddCutPCMCalo("00010113", "0dk00089f9730000iih0404000","4117912067032230000", "0163103100b00010"); // RBins    min = 55,     max = 72
+    cuts.AddCutPCMCalo("00010113", "0dl00089f9730000iih0404000","4117912067032230000", "0163103100b00010"); // RBins    min = 72,     max = 95
+    cuts.AddCutPCMCalo("00010113", "0dg00089f9730000iih0404000","4117912067032230000", "0163103100b00010"); // RBins    min = 95,     max = 180
 
 
   //*************************************************************************************************
