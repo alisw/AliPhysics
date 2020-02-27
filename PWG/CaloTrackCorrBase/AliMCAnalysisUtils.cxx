@@ -860,6 +860,23 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const U
 //           photon1->Eta(),phi,
 //           photon1->MCStatusCode(),photon1->IsPhysicalPrimary());
   }	
+  else  if ( angle < 0.0143 ) 
+  {
+    // Two contributions not found in cluster, but not normal if too small opening angle and only one photon appears,
+    // still check if opening angle is smaller than an EMCal cell and assign as merged 
+    AliInfo(Form("Opening angle %2.3f rad too small to not be a merged meson (%d): \n"
+           "\t Meson  E %2.2f GeV, Eta %2.3f, Phi %2.3f rad \n"
+           "\t Gamma1 E %2.2f GeV, Eta %2.3f, Phi %2.3f rad \n"
+           "\t Gamma2 E %2.2f GeV, Eta %2.3f, Phi %2.3f rad ",
+           angle, mesonPdg, 
+           meson    ->E(), meson    ->Eta(), meson    ->Phi(),
+           fDaughMom .E(), fDaughMom .Eta(), fDaughMom .Phi(),
+           fDaughMom2.E(), fDaughMom2.Eta(), fDaughMom2.Phi()));
+    
+    if ( mesonPdg == 111 ) SetTagBit(tag,kMCPi0);
+    else                   SetTagBit(tag,kMCEta);
+  }
+  
 }
 
 //________________________________________________________________________________________________________
