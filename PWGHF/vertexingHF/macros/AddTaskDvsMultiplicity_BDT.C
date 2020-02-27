@@ -84,7 +84,10 @@ AliAnalysisTaskSEDvsMultiplicity_BDT *AddTaskDvsMultiplicity_BDT(Int_t system=0,
       if (system == 0) analysiscuts->SetStandardCutsPP2010();
       else analysiscuts->SetStandardCutsPbPb2011();
     }
-    else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(finAnObjname);
+    else {analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(finAnObjname);
+      Nptbins = analysiscuts->GetNPtBins();
+      ptbin = analysiscuts->GetPtBinLimits();
+    }    
     Name="Ds";
   }else if(pdgMeson==4122){
     if(stdcuts) {
