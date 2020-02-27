@@ -2194,13 +2194,9 @@ void AddTask_GammaConvCalo_pp(
       cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190ra01cc00000","0163103100000010"); //PHI7
   } else if ( trainConfig == 919){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<100ns/150ns, LowPt from Trigger/MB; HighPt from Trigger
       cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //INT7, |TimingProbe|<100ns, LowPt from Trigger
-      cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //PHI7, |TimingProbe|<100ns, LowPt from Trigger
       cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190ta01cc00000","0163103100000010"); //INT7 |TimingProbe|<150ns,LowPt from MB
-      cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190ta01cc00000","0163103100000010"); //PHI7 |TimingProbe|<150ns,LowPt from MB
       cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190ua01cc00000","0163103100000010"); //INT7 |TimingProbe|<250ns,LowPt from MB
-      cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190ua01cc00000","0163103100000010"); //PHI7 |TimingProbe|<250ns,LowPt from MB
       cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190va01cc00000","0163103100000010"); //INT7 |TimingProbe|<500ns,LowPt from MB
-      cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190va01cc00000","0163103100000010"); //PHI7 |TimingProbe|<500ns,LowPt from MB
     //Normal B Option
  } else if ( trainConfig == 920){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0d200009f9730000dge0404000","24466190pa01cc00000","0163103100000010"); // INT7
