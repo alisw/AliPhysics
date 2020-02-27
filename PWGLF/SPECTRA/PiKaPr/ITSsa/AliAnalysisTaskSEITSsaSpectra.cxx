@@ -2062,10 +2062,11 @@ int AliAnalysisTaskSEITSsaSpectra::GetTrackPid(AliESDtrack *track, double *logdi
   }
 
   double bbtheo[4];
+  float corrp = fUseUnfolding ? GetUnfoldedP(dedx, p) : p;
   for (int i = 0; i < 4; i++) {
     float mass = AliPID::ParticleMass(iType[i]);
     //bbtheo[i] = fITSPIDResponse->BetheITSsaHybrid(p, mass);
-    bbtheo[i] = BetheITSsaHybrid(fUseUnfolding ? GetUnfoldedP(dedx, p) : p, mass);
+    bbtheo[i] = BetheITSsaHybrid(corrp, mass);
     logdiff[i] = TMath::Log(dedx) - TMath::Log(bbtheo[i]);
   }
 
@@ -2288,15 +2289,26 @@ float AliAnalysisTaskSEITSsaSpectra::GetUnfoldedP(double dedx, float p) const
 {
 
   TAxis dedxaxis(900,0,1000);
-  int dedxbin;
+  unsigned int dedxbin;
   if(dedx>1000) dedxbin=900; //last bin in case dedx is in overflow bin
   else dedxbin = dedxaxis.FindBin(dedx);
 
   if(isnan(fUnfProb[dedxbin-1]->GetMean())) return p; // do not do anything if matrix ha no sense
   if(p>1.50624) return p; // do not do anything if p is out of x-axis range
 
-  TH1F *hProj = (TH1F*)fUnfProb[dedxbin-1]->ProjectionY("hProj", fUnfProb[dedxbin-1]->GetXaxis()->FindBin(p), fUnfProb[dedxbin-1]->GetXaxis()->FindBin(p));
-  if(!hProj->GetEntries()) return p; // do not do anything if probability is not available
+  unsigned int pbin = fUnfProb[dedxbin-1]->GetXaxis()->FindBin(p);
+  float punf;
+  float max = 0.;
+  for(unsigned int ibin=1; ibin<=fUnfProb[dedxbin-1]->GetNbinsY(); ibin++){
+    float binc = fUnfProb[dedxbin-1]->GetBinContent(pbin,ibin);
+    if(binc > max){
+      punf = fUnfProb[dedxbin-1]->GetYaxis()->GetBinCenter(ibin);
+      max = binc;
+    }
+  }
+  if(max<1e-20) return p; // do not do anything if probability is not available
 
-  return hProj->GetBinCenter(hProj->GetMaximumBin()); //return bin with maximum probability
+  //Printf("p: %f - punf: %f", p, punf);
+
+  return punf; //return bin with maximum probability
 }
