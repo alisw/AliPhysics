@@ -935,6 +935,11 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
   
   //ic->SwitchOnFillEtaPhiHistograms();
   
+  if ( kAnaCutsString.Contains("HighMult") )
+    ic->SwitchOnFillHighMultHistograms (); 
+  else
+    ic->SwitchOffFillHighMultHistograms ();
+      
   if ( kAnaCutsString.Contains("FixIsoConeExcess") ) 
     ic->SwitchOnConeExcessCorrectionHistograms();
   else                                         
