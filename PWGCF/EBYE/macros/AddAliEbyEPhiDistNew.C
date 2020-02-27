@@ -4,7 +4,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/01/23)                      //
+//                         (Last Modified 2020/02/27)                      //
 //                                                                         //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -12,7 +12,7 @@
 TString fileNameBase="AnalysisResults.root";
 
 AliAnalysisTask *AddAliEbyEPhiDistNew(
-                                      TString runName = "LHC15o",
+                                      TString runName = "LHC10h",
                                       Bool_t isModeAOD = 0,
                                       Int_t aodFilterBit = 768,
                                       Bool_t IsMC  = 1,
@@ -24,6 +24,8 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
                                       Double_t Vy = 0.3,
                                       Double_t Vz = 10.,
                                       Double_t Eta = 0.8,
+                                      Double_t Philow = 0.0,
+                                      Double_t Phihigh = 1.04,
                                       Int_t TPCCrossRow = 80,
                                       Double_t Chi2NDF = 4.,
                                       const char* CentEstimator = "V0M",
@@ -31,25 +33,19 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
                                       Float_t nSigmaITS = 2.,
                                       Float_t nSigmaTPC = 2.,
                                       Float_t nSigmaTOF = 3.,
-                                      Float_t nSigmaTPClow = 2.,
-                                      Float_t minPtTOF = 0.69,
-                                      Float_t minPtTPClow = 0.69,
                                       TString taskname = "TestHM") {
     
     Double_t ptl, pth;
-    Double_t phil, phih;
     
     //Set the track cuts here ---
     if( pidtype == 0){
-        ptl = 0.2;
-        pth = 1.5;
+        ptl = 0.18;
+        pth = 2.1;
     }
     else{
-        ptl = 0.2;
-        pth = 1.5;
+        ptl = 0.35;
+        pth = 1.05;
     }
-    phil = 0.0 ; // total phi in radian
-    phih = 6.28;
     
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -83,14 +79,13 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
     task->SetDca( DCAxy,DCAz );
     task->SetVertexDiamond( Vx, Vy, Vz );
     task->SetKinematicsCuts( ptl, pth, Eta );
+    task->SetPhi(Philow,Phihigh);
     if( pidtype == 0){
-        task->SetNumberOfPtBins( 13 );
+        task->SetNumberOfPtBins( 16 );
     }
     else{
-        task->SetNumberOfPtBins( 21 );
+        task->SetNumberOfPtBins( 19 );
     }
-    task->SetPhi(phil,phih);
-    task->SetNumberOfPhiBins(18);
     task->SetTPCTrackQualityCuts( TPCCrossRow, Chi2NDF );
     task->SetCentralityEstimator( CentEstimator );
     
@@ -100,9 +95,6 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
     task->SetNSigmaMaxITS(nSigmaITS);
     task->SetNSigmaMaxTPC(nSigmaTPC);
     task->SetNSigmaMaxTOF(nSigmaTOF);
-    task->SetNSigmaMaxTPClow(nSigmaTPClow);
-    task->SetMinPtForTOFRequired(minPtTOF);
-    task->SetMaxPtForTPClow(minPtTPClow);
     
     if( runName == "LHC10h") task->SelectCollisionCandidates(AliVEvent::kMB);
     else if ( runName == "LHC15o") task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -121,4 +113,5 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
     
     return task;
 }
+
 
