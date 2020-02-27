@@ -765,6 +765,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
     timeMin                         = -2e-7;
     timeMax                         = 12e-7;
+  } else if ( fClusterType == 2 ){
+    timeMin                         = -8e-6;
+    timeMax                         = 8e-6;
   }
 
   if(!fDoLightOutput){
@@ -1069,7 +1072,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistCellEnergyvsCellID->GetXaxis()->SetTitle("E_{cell} (GeV)");
         fHistCellEnergyvsCellID->GetYaxis()->SetTitle("Cell ID");
         fHistExtQA->Add(fHistCellEnergyvsCellID);
-        fHistCellTimevsCellID           = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",600,-timeMax,timeMax,nMaxCellsPHOS,0,nMaxCellsPHOS);
+        fHistCellTimevsCellID           = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",960,-timeMax,timeMax,nMaxCellsPHOS,0,nMaxCellsPHOS);
         fHistCellTimevsCellID->GetXaxis()->SetTitle("t_{cell} (GeV)");
         fHistCellTimevsCellID->GetYaxis()->SetTitle("Cell ID");
         fHistExtQA->Add(fHistCellTimevsCellID);
