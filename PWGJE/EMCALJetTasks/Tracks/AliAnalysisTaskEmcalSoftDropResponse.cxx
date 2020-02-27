@@ -760,7 +760,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     }
     catch (...)
     {
-      AliErrorStream() << "Error in softdrop evaluation - jet will be ignored" << std::endl;
+      if(fUseChargedConstituents && fUseNeutralConstituents) AliErrorStream() << "Error in softdrop evaluation - jet will be ignored" << std::endl;
       if(fForceBeamType != kpp) {
         fHistManager.FillTH1(Form("hSkippedJetsPart_%d", fCentBin), partjet->Pt());
         fHistManager.FillTH1(Form("hSkippedJetsDet_%d", fCentBin), detjet->Pt());
