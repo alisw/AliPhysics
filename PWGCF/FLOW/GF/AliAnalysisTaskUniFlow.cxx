@@ -2986,7 +2986,7 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, AliVParticle* tra
   return;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
+Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, const Int_t iTask, Bool_t doLowerOrder)
 {
     if(!task) { AliError("AliUniFlowCorrTask does not exists!"); return kFALSE; }
     // task->PrintTask();
@@ -2998,12 +2998,11 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
     if(iNumGaps == 2 && task->fdGaps[0] != task->fdGaps[1]) { AliError("Different position of the border when using 3 subevents! Not implemented yet!"); return kFALSE; }
     if(iNumHarm > 8) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
 
-
     Double_t dGap = -1.0;
     if(iNumGaps > 0) { dGap = task->fdGaps[0]; }
 
     // Fill anyway -> needed for any correlations
-    FillRefsVectors(task, dGap); // TODO might check if previous task uses different Gap and if so, not fill it
+    FillRefsVectors(task, dGap);
 
     for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
         AliDebug(2,Form("Processing species '%s'",GetSpeciesName(PartSpecies(iSpec))));
@@ -3011,6 +3010,11 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
         if(iSpec == kRefs) {
             if(!task->fbDoRefs) { continue; }
             CalculateCorrelations(task, kRefs);
+            if(doLowerOrder){
+              if(iNumHarm > 2) CalculateCorrelations(fVecCorrTask.at(iTask-1), kRefs);
+              if(iNumHarm > 4) CalculateCorrelations(fVecCorrTask.at(iTask-2), kRefs);
+              if(iNumHarm > 6) CalculateCorrelations(fVecCorrTask.at(iTask-3), kRefs);
+            }
             continue;
         }
 
@@ -3069,6 +3073,12 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
                 // filling POIs (P,S) flow vectors
                 Int_t iFilledHere = FillPOIsVectors(task, dGap ,PartSpecies(iSpec), contIndexStart, iNumInPtBin, dPtLow, dPtHigh, dMassLow, dMassHigh);
                 CalculateCorrelations(task, PartSpecies(iSpec),dPt,dMass);
+                if(doLowerOrder)
+                {
+                  if(iNumHarm > 2) CalculateCorrelations(fVecCorrTask.at(iTask-1), PartSpecies(iSpec),dPt,dMass);
+                  // if(iNumHarm > 4) CalculateCorrelations(fVecCorrTask.at(iTask-2), PartSpecies(iSpec),dPt,dMass);
+                  // if(iNumHarm > 6) CalculateCorrelations(fVecCorrTask.at(iTask-3), PartSpecies(iSpec),dPt,dMass);
+                }
 
                 // updating counters with numbers from this step
                 iNumFilled += iFilledHere;
@@ -3556,10 +3566,31 @@ Bool_t AliAnalysisTaskUniFlow::CalculateFlow()
   // >>>> Using AliUniFlowCorrTask <<<<<
 
   Int_t iNumTasks = fVecCorrTask.size();
+  Bool_t doLowerOrder = kFALSE;
   for(Int_t iTask(0); iTask < iNumTasks; ++iTask)
   {
-    Bool_t process = ProcessCorrTask(fVecCorrTask.at(iTask));
+    //if you want to save some CPU time
+    //you need to add tasks with same gaps one after the other
+    //starting with the lowest harmonics
+    Bool_t isLowerOrder = kFALSE;
+    AliUniFlowCorrTask* thisTask = (AliUniFlowCorrTask*) fVecCorrTask.at(iTask);
+    AliUniFlowCorrTask* nextTask = nullptr;
+    if(iTask+1 < iNumTasks) {
+      nextTask = (AliUniFlowCorrTask*) fVecCorrTask.at(iTask+1);
+      if(thisTask->fMaxHarm < nextTask->fMaxHarm && thisTask->fiNumGaps == nextTask->fiNumGaps){
+        isLowerOrder = kTRUE;
+        for(Int_t gaps(0); gaps < thisTask->fiNumGaps; gaps++){
+          if(thisTask->fdGaps[gaps] != nextTask->fdGaps[gaps]) isLowerOrder = kFALSE;
+        }
+      }
+    }
+    if(isLowerOrder) {
+      doLowerOrder = kTRUE;
+      continue;
+    }
+    Bool_t process = ProcessCorrTask(fVecCorrTask.at(iTask), iTask, doLowerOrder);
     if(!process) { AliError("AliUniFlowCorrTask processing failed!\n"); fVecCorrTask.at(iTask)->Print(); return kFALSE; }
+    doLowerOrder = kFALSE;
   }
 
   fEventCounter++; // counter of processed events
