@@ -2623,7 +2623,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
           fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
       if(fHistCellTimevsCellID && (cellAmplitude > 0.01) && fClusterType == 2 )
           fHistCellTimevsCellID->Fill(cellTime,cellNumber);
-      else if(fHistCellTimevsCellID && (cellAmplitude > 0.2) && fClusterType != 2) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
+      else if(fHistCellTimevsCellID && (cellAmplitude > 0.2)) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
     }
   }
 
