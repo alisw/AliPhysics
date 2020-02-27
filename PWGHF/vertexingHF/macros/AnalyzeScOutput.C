@@ -1,4 +1,5 @@
 #ifdef __CLING__
+// Tell  ROOT where to find AliRoot headers
 R__ADD_INCLUDE_PATH($ALICE_ROOT)
 #endif
 #if !defined (__CINT__) || defined (__CLING__)
@@ -7,6 +8,7 @@ R__ADD_INCLUDE_PATH($ALICE_ROOT)
 #include <TH1D.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THn.h>
 #include <TLegend.h>
 #include <THnSparse.h>
 #include <TCanvas.h>
@@ -24,9 +26,9 @@ R__ADD_INCLUDE_PATH($ALICE_ROOT)
 #include "AliNormalizationCounter.h"
 #endif
 
+#include <vector>
 
-/* 
- ROUGH MACRO TO ANALSE SigmaC TASK OUTPUT
+/*  ROUGH MACRO TO ANALSE SigmaC TASK OUTPUT
  A. Rossi, M. Faggin
 
  Future Goal: bash script that reproduces all plots, studies and results
@@ -61,9 +63,26 @@ const Int_t nbinsGlobal=6;
 Double_t ptbinsGlobal[nbinsGlobal+1]={1.,2.,4.,6.,8,12,24.};
 Int_t skipBinGlobal[nbinsGlobal]={0,0,0,0,0,0};
 
+// pT to consider for the Sc analysis
+//  0: pT of Lc
+//  10: pT of SigmaC
+//
+//  TODO
+//
 
 TH1D *hEffRecoLc;
 TH1D *hEffRecoLcSc;
+//
+//  create other histos in order to consider the 
+//  efficiency separately for the different decay channels (direct, resonant)
+//
+TH1D *hEffRecoLc_direct, *hEffRecoLc_res2, *hEffRecoLc_res3, *hEffRecoLc_res4;
+TH1D *hEffRecoLcSc_direct, *hEffRecoLcSc_res2, *hEffRecoLcSc_res3, *hEffRecoLcSc_res4;
+double br_direct = 1.;  double err_br_direct = 0.;
+double br_res_2  = 1.;  double err_br_res_2  = 0.;
+double br_res_3  = 1.;  double err_br_res_3  = 0.;
+double br_res_4  = 1.;  double err_br_res_4  = 0.;
+
 TH1D *hRawYieldLc;
 TH1D *hRawYieldLcSc;
 AliNormalizationCounter *normCount;
@@ -607,7 +626,7 @@ void StudySBfits(TH1D **hSB,Int_t nbins){
 }
 
 
-void AnalyseOutput(Int_t readMC=0,Int_t tryFitData=0,Int_t particle=0,Int_t useCuts=1,Bool_t lowField=kFALSE,Int_t varscan0=3/*2=Lxy,3=nLxy,4=cosThetaP,5=nDCA*/,Int_t varscan1=4,Int_t caseSelForUseCuts2=-1,TString strfile="AnalysisResults.root",TString strDir="PWG3_D2H_XicpKpi"){
+void AnalyseOutput(Int_t readMC=0,Int_t tryFitData=0,Int_t particle=0,Int_t useCuts=1,Bool_t lowField=kFALSE,Int_t varscan0=3/*2=Lxy,3=nLxy,4=cosThetaP,5=nDCA*/,Int_t varscan1=4,Int_t caseSelForUseCuts2=-1,TString strfile="AnalysisResults_16_18_QM19.root",TString strDir="PWG3_D2H_XicpKpi"){
   const Int_t nbins=6;
   const Int_t nscansVar0=5; 
   const Int_t nscansVar1=5; 
@@ -892,11 +911,11 @@ void AnalyseOutput(Int_t readMC=0,Int_t tryFitData=0,Int_t particle=0,Int_t useC
   
   
   TFile *f=TFile::Open(strfile.Data(),"READ");
-  TDirectory *ddir=f->GetDirectory(strDir.Data());
-  TList *lis=(TList*)ddir->Get("outputList");
+  /*TDirectory *ddir=f->GetDirectory(strDir.Data());
+  TList *lis=(TList*)ddir->Get("outputList");*/
   THnSparseF *hsparse;
-  if(particle==0 || particle==2 )hsparse=(THnSparseF*)lis->FindObject("fhSparseAnalysis");
-  else if(particle==1)hsparse=(THnSparseF*)lis->FindObject("fhSparseAnalysisSigma");
+  if(particle==0 || particle==2 )hsparse=(THnSparseF*)f->Get("fhSparseAnalysis");
+  else if(particle==1)hsparse=(THnSparseF*)f->Get("fhSparseAnalysisSigma");
   TTree *treeVar;
   TH1D ***hVarSign=new TH1D**[17];
   TH1D ***hVarBack=new TH1D**[17];
@@ -912,7 +931,7 @@ void AnalyseOutput(Int_t readMC=0,Int_t tryFitData=0,Int_t particle=0,Int_t useC
 
 
   if(readMC==2){
-    treeVar=(TTree*)lis->FindObject("T");
+    treeVar=(TTree*)f->Get("T");
     for(Int_t j=0;j<18;j++){      
       treeVar->SetBranchAddress(varNames[j].Data(),&var[j]);
       if(j==0){
@@ -1420,7 +1439,7 @@ void AnalyseOutput(Int_t readMC=0,Int_t tryFitData=0,Int_t particle=0,Int_t useC
 	hYieldData->SetBinError(ipt+1,errsignal);
       }
     }
-    TH2F *hMC=(TH2F*)lis->FindObject("fhistMCSpectrumAccLc");
+    TH2F *hMC=(TH2F*)f->Get("fhistMCSpectrumAccLc");
     TH1D *hGenLimAcc=hMC->ProjectionX("hGenLimAcc",2,2);
     TH1D *hGenAcc=hMC->ProjectionX("hGenAcc",3,3);
     TH1D *hRecoAcc=hMC->ProjectionX("hRecoCuts",8,8);
@@ -1862,7 +1881,93 @@ void SetLcCutsFromSigmaC(const Int_t nptbins,const Double_t cutsScMin[nptbins][1
   return; 
 }
 
-void StudyEfficiency(TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0){
+void CalculateCombinedEff(TH1D** hCombined, TH1D** hEffDirect, TH1D** hEffRes2, TH1D** hEffRes3, TH1D** hEffRes4, TString suff){
+
+    (*hCombined) = (TH1D*) (*hEffDirect)->Clone();
+    int nbins = (*hCombined)->GetNbinsX();
+
+    // loop over the pT bins to compute the combined efficiency
+    for(int i=1; i<=nbins; i++){
+      // direct decay
+      double centre_direct  = (*hEffDirect)->GetBinCenter(i);
+      double content_direct = (*hEffDirect)->GetBinContent(i);
+      double error_direct   = (*hEffDirect)->GetBinError(i);
+      std::cout << "   [direct channel]         bin centre: " << centre_direct << "   bin content: " << content_direct << "+-" << error_direct << std::endl;
+      // resonant decay (2)
+      double centre_res_2  = (*hEffRes2)->GetBinCenter(i);
+      double content_res_2 = (*hEffRes2)->GetBinContent(i);
+      double error_res_2   = (*hEffRes2)->GetBinError(i);
+      std::cout << "   [resonant channel (2)]   bin centre: " << centre_res_2 << "   bin content: " << content_res_2 << "+-" << error_res_2 << std::endl;
+      // resonant decay (3)
+      double centre_res_3  = (*hEffRes3)->GetBinCenter(i);
+      double content_res_3 = (*hEffRes3)->GetBinContent(i);
+      double error_res_3   = (*hEffRes3)->GetBinError(i);
+      std::cout << "   [resonant channel (3)]   bin centre: " << centre_res_3 << "   bin content: " << content_res_3 << "+-" << error_res_3 << std::endl;
+      // resonant decay (4)
+      double centre_res_4  = (*hEffRes4)->GetBinCenter(i);
+      double content_res_4 = (*hEffRes4)->GetBinContent(i);
+      double error_res_4   = (*hEffRes4)->GetBinError(i);
+      std::cout << "   [resonant channel (4)]   bin centre: " << centre_res_4 << "   bin content: " << content_res_4 << "+-" << error_res_4 << std::endl;
+
+      //  check consistent binning
+      if(abs(centre_direct-centre_res_2)>0.01){
+        std::cout << "ERROR: wrong binning between direct and resonant (2) channels" << std::endl;
+        return;
+      }
+      if(abs(centre_res_3-centre_res_2)>0.01){
+        std::cout << "ERROR: wrong binning between resonant (2) and resonant (3) channels" << std::endl;
+        return;
+      }
+      if(abs(centre_res_3-centre_res_4)>0.01){
+        std::cout << "ERROR: wrong binning between resonant (3) and resonant (4) channels" << std::endl;
+        return;
+      }
+
+      // do the calculation
+      double content_combined = ( content_direct*br_direct + content_res_2*br_res_2 + content_res_3*br_res_3 + content_res_4*br_res_4 )/( br_direct + br_res_2 + br_res_3 + br_res_4 );
+      double err_combined = sqrt( pow( (content_direct-content_combined)*error_direct,2 ) + pow(br_direct*err_br_direct,2)
+                                 +pow( (content_res_2 -content_combined)*error_res_2,2 )  + pow(br_res_2 *err_br_res_2 ,2)
+                                 +pow( (content_res_3 -content_combined)*error_res_3,2 )  + pow(br_res_3 *err_br_res_3 ,2)
+                                 +pow( (content_res_4 -content_combined)*error_res_4,2 )  + pow(br_res_4 *err_br_res_4 ,2)
+                                )/( br_direct + br_res_2 + br_res_3 + br_res_4 );
+
+      // assign the values
+      (*hCombined)->SetBinContent(i,content_combined);
+      (*hCombined)->SetBinError(i,err_combined);
+      std::cout << "  ---> combined efficiency: " << (*hCombined)->GetBinContent(i) << "+-" << (*hCombined)->GetBinError(i) << std::endl;
+    }
+
+    //
+    // plot comparison
+    //
+    TCanvas* cancomp = new TCanvas(Form("cancomp_%s",suff.Data()),Form("eff comparison %s",suff.Data()),1000,1000);
+    //cancomp->Divide(2,1);
+    cancomp->cd(1);
+    (*hEffDirect)->SetMarkerStyle(24);
+    (*hEffRes2)->SetMarkerStyle(25);
+    (*hEffRes3)->SetMarkerStyle(26);
+    (*hEffRes4)->SetMarkerStyle(32);
+    (*hCombined)->GetYaxis()->SetRangeUser(0,0.25);
+    (*hCombined)->Draw();
+    //(*hCombined)->GetYaxis()->UnZoom();
+    (*hEffDirect)->Draw("same");
+    (*hEffRes2)->Draw("same");
+    (*hEffRes3)->Draw("same");
+    (*hEffRes4)->Draw("same");
+    gPad->SetTicks();
+    gPad->SetGridy();
+    TLegend* legeffcomp = new TLegend(0.25,0.5,0.5,0.85);
+    legeffcomp->SetHeader(Form("efficiency %s", suff.Data()));
+    legeffcomp->AddEntry((*hCombined),"combined");
+    legeffcomp->AddEntry((*hEffDirect),"direct channel (1)");
+    legeffcomp->AddEntry((*hEffRes2),"resonant channel (2)");
+    legeffcomp->AddEntry((*hEffRes3),"resonant channel (3)");
+    legeffcomp->AddEntry((*hEffRes4),"resonant channel (4)");
+    legeffcomp->Draw();
+
+}
+
+void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0){
 
   TDatime *t=new TDatime();
   TString tdate(Form("%d%d%d",t->GetDate(),t->GetMinute(),t->GetSecond()));
@@ -1893,11 +1998,13 @@ void StudyEfficiency(TString strfile="AnalysisResults.root",TString strSuff="AR"
   TFile *f=TFile::Open(strfile.Data(),"READ");
   THnSparseF *hsparseLcAllAxes,*hsparseScAllAxes;
   THnSparseF *hsparseMCLcFromSc;
+  THnF *hNdMCLc;  // new
   TH3F *h3dMCLc;
   if(strDir.Contains("-1")){
     hsparseLcAllAxes=(THnSparseF*)f->Get("fhSparseAnalysis");
     hsparseScAllAxes=(THnSparseF*)f->Get("fhSparseAnalysisSigma");
-    h3dMCLc=(TH3F*)f->Get("fhistMCSpectrumAccLc");
+    //h3dMCLc=(TH3F*)f->Get("fhistMCSpectrumAccLc");
+    hNdMCLc=(THnF*)f->Get("fhistMCSpectrumAccLc");
     hsparseMCLcFromSc=(THnSparseF*)f->Get("fhistMCSpectrumAccLcFromSc");
   }
   else{
@@ -1905,11 +2012,34 @@ void StudyEfficiency(TString strfile="AnalysisResults.root",TString strSuff="AR"
     TList *lis=(TList*)ddir->Get(Form("outputList%s",strSuff.Data()));
     hsparseLcAllAxes=(THnSparseF*)lis->FindObject("fhSparseAnalysis");
     hsparseScAllAxes=(THnSparseF*)lis->FindObject("fhSparseAnalysisSigma");
-    h3dMCLc=(TH3F*)lis->FindObject("fhistMCSpectrumAccLc");
+    //h3dMCLc=(TH3F*)lis->FindObject("fhistMCSpectrumAccLc");
+    hNdMCLc=(THnF*)lis->FindObject("fhistMCSpectrumAccLc");
     hsparseMCLcFromSc=(THnSparseF*)lis->FindObject("fhistMCSpectrumAccLcFromSc");
   }
   TString strvar[7]={"pt","mass","lxy","nLxy","cosThetaP","nDCA","SelSpec"};
   
+  //
+  //  Apply the selection of the decay channel
+  //
+  //  Generation level
+  //
+  hNdMCLc->GetAxis(3)->SetRangeUser(lowch,upch);
+  h3dMCLc = (TH3F*) hNdMCLc->Projection(0,1,2,"d");
+  std::cout << "===> [Lc - generated] Set decay channel: " << lowch << "," << upch << std::endl;
+  //
+  hsparseMCLcFromSc->GetAxis(6)->SetRangeUser(lowch,upch);
+  std::cout << "===> [Lc(<-Sc) - generated] Set decay channel: " << lowch << "," << upch << std::endl;
+  //  MISSING: CASE FOR SC GENERATED
+  /* [...] */
+  //
+  //  Reconstructed level
+  //
+  hsparseLcAllAxes->GetAxis(8)->SetRangeUser(lowch,upch);
+  std::cout << "===> [Lc - reconstructed] Set decay channel: " << lowch << "," << upch << std::endl;
+  //
+  hsparseScAllAxes->GetAxis(13)->SetRangeUser(lowch,upch);
+  std::cout << "===> [Lc(<-Sc) - reconstructed] Set decay channel: " << lowch << "," << upch << std::endl;
+
   // Gen level
   TAxis *axStepMClcFromSc=(TAxis*)hsparseMCLcFromSc->GetAxis(1);
   TAxis *axOriginMClcFromSc=(TAxis*)hsparseMCLcFromSc->GetAxis(2);
@@ -1917,15 +2047,15 @@ void StudyEfficiency(TString strfile="AnalysisResults.root",TString strSuff="AR"
   axOriginMClcFromSc->SetRange(1,1);// prompt 
   
   TH1D *hLcFromScGenLimAcc=hsparseMCLcFromSc->Projection(0);
-  hLcFromScGenLimAcc->SetName("hLcFromScGenLimAcc");
+  hLcFromScGenLimAcc->SetName(Form("hLcFromScGenLimAcc_%d_%d",lowch,upch));
 
   axStepMClcFromSc->SetRangeUser(kGenAcc,kGenAcc);
   TH1D *hLcFromScGenAcc=hsparseMCLcFromSc->Projection(0);
-  hLcFromScGenAcc->SetName("hLcFromScGenAcc");
+  hLcFromScGenAcc->SetName(Form("hLcFromScGenAcc_%d_%d",lowch,upch));
 
 
-  TH1D *hLcGenLimAcc=h3dMCLc->ProjectionX("hLcMCGenLimAccYield",h3dMCLc->GetYaxis()->FindBin(kGenLimAcc),h3dMCLc->GetYaxis()->FindBin(kGenLimAcc),1,1);
-  TH1D *hLcGenAcc=h3dMCLc->ProjectionX("hLcMCGenAccYield",h3dMCLc->GetYaxis()->FindBin(kGenAcc),h3dMCLc->GetYaxis()->FindBin(kGenAcc),1,1);
+  TH1D *hLcGenLimAcc=h3dMCLc->ProjectionX(Form("hLcMCGenLimAccYield_%d_%d",lowch,upch),h3dMCLc->GetYaxis()->FindBin(kGenLimAcc),h3dMCLc->GetYaxis()->FindBin(kGenLimAcc),1,1);
+  TH1D *hLcGenAcc=h3dMCLc->ProjectionX(Form("hLcMCGenAccYield_%d_%d",lowch,upch),h3dMCLc->GetYaxis()->FindBin(kGenAcc),h3dMCLc->GetYaxis()->FindBin(kGenAcc),1,1);
 
   for(Int_t jpt=0;jpt<nbins;jpt++){
     hLcScMCGenLimAcc->SetBinContent(hLcScMCGenLimAcc->GetXaxis()->FindBin(ptbins[jpt]*1.0001),hLcFromScGenLimAcc->Integral(hLcFromScGenLimAcc->GetXaxis()->FindBin(ptbins[jpt]*1.0001),hLcFromScGenLimAcc->GetXaxis()->FindBin(ptbins[jpt+1]*0.9999)));
@@ -1963,7 +2093,8 @@ void StudyEfficiency(TString strfile="AnalysisResults.root",TString strSuff="AR"
 
   // REDUCED SPARSES TO SPEED UP PROJECTIONS
     Int_t naxisSp=hsparseScAllAxes->GetNdimensions();
-    if(naxisSp>=12){
+    //if(naxisSp>=12){
+    if(naxisSp>12){ // mfaggin
       TAxis *axRot=hsparseScAllAxes->GetAxis(12);
       TString strAxRotTitle(axRot->GetTitle());
       if(!(strAxRotTitle.EqualTo("isRotated"))){
@@ -1990,7 +2121,7 @@ void StudyEfficiency(TString strfile="AnalysisResults.root",TString strSuff="AR"
   //     axM->SetRangeUser(2.286-lcMassCutDefault,2.286+lcMassCutDefault);
   
   THnSparseF *hsparseSc=(THnSparseF*)hsparseScAllAxes->Projection(ndimredSc,dimredSc,"A");
-  hsparseSc->SetName("hsparseSc");
+  hsparseSc->SetName(Form("hsparseSc_%d_%d",lowch,upch));
   TAxis *axptSc=hsparseSc->GetAxis(0);
   
   Int_t dimredLc[nVarLc];
@@ -2006,13 +2137,13 @@ void StudyEfficiency(TString strfile="AnalysisResults.root",TString strSuff="AR"
     }
   }
   THnSparseF *hsparseLc=(THnSparseF*)hsparseLcAllAxes->Projection(ndimredLc,dimredLc,"A");
-  hsparseLc->SetName("hsparseLc");
+  hsparseLc->SetName(Form("hsparseLc_%d_%d",lowch,upch));
   TAxis *axptLc=hsparseLc->GetAxis(0);    
 
 
-  TCanvas *cLcMassPlots=new TCanvas("cLcMassPlots","cLcMassPlots",800,800);
+  TCanvas *cLcMassPlots=new TCanvas(Form("cLcMassPlots_%d_%d",lowch,upch),Form("cLcMassPlots_%d_%d",lowch,upch),800,800);
   DivideCanvas(cLcMassPlots,nbins);
-  TCanvas *cScMassPlots=new TCanvas("cScMassPlots","cScMassPlots",800,800);
+  TCanvas *cScMassPlots=new TCanvas(Form("cScMassPlots_%d_%d",lowch,upch),Form("cScMassPlots_%d_%d",lowch,upch),800,800);
   DivideCanvas(cScMassPlots,nbins);
   
   // NOW START WORK
@@ -2058,60 +2189,210 @@ void StudyEfficiency(TString strfile="AnalysisResults.root",TString strSuff="AR"
     
   }
 
-  TCanvas *cCompareRecoGenSpectra=new TCanvas("cCompareRecoGenSpectra","cCompareRecoGenSpectra",800,800);
+  TCanvas *cCompareRecoGenSpectra=new TCanvas(Form("cCompareRecoGenSpectra_%d_%d",lowch,upch),Form("cCompareRecoGenSpectra_%d_%d",lowch,upch),800,800);
   cCompareRecoGenSpectra->Divide(1,2);
   cCompareRecoGenSpectra->cd(1);
+  gPad->SetLogy();
+  gPad->SetTicks();
   hLcMCGenLimAcc->SetLineColor(kBlack);
   hLcMCGenLimAcc->Sumw2();
+  hLcMCGenLimAcc->SetMarkerStyle(20);
+  hLcMCGenLimAcc->SetMarkerColor(hLcMCGenLimAcc->GetLineColor());
+  hLcMCGenLimAcc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hLcMCGenLimAcc->Draw();
 
   hLcMCGenAcc->SetLineColor(kBlue);
   hLcMCGenAcc->Sumw2();
+  hLcMCGenAcc->SetMarkerStyle(20);
+  hLcMCGenAcc->SetMarkerColor(hLcMCGenAcc->GetLineColor());
+  hLcMCGenAcc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hLcMCGenAcc->Draw("sames");
 
   hLcMCRecoPID->SetLineColor(kRed);
   hLcMCRecoPID->Sumw2();
+  hLcMCRecoPID->SetMarkerStyle(20);
+  hLcMCRecoPID->SetMarkerColor(hLcMCRecoPID->GetLineColor());
+  hLcMCRecoPID->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hLcMCRecoPID->Draw("sames");
 
+  TLegend* legGenReco = new TLegend(0.5,0.6,0.75,0.8);
+  legGenReco->AddEntry(hLcMCGenLimAcc, "GenLimAcc");
+  legGenReco->AddEntry(hLcMCGenAcc   , "GenAcc");
+  legGenReco->AddEntry(hLcMCRecoPID  , "RecoPID");
+  legGenReco->Draw();
+
+
   cCompareRecoGenSpectra->cd(2);
+  gPad->SetLogy();
+  gPad->SetTicks();
   hLcScMCGenLimAcc->SetLineColor(kBlack);
   hLcScMCGenLimAcc->Sumw2();
+  hLcScMCGenLimAcc->SetMarkerStyle(20);
+  hLcScMCGenLimAcc->SetMarkerColor(hLcScMCGenLimAcc->GetLineColor());
+  hLcScMCGenLimAcc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hLcScMCGenLimAcc->Draw();
 
   hLcScMCGenAcc->SetLineColor(kBlue);
   hLcScMCGenAcc->Sumw2();
+  hLcScMCGenAcc->SetMarkerStyle(20);
+  hLcScMCGenAcc->SetMarkerColor(hLcScMCGenAcc->GetLineColor());
+  hLcScMCGenAcc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hLcScMCGenAcc->Draw("sames");
 
   hLcScMCRecoPID->SetLineColor(kRed);
   hLcScMCRecoPID->Sumw2();
+  hLcScMCRecoPID->SetMarkerStyle(20);
+  hLcScMCRecoPID->SetMarkerColor(hLcScMCRecoPID->GetLineColor());
+  hLcScMCRecoPID->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hLcScMCRecoPID->Draw("sames");
 
-  TCanvas *cEfficiency=new TCanvas("cEfficiency","cEfficiency",800,800);
-  hEffRecoLc=(TH1D*)hLcMCRecoPID->Clone("hEfficiencyLc_RecoGenLimAcc");
+  legGenReco->Draw();
+
+  TCanvas *cEfficiency=new TCanvas(Form("cEfficiency_%d_%d",lowch,upch),Form("cEfficiency_%d_%d",lowch,upch),800,800);
+  //
+  //  choose the right histiogram to treat, according to the decay channel
+  //
+  /*hEffRecoLc=(TH1D*)hLcMCRecoPID->Clone("hEfficiencyLc_RecoGenLimAcc");
   hEffRecoLc->Divide(hEffRecoLc,hLcMCGenLimAcc,1.,1.,"B");
   hEffRecoLc->SetLineColor(kBlack);
+  hEffRecoLc->SetMarkerColor(hEffRecoLc->GetLineColor());
   hEffRecoLc->Draw();
-
   hEffRecoLcSc=(TH1D*)hLcScMCRecoPID->Clone("hEfficiencyLcSc_RecoGenLimAcc");
   hEffRecoLcSc->Divide(hEffRecoLcSc,hLcScMCGenLimAcc,1.,1.,"B");
   hEffRecoLcSc->SetLineColor(kRed);
-  hEffRecoLcSc->Draw("same");
+  hEffRecoLcSc->Draw("same");*/
+  // [...] create a pointer to the proper histogram and use it
+  TH1D** heff_ptr_Lc   = nullptr;
+  TH1D** heff_ptr_LcSc = nullptr;
+  if(lowch==1 && upch==4){  // direct channel
+    std::cout << "=========> [StudyEfficiency] efficiency computed without channel separation" << std::endl;
+    heff_ptr_Lc   = &hEffRecoLc;
+    heff_ptr_LcSc = &hEffRecoLcSc;
+  }
+  else if(lowch==1 && upch==1){ // resonant channel (2)
+    std::cout << "=========> [StudyEfficiency] efficiency computed for the direct channel" << std::endl;
+    heff_ptr_Lc   = &hEffRecoLc_direct;
+    heff_ptr_LcSc = &hEffRecoLcSc_direct;
+  }
+  else if(lowch==2 && upch==2){
+    std::cout << "=========> [StudyEfficiency] efficiency computed for the resonant channel (2)" << std::endl;
+    heff_ptr_Lc   = &hEffRecoLc_res2;
+    heff_ptr_LcSc = &hEffRecoLcSc_res2;
+  }
+  else if(lowch==3 && upch==3){
+    std::cout << "=========> [StudyEfficiency] efficiency computed for the resonant channel (3)" << std::endl;
+    heff_ptr_Lc   = &hEffRecoLc_res3;
+    heff_ptr_LcSc = &hEffRecoLcSc_res3;
+  }
+  else if(lowch==4 && upch==4){
+    std::cout << "=========> [StudyEfficiency] efficiency computed for the resonant channel (4)" << std::endl;
+    heff_ptr_Lc   = &hEffRecoLc_res4;
+    heff_ptr_LcSc = &hEffRecoLcSc_res4;
+  }
+  (*heff_ptr_Lc) = (TH1D*)hLcMCRecoPID->Clone("hEfficiencyLc_RecoGenLimAcc");
+  (*heff_ptr_Lc)->Divide((*heff_ptr_Lc),hLcMCGenLimAcc,1.,1.,"B");
+  (*heff_ptr_Lc)->SetLineColor(kBlack);
+  (*heff_ptr_Lc)->SetMarkerColor((*heff_ptr_Lc)->GetLineColor());
+  (*heff_ptr_Lc)->Draw();
+  (*heff_ptr_LcSc) = (TH1D*)hLcScMCRecoPID->Clone("hEfficiencyLcSc_RecoGenLimAcc");
+  (*heff_ptr_LcSc)->Divide((*heff_ptr_LcSc),hLcScMCGenLimAcc,1.,1.,"B");
+  (*heff_ptr_LcSc)->SetLineColor(kRed);
+  (*heff_ptr_LcSc)->Draw("same");
+
+  gPad->SetTicks();
+  TLegend* legeff = new TLegend(0.3,0.4,0.65,0.5);
+  legeff->AddEntry((*heff_ptr_Lc),(*heff_ptr_Lc)->GetName());
+  legeff->AddEntry((*heff_ptr_LcSc),(*heff_ptr_LcSc)->GetName());
+  legeff->Draw();
 
 
-  TCanvas *cEfficiencyGenAccOverLimAcc=new TCanvas("cEfficiencyGenAccOverLimAcc","cEfficiencyGenAccOverLimAcc",800,800);
+  TCanvas *cEfficiencyGenAccOverLimAcc=new TCanvas(Form("cEfficiencyGenAccOverLimAcc_%d_%d",lowch,upch),Form("cEfficiencyGenAccOverLimAcc_%d_%d",lowch,upch),800,800);
   TH1D *hGenAccOverLimAccLc=(TH1D*)hLcMCGenAcc->Clone("hEfficiencyLc_GenAccLimAcc");
   hGenAccOverLimAccLc->Divide(hGenAccOverLimAccLc,hLcMCGenLimAcc,1.,1.);
   hGenAccOverLimAccLc->SetLineColor(kBlack);
+  hGenAccOverLimAccLc->SetMarkerColor(hGenAccOverLimAccLc->GetLineColor());
   hGenAccOverLimAccLc->Draw();
 
   TH1D *hGenAccOverLimAccLcSc=(TH1D*)hLcScMCGenAcc->Clone("hEfficiencyLcSc_GenAccLimAcc");
   hGenAccOverLimAccLcSc->Divide(hGenAccOverLimAccLcSc,hLcScMCGenLimAcc,1.,1.,"B");
   hGenAccOverLimAccLcSc->SetLineColor(kRed);
+  hGenAccOverLimAccLcSc->SetMarkerColor(hGenAccOverLimAccLcSc->GetLineColor());
   hGenAccOverLimAccLcSc->Draw("same");
+
+  TLegend* legGenAcc_over_GenLimAcc = new TLegend(0.3,0.4,0.65,0.5);
+  legGenAcc_over_GenLimAcc->AddEntry(hGenAccOverLimAccLc,hGenAccOverLimAccLc->GetName());
+  legGenAcc_over_GenLimAcc->AddEntry(hGenAccOverLimAccLcSc,hGenAccOverLimAccLcSc->GetName());
+  legeff->Draw();
 
 }
 
-void StudyFit(TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Bool_t produceQM2019Performance=kTRUE,Int_t cutSet=0){
+//
+//  Compute efficiency in one of the two cases
+//    1. with separation of decay channels
+//    2. without separation of decay channels
+//
+void CalculateEfficiency(bool do_channel_separation, TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0){
+
+  std::cout << "=========================================================" << std::endl;
+  std::cout << "========== CalculateEfficiency function called ==========" << std::endl;
+  std::cout << "=========================================================" << std::endl;
+
+  // no channel separation
+  if(!do_channel_separation){
+    std::cout << "======= Efficiency computation =======" << std::endl;
+    std::cout << "===      NO channel separation     ===" << std::endl;
+    StudyEfficiency(1,4,strfile,strSuff,strDir,useGlobalPt,cutSet);
+  }
+
+  // with channel separation
+  else{
+    std::cout << "======= Efficiency computation =======" << std::endl;
+    std::cout << "===         Direct channel         ===" << std::endl;
+    StudyEfficiency(1,1,strfile,strSuff,strDir,useGlobalPt,cutSet);
+    std::cout << "======= Efficiency computation =======" << std::endl;
+    std::cout << "===      Resonant channel (2)      ===" << std::endl;
+    StudyEfficiency(2,2,strfile,strSuff,strDir,useGlobalPt,cutSet);
+    std::cout << "======= Efficiency computation =======" << std::endl;
+    std::cout << "===      Resonant channel (3)      ===" << std::endl;
+    StudyEfficiency(3,3,strfile,strSuff,strDir,useGlobalPt,cutSet);
+    std::cout << "======= Efficiency computation =======" << std::endl;
+    std::cout << "===      Resonant channel (4)      ===" << std::endl;
+    StudyEfficiency(4,4,strfile,strSuff,strDir,useGlobalPt,cutSet);
+
+    //
+    //  Calculate now the combined efficiency as the weighted sum of the 
+    //  efficiency of each decay channel, considered separately
+    //
+    std::cout                                                                << std::endl;
+    std::cout << "=========================================================" << std::endl;
+    std::cout << "             Compute combined efficiency        "          << std::endl;
+    std::cout << "=========================================================" << std::endl;
+    std::cout << "Combined efficiency computed as"                           << std::endl;
+    std::cout <<                                                                std::endl;
+    std::cout << "   eff = sum_i (eff_i*B_i)/sum_i(B_i)"                     << std::endl;
+    std::cout <<                                                                std::endl;
+    std::cout << "=========================================================" << std::endl;
+
+    // Lc
+    std::cout << " ---> calculation for Lc" << std::endl;
+    CalculateCombinedEff( &hEffRecoLc, &hEffRecoLc_direct, &hEffRecoLc_res2, &hEffRecoLc_res3, &hEffRecoLc_res4, "Lc" );
+    // LcSc
+    std::cout << " ---> calculation for LcSc" << std::endl;
+    CalculateCombinedEff( &hEffRecoLcSc, &hEffRecoLcSc_direct, &hEffRecoLcSc_res2, &hEffRecoLcSc_res3, &hEffRecoLcSc_res4, "LcSc" );
+    
+  }
+
+  if(!hEffRecoLc || !hEffRecoLcSc){
+    std::cout << "ERROR: no total efficiency computed" << std::endl;
+    std::cout << "hEffRecoLc "  << hEffRecoLc   << std::endl;
+    std::cout << "hEffRecoLcSc" << hEffRecoLcSc << std::endl;
+    return;
+  }
+
+  return;
+}
+
+void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Bool_t produceQM2019Performance=kTRUE,Int_t cutSet=0){
 
     TDatime *t=new TDatime();
     TString tdate(Form("%d%d%d",t->GetDate(),t->GetMinute(),t->GetSecond()));
@@ -2133,130 +2414,191 @@ void StudyFit(TString strfile="AnalysisResults.root",TString strSuff="AR",TStrin
     Int_t isPtCommonCutSigmaC[nVarSc];
     Int_t isPtCommonCutLc[nVarLc];
     
-    TFile *f=TFile::Open(strfile.Data(),"READ");
-    THnSparseF *hsparseLcAllAxes,*hsparseScAllAxes;
-    if(strDir.Contains("-1")){
-      hsparseLcAllAxes=(THnSparseF*)f->Get("fhSparseAnalysis");
-      hsparseScAllAxes=(THnSparseF*)f->Get("fhSparseAnalysisSigma");
-      normCount=(AliNormalizationCounter*)f->Get(Form("normalizationCounter%s",strSuff.Data()));
-    }
-    else{
-      TDirectory *ddir=f->GetDirectory(Form("%s%s",strDir.Data(),strSuff.Data()));
-      TList *lis=(TList*)ddir->Get(Form("outputList%s",strSuff.Data()));
-      hsparseLcAllAxes=(THnSparseF*)lis->FindObject("fhSparseAnalysis");
-      hsparseScAllAxes=(THnSparseF*)lis->FindObject("fhSparseAnalysisSigma");
-      normCount=(AliNormalizationCounter*)ddir->Get(Form("normalizationCounter%s",strSuff.Data()));
-    }
+//    std::vector<TString> vec_filenames = {
+//      //
+//      // 2701
+//      //
+//       "/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_1.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_2.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_3.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_4.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_5.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_6.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_7.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_8.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_9.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_10.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_11.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_12.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_13.root"
+//      //
+//      //  2702
+//      //
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child1.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child2.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/child3/merged_2702_child3.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child4.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child5.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/child6/merged_2702_child6.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child7.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/child8/merged_2702_child8.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child9.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/child10/merged_2702_child10.root"
+//      //
+//      //  2703
+//      //
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2703/merged_2703_child1.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2703/AnalysisResults_2703_child2_hadPID.root"
+//      //
+//      //  2704
+//      //
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_1.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_2.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_3.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_4_posMagField.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_4_negMagField.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_5.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_6_hadPID.root"
+//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_7.root"
+//    };
+    THnSparseF *hsparseLc, *hsparseSc;
 
-    //     TAxis *axptLcAllAxes=hsparseLcAllAxes->GetAxis(0); // axes: pt;mass;lxy;nLxy;cosThatPoint;normImpParXY; Xic mass: 2.468, Lc:2.286
-    //     TAxis *axLxyLc=hsparseLcAllAxes->GetAxis(2);
-    //     TAxis *axNlxyLc=hsparseLcAllAxes->GetAxis(3);
-    //     TAxis *axPointLc=hsparseLcAllAxes->GetAxis(4);
-    //     TAxis *axNDCALc=hsparseLcAllAxes->GetAxis(5);
-    //     TAxis *axSelLc=hsparseLcAllAxes->GetAxis(6);
-    //     axSelLc->SetRangeUser(-1,99);
-    //     TAxis *axSpecialPIDsLc=hsparseLcAllAxes->GetAxis(7);
-    //     axSpecialPIDsLc->SetRangeUser(pid,pid);
-    
+    for(int ifile=0; ifile<vec_filenames.size(); ifile++){
+          TString strfile = vec_filenames.at(ifile);
+          std::cout << "[StudyFit] Looking at file " << strfile.Data() << "..." << std::endl;
+          TFile *f=TFile::Open(strfile.Data(),"READ");
+          THnSparseF *hsparseLcAllAxes,*hsparseScAllAxes;
+          if(strDir.Contains("-1")){
+            hsparseLcAllAxes=(THnSparseF*)f->Get("fhSparseAnalysis");
+            hsparseScAllAxes=(THnSparseF*)f->Get("fhSparseAnalysisSigma");
+            if(ifile==0)  normCount=(AliNormalizationCounter*)f->Get(Form("normalizationCounter%s",strSuff.Data()));
+            else          normCount->Add((AliNormalizationCounter*)(f->Get(Form("normalizationCounter%s",strSuff.Data()))->Clone()));
+          }
+          else{
+            TDirectory *ddir=f->GetDirectory(Form("%s%s",strDir.Data(),strSuff.Data()));
+            TList *lis=(TList*)ddir->Get(Form("outputList%s",strSuff.Data()));
+            hsparseLcAllAxes=(THnSparseF*)lis->FindObject("fhSparseAnalysis");
+            hsparseScAllAxes=(THnSparseF*)lis->FindObject("fhSparseAnalysisSigma");
+            if(ifile==0) normCount=(AliNormalizationCounter*)ddir->Get(Form("normalizationCounter%s",strSuff.Data()));
+            else        normCount->Add((AliNormalizationCounter*)(ddir->Get(Form("normalizationCounter%s",strSuff.Data()))->Clone()));
+          }
 
-    //     TAxis *axptScAllAxes=hsparseScAllAxes->GetAxis(0); // axes: pt;mass;lxy;nLxy;cosThatPoint;normImpParXY; Xic mass: 2.468, Sc:2.286
-    //     TAxis *axLxySc=hsparseScAllAxes->GetAxis(2);
-    //     TAxis *axNlxySc=hsparseScAllAxes->GetAxis(3);
-    //     TAxis *axPointSc=hsparseScAllAxes->GetAxis(4);
-    //     TAxis *axNDCASc=hsparseScAllAxes->GetAxis(5);
-    //     TAxis *axITSrefitSc=hsparseScAllAxes->GetAxis(6);
-    //     TAxis *axSpecialPIDsSc=hsparseScAllAxes->GetAxis(7);
-    //     axSpecialPIDsSc->SetRangeUser(pid,pid);
-    
-    TString strvar[7]={"pt","mass","lxy","nLxy","cosThetaP","nDCA","SelSpec"};
-    
-    //     TAxis *axMassSigma=0x0;
-    //     TAxis *axMassLcSigma=0x0;
-    //     TAxis *axMassCosThetaStar=0x0;
-    
-    //     if(version>0){
-    //       axMassLcSigma=hsparseScAllAxes->GetAxis(8);
-    //       axMassCosThetaStar=hsparseScAllAxes->GetAxis(9);
-    //     }
-    //     else {
-    //       axMassLcSigma=hsparseScAllAxes->GetAxis(7);
-    //       axMassCosThetaStar=hsparseScAllAxes->GetAxis(8);
-    //     }
-    
-    
-    // SETTING CUTS    
-    if(cutSet==0){
-      SetQM2019MassPlotCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
-    }
-    else if(cutSet==1){
-      SetFilteringCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
-    }
-    else {
-      SetCuts(cutSet,nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
-    }
-    SetLcCutsFromSigmaC(nbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC,cutsMinLc,cutsMaxLc,isPtCommonCutLc);
-    
-    // check cut values:
-    for(Int_t ipt=0;ipt<nbins;ipt++){
-      Printf(" Pt bin %d",ipt);
-      Printf("Lc cuts:");
-      for(Int_t ivarLc=0;ivarLc<nVarLc;ivarLc++){
-	Printf(" %f < x < %f (is common-pt cut :%d)",cutsMinLc[ipt][ivarLc],cutsMaxLc[ipt][ivarLc],isPtCommonCutLc[ivarLc]);       
-      }
-      Printf("Sc cuts:");
-      for(Int_t ivarSc=0;ivarSc<nVarSc;ivarSc++){
-	Printf(" %f < x < %f (is common-pt cut :%d)",cutsMinSigmaC[ipt][ivarSc],cutsMaxSigmaC[ipt][ivarSc],isPtCommonCutSigmaC[ivarSc]);
-      }
-      
-    }
+          //     TAxis *axptLcAllAxes=hsparseLcAllAxes->GetAxis(0); // axes: pt;mass;lxy;nLxy;cosThatPoint;normImpParXY; Xic mass: 2.468, Lc:2.286
+          //     TAxis *axLxyLc=hsparseLcAllAxes->GetAxis(2);
+          //     TAxis *axNlxyLc=hsparseLcAllAxes->GetAxis(3);
+          //     TAxis *axPointLc=hsparseLcAllAxes->GetAxis(4);
+          //     TAxis *axNDCALc=hsparseLcAllAxes->GetAxis(5);
+          //     TAxis *axSelLc=hsparseLcAllAxes->GetAxis(6);
+          //     axSelLc->SetRangeUser(-1,99);
+          //     TAxis *axSpecialPIDsLc=hsparseLcAllAxes->GetAxis(7);
+          //     axSpecialPIDsLc->SetRangeUser(pid,pid);
 
-    Int_t naxisSp=hsparseScAllAxes->GetNdimensions();
-    if(naxisSp>=12){
-      TAxis *axRot=hsparseScAllAxes->GetAxis(12);
-      TString strAxRotTitle(axRot->GetTitle());
-      if(!(strAxRotTitle.EqualTo("isRotated"))){
-	Printf("Rotation axis not at expected dimension: something wrong with code version? Axis 12 pointer %p, title is %s",axRot,strAxRotTitle.Data());
-	//	return;
-      }
-      axRot->SetRange(1,1);
+
+          //     TAxis *axptScAllAxes=hsparseScAllAxes->GetAxis(0); // axes: pt;mass;lxy;nLxy;cosThatPoint;normImpParXY; Xic mass: 2.468, Sc:2.286
+          //     TAxis *axLxySc=hsparseScAllAxes->GetAxis(2);
+          //     TAxis *axNlxySc=hsparseScAllAxes->GetAxis(3);
+          //     TAxis *axPointSc=hsparseScAllAxes->GetAxis(4);
+          //     TAxis *axNDCASc=hsparseScAllAxes->GetAxis(5);
+          //     TAxis *axITSrefitSc=hsparseScAllAxes->GetAxis(6);
+          //     TAxis *axSpecialPIDsSc=hsparseScAllAxes->GetAxis(7);
+          //     axSpecialPIDsSc->SetRangeUser(pid,pid);
+
+          TString strvar[7]={"pt","mass","lxy","nLxy","cosThetaP","nDCA","SelSpec"};
+
+          //     TAxis *axMassSigma=0x0;
+          //     TAxis *axMassLcSigma=0x0;
+          //     TAxis *axMassCosThetaStar=0x0;
+
+          //     if(version>0){
+          //       axMassLcSigma=hsparseScAllAxes->GetAxis(8);
+          //       axMassCosThetaStar=hsparseScAllAxes->GetAxis(9);
+          //     }
+          //     else {
+          //       axMassLcSigma=hsparseScAllAxes->GetAxis(7);
+          //       axMassCosThetaStar=hsparseScAllAxes->GetAxis(8);
+          //     }
+
+
+          // SETTING CUTS    
+          if(cutSet==0){
+            SetQM2019MassPlotCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
+          }
+          else if(cutSet==1){
+            SetFilteringCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
+          }
+          else {
+            SetCuts(cutSet,nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
+          }
+          SetLcCutsFromSigmaC(nbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC,cutsMinLc,cutsMaxLc,isPtCommonCutLc);
+
+          // check cut values:
+          for(Int_t ipt=0;ipt<nbins;ipt++){
+            Printf(" Pt bin %d",ipt);
+            Printf("Lc cuts:");
+            for(Int_t ivarLc=0;ivarLc<nVarLc;ivarLc++){
+      	Printf(" %f < x < %f (is common-pt cut :%d)",cutsMinLc[ipt][ivarLc],cutsMaxLc[ipt][ivarLc],isPtCommonCutLc[ivarLc]);       
+            }
+            Printf("Sc cuts:");
+            for(Int_t ivarSc=0;ivarSc<nVarSc;ivarSc++){
+      	Printf(" %f < x < %f (is common-pt cut :%d)",cutsMinSigmaC[ipt][ivarSc],cutsMaxSigmaC[ipt][ivarSc],isPtCommonCutSigmaC[ivarSc]);
+            }
+
+          }
+
+          Int_t naxisSp=hsparseScAllAxes->GetNdimensions();
+          if(naxisSp>=12){
+            TAxis *axRot=hsparseScAllAxes->GetAxis(12);
+            TString strAxRotTitle(axRot->GetTitle());
+            if(!(strAxRotTitle.EqualTo("isRotated"))){
+      	Printf("Rotation axis not at expected dimension: something wrong with code version? Axis 12 pointer %p, title is %s",axRot,strAxRotTitle.Data());
+      	//	return;
+            }
+            axRot->SetRange(1,1);
+          }
+          // REDUCED SPARSES TO SPEED UP PROJECTIONS
+          Int_t dimredSc[nVarSc];
+          Int_t ndimredSc=0;
+          for(Int_t j=0;j<nVarSc;j++){
+            if(isPtCommonCutSigmaC[j]==1){
+      	TAxis *ax=hsparseScAllAxes->GetAxis(j);
+      	ax->SetRangeUser(cutsMinSigmaC[0][j]< 0 ? cutsMinSigmaC[0][j]*0.99999 : cutsMinSigmaC[0][j]*1.00001,cutsMaxSigmaC[0][j] < 0 ? cutsMaxSigmaC[0][j]*1.000001 : cutsMaxSigmaC[0][j]*0.999999);// the pt index should not matter!
+            }
+            else{
+      	dimredSc[ndimredSc]=j;
+      	ndimredSc++;
+            }
+          }
+          //     TAxis *axM=hsparseScAllAxes->GetAxis(8);
+          //     Double_t   lcMassCutDefault=0.012;
+          //     axM->SetRangeUser(2.286-lcMassCutDefault,2.286+lcMassCutDefault);
+
+          if(ifile==0)  hsparseSc=(THnSparseF*) (hsparseScAllAxes->Projection(ndimredSc,dimredSc,"A"))->Clone();
+          else          hsparseSc->Add( (THnSparseF*) ((THnSparseF*)hsparseScAllAxes->Projection(ndimredSc,dimredSc,"A"))->Clone() );
+          
+
+          Int_t dimredLc[nVarLc];
+          Int_t ndimredLc=0;
+          for(Int_t j=0;j<nVarLc;j++){
+            if(isPtCommonCutLc[j]==1){
+      	TAxis *ax=hsparseLcAllAxes->GetAxis(j);
+      	ax->SetRangeUser(cutsMinLc[0][j]< 0 ? cutsMinLc[0][j]*0.999 : cutsMinLc[0][j]*1.001,cutsMaxLc[0][j] < 0 ? cutsMaxLc[0][j]*1.0001 : cutsMaxLc[0][j]*0.999);// the pt index should not matter!
+            }
+            else{
+      	dimredLc[ndimredLc]=j;
+      	ndimredLc++;
+            }
+          }
+          if(ifile==0)  hsparseLc=(THnSparseF*)(hsparseLcAllAxes->Projection(ndimredLc,dimredLc,"A"))->Clone();
+          else          hsparseLc->Add( (THnSparseF*)(hsparseLcAllAxes->Projection(ndimredLc,dimredLc,"A"))->Clone() );
+          std::cout << "... done!" << std::endl;
+          delete f;
+          delete hsparseScAllAxes;
+          delete hsparseLcAllAxes;
     }
-    // REDUCED SPARSES TO SPEED UP PROJECTIONS
-    Int_t dimredSc[nVarSc];
-    Int_t ndimredSc=0;
-    for(Int_t j=0;j<nVarSc;j++){
-      if(isPtCommonCutSigmaC[j]==1){
-	TAxis *ax=hsparseScAllAxes->GetAxis(j);
-	ax->SetRangeUser(cutsMinSigmaC[0][j]< 0 ? cutsMinSigmaC[0][j]*0.99999 : cutsMinSigmaC[0][j]*1.00001,cutsMaxSigmaC[0][j] < 0 ? cutsMaxSigmaC[0][j]*1.000001 : cutsMaxSigmaC[0][j]*0.999999);// the pt index should not matter!
-      }
-      else{
-	dimredSc[ndimredSc]=j;
-	ndimredSc++;
-      }
-    }
-    //     TAxis *axM=hsparseScAllAxes->GetAxis(8);
-    //     Double_t   lcMassCutDefault=0.012;
-    //     axM->SetRangeUser(2.286-lcMassCutDefault,2.286+lcMassCutDefault);
-    
-    THnSparseF *hsparseSc=(THnSparseF*)hsparseScAllAxes->Projection(ndimredSc,dimredSc,"A");
     hsparseSc->SetName("hsparseSc");
     TAxis *axptSc=hsparseSc->GetAxis(0);
-
-    Int_t dimredLc[nVarLc];
-    Int_t ndimredLc=0;
-    for(Int_t j=0;j<nVarLc;j++){
-      if(isPtCommonCutLc[j]==1){
-	TAxis *ax=hsparseLcAllAxes->GetAxis(j);
-	ax->SetRangeUser(cutsMinLc[0][j]< 0 ? cutsMinLc[0][j]*0.999 : cutsMinLc[0][j]*1.001,cutsMaxLc[0][j] < 0 ? cutsMaxLc[0][j]*1.0001 : cutsMaxLc[0][j]*0.999);// the pt index should not matter!
-      }
-      else{
-	dimredLc[ndimredLc]=j;
-	ndimredLc++;
-      }
-    }
-    THnSparseF *hsparseLc=(THnSparseF*)hsparseLcAllAxes->Projection(ndimredLc,dimredLc,"A");
     hsparseLc->SetName("hsparseLc");
-    TAxis *axptLc=hsparseLc->GetAxis(0);    
-    
+    TAxis *axptLc=hsparseLc->GetAxis(0); 
     
     
     TCanvas *cLcMassPlots=new TCanvas("cLcMassPlots","cLcMassPlots",800,800);
@@ -2405,10 +2747,18 @@ void StudyFit(TString strfile="AnalysisResults.root",TString strSuff="AR",TStrin
     }
 }
 
-void GetCrossSectionLcSc(TString strFileData,TString strFileMC,Int_t cutset=0,TString strSuffData="AR",TString strDirData="PWG3_D2H_XicpKpi",TString strSuffMC="AR",TString strDirMC="PWG3_D2H_XicpKpi"){
+void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t cutset=0,TString strSuffData="AR",TString strDirData="PWG3_D2H_XicpKpi",TString strSuffMC="AR",TString strDirMC="PWG3_D2H_XicpKpi"
+, bool useGlobalpt = false  // mfaggin
+, bool do_ch_separation = false // mfaggin
+){
   
-  StudyEfficiency(strFileMC,strSuffMC,strDirMC,kTRUE,cutset);
-  StudyFit(strFileData,strSuffData,strDirData,kTRUE,kTRUE,cutset);
+  //StudyEfficiency(strFileMC,strSuffMC,strDirMC,kTRUE,cutset); // arossi
+  //StudyFit(strFileData,strSuffData,strDirData,kTRUE,kTRUE,cutset);  // arossi
+  
+  //StudyEfficiency(strFileMC,strSuffMC,strDirMC,useGlobalpt,cutset);
+  CalculateEfficiency(do_ch_separation,strFileMC,strSuffMC,strDirMC,useGlobalpt,cutset);
+  StudyFit(vec_files,strSuffData,strDirData,useGlobalpt,kTRUE,cutset);
+
   Double_t nev=normCount->GetNEventsForNorm();
 
   TH1D *hCrossSectionLc=(TH1D*)hRawYieldLc->Clone("hCrossSectionLc");
@@ -2433,23 +2783,54 @@ void GetCrossSectionLcSc(TString strFileData,TString strFileMC,Int_t cutset=0,TS
 
   TCanvas *cRawYield=new TCanvas("cRawYield","cRawYield",800,800);
   hRawYieldLc->SetLineColor(kBlack);
+  hRawYieldLc->SetMarkerColor(hRawYieldLc->GetLineColor());
+  hRawYieldLc->SetMarkerStyle(20);
+  hRawYieldLc->GetYaxis()->SetRangeUser(10,100000);
+  hRawYieldLc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hRawYieldLc->Draw();
   hRawYieldLcSc->SetLineColor(kRed);
+  hRawYieldLcSc->SetMarkerColor(hRawYieldLcSc->GetLineColor());
+  hRawYieldLcSc->SetMarkerStyle(20);
+  hRawYieldLcSc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hRawYieldLcSc->Draw("Same");
+  gPad->SetTicks();
+  gPad->SetLogy();
+  TLegend* legRawYield = new TLegend(0.5,0.5,0.8,0.8);
+  legRawYield->AddEntry(hRawYieldLc,hRawYieldLc->GetName());
+  legRawYield->AddEntry(hRawYieldLcSc,hRawYieldLcSc->GetName());
+  legRawYield->Draw();
 
   TCanvas *cCrossSectionCompare=new TCanvas("cCrossSectionCompare","cCrossSectionCompare",800,800);
   cCrossSectionCompare->cd();
   hCrossSectionLc->SetLineColor(kBlack);
+  hCrossSectionLc->SetMarkerColor(hCrossSectionLc->GetLineColor());
+  hCrossSectionLc->SetMarkerStyle(20);
   hCrossSectionLc->SetYTitle("#frac{d#sigma}{d#it{p}_{T}} (#mub#upoint#it{c}/GeV)");
   hCrossSectionLc->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  hCrossSectionLc->GetYaxis()->SetRangeUser(0.001,10);
   hCrossSectionLc->Draw();
   hCrossSectionLcSc->SetLineColor(kRed);
+  hCrossSectionLcSc->SetMarkerColor(hCrossSectionLcSc->GetLineColor());
+  hCrossSectionLcSc->SetMarkerStyle(20);
+  hCrossSectionLcSc->SetYTitle("#frac{d#sigma}{d#it{p}_{T}} (#mub#upoint#it{c}/GeV)");
+  hCrossSectionLcSc->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   hCrossSectionLcSc->Draw("same");
+  gPad->SetTicks();
+  gPad->SetLogy();
+  TLegend* legCrossSection = new TLegend(0.5,0.5,0.8,0.8);
+  legCrossSection->SetHeader("NO branching ratio correction"); // mfaggin
+  legCrossSection->AddEntry(hCrossSectionLc,hCrossSectionLc->GetName());
+  legCrossSection->AddEntry(hCrossSectionLcSc,hCrossSectionLcSc->GetName());
+  legCrossSection->Draw();
   
-  TFile *fPrel=TFile::Open("/Users/administrator/ALICE/CHARM/XsiC/2018June12/DataEsterni/HFPtSpectrum_LcpKpi_STD_pp_13TeV_NbNbx2_22Oct_corrected_noWeigNb.root");
+  TFile *fPrel=TFile::Open("/home/mattia/Documenti/PhD/D2H_Analysis/SigmaC/files_Cristina/HFPtSpectrum_LcpKpi_STD_pp_13TeV_NbNbx2_22Oct_corrected_noWeigNb.root");
   TH1D *hPrel=(TH1D*)fPrel->Get("histoSigmaCorr");
+  hPrel->SetName("histoSigmaCorr_Lcprel");  // mfaggin
   hPrel->Scale(1.e-6);// go to microbarn from picobarn
-  hPrel->Draw("same");  
+  hPrel->SetLineColor(kBlue);
+  hPrel->SetMarkerColor(hPrel->GetLineColor());
+  hPrel->Draw("same");
+  legCrossSection->AddEntry(hPrel,"#Lambda_{c} preliminary");
 
   TCanvas *cLcCompare=new TCanvas("cLcCompare","cLcCompare",800,800);
   cLcCompare->cd();
@@ -2468,8 +2849,9 @@ void GetCrossSectionLcSc(TString strFileData,TString strFileMC,Int_t cutset=0,TS
   TCanvas *cCompareToD0=new TCanvas("cCompareToD0","cCompareToD0",800,800);
   cCompareToD0->cd();
   
-  TFile *fPrelD0=TFile::Open("/Users/administrator/ALICE/CHARM/XsiC/2018June12/DataEsterni/HFPtSpectrum_D0_multInt_22OctnoWeig_Nb.root");
+  TFile *fPrelD0=TFile::Open("/home/mattia/Documenti/PhD/D2H_Analysis/SigmaC/files_Cristina/HFPtSpectrum_D0_multInt_22OctnoWeig_Nb.root");
   TH1D *hPrelD0=(TH1D*)fPrelD0->Get("histoSigmaCorr");
+  hPrelD0->SetName("histoSigmaCorr_D0");
   hPrelD0->Scale(1.e-6);// go to microbarn from picobarn
   hPrelD0->Scale(1/0.0389);
   hPrelD0->SetYTitle("#frac{d#sigma}{d#it{p}_{T}} (#mub#upoint#it{c}/GeV)");
