@@ -1,6 +1,3 @@
-#include "AliPythia8.h"
-#include "AliGenPythiaPlus.h"
-
 AliGenerator* CreatePythia8Gen( TString lTune          = "pp",
                                Float_t e_cms       = 13000.
                                );
