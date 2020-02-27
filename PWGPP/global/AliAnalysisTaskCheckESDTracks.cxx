@@ -474,14 +474,21 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistNtracksSPDanyVsV0aftEvSel);
 
   TString pNames[9]={"Elec","Muon","Pion","Kaon","Proton","Deuteron","Triton","He3","Alpha"};
-  for(Int_t jsp=0; jsp<9; jsp++){ 
-    fHistdEdxVsP[jsp] = new TH2F(Form("hdEdxVsP%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
-    fHistdEdxVsPTPCsel[jsp] = new TH2F(Form("hdEdxVsPTPCsel%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
-    fHistdEdxVsPTPCselITSref[jsp] = new TH2F(Form("hdEdxVsPTPCselITSref%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
-    fHistdEdxVsP0[jsp] = new TH2F(Form("hdEdxVsP0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
-    fHistdEdxVsPTPCsel0[jsp] = new TH2F(Form("hdEdxVsPTPCsel0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
-    fHistdEdxVsPTPCselITSref0[jsp] = new TH2F(Form("hdEdxVsPTPCselITSref0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
-    fHistnSigmaVsPdEdxTPCsel[jsp] = new TH2F(Form("hnSigmaVsPdEdxTPCsel%s",pNames[jsp].Data()),Form("  ; p_{TPC} (GeV/c) ; n#sigma(%s)",pNames[jsp].Data()),100,0.,5.,200,-10.,10.);
+  Double_t pmin=0.1;
+  Double_t pmax=10.;
+  const Int_t nbinsp=160;
+  Double_t expMax=TMath::Log(pmax/pmin);
+  Double_t pLims[nbinsp+1];
+  for(Int_t i=0; i<nbinsp+1; ++i) pLims[i]=pmin*TMath::Exp(expMax/nbinsp*(Double_t)i);
+  
+  for(Int_t jsp=0; jsp<9; jsp++){
+    fHistdEdxVsP[jsp] = new TH2F(Form("hdEdxVsP%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
+    fHistdEdxVsPTPCsel[jsp] = new TH2F(Form("hdEdxVsPTPCsel%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
+    fHistdEdxVsPTPCselITSref[jsp] = new TH2F(Form("hdEdxVsPTPCselITSref%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
+    fHistdEdxVsP0[jsp] = new TH2F(Form("hdEdxVsP0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
+    fHistdEdxVsPTPCsel0[jsp] = new TH2F(Form("hdEdxVsPTPCsel0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
+    fHistdEdxVsPTPCselITSref0[jsp] = new TH2F(Form("hdEdxVsPTPCselITSref0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
+    fHistnSigmaVsPdEdxTPCsel[jsp] = new TH2F(Form("hnSigmaVsPdEdxTPCsel%s",pNames[jsp].Data()),Form("  ; p_{TPC} (GeV/c) ; n#sigma(%s)",pNames[jsp].Data()),nbinsp,pLims,200,-10.,10.);
     fOutput->Add(fHistdEdxVsP[jsp]);
     fOutput->Add(fHistdEdxVsPTPCsel[jsp]);
     fOutput->Add(fHistdEdxVsPTPCselITSref[jsp]);
@@ -602,7 +609,7 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
     fHistTPCchi2PerClusPhiPtGoodHypTPCsel[j] = new TH3F(Form("hTPCchi2PerClusPhiPtGoodHyp%sTPCsel",pNames[j+2].Data())," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
     fHistTPCchi2PerClusPhiPtGoodHypTPCselITSref[j] = new TH3F(Form("hTPCchi2PerClusPhiPtGoodHyp%sTPCselITSref",pNames[j+2].Data())," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
     fHistTPCchi2PerClusPhiPtGoodHypTPCselSPDany[j] = new TH3F(Form("hTPCchi2PerClusPhiPtGoodHyp%sTPCselSPDany",pNames[j+2].Data())," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
-    fHistdEdxVsPGoodHyp[j] = new TH2F(Form("hdEdxVsPGoodHyp%s",pNames[j+2].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+    fHistdEdxVsPGoodHyp[j] = new TH2F(Form("hdEdxVsPGoodHyp%s",pNames[j+2].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
     fHistImpParXYPtMulGoodHypTPCselSPDany[j] = new TH3F(Form("hImpParXYPtMulGoodHyp%sTPCselSPDany",pNames[j+2].Data())," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip); 
     fOutput->Add(fHistEtaPhiPtGoodHypTPCsel[j]);
     fOutput->Add(fHistEtaPhiPtGoodHypTPCselITSref[j]);
@@ -625,7 +632,7 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
     fHistTPCchi2PerClusPhiPtBadHypTPCsel[j] = new TH3F(Form("hTPCchi2PerClusPhiPtBadHyp%sTPCsel",pNames[j+2].Data())," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
     fHistTPCchi2PerClusPhiPtBadHypTPCselITSref[j] = new TH3F(Form("hTPCchi2PerClusPhiPtBadHyp%sTPCselITSref",pNames[j+2].Data())," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
     fHistTPCchi2PerClusPhiPtBadHypTPCselSPDany[j] = new TH3F(Form("hTPCchi2PerClusPhiPtBadHyp%sTPCselSPDany",pNames[j+2].Data())," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
-    fHistdEdxVsPBadHyp[j] = new TH2F(Form("hdEdxVsPBadHyp%s",pNames[j+2].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+    fHistdEdxVsPBadHyp[j] = new TH2F(Form("hdEdxVsPBadHyp%s",pNames[j+2].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
     fHistImpParXYPtMulBadHypTPCselSPDany[j] = new TH3F(Form("hImpParXYPtMulBadHyp%sTPCselSPDany",pNames[j+2].Data())," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
     fOutput->Add(fHistEtaPhiPtBadHypTPCsel[j]);
     fOutput->Add(fHistEtaPhiPtBadHypTPCselITSref[j]);
