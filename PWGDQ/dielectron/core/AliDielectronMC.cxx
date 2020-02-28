@@ -2349,21 +2349,37 @@ Bool_t AliDielectronMC::IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, AliVPa
     // check if grand mother relation between particle 1&2 as well as 3&4
     Bool_t grandMotherRelation = kTRUE;
     if(signalMC1->GetGrandMothersRelation()==AliDielectronSignalMC::kSame) {
+      labelM1 = mcD1->GetMother();
+      labelM2 = mcD2->GetMother();
+      mcM1 = static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM1));
+      mcM2 = static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM2));
       labelG1 = mcM1->GetMother();
       labelG2 = mcM2->GetMother();
       grandMotherRelation = grandMotherRelation && labelG1 != -1 && labelG2 != -1 && labelG1 == labelG2;
     }
     if(signalMC2->GetGrandMothersRelation()==AliDielectronSignalMC::kDifferent) {
+      labelM1 = mcD1->GetMother();
+      labelM2 = mcD2->GetMother();
+      mcM1 = static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM1));
+      mcM2 = static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM2));
       labelG1 = mcM1->GetMother();
       labelG2 = mcM2->GetMother();
       grandMotherRelation = grandMotherRelation && (labelG1 == -1 || labelG2 == -1 || labelG1 != labelG2);
     }
     if(signalMC2->GetGrandMothersRelation()==AliDielectronSignalMC::kSame) {
+      labelM3 = mcD3->GetMother();
+      labelM4 = mcD4->GetMother();
+      mcM3 = static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM3));
+      mcM4 = static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM4));
       labelG3 = mcM3->GetMother();
       labelG4 = mcM4->GetMother();
       grandMotherRelation = grandMotherRelation && labelG3 != -1 && labelG4 != -1 && labelG3 == labelG4;
     }
     if(signalMC2->GetGrandMothersRelation()==AliDielectronSignalMC::kDifferent) {
+      labelM3 = mcD3->GetMother();
+      labelM4 = mcD4->GetMother();
+      mcM3 = static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM3));
+      mcM4 = static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM4));
       labelG3 = mcM3->GetMother();
       labelG4 = mcM4->GetMother();
       grandMotherRelation = grandMotherRelation && (labelG3 == -1 || labelG4 == -1 || labelG3 != labelG4);
@@ -2645,21 +2661,37 @@ Bool_t AliDielectronMC::IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, AliVPa
     // check if grand mother relation between particle 1&2 as well as 3&4
     Bool_t grandMotherRelation = kTRUE;
     if(signalMC1->GetGrandMothersRelation()==AliDielectronSignalMC::kSame) {
+      labelM1 = mcD1AOD->GetMother();
+      labelM2 = mcD2AOD->GetMother();
+      mcM1 = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(labelM1));
+      mcM2 = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(labelM2));
       labelG1 = mcM1->GetMother();
       labelG2 = mcM2->GetMother();
       grandMotherRelation = grandMotherRelation && labelG1 != -1 && labelG2 != -1 && labelG1 == labelG2;
     }
     if(signalMC2->GetGrandMothersRelation()==AliDielectronSignalMC::kDifferent) {
+      labelM1 = mcD1AOD->GetMother();
+      labelM2 = mcD2AOD->GetMother();
+      mcM1 = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(labelM1));
+      mcM2 = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(labelM2));
       labelG1 = mcM1->GetMother();
       labelG2 = mcM2->GetMother();
       grandMotherRelation = grandMotherRelation && (labelG1 == -1 || labelG2 == -1 || labelG1 != labelG2);
     }
     if(signalMC2->GetGrandMothersRelation()==AliDielectronSignalMC::kSame) {
+      labelM3 = mcD3AOD->GetMother();
+      labelM4 = mcD4AOD->GetMother();
+      mcM3 = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(labelM3));
+      mcM4 = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(labelM4));
       labelG3 = mcM3->GetMother();
       labelG4 = mcM4->GetMother();
       grandMotherRelation = grandMotherRelation && labelG3 != -1 && labelG4 != -1 && labelG3 == labelG4;
     }
     if(signalMC2->GetGrandMothersRelation()==AliDielectronSignalMC::kDifferent) {
+      labelM3 = mcD3AOD->GetMother();
+      labelM4 = mcD4AOD->GetMother();
+      mcM3 = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(labelM3));
+      mcM4 = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(labelM4));
       labelG3 = mcM3->GetMother();
       labelG4 = mcM4->GetMother();
       grandMotherRelation = grandMotherRelation && (labelG3 == -1 || labelG4 == -1 || labelG3 != labelG4);
