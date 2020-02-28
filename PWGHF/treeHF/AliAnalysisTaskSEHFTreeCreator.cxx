@@ -209,9 +209,17 @@ fIsEvRej(0),
 fIsEvRej_INT7(0),
 fIsEvRej_HighMultSPD(0),
 fIsEvRej_HighMultV0(0),
+fIsEvSel_INT7(false),
+fIsEvSel_HighMultSPD(false),
+fIsEvSel_HighMultV0(false),
 fRunNumber(0),
 fRunNumberCDB(0),
+fBC(0),
+fOrbit(0),
+fPeriod(0),
 fEventID(0),
+fEventIDExt(0),
+fEventIDLong(0),
 fFileName(""),
 fDirNumber(0),
 fnTracklets(0),
@@ -600,6 +608,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("is_ev_rej_HighMultV0", &fIsEvRej_HighMultV0);
   fTreeEvChar->Branch("run_number", &fRunNumber);
   fTreeEvChar->Branch("ev_id", &fEventID);
+  fTreeEvChar->Branch("ev_id_ext", &fEventIDExt);
+  fTreeEvChar->Branch("ev_id_long", &fEventIDLong);
   fTreeEvChar->Branch("n_tracklets", &fnTracklets);
   fTreeEvChar->Branch("V0Amult", &fnV0A);
   fTreeEvChar->Branch("trigger_bitmap", &fTriggerMask);
@@ -627,6 +637,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("mult_gen_v0c", &fMultGenV0C);
   fTreeEvChar->Branch("perc_v0m", &fPercV0M);
   fTreeEvChar->Branch("mult_v0m", &fMultV0M);
+  fTreeEvChar->Branch("is_ev_sel_int7", &fIsEvSel_INT7);
+  fTreeEvChar->Branch("is_ev_sel_shm", &fIsEvSel_HighMultSPD);
+  fTreeEvChar->Branch("is_ev_sel_vhm", &fIsEvSel_HighMultV0);
   fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
   
   if(fWriteVariableTreeD0){
@@ -1122,6 +1135,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
+  fBC = aod->GetBunchCrossNumber();
+  fOrbit = aod->GetOrbitNumber();
+  fPeriod = aod->GetPeriodNumber();
+
   fNentries->Fill(0); // all events
   if(fAODProtection>=0){
     //   Protection against different number of events in the AOD and deltaAOD
@@ -1330,15 +1347,15 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   auto trig_mask_cuts = fEvSelectionCuts->GetTriggerMask();
     
   fEvSelectionCuts->SetTriggerMask(AliVEvent::kINT7);
-  Bool_t isEvSel_INT7 = fEvSelectionCuts->IsEventSelected(aod);
+  fIsEvSel_INT7 = fEvSelectionCuts->IsEventSelected(aod);
   fIsEvRej_INT7 = fEvSelectionCuts->GetEventRejectionBitMap();
 
   fEvSelectionCuts->SetTriggerMask(AliVEvent::kHighMultSPD);
-  Bool_t isEvSel_HighMultSPD = fEvSelectionCuts->IsEventSelected(aod);
+  fIsEvSel_HighMultSPD = fEvSelectionCuts->IsEventSelected(aod);
   fIsEvRej_HighMultSPD = fEvSelectionCuts->GetEventRejectionBitMap();
 
   fEvSelectionCuts->SetTriggerMask(AliVEvent::kHighMultV0);
-  Bool_t isEvSel_HighMultV0 = fEvSelectionCuts->IsEventSelected(aod);
+  fIsEvSel_HighMultV0 = fEvSelectionCuts->IsEventSelected(aod);
   fIsEvRej_HighMultV0 = fEvSelectionCuts->GetEventRejectionBitMap();
     
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
@@ -1396,7 +1413,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fMultGenV0C = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-3.7,-1.7);
   }
 
-  fEventID = GetEvID();
+  fEventID    = (unsigned int)(GetEvID() & 0xffffffff);
+  fEventIDExt = (unsigned int)(GetEvID() >> 32);
+  fEventIDLong = GetEvID();
   // Extract fired triggers
   fTriggerMask = static_cast<AliVAODHeader*>(aod->GetHeader())->GetOfflineTrigger();
   fTriggerBitINT7 = static_cast<bool>(fTriggerMask & AliVEvent::kINT7);
@@ -3877,8 +3896,7 @@ AliAODVertex* AliAnalysisTaskSEHFTreeCreator::ReconstructDisplVertex(const AliVV
 }
 
 //________________________________________________________________
-unsigned int AliAnalysisTaskSEHFTreeCreator::GetEvID() {
-  
+unsigned long AliAnalysisTaskSEHFTreeCreator::GetEvID() {
   TString currentfilename = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
   if(!fFileName.EqualTo(currentfilename)) {
     fEventNumber = 0;
@@ -3892,8 +3910,11 @@ unsigned int AliAnalysisTaskSEHFTreeCreator::GetEvID() {
   if(fReadMC){
     ev_number = fEventNumber;
   }
-  unsigned int evID = (unsigned int)ev_number + (unsigned int)(fDirNumber<<17);
   fEventNumber++;
+
+  unsigned long evID = fPeriod & 0xfffffff;
+  evID = (evID << 24) | (fOrbit & 0xffffff);
+  evID = (evID << 12) | (fBC & 0xfff);
   return evID;
 }
 
