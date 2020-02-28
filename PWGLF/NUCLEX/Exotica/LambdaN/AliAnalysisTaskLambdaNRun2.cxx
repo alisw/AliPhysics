@@ -51,8 +51,6 @@ void AliAnalysisTaskLambdaNRun2::UserCreateOutputObjects()
 	fOutputTree = new TTree("OutputTree", "Output Tree");
 	fOutputTree->Branch("event", &fOutputEvent);
 
-	// fEventCut.SetManualMode();
-	// fEventCut.fTriggerMask = AliVEvent::kMuonUnlikePB;
 	fEventCut.AddQAplotsToList(fOutputList);
 
 	PostData(1, fOutputList);
@@ -85,12 +83,14 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 
 	// V0 loop
 	Double_t vertex[3] = { -100.0, -100.0, -100.0 };
+	const AliAODVertex *vertexAOD = fAOD->GetPrimaryVertex();
+	vertexAOD->GetXYZ(vertex);
 	for (Int_t ivertex = 0; ivertex < fAOD->GetNumberOfV0s(); ivertex++) {
 		AliAODv0 * v0 = fAOD->GetV0(ivertex);
 
 		AliAODTrack * track0 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
 		AliAODTrack * track1 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
-		if (!track1 || !track1) continue;
+		if (!track0 || !track1) continue;
 
 		// Cut on filter bit
 		if (track0->TestFilterBit(1) == false || track1->TestFilterBit(1) == false) continue;
@@ -99,7 +99,7 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 		if (LooseTrackCuts(track0) == false || LooseTrackCuts(track1) == false) continue;
 
 		// Loose cut on CosPointingAngle
-		if (v0->CosPointingAngle(vertex) < 0.9) continue;
+		if (v0->CosPointingAngle(vertex) < 0.95) continue;
 
 		// Loose cut on dca
 		if (v0->DcaV0Daughters() > 1.5) continue;
@@ -148,7 +148,7 @@ bool AliAnalysisTaskLambdaNRun2::LooseTrackCuts(AliAODTrack *track) {
 	// TPC clusters > 70 (80 analysis cut)
 	if (track->GetTPCNcls() <= 70) return false;
 
-	// chi2 per TPC clusters < 5.5 (5 analysis cut)
+	// chi2 per TPC clusters < 6 (5 analysis cut)
 	if (track->Chi2perNDF() >= 6) return false;
 
 	// Kink daughter reject
@@ -169,7 +169,7 @@ void AliAnalysisTaskLambdaNRun2::FillEvent(AnalysisV0::Type etype, AliAODTrack* 
 	pion_v4.SetPxPyPzE(pion->Px(), pion->Py(), pion->Pz(), TMath::Sqrt(pion_mass * pion_mass + pion->P() * pion->P()));
 	lambdan_v4 = deuteron_v4 + pion_v4;
 
-	if (lambdan_v4.M() > 1.95 && lambdan_v4.M() < 2.15) {
+	if (lambdan_v4.M() > 1.95 && lambdan_v4.M() < 2.2) {
 		fAnalysis_V0.mass = lambdan_v4.M();
 
 		fAnalysis_V0.topology = etype;
