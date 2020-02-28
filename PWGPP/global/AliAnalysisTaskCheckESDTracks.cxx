@@ -19,7 +19,6 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskCheckESDTracks.h"
 
-
 /**************************************************************************
  * Copyright(c) 1998-2012, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
