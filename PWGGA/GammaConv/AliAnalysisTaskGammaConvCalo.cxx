@@ -6749,6 +6749,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
     }
     for(Int_t i = 0; i < vSwappingInvMassPT.size(); i++){
       fHistoMotherBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping*fWeightJetJetMC);
+      if(!fDoLightOutput || fDoECalibOutput) fHistoMotherBackInvMassECalib[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1],tempMultWeightSwapping*fWeightJetJetMC);
     }
   } else {
     // mixing current conversion photons with previous clusters
