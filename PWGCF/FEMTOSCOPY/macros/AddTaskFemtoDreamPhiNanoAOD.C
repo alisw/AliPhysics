@@ -545,33 +545,33 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     pairQA.push_back(0);
   }
 
-  pairQA[0] = 11;   // pp
-  pairQA[1] = 0;    // pap
-  pairQA[2] = 12;   // pphi
-  pairQA[12] = 11;  // apap
-  pairQA[13] = 12;  // apphi
-  pairQA[23] = 22;  // phiphi
+  pairQA[0] = 10;   // pp
+  pairQA[1] = 10;    // pap
+  pairQA[2] = 10;   // pphi
+  pairQA[12] = 10;  // apap
+  pairQA[13] = 10;  // apphi
+  pairQA[23] = 10;  // phiphi
 
   if (isMC) {
-    pairQA[33] = 11;  // TRUE
-    pairQA[34] = 11;
-    pairQA[35] = 11;
-    pairQA[42] = 11;
-    pairQA[43] = 11;
-    pairQA[50] = 11;
+    pairQA[33] = 10;  // TRUE
+    pairQA[34] = 10;
+    pairQA[35] = 10;
+    pairQA[42] = 10;
+    pairQA[43] = 10;
+    pairQA[50] = 10;
 
-    pairQA[63] = 11;  // COMMON
-    pairQA[64] = 11;
-    pairQA[65] = 11;
-    pairQA[68] = 11;
-    pairQA[69] = 11;
-    pairQA[72] = 11;
+    pairQA[63] = 10;  // COMMON
+    pairQA[64] = 10;
+    pairQA[65] = 10;
+    pairQA[68] = 10;
+    pairQA[69] = 10;
+    pairQA[72] = 10;
 
-    pairQA[36] = 11;  // phiPRIM pTRUE
-    pairQA[44] = 11;
+    pairQA[36] = 10;  // phiPRIM pTRUE
+    pairQA[44] = 10;
 
-    pairQA[55] = 11;  // phiTURE pNOprim
-    pairQA[56] = 11;
+    pairQA[55] = 10;  // phiTURE pNOprim
+    pairQA[56] = 10;
   }
 
   AliFemtoDreamCollConfig *config =
