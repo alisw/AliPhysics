@@ -15,7 +15,6 @@
 #include "AliPIDResponse.h"
 #include "AliVertexerHyperTriton3Body.h"
 #include "AliVertexerTracks.h"
-
 #include <TVector3.h>
 #include <vector>
 
@@ -89,25 +88,14 @@ public:
   bool fFakeCand = false;
 
   // Histogram for efficiencies
-  TH2D *fHistGen[2] = {nullptr};
-  TH2D *fHistEffBefore[2] = {nullptr};
-  TH2D *fHistEffSel[2] = {nullptr};
-  TH2D *fHistEffSecVert[2] = {nullptr};
-  TH2D *fHistRecSingle[2] = {nullptr};
-  TH2D *fHistRecFake[2] = {nullptr};
-  TH2D *fHistRecClones[2] = {nullptr};
-  TH2D *fHistFakeRate[2] = {nullptr};
-  TH2D *fHistClonesRate[2] = {nullptr};
-  TH2D *fHistSingleRate[2] = {nullptr};
-  TH3D *fHistEffVsNsigmaTPC[2] = {nullptr};
-  TH3D *fHistEffVsNclusTPC[2] = {nullptr};
-  TH3D *fHistEffVsNclusITS[2] = {nullptr};
-  TH3D *fHistGenVsNsigmaTPC[2] = {nullptr};
-  TH3D *fHistGenVsNclusTPC[2] = {nullptr};
-  TH3D *fHistGenVsNclusITS[2] = {nullptr};
-  TH2D *fHistProjNsigmaTPC[2][2] = {{nullptr}};
-  TH2D *fHistProjNclusTPC[2][2] = {{nullptr}};
-  TH2D *fHistProjNclusITS[2][2] = {{nullptr}};
+
+  TH3D *fHistFakeVsCuts[3][2] = {{nullptr}};
+  TH3D *fHistClonesVsCuts[3][2] = {{nullptr}};
+
+  TH3D *fHistResolutionVsCuts[3][2] = {{nullptr}};
+
+  TH3D *fHistSingleRecVsCuts[3][2] = {{nullptr}};
+  TH3D *fHistGenVsCuts[3][2] = {{nullptr}};
 
   // Histograms for selection
   TH2D *fHistInvMassPt[2][3] = {{nullptr}};
@@ -132,7 +120,6 @@ public:
   TH1D *fHistTrackDistance[3] = {nullptr};
 
   bool AcceptCandidate(int,int);
-  void Divide(TH3D*,TH2D*);
 
   ClassDef(AliSelectorFindableHyperTriton3Body, 0);
 };
