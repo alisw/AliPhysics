@@ -228,7 +228,7 @@ public:
     void FillJetTree();
   
     
-    unsigned int GetEvID();
+    unsigned long GetEvID();
     
 private:
     
@@ -351,9 +351,17 @@ private:
     Int_t                   fIsEvRej_INT7;                         /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultSPD;                  /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultV0;                   /// flag with information about rejection of the event
+    Bool_t                  fIsEvSel_INT7;                         /// boolean whether event accept for INT7
+    Bool_t                  fIsEvSel_HighMultSPD;                  /// boolean whether event accept for SHM
+    Bool_t                  fIsEvSel_HighMultV0;                   /// boolean whether event accept for VHM
     Int_t                   fRunNumber;                            /// run number
     Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
-    UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
+    UShort_t                fBC;                                   /// bunch crossing number
+    UInt_t                  fOrbit;                                /// orbit
+    UInt_t                  fPeriod;                               /// period
+    UInt_t                  fEventID;                              /// event ID (for guaranteed uniqueness combine with ext ID)
+    UInt_t                  fEventIDExt;                           /// upper 32-bit of event ID
+    ULong_t                 fEventIDLong;                          /// single unique event id (unsigned long)
     TString                 fFileName;
     unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
@@ -488,7 +496,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,27);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,28);
     /// \endcond
 };
 
