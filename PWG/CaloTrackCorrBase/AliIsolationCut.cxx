@@ -1170,11 +1170,11 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   
   // For UE subtracted histograms, shift it down by 20 GeV
   // keep same histogram binning.
-  Float_t ptsumminUESub   = ptsummin-20;
-  Float_t ptsummaxUESub   = ptsummax;
-  Int_t   nptsumbinsUESub = nptsumbins*(1.+20./(ptsummax-ptsummin));
+  Float_t ptsumminUESub   = -50;
+  Float_t ptsummaxUESub   = 100;
+  Int_t   nptsumbinsUESub = 300;
   
-  TString sParticle = ", x^{0,#pm}";
+  TString sParticle = ", x^{ 0,#pm}";
   if      ( fPartInCone == kOnlyNeutral )  sParticle = ", x^{0}";
   else if ( fPartInCone == kOnlyCharged )  sParticle = ", x^{#pm}";
   
