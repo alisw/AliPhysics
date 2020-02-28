@@ -92,8 +92,8 @@ int IsTrueHyperTriton3Candidate(AliESDtrack *t1, AliESDtrack *t2, AliESDtrack *t
 bool HasTOF(AliVTrack *track) {
   const bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
   const bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
-  const float len       = track->GetIntegratedLength();
-  return hasTOFout && hasTOFtime && (len > 350.);
+  // const float len       = track->GetIntegratedLength();
+  return hasTOFout && hasTOFtime;
 }
 
 /// get nClsITS from cluster map
