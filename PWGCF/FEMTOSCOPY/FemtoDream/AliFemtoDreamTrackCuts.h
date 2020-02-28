@@ -197,21 +197,20 @@ class AliFemtoDreamTrackCuts {
   }
   ;
   void SetPID(AliPID::EParticleType pid, float pTPCThresh, float sigVal = 3.,
-              bool AllowITSonly = false, float sigValITS = 3., bool CombITSTPC = false) {
+              bool AllowITSonly = false, float sigValITS = 3.) {
     fParticleID = pid;
     fPIDPTPCThreshold = pTPCThresh;
     fNSigValue = sigVal;
     fAllowITSonly = AllowITSonly;
     fNSigValueITS = sigValITS;
-    fCombITSTPC = CombITSTPC;
     fCutPID = kTRUE;
   }
   ;
-  void SetCutITSPID(float pITSThresh = 0.0, double sigValITSmin = -3., double sigValITSmax = 3., bool cutit = false) {
+  void SetCutITSPID(float pITSThresh = 0.0, double sigValITSmin = -3., double sigValITSmax = 3.) {
     fPIDPITSThreshold = pITSThresh;
     fNSigValueITSmin = sigValITSmin;
     fNSigValueITSmax = sigValITSmax;
-    fdoITSnSigmaCut = cutit;
+    fdoITSnSigmaCut = kTRUE;
   }
   ;
   void SetRejLowPtPionsTOF(bool use) {
@@ -324,7 +323,6 @@ class AliFemtoDreamTrackCuts {
   float fNSigValueITSmax;             // defaults to +3
   float fdoITSnSigmaCut;              // defaults is false
   float fNSigValueITS;                // defaults to 3
-  bool  fCombITSTPC;                  // defaults is false 
   float fPIDPTPCThreshold;            // defaults to 0
   float fPIDPITSThreshold;            // defaults to 0, change it only if you want ITS in your analysis
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available

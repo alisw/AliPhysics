@@ -587,10 +587,11 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
 
         if (fTrackCutsDeuteronDCA->isSelected(fTrack)) {
           DCADeuterons.push_back(*fTrack);
+          fDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
         if (fTrackCutsDeuteronMass->isSelected(fTrack)) {
           MassDeuterons.push_back(*fTrack);
-          fDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          fDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
           if (fIsMC) {
 
             if (fTrack->GetMCPDGCode() == 1000010020) {
@@ -608,13 +609,13 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
         }
 
         if (fTrackCutsAntiDeuteronDCA->isSelected(fTrack)) {
-          //.. we add it to our particle buffer
           DCAAntiDeuterons.push_back(*fTrack);
+          fAntiDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
 
         if (fTrackCutsAntiDeuteronMass->isSelected(fTrack)) {
           MassAntiDeuterons.push_back(*fTrack);
-          fAntiDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          fAntiDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
           if (fIsMC) {
 
             if (fTrack->GetMCPDGCode() == -1000010020) {
@@ -640,13 +641,12 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
         }
 
         if (fTrackCutsProtonDCA->isSelected(fTrack)) {
-          //.. we add it to our particle buffer
-          fTrack->SetCPA(gRandom->Uniform());
-          DCAProtons.push_back(*fTrack);
+           DCAProtons.push_back(*fTrack);
+           fProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
         if (fTrackCutsProtonMass->isSelected(fTrack)) {
           MassProtons.push_back(*fTrack);
-          fProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          fProtonRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
           if (fIsMC) {
 
             if (fTrack->GetMCPDGCode() == 2212) {
@@ -668,13 +668,13 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
         }
 
         if (fTrackCutsAntiProtonDCA->isSelected(fTrack)) {
-          //.. we add it to our particle buffer
           DCAAntiProtons.push_back(*fTrack);
+          fAntiProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
 
         if (fTrackCutsAntiProtonMass->isSelected(fTrack)) {
           MassAntiProtons.push_back(*fTrack);
-          fAntiProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          fAntiProtonRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
           if (fIsMC) {
             if (fTrack->GetMCPDGCode() == -2212) {
 

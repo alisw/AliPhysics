@@ -67,7 +67,6 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fNSigValueITSmax(3.),
       fdoITSnSigmaCut(false),
       fNSigValueITS(3.),
-      fCombITSTPC(false),
       fPIDPTPCThreshold(0),
       fPIDPITSThreshold(0),
       fRejectPions(false) {
@@ -128,9 +127,8 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fNSigValue(cuts.fNSigValue),
       fNSigValueITSmin(cuts.fNSigValueITSmin),
       fNSigValueITSmax(cuts.fNSigValueITSmax),
-      fdoITSnSigmaCut(false),
+      fdoITSnSigmaCut(cuts.fdoITSnSigmaCut),
       fNSigValueITS(cuts.fNSigValueITS),
-      fCombITSTPC(false),
       fPIDPTPCThreshold(cuts.fPIDPTPCThreshold),
       fPIDPITSThreshold(cuts.fPIDPITSThreshold),
       fRejectPions(cuts.fRejectPions) {
@@ -196,7 +194,6 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fNSigValueITSmax = cuts.fNSigValueITSmax;
   this->fdoITSnSigmaCut = cuts.fdoITSnSigmaCut;
   this->fNSigValueITS = cuts.fNSigValueITS;
-  this->fCombITSTPC = cuts.fCombITSTPC;
   this->fPIDPTPCThreshold = cuts.fPIDPTPCThreshold;
   this->fPIDPITSThreshold = cuts.fPIDPITSThreshold;
   this->fRejectPions = cuts.fRejectPions;
@@ -233,7 +230,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(27);
+        fHists->FillTrackCounter(26);
     }
   }
   if (pass && fdoITSnSigmaCut) {
@@ -414,7 +411,7 @@ bool AliFemtoDreamTrackCuts::ITSPIDAODCuts(AliFemtoDreamTrack * Track) {
   if (Track->GetstatusITS() == AliPIDResponse::kDetPidOk) {
     ITSisthere = true;
     if (!fMinimalBooking)
-      fHists->FillTrackCounter(17);
+      fHists->FillTrackCounter(30);
   }
 
   double p = Track->GetP();
@@ -424,7 +421,7 @@ bool AliFemtoDreamTrackCuts::ITSPIDAODCuts(AliFemtoDreamTrack * Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(21);
+        fHists->FillTrackCounter(31);
     }
   }
   return pass;
@@ -460,7 +457,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
   //particle species doesn't have a smaller sigma value
 
   if (Track->GetMomTPC() < fPIDPTPCThreshold) {
-    if (!fAllowITSonly && !fCombITSTPC) {
+    if (!fAllowITSonly) {
       if (!TPCisthere) {
         pass = false;
       } else {
@@ -476,7 +473,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(25);
+              fHists->FillTrackCounter(24);
           }
         }
         if (pass) {
@@ -489,7 +486,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
           }
         }
       }
-    } else if(!fCombITSTPC) {  //exception for omega bachelor: enable use of ITS pid
+    } else {  //exception for omega bachelor: enable use of ITS pid
       if (!ITSisthere && !TPCisthere) {
         pass = false;
       } else {
@@ -507,7 +504,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(25);
+              fHists->FillTrackCounter(24);
           }
         }
         if (pass) {
@@ -532,38 +529,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
           }
         }
       }
-    }  else if(!fAllowITSonly){  // exception for deuteron PID: enable use of CombITSTPC for Threshold 
-        if (!ITSisthere || !TPCisthere) {
-          pass = false;
-      } else {
-        if (fRejectPions && TOFisthere) {
-          float nSigTOF = (Track->GetnSigmaTOF((int) (AliPID::kPion)));
-          if (TMath::Abs(nSigTOF) < fNSigValue) {
-            if (fParticleID == AliPID::kPion) {
-              AliWarning(
-                  "Sure you want to use this method? Propably want to set"
-                  " SetRejLowPtPionsTOF(kFALSE), since you are selecting Pions");
-            }
-            //if the particle is a Pion according to the TOF, reject it!
-            pass = false;
-          } else {
-            if (!fMinimalBooking)
-              fHists->FillTrackCounter(25);
-          }
-        }
-        if (pass) {   
-      float nSigTPC = (Track->GetnSigmaTPC((int) (fParticleID)));
-      float nSigITS = (Track->GetnSigmaITS((int) (fParticleID)));
-      float nSigComb = TMath::Sqrt(nSigTPC * nSigTPC + nSigITS * nSigITS);
-      if (!(nSigComb < fNSigValue)) {
-        pass = false;
-      } else {
-        if (!fMinimalBooking)
-          fHists->FillTrackCounter(24);
-      }
-        }
-      }
-    } // if fallowitsonly
+    } 
   } else {
     if (!(TPCisthere && TOFisthere)) {
       pass = false;
@@ -583,7 +549,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(26);
+              fHists->FillTrackCounter(25);
           }
         }
       }
@@ -1111,7 +1077,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetCutSharedCls(true);
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   trackCuts->SetPID(AliPID::kDeuteron, 1.4);
-  trackCuts->SetCutITSPID(1.4, -10., 1e30, true); 
+  trackCuts->SetCutITSPID(1.4, -10., 1e30); 
   trackCuts->SetRejLowPtPionsTOF(false);
   trackCuts->SetCutSmallestSig(true);
   return trackCuts;

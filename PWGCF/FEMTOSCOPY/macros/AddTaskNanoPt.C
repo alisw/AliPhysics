@@ -75,13 +75,13 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
       CombSigma, ContributionSplitting);
   TrackCutsDeuteronNoTOF->SetMinimalBooking(false);
   TrackCutsDeuteronNoTOF->SetCutCharge(1);
-  TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999., 3., false, 3., true);
+  TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999., 3.);
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteronNoTOF = AliFemtoDreamTrackCuts::PrimDeuteronCuts( isMC, true,
       CombSigma, ContributionSplitting);
   AntiTrackCutsDeuteronNoTOF->SetMinimalBooking(false);
   AntiTrackCutsDeuteronNoTOF->SetCutCharge(-1);
-  AntiTrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999., 3., false, 3., true);
+  AntiTrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
 //====================================================================================================================================
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
