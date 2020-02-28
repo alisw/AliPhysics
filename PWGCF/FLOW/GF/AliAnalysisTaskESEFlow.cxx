@@ -989,9 +989,11 @@ void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, Int_t fSp
 {
     Int_t CenterCode = GetCentralityCode(centrality);
 
-    if( (CenterCode < 0) || (CenterCode > 8)) { return; }
+    if( (CenterCode < 0) || (CenterCode > 9)) { return; }
 
     ReducedqVectorsTPC(centrality, fSpCent);
+
+    //if( (CenterCode < 0) || (CenterCode > 8)) { return; }
     if(fV0RunByRunCalibration){
         ReducedqVectorsV0(centrality, fSpCent);
         
@@ -1013,6 +1015,8 @@ void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, Int_t fSp
             prof_avg_V0A->Fill(centrality, qnV0A[i1]);
         }
     }
+
+    if( (CenterCode < 0) || (CenterCode > 8)) { return; }
 
     fIndexSampling = GetSamplingIndex();
 
@@ -1365,6 +1369,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
         }
     }
 
+
     if(fV0RunByRunCalibration){
     for (Int_t iQn(0); iQn < 2; ++iQn){
         QxnTPCEse[iQn] = QxnTPC[iQn] - fQnxTPCm[iQn]->GetBinContent(SPCode+1);
@@ -1492,6 +1497,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality,const In
         }
     }
 
+
     for (Int_t iQn(0); iQn < 2; ++iQn){
         QxnV0CEse[iQn] = QxnV0C[iQn] - fQnxV0Cm[iQn]->GetBinContent(SPCode+1);
         QynV0CEse[iQn] = QynV0C[iQn] - fQnyV0Cm[iQn]->GetBinContent(SPCode+1);
@@ -1500,6 +1506,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality,const In
         QynV0AEse[iQn] = QynV0A[iQn] - fQnyV0Am[iQn]->GetBinContent(SPCode+1);
 
         // recentering
+        if (SPCode >88) { continue; }
         QxnV0CCorr[iQn] = (QxnV0C[iQn] - fQnxV0Cm[iQn]->GetBinContent(SPCode+1))/fQnxV0Cs[iQn]->GetBinContent(SPCode+1);
         QynV0CCorr[iQn] = (QynV0C[iQn] - fQnyV0Cm[iQn]->GetBinContent(SPCode+1))/fQnyV0Cs[iQn]->GetBinContent(SPCode+1);
 
